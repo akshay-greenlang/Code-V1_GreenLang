@@ -35,29 +35,23 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "24.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: Any) -> str:
     if isinstance(data, dict):
         data = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(str(data).encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -66,7 +60,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
@@ -74,14 +67,12 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class MgmtPlanPhase(str, Enum):
     BASELINE_ANALYSIS = "baseline_analysis"
     REDUCTION_TARGETING = "reduction_targeting"
     ABATEMENT_PLANNING = "abatement_planning"
     RESIDUAL_FORECASTING = "residual_forecasting"
     PLAN_COMPILATION = "plan_compilation"
-
 
 class ReductionStrategy(str, Enum):
     ENERGY_EFFICIENCY = "energy_efficiency"
@@ -95,7 +86,6 @@ class ReductionStrategy(str, Enum):
     ELECTRIFICATION = "electrification"
     GREEN_PROCUREMENT = "green_procurement"
 
-
 class AbatementPriority(str, Enum):
     CRITICAL = "critical"
     HIGH = "high"
@@ -103,13 +93,11 @@ class AbatementPriority(str, Enum):
     LOW = "low"
     OPTIONAL = "optional"
 
-
 class TimeHorizon(str, Enum):
     IMMEDIATE = "immediate"  # 0-1 years
     SHORT_TERM = "short_term"  # 1-3 years
     MEDIUM_TERM = "medium_term"  # 3-5 years
     LONG_TERM = "long_term"  # 5-10 years
-
 
 # =============================================================================
 # REFERENCE DATA
@@ -150,11 +138,9 @@ REDUCTION_POTENTIAL: Dict[str, float] = {
     "green_procurement": 15.0,
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase_name: str = Field(...)
@@ -164,7 +150,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class ReductionTarget(BaseModel):
     target_id: str = Field(default="")
@@ -178,7 +163,6 @@ class ReductionTarget(BaseModel):
     target_emissions_tco2e: float = Field(default=0.0, ge=0.0)
     is_science_aligned: bool = Field(default=False)
     alignment_framework: str = Field(default="")
-
 
 class AbatementAction(BaseModel):
     action_id: str = Field(default="")
@@ -199,7 +183,6 @@ class AbatementAction(BaseModel):
     co_benefits: List[str] = Field(default_factory=list)
     risks: List[str] = Field(default_factory=list)
 
-
 class ResidualProfile(BaseModel):
     year: int = Field(...)
     projected_emissions_tco2e: float = Field(default=0.0, ge=0.0)
@@ -209,14 +192,12 @@ class ResidualProfile(BaseModel):
     reduction_pct_from_base: float = Field(default=0.0, ge=0.0, le=100.0)
     cumulative_reduction_pct: float = Field(default=0.0, ge=0.0, le=100.0)
 
-
 class MgmtPlanTimeline(BaseModel):
     start_year: int = Field(default=2025)
     end_year: int = Field(default=2030)
     milestones: List[Dict[str, Any]] = Field(default_factory=list)
     review_frequency: str = Field(default="annual")
     update_triggers: List[str] = Field(default_factory=list)
-
 
 class CarbonMgmtPlanConfig(BaseModel):
     org_name: str = Field(default="")
@@ -240,7 +221,6 @@ class CarbonMgmtPlanConfig(BaseModel):
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
 
-
 class CarbonMgmtPlanResult(BaseModel):
     workflow_id: str = Field(...)
     workflow_name: str = Field(default="carbon_mgmt_plan")
@@ -258,11 +238,9 @@ class CarbonMgmtPlanResult(BaseModel):
     vcmi_claim_eligible: str = Field(default="none")
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class CarbonMgmtPlanWorkflow:
     """
@@ -288,7 +266,7 @@ class CarbonMgmtPlanWorkflow:
 
     async def execute(self, config: CarbonMgmtPlanConfig) -> CarbonMgmtPlanResult:
         """Execute the 5-phase carbon management plan workflow."""
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting carbon mgmt plan %s, org=%s, target_year=%d",
             self.workflow_id, config.org_name, config.target_year,
@@ -324,7 +302,7 @@ class CarbonMgmtPlanWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         total_abatement = sum(a.reduction_potential_tco2e for a in self._actions)
         total_investment = sum(a.cost_usd for a in self._actions)
         avg_cost = (total_investment / max(total_abatement, 1.0))
@@ -369,7 +347,7 @@ class CarbonMgmtPlanWorkflow:
 
     async def _phase_baseline_analysis(self, config: CarbonMgmtPlanConfig) -> PhaseResult:
         """Analyze current emissions profile and historical trends."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         errors: List[str] = []
@@ -400,7 +378,7 @@ class CarbonMgmtPlanWorkflow:
             outputs["change_from_base_pct"] = 0.0
 
         status = PhaseStatus.FAILED if errors else PhaseStatus.COMPLETED
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name=MgmtPlanPhase.BASELINE_ANALYSIS.value,
             status=status, duration_seconds=round(elapsed, 4),
@@ -414,7 +392,7 @@ class CarbonMgmtPlanWorkflow:
 
     async def _phase_reduction_targeting(self, config: CarbonMgmtPlanConfig) -> PhaseResult:
         """Set reduction targets aligned with science-based pathways."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         errors: List[str] = []
@@ -461,7 +439,7 @@ class CarbonMgmtPlanWorkflow:
             )
 
         status = PhaseStatus.COMPLETED
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name=MgmtPlanPhase.REDUCTION_TARGETING.value,
             status=status, duration_seconds=round(elapsed, 4),
@@ -475,7 +453,7 @@ class CarbonMgmtPlanWorkflow:
 
     async def _phase_abatement_planning(self, config: CarbonMgmtPlanConfig) -> PhaseResult:
         """Identify and prioritize emission reduction actions."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         errors: List[str] = []
@@ -529,7 +507,7 @@ class CarbonMgmtPlanWorkflow:
             )
 
         status = PhaseStatus.COMPLETED
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name=MgmtPlanPhase.ABATEMENT_PLANNING.value,
             status=status, duration_seconds=round(elapsed, 4),
@@ -543,7 +521,7 @@ class CarbonMgmtPlanWorkflow:
 
     async def _phase_residual_forecasting(self, config: CarbonMgmtPlanConfig) -> PhaseResult:
         """Forecast residual emissions after planned reductions."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         errors: List[str] = []
@@ -584,7 +562,7 @@ class CarbonMgmtPlanWorkflow:
         )
 
         status = PhaseStatus.COMPLETED
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name=MgmtPlanPhase.RESIDUAL_FORECASTING.value,
             status=status, duration_seconds=round(elapsed, 4),
@@ -598,7 +576,7 @@ class CarbonMgmtPlanWorkflow:
 
     async def _phase_plan_compilation(self, config: CarbonMgmtPlanConfig) -> PhaseResult:
         """Compile management plan with milestones and timelines."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         errors: List[str] = []
@@ -644,7 +622,7 @@ class CarbonMgmtPlanWorkflow:
         outputs["pas2060_section_7_compliant"] = True
 
         status = PhaseStatus.COMPLETED
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name=MgmtPlanPhase.PLAN_COMPILATION.value,
             status=status, duration_seconds=round(elapsed, 4),

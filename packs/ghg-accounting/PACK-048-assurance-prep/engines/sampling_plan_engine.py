@@ -92,23 +92,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import RiskLevel
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -125,7 +121,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -134,7 +129,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -142,15 +136,12 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ConfidenceLevel(str, Enum):
     """Confidence level for sample size determination.
@@ -160,7 +151,6 @@ class ConfidenceLevel(str, Enum):
     """
     REASONABLE_95 = "reasonable_95"
     LIMITED_80 = "limited_80"
-
 
 class SelectionMethod(str, Enum):
     """Sample selection method.
@@ -177,14 +167,6 @@ class SelectionMethod(str, Enum):
     STRATIFIED = "stratified"
     JUDGMENTAL = "judgmental"
 
-
-class RiskLevel(str, Enum):
-    """Risk level for stratification."""
-    HIGH = "high"
-    MEDIUM = "medium"
-    LOW = "low"
-
-
 class ItemClassification(str, Enum):
     """Item classification in sampling.
 
@@ -195,7 +177,6 @@ class ItemClassification(str, Enum):
     HIGH_VALUE = "high_value"
     KEY_ITEM = "key_item"
     REMAINING = "remaining"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -211,11 +192,9 @@ RELIABILITY_FACTORS: Dict[str, Decimal] = {
 MIN_SAMPLE_SIZE: int = 5
 MAX_SAMPLE_SIZE: int = 10000
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class PopulationItem(BaseModel):
     """A single item in the audit population.
@@ -248,7 +227,6 @@ class PopulationItem(BaseModel):
     def coerce_value(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class Population(BaseModel):
     """Audit population.
 
@@ -268,7 +246,6 @@ class Population(BaseModel):
         if self.total_value_tco2e == Decimal("0") and self.items:
             self.total_value_tco2e = sum(it.value_tco2e for it in self.items)
         return self
-
 
 class SamplingConfig(BaseModel):
     """Configuration for sampling plan.
@@ -305,7 +282,6 @@ class SamplingConfig(BaseModel):
     def coerce_mat(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class SamplingInput(BaseModel):
     """Input for sampling plan engine.
 
@@ -320,11 +296,9 @@ class SamplingInput(BaseModel):
         default_factory=SamplingConfig, description="Configuration"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class Stratum(BaseModel):
     """A sampling stratum.
@@ -352,7 +326,6 @@ class Stratum(BaseModel):
     sample_size: int = Field(default=0, description="Sample size")
     selection_method: str = Field(default="", description="Method")
 
-
 class SampleSelection(BaseModel):
     """Selected sample items.
 
@@ -368,7 +341,6 @@ class SampleSelection(BaseModel):
     stratum_id: str = Field(default="", description="Stratum ID")
     value_tco2e: Decimal = Field(default=Decimal("0"), description="Value")
     selection_reason: str = Field(default="", description="Reason")
-
 
 class SamplingPlan(BaseModel):
     """Complete sampling plan.
@@ -400,7 +372,6 @@ class SamplingPlan(BaseModel):
     coverage_pct: Decimal = Field(default=Decimal("0"), description="Coverage %")
     sampling_interval: Decimal = Field(default=Decimal("0"), description="Interval")
 
-
 class ProjectedMisstatement(BaseModel):
     """Projected misstatement from sample results.
 
@@ -422,7 +393,6 @@ class ProjectedMisstatement(BaseModel):
     tainting_factors: List[Decimal] = Field(
         default_factory=list, description="Tainting factors"
     )
-
 
 class SamplingResult(BaseModel):
     """Complete result of sampling plan engine.
@@ -454,11 +424,9 @@ class SamplingResult(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class SamplingPlanEngine:
     """Designs audit sampling plans for GHG assurance engagements.
@@ -609,7 +577,7 @@ class SamplingPlanEngine:
             confidence_level=config.confidence_level.value,
             reliability_factor=reliability,
             warnings=warnings,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         result.provenance_hash = _compute_hash(result)
@@ -760,7 +728,6 @@ class SamplingPlanEngine:
 
     def get_version(self) -> str:
         return self._version
-
 
 # ---------------------------------------------------------------------------
 # __all__

@@ -38,36 +38,28 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "26.0.0"
 _PACK_ID = "PACK-026"
 
-
 # =============================================================================
 # HELPERS
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
 
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
 
-
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a single workflow phase."""
@@ -78,7 +70,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -88,14 +79,12 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class BaselineTier(str, Enum):
     """SME baseline calculation tier."""
 
     BRONZE = "bronze"      # Spend-based only (~5 min)
     SILVER = "silver"      # Activity data (~30 min)
     GOLD = "gold"          # Metered data (~2 hrs)
-
 
 class IndustrySector(str, Enum):
     """Simplified NACE-based industry sectors for SME."""
@@ -112,7 +101,6 @@ class IndustrySector(str, Enum):
     TECHNOLOGY = "technology"
     OTHER = "other"
 
-
 class CompanySizeBand(str, Enum):
     """SME size classification (EU definition)."""
 
@@ -120,7 +108,6 @@ class CompanySizeBand(str, Enum):
     SMALL = "small"            # <50 employees, <10M EUR
     MEDIUM = "medium"          # <250 employees, <50M EUR
     LARGE_SME = "large_sme"    # 250-500 employees
-
 
 class QuickWinCategory(str, Enum):
     """Quick win action categories."""
@@ -135,7 +122,6 @@ class QuickWinCategory(str, Enum):
     BEHAVIOUR_CHANGE = "behaviour_change"
     DIGITAL = "digital"
     WATER = "water"
-
 
 # =============================================================================
 # SME EMISSION FACTOR CONSTANTS (DEFRA 2024 / IEA 2024)
@@ -299,11 +285,9 @@ QUICK_WIN_DATABASE: Dict[str, Dict[str, Any]] = {
 SBTI_15C_ANNUAL_REDUCTION_PCT = 4.2
 SBTI_WELL_BELOW_2C_ANNUAL_REDUCTION_PCT = 2.5
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -318,7 +302,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list, description="Errors encountered")
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
     mobile_summary: str = Field(default="", description="Short mobile-friendly summary")
-
 
 class SMEOrganizationProfile(BaseModel):
     """SME organization profile - collected in Phase 1 (5 min)."""
@@ -354,7 +337,6 @@ class SMEOrganizationProfile(BaseModel):
             return "micro"
         return v
 
-
 class BronzeBaselineInput(BaseModel):
     """Minimal input for Bronze-tier baseline (spend + headcount)."""
 
@@ -366,7 +348,6 @@ class BronzeBaselineInput(BaseModel):
     annual_procurement_spend_gbp: float = Field(default=0.0, ge=0.0)
     employee_count: int = Field(default=1, ge=1)
     grid_region: str = Field(default="UK", description="Grid region for EF lookup")
-
 
 class BronzeBaseline(BaseModel):
     """Bronze-tier baseline result (spend-based, +/-25% accuracy)."""
@@ -388,7 +369,6 @@ class BronzeBaseline(BaseModel):
     electricity_kwh_estimated: float = Field(default=0.0, ge=0.0)
     gas_kwh_estimated: float = Field(default=0.0, ge=0.0)
 
-
 class AutoTarget(BaseModel):
     """Auto-generated emission reduction target."""
 
@@ -406,7 +386,6 @@ class AutoTarget(BaseModel):
     pathway_points: List[Dict[str, Any]] = Field(default_factory=list)
     sbti_eligible: bool = Field(default=True)
 
-
 class QuickWinAction(BaseModel):
     """A recommended quick-win action for SME."""
 
@@ -421,7 +400,6 @@ class QuickWinAction(BaseModel):
     payback_months: int = Field(default=0, ge=0, description="Simple payback period")
     difficulty: str = Field(default="easy", description="easy|medium|hard")
     savings_pct_of_total: float = Field(default=0.0, ge=0.0, le=100.0)
-
 
 class ExpressOnboardingConfig(BaseModel):
     """Configuration for express onboarding workflow."""
@@ -441,7 +419,6 @@ class ExpressOnboardingConfig(BaseModel):
             return "1.5C"
         return v
 
-
 class ExpressOnboardingInput(BaseModel):
     """Complete input for express onboarding workflow."""
 
@@ -453,7 +430,6 @@ class ExpressOnboardingInput(BaseModel):
     config: ExpressOnboardingConfig = Field(
         default_factory=ExpressOnboardingConfig,
     )
-
 
 class ExpressOnboardingResult(BaseModel):
     """Complete result from express onboarding workflow."""
@@ -475,11 +451,9 @@ class ExpressOnboardingResult(BaseModel):
     next_steps: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="", description="SHA-256 of complete output")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class ExpressOnboardingWorkflow:
     """
@@ -553,7 +527,7 @@ class ExpressOnboardingWorkflow:
         Raises:
             ValueError: If critical input data is missing.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         self.config = input_data.config
         self._profile = input_data.profile
         self.logger.info(
@@ -599,7 +573,7 @@ class ExpressOnboardingWorkflow:
                 mobile_summary="Onboarding failed. Please try again.",
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
 
         # Generate next steps
         next_steps = self._generate_next_steps()
@@ -636,7 +610,7 @@ class ExpressOnboardingWorkflow:
         self, input_data: ExpressOnboardingInput,
     ) -> PhaseResult:
         """Validate and enrich organization profile."""
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         errors: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -682,7 +656,7 @@ class ExpressOnboardingWorkflow:
 
         self._profile = profile
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         status = PhaseStatus.COMPLETED if not errors else PhaseStatus.FAILED
         return PhaseResult(
             phase_name="organization_profile",
@@ -705,7 +679,7 @@ class ExpressOnboardingWorkflow:
         self, input_data: ExpressOnboardingInput,
     ) -> PhaseResult:
         """Calculate Bronze-tier baseline from energy spend and headcount."""
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         errors: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -831,7 +805,7 @@ class ExpressOnboardingWorkflow:
         if total <= 0:
             errors.append("Total emissions are zero; ensure at least one spend figure is provided")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         status = PhaseStatus.COMPLETED if not errors else PhaseStatus.FAILED
         self.logger.info(
             "Bronze baseline: S1=%.1f S2=%.1f S3=%.1f Total=%.1f tCO2e (%s vs sector)",
@@ -858,7 +832,7 @@ class ExpressOnboardingWorkflow:
         self, input_data: ExpressOnboardingInput,
     ) -> PhaseResult:
         """Auto-generate 1.5C-aligned targets with pathway points."""
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
 
@@ -947,7 +921,7 @@ class ExpressOnboardingWorkflow:
         outputs["annual_rate_pct"] = annual_rate
         outputs["pathway_points_count"] = len(pathway_points)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Auto-target: %s - %.0f%% by %d, %.0f%% by %d (%.1f%%/yr)",
             pathway, near_term_reduction, near_term_year,
@@ -973,7 +947,7 @@ class ExpressOnboardingWorkflow:
         self, input_data: ExpressOnboardingInput,
     ) -> PhaseResult:
         """Identify top quick-win actions ranked by impact and feasibility."""
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
 
@@ -1045,7 +1019,7 @@ class ExpressOnboardingWorkflow:
         if not self._quick_wins:
             warnings.append("No quick wins identified; baseline data may be insufficient")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Quick wins: %d actions, total savings %.1f tCO2e (%.1f%% of baseline)",
             len(self._quick_wins), total_savings,

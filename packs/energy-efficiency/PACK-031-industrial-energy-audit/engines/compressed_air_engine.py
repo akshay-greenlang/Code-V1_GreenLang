@@ -86,25 +86,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -122,7 +116,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -131,7 +124,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -143,17 +135,14 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
@@ -161,11 +150,9 @@ def _round3(value: float) -> float:
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CompressorType(str, Enum):
     """Compressor technology types.
@@ -182,7 +169,6 @@ class CompressorType(str, Enum):
     CENTRIFUGAL = "centrifugal"
     SCROLL = "scroll"
 
-
 class CompressorControl(str, Enum):
     """Compressor capacity control methods.
 
@@ -198,7 +184,6 @@ class CompressorControl(str, Enum):
     MULTI_STEP = "multi_step"
     ON_OFF = "on_off"
 
-
 class DryerType(str, Enum):
     """Compressed air dryer types.
 
@@ -213,7 +198,6 @@ class DryerType(str, Enum):
     DESICCANT_HEATED = "desiccant_heated"
     DESICCANT_HOC = "desiccant_hoc"
     MEMBRANE = "membrane"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -322,11 +306,9 @@ DEFAULT_CO2_FACTOR_KG_KWH: Decimal = Decimal("0.4")
 # Pressure drop limits.
 MAX_ACCEPTABLE_PRESSURE_DROP_BAR: Decimal = Decimal("0.3")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class Compressor(BaseModel):
     """Individual compressor in the system.
@@ -406,7 +388,6 @@ class Compressor(BaseModel):
             raise ValueError(f"Unknown control type '{v}'. Must be one of: {sorted(valid)}")
         return v
 
-
 class LeakSurvey(BaseModel):
     """Compressed air leak survey data.
 
@@ -442,7 +423,6 @@ class LeakSurvey(BaseModel):
     )
     notes: str = Field(default="", description="Additional notes")
 
-
 class PressureProfile(BaseModel):
     """Compressed air pressure and flow measurement point.
 
@@ -457,7 +437,6 @@ class PressureProfile(BaseModel):
     flow_m3min: Decimal = Field(default=Decimal("0"), ge=0, description="Flow (m3/min)")
     power_kw: Decimal = Field(default=Decimal("0"), ge=0, description="Power (kW)")
 
-
 class AirReceiver(BaseModel):
     """Compressed air receiver (storage tank).
 
@@ -471,7 +450,6 @@ class AirReceiver(BaseModel):
     volume_m3: Decimal = Field(default=Decimal("0"), ge=0, description="Volume (m3)")
     pressure_bar: Decimal = Field(default=Decimal("0"), ge=0, description="Pressure (bar)")
     location: str = Field(default="primary", description="Location")
-
 
 class CompressedAirSystem(BaseModel):
     """Complete compressed air system definition.
@@ -527,7 +505,6 @@ class CompressedAirSystem(BaseModel):
             raise ValueError(f"Unknown dryer type '{v}'. Must be one of: {sorted(valid)}")
         return v
 
-
 class CompressedAirInput(BaseModel):
     """Complete input for compressed air system audit.
 
@@ -572,11 +549,9 @@ class CompressedAirInput(BaseModel):
     include_receiver_sizing: bool = Field(default=True, description="Include receiver sizing")
     include_pressure_drop: bool = Field(default=True, description="Include pressure drop")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class CompressorAnalysis(BaseModel):
     """Analysis result for a single compressor.
@@ -601,7 +576,6 @@ class CompressorAnalysis(BaseModel):
     part_load_efficiency_pct: Decimal = Field(default=Decimal("0"))
     annual_energy_cost_eur: Decimal = Field(default=Decimal("0"))
     efficiency_rating: str = Field(default="fair")
-
 
 class LeakAnalysis(BaseModel):
     """Compressed air leak analysis result.
@@ -629,7 +603,6 @@ class LeakAnalysis(BaseModel):
     repair_cost_eur: Decimal = Field(default=Decimal("0"))
     repair_payback_months: Decimal = Field(default=Decimal("0"))
 
-
 class PressureOptimization(BaseModel):
     """Pressure optimization analysis.
 
@@ -651,7 +624,6 @@ class PressureOptimization(BaseModel):
     annual_savings_eur: Decimal = Field(default=Decimal("0"))
     artificial_demand_m3min: Decimal = Field(default=Decimal("0"))
     artificial_demand_cost_eur: Decimal = Field(default=Decimal("0"))
-
 
 class VSDAnalysis(BaseModel):
     """VSD compressor retrofit analysis.
@@ -677,7 +649,6 @@ class VSDAnalysis(BaseModel):
     simple_payback_years: Decimal = Field(default=Decimal("0"))
     load_profile_suitability: str = Field(default="moderate")
 
-
 class ReceiverAnalysis(BaseModel):
     """Air receiver sizing analysis.
 
@@ -695,7 +666,6 @@ class ReceiverAnalysis(BaseModel):
     gap_m3: Decimal = Field(default=Decimal("0"))
     pressure_stability_score: Decimal = Field(default=Decimal("0"))
     recommendation: str = Field(default="")
-
 
 class HeatRecoveryAnalysis(BaseModel):
     """Compressor heat recovery analysis.
@@ -719,7 +689,6 @@ class HeatRecoveryAnalysis(BaseModel):
     capex_eur: Decimal = Field(default=Decimal("0"))
     payback_years: Decimal = Field(default=Decimal("0"))
 
-
 class PressureDropAnalysis(BaseModel):
     """Distribution network pressure drop analysis.
 
@@ -735,7 +704,6 @@ class PressureDropAnalysis(BaseModel):
     estimated_pressure_drop_bar: Decimal = Field(default=Decimal("0"))
     acceptable: bool = Field(default=True)
     recommendation: str = Field(default="")
-
 
 class CompressedAirResult(BaseModel):
     """Complete compressed air system audit result.
@@ -771,7 +739,7 @@ class CompressedAirResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     system_id: str = Field(default="")
     system_specific_power: Decimal = Field(default=Decimal("0"))
     benchmark_specific_power: Decimal = Field(default=BEST_PRACTICE_SP)
@@ -797,11 +765,9 @@ class CompressedAirResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class CompressedAirEngine:
     """Compressed air system audit engine ("the fourth utility").

@@ -72,25 +72,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "43.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -108,7 +102,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serialisable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -117,7 +110,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -129,17 +121,14 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _days_in_year(year: int) -> int:
     """Return number of days in a year (handles leap years)."""
@@ -147,11 +136,9 @@ def _days_in_year(year: int) -> int:
         return 366
     return 365
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ConsolidationApproach(str, Enum):
     """GHG Protocol consolidation approach.
@@ -163,7 +150,6 @@ class ConsolidationApproach(str, Enum):
     EQUITY_SHARE = "equity_share"
     OPERATIONAL_CONTROL = "operational_control"
     FINANCIAL_CONTROL = "financial_control"
-
 
 class EntityType(str, Enum):
     """Type of entity in the corporate group.
@@ -182,7 +168,6 @@ class EntityType(str, Enum):
     FRANCHISE = "franchise"
     INVESTMENT = "investment"
 
-
 class ControlType(str, Enum):
     """Type of control over an entity.
 
@@ -197,7 +182,6 @@ class ControlType(str, Enum):
     SHARED = "shared"
     SIGNIFICANT = "significant_influence"
     NONE = "none"
-
 
 class BoundaryChangeType(str, Enum):
     """Type of boundary change event.
@@ -216,7 +200,6 @@ class BoundaryChangeType(str, Enum):
     JV_FORMED = "jv_formed"
     JV_DISSOLVED = "jv_dissolved"
 
-
 class ConsolidationStatus(str, Enum):
     """Status of consolidation.
 
@@ -227,7 +210,6 @@ class ConsolidationStatus(str, Enum):
     COMPLETE = "complete"
     PARTIAL = "partial"
     ERROR = "error"
-
 
 # ---------------------------------------------------------------------------
 # Inter-company Elimination Rules
@@ -302,11 +284,9 @@ INTERCOMPANY_OVERLAP_RULES: List[Dict[str, Any]] = [
     },
 ]
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class EntityEmissions(BaseModel):
     """Emissions data for a single entity.
@@ -331,7 +311,6 @@ class EntityEmissions(BaseModel):
     total_scope3_tco2e: Decimal = Field(
         default=Decimal("0"), ge=0, description="Total Scope 3"
     )
-
 
 class Entity(BaseModel):
     """An entity in the corporate hierarchy.
@@ -385,7 +364,6 @@ class Entity(BaseModel):
         default_factory=list, description="Related entity IDs"
     )
 
-
 class EntityHierarchy(BaseModel):
     """Complete entity hierarchy for a corporate group.
 
@@ -403,7 +381,6 @@ class EntityHierarchy(BaseModel):
     entities: List[Entity] = Field(
         default_factory=list, description="Entities"
     )
-
 
 class IntercompanyRelationship(BaseModel):
     """Commercial relationship between two group entities.
@@ -435,7 +412,6 @@ class IntercompanyRelationship(BaseModel):
         default_factory=list, description="Buyer categories"
     )
 
-
 class BoundaryChangeEvent(BaseModel):
     """A boundary change event (acquisition, divestiture, etc.).
 
@@ -460,11 +436,9 @@ class BoundaryChangeEvent(BaseModel):
     )
     description: str = Field(default="", description="Description")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class EntityConsolidated(BaseModel):
     """Consolidated emissions for a single entity.
@@ -510,7 +484,6 @@ class EntityConsolidated(BaseModel):
     included_in_boundary: bool = Field(default=True, description="In boundary")
     notes: List[str] = Field(default_factory=list, description="Notes")
 
-
 class EliminationEntry(BaseModel):
     """A single inter-company elimination entry.
 
@@ -532,7 +505,6 @@ class EliminationEntry(BaseModel):
     )
     method: str = Field(default="", description="Method")
     description: str = Field(default="", description="Description")
-
 
 class BoundaryDefinition(BaseModel):
     """Organisational boundary definition result.
@@ -565,7 +537,6 @@ class BoundaryDefinition(BaseModel):
         default=Decimal("0"), description="Equity coverage %"
     )
     notes: List[str] = Field(default_factory=list, description="Notes")
-
 
 class ConsolidationResult(BaseModel):
     """Complete consolidation result.
@@ -637,12 +608,11 @@ class ConsolidationResult(BaseModel):
     status: ConsolidationStatus = Field(
         default=ConsolidationStatus.COMPLETE, description="Status"
     )
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Timestamp")
     processing_time_ms: Decimal = Field(
         default=Decimal("0"), description="Processing ms"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class InfluenceAssessment(BaseModel):
     """Result of a control/influence assessment for an entity.
@@ -678,7 +648,6 @@ class InfluenceAssessment(BaseModel):
     )
     recommendation: str = Field(default="", description="Recommendation")
 
-
 # ---------------------------------------------------------------------------
 # Model Rebuild
 # ---------------------------------------------------------------------------
@@ -694,11 +663,9 @@ BoundaryDefinition.model_rebuild()
 ConsolidationResult.model_rebuild()
 InfluenceAssessment.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class MultiEntityBoundaryEngine:
     """Manage Scope 3 boundaries for corporate groups.

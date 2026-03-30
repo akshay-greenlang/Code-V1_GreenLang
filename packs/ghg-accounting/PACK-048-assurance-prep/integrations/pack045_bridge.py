@@ -44,25 +44,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -75,11 +69,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class RecalculationStatus(str, Enum):
     """Base year recalculation status."""
@@ -89,7 +81,6 @@ class RecalculationStatus(str, Enum):
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
     NOT_SIGNIFICANT = "not_significant"
-
 
 class StructuralChangeType(str, Enum):
     """Types of structural changes triggering recalculation."""
@@ -102,11 +93,9 @@ class StructuralChangeType(str, Enum):
     METHODOLOGY_CHANGE = "methodology_change"
     ERROR_CORRECTION = "error_correction"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class Pack045Config(BaseModel):
     """Configuration for PACK-045 bridge."""
@@ -116,7 +105,6 @@ class Pack045Config(BaseModel):
     )
     timeout_s: float = Field(60.0, ge=5.0)
     cache_ttl_s: float = Field(3600.0)
-
 
 class BaseYearEmissions(BaseModel):
     """Base year emission totals from PACK-045."""
@@ -131,7 +119,6 @@ class BaseYearEmissions(BaseModel):
     adjustment_date: Optional[str] = None
     original_total_tco2e: float = 0.0
     provenance_hash: str = ""
-
 
 class RecalculationDocumentation(BaseModel):
     """Recalculation documentation for provenance trail."""
@@ -152,7 +139,6 @@ class RecalculationDocumentation(BaseModel):
     approved_date: str = ""
     provenance_hash: str = ""
 
-
 class StructuralChangeRecord(BaseModel):
     """Structural change record for control testing evidence."""
 
@@ -165,7 +151,6 @@ class StructuralChangeRecord(BaseModel):
     entities_affected: List[str] = Field(default_factory=list)
     documentation_refs: List[str] = Field(default_factory=list)
     provenance_hash: str = ""
-
 
 class SignificanceTestResult(BaseModel):
     """Significance test result from PACK-045."""
@@ -180,7 +165,6 @@ class SignificanceTestResult(BaseModel):
     conclusion: str = ""
     provenance_hash: str = ""
 
-
 class RecalculationPolicy(BaseModel):
     """Recalculation policy documentation from PACK-045."""
 
@@ -191,7 +175,6 @@ class RecalculationPolicy(BaseModel):
     approval_requirements: str = ""
     last_reviewed: str = ""
     provenance_hash: str = ""
-
 
 class BaseYearEvidenceRequest(BaseModel):
     """Request for base year evidence from PACK-045."""
@@ -207,7 +190,6 @@ class BaseYearEvidenceRequest(BaseModel):
     include_structural_changes: bool = Field(True)
     include_significance_tests: bool = Field(True)
     include_policy: bool = Field(True)
-
 
 class BaseYearEvidenceResponse(BaseModel):
     """Complete base year evidence response from PACK-045."""
@@ -226,11 +208,9 @@ class BaseYearEvidenceResponse(BaseModel):
     duration_ms: float = 0.0
     warnings: List[str] = Field(default_factory=list)
 
-
 # ---------------------------------------------------------------------------
 # Bridge Implementation
 # ---------------------------------------------------------------------------
-
 
 class Pack045Bridge:
     """
@@ -300,7 +280,7 @@ class Pack045Bridge:
                     "base_year": emissions.base_year,
                     "evidence_items": total,
                 }),
-                retrieved_at=_utcnow().isoformat(),
+                retrieved_at=utcnow().isoformat(),
                 duration_ms=duration,
             )
 
@@ -310,7 +290,7 @@ class Pack045Bridge:
             return BaseYearEvidenceResponse(
                 success=False,
                 warnings=[f"Retrieval failed: {str(e)}"],
-                retrieved_at=_utcnow().isoformat(),
+                retrieved_at=utcnow().isoformat(),
                 duration_ms=duration,
             )
 

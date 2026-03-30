@@ -79,8 +79,9 @@ from .models import (
 )
 from .provenance import get_tracker
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -130,28 +131,19 @@ _CERT_NUMBER_PATTERNS: Dict[str, str] = {
     "RAINFOREST_ALLIANCE": r"^RA-[A-Z]{2}-\d{6}$",
 }
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal for precise arithmetic."""
     if isinstance(value, Decimal):
         return value
     return Decimal(str(value))
 
-
 def _float(value: Decimal) -> float:
     """Convert Decimal to float for API responses."""
     return float(value)
 
-
 # ---------------------------------------------------------------------------
 # CertificationValidator
 # ---------------------------------------------------------------------------
-
 
 class CertificationValidator:
     """Validate supplier certifications against EUDR complementary measures.
@@ -271,7 +263,7 @@ class CertificationValidator:
 
             # Step 10: Create certification record
             cert_id = str(uuid.uuid4())
-            now = _utcnow()
+            now = utcnow()
 
             certification = CertificationRecord(
                 cert_id=cert_id,
@@ -380,7 +372,7 @@ class CertificationValidator:
                 if cid in self._certifications
             ]
 
-        now = _utcnow()
+        now = utcnow()
         cutoff = now + timedelta(days=days_ahead)
 
         expiring = []
@@ -770,7 +762,7 @@ class CertificationValidator:
         Returns:
             CertificationStatus enum value.
         """
-        now = _utcnow()
+        now = utcnow()
 
         if expiry_date < now:
             return CertificationStatus.EXPIRED
@@ -791,7 +783,7 @@ class CertificationValidator:
         Returns:
             List of alert messages.
         """
-        now = _utcnow()
+        now = utcnow()
         days_to_expiry = (expiry_date - now).days
 
         alerts = []

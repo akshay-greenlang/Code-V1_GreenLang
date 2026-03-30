@@ -54,6 +54,7 @@ import time
 from collections import defaultdict
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import utcnow
 
 from greenlang.agents.data.supplier_questionnaire.models import (
     CampaignAnalytics,
@@ -73,21 +74,13 @@ __all__ = [
     "AnalyticsEngine",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ---------------------------------------------------------------------------
 # AnalyticsEngine
 # ---------------------------------------------------------------------------
-
 
 class AnalyticsEngine:
     """Campaign and supplier analytics engine.
@@ -381,7 +374,7 @@ class AnalyticsEngine:
             "population_max": max_all,
             "delta_from_avg": round(supplier_score - avg_all, 1),
             "provenance_hash": provenance_hash,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     def get_compliance_gaps(
@@ -465,7 +458,7 @@ class AnalyticsEngine:
             "weakest_section": section_avgs[0] if section_avgs else None,
             "strongest_section": section_avgs[-1] if section_avgs else None,
             "provenance_hash": provenance_hash,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     def get_score_distribution(
@@ -509,7 +502,7 @@ class AnalyticsEngine:
             "min": round(min(values), 1) if values else 0.0,
             "max": round(max(values), 1) if values else 0.0,
             "provenance_hash": provenance_hash,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     def get_trend_analysis(
@@ -575,7 +568,7 @@ class AnalyticsEngine:
             "data_points": data_points,
             "trend": trend,
             "total_periods": len(data_points),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     def get_data_quality_distribution(
@@ -617,7 +610,7 @@ class AnalyticsEngine:
             "max": round(max(values), 1) if values else 0.0,
             "above_threshold": sum(1 for v in values if v >= 60.0),
             "below_threshold": sum(1 for v in values if v < 60.0),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     def identify_top_performers(
@@ -781,7 +774,7 @@ class AnalyticsEngine:
             "campaign_id": campaign_id,
             "countries": summary,
             "total_countries": len(summary),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     def get_framework_coverage(
@@ -850,7 +843,7 @@ class AnalyticsEngine:
             "campaign_id": campaign_id,
             "frameworks": coverage,
             "total_frameworks": len(coverage),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     def get_statistics(self) -> Dict[str, Any]:
@@ -863,7 +856,7 @@ class AnalyticsEngine:
             return {
                 **self._stats,
                 "cached_analytics": len(self._analytics_cache),
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }
 
     # ------------------------------------------------------------------
@@ -1259,7 +1252,7 @@ th {{ background-color: #4CAF50; color: white; }}
             Hex-encoded SHA-256 digest.
         """
         combined = json.dumps(
-            {"parts": list(parts), "timestamp": _utcnow().isoformat()},
+            {"parts": list(parts), "timestamp": utcnow().isoformat()},
             sort_keys=True,
         )
         return hashlib.sha256(combined.encode("utf-8")).hexdigest()

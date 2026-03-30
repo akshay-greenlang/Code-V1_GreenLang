@@ -39,19 +39,14 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -63,11 +58,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SBTiPathway(str, Enum):
     ACA_15C = "aca_15c"
@@ -76,13 +69,11 @@ class SBTiPathway(str, Enum):
     FLAG = "flag"
     HYBRID = "hybrid"
 
-
 class SBTiTargetType(str, Enum):
     NEAR_TERM = "near_term"
     LONG_TERM = "long_term"
     NET_ZERO = "net_zero"
     FLAG = "flag"
-
 
 class SBTiTargetScope(str, Enum):
     SCOPE_1 = "scope_1"
@@ -91,14 +82,12 @@ class SBTiTargetScope(str, Enum):
     SCOPE_3 = "scope_3"
     ALL_SCOPES = "all_scopes"
 
-
 class ValidationStatus(str, Enum):
     PASS = "pass"
     FAIL = "fail"
     WARNING = "warning"
     NOT_APPLICABLE = "not_applicable"
     PENDING = "pending"
-
 
 class SubmissionStatus(str, Enum):
     DRAFT = "draft"
@@ -108,7 +97,6 @@ class SubmissionStatus(str, Enum):
     REVISION_REQUIRED = "revision_required"
     WITHDRAWN = "withdrawn"
 
-
 class TemperatureRating(str, Enum):
     WELL_BELOW_15C = "well_below_1.5c"
     T_15C = "1.5c"
@@ -117,14 +105,12 @@ class TemperatureRating(str, Enum):
     ABOVE_2C = "above_2c"
     NOT_ASSESSED = "not_assessed"
 
-
 class ImportStatus(str, Enum):
     SUCCESS = "success"
     PARTIAL = "partial"
     FAILED = "failed"
     STALE = "stale"
     CACHED = "cached"
-
 
 # ---------------------------------------------------------------------------
 # SBTi Criteria
@@ -154,11 +140,9 @@ SBTI_VALIDATION_CRITERIA: List[Dict[str, str]] = [
     {"id": "C21", "name": "Just transition", "description": "Just transition considerations included"},
 ]
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class GLSBTiAppConfig(BaseModel):
     """Configuration for GL-SBTi-APP integration."""
@@ -175,7 +159,6 @@ class GLSBTiAppConfig(BaseModel):
     cache_ttl_seconds: int = Field(default=3600)
     retry_attempts: int = Field(default=3, ge=1, le=10)
     retry_delay_seconds: float = Field(default=1.0)
-
 
 class SBTiTarget(BaseModel):
     """SBTi target from GL-SBTi-APP."""
@@ -194,7 +177,6 @@ class SBTiTarget(BaseModel):
     validation_date: Optional[str] = Field(default=None)
     coverage_pct: float = Field(default=95.0)
 
-
 class SBTiTargetPortfolio(BaseModel):
     """Portfolio of all SBTi targets from GL-SBTi-APP."""
     portfolio_id: str = Field(default_factory=_new_uuid)
@@ -209,8 +191,7 @@ class SBTiTargetPortfolio(BaseModel):
     submission_status: SubmissionStatus = Field(default=SubmissionStatus.DRAFT)
     last_submission_date: Optional[str] = Field(default=None)
     provenance_hash: str = Field(default="")
-    fetched_at: datetime = Field(default_factory=_utcnow)
-
+    fetched_at: datetime = Field(default_factory=utcnow)
 
 class CriteriaResult(BaseModel):
     """Individual SBTi criteria validation result."""
@@ -219,7 +200,6 @@ class CriteriaResult(BaseModel):
     status: ValidationStatus = Field(default=ValidationStatus.PENDING)
     details: str = Field(default="")
     recommendation: str = Field(default="")
-
 
 class SBTiValidationResult(BaseModel):
     """Complete SBTi validation result from GL-SBTi-APP."""
@@ -234,9 +214,8 @@ class SBTiValidationResult(BaseModel):
     overall_status: ValidationStatus = Field(default=ValidationStatus.PENDING)
     compliance_score: float = Field(default=0.0)
     temperature_rating: TemperatureRating = Field(default=TemperatureRating.NOT_ASSESSED)
-    validated_at: datetime = Field(default_factory=_utcnow)
+    validated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class SubmissionRecord(BaseModel):
     """SBTi submission history record from GL-SBTi-APP."""
@@ -248,7 +227,6 @@ class SubmissionRecord(BaseModel):
     revision_count: int = Field(default=0)
     approval_date: Optional[str] = Field(default=None)
 
-
 class SubmissionHistory(BaseModel):
     """SBTi submission history from GL-SBTi-APP."""
     history_id: str = Field(default_factory=_new_uuid)
@@ -258,8 +236,7 @@ class SubmissionHistory(BaseModel):
     latest_status: SubmissionStatus = Field(default=SubmissionStatus.DRAFT)
     approved_count: int = Field(default=0)
     provenance_hash: str = Field(default="")
-    fetched_at: datetime = Field(default_factory=_utcnow)
-
+    fetched_at: datetime = Field(default_factory=utcnow)
 
 class GLSBTiAppResult(BaseModel):
     """Complete GL-SBTi-APP integration result."""
@@ -273,14 +250,12 @@ class GLSBTiAppResult(BaseModel):
     frameworks_serviced: List[str] = Field(default_factory=list)
     validation_errors: List[str] = Field(default_factory=list)
     validation_warnings: List[str] = Field(default_factory=list)
-    fetched_at: datetime = Field(default_factory=_utcnow)
+    fetched_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # GLSBTiAppIntegration
 # ---------------------------------------------------------------------------
-
 
 class GLSBTiAppIntegration:
     """GL-SBTi-APP integration for PACK-030.
@@ -349,6 +324,7 @@ class GLSBTiAppIntegration:
             return {}
         try:
             import httpx
+
             async with httpx.AsyncClient(timeout=self.config.api_timeout_seconds) as client:
                 headers = {}
                 if self.config.api_key:

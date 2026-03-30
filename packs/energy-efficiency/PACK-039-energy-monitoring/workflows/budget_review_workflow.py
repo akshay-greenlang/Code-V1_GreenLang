@@ -40,35 +40,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.utcnow()
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hash of a string."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -79,7 +71,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -89,14 +80,12 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class VarianceDirection(str, Enum):
     """Variance direction classification."""
 
     FAVORABLE = "favorable"
     UNFAVORABLE = "unfavorable"
     ON_TARGET = "on_target"
-
 
 class ForecastMethod(str, Enum):
     """Budget forecast methodology."""
@@ -105,7 +94,6 @@ class ForecastMethod(str, Enum):
     TREND_ADJUSTED = "trend_adjusted"
     WEATHER_ADJUSTED = "weather_adjusted"
     ACTUALS_PLUS_BUDGET = "actuals_plus_budget"
-
 
 # =============================================================================
 # REFERENCE DATA (Zero-Hallucination)
@@ -168,11 +156,9 @@ VARIANCE_THRESHOLDS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -186,7 +172,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list, description="Errors encountered")
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
 
-
 class BudgetLineItem(BaseModel):
     """A single budget line item for a category-period combination."""
 
@@ -195,7 +180,6 @@ class BudgetLineItem(BaseModel):
     budget_amount: Decimal = Field(default=Decimal("0"), description="Budgeted amount")
     budget_unit: str = Field(default="USD", description="Budget unit (USD, kWh, tCO2e)")
     actual_amount: Optional[Decimal] = Field(default=None, description="Actual amount if known")
-
 
 class BudgetReviewInput(BaseModel):
     """Input data model for BudgetReviewWorkflow."""
@@ -232,7 +216,6 @@ class BudgetReviewInput(BaseModel):
             raise ValueError("facility_name must not be blank")
         return stripped
 
-
 class BudgetReviewResult(BaseModel):
     """Complete result from budget review workflow."""
 
@@ -258,11 +241,9 @@ class BudgetReviewResult(BaseModel):
     calculated_at: str = Field(default="", description="ISO 8601 timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 of complete result")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class BudgetReviewWorkflow:
     """
@@ -323,7 +304,7 @@ class BudgetReviewWorkflow:
             ValueError: If input validation fails.
         """
         t_start = time.perf_counter()
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting budget review workflow %s for facility=%s FY=%s period=%s",
             self.review_id, input_data.facility_name,

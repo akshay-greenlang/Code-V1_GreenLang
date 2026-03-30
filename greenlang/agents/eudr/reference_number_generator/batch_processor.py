@@ -44,6 +44,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 from .config import ReferenceNumberGeneratorConfig, get_config
+from greenlang.schemas import utcnow
 from .models import (
     AGENT_ID,
     BatchRequest,
@@ -52,6 +53,7 @@ from .models import (
     ReferenceNumberStatus,
 )
 from .metrics import (
+
     observe_batch_generation_duration,
     observe_batch_size,
     record_batch_completed,
@@ -60,16 +62,9 @@ from .metrics import (
 
 logger = logging.getLogger(__name__)
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 class BatchProcessor:
     """Batch reference number generation processor.
@@ -158,7 +153,7 @@ class BatchProcessor:
 
         # Step 2: Create batch record
         batch_id = batch_id or _new_uuid()
-        now = _utcnow()
+        now = utcnow()
 
         batch_record = {
             "batch_id": batch_id,
@@ -214,7 +209,7 @@ class BatchProcessor:
                 batch_record["generated_count"] = len(generated_refs)
                 batch_record["failed_count"] = count - len(generated_refs)
                 batch_record["reference_numbers"] = generated_refs
-                batch_record["completed_at"] = _utcnow().isoformat()
+                batch_record["completed_at"] = utcnow().isoformat()
 
                 # Step 7: Determine final status
                 if batch_record["generated_count"] == count:
@@ -250,7 +245,7 @@ class BatchProcessor:
             )
             batch_record["status"] = BatchStatus.FAILED.value
             batch_record["error_message"] = str(e)
-            batch_record["completed_at"] = _utcnow().isoformat()
+            batch_record["completed_at"] = utcnow().isoformat()
             self._pending_count = max(0, self._pending_count - 1)
             set_pending_batches(self._pending_count)
             record_batch_completed(BatchStatus.FAILED.value)
@@ -415,7 +410,7 @@ class BatchProcessor:
             return False
 
         batch["status"] = BatchStatus.CANCELLED.value
-        batch["completed_at"] = _utcnow().isoformat()
+        batch["completed_at"] = utcnow().isoformat()
 
         if status == BatchStatus.PENDING.value:
             self._pending_count = max(0, self._pending_count - 1)

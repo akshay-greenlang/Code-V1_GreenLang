@@ -9,6 +9,7 @@ import strawberry
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from enum import Enum
+from greenlang.schemas.enums import ExecutionStatus, SortOrder
 
 
 # ==============================================================================
@@ -48,21 +49,7 @@ class ResourceType(Enum):
 
 
 @strawberry.enum
-class ExecutionStatus(Enum):
-    PENDING = "pending"
-    RUNNING = "running"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    CANCELLED = "cancelled"
-    TIMEOUT = "timeout"
-
-
 @strawberry.enum
-class SortOrder(Enum):
-    ASC = "asc"
-    DESC = "desc"
-
-
 @strawberry.enum
 class AgentStatus(Enum):
     ENABLED = "enabled"

@@ -38,6 +38,7 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Any, AsyncIterator, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -215,21 +216,13 @@ try:
 except ImportError:
     TemplateEngine = None  # type: ignore[misc,assignment]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute deterministic SHA-256 hash for provenance."""
@@ -237,7 +230,6 @@ def _compute_hash(data: Any) -> str:
         data, sort_keys=True, separators=(",", ":"), default=str
     )
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-
 
 def _safe_record(metric_fn: Any, *args: Any) -> None:
     """Safely call a metrics function if available."""
@@ -247,7 +239,6 @@ def _safe_record(metric_fn: Any, *args: Any) -> None:
         except Exception:
             pass
 
-
 def _safe_gauge(metric_fn: Any, value: Any) -> None:
     """Safely set a gauge metric if available."""
     if metric_fn is not None:
@@ -256,11 +247,9 @@ def _safe_gauge(metric_fn: Any, value: Any) -> None:
         except Exception:
             pass
 
-
 # ---------------------------------------------------------------------------
 # Service Facade
 # ---------------------------------------------------------------------------
-
 
 class AuthorityCommunicationManagerService:
     """Unified service facade for AGENT-EUDR-040.
@@ -501,7 +490,7 @@ class AuthorityCommunicationManagerService:
         """
         start = time.monotonic()
         communication_id = _new_uuid()
-        now = _utcnow()
+        now = utcnow()
 
         # Calculate deadline based on priority
         deadline = self._calculate_deadline(priority)
@@ -577,7 +566,7 @@ class AuthorityCommunicationManagerService:
         if comm is None:
             raise ValueError(f"Communication {communication_id} not found")
 
-        now = _utcnow()
+        now = utcnow()
         comm["status"] = "responded"
         comm["responded_at"] = now.isoformat()
         comm["response_body"] = body
@@ -614,7 +603,7 @@ class AuthorityCommunicationManagerService:
 
     async def list_overdue_communications(self) -> List[Dict[str, Any]]:
         """List overdue communications past their deadline."""
-        now = _utcnow()
+        now = utcnow()
         results = []
         for c in self._communications.values():
             if c.get("status") not in ("responded", "closed", "archived"):
@@ -754,7 +743,7 @@ class AuthorityCommunicationManagerService:
 
     def _calculate_deadline(self, priority: str) -> Optional[datetime]:
         """Calculate deadline based on priority."""
-        now = _utcnow()
+        now = utcnow()
         if priority == "urgent":
             return now + timedelta(hours=self.config.deadline_urgent_hours)
         elif priority == "high":
@@ -786,7 +775,7 @@ class AuthorityCommunicationManagerService:
                 "reminders": len(self._reminders),
             },
             "member_states": len(EU_MEMBER_STATES),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
         # Check database
@@ -876,14 +865,12 @@ class AuthorityCommunicationManagerService:
         """Return the number of communications in memory."""
         return len(self._communications)
 
-
 # ---------------------------------------------------------------------------
 # Thread-safe singleton
 # ---------------------------------------------------------------------------
 
 _service_lock = threading.Lock()
 _service_instance: Optional[AuthorityCommunicationManagerService] = None
-
 
 def get_service(
     config: Optional[AuthorityCommunicationManagerConfig] = None,
@@ -905,18 +892,15 @@ def get_service(
                 _service_instance = AuthorityCommunicationManagerService(config)
     return _service_instance
 
-
 def reset_service() -> None:
     """Reset the global service singleton (for testing only)."""
     global _service_instance
     with _service_lock:
         _service_instance = None
 
-
 # ---------------------------------------------------------------------------
 # FastAPI lifespan context manager
 # ---------------------------------------------------------------------------
-
 
 @asynccontextmanager
 async def lifespan(app: Any) -> AsyncIterator[None]:

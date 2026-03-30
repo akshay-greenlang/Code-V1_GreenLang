@@ -33,13 +33,12 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
-
 
 # =============================================================================
 # Enums and Constants
@@ -55,7 +54,6 @@ class TemplateType(str, Enum):
     TRANSFORMATION = "transformation"
     ORCHESTRATION = "orchestration"
 
-
 class AgentLayer(str, Enum):
     """Agent layer classification."""
     FOUNDATION = "foundation"
@@ -70,27 +68,18 @@ class AgentLayer(str, Enum):
     OPERATIONS = "operations"
     ECOSYSTEM = "ecosystem"
 
-
-class ValidationSeverity(str, Enum):
-    """Severity of validation issues."""
-    ERROR = "error"
-    WARNING = "warning"
-    INFO = "info"
-
-
 # =============================================================================
 # Pydantic Models
 # =============================================================================
 
-class AgentCapability(BaseModel):
+class AgentCapability(GreenLangBase):
     """Definition of an agent capability."""
     name: str = Field(..., description="Capability name")
     description: str = Field(..., description="Capability description")
     input_types: List[str] = Field(default_factory=list)
     output_types: List[str] = Field(default_factory=list)
 
-
-class AgentDefinition(BaseModel):
+class AgentDefinition(GreenLangBase):
     """Definition for a new agent."""
     agent_id: str = Field(..., description="Agent ID (e.g., GL-MRV-X-001)")
     name: str = Field(..., description="Agent name")
@@ -125,8 +114,7 @@ class AgentDefinition(BaseModel):
             raise ValueError(f"Invalid agent ID format: {v}. Expected: GL-LAYER-X-NNN")
         return v
 
-
-class AgentTemplate(BaseModel):
+class AgentTemplate(GreenLangBase):
     """An agent template for code generation."""
     template_id: str = Field(default_factory=lambda: str(uuid.uuid4())[:8])
     name: str = Field(..., description="Template name")
@@ -137,8 +125,7 @@ class AgentTemplate(BaseModel):
     placeholders: List[str] = Field(default_factory=list)
     version: str = Field(default="1.0.0")
 
-
-class ValidationIssue(BaseModel):
+class ValidationIssue(GreenLangBase):
     """A validation issue found in agent definition."""
     severity: ValidationSeverity = Field(..., description="Issue severity")
     code: str = Field(..., description="Issue code")
@@ -146,8 +133,7 @@ class ValidationIssue(BaseModel):
     location: Optional[str] = Field(None, description="Location in definition")
     suggestion: Optional[str] = Field(None, description="Fix suggestion")
 
-
-class ValidationResult(BaseModel):
+class ValidationResult(GreenLangBase):
     """Result of agent definition validation."""
     valid: bool = Field(..., description="Whether definition is valid")
     issues: List[ValidationIssue] = Field(default_factory=list)
@@ -155,8 +141,7 @@ class ValidationResult(BaseModel):
     warning_count: int = Field(default=0)
     info_count: int = Field(default=0)
 
-
-class CodeGenerationResult(BaseModel):
+class CodeGenerationResult(GreenLangBase):
     """Result of code generation."""
     success: bool = Field(..., description="Whether generation succeeded")
     agent_code: str = Field(default="", description="Generated agent code")
@@ -165,8 +150,7 @@ class CodeGenerationResult(BaseModel):
     file_path: str = Field(default="", description="Suggested file path")
     provenance_hash: str = Field(default="", description="Code provenance hash")
 
-
-class AgentSDKInput(BaseModel):
+class AgentSDKInput(GreenLangBase):
     """Input for the Agent SDK Agent."""
     operation: str = Field(..., description="Operation to perform")
     agent_definition: Optional[AgentDefinition] = Field(None)
@@ -187,8 +171,7 @@ class AgentSDKInput(BaseModel):
             raise ValueError(f"Operation must be one of: {valid_ops}")
         return v
 
-
-class AgentSDKOutput(BaseModel):
+class AgentSDKOutput(GreenLangBase):
     """Output from the Agent SDK Agent."""
     success: bool = Field(..., description="Whether operation succeeded")
     operation: str = Field(..., description="Operation performed")
@@ -196,7 +179,6 @@ class AgentSDKOutput(BaseModel):
     provenance_hash: str = Field(default="", description="SHA-256 hash for audit")
     processing_time_ms: float = Field(default=0.0, description="Processing duration")
     timestamp: datetime = Field(default_factory=DeterministicClock.now)
-
 
 # =============================================================================
 # Default Templates
@@ -225,13 +207,13 @@ import time
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas.enums import ValidationSeverity
 
 logger = logging.getLogger(__name__)
-
 
 class {input_model_name}(BaseModel):
     """Input for {agent_name}."""
@@ -246,7 +228,6 @@ class {input_model_name}(BaseModel):
             raise ValueError(f"Operation must be one of: {{valid_ops}}")
         return v
 
-
 class {output_model_name}(BaseModel):
     """Output from {agent_name}."""
     success: bool = Field(..., description="Whether operation succeeded")
@@ -255,7 +236,6 @@ class {output_model_name}(BaseModel):
     provenance_hash: str = Field(default="")
     processing_time_ms: float = Field(default=0.0)
     timestamp: datetime = Field(default_factory=DeterministicClock.now)
-
 
 class {class_name}(BaseAgent):
     """
@@ -337,7 +317,6 @@ class {class_name}(BaseAgent):
         return hashlib.sha256(provenance_str.encode()).hexdigest()[:16]
 '''
 
-
 TEST_TEMPLATE = '''# -*- coding: utf-8 -*-
 """Tests for {agent_id}: {agent_name}"""
 
@@ -345,7 +324,7 @@ import pytest
 from datetime import datetime
 
 from {module_path} import {class_name}, {input_model_name}, {output_model_name}
-
+from greenlang.schemas import GreenLangBase
 
 class Test{class_name}:
     """Test cases for {class_name}."""
@@ -383,7 +362,6 @@ class Test{class_name}:
         assert "provenance_hash" in result.data
         assert len(result.data["provenance_hash"]) == 16
 '''
-
 
 # =============================================================================
 # Agent SDK Agent Implementation

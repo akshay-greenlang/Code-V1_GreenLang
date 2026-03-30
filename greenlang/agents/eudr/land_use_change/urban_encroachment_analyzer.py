@@ -54,6 +54,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -67,27 +68,18 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a unique identifier using UUID4."""
     return str(uuid.uuid4())
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class InfrastructureType(str, Enum):
     """Type of infrastructure detected near forested areas.
@@ -101,7 +93,6 @@ class InfrastructureType(str, Enum):
     INDUSTRIAL = "INDUSTRIAL"
     RESIDENTIAL = "RESIDENTIAL"
     UNKNOWN = "UNKNOWN"
-
 
 # ---------------------------------------------------------------------------
 # Constants: Spectral Thresholds for Infrastructure Detection
@@ -171,11 +162,9 @@ REGIONAL_EXPANSION_RATES: Dict[str, float] = {
     "DEFAULT": 150.0,
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class EncroachmentInput:
@@ -220,7 +209,6 @@ class EncroachmentInput:
     area_ha: float = 0.0
     date_from: str = ""
     date_to: str = ""
-
 
 @dataclass
 class UrbanEncroachment:
@@ -290,11 +278,9 @@ class UrbanEncroachment:
             "metadata": self.metadata,
         }
 
-
 # ---------------------------------------------------------------------------
 # UrbanEncroachmentAnalyzer
 # ---------------------------------------------------------------------------
-
 
 class UrbanEncroachmentAnalyzer:
     """Monitors urban and infrastructure expansion near forested production areas.
@@ -440,7 +426,7 @@ class UrbanEncroachmentAnalyzer:
             latitude=latitude,
             longitude=longitude,
             processing_time_ms=round(elapsed_ms, 2),
-            timestamp=_utcnow().isoformat(),
+            timestamp=utcnow().isoformat(),
             metadata={
                 "buffer_km": buffer_km,
                 "date_from": date_from,
@@ -1042,6 +1028,7 @@ class UrbanEncroachmentAnalyzer:
             Period in years (float).
         """
         from datetime import date as date_type
+
         try:
             d1 = date_type.fromisoformat(date_from)
             d2 = date_type.fromisoformat(date_to)
@@ -1104,7 +1091,7 @@ class UrbanEncroachmentAnalyzer:
             encroachment_detected=False,
             latitude=plot.latitude,
             longitude=plot.longitude,
-            timestamp=_utcnow().isoformat(),
+            timestamp=utcnow().isoformat(),
             metadata={"error": error_msg},
         )
         result.provenance_hash = self._compute_result_hash(result)
@@ -1135,7 +1122,6 @@ class UrbanEncroachmentAnalyzer:
             "timestamp": result.timestamp,
         }
         return _compute_hash(hash_data)
-
 
 # ---------------------------------------------------------------------------
 # Module Exports

@@ -37,21 +37,15 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -63,7 +57,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 class _AgentStub:
     """Stub for unavailable agent modules."""
@@ -77,11 +70,9 @@ class _AgentStub:
             return {"agent": self._agent_name, "method": name, "status": "degraded"}
         return _stub_method
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EPRScheme(str, Enum):
     """Extended Producer Responsibility scheme categories."""
@@ -90,7 +81,6 @@ class EPRScheme(str, Enum):
     PACKAGING = "packaging"
     TEXTILES = "textiles"
     BATTERIES = "batteries"
-
 
 class WasteStream(str, Enum):
     """Retail waste stream categories."""
@@ -105,11 +95,9 @@ class WasteStream(str, Enum):
     HAZARDOUS_WASTE = "hazardous_waste"
     BATTERY_WASTE = "battery_waste"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class EPRComplianceResult(BaseModel):
     """Result of an EPR compliance check."""
@@ -127,7 +115,6 @@ class EPRComplianceResult(BaseModel):
     degraded: bool = Field(default=False)
     provenance_hash: str = Field(default="")
 
-
 class TakeBackResult(BaseModel):
     """Result of take-back programme tracking."""
 
@@ -139,7 +126,6 @@ class TakeBackResult(BaseModel):
     take_back_rate_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     channels: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class WasteEmissionsResult(BaseModel):
     """Result of waste treatment emissions calculation."""
@@ -153,7 +139,6 @@ class WasteEmissionsResult(BaseModel):
     degraded: bool = Field(default=False)
     provenance_hash: str = Field(default="")
 
-
 class CircularBridgeConfig(BaseModel):
     """Configuration for the Circular Economy Bridge."""
 
@@ -164,7 +149,6 @@ class CircularBridgeConfig(BaseModel):
     )
     reporting_year: int = Field(default=2025)
 
-
 # EPR target rates by scheme (EU 2025 targets)
 EPR_TARGET_RATES: Dict[EPRScheme, float] = {
     EPRScheme.PACKAGING: 65.0,
@@ -173,11 +157,9 @@ EPR_TARGET_RATES: Dict[EPRScheme, float] = {
     EPRScheme.BATTERIES: 63.0,
 }
 
-
 # ---------------------------------------------------------------------------
 # CircularEconomyBridge
 # ---------------------------------------------------------------------------
-
 
 class CircularEconomyBridge:
     """Bridge to EPR schemes and waste management agents.
@@ -206,6 +188,7 @@ class CircularEconomyBridge:
             pass
         try:
             import importlib
+
             self._cat5_agent = importlib.import_module("greenlang.agents.mrv.scope3_cat5")
         except ImportError:
             pass

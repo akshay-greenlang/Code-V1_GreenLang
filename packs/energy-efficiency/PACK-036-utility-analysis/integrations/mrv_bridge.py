@@ -44,26 +44,19 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -81,11 +74,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Agent Stubs
 # ---------------------------------------------------------------------------
-
 
 class _AgentStub:
     """Stub for unavailable MRV agent modules."""
@@ -105,7 +96,6 @@ class _AgentStub:
             }
         return _stub_method
 
-
 def _try_import_mrv_agent(agent_id: str, module_path: str) -> Any:
     """Try to import an MRV agent with graceful fallback.
 
@@ -118,16 +108,15 @@ def _try_import_mrv_agent(agent_id: str, module_path: str) -> Any:
     """
     try:
         import importlib
+
         return importlib.import_module(module_path)
     except ImportError:
         logger.debug("MRV agent %s not available, using stub", agent_id)
         return _AgentStub(agent_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ConsumptionCategory(str, Enum):
     """Utility commodity categories mapped to MRV agents."""
@@ -145,14 +134,12 @@ class ConsumptionCategory(str, Enum):
     DISTRICT_COOLING = "district_cooling"
     BIOGAS = "biogas"
 
-
 class MRVScope(str, Enum):
     """GHG Protocol emission scopes."""
 
     SCOPE_1 = "scope_1"
     SCOPE_2 = "scope_2"
     SCOPE_3 = "scope_3"
-
 
 class EmissionsMethod(str, Enum):
     """Emission calculation method."""
@@ -161,11 +148,9 @@ class EmissionsMethod(str, Enum):
     MARKET_BASED = "market_based"
     DIRECT_MEASUREMENT = "direct_measurement"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class MRVRouteConfig(BaseModel):
     """Configuration for the MRV Utility Bridge."""
@@ -184,7 +169,6 @@ class MRVRouteConfig(BaseModel):
         description="Electricity emissions calculation method",
     )
 
-
 class ConsumptionToEmissionsMapping(BaseModel):
     """Mapping entry from a commodity category to MRV agent routing."""
 
@@ -196,7 +180,6 @@ class ConsumptionToEmissionsMapping(BaseModel):
     energy_carrier: str = Field(default="electricity")
     module_path: str = Field(default="")
     description: str = Field(default="")
-
 
 class RoutingResult(BaseModel):
     """Result of routing consumption data to an MRV agent."""
@@ -215,7 +198,6 @@ class RoutingResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class EmissionsSummary(BaseModel):
     """Aggregated emissions summary across all commodities."""
 
@@ -229,7 +211,6 @@ class EmissionsSummary(BaseModel):
     breakdown_by_commodity: Dict[str, float] = Field(default_factory=dict)
     routing_results: List[RoutingResult] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # MRV Agent Routing Table
@@ -338,7 +319,6 @@ SCOPE3_UPSTREAM_ROUTE = ConsumptionToEmissionsMapping(
     description="Upstream fuel and energy-related activities",
 )
 
-
 # ---------------------------------------------------------------------------
 # Default Emission Factors by Energy Carrier (kg CO2e per kWh)
 # ---------------------------------------------------------------------------
@@ -359,11 +339,9 @@ DEFAULT_EMISSION_FACTORS: Dict[str, float] = {
     "upstream_energy": 0.050,
 }
 
-
 # ---------------------------------------------------------------------------
 # MRVBridge (named MRVUtilityBridge in docstring context)
 # ---------------------------------------------------------------------------
-
 
 class MRVBridge:
     """Bridge to MRV agents for utility consumption emissions calculation.

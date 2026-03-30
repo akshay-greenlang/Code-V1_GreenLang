@@ -34,10 +34,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -123,7 +124,7 @@ CARBON_SEQUESTRATION_RATES = {
 # Pydantic Models
 # =============================================================================
 
-class NbSSolution(BaseModel):
+class NbSSolution(GreenLangBase):
     """A nature-based solution definition."""
     solution_id: str = Field(...)
     name: str = Field(...)
@@ -156,7 +157,7 @@ class NbSSolution(BaseModel):
     effective_lifespan_years: int = Field(default=50, ge=1)
 
 
-class SolutionMatch(BaseModel):
+class SolutionMatch(GreenLangBase):
     """Match between context and NbS solution."""
     solution: NbSSolution = Field(...)
     match_score: float = Field(..., ge=0, le=1)
@@ -179,7 +180,7 @@ class SolutionMatch(BaseModel):
     match_rationale: List[str] = Field(default_factory=list)
 
 
-class EcosystemServiceValuation(BaseModel):
+class EcosystemServiceValuation(GreenLangBase):
     """Valuation of ecosystem services."""
     service: EcosystemService = Field(...)
     annual_value_usd: float = Field(..., ge=0)
@@ -188,7 +189,7 @@ class EcosystemServiceValuation(BaseModel):
     valuation_method: str = Field(default="benefit_transfer")
 
 
-class NbSInput(BaseModel):
+class NbSInput(GreenLangBase):
     """Input model for Nature-Based Adaptation Agent."""
     request_id: str = Field(...)
     target_hazards: List[str] = Field(..., min_length=1)
@@ -204,7 +205,7 @@ class NbSInput(BaseModel):
     time_horizon_years: int = Field(default=30, ge=1, le=100)
 
 
-class NbSOutput(BaseModel):
+class NbSOutput(GreenLangBase):
     """Output model for Nature-Based Adaptation Agent."""
     request_id: str = Field(...)
     completed_at: datetime = Field(default_factory=DeterministicClock.now)

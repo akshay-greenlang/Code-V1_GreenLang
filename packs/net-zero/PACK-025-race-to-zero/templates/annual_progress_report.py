@@ -31,25 +31,20 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "25.0.0"
 _PACK_ID = "PACK-025"
 _TEMPLATE_ID = "annual_progress_report"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str) if isinstance(data, dict) else str(data)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 def _dec(val: Any, places: int = 2) -> str:
     try:
@@ -58,7 +53,6 @@ def _dec(val: Any, places: int = 2) -> str:
         return str(d.quantize(Decimal(q), rounding=ROUND_HALF_UP))
     except Exception:
         return str(val)
-
 
 def _dec_comma(val: Any, places: int = 0) -> str:
     try:
@@ -83,13 +77,11 @@ def _dec_comma(val: Any, places: int = 0) -> str:
     except Exception:
         return str(val)
 
-
 def _pct(val: Any) -> str:
     try:
         return _dec(val, 1) + "%"
     except Exception:
         return str(val)
-
 
 def _safe_div(n: Any, d: Any) -> float:
     try:
@@ -98,7 +90,6 @@ def _safe_div(n: Any, d: Any) -> float:
     except Exception:
         return 0.0
 
-
 def _trend_arrow(current: float, previous: float) -> str:
     """Return a text indicator for trend direction."""
     if current < previous:
@@ -106,7 +97,6 @@ def _trend_arrow(current: float, previous: float) -> str:
     elif current > previous:
         return "UP (Unfavorable)"
     return "FLAT"
-
 
 class AnnualProgressReportTemplate:
     """Race to Zero annual progress report template for PACK-025.
@@ -130,7 +120,7 @@ class AnnualProgressReportTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render the annual progress report as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections: List[str] = [
             self._md_header(data),
             self._md_executive_summary(data),
@@ -149,7 +139,7 @@ class AnnualProgressReportTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render the annual progress report as HTML."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         body = "\n".join([
             self._html_header(data),
@@ -175,7 +165,7 @@ class AnnualProgressReportTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render the annual progress report as structured JSON."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         current = data.get("current_year", {})
         previous = data.get("previous_year", {})
         baseline = data.get("baseline", {})
@@ -215,7 +205,7 @@ class AnnualProgressReportTemplate:
 
     def render_excel_data(self, data: Dict[str, Any]) -> Dict[str, List[Dict[str, Any]]]:
         """Return structured data for Excel/openpyxl export."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sheets: Dict[str, List[Dict[str, Any]]] = {}
 
         # Sheet 1: YoY Comparison

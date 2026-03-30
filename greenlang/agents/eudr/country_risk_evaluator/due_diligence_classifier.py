@@ -73,8 +73,9 @@ from .models import (
 )
 from .provenance import get_provenance_tracker
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -205,16 +206,9 @@ _REQUIREMENTS: Dict[str, List[str]] = {
     ],
 }
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ---------------------------------------------------------------------------
 # DueDiligenceClassifier
 # ---------------------------------------------------------------------------
-
 
 class DueDiligenceClassifier:
     """Automated due diligence requirement determination per EUDR Arts. 10-13.
@@ -844,7 +838,7 @@ class DueDiligenceClassifier:
                 f"must be one of: simplified, standard, enhanced"
             )
 
-        start = start_date or _utcnow()
+        start = start_date or utcnow()
         total_days = _BASE_COMPLIANCE_DAYS[level_lower]
         completion = start + timedelta(days=total_days)
 

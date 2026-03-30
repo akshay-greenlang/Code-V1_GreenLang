@@ -29,7 +29,8 @@ from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, validator
+from pydantic import Field, validator
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -105,7 +106,7 @@ class SoilType(str, Enum):
 # Emission Factor Models
 # =============================================================================
 
-class EmissionFactor(BaseModel):
+class EmissionFactor(GreenLangBase):
     """Emission factor record with provenance."""
 
     factor_id: str = Field(..., description="Unique factor identifier")
@@ -149,7 +150,7 @@ GWP_AR6 = {
 # Calculation Step Model
 # =============================================================================
 
-class CalculationStep(BaseModel):
+class CalculationStep(GreenLangBase):
     """Single step in the calculation audit trail."""
 
     step_number: int = Field(..., ge=1, description="Step sequence number")
@@ -169,7 +170,7 @@ class CalculationStep(BaseModel):
 # Base Input/Output Models
 # =============================================================================
 
-class AgricultureMRVInput(BaseModel):
+class AgricultureMRVInput(GreenLangBase):
     """Base input model for all agriculture MRV agents."""
 
     # Identification
@@ -210,7 +211,7 @@ class AgricultureMRVInput(BaseModel):
         return v
 
 
-class AgricultureMRVOutput(BaseModel):
+class AgricultureMRVOutput(GreenLangBase):
     """Base output model for all agriculture MRV agents."""
 
     # Agent identification

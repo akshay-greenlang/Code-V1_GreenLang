@@ -50,25 +50,19 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -88,7 +82,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _safe_divide(numerator: float, denominator: float, default: float = 0.0) -> float:
     """Safely divide two numbers, returning default on zero denominator.
 
@@ -104,7 +97,6 @@ def _safe_divide(numerator: float, denominator: float, default: float = 0.0) -> 
         return default
     return numerator / denominator
 
-
 def _safe_pct(numerator: float, denominator: float) -> float:
     """Calculate percentage safely.
 
@@ -119,17 +111,14 @@ def _safe_pct(numerator: float, denominator: float) -> float:
         return 0.0
     return (numerator / denominator) * 100.0
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CarbonMethodology(str, Enum):
     """Carbon accounting methodology."""
     PCAF = "pcaf"
     GHG_PROTOCOL = "ghg_protocol"
-
 
 class AttributionMethod(str, Enum):
     """Method for attributing emissions to the portfolio."""
@@ -138,13 +127,11 @@ class AttributionMethod(str, Enum):
     TOTAL_ASSETS = "total_assets"
     REVENUE = "revenue"
 
-
 class ScopeCoverage(str, Enum):
     """Emission scope coverage for calculations."""
     SCOPE_1 = "scope_1"
     SCOPE_1_2 = "scope_1_2"
     SCOPE_1_2_3 = "scope_1_2_3"
-
 
 class DataQuality(str, Enum):
     """Data quality score per PCAF methodology."""
@@ -154,18 +141,15 @@ class DataQuality(str, Enum):
     ESTIMATED_SECTOR = "estimated_sector"          # Score 4
     ESTIMATED_BROAD = "estimated_broad"            # Score 5
 
-
 class TemperatureMethodology(str, Enum):
     """Implied temperature rise calculation methodology."""
     SBT_PORTFOLIO = "sbt_portfolio"
     SECTORAL_DECARBONIZATION = "sectoral_decarbonization"
     MARKET_WARMING_POTENTIAL = "market_warming_potential"
 
-
 # ---------------------------------------------------------------------------
 # Sector Emission Intensity Reference Data
 # ---------------------------------------------------------------------------
-
 
 SECTOR_EMISSION_INTENSITY: Dict[str, Dict[str, float]] = {
     # NACE sector code -> {scope1+2 intensity, scope3 intensity} in tCO2e/EUR M revenue
@@ -218,11 +202,9 @@ TEMPERATURE_PATHWAYS: Dict[str, float] = {
     "4.0C_plus": 400.0,      # Above 4.0C pathway
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class HoldingEmissions(BaseModel):
     """Emissions data for a single portfolio holding.
@@ -275,7 +257,6 @@ class HoldingEmissions(BaseModel):
         self.total_emissions = self.scope1 + self.scope2 + self.scope3
         return self.total_emissions
 
-
 class WACIResult(BaseModel):
     """Weighted Average Carbon Intensity result.
 
@@ -300,9 +281,8 @@ class WACIResult(BaseModel):
     data_quality_score: float = Field(
         default=0.0, description="Average PCAF data quality score"
     )
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Calculation timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Calculation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class CarbonFootprintResult(BaseModel):
     """Carbon footprint calculation result.
@@ -330,9 +310,8 @@ class CarbonFootprintResult(BaseModel):
         default_factory=dict, description="Financed emissions by scope"
     )
     data_quality_score: float = Field(default=0.0, description="Average PCAF quality score")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Calculation timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Calculation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class FinancedEmissionsResult(BaseModel):
     """Financed emissions calculation per PCAF methodology.
@@ -359,9 +338,8 @@ class FinancedEmissionsResult(BaseModel):
     weighted_data_quality: float = Field(
         default=0.0, description="Weighted average PCAF data quality score"
     )
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Calculation timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Calculation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class TemperatureAlignment(BaseModel):
     """Implied temperature rise alignment result.
@@ -386,9 +364,8 @@ class TemperatureAlignment(BaseModel):
         default=False, description="Whether portfolio is Paris-aligned (<2.0C)"
     )
     notes: str = Field(default="", description="Assessment notes")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Calculation timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Calculation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class SectorBreakdown(BaseModel):
     """Sector-level carbon attribution breakdown."""
@@ -401,7 +378,6 @@ class SectorBreakdown(BaseModel):
     waci_contribution: float = Field(default=0.0, description="Contribution to portfolio WACI")
     financed_emissions: float = Field(default=0.0, description="Financed emissions (tCO2e)")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class CarbonSummary(BaseModel):
     """Comprehensive portfolio carbon summary for PAI reporting."""
@@ -422,14 +398,12 @@ class CarbonSummary(BaseModel):
     total_portfolio_value: float = Field(default=0.0, description="Total portfolio value (EUR)")
     total_holdings: int = Field(default=0, description="Total holdings")
     coverage_ratio: float = Field(default=0.0, description="Data coverage ratio (%)")
-    generated_at: datetime = Field(default_factory=_utcnow, description="Generation timestamp")
+    generated_at: datetime = Field(default_factory=utcnow, description="Generation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 # ---------------------------------------------------------------------------
 # Engine Configuration
 # ---------------------------------------------------------------------------
-
 
 class CarbonFootprintConfig(BaseModel):
     """Configuration for the PortfolioCarbonFootprintEngine.
@@ -459,7 +433,6 @@ class CarbonFootprintConfig(BaseModel):
     )
     currency: str = Field(default="EUR", description="Portfolio currency")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic model_rebuild for forward reference resolution
 # ---------------------------------------------------------------------------
@@ -473,11 +446,9 @@ TemperatureAlignment.model_rebuild()
 SectorBreakdown.model_rebuild()
 CarbonSummary.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # PortfolioCarbonFootprintEngine
 # ---------------------------------------------------------------------------
-
 
 class PortfolioCarbonFootprintEngine:
     """
@@ -547,7 +518,7 @@ class PortfolioCarbonFootprintEngine:
         Returns:
             WACIResult with WACI value and breakdown.
         """
-        start = _utcnow()
+        start = utcnow()
         self._holdings = holdings
         scope = scope_coverage or self.config.scope_coverage
 
@@ -617,7 +588,7 @@ class PortfolioCarbonFootprintEngine:
             waci_total,
             scope.value,
             coverage,
-            int((_utcnow() - start).total_seconds() * 1000),
+            int((utcnow() - start).total_seconds() * 1000),
         )
         return result
 
@@ -645,7 +616,7 @@ class PortfolioCarbonFootprintEngine:
         Returns:
             CarbonFootprintResult with carbon footprint and breakdown.
         """
-        start = _utcnow()
+        start = utcnow()
         if holdings is not None:
             self._holdings = holdings
         holdings_list = self._holdings
@@ -728,7 +699,7 @@ class PortfolioCarbonFootprintEngine:
             carbon_footprint_value,
             total_financed,
             coverage,
-            int((_utcnow() - start).total_seconds() * 1000),
+            int((utcnow() - start).total_seconds() * 1000),
         )
         return result
 
@@ -753,7 +724,7 @@ class PortfolioCarbonFootprintEngine:
         Returns:
             FinancedEmissionsResult with detailed breakdown.
         """
-        start = _utcnow()
+        start = utcnow()
         if holdings is not None:
             self._holdings = holdings
         holdings_list = self._holdings
@@ -844,7 +815,7 @@ class PortfolioCarbonFootprintEngine:
             scope3_financed,
             coverage,
             weighted_quality,
-            int((_utcnow() - start).total_seconds() * 1000),
+            int((utcnow() - start).total_seconds() * 1000),
         )
         return result
 
@@ -869,7 +840,7 @@ class PortfolioCarbonFootprintEngine:
         Returns:
             TemperatureAlignment result.
         """
-        start = _utcnow()
+        start = utcnow()
         if holdings is not None:
             self._holdings = holdings
         holdings_list = self._holdings
@@ -934,7 +905,7 @@ class PortfolioCarbonFootprintEngine:
             total_weighted_intensity,
             pathway,
             paris_aligned,
-            int((_utcnow() - start).total_seconds() * 1000),
+            int((utcnow() - start).total_seconds() * 1000),
         )
         return result
 
@@ -956,7 +927,7 @@ class PortfolioCarbonFootprintEngine:
         Returns:
             List of SectorBreakdown objects sorted by emissions.
         """
-        start = _utcnow()
+        start = utcnow()
         if holdings is not None:
             self._holdings = holdings
         holdings_list = self._holdings
@@ -1019,7 +990,7 @@ class PortfolioCarbonFootprintEngine:
         logger.info(
             "Sector breakdown: %d sectors analyzed in %dms",
             len(results),
-            int((_utcnow() - start).total_seconds() * 1000),
+            int((utcnow() - start).total_seconds() * 1000),
         )
         return results
 
@@ -1091,7 +1062,7 @@ class PortfolioCarbonFootprintEngine:
         Returns:
             CarbonSummary with all calculated metrics.
         """
-        start = _utcnow()
+        start = utcnow()
         scope = scope_coverage or self.config.scope_coverage
 
         waci_result = self.calculate_waci(holdings, scope)
@@ -1119,7 +1090,7 @@ class PortfolioCarbonFootprintEngine:
             footprint_result.carbon_footprint,
             financed_result.total_financed_emissions,
             temp_result.implied_temperature_rise,
-            int((_utcnow() - start).total_seconds() * 1000),
+            int((utcnow() - start).total_seconds() * 1000),
         )
         return summary
 

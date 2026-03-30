@@ -45,25 +45,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -76,7 +70,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -86,11 +79,9 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SubmissionStatus(str, Enum):
     """Status of a registry submission."""
@@ -101,7 +92,6 @@ class SubmissionStatus(str, Enum):
     REJECTED = "rejected"
     AMENDMENT_REQUIRED = "amendment_required"
     WITHDRAWN = "withdrawn"
-
 
 class RegistryOperationType(str, Enum):
     """Type of registry operation."""
@@ -115,7 +105,6 @@ class RegistryOperationType(str, Enum):
     PRICE_QUERY = "price_query"
     BALANCE_QUERY = "balance_query"
 
-
 class DeclarantStatus(str, Enum):
     """CBAM declarant authorization status."""
     AUTHORIZED = "authorized"
@@ -123,7 +112,6 @@ class DeclarantStatus(str, Enum):
     SUSPENDED = "suspended"
     REVOKED = "revoked"
     NOT_REGISTERED = "not_registered"
-
 
 class APIErrorCode(str, Enum):
     """Structured API error codes."""
@@ -138,11 +126,9 @@ class APIErrorCode(str, Enum):
     DUPLICATE = "DUPLICATE"
     BUSINESS_RULE_VIOLATION = "BUSINESS_RULE_VIOLATION"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class RegistryAuth(BaseModel):
     """Authentication credentials for registry API."""
@@ -151,20 +137,18 @@ class RegistryAuth(BaseModel):
     certificate_thumbprint: str = Field(default="", description="Client certificate thumbprint")
     access_token: Optional[str] = Field(default=None, description="OAuth2 access token")
 
-
 class SubmissionResult(BaseModel):
     """Result of a declaration submission."""
     result_id: str = Field(default_factory=_new_uuid, description="Result identifier")
     submission_id: str = Field(default_factory=_new_uuid, description="Registry submission identifier")
     status: SubmissionStatus = Field(description="Submission status")
     registry_reference: str = Field(default="", description="Registry reference number")
-    submitted_at: datetime = Field(default_factory=_utcnow, description="Submission timestamp")
+    submitted_at: datetime = Field(default_factory=utcnow, description="Submission timestamp")
     estimated_review_days: int = Field(default=10, description="Estimated review period in days")
     errors: List[Dict[str, str]] = Field(default_factory=list, description="Validation errors if any")
     warnings: List[Dict[str, str]] = Field(default_factory=list, description="Validation warnings")
     audit_trail: List[Dict[str, Any]] = Field(default_factory=list, description="Operation audit log")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class AmendmentResult(BaseModel):
     """Result of a declaration amendment."""
@@ -174,21 +158,19 @@ class AmendmentResult(BaseModel):
     status: SubmissionStatus = Field(description="Amendment status")
     fields_amended: List[str] = Field(default_factory=list, description="Fields that were amended")
     previous_values: Dict[str, Any] = Field(default_factory=dict, description="Values before amendment")
-    amended_at: datetime = Field(default_factory=_utcnow, description="Amendment timestamp")
+    amended_at: datetime = Field(default_factory=utcnow, description="Amendment timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class StatusCheckResult(BaseModel):
     """Result of a submission status check."""
     result_id: str = Field(default_factory=_new_uuid, description="Result identifier")
     submission_id: str = Field(description="Submission identifier")
     status: SubmissionStatus = Field(description="Current status")
-    last_updated: datetime = Field(default_factory=_utcnow, description="Last status update")
+    last_updated: datetime = Field(default_factory=utcnow, description="Last status update")
     reviewer_notes: str = Field(default="", description="Notes from reviewer")
     next_action: str = Field(default="", description="Recommended next action")
     days_in_current_status: int = Field(default=0, description="Days in current status")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class PurchaseConfirmation(BaseModel):
     """Confirmation of certificate purchase from registry."""
@@ -198,7 +180,7 @@ class PurchaseConfirmation(BaseModel):
     total_cost: Decimal = Field(description="Total cost in EUR")
     certificate_ids: List[str] = Field(default_factory=list, description="Issued certificate identifiers")
     transaction_reference: str = Field(default="", description="Transaction reference from registry")
-    purchased_at: datetime = Field(default_factory=_utcnow, description="Purchase timestamp")
+    purchased_at: datetime = Field(default_factory=utcnow, description="Purchase timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("quantity", "unit_price", "total_cost", mode="before")
@@ -206,14 +188,13 @@ class PurchaseConfirmation(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class SurrenderConfirmation(BaseModel):
     """Confirmation of certificate surrender."""
     confirmation_id: str = Field(default_factory=_new_uuid, description="Confirmation identifier")
     certificate_ids: List[str] = Field(default_factory=list, description="Surrendered certificate IDs")
     declaration_id: str = Field(description="Declaration surrendered against")
     quantity_surrendered: Decimal = Field(description="Total tCO2e surrendered")
-    surrendered_at: datetime = Field(default_factory=_utcnow, description="Surrender timestamp")
+    surrendered_at: datetime = Field(default_factory=utcnow, description="Surrender timestamp")
     status: str = Field(default="confirmed", description="Surrender status")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
@@ -222,7 +203,6 @@ class SurrenderConfirmation(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class ResaleConfirmation(BaseModel):
     """Confirmation of certificate resale."""
     confirmation_id: str = Field(default_factory=_new_uuid, description="Confirmation identifier")
@@ -230,14 +210,13 @@ class ResaleConfirmation(BaseModel):
     quantity_resold: Decimal = Field(description="Total tCO2e resold")
     resale_price: Decimal = Field(description="Resale price per certificate (original purchase price)")
     total_proceeds: Decimal = Field(description="Total proceeds in EUR")
-    resold_at: datetime = Field(default_factory=_utcnow, description="Resale timestamp")
+    resold_at: datetime = Field(default_factory=utcnow, description="Resale timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("quantity_resold", "resale_price", "total_proceeds", mode="before")
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class BalanceResult(BaseModel):
     """Certificate balance inquiry result."""
@@ -248,7 +227,7 @@ class BalanceResult(BaseModel):
     certificates_by_status: Dict[str, int] = Field(
         default_factory=dict, description="Certificate count by status"
     )
-    queried_at: datetime = Field(default_factory=_utcnow, description="Query timestamp")
+    queried_at: datetime = Field(default_factory=utcnow, description="Query timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("total_quantity_tco2e", mode="before")
@@ -256,12 +235,11 @@ class BalanceResult(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class PriceResult(BaseModel):
     """Current certificate price result."""
     result_id: str = Field(default_factory=_new_uuid, description="Result identifier")
     price_per_tco2e: Decimal = Field(description="Current price per tCO2e in EUR")
-    price_date: datetime = Field(default_factory=_utcnow, description="Price date")
+    price_date: datetime = Field(default_factory=utcnow, description="Price date")
     auction_week: str = Field(default="", description="Auction week reference")
     price_trend: str = Field(default="stable", description="Price trend (up/down/stable)")
     eu_ets_reference_price: Decimal = Field(
@@ -274,7 +252,6 @@ class PriceResult(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class RegistrationResult(BaseModel):
     """Result of installation registration."""
     result_id: str = Field(default_factory=_new_uuid, description="Result identifier")
@@ -283,9 +260,8 @@ class RegistrationResult(BaseModel):
     country: str = Field(default="", description="Installation country")
     status: str = Field(default="registered", description="Registration status")
     registration_number: str = Field(default="", description="Registry registration number")
-    registered_at: datetime = Field(default_factory=_utcnow, description="Registration timestamp")
+    registered_at: datetime = Field(default_factory=utcnow, description="Registration timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class DeclarantStatusResult(BaseModel):
     """Result of declarant status check."""
@@ -296,9 +272,8 @@ class DeclarantStatusResult(BaseModel):
     member_state: str = Field(default="", description="Registered member state")
     nca_identifier: str = Field(default="", description="Supervising NCA")
     financial_guarantee_status: str = Field(default="", description="Financial guarantee status")
-    checked_at: datetime = Field(default_factory=_utcnow, description="Check timestamp")
+    checked_at: datetime = Field(default_factory=utcnow, description="Check timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class FinalStatus(BaseModel):
     """Final status after polling."""
@@ -307,9 +282,8 @@ class FinalStatus(BaseModel):
     final_status: SubmissionStatus = Field(description="Final resolved status")
     poll_attempts: int = Field(description="Number of poll attempts")
     total_wait_seconds: float = Field(description="Total wait time in seconds")
-    resolved_at: datetime = Field(default_factory=_utcnow, description="Resolution timestamp")
+    resolved_at: datetime = Field(default_factory=utcnow, description="Resolution timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class AuditLogEntry(BaseModel):
     """Single audit log entry for API operations."""
@@ -318,16 +292,14 @@ class AuditLogEntry(BaseModel):
     eori: str = Field(default="", description="EORI involved")
     request_summary: str = Field(default="", description="Request summary")
     response_status: str = Field(default="", description="Response status")
-    timestamp: datetime = Field(default_factory=_utcnow, description="Operation timestamp")
+    timestamp: datetime = Field(default_factory=utcnow, description="Operation timestamp")
     duration_ms: float = Field(default=0, description="Operation duration in milliseconds")
     error_code: Optional[APIErrorCode] = Field(default=None, description="Error code if any")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine Configuration
 # ---------------------------------------------------------------------------
-
 
 class RegistryAPIConfig(BaseModel):
     """Configuration for the RegistryAPIEngine."""
@@ -348,7 +320,6 @@ class RegistryAPIConfig(BaseModel):
         default=Decimal("72.50"), description="Mock EU ETS price for dev mode"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic model_rebuild for forward reference resolution
 # ---------------------------------------------------------------------------
@@ -368,11 +339,9 @@ DeclarantStatusResult.model_rebuild()
 FinalStatus.model_rebuild()
 AuditLogEntry.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # RegistryAPIEngine
 # ---------------------------------------------------------------------------
-
 
 class RegistryAPIEngine:
     """
@@ -471,7 +440,7 @@ class RegistryAPIEngine:
             "status": status.value,
             "declaration": declaration,
             "registry_ref": registry_ref,
-            "submitted_at": _utcnow().isoformat(),
+            "submitted_at": utcnow().isoformat(),
         }
 
         result = SubmissionResult(
@@ -482,7 +451,7 @@ class RegistryAPIEngine:
             warnings=warnings,
             audit_trail=[{
                 "action": "submit",
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
                 "status": status.value,
                 "eori": eori,
             }],
@@ -640,7 +609,7 @@ class RegistryAPIEngine:
         total_cost = (quantity * price).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
         cert_ids = [_new_uuid() for _ in range(int(quantity) or 1)]
-        txn_ref = f"TXN-{_utcnow().strftime('%Y%m%d')}-{_new_uuid()[:8].upper()}"
+        txn_ref = f"TXN-{utcnow().strftime('%Y%m%d')}-{_new_uuid()[:8].upper()}"
 
         result = PurchaseConfirmation(
             quantity=quantity,
@@ -795,7 +764,7 @@ class RegistryAPIEngine:
             PriceResult with current price information.
         """
         start = time.monotonic()
-        now = _utcnow()
+        now = utcnow()
 
         result = PriceResult(
             price_per_tco2e=self.config.mock_price_per_tco2e,
@@ -893,7 +862,7 @@ class RegistryAPIEngine:
         result = DeclarantStatusResult(
             eori=eori,
             status=status,
-            authorized_since=_utcnow() if status == DeclarantStatus.AUTHORIZED else None,
+            authorized_since=utcnow() if status == DeclarantStatus.AUTHORIZED else None,
             member_state=ms_code,
             nca_identifier=f"{ms_code}-NCA",
             financial_guarantee_status="adequate" if status == DeclarantStatus.AUTHORIZED else "not_required",

@@ -60,23 +60,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import RiskLevel
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -93,7 +89,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -101,7 +96,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal, denominator: Decimal,
@@ -111,22 +105,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     return float(
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CostCategory(str, Enum):
     """Category of cost/investment."""
@@ -140,20 +130,11 @@ class CostCategory(str, Enum):
     WASTE_REDUCTION = "waste_reduction"
     OTHER = "other"
 
-
 class ScenarioType(str, Enum):
     """Financial scenario type."""
     BASE = "base"
     CONSERVATIVE = "conservative"
     OPTIMISTIC = "optimistic"
-
-
-class RiskLevel(str, Enum):
-    """Risk assessment level."""
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -163,11 +144,9 @@ DEFAULT_DISCOUNT_RATE: Decimal = Decimal("0.08")
 DEFAULT_HORIZON_YEARS: int = 10
 SENSITIVITY_FACTOR: Decimal = Decimal("0.20")  # +/-20%
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class CostBenefitItem(BaseModel):
     """A single action for cost-benefit analysis.
@@ -216,7 +195,6 @@ class CostBenefitItem(BaseModel):
             raise ValueError("CapEx exceeds SME reasonable range")
         return v
 
-
 class CostBenefitInput(BaseModel):
     """Complete input for cost-benefit analysis.
 
@@ -239,11 +217,9 @@ class CostBenefitInput(BaseModel):
         default=Decimal("0.02"), ge=Decimal("0"), le=Decimal("0.20")
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class YearCashFlow(BaseModel):
     """Cash flow for a single year.
@@ -273,7 +249,6 @@ class YearCashFlow(BaseModel):
     cumulative_cf: Decimal = Field(default=Decimal("0"))
     cumulative_dcf: Decimal = Field(default=Decimal("0"))
 
-
 class ScenarioAnalysis(BaseModel):
     """Financial analysis under a specific scenario.
 
@@ -293,7 +268,6 @@ class ScenarioAnalysis(BaseModel):
     discounted_payback_years: Decimal = Field(default=Decimal("0"))
     total_benefit_usd: Decimal = Field(default=Decimal("0"))
     benefit_cost_ratio: Decimal = Field(default=Decimal("0"))
-
 
 class ItemAnalysis(BaseModel):
     """Complete cost-benefit analysis for a single item.
@@ -323,7 +297,6 @@ class ItemAnalysis(BaseModel):
     risk_factors: List[str] = Field(default_factory=list)
     recommendation: str = Field(default="")
 
-
 class PortfolioSummary(BaseModel):
     """Portfolio-level cost-benefit summary.
 
@@ -352,7 +325,6 @@ class PortfolioSummary(BaseModel):
     go_count: int = Field(default=0)
     no_go_count: int = Field(default=0)
 
-
 class CostBenefitResult(BaseModel):
     """Complete cost-benefit analysis result.
 
@@ -370,7 +342,7 @@ class CostBenefitResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
 
     items: List[ItemAnalysis] = Field(default_factory=list)
@@ -381,11 +353,9 @@ class CostBenefitResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class CostBenefitEngine:
     """Financial cost-benefit analysis engine for SME decarbonization.

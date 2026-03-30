@@ -33,14 +33,9 @@ import time
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -52,7 +47,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Data Structures
@@ -77,7 +71,6 @@ def _make_circuit_breaker_state(
         "last_success_time": None,
         "consecutive_successes": 0,
     }
-
 
 def _make_query_result(
     query_id: str,
@@ -111,9 +104,8 @@ def _make_query_result(
         "metadata": metadata or {},
         "errors": errors or [],
         "execution_time_ms": round(execution_time_ms, 2),
-        "created_at": _utcnow().isoformat(),
+        "created_at": utcnow().isoformat(),
     }
-
 
 class QueryRouterEngine:
     """Query routing and execution engine with circuit breaker.
@@ -380,7 +372,7 @@ class QueryRouterEngine:
             # Check if timeout has elapsed for half-open
             if cb["last_failure_time"]:
                 elapsed = (
-                    _utcnow() - datetime.fromisoformat(
+                    utcnow() - datetime.fromisoformat(
                         cb["last_failure_time"]
                     )
                 ).total_seconds()
@@ -687,7 +679,7 @@ class QueryRouterEngine:
         """
         cb = self.get_circuit_breaker_state(source_id)
         cb["consecutive_successes"] += 1
-        cb["last_success_time"] = _utcnow().isoformat()
+        cb["last_success_time"] = utcnow().isoformat()
 
         if cb["state"] == "half_open":
             if cb["consecutive_successes"] >= self.CB_SUCCESS_THRESHOLD:
@@ -707,7 +699,7 @@ class QueryRouterEngine:
         cb = self.get_circuit_breaker_state(source_id)
         cb["failures"] += 1
         cb["consecutive_successes"] = 0
-        cb["last_failure_time"] = _utcnow().isoformat()
+        cb["last_failure_time"] = utcnow().isoformat()
 
         if cb["failures"] >= self.CB_FAILURE_THRESHOLD:
             cb["state"] = "open"
@@ -749,7 +741,6 @@ class QueryRouterEngine:
             "circuit_breakers": cb_states,
             "registered_sources": len(self._source_data),
         }
-
 
 __all__ = [
     "QueryRouterEngine",

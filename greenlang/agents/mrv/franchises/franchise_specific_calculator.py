@@ -77,6 +77,8 @@ from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union
 
+from greenlang.schemas.enums import ValidationSeverity
+
 logger = logging.getLogger(__name__)
 
 # ============================================================================
@@ -105,11 +107,9 @@ _DEFAULT_COOLING_EF = Decimal("0.1200")
 # Default batch size limit
 _DEFAULT_BATCH_SIZE = 1000
 
-
 # ============================================================================
 # ENUMERATIONS
 # ============================================================================
-
 
 class OwnershipType(str, Enum):
     """Franchise unit ownership classification."""
@@ -118,13 +118,11 @@ class OwnershipType(str, Enum):
     JOINT_VENTURE = "joint_venture"
     MASTER_FRANCHISEE = "master_franchisee"
 
-
 class CalculationTier(str, Enum):
     """Data quality tier for the calculation."""
     TIER_1 = "tier_1"   # Primary metered data, full coverage
     TIER_2 = "tier_2"   # Primary data with some gaps
     TIER_3 = "tier_3"   # Primary data for subset, extrapolated
-
 
 class EmissionSource(str, Enum):
     """Emission source categories within a franchise unit."""
@@ -136,18 +134,9 @@ class EmissionSource(str, Enum):
     PURCHASED_HEATING = "purchased_heating"
     PURCHASED_COOLING = "purchased_cooling"
 
-
-class ValidationSeverity(str, Enum):
-    """Severity level for validation warnings/errors."""
-    ERROR = "error"
-    WARNING = "warning"
-    INFO = "info"
-
-
 # ============================================================================
 # DATA MODELS
 # ============================================================================
-
 
 @dataclass
 class StationaryCombustionInput:
@@ -166,7 +155,6 @@ class StationaryCombustionInput:
     coal_kg: Decimal = Decimal("0")
     biodiesel_litres: Decimal = Decimal("0")
 
-
 @dataclass
 class MobileCombustionInput:
     """
@@ -182,7 +170,6 @@ class MobileCombustionInput:
     total_diesel_litres: Decimal = Decimal("0")
     total_petrol_litres: Decimal = Decimal("0")
 
-
 @dataclass
 class RefrigerantInput:
     """
@@ -192,7 +179,6 @@ class RefrigerantInput:
     """
     equipment: List[Dict[str, Any]] = field(default_factory=list)
     # Each entry: {equipment_type: str, refrigerant_type: str, charge_kg: Decimal}
-
 
 @dataclass
 class FranchiseUnitInput:
@@ -283,7 +269,6 @@ class FranchiseUnitInput:
             result["refrigerants"] = asdict(self.refrigerants)
         return result
 
-
 @dataclass
 class EmissionBreakdown:
     """
@@ -338,7 +323,6 @@ class EmissionBreakdown:
             "total_co2e_kg": str(self.total_co2e_kg),
         }
 
-
 @dataclass
 class DataQualityScore:
     """
@@ -388,7 +372,6 @@ class DataQualityScore:
             "composite": str(self.composite),
             "tier": self.tier,
         }
-
 
 @dataclass
 class FranchiseCalculationResult:
@@ -464,11 +447,9 @@ class FranchiseCalculationResult:
             "calculated_at": self.calculated_at,
         }
 
-
 # ============================================================================
 # HASH UTILITY
 # ============================================================================
-
 
 def _compute_hash(data: Any) -> str:
     """
@@ -500,14 +481,12 @@ def _compute_hash(data: Any) -> str:
     serialized = json.dumps(data, sort_keys=True, default=_default)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
-
 # ============================================================================
 # DATABASE ENGINE ACCESSOR (lazy import to avoid circular dependency)
 # ============================================================================
 
 _db_engine: Optional[Any] = None
 _db_engine_lock = threading.Lock()
-
 
 def _get_db() -> Any:
     """
@@ -526,11 +505,9 @@ def _get_db() -> Any:
                 _db_engine = get_database_engine()
     return _db_engine
 
-
 # ============================================================================
 # METRICS AND PROVENANCE ACCESSORS
 # ============================================================================
-
 
 def _get_metrics() -> Any:
     """Get the metrics collector (lazy import)."""
@@ -540,7 +517,6 @@ def _get_metrics() -> Any:
     except ImportError:
         return None
 
-
 def _get_provenance() -> Any:
     """Get the provenance manager (lazy import)."""
     try:
@@ -549,11 +525,9 @@ def _get_provenance() -> Any:
     except ImportError:
         return None
 
-
 # ============================================================================
 # ENGINE CLASS
 # ============================================================================
-
 
 class FranchiseSpecificCalculatorEngine:
     """
@@ -1981,14 +1955,12 @@ class FranchiseSpecificCalculatorEngine:
                     "FranchiseSpecificCalculatorEngine singleton reset"
                 )
 
-
 # ============================================================================
 # MODULE-LEVEL SINGLETON ACCESSOR
 # ============================================================================
 
 _calculator_instance: Optional[FranchiseSpecificCalculatorEngine] = None
 _calculator_lock: threading.Lock = threading.Lock()
-
 
 def get_calculator_engine() -> FranchiseSpecificCalculatorEngine:
     """
@@ -2017,7 +1989,6 @@ def get_calculator_engine() -> FranchiseSpecificCalculatorEngine:
 
     return _calculator_instance
 
-
 def reset_calculator_engine() -> None:
     """
     Reset the singleton calculator engine instance for testing purposes.
@@ -2027,7 +1998,6 @@ def reset_calculator_engine() -> None:
     Should only be called in test teardown.
     """
     FranchiseSpecificCalculatorEngine.reset()
-
 
 # ============================================================================
 # MODULE EXPORTS

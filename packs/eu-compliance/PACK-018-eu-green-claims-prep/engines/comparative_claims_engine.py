@@ -59,25 +59,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -97,7 +91,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely.
 
@@ -111,7 +104,6 @@ def _decimal(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
 ) -> Decimal:
@@ -119,7 +111,6 @@ def _safe_divide(
     if denominator == Decimal("0"):
         return default
     return numerator / denominator
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value to the specified number of decimal places.
@@ -136,11 +127,9 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ComparisonType(str, Enum):
     """Type of comparative environmental claim per Article 3(4).
@@ -154,7 +143,6 @@ class ComparisonType(str, Enum):
     VS_REGULATORY_BASELINE = "vs_regulatory_baseline"
     IMPROVEMENT_OVER_TIME = "improvement_over_time"
 
-
 class FutureClaimStatus(str, Enum):
     """Validation status for future environmental performance claims.
 
@@ -165,7 +153,6 @@ class FutureClaimStatus(str, Enum):
     CONDITIONAL = "conditional"
     UNSUBSTANTIATED = "unsubstantiated"
     PROHIBITED = "prohibited"
-
 
 class MethodologyStatus(str, Enum):
     """Methodology validation outcome for comparative claims.
@@ -178,7 +165,6 @@ class MethodologyStatus(str, Enum):
     NON_EQUIVALENT = "non_equivalent"
     INSUFFICIENT_DATA = "insufficient_data"
 
-
 class ClaimCompliance(str, Enum):
     """Overall compliance assessment for a comparative claim.
 
@@ -190,11 +176,9 @@ class ClaimCompliance(str, Enum):
     NON_COMPLIANT = "non_compliant"
     REQUIRES_AMENDMENT = "requires_amendment"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # Validation rules for each comparison type, defining mandatory requirements.
 COMPARISON_REQUIREMENTS: Dict[str, Dict[str, Any]] = {
@@ -350,11 +334,9 @@ MAX_CREDIBLE_ANNUAL_IMPROVEMENT: Dict[str, Decimal] = {
     "default": Decimal("10.0"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class ComparativeClaim(BaseModel):
     """A comparative environmental claim subject to validation.
@@ -443,7 +425,6 @@ class ComparativeClaim(BaseModel):
             )
         return v
 
-
 class FutureClaimInput(BaseModel):
     """Input for future environmental claim assessment per Article 5.
 
@@ -504,7 +485,6 @@ class FutureClaimInput(BaseModel):
         description="Details of the independent monitoring arrangement",
     )
 
-
 class MethodologyAssessment(BaseModel):
     """Input for methodology equivalence assessment.
 
@@ -540,11 +520,9 @@ class MethodologyAssessment(BaseModel):
         description="Version of the methodology or standard",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ComparativeClaimsEngine:
     """Engine for validating comparative and improvement claims.
@@ -609,7 +587,7 @@ class ComparativeClaimsEngine:
             claim.claim_id,
             claim.comparison_type.value,
         )
-        timestamp = _utcnow()
+        timestamp = utcnow()
         findings: List[Dict[str, Any]] = []
         scores: Dict[str, Decimal] = {}
 
@@ -707,7 +685,7 @@ class ComparativeClaimsEngine:
             and provenance_hash.
         """
         logger.info("Assessing future claim | text_length=%d", len(claim_text))
-        timestamp = _utcnow()
+        timestamp = utcnow()
         claim_id = _new_uuid()
 
         criteria_scores: Dict[str, Decimal] = {}
@@ -894,7 +872,7 @@ class ComparativeClaimsEngine:
             str(baseline),
             str(current),
         )
-        timestamp = _utcnow()
+        timestamp = utcnow()
         calc_id = _new_uuid()
 
         baseline_d = _decimal(baseline)
@@ -997,7 +975,7 @@ class ComparativeClaimsEngine:
             claim.claim_id,
             claim.comparison_type.value,
         )
-        timestamp = _utcnow()
+        timestamp = utcnow()
         validation_id = _new_uuid()
         dimension_scores: Dict[str, Decimal] = {}
         findings: List[Dict[str, str]] = []

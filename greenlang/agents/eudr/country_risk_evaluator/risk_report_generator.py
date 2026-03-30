@@ -78,8 +78,9 @@ from .models import (
 )
 from .provenance import get_provenance_tracker
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -166,16 +167,9 @@ _RISK_LABELS: Dict[str, Dict[str, str]] = {
 #: Maximum report file size in bytes (default 50 MB).
 _MAX_REPORT_SIZE_BYTES: int = 50 * 1024 * 1024
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ---------------------------------------------------------------------------
 # RiskReportGenerator
 # ---------------------------------------------------------------------------
-
 
 class RiskReportGenerator:
     """Generate comprehensive risk assessment reports in multiple formats.
@@ -286,7 +280,7 @@ class RiskReportGenerator:
 
         # -- Retention -------------------------------------------------------
         retention_days = cfg.report_retention_days
-        expires_at = _utcnow() + timedelta(days=retention_days)
+        expires_at = utcnow() + timedelta(days=retention_days)
 
         # -- File size -------------------------------------------------------
         content_json = json.dumps(content, ensure_ascii=False)
@@ -779,7 +773,7 @@ class RiskReportGenerator:
         Returns:
             Number of reports deleted.
         """
-        now = _utcnow()
+        now = utcnow()
         deleted_count = 0
 
         with self._lock:
@@ -932,7 +926,7 @@ class RiskReportGenerator:
             "report_type": report_type.value,
             "format": format.value,
             "language": language,
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
         }
 
         return content
@@ -1440,7 +1434,7 @@ class RiskReportGenerator:
         Returns:
             Storage path string.
         """
-        timestamp = _utcnow().strftime("%Y%m%d_%H%M%S")
+        timestamp = utcnow().strftime("%Y%m%d_%H%M%S")
         filename = (
             f"{report_type.value}_{language}_{timestamp}.{format.value}"
         )

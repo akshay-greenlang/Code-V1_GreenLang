@@ -45,34 +45,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "30.0.0"
 _PACK_ID = "PACK-030"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 def _decimal(value: float, places: int = 4) -> Decimal:
     return Decimal(str(value)).quantize(
         Decimal(10) ** -places, rounding=ROUND_HALF_UP,
     )
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -81,7 +74,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
@@ -89,12 +81,10 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class RAGStatus(str, Enum):
     RED = "red"
     AMBER = "amber"
     GREEN = "green"
-
 
 class CDPModule(str, Enum):
     C0_INTRODUCTION = "C0"
@@ -111,7 +101,6 @@ class CDPModule(str, Enum):
     C11_CARBON_PRICING = "C11"
     C12_ENGAGEMENT = "C12"
 
-
 class CDPResponseType(str, Enum):
     YES_NO = "yes_no"
     TEXT = "text"
@@ -119,7 +108,6 @@ class CDPResponseType(str, Enum):
     DROPDOWN = "dropdown"
     NUMERIC = "numeric"
     ATTACHMENT = "attachment"
-
 
 class CDPScoringBand(str, Enum):
     A_LIST = "A"
@@ -132,14 +120,12 @@ class CDPScoringBand(str, Enum):
     D_MINUS = "D-"
     F = "F"
 
-
 class CompletionStatus(str, Enum):
     NOT_STARTED = "not_started"
     PARTIAL = "partial"
     COMPLETE = "complete"
     REVIEW = "review"
     APPROVED = "approved"
-
 
 # =============================================================================
 # CDP QUESTIONNAIRE STRUCTURE (Zero-Hallucination: CDP 2025)
@@ -334,11 +320,9 @@ CDP_SCORING_CRITERIA: Dict[str, Dict[str, Any]] = {
     "leadership": {"weight": 0.25, "description": "Best practice and leadership on climate"},
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase_name: str = Field(...)
@@ -351,7 +335,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
     dag_node_id: str = Field(default="")
-
 
 class CDPQuestionResponse(BaseModel):
     """A single CDP question response."""
@@ -369,7 +352,6 @@ class CDPQuestionResponse(BaseModel):
     scoring_weight: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class CDPModuleCompletion(BaseModel):
     """Completion status for a CDP module."""
     module: CDPModule = Field(...)
@@ -379,7 +361,6 @@ class CDPModuleCompletion(BaseModel):
     completion_pct: float = Field(default=0.0)
     status: CompletionStatus = Field(default=CompletionStatus.NOT_STARTED)
     scoring_weight_pct: float = Field(default=0.0)
-
 
 class CDPEmissionsResponse(BaseModel):
     """Emissions data formatted for CDP C6/C7."""
@@ -397,7 +378,6 @@ class CDPEmissionsResponse(BaseModel):
     consolidation_approach: str = Field(default="Operational control")
     provenance_hash: str = Field(default="")
 
-
 class CDPTargetResponse(BaseModel):
     """Target data formatted for CDP C4."""
     has_active_targets: bool = Field(default=True)
@@ -409,7 +389,6 @@ class CDPTargetResponse(BaseModel):
     total_emissions_reduced_tco2e: float = Field(default=0.0)
     projected_reductions_tco2e: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class CDPGovernanceResponse(BaseModel):
     """Governance data formatted for CDP C1."""
@@ -423,7 +402,6 @@ class CDPGovernanceResponse(BaseModel):
     incentive_details: List[Dict[str, Any]] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class CDPRiskResponse(BaseModel):
     """Risk data formatted for CDP C2."""
     has_risk_process: bool = Field(default=True)
@@ -432,7 +410,6 @@ class CDPRiskResponse(BaseModel):
     identified_risks: List[Dict[str, Any]] = Field(default_factory=list)
     risk_integration: str = Field(default="")
     provenance_hash: str = Field(default="")
-
 
 class CDPOpportunityResponse(BaseModel):
     """Opportunity data formatted for CDP C2."""
@@ -443,14 +420,12 @@ class CDPOpportunityResponse(BaseModel):
     transition_plan: Optional[Dict[str, Any]] = Field(default=None)
     provenance_hash: str = Field(default="")
 
-
 class CDPNarrativeSet(BaseModel):
     """Generated narratives for text response questions."""
     narratives: Dict[str, str] = Field(default_factory=dict)
     citation_count: int = Field(default=0)
     consistency_score: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
-
 
 class CDPCompletenessScore(BaseModel):
     """Completeness scoring results."""
@@ -465,7 +440,6 @@ class CDPCompletenessScore(BaseModel):
     gaps: List[Dict[str, str]] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class CDPExcelExport(BaseModel):
     """Excel export metadata."""
     export_id: str = Field(default="")
@@ -476,7 +450,6 @@ class CDPExcelExport(BaseModel):
     row_count: int = Field(default=0)
     submission_ready: bool = Field(default=False)
     provenance_hash: str = Field(default="")
-
 
 # -- Config / Input / Result --
 
@@ -513,7 +486,6 @@ class CDPQuestionnaireConfig(BaseModel):
     target_scoring_band: CDPScoringBand = Field(default=CDPScoringBand.B)
     output_formats: List[str] = Field(default_factory=lambda: ["excel", "json"])
 
-
 class CDPQuestionnaireInput(BaseModel):
     config: CDPQuestionnaireConfig = Field(default_factory=CDPQuestionnaireConfig)
     governance_data: Dict[str, Any] = Field(default_factory=dict)
@@ -524,7 +496,6 @@ class CDPQuestionnaireInput(BaseModel):
     engagement_data: Dict[str, Any] = Field(default_factory=dict)
     prior_year_responses: Dict[str, Any] = Field(default_factory=dict)
     branding_config: Dict[str, Any] = Field(default_factory=dict)
-
 
 class CDPQuestionnaireResult(BaseModel):
     workflow_id: str = Field(...)
@@ -546,11 +517,9 @@ class CDPQuestionnaireResult(BaseModel):
     overall_rag_status: RAGStatus = Field(default=RAGStatus.GREEN)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class CDPQuestionnaireWorkflow:
     """
@@ -593,7 +562,7 @@ class CDPQuestionnaireWorkflow:
 
     async def execute(self, input_data: CDPQuestionnaireInput) -> CDPQuestionnaireResult:
         """Execute the full 8-phase CDP questionnaire workflow."""
-        started_at = _utcnow()
+        started_at = utcnow()
         self.config = input_data.config
         self._phase_results = []
         overall_status = WorkflowStatus.RUNNING
@@ -643,7 +612,7 @@ class CDPQuestionnaireWorkflow:
                 status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
 
         result = CDPQuestionnaireResult(
             workflow_id=self.workflow_id,
@@ -675,7 +644,7 @@ class CDPQuestionnaireWorkflow:
         self, input_data: CDPQuestionnaireInput,
     ) -> PhaseResult:
         """Aggregate emissions data for CDP C6 (Scope 1/2) and C7 (Scope 3)."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -785,7 +754,7 @@ class CDPQuestionnaireWorkflow:
         outputs["scope3_categories_included"] = len(s3_cats_raw)
         outputs["scope3_categories_excluded"] = len(excluded_cats)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="aggregate_emissions", phase_number=1,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -802,7 +771,7 @@ class CDPQuestionnaireWorkflow:
         self, input_data: CDPQuestionnaireInput,
     ) -> PhaseResult:
         """Pull SBTi/net-zero targets for CDP C4."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -902,7 +871,7 @@ class CDPQuestionnaireWorkflow:
         outputs["initiative_count"] = len(initiatives)
         outputs["total_reduced_tco2e"] = round(total_reduced, 2)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="pull_target_data", phase_number=2,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -919,7 +888,7 @@ class CDPQuestionnaireWorkflow:
         self, input_data: CDPQuestionnaireInput,
     ) -> PhaseResult:
         """Pull governance structures for CDP C1."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -995,7 +964,7 @@ class CDPQuestionnaireWorkflow:
         outputs["has_incentives"] = self._governance.has_incentives
         outputs["incentive_count"] = len(self._governance.incentive_details)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="pull_governance_data", phase_number=3,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -1012,7 +981,7 @@ class CDPQuestionnaireWorkflow:
         self, input_data: CDPQuestionnaireInput,
     ) -> PhaseResult:
         """Pull climate risk data for CDP C2."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -1088,7 +1057,7 @@ class CDPQuestionnaireWorkflow:
         outputs["physical_risk_count"] = len([r for r in risks if r.get("risk_type") == "Physical"])
         outputs["total_financial_impact_usd"] = sum(r.get("financial_impact_usd", 0) for r in risks)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="pull_risk_data", phase_number=4,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -1105,7 +1074,7 @@ class CDPQuestionnaireWorkflow:
         self, input_data: CDPQuestionnaireInput,
     ) -> PhaseResult:
         """Pull climate opportunity data for CDP C2/C3."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -1194,7 +1163,7 @@ class CDPQuestionnaireWorkflow:
         outputs["scenario_analysis_used"] = self._opportunities.scenario_analysis_used
         outputs["transition_plan_available"] = self._opportunities.transition_plan is not None
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="pull_opportunity_data", phase_number=5,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -1211,7 +1180,7 @@ class CDPQuestionnaireWorkflow:
         self, input_data: CDPQuestionnaireInput,
     ) -> PhaseResult:
         """Generate text response narratives for CDP questions (deterministic)."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -1307,7 +1276,7 @@ class CDPQuestionnaireWorkflow:
         outputs["citation_count"] = citation_count
         outputs["consistency_score"] = 95.0
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="generate_narratives", phase_number=6,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -1324,7 +1293,7 @@ class CDPQuestionnaireWorkflow:
         self, input_data: CDPQuestionnaireInput,
     ) -> PhaseResult:
         """Score completeness and estimate CDP scoring band."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -1409,7 +1378,7 @@ class CDPQuestionnaireWorkflow:
         if overall_pct < 75:
             warnings.append(f"CDP completion at {overall_pct}% -- below recommended 75% threshold.")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="validate_completeness", phase_number=7,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -1426,7 +1395,7 @@ class CDPQuestionnaireWorkflow:
         self, input_data: CDPQuestionnaireInput,
     ) -> PhaseResult:
         """Export responses to CDP Excel upload template."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -1467,7 +1436,7 @@ class CDPQuestionnaireWorkflow:
         outputs["row_count"] = len(self._responses)
         outputs["submission_ready"] = self._excel.submission_ready
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="export_excel_template", phase_number=8,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),

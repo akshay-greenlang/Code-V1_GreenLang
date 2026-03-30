@@ -63,21 +63,13 @@ logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -104,7 +96,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -120,7 +111,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -141,7 +131,6 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100).
 
@@ -153,7 +142,6 @@ def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
         Percentage as Decimal; Decimal("0") when whole is zero.
     """
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* and return a float.
@@ -170,11 +158,9 @@ def _round_val(value: Decimal, places: int = 6) -> float:
     quantizer = Decimal(10) ** -places
     return float(value.quantize(quantizer, rounding=ROUND_HALF_UP))
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round4(value: float) -> float:
     """Round to 4 decimal places using ROUND_HALF_UP."""
@@ -182,18 +168,15 @@ def _round4(value: float) -> float:
         Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP)
     )
 
-
 def _round6(value: float) -> float:
     """Round to 6 decimal places using ROUND_HALF_UP."""
     return float(
         Decimal(str(value)).quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class RateType(str, Enum):
     """Utility rate structure type.
@@ -213,7 +196,6 @@ class RateType(str, Enum):
     NET_METERING = "net_metering"
     FEED_IN = "feed_in"
 
-
 class SeasonType(str, Enum):
     """Season classification for seasonal rate schedules.
 
@@ -224,7 +206,6 @@ class SeasonType(str, Enum):
     WINTER = "winter"
     SHOULDER = "shoulder"
     ANNUAL = "annual"
-
 
 class TOUPeriod(str, Enum):
     """Time-of-use period classification.
@@ -237,7 +218,6 @@ class TOUPeriod(str, Enum):
     OFF_PEAK = "off_peak"
     SUPER_OFF_PEAK = "super_off_peak"
     CRITICAL_PEAK = "critical_peak"
-
 
 class DemandType(str, Enum):
     """Demand charge classification type.
@@ -252,13 +232,11 @@ class DemandType(str, Enum):
     RATCHET = "ratchet"
     CONTRACT = "contract"
 
-
 class RateChangeImpact(str, Enum):
     """Direction of cost impact from a rate change."""
     INCREASE = "increase"
     DECREASE = "decrease"
     NEUTRAL = "neutral"
-
 
 class OptimizationStatus(str, Enum):
     """Optimization outcome status.
@@ -271,11 +249,9 @@ class OptimizationStatus(str, Enum):
     SUBOPTIMAL = "suboptimal"
     REVIEW_NEEDED = "review_needed"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Rate Structure Components
 # ---------------------------------------------------------------------------
-
 
 class RateTier(BaseModel):
     """Single tier in an inclining/declining block rate structure.
@@ -305,7 +281,6 @@ class RateTier(BaseModel):
                 f"upper_kwh ({v}) must exceed lower_kwh ({lower})"
             )
         return v
-
 
 class TOUSchedule(BaseModel):
     """Time-of-use schedule entry defining a pricing period.
@@ -350,7 +325,6 @@ class TOUSchedule(BaseModel):
             )
         return v
 
-
 class DemandCharge(BaseModel):
     """Demand charge component of a rate structure.
 
@@ -370,7 +344,6 @@ class DemandCharge(BaseModel):
     season: SeasonType = Field(
         default=SeasonType.ANNUAL, description="Applicable season"
     )
-
 
 class RateStructure(BaseModel):
     """Complete utility rate structure definition.
@@ -440,11 +413,9 @@ class RateStructure(BaseModel):
         None, ge=0, description="Monthly standby charge (currency)"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Consumption Data
 # ---------------------------------------------------------------------------
-
 
 class MonthlyConsumption(BaseModel):
     """Monthly energy consumption profile for rate analysis.
@@ -482,11 +453,9 @@ class MonthlyConsumption(BaseModel):
             raise ValueError("Monthly consumption exceeds 100 GWh sanity check")
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output Results
 # ---------------------------------------------------------------------------
-
 
 class RateComparison(BaseModel):
     """Cost comparison result for a single rate schedule.
@@ -514,7 +483,6 @@ class RateComparison(BaseModel):
         default=0.0, description="Savings vs current rate"
     )
 
-
 class TOUShiftAnalysis(BaseModel):
     """Analysis of potential cost savings from shifting load between TOU periods.
 
@@ -536,7 +504,6 @@ class TOUShiftAnalysis(BaseModel):
     on_peak_share: float = Field(default=0.0, description="On-peak share pct")
     off_peak_share: float = Field(default=0.0, description="Off-peak share pct")
     recommendation: str = Field(default="", description="Recommendation")
-
 
 class DemandRatchetAnalysis(BaseModel):
     """Analysis of demand ratchet impact on billing.
@@ -563,7 +530,6 @@ class DemandRatchetAnalysis(BaseModel):
         default=0.0, description="Demand reduction target (kW)"
     )
     recommendation: str = Field(default="", description="Recommendation")
-
 
 class PowerFactorAssessment(BaseModel):
     """Assessment of power factor impact on billing.
@@ -593,7 +559,6 @@ class PowerFactorAssessment(BaseModel):
     )
     recommendation: str = Field(default="", description="Recommendation")
 
-
 class AnnualCostProjection(BaseModel):
     """Projected annual cost for a future year.
 
@@ -615,7 +580,6 @@ class AnnualCostProjection(BaseModel):
     cumulative_cost: float = Field(
         default=0.0, description="Cumulative cost from base"
     )
-
 
 class TariffChangeImpact(BaseModel):
     """Impact analysis of a tariff change.
@@ -643,7 +607,6 @@ class TariffChangeImpact(BaseModel):
     )
     recommendation: str = Field(default="", description="Recommendation")
 
-
 class RateOptimizationResult(BaseModel):
     """Complete rate optimization result with provenance.
 
@@ -654,7 +617,7 @@ class RateOptimizationResult(BaseModel):
     result_id: str = Field(default_factory=_new_uuid, description="Unique result ID")
     engine_version: str = Field(default=_MODULE_VERSION, description="Engine version")
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
 
@@ -692,11 +655,9 @@ class RateOptimizationResult(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 # ---------------------------------------------------------------------------
 # Calculation Engine
 # ---------------------------------------------------------------------------
-
 
 class RateStructureAnalyzerEngine:
     """Utility rate structure analysis and optimization engine.
@@ -841,6 +802,8 @@ class RateStructureAnalyzerEngine:
 
         Calculates the annual cost for each rate schedule and ranks them
         from lowest to highest total cost.
+
+from greenlang.schemas import utcnow
 
         Args:
             consumption: Monthly consumption profile.

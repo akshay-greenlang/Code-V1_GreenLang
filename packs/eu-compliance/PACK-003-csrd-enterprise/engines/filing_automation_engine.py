@@ -48,25 +48,20 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ValidationSeverity
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -79,11 +74,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class FilingTargetName(str, Enum):
     """Regulatory filing targets."""
@@ -97,7 +90,6 @@ class FilingTargetName(str, Enum):
     CONSOB = "consob"
     CNMV = "cnmv"
 
-
 class FilingFormat(str, Enum):
     """Filing package format."""
 
@@ -106,7 +98,6 @@ class FilingFormat(str, Enum):
     XBRL = "xbrl"
     JSON = "json"
     CSV = "csv"
-
 
 class FilingStatus(str, Enum):
     """Filing submission status."""
@@ -118,15 +109,6 @@ class FilingStatus(str, Enum):
     REJECTED = "rejected"
     ARCHIVED = "archived"
 
-
-class ValidationSeverity(str, Enum):
-    """Severity of a validation finding."""
-
-    ERROR = "error"
-    WARNING = "warning"
-    INFO = "info"
-
-
 class AuthMethod(str, Enum):
     """Authentication method for filing target."""
 
@@ -134,7 +116,6 @@ class AuthMethod(str, Enum):
     OAUTH2 = "oauth2"
     CERTIFICATE = "certificate"
     MANUAL = "manual"
-
 
 class DeadlineUrgency(str, Enum):
     """Urgency level of a filing deadline."""
@@ -145,11 +126,9 @@ class DeadlineUrgency(str, Enum):
     UPCOMING = "upcoming"
     PLANNED = "planned"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class FilingTarget(BaseModel):
     """Regulatory filing target configuration."""
@@ -173,7 +152,6 @@ class FilingTarget(BaseModel):
         default_factory=list, description="Validation rule IDs"
     )
 
-
 class ValidationFinding(BaseModel):
     """A single validation finding."""
 
@@ -182,7 +160,6 @@ class ValidationFinding(BaseModel):
     message: str = Field(..., description="Finding description")
     field: Optional[str] = Field(None, description="Affected field")
     suggestion: Optional[str] = Field(None, description="Fix suggestion")
-
 
 class FilingPackage(BaseModel):
     """A prepared filing package ready for submission."""
@@ -202,14 +179,13 @@ class FilingPackage(BaseModel):
     )
     data_hash: str = Field("", description="SHA-256 hash of package contents")
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Package creation time"
+        default_factory=utcnow, description="Package creation time"
     )
     version: int = Field(1, ge=1, description="Package version")
     metadata: Dict[str, Any] = Field(
         default_factory=dict, description="Package metadata"
     )
     provenance_hash: str = Field("", description="SHA-256 provenance hash")
-
 
 class FilingSubmission(BaseModel):
     """A filing submission to a regulatory target."""
@@ -235,7 +211,6 @@ class FilingSubmission(BaseModel):
     reporting_period: str = Field("", description="Reporting period")
     provenance_hash: str = Field("", description="SHA-256 provenance hash")
 
-
 class FilingDeadline(BaseModel):
     """A regulatory filing deadline."""
 
@@ -256,7 +231,6 @@ class FilingDeadline(BaseModel):
     filing_completed: bool = Field(
         False, description="Whether filing is complete"
     )
-
 
 # ---------------------------------------------------------------------------
 # Validation Rules
@@ -315,11 +289,9 @@ _VALIDATION_RULES: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class FilingAutomationEngine:
     """Automated regulatory filing engine.
@@ -426,7 +398,7 @@ class FilingAutomationEngine:
                 "report_id": report_id,
                 "target": target.value,
                 "format": fmt.value,
-                "prepared_at": _utcnow().isoformat(),
+                "prepared_at": utcnow().isoformat(),
             },
         )
         package.provenance_hash = _compute_hash(package)
@@ -526,7 +498,7 @@ class FilingAutomationEngine:
             "errors": len(errors),
             "warnings": len(warnings),
             "findings": [f.model_dump() for f in findings],
-            "validated_at": _utcnow().isoformat(),
+            "validated_at": utcnow().isoformat(),
             "provenance_hash": _compute_hash({
                 "package_id": package_id, "passed": passed,
                 "errors": len(errors),
@@ -609,7 +581,7 @@ class FilingAutomationEngine:
                 f"Fix errors before submission."
             )
 
-        now = _utcnow()
+        now = utcnow()
         ref_number = f"GL-{now.strftime('%Y%m%d')}-{_new_uuid()[:8].upper()}"
 
         submission = FilingSubmission(
@@ -665,7 +637,7 @@ class FilingAutomationEngine:
         Returns:
             List of deadline entries sorted by due date.
         """
-        now = _utcnow()
+        now = utcnow()
 
         # Generate standard CSRD deadlines if none exist for entity
         entity_deadlines = [
@@ -710,7 +682,7 @@ class FilingAutomationEngine:
         Returns:
             List of standard FilingDeadline objects.
         """
-        current_year = _utcnow().year
+        current_year = utcnow().year
         deadlines = [
             FilingDeadline(
                 entity_id=entity_id,
@@ -859,7 +831,7 @@ class FilingAutomationEngine:
                 submission.submitted_at.isoformat()
                 if submission.submitted_at else None
             ),
-            "archived_at": _utcnow().isoformat(),
+            "archived_at": utcnow().isoformat(),
             "archive_location": f"filings/archive/{submission_id}/",
             "retention_years": 10,
             "provenance_hash": _compute_hash(submission),

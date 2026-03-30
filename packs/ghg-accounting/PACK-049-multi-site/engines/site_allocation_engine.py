@@ -65,26 +65,20 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 _ZERO = Decimal("0")
 _ONE = Decimal("1")
@@ -93,23 +87,19 @@ _TOLERANCE = Decimal("0.0001")
 _DP6 = Decimal("0.000001")
 _DP10 = Decimal("0.0000000001")
 
-
 def _safe_divide(numerator: Decimal, denominator: Decimal) -> Decimal:
     """Divide with zero-guard, returning Decimal('0') when denominator is zero."""
     if denominator == _ZERO:
         return _ZERO
     return (numerator / denominator).quantize(_DP6, rounding=ROUND_HALF_UP)
 
-
 def _quantise(value: Decimal, precision: Decimal = _DP6) -> Decimal:
     """Quantise a Decimal to the requested precision."""
     return value.quantize(precision, rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class AllocationType(str, Enum):
     """Supported emission allocation types."""
@@ -118,7 +108,6 @@ class AllocationType(str, Enum):
     COGENERATION = "COGENERATION"
     DISTRICT_SYSTEM = "DISTRICT_SYSTEM"
     VPPA = "VPPA"
-
 
 class AllocationMethod(str, Enum):
     """Supported allocation key methods."""
@@ -132,12 +121,10 @@ class AllocationMethod(str, Enum):
     CONTRACTUAL = "CONTRACTUAL"
     CUSTOM = "CUSTOM"
 
-
 class CogenerationMethod(str, Enum):
     """Cogeneration emission allocation method per ISO 8302."""
     EFFICIENCY = "EFFICIENCY"
     ENERGY_CONTENT = "ENERGY_CONTENT"
-
 
 class AllocationStatus(str, Enum):
     """Status of an allocation run."""
@@ -145,11 +132,9 @@ class AllocationStatus(str, Enum):
     PARTIAL = "PARTIAL"
     FAILED = "FAILED"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class AllocationConfig(BaseModel):
     """Configuration for a single allocation run."""
@@ -191,7 +176,6 @@ class AllocationConfig(BaseModel):
             raise ValueError(f"method must be one of {sorted(allowed)}, got '{v}'")
         return v.upper()
 
-
 class AllocationResult(BaseModel):
     """Result of an allocation operation."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -209,7 +193,7 @@ class AllocationResult(BaseModel):
     unallocated_remainder: Decimal = Field(
         _ZERO, description="Emissions not allocated (should be zero or within tolerance)"
     )
-    created_at: datetime = Field(default_factory=_utcnow, description="Timestamp of allocation")
+    created_at: datetime = Field(default_factory=utcnow, description="Timestamp of allocation")
     provenance_hash: str = Field("", description="SHA-256 provenance hash")
 
     def model_post_init(self, __context: Any) -> None:
@@ -222,7 +206,6 @@ class AllocationResult(BaseModel):
             for site_id in sorted(self.allocated_amounts):
                 payload += f"|{site_id}={self.allocated_amounts[site_id]}"
             self.provenance_hash = _compute_hash(payload)
-
 
 class LandlordTenantSplit(BaseModel):
     """Result of a landlord-tenant emission split."""
@@ -261,7 +244,6 @@ class LandlordTenantSplit(BaseModel):
             )
             self.provenance_hash = _compute_hash(payload)
 
-
 class CogenerationAllocation(BaseModel):
     """Result of a cogeneration / CHP emission allocation."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -297,7 +279,6 @@ class CogenerationAllocation(BaseModel):
             )
             self.provenance_hash = _compute_hash(payload)
 
-
 class VPPACertificate(BaseModel):
     """A single virtual power purchase agreement certificate."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -310,7 +291,6 @@ class VPPACertificate(BaseModel):
     source_description: str = Field("", description="Source of renewable energy")
     vintage_year: int = Field(2026, ge=2015, le=2040, description="Certificate vintage year")
 
-
 class DistrictConsumption(BaseModel):
     """Metered consumption for a site connected to a district system."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -318,7 +298,6 @@ class DistrictConsumption(BaseModel):
     site_id: str = Field(..., description="Connected site identifier")
     consumption_kwh: Decimal = Field(..., ge=_ZERO, description="Metered consumption (kWh)")
     period: str = Field("", description="Reporting period identifier")
-
 
 class AllocationSummary(BaseModel):
     """Summary of a batch of allocation results."""
@@ -335,7 +314,6 @@ class AllocationSummary(BaseModel):
     status: str = Field("COMPLETE", description="Overall status")
     provenance_hash: str = Field("", description="SHA-256 provenance hash")
 
-
 class CompletenessCheck(BaseModel):
     """Result of allocation completeness verification."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -348,11 +326,9 @@ class CompletenessCheck(BaseModel):
     tolerance_used: Decimal = Field(_TOLERANCE, description="Tolerance value used")
     status: str = Field("PASS", description="PASS or FAIL")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class SiteAllocationEngine:
     """
@@ -1173,7 +1149,6 @@ class SiteAllocationEngine:
             target_site_ids=target_site_ids,
             allocation_keys=allocation_keys,
         )
-
 
 # ---------------------------------------------------------------------------
 # Pydantic v2 model rebuild (required with `from __future__ import annotations`)

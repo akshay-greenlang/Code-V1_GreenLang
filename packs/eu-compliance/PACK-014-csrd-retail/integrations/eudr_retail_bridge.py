@@ -33,21 +33,15 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -59,7 +53,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 class _AgentStub:
     """Stub for unavailable EUDR agent modules."""
@@ -78,22 +71,20 @@ class _AgentStub:
             }
         return _stub_method
 
-
 def _try_import_eudr_agent(agent_id: str) -> Any:
     """Try to import an EUDR agent with graceful fallback."""
     module_path = f"greenlang.agents.eudr.agent_{agent_id.lower().replace('-', '_')}"
     try:
         import importlib
+
         return importlib.import_module(module_path)
     except ImportError:
         logger.debug("EUDR agent %s not available, using stub", agent_id)
         return _AgentStub(agent_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EUDRCommodity(str, Enum):
     """EUDR-regulated commodity categories."""
@@ -106,7 +97,6 @@ class EUDRCommodity(str, Enum):
     SOY = "soy"
     WOOD = "wood"
 
-
 class RiskLevel(str, Enum):
     """Country-level deforestation risk classification."""
 
@@ -114,11 +104,9 @@ class RiskLevel(str, Enum):
     STANDARD = "standard"
     HIGH = "high"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class ProductCommodityMapping(BaseModel):
     """Mapping of a retail product category to EUDR commodities."""
@@ -127,7 +115,6 @@ class ProductCommodityMapping(BaseModel):
     commodities: List[EUDRCommodity] = Field(default_factory=list)
     description: str = Field(default="")
     typical_origin_countries: List[str] = Field(default_factory=list)
-
 
 class TraceabilityResult(BaseModel):
     """Result of a traceability request for a commodity."""
@@ -147,7 +134,6 @@ class TraceabilityResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class EUDRBridgeConfig(BaseModel):
     """Configuration for the EUDR Retail Bridge."""
 
@@ -155,7 +141,6 @@ class EUDRBridgeConfig(BaseModel):
     enable_provenance: bool = Field(default=True)
     enable_risk_assessment: bool = Field(default=True)
     default_risk_level: RiskLevel = Field(default=RiskLevel.STANDARD)
-
 
 class MultiCommodityResult(BaseModel):
     """Result for a multi-commodity product (e.g., chocolate bar)."""
@@ -167,7 +152,6 @@ class MultiCommodityResult(BaseModel):
     highest_risk_level: str = Field(default="standard")
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Product-to-Commodity Mapping Table
@@ -243,11 +227,9 @@ COUNTRY_RISK_MAP: Dict[str, RiskLevel] = {
     "US": RiskLevel.LOW,
 }
 
-
 # ---------------------------------------------------------------------------
 # EUDRRetailBridge
 # ---------------------------------------------------------------------------
-
 
 class EUDRRetailBridge:
     """Bridge to EUDR agents for retail commodity tracing.

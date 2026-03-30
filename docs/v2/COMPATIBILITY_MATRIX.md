@@ -29,9 +29,10 @@
 
 ## Exit Rules
 
-1. all selected V2 profiles must pass `gl v2 validate-contracts`.
-2. all selected V2 profiles must pass `gl v2 runtime-checks`.
-3. `gl v2 gate` must be green in release candidate lanes.
+1. all selected V2 profiles must pass `python -m greenlang.cli.main v2 validate-contracts`.
+2. all selected V2 profiles must pass `python -m greenlang.cli.main v2 runtime-checks`.
+3. `python -m greenlang.cli.main v2 gate` must be green in release candidate lanes.
+4. regulated profile runtime execution checks must run with `strict=True` and `allow_fallback=False`.
 
 ## Enforcement Commands (CI and Runtime)
 
@@ -39,7 +40,7 @@
 - `python -m greenlang.cli.main v2 runtime-checks`
 - `python -m greenlang.cli.main v2 gate`
 - `python -c "from pathlib import Path; from greenlang.v2.pack_tiers import validate_tier_registry; p=Path('greenlang/ecosystem/packs/v2_tier_registry.yaml'); errs=validate_tier_registry(p); raise SystemExit(1 if errs else 0)"`
-- `pytest -q tests/v2/test_pack_tiers.py tests/v2/test_pack_tier_lifecycle.py`
+- `pytest -q tests/v2/test_pack_tiers.py tests/v2/test_pack_tier_lifecycle.py tests/v2/test_v2_profile_backend_parity.py`
 
 ## Pilot Cohort Mapping
 

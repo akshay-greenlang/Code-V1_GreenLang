@@ -49,25 +49,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -80,11 +74,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Agent Stubs
 # ---------------------------------------------------------------------------
-
 
 class _AgentStub:
     """Stub for unavailable offset agent modules."""
@@ -103,7 +95,6 @@ class _AgentStub:
             }
         return _stub_method
 
-
 def _try_import_agent(agent_id: str, module_path: str) -> Any:
     """Try to import an agent with graceful fallback."""
     try:
@@ -112,11 +103,9 @@ def _try_import_agent(agent_id: str, module_path: str) -> Any:
         logger.debug("Agent %s not available, using stub", agent_id)
         return _AgentStub(agent_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CreditType(str, Enum):
     """Carbon credit types."""
@@ -132,7 +121,6 @@ class CreditType(str, Enum):
     BIOENERGY_CCS = "bioenergy_ccs"
     SOIL_CARBON = "soil_carbon"
 
-
 class CreditStandard(str, Enum):
     """Carbon credit verification standards."""
 
@@ -143,7 +131,6 @@ class CreditStandard(str, Enum):
     PURO_EARTH = "puro_earth"
     ISOMETRIC = "isometric"
 
-
 class QualityTier(str, Enum):
     """Credit quality tier per ICVCM."""
 
@@ -153,14 +140,12 @@ class QualityTier(str, Enum):
     BRONZE = "bronze"
     UNRATED = "unrated"
 
-
 class SBTiOffsetRole(str, Enum):
     """Role of offsets per SBTi Net-Zero Standard."""
 
     NEUTRALIZATION = "neutralization"
     BVCM = "beyond_value_chain_mitigation"
     NOT_PERMITTED = "not_permitted"
-
 
 class VCMIClaimTier(str, Enum):
     """VCMI Claims Code claim tiers."""
@@ -170,11 +155,9 @@ class VCMIClaimTier(str, Enum):
     BRONZE = "bronze"
     NOT_ELIGIBLE = "not_eligible"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class OffsetBridgeConfig(BaseModel):
     """Configuration for the SBTi Offset Bridge."""
@@ -189,7 +172,6 @@ class OffsetBridgeConfig(BaseModel):
         description="SBTi requires removal-based credits for neutralization",
     )
     min_permanence_years: int = Field(default=100, ge=1)
-
 
 class OffsetStrategyResult(BaseModel):
     """SBTi-compliant offset strategy design result."""
@@ -209,7 +191,6 @@ class OffsetStrategyResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class CreditValuationResult(BaseModel):
     """Credit valuation result."""
 
@@ -227,7 +208,6 @@ class CreditValuationResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class CreditTrackingResult(BaseModel):
     """Credit tracking result."""
 
@@ -243,7 +223,6 @@ class CreditTrackingResult(BaseModel):
     removal_credits_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class QualityVerificationResult(BaseModel):
     """Credit quality verification result."""
@@ -263,7 +242,6 @@ class QualityVerificationResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class SBTiComplianceResult(BaseModel):
     """SBTi offset compliance check result."""
 
@@ -282,7 +260,6 @@ class SBTiComplianceResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class BVCMResult(BaseModel):
     """Beyond Value Chain Mitigation assessment result."""
 
@@ -298,7 +275,6 @@ class BVCMResult(BaseModel):
     vcmi_claim_tier: str = Field(default="not_eligible")
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Credit pricing reference
@@ -326,11 +302,9 @@ SBTI_NEUTRALIZATION_ELIGIBLE: set = {
     CreditType.SOIL_CARBON,
 }
 
-
 # ---------------------------------------------------------------------------
 # SBTiOffsetBridge
 # ---------------------------------------------------------------------------
-
 
 class SBTiOffsetBridge:
     """Carbon credit management bridge for SBTi net-zero neutralization.

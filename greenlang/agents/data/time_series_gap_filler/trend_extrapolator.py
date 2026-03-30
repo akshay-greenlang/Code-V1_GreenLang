@@ -43,6 +43,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 from greenlang.agents.data.time_series_gap_filler.config import get_config
+from greenlang.schemas import utcnow
 from greenlang.agents.data.time_series_gap_filler.metrics import (
     inc_errors,
     inc_gaps_filled,
@@ -63,16 +64,9 @@ from greenlang.agents.data.time_series_gap_filler.provenance import (
 
 logger = logging.getLogger(__name__)
 
-
 # ---------------------------------------------------------------------------
 # Module-level helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _is_missing(value: Any) -> bool:
     """Check whether a value represents a missing data point.
@@ -93,7 +87,6 @@ def _is_missing(value: Any) -> bool:
     if isinstance(value, str) and value.strip().lower() == "nan":
         return True
     return False
-
 
 def _ols_fit(
     x: List[float],
@@ -159,7 +152,6 @@ def _ols_fit(
 
     return slope, intercept, r_squared
 
-
 def _compute_confidence(
     r_squared: float,
     method: str,
@@ -207,11 +199,9 @@ def _compute_confidence(
     confidence = base + adjustment - length_penalty
     return max(0.0, min(1.0, confidence))
 
-
 # ---------------------------------------------------------------------------
 # TrendExtrapolatorEngine
 # ---------------------------------------------------------------------------
-
 
 class TrendExtrapolatorEngine:
     """Trend-based gap filling engine for time series data.
@@ -1882,7 +1872,6 @@ class TrendExtrapolatorEngine:
             "metadata": {"reason": "insufficient_data"},
             "provenance_hash": result_hash,
         }
-
 
 __all__ = [
     "TrendExtrapolatorEngine",

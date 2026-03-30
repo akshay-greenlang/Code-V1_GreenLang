@@ -74,24 +74,18 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -108,7 +102,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -117,7 +110,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -125,26 +117,21 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     return float(
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class PlanSection(str, Enum):
     """Climate action plan sections per Interpretation Guide."""
@@ -159,7 +146,6 @@ class PlanSection(str, Enum):
     JUST_TRANSITION = "just_transition"
     MONITORING = "monitoring"
 
-
 class SectionRating(str, Enum):
     """Section completeness rating."""
     COMPLETE = "complete"
@@ -167,7 +153,6 @@ class SectionRating(str, Enum):
     PARTIAL = "partial"
     INCOMPLETE = "incomplete"
     MISSING = "missing"
-
 
 class ActionCategory(str, Enum):
     """Decarbonization action category."""
@@ -185,7 +170,6 @@ class ActionCategory(str, Enum):
     BEHAVIORAL = "behavioral"
     OTHER = "other"
 
-
 class PlanQuality(str, Enum):
     """Overall plan quality classification."""
     EXCELLENT = "excellent"
@@ -193,7 +177,6 @@ class PlanQuality(str, Enum):
     ADEQUATE = "adequate"
     INADEQUATE = "inadequate"
     MISSING = "missing"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -246,11 +229,9 @@ QUALITY_THRESHOLDS: List[Tuple[Decimal, str]] = [
 MIN_ACTIONS_COUNT: int = 10
 PUBLICATION_DEADLINE_MONTHS: int = 12
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class DecarbonizationActionInput(BaseModel):
     """Input for a single decarbonization action.
@@ -301,7 +282,6 @@ class DecarbonizationActionInput(BaseModel):
             raise ValueError(f"Unknown action status '{v}'.")
         return v
 
-
 class SectionInput(BaseModel):
     """Input for a single plan section assessment.
 
@@ -324,7 +304,6 @@ class SectionInput(BaseModel):
         if v not in SECTION_IDS:
             raise ValueError(f"Unknown section '{v}'. Must be one of: {SECTION_IDS}")
         return v
-
 
 class ActionPlanInput(BaseModel):
     """Complete input for action plan assessment.
@@ -378,11 +357,9 @@ class ActionPlanInput(BaseModel):
     has_monitoring_kpis: bool = Field(default=False)
     include_prioritization: bool = Field(default=True)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class ActionResult(BaseModel):
     """Assessment result for a single action.
@@ -414,7 +391,6 @@ class ActionResult(BaseModel):
     status: str = Field(default="planned")
     pct_of_total_abatement: Decimal = Field(default=Decimal("0"))
 
-
 class SectionResult(BaseModel):
     """Assessment result for a single plan section.
 
@@ -437,7 +413,6 @@ class SectionResult(BaseModel):
     gap_description: str = Field(default="")
     recommendations: List[str] = Field(default_factory=list)
 
-
 class AbatementSummary(BaseModel):
     """Summary of abatement from all actions.
 
@@ -459,7 +434,6 @@ class AbatementSummary(BaseModel):
     target_gap_tco2e: Decimal = Field(default=Decimal("0"))
     target_coverage_pct: Decimal = Field(default=Decimal("0"))
     actions_by_status: Dict[str, int] = Field(default_factory=dict)
-
 
 class ActionPlanResult(BaseModel):
     """Complete action plan assessment result.
@@ -489,7 +463,7 @@ class ActionPlanResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     completeness_score: Decimal = Field(default=Decimal("0"))
     plan_quality: str = Field(default=PlanQuality.MISSING.value)
@@ -509,11 +483,9 @@ class ActionPlanResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ActionPlanEngine:
     """Race to Zero climate action plan generation and validation engine.
@@ -602,6 +574,7 @@ class ActionPlanEngine:
             try:
                 join_dt = datetime.strptime(data.join_date, "%Y-%m-%d")
                 from datetime import timedelta
+
                 deadline = join_dt + timedelta(days=PUBLICATION_DEADLINE_MONTHS * 30)
                 now = datetime.now()
                 days_until = (deadline - now).days

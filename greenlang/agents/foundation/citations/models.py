@@ -8,7 +8,7 @@ and models while providing a stable public API.
 
 Models:
     - Enums: CitationType, SourceAuthority, RegulatoryFramework,
-             VerificationStatus, EvidenceType, ExportFormat, ChangeType
+             VerificationStatus, EvidenceType, ReportFormat, ChangeType
     - Core: CitationMetadata, Citation, EvidenceItem, EvidencePackage,
             MethodologyReference, RegulatoryRequirement,
             DataSourceAttribution
@@ -32,13 +32,14 @@ from datetime import date, datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ReportFormat
 
 # =============================================================================
 # Enumerations
 # =============================================================================
-
 
 class CitationType(str, Enum):
     """Types of citations supported by the system."""
@@ -49,7 +50,6 @@ class CitationType(str, Enum):
     COMPANY_DATA = "company_data"
     GUIDANCE = "guidance"
     DATABASE = "database"
-
 
 class SourceAuthority(str, Enum):
     """Recognized data source authorities."""
@@ -77,7 +77,6 @@ class SourceAuthority(str, Enum):
     # Other
     OTHER = "other"
 
-
 class RegulatoryFramework(str, Enum):
     """Regulatory frameworks for compliance tracking."""
     CSRD = "csrd"
@@ -89,7 +88,6 @@ class RegulatoryFramework(str, Enum):
     TCFD = "tcfd"
     TNFD = "tnfd"
 
-
 class VerificationStatus(str, Enum):
     """Status of citation verification."""
     VERIFIED = "verified"
@@ -98,7 +96,6 @@ class VerificationStatus(str, Enum):
     SUPERSEDED = "superseded"
     UNVERIFIED = "unverified"
     INVALID = "invalid"
-
 
 class EvidenceType(str, Enum):
     """Types of evidence that can be packaged."""
@@ -109,14 +106,6 @@ class EvidenceType(str, Enum):
     VALIDATION = "validation"
     AUDIT_TRAIL = "audit_trail"
 
-
-class ExportFormat(str, Enum):
-    """Supported export formats for citations."""
-    BIBTEX = "bibtex"
-    JSON = "json"
-    CSL = "csl"
-
-
 class ChangeType(str, Enum):
     """Types of changes to citations and evidence."""
     CREATE = "create"
@@ -125,23 +114,15 @@ class ChangeType(str, Enum):
     VERIFY = "verify"
     SUPERSEDE = "supersede"
 
-
 # =============================================================================
 # Utility
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # =============================================================================
 # Core Data Models
 # =============================================================================
 
-
-class CitationMetadata(BaseModel):
+class CitationMetadata(GreenLangBase):
     """Metadata for a citation."""
 
     title: str = Field(..., description="Title of the cited work")
@@ -197,8 +178,7 @@ class CitationMetadata(BaseModel):
             raise ValueError(f"Invalid DOI format: {v}")
         return v
 
-
-class Citation(BaseModel):
+class Citation(GreenLangBase):
     """Complete citation record for zero-hallucination compliance.
 
     Every data point used in calculations must be traceable to a Citation.
@@ -264,10 +244,10 @@ class Citation(BaseModel):
 
     # Audit trail
     created_at: datetime = Field(
-        default_factory=_utcnow, description="When this record was created",
+        default_factory=utcnow, description="When this record was created",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow, description="When this record was last updated",
+        default_factory=utcnow, description="When this record was last updated",
     )
     created_by: Optional[str] = Field(
         None, description="User who created this record",
@@ -415,8 +395,7 @@ class Citation(BaseModel):
         bibtex_id = re.sub(r"[^a-z0-9]", "", f"{surname}{year}")
         return bibtex_id or self.citation_id[:8]
 
-
-class EvidenceItem(BaseModel):
+class EvidenceItem(GreenLangBase):
     """A single piece of evidence in an evidence package."""
 
     evidence_id: str = Field(
@@ -443,7 +422,7 @@ class EvidenceItem(BaseModel):
         None, description="Agent that produced this evidence",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When this evidence was recorded",
     )
     content_hash: Optional[str] = Field(
@@ -463,8 +442,7 @@ class EvidenceItem(BaseModel):
         content_str = json.dumps(content, sort_keys=True, default=str)
         return hashlib.sha256(content_str.encode()).hexdigest()
 
-
-class EvidencePackage(BaseModel):
+class EvidencePackage(GreenLangBase):
     """Complete evidence package for audit-ready documentation.
 
     Bundles all evidence, citations, and calculations for a specific
@@ -513,7 +491,7 @@ class EvidencePackage(BaseModel):
 
     # Audit metadata
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When this package was created",
     )
     created_by: Optional[str] = Field(
@@ -550,8 +528,7 @@ class EvidencePackage(BaseModel):
         """Return True if the package has been finalized."""
         return self.package_hash is not None
 
-
-class MethodologyReference(BaseModel):
+class MethodologyReference(GreenLangBase):
     """Reference to a calculation methodology."""
 
     reference_id: str = Field(
@@ -589,8 +566,7 @@ class MethodologyReference(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class RegulatoryRequirement(BaseModel):
+class RegulatoryRequirement(GreenLangBase):
     """A regulatory requirement for compliance tracking."""
 
     requirement_id: str = Field(
@@ -628,8 +604,7 @@ class RegulatoryRequirement(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class DataSourceAttribution(BaseModel):
+class DataSourceAttribution(GreenLangBase):
     """Attribution for a data source."""
 
     attribution_id: str = Field(
@@ -653,7 +628,7 @@ class DataSourceAttribution(BaseModel):
         description="Values extracted from this source",
     )
     extraction_date: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When data was extracted",
     )
     extracted_by: Optional[str] = Field(
@@ -668,8 +643,7 @@ class DataSourceAttribution(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class VerificationRecord(BaseModel):
+class VerificationRecord(GreenLangBase):
     """Record of a citation verification check."""
 
     record_id: str = Field(
@@ -683,7 +657,7 @@ class VerificationRecord(BaseModel):
         ..., description="Result of verification",
     )
     checked_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the check was performed",
     )
     checked_by: str = Field(
@@ -703,8 +677,7 @@ class VerificationRecord(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class CitationVersion(BaseModel):
+class CitationVersion(GreenLangBase):
     """A single version snapshot of a citation."""
 
     version_id: str = Field(
@@ -721,7 +694,7 @@ class CitationVersion(BaseModel):
         ..., description="Full citation snapshot at this version",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation timestamp",
+        default_factory=utcnow, description="Creation timestamp",
     )
     created_by: str = Field(
         ..., description="User who created this version",
@@ -741,8 +714,7 @@ class CitationVersion(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class ChangeLogEntry(BaseModel):
+class ChangeLogEntry(GreenLangBase):
     """Audit log entry for citation and evidence changes."""
 
     log_id: str = Field(
@@ -750,7 +722,7 @@ class ChangeLogEntry(BaseModel):
         description="Unique log ID",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Change timestamp",
+        default_factory=utcnow, description="Change timestamp",
     )
     user_id: str = Field(
         ..., description="User who made the change",
@@ -779,7 +751,6 @@ class ChangeLogEntry(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
 __all__ = [
     # Enumerations
     "CitationType",
@@ -787,7 +758,7 @@ __all__ = [
     "RegulatoryFramework",
     "VerificationStatus",
     "EvidenceType",
-    "ExportFormat",
+    "ReportFormat",
     "ChangeType",
     # Core models
     "CitationMetadata",

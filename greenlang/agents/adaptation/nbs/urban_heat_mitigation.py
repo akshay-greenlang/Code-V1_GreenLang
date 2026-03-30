@@ -16,10 +16,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism.clock import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +43,7 @@ class GreenInfrastructureType(str, Enum):
     BIOSWALE = "bioswale"
 
 
-class UrbanZone(BaseModel):
+class UrbanZone(GreenLangBase):
     zone_id: str = Field(...)
     area_km2: float = Field(..., gt=0)
     population: int = Field(..., ge=0)
@@ -52,7 +53,7 @@ class UrbanZone(BaseModel):
     building_density_per_km2: float = Field(default=5000, ge=0)
 
 
-class HeatMitigationPlan(BaseModel):
+class HeatMitigationPlan(GreenLangBase):
     zone_id: str = Field(...)
     heat_risk_level: HeatRiskLevel = Field(...)
     temperature_reduction_potential_c: float = Field(...)
@@ -64,7 +65,7 @@ class HeatMitigationPlan(BaseModel):
     priority: str = Field(...)
 
 
-class UrbanHeatInput(BaseModel):
+class UrbanHeatInput(GreenLangBase):
     project_id: str = Field(...)
     city_name: str = Field(...)
     zones: List[UrbanZone] = Field(..., min_length=1)
@@ -72,7 +73,7 @@ class UrbanHeatInput(BaseModel):
     target_year: int = Field(default=2050, ge=2024, le=2100)
 
 
-class UrbanHeatOutput(BaseModel):
+class UrbanHeatOutput(GreenLangBase):
     project_id: str = Field(...)
     city_name: str = Field(...)
     calculation_date: datetime = Field(default_factory=DeterministicClock.now)

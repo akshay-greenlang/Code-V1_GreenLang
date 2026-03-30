@@ -101,7 +101,6 @@ except ImportError:
     otel_trace = None  # type: ignore[assignment]
     OTEL_AVAILABLE = False
 
-
 # ---------------------------------------------------------------------------
 # Environment variable prefix
 # ---------------------------------------------------------------------------
@@ -112,16 +111,9 @@ _VALID_LOG_LEVELS = frozenset(
     {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_provenance_hash(*parts: str) -> str:
     """Compute SHA-256 hash over concatenated string parts.
@@ -135,7 +127,6 @@ def _compute_provenance_hash(*parts: str) -> str:
     combined = "|".join(str(p) for p in parts)
     return hashlib.sha256(combined.encode("utf-8")).hexdigest()
 
-
 def _generate_request_id() -> str:
     """Generate a unique request identifier.
 
@@ -144,11 +135,9 @@ def _generate_request_id() -> str:
     """
     return f"LUC-{uuid.uuid4().hex[:12]}"
 
-
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class LandUseChangeConfig:
@@ -370,14 +359,12 @@ class LandUseChangeConfig:
             "health_check_interval_seconds": self.health_check_interval_seconds,
         }
 
-
 # ---------------------------------------------------------------------------
 # Config singleton
 # ---------------------------------------------------------------------------
 
 _config_instance: Optional[LandUseChangeConfig] = None
 _config_lock = threading.Lock()
-
 
 def get_config() -> LandUseChangeConfig:
     """Return the singleton LandUseChangeConfig, creating from env if needed.
@@ -392,7 +379,6 @@ def get_config() -> LandUseChangeConfig:
                 _config_instance = LandUseChangeConfig.from_env()
     return _config_instance
 
-
 def set_config(config: LandUseChangeConfig) -> None:
     """Replace the singleton LandUseChangeConfig.
 
@@ -404,7 +390,6 @@ def set_config(config: LandUseChangeConfig) -> None:
         _config_instance = config
     logger.info("LandUseChangeConfig replaced programmatically")
 
-
 def reset_config() -> None:
     """Reset the singleton LandUseChangeConfig to None.
 
@@ -415,11 +400,9 @@ def reset_config() -> None:
         _config_instance = None
     logger.debug("LandUseChangeConfig singleton reset")
 
-
 # ---------------------------------------------------------------------------
 # Health status model
 # ---------------------------------------------------------------------------
-
 
 class HealthStatus:
     """Health check result container.
@@ -444,7 +427,7 @@ class HealthStatus:
     ) -> None:
         self.status = status
         self.checks = checks or {}
-        self.timestamp = timestamp or _utcnow()
+        self.timestamp = timestamp or utcnow()
         self.version = version
         self.uptime_seconds = uptime_seconds
 
@@ -458,11 +441,9 @@ class HealthStatus:
             "uptime_seconds": round(self.uptime_seconds, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container classes
 # ---------------------------------------------------------------------------
-
 
 class LandUseClassificationResult:
     """Result from a single land use classification operation.
@@ -520,7 +501,6 @@ class LandUseClassificationResult:
             "provenance_hash": self.provenance_hash,
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
-
 
 class TransitionResult:
     """Result from a transition detection operation.
@@ -587,7 +567,6 @@ class TransitionResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 class TrajectoryResult:
     """Result from a temporal trajectory analysis.
 
@@ -631,7 +610,6 @@ class TrajectoryResult:
             "provenance_hash": self.provenance_hash,
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
-
 
 class CutoffVerificationResult:
     """Result from a cutoff date compliance verification.
@@ -690,7 +668,6 @@ class CutoffVerificationResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 class CroplandConversionResult:
     """Result from a cropland expansion detection.
 
@@ -744,7 +721,6 @@ class CroplandConversionResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 class ConversionRiskResult:
     """Result from a conversion risk assessment.
 
@@ -792,7 +768,6 @@ class ConversionRiskResult:
             "provenance_hash": self.provenance_hash,
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
-
 
 class UrbanEncroachmentResult:
     """Result from an urban encroachment analysis.
@@ -843,7 +818,6 @@ class UrbanEncroachmentResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 class ComplianceReportResult:
     """Result from compliance report generation.
 
@@ -880,7 +854,7 @@ class ComplianceReportResult:
         self.format = format
         self.plot_count = plot_count
         self.content = content
-        self.generated_at = generated_at or _utcnow()
+        self.generated_at = generated_at or utcnow()
         self.provenance_hash = provenance_hash
         self.processing_time_ms = processing_time_ms
 
@@ -896,7 +870,6 @@ class ComplianceReportResult:
             "provenance_hash": self.provenance_hash,
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
-
 
 class BatchJobResult:
     """Result container for a batch processing job.
@@ -937,7 +910,7 @@ class BatchJobResult:
         self.total_items = total_items
         self.completed_items = completed_items
         self.failed_items = failed_items
-        self.submitted_at = submitted_at or _utcnow()
+        self.submitted_at = submitted_at or utcnow()
         self.completed_at = completed_at
         self.processing_time_ms = processing_time_ms
 
@@ -955,11 +928,9 @@ class BatchJobResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # LandUseChangeService
 # ---------------------------------------------------------------------------
-
 
 class LandUseChangeService:
     """Facade for the Land Use Change Detector Agent (AGENT-EUDR-005).
@@ -1916,7 +1887,7 @@ class LandUseChangeService:
             request_id, latitude, longitude, commodity,
         )
 
-        today_str = _utcnow().strftime("%Y-%m-%d")
+        today_str = utcnow().strftime("%Y-%m-%d")
 
         # Run all engines with safe wrappers
         classification = self._safe_call(
@@ -1974,7 +1945,7 @@ class LandUseChangeService:
                 self._config.cutoff_date, today_str,
             ),
             "processing_time_ms": round(elapsed_ms, 2),
-            "verified_at": _utcnow().isoformat(),
+            "verified_at": utcnow().isoformat(),
         }
 
         logger.info(
@@ -2497,7 +2468,7 @@ class LandUseChangeService:
             )
             with self._batch_lock:
                 job.status = "failed"
-                job.completed_at = _utcnow()
+                job.completed_at = utcnow()
             return job
 
         elapsed_ms = (time.monotonic() - start) * 1000
@@ -2506,7 +2477,7 @@ class LandUseChangeService:
             job.status = "completed"
             job.completed_items = completed
             job.failed_items = failed
-            job.completed_at = _utcnow()
+            job.completed_at = utcnow()
             job.processing_time_ms = elapsed_ms
 
         logger.info(
@@ -2552,7 +2523,7 @@ class LandUseChangeService:
             if job.status in ("completed", "failed", "cancelled"):
                 return False
             job.status = "cancelled"
-            job.completed_at = _utcnow()
+            job.completed_at = utcnow()
 
         logger.info("Batch job cancelled: id=%s", job_id)
         return True
@@ -2591,7 +2562,7 @@ class LandUseChangeService:
         health = HealthStatus(
             status=overall,
             checks=checks,
-            timestamp=_utcnow(),
+            timestamp=utcnow(),
             version="1.0.0",
             uptime_seconds=self.uptime_seconds,
         )
@@ -3239,11 +3210,9 @@ class LandUseChangeService:
         ]
         return sum(1 for e in engines if e is not None)
 
-
 # ---------------------------------------------------------------------------
 # FastAPI lifespan context manager
 # ---------------------------------------------------------------------------
-
 
 @asynccontextmanager
 async def lifespan(app: Any) -> AsyncIterator[None]:
@@ -3257,6 +3226,7 @@ async def lifespan(app: Any) -> AsyncIterator[None]:
 
         from fastapi import FastAPI
         from greenlang.agents.eudr.land_use_change.setup import lifespan
+from greenlang.schemas import utcnow
 
         app = FastAPI(lifespan=lifespan)
 
@@ -3274,14 +3244,12 @@ async def lifespan(app: Any) -> AsyncIterator[None]:
     finally:
         await service.shutdown()
 
-
 # ---------------------------------------------------------------------------
 # Thread-safe singleton accessor
 # ---------------------------------------------------------------------------
 
 _service_instance: Optional[LandUseChangeService] = None
 _service_lock = threading.Lock()
-
 
 def get_service(
     config: Optional[LandUseChangeConfig] = None,
@@ -3309,7 +3277,6 @@ def get_service(
                 _service_instance = LandUseChangeService(config=config)
     return _service_instance
 
-
 def set_service(service: LandUseChangeService) -> None:
     """Replace the singleton LandUseChangeService instance.
 
@@ -3323,7 +3290,6 @@ def set_service(service: LandUseChangeService) -> None:
         _service_instance = service
     logger.info("LandUseChangeService singleton replaced")
 
-
 def reset_service() -> None:
     """Reset the singleton LandUseChangeService to None.
 
@@ -3334,7 +3300,6 @@ def reset_service() -> None:
     with _service_lock:
         _service_instance = None
     logger.debug("LandUseChangeService singleton reset")
-
 
 # ---------------------------------------------------------------------------
 # Public API

@@ -35,35 +35,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "21.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a single workflow phase."""
@@ -74,7 +66,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -84,7 +75,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class SBTiPathway(str, Enum):
     """SBTi target-setting pathways."""
 
@@ -92,13 +82,11 @@ class SBTiPathway(str, Enum):
     SDA = "sectoral_decarbonisation"
     FLAG = "forest_land_agriculture"
 
-
 class AmbitionLevel(str, Enum):
     """Target ambition levels."""
 
     CELSIUS_1_5 = "1.5C"
     WELL_BELOW_2 = "WB2C"
-
 
 class TargetType(str, Enum):
     """Target time horizon types."""
@@ -106,14 +94,12 @@ class TargetType(str, Enum):
     NEAR_TERM = "near_term"
     LONG_TERM = "long_term"
 
-
 class ValidationSeverity(str, Enum):
     """Validation finding severity."""
 
     PASS = "pass"
     WARNING = "warning"
     FAIL = "fail"
-
 
 # =============================================================================
 # SBTi REFERENCE DATA (Zero-Hallucination, from SBTi NZ Standard v1.2)
@@ -192,11 +178,9 @@ SDA_INTENSITY_BENCHMARKS_2030: Dict[str, Dict[str, Any]] = {
 # FLAG sectors requiring FLAG target
 FLAG_SECTORS = {"agriculture", "forestry", "food_and_beverage"}
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -208,7 +192,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class BaselineEmissions(BaseModel):
     """Baseline emissions for target-setting context."""
@@ -222,7 +205,6 @@ class BaselineEmissions(BaseModel):
     flag_emissions_tco2e: float = Field(default=0.0, ge=0.0, description="FLAG-related emissions")
     intensity_metric: Optional[str] = Field(None, description="e.g. tCO2e/revenue")
     intensity_value: Optional[float] = Field(None, ge=0.0)
-
 
 class TargetSettingConfig(BaseModel):
     """Configuration for the target setting workflow."""
@@ -245,7 +227,6 @@ class TargetSettingConfig(BaseModel):
             raise ValueError("ambition_level must be '1.5C' or 'WB2C'")
         return v
 
-
 class SectorAnalysisResult(BaseModel):
     """Output of sector analysis phase."""
 
@@ -258,7 +239,6 @@ class SectorAnalysisResult(BaseModel):
     sda_benchmark: Optional[Dict[str, Any]] = Field(None)
     scope3_significant: bool = Field(default=False, description="Scope 3 > 40% of total")
 
-
 class PathwayDetail(BaseModel):
     """Details of the selected pathway."""
 
@@ -266,7 +246,6 @@ class PathwayDetail(BaseModel):
     ambition_level: str = Field(default="1.5C")
     annual_reduction_rate_pct: float = Field(default=4.2)
     rationale: str = Field(default="")
-
 
 class TargetDefinition(BaseModel):
     """A single target definition (near-term or long-term)."""
@@ -284,7 +263,6 @@ class TargetDefinition(BaseModel):
     pathway: str = Field(default="absolute_contraction")
     ambition_level: str = Field(default="1.5C")
 
-
 class Milestone(BaseModel):
     """Interim milestone on the reduction trajectory."""
 
@@ -293,7 +271,6 @@ class Milestone(BaseModel):
     reduction_from_base_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     label: str = Field(default="")
 
-
 class ValidationFinding(BaseModel):
     """A single SBTi validation finding."""
 
@@ -301,7 +278,6 @@ class ValidationFinding(BaseModel):
     description: str = Field(default="")
     severity: ValidationSeverity = Field(default=ValidationSeverity.PASS)
     detail: str = Field(default="")
-
 
 class ValidationReport(BaseModel):
     """Full SBTi validation report."""
@@ -312,7 +288,6 @@ class ValidationReport(BaseModel):
     warning_count: int = Field(default=0)
     fail_count: int = Field(default=0)
     sbti_standard_version: str = Field(default="Net-Zero Standard v1.2")
-
 
 class TargetSettingResult(BaseModel):
     """Complete result from the target setting workflow."""
@@ -331,11 +306,9 @@ class TargetSettingResult(BaseModel):
     validation_results: ValidationReport = Field(default_factory=ValidationReport)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class TargetSettingWorkflow:
     """
@@ -387,7 +360,7 @@ class TargetSettingWorkflow:
         Returns:
             TargetSettingResult with targets, milestones, and validation.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting target setting workflow %s, sector=%s, ambition=%s",
             self.workflow_id, config.sector, config.ambition_level,
@@ -418,7 +391,7 @@ class TargetSettingWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         targets = []
         if self._near_term:
             targets.append(self._near_term)
@@ -454,7 +427,7 @@ class TargetSettingWorkflow:
 
     async def _phase_sector_analysis(self, config: TargetSettingConfig) -> PhaseResult:
         """Determine sector classification, applicable pathways, FLAG relevance."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -498,7 +471,7 @@ class TargetSettingWorkflow:
         outputs["sda_available"] = sda_available
         outputs["scope3_significant"] = scope3_significant
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Sector analysis: %s, pathways=%s, FLAG=%s", sector, applicable, flag_relevant)
         return PhaseResult(
             phase_name="sector_analysis",
@@ -515,7 +488,7 @@ class TargetSettingWorkflow:
 
     async def _phase_pathway_selection(self, config: TargetSettingConfig) -> PhaseResult:
         """Select SBTi pathway and determine required reduction rates."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -556,7 +529,7 @@ class TargetSettingWorkflow:
         outputs["ambition_level"] = ambition
         outputs["annual_reduction_rate_pct"] = rate
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Pathway selected: %s at %s (%.1f%%/yr)", pathway, ambition, rate)
         return PhaseResult(
             phase_name="pathway_selection",
@@ -595,7 +568,7 @@ class TargetSettingWorkflow:
 
     async def _phase_target_definition(self, config: TargetSettingConfig) -> PhaseResult:
         """Define near-term and long-term targets with scope coverage."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -665,7 +638,7 @@ class TargetSettingWorkflow:
         outputs["long_term_target_tco2e"] = self._long_term.target_emissions_tco2e
         outputs["milestone_count"] = len(self._milestones)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Targets defined: NT %d (-%.1f%%), LT %d (-%.1f%%)",
             nt_year, nt_reduction_pct, lt_year, lt_reduction_pct,
@@ -706,7 +679,7 @@ class TargetSettingWorkflow:
 
     async def _phase_validation(self, config: TargetSettingConfig) -> PhaseResult:
         """Validate targets against SBTi Net-Zero Standard v1.2."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         findings: List[ValidationFinding] = []
 
@@ -742,7 +715,7 @@ class TargetSettingWorkflow:
         outputs["warning_count"] = warn_count
         outputs["fail_count"] = fail_count
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Validation: valid=%s, pass=%d, warn=%d, fail=%d",
             overall_valid, pass_count, warn_count, fail_count,

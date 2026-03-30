@@ -22,7 +22,8 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase
 
 
 # ---------------------------------------------------------------------------
@@ -177,7 +178,7 @@ SUPPORTED_COMMODITIES: List[str] = [c.value for c in EUDRCommodity]
 # ---------------------------------------------------------------------------
 
 
-class RiskTrigger(BaseModel):
+class RiskTrigger(GreenLangBase):
     """Upstream risk assessment result that triggers mitigation design.
 
     Captures the composite risk score and per-dimension breakdown
@@ -202,7 +203,7 @@ class RiskTrigger(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class MeasureTemplate(BaseModel):
+class MeasureTemplate(GreenLangBase):
     """Reusable template for a mitigation measure.
 
     Templates define the standard structure for mitigation measures
@@ -243,7 +244,7 @@ class MeasureTemplate(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class MitigationMeasure(BaseModel):
+class MitigationMeasure(GreenLangBase):
     """A single mitigation measure within a strategy.
 
     Tracks the full lifecycle from proposal through verification,
@@ -290,7 +291,7 @@ class MitigationMeasure(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class MitigationStrategy(BaseModel):
+class MitigationStrategy(GreenLangBase):
     """Collection of mitigation measures forming a coherent strategy.
 
     Designed to reduce the composite risk score from pre-mitigation
@@ -324,7 +325,7 @@ class MitigationStrategy(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class EffectivenessEstimate(BaseModel):
+class EffectivenessEstimate(GreenLangBase):
     """Three-scenario effectiveness projection for a measure.
 
     Provides conservative, moderate, and optimistic estimates of
@@ -359,7 +360,7 @@ class EffectivenessEstimate(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class VerificationReport(BaseModel):
+class VerificationReport(GreenLangBase):
     """Post-implementation verification of mitigation effectiveness.
 
     Compares pre- and post-mitigation risk scores to determine
@@ -387,7 +388,7 @@ class VerificationReport(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class WorkflowState(BaseModel):
+class WorkflowState(GreenLangBase):
     """Top-level workflow state for the mitigation lifecycle.
 
     Tracks the overall workflow from initiation through closure,
@@ -414,7 +415,7 @@ class WorkflowState(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class ImplementationMilestone(BaseModel):
+class ImplementationMilestone(GreenLangBase):
     """A milestone within a mitigation measure implementation.
 
     Tracks intermediate deliverables and checkpoints during
@@ -434,7 +435,7 @@ class ImplementationMilestone(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class MeasureEvidence(BaseModel):
+class MeasureEvidence(GreenLangBase):
     """Evidence item supporting mitigation measure completion.
 
     Documents, certificates, audit reports, satellite imagery,
@@ -456,7 +457,7 @@ class MeasureEvidence(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class MeasureSummary(BaseModel):
+class MeasureSummary(GreenLangBase):
     """Summary of a single measure for inclusion in reports."""
 
     measure_id: str
@@ -469,7 +470,7 @@ class MeasureSummary(BaseModel):
     actual_risk_reduction: Optional[Decimal] = None
 
 
-class MitigationReport(BaseModel):
+class MitigationReport(GreenLangBase):
     """Complete mitigation report for audit and DDS submission.
 
     Summarizes the mitigation strategy, measure outcomes,
@@ -500,7 +501,7 @@ class MitigationReport(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class HealthStatus(BaseModel):
+class HealthStatus(GreenLangBase):
     """Health check response for the Mitigation Measure Designer."""
 
     agent_id: str = AGENT_ID

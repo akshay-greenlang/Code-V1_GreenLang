@@ -72,24 +72,18 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC timestamp with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 provenance hash, excluding volatile fields."""
@@ -107,7 +101,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert any value to Decimal."""
     if isinstance(value, Decimal):
@@ -116,7 +109,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -128,21 +120,17 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> Decimal:
     """Round a value to two decimal places using ROUND_HALF_UP."""
     return Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-
 
 def _round4(value: Any) -> Decimal:
     """Round a value to four decimal places using ROUND_HALF_UP."""
     return Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class TransferType(str, Enum):
     """Types of intra-group transfers that may cause double-counting."""
@@ -156,7 +144,6 @@ class TransferType(str, Enum):
     TRANSPORT = "TRANSPORT"
     OTHER = "OTHER"
 
-
 class EliminationScope(str, Enum):
     """Emission scope from which the elimination is deducted."""
     SCOPE_1 = "SCOPE_1"
@@ -164,14 +151,12 @@ class EliminationScope(str, Enum):
     SCOPE_2_MARKET = "SCOPE_2_MARKET"
     SCOPE_3 = "SCOPE_3"
 
-
 class ReconciliationStatus(str, Enum):
     """Reconciliation outcome between seller and buyer records."""
     RECONCILED = "RECONCILED"
     VARIANCE = "VARIANCE"
     UNRECONCILED = "UNRECONCILED"
     PENDING = "PENDING"
-
 
 # ---------------------------------------------------------------------------
 # Default Configuration
@@ -190,11 +175,9 @@ DEFAULT_TRANSFER_TYPE_SCOPE_MAP: Dict[str, str] = {
     TransferType.OTHER.value: EliminationScope.SCOPE_3.value,
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class TransferRecord(BaseModel):
     """A single intra-group transfer between two entities.
@@ -272,7 +255,7 @@ class TransferRecord(BaseModel):
         description="Reference to supporting documentation.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the transfer was registered.",
     )
     provenance_hash: str = Field(
@@ -295,7 +278,6 @@ class TransferRecord(BaseModel):
         if v.upper() not in valid:
             logger.warning("Transfer type '%s' not standard; accepted.", v)
         return v.upper()
-
 
 class EliminationEntry(BaseModel):
     """A single double-counting elimination entry.
@@ -350,7 +332,7 @@ class EliminationEntry(BaseModel):
         description="Explanation for the elimination.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the elimination was calculated.",
     )
     provenance_hash: str = Field(
@@ -364,7 +346,6 @@ class EliminationEntry(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Any:
         return Decimal(str(v))
-
 
 class TransferReconciliation(BaseModel):
     """Reconciliation result for a single transfer.
@@ -431,7 +412,6 @@ class TransferReconciliation(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Any:
         return Decimal(str(v))
 
-
 class EliminationResult(BaseModel):
     """Aggregated result of all eliminations for a reporting period.
 
@@ -494,7 +474,7 @@ class EliminationResult(BaseModel):
         description="Number of transfers with variance outside tolerance.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When this result was generated.",
     )
     provenance_hash: str = Field(
@@ -510,11 +490,9 @@ class EliminationResult(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Any:
         return Decimal(str(v))
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class IntercompanyEliminationEngine:
     """Eliminates double-counted emissions from intra-group transfers.

@@ -34,9 +34,10 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -108,7 +109,7 @@ class PeriodType(str, Enum):
 # PYDANTIC MODELS
 # =============================================================================
 
-class GridEmissionFactor(BaseModel):
+class GridEmissionFactor(GreenLangBase):
     """Grid emission factor."""
     region: str = Field(..., description="Grid region code")
     year: int = Field(..., description="Factor year")
@@ -121,7 +122,7 @@ class GridEmissionFactor(BaseModel):
     effective_date: date = Field(...)
 
 
-class HourlyEmissionFactor(BaseModel):
+class HourlyEmissionFactor(GreenLangBase):
     """Hourly marginal emission factor."""
     region: str = Field(...)
     timestamp: datetime = Field(...)
@@ -130,7 +131,7 @@ class HourlyEmissionFactor(BaseModel):
     source: str = Field(default="WattTime")
 
 
-class RatePeriod(BaseModel):
+class RatePeriod(GreenLangBase):
     """Rate period definition."""
     period_type: PeriodType = Field(...)
     start_hour: int = Field(..., ge=0, le=23)
@@ -140,7 +141,7 @@ class RatePeriod(BaseModel):
     months: Optional[List[int]] = Field(None, description="Applicable months")
 
 
-class UtilityTariff(BaseModel):
+class UtilityTariff(GreenLangBase):
     """Utility tariff structure."""
     tariff_id: str = Field(...)
     utility_name: str = Field(...)
@@ -156,7 +157,7 @@ class UtilityTariff(BaseModel):
     currency: str = Field(default="USD")
 
 
-class RECertificate(BaseModel):
+class RECertificate(GreenLangBase):
     """Renewable Energy Certificate."""
     rec_id: str = Field(...)
     vintage_year: int = Field(...)
@@ -170,7 +171,7 @@ class RECertificate(BaseModel):
     retired_for: Optional[str] = Field(None)
 
 
-class EmissionsCalculation(BaseModel):
+class EmissionsCalculation(GreenLangBase):
     """Emissions calculation result."""
     calculation_id: str = Field(...)
     location_id: str = Field(...)
@@ -186,7 +187,7 @@ class EmissionsCalculation(BaseModel):
     provenance_hash: str = Field(...)
 
 
-class TariffQueryInput(BaseModel):
+class TariffQueryInput(GreenLangBase):
     """Input for tariff/factor query."""
     query_type: str = Field(...)  # factors, tariffs, calculate, recs
     region: Optional[str] = Field(None)
@@ -198,7 +199,7 @@ class TariffQueryInput(BaseModel):
     location_id: Optional[str] = Field(None)
 
 
-class TariffQueryOutput(BaseModel):
+class TariffQueryOutput(GreenLangBase):
     """Output from tariff/factor query."""
     query_type: str = Field(...)
     emission_factors: List[GridEmissionFactor] = Field(default_factory=list)

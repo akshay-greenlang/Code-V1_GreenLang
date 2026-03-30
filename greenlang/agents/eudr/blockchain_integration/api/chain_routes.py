@@ -31,6 +31,7 @@ from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.blockchain_integration.api.dependencies import (
     AuthUser,
@@ -94,21 +95,13 @@ _TOKEN_PRICES_USD: Dict[str, Decimal] = {
     "besu": Decimal("3500.00"),
 }
 
-
 def _get_chain_store() -> Dict[str, Dict]:
     """Return the chain connection store singleton."""
     return _chain_store
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ---------------------------------------------------------------------------
 # POST /chains/connect
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/chains/connect",
@@ -150,7 +143,7 @@ async def connect_chain(
     start = time.monotonic()
     try:
         chain_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         confirmation_depth = (
             body.confirmation_depth
@@ -193,11 +186,9 @@ async def connect_chain(
             detail="Failed to connect to blockchain network",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /chains/{chain_id}/status
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/chains/{chain_id}/status",
@@ -245,7 +236,7 @@ async def get_chain_status(
             )
 
         # Update heartbeat
-        record["last_heartbeat"] = _utcnow()
+        record["last_heartbeat"] = utcnow()
 
         return ChainStatusResponse(**record)
 
@@ -263,11 +254,9 @@ async def get_chain_status(
             detail="Failed to retrieve chain status",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /chains
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/chains",
@@ -318,11 +307,9 @@ async def list_chains(
             detail="Failed to list connected chains",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /chains/{chain_id}/estimate-gas
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/chains/{chain_id}/estimate-gas",
@@ -433,7 +420,7 @@ async def estimate_gas(
             cost_estimate_usd=round(cost_usd, 6),
             cost_estimate_native=round(cost_native, 12),
             native_token=native_token,
-            estimated_at=_utcnow(),
+            estimated_at=utcnow(),
         )
 
     except HTTPException:
@@ -449,7 +436,6 @@ async def estimate_gas(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to estimate gas",
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

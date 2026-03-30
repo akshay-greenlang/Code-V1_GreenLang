@@ -85,25 +85,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -121,7 +115,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -130,7 +123,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -142,17 +134,14 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
@@ -160,11 +149,9 @@ def _round3(value: float) -> float:
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class Scope3Category(str, Enum):
     """GHG Protocol Scope 3 categories (1-15)."""
@@ -184,14 +171,12 @@ class Scope3Category(str, Enum):
     CAT_14 = "cat_14_franchises"
     CAT_15 = "cat_15_investments"
 
-
 class CalculationMethod(str, Enum):
     """Calculation methodology used for a category."""
     ACTIVITY_BASED = "activity_based"
     SPEND_BASED = "spend_based"
     HYBRID = "hybrid"
     SUPPLIER_SPECIFIC = "supplier_specific"
-
 
 class TransportMode(str, Enum):
     """Transport mode for categories 4 and 9."""
@@ -203,7 +188,6 @@ class TransportMode(str, Enum):
     AIR_FREIGHT = "air_freight"
     INLAND_WATER = "inland_water"
 
-
 class WasteType(str, Enum):
     """Waste type for category 5."""
     GENERAL_LANDFILL = "general_landfill"
@@ -214,7 +198,6 @@ class WasteType(str, Enum):
     WASTEWATER = "wastewater"
     HAZARDOUS = "hazardous"
 
-
 class TravelMode(str, Enum):
     """Business travel mode for category 6."""
     AIR_SHORT_HAUL = "air_short_haul"
@@ -224,7 +207,6 @@ class TravelMode(str, Enum):
     CAR_RENTAL = "car_rental"
     TAXI = "taxi"
     HOTEL_NIGHT = "hotel_night"
-
 
 class CommuteMode(str, Enum):
     """Commuting mode for category 7."""
@@ -238,7 +220,6 @@ class CommuteMode(str, Enum):
     BICYCLE = "bicycle"
     WALK = "walk"
     MOTORCYCLE = "motorcycle"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Emission Factors
@@ -386,11 +367,9 @@ CATEGORY_NAMES: Dict[str, str] = {
     "cat_15_investments": "Cat 15: Investments",
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class PurchasedGoodEntry(BaseModel):
     """Purchased goods activity data for Cat 1."""
@@ -398,13 +377,11 @@ class PurchasedGoodEntry(BaseModel):
     quantity_kg: Decimal = Field(..., ge=Decimal("0"))
     custom_factor_kgco2e_per_kg: Optional[Decimal] = Field(None, ge=Decimal("0"))
 
-
 class FuelEnergyEntry(BaseModel):
     """Fuel/energy-related data for Cat 3."""
     fuel_type: str = Field(..., description="Fuel type key")
     quantity: Decimal = Field(..., ge=Decimal("0"))
     unit: str = Field(default="kwh", description="kwh or litre")
-
 
 class TransportEntry(BaseModel):
     """Transport activity data for Cat 4 and 9."""
@@ -412,12 +389,10 @@ class TransportEntry(BaseModel):
     tonnes: Decimal = Field(..., ge=Decimal("0"))
     distance_km: Decimal = Field(..., ge=Decimal("0"))
 
-
 class WasteEntry(BaseModel):
     """Waste data for Cat 5."""
     waste_type: WasteType = Field(...)
     quantity_tonnes: Decimal = Field(..., ge=Decimal("0"))
-
 
 class TravelEntry(BaseModel):
     """Business travel data for Cat 6."""
@@ -425,13 +400,11 @@ class TravelEntry(BaseModel):
     distance_km: Optional[Decimal] = Field(None, ge=Decimal("0"))
     nights: Optional[int] = Field(None, ge=0)
 
-
 class CommuteProfile(BaseModel):
     """Employee commuting profile for Cat 7."""
     mode: CommuteMode = Field(...)
     employee_pct: Decimal = Field(..., ge=Decimal("0"), le=Decimal("100"))
     avg_distance_km_one_way: Decimal = Field(default=Decimal("15"), ge=Decimal("0"))
-
 
 class UseOfSoldEntry(BaseModel):
     """Use-of-sold-products data for Cat 11."""
@@ -441,7 +414,6 @@ class UseOfSoldEntry(BaseModel):
     uses_per_lifetime: Decimal = Field(..., ge=Decimal("0"))
     grid_region: str = Field(default="GLOBAL_AVG")
 
-
 class EndOfLifeEntry(BaseModel):
     """End-of-life treatment data for Cat 12."""
     product_name: str = Field(default="")
@@ -449,13 +421,11 @@ class EndOfLifeEntry(BaseModel):
     weight_per_unit_kg: Decimal = Field(..., ge=Decimal("0"))
     treatment_type: WasteType = Field(default=WasteType.GENERAL_LANDFILL)
 
-
 class SpendFallbackEntry(BaseModel):
     """Spend-based fallback for non-activity categories."""
     category: Scope3Category = Field(...)
     spend_usd_thousands: Decimal = Field(..., ge=Decimal("0"))
     custom_factor: Optional[Decimal] = Field(None, ge=Decimal("0"))
-
 
 class Scope3ActivityInput(BaseModel):
     """Complete input for activity-based Scope 3 calculation.
@@ -504,11 +474,9 @@ class Scope3ActivityInput(BaseModel):
         description="Grid factor for use-phase calculations",
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class CategoryResult(BaseModel):
     """Emission result for a single Scope 3 category.
@@ -532,7 +500,6 @@ class CategoryResult(BaseModel):
     is_material: bool = Field(default=False)
     entry_count: int = Field(default=0)
 
-
 class MethodComparison(BaseModel):
     """Comparison between activity-based and spend-based results.
 
@@ -550,7 +517,6 @@ class MethodComparison(BaseModel):
     delta_tco2e: Decimal = Field(default=Decimal("0"))
     delta_pct: Decimal = Field(default=Decimal("0"))
     materiality_flag: bool = Field(default=False)
-
 
 class Scope3ActivityResult(BaseModel):
     """Complete activity-based Scope 3 result.
@@ -577,7 +543,7 @@ class Scope3ActivityResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     reporting_year: int = Field(default=0)
     category_emissions: List[CategoryResult] = Field(default_factory=list)
@@ -594,11 +560,9 @@ class Scope3ActivityResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class Scope3ActivityEngine:
     """Activity-based Scope 3 emission calculation engine.

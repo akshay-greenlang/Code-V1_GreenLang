@@ -38,25 +38,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -69,11 +63,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class Scope3DataSource(str, Enum):
     """Scope 3 data source types."""
@@ -91,7 +83,6 @@ class Scope3DataSource(str, Enum):
     ERP_AP = "erp_accounts_payable"
     MANUAL_ENTRY = "manual_entry"
 
-
 class DataFormat(str, Enum):
     """Supported input data formats."""
 
@@ -101,7 +92,6 @@ class DataFormat(str, Enum):
     JSON = "json"
     XML = "xml"
     API = "api"
-
 
 class DataAgentTarget(str, Enum):
     """Target DATA agent identifiers for Scope 3."""
@@ -114,7 +104,6 @@ class DataAgentTarget(str, Enum):
     DATA_010 = "DATA-010"
     DATA_018 = "DATA-018"
 
-
 class QualityLevel(str, Enum):
     """Data quality assessment levels."""
 
@@ -123,11 +112,9 @@ class QualityLevel(str, Enum):
     LOW = "low"
     INSUFFICIENT = "insufficient"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class DataRouteConfig(BaseModel):
     """Configuration for routing data to a DATA agent."""
@@ -141,7 +128,6 @@ class DataRouteConfig(BaseModel):
     batch_size: int = Field(default=1000, ge=1)
     timeout_seconds: int = Field(default=120, ge=10)
 
-
 class DataRequest(BaseModel):
     """Request to ingest or process Scope 3 data."""
 
@@ -154,8 +140,7 @@ class DataRequest(BaseModel):
     reporting_year: int = Field(default=2025)
     scope3_category: str = Field(default="")
     quality_check: bool = Field(default=True)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class DataResponse(BaseModel):
     """Response from DATA agent processing."""
@@ -173,8 +158,7 @@ class DataResponse(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
     processing_time_ms: float = Field(default=0.0)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class QualityReport(BaseModel):
     """Data quality profiling report for Scope 3 data."""
@@ -194,8 +178,7 @@ class QualityReport(BaseModel):
     issues: List[Dict[str, Any]] = Field(default_factory=list)
     recommendations: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class LineageRecord(BaseModel):
     """Data lineage tracking record."""
@@ -210,13 +193,11 @@ class LineageRecord(BaseModel):
     record_count: int = Field(default=0)
     input_hash: str = Field(default="")
     output_hash: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # DataBridge
 # ---------------------------------------------------------------------------
-
 
 class DataBridge:
     """Bridge between Scope 3 data operations and DATA agents.
@@ -491,7 +472,7 @@ class DataBridge:
         output_hash = _compute_hash({
             "inventory": inventory_id,
             "input_hash": input_hash,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         })
 
         record = LineageRecord(

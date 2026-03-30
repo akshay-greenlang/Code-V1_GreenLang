@@ -48,25 +48,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -79,11 +73,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class MRVScope(str, Enum):
     """MRV agent scope grouping."""
@@ -92,7 +84,6 @@ class MRVScope(str, Enum):
     SCOPE_2 = "scope_2"
     SCOPE_3 = "scope_3"
     CROSS_CUTTING = "cross_cutting"
-
 
 # ---------------------------------------------------------------------------
 # Agent Maps
@@ -135,11 +126,9 @@ AGENT_DESCRIPTIONS: Dict[str, str] = {
     "MRV-029": "Category Mapper", "MRV-030": "Audit Trail Lineage",
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class MRVBridgeConfig(BaseModel):
     """Configuration for MRV bridge."""
@@ -154,7 +143,6 @@ class MRVBridgeConfig(BaseModel):
         True, description="Provide group context to MRV agents for boundary awareness",
     )
 
-
 class MRVScopeBreakdown(BaseModel):
     """Emission breakdown for a single scope at an entity."""
 
@@ -164,7 +152,6 @@ class MRVScopeBreakdown(BaseModel):
     agents_queried: int = 0
     agents_with_data: int = 0
     provenance_hash: str = ""
-
 
 class MRVEntityEmissions(BaseModel):
     """Complete emission profile for a single entity from MRV agents."""
@@ -187,7 +174,6 @@ class MRVEntityEmissions(BaseModel):
     retrieved_at: str = ""
     duration_ms: float = 0.0
 
-
 class BatchEntityResult(BaseModel):
     """Result of batch emission calculation across all entities."""
 
@@ -204,7 +190,6 @@ class BatchEntityResult(BaseModel):
     provenance_hash: str = ""
     duration_ms: float = 0.0
 
-
 class GroupContext(BaseModel):
     """Group context provided to MRV agents for boundary awareness."""
 
@@ -214,11 +199,9 @@ class GroupContext(BaseModel):
     entity_count: int = 0
     boundary_locked: bool = False
 
-
 # ---------------------------------------------------------------------------
 # Bridge Implementation
 # ---------------------------------------------------------------------------
-
 
 class MRVBridge:
     """
@@ -360,7 +343,7 @@ class MRVBridge:
                 "scope3": scope3.total_tco2e,
                 "equity_pct": equity_share_pct,
             }),
-            retrieved_at=_utcnow().isoformat(),
+            retrieved_at=utcnow().isoformat(),
             duration_ms=duration,
         )
 

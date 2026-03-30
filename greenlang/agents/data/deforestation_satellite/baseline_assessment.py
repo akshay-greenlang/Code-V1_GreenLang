@@ -49,6 +49,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 from greenlang.agents.data.deforestation_satellite.config import get_config
+from greenlang.schemas import utcnow
 from greenlang.agents.data.deforestation_satellite.models import (
     BaselineAssessment,
     CheckBaselinePolygonRequest,
@@ -62,21 +63,13 @@ from greenlang.agents.data.deforestation_satellite.models import (
 
 logger = logging.getLogger(__name__)
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _hash_seed(value: str) -> int:
     """Derive a deterministic integer seed from a string value."""
     return int(hashlib.sha256(value.encode("utf-8")).hexdigest()[:8], 16)
-
 
 def _deterministic_float(seed: int, index: int, low: float = 0.0, high: float = 1.0) -> float:
     """Generate a deterministic float in [low, high] from seed and index."""
@@ -84,11 +77,9 @@ def _deterministic_float(seed: int, index: int, low: float = 0.0, high: float = 
     fraction = int(combined[:8], 16) / 0xFFFFFFFF
     return low + fraction * (high - low)
 
-
 # =============================================================================
 # BaselineAssessmentEngine
 # =============================================================================
-
 
 class BaselineAssessmentEngine:
     """Engine for EUDR baseline deforestation-free compliance assessment.
@@ -317,7 +308,7 @@ class BaselineAssessmentEngine:
         lat = request.latitude
         lon = request.longitude
         country = request.country_iso3.upper()
-        obs_date = request.observation_date or _utcnow().strftime("%Y-%m-%d")
+        obs_date = request.observation_date or utcnow().strftime("%Y-%m-%d")
 
         # Get forest definition
         forest_def = self.get_forest_definition(country)
@@ -909,7 +900,6 @@ class BaselineAssessmentEngine:
             Integer count of assessments.
         """
         return self._assessment_count
-
 
 __all__ = [
     "BaselineAssessmentEngine",

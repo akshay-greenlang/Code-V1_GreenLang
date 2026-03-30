@@ -33,14 +33,9 @@ import time
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -52,7 +47,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Conflict Resolution Strategies
@@ -67,7 +61,6 @@ CONFLICT_STRATEGIES = frozenset({
     "merge_unique",     # Merge unique list values
     "error_on_conflict",  # Raise error on conflicting values
 })
-
 
 class ResponseAggregatorEngine:
     """Multi-source response aggregation engine.
@@ -134,7 +127,7 @@ class ResponseAggregatorEngine:
                 "metadata": {"strategy": strategy},
                 "errors": [],
                 "execution_time_ms": 0.0,
-                "created_at": _utcnow().isoformat(),
+                "created_at": utcnow().isoformat(),
             }
 
         if strategy not in CONFLICT_STRATEGIES:
@@ -182,7 +175,7 @@ class ResponseAggregatorEngine:
             },
             "errors": all_errors if all_errors else [],
             "execution_time_ms": round(elapsed_ms, 2),
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
         # Store
@@ -657,7 +650,6 @@ class ResponseAggregatorEngine:
         return {
             "total_aggregations": len(self._aggregations),
         }
-
 
 __all__ = [
     "ResponseAggregatorEngine",

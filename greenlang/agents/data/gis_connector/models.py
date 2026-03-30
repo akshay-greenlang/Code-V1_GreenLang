@@ -33,23 +33,17 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import ConfigDict, Field, field_validator
 
+from greenlang.schemas import GreenLangBase, utcnow
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # =============================================================================
 # Enumerations
 # =============================================================================
-
 
 class GeometryType(str, Enum):
     """Types of geometries supported by the GIS connector.
@@ -66,7 +60,6 @@ class GeometryType(str, Enum):
     MULTIPOLYGON = "multipolygon"
     GEOMETRYCOLLECTION = "geometrycollection"
 
-
 class CRSType(str, Enum):
     """Classification of Coordinate Reference Systems.
 
@@ -78,7 +71,6 @@ class CRSType(str, Enum):
     PROJECTED = "projected"
     LOCAL = "local"
     COMPOUND = "compound"
-
 
 class GeoFormat(str, Enum):
     """Geospatial data interchange formats supported for parsing and export.
@@ -96,7 +88,6 @@ class GeoFormat(str, Enum):
     CSV = "csv"
     TOPOJSON = "topojson"
 
-
 class SpatialOperation(str, Enum):
     """Spatial analysis operations available in the SpatialAnalyzerEngine.
 
@@ -113,7 +104,6 @@ class SpatialOperation(str, Enum):
     CENTROID = "centroid"
     ENVELOPE = "envelope"
     VORONOI = "voronoi"
-
 
 class LandCoverType(str, Enum):
     """CORINE-derived land cover classification types.
@@ -133,7 +123,6 @@ class LandCoverType(str, Enum):
     SHRUBLAND = "shrubland"
     MANGROVE = "mangrove"
 
-
 class BoundaryType(str, Enum):
     """Administrative boundary resolution levels.
 
@@ -148,7 +137,6 @@ class BoundaryType(str, Enum):
     DISTRICT = "district"
     POSTAL_CODE = "postal_code"
 
-
 class DataSourceStatus(str, Enum):
     """Health status of geospatial data sources.
 
@@ -162,7 +150,6 @@ class DataSourceStatus(str, Enum):
     MAINTENANCE = "maintenance"
     ERROR = "error"
 
-
 class LayerVisibility(str, Enum):
     """Visibility levels for managed geospatial layers.
 
@@ -172,7 +159,6 @@ class LayerVisibility(str, Enum):
     PUBLIC = "public"
     PRIVATE = "private"
     RESTRICTED = "restricted"
-
 
 class TransformStatus(str, Enum):
     """Lifecycle status of a CRS transformation or batch operation.
@@ -187,7 +173,6 @@ class TransformStatus(str, Enum):
     FAILED = "failed"
     CANCELLED = "cancelled"
 
-
 class ValidationSeverity(str, Enum):
     """Severity levels for geometry and data validation issues.
 
@@ -200,13 +185,11 @@ class ValidationSeverity(str, Enum):
     ERROR = "error"
     CRITICAL = "critical"
 
-
 # =============================================================================
 # Core Data Models
 # =============================================================================
 
-
-class Coordinate(BaseModel):
+class Coordinate(GreenLangBase):
     """A geographic coordinate with longitude, latitude, and optional altitude.
 
     Validates that longitude is between -180 and 180 and latitude is
@@ -264,8 +247,7 @@ class Coordinate(BaseModel):
             return (self.longitude, self.latitude, self.altitude)
         return (self.longitude, self.latitude)
 
-
-class BoundingBox(BaseModel):
+class BoundingBox(GreenLangBase):
     """Axis-aligned bounding box in geographic coordinates.
 
     Defines a rectangular geographic extent. Validates that min values
@@ -341,8 +323,7 @@ class BoundingBox(BaseModel):
         """
         return [self.min_lon, self.min_lat, self.max_lon, self.max_lat]
 
-
-class Geometry(BaseModel):
+class Geometry(GreenLangBase):
     """Geospatial geometry with type, coordinates, and optional properties.
 
     Represents any of the OGC Simple Features geometry types with
@@ -380,8 +361,7 @@ class Geometry(BaseModel):
             "coordinates": self.coordinates,
         }
 
-
-class Feature(BaseModel):
+class Feature(GreenLangBase):
     """A geospatial feature combining geometry, properties, and CRS.
 
     Represents a single geographic entity with an associated geometry,
@@ -437,8 +417,7 @@ class Feature(BaseModel):
             "crs": self.crs,
         }
 
-
-class GeoLayer(BaseModel):
+class GeoLayer(GreenLangBase):
     """A managed layer containing a collection of geographic features.
 
     Provides a logical grouping of features with metadata, CRS,
@@ -507,8 +486,7 @@ class GeoLayer(BaseModel):
         if not self.created_at:
             self.created_at = datetime.now(timezone.utc).isoformat()
 
-
-class CRSDefinition(BaseModel):
+class CRSDefinition(GreenLangBase):
     """Coordinate Reference System definition with EPSG metadata.
 
     Stores the parameters of a CRS for use in coordinate
@@ -555,8 +533,7 @@ class CRSDefinition(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class SpatialResult(BaseModel):
+class SpatialResult(GreenLangBase):
     """Result of a spatial analysis operation.
 
     Contains output geometry, feature counts, performance metrics,
@@ -613,8 +590,7 @@ class SpatialResult(BaseModel):
         if not self.result_id:
             self.result_id = f"SPR-{uuid.uuid4().hex[:5]}"
 
-
-class LandCoverClassification(BaseModel):
+class LandCoverClassification(GreenLangBase):
     """Land cover classification result for a geographic area.
 
     Contains CORINE-derived classification type, area, confidence,
@@ -671,8 +647,7 @@ class LandCoverClassification(BaseModel):
         if not self.classification_id:
             self.classification_id = f"LCC-{uuid.uuid4().hex[:5]}"
 
-
-class BoundaryResult(BaseModel):
+class BoundaryResult(GreenLangBase):
     """Result of an administrative boundary resolution.
 
     Contains the resolved boundary name, ISO code, geometry, and
@@ -729,8 +704,7 @@ class BoundaryResult(BaseModel):
         if not self.boundary_id:
             self.boundary_id = f"BND-{uuid.uuid4().hex[:5]}"
 
-
-class GeocodingResult(BaseModel):
+class GeocodingResult(GreenLangBase):
     """Result of a geocoding operation (forward or reverse).
 
     Contains the resolved coordinate, address, confidence score,
@@ -782,8 +756,7 @@ class GeocodingResult(BaseModel):
         if not self.geocode_id:
             self.geocode_id = f"GEO-{uuid.uuid4().hex[:5]}"
 
-
-class FormatConversionResult(BaseModel):
+class FormatConversionResult(GreenLangBase):
     """Result of a geospatial format conversion operation.
 
     Contains source and target format information, feature counts,
@@ -840,8 +813,7 @@ class FormatConversionResult(BaseModel):
         if not self.conversion_id:
             self.conversion_id = f"FCV-{uuid.uuid4().hex[:5]}"
 
-
-class TransformResult(BaseModel):
+class TransformResult(GreenLangBase):
     """Result of a CRS transformation operation.
 
     Contains source and target CRS, feature counts, execution
@@ -893,8 +865,7 @@ class TransformResult(BaseModel):
         if not self.transform_id:
             self.transform_id = f"TRF-{uuid.uuid4().hex[:5]}"
 
-
-class GISStatistics(BaseModel):
+class GISStatistics(GreenLangBase):
     """Aggregated statistics for the GIS Connector service.
 
     Provides high-level operational metrics for monitoring the
@@ -951,8 +922,7 @@ class GISStatistics(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class OperationLog(BaseModel):
+class OperationLog(GreenLangBase):
     """Log entry for a single GIS connector operation.
 
     Records the operation type, parameters, result summary,
@@ -1016,13 +986,11 @@ class OperationLog(BaseModel):
         if not self.created_at:
             self.created_at = datetime.now(timezone.utc).isoformat()
 
-
 # =============================================================================
 # Request Models
 # =============================================================================
 
-
-class ParseFormatRequest(BaseModel):
+class ParseFormatRequest(GreenLangBase):
     """Request body for parsing geospatial data from a given format.
 
     Attributes:
@@ -1051,8 +1019,7 @@ class ParseFormatRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class TransformCRSRequest(BaseModel):
+class TransformCRSRequest(GreenLangBase):
     """Request body for transforming features between CRS.
 
     Attributes:
@@ -1081,8 +1048,7 @@ class TransformCRSRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class SpatialAnalysisRequest(BaseModel):
+class SpatialAnalysisRequest(GreenLangBase):
     """Request body for performing a spatial analysis operation.
 
     Attributes:
@@ -1111,8 +1077,7 @@ class SpatialAnalysisRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class GeocodingRequest(BaseModel):
+class GeocodingRequest(GreenLangBase):
     """Request body for a geocoding operation.
 
     Attributes:
@@ -1141,8 +1106,7 @@ class GeocodingRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class LayerCreateRequest(BaseModel):
+class LayerCreateRequest(GreenLangBase):
     """Request body for creating a new geospatial layer.
 
     Attributes:
@@ -1176,8 +1140,7 @@ class LayerCreateRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class BoundaryQueryRequest(BaseModel):
+class BoundaryQueryRequest(GreenLangBase):
     """Request body for querying administrative boundaries.
 
     Attributes:
@@ -1210,7 +1173,6 @@ class BoundaryQueryRequest(BaseModel):
     )
 
     model_config = ConfigDict(extra="forbid")
-
 
 __all__ = [
     # Enumerations

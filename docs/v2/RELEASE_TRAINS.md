@@ -21,3 +21,9 @@
 - no unresolved critical security findings
 - determinism parity green for regulated-critical workflows
 - go/no-go approval recorded
+- EUDR/GHG/ISO14064 backend parity tests green in PR/nightly/RC lanes
+
+## Cycle Evidence
+
+- `docs/v2/RELEASE_TRAIN_CYCLE_LOG.md` records cycle outcomes.
+- Phase 5 exit requires two consecutive green cycles in this log.

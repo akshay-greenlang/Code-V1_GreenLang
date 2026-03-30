@@ -40,35 +40,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "22.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a single workflow phase."""
@@ -79,7 +71,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -88,7 +79,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class CapExCategory(str, Enum):
     """Climate CapEx categories."""
@@ -104,7 +94,6 @@ class CapExCategory(str, Enum):
     PROCESS_CHANGE = "process_change"
     NON_CLIMATE = "non_climate"
 
-
 class TaxonomyObjective(str, Enum):
     """EU Taxonomy environmental objectives."""
 
@@ -114,7 +103,6 @@ class TaxonomyObjective(str, Enum):
     CIRCULAR_ECONOMY = "circular_economy"
     POLLUTION = "pollution_prevention"
     BIODIVERSITY = "biodiversity"
-
 
 # =============================================================================
 # EU TAXONOMY REFERENCE DATA (Zero-Hallucination)
@@ -171,11 +159,9 @@ ICMA_ELIGIBLE_CATEGORIES = {
     "carbon_capture", "electrification",
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -187,7 +173,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class CapExItem(BaseModel):
     """A single capital expenditure item."""
@@ -205,7 +190,6 @@ class CapExItem(BaseModel):
     technology: str = Field(default="")
     facility_id: str = Field(default="")
 
-
 class CapExClassification(BaseModel):
     """Classification result for a CapEx item."""
 
@@ -215,7 +199,6 @@ class CapExClassification(BaseModel):
     category: CapExCategory = Field(default=CapExCategory.NON_CLIMATE)
     is_climate: bool = Field(default=False)
     climate_share_pct: float = Field(default=0.0)
-
 
 class TaxonomyAlignment(BaseModel):
     """EU Taxonomy alignment result for a CapEx item."""
@@ -232,7 +215,6 @@ class TaxonomyAlignment(BaseModel):
     minimum_safeguards: bool = Field(default=True)
     alignment_issues: List[str] = Field(default_factory=list)
 
-
 class BondEligibility(BaseModel):
     """ICMA Green Bond Principles eligibility for a CapEx item."""
 
@@ -245,7 +227,6 @@ class BondEligibility(BaseModel):
     management_proceeds: str = Field(default="")
     reporting_commitment: str = Field(default="")
     issues: List[str] = Field(default_factory=list)
-
 
 class InvestmentCaseResult(BaseModel):
     """Investment case analysis for a CapEx item."""
@@ -264,7 +245,6 @@ class InvestmentCaseResult(BaseModel):
     taxonomy_aligned: bool = Field(default=False)
     bond_eligible: bool = Field(default=False)
 
-
 class TransitionFinanceConfig(BaseModel):
     """Configuration for the transition finance workflow."""
 
@@ -275,7 +255,6 @@ class TransitionFinanceConfig(BaseModel):
     include_dnsh: bool = Field(default=True)
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
-
 
 class TransitionFinanceResult(BaseModel):
     """Complete result from the transition finance workflow."""
@@ -298,11 +277,9 @@ class TransitionFinanceResult(BaseModel):
     total_npv_usd: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class TransitionFinanceWorkflow:
     """
@@ -352,7 +329,7 @@ class TransitionFinanceWorkflow:
             TransitionFinanceResult with classifications, taxonomy alignment,
             bond eligibility, and investment cases.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting transition finance workflow %s, items=%d",
             self.workflow_id, len(config.capex_items),
@@ -383,7 +360,7 @@ class TransitionFinanceWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
 
         total_capex = sum(c.amount_usd for c in self._classifications)
         climate_capex = sum(c.amount_usd for c in self._classifications if c.is_climate)
@@ -444,7 +421,7 @@ class TransitionFinanceWorkflow:
 
     async def _phase_capex_mapping(self, config: TransitionFinanceConfig) -> PhaseResult:
         """Classify all CapEx items as climate/non-climate."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -481,7 +458,7 @@ class TransitionFinanceWorkflow:
         outputs["climate_capex_usd"] = round(climate, 2)
         outputs["climate_capex_pct"] = round((climate / total * 100.0) if total > 0 else 0.0, 2)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("CapEx mapping: %d items, %.1f%% climate",
                          len(self._classifications), outputs["climate_capex_pct"])
         return PhaseResult(
@@ -537,7 +514,7 @@ class TransitionFinanceWorkflow:
 
     async def _phase_taxonomy_alignment(self, config: TransitionFinanceConfig) -> PhaseResult:
         """Check EU Taxonomy alignment for climate CapEx items."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -570,7 +547,7 @@ class TransitionFinanceWorkflow:
             (aligned_count / len(self._taxonomy) * 100.0) if self._taxonomy else 0.0, 2
         )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Taxonomy: %d eligible, %d aligned of %d items",
                          eligible_count, aligned_count, len(self._taxonomy))
         return PhaseResult(
@@ -667,7 +644,7 @@ class TransitionFinanceWorkflow:
 
     async def _phase_bond_screening(self, config: TransitionFinanceConfig) -> PhaseResult:
         """Screen CapEx items against ICMA Green Bond Principles."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -683,7 +660,7 @@ class TransitionFinanceWorkflow:
             (eligible_count / len(self._bonds) * 100.0) if self._bonds else 0.0, 2
         )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Bond screening: %d eligible of %d items",
                          eligible_count, len(self._bonds))
         return PhaseResult(
@@ -744,7 +721,7 @@ class TransitionFinanceWorkflow:
 
     async def _phase_investment_case(self, config: TransitionFinanceConfig) -> PhaseResult:
         """Build investment case with NPV, IRR, carbon price benefit."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -783,7 +760,7 @@ class TransitionFinanceWorkflow:
             sum(ic.total_emission_reduction_tco2e for ic in self._investments), 2
         )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Investment case: %d items, %d with positive NPV",
                          len(self._investments), positive_npv)
         return PhaseResult(

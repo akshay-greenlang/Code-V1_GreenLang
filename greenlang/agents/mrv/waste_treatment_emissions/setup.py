@@ -56,6 +56,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -165,31 +166,21 @@ except ImportError:
     _MetricsCollector = None  # type: ignore[assignment, misc]
     _METRICS_AVAILABLE = False
 
-
 # ===================================================================
 # Utility helpers
 # ===================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _utcnow_iso() -> str:
     """Return current UTC datetime as an ISO-8601 string."""
-    return _utcnow().isoformat()
-
+    return utcnow().isoformat()
 
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 def _short_id(prefix: str) -> str:
     """Generate a short prefixed identifier using UUID4 hex truncation."""
     return f"{prefix}_{uuid.uuid4().hex[:12]}"
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -206,7 +197,6 @@ def _compute_hash(data: Any) -> str:
         serializable = data
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 # ===================================================================
 # Waste treatment method categories
@@ -248,11 +238,9 @@ COMPLIANCE_FRAMEWORKS: List[str] = [
     "UNFCCC",
 ]
 
-
 # ===================================================================
 # Lightweight Pydantic response models (14 models)
 # ===================================================================
-
 
 class CalculateResponse(BaseModel):
     """Single waste treatment emission calculation response."""
@@ -281,7 +269,6 @@ class CalculateResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
 class BatchCalculateResponse(BaseModel):
     """Batch waste treatment emission calculation response."""
 
@@ -299,7 +286,6 @@ class BatchCalculateResponse(BaseModel):
     total_biogenic_co2_tonnes: float = Field(default=0.0)
     results: List[Dict[str, Any]] = Field(default_factory=list)
     processing_time_ms: float = Field(default=0.0)
-
 
 class FacilityResponse(BaseModel):
     """Response for a single waste treatment facility."""
@@ -321,7 +307,6 @@ class FacilityResponse(BaseModel):
     created_at: str = Field(default="")
     updated_at: str = Field(default="")
 
-
 class FacilityListResponse(BaseModel):
     """Response listing waste treatment facilities."""
 
@@ -331,7 +316,6 @@ class FacilityListResponse(BaseModel):
     total: int = Field(default=0)
     page: int = Field(default=1)
     page_size: int = Field(default=20)
-
 
 class WasteStreamResponse(BaseModel):
     """Response for a single waste stream definition."""
@@ -351,7 +335,6 @@ class WasteStreamResponse(BaseModel):
     created_at: str = Field(default="")
     updated_at: str = Field(default="")
 
-
 class WasteStreamListResponse(BaseModel):
     """Response listing waste streams."""
 
@@ -361,7 +344,6 @@ class WasteStreamListResponse(BaseModel):
     total: int = Field(default=0)
     page: int = Field(default=1)
     page_size: int = Field(default=20)
-
 
 class TreatmentEventResponse(BaseModel):
     """Response for a treatment event record."""
@@ -377,7 +359,6 @@ class TreatmentEventResponse(BaseModel):
     operating_parameters: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
     created_at: str = Field(default="")
-
 
 class MethaneRecoveryResponse(BaseModel):
     """Response for a methane recovery record."""
@@ -396,7 +377,6 @@ class MethaneRecoveryResponse(BaseModel):
     provenance_hash: str = Field(default="")
     created_at: str = Field(default="")
 
-
 class EnergyRecoveryResponse(BaseModel):
     """Response for an energy recovery record."""
 
@@ -412,7 +392,6 @@ class EnergyRecoveryResponse(BaseModel):
     provenance_hash: str = Field(default="")
     created_at: str = Field(default="")
 
-
 class ComplianceCheckResponse(BaseModel):
     """Regulatory compliance check response."""
 
@@ -426,7 +405,6 @@ class ComplianceCheckResponse(BaseModel):
     partial: int = Field(default=0)
     results: List[Dict[str, Any]] = Field(default_factory=list)
     timestamp: str = Field(default_factory=_utcnow_iso)
-
 
 class UncertaintyResponse(BaseModel):
     """Monte Carlo uncertainty analysis response."""
@@ -446,7 +424,6 @@ class UncertaintyResponse(BaseModel):
     provenance_hash: str = Field(default="")
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
 class AggregationResponse(BaseModel):
     """Aggregated waste treatment emissions response."""
 
@@ -461,7 +438,6 @@ class AggregationResponse(BaseModel):
     calculation_count: int = Field(default=0)
     period: str = Field(default="annual")
 
-
 class HealthResponse(BaseModel):
     """Service health check response."""
 
@@ -472,7 +448,6 @@ class HealthResponse(BaseModel):
     version: str = Field(default="1.0.0")
     engines: Dict[str, str] = Field(default_factory=dict)
     timestamp: str = Field(default_factory=_utcnow_iso)
-
 
 class StatsResponse(BaseModel):
     """Service aggregate statistics response."""
@@ -491,14 +466,12 @@ class StatsResponse(BaseModel):
     total_waste_processed_tonnes: float = Field(default=0.0)
     uptime_seconds: float = Field(default=0.0)
 
-
 # ===================================================================
 # WasteTreatmentEmissionsService facade
 # ===================================================================
 
 _singleton_lock = threading.RLock()
 _singleton_instance: Optional["WasteTreatmentEmissionsService"] = None
-
 
 class WasteTreatmentEmissionsService:
     """Unified facade over the Waste Treatment Emissions Agent SDK.
@@ -2705,14 +2678,12 @@ class WasteTreatmentEmissionsService:
             uptime_seconds=round(uptime, 3),
         )
 
-
 # ===================================================================
 # Thread-safe singleton access
 # ===================================================================
 
 _service_instance: Optional[WasteTreatmentEmissionsService] = None
 _service_lock = threading.RLock()
-
 
 def get_service() -> WasteTreatmentEmissionsService:
     """Get or create the singleton WasteTreatmentEmissionsService instance.
@@ -2735,7 +2706,6 @@ def get_service() -> WasteTreatmentEmissionsService:
                 _service_instance = WasteTreatmentEmissionsService()
     return _service_instance
 
-
 def reset_service() -> None:
     """Reset the singleton service instance for test teardown.
 
@@ -2747,11 +2717,9 @@ def reset_service() -> None:
         _service_instance = None
     logger.debug("WasteTreatmentEmissionsService singleton reset")
 
-
 # ===================================================================
 # FastAPI Router factory
 # ===================================================================
-
 
 def get_router() -> Any:
     """Get the FastAPI router for waste treatment emissions.
@@ -2776,11 +2744,9 @@ def get_router() -> Any:
         )
         return None
 
-
 # ===================================================================
 # FastAPI application integration
 # ===================================================================
-
 
 def configure_waste_treatment(
     app: Any,
@@ -2826,7 +2792,6 @@ def configure_waste_treatment(
 
     logger.info("Waste Treatment Emissions service configured")
     return service
-
 
 # ===================================================================
 # Public API

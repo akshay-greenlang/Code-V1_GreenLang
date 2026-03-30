@@ -35,35 +35,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class WorkflowPhase(str, Enum):
     """Phases of the performance testing workflow."""
@@ -71,7 +63,6 @@ class WorkflowPhase(str, Enum):
     METRIC_CALCULATION = "metric_calculation"
     THRESHOLD_VALIDATION = "threshold_validation"
     REPORT_GENERATION = "report_generation"
-
 
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
@@ -81,7 +72,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class PhaseStatus(str, Enum):
     """Status of a single phase."""
     PENDING = "pending"
@@ -89,7 +79,6 @@ class PhaseStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class TestType(str, Enum):
     """Battery performance test types per Annex IV."""
@@ -104,7 +93,6 @@ class TestType(str, Enum):
     TEMPERATURE_RANGE = "temperature_range"
     STATE_OF_HEALTH = "state_of_health"
 
-
 class TestStandard(str, Enum):
     """Testing standard applied."""
     IEC_62660_1 = "IEC_62660_1"
@@ -114,7 +102,6 @@ class TestStandard(str, Enum):
     ISO_12405 = "ISO_12405"
     MANUFACTURER = "manufacturer_standard"
 
-
 class ComplianceLevel(str, Enum):
     """Compliance assessment result."""
     COMPLIANT = "compliant"
@@ -122,11 +109,9 @@ class ComplianceLevel(str, Enum):
     MARGINAL = "marginal"
     NOT_TESTED = "not_tested"
 
-
 # =============================================================================
 # REGULATORY THRESHOLDS (Annex IV minimum values)
 # =============================================================================
-
 
 EV_BATTERY_THRESHOLDS: Dict[str, Dict[str, float]] = {
     "rated_capacity_ah": {"min": 0.0, "tolerance_pct": 5.0},
@@ -149,11 +134,9 @@ INDUSTRIAL_BATTERY_THRESHOLDS: Dict[str, Dict[str, float]] = {
     "self_discharge_pct_per_month": {"max": 8.0, "tolerance_pct": 0.0},
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -164,7 +147,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class TestRecord(BaseModel):
     """Individual test result record."""
@@ -182,7 +164,6 @@ class TestRecord(BaseModel):
     cycle_count: int = Field(default=0, ge=0, description="Cycle count at test")
     notes: str = Field(default="")
 
-
 class MetricResult(BaseModel):
     """Computed performance metric."""
     metric_name: str = Field(..., description="Metric identifier")
@@ -193,7 +174,6 @@ class MetricResult(BaseModel):
     compliance: ComplianceLevel = Field(default=ComplianceLevel.NOT_TESTED)
     margin_pct: float = Field(default=0.0, description="Margin above/below threshold")
     source_test_ids: List[str] = Field(default_factory=list)
-
 
 class PerformanceTestingInput(BaseModel):
     """Input data model for PerformanceTestingWorkflow."""
@@ -208,7 +188,6 @@ class PerformanceTestingInput(BaseModel):
     entity_id: str = Field(default="")
     entity_name: str = Field(default="")
     config: Dict[str, Any] = Field(default_factory=dict)
-
 
 class PerformanceTestingResult(BaseModel):
     """Complete result from performance testing workflow."""
@@ -231,11 +210,9 @@ class PerformanceTestingResult(BaseModel):
     executed_at: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class PerformanceTestingWorkflow:
     """
@@ -301,7 +278,7 @@ class PerformanceTestingWorkflow:
         if input_data is None:
             input_data = PerformanceTestingInput(config=config or {})
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting performance testing workflow %s", self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = WorkflowStatus.IN_PROGRESS
@@ -324,7 +301,7 @@ class PerformanceTestingWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         compliant = sum(1 for m in self._metrics if m.compliance == ComplianceLevel.COMPLIANT)
         non_compliant = sum(1 for m in self._metrics if m.compliance == ComplianceLevel.NON_COMPLIANT)
         marginal = sum(1 for m in self._metrics if m.compliance == ComplianceLevel.MARGINAL)
@@ -346,7 +323,7 @@ class PerformanceTestingWorkflow:
             test_record_count=len(self._tests),
             test_types_covered=types_covered,
             reporting_year=input_data.reporting_year,
-            executed_at=_utcnow().isoformat(),
+            executed_at=utcnow().isoformat(),
         )
         result.provenance_hash = self._compute_provenance(result)
         self.logger.info(
@@ -363,7 +340,7 @@ class PerformanceTestingWorkflow:
         self, input_data: PerformanceTestingInput,
     ) -> PhaseResult:
         """Gather and organize performance test results."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -412,7 +389,7 @@ class PerformanceTestingWorkflow:
                 f"{len(unaccredited)} tests from labs without stated accreditation"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 1 TestDataCollection: %d tests, %d types",
             len(self._tests), len(type_counts),
@@ -432,7 +409,7 @@ class PerformanceTestingWorkflow:
         self, input_data: PerformanceTestingInput,
     ) -> PhaseResult:
         """Compute performance and durability metrics from test data."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._metrics = []
@@ -539,7 +516,7 @@ class PerformanceTestingWorkflow:
         if not self._metrics:
             warnings.append("No metrics could be calculated from the test data")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 2 MetricCalculation: %d metrics calculated",
             len(self._metrics),
@@ -559,7 +536,7 @@ class PerformanceTestingWorkflow:
         self, input_data: PerformanceTestingInput,
     ) -> PhaseResult:
         """Validate computed metrics against regulatory thresholds."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -643,7 +620,7 @@ class PerformanceTestingWorkflow:
         outputs["battery_category"] = input_data.battery_category
         outputs["thresholds_applied"] = "ev_battery" if is_ev else "industrial_battery"
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 3 ThresholdValidation: %s (%d compliant, %d non-compliant, %d marginal)",
             self._overall_compliance, compliant_count, non_compliant_count, marginal_count,
@@ -663,7 +640,7 @@ class PerformanceTestingWorkflow:
         self, input_data: PerformanceTestingInput,
     ) -> PhaseResult:
         """Generate performance compliance report."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -696,7 +673,7 @@ class PerformanceTestingWorkflow:
                 "labs_used": sorted(set(t.lab_name for t in self._tests if t.lab_name)),
                 "standards_applied": sorted(set(t.test_standard.value for t in self._tests)),
             },
-            "issued_at": _utcnow().isoformat(),
+            "issued_at": utcnow().isoformat(),
         }
 
         # Coverage assessment
@@ -717,7 +694,7 @@ class PerformanceTestingWorkflow:
                 f"missing types: {', '.join(sorted(all_test_types - covered))}"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 4 ReportGeneration: %s, coverage %.1f%%",
             report["report_id"], coverage_pct,

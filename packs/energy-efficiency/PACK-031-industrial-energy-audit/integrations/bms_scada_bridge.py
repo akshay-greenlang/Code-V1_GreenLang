@@ -35,20 +35,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -61,11 +56,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ProtocolType(str, Enum):
     """Industrial communication protocol types."""
@@ -77,7 +70,6 @@ class ProtocolType(str, Enum):
     MQTT = "mqtt"
     REST_API = "rest_api"
     CSV_EXPORT = "csv_export"
-
 
 class DataPointType(str, Enum):
     """Types of metered data points."""
@@ -96,7 +88,6 @@ class DataPointType(str, Enum):
     GAS_VOLUME_M3 = "gas_volume_m3"
     STEAM_TONNES = "steam_tonnes"
 
-
 class AlarmSeverity(str, Enum):
     """Alarm severity levels."""
 
@@ -105,7 +96,6 @@ class AlarmSeverity(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     INFO = "info"
-
 
 class ConnectionStatus(str, Enum):
     """Protocol connection status."""
@@ -116,11 +106,9 @@ class ConnectionStatus(str, Enum):
     TIMEOUT = "timeout"
     NOT_CONFIGURED = "not_configured"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class ProtocolConfig(BaseModel):
     """Configuration for a protocol adapter."""
@@ -139,7 +127,6 @@ class ProtocolConfig(BaseModel):
     opcua_security_policy: Optional[str] = Field(None)
     # Modbus specific
     modbus_unit_id: Optional[int] = Field(None)
-
 
 class DataPointMapping(BaseModel):
     """Mapping of a SCADA/BMS data point to GreenLang standard fields."""
@@ -164,33 +151,30 @@ class DataPointMapping(BaseModel):
     equipment_id: str = Field(default="", description="Associated equipment ID")
     meter_id: str = Field(default="", description="Associated meter ID")
 
-
 class MeterReading(BaseModel):
     """A single meter reading from BMS/SCADA."""
 
     reading_id: str = Field(default_factory=_new_uuid)
     point_id: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     raw_value: float = Field(default=0.0)
     normalized_value: float = Field(default=0.0)
     unit: str = Field(default="")
     quality: str = Field(default="good", description="good|uncertain|bad")
     source_protocol: str = Field(default="")
 
-
 class AlarmEvent(BaseModel):
     """An alarm event from BMS/SCADA."""
 
     alarm_id: str = Field(default_factory=_new_uuid)
     point_id: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     severity: AlarmSeverity = Field(default=AlarmSeverity.MEDIUM)
     description: str = Field(default="")
     value: float = Field(default=0.0)
     threshold: float = Field(default=0.0)
     acknowledged: bool = Field(default=False)
     cleared: bool = Field(default=False)
-
 
 class HistoricalDataRequest(BaseModel):
     """Request for historical data from BMS/SCADA historian."""
@@ -201,7 +185,6 @@ class HistoricalDataRequest(BaseModel):
     end_time: Optional[datetime] = Field(None)
     interval_seconds: int = Field(default=900, description="Aggregation interval")
     aggregation: str = Field(default="average", description="average|sum|min|max|last")
-
 
 class HistoricalDataResult(BaseModel):
     """Result of a historical data retrieval."""
@@ -216,7 +199,6 @@ class HistoricalDataResult(BaseModel):
     gaps_detected: int = Field(default=0)
     provenance_hash: str = Field(default="")
 
-
 class BMSSCADABridgeConfig(BaseModel):
     """Configuration for the BMS/SCADA Bridge."""
 
@@ -226,7 +208,6 @@ class BMSSCADABridgeConfig(BaseModel):
     max_concurrent_connections: int = Field(default=10, ge=1, le=100)
     reading_buffer_size: int = Field(default=10000, ge=100)
     enable_alarm_integration: bool = Field(default=True)
-
 
 # ---------------------------------------------------------------------------
 # Unit Conversion Constants (deterministic, no LLM)
@@ -245,11 +226,9 @@ UNIT_CONVERSIONS: Dict[str, Dict[str, float]] = {
     "gpm_to_m3h": {"factor": 0.2271},
 }
 
-
 # ---------------------------------------------------------------------------
 # BMSSCADABridge
 # ---------------------------------------------------------------------------
-
 
 class BMSSCADABridge:
     """Building and industrial management system integration.
@@ -410,7 +389,7 @@ class BMSSCADABridge:
 
         reading = MeterReading(
             point_id=point_id,
-            timestamp=timestamp or _utcnow(),
+            timestamp=timestamp or utcnow(),
             raw_value=raw_value,
             normalized_value=round(normalized, 4),
             unit=mapping.target_unit or mapping.raw_unit,

@@ -18,9 +18,11 @@ import pytest
 
 import sys
 import os
+from greenlang.schemas import utcnow
 sys.path.insert(0, os.path.dirname(__file__))
 
 from conftest import (
+
     _compute_hash,
     _new_uuid,
     _utcnow,
@@ -49,7 +51,7 @@ class TestRepositoryAndEvidence:
             "type": "customs_declaration",
             "description": "Q1 2026 customs declarations batch",
             "file_reference": "docs/customs/q1_2026_batch.pdf",
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
             "created_by": "compliance_officer@eurosteel-group.de",
             "hash": _compute_hash({"type": "customs_declaration", "q": "Q1"}),
             "encrypted": False,
@@ -82,7 +84,7 @@ class TestDataRoom:
             "room_id": f"DR-{_new_uuid()[:8]}",
             "repository_id": sample_audit_repository["repository_id"],
             "name": "CBAM Audit 2026 - NCA Examination",
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
             "status": "active",
             "document_count": sample_audit_repository["total_records"],
             "access_log": [],
@@ -143,7 +145,7 @@ class TestRemediationAndNCA:
                 "certificates_surrendered": 563,
                 "verification_opinion": "unqualified",
             },
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
             "provenance_hash": _compute_hash({"nca": "BaFin", "year": 2026}),
         }
         assert_provenance_hash(package)

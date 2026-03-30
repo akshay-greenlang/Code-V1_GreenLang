@@ -54,25 +54,18 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ReportFormat
 
 from pydantic import (
-    BaseModel,
-    ConfigDict,
     Field,
     field_validator,
     model_validator,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -152,11 +145,9 @@ DEFAULT_YIELD_RATIOS: Dict[str, float] = {
     "blending": 0.99,
 }
 
-
 # =============================================================================
 # Enumerations
 # =============================================================================
-
 
 class CustodyEventType(str, Enum):
     """Type of custody event in the commodity chain.
@@ -199,7 +190,6 @@ class CustodyEventType(str, Enum):
     INSPECTION = "inspection"
     SAMPLING = "sampling"
 
-
 class BatchStatus(str, Enum):
     """Lifecycle status of a commodity batch.
 
@@ -232,7 +222,6 @@ class BatchStatus(str, Enum):
     DELIVERED = "delivered"
     CONSUMED = "consumed"
 
-
 class CoCModelType(str, Enum):
     """Chain of Custody model type per ISO 22095:2020.
 
@@ -260,7 +249,6 @@ class CoCModelType(str, Enum):
     SEGREGATED = "segregated"
     MASS_BALANCE = "mass_balance"
     CONTROLLED_BLENDING = "controlled_blending"
-
 
 class DocumentType(str, Enum):
     """Document types required for EUDR custody chain evidence.
@@ -329,7 +317,6 @@ class DocumentType(str, Enum):
     CHAIN_OF_CUSTODY_FORM = "chain_of_custody_form"
     LABORATORY_ANALYSIS_REPORT = "laboratory_analysis_report"
 
-
 class ProcessType(str, Enum):
     """Processing/transformation types for commodity conversion.
 
@@ -396,7 +383,6 @@ class ProcessType(str, Enum):
     PACKAGING = "packaging"              # 0.99
     SORTING = "sorting"                  # 0.95
 
-
 class OriginAllocationType(str, Enum):
     """Method of allocating origin to a batch.
 
@@ -419,22 +405,6 @@ class OriginAllocationType(str, Enum):
     CREDIT_BASED = "credit_based"
     BLENDED = "blended"
 
-
-class ReportFormat(str, Enum):
-    """Output format for chain of custody reports.
-
-    JSON: Machine-readable JSON format for API integration.
-    PDF: Human-readable PDF format for regulatory submission.
-    CSV: Tabular CSV format for spreadsheet analysis.
-    EUDR_XML: EU Information System XML schema for DDS submission.
-    """
-
-    JSON = "json"
-    PDF = "pdf"
-    CSV = "csv"
-    EUDR_XML = "eudr_xml"
-
-
 class BatchOperationType(str, Enum):
     """Type of batch operation.
 
@@ -448,7 +418,6 @@ class BatchOperationType(str, Enum):
     MERGE = "merge"
     BLEND = "blend"
     TRANSFORM = "transform"
-
 
 class GapSeverity(str, Enum):
     """Severity classification for custody chain gaps.
@@ -468,7 +437,6 @@ class GapSeverity(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
 
-
 class VerificationStatus(str, Enum):
     """Status of a chain of custody verification.
 
@@ -484,7 +452,6 @@ class VerificationStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
     PENDING = "pending"
-
 
 class LedgerEntryType(str, Enum):
     """Type of mass balance ledger entry.
@@ -504,13 +471,11 @@ class LedgerEntryType(str, Enum):
     ADJUSTMENT = "adjustment"
     CARRY_FORWARD = "carry_forward"
 
-
 # =============================================================================
 # Core Models
 # =============================================================================
 
-
-class CustodyEvent(BaseModel):
+class CustodyEvent(GreenLangBase):
     """A single custody event in the commodity chain.
 
     Represents a specific custodial action (transfer, receipt, storage,
@@ -600,7 +565,7 @@ class CustodyEvent(BaseModel):
         description="Chain of custody model applied",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the event occurred",
     )
     previous_event_id: Optional[str] = Field(
@@ -629,11 +594,11 @@ class CustodyEvent(BaseModel):
         description="SHA-256 provenance hash for audit trail",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the record was created",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the record was last updated",
     )
 
@@ -643,8 +608,7 @@ class CustodyEvent(BaseModel):
         """Normalize country code to uppercase."""
         return v.upper()
 
-
-class BatchOrigin(BaseModel):
+class BatchOrigin(GreenLangBase):
     """Origin allocation for a commodity batch.
 
     Tracks the geographic and producer origin of material in a batch,
@@ -731,8 +695,7 @@ class BatchOrigin(BaseModel):
         """Normalize country code to uppercase."""
         return v.upper()
 
-
-class Batch(BaseModel):
+class Batch(GreenLangBase):
     """A commodity batch tracked through the custody chain.
 
     Represents a discrete quantity of a commodity (or derived product)
@@ -842,11 +805,11 @@ class Batch(BaseModel):
         description="SHA-256 provenance hash for audit trail",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the batch was created",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the batch was last updated",
     )
 
@@ -857,8 +820,7 @@ class Batch(BaseModel):
             self.initial_quantity_kg = self.quantity_kg
         return self
 
-
-class BatchOperation(BaseModel):
+class BatchOperation(GreenLangBase):
     """Record of a batch operation (split, merge, blend, or transform).
 
     Captures the details of a batch operation including input and output
@@ -947,12 +909,11 @@ class BatchOperation(BaseModel):
         description="SHA-256 provenance hash",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the operation occurred",
     )
 
-
-class CoCModelAssignment(BaseModel):
+class CoCModelAssignment(GreenLangBase):
     """Assignment of a CoC model to a batch or chain segment.
 
     Records the specific chain of custody model (IP, SG, MB, CB)
@@ -1001,7 +962,7 @@ class CoCModelAssignment(BaseModel):
         description="Model-specific constraints or requirements",
     )
     effective_from: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Start date of model applicability",
     )
     effective_until: Optional[datetime] = Field(
@@ -1017,12 +978,11 @@ class CoCModelAssignment(BaseModel):
         description="SHA-256 provenance hash",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the assignment was created",
     )
 
-
-class MassBalanceEntry(BaseModel):
+class MassBalanceEntry(GreenLangBase):
     """A single entry in the mass balance ledger.
 
     Records a debit or credit to the mass balance account for a
@@ -1099,12 +1059,11 @@ class MassBalanceEntry(BaseModel):
         description="SHA-256 provenance hash",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the entry was recorded",
     )
 
-
-class TransformationRecord(BaseModel):
+class TransformationRecord(GreenLangBase):
     """Record of a commodity transformation/processing event.
 
     Captures the complete details of a processing operation that
@@ -1238,12 +1197,11 @@ class TransformationRecord(BaseModel):
         description="SHA-256 provenance hash",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the record was created",
     )
 
-
-class CustodyDocument(BaseModel):
+class CustodyDocument(GreenLangBase):
     """A document linked to a custody event or batch.
 
     Represents a supporting document in the custody chain evidence
@@ -1337,7 +1295,7 @@ class CustodyDocument(BaseModel):
         description="Additional contextual key-value pairs",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the record was created",
     )
 
@@ -1350,8 +1308,7 @@ class CustodyDocument(BaseModel):
             )
         return self
 
-
-class ChainVerificationResult(BaseModel):
+class ChainVerificationResult(GreenLangBase):
     """Result of a chain of custody verification operation.
 
     Captures the outcome of verifying the integrity and completeness
@@ -1452,12 +1409,11 @@ class ChainVerificationResult(BaseModel):
         description="SHA-256 provenance hash",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of the verification",
     )
 
-
-class OriginAllocation(BaseModel):
+class OriginAllocation(GreenLangBase):
     """Origin allocation record for mass balance and blending operations.
 
     Tracks how origin is allocated to output batches based on the
@@ -1528,17 +1484,15 @@ class OriginAllocation(BaseModel):
         description="Additional contextual key-value pairs",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of the allocation",
     )
-
 
 # =============================================================================
 # Request Models
 # =============================================================================
 
-
-class RecordEventRequest(BaseModel):
+class RecordEventRequest(GreenLangBase):
     """Request to record a custody event.
 
     Attributes:
@@ -1575,8 +1529,7 @@ class RecordEventRequest(BaseModel):
     notes: Optional[str] = Field(None)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-
-class CreateBatchRequest(BaseModel):
+class CreateBatchRequest(GreenLangBase):
     """Request to create a new commodity batch.
 
     Attributes:
@@ -1607,8 +1560,7 @@ class CreateBatchRequest(BaseModel):
     dds_reference: Optional[str] = Field(None)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-
-class SplitBatchRequest(BaseModel):
+class SplitBatchRequest(GreenLangBase):
     """Request to split a batch into sub-batches.
 
     Attributes:
@@ -1642,8 +1594,7 @@ class SplitBatchRequest(BaseModel):
                 )
         return v
 
-
-class MergeBatchRequest(BaseModel):
+class MergeBatchRequest(GreenLangBase):
     """Request to merge multiple batches into one.
 
     Attributes:
@@ -1662,8 +1613,7 @@ class MergeBatchRequest(BaseModel):
     notes: Optional[str] = Field(None)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-
-class BlendBatchRequest(BaseModel):
+class BlendBatchRequest(GreenLangBase):
     """Request to blend multiple batches under controlled blending rules.
 
     Attributes:
@@ -1700,8 +1650,7 @@ class BlendBatchRequest(BaseModel):
             )
         return self
 
-
-class AssignModelRequest(BaseModel):
+class AssignModelRequest(GreenLangBase):
     """Request to assign a CoC model to a batch.
 
     Attributes:
@@ -1726,8 +1675,7 @@ class AssignModelRequest(BaseModel):
     effective_until: Optional[datetime] = Field(None)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-
-class RecordInputRequest(BaseModel):
+class RecordInputRequest(GreenLangBase):
     """Request to record a mass balance input entry.
 
     Attributes:
@@ -1750,8 +1698,7 @@ class RecordInputRequest(BaseModel):
     notes: Optional[str] = Field(None)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-
-class RecordOutputRequest(BaseModel):
+class RecordOutputRequest(GreenLangBase):
     """Request to record a mass balance output entry.
 
     Attributes:
@@ -1772,8 +1719,7 @@ class RecordOutputRequest(BaseModel):
     notes: Optional[str] = Field(None)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-
-class RecordTransformRequest(BaseModel):
+class RecordTransformRequest(GreenLangBase):
     """Request to record a processing transformation.
 
     Attributes:
@@ -1808,8 +1754,7 @@ class RecordTransformRequest(BaseModel):
     notes: Optional[str] = Field(None)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-
-class LinkDocumentRequest(BaseModel):
+class LinkDocumentRequest(GreenLangBase):
     """Request to link a document to a custody event or batch.
 
     Attributes:
@@ -1851,8 +1796,7 @@ class LinkDocumentRequest(BaseModel):
             )
         return self
 
-
-class VerifyChainRequest(BaseModel):
+class VerifyChainRequest(GreenLangBase):
     """Request to verify chain of custody integrity.
 
     Attributes:
@@ -1873,8 +1817,7 @@ class VerifyChainRequest(BaseModel):
     depth: Optional[int] = Field(None, ge=1)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-
-class GenerateReportRequest(BaseModel):
+class GenerateReportRequest(GreenLangBase):
     """Request to generate a chain of custody report.
 
     Attributes:
@@ -1905,13 +1848,11 @@ class GenerateReportRequest(BaseModel):
     include_verification: bool = Field(default=True)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-
 # =============================================================================
 # Response Models
 # =============================================================================
 
-
-class RecordEventResponse(BaseModel):
+class RecordEventResponse(GreenLangBase):
     """Response after recording a custody event.
 
     Attributes:
@@ -1936,10 +1877,9 @@ class RecordEventResponse(BaseModel):
     gap_hours: Optional[float] = Field(None)
     gap_severity: Optional[GapSeverity] = Field(None)
     processing_time_ms: float = Field(...)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
-
-class CreateBatchResponse(BaseModel):
+class CreateBatchResponse(GreenLangBase):
     """Response after creating a new batch.
 
     Attributes:
@@ -1964,10 +1904,9 @@ class CreateBatchResponse(BaseModel):
     origin_count: int = Field(default=0)
     provenance_hash: str = Field(...)
     processing_time_ms: float = Field(...)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
-
-class BatchOperationResponse(BaseModel):
+class BatchOperationResponse(GreenLangBase):
     """Response after a batch operation (split/merge/blend).
 
     Attributes:
@@ -1994,10 +1933,9 @@ class BatchOperationResponse(BaseModel):
     yield_ratio: Optional[float] = Field(None)
     provenance_hash: str = Field(...)
     processing_time_ms: float = Field(...)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
-
-class BalanceResponse(BaseModel):
+class BalanceResponse(GreenLangBase):
     """Response for mass balance operations.
 
     Attributes:
@@ -2026,10 +1964,9 @@ class BalanceResponse(BaseModel):
     credit_period_end: Optional[datetime] = Field(None)
     provenance_hash: str = Field(...)
     processing_time_ms: float = Field(...)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
-
-class TransformResponse(BaseModel):
+class TransformResponse(GreenLangBase):
     """Response after recording a transformation.
 
     Attributes:
@@ -2062,10 +1999,9 @@ class TransformResponse(BaseModel):
     within_tolerance: bool = Field(...)
     provenance_hash: str = Field(...)
     processing_time_ms: float = Field(...)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
-
-class VerificationResponse(BaseModel):
+class VerificationResponse(GreenLangBase):
     """Response after chain verification.
 
     Attributes:
@@ -2102,10 +2038,9 @@ class VerificationResponse(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(...)
     processing_time_ms: float = Field(...)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
-
-class ReportResponse(BaseModel):
+class ReportResponse(GreenLangBase):
     """Response after generating a report.
 
     Attributes:
@@ -2136,10 +2071,9 @@ class ReportResponse(BaseModel):
     date_to: Optional[datetime] = Field(None)
     provenance_hash: str = Field(...)
     processing_time_ms: float = Field(...)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
-
-class BatchResult(BaseModel):
+class BatchResult(GreenLangBase):
     """Generic batch processing result.
 
     Used for reporting the outcome of bulk operations across
@@ -2163,7 +2097,7 @@ class BatchResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     processing_time_ms: float = Field(...)
     provenance_hash: Optional[str] = Field(None)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
     @model_validator(mode="after")
     def validate_counts(self) -> BatchResult:
@@ -2174,7 +2108,6 @@ class BatchResult(BaseModel):
                 f"must equal total_records ({self.total_records})"
             )
         return self
-
 
 # ---------------------------------------------------------------------------
 # Public API

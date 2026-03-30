@@ -38,25 +38,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -69,11 +63,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EUDRCommodity(str, Enum):
     """EUDR Annex I regulated commodities."""
@@ -86,7 +78,6 @@ class EUDRCommodity(str, Enum):
     SOYA = "soya"
     WOOD = "wood"
 
-
 class DeforestationRisk(str, Enum):
     """Deforestation risk classification per EUDR benchmarking."""
 
@@ -94,7 +85,6 @@ class DeforestationRisk(str, Enum):
     STANDARD = "standard"
     LOW = "low"
     NOT_ASSESSED = "not_assessed"
-
 
 class EUDRComplianceStatus(str, Enum):
     """EUDR due diligence compliance status."""
@@ -104,7 +94,6 @@ class EUDRComplianceStatus(str, Enum):
     NON_COMPLIANT = "non_compliant"
     NOT_APPLICABLE = "not_applicable"
     UNDER_REVIEW = "under_review"
-
 
 class CSDDDImpactCategory(str, Enum):
     """CSDDD adverse impact category for deforestation-related impacts."""
@@ -116,11 +105,9 @@ class CSDDDImpactCategory(str, Enum):
     INDIGENOUS_RIGHTS = "indigenous_rights"
     COMMUNITY_DISPLACEMENT = "community_displacement"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class EUDRBridgeConfig(BaseModel):
     """Configuration for the EUDR Bridge."""
@@ -140,7 +127,6 @@ class EUDRBridgeConfig(BaseModel):
         description="Risk score threshold for standard risk",
     )
 
-
 class CommodityRiskProfile(BaseModel):
     """Risk profile for a single EUDR-regulated commodity."""
 
@@ -155,7 +141,6 @@ class CommodityRiskProfile(BaseModel):
         default=EUDRComplianceStatus.NOT_APPLICABLE
     )
 
-
 class DeforestationImpact(BaseModel):
     """A deforestation-related adverse impact identified via EUDR data."""
 
@@ -168,7 +153,6 @@ class DeforestationImpact(BaseModel):
     csddd_articles: List[str] = Field(default_factory=list)
     is_actual: bool = Field(default=False)
     remediation_status: str = Field(default="not_started")
-
 
 class EUDRDueDiligenceStatus(BaseModel):
     """Overall EUDR due diligence status for a company."""
@@ -185,7 +169,6 @@ class EUDRDueDiligenceStatus(BaseModel):
     dd_statements_filed: int = Field(default=0)
     provenance_hash: str = Field(default="")
 
-
 class CSDDDMappingResult(BaseModel):
     """Result of mapping EUDR data to CSDDD requirements."""
 
@@ -197,7 +180,6 @@ class CSDDDMappingResult(BaseModel):
     coverage_score: float = Field(default=0.0, ge=0.0, le=100.0)
     records_processed: int = Field(default=0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Country Risk Classifications (EUDR Benchmarking System)
@@ -265,11 +247,9 @@ IMPACT_MAPPINGS: Dict[EUDRCommodity, List[CSDDDImpactCategory]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # EUDRBridge
 # ---------------------------------------------------------------------------
-
 
 class EUDRBridge:
     """EUDR due diligence to CSDDD deforestation impact bridge for PACK-019.

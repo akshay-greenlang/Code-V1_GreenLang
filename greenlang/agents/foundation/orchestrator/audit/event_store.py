@@ -51,7 +51,8 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
 from uuid import uuid4
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
+from greenlang.schemas import GreenLangBase
 
 # Use canonical serialization for deterministic hashing
 try:
@@ -150,7 +151,7 @@ class EventType(str, Enum):
 # EVENT MODEL
 # ============================================================================
 
-class RunEvent(BaseModel):
+class RunEvent(GreenLangBase):
     """
     Immutable audit event with hash chain linkage.
 
@@ -271,7 +272,7 @@ class RunEvent(BaseModel):
 # AUDIT PACKAGE MODEL
 # ============================================================================
 
-class AuditPackage(BaseModel):
+class AuditPackage(GreenLangBase):
     """
     Exportable audit trail package for a run.
 

@@ -38,19 +38,13 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # =============================================================================
 # Utility Helpers
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute a SHA-256 hash of arbitrary data."""
@@ -58,11 +52,9 @@ def _hash_data(data: Any) -> str:
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # Agent Stub
 # =============================================================================
-
 
 class _AgentStub:
     """Deferred agent loader for lazy initialization."""
@@ -79,6 +71,7 @@ class _AgentStub:
             return self._instance
         try:
             import importlib
+
             mod = importlib.import_module(self.module_path)
             cls = getattr(mod, self.class_name)
             self._instance = cls()
@@ -94,11 +87,9 @@ class _AgentStub:
         """Whether the agent has been loaded."""
         return self._instance is not None
 
-
 # =============================================================================
 # Enums
 # =============================================================================
-
 
 class SFDRArticle(str, Enum):
     """SFDR article classification."""
@@ -106,7 +97,6 @@ class SFDRArticle(str, Enum):
     ARTICLE_8 = "article_8"
     ARTICLE_8_PLUS = "article_8_plus"
     ARTICLE_9 = "article_9"
-
 
 class SFDRFeature(str, Enum):
     """Features available from SFDR packs."""
@@ -118,11 +108,9 @@ class SFDRFeature(str, Enum):
     GOOD_GOVERNANCE = "good_governance"
     DISCLOSURE_TEMPLATES = "disclosure_templates"
 
-
 # =============================================================================
 # Data Models
 # =============================================================================
-
 
 class SFDRBridgeConfig(BaseModel):
     """Configuration for the SFDR Pack Bridge."""
@@ -155,7 +143,6 @@ class SFDRBridgeConfig(BaseModel):
         description="Share taxonomy alignment data",
     )
 
-
 class PAIDataResult(BaseModel):
     """Result of PAI data retrieval from SFDR pack."""
     total_indicators: int = Field(
@@ -177,7 +164,6 @@ class PAIDataResult(BaseModel):
         default=False, description="Whether data is shared with CSRD entity report"
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class CarbonFootprintResult(BaseModel):
     """Result of portfolio carbon footprint from SFDR pack."""
@@ -204,7 +190,6 @@ class CarbonFootprintResult(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class TaxonomyAlignmentResult(BaseModel):
     """Result of taxonomy alignment from SFDR pack."""
     taxonomy_eligible_pct: float = Field(
@@ -228,7 +213,6 @@ class TaxonomyAlignmentResult(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class SFDRBridgeStatus(BaseModel):
     """Status of the SFDR bridge connection."""
     connected: bool = Field(default=False, description="Whether bridge is connected")
@@ -242,11 +226,9 @@ class SFDRBridgeStatus(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 # =============================================================================
 # PAI Indicator Definitions
 # =============================================================================
-
 
 PAI_INDICATORS: Dict[int, Dict[str, str]] = {
     1: {"name": "GHG emissions (Scope 1/2/3)", "category": "climate",
@@ -287,11 +269,9 @@ PAI_INDICATORS: Dict[int, Dict[str, str]] = {
          "unit": "share"},
 }
 
-
 # =============================================================================
 # SFDR Pack Bridge
 # =============================================================================
-
 
 class SFDRPackBridge:
     """Bridge connecting PACK-012 (CSRD FS) with PACK-010/011 (SFDR).

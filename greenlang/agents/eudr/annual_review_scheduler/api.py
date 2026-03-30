@@ -57,9 +57,10 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException, Query
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.eudr.annual_review_scheduler.setup import get_service
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -68,24 +69,24 @@ logger = logging.getLogger(__name__)
 # Request Schemas
 # ---------------------------------------------------------------------------
 
-class CreateCycleRequest(BaseModel):
+class CreateCycleRequest(GreenLangBase):
     operator_id: str = Field(..., description="Operator identifier")
     review_year: int = Field(..., description="Year under review")
     commodities: Optional[List[str]] = Field(None, description="Commodities covered")
     start_date: Optional[str] = Field(None, description="Explicit start date (ISO)")
 
-class ScheduleTasksRequest(BaseModel):
+class ScheduleTasksRequest(GreenLangBase):
     additional_tasks: Optional[List[Dict[str, Any]]] = Field(None, description="Custom tasks")
 
-class UpdateCycleStatusRequest(BaseModel):
+class UpdateCycleStatusRequest(GreenLangBase):
     new_status: str = Field(..., description="Target status")
 
-class UpdateTaskStatusRequest(BaseModel):
+class UpdateTaskStatusRequest(GreenLangBase):
     cycle_id: str = Field(..., description="Cycle identifier")
     task_id: str = Field(..., description="Task identifier")
     new_status: str = Field(..., description="New task status")
 
-class RegisterDeadlineRequest(BaseModel):
+class RegisterDeadlineRequest(GreenLangBase):
     operator_id: str = Field(..., description="Operator identifier")
     deadline_type: str = Field(..., description="Type of deadline")
     title: str = Field(..., description="Deadline title")
@@ -94,51 +95,51 @@ class RegisterDeadlineRequest(BaseModel):
     responsible_entity: Optional[str] = None
     review_year: int = Field(default=0, description="Review year")
 
-class CheckDeadlinesRequest(BaseModel):
+class CheckDeadlinesRequest(GreenLangBase):
     operator_id: str = Field(..., description="Operator identifier")
     review_year: Optional[int] = None
 
-class SubmitToAuthorityRequest(BaseModel):
+class SubmitToAuthorityRequest(GreenLangBase):
     operator_id: str = Field(..., description="Operator identifier")
     deadline_id: str = Field(..., description="Deadline being fulfilled")
     submission_data: Dict[str, Any] = Field(..., description="Submission payload")
 
-class GenerateChecklistRequest(BaseModel):
+class GenerateChecklistRequest(GreenLangBase):
     operator_id: str = Field(..., description="Operator identifier")
     commodity: str = Field(default="general", description="Commodity type")
     cycle_id: str = Field(default="", description="Associated cycle ID")
     custom_items: Optional[List[Dict[str, Any]]] = None
 
-class CustomizeChecklistRequest(BaseModel):
+class CustomizeChecklistRequest(GreenLangBase):
     checklist_id: str = Field(..., description="Checklist identifier")
     commodity: str = Field(..., description="Commodity to add items for")
 
-class TrackChecklistCompletionRequest(BaseModel):
+class TrackChecklistCompletionRequest(GreenLangBase):
     checklist_id: str = Field(..., description="Checklist identifier")
     item_id: str = Field(..., description="Item identifier")
     new_status: str = Field(..., description="New status")
     notes: str = Field(default="", description="Reviewer notes")
 
-class IdentifyEntitiesRequest(BaseModel):
+class IdentifyEntitiesRequest(GreenLangBase):
     operator_id: str = Field(..., description="Root operator identifier")
     entities: List[Dict[str, Any]] = Field(..., description="Entity data list")
     cycle_id: str = Field(default="", description="Associated cycle ID")
 
-class CascadeReviewsRequest(BaseModel):
+class CascadeReviewsRequest(GreenLangBase):
     coordination_id: str = Field(..., description="Coordination record ID")
     child_entities: Optional[List[Dict[str, Any]]] = None
 
-class TrackDependenciesRequest(BaseModel):
+class TrackDependenciesRequest(GreenLangBase):
     coordination_id: str = Field(..., description="Coordination record ID")
 
-class AggregateCompletionRequest(BaseModel):
+class AggregateCompletionRequest(GreenLangBase):
     coordination_id: str = Field(..., description="Coordination record ID")
 
-class CompareYearsRequest(BaseModel):
+class CompareYearsRequest(GreenLangBase):
     operator_id: str = Field(..., description="Operator identifier")
     data_points: List[Dict[str, Any]] = Field(..., description="Year data points")
 
-class AddCalendarEventRequest(BaseModel):
+class AddCalendarEventRequest(GreenLangBase):
     operator_id: str = Field(..., description="Operator identifier")
     event_type: str = Field(..., description="Event type")
     title: str = Field(..., description="Event title")
@@ -148,11 +149,11 @@ class AddCalendarEventRequest(BaseModel):
     all_day: bool = Field(default=True)
     review_year: int = Field(default=0)
 
-class GenerateIcalRequest(BaseModel):
+class GenerateIcalRequest(GreenLangBase):
     operator_id: str = Field(..., description="Operator identifier")
     review_year: Optional[int] = None
 
-class SendNotificationRequest(BaseModel):
+class SendNotificationRequest(GreenLangBase):
     operator_id: str = Field(..., description="Operator identifier")
     channel: str = Field(default="email", description="Delivery channel")
     recipient: str = Field(..., description="Recipient identifier")
@@ -160,21 +161,21 @@ class SendNotificationRequest(BaseModel):
     body: str = Field(..., description="Message body")
     cycle_id: str = Field(default="")
 
-class SendNotificationBatchRequest(BaseModel):
+class SendNotificationBatchRequest(GreenLangBase):
     operator_id: str = Field(..., description="Operator identifier")
     notifications: List[Dict[str, Any]] = Field(..., description="Notification list")
     cycle_id: str = Field(default="")
 
-class EscalateOverdueRequest(BaseModel):
+class EscalateOverdueRequest(GreenLangBase):
     operator_id: str = Field(..., description="Operator identifier")
     cycle_id: str = Field(default="")
     hours_threshold: Optional[int] = None
 
-class GenerateSummaryRequest(BaseModel):
+class GenerateSummaryRequest(GreenLangBase):
     operator_id: str = Field(..., description="Operator identifier")
     review_year: int = Field(default=0)
 
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     detail: str = Field(..., description="Error description")
     error_code: str = Field(default="internal_error")
 

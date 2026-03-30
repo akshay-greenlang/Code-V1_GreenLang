@@ -68,18 +68,11 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
-
+from pydantic import Field, field_validator
 
 # ---------------------------------------------------------------------------
 # Helper
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -118,11 +111,9 @@ DEFAULT_QUALITY_THRESHOLD: Decimal = Decimal("0.70")
 #: Prefix for all database table names in this module.
 TABLE_PREFIX: str = "gl_s2m_"
 
-
 # =============================================================================
 # Enumerations (20)
 # =============================================================================
-
 
 class InstrumentType(str, Enum):
     """Classification of contractual instruments for market-based Scope 2.
@@ -180,7 +171,6 @@ class InstrumentType(str, Enum):
     GREEN_TARIFF = "green_tariff"
     SUPPLIER_SPECIFIC = "supplier_specific"
 
-
 class InstrumentStatus(str, Enum):
     """Lifecycle status of a contractual instrument.
 
@@ -210,7 +200,6 @@ class InstrumentStatus(str, Enum):
     EXPIRED = "expired"
     CANCELLED = "cancelled"
     PENDING = "pending"
-
 
 class EnergySource(str, Enum):
     """Classification of electricity generation source for instruments.
@@ -258,7 +247,6 @@ class EnergySource(str, Enum):
     OIL = "oil"
     MIXED = "mixed"
 
-
 class EnergyType(str, Enum):
     """Classification of purchased energy types for Scope 2 reporting.
 
@@ -286,7 +274,6 @@ class EnergyType(str, Enum):
     HEATING = "heating"
     COOLING = "cooling"
 
-
 class EnergyUnit(str, Enum):
     """Units of measurement for energy consumption quantities.
 
@@ -311,7 +298,6 @@ class EnergyUnit(str, Enum):
     GJ = "gj"
     MMBTU = "mmbtu"
     THERMS = "therms"
-
 
 class CalculationMethod(str, Enum):
     """Methodology for calculating Scope 2 market-based emissions.
@@ -346,7 +332,6 @@ class CalculationMethod(str, Enum):
     RESIDUAL_MIX = "residual_mix"
     HYBRID = "hybrid"
 
-
 class EmissionGas(str, Enum):
     """Greenhouse gases tracked in Scope 2 market-based calculations.
 
@@ -365,7 +350,6 @@ class EmissionGas(str, Enum):
     CO2 = "CO2"
     CH4 = "CH4"
     N2O = "N2O"
-
 
 class GWPSource(str, Enum):
     """IPCC Assessment Report edition used for Global Warming Potential values.
@@ -389,7 +373,6 @@ class GWPSource(str, Enum):
     AR5 = "AR5"
     AR6 = "AR6"
     AR6_20YR = "AR6_20YR"
-
 
 class QualityCriterion(str, Enum):
     """GHG Protocol Scope 2 quality criteria for contractual instruments.
@@ -430,7 +413,6 @@ class QualityCriterion(str, Enum):
     NO_DOUBLE_COUNT = "no_double_count"
     RECOGNIZED_REGISTRY = "recognized_registry"
     REPRESENTS_GENERATION = "represents_generation"
-
 
 class TrackingSystem(str, Enum):
     """Recognised tracking system registries for contractual instruments.
@@ -473,7 +455,6 @@ class TrackingSystem(str, Enum):
     WREGIS = "wregis"
     CUSTOM = "custom"
 
-
 class ResidualMixSource(str, Enum):
     """Source authority for residual mix emission factors.
 
@@ -504,7 +485,6 @@ class ResidualMixSource(str, Enum):
     ESTIMATED = "estimated"
     CUSTOM = "custom"
 
-
 class FacilityType(str, Enum):
     """Classification of reporting facilities by primary function.
 
@@ -534,7 +514,6 @@ class FacilityType(str, Enum):
     SCHOOL = "school"
     OTHER = "other"
 
-
 class ComplianceStatus(str, Enum):
     """Result of a regulatory compliance check for a calculation.
 
@@ -551,7 +530,6 @@ class ComplianceStatus(str, Enum):
     NON_COMPLIANT = "non_compliant"
     PARTIAL = "partial"
     NOT_ASSESSED = "not_assessed"
-
 
 class CoverageStatus(str, Enum):
     """Coverage status of energy consumption by contractual instruments.
@@ -579,7 +557,6 @@ class CoverageStatus(str, Enum):
     UNCOVERED = "uncovered"
     OVER_COVERED = "over_covered"
 
-
 class ReportingPeriod(str, Enum):
     """Time period for emission aggregation and reporting outputs.
 
@@ -597,7 +574,6 @@ class ReportingPeriod(str, Enum):
     QUARTERLY = "quarterly"
     MONTHLY = "monthly"
     CUSTOM = "custom"
-
 
 class ContractType(str, Enum):
     """Classification of power purchase agreement contract structures.
@@ -627,7 +603,6 @@ class ContractType(str, Enum):
     SLEEVED_PPA = "sleeved_ppa"
     DIRECT_PURCHASE = "direct_purchase"
 
-
 class DataQualityTier(str, Enum):
     """Data quality classification for emission factor inputs.
 
@@ -640,6 +615,8 @@ class DataQualityTier(str, Enum):
         instrument-specific or supplier-specific data is available.
     TIER_2: Supplier-specific or instrument-based emission factors
         from recognised tracking systems. Moderate uncertainty
+
+from greenlang.schemas import GreenLangBase, utcnow
         (+/- 10-25%).
     TIER_3: Instrument-specific emission factors from verified
         PPAs with direct metering and independent audit.
@@ -649,7 +626,6 @@ class DataQualityTier(str, Enum):
     TIER_1 = "tier_1"
     TIER_2 = "tier_2"
     TIER_3 = "tier_3"
-
 
 class DualReportingStatus(str, Enum):
     """Completeness status of dual reporting (location + market-based).
@@ -672,7 +648,6 @@ class DualReportingStatus(str, Enum):
     LOCATION_ONLY = "location_only"
     MARKET_ONLY = "market_only"
 
-
 class AllocationMethod(str, Enum):
     """Method for allocating contractual instruments to energy purchases.
 
@@ -694,7 +669,6 @@ class AllocationMethod(str, Enum):
     PRIORITY_BASED = "priority_based"
     PROPORTIONAL = "proportional"
     CUSTOM = "custom"
-
 
 class ConsumptionDataSource(str, Enum):
     """Origin of energy consumption data for data quality assessment.
@@ -721,11 +695,9 @@ class ConsumptionDataSource(str, Enum):
     ESTIMATE = "estimate"
     BENCHMARK = "benchmark"
 
-
 # =============================================================================
 # Constant Tables (all Decimal for deterministic arithmetic)
 # =============================================================================
-
 
 # ---------------------------------------------------------------------------
 # GWP values by IPCC Assessment Report
@@ -761,7 +733,6 @@ GWP_VALUES: Dict[str, Dict[str, Decimal]] = {
         "N2O": Decimal("273"),
     },
 }
-
 
 # ---------------------------------------------------------------------------
 # Residual Mix Emission Factors
@@ -848,7 +819,6 @@ RESIDUAL_MIX_FACTORS: Dict[str, Decimal] = {
     "GLOBAL": Decimal("0.500"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Energy Source Emission Factors
 # ---------------------------------------------------------------------------
@@ -876,7 +846,6 @@ ENERGY_SOURCE_EF: Dict[str, Decimal] = {
     "oil": Decimal("0.650"),
     "mixed": Decimal("0.450"),
 }
-
 
 # ---------------------------------------------------------------------------
 # Supplier Default Emission Factors
@@ -954,7 +923,6 @@ SUPPLIER_DEFAULT_EF: Dict[str, Decimal] = {
     "TR": Decimal("0.395"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Instrument Quality Criterion Weights
 # ---------------------------------------------------------------------------
@@ -976,7 +944,6 @@ INSTRUMENT_QUALITY_WEIGHTS: Dict[str, Decimal] = {
     "recognized_registry": Decimal("0.10"),
     "represents_generation": Decimal("0.10"),
 }
-
 
 # ---------------------------------------------------------------------------
 # Vintage Validity Years
@@ -1002,7 +969,6 @@ VINTAGE_VALIDITY_YEARS: Dict[str, int] = {
     "green_tariff": 1,
     "supplier_specific": 1,
 }
-
 
 # ---------------------------------------------------------------------------
 # Energy Unit Conversion Factors
@@ -1031,13 +997,11 @@ UNIT_CONVERSIONS: Dict[str, Decimal] = {
     "MWH_TO_KWH": Decimal("1000"),
 }
 
-
 # =============================================================================
 # Data Models (20)
 # =============================================================================
 
-
-class ContractualInstrument(BaseModel):
+class ContractualInstrument(GreenLangBase):
     """A contractual instrument conveying emission attributes for market-based.
 
     Represents a single contractual instrument (PPA, REC, GO, REGO,
@@ -1168,8 +1132,7 @@ class ContractualInstrument(BaseModel):
             raise ValueError("delivery_end must be after delivery_start")
         return v
 
-
-class InstrumentQualityAssessment(BaseModel):
+class InstrumentQualityAssessment(GreenLangBase):
     """Quality assessment of a contractual instrument against GHG Protocol.
 
     Evaluates a contractual instrument against the seven GHG Protocol
@@ -1276,12 +1239,11 @@ class InstrumentQualityAssessment(BaseModel):
         description="Quality threshold used for pass/fail determination",
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of the assessment",
     )
 
-
-class SupplierEmissionFactor(BaseModel):
+class SupplierEmissionFactor(GreenLangBase):
     """Supplier-specific emission factor for market-based calculations.
 
     Represents an emission factor disclosed by an energy supplier
@@ -1364,8 +1326,7 @@ class SupplierEmissionFactor(BaseModel):
         """Normalise country code to uppercase."""
         return v.upper()
 
-
-class ResidualMixFactor(BaseModel):
+class ResidualMixFactor(GreenLangBase):
     """Residual mix emission factor for a specific region and year.
 
     Represents the emission intensity of electricity generation
@@ -1433,8 +1394,7 @@ class ResidualMixFactor(BaseModel):
             return v.upper()
         return v
 
-
-class EnergyPurchase(BaseModel):
+class EnergyPurchase(GreenLangBase):
     """Energy purchase record for market-based Scope 2 calculations.
 
     Represents a single energy purchase for a facility during a
@@ -1543,8 +1503,7 @@ class EnergyPurchase(BaseModel):
             )
         return v
 
-
-class FacilityInfo(BaseModel):
+class FacilityInfo(GreenLangBase):
     """Metadata record for a reporting facility in the Scope 2 inventory.
 
     Represents a single physical facility (building, campus, or site)
@@ -1606,8 +1565,7 @@ class FacilityInfo(BaseModel):
         """Normalise country code to uppercase."""
         return v.upper()
 
-
-class AllocationResult(BaseModel):
+class AllocationResult(GreenLangBase):
     """Result of allocating contractual instruments to an energy purchase.
 
     Summarises how instruments were allocated to a specific energy
@@ -1673,8 +1631,7 @@ class AllocationResult(BaseModel):
         description="Method used for the allocation",
     )
 
-
-class CoveredEmissionResult(BaseModel):
+class CoveredEmissionResult(GreenLangBase):
     """Emission result for consumption covered by a contractual instrument.
 
     Represents the emissions calculated for a portion of energy
@@ -1742,8 +1699,7 @@ class CoveredEmissionResult(BaseModel):
         description="Quality assessment score (0-1)",
     )
 
-
-class UncoveredEmissionResult(BaseModel):
+class UncoveredEmissionResult(GreenLangBase):
     """Emission result for consumption not covered by instruments.
 
     Represents the emissions calculated for the portion of energy
@@ -1797,8 +1753,7 @@ class UncoveredEmissionResult(BaseModel):
         description="Source of the residual mix factor",
     )
 
-
-class GasEmissionDetail(BaseModel):
+class GasEmissionDetail(GreenLangBase):
     """Breakdown of emissions for a single greenhouse gas species.
 
     Provides the individual gas emission quantity, the GWP multiplier
@@ -1836,8 +1791,7 @@ class GasEmissionDetail(BaseModel):
         description="CO2-equivalent emission in kg",
     )
 
-
-class MarketBasedResult(BaseModel):
+class MarketBasedResult(GreenLangBase):
     """Result of a Scope 2 market-based emission calculation for a facility.
 
     Contains the complete calculation output including covered and
@@ -1949,7 +1903,7 @@ class MarketBasedResult(BaseModel):
         description="SHA-256 provenance hash for audit trail",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of the calculation",
     )
     metadata: Dict[str, Any] = Field(
@@ -1957,8 +1911,7 @@ class MarketBasedResult(BaseModel):
         description="Optional additional metadata",
     )
 
-
-class DualReportingResult(BaseModel):
+class DualReportingResult(GreenLangBase):
     """Comparison of location-based and market-based Scope 2 results.
 
     GHG Protocol Scope 2 Guidance requires dual reporting of both
@@ -2038,12 +1991,11 @@ class DualReportingResult(BaseModel):
         description="Time period description (e.g. 2025, 2025-Q1)",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of the comparison",
     )
 
-
-class CalculationRequest(BaseModel):
+class CalculationRequest(GreenLangBase):
     """Complete request for a Scope 2 market-based emission calculation.
 
     Aggregates one or more energy purchase records for a single
@@ -2119,8 +2071,7 @@ class CalculationRequest(BaseModel):
             )
         return v
 
-
-class BatchCalculationRequest(BaseModel):
+class BatchCalculationRequest(GreenLangBase):
     """Batch request for multiple Scope 2 market-based calculations.
 
     Aggregates multiple CalculationRequest instances for parallel
@@ -2166,8 +2117,7 @@ class BatchCalculationRequest(BaseModel):
             )
         return v
 
-
-class BatchCalculationResult(BaseModel):
+class BatchCalculationResult(GreenLangBase):
     """Result of a batch Scope 2 market-based calculation.
 
     Aggregates results from all individual calculations in a batch
@@ -2222,8 +2172,7 @@ class BatchCalculationResult(BaseModel):
         description="SHA-256 provenance hash for batch audit trail",
     )
 
-
-class ComplianceCheckResult(BaseModel):
+class ComplianceCheckResult(GreenLangBase):
     """Result of a regulatory compliance check for a calculation.
 
     Evaluates a completed market-based calculation against a specific
@@ -2291,12 +2240,11 @@ class ComplianceCheckResult(BaseModel):
         description="Actual instrument coverage achieved (0-100)",
     )
     checked_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of the compliance check",
     )
 
-
-class InstrumentValidationResult(BaseModel):
+class InstrumentValidationResult(GreenLangBase):
     """Result of validating a contractual instrument for market-based use.
 
     Combines the quality assessment with a validity determination
@@ -2348,12 +2296,11 @@ class InstrumentValidationResult(BaseModel):
         description="Whether instrument status allows allocation",
     )
     validated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of the validation",
     )
 
-
-class UncertaintyRequest(BaseModel):
+class UncertaintyRequest(GreenLangBase):
     """Request for uncertainty quantification on a calculation result.
 
     Specifies the calculation to analyse and the uncertainty method
@@ -2408,8 +2355,7 @@ class UncertaintyRequest(BaseModel):
             )
         return v
 
-
-class UncertaintyResult(BaseModel):
+class UncertaintyResult(GreenLangBase):
     """Result of uncertainty quantification for a market-based calculation.
 
     Provides the mean, standard deviation, and confidence interval
@@ -2479,8 +2425,7 @@ class UncertaintyResult(BaseModel):
         description="Optional distribution parameters",
     )
 
-
-class AggregationResult(BaseModel):
+class AggregationResult(GreenLangBase):
     """Aggregated emission result across multiple calculations.
 
     Provides portfolio-level or group-level totals for Scope 2

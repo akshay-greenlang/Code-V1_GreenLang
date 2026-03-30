@@ -9,7 +9,8 @@ and taxonomy entries with full validation.
 from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional, Set, Union
-from pydantic import BaseModel, Field, validator, root_validator
+from pydantic import Field, validator, root_validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 import re
 
 
@@ -53,7 +54,7 @@ class ConfidenceLevel(str, Enum):
     VERY_LOW = "very_low"  # <50%
 
 
-class CodeHierarchy(BaseModel):
+class CodeHierarchy(GreenLangBase):
     """Hierarchical code structure"""
     level_1: Optional[str] = Field(None, description="Top level (sector)")
     level_2: Optional[str] = Field(None, description="Second level (subsector)")
@@ -74,7 +75,7 @@ class CodeHierarchy(BaseModel):
         }
 
 
-class NAICSCode(BaseModel):
+class NAICSCode(GreenLangBase):
     """NAICS 2022 Code Model"""
     code: str = Field(..., description="NAICS code (2-6 digits)")
     title: str = Field(..., description="Official NAICS title")
@@ -137,7 +138,7 @@ class NAICSCode(BaseModel):
         }
 
 
-class ISICCode(BaseModel):
+class ISICCode(GreenLangBase):
     """ISIC Rev 4 Code Model"""
     code: str = Field(..., description="ISIC code (1-4 characters)")
     title: str = Field(..., description="Official ISIC title")
@@ -188,7 +189,7 @@ class ISICCode(BaseModel):
         }
 
 
-class TaxonomyEntry(BaseModel):
+class TaxonomyEntry(GreenLangBase):
     """Custom Product Taxonomy Entry"""
     id: str = Field(..., description="Unique taxonomy ID")
     name: str = Field(..., description="Product/service name")
@@ -240,7 +241,7 @@ class TaxonomyEntry(BaseModel):
         }
 
 
-class MappingResult(BaseModel):
+class MappingResult(GreenLangBase):
     """Result of an industry mapping operation"""
     input_text: str = Field(..., description="Original input text")
     matched: bool = Field(..., description="Whether a match was found")
@@ -291,7 +292,7 @@ class MappingResult(BaseModel):
         }
 
 
-class ProductMapping(BaseModel):
+class ProductMapping(GreenLangBase):
     """Complete product to industry code mapping"""
     product_name: str = Field(..., description="Product or service name")
     product_description: Optional[str] = Field(None, description="Detailed description")
@@ -317,7 +318,7 @@ class ProductMapping(BaseModel):
         }
 
 
-class ValidationResult(BaseModel):
+class ValidationResult(GreenLangBase):
     """Result of mapping validation"""
     valid: bool = Field(..., description="Whether mapping is valid")
     code: Optional[str] = Field(None, description="Code being validated")
@@ -342,7 +343,7 @@ class ValidationResult(BaseModel):
         }
 
 
-class CoverageAnalysis(BaseModel):
+class CoverageAnalysis(GreenLangBase):
     """Coverage analysis for industry mappings"""
     total_products: int = Field(..., description="Total products analyzed")
     mapped_products: int = Field(..., description="Successfully mapped products")

@@ -47,6 +47,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from pydantic import BaseModel, Field, validator, root_validator
+from greenlang.schemas.enums import AlertSeverity
 
 
 # =============================================================================
@@ -209,16 +210,6 @@ class KafkaSecurityProtocol(str, Enum):
     SSL = "SSL"
     SASL_PLAINTEXT = "SASL_PLAINTEXT"
     SASL_SSL = "SASL_SSL"
-
-
-class AlertSeverity(str, Enum):
-    """Alert severity levels for monitoring."""
-    GOOD = "good"
-    ADVISORY = "advisory"
-    WARNING = "warning"
-    ALARM = "alarm"
-    CRITICAL = "critical"
-    TRIP = "trip"
 
 
 # =============================================================================

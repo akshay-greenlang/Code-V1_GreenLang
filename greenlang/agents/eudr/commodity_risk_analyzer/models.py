@@ -62,17 +62,17 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import (
-    BaseModel,
-    ConfigDict,
     Field,
     field_validator,
     model_validator,
 )
 
-
 # ---------------------------------------------------------------------------
 # Cross-agent commodity import (graceful fallback)
 # ---------------------------------------------------------------------------
+
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ComplianceStatus, ReportFormat, RiskLevel
 
 try:
     from greenlang.agents.data.eudr_traceability.models import (
@@ -81,16 +81,9 @@ try:
 except ImportError:
     _ExternalEUDRCommodity = None  # type: ignore[assignment,misc]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -154,11 +147,9 @@ DEFAULT_COMMODITY_WEIGHTS: Dict[str, float] = {
     "production_stability": 0.10,
 }
 
-
 # =============================================================================
 # Enumerations
 # =============================================================================
-
 
 class CommodityType(str, Enum):
     """EUDR-regulated commodities per Article 1 and Annex I.
@@ -176,7 +167,6 @@ class CommodityType(str, Enum):
     RUBBER = "rubber"
     SOYA = "soya"
     WOOD = "wood"
-
 
 class DerivedProductCategory(str, Enum):
     """Derived product categories per EUDR Annex I.
@@ -243,7 +233,6 @@ class DerivedProductCategory(str, Enum):
     FURNITURE = "furniture"
     CORK = "cork"
 
-
 class ProcessingStage(str, Enum):
     """Processing stages in the commodity transformation chain.
 
@@ -262,22 +251,6 @@ class ProcessingStage(str, Enum):
     FINISHED = "finished"
     PACKAGED = "packaged"
 
-
-class RiskLevel(str, Enum):
-    """Commodity risk classification per composite risk scoring.
-
-    LOW: Risk score 0-25. Low risk, reduced monitoring frequency.
-    MEDIUM: Risk score 26-50. Standard risk, standard monitoring.
-    HIGH: Risk score 51-75. High risk, enhanced monitoring.
-    CRITICAL: Risk score 76-100. Critical risk, immediate action required.
-    """
-
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
-    CRITICAL = "critical"
-
-
 class MarketCondition(str, Enum):
     """Market condition classification for commodity price analysis.
 
@@ -291,7 +264,6 @@ class MarketCondition(str, Enum):
     VOLATILE = "volatile"
     DISRUPTED = "disrupted"
     CRISIS = "crisis"
-
 
 class VolatilityLevel(str, Enum):
     """Price volatility classification.
@@ -307,7 +279,6 @@ class VolatilityLevel(str, Enum):
     HIGH = "high"
     EXTREME = "extreme"
 
-
 class SeasonalPhase(str, Enum):
     """Seasonal production phase for commodity forecasting.
 
@@ -321,24 +292,6 @@ class SeasonalPhase(str, Enum):
     GROWING = "growing"
     HARVEST = "harvest"
     OFF_SEASON = "off_season"
-
-
-class ComplianceStatus(str, Enum):
-    """Regulatory compliance status per commodity per EUDR article.
-
-    COMPLIANT: Fully compliant with all requirements.
-    PARTIALLY_COMPLIANT: Some requirements met, gaps identified.
-    NON_COMPLIANT: Not compliant, corrective action required.
-    UNDER_REVIEW: Compliance status under review.
-    NOT_ASSESSED: Compliance not yet assessed.
-    """
-
-    COMPLIANT = "compliant"
-    PARTIALLY_COMPLIANT = "partially_compliant"
-    NON_COMPLIANT = "non_compliant"
-    UNDER_REVIEW = "under_review"
-    NOT_ASSESSED = "not_assessed"
-
 
 class DDWorkflowStatus(str, Enum):
     """Due diligence workflow execution status.
@@ -357,7 +310,6 @@ class DDWorkflowStatus(str, Enum):
     APPROVED = "approved"
     REJECTED = "rejected"
     OVERDUE = "overdue"
-
 
 class EvidenceType(str, Enum):
     """Evidence types for commodity due diligence.
@@ -385,7 +337,6 @@ class EvidenceType(str, Enum):
     THIRD_PARTY_AUDIT = "third_party_audit"
     CERTIFICATION_DOCUMENT = "certification_document"
 
-
 class PortfolioStrategy(str, Enum):
     """Portfolio risk management strategy classification.
 
@@ -400,30 +351,11 @@ class PortfolioStrategy(str, Enum):
     DIVERSIFIED = "diversified"
     CONCENTRATED = "concentrated"
 
-
-class ReportFormat(str, Enum):
-    """Report output format.
-
-    JSON: JSON format for programmatic access.
-    HTML: HTML format for web display.
-    PDF: PDF format for printing and archiving.
-    EXCEL: Excel format for data analysis.
-    CSV: CSV format for data export.
-    """
-
-    JSON = "json"
-    HTML = "html"
-    PDF = "pdf"
-    EXCEL = "excel"
-    CSV = "csv"
-
-
 # =============================================================================
 # Core Models
 # =============================================================================
 
-
-class CommodityRiskScore(BaseModel):
+class CommodityRiskScore(GreenLangBase):
     """Individual commodity risk factor score with weighting.
 
     Attributes:
@@ -446,10 +378,9 @@ class CommodityRiskScore(BaseModel):
     weighted_score: Decimal = Field(..., ge=0, le=100)
     data_sources: List[str] = Field(default_factory=list)
     confidence: Decimal = Field(..., ge=0, le=1)
-    last_updated: datetime = Field(default_factory=_utcnow)
+    last_updated: datetime = Field(default_factory=utcnow)
 
-
-class CommodityProfile(BaseModel):
+class CommodityProfile(GreenLangBase):
     """Commodity risk profile with comprehensive risk scoring.
 
     Attributes:
@@ -485,8 +416,8 @@ class CommodityProfile(BaseModel):
     processing_chains: List[str] = Field(default_factory=list)
     factor_scores: List[CommodityRiskScore] = Field(default_factory=list)
     provenance_hash: str = Field(default="", max_length=64)
-    created_at: datetime = Field(default_factory=_utcnow)
-    updated_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
+    updated_at: datetime = Field(default_factory=utcnow)
 
     @field_validator("country_distribution")
     @classmethod
@@ -502,8 +433,7 @@ class CommodityProfile(BaseModel):
                 )
         return v
 
-
-class DerivedProduct(BaseModel):
+class DerivedProduct(GreenLangBase):
     """Derived product from an EUDR commodity with traceability scoring.
 
     Attributes:
@@ -533,11 +463,10 @@ class DerivedProduct(BaseModel):
     traceability_score: Decimal = Field(..., ge=0, le=1)
     hs_codes: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="", max_length=64)
-    created_at: datetime = Field(default_factory=_utcnow)
-    updated_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
+    updated_at: datetime = Field(default_factory=utcnow)
 
-
-class PriceData(BaseModel):
+class PriceData(GreenLangBase):
     """Commodity price data point with volatility metrics.
 
     Attributes:
@@ -573,11 +502,10 @@ class PriceData(BaseModel):
     market_condition: MarketCondition = MarketCondition.STABLE
     volume: Optional[Decimal] = Field(None, ge=0)
     provenance_hash: str = Field(default="", max_length=64)
-    created_at: datetime = Field(default_factory=_utcnow)
-    updated_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
+    updated_at: datetime = Field(default_factory=utcnow)
 
-
-class ProductionForecast(BaseModel):
+class ProductionForecast(GreenLangBase):
     """Production forecast for a commodity in a specific region.
 
     Attributes:
@@ -613,8 +541,8 @@ class ProductionForecast(BaseModel):
     seasonal_factor: Decimal = Field(default=Decimal("1.0"), gt=0, le=3)
     seasonal_phase: SeasonalPhase = SeasonalPhase.GROWING
     provenance_hash: str = Field(default="", max_length=64)
-    created_at: datetime = Field(default_factory=_utcnow)
-    updated_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
+    updated_at: datetime = Field(default_factory=utcnow)
 
     @model_validator(mode="after")
     def validate_confidence_bounds(self) -> "ProductionForecast":
@@ -631,8 +559,7 @@ class ProductionForecast(BaseModel):
             )
         return self
 
-
-class SubstitutionEvent(BaseModel):
+class SubstitutionEvent(GreenLangBase):
     """Commodity substitution event detection record.
 
     Attributes:
@@ -662,8 +589,8 @@ class SubstitutionEvent(BaseModel):
     risk_impact: Decimal = Field(..., ge=0, le=100)
     evidence_items: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="", max_length=64)
-    created_at: datetime = Field(default_factory=_utcnow)
-    updated_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
+    updated_at: datetime = Field(default_factory=utcnow)
 
     @field_validator("to_commodity")
     @classmethod
@@ -678,8 +605,7 @@ class SubstitutionEvent(BaseModel):
             )
         return v
 
-
-class RegulatoryRequirement(BaseModel):
+class RegulatoryRequirement(GreenLangBase):
     """Regulatory requirement per commodity per EUDR article.
 
     Attributes:
@@ -709,11 +635,10 @@ class RegulatoryRequirement(BaseModel):
     evidence_standard: str = Field(default="standard", max_length=100)
     compliance_status: ComplianceStatus = ComplianceStatus.NOT_ASSESSED
     provenance_hash: str = Field(default="", max_length=64)
-    created_at: datetime = Field(default_factory=_utcnow)
-    updated_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
+    updated_at: datetime = Field(default_factory=utcnow)
 
-
-class DDWorkflow(BaseModel):
+class DDWorkflow(GreenLangBase):
     """Commodity-specific due diligence workflow.
 
     Attributes:
@@ -748,14 +673,13 @@ class DDWorkflow(BaseModel):
         default=Decimal("0"), ge=0, le=1
     )
     deadline: Optional[datetime] = None
-    started_at: datetime = Field(default_factory=_utcnow)
+    started_at: datetime = Field(default_factory=utcnow)
     completed_at: Optional[datetime] = None
     provenance_hash: str = Field(default="", max_length=64)
-    created_at: datetime = Field(default_factory=_utcnow)
-    updated_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
+    updated_at: datetime = Field(default_factory=utcnow)
 
-
-class PortfolioAnalysis(BaseModel):
+class PortfolioAnalysis(GreenLangBase):
     """Multi-commodity portfolio risk aggregation analysis.
 
     Attributes:
@@ -789,11 +713,10 @@ class PortfolioAnalysis(BaseModel):
         default_factory=dict
     )
     provenance_hash: str = Field(default="", max_length=64)
-    created_at: datetime = Field(default_factory=_utcnow)
-    updated_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
+    updated_at: datetime = Field(default_factory=utcnow)
 
-
-class AuditLogEntry(BaseModel):
+class AuditLogEntry(GreenLangBase):
     """Audit log entry for commodity risk analysis operations.
 
     Attributes:
@@ -816,17 +739,15 @@ class AuditLogEntry(BaseModel):
     entity_id: str = Field(..., min_length=1, max_length=100)
     action: str = Field(..., min_length=1, max_length=100)
     actor: str = Field(..., min_length=1, max_length=100)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(..., min_length=64, max_length=64)
     details: Optional[Dict[str, Any]] = None
-
 
 # =============================================================================
 # Request Models
 # =============================================================================
 
-
-class ProfileCommodityRequest(BaseModel):
+class ProfileCommodityRequest(GreenLangBase):
     """Request to create or update a commodity risk profile."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -837,8 +758,7 @@ class ProfileCommodityRequest(BaseModel):
     include_price_data: bool = True
     requested_by: str = Field(..., min_length=1, max_length=100)
 
-
-class AnalyzeDerivedProductRequest(BaseModel):
+class AnalyzeDerivedProductRequest(GreenLangBase):
     """Request to analyze a derived product."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -848,8 +768,7 @@ class AnalyzeDerivedProductRequest(BaseModel):
     processing_stages: Optional[List[ProcessingStage]] = None
     include_traceability: bool = True
 
-
-class QueryPriceVolatilityRequest(BaseModel):
+class QueryPriceVolatilityRequest(GreenLangBase):
     """Request to query price volatility data."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -867,8 +786,7 @@ class QueryPriceVolatilityRequest(BaseModel):
             raise ValueError("start_date must be before end_date")
         return self
 
-
-class GenerateForecastRequest(BaseModel):
+class GenerateForecastRequest(GreenLangBase):
     """Request to generate a production forecast."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -879,8 +797,7 @@ class GenerateForecastRequest(BaseModel):
     include_climate_adjustment: bool = True
     include_seasonal_factor: bool = True
 
-
-class DetectSubstitutionRequest(BaseModel):
+class DetectSubstitutionRequest(GreenLangBase):
     """Request to detect commodity substitution events."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -890,8 +807,7 @@ class DetectSubstitutionRequest(BaseModel):
     lookback_days: int = Field(default=180, ge=1, le=365)
     min_confidence: Decimal = Field(default=Decimal("0.70"), ge=0, le=1)
 
-
-class CheckComplianceRequest(BaseModel):
+class CheckComplianceRequest(GreenLangBase):
     """Request to check regulatory compliance for a commodity."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -900,8 +816,7 @@ class CheckComplianceRequest(BaseModel):
     eudr_articles: Optional[List[str]] = None
     supplier_id: Optional[str] = Field(None, max_length=100)
 
-
-class InitiateDDWorkflowRequest(BaseModel):
+class InitiateDDWorkflowRequest(GreenLangBase):
     """Request to initiate a commodity due diligence workflow."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -912,8 +827,7 @@ class InitiateDDWorkflowRequest(BaseModel):
     deadline_days: int = Field(default=30, ge=1, le=365)
     initiated_by: str = Field(..., min_length=1, max_length=100)
 
-
-class AggregatePortfolioRequest(BaseModel):
+class AggregatePortfolioRequest(GreenLangBase):
     """Request to aggregate portfolio risk across commodities."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -923,8 +837,7 @@ class AggregatePortfolioRequest(BaseModel):
     include_correlation: bool = True
     include_diversification: bool = True
 
-
-class BatchCommodityAnalysisRequest(BaseModel):
+class BatchCommodityAnalysisRequest(GreenLangBase):
     """Request to perform batch commodity analysis."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -933,8 +846,7 @@ class BatchCommodityAnalysisRequest(BaseModel):
     analysis_types: List[str] = Field(default_factory=lambda: ["profile"])
     requested_by: str = Field(..., min_length=1, max_length=100)
 
-
-class CompareCommoditiesRequest(BaseModel):
+class CompareCommoditiesRequest(GreenLangBase):
     """Request to compare multiple commodities."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -943,8 +855,7 @@ class CompareCommoditiesRequest(BaseModel):
     comparison_factors: Optional[List[str]] = None
     include_trend: bool = True
 
-
-class GetTrendRequest(BaseModel):
+class GetTrendRequest(GreenLangBase):
     """Request to get commodity risk trend analysis."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -953,8 +864,7 @@ class GetTrendRequest(BaseModel):
     period_months: int = Field(default=12, ge=1, le=60)
     include_forecast: bool = False
 
-
-class HealthRequest(BaseModel):
+class HealthRequest(GreenLangBase):
     """Request to check service health."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -962,13 +872,11 @@ class HealthRequest(BaseModel):
     include_database: bool = True
     include_cache: bool = True
 
-
 # =============================================================================
 # Response Models
 # =============================================================================
 
-
-class CommodityProfileResponse(BaseModel):
+class CommodityProfileResponse(GreenLangBase):
     """Response for commodity profiling."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -977,8 +885,7 @@ class CommodityProfileResponse(BaseModel):
     processing_time_ms: float
     provenance_hash: str = Field(..., min_length=64, max_length=64)
 
-
-class DerivedProductResponse(BaseModel):
+class DerivedProductResponse(GreenLangBase):
     """Response for derived product analysis."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -988,8 +895,7 @@ class DerivedProductResponse(BaseModel):
     processing_time_ms: float
     provenance_hash: str = Field(..., min_length=64, max_length=64)
 
-
-class PriceVolatilityResponse(BaseModel):
+class PriceVolatilityResponse(GreenLangBase):
     """Response for price volatility query."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1001,8 +907,7 @@ class PriceVolatilityResponse(BaseModel):
     processing_time_ms: float
     provenance_hash: str = Field(..., min_length=64, max_length=64)
 
-
-class ProductionForecastResponse(BaseModel):
+class ProductionForecastResponse(GreenLangBase):
     """Response for production forecast."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1012,8 +917,7 @@ class ProductionForecastResponse(BaseModel):
     processing_time_ms: float
     provenance_hash: str = Field(..., min_length=64, max_length=64)
 
-
-class SubstitutionRiskResponse(BaseModel):
+class SubstitutionRiskResponse(GreenLangBase):
     """Response for substitution risk detection."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1024,8 +928,7 @@ class SubstitutionRiskResponse(BaseModel):
     processing_time_ms: float
     provenance_hash: str = Field(..., min_length=64, max_length=64)
 
-
-class RegulatoryComplianceResponse(BaseModel):
+class RegulatoryComplianceResponse(GreenLangBase):
     """Response for regulatory compliance check."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1036,8 +939,7 @@ class RegulatoryComplianceResponse(BaseModel):
     processing_time_ms: float
     provenance_hash: str = Field(..., min_length=64, max_length=64)
 
-
-class DDWorkflowResponse(BaseModel):
+class DDWorkflowResponse(GreenLangBase):
     """Response for due diligence workflow operations."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1046,8 +948,7 @@ class DDWorkflowResponse(BaseModel):
     processing_time_ms: float
     provenance_hash: str = Field(..., min_length=64, max_length=64)
 
-
-class PortfolioAnalysisResponse(BaseModel):
+class PortfolioAnalysisResponse(GreenLangBase):
     """Response for portfolio risk aggregation."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1057,8 +958,7 @@ class PortfolioAnalysisResponse(BaseModel):
     processing_time_ms: float
     provenance_hash: str = Field(..., min_length=64, max_length=64)
 
-
-class BatchAnalysisResponse(BaseModel):
+class BatchAnalysisResponse(GreenLangBase):
     """Response for batch commodity analysis."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1070,8 +970,7 @@ class BatchAnalysisResponse(BaseModel):
     processing_time_ms: float
     provenance_hash: str = Field(..., min_length=64, max_length=64)
 
-
-class ComparisonResponse(BaseModel):
+class ComparisonResponse(GreenLangBase):
     """Response for commodity comparison."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1081,8 +980,7 @@ class ComparisonResponse(BaseModel):
     processing_time_ms: float
     provenance_hash: str = Field(..., min_length=64, max_length=64)
 
-
-class TrendResponse(BaseModel):
+class TrendResponse(GreenLangBase):
     """Response for trend analysis."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1093,8 +991,7 @@ class TrendResponse(BaseModel):
     processing_time_ms: float
     provenance_hash: str = Field(..., min_length=64, max_length=64)
 
-
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Response for health check."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1103,4 +1000,4 @@ class HealthResponse(BaseModel):
     database_status: Optional[str] = Field(None, max_length=50)
     cache_status: Optional[str] = Field(None, max_length=50)
     version: str = Field(default=VERSION)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)

@@ -58,18 +58,13 @@ from typing import Any, Callable, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # UTILITIES
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return current UTC time with timezone info."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute SHA-256 provenance hash of arbitrary data."""
@@ -77,11 +72,9 @@ def _hash_data(data: Any) -> str:
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -91,7 +84,6 @@ class PhaseStatus(str, Enum):
     FAILED = "FAILED"
     SKIPPED = "SKIPPED"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "PENDING"
@@ -100,13 +92,11 @@ class WorkflowStatus(str, Enum):
     FAILED = "FAILED"
     PARTIAL = "PARTIAL"
 
-
 class ScreeningScope(str, Enum):
     """Screening scope."""
     FULL_PORTFOLIO = "FULL_PORTFOLIO"
     NEW_INVESTMENTS = "NEW_INVESTMENTS"
     REBALANCE = "REBALANCE"
-
 
 class ViolationSeverity(str, Enum):
     """Severity of a screening violation."""
@@ -115,7 +105,6 @@ class ViolationSeverity(str, Enum):
     MEDIUM = "MEDIUM"
     LOW = "LOW"
 
-
 class ScreeningVerdict(str, Enum):
     """Screening outcome verdict."""
     PASS = "PASS"
@@ -123,17 +112,15 @@ class ScreeningVerdict(str, Enum):
     WATCHLIST = "WATCHLIST"
     EXEMPT = "EXEMPT"
 
-
 # =============================================================================
 # DATA MODELS - SHARED
 # =============================================================================
-
 
 class WorkflowContext(BaseModel):
     """Shared state passed between workflow phases."""
     workflow_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     organization_id: str = Field(..., description="Organization identifier")
-    execution_timestamp: datetime = Field(default_factory=_utcnow)
+    execution_timestamp: datetime = Field(default_factory=utcnow)
     config: Dict[str, Any] = Field(default_factory=dict)
     phase_states: Dict[str, PhaseStatus] = Field(default_factory=dict)
     phase_outputs: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
@@ -156,7 +143,6 @@ class WorkflowContext(BaseModel):
         """Check if a phase has already completed."""
         return self.phase_states.get(phase_name) == PhaseStatus.COMPLETED
 
-
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
     phase_name: str = Field(..., description="Phase identifier")
@@ -170,7 +156,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     records_processed: int = Field(default=0)
 
-
 class WorkflowResult(BaseModel):
     """Complete result from a multi-phase workflow execution."""
     workflow_id: str = Field(..., description="Unique workflow execution ID")
@@ -183,11 +168,9 @@ class WorkflowResult(BaseModel):
     summary: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # DATA MODELS - PORTFOLIO SCREENING
 # =============================================================================
-
 
 class ScreeningHolding(BaseModel):
     """A holding to be screened."""
@@ -210,7 +193,6 @@ class ScreeningHolding(BaseModel):
     water_stress_exposure: bool = Field(default=False)
     is_new_investment: bool = Field(default=False)
 
-
 class ExclusionRule(BaseModel):
     """A single exclusion rule for negative screening."""
     rule_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -222,7 +204,6 @@ class ExclusionRule(BaseModel):
     threshold: float = Field(default=0.0, description="Threshold value")
     severity: ViolationSeverity = Field(default=ViolationSeverity.CRITICAL)
     binding: bool = Field(default=True)
-
 
 class PositiveRule(BaseModel):
     """A single positive screening rule."""
@@ -236,7 +217,6 @@ class PositiveRule(BaseModel):
     weight: float = Field(
         default=1.0, ge=0.0, description="Weighting for scoring"
     )
-
 
 class PortfolioScreeningInput(BaseModel):
     """Input configuration for the portfolio screening workflow."""
@@ -317,7 +297,6 @@ class PortfolioScreeningInput(BaseModel):
             raise ValueError("screening_date must be YYYY-MM-DD format")
         return v
 
-
 class PortfolioScreeningResult(WorkflowResult):
     """Complete result from the portfolio screening workflow."""
     product_name: str = Field(default="")
@@ -330,11 +309,9 @@ class PortfolioScreeningResult(WorkflowResult):
     is_compliant: bool = Field(default=False)
     watchlist_count: int = Field(default=0)
 
-
 # =============================================================================
 # PHASE IMPLEMENTATIONS
 # =============================================================================
-
 
 class UniverseDefinitionPhase:
     """
@@ -356,7 +333,7 @@ class UniverseDefinitionPhase:
         Returns:
             PhaseResult with defined universe and scope.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -420,7 +397,7 @@ class UniverseDefinitionPhase:
             status = PhaseStatus.FAILED
             records = 0
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -433,7 +410,6 @@ class UniverseDefinitionPhase:
             provenance_hash=_hash_data(outputs),
             records_processed=records,
         )
-
 
 class NegativeScreeningPhase:
     """
@@ -455,7 +431,7 @@ class NegativeScreeningPhase:
         Returns:
             PhaseResult with violation details and exclusion impact.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -570,7 +546,7 @@ class NegativeScreeningPhase:
             status = PhaseStatus.FAILED
             records = 0
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -583,7 +559,6 @@ class NegativeScreeningPhase:
             provenance_hash=_hash_data(outputs),
             records_processed=records,
         )
-
 
 class PositiveScreeningPhase:
     """
@@ -605,7 +580,7 @@ class PositiveScreeningPhase:
         Returns:
             PhaseResult with positive screening scores and categorization.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -740,7 +715,7 @@ class PositiveScreeningPhase:
             status = PhaseStatus.FAILED
             records = 0
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -753,7 +728,6 @@ class PositiveScreeningPhase:
             provenance_hash=_hash_data(outputs),
             records_processed=records,
         )
-
 
 class ComplianceCheckPhase:
     """
@@ -776,7 +750,7 @@ class ComplianceCheckPhase:
         Returns:
             PhaseResult with compliance assessment and screening report.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -865,7 +839,7 @@ class ComplianceCheckPhase:
             # Generate screening report
             outputs["screening_report"] = {
                 "report_id": str(uuid.uuid4()),
-                "generated_at": _utcnow().isoformat(),
+                "generated_at": utcnow().isoformat(),
                 "product_name": config.get("product_name", ""),
                 "screening_date": config.get("screening_date", ""),
                 "scope": config.get(
@@ -908,7 +882,7 @@ class ComplianceCheckPhase:
             errors.append(f"Compliance check failed: {str(exc)}")
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -921,11 +895,9 @@ class ComplianceCheckPhase:
             provenance_hash=_hash_data(outputs),
         )
 
-
 # =============================================================================
 # WORKFLOW ORCHESTRATOR
 # =============================================================================
-
 
 class PortfolioScreeningWorkflow:
     """
@@ -981,7 +953,7 @@ class PortfolioScreeningWorkflow:
         Returns:
             PortfolioScreeningResult with per-phase details and summary.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         logger.info(
             "Starting portfolio screening workflow %s for org=%s product=%s",
             self.workflow_id, input_data.organization_id,
@@ -1040,7 +1012,7 @@ class PortfolioScreeningWorkflow:
                 error_result = PhaseResult(
                     phase_name=phase_name,
                     status=PhaseStatus.FAILED,
-                    started_at=_utcnow(),
+                    started_at=utcnow(),
                     errors=[str(exc)],
                     provenance_hash=_hash_data({"error": str(exc)}),
                 )
@@ -1058,7 +1030,7 @@ class PortfolioScreeningWorkflow:
                 WorkflowStatus.COMPLETED if all_ok else WorkflowStatus.PARTIAL
             )
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         total_duration = (completed_at - started_at).total_seconds()
         summary = self._build_summary(context)
         provenance = _hash_data({

@@ -95,9 +95,9 @@ from greenlang.agents.mrv.cooling_purchase.models import (
     UncertaintyResult,
     VERSION,
 )
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Optional engine imports (graceful degradation)
@@ -161,7 +161,6 @@ except ImportError:
     CoolingPurchaseMetrics = None  # type: ignore[assignment, misc]
     get_metrics = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # Pipeline stage constants
 # ---------------------------------------------------------------------------
@@ -212,26 +211,17 @@ _DEFAULT_CH4_FRACTION = Decimal("0.012")
 #: N2O fraction of total CO2e from typical grid electricity.
 _DEFAULT_N2O_FRACTION = Decimal("0.008")
 
-
 # ---------------------------------------------------------------------------
 # Utility helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _utcnow_iso() -> str:
     """Return current UTC datetime as an ISO-8601 string."""
-    return _utcnow().isoformat()
-
+    return utcnow().isoformat()
 
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _quantize(value: Decimal, places: int = _DEFAULT_DECIMAL_PLACES) -> Decimal:
     """Quantize a Decimal to the specified number of decimal places.
@@ -247,7 +237,6 @@ def _quantize(value: Decimal, places: int = _DEFAULT_DECIMAL_PLACES) -> Decimal:
         return value.quantize(_QUANTIZE_8, rounding=ROUND_HALF_UP)
     q = Decimal(10) ** -places
     return value.quantize(q, rounding=ROUND_HALF_UP)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -267,7 +256,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 def _elapsed_ms(start: float) -> Decimal:
     """Calculate elapsed time in milliseconds from a perf_counter start.
 
@@ -280,7 +268,6 @@ def _elapsed_ms(start: float) -> Decimal:
     return Decimal(str((time.perf_counter() - start) * 1000)).quantize(
         Decimal("0.001"), rounding=ROUND_HALF_UP
     )
-
 
 def _safe_model_dict(model: Any) -> Dict[str, Any]:
     """Safely convert a Pydantic model or dict to a dictionary.
@@ -297,11 +284,9 @@ def _safe_model_dict(model: Any) -> Dict[str, Any]:
         return model
     return {"value": str(model)}
 
-
 # ===================================================================
 # CoolingPurchasePipelineEngine
 # ===================================================================
-
 
 class CoolingPurchasePipelineEngine:
     """End-to-end orchestration pipeline for Scope 2 cooling purchase
@@ -2866,11 +2851,9 @@ class CoolingPurchasePipelineEngine:
             "checked_at": _utcnow_iso(),
         }
 
-
 # ---------------------------------------------------------------------------
 # Module-level convenience functions
 # ---------------------------------------------------------------------------
-
 
 def get_pipeline() -> CoolingPurchasePipelineEngine:
     """Return the singleton CoolingPurchasePipelineEngine instance.

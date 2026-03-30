@@ -44,6 +44,7 @@ from greenlang.agents.foundation.citations.models import (
     RegulatoryFramework,
 )
 from greenlang.agents.foundation.citations.provenance import ProvenanceTracker
+from greenlang.schemas import utcnow
 from greenlang.agents.foundation.citations.metrics import (
     record_evidence_item,
     record_evidence_package,
@@ -52,12 +53,6 @@ from greenlang.agents.foundation.citations.metrics import (
 )
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 class EvidenceManager:
     """Manages evidence packages for audit-ready documentation.
@@ -345,7 +340,7 @@ class EvidenceManager:
         # Calculate package hash
         package_hash = package.calculate_package_hash()
         package.package_hash = package_hash
-        package.finalized_at = _utcnow()
+        package.finalized_at = utcnow()
 
         # Record provenance
         if self.config.enable_change_logging:
@@ -513,7 +508,6 @@ class EvidenceManager:
             return hashlib.sha256(json_str.encode()).hexdigest()
         except Exception:
             return hashlib.sha256(str(data).encode()).hexdigest()
-
 
 __all__ = [
     "EvidenceManager",

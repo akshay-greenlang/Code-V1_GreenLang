@@ -17,10 +17,11 @@ from datetime import datetime, date
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism.clock import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +53,7 @@ class Jurisdiction(str, Enum):
     GLOBAL = "global"
 
 
-class Regulation(BaseModel):
+class Regulation(GreenLangBase):
     regulation_id: str = Field(...)
     name: str = Field(...)
     jurisdiction: Jurisdiction = Field(...)
@@ -66,7 +67,7 @@ class Regulation(BaseModel):
     penalties: Optional[str] = Field(None)
 
 
-class RegulatoryUpdate(BaseModel):
+class RegulatoryUpdate(GreenLangBase):
     regulation_id: str = Field(...)
     update_type: str = Field(...)
     update_date: date = Field(...)
@@ -74,7 +75,7 @@ class RegulatoryUpdate(BaseModel):
     impact_level: str = Field(...)
 
 
-class RegulatoryDatabaseInput(BaseModel):
+class RegulatoryDatabaseInput(GreenLangBase):
     organization_id: str = Field(...)
     jurisdictions: List[Jurisdiction] = Field(...)
     regulation_types: List[RegulationType] = Field(default_factory=list)
@@ -82,7 +83,7 @@ class RegulatoryDatabaseInput(BaseModel):
     include_upcoming: bool = Field(default=True)
 
 
-class RegulatoryDatabaseOutput(BaseModel):
+class RegulatoryDatabaseOutput(GreenLangBase):
     organization_id: str = Field(...)
     query_date: datetime = Field(default_factory=DeterministicClock.now)
     applicable_regulations: List[Regulation] = Field(...)

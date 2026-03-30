@@ -34,33 +34,26 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "26.0.0"
 _PACK_ID = "PACK-026"
 
-
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -69,7 +62,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
@@ -77,25 +69,21 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class RAGStatus(str, Enum):
     GREEN = "green"
     AMBER = "amber"
     RED = "red"
-
 
 class TrendDirection(str, Enum):
     DECREASING = "decreasing"
     FLAT = "flat"
     INCREASING = "increasing"
 
-
 class Quarter(str, Enum):
     Q1 = "Q1"
     Q2 = "Q2"
     Q3 = "Q3"
     Q4 = "Q4"
-
 
 # =============================================================================
 # EMISSION FACTOR CONSTANTS (subset for quarterly updates)
@@ -115,11 +103,9 @@ ENERGY_COST_PER_KWH_GBP: Dict[str, float] = {
     "gas": 0.08,
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -134,7 +120,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
     mobile_summary: str = Field(default="")
-
 
 class QuarterlySpendUpdate(BaseModel):
     """Quarterly spend data for quick emissions update."""
@@ -152,7 +137,6 @@ class QuarterlySpendUpdate(BaseModel):
     employee_count: int = Field(default=0, ge=0, description="Current headcount")
     notes: str = Field(default="", description="Any context for the quarter")
 
-
 class QuarterlyEmissions(BaseModel):
     """Calculated quarterly emissions."""
 
@@ -164,14 +148,12 @@ class QuarterlyEmissions(BaseModel):
     total_tco2e: float = Field(default=0.0, ge=0.0)
     annualised_tco2e: float = Field(default=0.0, ge=0.0)
 
-
 class TargetPathwayPoint(BaseModel):
     """Target pathway point for comparison."""
 
     year: int = Field(default=2025)
     target_tco2e: float = Field(default=0.0, ge=0.0)
     reduction_pct: float = Field(default=0.0, ge=0.0, le=100.0)
-
 
 class ProgressMetrics(BaseModel):
     """Quarterly progress metrics vs target."""
@@ -188,7 +170,6 @@ class ProgressMetrics(BaseModel):
     vs_previous_quarter_pct: float = Field(default=0.0)
     ytd_tco2e: float = Field(default=0.0, ge=0.0)
 
-
 class QuickWinProgress(BaseModel):
     """Progress on quick win actions."""
 
@@ -197,7 +178,6 @@ class QuickWinProgress(BaseModel):
     savings_achieved_tco2e: float = Field(default=0.0, ge=0.0)
     savings_target_tco2e: float = Field(default=0.0, ge=0.0)
     completion_pct: float = Field(default=0.0, ge=0.0, le=100.0)
-
 
 class BoardBrief(BaseModel):
     """One-page board brief summary."""
@@ -211,7 +191,6 @@ class BoardBrief(BaseModel):
     recommended_actions: List[str] = Field(default_factory=list)
     cost_savings_ytd_gbp: float = Field(default=0.0)
     next_quarter_priorities: List[str] = Field(default_factory=list)
-
 
 class QuarterlyReviewConfig(BaseModel):
     """Configuration for quarterly review workflow."""
@@ -232,7 +211,6 @@ class QuarterlyReviewConfig(BaseModel):
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
 
-
 class QuarterlyReviewInput(BaseModel):
     """Complete input for quarterly review workflow."""
 
@@ -242,7 +220,6 @@ class QuarterlyReviewInput(BaseModel):
     config: QuarterlyReviewConfig = Field(
         default_factory=QuarterlyReviewConfig,
     )
-
 
 class QuarterlyReviewResult(BaseModel):
     """Complete result from quarterly review workflow."""
@@ -261,11 +238,9 @@ class QuarterlyReviewResult(BaseModel):
     next_steps: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class QuarterlyReviewWorkflow:
     """
@@ -310,7 +285,7 @@ class QuarterlyReviewWorkflow:
 
     async def execute(self, input_data: QuarterlyReviewInput) -> QuarterlyReviewResult:
         """Execute the 3-phase quarterly review workflow."""
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting quarterly review %s for %s %d",
             self.workflow_id,
@@ -344,7 +319,7 @@ class QuarterlyReviewWorkflow:
                 mobile_summary="Review failed.",
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         next_steps = self._generate_next_steps(input_data)
 
         result = QuarterlyReviewResult(
@@ -370,7 +345,7 @@ class QuarterlyReviewWorkflow:
 
     async def _phase_data_update(self, inp: QuarterlyReviewInput) -> PhaseResult:
         """Calculate quarterly emissions from spend/activity data."""
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         errors: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -445,7 +420,7 @@ class QuarterlyReviewWorkflow:
         if total_spend <= 0:
             errors.append("No spend data provided for the quarter")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         status = PhaseStatus.COMPLETED if not errors else PhaseStatus.FAILED
         return PhaseResult(
             phase_name="data_update", phase_number=1,
@@ -462,7 +437,7 @@ class QuarterlyReviewWorkflow:
 
     async def _phase_progress_calc(self, inp: QuarterlyReviewInput) -> PhaseResult:
         """Calculate progress vs. target pathway."""
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
 
@@ -565,7 +540,7 @@ class QuarterlyReviewWorkflow:
         outputs["cumulative_reduction_pct"] = round(cumulative_reduction, 2)
         outputs["ytd_tco2e"] = round(ytd, 4)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Progress: RAG=%s, gap=%.1f tCO2e, %s, on_track=%s",
             rag.value, gap, trend.value, on_track,
@@ -586,7 +561,7 @@ class QuarterlyReviewWorkflow:
 
     async def _phase_reporting(self, inp: QuarterlyReviewInput) -> PhaseResult:
         """Generate dashboard metrics and board brief."""
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
 
@@ -689,7 +664,7 @@ class QuarterlyReviewWorkflow:
         outputs["risks"] = len(risks)
         outputs["cost_savings_gbp"] = round(cost_savings, 2)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="reporting", phase_number=3,
             status=PhaseStatus.COMPLETED,

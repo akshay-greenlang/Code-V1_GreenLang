@@ -76,21 +76,13 @@ logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -110,7 +102,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely.
 
@@ -124,7 +115,6 @@ def _decimal(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _safe_divide(
     numerator: float, denominator: float, default: float = 0.0
 ) -> float:
@@ -133,20 +123,17 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.01"), rounding=ROUND_HALF_UP
     ))
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value to the specified number of decimal places.
@@ -163,11 +150,9 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class PassportField(str, Enum):
     """Battery passport data field per Annex XIII.
@@ -226,7 +211,6 @@ class PassportField(str, Enum):
     EOL_SECOND_LIFE_INFO = "eol_second_life_info"
     EOL_SAFETY_INSTRUCTIONS = "eol_safety_instructions"
 
-
 class PassportStatus(str, Enum):
     """Status of the battery passport.
 
@@ -238,7 +222,6 @@ class PassportStatus(str, Enum):
     PUBLISHED = "published"
     REVOKED = "revoked"
 
-
 class DataQuality(str, Enum):
     """Data quality level for a passport field.
 
@@ -249,7 +232,6 @@ class DataQuality(str, Enum):
     PARTIAL = "partial"
     MISSING = "missing"
     INVALID = "invalid"
-
 
 class AccessLevel(str, Enum):
     """Access level for battery passport information per Art 78.
@@ -263,11 +245,9 @@ class AccessLevel(str, Enum):
     COMMISSION = "commission"
     MARKET_SURVEILLANCE = "market_surveillance"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # Required fields by Annex XIII section.
 REQUIRED_FIELDS: Dict[str, List[str]] = {
@@ -310,7 +290,6 @@ REQUIRED_FIELDS: Dict[str, List[str]] = {
     ],
 }
 
-
 # Optional but recommended fields.
 OPTIONAL_FIELDS: Dict[str, List[str]] = {
     "A_general": [
@@ -337,7 +316,6 @@ OPTIONAL_FIELDS: Dict[str, List[str]] = {
     ],
 }
 
-
 # All required fields as a flat set for quick lookup.
 ALL_REQUIRED_FIELDS: set = set()
 for _section_fields in REQUIRED_FIELDS.values():
@@ -348,7 +326,6 @@ ALL_OPTIONAL_FIELDS: set = set()
 for _section_fields in OPTIONAL_FIELDS.values():
     ALL_OPTIONAL_FIELDS.update(_section_fields)
 
-
 # Section labels.
 SECTION_LABELS: Dict[str, str] = {
     "A_general": "A. General battery and manufacturer information",
@@ -358,7 +335,6 @@ SECTION_LABELS: Dict[str, str] = {
     "E_performance": "E. Performance and durability",
     "F_end_of_life": "F. End-of-life information",
 }
-
 
 # Field access levels per Art 78.
 FIELD_ACCESS_LEVELS: Dict[str, str] = {
@@ -400,7 +376,6 @@ FIELD_ACCESS_LEVELS: Dict[str, str] = {
     PassportField.EOL_SAFETY_INSTRUCTIONS.value: AccessLevel.PUBLIC.value,
 }
 
-
 # Field descriptions for documentation.
 FIELD_DESCRIPTIONS: Dict[str, str] = {
     PassportField.MANUFACTURER_ID.value: "Unique identifier of the battery manufacturer",
@@ -441,11 +416,9 @@ FIELD_DESCRIPTIONS: Dict[str, str] = {
     PassportField.EOL_SAFETY_INSTRUCTIONS.value: "End-of-life safety and handling instructions",
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class GeneralInfo(BaseModel):
     """Section A: General battery and manufacturer information.
@@ -514,7 +487,6 @@ class GeneralInfo(BaseModel):
         ge=0,
     )
 
-
 class CarbonFootprintInfo(BaseModel):
     """Section B: Carbon footprint information.
 
@@ -543,7 +515,6 @@ class CarbonFootprintInfo(BaseModel):
         description="Methodology references",
     )
 
-
 class SupplyChainDD(BaseModel):
     """Section C: Supply chain due diligence.
 
@@ -571,7 +542,6 @@ class SupplyChainDD(BaseModel):
         max_length=5000,
     )
 
-
 class MaterialComposition(BaseModel):
     """Section D: Material composition and hazardous substances.
 
@@ -594,7 +564,6 @@ class MaterialComposition(BaseModel):
         default=None,
         description="Recycled content per material (material to percentage)",
     )
-
 
 class PerformanceDurability(BaseModel):
     """Section E: Performance and durability information.
@@ -643,7 +612,6 @@ class PerformanceDurability(BaseModel):
         ge=0,
     )
 
-
 class EndOfLifeInfo(BaseModel):
     """Section F: End-of-life information.
 
@@ -669,7 +637,6 @@ class EndOfLifeInfo(BaseModel):
         description="End-of-life safety and handling instructions",
         max_length=5000,
     )
-
 
 class PassportData(BaseModel):
     """Complete passport data covering all Annex XIII sections.
@@ -705,7 +672,6 @@ class PassportData(BaseModel):
         default_factory=EndOfLifeInfo,
         description="Section F: End-of-life information",
     )
-
 
 class FieldValidation(BaseModel):
     """Validation result for a single passport field."""
@@ -743,7 +709,6 @@ class FieldValidation(BaseModel):
         max_length=500,
     )
 
-
 class PassportValidationResult(BaseModel):
     """Result of battery passport compilation and validation.
 
@@ -760,7 +725,7 @@ class PassportValidationResult(BaseModel):
         description="Engine version used for this validation",
     )
     validated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of validation (UTC)",
     )
     passport_id: str = Field(
@@ -828,11 +793,9 @@ class PassportValidationResult(BaseModel):
         description="SHA-256 hash of the entire result",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class BatteryPassportEngine:
     """Battery passport engine per EU Battery Regulation Art 77-78.
@@ -1055,6 +1018,8 @@ class BatteryPassportEngine:
 
         Creates a JSON payload containing the public-access fields
         from the battery passport, suitable for encoding into a QR
+
+from greenlang.schemas import utcnow
         code affixed to the battery per Art 77(2).
 
         Args:
@@ -1098,7 +1063,7 @@ class BatteryPassportEngine:
             "passport_url": (
                 f"https://battery-passport.eu/p/{passport.passport_id}"
             ),
-            "generated_at": str(_utcnow()),
+            "generated_at": str(utcnow()),
         }
 
         qr_json = json.dumps(payload, sort_keys=True, default=str)
@@ -1237,7 +1202,7 @@ class BatteryPassportEngine:
             "success": True,
             "previous_status": "unknown",
             "new_status": new_status.value,
-            "updated_at": str(_utcnow()),
+            "updated_at": str(utcnow()),
         }
         result["provenance_hash"] = _compute_hash(result)
 

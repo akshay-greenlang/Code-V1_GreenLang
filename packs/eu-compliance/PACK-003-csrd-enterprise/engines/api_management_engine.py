@@ -49,25 +49,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -80,7 +74,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _hash_key(key: str) -> str:
     """Hash an API key for secure storage.
 
@@ -92,11 +85,9 @@ def _hash_key(key: str) -> str:
     """
     return hashlib.sha256(key.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class KeyStatus(str, Enum):
     """API key lifecycle status."""
@@ -105,14 +96,12 @@ class KeyStatus(str, Enum):
     REVOKED = "revoked"
     EXPIRED = "expired"
 
-
 class RateLimitAlgorithm(str, Enum):
     """Rate limiting algorithm."""
 
     TOKEN_BUCKET = "token_bucket"
     SLIDING_WINDOW = "sliding_window"
     FIXED_WINDOW = "fixed_window"
-
 
 class WebhookEvent(str, Enum):
     """Webhook event types."""
@@ -128,11 +117,9 @@ class WebhookEvent(str, Enum):
     WORKFLOW_COMPLETED = "workflow.completed"
     TENANT_PROVISIONED = "tenant.provisioned"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class APIKey(BaseModel):
     """An API key with scoped permissions."""
@@ -158,7 +145,7 @@ class APIKey(BaseModel):
         10000, ge=1, description="Max requests per day"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation timestamp"
+        default_factory=utcnow, description="Creation timestamp"
     )
     expires_at: Optional[datetime] = Field(
         None, description="Expiration timestamp"
@@ -170,7 +157,6 @@ class APIKey(BaseModel):
         None, description="Last usage timestamp"
     )
     usage_count: int = Field(0, ge=0, description="Total usage count")
-
 
 class RateLimitPolicy(BaseModel):
     """Rate limiting policy for a tenant."""
@@ -191,7 +177,6 @@ class RateLimitPolicy(BaseModel):
         description="Rate limiting algorithm",
     )
 
-
 class EndpointUsage(BaseModel):
     """Usage statistics for a single endpoint."""
 
@@ -200,7 +185,6 @@ class EndpointUsage(BaseModel):
     call_count: int = Field(0, description="Number of calls")
     avg_latency_ms: float = Field(0.0, description="Average latency")
     error_count: int = Field(0, description="Number of errors")
-
 
 class APIUsageMetrics(BaseModel):
     """Aggregated API usage metrics for a tenant."""
@@ -228,7 +212,6 @@ class APIUsageMetrics(BaseModel):
     )
     provenance_hash: str = Field("", description="SHA-256 provenance hash")
 
-
 class WebhookRegistration(BaseModel):
     """A registered webhook endpoint."""
 
@@ -245,7 +228,7 @@ class WebhookRegistration(BaseModel):
     )
     active: bool = Field(True, description="Whether webhook is active")
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Registration timestamp"
+        default_factory=utcnow, description="Registration timestamp"
     )
     failure_count: int = Field(
         0, ge=0, description="Consecutive delivery failures"
@@ -253,7 +236,6 @@ class WebhookRegistration(BaseModel):
     last_delivery: Optional[datetime] = Field(
         None, description="Last successful delivery"
     )
-
 
 class GraphQLConfig(BaseModel):
     """GraphQL access configuration for a tenant."""
@@ -272,7 +254,6 @@ class GraphQLConfig(BaseModel):
         True, description="Allow introspection queries"
     )
 
-
 # ---------------------------------------------------------------------------
 # Available API Scopes
 # ---------------------------------------------------------------------------
@@ -290,11 +271,9 @@ _AVAILABLE_SCOPES: List[str] = [
     "admin:full",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class APIManagementEngine:
     """Enterprise API governance engine.
@@ -328,11 +307,11 @@ class APIManagementEngine:
         self._usage: Dict[str, Dict[str, Any]] = defaultdict(
             lambda: {
                 "minute_count": 0,
-                "minute_window": _utcnow(),
+                "minute_window": utcnow(),
                 "hour_count": 0,
-                "hour_window": _utcnow(),
+                "hour_window": utcnow(),
                 "day_count": 0,
-                "day_window": _utcnow(),
+                "day_window": utcnow(),
                 "total_count": 0,
                 "endpoints": defaultdict(int),
                 "errors": defaultdict(int),
@@ -388,7 +367,7 @@ class APIManagementEngine:
         # Expiration
         expires_at = None
         if expires_in_days:
-            expires_at = _utcnow() + timedelta(days=expires_in_days)
+            expires_at = utcnow() + timedelta(days=expires_in_days)
 
         key = APIKey(
             tenant_id=tenant_id,
@@ -432,7 +411,7 @@ class APIManagementEngine:
             "key_id": key_id,
             "key_prefix": key.key_prefix,
             "status": "revoked",
-            "revoked_at": _utcnow().isoformat(),
+            "revoked_at": utcnow().isoformat(),
             "provenance_hash": _compute_hash(
                 {"key_id": key_id, "action": "revoke"}
             ),
@@ -492,7 +471,7 @@ class APIManagementEngine:
             KeyError: If key not found.
         """
         key = self._get_key(key_id)
-        now = _utcnow()
+        now = utcnow()
 
         # Check key status
         if key.status != KeyStatus.ACTIVE:
@@ -578,7 +557,7 @@ class APIManagementEngine:
             APIUsageMetrics with detailed breakdown.
         """
         if not period:
-            period = _utcnow().strftime("%Y-%m-%d")
+            period = utcnow().strftime("%Y-%m-%d")
 
         # Aggregate across all tenant keys
         tenant_keys = [
@@ -681,7 +660,7 @@ class APIManagementEngine:
             "per_day": policy.per_day,
             "burst_limit": policy.burst_limit,
             "keys_updated": updated_keys,
-            "applied_at": _utcnow().isoformat(),
+            "applied_at": utcnow().isoformat(),
             "provenance_hash": _compute_hash(policy),
         }
 
@@ -739,7 +718,7 @@ class APIManagementEngine:
             "max_depth": max_depth,
             "max_complexity": config.max_complexity,
             "introspection_enabled": config.introspection_enabled,
-            "configured_at": _utcnow().isoformat(),
+            "configured_at": utcnow().isoformat(),
             "provenance_hash": _compute_hash(config),
         }
 

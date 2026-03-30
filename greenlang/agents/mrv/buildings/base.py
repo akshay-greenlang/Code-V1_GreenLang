@@ -34,7 +34,8 @@ from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Any, Dict, List, Optional, TypeVar, Generic, Literal
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -160,7 +161,7 @@ class CertificationStandard(str, Enum):
 # DATA MODELS
 # =============================================================================
 
-class EnergyConsumption(BaseModel):
+class EnergyConsumption(GreenLangBase):
     """Energy consumption data for a specific source."""
     source: EnergySource
     consumption: Decimal = Field(..., ge=0, description="Consumption value")
@@ -171,7 +172,7 @@ class EnergyConsumption(BaseModel):
     billing_period_end: Optional[str] = None
 
 
-class EmissionFactor(BaseModel):
+class EmissionFactor(GreenLangBase):
     """Emission factor with provenance."""
     factor_id: str = Field(..., description="Unique factor identifier")
     value: Decimal = Field(..., description="Factor value")
@@ -183,7 +184,7 @@ class EmissionFactor(BaseModel):
     uncertainty_percent: Optional[float] = Field(None, ge=0, le=100)
 
 
-class CalculationStep(BaseModel):
+class CalculationStep(GreenLangBase):
     """Individual calculation step for audit trail."""
     step_number: int = Field(..., ge=1)
     description: str = Field(..., min_length=1)
@@ -194,7 +195,7 @@ class CalculationStep(BaseModel):
     source: str = Field(default="", description="Source reference")
 
 
-class BuildingMetadata(BaseModel):
+class BuildingMetadata(GreenLangBase):
     """Building metadata for context."""
     building_id: str
     building_name: Optional[str] = None
@@ -211,7 +212,7 @@ class BuildingMetadata(BaseModel):
     country_code: str = Field(default="US")
 
 
-class EnergyUseIntensity(BaseModel):
+class EnergyUseIntensity(GreenLangBase):
     """Energy Use Intensity (EUI) metrics."""
     site_eui_kwh_per_sqm: Decimal
     source_eui_kwh_per_sqm: Decimal
@@ -220,7 +221,7 @@ class EnergyUseIntensity(BaseModel):
     percentile_rank: Optional[int] = Field(None, ge=0, le=100)
 
 
-class CarbonIntensity(BaseModel):
+class CarbonIntensity(GreenLangBase):
     """Carbon intensity metrics."""
     total_carbon_intensity_kgco2e_per_sqm: Decimal
     operational_carbon_kgco2e_per_sqm: Decimal
@@ -232,7 +233,7 @@ class CarbonIntensity(BaseModel):
 # INPUT/OUTPUT MODELS
 # =============================================================================
 
-class BuildingMRVInput(BaseModel):
+class BuildingMRVInput(GreenLangBase):
     """Base input model for building MRV agents."""
 
     # Building identification
@@ -256,7 +257,7 @@ class BuildingMRVInput(BaseModel):
         json_encoders = {Decimal: str}
 
 
-class BuildingMRVOutput(BaseModel):
+class BuildingMRVOutput(GreenLangBase):
     """Base output model for building MRV agents."""
 
     # Identification

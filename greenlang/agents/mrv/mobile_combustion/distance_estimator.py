@@ -81,6 +81,7 @@ from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -121,15 +122,9 @@ except ImportError:
     _record_distance_estimation = None  # type: ignore[assignment]
     _observe_calculation_duration = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _to_decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
@@ -150,11 +145,9 @@ def _to_decimal(value: Any) -> Decimal:
     except (InvalidOperation, ValueError, TypeError) as exc:
         raise ValueError(f"Cannot convert {value!r} to Decimal") from exc
 
-
 # ===========================================================================
 # Enumerations
 # ===========================================================================
-
 
 class VehicleType(str, Enum):
     """Vehicle type classification for distance-based estimation.
@@ -223,7 +216,6 @@ class VehicleType(str, Enum):
     AVIATION_HELICOPTER = "AVIATION_HELICOPTER"
     AVIATION_TURBOPROP = "AVIATION_TURBOPROP"
 
-
 class FuelType(str, Enum):
     """Fuel type for mobile combustion sources.
 
@@ -250,7 +242,6 @@ class FuelType(str, Enum):
     MARINE_HFO = "MARINE_HFO"
     AVGAS = "AVGAS"
 
-
 class LoadFactor(str, Enum):
     """Load factor classification for fuel economy adjustment.
 
@@ -269,7 +260,6 @@ class LoadFactor(str, Enum):
     FULL_LOAD = "FULL_LOAD"
     OVERLOADED = "OVERLOADED"
 
-
 class DistanceUnit(str, Enum):
     """Distance measurement units.
 
@@ -281,7 +271,6 @@ class DistanceUnit(str, Enum):
     KM = "KM"
     MI = "MI"
     NM = "NM"
-
 
 class FuelEconomyUnit(str, Enum):
     """Fuel economy measurement units.
@@ -296,7 +285,6 @@ class FuelEconomyUnit(str, Enum):
     MPG_US = "MPG_US"
     MPG_UK = "MPG_UK"
     KM_PER_L = "KM_PER_L"
-
 
 class EquipmentOperatingType(str, Enum):
     """Off-road equipment type for operating-hour-based estimation.
@@ -326,7 +314,6 @@ class EquipmentOperatingType(str, Enum):
     GENERATOR_MEDIUM = "GENERATOR_MEDIUM"
     GENERATOR_LARGE = "GENERATOR_LARGE"
 
-
 class MarineVesselType(str, Enum):
     """Marine vessel type for tonne-km emission factors.
 
@@ -349,7 +336,6 @@ class MarineVesselType(str, Enum):
     OCEAN_BULK = "OCEAN_BULK"
     OCEAN_TANKER = "OCEAN_TANKER"
 
-
 class AircraftType(str, Enum):
     """Aircraft type for aviation emission factors.
 
@@ -371,7 +357,6 @@ class AircraftType(str, Enum):
     HELICOPTER_HEAVY = "HELICOPTER_HEAVY"
     TURBOPROP_SMALL = "TURBOPROP_SMALL"
     TURBOPROP_LARGE = "TURBOPROP_LARGE"
-
 
 # ===========================================================================
 # Default Fuel Economy Database (L/100km)
@@ -400,7 +385,6 @@ _EQUIPMENT_FUEL_RATES: Dict[str, Decimal] = {
     VehicleType.AGRICULTURAL_EQUIPMENT.value: Decimal("18.0"),
     VehicleType.FORKLIFT.value: Decimal("4.0"),
 }
-
 
 # ===========================================================================
 # Distance Emission Factors (g CO2e/km)
@@ -501,7 +485,6 @@ _DISTANCE_EMISSION_FACTORS: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ===========================================================================
 # Vehicle Age Fuel Economy Degradation Factors
 # Source: EPA MOVES, ICCT fleet studies
@@ -516,7 +499,6 @@ _AGE_DEGRADATION_TABLE: List[Tuple[int, Decimal]] = [
 ]
 _AGE_DEGRADATION_MAX: Decimal = Decimal("1.15")  # 12+ years: +15%
 
-
 # ===========================================================================
 # Load Factor Adjustment Multipliers
 # Source: GHG Protocol, ICCT heavy-duty fuel consumption studies
@@ -530,7 +512,6 @@ _LOAD_FACTOR_ADJUSTMENTS: Dict[str, Decimal] = {
     LoadFactor.FULL_LOAD.value: Decimal("1.20"),
     LoadFactor.OVERLOADED.value: Decimal("1.35"),
 }
-
 
 # ===========================================================================
 # Operating Hour Emission Factors (kg CO2/hour)
@@ -628,7 +609,6 @@ _OPERATING_HOUR_FACTORS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ===========================================================================
 # Marine Emission Factors (g CO2/tonne-km)
 # Sources: IMO Fourth GHG Study 2020, GLEC Framework, DEFRA
@@ -692,7 +672,6 @@ _MARINE_EMISSION_FACTORS: Dict[str, Dict[str, Decimal]] = {
         "source": "IMO Fourth GHG Study 2020; GLEC Framework",
     },
 }
-
 
 # ===========================================================================
 # Aviation Emission Factors (g CO2/km)
@@ -774,7 +753,6 @@ _AVIATION_EMISSION_FACTORS: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ===========================================================================
 # Unit Conversion Constants
 # ===========================================================================
@@ -831,11 +809,9 @@ _DEFAULT_FUEL_TYPE: Dict[str, str] = {
     VehicleType.AVIATION_TURBOPROP.value: FuelType.JET_FUEL.value,
 }
 
-
 # ===========================================================================
 # Dataclasses for results
 # ===========================================================================
-
 
 @dataclass
 class FuelEstimationResult:
@@ -905,7 +881,6 @@ class FuelEstimationResult:
             "metadata": self.metadata,
         }
 
-
 @dataclass
 class DistanceEmissionResult:
     """Result of distance-based emission factor lookup.
@@ -948,7 +923,6 @@ class DistanceEmissionResult:
             "provenance_hash": self.provenance_hash,
             "timestamp": self.timestamp,
         }
-
 
 @dataclass
 class OperatingHoursResult:
@@ -998,7 +972,6 @@ class OperatingHoursResult:
             "provenance_hash": self.provenance_hash,
             "timestamp": self.timestamp,
         }
-
 
 @dataclass
 class MarineEmissionResult:
@@ -1052,7 +1025,6 @@ class MarineEmissionResult:
             "timestamp": self.timestamp,
         }
 
-
 @dataclass
 class AviationEmissionResult:
     """Result of aviation emission factor lookup.
@@ -1105,11 +1077,9 @@ class AviationEmissionResult:
             "timestamp": self.timestamp,
         }
 
-
 # ===========================================================================
 # DistanceEstimatorEngine
 # ===========================================================================
-
 
 class DistanceEstimatorEngine:
     """Distance-based emission estimation engine for mobile combustion.
@@ -1274,7 +1244,7 @@ class DistanceEstimatorEngine:
             json.dumps(provenance_data, sort_keys=True).encode("utf-8")
         ).hexdigest()
 
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         result = FuelEstimationResult(
             result_id=f"de_{uuid4().hex[:12]}",
@@ -1373,7 +1343,7 @@ class DistanceEstimatorEngine:
             n2o_g_per_km=ef["N2O"],
             source=ef["source"],
             provenance_hash=provenance_hash,
-            timestamp=_utcnow().isoformat(),
+            timestamp=utcnow().isoformat(),
         )
 
     # ------------------------------------------------------------------
@@ -1754,7 +1724,7 @@ class DistanceEstimatorEngine:
             fuel_consumed_litres=fuel_l,
             source=ef["source"],
             provenance_hash=provenance_hash,
-            timestamp=_utcnow().isoformat(),
+            timestamp=utcnow().isoformat(),
         )
 
         elapsed = time.monotonic() - t_start
@@ -1866,7 +1836,7 @@ class DistanceEstimatorEngine:
             emission_factor_g_per_tonne_km=ef["co2e_g_per_tonne_km"],
             source=ef["source"],
             provenance_hash=provenance_hash,
-            timestamp=_utcnow().isoformat(),
+            timestamp=utcnow().isoformat(),
         )
 
     # ------------------------------------------------------------------
@@ -1985,7 +1955,7 @@ class DistanceEstimatorEngine:
             co2e_g_per_pax_km=co2e_g_per_pax_km,
             source=ef["source"],
             provenance_hash=provenance_hash,
-            timestamp=_utcnow().isoformat(),
+            timestamp=utcnow().isoformat(),
         )
 
     # ------------------------------------------------------------------
@@ -2077,7 +2047,7 @@ class DistanceEstimatorEngine:
             "vehicle_count": len(results),
             "errors": errors,
             "provenance_hash": fleet_hash,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     # ------------------------------------------------------------------

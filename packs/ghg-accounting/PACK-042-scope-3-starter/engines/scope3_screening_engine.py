@@ -68,25 +68,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -104,7 +98,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serialisable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -113,7 +106,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -125,22 +117,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class Scope3Category(str, Enum):
     """All 15 Scope 3 categories per GHG Protocol.
@@ -169,7 +157,6 @@ class Scope3Category(str, Enum):
     CAT_14 = "cat_14_franchises"
     CAT_15 = "cat_15_investments"
 
-
 class RelevanceTier(str, Enum):
     """Relevance tier for a Scope 3 category.
 
@@ -182,7 +169,6 @@ class RelevanceTier(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     NOT_APPLICABLE = "not_applicable"
-
 
 class DataAvailabilityLevel(str, Enum):
     """Level of data availability for a Scope 3 category.
@@ -197,7 +183,6 @@ class DataAvailabilityLevel(str, Enum):
     LIMITED = "limited"
     NONE = "none"
 
-
 class ScreeningStatus(str, Enum):
     """Status of the screening assessment.
 
@@ -208,7 +193,6 @@ class ScreeningStatus(str, Enum):
     COMPLETE = "complete"
     PARTIAL = "partial"
     ERROR = "error"
-
 
 # ---------------------------------------------------------------------------
 # EEIO Emission Intensity Factors (kgCO2e per EUR of spend)
@@ -638,7 +622,6 @@ NAICS_SECTOR_PROFILES: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # Downstream revenue-based intensity factors (kgCO2e per EUR revenue).
 # Used for categories 10-12 when spend data is not available.
 DOWNSTREAM_INTENSITY_BY_SECTOR: Dict[str, Dict[str, Decimal]] = {
@@ -694,7 +677,6 @@ DOWNSTREAM_INTENSITY_BY_SECTOR: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # Relevance scoring weights per GHG Protocol Scope 3 Standard Chapter 6
 RELEVANCE_WEIGHTS: Dict[str, Decimal] = {
     "magnitude": Decimal("0.40"),
@@ -725,11 +707,9 @@ CATEGORY_DESCRIPTIONS: Dict[Scope3Category, str] = {
     Scope3Category.CAT_15: "Investments",
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class OrgProfile(BaseModel):
     """Organisation profile for Scope 3 screening.
@@ -777,11 +757,9 @@ class OrgProfile(BaseModel):
     reporting_year: int = Field(default=2025, ge=2000, le=2100, description="Reporting year")
     currency: str = Field(default="EUR", max_length=3, description="Currency code")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class RelevanceScore(BaseModel):
     """Multi-dimensional relevance score for a Scope 3 category.
@@ -798,7 +776,6 @@ class RelevanceScore(BaseModel):
     stakeholder_interest_score: Decimal = Field(default=Decimal("0"), ge=0, le=100)
     outsourcing_potential_score: Decimal = Field(default=Decimal("0"), ge=0, le=100)
     weighted_total: Decimal = Field(default=Decimal("0"), ge=0, le=100)
-
 
 class CategoryScreening(BaseModel):
     """Screening result for a single Scope 3 category.
@@ -837,7 +814,6 @@ class CategoryScreening(BaseModel):
     )
     recommended_methodology: str = Field(default="", description="Recommended methodology")
     notes: str = Field(default="", description="Notes")
-
 
 class ScreeningResult(BaseModel):
     """Complete Scope 3 screening result for an organisation.
@@ -903,10 +879,9 @@ class ScreeningResult(BaseModel):
     eeio_base_intensity: Decimal = Field(default=Decimal("0"), description="Base EEIO intensity")
     warnings: List[str] = Field(default_factory=list, description="Warnings")
     status: ScreeningStatus = Field(default=ScreeningStatus.COMPLETE, description="Status")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Timestamp")
     processing_time_ms: Decimal = Field(default=Decimal("0"), description="Processing time ms")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 # ---------------------------------------------------------------------------
 # Model Rebuild (resolve forward references from __future__ annotations)
@@ -917,11 +892,9 @@ RelevanceScore.model_rebuild()
 CategoryScreening.model_rebuild()
 ScreeningResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class Scope3ScreeningEngine:
     """Rapid Scope 3 screening engine per GHG Protocol Chapter 6.

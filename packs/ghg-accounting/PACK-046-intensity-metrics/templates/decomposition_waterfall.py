@@ -39,29 +39,23 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 def _compute_hash(content: str) -> str:
     """Compute SHA-256 hash of string content."""
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -74,13 +68,11 @@ class OutputFormat(str, Enum):
     PDF = "pdf"
     JSON = "json"
 
-
 class EffectType(str, Enum):
     """Decomposition effect types."""
     ACTIVITY = "activity"
     STRUCTURE = "structure"
     INTENSITY = "intensity"
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Input Models
@@ -95,7 +87,6 @@ class PeriodSummary(BaseModel):
     overall_intensity: float = Field(0.0, description="Overall intensity")
     intensity_unit: str = Field("", description="Intensity unit")
 
-
 class WaterfallBar(BaseModel):
     """Single bar in the waterfall chart."""
     label: str = Field(..., description="Bar label")
@@ -106,7 +97,6 @@ class WaterfallBar(BaseModel):
     cumulative_end: float = Field(0.0, description="Cumulative end position for chart")
     color: str = Field("#888", description="Suggested bar colour hex code")
 
-
 class EntityContribution(BaseModel):
     """Entity-level contribution to a decomposition effect."""
     entity_name: str = Field(..., description="Entity name")
@@ -114,7 +104,6 @@ class EntityContribution(BaseModel):
     contribution_tco2e: float = Field(0.0, description="Absolute contribution in tCO2e")
     contribution_pct: float = Field(0.0, description="Share of total effect (%)")
     direction: str = Field("neutral", description="Increase / decrease / neutral")
-
 
 class ClosureValidation(BaseModel):
     """Validation that decomposition closes to observed change."""
@@ -124,7 +113,6 @@ class ClosureValidation(BaseModel):
     residual_pct: float = Field(0.0, description="Residual as % of observed change")
     closure_passed: bool = Field(True, description="Whether closure test passed")
     tolerance_pct: float = Field(1.0, description="Acceptable tolerance %")
-
 
 class WaterfallInput(BaseModel):
     """Complete input model for DecompositionWaterfallReport."""
@@ -146,7 +134,6 @@ class WaterfallInput(BaseModel):
     closure_validation: Optional[ClosureValidation] = Field(
         None, description="Closure validation results"
     )
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -195,7 +182,7 @@ class DecompositionWaterfallReport:
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render decomposition waterfall as Markdown."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_md(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -203,7 +190,7 @@ class DecompositionWaterfallReport:
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render decomposition waterfall as HTML."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_html(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -211,7 +198,7 @@ class DecompositionWaterfallReport:
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render decomposition waterfall as JSON dict."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_json(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -241,7 +228,7 @@ class DecompositionWaterfallReport:
         return (
             f"# Decomposition Waterfall Analysis - {company}\n\n"
             f"**Period:** {period} | "
-            f"**Report Date:** {_utcnow().strftime('%Y-%m-%d')}\n\n"
+            f"**Report Date:** {utcnow().strftime('%Y-%m-%d')}\n\n"
             "---"
         )
 

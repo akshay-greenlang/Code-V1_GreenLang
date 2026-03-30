@@ -72,6 +72,7 @@ from greenlang.agents.eudr.risk_assessment_engine.models import (
     RiskFactorInput,
 )
 from greenlang.agents.eudr.risk_assessment_engine.provenance import ProvenanceTracker
+from greenlang.schemas import utcnow
 from greenlang.agents.eudr.risk_assessment_engine.metrics import (
     record_criteria_evaluation,
 )
@@ -97,16 +98,9 @@ _LEGAL_CONCERN_THRESHOLD = Decimal("55")
 
 _FAIL_MULTIPLIER = Decimal("1.4")  # FAIL threshold = CONCERN * 1.4
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute deterministic SHA-256 hash of data.
@@ -119,7 +113,6 @@ def _compute_hash(data: Any) -> str:
     """
     canonical = json.dumps(data, sort_keys=True, separators=(",", ":"), default=str)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-
 
 def _get_dimension_score(
     inputs: List[RiskFactorInput],
@@ -142,7 +135,6 @@ def _get_dimension_score(
         Decimal("0.01"), rounding=ROUND_HALF_UP
     )
 
-
 def _has_high_risk_country(benchmarks: List[CountryBenchmark]) -> bool:
     """Check if any benchmark is HIGH risk.
 
@@ -154,11 +146,9 @@ def _has_high_risk_country(benchmarks: List[CountryBenchmark]) -> bool:
     """
     return any(b.level == CountryBenchmarkLevel.HIGH for b in benchmarks)
 
-
 # ---------------------------------------------------------------------------
 # Main Engine
 # ---------------------------------------------------------------------------
-
 
 class Article10CriteriaEvaluator:
     """Engine for evaluating EUDR Article 10(2) risk assessment criteria.
@@ -265,7 +255,7 @@ class Article10CriteriaEvaluator:
             concern_count=concern_count,
             fail_count=fail_count,
             not_evaluated_count=not_evaluated,
-            evaluated_at=_utcnow(),
+            evaluated_at=utcnow(),
             provenance_hash=provenance_hash,
         )
 

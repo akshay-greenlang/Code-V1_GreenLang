@@ -53,7 +53,7 @@ import time
 from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 
 import yaml
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.foundation.schema.constants import (
     MAX_OBJECT_DEPTH,
@@ -62,6 +62,7 @@ from greenlang.agents.foundation.schema.constants import (
     DEFAULT_ENCODING,
 )
 from greenlang.agents.foundation.schema.errors import ErrorCode, format_error_message
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +72,7 @@ logger = logging.getLogger(__name__)
 # =============================================================================
 
 
-class ParseResult(BaseModel):
+class ParseResult(GreenLangBase):
     """
     Result of parsing a YAML/JSON payload.
 

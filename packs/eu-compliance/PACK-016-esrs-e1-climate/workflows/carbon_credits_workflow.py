@@ -28,33 +28,25 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class WorkflowPhase(str, Enum):
     """Phases of the carbon credits workflow."""
@@ -64,7 +56,6 @@ class WorkflowPhase(str, Enum):
     SBTI_CHECK = "sbti_check"
     REPORT_GENERATION = "report_generation"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "pending"
@@ -72,7 +63,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class PhaseStatus(str, Enum):
     """Status of a single phase."""
@@ -82,13 +72,11 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class CreditType(str, Enum):
     """Carbon credit type."""
     AVOIDANCE = "avoidance"
     REMOVAL = "removal"
     HYBRID = "hybrid"
-
 
 class CreditStandard(str, Enum):
     """Carbon credit certification standard."""
@@ -102,7 +90,6 @@ class CreditStandard(str, Enum):
     EU_ETS = "eu_ets"
     OTHER = "other"
 
-
 class CreditStatus(str, Enum):
     """Credit lifecycle status."""
     ACTIVE = "active"
@@ -111,7 +98,6 @@ class CreditStatus(str, Enum):
     PENDING = "pending"
     EXPIRED = "expired"
 
-
 class QualityTier(str, Enum):
     """Credit quality tier."""
     HIGH = "high"
@@ -119,11 +105,9 @@ class QualityTier(str, Enum):
     LOW = "low"
     UNASSESSED = "unassessed"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -134,7 +118,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class CarbonCredit(BaseModel):
     """A carbon credit or offset record."""
@@ -153,7 +136,6 @@ class CarbonCredit(BaseModel):
     additionality_verified: bool = Field(default=False)
     co_benefits: List[str] = Field(default_factory=list)
 
-
 class CreditQualityScore(BaseModel):
     """Quality assessment score for a carbon credit."""
     credit_id: str = Field(default="")
@@ -165,7 +147,6 @@ class CreditQualityScore(BaseModel):
     composite_score: float = Field(default=0.0, ge=0.0, le=5.0)
     is_removal: bool = Field(default=False)
     sbti_eligible: bool = Field(default=False)
-
 
 class CarbonCreditsInput(BaseModel):
     """Input data model for CarbonCreditsWorkflow."""
@@ -182,7 +163,6 @@ class CarbonCreditsInput(BaseModel):
         default=3.0, ge=0.0, le=5.0, description="Minimum quality score"
     )
     config: Dict[str, Any] = Field(default_factory=dict)
-
 
 class CarbonCreditsResult(BaseModel):
     """Complete result from carbon credits workflow."""
@@ -205,7 +185,6 @@ class CarbonCreditsResult(BaseModel):
     sbti_compliant: bool = Field(default=False)
     reporting_year: int = Field(default=2025)
     provenance_hash: str = Field(default="")
-
 
 # =============================================================================
 # QUALITY SCORING WEIGHTS
@@ -231,11 +210,9 @@ STANDARD_BASELINE: Dict[str, float] = {
     "other": 2.0,
 }
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class CarbonCreditsWorkflow:
     """
@@ -307,7 +284,7 @@ class CarbonCreditsWorkflow:
                 config=config or {},
             )
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting carbon credits workflow %s", self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = WorkflowStatus.IN_PROGRESS
@@ -326,7 +303,7 @@ class CarbonCreditsWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         completed_count = sum(1 for p in phase_results if p.status == PhaseStatus.COMPLETED)
         total_tco2e = sum(c.quantity_tco2e for c in self._credits)
         removals = sum(c.quantity_tco2e for c in self._credits if c.credit_type == CreditType.REMOVAL)
@@ -376,7 +353,7 @@ class CarbonCreditsWorkflow:
         self, input_data: CarbonCreditsInput,
     ) -> PhaseResult:
         """Register all carbon credits."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -398,7 +375,7 @@ class CarbonCreditsWorkflow:
         if not self._credits:
             warnings.append("No carbon credits registered")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 1 CreditRegistration: %d credits registered", len(self._credits))
         return PhaseResult(
             phase_name=WorkflowPhase.CREDIT_REGISTRATION.value, status=PhaseStatus.COMPLETED,
@@ -414,7 +391,7 @@ class CarbonCreditsWorkflow:
         self, input_data: CarbonCreditsInput,
     ) -> PhaseResult:
         """Assess quality of each carbon credit."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._quality_scores = []
@@ -441,7 +418,7 @@ class CarbonCreditsWorkflow:
         if low_quality > 0:
             warnings.append(f"{low_quality} credits below quality threshold ({input_data.quality_threshold})")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 2 QualityAssessment: %s", tier_counts)
         return PhaseResult(
             phase_name=WorkflowPhase.QUALITY_ASSESSMENT.value, status=PhaseStatus.COMPLETED,
@@ -492,7 +469,7 @@ class CarbonCreditsWorkflow:
         self, input_data: CarbonCreditsInput,
     ) -> PhaseResult:
         """Analyze the carbon credit portfolio composition."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -522,7 +499,7 @@ class CarbonCreditsWorkflow:
             / total if total > 0 else 0.0, 2
         )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 3 PortfolioAnalysis: %.0f tCO2e across %d countries", total, len(country_breakdown))
         return PhaseResult(
             phase_name=WorkflowPhase.PORTFOLIO_ANALYSIS.value, status=PhaseStatus.COMPLETED,
@@ -538,7 +515,7 @@ class CarbonCreditsWorkflow:
         self, input_data: CarbonCreditsInput,
     ) -> PhaseResult:
         """Check SBTi compliance for carbon credit usage."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -568,7 +545,7 @@ class CarbonCreditsWorkflow:
         if not sbti_eligible:
             warnings.append("No SBTi-eligible removal credits in portfolio")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 4 SBTiCheck: compliant=%s, ratio=%.1f%%", self._sbti_compliant, offset_ratio)
         return PhaseResult(
             phase_name=WorkflowPhase.SBTI_CHECK.value, status=PhaseStatus.COMPLETED,
@@ -584,7 +561,7 @@ class CarbonCreditsWorkflow:
         self, input_data: CarbonCreditsInput,
     ) -> PhaseResult:
         """Generate E1-7 disclosure-ready output."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -608,7 +585,7 @@ class CarbonCreditsWorkflow:
 
         outputs["report_ready"] = True
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 5 ReportGeneration: E1-7 disclosure ready")
         return PhaseResult(
             phase_name=WorkflowPhase.REPORT_GENERATION.value, status=PhaseStatus.COMPLETED,

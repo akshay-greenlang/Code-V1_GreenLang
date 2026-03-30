@@ -43,26 +43,19 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -75,11 +68,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Agent Stubs (graceful degradation)
 # ---------------------------------------------------------------------------
-
 
 class _AgentStub:
     """Stub for unavailable CSRD pack modules.
@@ -103,7 +94,6 @@ class _AgentStub:
             }
         return _stub_method
 
-
 def _try_import_csrd_pack(pack_id: str) -> Any:
     """Try to import a CSRD pack module with graceful fallback.
 
@@ -124,16 +114,15 @@ def _try_import_csrd_pack(pack_id: str) -> Any:
 
     try:
         import importlib
+
         return importlib.import_module(module_path)
     except ImportError:
         logger.warning("CSRD pack %s not available, using stub", pack_id)
         return _AgentStub(pack_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class BasePack(str, Enum):
     """Target base CSRD packs for integration."""
@@ -141,7 +130,6 @@ class BasePack(str, Enum):
     STARTER = "PACK-001"
     PROFESSIONAL = "PACK-002"
     ENTERPRISE = "PACK-003"
-
 
 class GovernanceDisclosure(str, Enum):
     """ESRS 2 Governance disclosures (GOV-1 through GOV-5)."""
@@ -152,7 +140,6 @@ class GovernanceDisclosure(str, Enum):
     GOV_4 = "GOV-4"  # Statement on due diligence
     GOV_5 = "GOV-5"  # Risk management and internal controls over reporting
 
-
 class DataFlowDirection(str, Enum):
     """Direction of data flow between packs."""
 
@@ -160,11 +147,9 @@ class DataFlowDirection(str, Enum):
     CSRD_TO_DMA = "csrd_to_dma"
     BIDIRECTIONAL = "bidirectional"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class CSRDPackBridgeConfig(BaseModel):
     """Configuration for the CSRD Pack Bridge."""
@@ -178,7 +163,6 @@ class CSRDPackBridgeConfig(BaseModel):
     import_governance_data: bool = Field(default=True)
     feed_dma_results: bool = Field(default=True)
 
-
 class GovernanceData(BaseModel):
     """Governance data imported from CSRD packs."""
 
@@ -187,8 +171,7 @@ class GovernanceData(BaseModel):
     content: Dict[str, Any] = Field(default_factory=dict)
     completeness_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     source_pack: str = Field(default="")
-    imported_at: datetime = Field(default_factory=_utcnow)
-
+    imported_at: datetime = Field(default_factory=utcnow)
 
 class MaterialTopicFeed(BaseModel):
     """Material topic data to feed into CSRD reporting pipeline."""
@@ -205,7 +188,6 @@ class MaterialTopicFeed(BaseModel):
     )
     disclosure_requirements: List[str] = Field(default_factory=list)
 
-
 class BridgeResult(BaseModel):
     """Result of a bridge operation."""
 
@@ -218,7 +200,6 @@ class BridgeResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class CompanyProfileImport(BaseModel):
     """Company profile data imported from CSRD pack."""
 
@@ -230,7 +211,6 @@ class CompanyProfileImport(BaseModel):
     headquarters_country: str = Field(default="")
     reporting_year: int = Field(default=2025)
     source_pack: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Governance Disclosure Catalog
@@ -291,11 +271,9 @@ GOVERNANCE_CATALOG: Dict[GovernanceDisclosure, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # CSRDPackBridge
 # ---------------------------------------------------------------------------
-
 
 class CSRDPackBridge:
     """Bridge between PACK-015 DMA Pack and base CSRD Packs.

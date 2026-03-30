@@ -39,6 +39,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "27.0.0"
@@ -101,23 +103,16 @@ DQ_LEVELS = {
 
 GHG_GASES = ["CO2", "CH4", "N2O", "HFCs", "PFCs", "SF6", "NF3"]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str) if isinstance(data, dict) else str(data)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 def _dec(val: Any, places: int = 2) -> str:
     try:
@@ -126,7 +121,6 @@ def _dec(val: Any, places: int = 2) -> str:
         return str(d.quantize(Decimal(q), rounding=ROUND_HALF_UP))
     except Exception:
         return str(val)
-
 
 def _dec_comma(val: Any, places: int = 0) -> str:
     try:
@@ -151,13 +145,11 @@ def _dec_comma(val: Any, places: int = 0) -> str:
     except Exception:
         return str(val)
 
-
 def _pct(val: Any) -> str:
     try:
         return _dec(val, 1) + "%"
     except Exception:
         return str(val)
-
 
 def _safe_div(num: Any, den: Any, default: float = 0.0) -> float:
     try:
@@ -165,7 +157,6 @@ def _safe_div(num: Any, den: Any, default: float = 0.0) -> float:
         return float(num) / d if d != 0 else default
     except Exception:
         return default
-
 
 def _yoy_arrow(current: float, previous: float) -> str:
     if previous <= 0:
@@ -177,10 +168,8 @@ def _yoy_arrow(current: float, previous: float) -> str:
         return f"^ {_dec(change, 1)}%"
     return f"~ {_dec(abs(change), 1)}%"
 
-
 def _dq_label(level: int) -> str:
     return DQ_LEVELS.get(level, {"label": "Unknown"})["label"]
-
 
 # ===========================================================================
 # Template Class
@@ -260,7 +249,7 @@ class GHGInventoryReportTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render the full GHG inventory report as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         totals = self._extract_totals(data)
         cats = self._extract_scope3_cats(data)
         entities = self._extract_entities(data)
@@ -289,7 +278,7 @@ class GHGInventoryReportTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render the full GHG inventory report as HTML with inline CSS."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         totals = self._extract_totals(data)
         cats = self._extract_scope3_cats(data)
         entities = self._extract_entities(data)
@@ -324,7 +313,7 @@ class GHGInventoryReportTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render the GHG inventory as structured JSON."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         totals = self._extract_totals(data)
         cats = self._extract_scope3_cats(data)
         entities = self._extract_entities(data)
@@ -437,7 +426,7 @@ class GHGInventoryReportTemplate:
 
     def render_excel(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render Excel-ready data structure with worksheet definitions."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         totals = self._extract_totals(data)
         cats = self._extract_scope3_cats(data)
         entities = self._extract_entities(data)

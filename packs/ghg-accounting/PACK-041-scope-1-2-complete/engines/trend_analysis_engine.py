@@ -73,25 +73,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -109,7 +103,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -118,7 +111,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -130,31 +122,25 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round2(value: Any) -> float:
     """Round to 2 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
-
 def _round3(value: Any) -> float:
     """Round to 3 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
-
 
 def _round4(value: Any) -> float:
     """Round to 4 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class IntensityMetricType(str, Enum):
     """Emission intensity metric denominators.
@@ -177,7 +163,6 @@ class IntensityMetricType(str, Enum):
     PER_MWH = "per_mwh"
     PER_TONNE_PRODUCT = "per_tonne_product"
 
-
 class DecompositionFactor(str, Enum):
     """Factors in the Kaya/LMDI decomposition of emission changes.
 
@@ -196,7 +181,6 @@ class DecompositionFactor(str, Enum):
     METHODOLOGY_CHANGE = "methodology_change"
     WEATHER = "weather"
 
-
 class TrendDirection(str, Enum):
     """Overall direction of the emission trend.
 
@@ -207,7 +191,6 @@ class TrendDirection(str, Enum):
     DECREASING = "decreasing"
     STABLE = "stable"
     INCREASING = "increasing"
-
 
 class SBTiAmbitionLevel(str, Enum):
     """SBTi target ambition levels per SBTi Criteria v5.1.
@@ -221,7 +204,6 @@ class SBTiAmbitionLevel(str, Enum):
     WELL_BELOW_2C = "well_below_2C"
     BELOW_2C = "below_2C"
     NOT_ALIGNED = "not_aligned"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- SBTi Target Rates
@@ -248,11 +230,9 @@ INTENSITY_UNITS: Dict[str, str] = {
 }
 """Unit labels for intensity metrics."""
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class YearlyEmissions(BaseModel):
     """GHG emissions for a single reporting year.
@@ -302,7 +282,6 @@ class YearlyEmissions(BaseModel):
         """Total Scope 1 + Scope 2 market-based."""
         return self.scope1_total + self.scope2_market
 
-
 class SBTiTarget(BaseModel):
     """Science-based target definition.
 
@@ -335,11 +314,9 @@ class SBTiTarget(BaseModel):
         """Coerce target values to Decimal."""
         return _decimal(v)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class YearOverYearChange(BaseModel):
     """Year-over-year emission change between two consecutive years.
@@ -365,7 +342,6 @@ class YearOverYearChange(BaseModel):
         default=0.0, description="Scope 2 mkt change"
     )
 
-
 class IntensityMetric(BaseModel):
     """Emission intensity metric result.
 
@@ -388,7 +364,6 @@ class IntensityMetric(BaseModel):
         default=None, description="YoY change (%)"
     )
 
-
 class DecompositionResult(BaseModel):
     """Result of a single factor in Kaya/LMDI decomposition.
 
@@ -402,7 +377,6 @@ class DecompositionResult(BaseModel):
     contribution_tco2e: float = Field(default=0.0, description="Contribution (tCO2e)")
     contribution_pct: float = Field(default=0.0, description="Contribution (%)")
     description: str = Field(default="", description="Explanation")
-
 
 class KayaResult(BaseModel):
     """Complete Kaya/LMDI decomposition result.
@@ -423,7 +397,6 @@ class KayaResult(BaseModel):
     )
     residual_tco2e: float = Field(default=0.0, description="Residual")
     method: str = Field(default="LMDI", description="Method")
-
 
 class SBTiAlignment(BaseModel):
     """Assessment of emission trajectory against SBTi targets.
@@ -455,7 +428,6 @@ class SBTiAlignment(BaseModel):
     )
     assessment_narrative: str = Field(default="", description="Narrative")
 
-
 class BaseYearComparison(BaseModel):
     """Comparison of latest year against base year.
 
@@ -475,7 +447,6 @@ class BaseYearComparison(BaseModel):
     absolute_change_tco2e: float = Field(default=0.0, description="Absolute change")
     percentage_change: float = Field(default=0.0, description="Percentage change")
     cagr_pct: float = Field(default=0.0, description="CAGR (%)")
-
 
 class TrendAnalysisResult(BaseModel):
     """Complete GHG trend analysis result with full provenance.
@@ -503,7 +474,7 @@ class TrendAnalysisResult(BaseModel):
     result_id: str = Field(default_factory=_new_uuid, description="Result ID")
     engine_version: str = Field(default=_MODULE_VERSION, description="Version")
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp"
+        default_factory=utcnow, description="Timestamp"
     )
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     years_analyzed: List[int] = Field(
@@ -545,11 +516,9 @@ class TrendAnalysisResult(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class TrendAnalysisEngine:
     """GHG emission trend analysis engine with Kaya decomposition.
@@ -1277,7 +1246,6 @@ class TrendAnalysisEngine:
         )
 
         return " ".join(parts)
-
 
 # ---------------------------------------------------------------------------
 # Pydantic v2 model_rebuild for forward-reference resolution

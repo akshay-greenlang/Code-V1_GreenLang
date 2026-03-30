@@ -53,25 +53,20 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import AlertSeverity, AlertStatus
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -84,20 +79,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
-
-class AlertSeverity(str, Enum):
-    """Alert severity levels."""
-
-    INFO = "info"
-    WARNING = "warning"
-    CRITICAL = "critical"
-    EMERGENCY = "emergency"
-
 
 class AlertChannel(str, Enum):
     """Notification delivery channels."""
@@ -107,7 +91,6 @@ class AlertChannel(str, Enum):
     WEBHOOK = "webhook"
     DASHBOARD = "dashboard"
     SLACK = "slack"
-
 
 class AlertType(str, Enum):
     """Types of M&V alerts."""
@@ -121,24 +104,12 @@ class AlertType(str, Enum):
     DATA_QUALITY = "data_quality"
     PERSISTENCE_ALERT = "persistence_alert"
 
-
 class EscalationLevel(str, Enum):
     """Alert escalation levels."""
 
     LEVEL_1 = "level_1"
     LEVEL_2 = "level_2"
     LEVEL_3 = "level_3"
-
-
-class AlertStatus(str, Enum):
-    """Alert lifecycle status."""
-
-    ACTIVE = "active"
-    ACKNOWLEDGED = "acknowledged"
-    RESOLVED = "resolved"
-    ESCALATED = "escalated"
-    SUPPRESSED = "suppressed"
-
 
 # ---------------------------------------------------------------------------
 # Escalation Rules
@@ -204,11 +175,9 @@ ESCALATION_CHANNELS: Dict[EscalationLevel, List[AlertChannel]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class EscalationRule(BaseModel):
     """Escalation rule definition."""
@@ -220,7 +189,6 @@ class EscalationRule(BaseModel):
     channels: List[AlertChannel] = Field(default_factory=list)
     escalation_delay_minutes: int = Field(default=30, ge=0)
     auto_resolve_hours: Optional[int] = Field(None, ge=1)
-
 
 class AlertConfig(BaseModel):
     """Alert system configuration."""
@@ -239,7 +207,6 @@ class AlertConfig(BaseModel):
     calibration_warning_days: int = Field(default=30, ge=7)
     compliance_warning_days: int = Field(default=60, ge=7)
 
-
 class AlertMessage(BaseModel):
     """Alert message with metadata."""
 
@@ -255,11 +222,10 @@ class AlertMessage(BaseModel):
     escalation_level: EscalationLevel = Field(default=EscalationLevel.LEVEL_1)
     channels: List[AlertChannel] = Field(default_factory=list)
     status: AlertStatus = Field(default=AlertStatus.ACTIVE)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     acknowledged_at: Optional[datetime] = Field(None)
     resolved_at: Optional[datetime] = Field(None)
     provenance_hash: str = Field(default="")
-
 
 class NotificationResult(BaseModel):
     """Result of sending a notification."""
@@ -270,13 +236,11 @@ class NotificationResult(BaseModel):
     success: bool = Field(default=True)
     recipient: str = Field(default="")
     error: Optional[str] = Field(None)
-    sent_at: datetime = Field(default_factory=_utcnow)
-
+    sent_at: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # AlertBridge
 # ---------------------------------------------------------------------------
-
 
 class AlertBridge:
     """Multi-channel alerting for M&V Pack.
@@ -421,7 +385,7 @@ class AlertBridge:
             return {"alert_id": alert_id, "acknowledged": False, "reason": "Not found"}
 
         alert.status = AlertStatus.ACKNOWLEDGED
-        alert.acknowledged_at = _utcnow()
+        alert.acknowledged_at = utcnow()
 
         self.logger.info("Alert acknowledged: id=%s, by=%s", alert_id, acknowledged_by)
         return {
@@ -450,7 +414,7 @@ class AlertBridge:
             return {"alert_id": alert_id, "resolved": False, "reason": "Not found"}
 
         alert.status = AlertStatus.RESOLVED
-        alert.resolved_at = _utcnow()
+        alert.resolved_at = utcnow()
 
         self.logger.info("Alert resolved: id=%s, note=%s", alert_id, resolution_note)
         return {

@@ -37,8 +37,10 @@ from decimal import Decimal
 from typing import Dict, List, Optional, Any, Tuple
 from datetime import datetime, date
 from enum import Enum
-from pydantic import BaseModel, Field, validator, field_validator, model_validator
+from pydantic import Field, validator, field_validator, model_validator
 import hashlib
+
+from greenlang.schemas.enums import ComplianceStatus, ReportFormat
 
 # ==============================================================================
 # AGENT METADATA
@@ -53,7 +55,6 @@ TABLE_PREFIX: str = "gl_uto_"
 # ENUMERATIONS
 # ==============================================================================
 
-
 class CalculationMethod(str, Enum):
     """Calculation method for transport emissions."""
 
@@ -62,7 +63,6 @@ class CalculationMethod(str, Enum):
     SPEND_BASED = "spend_based"  # Activity data: transport spend × EEIO
     SUPPLIER_SPECIFIC = "supplier_specific"  # Supplier-provided emissions
     HYBRID = "hybrid"  # Combination of methods
-
 
 class TransportMode(str, Enum):
     """Primary transport mode."""
@@ -73,7 +73,6 @@ class TransportMode(str, Enum):
     AIR = "air"
     PIPELINE = "pipeline"
     INTERMODAL = "intermodal"  # Multiple modes in single leg
-
 
 class RoadVehicleType(str, Enum):
     """Road vehicle types per ISO 14083 and GLEC Framework."""
@@ -98,14 +97,12 @@ class RoadVehicleType(str, Enum):
     HGV_ELECTRIC = "hgv_electric"  # Battery electric
     HYDROGEN_TRUCK = "hydrogen_truck"  # Hydrogen fuel cell
 
-
 class RailType(str, Enum):
     """Rail freight types."""
 
     DIESEL = "diesel"  # Diesel locomotive
     ELECTRIC = "electric"  # Electric locomotive
     AVERAGE = "average"  # Grid average
-
 
 class MaritimeVesselType(str, Enum):
     """Maritime vessel types per IMO and GLEC Framework."""
@@ -136,7 +133,6 @@ class MaritimeVesselType(str, Enum):
     # Inland waterway
     INLAND_BARGE = "inland_barge"
 
-
 class AircraftType(str, Enum):
     """Aircraft types for freight."""
 
@@ -146,7 +142,6 @@ class AircraftType(str, Enum):
     BELLY_FREIGHT = "belly_freight"  # Passenger aircraft cargo hold
     EXPRESS_INTEGRATOR = "express_integrator"  # FedEx, UPS, DHL fleet
 
-
 class PipelineType(str, Enum):
     """Pipeline transport types."""
 
@@ -155,7 +150,6 @@ class PipelineType(str, Enum):
     NATURAL_GAS = "natural_gas"
     CHEMICALS = "chemicals"  # Ethylene, ammonia, etc.
     CO2 = "co2"  # Carbon capture pipelines
-
 
 class TransportFuelType(str, Enum):
     """Fuel types for transport (primarily fuel-based method)."""
@@ -183,7 +177,6 @@ class TransportFuelType(str, Enum):
     METHANOL = "methanol"  # Marine methanol
     AMMONIA = "ammonia"  # Marine ammonia (future)
 
-
 class LadenState(str, Enum):
     """Load state for return/backhaul journeys."""
 
@@ -191,7 +184,6 @@ class LadenState(str, Enum):
     HALF = "half"  # ~50% load
     FULL = "full"  # 100% load
     AVERAGE = "average"  # Industry average (~65% for road)
-
 
 class AllocationMethod(str, Enum):
     """Method for allocating shared transport emissions."""
@@ -203,7 +195,6 @@ class AllocationMethod(str, Enum):
     REVENUE = "revenue"  # Revenue-based allocation
     CHARGEABLE_WEIGHT = "chargeable_weight"  # MAX(actual, volumetric) for air
     FLOOR_AREA = "floor_area"  # Floor space (warehousing)
-
 
 class Incoterm(str, Enum):
     """
@@ -228,7 +219,6 @@ class Incoterm(str, Enum):
     CFR = "cfr"  # Cost and Freight
     CIF = "cif"  # Cost, Insurance, and Freight
 
-
 class HubType(str, Enum):
     """Type of distribution/logistics hub."""
 
@@ -241,7 +231,6 @@ class HubType(str, Enum):
     CONSOLIDATION_CENTER = "consolidation_center"  # Freight consolidation
     TRANSSHIPMENT_HUB = "transshipment_hub"  # Port/airport transfer
 
-
 class TemperatureControl(str, Enum):
     """Temperature control requirements (reefer transport)."""
 
@@ -251,14 +240,12 @@ class TemperatureControl(str, Enum):
     DEEP_FROZEN_MINUS_25C = "deep_frozen_minus_25c"  # -25°C (vaccines, biotech)
     HEATED = "heated"  # Heated transport (chemicals)
 
-
 class EFScope(str, Enum):
     """Emission factor scope (WTW = Well-to-Wheel)."""
 
     TTW = "ttw"  # Tank-to-Wheel (direct combustion)
     WTT = "wtt"  # Well-to-Tank (upstream fuel production)
     WTW = "wtw"  # Well-to-Wheel (TTW + WTT)
-
 
 class DistanceMethod(str, Enum):
     """Method for determining transport distance."""
@@ -267,7 +254,6 @@ class DistanceMethod(str, Enum):
     SHORTEST_FEASIBLE = "shortest_feasible"  # Routing engine (OSM, Google, HERE)
     GREAT_CIRCLE = "great_circle"  # Haversine formula (air, maritime)
     ESTIMATED = "estimated"  # Industry average or modeled
-
 
 class CurrencyCode(str, Enum):
     """ISO 4217 currency codes for spend-based method."""
@@ -293,7 +279,6 @@ class CurrencyCode(str, Enum):
     ZAR = "ZAR"
     AED = "AED"
 
-
 class DQIDimension(str, Enum):
     """Data Quality Indicator dimensions per ISO 14083."""
 
@@ -302,7 +287,6 @@ class DQIDimension(str, Enum):
     TEMPORAL = "temporal"  # Temporal correlation
     GEOGRAPHICAL = "geographical"  # Geographical correlation
     TECHNOLOGICAL = "technological"  # Technological correlation
-
 
 class DQIScore(str, Enum):
     """Data Quality Indicator scores (1-5 scale)."""
@@ -313,14 +297,12 @@ class DQIScore(str, Enum):
     POOR = "poor"  # 4
     VERY_POOR = "very_poor"  # 5
 
-
 class UncertaintyMethod(str, Enum):
     """Uncertainty quantification method."""
 
     MONTE_CARLO = "monte_carlo"  # Monte Carlo simulation
     ANALYTICAL = "analytical"  # Analytical error propagation
     PEDIGREE_MATRIX = "pedigree_matrix"  # ISO 14083 pedigree matrix
-
 
 class ComplianceFramework(str, Enum):
     """Regulatory/reporting framework."""
@@ -332,16 +314,6 @@ class ComplianceFramework(str, Enum):
     CDP = "cdp"  # CDP Climate Change
     SBTI = "sbti"  # Science Based Targets initiative
     GRI_305 = "gri_305"  # GRI 305 Emissions
-
-
-class ComplianceStatus(str, Enum):
-    """Compliance check status."""
-
-    COMPLIANT = "compliant"
-    PARTIALLY_COMPLIANT = "partially_compliant"
-    NON_COMPLIANT = "non_compliant"
-    NOT_ASSESSED = "not_assessed"
-
 
 class PipelineStage(str, Enum):
     """Processing pipeline stages."""
@@ -357,16 +329,6 @@ class PipelineStage(str, Enum):
     AGGREGATE = "aggregate"  # Aggregation
     SEAL = "seal"  # Provenance sealing
 
-
-class ExportFormat(str, Enum):
-    """Export format for results."""
-
-    JSON = "json"
-    CSV = "csv"
-    XLSX = "xlsx"
-    PDF = "pdf"
-
-
 class BatchStatus(str, Enum):
     """Batch calculation status."""
 
@@ -376,7 +338,6 @@ class BatchStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"  # Some records failed
 
-
 class GWPSource(str, Enum):
     """IPCC Global Warming Potential source."""
 
@@ -384,7 +345,6 @@ class GWPSource(str, Enum):
     AR5 = "ar5"  # Fifth Assessment Report (100-year)
     AR6 = "ar6"  # Sixth Assessment Report (100-year)
     AR6_20YR = "ar6_20yr"  # Sixth Assessment Report (20-year)
-
 
 class EmissionGas(str, Enum):
     """Greenhouse gas types."""
@@ -394,7 +354,6 @@ class EmissionGas(str, Enum):
     N2O = "n2o"
     HFC = "hfc"  # Hydrofluorocarbons (reefer units)
     SF6 = "sf6"  # Sulfur hexafluoride (rare in transport)
-
 
 # ==============================================================================
 # CONSTANT TABLES
@@ -859,13 +818,11 @@ FRAMEWORK_REQUIRED_DISCLOSURES: Dict[ComplianceFramework, List[str]] = {
     ],
 }
 
-
 # ==============================================================================
 # PYDANTIC MODELS
 # ==============================================================================
 
-
-class TransportEmissionFactor(BaseModel):
+class TransportEmissionFactor(GreenLangBase):
     """
     Transport emission factor with metadata.
 
@@ -887,8 +844,7 @@ class TransportEmissionFactor(BaseModel):
     class Config:
         frozen = True
 
-
-class RoadVehicleProfile(BaseModel):
+class RoadVehicleProfile(GreenLangBase):
     """Road vehicle operational profile."""
 
     vehicle_type: RoadVehicleType
@@ -902,8 +858,7 @@ class RoadVehicleProfile(BaseModel):
     class Config:
         frozen = True
 
-
-class MaritimeVesselProfile(BaseModel):
+class MaritimeVesselProfile(GreenLangBase):
     """Maritime vessel operational profile."""
 
     vessel_type: MaritimeVesselType
@@ -916,8 +871,7 @@ class MaritimeVesselProfile(BaseModel):
     class Config:
         frozen = True
 
-
-class AircraftProfile(BaseModel):
+class AircraftProfile(GreenLangBase):
     """Aircraft operational profile."""
 
     aircraft_type: AircraftType
@@ -929,8 +883,7 @@ class AircraftProfile(BaseModel):
     class Config:
         frozen = True
 
-
-class TransportLeg(BaseModel):
+class TransportLeg(GreenLangBase):
     """
     Single leg of a transport chain.
 
@@ -990,8 +943,7 @@ class TransportLeg(BaseModel):
             raise ValueError("allocation_percentage must be 0-100")
         return v
 
-
-class TransportHub(BaseModel):
+class TransportHub(GreenLangBase):
     """
     Hub/warehouse/distribution center in transport chain.
 
@@ -1023,8 +975,7 @@ class TransportHub(BaseModel):
     class Config:
         frozen = True
 
-
-class TransportChain(BaseModel):
+class TransportChain(GreenLangBase):
     """
     Multi-leg transport chain (e.g., truck → warehouse → ship → truck).
 
@@ -1055,8 +1006,7 @@ class TransportChain(BaseModel):
                 )
         return self
 
-
-class ShipmentInput(BaseModel):
+class ShipmentInput(GreenLangBase):
     """
     Shipment input for distance-based calculation method.
 
@@ -1096,8 +1046,7 @@ class ShipmentInput(BaseModel):
             raise ValueError("Must provide either 'legs' or 'transport_chain'")
         return self
 
-
-class FuelConsumptionInput(BaseModel):
+class FuelConsumptionInput(GreenLangBase):
     """
     Fuel consumption input for fuel-based calculation method.
 
@@ -1143,8 +1092,7 @@ class FuelConsumptionInput(BaseModel):
             raise ValueError("Must provide at least one fuel/energy quantity")
         return self
 
-
-class SpendInput(BaseModel):
+class SpendInput(GreenLangBase):
     """
     Transport spend input for spend-based calculation method.
 
@@ -1178,8 +1126,7 @@ class SpendInput(BaseModel):
     class Config:
         frozen = True
 
-
-class SupplierEmissionInput(BaseModel):
+class SupplierEmissionInput(GreenLangBase):
     """
     Supplier-provided emissions for supplier-specific calculation method.
 
@@ -1214,8 +1161,7 @@ class SupplierEmissionInput(BaseModel):
     class Config:
         frozen = True
 
-
-class AllocationConfig(BaseModel):
+class AllocationConfig(GreenLangBase):
     """Configuration for emission allocation (shared transport)."""
 
     allocation_method: AllocationMethod
@@ -1240,8 +1186,7 @@ class AllocationConfig(BaseModel):
     class Config:
         frozen = True
 
-
-class ReeferConfig(BaseModel):
+class ReeferConfig(GreenLangBase):
     """Configuration for refrigerated/temperature-controlled transport."""
 
     temperature_control: TemperatureControl
@@ -1258,8 +1203,7 @@ class ReeferConfig(BaseModel):
     class Config:
         frozen = True
 
-
-class WarehouseConfig(BaseModel):
+class WarehouseConfig(GreenLangBase):
     """Configuration for warehouse/hub emissions."""
 
     hub_type: HubType
@@ -1279,8 +1223,7 @@ class WarehouseConfig(BaseModel):
     class Config:
         frozen = True
 
-
-class LegResult(BaseModel):
+class LegResult(GreenLangBase):
     """Result for single transport leg calculation."""
 
     leg_id: str
@@ -1314,8 +1257,7 @@ class LegResult(BaseModel):
     class Config:
         frozen = True
 
-
-class HubResult(BaseModel):
+class HubResult(GreenLangBase):
     """Result for hub/warehouse emissions calculation."""
 
     hub_id: str
@@ -1342,8 +1284,7 @@ class HubResult(BaseModel):
     class Config:
         frozen = True
 
-
-class TransportChainResult(BaseModel):
+class TransportChainResult(GreenLangBase):
     """Result for complete transport chain."""
 
     chain_id: str
@@ -1369,8 +1310,7 @@ class TransportChainResult(BaseModel):
     class Config:
         frozen = True
 
-
-class CalculationRequest(BaseModel):
+class CalculationRequest(GreenLangBase):
     """Request for emissions calculation."""
 
     request_id: str = Field(default_factory=lambda: f"req_{datetime.utcnow().strftime('%Y%m%d%H%M%S%f')}")
@@ -1402,8 +1342,7 @@ class CalculationRequest(BaseModel):
             raise ValueError("Must provide at least one input type")
         return self
 
-
-class CalculationResult(BaseModel):
+class CalculationResult(GreenLangBase):
     """Result from emissions calculation."""
 
     request_id: str
@@ -1453,8 +1392,7 @@ class CalculationResult(BaseModel):
     class Config:
         frozen = True
 
-
-class BatchCalculationRequest(BaseModel):
+class BatchCalculationRequest(GreenLangBase):
     """Request for batch emissions calculation."""
 
     batch_id: str = Field(default_factory=lambda: f"batch_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}")
@@ -1468,8 +1406,7 @@ class BatchCalculationRequest(BaseModel):
     class Config:
         frozen = True
 
-
-class BatchCalculationResult(BaseModel):
+class BatchCalculationResult(GreenLangBase):
     """Result from batch emissions calculation."""
 
     batch_id: str
@@ -1495,8 +1432,7 @@ class BatchCalculationResult(BaseModel):
     class Config:
         frozen = True
 
-
-class ComplianceRequirement(BaseModel):
+class ComplianceRequirement(GreenLangBase):
     """Compliance requirement definition."""
 
     framework: ComplianceFramework
@@ -1508,8 +1444,7 @@ class ComplianceRequirement(BaseModel):
     class Config:
         frozen = True
 
-
-class ComplianceCheckResult(BaseModel):
+class ComplianceCheckResult(GreenLangBase):
     """Result from compliance check."""
 
     framework: ComplianceFramework
@@ -1531,8 +1466,7 @@ class ComplianceCheckResult(BaseModel):
     class Config:
         frozen = True
 
-
-class AggregationResult(BaseModel):
+class AggregationResult(GreenLangBase):
     """
     Aggregated emissions result.
 
@@ -1569,12 +1503,11 @@ class AggregationResult(BaseModel):
     class Config:
         frozen = True
 
-
-class ExportRequest(BaseModel):
+class ExportRequest(GreenLangBase):
     """Request for exporting results."""
 
     export_id: str = Field(default_factory=lambda: f"export_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}")
-    format: ExportFormat
+    format: ReportFormat
 
     # Data to export
     calculation_results: Optional[List[CalculationResult]] = None
@@ -1592,11 +1525,9 @@ class ExportRequest(BaseModel):
     class Config:
         frozen = True
 
-
 # ==============================================================================
 # HELPER FUNCTIONS
 # ==============================================================================
-
 
 def calculate_provenance_hash(data: Any) -> str:
     """
@@ -1612,12 +1543,12 @@ def calculate_provenance_hash(data: Any) -> str:
         data_str = data.model_dump_json(indent=None)
     elif isinstance(data, dict):
         import json
+
         data_str = json.dumps(data, sort_keys=True, default=str)
     else:
         data_str = str(data)
 
     return hashlib.sha256(data_str.encode("utf-8")).hexdigest()
-
 
 def get_gwp(gas: EmissionGas, source: GWPSource = GWPSource.AR5) -> Decimal:
     """
@@ -1631,7 +1562,6 @@ def get_gwp(gas: EmissionGas, source: GWPSource = GWPSource.AR5) -> Decimal:
         GWP value (unitless)
     """
     return GWP_VALUES.get(source, {}).get(gas, Decimal("0"))
-
 
 def calculate_co2e(
     co2_kg: Decimal,
@@ -1655,7 +1585,6 @@ def calculate_co2e(
     co2e += ch4_kg * get_gwp(EmissionGas.CH4, gwp_source)
     co2e += n2o_kg * get_gwp(EmissionGas.N2O, gwp_source)
     return co2e
-
 
 def get_dqi_composite_score(
     reliability: DQIScore,
@@ -1688,7 +1617,6 @@ def get_dqi_composite_score(
     ]
     return sum(scores) / Decimal("5")
 
-
 def get_dqi_quality_tier(composite_score: Decimal) -> str:
     """
     Map composite DQI score to quality tier.
@@ -1703,7 +1631,6 @@ def get_dqi_quality_tier(composite_score: Decimal) -> str:
         if min_score <= composite_score < max_score:
             return tier
     return "tier_5_very_poor"  # Default to worst if out of range
-
 
 # ==============================================================================
 # MODULE EXPORTS
@@ -1739,7 +1666,7 @@ __all__ = [
     "ComplianceFramework",
     "ComplianceStatus",
     "PipelineStage",
-    "ExportFormat",
+    "ReportFormat",
     "BatchStatus",
     "GWPSource",
     "EmissionGas",

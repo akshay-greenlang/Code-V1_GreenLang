@@ -44,18 +44,14 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -67,11 +63,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DQDimension(str, Enum):
     COMPLETENESS = "completeness"
@@ -80,14 +74,12 @@ class DQDimension(str, Enum):
     TIMELINESS = "timeliness"
     REPRESENTATIVENESS = "representativeness"
 
-
 class DQLevel(str, Enum):
     VERIFIED = "1_verified"
     SUPPLIER_SPECIFIC = "2_supplier_specific"
     AVERAGE = "3_average"
     PROXY = "4_proxy"
     SPEND_BASED = "5_spend_based"
-
 
 class AnomalyType(str, Enum):
     SPIKE = "spike"
@@ -97,7 +89,6 @@ class AnomalyType(str, Enum):
     DUPLICATE = "duplicate"
     FORMAT_ERROR = "format_error"
 
-
 class DQSeverity(str, Enum):
     CRITICAL = "critical"
     HIGH = "high"
@@ -105,11 +96,9 @@ class DQSeverity(str, Enum):
     LOW = "low"
     INFO = "info"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class DataQualityGuardianConfig(BaseModel):
     pack_id: str = Field(default="PACK-027")
@@ -119,7 +108,6 @@ class DataQualityGuardianConfig(BaseModel):
     yoy_variance_threshold_pct: float = Field(default=15.0, ge=5.0, le=50.0)
     anomaly_sigma_threshold: float = Field(default=3.0, ge=2.0, le=5.0)
     enable_provenance: bool = Field(default=True)
-
 
 class DQIssue(BaseModel):
     issue_id: str = Field(default_factory=_new_uuid)
@@ -134,14 +122,12 @@ class DQIssue(BaseModel):
     remediation: str = Field(default="")
     auto_fixable: bool = Field(default=False)
 
-
 class DQDimensionScore(BaseModel):
     dimension: DQDimension = Field(...)
     score: float = Field(default=0.0, ge=0.0, le=1.0)
     level: DQLevel = Field(default=DQLevel.AVERAGE)
     issues_count: int = Field(default=0)
     detail: str = Field(default="")
-
 
 class DQAssessmentResult(BaseModel):
     assessment_id: str = Field(default_factory=_new_uuid)
@@ -158,9 +144,8 @@ class DQAssessmentResult(BaseModel):
     materiality_weighted_score: float = Field(default=0.0)
     by_scope: Dict[str, float] = Field(default_factory=dict)
     by_category: Dict[str, float] = Field(default_factory=dict)
-    assessed_at: datetime = Field(default_factory=_utcnow)
+    assessed_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class YoYVarianceResult(BaseModel):
     assessment_id: str = Field(default_factory=_new_uuid)
@@ -170,11 +155,9 @@ class YoYVarianceResult(BaseModel):
     flags: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # DataQualityGuardian
 # ---------------------------------------------------------------------------
-
 
 class DataQualityGuardian:
     """Automated data quality guardian for PACK-027 enterprise data.

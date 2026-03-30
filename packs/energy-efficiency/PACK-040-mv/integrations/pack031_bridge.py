@@ -36,26 +36,19 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -68,11 +61,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class AuditLevel(str, Enum):
     """ASHRAE energy audit levels."""
@@ -80,7 +71,6 @@ class AuditLevel(str, Enum):
     LEVEL_1 = "level_1_walkthrough"
     LEVEL_2 = "level_2_detailed"
     LEVEL_3 = "level_3_investment_grade"
-
 
 class ECMCategory(str, Enum):
     """Energy Conservation Measure categories from industrial audits."""
@@ -96,7 +86,6 @@ class ECMCategory(str, Enum):
     CONTROLS = "controls"
     POWER_QUALITY = "power_quality"
 
-
 class EquipmentStatus(str, Enum):
     """Equipment operational status."""
 
@@ -105,7 +94,6 @@ class EquipmentStatus(str, Enum):
     SCHEDULED_REPLACEMENT = "scheduled_replacement"
     REPLACED = "replaced"
     DECOMMISSIONED = "decommissioned"
-
 
 class BaselineSource(str, Enum):
     """Source of baseline data from PACK-031."""
@@ -116,7 +104,6 @@ class BaselineSource(str, Enum):
     METERED_DATA = "metered_data"
     ENGINEERING_ESTIMATE = "engineering_estimate"
 
-
 class ImportStatus(str, Enum):
     """Status of data import from PACK-031."""
 
@@ -125,11 +112,9 @@ class ImportStatus(str, Enum):
     FAILED = "failed"
     NOT_AVAILABLE = "not_available"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class ECMSpec(BaseModel):
     """ECM specification from PACK-031 audit."""
@@ -148,7 +133,6 @@ class ECMSpec(BaseModel):
     measurement_boundary: str = Field(default="whole_facility")
     equipment_ids: List[str] = Field(default_factory=list)
 
-
 class EquipmentData(BaseModel):
     """Equipment inventory data from PACK-031 audit."""
 
@@ -163,7 +147,6 @@ class EquipmentData(BaseModel):
     efficiency_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     age_years: int = Field(default=0, ge=0)
     location: str = Field(default="")
-
 
 class AuditBaseline(BaseModel):
     """Audit baseline data from PACK-031."""
@@ -185,7 +168,6 @@ class AuditBaseline(BaseModel):
     ecm_specs: List[ECMSpec] = Field(default_factory=list)
     equipment: List[EquipmentData] = Field(default_factory=list)
 
-
 class Pack031ImportResult(BaseModel):
     """Result of importing data from PACK-031."""
 
@@ -200,13 +182,11 @@ class Pack031ImportResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
     processing_time_ms: float = Field(default=0.0)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # Pack031Bridge
 # ---------------------------------------------------------------------------
-
 
 class Pack031Bridge:
     """Bridge to PACK-031 Industrial Energy Audit data.
@@ -409,6 +389,7 @@ class Pack031Bridge:
         """Check if PACK-031 module is importable."""
         try:
             import importlib
+
             importlib.import_module(
                 "packs.energy_efficiency.PACK_031_industrial_audit"
             )

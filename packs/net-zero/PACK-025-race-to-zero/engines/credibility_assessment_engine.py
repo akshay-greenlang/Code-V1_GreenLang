@@ -73,23 +73,18 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -106,7 +101,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -115,7 +109,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -123,26 +116,21 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     return float(
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums & Constants
 # ---------------------------------------------------------------------------
-
 
 class CredibilityTier(str, Enum):
     """Credibility tier classification."""
@@ -151,14 +139,12 @@ class CredibilityTier(str, Enum):
     LOW = "LOW"
     CRITICAL = "CRITICAL"
 
-
 class GovernanceMaturity(str, Enum):
     """Governance maturity level."""
     EXEMPLARY = "EXEMPLARY"
     MATURE = "MATURE"
     DEVELOPING = "DEVELOPING"
     NASCENT = "NASCENT"
-
 
 class SubCriterionStatus(str, Enum):
     """Sub-criterion assessment status."""
@@ -167,14 +153,12 @@ class SubCriterionStatus(str, Enum):
     NOT_MET = "NOT_MET"
     NOT_APPLICABLE = "NOT_APPLICABLE"
 
-
 class PathwayAlignment(str, Enum):
     """Temperature pathway alignment."""
     ALIGNED_1_5C = "1.5C_ALIGNED"
     ALIGNED_WB2C = "WELL_BELOW_2C"
     ALIGNED_2C = "2C_ALIGNED"
     MISALIGNED = "MISALIGNED"
-
 
 class OffsetUsageRating(str, Enum):
     """Voluntary credit usage rating."""
@@ -183,14 +167,12 @@ class OffsetUsageRating(str, Enum):
     EXCESSIVE = "EXCESSIVE"
     NON_COMPLIANT = "NON_COMPLIANT"
 
-
 class LobbyingAlignmentRating(str, Enum):
     """Lobbying climate alignment rating."""
     FULLY_ALIGNED = "FULLY_ALIGNED"
     MOSTLY_ALIGNED = "MOSTLY_ALIGNED"
     PARTIALLY_ALIGNED = "PARTIALLY_ALIGNED"
     MISALIGNED = "MISALIGNED"
-
 
 # ---------------------------------------------------------------------------
 # HLEG Recommendations Database
@@ -532,11 +514,9 @@ GOVERNANCE_REQUIREMENTS: Dict[str, List[str]] = {
     "NASCENT": [],
 }
 
-
 # ---------------------------------------------------------------------------
 # Input / Output Models
 # ---------------------------------------------------------------------------
-
 
 class SubCriterionInput(BaseModel):
     """Input for a single HLEG sub-criterion assessment."""
@@ -558,7 +538,6 @@ class SubCriterionInput(BaseModel):
     def validate_evidence_quality(cls, v: float) -> float:
         return max(0.0, min(1.0, v))
 
-
 class LobbyingRecord(BaseModel):
     """Record of a lobbying or trade association engagement."""
     association_name: str = Field(..., description="Trade association or lobbying target")
@@ -568,7 +547,6 @@ class LobbyingRecord(BaseModel):
     audit_conducted: bool = Field(False, description="Whether audit of climate positions has been conducted")
     disclosed_publicly: bool = Field(False, description="Whether lobbying activity is publicly disclosed")
     notes: Optional[str] = Field(None, description="Additional notes")
-
 
 class OffsetUsageRecord(BaseModel):
     """Record of voluntary carbon credit usage."""
@@ -580,7 +558,6 @@ class OffsetUsageRecord(BaseModel):
     registry_used: Optional[str] = Field(None, description="Registry used for retirement")
     project_details_disclosed: bool = Field(False, description="Whether project details disclosed")
 
-
 class GovernanceInput(BaseModel):
     """Input for governance structure assessment."""
     board_oversight: bool = Field(False, description="Board-level climate oversight")
@@ -591,7 +568,6 @@ class GovernanceInput(BaseModel):
     external_accountability: bool = Field(False, description="External accountability mechanisms")
     governance_committee: bool = Field(False, description="Dedicated climate/sustainability committee")
     regular_board_reporting: bool = Field(False, description="Regular board reporting on climate progress")
-
 
 class CredibilityInput(BaseModel):
     """Input for credibility assessment engine."""
@@ -677,7 +653,6 @@ class CredibilityInput(BaseModel):
             raise ValueError(f"Reporting year {v} out of valid range [2015, 2060]")
         return v
 
-
 class SubCriterionAssessment(BaseModel):
     """Assessment result for a single sub-criterion."""
     criterion_id: str
@@ -690,7 +665,6 @@ class SubCriterionAssessment(BaseModel):
     gap_description: Optional[str] = None
     remediation_action: Optional[str] = None
     effort_level: Optional[str] = None
-
 
 class RecommendationAssessment(BaseModel):
     """Assessment result for a single HLEG recommendation."""
@@ -705,7 +679,6 @@ class RecommendationAssessment(BaseModel):
     key_gaps: List[str]
     improvement_actions: List[str]
 
-
 class LobbyingAlignmentAssessment(BaseModel):
     """Lobbying alignment assessment result."""
     overall_rating: str
@@ -716,7 +689,6 @@ class LobbyingAlignmentAssessment(BaseModel):
     total_expenditure_usd: float = 0.0
     publicly_disclosed: bool = False
     key_concerns: List[str]
-
 
 class OffsetUsageAssessment(BaseModel):
     """Offset usage assessment result."""
@@ -729,7 +701,6 @@ class OffsetUsageAssessment(BaseModel):
     concerns: List[str]
     score: float = 0.0
 
-
 class GovernanceAssessment(BaseModel):
     """Governance maturity assessment result."""
     maturity_level: str
@@ -737,7 +708,6 @@ class GovernanceAssessment(BaseModel):
     elements_missing: List[str]
     score: float = 0.0
     recommendations: List[str]
-
 
 class ImprovementPriority(BaseModel):
     """Ranked improvement priority."""
@@ -750,7 +720,6 @@ class ImprovementPriority(BaseModel):
     actions: List[str]
     estimated_effort: str
     estimated_timeline: str
-
 
 class CredibilityResult(BaseModel):
     """Complete credibility assessment result."""
@@ -797,11 +766,9 @@ class CredibilityResult(BaseModel):
     processing_time_ms: float
     provenance_hash: str
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class CredibilityAssessmentEngine:
     """
@@ -909,7 +876,7 @@ class CredibilityAssessmentEngine:
             entity_id=data.entity_id,
             entity_name=data.entity_name,
             reporting_year=data.reporting_year,
-            assessment_date=data.assessment_date or _utcnow().isoformat(),
+            assessment_date=data.assessment_date or utcnow().isoformat(),
             credibility_score=_round3(credibility_score),
             credibility_tier=credibility_tier,
             temperature_alignment=_round3(temp_alignment),
@@ -930,7 +897,7 @@ class CredibilityAssessmentEngine:
             overall_narrative=narrative,
             engine_version=self._module_version,
             module_version=self._module_version,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 2),
             provenance_hash="",
         )

@@ -108,23 +108,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -141,7 +136,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -150,7 +144,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -158,19 +151,15 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round4(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EvidenceCategory(str, Enum):
     """Evidence category per ISAE 3410.
@@ -197,7 +186,6 @@ class EvidenceCategory(str, Enum):
     APPROVAL = "approval"
     EXTERNAL = "external"
 
-
 class QualityGrade(str, Enum):
     """Evidence quality grade (5-point scale).
 
@@ -213,7 +201,6 @@ class QualityGrade(str, Enum):
     MARGINAL = "marginal"
     INSUFFICIENT = "insufficient"
 
-
 class EmissionScope(str, Enum):
     """GHG Protocol emission scope.
 
@@ -227,7 +214,6 @@ class EmissionScope(str, Enum):
     SCOPE_3 = "scope_3"
     CROSS_SCOPE = "cross_scope"
 
-
 class Scope1EvidenceType(str, Enum):
     """Scope 1 evidence sub-types."""
     STATIONARY_COMBUSTION = "stationary_combustion"
@@ -236,7 +222,6 @@ class Scope1EvidenceType(str, Enum):
     FUGITIVE_MONITORING = "fugitive_monitoring"
     REFRIGERANT_TRACKING = "refrigerant_tracking"
 
-
 class Scope2EvidenceType(str, Enum):
     """Scope 2 evidence sub-types."""
     UTILITY_BILLS = "utility_bills"
@@ -244,14 +229,12 @@ class Scope2EvidenceType(str, Enum):
     RESIDUAL_MIX_FACTORS = "residual_mix_factors"
     GRID_EMISSION_FACTORS = "grid_emission_factors"
 
-
 class Scope3EvidenceType(str, Enum):
     """Scope 3 evidence sub-types."""
     SUPPLIER_DATA = "supplier_data"
     SPEND_BASED_CALCS = "spend_based_calcs"
     ACTIVITY_BASED_CALCS = "activity_based_calcs"
     EF_SELECTION_RATIONALE = "ef_selection_rationale"
-
 
 class SourceType(str, Enum):
     """Source type for evidence quality scoring.
@@ -268,7 +251,6 @@ class SourceType(str, Enum):
     SECONDARY_INDIRECT = "secondary_indirect"
     ESTIMATED = "estimated"
 
-
 class PackageStatus(str, Enum):
     """Evidence package versioning status.
 
@@ -279,7 +261,6 @@ class PackageStatus(str, Enum):
     DRAFT = "draft"
     REVIEW = "review"
     FINAL = "final"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -346,11 +327,9 @@ SCOPE_3_REQUIRED: List[str] = [
 MAX_EVIDENCE_AGE_MONTHS: int = 18
 MAX_EVIDENCE_ITEMS: int = 100000
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class QualityWeights(BaseModel):
     """Weights for evidence quality scoring.
@@ -377,7 +356,6 @@ class QualityWeights(BaseModel):
                 "Quality weights sum to %s (expected ~1.0). Results may be skewed.", total
             )
         return self
-
 
 class EvidenceItem(BaseModel):
     """A single evidence item for assurance.
@@ -434,7 +412,6 @@ class EvidenceItem(BaseModel):
     def coerce_completeness(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class ConsolidationConfig(BaseModel):
     """Configuration for evidence consolidation.
 
@@ -477,7 +454,6 @@ class ConsolidationConfig(BaseModel):
     )
     output_precision: int = Field(default=2, ge=0, le=6, description="Output precision")
 
-
 class ConsolidationInput(BaseModel):
     """Input for evidence consolidation.
 
@@ -492,11 +468,9 @@ class ConsolidationInput(BaseModel):
         default_factory=ConsolidationConfig, description="Configuration"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class EvidenceQualityScore(BaseModel):
     """Quality score for a single evidence item.
@@ -518,7 +492,6 @@ class EvidenceQualityScore(BaseModel):
     composite_score: Decimal = Field(default=Decimal("0"), description="Composite score")
     grade: str = Field(default=QualityGrade.INSUFFICIENT.value, description="Quality grade")
 
-
 class CompletenessScore(BaseModel):
     """Completeness score for a scope, category, or facility.
 
@@ -538,7 +511,6 @@ class CompletenessScore(BaseModel):
     completeness_pct: Decimal = Field(default=Decimal("0"), description="Completeness %")
     missing_items: List[str] = Field(default_factory=list, description="Missing items")
     grade: str = Field(default=QualityGrade.INSUFFICIENT.value, description="Grade")
-
 
 class EvidenceIndexEntry(BaseModel):
     """Entry in the digital evidence index.
@@ -566,7 +538,6 @@ class EvidenceIndexEntry(BaseModel):
     uploaded_at: str = Field(default="", description="Upload time")
     uploaded_by: str = Field(default="", description="Uploader")
 
-
 class EvidenceIndex(BaseModel):
     """Digital evidence index with SHA-256 file hashes.
 
@@ -582,7 +553,6 @@ class EvidenceIndex(BaseModel):
     total_size_bytes: int = Field(default=0, description="Total size")
     entries: List[EvidenceIndexEntry] = Field(default_factory=list, description="Entries")
     index_hash: str = Field(default="", description="Index hash")
-
 
 class ScopeEvidenceSummary(BaseModel):
     """Summary of evidence for a single scope.
@@ -609,7 +579,6 @@ class ScopeEvidenceSummary(BaseModel):
     completeness_scores: List[CompletenessScore] = Field(
         default_factory=list, description="Completeness"
     )
-
 
 class EvidencePackage(BaseModel):
     """Consolidated evidence package.
@@ -659,7 +628,6 @@ class EvidencePackage(BaseModel):
     total_evidence_items: int = Field(default=0, description="Total items")
     total_file_size_bytes: int = Field(default=0, description="Total size")
 
-
 class PackageResult(BaseModel):
     """Complete result of evidence consolidation.
 
@@ -692,11 +660,9 @@ class PackageResult(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class EvidenceConsolidationEngine:
     """Consolidates and quality-grades evidence for GHG assurance readiness.
@@ -847,7 +813,7 @@ class EvidenceConsolidationEngine:
             gaps_identified=len(gaps),
             gap_details=gaps,
             warnings=warnings,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         result.provenance_hash = _compute_hash(result)
@@ -937,7 +903,7 @@ class EvidenceConsolidationEngine:
         if item.data_date:
             try:
                 data_dt = datetime.fromisoformat(item.data_date.replace("Z", "+00:00"))
-                now = _utcnow()
+                now = utcnow()
                 months_old = (now.year - data_dt.year) * 12 + (now.month - data_dt.month)
                 if months_old > config.max_evidence_age_months:
                     recency_score = Decimal("0")
@@ -1292,7 +1258,6 @@ class EvidenceConsolidationEngine:
 
     def get_version(self) -> str:
         return self._version
-
 
 # ---------------------------------------------------------------------------
 # __all__

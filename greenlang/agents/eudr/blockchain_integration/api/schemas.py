@@ -30,28 +30,21 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import ConfigDict, Field, field_validator, model_validator
 
+from greenlang.schemas import GreenLangBase, utcnow
 
 # =============================================================================
 # Helpers
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_id() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 # =============================================================================
 # Enumerations (API-layer mirrors of domain enums)
 # =============================================================================
-
 
 class BlockchainNetworkSchema(str, Enum):
     """Supported blockchain networks for EUDR compliance anchoring."""
@@ -61,7 +54,6 @@ class BlockchainNetworkSchema(str, Enum):
     FABRIC = "fabric"
     BESU = "besu"
 
-
 class AnchorStatusSchema(str, Enum):
     """Status of an on-chain anchor record."""
 
@@ -70,7 +62,6 @@ class AnchorStatusSchema(str, Enum):
     CONFIRMED = "confirmed"
     FAILED = "failed"
     EXPIRED = "expired"
-
 
 class AnchorEventTypeSchema(str, Enum):
     """Type of EUDR supply chain event being anchored on-chain."""
@@ -84,7 +75,6 @@ class AnchorEventTypeSchema(str, Enum):
     DOCUMENT_AUTHENTICATION = "document_authentication"
     GEOLOCATION_VERIFICATION = "geolocation_verification"
 
-
 class AnchorPrioritySchema(str, Enum):
     """Priority level for anchor submission scheduling."""
 
@@ -92,14 +82,12 @@ class AnchorPrioritySchema(str, Enum):
     P1_STANDARD = "p1_standard"
     P2_BATCH = "p2_batch"
 
-
 class ContractTypeSchema(str, Enum):
     """Type of smart contract deployed for EUDR compliance."""
 
     ANCHOR_REGISTRY = "anchor_registry"
     CUSTODY_TRANSFER = "custody_transfer"
     COMPLIANCE_CHECK = "compliance_check"
-
 
 class ContractStatusSchema(str, Enum):
     """Lifecycle status of a deployed smart contract."""
@@ -109,7 +97,6 @@ class ContractStatusSchema(str, Enum):
     PAUSED = "paused"
     DEPRECATED = "deprecated"
 
-
 class VerificationStatusSchema(str, Enum):
     """Result status of an anchor verification operation."""
 
@@ -117,7 +104,6 @@ class VerificationStatusSchema(str, Enum):
     TAMPERED = "tampered"
     NOT_FOUND = "not_found"
     ERROR = "error"
-
 
 class EventTypeSchema(str, Enum):
     """Type of on-chain event emitted by EUDR smart contracts."""
@@ -127,7 +113,6 @@ class EventTypeSchema(str, Enum):
     COMPLIANCE_CHECK_COMPLETED = "compliance_check_completed"
     PARTY_REGISTERED = "party_registered"
 
-
 class AccessLevelSchema(str, Enum):
     """Access level for cross-party data sharing grants."""
 
@@ -136,14 +121,12 @@ class AccessLevelSchema(str, Enum):
     AUDITOR = "auditor"
     SUPPLY_CHAIN_PARTNER = "supply_chain_partner"
 
-
 class AccessStatusSchema(str, Enum):
     """Status of a cross-party data access grant."""
 
     ACTIVE = "active"
     REVOKED = "revoked"
     EXPIRED = "expired"
-
 
 class EvidenceFormatSchema(str, Enum):
     """Output format for EUDR compliance evidence packages."""
@@ -152,13 +135,11 @@ class EvidenceFormatSchema(str, Enum):
     PDF = "pdf"
     EUDR_XML = "eudr_xml"
 
-
 class ProofFormatSchema(str, Enum):
     """Output format for Merkle proofs."""
 
     JSON = "json"
     BINARY = "binary"
-
 
 class TransactionStatusSchema(str, Enum):
     """Status of a blockchain transaction."""
@@ -168,7 +149,6 @@ class TransactionStatusSchema(str, Enum):
     CONFIRMED = "confirmed"
     REVERTED = "reverted"
 
-
 class ChainConnectionStatusSchema(str, Enum):
     """Status of a blockchain network connection."""
 
@@ -176,7 +156,6 @@ class ChainConnectionStatusSchema(str, Enum):
     DISCONNECTED = "disconnected"
     ERROR = "error"
     RECONNECTING = "reconnecting"
-
 
 class BatchJobStatusSchema(str, Enum):
     """Status of a batch processing job."""
@@ -187,7 +166,6 @@ class BatchJobStatusSchema(str, Enum):
     FAILED = "failed"
     CANCELLED = "cancelled"
 
-
 class BatchJobTypeSchema(str, Enum):
     """Type of batch processing job."""
 
@@ -197,14 +175,12 @@ class BatchJobTypeSchema(str, Enum):
     MERKLE_BUILD = "merkle_build"
     EVENT_REPLAY = "event_replay"
 
-
 class HashAlgorithmSchema(str, Enum):
     """Cryptographic hash algorithm for Merkle tree construction."""
 
     SHA256 = "sha256"
     SHA512 = "sha512"
     KECCAK256 = "keccak256"
-
 
 class SubscriptionStatusSchema(str, Enum):
     """Status of an on-chain event subscription."""
@@ -214,7 +190,6 @@ class SubscriptionStatusSchema(str, Enum):
     CANCELLED = "cancelled"
     ERROR = "error"
 
-
 class EvidenceStatusSchema(str, Enum):
     """Status of a compliance evidence package."""
 
@@ -222,7 +197,6 @@ class EvidenceStatusSchema(str, Enum):
     READY = "ready"
     FAILED = "failed"
     EXPIRED = "expired"
-
 
 class EvidenceVerifyStatusSchema(str, Enum):
     """Verification status of an evidence package."""
@@ -232,13 +206,11 @@ class EvidenceVerifyStatusSchema(str, Enum):
     EXPIRED = "expired"
     TAMPERED = "tampered"
 
-
 # =============================================================================
 # Shared Models
 # =============================================================================
 
-
-class ProvenanceInfo(BaseModel):
+class ProvenanceInfo(GreenLangBase):
     """Provenance tracking metadata for audit trails.
 
     Attributes:
@@ -256,11 +228,10 @@ class ProvenanceInfo(BaseModel):
         default="sha256", description="Hash algorithm used"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Provenance timestamp"
+        default_factory=utcnow, description="Provenance timestamp"
     )
 
-
-class PaginatedMeta(BaseModel):
+class PaginatedMeta(GreenLangBase):
     """Pagination metadata for list responses.
 
     Attributes:
@@ -277,8 +248,7 @@ class PaginatedMeta(BaseModel):
     offset: int = Field(..., ge=0, description="Records skipped")
     has_more: bool = Field(..., description="More records exist")
 
-
-class TransactionInfo(BaseModel):
+class TransactionInfo(GreenLangBase):
     """Blockchain transaction information.
 
     Attributes:
@@ -305,13 +275,11 @@ class TransactionInfo(BaseModel):
         ..., description="Transaction status"
     )
 
-
 # =============================================================================
 # Anchor Schemas
 # =============================================================================
 
-
-class AnchorCreateRequest(BaseModel):
+class AnchorCreateRequest(GreenLangBase):
     """Request to create a single on-chain anchor record.
 
     Attributes:
@@ -357,8 +325,7 @@ class AnchorCreateRequest(BaseModel):
             raise ValueError("data_hash must be a valid hexadecimal string")
         return v
 
-
-class AnchorBatchRequest(BaseModel):
+class AnchorBatchRequest(GreenLangBase):
     """Request to batch anchor multiple records.
 
     Attributes:
@@ -395,8 +362,7 @@ class AnchorBatchRequest(BaseModel):
             raise ValueError("At least one record is required")
         return v
 
-
-class AnchorResponse(BaseModel):
+class AnchorResponse(GreenLangBase):
     """Response for a single anchor operation.
 
     Attributes:
@@ -445,7 +411,7 @@ class AnchorResponse(BaseModel):
         None, description="Additional metadata"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation timestamp"
+        default_factory=utcnow, description="Creation timestamp"
     )
     confirmed_at: Optional[datetime] = Field(
         None, description="Confirmation timestamp"
@@ -454,8 +420,7 @@ class AnchorResponse(BaseModel):
         None, description="Provenance tracking"
     )
 
-
-class AnchorListResponse(BaseModel):
+class AnchorListResponse(GreenLangBase):
     """Paginated list of anchor records.
 
     Attributes:
@@ -470,13 +435,11 @@ class AnchorListResponse(BaseModel):
     )
     pagination: PaginatedMeta = Field(..., description="Pagination metadata")
 
-
 # =============================================================================
 # Contract Schemas
 # =============================================================================
 
-
-class ContractDeployRequest(BaseModel):
+class ContractDeployRequest(GreenLangBase):
     """Request to deploy a smart contract.
 
     Attributes:
@@ -513,8 +476,7 @@ class ContractDeployRequest(BaseModel):
         description="Maximum gas for deployment",
     )
 
-
-class ContractCallRequest(BaseModel):
+class ContractCallRequest(GreenLangBase):
     """Request to call a smart contract method.
 
     Attributes:
@@ -547,8 +509,7 @@ class ContractCallRequest(BaseModel):
         description="Read-only call (no transaction submitted)",
     )
 
-
-class ContractResponse(BaseModel):
+class ContractResponse(GreenLangBase):
     """Response for a smart contract operation.
 
     Attributes:
@@ -601,14 +562,13 @@ class ContractResponse(BaseModel):
         None, description="Deployment timestamp"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation timestamp"
+        default_factory=utcnow, description="Creation timestamp"
     )
     provenance: Optional[ProvenanceInfo] = Field(
         None, description="Provenance tracking"
     )
 
-
-class ContractListResponse(BaseModel):
+class ContractListResponse(GreenLangBase):
     """Paginated list of deployed contracts.
 
     Attributes:
@@ -623,8 +583,7 @@ class ContractListResponse(BaseModel):
     )
     pagination: PaginatedMeta = Field(..., description="Pagination metadata")
 
-
-class ContractStateResponse(BaseModel):
+class ContractStateResponse(GreenLangBase):
     """Response for contract state query.
 
     Attributes:
@@ -648,11 +607,10 @@ class ContractStateResponse(BaseModel):
     )
     block_number: int = Field(..., ge=0, description="State block number")
     queried_at: datetime = Field(
-        default_factory=_utcnow, description="Query timestamp"
+        default_factory=utcnow, description="Query timestamp"
     )
 
-
-class ContractCallResponse(BaseModel):
+class ContractCallResponse(GreenLangBase):
     """Response for a contract method call.
 
     Attributes:
@@ -678,16 +636,14 @@ class ContractCallResponse(BaseModel):
     )
     is_read_only: bool = Field(..., description="Whether read-only call")
     executed_at: datetime = Field(
-        default_factory=_utcnow, description="Execution timestamp"
+        default_factory=utcnow, description="Execution timestamp"
     )
-
 
 # =============================================================================
 # Chain Connection Schemas
 # =============================================================================
 
-
-class ChainConnectRequest(BaseModel):
+class ChainConnectRequest(GreenLangBase):
     """Request to connect to a blockchain network.
 
     Attributes:
@@ -736,8 +692,7 @@ class ChainConnectRequest(BaseModel):
             )
         return v
 
-
-class GasEstimateRequest(BaseModel):
+class GasEstimateRequest(GreenLangBase):
     """Request to estimate gas for a blockchain operation.
 
     Attributes:
@@ -768,8 +723,7 @@ class GasEstimateRequest(BaseModel):
         None, description="Contract method name"
     )
 
-
-class ChainStatusResponse(BaseModel):
+class ChainStatusResponse(GreenLangBase):
     """Response for chain connection status.
 
     Attributes:
@@ -816,8 +770,7 @@ class ChainStatusResponse(BaseModel):
         None, description="Last heartbeat timestamp"
     )
 
-
-class ChainListResponse(BaseModel):
+class ChainListResponse(GreenLangBase):
     """List of connected blockchain networks.
 
     Attributes:
@@ -832,8 +785,7 @@ class ChainListResponse(BaseModel):
     )
     total: int = Field(default=0, ge=0, description="Total connected chains")
 
-
-class GasEstimateResponse(BaseModel):
+class GasEstimateResponse(GreenLangBase):
     """Response for gas estimation.
 
     Attributes:
@@ -867,16 +819,14 @@ class GasEstimateResponse(BaseModel):
         ..., description="Native token symbol"
     )
     estimated_at: datetime = Field(
-        default_factory=_utcnow, description="Estimation timestamp"
+        default_factory=utcnow, description="Estimation timestamp"
     )
-
 
 # =============================================================================
 # Verification Schemas
 # =============================================================================
 
-
-class VerifyRecordRequest(BaseModel):
+class VerifyRecordRequest(GreenLangBase):
     """Request to verify a record against its on-chain anchor.
 
     Attributes:
@@ -908,8 +858,7 @@ class VerifyRecordRequest(BaseModel):
             raise ValueError("data_hash must be a valid hexadecimal string")
         return v
 
-
-class VerifyBatchRequest(BaseModel):
+class VerifyBatchRequest(GreenLangBase):
     """Request to batch verify multiple records.
 
     Attributes:
@@ -923,8 +872,7 @@ class VerifyBatchRequest(BaseModel):
         description="Records to verify (max 100)",
     )
 
-
-class VerifyMerkleProofRequest(BaseModel):
+class VerifyMerkleProofRequest(GreenLangBase):
     """Request to verify a Merkle inclusion proof.
 
     Attributes:
@@ -965,8 +913,7 @@ class VerifyMerkleProofRequest(BaseModel):
             raise ValueError("Hash must be a valid hexadecimal string")
         return v
 
-
-class VerificationResponse(BaseModel):
+class VerificationResponse(GreenLangBase):
     """Response for a verification operation.
 
     Attributes:
@@ -1007,14 +954,13 @@ class VerificationResponse(BaseModel):
         None, ge=0, description="Original anchor block number"
     )
     verified_at: datetime = Field(
-        default_factory=_utcnow, description="Verification timestamp"
+        default_factory=utcnow, description="Verification timestamp"
     )
     provenance: Optional[ProvenanceInfo] = Field(
         None, description="Provenance tracking"
     )
 
-
-class VerificationListResponse(BaseModel):
+class VerificationListResponse(GreenLangBase):
     """Paginated list of verification results.
 
     Attributes:
@@ -1035,13 +981,11 @@ class VerificationListResponse(BaseModel):
         None, description="Pagination metadata"
     )
 
-
 # =============================================================================
 # Event Schemas
 # =============================================================================
 
-
-class EventSubscribeRequest(BaseModel):
+class EventSubscribeRequest(GreenLangBase):
     """Request to subscribe to on-chain events.
 
     Attributes:
@@ -1077,8 +1021,7 @@ class EventSubscribeRequest(BaseModel):
         default=None, description="Additional event filter parameters"
     )
 
-
-class EventReplayRequest(BaseModel):
+class EventReplayRequest(GreenLangBase):
     """Request to replay events from a specific block.
 
     Attributes:
@@ -1115,8 +1058,7 @@ class EventReplayRequest(BaseModel):
             raise ValueError("to_block must be >= from_block")
         return self
 
-
-class EventQueryRequest(BaseModel):
+class EventQueryRequest(GreenLangBase):
     """Query parameters for searching indexed events.
 
     Attributes:
@@ -1153,8 +1095,7 @@ class EventQueryRequest(BaseModel):
         None, description="End date filter"
     )
 
-
-class EventResponse(BaseModel):
+class EventResponse(GreenLangBase):
     """Response for a single on-chain event.
 
     Attributes:
@@ -1196,11 +1137,10 @@ class EventResponse(BaseModel):
         default_factory=dict, description="Event data payload"
     )
     indexed_at: datetime = Field(
-        default_factory=_utcnow, description="Indexing timestamp"
+        default_factory=utcnow, description="Indexing timestamp"
     )
 
-
-class EventListResponse(BaseModel):
+class EventListResponse(GreenLangBase):
     """Paginated list of on-chain events.
 
     Attributes:
@@ -1215,8 +1155,7 @@ class EventListResponse(BaseModel):
     )
     pagination: PaginatedMeta = Field(..., description="Pagination metadata")
 
-
-class SubscriptionResponse(BaseModel):
+class SubscriptionResponse(GreenLangBase):
     """Response for an event subscription operation.
 
     Attributes:
@@ -1256,19 +1195,17 @@ class SubscriptionResponse(BaseModel):
         None, description="Webhook URL"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation timestamp"
+        default_factory=utcnow, description="Creation timestamp"
     )
     events_received: int = Field(
         default=0, ge=0, description="Events received count"
     )
 
-
 # =============================================================================
 # Merkle Proof Schemas
 # =============================================================================
 
-
-class MerkleBuildRequest(BaseModel):
+class MerkleBuildRequest(GreenLangBase):
     """Request to build a Merkle tree.
 
     Attributes:
@@ -1309,8 +1246,7 @@ class MerkleBuildRequest(BaseModel):
             validated.append(leaf)
         return validated
 
-
-class MerkleProofRequest(BaseModel):
+class MerkleProofRequest(GreenLangBase):
     """Request to generate a Merkle inclusion proof.
 
     Attributes:
@@ -1338,8 +1274,7 @@ class MerkleProofRequest(BaseModel):
             raise ValueError("leaf_hash must be a valid hexadecimal string")
         return v
 
-
-class MerkleVerifyRequest(BaseModel):
+class MerkleVerifyRequest(GreenLangBase):
     """Request to verify a standalone Merkle proof.
 
     Attributes:
@@ -1377,8 +1312,7 @@ class MerkleVerifyRequest(BaseModel):
             raise ValueError("Hash must be a valid hexadecimal string")
         return v
 
-
-class MerkleTreeResponse(BaseModel):
+class MerkleTreeResponse(GreenLangBase):
     """Response for a Merkle tree operation.
 
     Attributes:
@@ -1410,7 +1344,7 @@ class MerkleTreeResponse(BaseModel):
         None, description="Leaf hashes (omitted for large trees)"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation timestamp"
+        default_factory=utcnow, description="Creation timestamp"
     )
     anchor_id: Optional[str] = Field(
         None, description="Associated anchor identifier"
@@ -1419,8 +1353,7 @@ class MerkleTreeResponse(BaseModel):
         None, description="Provenance tracking"
     )
 
-
-class MerkleProofResponse(BaseModel):
+class MerkleProofResponse(GreenLangBase):
     """Response for a Merkle proof generation.
 
     Attributes:
@@ -1448,11 +1381,10 @@ class MerkleProofResponse(BaseModel):
         ..., description="Proof format"
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow, description="Generation timestamp"
+        default_factory=utcnow, description="Generation timestamp"
     )
 
-
-class MerkleVerifyResponse(BaseModel):
+class MerkleVerifyResponse(GreenLangBase):
     """Response for a Merkle proof verification.
 
     Attributes:
@@ -1476,16 +1408,14 @@ class MerkleVerifyResponse(BaseModel):
         ..., description="Hash algorithm"
     )
     verified_at: datetime = Field(
-        default_factory=_utcnow, description="Verification timestamp"
+        default_factory=utcnow, description="Verification timestamp"
     )
-
 
 # =============================================================================
 # Sharing / Access Grant Schemas
 # =============================================================================
 
-
-class AccessGrantRequest(BaseModel):
+class AccessGrantRequest(GreenLangBase):
     """Request to grant cross-party data access.
 
     Attributes:
@@ -1522,8 +1452,7 @@ class AccessGrantRequest(BaseModel):
         description="Reason for granting access",
     )
 
-
-class AccessRevokeRequest(BaseModel):
+class AccessRevokeRequest(GreenLangBase):
     """Request to revoke cross-party data access.
 
     Attributes:
@@ -1537,8 +1466,7 @@ class AccessRevokeRequest(BaseModel):
         description="Reason for revoking access",
     )
 
-
-class AccessRequestRequest(BaseModel):
+class AccessRequestRequest(GreenLangBase):
     """Request to request access to a record from its owner.
 
     Attributes:
@@ -1566,8 +1494,7 @@ class AccessRequestRequest(BaseModel):
         description="Requested access duration in days",
     )
 
-
-class MultiPartyConfirmRequest(BaseModel):
+class MultiPartyConfirmRequest(GreenLangBase):
     """Request for multi-party confirmation of a data sharing agreement.
 
     Attributes:
@@ -1607,8 +1534,7 @@ class MultiPartyConfirmRequest(BaseModel):
             )
         return v
 
-
-class AccessGrantResponse(BaseModel):
+class AccessGrantResponse(GreenLangBase):
     """Response for an access grant operation.
 
     Attributes:
@@ -1645,7 +1571,7 @@ class AccessGrantResponse(BaseModel):
     )
     reason: Optional[str] = Field(None, description="Grant reason")
     granted_at: datetime = Field(
-        default_factory=_utcnow, description="Grant timestamp"
+        default_factory=utcnow, description="Grant timestamp"
     )
     expires_at: Optional[datetime] = Field(
         None, description="Expiry timestamp"
@@ -1657,8 +1583,7 @@ class AccessGrantResponse(BaseModel):
         None, description="Provenance tracking"
     )
 
-
-class AccessGrantListResponse(BaseModel):
+class AccessGrantListResponse(GreenLangBase):
     """List of access grants for a record.
 
     Attributes:
@@ -1675,8 +1600,7 @@ class AccessGrantListResponse(BaseModel):
     record_id: str = Field(..., description="Record identifier")
     total: int = Field(default=0, ge=0, description="Total grants")
 
-
-class SharedRecordListResponse(BaseModel):
+class SharedRecordListResponse(GreenLangBase):
     """List of records shared with the current party.
 
     Attributes:
@@ -1691,8 +1615,7 @@ class SharedRecordListResponse(BaseModel):
     )
     total: int = Field(default=0, ge=0, description="Total shared records")
 
-
-class MultiPartyConfirmResponse(BaseModel):
+class MultiPartyConfirmResponse(GreenLangBase):
     """Response for a multi-party confirmation.
 
     Attributes:
@@ -1720,16 +1643,14 @@ class MultiPartyConfirmResponse(BaseModel):
         ..., description="All confirmations met"
     )
     confirmed_at: datetime = Field(
-        default_factory=_utcnow, description="Confirmation timestamp"
+        default_factory=utcnow, description="Confirmation timestamp"
     )
-
 
 # =============================================================================
 # Evidence Package Schemas
 # =============================================================================
 
-
-class EvidencePackageRequest(BaseModel):
+class EvidencePackageRequest(GreenLangBase):
     """Request to generate a compliance evidence package.
 
     Attributes:
@@ -1778,8 +1699,7 @@ class EvidencePackageRequest(BaseModel):
         description="Regulatory framework reference",
     )
 
-
-class EvidenceVerifyRequest(BaseModel):
+class EvidenceVerifyRequest(GreenLangBase):
     """Request to verify a compliance evidence package.
 
     Attributes:
@@ -1812,8 +1732,7 @@ class EvidenceVerifyRequest(BaseModel):
             )
         return v
 
-
-class EvidencePackageResponse(BaseModel):
+class EvidencePackageResponse(GreenLangBase):
     """Response for an evidence package operation.
 
     Attributes:
@@ -1865,7 +1784,7 @@ class EvidencePackageResponse(BaseModel):
         default="EUDR_2023_1115", description="Regulatory framework"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation timestamp"
+        default_factory=utcnow, description="Creation timestamp"
     )
     expires_at: Optional[datetime] = Field(
         None, description="Package expiry"
@@ -1877,8 +1796,7 @@ class EvidencePackageResponse(BaseModel):
         None, description="Provenance tracking"
     )
 
-
-class EvidenceDownloadResponse(BaseModel):
+class EvidenceDownloadResponse(GreenLangBase):
     """Response for evidence package download.
 
     Attributes:
@@ -1903,8 +1821,7 @@ class EvidenceDownloadResponse(BaseModel):
         default="application/json", description="MIME content type"
     )
 
-
-class EvidenceVerifyResponse(BaseModel):
+class EvidenceVerifyResponse(GreenLangBase):
     """Response for evidence package verification.
 
     Attributes:
@@ -1937,19 +1854,17 @@ class EvidenceVerifyResponse(BaseModel):
         default=0, ge=0, description="Tampered records"
     )
     verified_at: datetime = Field(
-        default_factory=_utcnow, description="Verification timestamp"
+        default_factory=utcnow, description="Verification timestamp"
     )
     details: Optional[Dict[str, Any]] = Field(
         None, description="Verification details"
     )
 
-
 # =============================================================================
 # Batch Job Schemas
 # =============================================================================
 
-
-class SubmitBatchSchema(BaseModel):
+class SubmitBatchSchema(GreenLangBase):
     """Request to submit a batch processing job.
 
     Attributes:
@@ -1977,8 +1892,7 @@ class SubmitBatchSchema(BaseModel):
         description="Webhook URL for completion notification",
     )
 
-
-class BatchJobSchema(BaseModel):
+class BatchJobSchema(GreenLangBase):
     """Response for a batch job.
 
     Attributes:
@@ -2036,7 +1950,7 @@ class BatchJobSchema(BaseModel):
     error: Optional[str] = Field(None, description="Error message")
     callback_url: Optional[str] = Field(None, description="Webhook URL")
     submitted_at: datetime = Field(
-        default_factory=_utcnow, description="Submission timestamp"
+        default_factory=utcnow, description="Submission timestamp"
     )
     started_at: Optional[datetime] = Field(
         None, description="Start timestamp"
@@ -2051,8 +1965,7 @@ class BatchJobSchema(BaseModel):
         None, description="SHA-256 hash for audit trail"
     )
 
-
-class BatchJobCancelSchema(BaseModel):
+class BatchJobCancelSchema(GreenLangBase):
     """Response for batch job cancellation.
 
     Attributes:
@@ -2069,15 +1982,14 @@ class BatchJobCancelSchema(BaseModel):
         default=BatchJobStatusSchema.CANCELLED, description="Job status"
     )
     cancelled_at: datetime = Field(
-        default_factory=_utcnow, description="Cancellation timestamp"
+        default_factory=utcnow, description="Cancellation timestamp"
     )
     message: str = Field(
         default="Job cancelled successfully",
         description="Cancellation message",
     )
 
-
-class BatchJobResponse(BaseModel):
+class BatchJobResponse(GreenLangBase):
     """Full batch job response with status and result.
 
     Attributes:
@@ -2092,13 +2004,11 @@ class BatchJobResponse(BaseModel):
         None, description="Provenance tracking"
     )
 
-
 # =============================================================================
 # Health Schema
 # =============================================================================
 
-
-class HealthComponentSchema(BaseModel):
+class HealthComponentSchema(GreenLangBase):
     """Health status for a single service component.
 
     Attributes:
@@ -2119,8 +2029,7 @@ class HealthComponentSchema(BaseModel):
         None, description="Health details"
     )
 
-
-class HealthSchema(BaseModel):
+class HealthSchema(GreenLangBase):
     """Health check response for the Blockchain Integration API.
 
     Attributes:
@@ -2155,9 +2064,8 @@ class HealthSchema(BaseModel):
         description="Component health details",
     )
     checked_at: datetime = Field(
-        default_factory=_utcnow, description="Health check timestamp"
+        default_factory=utcnow, description="Health check timestamp"
     )
-
 
 # =============================================================================
 # Public API

@@ -35,7 +35,7 @@ import logging
 from typing import Any, Dict, List, Optional, Tuple
 
 from fastapi import APIRouter, HTTPException, Query
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.eudr.information_gathering.models import (
     CertificationBody,
@@ -50,6 +50,7 @@ from greenlang.agents.eudr.information_gathering.models import (
     SupplierProfile,
 )
 from greenlang.agents.eudr.information_gathering.setup import get_service
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +59,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-class GatherInformationRequest(BaseModel):
+class GatherInformationRequest(GreenLangBase):
     """Request body for the full information gathering pipeline."""
 
     operator_id: str = Field(..., description="EUDR operator identifier")
@@ -68,7 +69,7 @@ class GatherInformationRequest(BaseModel):
     )
 
 
-class QueryExternalDatabaseRequest(BaseModel):
+class QueryExternalDatabaseRequest(GreenLangBase):
     """Request body for querying a specific external database."""
 
     params: Dict[str, Any] = Field(
@@ -77,7 +78,7 @@ class QueryExternalDatabaseRequest(BaseModel):
     )
 
 
-class VerifyCertificateRequest(BaseModel):
+class VerifyCertificateRequest(GreenLangBase):
     """Request body for single certificate verification."""
 
     certificate_id: str = Field(..., description="Certificate identifier")
@@ -86,7 +87,7 @@ class VerifyCertificateRequest(BaseModel):
     )
 
 
-class BatchVerifyCertificatesRequest(BaseModel):
+class BatchVerifyCertificatesRequest(GreenLangBase):
     """Request body for batch certificate verification."""
 
     certificates: List[VerifyCertificateRequest] = Field(
@@ -94,7 +95,7 @@ class BatchVerifyCertificatesRequest(BaseModel):
     )
 
 
-class HarvestPublicDataRequest(BaseModel):
+class HarvestPublicDataRequest(GreenLangBase):
     """Request body for public data harvesting."""
 
     country_code: Optional[str] = Field(
@@ -105,7 +106,7 @@ class HarvestPublicDataRequest(BaseModel):
     )
 
 
-class AggregateSupplierRequest(BaseModel):
+class AggregateSupplierRequest(GreenLangBase):
     """Request body for supplier information aggregation."""
 
     sources: Dict[str, Any] = Field(
@@ -114,7 +115,7 @@ class AggregateSupplierRequest(BaseModel):
     )
 
 
-class ValidateCompletenessRequest(BaseModel):
+class ValidateCompletenessRequest(GreenLangBase):
     """Request body for Article 9 completeness validation."""
 
     operation_id: str = Field(..., description="Operation identifier")
@@ -124,7 +125,7 @@ class ValidateCompletenessRequest(BaseModel):
     )
 
 
-class AssemblePackageRequest(BaseModel):
+class AssemblePackageRequest(GreenLangBase):
     """Request body for information package assembly."""
 
     operation_id: str = Field(..., description="Operation identifier")
@@ -132,7 +133,7 @@ class AssemblePackageRequest(BaseModel):
     commodity: EUDRCommodity = Field(..., description="EUDR regulated commodity")
 
 
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     """Standard error response body."""
 
     detail: str = Field(..., description="Error description")

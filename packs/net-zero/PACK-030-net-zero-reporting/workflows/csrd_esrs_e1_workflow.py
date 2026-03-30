@@ -46,28 +46,22 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "30.0.0"
 _PACK_ID = "PACK-030"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -76,7 +70,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
@@ -84,12 +77,10 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class RAGStatus(str, Enum):
     RED = "red"
     AMBER = "amber"
     GREEN = "green"
-
 
 class ESRSE1Disclosure(str, Enum):
     E1_1 = "E1-1"
@@ -101,7 +92,6 @@ class ESRSE1Disclosure(str, Enum):
     E1_7 = "E1-7"
     E1_8 = "E1-8"
     E1_9 = "E1-9"
-
 
 # =============================================================================
 # ESRS E1 REFERENCE DATA (Zero-Hallucination: ESRS E1 2023)
@@ -119,11 +109,9 @@ ESRS_E1_REQUIREMENTS: Dict[str, Dict[str, Any]] = {
     "E1-9": {"title": "Anticipated financial effects from material physical and transition risks", "data_points": 8},
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase_name: str = Field(...)
@@ -137,7 +125,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     dag_node_id: str = Field(default="")
 
-
 class ESRSE1Section(BaseModel):
     disclosure: ESRSE1Disclosure = Field(...)
     title: str = Field(default="")
@@ -150,13 +137,11 @@ class ESRSE1Section(BaseModel):
     completeness_pct: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class CSRDTaxonomyOutput(BaseModel):
     tag_count: int = Field(default=0)
     taxonomy_version: str = Field(default="ESRS-2023")
     validation_passed: bool = Field(default=True)
     provenance_hash: str = Field(default="")
-
 
 class ESRSE1ValidationResult(BaseModel):
     is_valid: bool = Field(default=True)
@@ -166,7 +151,6 @@ class ESRSE1ValidationResult(BaseModel):
     errors: List[Dict[str, str]] = Field(default_factory=list)
     warnings: List[Dict[str, str]] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 # -- Config / Input / Result --
 
@@ -197,13 +181,11 @@ class CSRDE1Config(BaseModel):
     taxonomy_aligned_pct: float = Field(default=0.0)
     has_transition_plan: bool = Field(default=True)
 
-
 class CSRDE1Input(BaseModel):
     config: CSRDE1Config = Field(default_factory=CSRDE1Config)
     policy_data: Dict[str, Any] = Field(default_factory=dict)
     action_data: List[Dict[str, Any]] = Field(default_factory=list)
     financial_effects: Dict[str, Any] = Field(default_factory=dict)
-
 
 class CSRDE1Result(BaseModel):
     workflow_id: str = Field(...)
@@ -219,11 +201,9 @@ class CSRDE1Result(BaseModel):
     overall_rag_status: RAGStatus = Field(default=RAGStatus.GREEN)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class CSRDESRSE1Workflow:
     """12-phase DAG workflow for CSRD ESRS E1 Climate Change disclosure."""
@@ -241,7 +221,7 @@ class CSRDESRSE1Workflow:
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     async def execute(self, input_data: CSRDE1Input) -> CSRDE1Result:
-        started_at = _utcnow()
+        started_at = utcnow()
         self.config = input_data.config
         self._phase_results = []
         self._sections = []
@@ -267,7 +247,7 @@ class CSRDESRSE1Workflow:
             overall_status = WorkflowStatus.FAILED
             self._phase_results.append(PhaseResult(phase_name="error", phase_number=99, status=PhaseStatus.FAILED, errors=[str(exc)]))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         result = CSRDE1Result(
             workflow_id=self.workflow_id, status=overall_status,
             phases=self._phase_results, total_duration_seconds=round(elapsed, 4),
@@ -293,7 +273,7 @@ class CSRDESRSE1Workflow:
         return section
 
     async def _phase_e1_1(self, input_data: CSRDE1Input) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         cfg = self.config
         s = self._make_section(
             ESRSE1Disclosure.E1_1, "Transition plan for climate change mitigation",
@@ -306,14 +286,14 @@ class CSRDESRSE1Workflow:
              "taxonomy_aligned_pct": cfg.taxonomy_aligned_pct, "key_milestones": ["2025", "2030", "2040", "2050"]},
             addressed=8 if cfg.has_transition_plan else 4,
         )
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(phase_name="e1_1_transition_plan", phase_number=1, status=PhaseStatus.COMPLETED,
                            duration_seconds=round(elapsed, 4), completion_pct=100.0,
                            outputs={"has_plan": cfg.has_transition_plan}, provenance_hash=s.provenance_hash,
                            dag_node_id=f"{self.workflow_id}_e1_1")
 
     async def _phase_e1_2(self, input_data: CSRDE1Input) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         cfg = self.config
         policies = input_data.policy_data or {
             "climate_policy": True, "energy_policy": True,
@@ -327,14 +307,14 @@ class CSRDESRSE1Workflow:
              "scope_covered": "Climate mitigation and adaptation", "review_frequency": "Annual",
              "board_approved": True},
         )
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(phase_name="e1_2_policies", phase_number=2, status=PhaseStatus.COMPLETED,
                            duration_seconds=round(elapsed, 4), completion_pct=100.0,
                            outputs={"policy_count": sum(1 for v in policies.values() if v)},
                            provenance_hash=s.provenance_hash, dag_node_id=f"{self.workflow_id}_e1_2")
 
     async def _phase_e1_3(self, input_data: CSRDE1Input) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         cfg = self.config
         actions = input_data.action_data or [
             {"action": "Energy efficiency program", "investment_eur": cfg.climate_capex_eur * 0.3, "status": "active"},
@@ -353,14 +333,14 @@ class CSRDESRSE1Workflow:
             tables=[{"table_name": "Climate Actions", "columns": ["Action", "Investment (EUR)", "Status"],
                      "rows": [[a["action"], a.get("investment_eur", 0), a.get("status", "active")] for a in actions]}],
         )
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(phase_name="e1_3_actions", phase_number=3, status=PhaseStatus.COMPLETED,
                            duration_seconds=round(elapsed, 4), completion_pct=100.0,
                            outputs={"action_count": len(actions)}, provenance_hash=s.provenance_hash,
                            dag_node_id=f"{self.workflow_id}_e1_3")
 
     async def _phase_e1_4(self, input_data: CSRDE1Input) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         cfg = self.config
         base_e = cfg.base_year_emissions_tco2e or 100_000.0
         total = cfg.scope1_tco2e + cfg.scope2_market_tco2e + cfg.scope3_tco2e or base_e * 0.88
@@ -379,14 +359,14 @@ class CSRDESRSE1Workflow:
              "review_frequency": "Annual"},
             addressed=10,
         )
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(phase_name="e1_4_targets", phase_number=4, status=PhaseStatus.COMPLETED,
                            duration_seconds=round(elapsed, 4), completion_pct=100.0,
                            outputs={"progress_pct": progress}, provenance_hash=s.provenance_hash,
                            dag_node_id=f"{self.workflow_id}_e1_4")
 
     async def _phase_e1_5(self, input_data: CSRDE1Input) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         cfg = self.config
         energy = cfg.energy_consumption_mwh or 250_000.0
         renewable_pct = cfg.renewable_energy_pct or 35.0
@@ -397,14 +377,14 @@ class CSRDESRSE1Workflow:
              "energy_intensity_mwh_per_meur": round(energy / max(cfg.revenue_million_eur or 500, 1e-10), 1),
              "electricity_mwh": energy * 0.6, "heating_mwh": energy * 0.25, "transport_mwh": energy * 0.15},
         )
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(phase_name="e1_5_energy", phase_number=5, status=PhaseStatus.COMPLETED,
                            duration_seconds=round(elapsed, 4), completion_pct=100.0,
                            outputs={"energy_mwh": energy, "renewable_pct": renewable_pct},
                            provenance_hash=s.provenance_hash, dag_node_id=f"{self.workflow_id}_e1_5")
 
     async def _phase_e1_6(self, input_data: CSRDE1Input) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         cfg = self.config
         base_e = cfg.base_year_emissions_tco2e or 100_000.0
         s1 = cfg.scope1_tco2e or base_e * 0.45
@@ -428,14 +408,14 @@ class CSRDESRSE1Workflow:
                               ["Scope 2 (mkt)", round(s2_mkt, 0)], ["Scope 3", round(s3, 0)], ["Total", round(total, 0)]]}],
             addressed=12,
         )
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(phase_name="e1_6_emissions", phase_number=6, status=PhaseStatus.COMPLETED,
                            duration_seconds=round(elapsed, 4), completion_pct=100.0,
                            outputs={"total_tco2e": round(total, 2)}, provenance_hash=s.provenance_hash,
                            dag_node_id=f"{self.workflow_id}_e1_6")
 
     async def _phase_e1_7(self, input_data: CSRDE1Input) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         cfg = self.config
         s = self._make_section(
             ESRSE1Disclosure.E1_7, "GHG removals and carbon credits",
@@ -444,14 +424,14 @@ class CSRDESRSE1Workflow:
              "credit_standard": "VCS / Gold Standard", "additionality": "verified",
              "permanence_risk": "low" if cfg.carbon_credits_tco2e > 0 else "n/a"},
         )
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(phase_name="e1_7_removals", phase_number=7, status=PhaseStatus.COMPLETED,
                            duration_seconds=round(elapsed, 4), completion_pct=100.0,
                            outputs={"removals": cfg.ghg_removals_tco2e, "credits": cfg.carbon_credits_tco2e},
                            provenance_hash=s.provenance_hash, dag_node_id=f"{self.workflow_id}_e1_7")
 
     async def _phase_e1_8(self, input_data: CSRDE1Input) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         cfg = self.config
         s = self._make_section(
             ESRSE1Disclosure.E1_8, "Internal carbon pricing",
@@ -461,14 +441,14 @@ class CSRDESRSE1Workflow:
              "applied_to": "Investment decisions and project appraisal" if cfg.internal_carbon_price_eur > 0 else "N/A",
              "scope_of_application": "Scope 1 and 2", "review_frequency": "Annual"},
         )
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(phase_name="e1_8_carbon_pricing", phase_number=8, status=PhaseStatus.COMPLETED,
                            duration_seconds=round(elapsed, 4), completion_pct=100.0,
                            outputs={"carbon_price_eur": cfg.internal_carbon_price_eur},
                            provenance_hash=s.provenance_hash, dag_node_id=f"{self.workflow_id}_e1_8")
 
     async def _phase_e1_9(self, input_data: CSRDE1Input) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         cfg = self.config
         fin = input_data.financial_effects or {
             "transition_risk_eur": 5_000_000, "physical_risk_eur": 3_000_000,
@@ -485,27 +465,27 @@ class CSRDESRSE1Workflow:
             fin,
             addressed=8,
         )
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(phase_name="e1_9_financial", phase_number=9, status=PhaseStatus.COMPLETED,
                            duration_seconds=round(elapsed, 4), completion_pct=100.0,
                            outputs=fin, provenance_hash=s.provenance_hash,
                            dag_node_id=f"{self.workflow_id}_e1_9")
 
     async def _phase_taxonomy(self, input_data: CSRDE1Input) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         tag_count = sum(len(s.data_points) for s in self._sections)
         self._taxonomy = CSRDTaxonomyOutput(
             tag_count=tag_count, taxonomy_version="ESRS-2023", validation_passed=True,
         )
         self._taxonomy.provenance_hash = _compute_hash(self._taxonomy.model_dump_json(exclude={"provenance_hash"}))
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(phase_name="digital_taxonomy", phase_number=10, status=PhaseStatus.COMPLETED,
                            duration_seconds=round(elapsed, 4), completion_pct=100.0,
                            outputs={"tag_count": tag_count}, provenance_hash=self._taxonomy.provenance_hash,
                            dag_node_id=f"{self.workflow_id}_taxonomy")
 
     async def _phase_validate(self, input_data: CSRDE1Input) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         total_dp = sum(v["data_points"] for v in ESRS_E1_REQUIREMENTS.values())
         addressed_dp = sum(s.addressed_data_points for s in self._sections)
         completeness = round(addressed_dp / max(total_dp, 1) * 100, 1)
@@ -514,7 +494,7 @@ class CSRDESRSE1Workflow:
             addressed_data_points=addressed_dp, completeness_pct=completeness,
         )
         self._validation.provenance_hash = _compute_hash(self._validation.model_dump_json(exclude={"provenance_hash"}))
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(phase_name="validate_esrs_e1", phase_number=11, status=PhaseStatus.COMPLETED,
                            duration_seconds=round(elapsed, 4), completion_pct=100.0,
                            outputs={"completeness_pct": completeness, "is_valid": self._validation.is_valid},
@@ -522,8 +502,8 @@ class CSRDESRSE1Workflow:
                            dag_node_id=f"{self.workflow_id}_validate")
 
     async def _phase_render(self, input_data: CSRDE1Input) -> PhaseResult:
-        started = _utcnow()
-        elapsed = (_utcnow() - started).total_seconds()
+        started = utcnow()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(phase_name="render_digital_report", phase_number=12, status=PhaseStatus.COMPLETED,
                            duration_seconds=round(elapsed, 4), completion_pct=100.0,
                            outputs={"format": "digital_taxonomy + PDF"},

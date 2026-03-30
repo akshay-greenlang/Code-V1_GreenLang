@@ -25,7 +25,8 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
+from greenlang.schemas import GreenLangBase
 
 
 # ---------------------------------------------------------------------------
@@ -348,7 +349,7 @@ MRN_PATTERN = re.compile(
 # ---------------------------------------------------------------------------
 
 
-class CNCodeMapping(BaseModel):
+class CNCodeMapping(GreenLangBase):
     """Mapping between EUDR commodity and EU Combined Nomenclature code."""
 
     cn_code: str = Field(
@@ -411,7 +412,7 @@ class CNCodeMapping(BaseModel):
     model_config = {"frozen": False, "extra": "ignore", "populate_by_name": True}
 
 
-class HSCode(BaseModel):
+class HSCode(GreenLangBase):
     """World Customs Organization Harmonized System code."""
 
     hs_code: str = Field(
@@ -469,7 +470,7 @@ class HSCode(BaseModel):
     model_config = {"frozen": False, "extra": "ignore", "populate_by_name": True}
 
 
-class TariffCalculation(BaseModel):
+class TariffCalculation(GreenLangBase):
     """Result of a customs tariff calculation."""
 
     calculation_id: str = Field(
@@ -557,7 +558,7 @@ class TariffCalculation(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class CountryOriginVerification(BaseModel):
+class CountryOriginVerification(GreenLangBase):
     """Verification of country of origin against supply chain data."""
 
     verification_id: str = Field(
@@ -623,7 +624,7 @@ class CountryOriginVerification(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class SubmissionLog(BaseModel):
+class SubmissionLog(GreenLangBase):
     """Log entry for a customs system submission attempt."""
 
     submission_id: str = Field(
@@ -665,7 +666,7 @@ class SubmissionLog(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class ComplianceCheck(BaseModel):
+class ComplianceCheck(GreenLangBase):
     """Result of an EUDR compliance check for customs declaration."""
 
     check_id: str = Field(
@@ -721,7 +722,7 @@ class ComplianceCheck(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class PortOfEntry(BaseModel):
+class PortOfEntry(GreenLangBase):
     """EU port of entry / customs office information."""
 
     port_code: str = Field(
@@ -766,7 +767,7 @@ class PortOfEntry(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class DeclarationLine(BaseModel):
+class DeclarationLine(GreenLangBase):
     """A single line item in a customs declaration."""
 
     line_number: int = Field(
@@ -825,7 +826,7 @@ class DeclarationLine(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class ValueDeclaration(BaseModel):
+class ValueDeclaration(GreenLangBase):
     """Customs value declaration per WTO Valuation Agreement."""
 
     value_id: str = Field(
@@ -886,7 +887,7 @@ class ValueDeclaration(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class QuantityDeclaration(BaseModel):
+class QuantityDeclaration(GreenLangBase):
     """Quantity declaration for goods in a customs entry."""
 
     net_mass_kg: Decimal = Field(
@@ -912,7 +913,7 @@ class QuantityDeclaration(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class SADForm(BaseModel):
+class SADForm(GreenLangBase):
     """Single Administrative Document (SAD) form for EU customs.
 
     Represents the standard EU customs declaration form with all
@@ -1060,7 +1061,7 @@ class SADForm(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class CustomsDeclaration(BaseModel):
+class CustomsDeclaration(GreenLangBase):
     """A complete customs declaration record.
 
     Top-level model representing the full lifecycle of a customs
@@ -1226,7 +1227,7 @@ class CustomsDeclaration(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class DeclarationSummary(BaseModel):
+class DeclarationSummary(GreenLangBase):
     """Summary view of a customs declaration for listing endpoints."""
 
     declaration_id: str = Field(..., description="Declaration identifier")
@@ -1256,7 +1257,7 @@ class DeclarationSummary(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class AuditEntry(BaseModel):
+class AuditEntry(GreenLangBase):
     """An audit trail entry for customs declaration events."""
 
     entry_id: str = Field(..., description="Unique audit entry identifier")
@@ -1282,7 +1283,7 @@ class AuditEntry(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class HealthStatus(BaseModel):
+class HealthStatus(GreenLangBase):
     """Health check response for the Customs Declaration Support agent."""
 
     agent_id: str = AGENT_ID
@@ -1296,7 +1297,7 @@ class HealthStatus(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class TariffLineItem(BaseModel):
+class TariffLineItem(GreenLangBase):
     """A single tariff line item for duty calculation."""
 
     line_number: int = Field(
@@ -1357,7 +1358,7 @@ class TariffLineItem(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class DutyCalculation(BaseModel):
+class DutyCalculation(GreenLangBase):
     """Detailed duty calculation breakdown."""
 
     cn_code: str = Field(
@@ -1416,7 +1417,7 @@ class DutyCalculation(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class CustomsInterfaceResponse(BaseModel):
+class CustomsInterfaceResponse(GreenLangBase):
     """Response from a customs system interface (NCTS/AIS/ICS2)."""
 
     system: Optional[CustomsSystemType] = Field(

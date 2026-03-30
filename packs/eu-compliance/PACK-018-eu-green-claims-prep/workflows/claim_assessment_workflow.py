@@ -36,23 +36,18 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import RiskLevel
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID-4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hex digest for provenance tracking."""
@@ -65,11 +60,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Execution status for a single workflow phase."""
@@ -78,7 +71,6 @@ class PhaseStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class ClaimType(str, Enum):
     """EU Green Claims Directive claim classification."""
@@ -89,19 +81,9 @@ class ClaimType(str, Enum):
     WATER = "water"
     GENERIC = "generic"
 
-
-class RiskLevel(str, Enum):
-    """Greenwashing risk tier."""
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
-    CRITICAL = "critical"
-
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class WorkflowInput(BaseModel):
     """Input model for ClaimAssessmentWorkflow."""
@@ -117,7 +99,6 @@ class WorkflowInput(BaseModel):
     reporting_year: int = Field(default=2025, ge=2020, le=2050)
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
     phase_name: str = Field(..., description="Phase identifier")
@@ -126,7 +107,6 @@ class PhaseResult(BaseModel):
     completed_at: Optional[datetime] = Field(default=None)
     result_data: Dict[str, Any] = Field(default_factory=dict)
     error_message: Optional[str] = Field(default=None)
-
 
 class WorkflowResult(BaseModel):
     """Complete result from ClaimAssessmentWorkflow."""
@@ -139,11 +119,9 @@ class WorkflowResult(BaseModel):
     started_at: Optional[datetime] = Field(default=None)
     completed_at: Optional[datetime] = Field(default=None)
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class ClaimAssessmentWorkflow:
     """
@@ -196,7 +174,7 @@ class ClaimAssessmentWorkflow:
             config=kwargs.get("config", {}),
         )
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting %s workflow %s", self.WORKFLOW_NAME, self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = PhaseStatus.RUNNING
@@ -233,12 +211,12 @@ class ClaimAssessmentWorkflow:
             phase_results.append(PhaseResult(
                 phase_name="error_capture",
                 status=PhaseStatus.FAILED,
-                started_at=_utcnow(),
-                completed_at=_utcnow(),
+                started_at=utcnow(),
+                completed_at=utcnow(),
                 error_message=str(exc),
             ))
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
 
         # Build overall result summary
         completed_phases = [p for p in phase_results if p.status == PhaseStatus.COMPLETED]
@@ -277,7 +255,7 @@ class ClaimAssessmentWorkflow:
 
     def _phase_data_intake(self, input_data: WorkflowInput) -> PhaseResult:
         """Ingest and normalise claim and evidence data."""
-        started = _utcnow()
+        started = utcnow()
         self.logger.info("Phase 1/5 DataIntake -- ingesting %d claims, %d evidence items",
                          len(input_data.claims), len(input_data.evidence))
 
@@ -305,7 +283,7 @@ class ClaimAssessmentWorkflow:
             phase_name="DataIntake",
             status=PhaseStatus.COMPLETED,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             result_data=result_data,
         )
 
@@ -315,7 +293,7 @@ class ClaimAssessmentWorkflow:
 
     def _phase_claim_classification(self, input_data: WorkflowInput) -> PhaseResult:
         """Classify each claim by type, scope, and specificity."""
-        started = _utcnow()
+        started = utcnow()
         self.logger.info("Phase 2/5 ClaimClassification -- classifying %d claims",
                          len(input_data.claims))
 
@@ -348,7 +326,7 @@ class ClaimAssessmentWorkflow:
             phase_name="ClaimClassification",
             status=PhaseStatus.COMPLETED,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             result_data=result_data,
         )
 
@@ -362,7 +340,7 @@ class ClaimAssessmentWorkflow:
         classification_data: Dict[str, Any],
     ) -> PhaseResult:
         """Verify evidence sufficiency for each classified claim."""
-        started = _utcnow()
+        started = utcnow()
         self.logger.info("Phase 3/5 SubstantiationAssessment -- evaluating evidence")
 
         evidence_by_claim: Dict[str, List[Dict[str, Any]]] = {}
@@ -418,7 +396,7 @@ class ClaimAssessmentWorkflow:
             phase_name="SubstantiationAssessment",
             status=PhaseStatus.COMPLETED,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             result_data=result_data,
         )
 
@@ -432,7 +410,7 @@ class ClaimAssessmentWorkflow:
         substantiation_data: Dict[str, Any],
     ) -> PhaseResult:
         """Assign greenwashing risk scores based on substantiation gaps."""
-        started = _utcnow()
+        started = utcnow()
         self.logger.info("Phase 4/5 RiskScoring -- computing risk levels")
 
         risk_items: List[Dict[str, Any]] = []
@@ -464,7 +442,7 @@ class ClaimAssessmentWorkflow:
             phase_name="RiskScoring",
             status=PhaseStatus.COMPLETED,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             result_data=result_data,
         )
 
@@ -478,7 +456,7 @@ class ClaimAssessmentWorkflow:
         all_phases: List[PhaseResult],
     ) -> PhaseResult:
         """Produce the final assessment report from all phase outputs."""
-        started = _utcnow()
+        started = utcnow()
         self.logger.info("Phase 5/5 ReportGeneration -- assembling report")
 
         phase_summaries: Dict[str, Any] = {}
@@ -517,7 +495,7 @@ class ClaimAssessmentWorkflow:
             phase_name="ReportGeneration",
             status=PhaseStatus.COMPLETED,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             result_data=result_data,
         )
 

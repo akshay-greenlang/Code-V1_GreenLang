@@ -55,25 +55,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -93,13 +87,11 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _safe_divide(numerator: float, denominator: float, default: float = 0.0) -> float:
     """Safely divide two numbers, returning *default* on zero denominator."""
     if denominator == 0.0:
         return default
     return numerator / denominator
-
 
 def _safe_pct(numerator: float, denominator: float) -> float:
     """Calculate percentage safely, returning 0.0 on zero denominator."""
@@ -107,26 +99,21 @@ def _safe_pct(numerator: float, denominator: float) -> float:
         return 0.0
     return (numerator / denominator) * 100.0
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
-
 
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: float) -> float:
     """Round to 4 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class FoodWasteCategory(str, Enum):
     """Food category for waste classification in retail.
@@ -148,7 +135,6 @@ class FoodWasteCategory(str, Enum):
     CONFECTIONERY = "confectionery"
     OTHER = "other"
 
-
 class WasteDestination(str, Enum):
     """Destination for food waste, ordered by waste hierarchy preference.
 
@@ -166,7 +152,6 @@ class WasteDestination(str, Enum):
     LANDFILL = "landfill"
     SEWER = "sewer"
 
-
 class MeasurementMethod(str, Enum):
     """Food waste measurement methodology per EU delegated act.
 
@@ -179,7 +164,6 @@ class MeasurementMethod(str, Enum):
     DIARIES = "diaries"
     COEFFICIENTS = "coefficients"
     SCANNING_DATA = "scanning_data"
-
 
 class WasteHierarchyLevel(str, Enum):
     """Waste hierarchy levels per Waste Framework Directive Article 4.
@@ -194,11 +178,9 @@ class WasteHierarchyLevel(str, Enum):
     ENERGY_RECOVERY = "energy_recovery"
     DISPOSAL = "disposal"
 
-
 # ---------------------------------------------------------------------------
 # Embedded Constants
 # ---------------------------------------------------------------------------
-
 
 EU_FOOD_WASTE_REDUCTION_TARGET: float = 30.0
 """EU target: 30% reduction in food waste by 2030 vs 2020-2022 baseline.
@@ -235,7 +217,6 @@ FOOD_WASTE_EMISSION_FACTORS: Dict[str, float] = {
     "other": 1.50,
 }
 
-
 # Waste hierarchy weights (0-1 scale) for scoring destination quality.
 # Weight 1.0 = best outcome (prevention), 0.0 = worst (landfill/disposal).
 # Used to calculate a composite waste hierarchy score that indicates how
@@ -249,7 +230,6 @@ WASTE_HIERARCHY_WEIGHTS: Dict[str, float] = {
     "disposal": 0.0,
 }
 
-
 # Mapping from specific waste destinations to waste hierarchy levels.
 DESTINATION_TO_HIERARCHY: Dict[str, str] = {
     "redistribution": "redistribution",
@@ -261,7 +241,6 @@ DESTINATION_TO_HIERARCHY: Dict[str, str] = {
     "landfill": "disposal",
     "sewer": "disposal",
 }
-
 
 # Average shelf life in days by food category (retail setting).
 # Used for estimating waste risk and optimal ordering calculations.
@@ -280,13 +259,11 @@ SHELF_LIFE_BY_CATEGORY: Dict[str, int] = {
     "other": 30,
 }
 
-
 REDISTRIBUTION_CREDIT: float = 0.85
 """Credit factor for redistributed food (0-1 scale).
 Redistributed food receives 85% of the prevention credit value,
 reflecting that redistribution prevents waste but still incurs some
 logistics emissions."""
-
 
 # Average cost per kg by food category (EUR) for financial loss calculation.
 # Based on typical EU grocery retail price ranges (mid-range, 2023 data).
@@ -305,7 +282,6 @@ AVG_COST_PER_KG: Dict[str, float] = {
     "other": 3.00,
 }
 
-
 # Measurement accuracy by method (0-1 scale).
 # Higher values indicate more accurate measurement.  Direct weighing is
 # the gold standard per EU delegated act.
@@ -317,11 +293,9 @@ MEASUREMENT_ACCURACY: Dict[str, float] = {
     "scanning_data": 0.90,
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class FoodWasteRecord(BaseModel):
     """Individual food waste measurement record.
@@ -380,7 +354,6 @@ class FoodWasteRecord(BaseModel):
             raise ValueError("Food waste quantity exceeds 1,000,000 kg sanity check")
         return v
 
-
 class FoodWasteBaseline(BaseModel):
     """Baseline data for food waste reduction tracking.
 
@@ -424,7 +397,6 @@ class FoodWasteBaseline(BaseModel):
         ge=0.0,
     )
 
-
 class CategoryWasteDetail(BaseModel):
     """Detailed waste breakdown for a single food category."""
     category: str = Field(..., description="Food waste category name")
@@ -435,7 +407,6 @@ class CategoryWasteDetail(BaseModel):
     financial_value_eur: float = Field(default=0.0, description="Financial loss EUR")
     avg_shelf_life_days: int = Field(default=0, description="Average shelf life (days)")
 
-
 class DestinationDetail(BaseModel):
     """Waste breakdown by destination."""
     destination: str = Field(..., description="Waste destination")
@@ -443,7 +414,6 @@ class DestinationDetail(BaseModel):
     share_pct: float = Field(default=0.0, description="Share of total waste (%)")
     hierarchy_level: str = Field(default="", description="Waste hierarchy level")
     hierarchy_weight: float = Field(default=0.0, description="Hierarchy weight (0-1)")
-
 
 class StoreWasteDetail(BaseModel):
     """Waste summary for a single store."""
@@ -453,7 +423,6 @@ class StoreWasteDetail(BaseModel):
     hierarchy_score: float = Field(default=0.0, description="Waste hierarchy score (0-1)")
     top_waste_category: str = Field(default="", description="Category with most waste")
     measurement_accuracy: float = Field(default=0.0, description="Avg measurement accuracy")
-
 
 class ReductionTracking(BaseModel):
     """Tracks progress toward EU 2030 food waste reduction target."""
@@ -477,7 +446,6 @@ class ReductionTracking(BaseModel):
         default=0.0, description="Gap between expected and actual reduction (%)",
     )
 
-
 class FoodWasteResult(BaseModel):
     """Complete food waste analysis result with full provenance.
 
@@ -494,7 +462,7 @@ class FoodWasteResult(BaseModel):
         description="Engine version used for this calculation",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of calculation (UTC)",
     )
     processing_time_ms: float = Field(
@@ -613,11 +581,9 @@ class FoodWasteResult(BaseModel):
         description="SHA-256 hash of all inputs and calculation steps",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class FoodWasteEngine:
     """Food waste measurement and reduction tracking engine.

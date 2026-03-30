@@ -34,19 +34,28 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e .
-          pip install pytest bandit pip-audit
+          pip install pytest bandit pip-audit detect-secrets
 
       - name: V2 policy file presence
         run: |
           test -f greenlang/governance/policy/bundles/v2_pack_tier_policy.rego
+          test -f greenlang/governance/policy/bundles/v2_authz.rego
+          test -f greenlang/governance/policy/bundles/v2_pack_trust.rego
+          test -f greenlang/governance/policy/bundles/v2_egress_controls.rego
+          test -f greenlang/governance/policy/bundles/v2_data_controls.rego
 
       - name: Run V2 tests
         run: |
-          pytest -q tests/v2
+          pytest -q tests/v2/test_phase4_security_determinism.py tests/v2/test_contracts.py tests/v2/test_pack_tiers.py tests/v2/test_policy_bundle_semantics.py tests/v2/test_runtime_execution_checks.py tests/v2/test_v2_profile_backend_parity.py
+
+      - name: Secrets scan (release blocking)
+        run: |
+          detect-secrets scan --all-files --exclude-files "(^\\.git/|^\\.venv/|^venv/|node_modules/|dist/|build/)" > .secrets.phase4.json
+          python -c "import json; d=json.load(open('.secrets.phase4.json','r',encoding='utf-8')); findings=d.get('results',{}); violations={k:v for k,v in findings.items() if v}; print(violations); raise SystemExit(1 if violations else 0)"
 
       - name: Bandit security scan
         run: |
-          bandit -q -r greenlang/v2
+          bandit -q -r greenlang/v2 greenlang/governance/policy
 
       - name: Dependency vulnerability scan
         run: |

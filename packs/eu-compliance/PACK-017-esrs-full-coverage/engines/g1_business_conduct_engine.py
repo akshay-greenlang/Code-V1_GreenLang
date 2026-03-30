@@ -58,25 +58,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -96,13 +90,11 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely."""
     if isinstance(value, Decimal):
         return value
     return Decimal(str(value))
-
 
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
@@ -111,7 +103,6 @@ def _safe_divide(
     if denominator == Decimal("0"):
         return default
     return numerator / denominator
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value using ROUND_HALF_UP.
@@ -126,13 +117,11 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
-
 
 def _pct(part: int, total: int) -> Decimal:
     """Calculate percentage as Decimal, rounded to 1 decimal place."""
@@ -142,18 +131,15 @@ def _pct(part: int, total: int) -> Decimal:
         _decimal(part) / _decimal(total) * Decimal("100"), 1
     )
 
-
 def _pct_dec(part: Decimal, total: Decimal) -> Decimal:
     """Calculate percentage from Decimal values, rounded to 1 dp."""
     if total == Decimal("0"):
         return Decimal("0.0")
     return _round_val(part / total * Decimal("100"), 1)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CorruptionRiskLevel(str, Enum):
     """Corruption risk level for geographic or business-unit assessment.
@@ -165,7 +151,6 @@ class CorruptionRiskLevel(str, Enum):
     MEDIUM = "medium"
     HIGH = "high"
     VERY_HIGH = "very_high"
-
 
 class PoliticalActivityType(str, Enum):
     """Types of political influence activities per ESRS G1-5.
@@ -179,7 +164,6 @@ class PoliticalActivityType(str, Enum):
     CAMPAIGN_CONTRIBUTION = "campaign_contribution"
     GOVERNMENT_ADVISORY = "government_advisory"
 
-
 class SupplierCategory(str, Enum):
     """Supplier categorisation for relationship management per G1-2.
 
@@ -191,7 +175,6 @@ class SupplierCategory(str, Enum):
     APPROVED = "approved"
     CONDITIONAL = "conditional"
     BLOCKED = "blocked"
-
 
 class PaymentTermType(str, Enum):
     """Standard payment term types per ESRS G1-6.
@@ -206,7 +189,6 @@ class PaymentTermType(str, Enum):
     EXTENDED = "extended"
     EARLY_PAYMENT_DISCOUNT = "early_payment_discount"
 
-
 class TrainingType(str, Enum):
     """Types of business conduct training per ESRS G1.
 
@@ -219,11 +201,9 @@ class TrainingType(str, Enum):
     SUPPLIER_CODE = "supplier_code"
     DATA_PROTECTION = "data_protection"
 
-
 # ---------------------------------------------------------------------------
 # Constants - G1 Disclosure Requirement Data Points
 # ---------------------------------------------------------------------------
-
 
 G1_1_DATAPOINTS: List[str] = [
     "g1_1_01_code_of_conduct_exists",
@@ -288,11 +268,9 @@ ALL_G1_DATAPOINTS: List[str] = (
     + G1_4_DATAPOINTS + G1_5_DATAPOINTS + G1_6_DATAPOINTS
 )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class BusinessConductPolicy(BaseModel):
     """Business conduct policy per G1-1 (Para 7-10).
@@ -353,7 +331,6 @@ class BusinessConductPolicy(BaseModel):
         description="Date of last policy review",
     )
 
-
 class SupplierRelationship(BaseModel):
     """Supplier relationship record per G1-2 (Para 12-15).
 
@@ -402,7 +379,6 @@ class SupplierRelationship(BaseModel):
         description="ISO 3166-1 alpha-2 country code",
         max_length=3,
     )
-
 
 class CorruptionPreventionMeasure(BaseModel):
     """Corruption prevention and detection measure per G1-3 (Para 17-22).
@@ -462,7 +438,6 @@ class CorruptionPreventionMeasure(BaseModel):
         description="Whether this measure is currently active",
     )
 
-
 class CorruptionIncident(BaseModel):
     """Confirmed corruption or bribery incident per G1-4 (Para 24-26).
 
@@ -511,7 +486,6 @@ class CorruptionIncident(BaseModel):
         description="Whether the incident is considered material",
     )
 
-
 class PoliticalActivity(BaseModel):
     """Political influence and lobbying activity per G1-5 (Para 28-30).
 
@@ -557,7 +531,6 @@ class PoliticalActivity(BaseModel):
         description="Year of the activity",
         ge=0,
     )
-
 
 class PaymentPractice(BaseModel):
     """Payment practice record per G1-6 (Para 32-35).
@@ -613,11 +586,9 @@ class PaymentPractice(BaseModel):
         """Return True if payment was made after the agreed term."""
         return self.actual_payment_days > self.agreed_payment_days
 
-
 # ---------------------------------------------------------------------------
 # Result Model
 # ---------------------------------------------------------------------------
-
 
 class G1BusinessConductResult(BaseModel):
     """Complete ESRS G1 Business Conduct disclosure result.
@@ -635,7 +606,7 @@ class G1BusinessConductResult(BaseModel):
         description="Engine version used for this assessment",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of assessment (UTC)",
     )
     reporting_year: int = Field(
@@ -708,11 +679,9 @@ class G1BusinessConductResult(BaseModel):
         description="SHA-256 hash of all inputs and assessment steps",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class BusinessConductEngine:
     """ESRS G1 Business Conduct assessment engine.

@@ -36,18 +36,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ValidationSeverity
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -59,11 +56,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CDPSection(str, Enum):
     C4_1 = "C4.1"   # Target description
@@ -72,11 +67,9 @@ class CDPSection(str, Enum):
     C6_1 = "C6.1"   # Current year emissions
     C7_1 = "C7.1"   # Scope 3 breakdown
 
-
 class CDPTargetType(str, Enum):
     ABSOLUTE = "absolute"
     INTENSITY = "intensity"
-
 
 class CDPScope(str, Enum):
     SCOPE_1 = "Scope 1"
@@ -86,24 +79,15 @@ class CDPScope(str, Enum):
     SCOPE_1_2 = "Scope 1+2"
     SCOPE_1_2_3 = "Scope 1+2+3"
 
-
 class CDPMethodology(str, Enum):
     SBTI_ACA = "Science Based Targets initiative - Absolute Contraction Approach"
     SBTI_SDA = "Science Based Targets initiative - Sectoral Decarbonization Approach"
     GHG_PROTOCOL = "GHG Protocol Corporate Standard"
     INTERNAL = "Company-specific methodology"
 
-
-class ValidationSeverity(str, Enum):
-    ERROR = "error"
-    WARNING = "warning"
-    INFO = "info"
-
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class CDPBridgeConfig(BaseModel):
     """Configuration for the CDP bridge."""
@@ -118,7 +102,6 @@ class CDPBridgeConfig(BaseModel):
     enable_provenance: bool = Field(default=True)
     enable_cross_validation: bool = Field(default=True)
     rate_limit_per_minute: int = Field(default=30, ge=1, le=60)
-
 
 class CDPC41Export(BaseModel):
     """C4.1 Interim target description export."""
@@ -139,7 +122,6 @@ class CDPC41Export(BaseModel):
     sbti_validation_status: str = Field(default="Targets set - committed")
     provenance_hash: str = Field(default="")
 
-
 class CDPC42Row(BaseModel):
     """Single row in C4.2 interim targets table."""
     row_id: str = Field(default_factory=_new_uuid)
@@ -156,14 +138,12 @@ class CDPC42Row(BaseModel):
     is_science_based: bool = Field(default=True)
     target_ambition: str = Field(default="1.5C aligned")
 
-
 class CDPC42Export(BaseModel):
     """C4.2 Interim targets table export."""
     export_id: str = Field(default_factory=_new_uuid)
     section: str = Field(default="C4.2")
     rows: List[CDPC42Row] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class CDPC51Export(BaseModel):
     """C5.1 Baseline emissions export."""
@@ -181,7 +161,6 @@ class CDPC51Export(BaseModel):
     verification_status: str = Field(default="Third party verified")
     verification_standard: str = Field(default="ISO 14064-3")
     provenance_hash: str = Field(default="")
-
 
 class CDPC61Export(BaseModel):
     """C6.1 Current year emissions export."""
@@ -201,7 +180,6 @@ class CDPC61Export(BaseModel):
     change_driver: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 class CDPC71Export(BaseModel):
     """C7.1 Scope 3 breakdown by category."""
     export_id: str = Field(default_factory=_new_uuid)
@@ -213,7 +191,6 @@ class CDPC71Export(BaseModel):
     categories_relevant: int = Field(default=0)
     provenance_hash: str = Field(default="")
 
-
 class CrossValidationResult(BaseModel):
     """Cross-reference validation between CDP sections."""
     validation_id: str = Field(default_factory=_new_uuid)
@@ -224,7 +201,6 @@ class CrossValidationResult(BaseModel):
     errors: int = Field(default=0)
     overall_consistent: bool = Field(default=True)
     provenance_hash: str = Field(default="")
-
 
 class CDPExportResult(BaseModel):
     """Complete CDP export result."""
@@ -238,7 +214,6 @@ class CDPExportResult(BaseModel):
     sections_exported: List[str] = Field(default_factory=list)
     export_complete: bool = Field(default=False)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Scope 3 Category Names
@@ -262,11 +237,9 @@ SCOPE3_CATEGORY_NAMES: Dict[int, str] = {
     15: "Investments",
 }
 
-
 # ---------------------------------------------------------------------------
 # CDPBridge
 # ---------------------------------------------------------------------------
-
 
 class CDPBridge:
     """CDP Climate Change questionnaire integration bridge for PACK-029.

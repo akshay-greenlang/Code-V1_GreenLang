@@ -49,25 +49,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -80,11 +74,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DRProgramType(str, Enum):
     """DR program types from PACK-037."""
@@ -94,7 +86,6 @@ class DRProgramType(str, Enum):
     ANCILLARY = "ancillary"
     EMERGENCY = "emergency"
     ECONOMIC = "economic"
-
 
 class DREventStatus(str, Enum):
     """DR event lifecycle status."""
@@ -106,7 +97,6 @@ class DREventStatus(str, Enum):
     CANCELLED = "cancelled"
     SETTLED = "settled"
 
-
 class CoordinationPriority(str, Enum):
     """Dispatch coordination priority levels."""
 
@@ -114,7 +104,6 @@ class CoordinationPriority(str, Enum):
     PEAK_SHAVING = "peak_shaving"
     TOU_ARBITRAGE = "tou_arbitrage"
     BACKUP_RESERVE = "backup_reserve"
-
 
 class BESSReservation(str, Enum):
     """BESS capacity reservation types."""
@@ -124,7 +113,6 @@ class BESSReservation(str, Enum):
     SHARED = "shared"
     UNRESERVED = "unreserved"
 
-
 class StackingStrategy(str, Enum):
     """Revenue stacking strategy options."""
 
@@ -133,11 +121,9 @@ class StackingStrategy(str, Enum):
     BALANCED = "balanced"
     SEASONAL = "seasonal"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class Pack037Config(BaseModel):
     """Configuration for importing PACK-037 demand response data."""
@@ -152,7 +138,6 @@ class Pack037Config(BaseModel):
     )
     coordination_enabled: bool = Field(default=True)
     base_currency: str = Field(default="USD")
-
 
 class DREventSchedule(BaseModel):
     """A DR event from PACK-037."""
@@ -169,7 +154,6 @@ class DREventSchedule(BaseModel):
     baseline_kw: float = Field(default=0.0, ge=0.0)
     provenance_hash: str = Field(default="")
 
-
 class DRRevenueData(BaseModel):
     """DR revenue and settlement data from PACK-037."""
 
@@ -185,7 +169,6 @@ class DRRevenueData(BaseModel):
     performance_ratio_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
 
-
 class StackingAnalysis(BaseModel):
     """Combined peak shaving + DR revenue stacking analysis."""
 
@@ -199,7 +182,6 @@ class StackingAnalysis(BaseModel):
     strategy: StackingStrategy = Field(default=StackingStrategy.BALANCED)
     provenance_hash: str = Field(default="")
 
-
 class CoordinationResult(BaseModel):
     """Result of dispatch coordination check."""
 
@@ -212,11 +194,9 @@ class CoordinationResult(BaseModel):
     message: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Pack037Bridge
 # ---------------------------------------------------------------------------
-
 
 class Pack037Bridge:
     """Bridge to PACK-037 Demand Response data for revenue stacking.

@@ -37,25 +37,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -68,11 +62,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class MVDataSource(str, Enum):
     """M&V data source types."""
@@ -85,7 +77,6 @@ class MVDataSource(str, Enum):
     MANUAL_ENTRY = "manual_entry"
     COMMISSIONING = "commissioning"
 
-
 class DataFormat(str, Enum):
     """Supported input data formats."""
 
@@ -97,7 +88,6 @@ class DataFormat(str, Enum):
     MODBUS = "modbus"
     BACNET = "bacnet"
 
-
 class DataAgentTarget(str, Enum):
     """Target DATA agent identifiers."""
 
@@ -108,7 +98,6 @@ class DataAgentTarget(str, Enum):
     DATA_014 = "DATA-014"
     DATA_016 = "DATA-016"
 
-
 class QualityLevel(str, Enum):
     """Data quality assessment levels."""
 
@@ -116,7 +105,6 @@ class QualityLevel(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     INSUFFICIENT = "insufficient"
-
 
 class GapFillMethod(str, Enum):
     """Methods for filling data gaps."""
@@ -127,11 +115,9 @@ class GapFillMethod(str, Enum):
     REGRESSION_PREDICT = "regression_predict"
     EXCLUDE = "exclude"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class DataRouteConfig(BaseModel):
     """Configuration for routing data to a DATA agent."""
@@ -144,7 +130,6 @@ class DataRouteConfig(BaseModel):
     enabled: bool = Field(default=True)
     batch_size: int = Field(default=1000, ge=1)
     timeout_seconds: int = Field(default=120, ge=10)
-
 
 class DataRequest(BaseModel):
     """Request to ingest or process M&V data."""
@@ -161,8 +146,7 @@ class DataRequest(BaseModel):
     quality_check: bool = Field(default=True)
     gap_fill: bool = Field(default=False)
     gap_fill_method: GapFillMethod = Field(default=GapFillMethod.LINEAR_INTERPOLATION)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class DataResponse(BaseModel):
     """Response from DATA agent processing."""
@@ -182,8 +166,7 @@ class DataResponse(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
     processing_time_ms: float = Field(default=0.0)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class DataQualityReport(BaseModel):
     """Data quality profiling report for M&V data."""
@@ -203,13 +186,11 @@ class DataQualityReport(BaseModel):
     issues: List[Dict[str, Any]] = Field(default_factory=list)
     recommendations: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # DataBridge
 # ---------------------------------------------------------------------------
-
 
 class DataBridge:
     """Bridge between M&V data operations and DATA agents.
@@ -369,7 +350,7 @@ class DataBridge:
         for meter_id in meters:
             freshness.append({
                 "meter_id": meter_id,
-                "last_reading": _utcnow().isoformat(),
+                "last_reading": utcnow().isoformat(),
                 "freshness_minutes": 15,
                 "status": "fresh",
                 "expected_interval_min": 15,

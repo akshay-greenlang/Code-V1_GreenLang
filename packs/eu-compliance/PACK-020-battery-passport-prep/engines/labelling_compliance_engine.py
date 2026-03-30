@@ -64,25 +64,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -102,7 +96,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _safe_divide(
     numerator: float, denominator: float, default: float = 0.0
 ) -> float:
@@ -111,13 +104,11 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.01"), rounding=ROUND_HALF_UP
     ))
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
@@ -125,11 +116,9 @@ def _round3(value: float) -> float:
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class BatteryCategory(str, Enum):
     """Battery category per EU Battery Regulation classification.
@@ -142,7 +131,6 @@ class BatteryCategory(str, Enum):
     SLI = "sli"
     EV = "ev"
     INDUSTRIAL = "industrial"
-
 
 class LabelElement(str, Enum):
     """Individual labelling element required under Art 13-14.
@@ -161,7 +149,6 @@ class LabelElement(str, Enum):
     MANUFACTURER_INFO = "manufacturer_info"
     COUNTRY_OF_ORIGIN = "country_of_origin"
 
-
 class LabelStatus(str, Enum):
     """Status of a labelling element on a battery.
 
@@ -174,11 +161,9 @@ class LabelStatus(str, Enum):
     INCORRECT = "incorrect"
     NOT_REQUIRED = "not_required"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # Label element descriptions with regulatory references.
 LABEL_ELEMENT_DESCRIPTIONS: Dict[str, str] = {
@@ -228,7 +213,6 @@ LABEL_ELEMENT_DESCRIPTIONS: Dict[str, str] = {
         "Country of origin of the battery. Art 13(8)."
     ),
 }
-
 
 # Required label elements by battery category.
 # True means required, False means not required for that category.
@@ -354,11 +338,9 @@ CORRECTIVE_ACTIONS: Dict[str, str] = {
     ),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class LabelRequirement(BaseModel):
     """A single labelling requirement for a battery category.
@@ -383,7 +365,6 @@ class LabelRequirement(BaseModel):
         description="Regulatory description of the requirement",
         max_length=2000,
     )
-
 
 class LabelElementCheck(BaseModel):
     """Result of checking a single label element on a battery.
@@ -417,7 +398,6 @@ class LabelElementCheck(BaseModel):
         max_length=2000,
     )
 
-
 class LabelCheckResult(BaseModel):
     """Result of a complete labelling compliance check for a battery.
 
@@ -433,7 +413,7 @@ class LabelCheckResult(BaseModel):
         description="Engine version used for this check",
     )
     checked_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of check (UTC)",
     )
     battery_id: str = Field(
@@ -497,11 +477,9 @@ class LabelCheckResult(BaseModel):
         description="SHA-256 hash of the entire result",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class LabellingComplianceEngine:
     """Labelling and marking compliance engine per Art 13-14.

@@ -26,7 +26,7 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult
 from greenlang.agents.foundation.orchestrator import (
@@ -78,6 +78,7 @@ from greenlang.agents.foundation.orchestrator.governance.policy_engine import (
     PolicyDecision,
     EvaluationPoint,
 )
+from greenlang.schemas import GreenLangBase
 
 # Audit event store (always available - no external deps)
 try:
@@ -129,7 +130,7 @@ class ApprovalStatus(str, Enum):
     TIMEOUT = "timeout"
 
 
-class ApprovalRequest(BaseModel):
+class ApprovalRequest(GreenLangBase):
     """Human approval gate request."""
     request_id: str = Field(..., description="Unique approval request ID")
     run_id: str = Field(..., description="Associated run ID")
@@ -146,7 +147,7 @@ class ApprovalRequest(BaseModel):
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
-class FanOutSpec(BaseModel):
+class FanOutSpec(GreenLangBase):
     """Dynamic fan-out specification."""
     source_field: str = Field(..., description="Field containing items to fan out")
     item_param_name: str = Field(default="item", description="Parameter name for each item")
@@ -155,7 +156,7 @@ class FanOutSpec(BaseModel):
     aggregate_results: bool = Field(default=True, description="Aggregate all results")
 
 
-class ConcurrencyConfig(BaseModel):
+class ConcurrencyConfig(GreenLangBase):
     """Concurrency control configuration."""
     # Global limits
     max_concurrent_runs: int = Field(default=100, description="Max concurrent pipeline runs")
@@ -176,7 +177,7 @@ class ConcurrencyConfig(BaseModel):
     enable_fair_scheduling: bool = Field(default=True, description="Fair scheduling across tenants")
 
 
-class GLIPRunConfig(BaseModel):
+class GLIPRunConfig(GreenLangBase):
     """Configuration for a GLIP v1 pipeline run."""
     pipeline_id: str = Field(..., description="Pipeline identifier")
     tenant_id: str = Field(..., description="Tenant identifier")
@@ -205,7 +206,7 @@ class GLIPRunConfig(BaseModel):
     concurrency: Optional[ConcurrencyConfig] = Field(None, description="Concurrency configuration")
 
 
-class GLIPStepContext(BaseModel):
+class GLIPStepContext(GreenLangBase):
     """Extended context for GLIP v1 step execution."""
     run_id: str
     step_id: str
@@ -222,7 +223,7 @@ class GLIPStepContext(BaseModel):
     resource_profile: Optional[Dict[str, Any]] = None
 
 
-class GLIPOrchestratorConfig(BaseModel):
+class GLIPOrchestratorConfig(GreenLangBase):
     """Configuration for the GLIP v1 Orchestrator."""
     # K8s Executor
     k8s_namespace: str = Field(default="greenlang", description="K8s namespace for jobs")

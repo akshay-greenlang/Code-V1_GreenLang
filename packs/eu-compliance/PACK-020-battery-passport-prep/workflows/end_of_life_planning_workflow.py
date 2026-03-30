@@ -36,35 +36,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class WorkflowPhase(str, Enum):
     """Phases of the end-of-life planning workflow."""
@@ -72,7 +64,6 @@ class WorkflowPhase(str, Enum):
     RECYCLING_TARGETS = "recycling_targets"
     RECOVERY_CALCULATION = "recovery_calculation"
     COMPLIANCE_REPORTING = "compliance_reporting"
-
 
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
@@ -82,7 +73,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class PhaseStatus(str, Enum):
     """Status of a single phase."""
     PENDING = "pending"
@@ -91,7 +81,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class BatteryWasteCategory(str, Enum):
     """Battery waste stream categories."""
     PORTABLE = "portable"
@@ -99,7 +88,6 @@ class BatteryWasteCategory(str, Enum):
     INDUSTRIAL = "industrial"
     LMT = "lmt"
     SLI = "sli"
-
 
 class CollectionChannel(str, Enum):
     """Collection infrastructure channels."""
@@ -110,7 +98,6 @@ class CollectionChannel(str, Enum):
     OEM_RETURN = "oem_return"
     AUTHORIZED_AGENT = "authorized_agent"
 
-
 class RecyclingProcess(str, Enum):
     """Battery recycling process types."""
     HYDROMETALLURGICAL = "hydrometallurgical"
@@ -119,11 +106,9 @@ class RecyclingProcess(str, Enum):
     MECHANICAL = "mechanical"
     COMBINED = "combined"
 
-
 # =============================================================================
 # REGULATORY TARGETS (Art. 60, 71)
 # =============================================================================
-
 
 # Collection rate targets for portable batteries (Art. 60)
 COLLECTION_RATE_TARGETS: Dict[str, Dict[str, float]] = {
@@ -151,11 +136,9 @@ MATERIAL_RECOVERY_TARGETS: Dict[str, Dict[str, float]] = {
     "nickel": {"2028": 90.0, "2032": 95.0},
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -167,7 +150,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class CollectionPoint(BaseModel):
     """Collection infrastructure point."""
     point_id: str = Field(default_factory=lambda: f"cp-{_new_uuid()[:8]}")
@@ -177,7 +159,6 @@ class CollectionPoint(BaseModel):
     capacity_tonnes_year: float = Field(default=0.0, ge=0.0)
     actual_collected_tonnes: float = Field(default=0.0, ge=0.0)
     operational: bool = Field(default=True)
-
 
 class WasteStreamRecord(BaseModel):
     """Battery waste stream record."""
@@ -200,7 +181,6 @@ class WasteStreamRecord(BaseModel):
     recycler_country: str = Field(default="")
     reporting_period: str = Field(default="", description="e.g., 2025-Q1")
 
-
 class MaterialRecoveryRecord(BaseModel):
     """Material recovery data from recycling."""
     recovery_id: str = Field(default_factory=lambda: f"mr-{_new_uuid()[:8]}")
@@ -212,7 +192,6 @@ class MaterialRecoveryRecord(BaseModel):
         default=RecyclingProcess.HYDROMETALLURGICAL
     )
     purity_pct: float = Field(default=0.0, ge=0.0, le=100.0, description="Recovered material purity")
-
 
 class EndOfLifeInput(BaseModel):
     """Input data model for EndOfLifePlanningWorkflow."""
@@ -229,7 +208,6 @@ class EndOfLifeInput(BaseModel):
     entity_name: str = Field(default="")
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class CollectionAssessmentSummary(BaseModel):
     """Summary of collection infrastructure assessment."""
     total_collection_points: int = Field(default=0, ge=0)
@@ -241,7 +219,6 @@ class CollectionAssessmentSummary(BaseModel):
     gap_pct: float = Field(default=0.0)
     channel_breakdown: Dict[str, float] = Field(default_factory=dict)
 
-
 class RecyclingEfficiencySummary(BaseModel):
     """Summary of recycling efficiency assessment."""
     chemistry: str = Field(default="")
@@ -252,7 +229,6 @@ class RecyclingEfficiencySummary(BaseModel):
     meets_target: bool = Field(default=False)
     gap_pct: float = Field(default=0.0)
 
-
 class MaterialRecoverySummary(BaseModel):
     """Summary of material recovery rates."""
     material: str = Field(default="")
@@ -262,7 +238,6 @@ class MaterialRecoverySummary(BaseModel):
     target_pct: float = Field(default=0.0, ge=0.0)
     meets_target: bool = Field(default=False)
     gap_pct: float = Field(default=0.0)
-
 
 class EndOfLifeResult(BaseModel):
     """Complete result from end-of-life planning workflow."""
@@ -285,11 +260,9 @@ class EndOfLifeResult(BaseModel):
     executed_at: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class EndOfLifePlanningWorkflow:
     """
@@ -364,7 +337,7 @@ class EndOfLifePlanningWorkflow:
         if input_data is None:
             input_data = EndOfLifeInput(config=config or {})
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting end-of-life planning workflow %s", self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = WorkflowStatus.IN_PROGRESS
@@ -387,7 +360,7 @@ class EndOfLifePlanningWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
 
         result = EndOfLifeResult(
             workflow_id=self.workflow_id,
@@ -403,7 +376,7 @@ class EndOfLifePlanningWorkflow:
             overall_eol_compliant=self._compliant,
             compliance_gaps=self._compliance_gaps,
             reporting_year=input_data.reporting_year,
-            executed_at=_utcnow().isoformat(),
+            executed_at=utcnow().isoformat(),
         )
         result.provenance_hash = self._compute_provenance(result)
         self.logger.info(
@@ -420,7 +393,7 @@ class EndOfLifePlanningWorkflow:
         self, input_data: EndOfLifeInput,
     ) -> PhaseResult:
         """Assess collection infrastructure and compute collection rates."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -499,7 +472,7 @@ class EndOfLifePlanningWorkflow:
         outputs["total_collected_tonnes"] = round(effective_collected, 2)
         outputs["channel_breakdown"] = channel_breakdown
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 1 CollectionAssessment: %.1f%% rate, target %.1f%%",
             collection_rate, target_rate,
@@ -519,7 +492,7 @@ class EndOfLifePlanningWorkflow:
         self, input_data: EndOfLifeInput,
     ) -> PhaseResult:
         """Evaluate recycling efficiency against regulatory targets."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -576,7 +549,7 @@ class EndOfLifePlanningWorkflow:
         if total_input <= 0:
             warnings.append("No waste stream input data; recycling efficiency is 0%")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 2 RecyclingTargets: %.1f%% efficiency, target %.1f%%",
             efficiency, target_eff,
@@ -596,7 +569,7 @@ class EndOfLifePlanningWorkflow:
         self, input_data: EndOfLifeInput,
     ) -> PhaseResult:
         """Calculate material recovery rates against regulatory targets."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._recovery_summaries = []
@@ -662,7 +635,7 @@ class EndOfLifePlanningWorkflow:
         }
         outputs["missing_critical_materials"] = sorted(missing)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 3 RecoveryCalculation: %d materials, %d meeting targets",
             len(self._recovery_summaries),
@@ -683,7 +656,7 @@ class EndOfLifePlanningWorkflow:
         self, input_data: EndOfLifeInput,
     ) -> PhaseResult:
         """Generate end-of-life compliance report."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -733,7 +706,7 @@ class EndOfLifePlanningWorkflow:
                 for s in self._recovery_summaries
             ],
             "compliance_gaps": self._compliance_gaps,
-            "issued_at": _utcnow().isoformat(),
+            "issued_at": utcnow().isoformat(),
         }
 
         outputs["report_id"] = report["report_id"]
@@ -749,7 +722,7 @@ class EndOfLifePlanningWorkflow:
                 f"End-of-life compliance not met: {len(self._compliance_gaps)} gaps identified"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 4 ComplianceReporting: %s, compliant=%s, %d gaps",
             report["report_id"], self._compliant, len(self._compliance_gaps),

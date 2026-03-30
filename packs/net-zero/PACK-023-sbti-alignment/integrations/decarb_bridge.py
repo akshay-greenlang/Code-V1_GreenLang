@@ -55,25 +55,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -86,11 +80,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Agent Stubs
 # ---------------------------------------------------------------------------
-
 
 class _AgentStub:
     """Stub for unavailable DECARB-X agent modules."""
@@ -109,7 +101,6 @@ class _AgentStub:
             }
         return _stub_method
 
-
 def _try_import_decarb_agent(agent_id: str, module_path: str) -> Any:
     """Try to import a DECARB-X agent with graceful fallback."""
     try:
@@ -118,11 +109,9 @@ def _try_import_decarb_agent(agent_id: str, module_path: str) -> Any:
         logger.debug("DECARB agent %s not available, using stub", agent_id)
         return _AgentStub(agent_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DecarbLever(str, Enum):
     """Decarbonisation lever categories."""
@@ -141,7 +130,6 @@ class DecarbLever(str, Enum):
     BUILDING_DECARBONISATION = "building_decarbonisation"
     OFFSET_STRATEGY = "offset_strategy"
 
-
 class TechnologyReadiness(str, Enum):
     """Technology Readiness Level (TRL) classification."""
 
@@ -151,7 +139,6 @@ class TechnologyReadiness(str, Enum):
     PILOT = "pilot"
     RESEARCH = "research"
 
-
 class SBTiPathwayAlignment(str, Enum):
     """SBTi pathway alignment for abatement options."""
 
@@ -160,11 +147,9 @@ class SBTiPathwayAlignment(str, Enum):
     INSUFFICIENT = "insufficient"
     BEYOND_VALUE_CHAIN = "beyond_value_chain"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class DecarbBridgeConfig(BaseModel):
     """Configuration for the SBTi Decarb Bridge."""
@@ -177,7 +162,6 @@ class DecarbBridgeConfig(BaseModel):
     pathway: str = Field(default="1.5C")
     sector: str = Field(default="general")
     sbti_gap_tco2e: float = Field(default=0.0, ge=0.0, description="Emissions gap to close for SBTi target")
-
 
 class AbatementOption(BaseModel):
     """A single abatement option."""
@@ -194,7 +178,6 @@ class AbatementOption(BaseModel):
     implementation_years: int = Field(default=1, ge=1)
     sbti_eligible: bool = Field(default=True)
     sbti_pathway_alignment: str = Field(default="aligned_1_5c")
-
 
 class AbatementResult(BaseModel):
     """Result of abatement options assessment."""
@@ -213,7 +196,6 @@ class AbatementResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class MACCResult(BaseModel):
     """Marginal Abatement Cost Curve result."""
 
@@ -228,7 +210,6 @@ class MACCResult(BaseModel):
     sbti_gap_covered_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class RoadmapResult(BaseModel):
     """Decarbonisation roadmap result aligned with SBTi pathway."""
@@ -249,7 +230,6 @@ class RoadmapResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class TechnologyResult(BaseModel):
     """Technology assessment result."""
 
@@ -263,7 +243,6 @@ class TechnologyResult(BaseModel):
     recommended_for_sbti: List[str] = Field(default_factory=list)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class ProgressMonitorResult(BaseModel):
     """Decarbonisation progress monitoring result."""
@@ -281,7 +260,6 @@ class ProgressMonitorResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class BusinessCaseResult(BaseModel):
     """Business case result for SBTi-aligned decarbonisation."""
 
@@ -297,7 +275,6 @@ class BusinessCaseResult(BaseModel):
     risk_reduction_value_eur: float = Field(default=0.0, ge=0.0)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # DECARB-X Agent Mapping (21 agents)
@@ -334,11 +311,9 @@ SBTI_REDUCTION_REQUIREMENTS: Dict[str, Dict[str, float]] = {
     "2C": {"near_term_s12_pct": 25.0, "near_term_s3_pct": 20.0, "long_term_pct": 80.0, "annual_rate": 2.5},
 }
 
-
 # ---------------------------------------------------------------------------
 # SBTiDecarbBridge
 # ---------------------------------------------------------------------------
-
 
 class SBTiDecarbBridge:
     """Bridge to 21 DECARB-X agents for SBTi-aligned reduction planning.

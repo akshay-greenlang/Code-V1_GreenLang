@@ -101,16 +101,9 @@ except ImportError:
     otel_trace = None  # type: ignore[assignment]
     OTEL_AVAILABLE = False
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_service_hash(config: GeolocationVerificationConfig) -> str:
     """Compute SHA-256 hash of the service configuration for provenance.
@@ -124,11 +117,9 @@ def _compute_service_hash(config: GeolocationVerificationConfig) -> str:
     raw = json.dumps(config.to_dict(), sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Health status model
 # ---------------------------------------------------------------------------
-
 
 class HealthStatus:
     """Health check result container.
@@ -153,7 +144,7 @@ class HealthStatus:
     ) -> None:
         self.status = status
         self.checks = checks or {}
-        self.timestamp = timestamp or _utcnow()
+        self.timestamp = timestamp or utcnow()
         self.version = version
         self.uptime_seconds = uptime_seconds
 
@@ -167,11 +158,9 @@ class HealthStatus:
             "uptime_seconds": round(self.uptime_seconds, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # VerifyPlotRequest
 # ---------------------------------------------------------------------------
-
 
 class VerifyPlotRequest:
     """Request object for full plot verification.
@@ -215,11 +204,9 @@ class VerifyPlotRequest:
         self.polygon_vertices = polygon_vertices or []
         self.buffer_km = buffer_km
 
-
 # ---------------------------------------------------------------------------
 # PlotVerificationResult (unified result from verify_plot)
 # ---------------------------------------------------------------------------
-
 
 class PlotVerificationResult:
     """Unified result from a full plot verification across all engines.
@@ -264,7 +251,7 @@ class PlotVerificationResult:
         self.deforestation_result = deforestation_result
         self.accuracy_score = accuracy_score
         self.provenance_hash = provenance_hash
-        self.verified_at = verified_at or _utcnow()
+        self.verified_at = verified_at or utcnow()
         self.processing_time_ms = processing_time_ms
 
     def to_dict(self) -> Dict[str, Any]:
@@ -289,11 +276,9 @@ class PlotVerificationResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # BatchVerificationResult
 # ---------------------------------------------------------------------------
-
 
 class BatchVerificationResult:
     """Result of a batch verification job.
@@ -334,7 +319,7 @@ class BatchVerificationResult:
         self.completed_plots = completed_plots
         self.failed_plots = failed_plots
         self.results = results or []
-        self.submitted_at = submitted_at or _utcnow()
+        self.submitted_at = submitted_at or utcnow()
         self.completed_at = completed_at
         self.processing_time_ms = processing_time_ms
 
@@ -354,11 +339,9 @@ class BatchVerificationResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # GeolocationVerificationService
 # ---------------------------------------------------------------------------
-
 
 class GeolocationVerificationService:
     """Facade service for the EUDR Geolocation Verification Agent.
@@ -707,7 +690,7 @@ class GeolocationVerificationService:
         health = HealthStatus(
             status=overall,
             checks=checks,
-            timestamp=_utcnow(),
+            timestamp=utcnow(),
             version="1.0.0",
             uptime_seconds=self.uptime_seconds,
         )
@@ -1046,7 +1029,7 @@ class GeolocationVerificationService:
             deforestation_result=deforestation_result,
             accuracy_score=accuracy_result,
             provenance_hash=provenance_hash,
-            verified_at=_utcnow(),
+            verified_at=utcnow(),
             processing_time_ms=elapsed_ms,
         )
 
@@ -1127,7 +1110,7 @@ class GeolocationVerificationService:
             batch_result.completed_plots = len(results)
             batch_result.failed_plots = failed_count
             batch_result.results = results
-            batch_result.completed_at = _utcnow()
+            batch_result.completed_at = utcnow()
             batch_result.processing_time_ms = elapsed_ms
 
         logger.info(
@@ -2165,11 +2148,9 @@ class GeolocationVerificationService:
         ]
         return sum(1 for e in engines if e is not None)
 
-
 # ---------------------------------------------------------------------------
 # FastAPI lifespan context manager
 # ---------------------------------------------------------------------------
-
 
 @asynccontextmanager
 async def lifespan(app: Any) -> AsyncIterator[None]:
@@ -2183,6 +2164,7 @@ async def lifespan(app: Any) -> AsyncIterator[None]:
 
         from fastapi import FastAPI
         from greenlang.agents.eudr.geolocation_verification.setup import lifespan
+from greenlang.schemas import utcnow
 
         app = FastAPI(lifespan=lifespan)
 
@@ -2200,14 +2182,12 @@ async def lifespan(app: Any) -> AsyncIterator[None]:
     finally:
         await service.shutdown()
 
-
 # ---------------------------------------------------------------------------
 # Thread-safe singleton accessor
 # ---------------------------------------------------------------------------
 
 _service_instance: Optional[GeolocationVerificationService] = None
 _service_lock = threading.Lock()
-
 
 def get_service(
     config: Optional[GeolocationVerificationConfig] = None,
@@ -2237,7 +2217,6 @@ def get_service(
                 )
     return _service_instance
 
-
 def set_service(service: GeolocationVerificationService) -> None:
     """Replace the singleton GeolocationVerificationService instance.
 
@@ -2251,7 +2230,6 @@ def set_service(service: GeolocationVerificationService) -> None:
         _service_instance = service
     logger.info("GeolocationVerificationService singleton replaced")
 
-
 def reset_service() -> None:
     """Reset the singleton GeolocationVerificationService to None.
 
@@ -2262,7 +2240,6 @@ def reset_service() -> None:
     with _service_lock:
         _service_instance = None
     logger.debug("GeolocationVerificationService singleton reset")
-
 
 # ---------------------------------------------------------------------------
 # Public API

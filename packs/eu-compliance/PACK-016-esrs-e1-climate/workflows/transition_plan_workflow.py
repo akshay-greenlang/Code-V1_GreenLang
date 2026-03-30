@@ -29,33 +29,25 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class WorkflowPhase(str, Enum):
     """Phases of the transition plan workflow."""
@@ -66,7 +58,6 @@ class WorkflowPhase(str, Enum):
     SCENARIO_VALIDATION = "scenario_validation"
     REPORT_GENERATION = "report_generation"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "pending"
@@ -75,7 +66,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class PhaseStatus(str, Enum):
     """Status of a single phase."""
     PENDING = "pending"
@@ -83,7 +73,6 @@ class PhaseStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class LeverType(str, Enum):
     """Decarbonization lever types."""
@@ -98,7 +87,6 @@ class LeverType(str, Enum):
     CIRCULAR_ECONOMY = "circular_economy"
     BEHAVIORAL_CHANGE = "behavioral_change"
 
-
 class ScenarioType(str, Enum):
     """Climate scenario types."""
     IEA_NZE_2050 = "iea_nze_2050"
@@ -110,7 +98,6 @@ class ScenarioType(str, Enum):
     SBTI_WB2C = "sbti_wb2c"
     CUSTOM = "custom"
 
-
 class ActionStatus(str, Enum):
     """Transition action status."""
     PLANNED = "planned"
@@ -119,11 +106,9 @@ class ActionStatus(str, Enum):
     DEFERRED = "deferred"
     CANCELLED = "cancelled"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -134,7 +119,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class DecarbonizationLever(BaseModel):
     """A decarbonization lever for the transition plan."""
@@ -152,7 +136,6 @@ class DecarbonizationLever(BaseModel):
     confidence_level: str = Field(default="medium")
     feasibility_score: float = Field(default=0.0, ge=0.0, le=5.0)
 
-
 class TransitionAction(BaseModel):
     """A specific action within the transition plan."""
     action_id: str = Field(default_factory=lambda: f"ta-{_new_uuid()[:8]}")
@@ -168,7 +151,6 @@ class TransitionAction(BaseModel):
     is_taxonomy_aligned: bool = Field(default=False)
     locked_in_emissions_tco2e: float = Field(default=0.0, ge=0.0)
 
-
 class GapAnalysisItem(BaseModel):
     """Gap analysis between target and planned reductions."""
     scope: str = Field(default="")
@@ -177,7 +159,6 @@ class GapAnalysisItem(BaseModel):
     gap_tco2e: float = Field(default=0.0)
     gap_pct: float = Field(default=0.0)
     gap_status: str = Field(default="on_track")
-
 
 class TransitionPlanInput(BaseModel):
     """Input data model for TransitionPlanWorkflow."""
@@ -197,7 +178,6 @@ class TransitionPlanInput(BaseModel):
     entity_id: str = Field(default="")
     entity_name: str = Field(default="")
     config: Dict[str, Any] = Field(default_factory=dict)
-
 
 class TransitionPlanResult(BaseModel):
     """Complete result from transition plan workflow."""
@@ -223,7 +203,6 @@ class TransitionPlanResult(BaseModel):
     reporting_year: int = Field(default=2025)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # SCENARIO REDUCTION RATES (annual % reduction required)
 # =============================================================================
@@ -239,11 +218,9 @@ SCENARIO_ANNUAL_RATES: Dict[str, float] = {
     "custom": 0.0,
 }
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class TransitionPlanWorkflow:
     """
@@ -314,7 +291,7 @@ class TransitionPlanWorkflow:
         if input_data is None:
             input_data = TransitionPlanInput(config=config or {})
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting transition plan workflow %s", self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = WorkflowStatus.IN_PROGRESS
@@ -341,7 +318,7 @@ class TransitionPlanWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         target_emissions = input_data.baseline_emissions_tco2e * (1 - input_data.target_reduction_pct / 100)
         planned_reduction = sum(lv.estimated_reduction_tco2e for lv in self._levers)
         total_gap = max(0, (input_data.baseline_emissions_tco2e - target_emissions) - planned_reduction)
@@ -384,7 +361,7 @@ class TransitionPlanWorkflow:
         self, input_data: TransitionPlanInput,
     ) -> PhaseResult:
         """Establish the emissions baseline for transition planning."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -416,7 +393,7 @@ class TransitionPlanWorkflow:
                 f"Current emissions ({current:.0f}) exceed baseline ({baseline:.0f})"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 1 BaselineAssessment: baseline=%.0f, current=%.0f, change=%.1f%%",
             baseline, current, change_pct,
@@ -436,7 +413,7 @@ class TransitionPlanWorkflow:
         self, input_data: TransitionPlanInput,
     ) -> PhaseResult:
         """Identify and catalog decarbonization levers."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -458,7 +435,7 @@ class TransitionPlanWorkflow:
         if not self._levers:
             warnings.append("No decarbonization levers provided")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 2 LeverIdentification: %d levers, %.0f tCO2e reduction potential",
             len(self._levers), total_potential,
@@ -478,7 +455,7 @@ class TransitionPlanWorkflow:
         self, input_data: TransitionPlanInput,
     ) -> PhaseResult:
         """Define specific actions with timelines and investments."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -505,7 +482,7 @@ class TransitionPlanWorkflow:
         if not self._actions:
             warnings.append("No transition actions defined")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 3 ActionPlanning: %d actions, CAPEX=%.0f EUR",
             len(self._actions), total_capex,
@@ -525,7 +502,7 @@ class TransitionPlanWorkflow:
         self, input_data: TransitionPlanInput,
     ) -> PhaseResult:
         """Assess gap between reduction targets and planned actions."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._gap_items = []
@@ -583,7 +560,7 @@ class TransitionPlanWorkflow:
                 f"({overall_gap_pct:.1f}% of required reduction)"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 4 GapAnalysis: gap=%.0f tCO2e (%.1f%%)",
             overall_gap, overall_gap_pct,
@@ -603,7 +580,7 @@ class TransitionPlanWorkflow:
         self, input_data: TransitionPlanInput,
     ) -> PhaseResult:
         """Validate the transition plan against climate scenarios."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -637,7 +614,7 @@ class TransitionPlanWorkflow:
                 f"inconsistent with {input_data.scenario.value} scenario"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 5 ScenarioValidation: %s aligned=%s, rate=%.1f%%/yr",
             input_data.scenario.value, self._scenario_aligned, required_annual_reduction,
@@ -657,7 +634,7 @@ class TransitionPlanWorkflow:
         self, input_data: TransitionPlanInput,
     ) -> PhaseResult:
         """Generate E1-1 disclosure-ready output."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -685,7 +662,7 @@ class TransitionPlanWorkflow:
 
         outputs["report_ready"] = True
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 6 ReportGeneration: E1-1 disclosure ready")
         return PhaseResult(
             phase_name=WorkflowPhase.REPORT_GENERATION.value,

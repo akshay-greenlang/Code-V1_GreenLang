@@ -80,23 +80,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -113,7 +108,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -122,7 +116,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -130,26 +123,21 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     return float(
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class PhaseId(str, Enum):
     """Carbon neutral lifecycle phase identifiers.
@@ -166,7 +154,6 @@ class PhaseId(str, Enum):
     BALANCE = "balance"
     CLAIM = "claim"
     VERIFY = "verify"
-
 
 class PhaseStatus(str, Enum):
     """Status of a lifecycle phase.
@@ -185,7 +172,6 @@ class PhaseStatus(str, Enum):
     BLOCKED = "blocked"
     SKIPPED = "skipped"
 
-
 class TaskStatus(str, Enum):
     """Status of an individual task within a phase."""
     PENDING = "pending"
@@ -193,7 +179,6 @@ class TaskStatus(str, Enum):
     COMPLETED = "completed"
     BLOCKED = "blocked"
     SKIPPED = "skipped"
-
 
 class CycleStatus(str, Enum):
     """Overall cycle status.
@@ -209,7 +194,6 @@ class CycleStatus(str, Enum):
     OFF_TRACK = "off_track"
     COMPLETED = "completed"
     NOT_STARTED = "not_started"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Phase Definitions
@@ -378,11 +362,9 @@ PHASE_DEFINITIONS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class TaskInput(BaseModel):
     """Input for a single task within a phase.
@@ -413,7 +395,6 @@ class TaskInput(BaseModel):
         if v not in valid:
             raise ValueError(f"Unknown task status '{v}'.")
         return v
-
 
 class PhaseInput(BaseModel):
     """Input for a single lifecycle phase.
@@ -451,7 +432,6 @@ class PhaseInput(BaseModel):
             raise ValueError(f"Unknown phase '{v}'.")
         return v
 
-
 class YearCycleInput(BaseModel):
     """Input for a single year's cycle (for multi-year assessment).
 
@@ -469,7 +449,6 @@ class YearCycleInput(BaseModel):
     declaration_made: bool = Field(default=False)
     verified: bool = Field(default=False)
     reduction_pct: Decimal = Field(default=Decimal("0"), ge=0)
-
 
 class AnnualCycleInput(BaseModel):
     """Complete input for annual cycle management.
@@ -505,11 +484,9 @@ class AnnualCycleInput(BaseModel):
     include_multi_year: bool = Field(default=True)
     include_recommendations: bool = Field(default=True)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class TaskResult(BaseModel):
     """Result for a single task."""
@@ -519,7 +496,6 @@ class TaskResult(BaseModel):
     is_complete: bool = Field(default=False)
     is_overdue: bool = Field(default=False)
     days_until_due: Optional[int] = Field(default=None)
-
 
 class PhaseResult(BaseModel):
     """Result for a single lifecycle phase.
@@ -559,7 +535,6 @@ class PhaseResult(BaseModel):
     blocking_issues: List[str] = Field(default_factory=list)
     recommendations: List[str] = Field(default_factory=list)
 
-
 class MultiYearAssessment(BaseModel):
     """Multi-year continuity assessment.
 
@@ -583,7 +558,6 @@ class MultiYearAssessment(BaseModel):
     years_verified: int = Field(default=0)
     reduction_trend: List[Decimal] = Field(default_factory=list)
     message: str = Field(default="")
-
 
 class AnnualCycleResult(BaseModel):
     """Complete annual cycle result.
@@ -614,7 +588,7 @@ class AnnualCycleResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     cycle_year: int = Field(default=0)
     phase_results: List[PhaseResult] = Field(default_factory=list)
@@ -635,11 +609,9 @@ class AnnualCycleResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class AnnualCycleEngine:
     """10-phase carbon neutral lifecycle management engine.

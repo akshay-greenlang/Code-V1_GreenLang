@@ -60,24 +60,18 @@ from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC timestamp with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 provenance hash, excluding volatile fields."""
@@ -95,7 +89,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert any value to Decimal."""
     if isinstance(value, Decimal):
@@ -104,7 +97,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -116,21 +108,17 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> Decimal:
     """Round a value to two decimal places using ROUND_HALF_UP."""
     return Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-
 
 def _round4(value: Any) -> Decimal:
     """Round a value to four decimal places using ROUND_HALF_UP."""
     return Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ControlType(str, Enum):
     """Types of control under GHG Protocol."""
@@ -138,7 +126,6 @@ class ControlType(str, Enum):
     FINANCIAL_CONTROL = "FINANCIAL_CONTROL"
     NO_CONTROL = "NO_CONTROL"
     JOINT_CONTROL = "JOINT_CONTROL"
-
 
 class OwnershipCategory(str, Enum):
     """Classification of ownership stake."""
@@ -148,7 +135,6 @@ class OwnershipCategory(str, Enum):
     ASSOCIATE = "ASSOCIATE"
     MINORITY = "MINORITY"
     NO_STAKE = "NO_STAKE"
-
 
 class ChangeReason(str, Enum):
     """Reasons for ownership changes."""
@@ -162,11 +148,9 @@ class ChangeReason(str, Enum):
     RESTRUCTURING = "RESTRUCTURING"
     OTHER = "OTHER"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class OwnershipRecord(BaseModel):
     """Records a direct ownership link between two entities.
@@ -234,7 +218,7 @@ class OwnershipRecord(BaseModel):
         description="Additional notes on the ownership relationship.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When this record was created.",
     )
 
@@ -242,7 +226,6 @@ class OwnershipRecord(BaseModel):
     @classmethod
     def _coerce_pct(cls, v: Any) -> Any:
         return Decimal(str(v))
-
 
 class EquityChain(BaseModel):
     """Represents a resolved equity chain from reporting entity to target.
@@ -286,7 +269,7 @@ class EquityChain(BaseModel):
         description="Classification of effective ownership.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When this chain was resolved.",
     )
     provenance_hash: str = Field(
@@ -298,7 +281,6 @@ class EquityChain(BaseModel):
     @classmethod
     def _coerce_pct(cls, v: Any) -> Any:
         return Decimal(str(v))
-
 
 class ControlAssessment(BaseModel):
     """Result of assessing control type for an entity.
@@ -356,7 +338,7 @@ class ControlAssessment(BaseModel):
         description="Inclusion percentage under financial control.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When this assessment was performed.",
     )
     provenance_hash: str = Field(
@@ -370,7 +352,6 @@ class ControlAssessment(BaseModel):
     @classmethod
     def _coerce_pct(cls, v: Any) -> Any:
         return Decimal(str(v))
-
 
 class OwnershipChange(BaseModel):
     """Records a change in ownership percentage over time."""
@@ -416,7 +397,7 @@ class OwnershipChange(BaseModel):
         description="Whether this change triggers base year restatement.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When this change was recorded.",
     )
 
@@ -433,11 +414,9 @@ class OwnershipChange(BaseModel):
             logger.warning("Change reason '%s' not standard; accepted.", v)
         return v.upper()
 
-
 # ---------------------------------------------------------------------------
 # Reference Data
 # ---------------------------------------------------------------------------
-
 
 # Ownership classification thresholds
 OWNERSHIP_THRESHOLDS: Dict[str, Tuple[Decimal, Decimal]] = {
@@ -447,7 +426,6 @@ OWNERSHIP_THRESHOLDS: Dict[str, Tuple[Decimal, Decimal]] = {
     OwnershipCategory.ASSOCIATE.value: (Decimal("20"), Decimal("49.99")),
     OwnershipCategory.MINORITY.value: (Decimal("0.01"), Decimal("19.99")),
 }
-
 
 def _classify_ownership(pct: Decimal) -> str:
     """Classify ownership percentage into a standard category.
@@ -470,11 +448,9 @@ def _classify_ownership(pct: Decimal) -> str:
         return OwnershipCategory.MINORITY.value
     return OwnershipCategory.NO_STAKE.value
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class OwnershipStructureEngine:
     """Resolves equity chains and assesses control for GHG consolidation.
@@ -579,7 +555,7 @@ class OwnershipStructureEngine:
             "owner": owner_id,
             "target": target_id,
             "ownership_pct": str(record.ownership_pct),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         })
 
         logger.info(
@@ -629,7 +605,7 @@ class OwnershipStructureEngine:
             "event": "OWNERSHIP_REMOVED",
             "owner": owner_entity_id,
             "target": target_entity_id,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         })
 
         logger.info(

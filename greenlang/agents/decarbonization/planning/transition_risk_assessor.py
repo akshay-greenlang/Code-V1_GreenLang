@@ -15,12 +15,13 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig
 from greenlang.agents.base_agents import DeterministicAgent
 from greenlang.agents.categories import AgentCategory, AgentMetadata
 from greenlang.utilities.determinism import DeterministicClock, content_hash, deterministic_id
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +49,7 @@ class RiskImpact(str, Enum):
     SEVERE = "severe"
 
 
-class TransitionRisk(BaseModel):
+class TransitionRisk(GreenLangBase):
     risk_id: str = Field(...)
     name: str = Field(...)
     risk_type: TransitionRiskType = Field(...)
@@ -69,7 +70,7 @@ class TransitionRisk(BaseModel):
     residual_risk_score: float = Field(default=0, ge=0, le=25)
 
 
-class TransitionRiskAssessment(BaseModel):
+class TransitionRiskAssessment(GreenLangBase):
     assessment_id: str = Field(...)
     organization_name: str = Field(...)
     assessment_date: datetime = Field(default_factory=DeterministicClock.now)
@@ -89,7 +90,7 @@ class TransitionRiskAssessment(BaseModel):
     provenance_hash: str = Field(default="")
 
 
-class TransitionRiskInput(BaseModel):
+class TransitionRiskInput(GreenLangBase):
     operation: str = Field(default="assess")
     organization_name: str = Field(default="Organization")
     sector: str = Field(default="general")
@@ -98,7 +99,7 @@ class TransitionRiskInput(BaseModel):
     carbon_intensity: float = Field(default=100, ge=0, description="tCO2e/MUSD")
 
 
-class TransitionRiskOutput(BaseModel):
+class TransitionRiskOutput(GreenLangBase):
     operation: str = Field(...)
     success: bool = Field(...)
     assessment: Optional[TransitionRiskAssessment] = Field(None)

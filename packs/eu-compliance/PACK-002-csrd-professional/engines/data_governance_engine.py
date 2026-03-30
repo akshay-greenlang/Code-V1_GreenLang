@@ -57,6 +57,8 @@ from typing import Any, Dict, List, Optional, Set
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
@@ -102,21 +104,13 @@ _PII_PATTERNS: List[str] = [
 
 _COMPILED_PII_PATTERNS = [re.compile(p, re.IGNORECASE) for p in _PII_PATTERNS]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash."""
@@ -129,11 +123,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DataClassificationLevel(str, Enum):
     """Data classification levels."""
@@ -142,7 +134,6 @@ class DataClassificationLevel(str, Enum):
     INTERNAL = "internal"
     CONFIDENTIAL = "confidential"
     RESTRICTED = "restricted"
-
 
 class DataSubjectRequestType(str, Enum):
     """GDPR data subject request types."""
@@ -153,7 +144,6 @@ class DataSubjectRequestType(str, Enum):
     RECTIFICATION = "rectification"
     RESTRICTION = "restriction"
 
-
 class RequestStatus(str, Enum):
     """Status of a data subject request."""
 
@@ -163,11 +153,9 @@ class RequestStatus(str, Enum):
     REJECTED = "rejected"
     EXTENDED = "extended"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class DataClassification(BaseModel):
     """Classification result for a dataset."""
@@ -192,10 +180,9 @@ class DataClassification(BaseModel):
         0.0, ge=0.0, le=1.0, description="Classification confidence (0-1)"
     )
     classified_at: datetime = Field(
-        default_factory=_utcnow, description="Classification timestamp"
+        default_factory=utcnow, description="Classification timestamp"
     )
     provenance_hash: str = Field("", description="SHA-256 hash")
-
 
 class RetentionPolicy(BaseModel):
     """Retention policy for a data type."""
@@ -224,7 +211,6 @@ class RetentionPolicy(BaseModel):
         """Ensure delete is after archive."""
         return v
 
-
 class DataSubjectRequest(BaseModel):
     """A GDPR data subject request."""
 
@@ -250,7 +236,6 @@ class DataSubjectRequest(BaseModel):
     )
     handler: str = Field("", description="Assigned handler")
     provenance_hash: str = Field("", description="SHA-256 hash")
-
 
 class GovernanceReport(BaseModel):
     """Data governance compliance report."""
@@ -294,15 +279,13 @@ class GovernanceReport(BaseModel):
         default_factory=list, description="Governance audit findings"
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow, description="Report generation time"
+        default_factory=utcnow, description="Report generation time"
     )
     provenance_hash: str = Field("", description="SHA-256 hash")
-
 
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
-
 
 class DataGovernanceConfig(BaseModel):
     """Configuration for the data governance engine."""
@@ -320,7 +303,6 @@ class DataGovernanceConfig(BaseModel):
         DataClassificationLevel.INTERNAL,
         description="Default classification when auto-detection is inconclusive",
     )
-
 
 # Default retention policies for CSRD data types
 _DEFAULT_RETENTION_POLICIES: List[Dict[str, Any]] = [
@@ -382,11 +364,9 @@ _DEFAULT_RETENTION_POLICIES: List[Dict[str, Any]] = [
     },
 ]
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class DataGovernanceEngine:
     """Data lifecycle, classification, retention, and GDPR compliance engine.
@@ -485,7 +465,7 @@ class DataGovernanceEngine:
 
         self.classifications[dataset_id] = classification
         self._dataset_registry[dataset_id] = {
-            "classified_at": _utcnow().isoformat(),
+            "classified_at": utcnow().isoformat(),
             "level": level.value,
             "sample_keys": list(data_sample.keys()),
         }
@@ -652,7 +632,7 @@ class DataGovernanceEngine:
         """
         today = date.today()
         results: Dict[str, Any] = {
-            "checked_at": _utcnow().isoformat(),
+            "checked_at": utcnow().isoformat(),
             "data_types": {},
             "overall_compliant": True,
             "compliance_pct": 100.0,

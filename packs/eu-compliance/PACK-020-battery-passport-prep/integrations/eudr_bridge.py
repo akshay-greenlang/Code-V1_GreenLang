@@ -46,25 +46,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -77,18 +71,15 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EUDRCommodity(str, Enum):
     """EUDR Annex I regulated commodities relevant to batteries."""
 
     RUBBER = "rubber"
     WOOD = "wood"
-
 
 class DeforestationStatus(str, Enum):
     """EUDR deforestation compliance status."""
@@ -99,7 +90,6 @@ class DeforestationStatus(str, Enum):
     UNDER_REVIEW = "under_review"
     NOT_ASSESSED = "not_assessed"
 
-
 class CountryBenchmark(str, Enum):
     """EUDR country benchmarking risk levels (Art 29)."""
 
@@ -107,7 +97,6 @@ class CountryBenchmark(str, Enum):
     STANDARD = "standard"
     HIGH = "high"
     NOT_CLASSIFIED = "not_classified"
-
 
 class DDSystemStatus(str, Enum):
     """Due diligence system maturity status."""
@@ -117,11 +106,9 @@ class DDSystemStatus(str, Enum):
     PLANNED = "planned"
     NOT_STARTED = "not_started"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class EUDRBridgeConfig(BaseModel):
     """Configuration for the EUDR Bridge."""
@@ -136,7 +123,6 @@ class EUDRBridgeConfig(BaseModel):
     commodities_in_scope: List[EUDRCommodity] = Field(
         default_factory=lambda: [EUDRCommodity.RUBBER, EUDRCommodity.WOOD]
     )
-
 
 class DeforestationAssessment(BaseModel):
     """Deforestation risk assessment for a supply chain node."""
@@ -154,7 +140,6 @@ class DeforestationAssessment(BaseModel):
     satellite_verification: bool = Field(default=False)
     legality_verified: bool = Field(default=False)
     assessment_date: Optional[str] = Field(None)
-
 
 class DeforestationStatusResult(BaseModel):
     """Result of deforestation status check."""
@@ -175,7 +160,6 @@ class DeforestationStatusResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class CommodityRiskResult(BaseModel):
     """Result of commodity risk mapping."""
 
@@ -187,7 +171,6 @@ class CommodityRiskResult(BaseModel):
     low_risk_countries: List[str] = Field(default_factory=list)
     battery_reg_articles_satisfied: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class RubberSourcingResult(BaseModel):
     """Result of rubber sourcing validation."""
@@ -202,7 +185,6 @@ class RubberSourcingResult(BaseModel):
     certifications_present: List[str] = Field(default_factory=list)
     battery_components_using_rubber: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Country Benchmark Data (EUDR Art 29)
@@ -247,11 +229,9 @@ BATTERY_RUBBER_COMPONENTS: List[str] = [
     "mounting_grommets",
 ]
 
-
 # ---------------------------------------------------------------------------
 # EUDRBridge
 # ---------------------------------------------------------------------------
-
 
 class EUDRBridge:
     """EUDR deforestation due diligence bridge for PACK-020.
@@ -292,7 +272,7 @@ class EUDRBridge:
         Returns:
             DeforestationStatusResult with assessment outcomes.
         """
-        result = DeforestationStatusResult(started_at=_utcnow())
+        result = DeforestationStatusResult(started_at=utcnow())
 
         try:
             raw_assessments = context.get("eudr_assessments", [])
@@ -358,7 +338,7 @@ class EUDRBridge:
             result.errors.append(str(exc))
             logger.error("Deforestation status check failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at

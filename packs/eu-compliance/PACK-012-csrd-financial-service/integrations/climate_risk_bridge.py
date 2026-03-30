@@ -36,21 +36,15 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute a SHA-256 hash of arbitrary data."""
     return hashlib.sha256(
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
-
 
 class _AgentStub:
     """Deferred agent loader for lazy initialization."""
@@ -67,6 +61,7 @@ class _AgentStub:
             return self._instance
         try:
             import importlib
+
             mod = importlib.import_module(self.module_path)
             cls = getattr(mod, self.class_name)
             self._instance = cls()
@@ -80,7 +75,6 @@ class _AgentStub:
         """Whether the agent has been loaded."""
         return self._instance is not None
 
-
 class ClimateScenario(str, Enum):
     """NGFS climate scenarios."""
     ORDERLY = "orderly"
@@ -89,7 +83,6 @@ class ClimateScenario(str, Enum):
     TOO_LITTLE_TOO_LATE = "too_little_too_late"
     NET_ZERO_2050 = "net_zero_2050"
     DELAYED_TRANSITION = "delayed_transition"
-
 
 class HazardType(str, Enum):
     """Climate hazard types for physical risk."""
@@ -101,13 +94,11 @@ class HazardType(str, Enum):
     STORM = "storm"
     DROUGHT = "drought"
 
-
 class TimeHorizon(str, Enum):
     """Time horizons for risk assessment."""
     SHORT = "short_term"
     MEDIUM = "medium_term"
     LONG = "long_term"
-
 
 class ClimateRiskBridgeConfig(BaseModel):
     """Configuration for the Climate Risk Bridge."""
@@ -144,7 +135,6 @@ class ClimateRiskBridgeConfig(BaseModel):
         description="Weight for physical risk in combined score",
     )
 
-
 class TransitionRiskResult(BaseModel):
     """Result of transition risk assessment."""
     portfolio_transition_score: float = Field(
@@ -163,7 +153,6 @@ class TransitionRiskResult(BaseModel):
         default=0.0, description="Exposure to carbon-intensive sectors (%)",
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class PhysicalRiskResult(BaseModel):
     """Result of physical risk assessment."""
@@ -186,7 +175,6 @@ class PhysicalRiskResult(BaseModel):
         default=0, description="Number of high-risk locations",
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class CombinedClimateRiskResult(BaseModel):
     """Combined climate risk assessment result."""
@@ -214,7 +202,6 @@ class CombinedClimateRiskResult(BaseModel):
         default=False, description="Whether data is stress-test ready",
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class ClimateRiskBridge:
     """Bridge to climate risk assessment agents.

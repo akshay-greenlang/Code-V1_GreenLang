@@ -62,7 +62,7 @@ from greenlang.serialization import canonical_dumps, canonical_hash
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.intelligence.providers.base import LLMProvider
 from greenlang.agents.intelligence.schemas.messages import ChatMessage
@@ -70,6 +70,7 @@ from greenlang.agents.intelligence.schemas.tools import ToolDef
 from greenlang.agents.intelligence.schemas.responses import ChatResponse
 from greenlang.agents.intelligence.schemas.jsonschema import JSONSchema
 from greenlang.agents.intelligence.runtime.budget import Budget
+from greenlang.schemas import GreenLangBase
 
 
 class CacheMode(str, Enum):
@@ -80,7 +81,7 @@ class CacheMode(str, Enum):
     GOLDEN = "golden"  # Use pre-recorded golden responses
 
 
-class CacheEntry(BaseModel):
+class CacheEntry(GreenLangBase):
     """
     Single cache entry
 
@@ -137,7 +138,7 @@ class CacheEntry(BaseModel):
         }
 
 
-class CacheStats(BaseModel):
+class CacheStats(GreenLangBase):
     """
     Cache statistics
 

@@ -95,6 +95,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -159,20 +160,13 @@ try:
 except ImportError:
     ProvenanceTracker = None  # type: ignore[assignment, misc]
 
-
 # ---------------------------------------------------------------------------
 # UTC helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _utcnow_iso() -> str:
     """Return current UTC datetime as an ISO-8601 string."""
-    return _utcnow().isoformat()
-
+    return utcnow().isoformat()
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -190,7 +184,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Decimal helpers
 # ---------------------------------------------------------------------------
@@ -202,7 +195,6 @@ _THOUSAND = Decimal("1000")
 _CO2_C_RATIO = Decimal("3.66667")  # 44/12 molecular weight ratio CO2/C
 _N2O_N_RATIO = Decimal("1.571429")  # 44/28 molecular weight ratio N2O/N
 _CH4_C_RATIO = Decimal("1.333333")  # 16/12 molecular weight ratio CH4/C
-
 
 def _D(value: Any) -> Decimal:
     """Convert a value to Decimal.
@@ -216,7 +208,6 @@ def _D(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
     return Decimal(str(value))
-
 
 def _safe_decimal(value: Any, default: Decimal = _ZERO) -> Decimal:
     """Safely convert to Decimal, returning a default on failure.
@@ -235,7 +226,6 @@ def _safe_decimal(value: Any, default: Decimal = _ZERO) -> Decimal:
     except Exception:
         return default
 
-
 def _quantize(value: Decimal) -> Decimal:
     """Quantize a Decimal to pipeline precision.
 
@@ -246,7 +236,6 @@ def _quantize(value: Decimal) -> Decimal:
         Quantized Decimal value.
     """
     return value.quantize(_PRECISION, rounding=ROUND_HALF_UP)
-
 
 # ---------------------------------------------------------------------------
 # GWP values (IPCC AR6 100-year defaults)
@@ -279,11 +268,9 @@ GWP_VALUES: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ===========================================================================
 # Pipeline Stages
 # ===========================================================================
-
 
 class PipelineStage(str, Enum):
     """Enumeration of the 8 pipeline stages for waste treatment."""
@@ -296,7 +283,6 @@ class PipelineStage(str, Enum):
     CALCULATE_WASTEWATER = "CALCULATE_WASTEWATER"
     CHECK_COMPLIANCE = "CHECK_COMPLIANCE"
     ASSEMBLE_RESULTS = "ASSEMBLE_RESULTS"
-
 
 # ---------------------------------------------------------------------------
 # Valid enumerations
@@ -458,11 +444,9 @@ WASTEWATER_BO: Dict[str, Decimal] = {
     "COD": Decimal("0.25"),
 }
 
-
 # ===========================================================================
 # WasteTreatmentPipelineEngine
 # ===========================================================================
-
 
 class WasteTreatmentPipelineEngine:
     """End-to-end orchestration pipeline for on-site waste treatment emissions.
@@ -571,7 +555,7 @@ class WasteTreatmentPipelineEngine:
         self._stage_timings: Dict[str, List[float]] = {
             stage.value: [] for stage in PipelineStage
         }
-        self._created_at = _utcnow()
+        self._created_at = utcnow()
 
         engine_status = {
             "db": self._db_engine is not None,
@@ -734,7 +718,7 @@ class WasteTreatmentPipelineEngine:
         ctx["frameworks"] = request.get("frameworks", [])
 
         # Reporting year
-        ctx["reporting_year"] = request.get("reporting_year", _utcnow().year)
+        ctx["reporting_year"] = request.get("reporting_year", utcnow().year)
 
         # Treatment streams validation
         streams = request.get("treatment_streams", [])

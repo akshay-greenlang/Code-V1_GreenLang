@@ -37,7 +37,8 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import ConfigDict, Field, field_validator
+from greenlang.schemas import GreenLangBase
 
 
 # =============================================================================
@@ -45,7 +46,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 # =============================================================================
 
 
-class PaginationSchema(BaseModel):
+class PaginationSchema(GreenLangBase):
     """Standard pagination metadata for list responses."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -68,7 +69,7 @@ class PaginationSchema(BaseModel):
     )
 
 
-class ErrorSchema(BaseModel):
+class ErrorSchema(GreenLangBase):
     """Structured error response schema per GreenLang API standards."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -95,7 +96,7 @@ class ErrorSchema(BaseModel):
     )
 
 
-class HealthSchema(BaseModel):
+class HealthSchema(GreenLangBase):
     """Health check response for the Supplier Risk Scorer service."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -142,7 +143,7 @@ class HealthSchema(BaseModel):
     )
 
 
-class SuccessSchema(BaseModel):
+class SuccessSchema(GreenLangBase):
     """Generic success response."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -166,7 +167,7 @@ class SuccessSchema(BaseModel):
 # =============================================================================
 
 
-class FactorScoreSchema(BaseModel):
+class FactorScoreSchema(GreenLangBase):
     """Individual risk factor score breakdown."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -205,7 +206,7 @@ class FactorScoreSchema(BaseModel):
     )
 
 
-class AssessSupplierRequest(BaseModel):
+class AssessSupplierRequest(GreenLangBase):
     """Request schema for single supplier risk assessment."""
 
     model_config = ConfigDict(
@@ -261,7 +262,7 @@ class AssessSupplierRequest(BaseModel):
         return v
 
 
-class SupplierRiskResponse(BaseModel):
+class SupplierRiskResponse(GreenLangBase):
     """Response schema for supplier risk assessment."""
 
     model_config = ConfigDict(
@@ -331,7 +332,7 @@ class SupplierRiskResponse(BaseModel):
     )
 
 
-class BatchAssessmentRequest(BaseModel):
+class BatchAssessmentRequest(GreenLangBase):
     """Request schema for batch supplier assessment."""
 
     model_config = ConfigDict(
@@ -354,7 +355,7 @@ class BatchAssessmentRequest(BaseModel):
     )
 
 
-class BatchAssessmentResponse(BaseModel):
+class BatchAssessmentResponse(GreenLangBase):
     """Response schema for batch supplier assessment."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -381,7 +382,7 @@ class BatchAssessmentResponse(BaseModel):
     )
 
 
-class CompareSupplierRequest(BaseModel):
+class CompareSupplierRequest(GreenLangBase):
     """Request schema for supplier comparison."""
 
     model_config = ConfigDict(
@@ -404,7 +405,7 @@ class CompareSupplierRequest(BaseModel):
     )
 
 
-class ComparisonResponse(BaseModel):
+class ComparisonResponse(GreenLangBase):
     """Response schema for supplier comparison."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -431,7 +432,7 @@ class ComparisonResponse(BaseModel):
     )
 
 
-class TrendPointSchema(BaseModel):
+class TrendPointSchema(GreenLangBase):
     """Single point in risk trend time series."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -450,7 +451,7 @@ class TrendPointSchema(BaseModel):
     )
 
 
-class TrendResponse(BaseModel):
+class TrendResponse(GreenLangBase):
     """Response schema for supplier risk trend."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -481,7 +482,7 @@ class TrendResponse(BaseModel):
     )
 
 
-class RankingsResponse(BaseModel):
+class RankingsResponse(GreenLangBase):
     """Response schema for supplier rankings."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -517,7 +518,7 @@ class RankingsResponse(BaseModel):
 # =============================================================================
 
 
-class DDRecordRequest(BaseModel):
+class DDRecordRequest(GreenLangBase):
     """Request schema for recording due diligence activity."""
 
     model_config = ConfigDict(
@@ -559,7 +560,7 @@ class DDRecordRequest(BaseModel):
     )
 
 
-class DDHistoryResponse(BaseModel):
+class DDHistoryResponse(GreenLangBase):
     """Response schema for due diligence history."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -598,7 +599,7 @@ class DDHistoryResponse(BaseModel):
     )
 
 
-class DDGapsResponse(BaseModel):
+class DDGapsResponse(GreenLangBase):
     """Response schema for due diligence gaps."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -633,7 +634,7 @@ class DDGapsResponse(BaseModel):
     )
 
 
-class EscalateIssueRequest(BaseModel):
+class EscalateIssueRequest(GreenLangBase):
     """Request schema for escalating due diligence issue."""
 
     model_config = ConfigDict(
@@ -680,7 +681,7 @@ class EscalateIssueRequest(BaseModel):
 # =============================================================================
 
 
-class AnalyzeDocumentRequest(BaseModel):
+class AnalyzeDocumentRequest(GreenLangBase):
     """Request schema for document analysis."""
 
     model_config = ConfigDict(
@@ -717,7 +718,7 @@ class AnalyzeDocumentRequest(BaseModel):
     )
 
 
-class DocumentProfileResponse(BaseModel):
+class DocumentProfileResponse(GreenLangBase):
     """Response schema for supplier documentation profile."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -752,7 +753,7 @@ class DocumentProfileResponse(BaseModel):
     )
 
 
-class DocumentGapsResponse(BaseModel):
+class DocumentGapsResponse(GreenLangBase):
     """Response schema for documentation gaps."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -783,7 +784,7 @@ class DocumentGapsResponse(BaseModel):
     )
 
 
-class RequestDocumentRequest(BaseModel):
+class RequestDocumentRequest(GreenLangBase):
     """Request schema for requesting documents from supplier."""
 
     model_config = ConfigDict(
@@ -821,7 +822,7 @@ class RequestDocumentRequest(BaseModel):
 # =============================================================================
 
 
-class ValidateCertificationRequest(BaseModel):
+class ValidateCertificationRequest(GreenLangBase):
     """Request schema for certification validation."""
 
     model_config = ConfigDict(
@@ -854,7 +855,7 @@ class ValidateCertificationRequest(BaseModel):
     )
 
 
-class CertStatusResponse(BaseModel):
+class CertStatusResponse(GreenLangBase):
     """Response schema for certification status."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -889,7 +890,7 @@ class CertStatusResponse(BaseModel):
     )
 
 
-class CertExpiryResponse(BaseModel):
+class CertExpiryResponse(GreenLangBase):
     """Response schema for certification expiry check."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -916,7 +917,7 @@ class CertExpiryResponse(BaseModel):
     )
 
 
-class VerifyScopeRequest(BaseModel):
+class VerifyScopeRequest(GreenLangBase):
     """Request schema for certification scope verification."""
 
     model_config = ConfigDict(
@@ -949,7 +950,7 @@ class VerifyScopeRequest(BaseModel):
     )
 
 
-class SchemesListResponse(BaseModel):
+class SchemesListResponse(GreenLangBase):
     """Response schema for supported certification schemes."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -969,7 +970,7 @@ class SchemesListResponse(BaseModel):
 # =============================================================================
 
 
-class AnalyzeSourcingRequest(BaseModel):
+class AnalyzeSourcingRequest(GreenLangBase):
     """Request schema for geographic sourcing analysis."""
 
     model_config = ConfigDict(
@@ -1002,7 +1003,7 @@ class AnalyzeSourcingRequest(BaseModel):
     )
 
 
-class SourcingProfileResponse(BaseModel):
+class SourcingProfileResponse(GreenLangBase):
     """Response schema for geographic sourcing profile."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1033,7 +1034,7 @@ class SourcingProfileResponse(BaseModel):
     )
 
 
-class RiskZonesResponse(BaseModel):
+class RiskZonesResponse(GreenLangBase):
     """Response schema for risk zones analysis."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1060,7 +1061,7 @@ class RiskZonesResponse(BaseModel):
     )
 
 
-class ConcentrationRequest(BaseModel):
+class ConcentrationRequest(GreenLangBase):
     """Request schema for geographic concentration analysis."""
 
     model_config = ConfigDict(
@@ -1083,7 +1084,7 @@ class ConcentrationRequest(BaseModel):
     )
 
 
-class SourcingChangesResponse(BaseModel):
+class SourcingChangesResponse(GreenLangBase):
     """Response schema for sourcing changes detection."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1119,7 +1120,7 @@ class SourcingChangesResponse(BaseModel):
 # =============================================================================
 
 
-class AnalyzeNetworkRequest(BaseModel):
+class AnalyzeNetworkRequest(GreenLangBase):
     """Request schema for supplier network analysis."""
 
     model_config = ConfigDict(
@@ -1147,7 +1148,7 @@ class AnalyzeNetworkRequest(BaseModel):
     )
 
 
-class NetworkResponse(BaseModel):
+class NetworkResponse(GreenLangBase):
     """Response schema for supplier network."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1178,7 +1179,7 @@ class NetworkResponse(BaseModel):
     )
 
 
-class SubSuppliersResponse(BaseModel):
+class SubSuppliersResponse(GreenLangBase):
     """Response schema for sub-suppliers list."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1201,7 +1202,7 @@ class SubSuppliersResponse(BaseModel):
     )
 
 
-class RiskPropagationRequest(BaseModel):
+class RiskPropagationRequest(GreenLangBase):
     """Request schema for network risk propagation."""
 
     model_config = ConfigDict(
@@ -1229,7 +1230,7 @@ class RiskPropagationRequest(BaseModel):
     )
 
 
-class NetworkGraphResponse(BaseModel):
+class NetworkGraphResponse(GreenLangBase):
     """Response schema for network graph data."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1253,7 +1254,7 @@ class NetworkGraphResponse(BaseModel):
 # =============================================================================
 
 
-class ConfigureMonitoringRequest(BaseModel):
+class ConfigureMonitoringRequest(GreenLangBase):
     """Request schema for configuring supplier monitoring."""
 
     model_config = ConfigDict(
@@ -1285,7 +1286,7 @@ class ConfigureMonitoringRequest(BaseModel):
     )
 
 
-class AlertResponse(BaseModel):
+class AlertResponse(GreenLangBase):
     """Response schema for supplier alerts."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1320,7 +1321,7 @@ class AlertResponse(BaseModel):
     )
 
 
-class AlertListResponse(BaseModel):
+class AlertListResponse(GreenLangBase):
     """Response schema for alert list."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1343,7 +1344,7 @@ class AlertListResponse(BaseModel):
     )
 
 
-class WatchlistResponse(BaseModel):
+class WatchlistResponse(GreenLangBase):
     """Response schema for monitoring watchlist."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1358,7 +1359,7 @@ class WatchlistResponse(BaseModel):
     )
 
 
-class AddToWatchlistRequest(BaseModel):
+class AddToWatchlistRequest(GreenLangBase):
     """Request schema for adding supplier to watchlist."""
 
     model_config = ConfigDict(
@@ -1386,7 +1387,7 @@ class AddToWatchlistRequest(BaseModel):
     )
 
 
-class PortfolioRiskResponse(BaseModel):
+class PortfolioRiskResponse(GreenLangBase):
     """Response schema for portfolio risk analysis."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1422,7 +1423,7 @@ class PortfolioRiskResponse(BaseModel):
 # =============================================================================
 
 
-class GenerateReportRequest(BaseModel):
+class GenerateReportRequest(GreenLangBase):
     """Request schema for generating supplier risk report."""
 
     model_config = ConfigDict(
@@ -1459,7 +1460,7 @@ class GenerateReportRequest(BaseModel):
     )
 
 
-class BatchReportRequest(BaseModel):
+class BatchReportRequest(GreenLangBase):
     """Request schema for batch report generation."""
 
     model_config = ConfigDict(
@@ -1487,7 +1488,7 @@ class BatchReportRequest(BaseModel):
     )
 
 
-class ReportResponse(BaseModel):
+class ReportResponse(GreenLangBase):
     """Response schema for generated report."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1530,7 +1531,7 @@ class ReportResponse(BaseModel):
     )
 
 
-class ReportListResponse(BaseModel):
+class ReportListResponse(GreenLangBase):
     """Response schema for report list."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1549,7 +1550,7 @@ class ReportListResponse(BaseModel):
     )
 
 
-class DownloadReportResponse(BaseModel):
+class DownloadReportResponse(GreenLangBase):
     """Response schema for report download."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1580,7 +1581,7 @@ class DownloadReportResponse(BaseModel):
     )
 
 
-class PortfolioReportRequest(BaseModel):
+class PortfolioReportRequest(GreenLangBase):
     """Request schema for portfolio report generation."""
 
     model_config = ConfigDict(

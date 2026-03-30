@@ -68,25 +68,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -104,7 +98,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serialisable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -113,7 +106,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -125,17 +117,14 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class OverlapRuleId(str, Enum):
     """Identifier for each overlap detection rule.
@@ -156,7 +145,6 @@ class OverlapRuleId(str, Enum):
     CAT6_CAT7 = "cat6_cat7_travel_vs_commuting"
     CAT15_CAT1314 = "cat15_cat1314_investment_vs_leased"
 
-
 class AllocationMethod(str, Enum):
     """Method for resolving detected overlaps.
 
@@ -170,7 +158,6 @@ class AllocationMethod(str, Enum):
     REMOVE_LOWER = "remove_lower"
     FLAG_ONLY = "flag_only"
 
-
 class OverlapSeverity(str, Enum):
     """Severity of the detected overlap.
 
@@ -182,14 +169,12 @@ class OverlapSeverity(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
 
-
 class ResolutionStatus(str, Enum):
     """Status of overlap resolution."""
     RESOLVED = "resolved"
     FLAGGED = "flagged"
     SKIPPED = "skipped"
     ERROR = "error"
-
 
 # ---------------------------------------------------------------------------
 # Overlap Rules Configuration
@@ -386,11 +371,9 @@ OVERLAP_RULES: List[Dict[str, Any]] = [
     },
 ]
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class CategoryEmissionInput(BaseModel):
     """Emission data for a single Scope 3 category (input to overlap detection).
@@ -416,11 +399,9 @@ class CategoryEmissionInput(BaseModel):
     tags: List[str] = Field(default_factory=list, description="Detection tags")
     entity_ids: List[str] = Field(default_factory=list, description="Entity IDs")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class OverlapDetection(BaseModel):
     """A detected overlap between two categories.
@@ -466,7 +447,6 @@ class OverlapDetection(BaseModel):
     )
     ghg_protocol_reference: str = Field(default="", description="GHG Protocol ref")
 
-
 class OverlapResolution(BaseModel):
     """Resolution of a detected overlap.
 
@@ -503,7 +483,6 @@ class OverlapResolution(BaseModel):
         default=ResolutionStatus.RESOLVED, description="Status"
     )
 
-
 class AdjustedResult(BaseModel):
     """Adjusted emission result for a category after overlap resolution.
 
@@ -525,7 +504,6 @@ class AdjustedResult(BaseModel):
     adjustment_details: List[str] = Field(
         default_factory=list, description="Adjustment details"
     )
-
 
 class DoubleCountingResult(BaseModel):
     """Complete double-counting detection and resolution result.
@@ -579,10 +557,9 @@ class DoubleCountingResult(BaseModel):
     overlaps_resolved: int = Field(default=0, description="Overlaps resolved")
     overlaps_flagged: int = Field(default=0, description="Overlaps flagged")
     warnings: List[str] = Field(default_factory=list, description="Warnings")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Timestamp")
     processing_time_ms: Decimal = Field(default=Decimal("0"), description="Processing ms")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 # ---------------------------------------------------------------------------
 # Model Rebuild
@@ -594,11 +571,9 @@ OverlapResolution.model_rebuild()
 AdjustedResult.model_rebuild()
 DoubleCountingResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class DoubleCountingPreventionEngine:
     """Detect and resolve double-counting across Scope 3 categories.

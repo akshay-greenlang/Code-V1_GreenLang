@@ -40,29 +40,23 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 def _compute_hash(content: str) -> str:
     """Compute SHA-256 hash of string content."""
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -75,7 +69,6 @@ class OutputFormat(str, Enum):
     PDF = "pdf"
     JSON = "json"
 
-
 class QualityRating(str, Enum):
     """Data quality rating levels."""
     HIGH = "high"
@@ -83,12 +76,10 @@ class QualityRating(str, Enum):
     LOW = "low"
     VERY_LOW = "very_low"
 
-
 class IPCCTier(str, Enum):
     """IPCC uncertainty tier."""
     TIER_1 = "tier_1"
     TIER_2 = "tier_2"
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Input Models
@@ -105,7 +96,6 @@ class DataQualityEntry(BaseModel):
     geographic_correlation: str = Field("", description="Geographic correlation rating")
     technology_correlation: str = Field("", description="Technology correlation rating")
 
-
 class UncertaintyByMetric(BaseModel):
     """Uncertainty assessment for a single intensity metric."""
     metric_name: str = Field(..., description="Intensity metric name")
@@ -119,7 +109,6 @@ class UncertaintyByMetric(BaseModel):
     lower_bound: float = Field(0.0, description="Lower bound (95% CI)")
     upper_bound: float = Field(0.0, description="Upper bound (95% CI)")
 
-
 class CombinedUncertaintyBand(BaseModel):
     """Combined uncertainty band for aggregate metrics."""
     scope_label: str = Field(..., description="Scope or aggregate label")
@@ -128,7 +117,6 @@ class CombinedUncertaintyBand(BaseModel):
     lower_bound: float = Field(0.0, description="Lower bound")
     upper_bound: float = Field(0.0, description="Upper bound")
     confidence_level: str = Field("95%", description="Confidence level")
-
 
 class ConfidenceInterval(BaseModel):
     """Confidence interval for a metric at specified confidence level."""
@@ -139,14 +127,12 @@ class ConfidenceInterval(BaseModel):
     upper: float = Field(0.0, description="Upper bound")
     half_width_pct: float = Field(0.0, description="Half-width as % of central")
 
-
 class QualityTrendEntry(BaseModel):
     """Quality trend for a single year."""
     year: int = Field(..., description="Reporting year")
     overall_quality_score: float = Field(0.0, description="Overall quality score 0-100")
     combined_uncertainty_pct: float = Field(0.0, description="Combined uncertainty %")
     data_coverage_pct: float = Field(0.0, description="Data coverage %")
-
 
 class ImprovementRecommendation(BaseModel):
     """Data improvement recommendation."""
@@ -156,7 +142,6 @@ class ImprovementRecommendation(BaseModel):
     current_uncertainty_pct: float = Field(0.0, description="Current uncertainty %")
     target_uncertainty_pct: float = Field(0.0, description="Target uncertainty %")
     expected_improvement: str = Field("", description="Expected improvement description")
-
 
 class UncertaintyReportInput(BaseModel):
     """Complete input model for UncertaintyReport."""
@@ -183,7 +168,6 @@ class UncertaintyReportInput(BaseModel):
         default_factory=list, description="Quality trend over years"
     )
 
-
 # ---------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------
@@ -198,7 +182,6 @@ def _quality_label(rating: QualityRating) -> str:
     }
     return mapping.get(rating, rating.value.upper())
 
-
 def _quality_css(rating: QualityRating) -> str:
     """Return CSS class for quality rating."""
     mapping = {
@@ -208,7 +191,6 @@ def _quality_css(rating: QualityRating) -> str:
         QualityRating.VERY_LOW: "q-very-low",
     }
     return mapping.get(rating, "q-medium")
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -257,7 +239,7 @@ class UncertaintyReport:
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render uncertainty report as Markdown."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_md(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -265,7 +247,7 @@ class UncertaintyReport:
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render uncertainty report as HTML."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_html(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -273,7 +255,7 @@ class UncertaintyReport:
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render uncertainty report as JSON dict."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_json(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -305,7 +287,7 @@ class UncertaintyReport:
         return (
             f"# Uncertainty Analysis Report - {company}\n\n"
             f"**Period:** {period} | **IPCC Tier:** {tier.replace('_', ' ').title()} | "
-            f"**Report Date:** {_utcnow().strftime('%Y-%m-%d')}\n\n"
+            f"**Report Date:** {utcnow().strftime('%Y-%m-%d')}\n\n"
             "---"
         )
 

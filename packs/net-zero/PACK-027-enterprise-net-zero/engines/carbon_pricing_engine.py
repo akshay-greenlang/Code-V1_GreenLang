@@ -63,23 +63,18 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -96,7 +91,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -104,7 +98,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal, denominator: Decimal,
@@ -114,26 +107,21 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     return float(
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CarbonPricingApproach(str, Enum):
     """Carbon pricing approaches."""
@@ -142,7 +130,6 @@ class CarbonPricingApproach(str, Enum):
     IMPLICIT_PRICE = "implicit_price"
     REGULATORY_PRICE = "regulatory_price"
 
-
 class PriceTrajectoryScenario(str, Enum):
     """Carbon price trajectory scenarios."""
     LOW = "low"
@@ -150,14 +137,12 @@ class PriceTrajectoryScenario(str, Enum):
     HIGH = "high"
     CUSTOM = "custom"
 
-
 class AllocationMethod(str, Enum):
     """Carbon cost allocation methods."""
     DIRECT_EMISSIONS = "direct_emissions"
     REVENUE_BASED = "revenue_based"
     ACTIVITY_BASED = "activity_based"
     HEADCOUNT_BASED = "headcount_based"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -200,11 +185,9 @@ CBAM_PRODUCTS: Dict[str, Decimal] = {
     "electricity": Decimal("0.450"),   # tCO2 per MWh
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class BusinessUnitEmissions(BaseModel):
     """Business unit emission data for carbon cost allocation.
@@ -223,7 +206,6 @@ class BusinessUnitEmissions(BaseModel):
     scope3_tco2e: Decimal = Field(default=Decimal("0"), ge=Decimal("0"))
     revenue_usd: Decimal = Field(default=Decimal("0"), ge=Decimal("0"))
     headcount: int = Field(default=0, ge=0)
-
 
 class InvestmentProposal(BaseModel):
     """Investment proposal for carbon-adjusted NPV analysis.
@@ -247,7 +229,6 @@ class InvestmentProposal(BaseModel):
     standard_npv_usd: Decimal = Field(default=Decimal("0"))
     standard_irr_pct: Decimal = Field(default=Decimal("0"))
 
-
 class CBAMImport(BaseModel):
     """CBAM import for border adjustment calculation.
 
@@ -261,7 +242,6 @@ class CBAMImport(BaseModel):
     import_origin: str = Field(default="", max_length=100)
     annual_tonnes: Decimal = Field(default=Decimal("0"), ge=Decimal("0"))
     embedded_ef_override: Optional[Decimal] = Field(None, ge=Decimal("0"))
-
 
 class CarbonPricingInput(BaseModel):
     """Complete input for carbon pricing analysis.
@@ -315,11 +295,9 @@ class CarbonPricingInput(BaseModel):
     ets_covered_emissions_tco2e: Decimal = Field(default=Decimal("0"), ge=Decimal("0"))
     free_allocation_tco2e: Decimal = Field(default=Decimal("0"), ge=Decimal("0"))
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class BUCarbonAllocation(BaseModel):
     """Carbon cost allocation for a single business unit."""
@@ -329,7 +307,6 @@ class BUCarbonAllocation(BaseModel):
     carbon_intensity_per_revenue: Decimal = Field(default=Decimal("0"))
     pct_of_total_emissions: Decimal = Field(default=Decimal("0"))
     pct_of_total_charge: Decimal = Field(default=Decimal("0"))
-
 
 class InvestmentAppraisal(BaseModel):
     """Carbon-adjusted investment appraisal result."""
@@ -343,7 +320,6 @@ class InvestmentAppraisal(BaseModel):
     payback_years_carbon_adjusted: Decimal = Field(default=Decimal("0"))
     recommendation: str = Field(default="")
 
-
 class CBAMExposure(BaseModel):
     """CBAM border adjustment exposure."""
     product_category: str = Field(default="")
@@ -352,7 +328,6 @@ class CBAMExposure(BaseModel):
     embedded_emissions_tco2e: Decimal = Field(default=Decimal("0"))
     cbam_certificate_cost_usd: Decimal = Field(default=Decimal("0"))
     pct_of_total_cbam: Decimal = Field(default=Decimal("0"))
-
 
 class CarbonPnL(BaseModel):
     """Carbon-adjusted P&L summary."""
@@ -365,7 +340,6 @@ class CarbonPnL(BaseModel):
     ebitda_impact_pct: Decimal = Field(default=Decimal("0"))
     carbon_intensity_per_million_revenue: Decimal = Field(default=Decimal("0"))
 
-
 class CarbonLiability(BaseModel):
     """Carbon liability assessment."""
     current_year_ets_liability_usd: Decimal = Field(default=Decimal("0"))
@@ -374,7 +348,6 @@ class CarbonLiability(BaseModel):
     ten_year_pv_liability_usd: Decimal = Field(default=Decimal("0"))
     free_allocation_value_usd: Decimal = Field(default=Decimal("0"))
     net_liability_usd: Decimal = Field(default=Decimal("0"))
-
 
 class CarbonPricingResult(BaseModel):
     """Complete carbon pricing analysis result.
@@ -400,7 +373,7 @@ class CarbonPricingResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     organization_name: str = Field(default="")
     internal_carbon_price: Decimal = Field(default=Decimal("0"))
     total_carbon_charge_usd: Decimal = Field(default=Decimal("0"))
@@ -426,11 +399,9 @@ class CarbonPricingResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class CarbonPricingEngine:
     """Internal carbon pricing engine for enterprise capital allocation.

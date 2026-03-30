@@ -56,25 +56,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -94,13 +88,11 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _safe_divide(numerator: float, denominator: float, default: float = 0.0) -> float:
     """Safely divide two numbers, returning *default* on zero denominator."""
     if denominator == 0.0:
         return default
     return numerator / denominator
-
 
 def _safe_pct(numerator: float, denominator: float) -> float:
     """Calculate percentage safely, returning 0.0 on zero denominator."""
@@ -108,28 +100,23 @@ def _safe_pct(numerator: float, denominator: float) -> float:
         return 0.0
     return (numerator / denominator) * 100.0
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
-
 
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class LifecycleScope(str, Enum):
     """Lifecycle scope for PCF calculation per ISO 14067."""
     CRADLE_TO_GATE = "cradle_to_gate"
     GATE_TO_GATE = "gate_to_gate"
     CRADLE_TO_GRAVE = "cradle_to_grave"
-
 
 class AllocationMethod(str, Enum):
     """Allocation method per ISO 14044 hierarchy."""
@@ -138,7 +125,6 @@ class AllocationMethod(str, Enum):
     PHYSICAL_CAUSALITY = "physical_causality"
     SYSTEM_EXPANSION = "system_expansion"
 
-
 class LifecycleStage(str, Enum):
     """Lifecycle stages for PCF breakdown."""
     RAW_MATERIAL = "raw_material"
@@ -146,7 +132,6 @@ class LifecycleStage(str, Enum):
     DISTRIBUTION = "distribution"
     USE = "use"
     END_OF_LIFE = "end_of_life"
-
 
 class DataQualityLevel(str, Enum):
     """Data quality scoring per PEF methodology (1=best, 5=worst).
@@ -162,7 +147,6 @@ class DataQualityLevel(str, Enum):
     SCORE_3 = "score_3"
     SCORE_4 = "score_4"
     SCORE_5 = "score_5"
-
 
 # ---------------------------------------------------------------------------
 # Constants: Material Emission Factors (kgCO2e per kg material)
@@ -345,11 +329,9 @@ END_OF_LIFE_FACTORS: Dict[str, Dict[str, float]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class PCFConfig(BaseModel):
     """Configuration for product carbon footprint calculation.
@@ -387,7 +369,6 @@ class PCFConfig(BaseModel):
         description="Generate Digital Product Passport data.",
     )
 
-
 class ProductData(BaseModel):
     """Product definition for PCF calculation.
 
@@ -423,7 +404,6 @@ class ProductData(BaseModel):
         default="general",
         description="Product category.",
     )
-
 
 class BOMComponent(BaseModel):
     """A Bill of Materials component with emission data.
@@ -481,7 +461,6 @@ class BOMComponent(BaseModel):
         description="Supplier name.",
     )
 
-
 class ManufacturingProcess(BaseModel):
     """A manufacturing process step contributing to product emissions.
 
@@ -507,7 +486,6 @@ class ManufacturingProcess(BaseModel):
         default=0.0, ge=0.0,
         description="Waste generated per unit (kg).",
     )
-
 
 class DistributionData(BaseModel):
     """Distribution / transport data for the product.
@@ -535,7 +513,6 @@ class DistributionData(BaseModel):
         description="Override emission factor (kgCO2e/tkm).",
     )
 
-
 class UsePhaseData(BaseModel):
     """Use phase energy consumption and lifetime data.
 
@@ -562,7 +539,6 @@ class UsePhaseData(BaseModel):
         ge=0.0,
         description="Grid emission factor (kgCO2e/kWh).",
     )
-
 
 class EndOfLifeData(BaseModel):
     """End-of-life treatment pathways for the product.
@@ -605,7 +581,6 @@ class EndOfLifeData(BaseModel):
             )
         return self
 
-
 class DPPData(BaseModel):
     """Digital Product Passport data per EU ESPR framework.
 
@@ -626,7 +601,6 @@ class DPPData(BaseModel):
     durability_info: str = Field(default="")
     material_composition: Dict[str, float] = Field(default_factory=dict)
 
-
 class DataQualityScore(BaseModel):
     """Aggregated data quality assessment.
 
@@ -640,7 +614,6 @@ class DataQualityScore(BaseModel):
     coverage_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     components_assessed: int = Field(default=0, ge=0)
     recommendation: str = Field(default="")
-
 
 class PCFResult(BaseModel):
     """Complete result of product carbon footprint calculation with provenance.
@@ -677,14 +650,12 @@ class PCFResult(BaseModel):
     methodology_notes: List[str] = Field(default_factory=list)
     processing_time_ms: float = Field(default=0.0)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ProductCarbonFootprintEngine:
     """Zero-hallucination product carbon footprint calculation engine.
@@ -879,7 +850,7 @@ class ProductCarbonFootprintEngine:
             methodology_notes=methodology_notes,
             processing_time_ms=round(elapsed_ms, 2),
             engine_version=self.engine_version,
-            calculated_at=_utcnow(),
+            calculated_at=utcnow(),
         )
 
         result.provenance_hash = _compute_hash(result)

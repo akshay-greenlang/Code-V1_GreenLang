@@ -31,6 +31,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "29.0.0"
@@ -54,10 +56,6 @@ XBRL_TAGS: Dict[str, str] = {
     "pct_complete": "gl:AnnualTargetCompletionPct",
     "rag_overall": "gl:QuarterlyRAGStatus",
 }
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
@@ -104,7 +102,6 @@ def _rag_from_variance(variance_pct: float) -> str:
         return "AMBER"
     return "RED"
 
-
 class QuarterlyDashboardTemplate:
     """
     Board-level quarterly KPI dashboard template for PACK-029.
@@ -132,7 +129,7 @@ class QuarterlyDashboardTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render quarterly dashboard as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [
             self._md_header(data), self._md_key_metrics(data),
             self._md_rag_milestones(data), self._md_top_initiatives(data),
@@ -146,7 +143,7 @@ class QuarterlyDashboardTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render quarterly dashboard as HTML."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         parts = [
             self._html_header(data), self._html_key_metrics(data),
@@ -166,7 +163,7 @@ class QuarterlyDashboardTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render as structured JSON."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         actual_q = float(data.get("actual_emissions_q", 0))
         target_q = float(data.get("target_emissions_q", 0))
         variance_q = actual_q - target_q

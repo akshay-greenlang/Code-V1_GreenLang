@@ -67,6 +67,7 @@ import uuid
 from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.mass_balance_calculator.config import (
     MassBalanceCalculatorConfig,
@@ -99,12 +100,6 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance.
 
@@ -117,7 +112,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str = "RPT") -> str:
     """Generate a prefixed UUID4 string identifier.
 
@@ -128,7 +122,6 @@ def _generate_id(prefix: str = "RPT") -> str:
         Prefixed UUID4 string.
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 def _safe_decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
@@ -151,7 +144,6 @@ def _safe_decimal(value: Any) -> Decimal:
             f"Cannot convert {value!r} to Decimal: {exc}"
         ) from exc
 
-
 def _safe_float(value: Any) -> float:
     """Safely convert a value to float.
 
@@ -167,7 +159,6 @@ def _safe_float(value: Any) -> float:
         return float(str(value))
     except (ValueError, TypeError):
         return 0.0
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -209,11 +200,9 @@ EVIDENCE_DOCUMENT_TYPES = (
     "provenance_chain",
 )
 
-
 # ---------------------------------------------------------------------------
 # ConsolidationReporter
 # ---------------------------------------------------------------------------
-
 
 class ConsolidationReporter:
     """Multi-facility consolidation and reporting engine.
@@ -340,7 +329,7 @@ class ConsolidationReporter:
         )
 
         report_id = _generate_id("RPT-CON")
-        now = _utcnow()
+        now = utcnow()
 
         # Build report data based on type
         report_data = self._build_report_data(
@@ -447,7 +436,7 @@ class ConsolidationReporter:
             )
 
         group_id = _generate_id("GRP")
-        now = _utcnow()
+        now = utcnow()
 
         group: Dict[str, Any] = {
             "group_id": group_id,
@@ -541,7 +530,7 @@ class ConsolidationReporter:
         # Overall compliance status
         compliance_status = self._assess_enterprise_compliance(resolved_ids)
 
-        now = _utcnow()
+        now = utcnow()
         dashboard: Dict[str, Any] = {
             "dashboard_type": "enterprise",
             "group_id": group_id,
@@ -670,7 +659,7 @@ class ConsolidationReporter:
             )
 
         transfer_id = _generate_id("XFR")
-        now = _utcnow()
+        now = utcnow()
 
         transfer: Dict[str, Any] = {
             "transfer_id": transfer_id,
@@ -786,7 +775,7 @@ class ConsolidationReporter:
             "facility_count": len(facility_ids),
             "comparisons": ranked,
             "statistics": agg_stats,
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
         }
 
     # ------------------------------------------------------------------
@@ -827,7 +816,7 @@ class ConsolidationReporter:
         )
 
         package_id = _generate_id("EVD")
-        now = _utcnow()
+        now = utcnow()
 
         # Assemble document inventory
         document_inventory = self._build_document_inventory(
@@ -982,7 +971,7 @@ class ConsolidationReporter:
             "facility_ids": facility_ids,
             "commodity_count": len(result_breakdown),
             "commodities": result_breakdown,
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
         }
 
     # ------------------------------------------------------------------
@@ -1259,7 +1248,7 @@ class ConsolidationReporter:
         Returns:
             Report data dictionary.
         """
-        now = _utcnow()
+        now = utcnow()
         header: Dict[str, Any] = {
             "agent_id": "GL-EUDR-MBC-011",
             "module_version": _MODULE_VERSION,
@@ -1347,7 +1336,7 @@ class ConsolidationReporter:
         return {
             "report_type": report_type,
             "facility_count": len(facility_ids),
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
             "sections": list(report_data.keys()),
         }
 
@@ -1795,7 +1784,7 @@ class ConsolidationReporter:
             List of document metadata dictionaries.
         """
         inventory: List[Dict[str, Any]] = []
-        now = _utcnow()
+        now = utcnow()
 
         for doc_type in EVIDENCE_DOCUMENT_TYPES:
             for fid in facility_ids:
@@ -1929,7 +1918,6 @@ class ConsolidationReporter:
         """Return the total number of generated reports."""
         with self._lock:
             return len(self._reports)
-
 
 # ---------------------------------------------------------------------------
 # Public API

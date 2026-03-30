@@ -39,18 +39,13 @@ from typing import Any, Callable, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # UTILITIES
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return current UTC time with timezone info."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute SHA-256 provenance hash of arbitrary data."""
@@ -58,11 +53,9 @@ def _hash_data(data: Any) -> str:
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -72,7 +65,6 @@ class PhaseStatus(str, Enum):
     FAILED = "FAILED"
     SKIPPED = "SKIPPED"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "PENDING"
@@ -80,7 +72,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
     PARTIAL = "PARTIAL"
-
 
 class KPICategory(str, Enum):
     """KPI category classification."""
@@ -91,7 +82,6 @@ class KPICategory(str, Enum):
     BIODIVERSITY = "BIODIVERSITY"
     CIRCULAR_ECONOMY = "CIRCULAR_ECONOMY"
 
-
 class MeasurementFrequency(str, Enum):
     """KPI measurement frequency."""
     DAILY = "DAILY"
@@ -101,24 +91,21 @@ class MeasurementFrequency(str, Enum):
     SEMI_ANNUAL = "SEMI_ANNUAL"
     ANNUAL = "ANNUAL"
 
-
 class DataQualityTier(str, Enum):
     """Data quality tier classification."""
     TIER_1_REPORTED = "TIER_1_REPORTED"
     TIER_2_ESTIMATED = "TIER_2_ESTIMATED"
     TIER_3_PROXY = "TIER_3_PROXY"
 
-
 # =============================================================================
 # DATA MODELS - SHARED
 # =============================================================================
-
 
 class WorkflowContext(BaseModel):
     """Shared state passed between workflow phases."""
     workflow_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     organization_id: str = Field(..., description="Organization identifier")
-    execution_timestamp: datetime = Field(default_factory=_utcnow)
+    execution_timestamp: datetime = Field(default_factory=utcnow)
     config: Dict[str, Any] = Field(default_factory=dict)
     phase_states: Dict[str, PhaseStatus] = Field(default_factory=dict)
     phase_outputs: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
@@ -141,7 +128,6 @@ class WorkflowContext(BaseModel):
         """Check if a phase has already completed."""
         return self.phase_states.get(phase_name) == PhaseStatus.COMPLETED
 
-
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
     phase_name: str = Field(..., description="Phase identifier")
@@ -155,7 +141,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     records_processed: int = Field(default=0)
 
-
 class WorkflowResult(BaseModel):
     """Complete result from a multi-phase workflow execution."""
     workflow_id: str = Field(..., description="Unique workflow execution ID")
@@ -168,11 +153,9 @@ class WorkflowResult(BaseModel):
     summary: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # DATA MODELS - IMPACT REPORTING
 # =============================================================================
-
 
 class ImpactReportingInput(BaseModel):
     """Input configuration for the impact reporting workflow."""
@@ -226,7 +209,6 @@ class ImpactReportingInput(BaseModel):
             raise ValueError("Date must be YYYY-MM-DD format")
         return v
 
-
 class ImpactReportingResult(WorkflowResult):
     """Complete result from the impact reporting workflow."""
     product_name: str = Field(default="")
@@ -241,11 +223,9 @@ class ImpactReportingResult(WorkflowResult):
     report_sections_total: int = Field(default=6)
     overall_impact_score: float = Field(default=0.0)
 
-
 # =============================================================================
 # PHASE IMPLEMENTATIONS
 # =============================================================================
-
 
 class KPIDefinitionPhase:
     """
@@ -268,7 +248,7 @@ class KPIDefinitionPhase:
         Returns:
             PhaseResult with defined KPIs.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -412,7 +392,7 @@ class KPIDefinitionPhase:
             status = PhaseStatus.FAILED
             records = 0
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -425,7 +405,6 @@ class KPIDefinitionPhase:
             provenance_hash=_hash_data(outputs),
             records_processed=records,
         )
-
 
 class DataCollectionPhase:
     """
@@ -448,7 +427,7 @@ class DataCollectionPhase:
         Returns:
             PhaseResult with collected and validated data.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -503,7 +482,7 @@ class DataCollectionPhase:
                         "value": kpi_value,
                         "quality_tier": quality_tier,
                         "quality_score": quality_score,
-                        "collected_at": _utcnow().isoformat(),
+                        "collected_at": utcnow().isoformat(),
                     }
                     kpi_data_points.append(data_point)
 
@@ -574,7 +553,7 @@ class DataCollectionPhase:
             status = PhaseStatus.FAILED
             records = 0
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -587,7 +566,6 @@ class DataCollectionPhase:
             provenance_hash=_hash_data(outputs),
             records_processed=records,
         )
-
 
 class ImpactCalculationPhase:
     """
@@ -610,7 +588,7 @@ class ImpactCalculationPhase:
         Returns:
             PhaseResult with calculated impact metrics.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -761,7 +739,7 @@ class ImpactCalculationPhase:
             status = PhaseStatus.FAILED
             records = 0
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -774,7 +752,6 @@ class ImpactCalculationPhase:
             provenance_hash=_hash_data(outputs),
             records_processed=records,
         )
-
 
 class ReportGenerationPhase:
     """
@@ -806,7 +783,7 @@ class ReportGenerationPhase:
         Returns:
             PhaseResult with generated report structure.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -944,7 +921,7 @@ class ReportGenerationPhase:
             outputs["sections_total"] = len(self.REPORT_SECTIONS)
             outputs["report_format"] = "structured_json"
             outputs["report_version"] = "1.0"
-            outputs["generated_at"] = _utcnow().isoformat()
+            outputs["generated_at"] = utcnow().isoformat()
 
             status = PhaseStatus.COMPLETED
 
@@ -955,7 +932,7 @@ class ReportGenerationPhase:
             errors.append(f"Report generation failed: {str(exc)}")
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -968,11 +945,9 @@ class ReportGenerationPhase:
             provenance_hash=_hash_data(outputs),
         )
 
-
 # =============================================================================
 # WORKFLOW ORCHESTRATOR
 # =============================================================================
-
 
 class ImpactReportingWorkflow:
     """
@@ -1040,7 +1015,7 @@ class ImpactReportingWorkflow:
         Returns:
             ImpactReportingResult with per-phase details and summary.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         logger.info(
             "Starting impact reporting workflow %s for org=%s product=%s",
             self.workflow_id, input_data.organization_id,
@@ -1115,7 +1090,7 @@ class ImpactReportingWorkflow:
                 error_result = PhaseResult(
                     phase_name=phase_name,
                     status=PhaseStatus.FAILED,
-                    started_at=_utcnow(),
+                    started_at=utcnow(),
                     errors=[str(exc)],
                     provenance_hash=_hash_data({"error": str(exc)}),
                 )
@@ -1134,7 +1109,7 @@ class ImpactReportingWorkflow:
                 else WorkflowStatus.PARTIAL
             )
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         total_duration = (completed_at - started_at).total_seconds()
         summary = self._build_summary(context)
         provenance = _hash_data({

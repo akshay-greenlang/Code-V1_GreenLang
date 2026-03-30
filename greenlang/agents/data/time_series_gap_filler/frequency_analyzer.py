@@ -48,9 +48,9 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from greenlang.agents.data.time_series_gap_filler.config import get_config
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Graceful imports for sibling modules (built in parallel)
@@ -79,11 +79,9 @@ except ImportError:
     _observe_duration = None  # type: ignore[assignment, misc]
     _inc_errors = None  # type: ignore[assignment, misc]
 
-
 # ---------------------------------------------------------------------------
 # Frequency Level Enumeration
 # ---------------------------------------------------------------------------
-
 
 class FrequencyLevel(str, Enum):
     """Canonical time series observation frequency levels.
@@ -110,7 +108,6 @@ class FrequencyLevel(str, Enum):
     SEMI_ANNUAL = "semi_annual"
     ANNUAL = "annual"
     IRREGULAR = "irregular"
-
 
 # ---------------------------------------------------------------------------
 # Frequency reference intervals (seconds)
@@ -142,11 +139,9 @@ FREQUENCY_TOLERANCES: Dict[FrequencyLevel, Tuple[float, float]] = {
     FrequencyLevel.ANNUAL: (23328000.0, 63072000.0),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pure-Python math helpers
 # ---------------------------------------------------------------------------
-
 
 def _safe_mean(values: List[float]) -> float:
     """Compute arithmetic mean, returning 0.0 for empty lists.
@@ -160,7 +155,6 @@ def _safe_mean(values: List[float]) -> float:
     if not values:
         return 0.0
     return sum(values) / len(values)
-
 
 def _safe_std(values: List[float], mean: Optional[float] = None) -> float:
     """Compute population standard deviation.
@@ -177,7 +171,6 @@ def _safe_std(values: List[float], mean: Optional[float] = None) -> float:
     m = mean if mean is not None else _safe_mean(values)
     variance = sum((x - m) ** 2 for x in values) / len(values)
     return math.sqrt(variance)
-
 
 def _safe_median(values: List[float]) -> float:
     """Compute median of values.
@@ -197,12 +190,6 @@ def _safe_median(values: List[float]) -> float:
         return (s[mid - 1] + s[mid]) / 2.0
     return s[mid]
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _build_hash(data: Any) -> str:
     """Build a SHA-256 hash for arbitrary data.
 
@@ -215,11 +202,9 @@ def _build_hash(data: Any) -> str:
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # FrequencyAnalyzerEngine
 # ---------------------------------------------------------------------------
-
 
 class FrequencyAnalyzerEngine:
     """Pure-Python frequency analysis engine for time series data.
@@ -1091,7 +1076,6 @@ class FrequencyAnalyzerEngine:
                 _observe_duration(operation, elapsed)
             except Exception as exc:
                 logger.debug("Metric observation skipped: %s", exc)
-
 
 __all__ = [
     "FrequencyAnalyzerEngine",

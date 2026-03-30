@@ -69,6 +69,7 @@ from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from typing import Any, Dict, List, Optional, Tuple
 
 from greenlang.agents.mrv.cooling_purchase.config import CoolingPurchaseConfig
+from greenlang.schemas import utcnow
 from greenlang.agents.mrv.cooling_purchase.metrics import (
     record_calculation,
     record_error,
@@ -98,7 +99,6 @@ from greenlang.agents.mrv.cooling_purchase.provenance import (
 )
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Decimal precision constant
@@ -201,7 +201,6 @@ _ZERO = Decimal("0")
 _ONE = Decimal("1")
 _THOUSAND = Decimal("1000")
 
-
 def _q(value: Decimal) -> Decimal:
     """Quantize a Decimal value to 8 decimal places using ROUND_HALF_UP.
 
@@ -212,16 +211,6 @@ def _q(value: Decimal) -> Decimal:
         Quantized Decimal.
     """
     return value.quantize(_PRECISION, rounding=ROUND_HALF_UP)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed.
-
-    Returns:
-        UTC datetime with microsecond component set to zero.
-    """
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _canonical_json(data: Dict[str, Any]) -> str:
     """Serialize a dictionary to canonical JSON form for hashing.
@@ -236,11 +225,9 @@ def _canonical_json(data: Dict[str, Any]) -> str:
     """
     return json.dumps(data, sort_keys=True, default=str)
 
-
 # ===========================================================================
 # DistrictCoolingCalculatorEngine
 # ===========================================================================
-
 
 class DistrictCoolingCalculatorEngine:
     """Engine 4: District cooling, free cooling, and TES emission calculator.
@@ -600,7 +587,7 @@ class DistrictCoolingCalculatorEngine:
                 calculation_tier=tier if isinstance(tier, DataQualityTier) else DataQualityTier(tier),
                 provenance_hash=provenance_hash,
                 trace_steps=trace,
-                timestamp=_utcnow(),
+                timestamp=utcnow(),
                 metadata=metadata,
             )
 
@@ -1145,7 +1132,7 @@ class DistrictCoolingCalculatorEngine:
                 calculation_tier=tier if isinstance(tier, DataQualityTier) else DataQualityTier(tier),
                 provenance_hash=provenance_hash,
                 trace_steps=trace,
-                timestamp=_utcnow(),
+                timestamp=utcnow(),
                 metadata=metadata,
             )
 
@@ -1170,7 +1157,7 @@ class DistrictCoolingCalculatorEngine:
                 calculation_tier=tier if isinstance(tier, DataQualityTier) else DataQualityTier(tier),
                 provenance_hash="",
                 trace_steps=trace,
-                timestamp=_utcnow(),
+                timestamp=utcnow(),
                 metadata={"error": str(exc)},
             )
 
@@ -1573,7 +1560,7 @@ class DistrictCoolingCalculatorEngine:
                 calculation_tier=tier if isinstance(tier, DataQualityTier) else DataQualityTier(tier),
                 provenance_hash=provenance_hash,
                 trace_steps=trace,
-                timestamp=_utcnow(),
+                timestamp=utcnow(),
                 metadata=metadata,
             )
 
@@ -1998,7 +1985,7 @@ class DistrictCoolingCalculatorEngine:
                 calculation_tier=tier if isinstance(tier, DataQualityTier) else DataQualityTier(tier),
                 provenance_hash=provenance_hash,
                 trace_steps=trace,
-                timestamp=_utcnow(),
+                timestamp=utcnow(),
                 metadata=metadata,
             )
 
@@ -2746,7 +2733,7 @@ class DistrictCoolingCalculatorEngine:
             calculation_tier=tier if isinstance(tier, DataQualityTier) else DataQualityTier(tier),
             provenance_hash="",
             trace_steps=trace,
-            timestamp=_utcnow(),
+            timestamp=utcnow(),
             metadata={
                 "error": error_message,
                 "processing_time_ms": f"{elapsed_ms:.2f}",
@@ -3065,15 +3052,12 @@ class DistrictCoolingCalculatorEngine:
             "monthly_results": monthly_results,
         }
 
-
 # ===========================================================================
 # Module-level convenience functions
 # ===========================================================================
 
-
 _engine_instance: Optional[DistrictCoolingCalculatorEngine] = None
 _engine_lock = threading.Lock()
-
 
 def get_district_cooling_calculator() -> DistrictCoolingCalculatorEngine:
     """Return the singleton DistrictCoolingCalculatorEngine instance.
@@ -3097,7 +3081,6 @@ def get_district_cooling_calculator() -> DistrictCoolingCalculatorEngine:
             if _engine_instance is None:
                 _engine_instance = DistrictCoolingCalculatorEngine()
     return _engine_instance
-
 
 def reset_district_cooling_calculator() -> None:
     """Reset the module-level engine singleton for testing.

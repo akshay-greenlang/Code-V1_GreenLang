@@ -81,25 +81,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -117,7 +111,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -126,7 +119,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -138,17 +130,14 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
@@ -156,11 +145,9 @@ def _round3(value: float) -> float:
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class AssetClass(str, Enum):
     """FINZ V1.0 asset classes for portfolio target-setting.
@@ -178,7 +165,6 @@ class AssetClass(str, Enum):
     SOVEREIGN_BONDS = "sovereign_bonds"
     CORPORATE_BONDS = "corporate_bonds"
 
-
 class PcafDataQuality(int, Enum):
     """PCAF data quality scores (1-5 scale).
 
@@ -193,7 +179,6 @@ class PcafDataQuality(int, Enum):
     SCORE_3 = 3
     SCORE_4 = 4
     SCORE_5 = 5
-
 
 class TargetMethodology(str, Enum):
     """Target-setting methodology per FINZ V1.0.
@@ -214,7 +199,6 @@ class TargetMethodology(str, Enum):
     ENGAGEMENT = "engagement"
     NOT_SET = "not_set"
 
-
 class PortfolioCoverageStatus(str, Enum):
     """Coverage status for portfolio targets.
 
@@ -227,7 +211,6 @@ class PortfolioCoverageStatus(str, Enum):
     PARTIAL = "partial"
     MINIMAL = "minimal"
     NONE = "none"
-
 
 class EngagementStatus(str, Enum):
     """Engagement status for portfolio entities.
@@ -246,7 +229,6 @@ class EngagementStatus(str, Enum):
     NOT_ENGAGED = "not_engaged"
     DIVESTED = "divested"
 
-
 class TemperatureAlignment(str, Enum):
     """Temperature alignment classification.
 
@@ -264,7 +246,6 @@ class TemperatureAlignment(str, Enum):
     ABOVE_2C = "above_2c"
     NOT_ASSESSED = "not_assessed"
 
-
 class AssetClassRisk(str, Enum):
     """Climate risk level for an asset class.
 
@@ -275,7 +256,6 @@ class AssetClassRisk(str, Enum):
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- SBTi FINZ V1.0 Thresholds
@@ -443,11 +423,9 @@ PCAF_DQ_DESCRIPTIONS: Dict[int, Dict[str, str]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class PortfolioEntityInput(BaseModel):
     """Input data for a single entity in the portfolio.
@@ -563,7 +541,6 @@ class PortfolioEntityInput(BaseModel):
             )
         return v
 
-
 class PortfolioTargetInput(BaseModel):
     """Input for a portfolio-level target.
 
@@ -627,7 +604,6 @@ class PortfolioTargetInput(BaseModel):
                 f"Must be one of: {sorted(valid)}"
             )
         return v
-
 
 class FIPortfolioInput(BaseModel):
     """Complete FI portfolio analysis input.
@@ -725,11 +701,9 @@ class FIPortfolioInput(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class AssetClassSummary(BaseModel):
     """Summary metrics for a single asset class.
@@ -777,7 +751,6 @@ class AssetClassSummary(BaseModel):
     target_methodology: str = Field(default=TargetMethodology.NOT_SET.value)
     is_finz_required: bool = Field(default=False)
 
-
 class PortfolioCoverageResult(BaseModel):
     """Portfolio coverage assessment result.
 
@@ -817,7 +790,6 @@ class PortfolioCoverageResult(BaseModel):
     entity_coverage_pct: Decimal = Field(default=Decimal("0"))
     coverage_status: str = Field(default=PortfolioCoverageStatus.NONE.value)
     message: str = Field(default="")
-
 
 class EngagementTrackingResult(BaseModel):
     """Engagement tracking assessment.
@@ -859,7 +831,6 @@ class EngagementTrackingResult(BaseModel):
     top_engagement_priorities: List[str] = Field(default_factory=list)
     message: str = Field(default="")
 
-
 class PcafDataQualityAssessment(BaseModel):
     """PCAF data quality assessment across the portfolio.
 
@@ -887,7 +858,6 @@ class PcafDataQualityAssessment(BaseModel):
     target_score: int = Field(default=PCAF_TARGET_DQ)
     improvement_priorities: List[str] = Field(default_factory=list)
     message: str = Field(default="")
-
 
 class TemperatureAlignmentResult(BaseModel):
     """Temperature alignment assessment for the portfolio.
@@ -927,7 +897,6 @@ class TemperatureAlignmentResult(BaseModel):
     by_asset_class: Dict[str, Decimal] = Field(default_factory=dict)
     message: str = Field(default="")
 
-
 class FIRecommendation(BaseModel):
     """A single FI-specific recommendation.
 
@@ -949,7 +918,6 @@ class FIRecommendation(BaseModel):
     rationale: str = Field(default="")
     estimated_impact: str = Field(default="")
     timeline_months: int = Field(default=12)
-
 
 class FIPortfolioResult(BaseModel):
     """Complete FI portfolio analysis result.
@@ -977,7 +945,7 @@ class FIPortfolioResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     institution_name: str = Field(default="")
     base_year: int = Field(default=0)
     total_entities: int = Field(default=0)
@@ -997,11 +965,9 @@ class FIPortfolioResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class FIPortfolioEngine:
     """SBTi Financial Institutions portfolio target engine.

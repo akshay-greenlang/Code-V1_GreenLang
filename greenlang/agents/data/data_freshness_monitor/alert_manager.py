@@ -59,6 +59,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 from greenlang.agents.data.data_freshness_monitor.config import get_config
+from greenlang.schemas import utcnow
 from greenlang.agents.data.data_freshness_monitor.models import (
     AlertChannel,
     AlertSeverity,
@@ -76,16 +77,9 @@ __all__ = [
     "AlertManagerEngine",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _generate_id(prefix: str = "ALT") -> str:
     """Generate a unique identifier with the given prefix.
@@ -98,7 +92,6 @@ def _generate_id(prefix: str = "ALT") -> str:
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
 
-
 def _compute_provenance(operation: str, data_repr: str) -> str:
     """Compute SHA-256 provenance hash for an alert manager operation.
 
@@ -109,9 +102,8 @@ def _compute_provenance(operation: str, data_repr: str) -> str:
     Returns:
         Hex-encoded SHA-256 digest.
     """
-    payload = f"{operation}:{data_repr}:{_utcnow().isoformat()}"
+    payload = f"{operation}:{data_repr}:{utcnow().isoformat()}"
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
-
 
 def _safe_inc(metric: Any, **labels: str) -> None:
     """Safely increment a Prometheus counter if available.
@@ -126,7 +118,6 @@ def _safe_inc(metric: Any, **labels: str) -> None:
         metric.labels(**labels).inc()
     except Exception:  # noqa: BLE001
         pass
-
 
 def _safe_observe(metric: Any, value: float, **labels: str) -> None:
     """Safely observe a Prometheus histogram value if available.
@@ -145,7 +136,6 @@ def _safe_observe(metric: Any, value: float, **labels: str) -> None:
             metric.observe(value)
     except Exception:  # noqa: BLE001
         pass
-
 
 # ---------------------------------------------------------------------------
 # Prometheus metrics (graceful import)
@@ -230,7 +220,6 @@ else:
     _escalations_total = None  # type: ignore[assignment]
     _active_alerts_gauge = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # Default alert template
 # ---------------------------------------------------------------------------
@@ -240,11 +229,9 @@ _DEFAULT_ALERT_TEMPLATE: str = (
     "data is {age_hours:.1f}h old (SLA: {sla_hours}h)"
 )
 
-
 # ---------------------------------------------------------------------------
 # AlertManagerEngine
 # ---------------------------------------------------------------------------
-
 
 class AlertManagerEngine:
     """Generates and manages alerts for SLA breaches.
@@ -351,7 +338,7 @@ class AlertManagerEngine:
         self._validate_channel(channel)
 
         alert_id = _generate_id("ALT")
-        now = _utcnow()
+        now = utcnow()
         provenance_hash = _compute_provenance(
             "create_alert",
             json.dumps({
@@ -435,7 +422,7 @@ class AlertManagerEngine:
                 )
                 return False
 
-            now = _utcnow()
+            now = utcnow()
             alert.status = AlertStatus.SENT
             alert.sent_at = now
             alert.provenance_hash = _compute_provenance(
@@ -566,7 +553,7 @@ class AlertManagerEngine:
                     f"in status {alert.status.value}"
                 )
 
-            now = _utcnow()
+            now = utcnow()
             alert.status = AlertStatus.ACKNOWLEDGED
             alert.acknowledged_at = now
             alert.acknowledged_by = acknowledged_by
@@ -627,7 +614,7 @@ class AlertManagerEngine:
                     f"Cannot resolve suppressed alert {alert_id}"
                 )
 
-            now = _utcnow()
+            now = utcnow()
             alert.status = AlertStatus.RESOLVED
             alert.resolved_at = now
             alert.resolution_notes = resolution_notes
@@ -686,7 +673,7 @@ class AlertManagerEngine:
                     f"Cannot suppress resolved alert {alert_id}"
                 )
 
-            now = _utcnow()
+            now = utcnow()
             alert.status = AlertStatus.SUPPRESSED
             alert.suppressed_at = now
             alert.suppression_reason = reason
@@ -736,7 +723,7 @@ class AlertManagerEngine:
             if it is safe to send.
         """
         throttle_key = (dataset_id, channel)
-        now = _utcnow()
+        now = utcnow()
         throttle_window = timedelta(
             minutes=self._config.alert_throttle_minutes,
         )
@@ -771,7 +758,7 @@ class AlertManagerEngine:
             False if it is safe to send.
         """
         dedup_key = (dataset_id, alert_severity, channel)
-        now = _utcnow()
+        now = utcnow()
         dedup_window = timedelta(
             hours=self._config.alert_dedup_window_hours,
         )
@@ -832,7 +819,7 @@ class AlertManagerEngine:
         if not levels:
             return None
 
-        now = _utcnow()
+        now = utcnow()
         time_since_detection = (now - breach.detected_at).total_seconds() / 60.0
 
         # Find the highest applicable escalation level
@@ -1155,7 +1142,7 @@ class AlertManagerEngine:
         self._validate_breach_severity(breach_severity)
 
         breach_id = _generate_id("BRC")
-        now = _utcnow()
+        now = utcnow()
         provenance_hash = _compute_provenance(
             "record_breach",
             json.dumps({
@@ -1231,7 +1218,7 @@ class AlertManagerEngine:
                     f"Cannot acknowledge resolved breach {breach_id}"
                 )
 
-            now = _utcnow()
+            now = utcnow()
             breach.status = BreachStatus.ACKNOWLEDGED
             breach.acknowledged_at = now
             breach.acknowledged_by = acknowledged_by
@@ -1282,7 +1269,7 @@ class AlertManagerEngine:
             if breach is None:
                 raise ValueError(f"Breach not found: {breach_id}")
 
-            now = _utcnow()
+            now = utcnow()
             breach.status = BreachStatus.RESOLVED
             breach.resolved_at = now
             breach.resolution_notes = resolution_notes
@@ -1413,7 +1400,7 @@ class AlertManagerEngine:
             "escalation_levels": escalation_levels,
             "throttle_entries": throttle_count,
             "dedup_entries": dedup_count,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     # ------------------------------------------------------------------

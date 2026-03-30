@@ -54,25 +54,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -85,7 +79,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -95,18 +88,15 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DDSType(str, Enum):
     """Type of Due Diligence Statement."""
 
     STANDARD = "STANDARD"
     SIMPLIFIED = "SIMPLIFIED"
-
 
 class DDSStatus(str, Enum):
     """Status of a Due Diligence Statement."""
@@ -118,7 +108,6 @@ class DDSStatus(str, Enum):
     SUBMITTED = "SUBMITTED"
     AMENDED = "AMENDED"
 
-
 class RiskConclusion(str, Enum):
     """Risk assessment conclusion per EUDR Article 10."""
 
@@ -126,7 +115,6 @@ class RiskConclusion(str, Enum):
     LOW = "LOW"
     STANDARD = "STANDARD"
     HIGH = "HIGH"
-
 
 class EvidenceType(str, Enum):
     """Types of evidence that can be attached to a DDS."""
@@ -142,18 +130,15 @@ class EvidenceType(str, Enum):
     PERMIT = "PERMIT"
     OTHER = "OTHER"
 
-
 class GeolocationFormat(str, Enum):
     """Format of geolocation data."""
 
     POINT = "POINT"
     POLYGON = "POLYGON"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class SupplierInfo(BaseModel):
     """Supplier information for DDS Annex II field 6."""
@@ -168,7 +153,6 @@ class SupplierInfo(BaseModel):
     tier: int = Field(default=1, ge=1, le=10, description="Supply chain tier (1=direct)")
     certifications: List[str] = Field(default_factory=list, description="Active certifications")
 
-
 class ProductInfo(BaseModel):
     """Product information for DDS Annex II fields 2-3."""
 
@@ -182,7 +166,6 @@ class ProductInfo(BaseModel):
     supplementary_quantity: Optional[Decimal] = Field(None, ge=0, description="Quantity in supplementary unit")
     trade_name: Optional[str] = Field(None, description="Trade or brand name")
 
-
 class GeolocationPoint(BaseModel):
     """Single geolocation point (WGS84, 6 decimal places)."""
 
@@ -194,7 +177,6 @@ class GeolocationPoint(BaseModel):
     def round_to_six_decimals(cls, v: float) -> float:
         """Ensure 6-decimal precision per EUDR requirement."""
         return round(v, 6)
-
 
 class GeolocationPolygon(BaseModel):
     """Polygon geolocation for plots >= 4 hectares."""
@@ -214,7 +196,6 @@ class GeolocationPolygon(BaseModel):
             v.append(v[0])
         return v
 
-
 class GeolocationInfo(BaseModel):
     """Geolocation information for DDS Annex II field 5."""
 
@@ -226,7 +207,6 @@ class GeolocationInfo(BaseModel):
     area_hectares: Optional[float] = Field(None, ge=0, description="Plot area in hectares")
     datum: str = Field(default="WGS84", description="Geodetic datum (must be WGS84)")
 
-
 class RiskSummary(BaseModel):
     """Risk assessment summary for DDS Annex II field 7."""
 
@@ -236,11 +216,10 @@ class RiskSummary(BaseModel):
     supplier_risk_score: Optional[float] = Field(None, ge=0, le=100, description="Supplier risk score")
     commodity_risk_score: Optional[float] = Field(None, ge=0, le=100, description="Commodity risk score")
     deforestation_risk: Optional[str] = Field(None, description="Deforestation risk assessment")
-    assessment_date: datetime = Field(default_factory=_utcnow, description="Assessment date")
+    assessment_date: datetime = Field(default_factory=utcnow, description="Assessment date")
     assessor: Optional[str] = Field(None, description="Person or system that performed assessment")
     methodology: str = Field(default="EUDR_STANDARD", description="Assessment methodology used")
     key_findings: List[str] = Field(default_factory=list, description="Key risk findings")
-
 
 class MitigationSummary(BaseModel):
     """Risk mitigation measures for DDS Annex II field 8."""
@@ -253,7 +232,6 @@ class MitigationSummary(BaseModel):
     verification_entity: Optional[str] = Field(None, description="Third-party verifier name")
     completion_date: Optional[datetime] = Field(None, description="When mitigation was completed")
     effectiveness_assessment: Optional[str] = Field(None, description="Mitigation effectiveness")
-
 
 class OperatorDeclaration(BaseModel):
     """Operator/trader declaration for DDS finalization."""
@@ -271,11 +249,10 @@ class OperatorDeclaration(BaseModel):
         "of the country of production is negligible.",
         description="Declaration text",
     )
-    signature_date: datetime = Field(default_factory=_utcnow, description="Date of signature")
+    signature_date: datetime = Field(default_factory=utcnow, description="Date of signature")
     signature_reference: Optional[str] = Field(None, description="Digital signature reference")
     is_sme: bool = Field(default=False, description="Whether the operator is an SME")
     is_trader: bool = Field(default=False, description="True if trader, False if operator")
-
 
 class DDSEvidence(BaseModel):
     """Evidence document attached to a DDS."""
@@ -289,8 +266,7 @@ class DDSEvidence(BaseModel):
     issue_date: Optional[datetime] = Field(None, description="When the evidence was issued")
     expiry_date: Optional[datetime] = Field(None, description="When the evidence expires")
     issuing_authority: Optional[str] = Field(None, description="Authority that issued the evidence")
-    attached_at: datetime = Field(default_factory=_utcnow, description="When attached to DDS")
-
+    attached_at: datetime = Field(default_factory=utcnow, description="When attached to DDS")
 
 class FormattedGeolocation(BaseModel):
     """Formatted geolocation data for DDS output."""
@@ -303,7 +279,6 @@ class FormattedGeolocation(BaseModel):
     precision_decimals: int = Field(default=6, description="Coordinate decimal precision")
     provenance_hash: str = Field(default="", description="SHA-256 hash of geolocation data")
 
-
 class AnnexIIField(BaseModel):
     """Validation result for a single Annex II field."""
 
@@ -313,7 +288,6 @@ class AnnexIIField(BaseModel):
     is_valid: bool = Field(default=False, description="Whether the field passes validation")
     errors: List[str] = Field(default_factory=list, description="Validation errors")
     warnings: List[str] = Field(default_factory=list, description="Validation warnings")
-
 
 class AnnexIIValidation(BaseModel):
     """Complete Annex II validation result."""
@@ -327,9 +301,8 @@ class AnnexIIValidation(BaseModel):
     failed_fields: int = Field(default=0, description="Number of fields failing validation")
     errors: List[str] = Field(default_factory=list, description="Aggregate validation errors")
     warnings: List[str] = Field(default_factory=list, description="Aggregate validation warnings")
-    validated_at: datetime = Field(default_factory=_utcnow, description="Validation timestamp")
+    validated_at: datetime = Field(default_factory=utcnow, description="Validation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 hash of validation")
-
 
 class DDSDocument(BaseModel):
     """Complete Due Diligence Statement document."""
@@ -363,15 +336,14 @@ class DDSDocument(BaseModel):
     # Evidence and metadata
     evidence: List[DDSEvidence] = Field(default_factory=list, description="Attached evidence")
     version: int = Field(default=1, ge=1, description="DDS version number")
-    created_at: datetime = Field(default_factory=_utcnow, description="Creation timestamp")
-    updated_at: datetime = Field(default_factory=_utcnow, description="Last update timestamp")
+    created_at: datetime = Field(default_factory=utcnow, description="Creation timestamp")
+    updated_at: datetime = Field(default_factory=utcnow, description="Last update timestamp")
     finalized_at: Optional[datetime] = Field(None, description="Finalization timestamp")
     submitted_at: Optional[datetime] = Field(None, description="Submission timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 hash of complete DDS")
 
     # Validation
     annex_ii_validation: Optional[AnnexIIValidation] = Field(None, description="Annex II validation result")
-
 
 class EUISSubmission(BaseModel):
     """Formatted DDS for EU Information System submission."""
@@ -390,11 +362,10 @@ class EUISSubmission(BaseModel):
     risk_conclusion: str = Field(..., description="Risk assessment conclusion")
     mitigation_applied: bool = Field(default=False, description="Whether mitigation was applied")
 
-    declaration_date: datetime = Field(default_factory=_utcnow, description="Declaration date")
+    declaration_date: datetime = Field(default_factory=utcnow, description="Declaration date")
     submission_format: str = Field(default="EU_IS_V1", description="Submission format version")
     xml_payload: Optional[str] = Field(None, description="XML-formatted payload for EU-IS")
     provenance_hash: str = Field(default="", description="SHA-256 hash of submission")
-
 
 class FinalizedDDS(BaseModel):
     """Finalized DDS ready for submission."""
@@ -404,14 +375,12 @@ class FinalizedDDS(BaseModel):
     operator_declaration_hash: str = Field(default="", description="Hash of operator declaration")
     is_complete: bool = Field(default=False, description="Whether all requirements are met")
     submission_ready: bool = Field(default=False, description="Whether ready for EU-IS submission")
-    finalized_at: datetime = Field(default_factory=_utcnow, description="Finalization timestamp")
+    finalized_at: datetime = Field(default_factory=utcnow, description="Finalization timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 hash of finalized DDS")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class DDSAssemblyEngine:
     """
@@ -479,7 +448,7 @@ class DDSAssemblyEngine:
         Raises:
             ValueError: If required data is missing or invalid.
         """
-        start_time = _utcnow()
+        start_time = utcnow()
         logger.info("Assembling DDS from %d suppliers, %d plots, %d products",
                      len(supplier_data), len(geolocation_data), len(commodity_data))
 
@@ -530,7 +499,7 @@ class DDSAssemblyEngine:
             risk_summary=risk_summary,
             mitigation_summary=mitigation,
             created_at=start_time,
-            updated_at=_utcnow(),
+            updated_at=utcnow(),
         )
 
         dds.reference_number = self.compute_dds_reference(dds)
@@ -649,7 +618,7 @@ class DDSAssemblyEngine:
         if "operator" in data:
             dds.operator = OperatorDeclaration(**data["operator"])
 
-        dds.updated_at = _utcnow()
+        dds.updated_at = utcnow()
         dds.provenance_hash = _compute_hash(dds)
         return dds
 
@@ -705,7 +674,7 @@ class DDSAssemblyEngine:
         if "operator" in data:
             dds.operator = OperatorDeclaration(**data["operator"])
 
-        dds.updated_at = _utcnow()
+        dds.updated_at = utcnow()
         dds.provenance_hash = _compute_hash(dds)
         return dds
 
@@ -861,7 +830,7 @@ class DDSAssemblyEngine:
             )
             dds.evidence.append(evidence)
 
-        dds.updated_at = _utcnow()
+        dds.updated_at = utcnow()
         dds.provenance_hash = _compute_hash(dds)
         return dds
 
@@ -899,8 +868,8 @@ class DDSAssemblyEngine:
 
         # Update DDS status
         dds.status = DDSStatus.FINALIZED
-        dds.finalized_at = _utcnow()
-        dds.updated_at = _utcnow()
+        dds.finalized_at = utcnow()
+        dds.updated_at = utcnow()
         dds.provenance_hash = _compute_hash(dds)
 
         operator_hash = _compute_hash(dds.operator)
@@ -994,7 +963,7 @@ class DDSAssemblyEngine:
             suppliers=supplier_formatted,
             risk_conclusion=dds.risk_summary.conclusion.value if dds.risk_summary else "UNKNOWN",
             mitigation_applied=dds.mitigation_summary is not None,
-            declaration_date=dds.finalized_at or _utcnow(),
+            declaration_date=dds.finalized_at or utcnow(),
             xml_payload=xml_payload,
         )
         submission.provenance_hash = _compute_hash(submission)
@@ -1385,7 +1354,6 @@ class DDSAssemblyEngine:
         lines.append('</DueDiligenceStatement>')
 
         return "\n".join(lines)
-
 
 def _xml_escape(text: str) -> str:
     """Escape special characters for XML output."""

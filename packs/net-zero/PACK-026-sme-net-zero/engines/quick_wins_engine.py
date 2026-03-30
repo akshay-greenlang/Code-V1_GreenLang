@@ -54,23 +54,18 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -87,7 +82,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -95,7 +89,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal, denominator: Decimal,
@@ -105,22 +98,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     return float(
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ActionCategory(str, Enum):
     """Category of quick-win action."""
@@ -136,7 +125,6 @@ class ActionCategory(str, Enum):
     DIGITAL = "digital"
     BUILDING_ENVELOPE = "building_envelope"
 
-
 class DifficultyLevel(str, Enum):
     """Implementation difficulty level."""
     VERY_EASY = "very_easy"      # No capital, just policy change
@@ -145,7 +133,6 @@ class DifficultyLevel(str, Enum):
     HARD = "hard"                # Significant capital, medium project
     VERY_HARD = "very_hard"      # Major capital, long project
 
-
 class ScopeImpact(str, Enum):
     """Which emission scope is primarily affected."""
     SCOPE_1 = "scope_1"
@@ -153,13 +140,11 @@ class ScopeImpact(str, Enum):
     SCOPE_3 = "scope_3"
     SCOPE_1_2 = "scope_1_2"
 
-
 class TimelinePhase(str, Enum):
     """Implementation timeline phase."""
     IMMEDIATE = "immediate"       # 0-3 months
     SHORT_TERM = "short_term"     # 3-12 months
     MEDIUM_TERM = "medium_term"   # 1-2 years
-
 
 class SMESectorFilter(str, Enum):
     """Sector filter for quick win applicability."""
@@ -173,11 +158,9 @@ class SMESectorFilter(str, Enum):
     AGRICULTURE = "agriculture"
     HEALTHCARE = "healthcare"
 
-
 # ---------------------------------------------------------------------------
 # Quick Wins Database (50+ actions)
 # ---------------------------------------------------------------------------
-
 
 class QuickWinDefinition:
     """Internal definition of a single quick-win action.
@@ -217,7 +200,6 @@ class QuickWinDefinition:
         self.sectors = sectors
         self.prerequisites = prerequisites
         self.co_benefits = co_benefits
-
 
 # Source: Carbon Trust SME Guide, BEIS Energy Efficiency, IEA SME studies.
 QUICK_WINS_DB: List[QuickWinDefinition] = [
@@ -834,11 +816,9 @@ QUICK_WINS_DB: List[QuickWinDefinition] = [
     ),
 ]
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class QuickWinsInput(BaseModel):
     """Input for quick-wins analysis.
@@ -900,11 +880,9 @@ class QuickWinsInput(BaseModel):
             raise ValueError("SME headcount must be <= 250")
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class QuickWinAction(BaseModel):
     """A single scored quick-win action.
@@ -944,7 +922,6 @@ class QuickWinAction(BaseModel):
     co_benefits: List[str] = Field(default_factory=list)
     prerequisites: List[str] = Field(default_factory=list)
 
-
 class QuickWinsSummary(BaseModel):
     """Aggregate summary of recommended quick wins.
 
@@ -965,7 +942,6 @@ class QuickWinsSummary(BaseModel):
     within_budget: bool = Field(default=True)
     actions_by_timeline: Dict[str, int] = Field(default_factory=dict)
 
-
 class QuickWinsResult(BaseModel):
     """Complete quick-wins analysis result.
 
@@ -983,7 +959,7 @@ class QuickWinsResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     actions: List[QuickWinAction] = Field(default_factory=list)
     summary: QuickWinsSummary = Field(default_factory=QuickWinsSummary)
@@ -992,11 +968,9 @@ class QuickWinsResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class QuickWinsEngine:
     """SME quick-wins recommendation engine.

@@ -34,7 +34,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.data.data_lineage_tracker.config import (
     DataLineageTrackerConfig,
@@ -56,6 +56,7 @@ from greenlang.agents.data.data_lineage_tracker.metrics import (
     set_graph_edge_count,
 )
 from greenlang.agents.data.data_lineage_tracker.provenance import ProvenanceTracker
+from greenlang.schemas import GreenLangBase, utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +70,6 @@ try:
 except ImportError:
     FastAPI = None  # type: ignore[assignment, misc]
     FASTAPI_AVAILABLE = False
-
 
 # ---------------------------------------------------------------------------
 # Optional engine imports (graceful degradation)
@@ -110,13 +110,11 @@ try:
 except ImportError:
     LineageTrackerPipelineEngine = None  # type: ignore[assignment, misc]
 
-
 # ===================================================================
 # Lightweight Pydantic response models used by the facade / API layer
 # ===================================================================
 
-
-class AssetResponse(BaseModel):
+class AssetResponse(GreenLangBase):
     """Data asset registration / retrieval response.
 
     Attributes:
@@ -159,8 +157,7 @@ class AssetResponse(BaseModel):
     )
     provenance_hash: str = Field(default="")
 
-
-class TransformationResponse(BaseModel):
+class TransformationResponse(GreenLangBase):
     """Transformation event capture response.
 
     Attributes:
@@ -201,8 +198,7 @@ class TransformationResponse(BaseModel):
     completed_at: Optional[str] = Field(default=None)
     provenance_hash: str = Field(default="")
 
-
-class EdgeResponse(BaseModel):
+class EdgeResponse(GreenLangBase):
     """Lineage edge creation / retrieval response.
 
     Attributes:
@@ -235,8 +231,7 @@ class EdgeResponse(BaseModel):
     )
     provenance_hash: str = Field(default="")
 
-
-class GraphResponse(BaseModel):
+class GraphResponse(GreenLangBase):
     """Full lineage graph snapshot response.
 
     Attributes:
@@ -271,8 +266,7 @@ class GraphResponse(BaseModel):
     )
     provenance_hash: str = Field(default="")
 
-
-class SubgraphResponse(BaseModel):
+class SubgraphResponse(GreenLangBase):
     """Subgraph extraction result response.
 
     Attributes:
@@ -295,8 +289,7 @@ class SubgraphResponse(BaseModel):
     edges: List[Dict[str, Any]] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
-class ImpactAnalysisResponse(BaseModel):
+class ImpactAnalysisResponse(GreenLangBase):
     """Impact analysis traversal result response.
 
     Attributes:
@@ -333,8 +326,7 @@ class ImpactAnalysisResponse(BaseModel):
     )
     provenance_hash: str = Field(default="")
 
-
-class ValidationResponse(BaseModel):
+class ValidationResponse(GreenLangBase):
     """Lineage graph validation result response.
 
     Attributes:
@@ -371,8 +363,7 @@ class ValidationResponse(BaseModel):
     )
     provenance_hash: str = Field(default="")
 
-
-class ReportResponse(BaseModel):
+class ReportResponse(GreenLangBase):
     """Lineage report generation result response.
 
     Attributes:
@@ -402,8 +393,7 @@ class ReportResponse(BaseModel):
     )
     provenance_hash: str = Field(default="")
 
-
-class PipelineResultResponse(BaseModel):
+class PipelineResultResponse(GreenLangBase):
     """End-to-end lineage pipeline execution result response.
 
     Attributes:
@@ -432,8 +422,7 @@ class PipelineResultResponse(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
-class DataLineageStatisticsResponse(BaseModel):
+class DataLineageStatisticsResponse(GreenLangBase):
     """Aggregate statistics for the data lineage tracker service.
 
     Attributes:
@@ -464,26 +453,17 @@ class DataLineageStatisticsResponse(BaseModel):
     orphan_count: int = Field(default=0)
     assets_by_type: Dict[str, int] = Field(default_factory=dict)
 
-
 # ===================================================================
 # Utility helpers
 # ===================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _utcnow_iso() -> str:
     """Return current UTC datetime as an ISO-8601 string."""
-    return _utcnow().isoformat()
-
+    return utcnow().isoformat()
 
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -501,7 +481,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ===================================================================
 # DataLineageTrackerService facade
 # ===================================================================
@@ -509,7 +488,6 @@ def _compute_hash(data: Any) -> str:
 # Thread-safe singleton lock
 _singleton_lock = threading.Lock()
 _singleton_instance: Optional["DataLineageTrackerService"] = None
-
 
 class DataLineageTrackerService:
     """Unified facade over the Data Lineage Tracker Agent SDK.
@@ -2554,11 +2532,9 @@ class DataLineageTrackerService:
             ]
         return result
 
-
 # ===================================================================
 # Thread-safe singleton access
 # ===================================================================
-
 
 def _get_singleton() -> DataLineageTrackerService:
     """Get or create the singleton DataLineageTrackerService instance.
@@ -2573,11 +2549,9 @@ def _get_singleton() -> DataLineageTrackerService:
                 _singleton_instance = DataLineageTrackerService()
     return _singleton_instance
 
-
 # ===================================================================
 # FastAPI integration
 # ===================================================================
-
 
 async def configure_data_lineage_tracker(
     app: Any,
@@ -2622,7 +2596,6 @@ async def configure_data_lineage_tracker(
     logger.info("Data lineage tracker service configured on app")
     return service
 
-
 def get_data_lineage_tracker() -> DataLineageTrackerService:
     """Get the singleton DataLineageTrackerService instance.
 
@@ -2638,7 +2611,6 @@ def get_data_lineage_tracker() -> DataLineageTrackerService:
             if _singleton_instance is None:
                 _singleton_instance = DataLineageTrackerService()
     return _singleton_instance
-
 
 def get_router(service: Optional[DataLineageTrackerService] = None) -> Any:
     """Get the data lineage tracker API router.
@@ -3017,7 +2989,6 @@ def get_router(service: Optional[DataLineageTrackerService] = None) -> Any:
         return _svc().get_statistics()
 
     return router
-
 
 # ===================================================================
 # Public API

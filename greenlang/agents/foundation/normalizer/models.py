@@ -25,7 +25,8 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase
 
 
 # =============================================================================
@@ -79,7 +80,7 @@ class ConfidenceLevel(str, Enum):
 # =============================================================================
 
 
-class ConversionResult(BaseModel):
+class ConversionResult(GreenLangBase):
     """Result of a single unit conversion operation.
 
     Attributes:
@@ -106,7 +107,7 @@ class ConversionResult(BaseModel):
     model_config = {"arbitrary_types_allowed": True}
 
 
-class BatchConversionResult(BaseModel):
+class BatchConversionResult(GreenLangBase):
     """Result of a batch conversion operation.
 
     Attributes:
@@ -130,7 +131,7 @@ class BatchConversionResult(BaseModel):
 # =============================================================================
 
 
-class EntityMatch(BaseModel):
+class EntityMatch(GreenLangBase):
     """Result of resolving a single entity (fuel, material, process).
 
     Attributes:
@@ -155,7 +156,7 @@ class EntityMatch(BaseModel):
     match_method: str = Field(..., description="Match method used")
 
 
-class EntityResolutionResult(BaseModel):
+class EntityResolutionResult(GreenLangBase):
     """Result of batch entity resolution.
 
     Attributes:
@@ -175,7 +176,7 @@ class EntityResolutionResult(BaseModel):
 # =============================================================================
 
 
-class DimensionInfo(BaseModel):
+class DimensionInfo(GreenLangBase):
     """Information about a physical dimension.
 
     Attributes:
@@ -190,7 +191,7 @@ class DimensionInfo(BaseModel):
     )
 
 
-class UnitInfo(BaseModel):
+class UnitInfo(GreenLangBase):
     """Information about a specific unit.
 
     Attributes:
@@ -205,7 +206,7 @@ class UnitInfo(BaseModel):
     base_unit: str = Field(..., description="Base unit for dimension")
 
 
-class GWPInfo(BaseModel):
+class GWPInfo(GreenLangBase):
     """GWP information for a greenhouse gas.
 
     Attributes:
@@ -229,7 +230,7 @@ class GWPInfo(BaseModel):
 # =============================================================================
 
 
-class ConversionProvenance(BaseModel):
+class ConversionProvenance(GreenLangBase):
     """Provenance record for a conversion or resolution operation.
 
     Attributes:

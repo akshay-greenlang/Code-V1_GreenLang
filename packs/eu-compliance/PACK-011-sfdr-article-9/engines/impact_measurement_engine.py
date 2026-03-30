@@ -58,25 +58,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -96,7 +90,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _safe_pct(numerator: float, denominator: float) -> float:
     """Calculate percentage safely, returning 0.0 on zero denominator.
 
@@ -111,11 +104,9 @@ def _safe_pct(numerator: float, denominator: float) -> float:
         return 0.0
     return (numerator / denominator) * 100.0
 
-
 def _round_val(value: float, places: int = 4) -> float:
     """Round a float to specified decimal places."""
     return round(value, places)
-
 
 def _safe_divide(
     numerator: float, denominator: float, default: float = 0.0,
@@ -124,7 +115,6 @@ def _safe_divide(
     if denominator == 0.0:
         return default
     return numerator / denominator
-
 
 def _yoy_change(current: float, prior: float) -> float:
     """Calculate year-on-year percentage change.
@@ -140,18 +130,15 @@ def _yoy_change(current: float, prior: float) -> float:
         return 0.0
     return ((current - prior) / abs(prior)) * 100.0
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ImpactCategory(str, Enum):
     """Impact KPI category classification."""
     ENVIRONMENTAL = "environmental"
     SOCIAL = "social"
     GOVERNANCE = "governance"
-
 
 class SDGGoal(str, Enum):
     """UN Sustainable Development Goals (1-17)."""
@@ -173,7 +160,6 @@ class SDGGoal(str, Enum):
     SDG_16 = "sdg_16_peace_justice"
     SDG_17 = "sdg_17_partnerships"
 
-
 class ToCStage(str, Enum):
     """Theory of Change stages."""
     INPUT = "input"
@@ -181,7 +167,6 @@ class ToCStage(str, Enum):
     OUTPUT = "output"
     OUTCOME = "outcome"
     IMPACT = "impact"
-
 
 # ---------------------------------------------------------------------------
 # KPI Definition Registry
@@ -388,11 +373,9 @@ ALL_KPI_DEFINITIONS: Dict[str, Dict[str, Any]] = {
     **_SOCIAL_KPI_DEFINITIONS,
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Data Models
 # ---------------------------------------------------------------------------
-
 
 class KPIDefinition(BaseModel):
     """Definition of a single impact KPI.
@@ -411,7 +394,6 @@ class KPIDefinition(BaseModel):
         default=True,
         description="Whether higher values indicate positive impact",
     )
-
 
 class ImpactKPI(BaseModel):
     """A single impact KPI measurement for a holding or portfolio.
@@ -469,7 +451,6 @@ class ImpactKPI(BaseModel):
             self.attributed_value = self.value * self.attribution_factor
         return self
 
-
 class KPIUpdate(BaseModel):
     """Update payload for a KPI measurement.
 
@@ -485,9 +466,8 @@ class KPIUpdate(BaseModel):
         default="manual_update", description="Update source",
     )
     effective_date: datetime = Field(
-        default_factory=_utcnow, description="Effective date of update",
+        default_factory=utcnow, description="Effective date of update",
     )
-
 
 class SDGContribution(BaseModel):
     """Contribution assessment for a single SDG goal.
@@ -521,7 +501,6 @@ class SDGContribution(BaseModel):
     provenance_hash: str = Field(
         default="", description="SHA-256 provenance hash",
     )
-
 
 class TheoryOfChange(BaseModel):
     """Theory of Change model for the portfolio's impact thesis.
@@ -569,12 +548,11 @@ class TheoryOfChange(BaseModel):
         description="ToC completeness score (0-100)",
     )
     last_reviewed: datetime = Field(
-        default_factory=_utcnow, description="Last review date",
+        default_factory=utcnow, description="Last review date",
     )
     provenance_hash: str = Field(
         default="", description="SHA-256 provenance hash",
     )
-
 
 class AdditionalityResult(BaseModel):
     """Result of investment additionality assessment.
@@ -617,12 +595,11 @@ class AdditionalityResult(BaseModel):
         description="Evidence supporting additionality claim",
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow, description="Assessment timestamp",
+        default_factory=utcnow, description="Assessment timestamp",
     )
     provenance_hash: str = Field(
         default="", description="SHA-256 provenance hash",
     )
-
 
 class PeriodComparison(BaseModel):
     """Year-on-year comparison for a specific KPI.
@@ -664,7 +641,6 @@ class PeriodComparison(BaseModel):
         default="", description="SHA-256 provenance hash",
     )
 
-
 class ImpactResult(BaseModel):
     """Complete result of the impact measurement assessment.
 
@@ -678,7 +654,7 @@ class ImpactResult(BaseModel):
         default="", description="Financial product name",
     )
     reporting_date: datetime = Field(
-        default_factory=_utcnow, description="Reporting date",
+        default_factory=utcnow, description="Reporting date",
     )
 
     # Aggregated KPIs
@@ -760,17 +736,15 @@ class ImpactResult(BaseModel):
         default=_MODULE_VERSION, description="Engine version",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp",
+        default_factory=utcnow, description="Calculation timestamp",
     )
     provenance_hash: str = Field(
         default="", description="SHA-256 provenance hash",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine Configuration
 # ---------------------------------------------------------------------------
-
 
 class ImpactConfig(BaseModel):
     """Configuration for the ImpactMeasurementEngine.
@@ -828,7 +802,6 @@ class ImpactConfig(BaseModel):
         default="2024", description="Prior reporting period label",
     )
 
-
 # ---------------------------------------------------------------------------
 # SDG Names
 # ---------------------------------------------------------------------------
@@ -857,7 +830,6 @@ _SDG_NUMBERS: Dict[SDGGoal, int] = {
     sdg: i + 1 for i, sdg in enumerate(SDGGoal)
 }
 
-
 # ---------------------------------------------------------------------------
 # model_rebuild for forward reference resolution
 # ---------------------------------------------------------------------------
@@ -872,11 +844,9 @@ AdditionalityResult.model_rebuild()
 PeriodComparison.model_rebuild()
 ImpactResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # ImpactMeasurementEngine
 # ---------------------------------------------------------------------------
-
 
 class ImpactMeasurementEngine:
     """
@@ -964,7 +934,7 @@ class ImpactMeasurementEngine:
         Raises:
             ValueError: If KPI list is empty.
         """
-        start = _utcnow()
+        start = utcnow()
 
         if not kpis:
             raise ValueError("KPI list cannot be empty")
@@ -1035,7 +1005,7 @@ class ImpactMeasurementEngine:
         # Step 9: Unique holding count
         holding_ids = set(k.holding_id for k in kpis if k.holding_id)
 
-        processing_ms = (_utcnow() - start).total_seconds() * 1000.0
+        processing_ms = (utcnow() - start).total_seconds() * 1000.0
 
         result = ImpactResult(
             product_name=self.config.product_name,

@@ -54,7 +54,8 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase, utcnow
 
 # Layer 1 imports
 from greenlang.agents.data.erp_connector_agent import (
@@ -72,21 +73,13 @@ __all__ = [
     "Scope3Mapper",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ---------------------------------------------------------------------------
 # Scope3Mapper
 # ---------------------------------------------------------------------------
-
 
 class Scope3Mapper:
     """GHG Protocol Scope 3 classification engine.
@@ -435,7 +428,7 @@ class Scope3Mapper:
                     self._material_mappings,
                 ),
                 "errors": self._stats["errors"],
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }
 
     # ------------------------------------------------------------------

@@ -19,17 +19,15 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 class BoundaryEntity(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -91,7 +89,6 @@ class BoundaryReportOutput(BaseModel):
     lock_status: str = Field("")
     provenance_hash: str = Field("")
 
-
 class BoundaryDefinitionReport:
     """Organisational boundary documentation template."""
 
@@ -102,7 +99,7 @@ class BoundaryDefinitionReport:
 
     def render(self, data: Dict[str, Any]) -> BoundaryReportOutput:
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         inp = BoundaryReportInput(**data) if isinstance(data, dict) else data
 
         entities = [BoundaryEntity(**e) if isinstance(e, dict) else e for e in inp.entities]
@@ -191,6 +188,5 @@ class BoundaryDefinitionReport:
         for e in r.entity_hierarchy:
             lines.append(f"{e.entity_name},{e.entity_type},{e.ownership_pct},{e.reporting_pct},{e.is_included},{e.materiality}")
         return "\n".join(lines)
-
 
 __all__ = ["BoundaryDefinitionReport", "BoundaryReportInput", "BoundaryReportOutput"]

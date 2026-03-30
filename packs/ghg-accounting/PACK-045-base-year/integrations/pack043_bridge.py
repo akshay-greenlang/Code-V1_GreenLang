@@ -22,19 +22,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 class Pack043Config(BaseModel):
     """Configuration for PACK-043 bridge."""
@@ -43,7 +39,6 @@ class Pack043Config(BaseModel):
     include_lca_data: bool = Field(True)
     include_supplier_data: bool = Field(True)
     sbti_alignment: bool = Field(True)
-
 
 class Scope3FullResult(BaseModel):
     """Full result for a Scope 3 category from PACK-043."""
@@ -57,7 +52,6 @@ class Scope3FullResult(BaseModel):
     supplier_count: int = 0
     lca_coverage_pct: float = 0.0
     sbti_flag_3_category: bool = False
-
 
 class Scope3CompleteImportResult(BaseModel):
     """Result of importing full Scope 3 data from PACK-043."""
@@ -73,7 +67,6 @@ class Scope3CompleteImportResult(BaseModel):
     provenance_hash: str = ""
     warnings: List[str] = Field(default_factory=list)
     duration_ms: float = 0.0
-
 
 class Pack043Bridge:
     """
@@ -114,7 +107,7 @@ class Pack043Bridge:
             duration = (time.monotonic() - start_time) * 1000
             return Scope3CompleteImportResult(
                 success=True,
-                imported_at=_utcnow().isoformat(),
+                imported_at=utcnow().isoformat(),
                 base_year=base_year,
                 total_scope3_tco2e=total,
                 upstream_total_tco2e=upstream,
@@ -131,7 +124,7 @@ class Pack043Bridge:
             logger.error("PACK-043 import failed: %s", e, exc_info=True)
             return Scope3CompleteImportResult(
                 success=False,
-                imported_at=_utcnow().isoformat(),
+                imported_at=utcnow().isoformat(),
                 base_year=base_year,
                 warnings=[f"Import failed: {str(e)}"],
                 duration_ms=duration,

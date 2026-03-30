@@ -56,26 +56,19 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -88,7 +81,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _safe_divide(
     numerator: float, denominator: float, default: float = 0.0,
 ) -> float:
@@ -97,35 +89,29 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(numerator: float, denominator: float) -> float:
     """Calculate percentage safely."""
     if denominator == 0.0:
         return 0.0
     return (numerator / denominator) * 100.0
 
-
 def _clamp(value: float, low: float = 0.0, high: float = 100.0) -> float:
     """Clamp a value to [low, high] range."""
     return max(low, min(high, value))
-
 
 def _round_val(value: float, places: int = 4) -> float:
     """Round a float to specified decimal places."""
     return round(value, places)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SBTiMethod(str, Enum):
     """SBTi methods for financial institutions."""
     SDA = "sectoral_decarbonization_approach"
     PORTFOLIO_COVERAGE = "portfolio_coverage"
     TEMPERATURE_RATING = "temperature_rating"
-
 
 class AllianceType(str, Enum):
     """Net-zero alliance membership type."""
@@ -134,7 +120,6 @@ class AllianceType(str, Enum):
     NZAMI = "nzami"     # Net Zero Asset Managers Initiative
     NZIA = "nzia"       # Net Zero Insurance Alliance
     NONE = "none"
-
 
 class SectorCategory(str, Enum):
     """Sector categories for transition targets."""
@@ -150,7 +135,6 @@ class SectorCategory(str, Enum):
     COAL = "coal"
     OTHER = "other"
 
-
 class PhaseOutStatus(str, Enum):
     """Phase-out commitment status."""
     COMMITTED = "committed"
@@ -159,14 +143,12 @@ class PhaseOutStatus(str, Enum):
     NOT_COMMITTED = "not_committed"
     COMPLETED = "completed"
 
-
 class CredibilityLevel(str, Enum):
     """Credibility assessment level."""
     HIGH = "high"             # 75-100
     MODERATE = "moderate"     # 50-74
     LOW = "low"               # 25-49
     INSUFFICIENT = "insufficient"  # 0-24
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -272,11 +254,9 @@ CREDIBILITY_WEIGHTS: Dict[str, float] = {
     "disclosure_transparency": 0.05,
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class SectorTargetData(BaseModel):
     """Sector-level decarbonization target data.
@@ -319,7 +299,6 @@ class SectorTargetData(BaseModel):
     methodology: str = Field(
         default="SDA", description="Target-setting methodology",
     )
-
 
 class SBTiFIAssessment(BaseModel):
     """SBTi for Financial Institutions assessment result."""
@@ -380,7 +359,6 @@ class SBTiFIAssessment(BaseModel):
         default="", description="SHA-256 provenance hash",
     )
 
-
 class NZBACommitment(BaseModel):
     """Net Zero Banking Alliance commitment tracking."""
     commitment_id: str = Field(
@@ -435,7 +413,6 @@ class NZBACommitment(BaseModel):
         default="", description="SHA-256 provenance hash",
     )
 
-
 class SectorDecarbPath(BaseModel):
     """Sector-level decarbonization pathway assessment."""
     path_id: str = Field(
@@ -475,7 +452,6 @@ class SectorDecarbPath(BaseModel):
         default="", description="SHA-256 provenance hash",
     )
 
-
 class PhaseOutCommitment(BaseModel):
     """Fossil fuel phase-out commitment assessment."""
     commitment_id: str = Field(
@@ -510,7 +486,6 @@ class PhaseOutCommitment(BaseModel):
         default="", description="SHA-256 provenance hash",
     )
 
-
 class CredibilityScore(BaseModel):
     """Overall transition plan credibility assessment."""
     score_id: str = Field(
@@ -538,7 +513,6 @@ class CredibilityScore(BaseModel):
         default="", description="SHA-256 provenance hash",
     )
 
-
 class TransitionPlanResult(BaseModel):
     """Complete transition plan assessment result."""
     result_id: str = Field(
@@ -548,7 +522,7 @@ class TransitionPlanResult(BaseModel):
         default="", description="Institution name",
     )
     reporting_date: datetime = Field(
-        default_factory=_utcnow, description="Reporting date",
+        default_factory=utcnow, description="Reporting date",
     )
 
     # SBTi-FI assessment
@@ -617,17 +591,15 @@ class TransitionPlanResult(BaseModel):
         default=_MODULE_VERSION, description="Engine version",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp",
+        default_factory=utcnow, description="Calculation timestamp",
     )
     provenance_hash: str = Field(
         default="", description="SHA-256 provenance hash",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine Configuration
 # ---------------------------------------------------------------------------
-
 
 class TransitionPlanConfig(BaseModel):
     """Configuration for the FSTransitionPlanEngine.
@@ -683,7 +655,6 @@ class TransitionPlanConfig(BaseModel):
         description="Credibility scoring weights",
     )
 
-
 # ---------------------------------------------------------------------------
 # model_rebuild for forward reference resolution
 # ---------------------------------------------------------------------------
@@ -697,11 +668,9 @@ PhaseOutCommitment.model_rebuild()
 CredibilityScore.model_rebuild()
 TransitionPlanResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # FSTransitionPlanEngine
 # ---------------------------------------------------------------------------
-
 
 class FSTransitionPlanEngine:
     """
@@ -767,9 +736,10 @@ class FSTransitionPlanEngine:
             Complete TransitionPlanResult.
         """
         import time
+
         start = time.perf_counter()
 
-        r_date = reporting_date or _utcnow()
+        r_date = reporting_date or utcnow()
         phase_out_data = phase_out_data or []
         engagement_data = engagement_data or {}
         capex_data = capex_data or {}

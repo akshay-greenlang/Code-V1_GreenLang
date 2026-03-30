@@ -61,25 +61,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -99,7 +93,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _safe_divide(
     numerator: float, denominator: float, default: float = 0.0
 ) -> float:
@@ -108,13 +101,11 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.01"), rounding=ROUND_HALF_UP
     ))
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
@@ -122,11 +113,9 @@ def _round3(value: float) -> float:
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class BatteryCategory(str, Enum):
     """Battery category per EU Battery Regulation classification.
@@ -138,7 +127,6 @@ class BatteryCategory(str, Enum):
     SLI = "sli"
     EV = "ev"
     INDUSTRIAL = "industrial"
-
 
 class ConformityModule(str, Enum):
     """Conformity assessment module per Decision 768/2008/EC.
@@ -156,7 +144,6 @@ class ConformityModule(str, Enum):
     MODULE_G = "module_g"
     MODULE_H = "module_h"
 
-
 class DocumentationType(str, Enum):
     """Type of documentation required for conformity assessment.
 
@@ -169,7 +156,6 @@ class DocumentationType(str, Enum):
     QUALITY_SYSTEM = "quality_system"
     DESIGN_EXAMINATION = "design_examination"
 
-
 class ConformityStatus(str, Enum):
     """Overall conformity assessment readiness status.
 
@@ -181,11 +167,9 @@ class ConformityStatus(str, Enum):
     NOT_READY = "not_ready"
     IN_PROGRESS = "in_progress"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # Module descriptions with regulatory references.
 MODULE_DESCRIPTIONS: Dict[str, str] = {
@@ -419,11 +403,9 @@ TEST_REQUIREMENTS: Dict[str, List[Dict[str, str]]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class DocumentationItem(BaseModel):
     """A single documentation item in the conformity checklist.
@@ -457,7 +439,6 @@ class DocumentationItem(BaseModel):
         max_length=2000,
     )
 
-
 class TestResult(BaseModel):
     """Result of a specific test in the conformity assessment.
 
@@ -488,7 +469,6 @@ class TestResult(BaseModel):
         default="",
         description="Reference to the test report document",
     )
-
 
 class ConformityInput(BaseModel):
     """Input data for a conformity assessment evaluation.
@@ -553,7 +533,6 @@ class ConformityInput(BaseModel):
         description="Quality system standard (e.g., ISO 9001)",
     )
 
-
 class ConformityResult(BaseModel):
     """Result of a conformity assessment readiness evaluation.
 
@@ -570,7 +549,7 @@ class ConformityResult(BaseModel):
         description="Engine version used for this assessment",
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of assessment (UTC)",
     )
     battery_id: str = Field(
@@ -662,11 +641,9 @@ class ConformityResult(BaseModel):
         description="SHA-256 hash of the entire result",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ConformityAssessmentEngine:
     """Conformity assessment readiness engine per Art 17-22.

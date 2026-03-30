@@ -31,6 +31,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.blockchain_integration.api.dependencies import (
     AuthUser,
@@ -74,22 +75,14 @@ _FORMAT_CONTENT_TYPES: Dict[str, str] = {
 # EUDR Article 14 retention period (5 years)
 _RETENTION_YEARS: int = 5
 
-
 def _get_evidence_store() -> Dict[str, Dict]:
     """Return the evidence package store singleton."""
     return _evidence_store
-
 
 def _compute_provenance_hash(data: dict) -> str:
     """Compute SHA-256 hash for provenance tracking."""
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_package_hash(
     record_ids: List[str],
@@ -115,7 +108,6 @@ def _compute_package_hash(
     }, sort_keys=True)
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
 
-
 def _compute_package_signature(
     package_hash: str,
     user_id: str,
@@ -135,11 +127,9 @@ def _compute_package_signature(
     sig_data = f"{package_hash}:{user_id}:EUDR_2023_1115"
     return hashlib.sha256(sig_data.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # POST /evidence/package
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/evidence/package",
@@ -183,7 +173,7 @@ async def create_evidence_package(
     start = time.monotonic()
     try:
         package_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         # Compute package hash (deterministic, zero hallucination)
         package_hash = _compute_package_hash(
@@ -278,11 +268,9 @@ async def create_evidence_package(
             detail="Failed to create evidence package",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /evidence/{package_id}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/evidence/{package_id}",
@@ -345,11 +333,9 @@ async def get_evidence_package(
             detail="Failed to retrieve evidence package",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /evidence/{package_id}/download
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/evidence/{package_id}/download",
@@ -452,11 +438,9 @@ async def download_evidence_package(
             detail="Failed to generate download URL",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /evidence/verify
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/evidence/verify",
@@ -501,7 +485,7 @@ async def verify_evidence_package(
     start = time.monotonic()
     try:
         store = _get_evidence_store()
-        now = _utcnow()
+        now = utcnow()
 
         # Find the package if package_id is provided
         found_package = None
@@ -592,7 +576,6 @@ async def verify_evidence_package(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to verify evidence package",
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

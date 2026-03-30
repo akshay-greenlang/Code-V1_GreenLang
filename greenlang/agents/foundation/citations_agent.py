@@ -34,11 +34,12 @@ from datetime import datetime, date
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Union
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism.clock import DeterministicClock
 from greenlang.utilities.determinism.uuid import deterministic_uuid
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -125,7 +126,7 @@ class EvidenceType(str, Enum):
 # Pydantic Models
 # =============================================================================
 
-class CitationMetadata(BaseModel):
+class CitationMetadata(GreenLangBase):
     """Metadata for a citation."""
 
     title: str = Field(..., description="Title of the cited work")
@@ -155,7 +156,7 @@ class CitationMetadata(BaseModel):
         return v
 
 
-class Citation(BaseModel):
+class Citation(GreenLangBase):
     """
     Complete citation record for zero-hallucination compliance.
 
@@ -350,7 +351,7 @@ class Citation(BaseModel):
         return bibtex_id or self.citation_id[:8]
 
 
-class EvidenceItem(BaseModel):
+class EvidenceItem(GreenLangBase):
     """A single piece of evidence in an evidence package."""
 
     evidence_id: str = Field(
@@ -410,7 +411,7 @@ class EvidenceItem(BaseModel):
         return hashlib.sha256(content_str.encode()).hexdigest()
 
 
-class EvidencePackage(BaseModel):
+class EvidencePackage(GreenLangBase):
     """
     Complete evidence package for audit-ready documentation.
 
@@ -521,7 +522,7 @@ class EvidencePackage(BaseModel):
         return self.model_dump_json(indent=indent)
 
 
-class MethodologyReference(BaseModel):
+class MethodologyReference(GreenLangBase):
     """Reference to a calculation methodology."""
 
     reference_id: str = Field(
@@ -571,7 +572,7 @@ class MethodologyReference(BaseModel):
     )
 
 
-class RegulatoryRequirement(BaseModel):
+class RegulatoryRequirement(GreenLangBase):
     """A regulatory requirement for compliance tracking."""
 
     requirement_id: str = Field(
@@ -623,7 +624,7 @@ class RegulatoryRequirement(BaseModel):
     )
 
 
-class DataSourceAttribution(BaseModel):
+class DataSourceAttribution(GreenLangBase):
     """Attribution for a data source."""
 
     attribution_id: str = Field(
@@ -678,7 +679,7 @@ class DataSourceAttribution(BaseModel):
 # Agent Input/Output Models
 # =============================================================================
 
-class CitationsAgentInput(BaseModel):
+class CitationsAgentInput(GreenLangBase):
     """Input for Citations & Evidence Agent."""
 
     action: str = Field(
@@ -766,7 +767,7 @@ class CitationsAgentInput(BaseModel):
         return v
 
 
-class CitationsAgentOutput(BaseModel):
+class CitationsAgentOutput(GreenLangBase):
     """Output from Citations & Evidence Agent."""
 
     success: bool = Field(

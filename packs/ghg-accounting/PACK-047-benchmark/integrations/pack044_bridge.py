@@ -39,25 +39,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -70,11 +64,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class PeriodStatus(str, Enum):
     """Inventory period status."""
@@ -85,7 +77,6 @@ class PeriodStatus(str, Enum):
     APPROVED = "approved"
     FINALIZED = "finalized"
 
-
 class CollectionStatusEnum(str, Enum):
     """Data collection workflow status."""
 
@@ -95,11 +86,9 @@ class CollectionStatusEnum(str, Enum):
     VALIDATED = "validated"
     REJECTED = "rejected"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class Pack044Config(BaseModel):
     """Configuration for PACK-044 bridge."""
@@ -109,7 +98,6 @@ class Pack044Config(BaseModel):
     )
     timeout_s: float = Field(60.0, ge=5.0)
     cache_ttl_s: float = Field(1800.0)
-
 
 class InventoryPeriod(BaseModel):
     """Inventory period definition from PACK-044."""
@@ -126,7 +114,6 @@ class InventoryPeriod(BaseModel):
     created_at: str = ""
     updated_at: str = ""
 
-
 class CollectionStatus(BaseModel):
     """Data collection status for a period."""
 
@@ -139,7 +126,6 @@ class CollectionStatus(BaseModel):
     scope_status: Dict[str, str] = Field(default_factory=dict)
     last_updated: str = ""
 
-
 class OrganisationalBoundary(BaseModel):
     """Organisational boundary definition."""
 
@@ -149,7 +135,6 @@ class OrganisationalBoundary(BaseModel):
     consolidation_adjustments: Dict[str, float] = Field(default_factory=dict)
     provenance_hash: str = ""
 
-
 class InventoryRequest(BaseModel):
     """Request for inventory data from PACK-044."""
 
@@ -157,7 +142,6 @@ class InventoryRequest(BaseModel):
     include_versions: bool = Field(False)
     include_collection_status: bool = Field(True)
     include_boundary: bool = Field(True)
-
 
 class InventoryResponse(BaseModel):
     """Response with inventory data from PACK-044."""
@@ -173,11 +157,9 @@ class InventoryResponse(BaseModel):
     duration_ms: float = 0.0
     warnings: List[str] = Field(default_factory=list)
 
-
 # ---------------------------------------------------------------------------
 # Bridge Implementation
 # ---------------------------------------------------------------------------
-
 
 class Pack044Bridge:
     """
@@ -238,7 +220,7 @@ class Pack044Bridge:
                 collection_status=collection,
                 boundary=boundary,
                 provenance_hash=provenance,
-                retrieved_at=_utcnow().isoformat(),
+                retrieved_at=utcnow().isoformat(),
                 duration_ms=duration,
             )
 
@@ -249,7 +231,7 @@ class Pack044Bridge:
                 success=False,
                 period=period,
                 warnings=[f"Retrieval failed: {str(e)}"],
-                retrieved_at=_utcnow().isoformat(),
+                retrieved_at=utcnow().isoformat(),
                 duration_ms=duration,
             )
 
@@ -310,7 +292,7 @@ class Pack044Bridge:
         logger.debug("Fetching collection status for %s", period)
         return CollectionStatus(
             period_id=f"inv-{period}",
-            last_updated=_utcnow().isoformat(),
+            last_updated=utcnow().isoformat(),
         )
 
     async def _fetch_boundary(self, period: str) -> OrganisationalBoundary:

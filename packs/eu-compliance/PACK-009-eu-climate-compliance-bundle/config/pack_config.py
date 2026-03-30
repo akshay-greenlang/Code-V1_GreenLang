@@ -53,6 +53,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import yaml
 from pydantic import BaseModel, Field, field_validator, model_validator
+from greenlang.schemas.enums import NotificationChannel
 
 logger = logging.getLogger(__name__)
 
@@ -155,16 +156,6 @@ class ScoringMethod(str, Enum):
     MINIMUM_SCORE = "MINIMUM_SCORE"  # Overall score = lowest regulation score
     GEOMETRIC_MEAN = "GEOMETRIC_MEAN"  # Geometric mean of all regulation scores
     HARMONIC_MEAN = "HARMONIC_MEAN"  # Harmonic mean (penalizes low outliers)
-
-
-class NotificationChannel(str, Enum):
-    """Notification channels for calendar and alert dispatch."""
-
-    EMAIL = "EMAIL"
-    SLACK = "SLACK"
-    TEAMS = "TEAMS"
-    WEBHOOK = "WEBHOOK"
-    IN_APP = "IN_APP"
 
 
 class ReconciliationAction(str, Enum):

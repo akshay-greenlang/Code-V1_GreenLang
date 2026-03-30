@@ -67,25 +67,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -103,7 +97,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -112,7 +105,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -124,22 +116,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class AcquisitionMode(str, Enum):
     """Data acquisition mode.
@@ -153,7 +141,6 @@ class AcquisitionMode(str, Enum):
     PUSH = "push"
     BATCH = "batch"
     MANUAL = "manual"
-
 
 class DataStatus(str, Enum):
     """Status of an acquired data reading.
@@ -169,7 +156,6 @@ class DataStatus(str, Enum):
     CORRECTED = "corrected"
     ESTIMATED = "estimated"
     REJECTED = "rejected"
-
 
 class IntervalLength(str, Enum):
     """Standard metering interval length.
@@ -190,7 +176,6 @@ class IntervalLength(str, Enum):
     DAILY = "daily"
     MONTHLY = "monthly"
 
-
 class NormalizationMethod(str, Enum):
     """Method for normalizing intervals to standard boundaries.
 
@@ -204,7 +189,6 @@ class NormalizationMethod(str, Enum):
     AVERAGING = "averaging"
     PRORATING = "prorating"
 
-
 class BufferStatus(str, Enum):
     """Status of the data acquisition buffer.
 
@@ -217,7 +201,6 @@ class BufferStatus(str, Enum):
     PARTIAL = "partial"
     FULL = "full"
     OVERFLOW = "overflow"
-
 
 class UnitCategory(str, Enum):
     """Category of engineering unit for conversion.
@@ -235,7 +218,6 @@ class UnitCategory(str, Enum):
     TEMPERATURE = "temperature"
     PRESSURE = "pressure"
     FLOW = "flow"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -294,11 +276,9 @@ MAX_REGISTER_VALUE: Decimal = Decimal("999999999")
 # Minimum gap threshold (seconds) before flagging as gap.
 MIN_GAP_THRESHOLD_FACTOR: Decimal = Decimal("1.5")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class RawReading(BaseModel):
     """A single raw reading from a meter or data source.
@@ -319,7 +299,7 @@ class RawReading(BaseModel):
     meter_id: str = Field(default="", description="Meter ID")
     channel_id: str = Field(default="", description="Channel ID")
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Reading timestamp"
+        default_factory=utcnow, description="Reading timestamp"
     )
     value: Decimal = Field(default=Decimal("0"), description="Raw value")
     unit: str = Field(default="kWh", max_length=32, description="Unit")
@@ -329,7 +309,6 @@ class RawReading(BaseModel):
     status: DataStatus = Field(default=DataStatus.RAW, description="Status")
     quality_code: int = Field(default=0, ge=0, description="Quality code")
     source: str = Field(default="", max_length=200, description="Source")
-
 
 class NormalizedReading(BaseModel):
     """A normalized reading aligned to standard interval boundaries.
@@ -351,8 +330,8 @@ class NormalizedReading(BaseModel):
     reading_id: str = Field(default_factory=_new_uuid)
     meter_id: str = Field(default="")
     channel_id: str = Field(default="")
-    interval_start: datetime = Field(default_factory=_utcnow)
-    interval_end: datetime = Field(default_factory=_utcnow)
+    interval_start: datetime = Field(default_factory=utcnow)
+    interval_end: datetime = Field(default_factory=utcnow)
     value: Decimal = Field(default=Decimal("0"))
     unit: str = Field(default="kWh", max_length=32)
     status: DataStatus = Field(default=DataStatus.VALIDATED)
@@ -362,7 +341,6 @@ class NormalizedReading(BaseModel):
     source_reading_count: int = Field(default=0, ge=0)
     confidence_pct: Decimal = Field(default=Decimal("100"))
     provenance_hash: str = Field(default="")
-
 
 class AcquisitionSchedule(BaseModel):
     """Polling schedule configuration for a meter.
@@ -394,7 +372,6 @@ class AcquisitionSchedule(BaseModel):
     next_poll: Optional[datetime] = Field(default=None)
     consecutive_fails: int = Field(default=0, ge=0)
 
-
 class AcquisitionConfig(BaseModel):
     """Configuration for the data acquisition engine.
 
@@ -423,7 +400,6 @@ class AcquisitionConfig(BaseModel):
     target_unit_energy: str = Field(default="kwh", max_length=32)
     target_unit_power: str = Field(default="kw", max_length=32)
 
-
 class AcquisitionResult(BaseModel):
     """Result of a data acquisition cycle.
 
@@ -449,8 +425,8 @@ class AcquisitionResult(BaseModel):
         provenance_hash:       SHA-256 audit hash.
     """
     result_id: str = Field(default_factory=_new_uuid)
-    acquisition_start: datetime = Field(default_factory=_utcnow)
-    acquisition_end: datetime = Field(default_factory=_utcnow)
+    acquisition_start: datetime = Field(default_factory=utcnow)
+    acquisition_end: datetime = Field(default_factory=utcnow)
     raw_readings_count: int = Field(default=0, ge=0)
     normalized_count: int = Field(default=0, ge=0)
     rejected_count: int = Field(default=0, ge=0)
@@ -465,14 +441,12 @@ class AcquisitionResult(BaseModel):
     meter_status: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
     warnings: List[str] = Field(default_factory=list)
     processing_time_ms: Decimal = Field(default=Decimal("0"))
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class DataAcquisitionEngine:
     """Multi-source data collection engine with protocol abstraction.

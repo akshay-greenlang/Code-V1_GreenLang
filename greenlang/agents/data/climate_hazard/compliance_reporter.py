@@ -72,6 +72,7 @@ from dataclasses import dataclass, field as dc_field
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -161,7 +162,6 @@ except Exception:  # pragma: no cover -- fallback when module unavailable
             with self._lock:
                 return len(self._chain)
 
-
 # ---------------------------------------------------------------------------
 # Graceful imports -- metrics.py
 # ---------------------------------------------------------------------------
@@ -178,7 +178,6 @@ except Exception:  # pragma: no cover
 
     def _observe_pipeline_duration(pipeline_stage: str, seconds: float) -> None:  # type: ignore[misc]
         """No-op metric stub."""
-
 
 # ---------------------------------------------------------------------------
 # Graceful imports -- models.py
@@ -205,11 +204,9 @@ except Exception:  # pragma: no cover
     _Scenario = None  # type: ignore[assignment, misc]
     _TimeHorizon = None  # type: ignore[assignment, misc]
 
-
 # ---------------------------------------------------------------------------
 # Enumerations (local fallback-safe copies)
 # ---------------------------------------------------------------------------
-
 
 class ReportTypeLocal(str, Enum):
     """Report type enumeration (engine-local copy).
@@ -228,7 +225,6 @@ class ReportTypeLocal(str, Enum):
     EXPOSURE_SUMMARY = "exposure_summary"
     EXECUTIVE_DASHBOARD = "executive_dashboard"
 
-
 class ReportFormatLocal(str, Enum):
     """Report output format enumeration (engine-local copy).
 
@@ -246,11 +242,9 @@ class ReportFormatLocal(str, Enum):
     TEXT = "text"
     CSV = "csv"
 
-
 # Resolve enums: prefer SDK models, fall back to local copies.
 ReportType = _ReportType if _ReportType is not None else ReportTypeLocal
 ReportFormat = _ReportFormat if _ReportFormat is not None else ReportFormatLocal
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -306,11 +300,9 @@ URGENCY_MAP: Dict[str, str] = {
     "extreme": "critical",
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class ReportRecord:
@@ -401,21 +393,13 @@ class ReportRecord:
             "provenance_hash": self.provenance_hash,
         }
 
-
 # ---------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc)
-
-
 def _utcnow_iso() -> str:
     """Return current UTC datetime as ISO 8601 string."""
-    return _utcnow().replace(microsecond=0).isoformat()
-
+    return utcnow().replace(microsecond=0).isoformat()
 
 def _generate_id(prefix: str) -> str:
     """Generate a unique identifier with the given prefix.
@@ -428,7 +412,6 @@ def _generate_id(prefix: str) -> str:
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
 
-
 def _build_provenance_hash(data: Any) -> str:
     """Build a SHA-256 hash for arbitrary data for provenance tracking.
 
@@ -440,7 +423,6 @@ def _build_provenance_hash(data: Any) -> str:
     """
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
 
 def _classify_risk_level(score: float) -> str:
     """Classify a numeric risk score (0-100) into a risk level string.
@@ -468,7 +450,6 @@ def _classify_risk_level(score: float) -> str:
         return "low"
     return "negligible"
 
-
 def _clamp(value: float, lo: float = 0.0, hi: float = 100.0) -> float:
     """Clamp a numeric value to [lo, hi].
 
@@ -481,7 +462,6 @@ def _clamp(value: float, lo: float = 0.0, hi: float = 100.0) -> float:
         Clamped value.
     """
     return max(lo, min(hi, value))
-
 
 def _safe_mean(values: List[float]) -> float:
     """Compute arithmetic mean, returning 0.0 for empty lists.
@@ -496,7 +476,6 @@ def _safe_mean(values: List[float]) -> float:
         return 0.0
     return sum(values) / len(values)
 
-
 def _enum_value(val: Any) -> str:
     """Extract string value from an enum or return str(val).
 
@@ -509,7 +488,6 @@ def _enum_value(val: Any) -> str:
     if hasattr(val, "value"):
         return str(val.value)
     return str(val)
-
 
 # ---------------------------------------------------------------------------
 # Framework Template Definitions
@@ -1196,11 +1174,9 @@ ADAPTATION_MEASURES: Dict[str, List[Dict[str, str]]] = {
     ],
 }
 
-
 # ===========================================================================
 # ComplianceReporterEngine
 # ===========================================================================
-
 
 class ComplianceReporterEngine:
     """Climate risk compliance reporting engine for TCFD, CSRD/ESRS,

@@ -83,25 +83,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -119,7 +113,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -128,7 +121,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -140,36 +132,29 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* decimal digits and return float."""
     return float(value.quantize(Decimal(10) ** -places, rounding=ROUND_HALF_UP))
-
 
 def _round2(value: Any) -> float:
     """Round to 2 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
-
 def _round3(value: Any) -> float:
     """Round to 3 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
-
 
 def _round4(value: Any) -> float:
     """Round to 4 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ForecastMethod(str, Enum):
     """Forecasting method for energy budget projection.
@@ -190,7 +175,6 @@ class ForecastMethod(str, Enum):
     MONTE_CARLO = "monte_carlo"
     ENSEMBLE = "ensemble"
 
-
 class ForecastHorizon(str, Enum):
     """Forecast planning horizon.
 
@@ -201,7 +185,6 @@ class ForecastHorizon(str, Enum):
     SHORT_12M = "short_12m"
     MEDIUM_24M = "medium_24m"
     LONG_36M = "long_36m"
-
 
 class ConfidenceLevel(str, Enum):
     """Confidence interval percentile levels.
@@ -215,7 +198,6 @@ class ConfidenceLevel(str, Enum):
     P80 = "p80"
     P90 = "p90"
     P95 = "p95"
-
 
 class VarianceCategory(str, Enum):
     """Categories for budget variance attribution.
@@ -234,7 +216,6 @@ class VarianceCategory(str, Enum):
     OPERATIONAL = "operational"
     OTHER = "other"
 
-
 class ScenarioType(str, Enum):
     """Types of budget scenarios for sensitivity analysis.
 
@@ -249,7 +230,6 @@ class ScenarioType(str, Enum):
     WORST = "worst"
     CUSTOM = "custom"
     REGULATORY_CHANGE = "regulatory_change"
-
 
 class CommodityType(str, Enum):
     """Utility commodity types tracked for budget forecasting.
@@ -266,7 +246,6 @@ class CommodityType(str, Enum):
     STEAM = "steam"
     CHILLED_WATER = "chilled_water"
 
-
 class TrendDirection(str, Enum):
     """Direction of observed energy cost/consumption trend.
 
@@ -279,7 +258,6 @@ class TrendDirection(str, Enum):
     DECREASING = "decreasing"
     STABLE = "stable"
     VOLATILE = "volatile"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -307,11 +285,9 @@ MC_DEFAULT_ITERATIONS: int = 1000
 # Train/test split ratio for model validation.
 VALIDATION_SPLIT_RATIO: float = 0.75
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class HistoricalDataPoint(BaseModel):
     """A single month of historical utility data.
@@ -351,7 +327,6 @@ class HistoricalDataPoint(BaseModel):
             raise ValueError(f"Month out of range (1-12): {month}")
         return v
 
-
 class ScenarioDefinition(BaseModel):
     """Definition of a budget scenario for sensitivity analysis.
 
@@ -371,7 +346,6 @@ class ScenarioDefinition(BaseModel):
     volume_adjustment_pct: float = Field(default=0.0, description="Volume adjustment %")
     weather_adjustment_pct: float = Field(default=0.0, description="Weather adjustment %")
     assumptions: Dict[str, Any] = Field(default_factory=dict, description="Assumptions")
-
 
 class ForecastInput(BaseModel):
     """Input for budget forecast generation.
@@ -399,11 +373,9 @@ class ForecastInput(BaseModel):
     scenarios: List[ScenarioDefinition] = Field(default_factory=list, description="Scenarios")
     random_seed: int = Field(default=42, ge=0, description="Monte Carlo seed")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class MonthlyForecast(BaseModel):
     """Forecasted values for a single month.
@@ -425,7 +397,6 @@ class MonthlyForecast(BaseModel):
     confidence_upper: float = Field(default=0.0, description="Upper confidence bound EUR")
     confidence_level: ConfidenceLevel = Field(default=ConfidenceLevel.P90)
 
-
 class ConfidenceBand(BaseModel):
     """Confidence band around an annual cost forecast.
 
@@ -439,7 +410,6 @@ class ConfidenceBand(BaseModel):
     lower_bound_eur: float = Field(default=0.0, description="Lower bound EUR")
     upper_bound_eur: float = Field(default=0.0, description="Upper bound EUR")
     width_eur: float = Field(default=0.0, description="Band width EUR")
-
 
 class BudgetVariance(BaseModel):
     """Variance between budgeted and actual values for one month.
@@ -459,7 +429,6 @@ class BudgetVariance(BaseModel):
     variance_pct: float = Field(default=0.0, description="Variance %")
     explanations: List[str] = Field(default_factory=list, description="Explanatory notes")
 
-
 class VarianceDecomposition(BaseModel):
     """Decomposition of total budget variance into causal factors.
 
@@ -477,7 +446,6 @@ class VarianceDecomposition(BaseModel):
     volume_impact_eur: float = Field(default=0.0, description="Volume impact EUR")
     timing_impact_eur: float = Field(default=0.0, description="Timing impact EUR")
     residual_eur: float = Field(default=0.0, description="Residual EUR")
-
 
 class ScenarioResult(BaseModel):
     """Result of a single scenario analysis.
@@ -497,7 +465,6 @@ class ScenarioResult(BaseModel):
     monthly_forecasts: List[MonthlyForecast] = Field(default_factory=list)
     assumptions: Dict[str, Any] = Field(default_factory=dict, description="Assumptions")
 
-
 class RollingForecast(BaseModel):
     """Rolling forecast update combining actuals YTD with revised projections.
 
@@ -513,7 +480,6 @@ class RollingForecast(BaseModel):
     original_budget_eur: float = Field(default=0.0, description="Original budget EUR")
     revised_forecast_eur: float = Field(default=0.0, description="Revised forecast EUR")
     variance_to_budget_eur: float = Field(default=0.0, description="Variance to budget EUR")
-
 
 class ForecastResult(BaseModel):
     """Complete budget forecast result with all analyses.
@@ -550,14 +516,12 @@ class ForecastResult(BaseModel):
     methodology_notes: List[str] = Field(default_factory=list)
     processing_time_ms: float = Field(default=0.0)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class BudgetForecastingEngine:
     """Zero-hallucination energy budget forecasting engine.
@@ -1225,7 +1189,7 @@ class BudgetForecastingEngine:
         variance = revised_total - original_total
         months_remaining = len(remaining_forecast)
 
-        as_of = _utcnow().strftime("%Y-%m-%d")
+        as_of = utcnow().strftime("%Y-%m-%d")
 
         self._notes.append(
             f"Rolling forecast: original={_round2(original_total)}, "
@@ -2113,7 +2077,6 @@ class BudgetForecastingEngine:
 
         return f"{new_year:04d}-{new_month:02d}"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic v2 model_rebuild for forward-reference resolution
 # ---------------------------------------------------------------------------
@@ -2128,7 +2091,6 @@ VarianceDecomposition.model_rebuild()
 ScenarioResult.model_rebuild()
 RollingForecast.model_rebuild()
 ForecastResult.model_rebuild()
-
 
 # ---------------------------------------------------------------------------
 # Public Aliases -- required by PACK-036 __init__.py symbol contract

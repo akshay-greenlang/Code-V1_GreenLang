@@ -89,25 +89,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -125,7 +119,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -134,7 +127,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -146,22 +138,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ModelType(str, Enum):
     """Regression model type for baseline fitting.
@@ -180,7 +168,6 @@ class ModelType(str, Enum):
     FIVE_P = "5p"
     TOWT = "towt"
 
-
 class BaselinePeriodGranularity(str, Enum):
     """Granularity of baseline data and model.
 
@@ -194,7 +181,6 @@ class BaselinePeriodGranularity(str, Enum):
     WEEKLY = "weekly"
     MONTHLY = "monthly"
 
-
 class ValidationGrade(str, Enum):
     """Model validation grade per ASHRAE 14 criteria.
 
@@ -207,7 +193,6 @@ class ValidationGrade(str, Enum):
     MARGINAL = "marginal"
     FAIL = "fail"
     INSUFFICIENT_DATA = "insufficient_data"
-
 
 class IndependentVariableType(str, Enum):
     """Type of independent variable in regression model.
@@ -232,7 +217,6 @@ class IndependentVariableType(str, Enum):
     HUMIDITY = "humidity"
     CUSTOM = "custom"
 
-
 class ModelSelectionCriterion(str, Enum):
     """Criterion used for automated model selection.
 
@@ -248,7 +232,6 @@ class ModelSelectionCriterion(str, Enum):
     BEST_BIC = "best_bic"
     BEST_COMPOSITE = "best_composite"
 
-
 class DataQualityGrade(str, Enum):
     """Data quality assessment grade for baseline data.
 
@@ -261,7 +244,6 @@ class DataQualityGrade(str, Enum):
     GOOD = "good"
     FAIR = "fair"
     POOR = "poor"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -329,11 +311,9 @@ QUALITY_THRESHOLDS: List[Tuple[Decimal, Decimal, DataQualityGrade]] = [
     (Decimal("0"), Decimal("100"), DataQualityGrade.POOR),
 ]
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class BaselineDataPoint(BaseModel):
     """Single observation for baseline development.
@@ -355,10 +335,10 @@ class BaselineDataPoint(BaseModel):
         notes: Additional notes or flags.
     """
     period_start: datetime = Field(
-        default_factory=_utcnow, description="Period start timestamp"
+        default_factory=utcnow, description="Period start timestamp"
     )
     period_end: datetime = Field(
-        default_factory=_utcnow, description="Period end timestamp"
+        default_factory=utcnow, description="Period end timestamp"
     )
     energy_consumption: Decimal = Field(
         default=Decimal("0"), ge=0, description="Energy consumption (kWh)"
@@ -393,7 +373,6 @@ class BaselineDataPoint(BaseModel):
     is_valid: bool = Field(default=True, description="Data quality flag")
     notes: str = Field(default="", max_length=500, description="Notes")
 
-
 class BaselineConfig(BaseModel):
     """Configuration for baseline model development.
 
@@ -423,10 +402,10 @@ class BaselineConfig(BaseModel):
         default="", max_length=500, description="Facility name"
     )
     baseline_start: datetime = Field(
-        default_factory=_utcnow, description="Baseline period start"
+        default_factory=utcnow, description="Baseline period start"
     )
     baseline_end: datetime = Field(
-        default_factory=_utcnow, description="Baseline period end"
+        default_factory=utcnow, description="Baseline period end"
     )
     granularity: BaselinePeriodGranularity = Field(
         default=BaselinePeriodGranularity.MONTHLY,
@@ -467,11 +446,9 @@ class BaselineConfig(BaseModel):
         default="fahrenheit", description="Temperature unit (fahrenheit/celsius)"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class RegressionCoefficients(BaseModel):
     """Regression model coefficients and change-points.
@@ -512,7 +489,6 @@ class RegressionCoefficients(BaseModel):
     p_values: Dict[str, Decimal] = Field(
         default_factory=dict, description="p-values (approx)"
     )
-
 
 class ModelValidationStats(BaseModel):
     """Statistical validation metrics for a regression model.
@@ -565,9 +541,8 @@ class ModelValidationStats(BaseModel):
     ashrae14_r2_pass: bool = Field(default=False)
     ashrae14_overall_pass: bool = Field(default=False)
     dw_autocorrelation_flag: bool = Field(default=False)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class FittedModel(BaseModel):
     """Complete fitted regression model with coefficients and diagnostics.
@@ -596,9 +571,8 @@ class FittedModel(BaseModel):
     predicted_values: List[Decimal] = Field(default_factory=list)
     composite_score: Decimal = Field(default=Decimal("0"))
     rank: int = Field(default=0)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class BalancePointResult(BaseModel):
     """Result of balance-point optimisation.
@@ -629,9 +603,8 @@ class BalancePointResult(BaseModel):
     search_step_f: Decimal = Field(default=BALANCE_POINT_STEP_F)
     iterations_heating: int = Field(default=0)
     iterations_cooling: int = Field(default=0)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class BaselineResult(BaseModel):
     """Complete baseline development result.
@@ -670,8 +643,8 @@ class BaselineResult(BaseModel):
     granularity: BaselinePeriodGranularity = Field(
         default=BaselinePeriodGranularity.MONTHLY
     )
-    baseline_start: datetime = Field(default_factory=_utcnow)
-    baseline_end: datetime = Field(default_factory=_utcnow)
+    baseline_start: datetime = Field(default_factory=utcnow)
+    baseline_end: datetime = Field(default_factory=utcnow)
     n_data_points: int = Field(default=0)
     data_quality: DataQualityGrade = Field(default=DataQualityGrade.POOR)
     selected_model: Optional[FittedModel] = Field(default=None)
@@ -688,14 +661,12 @@ class BaselineResult(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     warnings: List[str] = Field(default_factory=list)
     processing_time_ms: Decimal = Field(default=Decimal("0"))
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class BaselineEngine:
     """Energy baseline development engine for M&V per IPMVP / ASHRAE 14.

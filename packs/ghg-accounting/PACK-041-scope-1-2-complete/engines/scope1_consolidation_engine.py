@@ -72,25 +72,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -108,7 +102,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -117,7 +110,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -129,22 +121,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class Scope1Category(str, Enum):
     """Scope 1 emission source categories per GHG Protocol Chapter 4.
@@ -167,7 +155,6 @@ class Scope1Category(str, Enum):
     WASTE = "waste_treatment"
     AGRICULTURAL = "agricultural"
 
-
 class GasType(str, Enum):
     """Greenhouse gas types reported under the GHG Protocol.
 
@@ -189,7 +176,6 @@ class GasType(str, Enum):
     SF6 = "sf6"
     NF3 = "nf3"
 
-
 class DoubleCountingType(str, Enum):
     """Type of double-counting overlap.
 
@@ -210,7 +196,6 @@ class DoubleCountingType(str, Enum):
     REFRIGERANT_PROCESS = "refrigerant_process"
     LAND_USE_AGRICULTURAL = "land_use_agricultural"
 
-
 class ResolutionStrategy(str, Enum):
     """Strategy for resolving double-counting.
 
@@ -224,7 +209,6 @@ class ResolutionStrategy(str, Enum):
     ALLOCATE_BY_SOURCE = "allocate_by_source"
     MANUAL_REVIEW = "manual_review"
 
-
 class ConsolidationStatus(str, Enum):
     """Status of the consolidation process.
 
@@ -237,7 +221,6 @@ class ConsolidationStatus(str, Enum):
     PARTIAL = "partial"
     DOUBLE_COUNTING = "double_counting"
     ERROR = "error"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -315,11 +298,9 @@ DEFAULT_GWP: Dict[str, Decimal] = {
     GasType.NF3.value: Decimal("16100"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class GasEmission(BaseModel):
     """Emission of a single greenhouse gas from a source.
@@ -334,7 +315,6 @@ class GasEmission(BaseModel):
     mass_kg: Decimal = Field(default=Decimal("0"), ge=0, description="Mass (kg)")
     gwp: Decimal = Field(default=Decimal("1"), ge=0, description="GWP value")
     co2e_kg: Decimal = Field(default=Decimal("0"), ge=0, description="kgCO2e")
-
 
 class CategoryEmissions(BaseModel):
     """Emissions from a single Scope 1 category at a facility.
@@ -374,7 +354,6 @@ class CategoryEmissions(BaseModel):
         default_factory=list, description="Tags for overlap detection"
     )
 
-
 class FacilityScope1(BaseModel):
     """All Scope 1 emissions for a single facility.
 
@@ -402,7 +381,6 @@ class FacilityScope1(BaseModel):
         description="Boundary inclusion % (0-100)",
     )
 
-
 class EntityScope1(BaseModel):
     """Scope 1 emissions for a single legal entity.
 
@@ -425,11 +403,9 @@ class EntityScope1(BaseModel):
         default=Decimal("0"), ge=0, description="Included after boundary"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class DoubleCountingFlag(BaseModel):
     """A detected double-counting overlap.
@@ -461,7 +437,6 @@ class DoubleCountingFlag(BaseModel):
         default=ResolutionStrategy.MANUAL_REVIEW, description="Suggested strategy"
     )
 
-
 class Resolution(BaseModel):
     """Resolution of a double-counting flag.
 
@@ -483,7 +458,6 @@ class Resolution(BaseModel):
         default=Decimal("0"), ge=0, description="Deduction (tCO2e)"
     )
     rationale: str = Field(default="", description="Rationale")
-
 
 class Scope1Total(BaseModel):
     """Consolidated Scope 1 total for the organisation.
@@ -518,7 +492,6 @@ class Scope1Total(BaseModel):
     double_counting_deductions_tco2e: Decimal = Field(
         default=Decimal("0"), description="DC deductions tCO2e"
     )
-
 
 class Scope1ConsolidationResult(BaseModel):
     """Complete Scope 1 consolidation result.
@@ -561,13 +534,12 @@ class Scope1ConsolidationResult(BaseModel):
     )
     warnings: List[str] = Field(default_factory=list, description="Warnings")
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp"
+        default_factory=utcnow, description="Timestamp"
     )
     processing_time_ms: Decimal = Field(
         default=Decimal("0"), description="Processing time (ms)"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 # ---------------------------------------------------------------------------
 # Model Rebuild (resolve forward references from __future__ annotations)
@@ -582,11 +554,9 @@ Resolution.model_rebuild()
 Scope1Total.model_rebuild()
 Scope1ConsolidationResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class Scope1ConsolidationEngine:
     """Scope 1 emission consolidation engine.

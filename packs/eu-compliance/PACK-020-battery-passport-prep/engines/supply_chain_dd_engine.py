@@ -61,25 +61,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -99,7 +93,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _safe_divide(
     numerator: float, denominator: float, default: float = 0.0
 ) -> float:
@@ -108,13 +101,11 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.01"), rounding=ROUND_HALF_UP
     ))
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
@@ -122,11 +113,9 @@ def _round3(value: float) -> float:
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CriticalRawMaterial(str, Enum):
     """Critical raw materials for battery manufacturing per Art 48.
@@ -141,7 +130,6 @@ class CriticalRawMaterial(str, Enum):
     NATURAL_GRAPHITE = "natural_graphite"
     MANGANESE = "manganese"
 
-
 class DueDiligenceRisk(str, Enum):
     """Due diligence risk levels for supply chain assessment.
 
@@ -153,7 +141,6 @@ class DueDiligenceRisk(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     NEGLIGIBLE = "negligible"
-
 
 class OECDStep(str, Enum):
     """OECD Due Diligence five-step framework.
@@ -168,7 +155,6 @@ class OECDStep(str, Enum):
     STEP_4 = "step_4_third_party_audit"
     STEP_5 = "step_5_reporting"
 
-
 class SupplierTier(str, Enum):
     """Supplier tier in the battery supply chain.
 
@@ -181,11 +167,9 @@ class SupplierTier(str, Enum):
     TIER_3 = "tier_3"
     TIER_4 = "tier_4"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # High-risk countries for each critical raw material.
 # Based on known conflict-affected and high-risk areas (CAHRAs)
@@ -303,11 +287,9 @@ MATERIAL_CRITICALITY: Dict[str, int] = {
     CriticalRawMaterial.MANGANESE.value: 60,
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class OECDStepAssessment(BaseModel):
     """Assessment of a single OECD due diligence step for a supplier.
@@ -340,7 +322,6 @@ class OECDStepAssessment(BaseModel):
         default_factory=list,
         description="Identified gaps in compliance for this step",
     )
-
 
 class SupplierAssessment(BaseModel):
     """Assessment of a single supplier in the battery supply chain.
@@ -416,7 +397,6 @@ class SupplierAssessment(BaseModel):
         """Validate country code is uppercase alpha-2."""
         return v.upper().strip()
 
-
 class RiskSummary(BaseModel):
     """Summary of risk distribution across all assessed suppliers.
 
@@ -471,7 +451,6 @@ class RiskSummary(BaseModel):
         description="Countries with HIGH or VERY_HIGH risk suppliers",
     )
 
-
 class DDResult(BaseModel):
     """Result of a complete supply chain due diligence assessment.
 
@@ -488,7 +467,7 @@ class DDResult(BaseModel):
         description="Engine version used for this assessment",
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of assessment (UTC)",
     )
     suppliers_assessed: int = Field(
@@ -544,11 +523,9 @@ class DDResult(BaseModel):
         description="SHA-256 hash of the entire result",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class SupplyChainDDEngine:
     """Supply chain due diligence engine per EU Battery Regulation Art 48.

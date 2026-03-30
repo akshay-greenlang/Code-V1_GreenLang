@@ -48,29 +48,23 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 def _compute_hash(content: str) -> str:
     """Compute SHA-256 hash of string content."""
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -85,7 +79,6 @@ class OutputFormat(str, Enum):
     XBRL = "xbrl"
     CSV = "csv"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Input Models
 # ---------------------------------------------------------------------------
@@ -99,7 +92,6 @@ class RevenueIntensityRow(BaseModel):
     prior_year_intensity: Optional[float] = Field(None, description="Prior year intensity")
     change_pct: Optional[float] = Field(None, description="Year-over-year change %")
 
-
 class PhysicalIntensityRow(BaseModel):
     """Sector-specific physical intensity metric."""
     metric_name: str = Field(..., description="Physical intensity metric name")
@@ -112,7 +104,6 @@ class PhysicalIntensityRow(BaseModel):
     sector_standard: str = Field("", description="Sector standard reference")
     prior_year_intensity: Optional[float] = Field(None, description="Prior year value")
     change_pct: Optional[float] = Field(None, description="YoY change %")
-
 
 class ESRSDisclosureInput(BaseModel):
     """Complete input model for ESRS E1 Intensity Disclosure."""
@@ -150,7 +141,6 @@ class ESRSDisclosureInput(BaseModel):
         "operational control", description="Consolidation approach"
     )
     currency: str = Field("EUR", description="Revenue currency")
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -200,7 +190,7 @@ class ESRSE1IntensityDisclosure:
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render ESRS disclosure as Markdown."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_md(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -208,7 +198,7 @@ class ESRSE1IntensityDisclosure:
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render ESRS disclosure as HTML."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_html(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -216,7 +206,7 @@ class ESRSE1IntensityDisclosure:
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render ESRS disclosure as JSON dict."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_json(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -232,7 +222,7 @@ class ESRSE1IntensityDisclosure:
             XBRL XML string with ESRS taxonomy tags.
         """
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_xbrl(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -263,7 +253,7 @@ class ESRSE1IntensityDisclosure:
         return (
             f"# ESRS E1-6 Intensity Disclosure - {company}\n\n"
             f"**Reporting Year:** {year} | "
-            f"**Report Date:** {_utcnow().strftime('%Y-%m-%d')}\n\n"
+            f"**Report Date:** {utcnow().strftime('%Y-%m-%d')}\n\n"
             "---"
         )
 

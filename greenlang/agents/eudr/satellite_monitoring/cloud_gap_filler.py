@@ -58,18 +58,13 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -89,7 +84,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str) -> str:
     """Generate a unique identifier with a given prefix.
 
@@ -100,7 +94,6 @@ def _generate_id(prefix: str) -> str:
         ID in format ``{prefix}-{hex12}``.
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -127,7 +120,6 @@ MIN_CLEAR_PIXEL_PCT: float = 20.0
 
 #: Maximum cloud cover for a scene to be considered "clear".
 MAX_CLEAR_CLOUD_PCT: float = 15.0
-
 
 # ---------------------------------------------------------------------------
 # Cloud Persistence Regions Reference Data
@@ -180,11 +172,9 @@ CLOUD_PERSISTENCE_REGIONS: List[Dict[str, Any]] = [
     },
 ]
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class CloudCoverAnalysis:
@@ -206,7 +196,7 @@ class CloudCoverAnalysis:
     """
 
     analysis_id: str = field(default_factory=lambda: _generate_id("CCA"))
-    analyzed_at: datetime = field(default_factory=_utcnow)
+    analyzed_at: datetime = field(default_factory=utcnow)
     cloud_percentage: float = 0.0
     clear_pixel_count: int = 0
     total_pixel_count: int = 0
@@ -238,7 +228,6 @@ class CloudCoverAnalysis:
             "provenance_hash": self.provenance_hash,
         }
 
-
 @dataclass
 class GapFillResult:
     """Result of a gap-filling operation.
@@ -257,7 +246,7 @@ class GapFillResult:
     """
 
     result_id: str = field(default_factory=lambda: _generate_id("GFR"))
-    filled_at: datetime = field(default_factory=_utcnow)
+    filled_at: datetime = field(default_factory=utcnow)
     method: str = ""
     input_cloud_pct: float = 0.0
     output_cloud_pct: float = 0.0
@@ -282,11 +271,9 @@ class GapFillResult:
             "provenance_hash": self.provenance_hash,
         }
 
-
 # ---------------------------------------------------------------------------
 # CloudGapFiller
 # ---------------------------------------------------------------------------
-
 
 class CloudGapFiller:
     """Cloud-obscured imagery gap-filling engine for EUDR satellite monitoring.
@@ -568,7 +555,7 @@ class CloudGapFiller:
         try:
             target_dt = datetime.fromisoformat(target_date)
         except (ValueError, TypeError):
-            target_dt = _utcnow()
+            target_dt = utcnow()
 
         # Filter scenes within window and below cloud threshold
         qualifying_scenes: List[Dict[str, Any]] = []
@@ -960,7 +947,7 @@ class CloudGapFiller:
         try:
             target_dt = datetime.fromisoformat(target_date)
         except (ValueError, TypeError):
-            target_dt = _utcnow()
+            target_dt = utcnow()
 
         # Find nearest clear scene
         best_scene: Optional[Dict[str, Any]] = None
@@ -1331,7 +1318,6 @@ class CloudGapFiller:
         method_factor = interp_rate * 25.0
 
         return max(0.0, min(100.0, fill_factor + gap_factor + method_factor))
-
 
 # ---------------------------------------------------------------------------
 # Module Exports

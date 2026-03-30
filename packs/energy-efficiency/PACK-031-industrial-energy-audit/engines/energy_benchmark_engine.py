@@ -54,25 +54,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -90,7 +84,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -100,36 +93,29 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(num: Decimal, den: Decimal, default: Decimal = Decimal("0")) -> Decimal:
     """Safely divide two Decimals, returning *default* on zero denominator."""
     return default if den == Decimal("0") else num / den
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* decimal digits and return float."""
     return float(value.quantize(Decimal(10) ** -places, rounding=ROUND_HALF_UP))
 
-
 def _round3(value: Any) -> float:
     """Round to 3 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
-
 
 def _round2(value: Any) -> float:
     """Round to 2 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
-
 def _round1(value: Any) -> float:
     """Round to 1 decimal place."""
     return float(Decimal(str(value)).quantize(Decimal("0.1"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class IndustrySector(str, Enum):
     """Industrial sector classifications for benchmarking."""
@@ -166,7 +152,6 @@ class IndustrySector(str, Enum):
     COLD_STORAGE = "cold_storage"
     GENERIC_MANUFACTURING = "generic_manufacturing"
 
-
 class EnergyRatingClass(str, Enum):
     """EU-style energy performance rating classes (A-G)."""
     A = "A"
@@ -176,7 +161,6 @@ class EnergyRatingClass(str, Enum):
     E = "E"
     F = "F"
     G = "G"
-
 
 class BREFDocument(str, Enum):
     """EU BREF reference documents for BAT-AEL benchmarking."""
@@ -196,7 +180,6 @@ class BREFDocument(str, Enum):
     SA = "sa"          # Smitheries and Foundries
     ENE = "ene"        # Energy Efficiency
 
-
 class BenchmarkMetric(str, Enum):
     """Benchmark comparison metrics."""
     SEC_KWH_PER_TONNE = "sec_kwh_per_tonne"
@@ -207,7 +190,6 @@ class BenchmarkMetric(str, Enum):
     CARBON_INTENSITY_KG_PER_UNIT = "carbon_intensity_kg_co2_per_unit"
     EUI_KWH_PER_SQM = "eui_kwh_per_sqm"
     COST_EUR_PER_TONNE = "cost_eur_per_tonne"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -671,11 +653,9 @@ ENERGY_COST_REFERENCE: Dict[str, float] = {
     "steam": 0.07,
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class BenchmarkFacility(BaseModel):
     """Facility data for energy benchmarking.
@@ -717,7 +697,6 @@ class BenchmarkFacility(BaseModel):
         description="Historical SEC values: {year: sec_value}",
     )
 
-
 class SECResult(BaseModel):
     """Specific Energy Consumption result.
 
@@ -744,7 +723,6 @@ class SECResult(BaseModel):
     gap_to_best_kwh_per_unit: float = Field(default=0.0)
     rating: str = Field(default="unknown")
 
-
 class BATBenchmark(BaseModel):
     """BAT-AEL benchmark comparison result.
 
@@ -769,7 +747,6 @@ class BATBenchmark(BaseModel):
     gap_kwh: float = Field(default=0.0)
     notes: str = Field(default="")
 
-
 class EnergyRating(BaseModel):
     """Energy performance rating (A-G scale).
 
@@ -785,7 +762,6 @@ class EnergyRating(BaseModel):
     ratio_to_average: float = Field(default=1.0)
     description: str = Field(default="")
     improvement_needed_pct: float = Field(default=0.0)
-
 
 class PeerComparison(BaseModel):
     """Peer group comparison result.
@@ -811,7 +787,6 @@ class PeerComparison(BaseModel):
     best_sec: float = Field(default=0.0)
     worst_sec: float = Field(default=0.0)
 
-
 class CarbonIntensityResult(BaseModel):
     """Carbon intensity benchmarking result.
 
@@ -828,14 +803,12 @@ class CarbonIntensityResult(BaseModel):
     carrier_breakdown: Dict[str, float] = Field(default_factory=dict)
     country_grid_factor: float = Field(default=0.0)
 
-
 class TrajectoryPoint(BaseModel):
     """Single data point in the improvement trajectory."""
     year: int = Field(default=2025)
     sec_value: float = Field(default=0.0)
     year_over_year_change_pct: float = Field(default=0.0)
     cumulative_improvement_pct: float = Field(default=0.0)
-
 
 class EnergyBenchmarkResult(BaseModel):
     """Complete energy benchmarking result with full provenance.
@@ -880,14 +853,12 @@ class EnergyBenchmarkResult(BaseModel):
     methodology_notes: List[str] = Field(default_factory=list)
     processing_time_ms: float = Field(default=0.0)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class EnergyBenchmarkEngine:
     """Zero-hallucination energy benchmarking engine.

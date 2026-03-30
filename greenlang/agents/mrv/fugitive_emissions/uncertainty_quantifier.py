@@ -92,6 +92,7 @@ from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -130,15 +131,9 @@ except ImportError:
     _METRICS_AVAILABLE = False
     _record_uncertainty = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # UTC helpers
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -156,11 +151,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ===========================================================================
 # Enumerations
 # ===========================================================================
-
 
 class FugitiveSourceCategory(str, Enum):
     """Fugitive emission source categories for uncertainty lookup."""
@@ -173,7 +166,6 @@ class FugitiveSourceCategory(str, Enum):
     TANK_LOSS = "TANK_LOSS"
     DIRECT_MEASUREMENT = "DIRECT_MEASUREMENT"
 
-
 class CalculationMethodType(str, Enum):
     """Fugitive emission calculation method types."""
 
@@ -183,7 +175,6 @@ class CalculationMethodType(str, Enum):
     UNIT_SPECIFIC_CORRELATION = "UNIT_SPECIFIC_CORRELATION"
     DIRECT_MEASUREMENT = "DIRECT_MEASUREMENT"
 
-
 class DQIDimension(str, Enum):
     """Data Quality Indicator dimensions (ISO 14044 / PAS 2050)."""
 
@@ -192,7 +183,6 @@ class DQIDimension(str, Enum):
     TEMPORAL_CORRELATION = "temporal_correlation"
     GEOGRAPHICAL_CORRELATION = "geographical_correlation"
     TECHNOLOGICAL_CORRELATION = "technological_correlation"
-
 
 # ===========================================================================
 # Reference Data: Uncertainty Ranges
@@ -307,11 +297,9 @@ DQI_SCORING_MATRIX: Dict[str, List[Tuple[str, int]]] = {
     ],
 }
 
-
 # ===========================================================================
 # UncertaintyQuantifierEngine
 # ===========================================================================
-
 
 class UncertaintyQuantifierEngine:
     """Uncertainty quantification engine for fugitive emissions.

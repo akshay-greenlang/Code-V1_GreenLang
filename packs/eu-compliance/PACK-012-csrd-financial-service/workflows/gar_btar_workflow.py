@@ -27,20 +27,15 @@ from typing import Any, Callable, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC time with timezone info."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute SHA-256 provenance hash of arbitrary data."""
     return hashlib.sha256(
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
-
 
 class PhaseStatus(str, Enum):
     PENDING = "PENDING"
@@ -49,7 +44,6 @@ class PhaseStatus(str, Enum):
     FAILED = "FAILED"
     SKIPPED = "SKIPPED"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "PENDING"
     RUNNING = "RUNNING"
@@ -57,12 +51,11 @@ class WorkflowStatus(str, Enum):
     FAILED = "FAILED"
     PARTIAL = "PARTIAL"
 
-
 class WorkflowContext(BaseModel):
     """Shared state passed between workflow phases."""
     workflow_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     organization_id: str = Field(..., description="Organization identifier")
-    execution_timestamp: datetime = Field(default_factory=_utcnow)
+    execution_timestamp: datetime = Field(default_factory=utcnow)
     config: Dict[str, Any] = Field(default_factory=dict)
     phase_states: Dict[str, PhaseStatus] = Field(default_factory=dict)
     phase_outputs: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
@@ -81,7 +74,6 @@ class WorkflowContext(BaseModel):
     def is_phase_completed(self, phase_name: str) -> bool:
         return self.phase_states.get(phase_name) == PhaseStatus.COMPLETED
 
-
 class PhaseResult(BaseModel):
     phase_name: str = Field(..., description="Phase identifier")
     status: PhaseStatus = Field(..., description="Phase completion status")
@@ -94,7 +86,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     records_processed: int = Field(default=0)
 
-
 class WorkflowResult(BaseModel):
     workflow_id: str = Field(..., description="Unique workflow execution ID")
     workflow_name: str = Field(..., description="Workflow type identifier")
@@ -106,8 +97,6 @@ class WorkflowResult(BaseModel):
     summary: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
 
-
-
 class TaxonomyObjective(str, Enum):
     """EU Taxonomy environmental objectives."""
     CLIMATE_MITIGATION = "CLIMATE_MITIGATION"
@@ -117,7 +106,6 @@ class TaxonomyObjective(str, Enum):
     POLLUTION = "POLLUTION"
     BIODIVERSITY = "BIODIVERSITY"
 
-
 class AssetEligibility(str, Enum):
     """Asset eligibility categories for GAR."""
     ELIGIBLE = "ELIGIBLE"
@@ -126,7 +114,6 @@ class AssetEligibility(str, Enum):
     SOVEREIGN = "SOVEREIGN"
     CENTRAL_BANK = "CENTRAL_BANK"
     TRADING_BOOK = "TRADING_BOOK"
-
 
 # ---------------------------------------------------------------------------
 #  Input / Result Models
@@ -150,7 +137,6 @@ class GARAsset(BaseModel):
     is_enabling: bool = Field(default=False)
     country: str = Field(default="")
 
-
 class GARBTARInput(BaseModel):
     """Input for the GAR/BTAR workflow."""
     organization_id: str = Field(..., description="Organization identifier")
@@ -167,7 +153,6 @@ class GARBTARInput(BaseModel):
         datetime.strptime(v, "%Y-%m-%d")
         return v
 
-
 class GARBTARResult(WorkflowResult):
     """Result from the GAR/BTAR workflow."""
     gar_pct: float = Field(default=0.0)
@@ -179,7 +164,6 @@ class GARBTARResult(WorkflowResult):
     counterparties_assessed: int = Field(default=0)
     disclosure_tables_generated: int = Field(default=0)
 
-
 # ---------------------------------------------------------------------------
 #  Phase 1: Asset Classification
 # ---------------------------------------------------------------------------
@@ -190,7 +174,7 @@ class AssetClassificationPhase:
     PHASE_NAME = "asset_classification"
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -244,7 +228,7 @@ class AssetClassificationPhase:
             status = PhaseStatus.FAILED
             records = 0
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -252,7 +236,6 @@ class AssetClassificationPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs), records_processed=records,
         )
-
 
 # ---------------------------------------------------------------------------
 #  Phase 2: Alignment Assessment
@@ -264,7 +247,7 @@ class AlignmentAssessmentPhase:
     PHASE_NAME = "alignment_assessment"
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -337,7 +320,7 @@ class AlignmentAssessmentPhase:
             errors.append(f"Alignment assessment failed: {str(exc)}")
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -345,7 +328,6 @@ class AlignmentAssessmentPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 # ---------------------------------------------------------------------------
 #  Phase 3: KPI Computation
@@ -357,7 +339,7 @@ class KPIComputationPhase:
     PHASE_NAME = "kpi_computation"
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -418,7 +400,7 @@ class KPIComputationPhase:
             errors.append(f"KPI computation failed: {str(exc)}")
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -426,7 +408,6 @@ class KPIComputationPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 # ---------------------------------------------------------------------------
 #  Phase 4: Disclosure Generation
@@ -445,7 +426,7 @@ class DisclosureGenerationPhase:
     ]
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -510,7 +491,7 @@ class DisclosureGenerationPhase:
             errors.append(f"Disclosure generation failed: {str(exc)}")
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -518,7 +499,6 @@ class DisclosureGenerationPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 # ---------------------------------------------------------------------------
 #  Workflow Orchestrator
@@ -543,7 +523,7 @@ class GARBTARWorkflow:
 
     async def run(self, input_data: GARBTARInput) -> GARBTARResult:
         """Execute the complete 4-phase GAR/BTAR workflow."""
-        started_at = _utcnow()
+        started_at = utcnow()
         logger.info("Starting GAR/BTAR workflow %s org=%s", self.workflow_id, input_data.organization_id)
         context = WorkflowContext(
             workflow_id=self.workflow_id,
@@ -582,7 +562,7 @@ class GARBTARWorkflow:
                 logger.error("Phase '%s' raised: %s", phase_name, exc, exc_info=True)
                 completed_phases.append(PhaseResult(
                     phase_name=phase_name, status=PhaseStatus.FAILED,
-                    started_at=_utcnow(), errors=[str(exc)],
+                    started_at=utcnow(), errors=[str(exc)],
                     provenance_hash=_hash_data({"error": str(exc)}),
                 ))
                 context.mark_phase(phase_name, PhaseStatus.FAILED)
@@ -594,7 +574,7 @@ class GARBTARWorkflow:
                          for p in completed_phases)
             overall_status = WorkflowStatus.COMPLETED if all_ok else WorkflowStatus.PARTIAL
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         duration = (completed_at - started_at).total_seconds()
         summary = self._build_summary(context)
         provenance = _hash_data({

@@ -68,25 +68,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -104,7 +98,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -113,7 +106,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -125,22 +117,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DRProgramType(str, Enum):
     """Type of demand response program.
@@ -167,7 +155,6 @@ class DRProgramType(str, Enum):
     BEHIND_METER = "behind_meter"
     VPP = "virtual_power_plant"
 
-
 class ISORegion(str, Enum):
     """ISO / market region.
 
@@ -193,7 +180,6 @@ class ISORegion(str, Enum):
     FR_RTE = "fr_rte"
     NL_TENNET = "nl_tennet"
 
-
 class EligibilityStatus(str, Enum):
     """Program eligibility determination.
 
@@ -207,7 +193,6 @@ class EligibilityStatus(str, Enum):
     INELIGIBLE = "ineligible"
     PENDING_REVIEW = "pending_review"
 
-
 class RevenueConfidence(str, Enum):
     """Confidence level for revenue projections.
 
@@ -218,7 +203,6 @@ class RevenueConfidence(str, Enum):
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 class SeasonalAvailability(str, Enum):
     """Seasonal availability of a DR program.
@@ -233,7 +217,6 @@ class SeasonalAvailability(str, Enum):
     YEAR_ROUND = "year_round"
     SHOULDER = "shoulder"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -245,11 +228,9 @@ DEFAULT_ANALYSIS_YEARS: int = 3
 # Revenue escalation rate per year.
 DEFAULT_REVENUE_ESCALATION: Decimal = Decimal("0.02")
 
-
 # ---------------------------------------------------------------------------
 # Program Database
 # ---------------------------------------------------------------------------
-
 
 def _build_program_database() -> List[Dict[str, Any]]:
     """Build the representative DR program database.
@@ -607,15 +588,12 @@ def _build_program_database() -> List[Dict[str, Any]]:
 
     return programs
 
-
 # Pre-built program database.
 _PROGRAM_DATABASE: List[Dict[str, Any]] = _build_program_database()
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input / Output
 # ---------------------------------------------------------------------------
-
 
 class DRProgram(BaseModel):
     """A demand response program specification.
@@ -669,7 +647,6 @@ class DRProgram(BaseModel):
         default=False, description="Telemetry required"
     )
 
-
 class ProgramEligibility(BaseModel):
     """Eligibility evaluation result for a facility against a program.
 
@@ -695,9 +672,8 @@ class ProgramEligibility(BaseModel):
     meets_notification: bool = Field(default=False)
     meets_telemetry: bool = Field(default=False)
     gaps: List[str] = Field(default_factory=list)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class RevenueProjection(BaseModel):
     """Revenue projection for a facility enrolled in a DR program.
@@ -734,9 +710,8 @@ class RevenueProjection(BaseModel):
     revenue_per_kw: Decimal = Field(default=Decimal("0"))
     confidence: RevenueConfidence = Field(default=RevenueConfidence.MEDIUM)
     analysis_years: int = Field(default=3)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class ProgramPortfolio(BaseModel):
     """Optimised portfolio of DR programs for a facility.
@@ -759,14 +734,12 @@ class ProgramPortfolio(BaseModel):
     total_multi_year_revenue: Decimal = Field(default=Decimal("0"))
     utilization_pct: Decimal = Field(default=Decimal("0"))
     program_count: int = Field(default=0)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class DRProgramEngine:
     """Demand response program matching, revenue, and portfolio engine.

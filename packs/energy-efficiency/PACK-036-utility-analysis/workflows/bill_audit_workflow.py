@@ -50,20 +50,15 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "36.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC timestamp with zero microseconds."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking.
@@ -87,11 +82,9 @@ def _compute_hash(data: Any) -> str:
         json.dumps(s, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -102,7 +95,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -111,7 +103,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class UtilityType(str, Enum):
     """Utility commodity classification."""
@@ -124,7 +115,6 @@ class UtilityType(str, Enum):
     FUEL_OIL = "fuel_oil"
     PROPANE = "propane"
     SEWER = "sewer"
-
 
 class DiscrepancyType(str, Enum):
     """Bill discrepancy classification."""
@@ -140,7 +130,6 @@ class DiscrepancyType(str, Enum):
     MISSING_CREDIT = "missing_credit"
     LATE_FEE_INCORRECT = "late_fee_incorrect"
 
-
 class DiscrepancySeverity(str, Enum):
     """Severity classification for discrepancies."""
 
@@ -149,7 +138,6 @@ class DiscrepancySeverity(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     INFO = "info"
-
 
 class ChargeCategory(str, Enum):
     """Utility bill charge category."""
@@ -168,7 +156,6 @@ class ChargeCategory(str, Enum):
     CUSTOMER_CHARGE = "customer_charge"
     LATE_FEE = "late_fee"
     OTHER = "other"
-
 
 # =============================================================================
 # REFERENCE DATA (Zero-Hallucination)
@@ -224,11 +211,9 @@ DAYS_IN_MONTH: Dict[int, int] = {
     7: 31, 8: 31, 9: 30, 10: 31, 11: 30, 12: 31,
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase.
@@ -253,7 +238,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
 
-
 class BillLineItem(BaseModel):
     """A single line item on a utility bill.
 
@@ -276,7 +260,6 @@ class BillLineItem(BaseModel):
     rate: float = Field(default=0.0, ge=0.0)
     billed_amount: float = Field(default=0.0)
     expected_amount: float = Field(default=0.0)
-
 
 class BillRecord(BaseModel):
     """A complete utility bill record.
@@ -315,7 +298,6 @@ class BillRecord(BaseModel):
     rate_schedule: str = Field(default="")
     service_address: str = Field(default="")
 
-
 class BillDiscrepancy(BaseModel):
     """A detected discrepancy in a utility bill.
 
@@ -346,7 +328,6 @@ class BillDiscrepancy(BaseModel):
     description: str = Field(default="")
     recommendation: str = Field(default="")
     confidence: float = Field(default=0.9, ge=0.0, le=1.0)
-
 
 class BillAuditInput(BaseModel):
     """Input data model for BillAuditWorkflow.
@@ -387,7 +368,6 @@ class BillAuditInput(BaseModel):
             raise ValueError("At least one bill record is required for audit")
         return v
 
-
 class BillAuditResult(BaseModel):
     """Complete result from the bill audit workflow.
 
@@ -425,11 +405,9 @@ class BillAuditResult(BaseModel):
     duration_seconds: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class BillAuditWorkflow:
     """
@@ -1187,7 +1165,7 @@ class BillAuditWorkflow:
             })
 
         outputs["report_id"] = report_id
-        outputs["generated_at"] = _utcnow().isoformat()
+        outputs["generated_at"] = utcnow().isoformat()
         outputs["by_utility_type"] = by_utility
         outputs["top_findings"] = top_findings
         outputs["recovery_actions"] = actions
@@ -1242,5 +1220,5 @@ class BillAuditWorkflow:
         return {
             "by_category": by_category,
             "workflow_version": _MODULE_VERSION,
-            "audit_date": _utcnow().isoformat(),
+            "audit_date": utcnow().isoformat(),
         }

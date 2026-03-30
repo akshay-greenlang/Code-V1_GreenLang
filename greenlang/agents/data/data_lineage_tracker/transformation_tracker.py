@@ -59,6 +59,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from greenlang.agents.data.data_lineage_tracker.config import get_config
 from greenlang.agents.data.data_lineage_tracker.provenance import ProvenanceTracker
+from greenlang.schemas import utcnow
 from greenlang.agents.data.data_lineage_tracker.metrics import (
     record_transformation_captured,
     observe_processing_duration,
@@ -88,19 +89,9 @@ VALID_TRANSFORMATION_TYPES: frozenset = frozenset({
 
 _VALID_CHAIN_DIRECTIONS: frozenset = frozenset({"backward", "forward"})
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with timezone info.
-
-    Returns:
-        Timezone-aware UTC datetime with microsecond precision.
-    """
-    return datetime.now(timezone.utc)
-
 
 def _utcnow_iso() -> str:
     """Return current UTC datetime as an ISO-8601 string.
@@ -108,8 +99,7 @@ def _utcnow_iso() -> str:
     Returns:
         ISO-8601 formatted timestamp string with UTC timezone.
     """
-    return _utcnow().isoformat()
-
+    return utcnow().isoformat()
 
 def _generate_id() -> str:
     """Generate a unique transformation identifier.
@@ -121,7 +111,6 @@ def _generate_id() -> str:
         Lowercase hex UUID4 string (e.g. ``"a1b2c3d4e5f6..."``).
     """
     return uuid.uuid4().hex
-
 
 def _build_provenance_payload(transformation: dict) -> dict:
     """Build a dictionary suitable for SHA-256 provenance hashing.
@@ -150,11 +139,9 @@ def _build_provenance_payload(transformation: dict) -> dict:
         "created_at": transformation["created_at"],
     }
 
-
 # ---------------------------------------------------------------------------
 # TransformationTrackerEngine
 # ---------------------------------------------------------------------------
-
 
 class TransformationTrackerEngine:
     """Engine for capturing and storing data transformation events.
@@ -1209,7 +1196,6 @@ class TransformationTrackerEngine:
             f"pipelines={len(self._pipeline_index)}, "
             f"types={len(self._type_index)})"
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

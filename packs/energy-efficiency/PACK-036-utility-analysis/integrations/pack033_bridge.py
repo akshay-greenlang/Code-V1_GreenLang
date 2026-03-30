@@ -37,20 +37,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -68,11 +63,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class MeasureStatus(str, Enum):
     """Quick win measure implementation status."""
@@ -84,7 +77,6 @@ class MeasureStatus(str, Enum):
     VERIFIED = "verified"
     CANCELLED = "cancelled"
 
-
 class SavingsConfidence(str, Enum):
     """Confidence level for savings estimates."""
 
@@ -93,11 +85,9 @@ class SavingsConfidence(str, Enum):
     LOW = "low"
     VERIFIED = "verified"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class QuickWinsImportConfig(BaseModel):
     """Configuration for importing PACK-033 quick wins data."""
@@ -109,7 +99,6 @@ class QuickWinsImportConfig(BaseModel):
     import_implementation_status: bool = Field(default=True)
     import_verified_savings: bool = Field(default=True)
     sync_baseline_back: bool = Field(default=True)
-
 
 class QuickWinMeasure(BaseModel):
     """A single quick win measure from PACK-033."""
@@ -125,7 +114,6 @@ class QuickWinMeasure(BaseModel):
     implementation_cost_eur: float = Field(default=0.0)
     payback_months: float = Field(default=0.0)
     confidence: SavingsConfidence = Field(default=SavingsConfidence.MEDIUM)
-
 
 class QuickWinsDataImport(BaseModel):
     """Result of importing quick wins data from PACK-033."""
@@ -146,7 +134,6 @@ class QuickWinsDataImport(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class BaselineExport(BaseModel):
     """Utility baseline data exported to PACK-033."""
 
@@ -158,9 +145,8 @@ class BaselineExport(BaseModel):
     average_rate_eur_per_kwh: float = Field(default=0.0)
     demand_rate_eur_per_kw: float = Field(default=0.0)
     peak_demand_kw: float = Field(default=0.0)
-    exported_at: datetime = Field(default_factory=_utcnow)
+    exported_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class BudgetImpact(BaseModel):
     """Impact of quick win savings on utility budget forecast."""
@@ -176,11 +162,9 @@ class BudgetImpact(BaseModel):
     confidence: SavingsConfidence = Field(default=SavingsConfidence.MEDIUM)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Pack033Bridge
 # ---------------------------------------------------------------------------
-
 
 class Pack033Bridge:
     """Bridge to PACK-033 Quick Wins Identifier data.

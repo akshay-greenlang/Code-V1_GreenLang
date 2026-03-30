@@ -35,21 +35,16 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Input Models
@@ -69,7 +64,6 @@ class DisclosureItem(BaseModel):
     notes: str = Field("")
     assurance_level: str = Field("", description="reasonable, limited, none")
 
-
 class CrossReference(BaseModel):
     """Cross-reference mapping between frameworks."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -83,7 +77,6 @@ class CrossReference(BaseModel):
     sbti_ref: str = Field("")
     ifrs_s2_ref: str = Field("")
 
-
 class FrameworkCompleteness(BaseModel):
     """Completeness status for a single framework."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -95,7 +88,6 @@ class FrameworkCompleteness(BaseModel):
     not_applicable: int = Field(0)
     completeness_pct: Decimal = Field(Decimal("0"))
 
-
 class RegulatoryDisclosureReportInput(BaseModel):
     """Complete input for the regulatory disclosure report."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -104,7 +96,6 @@ class RegulatoryDisclosureReportInput(BaseModel):
     disclosures: List[Dict[str, Any]] = Field(default_factory=list)
     cross_references: List[Dict[str, Any]] = Field(default_factory=list)
     framework_completeness: List[Dict[str, Any]] = Field(default_factory=list)
-
 
 # ---------------------------------------------------------------------------
 # Output Model
@@ -124,7 +115,6 @@ class RegulatoryDisclosureReportOutput(BaseModel):
     framework_completeness: List[FrameworkCompleteness] = Field(default_factory=list)
     cross_references: List[CrossReference] = Field(default_factory=list)
     provenance_hash: str = Field("")
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -158,7 +148,7 @@ class RegulatoryDisclosureReport:
     def render(self, data: Dict[str, Any]) -> RegulatoryDisclosureReportOutput:
         """Render regulatory disclosure report from input data."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         inp = RegulatoryDisclosureReportInput(**data) if isinstance(data, dict) else data
 
         disclosures = [DisclosureItem(**d) if isinstance(d, dict) else d for d in inp.disclosures]
@@ -319,7 +309,6 @@ class RegulatoryDisclosureReport:
                     f"{d.status},{d.assurance_level}"
                 )
         return "\n".join(lines_out)
-
 
 __all__ = [
     "RegulatoryDisclosureReport",

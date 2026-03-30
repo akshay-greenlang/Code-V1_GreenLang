@@ -45,34 +45,27 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "30.0.0"
 _PACK_ID = "PACK-030"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 def _decimal(value: float, places: int = 4) -> Decimal:
     return Decimal(str(value)).quantize(
         Decimal(10) ** -places, rounding=ROUND_HALF_UP,
     )
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -81,7 +74,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
@@ -89,18 +81,15 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class RAGStatus(str, Enum):
     RED = "red"
     AMBER = "amber"
     GREEN = "green"
 
-
 class TargetType(str, Enum):
     NEAR_TERM = "near_term"
     LONG_TERM = "long_term"
     NET_ZERO = "net_zero"
-
 
 class TargetScope(str, Enum):
     SCOPE_1 = "scope_1"
@@ -109,14 +98,12 @@ class TargetScope(str, Enum):
     SCOPE_3 = "scope_3"
     ALL_SCOPES = "all_scopes"
 
-
 class ValidationSeverity(str, Enum):
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
     INFO = "info"
-
 
 class SubmissionStatus(str, Enum):
     DRAFT = "draft"
@@ -125,20 +112,17 @@ class SubmissionStatus(str, Enum):
     SUBMITTED = "submitted"
     ACCEPTED = "accepted"
 
-
 class VarianceDirection(str, Enum):
     AHEAD = "ahead"
     ON_TRACK = "on_track"
     BEHIND = "behind"
     SIGNIFICANTLY_BEHIND = "significantly_behind"
 
-
 class OutputFormat(str, Enum):
     PDF = "pdf"
     JSON = "json"
     HTML = "html"
     EXCEL = "excel"
-
 
 # =============================================================================
 # SBTI REFERENCE DATA (Zero-Hallucination: SBTi CNZ Standard v1.1)
@@ -201,11 +185,9 @@ SBTI_PROGRESS_RAG_RULES: Dict[str, Dict[str, float]] = {
     "red": {"min_progress_ratio": 0.0, "description": "Significantly behind, urgent action needed"},
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase_name: str = Field(...)
@@ -218,7 +200,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
     dag_node_id: str = Field(default="")
-
 
 class SBTiTargetData(BaseModel):
     """Target data pulled from GL-SBTi-APP."""
@@ -236,7 +217,6 @@ class SBTiTargetData(BaseModel):
     scope3_categories_covered: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class EmissionsData(BaseModel):
     """Emissions data aggregated from PACK-021/029."""
     organization_id: str = Field(default="")
@@ -252,7 +232,6 @@ class EmissionsData(BaseModel):
     boundary: str = Field(default="Operational control")
     source_pack: str = Field(default="PACK-021")
     provenance_hash: str = Field(default="")
-
 
 class ProgressCalculation(BaseModel):
     """Progress calculation results."""
@@ -275,7 +254,6 @@ class ProgressCalculation(BaseModel):
     pathway_deviation_pct: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class VarianceExplanation(BaseModel):
     """Variance explanation for deviations from expected pathway."""
     variance_id: str = Field(default="")
@@ -292,7 +270,6 @@ class VarianceExplanation(BaseModel):
     narrative: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 class SBTiReportSection(BaseModel):
     """A section of the compiled SBTi report."""
     section_id: str = Field(default="")
@@ -303,7 +280,6 @@ class SBTiReportSection(BaseModel):
     data_tables: List[Dict[str, Any]] = Field(default_factory=list)
     citations: List[Dict[str, str]] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class SchemaValidationResult(BaseModel):
     """Validation result against SBTi schema."""
@@ -318,7 +294,6 @@ class SchemaValidationResult(BaseModel):
     severity_summary: Dict[str, int] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
 
-
 class RenderedOutput(BaseModel):
     """A rendered output file."""
     output_id: str = Field(default="")
@@ -329,7 +304,6 @@ class RenderedOutput(BaseModel):
     content_hash: str = Field(default="")
     metadata: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
-
 
 class SubmissionPackage(BaseModel):
     """Final submission package for SBTi."""
@@ -342,7 +316,6 @@ class SubmissionPackage(BaseModel):
     ready_for_submission: bool = Field(default=False)
     submission_deadline: Optional[str] = Field(default=None)
     provenance_hash: str = Field(default="")
-
 
 # -- Config / Input / Result --
 
@@ -373,7 +346,6 @@ class SBTiProgressConfig(BaseModel):
     methodology_changes: List[str] = Field(default_factory=list)
     recalculation_triggers: List[str] = Field(default_factory=list)
 
-
 class SBTiProgressInput(BaseModel):
     config: SBTiProgressConfig = Field(default_factory=SBTiProgressConfig)
     historical_emissions: List[Dict[str, Any]] = Field(default_factory=list)
@@ -381,7 +353,6 @@ class SBTiProgressInput(BaseModel):
     scope3_categories: Dict[str, float] = Field(default_factory=dict)
     external_target_data: Optional[Dict[str, Any]] = Field(default=None)
     branding_config: Dict[str, Any] = Field(default_factory=dict)
-
 
 class SBTiProgressResult(BaseModel):
     workflow_id: str = Field(...)
@@ -402,11 +373,9 @@ class SBTiProgressResult(BaseModel):
     overall_rag_status: RAGStatus = Field(default=RAGStatus.GREEN)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class SBTiProgressWorkflow:
     """
@@ -450,7 +419,7 @@ class SBTiProgressWorkflow:
 
     async def execute(self, input_data: SBTiProgressInput) -> SBTiProgressResult:
         """Execute the full 8-phase SBTi progress workflow."""
-        started_at = _utcnow()
+        started_at = utcnow()
         self.config = input_data.config
         self._phase_results = []
         overall_status = WorkflowStatus.RUNNING
@@ -504,7 +473,7 @@ class SBTiProgressWorkflow:
                 status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
 
         overall_rag = self._determine_overall_rag()
 
@@ -537,7 +506,7 @@ class SBTiProgressWorkflow:
         self, input_data: SBTiProgressInput,
     ) -> PhaseResult:
         """Pull SBTi target data from GL-SBTi-APP or config."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -600,7 +569,7 @@ class SBTiProgressWorkflow:
         outputs["ambition"] = cfg.sbti_ambition
         outputs["sbti_validated"] = cfg.sbti_validated
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="aggregate_target_data", phase_number=1,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -617,7 +586,7 @@ class SBTiProgressWorkflow:
         self, input_data: SBTiProgressInput,
     ) -> PhaseResult:
         """Pull emissions data from PACK-021/029."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -674,7 +643,7 @@ class SBTiProgressWorkflow:
         outputs["data_quality_score"] = dq_score
         outputs["scope3_category_count"] = len(scope3_cats)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="aggregate_emissions", phase_number=2,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -691,7 +660,7 @@ class SBTiProgressWorkflow:
         self, input_data: SBTiProgressInput,
     ) -> PhaseResult:
         """Compute progress against near-term and long-term targets."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -777,7 +746,7 @@ class SBTiProgressWorkflow:
             outputs[f"{prefix}_on_track"] = pc.on_track
             outputs[f"{prefix}_rag_status"] = pc.rag_status.value
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="calculate_progress", phase_number=3,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -794,7 +763,7 @@ class SBTiProgressWorkflow:
         self, input_data: SBTiProgressInput,
     ) -> PhaseResult:
         """Generate variance explanations for deviations from pathway."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -885,7 +854,7 @@ class SBTiProgressWorkflow:
             outputs[f"variance_{v.target_id}_tco2e"] = v.variance_tco2e
             outputs[f"variance_{v.target_id}_corrective_needed"] = v.corrective_actions_needed
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="generate_variance", phase_number=4,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -902,7 +871,7 @@ class SBTiProgressWorkflow:
         self, input_data: SBTiProgressInput,
     ) -> PhaseResult:
         """Assemble SBTi report sections from progress and variance data."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -1090,7 +1059,7 @@ class SBTiProgressWorkflow:
         outputs["section_count"] = len(self._sections)
         outputs["sections"] = [s.section_name for s in self._sections]
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="compile_report", phase_number=5,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -1107,7 +1076,7 @@ class SBTiProgressWorkflow:
         self, input_data: SBTiProgressInput,
     ) -> PhaseResult:
         """Validate compiled report against SBTi disclosure schema."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -1208,7 +1177,7 @@ class SBTiProgressWorkflow:
         outputs["warning_count"] = len(val_warnings)
         outputs["severity_summary"] = severity_summary
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="validate_schema", phase_number=6,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -1225,7 +1194,7 @@ class SBTiProgressWorkflow:
         self, input_data: SBTiProgressInput,
     ) -> PhaseResult:
         """Render SBTi report as PDF and JSON."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -1258,7 +1227,7 @@ class SBTiProgressWorkflow:
         outputs["formats"] = [o.format.value for o in self._outputs]
         outputs["total_size_bytes"] = sum(o.file_size_bytes for o in self._outputs)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="render_outputs", phase_number=7,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -1275,7 +1244,7 @@ class SBTiProgressWorkflow:
         self, input_data: SBTiProgressInput,
     ) -> PhaseResult:
         """Package all outputs for SBTi annual submission."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -1337,7 +1306,7 @@ class SBTiProgressWorkflow:
         outputs["evidence_count"] = len(evidence)
         outputs["output_count"] = len(self._outputs)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="package_submission", phase_number=8,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -1429,7 +1398,7 @@ class SBTiProgressWorkflow:
             "metadata": {
                 "title": f"SBTi Annual Progress Report {self.config.reporting_year}",
                 "company": self.config.company_name,
-                "generated_at": _utcnow().isoformat(),
+                "generated_at": utcnow().isoformat(),
             },
         }, sort_keys=True, default=str)
 

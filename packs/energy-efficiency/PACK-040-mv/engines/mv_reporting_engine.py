@@ -65,25 +65,20 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ReportFormat
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -101,7 +96,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -110,7 +104,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -122,22 +115,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class MVReportType(str, Enum):
     """Type of M&V report.
@@ -160,19 +149,6 @@ class MVReportType(str, Enum):
     COMPLIANCE = "compliance"
     EXECUTIVE = "executive"
 
-
-class ReportFormat(str, Enum):
-    """Output format for M&V reports.
-
-    MARKDOWN:  Structured Markdown text.
-    HTML:      Full HTML document.
-    JSON:      Machine-readable JSON.
-    """
-    MARKDOWN = "markdown"
-    HTML = "html"
-    JSON = "json"
-
-
 class ComplianceFramework(str, Enum):
     """Compliance framework for checking.
 
@@ -187,7 +163,6 @@ class ComplianceFramework(str, Enum):
     FEMP = "femp"
     ASHRAE_14 = "ashrae_14"
     EU_EED = "eu_eed"
-
 
 class CheckStatus(str, Enum):
     """Compliance check result status.
@@ -204,7 +179,6 @@ class CheckStatus(str, Enum):
     NOT_APPLICABLE = "not_applicable"
     NOT_EVALUATED = "not_evaluated"
 
-
 class ScheduleFrequency(str, Enum):
     """Report scheduling frequency.
 
@@ -219,7 +193,6 @@ class ScheduleFrequency(str, Enum):
     SEMI_ANNUAL = "semi_annual"
     ANNUAL = "annual"
     ON_DEMAND = "on_demand"
-
 
 class DistributionChannel(str, Enum):
     """Report distribution channel.
@@ -236,11 +209,9 @@ class DistributionChannel(str, Enum):
     FILE = "file"
     PRINT = "print"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class ReportSection(BaseModel):
     """A single section within an M&V report."""
@@ -257,7 +228,6 @@ class ReportSection(BaseModel):
     )
     notes: List[str] = Field(default_factory=list, description="Section notes")
 
-
 class ComplianceCheck(BaseModel):
     """Single compliance requirement check."""
 
@@ -268,7 +238,6 @@ class ComplianceCheck(BaseModel):
     status: CheckStatus = Field(default=CheckStatus.NOT_EVALUATED, description="Status")
     evidence: str = Field(default="", description="Supporting evidence")
     notes: str = Field(default="", description="Additional notes")
-
 
 class ComplianceResult(BaseModel):
     """Overall compliance assessment result."""
@@ -287,9 +256,8 @@ class ComplianceResult(BaseModel):
         default_factory=list, description="Individual checks"
     )
     overall_compliant: bool = Field(default=False, description="Overall pass/fail")
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class ReportSchedule(BaseModel):
     """Schedule configuration for automated report generation."""
@@ -313,7 +281,6 @@ class ReportSchedule(BaseModel):
     next_due: Optional[str] = Field(None, description="Next due date YYYY-MM-DD")
     active: bool = Field(default=True, description="Whether schedule is active")
 
-
 class ReportConfig(BaseModel):
     """Configuration for a single report generation."""
 
@@ -333,7 +300,6 @@ class ReportConfig(BaseModel):
         default_factory=list, description="Custom sections to include"
     )
 
-
 class ReportOutput(BaseModel):
     """Generated report output."""
 
@@ -351,10 +317,9 @@ class ReportOutput(BaseModel):
     compliance_results: List[ComplianceResult] = Field(
         default_factory=list, description="Compliance check results"
     )
-    generated_at: datetime = Field(default_factory=_utcnow, description="Generation time")
+    generated_at: datetime = Field(default_factory=utcnow, description="Generation time")
     processing_time_ms: Decimal = Field(default=Decimal("0"), description="Processing time")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class ReportingResult(BaseModel):
     """Overall reporting engine result (multiple reports)."""
@@ -368,10 +333,9 @@ class ReportingResult(BaseModel):
     compliance_summary: Optional[ComplianceResult] = Field(
         None, description="Aggregate compliance result"
     )
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     processing_time_ms: Decimal = Field(default=Decimal("0"))
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Compliance Checklists (Deterministic Lookups)
@@ -440,11 +404,9 @@ EU_EED_CHECKS: List[Dict[str, str]] = [
     {"id": "EED-05", "text": "Verification by independent third party"},
 ]
 
-
 # ---------------------------------------------------------------------------
 # Engine Class
 # ---------------------------------------------------------------------------
-
 
 class MVReportingEngine:
     """M&V report generation engine with multi-format export and compliance.
@@ -1096,7 +1058,7 @@ class MVReportingEngine:
                 content_md=(
                     f"**Project ID:** {config.project_id}\n\n"
                     f"**Report Type:** {config.report_type.value}\n\n"
-                    f"**Generated:** {_utcnow().isoformat()}\n"
+                    f"**Generated:** {utcnow().isoformat()}\n"
                 ),
             ),
         ]
@@ -1127,7 +1089,7 @@ class MVReportingEngine:
         """Render sections as Markdown."""
         lines: List[str] = []
         lines.append(f"# {title}\n")
-        lines.append(f"**Generated:** {_utcnow().isoformat()}\n")
+        lines.append(f"**Generated:** {utcnow().isoformat()}\n")
         lines.append(f"**Author:** {config.author}\n")
         lines.append("---\n")
 
@@ -1161,7 +1123,7 @@ class MVReportingEngine:
         parts.append("</style>")
         parts.append("</head><body>")
         parts.append(f"<h1>{title}</h1>")
-        parts.append(f'<p class="meta">Generated: {_utcnow().isoformat()} | '
+        parts.append(f'<p class="meta">Generated: {utcnow().isoformat()} | '
                       f'Author: {config.author}</p>')
         parts.append("<hr>")
 
@@ -1185,7 +1147,7 @@ class MVReportingEngine:
         """Render sections as JSON."""
         report_data = {
             "title": title,
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
             "author": config.author,
             "project_id": config.project_id,
             "report_type": config.report_type.value,

@@ -34,7 +34,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.data.validation_rule_engine.config import (
     ValidationRuleEngineConfig,
@@ -56,6 +56,7 @@ from greenlang.agents.data.validation_rule_engine.metrics import (
     set_pass_rate,
 )
 from greenlang.agents.data.validation_rule_engine.provenance import ProvenanceTracker
+from greenlang.schemas import GreenLangBase, utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +70,6 @@ try:
 except ImportError:
     FastAPI = None  # type: ignore[assignment, misc]
     FASTAPI_AVAILABLE = False
-
 
 # ---------------------------------------------------------------------------
 # Optional engine imports (graceful degradation)
@@ -110,13 +110,11 @@ try:
 except ImportError:
     ValidationPipelineEngine = None  # type: ignore[assignment, misc]
 
-
 # ===================================================================
 # Lightweight Pydantic response models used by the facade / API layer
 # ===================================================================
 
-
-class RuleResponse(BaseModel):
+class RuleResponse(GreenLangBase):
     """Validation rule registration / retrieval response.
 
     Attributes:
@@ -167,8 +165,7 @@ class RuleResponse(BaseModel):
     )
     provenance_hash: str = Field(default="")
 
-
-class RuleSetResponse(BaseModel):
+class RuleSetResponse(GreenLangBase):
     """Rule set creation / retrieval response.
 
     Attributes:
@@ -207,8 +204,7 @@ class RuleSetResponse(BaseModel):
     )
     provenance_hash: str = Field(default="")
 
-
-class CompoundRuleResponse(BaseModel):
+class CompoundRuleResponse(GreenLangBase):
     """Compound rule composition response.
 
     Attributes:
@@ -230,8 +226,7 @@ class CompoundRuleResponse(BaseModel):
     description: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
-class EvaluationResponse(BaseModel):
+class EvaluationResponse(GreenLangBase):
     """Rule evaluation execution result response.
 
     Attributes:
@@ -266,8 +261,7 @@ class EvaluationResponse(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
-class BatchEvaluationResponse(BaseModel):
+class BatchEvaluationResponse(GreenLangBase):
     """Batch evaluation across multiple datasets response.
 
     Attributes:
@@ -291,8 +285,7 @@ class BatchEvaluationResponse(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
-class ConflictReportResponse(BaseModel):
+class ConflictReportResponse(GreenLangBase):
     """Rule conflict detection result response.
 
     Attributes:
@@ -316,8 +309,7 @@ class ConflictReportResponse(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
-class ValidationReportResponse(BaseModel):
+class ValidationReportResponse(GreenLangBase):
     """Validation report generation result response.
 
     Attributes:
@@ -346,8 +338,7 @@ class ValidationReportResponse(BaseModel):
     )
     provenance_hash: str = Field(default="")
 
-
-class RulePackResponse(BaseModel):
+class RulePackResponse(GreenLangBase):
     """Regulatory rule pack application / listing response.
 
     Attributes:
@@ -369,8 +360,7 @@ class RulePackResponse(BaseModel):
     description: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
-class PipelineResultResponse(BaseModel):
+class PipelineResultResponse(GreenLangBase):
     """End-to-end validation pipeline execution result response.
 
     Attributes:
@@ -397,8 +387,7 @@ class PipelineResultResponse(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
-class ValidationStatisticsResponse(BaseModel):
+class ValidationStatisticsResponse(GreenLangBase):
     """Aggregate statistics for the validation rule engine service.
 
     Attributes:
@@ -422,26 +411,17 @@ class ValidationStatisticsResponse(BaseModel):
     rules_by_type: Dict[str, int] = Field(default_factory=dict)
     rules_by_severity: Dict[str, int] = Field(default_factory=dict)
 
-
 # ===================================================================
 # Utility helpers
 # ===================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _utcnow_iso() -> str:
     """Return current UTC datetime as an ISO-8601 string."""
-    return _utcnow().isoformat()
-
+    return utcnow().isoformat()
 
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -459,7 +439,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ===================================================================
 # ValidationRuleEngineService facade
 # ===================================================================
@@ -467,7 +446,6 @@ def _compute_hash(data: Any) -> str:
 # Thread-safe singleton lock
 _singleton_lock = threading.Lock()
 _singleton_instance: Optional["ValidationRuleEngineService"] = None
-
 
 class ValidationRuleEngineService:
     """Unified facade over the Validation Rule Engine Agent SDK.
@@ -2798,11 +2776,9 @@ class ValidationRuleEngineService:
             ]
         return result
 
-
 # ===================================================================
 # Thread-safe singleton access
 # ===================================================================
-
 
 def _get_singleton() -> ValidationRuleEngineService:
     """Get or create the singleton ValidationRuleEngineService instance.
@@ -2817,11 +2793,9 @@ def _get_singleton() -> ValidationRuleEngineService:
                 _singleton_instance = ValidationRuleEngineService()
     return _singleton_instance
 
-
 # ===================================================================
 # FastAPI integration
 # ===================================================================
-
 
 async def configure_validation_rule_engine(
     app: Any,
@@ -2866,7 +2840,6 @@ async def configure_validation_rule_engine(
     logger.info("Validation rule engine service configured on app")
     return service
 
-
 def get_validation_rule_engine() -> ValidationRuleEngineService:
     """Get the singleton ValidationRuleEngineService instance.
 
@@ -2882,7 +2855,6 @@ def get_validation_rule_engine() -> ValidationRuleEngineService:
             if _singleton_instance is None:
                 _singleton_instance = ValidationRuleEngineService()
     return _singleton_instance
-
 
 def get_router(
     service: Optional[ValidationRuleEngineService] = None,
@@ -3283,13 +3255,11 @@ def get_router(
 
     return router
 
-
 # ===================================================================
 # HealthResponse (lightweight model)
 # ===================================================================
 
-
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Health check response for the VRE service."""
 
     model_config = {"extra": "forbid"}
@@ -3300,7 +3270,6 @@ class HealthResponse(BaseModel):
     engines: Dict[str, str] = Field(default_factory=dict)
     timestamp: str = Field(default="")
 
-
 # ===================================================================
 # Response-model aliases (used by tests / __init__.py)
 # ===================================================================
@@ -3309,7 +3278,6 @@ ConflictDetectionResponse = ConflictReportResponse
 PackApplyResponse = RulePackResponse
 ReportResponse = ValidationReportResponse
 ValidationRuleStatisticsResponse = ValidationStatisticsResponse
-
 
 # ===================================================================
 # Public API

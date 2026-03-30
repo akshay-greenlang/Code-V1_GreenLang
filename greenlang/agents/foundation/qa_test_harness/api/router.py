@@ -38,6 +38,7 @@ Status: Production Ready
 
 import logging
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +64,7 @@ except ImportError:
 
 if FASTAPI_AVAILABLE:
 
-    class RunTestBody(BaseModel):
+    class RunTestBody(GreenLangBase):
         """Request body for running a single test case."""
         name: str = Field(..., description="Test case name")
         agent_type: str = Field(..., description="Agent type to test")
@@ -74,7 +75,7 @@ if FASTAPI_AVAILABLE:
         timeout_seconds: int = Field(default=60, description="Timeout seconds")
         tags: List[str] = Field(default_factory=list, description="Test tags")
 
-    class RunSuiteBody(BaseModel):
+    class RunSuiteBody(GreenLangBase):
         """Request body for running a test suite."""
         name: str = Field(..., description="Suite name")
         test_cases: List[Dict[str, Any]] = Field(..., description="Test cases")
@@ -84,30 +85,30 @@ if FASTAPI_AVAILABLE:
         tags_include: List[str] = Field(default_factory=list, description="Include tags")
         tags_exclude: List[str] = Field(default_factory=list, description="Exclude tags")
 
-    class DeterminismTestBody(BaseModel):
+    class DeterminismTestBody(GreenLangBase):
         """Request body for determinism test."""
         agent_type: str = Field(..., description="Agent type to test")
         input_data: Dict[str, Any] = Field(default_factory=dict, description="Input data")
         iterations: int = Field(default=3, ge=2, description="Iterations")
 
-    class ZeroHallucinationTestBody(BaseModel):
+    class ZeroHallucinationTestBody(GreenLangBase):
         """Request body for zero-hallucination test."""
         agent_type: str = Field(..., description="Agent type to test")
         input_data: Dict[str, Any] = Field(default_factory=dict, description="Input data")
         checks: List[str] = Field(default_factory=list, description="Specific checks")
 
-    class LineageTestBody(BaseModel):
+    class LineageTestBody(GreenLangBase):
         """Request body for lineage test."""
         agent_type: str = Field(..., description="Agent type to test")
         input_data: Dict[str, Any] = Field(default_factory=dict, description="Input data")
 
-    class RegressionTestBody(BaseModel):
+    class RegressionTestBody(GreenLangBase):
         """Request body for regression test."""
         agent_type: str = Field(..., description="Agent type to test")
         input_data: Dict[str, Any] = Field(default_factory=dict, description="Input data")
         baseline_hash: Optional[str] = Field(None, description="Expected baseline hash")
 
-    class SaveGoldenFileBody(BaseModel):
+    class SaveGoldenFileBody(GreenLangBase):
         """Request body for saving a golden file."""
         agent_type: str = Field(..., description="Agent type")
         name: str = Field(..., description="Golden file name")
@@ -115,11 +116,11 @@ if FASTAPI_AVAILABLE:
         output_data: Dict[str, Any] = Field(..., description="Output data")
         description: str = Field(default="", description="Description")
 
-    class CompareGoldenBody(BaseModel):
+    class CompareGoldenBody(GreenLangBase):
         """Request body for golden file comparison."""
         agent_result: Dict[str, Any] = Field(..., description="Agent result to compare")
 
-    class RunBenchmarkBody(BaseModel):
+    class RunBenchmarkBody(GreenLangBase):
         """Request body for running a benchmark."""
         agent_type: str = Field(..., description="Agent type to benchmark")
         input_data: Dict[str, Any] = Field(default_factory=dict, description="Input data")
@@ -127,7 +128,7 @@ if FASTAPI_AVAILABLE:
         warmup: int = Field(default=2, ge=0, description="Warmup iterations")
         threshold_ms: Optional[float] = Field(None, description="Threshold ms")
 
-    class GenerateReportBody(BaseModel):
+    class GenerateReportBody(GreenLangBase):
         """Request body for report generation."""
         suite_result: Dict[str, Any] = Field(..., description="Suite result data")
         format: str = Field(default="markdown", description="Report format")

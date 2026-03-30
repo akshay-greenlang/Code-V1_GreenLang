@@ -40,6 +40,12 @@ except Exception:
     run_csrd_backend = None
     run_vcci_backend = None
 
+try:
+    from greenlang.v2.backends import V2_BLOCKED_EXIT_CODE, run_v2_profile_backend
+except Exception:
+    V2_BLOCKED_EXIT_CODE = 4
+    run_v2_profile_backend = None
+
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024  # 10 MB
 RATE_LIMIT_PER_MINUTE = 60
 SESSION_TTL_SECONDS = 60 * 60
@@ -160,6 +166,21 @@ def create_app() -> FastAPI:
     async def vcci_workspace(request: Request):
         """Render VCCI workspace HTML."""
         return get_vcci_html()
+
+    @app.get("/apps/eudr", response_class=HTMLResponse)
+    async def eudr_workspace(request: Request):
+        """Render EUDR workspace HTML."""
+        return get_eudr_html()
+
+    @app.get("/apps/ghg", response_class=HTMLResponse)
+    async def ghg_workspace(request: Request):
+        """Render GHG workspace HTML."""
+        return get_ghg_html()
+
+    @app.get("/apps/iso14064", response_class=HTMLResponse)
+    async def iso14064_workspace(request: Request):
+        """Render ISO14064 workspace HTML."""
+        return get_iso14064_html()
 
     @app.get("/runs", response_class=HTMLResponse)
     async def runs_center(request: Request):
@@ -390,6 +411,177 @@ def create_app() -> FastAPI:
             app_id="vcci",
             out_dir=out_dir,
             success=bool(result.success),
+            native_backend_used=bool(result.native_backend_used),
+            fallback_used=bool(result.fallback_used),
+            artifacts=result.artifacts,
+        )
+        return {"ok": True, "run_id": run_id, "artifacts": result.artifacts, "execution_mode": app.state.session_meta[run_id]["execution_mode"]}
+
+    async def _run_v2_json_app(request: Request, app_key: str, input_file: UploadFile) -> dict:
+        _require_api_key(request)
+        _enforce_rate_limit(request)
+        _prune_expired_sessions()
+        if run_v2_profile_backend is None:
+            raise HTTPException(status_code=503, detail=f"{app_key.upper()} backend integration unavailable in this install")
+
+        temp_dir = tempfile.mkdtemp(prefix=f"{app_key}_")
+        out_dir = Path(temp_dir) / "output"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            raw_name = input_file.filename or ""
+            if _is_suspicious_upload_filename(raw_name):
+                raise HTTPException(status_code=400, detail="Invalid upload filename")
+            input_path = (Path(temp_dir) / Path(raw_name).name).resolve()
+            content = await input_file.read()
+            if len(content) > MAX_UPLOAD_BYTES:
+                raise HTTPException(status_code=413, detail="Input file exceeds upload size limit")
+            input_path.write_bytes(content)
+
+            result = run_v2_profile_backend(
+                profile_key=app_key,
+                input_path=input_path,
+                output_dir=out_dir,
+                strict=True,
+                allow_fallback=True,
+            )
+
+            run_id = uuid.uuid4().hex
+            blocked = result.exit_code == V2_BLOCKED_EXIT_CODE
+            app.state.output_dirs[run_id] = out_dir
+            app.state.session_meta[run_id] = {
+                "app_id": app_key,
+                "status": "completed" if result.success else "failed",
+                "success": bool(result.success),
+                "execution_mode": "native" if result.native_backend_used else ("fallback" if result.fallback_used else "unknown"),
+                "artifacts": result.artifacts,
+                "created_at_ts": datetime.utcnow().timestamp(),
+                "can_export": bool(result.success and not blocked),
+            }
+
+            summary = {}
+            summary_artifacts = {
+                "eudr": "due_diligence_statement.json",
+                "ghg": "ghg_inventory.json",
+                "iso14064": "iso14064_verification_report.json",
+            }
+            artifact_name = summary_artifacts.get(app_key)
+            if artifact_name and (out_dir / artifact_name).exists():
+                try:
+                    summary = json.loads((out_dir / artifact_name).read_text(encoding="utf-8"))
+                except Exception:
+                    summary = {"note": f"{artifact_name} present but could not be parsed"}
+
+            return {
+                "run_id": run_id,
+                "app_id": app_key,
+                "success": bool(result.success),
+                "status": "completed" if result.success else "failed",
+                "execution_mode": app.state.session_meta[run_id]["execution_mode"],
+                "artifacts": result.artifacts,
+                "warnings": result.warnings,
+                "errors": _sanitize_errors(result.errors),
+                "summary": summary,
+            }
+        except HTTPException:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+            raise
+        except Exception as exc:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+            raise HTTPException(status_code=500, detail=f"{app_key.upper()} processing failed") from exc
+
+    @app.post("/api/v1/apps/eudr/run")
+    async def run_eudr(request: Request, input_file: UploadFile = File(...)):
+        return await _run_v2_json_app(request=request, app_key="eudr", input_file=input_file)
+
+    @app.post("/api/v1/apps/ghg/run")
+    async def run_ghg(request: Request, input_file: UploadFile = File(...)):
+        return await _run_v2_json_app(request=request, app_key="ghg", input_file=input_file)
+
+    @app.post("/api/v1/apps/iso14064/run")
+    async def run_iso14064(request: Request, input_file: UploadFile = File(...)):
+        return await _run_v2_json_app(request=request, app_key="iso14064", input_file=input_file)
+
+    @app.post("/api/v1/apps/eudr/demo-run")
+    async def run_eudr_demo(request: Request):
+        _require_api_key(request)
+        _enforce_rate_limit(request)
+        _prune_expired_sessions()
+        sample_input = _resolve_demo_input("eudr")
+        if sample_input is None:
+            raise HTTPException(status_code=404, detail="EUDR demo input not found")
+        temp_dir = tempfile.mkdtemp(prefix="eudr_demo_")
+        out_dir = Path(temp_dir) / "output"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        result = run_v2_profile_backend(
+            profile_key="eudr",
+            input_path=sample_input,
+            output_dir=out_dir,
+            strict=True,
+            allow_fallback=True,
+        )
+        run_id = _record_v1_run(
+            app=app,
+            app_id="eudr",
+            out_dir=out_dir,
+            success=bool(result.success and result.exit_code == 0),
+            native_backend_used=bool(result.native_backend_used),
+            fallback_used=bool(result.fallback_used),
+            artifacts=result.artifacts,
+        )
+        return {"ok": True, "run_id": run_id, "artifacts": result.artifacts, "execution_mode": app.state.session_meta[run_id]["execution_mode"]}
+
+    @app.post("/api/v1/apps/ghg/demo-run")
+    async def run_ghg_demo(request: Request):
+        _require_api_key(request)
+        _enforce_rate_limit(request)
+        _prune_expired_sessions()
+        sample_input = _resolve_demo_input("ghg")
+        if sample_input is None:
+            raise HTTPException(status_code=404, detail="GHG demo input not found")
+        temp_dir = tempfile.mkdtemp(prefix="ghg_demo_")
+        out_dir = Path(temp_dir) / "output"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        result = run_v2_profile_backend(
+            profile_key="ghg",
+            input_path=sample_input,
+            output_dir=out_dir,
+            strict=True,
+            allow_fallback=True,
+        )
+        run_id = _record_v1_run(
+            app=app,
+            app_id="ghg",
+            out_dir=out_dir,
+            success=bool(result.success and result.exit_code == 0),
+            native_backend_used=bool(result.native_backend_used),
+            fallback_used=bool(result.fallback_used),
+            artifacts=result.artifacts,
+        )
+        return {"ok": True, "run_id": run_id, "artifacts": result.artifacts, "execution_mode": app.state.session_meta[run_id]["execution_mode"]}
+
+    @app.post("/api/v1/apps/iso14064/demo-run")
+    async def run_iso14064_demo(request: Request):
+        _require_api_key(request)
+        _enforce_rate_limit(request)
+        _prune_expired_sessions()
+        sample_input = _resolve_demo_input("iso14064")
+        if sample_input is None:
+            raise HTTPException(status_code=404, detail="ISO14064 demo input not found")
+        temp_dir = tempfile.mkdtemp(prefix="iso14064_demo_")
+        out_dir = Path(temp_dir) / "output"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        result = run_v2_profile_backend(
+            profile_key="iso14064",
+            input_path=sample_input,
+            output_dir=out_dir,
+            strict=True,
+            allow_fallback=True,
+        )
+        run_id = _record_v1_run(
+            app=app,
+            app_id="iso14064",
+            out_dir=out_dir,
+            success=bool(result.success and result.exit_code == 0),
             native_backend_used=bool(result.native_backend_used),
             fallback_used=bool(result.fallback_used),
             artifacts=result.artifacts,
@@ -1884,6 +2076,12 @@ def _resolve_demo_input(app_id: str) -> Optional[Path]:
         candidate = repo_root / "applications" / "GL-CSRD-APP" / "CSRD-Reporting-Platform" / "examples" / "demo_esg_data.csv"
     elif app_id == "vcci":
         candidate = repo_root / "applications" / "GL-VCCI-Carbon-APP" / "VCCI-Scope3-Platform" / "examples" / "sample_category1_batch.csv"
+    elif app_id == "eudr":
+        candidate = repo_root / "applications" / "GL-EUDR-APP" / "v2" / "smoke_input.json"
+    elif app_id == "ghg":
+        candidate = repo_root / "applications" / "GL-GHG-APP" / "v2" / "smoke_input.json"
+    elif app_id == "iso14064":
+        candidate = repo_root / "applications" / "GL-ISO14064-APP" / "v2" / "smoke_input.json"
     else:
         candidate = package_root / "examples" / "sample_imports.csv"
     return candidate if candidate.exists() else None
@@ -1920,6 +2118,24 @@ def get_csrd_html() -> str:
 def get_vcci_html() -> str:
     html = _read_web_template("vcci_workspace.html")
     html = html or "<html><body><h1>VCCI Workspace unavailable</h1></body></html>"
+    return _inject_shared_ui_script(html)
+
+
+def get_eudr_html() -> str:
+    html = _read_web_template("eudr_workspace.html")
+    html = html or "<html><body><h1>EUDR Workspace unavailable</h1></body></html>"
+    return _inject_shared_ui_script(html)
+
+
+def get_ghg_html() -> str:
+    html = _read_web_template("ghg_workspace.html")
+    html = html or "<html><body><h1>GHG Workspace unavailable</h1></body></html>"
+    return _inject_shared_ui_script(html)
+
+
+def get_iso14064_html() -> str:
+    html = _read_web_template("iso14064_workspace.html")
+    html = html or "<html><body><h1>ISO14064 Workspace unavailable</h1></body></html>"
     return _inject_shared_ui_script(html)
 
 
@@ -1984,6 +2200,38 @@ def get_runs_html(app: FastAPI) -> str:
     }
     loadRuns();
   </script>
+</body>
+</html>"""
+
+
+def get_enterprise_workspace_html(app_title: str, app_id: str, description: str) -> str:
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{app_title}</title>
+  <style>
+    body {{ font-family: Segoe UI, Roboto, Arial, sans-serif; margin: 0; padding: 20px; background: #0b1225; color: #e8efff; }}
+    .card {{ border: 1px solid rgba(255,255,255,0.14); border-radius: 12px; padding: 16px; background: rgba(255,255,255,0.06); max-width: 960px; }}
+    .muted {{ color: #a8b6d8; }}
+    a {{ color: #66f2cf; text-decoration: none; }}
+    .pill {{ display: inline-block; margin-right: 8px; margin-top: 10px; padding: 4px 10px; border-radius: 999px; border: 1px solid rgba(102,242,207,0.5); }}
+  </style>
+</head>
+<body>
+  <p><a href="/apps">Back to enterprise portfolio</a></p>
+  <div class="card">
+    <h1>{app_title}</h1>
+    <p class="muted"><strong>{app_id}</strong></p>
+    <p>{description}</p>
+    <p class="muted">This workspace is included in enterprise portfolio navigation and release-train observability gates.</p>
+    <div>
+      <span class="pill">Policy Controls Visible</span>
+      <span class="pill">Evidence Ready</span>
+      <span class="pill">Release Train Aligned</span>
+    </div>
+  </div>
 </body>
 </html>"""
 

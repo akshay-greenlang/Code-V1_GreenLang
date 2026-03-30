@@ -28,7 +28,8 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 
 from .config import (
     CDPModule,
@@ -71,7 +72,7 @@ def _sha256(payload: str) -> str:
 # Organization Models
 # ---------------------------------------------------------------------------
 
-class CDPOrganization(BaseModel):
+class CDPOrganization(GreenLangBase):
     """
     Organization registered for CDP Climate Change disclosure.
 
@@ -100,7 +101,7 @@ class CDPOrganization(BaseModel):
 # Questionnaire Models
 # ---------------------------------------------------------------------------
 
-class Questionnaire(BaseModel):
+class Questionnaire(GreenLangBase):
     """
     A CDP Climate Change questionnaire instance for an organization-year.
 
@@ -129,7 +130,7 @@ class Questionnaire(BaseModel):
         return self.answered_questions >= self.total_questions > 0
 
 
-class Module(BaseModel):
+class Module(GreenLangBase):
     """
     A module within a CDP questionnaire (M0 through M13).
 
@@ -156,7 +157,7 @@ class Module(BaseModel):
     updated_at: datetime = Field(default_factory=_now)
 
 
-class QuestionOption(BaseModel):
+class QuestionOption(GreenLangBase):
     """A selectable option for single-select or multi-select questions."""
 
     value: str = Field(..., description="Option value/key")
@@ -164,7 +165,7 @@ class QuestionOption(BaseModel):
     score_points: float = Field(default=0.0, description="Points awarded for this selection")
 
 
-class QuestionDependency(BaseModel):
+class QuestionDependency(GreenLangBase):
     """Conditional dependency defining skip patterns between questions."""
 
     parent_question_id: str = Field(..., description="Question that triggers the condition")
@@ -179,7 +180,7 @@ class QuestionDependency(BaseModel):
     )
 
 
-class Question(BaseModel):
+class Question(GreenLangBase):
     """
     A single CDP questionnaire question with metadata.
 
@@ -227,7 +228,7 @@ class Question(BaseModel):
 # Response Models
 # ---------------------------------------------------------------------------
 
-class ResponseVersion(BaseModel):
+class ResponseVersion(GreenLangBase):
     """A historical version of a response for change tracking."""
 
     id: str = Field(default_factory=_new_id)
@@ -253,7 +254,7 @@ class ResponseVersion(BaseModel):
             self.provenance_hash = _sha256(payload)
 
 
-class EvidenceAttachment(BaseModel):
+class EvidenceAttachment(GreenLangBase):
     """Evidence document attached to a CDP response."""
 
     id: str = Field(default_factory=_new_id)
@@ -274,7 +275,7 @@ class EvidenceAttachment(BaseModel):
             self.provenance_hash = _sha256(payload)
 
 
-class ReviewComment(BaseModel):
+class ReviewComment(GreenLangBase):
     """A review comment on a response."""
 
     id: str = Field(default_factory=_new_id)
@@ -288,7 +289,7 @@ class ReviewComment(BaseModel):
     created_at: datetime = Field(default_factory=_now)
 
 
-class ReviewWorkflow(BaseModel):
+class ReviewWorkflow(GreenLangBase):
     """Review workflow tracking for a response."""
 
     id: str = Field(default_factory=_new_id)
@@ -305,7 +306,7 @@ class ReviewWorkflow(BaseModel):
     updated_at: datetime = Field(default_factory=_now)
 
 
-class Response(BaseModel):
+class Response(GreenLangBase):
     """
     A response to a single CDP questionnaire question.
 
@@ -360,7 +361,7 @@ class Response(BaseModel):
 # Scoring Models
 # ---------------------------------------------------------------------------
 
-class CategoryScore(BaseModel):
+class CategoryScore(GreenLangBase):
     """Score for a single CDP scoring category (1 of 17)."""
 
     category_id: str = Field(..., description="Scoring category ID (SC01-SC17)")
@@ -382,7 +383,7 @@ class CategoryScore(BaseModel):
     applicable: bool = Field(default=True, description="Whether category applies to this org")
 
 
-class ARequirementStatus(BaseModel):
+class ARequirementStatus(GreenLangBase):
     """Status of one of the 5 A-level requirements."""
 
     requirement_id: str = Field(..., description="Requirement ID (AREQ01-AREQ05)")
@@ -393,7 +394,7 @@ class ARequirementStatus(BaseModel):
     details: Optional[str] = Field(None, max_length=1000)
 
 
-class ScoringResult(BaseModel):
+class ScoringResult(GreenLangBase):
     """
     Complete CDP scoring result for a questionnaire.
 
@@ -443,7 +444,7 @@ class ScoringResult(BaseModel):
 # Gap Analysis Models
 # ---------------------------------------------------------------------------
 
-class GapRecommendation(BaseModel):
+class GapRecommendation(GreenLangBase):
     """Actionable recommendation for closing a gap."""
 
     title: str = Field(..., description="Recommendation title")
@@ -452,7 +453,7 @@ class GapRecommendation(BaseModel):
     reference: Optional[str] = Field(None, description="CDP guidance reference")
 
 
-class GapItem(BaseModel):
+class GapItem(GreenLangBase):
     """A single identified gap in CDP questionnaire responses."""
 
     id: str = Field(default_factory=_new_id)
@@ -476,7 +477,7 @@ class GapItem(BaseModel):
     created_at: datetime = Field(default_factory=_now)
 
 
-class GapAnalysis(BaseModel):
+class GapAnalysis(GreenLangBase):
     """
     Complete gap analysis result for a questionnaire.
 
@@ -541,7 +542,7 @@ class GapAnalysis(BaseModel):
 # Benchmarking Models
 # ---------------------------------------------------------------------------
 
-class PeerComparison(BaseModel):
+class PeerComparison(GreenLangBase):
     """Comparison data point for a single peer organization."""
 
     peer_id: str = Field(default_factory=_new_id, description="Anonymous peer ID")
@@ -555,7 +556,7 @@ class PeerComparison(BaseModel):
     year: int = Field(default=2026, ge=2020, le=2030)
 
 
-class SectorDistribution(BaseModel):
+class SectorDistribution(GreenLangBase):
     """Score distribution data for a sector."""
 
     sector_code: str = Field(..., description="GICS sector code")
@@ -575,7 +576,7 @@ class SectorDistribution(BaseModel):
     )
 
 
-class Benchmark(BaseModel):
+class Benchmark(GreenLangBase):
     """
     Benchmarking result comparing an organization against its peers.
 
@@ -609,7 +610,7 @@ class Benchmark(BaseModel):
 # Supply Chain Models
 # ---------------------------------------------------------------------------
 
-class SupplyChainRequest(BaseModel):
+class SupplyChainRequest(GreenLangBase):
     """A CDP Supply Chain disclosure request to a supplier."""
 
     id: str = Field(default_factory=_new_id)
@@ -629,7 +630,7 @@ class SupplyChainRequest(BaseModel):
     updated_at: datetime = Field(default_factory=_now)
 
 
-class SupplierResponse(BaseModel):
+class SupplierResponse(GreenLangBase):
     """A supplier's response to a CDP Supply Chain questionnaire."""
 
     id: str = Field(default_factory=_new_id)
@@ -660,7 +661,7 @@ class SupplierResponse(BaseModel):
 # Transition Plan Models
 # ---------------------------------------------------------------------------
 
-class TransitionMilestone(BaseModel):
+class TransitionMilestone(GreenLangBase):
     """A milestone in the 1.5C transition plan."""
 
     id: str = Field(default_factory=_new_id)
@@ -685,7 +686,7 @@ class TransitionMilestone(BaseModel):
     updated_at: datetime = Field(default_factory=_now)
 
 
-class TransitionPlan(BaseModel):
+class TransitionPlan(GreenLangBase):
     """
     1.5C-aligned transition plan for CDP A-level scoring.
 
@@ -763,7 +764,7 @@ class TransitionPlan(BaseModel):
 # Verification Models
 # ---------------------------------------------------------------------------
 
-class VerificationRecord(BaseModel):
+class VerificationRecord(GreenLangBase):
     """
     Third-party verification record for CDP emissions data.
 
@@ -797,7 +798,7 @@ class VerificationRecord(BaseModel):
 # Submission Models
 # ---------------------------------------------------------------------------
 
-class Submission(BaseModel):
+class Submission(GreenLangBase):
     """
     Final CDP questionnaire submission record.
 
@@ -840,7 +841,7 @@ class Submission(BaseModel):
 # Historical Tracking Models
 # ---------------------------------------------------------------------------
 
-class YearlyScoreRecord(BaseModel):
+class YearlyScoreRecord(GreenLangBase):
     """Historical score record for one year."""
 
     year: int = Field(..., ge=2015, le=2030)
@@ -852,7 +853,7 @@ class YearlyScoreRecord(BaseModel):
     submitted: bool = Field(default=False)
 
 
-class HistoricalTrackingResult(BaseModel):
+class HistoricalTrackingResult(GreenLangBase):
     """Multi-year historical tracking result."""
 
     org_id: str = Field(..., description="Organization ID")
@@ -874,7 +875,7 @@ class HistoricalTrackingResult(BaseModel):
 # Data Connector Models
 # ---------------------------------------------------------------------------
 
-class MRVDataPoint(BaseModel):
+class MRVDataPoint(GreenLangBase):
     """A data point retrieved from an MRV agent."""
 
     agent_id: str = Field(..., description="MRV agent ID (e.g. MRV-001)")
@@ -901,7 +902,7 @@ class MRVDataPoint(BaseModel):
             self.provenance_hash = _sha256(payload)
 
 
-class AutoPopulationResult(BaseModel):
+class AutoPopulationResult(GreenLangBase):
     """Result of auto-populating CDP responses from MRV agents."""
 
     questionnaire_id: str = Field(...)
@@ -936,7 +937,7 @@ class AutoPopulationResult(BaseModel):
 # Dashboard Models
 # ---------------------------------------------------------------------------
 
-class DashboardAlert(BaseModel):
+class DashboardAlert(GreenLangBase):
     """An alert surfaced on the CDP dashboard."""
 
     id: str = Field(default_factory=_new_id)
@@ -948,7 +949,7 @@ class DashboardAlert(BaseModel):
     dismissed: bool = Field(default=False)
 
 
-class DashboardMetrics(BaseModel):
+class DashboardMetrics(GreenLangBase):
     """
     Aggregated dashboard metrics for the CDP disclosure.
 
@@ -988,7 +989,7 @@ class DashboardMetrics(BaseModel):
 # Request / Response API Models
 # ---------------------------------------------------------------------------
 
-class CreateOrganizationRequest(BaseModel):
+class CreateOrganizationRequest(GreenLangBase):
     """Request to create a new CDP organization."""
 
     name: str = Field(..., min_length=1, max_length=500)
@@ -1001,14 +1002,14 @@ class CreateOrganizationRequest(BaseModel):
     annual_revenue_usd: Optional[Decimal] = Field(None, ge=Decimal("0"))
 
 
-class CreateQuestionnaireRequest(BaseModel):
+class CreateQuestionnaireRequest(GreenLangBase):
     """Request to create a new CDP questionnaire."""
 
     year: int = Field(..., ge=2020, le=2030)
     version: str = Field(default="2026")
 
 
-class SaveResponseRequest(BaseModel):
+class SaveResponseRequest(GreenLangBase):
     """Request to save a response to a question."""
 
     question_id: str = Field(...)
@@ -1020,34 +1021,34 @@ class SaveResponseRequest(BaseModel):
     override_justification: Optional[str] = Field(None, max_length=1000)
 
 
-class BulkSaveResponseRequest(BaseModel):
+class BulkSaveResponseRequest(GreenLangBase):
     """Request to save multiple responses at once."""
 
     responses: List[SaveResponseRequest] = Field(...)
 
 
-class SubmitForReviewRequest(BaseModel):
+class SubmitForReviewRequest(GreenLangBase):
     """Request to submit a response for review."""
 
     reviewer: str = Field(..., description="Reviewer user ID")
     comment: Optional[str] = Field(None, max_length=2000)
 
 
-class ApproveResponseRequest(BaseModel):
+class ApproveResponseRequest(GreenLangBase):
     """Request to approve a response."""
 
     approved_by: str = Field(...)
     comment: Optional[str] = Field(None, max_length=2000)
 
 
-class RejectResponseRequest(BaseModel):
+class RejectResponseRequest(GreenLangBase):
     """Request to reject (return) a response."""
 
     rejected_by: str = Field(...)
     reason: str = Field(..., min_length=1, max_length=2000)
 
 
-class SimulateScoreRequest(BaseModel):
+class SimulateScoreRequest(GreenLangBase):
     """Request to run a what-if scoring simulation."""
 
     changes: Dict[str, Dict[str, Any]] = Field(
@@ -1056,7 +1057,7 @@ class SimulateScoreRequest(BaseModel):
     )
 
 
-class RunGapAnalysisRequest(BaseModel):
+class RunGapAnalysisRequest(GreenLangBase):
     """Request to run gap analysis."""
 
     target_level: ScoringLevel = Field(
@@ -1068,7 +1069,7 @@ class RunGapAnalysisRequest(BaseModel):
     )
 
 
-class CreateBenchmarkRequest(BaseModel):
+class CreateBenchmarkRequest(GreenLangBase):
     """Request to create a benchmark comparison."""
 
     sector_code: Optional[str] = Field(None, description="GICS sector for comparison")
@@ -1076,7 +1077,7 @@ class CreateBenchmarkRequest(BaseModel):
     custom_peer_ids: Optional[List[str]] = Field(None, description="Custom peer org IDs")
 
 
-class InviteSupplierRequest(BaseModel):
+class InviteSupplierRequest(GreenLangBase):
     """Request to invite a supplier to CDP Supply Chain."""
 
     supplier_name: str = Field(..., min_length=1, max_length=500)
@@ -1088,7 +1089,7 @@ class InviteSupplierRequest(BaseModel):
     scope3_category: Optional[int] = Field(None, ge=1, le=15)
 
 
-class CreateTransitionPlanRequest(BaseModel):
+class CreateTransitionPlanRequest(GreenLangBase):
     """Request to create a transition plan."""
 
     name: str = Field(default="1.5C Transition Plan", max_length=255)
@@ -1100,7 +1101,7 @@ class CreateTransitionPlanRequest(BaseModel):
     pathway_aligned: str = Field(default="1.5c")
 
 
-class AddMilestoneRequest(BaseModel):
+class AddMilestoneRequest(GreenLangBase):
     """Request to add a milestone to a transition plan."""
 
     name: str = Field(..., min_length=1, max_length=255)
@@ -1114,7 +1115,7 @@ class AddMilestoneRequest(BaseModel):
     opex_annual_usd: Optional[Decimal] = Field(None, ge=Decimal("0"))
 
 
-class AddVerificationRequest(BaseModel):
+class AddVerificationRequest(GreenLangBase):
     """Request to add a verification record."""
 
     scope: str = Field(..., description="scope_1, scope_2, scope_3, scope_3_cat_N")
@@ -1126,7 +1127,7 @@ class AddVerificationRequest(BaseModel):
     emissions_verified_tco2e: Optional[Decimal] = Field(None, ge=Decimal("0"))
 
 
-class GenerateReportRequest(BaseModel):
+class GenerateReportRequest(GreenLangBase):
     """Request to generate a CDP report."""
 
     format: ReportFormat = Field(default=ReportFormat.PDF)
@@ -1136,14 +1137,14 @@ class GenerateReportRequest(BaseModel):
     include_executive_summary: bool = Field(default=True)
 
 
-class ExportXMLRequest(BaseModel):
+class ExportXMLRequest(GreenLangBase):
     """Request to export CDP ORS-compatible XML."""
 
     validate_before_export: bool = Field(default=True)
     include_attachments: bool = Field(default=False)
 
 
-class UpdateSettingsRequest(BaseModel):
+class UpdateSettingsRequest(GreenLangBase):
     """Request to update platform configuration."""
 
     default_questionnaire_year: Optional[int] = Field(None, ge=2024, le=2030)
@@ -1160,7 +1161,7 @@ class UpdateSettingsRequest(BaseModel):
 # Generic API Response Models
 # ---------------------------------------------------------------------------
 
-class ApiError(BaseModel):
+class ApiError(GreenLangBase):
     """Standard API error response."""
 
     code: str = Field(..., description="Error code (e.g. VALIDATION_ERROR)")
@@ -1169,7 +1170,7 @@ class ApiError(BaseModel):
     timestamp: datetime = Field(default_factory=_now)
 
 
-class ApiResponse(BaseModel):
+class ApiResponse(GreenLangBase):
     """Standard API success response wrapper."""
 
     success: bool = Field(default=True)
@@ -1180,7 +1181,7 @@ class ApiResponse(BaseModel):
     provenance_hash: Optional[str] = Field(None)
 
 
-class PaginatedResponse(BaseModel):
+class PaginatedResponse(GreenLangBase):
     """Paginated list response for collection endpoints."""
 
     items: List[Any] = Field(default_factory=list)

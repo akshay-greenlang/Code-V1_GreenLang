@@ -23,7 +23,7 @@ from typing import Any, Dict, List, Optional
 from enum import Enum
 import logging
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.decarbonization.waste.base import (
     BaseWasteDecarbAgent,
@@ -36,6 +36,7 @@ from greenlang.agents.decarbonization.waste.base import (
     CostCategory,
     ConfidenceLevel,
 )
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +67,7 @@ class CircularEconomyInput(WasteDecarbInput):
     product_categories: List[str] = Field(default_factory=list, description="Product categories")
 
 
-class CircularityMetrics(BaseModel):
+class CircularityMetrics(GreenLangBase):
     """Circularity metrics output."""
     material_circularity_indicator: Decimal = Field(Decimal("0"), description="MCI (0-1)")
     recycled_input_rate: Decimal = Field(Decimal("0"))

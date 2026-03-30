@@ -127,6 +127,7 @@ from greenlang.agents.mrv.capital_goods.models import (
 )
 from greenlang.agents.mrv.capital_goods.config import CapitalGoodsConfig
 from greenlang.agents.mrv.capital_goods.metrics import CapitalGoodsMetrics
+from greenlang.schemas import utcnow
 from greenlang.agents.mrv.capital_goods.provenance import (
     CapitalGoodsProvenance,
     ProvenanceStage,
@@ -378,16 +379,9 @@ _EEIO_DATABASE_LABELS: Dict[EEIODatabase, str] = {
     EEIODatabase.GTAP: "GTAP 11 (141 regions, 65 sectors)",
 }
 
-
 # ===========================================================================
 # Helper utilities
 # ===========================================================================
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _quantize(value: Decimal) -> Decimal:
     """Quantize a Decimal to the configured precision.
@@ -405,7 +399,6 @@ def _quantize(value: Decimal) -> Decimal:
             "Quantize failed for value=%s, returning ZERO", value
         )
         return ZERO
-
 
 def _hash_data(data: Any) -> str:
     """Compute SHA-256 hex digest for arbitrary data.
@@ -428,7 +421,6 @@ def _hash_data(data: Any) -> str:
     else:
         serialized = json.dumps(data, default=str).encode("utf-8")
     return hashlib.sha256(serialized).hexdigest()
-
 
 def _compute_provenance_hash(
     record_id: str,
@@ -476,7 +468,6 @@ def _compute_provenance_hash(
     )
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
-
 def _naics_to_2digit(naics_code: str) -> str:
     """Extract 2-digit NAICS sector from a NAICS code.
 
@@ -487,7 +478,6 @@ def _naics_to_2digit(naics_code: str) -> str:
         First two characters of the NAICS code.
     """
     return naics_code[:2] if naics_code and len(naics_code) >= 2 else ""
-
 
 def _naics_to_3digit(naics_code: str) -> str:
     """Extract 3-digit NAICS subsector from a NAICS code.
@@ -500,7 +490,6 @@ def _naics_to_3digit(naics_code: str) -> str:
     """
     return naics_code[:3] if naics_code and len(naics_code) >= 3 else ""
 
-
 def _sector_name_for_code(naics_code: str) -> str:
     """Get human-readable sector name from a NAICS code.
 
@@ -512,7 +501,6 @@ def _sector_name_for_code(naics_code: str) -> str:
     """
     sector_2 = _naics_to_2digit(naics_code)
     return _NAICS_SECTOR_NAMES.get(sector_2, "Unknown Sector")
-
 
 def _resolve_gas_sector(naics_code: str) -> str:
     """Resolve a NAICS code to a gas split sector key.
@@ -541,7 +529,6 @@ def _resolve_gas_sector(naics_code: str) -> str:
 
     return "default"
 
-
 def _dqi_score_label(score: Decimal) -> str:
     """Map a numeric DQI score to its qualitative label.
 
@@ -560,7 +547,6 @@ def _dqi_score_label(score: Decimal) -> str:
     if score < Decimal("4.6"):
         return "Poor"
     return "Very Poor"
-
 
 def _pedigree_factor_for_score(score: Decimal) -> Decimal:
     """Get pedigree uncertainty factor for a DQI score.
@@ -585,11 +571,9 @@ def _pedigree_factor_for_score(score: Decimal) -> Decimal:
         return PEDIGREE_UNCERTAINTY_FACTORS[DQIScore.POOR]
     return PEDIGREE_UNCERTAINTY_FACTORS[DQIScore.VERY_POOR]
 
-
 # ===========================================================================
 # SpendBasedCalculatorEngine
 # ===========================================================================
-
 
 class SpendBasedCalculatorEngine:
     """Thread-safe singleton engine for capital goods spend-based EEIO emission calculations.
@@ -942,7 +926,7 @@ class SpendBasedCalculatorEngine:
                 self._calculation_count += 1
                 self._total_emissions_kgco2e += emissions_kgco2e
                 self._total_spend_processed_usd += spend_usd
-                self._last_calculation_time = _utcnow()
+                self._last_calculation_time = utcnow()
 
             logger.info(
                 "Capital goods spend-based calculation completed: "
@@ -1522,7 +1506,7 @@ class SpendBasedCalculatorEngine:
 
         # Adjust temporal score based on EEIO base year recency
         base_year = self._config.calculation.cpi_base_year
-        current_year = _utcnow().year
+        current_year = utcnow().year
         year_gap = current_year - base_year
         if year_gap <= 2:
             temporal_score = Decimal("3.0")
@@ -1683,7 +1667,7 @@ class SpendBasedCalculatorEngine:
         if not results:
             return {}
 
-        current_year = _utcnow().year
+        current_year = utcnow().year
         total = ZERO
         for r in results:
             total += r.emissions_kg_co2e

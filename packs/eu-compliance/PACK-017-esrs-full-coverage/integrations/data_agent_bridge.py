@@ -37,25 +37,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -68,11 +62,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DataSourceType(str, Enum):
     """Supported data source types."""
@@ -86,7 +78,6 @@ class DataSourceType(str, Enum):
     GIS = "gis"
     SATELLITE = "satellite"
 
-
 class ERPSystem(str, Enum):
     """Supported ERP systems."""
 
@@ -94,7 +85,6 @@ class ERPSystem(str, Enum):
     ORACLE = "oracle"
     WORKDAY = "workday"
     MS_DYNAMICS = "ms_dynamics"
-
 
 class QualityLevel(str, Enum):
     """Data quality assessment level."""
@@ -104,7 +94,6 @@ class QualityLevel(str, Enum):
     LOW = "low"
     UNASSESSED = "unassessed"
 
-
 class AgentCategory(str, Enum):
     """DATA agent category."""
 
@@ -112,11 +101,9 @@ class AgentCategory(str, Enum):
     QUALITY = "quality"
     GEO = "geo"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class DataBridgeConfig(BaseModel):
     """Configuration for the Data Agent Bridge."""
@@ -132,7 +119,6 @@ class DataBridgeConfig(BaseModel):
         description="Minimum data quality score to pass validation",
     )
 
-
 class DataAgentMapping(BaseModel):
     """Mapping of a DATA agent to its function and supported data types."""
 
@@ -144,7 +130,6 @@ class DataAgentMapping(BaseModel):
         default_factory=list,
         description="ESRS standards this agent supports",
     )
-
 
 class IntakeResult(BaseModel):
     """Result of a data intake operation."""
@@ -163,7 +148,6 @@ class IntakeResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class QualityReport(BaseModel):
     """Data quality assessment report."""
 
@@ -177,7 +161,6 @@ class QualityReport(BaseModel):
     quality_level: QualityLevel = Field(default=QualityLevel.UNASSESSED)
     issues: List[Dict[str, Any]] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # DATA Agent Routing Table
@@ -333,11 +316,9 @@ ERP_FIELD_MAPPINGS: Dict[str, Dict[str, str]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # DataAgentBridge
 # ---------------------------------------------------------------------------
-
 
 class DataAgentBridge:
     """AGENT-DATA integration bridge for PACK-017.
@@ -380,7 +361,7 @@ class DataAgentBridge:
         Returns:
             IntakeResult with import status and record counts.
         """
-        result = IntakeResult(started_at=_utcnow(), source_type=source_key)
+        result = IntakeResult(started_at=utcnow(), source_type=source_key)
 
         mapping = DATA_AGENT_ROUTING.get(source_key)
         if mapping is None:
@@ -546,7 +527,7 @@ class DataAgentBridge:
                 return self.route_data(key, context)
 
         result = IntakeResult(
-            started_at=_utcnow(),
+            started_at=utcnow(),
             source_type=source_type.value,
             status="failed",
         )
@@ -600,7 +581,7 @@ class DataAgentBridge:
 
     def _finalize_result(self, result: IntakeResult) -> None:
         """Set completed_at and duration_ms on a result."""
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at

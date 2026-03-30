@@ -35,6 +35,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from greenlang.agents.foundation.qa_test_harness.config import QATestHarnessConfig
+from greenlang.schemas import utcnow
 from greenlang.agents.foundation.qa_test_harness.models import (
     GoldenFileEntry,
     TestAssertion,
@@ -47,12 +48,6 @@ from greenlang.agents.foundation.qa_test_harness.metrics import (
 )
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 class GoldenFileManager:
     """Golden file / snapshot testing manager.
@@ -121,7 +116,7 @@ class GoldenFileManager:
             "description": description,
             "input_data": input_data,
             "expected_output": output_data,
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
             "version": "1.0.0",
         }
 
@@ -288,7 +283,7 @@ class GoldenFileManager:
         new_content_hash = self._compute_content_hash(golden_data)
         entry.content_hash = new_content_hash
         entry.version = golden_data["version"]
-        entry.updated_at = _utcnow()
+        entry.updated_at = utcnow()
 
         # Invalidate cache
         self._invalidate_cache(entry.file_path)
@@ -347,7 +342,7 @@ class GoldenFileManager:
             return False
 
         entry.is_active = False
-        entry.updated_at = _utcnow()
+        entry.updated_at = utcnow()
 
         # Invalidate cache
         self._invalidate_cache(entry.file_path)
@@ -411,11 +406,9 @@ class GoldenFileManager:
         self._file_cache.pop(file_path, None)
         self._cache_timestamps.pop(file_path, None)
 
-
 # ---------------------------------------------------------------------------
 # Module-level helpers
 # ---------------------------------------------------------------------------
-
 
 def _deep_compare(obj1: Any, obj2: Any) -> bool:
     """Deep compare two objects for equality.
@@ -452,7 +445,6 @@ def _deep_compare(obj1: Any, obj2: Any) -> bool:
     else:
         return obj1 == obj2
 
-
 def _increment_version(version: str) -> str:
     """Increment the patch version of a semver string.
 
@@ -468,7 +460,6 @@ def _increment_version(version: str) -> str:
         return ".".join(parts)
     except (ValueError, IndexError):
         return f"{version}.1"
-
 
 __all__ = [
     "GoldenFileManager",

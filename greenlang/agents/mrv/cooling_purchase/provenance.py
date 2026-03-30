@@ -129,21 +129,9 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 logger = logging.getLogger(__name__)
 
-
 # ---------------------------------------------------------------------------
 # Utility helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed.
-
-    Returns:
-        UTC datetime with microsecond component set to zero for
-        reproducible ISO timestamp strings.
-    """
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _safe_str(value: Any) -> str:
     """Convert a value to its string representation for hashing.
@@ -162,7 +150,6 @@ def _safe_str(value: Any) -> str:
         return "null"
     return str(value)
 
-
 def _canonical_json(data: Dict[str, Any]) -> str:
     """Serialize a dictionary to canonical JSON form.
 
@@ -178,7 +165,6 @@ def _canonical_json(data: Dict[str, Any]) -> str:
         Canonical JSON string with sorted keys.
     """
     return json.dumps(data, sort_keys=True, default=str)
-
 
 # ---------------------------------------------------------------------------
 # Valid provenance stages (19 stages)
@@ -253,11 +239,9 @@ STAGE_ORDER: List[str] = [
 #: Number of defined provenance stages.
 STAGE_COUNT: int = len(STAGE_ORDER)
 
-
 # ---------------------------------------------------------------------------
 # ProvenanceEntry dataclass (frozen for immutability)
 # ---------------------------------------------------------------------------
-
 
 @dataclass(frozen=True)
 class ProvenanceEntry:
@@ -357,11 +341,9 @@ class ProvenanceEntry:
             chain_id=data.get("chain_id", ""),
         )
 
-
 # ---------------------------------------------------------------------------
 # CoolingPurchaseProvenance (Thread-safe Singleton)
 # ---------------------------------------------------------------------------
-
 
 class CoolingPurchaseProvenance:
     """SHA-256 provenance chain tracker for Cooling Purchase emission
@@ -638,7 +620,7 @@ class CoolingPurchaseProvenance:
         entry = ProvenanceEntry(
             stage=stage,
             hash_value=hash_value,
-            timestamp=_utcnow().isoformat(),
+            timestamp=utcnow().isoformat(),
             previous_hash=previous,
             metadata=data,
             chain_id=chain_id,
@@ -740,7 +722,7 @@ class CoolingPurchaseProvenance:
             self._evict_chains_if_needed()
 
             self._chains[calc_id] = []
-            self._chain_creation_times[calc_id] = _utcnow().isoformat()
+            self._chain_creation_times[calc_id] = utcnow().isoformat()
 
         logger.info(
             "Created provenance chain: chain_id=%s agent=%s",
@@ -782,7 +764,7 @@ class CoolingPurchaseProvenance:
                 "calculation_id": calculation_id,
                 "agent_id": self.AGENT_ID,
                 "agent_code": self.AGENT_CODE,
-                "initialized_at": _utcnow().isoformat(),
+                "initialized_at": utcnow().isoformat(),
             },
         )
 
@@ -941,7 +923,7 @@ class CoolingPurchaseProvenance:
                 "created_at": self._chain_creation_times.get(
                     chain_id, ""
                 ),
-                "sealed_at": _utcnow().isoformat(),
+                "sealed_at": utcnow().isoformat(),
                 "agent_id": self.AGENT_ID,
                 "agent_code": self.AGENT_CODE,
                 "agent_name": self.AGENT_NAME,
@@ -1563,13 +1545,13 @@ class CoolingPurchaseProvenance:
             "chain_hash": chain_hash,
             "sealed": sealed,
             "created_at": created_at,
-            "exported_at": _utcnow().isoformat(),
+            "exported_at": utcnow().isoformat(),
             "entries": entries,
             "stage_summary": stage_summary,
             "stages_defined": STAGE_COUNT,
             "verification": {
                 "is_valid": is_valid,
-                "verified_at": _utcnow().isoformat(),
+                "verified_at": utcnow().isoformat(),
             },
         }
 
@@ -1643,7 +1625,7 @@ class CoolingPurchaseProvenance:
                 "creation_times": dict(self._chain_creation_times),
                 "max_entries_per_chain": self._max_entries_per_chain,
                 "max_chains": self._max_chains,
-                "created_at": _utcnow().isoformat(),
+                "created_at": utcnow().isoformat(),
             }
 
     @classmethod
@@ -2833,6 +2815,8 @@ class CoolingPurchaseProvenance:
         Records the uncertainty quantification results for the cooling
         emission calculation. Cooling calculations have uncertainty
         from COP variability, grid emission factor uncertainty, and
+
+from greenlang.schemas import utcnow
         measurement errors.
 
         Supported methods:
@@ -3546,7 +3530,7 @@ class CoolingPurchaseProvenance:
             "source_chain_hash": source_hash,
             "source_chain_length": source_length,
             "source_stage_summary": source_summary,
-            "merge_timestamp": _utcnow().isoformat(),
+            "merge_timestamp": utcnow().isoformat(),
         }
 
         logger.info(
@@ -3759,11 +3743,9 @@ class CoolingPurchaseProvenance:
         with self._instance_lock:
             return chain_id in self._chains
 
-
 # ---------------------------------------------------------------------------
 # Module-level factory and singleton access
 # ---------------------------------------------------------------------------
-
 
 def create_provenance(
     max_entries_per_chain: int = (
@@ -3795,7 +3777,6 @@ def create_provenance(
         max_chains=max_chains,
     )
 
-
 def get_provenance() -> CoolingPurchaseProvenance:
     """Return the process-wide singleton CoolingPurchaseProvenance.
 
@@ -3813,7 +3794,6 @@ def get_provenance() -> CoolingPurchaseProvenance:
     """
     return CoolingPurchaseProvenance()
 
-
 def reset_provenance() -> None:
     """Destroy the current singleton and reset to None.
 
@@ -3827,16 +3807,13 @@ def reset_provenance() -> None:
     """
     CoolingPurchaseProvenance.reset()
 
-
 # Aliases for backward compatibility with sibling MRV agents
 reset_provenance_tracker = reset_provenance
 get_provenance_tracker = get_provenance
 
-
 # ---------------------------------------------------------------------------
 # Standalone utility functions
 # ---------------------------------------------------------------------------
-
 
 def compute_standalone_hash(data: Dict[str, Any]) -> str:
     """Compute a standalone SHA-256 hash for arbitrary data.
@@ -3860,7 +3837,6 @@ def compute_standalone_hash(data: Dict[str, Any]) -> str:
     canonical = _canonical_json(data)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
-
 def verify_hash(
     data: Dict[str, Any], expected_hash: str,
 ) -> bool:
@@ -3879,7 +3855,6 @@ def verify_hash(
     """
     computed = compute_standalone_hash(data)
     return computed == expected_hash
-
 
 def compute_chain_entry_hash(
     previous_hash: str,
@@ -3909,7 +3884,6 @@ def compute_chain_entry_hash(
     canonical = _canonical_json(data)
     payload = f"{previous_hash}|{stage}|{canonical}"
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
-
 
 def verify_chain_entries(
     entries: List[Dict[str, Any]],
@@ -3982,7 +3956,6 @@ def verify_chain_entries(
             )
 
     return True, None
-
 
 def verify_sealed_export(
     export_data: Dict[str, Any],

@@ -17,10 +17,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +35,7 @@ class AssetType(str, Enum):
     INSTITUTIONAL = "institutional"  # Government services
 
 
-class ResilienceIndicator(BaseModel):
+class ResilienceIndicator(GreenLangBase):
     """Community resilience indicator."""
     indicator_id: str = Field(...)
     name: str = Field(...)
@@ -45,7 +46,7 @@ class ResilienceIndicator(BaseModel):
     data_source: Optional[str] = Field(None)
 
 
-class CommunityAsset(BaseModel):
+class CommunityAsset(GreenLangBase):
     """Community asset."""
     asset_id: str = Field(...)
     name: str = Field(...)
@@ -56,7 +57,7 @@ class CommunityAsset(BaseModel):
     community_importance: str = Field(default="medium")  # low, medium, high
 
 
-class AdaptationProject(BaseModel):
+class AdaptationProject(GreenLangBase):
     """Community adaptation project."""
     project_id: str = Field(...)
     name: str = Field(...)
@@ -68,7 +69,7 @@ class AdaptationProject(BaseModel):
     status: str = Field(default="proposed")
 
 
-class CommunityResiliencePlan(BaseModel):
+class CommunityResiliencePlan(GreenLangBase):
     """Community resilience plan."""
     plan_id: str = Field(...)
     community_name: str = Field(...)
@@ -84,7 +85,7 @@ class CommunityResiliencePlan(BaseModel):
     provenance_hash: Optional[str] = Field(None)
 
 
-class CommunityResilienceInput(BaseModel):
+class CommunityResilienceInput(GreenLangBase):
     """Input for Community Resilience Agent."""
     action: str = Field(...)
     plan_id: Optional[str] = Field(None)
@@ -105,7 +106,7 @@ class CommunityResilienceInput(BaseModel):
         return v
 
 
-class CommunityResilienceOutput(BaseModel):
+class CommunityResilienceOutput(GreenLangBase):
     """Output from Community Resilience Agent."""
     success: bool = Field(...)
     action: str = Field(...)

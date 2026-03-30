@@ -19,16 +19,15 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
 
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 class HeatmapCell(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -95,7 +94,6 @@ class QualityReportOutput(BaseModel):
     sites_below_threshold: int = Field(0)
     provenance_hash: str = Field("")
 
-
 class DataQualityReport:
     """Data quality heatmap and remediation report template."""
 
@@ -108,7 +106,7 @@ class DataQualityReport:
 
     def render(self, data: Dict[str, Any]) -> QualityReportOutput:
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         inp = QualityReportInput(**data) if isinstance(data, dict) else data
 
         heatmap: List[HeatmapCell] = []
@@ -269,6 +267,5 @@ class DataQualityReport:
         for s in r.site_summaries:
             lines_out.append(f"{s.site_name},{s.overall_score},{s.tier},{s.dimensions_below}")
         return "\n".join(lines_out)
-
 
 __all__ = ["DataQualityReport", "QualityReportInput", "QualityReportOutput"]

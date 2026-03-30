@@ -66,6 +66,7 @@ import logging
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.third_party_audit_manager.config import (
     ThirdPartyAuditManagerConfig,
@@ -130,12 +131,6 @@ SCOPE_DURATION_DAYS: Dict[str, int] = {
     "unscheduled": 3,
 }
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_provenance_hash(data: Dict[str, Any]) -> str:
     """Compute SHA-256 hash for provenance tracking.
 
@@ -147,7 +142,6 @@ def _compute_provenance_hash(data: Dict[str, Any]) -> str:
     """
     canonical = json.dumps(data, sort_keys=True, default=str, separators=(",", ":"))
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-
 
 class AuditPlanningSchedulingEngine:
     """Risk-based audit planning and scheduling engine.
@@ -192,7 +186,7 @@ class AuditPlanningSchedulingEngine:
         Returns:
             ScheduleAuditResponse with scheduled audits and metadata.
         """
-        start_time = _utcnow()
+        start_time = utcnow()
 
         try:
             # Extract risk weight overrides if provided
@@ -258,7 +252,7 @@ class AuditPlanningSchedulingEngine:
             conflicts = self._detect_conflicts(scheduled_audits)
 
             processing_time = (
-                _utcnow() - start_time
+                utcnow() - start_time
             ).total_seconds() * Decimal("1000")
 
             response = ScheduleAuditResponse(

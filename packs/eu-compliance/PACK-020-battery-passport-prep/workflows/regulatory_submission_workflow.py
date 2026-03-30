@@ -35,35 +35,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class WorkflowPhase(str, Enum):
     """Phases of the regulatory submission workflow."""
@@ -71,7 +63,6 @@ class WorkflowPhase(str, Enum):
     CONFORMITY_CHECK = "conformity_check"
     SUBMISSION_PACKAGE = "submission_package"
     REGISTRY_UPLOAD = "registry_upload"
-
 
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
@@ -81,7 +72,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class PhaseStatus(str, Enum):
     """Status of a single phase."""
     PENDING = "pending"
@@ -89,7 +79,6 @@ class PhaseStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class DocumentType(str, Enum):
     """Required regulatory document types."""
@@ -106,7 +95,6 @@ class DocumentType(str, Enum):
     NOTIFIED_BODY_CERTIFICATE = "notified_body_certificate"
     RISK_ASSESSMENT = "risk_assessment"
 
-
 class ConformityModule(str, Enum):
     """Conformity assessment modules per Decision 768/2008/EC."""
     MODULE_A = "module_a"
@@ -115,7 +103,6 @@ class ConformityModule(str, Enum):
     MODULE_D = "module_d"
     MODULE_E = "module_e"
     MODULE_F = "module_f"
-
 
 class SubmissionStatus(str, Enum):
     """Submission package status."""
@@ -128,7 +115,6 @@ class SubmissionStatus(str, Enum):
     REJECTED = "rejected"
     REVISION_REQUIRED = "revision_required"
 
-
 class RegistryType(str, Enum):
     """Regulatory registry types."""
     BATTERY_PASSPORT_REGISTRY = "battery_passport_registry"
@@ -136,11 +122,9 @@ class RegistryType(str, Enum):
     NOTIFIED_BODY_DATABASE = "notified_body_database"
     MARKET_SURVEILLANCE = "market_surveillance"
 
-
 # =============================================================================
 # REQUIRED DOCUMENTS BY CATEGORY
 # =============================================================================
-
 
 REQUIRED_DOCUMENTS: Dict[str, List[str]] = {
     "ev_battery": [
@@ -223,11 +207,9 @@ DOC_REQUIRED_FIELDS: Dict[str, List[str]] = {
     ],
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -238,7 +220,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class DocumentRecord(BaseModel):
     """A regulatory document record."""
@@ -255,7 +236,6 @@ class DocumentRecord(BaseModel):
     file_hash: str = Field(default="", description="SHA-256 of document file")
     status: str = Field(default="draft")
 
-
 class ConformityCheckResult(BaseModel):
     """Result of a conformity assessment check."""
     check_id: str = Field(default_factory=lambda: f"cc-{_new_uuid()[:8]}")
@@ -265,7 +245,6 @@ class ConformityCheckResult(BaseModel):
     completeness_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     missing_fields: List[str] = Field(default_factory=list)
     issues: List[str] = Field(default_factory=list)
-
 
 class SubmissionPackageInfo(BaseModel):
     """Regulatory submission package metadata."""
@@ -279,7 +258,6 @@ class SubmissionPackageInfo(BaseModel):
     status: SubmissionStatus = Field(default=SubmissionStatus.DRAFT)
     created_at: str = Field(default="")
 
-
 class RegistryUploadRecord(BaseModel):
     """Registry upload tracking record."""
     upload_id: str = Field(default_factory=lambda: f"upl-{_new_uuid()[:8]}")
@@ -292,7 +270,6 @@ class RegistryUploadRecord(BaseModel):
     uploaded_at: str = Field(default="")
     confirmation_id: str = Field(default="")
     response_code: str = Field(default="")
-
 
 class RegulatorySubmissionInput(BaseModel):
     """Input data model for RegulatorySubmissionWorkflow."""
@@ -313,7 +290,6 @@ class RegulatorySubmissionInput(BaseModel):
     entity_id: str = Field(default="")
     entity_name: str = Field(default="")
     config: Dict[str, Any] = Field(default_factory=dict)
-
 
 class RegulatorySubmissionResult(BaseModel):
     """Complete result from regulatory submission workflow."""
@@ -336,11 +312,9 @@ class RegulatorySubmissionResult(BaseModel):
     executed_at: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class RegulatorySubmissionWorkflow:
     """
@@ -411,7 +385,7 @@ class RegulatorySubmissionWorkflow:
         if input_data is None:
             input_data = RegulatorySubmissionInput(config=config or {})
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting regulatory submission workflow %s", self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = WorkflowStatus.IN_PROGRESS
@@ -436,7 +410,7 @@ class RegulatorySubmissionWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         required_docs = REQUIRED_DOCUMENTS.get(input_data.battery_category, [])
         completeness = round(
             (self._package.completeness_pct if self._package else 0.0), 1
@@ -458,7 +432,7 @@ class RegulatorySubmissionWorkflow:
             overall_completeness_pct=completeness,
             submission_ready=self._submission_ready,
             reporting_year=input_data.reporting_year,
-            executed_at=_utcnow().isoformat(),
+            executed_at=utcnow().isoformat(),
         )
         result.provenance_hash = self._compute_provenance(result)
         self.logger.info(
@@ -475,7 +449,7 @@ class RegulatorySubmissionWorkflow:
         self, input_data: RegulatorySubmissionInput,
     ) -> PhaseResult:
         """Gather and assemble all required regulatory documents."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -516,7 +490,7 @@ class RegulatorySubmissionWorkflow:
         if not self._documents:
             warnings.append("No documents provided; submission package will be empty")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 1 DocumentationAssembly: %d submitted, %d required, %d missing",
             len(self._documents), len(required), len(missing),
@@ -536,7 +510,7 @@ class RegulatorySubmissionWorkflow:
         self, input_data: RegulatorySubmissionInput,
     ) -> PhaseResult:
         """Verify conformity of each document against requirements."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._conformity_checks = []
@@ -587,7 +561,7 @@ class RegulatorySubmissionWorkflow:
                 f"missing: {', '.join(doc_check.missing_fields)}"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 2 ConformityCheck: %d valid, %d invalid",
             valid_count, invalid_count,
@@ -658,7 +632,7 @@ class RegulatorySubmissionWorkflow:
         self, input_data: RegulatorySubmissionInput,
     ) -> PhaseResult:
         """Generate structured submission package."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -688,7 +662,7 @@ class RegulatorySubmissionWorkflow:
                 for d in self._documents
             ],
             "reporting_year": input_data.reporting_year,
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
         manifest_json = json.dumps(manifest, sort_keys=True, default=str)
@@ -711,7 +685,7 @@ class RegulatorySubmissionWorkflow:
             completeness_pct=completeness,
             package_hash=package_hash,
             status=pkg_status,
-            created_at=_utcnow().isoformat(),
+            created_at=utcnow().isoformat(),
         )
 
         self._submission_ready = can_submit
@@ -736,7 +710,7 @@ class RegulatorySubmissionWorkflow:
                     "resolve issues before submission"
                 )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 3 SubmissionPackage: %s, completeness %.1f%%, ready=%s",
             self._package.package_id, completeness, can_submit,
@@ -756,7 +730,7 @@ class RegulatorySubmissionWorkflow:
         self, input_data: RegulatorySubmissionInput,
     ) -> PhaseResult:
         """Prepare and record registry upload for each target registry."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._uploads = []
@@ -780,7 +754,7 @@ class RegulatorySubmissionWorkflow:
                 ),
                 package_id=package_id,
                 upload_status="submitted" if can_upload else "blocked",
-                uploaded_at=_utcnow().isoformat() if can_upload else "",
+                uploaded_at=utcnow().isoformat() if can_upload else "",
                 confirmation_id=f"CONF-{_new_uuid()[:8]}" if can_upload else "",
                 response_code="200_ACCEPTED" if can_upload else "400_INCOMPLETE",
             )
@@ -806,7 +780,7 @@ class RegulatorySubmissionWorkflow:
         outputs["upload_summary"] = upload_summary
         outputs["package_id"] = package_id
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 4 RegistryUpload: %d attempted, %d submitted",
             len(self._uploads),

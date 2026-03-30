@@ -90,23 +90,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -123,7 +118,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -132,7 +126,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -140,15 +133,12 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class MaterialityBasis(str, Enum):
     """Basis for materiality determination.
@@ -163,7 +153,6 @@ class MaterialityBasis(str, Enum):
     REVENUE_INTENSITY = "revenue_intensity"
     PRODUCTION_INTENSITY = "production_intensity"
 
-
 class AssuranceLevel(str, Enum):
     """Assurance level.
 
@@ -172,7 +161,6 @@ class AssuranceLevel(str, Enum):
     """
     LIMITED = "limited"
     REASONABLE = "reasonable"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -196,11 +184,9 @@ ASSURANCE_LEVEL_MULTIPLIER: Dict[str, Decimal] = {
     AssuranceLevel.REASONABLE.value: Decimal("0.75"),    # Tighter for reasonable
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class QualitativeFactor(BaseModel):
     """Qualitative factor for materiality adjustment.
@@ -215,7 +201,6 @@ class QualitativeFactor(BaseModel):
     description: str = Field(default="", description="Description")
     score: int = Field(default=1, ge=1, le=5, description="Score (1-5)")
     rationale: str = Field(default="", description="Rationale")
-
 
 class ScopeEmissions(BaseModel):
     """Emissions by scope for scope-specific materiality.
@@ -247,7 +232,6 @@ class ScopeEmissions(BaseModel):
             )
         return self
 
-
 class SpecificItem(BaseModel):
     """A specific line item for individual materiality assessment.
 
@@ -268,7 +252,6 @@ class SpecificItem(BaseModel):
     @classmethod
     def coerce_value(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class MaterialityConfig(BaseModel):
     """Configuration for materiality assessment.
@@ -309,7 +292,6 @@ class MaterialityConfig(BaseModel):
     )
     output_precision: int = Field(default=2, ge=0, le=6, description="Output precision")
 
-
 class MaterialityInput(BaseModel):
     """Input for materiality assessment.
 
@@ -332,11 +314,9 @@ class MaterialityInput(BaseModel):
         default_factory=MaterialityConfig, description="Configuration"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class MaterialityThreshold(BaseModel):
     """A materiality threshold value.
@@ -354,7 +334,6 @@ class MaterialityThreshold(BaseModel):
     percentage: Decimal = Field(default=Decimal("0"), description="Percentage")
     description: str = Field(default="", description="Description")
 
-
 class ScopeMateriality(BaseModel):
     """Scope-specific materiality.
 
@@ -368,7 +347,6 @@ class ScopeMateriality(BaseModel):
     scope_emissions: Decimal = Field(default=Decimal("0"), description="Emissions")
     materiality_pct: Decimal = Field(default=Decimal("0"), description="Materiality %")
     materiality_tco2e: Decimal = Field(default=Decimal("0"), description="Materiality tCO2e")
-
 
 class QualitativeAssessment(BaseModel):
     """Qualitative assessment summary.
@@ -392,7 +370,6 @@ class QualitativeAssessment(BaseModel):
         default=Decimal("0"), description="Adjusted materiality"
     )
 
-
 class SpecificMateriality(BaseModel):
     """Specific materiality for a line item.
 
@@ -408,7 +385,6 @@ class SpecificMateriality(BaseModel):
     value_tco2e: Decimal = Field(default=Decimal("0"), description="Value")
     materiality_tco2e: Decimal = Field(default=Decimal("0"), description="Threshold")
     exceeds_materiality: bool = Field(default=False, description="Exceeds")
-
 
 class MaterialityAssessment(BaseModel):
     """Complete materiality assessment.
@@ -442,7 +418,6 @@ class MaterialityAssessment(BaseModel):
     )
     final_materiality: Decimal = Field(default=Decimal("0"), description="Final")
 
-
 class MaterialityResult(BaseModel):
     """Complete result of materiality assessment.
 
@@ -473,11 +448,9 @@ class MaterialityResult(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class MaterialityAssessmentEngine:
     """Determines materiality thresholds for GHG assurance engagements.
@@ -632,7 +605,7 @@ class MaterialityAssessmentEngine:
             total_emissions_tco2e=emissions.total_tco2e,
             methodology_rationale=rationale,
             warnings=warnings,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         result.provenance_hash = _compute_hash(result)
@@ -688,7 +661,6 @@ class MaterialityAssessmentEngine:
 
     def get_version(self) -> str:
         return self._version
-
 
 # ---------------------------------------------------------------------------
 # __all__

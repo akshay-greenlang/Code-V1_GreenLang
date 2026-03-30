@@ -48,18 +48,14 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ValidationSeverity
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # Utility Helpers
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute a SHA-256 hash of arbitrary data."""
@@ -67,11 +63,9 @@ def _hash_data(data: Any) -> str:
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # Enums
 # =============================================================================
-
 
 class EETVersion(str, Enum):
     """EET format version."""
@@ -79,7 +73,6 @@ class EETVersion(str, Enum):
     V1_1 = "1.1"
     V1_1_1 = "1.1.1"
     V1_1_2 = "1.1.2"
-
 
 class EETFieldCategory(str, Enum):
     """EET field category."""
@@ -93,7 +86,6 @@ class EETFieldCategory(str, Enum):
     MIFID_SUSTAINABILITY = "mifid_sustainability"
     ARTICLE_9_SPECIFIC = "article_9_specific"
 
-
 class FieldDataType(str, Enum):
     """EET field data types."""
     TEXT = "text"
@@ -105,18 +97,9 @@ class FieldDataType(str, Enum):
     ISIN = "isin"
     LEI = "lei"
 
-
-class ValidationSeverity(str, Enum):
-    """Validation finding severity."""
-    ERROR = "error"
-    WARNING = "warning"
-    INFO = "info"
-
-
 # =============================================================================
 # Data Models
 # =============================================================================
-
 
 class EETBridgeConfig(BaseModel):
     """Configuration for the EET Data Bridge."""
@@ -148,7 +131,6 @@ class EETBridgeConfig(BaseModel):
         default=True, description="Enable provenance hash tracking"
     )
 
-
 class EETFieldDefinition(BaseModel):
     """Definition of a single EET field."""
     field_id: str = Field(default="", description="EET field identifier")
@@ -169,7 +151,6 @@ class EETFieldDefinition(BaseModel):
         default=None, description="Default value for Article 9"
     )
 
-
 class EETFieldValue(BaseModel):
     """A single EET field value."""
     field_id: str = Field(default="", description="EET field identifier")
@@ -182,7 +163,6 @@ class EETFieldValue(BaseModel):
     validation_message: str = Field(
         default="", description="Validation message"
     )
-
 
 class Article9EETFields(BaseModel):
     """Article 9 specific EET fields beyond Article 8."""
@@ -320,7 +300,6 @@ class Article9EETFields(BaseModel):
 
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class EETImportResult(BaseModel):
     """Result of importing EET data."""
     import_id: str = Field(default="", description="Import identifier")
@@ -359,7 +338,6 @@ class EETImportResult(BaseModel):
     imported_at: str = Field(default="", description="Import timestamp")
     execution_time_ms: float = Field(default=0.0, description="Execution time")
 
-
 class EETExportResult(BaseModel):
     """Result of exporting pipeline data to EET format."""
     export_id: str = Field(default="", description="Export identifier")
@@ -388,11 +366,9 @@ class EETExportResult(BaseModel):
     exported_at: str = Field(default="", description="Export timestamp")
     execution_time_ms: float = Field(default=0.0, description="Execution time")
 
-
 # =============================================================================
 # EET Field Registry (87+ SFDR fields)
 # =============================================================================
-
 
 ARTICLE_9_MANDATORY_FIELDS: List[EETFieldDefinition] = [
     # General
@@ -597,7 +573,6 @@ ARTICLE_9_MANDATORY_FIELDS: List[EETFieldDefinition] = [
     ),
 ]
 
-
 # Field ID to pipeline key mapping
 EET_TO_PIPELINE_MAPPING: Dict[str, str] = {
     "EET_001": "product_isin",
@@ -639,11 +614,9 @@ EET_TO_PIPELINE_MAPPING: Dict[str, str] = {
     "EET_072": "benchmark_name",
 }
 
-
 # =============================================================================
 # EET Data Bridge
 # =============================================================================
-
 
 class EETDataBridge:
     """Bridge for EET (European ESG Template) import and export.
@@ -778,7 +751,7 @@ class EETDataBridge:
         elapsed_ms = (time.time() - start_time) * 1000
 
         result = EETImportResult(
-            import_id=f"IMP-{_utcnow().strftime('%Y%m%d%H%M%S')}",
+            import_id=f"IMP-{utcnow().strftime('%Y%m%d%H%M%S')}",
             eet_version=self.config.eet_version.value,
             product_isin=str(normalized.get("EET_001", "")),
             product_name=str(normalized.get("EET_002", "")),
@@ -792,7 +765,7 @@ class EETDataBridge:
             validation_errors=errors,
             validation_warnings=warnings,
             is_valid=is_valid,
-            imported_at=_utcnow().isoformat(),
+            imported_at=utcnow().isoformat(),
             execution_time_ms=elapsed_ms,
         )
 
@@ -860,7 +833,7 @@ class EETDataBridge:
         elapsed_ms = (time.time() - start_time) * 1000
 
         result = EETExportResult(
-            export_id=f"EXP-{_utcnow().strftime('%Y%m%d%H%M%S')}",
+            export_id=f"EXP-{utcnow().strftime('%Y%m%d%H%M%S')}",
             eet_version=self.config.eet_version.value,
             product_isin=str(pipeline_data.get("product_isin", "")),
             product_name=str(pipeline_data.get("product_name", "")),
@@ -870,7 +843,7 @@ class EETDataBridge:
             eet_data=eet_data,
             missing_mandatory=missing_mandatory,
             warnings=warnings,
-            exported_at=_utcnow().isoformat(),
+            exported_at=utcnow().isoformat(),
             execution_time_ms=elapsed_ms,
         )
 
@@ -940,7 +913,7 @@ class EETDataBridge:
                 }
                 for cat, data in category_coverage.items()
             },
-            "validated_at": _utcnow().isoformat(),
+            "validated_at": utcnow().isoformat(),
         }
 
     # -------------------------------------------------------------------------

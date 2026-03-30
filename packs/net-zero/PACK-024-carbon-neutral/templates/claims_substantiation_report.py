@@ -21,10 +21,11 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "24.0.0"
 
-def _utcnow(): return datetime.now(timezone.utc).replace(microsecond=0)
 def _new_uuid(): return str(uuid.uuid4())
 def _compute_hash(d):
     r = json.dumps(d, sort_keys=True, default=str) if isinstance(d, dict) else str(d)
@@ -50,7 +51,6 @@ def _pct(v):
     try: return _dec(v, 1) + "%"
     except: return str(v)
 
-
 class ClaimsSubstantiationReportTemplate:
     """Claims substantiation report template for PACK-024."""
 
@@ -59,7 +59,7 @@ class ClaimsSubstantiationReportTemplate:
         self.generated_at: Optional[datetime] = None
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [
             self._md_header(data), self._md_claim(data), self._md_compliance(data),
             self._md_evidence(data), self._md_risk(data), self._md_approval(data),
@@ -69,7 +69,7 @@ class ClaimsSubstantiationReportTemplate:
         return content + f"\n\n<!-- Provenance: {_compute_hash(content)} -->"
 
     def render_html(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = ("body{font-family:'Segoe UI',sans-serif;padding:20px;background:#f0f4f0;}"
                ".report{max-width:1200px;margin:0 auto;background:#fff;padding:40px;border-radius:12px;}"
                "h1{color:#1b5e20;border-bottom:3px solid #2e7d32;padding-bottom:12px;}"
@@ -83,7 +83,7 @@ class ClaimsSubstantiationReportTemplate:
         return f'<!DOCTYPE html>\n<html><head><style>{css}</style></head><body><div class="report">{body}</div></body></html>'
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = {"template": "claims_substantiation_report", "version": _MODULE_VERSION,
                   "generated_at": self.generated_at.isoformat(), "report_id": _new_uuid(),
                   "claim": data.get("claim", {}), "compliance": data.get("compliance", []),

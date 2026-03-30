@@ -68,37 +68,28 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> str:
-    """Return current UTC timestamp as ISO-8601 string."""
-    return datetime.utcnow().isoformat() + "Z"
-
-
 def _new_uuid() -> str:
     """Return a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash of JSON-serialisable data."""
     serialised = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialised.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -109,7 +100,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -119,7 +109,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class PortfolioPhase(str, Enum):
     """Portfolio benchmark workflow phases."""
 
@@ -128,7 +117,6 @@ class PortfolioPhase(str, Enum):
     WEIGHTED_AGGREGATION = "weighted_aggregation"
     WACI_CALCULATION = "waci_calculation"
     INDEX_COMPARISON = "index_comparison"
-
 
 class AssetClass(str, Enum):
     """Financial asset class."""
@@ -142,7 +130,6 @@ class AssetClass(str, Enum):
     SOVEREIGN_BONDS = "sovereign_bonds"
     OTHER = "other"
 
-
 class PCAFLevel(str, Enum):
     """PCAF data quality level (1=best, 5=worst)."""
 
@@ -151,7 +138,6 @@ class PCAFLevel(str, Enum):
     LEVEL_3 = "level_3"
     LEVEL_4 = "level_4"
     LEVEL_5 = "level_5"
-
 
 class BenchmarkIndex(str, Enum):
     """Benchmark index for portfolio comparison."""
@@ -163,7 +149,6 @@ class BenchmarkIndex(str, Enum):
     PARIS_ALIGNED = "paris_aligned"
     CLIMATE_TRANSITION = "climate_transition"
     CUSTOM = "custom"
-
 
 # =============================================================================
 # PCAF QUALITY SCORE MAPPING (Zero-Hallucination Reference Data)
@@ -198,11 +183,9 @@ INDEX_WACI_REFERENCE: Dict[str, float] = {
     "climate_transition": 105.0,
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -215,7 +198,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
-
 
 class PortfolioHolding(BaseModel):
     """A single portfolio holding."""
@@ -239,7 +221,6 @@ class PortfolioHolding(BaseModel):
     outstanding_balance_usd_m: float = Field(default=0.0, ge=0.0)
     property_value_usd_m: float = Field(default=0.0, ge=0.0)
 
-
 class PCAFQualityResult(BaseModel):
     """PCAF quality scoring result for a holding."""
 
@@ -250,7 +231,6 @@ class PCAFQualityResult(BaseModel):
     needs_improvement: bool = Field(default=False)
     improvement_note: str = Field(default="")
     provenance_hash: str = Field(default="")
-
 
 class AssetClassAggregation(BaseModel):
     """Aggregated financed emissions for an asset class."""
@@ -263,7 +243,6 @@ class AssetClassAggregation(BaseModel):
     avg_pcaf_quality: float = Field(default=0.0, ge=0.0, le=5.0)
     provenance_hash: str = Field(default="")
 
-
 class PortfolioMetric(BaseModel):
     """A computed portfolio carbon metric."""
 
@@ -272,7 +251,6 @@ class PortfolioMetric(BaseModel):
     unit: str = Field(default="")
     description: str = Field(default="")
     provenance_hash: str = Field(default="")
-
 
 class IndexComparisonResult(BaseModel):
     """Comparison of portfolio metric against benchmark index."""
@@ -286,11 +264,9 @@ class IndexComparisonResult(BaseModel):
     outperforms: bool = Field(default=False)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # INPUT / OUTPUT
 # =============================================================================
-
 
 class PortfolioBenchmarkInput(BaseModel):
     """Input data model for PortfolioBenchmarkWorkflow."""
@@ -323,7 +299,6 @@ class PortfolioBenchmarkInput(BaseModel):
     tenant_id: str = Field(default="")
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class PortfolioBenchmarkResult(BaseModel):
     """Complete result from portfolio benchmark workflow."""
 
@@ -343,11 +318,9 @@ class PortfolioBenchmarkResult(BaseModel):
     weighted_pcaf_quality: float = Field(default=0.0, ge=0.0, le=5.0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class PortfolioBenchmarkWorkflow:
     """
@@ -896,6 +869,7 @@ class PortfolioBenchmarkWorkflow:
                         phase_number, attempt, self.MAX_RETRIES, exc, delay,
                     )
                     import asyncio
+
                     await asyncio.sleep(delay)
         return PhaseResult(
             phase_name=f"phase_{phase_number}_failed",

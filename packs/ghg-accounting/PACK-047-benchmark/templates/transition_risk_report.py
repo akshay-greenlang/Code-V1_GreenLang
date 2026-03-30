@@ -46,29 +46,23 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 def _compute_hash(content: str) -> str:
     """Compute SHA-256 hash of string content."""
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -81,13 +75,11 @@ class OutputFormat(str, Enum):
     PDF = "pdf"
     JSON = "json"
 
-
 class TrafficLight(str, Enum):
     """Traffic light status indicators."""
     GREEN = "green"
     AMBER = "amber"
     RED = "red"
-
 
 class RiskLevel(str, Enum):
     """Risk level classification."""
@@ -95,7 +87,6 @@ class RiskLevel(str, Enum):
     MEDIUM = "medium"
     HIGH = "high"
     VERY_HIGH = "very_high"
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Input Models
@@ -110,7 +101,6 @@ class RiskDimension(BaseModel):
     description: str = Field("", description="Dimension description")
     risk_level: RiskLevel = Field(RiskLevel.MEDIUM, description="Risk level")
 
-
 class CompositeRiskScore(BaseModel):
     """Composite transition risk score."""
     total_score: float = Field(50.0, ge=0, le=100, description="Composite score (0-100)")
@@ -120,7 +110,6 @@ class CompositeRiskScore(BaseModel):
         default_factory=list, description="Dimension breakdown"
     )
     methodology: str = Field("", description="Scoring methodology")
-
 
 class ITRGaugeData(BaseModel):
     """Implied Temperature Rise gauge chart data."""
@@ -133,7 +122,6 @@ class ITRGaugeData(BaseModel):
     confidence_interval_high: Optional[float] = Field(None, description="Upper CI bound")
     peer_median_itr: Optional[float] = Field(None, description="Peer median ITR")
 
-
 class StrandingRiskEntry(BaseModel):
     """Stranding risk timeline entry."""
     year: int = Field(..., description="Year")
@@ -142,7 +130,6 @@ class StrandingRiskEntry(BaseModel):
     probability_pct: float = Field(0.0, ge=0, le=100, description="Probability of stranding (%)")
     scenario: str = Field("", description="Scenario (e.g., Net Zero 2050)")
     notes: str = Field("", description="Additional notes")
-
 
 class RegulatoryExposureEntry(BaseModel):
     """Regulatory exposure table entry."""
@@ -155,14 +142,12 @@ class RegulatoryExposureEntry(BaseModel):
     free_allowance_pct: Optional[float] = Field(None, description="Free allowance remaining (%)")
     notes: str = Field("", description="Additional notes")
 
-
 class CompetitiveRadarAxis(BaseModel):
     """Single axis on the competitive position radar chart."""
     axis_name: str = Field(..., description="Axis label")
     org_value: float = Field(0.0, ge=0, le=100, description="Organisation score (0-100)")
     peer_average: float = Field(0.0, ge=0, le=100, description="Peer average score")
     best_in_class: float = Field(0.0, ge=0, le=100, description="Best-in-class score")
-
 
 class CarbonPriceSensitivity(BaseModel):
     """Carbon price sensitivity scenario."""
@@ -171,7 +156,6 @@ class CarbonPriceSensitivity(BaseModel):
     ebitda_impact_pct: float = Field(0.0, description="EBITDA impact (%)")
     margin_impact_pct: float = Field(0.0, description="Margin impact (%)")
     scenario_label: str = Field("", description="Scenario label")
-
 
 class TransitionRiskInput(BaseModel):
     """Complete input model for TransitionRiskReport."""
@@ -195,7 +179,6 @@ class TransitionRiskInput(BaseModel):
         default_factory=list, description="Carbon price sensitivity scenarios"
     )
 
-
 # ---------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------
@@ -203,7 +186,6 @@ class TransitionRiskInput(BaseModel):
 def _tl_label(status: TrafficLight) -> str:
     """Return uppercase label for traffic light."""
     return status.value.upper()
-
 
 def _tl_color(status: TrafficLight) -> str:
     """Return hex colour for traffic light."""
@@ -214,7 +196,6 @@ def _tl_color(status: TrafficLight) -> str:
     }
     return mapping.get(status, "#e9c46a")
 
-
 def _risk_color(level: RiskLevel) -> str:
     """Return hex colour for risk level."""
     mapping = {
@@ -224,7 +205,6 @@ def _risk_color(level: RiskLevel) -> str:
         RiskLevel.VERY_HIGH: "#c1121f",
     }
     return mapping.get(level, "#e9c46a")
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -282,7 +262,7 @@ class TransitionRiskReport:
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render transition risk as Markdown."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_md(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -290,7 +270,7 @@ class TransitionRiskReport:
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render transition risk as HTML."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_html(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -298,7 +278,7 @@ class TransitionRiskReport:
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render transition risk as JSON dict."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_json(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -340,7 +320,7 @@ class TransitionRiskReport:
         return (
             f"# Transition Risk Report - {company}\n\n"
             f"**Reporting Period:** {period} | "
-            f"**Report Date:** {_utcnow().strftime('%Y-%m-%d')}\n\n"
+            f"**Report Date:** {utcnow().strftime('%Y-%m-%d')}\n\n"
             "---"
         )
 
@@ -551,7 +531,7 @@ class TransitionRiskReport:
             '<div class="section">\n'
             f"<h1>Transition Risk Report &mdash; {company}</h1>\n"
             f"<p><strong>Reporting Period:</strong> {period} | "
-            f"<strong>Report Date:</strong> {_utcnow().strftime('%Y-%m-%d')}</p>\n"
+            f"<strong>Report Date:</strong> {utcnow().strftime('%Y-%m-%d')}</p>\n"
             "<hr>\n</div>"
         )
 

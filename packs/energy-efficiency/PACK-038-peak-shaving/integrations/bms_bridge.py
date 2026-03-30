@@ -53,25 +53,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -84,11 +78,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class BMSProtocol(str, Enum):
     """BMS communication protocols."""
@@ -100,7 +92,6 @@ class BMSProtocol(str, Enum):
     NIAGARA_REST = "niagara_rest"
     METASYS_API = "metasys_api"
     ECOSTRUXURE = "ecostruxure"
-
 
 class LoadCategory(str, Enum):
     """Controllable load categories."""
@@ -115,7 +106,6 @@ class LoadCategory(str, Enum):
     COMPRESSED_AIR = "compressed_air"
     REFRIGERATION = "refrigeration"
 
-
 class ControlAction(str, Enum):
     """BMS control action types."""
 
@@ -127,7 +117,6 @@ class ControlAction(str, Enum):
     RESTORE = "restore"
     PRECOOL = "precool"
 
-
 class ControlStatus(str, Enum):
     """Control command execution status."""
 
@@ -137,7 +126,6 @@ class ControlStatus(str, Enum):
     FAILED = "failed"
     OVERRIDDEN = "overridden"
 
-
 class ConnectionStatus(str, Enum):
     """BMS connection status."""
 
@@ -146,11 +134,9 @@ class ConnectionStatus(str, Enum):
     DEGRADED = "degraded"
     ERROR = "error"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class BMSConfig(BaseModel):
     """Configuration for the BMS Bridge."""
@@ -168,7 +154,6 @@ class BMSConfig(BaseModel):
     critical_load_exclusions: List[str] = Field(default_factory=list)
     rebound_delay_minutes: int = Field(default=15, ge=0)
 
-
 class ControlCommand(BaseModel):
     """A BMS control command for peak load reduction."""
 
@@ -185,7 +170,6 @@ class ControlCommand(BaseModel):
     completed_at: Optional[datetime] = Field(None)
     provenance_hash: str = Field(default="")
 
-
 class ControlResponse(BaseModel):
     """Result of a BMS control command execution."""
 
@@ -197,7 +181,6 @@ class ControlResponse(BaseModel):
     execution_time_ms: float = Field(default=0.0)
     restored: bool = Field(default=False)
     provenance_hash: str = Field(default="")
-
 
 class BMSEndpoint(BaseModel):
     """A controllable BMS endpoint (equipment/zone)."""
@@ -212,11 +195,9 @@ class BMSEndpoint(BaseModel):
     current_setpoint: Optional[float] = Field(None)
     status: ConnectionStatus = Field(default=ConnectionStatus.CONNECTED)
 
-
 # ---------------------------------------------------------------------------
 # BMSBridge
 # ---------------------------------------------------------------------------
-
 
 class BMSBridge:
     """Building Management System integration for peak shaving load control.
@@ -273,7 +254,7 @@ class BMSBridge:
             ControlResponse with execution result.
         """
         start = time.monotonic()
-        command.issued_at = _utcnow()
+        command.issued_at = utcnow()
 
         self.logger.info(
             "Executing BMS command: category=%s, action=%s, zone=%s, reduction=%.0f kW",
@@ -307,7 +288,7 @@ class BMSBridge:
 
         # Execute (stub: always succeeds if validation passes)
         command.status = ControlStatus.COMPLETED
-        command.completed_at = _utcnow()
+        command.completed_at = utcnow()
 
         response = ControlResponse(
             command_id=command.command_id,
@@ -399,7 +380,7 @@ class BMSBridge:
             "endpoints_restored": len(self._endpoints),
             "success": True,
             "message": "All control points restored to normal setpoints",
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     def get_controllable_capacity(self) -> Dict[str, Any]:

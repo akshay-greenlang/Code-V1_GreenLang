@@ -78,6 +78,7 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any, AsyncIterator, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -318,16 +319,9 @@ _ENGINE_NAMES: List[str] = [
     "PortfolioRiskAggregator",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed for determinism."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _calculate_sha256(data: Any) -> str:
     """Calculate SHA-256 hash of JSON-serialized data for provenance.
@@ -346,7 +340,6 @@ def _calculate_sha256(data: Any) -> str:
         payload = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
-
 def _safe_decimal(value: Any, default: Decimal = Decimal("0.0")) -> Decimal:
     """Safely convert value to Decimal with fallback.
 
@@ -362,11 +355,9 @@ def _safe_decimal(value: Any, default: Decimal = Decimal("0.0")) -> Decimal:
     except Exception:
         return default
 
-
 # =============================================================================
 # FACADE: CommodityRiskAnalyzerSetup
 # =============================================================================
-
 
 class CommodityRiskAnalyzerSetup:
     """
@@ -679,7 +670,7 @@ class CommodityRiskAnalyzerSetup:
 
                 # 4. Mark as started
                 self._started = True
-                self._startup_time = _utcnow()
+                self._startup_time = utcnow()
                 duration_ms = (time.monotonic() - start_time) * 1000
 
                 logger.info(
@@ -762,7 +753,7 @@ class CommodityRiskAnalyzerSetup:
         init_results: Dict[str, Any] = {
             "agent_id": _AGENT_ID,
             "version": _MODULE_VERSION,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "engines": {},
             "reference_data": {},
             "connectivity": {},
@@ -1144,7 +1135,7 @@ class CommodityRiskAnalyzerSetup:
                 "action": "profile_commodity",
                 "commodity_type": commodity_type,
                 "kwargs": str(kwargs),
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             })
 
             logger.info(
@@ -1228,7 +1219,7 @@ class CommodityRiskAnalyzerSetup:
                 "product_id": product_id,
                 "source_commodity": source_commodity,
                 "processing_stages": processing_stages,
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             })
 
             logger.info(
@@ -1307,7 +1298,7 @@ class CommodityRiskAnalyzerSetup:
                 "action": "get_price_volatility",
                 "commodity_type": commodity_type,
                 "window_days": window_days,
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             })
 
             logger.info(
@@ -1396,7 +1387,7 @@ class CommodityRiskAnalyzerSetup:
                 "commodity_type": commodity_type,
                 "region": region,
                 "horizon_months": horizon_months,
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             })
 
             logger.info(
@@ -1479,7 +1470,7 @@ class CommodityRiskAnalyzerSetup:
                 "action": "detect_substitution",
                 "supplier_id": supplier_id,
                 "history_count": len(commodity_history),
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             })
 
             logger.info(
@@ -1562,7 +1553,7 @@ class CommodityRiskAnalyzerSetup:
                 "action": "check_regulatory_compliance",
                 "commodity_type": commodity_type,
                 "docs_count": len(documentation),
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             })
 
             logger.info(
@@ -1646,7 +1637,7 @@ class CommodityRiskAnalyzerSetup:
                 "action": "initiate_due_diligence",
                 "commodity_type": commodity_type,
                 "supplier_id": supplier_id,
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             })
 
             logger.info(
@@ -1730,7 +1721,7 @@ class CommodityRiskAnalyzerSetup:
                 "action": "analyze_portfolio",
                 "position_count": len(commodity_positions),
                 "commodities": [p.get("commodity") for p in commodity_positions],
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             })
 
             logger.info(
@@ -1814,7 +1805,7 @@ class CommodityRiskAnalyzerSetup:
             results: Dict[str, Any] = {
                 "commodity_type": commodity_type,
                 "supplier_id": supplier_id,
-                "analysis_timestamp": _utcnow().isoformat(),
+                "analysis_timestamp": utcnow().isoformat(),
                 "agent_id": _AGENT_ID,
                 "version": _MODULE_VERSION,
             }
@@ -1899,7 +1890,7 @@ class CommodityRiskAnalyzerSetup:
                         commodity_history=[],
                         current_declaration={
                             "commodity": commodity_type,
-                            "date": _utcnow().isoformat(),
+                            "date": utcnow().isoformat(),
                         },
                     )
                     results["substitution_risk"] = substitution
@@ -1944,7 +1935,7 @@ class CommodityRiskAnalyzerSetup:
                 "commodity_type": commodity_type,
                 "supplier_id": supplier_id,
                 "engine_provenance_chain": provenance_chain,
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             })
 
             duration_sec = time.monotonic() - start_time
@@ -2049,7 +2040,7 @@ class CommodityRiskAnalyzerSetup:
         uptime_seconds = 0.0
         if self._startup_time:
             uptime_seconds = (
-                _utcnow() - self._startup_time
+                utcnow() - self._startup_time
             ).total_seconds()
 
         # Determine overall status
@@ -2077,7 +2068,7 @@ class CommodityRiskAnalyzerSetup:
             "engines_total": _ENGINE_COUNT,
             "engine_statuses": engine_statuses,
             "processing_time_ms": round(duration_ms, 2),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     async def get_statistics(self) -> Dict[str, Any]:
@@ -2093,7 +2084,7 @@ class CommodityRiskAnalyzerSetup:
         uptime_seconds = 0.0
         if self._startup_time:
             uptime_seconds = (
-                _utcnow() - self._startup_time
+                utcnow() - self._startup_time
             ).total_seconds()
 
         cache_hit_rate = 0.0
@@ -2125,7 +2116,7 @@ class CommodityRiskAnalyzerSetup:
             "errors": self._stats["errors"],
             "supported_commodities": SUPPORTED_COMMODITIES,
             "supported_commodities_count": len(SUPPORTED_COMMODITIES),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
         # Add per-engine statistics if available
@@ -2151,14 +2142,12 @@ class CommodityRiskAnalyzerSetup:
 
         return stats
 
-
 # =============================================================================
 # Module-level singleton management
 # =============================================================================
 
 _service_instance: Optional[CommodityRiskAnalyzerSetup] = None
 _service_lock = threading.Lock()
-
 
 def get_service(
     config: Optional[CommodityRiskAnalyzerConfig] = None,
@@ -2190,7 +2179,6 @@ def get_service(
 
     return _service_instance
 
-
 def set_service(service: CommodityRiskAnalyzerSetup) -> None:
     """
     Override the singleton service instance (for testing).
@@ -2203,7 +2191,6 @@ def set_service(service: CommodityRiskAnalyzerSetup) -> None:
         _service_instance = service
         logger.info("CommodityRiskAnalyzerSetup singleton overridden")
 
-
 def reset_service() -> None:
     """
     Reset the singleton service instance (for testing).
@@ -2215,11 +2202,9 @@ def reset_service() -> None:
         _service_instance = None
         logger.info("CommodityRiskAnalyzerSetup singleton reset")
 
-
 # =============================================================================
 # FastAPI Lifespan Integration
 # =============================================================================
-
 
 @asynccontextmanager
 async def lifespan(app: Any) -> AsyncIterator[None]:
@@ -2248,7 +2233,6 @@ async def lifespan(app: Any) -> AsyncIterator[None]:
     # Shutdown
     await service.shutdown()
     logger.info("CommodityRiskAnalyzerSetup shutdown (FastAPI lifespan)")
-
 
 # =============================================================================
 # Module exports

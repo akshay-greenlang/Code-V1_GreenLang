@@ -12,14 +12,15 @@ Key Design Decisions:
 - Literal types for enums (type safety)
 """
 
-from pydantic import BaseModel, Field, validator
+from pydantic import Field, validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Literal, List, Optional
 import re
 
 
-class TimeWindow(BaseModel):
+class TimeWindow(GreenLangBase):
     """
     Time window specification
 
@@ -53,7 +54,7 @@ class TimeWindow(BaseModel):
         }
 
 
-class TSPoint(BaseModel):
+class TSPoint(GreenLangBase):
     """
     Time series data point
 
@@ -82,7 +83,7 @@ class TSPoint(BaseModel):
         }
 
 
-class GridIntensityQuery(BaseModel):
+class GridIntensityQuery(GreenLangBase):
     """
     Query for grid carbon intensity data
 
@@ -110,7 +111,7 @@ class GridIntensityQuery(BaseModel):
         return v
 
 
-class GridIntensityPayload(BaseModel):
+class GridIntensityPayload(GreenLangBase):
     """
     Grid carbon intensity response payload
 

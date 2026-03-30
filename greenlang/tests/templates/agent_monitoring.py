@@ -32,25 +32,10 @@ import time
 import traceback
 import uuid
 from dataclasses import dataclass, asdict, field
-from enum import Enum
 from collections import deque, defaultdict
 import threading
 from greenlang.utilities.determinism import deterministic_uuid, DeterministicClock
-
-
-class HealthStatus(Enum):
-    """Agent health status."""
-    HEALTHY = "healthy"
-    DEGRADED = "degraded"
-    UNHEALTHY = "unhealthy"
-
-
-class AlertSeverity(Enum):
-    """Alert severity levels."""
-    INFO = "info"
-    WARNING = "warning"
-    ERROR = "error"
-    CRITICAL = "critical"
+from greenlang.schemas.enums import AlertSeverity, HealthStatus
 
 
 @dataclass

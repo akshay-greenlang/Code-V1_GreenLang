@@ -71,6 +71,7 @@ from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -121,15 +122,9 @@ except ImportError:
     _PROVENANCE_AVAILABLE = False
     _get_provenance_tracker = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -140,7 +135,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Decimal helpers
 # ---------------------------------------------------------------------------
@@ -149,13 +143,11 @@ _PRECISION = Decimal("0.00000001")
 _ZERO = Decimal("0")
 _ONE = Decimal("1")
 
-
 def _D(value: Any) -> Decimal:
     """Convert a value to Decimal."""
     if isinstance(value, Decimal):
         return value
     return Decimal(str(value))
-
 
 def _safe_decimal(value: Any, default: Decimal = _ZERO) -> Decimal:
     """Safely convert to Decimal, returning default on failure."""
@@ -165,7 +157,6 @@ def _safe_decimal(value: Any, default: Decimal = _ZERO) -> Decimal:
         return _D(value)
     except (InvalidOperation, ValueError, TypeError):
         return default
-
 
 # ===========================================================================
 # Constants
@@ -195,11 +186,9 @@ N_MINERALIZATION_C_TO_N: Decimal = _D("0.01")
 #: Depth ratio for Tier 2 (100cm / 30cm scaling).
 TIER_2_DEPTH_RATIO: Decimal = _D("2.5")
 
-
 # ===========================================================================
 # Dataclasses
 # ===========================================================================
-
 
 @dataclass
 class SOCHistoryEntry:
@@ -256,11 +245,9 @@ class SOCHistoryEntry:
             "transition_year": self.transition_year,
         }
 
-
 # ===========================================================================
 # SoilOrganicCarbonEngine
 # ===========================================================================
-
 
 class SoilOrganicCarbonEngine:
     """IPCC Tier 1/2 soil organic carbon calculator.
@@ -309,7 +296,7 @@ class SoilOrganicCarbonEngine:
         self._lock = threading.RLock()
         self._parcel_history: Dict[str, List[SOCHistoryEntry]] = defaultdict(list)
         self._total_calculations: int = 0
-        self._created_at = _utcnow()
+        self._created_at = utcnow()
 
         logger.info(
             "SoilOrganicCarbonEngine initialized: db_available=%s",
@@ -529,7 +516,7 @@ class SoilOrganicCarbonEngine:
                 f_mg=factors["f_mg"],
                 f_i=factors["f_i"],
                 soc_calculated=soc_per_ha,
-                calculation_date=_utcnow().isoformat(),
+                calculation_date=utcnow().isoformat(),
                 transition_year=int(request.get("transition_year", 0)),
             )
             with self._lock:

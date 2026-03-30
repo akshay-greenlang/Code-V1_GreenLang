@@ -52,7 +52,9 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+
+from greenlang.schemas import GreenLangBase, utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -62,21 +64,13 @@ __all__ = [
     "TaxonomyClassifierEngine",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _generate_id(prefix: str = "cls") -> str:
     """Generate a unique identifier with a prefix."""
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 # ---------------------------------------------------------------------------
 # UNSPSC Segments (58 top-level segments)
@@ -144,7 +138,6 @@ _UNSPSC_SEGMENTS: Dict[str, str] = {
     "A2": "Consumer Electronics",
 }
 
-
 # ---------------------------------------------------------------------------
 # UNSPSC Keyword Mapping (segment -> keywords)
 # ---------------------------------------------------------------------------
@@ -208,7 +201,6 @@ _UNSPSC_KEYWORDS: Dict[str, List[str]] = {
     "95": ["real estate", "lease", "rent", "property", "land"],
 }
 
-
 # ---------------------------------------------------------------------------
 # NAICS 2-digit Sectors (20 sectors)
 # ---------------------------------------------------------------------------
@@ -266,7 +258,6 @@ _NAICS_KEYWORDS: Dict[str, List[str]] = {
     "81": ["repair", "maintenance", "personal care", "laundry", "religious"],
     "92": ["government", "public administration", "justice", "defense"],
 }
-
 
 # ---------------------------------------------------------------------------
 # eCl@ss Top-level Groups (45 groups)
@@ -370,7 +361,6 @@ _ECLASS_KEYWORDS: Dict[str, List[str]] = {
     "62": ["legal", "tax", "audit", "compliance", "consulting"],
 }
 
-
 # ---------------------------------------------------------------------------
 # ISIC Rev 4 Sections (21 sections)
 # ---------------------------------------------------------------------------
@@ -423,7 +413,6 @@ _ISIC_KEYWORDS: Dict[str, List[str]] = {
     "U": ["international", "extraterritorial", "embassy"],
 }
 
-
 # ---------------------------------------------------------------------------
 # Cross-taxonomy mapping tables
 # ---------------------------------------------------------------------------
@@ -467,13 +456,11 @@ _NAICS_TO_ECLASS: Dict[str, str] = {
     "81": "39", "92": "35",
 }
 
-
 # ---------------------------------------------------------------------------
 # Data models
 # ---------------------------------------------------------------------------
 
-
-class TaxonomyCode(BaseModel):
+class TaxonomyCode(GreenLangBase):
     """A taxonomy code result with metadata."""
 
     code: str = Field(..., description="Taxonomy code")
@@ -487,8 +474,7 @@ class TaxonomyCode(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class TaxonomyClassification(BaseModel):
+class TaxonomyClassification(GreenLangBase):
     """Complete classification result for a spend record."""
 
     classification_id: str = Field(..., description="Unique classification identifier")
@@ -505,11 +491,9 @@ class TaxonomyClassification(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
 # ---------------------------------------------------------------------------
 # TaxonomyClassifierEngine
 # ---------------------------------------------------------------------------
-
 
 class TaxonomyClassifierEngine:
     """Spend taxonomy classification engine.
@@ -612,7 +596,7 @@ class TaxonomyClassifierEngine:
 
         # Build classification
         cid = _generate_id("cls")
-        now_iso = _utcnow().isoformat()
+        now_iso = utcnow().isoformat()
 
         provenance_hash = self._compute_provenance(
             cid, primary_code.code, system, search_text, now_iso,
@@ -807,7 +791,7 @@ class TaxonomyClassifierEngine:
 
         provenance_hash = self._compute_provenance(
             f"translate-{code}-{fs}-{ts}",
-            target_code, ts, code, _utcnow().isoformat(),
+            target_code, ts, code, utcnow().isoformat(),
         )
 
         return TaxonomyCode(
@@ -1021,7 +1005,7 @@ class TaxonomyClassifierEngine:
 
         provenance_hash = self._compute_provenance(
             f"classify-{system}", best_code, system, text_lower[:100],
-            _utcnow().isoformat(),
+            utcnow().isoformat(),
         )
 
         return TaxonomyCode(

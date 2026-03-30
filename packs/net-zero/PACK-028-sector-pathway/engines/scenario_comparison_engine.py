@@ -65,17 +65,15 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
@@ -118,7 +116,6 @@ def _round_val(value: Decimal, places: int = 6) -> Decimal:
 def _round3(value: float) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
@@ -150,7 +147,6 @@ class RecommendationConfidence(str, Enum):
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Scenario Metadata
@@ -229,7 +225,6 @@ SCENARIO_META: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
@@ -267,7 +262,6 @@ class ScenarioPathwayData(BaseModel):
         default=Decimal("0"), ge=Decimal("0"),
         description="Estimated CapEx (EUR)"
     )
-
 
 class ComparisonInput(BaseModel):
     """Input for scenario comparison.
@@ -337,7 +331,6 @@ class ComparisonInput(BaseModel):
         description="Stakeholder priority weighting"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
@@ -368,7 +361,6 @@ class ScenarioSummary(BaseModel):
     estimated_capex: Decimal = Field(default=Decimal("0"))
     sbti_alignment: str = Field(default="")
 
-
 class ScenarioPairDelta(BaseModel):
     """Pairwise comparison between two scenarios.
 
@@ -390,7 +382,6 @@ class ScenarioPairDelta(BaseModel):
     capex_delta_eur: Decimal = Field(default=Decimal("0"))
     abatement_delta_tco2e: Decimal = Field(default=Decimal("0"))
     more_ambitious: str = Field(default="")
-
 
 class InvestmentAnalysis(BaseModel):
     """Investment analysis across scenarios.
@@ -414,7 +405,6 @@ class InvestmentAnalysis(BaseModel):
     most_cost_effective: str = Field(default="")
     highest_roi: str = Field(default="")
 
-
 class ScenarioRiskReturn(BaseModel):
     """Risk-return assessment for a scenario.
 
@@ -435,7 +425,6 @@ class ScenarioRiskReturn(BaseModel):
     climate_return_score: Decimal = Field(default=Decimal("0"))
     risk_adjusted_score: Decimal = Field(default=Decimal("0"))
 
-
 class OptimalPathwayRecommendation(BaseModel):
     """Optimal pathway recommendation.
 
@@ -453,7 +442,6 @@ class OptimalPathwayRecommendation(BaseModel):
     rationale: List[str] = Field(default_factory=list)
     alternative_scenario: str = Field(default="")
     scoring_breakdown: Dict[str, Decimal] = Field(default_factory=dict)
-
 
 class ComparisonResult(BaseModel):
     """Complete scenario comparison result.
@@ -477,7 +465,7 @@ class ComparisonResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     sector: str = Field(default="")
     intensity_unit: str = Field(default="")
@@ -493,11 +481,9 @@ class ComparisonResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ScenarioComparisonEngine:
     """Multi-scenario pathway comparison engine.

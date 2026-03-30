@@ -39,25 +39,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -70,11 +64,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class Scope1Category(str, Enum):
     """Scope 1 emission categories from PACK-041."""
@@ -88,13 +80,11 @@ class Scope1Category(str, Enum):
     WASTE_TREATMENT = "waste_treatment"
     AGRICULTURAL = "agricultural"
 
-
 class Scope2Method(str, Enum):
     """Scope 2 calculation methods."""
 
     LOCATION_BASED = "location_based"
     MARKET_BASED = "market_based"
-
 
 class ConsolidationApproach(str, Enum):
     """Organisational boundary consolidation approaches."""
@@ -103,11 +93,9 @@ class ConsolidationApproach(str, Enum):
     FINANCIAL_CONTROL = "financial_control"
     OPERATIONAL_CONTROL = "operational_control"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class Pack041Config(BaseModel):
     """Configuration for PACK-041 bridge."""
@@ -118,7 +106,6 @@ class Pack041Config(BaseModel):
     timeout_s: float = Field(60.0, ge=5.0)
     cache_ttl_s: float = Field(3600.0)
     include_emission_factors: bool = Field(True)
-
 
 class Pack041Request(BaseModel):
     """Request for Scope 1-2 data from PACK-041."""
@@ -135,7 +122,6 @@ class Pack041Request(BaseModel):
     include_scope1: bool = Field(True)
     include_scope2: bool = Field(True)
 
-
 class Scope1Summary(BaseModel):
     """Summary of Scope 1 emissions from PACK-041."""
 
@@ -149,7 +135,6 @@ class Scope1Summary(BaseModel):
     data_quality_score: float = 0.0
     source_count: int = 0
 
-
 class Scope2Summary(BaseModel):
     """Summary of Scope 2 emissions from PACK-041."""
 
@@ -161,7 +146,6 @@ class Scope2Summary(BaseModel):
     grid_regions: List[str] = Field(default_factory=list)
     instruments: List[str] = Field(default_factory=list)
     data_quality_score: float = 0.0
-
 
 class Pack041Response(BaseModel):
     """Response with Scope 1-2 emission data from PACK-041."""
@@ -181,11 +165,9 @@ class Pack041Response(BaseModel):
     duration_ms: float = 0.0
     warnings: List[str] = Field(default_factory=list)
 
-
 # ---------------------------------------------------------------------------
 # Bridge Implementation
 # ---------------------------------------------------------------------------
-
 
 class Pack041Bridge:
     """
@@ -273,7 +255,7 @@ class Pack041Bridge:
                 scope2_summaries=scope2_data,
                 organisational_boundary=boundary,
                 provenance_hash=provenance,
-                retrieved_at=_utcnow().isoformat(),
+                retrieved_at=utcnow().isoformat(),
                 duration_ms=duration,
             )
 
@@ -291,7 +273,7 @@ class Pack041Bridge:
                 period=period,
                 consolidation_approach=consolidation_approach,
                 warnings=[f"Retrieval failed: {str(e)}"],
-                retrieved_at=_utcnow().isoformat(),
+                retrieved_at=utcnow().isoformat(),
                 duration_ms=duration,
             )
 

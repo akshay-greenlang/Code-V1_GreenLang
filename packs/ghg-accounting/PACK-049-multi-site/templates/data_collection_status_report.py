@@ -19,16 +19,15 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
 
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 class SiteStatusRow(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -106,7 +105,6 @@ class CollectionStatusOutput(BaseModel):
     estimation_coverage_pct: Decimal = Field(Decimal("0"))
     provenance_hash: str = Field("")
 
-
 class DataCollectionStatusReport:
     """Data collection status and submission tracker template."""
 
@@ -117,7 +115,7 @@ class DataCollectionStatusReport:
 
     def render(self, data: Dict[str, Any]) -> CollectionStatusOutput:
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         inp = CollectionStatusInput(**data) if isinstance(data, dict) else data
 
         statuses = [SiteStatusRow(**s) if isinstance(s, dict) else s for s in inp.site_statuses]
@@ -227,6 +225,5 @@ class DataCollectionStatusReport:
         for s in r.status_matrix:
             lines_out.append(f"{s.site_name},{s.status},{s.completeness_pct},{s.entries_count},{s.errors},{s.warnings}")
         return "\n".join(lines_out)
-
 
 __all__ = ["DataCollectionStatusReport", "CollectionStatusInput", "CollectionStatusOutput"]

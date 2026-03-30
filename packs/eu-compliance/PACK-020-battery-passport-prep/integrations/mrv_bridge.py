@@ -43,25 +43,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -74,11 +68,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class MRVScope(str, Enum):
     """GHG Protocol emission scopes."""
@@ -86,7 +78,6 @@ class MRVScope(str, Enum):
     SCOPE_1 = "scope_1"
     SCOPE_2 = "scope_2"
     SCOPE_3 = "scope_3"
-
 
 class LifecycleStage(str, Enum):
     """Battery carbon footprint lifecycle stages (EU 2024/1781)."""
@@ -96,7 +87,6 @@ class LifecycleStage(str, Enum):
     DISTRIBUTION = "distribution"
     END_OF_LIFE_RECYCLING = "end_of_life_recycling"
 
-
 class AgentStatus(str, Enum):
     """MRV agent availability status."""
 
@@ -104,11 +94,9 @@ class AgentStatus(str, Enum):
     UNAVAILABLE = "unavailable"
     DEGRADED = "degraded"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class MRVBridgeConfig(BaseModel):
     """Configuration for the MRV Bridge."""
@@ -124,7 +112,6 @@ class MRVBridgeConfig(BaseModel):
         description="Carbon footprint functional unit per EU 2024/1781",
     )
 
-
 class MRVAgentMapping(BaseModel):
     """Mapping of an MRV agent to battery lifecycle stage."""
 
@@ -135,7 +122,6 @@ class MRVAgentMapping(BaseModel):
         default=LifecycleStage.MAIN_PRODUCTION
     )
     ghg_protocol_category: str = Field(default="")
-
 
 class ScopeEmissionsResult(BaseModel):
     """Result of a scope-level emissions import."""
@@ -154,7 +140,6 @@ class ScopeEmissionsResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     warnings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class ManufacturingEmissionsResult(BaseModel):
     """Aggregated manufacturing emissions for battery carbon footprint."""
@@ -175,7 +160,6 @@ class ManufacturingEmissionsResult(BaseModel):
     agents_queried: int = Field(default=0)
     provenance_hash: str = Field(default="")
 
-
 class CarbonIntensityResult(BaseModel):
     """Carbon intensity calculation result."""
 
@@ -185,7 +169,6 @@ class CarbonIntensityResult(BaseModel):
     performance_class: str = Field(default="not_classified")
     lifecycle_contributions: Dict[str, float] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # MRV Agent Routing Table for Battery Manufacturing
@@ -275,11 +258,9 @@ PERFORMANCE_CLASS_THRESHOLDS: Dict[str, float] = {
     "E": 120.0,
 }
 
-
 # ---------------------------------------------------------------------------
 # MRVBridge
 # ---------------------------------------------------------------------------
-
 
 class MRVBridge:
     """AGENT-MRV integration bridge for PACK-020 Battery Passport Prep.
@@ -324,7 +305,7 @@ class MRVBridge:
         Returns:
             ManufacturingEmissionsResult with lifecycle breakdown.
         """
-        result = ManufacturingEmissionsResult(started_at=_utcnow())
+        result = ManufacturingEmissionsResult(started_at=utcnow())
 
         try:
             scope1 = self.get_scope1_data(context)
@@ -388,7 +369,7 @@ class MRVBridge:
             result.status = "failed"
             logger.error("Manufacturing emissions aggregation failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at
@@ -405,7 +386,7 @@ class MRVBridge:
             ScopeEmissionsResult with Scope 1 breakdown.
         """
         result = ScopeEmissionsResult(
-            scope=MRVScope.SCOPE_1, started_at=_utcnow()
+            scope=MRVScope.SCOPE_1, started_at=utcnow()
         )
 
         try:
@@ -431,7 +412,7 @@ class MRVBridge:
             result.errors.append(str(exc))
             logger.error("Scope 1 import failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at
@@ -448,7 +429,7 @@ class MRVBridge:
             ScopeEmissionsResult with location and market-based emissions.
         """
         result = ScopeEmissionsResult(
-            scope=MRVScope.SCOPE_2, started_at=_utcnow()
+            scope=MRVScope.SCOPE_2, started_at=utcnow()
         )
 
         try:
@@ -484,7 +465,7 @@ class MRVBridge:
             result.errors.append(str(exc))
             logger.error("Scope 2 import failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at
@@ -501,7 +482,7 @@ class MRVBridge:
             ScopeEmissionsResult with upstream/downstream breakdown.
         """
         result = ScopeEmissionsResult(
-            scope=MRVScope.SCOPE_3, started_at=_utcnow()
+            scope=MRVScope.SCOPE_3, started_at=utcnow()
         )
 
         try:
@@ -550,7 +531,7 @@ class MRVBridge:
             result.errors.append(str(exc))
             logger.error("Scope 3 import failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at

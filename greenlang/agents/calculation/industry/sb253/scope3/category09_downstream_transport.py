@@ -31,7 +31,7 @@ from datetime import datetime
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, List, Optional
 
-from pydantic import BaseModel, Field, validator
+from pydantic import Field, validator
 
 from .base import (
     Scope3CategoryCalculator,
@@ -43,11 +43,12 @@ from .base import (
     EmissionFactorSource,
     DataQualityTier,
 )
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
 
-class OutboundShipment(BaseModel):
+class OutboundShipment(GreenLangBase):
     """Outbound shipment to customers/distributors."""
 
     description: Optional[str] = Field(None, description="Shipment description")

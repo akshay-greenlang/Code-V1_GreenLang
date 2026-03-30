@@ -62,25 +62,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -100,7 +94,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _safe_pct(numerator: float, denominator: float) -> float:
     """Calculate percentage safely, returning 0.0 on zero denominator.
 
@@ -115,11 +108,9 @@ def _safe_pct(numerator: float, denominator: float) -> float:
         return 0.0
     return (numerator / denominator) * 100.0
 
-
 def _round_val(value: float, places: int = 4) -> float:
     """Round a float to specified decimal places."""
     return round(value, places)
-
 
 def _safe_divide(numerator: float, denominator: float, default: float = 0.0) -> float:
     """Safely divide two numbers, returning default on zero denominator."""
@@ -127,11 +118,9 @@ def _safe_divide(numerator: float, denominator: float, default: float = 0.0) -> 
         return default
     return numerator / denominator
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class TaxonomyEnvironmentalObjective(str, Enum):
     """EU Taxonomy six environmental objectives per Article 9."""
@@ -142,13 +131,11 @@ class TaxonomyEnvironmentalObjective(str, Enum):
     POLLUTION_PREVENTION = "pollution_prevention"
     BIODIVERSITY = "biodiversity"
 
-
 class ArticleReference(str, Enum):
     """Taxonomy Regulation article references for disclosure."""
     ARTICLE_5 = "article_5"
     ARTICLE_6 = "article_6"
     ARTICLE_5_AND_6 = "article_5_and_6"
-
 
 class SafeguardArea(str, Enum):
     """Minimum safeguards areas per Article 18 of the Taxonomy Regulation."""
@@ -159,7 +146,6 @@ class SafeguardArea(str, Enum):
     ANTI_BRIBERY = "anti_bribery"
     TAXATION = "fair_taxation"
     COMPETITION = "fair_competition"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -177,11 +163,9 @@ CDA_NUCLEAR_NACE: List[str] = ["D35.11", "E38.12"]
 MAX_TRANSITIONAL_SHARE: float = 100.0
 MAX_ENABLING_SHARE: float = 100.0
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Data Models
 # ---------------------------------------------------------------------------
-
 
 class TaxonomyHoldingData(BaseModel):
     """Input data for a single holding with full Taxonomy alignment details.
@@ -309,7 +293,6 @@ class TaxonomyHoldingData(BaseModel):
     )
     reporting_year: int = Field(default=2025, description="Fiscal year of data")
 
-
 class ObjectiveAlignmentEntry(BaseModel):
     """Alignment metrics for a single environmental objective.
 
@@ -353,7 +336,6 @@ class ObjectiveAlignmentEntry(BaseModel):
         description="Transitional activity share %",
     )
 
-
 class MinimumSafeguardsResult(BaseModel):
     """Result of minimum safeguards assessment per Article 18.
 
@@ -381,12 +363,11 @@ class MinimumSafeguardsResult(BaseModel):
         description="Percentage of safeguard areas with data",
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow, description="Assessment timestamp",
+        default_factory=utcnow, description="Assessment timestamp",
     )
     provenance_hash: str = Field(
         default="", description="SHA-256 provenance hash",
     )
-
 
 class BarChartSeries(BaseModel):
     """A single series (objective) for the RTS bar chart visualization.
@@ -408,7 +389,6 @@ class BarChartSeries(BaseModel):
     color_hex: str = Field(
         default="#4CAF50", description="Display color hex code",
     )
-
 
 class BarChartData(BaseModel):
     """Complete bar chart data for RTS disclosure Annex III/IV.
@@ -470,12 +450,11 @@ class BarChartData(BaseModel):
         default=0.0, description="Not Taxonomy-eligible %",
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow, description="Generation timestamp",
+        default_factory=utcnow, description="Generation timestamp",
     )
     provenance_hash: str = Field(
         default="", description="SHA-256 provenance hash",
     )
-
 
 class Article5Disclosure(BaseModel):
     """Article 5 (turnover-based) taxonomy disclosure.
@@ -490,7 +469,7 @@ class Article5Disclosure(BaseModel):
         default="", description="Financial product name",
     )
     reporting_date: datetime = Field(
-        default_factory=_utcnow, description="Reporting date",
+        default_factory=utcnow, description="Reporting date",
     )
     total_turnover_alignment_pct: float = Field(
         default=0.0, ge=0.0, le=100.0,
@@ -534,7 +513,6 @@ class Article5Disclosure(BaseModel):
         default="", description="SHA-256 provenance hash",
     )
 
-
 class Article6Disclosure(BaseModel):
     """Article 6 (CapEx/OpEx-based) taxonomy disclosure.
 
@@ -548,7 +526,7 @@ class Article6Disclosure(BaseModel):
         default="", description="Financial product name",
     )
     reporting_date: datetime = Field(
-        default_factory=_utcnow, description="Reporting date",
+        default_factory=utcnow, description="Reporting date",
     )
     total_capex_alignment_pct: float = Field(
         default=0.0, ge=0.0, le=100.0,
@@ -594,7 +572,6 @@ class Article6Disclosure(BaseModel):
         default="", description="SHA-256 provenance hash",
     )
 
-
 class FullTaxonomyResult(BaseModel):
     """Complete result of full Taxonomy alignment assessment.
 
@@ -609,7 +586,7 @@ class FullTaxonomyResult(BaseModel):
         default="", description="Financial product name",
     )
     reporting_date: datetime = Field(
-        default_factory=_utcnow, description="Reporting date",
+        default_factory=utcnow, description="Reporting date",
     )
 
     # Aggregate alignment ratios
@@ -719,17 +696,15 @@ class FullTaxonomyResult(BaseModel):
         default=_MODULE_VERSION, description="Engine version",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp",
+        default_factory=utcnow, description="Calculation timestamp",
     )
     provenance_hash: str = Field(
         default="", description="SHA-256 provenance hash",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine Configuration
 # ---------------------------------------------------------------------------
-
 
 class FullTaxonomyConfig(BaseModel):
     """Configuration for the FullTaxonomyAlignmentEngine.
@@ -794,7 +769,6 @@ class FullTaxonomyConfig(BaseModel):
         description="Whether to include sovereign bonds in alignment",
     )
 
-
 # ---------------------------------------------------------------------------
 # model_rebuild for forward reference resolution
 # ---------------------------------------------------------------------------
@@ -831,11 +805,9 @@ _OBJECTIVE_LABELS: Dict[TaxonomyEnvironmentalObjective, str] = {
     TaxonomyEnvironmentalObjective.BIODIVERSITY: "Biodiversity and Ecosystems",
 }
 
-
 # ---------------------------------------------------------------------------
 # FullTaxonomyAlignmentEngine
 # ---------------------------------------------------------------------------
-
 
 class FullTaxonomyAlignmentEngine:
     """
@@ -918,7 +890,7 @@ class FullTaxonomyAlignmentEngine:
         Raises:
             ValueError: If holdings list is empty.
         """
-        start = _utcnow()
+        start = utcnow()
 
         if not holdings:
             raise ValueError("Holdings list cannot be empty")
@@ -1014,7 +986,7 @@ class FullTaxonomyAlignmentEngine:
             cda_gas_t, cda_nuc_t, non_aligned_pct, not_eligible_pct,
         )
 
-        processing_ms = (_utcnow() - start).total_seconds() * 1000.0
+        processing_ms = (utcnow() - start).total_seconds() * 1000.0
 
         result = FullTaxonomyResult(
             product_name=self.config.product_name,

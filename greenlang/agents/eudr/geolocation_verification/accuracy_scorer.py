@@ -54,8 +54,10 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from .models import (
+
     CoordinateValidationResult,
     DeforestationVerificationResult,
     GeolocationAccuracyScore,
@@ -77,30 +79,21 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _to_decimal(value: float | int | str | Decimal) -> Decimal:
     """Convert a numeric value to Decimal via string for determinism."""
     if isinstance(value, Decimal):
         return value
     return Decimal(str(value))
 
-
 def _clamp_score(value: Decimal, max_score: Decimal) -> Decimal:
     """Clamp a score to [0, max_score] with 2-decimal precision."""
     clamped = max(Decimal("0.00"), min(max_score, value))
     return clamped.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -122,7 +115,6 @@ SCORE_PRECISION = Decimal("0.01")
 TIER_GOLD_THRESHOLD = Decimal("85.00")
 TIER_SILVER_THRESHOLD = Decimal("70.00")
 TIER_BRONZE_THRESHOLD = Decimal("50.00")
-
 
 # ---------------------------------------------------------------------------
 # Default Weights
@@ -206,11 +198,9 @@ class ScoringWeights:
                 kwargs[key] = _to_decimal(data[key])
         return cls(**kwargs)
 
-
 # ---------------------------------------------------------------------------
 # AccuracyScoringEngine
 # ---------------------------------------------------------------------------
-
 
 class AccuracyScoringEngine:
     """Deterministic geolocation accuracy scoring engine for EUDR compliance.
@@ -877,7 +867,6 @@ class AccuracyScoringEngine:
             "weights_used": result.weights_used,
         }
         return _compute_hash(hash_data)
-
 
 # ---------------------------------------------------------------------------
 # Module Exports

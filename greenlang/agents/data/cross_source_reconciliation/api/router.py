@@ -39,6 +39,7 @@ Status: Production Ready
 
 import logging
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +69,7 @@ if FASTAPI_AVAILABLE:
 
     # === Request Bodies ===
 
-    class CreateJobRequest(BaseModel):
+    class CreateJobRequest(GreenLangBase):
         """Request body for creating a reconciliation job."""
         name: str = Field(
             default="", description="Human-readable job name",
@@ -86,7 +87,7 @@ if FASTAPI_AVAILABLE:
             None, description="Additional job configuration overrides",
         )
 
-    class RegisterSourceRequest(BaseModel):
+    class RegisterSourceRequest(GreenLangBase):
         """Request body for registering a data source."""
         name: str = Field(
             ..., description="Human-readable source name",
@@ -116,7 +117,7 @@ if FASTAPI_AVAILABLE:
             None, description="Additional source metadata",
         )
 
-    class UpdateSourceRequest(BaseModel):
+    class UpdateSourceRequest(GreenLangBase):
         """Request body for updating a data source."""
         name: Optional[str] = Field(
             None, description="New source name",
@@ -139,7 +140,7 @@ if FASTAPI_AVAILABLE:
             None, description="Additional metadata to merge",
         )
 
-    class MatchRecordsRequest(BaseModel):
+    class MatchRecordsRequest(GreenLangBase):
         """Request body for matching records across sources."""
         source_ids: List[str] = Field(
             default_factory=list,
@@ -167,7 +168,7 @@ if FASTAPI_AVAILABLE:
             "rule_based)",
         )
 
-    class CompareRecordsRequest(BaseModel):
+    class CompareRecordsRequest(GreenLangBase):
         """Request body for comparing matched records."""
         match_id: Optional[str] = Field(
             None,
@@ -193,7 +194,7 @@ if FASTAPI_AVAILABLE:
             description="Absolute tolerance for numeric fields",
         )
 
-    class ResolveDiscrepanciesRequest(BaseModel):
+    class ResolveDiscrepanciesRequest(GreenLangBase):
         """Request body for resolving discrepancies."""
         discrepancy_ids: List[str] = Field(
             default_factory=list,
@@ -215,7 +216,7 @@ if FASTAPI_AVAILABLE:
             "strategy",
         )
 
-    class RunPipelineRequest(BaseModel):
+    class RunPipelineRequest(GreenLangBase):
         """Request body for running the full reconciliation pipeline."""
         source_ids: List[str] = Field(
             default_factory=list,
@@ -256,7 +257,7 @@ if FASTAPI_AVAILABLE:
 
     # === Response Models ===
 
-    class JobResponse(BaseModel):
+    class JobResponse(GreenLangBase):
         """Response model for a reconciliation job."""
         job_id: str = Field(default="")
         name: str = Field(default="")
@@ -271,7 +272,7 @@ if FASTAPI_AVAILABLE:
         completed_at: Optional[str] = Field(default=None)
         provenance_hash: str = Field(default="")
 
-    class SourceResponse(BaseModel):
+    class SourceResponse(GreenLangBase):
         """Response model for a registered data source."""
         source_id: str = Field(default="")
         name: str = Field(default="")
@@ -285,7 +286,7 @@ if FASTAPI_AVAILABLE:
         updated_at: str = Field(default="")
         provenance_hash: str = Field(default="")
 
-    class MatchResponse(BaseModel):
+    class MatchResponse(GreenLangBase):
         """Response model for record matching results."""
         match_id: str = Field(default="")
         source_ids: List[str] = Field(default_factory=list)
@@ -298,7 +299,7 @@ if FASTAPI_AVAILABLE:
         processing_time_ms: float = Field(default=0.0)
         provenance_hash: str = Field(default="")
 
-    class ComparisonResponse(BaseModel):
+    class ComparisonResponse(GreenLangBase):
         """Response model for field comparison results."""
         comparison_id: str = Field(default="")
         match_id: str = Field(default="")
@@ -310,7 +311,7 @@ if FASTAPI_AVAILABLE:
         processing_time_ms: float = Field(default=0.0)
         provenance_hash: str = Field(default="")
 
-    class DiscrepancyResponse(BaseModel):
+    class DiscrepancyResponse(GreenLangBase):
         """Response model for a detected discrepancy."""
         discrepancy_id: str = Field(default="")
         detection_id: str = Field(default="")
@@ -323,7 +324,7 @@ if FASTAPI_AVAILABLE:
         rel_diff_pct: float = Field(default=0.0)
         status: str = Field(default="open")
 
-    class ResolutionResponse(BaseModel):
+    class ResolutionResponse(GreenLangBase):
         """Response model for conflict resolution results."""
         resolution_id: str = Field(default="")
         strategy: str = Field(default="priority_wins")
@@ -332,7 +333,7 @@ if FASTAPI_AVAILABLE:
         processing_time_ms: float = Field(default=0.0)
         provenance_hash: str = Field(default="")
 
-    class GoldenRecordResponse(BaseModel):
+    class GoldenRecordResponse(GreenLangBase):
         """Response model for a golden record."""
         record_id: str = Field(default="")
         entity_id: str = Field(default="")
@@ -345,7 +346,7 @@ if FASTAPI_AVAILABLE:
         created_at: str = Field(default="")
         provenance_hash: str = Field(default="")
 
-    class HealthResponse(BaseModel):
+    class HealthResponse(GreenLangBase):
         """Response model for health check."""
         status: str = Field(default="healthy")
         service: str = Field(default="cross_source_reconciliation")
@@ -353,7 +354,7 @@ if FASTAPI_AVAILABLE:
         stores: Dict[str, int] = Field(default_factory=dict)
         timestamp: str = Field(default="")
 
-    class StatsResponse(BaseModel):
+    class StatsResponse(GreenLangBase):
         """Response model for aggregate statistics."""
         total_jobs: int = Field(default=0)
         total_sources: int = Field(default=0)
@@ -366,7 +367,7 @@ if FASTAPI_AVAILABLE:
         provenance_entries: int = Field(default=0)
         timestamp: str = Field(default="")
 
-    class ErrorResponse(BaseModel):
+    class ErrorResponse(GreenLangBase):
         """Error response model."""
         error: str = Field(default="")
         detail: str = Field(default="")

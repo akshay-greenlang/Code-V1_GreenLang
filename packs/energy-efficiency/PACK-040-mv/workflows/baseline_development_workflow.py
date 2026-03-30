@@ -42,35 +42,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.utcnow()
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hash of a string."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -81,7 +73,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -90,7 +81,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class BaselineModelType(str, Enum):
     """Baseline regression model types."""
@@ -103,7 +93,6 @@ class BaselineModelType(str, Enum):
     TOWT = "towt"
     MULTIVARIATE = "multivariate"
 
-
 class DataFrequency(str, Enum):
     """Data collection frequency."""
 
@@ -112,7 +101,6 @@ class DataFrequency(str, Enum):
     WEEKLY = "weekly"
     MONTHLY = "monthly"
     BILLING = "billing"
-
 
 # =============================================================================
 # REFERENCE DATA (Zero-Hallucination)
@@ -228,11 +216,9 @@ DATA_QUALITY_THRESHOLDS: Dict[str, Any] = {
     "temperature_range_c": {"min": -50.0, "max": 60.0},
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -246,7 +232,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list, description="Errors encountered")
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
 
-
 class DataRecord(BaseModel):
     """Single energy data record for baseline development."""
 
@@ -258,7 +243,6 @@ class DataRecord(BaseModel):
     occupancy: Optional[float] = Field(None, ge=0, le=1, description="Occupancy fraction")
     humidity: Optional[float] = Field(None, ge=0, le=100, description="Relative humidity (%)")
     is_valid: bool = Field(default=True, description="Data quality flag")
-
 
 class BaselineDevelopmentInput(BaseModel):
     """Input data model for BaselineDevelopmentWorkflow."""
@@ -311,7 +295,6 @@ class BaselineDevelopmentInput(BaseModel):
             raise ValueError(f"data_frequency must be one of {valid}")
         return v.lower()
 
-
 class ModelCandidate(BaseModel):
     """Candidate model evaluation result."""
 
@@ -328,7 +311,6 @@ class ModelCandidate(BaseModel):
     residual_autocorrelation: float = Field(default=0.0, description="Durbin-Watson stat")
     f_statistic: float = Field(default=0.0, description="F-test statistic")
     t_statistics: Dict[str, float] = Field(default_factory=dict, description="t-stats per coeff")
-
 
 class BaselineDevelopmentResult(BaseModel):
     """Complete result from baseline development workflow."""
@@ -358,11 +340,9 @@ class BaselineDevelopmentResult(BaseModel):
     calculated_at: str = Field(default="", description="ISO 8601 timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 of complete result")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class BaselineDevelopmentWorkflow:
     """
@@ -419,7 +399,7 @@ class BaselineDevelopmentWorkflow:
             ValueError: If input validation fails.
         """
         t_start = time.perf_counter()
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting baseline development workflow %s for facility=%s records=%d",
             self.baseline_id, input_data.facility_name, len(input_data.data_records),

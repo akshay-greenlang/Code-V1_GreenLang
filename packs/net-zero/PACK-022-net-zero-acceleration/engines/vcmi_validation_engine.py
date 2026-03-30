@@ -94,25 +94,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -125,7 +119,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -135,7 +128,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
 ) -> Decimal:
@@ -143,7 +135,6 @@ def _safe_divide(
     if denominator == Decimal("0"):
         return default
     return numerator / denominator
-
 
 def _safe_pct(
     part: Decimal, whole: Decimal, places: int = 2
@@ -155,12 +146,10 @@ def _safe_pct(
         Decimal("0." + "0" * places), rounding=ROUND_HALF_UP
     )
 
-
 def _round_val(value: Decimal, places: int = 4) -> Decimal:
     """Round a Decimal value to the specified number of decimal places."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 # ---------------------------------------------------------------------------
 # Reference Data
@@ -209,11 +198,9 @@ GREENWASHING_INDICATORS: List[Dict[str, str]] = [
     {"id": "GW-7", "name": "Stale Inventory", "description": "GHG inventory more than 2 years old"},
 ]
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class VCMITier(str, Enum):
     """VCMI claim tier."""
@@ -222,14 +209,12 @@ class VCMITier(str, Enum):
     PLATINUM = "platinum"
     NOT_ELIGIBLE = "not_eligible"
 
-
 class CriterionStatus(str, Enum):
     """Status of a foundational criterion."""
     MET = "met"
     PARTIALLY_MET = "partially_met"
     NOT_MET = "not_met"
     NOT_ASSESSED = "not_assessed"
-
 
 class EvidenceStrength(str, Enum):
     """Strength of evidence provided."""
@@ -238,14 +223,12 @@ class EvidenceStrength(str, Enum):
     WEAK = "weak"
     ABSENT = "absent"
 
-
 class GreenwashingRiskLevel(str, Enum):
     """Greenwashing risk level."""
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
     CRITICAL = "critical"
-
 
 class CreditQualityLevel(str, Enum):
     """Carbon credit quality level."""
@@ -255,11 +238,9 @@ class CreditQualityLevel(str, Enum):
     LOW_QUALITY = "low_quality"
     UNKNOWN = "unknown"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class CarbonCreditPortfolio(BaseModel):
     """Carbon credit portfolio for VCMI assessment."""
@@ -280,7 +261,6 @@ class CarbonCreditPortfolio(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class EmissionsData(BaseModel):
     """Emissions data for VCMI assessment."""
@@ -308,7 +288,6 @@ class EmissionsData(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class FoundationalCriterionResult(BaseModel):
     """Result for a single VCMI foundational criterion."""
     criterion_id: str = Field(description="Criterion identifier (FC-1 to FC-4)")
@@ -324,7 +303,6 @@ class FoundationalCriterionResult(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class TierEligibility(BaseModel):
     """Eligibility assessment for a specific VCMI tier."""
@@ -344,7 +322,6 @@ class TierEligibility(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class GapToNextTier(BaseModel):
     """Gap analysis for upgrading to the next VCMI tier."""
     current_tier: VCMITier = Field(description="Current tier (or not_eligible)")
@@ -360,7 +337,6 @@ class GapToNextTier(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class GreenwashingFlag(BaseModel):
     """A greenwashing risk flag."""
     flag_id: str = Field(description="Indicator ID (GW-1 to GW-7)")
@@ -370,7 +346,6 @@ class GreenwashingFlag(BaseModel):
     description: str = Field(default="", description="Detailed description")
     recommendation: str = Field(default="", description="Recommended action")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class ICVCMAssessment(BaseModel):
     """Assessment against ICVCM Core Carbon Principles."""
@@ -386,7 +361,6 @@ class ICVCMAssessment(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class ISOComparison(BaseModel):
     """Comparison with ISO 14068-1 requirements."""
     requirement_id: str = Field(description="ISO requirement ID")
@@ -395,7 +369,6 @@ class ISOComparison(BaseModel):
     met_by_vcmi_compliance: bool = Field(description="Whether VCMI compliance meets this")
     gap: str = Field(default="", description="Gap description if not covered")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class VCMIResult(BaseModel):
     """Complete VCMI validation result."""
@@ -436,7 +409,7 @@ class VCMIResult(BaseModel):
     recommendations: List[str] = Field(
         default_factory=list, description="Improvement recommendations"
     )
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Calculation timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Calculation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("foundational_overall_score", mode="before")
@@ -444,11 +417,9 @@ class VCMIResult(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 # ---------------------------------------------------------------------------
 # Engine Configuration
 # ---------------------------------------------------------------------------
-
 
 class VCMIValidationConfig(BaseModel):
     """Configuration for the VCMIValidationEngine."""
@@ -477,7 +448,6 @@ class VCMIValidationConfig(BaseModel):
         default=4, description="Decimal places for results"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic model_rebuild
 # ---------------------------------------------------------------------------
@@ -493,11 +463,9 @@ ISOComparison.model_rebuild()
 VCMIResult.model_rebuild()
 VCMIValidationConfig.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # VCMIValidationEngine
 # ---------------------------------------------------------------------------
-
 
 class VCMIValidationEngine:
     """

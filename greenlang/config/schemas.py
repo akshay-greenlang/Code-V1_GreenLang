@@ -21,38 +21,17 @@ Status: Production Ready
 from __future__ import annotations
 
 import os
-from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional
 
 from pydantic import BaseModel, Field, field_validator, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from greenlang.schemas.enums import Environment
 
 
 # ==============================================================================
 # Environment Type
 # ==============================================================================
-
-class Environment(str, Enum):
-    """Deployment environment."""
-
-    DEVELOPMENT = "development"
-    STAGING = "staging"
-    PRODUCTION = "production"
-    TEST = "test"
-
-    def is_production(self) -> bool:
-        """Check if production environment."""
-        return self == Environment.PRODUCTION
-
-    def is_development(self) -> bool:
-        """Check if development environment."""
-        return self == Environment.DEVELOPMENT
-
-    def is_test(self) -> bool:
-        """Check if test environment."""
-        return self == Environment.TEST
-
 
 # ==============================================================================
 # LLM Provider Configuration

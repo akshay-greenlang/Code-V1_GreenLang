@@ -45,9 +45,9 @@ import threading
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Model imports (graceful fallback)
@@ -133,7 +133,7 @@ except ImportError:
             self.status = status
             self.tags = tags or []
             self.metadata = metadata or {}
-            now = _utcnow()
+            now = utcnow()
             self.created_at = created_at or now
             self.updated_at = updated_at or now
             self.version = version
@@ -176,8 +176,8 @@ except ImportError:
         ) -> None:
             self.id = id or uuid4().hex[:12]
             self.dataset_id = dataset_id
-            self.refreshed_at = refreshed_at or _utcnow()
-            self.recorded_at = recorded_at or _utcnow()
+            self.refreshed_at = refreshed_at or utcnow()
+            self.recorded_at = recorded_at or utcnow()
             self.data_size_bytes = data_size_bytes
             self.record_count = record_count
             self.source_info = source_info or {}
@@ -218,8 +218,8 @@ except ImportError:
             self.dataset_ids = dataset_ids or []
             self.priority = priority
             self.sla_id = sla_id
-            self.created_at = created_at or _utcnow()
-            self.updated_at = updated_at or _utcnow()
+            self.created_at = created_at or utcnow()
+            self.updated_at = updated_at or utcnow()
 
         def to_dict(self) -> Dict[str, Any]:
             """Serialise to dictionary."""
@@ -235,7 +235,6 @@ except ImportError:
                 "updated_at": self.updated_at.isoformat()
                 if self.updated_at else None,
             }
-
 
 # ---------------------------------------------------------------------------
 # Metrics import (graceful fallback)
@@ -269,7 +268,6 @@ except ImportError:
         "data_freshness_monitor.metrics not available; "
         "dataset registry metrics disabled"
     )
-
 
 # ---------------------------------------------------------------------------
 # Provenance import (graceful fallback with inline tracker)
@@ -377,16 +375,9 @@ except ImportError:
             with self._lock:
                 return len(self._chain)
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _gen_id() -> str:
     """Generate a 12-character hex identifier from uuid4.
@@ -395,7 +386,6 @@ def _gen_id() -> str:
         12-character lowercase hex string.
     """
     return uuid4().hex[:12]
-
 
 # ---------------------------------------------------------------------------
 # Valid enum value sets for validation
@@ -408,11 +398,9 @@ _VALID_CADENCES = {
     "monthly", "quarterly", "annual",
 }
 
-
 # ---------------------------------------------------------------------------
 # DatasetRegistryEngine
 # ---------------------------------------------------------------------------
-
 
 class DatasetRegistryEngine:
     """Pure-Python engine for managing monitored datasets in data freshness monitoring.
@@ -541,7 +529,7 @@ class DatasetRegistryEngine:
             )
 
         dataset_id = _gen_id()
-        now = _utcnow()
+        now = utcnow()
 
         dataset = DatasetDefinition(
             id=dataset_id,
@@ -848,7 +836,7 @@ class DatasetRegistryEngine:
 
         # Bump version and update timestamp
         dataset.version += 1
-        dataset.updated_at = _utcnow()
+        dataset.updated_at = utcnow()
 
         # Compute provenance
         input_hash = self._provenance.hash_record({
@@ -1007,7 +995,7 @@ class DatasetRegistryEngine:
             if dataset_id not in self._datasets:
                 raise KeyError(f"Dataset not found: {dataset_id}")
 
-        now = _utcnow()
+        now = utcnow()
         event_id = _gen_id()
 
         event = RefreshEvent(
@@ -1226,7 +1214,7 @@ class DatasetRegistryEngine:
                         )
 
         group_id = _gen_id()
-        now = _utcnow()
+        now = utcnow()
 
         group = DatasetGroup(
             id=group_id,
@@ -1778,7 +1766,6 @@ class DatasetRegistryEngine:
         if hasattr(cadence, "value"):
             return str(cadence.value).lower()
         return str(cadence).lower()
-
 
 # ---------------------------------------------------------------------------
 # __all__ export list

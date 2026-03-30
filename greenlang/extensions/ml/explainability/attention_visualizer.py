@@ -46,6 +46,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
+from greenlang.schemas.enums import ReportFormat
 
 try:
     import matplotlib.pyplot as plt
@@ -75,15 +76,6 @@ class VisualizationType(str, Enum):
     NETWORK = "network"
     TIMESERIES = "timeseries"
     DISTRIBUTION = "distribution"
-
-
-class ExportFormat(str, Enum):
-    """Export formats for visualizations."""
-    HTML = "html"
-    PNG = "png"
-    SVG = "svg"
-    JSON = "json"
-    CSV = "csv"
 
 
 # =============================================================================
@@ -635,7 +627,7 @@ class AttentionVisualizer:
     def export_visualization(
         self,
         summary: AttentionSummary,
-        format: ExportFormat = ExportFormat.HTML,
+        format: ReportFormat = ReportFormat.HTML,
         output_path: Optional[Union[str, Path]] = None
     ) -> Union[str, Path]:
         """
@@ -653,13 +645,13 @@ class AttentionVisualizer:
             ImportError: If required library not available
             ValueError: If format not supported
         """
-        if format == ExportFormat.HTML:
+        if format == ReportFormat.HTML:
             return self._export_html(summary, output_path)
-        elif format == ExportFormat.JSON:
+        elif format == ReportFormat.JSON:
             return self._export_json(summary, output_path)
-        elif format == ExportFormat.CSV:
+        elif format == ReportFormat.CSV:
             return self._export_csv(summary, output_path)
-        elif format == ExportFormat.PNG:
+        elif format == ReportFormat.PNG:
             return self._export_png(summary, output_path)
         else:
             raise ValueError(f"Unsupported format: {format}")
@@ -896,5 +888,5 @@ __all__ = [
     "AttentionWeights",
     "AttentionSummary",
     "VisualizationType",
-    "ExportFormat",
+    "ReportFormat",
 ]

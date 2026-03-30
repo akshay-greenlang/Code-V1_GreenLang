@@ -52,30 +52,22 @@ from datetime import date, datetime, timezone
 from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import AlertSeverity, AlertStatus
 
 from pydantic import (
-    BaseModel,
-    ConfigDict,
     Field,
     field_validator,
     model_validator,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Return a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -134,11 +126,9 @@ SUPPORTED_COMMODITIES: List[str] = [
 #: Default number of points for buffer geometry resolution.
 DEFAULT_BUFFER_RESOLUTION: int = 64
 
-
 # ---------------------------------------------------------------------------
 # Enumerations (12)
 # ---------------------------------------------------------------------------
-
 
 class SatelliteSource(str, Enum):
     """Satellite data sources for deforestation monitoring.
@@ -172,7 +162,6 @@ class SatelliteSource(str, Enum):
     CUSTOM = "custom"
     """Custom or third-party satellite data source."""
 
-
 class ChangeType(str, Enum):
     """Type of land cover change detected by satellite analysis.
 
@@ -201,61 +190,6 @@ class ChangeType(str, Enum):
     NO_CHANGE = "no_change"
     """No significant land cover change detected."""
 
-
-class AlertSeverity(str, Enum):
-    """Severity levels for deforestation alerts.
-
-    Five-tier classification determined by weighted scoring across
-    area affected, deforestation rate, proximity to supply chain
-    plots, protected area status, and post-cutoff timing.
-    """
-
-    CRITICAL = "critical"
-    """Critical: immediate action required, likely supply chain impact."""
-
-    HIGH = "high"
-    """High: urgent investigation within 48 hours."""
-
-    MEDIUM = "medium"
-    """Medium: review within 7 days, potential supply chain impact."""
-
-    LOW = "low"
-    """Low: monitor, minor or distant deforestation event."""
-
-    INFORMATIONAL = "informational"
-    """Informational: no immediate action, contextual awareness only."""
-
-
-class AlertStatus(str, Enum):
-    """Lifecycle status of a deforestation alert.
-
-    Tracks the alert through its workflow from initial generation
-    through triage, investigation, and resolution with support for
-    escalation and false positive classification.
-    """
-
-    PENDING = "pending"
-    """Newly generated alert awaiting triage."""
-
-    TRIAGED = "triaged"
-    """Alert has been triaged and prioritized."""
-
-    INVESTIGATING = "investigating"
-    """Alert is under active investigation."""
-
-    RESOLVED = "resolved"
-    """Alert has been resolved (action taken or determined no risk)."""
-
-    ESCALATED = "escalated"
-    """Alert has been escalated to higher authority."""
-
-    FALSE_POSITIVE = "false_positive"
-    """Alert determined to be a false positive (cloud, shadow, etc.)."""
-
-    EXPIRED = "expired"
-    """Alert has expired without resolution (SLA breach)."""
-
-
 class BufferType(str, Enum):
     """Geometry type for spatial buffer zones around supply chain plots.
 
@@ -271,7 +205,6 @@ class BufferType(str, Enum):
 
     ADAPTIVE = "adaptive"
     """Adaptive buffer adjusting radius based on local deforestation risk."""
-
 
 class CutoffResult(str, Enum):
     """EUDR cutoff date verification result.
@@ -292,7 +225,6 @@ class CutoffResult(str, Enum):
     ONGOING = "ongoing"
     """Deforestation spans the cutoff date (ongoing event)."""
 
-
 class ComplianceOutcome(str, Enum):
     """Compliance assessment outcome for deforestation-affected supply chains.
 
@@ -312,7 +244,6 @@ class ComplianceOutcome(str, Enum):
 
     REMEDIATION_REQUIRED = "remediation_required"
     """Non-compliance detected, remediation plan required."""
-
 
 class WorkflowAction(str, Enum):
     """Actions that trigger workflow state transitions.
@@ -342,7 +273,6 @@ class WorkflowAction(str, Enum):
     REOPEN = "reopen"
     """Reopen a previously resolved or closed alert."""
 
-
 class EUDRCommodity(str, Enum):
     """EUDR-regulated forest-risk commodities per Article 1.
 
@@ -371,7 +301,6 @@ class EUDRCommodity(str, Enum):
     WOOD = "wood"
     """Wood and derived products (timber, pulp, paper, furniture)."""
 
-
 class SpectralIndex(str, Enum):
     """Spectral vegetation indices used for change detection.
 
@@ -394,7 +323,6 @@ class SpectralIndex(str, Enum):
     SAVI = "savi"
     """Soil-Adjusted Vegetation Index: reduces soil background effects."""
 
-
 class EvidenceQuality(str, Enum):
     """Quality rating for temporal evidence in cutoff date verification.
 
@@ -413,7 +341,6 @@ class EvidenceQuality(str, Enum):
 
     INSUFFICIENT = "insufficient"
     """Insufficient: cannot reliably determine temporal placement."""
-
 
 class RemediationAction(str, Enum):
     """Remediation actions for deforestation-related compliance failures.
@@ -437,13 +364,11 @@ class RemediationAction(str, Enum):
     PRODUCT_WITHDRAWAL = "product_withdrawal"
     """Withdraw affected products from EU market per Article 10."""
 
-
 # ---------------------------------------------------------------------------
 # Core Models (12)
 # ---------------------------------------------------------------------------
 
-
-class SatelliteDetection(BaseModel):
+class SatelliteDetection(GreenLangBase):
     """Satellite-based deforestation change detection event.
 
     Represents a single change detection result from satellite imagery
@@ -499,7 +424,7 @@ class SatelliteDetection(BaseModel):
         description="Satellite data source that produced the detection",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the satellite image was acquired",
     )
     latitude: Decimal = Field(
@@ -561,12 +486,11 @@ class SatelliteDetection(BaseModel):
         description="SHA-256 hash for audit trail",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record creation timestamp (UTC)",
     )
 
-
-class DeforestationAlert(BaseModel):
+class DeforestationAlert(GreenLangBase):
     """Deforestation alert generated from satellite detection analysis.
 
     Represents an actionable deforestation alert linked to one or more
@@ -676,11 +600,11 @@ class DeforestationAlert(BaseModel):
         description="SHA-256 hash for audit trail",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Alert creation timestamp (UTC)",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Alert last update timestamp (UTC)",
     )
 
@@ -692,8 +616,7 @@ class DeforestationAlert(BaseModel):
             return v.upper()
         return v
 
-
-class SeverityScore(BaseModel):
+class SeverityScore(GreenLangBase):
     """Weighted severity score for deforestation alert classification.
 
     Implements the five-dimension weighted scoring system: area affected
@@ -759,12 +682,11 @@ class SeverityScore(BaseModel):
         description="SHA-256 hash for audit trail",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Score computation timestamp (UTC)",
     )
 
-
-class SpatialBuffer(BaseModel):
+class SpatialBuffer(GreenLangBase):
     """Spatial monitoring buffer zone around a supply chain plot.
 
     Defines a geographic buffer zone used to detect deforestation
@@ -847,11 +769,11 @@ class SpatialBuffer(BaseModel):
         description="SHA-256 hash for audit trail",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Buffer creation timestamp (UTC)",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Buffer last update timestamp (UTC)",
     )
 
@@ -863,8 +785,7 @@ class SpatialBuffer(BaseModel):
             return v.upper()
         return v
 
-
-class BufferViolation(BaseModel):
+class BufferViolation(GreenLangBase):
     """Detection of deforestation within a supply chain plot buffer zone.
 
     Records when a satellite detection falls within the monitoring
@@ -912,12 +833,11 @@ class BufferViolation(BaseModel):
         description="SHA-256 hash for audit trail",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Violation detection timestamp (UTC)",
     )
 
-
-class CutoffVerification(BaseModel):
+class CutoffVerification(GreenLangBase):
     """EUDR cutoff date temporal verification result.
 
     Verifies whether detected deforestation occurred before or after
@@ -986,12 +906,11 @@ class CutoffVerification(BaseModel):
         description="SHA-256 hash for audit trail",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Verification timestamp (UTC)",
     )
 
-
-class HistoricalBaseline(BaseModel):
+class HistoricalBaseline(GreenLangBase):
     """Historical reference baseline for a supply chain plot location.
 
     Establishes the reference forest cover state during the baseline
@@ -1065,7 +984,7 @@ class HistoricalBaseline(BaseModel):
         description="Number of cloud-free observations in baseline",
     )
     established_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Date baseline was established",
     )
     provenance_hash: Optional[str] = Field(
@@ -1073,12 +992,11 @@ class HistoricalBaseline(BaseModel):
         description="SHA-256 hash for audit trail",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record creation timestamp (UTC)",
     )
 
-
-class BaselineComparison(BaseModel):
+class BaselineComparison(GreenLangBase):
     """Comparison of current conditions against historical baseline.
 
     Quantifies the change between the historical baseline reference
@@ -1146,12 +1064,11 @@ class BaselineComparison(BaseModel):
         description="SHA-256 hash for audit trail",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Comparison timestamp (UTC)",
     )
 
-
-class WorkflowTransition(BaseModel):
+class WorkflowTransition(GreenLangBase):
     """A single state transition in the alert workflow lifecycle.
 
     Records the change from one workflow status to another, capturing
@@ -1188,7 +1105,7 @@ class WorkflowTransition(BaseModel):
         description="User or system that performed the action",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Transition timestamp (UTC)",
     )
     notes: Optional[str] = Field(
@@ -1197,8 +1114,7 @@ class WorkflowTransition(BaseModel):
         description="Optional notes about the transition",
     )
 
-
-class WorkflowState(BaseModel):
+class WorkflowState(GreenLangBase):
     """Current workflow state for a deforestation alert.
 
     Tracks the alert's position in the investigation workflow including
@@ -1269,16 +1185,15 @@ class WorkflowState(BaseModel):
         description="SHA-256 hash for audit trail",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="State creation timestamp (UTC)",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="State last update timestamp (UTC)",
     )
 
-
-class ComplianceImpact(BaseModel):
+class ComplianceImpact(GreenLangBase):
     """Compliance impact assessment for a deforestation alert.
 
     Maps the deforestation alert analysis to supply chain impact,
@@ -1354,12 +1269,11 @@ class ComplianceImpact(BaseModel):
         description="SHA-256 hash for audit trail",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Assessment timestamp (UTC)",
     )
 
-
-class AuditLogEntry(BaseModel):
+class AuditLogEntry(GreenLangBase):
     """Audit log entry for deforestation alert system operations.
 
     Captures all significant operations for EUDR Article 31 compliance
@@ -1415,17 +1329,15 @@ class AuditLogEntry(BaseModel):
         description="SHA-256 hash for audit trail",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Audit entry timestamp (UTC)",
     )
-
 
 # ---------------------------------------------------------------------------
 # Request Models (8)
 # ---------------------------------------------------------------------------
 
-
-class DetectChangesRequest(BaseModel):
+class DetectChangesRequest(GreenLangBase):
     """Request to perform satellite change detection.
 
     Triggers change detection analysis on satellite imagery for a
@@ -1497,8 +1409,7 @@ class DetectChangesRequest(BaseModel):
         description="Optional client-provided request identifier",
     )
 
-
-class GenerateAlertsRequest(BaseModel):
+class GenerateAlertsRequest(GreenLangBase):
     """Request to generate deforestation alerts from detections.
 
     Attributes:
@@ -1528,8 +1439,7 @@ class GenerateAlertsRequest(BaseModel):
         description="Optional client-provided request identifier",
     )
 
-
-class ClassifySeverityRequest(BaseModel):
+class ClassifySeverityRequest(GreenLangBase):
     """Request to classify the severity of a deforestation alert.
 
     Attributes:
@@ -1569,8 +1479,7 @@ class ClassifySeverityRequest(BaseModel):
         description="Optional client-provided request identifier",
     )
 
-
-class CheckBufferRequest(BaseModel):
+class CheckBufferRequest(GreenLangBase):
     """Request to check for buffer zone violations.
 
     Attributes:
@@ -1599,8 +1508,7 @@ class CheckBufferRequest(BaseModel):
         description="Optional client-provided request identifier",
     )
 
-
-class VerifyCutoffRequest(BaseModel):
+class VerifyCutoffRequest(GreenLangBase):
     """Request to verify EUDR cutoff date for a detection.
 
     Attributes:
@@ -1643,8 +1551,7 @@ class VerifyCutoffRequest(BaseModel):
         description="Optional client-provided request identifier",
     )
 
-
-class CompareBaselineRequest(BaseModel):
+class CompareBaselineRequest(GreenLangBase):
     """Request to compare current conditions against historical baseline.
 
     Attributes:
@@ -1681,8 +1588,7 @@ class CompareBaselineRequest(BaseModel):
         description="Optional client-provided request identifier",
     )
 
-
-class TransitionWorkflowRequest(BaseModel):
+class TransitionWorkflowRequest(GreenLangBase):
     """Request to transition an alert through the workflow.
 
     Attributes:
@@ -1722,8 +1628,7 @@ class TransitionWorkflowRequest(BaseModel):
         description="Optional client-provided request identifier",
     )
 
-
-class AssessComplianceRequest(BaseModel):
+class AssessComplianceRequest(GreenLangBase):
     """Request to assess compliance impact of a deforestation alert.
 
     Attributes:
@@ -1767,13 +1672,11 @@ class AssessComplianceRequest(BaseModel):
         description="Optional client-provided request identifier",
     )
 
-
 # ---------------------------------------------------------------------------
 # Response Models (8)
 # ---------------------------------------------------------------------------
 
-
-class DetectChangesResponse(BaseModel):
+class DetectChangesResponse(GreenLangBase):
     """Response from satellite change detection.
 
     Attributes:
@@ -1814,8 +1717,7 @@ class DetectChangesResponse(BaseModel):
         description="Client-provided request identifier (echoed)",
     )
 
-
-class GenerateAlertsResponse(BaseModel):
+class GenerateAlertsResponse(GreenLangBase):
     """Response from alert generation.
 
     Attributes:
@@ -1857,8 +1759,7 @@ class GenerateAlertsResponse(BaseModel):
         description="Client-provided request identifier (echoed)",
     )
 
-
-class ClassifySeverityResponse(BaseModel):
+class ClassifySeverityResponse(GreenLangBase):
     """Response from severity classification.
 
     Attributes:
@@ -1888,8 +1789,7 @@ class ClassifySeverityResponse(BaseModel):
         description="Client-provided request identifier (echoed)",
     )
 
-
-class CheckBufferResponse(BaseModel):
+class CheckBufferResponse(GreenLangBase):
     """Response from buffer zone violation check.
 
     Attributes:
@@ -1931,8 +1831,7 @@ class CheckBufferResponse(BaseModel):
         description="Client-provided request identifier (echoed)",
     )
 
-
-class VerifyCutoffResponse(BaseModel):
+class VerifyCutoffResponse(GreenLangBase):
     """Response from EUDR cutoff date verification.
 
     Attributes:
@@ -1962,8 +1861,7 @@ class VerifyCutoffResponse(BaseModel):
         description="Client-provided request identifier (echoed)",
     )
 
-
-class CompareBaselineResponse(BaseModel):
+class CompareBaselineResponse(GreenLangBase):
     """Response from historical baseline comparison.
 
     Attributes:
@@ -1993,8 +1891,7 @@ class CompareBaselineResponse(BaseModel):
         description="Client-provided request identifier (echoed)",
     )
 
-
-class TransitionWorkflowResponse(BaseModel):
+class TransitionWorkflowResponse(GreenLangBase):
     """Response from workflow state transition.
 
     Attributes:
@@ -2029,8 +1926,7 @@ class TransitionWorkflowResponse(BaseModel):
         description="Client-provided request identifier (echoed)",
     )
 
-
-class AssessComplianceResponse(BaseModel):
+class AssessComplianceResponse(GreenLangBase):
     """Response from compliance impact assessment.
 
     Attributes:

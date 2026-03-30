@@ -48,22 +48,17 @@ from collections import Counter
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 __all__ = [
     "AnomalyDetector",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _generate_id(prefix: str = "ANM") -> str:
     """Generate a unique identifier with the given prefix.
@@ -76,7 +71,6 @@ def _generate_id(prefix: str = "ANM") -> str:
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
 
-
 def _compute_provenance(operation: str, data_repr: str) -> str:
     """Compute SHA-256 provenance hash for an anomaly detection operation.
 
@@ -87,9 +81,8 @@ def _compute_provenance(operation: str, data_repr: str) -> str:
     Returns:
         Hex-encoded SHA-256 digest.
     """
-    payload = f"{operation}:{data_repr}:{_utcnow().isoformat()}"
+    payload = f"{operation}:{data_repr}:{utcnow().isoformat()}"
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
-
 
 def _try_float(value: Any) -> Optional[float]:
     """Attempt to convert a value to float.
@@ -117,7 +110,6 @@ def _try_float(value: Any) -> Optional[float]:
     except (ValueError, TypeError):
         return None
 
-
 def _safe_stdev(values: List[float]) -> float:
     """Compute sample standard deviation, 0.0 for < 2 values.
 
@@ -130,7 +122,6 @@ def _safe_stdev(values: List[float]) -> float:
     if len(values) < 2:
         return 0.0
     return statistics.stdev(values)
-
 
 def _safe_mean(values: List[float]) -> float:
     """Compute mean, 0.0 for empty lists.
@@ -145,7 +136,6 @@ def _safe_mean(values: List[float]) -> float:
         return 0.0
     return statistics.mean(values)
 
-
 def _safe_median(values: List[float]) -> float:
     """Compute median, 0.0 for empty lists.
 
@@ -158,7 +148,6 @@ def _safe_median(values: List[float]) -> float:
     if not values:
         return 0.0
     return statistics.median(values)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -200,7 +189,6 @@ _GRUBBS_CRITICAL_TABLE: Dict[int, float] = {
     100: 3.3836,
 }
 
-
 def _grubbs_critical(n: int) -> float:
     """Look up or interpolate Grubbs critical value for sample size n.
 
@@ -232,11 +220,9 @@ def _grubbs_critical(n: int) -> float:
 
     return _GRUBBS_CRITICAL_TABLE[keys[-1]]
 
-
 # ---------------------------------------------------------------------------
 # AnomalyDetector Engine
 # ---------------------------------------------------------------------------
-
 
 class AnomalyDetector:
     """Statistical anomaly detection engine with multiple methods.
@@ -377,7 +363,7 @@ class AnomalyDetector:
             "issue_count": len(issues),
             "provenance_hash": provenance_hash,
             "detection_time_ms": round(elapsed_ms, 2),
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
         with self._lock:
@@ -971,7 +957,7 @@ class AnomalyDetector:
                     "methods_used": list(set(a.get("method", "") for a in anomalies)),
                     "sample_values": [a.get("value") for a in anomalies[:5]],
                 },
-                "created_at": _utcnow().isoformat(),
+                "created_at": utcnow().isoformat(),
             })
 
         return issues
@@ -1123,5 +1109,5 @@ class AnomalyDetector:
                 ),
                 "avg_detection_time_ms": round(avg_time, 2),
                 "stored_detections": len(self._detections),
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }

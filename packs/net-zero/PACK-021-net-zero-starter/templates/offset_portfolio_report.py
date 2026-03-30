@@ -29,6 +29,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "21.0.0"
@@ -42,14 +44,8 @@ _QUALITY_DIMENSIONS: List[Dict[str, str]] = [
     {"id": "registry", "name": "Registry Standard", "description": "Certification standard quality"},
 ]
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if isinstance(data, dict):
@@ -58,7 +54,6 @@ def _compute_hash(data: Any) -> str:
         raw = str(data)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _dec(val: Any, places: int = 2) -> str:
     try:
         d = Decimal(str(val))
@@ -66,7 +61,6 @@ def _dec(val: Any, places: int = 2) -> str:
         return str(d.quantize(Decimal(q), rounding=ROUND_HALF_UP))
     except Exception:
         return str(val)
-
 
 def _dec_comma(val: Any, places: int = 2) -> str:
     try:
@@ -91,14 +85,12 @@ def _dec_comma(val: Any, places: int = 2) -> str:
     except Exception:
         return str(val)
 
-
 def _pct_of(part: Any, total: Any) -> Decimal:
     p = Decimal(str(part))
     t = Decimal(str(total))
     if t == 0:
         return Decimal("0.00")
     return (p / t * Decimal("100")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-
 
 class OffsetPortfolioReportTemplate:
     """
@@ -122,7 +114,7 @@ class OffsetPortfolioReportTemplate:
     # ------------------------------------------------------------------
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections: List[str] = [
             self._md_header(data),
             self._md_residual_budget(data),
@@ -140,7 +132,7 @@ class OffsetPortfolioReportTemplate:
         return content + f"\n\n<!-- Provenance: {prov} -->"
 
     def render_html(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         body = "\n".join([
             self._html_header(data),
@@ -164,7 +156,7 @@ class OffsetPortfolioReportTemplate:
         )
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         credits_list = data.get("credits", [])
         total_volume = sum(Decimal(str(c.get("volume_tco2e", 0))) for c in credits_list)
         removal_volume = sum(

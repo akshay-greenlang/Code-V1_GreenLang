@@ -52,25 +52,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 engine_version: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -97,7 +91,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -114,7 +107,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal,
     denominator: Decimal,
@@ -125,11 +117,9 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* and return a float.
@@ -139,11 +129,9 @@ def _round_val(value: Decimal, places: int = 6) -> float:
     quantizer = Decimal(10) ** -places
     return float(value.quantize(quantizer, rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ESRSStandard(str, Enum):
     """ESRS standard identifiers (EFRAG 2023).
@@ -164,7 +152,6 @@ class ESRSStandard(str, Enum):
     ESRS_S4 = "ESRS_S4"
     ESRS_G1 = "ESRS_G1"
 
-
 class DisclosureStatus(str, Enum):
     """Coverage status for a disclosure requirement."""
     FULLY_COVERED = "fully_covered"
@@ -173,7 +160,6 @@ class DisclosureStatus(str, Enum):
     NOT_APPLICABLE = "not_applicable"
     PHASE_IN = "phase_in"
 
-
 class CoverageLevel(str, Enum):
     """Aggregate coverage assessment level."""
     COMPLETE = "complete"
@@ -181,7 +167,6 @@ class CoverageLevel(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     NONE = "none"
-
 
 # ---------------------------------------------------------------------------
 # ESRS Disclosure Catalog
@@ -753,7 +738,6 @@ TOPIC_TO_STANDARD: Dict[str, str] = {
     "ESRS_S4": "ESRS_S4", "ESRS_G1": "ESRS_G1",
 }
 
-
 # Effort estimates (hours) per disclosure.
 # Based on typical first-year CSRD implementation timelines.
 EFFORT_ESTIMATES_PER_DISCLOSURE: Dict[str, Decimal] = {
@@ -802,11 +786,9 @@ EFFORT_ESTIMATES_PER_DISCLOSURE: Dict[str, Decimal] = {
 # Build the structured catalog from the raw data
 ESRS_DISCLOSURE_CATALOG: Dict[str, List[Dict[str, Any]]] = _RAW_CATALOG
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class ESRSDisclosureRequirement(BaseModel):
     """A single ESRS disclosure requirement.
@@ -830,7 +812,6 @@ class ESRSDisclosureRequirement(BaseModel):
     phase_in: bool = Field(default=False, description="Phase-in period applies")
     phase_in_date: Optional[str] = Field(default=None, description="Phase-in effective date")
 
-
 class TopicMapping(BaseModel):
     """Mapping of one material topic to its ESRS disclosure requirements.
 
@@ -848,7 +829,6 @@ class TopicMapping(BaseModel):
     total_data_points: int = Field(default=0, ge=0)
     mandatory_data_points: int = Field(default=0, ge=0)
     phase_in_data_points: int = Field(default=0, ge=0)
-
 
 class DisclosureGap(BaseModel):
     """Gap identified for a specific disclosure requirement.
@@ -872,7 +852,6 @@ class DisclosureGap(BaseModel):
     @classmethod
     def _coerce_effort(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class ESRSMappingResult(BaseModel):
     """Complete result of ESRS topic mapping for all material topics.
@@ -898,11 +877,9 @@ class ESRSMappingResult(BaseModel):
     calculated_at: Optional[datetime] = Field(default=None)
     processing_time_ms: float = Field(default=0.0, ge=0.0)
 
-
 # ---------------------------------------------------------------------------
 # Input Models
 # ---------------------------------------------------------------------------
-
 
 class MaterialTopicInput(BaseModel):
     """Input representing a single material topic to map.
@@ -914,7 +891,6 @@ class MaterialTopicInput(BaseModel):
     matter_id: str = Field(..., min_length=1)
     esrs_topic: str = Field(..., min_length=1)
 
-
 class AvailableDataInput(BaseModel):
     """Input representing data points currently available.
 
@@ -925,11 +901,9 @@ class AvailableDataInput(BaseModel):
     disclosure_id: str = Field(..., min_length=1)
     available_data_points: List[str] = Field(default_factory=list)
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ESRSTopicMappingEngine:
     """Maps material topics to ESRS disclosure requirements.
@@ -1069,7 +1043,7 @@ class ESRSTopicMappingEngine:
             total_disclosures=len(seen_disclosures),
             total_data_points=total_dp,
             coverage_assessment="none",
-            calculated_at=_utcnow(),
+            calculated_at=utcnow(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         result.provenance_hash = _compute_hash(result)

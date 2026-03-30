@@ -28,6 +28,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.document_authentication.api.dependencies import (
     AuthUser,
@@ -58,22 +59,14 @@ router = APIRouter(tags=["Metadata"])
 
 _metadata_store: Dict[str, Dict] = {}
 
-
 def _get_metadata_store() -> Dict[str, Dict]:
     """Return the metadata record store singleton."""
     return _metadata_store
-
 
 def _compute_provenance_hash(data: dict) -> str:
     """Compute SHA-256 hash for provenance tracking."""
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _extract_metadata_logic(
     reference: str,
@@ -90,7 +83,7 @@ def _extract_metadata_logic(
     Returns:
         Dict with extracted metadata fields.
     """
-    now = _utcnow()
+    now = utcnow()
     creation_date = now - timedelta(days=5)
     modification_date = now - timedelta(days=1)
 
@@ -154,11 +147,9 @@ def _extract_metadata_logic(
         "issues": issues,
     }
 
-
 # ---------------------------------------------------------------------------
 # POST /metadata/extract
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/metadata/extract",
@@ -198,7 +189,7 @@ async def extract_metadata(
     start = time.monotonic()
     try:
         document_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         metadata_result = _extract_metadata_logic(
             body.document_reference,
@@ -269,11 +260,9 @@ async def extract_metadata(
             detail="Failed to extract metadata",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /metadata/{document_id}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/metadata/{document_id}",
@@ -337,11 +326,9 @@ async def get_metadata(
             detail="Failed to retrieve metadata",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /metadata/validate
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/metadata/validate",
@@ -391,7 +378,7 @@ async def validate_metadata(
                 detail=f"Metadata for document {body.document_id} not found",
             )
 
-        now = _utcnow()
+        now = utcnow()
         field_results: List[MetadataFieldSchema] = []
         issues: List[str] = []
         all_valid = True
@@ -469,7 +456,6 @@ async def validate_metadata(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to validate metadata",
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

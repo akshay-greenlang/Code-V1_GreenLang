@@ -34,9 +34,10 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -108,7 +109,7 @@ class SpendCategory(str, Enum):
 # PYDANTIC MODELS
 # =============================================================================
 
-class ERPConnectionConfig(BaseModel):
+class ERPConnectionConfig(GreenLangBase):
     """ERP connection configuration."""
     connection_id: str = Field(..., description="Unique connection identifier")
     erp_system: ERPSystem = Field(..., description="ERP system type")
@@ -123,7 +124,7 @@ class ERPConnectionConfig(BaseModel):
     company_code: Optional[str] = Field(None)
 
 
-class VendorMapping(BaseModel):
+class VendorMapping(GreenLangBase):
     """Vendor to Scope 3 category mapping."""
     vendor_id: str = Field(..., description="Vendor identifier")
     vendor_name: str = Field(..., description="Vendor name")
@@ -134,7 +135,7 @@ class VendorMapping(BaseModel):
     emission_factor_source: Optional[str] = Field(None)
 
 
-class MaterialMapping(BaseModel):
+class MaterialMapping(GreenLangBase):
     """Material to Scope 3 category mapping."""
     material_id: str = Field(..., description="Material identifier")
     material_name: str = Field(..., description="Material name")
@@ -145,7 +146,7 @@ class MaterialMapping(BaseModel):
     emission_factor_kgco2e_per_unit: Optional[float] = Field(None)
 
 
-class PurchaseOrderLine(BaseModel):
+class PurchaseOrderLine(GreenLangBase):
     """Purchase order line item."""
     line_number: int = Field(...)
     material_id: Optional[str] = Field(None)
@@ -160,7 +161,7 @@ class PurchaseOrderLine(BaseModel):
     gl_account: Optional[str] = Field(None)
 
 
-class PurchaseOrder(BaseModel):
+class PurchaseOrder(GreenLangBase):
     """Purchase order."""
     po_number: str = Field(..., description="PO number")
     vendor_id: str = Field(..., description="Vendor ID")
@@ -176,7 +177,7 @@ class PurchaseOrder(BaseModel):
     spend_category: Optional[SpendCategory] = Field(None)
 
 
-class SpendRecord(BaseModel):
+class SpendRecord(GreenLangBase):
     """Spend record for analysis."""
     record_id: str = Field(..., description="Record identifier")
     transaction_type: TransactionType = Field(...)
@@ -195,7 +196,7 @@ class SpendRecord(BaseModel):
     estimated_emissions_kgco2e: Optional[float] = Field(None)
 
 
-class InventoryItem(BaseModel):
+class InventoryItem(GreenLangBase):
     """Inventory item."""
     material_id: str = Field(...)
     material_name: str = Field(...)
@@ -208,7 +209,7 @@ class InventoryItem(BaseModel):
     last_receipt_date: Optional[date] = Field(None)
 
 
-class ERPQueryInput(BaseModel):
+class ERPQueryInput(GreenLangBase):
     """Input for ERP data query."""
     connection_id: str = Field(..., description="ERP connection to use")
     query_type: str = Field(..., description="Query type: spend, po, inventory, vendor")
@@ -224,7 +225,7 @@ class ERPQueryInput(BaseModel):
     tenant_id: Optional[str] = Field(None)
 
 
-class ERPQueryOutput(BaseModel):
+class ERPQueryOutput(GreenLangBase):
     """Output from ERP data query."""
     connection_id: str = Field(...)
     query_type: str = Field(...)

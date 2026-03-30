@@ -73,21 +73,13 @@ logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -116,7 +108,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _compute_chain_hash(entry_data: str, previous_hash: str) -> str:
     """Compute a chained SHA-256 hash incorporating the previous entry.
 
@@ -133,7 +124,6 @@ def _compute_chain_hash(entry_data: str, previous_hash: str) -> str:
     combined = f"{previous_hash}:{entry_data}"
     return hashlib.sha256(combined.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -143,17 +133,14 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _round_val(value: Decimal, places: int = 4) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class AuditEventType(str, Enum):
     """Types of audit events in the base year management lifecycle.
@@ -187,7 +174,6 @@ class AuditEventType(str, Enum):
     VERIFICATION_COMPLETED = "verification_completed"
     ANNUAL_REVIEW_COMPLETED = "annual_review_completed"
 
-
 class VerificationLevel(str, Enum):
     """Level of assurance for third-party verification.
 
@@ -203,7 +189,6 @@ class VerificationLevel(str, Enum):
     LIMITED_ASSURANCE = "limited_assurance"
     REASONABLE_ASSURANCE = "reasonable_assurance"
 
-
 class ApprovalStatus(str, Enum):
     """Status of an approval request.
 
@@ -216,7 +201,6 @@ class ApprovalStatus(str, Enum):
     APPROVED = "approved"
     REJECTED = "rejected"
     ESCALATED = "escalated"
-
 
 class AuditSeverity(str, Enum):
     """Severity/importance level of an audit entry.
@@ -232,19 +216,6 @@ class AuditSeverity(str, Enum):
     MEDIUM = "medium"
     HIGH = "high"
     CRITICAL = "critical"
-
-
-class ExportFormat(str, Enum):
-    """Supported export formats for audit trail.
-
-    JSON:       Machine-readable JSON format.
-    CSV:        Comma-separated values for spreadsheet analysis.
-    MARKDOWN:   Human-readable Markdown format.
-    """
-    JSON = "json"
-    CSV = "csv"
-    MARKDOWN = "markdown"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -280,11 +251,9 @@ ISAE3410_EVIDENCE_CATEGORIES: List[str] = [
     "uncertainty_assessment",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class AuditEntry(BaseModel):
     """A single entry in the base year audit trail.
@@ -292,6 +261,9 @@ class AuditEntry(BaseModel):
     Each entry is an immutable record of an event in the base year
     management lifecycle.  The entry includes a provenance hash computed
     from the entry data and the previous entry's hash, forming a
+
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ReportFormat
     tamper-evident chain.
 
     Attributes:
@@ -312,7 +284,7 @@ class AuditEntry(BaseModel):
     """
     entry_id: str = Field(default_factory=_new_uuid)
     event_type: AuditEventType
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     actor: str = Field(..., min_length=1, max_length=500)
     description: str = Field(..., min_length=1)
     severity: AuditSeverity = Field(default=AuditSeverity.INFO)
@@ -342,7 +314,6 @@ class AuditEntry(BaseModel):
     )
     provenance_hash: str = Field(default="")
 
-
 class ApprovalRecord(BaseModel):
     """Record of an approval decision in the base year workflow.
 
@@ -363,7 +334,7 @@ class ApprovalRecord(BaseModel):
     approval_id: str = Field(default_factory=_new_uuid)
     subject: str = Field(..., min_length=1)
     requested_by: str = Field(..., min_length=1)
-    requested_date: datetime = Field(default_factory=_utcnow)
+    requested_date: datetime = Field(default_factory=utcnow)
     approver: str = Field(..., min_length=1)
     approval_status: ApprovalStatus = Field(default=ApprovalStatus.PENDING)
     decision_date: Optional[datetime] = None
@@ -371,7 +342,6 @@ class ApprovalRecord(BaseModel):
     comments: str = Field(default="")
     related_entry_ids: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class VerificationFinding(BaseModel):
     """A single finding from a verification engagement.
@@ -392,7 +362,6 @@ class VerificationFinding(BaseModel):
     recommendation: str = Field(default="")
     management_response: str = Field(default="")
     status: str = Field(default="open")
-
 
 class VerificationPackage(BaseModel):
     """Complete verification package for base year assurance.
@@ -422,7 +391,7 @@ class VerificationPackage(BaseModel):
     verification_level: VerificationLevel
     verifier_name: str = Field(..., min_length=1)
     verifier_accreditation: str = Field(default="")
-    verification_date: datetime = Field(default_factory=_utcnow)
+    verification_date: datetime = Field(default_factory=utcnow)
     scope_covered: str = Field(default="Scope 1 and Scope 2")
     findings: List[VerificationFinding] = Field(default_factory=list)
     opinion: str = Field(default="")
@@ -445,7 +414,6 @@ class VerificationPackage(BaseModel):
             return None
         return _decimal(v)
 
-
 class AuditTrailFilter(BaseModel):
     """Filter criteria for querying the audit trail.
 
@@ -463,7 +431,6 @@ class AuditTrailFilter(BaseModel):
     date_from: Optional[datetime] = None
     date_to: Optional[datetime] = None
     has_evidence: Optional[bool] = None
-
 
 class AuditTrail(BaseModel):
     """Complete audit trail for a base year.
@@ -490,9 +457,8 @@ class AuditTrail(BaseModel):
     verification_packages: List[VerificationPackage] = Field(default_factory=list)
     total_entries: int = Field(default=0)
     chain_valid: bool = Field(default=True)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class AuditCompletenessGap(BaseModel):
     """A gap identified in audit trail completeness.
@@ -510,11 +476,9 @@ class AuditCompletenessGap(BaseModel):
     severity: AuditSeverity
     recommendation: str
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class BaseYearAuditEngine:
     """Comprehensive audit trail and verification engine.
@@ -604,7 +568,7 @@ class BaseYearAuditEngine:
 
         entry = AuditEntry(
             event_type=event_type,
-            timestamp=_utcnow(),
+            timestamp=utcnow(),
             actor=actor,
             description=description,
             severity=severity,
@@ -678,12 +642,12 @@ class BaseYearAuditEngine:
         Returns:
             The created ApprovalRecord with provenance hash.
         """
-        decision_date = _utcnow() if status != ApprovalStatus.PENDING else None
+        decision_date = utcnow() if status != ApprovalStatus.PENDING else None
 
         record = ApprovalRecord(
             subject=subject,
             requested_by=requested_by,
-            requested_date=_utcnow(),
+            requested_date=utcnow(),
             approver=approver,
             approval_status=status,
             decision_date=decision_date,
@@ -771,7 +735,7 @@ class BaseYearAuditEngine:
             verification_level=verification_level,
             verifier_name=verifier_name,
             verifier_accreditation=verifier_accreditation,
-            verification_date=_utcnow(),
+            verification_date=utcnow(),
             scope_covered=scope_covered,
             findings=findings or [],
             opinion=opinion,
@@ -862,7 +826,7 @@ class BaseYearAuditEngine:
             verification_packages=verifications,
             total_entries=len(entries),
             chain_valid=chain_valid,
-            calculated_at=_utcnow(),
+            calculated_at=utcnow(),
         )
         trail.provenance_hash = _compute_hash(trail)
         return trail
@@ -899,7 +863,7 @@ class BaseYearAuditEngine:
             "standard": "ISAE 3410",
             "organization_id": audit_trail.organization_id,
             "base_year": audit_trail.base_year,
-            "generated_at": str(_utcnow()),
+            "generated_at": str(utcnow()),
             "total_audit_entries": audit_trail.total_entries,
             "chain_integrity": audit_trail.chain_valid,
             "evidence_categories": {},
@@ -1127,7 +1091,7 @@ class BaseYearAuditEngine:
     def export_audit_log(
         self,
         trail: AuditTrail,
-        output_format: ExportFormat = ExportFormat.MARKDOWN,
+        output_format: ReportFormat = ReportFormat.MARKDOWN,
     ) -> str:
         """Export the audit trail in the specified format.
 
@@ -1138,11 +1102,11 @@ class BaseYearAuditEngine:
         Returns:
             Formatted string in the specified format.
         """
-        if output_format == ExportFormat.JSON:
+        if output_format == ReportFormat.JSON:
             return self._export_json(trail)
-        elif output_format == ExportFormat.CSV:
+        elif output_format == ReportFormat.CSV:
             return self._export_csv(trail)
-        elif output_format == ExportFormat.MARKDOWN:
+        elif output_format == ReportFormat.MARKDOWN:
             return self._export_markdown(trail)
         else:
             return self._export_markdown(trail)

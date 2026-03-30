@@ -32,6 +32,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Request, status
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.gps_coordinate_validator.api.dependencies import (
     AuthUser,
@@ -64,18 +65,15 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Batch & Geocoding"])
 
-
 # ---------------------------------------------------------------------------
 # In-memory batch job store (replaced by database in production)
 # ---------------------------------------------------------------------------
 
 _batch_job_store: Dict[str, Dict[str, Any]] = {}
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
 
 def _compute_provenance(data: str) -> str:
     """Compute SHA-256 provenance hash.
@@ -87,12 +85,6 @@ def _compute_provenance(data: str) -> str:
         Hex-encoded SHA-256 hash.
     """
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Datum metadata for GET /datums endpoint
@@ -134,11 +126,9 @@ _DATUM_METADATA: Dict[str, Dict[str, Any]] = {
     "nzgd49": {"name": "New Zealand Geodetic Datum 1949", "epsg": 4272, "region": "New Zealand"},
 }
 
-
 # ---------------------------------------------------------------------------
 # POST /geo/reverse
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/geo/reverse",
@@ -238,11 +228,9 @@ async def reverse_geocode(
             detail="Reverse geocoding failed due to an internal error",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /geo/reverse/batch
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/geo/reverse/batch",
@@ -353,11 +341,9 @@ async def reverse_geocode_batch(
             detail="Batch reverse geocoding failed",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /geo/country
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/geo/country",
@@ -447,11 +433,9 @@ async def country_lookup(
             detail="Country lookup failed due to an internal error",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /geo/datum/transform
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/geo/datum/transform",
@@ -565,11 +549,9 @@ async def datum_transform(
             detail="Datum transformation failed due to an internal error",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /geo/datum/batch
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/geo/datum/batch",
@@ -688,11 +670,9 @@ async def datum_transform_batch(
             detail="Batch datum transformation failed",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /geo/datum/list
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/geo/datum/list",
@@ -739,11 +719,9 @@ async def list_datums(
         total=len(datums),
     )
 
-
 # ---------------------------------------------------------------------------
 # POST /batch/submit
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/batch/submit",
@@ -813,7 +791,7 @@ async def submit_batch_job(
         seconds_per_coord.get(op, 0.5) for op in body.operations
     )
 
-    now = _utcnow()
+    now = utcnow()
     _batch_job_store[job_id] = {
         "job_id": job_id,
         "user_id": user.user_id,
@@ -865,11 +843,9 @@ async def submit_batch_job(
         estimated_completion_seconds=estimated,
     )
 
-
 # ---------------------------------------------------------------------------
 # GET /batch/{job_id}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/batch/{job_id}",
@@ -942,11 +918,9 @@ async def get_batch_job_status(
         completed_at=job.get("completed_at"),
     )
 
-
 # ---------------------------------------------------------------------------
 # DELETE /batch/{job_id}
 # ---------------------------------------------------------------------------
-
 
 @router.delete(
     "/batch/{job_id}",
@@ -1013,7 +987,7 @@ async def cancel_batch_job(
             detail=f"Batch job {job_id} is already {current_status}",
         )
 
-    now = _utcnow()
+    now = utcnow()
     job["status"] = "cancelled"
     job["completed_at"] = now.isoformat()
 

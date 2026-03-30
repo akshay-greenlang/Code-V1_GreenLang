@@ -30,28 +30,21 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import ConfigDict, Field, field_validator, model_validator
 
+from greenlang.schemas import GreenLangBase, utcnow
 
 # =============================================================================
 # Helpers
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_id() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 # =============================================================================
 # Enumerations (API-layer mirrors of domain enums)
 # =============================================================================
-
 
 class LedgerEntryTypeSchema(str, Enum):
     """Type of mass balance ledger entry."""
@@ -65,7 +58,6 @@ class LedgerEntryTypeSchema(str, Enum):
     CARRY_FORWARD_OUT = "carry_forward_out"
     EXPIRY = "expiry"
 
-
 class PeriodStatusSchema(str, Enum):
     """Lifecycle status of a credit period."""
 
@@ -74,7 +66,6 @@ class PeriodStatusSchema(str, Enum):
     RECONCILING = "reconciling"
     CLOSED = "closed"
 
-
 class OverdraftSeveritySchema(str, Enum):
     """Severity classification for overdraft events."""
 
@@ -82,14 +73,12 @@ class OverdraftSeveritySchema(str, Enum):
     VIOLATION = "violation"
     CRITICAL = "critical"
 
-
 class OverdraftModeSchema(str, Enum):
     """Overdraft enforcement mode."""
 
     ZERO_TOLERANCE = "zero_tolerance"
     PERCENTAGE = "percentage"
     ABSOLUTE = "absolute"
-
 
 class LossTypeSchema(str, Enum):
     """Type of material loss."""
@@ -101,14 +90,12 @@ class LossTypeSchema(str, Enum):
     SPILLAGE = "spillage"
     CONTAMINATION_LOSS = "contamination_loss"
 
-
 class WasteTypeSchema(str, Enum):
     """Type of waste material."""
 
     BY_PRODUCT = "by_product"
     WASTE_MATERIAL = "waste_material"
     HAZARDOUS_WASTE = "hazardous_waste"
-
 
 class ConversionStatusSchema(str, Enum):
     """Validation status of a conversion factor."""
@@ -118,14 +105,12 @@ class ConversionStatusSchema(str, Enum):
     REJECTED = "rejected"
     PENDING = "pending"
 
-
 class VarianceClassificationSchema(str, Enum):
     """Classification of reconciliation variance."""
 
     ACCEPTABLE = "acceptable"
     WARNING = "warning"
     VIOLATION = "violation"
-
 
 class ReconciliationStatusSchema(str, Enum):
     """Status of a period reconciliation."""
@@ -135,7 +120,6 @@ class ReconciliationStatusSchema(str, Enum):
     COMPLETED = "completed"
     SIGNED_OFF = "signed_off"
 
-
 class CarryForwardStatusSchema(str, Enum):
     """Status of a carry-forward balance transfer."""
 
@@ -144,7 +128,6 @@ class CarryForwardStatusSchema(str, Enum):
     UTILIZED = "utilized"
     PARTIAL = "partial"
 
-
 class ReportFormatSchema(str, Enum):
     """Output format for reports."""
 
@@ -152,7 +135,6 @@ class ReportFormatSchema(str, Enum):
     CSV = "csv"
     PDF = "pdf"
     EUDR_XML = "eudr_xml"
-
 
 class ReportTypeSchema(str, Enum):
     """Type of mass balance report."""
@@ -163,7 +145,6 @@ class ReportTypeSchema(str, Enum):
     VARIANCE = "variance"
     EVIDENCE = "evidence"
 
-
 class FacilityGroupTypeSchema(str, Enum):
     """Type of facility grouping for consolidation."""
 
@@ -172,7 +153,6 @@ class FacilityGroupTypeSchema(str, Enum):
     COMMODITY = "commodity"
     CUSTOM = "custom"
 
-
 class ComplianceStatusSchema(str, Enum):
     """Compliance status for mass balance operations."""
 
@@ -180,7 +160,6 @@ class ComplianceStatusSchema(str, Enum):
     NON_COMPLIANT = "non_compliant"
     PENDING = "pending"
     UNDER_REVIEW = "under_review"
-
 
 class StandardTypeSchema(str, Enum):
     """Certification standard governing the mass balance."""
@@ -192,7 +171,6 @@ class StandardTypeSchema(str, Enum):
     FAIRTRADE = "fairtrade"
     EUDR_DEFAULT = "eudr_default"
 
-
 class BatchJobStatusSchema(str, Enum):
     """Status of an async batch job."""
 
@@ -201,7 +179,6 @@ class BatchJobStatusSchema(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     CANCELLED = "cancelled"
-
 
 class BatchJobTypeSchema(str, Enum):
     """Types of batch jobs supported by mass balance calculator."""
@@ -212,20 +189,17 @@ class BatchJobTypeSchema(str, Enum):
     LOSS_IMPORT = "loss_import"
     FACTOR_VALIDATION = "factor_validation"
 
-
 class SortOrderSchema(str, Enum):
     """Sort order for list endpoints."""
 
     ASC = "asc"
     DESC = "desc"
 
-
 # =============================================================================
 # Shared / Common Models
 # =============================================================================
 
-
-class ProvenanceInfo(BaseModel):
+class ProvenanceInfo(GreenLangBase):
     """Provenance tracking information for audit trail."""
 
     provenance_hash: str = Field(
@@ -233,7 +207,7 @@ class ProvenanceInfo(BaseModel):
     )
     created_by: str = Field(..., description="User ID who created the record")
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation timestamp (UTC)"
+        default_factory=utcnow, description="Creation timestamp (UTC)"
     )
     source: str = Field(
         default="api", description="Data source (api, import, system)"
@@ -241,8 +215,7 @@ class ProvenanceInfo(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class PaginatedMeta(BaseModel):
+class PaginatedMeta(GreenLangBase):
     """Pagination metadata for list responses."""
 
     total: int = Field(..., ge=0, description="Total number of results")
@@ -252,8 +225,7 @@ class PaginatedMeta(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ErrorDetail(BaseModel):
+class ErrorDetail(GreenLangBase):
     """Individual error detail within an error response."""
 
     field: Optional[str] = Field(None, description="Field that caused the error")
@@ -262,8 +234,7 @@ class ErrorDetail(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     """Structured error response for all API endpoints."""
 
     error: str = Field(..., description="Error type identifier")
@@ -276,13 +247,11 @@ class ErrorResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Ledger Schemas
 # =============================================================================
 
-
-class CreateLedgerSchema(BaseModel):
+class CreateLedgerSchema(GreenLangBase):
     """Request to create a new mass balance ledger."""
 
     facility_id: str = Field(
@@ -328,8 +297,7 @@ class CreateLedgerSchema(BaseModel):
             raise ValueError("commodity must be non-empty")
         return v.strip().lower()
 
-
-class RecordEntrySchema(BaseModel):
+class RecordEntrySchema(GreenLangBase):
     """Request to record a single ledger entry."""
 
     ledger_id: str = Field(
@@ -382,8 +350,7 @@ class RecordEntrySchema(BaseModel):
         },
     )
 
-
-class BulkEntrySchema(BaseModel):
+class BulkEntrySchema(GreenLangBase):
     """Request to record multiple ledger entries in bulk."""
 
     entries: List[RecordEntrySchema] = Field(
@@ -413,8 +380,7 @@ class BulkEntrySchema(BaseModel):
             raise ValueError(f"Maximum 500 entries per bulk request, got {len(v)}")
         return v
 
-
-class SearchLedgerSchema(BaseModel):
+class SearchLedgerSchema(GreenLangBase):
     """Request to search ledgers by criteria."""
 
     facility_id: Optional[str] = Field(
@@ -450,11 +416,9 @@ class SearchLedgerSchema(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
 # -- Ledger Response Schemas --
 
-
-class LedgerEntryDetailSchema(BaseModel):
+class LedgerEntryDetailSchema(GreenLangBase):
     """Detailed ledger entry for response payloads."""
 
     entry_id: str = Field(..., description="Unique entry identifier")
@@ -481,8 +445,7 @@ class LedgerEntryDetailSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class LedgerDetailSchema(BaseModel):
+class LedgerDetailSchema(GreenLangBase):
     """Response for a single ledger with full details."""
 
     ledger_id: str = Field(..., description="Unique ledger identifier")
@@ -509,8 +472,7 @@ class LedgerDetailSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class LedgerBalanceSchema(BaseModel):
+class LedgerBalanceSchema(GreenLangBase):
     """Response with detailed ledger balance information."""
 
     ledger_id: str = Field(..., description="Ledger identifier")
@@ -531,13 +493,12 @@ class LedgerBalanceSchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class EntryHistorySchema(BaseModel):
+class EntryHistorySchema(GreenLangBase):
     """Response with ledger entry history."""
 
     ledger_id: str = Field(..., description="Ledger identifier")
@@ -549,13 +510,12 @@ class EntryHistorySchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BulkEntryResultSchema(BaseModel):
+class BulkEntryResultSchema(GreenLangBase):
     """Response for bulk entry import."""
 
     total_submitted: int = Field(..., ge=0, description="Total entries submitted")
@@ -577,8 +537,7 @@ class BulkEntryResultSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class LedgerListSchema(BaseModel):
+class LedgerListSchema(GreenLangBase):
     """Response for ledger search results."""
 
     ledgers: List[LedgerDetailSchema] = Field(
@@ -589,18 +548,16 @@ class LedgerListSchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Period Schemas
 # =============================================================================
 
-
-class CreatePeriodSchema(BaseModel):
+class CreatePeriodSchema(GreenLangBase):
     """Request to create a new credit period."""
 
     facility_id: str = Field(
@@ -644,8 +601,7 @@ class CreatePeriodSchema(BaseModel):
         },
     )
 
-
-class ExtendPeriodSchema(BaseModel):
+class ExtendPeriodSchema(GreenLangBase):
     """Request to extend a credit period end date."""
 
     new_end_date: datetime = Field(
@@ -670,8 +626,7 @@ class ExtendPeriodSchema(BaseModel):
             raise ValueError("reason must be non-empty")
         return v
 
-
-class RolloverPeriodSchema(BaseModel):
+class RolloverPeriodSchema(GreenLangBase):
     """Request to rollover a credit period to a new one."""
 
     closing_period_id: str = Field(
@@ -696,11 +651,9 @@ class RolloverPeriodSchema(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
 # -- Period Response Schemas --
 
-
-class PeriodDetailSchema(BaseModel):
+class PeriodDetailSchema(GreenLangBase):
     """Response for a single credit period with full details."""
 
     period_id: str = Field(..., description="Unique period identifier")
@@ -733,8 +686,7 @@ class PeriodDetailSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ActivePeriodsSchema(BaseModel):
+class ActivePeriodsSchema(GreenLangBase):
     """Response listing active credit periods for a facility."""
 
     facility_id: str = Field(..., description="Facility identifier")
@@ -746,13 +698,12 @@ class ActivePeriodsSchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class RolloverResultSchema(BaseModel):
+class RolloverResultSchema(GreenLangBase):
     """Response for period rollover operation."""
 
     closed_period: PeriodDetailSchema = Field(
@@ -774,13 +725,11 @@ class RolloverResultSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Conversion Factor Schemas
 # =============================================================================
 
-
-class ValidateFactorSchema(BaseModel):
+class ValidateFactorSchema(GreenLangBase):
     """Request to validate a conversion factor against reference data."""
 
     commodity: str = Field(
@@ -818,8 +767,7 @@ class ValidateFactorSchema(BaseModel):
         },
     )
 
-
-class RegisterCustomFactorSchema(BaseModel):
+class RegisterCustomFactorSchema(GreenLangBase):
     """Request to register a custom conversion factor."""
 
     commodity: str = Field(
@@ -856,11 +804,9 @@ class RegisterCustomFactorSchema(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
 # -- Factor Response Schemas --
 
-
-class FactorValidationResultSchema(BaseModel):
+class FactorValidationResultSchema(GreenLangBase):
     """Response after validating a conversion factor."""
 
     factor_id: str = Field(..., description="Factor identifier")
@@ -888,13 +834,12 @@ class FactorValidationResultSchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ReferenceFactorDetailSchema(BaseModel):
+class ReferenceFactorDetailSchema(GreenLangBase):
     """Detail of a single reference conversion factor."""
 
     process_name: str = Field(..., description="Processing step name")
@@ -908,8 +853,7 @@ class ReferenceFactorDetailSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ReferenceFactorsSchema(BaseModel):
+class ReferenceFactorsSchema(GreenLangBase):
     """Response listing reference conversion factors for a commodity."""
 
     commodity: str = Field(..., description="Commodity")
@@ -924,13 +868,12 @@ class ReferenceFactorsSchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class FactorRegistrationResultSchema(BaseModel):
+class FactorRegistrationResultSchema(GreenLangBase):
     """Response after registering a custom conversion factor."""
 
     factor_id: str = Field(..., description="New factor identifier")
@@ -951,8 +894,7 @@ class FactorRegistrationResultSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class FactorHistoryEntrySchema(BaseModel):
+class FactorHistoryEntrySchema(GreenLangBase):
     """Single entry in factor usage history."""
 
     factor_id: str = Field(..., description="Factor identifier")
@@ -969,8 +911,7 @@ class FactorHistoryEntrySchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class FactorHistorySchema(BaseModel):
+class FactorHistorySchema(GreenLangBase):
     """Response with factor usage history for a facility."""
 
     facility_id: str = Field(..., description="Facility identifier")
@@ -982,18 +923,16 @@ class FactorHistorySchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Overdraft Schemas
 # =============================================================================
 
-
-class CheckOverdraftSchema(BaseModel):
+class CheckOverdraftSchema(GreenLangBase):
     """Request to check for potential overdraft before recording output."""
 
     ledger_id: str = Field(
@@ -1022,8 +961,7 @@ class CheckOverdraftSchema(BaseModel):
         },
     )
 
-
-class ForecastOutputSchema(BaseModel):
+class ForecastOutputSchema(GreenLangBase):
     """Request to forecast maximum available output quantity."""
 
     ledger_id: str = Field(
@@ -1041,8 +979,7 @@ class ForecastOutputSchema(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class RequestExemptionSchema(BaseModel):
+class RequestExemptionSchema(GreenLangBase):
     """Request an exemption for an overdraft event."""
 
     event_id: str = Field(
@@ -1075,11 +1012,9 @@ class RequestExemptionSchema(BaseModel):
             raise ValueError("reason must be non-empty")
         return v
 
-
 # -- Overdraft Response Schemas --
 
-
-class OverdraftCheckResultSchema(BaseModel):
+class OverdraftCheckResultSchema(GreenLangBase):
     """Response after checking for potential overdraft."""
 
     ledger_id: str = Field(..., description="Ledger identifier")
@@ -1107,13 +1042,12 @@ class OverdraftCheckResultSchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class OverdraftAlertDetailSchema(BaseModel):
+class OverdraftAlertDetailSchema(GreenLangBase):
     """Detail of a single overdraft alert."""
 
     event_id: str = Field(..., description="Overdraft event identifier")
@@ -1140,8 +1074,7 @@ class OverdraftAlertDetailSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class OverdraftAlertsSchema(BaseModel):
+class OverdraftAlertsSchema(GreenLangBase):
     """Response with active overdraft alerts for a facility."""
 
     facility_id: str = Field(..., description="Facility identifier")
@@ -1158,13 +1091,12 @@ class OverdraftAlertsSchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ForecastResultSchema(BaseModel):
+class ForecastResultSchema(GreenLangBase):
     """Response with output forecast information."""
 
     ledger_id: str = Field(..., description="Ledger identifier")
@@ -1194,13 +1126,12 @@ class ForecastResultSchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ExemptionResultSchema(BaseModel):
+class ExemptionResultSchema(GreenLangBase):
     """Response after requesting an overdraft exemption."""
 
     exemption_id: str = Field(..., description="Exemption identifier")
@@ -1214,8 +1145,7 @@ class ExemptionResultSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class OverdraftHistorySchema(BaseModel):
+class OverdraftHistorySchema(GreenLangBase):
     """Response with overdraft event history for a facility."""
 
     facility_id: str = Field(..., description="Facility identifier")
@@ -1227,18 +1157,16 @@ class OverdraftHistorySchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Loss Schemas
 # =============================================================================
 
-
-class RecordLossSchema(BaseModel):
+class RecordLossSchema(GreenLangBase):
     """Request to record a processing loss."""
 
     ledger_id: str = Field(
@@ -1284,8 +1212,7 @@ class RecordLossSchema(BaseModel):
         },
     )
 
-
-class ValidateLossSchema(BaseModel):
+class ValidateLossSchema(GreenLangBase):
     """Request to validate a loss against tolerance thresholds."""
 
     commodity: str = Field(
@@ -1308,11 +1235,9 @@ class ValidateLossSchema(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
 # -- Loss Response Schemas --
 
-
-class LossRecordSchema(BaseModel):
+class LossRecordSchema(GreenLangBase):
     """Response for a single loss record."""
 
     record_id: str = Field(..., description="Unique loss record identifier")
@@ -1347,8 +1272,7 @@ class LossRecordSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class LossListSchema(BaseModel):
+class LossListSchema(GreenLangBase):
     """Response listing loss records for a facility."""
 
     facility_id: str = Field(..., description="Facility identifier")
@@ -1363,13 +1287,12 @@ class LossListSchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class LossValidationResultSchema(BaseModel):
+class LossValidationResultSchema(GreenLangBase):
     """Response after validating a loss against tolerances."""
 
     commodity: str = Field(..., description="Commodity validated against")
@@ -1399,13 +1322,12 @@ class LossValidationResultSchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class LossTrendPointSchema(BaseModel):
+class LossTrendPointSchema(GreenLangBase):
     """Single data point in loss trend analysis."""
 
     period_label: str = Field(..., description="Period label")
@@ -1418,8 +1340,7 @@ class LossTrendPointSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class LossTrendsSchema(BaseModel):
+class LossTrendsSchema(GreenLangBase):
     """Response with loss trend analysis for a facility."""
 
     facility_id: str = Field(..., description="Facility identifier")
@@ -1444,18 +1365,16 @@ class LossTrendsSchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Reconciliation Schemas
 # =============================================================================
 
-
-class RunReconciliationSchema(BaseModel):
+class RunReconciliationSchema(GreenLangBase):
     """Request to run a period reconciliation."""
 
     period_id: str = Field(
@@ -1505,8 +1424,7 @@ class RunReconciliationSchema(BaseModel):
         },
     )
 
-
-class SignOffReconciliationSchema(BaseModel):
+class SignOffReconciliationSchema(GreenLangBase):
     """Request to sign off on a completed reconciliation."""
 
     reconciliation_id: str = Field(
@@ -1528,11 +1446,9 @@ class SignOffReconciliationSchema(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
 # -- Reconciliation Response Schemas --
 
-
-class AnomalyDetailSchema(BaseModel):
+class AnomalyDetailSchema(GreenLangBase):
     """Detail of a detected anomaly during reconciliation."""
 
     anomaly_type: str = Field(..., description="Type of anomaly")
@@ -1547,8 +1463,7 @@ class AnomalyDetailSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ReconciliationResultSchema(BaseModel):
+class ReconciliationResultSchema(GreenLangBase):
     """Response after running a reconciliation."""
 
     reconciliation_id: str = Field(
@@ -1589,13 +1504,12 @@ class ReconciliationResultSchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ReconciliationHistoryEntrySchema(BaseModel):
+class ReconciliationHistoryEntrySchema(GreenLangBase):
     """Summary of a historical reconciliation for list views."""
 
     reconciliation_id: str = Field(..., description="Reconciliation identifier")
@@ -1616,8 +1530,7 @@ class ReconciliationHistoryEntrySchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ReconciliationHistorySchema(BaseModel):
+class ReconciliationHistorySchema(GreenLangBase):
     """Response with reconciliation history for a facility."""
 
     facility_id: str = Field(..., description="Facility identifier")
@@ -1629,18 +1542,16 @@ class ReconciliationHistorySchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Consolidation Schemas
 # =============================================================================
 
-
-class GenerateConsolidationSchema(BaseModel):
+class GenerateConsolidationSchema(GreenLangBase):
     """Request to generate a consolidation report."""
 
     facility_ids: List[str] = Field(
@@ -1688,8 +1599,7 @@ class GenerateConsolidationSchema(BaseModel):
             )
         return self
 
-
-class CreateFacilityGroupSchema(BaseModel):
+class CreateFacilityGroupSchema(GreenLangBase):
     """Request to create a facility group for consolidation."""
 
     name: str = Field(
@@ -1725,11 +1635,9 @@ class CreateFacilityGroupSchema(BaseModel):
         },
     )
 
-
 # -- Consolidation Response Schemas --
 
-
-class FacilityGroupDetailSchema(BaseModel):
+class FacilityGroupDetailSchema(GreenLangBase):
     """Response for a facility group."""
 
     group_id: str = Field(..., description="Unique group identifier")
@@ -1747,8 +1655,7 @@ class FacilityGroupDetailSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CommodityBreakdownSchema(BaseModel):
+class CommodityBreakdownSchema(GreenLangBase):
     """Per-commodity balance breakdown in consolidation dashboard."""
 
     commodity: str = Field(..., description="Commodity name")
@@ -1763,8 +1670,7 @@ class CommodityBreakdownSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ConsolidationDashboardSchema(BaseModel):
+class ConsolidationDashboardSchema(GreenLangBase):
     """Response with enterprise-level consolidated dashboard data."""
 
     facility_count: int = Field(
@@ -1800,13 +1706,12 @@ class ConsolidationDashboardSchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ConsolidationReportSchema(BaseModel):
+class ConsolidationReportSchema(GreenLangBase):
     """Response after generating a consolidation report."""
 
     report_id: str = Field(..., description="Unique report identifier")
@@ -1835,7 +1740,7 @@ class ConsolidationReportSchema(BaseModel):
         None, ge=0, description="File size in bytes"
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow, description="Generation timestamp"
+        default_factory=utcnow, description="Generation timestamp"
     )
     provenance: ProvenanceInfo = Field(..., description="Provenance tracking")
     processing_time_ms: float = Field(
@@ -1844,8 +1749,7 @@ class ConsolidationReportSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ConsolidationReportDownloadSchema(BaseModel):
+class ConsolidationReportDownloadSchema(GreenLangBase):
     """Response with report download information."""
 
     report_id: str = Field(..., description="Report identifier")
@@ -1863,13 +1767,11 @@ class ConsolidationReportDownloadSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Batch Job Schemas
 # =============================================================================
 
-
-class SubmitBatchSchema(BaseModel):
+class SubmitBatchSchema(GreenLangBase):
     """Request to submit a batch processing job."""
 
     job_type: BatchJobTypeSchema = Field(
@@ -1890,8 +1792,7 @@ class SubmitBatchSchema(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class BatchJobSchema(BaseModel):
+class BatchJobSchema(GreenLangBase):
     """Response for a batch processing job."""
 
     job_id: str = Field(..., description="Unique job identifier")
@@ -1932,8 +1833,7 @@ class BatchJobSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchJobCancelSchema(BaseModel):
+class BatchJobCancelSchema(GreenLangBase):
     """Response after cancelling a batch job."""
 
     job_id: str = Field(..., description="Job identifier")
@@ -1943,13 +1843,11 @@ class BatchJobCancelSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Health Schema
 # =============================================================================
 
-
-class HealthSchema(BaseModel):
+class HealthSchema(GreenLangBase):
     """Health check response for the mass balance calculator service."""
 
     service: str = Field(
@@ -1983,18 +1881,16 @@ class HealthSchema(BaseModel):
         default=0.0, ge=0.0, description="Service uptime in seconds"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Health check timestamp"
+        default_factory=utcnow, description="Health check timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Paginated Response Wrapper
 # =============================================================================
 
-
-class PaginatedResponse(BaseModel):
+class PaginatedResponse(GreenLangBase):
     """Generic paginated response wrapper."""
 
     data: List[Any] = Field(default_factory=list, description="Result items")
@@ -2003,11 +1899,10 @@ class PaginatedResponse(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Public API

@@ -53,7 +53,8 @@ from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase, utcnow
 
 # Layer 1 imports
 from greenlang.agents.data.erp_connector_agent import (
@@ -69,16 +70,9 @@ __all__ = [
     "SpendExtractor",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _hash_int(seed: str, modulus: int) -> int:
     """Deterministic integer from a seed string.
@@ -92,7 +86,6 @@ def _hash_int(seed: str, modulus: int) -> int:
     """
     digest = hashlib.sha256(seed.encode("utf-8")).hexdigest()
     return int(digest[:8], 16) % modulus
-
 
 def _hash_float(seed: str, low: float, high: float) -> float:
     """Deterministic float in [low, high] from a seed string.
@@ -108,7 +101,6 @@ def _hash_float(seed: str, low: float, high: float) -> float:
     digest = hashlib.sha256(seed.encode("utf-8")).hexdigest()
     fraction = int(digest[:8], 16) / 0xFFFFFFFF
     return round(low + fraction * (high - low), 2)
-
 
 # ---------------------------------------------------------------------------
 # Simulated vendor catalogue
@@ -135,13 +127,11 @@ _TRANSACTION_TYPES = [
     TransactionType.GOODS_RECEIPT,
 ]
 
-
 # ---------------------------------------------------------------------------
 # Data models
 # ---------------------------------------------------------------------------
 
-
-class SpendSummary(BaseModel):
+class SpendSummary(GreenLangBase):
     """Aggregated spend summary."""
 
     total_spend_usd: float = Field(
@@ -177,11 +167,9 @@ class SpendSummary(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
 # ---------------------------------------------------------------------------
 # SpendExtractor
 # ---------------------------------------------------------------------------
-
 
 class SpendExtractor:
     """Vendor spend data extractor with deterministic simulation.
@@ -524,7 +512,7 @@ class SpendExtractor:
                 ),
                 "extractions_count": self._stats["extractions_count"],
                 "errors": self._stats["errors"],
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }
 
     # ------------------------------------------------------------------
@@ -676,7 +664,7 @@ class SpendExtractor:
             Hex-encoded SHA-256 digest.
         """
         combined = json.dumps(
-            {"parts": list(parts), "timestamp": _utcnow().isoformat()},
+            {"parts": list(parts), "timestamp": utcnow().isoformat()},
             sort_keys=True,
         )
         return hashlib.sha256(combined.encode("utf-8")).hexdigest()

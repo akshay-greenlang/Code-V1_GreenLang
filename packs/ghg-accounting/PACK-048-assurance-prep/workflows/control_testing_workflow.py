@@ -64,36 +64,28 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas.enums import RiskLevel
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> str:
-    """Return current UTC timestamp as ISO-8601 string."""
-    return datetime.utcnow().isoformat() + "Z"
-
-
 def _new_uuid() -> str:
     """Return a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash of JSON-serialisable data."""
     serialised = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialised.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -104,7 +96,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -114,7 +105,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class ControlTestingPhase(str, Enum):
     """Control testing workflow phases."""
 
@@ -123,7 +113,6 @@ class ControlTestingPhase(str, Enum):
     SAMPLE_SELECTION = "sample_selection"
     TEST_EXECUTION = "test_execution"
     DEFICIENCY_REPORTING = "deficiency_reporting"
-
 
 class ControlCategory(str, Enum):
     """Control category classification."""
@@ -136,14 +125,12 @@ class ControlCategory(str, Enum):
     CHANGE_MANAGEMENT = "change_management"
     REPORTING = "reporting"
 
-
 class ControlType(str, Enum):
     """Control type classification."""
 
     PREVENTIVE = "preventive"
     DETECTIVE = "detective"
     CORRECTIVE = "corrective"
-
 
 class ControlFrequency(str, Enum):
     """Control execution frequency."""
@@ -155,7 +142,6 @@ class ControlFrequency(str, Enum):
     QUARTERLY = "quarterly"
     ANNUALLY = "annually"
 
-
 class DesignEffectiveness(str, Enum):
     """Design effectiveness assessment outcome."""
 
@@ -163,7 +149,6 @@ class DesignEffectiveness(str, Enum):
     PARTIALLY_EFFECTIVE = "partially_effective"
     INEFFECTIVE = "ineffective"
     NOT_ASSESSED = "not_assessed"
-
 
 class TestResult(str, Enum):
     """Control test execution result."""
@@ -173,7 +158,6 @@ class TestResult(str, Enum):
     EXCEPTION = "exception"
     NOT_TESTED = "not_tested"
 
-
 class DeficiencyClassification(str, Enum):
     """Deficiency severity classification."""
 
@@ -181,15 +165,6 @@ class DeficiencyClassification(str, Enum):
     SIGNIFICANT_DEFICIENCY = "significant_deficiency"
     CONTROL_DEFICIENCY = "control_deficiency"
     OBSERVATION = "observation"
-
-
-class RiskLevel(str, Enum):
-    """Risk level for a control."""
-
-    HIGH = "high"
-    MEDIUM = "medium"
-    LOW = "low"
-
 
 # =============================================================================
 # STANDARD CONTROLS REGISTER (Zero-Hallucination Reference Data)
@@ -317,11 +292,9 @@ POPULATION_SIZE_BANDS: Dict[str, Tuple[int, int]] = {
     "large": (251, 99999),
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -334,7 +307,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
-
 
 class ControlRecord(BaseModel):
     """Record of an identified control."""
@@ -359,7 +331,6 @@ class ControlRecord(BaseModel):
     test_notes: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 class DeficiencyRecord(BaseModel):
     """Record of an identified control deficiency."""
 
@@ -378,7 +349,6 @@ class DeficiencyRecord(BaseModel):
     target_date: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 class ControlTestSummary(BaseModel):
     """Summary of control testing results."""
 
@@ -396,11 +366,9 @@ class ControlTestSummary(BaseModel):
     control_effectiveness_pct: str = Field(default="0.00")
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # INPUT / OUTPUT
 # =============================================================================
-
 
 class ControlTestingInput(BaseModel):
     """Input data model for ControlTestingWorkflow."""
@@ -428,7 +396,6 @@ class ControlTestingInput(BaseModel):
     tenant_id: str = Field(default="")
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class ControlTestingResult(BaseModel):
     """Complete result from control testing workflow."""
 
@@ -444,11 +411,9 @@ class ControlTestingResult(BaseModel):
     control_effectiveness_pct: str = Field(default="0.00")
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class ControlTestingWorkflow:
     """

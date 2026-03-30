@@ -16,15 +16,9 @@ from datetime import datetime
 from enum import Enum
 import requests
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas.enums import AlertSeverity
 
 logger = logging.getLogger(__name__)
-
-
-class AlertSeverity(Enum):
-    """Alert severity levels"""
-    INFO = "info"
-    WARNING = "warning"
-    CRITICAL = "critical"
 
 
 class AlertChannel(Enum):

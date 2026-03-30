@@ -83,13 +83,13 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 __all__ = [
     "ScenarioProjectorEngine",
 ]
-
 
 # ---------------------------------------------------------------------------
 # Graceful imports -- provenance, metrics, config
@@ -119,7 +119,6 @@ try:
 except ImportError:  # pragma: no cover -- fallback when config not yet built
     get_config = None  # type: ignore[misc, assignment]
     _CONFIG_AVAILABLE = False
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Scenarios
@@ -282,7 +281,6 @@ _SCENARIO_REGISTRY: Dict[str, Dict[str, Any]] = {
 # Frozen set of all valid scenario identifiers for fast membership testing
 _VALID_SCENARIO_IDS: frozenset = frozenset(_SCENARIO_REGISTRY.keys())
 
-
 # ---------------------------------------------------------------------------
 # Constants -- Time Horizons
 # ---------------------------------------------------------------------------
@@ -351,7 +349,6 @@ _TIME_HORIZON_REGISTRY: Dict[str, Dict[str, Any]] = {
 
 # Frozen set of valid horizon identifiers
 _VALID_TIME_HORIZONS: frozenset = frozenset(_TIME_HORIZON_REGISTRY.keys())
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Hazard Scaling Factors
@@ -442,7 +439,6 @@ _BASELINE_RISK_KEYS: frozenset = frozenset(
     {"probability", "intensity", "frequency", "duration_days"}
 )
 
-
 # ---------------------------------------------------------------------------
 # Duration scaling factors (per C warming)
 # ---------------------------------------------------------------------------
@@ -486,13 +482,11 @@ _HAZARD_PROBABILITY_FACTORS: Dict[str, float] = {
     "EXTREME_COLD": -0.25,
 }
 
-
 # ---------------------------------------------------------------------------
 # ID generation helper
 # ---------------------------------------------------------------------------
 
 _PREFIX_PROJECTION = "PROJ"
-
 
 def _generate_id(prefix: str = "PROJ") -> str:
     """Generate a unique identifier with the given prefix.
@@ -509,25 +503,13 @@ def _generate_id(prefix: str = "PROJ") -> str:
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed for consistency.
-
-    Returns:
-        Timezone-aware datetime at second precision in UTC.
-    """
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ---------------------------------------------------------------------------
 # Provenance helper
 # ---------------------------------------------------------------------------
-
 
 def _compute_provenance(operation: str, payload_repr: str) -> str:
     """Compute a SHA-256 provenance hash for an engine operation.
@@ -543,14 +525,12 @@ def _compute_provenance(operation: str, payload_repr: str) -> str:
     Returns:
         Hex-encoded 64-character SHA-256 digest.
     """
-    raw = f"{operation}:{payload_repr}:{_utcnow().isoformat()}"
+    raw = f"{operation}:{payload_repr}:{utcnow().isoformat()}"
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Metrics helper
 # ---------------------------------------------------------------------------
-
 
 def _record_projection_metric(
     hazard_type: str,
@@ -576,11 +556,9 @@ def _record_projection_metric(
     except Exception:  # pragma: no cover
         logger.debug("Metrics recording failed (non-critical)", exc_info=True)
 
-
 # ---------------------------------------------------------------------------
 # Validation helpers
 # ---------------------------------------------------------------------------
-
 
 def _validate_scenario(scenario: str) -> str:
     """Validate and normalise a scenario identifier.
@@ -625,7 +603,6 @@ def _validate_scenario(scenario: str) -> str:
         f"{sorted(_VALID_SCENARIO_IDS)}"
     )
 
-
 def _validate_time_horizon(time_horizon: str) -> str:
     """Validate and normalise a time horizon identifier.
 
@@ -653,7 +630,6 @@ def _validate_time_horizon(time_horizon: str) -> str:
         f"{sorted(_VALID_TIME_HORIZONS)}"
     )
 
-
 def _validate_hazard_type(hazard_type: str) -> str:
     """Validate and normalise a hazard type identifier.
 
@@ -680,7 +656,6 @@ def _validate_hazard_type(hazard_type: str) -> str:
         f"Unknown hazard_type '{hazard_type}'. Valid hazard types: "
         f"{sorted(_VALID_HAZARD_TYPES)}"
     )
-
 
 def _validate_baseline_risk(baseline_risk: Dict[str, Any]) -> Dict[str, float]:
     """Validate and normalise a baseline risk dictionary.
@@ -739,7 +714,6 @@ def _validate_baseline_risk(baseline_risk: Dict[str, Any]) -> Dict[str, float]:
 
     return result
 
-
 def _validate_location(location: Any) -> Dict[str, Any]:
     """Validate a location parameter.
 
@@ -769,11 +743,9 @@ def _validate_location(location: Any) -> Dict[str, Any]:
     # Accept any other truthy type
     return {"identifier": str(location)}
 
-
 # ---------------------------------------------------------------------------
 # ScenarioProjectorEngine
 # ---------------------------------------------------------------------------
-
 
 class ScenarioProjectorEngine:
     """SSP/RCP scenario projection engine for climate hazard risk assessment.
@@ -866,7 +838,7 @@ class ScenarioProjectorEngine:
             "projections_by_hazard": defaultdict(int),
             "projections_by_horizon": defaultdict(int),
             "total_errors": 0,
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
             "last_projection_at": None,
         }
 
@@ -1050,7 +1022,7 @@ class ScenarioProjectorEngine:
 
         # Build projection record
         projection_id = _generate_id(_PREFIX_PROJECTION)
-        now_iso = _utcnow().isoformat()
+        now_iso = utcnow().isoformat()
 
         scenario_info = copy.deepcopy(_SCENARIO_REGISTRY.get(norm_scenario, {}))
         horizon_info = copy.deepcopy(_TIME_HORIZON_REGISTRY.get(norm_horizon, {}))
@@ -1203,7 +1175,7 @@ class ScenarioProjectorEngine:
         }
 
         comparison_id = _generate_id("COMP")
-        now_iso = _utcnow().isoformat()
+        now_iso = utcnow().isoformat()
 
         result = {
             "comparison_id": comparison_id,
@@ -1362,7 +1334,7 @@ class ScenarioProjectorEngine:
         ]
 
         ts_id = _generate_id("TS")
-        now_iso = _utcnow().isoformat()
+        now_iso = utcnow().isoformat()
 
         result = {
             "timeseries_id": ts_id,
@@ -1900,7 +1872,7 @@ class ScenarioProjectorEngine:
                 "projections_by_hazard": defaultdict(int),
                 "projections_by_horizon": defaultdict(int),
                 "total_errors": 0,
-                "created_at": _utcnow().isoformat(),
+                "created_at": utcnow().isoformat(),
                 "last_projection_at": None,
             }
 
@@ -1922,7 +1894,7 @@ class ScenarioProjectorEngine:
                 k: (dict(v) if isinstance(v, defaultdict) else v)
                 for k, v in old_stats.items()
             },
-            "cleared_at": _utcnow().isoformat(),
+            "cleared_at": utcnow().isoformat(),
         }
 
         logger.info(
@@ -2105,7 +2077,7 @@ class ScenarioProjectorEngine:
                 )
 
         batch_id = _generate_id("BATCH")
-        now_iso = _utcnow().isoformat()
+        now_iso = utcnow().isoformat()
 
         result = {
             "batch_id": batch_id,
@@ -2224,7 +2196,7 @@ class ScenarioProjectorEngine:
                     )
 
         matrix_id = _generate_id("MATRIX")
-        now_iso = _utcnow().isoformat()
+        now_iso = utcnow().isoformat()
 
         summary = {
             "total_projections": total_projections,

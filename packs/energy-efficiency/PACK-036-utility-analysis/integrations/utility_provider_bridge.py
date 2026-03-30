@@ -42,20 +42,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -73,11 +68,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ProviderProtocol(str, Enum):
     """Utility provider communication protocols."""
@@ -88,7 +81,6 @@ class ProviderProtocol(str, Enum):
     API_KEY = "api_key"
     SFTP = "sftp"
 
-
 class CommodityType(str, Enum):
     """Utility commodity types."""
 
@@ -97,7 +89,6 @@ class CommodityType(str, Enum):
     WATER = "water"
     STEAM = "steam"
     CHILLED_WATER = "chilled_water"
-
 
 class DataGranularity(str, Enum):
     """Data retrieval granularity."""
@@ -108,7 +99,6 @@ class DataGranularity(str, Enum):
     INTERVAL_15MIN = "15min"
     INTERVAL_5MIN = "5min"
 
-
 class ConnectionStatus(str, Enum):
     """Provider connection status."""
 
@@ -118,11 +108,9 @@ class ConnectionStatus(str, Enum):
     ERROR = "error"
     PENDING = "pending"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class ProviderAPIConfig(BaseModel):
     """Configuration for a utility provider API connection."""
@@ -147,7 +135,6 @@ class ProviderAPIConfig(BaseModel):
     timeout_seconds: int = Field(default=30, ge=5, le=300)
     retry_count: int = Field(default=3, ge=0, le=10)
 
-
 class AccountInfo(BaseModel):
     """Utility account information from a provider."""
 
@@ -161,7 +148,6 @@ class AccountInfo(BaseModel):
     contract_start: Optional[str] = Field(None)
     contract_end: Optional[str] = Field(None)
     status: str = Field(default="active")
-
 
 class BillRetrievalResult(BaseModel):
     """Result of retrieving utility bills from a provider."""
@@ -179,7 +165,6 @@ class BillRetrievalResult(BaseModel):
     message: str = Field(default="")
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class IntervalDataResult(BaseModel):
     """Result of retrieving interval data from a provider."""
@@ -199,7 +184,6 @@ class IntervalDataResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class RateScheduleResult(BaseModel):
     """Result of retrieving rate schedule from a provider."""
 
@@ -214,11 +198,9 @@ class RateScheduleResult(BaseModel):
     success: bool = Field(default=False)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # UtilityProviderBridge
 # ---------------------------------------------------------------------------
-
 
 class UtilityProviderBridge:
     """External utility data integration via provider APIs.

@@ -46,29 +46,23 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 def _compute_hash(content: str) -> str:
     """Compute SHA-256 hash of string content."""
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -81,7 +75,6 @@ class OutputFormat(str, Enum):
     PDF = "pdf"
     JSON = "json"
 
-
 class OpinionType(str, Enum):
     """Assurance opinion type."""
     UNQUALIFIED = "unqualified"
@@ -90,13 +83,11 @@ class OpinionType(str, Enum):
     DISCLAIMER = "disclaimer"
     NOT_ISSUED = "not_issued"
 
-
 class FindingCategory(str, Enum):
     """Finding recurrence category."""
     NEW = "new"
     RECURRING = "recurring"
     RESOLVED = "resolved"
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Input Models
@@ -109,7 +100,6 @@ class YearlyReadinessScore(BaseModel):
     assurance_level: str = Field("limited", description="Assurance level that year")
     notes: str = Field("", description="Year-specific notes")
 
-
 class FindingRecurrence(BaseModel):
     """Finding recurrence for a single year."""
     year: int = Field(..., description="Year")
@@ -117,7 +107,6 @@ class FindingRecurrence(BaseModel):
     new_findings: int = Field(0, ge=0, description="New findings")
     recurring_findings: int = Field(0, ge=0, description="Recurring findings")
     resolved_findings: int = Field(0, ge=0, description="Resolved from prior year")
-
 
 class ControlMaturityYear(BaseModel):
     """Control maturity for a single year."""
@@ -129,7 +118,6 @@ class ControlMaturityYear(BaseModel):
     controls_at_repeatable: int = Field(0, ge=0, description="Controls at repeatable level")
     controls_at_initial: int = Field(0, ge=0, description="Controls at initial level")
 
-
 class EvidenceQualityYear(BaseModel):
     """Evidence quality for a single year."""
     year: int = Field(..., description="Year")
@@ -139,7 +127,6 @@ class EvidenceQualityYear(BaseModel):
     insufficient_pct: float = Field(0.0, ge=0, le=100, description="% insufficient")
     total_evidence_items: int = Field(0, ge=0, description="Total evidence items")
 
-
 class QueryVolumeYear(BaseModel):
     """Query volume and resolution for a single year."""
     year: int = Field(..., description="Year")
@@ -147,7 +134,6 @@ class QueryVolumeYear(BaseModel):
     avg_resolution_days: float = Field(0.0, ge=0, description="Avg days to resolve")
     overdue_pct: float = Field(0.0, ge=0, le=100, description="% overdue")
     findings_count: int = Field(0, ge=0, description="Number of formal findings")
-
 
 class CostYear(BaseModel):
     """Cost for a single year."""
@@ -157,7 +143,6 @@ class CostYear(BaseModel):
     assurance_level: str = Field("limited", description="Assurance level")
     scope_coverage: str = Field("", description="Scope coverage")
 
-
 class OpinionYear(BaseModel):
     """Assurance opinion for a single year."""
     year: int = Field(..., description="Year")
@@ -165,7 +150,6 @@ class OpinionYear(BaseModel):
     verifier: str = Field("", description="Verifier name")
     qualifications: List[str] = Field(default_factory=list, description="Qualification details")
     scope: str = Field("", description="Scope of assurance")
-
 
 class MultiYearTrendInput(BaseModel):
     """Complete input model for MultiYearAssuranceTrend."""
@@ -194,7 +178,6 @@ class MultiYearTrendInput(BaseModel):
         default_factory=list, description="Assurance opinion history"
     )
 
-
 # ---------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------
@@ -202,7 +185,6 @@ class MultiYearTrendInput(BaseModel):
 def _opinion_label(opinion: str) -> str:
     """Return display label for opinion type."""
     return opinion.replace("_", " ").title()
-
 
 def _opinion_css(opinion: str) -> str:
     """Return CSS class for opinion type."""
@@ -214,7 +196,6 @@ def _opinion_css(opinion: str) -> str:
         "not_issued": "op-not-issued",
     }
     return mapping.get(opinion, "op-not-issued")
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -273,7 +254,7 @@ class MultiYearAssuranceTrend:
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render multi-year trend as Markdown."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_md(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -281,7 +262,7 @@ class MultiYearAssuranceTrend:
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render multi-year trend as HTML."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_html(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -289,7 +270,7 @@ class MultiYearAssuranceTrend:
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render multi-year trend as JSON dict."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_json(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -332,7 +313,7 @@ class MultiYearAssuranceTrend:
         return (
             f"# Multi-Year Assurance Trend - {company}\n\n"
             f"**Current Period:** {period} | "
-            f"**Report Date:** {_utcnow().strftime('%Y-%m-%d')}\n\n"
+            f"**Report Date:** {utcnow().strftime('%Y-%m-%d')}\n\n"
             "---"
         )
 
@@ -554,7 +535,7 @@ class MultiYearAssuranceTrend:
             '<div class="section">\n'
             f"<h1>Multi-Year Assurance Trend &mdash; {company}</h1>\n"
             f"<p><strong>Current Period:</strong> {period} | "
-            f"<strong>Report Date:</strong> {_utcnow().strftime('%Y-%m-%d')}</p>\n"
+            f"<strong>Report Date:</strong> {utcnow().strftime('%Y-%m-%d')}</p>\n"
             "<hr>\n</div>"
         )
 

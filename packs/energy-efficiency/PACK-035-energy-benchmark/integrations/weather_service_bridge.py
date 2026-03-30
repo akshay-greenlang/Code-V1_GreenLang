@@ -34,20 +34,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -60,11 +55,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class WeatherDataSource(str, Enum):
     """Weather data source providers."""
@@ -77,7 +70,6 @@ class WeatherDataSource(str, Enum):
     EUROSTAT = "eurostat"
     LOCAL_STATION = "local_station"
 
-
 class DegreeDayMethod(str, Enum):
     """Degree day calculation methods."""
 
@@ -86,11 +78,9 @@ class DegreeDayMethod(str, Enum):
     INTEGRATION = "integration"
     ASHRAE = "ashrae"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class WeatherServiceConfig(BaseModel):
     """Configuration for the Weather Service Bridge."""
@@ -102,7 +92,6 @@ class WeatherServiceConfig(BaseModel):
     cdd_base_temperature_c: float = Field(default=22.0, description="Base temp for CDD (Celsius)")
     degree_day_method: DegreeDayMethod = Field(default=DegreeDayMethod.MEAN_TEMPERATURE)
     max_station_distance_km: float = Field(default=50.0, ge=1.0, le=200.0)
-
 
 class WeatherStationInfo(BaseModel):
     """Weather station information."""
@@ -118,7 +107,6 @@ class WeatherStationInfo(BaseModel):
     data_available_from: str = Field(default="")
     data_available_to: str = Field(default="")
 
-
 class DegreeDayRequest(BaseModel):
     """Request for heating/cooling degree day data."""
 
@@ -129,7 +117,6 @@ class DegreeDayRequest(BaseModel):
     cdd_base_c: float = Field(default=22.0, ge=10.0, le=40.0)
     method: DegreeDayMethod = Field(default=DegreeDayMethod.MEAN_TEMPERATURE)
 
-
 class TMYRequest(BaseModel):
     """Request for Typical Meteorological Year data."""
 
@@ -138,7 +125,6 @@ class TMYRequest(BaseModel):
     latitude: float = Field(default=0.0)
     longitude: float = Field(default=0.0)
     source: WeatherDataSource = Field(default=WeatherDataSource.METEOSTAT)
-
 
 class WeatherDataResult(BaseModel):
     """Result of a weather data retrieval."""
@@ -163,11 +149,9 @@ class WeatherDataResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # WeatherServiceBridge
 # ---------------------------------------------------------------------------
-
 
 class WeatherServiceBridge:
     """Bridge to weather station data for energy use normalisation.

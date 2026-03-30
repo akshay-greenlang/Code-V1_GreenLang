@@ -14,24 +14,14 @@ import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
-from enum import Enum
 from typing import Any, Dict, List, Optional, Protocol
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase
+from greenlang.schemas.enums import ExecutionStatus
 
 
-class ExecutionStatus(str, Enum):
-    """Status of a step execution."""
-    PENDING = "pending"
-    SCHEDULED = "scheduled"
-    RUNNING = "running"
-    SUCCEEDED = "succeeded"
-    FAILED = "failed"
-    TIMEOUT = "timeout"
-    CANCELED = "canceled"
-
-
-class ResourceProfile(BaseModel):
+class ResourceProfile(GreenLangBase):
     """Resource requirements for a GLIP v1 agent."""
     cpu_request: str = Field(default="100m", description="CPU request (K8s format)")
     cpu_limit: str = Field(default="1000m", description="CPU limit (K8s format)")
@@ -67,7 +57,7 @@ class ResourceProfile(BaseModel):
         return resources
 
 
-class RunContext(BaseModel):
+class RunContext(GreenLangBase):
     """
     GLIP v1 Input Envelope - The standardized input for all agents.
 
@@ -126,7 +116,7 @@ class RunContext(BaseModel):
         return hashlib.sha256(json_str.encode()).hexdigest()
 
 
-class ArtifactReference(BaseModel):
+class ArtifactReference(GreenLangBase):
     """Reference to an artifact with integrity verification."""
     uri: str = Field(..., description="S3 URI to artifact")
     checksum: str = Field(..., description="SHA-256 checksum")
@@ -134,7 +124,7 @@ class ArtifactReference(BaseModel):
     size_bytes: Optional[int] = Field(None, description="Size in bytes")
 
 
-class StepResult(BaseModel):
+class StepResult(GreenLangBase):
     """
     GLIP v1 Output - The standardized output from agents.
 
@@ -151,7 +141,7 @@ class StepResult(BaseModel):
     warnings: List[str] = Field(default_factory=list, description="Non-fatal warnings")
 
 
-class StepMetadata(BaseModel):
+class StepMetadata(GreenLangBase):
     """
     GLIP v1 Metadata - Execution metadata from agents.
 
@@ -183,7 +173,7 @@ class StepMetadata(BaseModel):
     status: str = Field(..., description="Final status")
 
 
-class ExecutionResult(BaseModel):
+class ExecutionResult(GreenLangBase):
     """Result from executor backend."""
     step_id: str = Field(..., description="Step ID")
     status: ExecutionStatus = Field(..., description="Execution status")

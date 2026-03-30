@@ -58,25 +58,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -96,13 +90,11 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _safe_divide(numerator: float, denominator: float, default: float = 0.0) -> float:
     """Safely divide two numbers, returning *default* on zero denominator."""
     if denominator == 0.0:
         return default
     return numerator / denominator
-
 
 def _safe_pct(numerator: float, denominator: float) -> float:
     """Calculate percentage safely, returning 0.0 on zero denominator."""
@@ -110,31 +102,25 @@ def _safe_pct(numerator: float, denominator: float) -> float:
         return 0.0
     return (numerator / denominator) * 100.0
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
-
 
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
-
 def _round1(value: float) -> float:
     """Round to 1 decimal place using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.1"), rounding=ROUND_HALF_UP))
-
 
 def _round4(value: float) -> float:
     """Round to 4 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class BenchmarkKPI(str, Enum):
     """Key Performance Indicators for retail sustainability benchmarking.
@@ -153,14 +139,12 @@ class BenchmarkKPI(str, Enum):
     PACKAGING_RECYCLED_CONTENT = "packaging_recycled_content"
     SUPPLIER_ENGAGEMENT_RATE = "supplier_engagement_rate"
 
-
 class PercentileRank(str, Enum):
     """Percentile ranking brackets for benchmarking."""
     TOP_QUARTILE = "top_quartile"
     SECOND_QUARTILE = "second_quartile"
     THIRD_QUARTILE = "third_quartile"
     BOTTOM_QUARTILE = "bottom_quartile"
-
 
 class SBTiPathway(str, Enum):
     """Science Based Targets initiative pathways.
@@ -171,7 +155,6 @@ class SBTiPathway(str, Enum):
     ONE_POINT_FIVE = "1.5C"
     WELL_BELOW_2C = "well_below_2C"
     BELOW_2C = "below_2C"
-
 
 class RetailSubSector(str, Enum):
     """Retail sub-sector classification for benchmarking.
@@ -188,11 +171,9 @@ class RetailSubSector(str, Enum):
     ONLINE = "online"
     WHOLESALE = "wholesale"
 
-
 # ---------------------------------------------------------------------------
 # Embedded Constants
 # ---------------------------------------------------------------------------
-
 
 # SBTi annual reduction rates by pathway.
 # Source: SBTi Corporate Net-Zero Standard (2021), SBTi Criteria v5.1.
@@ -205,7 +186,6 @@ SBTI_ANNUAL_REDUCTION_RATES: Dict[str, float] = {
 1.5C requires 4.2% annual reduction from base year.
 Well Below 2C requires 2.5% annual reduction.
 Below 2C requires 1.25% annual reduction."""
-
 
 # Sector benchmark data by sub-sector.
 # Each KPI has p25, p50 (median), and p75 thresholds.
@@ -555,7 +535,6 @@ quartile threshold). For 'lower_is_better' KPIs, p25 < p50 < p75.
 For 'higher_is_better' KPIs, p25 < p50 < p75 still holds, but a value
 above p75 is top quartile."""
 
-
 # Peer reference companies (illustrative public data).
 # These are major EU retailers with publicly reported ESG data.
 PEER_COMPANIES: List[Dict[str, Any]] = [
@@ -584,7 +563,6 @@ PEER_COMPANIES: List[Dict[str, Any]] = [
 Based on publicly available sustainability reports from major EU retailers.
 Anonymised for compliance reasons."""
 
-
 # KPI weightings for composite score.
 KPI_WEIGHTS: Dict[str, float] = {
     "emission_intensity_sqm": 0.15,
@@ -602,11 +580,9 @@ KPI_WEIGHTS: Dict[str, float] = {
 Weights sum to 1.0.  Emission intensity has highest weight (15%)
 as the primary ESRS E1 metric."""
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class RetailKPIs(BaseModel):
     """Retailer KPI data for benchmarking.
@@ -677,7 +653,6 @@ class RetailKPIs(BaseModel):
         ge=0.0, le=100.0,
     )
 
-
 class KPIRanking(BaseModel):
     """Percentile ranking for a single KPI."""
     kpi: str = Field(..., description="KPI name")
@@ -702,7 +677,6 @@ class KPIRanking(BaseModel):
         default=0.0,
         description="Normalised score (0-100, higher is better)",
     )
-
 
 class SBTiAlignment(BaseModel):
     """SBTi pathway alignment assessment."""
@@ -740,7 +714,6 @@ class SBTiAlignment(BaseModel):
         description="Target year for near-term SBT",
     )
 
-
 class TrajectoryPoint(BaseModel):
     """Single point in a trajectory analysis."""
     year: int = Field(..., description="Year")
@@ -753,7 +726,6 @@ class TrajectoryPoint(BaseModel):
     projected_tco2e: Optional[float] = Field(
         default=None, description="Projected emissions (tCO2e)",
     )
-
 
 class BenchmarkResult(BaseModel):
     """Complete benchmark analysis result.
@@ -770,7 +742,7 @@ class BenchmarkResult(BaseModel):
         description="Engine version used for this calculation",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of calculation (UTC)",
     )
     processing_time_ms: float = Field(
@@ -836,11 +808,9 @@ class BenchmarkResult(BaseModel):
         description="SHA-256 hash of all inputs and calculation steps",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class RetailBenchmarkEngine:
     """Retail sustainability benchmarking engine.

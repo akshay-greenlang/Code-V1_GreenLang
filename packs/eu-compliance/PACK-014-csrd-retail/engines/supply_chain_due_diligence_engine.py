@@ -58,25 +58,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -96,13 +90,11 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _safe_divide(numerator: float, denominator: float, default: float = 0.0) -> float:
     """Safely divide two numbers, returning *default* on zero denominator."""
     if denominator == 0.0:
         return default
     return numerator / denominator
-
 
 def _safe_pct(numerator: float, denominator: float) -> float:
     """Calculate percentage safely, returning 0.0 on zero denominator."""
@@ -110,26 +102,21 @@ def _safe_pct(numerator: float, denominator: float) -> float:
         return 0.0
     return (numerator / denominator) * 100.0
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
-
 
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
-
 def _round1(value: float) -> float:
     """Round to 1 decimal place using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.1"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DueDiligenceRisk(str, Enum):
     """Risk levels for supply chain due diligence assessment.
@@ -142,7 +129,6 @@ class DueDiligenceRisk(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     NEGLIGIBLE = "negligible"
-
 
 class EUDRCommodity(str, Enum):
     """EU Deforestation Regulation commodity scope.
@@ -159,7 +145,6 @@ class EUDRCommodity(str, Enum):
     TIMBER = "timber"
     CATTLE = "cattle"
 
-
 class HumanRightsIssue(str, Enum):
     """Key human rights issues for supply chain screening.
 
@@ -175,7 +160,6 @@ class HumanRightsIssue(str, Enum):
     WORKING_HOURS = "working_hours"
     LAND_RIGHTS = "land_rights"
 
-
 class SupplierTier(str, Enum):
     """Supply chain tier classification.
 
@@ -188,7 +172,6 @@ class SupplierTier(str, Enum):
     TIER_3 = "tier_3"
     TIER_4_PLUS = "tier_4_plus"
 
-
 class RemediationStatus(str, Enum):
     """Status of remediation actions for identified issues."""
     NOT_STARTED = "not_started"
@@ -196,7 +179,6 @@ class RemediationStatus(str, Enum):
     COMPLETED = "completed"
     VERIFIED = "verified"
     FAILED = "failed"
-
 
 class RiskSource(str, Enum):
     """Source of risk identification in due diligence."""
@@ -206,11 +188,9 @@ class RiskSource(str, Enum):
     INCIDENT_HISTORY = "incident_history"
     AUDIT_FINDING = "audit_finding"
 
-
 # ---------------------------------------------------------------------------
 # Embedded Constants
 # ---------------------------------------------------------------------------
-
 
 # Country risk scores (1-5 scale).
 # Sources: ITUC Global Rights Index 2024, US DoL List of Goods
@@ -245,7 +225,6 @@ COUNTRY_RISK_SCORES: Dict[str, float] = {
     "AU": 1.2, "NZ": 1.0,
 }
 
-
 # Sector risk scores (1-5 scale).
 # Sources: ILO sectoral risk assessments, OECD sector guidance,
 # Know The Chain benchmark data, US DoL findings by sector.
@@ -276,7 +255,6 @@ SECTOR_RISK_SCORES: Dict[str, float] = {
     "other": 2.5,
 }
 
-
 # EUDR country risk benchmarking (per EU Commission delegated act).
 # Standard risk = default; High/Low risk lists published by Commission.
 EUDR_HIGH_RISK_COUNTRIES: List[str] = [
@@ -291,7 +269,6 @@ EUDR_LOW_RISK_COUNTRIES: List[str] = [
     "LU", "CH", "GB", "US", "CA", "AU", "NZ", "JP", "KR", "SG",
 ]
 """Countries classified as low deforestation risk by EU Commission."""
-
 
 # 11 ILO Indicators of Forced Labour (ILO 2012).
 # Each indicator, if present, contributes to forced labour risk score.
@@ -308,7 +285,6 @@ FORCED_LABOUR_INDICATORS: Dict[str, str] = {
     "abusive_working_conditions": "Abusive working and living conditions",
     "excessive_overtime": "Excessive overtime beyond legal limits",
 }
-
 
 # CSDDD phase thresholds per Directive (EU) 2024/1760 Article 30.
 # Phase 1: July 2028 - largest companies
@@ -338,7 +314,6 @@ CSDDD_PHASE_THRESHOLDS: List[Dict[str, Any]] = [
     },
 ]
 
-
 # Maximum penalty rates
 CSDDD_PENALTY_MAX_PCT: float = 5.0
 """CSDDD: max 5% of worldwide net turnover."""
@@ -346,13 +321,11 @@ CSDDD_PENALTY_MAX_PCT: float = 5.0
 EUDR_PENALTY_MAX_PCT: float = 4.0
 """EUDR: max 4% of EU turnover."""
 
-
 # Risk weights for composite risk score calculation.
 RISK_WEIGHT_COUNTRY: float = 0.25
 RISK_WEIGHT_SECTOR: float = 0.25
 RISK_WEIGHT_COMMODITY: float = 0.30
 RISK_WEIGHT_INCIDENT: float = 0.20
-
 
 # Commodity risk scores (inherent risk for EUDR commodities).
 COMMODITY_RISK_SCORES: Dict[str, float] = {
@@ -366,11 +339,9 @@ COMMODITY_RISK_SCORES: Dict[str, float] = {
     "none": 1.0,
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class SupplierProfile(BaseModel):
     """Profile of a supplier for due diligence assessment.
@@ -434,7 +405,6 @@ class SupplierProfile(BaseModel):
         description="ILO forced labour indicators identified (if any)",
     )
 
-
 class RiskAssessment(BaseModel):
     """Risk assessment result for a single supplier."""
     supplier_id: str = Field(..., description="Supplier identifier")
@@ -471,7 +441,6 @@ class RiskAssessment(BaseModel):
         default="standard",
         description="Mitigation priority (critical/high/standard/low)",
     )
-
 
 class EUDRCommodityTrace(BaseModel):
     """Traceability record for an EUDR-regulated commodity.
@@ -532,7 +501,6 @@ class EUDRCommodityTrace(BaseModel):
         description="Relevant certification (RSPO, FSC, etc.)",
     )
 
-
 class RemediationAction(BaseModel):
     """Remediation action for an identified supply chain issue."""
     action_id: str = Field(
@@ -564,7 +532,6 @@ class RemediationAction(BaseModel):
         description="Date of most recent verification (YYYY-MM-DD)",
     )
 
-
 class RiskDistribution(BaseModel):
     """Distribution of suppliers across risk levels."""
     very_high: int = Field(default=0, description="Count of very high risk suppliers")
@@ -577,7 +544,6 @@ class RiskDistribution(BaseModel):
     medium_pct: float = Field(default=0.0, description="Medium risk share (%)")
     low_pct: float = Field(default=0.0, description="Low risk share (%)")
     negligible_pct: float = Field(default=0.0, description="Negligible risk share (%)")
-
 
 class EUDRComplianceSummary(BaseModel):
     """Summary of EUDR commodity tracing compliance."""
@@ -593,7 +559,6 @@ class EUDRComplianceSummary(BaseModel):
     volume_by_risk_level: Dict[str, float] = Field(default_factory=dict)
     gaps: List[str] = Field(default_factory=list)
 
-
 class CSDDDApplicability(BaseModel):
     """CSDDD applicability determination."""
     in_scope: bool = Field(default=False, description="Whether company is in CSDDD scope")
@@ -606,7 +571,6 @@ class CSDDDApplicability(BaseModel):
         default=None, description="Max penalty (5% worldwide turnover)",
     )
 
-
 class RemediationSummary(BaseModel):
     """Summary of remediation actions across supply chain."""
     total_actions: int = Field(default=0)
@@ -617,7 +581,6 @@ class RemediationSummary(BaseModel):
     failed: int = Field(default=0)
     completion_rate_pct: float = Field(default=0.0)
     verification_rate_pct: float = Field(default=0.0)
-
 
 class SupplyChainDDResult(BaseModel):
     """Complete supply chain due diligence assessment result.
@@ -635,7 +598,7 @@ class SupplyChainDDResult(BaseModel):
         description="Engine version used for this calculation",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of calculation (UTC)",
     )
     processing_time_ms: float = Field(
@@ -719,11 +682,9 @@ class SupplyChainDDResult(BaseModel):
         description="SHA-256 hash of all inputs and calculation steps",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class SupplyChainDueDiligenceEngine:
     """Supply chain due diligence engine for CSDDD, EUDR, and forced labour.

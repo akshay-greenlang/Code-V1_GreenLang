@@ -16,12 +16,13 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig
 from greenlang.agents.base_agents import DeterministicAgent
 from greenlang.agents.categories import AgentCategory, AgentMetadata
 from greenlang.utilities.determinism import DeterministicClock, content_hash, deterministic_id
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +49,7 @@ class ElectrificationTechnology(str, Enum):
     ELECTRIC_FORKLIFT = "electric_forklift"
 
 
-class ElectrificationProject(BaseModel):
+class ElectrificationProject(GreenLangBase):
     project_id: str = Field(...)
     name: str = Field(...)
     process_type: ProcessType = Field(...)
@@ -78,7 +79,7 @@ class ElectrificationProject(BaseModel):
     barriers: List[str] = Field(default_factory=list)
 
 
-class ElectrificationPlan(BaseModel):
+class ElectrificationPlan(GreenLangBase):
     plan_id: str = Field(...)
     projects: List[ElectrificationProject] = Field(default_factory=list)
 
@@ -92,7 +93,7 @@ class ElectrificationPlan(BaseModel):
     provenance_hash: str = Field(default="")
 
 
-class ElectrificationInput(BaseModel):
+class ElectrificationInput(GreenLangBase):
     operation: str = Field(default="plan")
     processes: List[Dict[str, Any]] = Field(default_factory=list)
     grid_emission_factor_kgco2_mwh: float = Field(default=400, ge=0)
@@ -101,7 +102,7 @@ class ElectrificationInput(BaseModel):
     natural_gas_price_usd_mwh: float = Field(default=40, ge=0)
 
 
-class ElectrificationOutput(BaseModel):
+class ElectrificationOutput(GreenLangBase):
     operation: str = Field(...)
     success: bool = Field(...)
     plan: Optional[ElectrificationPlan] = Field(None)

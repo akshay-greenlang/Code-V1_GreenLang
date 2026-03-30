@@ -76,25 +76,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -112,7 +106,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -121,7 +114,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -133,22 +125,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class PeakType(str, Enum):
     """Classification of peak event by billing or system context.
@@ -165,7 +153,6 @@ class PeakType(str, Enum):
     RATCHET = "ratchet"
     STARTUP = "startup"
 
-
 class PeakCause(str, Enum):
     """Root cause attribution for a peak event.
 
@@ -181,7 +168,6 @@ class PeakCause(str, Enum):
     COINCIDENCE = "coincidence"
     UNKNOWN = "unknown"
 
-
 class Avoidability(str, Enum):
     """Assessment of whether a peak can be avoided or reduced.
 
@@ -193,7 +179,6 @@ class Avoidability(str, Enum):
     PARTIALLY = "partially"
     UNAVOIDABLE = "unavoidable"
 
-
 class ClusterType(str, Enum):
     """Temporal clustering pattern of peak events.
 
@@ -204,7 +189,6 @@ class ClusterType(str, Enum):
     ISOLATED = "isolated"
     CLUSTERED = "clustered"
     RECURRING = "recurring"
-
 
 class SeverityLevel(str, Enum):
     """Severity classification of a peak event.
@@ -219,7 +203,6 @@ class SeverityLevel(str, Enum):
     HIGH = "high"
     CRITICAL = "critical"
 
-
 class SeasonType(str, Enum):
     """Season for peak analysis context.
 
@@ -230,7 +213,6 @@ class SeasonType(str, Enum):
     SUMMER = "summer"
     WINTER = "winter"
     SHOULDER = "shoulder"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -280,11 +262,9 @@ DEFAULT_INTERCEPT: Decimal = Decimal("0")
 # Perturbation range for Monte Carlo (fraction of peak kW).
 MC_PERTURBATION_RANGE: Decimal = Decimal("0.10")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input / Output
 # ---------------------------------------------------------------------------
-
 
 class PeakEvent(BaseModel):
     """A detected peak demand event.
@@ -306,7 +286,7 @@ class PeakEvent(BaseModel):
         notes: Additional notes.
     """
     peak_id: str = Field(default_factory=_new_uuid, description="Peak event ID")
-    timestamp: datetime = Field(default_factory=_utcnow, description="Peak timestamp")
+    timestamp: datetime = Field(default_factory=utcnow, description="Peak timestamp")
     demand_kw: Decimal = Field(default=Decimal("0"), ge=0, description="Peak demand (kW)")
     duration_minutes: int = Field(default=15, ge=0, description="Duration (minutes)")
     peak_type: PeakType = Field(default=PeakType.BILLING, description="Peak type")
@@ -319,7 +299,6 @@ class PeakEvent(BaseModel):
     cdd: Decimal = Field(default=Decimal("0"), ge=0, description="Cooling degree-days")
     hdd: Decimal = Field(default=Decimal("0"), ge=0, description="Heating degree-days")
     notes: str = Field(default="", max_length=2000, description="Notes")
-
 
 class PeakAttribution(BaseModel):
     """Root cause attribution for a peak event.
@@ -356,9 +335,8 @@ class PeakAttribution(BaseModel):
     avoidability: Avoidability = Field(default=Avoidability.PARTIALLY)
     shavable_kw: Decimal = Field(default=Decimal("0"))
     notes: str = Field(default="", max_length=2000)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class PeakCluster(BaseModel):
     """Cluster of temporally related peak events.
@@ -382,16 +360,15 @@ class PeakCluster(BaseModel):
     cluster_type: ClusterType = Field(default=ClusterType.ISOLATED)
     peak_ids: List[str] = Field(default_factory=list)
     peak_count: int = Field(default=0)
-    earliest: datetime = Field(default_factory=_utcnow)
-    latest: datetime = Field(default_factory=_utcnow)
+    earliest: datetime = Field(default_factory=utcnow)
+    latest: datetime = Field(default_factory=utcnow)
     max_demand_kw: Decimal = Field(default=Decimal("0"))
     avg_demand_kw: Decimal = Field(default=Decimal("0"))
     recurrence_interval_hours: Decimal = Field(default=Decimal("0"))
     recurrence_std_hours: Decimal = Field(default=Decimal("0"))
     dominant_cause: PeakCause = Field(default=PeakCause.UNKNOWN)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class PeakSimulation(BaseModel):
     """Monte Carlo peak simulation results.
@@ -424,9 +401,8 @@ class PeakSimulation(BaseModel):
     threshold_kw: Decimal = Field(default=Decimal("0"))
     poisson_rate: Decimal = Field(default=Decimal("0"))
     poisson_prob_k: Decimal = Field(default=Decimal("0"))
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class PeakAssessment(BaseModel):
     """Complete peak assessment result.
@@ -457,8 +433,8 @@ class PeakAssessment(BaseModel):
     assessment_id: str = Field(default_factory=_new_uuid)
     facility_id: str = Field(default="")
     facility_name: str = Field(default="", max_length=500)
-    analysis_period_start: datetime = Field(default_factory=_utcnow)
-    analysis_period_end: datetime = Field(default_factory=_utcnow)
+    analysis_period_start: datetime = Field(default_factory=utcnow)
+    analysis_period_end: datetime = Field(default_factory=utcnow)
     peaks: List[PeakEvent] = Field(default_factory=list)
     attributions: List[PeakAttribution] = Field(default_factory=list)
     clusters: List[PeakCluster] = Field(default_factory=list)
@@ -473,14 +449,12 @@ class PeakAssessment(BaseModel):
     dominant_cause: PeakCause = Field(default=PeakCause.UNKNOWN)
     recommendations: List[str] = Field(default_factory=list)
     processing_time_ms: Decimal = Field(default=Decimal("0"))
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class PeakIdentifierEngine:
     """Peak detection and attribution engine for demand charge management.
@@ -579,7 +553,7 @@ class PeakIdentifierEngine:
         entries = []
         for d in demand_data:
             entries.append({
-                "timestamp": d.get("timestamp", _utcnow()),
+                "timestamp": d.get("timestamp", utcnow()),
                 "demand_kw": _decimal(d.get("demand_kw", 0)),
                 "temperature_c": _decimal(d.get("temperature_c", 0)),
             })
@@ -968,8 +942,8 @@ class PeakIdentifierEngine:
 
         # Timestamps
         timestamps = [p.timestamp for p in peaks]
-        start = min(timestamps) if timestamps else _utcnow()
-        end = max(timestamps) if timestamps else _utcnow()
+        start = min(timestamps) if timestamps else utcnow()
+        end = max(timestamps) if timestamps else utcnow()
 
         # Recommendations
         recommendations = self._generate_recommendations(
@@ -1153,8 +1127,8 @@ class PeakIdentifierEngine:
         avg_d = _safe_divide(
             sum(demands, Decimal("0")), _decimal(len(demands))
         )
-        earliest = min(timestamps) if timestamps else _utcnow()
-        latest = max(timestamps) if timestamps else _utcnow()
+        earliest = min(timestamps) if timestamps else utcnow()
+        latest = max(timestamps) if timestamps else utcnow()
 
         # Calculate inter-peak intervals
         intervals_hours: List[Decimal] = []

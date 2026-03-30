@@ -41,29 +41,23 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 def _compute_hash(content: str) -> str:
     """Compute SHA-256 hash of string content."""
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -76,14 +70,12 @@ class OutputFormat(str, Enum):
     PDF = "pdf"
     JSON = "json"
 
-
 class AlignmentStatus(str, Enum):
     """Target alignment classification."""
     ON_TRACK = "on_track"
     OFF_TRACK = "off_track"
     AHEAD = "ahead"
     NOT_STARTED = "not_started"
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Input Models
@@ -98,7 +90,6 @@ class BaseYearSummary(BaseModel):
     denominator_value: float = Field(0.0, description="Base year denominator value")
     denominator_unit: str = Field("", description="Denominator unit")
 
-
 class PathwayPoint(BaseModel):
     """Single point on target or actual pathway."""
     year: int = Field(..., description="Year")
@@ -106,7 +97,6 @@ class PathwayPoint(BaseModel):
     actual_intensity: Optional[float] = Field(None, description="Actual intensity")
     target_emissions: Optional[float] = Field(None, description="Target emissions")
     actual_emissions: Optional[float] = Field(None, description="Actual emissions")
-
 
 class AnnualProgressRow(BaseModel):
     """Annual progress table row."""
@@ -118,7 +108,6 @@ class AnnualProgressRow(BaseModel):
     cumulative_reduction_pct: Optional[float] = Field(None, description="Cumulative % reduction from base")
     on_track: Optional[bool] = Field(None, description="On track for this year")
 
-
 class GapAnalysis(BaseModel):
     """Gap-to-target analysis."""
     current_year: int = Field(0, description="Current reporting year")
@@ -129,7 +118,6 @@ class GapAnalysis(BaseModel):
     remaining_reduction_needed_pct: float = Field(0.0, description="Remaining reduction needed to hit final target")
     years_remaining: int = Field(0, description="Years remaining to target year")
 
-
 class TrajectoryProjection(BaseModel):
     """Forward trajectory projection."""
     projection_method: str = Field("linear", description="Projection method (linear/compound)")
@@ -138,7 +126,6 @@ class TrajectoryProjection(BaseModel):
     target_intensity: float = Field(0.0, description="Target intensity at target year")
     projected_gap: float = Field(0.0, description="Projected gap at target year")
     probability_of_achievement: Optional[float] = Field(None, description="Estimated probability of meeting target")
-
 
 class PathwayReportInput(BaseModel):
     """Complete input model for TargetPathwayReport."""
@@ -171,7 +158,6 @@ class PathwayReportInput(BaseModel):
     )
     alignment_narrative: str = Field("", description="Alignment assessment narrative")
 
-
 # ---------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------
@@ -186,7 +172,6 @@ def _alignment_label(status: AlignmentStatus) -> str:
     }
     return mapping.get(status, status.value.upper())
 
-
 def _alignment_css(status: AlignmentStatus) -> str:
     """Return CSS class for alignment status."""
     mapping = {
@@ -196,7 +181,6 @@ def _alignment_css(status: AlignmentStatus) -> str:
         AlignmentStatus.NOT_STARTED: "align-not-started",
     }
     return mapping.get(status, "align-not-started")
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -244,7 +228,7 @@ class TargetPathwayReport:
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render target pathway as Markdown."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_md(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -252,7 +236,7 @@ class TargetPathwayReport:
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render target pathway as HTML."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_html(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -260,7 +244,7 @@ class TargetPathwayReport:
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render target pathway as JSON dict."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_json(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -293,7 +277,7 @@ class TargetPathwayReport:
             f"# Target Pathway Report - {company}\n\n"
             f"**Target:** {target} | "
             f"**Status:** {_alignment_label(status)} | "
-            f"**Report Date:** {_utcnow().strftime('%Y-%m-%d')}\n\n"
+            f"**Report Date:** {utcnow().strftime('%Y-%m-%d')}\n\n"
             "---"
         )
 

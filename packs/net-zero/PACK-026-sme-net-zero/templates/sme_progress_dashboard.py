@@ -30,6 +30,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "26.0.0"
@@ -57,18 +59,12 @@ _STATUS_MAP = {
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str) if isinstance(data, dict) else str(data)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 def _dec(val: Any, places: int = 2) -> str:
     try:
@@ -77,7 +73,6 @@ def _dec(val: Any, places: int = 2) -> str:
         return str(d.quantize(Decimal(q), rounding=ROUND_HALF_UP))
     except Exception:
         return str(val)
-
 
 def _dec_comma(val: Any, places: int = 0) -> str:
     try:
@@ -102,13 +97,11 @@ def _dec_comma(val: Any, places: int = 0) -> str:
     except Exception:
         return str(val)
 
-
 def _pct(val: Any) -> str:
     try:
         return _dec(val, 1) + "%"
     except Exception:
         return str(val)
-
 
 def _safe_div(num: Any, den: Any, default: float = 0.0) -> float:
     try:
@@ -117,16 +110,13 @@ def _safe_div(num: Any, den: Any, default: float = 0.0) -> float:
     except Exception:
         return default
 
-
 def _status_info(status: str) -> Dict[str, str]:
     return _STATUS_MAP.get(status.lower(), _STATUS_MAP["planned"])
-
 
 def _progress_bar_ascii(pct: float, width: int = 20) -> str:
     filled = int(round(pct / 100 * width))
     filled = max(0, min(width, filled))
     return "[" + "#" * filled + "." * (width - filled) + f"] {_dec(pct, 1)}%"
-
 
 def _yoy_arrow(current: float, previous: float) -> str:
     if previous == 0:
@@ -137,7 +127,6 @@ def _yoy_arrow(current: float, previous: float) -> str:
     elif change > 1:
         return f"^ {_pct(change)} (increase)"
     return "-- flat"
-
 
 # ===========================================================================
 # Template Class
@@ -167,7 +156,7 @@ class SMEProgressDashboardTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render the progress dashboard as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections: List[str] = [
             self._md_header(data),
             self._md_kpi_summary(data),
@@ -186,7 +175,7 @@ class SMEProgressDashboardTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render the progress dashboard as interactive HTML."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         body = "\n".join([
             self._html_header(data),
@@ -213,7 +202,7 @@ class SMEProgressDashboardTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render the progress dashboard as structured JSON."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         current = float(data.get("current_tco2e", 0))
         baseline = float(data.get("baseline_tco2e", 0))
         target_2030 = float(data.get("target_2030_tco2e", 0))

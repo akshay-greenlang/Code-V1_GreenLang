@@ -1,0 +1,27 @@
+{
+  "phase": "V2-Phase6",
+  "phase6_complete": true,
+  "title": "Docs/DX Handbook + Operational Hardening + Go/No-Go",
+  "checklist": {
+    "platform_handbook_published": true,
+    "migration_playbooks_published": true,
+    "non_core_team_bootstrap_uat_complete": true,
+    "rc_soak_complete": true,
+    "go_no_go_evidence_recorded": true,
+    "all_v2_exit_criteria_passed": true,
+    "immutable_evidence_artifacts_recorded": true
+  },
+  "evidence_files": [
+    "docs/v2/PLATFORM_HANDBOOK.md",
+    "docs/v2/MIGRATION_PLAYBOOKS.md",
+    "docs/v2/COMPATIBILITY_MATRIX.md",
+    "docs/v2/PACK_TIERING_POLICY.md",
+    "docs/v2/AGENT_LIFECYCLE_POLICY.md",
+    "docs/v2/RELEASE_TRAINS.md",
+    "docs/v2/ONCALL_AND_SLOS.md",
+    "docs/v2/UAT_RESULTS.md",
+    "docs/v2/RC_SOAK_LOG.md",
+    "docs/v2/GO_NO_GO_RECORD.md",
+    "docs/v2/IMMUTABLE_EVIDENCE_MANIFEST.json"
+  ]
+}

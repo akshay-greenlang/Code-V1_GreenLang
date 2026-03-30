@@ -94,21 +94,13 @@ logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -137,7 +129,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -146,7 +137,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -158,27 +148,22 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 4) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 def _abs_decimal(value: Decimal) -> Decimal:
     """Return absolute value of a Decimal."""
     return value if value >= Decimal("0") else -value
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ConsistencyStatus(str, Enum):
     """Overall consistency status of a time series.
@@ -195,7 +180,6 @@ class ConsistencyStatus(str, Enum):
     INCONSISTENT = "inconsistent"
     PARTIALLY_CONSISTENT = "partially_consistent"
     NOT_ASSESSED = "not_assessed"
-
 
 class InconsistencyType(str, Enum):
     """Type of inconsistency detected in the time series.
@@ -218,7 +202,6 @@ class InconsistencyType(str, Enum):
     CONSOLIDATION_APPROACH_CHANGE = "consolidation_approach_change"
     DATA_GAP = "data_gap"
 
-
 class NormalizationType(str, Enum):
     """Type of normalization adjustment applied to the series.
 
@@ -237,7 +220,6 @@ class NormalizationType(str, Enum):
     WEATHER = "weather"
     PRODUCTION_VOLUME = "production_volume"
 
-
 class ConsolidationApproach(str, Enum):
     """GHG Protocol consolidation approach.
 
@@ -252,7 +234,6 @@ class ConsolidationApproach(str, Enum):
     FINANCIAL_CONTROL = "financial_control"
     EQUITY_SHARE = "equity_share"
 
-
 class GWPVersion(str, Enum):
     """IPCC Global Warming Potential version identifier.
 
@@ -263,7 +244,6 @@ class GWPVersion(str, Enum):
     AR4 = "AR4"
     AR5 = "AR5"
     AR6 = "AR6"
-
 
 class ReportingFramework(str, Enum):
     """Reporting framework for trend validation requirements.
@@ -281,7 +261,6 @@ class ReportingFramework(str, Enum):
     CDP = "cdp"
     SBTI = "sbti"
     SEC = "sec"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -314,11 +293,9 @@ MAX_YOY_CHANGE_PCT: Decimal = Decimal("50")
 SEVERITY_INCONSISTENT_THRESHOLD: int = 4
 SEVERITY_PARTIAL_THRESHOLD: int = 1
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class YearData(BaseModel):
     """Emission data for a single reporting year.
@@ -378,7 +355,6 @@ class YearData(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class NormalizationAdjustment(BaseModel):
     """A single normalization adjustment to apply to a specific year.
 
@@ -403,7 +379,6 @@ class NormalizationAdjustment(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class InconsistencyFinding(BaseModel):
     """A single inconsistency detected in the time series.
@@ -442,7 +417,6 @@ class InconsistencyFinding(BaseModel):
             return None
         return _decimal(v)
 
-
 class TrendPoint(BaseModel):
     """A single point in the normalized trend series.
 
@@ -454,6 +428,8 @@ class TrendPoint(BaseModel):
             None for the first year in the series.
         cumulative_change_from_base_pct: Cumulative percentage change
             from the base year.  None if base year not identified.
+
+from greenlang.schemas import utcnow
     """
     year: int
     original_tco2e: Decimal
@@ -474,7 +450,6 @@ class TrendPoint(BaseModel):
             return None
         return _decimal(v)
 
-
 class ConsistencyConfig(BaseModel):
     """Configuration for consistency assessment.
 
@@ -491,7 +466,6 @@ class ConsistencyConfig(BaseModel):
     require_gwp_consistency: bool = Field(default=True)
     require_methodology_consistency: bool = Field(default=True)
     severity_override: Dict[str, int] = Field(default_factory=dict)
-
 
 class ConsistencyResult(BaseModel):
     """Complete result of time-series consistency assessment.
@@ -517,10 +491,9 @@ class ConsistencyResult(BaseModel):
     max_severity: int = Field(default=0)
     total_findings: int = Field(default=0)
     recommendations: List[str] = Field(default_factory=list)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class TrendValidationResult(BaseModel):
     """Result of trend validation against a specific reporting framework.
@@ -540,11 +513,9 @@ class TrendValidationResult(BaseModel):
     issues: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class TimeSeriesConsistencyEngine:
     """Time-series comparability and trend validation engine.
@@ -664,7 +635,7 @@ class TimeSeriesConsistencyEngine:
             max_severity=max_severity,
             total_findings=len(findings),
             recommendations=recommendations,
-            calculated_at=_utcnow(),
+            calculated_at=utcnow(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         result.provenance_hash = _compute_hash(result)

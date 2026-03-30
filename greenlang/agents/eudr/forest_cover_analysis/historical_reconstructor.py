@@ -71,6 +71,8 @@ from datetime import date, datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -83,27 +85,18 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a unique identifier using UUID4."""
     return str(uuid.uuid4())
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class DataSource(str, Enum):
     """Satellite data sources for historical reconstruction."""
@@ -113,14 +106,12 @@ class DataSource(str, Enum):
     HANSEN_GFC = "HANSEN_GFC"
     JAXA_FNF = "JAXA_FNF"
 
-
 class CutoffCoverClass(str, Enum):
     """Forest cover classification at the EUDR cutoff date."""
 
     FOREST = "FOREST"
     NON_FOREST = "NON_FOREST"
     UNCERTAIN = "UNCERTAIN"
-
 
 class ReconstructionQuality(str, Enum):
     """Quality tier of the reconstruction result."""
@@ -129,7 +120,6 @@ class ReconstructionQuality(str, Enum):
     MEDIUM = "MEDIUM"     # >= 2 sources agree, confidence >= 0.6
     LOW = "LOW"           # 1 source or confidence < 0.6
     INSUFFICIENT = "INSUFFICIENT"  # No usable data
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -210,11 +200,9 @@ CROSS_VALIDATION_SOURCES: List[str] = [
     "JRC_Tropical_Moist_Forest_2020",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class SourceObservation:
@@ -240,7 +228,6 @@ class SourceObservation:
     cloud_cover_pct: float = 0.0
     metadata: Dict[str, Any] = field(default_factory=dict)
 
-
 @dataclass
 class TemporalComposite:
     """Cloud-free median composite from the reconstruction window.
@@ -263,7 +250,6 @@ class TemporalComposite:
     cloud_free_pct: float = 0.0
     provenance_hash: str = ""
 
-
 @dataclass
 class CrossValidationResult:
     """Result of cross-validating classification against references.
@@ -282,7 +268,6 @@ class CrossValidationResult:
     reference_is_forest: Optional[bool] = None
     classification_is_forest: Optional[bool] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
-
 
 @dataclass
 class HistoricalCoverRecord:
@@ -364,7 +349,6 @@ class HistoricalCoverRecord:
             "metadata": self.metadata,
         }
 
-
 @dataclass
 class ReconstructionInput:
     """Input data for historical reconstruction of a single plot.
@@ -398,11 +382,9 @@ class ReconstructionInput:
     ndvi_2021: Optional[float] = None
     area_ha: float = 1.0
 
-
 # ---------------------------------------------------------------------------
 # HistoricalReconstructor
 # ---------------------------------------------------------------------------
-
 
 class HistoricalReconstructor:
     """Production-grade historical forest cover reconstructor for EUDR.
@@ -498,7 +480,7 @@ class HistoricalReconstructor:
             raise ValueError("plot_id must not be empty")
 
         record_id = _generate_id()
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         # Step 1: Build temporal composites
         composites: List[TemporalComposite] = []
@@ -1268,7 +1250,7 @@ class HistoricalReconstructor:
             cover_class=CutoffCoverClass.UNCERTAIN.value,
             quality_tier=ReconstructionQuality.INSUFFICIENT.value,
             reconstruction_confidence=0.0,
-            timestamp=_utcnow().isoformat(),
+            timestamp=utcnow().isoformat(),
             metadata={"error": error_msg},
         )
         record.provenance_hash = self._compute_record_hash(record)
@@ -1302,7 +1284,6 @@ class HistoricalReconstructor:
             "timestamp": record.timestamp,
         }
         return _compute_hash(hash_data)
-
 
 # ---------------------------------------------------------------------------
 # Module Exports

@@ -29,6 +29,7 @@ from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.due_diligence_orchestrator.api.dependencies import (
     AuthUser,
@@ -242,7 +243,7 @@ async def create_checkpoint(
             "type": "manual",
             "reason": reason,
             "cumulative_provenance_hash": cp_hash,
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
             "created_by": user.user_id,
         }
     except Exception as exc:

@@ -45,25 +45,20 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import AlertSeverity
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -76,7 +71,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -86,11 +80,9 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class OrderStatus(str, Enum):
     """Purchase order status."""
@@ -100,13 +92,11 @@ class OrderStatus(str, Enum):
     CANCELLED = "cancelled"
     FAILED = "failed"
 
-
 class ValuationMethod(str, Enum):
     """Portfolio valuation method."""
     FIFO = "fifo"
     WAC = "weighted_average_cost"
     MTM = "mark_to_market"
-
 
 class CertificateStatus(str, Enum):
     """Individual certificate status."""
@@ -116,23 +106,14 @@ class CertificateStatus(str, Enum):
     EXPIRED = "expired"
     PENDING_BUYBACK = "pending_buyback"
 
-
-class AlertSeverity(str, Enum):
-    """Severity level for expiry alerts."""
-    INFO = "info"
-    WARNING = "warning"
-    CRITICAL = "critical"
-
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
 
-
 class Certificate(BaseModel):
     """Individual CBAM certificate representation."""
     certificate_id: str = Field(default_factory=_new_uuid, description="Unique certificate identifier")
-    purchase_date: datetime = Field(default_factory=_utcnow, description="Date of purchase")
+    purchase_date: datetime = Field(default_factory=utcnow, description="Date of purchase")
     expiry_date: datetime = Field(description="Expiry date (2 years from purchase)")
     purchase_price: Decimal = Field(description="Purchase price in EUR per tCO2e")
     quantity_tco2e: Decimal = Field(default=Decimal("1"), description="Quantity in tCO2e")
@@ -148,14 +129,13 @@ class Certificate(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class CertificatePortfolio(BaseModel):
     """Portfolio of CBAM certificates for a declarant."""
     portfolio_id: str = Field(default_factory=_new_uuid, description="Unique portfolio identifier")
     entity_id: str = Field(description="Owning entity/declarant identifier")
     entity_name: str = Field(default="", description="Entity display name")
     certificates: List[Certificate] = Field(default_factory=list, description="Certificates held")
-    created_at: datetime = Field(default_factory=_utcnow, description="Portfolio creation timestamp")
+    created_at: datetime = Field(default_factory=utcnow, description="Portfolio creation timestamp")
     total_purchased: Decimal = Field(default=Decimal("0"), description="Lifetime certificates purchased")
     total_surrendered: Decimal = Field(default=Decimal("0"), description="Lifetime certificates surrendered")
     total_resold: Decimal = Field(default=Decimal("0"), description="Lifetime certificates resold")
@@ -168,7 +148,6 @@ class CertificatePortfolio(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class PurchaseOrder(BaseModel):
     """Certificate purchase order."""
     order_id: str = Field(default_factory=_new_uuid, description="Unique order identifier")
@@ -176,7 +155,7 @@ class PurchaseOrder(BaseModel):
     quantity: Decimal = Field(description="Quantity to purchase in tCO2e")
     max_price: Optional[Decimal] = Field(default=None, description="Maximum acceptable price per tCO2e")
     status: OrderStatus = Field(default=OrderStatus.PENDING, description="Order status")
-    submitted_at: datetime = Field(default_factory=_utcnow, description="Submission timestamp")
+    submitted_at: datetime = Field(default_factory=utcnow, description="Submission timestamp")
     executed_at: Optional[datetime] = Field(default=None, description="Execution timestamp")
     executed_price: Optional[Decimal] = Field(default=None, description="Actual execution price")
     total_cost: Optional[Decimal] = Field(default=None, description="Total cost of order")
@@ -188,7 +167,6 @@ class PurchaseOrder(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class ExecutionResult(BaseModel):
     """Result of executing a purchase order."""
     execution_id: str = Field(default_factory=_new_uuid, description="Execution identifier")
@@ -197,7 +175,7 @@ class ExecutionResult(BaseModel):
     quantity_filled: Decimal = Field(description="Quantity filled in tCO2e")
     execution_price: Decimal = Field(description="Execution price per tCO2e")
     total_cost: Decimal = Field(description="Total cost in EUR")
-    executed_at: datetime = Field(default_factory=_utcnow, description="Execution timestamp")
+    executed_at: datetime = Field(default_factory=utcnow, description="Execution timestamp")
     status: str = Field(default="executed", description="Execution status")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
@@ -205,7 +183,6 @@ class ExecutionResult(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class SurrenderResult(BaseModel):
     """Result of certificate surrender operation."""
@@ -216,7 +193,7 @@ class SurrenderResult(BaseModel):
     quantity_surrendered: Decimal = Field(description="Total tCO2e surrendered")
     total_value: Decimal = Field(description="Total value at original purchase price")
     average_cost: Decimal = Field(description="Weighted average cost of surrendered certificates")
-    surrendered_at: datetime = Field(default_factory=_utcnow, description="Surrender timestamp")
+    surrendered_at: datetime = Field(default_factory=utcnow, description="Surrender timestamp")
     remaining_balance: Decimal = Field(description="Remaining active certificates in portfolio")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
@@ -224,7 +201,6 @@ class SurrenderResult(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class ResaleResult(BaseModel):
     """Result of certificate resale operation."""
@@ -235,7 +211,7 @@ class ResaleResult(BaseModel):
     resale_price: Decimal = Field(description="Resale price per tCO2e (original purchase price)")
     total_proceeds: Decimal = Field(description="Total resale proceeds")
     resale_limit_remaining: Decimal = Field(description="Remaining resale allowance (1/3 rule)")
-    resold_at: datetime = Field(default_factory=_utcnow, description="Resale timestamp")
+    resold_at: datetime = Field(default_factory=utcnow, description="Resale timestamp")
     compliant: bool = Field(default=True, description="Whether resale is within 1/3 limit")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
@@ -243,7 +219,6 @@ class ResaleResult(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class ExpiryAlert(BaseModel):
     """Alert for certificates approaching or past expiry."""
@@ -259,7 +234,6 @@ class ExpiryAlert(BaseModel):
     recommendation: str = Field(default="", description="Recommended action")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class HoldingCheck(BaseModel):
     """Result of quarterly holding compliance check."""
     check_id: str = Field(default_factory=_new_uuid, description="Check identifier")
@@ -271,7 +245,7 @@ class HoldingCheck(BaseModel):
     surplus_deficit: Decimal = Field(description="Surplus (positive) or deficit (negative)")
     compliant: bool = Field(description="Whether holding meets 50% quarterly target")
     compliance_ratio: Decimal = Field(description="Current holdings / quarterly target ratio")
-    checked_at: datetime = Field(default_factory=_utcnow, description="Check timestamp")
+    checked_at: datetime = Field(default_factory=utcnow, description="Check timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("estimated_obligation", "quarterly_target", "current_holdings",
@@ -279,7 +253,6 @@ class HoldingCheck(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class PortfolioValuation(BaseModel):
     """Portfolio valuation result."""
@@ -295,7 +268,7 @@ class PortfolioValuation(BaseModel):
     weighted_average_cost: Decimal = Field(description="Weighted average cost per tCO2e")
     oldest_certificate_date: Optional[datetime] = Field(default=None, description="Oldest active certificate date")
     newest_certificate_date: Optional[datetime] = Field(default=None, description="Newest active certificate date")
-    valued_at: datetime = Field(default_factory=_utcnow, description="Valuation timestamp")
+    valued_at: datetime = Field(default_factory=utcnow, description="Valuation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("total_quantity_tco2e", "total_cost_basis", "current_market_price",
@@ -303,7 +276,6 @@ class PortfolioValuation(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class TransferResult(BaseModel):
     """Result of inter-portfolio certificate transfer."""
@@ -313,14 +285,13 @@ class TransferResult(BaseModel):
     certificates_transferred: List[str] = Field(default_factory=list, description="Certificate IDs transferred")
     quantity_transferred: Decimal = Field(description="Total tCO2e transferred")
     transfer_value: Decimal = Field(description="Value of transferred certificates at cost basis")
-    transferred_at: datetime = Field(default_factory=_utcnow, description="Transfer timestamp")
+    transferred_at: datetime = Field(default_factory=utcnow, description="Transfer timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("quantity_transferred", "transfer_value", mode="before")
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class SurrenderPlan(BaseModel):
     """Optimized surrender plan to minimize cost."""
@@ -334,7 +305,7 @@ class SurrenderPlan(BaseModel):
     savings_vs_fifo: Decimal = Field(description="Savings compared to naive FIFO approach")
     savings_vs_lifo: Decimal = Field(description="Savings compared to LIFO approach")
     expiring_soon_included: int = Field(default=0, description="Count of near-expiry certificates included")
-    created_at: datetime = Field(default_factory=_utcnow, description="Plan creation timestamp")
+    created_at: datetime = Field(default_factory=utcnow, description="Plan creation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("obligation_tco2e", "total_surrender_cost", "average_cost_per_tco2e",
@@ -342,7 +313,6 @@ class SurrenderPlan(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class BudgetForecast(BaseModel):
     """Multi-year CBAM certificate budget forecast."""
@@ -358,7 +328,7 @@ class BudgetForecast(BaseModel):
     free_allocation_phase_out: List[Dict[str, Any]] = Field(
         default_factory=list, description="Free allocation phase-out schedule"
     )
-    created_at: datetime = Field(default_factory=_utcnow, description="Forecast creation timestamp")
+    created_at: datetime = Field(default_factory=utcnow, description="Forecast creation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("total_estimated_cost", "average_annual_cost",
@@ -367,11 +337,9 @@ class BudgetForecast(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 # ---------------------------------------------------------------------------
 # Engine Configuration
 # ---------------------------------------------------------------------------
-
 
 class CertificateTradingConfig(BaseModel):
     """Configuration for the CertificateTradingEngine."""
@@ -406,7 +374,6 @@ class CertificateTradingConfig(BaseModel):
         description="EU ETS free allocation phase-out schedule (year -> fraction remaining)"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic model_rebuild for forward reference resolution
 # ---------------------------------------------------------------------------
@@ -425,11 +392,9 @@ TransferResult.model_rebuild()
 SurrenderPlan.model_rebuild()
 BudgetForecast.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # CertificateTradingEngine
 # ---------------------------------------------------------------------------
-
 
 class CertificateTradingEngine:
     """
@@ -589,7 +554,7 @@ class CertificateTradingEngine:
             )
 
         portfolio = self._portfolios[order.portfolio_id]
-        now = _utcnow()
+        now = utcnow()
         expiry = now + timedelta(days=self.config.certificate_validity_years * 365)
         total_cost = order.quantity * market_price
 
@@ -765,7 +730,7 @@ class CertificateTradingEngine:
             raise ValueError("Resale quantity must be positive")
 
         portfolio = self._portfolios[portfolio_id]
-        now = _utcnow()
+        now = utcnow()
         cutoff = now - timedelta(days=self.config.resale_window_months * 30)
 
         recent_purchased = Decimal("0")
@@ -878,7 +843,7 @@ class CertificateTradingEngine:
 
         portfolio = self._portfolios[portfolio_id]
         active_certs = self._get_active_certificates(portfolio)
-        now = _utcnow()
+        now = utcnow()
         alerts: List[ExpiryAlert] = []
 
         for cert in active_certs:
@@ -1189,7 +1154,7 @@ class CertificateTradingEngine:
                 f"Insufficient certificates: need {obligation}, have {available}"
             )
 
-        now = _utcnow()
+        now = utcnow()
 
         def _score(cert: Certificate) -> Tuple[int, Decimal]:
             days_left = (cert.expiry_date - now).days
@@ -1270,7 +1235,7 @@ class CertificateTradingEngine:
             raise ValueError("Horizon must be between 1 and 30 years")
 
         portfolio = self._portfolios[portfolio_id]
-        base_year = _utcnow().year
+        base_year = utcnow().year
         base_obligation = _decimal(
             portfolio.config.get("estimated_annual_obligation", 0)
         )

@@ -50,6 +50,7 @@ import logging
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.third_party_audit_manager.config import (
     ThirdPartyAuditManagerConfig,
@@ -102,12 +103,6 @@ CPD_CATEGORIES: Dict[str, int] = {
 #: Conflict-of-interest cooling-off period (months)
 COI_COOLING_OFF_MONTHS: int = 24
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_provenance_hash(data: Dict[str, Any]) -> str:
     """Compute SHA-256 hash for provenance tracking.
 
@@ -119,7 +114,6 @@ def _compute_provenance_hash(data: Dict[str, Any]) -> str:
     """
     canonical = json.dumps(data, sort_keys=True, default=str, separators=(",", ":"))
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-
 
 class AuditorRegistryQualificationEngine:
     """Auditor registry and qualification management engine.
@@ -166,7 +160,7 @@ class AuditorRegistryQualificationEngine:
         Returns:
             MatchAuditorResponse with ranked auditor matches.
         """
-        start_time = _utcnow()
+        start_time = utcnow()
 
         try:
             pool = auditor_pool or []
@@ -180,7 +174,7 @@ class AuditorRegistryQualificationEngine:
             top_matches = scored[: request.max_results]
 
             processing_time = Decimal(str(
-                (_utcnow() - start_time).total_seconds() * 1000
+                (utcnow() - start_time).total_seconds() * 1000
             )).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
             response = MatchAuditorResponse(
@@ -355,7 +349,7 @@ class AuditorRegistryQualificationEngine:
             "supplier_id": supplier_id,
             "is_clear": is_clear,
             "conflicts_found": conflicts_found,
-            "screened_at": _utcnow().isoformat(),
+            "screened_at": utcnow().isoformat(),
         }
 
     def verify_accreditation(self, auditor: Auditor) -> Dict[str, Any]:
@@ -405,7 +399,7 @@ class AuditorRegistryQualificationEngine:
             "days_to_expiry": days_to_expiry,
             "is_valid": is_valid,
             "warnings": warnings,
-            "verified_at": _utcnow().isoformat(),
+            "verified_at": utcnow().isoformat(),
         }
 
     def verify_cpd_compliance(self, auditor: Auditor) -> Dict[str, Any]:
@@ -431,7 +425,7 @@ class AuditorRegistryQualificationEngine:
             "is_compliant": is_compliant,
             "shortfall_hours": shortfall,
             "categories": CPD_CATEGORIES,
-            "verified_at": _utcnow().isoformat(),
+            "verified_at": utcnow().isoformat(),
         }
 
     def calculate_performance_score(
@@ -461,7 +455,7 @@ class AuditorRegistryQualificationEngine:
                 "car_closure_rate": str(auditor.car_closure_rate),
                 "audit_count": auditor.audit_count,
                 "benchmarks": {},
-                "calculated_at": _utcnow().isoformat(),
+                "calculated_at": utcnow().isoformat(),
             }
 
         # Calculate from audit history
@@ -503,7 +497,7 @@ class AuditorRegistryQualificationEngine:
             "total_findings": str(total_findings),
             "total_cars": str(total_cars),
             "closed_cars": str(closed_cars),
-            "calculated_at": _utcnow().isoformat(),
+            "calculated_at": utcnow().isoformat(),
         }
 
     def _filter_eligible(

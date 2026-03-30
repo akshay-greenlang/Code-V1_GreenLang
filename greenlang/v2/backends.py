@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -20,6 +22,7 @@ from .profiles import V2_APP_PROFILES
 
 V2_BLOCKED_EXIT_CODE = 4
 REPO_ROOT = Path(__file__).resolve().parents[2]
+NATIVE_BACKEND_TIMEOUT_SECONDS = 240
 
 
 def _sha256(path: Path) -> str:
@@ -83,7 +86,30 @@ def _load_json_input(input_path: Path) -> dict[str, Any]:
     return payload
 
 
-def _run_eudr_backend(input_path: Path, output_dir: Path) -> BackendRunResult:
+def _run_subprocess(command: list[str], cwd: Path) -> tuple[int, str]:
+    try:
+        proc = subprocess.run(
+            command,
+            cwd=str(cwd),
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=NATIVE_BACKEND_TIMEOUT_SECONDS,
+            encoding="utf-8",
+            errors="replace",
+        )
+        out = (proc.stdout or "") + (proc.stderr or "")
+        return proc.returncode, out
+    except subprocess.TimeoutExpired as exc:
+        stdout = exc.stdout or ""
+        stderr = exc.stderr or ""
+        timeout_msg = (
+            f"backend command timed out after {NATIVE_BACKEND_TIMEOUT_SECONDS}s"
+        )
+        return 124, f"{stdout}{stderr}\n{timeout_msg}".strip()
+
+
+def _run_eudr_backend_local(input_path: Path, output_dir: Path) -> BackendRunResult:
     payload = _load_json_input(input_path)
     suppliers = payload.get("suppliers", [])
     records_processed = len(suppliers) if isinstance(suppliers, list) else 0
@@ -128,11 +154,11 @@ def _run_eudr_backend(input_path: Path, output_dir: Path) -> BackendRunResult:
         errors=[],
         warnings=[],
         native_backend_used=True,
-        fallback_used=False,
+        fallback_used=True,
     )
 
 
-def _run_ghg_backend(input_path: Path, output_dir: Path) -> BackendRunResult:
+def _run_ghg_backend_local(input_path: Path, output_dir: Path) -> BackendRunResult:
     payload = _load_json_input(input_path)
     activities = payload.get("activities", [])
     total_emissions = 0.0
@@ -182,11 +208,11 @@ def _run_ghg_backend(input_path: Path, output_dir: Path) -> BackendRunResult:
         errors=[],
         warnings=[],
         native_backend_used=True,
-        fallback_used=False,
+        fallback_used=True,
     )
 
 
-def _run_iso14064_backend(input_path: Path, output_dir: Path) -> BackendRunResult:
+def _run_iso14064_backend_local(input_path: Path, output_dir: Path) -> BackendRunResult:
     payload = _load_json_input(input_path)
     controls = payload.get("controls", [])
     control_count = len(controls) if isinstance(controls, list) else 0
@@ -231,8 +257,25 @@ def _run_iso14064_backend(input_path: Path, output_dir: Path) -> BackendRunResul
         errors=[],
         warnings=[],
         native_backend_used=True,
-        fallback_used=False,
+        fallback_used=True,
     )
+
+
+def _run_native_v2_backend(
+    app_dir: Path,
+    input_path: Path,
+    output_dir: Path,
+) -> tuple[int, str]:
+    entrypoint = app_dir / "v2" / "runtime_backend.py"
+    command = [
+        sys.executable,
+        str(entrypoint.resolve()),
+        "--input",
+        str(input_path.resolve()),
+        "--output",
+        str(output_dir.resolve()),
+    ]
+    return _run_subprocess(command, cwd=app_dir)
 
 
 def run_v2_profile_backend(
@@ -242,7 +285,6 @@ def run_v2_profile_backend(
     strict: bool = True,
     allow_fallback: bool = False,
 ) -> BackendRunResult:
-    del strict, allow_fallback  # V2 adapters are deterministic and local for now.
     output_dir.mkdir(parents=True, exist_ok=True)
     if not input_path.exists():
         return BackendRunResult(
@@ -256,15 +298,164 @@ def run_v2_profile_backend(
         )
 
     key = profile_key.lower()
+    native_failures: list[str] = []
     if key == "cbam":
-        result = run_cbam_backend(input_path=input_path, output_dir=output_dir, strict=True, allow_fallback=False)
+        try:
+            app_dir = REPO_ROOT / "applications" / "GL-CBAM-APP"
+            entrypoint = app_dir / "v2" / "runtime_backend.py"
+            if entrypoint.exists():
+                code, output = _run_subprocess(
+                    [sys.executable, str(entrypoint.resolve()), "--input", str(input_path.resolve()), "--output", str(output_dir.resolve())],
+                    cwd=app_dir,
+                )
+                if code == 0:
+                    artifacts = _required_artifacts("cbam")
+                    _write_audit_bundle(
+                        output_dir=output_dir, app_id="GL-CBAM-APP",
+                        pipeline_id="cbam-quarterly-v2", artifacts=artifacts, status="ok",
+                    )
+                    result = BackendRunResult(
+                        success=True, exit_code=0, artifacts=artifacts, errors=[], warnings=[],
+                        native_backend_used=True, fallback_used=False,
+                    )
+                else:
+                    native_failures.append(f"cbam v2 native backend failed: {code}")
+                    native_failures.append(output[-800:])
+                    if strict and not allow_fallback:
+                        return BackendRunResult(success=False, exit_code=code or 1, artifacts=[], errors=native_failures, warnings=[], native_backend_used=False, fallback_used=False)
+                    result = run_cbam_backend(input_path=input_path, output_dir=output_dir, strict=True, allow_fallback=True)
+                    result.warnings = result.warnings + ["cbam v2 native failed; v1 fallback engaged"]
+            else:
+                result = run_cbam_backend(input_path=input_path, output_dir=output_dir, strict=True, allow_fallback=allow_fallback)
+                result.warnings = result.warnings + ["cbam v2 entrypoint missing; v1 backend used"]
+        except Exception as exc:
+            result = run_cbam_backend(input_path=input_path, output_dir=output_dir, strict=True, allow_fallback=True)
+            result.warnings = result.warnings + [f"cbam v2 error: {exc}; v1 fallback engaged"]
     elif key == "csrd":
-        result = run_csrd_backend(input_path=input_path, output_dir=output_dir, strict=True, allow_fallback=False)
+        try:
+            app_dir = REPO_ROOT / "applications" / "GL-CSRD-APP" / "CSRD-Reporting-Platform"
+            entrypoint = app_dir / "v2" / "runtime_backend.py"
+            if entrypoint.exists():
+                code, output = _run_subprocess(
+                    [sys.executable, str(entrypoint.resolve()), "--input", str(input_path.resolve()), "--output", str(output_dir.resolve())],
+                    cwd=app_dir,
+                )
+                if code == 0:
+                    artifacts = _required_artifacts("csrd")
+                    _write_audit_bundle(
+                        output_dir=output_dir, app_id="GL-CSRD-APP",
+                        pipeline_id="csrd-esrs-v2", artifacts=artifacts, status="ok",
+                    )
+                    result = BackendRunResult(
+                        success=True, exit_code=0, artifacts=artifacts, errors=[], warnings=[],
+                        native_backend_used=True, fallback_used=False,
+                    )
+                else:
+                    native_failures.append(f"csrd v2 native backend failed: {code}")
+                    native_failures.append(output[-800:])
+                    if strict and not allow_fallback:
+                        return BackendRunResult(success=False, exit_code=code or 1, artifacts=[], errors=native_failures, warnings=[], native_backend_used=False, fallback_used=False)
+                    result = run_csrd_backend(input_path=input_path, output_dir=output_dir, strict=True, allow_fallback=True)
+                    result.warnings = result.warnings + ["csrd v2 native failed; v1 fallback engaged"]
+            else:
+                result = run_csrd_backend(input_path=input_path, output_dir=output_dir, strict=True, allow_fallback=allow_fallback)
+                result.warnings = result.warnings + ["csrd v2 entrypoint missing; v1 backend used"]
+        except Exception as exc:
+            result = run_csrd_backend(input_path=input_path, output_dir=output_dir, strict=True, allow_fallback=True)
+            result.warnings = result.warnings + [f"csrd v2 error: {exc}; v1 fallback engaged"]
     elif key == "vcci":
-        result = run_vcci_backend(input_path=input_path, output_dir=output_dir, strict=True, allow_fallback=False)
+        try:
+            app_dir = REPO_ROOT / "applications" / "GL-VCCI-Carbon-APP" / "VCCI-Scope3-Platform"
+            entrypoint = app_dir / "v2" / "runtime_backend.py"
+            if entrypoint.exists():
+                code, output = _run_subprocess(
+                    [sys.executable, str(entrypoint.resolve()), "--input", str(input_path.resolve()), "--output", str(output_dir.resolve())],
+                    cwd=app_dir,
+                )
+                if code == 0:
+                    artifacts = _required_artifacts("vcci")
+                    _write_audit_bundle(
+                        output_dir=output_dir, app_id="GL-VCCI-Carbon-APP",
+                        pipeline_id="vcci-scope3-v2", artifacts=artifacts, status="ok",
+                    )
+                    result = BackendRunResult(
+                        success=True, exit_code=0, artifacts=artifacts, errors=[], warnings=[],
+                        native_backend_used=True, fallback_used=False,
+                    )
+                else:
+                    native_failures.append(f"vcci v2 native backend failed: {code}")
+                    native_failures.append(output[-800:])
+                    if strict and not allow_fallback:
+                        return BackendRunResult(success=False, exit_code=code or 1, artifacts=[], errors=native_failures, warnings=[], native_backend_used=False, fallback_used=False)
+                    result = run_vcci_backend(input_path=input_path, output_dir=output_dir, strict=True, allow_fallback=True)
+                    result.warnings = result.warnings + ["vcci v2 native failed; v1 fallback engaged"]
+            else:
+                result = run_vcci_backend(input_path=input_path, output_dir=output_dir, strict=True, allow_fallback=allow_fallback)
+                result.warnings = result.warnings + ["vcci v2 entrypoint missing; v1 backend used"]
+        except Exception as exc:
+            result = run_vcci_backend(input_path=input_path, output_dir=output_dir, strict=True, allow_fallback=True)
+            result.warnings = result.warnings + [f"vcci v2 error: {exc}; v1 fallback engaged"]
     elif key == "eudr":
         try:
-            result = _run_eudr_backend(input_path=input_path, output_dir=output_dir)
+            app_dir = REPO_ROOT / "applications" / "GL-EUDR-APP"
+            entrypoint = app_dir / "v2" / "runtime_backend.py"
+            if entrypoint.exists():
+                code, output = _run_native_v2_backend(
+                    app_dir=app_dir,
+                    input_path=input_path,
+                    output_dir=output_dir,
+                )
+                if code == 0:
+                    artifacts = _required_artifacts("eudr")
+                    payload = json.loads(
+                        (output_dir / "due_diligence_statement.json").read_text(encoding="utf-8")
+                    )
+                    blocked = payload.get("status") == "blocked"
+                    _write_audit_bundle(
+                        output_dir=output_dir,
+                        app_id="GL-EUDR-APP",
+                        pipeline_id="eudr-due-diligence-v2",
+                        artifacts=artifacts,
+                        status="blocked" if blocked else "ok",
+                    )
+                    result = BackendRunResult(
+                        success=True,
+                        exit_code=V2_BLOCKED_EXIT_CODE if blocked else 0,
+                        artifacts=artifacts,
+                        errors=[],
+                        warnings=["policy gate blocked EUDR export"] if blocked else [],
+                        native_backend_used=True,
+                        fallback_used=False,
+                    )
+                else:
+                    native_failures.append(f"eudr native backend failed: {code}")
+                    native_failures.append(output[-800:])
+                    if strict and not allow_fallback:
+                        return BackendRunResult(
+                            success=False,
+                            exit_code=code or 1,
+                            artifacts=[],
+                            errors=native_failures,
+                            warnings=[],
+                            native_backend_used=False,
+                            fallback_used=False,
+                        )
+                    result = _run_eudr_backend_local(input_path=input_path, output_dir=output_dir)
+                    result.errors = native_failures + result.errors
+                    result.warnings = result.warnings + ["eudr fallback adapter engaged"]
+            else:
+                if strict and not allow_fallback:
+                    return BackendRunResult(
+                        success=False,
+                        exit_code=1,
+                        artifacts=[],
+                        errors=["eudr native backend missing: applications/GL-EUDR-APP/v2/runtime_backend.py"],
+                        warnings=[],
+                        native_backend_used=False,
+                        fallback_used=False,
+                    )
+                result = _run_eudr_backend_local(input_path=input_path, output_dir=output_dir)
+                result.warnings = result.warnings + ["eudr fallback adapter engaged"]
         except ValueError as exc:
             return BackendRunResult(
                 success=False,
@@ -277,7 +468,65 @@ def run_v2_profile_backend(
             )
     elif key == "ghg":
         try:
-            result = _run_ghg_backend(input_path=input_path, output_dir=output_dir)
+            app_dir = REPO_ROOT / "applications" / "GL-GHG-APP"
+            entrypoint = app_dir / "v2" / "runtime_backend.py"
+            if entrypoint.exists():
+                code, output = _run_native_v2_backend(
+                    app_dir=app_dir,
+                    input_path=input_path,
+                    output_dir=output_dir,
+                )
+                if code == 0:
+                    artifacts = _required_artifacts("ghg")
+                    payload = json.loads(
+                        (output_dir / "ghg_inventory.json").read_text(encoding="utf-8")
+                    )
+                    blocked = payload.get("status") == "blocked"
+                    _write_audit_bundle(
+                        output_dir=output_dir,
+                        app_id="GL-GHG-APP",
+                        pipeline_id="ghg-inventory-v2",
+                        artifacts=artifacts,
+                        status="blocked" if blocked else "ok",
+                    )
+                    result = BackendRunResult(
+                        success=True,
+                        exit_code=V2_BLOCKED_EXIT_CODE if blocked else 0,
+                        artifacts=artifacts,
+                        errors=[],
+                        warnings=["policy gate blocked GHG export"] if blocked else [],
+                        native_backend_used=True,
+                        fallback_used=False,
+                    )
+                else:
+                    native_failures.append(f"ghg native backend failed: {code}")
+                    native_failures.append(output[-800:])
+                    if strict and not allow_fallback:
+                        return BackendRunResult(
+                            success=False,
+                            exit_code=code or 1,
+                            artifacts=[],
+                            errors=native_failures,
+                            warnings=[],
+                            native_backend_used=False,
+                            fallback_used=False,
+                        )
+                    result = _run_ghg_backend_local(input_path=input_path, output_dir=output_dir)
+                    result.errors = native_failures + result.errors
+                    result.warnings = result.warnings + ["ghg fallback adapter engaged"]
+            else:
+                if strict and not allow_fallback:
+                    return BackendRunResult(
+                        success=False,
+                        exit_code=1,
+                        artifacts=[],
+                        errors=["ghg native backend missing: applications/GL-GHG-APP/v2/runtime_backend.py"],
+                        warnings=[],
+                        native_backend_used=False,
+                        fallback_used=False,
+                    )
+                result = _run_ghg_backend_local(input_path=input_path, output_dir=output_dir)
+                result.warnings = result.warnings + ["ghg fallback adapter engaged"]
         except ValueError as exc:
             return BackendRunResult(
                 success=False,
@@ -290,7 +539,65 @@ def run_v2_profile_backend(
             )
     elif key == "iso14064":
         try:
-            result = _run_iso14064_backend(input_path=input_path, output_dir=output_dir)
+            app_dir = REPO_ROOT / "applications" / "GL-ISO14064-APP"
+            entrypoint = app_dir / "v2" / "runtime_backend.py"
+            if entrypoint.exists():
+                code, output = _run_native_v2_backend(
+                    app_dir=app_dir,
+                    input_path=input_path,
+                    output_dir=output_dir,
+                )
+                if code == 0:
+                    artifacts = _required_artifacts("iso14064")
+                    payload = json.loads(
+                        (output_dir / "iso14064_verification_report.json").read_text(encoding="utf-8")
+                    )
+                    blocked = payload.get("status") == "blocked"
+                    _write_audit_bundle(
+                        output_dir=output_dir,
+                        app_id="GL-ISO14064-APP",
+                        pipeline_id="iso14064-verification-v2",
+                        artifacts=artifacts,
+                        status="blocked" if blocked else "ok",
+                    )
+                    result = BackendRunResult(
+                        success=True,
+                        exit_code=V2_BLOCKED_EXIT_CODE if blocked else 0,
+                        artifacts=artifacts,
+                        errors=[],
+                        warnings=["policy gate blocked ISO14064 export"] if blocked else [],
+                        native_backend_used=True,
+                        fallback_used=False,
+                    )
+                else:
+                    native_failures.append(f"iso14064 native backend failed: {code}")
+                    native_failures.append(output[-800:])
+                    if strict and not allow_fallback:
+                        return BackendRunResult(
+                            success=False,
+                            exit_code=code or 1,
+                            artifacts=[],
+                            errors=native_failures,
+                            warnings=[],
+                            native_backend_used=False,
+                            fallback_used=False,
+                        )
+                    result = _run_iso14064_backend_local(input_path=input_path, output_dir=output_dir)
+                    result.errors = native_failures + result.errors
+                    result.warnings = result.warnings + ["iso14064 fallback adapter engaged"]
+            else:
+                if strict and not allow_fallback:
+                    return BackendRunResult(
+                        success=False,
+                        exit_code=1,
+                        artifacts=[],
+                        errors=["iso14064 native backend missing: applications/GL-ISO14064-APP/v2/runtime_backend.py"],
+                        warnings=[],
+                        native_backend_used=False,
+                        fallback_used=False,
+                    )
+                result = _run_iso14064_backend_local(input_path=input_path, output_dir=output_dir)
+                result.warnings = result.warnings + ["iso14064 fallback adapter engaged"]
         except ValueError as exc:
             return BackendRunResult(
                 success=False,

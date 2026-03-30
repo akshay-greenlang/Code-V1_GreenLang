@@ -33,9 +33,10 @@ Example:
 from __future__ import annotations
 import re
 from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import Field, ValidationError
 
 from greenlang.agents.intelligence.runtime.json_validator import GLValidationError
+from greenlang.schemas import GreenLangBase
 
 
 class ClimateValidator:

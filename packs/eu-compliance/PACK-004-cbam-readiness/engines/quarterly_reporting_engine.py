@@ -47,25 +47,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -78,7 +72,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -88,17 +81,14 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to specified places and return float."""
     rounded = value.quantize(Decimal(10) ** -places, rounding=ROUND_HALF_UP)
     return float(rounded)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ReportStatus(str, Enum):
     """Quarterly report lifecycle status."""
@@ -108,14 +98,12 @@ class ReportStatus(str, Enum):
     SUBMITTED = "SUBMITTED"
     AMENDED = "AMENDED"
 
-
 class CalculationMethod(str, Enum):
     """Emission calculation method (mirrored for self-containment)."""
 
     ACTUAL = "actual"
     DEFAULT = "default"
     COUNTRY_DEFAULT = "country_default"
-
 
 # ---------------------------------------------------------------------------
 # Quarter/Period Constants
@@ -139,11 +127,9 @@ _SUBMISSION_DEADLINES: Dict[int, Tuple[int, int, int]] = {
 # Amendment deadline: 2 months after submission deadline
 _AMENDMENT_OFFSET_DAYS: int = 60
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class QuarterlyPeriod(BaseModel):
     """CBAM quarterly reporting period with key dates.
@@ -172,7 +158,6 @@ class QuarterlyPeriod(BaseModel):
     amendment_deadline: date = Field(
         ..., description="Deadline for submitting amendments",
     )
-
 
 class GoodsEntry(BaseModel):
     """Single goods entry in a CBAM quarterly report.
@@ -232,7 +217,6 @@ class GoodsEntry(BaseModel):
         """Ensure country code is uppercase."""
         return v.strip().upper()
 
-
 class ImporterConfig(BaseModel):
     """Importer configuration for report header."""
 
@@ -260,7 +244,6 @@ class ImporterConfig(BaseModel):
         "", min_length=0, max_length=2,
         description="EU member state code",
     )
-
 
 class QuarterlyReport(BaseModel):
     """Complete CBAM quarterly report.
@@ -315,13 +298,12 @@ class QuarterlyReport(BaseModel):
         None, description="ID of the original report if this is an amendment",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Report creation timestamp",
     )
     provenance_hash: str = Field(
         "", description="SHA-256 hash for audit trail",
     )
-
 
 class ValidationError(BaseModel):
     """Single validation error in a quarterly report."""
@@ -339,11 +321,9 @@ class ValidationError(BaseModel):
         "", description="Machine-readable error code",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class QuarterlyReportingEngine:
     """Quarterly CBAM report assembly and management engine.
@@ -871,7 +851,7 @@ class QuarterlyReportingEngine:
                 - amendment_deadline: The amendment deadline date
         """
         if reference_date is None:
-            reference_date = _utcnow().date()
+            reference_date = utcnow().date()
 
         days_sub = (period.submission_deadline - reference_date).days
         days_amend = (period.amendment_deadline - reference_date).days
@@ -968,11 +948,9 @@ class QuarterlyReportingEngine:
             return "YELLOW"
         return "GREEN"
 
-
 # ---------------------------------------------------------------------------
 # Module-level helpers
 # ---------------------------------------------------------------------------
-
 
 def _xml_escape(value: Optional[str]) -> str:
     """Escape special XML characters in a string."""

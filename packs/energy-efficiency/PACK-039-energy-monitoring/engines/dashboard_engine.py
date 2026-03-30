@@ -76,25 +76,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -112,7 +106,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -121,7 +114,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -133,22 +125,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class PanelType(str, Enum):
     """Dashboard panel type.
@@ -171,7 +159,6 @@ class PanelType(str, Enum):
     LOAD_PROFILE = "load_profile"
     ALARM = "alarm"
 
-
 class WidgetType(str, Enum):
     """Dashboard widget visualisation type.
 
@@ -193,7 +180,6 @@ class WidgetType(str, Enum):
     TABLE = "table"
     GAUGE = "gauge"
 
-
 class TimeRange(str, Enum):
     """Dashboard time range selection.
 
@@ -213,7 +199,6 @@ class TimeRange(str, Enum):
     YEAR = "year"
     CUSTOM = "custom"
 
-
 class RefreshRate(str, Enum):
     """Dashboard auto-refresh rate.
 
@@ -231,7 +216,6 @@ class RefreshRate(str, Enum):
     HOUR = "hour"
     DAILY = "daily"
 
-
 class TrendDirection(str, Enum):
     """KPI trend direction classification.
 
@@ -244,7 +228,6 @@ class TrendDirection(str, Enum):
     STABLE = "stable"
     DECLINING = "declining"
     VOLATILE = "volatile"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -281,11 +264,9 @@ DEFAULT_PANEL_ORDER: List[str] = [
     PanelType.ALARM.value,
 ]
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class DashboardConfig(BaseModel):
     """Dashboard configuration.
@@ -339,7 +320,6 @@ class DashboardConfig(BaseModel):
         default="UTC", max_length=50, description="Timezone"
     )
 
-
 class PanelConfig(BaseModel):
     """Individual panel configuration within a dashboard.
 
@@ -377,7 +357,6 @@ class PanelConfig(BaseModel):
     data_source: str = Field(
         default="", description="Data source ID"
     )
-
 
 class WidgetData(BaseModel):
     """Rendered widget data payload.
@@ -429,7 +408,6 @@ class WidgetData(BaseModel):
         default_factory=dict, description="Metadata"
     )
 
-
 class KPIMetric(BaseModel):
     """Key Performance Indicator metric.
 
@@ -476,7 +454,6 @@ class KPIMetric(BaseModel):
         default_factory=list, description="Sparkline values"
     )
 
-
 class DashboardResult(BaseModel):
     """Complete dashboard data result.
 
@@ -520,24 +497,22 @@ class DashboardResult(BaseModel):
         default_factory=list, description="Heatmap matrix"
     )
     last_updated: datetime = Field(
-        default_factory=_utcnow, description="Last updated"
+        default_factory=utcnow, description="Last updated"
     )
     data_freshness_sec: int = Field(
         default=0, ge=0, description="Freshness (sec)"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp"
+        default_factory=utcnow, description="Timestamp"
     )
     processing_time_ms: float = Field(
         default=0.0, description="Processing time (ms)"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class DashboardEngine:
     """Real-time energy monitoring dashboard engine.
@@ -659,7 +634,7 @@ class DashboardEngine:
                     last_dt = datetime.fromisoformat(
                         str(last_ts).replace("Z", "+00:00")
                     )
-                    freshness = int((_utcnow() - last_dt).total_seconds())
+                    freshness = int((utcnow() - last_dt).total_seconds())
                 except (ValueError, TypeError):
                     freshness = 0
 

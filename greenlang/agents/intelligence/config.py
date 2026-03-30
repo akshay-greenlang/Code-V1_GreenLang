@@ -21,10 +21,11 @@ Environment variables:
 from __future__ import annotations
 import os
 from typing import Optional, Literal
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase
 
 
-class IntelligenceConfig(BaseModel):
+class IntelligenceConfig(GreenLangBase):
     """
     Configuration for Intelligence Layer
 

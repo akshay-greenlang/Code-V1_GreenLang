@@ -68,6 +68,8 @@ from .config import get_config
 from .metrics import record_api_error, set_active_devices, set_offline_devices
 from .provenance import get_provenance_tracker
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -110,21 +112,13 @@ CONNECTIVITY_TYPES: frozenset = frozenset({
     "none", "2g", "3g", "4g", "5g", "wifi", "satellite",
 })
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _utcnow_iso() -> str:
     """Return current UTC datetime as ISO 8601 string."""
-    return _utcnow().isoformat()
-
+    return utcnow().isoformat()
 
 # ---------------------------------------------------------------------------
 # DeviceFleetManager
 # ---------------------------------------------------------------------------
-
 
 class DeviceFleetManager:
     """Device fleet management engine for EUDR mobile data collection.
@@ -833,7 +827,7 @@ class DeviceFleetManager:
         with self._lock:
             devices = list(self._devices.values())
 
-        now = _utcnow()
+        now = utcnow()
         total = len(devices)
         active = 0
         offline = 0
@@ -964,7 +958,7 @@ class DeviceFleetManager:
         if device.get("is_stale"):
             alerts.append("Device is stale (no recent heartbeat)")
 
-        if self._is_device_offline(device, _utcnow()):
+        if self._is_device_offline(device, utcnow()):
             alerts.append("Device is offline")
 
         return {
@@ -998,7 +992,7 @@ class DeviceFleetManager:
                 1, self._config.offline_threshold_minutes // 60,
             )
 
-        now = _utcnow()
+        now = utcnow()
         threshold = timedelta(hours=threshold_hours)
         stale_devices: List[Dict[str, Any]] = []
 
@@ -1245,7 +1239,7 @@ class DeviceFleetManager:
             hb_time = datetime.fromisoformat(last_hb)
             if hb_time.tzinfo is None:
                 hb_time = hb_time.replace(tzinfo=timezone.utc)
-            delta_minutes = (_utcnow() - hb_time).total_seconds() / 60.0
+            delta_minutes = (utcnow() - hb_time).total_seconds() / 60.0
 
             if delta_minutes <= 5:
                 return 100.0
@@ -1366,7 +1360,6 @@ class DeviceFleetManager:
         """Return total number of registered devices."""
         with self._lock:
             return len(self._devices)
-
 
 # ---------------------------------------------------------------------------
 # Public API

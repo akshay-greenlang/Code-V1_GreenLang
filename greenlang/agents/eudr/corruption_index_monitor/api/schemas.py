@@ -49,23 +49,17 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import ConfigDict, Field, field_validator
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
+from greenlang.schemas import GreenLangBase, utcnow
 
 def _new_id() -> str:
     """Generate a new UUID4 string identifier."""
     return str(uuid.uuid4())
 
-
 # =============================================================================
 # Enumerations (API-level mirrors for OpenAPI documentation)
 # =============================================================================
-
 
 class RiskLevelEnum(str, Enum):
     """Risk classification levels for corruption assessment."""
@@ -74,7 +68,6 @@ class RiskLevelEnum(str, Enum):
     MODERATE = "moderate"
     HIGH = "high"
     CRITICAL = "critical"
-
 
 class WGIDimensionEnum(str, Enum):
     """World Bank Worldwide Governance Indicators dimensions."""
@@ -86,7 +79,6 @@ class WGIDimensionEnum(str, Enum):
     RULE_OF_LAW = "rule_of_law"
     CONTROL_OF_CORRUPTION = "control_of_corruption"
 
-
 class BriberySectorEnum(str, Enum):
     """Sector-specific bribery risk assessment sectors."""
 
@@ -97,7 +89,6 @@ class BriberySectorEnum(str, Enum):
     EXTRACTION = "extraction"
     JUDICIARY = "judiciary"
 
-
 class TrendDirectionEnum(str, Enum):
     """Trend direction classification for temporal analysis."""
 
@@ -106,7 +97,6 @@ class TrendDirectionEnum(str, Enum):
     STABLE = "stable"
     VOLATILE = "volatile"
 
-
 class AlertSeverityEnum(str, Enum):
     """Alert severity levels for corruption index changes."""
 
@@ -114,7 +104,6 @@ class AlertSeverityEnum(str, Enum):
     MEDIUM = "medium"
     HIGH = "high"
     CRITICAL = "critical"
-
 
 class AlertTypeEnum(str, Enum):
     """Types of corruption index alerts."""
@@ -127,7 +116,6 @@ class AlertTypeEnum(str, Enum):
     BRIBERY_RISK_ESCALATION = "bribery_risk_escalation"
     INSTITUTIONAL_DEGRADATION = "institutional_degradation"
 
-
 class AlertStatusEnum(str, Enum):
     """Alert lifecycle status values."""
 
@@ -137,7 +125,6 @@ class AlertStatusEnum(str, Enum):
     EXPIRED = "expired"
     SUPPRESSED = "suppressed"
 
-
 class ComplianceLevelEnum(str, Enum):
     """EUDR compliance due diligence levels."""
 
@@ -145,14 +132,12 @@ class ComplianceLevelEnum(str, Enum):
     STANDARD = "standard"
     ENHANCED = "enhanced"
 
-
 class CountryClassificationEnum(str, Enum):
     """EUDR Article 29 country classification levels."""
 
     LOW_RISK = "low_risk"
     STANDARD_RISK = "standard_risk"
     HIGH_RISK = "high_risk"
-
 
 class CorrelationStrengthEnum(str, Enum):
     """Correlation strength classification."""
@@ -163,7 +148,6 @@ class CorrelationStrengthEnum(str, Enum):
     STRONG = "strong"
     VERY_STRONG = "very_strong"
 
-
 class GovernanceRatingEnum(str, Enum):
     """Governance quality rating classification."""
 
@@ -172,7 +156,6 @@ class GovernanceRatingEnum(str, Enum):
     ADEQUATE = "adequate"
     POOR = "poor"
     CRITICAL = "critical"
-
 
 class DataSourceEnum(str, Enum):
     """Data source identifiers for provenance tracking."""
@@ -183,7 +166,6 @@ class DataSourceEnum(str, Enum):
     GLOBAL_FOREST_WATCH = "global_forest_watch"
     INTERNAL = "internal"
     COMPOSITE = "composite"
-
 
 class RegionEnum(str, Enum):
     """Regional classification for CPI analysis."""
@@ -196,7 +178,6 @@ class RegionEnum(str, Enum):
     MIDDLE_EAST_NORTH_AFRICA = "middle_east_north_africa"
     SUB_SAHARAN_AFRICA = "sub_saharan_africa"
 
-
 class PredictionConfidenceEnum(str, Enum):
     """Confidence level classification for predictions."""
 
@@ -205,13 +186,11 @@ class PredictionConfidenceEnum(str, Enum):
     LOW = "low"
     UNRELIABLE = "unreliable"
 
-
 # =============================================================================
 # Common / Shared Schemas
 # =============================================================================
 
-
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Health check response for the Corruption Index Monitor API."""
 
     status: str = Field(
@@ -236,14 +215,13 @@ class HealthResponse(BaseModel):
         description="Component identifier",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Current server time in UTC",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     """Structured error response for all API endpoints."""
 
     error: str = Field(
@@ -267,8 +245,7 @@ class ErrorResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class PaginatedMeta(BaseModel):
+class PaginatedMeta(GreenLangBase):
     """Pagination metadata included in list responses."""
 
     total: int = Field(..., ge=0, description="Total number of results")
@@ -276,8 +253,7 @@ class PaginatedMeta(BaseModel):
     offset: int = Field(..., ge=0, description="Results skipped")
     has_more: bool = Field(..., description="Whether more results exist")
 
-
-class ProvenanceInfo(BaseModel):
+class ProvenanceInfo(GreenLangBase):
     """Provenance tracking metadata for audit trails."""
 
     provenance_hash: str = Field(
@@ -286,7 +262,7 @@ class ProvenanceInfo(BaseModel):
         examples=["a1b2c3d4e5f6..."],
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when provenance was recorded",
     )
     source_agent: str = Field(
@@ -301,8 +277,7 @@ class ProvenanceInfo(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class MetadataSchema(BaseModel):
+class MetadataSchema(GreenLangBase):
     """Generic metadata schema for enriched responses."""
 
     request_id: str = Field(
@@ -310,7 +285,7 @@ class MetadataSchema(BaseModel):
         description="Unique request identifier",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Response timestamp in UTC",
     )
     agent_id: str = Field(
@@ -326,13 +301,11 @@ class MetadataSchema(BaseModel):
         description="Whether response was served from cache",
     )
 
-
 # =============================================================================
 # 1. CPI Schemas - Corruption Perceptions Index Monitoring
 # =============================================================================
 
-
-class CPIScoreEntry(BaseModel):
+class CPIScoreEntry(GreenLangBase):
     """Single CPI score data point for a country."""
 
     country_code: str = Field(
@@ -400,8 +373,7 @@ class CPIScoreEntry(BaseModel):
             )
         return v
 
-
-class CPIScoreResponse(BaseModel):
+class CPIScoreResponse(GreenLangBase):
     """Response model for single CPI score retrieval."""
 
     score: CPIScoreEntry = Field(
@@ -427,8 +399,7 @@ class CPIScoreResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CPIHistoryEntry(BaseModel):
+class CPIHistoryEntry(GreenLangBase):
     """Single historical CPI data point."""
 
     year: int = Field(..., ge=1995, le=2030, description="CPI score year")
@@ -446,8 +417,7 @@ class CPIHistoryEntry(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CPIHistoryResponse(BaseModel):
+class CPIHistoryResponse(GreenLangBase):
     """Response model for CPI score history retrieval."""
 
     country_code: str = Field(..., description="ISO 3166-1 alpha-2 country code")
@@ -481,8 +451,7 @@ class CPIHistoryResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CPIRankingEntry(BaseModel):
+class CPIRankingEntry(GreenLangBase):
     """Single entry in the CPI rankings list."""
 
     rank: int = Field(..., ge=1, description="Global ranking position")
@@ -503,8 +472,7 @@ class CPIRankingEntry(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CPIRankingsResponse(BaseModel):
+class CPIRankingsResponse(GreenLangBase):
     """Response model for global/regional CPI rankings."""
 
     year: int = Field(..., description="Rankings year")
@@ -540,8 +508,7 @@ class CPIRankingsResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CPIRegionalStats(BaseModel):
+class CPIRegionalStats(GreenLangBase):
     """Statistical summary for a region."""
 
     region: RegionEnum = Field(..., description="Region identifier")
@@ -564,8 +531,7 @@ class CPIRegionalStats(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CPIRegionalResponse(BaseModel):
+class CPIRegionalResponse(GreenLangBase):
     """Response model for regional CPI analysis."""
 
     year: int = Field(..., description="Analysis year")
@@ -590,8 +556,7 @@ class CPIRegionalResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CPIBatchCountryEntry(BaseModel):
+class CPIBatchCountryEntry(GreenLangBase):
     """Single country entry in a CPI batch query request."""
 
     country_code: str = Field(
@@ -613,8 +578,7 @@ class CPIBatchCountryEntry(BaseModel):
         """Normalize country code to uppercase."""
         return v.upper().strip()
 
-
-class CPIBatchRequest(BaseModel):
+class CPIBatchRequest(GreenLangBase):
     """Request model for batch CPI score retrieval."""
 
     countries: List[CPIBatchCountryEntry] = Field(
@@ -636,8 +600,7 @@ class CPIBatchRequest(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CPIBatchResultEntry(BaseModel):
+class CPIBatchResultEntry(GreenLangBase):
     """Single result entry in a CPI batch response."""
 
     country_code: str = Field(..., description="ISO 3166-1 alpha-2 country code")
@@ -657,8 +620,7 @@ class CPIBatchResultEntry(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CPIBatchResponse(BaseModel):
+class CPIBatchResponse(GreenLangBase):
     """Response model for batch CPI score retrieval."""
 
     results: List[CPIBatchResultEntry] = Field(
@@ -684,8 +646,7 @@ class CPIBatchResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CPISummaryResponse(BaseModel):
+class CPISummaryResponse(GreenLangBase):
     """Response model for CPI summary statistics."""
 
     year: int = Field(..., description="Summary year")
@@ -746,13 +707,11 @@ class CPISummaryResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # 2. WGI Schemas - Worldwide Governance Indicators Analysis
 # =============================================================================
 
-
-class WGIDimensionScore(BaseModel):
+class WGIDimensionScore(GreenLangBase):
     """Single WGI dimension score for a country."""
 
     dimension: WGIDimensionEnum = Field(
@@ -784,8 +743,7 @@ class WGIDimensionScore(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class WGIIndicatorsResponse(BaseModel):
+class WGIIndicatorsResponse(GreenLangBase):
     """Response model for all 6 WGI dimension indicators for a country."""
 
     country_code: str = Field(..., description="ISO 3166-1 alpha-2 country code")
@@ -826,8 +784,7 @@ class WGIIndicatorsResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class WGIHistoryEntry(BaseModel):
+class WGIHistoryEntry(GreenLangBase):
     """Single historical WGI data point for a dimension."""
 
     year: int = Field(..., ge=1996, le=2030, description="Indicator year")
@@ -850,8 +807,7 @@ class WGIHistoryEntry(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class WGIHistoryResponse(BaseModel):
+class WGIHistoryResponse(GreenLangBase):
     """Response model for WGI indicator history."""
 
     country_code: str = Field(..., description="ISO 3166-1 alpha-2 country code")
@@ -883,8 +839,7 @@ class WGIHistoryResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class WGIDimensionCountryEntry(BaseModel):
+class WGIDimensionCountryEntry(GreenLangBase):
     """Single country entry for cross-country dimension analysis."""
 
     country_code: str = Field(..., description="ISO 3166-1 alpha-2 country code")
@@ -903,8 +858,7 @@ class WGIDimensionCountryEntry(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class WGIDimensionResponse(BaseModel):
+class WGIDimensionResponse(GreenLangBase):
     """Response model for cross-country WGI dimension analysis."""
 
     dimension: WGIDimensionEnum = Field(..., description="WGI dimension analyzed")
@@ -925,8 +879,7 @@ class WGIDimensionResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class WGIComparisonRequest(BaseModel):
+class WGIComparisonRequest(GreenLangBase):
     """Request model for WGI country comparison."""
 
     country_codes: List[str] = Field(
@@ -954,8 +907,7 @@ class WGIComparisonRequest(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class WGIComparisonCountryEntry(BaseModel):
+class WGIComparisonCountryEntry(GreenLangBase):
     """Single country entry in WGI comparison results."""
 
     country_code: str = Field(..., description="ISO 3166-1 alpha-2 country code")
@@ -975,8 +927,7 @@ class WGIComparisonCountryEntry(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class WGIComparisonResponse(BaseModel):
+class WGIComparisonResponse(GreenLangBase):
     """Response model for WGI country comparison."""
 
     year: int = Field(..., description="Comparison year")
@@ -1004,8 +955,7 @@ class WGIComparisonResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class WGIRankingEntry(BaseModel):
+class WGIRankingEntry(GreenLangBase):
     """Single entry in WGI rankings."""
 
     rank: int = Field(..., ge=1, description="Ranking position")
@@ -1021,8 +971,7 @@ class WGIRankingEntry(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class WGIRankingsResponse(BaseModel):
+class WGIRankingsResponse(GreenLangBase):
     """Response model for WGI rankings by dimension."""
 
     dimension: WGIDimensionEnum = Field(..., description="Ranked dimension")
@@ -1039,13 +988,11 @@ class WGIRankingsResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # 3. Bribery Schemas - Sector-Specific Bribery Risk Assessment
 # =============================================================================
 
-
-class BriberyAssessmentRequest(BaseModel):
+class BriberyAssessmentRequest(GreenLangBase):
     """Request model for bribery risk assessment."""
 
     country_code: str = Field(
@@ -1075,8 +1022,7 @@ class BriberyAssessmentRequest(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BriberySectorScore(BaseModel):
+class BriberySectorScore(GreenLangBase):
     """Bribery risk score for a specific sector."""
 
     sector: BriberySectorEnum = Field(..., description="Sector assessed")
@@ -1104,8 +1050,7 @@ class BriberySectorScore(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BriberyAssessmentResponse(BaseModel):
+class BriberyAssessmentResponse(GreenLangBase):
     """Response model for bribery risk assessment."""
 
     country_code: str = Field(..., description="ISO 3166-1 alpha-2 country code")
@@ -1144,8 +1089,7 @@ class BriberyAssessmentResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BriberyProfileResponse(BaseModel):
+class BriberyProfileResponse(GreenLangBase):
     """Response model for country bribery risk profile."""
 
     country_code: str = Field(..., description="ISO 3166-1 alpha-2 country code")
@@ -1172,7 +1116,7 @@ class BriberyProfileResponse(BaseModel):
         description="Percentile among regional peers",
     )
     last_updated: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Last data update timestamp",
     )
     provenance: ProvenanceInfo = Field(..., description="Provenance tracking metadata")
@@ -1183,8 +1127,7 @@ class BriberyProfileResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class SectorRiskEntry(BaseModel):
+class SectorRiskEntry(GreenLangBase):
     """Single sector risk entry for a country."""
 
     sector: BriberySectorEnum = Field(..., description="Sector")
@@ -1204,8 +1147,7 @@ class SectorRiskEntry(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class SectorRiskResponse(BaseModel):
+class SectorRiskResponse(GreenLangBase):
     """Response model for sector-specific bribery risks by country."""
 
     country_code: str = Field(..., description="ISO 3166-1 alpha-2 country code")
@@ -1230,8 +1172,7 @@ class SectorRiskResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class HighRiskCountryEntry(BaseModel):
+class HighRiskCountryEntry(GreenLangBase):
     """Single high-risk country entry."""
 
     country_code: str = Field(..., description="ISO 3166-1 alpha-2 country code")
@@ -1254,8 +1195,7 @@ class HighRiskCountryEntry(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class HighRiskCountriesResponse(BaseModel):
+class HighRiskCountriesResponse(GreenLangBase):
     """Response model for high-risk bribery countries list."""
 
     threshold: Decimal = Field(
@@ -1280,8 +1220,7 @@ class HighRiskCountriesResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class SectorExposureCountryEntry(BaseModel):
+class SectorExposureCountryEntry(GreenLangBase):
     """Country entry for cross-country sector analysis."""
 
     country_code: str = Field(..., description="ISO 3166-1 alpha-2 country code")
@@ -1296,8 +1235,7 @@ class SectorExposureCountryEntry(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class SectorExposureResponse(BaseModel):
+class SectorExposureResponse(GreenLangBase):
     """Response model for cross-country sector bribery risk analysis."""
 
     sector: BriberySectorEnum = Field(..., description="Sector analyzed")
@@ -1325,13 +1263,11 @@ class SectorExposureResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # 4. Institutional Schemas - Institutional Quality Assessment
 # =============================================================================
 
-
-class InstitutionalDimensionScore(BaseModel):
+class InstitutionalDimensionScore(GreenLangBase):
     """Score for a single institutional quality dimension."""
 
     dimension: str = Field(
@@ -1362,8 +1298,7 @@ class InstitutionalDimensionScore(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class InstitutionalQualityResponse(BaseModel):
+class InstitutionalQualityResponse(GreenLangBase):
     """Response model for institutional quality assessment."""
 
     country_code: str = Field(..., description="ISO 3166-1 alpha-2 country code")
@@ -1399,8 +1334,7 @@ class InstitutionalQualityResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class GovernanceProfileResponse(BaseModel):
+class GovernanceProfileResponse(GreenLangBase):
     """Response model for detailed governance profile."""
 
     country_code: str = Field(..., description="ISO 3166-1 alpha-2 country code")
@@ -1456,7 +1390,7 @@ class GovernanceProfileResponse(BaseModel):
         description="Peer countries for benchmarking",
     )
     last_updated: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Last data update timestamp",
     )
     provenance: ProvenanceInfo = Field(..., description="Provenance tracking metadata")
@@ -1467,8 +1401,7 @@ class GovernanceProfileResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class StrengthAssessmentRequest(BaseModel):
+class StrengthAssessmentRequest(GreenLangBase):
     """Request model for institutional strength assessment."""
 
     country_code: str = Field(
@@ -1498,8 +1431,7 @@ class StrengthAssessmentRequest(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class StrengthAssessmentResponse(BaseModel):
+class StrengthAssessmentResponse(GreenLangBase):
     """Response model for institutional strength assessment."""
 
     country_code: str = Field(..., description="ISO 3166-1 alpha-2 country code")
@@ -1542,8 +1474,7 @@ class StrengthAssessmentResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ForestGovernanceResponse(BaseModel):
+class ForestGovernanceResponse(GreenLangBase):
     """Response model for forest governance assessment."""
 
     country_code: str = Field(..., description="ISO 3166-1 alpha-2 country code")
@@ -1606,8 +1537,7 @@ class ForestGovernanceResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class InstitutionalComparisonRequest(BaseModel):
+class InstitutionalComparisonRequest(GreenLangBase):
     """Request model for institutional quality comparison."""
 
     country_codes: List[str] = Field(
@@ -1629,8 +1559,7 @@ class InstitutionalComparisonRequest(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class InstitutionalComparisonCountryEntry(BaseModel):
+class InstitutionalComparisonCountryEntry(GreenLangBase):
     """Single country entry in institutional comparison."""
 
     country_code: str = Field(..., description="ISO 3166-1 alpha-2 country code")
@@ -1652,8 +1581,7 @@ class InstitutionalComparisonCountryEntry(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class InstitutionalComparisonResponse(BaseModel):
+class InstitutionalComparisonResponse(GreenLangBase):
     """Response model for institutional quality comparison."""
 
     countries: List[InstitutionalComparisonCountryEntry] = Field(
@@ -1684,13 +1612,11 @@ class InstitutionalComparisonResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # 5. Trend Schemas - Corruption Trend Analysis
 # =============================================================================
 
-
-class TrendAnalysisRequest(BaseModel):
+class TrendAnalysisRequest(GreenLangBase):
     """Request model for corruption trend analysis."""
 
     country_code: str = Field(
@@ -1737,8 +1663,7 @@ class TrendAnalysisRequest(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class TrendDataPoint(BaseModel):
+class TrendDataPoint(GreenLangBase):
     """Single data point in a trend analysis."""
 
     year: int = Field(..., description="Year")
@@ -1758,8 +1683,7 @@ class TrendDataPoint(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class TrendAnalysisResponse(BaseModel):
+class TrendAnalysisResponse(GreenLangBase):
     """Response model for corruption trend analysis."""
 
     country_code: str = Field(..., description="ISO 3166-1 alpha-2 country code")
@@ -1813,8 +1737,7 @@ class TrendAnalysisResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class TrajectoryResponse(BaseModel):
+class TrajectoryResponse(GreenLangBase):
     """Response model for country corruption trajectory."""
 
     country_code: str = Field(..., description="ISO 3166-1 alpha-2 country code")
@@ -1861,8 +1784,7 @@ class TrajectoryResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class PredictionRequest(BaseModel):
+class PredictionRequest(GreenLangBase):
     """Request model for corruption index prediction."""
 
     country_code: str = Field(
@@ -1896,8 +1818,7 @@ class PredictionRequest(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class PredictionResponse(BaseModel):
+class PredictionResponse(GreenLangBase):
     """Response model for corruption index prediction."""
 
     country_code: str = Field(..., description="ISO 3166-1 alpha-2 country code")
@@ -1935,8 +1856,7 @@ class PredictionResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class TrendCountryEntry(BaseModel):
+class TrendCountryEntry(GreenLangBase):
     """Single country entry for improving/deteriorating lists."""
 
     country_code: str = Field(..., description="ISO 3166-1 alpha-2 country code")
@@ -1953,8 +1873,7 @@ class TrendCountryEntry(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ImprovingCountriesResponse(BaseModel):
+class ImprovingCountriesResponse(GreenLangBase):
     """Response model for countries with improving corruption indices."""
 
     period: str = Field(
@@ -1981,8 +1900,7 @@ class ImprovingCountriesResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class DeterioratingCountriesResponse(BaseModel):
+class DeterioratingCountriesResponse(GreenLangBase):
     """Response model for countries with deteriorating corruption indices."""
 
     period: str = Field(
@@ -2014,13 +1932,11 @@ class DeterioratingCountriesResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # 6. Correlation Schemas - Deforestation-Corruption Correlation
 # =============================================================================
 
-
-class CorrelationAnalysisRequest(BaseModel):
+class CorrelationAnalysisRequest(GreenLangBase):
     """Request model for corruption-deforestation correlation analysis."""
 
     country_codes: Optional[List[str]] = Field(
@@ -2063,8 +1979,7 @@ class CorrelationAnalysisRequest(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CorrelationResultEntry(BaseModel):
+class CorrelationResultEntry(GreenLangBase):
     """Single correlation result."""
 
     variable_pair: str = Field(
@@ -2104,8 +2019,7 @@ class CorrelationResultEntry(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CorrelationAnalysisResponse(BaseModel):
+class CorrelationAnalysisResponse(GreenLangBase):
     """Response model for correlation analysis."""
 
     correlations: List[CorrelationResultEntry] = Field(
@@ -2147,8 +2061,7 @@ class CorrelationAnalysisResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class DeforestationLinkResponse(BaseModel):
+class DeforestationLinkResponse(GreenLangBase):
     """Response model for country-specific deforestation-corruption link."""
 
     country_code: str = Field(..., description="ISO 3166-1 alpha-2 country code")
@@ -2187,8 +2100,7 @@ class DeforestationLinkResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class RegressionRequest(BaseModel):
+class RegressionRequest(GreenLangBase):
     """Request model for regression model building."""
 
     dependent_variable: str = Field(
@@ -2218,8 +2130,7 @@ class RegressionRequest(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class RegressionResponse(BaseModel):
+class RegressionResponse(GreenLangBase):
     """Response model for regression analysis."""
 
     model_type: str = Field(..., description="Regression model type used")
@@ -2270,8 +2181,7 @@ class RegressionResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class HeatmapCell(BaseModel):
+class HeatmapCell(GreenLangBase):
     """Single cell in a corruption-deforestation heatmap."""
 
     country_code: str = Field(..., description="ISO 3166-1 alpha-2 country code")
@@ -2290,8 +2200,7 @@ class HeatmapCell(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class HeatmapResponse(BaseModel):
+class HeatmapResponse(GreenLangBase):
     """Response model for corruption-deforestation heatmap."""
 
     cells: List[HeatmapCell] = Field(
@@ -2323,8 +2232,7 @@ class HeatmapResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CausalPathwayStep(BaseModel):
+class CausalPathwayStep(GreenLangBase):
     """Single step in a causal pathway."""
 
     step_number: int = Field(..., ge=1, description="Step position in pathway")
@@ -2343,8 +2251,7 @@ class CausalPathwayStep(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CausalPathway(BaseModel):
+class CausalPathway(GreenLangBase):
     """Complete causal pathway from corruption to deforestation."""
 
     pathway_id: str = Field(
@@ -2373,8 +2280,7 @@ class CausalPathway(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CausalPathwayResponse(BaseModel):
+class CausalPathwayResponse(GreenLangBase):
     """Response model for causal pathway analysis."""
 
     pathways: List[CausalPathway] = Field(
@@ -2406,13 +2312,11 @@ class CausalPathwayResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # 7. Alert Schemas - Corruption Index Alert Management
 # =============================================================================
 
-
-class AlertEntry(BaseModel):
+class AlertEntry(GreenLangBase):
     """Single alert entry in the alert list."""
 
     alert_id: str = Field(
@@ -2450,7 +2354,7 @@ class AlertEntry(BaseModel):
         description="Threshold value that was breached",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Alert creation timestamp",
     )
     acknowledged_at: Optional[datetime] = Field(
@@ -2476,8 +2380,7 @@ class AlertEntry(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class AlertListResponse(BaseModel):
+class AlertListResponse(GreenLangBase):
     """Response model for alert list with pagination."""
 
     alerts: List[AlertEntry] = Field(
@@ -2499,8 +2402,7 @@ class AlertListResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class AlertDetailResponse(BaseModel):
+class AlertDetailResponse(GreenLangBase):
     """Response model for individual alert detail."""
 
     alert: AlertEntry = Field(..., description="Full alert details")
@@ -2525,8 +2427,7 @@ class AlertDetailResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class AlertConfigRequest(BaseModel):
+class AlertConfigRequest(GreenLangBase):
     """Request model for alert rule configuration."""
 
     alert_type: AlertTypeEnum = Field(..., description="Alert type to configure")
@@ -2556,8 +2457,7 @@ class AlertConfigRequest(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class AlertConfigResponse(BaseModel):
+class AlertConfigResponse(GreenLangBase):
     """Response model for alert rule configuration."""
 
     config_id: str = Field(
@@ -2584,7 +2484,7 @@ class AlertConfigResponse(BaseModel):
         description="Active notification channels",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Configuration creation timestamp",
     )
     provenance: ProvenanceInfo = Field(..., description="Provenance tracking metadata")
@@ -2595,8 +2495,7 @@ class AlertConfigResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class AlertAcknowledgeRequest(BaseModel):
+class AlertAcknowledgeRequest(GreenLangBase):
     """Request model for alert acknowledgement."""
 
     notes: Optional[str] = Field(
@@ -2616,8 +2515,7 @@ class AlertAcknowledgeRequest(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class AlertAcknowledgeResponse(BaseModel):
+class AlertAcknowledgeResponse(GreenLangBase):
     """Response model for alert acknowledgement."""
 
     alert_id: str = Field(..., description="Acknowledged alert ID")
@@ -2626,7 +2524,7 @@ class AlertAcknowledgeResponse(BaseModel):
         description="New alert status after acknowledgement",
     )
     acknowledged_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Acknowledgement timestamp",
     )
     acknowledged_by: str = Field(..., description="User who acknowledged")
@@ -2639,8 +2537,7 @@ class AlertAcknowledgeResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class AlertSeverityCount(BaseModel):
+class AlertSeverityCount(GreenLangBase):
     """Alert count grouped by severity."""
 
     severity: AlertSeverityEnum = Field(..., description="Severity level")
@@ -2648,8 +2545,7 @@ class AlertSeverityCount(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class AlertTypeSummary(BaseModel):
+class AlertTypeSummary(GreenLangBase):
     """Alert count grouped by type."""
 
     alert_type: AlertTypeEnum = Field(..., description="Alert type")
@@ -2661,8 +2557,7 @@ class AlertTypeSummary(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class AlertSummaryResponse(BaseModel):
+class AlertSummaryResponse(GreenLangBase):
     """Response model for alert summary statistics."""
 
     total_active: int = Field(..., ge=0, description="Total active alerts")
@@ -2706,13 +2601,11 @@ class AlertSummaryResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # 8. Compliance Schemas - EUDR Compliance Impact Assessment
 # =============================================================================
 
-
-class ComplianceImpactRequest(BaseModel):
+class ComplianceImpactRequest(GreenLangBase):
     """Request model for EUDR compliance impact assessment."""
 
     country_code: str = Field(
@@ -2742,8 +2635,7 @@ class ComplianceImpactRequest(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class DueDiligenceCostEstimate(BaseModel):
+class DueDiligenceCostEstimate(GreenLangBase):
     """Cost estimate for due diligence activities."""
 
     dd_level: ComplianceLevelEnum = Field(
@@ -2772,8 +2664,7 @@ class DueDiligenceCostEstimate(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ComplianceImpactResponse(BaseModel):
+class ComplianceImpactResponse(GreenLangBase):
     """Response model for comprehensive EUDR compliance impact assessment."""
 
     country_code: str = Field(..., description="ISO 3166-1 alpha-2 country code")
@@ -2826,8 +2717,7 @@ class ComplianceImpactResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CountryImpactResponse(BaseModel):
+class CountryImpactResponse(GreenLangBase):
     """Response model for country-specific compliance impact profile."""
 
     country_code: str = Field(..., description="ISO 3166-1 alpha-2 country code")
@@ -2877,8 +2767,7 @@ class CountryImpactResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class DDRecommendationEntry(BaseModel):
+class DDRecommendationEntry(GreenLangBase):
     """Single due diligence recommendation."""
 
     recommendation_id: str = Field(
@@ -2911,8 +2800,7 @@ class DDRecommendationEntry(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class DDRecommendationsResponse(BaseModel):
+class DDRecommendationsResponse(GreenLangBase):
     """Response model for due diligence recommendations."""
 
     country_code: Optional[str] = Field(
@@ -2949,8 +2837,7 @@ class DDRecommendationsResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CountryClassificationEntry(BaseModel):
+class CountryClassificationEntry(GreenLangBase):
     """Single country classification entry."""
 
     country_code: str = Field(..., description="ISO 3166-1 alpha-2 country code")
@@ -2973,8 +2860,7 @@ class CountryClassificationEntry(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CountryClassificationResponse(BaseModel):
+class CountryClassificationResponse(GreenLangBase):
     """Response model for EUDR country classifications."""
 
     classifications: List[CountryClassificationEntry] = Field(
@@ -3021,7 +2907,6 @@ class CountryClassificationResponse(BaseModel):
     )
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Public API

@@ -33,6 +33,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "28.0.0"
@@ -68,19 +70,12 @@ XBRL_BENCHMARK_TAGS: Dict[str, str] = {
     "iea_alignment_pct": "gl:IEAPathwayAlignmentPercentage",
 }
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str) if isinstance(data, dict) else str(data)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 def _dec(val: Any, places: int = 2) -> str:
     try:
@@ -89,7 +84,6 @@ def _dec(val: Any, places: int = 2) -> str:
         return str(d.quantize(Decimal(q), rounding=ROUND_HALF_UP))
     except Exception:
         return str(val)
-
 
 def _dec_comma(val: Any, places: int = 0) -> str:
     try:
@@ -114,7 +108,6 @@ def _dec_comma(val: Any, places: int = 0) -> str:
     except Exception:
         return str(val)
 
-
 def _quartile(percentile: float) -> str:
     if percentile >= 75:
         return "Q1 (Top 25%)"
@@ -124,7 +117,6 @@ def _quartile(percentile: float) -> str:
         return "Q3 (50-75%)"
     return "Q4 (Bottom 25%)"
 
-
 def _quartile_color(percentile: float) -> str:
     if percentile >= 75:
         return _SUCCESS
@@ -133,7 +125,6 @@ def _quartile_color(percentile: float) -> str:
     elif percentile >= 25:
         return _WARN
     return _DANGER
-
 
 class SectorBenchmarkReportTemplate:
     """
@@ -158,7 +149,7 @@ class SectorBenchmarkReportTemplate:
         self.generated_at: Optional[datetime] = None
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [
             self._md_header(data),
             self._md_executive_summary(data),
@@ -180,7 +171,7 @@ class SectorBenchmarkReportTemplate:
         return content + f"\n\n<!-- Provenance: {prov} -->"
 
     def render_html(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         body_parts = [
             self._html_header(data),
@@ -209,7 +200,7 @@ class SectorBenchmarkReportTemplate:
         )
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         your_metrics = data.get("your_metrics", {})
         peers = data.get("peers", [])
         rankings = data.get("percentile_rankings", {})

@@ -44,35 +44,27 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "23.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a single workflow phase."""
@@ -83,7 +75,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -93,14 +84,12 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class SDAEligibility(str, Enum):
     """SDA eligibility status for a sector."""
 
     ELIGIBLE = "eligible"
     NOT_ELIGIBLE = "not_eligible"
     CONDITIONAL = "conditional"
-
 
 class AmbitionLevel(str, Enum):
     """Temperature ambition level of SDA targets."""
@@ -110,7 +99,6 @@ class AmbitionLevel(str, Enum):
     CELSIUS_2C = "2C"
     INSUFFICIENT = "insufficient"
 
-
 class CrossValidationStatus(str, Enum):
     """SDA Tool cross-validation status."""
 
@@ -118,7 +106,6 @@ class CrossValidationStatus(str, Enum):
     FAIL = "fail"
     WARNING = "warning"
     NOT_VALIDATED = "not_validated"
-
 
 # =============================================================================
 # REFERENCE DATA (Zero-Hallucination Lookups)
@@ -415,11 +402,9 @@ IEA_NZE_BENCHMARKS: Dict[str, Dict[str, float]] = {
 # SDA Tool V3.0 cross-validation tolerance
 SDA_TOOL_TOLERANCE_PCT = 2.0  # 2% maximum deviation
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -431,7 +416,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class SectorClassification(BaseModel):
     """Result of sector classification and SDA eligibility check."""
@@ -446,14 +430,12 @@ class SectorClassification(BaseModel):
     confidence: float = Field(default=0.0, ge=0.0, le=1.0)
     notes: List[str] = Field(default_factory=list)
 
-
 class BenchmarkPoint(BaseModel):
     """A single year-intensity point on the sector benchmark pathway."""
 
     year: int = Field(...)
     sector_intensity: float = Field(default=0.0)
     source: str = Field(default="IEA NZE 2023")
-
 
 class SectorBenchmark(BaseModel):
     """IEA NZE sector benchmark data for SDA convergence."""
@@ -469,7 +451,6 @@ class SectorBenchmark(BaseModel):
     pathway_points: List[BenchmarkPoint] = Field(default_factory=list)
     source: str = Field(default="IEA NZE 2023")
 
-
 class IntensityMilestone(BaseModel):
     """Annual intensity milestone on the SDA convergence pathway."""
 
@@ -480,7 +461,6 @@ class IntensityMilestone(BaseModel):
     annual_reduction_rate_pct: float = Field(default=0.0)
     cumulative_reduction_pct: float = Field(default=0.0)
     absolute_emissions_tco2e: float = Field(default=0.0)
-
 
 class ConvergenceResult(BaseModel):
     """Complete SDA convergence pathway calculation."""
@@ -498,7 +478,6 @@ class ConvergenceResult(BaseModel):
     convergence_year: Optional[int] = Field(None)
     intensity_unit: str = Field(default="")
 
-
 class CrossValidationResult(BaseModel):
     """SDA Tool V3.0 cross-validation assessment."""
 
@@ -510,7 +489,6 @@ class CrossValidationResult(BaseModel):
     years_exceeding_tolerance: List[int] = Field(default_factory=list)
     notes: List[str] = Field(default_factory=list)
 
-
 class AmbitionAssessment(BaseModel):
     """Ambition assessment of the SDA target."""
 
@@ -520,7 +498,6 @@ class AmbitionAssessment(BaseModel):
     meets_wb2c: bool = Field(default=False)
     sector_aligned: bool = Field(default=False)
     assessment_notes: List[str] = Field(default_factory=list)
-
 
 class SDAPathwayConfig(BaseModel):
     """Configuration for the SDA pathway workflow."""
@@ -564,7 +541,6 @@ class SDAPathwayConfig(BaseModel):
                 raise ValueError(f"NACE code must be in format X99.99, got '{code}'")
         return v
 
-
 class SDAPathwayResult(BaseModel):
     """Complete result from the SDA pathway workflow."""
 
@@ -580,11 +556,9 @@ class SDAPathwayResult(BaseModel):
     ambition: Optional[AmbitionAssessment] = Field(None)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class SDAPathwayWorkflow:
     """
@@ -641,7 +615,7 @@ class SDAPathwayWorkflow:
             SDAPathwayResult with sector classification, benchmark,
             convergence pathway, and validation results.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting SDA pathway workflow %s, nace=%s, gics=%s",
             self.workflow_id, config.nace_codes, config.gics_codes,
@@ -680,7 +654,7 @@ class SDAPathwayWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         result = SDAPathwayResult(
             workflow_id=self.workflow_id,
             status=overall_status,
@@ -708,7 +682,7 @@ class SDAPathwayWorkflow:
 
     async def _phase_sector_classify(self, config: SDAPathwayConfig) -> PhaseResult:
         """Classify sector via NACE/GICS codes and validate SDA eligibility."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         errors: List[str] = []
@@ -826,7 +800,7 @@ class SDAPathwayWorkflow:
         outputs["nace_codes_provided"] = len(config.nace_codes)
         outputs["gics_codes_provided"] = len(config.gics_codes)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Sector classify: sector=%s, eligibility=%s, confidence=%.2f",
             matched_sector, eligibility.value, confidence,
@@ -847,14 +821,14 @@ class SDAPathwayWorkflow:
 
     async def _phase_benchmark_load(self, config: SDAPathwayConfig) -> PhaseResult:
         """Load IEA NZE 2050 sector benchmarks and interpolate pathway."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         errors: List[str] = []
 
         if not self._classification or not self._classification.sector_code:
             errors.append("No sector classified; cannot load benchmark")
-            elapsed = (_utcnow() - started).total_seconds()
+            elapsed = (utcnow() - started).total_seconds()
             return PhaseResult(
                 phase_name="benchmark_load", status=PhaseStatus.FAILED,
                 duration_seconds=round(elapsed, 4), errors=errors,
@@ -865,7 +839,7 @@ class SDAPathwayWorkflow:
 
         if not benchmark_data:
             errors.append(f"No IEA NZE benchmark available for sector '{sector}'")
-            elapsed = (_utcnow() - started).total_seconds()
+            elapsed = (utcnow() - started).total_seconds()
             return PhaseResult(
                 phase_name="benchmark_load", status=PhaseStatus.FAILED,
                 duration_seconds=round(elapsed, 4), errors=errors,
@@ -941,7 +915,7 @@ class SDAPathwayWorkflow:
             sector_reduction_pct = (1.0 - bm_target_intensity / bm_base_intensity) * 100.0
             outputs["sector_total_reduction_pct"] = round(sector_reduction_pct, 2)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Benchmark load: sector=%s, base=%.4f, target=%.4f %s, points=%d",
             sector, bm_base_intensity, bm_target_intensity, intensity_unit,
@@ -962,14 +936,14 @@ class SDAPathwayWorkflow:
 
     async def _phase_convergence_calc(self, config: SDAPathwayConfig) -> PhaseResult:
         """Calculate SDA convergence pathway with intensity milestones."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         errors: List[str] = []
 
         if not self._benchmark:
             errors.append("No benchmark loaded; cannot calculate convergence")
-            elapsed = (_utcnow() - started).total_seconds()
+            elapsed = (utcnow() - started).total_seconds()
             return PhaseResult(
                 phase_name="convergence_calc", status=PhaseStatus.FAILED,
                 duration_seconds=round(elapsed, 4), errors=errors,
@@ -980,7 +954,7 @@ class SDAPathwayWorkflow:
 
         if company_base <= 0:
             errors.append("Company base intensity must be > 0 for SDA calculation")
-            elapsed = (_utcnow() - started).total_seconds()
+            elapsed = (utcnow() - started).total_seconds()
             return PhaseResult(
                 phase_name="convergence_calc", status=PhaseStatus.FAILED,
                 duration_seconds=round(elapsed, 4), errors=errors,
@@ -1114,7 +1088,7 @@ class SDAPathwayWorkflow:
         outputs["converges_by_target"] = converges
         outputs["convergence_year"] = convergence_year
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Convergence: base=%.4f -> target=%.4f, reduction=%.1f%%, converges=%s",
             company_base, company_target,
@@ -1174,7 +1148,7 @@ class SDAPathwayWorkflow:
 
     async def _phase_validate(self, config: SDAPathwayConfig) -> PhaseResult:
         """Cross-validate against SBTi SDA Tool V3.0 and assess ambition."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -1304,7 +1278,7 @@ class SDAPathwayWorkflow:
                 f"exceeds {SDA_TOOL_TOLERANCE_PCT}% tolerance"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Validate: cross_val=%s, ambition=%s, annual_rate=%.2f%%",
             cross_val_status.value, ambition_level.value, annual_rate,

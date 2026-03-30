@@ -45,26 +45,19 @@ from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Set
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -77,11 +70,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # CSRD GraphQL Type Definitions (dataclasses for Strawberry compatibility)
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class EmissionReportType:
@@ -101,7 +92,6 @@ class EmissionReportType:
     provenance_hash: str = ""
     created_at: str = ""
 
-
 @dataclass
 class ComplianceStatusType:
     """GraphQL type representing ESRS standard compliance."""
@@ -115,7 +105,6 @@ class ComplianceStatusType:
     data_points_missing: int = 0
     quality_score: float = 0.0
     last_updated: str = ""
-
 
 @dataclass
 class TenantDashboardType:
@@ -132,7 +121,6 @@ class TenantDashboardType:
     frameworks_configured: List[str] = dc_field(default_factory=list)
     last_report_date: Optional[str] = None
 
-
 @dataclass
 class SupplierScoreType:
     """GraphQL type representing a supplier ESG score."""
@@ -147,11 +135,9 @@ class SupplierScoreType:
     risk_level: str = "medium"
     last_assessed: str = ""
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class FieldAuthRule(BaseModel):
     """Field-level authorization rule."""
@@ -159,8 +145,7 @@ class FieldAuthRule(BaseModel):
     type_name: str = Field(...)
     field_name: str = Field(...)
     required_roles: List[str] = Field(default_factory=list)
-    created_at: datetime = Field(default_factory=_utcnow)
-
+    created_at: datetime = Field(default_factory=utcnow)
 
 class QueryComplexityConfig(BaseModel):
     """Query complexity limits per tenant."""
@@ -170,7 +155,6 @@ class QueryComplexityConfig(BaseModel):
     max_complexity: int = Field(default=1000, ge=10, le=100000)
     max_aliases: int = Field(default=20, ge=1, le=100)
     enabled: bool = Field(default=True)
-
 
 class QueryLogEntry(BaseModel):
     """Query analytics log entry."""
@@ -185,13 +169,11 @@ class QueryLogEntry(BaseModel):
     depth: int = Field(default=0)
     status: str = Field(default="success")
     error_message: Optional[str] = Field(None)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # GraphQLBridge
 # ---------------------------------------------------------------------------
-
 
 class GraphQLBridge:
     """Enterprise GraphQL bridge for CSRD Enterprise Pack.
@@ -267,7 +249,7 @@ class GraphQLBridge:
         result = {
             "registered_types": sorted(self._registered_types),
             "count": len(self._registered_types),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "provenance_hash": _compute_hash(sorted(self._registered_types)),
         }
 
@@ -397,7 +379,7 @@ class GraphQLBridge:
         self._subscriptions[tenant_id][sub_id] = {
             "subscription": subscription,
             "callback": callback,
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
             "active": True,
         }
 
@@ -445,7 +427,7 @@ class GraphQLBridge:
             "field_name": field_name,
             "required_roles": required_roles,
             "configured": True,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     # -------------------------------------------------------------------------
@@ -484,7 +466,7 @@ class GraphQLBridge:
             "max_depth": max_depth,
             "max_complexity": max_complexity,
             "configured": True,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     # -------------------------------------------------------------------------
@@ -514,7 +496,7 @@ class GraphQLBridge:
             ),
             "platform_schema_connected": self._platform_schema is not None,
             "active_subscriptions": len(self._subscriptions.get(tenant_id, {})),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "provenance_hash": _compute_hash(sorted(self._registered_types)),
         }
 

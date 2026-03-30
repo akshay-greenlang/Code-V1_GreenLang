@@ -50,20 +50,15 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "36.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC timestamp with zero microseconds."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -80,11 +75,9 @@ def _compute_hash(data: Any) -> str:
         json.dumps(s, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -94,7 +87,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "pending"
@@ -102,7 +94,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class AllocationMethod(str, Enum):
     """Cost allocation method classification."""
@@ -115,7 +106,6 @@ class AllocationMethod(str, Enum):
     HYBRID = "hybrid"
     EQUAL_SPLIT = "equal_split"
 
-
 class CostCentreType(str, Enum):
     """Cost centre classification."""
     DEPARTMENT = "department"
@@ -124,7 +114,6 @@ class CostCentreType(str, Enum):
     BUILDING_ZONE = "building_zone"
     FLOOR = "floor"
     BUSINESS_UNIT = "business_unit"
-
 
 class UtilityType(str, Enum):
     """Utility commodity type."""
@@ -136,14 +125,12 @@ class UtilityType(str, Enum):
     SEWER = "sewer"
     COMPRESSED_AIR = "compressed_air"
 
-
 class MeterType(str, Enum):
     """Meter classification."""
     MAIN = "main"
     SUB = "sub"
     VIRTUAL = "virtual"
     CHECK = "check"
-
 
 # =============================================================================
 # REFERENCE DATA (Zero-Hallucination)
@@ -174,11 +161,9 @@ METHOD_ACCURACY_BENCHMARKS: Dict[str, Tuple[float, float]] = {
     "equal_split": (0.50, 0.75),
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -190,7 +175,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class MeterRecord(BaseModel):
     """Meter definition and mapping record.
@@ -213,7 +197,6 @@ class MeterRecord(BaseModel):
     cost_centre_id: str = Field(default="")
     location: str = Field(default="")
     installed_capacity_kw: float = Field(default=0.0, ge=0.0)
-
 
 class CostCentre(BaseModel):
     """Cost centre definition.
@@ -241,7 +224,6 @@ class CostCentre(BaseModel):
     allocation_method: AllocationMethod = Field(default=AllocationMethod.AREA_PRORATE)
     parent_centre_id: str = Field(default="")
 
-
 class CostPool(BaseModel):
     """Utility cost pool for a billing period.
 
@@ -264,7 +246,6 @@ class CostPool(BaseModel):
     currency: str = Field(default="USD")
     account_number: str = Field(default="")
 
-
 class MeterReading(BaseModel):
     """Sub-meter reading for direct allocation.
 
@@ -278,7 +259,6 @@ class MeterReading(BaseModel):
     period: str = Field(default="")
     consumption: float = Field(default=0.0, ge=0.0)
     unit: str = Field(default="kwh")
-
 
 class AllocationEntry(BaseModel):
     """A single cost allocation result.
@@ -310,7 +290,6 @@ class AllocationEntry(BaseModel):
     basis_unit: str = Field(default="")
     confidence: float = Field(default=0.85, ge=0.0, le=1.0)
 
-
 class CostAllocationInput(BaseModel):
     """Input data model for CostAllocationWorkflow.
 
@@ -341,7 +320,6 @@ class CostAllocationInput(BaseModel):
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
 
-
 class CostAllocationResult(BaseModel):
     """Complete result from cost allocation workflow."""
     workflow_id: str = Field(..., description="Unique execution ID")
@@ -360,11 +338,9 @@ class CostAllocationResult(BaseModel):
     duration_seconds: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class CostAllocationWorkflow:
     """
@@ -880,7 +856,7 @@ class CostAllocationWorkflow:
             }
 
         outputs["report_id"] = report_id
-        outputs["generated_at"] = _utcnow().isoformat()
+        outputs["generated_at"] = utcnow().isoformat()
         outputs["total_pool_cost"] = round(total_pool, 2)
         outputs["total_allocated_cost"] = round(total_allocated, 2)
         outputs["variance"] = round(variance, 2)

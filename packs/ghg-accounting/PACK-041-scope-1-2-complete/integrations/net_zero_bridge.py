@@ -41,25 +41,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -72,11 +66,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class TargetType(str, Enum):
     """Emission reduction target types."""
@@ -84,7 +76,6 @@ class TargetType(str, Enum):
     ABSOLUTE = "absolute"
     INTENSITY = "intensity"
     SECTOR_BASED = "sector_based"
-
 
 class TargetScope(str, Enum):
     """Target emission scope coverage."""
@@ -94,13 +85,11 @@ class TargetScope(str, Enum):
     SCOPE_1_2 = "scope_1_2"
     SCOPE_1_2_3 = "scope_1_2_3"
 
-
 class SBTiPathway(str, Enum):
     """SBTi approved temperature pathways."""
 
     WELL_BELOW_2C = "well_below_2c"
     CELSIUS_1_5 = "1.5c"
-
 
 class ProgressStatus(str, Enum):
     """Progress tracking status."""
@@ -109,7 +98,6 @@ class ProgressStatus(str, Enum):
     BEHIND = "behind"
     AT_RISK = "at_risk"
     EXCEEDED = "exceeded"
-
 
 # ---------------------------------------------------------------------------
 # SBTi linear annual reduction rates (% per year)
@@ -126,11 +114,9 @@ SBTI_ANNUAL_REDUCTION_RATES: Dict[str, Dict[str, float]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class BaselineData(BaseModel):
     """Baseline GHG inventory data provided to net zero packs."""
@@ -146,8 +132,7 @@ class BaselineData(BaseModel):
     data_quality_score: float = Field(default=0.0, ge=0.0, le=100.0)
     verification_status: str = Field(default="unverified")
     provenance_hash: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class EmissionTarget(BaseModel):
     """Emission reduction target from net zero packs."""
@@ -165,7 +150,6 @@ class EmissionTarget(BaseModel):
     pathway: Optional[SBTiPathway] = Field(None)
     source_pack: str = Field(default="")
     provenance_hash: str = Field(default="")
-
 
 class ProgressReport(BaseModel):
     """Progress report against emission reduction targets."""
@@ -185,8 +169,7 @@ class ProgressReport(BaseModel):
     years_remaining: int = Field(default=0)
     annual_reduction_needed_pct: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class SBTiAlignment(BaseModel):
     """SBTi alignment assessment result."""
@@ -204,13 +187,11 @@ class SBTiAlignment(BaseModel):
     current_emissions_tco2e: float = Field(default=0.0)
     recommendation: str = Field(default="")
     provenance_hash: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # NetZeroBridge
 # ---------------------------------------------------------------------------
-
 
 class NetZeroBridge:
     """Integration with Net Zero Packs (PACK-021 through PACK-030).

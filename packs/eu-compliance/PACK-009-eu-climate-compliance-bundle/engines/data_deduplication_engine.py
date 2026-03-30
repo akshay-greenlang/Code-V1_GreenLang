@@ -40,25 +40,19 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -70,7 +64,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 def _normalize_field_name(name: str) -> str:
     """Normalize a field name for comparison.
@@ -90,7 +83,6 @@ def _normalize_field_name(name: str) -> str:
     normalized = re.sub(r"_+", "_", normalized)
     normalized = normalized.strip("_")
     return normalized
-
 
 def _compute_similarity(name_a: str, name_b: str) -> float:
     """Compute Jaccard similarity between two normalized field names.
@@ -112,11 +104,9 @@ def _compute_similarity(name_a: str, name_b: str) -> float:
     union = tokens_a.union(tokens_b)
     return len(intersection) / len(union) if union else 0.0
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class MergeStrategy(str, Enum):
     """Strategy for merging duplicate requirements."""
@@ -125,14 +115,12 @@ class MergeStrategy(str, Enum):
     MOST_RECENT = "MOST_RECENT"
     MANUAL = "MANUAL"
 
-
 class MatchType(str, Enum):
     """How a duplicate match was identified."""
     EXACT_NAME = "EXACT_NAME"
     NORMALIZED_NAME = "NORMALIZED_NAME"
     SEMANTIC_SIMILARITY = "SEMANTIC_SIMILARITY"
     TYPE_AND_DESCRIPTION = "TYPE_AND_DESCRIPTION"
-
 
 class ConflictSeverity(str, Enum):
     """Severity of a merge conflict."""
@@ -141,11 +129,9 @@ class ConflictSeverity(str, Enum):
     HIGH = "HIGH"
     CRITICAL = "CRITICAL"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class DataRequirement(BaseModel):
     """A single data collection requirement from a regulation."""
@@ -161,10 +147,9 @@ class DataRequirement(BaseModel):
     collection_effort_hours: float = Field(default=1.0, ge=0.0, description="Estimated effort to collect in hours")
     confidence: float = Field(default=1.0, ge=0.0, le=1.0, description="Data quality confidence")
     last_updated: str = Field(
-        default_factory=lambda: _utcnow().isoformat(),
+        default_factory=lambda: utcnow().isoformat(),
         description="Last update timestamp"
     )
-
 
 class MergeConflict(BaseModel):
     """A conflict detected during duplicate merging."""
@@ -173,7 +158,6 @@ class MergeConflict(BaseModel):
     values_by_regulation: Dict[str, str] = Field(default_factory=dict, description="Conflicting values by regulation")
     severity: str = Field(default="LOW", description="Conflict severity")
     resolution_suggestion: str = Field(default="", description="Suggested resolution")
-
 
 class DeduplicationGroup(BaseModel):
     """A group of duplicate data requirements with merge decision."""
@@ -186,7 +170,6 @@ class DeduplicationGroup(BaseModel):
     conflicts: List[MergeConflict] = Field(default_factory=list, description="Merge conflicts")
     savings_estimate_hours: float = Field(default=0.0, description="Estimated hours saved by deduplication")
     regulations_involved: List[str] = Field(default_factory=list, description="Regulations in this group")
-
 
 class GoldenRecord(BaseModel):
     """Merged golden record after deduplication."""
@@ -202,7 +185,6 @@ class GoldenRecord(BaseModel):
     merge_strategy_used: str = Field(default="", description="Strategy used for merging")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class DeduplicationResult(BaseModel):
     """Complete result of a deduplication scan."""
     result_id: str = Field(default_factory=_new_uuid, description="Result identifier")
@@ -216,9 +198,8 @@ class DeduplicationResult(BaseModel):
     savings_percentage: float = Field(default=0.0, description="Effort reduction percentage")
     conflicts: List[MergeConflict] = Field(default_factory=list, description="All unresolved conflicts")
     regulations_analyzed: List[str] = Field(default_factory=list, description="Regulations analyzed")
-    timestamp: str = Field(default_factory=lambda: _utcnow().isoformat(), description="Analysis timestamp")
+    timestamp: str = Field(default_factory=lambda: utcnow().isoformat(), description="Analysis timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class DedupReport(BaseModel):
     """Human-readable deduplication report."""
@@ -233,11 +214,9 @@ class DedupReport(BaseModel):
     recommendations: List[str] = Field(default_factory=list, description="Recommendations")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
-
 
 class DataDeduplicationConfig(BaseModel):
     """Configuration for the DataDeduplicationEngine."""
@@ -270,7 +249,6 @@ class DataDeduplicationConfig(BaseModel):
             return "HIGHEST_CONFIDENCE"
         return val
 
-
 # ---------------------------------------------------------------------------
 # Model rebuilds
 # ---------------------------------------------------------------------------
@@ -282,7 +260,6 @@ GoldenRecord.model_rebuild()
 DeduplicationResult.model_rebuild()
 DedupReport.model_rebuild()
 MergeConflict.model_rebuild()
-
 
 # ---------------------------------------------------------------------------
 # Regulation Data Requirements Database (~200 fields across 4 regulations)
@@ -446,11 +423,9 @@ REGULATION_DATA_REQUIREMENTS: Dict[str, List[Dict[str, Any]]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # DataDeduplicationEngine
 # ---------------------------------------------------------------------------
-
 
 class DataDeduplicationEngine:
     """

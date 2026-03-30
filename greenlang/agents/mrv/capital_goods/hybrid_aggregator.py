@@ -85,6 +85,7 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from typing import Any, Dict, List, Optional, Set, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -284,16 +285,9 @@ _EXCLUSION_REASON_LEASED = "leased_asset_redirect"
 _EXCLUSION_REASON_UNDER_CONSTRUCTION = "under_construction_partial"
 _EXCLUSION_REASON_PPE_CLASSIFICATION = "ppe_classification_mismatch"
 
-
 # ===========================================================================
 # Helper functions
 # ===========================================================================
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _quantize(value: Decimal) -> Decimal:
     """Quantize a Decimal value to the configured decimal places.
@@ -308,7 +302,6 @@ def _quantize(value: Decimal) -> Decimal:
         return value.quantize(_QUANTIZER, rounding=ROUND_HALF_UP)
     except (InvalidOperation, OverflowError):
         return ZERO
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -329,7 +322,6 @@ def _safe_divide(
         return default
     return _quantize(numerator / denominator)
 
-
 def _pct(part: Decimal, whole: Decimal) -> Decimal:
     """Calculate percentage of part relative to whole.
 
@@ -349,7 +341,6 @@ def _pct(part: Decimal, whole: Decimal) -> Decimal:
     if result > ONE_HUNDRED:
         return ONE_HUNDRED
     return result
-
 
 def _compute_sha256(data: Any) -> str:
     """Compute SHA-256 hex digest for arbitrary data.
@@ -375,7 +366,6 @@ def _compute_sha256(data: Any) -> str:
         logger.warning("SHA-256 hashing failed: %s", exc)
         return hashlib.sha256(b"fallback").hexdigest()
 
-
 def _decimal_to_str(value: Decimal) -> str:
     """Convert Decimal to string for JSON serialisation.
 
@@ -387,7 +377,6 @@ def _decimal_to_str(value: Decimal) -> str:
     """
     return str(_quantize(value))
 
-
 def _kg_to_tco2e(kg_co2e: Decimal) -> Decimal:
     """Convert kgCO2e to tCO2e (metric tonnes).
 
@@ -398,7 +387,6 @@ def _kg_to_tco2e(kg_co2e: Decimal) -> Decimal:
         Emissions in tCO2e, quantized.
     """
     return _quantize(kg_co2e * _KG_TO_TONNES)
-
 
 def _get_result_asset_id(result: Any) -> str:
     """Extract asset_id from a method-specific result object.
@@ -418,7 +406,6 @@ def _get_result_asset_id(result: Any) -> str:
         return str(result.get("asset_id", ""))
     return ""
 
-
 def _get_result_emissions(result: Any) -> Decimal:
     """Extract emissions_kg_co2e from a method-specific result.
 
@@ -433,7 +420,6 @@ def _get_result_emissions(result: Any) -> Decimal:
     if isinstance(result, dict):
         return Decimal(str(result.get("emissions_kg_co2e", "0")))
     return ZERO
-
 
 def _get_result_dqi(result: Any) -> Decimal:
     """Extract DQI score from a method-specific result.
@@ -450,7 +436,6 @@ def _get_result_dqi(result: Any) -> Decimal:
         return Decimal(str(result.get("dqi_score", "5.0")))
     return _MAX_DQI
 
-
 def _get_result_uncertainty(result: Any) -> Decimal:
     """Extract uncertainty percentage from a method-specific result.
 
@@ -465,7 +450,6 @@ def _get_result_uncertainty(result: Any) -> Decimal:
     if isinstance(result, dict):
         return Decimal(str(result.get("uncertainty_pct", "75.0")))
     return Decimal("75.0")
-
 
 def _get_result_method(result: Any) -> str:
     """Extract calculation method name from a result.
@@ -484,7 +468,6 @@ def _get_result_method(result: Any) -> str:
         return val.value if hasattr(val, "value") else str(val)
     return "spend_based"
 
-
 def _get_asset_capex(asset: Any) -> Decimal:
     """Extract CapEx amount from a capital asset record.
 
@@ -500,7 +483,6 @@ def _get_asset_capex(asset: Any) -> Decimal:
         return Decimal(str(asset.get("capex_amount", "0")))
     return ZERO
 
-
 def _get_asset_id(asset: Any) -> str:
     """Extract asset_id from a capital asset record.
 
@@ -515,7 +497,6 @@ def _get_asset_id(asset: Any) -> str:
     if isinstance(asset, dict):
         return str(asset.get("asset_id", ""))
     return ""
-
 
 def _get_asset_category(asset: Any) -> str:
     """Extract asset category from a capital asset record.
@@ -534,7 +515,6 @@ def _get_asset_category(asset: Any) -> str:
         return val.value if hasattr(val, "value") else str(val)
     return "other"
 
-
 def _get_asset_supplier(asset: Any) -> str:
     """Extract supplier identifier from a capital asset record.
 
@@ -550,7 +530,6 @@ def _get_asset_supplier(asset: Any) -> str:
         return str(asset.get("supplier_id", "unknown")) or "unknown"
     return "unknown"
 
-
 def _get_asset_is_leased(asset: Any) -> bool:
     """Check if asset is leased.
 
@@ -565,7 +544,6 @@ def _get_asset_is_leased(asset: Any) -> bool:
     if isinstance(asset, dict):
         return bool(asset.get("is_leased", False))
     return False
-
 
 def _get_asset_year(asset: Any) -> int:
     """Extract acquisition year from a capital asset record.
@@ -585,8 +563,7 @@ def _get_asset_year(asset: Any) -> int:
         acq = asset.get("acquisition_date")
         if acq and hasattr(acq, "year"):
             return acq.year
-    return _utcnow().year
-
+    return utcnow().year
 
 def _get_result_verification(result: Any) -> str:
     """Extract verification status from a supplier result.
@@ -602,7 +579,6 @@ def _get_result_verification(result: Any) -> str:
     if isinstance(result, dict):
         return str(result.get("verification_status", "unverified"))
     return "unverified"
-
 
 def _get_result_data_source(result: Any) -> str:
     """Extract data source from a supplier result.
@@ -621,7 +597,6 @@ def _get_result_data_source(result: Any) -> str:
         return val.value if hasattr(val, "value") else str(val)
     return "estimated"
 
-
 def _get_result_ef_source(result: Any) -> str:
     """Extract EF source from an average-data result.
 
@@ -638,7 +613,6 @@ def _get_result_ef_source(result: Any) -> str:
         val = result.get("ef_source", "")
         return val.value if hasattr(val, "value") else str(val)
     return ""
-
 
 def _determine_hierarchy_level_supplier(result: Any) -> int:
     """Determine the EF hierarchy level for a supplier-specific result.
@@ -667,7 +641,6 @@ def _determine_hierarchy_level_supplier(result: Any) -> int:
     # Level 3: Uncertified supplier data
     return 3
 
-
 def _determine_hierarchy_level_average(result: Any) -> int:
     """Determine the EF hierarchy level for an average-data result.
 
@@ -687,7 +660,6 @@ def _determine_hierarchy_level_average(result: Any) -> int:
 
     # Level 5: DEFRA activity EF or ICE database
     return 5
-
 
 def _determine_hierarchy_level_spend(result: Any) -> int:
     """Determine the EF hierarchy level for a spend-based result.
@@ -722,11 +694,9 @@ def _determine_hierarchy_level_spend(result: Any) -> int:
     # Default: national EEIO for spend-based
     return 7
 
-
 # ===========================================================================
 # HybridAggregatorEngine
 # ===========================================================================
-
 
 class HybridAggregatorEngine:
     """Engine 5 of 7 -- Multi-method aggregation and hot-spot analysis.
@@ -1889,7 +1859,7 @@ class HybridAggregatorEngine:
         Returns:
             DepreciationContext with volatility analysis.
         """
-        year = acquisition_year or _utcnow().year
+        year = acquisition_year or utcnow().year
         rolling_years = self._get_rolling_years()
         threshold = self._get_volatility_threshold()
 
@@ -2251,7 +2221,7 @@ class HybridAggregatorEngine:
             emissions_kg = _get_result_emissions(r)
             tco2e = _kg_to_tco2e(emissions_kg)
             asset = asset_index.get(aid, {})
-            year = _get_asset_year(asset) if asset else _utcnow().year
+            year = _get_asset_year(asset) if asset else utcnow().year
             by_period[year] += tco2e
 
         return {k: _quantize(v) for k, v in sorted(by_period.items())}

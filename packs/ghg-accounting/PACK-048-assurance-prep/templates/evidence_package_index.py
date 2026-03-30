@@ -46,29 +46,23 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 def _compute_hash(content: str) -> str:
     """Compute SHA-256 hash of string content."""
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -81,14 +75,12 @@ class OutputFormat(str, Enum):
     PDF = "pdf"
     JSON = "json"
 
-
 class EvidenceQuality(str, Enum):
     """Evidence quality classification."""
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
     INSUFFICIENT = "insufficient"
-
 
 class EvidenceStatus(str, Enum):
     """Evidence item status."""
@@ -97,13 +89,11 @@ class EvidenceStatus(str, Enum):
     PARTIAL = "partial"
     EXPIRED = "expired"
 
-
 class ScopeLabel(str, Enum):
     """GHG Scope labels."""
     SCOPE_1 = "Scope 1"
     SCOPE_2 = "Scope 2"
     SCOPE_3 = "Scope 3"
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Input Models
@@ -127,7 +117,6 @@ class EvidenceItem(BaseModel):
     reviewer: str = Field("", description="Reviewer name")
     notes: str = Field("", description="Additional notes")
 
-
 class ScopeCompleteness(BaseModel):
     """Completeness summary for a single scope."""
     scope: str = Field(..., description="Scope label")
@@ -140,7 +129,6 @@ class ScopeCompleteness(BaseModel):
         default_factory=list, description="Per-category breakdown"
     )
 
-
 class PackageMetadata(BaseModel):
     """Evidence package metadata."""
     package_id: str = Field(default_factory=_new_uuid, description="Package unique ID")
@@ -150,7 +138,6 @@ class PackageMetadata(BaseModel):
     total_available: int = Field(0, ge=0, description="Total available items")
     total_missing: int = Field(0, ge=0, description="Total missing items")
     overall_completeness_pct: float = Field(0.0, ge=0, le=100, description="Overall completeness %")
-
 
 class EvidencePackageInput(BaseModel):
     """Complete input model for EvidencePackageIndex."""
@@ -167,7 +154,6 @@ class EvidencePackageInput(BaseModel):
         default_factory=list, description="Completeness by scope"
     )
 
-
 # ---------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------
@@ -176,11 +162,9 @@ def _quality_label(quality: str) -> str:
     """Return display label for quality."""
     return quality.upper()
 
-
 def _status_label(status: str) -> str:
     """Return display label for status."""
     return status.upper()
-
 
 def _quality_css(quality: str) -> str:
     """Return CSS class for quality."""
@@ -191,7 +175,6 @@ def _quality_css(quality: str) -> str:
         "insufficient": "qual-insufficient",
     }
     return mapping.get(quality, "qual-medium")
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -250,7 +233,7 @@ class EvidencePackageIndex:
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render evidence package index as Markdown."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_md(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -258,7 +241,7 @@ class EvidencePackageIndex:
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render evidence package index as HTML."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_html(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -266,7 +249,7 @@ class EvidencePackageIndex:
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render evidence package index as JSON dict."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_json(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -308,7 +291,7 @@ class EvidencePackageIndex:
         return (
             f"# Evidence Package Index - {company}\n\n"
             f"**Reporting Period:** {period} | "
-            f"**Report Date:** {_utcnow().strftime('%Y-%m-%d')}\n\n"
+            f"**Report Date:** {utcnow().strftime('%Y-%m-%d')}\n\n"
             "---"
         )
 
@@ -508,7 +491,7 @@ class EvidencePackageIndex:
             '<div class="section">\n'
             f"<h1>Evidence Package Index &mdash; {company}</h1>\n"
             f"<p><strong>Reporting Period:</strong> {period} | "
-            f"<strong>Report Date:</strong> {_utcnow().strftime('%Y-%m-%d')}</p>\n"
+            f"<strong>Report Date:</strong> {utcnow().strftime('%Y-%m-%d')}</p>\n"
             "<hr>\n</div>"
         )
 

@@ -36,14 +36,9 @@ import time
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -55,7 +50,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Known City/Capital Coordinates (deterministic geocoding lookup)
@@ -124,7 +118,6 @@ _DD_PATTERN = re.compile(
     r"(-?\d{1,3}\.\d+)\s*[,\s]\s*(-?\d{1,3}\.\d+)",
 )
 
-
 # ---------------------------------------------------------------------------
 # Data Structures
 # ---------------------------------------------------------------------------
@@ -154,9 +147,8 @@ def _make_geocoding_result(
         "query": query,
         "results": results,
         "total_results": total_results or len(results),
-        "created_at": _utcnow().isoformat(),
+        "created_at": utcnow().isoformat(),
     }
-
 
 # ---------------------------------------------------------------------------
 # Engine
@@ -629,7 +621,6 @@ class GeocoderEngine:
             "cache_size": len(self._cache),
             "known_locations": len(KNOWN_LOCATIONS),
         }
-
 
 __all__ = [
     "GeocoderEngine",

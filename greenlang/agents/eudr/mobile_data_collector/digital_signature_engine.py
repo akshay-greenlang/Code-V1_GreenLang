@@ -68,6 +68,8 @@ from .config import get_config
 from .metrics import record_api_error, record_signature_captured
 from .provenance import get_provenance_tracker
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -99,22 +101,13 @@ WITNESS_ROLES: frozenset = frozenset({
     "transport_operator", "system",
 })
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with millisecond precision."""
-    now = datetime.now(timezone.utc)
-    return now.replace(microsecond=(now.microsecond // 1000) * 1000)
-
-
 def _utcnow_iso() -> str:
     """Return current UTC datetime as ISO 8601 string with ms precision."""
-    return _utcnow().isoformat(timespec="milliseconds")
-
+    return utcnow().isoformat(timespec="milliseconds")
 
 # ---------------------------------------------------------------------------
 # DigitalSignatureEngine
 # ---------------------------------------------------------------------------
-
 
 class DigitalSignatureEngine:
     """Simulated ECDSA P-256 digital signature engine for EUDR mobile data.
@@ -205,7 +198,7 @@ class DigitalSignatureEngine:
                 f"Invalid role '{role}'. Must be one of: {sorted(SIGNER_ROLES)}"
             )
 
-        now = _utcnow()
+        now = utcnow()
         if valid_from is None:
             valid_from = now.isoformat(timespec="milliseconds")
         if valid_to is None:
@@ -355,7 +348,7 @@ class DigitalSignatureEngine:
 
         self._validate_signer_authorized(signer_id)
 
-        now = _utcnow()
+        now = utcnow()
         timestamp_iso = now.isoformat(timespec="milliseconds")
 
         # Deterministic signature ID from binding components
@@ -607,7 +600,7 @@ class DigitalSignatureEngine:
         if reference_time:
             ref_time = datetime.fromisoformat(reference_time)
         else:
-            ref_time = _utcnow()
+            ref_time = utcnow()
 
         if sig_time.tzinfo is None:
             sig_time = sig_time.replace(tzinfo=timezone.utc)
@@ -666,7 +659,7 @@ class DigitalSignatureEngine:
             if created.tzinfo is None:
                 created = created.replace(tzinfo=timezone.utc)
             window = timedelta(hours=self._config.revocation_window_hours)
-            if _utcnow() > created + window:
+            if utcnow() > created + window:
                 raise ValueError(
                     f"Revocation window of {self._config.revocation_window_hours}h "
                     f"has expired for this signature"
@@ -1065,7 +1058,7 @@ class DigitalSignatureEngine:
         if not signer["is_active"]:
             raise ValueError(f"Signer is not active: {signer_id}")
 
-        now = _utcnow()
+        now = utcnow()
         valid_from = datetime.fromisoformat(signer["valid_from"])
         valid_to = datetime.fromisoformat(signer["valid_to"])
         if valid_from.tzinfo is None:
@@ -1155,7 +1148,7 @@ class DigitalSignatureEngine:
             exp_time = datetime.fromisoformat(expires_at)
             if exp_time.tzinfo is None:
                 exp_time = exp_time.replace(tzinfo=timezone.utc)
-            return _utcnow() > exp_time
+            return utcnow() > exp_time
         except (ValueError, TypeError):
             return False
 
@@ -1220,7 +1213,6 @@ class DigitalSignatureEngine:
         """Return total number of signatures."""
         with self._lock:
             return len(self._signatures)
-
 
 # ---------------------------------------------------------------------------
 # Public API

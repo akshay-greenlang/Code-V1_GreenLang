@@ -105,6 +105,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import yaml
 from pydantic import BaseModel, Field, field_validator, model_validator
+from greenlang.schemas.enums import ReportFormat
 
 logger = logging.getLogger(__name__)
 
@@ -247,15 +248,6 @@ class ConformityModule(str, Enum):
     MODULE_E = "MODULE_E"  # Conformity to type based on product quality assurance
     MODULE_G = "MODULE_G"  # Conformity based on unit verification
     MODULE_H = "MODULE_H"  # Conformity based on full quality assurance
-
-
-class ReportFormat(str, Enum):
-    """Output format for battery passport and compliance reports."""
-
-    PDF = "PDF"      # Portable Document Format for human review
-    HTML = "HTML"    # Web-based interactive report
-    JSON = "JSON"    # Machine-readable structured data (battery passport API)
-    EXCEL = "EXCEL"  # Spreadsheet format for data analysis
 
 
 class CacheBackend(str, Enum):

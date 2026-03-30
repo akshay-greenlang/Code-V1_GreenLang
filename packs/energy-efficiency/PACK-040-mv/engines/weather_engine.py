@@ -77,25 +77,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -113,7 +107,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -122,7 +115,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -134,22 +126,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DegreeDayType(str, Enum):
     """Type of degree-day calculation.
@@ -162,7 +150,6 @@ class DegreeDayType(str, Enum):
     CDD = "cdd"
     BOTH = "both"
 
-
 class TemperatureUnit(str, Enum):
     """Temperature measurement unit.
 
@@ -173,7 +160,6 @@ class TemperatureUnit(str, Enum):
     CELSIUS = "celsius"
     FAHRENHEIT = "fahrenheit"
     KELVIN = "kelvin"
-
 
 class WeatherDataSource(str, Enum):
     """Source of weather data.
@@ -194,7 +180,6 @@ class WeatherDataSource(str, Enum):
     UTILITY = "utility"
     CUSTOM = "custom"
 
-
 class QualityFlag(str, Enum):
     """Weather data quality flag.
 
@@ -209,7 +194,6 @@ class QualityFlag(str, Enum):
     ESTIMATED = "estimated"
     MISSING = "missing"
     OUT_OF_RANGE = "out_of_range"
-
 
 class GapFillMethod(str, Enum):
     """Method used to fill missing weather data.
@@ -228,7 +212,6 @@ class GapFillMethod(str, Enum):
     TMY = "tmy"
     NONE = "none"
 
-
 class NormalisationMethod(str, Enum):
     """Weather normalisation method.
 
@@ -241,7 +224,6 @@ class NormalisationMethod(str, Enum):
     LONG_TERM_AVG = "long_term_avg"
     REFERENCE_YEAR = "reference_year"
     REPORTING_PERIOD = "reporting_period"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -259,11 +241,9 @@ BP_SEARCH_STEP_C = Decimal("0.5")
 # Maximum acceptable gap (hours) before data is flagged
 MAX_GAP_HOURS_DEFAULT = 6
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class DailyTemperature(BaseModel):
     """Daily temperature observation."""
@@ -284,7 +264,6 @@ class DailyTemperature(BaseModel):
     def _coerce_temp(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class DegreeDayRecord(BaseModel):
     """Degree-day calculation for a single period."""
 
@@ -295,7 +274,6 @@ class DegreeDayRecord(BaseModel):
     n_days: int = Field(default=0, description="Number of days in period")
     base_temp_heating_c: Decimal = Field(default=Decimal("18"), description="HDD base temp")
     base_temp_cooling_c: Decimal = Field(default=Decimal("18"), description="CDD base temp")
-
 
 class BalancePointResult(BaseModel):
     """Result of balance-point optimisation."""
@@ -312,10 +290,9 @@ class BalancePointResult(BaseModel):
     cooling_slope: Decimal = Field(default=Decimal("0"), description="Cooling slope (energy/CDD)")
     intercept: Decimal = Field(default=Decimal("0"), description="Regression intercept")
     candidates_tested: int = Field(default=0, description="Number of candidates evaluated")
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     processing_time_ms: Decimal = Field(default=Decimal("0"))
     provenance_hash: str = Field(default="")
-
 
 class DegreeDayRegressionResult(BaseModel):
     """Result of degree-day regression E = a + bh*HDD + bc*CDD."""
@@ -333,10 +310,9 @@ class DegreeDayRegressionResult(BaseModel):
     n_observations: int = Field(default=0, description="Number of observations")
     predicted: List[Decimal] = Field(default_factory=list, description="Predicted values")
     residuals: List[Decimal] = Field(default_factory=list, description="Residuals")
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     processing_time_ms: Decimal = Field(default=Decimal("0"))
     provenance_hash: str = Field(default="")
-
 
 class TMYNormalisationResult(BaseModel):
     """Result of TMY weather normalisation."""
@@ -363,10 +339,9 @@ class TMYNormalisationResult(BaseModel):
     normalisation_factor_cdd: Decimal = Field(
         default=Decimal("1"), description="CDD normalisation factor"
     )
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     processing_time_ms: Decimal = Field(default=Decimal("0"))
     provenance_hash: str = Field(default="")
-
 
 class WeatherQualityReport(BaseModel):
     """Weather data quality assessment report."""
@@ -388,10 +363,9 @@ class WeatherQualityReport(BaseModel):
     consistency_score: Decimal = Field(default=Decimal("100"), description="Consistency 0-100")
     overall_grade: QualityFlag = Field(default=QualityFlag.GOOD, description="Overall grade")
     issues: List[str] = Field(default_factory=list, description="Identified issues")
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     processing_time_ms: Decimal = Field(default=Decimal("0"))
     provenance_hash: str = Field(default="")
-
 
 class WeatherReconciliationResult(BaseModel):
     """Result of multi-source weather data reconciliation."""
@@ -407,15 +381,13 @@ class WeatherReconciliationResult(BaseModel):
     reconciled_values: List[Decimal] = Field(
         default_factory=list, description="Reconciled temperature values"
     )
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     processing_time_ms: Decimal = Field(default=Decimal("0"))
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Linear Algebra Helpers (minimal - for degree-day regression)
 # ---------------------------------------------------------------------------
-
 
 def _ols_2var(
     y: List[Decimal],
@@ -482,7 +454,6 @@ def _ols_2var(
 
     return a, b1, b2, r2
 
-
 def _ols_1var(
     y: List[Decimal], x: List[Decimal],
 ) -> Optional[Tuple[Decimal, Decimal, Decimal]]:
@@ -511,11 +482,9 @@ def _ols_1var(
 
     return a, b, r2
 
-
 # ---------------------------------------------------------------------------
 # Engine Class
 # ---------------------------------------------------------------------------
-
 
 class WeatherEngine:
     """Weather normalisation engine for M&V calculations.

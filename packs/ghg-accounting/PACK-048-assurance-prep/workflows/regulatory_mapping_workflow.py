@@ -57,37 +57,28 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> str:
-    """Return current UTC timestamp as ISO-8601 string."""
-    return datetime.utcnow().isoformat() + "Z"
-
-
 def _new_uuid() -> str:
     """Return a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash of JSON-serialisable data."""
     serialised = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialised.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -98,7 +89,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -108,7 +98,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class RegulatoryMappingPhase(str, Enum):
     """Regulatory mapping workflow phases."""
 
@@ -116,7 +105,6 @@ class RegulatoryMappingPhase(str, Enum):
     REQUIREMENT_MAPPING = "requirement_mapping"
     GAP_ANALYSIS = "gap_analysis"
     COMPLIANCE_PLANNING = "compliance_planning"
-
 
 class Jurisdiction(str, Enum):
     """Supported jurisdictions."""
@@ -131,7 +119,6 @@ class Jurisdiction(str, Enum):
     HONG_KONG = "hong_kong"
     GLOBAL_VOLUNTARY = "global_voluntary"
 
-
 class AssuranceRequirementLevel(str, Enum):
     """Required assurance level per jurisdiction."""
 
@@ -141,7 +128,6 @@ class AssuranceRequirementLevel(str, Enum):
     VOLUNTARY = "voluntary"
     NOT_REQUIRED = "not_required"
 
-
 class ComplianceStatus(str, Enum):
     """Organisation's compliance status for a jurisdiction."""
 
@@ -150,7 +136,6 @@ class ComplianceStatus(str, Enum):
     NON_COMPLIANT = "non_compliant"
     NOT_APPLICABLE = "not_applicable"
 
-
 class ActionPriority(str, Enum):
     """Priority for compliance actions."""
 
@@ -158,7 +143,6 @@ class ActionPriority(str, Enum):
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 # =============================================================================
 # REGULATORY REGISTER (Zero-Hallucination Reference Data)
@@ -297,11 +281,9 @@ REGULATORY_REGISTER: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -314,7 +296,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
-
 
 class JurisdictionRecord(BaseModel):
     """Record of an identified jurisdiction with assurance obligations."""
@@ -336,7 +317,6 @@ class JurisdictionRecord(BaseModel):
     meets_thresholds: bool = Field(default=False)
     provenance_hash: str = Field(default="")
 
-
 class RequirementGap(BaseModel):
     """Gap between current state and jurisdictional requirement."""
 
@@ -349,7 +329,6 @@ class RequirementGap(BaseModel):
     compliance_status: ComplianceStatus = Field(default=ComplianceStatus.NON_COMPLIANT)
     effort_weeks: int = Field(default=0, ge=0)
     provenance_hash: str = Field(default="")
-
 
 class ComplianceAction(BaseModel):
     """A compliance action to close a regulatory gap."""
@@ -364,11 +343,9 @@ class ComplianceAction(BaseModel):
     estimated_cost_usd: float = Field(default=0.0, ge=0.0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # INPUT / OUTPUT
 # =============================================================================
-
 
 class RegulatoryMappingInput(BaseModel):
     """Input data model for RegulatoryMappingWorkflow."""
@@ -395,7 +372,6 @@ class RegulatoryMappingInput(BaseModel):
     tenant_id: str = Field(default="")
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class RegulatoryMappingResult(BaseModel):
     """Complete result from regulatory mapping workflow."""
 
@@ -414,11 +390,9 @@ class RegulatoryMappingResult(BaseModel):
     total_actions: int = Field(default=0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class RegulatoryMappingWorkflow:
     """
@@ -912,6 +886,7 @@ class RegulatoryMappingWorkflow:
                         phase_number, attempt, self.MAX_RETRIES, exc, delay,
                     )
                     import asyncio
+
                     await asyncio.sleep(delay)
         return PhaseResult(
             phase_name=f"phase_{phase_number}_failed",

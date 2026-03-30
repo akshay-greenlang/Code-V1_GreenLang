@@ -45,29 +45,23 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 def _compute_hash(content: str) -> str:
     """Compute SHA-256 hash of string content."""
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -80,7 +74,6 @@ class OutputFormat(str, Enum):
     PDF = "pdf"
     JSON = "json"
 
-
 class DesignEffectiveness(str, Enum):
     """Control design effectiveness rating."""
     EFFECTIVE = "effective"
@@ -88,14 +81,12 @@ class DesignEffectiveness(str, Enum):
     INEFFECTIVE = "ineffective"
     NOT_TESTED = "not_tested"
 
-
 class OperatingEffectiveness(str, Enum):
     """Control operating effectiveness rating."""
     EFFECTIVE = "effective"
     PARTIALLY_EFFECTIVE = "partially_effective"
     INEFFECTIVE = "ineffective"
     NOT_TESTED = "not_tested"
-
 
 class MaturityLevel(str, Enum):
     """Control maturity level."""
@@ -105,14 +96,12 @@ class MaturityLevel(str, Enum):
     MANAGED = "managed"
     OPTIMIZING = "optimizing"
 
-
 class DeficiencySeverity(str, Enum):
     """Control deficiency severity."""
     SIGNIFICANT = "significant"
     MATERIAL_WEAKNESS = "material_weakness"
     DEFICIENCY = "deficiency"
     OBSERVATION = "observation"
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Input Models
@@ -140,13 +129,11 @@ class ControlEntry(BaseModel):
     last_tested: Optional[str] = Field(None, description="Last tested date (ISO)")
     notes: str = Field("", description="Additional notes")
 
-
 class MaturityHeatmapCell(BaseModel):
     """Single cell in the control maturity heatmap."""
     category: str = Field(..., description="Control category")
     maturity_level: MaturityLevel = Field(..., description="Maturity level")
     control_count: int = Field(0, ge=0, description="Number of controls at this level")
-
 
 class DeficiencyEntry(BaseModel):
     """Single deficiency in the deficiency log."""
@@ -163,7 +150,6 @@ class DeficiencyEntry(BaseModel):
     target_date: Optional[str] = Field(None, description="Target remediation date (ISO)")
     status: str = Field("open", description="Status (open/in_progress/closed)")
 
-
 class ControlCoverageSummary(BaseModel):
     """Control coverage summary statistics."""
     total_controls: int = Field(0, ge=0, description="Total controls in register")
@@ -174,7 +160,6 @@ class ControlCoverageSummary(BaseModel):
     tested_pct: float = Field(0.0, ge=0, le=100, description="% tested")
     effective_pct: float = Field(0.0, ge=0, le=100, description="% effective (of tested)")
 
-
 class Recommendation(BaseModel):
     """Single recommendation for control improvement."""
     priority: int = Field(1, ge=1, description="Priority rank")
@@ -182,7 +167,6 @@ class Recommendation(BaseModel):
     recommendation: str = Field(..., description="Recommendation text")
     expected_benefit: str = Field("", description="Expected benefit")
     effort: str = Field("", description="Estimated effort (low/medium/high)")
-
 
 class ControlAssessmentInput(BaseModel):
     """Complete input model for ControlSelfAssessmentReport."""
@@ -205,7 +189,6 @@ class ControlAssessmentInput(BaseModel):
         default_factory=list, description="Improvement recommendations"
     )
 
-
 # ---------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------
@@ -213,7 +196,6 @@ class ControlAssessmentInput(BaseModel):
 def _effectiveness_label(value: str) -> str:
     """Return display label for effectiveness."""
     return value.replace("_", " ").title()
-
 
 def _severity_css(severity: str) -> str:
     """Return CSS class for deficiency severity."""
@@ -224,7 +206,6 @@ def _severity_css(severity: str) -> str:
         "observation": "sev-observation",
     }
     return mapping.get(severity, "sev-deficiency")
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -283,7 +264,7 @@ class ControlSelfAssessmentReport:
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render control assessment as Markdown."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_md(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -291,7 +272,7 @@ class ControlSelfAssessmentReport:
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render control assessment as HTML."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_html(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -299,7 +280,7 @@ class ControlSelfAssessmentReport:
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render control assessment as JSON dict."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_json(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -340,7 +321,7 @@ class ControlSelfAssessmentReport:
         return (
             f"# Control Self-Assessment Report - {company}\n\n"
             f"**Reporting Period:** {period} | "
-            f"**Report Date:** {_utcnow().strftime('%Y-%m-%d')}\n\n"
+            f"**Report Date:** {utcnow().strftime('%Y-%m-%d')}\n\n"
             "---"
         )
 
@@ -532,7 +513,7 @@ class ControlSelfAssessmentReport:
             '<div class="section">\n'
             f"<h1>Control Self-Assessment Report &mdash; {company}</h1>\n"
             f"<p><strong>Reporting Period:</strong> {period} | "
-            f"<strong>Report Date:</strong> {_utcnow().strftime('%Y-%m-%d')}</p>\n"
+            f"<strong>Report Date:</strong> {utcnow().strftime('%Y-%m-%d')}</p>\n"
             "<hr>\n</div>"
         )
 

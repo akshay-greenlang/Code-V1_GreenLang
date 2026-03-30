@@ -76,25 +76,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -112,7 +106,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -121,7 +114,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -133,31 +125,25 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round3(value: Any) -> float:
     """Round to 3 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: Any) -> float:
     """Round to 4 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
-
 
 def _round6(value: Any) -> float:
     """Round to 6 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ScopeInclusion(str, Enum):
     """Defines which emission scopes to include in the intensity numerator.
@@ -180,7 +166,6 @@ class ScopeInclusion(str, Enum):
     SCOPE_3_SPECIFIC = "scope_3_specific"
     CUSTOM = "custom"
 
-
 class IntensityStatus(str, Enum):
     """Status of an intensity calculation result.
 
@@ -195,7 +180,6 @@ class IntensityStatus(str, Enum):
     PARTIAL_DATA = "partial_data"
     MISSING_DATA = "missing_data"
     ERROR = "error"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -229,11 +213,9 @@ SCOPE_3_CATEGORIES: Dict[int, str] = {
     15: "Investments",
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class EmissionsData(BaseModel):
     """Emissions data for a single entity and period.
@@ -272,7 +254,6 @@ class EmissionsData(BaseModel):
         if v is None:
             return None
         return _decimal(v)
-
 
 class IntensityInput(BaseModel):
     """Input for a single intensity calculation.
@@ -321,7 +302,6 @@ class IntensityInput(BaseModel):
             )
         return self
 
-
 class EntityIntensityInput(BaseModel):
     """Input for a single entity in a multi-entity consolidation.
 
@@ -344,7 +324,6 @@ class EntityIntensityInput(BaseModel):
         """Coerce to Decimal."""
         return _decimal(v)
 
-
 class TimeSeriesInput(BaseModel):
     """Input for time-series intensity calculation.
 
@@ -356,7 +335,6 @@ class TimeSeriesInput(BaseModel):
     entity_id: str = Field(default="default", description="Entity ID")
     periods: List[IntensityInput] = Field(..., min_length=1, description="Period inputs")
     base_period: Optional[str] = Field(default=None, description="Base period label")
-
 
 class ConsolidationInput(BaseModel):
     """Input for multi-entity consolidated intensity.
@@ -376,11 +354,9 @@ class ConsolidationInput(BaseModel):
     denominator_id: str = Field(default="", description="Denominator type ID")
     output_precision: int = Field(default=DEFAULT_PRECISION, ge=0, le=12, description="Precision")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class IntensityResult(BaseModel):
     """Result of a single intensity calculation.
@@ -420,7 +396,6 @@ class IntensityResult(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 class PeriodIntensity(BaseModel):
     """Intensity for a single period in a time series.
 
@@ -440,7 +415,6 @@ class PeriodIntensity(BaseModel):
     yoy_change_pct: Optional[Decimal] = Field(default=None, description="YoY change (%)")
     cum_change_pct: Optional[Decimal] = Field(default=None, description="Cumulative change (%)")
     status: IntensityStatus = Field(default=IntensityStatus.VALID, description="Status")
-
 
 class IntensityTimeSeries(BaseModel):
     """Time series of intensity values with trend metrics.
@@ -470,7 +444,6 @@ class IntensityTimeSeries(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 class EntityContribution(BaseModel):
     """An entity's contribution to a consolidated intensity.
 
@@ -486,7 +459,6 @@ class EntityContribution(BaseModel):
     entity_intensity: Optional[Decimal] = Field(default=None, description="Entity intensity")
     emissions_share_pct: Decimal = Field(default=Decimal("0"), description="Emissions share (%)")
     denominator_share_pct: Decimal = Field(default=Decimal("0"), description="Denominator share (%)")
-
 
 class ConsolidatedIntensity(BaseModel):
     """Result of multi-entity consolidated intensity calculation.
@@ -524,11 +496,9 @@ class ConsolidatedIntensity(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class IntensityCalculationEngine:
     """Core GHG emissions intensity calculation engine.
@@ -630,7 +600,7 @@ class IntensityCalculationEngine:
             scope_coverage_pct=coverage_pct,
             status=status,
             warnings=warnings,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         result.provenance_hash = _compute_hash(result)
@@ -722,7 +692,7 @@ class IntensityCalculationEngine:
             period_count=len(period_results),
             valid_period_count=len(valid_periods),
             warnings=warnings,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         ts_result.provenance_hash = _compute_hash(ts_result)
@@ -833,7 +803,7 @@ class IntensityCalculationEngine:
             entity_count=len(entities),
             entity_contributions=contributions,
             warnings=warnings,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         result.provenance_hash = _compute_hash(result)
@@ -996,11 +966,9 @@ class IntensityCalculationEngine:
         """Return Scope 3 category names."""
         return dict(SCOPE_3_CATEGORIES)
 
-
 # ---------------------------------------------------------------------------
 # Module-level convenience functions
 # ---------------------------------------------------------------------------
-
 
 def calculate_intensity(
     emissions_tco2e: Decimal,
@@ -1026,7 +994,6 @@ def calculate_intensity(
     precision_str = "0." + "0" * precision
     return (emissions / denom).quantize(Decimal(precision_str), rounding=ROUND_HALF_UP)
 
-
 def calculate_consolidated_intensity(
     entities: List[Tuple[Decimal, Decimal]],
     precision: int = DEFAULT_PRECISION,
@@ -1046,7 +1013,6 @@ def calculate_consolidated_intensity(
         return None
     precision_str = "0." + "0" * precision
     return (total_e / total_d).quantize(Decimal(precision_str), rounding=ROUND_HALF_UP)
-
 
 # ---------------------------------------------------------------------------
 # __all__

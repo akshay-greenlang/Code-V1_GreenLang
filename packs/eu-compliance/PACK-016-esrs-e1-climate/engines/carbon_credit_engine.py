@@ -67,25 +67,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -105,7 +99,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely.
 
@@ -119,7 +112,6 @@ def _decimal(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _safe_divide(
     numerator: float, denominator: float, default: float = 0.0
 ) -> float:
@@ -128,13 +120,11 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.01"), rounding=ROUND_HALF_UP
     ))
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
@@ -142,13 +132,11 @@ def _round3(value: float) -> float:
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
 
-
 def _round4(value: float) -> float:
     """Round to 4 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.0001"), rounding=ROUND_HALF_UP
     ))
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value to the specified number of decimal places.
@@ -165,11 +153,9 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CreditStandard(str, Enum):
     """Carbon credit standard or registry.
@@ -187,7 +173,6 @@ class CreditStandard(str, Enum):
     REDD_PLUS = "redd_plus"
     CUSTOM = "custom"
 
-
 class CreditType(str, Enum):
     """Type of carbon credit per AR E1-64.
 
@@ -197,7 +182,6 @@ class CreditType(str, Enum):
     """
     AVOIDANCE = "avoidance"
     REMOVAL = "removal"
-
 
 class ProjectType(str, Enum):
     """Type of carbon credit project.
@@ -216,7 +200,6 @@ class ProjectType(str, Enum):
     COOKSTOVES = "cookstoves"
     OTHER = "other"
 
-
 class CreditStatus(str, Enum):
     """Status of a carbon credit in the portfolio.
 
@@ -227,7 +210,6 @@ class CreditStatus(str, Enum):
     RETIRED = "retired"
     CANCELLED = "cancelled"
     PENDING = "pending"
-
 
 class RemovalType(str, Enum):
     """Type of GHG removal activity per AR E1-63.
@@ -245,7 +227,6 @@ class RemovalType(str, Enum):
     OCEAN_BASED = "ocean_based"
     OTHER = "other"
 
-
 class VerificationStatus(str, Enum):
     """Verification status of a GHG removal or credit."""
     VERIFIED = "verified"
@@ -253,11 +234,9 @@ class VerificationStatus(str, Enum):
     NOT_VERIFIED = "not_verified"
     SELF_ASSESSED = "self_assessed"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # Required ESRS E1-7 data points.
 E1_7_DATAPOINTS: Dict[str, str] = {
@@ -277,7 +256,6 @@ E1_7_DATAPOINTS: Dict[str, str] = {
     "e1_7_dp14": "Quality assessment of carbon credits (additionality, permanence)",
     "e1_7_dp15": "Role of carbon credits in the transition plan (E1-1)",
 }
-
 
 # Quality criteria for carbon credit assessment per AR E1-65.
 QUALITY_CRITERIA: Dict[str, Dict[str, Any]] = {
@@ -307,7 +285,6 @@ QUALITY_CRITERIA: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # SBTi guidance on carbon credit use per Corporate Net-Zero Standard v1.2.
 SBTI_BEYONDVALUECHAINMITIGATION: Dict[str, Any] = {
     "principle": "Carbon credits shall not substitute for direct emission "
@@ -336,7 +313,6 @@ SBTI_BEYONDVALUECHAINMITIGATION: Dict[str, Any] = {
     },
 }
 
-
 # Credit standard descriptions for reporting.
 CREDIT_STANDARD_DESCRIPTIONS: Dict[str, str] = {
     "verra_vcs": "Verified Carbon Standard (VCS) by Verra - largest voluntary carbon market standard",
@@ -348,7 +324,6 @@ CREDIT_STANDARD_DESCRIPTIONS: Dict[str, str] = {
     "redd_plus": "REDD+ - Reducing Emissions from Deforestation and Degradation",
     "custom": "Custom or emerging standard not listed in standard registries",
 }
-
 
 # Project type descriptions for reporting.
 PROJECT_TYPE_DESCRIPTIONS: Dict[str, str] = {
@@ -364,11 +339,9 @@ PROJECT_TYPE_DESCRIPTIONS: Dict[str, str] = {
     "other": "Other project type not in standard categories",
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class CarbonCredit(BaseModel):
     """A carbon credit held or retired by the undertaking per ESRS E1-7.
@@ -484,7 +457,6 @@ class CarbonCredit(BaseModel):
         description="SHA-256 provenance hash",
     )
 
-
 class GHGRemoval(BaseModel):
     """A GHG removal activity in the undertaking's own operations per E1-7.
 
@@ -547,7 +519,6 @@ class GHGRemoval(BaseModel):
         description="SHA-256 provenance hash",
     )
 
-
 class QualityAssessment(BaseModel):
     """Quality assessment of a carbon credit per AR E1-65.
 
@@ -596,7 +567,6 @@ class QualityAssessment(BaseModel):
         description="SHA-256 provenance hash",
     )
 
-
 class CarbonCreditResult(BaseModel):
     """Result of carbon credit portfolio compilation per ESRS E1-7.
 
@@ -613,7 +583,7 @@ class CarbonCreditResult(BaseModel):
         description="Engine version used for this compilation",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of compilation (UTC)",
     )
     credits: List[CarbonCredit] = Field(
@@ -685,11 +655,9 @@ class CarbonCreditResult(BaseModel):
         description="SHA-256 hash of the entire result",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class CarbonCreditEngine:
     """Carbon credit and GHG removal engine per ESRS E1-7.

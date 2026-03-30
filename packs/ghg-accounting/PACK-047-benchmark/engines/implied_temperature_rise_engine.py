@@ -91,23 +91,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -124,7 +119,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -133,7 +127,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -141,19 +134,15 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round4(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ITRMethod(str, Enum):
     """ITR calculation methodology.
@@ -166,7 +155,6 @@ class ITRMethod(str, Enum):
     SECTOR_RELATIVE = "sector_relative"
     RATE_REDUCTION = "rate_reduction"
 
-
 class ScopeVariant(str, Enum):
     """Scope variant for ITR calculation.
 
@@ -176,7 +164,6 @@ class ScopeVariant(str, Enum):
     S1_S2 = "s1_s2"
     S1_S2_S3 = "s1_s2_s3"
 
-
 class PCAFQuality(int, Enum):
     """PCAF data quality score (1=best, 5=worst)."""
     SCORE_1 = 1
@@ -184,7 +171,6 @@ class PCAFQuality(int, Enum):
     SCORE_3 = 3
     SCORE_4 = 4
     SCORE_5 = 5
-
 
 class TemperatureCategory(str, Enum):
     """Temperature outcome category.
@@ -202,7 +188,6 @@ class TemperatureCategory(str, Enum):
     T_2 = "2C"
     T_2_3 = "2C-3C"
     ABOVE_3 = "above_3C"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -256,11 +241,9 @@ CURRENT_WARMING: Decimal = Decimal("1.1")
 REFERENCE_YEAR: int = 2020
 TARGET_YEAR: int = 2050
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class ITRInput(BaseModel):
     """Input for ITR calculation for a single entity.
@@ -301,7 +284,6 @@ class ITRInput(BaseModel):
     def coerce_emissions(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class Holding(BaseModel):
     """A single holding in a portfolio for ITR aggregation.
 
@@ -327,7 +309,6 @@ class Holding(BaseModel):
     def coerce_dec(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class PortfolioITRInput(BaseModel):
     """Input for portfolio ITR calculation.
 
@@ -342,11 +323,9 @@ class PortfolioITRInput(BaseModel):
     holdings: List[Holding] = Field(default_factory=list, description="Holdings")
     output_precision: int = Field(default=2, ge=0, le=6)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class CarbonBudget(BaseModel):
     """Carbon budget analysis for an entity.
@@ -364,7 +343,6 @@ class CarbonBudget(BaseModel):
     overshoot_tco2e: Decimal = Field(default=Decimal("0"))
     overshoot_year: Optional[int] = Field(default=None)
 
-
 class TemperatureMapping(BaseModel):
     """Temperature-budget mapping detail.
 
@@ -378,7 +356,6 @@ class TemperatureMapping(BaseModel):
     budget_gtco2: Decimal = Field(default=Decimal("0"))
     entity_share: Decimal = Field(default=Decimal("0"))
     probability: str = Field(default="50%", description="Probability")
-
 
 class ITRResult(BaseModel):
     """Result of ITR calculation for a single entity.
@@ -424,7 +401,6 @@ class ITRResult(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 class PortfolioITR(BaseModel):
     """Portfolio-level ITR result.
 
@@ -459,11 +435,9 @@ class PortfolioITR(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ImpliedTemperatureRiseEngine:
     """Calculates Implied Temperature Rise for entities and portfolios.
@@ -573,7 +547,7 @@ class ImpliedTemperatureRiseEngine:
             required_rate_2_0c=REQUIRED_REDUCTION_RATES.get("2.0C", Decimal("0.027")),
             pcaf_quality=input_data.pcaf_quality.value,
             warnings=warnings,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         result.provenance_hash = _compute_hash(result)
@@ -658,7 +632,7 @@ class ImpliedTemperatureRiseEngine:
             weighted_quality=wq,
             holding_itrs=holding_details,
             warnings=warnings,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         result.provenance_hash = _compute_hash(result)
@@ -833,7 +807,6 @@ class ImpliedTemperatureRiseEngine:
 
     def get_version(self) -> str:
         return self._version
-
 
 # ---------------------------------------------------------------------------
 # __all__

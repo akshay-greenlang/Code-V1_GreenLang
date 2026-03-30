@@ -59,18 +59,14 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import Field, field_validator
 
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ReportingPeriod
 
 # ---------------------------------------------------------------------------
 # Helper
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -106,11 +102,9 @@ DEFAULT_REPAIR_DEADLINE_DAYS: int = 15
 #: Maximum delay of repair extension in calendar days.
 MAX_DELAY_OF_REPAIR_DAYS: int = 365
 
-
 # =============================================================================
 # Enumerations (16)
 # =============================================================================
-
 
 class FugitiveSourceCategory(str, Enum):
     """Broad classification of fugitive emission sources by sector and activity.
@@ -159,7 +153,6 @@ class FugitiveSourceCategory(str, Enum):
     TANK_STORAGE = "tank_storage"
     PNEUMATIC_DEVICES = "pneumatic_devices"
     OTHER = "other"
-
 
 class FugitiveSourceType(str, Enum):
     """Specific fugitive emission source type identifiers (25 values).
@@ -219,7 +212,6 @@ class FugitiveSourceType(str, Enum):
     COMPRESSOR_SEAL = "compressor_seal"
     FLANGE_CONNECTOR = "flange_connector"
 
-
 class ComponentType(str, Enum):
     """Classification of process equipment components for LDAR monitoring.
 
@@ -253,7 +245,6 @@ class ComponentType(str, Enum):
     FLANGE = "flange"
     OTHER = "other"
 
-
 class ServiceType(str, Enum):
     """Process stream service classification for component emission factors.
 
@@ -280,7 +271,6 @@ class ServiceType(str, Enum):
     HEAVY_LIQUID = "heavy_liquid"
     HYDROGEN = "hydrogen"
 
-
 class EmissionGas(str, Enum):
     """Greenhouse gases tracked in fugitive emission calculations.
 
@@ -300,7 +290,6 @@ class EmissionGas(str, Enum):
     CO2 = "CO2"
     N2O = "N2O"
     VOC = "VOC"
-
 
 class CalculationMethod(str, Enum):
     """Methodology for calculating fugitive emissions from equipment leaks.
@@ -330,7 +319,6 @@ class CalculationMethod(str, Enum):
     ENGINEERING_ESTIMATE = "ENGINEERING_ESTIMATE"
     DIRECT_MEASUREMENT = "DIRECT_MEASUREMENT"
 
-
 class EmissionFactorSource(str, Enum):
     """Source authority for fugitive emission factor values.
 
@@ -358,7 +346,6 @@ class EmissionFactorSource(str, Enum):
     API = "API"
     CUSTOM = "CUSTOM"
 
-
 class GWPSource(str, Enum):
     """IPCC Assessment Report edition used for GWP conversion factors.
 
@@ -375,7 +362,6 @@ class GWPSource(str, Enum):
     AR5 = "AR5"
     AR6 = "AR6"
     AR6_20YR = "AR6_20YR"
-
 
 class SurveyType(str, Enum):
     """Leak detection survey methodology type for LDAR programs.
@@ -397,7 +383,6 @@ class SurveyType(str, Enum):
     METHOD_21 = "METHOD_21"
     AVO = "AVO"
     HI_FLOW = "HI_FLOW"
-
 
 class LeakStatus(str, Enum):
     """Current leak status of an equipment component.
@@ -422,7 +407,6 @@ class LeakStatus(str, Enum):
     REPAIRED = "repaired"
     DELAY_OF_REPAIR = "delay_of_repair"
 
-
 class CoalRank(str, Enum):
     """Classification of coal by rank for methane content estimation.
 
@@ -445,7 +429,6 @@ class CoalRank(str, Enum):
     BITUMINOUS = "bituminous"
     SUBBITUMINOUS = "subbituminous"
     LIGNITE = "lignite"
-
 
 class WastewaterType(str, Enum):
     """Classification of wastewater treatment system types.
@@ -472,7 +455,6 @@ class WastewaterType(str, Enum):
     FACULTATIVE = "facultative"
     SEPTIC = "septic"
 
-
 class ComplianceStatus(str, Enum):
     """Compliance check result status for a regulatory framework.
 
@@ -486,20 +468,6 @@ class ComplianceStatus(str, Enum):
     NON_COMPLIANT = "non_compliant"
     PARTIAL = "partial"
     NOT_CHECKED = "not_checked"
-
-
-class ReportingPeriod(str, Enum):
-    """Temporal granularity for fugitive emission reporting aggregation.
-
-    MONTHLY: Calendar month aggregation.
-    QUARTERLY: Calendar quarter (Q1-Q4) aggregation.
-    ANNUAL: Full calendar or fiscal year aggregation.
-    """
-
-    MONTHLY = "monthly"
-    QUARTERLY = "quarterly"
-    ANNUAL = "annual"
-
 
 class UnitType(str, Enum):
     """Physical unit categories for activity data quantities.
@@ -516,7 +484,6 @@ class UnitType(str, Enum):
     VOLUME = "volume"
     COUNT = "count"
     TIME = "time"
-
 
 class TankType(str, Enum):
     """Classification of hydrocarbon storage tanks for loss estimation.
@@ -543,7 +510,6 @@ class TankType(str, Enum):
     FLOATING_ROOF_EXTERNAL = "floating_roof_external"
     FLOATING_ROOF_INTERNAL = "floating_roof_internal"
     PRESSURIZED = "pressurized"
-
 
 # =============================================================================
 # GWP Values Lookup Table
@@ -581,7 +547,6 @@ GWP_VALUES: Dict[str, Dict[str, Decimal]] = {
         "N2O": Decimal("273"),
     },
 }
-
 
 # =============================================================================
 # EPA Component-Level Average Emission Factors
@@ -650,7 +615,6 @@ EPA_COMPONENT_EMISSION_FACTORS: Dict[
     ("other", "hydrogen"): Decimal("0.00183"),
 }
 
-
 # =============================================================================
 # EPA Correlation Equation Coefficients
 # =============================================================================
@@ -674,7 +638,6 @@ EPA_CORRELATION_COEFFICIENTS: Dict[
     ("open_ended_line", "gas"): (Decimal("0.6230"), Decimal("-5.9580")),
     ("other", "gas"): (Decimal("0.6520"), Decimal("-6.4240")),
 }
-
 
 # =============================================================================
 # Coal Mine Methane Content by Rank and Mining Type
@@ -718,7 +681,6 @@ COAL_METHANE_FACTORS: Dict[str, Decimal] = {
     "lignite": Decimal("1.0"),
 }
 
-
 # =============================================================================
 # Wastewater Methane Correction Factors
 # =============================================================================
@@ -740,7 +702,6 @@ WASTEWATER_MCF: Dict[str, Decimal] = {
     "septic": Decimal("0.5"),
 }
 
-
 # =============================================================================
 # Pneumatic Device Emission Rates
 # =============================================================================
@@ -761,7 +722,6 @@ PNEUMATIC_RATES_M3_PER_DAY: Dict[str, Decimal] = {
     "LOW_BLEED": Decimal("0.945"),
     "INTERMITTENT": Decimal("9.18"),
 }
-
 
 # =============================================================================
 # Source Category to Source Type Mapping
@@ -843,7 +803,6 @@ SOURCE_CATEGORY_MAP: Dict[str, List[str]] = {
     "other": [],
 }
 
-
 # =============================================================================
 # Default Gases by Source Type
 # =============================================================================
@@ -879,13 +838,11 @@ SOURCE_DEFAULT_GASES: Dict[str, List[str]] = {
     "flange_connector": ["CH4", "VOC"],
 }
 
-
 # =============================================================================
 # Data Models (16)
 # =============================================================================
 
-
-class FugitiveSourceInfo(BaseModel):
+class FugitiveSourceInfo(GreenLangBase):
     """Metadata record describing a fugitive emission source type.
 
     Provides reference information about a source type including its
@@ -958,8 +915,7 @@ class FugitiveSourceInfo(BaseModel):
         description="Whether direct measurement is applicable",
     )
 
-
-class ComponentRecord(BaseModel):
+class ComponentRecord(GreenLangBase):
     """Registration record for a single equipment component in an LDAR program.
 
     Tracks component-level metadata required for fugitive emission
@@ -1051,8 +1007,7 @@ class ComponentRecord(BaseModel):
         description="Notes about the component",
     )
 
-
-class EmissionFactorRecord(BaseModel):
+class EmissionFactorRecord(GreenLangBase):
     """A single emission factor record for a fugitive source-gas combination.
 
     Emission factors define the mass of GHG released per component-hour,
@@ -1176,8 +1131,7 @@ class EmissionFactorRecord(BaseModel):
                 )
         return v
 
-
-class SurveyRecord(BaseModel):
+class SurveyRecord(GreenLangBase):
     """LDAR survey record for leak detection monitoring at a facility.
 
     Captures the metadata of a single LDAR survey event including the
@@ -1280,8 +1234,7 @@ class SurveyRecord(BaseModel):
             )
         return v
 
-
-class LeakRecord(BaseModel):
+class LeakRecord(GreenLangBase):
     """Individual leak record for a component detected during an LDAR survey.
 
     Tracks the detection, screening value, status, and repair deadline
@@ -1378,8 +1331,7 @@ class LeakRecord(BaseModel):
                 )
         return v
 
-
-class RepairRecord(BaseModel):
+class RepairRecord(GreenLangBase):
     """Record of a leak repair action performed on an equipment component.
 
     Documents the repair method, date, post-repair verification reading,
@@ -1468,8 +1420,7 @@ class RepairRecord(BaseModel):
         description="Notes about the repair",
     )
 
-
-class CalculationRequest(BaseModel):
+class CalculationRequest(GreenLangBase):
     """Input data for a single fugitive emission calculation.
 
     Represents one calculation request for a specific fugitive emission
@@ -1637,8 +1588,7 @@ class CalculationRequest(BaseModel):
             )
         return v
 
-
-class CalculationResult(BaseModel):
+class CalculationResult(GreenLangBase):
     """Complete result of a single fugitive emission calculation.
 
     Contains all calculated emissions by gas, total CO2e, the methodology
@@ -1774,7 +1724,7 @@ class CalculationResult(BaseModel):
         description="Calculation processing time in milliseconds",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the calculation was performed",
     )
     facility_id: Optional[str] = Field(
@@ -1798,8 +1748,7 @@ class CalculationResult(BaseModel):
         description="Emission factor source used",
     )
 
-
-class CalculationDetailResult(BaseModel):
+class CalculationDetailResult(GreenLangBase):
     """Detailed per-gas calculation breakdown for audit trail traceability.
 
     Captures the emission factor, raw emission mass, GWP multiplier,
@@ -1859,8 +1808,7 @@ class CalculationDetailResult(BaseModel):
         description="Step-by-step calculation trace for this gas",
     )
 
-
-class BatchCalculationRequest(BaseModel):
+class BatchCalculationRequest(GreenLangBase):
     """Request model for batch fugitive emission calculations.
 
     Groups multiple calculation inputs for processing as a single
@@ -1907,8 +1855,7 @@ class BatchCalculationRequest(BaseModel):
         description="Temporal granularity for the batch",
     )
 
-
-class BatchCalculationResult(BaseModel):
+class BatchCalculationResult(GreenLangBase):
     """Response model for a batch fugitive emission calculation.
 
     Aggregates individual calculation results with batch-level totals,
@@ -2009,8 +1956,7 @@ class BatchCalculationResult(BaseModel):
         description="Compliance check results (if requested)",
     )
 
-
-class UncertaintyRequest(BaseModel):
+class UncertaintyRequest(GreenLangBase):
     """Request model for uncertainty quantification of a fugitive emission.
 
     Configures Monte Carlo simulation parameters for propagating
@@ -2085,8 +2031,7 @@ class UncertaintyRequest(BaseModel):
                 )
         return v
 
-
-class UncertaintyResult(BaseModel):
+class UncertaintyResult(GreenLangBase):
     """Monte Carlo uncertainty quantification result for a fugitive emission.
 
     Provides statistical characterisation of emission estimate uncertainty
@@ -2173,8 +2118,7 @@ class UncertaintyResult(BaseModel):
         description="Calculation method used",
     )
 
-
-class ComplianceCheckResult(BaseModel):
+class ComplianceCheckResult(GreenLangBase):
     """Result of regulatory compliance checks across multiple frameworks.
 
     Captures the assessment of whether a fugitive emission calculation
@@ -2226,7 +2170,7 @@ class ComplianceCheckResult(BaseModel):
         ),
     )
     checked_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the check was performed",
     )
     calculation_id: Optional[str] = Field(
@@ -2234,8 +2178,7 @@ class ComplianceCheckResult(BaseModel):
         description="Calculation this check applies to",
     )
 
-
-class AggregationRequest(BaseModel):
+class AggregationRequest(GreenLangBase):
     """Request model for aggregating fugitive emissions.
 
     Defines the scope and grouping parameters for rolling up individual
@@ -2329,8 +2272,7 @@ class AggregationRequest(BaseModel):
                 )
         return v
 
-
-class AggregationResult(BaseModel):
+class AggregationResult(GreenLangBase):
     """Result of a fugitive emission aggregation across calculations.
 
     Rolls up individual calculation results into aggregate totals with
@@ -2437,7 +2379,6 @@ class AggregationResult(BaseModel):
         default=None,
         description="Temporal granularity",
     )
-
 
 # ---------------------------------------------------------------------------
 # Public API

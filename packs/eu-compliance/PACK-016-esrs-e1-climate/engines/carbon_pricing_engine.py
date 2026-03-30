@@ -65,25 +65,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -103,7 +97,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely.
 
@@ -117,7 +110,6 @@ def _decimal(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _safe_divide(
     numerator: float, denominator: float, default: float = 0.0
 ) -> float:
@@ -126,20 +118,17 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.01"), rounding=ROUND_HALF_UP
     ))
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value to the specified number of decimal places.
@@ -156,11 +145,9 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class PricingMechanism(str, Enum):
     """Type of internal carbon pricing mechanism per AR E1-69.
@@ -172,7 +159,6 @@ class PricingMechanism(str, Enum):
     INTERNAL_FEE = "internal_fee"
     IMPLICIT_PRICE = "implicit_price"
     OFFSET_PRICE = "offset_price"
-
 
 class PricingScope(str, Enum):
     """Scope of activities to which the carbon price applies per AR E1-72.
@@ -186,7 +172,6 @@ class PricingScope(str, Enum):
     INTERNAL_TRANSFER = "internal_transfer"
     ALL = "all"
 
-
 class CurrencyCode(str, Enum):
     """Currency codes for carbon pricing per AR E1-71.
 
@@ -199,11 +184,9 @@ class CurrencyCode(str, Enum):
     CHF = "CHF"
     JPY = "JPY"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # Required ESRS E1-8 data points.
 E1_8_DATAPOINTS: Dict[str, str] = {
@@ -221,7 +204,6 @@ E1_8_DATAPOINTS: Dict[str, str] = {
     "e1_8_dp12": "Whether shadow price scenarios are used for sensitivity analysis",
     "e1_8_dp13": "Shadow price trajectory (if applicable, price by year to 2050)",
 }
-
 
 # Reference carbon prices from major compliance and voluntary markets.
 # All prices in EUR per tCO2e as of early 2026.
@@ -282,7 +264,6 @@ REFERENCE_CARBON_PRICES: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # Shadow price benchmarks for scenario analysis.
 # Provides low, central, and high price trajectories from 2025 to 2050.
 SHADOW_PRICE_BENCHMARKS: Dict[str, Dict[int, Decimal]] = {
@@ -312,7 +293,6 @@ SHADOW_PRICE_BENCHMARKS: Dict[str, Dict[int, Decimal]] = {
     },
 }
 
-
 # Pricing mechanism descriptions for reporting.
 MECHANISM_DESCRIPTIONS: Dict[str, str] = {
     "shadow_price": "Shadow carbon price used in investment appraisals and project "
@@ -324,7 +304,6 @@ MECHANISM_DESCRIPTIONS: Dict[str, str] = {
     "offset_price": "Carbon offset price based on the average cost of carbon "
                     "credits purchased to compensate for emissions",
 }
-
 
 # Pricing scope descriptions.
 SCOPE_DESCRIPTIONS: Dict[str, str] = {
@@ -340,11 +319,9 @@ SCOPE_DESCRIPTIONS: Dict[str, str] = {
            "product pricing, and internal transfer)",
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class CarbonPrice(BaseModel):
     """An internal carbon price per ESRS E1-8.
@@ -416,7 +393,6 @@ class CarbonPrice(BaseModel):
         description="SHA-256 provenance hash",
     )
 
-
 class ShadowPriceScenario(BaseModel):
     """A shadow carbon price scenario for sensitivity analysis per AR E1-73.
 
@@ -465,7 +441,6 @@ class ShadowPriceScenario(BaseModel):
             raise ValueError("Scenario name cannot be empty")
         return v.strip()
 
-
 class CarbonPricingResult(BaseModel):
     """Result of carbon pricing disclosure compilation per ESRS E1-8.
 
@@ -481,7 +456,7 @@ class CarbonPricingResult(BaseModel):
         description="Engine version used for this compilation",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of compilation (UTC)",
     )
     applies_carbon_pricing: bool = Field(
@@ -541,11 +516,9 @@ class CarbonPricingResult(BaseModel):
         description="SHA-256 hash of the entire result",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class CarbonPricingEngine:
     """Internal carbon pricing engine per ESRS E1-8.

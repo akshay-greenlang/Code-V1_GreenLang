@@ -37,6 +37,7 @@ from typing import Any, Dict, List, Optional, Union
 
 import yaml
 from pydantic import BaseModel, Field, field_validator, model_validator
+from greenlang.schemas.enums import NotificationChannel
 
 logger = logging.getLogger(__name__)
 
@@ -188,14 +189,6 @@ class PropagationMethod(str, Enum):
     MONTE_CARLO = "MONTE_CARLO"
     ANALYTICAL_GUM = "ANALYTICAL_GUM"
     BOOTSTRAP = "BOOTSTRAP"
-
-
-class NotificationChannel(str, Enum):
-    """Available notification delivery channels."""
-    EMAIL = "EMAIL"
-    SLACK = "SLACK"
-    TEAMS = "TEAMS"
-    WEBHOOK = "WEBHOOK"
 
 
 # =============================================================================

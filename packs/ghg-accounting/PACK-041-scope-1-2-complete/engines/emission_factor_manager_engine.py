@@ -70,25 +70,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -106,7 +100,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -115,7 +108,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -127,22 +119,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EmissionFactorSource(str, Enum):
     """Source database for emission factors.
@@ -166,7 +154,6 @@ class EmissionFactorSource(str, Enum):
     IEA = "iea"
     SUPPLIER = "supplier"
     FACILITY = "facility"
-
 
 class FuelType(str, Enum):
     """Fuel type classification for emission factor lookup.
@@ -197,7 +184,6 @@ class FuelType(str, Enum):
     WASTE_OIL = "waste_oil"
     HYDROGEN = "hydrogen"
 
-
 class GasType(str, Enum):
     """Greenhouse gas type for GWP lookup.
 
@@ -217,7 +203,6 @@ class GasType(str, Enum):
     SF6 = "sf6"
     NF3 = "nf3"
 
-
 class AssessmentReport(str, Enum):
     """IPCC Assessment Report for GWP values.
 
@@ -228,7 +213,6 @@ class AssessmentReport(str, Enum):
     AR4 = "ar4"
     AR5 = "ar5"
     AR6 = "ar6"
-
 
 class FactorTier(str, Enum):
     """IPCC tier level for emission factors.
@@ -241,7 +225,6 @@ class FactorTier(str, Enum):
     TIER_2 = "tier_2"
     TIER_3 = "tier_3"
 
-
 class GridFactorMethod(str, Enum):
     """Grid electricity emission factor method.
 
@@ -250,7 +233,6 @@ class GridFactorMethod(str, Enum):
     """
     LOCATION_BASED = "location_based"
     MARKET_BASED = "market_based"
-
 
 class ConsistencyIssueType(str, Enum):
     """Type of consistency issue in factor usage.
@@ -268,7 +250,6 @@ class ConsistencyIssueType(str, Enum):
     MISSING_PROVENANCE = "missing_provenance"
     GWP_MISMATCH = "gwp_mismatch"
     TIER_MISMATCH = "tier_mismatch"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Emission Factor Database
@@ -640,11 +621,9 @@ SOURCE_PRIORITY: List[EmissionFactorSource] = [
 # for the same fuel type across facilities (percentage).
 FACTOR_DEVIATION_THRESHOLD_PCT: Decimal = Decimal("20.0")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class EmissionFactor(BaseModel):
     """A single emission factor with full provenance.
@@ -684,7 +663,6 @@ class EmissionFactor(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 class FactorRequest(BaseModel):
     """Request for an emission factor.
 
@@ -704,7 +682,6 @@ class FactorRequest(BaseModel):
     preferred_source: Optional[EmissionFactorSource] = Field(
         default=None, description="Preferred source"
     )
-
 
 class FactorOverride(BaseModel):
     """An override for a standard emission factor.
@@ -731,13 +708,12 @@ class FactorOverride(BaseModel):
     unit: str = Field(default="", description="Factor unit")
     justification: str = Field(default="", max_length=2000, description="Justification")
     approved_by: str = Field(default="", description="Approver")
-    approved_at: datetime = Field(default_factory=_utcnow, description="Approval time")
+    approved_at: datetime = Field(default_factory=utcnow, description="Approval time")
     source: EmissionFactorSource = Field(
         default=EmissionFactorSource.FACILITY, description="Override source"
     )
     expires_at: Optional[datetime] = Field(default=None, description="Expiry date")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class ConsistencyIssue(BaseModel):
     """A factor consistency issue.
@@ -758,7 +734,6 @@ class ConsistencyIssue(BaseModel):
     )
     severity: str = Field(default="medium", description="Severity")
     recommendation: str = Field(default="", description="Recommendation")
-
 
 class FactorProvenance(BaseModel):
     """Full provenance record for an emission factor.
@@ -785,7 +760,7 @@ class FactorProvenance(BaseModel):
     tier: FactorTier = Field(default=FactorTier.TIER_1, description="Tier")
     geography: str = Field(default="GLOBAL", description="Geography")
     retrieval_timestamp: datetime = Field(
-        default_factory=_utcnow, description="Retrieval time"
+        default_factory=utcnow, description="Retrieval time"
     )
     hash_chain: List[str] = Field(
         default_factory=list, description="Provenance hash chain"
@@ -793,7 +768,6 @@ class FactorProvenance(BaseModel):
     overrides: List[FactorOverride] = Field(
         default_factory=list, description="Applied overrides"
     )
-
 
 class FactorRegistryResult(BaseModel):
     """Result from the factor registry for a batch of lookups.
@@ -820,13 +794,12 @@ class FactorRegistryResult(BaseModel):
     total_lookups: int = Field(default=0, description="Total lookups")
     cache_hits: int = Field(default=0, description="Cache hits")
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp"
+        default_factory=utcnow, description="Timestamp"
     )
     processing_time_ms: Decimal = Field(
         default=Decimal("0"), description="Processing time (ms)"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 # ---------------------------------------------------------------------------
 # Model Rebuild (resolve forward references from __future__ annotations)
@@ -839,11 +812,9 @@ ConsistencyIssue.model_rebuild()
 FactorProvenance.model_rebuild()
 FactorRegistryResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class EmissionFactorManagerEngine:
     """Centralised emission factor management engine.
@@ -919,7 +890,7 @@ class EmissionFactorManagerEngine:
         override_key = f"{fuel_type}|{geography}|{gas}"
         if override_key in self._overrides:
             override = self._overrides[override_key]
-            if override.expires_at is None or override.expires_at > _utcnow():
+            if override.expires_at is None or override.expires_at > utcnow():
                 factor = self._build_factor_from_override(
                     override, fuel_type, gas, geography, year
                 )

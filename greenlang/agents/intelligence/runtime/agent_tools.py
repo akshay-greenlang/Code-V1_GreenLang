@@ -67,10 +67,11 @@ import inspect
 import logging
 from typing import Any, Callable, Dict, List, Optional, get_type_hints
 from functools import wraps
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import Field, ValidationError
 
 from greenlang.agents.intelligence.schemas.tools import ToolDef
 from greenlang.agents.intelligence.runtime.jsonio import validate_json_payload
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -109,7 +110,7 @@ class ToolTimeoutError(Exception):
     pass
 
 
-class ToolSpec(BaseModel):
+class ToolSpec(GreenLangBase):
     """
     Internal tool specification
 

@@ -28,6 +28,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "23.0.0"
@@ -38,20 +40,13 @@ FLAG_COMMODITIES = [
     "Rice", "Wheat", "Maize", "Soy", "Palm Oil", "Timber & Pulp",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -61,7 +56,6 @@ def _compute_hash(data: Any) -> str:
         raw = str(data)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _dec(val: Any, places: int = 2) -> str:
     """Format a value as a Decimal string with fixed decimal places."""
     try:
@@ -70,7 +64,6 @@ def _dec(val: Any, places: int = 2) -> str:
         return str(d.quantize(Decimal(q), rounding=ROUND_HALF_UP))
     except Exception:
         return str(val)
-
 
 def _dec_comma(val: Any, places: int = 2) -> str:
     """Format a Decimal value with thousands separator."""
@@ -96,7 +89,6 @@ def _dec_comma(val: Any, places: int = 2) -> str:
     except Exception:
         return str(val)
 
-
 def _pct(val: Any) -> str:
     """Format a value as percentage string."""
     try:
@@ -104,11 +96,9 @@ def _pct(val: Any) -> str:
     except Exception:
         return str(val)
 
-
 def _check_icon(passed: bool) -> str:
     """Return a text-based check indicator for markdown."""
     return "YES" if passed else "NO"
-
 
 def _flag_trigger_status(pct_val: float) -> str:
     """Determine FLAG trigger status based on 20% threshold."""
@@ -118,7 +108,6 @@ def _flag_trigger_status(pct_val: float) -> str:
         return "APPROACHING - FLAG target recommended"
     else:
         return "BELOW THRESHOLD - FLAG target optional"
-
 
 class FLAGAssessmentReportTemplate:
     """
@@ -145,7 +134,7 @@ class FLAGAssessmentReportTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render FLAG assessment report as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections: List[str] = [
             self._md_header(data),
             self._md_flag_overview(data),
@@ -163,7 +152,7 @@ class FLAGAssessmentReportTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render FLAG assessment report as self-contained HTML."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         body = "\n".join([
             self._html_header(data),
@@ -187,7 +176,7 @@ class FLAGAssessmentReportTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render FLAG assessment report as structured JSON."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         commodities = data.get("commodities", [])
         trigger = data.get("trigger_evaluation", {})
         luc = data.get("luc_emissions", {})

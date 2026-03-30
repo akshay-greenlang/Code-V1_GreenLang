@@ -57,6 +57,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -69,22 +71,14 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a unique identifier using UUID4."""
     return str(uuid.uuid4())
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -201,11 +195,9 @@ CHANGEOVER_COMPLIANT = "compliant"
 CHANGEOVER_NON_COMPLIANT = "non_compliant"
 CHANGEOVER_PARTIAL = "partial"
 
-
 # ---------------------------------------------------------------------------
 # Internal Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class LineRecord:
@@ -263,7 +255,6 @@ class LineRecord:
             "metadata": dict(self.metadata),
             "created_at": str(self.created_at) if self.created_at else "",
         }
-
 
 @dataclass
 class ChangeoverRecord:
@@ -325,7 +316,6 @@ class ChangeoverRecord:
             "findings": list(self.findings),
         }
 
-
 @dataclass
 class ProcessingVerificationResult:
     """Result of a comprehensive processing line verification.
@@ -376,11 +366,9 @@ class ProcessingVerificationResult:
             "processing_time_ms": self.processing_time_ms,
         }
 
-
 # ---------------------------------------------------------------------------
 # ProcessingLineVerifier
 # ---------------------------------------------------------------------------
-
 
 class ProcessingLineVerifier:
     """Production-grade processing line verification engine for EUDR compliance.
@@ -550,7 +538,7 @@ class ProcessingLineVerifier:
                 line_id, unknown_equipment,
             )
 
-        now = _utcnow()
+        now = utcnow()
         line = LineRecord(
             line_id=line_id,
             facility_id=facility_id,
@@ -679,7 +667,7 @@ class ProcessingLineVerifier:
         findings = compliance_result.get("findings", [])
         compliance_status = compliance_result.get("status", CHANGEOVER_NON_COMPLIANT)
 
-        now = _utcnow()
+        now = utcnow()
         changeover = ChangeoverRecord(
             changeover_id=_generate_id(),
             line_id=line_id,
@@ -891,7 +879,7 @@ class ProcessingLineVerifier:
             * PROCESSING_SCORE_WEIGHTS["temporal_separation"]
         )
 
-        now = _utcnow()
+        now = utcnow()
         elapsed_ms = (time.monotonic() - start_time) * 1000.0
 
         result = ProcessingVerificationResult(
@@ -1125,7 +1113,7 @@ class ProcessingLineVerifier:
             last = changeovers[-1]
             if last.timestamp:
                 changeover_date = last.timestamp.isoformat()
-                now = _utcnow()
+                now = utcnow()
                 hours_since = (now - last.timestamp).total_seconds() / 3600.0
             last_changeover_compliant = last.compliant
 
@@ -1675,7 +1663,6 @@ class ProcessingLineVerifier:
             f"lines={self.line_count}, "
             f"facilities={self.facility_count})"
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

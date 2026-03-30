@@ -39,9 +39,9 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from greenlang.agents.data.time_series_gap_filler.config import get_config
 from greenlang.agents.data.time_series_gap_filler.provenance import ProvenanceTracker
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Metrics import (graceful fallback)
@@ -67,11 +67,9 @@ except ImportError:
         "gap detector metrics disabled"
     )
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class GapType(str, Enum):
     """Classification of a detected gap by its length.
@@ -85,7 +83,6 @@ class GapType(str, Enum):
     MEDIUM = "medium_gap"
     LONG = "long_gap"
 
-
 class GapPattern(str, Enum):
     """Pattern classification of a gap based on its occurrence.
 
@@ -97,7 +94,6 @@ class GapPattern(str, Enum):
     PERIODIC = "periodic_gap"
     SYSTEMATIC = "systematic_gap"
     RANDOM = "random_gap"
-
 
 class Frequency(str, Enum):
     """Expected frequency of a time series for gap detection.
@@ -111,7 +107,6 @@ class Frequency(str, Enum):
     MONTHLY = "monthly"
     QUARTERLY = "quarterly"
     ANNUAL = "annual"
-
 
 # ---------------------------------------------------------------------------
 # Frequency delta mapping
@@ -130,11 +125,9 @@ FREQUENCY_DELTAS: Dict[Frequency, timedelta] = {
     Frequency.ANNUAL: timedelta(days=365),
 }
 
-
 # ---------------------------------------------------------------------------
 # Data models (dataclasses -- pure Python, no Pydantic dependency)
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class GapRecord:
@@ -154,7 +147,6 @@ class GapRecord:
     start_timestamp: Optional[datetime] = None
     end_timestamp: Optional[datetime] = None
 
-
 @dataclass
 class GapCharacterization:
     """Characterisation of a single gap including type and pattern.
@@ -172,7 +164,6 @@ class GapCharacterization:
     gap_pattern: GapPattern
     position_pct: float = 0.0
     details: Dict[str, Any] = field(default_factory=dict)
-
 
 @dataclass
 class GapDetectionResult:
@@ -202,11 +193,9 @@ class GapDetectionResult:
     provenance_hash: str = ""
     processing_time_ms: float = 0.0
 
-
 # ---------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------
-
 
 def _is_missing(value: Any) -> bool:
     """Determine whether a value represents a missing data point.
@@ -228,12 +217,6 @@ def _is_missing(value: Any) -> bool:
         return True
     return False
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _safe_mean(values: List[float]) -> float:
     """Compute arithmetic mean, returning 0.0 for empty lists.
 
@@ -247,11 +230,9 @@ def _safe_mean(values: List[float]) -> float:
         return 0.0
     return sum(values) / len(values)
 
-
 # ---------------------------------------------------------------------------
 # GapDetectorEngine
 # ---------------------------------------------------------------------------
-
 
 class GapDetectorEngine:
     """Pure-Python engine for detecting and characterising gaps in time series.
@@ -957,11 +938,9 @@ class GapDetectorEngine:
 
         return False
 
-
 # ---------------------------------------------------------------------------
 # Calendar-aware month addition helper
 # ---------------------------------------------------------------------------
-
 
 def _add_months(dt: datetime, months: int) -> datetime:
     """Add a number of months to a datetime, clamping to valid day.
@@ -984,7 +963,6 @@ def _add_months(dt: datetime, months: int) -> datetime:
     day = min(dt.day, max_day)
 
     return dt.replace(year=year, month=month, day=day)
-
 
 # ---------------------------------------------------------------------------
 # __all__ export list

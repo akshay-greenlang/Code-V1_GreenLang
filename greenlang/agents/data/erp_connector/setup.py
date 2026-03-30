@@ -34,7 +34,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.data.erp_connector.config import ERPConnectorConfig, get_config
 from greenlang.agents.data.erp_connector.metrics import (
@@ -52,6 +52,7 @@ from greenlang.agents.data.erp_connector.metrics import (
     update_sync_queue_size,
     erp_sync_duration_seconds,
 )
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -66,13 +67,11 @@ except ImportError:
     FastAPI = None  # type: ignore[assignment, misc]
     FASTAPI_AVAILABLE = False
 
-
 # ===================================================================
 # Lightweight Pydantic models used by the facade
 # ===================================================================
 
-
-class ERPConnection(BaseModel):
+class ERPConnection(GreenLangBase):
     """Record representing a registered ERP connection.
 
     Attributes:
@@ -104,8 +103,7 @@ class ERPConnection(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc).isoformat(),
     )
 
-
-class ConnectionTestResult(BaseModel):
+class ConnectionTestResult(GreenLangBase):
     """Result of an ERP connectivity test.
 
     Attributes:
@@ -125,8 +123,7 @@ class ConnectionTestResult(BaseModel):
     )
     provenance_hash: str = Field(default="")
 
-
-class ConnectionRemovalResult(BaseModel):
+class ConnectionRemovalResult(GreenLangBase):
     """Result of removing an ERP connection.
 
     Attributes:
@@ -140,8 +137,7 @@ class ConnectionRemovalResult(BaseModel):
     message: str = Field(default="Connection removed")
     provenance_hash: str = Field(default="")
 
-
-class SpendRecord(BaseModel):
+class SpendRecord(GreenLangBase):
     """Single spend record synced from ERP.
 
     Attributes:
@@ -171,8 +167,7 @@ class SpendRecord(BaseModel):
     scope3_category: Optional[str] = Field(default=None)
     provenance_hash: str = Field(default="")
 
-
-class SyncResult(BaseModel):
+class SyncResult(GreenLangBase):
     """Result of a data sync operation.
 
     Attributes:
@@ -204,8 +199,7 @@ class SyncResult(BaseModel):
     completed_at: Optional[str] = Field(default=None)
     provenance_hash: str = Field(default="")
 
-
-class SpendSummary(BaseModel):
+class SpendSummary(GreenLangBase):
     """Aggregated spend summary for a connection.
 
     Attributes:
@@ -229,8 +223,7 @@ class SpendSummary(BaseModel):
     period_end: Optional[str] = Field(default=None)
     provenance_hash: str = Field(default="")
 
-
-class PurchaseOrder(BaseModel):
+class PurchaseOrder(GreenLangBase):
     """Purchase order record synced from ERP.
 
     Attributes:
@@ -260,8 +253,7 @@ class PurchaseOrder(BaseModel):
     scope3_category: Optional[str] = Field(default=None)
     provenance_hash: str = Field(default="")
 
-
-class InventoryItem(BaseModel):
+class InventoryItem(GreenLangBase):
     """Inventory item record synced from ERP.
 
     Attributes:
@@ -291,8 +283,7 @@ class InventoryItem(BaseModel):
     last_receipt_date: Optional[str] = Field(default=None)
     provenance_hash: str = Field(default="")
 
-
-class VendorMapping(BaseModel):
+class VendorMapping(GreenLangBase):
     """Mapping of a vendor to a Scope 3 category.
 
     Attributes:
@@ -316,8 +307,7 @@ class VendorMapping(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc).isoformat(),
     )
 
-
-class MaterialMapping(BaseModel):
+class MaterialMapping(GreenLangBase):
     """Mapping of a material to a Scope 3 category.
 
     Attributes:
@@ -341,8 +331,7 @@ class MaterialMapping(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc).isoformat(),
     )
 
-
-class EmissionsResult(BaseModel):
+class EmissionsResult(GreenLangBase):
     """Result of a Scope 3 emissions calculation.
 
     Attributes:
@@ -376,8 +365,7 @@ class EmissionsResult(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc).isoformat(),
     )
 
-
-class EmissionsSummary(BaseModel):
+class EmissionsSummary(GreenLangBase):
     """Aggregated emissions summary for a connection.
 
     Attributes:
@@ -401,8 +389,7 @@ class EmissionsSummary(BaseModel):
     period_end: Optional[str] = Field(default=None)
     provenance_hash: str = Field(default="")
 
-
-class ERPStatistics(BaseModel):
+class ERPStatistics(GreenLangBase):
     """Aggregate statistics for the ERP connector service.
 
     Attributes:
@@ -432,11 +419,9 @@ class ERPStatistics(BaseModel):
     total_currency_conversions: int = Field(default=0)
     avg_sync_duration_seconds: float = Field(default=0.0)
 
-
 # ===================================================================
 # Provenance helper
 # ===================================================================
-
 
 class _ProvenanceTracker:
     """Minimal provenance tracker recording SHA-256 audit entries.
@@ -486,7 +471,6 @@ class _ProvenanceTracker:
         self.entry_count += 1
         return entry_hash
 
-
 # ===================================================================
 # ERPConnectorService facade
 # ===================================================================
@@ -494,12 +478,6 @@ class _ProvenanceTracker:
 # Thread-safe singleton lock
 _singleton_lock = threading.Lock()
 _singleton_instance: Optional[ERPConnectorService] = None
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -516,7 +494,6 @@ def _compute_hash(data: Any) -> str:
         serializable = data
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 class ERPConnectorService:
     """Unified facade over the ERP/Finance Connector SDK.
@@ -1899,11 +1876,9 @@ class ERPConnectorService:
         self._started = False
         logger.info("ERPConnectorService shut down")
 
-
 # ===================================================================
 # Thread-safe singleton access
 # ===================================================================
-
 
 def _get_singleton() -> ERPConnectorService:
     """Get or create the singleton ERPConnectorService instance.
@@ -1918,11 +1893,9 @@ def _get_singleton() -> ERPConnectorService:
                 _singleton_instance = ERPConnectorService()
     return _singleton_instance
 
-
 # ===================================================================
 # FastAPI integration
 # ===================================================================
-
 
 async def configure_erp_connector(
     app: Any,
@@ -1966,7 +1939,6 @@ async def configure_erp_connector(
     logger.info("ERP connector service configured on app")
     return service
 
-
 def get_erp_connector(app: Any) -> ERPConnectorService:
     """Get the ERPConnectorService instance from app state.
 
@@ -1987,7 +1959,6 @@ def get_erp_connector(app: Any) -> ERPConnectorService:
         )
     return service
 
-
 def get_router(service: Optional[ERPConnectorService] = None) -> Any:
     """Get the ERP connector API router.
 
@@ -2002,7 +1973,6 @@ def get_router(service: Optional[ERPConnectorService] = None) -> Any:
         return router
     except ImportError:
         return None
-
 
 __all__ = [
     "ERPConnectorService",

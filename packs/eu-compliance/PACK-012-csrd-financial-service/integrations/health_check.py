@@ -50,19 +50,13 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # =============================================================================
 # Utility Helpers
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute a SHA-256 hash of arbitrary data."""
@@ -70,11 +64,9 @@ def _hash_data(data: Any) -> str:
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # Agent Stub
 # =============================================================================
-
 
 class _AgentStub:
     """Deferred agent loader for lazy initialization."""
@@ -107,11 +99,9 @@ class _AgentStub:
         """Whether the agent has been loaded."""
         return self._instance is not None
 
-
 # =============================================================================
 # Enums
 # =============================================================================
-
 
 class CheckCategory(str, Enum):
     """Health check categories (22 total for FI CSRD)."""
@@ -138,7 +128,6 @@ class CheckCategory(str, Enum):
     AUTH_AUTHORIZATION = "auth_authorization"
     SYSTEM_RESOURCES = "system_resources"
 
-
 class CheckStatus(str, Enum):
     """Status of a single health check."""
     PASS = "pass"
@@ -147,14 +136,12 @@ class CheckStatus(str, Enum):
     SKIP = "skip"
     ERROR = "error"
 
-
 class ReadinessLevel(str, Enum):
     """Overall system readiness level."""
     READY = "ready"
     DEGRADED = "degraded"
     NOT_READY = "not_ready"
     CRITICAL = "critical"
-
 
 class InstitutionType(str, Enum):
     """Financial institution types (determines which categories are critical)."""
@@ -165,11 +152,9 @@ class InstitutionType(str, Enum):
     PENSION_FUND = "pension_fund"
     DEVELOPMENT_BANK = "development_bank"
 
-
 # =============================================================================
 # Data Models
 # =============================================================================
-
 
 class HealthCheckConfig(BaseModel):
     """Configuration for the FI CSRD Health Check."""
@@ -221,7 +206,6 @@ class HealthCheckConfig(BaseModel):
         description="Whether SFDR disclosures apply (asset managers, pension funds)",
     )
 
-
 class ComponentCheck(BaseModel):
     """Result of checking a single component within a category."""
     component_id: str = Field(default="", description="Component identifier")
@@ -234,7 +218,6 @@ class ComponentCheck(BaseModel):
     details: Dict[str, Any] = Field(
         default_factory=dict, description="Additional details",
     )
-
 
 class CategoryResult(BaseModel):
     """Result of checking a single health check category."""
@@ -265,7 +248,6 @@ class CategoryResult(BaseModel):
     execution_time_ms: float = Field(
         default=0.0, description="Category check execution time",
     )
-
 
 class HealthCheckResult(BaseModel):
     """Complete health check result for FI CSRD readiness."""
@@ -324,11 +306,9 @@ class HealthCheckResult(BaseModel):
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
     execution_time_ms: float = Field(default=0.0, description="Total execution time")
 
-
 # =============================================================================
 # Category Definitions
 # =============================================================================
-
 
 # Institution-specific criticality overrides
 INSTITUTION_CRITICAL_CATEGORIES: Dict[str, List[str]] = {
@@ -378,7 +358,6 @@ INSTITUTION_CRITICAL_CATEGORIES: Dict[str, List[str]] = {
         CheckCategory.CSRD_PACK_BRIDGE.value,
     ],
 }
-
 
 CATEGORY_DEFINITIONS: Dict[str, Dict[str, Any]] = {
     CheckCategory.FINANCED_EMISSIONS_ENGINE.value: {
@@ -617,11 +596,9 @@ CATEGORY_DEFINITIONS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # Engine Module Map
 # =============================================================================
-
 
 ENGINE_MODULE_MAP: Dict[str, Dict[str, str]] = {
     CheckCategory.FINANCED_EMISSIONS_ENGINE.value: {
@@ -658,7 +635,6 @@ ENGINE_MODULE_MAP: Dict[str, Dict[str, str]] = {
     },
 }
 
-
 BRIDGE_MODULE_MAP: Dict[str, Dict[str, str]] = {
     CheckCategory.CSRD_PACK_BRIDGE.value: {
         "module": "packs.eu_compliance.PACK_012_csrd_financial_service.integrations.csrd_pack_bridge",
@@ -690,11 +666,9 @@ BRIDGE_MODULE_MAP: Dict[str, Dict[str, str]] = {
     },
 }
 
-
 # =============================================================================
 # Health Check
 # =============================================================================
-
 
 class HealthCheck:
     """22-category system verification for FI CSRD readiness.
@@ -827,9 +801,9 @@ class HealthCheck:
         elapsed_ms = (time.time() - start_time) * 1000
 
         result = HealthCheckResult(
-            check_id=f"HC-FS-{_utcnow().strftime('%Y%m%d%H%M%S')}",
+            check_id=f"HC-FS-{utcnow().strftime('%Y%m%d%H%M%S')}",
             institution_type=self.config.institution_type,
-            checked_at=_utcnow().isoformat(),
+            checked_at=utcnow().isoformat(),
             is_ready=is_ready,
             readiness_level=readiness,
             overall_score=overall_score,
@@ -1203,6 +1177,7 @@ class HealthCheck:
         if comp_id == "SYS-MEMORY":
             try:
                 import os
+
                 if hasattr(os, "sysconf"):
                     pages = os.sysconf("SC_PHYS_PAGES")
                     page_size = os.sysconf("SC_PAGE_SIZE")

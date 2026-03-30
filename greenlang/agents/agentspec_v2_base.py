@@ -43,12 +43,13 @@ from pathlib import Path
 from typing import Any, Dict, Generic, List, Optional, TypeVar, Callable
 
 import yaml
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import Field, ValidationError
 
 from greenlang.specs.agentspec_v2 import AgentSpecV2
 from greenlang.specs.errors import GLValidationError, GLVErr
 from greenlang.types import AgentResult
 from greenlang.utilities.determinism import deterministic_uuid, DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -81,7 +82,7 @@ class AgentLifecycleState:
 # AgentSpec v2 Execution Context
 # ==============================================================================
 
-class AgentExecutionContext(BaseModel):
+class AgentExecutionContext(GreenLangBase):
     """Context object passed through agent lifecycle."""
 
     execution_id: str = Field(..., description="Unique execution identifier")

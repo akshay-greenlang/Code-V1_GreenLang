@@ -48,7 +48,8 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 
 
 # ---------------------------------------------------------------------------
@@ -125,7 +126,7 @@ class ContentType(str, Enum):
 # ---------------------------------------------------------------------------
 
 
-class Course(BaseModel):
+class Course(GreenLangBase):
     """Training course definition.
 
     Represents a single training course in the catalog with its metadata,
@@ -237,7 +238,7 @@ class Course(BaseModel):
         return result
 
 
-class Module(BaseModel):
+class Module(GreenLangBase):
     """Course module with content.
 
     A module is a single unit of learning within a course.
@@ -286,7 +287,7 @@ class Module(BaseModel):
     )
 
 
-class Question(BaseModel):
+class Question(GreenLangBase):
     """Assessment question with multiple choice options.
 
     Attributes:
@@ -344,7 +345,7 @@ class Question(BaseModel):
         return self
 
 
-class CourseContent(BaseModel):
+class CourseContent(GreenLangBase):
     """Full course content including modules and assessment questions.
 
     Attributes:
@@ -387,7 +388,7 @@ class CourseContent(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class TrainingCompletion(BaseModel):
+class TrainingCompletion(GreenLangBase):
     """User's completion record for a course.
 
     Tracks the user's progress through a course including start time,
@@ -459,7 +460,7 @@ class TrainingCompletion(BaseModel):
     )
 
 
-class Certificate(BaseModel):
+class Certificate(GreenLangBase):
     """Completion certificate with verification code.
 
     Certificates are issued when a user passes a course assessment.
@@ -539,7 +540,7 @@ class Certificate(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class PhishingCampaign(BaseModel):
+class PhishingCampaign(GreenLangBase):
     """Phishing simulation campaign definition.
 
     Manages the configuration and lifecycle of a phishing simulation
@@ -621,7 +622,7 @@ class PhishingCampaign(BaseModel):
     )
 
 
-class PhishingResult(BaseModel):
+class PhishingResult(GreenLangBase):
     """Individual phishing test result for a single user.
 
     Tracks each user's interaction with a phishing email.
@@ -694,7 +695,7 @@ class PhishingResult(BaseModel):
     )
 
 
-class CampaignMetrics(BaseModel):
+class CampaignMetrics(GreenLangBase):
     """Aggregated phishing campaign metrics.
 
     Attributes:
@@ -709,9 +710,6 @@ class CampaignMetrics(BaseModel):
         credential_rate: Percentage of credential submissions.
         report_rate: Percentage of users who reported.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     campaign_id: str = Field(
         ...,
         description="Campaign identifier.",
@@ -772,7 +770,7 @@ class CampaignMetrics(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class SecurityScore(BaseModel):
+class SecurityScore(GreenLangBase):
     """Employee security posture score.
 
     Composite score based on multiple security factors including training
@@ -835,7 +833,7 @@ class SecurityScore(BaseModel):
     )
 
 
-class UserProgress(BaseModel):
+class UserProgress(GreenLangBase):
     """Aggregated user training progress.
 
     Summarizes a user's overall training status across all courses.
@@ -852,9 +850,6 @@ class UserProgress(BaseModel):
         expiring_soon: Courses expiring within 30 days.
         security_score: Current security score.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     user_id: str = Field(
         ...,
         description="User identifier.",
@@ -907,7 +902,7 @@ class UserProgress(BaseModel):
     )
 
 
-class QuizSubmission(BaseModel):
+class QuizSubmission(GreenLangBase):
     """Quiz answer submission.
 
     Represents a user's answers to a quiz for grading.
@@ -919,9 +914,6 @@ class QuizSubmission(BaseModel):
         submitted_at: Submission timestamp.
         time_taken_seconds: Time taken to complete the quiz.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     user_id: str = Field(
         ...,
         description="User identifier.",

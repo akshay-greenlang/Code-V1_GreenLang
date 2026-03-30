@@ -40,35 +40,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.utcnow()
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hash of a string."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -79,7 +71,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -89,7 +80,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class LoadCriticality(str, Enum):
     """Criticality classification for facility loads."""
 
@@ -98,7 +88,6 @@ class LoadCriticality(str, Enum):
     NON_ESSENTIAL = "non_essential"
     SHEDDABLE = "sheddable"
 
-
 class FlexibilityTier(str, Enum):
     """Flexibility tier classification."""
 
@@ -106,7 +95,6 @@ class FlexibilityTier(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     NONE = "none"
-
 
 # =============================================================================
 # REFERENCE DATA (Zero-Hallucination)
@@ -206,11 +194,9 @@ LOAD_FLEXIBILITY_BENCHMARKS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -223,7 +209,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list, description="Warnings raised")
     errors: List[str] = Field(default_factory=list, description="Errors encountered")
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
-
 
 class LoadItem(BaseModel):
     """Individual load within a facility."""
@@ -239,7 +224,6 @@ class LoadItem(BaseModel):
     flexibility_tier: str = Field(default="none", description="high|medium|low|none")
     max_curtail_duration_min: int = Field(default=0, ge=0)
     ramp_time_min: int = Field(default=0, ge=0)
-
 
 class FlexibilityAssessmentInput(BaseModel):
     """Input data model for FlexibilityAssessmentWorkflow."""
@@ -263,7 +247,6 @@ class FlexibilityAssessmentInput(BaseModel):
             raise ValueError("facility_name must not be blank")
         return stripped
 
-
 class FlexibilityAssessmentResult(BaseModel):
     """Complete result from flexibility assessment workflow."""
 
@@ -282,11 +265,9 @@ class FlexibilityAssessmentResult(BaseModel):
     calculated_at: str = Field(default="", description="ISO 8601 timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 of complete result")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class FlexibilityAssessmentWorkflow:
     """
@@ -341,7 +322,7 @@ class FlexibilityAssessmentWorkflow:
             ValueError: If input validation fails.
         """
         t_start = time.perf_counter()
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting flexibility assessment workflow %s for facility=%s type=%s",
             self.assessment_id, input_data.facility_name, input_data.facility_type,
@@ -674,7 +655,7 @@ class FlexibilityAssessmentWorkflow:
             for ld in sorted(self._loads, key=lambda x: x.curtailable_kw, reverse=True)[:5]
         ]
         outputs["curtailable_by_category"] = {k: str(v) for k, v in by_category.items()}
-        outputs["report_generated_at"] = _utcnow().isoformat() + "Z"
+        outputs["report_generated_at"] = utcnow().isoformat() + "Z"
 
         elapsed_ms = (time.perf_counter() - t_start) * 1000.0
         self.logger.info(

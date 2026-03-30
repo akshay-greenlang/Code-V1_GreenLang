@@ -47,6 +47,7 @@ from typing import Any, Callable, Dict, Generic, List, Optional, Tuple, TypeVar,
 from uuid import uuid4
 
 import numpy as np
+from greenlang.schemas.enums import ReportFormat
 
 # Conditional Pydantic import
 try:
@@ -86,14 +87,6 @@ class ChartType(str, Enum):
     SCATTER_PLOT = "scatter_plot"
     PIE_CHART = "pie_chart"
     HISTOGRAM = "histogram"
-
-
-class ExportFormat(str, Enum):
-    """Supported export formats."""
-    JSON = "json"
-    CSV = "csv"
-    EXCEL = "excel"
-    PDF = "pdf"
 
 
 class TimeRange(str, Enum):
@@ -1213,7 +1206,7 @@ class DashboardStateManager:
     def export_data(
         self,
         data: Union[ExplanationDashboardData, GlobalImportanceChart, FeatureContributionChart],
-        format: ExportFormat = ExportFormat.JSON,
+        format: ReportFormat = ReportFormat.JSON,
     ) -> Union[str, bytes]:
         """
         Export dashboard data in specified format.
@@ -1225,10 +1218,10 @@ class DashboardStateManager:
         Returns:
             Exported data as string or bytes
         """
-        if format == ExportFormat.JSON:
+        if format == ReportFormat.JSON:
             return data.model_dump_json(indent=2)
 
-        elif format == ExportFormat.CSV:
+        elif format == ReportFormat.CSV:
             # Convert to CSV format
             lines = []
 
@@ -1939,8 +1932,8 @@ if FASTAPI_AVAILABLE:
     )
     async def export_dashboard_data(
         model_id: str,
-        format: ExportFormat = Query(
-            ExportFormat.JSON,
+        format: ReportFormat = Query(
+            ReportFormat.JSON,
             description="Export format"
         ),
         instance_data: Optional[str] = Query(
@@ -1972,7 +1965,7 @@ if FASTAPI_AVAILABLE:
         # Export
         exported = state.export_data(dashboard_data, format)
 
-        if format == ExportFormat.JSON:
+        if format == ReportFormat.JSON:
             return JSONResponse(
                 content=json.loads(exported),
                 media_type="application/json",
@@ -1980,7 +1973,7 @@ if FASTAPI_AVAILABLE:
                     "Content-Disposition": f"attachment; filename=explanation_{model_id}.json"
                 }
             )
-        elif format == ExportFormat.CSV:
+        elif format == ReportFormat.CSV:
             return Response(
                 content=exported,
                 media_type="text/csv",
@@ -2085,7 +2078,7 @@ else:
 __all__ = [
     # Enums
     "ChartType",
-    "ExportFormat",
+    "ReportFormat",
     "TimeRange",
     "DashboardViewMode",
     # Data Models

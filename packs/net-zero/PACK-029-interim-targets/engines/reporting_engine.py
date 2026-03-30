@@ -82,6 +82,8 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
@@ -89,9 +91,6 @@ _MODULE_VERSION: str = "1.0.0"
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
@@ -131,7 +130,6 @@ def _round_val(value: Decimal, places: int = 6) -> Decimal:
 def _round3(value: float) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
@@ -166,7 +164,6 @@ class DataQuality(str, Enum):
     LOW = "low"
     ESTIMATED = "estimated"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -200,7 +197,6 @@ TCFD_METRICS_TEMPLATE: Dict[str, str] = {
     "progress_vs_target_pct": "Progress vs target (%)",
     "annual_reduction_rate_pct": "Annual reduction rate (%)",
 }
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
@@ -256,7 +252,6 @@ class ReportingInput(BaseModel):
     recalculation_reason: str = Field(default="", max_length=500)
     sector: str = Field(default="", max_length=100)
     country: str = Field(default="", max_length=2)
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
@@ -320,7 +315,7 @@ class ReportingResult(BaseModel):
     """Complete reporting result."""
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     entity_id: str = Field(default="")
     report_types_generated: List[str] = Field(default_factory=list)
@@ -335,7 +330,6 @@ class ReportingResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine

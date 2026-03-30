@@ -60,9 +60,10 @@ import logging
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException, Query, Response
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.eudr.stakeholder_engagement.setup import get_service
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +73,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-class MapStakeholderRequest(BaseModel):
+class MapStakeholderRequest(GreenLangBase):
     """Request body for mapping a stakeholder."""
     operator_id: str = Field(..., description="EUDR operator identifier")
     name: str = Field(..., description="Stakeholder name")
@@ -84,26 +85,26 @@ class MapStakeholderRequest(BaseModel):
     metadata: Optional[Dict[str, Any]] = Field(None, description="Extra metadata")
 
 
-class InitiateFPICRequest(BaseModel):
+class InitiateFPICRequest(GreenLangBase):
     """Request body for initiating an FPIC workflow."""
     operator_id: str = Field(..., description="EUDR operator identifier")
     stakeholder_id: str = Field(..., description="Stakeholder identifier")
     supply_chain_node: str = Field(default="", description="Supply chain node")
 
 
-class AdvanceStageRequest(BaseModel):
+class AdvanceStageRequest(GreenLangBase):
     """Request body for advancing an FPIC stage."""
     next_stage: str = Field(..., description="Target FPIC stage")
     evidence: Optional[Dict[str, Any]] = Field(None, description="Stage evidence")
 
 
-class RecordConsentRequest(BaseModel):
+class RecordConsentRequest(GreenLangBase):
     """Request body for recording FPIC consent."""
     consent_status: str = Field(..., description="Consent status")
     agreement_terms: Optional[Dict[str, Any]] = Field(None, description="Agreement terms")
 
 
-class SubmitGrievanceRequest(BaseModel):
+class SubmitGrievanceRequest(GreenLangBase):
     """Request body for submitting a grievance."""
     operator_id: str = Field(..., description="Operator identifier")
     description: str = Field(..., description="Complaint description")
@@ -114,7 +115,7 @@ class SubmitGrievanceRequest(BaseModel):
     supply_chain_node: str = Field(default="", description="Supply chain node")
 
 
-class InvestigateRequest(BaseModel):
+class InvestigateRequest(GreenLangBase):
     """Request body for investigating a grievance."""
     investigator: str = Field(default="", description="Investigator name")
     findings: str = Field(default="", description="Investigation findings")
@@ -122,7 +123,7 @@ class InvestigateRequest(BaseModel):
     root_cause: str = Field(default="", description="Root cause")
 
 
-class ResolveGrievanceRequest(BaseModel):
+class ResolveGrievanceRequest(GreenLangBase):
     """Request body for resolving a grievance."""
     resolution_type: str = Field(default="", description="Resolution type")
     actions_taken: Optional[List[str]] = Field(None, description="Actions taken")
@@ -131,7 +132,7 @@ class ResolveGrievanceRequest(BaseModel):
     resolved_by: str = Field(default="", description="Resolver identity")
 
 
-class CreateConsultationRequest(BaseModel):
+class CreateConsultationRequest(GreenLangBase):
     """Request body for creating a consultation."""
     operator_id: str = Field(..., description="Operator identifier")
     title: str = Field(..., description="Consultation title")
@@ -143,7 +144,7 @@ class CreateConsultationRequest(BaseModel):
     language: str = Field(default="en", description="Language")
 
 
-class SendCommunicationRequest(BaseModel):
+class SendCommunicationRequest(GreenLangBase):
     """Request body for sending a communication."""
     operator_id: str = Field(..., description="Operator identifier")
     stakeholder_ids: List[str] = Field(..., description="Target stakeholders")
@@ -153,7 +154,7 @@ class SendCommunicationRequest(BaseModel):
     language: str = Field(default="en", description="Language")
 
 
-class ScheduleCommunicationRequest(BaseModel):
+class ScheduleCommunicationRequest(GreenLangBase):
     """Request body for scheduling a communication."""
     operator_id: str = Field(..., description="Operator identifier")
     stakeholder_ids: List[str] = Field(..., description="Target stakeholders")
@@ -164,7 +165,7 @@ class ScheduleCommunicationRequest(BaseModel):
     language: str = Field(default="en", description="Language")
 
 
-class SendCampaignRequest(BaseModel):
+class SendCampaignRequest(GreenLangBase):
     """Request body for sending a campaign."""
     operator_id: str = Field(..., description="Operator identifier")
     stakeholder_ids: List[str] = Field(..., description="Target stakeholders")
@@ -174,14 +175,14 @@ class SendCampaignRequest(BaseModel):
     language: str = Field(default="en", description="Language")
 
 
-class AssessEngagementRequest(BaseModel):
+class AssessEngagementRequest(GreenLangBase):
     """Request body for assessing engagement quality."""
     operator_id: str = Field(..., description="Operator identifier")
     period: Optional[Dict[str, str]] = Field(None, description="Period start/end")
     engagement_data: Optional[Dict[str, Any]] = Field(None, description="Engagement data")
 
 
-class GenerateReportRequest(BaseModel):
+class GenerateReportRequest(GreenLangBase):
     """Request body for generating a compliance report."""
     operator_id: str = Field(..., description="Operator identifier")
     report_type: str = Field(..., description="Report type")
@@ -189,7 +190,7 @@ class GenerateReportRequest(BaseModel):
     period: Optional[Dict[str, str]] = Field(None, description="Period start/end")
 
 
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     """Standard error response body."""
     detail: str = Field(..., description="Error description")
     error_code: str = Field(default="internal_error", description="Error classification")

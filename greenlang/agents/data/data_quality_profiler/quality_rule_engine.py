@@ -58,22 +58,17 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Set, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 __all__ = [
     "QualityRuleEngine",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _generate_id(prefix: str = "QRL") -> str:
     """Generate a unique identifier with the given prefix.
@@ -86,7 +81,6 @@ def _generate_id(prefix: str = "QRL") -> str:
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
 
-
 def _compute_provenance(operation: str, data_repr: str) -> str:
     """Compute SHA-256 provenance hash for a rule engine operation.
 
@@ -97,9 +91,8 @@ def _compute_provenance(operation: str, data_repr: str) -> str:
     Returns:
         Hex-encoded SHA-256 digest.
     """
-    payload = f"{operation}:{data_repr}:{_utcnow().isoformat()}"
+    payload = f"{operation}:{data_repr}:{utcnow().isoformat()}"
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
-
 
 def _is_missing(value: Any) -> bool:
     """Determine whether a value is considered missing.
@@ -115,7 +108,6 @@ def _is_missing(value: Any) -> bool:
     if isinstance(value, str) and value.strip() == "":
         return True
     return False
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -166,11 +158,9 @@ SEVERITY_MEDIUM = "medium"
 SEVERITY_LOW = "low"
 SEVERITY_INFO = "info"
 
-
 # ---------------------------------------------------------------------------
 # QualityRuleEngine
 # ---------------------------------------------------------------------------
-
 
 class QualityRuleEngine:
     """Custom quality rules and quality gates engine.
@@ -278,7 +268,7 @@ class QualityRuleEngine:
                 )
 
         rule_id = _generate_id("QRL")
-        now = _utcnow()
+        now = utcnow()
 
         rule: Dict[str, Any] = {
             "rule_id": rule_id,
@@ -385,7 +375,7 @@ class QualityRuleEngine:
             for key, value in updates.items():
                 rule[key] = value
 
-            rule["updated_at"] = _utcnow().isoformat()
+            rule["updated_at"] = utcnow().isoformat()
             rule["version"] = rule.get("version", 1) + 1
 
             provenance_data = json.dumps({
@@ -502,7 +492,7 @@ class QualityRuleEngine:
             "violation_count": fail_count,
             "provenance_hash": provenance_hash,
             "evaluation_time_ms": round(elapsed_ms, 2),
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
         with self._lock:
@@ -669,7 +659,7 @@ class QualityRuleEngine:
             return False
 
         max_age = params.get("max_age_hours", 24.0)
-        now = _utcnow()
+        now = utcnow()
 
         # Try ISO format parsing
         if isinstance(value, str):
@@ -849,7 +839,7 @@ class QualityRuleEngine:
                 )
 
         gate_id = _generate_id("GTE")
-        now = _utcnow()
+        now = utcnow()
         pass_threshold = threshold if threshold is not None else 1.0
 
         gate: Dict[str, Any] = {
@@ -1160,5 +1150,5 @@ class QualityRuleEngine:
                 "stored_rules": len(self._rules),
                 "stored_gates": len(self._gates),
                 "stored_evaluations": len(self._evaluations),
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }

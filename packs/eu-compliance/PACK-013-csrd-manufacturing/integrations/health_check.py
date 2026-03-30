@@ -14,6 +14,7 @@ import time
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 from pydantic import BaseModel, Field
+from greenlang.schemas.enums import HealthStatus
 
 logger = logging.getLogger(__name__)
 
@@ -21,14 +22,6 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
-class HealthStatus(str, Enum):
-    """Health check status."""
-    HEALTHY = "healthy"
-    DEGRADED = "degraded"
-    UNHEALTHY = "unhealthy"
-    UNKNOWN = "unknown"
-
 
 class HealthCategory(str, Enum):
     """The 22 health check categories."""

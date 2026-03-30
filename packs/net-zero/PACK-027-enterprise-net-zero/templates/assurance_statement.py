@@ -36,6 +36,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "27.0.0"
@@ -64,19 +66,12 @@ ASSURANCE_LEVELS = {
     },
 }
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str) if isinstance(data, dict) else str(data)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 def _dec_comma(val: Any, places: int = 0) -> str:
     try:
@@ -101,13 +96,11 @@ def _dec_comma(val: Any, places: int = 0) -> str:
     except Exception:
         return str(val)
 
-
 def _pct(val: Any) -> str:
     try:
         return str(round(float(val), 1)) + "%"
     except Exception:
         return str(val)
-
 
 class AssuranceStatementTemplate:
     """
@@ -129,7 +122,7 @@ class AssuranceStatementTemplate:
         self.generated_at: Optional[datetime] = None
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         level = data.get("assurance_level", "limited")
         al = ASSURANCE_LEVELS.get(level, ASSURANCE_LEVELS["limited"])
 
@@ -155,7 +148,7 @@ class AssuranceStatementTemplate:
         return content + f"\n\n<!-- SHA-256 Provenance: {prov} -->"
 
     def render_html(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         level = data.get("assurance_level", "limited")
         al = ASSURANCE_LEVELS.get(level, ASSURANCE_LEVELS["limited"])
         css = (
@@ -206,7 +199,7 @@ class AssuranceStatementTemplate:
         )
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         level = data.get("assurance_level", "limited")
         al = ASSURANCE_LEVELS.get(level, ASSURANCE_LEVELS["limited"])
         s1 = float(data.get("scope1_tco2e", 0))
@@ -245,7 +238,7 @@ class AssuranceStatementTemplate:
         return result
 
     def render_excel(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = {
             "template": _TEMPLATE_ID,
             "version": _MODULE_VERSION,

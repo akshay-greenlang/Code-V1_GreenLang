@@ -57,25 +57,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -102,7 +96,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -118,7 +111,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -139,7 +131,6 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100).
 
@@ -151,7 +142,6 @@ def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
         Percentage as Decimal; Decimal("0") when whole is zero.
     """
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* and return a float.
@@ -168,26 +158,21 @@ def _round_val(value: Decimal, places: int = 6) -> float:
     quantizer = Decimal(10) ** -places
     return float(value.quantize(quantizer, rounding=ROUND_HALF_UP))
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: float) -> float:
     """Round to 4 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class BuildingType(str, Enum):
     """Building types for benchmarking.
@@ -212,7 +197,6 @@ class BuildingType(str, Enum):
     PRISON = "prison"
     RESIDENTIAL_APARTMENT = "residential_apartment"
 
-
 class BenchmarkStandard(str, Enum):
     """Benchmarking standards and rating systems."""
     ENERGY_STAR = "energy_star"
@@ -224,7 +208,6 @@ class BenchmarkStandard(str, Enum):
     BREEAM = "breeam"
     ASHRAE_BEAP = "ashrae_beap"
 
-
 class ClimateZone(str, Enum):
     """Climate zones for weather normalisation."""
     NORTHERN_EUROPE = "northern_europe"
@@ -233,7 +216,6 @@ class ClimateZone(str, Enum):
     MEDITERRANEAN = "mediterranean"
     OCEANIC = "oceanic"
     CONTINENTAL = "continental"
-
 
 class DECRating(str, Enum):
     """Display Energy Certificate rating bands A-G."""
@@ -245,12 +227,10 @@ class DECRating(str, Enum):
     F = "F"
     G = "G"
 
-
 class CRREMScenario(str, Enum):
     """CRREM pathway scenarios."""
     SCENARIO_1_5C = "1.5C"
     SCENARIO_2_0C = "2.0C"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- EUI Benchmarks (kWh/m2/yr)
@@ -501,7 +481,6 @@ EUI_BENCHMARKS: Dict[str, Dict[str, Dict[str, float]]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Constants -- DEC Rating Thresholds
 # ---------------------------------------------------------------------------
@@ -518,7 +497,6 @@ DEC_RATING_THRESHOLDS: Dict[str, Dict[str, int]] = {
     DECRating.F: {"lower": 126, "upper": 150},
     DECRating.G: {"lower": 151, "upper": 9999},
 }
-
 
 # ---------------------------------------------------------------------------
 # Constants -- CRREM Pathways (kgCO2/m2/yr)
@@ -600,7 +578,6 @@ CRREM_PATHWAYS: Dict[str, Dict[str, Dict[int, float]]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Constants -- Typical End Use Split (%)
 # ---------------------------------------------------------------------------
@@ -655,7 +632,6 @@ TYPICAL_END_USE_SPLIT: Dict[str, Dict[str, float]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Constants -- Weather Correction (Reference HDD)
 # ---------------------------------------------------------------------------
@@ -688,7 +664,6 @@ WEATHER_REFERENCE_HDD: Dict[str, Dict[str, float]] = {
         "base_cooling_c": 18.0, "source": "Eurostat, PL/CZ/HU"
     },
 }
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Occupancy Correction Factors
@@ -730,7 +705,6 @@ OCCUPANCY_CORRECTION: Dict[str, Dict[str, float]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Constants -- Carbon Factors for DEC / CRREM
 # ---------------------------------------------------------------------------
@@ -747,11 +721,9 @@ CARBON_FACTORS_KG_PER_KWH: Dict[str, float] = {
     "lpg": 0.214,
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Input Models
 # ---------------------------------------------------------------------------
-
 
 class EnergyConsumptionInput(BaseModel):
     """Annual energy consumption breakdown."""
@@ -781,7 +753,6 @@ class EnergyConsumptionInput(BaseModel):
         0.0, ge=0, description="On-site renewable generation in kWh"
     )
 
-
 class WeatherDataInput(BaseModel):
     """Actual weather data for the assessment period."""
 
@@ -791,7 +762,6 @@ class WeatherDataInput(BaseModel):
     actual_cdd: float = Field(
         0.0, ge=0, description="Actual Cooling Degree Days for the period"
     )
-
 
 class PeerBuildingInput(BaseModel):
     """Peer building data for comparison."""
@@ -803,7 +773,6 @@ class PeerBuildingInput(BaseModel):
     carbon_intensity_kg_per_m2: Optional[float] = Field(
         None, description="Peer building carbon intensity kgCO2/m2/yr"
     )
-
 
 class BenchmarkInput(BaseModel):
     """Top-level benchmarking assessment input."""
@@ -853,11 +822,9 @@ class BenchmarkInput(BaseModel):
         0.08, description="Gas cost EUR/kWh"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Result Models
 # ---------------------------------------------------------------------------
-
 
 class EUIResult(BaseModel):
     """Energy Use Intensity calculation result."""
@@ -890,7 +857,6 @@ class EUIResult(BaseModel):
         ..., description="Performance tier vs benchmarks"
     )
 
-
 class DECResult(BaseModel):
     """Display Energy Certificate rating result."""
 
@@ -904,7 +870,6 @@ class DECResult(BaseModel):
     improvement_to_next_band: Optional[float] = Field(
         None, description="EUI reduction needed to reach next band (kWh/m2)"
     )
-
 
 class CRREMResult(BaseModel):
     """CRREM pathway compliance result."""
@@ -929,7 +894,6 @@ class CRREMResult(BaseModel):
         ..., description="Percentage reduction needed to meet target"
     )
 
-
 class EnergyStarResult(BaseModel):
     """Estimated ENERGY STAR score."""
 
@@ -943,7 +907,6 @@ class EnergyStarResult(BaseModel):
         ..., description="Whether score >= 75 (certification threshold)"
     )
 
-
 class PeerComparisonResult(BaseModel):
     """Peer comparison result."""
 
@@ -956,7 +919,6 @@ class PeerComparisonResult(BaseModel):
         ..., description="Percentage difference"
     )
 
-
 class EndUseSplitResult(BaseModel):
     """End use energy breakdown."""
 
@@ -966,7 +928,6 @@ class EndUseSplitResult(BaseModel):
     plug_loads_kwh: float = Field(0, description="Estimated plug loads")
     dhw_kwh: float = Field(0, description="Estimated DHW energy")
     fans_pumps_kwh: float = Field(0, description="Estimated fans/pumps energy")
-
 
 class GapAnalysisResult(BaseModel):
     """Gap to best practice analysis."""
@@ -986,7 +947,6 @@ class GapAnalysisResult(BaseModel):
     potential_carbon_saving_kg: float = Field(
         ..., description="Total potential carbon saving in kgCO2e/yr"
     )
-
 
 class BuildingBenchmarkResult(BaseModel):
     """Complete benchmarking assessment result."""
@@ -1034,11 +994,9 @@ class BuildingBenchmarkResult(BaseModel):
     processing_time_ms: float = Field(..., description="Processing time ms")
     provenance_hash: str = Field(..., description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class BuildingBenchmarkEngine:
     """Building energy benchmarking engine.
@@ -1176,7 +1134,7 @@ class BuildingBenchmarkEngine:
             total_annual_carbon_kg=_round2(float(total_carbon)),
             carbon_intensity_kg_per_m2=_round2(float(carbon_intensity)),
             recommendations=recommendations,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=_round3(processing_ms),
             provenance_hash="",
         )

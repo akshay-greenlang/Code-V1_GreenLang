@@ -54,7 +54,8 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import ConfigDict, Field
+from greenlang.schemas import GreenLangBase, utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -164,31 +165,21 @@ except ImportError:
     _MetricsCollector = None  # type: ignore[assignment, misc]
     _METRICS_AVAILABLE = False
 
-
 # ===================================================================
 # Utility helpers
 # ===================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _utcnow_iso() -> str:
     """Return current UTC datetime as an ISO-8601 string."""
-    return _utcnow().isoformat()
-
+    return utcnow().isoformat()
 
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 def _short_id(prefix: str) -> str:
     """Generate a short prefixed identifier using UUID4 hex truncation."""
     return f"{prefix}_{uuid.uuid4().hex[:12]}"
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -205,7 +196,6 @@ def _compute_hash(data: Any) -> str:
         serializable = data
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 # ===================================================================
 # Agricultural source categories and reference constants
@@ -287,13 +277,11 @@ COMPLIANCE_FRAMEWORKS: List[str] = [
     "SBTi_FLAG",
 ]
 
-
 # ===================================================================
 # Lightweight Pydantic response models (14 models)
 # ===================================================================
 
-
-class CalculateResponse(BaseModel):
+class CalculateResponse(GreenLangBase):
     """Single agricultural emission calculation response."""
 
     model_config = ConfigDict(frozen=True)
@@ -318,8 +306,7 @@ class CalculateResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
-class BatchCalculateResponse(BaseModel):
+class BatchCalculateResponse(GreenLangBase):
     """Batch agricultural emission calculation response."""
 
     model_config = ConfigDict(frozen=True)
@@ -338,8 +325,7 @@ class BatchCalculateResponse(BaseModel):
     results: List[Dict[str, Any]] = Field(default_factory=list)
     processing_time_ms: float = Field(default=0.0)
 
-
-class FarmResponse(BaseModel):
+class FarmResponse(GreenLangBase):
     """Response for a single farm / agricultural facility."""
 
     model_config = ConfigDict(frozen=True)
@@ -359,8 +345,7 @@ class FarmResponse(BaseModel):
     created_at: str = Field(default="")
     updated_at: str = Field(default="")
 
-
-class FarmListResponse(BaseModel):
+class FarmListResponse(GreenLangBase):
     """Response listing farms / agricultural facilities."""
 
     model_config = ConfigDict(frozen=True)
@@ -370,8 +355,7 @@ class FarmListResponse(BaseModel):
     page: int = Field(default=1)
     page_size: int = Field(default=20)
 
-
-class LivestockResponse(BaseModel):
+class LivestockResponse(GreenLangBase):
     """Response for a single livestock population record."""
 
     model_config = ConfigDict(frozen=True)
@@ -393,8 +377,7 @@ class LivestockResponse(BaseModel):
     created_at: str = Field(default="")
     updated_at: str = Field(default="")
 
-
-class LivestockListResponse(BaseModel):
+class LivestockListResponse(GreenLangBase):
     """Response listing livestock populations."""
 
     model_config = ConfigDict(frozen=True)
@@ -404,8 +387,7 @@ class LivestockListResponse(BaseModel):
     page: int = Field(default=1)
     page_size: int = Field(default=20)
 
-
-class CroplandInputResponse(BaseModel):
+class CroplandInputResponse(GreenLangBase):
     """Response for a single cropland input record (fertiliser/lime/urea)."""
 
     model_config = ConfigDict(frozen=True)
@@ -425,8 +407,7 @@ class CroplandInputResponse(BaseModel):
     created_at: str = Field(default="")
     updated_at: str = Field(default="")
 
-
-class RiceFieldResponse(BaseModel):
+class RiceFieldResponse(GreenLangBase):
     """Response for a single rice field registration."""
 
     model_config = ConfigDict(frozen=True)
@@ -450,8 +431,7 @@ class RiceFieldResponse(BaseModel):
     created_at: str = Field(default="")
     updated_at: str = Field(default="")
 
-
-class FieldBurningResponse(BaseModel):
+class FieldBurningResponse(GreenLangBase):
     """Response for a single field burning event."""
 
     model_config = ConfigDict(frozen=True)
@@ -471,8 +451,7 @@ class FieldBurningResponse(BaseModel):
     provenance_hash: str = Field(default="")
     created_at: str = Field(default="")
 
-
-class ComplianceCheckResponse(BaseModel):
+class ComplianceCheckResponse(GreenLangBase):
     """Regulatory compliance check response."""
 
     model_config = ConfigDict(frozen=True)
@@ -486,8 +465,7 @@ class ComplianceCheckResponse(BaseModel):
     results: List[Dict[str, Any]] = Field(default_factory=list)
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
-class UncertaintyResponse(BaseModel):
+class UncertaintyResponse(GreenLangBase):
     """Monte Carlo uncertainty analysis response."""
 
     model_config = ConfigDict(frozen=True)
@@ -505,8 +483,7 @@ class UncertaintyResponse(BaseModel):
     provenance_hash: str = Field(default="")
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
-class AggregationResponse(BaseModel):
+class AggregationResponse(GreenLangBase):
     """Aggregated agricultural emissions response."""
 
     model_config = ConfigDict(frozen=True)
@@ -521,8 +498,7 @@ class AggregationResponse(BaseModel):
     calculation_count: int = Field(default=0)
     period: str = Field(default="annual")
 
-
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Service health check response."""
 
     model_config = ConfigDict(frozen=True)
@@ -533,8 +509,7 @@ class HealthResponse(BaseModel):
     engines: Dict[str, str] = Field(default_factory=dict)
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
-class StatsResponse(BaseModel):
+class StatsResponse(GreenLangBase):
     """Service aggregate statistics response."""
 
     model_config = ConfigDict(frozen=True)
@@ -551,14 +526,12 @@ class StatsResponse(BaseModel):
     total_head_count: int = Field(default=0)
     uptime_seconds: float = Field(default=0.0)
 
-
 # ===================================================================
 # AgriculturalEmissionsService facade
 # ===================================================================
 
 _singleton_lock = threading.RLock()
 _singleton_instance: Optional["AgriculturalEmissionsService"] = None
-
 
 class AgriculturalEmissionsService:
     """Unified facade over the Agricultural Emissions Agent SDK.
@@ -3072,14 +3045,12 @@ class AgriculturalEmissionsService:
             uptime_seconds=round(uptime, 3),
         )
 
-
 # ===================================================================
 # Thread-safe singleton access
 # ===================================================================
 
 _service_instance: Optional[AgriculturalEmissionsService] = None
 _service_lock = threading.RLock()
-
 
 def get_service() -> AgriculturalEmissionsService:
     """Get or create the singleton AgriculturalEmissionsService instance.
@@ -3102,7 +3073,6 @@ def get_service() -> AgriculturalEmissionsService:
                 _service_instance = AgriculturalEmissionsService()
     return _service_instance
 
-
 def set_service(
     service: AgriculturalEmissionsService,
 ) -> None:
@@ -3122,7 +3092,6 @@ def set_service(
         "AgriculturalEmissionsService singleton set explicitly"
     )
 
-
 def reset_service() -> None:
     """Reset the singleton service instance for test teardown.
 
@@ -3134,11 +3103,9 @@ def reset_service() -> None:
         _service_instance = None
     logger.debug("AgriculturalEmissionsService singleton reset")
 
-
 # ===================================================================
 # FastAPI Router factory
 # ===================================================================
-
 
 def get_router() -> Any:
     """Get the FastAPI router for agricultural emissions.
@@ -3163,11 +3130,9 @@ def get_router() -> Any:
         )
         return None
 
-
 # ===================================================================
 # FastAPI application integration
 # ===================================================================
-
 
 def configure_agricultural_emissions(
     app: Any,
@@ -3215,7 +3180,6 @@ def configure_agricultural_emissions(
 
     logger.info("Agricultural Emissions service configured")
     return service
-
 
 # ===================================================================
 # Public API

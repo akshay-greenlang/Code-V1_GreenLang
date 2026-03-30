@@ -39,20 +39,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -65,11 +60,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EEDExemptionType(str, Enum):
     """Exemption types from EED Article 8 mandatory audit."""
@@ -78,7 +71,6 @@ class EEDExemptionType(str, Enum):
     ISO_50001 = "iso_50001"
     EMAS = "emas"
     SME = "sme"
-
 
 class ComplianceStatus(str, Enum):
     """EED compliance status values."""
@@ -89,7 +81,6 @@ class ComplianceStatus(str, Enum):
     PENDING = "pending"
     OVERDUE = "overdue"
 
-
 class AuditStandard(str, Enum):
     """Applicable EN 16247 audit standard parts."""
 
@@ -98,7 +89,6 @@ class AuditStandard(str, Enum):
     EN_16247_3 = "EN_16247-3"  # Processes
     EN_16247_4 = "EN_16247-4"  # Transport
     EN_16247_5 = "EN_16247-5"  # Competence of auditors
-
 
 class EUMemberState(str, Enum):
     """EU member states with EED transposition details."""
@@ -119,11 +109,9 @@ class EUMemberState(str, Enum):
     CZ = "CZ"
     RO = "RO"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class EEDObligationAssessment(BaseModel):
     """Assessment of EED Article 8 obligation for an organisation."""
@@ -144,7 +132,6 @@ class EEDObligationAssessment(BaseModel):
     compliance_status: ComplianceStatus = Field(default=ComplianceStatus.PENDING)
     provenance_hash: str = Field(default="")
 
-
 class AuditCycleRecord(BaseModel):
     """Record of a 4-year EED audit cycle."""
 
@@ -162,7 +149,6 @@ class AuditCycleRecord(BaseModel):
     status: ComplianceStatus = Field(default=ComplianceStatus.PENDING)
     provenance_hash: str = Field(default="")
 
-
 class NationalTransposition(BaseModel):
     """National transposition details for a member state."""
 
@@ -174,7 +160,6 @@ class NationalTransposition(BaseModel):
     additional_requirements: List[str] = Field(default_factory=list)
     energy_coverage_threshold_pct: float = Field(default=90.0)
     auditor_certification_required: bool = Field(default=True)
-
 
 class EEDComplianceReport(BaseModel):
     """Compliance report for national authority submission."""
@@ -190,9 +175,8 @@ class EEDComplianceReport(BaseModel):
     en_16247_compliance: bool = Field(default=False)
     recommendations_count: int = Field(default=0)
     status: ComplianceStatus = Field(default=ComplianceStatus.PENDING)
-    generated_at: datetime = Field(default_factory=_utcnow)
+    generated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class EEDComplianceBridgeConfig(BaseModel):
     """Configuration for the EED Compliance Bridge."""
@@ -202,7 +186,6 @@ class EEDComplianceBridgeConfig(BaseModel):
     audit_cycle_years: int = Field(default=4, ge=1, le=10)
     energy_coverage_threshold_pct: float = Field(default=90.0, ge=0.0, le=100.0)
     enable_provenance: bool = Field(default=True)
-
 
 # ---------------------------------------------------------------------------
 # National Transposition Database
@@ -256,11 +239,9 @@ NATIONAL_TRANSPOSITIONS: Dict[EUMemberState, NationalTransposition] = {
     ),
 }
 
-
 # ---------------------------------------------------------------------------
 # EEDComplianceBridge
 # ---------------------------------------------------------------------------
-
 
 class EEDComplianceBridge:
     """EU Energy Efficiency Directive compliance management.

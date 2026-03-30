@@ -81,23 +81,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -114,7 +109,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -123,7 +117,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -131,26 +124,21 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     return float(
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class RegistryName(str, Enum):
     """Supported carbon credit registries.
@@ -167,7 +155,6 @@ class RegistryName(str, Enum):
     ACR = "acr"
     PURO = "puro"
 
-
 class RetirementStatus(str, Enum):
     """Status of a credit retirement.
 
@@ -182,7 +169,6 @@ class RetirementStatus(str, Enum):
     CERTIFICATE_ISSUED = "certificate_issued"
     REJECTED = "rejected"
     CANCELLED = "cancelled"
-
 
 class SerialStatus(str, Enum):
     """Serial number verification status.
@@ -199,7 +185,6 @@ class SerialStatus(str, Enum):
     ALREADY_RETIRED = "already_retired"
     NOT_FOUND = "not_found"
 
-
 class BeneficiaryType(str, Enum):
     """Beneficiary designation type.
 
@@ -214,7 +199,6 @@ class BeneficiaryType(str, Enum):
     PRODUCT = "product"
     EVENT = "event"
     VOLUNTARY = "voluntary"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -277,11 +261,9 @@ REGISTRY_INFO: Dict[str, Dict[str, str]] = {
 MAX_VINTAGE_AGE_RECOMMENDED: int = 5
 MAX_VINTAGE_AGE_ACCEPTABLE: int = 7
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class RetirementInput(BaseModel):
     """Input for a single credit retirement.
@@ -377,7 +359,6 @@ class RetirementInput(BaseModel):
             raise ValueError(f"Unknown status '{v}'.")
         return v
 
-
 class RegistryRetirementInput(BaseModel):
     """Complete input for registry retirement management.
 
@@ -420,11 +401,9 @@ class RegistryRetirementInput(BaseModel):
         default="iso_14068_1", description="Target standard"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class SerialVerification(BaseModel):
     """Serial number verification result.
@@ -443,7 +422,6 @@ class SerialVerification(BaseModel):
     format_valid: bool = Field(default=False)
     expected_pattern: str = Field(default="")
     message: str = Field(default="")
-
 
 class RetirementCertificate(BaseModel):
     """Retirement certificate details.
@@ -476,7 +454,6 @@ class RetirementCertificate(BaseModel):
     purpose: str = Field(default="")
     registry_confirmation_ref: str = Field(default="")
     certificate_hash: str = Field(default="")
-
 
 class RetirementResult(BaseModel):
     """Result for a single retirement record.
@@ -518,7 +495,6 @@ class RetirementResult(BaseModel):
     issues: List[str] = Field(default_factory=list)
     is_valid: bool = Field(default=True)
 
-
 class RegistrySummary(BaseModel):
     """Summary of retirements by registry.
 
@@ -540,7 +516,6 @@ class RegistrySummary(BaseModel):
     total_cost_usd: Decimal = Field(default=Decimal("0"))
     pct_of_total: Decimal = Field(default=Decimal("0"))
     all_confirmed: bool = Field(default=False)
-
 
 class RegistryRetirementResult(BaseModel):
     """Complete registry retirement result.
@@ -574,7 +549,7 @@ class RegistryRetirementResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     footprint_year: int = Field(default=0)
     footprint_tco2e: Decimal = Field(default=Decimal("0"))
@@ -598,11 +573,9 @@ class RegistryRetirementResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class RegistryRetirementEngine:
     """Multi-registry carbon credit retirement management engine.

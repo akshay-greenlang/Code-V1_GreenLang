@@ -56,37 +56,28 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> str:
-    """Return current UTC timestamp as ISO-8601 string."""
-    return datetime.utcnow().isoformat() + "Z"
-
-
 def _new_uuid() -> str:
     """Return a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash of JSON-serialisable data."""
     serialised = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialised.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -97,7 +88,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -107,7 +97,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class DisclosurePhase(str, Enum):
     """Disclosure preparation workflow phases."""
 
@@ -115,7 +104,6 @@ class DisclosurePhase(str, Enum):
     FRAMEWORK_MAPPING = "framework_mapping"
     COMPLETENESS_CHECK = "completeness_check"
     DISCLOSURE_PACKAGE = "disclosure_package"
-
 
 class DisclosureFramework(str, Enum):
     """Supported disclosure frameworks."""
@@ -129,7 +117,6 @@ class DisclosureFramework(str, Enum):
     GRI_305_4 = "gri_305_4"
     IFRS_S2 = "ifrs_s2"
 
-
 class FieldStatus(str, Enum):
     """Status of a disclosure field."""
 
@@ -137,7 +124,6 @@ class FieldStatus(str, Enum):
     PARTIALLY_POPULATED = "partially_populated"
     MISSING = "missing"
     NOT_APPLICABLE = "not_applicable"
-
 
 class GapSeverity(str, Enum):
     """Severity of a disclosure completeness gap."""
@@ -147,7 +133,6 @@ class GapSeverity(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
 
-
 class PackageFormat(str, Enum):
     """Format of disclosure package output."""
 
@@ -155,7 +140,6 @@ class PackageFormat(str, Enum):
     EXCEL = "excel"
     PDF = "pdf"
     XBRL = "xbrl"
-
 
 # =============================================================================
 # FRAMEWORK FIELD REQUIREMENTS (Zero-Hallucination Reference Data)
@@ -205,11 +189,9 @@ FRAMEWORK_FIELDS: Dict[str, List[Dict[str, Any]]] = {
     ],
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -222,7 +204,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
-
 
 class IntensityMetricInput(BaseModel):
     """An intensity metric to include in disclosure."""
@@ -237,7 +218,6 @@ class IntensityMetricInput(BaseModel):
     denominator_value: float = Field(default=0.0, ge=0.0)
     data_quality_score: float = Field(default=0.0, ge=0.0, le=100.0)
 
-
 class AggregatedMetric(BaseModel):
     """Aggregated metric for disclosure."""
 
@@ -250,7 +230,6 @@ class AggregatedMetric(BaseModel):
     data_quality_score: float = Field(default=0.0)
     source_metric_count: int = Field(default=0)
     provenance_hash: str = Field(default="")
-
 
 class FrameworkField(BaseModel):
     """A mapped framework disclosure field."""
@@ -266,7 +245,6 @@ class FrameworkField(BaseModel):
     source_metric_key: str = Field(default="")
     notes: str = Field(default="")
 
-
 class CompletenessGap(BaseModel):
     """A gap in disclosure completeness."""
 
@@ -277,7 +255,6 @@ class CompletenessGap(BaseModel):
     severity: GapSeverity = Field(...)
     reason: str = Field(default="")
     remediation: str = Field(default="")
-
 
 class DisclosurePackageItem(BaseModel):
     """An item in the generated disclosure package."""
@@ -291,11 +268,9 @@ class DisclosurePackageItem(BaseModel):
     completeness_pct: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # INPUT / OUTPUT
 # =============================================================================
-
 
 class DisclosureInput(BaseModel):
     """Input data model for DisclosurePreparationWorkflow."""
@@ -322,7 +297,6 @@ class DisclosureInput(BaseModel):
     tenant_id: str = Field(default="")
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class DisclosureResult(BaseModel):
     """Complete result from disclosure preparation workflow."""
 
@@ -339,11 +313,9 @@ class DisclosureResult(BaseModel):
     overall_completeness_pct: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class DisclosurePreparationWorkflow:
     """
@@ -681,7 +653,7 @@ class DisclosurePreparationWorkflow:
         outputs: Dict[str, Any] = {}
 
         self._packages = []
-        now_iso = _utcnow()
+        now_iso = utcnow()
 
         for fw in input_data.target_frameworks:
             fw_fields = [f for f in self._fields if f.framework == fw]
@@ -742,6 +714,7 @@ class DisclosurePreparationWorkflow:
                         phase_number, attempt, self.MAX_RETRIES, exc, delay,
                     )
                     import asyncio
+
                     await asyncio.sleep(delay)
         return PhaseResult(
             phase_name=f"phase_{phase_number}_failed",

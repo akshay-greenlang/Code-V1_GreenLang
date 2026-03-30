@@ -65,6 +65,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 from greenlang.agents.eudr.blockchain_integration.config import get_config
+from greenlang.schemas import utcnow
 from greenlang.agents.eudr.blockchain_integration.metrics import (
     observe_verification_duration,
     record_api_error,
@@ -95,12 +96,6 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance.
 
@@ -113,7 +108,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a new UUID4 string identifier.
 
@@ -121,7 +115,6 @@ def _generate_id() -> str:
         UUID4 string.
     """
     return str(uuid.uuid4())
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -139,11 +132,9 @@ _DEFAULT_MAX_CACHE_ENTRIES: int = 10000
 #: Temporal verification tolerance in seconds (2 blocks for safety).
 _TEMPORAL_TOLERANCE_S: int = 30
 
-
 # ==========================================================================
 # LRUCache (Thread-Safe TTL Cache)
 # ==========================================================================
-
 
 class _LRUCache:
     """Thread-safe LRU cache with TTL eviction.
@@ -260,11 +251,9 @@ class _LRUCache:
 
         return removed
 
-
 # ==========================================================================
 # VerificationEngine
 # ==========================================================================
-
 
 class VerificationEngine:
     """On-chain verification engine for EUDR anchor records.
@@ -1244,7 +1233,6 @@ class VerificationEngine:
             self._result_store.clear()
         self._cache.clear()
         logger.info("VerificationEngine state cleared")
-
 
 # ---------------------------------------------------------------------------
 # Public API

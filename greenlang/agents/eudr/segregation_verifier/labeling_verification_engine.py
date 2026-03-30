@@ -44,6 +44,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -56,22 +58,14 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str = "lbl") -> str:
     """Generate a unique identifier with the given prefix."""
     return f"{prefix}-{uuid.uuid4().hex[:16]}"
-
 
 # ---------------------------------------------------------------------------
 # Constants: Label Types and Requirements
@@ -208,11 +202,9 @@ DEFAULT_LABEL_VALIDITY_DAYS: Dict[str, int] = {
     "processing_line_marker": 30,
 }
 
-
 # ---------------------------------------------------------------------------
 # Internal Dataclass Result Types
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class LabelRecord:
@@ -244,7 +236,6 @@ class LabelRecord:
     metadata: Dict[str, Any] = field(default_factory=dict)
     provenance_hash: str = ""
 
-
 @dataclass
 class LabelVerificationResult:
     """Result of verifying a single label or SCP's labels.
@@ -275,7 +266,6 @@ class LabelVerificationResult:
     findings: List[Dict[str, Any]]
     provenance_hash: str = ""
 
-
 @dataclass
 class LabelAuditResult:
     """Result of a comprehensive facility labeling audit.
@@ -302,7 +292,6 @@ class LabelAuditResult:
     recommendations: List[str]
     provenance_hash: str = ""
 
-
 @dataclass
 class LabelEvent:
     """A label lifecycle event record.
@@ -325,11 +314,9 @@ class LabelEvent:
     notes: str
     provenance_hash: str = ""
 
-
 # ---------------------------------------------------------------------------
 # LabelingVerificationEngine
 # ---------------------------------------------------------------------------
-
 
 class LabelingVerificationEngine:
     """Verifies labeling and marking compliance for EUDR segregation.
@@ -414,7 +401,7 @@ class LabelingVerificationEngine:
             )
 
         label_id = _generate_id("lbl")
-        now = _utcnow()
+        now = utcnow()
 
         if applied_date is None:
             applied_date = now.isoformat()
@@ -531,7 +518,7 @@ class LabelingVerificationEngine:
 
         label = self._labels[label_id]
         findings: List[Dict[str, Any]] = []
-        now = _utcnow()
+        now = utcnow()
 
         # Coverage: is the label present?
         coverage_score = 100.0 if label.status != "missing" else 0.0
@@ -735,7 +722,7 @@ class LabelingVerificationEngine:
             raise ValueError(f"Label not found: {label_id}")
 
         label = self._labels[label_id]
-        now = _utcnow()
+        now = utcnow()
 
         # Check expiry
         is_expired = False
@@ -1002,7 +989,7 @@ class LabelingVerificationEngine:
             LabelAuditResult with overall score and recommendations.
         """
         all_labels = list(self._labels.values())
-        now = _utcnow()
+        now = utcnow()
 
         # Group labels by SCP
         scp_ids = set(lbl.scp_id for lbl in all_labels)
@@ -1148,7 +1135,7 @@ class LabelingVerificationEngine:
         Returns:
             List of LabelRecord objects expiring within the period.
         """
-        now = _utcnow()
+        now = utcnow()
         cutoff = now + timedelta(days=days_ahead)
         expiring: List[LabelRecord] = []
 
@@ -1218,7 +1205,7 @@ class LabelingVerificationEngine:
             Created LabelEvent.
         """
         event_id = _generate_id("le")
-        now = _utcnow()
+        now = utcnow()
 
         event = LabelEvent(
             event_id=event_id,
@@ -1497,7 +1484,6 @@ class LabelingVerificationEngine:
             )
 
         return recommendations
-
 
 # ---------------------------------------------------------------------------
 # Public API

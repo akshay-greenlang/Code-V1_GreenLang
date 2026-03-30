@@ -40,25 +40,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -76,13 +70,11 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _safe_div(numerator: float, denominator: float, default: float = 0.0) -> float:
     """Divide safely, returning *default* when denominator is zero."""
     if denominator == 0.0:
         return default
     return numerator / denominator
-
 
 def _pct_change(current: float, previous: float) -> float:
     """Calculate percentage change between two values."""
@@ -90,11 +82,9 @@ def _pct_change(current: float, previous: float) -> float:
         return 0.0 if current == 0.0 else 100.0
     return round(((current - previous) / abs(previous)) * 100.0, 2)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class RegulationType(str, Enum):
     """Supported EU regulations in the bundle."""
@@ -103,13 +93,11 @@ class RegulationType(str, Enum):
     EU_TAXONOMY = "EU_TAXONOMY"
     EUDR = "EUDR"
 
-
 class TrendDirection(str, Enum):
     """Direction of a metric trend."""
     IMPROVING = "IMPROVING"
     STABLE = "STABLE"
     DECLINING = "DECLINING"
-
 
 class SummaryRating(str, Enum):
     """High-level compliance rating for executive summaries."""
@@ -119,11 +107,9 @@ class SummaryRating(str, Enum):
     NEEDS_IMPROVEMENT = "NEEDS_IMPROVEMENT"
     CRITICAL = "CRITICAL"
 
-
 # ---------------------------------------------------------------------------
 # Reference Data
 # ---------------------------------------------------------------------------
-
 
 REGULATION_METRIC_DEFINITIONS: Dict[str, List[Dict[str, str]]] = {
     "CSRD": [
@@ -196,7 +182,6 @@ REGULATION_METRIC_DEFINITIONS: Dict[str, List[Dict[str, str]]] = {
     ],
 }
 
-
 DEFAULT_REGULATION_WEIGHTS: Dict[str, float] = {
     "CSRD": 0.30,
     "CBAM": 0.25,
@@ -204,11 +189,9 @@ DEFAULT_REGULATION_WEIGHTS: Dict[str, float] = {
     "EUDR": 0.20,
 }
 
-
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
-
 
 class ConsolidatedMetricsConfig(BaseModel):
     """Configuration for the ConsolidatedMetricsEngine."""
@@ -236,11 +219,9 @@ class ConsolidatedMetricsConfig(BaseModel):
             raise ValueError(f"Regulation weights must sum to 1.0, got {total:.4f}")
         return v
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class RegulationMetrics(BaseModel):
     """Aggregated KPIs for a single regulation."""
@@ -256,7 +237,6 @@ class RegulationMetrics(BaseModel):
     assessment_date: str = Field(default="", description="ISO-8601 date of assessment")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class TrendDataPoint(BaseModel):
     """A single data point in a trend series."""
 
@@ -267,7 +247,6 @@ class TrendDataPoint(BaseModel):
     previous_value: float = Field(default=0.0, description="Value in the previous period")
     change_pct: float = Field(default=0.0, description="Percentage change from previous period")
     direction: str = Field(default="STABLE", description="Trend direction")
-
 
 class PeriodSnapshot(BaseModel):
     """Metrics snapshot for a single reporting period."""
@@ -281,7 +260,6 @@ class PeriodSnapshot(BaseModel):
         default_factory=dict, description="Per-regulation data completeness"
     )
     timestamp: str = Field(default="", description="ISO-8601 timestamp of snapshot")
-
 
 class ExecutiveSummary(BaseModel):
     """Executive summary of consolidated metrics."""
@@ -298,7 +276,6 @@ class ExecutiveSummary(BaseModel):
     generated_at: str = Field(default="", description="ISO-8601 timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class PeriodComparison(BaseModel):
     """Comparison of metrics between two reporting periods."""
 
@@ -313,7 +290,6 @@ class PeriodComparison(BaseModel):
     improved_regulations: List[str] = Field(default_factory=list, description="Regulations that improved")
     declined_regulations: List[str] = Field(default_factory=list, description="Regulations that declined")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class ConsolidatedMetricsResult(BaseModel):
     """Complete result from the ConsolidatedMetricsEngine."""
@@ -336,11 +312,9 @@ class ConsolidatedMetricsResult(BaseModel):
     engine_version: str = Field(default=_MODULE_VERSION, description="Engine version")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash of full result")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ConsolidatedMetricsEngine:
     """
@@ -392,9 +366,9 @@ class ConsolidatedMetricsEngine:
         Returns:
             ConsolidatedMetricsResult with bundle score, breakdowns, trends, and summary.
         """
-        start = _utcnow()
+        start = utcnow()
         if not period:
-            now = _utcnow()
+            now = utcnow()
             quarter = ((now.month - 1) // 3) + 1
             period = f"{now.year}-Q{quarter}"
 
@@ -427,7 +401,7 @@ class ConsolidatedMetricsEngine:
         # Executive summary
         summary = self.get_executive_summary(regulation_metrics, bundle_score, completeness)
 
-        elapsed_ms = (_utcnow() - start).total_seconds() * 1000
+        elapsed_ms = (utcnow() - start).total_seconds() * 1000
 
         result = ConsolidatedMetricsResult(
             bundle_score=bundle_score,
@@ -628,7 +602,7 @@ class ConsolidatedMetricsEngine:
                 bundle_score=0.0,
                 rating=SummaryRating.CRITICAL.value,
                 regulations_assessed=0,
-                generated_at=_utcnow().isoformat(),
+                generated_at=utcnow().isoformat(),
             )
 
         sorted_by_score = sorted(regulation_metrics, key=lambda r: r.compliance_score, reverse=True)
@@ -655,7 +629,7 @@ class ConsolidatedMetricsEngine:
             overall_completeness=round(avg_completeness, 2),
             key_findings=findings,
             recommendations=recommendations,
-            generated_at=_utcnow().isoformat(),
+            generated_at=utcnow().isoformat(),
         )
         summary.provenance_hash = _compute_hash(summary)
         return summary

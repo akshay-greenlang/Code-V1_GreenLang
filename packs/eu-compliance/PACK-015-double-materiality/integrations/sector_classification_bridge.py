@@ -57,25 +57,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -88,11 +82,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class SectorBridgeConfig(BaseModel):
     """Configuration for the Sector Classification Bridge."""
@@ -105,7 +97,6 @@ class SectorBridgeConfig(BaseModel):
         description="Weighting method for multi-sector: revenue, headcount, equal",
     )
 
-
 class NACECode(BaseModel):
     """Structured NACE code with section and division info."""
 
@@ -117,7 +108,6 @@ class NACECode(BaseModel):
         default=100.0, ge=0.0, le=100.0,
         description="Revenue share for conglomerate weighting",
     )
-
 
 class TopicPriority(BaseModel):
     """Priority of an ESRS topic for a specific sector."""
@@ -137,7 +127,6 @@ class TopicPriority(BaseModel):
         description="Typical materiality score in this sector",
     )
 
-
 class SectorProfile(BaseModel):
     """Sector-specific materiality profile."""
 
@@ -150,7 +139,6 @@ class SectorProfile(BaseModel):
         description="IRO catalog modifications: topic -> adjustment type",
     )
     benchmark_data: Dict[str, Any] = Field(default_factory=dict)
-
 
 class SectorClassificationResult(BaseModel):
     """Result of sector classification for a company."""
@@ -169,7 +157,6 @@ class SectorClassificationResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class SectorBenchmark(BaseModel):
     """Sector benchmark data for materiality comparison."""
 
@@ -181,7 +168,6 @@ class SectorBenchmark(BaseModel):
     avg_financial_score: float = Field(default=0.0, ge=0.0, le=5.0)
     peer_count: int = Field(default=0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Sector Profile Catalog (12 major NACE divisions)
@@ -406,11 +392,9 @@ SECTOR_PROFILES: Dict[str, SectorProfile] = {
     ),
 }
 
-
 # ---------------------------------------------------------------------------
 # SectorClassificationBridge
 # ---------------------------------------------------------------------------
-
 
 class SectorClassificationBridge:
     """NACE sector classification and materiality profile mapping for DMA.

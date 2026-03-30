@@ -40,35 +40,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.utcnow()
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hash of a string."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -79,7 +71,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -89,7 +80,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class ShiftDirection(str, Enum):
     """Direction of load shift."""
 
@@ -97,7 +87,6 @@ class ShiftDirection(str, Enum):
     DEFER = "defer"
     SPLIT = "split"
     ADVANCE = "advance"
-
 
 class ConstraintType(str, Enum):
     """Operational constraint type."""
@@ -107,7 +96,6 @@ class ConstraintType(str, Enum):
     EQUIPMENT = "equipment"
     SAFETY = "safety"
     OCCUPANCY = "occupancy"
-
 
 # =============================================================================
 # REFERENCE DATA (Zero-Hallucination)
@@ -196,11 +184,9 @@ SHIFTABLE_LOAD_PARAMS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -213,7 +199,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list, description="Warnings raised")
     errors: List[str] = Field(default_factory=list, description="Errors encountered")
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
-
 
 class ShiftableLoad(BaseModel):
     """Individual shiftable load record."""
@@ -229,7 +214,6 @@ class ShiftableLoad(BaseModel):
     priority: int = Field(default=0, ge=0, description="Shift priority rank")
     optimal_start_hour: int = Field(default=0, ge=0, le=23)
     optimal_end_hour: int = Field(default=0, ge=0, le=23)
-
 
 class LoadShiftInput(BaseModel):
     """Input data model for LoadShiftWorkflow."""
@@ -262,7 +246,6 @@ class LoadShiftInput(BaseModel):
             raise ValueError("facility_name must not be blank")
         return stripped
 
-
 class LoadShiftResult(BaseModel):
     """Complete result from load shifting workflow."""
 
@@ -282,11 +265,9 @@ class LoadShiftResult(BaseModel):
     calculated_at: str = Field(default="", description="ISO 8601 timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 of complete result")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class LoadShiftWorkflow:
     """
@@ -345,7 +326,7 @@ class LoadShiftWorkflow:
             ValueError: If input validation fails.
         """
         t_start = time.perf_counter()
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting load shift workflow %s for facility=%s peak=%s kW",
             self.shift_id, input_data.facility_name, input_data.peak_demand_kw,

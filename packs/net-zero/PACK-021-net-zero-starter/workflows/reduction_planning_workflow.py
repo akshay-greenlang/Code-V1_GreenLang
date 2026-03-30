@@ -35,35 +35,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "21.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a single workflow phase."""
@@ -74,7 +66,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -84,7 +75,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class TimeHorizon(str, Enum):
     """Implementation time horizon for actions."""
 
@@ -92,14 +82,12 @@ class TimeHorizon(str, Enum):
     MEDIUM = "medium_term"   # 3-5 years
     LONG = "long_term"       # 6-10 years
 
-
 class FeasibilityRating(str, Enum):
     """Action feasibility rating."""
 
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 class ActionCategory(str, Enum):
     """Abatement action categories."""
@@ -116,7 +104,6 @@ class ActionCategory(str, Enum):
     CIRCULAR_ECONOMY = "circular_economy"
     CARBON_CAPTURE = "carbon_capture"
     OTHER = "other"
-
 
 # =============================================================================
 # ABATEMENT TECHNOLOGY CATALOG (Zero-Hallucination, based on McKinsey MACC
@@ -351,11 +338,9 @@ ABATEMENT_CATALOG: List[Dict[str, Any]] = [
     },
 ]
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -368,7 +353,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class EmissionSource(BaseModel):
     """An identified emission source / hotspot."""
 
@@ -378,7 +362,6 @@ class EmissionSource(BaseModel):
     source_label: str = Field(default="")
     emissions_tco2e: float = Field(default=0.0, ge=0.0)
     share_of_total_pct: float = Field(default=0.0, ge=0.0, le=100.0)
-
 
 class EmissionsProfile(BaseModel):
     """Baseline emissions profile for hotspot analysis."""
@@ -390,7 +373,6 @@ class EmissionsProfile(BaseModel):
     scope3_by_category: Dict[str, float] = Field(default_factory=dict)
     scope3_total_tco2e: float = Field(default=0.0, ge=0.0)
     total_tco2e: float = Field(default=0.0, ge=0.0)
-
 
 class AbatementAction(BaseModel):
     """A matched abatement action with cost analysis."""
@@ -415,7 +397,6 @@ class AbatementAction(BaseModel):
     priority_rank: int = Field(default=0, ge=0)
     cumulative_reduction_tco2e: float = Field(default=0.0, ge=0.0)
 
-
 class MACCDataPoint(BaseModel):
     """Single data point for the Marginal Abatement Cost Curve."""
 
@@ -424,7 +405,6 @@ class MACCDataPoint(BaseModel):
     cost_per_tco2e_usd: float = Field(default=0.0)
     reduction_tco2e: float = Field(default=0.0, ge=0.0)
     cumulative_reduction_tco2e: float = Field(default=0.0, ge=0.0)
-
 
 class RoadmapPhase(BaseModel):
     """A phase of the implementation roadmap."""
@@ -438,7 +418,6 @@ class RoadmapPhase(BaseModel):
     total_reduction_tco2e: float = Field(default=0.0, ge=0.0)
     cumulative_reduction_tco2e: float = Field(default=0.0, ge=0.0)
 
-
 class ReductionPlanningConfig(BaseModel):
     """Configuration for the reduction planning workflow."""
 
@@ -451,7 +430,6 @@ class ReductionPlanningConfig(BaseModel):
     discount_rate_pct: float = Field(default=8.0, ge=0.0, le=30.0)
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
-
 
 class ReductionPlanningResult(BaseModel):
     """Complete result from the reduction planning workflow."""
@@ -471,11 +449,9 @@ class ReductionPlanningResult(BaseModel):
     average_cost_per_tco2e_usd: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class ReductionPlanningWorkflow:
     """
@@ -524,7 +500,7 @@ class ReductionPlanningWorkflow:
         Returns:
             ReductionPlanningResult with prioritised actions and roadmap.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting reduction planning workflow %s, total=%.2f tCO2e, budget=%s",
             self.workflow_id, config.emissions_profile.total_tco2e,
@@ -559,7 +535,7 @@ class ReductionPlanningWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         total_red = sum(a.reduction_tco2e for a in self._matched_actions)
         total_capex = sum(a.total_capex_usd for a in self._matched_actions)
         total_pct = (total_red / config.emissions_profile.total_tco2e * 100) if config.emissions_profile.total_tco2e > 0 else 0
@@ -594,7 +570,7 @@ class ReductionPlanningWorkflow:
 
     async def _phase_emissions_profile(self, config: ReductionPlanningConfig) -> PhaseResult:
         """Analyse emissions profile to identify hotspots."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         profile = config.emissions_profile
@@ -653,7 +629,7 @@ class ReductionPlanningWorkflow:
         if not hotspots:
             warnings.append("No emissions hotspots identified; emissions profile may be incomplete")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Emissions profile: %d hotspots identified", len(hotspots))
         return PhaseResult(
             phase_name="emissions_profile",
@@ -670,7 +646,7 @@ class ReductionPlanningWorkflow:
 
     async def _phase_action_identification(self, config: ReductionPlanningConfig) -> PhaseResult:
         """Match emissions hotspots to abatement options from catalog."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         matched: List[AbatementAction] = []
@@ -714,7 +690,7 @@ class ReductionPlanningWorkflow:
             warnings.append(f"{len(unmatched)} hotspot(s) have no matching abatement actions")
             outputs["unmatched_hotspots"] = [h.source_label for h in unmatched]
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Action identification: %d actions matched", len(self._matched_actions))
         return PhaseResult(
             phase_name="action_identification",
@@ -744,7 +720,7 @@ class ReductionPlanningWorkflow:
 
     async def _phase_cost_analysis(self, config: ReductionPlanningConfig) -> PhaseResult:
         """Calculate cost/tCO2e, NPV, IRR, payback for each action."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         discount_rate = config.discount_rate_pct / 100.0
@@ -777,7 +753,7 @@ class ReductionPlanningWorkflow:
         total_npv = sum(a.npv_usd for a in self._matched_actions)
         outputs["total_portfolio_npv_usd"] = round(total_npv, 2)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Cost analysis complete: portfolio NPV=%.0f USD", total_npv)
         return PhaseResult(
             phase_name="cost_analysis",
@@ -816,7 +792,7 @@ class ReductionPlanningWorkflow:
 
     async def _phase_prioritization(self, config: ReductionPlanningConfig) -> PhaseResult:
         """Rank actions by cost-effectiveness and apply budget constraints."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -871,7 +847,7 @@ class ReductionPlanningWorkflow:
         outputs["total_reduction_tco2e"] = round(cumulative, 4)
         outputs["macc_datapoints"] = len(self._macc_data)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Prioritization: %d actions selected, %.1f tCO2e total reduction",
             len(self._matched_actions), cumulative,
@@ -891,7 +867,7 @@ class ReductionPlanningWorkflow:
 
     async def _phase_roadmap_generation(self, config: ReductionPlanningConfig) -> PhaseResult:
         """Generate phased implementation roadmap."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         base = config.base_year
@@ -931,7 +907,7 @@ class ReductionPlanningWorkflow:
             outputs[f"{rp.time_horizon}_capex_usd"] = rp.total_capex_usd
             outputs[f"{rp.time_horizon}_reduction_tco2e"] = rp.total_reduction_tco2e
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Roadmap: %d phases generated", len(phases))
         return PhaseResult(
             phase_name="roadmap_generation",

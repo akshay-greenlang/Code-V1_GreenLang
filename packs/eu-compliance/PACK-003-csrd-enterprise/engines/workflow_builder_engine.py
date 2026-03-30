@@ -45,25 +45,20 @@ from typing import Any, Dict, List, Optional, Set
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ExecutionStatus
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -76,11 +71,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class StepType(str, Enum):
     """Types of workflow steps."""
@@ -102,7 +95,6 @@ class StepType(str, Enum):
     AGGREGATION = "aggregation"
     ASSIGNMENT = "assignment"
 
-
 class ConditionOperator(str, Enum):
     """Operators for workflow conditions."""
 
@@ -115,25 +107,12 @@ class ConditionOperator(str, Enum):
     IN = "in"
     CONTAINS = "contains"
 
-
 class WorkflowStatus(str, Enum):
     """Status of a workflow definition."""
 
     DRAFT = "draft"
     ACTIVE = "active"
     ARCHIVED = "archived"
-
-
-class ExecutionStatus(str, Enum):
-    """Status of a workflow execution."""
-
-    PENDING = "pending"
-    RUNNING = "running"
-    PAUSED = "paused"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    CANCELLED = "cancelled"
-
 
 class StepStatus(str, Enum):
     """Status of an individual step execution."""
@@ -144,11 +123,9 @@ class StepStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class WorkflowCondition(BaseModel):
     """A conditional branch in a workflow."""
@@ -161,7 +138,6 @@ class WorkflowCondition(BaseModel):
     value: Any = Field(..., description="Value to compare against")
     true_step: str = Field(..., description="Step ID if condition is true")
     false_step: str = Field(..., description="Step ID if condition is false")
-
 
 class WorkflowStep(BaseModel):
     """A single step in a workflow."""
@@ -198,7 +174,6 @@ class WorkflowStep(BaseModel):
             raise ValueError("step_id must not be empty")
         return v.strip()
 
-
 class WorkflowDefinition(BaseModel):
     """Complete workflow definition."""
 
@@ -216,13 +191,12 @@ class WorkflowDefinition(BaseModel):
         WorkflowStatus.DRAFT, description="Workflow status"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation timestamp"
+        default_factory=utcnow, description="Creation timestamp"
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow, description="Last update timestamp"
+        default_factory=utcnow, description="Last update timestamp"
     )
     provenance_hash: str = Field("", description="SHA-256 provenance hash")
-
 
 class StepResult(BaseModel):
     """Result of executing a single workflow step."""
@@ -234,13 +208,12 @@ class StepResult(BaseModel):
     )
     error: Optional[str] = Field(None, description="Error message if failed")
     started_at: datetime = Field(
-        default_factory=_utcnow, description="Step start time"
+        default_factory=utcnow, description="Step start time"
     )
     completed_at: Optional[datetime] = Field(
         None, description="Step completion time"
     )
     duration_ms: float = Field(0.0, description="Step execution duration")
-
 
 class WorkflowExecution(BaseModel):
     """State of a workflow execution instance."""
@@ -270,14 +243,12 @@ class WorkflowExecution(BaseModel):
     )
     provenance_hash: str = Field("", description="SHA-256 provenance hash")
 
-
 class ValidationIssue(BaseModel):
     """A single workflow validation issue."""
 
     severity: str = Field(..., description="error, warning, or info")
     message: str = Field(..., description="Issue description")
     step_id: Optional[str] = Field(None, description="Related step ID")
-
 
 # ---------------------------------------------------------------------------
 # Step Library
@@ -340,11 +311,9 @@ _STEP_LIBRARY: List[Dict[str, Any]] = [
     {"type": "custom", "name": "Custom Script", "category": "custom"},
 ]
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class WorkflowBuilderEngine:
     """Custom workflow composition and execution engine.
@@ -412,7 +381,7 @@ class WorkflowBuilderEngine:
             raise ValueError(f"Workflow validation failed: {error_msgs}")
 
         definition.status = WorkflowStatus.ACTIVE
-        definition.updated_at = _utcnow()
+        definition.updated_at = utcnow()
         definition.provenance_hash = _compute_hash(definition)
 
         self._workflows[definition.workflow_id] = definition
@@ -629,7 +598,7 @@ class WorkflowBuilderEngine:
             KeyError: If workflow_id not found.
         """
         workflow = self._get_workflow(workflow_id)
-        start = _utcnow()
+        start = utcnow()
 
         execution = WorkflowExecution(
             workflow_id=workflow_id,
@@ -708,7 +677,7 @@ class WorkflowBuilderEngine:
             )
             execution.status = ExecutionStatus.FAILED
 
-        execution.completed_at = _utcnow()
+        execution.completed_at = utcnow()
         execution.current_step = None
         execution.provenance_hash = _compute_hash(execution)
 
@@ -731,7 +700,7 @@ class WorkflowBuilderEngine:
         Returns:
             StepResult with output data and status.
         """
-        start = _utcnow()
+        start = utcnow()
         logger.debug("Executing step '%s' (type=%s)", step.step_id, step.step_type.value)
 
         try:
@@ -760,7 +729,7 @@ class WorkflowBuilderEngine:
             else:
                 output = {"step_type": step.step_type.value, "status": "executed"}
 
-            now = _utcnow()
+            now = utcnow()
             return StepResult(
                 step_id=step.step_id,
                 status=StepStatus.COMPLETED,
@@ -771,7 +740,7 @@ class WorkflowBuilderEngine:
             )
 
         except Exception as e:
-            now = _utcnow()
+            now = utcnow()
             logger.error("Step '%s' failed: %s", step.step_id, str(e))
             return StepResult(
                 step_id=step.step_id,
@@ -792,7 +761,7 @@ class WorkflowBuilderEngine:
             "data_collected": True,
             "source": source,
             "records_count": step.config.get("expected_records", 0),
-            "collection_timestamp": _utcnow().isoformat(),
+            "collection_timestamp": utcnow().isoformat(),
         }
 
     def _execute_calculation(
@@ -803,7 +772,7 @@ class WorkflowBuilderEngine:
         return {
             "calculation_completed": True,
             "formula": formula,
-            "calculation_timestamp": _utcnow().isoformat(),
+            "calculation_timestamp": utcnow().isoformat(),
         }
 
     def _execute_validation(
@@ -813,7 +782,7 @@ class WorkflowBuilderEngine:
         return {
             "validation_passed": True,
             "rules_checked": step.config.get("rule_count", 0),
-            "validation_timestamp": _utcnow().isoformat(),
+            "validation_timestamp": utcnow().isoformat(),
         }
 
     def _execute_review(
@@ -824,7 +793,7 @@ class WorkflowBuilderEngine:
         return {
             "reviewed": True,
             "reviewer": reviewer,
-            "review_timestamp": _utcnow().isoformat(),
+            "review_timestamp": utcnow().isoformat(),
         }
 
     def _execute_approval(
@@ -835,7 +804,7 @@ class WorkflowBuilderEngine:
         return {
             "approved": True,
             "approver": approver,
-            "approval_timestamp": _utcnow().isoformat(),
+            "approval_timestamp": utcnow().isoformat(),
         }
 
     def _execute_report(
@@ -847,7 +816,7 @@ class WorkflowBuilderEngine:
             "report_generated": True,
             "report_type": report_type,
             "report_id": _new_uuid(),
-            "generation_timestamp": _utcnow().isoformat(),
+            "generation_timestamp": utcnow().isoformat(),
         }
 
     def _execute_notification(
@@ -860,7 +829,7 @@ class WorkflowBuilderEngine:
             "notification_sent": True,
             "channel": channel,
             "recipients_count": len(recipients),
-            "sent_timestamp": _utcnow().isoformat(),
+            "sent_timestamp": utcnow().isoformat(),
         }
 
     def _execute_timer(
@@ -871,7 +840,7 @@ class WorkflowBuilderEngine:
         return {
             "timer_completed": True,
             "waited_minutes": wait_minutes,
-            "completed_timestamp": _utcnow().isoformat(),
+            "completed_timestamp": utcnow().isoformat(),
         }
 
     # -- Condition Evaluation -----------------------------------------------

@@ -1,0 +1,23 @@
+{
+  "phase": "V2-Phase5",
+  "phase5_complete": true,
+  "checklist": {
+    "regression_tiers_and_release_train_cadence_configured": true,
+    "frontend_ux_quality_gates_blocking": true,
+    "enterprise_multi_app_shell_navigation_expanded": true,
+    "policy_and_evidence_observability_surface_present": true,
+    "two_consecutive_release_train_cycles_green": true
+  },
+  "evidence_files": [
+    ".github/workflows/greenlang-v2-platform-ci.yml",
+    ".github/workflows/v2-release-train.yml",
+    ".github/workflows/v2-frontend-ux-ci.yml",
+    "cbam-pack-mvp/src/cbam_pack/web/app.py",
+    "cbam-pack-mvp/src/cbam_pack/web/shell_index.html",
+    "cbam-pack-mvp/tests/test_web_multiapp_shell.py",
+    "cbam-pack-mvp/tests/test_web_visual_regression.py",
+    "cbam-pack-mvp/tests/test_web_ux_budgets.py",
+    "docs/v2/RELEASE_TRAINS.md",
+    "docs/v2/RELEASE_TRAIN_CYCLE_LOG.md"
+  ]
+}

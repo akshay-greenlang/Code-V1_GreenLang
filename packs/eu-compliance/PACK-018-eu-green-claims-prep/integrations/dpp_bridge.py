@@ -50,6 +50,8 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 __all__ = [
@@ -65,21 +67,13 @@ __all__ = [
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for provenance tracking."""
@@ -92,11 +86,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ProductGroup(str, Enum):
     """ESPR product groups with DPP requirements."""
@@ -110,14 +102,12 @@ class ProductGroup(str, Enum):
     TYRES = "tyres"
     OTHER = "other"
 
-
 class PassportSchemaVersion(str, Enum):
     """DPP schema versions."""
 
     V1_0 = "DPP-v1.0"
     V1_1 = "DPP-v1.1"
     V2_0 = "DPP-v2.0"
-
 
 class LinkingStatus(str, Enum):
     """Status of a DPP-to-claim linking operation."""
@@ -127,7 +117,6 @@ class LinkingStatus(str, Enum):
     NOT_FOUND = "not_found"
     INCONSISTENT = "inconsistent"
     FAILED = "failed"
-
 
 class DPPDataField(str, Enum):
     """Standard DPP data fields."""
@@ -143,7 +132,6 @@ class DPPDataField(str, Enum):
     ENERGY_EFFICIENCY_CLASS = "energy_efficiency_class"
     SUPPLY_CHAIN_INFO = "supply_chain_info"
     END_OF_LIFE_INSTRUCTIONS = "end_of_life_instructions"
-
 
 # ---------------------------------------------------------------------------
 # Reference Data
@@ -206,11 +194,9 @@ CLAIM_TO_DPP_FIELDS: Dict[str, List[DPPDataField]] = {
     "ethically_sourced": [DPPDataField.SUPPLY_CHAIN_INFO],
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class DPPBridgeConfig(BaseModel):
     """Configuration for the DPP Bridge."""
@@ -234,7 +220,6 @@ class DPPBridgeConfig(BaseModel):
         description="Check DPP data consistency with claims",
     )
 
-
 class DPPDataSnapshot(BaseModel):
     """Snapshot of DPP environmental data for a product."""
 
@@ -248,7 +233,6 @@ class DPPDataSnapshot(BaseModel):
     substances_of_concern_count: int = Field(default=0, ge=0)
     fields_populated: List[str] = Field(default_factory=list)
     fields_missing: List[str] = Field(default_factory=list)
-
 
 class DPPLinkingResult(BaseModel):
     """Result of linking DPP data to a green claim."""
@@ -265,14 +249,12 @@ class DPPLinkingResult(BaseModel):
     missing_fields: List[str] = Field(default_factory=list)
     consistency_issues: List[str] = Field(default_factory=list)
     claim_supported: bool = Field(default=False)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # DPPBridge
 # ---------------------------------------------------------------------------
-
 
 class DPPBridge:
     """Digital Product Passport integration bridge for PACK-018.
@@ -320,7 +302,7 @@ class DPPBridge:
             Dict with linking status, DPP data snapshot, required/verified/
             missing fields, consistency issues, and provenance hash.
         """
-        start = _utcnow()
+        start = utcnow()
         result = DPPLinkingResult(
             product_id=product_id,
             claim_id=claim_id,
@@ -357,7 +339,7 @@ class DPPBridge:
             result.status = LinkingStatus.NOT_FOUND
             result.missing_fields = result.required_fields
 
-        elapsed = (_utcnow() - start).total_seconds() * 1000
+        elapsed = (utcnow() - start).total_seconds() * 1000
 
         if self.config.enable_provenance:
             result.provenance_hash = _compute_hash(result)

@@ -52,6 +52,8 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 __all__ = [
@@ -66,21 +68,13 @@ __all__ = [
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for provenance tracking."""
@@ -93,11 +87,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EvidenceSourceType(str, Enum):
     """Types of evidence sources for green claims."""
@@ -113,7 +105,6 @@ class EvidenceSourceType(str, Enum):
     FINANCIAL = "financial"
     CLIMATE_DATA = "climate_data"
 
-
 class DataQualityLevel(str, Enum):
     """Quality level of evidence data."""
 
@@ -122,7 +113,6 @@ class DataQualityLevel(str, Enum):
     LOW = "low"
     UNKNOWN = "unknown"
 
-
 class RoutingStatus(str, Enum):
     """Status of a data routing operation."""
 
@@ -130,7 +120,6 @@ class RoutingStatus(str, Enum):
     NO_AGENT = "no_agent_found"
     FAILED = "failed"
     QUALITY_CHECK_NEEDED = "quality_check_needed"
-
 
 # ---------------------------------------------------------------------------
 # Agent Routing Tables
@@ -183,11 +172,9 @@ EVIDENCE_TO_AGENT_MAP: Dict[str, List[str]] = {
     "recycling_reports": ["DATA-001", "DATA-002", "DATA-010"],
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class DataRoutingConfig(BaseModel):
     """Configuration for DATA agent evidence routing."""
@@ -206,7 +193,6 @@ class DataRoutingConfig(BaseModel):
         description="Maximum age of evidence data in days",
     )
 
-
 class DataRoutingEntry(BaseModel):
     """A single agent routing entry for evidence gathering."""
 
@@ -215,7 +201,6 @@ class DataRoutingEntry(BaseModel):
     agent_category: str = Field(default="intake")
     purpose: str = Field(default="")
     priority: int = Field(default=1, ge=1, le=10)
-
 
 class DataRoutingResult(BaseModel):
     """Result of a DATA evidence routing operation."""
@@ -228,15 +213,13 @@ class DataRoutingResult(BaseModel):
     quality_agents: List[DataRoutingEntry] = Field(default_factory=list)
     total_agents: int = Field(default=0)
     quality_level: DataQualityLevel = Field(default=DataQualityLevel.UNKNOWN)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
     duration_ms: float = Field(default=0.0)
-
 
 # ---------------------------------------------------------------------------
 # DataClaimsBridge
 # ---------------------------------------------------------------------------
-
 
 class DataClaimsBridge:
     """Routes evidence gathering requests to DATA agents for green claims.
@@ -283,7 +266,7 @@ class DataClaimsBridge:
         Returns:
             Dict with routing result including agents, quality level, and hash.
         """
-        start = _utcnow()
+        start = utcnow()
         source_type = self._resolve_source_type(source)
         result = DataRoutingResult(
             evidence_type=evidence_type,
@@ -304,7 +287,7 @@ class DataClaimsBridge:
             if self.config.auto_quality_check and not quality_entries:
                 result.status = RoutingStatus.QUALITY_CHECK_NEEDED
 
-        result.duration_ms = (_utcnow() - start).total_seconds() * 1000
+        result.duration_ms = (utcnow() - start).total_seconds() * 1000
 
         if self.config.enable_provenance:
             result.provenance_hash = _compute_hash(result)

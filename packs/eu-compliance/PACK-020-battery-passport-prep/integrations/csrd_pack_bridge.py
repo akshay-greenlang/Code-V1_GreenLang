@@ -47,25 +47,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -78,11 +72,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ESRSStandard(str, Enum):
     """ESRS environmental standards relevant to Battery Regulation."""
@@ -91,14 +83,12 @@ class ESRSStandard(str, Enum):
     E2_POLLUTION = "E2"
     E5_CIRCULAR = "E5"
 
-
 class MappingRelevance(str, Enum):
     """Relevance level of ESRS-to-Battery Regulation mapping."""
 
     DIRECT = "direct"
     SUPPORTIVE = "supportive"
     CONTEXTUAL = "contextual"
-
 
 class ImportStatus(str, Enum):
     """Data import operation status."""
@@ -108,11 +98,9 @@ class ImportStatus(str, Enum):
     PARTIAL = "partial"
     FAILED = "failed"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class CSRDBridgeConfig(BaseModel):
     """Configuration for the CSRD Pack Bridge."""
@@ -125,7 +113,6 @@ class CSRDBridgeConfig(BaseModel):
     import_e2: bool = Field(default=True, description="Import E2 pollution data")
     import_e5: bool = Field(default=True, description="Import E5 resource data")
 
-
 class ESRSDisclosureMapping(BaseModel):
     """Mapping of an ESRS disclosure requirement to Battery Regulation article."""
 
@@ -136,7 +123,6 @@ class ESRSDisclosureMapping(BaseModel):
     battery_reg_requirement: str = Field(default="")
     relevance: MappingRelevance = Field(default=MappingRelevance.DIRECT)
     data_fields: List[str] = Field(default_factory=list)
-
 
 class ESRSImportResult(BaseModel):
     """Result of an ESRS standard data import."""
@@ -156,7 +142,6 @@ class ESRSImportResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class BridgeResult(BaseModel):
     """Complete bridge mapping result."""
 
@@ -171,7 +156,6 @@ class BridgeResult(BaseModel):
     supportive_mappings: int = Field(default=0)
     contextual_mappings: int = Field(default=0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # ESRS to Battery Regulation Mapping Table
@@ -282,11 +266,9 @@ ESRS_BATTERY_MAPPINGS: List[ESRSDisclosureMapping] = [
     ),
 ]
 
-
 # ---------------------------------------------------------------------------
 # CSRDPackBridge
 # ---------------------------------------------------------------------------
-
 
 class CSRDPackBridge:
     """ESRS E1/E2/E5 to Battery Regulation mapping bridge for PACK-020.
@@ -322,7 +304,7 @@ class CSRDPackBridge:
         Returns:
             BridgeResult with mapping counts by relevance level.
         """
-        result = BridgeResult(started_at=_utcnow())
+        result = BridgeResult(started_at=utcnow())
 
         try:
             result.mappings = list(self._mappings)
@@ -359,7 +341,7 @@ class CSRDPackBridge:
             result.status = ImportStatus.FAILED
             logger.error("ESRS mapping failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at
@@ -379,7 +361,7 @@ class CSRDPackBridge:
             ESRSImportResult with GHG emissions and energy data.
         """
         result = ESRSImportResult(
-            standard=ESRSStandard.E1_CLIMATE, started_at=_utcnow()
+            standard=ESRSStandard.E1_CLIMATE, started_at=utcnow()
         )
 
         try:
@@ -418,7 +400,7 @@ class CSRDPackBridge:
             result.errors.append(str(exc))
             logger.error("E1 import failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at
@@ -438,7 +420,7 @@ class CSRDPackBridge:
             ESRSImportResult with hazardous substance data.
         """
         result = ESRSImportResult(
-            standard=ESRSStandard.E2_POLLUTION, started_at=_utcnow()
+            standard=ESRSStandard.E2_POLLUTION, started_at=utcnow()
         )
 
         try:
@@ -476,7 +458,7 @@ class CSRDPackBridge:
             result.errors.append(str(exc))
             logger.error("E2 import failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at
@@ -496,7 +478,7 @@ class CSRDPackBridge:
             ESRSImportResult with recycled content and circularity data.
         """
         result = ESRSImportResult(
-            standard=ESRSStandard.E5_CIRCULAR, started_at=_utcnow()
+            standard=ESRSStandard.E5_CIRCULAR, started_at=utcnow()
         )
 
         try:
@@ -541,7 +523,7 @@ class CSRDPackBridge:
             result.errors.append(str(exc))
             logger.error("E5 import failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at

@@ -77,6 +77,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -88,12 +90,6 @@ _MODULE_VERSION = "1.0.0"
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance.
@@ -113,7 +109,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str = "rpt") -> str:
     """Generate a unique identifier with a given prefix.
 
@@ -124,7 +119,6 @@ def _generate_id(prefix: str = "rpt") -> str:
         ID in format ``{prefix}-{hex12}``.
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 # ---------------------------------------------------------------------------
 # Constants: Compliance Verdicts
@@ -296,11 +290,9 @@ METHODOLOGY_DESCRIPTIONS: Dict[str, str] = {
     ),
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class PlotAssessment:
@@ -372,7 +364,6 @@ class PlotAssessment:
             "high_risk_flag": self.high_risk_flag,
         }
 
-
 @dataclass
 class BatchReport:
     """Batch commodity verification report across multiple plots.
@@ -424,7 +415,6 @@ class BatchReport:
             "overall_compliance_pct": round(self.overall_compliance_pct, 2),
             "high_risk_plots": self.high_risk_plots,
         }
-
 
 @dataclass
 class EvidencePackage:
@@ -486,7 +476,6 @@ class EvidencePackage:
             "provenance_chain": self.provenance_chain,
         }
 
-
 @dataclass
 class DashboardData:
     """Summary data for DDS dashboard integration.
@@ -532,11 +521,9 @@ class DashboardData:
             "alerts_count": len(self.alerts),
         }
 
-
 # ---------------------------------------------------------------------------
 # ComplianceReporter
 # ---------------------------------------------------------------------------
-
 
 class ComplianceReporter:
     """EUDR compliance report generation engine.
@@ -670,7 +657,7 @@ class ComplianceReporter:
         assessment = PlotAssessment(
             report_id=_generate_id("rpt-plot"),
             plot_id=plot_id,
-            generated_at=str(_utcnow()),
+            generated_at=str(utcnow()),
             verdict=verdict,
             confidence=round(confidence, 3),
             forest_cover_pct=round(forest_cover_pct, 2),
@@ -759,7 +746,7 @@ class ComplianceReporter:
 
         report = BatchReport(
             report_id=_generate_id("rpt-batch"),
-            generated_at=str(_utcnow()),
+            generated_at=str(utcnow()),
             commodity=commodity,
             total_plots=total,
             compliant_count=compliant,
@@ -852,7 +839,7 @@ class ComplianceReporter:
         package = EvidencePackage(
             package_id=_generate_id("evd"),
             plot_id=plot_id,
-            generated_at=str(_utcnow()),
+            generated_at=str(utcnow()),
             verdict=verdict,
             confidence=round(confidence, 3),
             canopy_analysis=canopy_analysis or {},
@@ -949,7 +936,7 @@ class ComplianceReporter:
             "report_id": _generate_id("rpt-hist"),
             "report_type": "HISTORICAL_REPORT",
             "plot_id": plot_id,
-            "generated_at": str(_utcnow()),
+            "generated_at": str(utcnow()),
             "cutoff_date": cutoff_date,
             "observation_count": len(sorted_series),
             "time_series": sorted_series,
@@ -1044,7 +1031,7 @@ class ComplianceReporter:
 
         dashboard = DashboardData(
             dashboard_id=_generate_id("dash"),
-            generated_at=str(_utcnow()),
+            generated_at=str(utcnow()),
             total_plots=len(assessments),
             compliance_summary=compliance_summary,
             risk_distribution=risk_dist,
@@ -1307,7 +1294,7 @@ class ComplianceReporter:
             "fragmentation_analysis": fragmentation_analysis,
             "biomass_analysis": biomass_analysis,
             "change_detection": change_detection,
-            "compiled_at": str(_utcnow()),
+            "compiled_at": str(utcnow()),
         }
         evidence["evidence_hash"] = _compute_hash(evidence)
         return evidence
@@ -1758,11 +1745,9 @@ class ComplianceReporter:
             "median": round(median_val, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # XML Escaping Helper
 # ---------------------------------------------------------------------------
-
 
 def _escape_xml(text: str) -> str:
     """Escape special XML characters in a string.
@@ -1781,7 +1766,6 @@ def _escape_xml(text: str) -> str:
     result = result.replace('"', "&quot;")
     result = result.replace("'", "&apos;")
     return result
-
 
 # ---------------------------------------------------------------------------
 # Module Exports

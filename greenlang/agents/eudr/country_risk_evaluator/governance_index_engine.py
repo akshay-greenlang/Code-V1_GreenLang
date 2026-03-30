@@ -73,8 +73,9 @@ from .models import (
 )
 from .provenance import get_provenance_tracker
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -105,28 +106,19 @@ _FOREST_INDICATORS: List[str] = [
     "institutional_strength",
 ]
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal for precise arithmetic."""
     if isinstance(value, Decimal):
         return value
     return Decimal(str(value))
 
-
 def _float(value: Decimal) -> float:
     """Convert Decimal to float for API responses."""
     return float(value)
 
-
 # ---------------------------------------------------------------------------
 # GovernanceIndexEngine
 # ---------------------------------------------------------------------------
-
 
 class GovernanceIndexEngine:
     """Multi-source governance quality evaluation engine.
@@ -632,7 +624,7 @@ class GovernanceIndexEngine:
         if window_years < 1:
             raise ValueError("window_years must be >= 1")
 
-        cutoff_date = _utcnow() - timedelta(days=window_years * 365)
+        cutoff_date = utcnow() - timedelta(days=window_years * 365)
 
         with self._lock:
             history = self._governance_history.get(country_code, [])
@@ -1042,7 +1034,7 @@ class GovernanceIndexEngine:
 
         # Use last 2 points including current
         recent = history[-2:]
-        recent_with_current = recent + [(_utcnow(), current_score)]
+        recent_with_current = recent + [(utcnow(), current_score)]
 
         slope = self._calculate_trend_slope(recent_with_current)
         return self._classify_trend_direction(slope)
@@ -1085,7 +1077,7 @@ class GovernanceIndexEngine:
         self, country_code: str, score: Decimal,
     ) -> None:
         """Add score to governance history (thread-safe)."""
-        now = _utcnow()
+        now = utcnow()
         if country_code not in self._governance_history:
             self._governance_history[country_code] = []
         self._governance_history[country_code].append((now, score))

@@ -8,11 +8,12 @@ and calculations used by AI agents. Ensures transparency and auditability.
 
 from typing import Optional, Dict, Any, List
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import Field
 import hashlib
+from greenlang.schemas import GreenLangBase
 
 
-class EmissionFactorCitation(BaseModel):
+class EmissionFactorCitation(GreenLangBase):
     """
     Citation for an emission factor used in calculations.
 
@@ -105,7 +106,7 @@ class EmissionFactorCitation(BaseModel):
         }
 
 
-class CalculationCitation(BaseModel):
+class CalculationCitation(GreenLangBase):
     """
     Citation for a calculation step in an AI agent.
 
@@ -148,7 +149,7 @@ class CalculationCitation(BaseModel):
         return result
 
 
-class DataSourceCitation(BaseModel):
+class DataSourceCitation(GreenLangBase):
     """
     Citation for external data sources used by agents.
 
@@ -281,7 +282,7 @@ def create_emission_factor_citation(
     )
 
 
-class CitationBundle(BaseModel):
+class CitationBundle(GreenLangBase):
     """
     Bundle of all citations for an agent execution.
 

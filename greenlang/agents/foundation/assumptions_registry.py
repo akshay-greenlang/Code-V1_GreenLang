@@ -38,7 +38,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism.clock import DeterministicClock
@@ -55,11 +55,12 @@ try:
 except ImportError:
     pass
 
+from greenlang.schemas.enums import ValidationSeverity
+from greenlang.schemas import GreenLangBase
 
 # =============================================================================
 # Enumerations
 # =============================================================================
-
 
 class AssumptionDataType(str, Enum):
     """Supported data types for assumption values."""
@@ -73,7 +74,6 @@ class AssumptionDataType(str, Enum):
     LIST_FLOAT = "list_float"
     LIST_STRING = "list_string"
     DICT = "dict"
-
 
 class AssumptionCategory(str, Enum):
     """Categories of assumptions for organization."""
@@ -89,7 +89,6 @@ class AssumptionCategory(str, Enum):
     WATER = "water"
     CUSTOM = "custom"
 
-
 class ScenarioType(str, Enum):
     """Pre-defined scenario types."""
     BASELINE = "baseline"
@@ -100,7 +99,6 @@ class ScenarioType(str, Enum):
     REGULATORY = "regulatory"
     CUSTOM = "custom"
 
-
 class ChangeType(str, Enum):
     """Types of changes to assumptions."""
     CREATE = "create"
@@ -110,20 +108,11 @@ class ChangeType(str, Enum):
     INHERIT = "inherit"
     REVERT = "revert"
 
-
-class ValidationSeverity(str, Enum):
-    """Severity levels for validation issues."""
-    ERROR = "error"
-    WARNING = "warning"
-    INFO = "info"
-
-
 # =============================================================================
 # Data Models
 # =============================================================================
 
-
-class ValidationRule(BaseModel):
+class ValidationRule(GreenLangBase):
     """Validation rule for an assumption value."""
     rule_id: str = Field(..., description="Unique rule identifier")
     description: str = Field(..., description="Human-readable rule description")
@@ -139,8 +128,7 @@ class ValidationRule(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class ValidationResult(BaseModel):
+class ValidationResult(GreenLangBase):
     """Result of validating an assumption value."""
     is_valid: bool = Field(..., description="Overall validation status")
     errors: List[str] = Field(default_factory=list, description="Validation errors")
@@ -150,8 +138,7 @@ class ValidationResult(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class AssumptionMetadata(BaseModel):
+class AssumptionMetadata(GreenLangBase):
     """Metadata for an assumption."""
     source: str = Field(..., description="Source of the assumption (e.g., EPA, IPCC)")
     source_url: Optional[str] = Field(None, description="URL to source document")
@@ -167,8 +154,7 @@ class AssumptionMetadata(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class AssumptionVersion(BaseModel):
+class AssumptionVersion(GreenLangBase):
     """A single version of an assumption value."""
     version_id: str = Field(default_factory=lambda: str(uuid.uuid4()), description="Unique version ID")
     version_number: int = Field(..., ge=1, description="Sequential version number")
@@ -185,8 +171,7 @@ class AssumptionVersion(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class Assumption(BaseModel):
+class Assumption(GreenLangBase):
     """Complete assumption definition with all versions and metadata."""
     assumption_id: str = Field(..., description="Unique assumption identifier")
     name: str = Field(..., description="Human-readable name")
@@ -234,8 +219,7 @@ class Assumption(BaseModel):
             raise ValueError("assumption_id must be alphanumeric with underscores, hyphens, or dots")
         return v
 
-
-class Scenario(BaseModel):
+class Scenario(GreenLangBase):
     """A scenario containing assumption overrides."""
     scenario_id: str = Field(default_factory=lambda: str(uuid.uuid4()), description="Unique scenario ID")
     name: str = Field(..., description="Scenario name")
@@ -256,8 +240,7 @@ class Scenario(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class ChangeLogEntry(BaseModel):
+class ChangeLogEntry(GreenLangBase):
     """Audit log entry for assumption changes."""
     log_id: str = Field(default_factory=lambda: str(uuid.uuid4()), description="Unique log ID")
     timestamp: datetime = Field(default_factory=DeterministicClock.now, description="Change timestamp")
@@ -276,8 +259,7 @@ class ChangeLogEntry(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class DependencyNode(BaseModel):
+class DependencyNode(GreenLangBase):
     """Node in the dependency graph."""
     assumption_id: str = Field(..., description="Assumption identifier")
     calculation_ids: List[str] = Field(default_factory=list, description="Calculations using this assumption")
@@ -286,13 +268,11 @@ class DependencyNode(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
 # =============================================================================
 # Input/Output Models
 # =============================================================================
 
-
-class AssumptionsRegistryInput(BaseModel):
+class AssumptionsRegistryInput(GreenLangBase):
     """Input for Assumptions Registry operations."""
     operation: str = Field(..., description="Operation to perform")
     assumption_id: Optional[str] = Field(None, description="Target assumption ID")
@@ -321,8 +301,7 @@ class AssumptionsRegistryInput(BaseModel):
             raise ValueError(f"Invalid operation: {v}. Valid operations: {valid_ops}")
         return v
 
-
-class AssumptionsRegistryOutput(BaseModel):
+class AssumptionsRegistryOutput(GreenLangBase):
     """Output from Assumptions Registry operations."""
     success: bool = Field(..., description="Whether operation succeeded")
     operation: str = Field(..., description="Operation that was performed")
@@ -340,11 +319,9 @@ class AssumptionsRegistryOutput(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
 # =============================================================================
 # Main Agent Class
 # =============================================================================
-
 
 class AssumptionsRegistryAgent(BaseAgent):
     """

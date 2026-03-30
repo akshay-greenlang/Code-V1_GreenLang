@@ -37,19 +37,14 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -61,18 +56,15 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class GHGScope(str, Enum):
     SCOPE_1 = "scope_1"
     SCOPE_2_LOCATION = "scope_2_location"
     SCOPE_2_MARKET = "scope_2_market"
     SCOPE_3 = "scope_3"
-
 
 class EFSource(str, Enum):
     DEFRA = "defra"
@@ -83,7 +75,6 @@ class EFSource(str, Enum):
     CUSTOM = "custom"
     SUPPLIER_SPECIFIC = "supplier_specific"
 
-
 class VerificationLevel(str, Enum):
     NOT_VERIFIED = "not_verified"
     SELF_ASSESSED = "self_assessed"
@@ -91,13 +82,11 @@ class VerificationLevel(str, Enum):
     LIMITED_ASSURANCE = "limited_assurance"
     REASONABLE_ASSURANCE = "reasonable_assurance"
 
-
 class InventoryStatus(str, Enum):
     DRAFT = "draft"
     IN_REVIEW = "in_review"
     VERIFIED = "verified"
     PUBLISHED = "published"
-
 
 class ImportStatus(str, Enum):
     SUCCESS = "success"
@@ -105,7 +94,6 @@ class ImportStatus(str, Enum):
     FAILED = "failed"
     STALE = "stale"
     CACHED = "cached"
-
 
 # ---------------------------------------------------------------------------
 # MRV Agent Registry (30 agents)
@@ -144,11 +132,9 @@ MRV_AGENT_REGISTRY: Dict[str, Dict[str, str]] = {
     "mrv_030": {"name": "Audit Trail & Lineage", "scope": "cross_cutting"},
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class GLGHGAppConfig(BaseModel):
     pack_id: str = Field(default="PACK-030")
@@ -165,7 +151,6 @@ class GLGHGAppConfig(BaseModel):
     cache_ttl_seconds: int = Field(default=3600)
     retry_attempts: int = Field(default=3, ge=1, le=10)
     retry_delay_seconds: float = Field(default=1.0)
-
 
 class GHGInventory(BaseModel):
     """Comprehensive GHG inventory from GL-GHG-APP."""
@@ -191,8 +176,7 @@ class GHGInventory(BaseModel):
     consolidation_approach: str = Field(default="operational_control")
     data_coverage_pct: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-    fetched_at: datetime = Field(default_factory=_utcnow)
-
+    fetched_at: datetime = Field(default_factory=utcnow)
 
 class EmissionFactorRecord(BaseModel):
     """Emission factor record from GL-GHG-APP."""
@@ -208,7 +192,6 @@ class EmissionFactorRecord(BaseModel):
     uncertainty_pct: float = Field(default=5.0)
     ghg_included: List[str] = Field(default_factory=lambda: ["CO2", "CH4", "N2O"])
 
-
 class EmissionFactorBundle(BaseModel):
     """Emission factor bundle from GL-GHG-APP."""
     bundle_id: str = Field(default_factory=_new_uuid)
@@ -217,8 +200,7 @@ class EmissionFactorBundle(BaseModel):
     sources_used: List[str] = Field(default_factory=list)
     vintage_years: List[int] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-    fetched_at: datetime = Field(default_factory=_utcnow)
-
+    fetched_at: datetime = Field(default_factory=utcnow)
 
 class ActivityDataSummary(BaseModel):
     """Activity data summary from GL-GHG-APP."""
@@ -231,8 +213,7 @@ class ActivityDataSummary(BaseModel):
     facilities_covered: int = Field(default=0)
     countries_covered: int = Field(default=0)
     provenance_hash: str = Field(default="")
-    fetched_at: datetime = Field(default_factory=_utcnow)
-
+    fetched_at: datetime = Field(default_factory=utcnow)
 
 class GLGHGAppResult(BaseModel):
     result_id: str = Field(default_factory=_new_uuid)
@@ -245,14 +226,12 @@ class GLGHGAppResult(BaseModel):
     frameworks_serviced: List[str] = Field(default_factory=list)
     validation_errors: List[str] = Field(default_factory=list)
     validation_warnings: List[str] = Field(default_factory=list)
-    fetched_at: datetime = Field(default_factory=_utcnow)
+    fetched_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # GLGHGAppIntegration
 # ---------------------------------------------------------------------------
-
 
 class GLGHGAppIntegration:
     """GL-GHG-APP integration for PACK-030.
@@ -307,6 +286,7 @@ class GLGHGAppIntegration:
                 attempt += 1
                 if attempt < self.config.retry_attempts:
                     import asyncio
+
                     await asyncio.sleep(self.config.retry_delay_seconds * attempt)
         return []
 

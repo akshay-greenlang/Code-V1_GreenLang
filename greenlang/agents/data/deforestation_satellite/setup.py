@@ -62,16 +62,9 @@ except ImportError:
     FastAPI = None  # type: ignore[assignment, misc]
     FASTAPI_AVAILABLE = False
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -89,7 +82,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ===================================================================
 # Thread-safe singleton
 # ===================================================================
@@ -97,11 +89,9 @@ def _compute_hash(data: Any) -> str:
 _singleton_lock = threading.Lock()
 _singleton_instance: Optional["DeforestationSatelliteService"] = None
 
-
 # ===================================================================
 # DeforestationSatelliteService facade
 # ===================================================================
-
 
 class DeforestationSatelliteService:
     """Unified facade over the Deforestation Satellite Connector SDK.
@@ -545,11 +535,9 @@ class DeforestationSatelliteService:
         self._started = False
         logger.info("DeforestationSatelliteService shut down")
 
-
 # ===================================================================
 # Thread-safe singleton access
 # ===================================================================
-
 
 def _get_singleton() -> DeforestationSatelliteService:
     """Get or create the singleton DeforestationSatelliteService instance.
@@ -564,11 +552,9 @@ def _get_singleton() -> DeforestationSatelliteService:
                 _singleton_instance = DeforestationSatelliteService()
     return _singleton_instance
 
-
 # ===================================================================
 # FastAPI integration
 # ===================================================================
-
 
 async def configure_deforestation_satellite(
     app: Any,
@@ -612,7 +598,6 @@ async def configure_deforestation_satellite(
     logger.info("Deforestation satellite connector service configured on app")
     return service
 
-
 def get_deforestation_satellite(app: Any) -> DeforestationSatelliteService:
     """Get the DeforestationSatelliteService instance from app state.
 
@@ -633,7 +618,6 @@ def get_deforestation_satellite(app: Any) -> DeforestationSatelliteService:
         )
     return service
 
-
 def get_router(service: Optional[DeforestationSatelliteService] = None) -> Any:
     """Get the deforestation satellite API router.
 
@@ -648,7 +632,6 @@ def get_router(service: Optional[DeforestationSatelliteService] = None) -> Any:
         return router
     except ImportError:
         return None
-
 
 __all__ = [
     "DeforestationSatelliteService",

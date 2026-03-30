@@ -57,25 +57,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -95,18 +89,15 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _safe_pct(numerator: float, denominator: float) -> float:
     """Calculate percentage safely, returning 0.0 on zero denominator."""
     if denominator == 0.0:
         return 0.0
     return (numerator / denominator) * 100.0
 
-
 def _round_val(value: float, places: int = 4) -> float:
     """Round a float to specified decimal places."""
     return round(value, places)
-
 
 def _safe_divide(
     numerator: float, denominator: float, default: float = 0.0,
@@ -116,11 +107,9 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ScreeningLayer(str, Enum):
     """Screening layer classification for multi-layer approach."""
@@ -131,7 +120,6 @@ class ScreeningLayer(str, Enum):
     CONTROVERSY_BASED = "controversy_based"
     ESG_QUALITY = "esg_quality"
     CUSTOM = "custom"
-
 
 class ExclusionType(str, Enum):
     """Type of exclusion applied to a security."""
@@ -149,7 +137,6 @@ class ExclusionType(str, Enum):
     ARCTIC_DRILLING = "arctic_drilling"
     DEFORESTATION = "deforestation"
     HUMAN_RIGHTS = "human_rights"
-
 
 # ---------------------------------------------------------------------------
 # Constants: Exclusion Thresholds
@@ -280,11 +267,9 @@ CONTROVERSY_RULES: Dict[str, Dict[str, Any]] = {
 # Watch list proximity threshold (% from exclusion threshold)
 WATCH_LIST_PROXIMITY_PCT: float = 20.0
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Data Models
 # ---------------------------------------------------------------------------
-
 
 class SecurityData(BaseModel):
     """Input data for a single security to screen.
@@ -424,7 +409,6 @@ class SecurityData(BaseModel):
         description="Data coverage (full/partial/minimal)",
     )
 
-
 class ExclusionDetail(BaseModel):
     """Details of a single exclusion applied to a security.
 
@@ -458,12 +442,11 @@ class ExclusionDetail(BaseModel):
         default=0.0, description="NAV impact of excluding this security",
     )
     excluded_at: datetime = Field(
-        default_factory=_utcnow, description="Exclusion timestamp",
+        default_factory=utcnow, description="Exclusion timestamp",
     )
     provenance_hash: str = Field(
         default="", description="SHA-256 provenance hash",
     )
-
 
 class WatchListEntry(BaseModel):
     """A security on the watch list due to proximity to exclusion threshold.
@@ -503,12 +486,11 @@ class WatchListEntry(BaseModel):
         description="Recommended monitoring frequency",
     )
     added_at: datetime = Field(
-        default_factory=_utcnow, description="Date added to watch list",
+        default_factory=utcnow, description="Date added to watch list",
     )
     provenance_hash: str = Field(
         default="", description="SHA-256 provenance hash",
     )
-
 
 class PreApprovalResult(BaseModel):
     """Result of pre-approval screening for a new investment candidate.
@@ -550,12 +532,11 @@ class PreApprovalResult(BaseModel):
         description="Screening recommendation (approve/reject/watch)",
     )
     screened_at: datetime = Field(
-        default_factory=_utcnow, description="Screening timestamp",
+        default_factory=utcnow, description="Screening timestamp",
     )
     provenance_hash: str = Field(
         default="", description="SHA-256 provenance hash",
     )
-
 
 class UniverseCoverage(BaseModel):
     """Coverage statistics for the investment universe.
@@ -614,12 +595,11 @@ class UniverseCoverage(BaseModel):
         description="Data coverage quality (%)",
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow, description="Assessment timestamp",
+        default_factory=utcnow, description="Assessment timestamp",
     )
     provenance_hash: str = Field(
         default="", description="SHA-256 provenance hash",
     )
-
 
 class ScreeningResult(BaseModel):
     """Complete result of investment universe screening.
@@ -634,7 +614,7 @@ class ScreeningResult(BaseModel):
         default="", description="Financial product name",
     )
     reporting_date: datetime = Field(
-        default_factory=_utcnow, description="Reporting date",
+        default_factory=utcnow, description="Reporting date",
     )
 
     # Exclusions
@@ -686,17 +666,15 @@ class ScreeningResult(BaseModel):
         default=_MODULE_VERSION, description="Engine version",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp",
+        default_factory=utcnow, description="Calculation timestamp",
     )
     provenance_hash: str = Field(
         default="", description="SHA-256 provenance hash",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine Configuration
 # ---------------------------------------------------------------------------
-
 
 class UniverseConfig(BaseModel):
     """Configuration for the InvestmentUniverseEngine.
@@ -761,7 +739,6 @@ class UniverseConfig(BaseModel):
         description="Max carbon intensity for eligibility (0 = no filter)",
     )
 
-
 # ---------------------------------------------------------------------------
 # model_rebuild for forward reference resolution
 # ---------------------------------------------------------------------------
@@ -774,11 +751,9 @@ PreApprovalResult.model_rebuild()
 UniverseCoverage.model_rebuild()
 ScreeningResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # InvestmentUniverseEngine
 # ---------------------------------------------------------------------------
-
 
 class InvestmentUniverseEngine:
     """
@@ -859,7 +834,7 @@ class InvestmentUniverseEngine:
         Raises:
             ValueError: If securities list is empty.
         """
-        start = _utcnow()
+        start = utcnow()
 
         if not securities:
             raise ValueError("Securities list cannot be empty")
@@ -907,7 +882,7 @@ class InvestmentUniverseEngine:
             securities, excluded_ids, all_exclusions, all_watch
         )
 
-        processing_ms = (_utcnow() - start).total_seconds() * 1000.0
+        processing_ms = (utcnow() - start).total_seconds() * 1000.0
 
         result = ScreeningResult(
             product_name=self.config.product_name,

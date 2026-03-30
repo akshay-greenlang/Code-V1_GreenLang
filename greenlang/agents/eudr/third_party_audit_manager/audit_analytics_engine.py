@@ -59,6 +59,7 @@ import logging
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.third_party_audit_manager.config import (
     ThirdPartyAuditManagerConfig,
@@ -103,12 +104,6 @@ URGENT_INTERACTION_TYPES: frozenset = frozenset({
     AuthorityInteractionType.UNANNOUNCED_INSPECTION.value,
 })
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_provenance_hash(data: Dict[str, Any]) -> str:
     """Compute SHA-256 hash for provenance tracking.
 
@@ -120,7 +115,6 @@ def _compute_provenance_hash(data: Dict[str, Any]) -> str:
     """
     canonical = json.dumps(data, sort_keys=True, default=str, separators=(",", ":"))
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-
 
 class AuditAnalyticsEngine:
     """Audit analytics, KPI calculation, and competent authority liaison engine.
@@ -174,7 +168,7 @@ class AuditAnalyticsEngine:
         Returns:
             CalculateAnalyticsResponse with computed metrics.
         """
-        start_time = _utcnow()
+        start_time = utcnow()
 
         try:
             audit_list = audits or []
@@ -221,7 +215,7 @@ class AuditAnalyticsEngine:
             )
 
             processing_time = Decimal(str(
-                (_utcnow() - start_time).total_seconds() * 1000
+                (utcnow() - start_time).total_seconds() * 1000
             )).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
             response = CalculateAnalyticsResponse(
@@ -272,10 +266,10 @@ class AuditAnalyticsEngine:
         Returns:
             LogAuthorityInteractionResponse with logged interaction.
         """
-        start_time = _utcnow()
+        start_time = utcnow()
 
         try:
-            now = _utcnow()
+            now = utcnow()
             received_date = request.received_date or now
 
             # Calculate response deadline
@@ -316,7 +310,7 @@ class AuditAnalyticsEngine:
             }
 
             processing_time = Decimal(str(
-                (_utcnow() - start_time).total_seconds() * 1000
+                (utcnow() - start_time).total_seconds() * 1000
             )).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
             response = LogAuthorityInteractionResponse(
@@ -356,7 +350,7 @@ class AuditAnalyticsEngine:
         Returns:
             Dictionary with SLA status details.
         """
-        now = _utcnow()
+        now = utcnow()
 
         if interaction.response_submitted_at:
             within_sla = interaction.response_submitted_at <= interaction.response_deadline
@@ -875,5 +869,5 @@ class AuditAnalyticsEngine:
             "open_cars": open_cars,
             "overdue_cars": overdue_cars,
             "findings_per_audit": str(fpa),
-            "calculated_at": _utcnow().isoformat(),
+            "calculated_at": utcnow().isoformat(),
         }

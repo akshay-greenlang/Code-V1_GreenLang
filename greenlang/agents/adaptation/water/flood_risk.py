@@ -17,10 +17,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +41,7 @@ class RiskLevel(str, Enum):
     VERY_HIGH = "very_high"
 
 
-class FloodHazard(BaseModel):
+class FloodHazard(GreenLangBase):
     """Flood hazard definition."""
     hazard_id: str
     flood_type: FloodType
@@ -50,7 +51,7 @@ class FloodHazard(BaseModel):
     flow_velocity_m_s: Optional[float] = None
 
 
-class FloodVulnerability(BaseModel):
+class FloodVulnerability(GreenLangBase):
     """Vulnerability assessment for area."""
     area_id: str
     area_name: str
@@ -62,7 +63,7 @@ class FloodVulnerability(BaseModel):
     vulnerability_score: float  # 0-1
 
 
-class ExposureData(BaseModel):
+class ExposureData(GreenLangBase):
     """Exposure data for flood zone."""
     zone_id: str
     flood_zone_type: str  # e.g., AE, VE, X
@@ -72,7 +73,7 @@ class ExposureData(BaseModel):
     economic_value_exposed: float
 
 
-class FloodRiskInput(BaseModel):
+class FloodRiskInput(GreenLangBase):
     """Input for flood risk analysis."""
     region_id: str
     hazards: List[FloodHazard]
@@ -82,7 +83,7 @@ class FloodRiskInput(BaseModel):
     historical_flood_events: List[Dict[str, Any]] = Field(default_factory=list)
 
 
-class RiskScore(BaseModel):
+class RiskScore(GreenLangBase):
     """Risk score for area."""
     area_id: str
     hazard_score: float
@@ -93,7 +94,7 @@ class RiskScore(BaseModel):
     expected_annual_damage: float
 
 
-class MitigationMeasure(BaseModel):
+class MitigationMeasure(GreenLangBase):
     """Flood mitigation measure."""
     measure_id: str
     measure_type: str
@@ -104,7 +105,7 @@ class MitigationMeasure(BaseModel):
     implementation_time_years: float
 
 
-class FloodRiskOutput(BaseModel):
+class FloodRiskOutput(GreenLangBase):
     """Output from flood risk analysis."""
     region_id: str
     overall_risk_level: RiskLevel

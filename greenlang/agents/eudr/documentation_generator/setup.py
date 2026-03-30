@@ -105,6 +105,7 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, AsyncIterator, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -329,21 +330,13 @@ try:
 except ImportError:
     RegulatorySubmissionEngine = None  # type: ignore[misc,assignment]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute deterministic SHA-256 hash for provenance.
@@ -359,7 +352,6 @@ def _compute_hash(data: Any) -> str:
     )
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
-
 def _safe_record(metric_fn: Any, *args: Any) -> None:
     """Safely call a metrics function if available.
 
@@ -372,7 +364,6 @@ def _safe_record(metric_fn: Any, *args: Any) -> None:
             metric_fn(*args)
         except Exception:
             pass
-
 
 def _safe_observe(metric_fn: Any, value: float) -> None:
     """Safely observe a histogram metric if available.
@@ -387,7 +378,6 @@ def _safe_observe(metric_fn: Any, value: float) -> None:
         except Exception:
             pass
 
-
 def _safe_gauge(metric_fn: Any, value: Any) -> None:
     """Safely set a gauge metric if available.
 
@@ -401,11 +391,9 @@ def _safe_gauge(metric_fn: Any, value: Any) -> None:
         except Exception:
             pass
 
-
 # ---------------------------------------------------------------------------
 # Service Facade
 # ---------------------------------------------------------------------------
-
 
 class DocumentationGeneratorService:
     """Unified service facade for AGENT-EUDR-030.
@@ -774,7 +762,7 @@ class DocumentationGeneratorService:
             )
 
         # Step 4: Build the DDS
-        now = _utcnow()
+        now = utcnow()
         ref_number = reference_number or f"DDS-{operator_id}-{now.strftime('%Y%m%d')}"
 
         # Determine risk conclusion
@@ -1048,7 +1036,7 @@ class DocumentationGeneratorService:
             Article 9 package dictionary.
         """
         package_id = _new_uuid()
-        now = _utcnow()
+        now = utcnow()
 
         # Extract country codes from geolocations
         country_codes = list(set(
@@ -1235,7 +1223,7 @@ class DocumentationGeneratorService:
             Risk assessment documentation dictionary.
         """
         doc_id = _new_uuid()
-        now = _utcnow()
+        now = utcnow()
 
         score = composite_score or "50"
         level = risk_level or "standard"
@@ -1401,7 +1389,7 @@ class DocumentationGeneratorService:
             Mitigation documentation dictionary.
         """
         doc_id = _new_uuid()
-        now = _utcnow()
+        now = utcnow()
 
         pre_score = pre_mitigation_score or "50"
         post_score = post_mitigation_score or "30"
@@ -1524,7 +1512,7 @@ class DocumentationGeneratorService:
             raise ValueError(f"DDS {dds_id} not found")
 
         package_id = _new_uuid()
-        now = _utcnow()
+        now = utcnow()
 
         # Collect all component hashes
         component_hashes: Dict[str, str] = {
@@ -1666,7 +1654,7 @@ class DocumentationGeneratorService:
                 raise ValueError(f"DDS {dds_id} not found")
 
         validation_id = _new_uuid()
-        now = _utcnow()
+        now = utcnow()
         issues: List[Dict[str, Any]] = []
 
         # Validate operator information
@@ -1915,7 +1903,7 @@ class DocumentationGeneratorService:
             )
 
         submission_id = _new_uuid()
-        now = _utcnow()
+        now = utcnow()
         deadline = now + timedelta(days=self.config.submission_deadline_days)
 
         submission = {
@@ -2044,7 +2032,7 @@ class DocumentationGeneratorService:
             Version record dictionary.
         """
         version_id = _new_uuid()
-        now = _utcnow()
+        now = utcnow()
 
         version_record = {
             "version_id": version_id,
@@ -2141,7 +2129,7 @@ class DocumentationGeneratorService:
                 "versioned_documents": len(self._versions),
                 "validation_results": len(self._validation_results),
             },
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
         # Check database
@@ -2252,14 +2240,12 @@ class DocumentationGeneratorService:
         """Return the number of compliance packages in memory."""
         return len(self._compliance_packages)
 
-
 # ---------------------------------------------------------------------------
 # Thread-safe singleton
 # ---------------------------------------------------------------------------
 
 _service_lock = threading.Lock()
 _service_instance: Optional[DocumentationGeneratorService] = None
-
 
 def get_service(
     config: Optional[DocumentationGeneratorConfig] = None,
@@ -2286,7 +2272,6 @@ def get_service(
                 _service_instance = DocumentationGeneratorService(config)
     return _service_instance
 
-
 def reset_service() -> None:
     """Reset the global service singleton to None.
 
@@ -2296,11 +2281,9 @@ def reset_service() -> None:
     with _service_lock:
         _service_instance = None
 
-
 # ---------------------------------------------------------------------------
 # FastAPI lifespan context manager
 # ---------------------------------------------------------------------------
-
 
 @asynccontextmanager
 async def lifespan(app: Any) -> AsyncIterator[None]:

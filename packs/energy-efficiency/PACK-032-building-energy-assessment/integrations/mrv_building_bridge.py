@@ -49,26 +49,19 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -81,11 +74,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Agent Stubs
 # ---------------------------------------------------------------------------
-
 
 class _AgentStub:
     """Stub for unavailable MRV agent modules."""
@@ -105,7 +96,6 @@ class _AgentStub:
             }
         return _stub_method
 
-
 def _try_import_mrv_agent(agent_id: str, module_path: str) -> Any:
     """Try to import an MRV agent with graceful fallback.
 
@@ -118,16 +108,15 @@ def _try_import_mrv_agent(agent_id: str, module_path: str) -> Any:
     """
     try:
         import importlib
+
         return importlib.import_module(module_path)
     except ImportError:
         logger.debug("MRV agent %s not available, using stub", agent_id)
         return _AgentStub(agent_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class BuildingEnergySource(str, Enum):
     """Building energy source categories mapped to MRV agents."""
@@ -149,14 +138,12 @@ class BuildingEnergySource(str, Enum):
     WATER_HEATING_ELECTRIC = "water_heating_electric"
     COOKING_GAS = "cooking_gas"
 
-
 class MRVScope(str, Enum):
     """GHG Protocol emission scopes."""
 
     SCOPE_1 = "scope_1"
     SCOPE_2 = "scope_2"
     SCOPE_3 = "scope_3"
-
 
 class BuildingMRVAgentType(str, Enum):
     """Building-specific MRV agent types."""
@@ -170,11 +157,9 @@ class BuildingMRVAgentType(str, Enum):
     OPERATIONS = "GL-MRV-BLD-007"
     SMART_BUILDING = "GL-MRV-BLD-008"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class MRVAgentRoute(BaseModel):
     """Routing entry mapping an energy source to an MRV agent."""
@@ -186,7 +171,6 @@ class MRVAgentRoute(BaseModel):
     scope3_category: Optional[int] = Field(None, ge=1, le=15)
     module_path: str = Field(default="", description="Python module path")
     description: str = Field(default="")
-
 
 class RoutingResult(BaseModel):
     """Result of routing a calculation request to an MRV agent."""
@@ -204,7 +188,6 @@ class RoutingResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class SavingsConversionResult(BaseModel):
     """Result of converting energy savings to avoided emissions."""
 
@@ -218,7 +201,6 @@ class SavingsConversionResult(BaseModel):
     scope: str = Field(default="")
     methodology: str = Field(default="")
     provenance_hash: str = Field(default="")
-
 
 class BatchRoutingResult(BaseModel):
     """Result of routing multiple calculation requests."""
@@ -237,7 +219,6 @@ class BatchRoutingResult(BaseModel):
     savings_conversions: List[SavingsConversionResult] = Field(default_factory=list)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class MRVBuildingBridgeConfig(BaseModel):
     """Configuration for the MRV Building Bridge."""
@@ -261,7 +242,6 @@ class MRVBuildingBridgeConfig(BaseModel):
     district_heating_ef_kgco2_per_kwh: float = Field(
         default=0.170, ge=0.0, description="District heating EF (kg CO2e/kWh)"
     )
-
 
 # ---------------------------------------------------------------------------
 # MRV Agent Routing Table
@@ -387,11 +367,9 @@ GRID_EMISSION_FACTORS: Dict[str, float] = {
     "ZA": 0.928, "SG": 0.408,
 }
 
-
 # ---------------------------------------------------------------------------
 # MRVBuildingBridge
 # ---------------------------------------------------------------------------
-
 
 class MRVBuildingBridge:
     """Routes building energy data to MRV agents for emissions calculation.

@@ -36,6 +36,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -182,11 +183,9 @@ except ImportError:
     def observe_calculation_duration(operation: str, seconds: float) -> None:  # type: ignore[misc]
         """No-op fallback when metrics module is unavailable."""
 
-
 # ===================================================================
 # Lightweight Pydantic response models used by the facade / API layer
 # ===================================================================
-
 
 class CalculationResponse(BaseModel):
     """Single refrigerant emission calculation response.
@@ -231,7 +230,6 @@ class CalculationResponse(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc).isoformat(),
     )
 
-
 class BatchResponse(BaseModel):
     """Batch refrigerant emission calculation response.
 
@@ -258,7 +256,6 @@ class BatchResponse(BaseModel):
     total_count: int = Field(default=0)
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class RefrigerantResponse(BaseModel):
     """Refrigerant properties response.
@@ -293,7 +290,6 @@ class RefrigerantResponse(BaseModel):
     ozone_depletion_potential: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class RefrigerantListResponse(BaseModel):
     """Response listing all available refrigerants.
 
@@ -306,7 +302,6 @@ class RefrigerantListResponse(BaseModel):
 
     refrigerants: List[Dict[str, Any]] = Field(default_factory=list)
     total_count: int = Field(default=0)
-
 
 class EquipmentResponse(BaseModel):
     """Equipment profile registration or retrieval response.
@@ -341,7 +336,6 @@ class EquipmentResponse(BaseModel):
     )
     provenance_hash: str = Field(default="")
 
-
 class EquipmentListResponse(BaseModel):
     """Response listing equipment profiles.
 
@@ -354,7 +348,6 @@ class EquipmentListResponse(BaseModel):
 
     equipment: List[Dict[str, Any]] = Field(default_factory=list)
     total_count: int = Field(default=0)
-
 
 class ServiceEventResponse(BaseModel):
     """Service event logging response.
@@ -385,7 +378,6 @@ class ServiceEventResponse(BaseModel):
     notes: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 class LeakRateResponse(BaseModel):
     """Leak rate estimation or registration response.
 
@@ -413,7 +405,6 @@ class LeakRateResponse(BaseModel):
     source: str = Field(default="IPCC")
     provenance_hash: str = Field(default="")
 
-
 class ComplianceResponse(BaseModel):
     """Regulatory compliance check response.
 
@@ -435,7 +426,6 @@ class ComplianceResponse(BaseModel):
     details: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
 
-
 class ComplianceListResponse(BaseModel):
     """List of compliance check results.
 
@@ -452,7 +442,6 @@ class ComplianceListResponse(BaseModel):
     total_count: int = Field(default=0)
     compliant_count: int = Field(default=0)
     overall_compliant: bool = Field(default=False)
-
 
 class UncertaintyResponse(BaseModel):
     """Uncertainty analysis response.
@@ -483,7 +472,6 @@ class UncertaintyResponse(BaseModel):
     data_quality_score: int = Field(default=3)
     provenance_hash: str = Field(default="")
 
-
 class AuditTrailResponse(BaseModel):
     """Audit trail retrieval response.
 
@@ -502,7 +490,6 @@ class AuditTrailResponse(BaseModel):
     total_entries: int = Field(default=0)
     chain_hash: str = Field(default="")
     provenance_hash: str = Field(default="")
-
 
 class HealthResponse(BaseModel):
     """Service health check response.
@@ -541,7 +528,6 @@ class HealthResponse(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc).isoformat(),
     )
 
-
 class StatsResponse(BaseModel):
     """Service aggregate statistics response.
 
@@ -575,7 +561,6 @@ class StatsResponse(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc).isoformat(),
     )
 
-
 class BlendResponse(BaseModel):
     """Blend decomposition response.
 
@@ -597,7 +582,6 @@ class BlendResponse(BaseModel):
     total_emissions_kg_co2e: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class ValidationResponse(BaseModel):
     """Input validation response (without calculation).
 
@@ -616,7 +600,6 @@ class ValidationResponse(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     validated_count: int = Field(default=0)
     total_count: int = Field(default=0)
-
 
 class PipelineResponse(BaseModel):
     """End-to-end refrigerant pipeline execution response.
@@ -643,26 +626,17 @@ class PipelineResponse(BaseModel):
     pipeline_provenance_hash: str = Field(default="")
     total_duration_ms: float = Field(default=0.0)
 
-
 # ===================================================================
 # Utility helpers
 # ===================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _utcnow_iso() -> str:
     """Return current UTC datetime as an ISO-8601 string."""
-    return _utcnow().isoformat()
-
+    return utcnow().isoformat()
 
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -680,7 +654,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ===================================================================
 # RefrigerantsFGasService facade
 # ===================================================================
@@ -688,7 +661,6 @@ def _compute_hash(data: Any) -> str:
 # Thread-safe singleton lock
 _singleton_lock = threading.Lock()
 _singleton_instance: Optional["RefrigerantsFGasService"] = None
-
 
 class RefrigerantsFGasService:
     """Unified facade over the Refrigerants & F-Gas Agent SDK.
@@ -2109,11 +2081,9 @@ class RefrigerantsFGasService:
 
         return requirements_map.get(framework, [])
 
-
 # ===================================================================
 # Thread-safe singleton access
 # ===================================================================
-
 
 def _get_singleton() -> RefrigerantsFGasService:
     """Get or create the singleton RefrigerantsFGasService instance.
@@ -2128,7 +2098,6 @@ def _get_singleton() -> RefrigerantsFGasService:
                 _singleton_instance = RefrigerantsFGasService()
     return _singleton_instance
 
-
 # ===================================================================
 # Module-level singletons for FastAPI integration
 # ===================================================================
@@ -2136,11 +2105,9 @@ def _get_singleton() -> RefrigerantsFGasService:
 _service: Optional[RefrigerantsFGasService] = None
 _router: Any = None
 
-
 # ===================================================================
 # FastAPI integration
 # ===================================================================
-
 
 async def configure_refrigerants_fgas(
     app: Any,
@@ -2189,7 +2156,6 @@ async def configure_refrigerants_fgas(
     )
     return service
 
-
 def get_service() -> Optional[RefrigerantsFGasService]:
     """Get the singleton RefrigerantsFGasService instance.
 
@@ -2211,7 +2177,6 @@ def get_service() -> Optional[RefrigerantsFGasService]:
         _service = _singleton_instance
     return _singleton_instance
 
-
 def get_router() -> Any:
     """Get the refrigerants-fgas API router.
 
@@ -2231,7 +2196,6 @@ def get_router() -> Any:
             "Refrigerants & F-Gas API router module not available",
         )
         return None
-
 
 # ===================================================================
 # Public API

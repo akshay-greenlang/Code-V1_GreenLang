@@ -60,24 +60,18 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC timestamp with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 provenance hash, excluding volatile fields."""
@@ -95,7 +89,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert any value to Decimal."""
     if isinstance(value, Decimal):
@@ -104,7 +97,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -116,16 +108,13 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> Decimal:
     """Round a value to two decimal places using ROUND_HALF_UP."""
     return Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class AdjustmentCategory(str, Enum):
     """Categories of consolidation adjustments."""
@@ -138,7 +127,6 @@ class AdjustmentCategory(str, Enum):
     BOUNDARY_CHANGE = "BOUNDARY_CHANGE"
     OTHER = "OTHER"
 
-
 class AdjustmentStatus(str, Enum):
     """Workflow status for adjustment approval."""
     DRAFT = "DRAFT"
@@ -148,7 +136,6 @@ class AdjustmentStatus(str, Enum):
     REJECTED = "REJECTED"
     REVERSED = "REVERSED"
 
-
 class ScopeTarget(str, Enum):
     """Scope the adjustment applies to."""
     SCOPE_1 = "SCOPE_1"
@@ -157,11 +144,9 @@ class ScopeTarget(str, Enum):
     SCOPE_3 = "SCOPE_3"
     TOTAL = "TOTAL"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class AdjustmentRecord(BaseModel):
     """A single consolidation adjustment entry.
@@ -242,11 +227,11 @@ class AdjustmentRecord(BaseModel):
         description="Batch ID if part of a batch adjustment.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the adjustment was created.",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the adjustment was last updated.",
     )
     provenance_hash: str = Field(
@@ -279,7 +264,6 @@ class AdjustmentRecord(BaseModel):
                 f"Invalid status '{v}'. Must be one of {sorted(valid)}."
             )
         return v.upper()
-
 
 class AdjustmentApproval(BaseModel):
     """Approval or rejection record for an adjustment."""
@@ -314,14 +298,13 @@ class AdjustmentApproval(BaseModel):
         description="Status after this action.",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When this action occurred.",
     )
     provenance_hash: str = Field(
         default="",
         description="SHA-256 provenance hash.",
     )
-
 
 class AdjustmentImpact(BaseModel):
     """Impact analysis of one or more adjustments.
@@ -374,7 +357,7 @@ class AdjustmentImpact(BaseModel):
         description="Total emissions after adjustments.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
     )
     provenance_hash: str = Field(default="")
 
@@ -388,7 +371,6 @@ class AdjustmentImpact(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Any:
         return Decimal(str(v))
-
 
 class AdjustmentBatch(BaseModel):
     """A batch of adjustments applied together.
@@ -430,7 +412,7 @@ class AdjustmentBatch(BaseModel):
         description="User who created the batch.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
     )
     provenance_hash: str = Field(default="")
 
@@ -438,7 +420,6 @@ class AdjustmentBatch(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Any:
         return Decimal(str(v))
-
 
 # ---------------------------------------------------------------------------
 # Allowed status transitions
@@ -463,11 +444,9 @@ _ALLOWED_TRANSITIONS: Dict[str, List[str]] = {
     AdjustmentStatus.REVERSED.value: [],
 }
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ConsolidationAdjustmentEngine:
     """Manages consolidation adjustments with approval workflow.
@@ -709,7 +688,7 @@ class ConsolidationAdjustmentEngine:
         # Update the adjustment
         updated_data = adj.model_dump()
         updated_data["status"] = new_status
-        updated_data["updated_at"] = _utcnow()
+        updated_data["updated_at"] = utcnow()
         updated = AdjustmentRecord(**updated_data)
         updated.provenance_hash = _compute_hash(updated)
         self._adjustments[adjustment_id] = updated
@@ -788,7 +767,7 @@ class ConsolidationAdjustmentEngine:
         # Auto-approve the reversal
         reversal_data_upd = reversal.model_dump()
         reversal_data_upd["status"] = AdjustmentStatus.APPROVED.value
-        reversal_data_upd["updated_at"] = _utcnow()
+        reversal_data_upd["updated_at"] = utcnow()
         approved_reversal = AdjustmentRecord(**reversal_data_upd)
         approved_reversal.provenance_hash = _compute_hash(approved_reversal)
         self._adjustments[approved_reversal.adjustment_id] = approved_reversal

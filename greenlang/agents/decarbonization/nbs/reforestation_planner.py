@@ -16,10 +16,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism.clock import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +42,7 @@ class RestorationMethod(str, Enum):
     ENRICHMENT_PLANTING = "enrichment_planting"
 
 
-class ReforestationSite(BaseModel):
+class ReforestationSite(GreenLangBase):
     """Reforestation site assessment."""
     site_id: str = Field(...)
     area_ha: float = Field(..., gt=0)
@@ -52,7 +53,7 @@ class ReforestationSite(BaseModel):
     invasive_species_present: bool = Field(default=False)
 
 
-class ReforestationPlan(BaseModel):
+class ReforestationPlan(GreenLangBase):
     """Reforestation plan for a site."""
     site_id: str = Field(...)
     recommended_method: RestorationMethod = Field(...)
@@ -72,7 +73,7 @@ class ReforestationPlan(BaseModel):
     monitoring_frequency: str = Field(...)
 
 
-class ReforestationInput(BaseModel):
+class ReforestationInput(GreenLangBase):
     """Input for Reforestation Planner."""
     project_id: str = Field(...)
     sites: List[ReforestationSite] = Field(..., min_length=1)
@@ -80,7 +81,7 @@ class ReforestationInput(BaseModel):
     project_duration_years: int = Field(default=30)
 
 
-class ReforestationOutput(BaseModel):
+class ReforestationOutput(GreenLangBase):
     """Output from Reforestation Planner."""
     project_id: str = Field(...)
     calculation_date: datetime = Field(default_factory=DeterministicClock.now)

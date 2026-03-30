@@ -52,6 +52,7 @@ import logging
 from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.due_diligence_orchestrator.config import (
     DueDiligenceOrchestratorConfig,
@@ -257,7 +258,7 @@ class RiskMitigationCoordinator:
             ...     "wf-001", profile
             ... )
         """
-        start_time = _utcnow()
+        start_time = utcnow()
 
         composite_score = risk_profile.composite_score
         negligible = self._config.negligible_risk_threshold
@@ -333,14 +334,14 @@ class RiskMitigationCoordinator:
             adequacy_verified=adequacy_verified,
             proportionality_verified=proportionality_verified,
             evidence=evidence,
-            decided_at=_utcnow(),
+            decided_at=utcnow(),
             provenance_hash=self._hash_decision(
                 workflow_id, composite_score, mitigation_level,
                 post_score, strategies
             ),
         )
 
-        duration_ms = (_utcnow() - start_time).total_seconds() * 1000
+        duration_ms = (utcnow() - start_time).total_seconds() * 1000
         logger.info(
             f"Mitigation decision for {workflow_id}: "
             f"required={mitigation_required}, level={mitigation_level}, "
@@ -506,7 +507,7 @@ class RiskMitigationCoordinator:
                 "pre_mitigation_score": str(composite_score),
             },
             bypass_justification=bypass_justification,
-            decided_at=_utcnow(),
+            decided_at=utcnow(),
             provenance_hash=self._hash_decision(
                 workflow_id, composite_score, "none",
                 composite_score, []

@@ -35,33 +35,25 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class WorkflowPhase(str, Enum):
     """Phases of the E3 water workflow."""
@@ -71,7 +63,6 @@ class WorkflowPhase(str, Enum):
     TARGET_EVALUATION = "target_evaluation"
     FINANCIAL_EFFECTS = "financial_effects"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "pending"
@@ -80,7 +71,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class PhaseStatus(str, Enum):
     """Status of a single phase."""
     PENDING = "pending"
@@ -88,7 +78,6 @@ class PhaseStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class WaterSourceType(str, Enum):
     """Water source classification."""
@@ -99,7 +88,6 @@ class WaterSourceType(str, Enum):
     THIRD_PARTY = "third_party_water"
     RAINWATER = "rainwater"
 
-
 class WaterStressLevel(str, Enum):
     """WRI Aqueduct water stress classification."""
     LOW = "low"
@@ -108,11 +96,9 @@ class WaterStressLevel(str, Enum):
     HIGH = "high"
     EXTREMELY_HIGH = "extremely_high"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -123,7 +109,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class WaterRecord(BaseModel):
     """Water withdrawal, discharge, or consumption record per E3-4."""
@@ -137,7 +122,6 @@ class WaterRecord(BaseModel):
     is_freshwater: bool = Field(default=True, description="TDS <= 1000 mg/L")
     reporting_year: int = Field(default=2025)
 
-
 class WaterTarget(BaseModel):
     """Water target per E3-3."""
     target_id: str = Field(default_factory=lambda: f"wt-{_new_uuid()[:8]}")
@@ -149,7 +133,6 @@ class WaterTarget(BaseModel):
     current_progress_pct: float = Field(default=0.0, ge=0.0, le=200.0)
     on_track: bool = Field(default=False)
     applies_to_stressed_areas: bool = Field(default=False)
-
 
 class E3WaterInput(BaseModel):
     """Input data model for E3WaterWorkflow."""
@@ -177,7 +160,6 @@ class E3WaterInput(BaseModel):
     )
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class E3WaterWorkflowResult(BaseModel):
     """Complete result from E3 water workflow."""
     workflow_id: str = Field(..., description="Unique execution ID")
@@ -201,11 +183,9 @@ class E3WaterWorkflowResult(BaseModel):
     reporting_year: int = Field(default=2025)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class E3WaterWorkflow:
     """
@@ -269,7 +249,7 @@ class E3WaterWorkflow:
         if input_data is None:
             input_data = E3WaterInput(config=config or {})
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting E3 water workflow %s", self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = WorkflowStatus.IN_PROGRESS
@@ -288,7 +268,7 @@ class E3WaterWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         completed_count = sum(1 for p in phase_results if p.status == PhaseStatus.COMPLETED)
 
         withdrawal = sum(r.volume_m3 for r in input_data.water_records if r.flow_type == "withdrawal")
@@ -341,7 +321,7 @@ class E3WaterWorkflow:
 
     async def _phase_policy_review(self, input_data: E3WaterInput) -> PhaseResult:
         """Review water and marine resource policies and actions."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -355,7 +335,7 @@ class E3WaterWorkflow:
         if not input_data.actions:
             warnings.append("No water/marine actions defined (E3-2)")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 1 PolicyReview: %d policies, %d actions",
                          len(input_data.policies), len(input_data.actions))
         return PhaseResult(
@@ -370,7 +350,7 @@ class E3WaterWorkflow:
 
     async def _phase_water_balance(self, input_data: E3WaterInput) -> PhaseResult:
         """Calculate water withdrawal, discharge, and consumption balance."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -400,7 +380,7 @@ class E3WaterWorkflow:
         if consumption == 0 and withdrawal > 0:
             warnings.append("No direct consumption records; using withdrawal minus discharge")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 2 WaterBalance: withdrawal=%.0f, discharge=%.0f, consumption=%.0f m3",
                          withdrawal, discharge, consumption)
         return PhaseResult(
@@ -415,7 +395,7 @@ class E3WaterWorkflow:
 
     async def _phase_stress_assessment(self, input_data: E3WaterInput) -> PhaseResult:
         """Assess operations in water-stressed areas."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -443,7 +423,7 @@ class E3WaterWorkflow:
                 f"{len(stressed_facilities)} facilities in high/extremely-high water stress areas"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 3 StressAssessment: %d facilities in stressed areas",
                          len(stressed_facilities))
         return PhaseResult(
@@ -458,7 +438,7 @@ class E3WaterWorkflow:
 
     async def _phase_target_evaluation(self, input_data: E3WaterInput) -> PhaseResult:
         """Evaluate water reduction targets and progress."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -477,7 +457,7 @@ class E3WaterWorkflow:
         if not targets:
             warnings.append("No water targets defined (E3-3)")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 4 TargetEvaluation: %d targets, %d on track",
                          len(targets), len(on_track))
         return PhaseResult(
@@ -492,7 +472,7 @@ class E3WaterWorkflow:
 
     async def _phase_financial_effects(self, input_data: E3WaterInput) -> PhaseResult:
         """Assess anticipated financial effects from water/marine risks."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -508,7 +488,7 @@ class E3WaterWorkflow:
         if not data:
             warnings.append("No financial effects data provided (E3-5)")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 5 FinancialEffects: exposure=%d EUR", outputs["total_exposure_eur"])
         return PhaseResult(
             phase_name=WorkflowPhase.FINANCIAL_EFFECTS.value, status=PhaseStatus.COMPLETED,

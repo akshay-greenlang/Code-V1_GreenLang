@@ -26,11 +26,12 @@ CBAM Note: Paper is not currently in CBAM scope
 
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, List, Optional
-from pydantic import BaseModel, Field
+from pydantic import Field
 from enum import Enum
 import hashlib
 import json
 from datetime import datetime, timezone
+from greenlang.schemas import GreenLangBase
 
 
 # =============================================================================
@@ -165,7 +166,7 @@ class EnergySource(str, Enum):
     MIXED = "MIXED"
 
 
-class PaperCalculationInput(BaseModel):
+class PaperCalculationInput(GreenLangBase):
     """Input parameters for paper emission calculation."""
 
     product_type: PaperProductType = Field(
@@ -241,7 +242,7 @@ class PaperCalculationInput(BaseModel):
     )
 
 
-class CalculationStep(BaseModel):
+class CalculationStep(GreenLangBase):
     """Individual calculation step with full provenance."""
     step_number: int
     description: str
@@ -252,7 +253,7 @@ class CalculationStep(BaseModel):
     source: str
 
 
-class PaperCalculationResult(BaseModel):
+class PaperCalculationResult(GreenLangBase):
     """Complete calculation result with biogenic carbon tracking."""
 
     # Identification

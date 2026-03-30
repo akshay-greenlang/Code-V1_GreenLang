@@ -76,6 +76,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.land_use_change.land_use_classifier import (
     LandUseCategory,
@@ -108,27 +109,18 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a unique identifier using UUID4."""
     return str(uuid.uuid4())
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class ComplianceVerdict(str, Enum):
     """EUDR cutoff date compliance verdict.
@@ -164,7 +156,6 @@ class ComplianceVerdict(str, Enum):
     DEGRADED = "degraded"
     INCONCLUSIVE = "inconclusive"
     PRE_EXISTING_AGRICULTURE = "pre_existing_agriculture"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -268,11 +259,9 @@ _VERDICT_MATRIX: Dict[Tuple[str, str], ComplianceVerdict] = {
     ("bare_soil", "non_forest"): ComplianceVerdict.PRE_EXISTING_AGRICULTURE,
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class CutoffPlotInput:
@@ -309,7 +298,6 @@ class CutoffPlotInput:
     ndvi_time_series: List[float] = field(default_factory=list)
     ndvi_dates: List[str] = field(default_factory=list)
     area_ha: float = 1.0
-
 
 @dataclass
 class CutoffVerification:
@@ -412,11 +400,9 @@ class CutoffVerification:
             "metadata": self.metadata,
         }
 
-
 # ---------------------------------------------------------------------------
 # CutoffDateVerifier
 # ---------------------------------------------------------------------------
-
 
 class CutoffDateVerifier:
     """Production-grade EUDR cutoff date compliance verification engine.
@@ -657,7 +643,7 @@ class CutoffDateVerifier:
         self._validate_plot_input(plot)
 
         result_id = _generate_id()
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
         today = date.today()
 
         # Stage 1: Classify at cutoff date
@@ -1453,14 +1439,13 @@ class CutoffDateVerifier:
             area_ha=plot.area_ha,
             processing_time_ms=0.0,
             provenance_hash="",
-            timestamp=_utcnow().isoformat(),
+            timestamp=utcnow().isoformat(),
             metadata={
                 "error": True,
                 "error_message": error_msg,
                 "module_version": _MODULE_VERSION,
             },
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

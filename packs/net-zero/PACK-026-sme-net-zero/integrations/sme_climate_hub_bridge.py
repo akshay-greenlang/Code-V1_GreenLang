@@ -38,23 +38,18 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -66,11 +61,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CommitmentStatus(str, Enum):
     NOT_SUBMITTED = "not_submitted"
@@ -80,7 +73,6 @@ class CommitmentStatus(str, Enum):
     ACTIVE = "active"
     LAPSED = "lapsed"
 
-
 class ProgressStatus(str, Enum):
     NOT_DUE = "not_due"
     DUE = "due"
@@ -88,17 +80,14 @@ class ProgressStatus(str, Enum):
     SUBMITTED = "submitted"
     VERIFIED = "verified"
 
-
 class BadgeType(str, Enum):
     COMMITTED = "committed"
     ON_TRACK = "on_track"
     LEADER = "leader"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class SMEClimateHubConfig(BaseModel):
     """Configuration for SME Climate Hub Bridge."""
@@ -109,7 +98,6 @@ class SMEClimateHubConfig(BaseModel):
     enable_provenance: bool = Field(default=True)
     auto_submit_progress: bool = Field(default=False)
     reminder_days_before: int = Field(default=30, ge=7, le=90)
-
 
 class CommitmentData(BaseModel):
     """SME Climate Hub commitment data."""
@@ -127,7 +115,6 @@ class CommitmentData(BaseModel):
     website: str = Field(default="")
     signed_at: Optional[datetime] = Field(None)
 
-
 class CommitmentResult(BaseModel):
     """Result of commitment submission."""
 
@@ -141,7 +128,6 @@ class CommitmentResult(BaseModel):
     message: str = Field(default="")
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class ProgressReport(BaseModel):
     """Annual progress report data."""
@@ -161,7 +147,6 @@ class ProgressReport(BaseModel):
     narrative: str = Field(default="")
     submitted_at: Optional[datetime] = Field(None)
 
-
 class ProgressSubmissionResult(BaseModel):
     """Result of progress report submission."""
 
@@ -173,7 +158,6 @@ class ProgressSubmissionResult(BaseModel):
     message: str = Field(default="")
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class VerificationStatus(BaseModel):
     """Verification status for commitment."""
@@ -190,7 +174,6 @@ class VerificationStatus(BaseModel):
     on_track: bool = Field(default=False)
     message: str = Field(default="")
 
-
 class BadgeInfo(BaseModel):
     """Badge/certification information."""
 
@@ -201,11 +184,9 @@ class BadgeInfo(BaseModel):
     valid_until: str = Field(default="")
     organization_name: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # SMEClimateHubBridge
 # ---------------------------------------------------------------------------
-
 
 class SMEClimateHubBridge:
     """UN SME Climate Hub integration for commitment and progress tracking.
@@ -263,7 +244,7 @@ class SMEClimateHubBridge:
 
             # Stub: In production, this calls SME Climate Hub API
             result.status = CommitmentStatus.SUBMITTED
-            result.submitted_at = _utcnow()
+            result.submitted_at = utcnow()
             result.public_profile_url = (
                 f"https://smeclimatehub.org/companies/"
                 f"{data.organization_name.lower().replace(' ', '-')}"
@@ -319,7 +300,7 @@ class SMEClimateHubBridge:
             return result
 
         report.commitment_id = commitment_id
-        report.submitted_at = _utcnow()
+        report.submitted_at = utcnow()
 
         reports = self._progress_reports.get(commitment_id, [])
         reports.append(report)
@@ -375,7 +356,7 @@ class SMEClimateHubBridge:
             badge_url=f"https://smeclimatehub.org/badge/{commitment_id}",
             public_profile_url=commitment.public_profile_url,
             progress_reports_submitted=len(reports),
-            next_report_due=f"{_utcnow().year + 1}-03-31",
+            next_report_due=f"{utcnow().year + 1}-03-31",
             on_track=True,
             message=f"Status: {commitment.status.value}",
         )
@@ -413,7 +394,7 @@ class SMEClimateHubBridge:
                 f'<img src="https://smeclimatehub.org/badge/{commitment_id}/image" '
                 f'alt="SME Climate Hub Committed" /></a>'
             ),
-            valid_until=f"{_utcnow().year + 1}-12-31",
+            valid_until=f"{utcnow().year + 1}-12-31",
             organization_name=commitment.organization_name,
         )
 

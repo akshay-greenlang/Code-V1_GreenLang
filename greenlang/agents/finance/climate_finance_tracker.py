@@ -31,10 +31,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.agents.categories import AgentCategory
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -113,7 +114,7 @@ CLIMATE_RELEVANCE: Dict[str, Dict[str, float]] = {
 # =============================================================================
 
 
-class ClimateFinanceFlow(BaseModel):
+class ClimateFinanceFlow(GreenLangBase):
     """A single climate finance flow (investment, expenditure, etc.)."""
     flow_id: str = Field(..., description="Unique identifier")
     name: str = Field(..., description="Description of the finance flow")
@@ -156,7 +157,7 @@ class ClimateFinanceFlow(BaseModel):
     expected_emissions_avoided_tco2e: float = Field(default=0.0, ge=0)
 
 
-class FinanceAlignment(BaseModel):
+class FinanceAlignment(GreenLangBase):
     """Alignment assessment for a finance flow."""
     flow_id: str
     climate_category: FinanceCategory
@@ -167,7 +168,7 @@ class FinanceAlignment(BaseModel):
     alignment_rationale: str
 
 
-class ClimateFinanceSummary(BaseModel):
+class ClimateFinanceSummary(GreenLangBase):
     """Summary of climate finance tracking."""
     reporting_period: str
     total_finance: float
@@ -194,7 +195,7 @@ class ClimateFinanceSummary(BaseModel):
     finance_per_tco2e_avoided: float
 
 
-class ClimateFinanceInput(BaseModel):
+class ClimateFinanceInput(GreenLangBase):
     """Input for climate finance tracking."""
     operation: str = Field(
         default="track_flow",
@@ -210,7 +211,7 @@ class ClimateFinanceInput(BaseModel):
     tracking_standard: Optional[TrackingStandard] = Field(None)
 
 
-class ClimateFinanceOutput(BaseModel):
+class ClimateFinanceOutput(GreenLangBase):
     """Output from climate finance tracking."""
     success: bool
     operation: str

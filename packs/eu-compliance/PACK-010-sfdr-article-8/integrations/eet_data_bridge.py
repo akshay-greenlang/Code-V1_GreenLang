@@ -36,18 +36,14 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ReportFormat
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # Utility Helpers
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute a SHA-256 hash of arbitrary data."""
@@ -55,25 +51,15 @@ def _hash_data(data: Any) -> str:
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # Enums
 # =============================================================================
-
 
 class EETVersion(str, Enum):
     """EET specification version."""
     V1_0 = "1.0"
     V1_1 = "1.1"
     V2_0 = "2.0"
-
-
-class ExportFormat(str, Enum):
-    """EET export format."""
-    CSV = "csv"
-    XML = "xml"
-    JSON = "json"
-
 
 class EETSection(str, Enum):
     """EET field section."""
@@ -85,11 +71,9 @@ class EETSection(str, Enum):
     COSTS = "costs"
     TARGET_MARKET = "target_market"
 
-
 # =============================================================================
 # Data Models
 # =============================================================================
-
 
 class EETDataBridgeConfig(BaseModel):
     """Configuration for the EET Data Bridge."""
@@ -97,8 +81,8 @@ class EETDataBridgeConfig(BaseModel):
         default=EETVersion.V2_0,
         description="EET specification version",
     )
-    export_format: ExportFormat = Field(
-        default=ExportFormat.CSV,
+    export_format: ReportFormat = Field(
+        default=ReportFormat.CSV,
         description="Default export format",
     )
     include_optional_fields: bool = Field(
@@ -118,7 +102,6 @@ class EETDataBridgeConfig(BaseModel):
         description="Reject records with any validation errors",
     )
 
-
 class EETField(BaseModel):
     """A single EET field definition."""
     field_id: str = Field(default="", description="EET field identifier")
@@ -131,7 +114,6 @@ class EETField(BaseModel):
     sfdr_relevant: bool = Field(default=True, description="SFDR-specific field")
     value: Any = Field(default=None, description="Field value")
     validation_status: str = Field(default="", description="Validation status")
-
 
 class EETImportResult(BaseModel):
     """Result of an EET import."""
@@ -157,7 +139,6 @@ class EETImportResult(BaseModel):
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
     imported_at: str = Field(default="", description="Import timestamp")
 
-
 class EETExportResult(BaseModel):
     """Result of an EET export."""
     total_fields: int = Field(default=0, description="Total fields exported")
@@ -171,11 +152,9 @@ class EETExportResult(BaseModel):
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
     exported_at: str = Field(default="", description="Export timestamp")
 
-
 # =============================================================================
 # EET SFDR Field Mappings (80+ fields)
 # =============================================================================
-
 
 EET_SFDR_FIELDS: Dict[str, Dict[str, Any]] = {
     # Product Info
@@ -273,11 +252,9 @@ EET_SFDR_FIELDS: Dict[str, Dict[str, Any]] = {
     "EET_70100": {"name": "Monitoring methodology", "section": "sustainability", "required": False, "type": "string"},
 }
 
-
 # =============================================================================
 # EET Data Bridge
 # =============================================================================
-
 
 class EETDataBridge:
     """Bridge for importing and exporting European ESG Template data.
@@ -383,7 +360,7 @@ class EETDataBridge:
             validation_warnings=warnings,
             fields=parsed_fields,
             sections=sections,
-            imported_at=_utcnow().isoformat(),
+            imported_at=utcnow().isoformat(),
         )
         result.provenance_hash = _hash_data({
             "total": total, "populated": populated,
@@ -399,7 +376,7 @@ class EETDataBridge:
     def export_eet(
         self,
         sfdr_data: Dict[str, Any],
-        export_format: Optional[ExportFormat] = None,
+        export_format: Optional[ReportFormat] = None,
     ) -> EETExportResult:
         """Export SFDR engine data as EET fields.
 
@@ -443,7 +420,7 @@ class EETDataBridge:
             content=content,
             validation_passed=len(errors) == 0,
             validation_errors=errors,
-            exported_at=_utcnow().isoformat(),
+            exported_at=utcnow().isoformat(),
         )
         result.provenance_hash = _hash_data({
             "fields": len(eet_fields), "format": fmt.value,
@@ -558,7 +535,7 @@ class EETDataBridge:
             "EET_00050": sfdr_data.get("management_company", ""),
             "EET_00060": sfdr_data.get("lei_code", ""),
             "EET_00070": sfdr_data.get("fund_type", "UCITS"),
-            "EET_00080": sfdr_data.get("reference_date", _utcnow().isoformat()[:10]),
+            "EET_00080": sfdr_data.get("reference_date", utcnow().isoformat()[:10]),
         }
 
     def _map_classification(self, sfdr_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -643,7 +620,7 @@ class EETDataBridge:
     # -------------------------------------------------------------------------
 
     def _serialize_eet(
-        self, fields: Dict[str, Any], fmt: ExportFormat
+        self, fields: Dict[str, Any], fmt: ReportFormat
     ) -> str:
         """Serialize EET fields to the specified format.
 
@@ -654,10 +631,10 @@ class EETDataBridge:
         Returns:
             Serialized string.
         """
-        if fmt == ExportFormat.JSON:
+        if fmt == ReportFormat.JSON:
             return json.dumps(fields, indent=2, default=str)
 
-        elif fmt == ExportFormat.CSV:
+        elif fmt == ReportFormat.CSV:
             lines = ["field_id,field_name,value"]
             for field_id, value in sorted(fields.items()):
                 field_def = EET_SFDR_FIELDS.get(field_id, {})
@@ -666,7 +643,7 @@ class EETDataBridge:
                 lines.append(f'{field_id},"{name}","{val_str}"')
             return "\n".join(lines)
 
-        elif fmt == ExportFormat.XML:
+        elif fmt == ReportFormat.XML:
             parts = ['<?xml version="1.0" encoding="UTF-8"?>', "<EET>"]
             for field_id, value in sorted(fields.items()):
                 val_str = str(value)

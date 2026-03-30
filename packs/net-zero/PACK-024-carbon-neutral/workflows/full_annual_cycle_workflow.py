@@ -42,31 +42,25 @@ from typing import Any, Callable, Coroutine, Dict, List, Optional, Set
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "24.0.0"
 
 ProgressCallback = Callable[[str, float, str], Coroutine[Any, Any, None]]
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: Any) -> str:
     if isinstance(data, dict):
         data = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(str(data).encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class AnnualCyclePhase(str, Enum):
     FOOTPRINT_ASSESSMENT = "footprint_assessment"
@@ -80,7 +74,6 @@ class AnnualCyclePhase(str, Enum):
     VERIFICATION = "verification"
     RENEWAL_PREP = "renewal_prep"
 
-
 class CycleStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
@@ -89,14 +82,12 @@ class CycleStatus(str, Enum):
     PARTIAL = "partial"
     CANCELLED = "cancelled"
 
-
 class PhaseStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 # =============================================================================
 # REFERENCE DATA
@@ -144,11 +135,9 @@ PHASE_TIMELINE_MONTHS: Dict[str, Dict[str, int]] = {
     "renewal_prep": {"start": 11, "end": 12},
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase: AnnualCyclePhase = Field(...)
@@ -162,7 +151,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class PhaseGate(BaseModel):
     """Gate criteria that must be met before proceeding to next phase."""
     gate_id: str = Field(default="")
@@ -171,7 +159,6 @@ class PhaseGate(BaseModel):
     is_met: bool = Field(default=False)
     value: Any = Field(default=None)
     threshold: Any = Field(default=None)
-
 
 class CycleMetrics(BaseModel):
     """Key metrics from the annual cycle."""
@@ -187,7 +174,6 @@ class CycleMetrics(BaseModel):
     cost_per_tco2e: float = Field(default=0.0, ge=0.0)
     year_over_year_reduction_pct: float = Field(default=0.0)
 
-
 class AnnualSummary(BaseModel):
     """End-of-cycle annual summary."""
     cycle_year: int = Field(...)
@@ -200,13 +186,11 @@ class AnnualSummary(BaseModel):
     areas_for_improvement: List[str] = Field(default_factory=list)
     next_cycle_priorities: List[str] = Field(default_factory=list)
 
-
 class RetryConfig(BaseModel):
     max_retries: int = Field(default=3, ge=0, le=10)
     base_delay: float = Field(default=1.0, ge=0.1)
     max_delay: float = Field(default=30.0, ge=1.0)
     jitter: float = Field(default=0.5, ge=0.0, le=1.0)
-
 
 class AnnualCycleConfig(BaseModel):
     pack_id: str = Field(default="PACK-024")
@@ -229,7 +213,6 @@ class AnnualCycleConfig(BaseModel):
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
 
-
 class AnnualCycleResult(BaseModel):
     execution_id: str = Field(default_factory=_new_uuid)
     pack_id: str = Field(default="PACK-024")
@@ -249,11 +232,9 @@ class AnnualCycleResult(BaseModel):
     quality_score: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class FullAnnualCycleWorkflow:
     """
@@ -288,7 +269,7 @@ class FullAnnualCycleWorkflow:
         result = AnnualCycleResult(
             org_name=self.config.org_name,
             status=CycleStatus.RUNNING,
-            started_at=_utcnow(),
+            started_at=utcnow(),
         )
         self._results[result.execution_id] = result
 
@@ -322,8 +303,8 @@ class FullAnnualCycleWorkflow:
                     phase_result = PhaseResult(
                         phase=phase,
                         status=PhaseStatus.SKIPPED,
-                        started_at=_utcnow(),
-                        completed_at=_utcnow(),
+                        started_at=utcnow(),
+                        completed_at=utcnow(),
                     )
                     result.phase_results[phase.value] = phase_result
                     result.phases_skipped.append(phase.value)
@@ -370,7 +351,7 @@ class FullAnnualCycleWorkflow:
             result.errors.append(str(exc))
 
         finally:
-            result.completed_at = _utcnow()
+            result.completed_at = utcnow()
             result.total_duration_ms = (time.monotonic() - start_time) * 1000
             result.quality_score = self._compute_quality_score(result)
             result.metrics = self._compile_metrics(shared_context)
@@ -404,7 +385,7 @@ class FullAnnualCycleWorkflow:
         self, phase: AnnualCyclePhase, context: Dict[str, Any]
     ) -> PhaseResult:
         """Execute a single phase of the annual cycle."""
-        started = _utcnow()
+        started = utcnow()
         start_time = time.monotonic()
 
         handler = self._get_phase_handler(phase)
@@ -423,7 +404,7 @@ class FullAnnualCycleWorkflow:
             phase=phase,
             status=status,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             duration_ms=round(elapsed_ms, 2),
             outputs=outputs,
             warnings=warnings,

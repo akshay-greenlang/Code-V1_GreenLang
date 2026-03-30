@@ -37,35 +37,28 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import AlertSeverity
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "22.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a single workflow phase."""
@@ -76,7 +69,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -86,22 +78,12 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
-class AlertSeverity(str, Enum):
-    """Alert severity levels."""
-
-    INFO = "info"
-    WARNING = "warning"
-    CRITICAL = "critical"
-
-
 class TrendDirection(str, Enum):
     """Emission trend direction."""
 
     DECREASING = "decreasing"
     STABLE = "stable"
     INCREASING = "increasing"
-
 
 # =============================================================================
 # ALERT THRESHOLDS (Zero-Hallucination)
@@ -113,11 +95,9 @@ DEFAULT_ALERT_THRESHOLDS: Dict[str, Dict[str, Any]] = {
     "critical": {"deviation_pct": 20.0, "description": "Major deviation requiring urgent action"},
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -129,7 +109,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class AnnualEmissionRecord(BaseModel):
     """Emissions data for a single year."""
@@ -143,7 +122,6 @@ class AnnualEmissionRecord(BaseModel):
     activity_level: float = Field(default=0.0, ge=0.0, description="Activity metric value")
     headcount: int = Field(default=0, ge=0)
 
-
 class BusinessUnitEmission(BaseModel):
     """Emissions data for a single business unit in a year."""
 
@@ -154,13 +132,11 @@ class BusinessUnitEmission(BaseModel):
     activity_level: float = Field(default=0.0, ge=0.0)
     share_pct: float = Field(default=0.0, ge=0.0, le=100.0)
 
-
 class TargetPathwayPoint(BaseModel):
     """A point on the target emission pathway."""
 
     year: int = Field(default=2025)
     target_tco2e: float = Field(default=0.0, ge=0.0)
-
 
 class LMDIDecomposition(BaseModel):
     """LMDI-I decomposition result for a year-over-year change."""
@@ -176,7 +152,6 @@ class LMDIDecomposition(BaseModel):
     structural_effect_pct: float = Field(default=0.0)
     residual_tco2e: float = Field(default=0.0, description="Unexplained residual")
 
-
 class DriverAttribution(BaseModel):
     """Attribution of emission change to a specific driver."""
 
@@ -189,7 +164,6 @@ class DriverAttribution(BaseModel):
     direction: TrendDirection = Field(default=TrendDirection.STABLE)
     explanation: str = Field(default="")
 
-
 class ForecastPoint(BaseModel):
     """A single forecast point."""
 
@@ -200,7 +174,6 @@ class ForecastPoint(BaseModel):
     target_tco2e: float = Field(default=0.0, ge=0.0)
     deviation_pct: float = Field(default=0.0)
     confidence_level: float = Field(default=0.80)
-
 
 class ProgressAlert(BaseModel):
     """Alert generated from progress tracking."""
@@ -213,7 +186,6 @@ class ProgressAlert(BaseModel):
     forecast_tco2e: float = Field(default=0.0)
     target_tco2e: float = Field(default=0.0)
     recommended_action: str = Field(default="")
-
 
 class AdvancedProgressConfig(BaseModel):
     """Configuration for the advanced progress workflow."""
@@ -228,7 +200,6 @@ class AdvancedProgressConfig(BaseModel):
     base_year: int = Field(default=2020, ge=2000, le=2050)
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
-
 
 class AdvancedProgressResult(BaseModel):
     """Complete result from the advanced progress workflow."""
@@ -247,11 +218,9 @@ class AdvancedProgressResult(BaseModel):
     cumulative_reduction_pct: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class AdvancedProgressWorkflow:
     """
@@ -304,7 +273,7 @@ class AdvancedProgressWorkflow:
             AdvancedProgressResult with decompositions, attributions,
             forecasts, and alerts.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting advanced progress workflow %s, years=%d",
             self.workflow_id, len(config.annual_data),
@@ -340,7 +309,7 @@ class AdvancedProgressWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         result = AdvancedProgressResult(
             workflow_id=self.workflow_id,
             status=overall_status,
@@ -369,7 +338,7 @@ class AdvancedProgressWorkflow:
 
     async def _phase_data_ingestion(self, config: AdvancedProgressConfig) -> PhaseResult:
         """Ingest and validate annual emissions data."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         errors: List[str] = []
@@ -415,7 +384,7 @@ class AdvancedProgressWorkflow:
         outputs["latest_year_tco2e"] = round(records[-1].total_tco2e, 2) if records else 0.0
         outputs["cumulative_reduction_pct"] = round(self._cumulative_reduction, 2)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         status = PhaseStatus.FAILED if errors else PhaseStatus.COMPLETED
         self.logger.info("Data ingestion: %d records, cumulative reduction=%.1f%%",
                          len(records), self._cumulative_reduction)
@@ -457,7 +426,7 @@ class AdvancedProgressWorkflow:
 
     async def _phase_decomposition(self, config: AdvancedProgressConfig) -> PhaseResult:
         """Decompose YoY changes using LMDI-I method."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -489,7 +458,7 @@ class AdvancedProgressWorkflow:
             outputs["latest_activity_effect_pct"] = round(latest.activity_effect_pct, 2)
             outputs["latest_intensity_effect_pct"] = round(latest.intensity_effect_pct, 2)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Decomposition: %d periods, trend=%s",
                          len(self._decompositions), self._trend.value)
         return PhaseResult(
@@ -581,7 +550,7 @@ class AdvancedProgressWorkflow:
 
     async def _phase_attribution(self, config: AdvancedProgressConfig) -> PhaseResult:
         """Attribute emission changes to specific drivers."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -646,7 +615,7 @@ class AdvancedProgressWorkflow:
             1 for a in self._attributions if a.direction == TrendDirection.DECREASING
         )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Attribution: %d drivers identified", len(self._attributions))
         return PhaseResult(
             phase_name="attribution",
@@ -707,7 +676,7 @@ class AdvancedProgressWorkflow:
 
     async def _phase_forecasting(self, config: AdvancedProgressConfig) -> PhaseResult:
         """Generate rolling forecast based on trends and planned actions."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -757,7 +726,7 @@ class AdvancedProgressWorkflow:
             outputs["next_year_forecast"] = self._forecasts[0].forecast_tco2e
             outputs["next_year_deviation_pct"] = self._forecasts[0].deviation_pct
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Forecasting: %d years forecasted", len(self._forecasts))
         return PhaseResult(
             phase_name="forecasting",
@@ -808,7 +777,7 @@ class AdvancedProgressWorkflow:
 
     async def _phase_alert_generation(self, config: AdvancedProgressConfig) -> PhaseResult:
         """Compare forecast to target pathway and generate alerts."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -870,7 +839,7 @@ class AdvancedProgressWorkflow:
         outputs["warning_alerts"] = warn_count
         outputs["critical_alerts"] = crit_count
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Alerts: %d total (info=%d, warn=%d, crit=%d)",
                          len(self._alerts), info_count, warn_count, crit_count)
         return PhaseResult(

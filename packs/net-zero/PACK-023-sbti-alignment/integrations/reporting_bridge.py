@@ -41,25 +41,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -72,11 +66,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Agent Stubs
 # ---------------------------------------------------------------------------
-
 
 class _AgentStub:
     """Stub for unavailable reporting app modules."""
@@ -95,7 +87,6 @@ class _AgentStub:
             }
         return _stub_method
 
-
 def _try_import_app(app_id: str, module_path: str) -> Any:
     """Try to import a reporting app with graceful fallback."""
     try:
@@ -104,11 +95,9 @@ def _try_import_app(app_id: str, module_path: str) -> Any:
         logger.debug("App %s not available, using stub", app_id)
         return _AgentStub(app_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ReportingFramework(str, Enum):
     """Supported reporting frameworks."""
@@ -119,7 +108,6 @@ class ReportingFramework(str, Enum):
     GHG_PROTOCOL = "ghg_protocol"
     ISO_14064 = "iso_14064"
 
-
 class MappingStatus(str, Enum):
     """Framework mapping status."""
 
@@ -128,11 +116,9 @@ class MappingStatus(str, Enum):
     NOT_STARTED = "not_started"
     FAILED = "failed"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class ReportingBridgeConfig(BaseModel):
     """Configuration for the SBTi Reporting Bridge."""
@@ -146,7 +132,6 @@ class ReportingBridgeConfig(BaseModel):
     )
     sbti_target_validated: bool = Field(default=False)
     sbti_submission_status: str = Field(default="pending")
-
 
 class FrameworkMappingResult(BaseModel):
     """Result of mapping SBTi data to a single framework."""
@@ -165,7 +150,6 @@ class FrameworkMappingResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class MultiFrameworkReportResult(BaseModel):
     """Result of multi-framework report generation."""
 
@@ -179,7 +163,6 @@ class MultiFrameworkReportResult(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # APP Mapping
@@ -222,11 +205,9 @@ ESRS_E1_DISCLOSURES: List[Dict[str, Any]] = [
     {"dr": "E1-9", "name": "Potential financial effects from physical/transition risks", "sbti_maps_to": ["climate_risk_assessment"]},
 ]
 
-
 # ---------------------------------------------------------------------------
 # SBTiReportingBridge
 # ---------------------------------------------------------------------------
-
 
 class SBTiReportingBridge:
     """Cross-framework reporting bridge for SBTi target data.

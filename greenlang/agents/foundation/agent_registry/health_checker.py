@@ -32,18 +32,13 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from greenlang.agents.foundation.agent_registry.config import AgentRegistryConfig, get_config
+from greenlang.schemas import utcnow
 from greenlang.agents.foundation.agent_registry.models import (
     AgentHealthStatus,
     HealthCheckResult,
 )
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 class HealthChecker:
     """Manages health probes for registered agents.
@@ -174,7 +169,7 @@ class HealthChecker:
             return False
 
         metadata.health_status = status
-        metadata.last_health_check = _utcnow()
+        metadata.last_health_check = utcnow()
 
         # Record in history
         result = HealthCheckResult(
@@ -268,7 +263,6 @@ class HealthChecker:
         with self._lock:
             return sum(len(entries) for entries in self._history.values())
 
-
 def _elapsed_ms(start_time: float) -> float:
     """Compute elapsed milliseconds since start_time.
 
@@ -279,7 +273,6 @@ def _elapsed_ms(start_time: float) -> float:
         Elapsed milliseconds.
     """
     return (time.time() - start_time) * 1000
-
 
 __all__ = [
     "HealthChecker",

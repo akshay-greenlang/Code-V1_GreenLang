@@ -16,10 +16,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism.clock import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +41,7 @@ class HabitatType(str, Enum):
     MONTANE = "montane"
 
 
-class HabitatPatch(BaseModel):
+class HabitatPatch(GreenLangBase):
     patch_id: str = Field(...)
     area_ha: float = Field(..., gt=0)
     habitat_type: HabitatType = Field(...)
@@ -49,7 +50,7 @@ class HabitatPatch(BaseModel):
     connectivity_score: float = Field(default=0.5, ge=0, le=1)
 
 
-class CorridorPlan(BaseModel):
+class CorridorPlan(GreenLangBase):
     corridor_id: str = Field(...)
     source_patch_id: str = Field(...)
     target_patch_id: str = Field(...)
@@ -63,7 +64,7 @@ class CorridorPlan(BaseModel):
     design_features: List[str] = Field(...)
 
 
-class CorridorInput(BaseModel):
+class CorridorInput(GreenLangBase):
     project_id: str = Field(...)
     region_name: str = Field(...)
     patches: List[HabitatPatch] = Field(..., min_length=2)
@@ -71,7 +72,7 @@ class CorridorInput(BaseModel):
     target_connectivity: float = Field(default=0.7, ge=0, le=1)
 
 
-class CorridorOutput(BaseModel):
+class CorridorOutput(GreenLangBase):
     project_id: str = Field(...)
     region_name: str = Field(...)
     calculation_date: datetime = Field(default_factory=DeterministicClock.now)

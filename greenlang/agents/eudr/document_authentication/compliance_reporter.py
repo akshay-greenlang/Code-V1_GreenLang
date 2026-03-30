@@ -54,6 +54,7 @@ import time
 import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.document_authentication.config import (
     DocumentAuthenticationConfig,
@@ -89,12 +90,6 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance.
 
@@ -107,7 +102,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str = "RPT") -> str:
     """Generate a prefixed UUID4 string identifier.
 
@@ -118,7 +112,6 @@ def _generate_id(prefix: str = "RPT") -> str:
         Prefixed UUID4 string.
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 # ---------------------------------------------------------------------------
 # Required documents per EUDR commodity (mirrors fraud_pattern_detector)
@@ -149,11 +142,9 @@ AUTH_RESULT_THRESHOLDS: Dict[str, float] = {
     "fraudulent": 0.0,      # Score < 50 or has critical alerts
 }
 
-
 # ---------------------------------------------------------------------------
 # ComplianceReporter
 # ---------------------------------------------------------------------------
-
 
 class ComplianceReporter:
     """Compliance reporting engine for EUDR document authentication.
@@ -306,7 +297,7 @@ class ComplianceReporter:
             )
 
             # Step 7: Format report content
-            now = _utcnow()
+            now = utcnow()
             expires_at = now + timedelta(days=self._config.retention_days)
 
             report_data: Dict[str, Any] = {
@@ -482,7 +473,7 @@ class ComplianceReporter:
 
             elapsed_ms = (time.monotonic() - start_time) * 1000
 
-            now = _utcnow()
+            now = utcnow()
             retention_until = now + timedelta(
                 days=self._config.retention_years * 365,
             )
@@ -864,7 +855,7 @@ class ComplianceReporter:
             Dictionary with dashboard metrics and trends.
         """
         start_time = time.monotonic()
-        cutoff = _utcnow() - timedelta(days=days)
+        cutoff = utcnow() - timedelta(days=days)
 
         with self._lock:
             reports = list(self._reports.values())
@@ -916,7 +907,7 @@ class ComplianceReporter:
                 result_dist.get("authentic", 0) / total * 100.0
                 if total > 0 else 0.0, 1,
             ),
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
             "processing_time_ms": round(elapsed_ms, 2),
         }
 
@@ -1244,7 +1235,7 @@ class ComplianceReporter:
             List of certificate dictionaries.
         """
         certificates: List[Dict[str, Any]] = []
-        now = _utcnow()
+        now = utcnow()
 
         for result in document_results:
             doc_id = result.get("document_id", "")
@@ -1296,7 +1287,7 @@ class ComplianceReporter:
             Evidence package dictionary with contents manifest.
         """
         evidence_id = _generate_id("EVID")
-        now = _utcnow()
+        now = utcnow()
 
         contents: List[Dict[str, Any]] = []
 
@@ -1553,7 +1544,7 @@ class ComplianceReporter:
         Returns:
             XML string.
         """
-        now = data.get("generated_at", _utcnow().isoformat())
+        now = data.get("generated_at", utcnow().isoformat())
         doc_results = data.get("document_results", [])
 
         xml_parts = [
@@ -1625,7 +1616,6 @@ class ComplianceReporter:
         """Return the number of stored reports."""
         with self._lock:
             return len(self._reports)
-
 
 # ---------------------------------------------------------------------------
 # Public API

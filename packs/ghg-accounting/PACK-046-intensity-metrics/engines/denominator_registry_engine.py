@@ -65,25 +65,20 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ValidationSeverity
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -106,7 +101,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -115,7 +109,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -127,26 +120,21 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round3(value: Any) -> float:
     """Round to 3 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: Any) -> float:
     """Round to 4 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DenominatorCategory(str, Enum):
     """Category of intensity denominator.
@@ -164,7 +152,6 @@ class DenominatorCategory(str, Enum):
     AREA = "area"
     CAPACITY = "capacity"
     ACTIVITY = "activity"
-
 
 class DenominatorUnit(str, Enum):
     """Standard units for intensity denominators."""
@@ -198,14 +185,6 @@ class DenominatorUnit(str, Enum):
     VEHICLE_KM = "vehicle_km"
     TRANSACTION = "transaction"
     UNIT = "unit"
-
-
-class ValidationSeverity(str, Enum):
-    """Severity level for validation findings."""
-    ERROR = "error"
-    WARNING = "warning"
-    INFO = "info"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Built-in Denominator Definitions
@@ -250,11 +229,9 @@ MAX_YOY_CHANGE_DEFAULTS: Dict[str, Decimal] = {
     DenominatorCategory.ACTIVITY.value: Decimal("40"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class DenominatorDefinition(BaseModel):
     """Definition of a standard intensity denominator.
@@ -297,7 +274,6 @@ class DenominatorDefinition(BaseModel):
         """Coerce to Decimal."""
         return _decimal(v)
 
-
 class DenominatorValue(BaseModel):
     """A single period value for a denominator.
 
@@ -324,7 +300,6 @@ class DenominatorValue(BaseModel):
         """Coerce value to Decimal."""
         return _decimal(v)
 
-
 class DenominatorRecommendation(BaseModel):
     """Recommendation for a denominator with relevance scoring.
 
@@ -347,7 +322,6 @@ class DenominatorRecommendation(BaseModel):
     rationale: str = Field(default="", description="Recommendation rationale")
     rank: int = Field(default=0, ge=0, description="Rank (1 = best)")
 
-
 class ValidationFinding(BaseModel):
     """A single validation finding for a denominator value.
 
@@ -363,7 +337,6 @@ class ValidationFinding(BaseModel):
     severity: ValidationSeverity = Field(..., description="Severity")
     code: str = Field(default="", description="Finding code")
     message: str = Field(..., description="Finding message")
-
 
 class RegistryInput(BaseModel):
     """Input for denominator registry operations.
@@ -396,7 +369,6 @@ class RegistryInput(BaseModel):
         description="Reporting currency"
     )
 
-
 class RegistryResult(BaseModel):
     """Result from denominator registry operations.
 
@@ -428,7 +400,6 @@ class RegistryResult(BaseModel):
     calculated_at: str = Field(default="", description="Calculation timestamp (ISO 8601)")
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 # ---------------------------------------------------------------------------
 # Built-in Denominators
@@ -740,11 +711,9 @@ BUILT_IN_DENOMINATORS: List[DenominatorDefinition] = [
     ),
 ]
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class DenominatorRegistryEngine:
     """Manages denominator definitions, validation, and recommendations.
@@ -851,7 +820,7 @@ class DenominatorRegistryEngine:
             converted_values=converted_values,
             summary=summary,
             warnings=warnings,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         result.provenance_hash = _compute_hash(result)
@@ -1323,11 +1292,9 @@ class DenominatorRegistryEngine:
         """Return list of available unit conversion pairs."""
         return sorted(UNIT_CONVERSION_FACTORS.keys())
 
-
 # ---------------------------------------------------------------------------
 # Module-level convenience functions
 # ---------------------------------------------------------------------------
-
 
 def get_built_in_denominators() -> List[DenominatorDefinition]:
     """Return the built-in denominator definitions.
@@ -1336,7 +1303,6 @@ def get_built_in_denominators() -> List[DenominatorDefinition]:
         List of all 27 built-in DenominatorDefinition objects.
     """
     return list(BUILT_IN_DENOMINATORS)
-
 
 def recommend_denominators(
     sector: str,
@@ -1355,7 +1321,6 @@ def recommend_denominators(
     """
     engine = DenominatorRegistryEngine()
     return engine.recommend_denominators(sector, frameworks, available_ids)
-
 
 # ---------------------------------------------------------------------------
 # __all__

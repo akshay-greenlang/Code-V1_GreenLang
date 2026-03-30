@@ -44,25 +44,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -75,11 +69,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class TOUPeriodType(str, Enum):
     """Time-of-use period classifications."""
@@ -89,7 +81,6 @@ class TOUPeriodType(str, Enum):
     OFF_PEAK = "off_peak"
     SUPER_OFF_PEAK = "super_off_peak"
     CRITICAL_PEAK = "critical_peak"
-
 
 class RateStructureType(str, Enum):
     """Utility rate structure types."""
@@ -102,7 +93,6 @@ class RateStructureType(str, Enum):
     CRITICAL_PEAK_PRICING = "critical_peak_pricing"
     DEMAND_RESPONSE_RATE = "demand_response_rate"
 
-
 class DemandChargeCategory(str, Enum):
     """Types of demand charges on utility bills."""
 
@@ -114,7 +104,6 @@ class DemandChargeCategory(str, Enum):
     TRANSMISSION = "transmission"
     GENERATION = "generation"
 
-
 class RatchetType(str, Enum):
     """Demand ratchet clause types."""
 
@@ -123,7 +112,6 @@ class RatchetType(str, Enum):
     ROLLING_12_MONTH = "rolling_12_month"
     CONTRACT_RATCHET = "contract_ratchet"
     NONE = "none"
-
 
 class TariffSource(str, Enum):
     """Source of tariff data."""
@@ -134,11 +122,9 @@ class TariffSource(str, Enum):
     ERP_IMPORT = "erp_import"
     PDF_EXTRACTION = "pdf_extraction"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class UtilityRateConfig(BaseModel):
     """Configuration for the Utility Rate Bridge."""
@@ -151,7 +137,6 @@ class UtilityRateConfig(BaseModel):
     cache_tariffs: bool = Field(default=True)
     tariff_refresh_hours: int = Field(default=24, ge=1)
 
-
 class TOUPeriod(BaseModel):
     """Time-of-use period definition."""
 
@@ -161,7 +146,6 @@ class TOUPeriod(BaseModel):
     weekdays_only: bool = Field(default=True)
     months: List[int] = Field(default_factory=list, description="Applicable months (1-12)")
     energy_rate_usd_per_kwh: float = Field(default=0.0, ge=0.0)
-
 
 class DemandChargeRate(BaseModel):
     """A demand charge rate component."""
@@ -174,7 +158,6 @@ class DemandChargeRate(BaseModel):
     minimum_kw: float = Field(default=0.0, ge=0.0)
     description: str = Field(default="")
 
-
 class RatchetClause(BaseModel):
     """Demand ratchet clause parameters."""
 
@@ -185,7 +168,6 @@ class RatchetClause(BaseModel):
     reset_month: int = Field(default=0, ge=0, le=12, description="0=no reset")
     applicable_charges: List[DemandChargeCategory] = Field(default_factory=list)
     description: str = Field(default="")
-
 
 class TariffSchedule(BaseModel):
     """Complete tariff schedule for a facility."""
@@ -206,11 +188,9 @@ class TariffSchedule(BaseModel):
     source: TariffSource = Field(default=TariffSource.MANUAL_ENTRY)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # UtilityRateBridge
 # ---------------------------------------------------------------------------
-
 
 class UtilityRateBridge:
     """Tariff data integration for peak shaving demand charge analysis.

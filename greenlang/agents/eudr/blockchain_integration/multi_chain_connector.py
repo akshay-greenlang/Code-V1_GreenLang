@@ -64,6 +64,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from greenlang.agents.eudr.blockchain_integration.config import get_config
+from greenlang.schemas import utcnow
 from greenlang.agents.eudr.blockchain_integration.metrics import (
     record_api_error,
     record_gas_spent,
@@ -89,12 +90,6 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance.
 
@@ -107,7 +102,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a new UUID4 string identifier.
 
@@ -115,7 +109,6 @@ def _generate_id() -> str:
         UUID4 string.
     """
     return str(uuid.uuid4())
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -188,11 +181,9 @@ _DEFAULT_PEER_COUNTS: Dict[str, int] = {
     "besu": 8,
 }
 
-
 # ==========================================================================
 # MultiChainConnector
 # ==========================================================================
-
 
 class MultiChainConnector:
     """Multi-chain abstraction layer for EUDR blockchain integration.
@@ -318,7 +309,7 @@ class MultiChainConnector:
         )
 
         connection_id = _generate_id()
-        now = _utcnow()
+        now = utcnow()
 
         # Perform chain-specific connection
         connected = self._connect_chain(network, endpoint)
@@ -398,7 +389,7 @@ class MultiChainConnector:
                 return False
 
             connection.status = ChainConnectionStatus.DISCONNECTED
-            connection.last_heartbeat = _utcnow()
+            connection.last_heartbeat = utcnow()
             self._connections[chain_id] = connection
 
         # Provenance
@@ -409,7 +400,7 @@ class MultiChainConnector:
             data={
                 "chain": chain_id,
                 "action": "disconnect",
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             },
         )
 
@@ -516,7 +507,7 @@ class MultiChainConnector:
             "gas_limit": gas_limit,
             "value": value,
             "nonce": nonce,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
         if is_eip1559:
@@ -549,7 +540,7 @@ class MultiChainConnector:
             ),
             "status": 1,  # 1 = success
             "type": 2 if is_eip1559 else 0,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
         with self._lock:
@@ -742,7 +733,7 @@ class MultiChainConnector:
         with self._lock:
             connection = self._connections.get(chain_id)
             if connection:
-                now = _utcnow()
+                now = utcnow()
                 if healthy:
                     connection.status = ChainConnectionStatus.CONNECTED
                     connection.last_heartbeat = now
@@ -800,7 +791,7 @@ class MultiChainConnector:
         with self._lock:
             connection = self._connections.get(chain_id)
             if connection:
-                now = _utcnow()
+                now = utcnow()
                 if success:
                     connection.status = ChainConnectionStatus.CONNECTED
                     connection.connected_at = now
@@ -825,7 +816,7 @@ class MultiChainConnector:
                 "chain": chain_id,
                 "action": "reconnect",
                 "success": success,
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             },
         )
 
@@ -1214,7 +1205,6 @@ class MultiChainConnector:
             self._block_heights = dict(_INITIAL_BLOCK_HEIGHTS)
 
         logger.info("MultiChainConnector state cleared")
-
 
 # ---------------------------------------------------------------------------
 # Public API

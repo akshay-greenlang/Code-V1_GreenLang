@@ -83,6 +83,7 @@ from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -304,15 +305,9 @@ except ImportError:
         "gj_to_mj": Decimal("1000.0"),
     }
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -330,7 +325,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Decimal precision constants
 # ---------------------------------------------------------------------------
@@ -340,7 +334,6 @@ _ZERO = Decimal("0")
 _ONE = Decimal("1")
 _THOUSAND = Decimal("1000")
 _GJ_TO_KWH = Decimal("277.778")
-
 
 def _D(value: Any) -> Decimal:
     """Convert a value to Decimal with controlled precision.
@@ -354,7 +347,6 @@ def _D(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
     return Decimal(str(value))
-
 
 def _safe_decimal(value: Any, default: Decimal = _ZERO) -> Decimal:
     """Safely convert a value to Decimal, returning default on failure.
@@ -373,11 +365,9 @@ def _safe_decimal(value: Any, default: Decimal = _ZERO) -> Decimal:
     except (InvalidOperation, ValueError, TypeError):
         return default
 
-
 # ===========================================================================
 # Enumerations
 # ===========================================================================
-
 
 class HeatingCoolingType(str, Enum):
     """Classification of heat/cooling calculation types."""
@@ -389,7 +379,6 @@ class HeatingCoolingType(str, Enum):
     THERMAL_STORAGE_COOLING = "THERMAL_STORAGE_COOLING"
     ICE_STORAGE_COOLING = "ICE_STORAGE_COOLING"
 
-
 class CoolingCategory(str, Enum):
     """Broad category classification for cooling technologies."""
 
@@ -398,11 +387,9 @@ class CoolingCategory(str, Enum):
     FREE = "FREE"
     STORAGE = "STORAGE"
 
-
 # ===========================================================================
 # Trace Step Dataclass
 # ===========================================================================
-
 
 @dataclass
 class TraceStep:
@@ -434,7 +421,6 @@ class TraceStep:
             "output": self.output,
             "unit": self.unit,
         }
-
 
 # ===========================================================================
 # Default COP values for cooling technology families
@@ -481,11 +467,9 @@ _DEFAULT_GRID_EF_KWH = Decimal("0.450")
 # Default heat source emission factor (kgCO2e/GJ) -- natural gas boiler
 _DEFAULT_HEAT_SOURCE_EF_GJ = Decimal("66.0")
 
-
 # ===========================================================================
 # HeatCoolingCalculatorEngine
 # ===========================================================================
-
 
 class HeatCoolingCalculatorEngine:
     """Core district heating and district cooling emission calculator
@@ -590,7 +574,7 @@ class HeatCoolingCalculatorEngine:
         self._total_heating_calculations: int = 0
         self._total_cooling_calculations: int = 0
         self._total_batch_calculations: int = 0
-        self._created_at = _utcnow()
+        self._created_at = utcnow()
         self._initialized = True
 
         logger.info(
@@ -2276,7 +2260,7 @@ class HeatCoolingCalculatorEngine:
             Dictionary with engine name, version, counters, and uptime.
         """
         with self._lock:
-            now = _utcnow()
+            now = utcnow()
             uptime_seconds = int(
                 (now - self._created_at).total_seconds()
             )
@@ -2435,7 +2419,7 @@ class HeatCoolingCalculatorEngine:
             "failed_checks": sum(
                 1 for v in checks.values() if v == "FAIL"
             ),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "processing_time_ms": processing_time,
         }
 
@@ -3087,11 +3071,9 @@ class HeatCoolingCalculatorEngine:
 
         return result
 
-
 # ===========================================================================
 # Module-level singleton accessor
 # ===========================================================================
-
 
 def get_heat_cooling_calculator(
     steam_heat_database: Optional[Any] = None,

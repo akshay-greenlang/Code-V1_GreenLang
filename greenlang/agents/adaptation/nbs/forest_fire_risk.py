@@ -16,10 +16,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism.clock import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +43,7 @@ class VegetationType(str, Enum):
     SAVANNA = "savanna"
 
 
-class FireSite(BaseModel):
+class FireSite(GreenLangBase):
     site_id: str = Field(...)
     area_ha: float = Field(..., gt=0)
     vegetation_type: VegetationType = Field(...)
@@ -53,7 +54,7 @@ class FireSite(BaseModel):
     summer_temp_avg_c: float = Field(default=25, ge=-20, le=50)
 
 
-class FireRiskAssessment(BaseModel):
+class FireRiskAssessment(GreenLangBase):
     site_id: str = Field(...)
     current_risk_level: FireRiskLevel = Field(...)
     future_risk_level_2050: FireRiskLevel = Field(...)
@@ -64,13 +65,13 @@ class FireRiskAssessment(BaseModel):
     recommended_actions: List[str] = Field(...)
 
 
-class ForestFireRiskInput(BaseModel):
+class ForestFireRiskInput(GreenLangBase):
     project_id: str = Field(...)
     sites: List[FireSite] = Field(..., min_length=1)
     climate_scenario: str = Field(default="RCP4.5")
 
 
-class ForestFireRiskOutput(BaseModel):
+class ForestFireRiskOutput(GreenLangBase):
     project_id: str = Field(...)
     calculation_date: datetime = Field(default_factory=DeterministicClock.now)
     total_area_ha: float = Field(...)

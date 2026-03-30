@@ -38,20 +38,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -64,7 +59,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 class MRVScope(str, Enum):
     """MRV agent scope groupings."""
 
@@ -73,7 +67,6 @@ class MRVScope(str, Enum):
     SCOPE3 = "scope3"
     CROSS_CUTTING = "cross_cutting"
 
-
 class VerificationStatus(str, Enum):
     """MRV verification status."""
 
@@ -81,7 +74,6 @@ class VerificationStatus(str, Enum):
     PENDING = "pending"
     FAILED = "failed"
     NOT_APPLICABLE = "not_applicable"
-
 
 # Agent ID to scope mapping
 AGENT_SCOPE_MAP: Dict[str, MRVScope] = {
@@ -126,7 +118,6 @@ AGENT_DESCRIPTIONS: Dict[str, str] = {
     "MRV-030": "Audit Trail & Lineage",
 }
 
-
 class MRVAgentResult(BaseModel):
     """Result from an MRV agent query."""
 
@@ -138,8 +129,7 @@ class MRVAgentResult(BaseModel):
     records_verified: int = Field(default=0)
     data_quality_score: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class MRVScopeSummary(BaseModel):
     """Summary of MRV results by scope."""
@@ -150,7 +140,6 @@ class MRVScopeSummary(BaseModel):
     total_tco2e: float = Field(default=0.0)
     average_dqi: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class MRVBridge:
     """Bridge to all 30 MRV agents for inventory management.

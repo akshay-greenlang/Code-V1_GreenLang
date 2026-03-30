@@ -35,14 +35,9 @@ import time
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -54,7 +49,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -68,7 +62,6 @@ GEOMETRY_TYPES = frozenset({
 LAYER_STATUSES = frozenset({"active", "inactive", "deleted"})
 
 EXPORT_FORMATS = frozenset({"geojson", "wkt", "csv"})
-
 
 # ---------------------------------------------------------------------------
 # Data Structures
@@ -99,7 +92,7 @@ def _make_layer(
     Returns:
         GeoLayer dictionary.
     """
-    now = _utcnow().isoformat()
+    now = utcnow().isoformat()
     return {
         "layer_id": layer_id,
         "name": name,
@@ -114,7 +107,6 @@ def _make_layer(
         "created_at": now,
         "updated_at": now,
     }
-
 
 def _make_feature(
     feature_id: str,
@@ -136,9 +128,8 @@ def _make_feature(
         "id": feature_id,
         "geometry": geometry,
         "properties": properties or {},
-        "created_at": _utcnow().isoformat(),
+        "created_at": utcnow().isoformat(),
     }
-
 
 # ---------------------------------------------------------------------------
 # Engine
@@ -349,7 +340,7 @@ class LayerManagerEngine:
 
         # Update layer metadata
         layer["feature_count"] = len(self._features[layer_id])
-        layer["updated_at"] = _utcnow().isoformat()
+        layer["updated_at"] = utcnow().isoformat()
         layer["bbox"] = self._compute_layer_bbox(layer_id)
 
         # Record metrics
@@ -447,7 +438,7 @@ class LayerManagerEngine:
             if key in allowed_fields:
                 layer[key] = value
 
-        layer["updated_at"] = _utcnow().isoformat()
+        layer["updated_at"] = utcnow().isoformat()
 
         # Record provenance
         if self._provenance is not None:
@@ -479,7 +470,7 @@ class LayerManagerEngine:
             raise ValueError(f"Layer not found: {layer_id}")
 
         layer["status"] = "deleted"
-        layer["updated_at"] = _utcnow().isoformat()
+        layer["updated_at"] = utcnow().isoformat()
 
         # Update metrics
         try:
@@ -800,7 +791,6 @@ class LayerManagerEngine:
             "active_layers": active,
             "total_features": total_features,
         }
-
 
 __all__ = [
     "LayerManagerEngine",

@@ -40,19 +40,14 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -64,24 +59,20 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class AssuranceLevel(str, Enum):
     LIMITED = "limited"
     REASONABLE = "reasonable"
     COMBINED = "combined"
 
-
 class AssuranceStandard(str, Enum):
     ISO_14064_3 = "iso_14064_3"
     ISAE_3000 = "isae_3000"
     ISAE_3410 = "isae_3410"
     AA1000_AS = "aa1000_as"
-
 
 class AssuranceProvider(str, Enum):
     EY = "ey"
@@ -95,7 +86,6 @@ class AssuranceProvider(str, Enum):
     DNV = "dnv"
     LRQA = "lrqa"
     OTHER = "other"
-
 
 class DocumentType(str, Enum):
     CALCULATION_SHEET = "calculation_sheet"
@@ -114,7 +104,6 @@ class DocumentType(str, Enum):
     MANAGEMENT_ASSERTION = "management_assertion"
     SUPPORTING_EVIDENCE = "supporting_evidence"
 
-
 class WorkflowStatus(str, Enum):
     DRAFT = "draft"
     EVIDENCE_COLLECTION = "evidence_collection"
@@ -127,7 +116,6 @@ class WorkflowStatus(str, Enum):
     OPINION_ISSUED = "opinion_issued"
     COMPLETED = "completed"
 
-
 class EvidenceStatus(str, Enum):
     REQUIRED = "required"
     OPTIONAL = "optional"
@@ -136,7 +124,6 @@ class EvidenceStatus(str, Enum):
     INCOMPLETE = "incomplete"
     ACCEPTED = "accepted"
     REJECTED = "rejected"
-
 
 # ---------------------------------------------------------------------------
 # ISO 14064-3 Evidence Requirements
@@ -165,11 +152,9 @@ ISO_14064_3_REQUIREMENTS: List[Dict[str, Any]] = [
     {"id": "WP-020", "category": "supporting", "name": "Additional supporting evidence", "doc_type": "supporting_evidence", "required": False, "assurance_level": "both"},
 ]
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class AssurancePortalConfig(BaseModel):
     """Configuration for the assurance portal bridge."""
@@ -186,7 +171,6 @@ class AssurancePortalConfig(BaseModel):
     auto_version: bool = Field(default=True)
     max_upload_size_mb: int = Field(default=100, ge=1, le=1000)
 
-
 class EvidenceDocument(BaseModel):
     """Single evidence document in the assurance package."""
     document_id: str = Field(default_factory=_new_uuid)
@@ -200,11 +184,10 @@ class EvidenceDocument(BaseModel):
     mime_type: str = Field(default="application/pdf")
     version: int = Field(default=1)
     status: EvidenceStatus = Field(default=EvidenceStatus.PROVIDED)
-    uploaded_at: datetime = Field(default_factory=_utcnow)
+    uploaded_at: datetime = Field(default_factory=utcnow)
     uploaded_by: str = Field(default="")
     reviewer_notes: str = Field(default="")
     provenance_hash: str = Field(default="")
-
 
 class WorkpaperRequirement(BaseModel):
     """Single workpaper requirement from ISO 14064-3."""
@@ -216,7 +199,6 @@ class WorkpaperRequirement(BaseModel):
     assurance_level: str = Field(default="both")
     status: EvidenceStatus = Field(default=EvidenceStatus.REQUIRED)
     documents: List[EvidenceDocument] = Field(default_factory=list)
-
 
 class CompletenessCheck(BaseModel):
     """Evidence completeness check result."""
@@ -230,7 +212,6 @@ class CompletenessCheck(BaseModel):
     ready_for_submission: bool = Field(default=False)
     gaps: List[Dict[str, str]] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class AssuranceRequest(BaseModel):
     """Assurance engagement request."""
@@ -248,7 +229,6 @@ class AssuranceRequest(BaseModel):
     fee_usd: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class EvidencePackage(BaseModel):
     """Complete evidence package for assurance."""
     package_id: str = Field(default_factory=_new_uuid)
@@ -261,15 +241,13 @@ class EvidencePackage(BaseModel):
     completeness: Optional[CompletenessCheck] = Field(None)
     version: int = Field(default=1)
     status: WorkflowStatus = Field(default=WorkflowStatus.DRAFT)
-    created_at: datetime = Field(default_factory=_utcnow)
-    last_updated: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
+    last_updated: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # AssurancePortalBridge
 # ---------------------------------------------------------------------------
-
 
 class AssurancePortalBridge:
     """Assurance provider portal integration bridge for PACK-029.
@@ -390,7 +368,7 @@ class AssurancePortalBridge:
                 wp.status = EvidenceStatus.PROVIDED
                 break
 
-        package.last_updated = _utcnow()
+        package.last_updated = utcnow()
         if self.config.auto_version:
             package.version += 1
 
@@ -504,7 +482,7 @@ class AssurancePortalBridge:
             scope_of_engagement=scope,
             status=WorkflowStatus.SUBMITTED,
             evidence_package_id=package_id,
-            submitted_at=_utcnow(),
+            submitted_at=utcnow(),
             estimated_completion_weeks=8 if self.config.assurance_level == AssuranceLevel.LIMITED else 12,
             fee_usd=fee_usd,
         )
@@ -608,6 +586,7 @@ class AssurancePortalBridge:
         """Submit to provider API."""
         try:
             import httpx
+
             if not self._http_client:
                 self._http_client = httpx.AsyncClient(
                     base_url=self.config.provider_api_url,

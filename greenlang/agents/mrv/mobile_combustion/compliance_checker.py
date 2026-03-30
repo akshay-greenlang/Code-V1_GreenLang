@@ -94,6 +94,7 @@ from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -134,15 +135,9 @@ except ImportError:
     _record_compliance_check = None  # type: ignore[assignment]
     _observe_calculation_duration = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _to_decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
@@ -163,11 +158,9 @@ def _to_decimal(value: Any) -> Decimal:
     except (InvalidOperation, ValueError, TypeError) as exc:
         raise ValueError(f"Cannot convert {value!r} to Decimal") from exc
 
-
 # ===========================================================================
 # Enumerations
 # ===========================================================================
-
 
 class RegulatoryFramework(str, Enum):
     """Supported regulatory frameworks for mobile combustion compliance.
@@ -191,7 +184,6 @@ class RegulatoryFramework(str, Enum):
     UK_SECR = "UK_SECR"
     EU_ETS_MRR = "EU_ETS_MRR"
 
-
 class ComplianceStatus(str, Enum):
     """Compliance assessment status values.
 
@@ -204,7 +196,6 @@ class ComplianceStatus(str, Enum):
     COMPLIANT = "COMPLIANT"
     NON_COMPLIANT = "NON_COMPLIANT"
     NEEDS_REVIEW = "NEEDS_REVIEW"
-
 
 class FindingSeverity(str, Enum):
     """Severity level for compliance findings.
@@ -221,7 +212,6 @@ class FindingSeverity(str, Enum):
     MINOR = "MINOR"
     INFORMATIONAL = "INFORMATIONAL"
     PASS = "PASS"
-
 
 # ===========================================================================
 # Framework Requirement Definitions
@@ -685,7 +675,6 @@ _FRAMEWORK_REQUIREMENTS: Dict[str, List[Dict[str, Any]]] = {
     RegulatoryFramework.EU_ETS_MRR.value: _EU_ETS_MRR_REQUIREMENTS,
 }
 
-
 # ===========================================================================
 # EPA Large Emitter Threshold
 # ===========================================================================
@@ -695,7 +684,6 @@ _EPA_LARGE_EMITTER_THRESHOLD_KG: Decimal = _EPA_LARGE_EMITTER_THRESHOLD_TCO2E * 
 
 # Base year recalculation threshold (5% change)
 _BASE_YEAR_RECALC_THRESHOLD: Decimal = Decimal("0.05")
-
 
 # ===========================================================================
 # Framework Methodology Mappings
@@ -742,7 +730,6 @@ _VALID_TIERS_BY_FRAMEWORK: Dict[str, List[str]] = {
         "TIER_1", "TIER_2", "TIER_3",
     ],
 }
-
 
 # ===========================================================================
 # Recommendation Templates
@@ -817,11 +804,9 @@ _RECOMMENDATION_TEMPLATES: Dict[str, str] = {
     ),
 }
 
-
 # ===========================================================================
 # Dataclasses
 # ===========================================================================
-
 
 @dataclass
 class ComplianceFinding:
@@ -859,7 +844,6 @@ class ComplianceFinding:
             "detail": self.detail,
             "data_present": self.data_present,
         }
-
 
 @dataclass
 class ComplianceCheckResult:
@@ -916,11 +900,9 @@ class ComplianceCheckResult:
             "metadata": self.metadata,
         }
 
-
 # ===========================================================================
 # ComplianceCheckerEngine
 # ===========================================================================
-
 
 class ComplianceCheckerEngine:
     """Regulatory compliance validation engine for mobile combustion
@@ -1108,7 +1090,7 @@ class ComplianceCheckerEngine:
             compliance_score_pct=compliance_score,
             recommendations=recommendations,
             provenance_hash=provenance_hash,
-            timestamp=_utcnow().isoformat(),
+            timestamp=utcnow().isoformat(),
         )
 
         # Record in history

@@ -33,10 +33,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -86,7 +87,7 @@ class CostCategory(str, Enum):
 # Pydantic Models
 # =============================================================================
 
-class CostEstimate(BaseModel):
+class CostEstimate(GreenLangBase):
     """Cost estimate for an adaptation measure."""
     capital_cost_usd_low: float = Field(..., ge=0)
     capital_cost_usd_high: float = Field(..., ge=0)
@@ -96,7 +97,7 @@ class CostEstimate(BaseModel):
     cost_category: CostCategory = Field(default=CostCategory.MEDIUM)
 
 
-class EffectivenessMetrics(BaseModel):
+class EffectivenessMetrics(GreenLangBase):
     """Effectiveness metrics for an adaptation measure."""
     risk_reduction_pct: float = Field(..., ge=0, le=100)
     effectiveness_level: EffectivenessLevel = Field(...)
@@ -105,7 +106,7 @@ class EffectivenessMetrics(BaseModel):
     lifespan_years: int = Field(default=20, ge=1)
 
 
-class AdaptationMeasure(BaseModel):
+class AdaptationMeasure(GreenLangBase):
     """Complete adaptation measure definition."""
     measure_id: str = Field(..., description="Unique identifier")
     name: str = Field(..., description="Measure name")
@@ -140,7 +141,7 @@ class AdaptationMeasure(BaseModel):
     data_source: str = Field(default="internal")
 
 
-class MeasureMatch(BaseModel):
+class MeasureMatch(GreenLangBase):
     """Match result between a context and adaptation measure."""
     measure: AdaptationMeasure = Field(...)
     match_score: float = Field(..., ge=0, le=1)
@@ -151,7 +152,7 @@ class MeasureMatch(BaseModel):
     match_rationale: List[str] = Field(default_factory=list)
 
 
-class LibraryQueryInput(BaseModel):
+class LibraryQueryInput(GreenLangBase):
     """Input for querying the adaptation library."""
     query_id: str = Field(..., description="Unique query identifier")
     hazards: List[str] = Field(default_factory=list, description="Target hazards")
@@ -164,7 +165,7 @@ class LibraryQueryInput(BaseModel):
     include_nature_based: bool = Field(default=True)
 
 
-class LibraryQueryOutput(BaseModel):
+class LibraryQueryOutput(GreenLangBase):
     """Output from library query."""
     query_id: str = Field(...)
     completed_at: datetime = Field(default_factory=DeterministicClock.now)

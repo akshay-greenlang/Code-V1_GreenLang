@@ -50,25 +50,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -86,7 +80,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -95,7 +88,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -107,22 +99,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class MeterType(str, Enum):
     """Classification of metering device purpose.
@@ -139,7 +127,6 @@ class MeterType(str, Enum):
     VIRTUAL = "virtual"
     TEMPORARY = "temporary"
 
-
 class MeterProtocol(str, Enum):
     """Communication protocol for meter data retrieval."""
     MODBUS_RTU = "modbus_rtu"
@@ -151,7 +138,6 @@ class MeterProtocol(str, Enum):
     PULSE = "pulse"
     MANUAL = "manual"
 
-
 class EnergyType(str, Enum):
     """Type of energy commodity metered."""
     ELECTRICITY = "electricity"
@@ -162,7 +148,6 @@ class EnergyType(str, Enum):
     FUEL_OIL = "fuel_oil"
     PROPANE = "propane"
     DISTRICT_HEAT = "district_heat"
-
 
 class MeterStatus(str, Enum):
     """Operational status of a meter asset.
@@ -178,7 +163,6 @@ class MeterStatus(str, Enum):
     CALIBRATION_DUE = "calibration_due"
     FAULT = "fault"
     DECOMMISSIONED = "decommissioned"
-
 
 class ChannelType(str, Enum):
     """Measurement channel type available on a meter."""
@@ -196,7 +180,6 @@ class ChannelType(str, Enum):
     TEMPERATURE = "temperature"
     PRESSURE = "pressure"
 
-
 class HierarchyLevel(str, Enum):
     """Level within the meter hierarchy tree.
 
@@ -211,7 +194,6 @@ class HierarchyLevel(str, Enum):
     FLOOR = "floor"
     SYSTEM = "system"
     CIRCUIT = "circuit"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -255,11 +237,9 @@ MAX_HIERARCHY_DEPTH: int = 10
 # Maximum channels per meter.
 MAX_CHANNELS_PER_METER: int = 32
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class MeterChannel(BaseModel):
     """Configuration of a single measurement channel on a meter.
@@ -298,7 +278,6 @@ class MeterChannel(BaseModel):
     register_address: int = Field(
         default=0, ge=0, description="Protocol register address"
     )
-
 
 class MeterConfig(BaseModel):
     """Complete configuration for a metering device.
@@ -370,7 +349,6 @@ class MeterConfig(BaseModel):
     )
     notes: str = Field(default="", max_length=2000, description="Notes")
 
-
 class CalibrationRecord(BaseModel):
     """Record of a meter calibration event.
 
@@ -394,7 +372,7 @@ class CalibrationRecord(BaseModel):
     """
     calibration_id: str = Field(default_factory=_new_uuid)
     meter_id: str = Field(default="")
-    calibration_date: datetime = Field(default_factory=_utcnow)
+    calibration_date: datetime = Field(default_factory=utcnow)
     next_due_date: Optional[datetime] = Field(default=None)
     technician: str = Field(default="", max_length=200)
     reference_standard: str = Field(default="", max_length=200)
@@ -408,7 +386,6 @@ class CalibrationRecord(BaseModel):
     certificate_number: str = Field(default="", max_length=100)
     notes: str = Field(default="", max_length=2000)
     provenance_hash: str = Field(default="")
-
 
 class MeterHierarchy(BaseModel):
     """Representation of the meter hierarchy tree.
@@ -437,9 +414,8 @@ class MeterHierarchy(BaseModel):
     tree: Dict[str, Any] = Field(default_factory=dict)
     orphan_meters: List[str] = Field(default_factory=list)
     completeness_pct: Decimal = Field(default=Decimal("0"))
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class VirtualMeterDefinition(BaseModel):
     """Definition of a virtual (calculated) meter.
@@ -458,9 +434,8 @@ class VirtualMeterDefinition(BaseModel):
     components: Dict[str, Decimal] = Field(default_factory=dict)
     operator: str = Field(default="SUM", max_length=10)
     description: str = Field(default="", max_length=1000)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class MeterRegistryResult(BaseModel):
     """Complete meter registry analysis result.
@@ -503,14 +478,12 @@ class MeterRegistryResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     recommendations: List[str] = Field(default_factory=list)
     processing_time_ms: Decimal = Field(default=Decimal("0"))
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class MeterRegistryEngine:
     """Meter asset management engine for energy monitoring programmes.
@@ -634,7 +607,7 @@ class MeterRegistryEngine:
             location=location,
             parent_meter_id=parent_meter_id,
             hierarchy_level=hierarchy_level,
-            install_date=install_date or _utcnow(),
+            install_date=install_date or utcnow(),
             calibration_interval_months=cal_months,
             notes=notes,
         )
@@ -884,7 +857,7 @@ class MeterRegistryEngine:
         if meter:
             cal_months = meter.calibration_interval_months
 
-        cal_date = _utcnow()
+        cal_date = utcnow()
         next_due = self._add_months(cal_date, cal_months) if cal_months > 0 else None
 
         record = CalibrationRecord(
@@ -1052,7 +1025,7 @@ class MeterRegistryEngine:
         virtual = sum(1 for m in all_meters if m.meter_type == MeterType.VIRTUAL)
 
         # Calibration due check
-        now = _utcnow()
+        now = utcnow()
         cal_due = 0
         for m in all_meters:
             if m.meter_type == MeterType.VIRTUAL:

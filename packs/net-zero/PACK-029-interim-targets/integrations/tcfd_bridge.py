@@ -35,18 +35,14 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -58,18 +54,15 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class TCFDPillar(str, Enum):
     GOVERNANCE = "governance"
     STRATEGY = "strategy"
     RISK_MANAGEMENT = "risk_management"
     METRICS_TARGETS = "metrics_targets"
-
 
 class TCFDScenario(str, Enum):
     NZE_15C = "nze_1.5c"
@@ -78,13 +71,11 @@ class TCFDScenario(str, Enum):
     BAU = "business_as_usual"
     HIGH_WARMING = "high_warming_4c"
 
-
 class TransitionRiskType(str, Enum):
     POLICY_LEGAL = "policy_legal"
     TECHNOLOGY = "technology"
     MARKET = "market"
     REPUTATION = "reputation"
-
 
 class RiskLikelihood(str, Enum):
     VERY_LIKELY = "very_likely"
@@ -93,7 +84,6 @@ class RiskLikelihood(str, Enum):
     UNLIKELY = "unlikely"
     RARE = "rare"
 
-
 class RiskImpact(str, Enum):
     HIGH = "high"
     MEDIUM_HIGH = "medium_high"
@@ -101,18 +91,15 @@ class RiskImpact(str, Enum):
     MEDIUM_LOW = "medium_low"
     LOW = "low"
 
-
 class ConsistencyStatus(str, Enum):
     CONSISTENT = "consistent"
     PARTIALLY_CONSISTENT = "partially_consistent"
     INCONSISTENT = "inconsistent"
     NOT_ASSESSED = "not_assessed"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class TCFDBridgeConfig(BaseModel):
     """Configuration for the TCFD bridge."""
@@ -125,7 +112,6 @@ class TCFDBridgeConfig(BaseModel):
     enable_provenance: bool = Field(default=True)
     enable_scenario_analysis: bool = Field(default=True)
     enable_consistency_checks: bool = Field(default=True)
-
 
 class TCFDTable1Row(BaseModel):
     """Single row in Table 1: GHG emissions data."""
@@ -140,7 +126,6 @@ class TCFDTable1Row(BaseModel):
     total_scope123_tco2e: float = Field(default=0.0)
     change_from_base_year_pct: float = Field(default=0.0)
 
-
 class TCFDTable1Export(BaseModel):
     """Table 1: GHG emissions historical + target trajectory."""
     export_id: str = Field(default_factory=_new_uuid)
@@ -149,7 +134,6 @@ class TCFDTable1Export(BaseModel):
     base_year: int = Field(default=2023)
     methodology: str = Field(default="GHG Protocol Corporate Standard")
     provenance_hash: str = Field(default="")
-
 
 class TCFDTable2Row(BaseModel):
     """Single row in Table 2: Interim targets."""
@@ -165,14 +149,12 @@ class TCFDTable2Row(BaseModel):
     science_based: bool = Field(default=True)
     methodology: str = Field(default="SBTi ACA 1.5C")
 
-
 class TCFDTable2Export(BaseModel):
     """Table 2: Interim targets (5-year, 10-year milestones)."""
     export_id: str = Field(default_factory=_new_uuid)
     table_name: str = Field(default="Table 2: Interim Targets")
     rows: List[TCFDTable2Row] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class TCFDTable3Row(BaseModel):
     """Single row in Table 3: Transition risks linked to targets."""
@@ -186,14 +168,12 @@ class TCFDTable3Row(BaseModel):
     financial_impact_usd: float = Field(default=0.0)
     mitigation_action: str = Field(default="")
 
-
 class TCFDTable3Export(BaseModel):
     """Table 3: Transition risks linked to targets."""
     export_id: str = Field(default_factory=_new_uuid)
     table_name: str = Field(default="Table 3: Transition Risks")
     rows: List[TCFDTable3Row] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class TCFDTable4Row(BaseModel):
     """Single row in Table 4: Forward-looking metrics."""
@@ -206,7 +186,6 @@ class TCFDTable4Row(BaseModel):
     transition_cost_usd: float = Field(default=0.0)
     revenue_at_risk_pct: float = Field(default=0.0)
 
-
 class TCFDTable4Export(BaseModel):
     """Table 4: Forward-looking metrics under scenarios."""
     export_id: str = Field(default_factory=_new_uuid)
@@ -214,7 +193,6 @@ class TCFDTable4Export(BaseModel):
     rows: List[TCFDTable4Row] = Field(default_factory=list)
     scenarios_analyzed: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class TCFDConsistencyCheck(BaseModel):
     """Cross-pillar consistency check result."""
@@ -224,7 +202,6 @@ class TCFDConsistencyCheck(BaseModel):
     check_description: str = Field(default="")
     status: ConsistencyStatus = Field(default=ConsistencyStatus.NOT_ASSESSED)
     detail: str = Field(default="")
-
 
 class TCFDExportResult(BaseModel):
     """Complete TCFD Metrics & Targets export result."""
@@ -237,7 +214,6 @@ class TCFDExportResult(BaseModel):
     tables_exported: List[str] = Field(default_factory=list)
     overall_consistency: ConsistencyStatus = Field(default=ConsistencyStatus.NOT_ASSESSED)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Scenario Carbon Price Assumptions
@@ -261,11 +237,9 @@ DEFAULT_TRANSITION_RISKS: List[Dict[str, Any]] = [
     {"type": "reputation", "description": "Greenwashing litigation risk", "likelihood": "possible", "impact": "high", "horizon": "Medium-term (3-10 years)"},
 ]
 
-
 # ---------------------------------------------------------------------------
 # TCFDBridge
 # ---------------------------------------------------------------------------
-
 
 class TCFDBridge:
     """TCFD Metrics and Targets disclosure bridge for PACK-029.

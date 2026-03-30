@@ -1,0 +1,14 @@
+{
+  "suppliers": [
+    {
+      "id": "SUP-001",
+      "risk": "low",
+      "country": "BR"
+    },
+    {
+      "id": "SUP-002",
+      "risk": "high",
+      "country": "ID"
+    }
+  ]
+}

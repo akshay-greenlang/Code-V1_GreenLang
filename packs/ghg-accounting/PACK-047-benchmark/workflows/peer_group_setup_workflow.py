@@ -67,36 +67,28 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas.enums import ValidationSeverity
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> str:
-    """Return current UTC timestamp as ISO-8601 string."""
-    return datetime.utcnow().isoformat() + "Z"
-
-
 def _new_uuid() -> str:
     """Return a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash of JSON-serialisable data."""
     serialised = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialised.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -107,7 +99,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -116,7 +107,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class PeerSetupPhase(str, Enum):
     """Peer group setup workflow phases."""
@@ -127,14 +117,12 @@ class PeerSetupPhase(str, Enum):
     PEER_SCORING = "peer_scoring"
     VALIDATION = "validation"
 
-
 class SectorSystem(str, Enum):
     """Sector classification system."""
 
     GICS = "gics"
     NACE = "nace"
     ISIC = "isic"
-
 
 class GICSsector(str, Enum):
     """GICS sector classification."""
@@ -151,7 +139,6 @@ class GICSsector(str, Enum):
     UTILITIES = "utilities"
     REAL_ESTATE = "real_estate"
 
-
 class SizeBand(str, Enum):
     """Revenue-based size banding."""
 
@@ -160,7 +147,6 @@ class SizeBand(str, Enum):
     MEDIUM = "medium"
     LARGE = "large"
     MEGA = "mega"
-
 
 class GeographicRegion(str, Enum):
     """Geographic region for emission factor similarity."""
@@ -173,7 +159,6 @@ class GeographicRegion(str, Enum):
     OCEANIA = "oceania"
     GLOBAL = "global"
 
-
 class DataQualityLevel(str, Enum):
     """PCAF-aligned data quality level (1=best, 5=worst)."""
 
@@ -182,7 +167,6 @@ class DataQualityLevel(str, Enum):
     LEVEL_3 = "level_3"
     LEVEL_4 = "level_4"
     LEVEL_5 = "level_5"
-
 
 class PeerStatus(str, Enum):
     """Status of a peer candidate in the selection process."""
@@ -193,15 +177,6 @@ class PeerStatus(str, Enum):
     EXCLUDED_QUALITY = "excluded_quality"
     EXCLUDED_SIZE = "excluded_size"
     EXCLUDED_GEO = "excluded_geo"
-
-
-class ValidationSeverity(str, Enum):
-    """Severity level for validation findings."""
-
-    ERROR = "error"
-    WARNING = "warning"
-    INFO = "info"
-
 
 # =============================================================================
 # SECTOR CROSS-REFERENCE (Zero-Hallucination Reference Data)
@@ -253,11 +228,9 @@ REGION_GRID_INTENSITY_KG_CO2_KWH: Dict[str, float] = {
     "global": 0.45,
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -271,7 +244,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
 
-
 class SectorMapping(BaseModel):
     """Cross-referenced sector classification for an entity."""
 
@@ -281,7 +253,6 @@ class SectorMapping(BaseModel):
     isic_code: str = Field(default="")
     sector_description: str = Field(default="")
     cross_reference_confidence: float = Field(default=0.0, ge=0.0, le=100.0)
-
 
 class PeerCandidate(BaseModel):
     """A candidate peer entity for benchmarking."""
@@ -303,7 +274,6 @@ class PeerCandidate(BaseModel):
     exclusion_reason: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 class ValidationFinding(BaseModel):
     """A finding from peer group validation."""
 
@@ -312,7 +282,6 @@ class ValidationFinding(BaseModel):
     check_name: str = Field(default="")
     message: str = Field(default="")
     recommendation: str = Field(default="")
-
 
 class PeerGroupStats(BaseModel):
     """Summary statistics of the final peer group."""
@@ -331,11 +300,9 @@ class PeerGroupStats(BaseModel):
     sector_concentration_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # INPUT / OUTPUT
 # =============================================================================
-
 
 class PeerGroupSetupInput(BaseModel):
     """Input data model for PeerGroupSetupWorkflow."""
@@ -387,7 +354,6 @@ class PeerGroupSetupInput(BaseModel):
     tenant_id: str = Field(default="")
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class PeerGroupSetupResult(BaseModel):
     """Complete result from peer group setup workflow."""
 
@@ -406,11 +372,9 @@ class PeerGroupSetupResult(BaseModel):
     peer_group_stats: Optional[PeerGroupStats] = Field(default=None)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class PeerGroupSetupWorkflow:
     """

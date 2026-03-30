@@ -48,7 +48,8 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase, utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -59,21 +60,13 @@ __all__ = [
     "ExcelParser",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class SpreadsheetFormat(str, Enum):
     """Supported spreadsheet file formats."""
@@ -83,7 +76,6 @@ class SpreadsheetFormat(str, Enum):
     CSV = "csv"
     TSV = "tsv"
     UNKNOWN = "unknown"
-
 
 # ---------------------------------------------------------------------------
 # Magic byte signatures for format detection
@@ -101,13 +93,11 @@ _EXTENSION_MAP: Dict[str, SpreadsheetFormat] = {
     ".tsv": SpreadsheetFormat.TSV,
 }
 
-
 # ---------------------------------------------------------------------------
 # Data models
 # ---------------------------------------------------------------------------
 
-
-class SheetMetadata(BaseModel):
+class SheetMetadata(GreenLangBase):
     """Metadata for a single worksheet within a workbook."""
 
     sheet_id: str = Field(
@@ -129,13 +119,12 @@ class SheetMetadata(BaseModel):
         default_factory=list, description="Detected column data types",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Parse timestamp",
+        default_factory=utcnow, description="Parse timestamp",
     )
 
     model_config = {"extra": "forbid"}
 
-
-class SpreadsheetFile(BaseModel):
+class SpreadsheetFile(GreenLangBase):
     """Parsed spreadsheet workbook metadata."""
 
     file_id: str = Field(
@@ -156,14 +145,13 @@ class SpreadsheetFile(BaseModel):
     total_rows: int = Field(default=0, ge=0, description="Total rows across all sheets")
     total_cells: int = Field(default=0, ge=0, description="Total cells across all sheets")
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Parse timestamp",
+        default_factory=utcnow, description="Parse timestamp",
     )
     provenance_hash: str = Field(
         default="", description="SHA-256 provenance hash",
     )
 
     model_config = {"extra": "forbid"}
-
 
 # ---------------------------------------------------------------------------
 # Graceful library imports
@@ -184,11 +172,9 @@ try:
 except ImportError:
     pass
 
-
 # ---------------------------------------------------------------------------
 # ExcelParser
 # ---------------------------------------------------------------------------
-
 
 class ExcelParser:
     """Excel workbook parser with format detection and sheet extraction.
@@ -497,7 +483,7 @@ class ExcelParser:
                 "parse_errors": self._stats["parse_errors"],
                 "openpyxl_available": _OPENPYXL_AVAILABLE,
                 "xlrd_available": _XLRD_AVAILABLE,
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }
 
     # ------------------------------------------------------------------
@@ -871,6 +857,7 @@ class ExcelParser:
             return self._simulate_extract_rows(content, start_row, max_rows)
 
         import xlrd
+
 
         try:
             wb = xlrd.open_workbook(file_contents=content)

@@ -36,6 +36,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "28.0.0"
@@ -112,19 +114,12 @@ XBRL_TECH_TAGS: Dict[str, str] = {
     "adoption_pct": "gl:TechnologyAdoptionPercentage",
 }
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str) if isinstance(data, dict) else str(data)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 def _dec(val: Any, places: int = 2) -> str:
     try:
@@ -133,7 +128,6 @@ def _dec(val: Any, places: int = 2) -> str:
         return str(d.quantize(Decimal(q), rounding=ROUND_HALF_UP))
     except Exception:
         return str(val)
-
 
 def _dec_comma(val: Any, places: int = 0) -> str:
     try:
@@ -158,7 +152,6 @@ def _dec_comma(val: Any, places: int = 0) -> str:
     except Exception:
         return str(val)
 
-
 def _s_curve(year: int, start_year: int, inflection_year: int, end_year: int, max_pct: float = 100.0) -> float:
     """S-curve adoption model returning percentage adopted."""
     if year <= start_year:
@@ -172,12 +165,10 @@ def _s_curve(year: int, start_year: int, inflection_year: int, end_year: int, ma
     norm = (sigmoid - sigmoid_start) / (sigmoid_end - sigmoid_start)
     return max_pct * norm
 
-
 def _trl_bar(trl: int) -> str:
     filled = trl
     empty = 9 - trl
     return "[" + "#" * filled + "." * empty + f"] TRL {trl}"
-
 
 class TechnologyRoadmapReportTemplate:
     """
@@ -203,7 +194,7 @@ class TechnologyRoadmapReportTemplate:
         self.generated_at: Optional[datetime] = None
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [
             self._md_header(data),
             self._md_executive_summary(data),
@@ -226,7 +217,7 @@ class TechnologyRoadmapReportTemplate:
         return content + f"\n\n<!-- Provenance: {prov} -->"
 
     def render_html(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         body_parts = [
             self._html_header(data),
@@ -256,7 +247,7 @@ class TechnologyRoadmapReportTemplate:
         )
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sector_id = data.get("sector_id", "")
         techs = data.get("technologies", SECTOR_TECHNOLOGIES.get(sector_id, []))
         milestones = data.get("iea_milestones", [])

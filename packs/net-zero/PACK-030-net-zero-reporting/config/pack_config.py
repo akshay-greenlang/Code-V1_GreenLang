@@ -99,12 +99,13 @@ from typing import Any, Dict, List, Optional, Union
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # Base directory for all pack configuration files
 PACK_BASE_DIR = Path(__file__).resolve().parent.parent
 CONFIG_DIR = Path(__file__).resolve().parent
-
 
 # =============================================================================
 # Constants
@@ -547,21 +548,13 @@ SUPPORTED_PRESETS: Dict[str, str] = {
     "assurance_ready": "Assurance-ready package with full ISAE 3410 evidence bundle",
 }
 
-
 # =============================================================================
 # Helper Functions
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hash of a string.
@@ -574,11 +567,9 @@ def _compute_hash(data: str) -> str:
     """
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # Enums (10 enums)
 # =============================================================================
-
 
 class ReportingFramework(str, Enum):
     """Supported climate disclosure reporting frameworks."""
@@ -591,7 +582,6 @@ class ReportingFramework(str, Enum):
     SEC = "SEC"
     CSRD = "CSRD"
 
-
 class OutputFormat(str, Enum):
     """Supported report output formats."""
 
@@ -602,7 +592,6 @@ class OutputFormat(str, Enum):
     XBRL = "XBRL"
     IXBRL = "iXBRL"
 
-
 class BrandingStyle(str, Enum):
     """Report branding style profiles."""
 
@@ -610,7 +599,6 @@ class BrandingStyle(str, Enum):
     EXECUTIVE = "executive"
     INVESTOR = "investor"
     REGULATOR = "regulator"
-
 
 class StakeholderViewType(str, Enum):
     """Dashboard stakeholder view types."""
@@ -621,14 +609,12 @@ class StakeholderViewType(str, Enum):
     EMPLOYEE = "employee"
     BOARD = "board"
 
-
 class AssuranceLevel(str, Enum):
     """External assurance engagement level."""
 
     NONE = "none"
     LIMITED = "limited"
     REASONABLE = "reasonable"
-
 
 class NarrativeQuality(str, Enum):
     """Narrative generation quality level."""
@@ -637,14 +623,12 @@ class NarrativeQuality(str, Enum):
     HIGH = "high"
     PREMIUM = "premium"
 
-
 class ConsistencyStrictness(str, Enum):
     """Cross-framework consistency validation strictness level."""
 
     RELAXED = "relaxed"
     STANDARD = "standard"
     STRICT = "strict"
-
 
 class ReportStatus(str, Enum):
     """Report lifecycle status."""
@@ -654,14 +638,12 @@ class ReportStatus(str, Enum):
     APPROVED = "approved"
     PUBLISHED = "published"
 
-
 class DataSourceRequirement(str, Enum):
     """Data source availability requirement level."""
 
     REQUIRED = "required"
     RECOMMENDED = "recommended"
     OPTIONAL = "optional"
-
 
 class TranslationService(str, Enum):
     """External translation service provider."""
@@ -670,11 +652,9 @@ class TranslationService(str, Enum):
     DEEPL = "deepl"
     GOOGLE = "google"
 
-
 # =============================================================================
 # Pydantic Sub-Config Models (11 models)
 # =============================================================================
-
 
 class FrameworkOutputConfig(BaseModel):
     """Configuration for a single framework output specification.
@@ -697,7 +677,6 @@ class FrameworkOutputConfig(BaseModel):
         True,
         description="Whether this output is enabled",
     )
-
 
 class FrameworkConfig(BaseModel):
     """Configuration for framework selection and prioritization.
@@ -748,7 +727,6 @@ class FrameworkConfig(BaseModel):
                 v, sorted(SUPPORTED_FRAMEWORKS.keys()),
             )
         return v
-
 
 class BrandingConfig(BaseModel):
     """Configuration for report branding and visual identity.
@@ -809,7 +787,6 @@ class BrandingConfig(BaseModel):
                 v,
             )
         return v
-
 
 class DataAggregationConfig(BaseModel):
     """Configuration for multi-source data aggregation.
@@ -901,7 +878,6 @@ class DataAggregationConfig(BaseModel):
         description="Number of consecutive failures before circuit breaker opens",
     )
 
-
 class NarrativeConfig(BaseModel):
     """Configuration for AI-assisted narrative generation.
 
@@ -967,7 +943,6 @@ class NarrativeConfig(BaseModel):
             )
         return v
 
-
 class TranslationConfig(BaseModel):
     """Configuration for multi-language narrative translation.
 
@@ -1021,7 +996,6 @@ class TranslationConfig(BaseModel):
             )
         return v
 
-
 class XBRLConfig(BaseModel):
     """Configuration for XBRL/iXBRL tagging and taxonomy management.
 
@@ -1069,7 +1043,6 @@ class XBRLConfig(BaseModel):
         True,
         description="Automatically detect appropriate XBRL tags for metrics",
     )
-
 
 class AssuranceConfig(BaseModel):
     """Configuration for assurance evidence packaging and audit support.
@@ -1136,7 +1109,6 @@ class AssuranceConfig(BaseModel):
             )
         return v
 
-
 class DashboardConfig(BaseModel):
     """Configuration for interactive dashboard generation.
 
@@ -1192,7 +1164,6 @@ class DashboardConfig(BaseModel):
         le=3600,
         description="Auto-refresh interval for real-time dashboards (0 = disabled)",
     )
-
 
 class ValidationConfig(BaseModel):
     """Configuration for report validation and quality scoring.
@@ -1252,7 +1223,6 @@ class ValidationConfig(BaseModel):
         description="Block publication if critical validation errors exist",
     )
 
-
 class NotificationConfig(BaseModel):
     """Configuration for alerting and notification channels.
 
@@ -1306,7 +1276,6 @@ class NotificationConfig(BaseModel):
         True,
         description="Notify when report is approved for publication",
     )
-
 
 class PerformanceConfig(BaseModel):
     """Configuration for runtime performance tuning.
@@ -1374,11 +1343,9 @@ class PerformanceConfig(BaseModel):
         description="Memory limit in MB for the report generation pipeline",
     )
 
-
 # =============================================================================
 # Main Configuration Model
 # =============================================================================
-
 
 class NetZeroReportingConfig(BaseModel):
     """Main configuration model for PACK-030 Net Zero Reporting Pack.
@@ -1675,11 +1642,9 @@ class NetZeroReportingConfig(BaseModel):
             {"name": view_type, "description": "Custom view"},
         )
 
-
 # =============================================================================
 # Pack Configuration Wrapper
 # =============================================================================
-
 
 class PackConfig(BaseModel):
     """Top-level pack configuration wrapper for PACK-030.
@@ -1832,11 +1797,9 @@ class PackConfig(BaseModel):
         """
         return NetZeroReportingConfig.model_json_schema()
 
-
 # =============================================================================
 # Utility Functions
 # =============================================================================
-
 
 def load_config(yaml_path: Union[str, Path]) -> PackConfig:
     """Load configuration from a YAML file.
@@ -1850,7 +1813,6 @@ def load_config(yaml_path: Union[str, Path]) -> PackConfig:
         PackConfig instance.
     """
     return PackConfig.from_yaml(yaml_path)
-
 
 def load_preset(
     preset_name: str,
@@ -1868,7 +1830,6 @@ def load_preset(
         PackConfig instance with preset applied.
     """
     return PackConfig.from_preset(preset_name, overrides)
-
 
 def _merge_config(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
     """Deep merge two dictionaries, with override taking precedence.
@@ -1888,7 +1849,6 @@ def _merge_config(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, A
             result[key] = value
     return result
 
-
 def merge_config(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
     """Public deep merge two dictionaries, with override taking precedence.
 
@@ -1900,7 +1860,6 @@ def merge_config(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, An
         Merged dictionary.
     """
     return _merge_config(base, override)
-
 
 def _get_env_overrides(prefix: str) -> Dict[str, Any]:
     """Load configuration overrides from environment variables.
@@ -1942,7 +1901,6 @@ def _get_env_overrides(prefix: str) -> Dict[str, Any]:
                         current[parts[-1]] = value
     return overrides
 
-
 def get_env_overrides(prefix: str) -> Dict[str, Any]:
     """Public wrapper for loading environment variable overrides.
 
@@ -1953,7 +1911,6 @@ def get_env_overrides(prefix: str) -> Dict[str, Any]:
         Dictionary of parsed overrides.
     """
     return _get_env_overrides(prefix)
-
 
 def validate_config(config: NetZeroReportingConfig) -> List[str]:
     """Validate a net zero reporting configuration and return any warnings.
@@ -2097,7 +2054,6 @@ def validate_config(config: NetZeroReportingConfig) -> List[str]:
 
     return warnings
 
-
 def get_framework_info(framework: str) -> Dict[str, str]:
     """Get reporting framework details.
 
@@ -2111,7 +2067,6 @@ def get_framework_info(framework: str) -> Dict[str, str]:
         framework,
         {"full_name": framework, "version": "Unknown"},
     )
-
 
 def get_output_format_info(format_name: str) -> Dict[str, Any]:
     """Get output format details.
@@ -2127,7 +2082,6 @@ def get_output_format_info(format_name: str) -> Dict[str, Any]:
         {"name": format_name, "description": "Unknown format"},
     )
 
-
 def get_assurance_standard_info(standard: str) -> Dict[str, str]:
     """Get assurance standard details.
 
@@ -2141,7 +2095,6 @@ def get_assurance_standard_info(standard: str) -> Dict[str, str]:
         standard,
         {"name": standard, "scope": "Unknown"},
     )
-
 
 def get_evidence_bundle_info(component: str) -> Dict[str, str]:
     """Get evidence bundle component details.
@@ -2157,7 +2110,6 @@ def get_evidence_bundle_info(component: str) -> Dict[str, str]:
         {"name": component, "description": "Unknown component"},
     )
 
-
 def get_stakeholder_view_info(view_type: str) -> Dict[str, Any]:
     """Get stakeholder view details.
 
@@ -2171,7 +2123,6 @@ def get_stakeholder_view_info(view_type: str) -> Dict[str, Any]:
         view_type,
         {"name": view_type, "description": "Custom view"},
     )
-
 
 def get_xbrl_taxonomy_info(framework: str) -> Dict[str, str]:
     """Get XBRL taxonomy specification details.
@@ -2187,7 +2138,6 @@ def get_xbrl_taxonomy_info(framework: str) -> Dict[str, str]:
         {"taxonomy_name": "Unknown", "version": "Unknown"},
     )
 
-
 def list_available_presets() -> Dict[str, str]:
     """List all available configuration presets.
 
@@ -2195,7 +2145,6 @@ def list_available_presets() -> Dict[str, str]:
         Dictionary mapping preset names to descriptions.
     """
     return SUPPORTED_PRESETS.copy()
-
 
 def list_supported_frameworks() -> Dict[str, str]:
     """List all supported reporting frameworks.
@@ -2205,7 +2154,6 @@ def list_supported_frameworks() -> Dict[str, str]:
     """
     return {k: v["full_name"] for k, v in SUPPORTED_FRAMEWORKS.items()}
 
-
 def list_output_formats() -> Dict[str, str]:
     """List all supported output formats.
 
@@ -2213,7 +2161,6 @@ def list_output_formats() -> Dict[str, str]:
         Dictionary mapping format codes to descriptions.
     """
     return {k: v["description"] for k, v in OUTPUT_FORMAT_SPECS.items()}
-
 
 def list_supported_languages() -> Dict[str, str]:
     """List all supported languages.
@@ -2223,7 +2170,6 @@ def list_supported_languages() -> Dict[str, str]:
     """
     return {k: v["name"] for k, v in SUPPORTED_LANGUAGES.items()}
 
-
 def list_stakeholder_views() -> Dict[str, str]:
     """List all supported stakeholder view types.
 
@@ -2231,7 +2177,6 @@ def list_stakeholder_views() -> Dict[str, str]:
         Dictionary mapping view type codes to descriptions.
     """
     return {k: v["description"] for k, v in STAKEHOLDER_VIEW_TYPES.items()}
-
 
 def list_branding_styles() -> Dict[str, str]:
     """List all supported branding style profiles.
@@ -2241,7 +2186,6 @@ def list_branding_styles() -> Dict[str, str]:
     """
     return {k: v["description"] for k, v in BRANDING_STYLES.items()}
 
-
 def list_evidence_bundle_components() -> Dict[str, str]:
     """List all evidence bundle components.
 
@@ -2249,7 +2193,6 @@ def list_evidence_bundle_components() -> Dict[str, str]:
         Dictionary mapping component codes to descriptions.
     """
     return {k: v["description"] for k, v in EVIDENCE_BUNDLE_COMPONENTS.items()}
-
 
 def list_consistency_rules() -> Dict[str, str]:
     """List all consistency validation rule categories.

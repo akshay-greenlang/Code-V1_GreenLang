@@ -46,29 +46,23 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 def _compute_hash(content: str) -> str:
     """Compute SHA-256 hash of string content."""
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -81,13 +75,11 @@ class OutputFormat(str, Enum):
     PDF = "pdf"
     JSON = "json"
 
-
 class TrafficLight(str, Enum):
     """Traffic light status indicators."""
     GREEN = "green"
     AMBER = "amber"
     RED = "red"
-
 
 class AlignmentStatus(str, Enum):
     """Pathway alignment status."""
@@ -95,7 +87,6 @@ class AlignmentStatus(str, Enum):
     PARTIALLY_ALIGNED = "partially_aligned"
     NOT_ALIGNED = "not_aligned"
     INSUFFICIENT_DATA = "insufficient_data"
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Input Models
@@ -105,7 +96,6 @@ class PathwayPoint(BaseModel):
     """Single year-value point on a pathway."""
     year: int = Field(..., description="Year")
     value: float = Field(..., description="Emissions or intensity value")
-
 
 class PathwayDefinition(BaseModel):
     """Reference pathway definition."""
@@ -120,13 +110,11 @@ class PathwayDefinition(BaseModel):
     )
     description: str = Field("", description="Pathway description")
 
-
 class OrgTrajectoryPoint(BaseModel):
     """Single year-value point for organisation trajectory."""
     year: int = Field(..., description="Year")
     value: float = Field(..., description="Actual or projected emissions")
     is_actual: bool = Field(True, description="True if actual data, False if projected")
-
 
 class GapToPathwayRow(BaseModel):
     """Gap to a specific pathway in a specific year."""
@@ -137,7 +125,6 @@ class GapToPathwayRow(BaseModel):
     org_value: float = Field(0.0, description="Organisation value at this year")
     absolute_gap: float = Field(0.0, description="Absolute gap (org - pathway)")
     relative_gap_pct: float = Field(0.0, description="Relative gap percentage")
-
 
 class ConvergenceEstimate(BaseModel):
     """Convergence year estimate for a pathway."""
@@ -150,7 +137,6 @@ class ConvergenceEstimate(BaseModel):
     converging: bool = Field(False, description="Whether gap is narrowing")
     methodology_note: str = Field("", description="Estimation methodology note")
 
-
 class AlignmentScoreSummary(BaseModel):
     """Overall alignment score summary."""
     overall_score: float = Field(0.0, ge=0, le=100, description="Overall alignment (0-100)")
@@ -160,7 +146,6 @@ class AlignmentScoreSummary(BaseModel):
     )
     traffic_light: TrafficLight = Field(TrafficLight.AMBER, description="Traffic light")
     score_methodology: str = Field("", description="Scoring methodology description")
-
 
 class MethodologyDisclosure(BaseModel):
     """Methodology disclosure for pathway alignment."""
@@ -175,7 +160,6 @@ class MethodologyDisclosure(BaseModel):
     sector_classification: str = Field("", description="Sector classification used")
     data_sources: List[str] = Field(default_factory=list, description="Data sources")
     limitations: List[str] = Field(default_factory=list, description="Methodology limitations")
-
 
 class PathwayAlignmentInput(BaseModel):
     """Complete input model for PathwayAlignmentReport."""
@@ -201,7 +185,6 @@ class PathwayAlignmentInput(BaseModel):
         None, description="Methodology disclosure"
     )
 
-
 # ---------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------
@@ -209,7 +192,6 @@ class PathwayAlignmentInput(BaseModel):
 def _tl_label(status: TrafficLight) -> str:
     """Return uppercase label for traffic light."""
     return status.value.upper()
-
 
 def _alignment_label(status: AlignmentStatus) -> str:
     """Return human-readable alignment status."""
@@ -221,7 +203,6 @@ def _alignment_label(status: AlignmentStatus) -> str:
     }
     return mapping.get(status, "Unknown")
 
-
 def _tl_color(status: TrafficLight) -> str:
     """Return hex colour for traffic light."""
     mapping = {
@@ -230,7 +211,6 @@ def _tl_color(status: TrafficLight) -> str:
         TrafficLight.RED: "#e76f51",
     }
     return mapping.get(status, "#e9c46a")
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -289,7 +269,7 @@ class PathwayAlignmentReport:
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render pathway alignment as Markdown."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_md(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -297,7 +277,7 @@ class PathwayAlignmentReport:
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render pathway alignment as HTML."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_html(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -305,7 +285,7 @@ class PathwayAlignmentReport:
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render pathway alignment as JSON dict."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_json(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -346,7 +326,7 @@ class PathwayAlignmentReport:
         return (
             f"# Pathway Alignment Report - {company}\n\n"
             f"**Reporting Period:** {period} | "
-            f"**Report Date:** {_utcnow().strftime('%Y-%m-%d')}\n\n"
+            f"**Report Date:** {utcnow().strftime('%Y-%m-%d')}\n\n"
             "---"
         )
 
@@ -539,7 +519,7 @@ class PathwayAlignmentReport:
             '<div class="section">\n'
             f"<h1>Pathway Alignment Report &mdash; {company}</h1>\n"
             f"<p><strong>Reporting Period:</strong> {period} | "
-            f"<strong>Report Date:</strong> {_utcnow().strftime('%Y-%m-%d')}</p>\n"
+            f"<strong>Report Date:</strong> {utcnow().strftime('%Y-%m-%d')}</p>\n"
             "<hr>\n</div>"
         )
 

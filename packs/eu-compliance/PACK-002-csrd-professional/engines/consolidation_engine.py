@@ -49,25 +49,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -87,7 +81,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -97,11 +90,9 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ConsolidationMethod(str, Enum):
     """Method used to consolidate a subsidiary."""
@@ -110,14 +101,12 @@ class ConsolidationMethod(str, Enum):
     FINANCIAL_CONTROL = "financial_control"
     EQUITY_SHARE = "equity_share"
 
-
 class ConsolidationApproach(str, Enum):
     """Approach for group-level consolidation."""
 
     OPERATIONAL_CONTROL = "operational_control"
     FINANCIAL_CONTROL = "financial_control"
     EQUITY_SHARE = "equity_share"
-
 
 class TransactionType(str, Enum):
     """Type of intercompany transaction."""
@@ -127,11 +116,9 @@ class TransactionType(str, Enum):
     EMISSION_TRANSFER = "emission_transfer"
     WASTE_TRANSFER = "waste_transfer"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class EntityDefinition(BaseModel):
     """Definition of a reporting entity (subsidiary, joint venture, etc.)."""
@@ -176,7 +163,6 @@ class EntityDefinition(BaseModel):
             raise ValueError(f"Currency must be a 3-letter ISO 4217 code, got '{v}'")
         return v.upper()
 
-
 class EntityESRSData(BaseModel):
     """ESRS data submitted by a single entity."""
 
@@ -191,9 +177,8 @@ class EntityESRSData(BaseModel):
         0.0, ge=0.0, le=100.0, description="Data quality score 0-100"
     )
     submission_date: datetime = Field(
-        default_factory=_utcnow, description="Date data was submitted"
+        default_factory=utcnow, description="Date data was submitted"
     )
-
 
 class IntercompanyTransaction(BaseModel):
     """An intercompany transaction that may require elimination."""
@@ -224,7 +209,6 @@ class IntercompanyTransaction(BaseModel):
             raise ValueError(f"elimination_method must be one of {allowed}")
         return v
 
-
 class ReconciliationEntry(BaseModel):
     """Single reconciliation line between entity and consolidated values."""
 
@@ -234,7 +218,6 @@ class ReconciliationEntry(BaseModel):
     consolidated_value: Decimal = Field(..., description="Value in consolidated report")
     adjustment: Decimal = Field(..., description="Adjustment applied")
     adjustment_reason: str = Field("", description="Reason for adjustment")
-
 
 class ConsolidationResult(BaseModel):
     """Output of a consolidation run."""
@@ -259,13 +242,11 @@ class ConsolidationResult(BaseModel):
     entity_count: int = Field(0, description="Number of entities consolidated")
     provenance_hash: str = Field("", description="SHA-256 provenance hash")
     processing_time_ms: float = Field(0.0, description="Processing duration in ms")
-    created_at: datetime = Field(default_factory=_utcnow, description="Timestamp")
-
+    created_at: datetime = Field(default_factory=utcnow, description="Timestamp")
 
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
-
 
 class ConsolidationConfig(BaseModel):
     """Configuration for the consolidation engine."""
@@ -288,11 +269,9 @@ class ConsolidationConfig(BaseModel):
         False, description="Require data from all registered entities"
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ConsolidationEngine:
     """Multi-entity ESRS consolidation engine.
@@ -435,7 +414,7 @@ class ConsolidationEngine:
         Raises:
             ValueError: If no entities or required data is missing.
         """
-        start = _utcnow()
+        start = utcnow()
         approach = approach or self.config.default_approach
 
         if not self.entities:
@@ -475,7 +454,7 @@ class ConsolidationEngine:
         variance = self._calculate_variance(per_entity_results, consolidated_data)
 
         # Step 6: Compute provenance hash
-        end = _utcnow()
+        end = utcnow()
         elapsed_ms = (end - start).total_seconds() * 1000
 
         result = ConsolidationResult(

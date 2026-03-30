@@ -23,11 +23,12 @@ CBAM Compliance: Annex III cement-specific methodology
 
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, List, Optional, Literal
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
 from enum import Enum
 import hashlib
 import json
 from datetime import datetime, timezone
+from greenlang.schemas import GreenLangBase
 
 
 # =============================================================================
@@ -127,13 +128,13 @@ class SCMType(str, Enum):
     LIMESTONE = "LIMESTONE"
 
 
-class SCMInput(BaseModel):
+class SCMInput(GreenLangBase):
     """SCM input with quantity."""
     scm_type: SCMType
     quantity_tonnes: Decimal = Field(ge=0)
 
 
-class CementCalculationInput(BaseModel):
+class CementCalculationInput(GreenLangBase):
     """Input parameters for cement emission calculation."""
 
     cement_production_tonnes: Decimal = Field(
@@ -200,7 +201,7 @@ class CementCalculationInput(BaseModel):
     )
 
 
-class CalculationStep(BaseModel):
+class CalculationStep(GreenLangBase):
     """Individual calculation step with full provenance."""
     step_number: int
     description: str
@@ -211,7 +212,7 @@ class CalculationStep(BaseModel):
     source: str
 
 
-class CementCalculationResult(BaseModel):
+class CementCalculationResult(GreenLangBase):
     """Complete calculation result with CBAM-compliant output."""
 
     # Identification

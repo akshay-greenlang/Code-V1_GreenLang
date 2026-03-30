@@ -56,6 +56,8 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -68,22 +70,14 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a unique identifier using UUID4."""
     return str(uuid.uuid4())
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -110,11 +104,9 @@ MAX_GENEALOGY_DEPTH: int = 100
 #: Maximum search results.
 MAX_SEARCH_RESULTS: int = 10_000
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class BatchStatus(str, Enum):
     """Lifecycle status of a commodity batch."""
@@ -132,7 +124,6 @@ class BatchStatus(str, Enum):
     BLENDED = "blended"
     VOIDED = "voided"
 
-
 class OperationType(str, Enum):
     """Type of batch operation."""
 
@@ -143,14 +134,12 @@ class OperationType(str, Enum):
     STATUS_UPDATE = "status_update"
     ORIGIN_UPDATE = "origin_update"
 
-
 class GenealogyDirection(str, Enum):
     """Direction of genealogy traversal."""
 
     UPSTREAM = "upstream"
     DOWNSTREAM = "downstream"
     BOTH = "both"
-
 
 # ---------------------------------------------------------------------------
 # Status transition state machine
@@ -214,11 +203,9 @@ VALID_STATUS_TRANSITIONS: Dict[str, Tuple[str, ...]] = {
     BatchStatus.VOIDED: (),  # Terminal state
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class BatchOrigin:
@@ -273,7 +260,6 @@ class BatchOrigin:
             "allocation_pct": self.allocation_pct,
             "quantity_kg": self.quantity_kg,
         }
-
 
 @dataclass
 class Batch:
@@ -347,7 +333,6 @@ class Batch:
             "updated_at": str(self.updated_at) if self.updated_at else "",
         }
 
-
 @dataclass
 class SplitConfig:
     """Configuration for a batch split operation.
@@ -376,7 +361,6 @@ class SplitConfig:
             "facility_id": self.facility_id,
         }
 
-
 @dataclass
 class MergeConfig:
     """Configuration for a batch merge operation.
@@ -404,7 +388,6 @@ class MergeConfig:
             "reason": self.reason,
             "quality_grade": self.quality_grade,
         }
-
 
 @dataclass
 class BlendConfig:
@@ -436,7 +419,6 @@ class BlendConfig:
             "waste_kg": self.waste_kg,
             "reason": self.reason,
         }
-
 
 @dataclass
 class BatchGenealogy:
@@ -485,7 +467,6 @@ class BatchGenealogy:
             "total_quantity_kg": self.total_quantity_kg,
             "created_at": str(self.created_at) if self.created_at else "",
         }
-
 
 @dataclass
 class BatchSearchCriteria:
@@ -536,7 +517,6 @@ class BatchSearchCriteria:
             "limit": self.limit,
         }
 
-
 @dataclass
 class BatchOperationResult:
     """Result of a batch operation (create, split, merge, blend, status update).
@@ -585,11 +565,9 @@ class BatchOperationResult:
             "created_at": str(self.created_at) if self.created_at else "",
         }
 
-
 # ---------------------------------------------------------------------------
 # BatchLifecycleManager
 # ---------------------------------------------------------------------------
-
 
 class BatchLifecycleManager:
     """Production-grade batch lifecycle management engine for EUDR compliance.
@@ -715,7 +693,7 @@ class BatchLifecycleManager:
         if quantity <= 0:
             raise ValueError(f"quantity_kg must be positive, got {quantity}.")
 
-        now = _utcnow()
+        now = utcnow()
         batch_id = str(batch_data.get("batch_id", "")).strip() or _generate_id()
 
         if batch_id in self._batches:
@@ -844,7 +822,7 @@ class BatchLifecycleManager:
                 f"(tolerance={self.quantity_tolerance:.4f}kg)."
             )
 
-        now = _utcnow()
+        now = utcnow()
         child_batch_ids: List[str] = []
 
         for i, out_qty in enumerate(output_quantities):
@@ -972,7 +950,7 @@ class BatchLifecycleManager:
                 f"Cannot merge batches with different commodities: {commodities}"
             )
 
-        now = _utcnow()
+        now = utcnow()
         total_in = sum(s.quantity_kg for s in sources)
         waste_kg = merged_attrs.waste_kg
         merged_qty = total_in - waste_kg
@@ -1114,7 +1092,7 @@ class BatchLifecycleManager:
                 )
             sources[bid] = batch
 
-        now = _utcnow()
+        now = utcnow()
         waste_kg = blend_config.waste_kg
         total_in = sum(s.quantity_kg for s in sources.values())
 
@@ -1265,7 +1243,7 @@ class BatchLifecycleManager:
             max_depth=max_depth,
             origin_plots=sorted(origin_plots),
             total_quantity_kg=round(total_qty, 4),
-            created_at=_utcnow(),
+            created_at=utcnow(),
         )
         genealogy.provenance_hash = _compute_hash(genealogy.to_dict())
 
@@ -1326,7 +1304,7 @@ class BatchLifecycleManager:
             )
 
         old_status = batch.status
-        now = _utcnow()
+        now = utcnow()
         batch.status = new_status
         batch.updated_at = now
         batch.provenance_hash = _compute_hash(batch.to_dict())

@@ -40,23 +40,18 @@ from typing import Any, Deque, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -68,11 +63,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Rate Limiter
 # ---------------------------------------------------------------------------
-
 
 class RateLimiter:
     """Token-bucket rate limiter for QuickBooks API."""
@@ -92,11 +85,9 @@ class RateLimiter:
                 await asyncio.sleep(wait_time)
         self._timestamps.append(time.monotonic())
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class QBConnectionStatus(str, Enum):
     DISCONNECTED = "disconnected"
@@ -105,7 +96,6 @@ class QBConnectionStatus(str, Enum):
     TOKEN_EXPIRED = "token_expired"
     ERROR = "error"
 
-
 class QBAccountCategory(str, Enum):
     EXPENSE = "Expense"
     OTHER_EXPENSE = "OtherExpense"
@@ -113,7 +103,6 @@ class QBAccountCategory(str, Enum):
     OTHER_CURRENT_ASSET = "OtherCurrentAsset"
     FIXED_ASSET = "FixedAsset"
     INCOME = "Income"
-
 
 # ---------------------------------------------------------------------------
 # QB Account-to-Emission Mapping
@@ -139,11 +128,9 @@ QB_ACCOUNT_EMISSION_MAP: Dict[str, Dict[str, str]] = {
     "Cost of Goods Sold": {"category": "raw_materials", "scope": "scope_3"},
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class QBConfig(BaseModel):
     """QuickBooks Online connector configuration."""
@@ -161,14 +148,12 @@ class QBConfig(BaseModel):
     max_retries: int = Field(default=3, ge=0, le=10)
     enable_provenance: bool = Field(default=True)
 
-
 class QBTokens(BaseModel):
     access_token: str = Field(default="")
     refresh_token: str = Field(default="")
     token_type: str = Field(default="bearer")
     expires_at: Optional[datetime] = Field(None)
     realm_id: str = Field(default="")
-
 
 class QBAccount(BaseModel):
     account_id: str = Field(default="")
@@ -182,7 +167,6 @@ class QBAccount(BaseModel):
     emission_category: str = Field(default="")
     emission_scope: str = Field(default="")
 
-
 class QBTransaction(BaseModel):
     transaction_id: str = Field(default="")
     date: str = Field(default="")
@@ -194,7 +178,6 @@ class QBTransaction(BaseModel):
     vendor_name: str = Field(default="")
     emission_category: str = Field(default="")
     emission_scope: str = Field(default="")
-
 
 class QBExportResult(BaseModel):
     export_id: str = Field(default_factory=_new_uuid)
@@ -213,7 +196,6 @@ class QBExportResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class QBAggregation(BaseModel):
     period: str = Field(default="")
     period_type: str = Field(default="monthly")
@@ -222,11 +204,9 @@ class QBAggregation(BaseModel):
     transaction_count: int = Field(default=0)
     currency: str = Field(default="GBP")
 
-
 # ---------------------------------------------------------------------------
 # QuickBooksConnector
 # ---------------------------------------------------------------------------
-
 
 class QuickBooksConnector:
     """QuickBooks Online integration for SME net-zero carbon footprint.
@@ -284,7 +264,7 @@ class QuickBooksConnector:
                 access_token=f"qb_at_{_new_uuid()[:16]}",
                 refresh_token=f"qb_rt_{_new_uuid()[:16]}",
                 token_type="bearer",
-                expires_at=_utcnow(),
+                expires_at=utcnow(),
                 realm_id=realm_id or self.config.realm_id,
             )
             self._status = QBConnectionStatus.CONNECTED
@@ -302,7 +282,7 @@ class QuickBooksConnector:
         await self._rate_limiter.acquire()
         try:
             self._tokens.access_token = f"qb_at_{_new_uuid()[:16]}"
-            self._tokens.expires_at = _utcnow()
+            self._tokens.expires_at = utcnow()
             self._status = QBConnectionStatus.CONNECTED
             return {"status": "refreshed"}
         except Exception as exc:
@@ -366,7 +346,7 @@ class QuickBooksConnector:
     ) -> QBExportResult:
         start = time.monotonic()
         result = QBExportResult(
-            started_at=_utcnow(),
+            started_at=utcnow(),
             period_start=period_start,
             period_end=period_end,
             connection_status=self._status.value,
@@ -391,7 +371,7 @@ class QuickBooksConnector:
             result.status = "error"
             result.errors.append(str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         result.duration_ms = (time.monotonic() - start) * 1000
 
         if self.config.enable_provenance:
@@ -411,7 +391,7 @@ class QuickBooksConnector:
     ) -> QBExportResult:
         start = time.monotonic()
         result = QBExportResult(
-            started_at=_utcnow(),
+            started_at=utcnow(),
             period_start=period_start,
             period_end=period_end,
             connection_status=self._status.value,
@@ -435,7 +415,7 @@ class QuickBooksConnector:
             result.status = "error"
             result.errors.append(str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         result.duration_ms = (time.monotonic() - start) * 1000
 
         if self.config.enable_provenance:

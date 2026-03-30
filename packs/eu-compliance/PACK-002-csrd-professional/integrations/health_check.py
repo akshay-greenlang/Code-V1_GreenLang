@@ -52,26 +52,20 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import HealthStatus
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return timezone-aware UTC now."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hex digest.
@@ -89,26 +83,15 @@ def _compute_hash(data: Any) -> str:
         raw = str(data)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # Enums
 # =============================================================================
-
 
 class HealthSeverity(str, Enum):
     """Severity level for health check findings."""
     CRITICAL = "critical"
     WARNING = "warning"
     INFO = "info"
-
-
-class HealthStatus(str, Enum):
-    """Overall health status."""
-    HEALTHY = "healthy"
-    DEGRADED = "degraded"
-    UNHEALTHY = "unhealthy"
-    UNKNOWN = "unknown"
-
 
 class CheckCategory(str, Enum):
     """Categories of health checks (10 total for Professional Pack)."""
@@ -123,11 +106,9 @@ class CheckCategory(str, Enum):
     WEBHOOK = "webhook"
     PACK1_COMPATIBILITY = "pack1_compatibility"
 
-
 # =============================================================================
 # Data Models
 # =============================================================================
-
 
 class ProfessionalHealthCheckConfig(BaseModel):
     """Configuration for the Professional Pack health check system."""
@@ -188,7 +169,6 @@ class ProfessionalHealthCheckConfig(BaseModel):
         description="Webhook endpoints to test connectivity",
     )
 
-
 class RemediationSuggestion(BaseModel):
     """A remediation suggestion for a health check finding."""
 
@@ -202,7 +182,6 @@ class RemediationSuggestion(BaseModel):
     documentation_link: Optional[str] = Field(
         None, description="Link to relevant documentation"
     )
-
 
 class ComponentHealth(BaseModel):
     """Health status of a single component."""
@@ -226,7 +205,6 @@ class ComponentHealth(BaseModel):
         default_factory=list, description="Remediation suggestions"
     )
 
-
 class HealthCheckResult(BaseModel):
     """Complete health check result for Professional Pack."""
 
@@ -237,7 +215,7 @@ class HealthCheckResult(BaseModel):
         default="2.0.0", description="PACK-002 version"
     )
     check_timestamp: datetime = Field(
-        default_factory=_utcnow, description="When the check was run"
+        default_factory=utcnow, description="When the check was run"
     )
     total_checks: int = Field(default=0, description="Total number of checks run")
     checks_passed: int = Field(default=0, description="Total checks passed")
@@ -261,7 +239,6 @@ class HealthCheckResult(BaseModel):
     categories_checked: int = Field(
         default=0, description="Number of categories checked (max 10)"
     )
-
 
 # =============================================================================
 # Agent Registry for Professional Pack (93+ agents)
@@ -508,11 +485,9 @@ SECURITY_ENV_VARS: List[str] = [
     "APPROVAL_JWT_SECRET",
 ]
 
-
 # =============================================================================
 # Health Check Implementation
 # =============================================================================
-
 
 class ProfessionalHealthCheck:
     """Comprehensive 10-category health check for CSRD Professional Pack.
@@ -1790,6 +1765,7 @@ class ProfessionalHealthCheck:
         # Check hmac module availability (stdlib, should always pass)
         try:
             import hmac as hmac_module  # noqa: F811
+
             details["hmac_module"] = "available"
             passed += 1
         except ImportError:
@@ -2087,7 +2063,7 @@ class ProfessionalHealthCheck:
             overall = HealthStatus.UNHEALTHY
 
         provenance = _compute_hash(
-            f"professional_health:{_utcnow().isoformat()}:"
+            f"professional_health:{utcnow().isoformat()}:"
             f"{total_checks}:{total_passed}:{total_failed}:"
             f"{categories_checked}"
         )
@@ -2169,11 +2145,9 @@ class ProfessionalHealthCheck:
             return HealthStatus.DEGRADED
         return HealthStatus.UNHEALTHY
 
-
 # =============================================================================
 # Module-Level Helper Functions
 # =============================================================================
-
 
 def _check_package_version(
     package_name: str, min_version: str
@@ -2218,7 +2192,6 @@ def _check_package_version(
             "installed": None,
             "minimum": min_version,
         }
-
 
 def _version_gte(installed: str, minimum: str) -> bool:
     """Check if installed version is >= minimum version.

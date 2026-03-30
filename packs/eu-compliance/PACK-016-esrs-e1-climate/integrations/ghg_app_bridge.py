@@ -29,20 +29,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -55,11 +50,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SyncDirection(str, Enum):
     """Data flow direction."""
@@ -67,7 +60,6 @@ class SyncDirection(str, Enum):
     IMPORT = "import"
     EXPORT = "export"
     BIDIRECTIONAL = "bidirectional"
-
 
 class DataQuality(str, Enum):
     """Data quality levels."""
@@ -77,11 +69,9 @@ class DataQuality(str, Enum):
     LOW = "low"
     ESTIMATED = "estimated"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class GHGBridgeConfig(BaseModel):
     """Configuration for the GHG App Bridge."""
@@ -92,7 +82,6 @@ class GHGBridgeConfig(BaseModel):
     auto_sync: bool = Field(default=True)
     sync_interval_hours: int = Field(default=24, ge=1)
     enable_provenance: bool = Field(default=True)
-
 
 class InventoryImport(BaseModel):
     """Imported GHG inventory data."""
@@ -107,7 +96,6 @@ class InventoryImport(BaseModel):
     gwp_source: str = Field(default="IPCC AR6")
     data_quality: str = Field(default="medium")
 
-
 class BaseYearData(BaseModel):
     """Base year emissions data."""
 
@@ -119,14 +107,12 @@ class BaseYearData(BaseModel):
     recalculation_policy: str = Field(default="")
     last_recalculation: Optional[str] = Field(None)
 
-
 class TargetImport(BaseModel):
     """Imported GHG reduction targets."""
 
     targets: List[Dict[str, Any]] = Field(default_factory=list)
     sbti_status: str = Field(default="not_committed")
     base_year: int = Field(default=2019)
-
 
 class BridgeResult(BaseModel):
     """Result from a bridge operation."""
@@ -142,11 +128,9 @@ class BridgeResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # GHGAppBridge
 # ---------------------------------------------------------------------------
-
 
 class GHGAppBridge:
     """GL-GHG-APP integration bridge for PACK-016.
@@ -189,7 +173,7 @@ class GHGAppBridge:
         """
         result = BridgeResult(
             direction=SyncDirection.IMPORT,
-            started_at=_utcnow(),
+            started_at=utcnow(),
         )
 
         try:
@@ -213,7 +197,7 @@ class GHGAppBridge:
             if self.config.enable_provenance:
                 result.provenance_hash = _compute_hash(inventory)
 
-            self._last_sync = _utcnow()
+            self._last_sync = utcnow()
             logger.info(
                 "Imported %d inventory records from GHG-APP",
                 result.records_transferred,
@@ -224,7 +208,7 @@ class GHGAppBridge:
             result.errors.append(str(exc))
             logger.error("GHG inventory import failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at
@@ -245,7 +229,7 @@ class GHGAppBridge:
         """
         result = BridgeResult(
             direction=SyncDirection.BIDIRECTIONAL,
-            started_at=_utcnow(),
+            started_at=utcnow(),
         )
 
         try:
@@ -272,7 +256,7 @@ class GHGAppBridge:
             result.errors.append(str(exc))
             logger.error("Base year sync failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at
@@ -293,7 +277,7 @@ class GHGAppBridge:
         """
         result = BridgeResult(
             direction=SyncDirection.IMPORT,
-            started_at=_utcnow(),
+            started_at=utcnow(),
         )
 
         try:
@@ -319,7 +303,7 @@ class GHGAppBridge:
             result.errors.append(str(exc))
             logger.error("Target import failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at
@@ -340,7 +324,7 @@ class GHGAppBridge:
         """
         result = BridgeResult(
             direction=SyncDirection.EXPORT,
-            started_at=_utcnow(),
+            started_at=utcnow(),
         )
 
         try:
@@ -349,7 +333,7 @@ class GHGAppBridge:
                 "pack_version": "1.0.0",
                 "reporting_year": self.config.reporting_year,
                 "disclosures": e1_results.get("disclosures", {}),
-                "exported_at": _utcnow().isoformat(),
+                "exported_at": utcnow().isoformat(),
             }
 
             result.records_transferred = len(
@@ -370,7 +354,7 @@ class GHGAppBridge:
             result.errors.append(str(exc))
             logger.error("E1 results export failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at

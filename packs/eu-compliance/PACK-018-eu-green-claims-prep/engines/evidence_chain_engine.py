@@ -62,25 +62,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -100,7 +94,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely.
 
@@ -114,7 +107,6 @@ def _decimal(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
 ) -> Decimal:
@@ -122,7 +114,6 @@ def _safe_divide(
     if denominator == Decimal("0"):
         return default
     return numerator / denominator
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value to the specified number of decimal places.
@@ -139,18 +130,15 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EvidenceStatus(str, Enum):
     """Status of an evidence document in the chain.
@@ -163,7 +151,6 @@ class EvidenceStatus(str, Enum):
     VALIDATED = "validated"
     EXPIRED = "expired"
     REJECTED = "rejected"
-
 
 class EvidenceType(str, Enum):
     """Types of evidence documents in the chain-of-custody.
@@ -183,7 +170,6 @@ class EvidenceType(str, Enum):
     MONITORING_DATA = "monitoring_data"
     OFFSET_REGISTRY = "offset_registry"
 
-
 class ChainVerificationStatus(str, Enum):
     """Verification status of the entire evidence chain.
 
@@ -195,7 +181,6 @@ class ChainVerificationStatus(str, Enum):
     UNVERIFIED = "unverified"
     VERIFICATION_FAILED = "verification_failed"
 
-
 class DocumentTier(str, Enum):
     """Reliability tier of a document in the evidence chain.
 
@@ -206,11 +191,9 @@ class DocumentTier(str, Enum):
     SECONDARY = "secondary"
     TERTIARY = "tertiary"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # Minimum required document types for a complete evidence chain.
 # Per Article 3(2) and Article 10, a robust chain should include
@@ -248,11 +231,9 @@ CHAIN_STRENGTH_WEIGHTS: Dict[str, Decimal] = {
 # window are flagged as approaching expiry).
 VALIDITY_WARNING_DAYS: int = 90
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class DocumentRecord(BaseModel):
     """A document in the evidence chain per Article 10.
@@ -334,7 +315,6 @@ class DocumentRecord(BaseModel):
             raise ValueError("Document title must not be empty")
         return v
 
-
 class EvidenceChain(BaseModel):
     """A chain of evidence documents supporting an environmental claim.
 
@@ -362,7 +342,7 @@ class EvidenceChain(BaseModel):
         description="Overall verification status of the chain",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Chain creation timestamp (UTC)",
     )
     last_validated_at: Optional[datetime] = Field(
@@ -377,7 +357,6 @@ class EvidenceChain(BaseModel):
         default="",
         description="SHA-256 hash of the entire chain",
     )
-
 
 class ChainValidationResult(BaseModel):
     """Result of an evidence chain validation.
@@ -442,7 +421,7 @@ class ChainValidationResult(BaseModel):
         description="Engine version",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Validation timestamp (UTC)",
     )
     processing_time_ms: float = Field(
@@ -453,7 +432,6 @@ class ChainValidationResult(BaseModel):
         default="",
         description="SHA-256 hash of the validation result",
     )
-
 
 class DocumentValidityResult(BaseModel):
     """Result of checking document validity across a set of documents.
@@ -505,7 +483,7 @@ class DocumentValidityResult(BaseModel):
         description="Engine version",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Check timestamp (UTC)",
     )
     processing_time_ms: float = Field(
@@ -516,7 +494,6 @@ class DocumentValidityResult(BaseModel):
         default="",
         description="SHA-256 hash of the result",
     )
-
 
 class ChainStrengthResult(BaseModel):
     """Result of chain strength calculation.
@@ -569,7 +546,7 @@ class ChainStrengthResult(BaseModel):
         description="Engine version",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Calculation timestamp (UTC)",
     )
     processing_time_ms: float = Field(
@@ -581,11 +558,9 @@ class ChainStrengthResult(BaseModel):
         description="SHA-256 hash of the result",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class EvidenceChainEngine:
     """Evidence chain management engine per EU Green Claims Directive Art. 10.

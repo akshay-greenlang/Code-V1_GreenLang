@@ -52,6 +52,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -64,22 +66,14 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a unique identifier using UUID4."""
     return str(uuid.uuid4())
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -106,7 +100,6 @@ DEFAULT_FOREST_NDVI_THRESHOLD: float = 0.4
 
 #: Default SAVI soil adjustment factor.
 DEFAULT_SAVI_SOIL_FACTOR: float = 0.5
-
 
 # ---------------------------------------------------------------------------
 # Biome-specific NDVI Thresholds for Forest Classification
@@ -159,11 +152,9 @@ BIOME_NDVI_THRESHOLDS: Dict[str, Dict[str, float]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class SpectralIndexResult:
@@ -197,7 +188,6 @@ class SpectralIndexResult:
     formula: str = ""
     provenance_hash: str = ""
 
-
 @dataclass
 class ForestClassification:
     """Result of biome-specific forest classification.
@@ -228,11 +218,9 @@ class ForestClassification:
     thresholds_used: Dict[str, float] = field(default_factory=dict)
     provenance_hash: str = ""
 
-
 # ---------------------------------------------------------------------------
 # SpectralIndexCalculator
 # ---------------------------------------------------------------------------
-
 
 class SpectralIndexCalculator:
     """Production-grade spectral index calculator for EUDR satellite monitoring.
@@ -967,7 +955,6 @@ class SpectralIndexCalculator:
             "forest_pct": classification.forest_pct,
         }
         return _compute_hash(hash_data)
-
 
 # ---------------------------------------------------------------------------
 # Module Exports

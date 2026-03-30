@@ -57,6 +57,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 from greenlang.agents.data.deforestation_satellite.config import get_config
+from greenlang.schemas import utcnow
 from greenlang.agents.data.deforestation_satellite.models import (
     AcquireSatelliteRequest,
     SatelliteScene,
@@ -66,7 +67,6 @@ from greenlang.agents.data.deforestation_satellite.models import (
 )
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -131,16 +131,9 @@ _SENTINEL2_SEMANTIC_MAP: Dict[str, str] = {
 # Number of mock pixels to generate per scene
 _MOCK_PIXEL_COUNT = 25
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _hash_seed(value: str) -> int:
     """Derive a deterministic integer seed from a string value.
@@ -152,7 +145,6 @@ def _hash_seed(value: str) -> int:
         Non-negative integer seed.
     """
     return int(hashlib.sha256(value.encode("utf-8")).hexdigest()[:8], 16)
-
 
 def _deterministic_float(seed: int, index: int, low: float = 0.0, high: float = 1.0) -> float:
     """Generate a deterministic float in [low, high] from seed and index.
@@ -173,7 +165,6 @@ def _deterministic_float(seed: int, index: int, low: float = 0.0, high: float = 
     fraction = int(combined[:8], 16) / 0xFFFFFFFF
     return low + fraction * (high - low)
 
-
 def _bbox_from_polygon(polygon_coords: List[List[float]]) -> List[float]:
     """Compute bounding box from polygon coordinate pairs.
 
@@ -190,7 +181,6 @@ def _bbox_from_polygon(polygon_coords: List[List[float]]) -> List[float]:
     lats = [c[1] for c in polygon_coords]
     return [min(lons), min(lats), max(lons), max(lats)]
 
-
 def _polygon_to_wkt(polygon_coords: List[List[float]]) -> str:
     """Convert polygon coordinate list to WKT string.
 
@@ -205,11 +195,9 @@ def _polygon_to_wkt(polygon_coords: List[List[float]]) -> str:
     pairs = " ".join(f"{c[0]} {c[1]}" for c in polygon_coords)
     return f"POLYGON(({pairs}))"
 
-
 # =============================================================================
 # SatelliteDataEngine
 # =============================================================================
-
 
 class SatelliteDataEngine:
     """Engine for satellite imagery acquisition and vegetation index computation.
@@ -314,7 +302,7 @@ class SatelliteDataEngine:
                     "end": request.end_date,
                 },
                 "max_cloud_cover_requested": max_cloud,
-                "acquisition_timestamp": _utcnow().isoformat(),
+                "acquisition_timestamp": utcnow().isoformat(),
                 "pixel_count": _MOCK_PIXEL_COUNT,
             },
         )
@@ -829,7 +817,6 @@ class SatelliteDataEngine:
             self._scenes.values(),
             key=lambda s: s.acquisition_date,
         )
-
 
 __all__ = [
     "SatelliteDataEngine",

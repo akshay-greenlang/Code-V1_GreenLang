@@ -48,18 +48,14 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -71,11 +67,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class GFANZAlliance(str, Enum):
     NZBA = "nzba"
@@ -85,13 +79,11 @@ class GFANZAlliance(str, Enum):
     PAAO = "paao"
     PAII = "paii"
 
-
 class PortfolioAlignmentMethod(str, Enum):
     TEMPERATURE_RATING = "temperature_rating"
     SECTORAL_PATHWAY = "sectoral_pathway"
     PORTFOLIO_COVERAGE = "portfolio_coverage"
     BINARY_TARGET = "binary_target"
-
 
 class FinancedEmissionsScope(str, Enum):
     CATEGORY_15_INVESTMENTS = "pcaf_category_15"
@@ -103,7 +95,6 @@ class FinancedEmissionsScope(str, Enum):
     MOTOR_VEHICLE_LOANS = "motor_vehicle_loans"
     SOVEREIGN_BONDS = "sovereign_bonds"
 
-
 class TransitionPlanElement(str, Enum):
     FOUNDATIONS = "foundations"
     IMPLEMENTATION = "implementation"
@@ -111,19 +102,16 @@ class TransitionPlanElement(str, Enum):
     METRICS_TARGETS = "metrics_targets"
     GOVERNANCE = "governance"
 
-
 class AlignmentTier(str, Enum):
     ALIGNED = "aligned"
     ALIGNING = "aligning"
     COMMITTED = "committed"
     NOT_ALIGNED = "not_aligned"
 
-
 class SectorPriority(str, Enum):
     HIGH_PRIORITY = "high_priority"
     PRIORITY = "priority"
     MONITORED = "monitored"
-
 
 # ---------------------------------------------------------------------------
 # GFANZ Sector Pathways
@@ -213,11 +201,9 @@ GFANZ_SECTOR_PATHWAYS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class GFANZBridgeConfig(BaseModel):
     pack_id: str = Field(default="PACK-025")
@@ -230,7 +216,6 @@ class GFANZBridgeConfig(BaseModel):
     reporting_year: int = Field(default=2025, ge=2020, le=2035)
     portfolio_aum_usd: float = Field(default=0.0, ge=0.0)
     timeout_seconds: int = Field(default=300, ge=30)
-
 
 class PortfolioAlignmentResult(BaseModel):
     """Portfolio temperature alignment result."""
@@ -248,7 +233,6 @@ class PortfolioAlignmentResult(BaseModel):
     gap_celsius: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class FinancedEmissionsResult(BaseModel):
     """Financed emissions calculation result."""
 
@@ -264,7 +248,6 @@ class FinancedEmissionsResult(BaseModel):
     yoy_change_pct: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class TransitionPlanResult(BaseModel):
     """GFANZ transition plan assessment result."""
 
@@ -277,7 +260,6 @@ class TransitionPlanResult(BaseModel):
     gfanz_compliant: bool = Field(default=False)
     r2z_aligned: bool = Field(default=False)
     provenance_hash: str = Field(default="")
-
 
 class SectorPathwayResult(BaseModel):
     """GFANZ sector pathway alignment result."""
@@ -295,7 +277,6 @@ class SectorPathwayResult(BaseModel):
     methodologies: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class PortfolioProgressResult(BaseModel):
     """Portfolio decarbonisation progress result."""
 
@@ -311,11 +292,9 @@ class PortfolioProgressResult(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # GFANZBridge
 # ---------------------------------------------------------------------------
-
 
 class GFANZBridge:
     """Bridge to GFANZ for financial institution net-zero pathways.

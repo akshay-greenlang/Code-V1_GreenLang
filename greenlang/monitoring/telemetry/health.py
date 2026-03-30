@@ -14,17 +14,9 @@ from enum import Enum
 import threading
 import psutil
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas.enums import HealthStatus
 
 logger = logging.getLogger(__name__)
-
-
-class HealthStatus(Enum):
-    """Health status levels"""
-
-    HEALTHY = "healthy"
-    DEGRADED = "degraded"
-    UNHEALTHY = "unhealthy"
-    UNKNOWN = "unknown"
 
 
 class CheckType(Enum):

@@ -84,25 +84,20 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ValidationSeverity
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -125,7 +120,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -134,7 +128,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -146,26 +139,21 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round2(value: Any) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
-
 def _round3(value: Any) -> float:
     """Round to 3 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class PolicyType(str, Enum):
     """Type of recalculation policy.
@@ -186,7 +174,6 @@ class PolicyType(str, Enum):
     SEC_COMPLIANT = "sec_compliant"
     CDP_ALIGNED = "cdp_aligned"
     CUSTOM = "custom"
-
 
 class TriggerType(str, Enum):
     """Types of events that may trigger base year recalculation.
@@ -218,7 +205,6 @@ class TriggerType(str, Enum):
     SOURCE_BOUNDARY_CHANGE = "source_boundary_change"
     OUTSOURCING_INSOURCING = "outsourcing_insourcing"
 
-
 class ApprovalLevel(str, Enum):
     """Approval level required for recalculation decisions.
 
@@ -239,7 +225,6 @@ class ApprovalLevel(str, Enum):
     COMMITTEE = "committee"
     BOARD = "board"
 
-
 class ComplianceFramework(str, Enum):
     """Regulatory/reporting framework for compliance checking.
 
@@ -256,19 +241,6 @@ class ComplianceFramework(str, Enum):
     CDP = "cdp"
     ESRS = "esrs"
     ISO_14064 = "iso_14064"
-
-
-class ValidationSeverity(str, Enum):
-    """Severity of a policy validation finding.
-
-    ERROR:   Policy is non-compliant; must be fixed.
-    WARNING: Policy has potential issues; should be reviewed.
-    INFO:    Informational note; no action required.
-    """
-    ERROR = "error"
-    WARNING = "warning"
-    INFO = "info"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -430,11 +402,9 @@ APPROVAL_HIERARCHY: Dict[str, int] = {
     ApprovalLevel.BOARD.value: 4,
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Core
 # ---------------------------------------------------------------------------
-
 
 class ThresholdConfig(BaseModel):
     """Threshold configuration for recalculation significance testing.
@@ -484,7 +454,6 @@ class ThresholdConfig(BaseModel):
                 f"individual threshold ({self.individual_pct}%)"
             )
         return self
-
 
 class TriggerRule(BaseModel):
     """Configuration for a single trigger type.
@@ -544,7 +513,6 @@ class TriggerRule(BaseModel):
         if v is None:
             return None
         return _decimal(v)
-
 
 class RecalculationPolicy(BaseModel):
     """Complete recalculation policy configuration.
@@ -650,11 +618,9 @@ class RecalculationPolicy(BaseModel):
         """Coerce board approval threshold to Decimal."""
         return _decimal(v)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class ComplianceGap(BaseModel):
     """A single compliance gap identified during policy checking.
@@ -694,7 +660,6 @@ class ComplianceGap(BaseModel):
         default="", description="Remediation action"
     )
 
-
 class PolicyComplianceCheck(BaseModel):
     """Result of checking a policy against a single framework.
 
@@ -727,7 +692,6 @@ class PolicyComplianceCheck(BaseModel):
         default="", description="Check timestamp"
     )
 
-
 class PolicyValidationResult(BaseModel):
     """Result of validating a policy's internal consistency.
 
@@ -757,7 +721,6 @@ class PolicyValidationResult(BaseModel):
         description="Informational notes"
     )
 
-
 class PolicyComparisonItem(BaseModel):
     """A single difference between two policies.
 
@@ -771,7 +734,6 @@ class PolicyComparisonItem(BaseModel):
     policy1_val: str = Field(default="", description="Policy 1 value")
     policy2_val: str = Field(default="", description="Policy 2 value")
     impact: str = Field(default="", description="Impact description")
-
 
 class PolicyComparison(BaseModel):
     """Comparison between two recalculation policies.
@@ -799,11 +761,9 @@ class PolicyComparison(BaseModel):
     summary: str = Field(default="", description="Summary")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class RecalculationPolicyEngine:
     """Configurable recalculation policy management engine.
@@ -875,7 +835,7 @@ class RecalculationPolicyEngine:
         if description:
             policy.description = description
 
-        policy.calculated_at = _utcnow().isoformat()
+        policy.calculated_at = utcnow().isoformat()
         policy.provenance_hash = _compute_hash(policy)
         return policy
 
@@ -929,7 +889,7 @@ class RecalculationPolicyEngine:
             applicable_frameworks=[
                 ComplianceFramework.GHG_PROTOCOL,
             ],
-            effective_date=_utcnow().isoformat(),
+            effective_date=utcnow().isoformat(),
         )
 
     def get_sbti_policy(self) -> RecalculationPolicy:
@@ -998,7 +958,7 @@ class RecalculationPolicyEngine:
                 ComplianceFramework.SBTI,
                 ComplianceFramework.GHG_PROTOCOL,
             ],
-            effective_date=_utcnow().isoformat(),
+            effective_date=utcnow().isoformat(),
         )
 
     def get_sec_policy(self) -> RecalculationPolicy:
@@ -1066,7 +1026,7 @@ class RecalculationPolicyEngine:
                 ComplianceFramework.SEC,
                 ComplianceFramework.GHG_PROTOCOL,
             ],
-            effective_date=_utcnow().isoformat(),
+            effective_date=utcnow().isoformat(),
         )
 
     def get_cdp_policy(self) -> RecalculationPolicy:
@@ -1119,7 +1079,7 @@ class RecalculationPolicyEngine:
                 ComplianceFramework.CDP,
                 ComplianceFramework.GHG_PROTOCOL,
             ],
-            effective_date=_utcnow().isoformat(),
+            effective_date=utcnow().isoformat(),
         )
 
     # ------------------------------------------------------------------
@@ -1183,7 +1143,7 @@ class RecalculationPolicyEngine:
                 is_compliant=is_compliant,
                 gaps=gaps,
                 recommendations=recommendations,
-                checked_at=_utcnow().isoformat(),
+                checked_at=utcnow().isoformat(),
             ))
 
         return results
@@ -1239,7 +1199,7 @@ class RecalculationPolicyEngine:
 
         updated.version = policy.version + 1
         updated.policy_id = _new_uuid()
-        updated.calculated_at = _utcnow().isoformat()
+        updated.calculated_at = utcnow().isoformat()
         updated.provenance_hash = _compute_hash(updated)
 
         logger.info(
@@ -1289,7 +1249,7 @@ class RecalculationPolicyEngine:
 
         updated.version = policy.version + 1
         updated.policy_id = _new_uuid()
-        updated.calculated_at = _utcnow().isoformat()
+        updated.calculated_at = utcnow().isoformat()
         updated.provenance_hash = _compute_hash(updated)
 
         return updated
@@ -1327,7 +1287,7 @@ class RecalculationPolicyEngine:
 
         updated.version = policy.version + 1
         updated.policy_id = _new_uuid()
-        updated.calculated_at = _utcnow().isoformat()
+        updated.calculated_at = utcnow().isoformat()
         updated.provenance_hash = _compute_hash(updated)
 
         return updated
@@ -2026,7 +1986,7 @@ class RecalculationPolicyEngine:
                 "Before/after inventory comparison",
             ],
             applicable_frameworks=[],
-            effective_date=_utcnow().isoformat(),
+            effective_date=utcnow().isoformat(),
         )
 
     @staticmethod
@@ -2095,11 +2055,9 @@ class RecalculationPolicyEngine:
         """Return engine version string."""
         return self._version
 
-
 # ---------------------------------------------------------------------------
 # Module-level convenience functions
 # ---------------------------------------------------------------------------
-
 
 def create_recalculation_policy(
     policy_type: PolicyType,
@@ -2119,7 +2077,6 @@ def create_recalculation_policy(
     engine = RecalculationPolicyEngine()
     return engine.create_policy(policy_type, name, description)
 
-
 def check_policy_compliance(
     policy: RecalculationPolicy,
     frameworks: List[ComplianceFramework],
@@ -2136,7 +2093,6 @@ def check_policy_compliance(
     engine = RecalculationPolicyEngine()
     return engine.check_compliance(policy, frameworks)
 
-
 def validate_recalculation_policy(
     policy: RecalculationPolicy,
 ) -> PolicyValidationResult:
@@ -2150,7 +2106,6 @@ def validate_recalculation_policy(
     """
     engine = RecalculationPolicyEngine()
     return engine.validate_policy(policy)
-
 
 # ---------------------------------------------------------------------------
 # __all__

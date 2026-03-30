@@ -63,6 +63,7 @@ import uuid
 from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.mass_balance_calculator.config import (
     MassBalanceCalculatorConfig,
@@ -85,15 +86,9 @@ from greenlang.agents.eudr.mass_balance_calculator.metrics import (
 
 logger = logging.getLogger(__name__)
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants: commodity-specific processing loss reference data
@@ -249,11 +244,9 @@ LOW_THRESHOLD_MULTIPLIER: float = 0.3
 #: Maximum number of trend data points to retain per facility+commodity key.
 MAX_TREND_DATA_POINTS: int = 500
 
-
 # ---------------------------------------------------------------------------
 # LossWasteTracker
 # ---------------------------------------------------------------------------
-
 
 class LossWasteTracker:
     """Processing loss and waste tracking engine for mass balance.
@@ -389,7 +382,7 @@ class LossWasteTracker:
         Raises:
             ValueError: If loss_type is invalid or quantity_kg <= 0.
         """
-        start_time = _utcnow()
+        start_time = utcnow()
 
         # -- Input validation -------------------------------------------------
         self._validate_loss_type(loss_type)
@@ -567,7 +560,7 @@ class LossWasteTracker:
         Raises:
             ValueError: If waste_type is invalid or quantity_kg <= 0.
         """
-        start_time = _utcnow()
+        start_time = utcnow()
 
         # -- Input validation -------------------------------------------------
         self._validate_waste_type(waste_type)
@@ -694,7 +687,7 @@ class LossWasteTracker:
                 - message: Human-readable validation message.
                 - provenance_hash: SHA-256 hash.
         """
-        start_time = _utcnow()
+        start_time = utcnow()
 
         result = self._validate_loss_against_reference(
             commodity=commodity,
@@ -866,12 +859,12 @@ class LossWasteTracker:
                 "provenance_hash": self._compute_provenance_hash(
                     {"batch_id": batch_id, "total_loss_kg": 0.0}
                 ),
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }
 
         result = dict(cumulative)
         result["provenance_hash"] = self._compute_provenance_hash(result)
-        result["timestamp"] = _utcnow().isoformat()
+        result["timestamp"] = utcnow().isoformat()
 
         logger.debug(
             "get_cumulative_loss: batch=%s total=%.2f kg count=%d",
@@ -1049,7 +1042,7 @@ class LossWasteTracker:
             ValueError: If by-product credits are disabled, quantities
                 are invalid, or conversion_rate is out of range.
         """
-        start_time = _utcnow()
+        start_time = utcnow()
 
         if not self._config.by_product_credit_enabled:
             raise ValueError(
@@ -1173,7 +1166,7 @@ class LossWasteTracker:
                 empty, ratios do not sum to ~1.0, or any ratio is
                 out of range.
         """
-        start_time = _utcnow()
+        start_time = utcnow()
 
         if not loss_record_id:
             raise ValueError("loss_record_id must not be empty")
@@ -1301,7 +1294,7 @@ class LossWasteTracker:
         Raises:
             ValueError: If record_id not found or certificate_ref empty.
         """
-        start_time = _utcnow()
+        start_time = utcnow()
 
         if not record_id:
             raise ValueError("record_id must not be empty")
@@ -1317,7 +1310,7 @@ class LossWasteTracker:
             )
 
         link_id = str(uuid.uuid4())
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         link_data: Dict[str, Any] = {
             "link_id": link_id,
@@ -1409,7 +1402,7 @@ class LossWasteTracker:
         if not operator_id:
             raise ValueError("operator_id must not be empty")
 
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         with self._lock:
             record = self._loss_records.get(record_id)
@@ -1606,7 +1599,7 @@ class LossWasteTracker:
             "by_facility": by_facility,
             "by_process_type": by_process,
             "tolerance_violations_count": len(tolerance_violations),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
         result["provenance_hash"] = self._compute_provenance_hash(result)
 
@@ -1646,7 +1639,7 @@ class LossWasteTracker:
         return {
             "reference_tolerances": result,
             "total_entries": len(result),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     # ==================================================================
@@ -1977,7 +1970,7 @@ class LossWasteTracker:
         Returns:
             Elapsed time in milliseconds.
         """
-        delta = _utcnow() - start
+        delta = utcnow() - start
         return delta.total_seconds() * 1000.0
 
     # ------------------------------------------------------------------
@@ -2001,7 +1994,6 @@ class LossWasteTracker:
         """Return total number of loss and waste records."""
         with self._lock:
             return len(self._loss_records) + len(self._waste_records)
-
 
 # ---------------------------------------------------------------------------
 # Public API

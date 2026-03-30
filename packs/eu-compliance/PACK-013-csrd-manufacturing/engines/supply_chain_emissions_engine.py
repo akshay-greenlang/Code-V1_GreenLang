@@ -63,25 +63,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -101,7 +95,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -111,12 +104,10 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _round_value(value: Decimal, places: int = 3) -> float:
     """Round a Decimal to specified places and return float."""
     rounded = value.quantize(Decimal(10) ** -places, rounding=ROUND_HALF_UP)
     return float(rounded)
-
 
 def _pct(numerator: Decimal, denominator: Decimal, places: int = 2) -> float:
     """Calculate percentage safely, returning 0.0 when denominator is zero."""
@@ -124,11 +115,9 @@ def _pct(numerator: Decimal, denominator: Decimal, places: int = 2) -> float:
         return 0.0
     return _round_value((numerator / denominator) * Decimal("100"), places)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CalculationMethod(str, Enum):
     """Scope 3 calculation methodology per GHG Protocol hierarchy."""
@@ -136,7 +125,6 @@ class CalculationMethod(str, Enum):
     HYBRID = "hybrid"
     AVERAGE_DATA = "average_data"
     SPEND_BASED = "spend_based"
-
 
 class Scope3Category(str, Enum):
     """GHG Protocol Scope 3 emission categories."""
@@ -156,14 +144,12 @@ class Scope3Category(str, Enum):
     CAT_14 = "cat_14_franchises"
     CAT_15 = "cat_15_investments"
 
-
 class SupplierTier(str, Enum):
     """Supplier tier in the value chain."""
     TIER_1 = "tier_1"
     TIER_2 = "tier_2"
     TIER_3 = "tier_3"
     TIER_4_PLUS = "tier_4_plus"
-
 
 class DataQualityScore(int, Enum):
     """Data quality score per GHG Protocol 5-point scale.
@@ -180,7 +166,6 @@ class DataQualityScore(int, Enum):
     SCORE_4 = 4
     SCORE_5 = 5
 
-
 class TransportMode(str, Enum):
     """Mode of transportation for upstream/downstream logistics."""
     ROAD = "road"
@@ -190,14 +175,12 @@ class TransportMode(str, Enum):
     INLAND_WATERWAY = "inland_waterway"
     PIPELINE = "pipeline"
 
-
 class EngagementPriority(str, Enum):
     """Priority level for supplier engagement."""
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 # ---------------------------------------------------------------------------
 # Constants - Emission Factors
@@ -348,11 +331,9 @@ DQ_WEIGHTS: Dict[int, float] = {
 HOTSPOT_THRESHOLD_PCT: float = 5.0  # Suppliers contributing >5% are hotspots
 TOP_N_HOTSPOTS: int = 20
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class SupplyChainConfig(BaseModel):
     """Configuration for supply chain emissions calculation."""
@@ -391,7 +372,6 @@ class SupplyChainConfig(BaseModel):
         if year < 2020 or year > 2035:
             raise ValueError(f"Reporting year {year} outside valid range 2020-2035")
         return year
-
 
 class SupplierData(BaseModel):
     """Supplier data for Scope 3 emissions calculation."""
@@ -447,7 +427,6 @@ class SupplierData(BaseModel):
             raise ValueError("Reported emissions cannot be negative")
         return d
 
-
 class BOMEmissionData(BaseModel):
     """Bill of Materials (BOM) component emission data."""
     component_id: str = Field(description="Component identifier")
@@ -482,7 +461,6 @@ class BOMEmissionData(BaseModel):
             return None
         return _decimal(v)
 
-
 class TransportData(BaseModel):
     """Transport leg data for upstream/downstream logistics emissions."""
     origin: str = Field(description="Origin location")
@@ -515,7 +493,6 @@ class TransportData(BaseModel):
             return None
         return _decimal(v)
 
-
 class SupplierHotspot(BaseModel):
     """Supplier identified as an emission hotspot."""
     supplier_id: str = Field(description="Supplier identifier")
@@ -529,7 +506,6 @@ class SupplierHotspot(BaseModel):
     tier: str = Field(default="", description="Supplier tier")
     scope3_category: str = Field(default="", description="Scope 3 category")
 
-
 class EngagementRecommendation(BaseModel):
     """Supplier engagement recommendation for emissions reduction."""
     supplier_id: str = Field(description="Supplier identifier")
@@ -541,7 +517,6 @@ class EngagementRecommendation(BaseModel):
     )
     timeline: str = Field(default="", description="Recommended timeline")
     rationale: str = Field(default="", description="Rationale for the action")
-
 
 class SupplyChainResult(BaseModel):
     """Complete supply chain emissions calculation result with provenance.
@@ -611,14 +586,12 @@ class SupplyChainResult(BaseModel):
     )
     processing_time_ms: float = Field(default=0.0, description="Processing time in milliseconds")
     engine_version: str = Field(default=_MODULE_VERSION, description="Engine version")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Calculation timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Calculation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class SupplyChainEmissionsEngine:
     """Manufacturing-specific Scope 3 supply chain emissions engine.

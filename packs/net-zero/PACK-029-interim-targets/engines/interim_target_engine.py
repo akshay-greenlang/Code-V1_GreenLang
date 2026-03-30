@@ -74,25 +74,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -110,7 +104,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -119,7 +112,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -131,17 +123,14 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places."""
@@ -149,11 +138,9 @@ def _round3(value: float) -> float:
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ClimateAmbition(str, Enum):
     """Climate ambition level for target-setting."""
@@ -161,7 +148,6 @@ class ClimateAmbition(str, Enum):
     WELL_BELOW_2C = "wb2c"
     TWO_C = "2c"
     RACE_TO_ZERO = "race_to_zero"
-
 
 class ScopeType(str, Enum):
     """GHG Protocol scope classification."""
@@ -171,7 +157,6 @@ class ScopeType(str, Enum):
     SCOPE_1_2 = "scope_1_2"
     ALL_SCOPES = "all_scopes"
 
-
 class PathwayShape(str, Enum):
     """Shape of the reduction pathway between milestones."""
     LINEAR = "linear"
@@ -180,14 +165,12 @@ class PathwayShape(str, Enum):
     MILESTONE_BASED = "milestone_based"
     CONSTANT_RATE = "constant_rate"
 
-
 class TargetType(str, Enum):
     """Type of interim target."""
     NEAR_TERM = "near_term"
     MID_TERM = "mid_term"
     LONG_TERM = "long_term"
     NET_ZERO = "net_zero"
-
 
 class ValidationStatus(str, Enum):
     """SBTi validation status for a target."""
@@ -197,14 +180,12 @@ class ValidationStatus(str, Enum):
     EXCEEDS_MINIMUM = "exceeds_minimum"
     REQUIRES_REVIEW = "requires_review"
 
-
 class DataQuality(str, Enum):
     """Data quality tier."""
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
     ESTIMATED = "estimated"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- SBTi Target Thresholds
@@ -273,11 +254,9 @@ FLAG_THRESHOLDS: Dict[str, Decimal] = {
 # Default milestone years for 5-year intervals
 DEFAULT_MILESTONE_YEARS: List[int] = [2025, 2030, 2035, 2040, 2045, 2050]
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class BaselineData(BaseModel):
     """Baseline emissions data for target calculation.
@@ -328,7 +307,6 @@ class BaselineData(BaseModel):
         """Auto-calculate total if not provided."""
         return v
 
-
 class LongTermTarget(BaseModel):
     """Long-term (net-zero) target parameters.
 
@@ -357,7 +335,6 @@ class LongTermTarget(BaseModel):
         default=True, description="Scope 3 included"
     )
 
-
 class MilestoneOverride(BaseModel):
     """Manual milestone override for custom pathway shapes.
 
@@ -378,7 +355,6 @@ class MilestoneOverride(BaseModel):
     description: str = Field(
         default="", max_length=500, description="Milestone description"
     )
-
 
 class InterimTargetInput(BaseModel):
     """Input for interim target calculation.
@@ -437,11 +413,9 @@ class InterimTargetInput(BaseModel):
         default=2024, ge=2020, le=2030, description="Reporting year"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class InterimMilestone(BaseModel):
     """A single interim milestone/target point.
@@ -472,7 +446,6 @@ class InterimMilestone(BaseModel):
     is_sbti_compliant: bool = Field(default=False)
     ambition_assessment: str = Field(default="")
     notes: List[str] = Field(default_factory=list)
-
 
 class ScopeTimeline(BaseModel):
     """Timeline for a specific scope.
@@ -506,7 +479,6 @@ class ScopeTimeline(BaseModel):
     annual_rate_pct: Decimal = Field(default=Decimal("0"))
     milestones: List[InterimMilestone] = Field(default_factory=list)
 
-
 class SBTiValidationResult(BaseModel):
     """SBTi validation result for interim targets.
 
@@ -537,7 +509,6 @@ class SBTiValidationResult(BaseModel):
     warning_checks: int = Field(default=0)
     validation_notes: List[str] = Field(default_factory=list)
 
-
 class FLAGTargetResult(BaseModel):
     """FLAG sector target result.
 
@@ -557,7 +528,6 @@ class FLAGTargetResult(BaseModel):
     flag_annual_rate_pct: Decimal = Field(default=Decimal("0"))
     is_compliant: bool = Field(default=False)
     notes: List[str] = Field(default_factory=list)
-
 
 class InterimTargetResult(BaseModel):
     """Complete interim target calculation result.
@@ -591,7 +561,7 @@ class InterimTargetResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     entity_id: str = Field(default="")
     ambition_level: str = Field(default="")
@@ -615,11 +585,9 @@ class InterimTargetResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class InterimTargetEngine:
     """Interim target calculation engine for PACK-029.

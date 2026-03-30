@@ -42,6 +42,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 from greenlang.agents.data.deforestation_satellite.config import get_config
+from greenlang.schemas import utcnow
 from greenlang.agents.data.deforestation_satellite.models import (
     AcquireSatelliteRequest,
     ChangeDetectionResult,
@@ -53,7 +54,6 @@ from greenlang.agents.data.deforestation_satellite.models import (
 
 logger = logging.getLogger(__name__)
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -61,21 +61,13 @@ logger = logging.getLogger(__name__)
 # Default number of simulated pixels
 _DEFAULT_PIXEL_COUNT = 25
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _hash_seed(value: str) -> int:
     """Derive a deterministic integer seed from a string value."""
     return int(hashlib.sha256(value.encode("utf-8")).hexdigest()[:8], 16)
-
 
 def _deterministic_float(seed: int, index: int, low: float = 0.0, high: float = 1.0) -> float:
     """Generate a deterministic float in [low, high] from seed and index."""
@@ -83,11 +75,9 @@ def _deterministic_float(seed: int, index: int, low: float = 0.0, high: float = 
     fraction = int(combined[:8], 16) / 0xFFFFFFFF
     return low + fraction * (high - low)
 
-
 # =============================================================================
 # ForestChangeEngine
 # =============================================================================
-
 
 class ForestChangeEngine:
     """Engine for detecting forest cover changes from satellite imagery.
@@ -629,7 +619,6 @@ class ForestChangeEngine:
             Integer count of detections.
         """
         return self._detection_count
-
 
 __all__ = [
     "ForestChangeEngine",

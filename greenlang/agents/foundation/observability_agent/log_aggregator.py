@@ -37,18 +37,13 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Deque, Dict, List, Optional, Tuple
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -67,11 +62,9 @@ LOG_LEVEL_SEVERITY: Dict[str, int] = {
     "CRITICAL": 50,
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class LogRecord:
@@ -100,7 +93,7 @@ class LogRecord:
     span_id: str = ""
     correlation_id: str = ""
     attributes: Dict[str, Any] = field(default_factory=dict)
-    timestamp: datetime = field(default_factory=_utcnow)
+    timestamp: datetime = field(default_factory=utcnow)
     provenance_hash: str = ""
 
     def __post_init__(self) -> None:
@@ -108,11 +101,9 @@ class LogRecord:
         if not self.record_id:
             self.record_id = str(uuid.uuid4())
 
-
 # =============================================================================
 # LogAggregator
 # =============================================================================
-
 
 class LogAggregator:
     """Structured log aggregation engine.
@@ -207,7 +198,7 @@ class LogAggregator:
         if not message or not message.strip():
             raise ValueError("Log message must be non-empty")
 
-        now = _utcnow()
+        now = utcnow()
         provenance_hash = self._compute_log_hash(
             normalized_level, message, agent_id, tenant_id,
             trace_id, correlation_id, now,
@@ -430,7 +421,7 @@ class LogAggregator:
         Returns:
             Number of records trimmed.
         """
-        cutoff = _utcnow().timestamp() - self._retention_seconds
+        cutoff = utcnow().timestamp() - self._retention_seconds
         removed = 0
 
         with self._lock:
@@ -599,7 +590,6 @@ class LogAggregator:
             ensure_ascii=True,
         )
         return hashlib.sha256(payload.encode("utf-8")).hexdigest()
-
 
 __all__ = [
     "LogAggregator",

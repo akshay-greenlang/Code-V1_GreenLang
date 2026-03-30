@@ -35,29 +35,23 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "24.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: Any) -> str:
     if isinstance(data, dict):
         data = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(str(data).encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -66,7 +60,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
@@ -74,13 +67,11 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class ProcurementPhase(str, Enum):
     NEEDS_ASSESSMENT = "needs_assessment"
     MARKET_SCREENING = "market_screening"
     QUALITY_ASSESSMENT = "quality_assessment"
     PROCUREMENT = "procurement"
-
 
 class CreditStandard(str, Enum):
     VCS = "vcs"
@@ -92,7 +83,6 @@ class CreditStandard(str, Enum):
     PURO = "puro"
     ISOMETRIC = "isometric"
 
-
 class CreditType(str, Enum):
     AVOIDANCE = "avoidance"
     REDUCTION = "reduction"
@@ -100,13 +90,11 @@ class CreditType(str, Enum):
     REMOVAL_TECH = "removal_tech"
     HYBRID = "hybrid"
 
-
 class QualityTier(str, Enum):
     PREMIUM = "premium"       # ICVCM CCP-approved, high co-benefits
     STANDARD = "standard"     # Major registry, verified
     BASIC = "basic"           # Verified but limited co-benefits
     UNRATED = "unrated"       # Not yet assessed
-
 
 class ProjectType(str, Enum):
     RENEWABLE_ENERGY = "renewable_energy"
@@ -122,13 +110,11 @@ class ProjectType(str, Enum):
     WASTE_MANAGEMENT = "waste_management"
     SOIL_CARBON = "soil_carbon"
 
-
 class RiskLevel(str, Enum):
     LOW = "low"
     MODERATE = "moderate"
     HIGH = "high"
     CRITICAL = "critical"
-
 
 # =============================================================================
 # REFERENCE DATA
@@ -174,11 +160,9 @@ PAS2060_ELIGIBLE_TYPES: List[str] = [
     "vcs", "gold_standard", "acr", "car", "cdm",
 ]
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase_name: str = Field(...)
@@ -188,7 +172,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class ProcurementStrategy(BaseModel):
     strategy_id: str = Field(default="")
@@ -201,7 +184,6 @@ class ProcurementStrategy(BaseModel):
     diversification_targets: Dict[str, Any] = Field(default_factory=dict)
     vintage_requirements: Dict[str, Any] = Field(default_factory=dict)
     co_benefit_priorities: List[str] = Field(default_factory=list)
-
 
 class SupplierEvaluation(BaseModel):
     supplier_id: str = Field(default="")
@@ -221,7 +203,6 @@ class SupplierEvaluation(BaseModel):
     recommended: bool = Field(default=False)
     recommendation_reason: str = Field(default="")
 
-
 class ContractTerms(BaseModel):
     contract_id: str = Field(default="")
     supplier_id: str = Field(default="")
@@ -235,7 +216,6 @@ class ContractTerms(BaseModel):
     retirement_deadline: str = Field(default="")
     replacement_clause: bool = Field(default=True)
     buffer_pool_pct: float = Field(default=0.0, ge=0.0)
-
 
 class CreditProcurementConfig(BaseModel):
     org_name: str = Field(default="")
@@ -257,7 +237,6 @@ class CreditProcurementConfig(BaseModel):
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
 
-
 class CreditProcurementResult(BaseModel):
     workflow_id: str = Field(...)
     workflow_name: str = Field(default="credit_procurement")
@@ -275,11 +254,9 @@ class CreditProcurementResult(BaseModel):
     pas2060_compliant: bool = Field(default=False)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class CreditProcurementWorkflow:
     """
@@ -303,7 +280,7 @@ class CreditProcurementWorkflow:
 
     async def execute(self, config: CreditProcurementConfig) -> CreditProcurementResult:
         """Execute the 4-phase credit procurement workflow."""
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting credit procurement %s, volume=%.2f tCO2e",
             self.workflow_id, config.residual_emissions_tco2e,
@@ -336,7 +313,7 @@ class CreditProcurementWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         total_vol = sum(c.volume_tco2e for c in self._contracts)
         total_cost = sum(c.total_cost_usd for c in self._contracts)
         avg_price = total_cost / max(total_vol, 1.0)
@@ -370,7 +347,7 @@ class CreditProcurementWorkflow:
 
     async def _phase_needs_assessment(self, config: CreditProcurementConfig) -> PhaseResult:
         """Determine credit volume and quality requirements."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         errors: List[str] = []
@@ -421,7 +398,7 @@ class CreditProcurementWorkflow:
         outputs["max_price_per_tco2e"] = round(self._strategy.max_price_per_tco2e, 2)
 
         status = PhaseStatus.FAILED if errors else PhaseStatus.COMPLETED
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name=ProcurementPhase.NEEDS_ASSESSMENT.value,
             status=status, duration_seconds=round(elapsed, 4),
@@ -431,7 +408,7 @@ class CreditProcurementWorkflow:
 
     async def _phase_market_screening(self, config: CreditProcurementConfig) -> PhaseResult:
         """Screen registries and marketplaces for eligible credits."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         errors: List[str] = []
@@ -471,7 +448,7 @@ class CreditProcurementWorkflow:
         outputs["registries_covered"] = len(config.preferred_registries)
 
         status = PhaseStatus.COMPLETED
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name=ProcurementPhase.MARKET_SCREENING.value,
             status=status, duration_seconds=round(elapsed, 4),
@@ -481,7 +458,7 @@ class CreditProcurementWorkflow:
 
     async def _phase_quality_assessment(self, config: CreditProcurementConfig) -> PhaseResult:
         """Evaluate credits against ICVCM CCP and project quality criteria."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         errors: List[str] = []
@@ -522,7 +499,7 @@ class CreditProcurementWorkflow:
             warnings.append("No suppliers meet quality criteria; consider relaxing requirements")
 
         status = PhaseStatus.COMPLETED
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name=ProcurementPhase.QUALITY_ASSESSMENT.value,
             status=status, duration_seconds=round(elapsed, 4),
@@ -532,7 +509,7 @@ class CreditProcurementWorkflow:
 
     async def _phase_procurement(self, config: CreditProcurementConfig) -> PhaseResult:
         """Execute procurement with contract terms and delivery schedules."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         errors: List[str] = []
@@ -592,7 +569,7 @@ class CreditProcurementWorkflow:
             )
 
         status = PhaseStatus.COMPLETED
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name=ProcurementPhase.PROCUREMENT.value,
             status=status, duration_seconds=round(elapsed, 4),

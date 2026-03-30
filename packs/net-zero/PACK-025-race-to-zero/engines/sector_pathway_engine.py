@@ -68,23 +68,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -101,7 +96,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -110,7 +104,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -118,26 +111,21 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     return float(
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class PathwayCredibility(str, Enum):
     """Sector pathway alignment credibility."""
@@ -145,7 +133,6 @@ class PathwayCredibility(str, Enum):
     MODERATE = "moderate"
     AGGRESSIVE = "aggressive"
     MISALIGNED = "misaligned"
-
 
 class SectorId(str, Enum):
     """Sector identifiers for 25 sectors."""
@@ -174,7 +161,6 @@ class SectorId(str, Enum):
     WASTE_MANAGEMENT = "waste_management"
     WATER_UTILITIES = "water_utilities"
     TELECOMMUNICATIONS = "telecommunications"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- 25 Sector Pathway Database
@@ -366,11 +352,9 @@ for _sid, _name, _source in [
             ],
         }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class SectorInput(BaseModel):
     """Sector mapping input for a single sector.
@@ -404,7 +388,6 @@ class SectorInput(BaseModel):
             raise ValueError(f"Unknown sector '{v}'. Must be one of: {sorted(valid)}")
         return v
 
-
 class SectorPathwayInput(BaseModel):
     """Complete input for sector pathway assessment.
 
@@ -427,11 +410,9 @@ class SectorPathwayInput(BaseModel):
     baseline_emissions_tco2e: Decimal = Field(default=Decimal("0"), ge=0)
     include_roadmap: bool = Field(default=True)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class MilestoneGap(BaseModel):
     """Gap analysis for a single sector milestone.
@@ -452,7 +433,6 @@ class MilestoneGap(BaseModel):
     gap_pct: Decimal = Field(default=Decimal("0"))
     description: str = Field(default="")
     on_track: bool = Field(default=False)
-
 
 class SectorResult(BaseModel):
     """Assessment result for a single sector.
@@ -482,7 +462,6 @@ class SectorResult(BaseModel):
     years_to_alignment: int = Field(default=0)
     key_actions: List[str] = Field(default_factory=list)
 
-
 class SectorPathwayResult(BaseModel):
     """Complete sector pathway assessment result.
 
@@ -506,7 +485,7 @@ class SectorPathwayResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     overall_alignment_score: Decimal = Field(default=Decimal("0"))
     overall_credibility: str = Field(default=PathwayCredibility.MISALIGNED.value)
@@ -521,11 +500,9 @@ class SectorPathwayResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class SectorPathwayEngine:
     """Race to Zero sector-specific decarbonization pathway engine.

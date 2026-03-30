@@ -68,11 +68,7 @@ _PRECISION = Decimal("0.00000001")  # 8 decimal places
 # ---------------------------------------------------------------------------
 from datetime import datetime, timezone
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
+from greenlang.schemas import utcnow
 
 # ===========================================================================
 # Vehicle Category Constants
@@ -105,7 +101,6 @@ VEHICLE_CATEGORIES: Dict[str, Dict[str, Any]] = {
         "source": "EPA Locomotive Emission Standards; IPCC 2006 Vol 2 Ch 3",
     },
 }
-
 
 # ===========================================================================
 # Vehicle Type Definitions (18 types across 5 categories)
@@ -382,7 +377,6 @@ VEHICLE_TYPES: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ===========================================================================
 # Fuel Type Definitions (15 types)
 # ===========================================================================
@@ -619,7 +613,6 @@ FUEL_TYPES: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ===========================================================================
 # CH4 and N2O Emission Factors by Vehicle Type, Model Year, Fuel
 # Units: g per km (grams per kilometer)
@@ -723,7 +716,6 @@ _CH4_N2O_RAIL: Dict[str, Dict[str, Decimal]] = {
     "DIESEL_LOCOMOTIVE": {"CH4": Decimal("0.25"), "N2O": Decimal("0.30")},
 }
 
-
 # ===========================================================================
 # Distance-Based Emission Factors (g CO2e per km)
 # Combines CO2, CH4, N2O into a single g CO2e/km for each vehicle type
@@ -744,7 +736,6 @@ _DISTANCE_EMISSION_FACTORS: Dict[str, Dict[str, Decimal]] = {
     "MOTORCYCLE": {"GASOLINE": Decimal("92.0")},
     "VAN_LCV": {"DIESEL": Decimal("250.0"), "GASOLINE": Decimal("280.0")},
 }
-
 
 # ===========================================================================
 # Emission Control Technology Adjustments
@@ -823,7 +814,6 @@ CONTROL_TECHNOLOGIES: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ===========================================================================
 # GWP Values by Assessment Report
 # ===========================================================================
@@ -835,11 +825,9 @@ _GWP_VALUES: Dict[str, Dict[str, Decimal]] = {
     "AR6_20YR": {"CO2": Decimal("1"), "CH4": Decimal("82.5"), "N2O": Decimal("273")},
 }
 
-
 # ===========================================================================
 # VehicleDatabaseEngine
 # ===========================================================================
-
 
 class VehicleDatabaseEngine:
     """Manages vehicle types, fuel types, and emission factors for mobile combustion.
@@ -1623,7 +1611,7 @@ class VehicleDatabaseEngine:
                 "unit": unit,
                 "source": source,
                 "metadata": metadata or {},
-                "registered_at": _utcnow().isoformat(),
+                "registered_at": utcnow().isoformat(),
             }
 
         logger.info(
@@ -1759,7 +1747,7 @@ class VehicleDatabaseEngine:
             Hexadecimal SHA-256 hash string.
         """
         hash_input = json.dumps(
-            {"operation": operation, "data": data, "timestamp": _utcnow().isoformat()},
+            {"operation": operation, "data": data, "timestamp": utcnow().isoformat()},
             sort_keys=True,
             default=str,
         )

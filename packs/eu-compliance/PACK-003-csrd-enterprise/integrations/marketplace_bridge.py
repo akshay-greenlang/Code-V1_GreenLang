@@ -39,26 +39,19 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -71,11 +64,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class PluginCategory(str, Enum):
     """Plugin marketplace categories."""
@@ -89,7 +80,6 @@ class PluginCategory(str, Enum):
     AUTOMATION = "automation"
     INDUSTRY = "industry"
 
-
 class PluginStatus(str, Enum):
     """Plugin installation status."""
 
@@ -99,7 +89,6 @@ class PluginStatus(str, Enum):
     DISABLED = "disabled"
     DEPRECATED = "deprecated"
 
-
 class CompatibilityLevel(str, Enum):
     """Plugin compatibility levels."""
 
@@ -108,11 +97,9 @@ class CompatibilityLevel(str, Enum):
     INCOMPATIBLE = "incompatible"
     UNKNOWN = "unknown"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class PluginInfo(BaseModel):
     """Plugin information from the marketplace catalog."""
@@ -130,10 +117,9 @@ class PluginInfo(BaseModel):
     rating: float = Field(default=0.0, ge=0.0, le=5.0)
     downloads: int = Field(default=0, ge=0)
     tags: List[str] = Field(default_factory=list)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     updated_at: Optional[datetime] = Field(None)
     provenance_hash: str = Field(default="")
-
 
 class InstallResult(BaseModel):
     """Result of a plugin installation or update."""
@@ -143,11 +129,10 @@ class InstallResult(BaseModel):
     tenant_id: str = Field(...)
     version: str = Field(...)
     status: str = Field(default="success")
-    installed_at: datetime = Field(default_factory=_utcnow)
+    installed_at: datetime = Field(default_factory=utcnow)
     dependencies_resolved: List[str] = Field(default_factory=list)
     error_message: Optional[str] = Field(None)
     provenance_hash: str = Field(default="")
-
 
 class InstalledPlugin(BaseModel):
     """Plugin installed for a specific tenant."""
@@ -159,11 +144,10 @@ class InstalledPlugin(BaseModel):
     category: PluginCategory = Field(default=PluginCategory.INTEGRATION)
     status: PluginStatus = Field(default=PluginStatus.INSTALLED)
     config: Dict[str, Any] = Field(default_factory=dict)
-    installed_at: datetime = Field(default_factory=_utcnow)
+    installed_at: datetime = Field(default_factory=utcnow)
     updated_at: Optional[datetime] = Field(None)
     api_calls_total: int = Field(default=0)
     last_used_at: Optional[datetime] = Field(None)
-
 
 class PluginUsageMetrics(BaseModel):
     """Usage metrics for an installed plugin."""
@@ -177,8 +161,7 @@ class PluginUsageMetrics(BaseModel):
     avg_latency_ms: float = Field(default=0.0)
     last_used_at: Optional[datetime] = Field(None)
     data_processed_mb: float = Field(default=0.0)
-    measured_at: datetime = Field(default_factory=_utcnow)
-
+    measured_at: datetime = Field(default_factory=utcnow)
 
 class CompatibilityResult(BaseModel):
     """Plugin compatibility check result."""
@@ -190,11 +173,9 @@ class CompatibilityResult(BaseModel):
     missing_dependencies: List[str] = Field(default_factory=list)
     recommendation: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Tier Plugin Limits
 # ---------------------------------------------------------------------------
-
 
 TIER_PLUGIN_LIMITS: Dict[str, int] = {
     "starter": 5,
@@ -202,7 +183,6 @@ TIER_PLUGIN_LIMITS: Dict[str, int] = {
     "enterprise": 100,
     "custom": 500,
 }
-
 
 # ---------------------------------------------------------------------------
 # Catalog (built-in CSRD plugins)
@@ -259,11 +239,9 @@ BUILTIN_PLUGINS: List[Dict[str, Any]] = [
     },
 ]
 
-
 # ---------------------------------------------------------------------------
 # MarketplaceBridge
 # ---------------------------------------------------------------------------
-
 
 class MarketplaceBridge:
     """Plugin marketplace bridge for CSRD Enterprise Pack.
@@ -468,7 +446,7 @@ class MarketplaceBridge:
             "tenant_id": tenant_id,
             "plugin_id": plugin_id,
             "uninstalled": True,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     def update_plugin(
@@ -495,7 +473,7 @@ class MarketplaceBridge:
 
         installed = tenant_plugins[plugin_id]
         installed.version = target_version
-        installed.updated_at = _utcnow()
+        installed.updated_at = utcnow()
         installed.status = PluginStatus.INSTALLED
 
         result = InstallResult(
@@ -619,7 +597,7 @@ class MarketplaceBridge:
             "max_plugins": max_plugins,
             "within_quota": within_quota,
             "remaining": max_plugins - installed_count,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     # -------------------------------------------------------------------------
@@ -653,7 +631,7 @@ class MarketplaceBridge:
 
         installed = tenant_plugins[plugin_id]
         installed.config.update(settings)
-        installed.updated_at = _utcnow()
+        installed.updated_at = utcnow()
 
         self.logger.info(
             "Plugin configured: tenant=%s, plugin=%s, keys=%s",
@@ -664,5 +642,5 @@ class MarketplaceBridge:
             "plugin_id": plugin_id,
             "configured": True,
             "settings_applied": list(settings.keys()),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }

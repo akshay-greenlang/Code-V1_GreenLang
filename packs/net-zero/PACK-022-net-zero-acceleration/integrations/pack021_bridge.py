@@ -34,25 +34,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -65,11 +59,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Agent Stubs
 # ---------------------------------------------------------------------------
-
 
 class _AgentStub:
     """Stub for unavailable PACK-021 engine modules."""
@@ -88,7 +80,6 @@ class _AgentStub:
             }
         return _stub_method
 
-
 def _try_import_pack021_engine(engine_id: str, module_path: str) -> Any:
     """Try to import a PACK-021 engine with graceful fallback.
 
@@ -105,11 +96,9 @@ def _try_import_pack021_engine(engine_id: str, module_path: str) -> Any:
         logger.debug("PACK-021 engine %s not available, using stub", engine_id)
         return _AgentStub(engine_id)
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class Pack021BridgeConfig(BaseModel):
     """Configuration for the PACK-021 Bridge."""
@@ -120,7 +109,6 @@ class Pack021BridgeConfig(BaseModel):
     base_year: int = Field(default=2019, ge=2015, le=2025)
     reporting_year: int = Field(default=2025, ge=2020, le=2035)
     organization_name: str = Field(default="")
-
 
 class BaselineResult(BaseModel):
     """Result of baseline retrieval from PACK-021."""
@@ -138,7 +126,6 @@ class BaselineResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class TargetsResult(BaseModel):
     """Result of targets retrieval from PACK-021."""
 
@@ -154,7 +141,6 @@ class TargetsResult(BaseModel):
     scopes_covered: List[str] = Field(default_factory=list)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class GapAnalysisResult(BaseModel):
     """Result of gap analysis from PACK-021."""
@@ -173,7 +159,6 @@ class GapAnalysisResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class RoadmapResult(BaseModel):
     """Result of reduction roadmap from PACK-021."""
 
@@ -189,7 +174,6 @@ class RoadmapResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class ResidualBudgetResult(BaseModel):
     """Result of residual budget calculation from PACK-021."""
 
@@ -202,7 +186,6 @@ class ResidualBudgetResult(BaseModel):
     estimated_cost_eur: float = Field(default=0.0, ge=0.0)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class OffsetPortfolioResult(BaseModel):
     """Result of offset portfolio from PACK-021."""
@@ -217,7 +200,6 @@ class OffsetPortfolioResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class ScorecardResult(BaseModel):
     """Result of scorecard from PACK-021."""
 
@@ -229,7 +211,6 @@ class ScorecardResult(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class BenchmarkResult(BaseModel):
     """Result of benchmark from PACK-021."""
@@ -244,7 +225,6 @@ class BenchmarkResult(BaseModel):
     best_in_class_tco2e: float = Field(default=0.0, ge=0.0)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # PACK-021 Engine Routing
@@ -281,11 +261,9 @@ PACK021_ENGINE_ROUTING: Dict[str, Dict[str, str]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Pack021Bridge
 # ---------------------------------------------------------------------------
-
 
 class Pack021Bridge:
     """Bridge to PACK-021 Net Zero Starter Pack engines.

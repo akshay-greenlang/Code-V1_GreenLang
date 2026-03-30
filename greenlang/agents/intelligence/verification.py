@@ -31,9 +31,10 @@ Usage:
 from __future__ import annotations
 import re
 from typing import List, Optional, Dict, Any
-from pydantic import BaseModel, Field
+from pydantic import Field
 from datetime import datetime
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 
 class HallucinationDetected(Exception):
@@ -71,7 +72,7 @@ class HallucinationDetected(Exception):
         return " | ".join(parts)
 
 
-class NumericClaim(BaseModel):
+class NumericClaim(GreenLangBase):
     """
     A numeric claim extracted from LLM response
 
@@ -119,7 +120,7 @@ class NumericClaim(BaseModel):
         }
 
 
-class Citation(BaseModel):
+class Citation(GreenLangBase):
     """
     A verified citation linking a claim to tool output
 

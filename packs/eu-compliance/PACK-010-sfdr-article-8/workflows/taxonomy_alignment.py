@@ -52,18 +52,13 @@ from typing import Any, Callable, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # UTILITIES
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return current UTC time with timezone info."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute SHA-256 provenance hash of arbitrary data."""
@@ -71,11 +66,9 @@ def _hash_data(data: Any) -> str:
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -85,7 +78,6 @@ class PhaseStatus(str, Enum):
     FAILED = "FAILED"
     SKIPPED = "SKIPPED"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "PENDING"
@@ -94,13 +86,11 @@ class WorkflowStatus(str, Enum):
     FAILED = "FAILED"
     PARTIAL = "PARTIAL"
 
-
 class AlignmentBasis(str, Enum):
     """Basis for taxonomy alignment measurement."""
     REVENUE = "REVENUE"
     CAPEX = "CAPEX"
     OPEX = "OPEX"
-
 
 class EnvironmentalObjective(str, Enum):
     """EU Taxonomy environmental objectives."""
@@ -111,7 +101,6 @@ class EnvironmentalObjective(str, Enum):
     POLLUTION_PREVENTION = "POLLUTION_PREVENTION"
     BIODIVERSITY = "BIODIVERSITY"
 
-
 class EligibilityStatus(str, Enum):
     """Taxonomy eligibility status."""
     ELIGIBLE_ALIGNED = "ELIGIBLE_ALIGNED"
@@ -119,17 +108,15 @@ class EligibilityStatus(str, Enum):
     NOT_ELIGIBLE = "NOT_ELIGIBLE"
     DATA_UNAVAILABLE = "DATA_UNAVAILABLE"
 
-
 # =============================================================================
 # DATA MODELS - SHARED
 # =============================================================================
-
 
 class WorkflowContext(BaseModel):
     """Shared state passed between workflow phases."""
     workflow_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     organization_id: str = Field(..., description="Organization identifier")
-    execution_timestamp: datetime = Field(default_factory=_utcnow)
+    execution_timestamp: datetime = Field(default_factory=utcnow)
     config: Dict[str, Any] = Field(default_factory=dict)
     phase_states: Dict[str, PhaseStatus] = Field(default_factory=dict)
     phase_outputs: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
@@ -152,7 +139,6 @@ class WorkflowContext(BaseModel):
         """Check if a phase has already completed."""
         return self.phase_states.get(phase_name) == PhaseStatus.COMPLETED
 
-
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
     phase_name: str = Field(..., description="Phase identifier")
@@ -166,7 +152,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     records_processed: int = Field(default=0)
 
-
 class WorkflowResult(BaseModel):
     """Complete result from a multi-phase workflow execution."""
     workflow_id: str = Field(..., description="Unique workflow execution ID")
@@ -179,11 +164,9 @@ class WorkflowResult(BaseModel):
     summary: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # DATA MODELS - TAXONOMY ALIGNMENT
 # =============================================================================
-
 
 class TaxonomyHolding(BaseModel):
     """A holding with taxonomy alignment data."""
@@ -214,7 +197,6 @@ class TaxonomyHolding(BaseModel):
     )
     data_source: str = Field(default="company_reported")
     reporting_year: Optional[int] = Field(None)
-
 
 class TaxonomyAlignmentInput(BaseModel):
     """Input configuration for the taxonomy alignment workflow."""
@@ -251,7 +233,6 @@ class TaxonomyAlignmentInput(BaseModel):
             raise ValueError("reporting_date must be YYYY-MM-DD format")
         return v
 
-
 class TaxonomyAlignmentResult(WorkflowResult):
     """Complete result from the taxonomy alignment workflow."""
     product_name: str = Field(default="")
@@ -265,11 +246,9 @@ class TaxonomyAlignmentResult(WorkflowResult):
     commitment_met: bool = Field(default=False)
     data_coverage_pct: float = Field(default=0.0)
 
-
 # =============================================================================
 # PHASE IMPLEMENTATIONS
 # =============================================================================
-
 
 class HoldingsAnalysisPhase:
     """
@@ -283,7 +262,7 @@ class HoldingsAnalysisPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Execute holdings analysis phase."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -373,7 +352,7 @@ class HoldingsAnalysisPhase:
             status = PhaseStatus.FAILED
             records = 0
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -387,7 +366,6 @@ class HoldingsAnalysisPhase:
             records_processed=records,
         )
 
-
 class AlignmentAssessmentPhase:
     """
     Phase 2: Alignment Assessment.
@@ -400,7 +378,7 @@ class AlignmentAssessmentPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Execute alignment assessment phase."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -477,7 +455,7 @@ class AlignmentAssessmentPhase:
             status = PhaseStatus.FAILED
             records = 0
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -491,7 +469,6 @@ class AlignmentAssessmentPhase:
             records_processed=records,
         )
 
-
 class AggregationPhase:
     """
     Phase 3: Aggregation.
@@ -504,7 +481,7 @@ class AggregationPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Execute aggregation phase."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -604,7 +581,7 @@ class AggregationPhase:
             errors.append(f"Aggregation failed: {str(exc)}")
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -616,7 +593,6 @@ class AggregationPhase:
             warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 class CommitmentTrackingPhase:
     """
@@ -630,7 +606,7 @@ class CommitmentTrackingPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Execute commitment tracking phase."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -697,7 +673,7 @@ class CommitmentTrackingPhase:
             # Adherence report
             outputs["adherence_report"] = {
                 "report_id": str(uuid.uuid4()),
-                "generated_at": _utcnow().isoformat(),
+                "generated_at": utcnow().isoformat(),
                 "product_name": config.get("product_name", ""),
                 "reporting_date": config.get("reporting_date", ""),
                 "alignment_ratios": {
@@ -737,7 +713,7 @@ class CommitmentTrackingPhase:
             errors.append(f"Commitment tracking failed: {str(exc)}")
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -750,11 +726,9 @@ class CommitmentTrackingPhase:
             provenance_hash=_hash_data(outputs),
         )
 
-
 # =============================================================================
 # WORKFLOW ORCHESTRATOR
 # =============================================================================
-
 
 class TaxonomyAlignmentWorkflow:
     """
@@ -801,7 +775,7 @@ class TaxonomyAlignmentWorkflow:
         self, input_data: TaxonomyAlignmentInput
     ) -> TaxonomyAlignmentResult:
         """Execute the complete 4-phase taxonomy alignment workflow."""
-        started_at = _utcnow()
+        started_at = utcnow()
         logger.info(
             "Starting taxonomy alignment workflow %s for org=%s product=%s",
             self.workflow_id, input_data.organization_id,
@@ -860,7 +834,7 @@ class TaxonomyAlignmentWorkflow:
                 error_result = PhaseResult(
                     phase_name=phase_name,
                     status=PhaseStatus.FAILED,
-                    started_at=_utcnow(),
+                    started_at=utcnow(),
                     errors=[str(exc)],
                     provenance_hash=_hash_data({"error": str(exc)}),
                 )
@@ -878,7 +852,7 @@ class TaxonomyAlignmentWorkflow:
                 WorkflowStatus.COMPLETED if all_ok else WorkflowStatus.PARTIAL
             )
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         total_duration = (completed_at - started_at).total_seconds()
         summary = self._build_summary(context)
         provenance = _hash_data({

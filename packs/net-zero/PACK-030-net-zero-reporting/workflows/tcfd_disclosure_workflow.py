@@ -46,28 +46,22 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "30.0.0"
 _PACK_ID = "PACK-030"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -76,7 +70,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
@@ -84,19 +77,16 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class RAGStatus(str, Enum):
     RED = "red"
     AMBER = "amber"
     GREEN = "green"
-
 
 class TCFDPillar(str, Enum):
     GOVERNANCE = "governance"
     STRATEGY = "strategy"
     RISK_MANAGEMENT = "risk_management"
     METRICS_TARGETS = "metrics_targets"
-
 
 class ScenarioType(str, Enum):
     ORDERLY_1_5C = "orderly_1.5c"
@@ -107,7 +97,6 @@ class ScenarioType(str, Enum):
     DELAYED_TRANSITION = "delayed_transition"
     CURRENT_POLICIES = "current_policies"
 
-
 class RiskType(str, Enum):
     TRANSITION_POLICY = "transition_policy"
     TRANSITION_LEGAL = "transition_legal"
@@ -117,19 +106,16 @@ class RiskType(str, Enum):
     PHYSICAL_ACUTE = "physical_acute"
     PHYSICAL_CHRONIC = "physical_chronic"
 
-
 class TimeHorizon(str, Enum):
     SHORT_TERM = "short_term"
     MEDIUM_TERM = "medium_term"
     LONG_TERM = "long_term"
-
 
 class ComplianceLevel(str, Enum):
     FULL = "full"
     PARTIAL = "partial"
     MINIMAL = "minimal"
     NON_COMPLIANT = "non_compliant"
-
 
 # =============================================================================
 # TCFD DISCLOSURE REQUIREMENTS (Zero-Hallucination: TCFD 2017)
@@ -253,11 +239,9 @@ TCFD_COMPLIANCE_SCORING: Dict[str, float] = {
     "metrics_targets_c": 9.0,
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase_name: str = Field(...)
@@ -271,7 +255,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     dag_node_id: str = Field(default="")
 
-
 class TCFDPillarContent(BaseModel):
     """Content for a single TCFD pillar."""
     pillar: TCFDPillar = Field(...)
@@ -284,7 +267,6 @@ class TCFDPillarContent(BaseModel):
     citations: List[Dict[str, str]] = Field(default_factory=list)
     compliance_score: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
-
 
 class ScenarioAnalysis(BaseModel):
     """Climate scenario analysis results."""
@@ -302,7 +284,6 @@ class ScenarioAnalysis(BaseModel):
     resilience_assessment: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 class TCFDExecutiveReport(BaseModel):
     """Compiled executive report."""
     report_id: str = Field(default="")
@@ -317,7 +298,6 @@ class TCFDExecutiveReport(BaseModel):
     table_of_contents: List[Dict[str, Any]] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class TCFDRenderedPDF(BaseModel):
     """Rendered PDF output."""
     pdf_id: str = Field(default="")
@@ -330,7 +310,6 @@ class TCFDRenderedPDF(BaseModel):
     branding_applied: bool = Field(default=False)
     provenance_hash: str = Field(default="")
 
-
 class TCFDAssuranceEvidence(BaseModel):
     """Assurance evidence package."""
     evidence_id: str = Field(default="")
@@ -341,7 +320,6 @@ class TCFDAssuranceEvidence(BaseModel):
     control_matrix: List[Dict[str, Any]] = Field(default_factory=list)
     readiness_score: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # -- Config / Input / Result --
 
@@ -374,7 +352,6 @@ class TCFDDisclosureConfig(BaseModel):
     output_formats: List[str] = Field(default_factory=lambda: ["pdf", "json"])
     branding_config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class TCFDDisclosureInput(BaseModel):
     config: TCFDDisclosureConfig = Field(default_factory=TCFDDisclosureConfig)
     governance_data: Dict[str, Any] = Field(default_factory=dict)
@@ -384,7 +361,6 @@ class TCFDDisclosureInput(BaseModel):
     financial_impact_data: Dict[str, Any] = Field(default_factory=dict)
     historical_emissions: List[Dict[str, Any]] = Field(default_factory=list)
     initiative_data: List[Dict[str, Any]] = Field(default_factory=list)
-
 
 class TCFDDisclosureResult(BaseModel):
     workflow_id: str = Field(...)
@@ -405,11 +381,9 @@ class TCFDDisclosureResult(BaseModel):
     overall_rag_status: RAGStatus = Field(default=RAGStatus.GREEN)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class TCFDDisclosureWorkflow:
     """
@@ -451,7 +425,7 @@ class TCFDDisclosureWorkflow:
 
     async def execute(self, input_data: TCFDDisclosureInput) -> TCFDDisclosureResult:
         """Execute the full 8-phase TCFD disclosure workflow."""
-        started_at = _utcnow()
+        started_at = utcnow()
         self.config = input_data.config
         self._phase_results = []
         overall_status = WorkflowStatus.RUNNING
@@ -502,7 +476,7 @@ class TCFDDisclosureWorkflow:
                 status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
 
         result = TCFDDisclosureResult(
             workflow_id=self.workflow_id,
@@ -530,7 +504,7 @@ class TCFDDisclosureWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_governance(self, input_data: TCFDDisclosureInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         cfg = self.config
         gov = input_data.governance_data
@@ -573,7 +547,7 @@ class TCFDDisclosureWorkflow:
         outputs["compliance_score"] = self._governance.compliance_score
         outputs["recommendations_covered"] = len(self._governance.recommendations_addressed)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="governance_pillar", phase_number=1,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -587,7 +561,7 @@ class TCFDDisclosureWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_strategy(self, input_data: TCFDDisclosureInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         cfg = self.config
 
@@ -649,7 +623,7 @@ class TCFDDisclosureWorkflow:
         outputs["opportunity_count"] = len(opps)
         outputs["compliance_score"] = self._strategy.compliance_score
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="strategy_pillar", phase_number=2,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -663,7 +637,7 @@ class TCFDDisclosureWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_risk_management(self, input_data: TCFDDisclosureInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         cfg = self.config
 
@@ -713,7 +687,7 @@ class TCFDDisclosureWorkflow:
         outputs["erm_integrated"] = True
         outputs["compliance_score"] = self._risk_mgmt.compliance_score
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="risk_management_pillar", phase_number=3,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -727,7 +701,7 @@ class TCFDDisclosureWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_metrics_targets(self, input_data: TCFDDisclosureInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         cfg = self.config
         base_e = cfg.base_year_emissions_tco2e or 100_000.0
@@ -805,7 +779,7 @@ class TCFDDisclosureWorkflow:
         outputs["progress_pct"] = progress_pct
         outputs["compliance_score"] = self._metrics.compliance_score
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="metrics_targets_pillar", phase_number=4,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -819,7 +793,7 @@ class TCFDDisclosureWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_compile_report(self, input_data: TCFDDisclosureInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         cfg = self.config
 
@@ -881,7 +855,7 @@ class TCFDDisclosureWorkflow:
         outputs["recommendations_covered"] = sum(recommendation_coverage.values())
         outputs["total_recommendations"] = len(recommendation_coverage)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="compile_executive_report", phase_number=5,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -895,7 +869,7 @@ class TCFDDisclosureWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_scenario_analysis(self, input_data: TCFDDisclosureInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         cfg = self.config
@@ -904,7 +878,7 @@ class TCFDDisclosureWorkflow:
             self._scenarios = []
             outputs["scenarios_count"] = 0
             warnings.append("Scenario analysis not configured; skipping.")
-            elapsed = (_utcnow() - started).total_seconds()
+            elapsed = (utcnow() - started).total_seconds()
             return PhaseResult(
                 phase_name="scenario_analysis", phase_number=6,
                 status=PhaseStatus.SKIPPED, duration_seconds=round(elapsed, 4),
@@ -1003,7 +977,7 @@ class TCFDDisclosureWorkflow:
         outputs["scenarios_count"] = len(self._scenarios)
         outputs["scenario_types"] = [s.scenario_type.value for s in self._scenarios]
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="scenario_analysis", phase_number=6,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -1017,7 +991,7 @@ class TCFDDisclosureWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_render_pdf(self, input_data: TCFDDisclosureInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         cfg = self.config
 
@@ -1047,7 +1021,7 @@ class TCFDDisclosureWorkflow:
         outputs["chart_count"] = chart_count
         outputs["table_count"] = table_count
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="render_pdf", phase_number=7,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -1061,7 +1035,7 @@ class TCFDDisclosureWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_assurance_evidence(self, input_data: TCFDDisclosureInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         cfg = self.config
 
@@ -1122,7 +1096,7 @@ class TCFDDisclosureWorkflow:
         outputs["provenance_hash_count"] = len(provenance_hashes)
         outputs["readiness_score"] = readiness
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="assurance_evidence", phase_number=8,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),

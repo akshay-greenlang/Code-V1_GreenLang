@@ -27,7 +27,7 @@ Enumerations (22):
     ActivityType, WTTFactorSource, GridRegionType, TDLossSource,
     SupplierDataSource, AllocationMethod, CurrencyCode,
     DQIDimension, DQIScore, UncertaintyMethod, ComplianceFramework,
-    ComplianceStatus, PipelineStage, ExportFormat, BatchStatus,
+    ComplianceStatus, PipelineStage, ReportFormat, BatchStatus,
     GWPSource, EmissionGas, AccountingMethod
 
 Constants (13):
@@ -62,18 +62,11 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
-
+from pydantic import Field, field_validator
 
 # ---------------------------------------------------------------------------
 # Helper
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Module-level Constants
@@ -136,11 +129,9 @@ ONE_HUNDRED: Decimal = Decimal("100")
 #: Decimal one thousand constant for unit conversions.
 ONE_THOUSAND: Decimal = Decimal("1000")
 
-
 # =============================================================================
 # Enumerations (22)
 # =============================================================================
-
 
 class CalculationMethod(str, Enum):
     """GHG Protocol Scope 3 Category 3 calculation methods.
@@ -165,7 +156,6 @@ class CalculationMethod(str, Enum):
     AVERAGE_DATA = "average_data"
     SPEND_BASED = "spend_based"
     HYBRID = "hybrid"
-
 
 class FuelType(str, Enum):
     """Fuel types for Activity 3a upstream (WTT) calculations.
@@ -211,7 +201,6 @@ class FuelType(str, Enum):
     BIOMASS_LIQUID = "biomass_liquid"
     LANDFILL_GAS = "landfill_gas"
 
-
 class FuelCategory(str, Enum):
     """Broad fuel classification for reporting roll-ups.
 
@@ -223,7 +212,6 @@ class FuelCategory(str, Enum):
     FOSSIL = "fossil"
     BIOFUEL = "biofuel"
     WASTE_DERIVED = "waste_derived"
-
 
 class EnergyType(str, Enum):
     """Types of purchased energy for Activity 3b and 3c.
@@ -239,7 +227,6 @@ class EnergyType(str, Enum):
     HEATING = "heating"
     COOLING = "cooling"
 
-
 class ActivityType(str, Enum):
     """Sub-activities within Scope 3 Category 3.
 
@@ -254,7 +241,6 @@ class ActivityType(str, Enum):
     ACTIVITY_3B = "activity_3b"
     ACTIVITY_3C = "activity_3c"
     ACTIVITY_3D = "activity_3d"
-
 
 class WTTFactorSource(str, Enum):
     """Sources of well-to-tank emission factors for fuels.
@@ -276,7 +262,6 @@ class WTTFactorSource(str, Enum):
     JEC = "jec"
     CUSTOM = "custom"
 
-
 class GridRegionType(str, Enum):
     """Types of electricity grid regions for factor resolution.
 
@@ -290,7 +275,6 @@ class GridRegionType(str, Enum):
     EGRID_SUBREGION = "egrid_subregion"
     EU_MEMBER_STATE = "eu_member_state"
     CUSTOM_REGION = "custom_region"
-
 
 class TDLossSource(str, Enum):
     """Sources of transmission and distribution loss factors.
@@ -307,7 +291,6 @@ class TDLossSource(str, Enum):
     EPA_EGRID = "epa_egrid"
     NATIONAL_GRID = "national_grid"
     CUSTOM = "custom"
-
 
 class SupplierDataSource(str, Enum):
     """Sources of supplier-specific upstream emission data.
@@ -335,7 +318,6 @@ class SupplierDataSource(str, Enum):
     DIRECT_MEASUREMENT = "direct_measurement"
     CUSTOM = "custom"
 
-
 class AllocationMethod(str, Enum):
     """Allocation methods for multi-product supplier data.
 
@@ -351,7 +333,6 @@ class AllocationMethod(str, Enum):
     ENERGY_CONTENT = "energy_content"
     MASS = "mass"
     ECONOMIC = "economic"
-
 
 class CurrencyCode(str, Enum):
     """ISO 4217 currency codes for spend-based calculations.
@@ -382,7 +363,6 @@ class CurrencyCode(str, Enum):
     ZAR = "ZAR"
     THB = "THB"
 
-
 class DQIDimension(str, Enum):
     """Data quality indicator dimensions per GHG Protocol Scope 3.
 
@@ -401,7 +381,6 @@ class DQIDimension(str, Enum):
     COMPLETENESS = "completeness"
     RELIABILITY = "reliability"
 
-
 class DQIScore(int, Enum):
     """Data quality score levels (1-5 scale, lower is better).
 
@@ -418,7 +397,6 @@ class DQIScore(int, Enum):
     LOW = 4
     VERY_LOW = 5
 
-
 class UncertaintyMethod(str, Enum):
     """Methods for quantifying uncertainty in emission calculations.
 
@@ -430,7 +408,6 @@ class UncertaintyMethod(str, Enum):
     MONTE_CARLO = "monte_carlo"
     ANALYTICAL = "analytical"
     IPCC_DEFAULT = "ipcc_default"
-
 
 class ComplianceFramework(str, Enum):
     """Regulatory and voluntary reporting frameworks for Category 3.
@@ -452,7 +429,6 @@ class ComplianceFramework(str, Enum):
     GRI_305 = "gri_305"
     ISO_14064 = "iso_14064"
 
-
 class ComplianceStatus(str, Enum):
     """Result of a regulatory compliance check.
 
@@ -466,7 +442,6 @@ class ComplianceStatus(str, Enum):
     PARTIALLY_COMPLIANT = "partially_compliant"
     NON_COMPLIANT = "non_compliant"
     NOT_APPLICABLE = "not_applicable"
-
 
 class PipelineStage(str, Enum):
     """Stages in the Fuel & Energy Activities calculation pipeline.
@@ -485,22 +460,6 @@ class PipelineStage(str, Enum):
     AGGREGATE = "aggregate"
     SEAL = "seal"
 
-
-class ExportFormat(str, Enum):
-    """Supported export formats for calculation outputs.
-
-    JSON: Machine-readable JSON for API consumers.
-    CSV: Comma-separated values for spreadsheet import.
-    EXCEL: Excel workbook with formatted sheets.
-    PDF: PDF report with charts and tables.
-    """
-
-    JSON = "json"
-    CSV = "csv"
-    EXCEL = "excel"
-    PDF = "pdf"
-
-
 class BatchStatus(str, Enum):
     """Status of a batch calculation job.
 
@@ -517,7 +476,6 @@ class BatchStatus(str, Enum):
     FAILED = "failed"
     CANCELLED = "cancelled"
 
-
 class GWPSource(str, Enum):
     """IPCC Assessment Report source for Global Warming Potential.
 
@@ -531,7 +489,6 @@ class GWPSource(str, Enum):
     AR5 = "AR5"
     AR6 = "AR6"
     AR6_20YR = "AR6_20YR"
-
 
 class EmissionGas(str, Enum):
     """Greenhouse gases tracked in Scope 3 Category 3 calculations.
@@ -547,7 +504,6 @@ class EmissionGas(str, Enum):
     N2O = "N2O"
     CO2E = "CO2e"
 
-
 class AccountingMethod(str, Enum):
     """Electricity accounting methods for Activity 3b and 3c.
 
@@ -561,11 +517,9 @@ class AccountingMethod(str, Enum):
     LOCATION_BASED = "location_based"
     MARKET_BASED = "market_based"
 
-
 # =============================================================================
 # Constant Tables (13) -- all Decimal for deterministic arithmetic
 # =============================================================================
-
 
 # ---------------------------------------------------------------------------
 # 1. GWP values by IPCC Assessment Report
@@ -597,7 +551,6 @@ GWP_VALUES: Dict[GWPSource, Dict[EmissionGas, Decimal]] = {
         EmissionGas.CO2E: Decimal("1"),
     },
 }
-
 
 # ---------------------------------------------------------------------------
 # 2. WTT fuel emission factors (kgCO2e per kWh of fuel energy content)
@@ -763,7 +716,6 @@ WTT_FUEL_EMISSION_FACTORS: Dict[FuelType, Dict[str, Decimal]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # 3. Upstream electricity emission factors by country (kgCO2e/kWh)
 #    Lifecycle upstream of generation (fuel extraction, processing,
@@ -819,7 +771,6 @@ UPSTREAM_ELECTRICITY_FACTORS: Dict[str, Decimal] = {
     "RU": Decimal("0.05900"),
     "UA": Decimal("0.04300"),
 }
-
 
 # ---------------------------------------------------------------------------
 # 4. T&D loss factors by country (fraction, not percentage)
@@ -879,7 +830,6 @@ TD_LOSS_FACTORS: Dict[str, Decimal] = {
     "TZ": Decimal("0.1920"),
 }
 
-
 # ---------------------------------------------------------------------------
 # 5. eGRID subregion T&D loss factors (fraction)
 #    Source: EPA eGRID 2022
@@ -913,7 +863,6 @@ EGRID_TD_LOSS_FACTORS: Dict[str, Decimal] = {
     "HIMS": Decimal("0.0574"),
     "HIOA": Decimal("0.0589"),
 }
-
 
 # ---------------------------------------------------------------------------
 # 6. Fuel heating values (NCV in kWh per unit)
@@ -1044,7 +993,6 @@ FUEL_HEATING_VALUES: Dict[FuelType, Dict[str, Decimal]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # 7. Fuel density factors (kg per litre) for liquid fuels
 #    Source: DEFRA 2024, IPCC 2006 GL
@@ -1066,7 +1014,6 @@ FUEL_DENSITY_FACTORS: Dict[FuelType, Decimal] = {
     FuelType.BIOMASS_LIQUID: Decimal("0.8570"),
 }
 
-
 # ---------------------------------------------------------------------------
 # 8. DQI score numeric values (1=best, 5=worst)
 # ---------------------------------------------------------------------------
@@ -1078,7 +1025,6 @@ DQI_SCORE_VALUES: Dict[DQIScore, Decimal] = {
     DQIScore.LOW: Decimal("4.0"),
     DQIScore.VERY_LOW: Decimal("5.0"),
 }
-
 
 # ---------------------------------------------------------------------------
 # 9. DQI quality tier labels with composite score ranges
@@ -1093,7 +1039,6 @@ DQI_QUALITY_TIERS: Dict[str, Tuple[Decimal, Decimal]] = {
     "Very Low": (Decimal("4.6"), Decimal("5.1")),
 }
 
-
 # ---------------------------------------------------------------------------
 # 10. Uncertainty ranges by calculation method (min%, max%)
 # ---------------------------------------------------------------------------
@@ -1104,7 +1049,6 @@ UNCERTAINTY_RANGES: Dict[CalculationMethod, Tuple[Decimal, Decimal]] = {
     CalculationMethod.AVERAGE_DATA: (Decimal("15"), Decimal("30")),
     CalculationMethod.SPEND_BASED: (Decimal("30"), Decimal("60")),
 }
-
 
 # ---------------------------------------------------------------------------
 # 11. Coverage thresholds by level
@@ -1117,7 +1061,6 @@ COVERAGE_THRESHOLDS: Dict[str, Decimal] = {
     "low": Decimal("80.0"),
     "minimal": Decimal("0.0"),
 }
-
 
 # ---------------------------------------------------------------------------
 # 12. Emission factor hierarchy priority (1=best, 8=worst)
@@ -1134,7 +1077,6 @@ EF_HIERARCHY_PRIORITY: Dict[str, int] = {
     "database_ecoinvent_lca": 7,
     "global_avg_fallback": 8,
 }
-
 
 # ---------------------------------------------------------------------------
 # 13. Framework required disclosures for Category 3 compliance
@@ -1239,18 +1181,15 @@ FRAMEWORK_REQUIRED_DISCLOSURES: Dict[
     ],
 }
 
-
 # =============================================================================
 # Data Models (25) -- Pydantic v2, frozen=True
 # =============================================================================
-
 
 # ---------------------------------------------------------------------------
 # 1. FuelConsumptionRecord
 # ---------------------------------------------------------------------------
 
-
-class FuelConsumptionRecord(BaseModel):
+class FuelConsumptionRecord(GreenLangBase):
     """A single fuel consumption record for Activity 3a WTT calculation.
 
     Represents one fuel purchase or consumption event from the fuel
@@ -1268,6 +1207,9 @@ class FuelConsumptionRecord(BaseModel):
         quantity_kwh: Fuel energy content in kWh (computed or
             provided).  If not provided the pipeline normalizes
             from quantity + unit using FUEL_HEATING_VALUES.
+
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ReportFormat
         period_start: Start date of the consumption period.
         period_end: End date of the consumption period.
         reporting_year: Reporting year for emission allocation.
@@ -1371,13 +1313,11 @@ class FuelConsumptionRecord(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # 2. ElectricityConsumptionRecord
 # ---------------------------------------------------------------------------
 
-
-class ElectricityConsumptionRecord(BaseModel):
+class ElectricityConsumptionRecord(GreenLangBase):
     """A single electricity / energy consumption record for 3b and 3c.
 
     Represents one electricity (or steam / heating / cooling)
@@ -1506,13 +1446,11 @@ class ElectricityConsumptionRecord(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # 3. WTTEmissionFactor
 # ---------------------------------------------------------------------------
 
-
-class WTTEmissionFactor(BaseModel):
+class WTTEmissionFactor(GreenLangBase):
     """A well-to-tank emission factor for a specific fuel type.
 
     Represents a single WTT factor entry from a given source,
@@ -1578,13 +1516,11 @@ class WTTEmissionFactor(BaseModel):
         description="Geographic region the factor applies to",
     )
 
-
 # ---------------------------------------------------------------------------
 # 4. UpstreamElectricityFactor
 # ---------------------------------------------------------------------------
 
-
-class UpstreamElectricityFactor(BaseModel):
+class UpstreamElectricityFactor(GreenLangBase):
     """Upstream lifecycle emission factor for grid electricity.
 
     Represents the upstream (pre-generation) emission factor for
@@ -1622,13 +1558,11 @@ class UpstreamElectricityFactor(BaseModel):
         description="Reference year of the factor",
     )
 
-
 # ---------------------------------------------------------------------------
 # 5. TDLossFactor
 # ---------------------------------------------------------------------------
 
-
-class TDLossFactor(BaseModel):
+class TDLossFactor(GreenLangBase):
     """Transmission and distribution loss factor for a region.
 
     Represents the percentage of electricity lost during
@@ -1667,13 +1601,11 @@ class TDLossFactor(BaseModel):
         description="Reference year of the factor",
     )
 
-
 # ---------------------------------------------------------------------------
 # 6. SupplierFuelData
 # ---------------------------------------------------------------------------
 
-
-class SupplierFuelData(BaseModel):
+class SupplierFuelData(GreenLangBase):
     """Supplier-specific upstream emission data for a fuel type.
 
     Contains primary data from a fuel supplier including upstream
@@ -1765,13 +1697,11 @@ class SupplierFuelData(BaseModel):
         description="Additional key-value pairs",
     )
 
-
 # ---------------------------------------------------------------------------
 # 7. Activity3aResult
 # ---------------------------------------------------------------------------
 
-
-class Activity3aResult(BaseModel):
+class Activity3aResult(GreenLangBase):
     """Result of Activity 3a (upstream fuel emissions) calculation.
 
     Contains the WTT emissions for one fuel consumption record,
@@ -1870,13 +1800,11 @@ class Activity3aResult(BaseModel):
         description="SHA-256 hash for audit trail",
     )
 
-
 # ---------------------------------------------------------------------------
 # 8. Activity3bResult
 # ---------------------------------------------------------------------------
 
-
-class Activity3bResult(BaseModel):
+class Activity3bResult(GreenLangBase):
     """Result of Activity 3b (upstream electricity emissions) calculation.
 
     Contains the upstream lifecycle emissions for one electricity
@@ -1963,13 +1891,11 @@ class Activity3bResult(BaseModel):
         description="SHA-256 hash for audit trail",
     )
 
-
 # ---------------------------------------------------------------------------
 # 9. Activity3cResult
 # ---------------------------------------------------------------------------
 
-
-class Activity3cResult(BaseModel):
+class Activity3cResult(GreenLangBase):
     """Result of Activity 3c (T&D losses) calculation.
 
     Contains the emissions attributable to transmission and
@@ -2077,13 +2003,11 @@ class Activity3cResult(BaseModel):
         description="SHA-256 hash for audit trail",
     )
 
-
 # ---------------------------------------------------------------------------
 # 10. Activity3dResult
 # ---------------------------------------------------------------------------
 
-
-class Activity3dResult(BaseModel):
+class Activity3dResult(GreenLangBase):
     """Result of Activity 3d (generation of electricity sold) calculation.
 
     Applicable to utilities and energy resellers only.  Contains
@@ -2150,13 +2074,11 @@ class Activity3dResult(BaseModel):
         description="SHA-256 hash for audit trail",
     )
 
-
 # ---------------------------------------------------------------------------
 # 11. CalculationResult
 # ---------------------------------------------------------------------------
 
-
-class CalculationResult(BaseModel):
+class CalculationResult(GreenLangBase):
     """Complete output of a Category 3 emission calculation run.
 
     The primary output of the calculation pipeline, containing
@@ -2262,7 +2184,7 @@ class CalculationResult(BaseModel):
         description="SHA-256 hash over entire result",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of calculation completion",
     )
     processing_time_ms: Decimal = Field(
@@ -2271,13 +2193,11 @@ class CalculationResult(BaseModel):
         description="Processing duration in milliseconds",
     )
 
-
 # ---------------------------------------------------------------------------
 # 12. GasBreakdown
 # ---------------------------------------------------------------------------
 
-
-class GasBreakdown(BaseModel):
+class GasBreakdown(GreenLangBase):
     """Per-gas emission breakdown for a calculation result.
 
     Provides individual gas values (CO2, CH4, N2O) and the
@@ -2318,13 +2238,11 @@ class GasBreakdown(BaseModel):
         description="IPCC AR version used for GWP conversion",
     )
 
-
 # ---------------------------------------------------------------------------
 # 13. DQIAssessment
 # ---------------------------------------------------------------------------
 
-
-class DQIAssessment(BaseModel):
+class DQIAssessment(GreenLangBase):
     """Data quality indicator assessment for a calculation result.
 
     Scores data quality across the five GHG Protocol dimensions
@@ -2401,13 +2319,11 @@ class DQIAssessment(BaseModel):
         description="List of findings and recommendations",
     )
 
-
 # ---------------------------------------------------------------------------
 # 14. UncertaintyResult
 # ---------------------------------------------------------------------------
 
-
-class UncertaintyResult(BaseModel):
+class UncertaintyResult(GreenLangBase):
     """Uncertainty quantification result for a calculation.
 
     Provides statistical metrics for the uncertainty of the
@@ -2461,13 +2377,11 @@ class UncertaintyResult(BaseModel):
         description="Uncertainty quantification method used",
     )
 
-
 # ---------------------------------------------------------------------------
 # 15. ComplianceCheckResult
 # ---------------------------------------------------------------------------
 
-
-class ComplianceCheckResult(BaseModel):
+class ComplianceCheckResult(GreenLangBase):
     """Result of a compliance check against one regulatory framework.
 
     Aggregates individual compliance findings into an overall
@@ -2502,17 +2416,15 @@ class ComplianceCheckResult(BaseModel):
         description="Compliance score (0-100)",
     )
     checked_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of the compliance check",
     )
-
 
 # ---------------------------------------------------------------------------
 # 16. ComplianceFinding
 # ---------------------------------------------------------------------------
 
-
-class ComplianceFinding(BaseModel):
+class ComplianceFinding(GreenLangBase):
     """A single compliance finding within a framework check.
 
     Represents one disclosure or data requirement that was
@@ -2562,13 +2474,11 @@ class ComplianceFinding(BaseModel):
         description="Actionable recommendation to remediate",
     )
 
-
 # ---------------------------------------------------------------------------
 # 17. PipelineResult
 # ---------------------------------------------------------------------------
 
-
-class PipelineResult(BaseModel):
+class PipelineResult(GreenLangBase):
     """Complete output of the Fuel & Energy Activities pipeline.
 
     Wraps the calculation result with pipeline-level metadata
@@ -2660,7 +2570,7 @@ class PipelineResult(BaseModel):
         description="SHA-256 hash over entire pipeline output",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of pipeline completion",
     )
     processing_time_ms: Decimal = Field(
@@ -2677,13 +2587,11 @@ class PipelineResult(BaseModel):
         description="Error messages generated during pipeline",
     )
 
-
 # ---------------------------------------------------------------------------
 # 18. BatchRequest
 # ---------------------------------------------------------------------------
 
-
-class BatchRequest(BaseModel):
+class BatchRequest(GreenLangBase):
     """Batch request for processing multiple fuel and electricity records.
 
     Enables batch processing of Category 3 calculations for
@@ -2788,13 +2696,11 @@ class BatchRequest(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # 19. BatchResult
 # ---------------------------------------------------------------------------
 
-
-class BatchResult(BaseModel):
+class BatchResult(GreenLangBase):
     """Result of a batch calculation job.
 
     Contains the aggregated results of all records in the batch,
@@ -2854,7 +2760,7 @@ class BatchResult(BaseModel):
         description="Overall batch job status",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of batch completion",
     )
     processing_time_ms: Decimal = Field(
@@ -2863,13 +2769,11 @@ class BatchResult(BaseModel):
         description="Total processing duration in milliseconds",
     )
 
-
 # ---------------------------------------------------------------------------
 # 20. AggregationResult
 # ---------------------------------------------------------------------------
 
-
-class AggregationResult(BaseModel):
+class AggregationResult(GreenLangBase):
     """Multi-dimension aggregation of Category 3 results.
 
     Provides breakdowns by activity type, fuel type, grid region,
@@ -2941,17 +2845,15 @@ class AggregationResult(BaseModel):
         description="SHA-256 hash of the aggregation",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of aggregation",
     )
-
 
 # ---------------------------------------------------------------------------
 # 21. ExportRequest
 # ---------------------------------------------------------------------------
 
-
-class ExportRequest(BaseModel):
+class ExportRequest(GreenLangBase):
     """Request to export calculation results in a specific format.
 
     Attributes:
@@ -2970,8 +2872,8 @@ class ExportRequest(BaseModel):
         default_factory=lambda: str(uuid.uuid4()),
         description="Unique export request identifier",
     )
-    format: ExportFormat = Field(
-        default=ExportFormat.JSON,
+    format: ReportFormat = Field(
+        default=ReportFormat.JSON,
         description="Requested export format",
     )
     calculation_ids: List[str] = Field(
@@ -2996,13 +2898,11 @@ class ExportRequest(BaseModel):
         description="Whether to include uncertainty data",
     )
 
-
 # ---------------------------------------------------------------------------
 # 22. MaterialityResult
 # ---------------------------------------------------------------------------
 
-
-class MaterialityResult(BaseModel):
+class MaterialityResult(GreenLangBase):
     """Materiality assessment of Category 3 relative to total emissions.
 
     Evaluates the significance of Category 3 emissions compared
@@ -3063,13 +2963,11 @@ class MaterialityResult(BaseModel):
         description="Materiality threshold percentage used",
     )
 
-
 # ---------------------------------------------------------------------------
 # 23. HotSpotResult
 # ---------------------------------------------------------------------------
 
-
-class HotSpotResult(BaseModel):
+class HotSpotResult(GreenLangBase):
     """A single hot-spot entry in the Pareto analysis.
 
     Represents one fuel type, grid region, or supplier ranked
@@ -3131,13 +3029,11 @@ class HotSpotResult(BaseModel):
         description="Whether within the top 80% cumulative",
     )
 
-
 # ---------------------------------------------------------------------------
 # 24. YoYDecomposition
 # ---------------------------------------------------------------------------
 
-
-class YoYDecomposition(BaseModel):
+class YoYDecomposition(GreenLangBase):
     """Year-over-year decomposition of Category 3 emission changes.
 
     Decomposes the change in Category 3 emissions between a base
@@ -3216,13 +3112,11 @@ class YoYDecomposition(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # 25. ProvenanceRecord
 # ---------------------------------------------------------------------------
 
-
-class ProvenanceRecord(BaseModel):
+class ProvenanceRecord(GreenLangBase):
     """Provenance tracking record for a single pipeline stage.
 
     Records the SHA-256 hashes of inputs and outputs at each
@@ -3258,7 +3152,7 @@ class ProvenanceRecord(BaseModel):
         description="SHA-256 hash of stage output data",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of stage execution",
     )
     agent_id: str = Field(

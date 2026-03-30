@@ -47,7 +47,8 @@ from typing import Any, Dict, List, Optional, Set, Tuple, Union
 import click
 import yaml
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
+from greenlang.schemas import GreenLangBase
 
 
 logger = logging.getLogger(__name__)
@@ -69,7 +70,7 @@ ALL_SCAN_EXTENSIONS = PYTHON_EXTENSIONS | JSON_EXTENSIONS | YAML_EXTENSIONS
 # =============================================================================
 
 
-class ValidationPattern(BaseModel):
+class ValidationPattern(GreenLangBase):
     """
     Detected validation pattern in code.
 
@@ -161,7 +162,7 @@ class ValidationPattern(BaseModel):
         return v
 
 
-class MigrationReport(BaseModel):
+class MigrationReport(GreenLangBase):
     """
     Migration analysis report.
 
@@ -247,7 +248,7 @@ class MigrationReport(BaseModel):
         return v
 
 
-class SchemaConversion(BaseModel):
+class SchemaConversion(GreenLangBase):
     """
     Schema conversion result.
 

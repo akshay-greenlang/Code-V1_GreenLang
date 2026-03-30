@@ -31,6 +31,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.document_authentication.api.dependencies import (
     AuthUser,
@@ -70,27 +71,18 @@ router = APIRouter(tags=["Classification"])
 _classification_store: Dict[str, Dict] = {}
 _template_store: Dict[str, Dict] = {}
 
-
 def _get_classification_store() -> Dict[str, Dict]:
     """Return the classification result store singleton."""
     return _classification_store
-
 
 def _get_template_store() -> Dict[str, Dict]:
     """Return the template store singleton."""
     return _template_store
 
-
 def _compute_provenance_hash(data: dict) -> str:
     """Compute SHA-256 hash for provenance tracking."""
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _classify_document_type(
     reference: str,
@@ -142,11 +134,9 @@ def _classify_document_type(
     # Default: unknown classification
     return (DocumentTypeSchema.COO, 0.50, ClassificationConfidenceSchema.LOW)
 
-
 # ---------------------------------------------------------------------------
 # POST /classify
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/classify",
@@ -186,7 +176,7 @@ async def classify_document(
     start = time.monotonic()
     try:
         document_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         doc_type, confidence, conf_level = _classify_document_type(
             body.document_reference, body.commodity,
@@ -245,11 +235,9 @@ async def classify_document(
             detail="Failed to classify document",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /classify/batch
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/classify/batch",
@@ -287,7 +275,7 @@ async def batch_classify(
     """
     start = time.monotonic()
     try:
-        now = _utcnow()
+        now = utcnow()
         results: List[ClassificationResultSchema] = []
         errors: List[Dict[str, Any]] = []
         store = _get_classification_store()
@@ -380,11 +368,9 @@ async def batch_classify(
             detail="Failed to process batch classification",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /classify/{document_id}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/classify/{document_id}",
@@ -448,11 +434,9 @@ async def get_classification(
             detail="Failed to retrieve classification",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /classify/templates
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/classify/templates",
@@ -506,7 +490,7 @@ async def list_templates(
             templates=templates,
             total_count=len(templates),
             processing_time_ms=elapsed_ms,
-            timestamp=_utcnow(),
+            timestamp=utcnow(),
         )
 
     except HTTPException:
@@ -518,11 +502,9 @@ async def list_templates(
             detail="Failed to list templates",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /classify/templates
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/classify/templates",
@@ -561,7 +543,7 @@ async def register_template(
     start = time.monotonic()
     try:
         template_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         template_record = {
             "template_id": template_id,
@@ -595,7 +577,6 @@ async def register_template(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to register template",
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

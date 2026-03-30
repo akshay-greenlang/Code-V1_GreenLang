@@ -63,27 +63,22 @@ from typing import Any, Callable, Coroutine, Dict, List, Optional, Set
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ExecutionStatus
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
 ProgressCallback = Callable[[str, float, str], Coroutine[Any, Any, None]]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for provenance tracking.
@@ -103,11 +98,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class AuditPipelinePhase(str, Enum):
     """The 12 phases of the industrial energy audit pipeline."""
@@ -125,18 +118,6 @@ class AuditPipelinePhase(str, Enum):
     REPORT_GENERATION = "report_generation"
     COMPLIANCE_CHECK = "compliance_check"
 
-
-class ExecutionStatus(str, Enum):
-    """Pipeline execution lifecycle status."""
-
-    PENDING = "pending"
-    RUNNING = "running"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    CANCELLED = "cancelled"
-    SKIPPED = "skipped"
-
-
 class IndustrySector(str, Enum):
     """Industrial sectors for audit context."""
 
@@ -153,11 +134,9 @@ class IndustrySector(str, Enum):
     DATA_CENTRES = "data_centres"
     COMMERCIAL_BUILDINGS = "commercial_buildings"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class RetryConfig(BaseModel):
     """Retry configuration with exponential backoff and jitter."""
@@ -168,7 +147,6 @@ class RetryConfig(BaseModel):
     jitter_factor: float = Field(
         default=0.5, ge=0.0, le=1.0, description="Jitter multiplier"
     )
-
 
 class OrchestratorConfig(BaseModel):
     """Configuration for the Industrial Energy Audit Orchestrator."""
@@ -190,7 +168,6 @@ class OrchestratorConfig(BaseModel):
     include_steam_systems: bool = Field(default=True)
     include_waste_heat: bool = Field(default=True)
 
-
 class PhaseProvenance(BaseModel):
     """Provenance tracking for a single phase execution."""
 
@@ -199,8 +176,7 @@ class PhaseProvenance(BaseModel):
     output_hash: str = Field(default="")
     duration_ms: float = Field(default=0.0)
     attempt: int = Field(default=1)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class PhaseResult(BaseModel):
     """Result of a single phase execution."""
@@ -216,7 +192,6 @@ class PhaseResult(BaseModel):
     outputs: Dict[str, Any] = Field(default_factory=dict)
     provenance: Optional[PhaseProvenance] = Field(None)
     retry_count: int = Field(default=0)
-
 
 class PipelineResult(BaseModel):
     """Complete result of the energy audit pipeline execution."""
@@ -236,7 +211,6 @@ class PipelineResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     quality_score: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # DAG Dependency Map
@@ -287,11 +261,9 @@ PHASE_AUDIT_TYPE_APPLICABILITY: Dict[AuditPipelinePhase, List[str]] = {
     AuditPipelinePhase.PROCESS_MAPPING: ["comprehensive", "targeted"],
 }
 
-
 # ---------------------------------------------------------------------------
 # IndustrialEnergyAuditOrchestrator
 # ---------------------------------------------------------------------------
-
 
 class IndustrialEnergyAuditOrchestrator:
     """12-phase pipeline orchestrator for Industrial Energy Audit Pack.
@@ -361,7 +333,7 @@ class IndustrialEnergyAuditOrchestrator:
             industry_sector=self.config.industry_sector.value,
             facility_id=self.config.facility_id,
             status=ExecutionStatus.RUNNING,
-            started_at=_utcnow(),
+            started_at=utcnow(),
         )
         self._results[result.execution_id] = result
 
@@ -394,8 +366,8 @@ class IndustrialEnergyAuditOrchestrator:
                     phase_result = PhaseResult(
                         phase=phase,
                         status=ExecutionStatus.SKIPPED,
-                        started_at=_utcnow(),
-                        completed_at=_utcnow(),
+                        started_at=utcnow(),
+                        completed_at=utcnow(),
                     )
                     result.phase_results[phase.value] = phase_result
                     result.phases_skipped.append(phase.value)
@@ -472,7 +444,7 @@ class IndustrialEnergyAuditOrchestrator:
             result.errors.append(str(exc))
 
         finally:
-            result.completed_at = _utcnow()
+            result.completed_at = utcnow()
             result.total_duration_ms = (time.monotonic() - start_time) * 1000
             result.quality_score = self._compute_quality_score(result)
             if self.config.enable_provenance:
@@ -520,7 +492,7 @@ class IndustrialEnergyAuditOrchestrator:
             "execution_id": execution_id,
             "cancelled": True,
             "reason": "Cancellation signal sent",
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     # -------------------------------------------------------------------------
@@ -737,8 +709,8 @@ class IndustrialEnergyAuditOrchestrator:
         return PhaseResult(
             phase=phase,
             status=ExecutionStatus.FAILED,
-            started_at=_utcnow(),
-            completed_at=_utcnow(),
+            started_at=utcnow(),
+            completed_at=utcnow(),
             errors=[last_error or "Unknown error"],
             retry_count=retry_config.max_retries,
         )
@@ -763,7 +735,7 @@ class IndustrialEnergyAuditOrchestrator:
             PhaseResult with execution details.
         """
         start_time = time.monotonic()
-        phase_start = _utcnow()
+        phase_start = utcnow()
 
         self.logger.info("Executing phase '%s' (attempt %d)", phase.value, attempt + 1)
 
@@ -863,7 +835,7 @@ class IndustrialEnergyAuditOrchestrator:
             phase=phase,
             status=ExecutionStatus.COMPLETED,
             started_at=phase_start,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             duration_ms=elapsed_ms,
             records_processed=records,
             outputs=outputs,

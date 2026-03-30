@@ -30,6 +30,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.document_authentication.api.dependencies import (
     AuthUser,
@@ -66,27 +67,18 @@ router = APIRouter(tags=["Signatures"])
 _signature_store: Dict[str, Dict] = {}
 _doc_signature_index: Dict[str, List[str]] = {}
 
-
 def _get_signature_store() -> Dict[str, Dict]:
     """Return the signature verification store singleton."""
     return _signature_store
-
 
 def _get_doc_signature_index() -> Dict[str, List[str]]:
     """Return the document-to-verification index."""
     return _doc_signature_index
 
-
 def _compute_provenance_hash(data: dict) -> str:
     """Compute SHA-256 hash for provenance tracking."""
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _verify_signature_logic(reference: str) -> Dict[str, Any]:
     """Deterministic signature verification simulation.
@@ -121,7 +113,7 @@ def _verify_signature_logic(reference: str) -> Dict[str, Any]:
         "signature_standard": SignatureStandardSchema.PADES,
         "signer_name": "EUDR Compliance Officer",
         "signer_organization": "GreenLang Verification Authority",
-        "signing_time": _utcnow(),
+        "signing_time": utcnow(),
         "timestamp_valid": True,
         "certificate_status": CertificateStatusSchema.VALID,
         "key_size_bits": 2048,
@@ -129,11 +121,9 @@ def _verify_signature_logic(reference: str) -> Dict[str, Any]:
         "issues": [],
     }
 
-
 # ---------------------------------------------------------------------------
 # POST /signatures/verify
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/signatures/verify",
@@ -173,7 +163,7 @@ async def verify_signature(
     start = time.monotonic()
     try:
         verification_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         sig_result = _verify_signature_logic(body.document_reference)
 
@@ -222,11 +212,9 @@ async def verify_signature(
             detail="Failed to verify signature",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /signatures/verify/batch
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/signatures/verify/batch",
@@ -264,7 +252,7 @@ async def batch_verify_signatures(
     """
     start = time.monotonic()
     try:
-        now = _utcnow()
+        now = utcnow()
         results: List[SignatureResultSchema] = []
         errors: List[Dict[str, Any]] = []
         store = _get_signature_store()
@@ -346,11 +334,9 @@ async def batch_verify_signatures(
             detail="Failed to process batch signature verification",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /signatures/{verification_id}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/signatures/{verification_id}",
@@ -414,11 +400,9 @@ async def get_verification(
             detail="Failed to retrieve verification",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /signatures/history/{document_id}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/signatures/history/{document_id}",
@@ -467,7 +451,7 @@ async def get_signature_history(
             verifications=verifications,
             total_count=len(verifications),
             processing_time_ms=elapsed_ms,
-            timestamp=_utcnow(),
+            timestamp=utcnow(),
         )
 
     except HTTPException:
@@ -481,7 +465,6 @@ async def get_signature_history(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve signature history",
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

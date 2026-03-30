@@ -76,6 +76,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, FrozenSet, List, Optional, Tuple
 
 from greenlang.agents.eudr.document_authentication.config import get_config
+from greenlang.schemas import utcnow
 from greenlang.agents.eudr.document_authentication.metrics import (
     observe_verification_duration,
     record_api_error,
@@ -102,12 +103,6 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance.
 
@@ -120,7 +115,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a new UUID4 string identifier.
 
@@ -128,7 +122,6 @@ def _generate_id() -> str:
         UUID4 string.
     """
     return str(uuid.uuid4())
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -262,11 +255,9 @@ _DEFAULT_ROOT_CAS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Internal: Parsed Certificate Info
 # ---------------------------------------------------------------------------
-
 
 class _CertificateInfo:
     """Internal holder for parsed X.509 certificate information.
@@ -356,11 +347,9 @@ class _CertificateInfo:
             "ct_precert_scts": self.ct_precert_scts,
         }
 
-
 # ---------------------------------------------------------------------------
 # Internal: Trusted CA Entry
 # ---------------------------------------------------------------------------
-
 
 class _TrustedCA:
     """Internal trusted certificate authority entry.
@@ -411,7 +400,7 @@ class _TrustedCA:
         self.key_algorithm = key_algorithm
         self.key_size_bits = key_size_bits
         self.fingerprint_sha256 = fingerprint_sha256
-        self.added_at = _utcnow()
+        self.added_at = utcnow()
         self.active = True
 
     def to_dict(self) -> Dict[str, Any]:
@@ -432,11 +421,9 @@ class _TrustedCA:
             "active": self.active,
         }
 
-
 # ---------------------------------------------------------------------------
 # Internal: OCSP/CRL Cache Entry
 # ---------------------------------------------------------------------------
-
 
 class _RevocationCacheEntry:
     """Internal cache entry for OCSP/CRL revocation status.
@@ -468,18 +455,16 @@ class _RevocationCacheEntry:
             source: Check source (ocsp/crl).
             cache_ttl_hours: Cache TTL in hours.
         """
-        now = _utcnow()
+        now = utcnow()
         self.serial_number = serial_number
         self.status = status
         self.checked_at = now
         self.source = source
         self.expires_at = now + timedelta(hours=cache_ttl_hours)
 
-
 # ---------------------------------------------------------------------------
 # CertificateChainValidator
 # ---------------------------------------------------------------------------
-
 
 class CertificateChainValidator:
     """X.509 certificate chain validation engine per RFC 5280 for EUDR compliance.
@@ -1291,7 +1276,7 @@ class CertificateChainValidator:
         Returns:
             Status string: 'valid' or 'expired'.
         """
-        now = _utcnow()
+        now = utcnow()
 
         if cert_info.not_before and now < cert_info.not_before:
             return "expired"  # Not yet valid counts as invalid
@@ -1434,7 +1419,7 @@ class CertificateChainValidator:
         # Check cache first
         with self._lock:
             cached = self._revocation_cache.get(serial)
-            if cached and cached.expires_at > _utcnow():
+            if cached and cached.expires_at > utcnow():
                 logger.debug(
                     "OCSP cache hit: serial=%s status=%s",
                     serial[:16], cached.status,
@@ -1498,7 +1483,7 @@ class CertificateChainValidator:
 
     def _auto_refresh_crl(self) -> None:
         """Auto-refresh CRL if the refresh interval has elapsed."""
-        now = _utcnow()
+        now = utcnow()
         refresh_interval = timedelta(
             hours=self._config.crl_refresh_hours,
         )
@@ -1838,7 +1823,7 @@ class CertificateChainValidator:
             "chain_depth": chain_depth,
             "root_ca_name": root_ca_name,
             "processing_time_ms": round(elapsed_ms, 2),
-            "validated_at": _utcnow().isoformat(),
+            "validated_at": utcnow().isoformat(),
         }
         with self._lock:
             self._validation_history.append(entry)
@@ -1860,7 +1845,6 @@ class CertificateChainValidator:
             f"trusted_cas={ca_count} (active={active_cas}), "
             f"validations={history_count})"
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

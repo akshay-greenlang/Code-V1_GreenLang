@@ -61,35 +61,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "23.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a single workflow phase."""
@@ -100,7 +92,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -109,7 +100,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class LifecycleStage(str, Enum):
     """SBTi lifecycle stage."""
@@ -123,7 +113,6 @@ class LifecycleStage(str, Enum):
     REVIEW = "review"
     REVALIDATION = "revalidation"
 
-
 class CommitmentType(str, Enum):
     """SBTi commitment type."""
 
@@ -131,14 +120,12 @@ class CommitmentType(str, Enum):
     NET_ZERO = "net_zero"
     BOTH = "near_term_and_net_zero"
 
-
 class EntityType(str, Enum):
     """Entity classification for SBTi pathway selection."""
 
     CORPORATE = "corporate"
     FINANCIAL_INSTITUTION = "financial_institution"
     SME = "sme"
-
 
 class PathwayMethod(str, Enum):
     """SBTi target pathway methods."""
@@ -149,7 +136,6 @@ class PathwayMethod(str, Enum):
     ACA_FLAG = "aca_flag"
     FI = "fi"
 
-
 class AmbitionLevel(str, Enum):
     """Temperature ambition level."""
 
@@ -157,7 +143,6 @@ class AmbitionLevel(str, Enum):
     WELL_BELOW_2C = "WB2C"
     CELSIUS_2C = "2C"
     INSUFFICIENT = "insufficient"
-
 
 class RAGStatus(str, Enum):
     """RAG (Red/Amber/Green) status."""
@@ -167,14 +152,12 @@ class RAGStatus(str, Enum):
     RED = "red"
     NOT_ASSESSED = "not_assessed"
 
-
 class SubmissionReadiness(str, Enum):
     """Submission readiness classification."""
 
     READY = "ready"
     CONDITIONALLY_READY = "conditionally_ready"
     NOT_READY = "not_ready"
-
 
 class RevalidationStatus(str, Enum):
     """Revalidation assessment status."""
@@ -183,7 +166,6 @@ class RevalidationStatus(str, Enum):
     REVALIDATION_DUE = "revalidation_due"
     REVALIDATION_REQUIRED = "revalidation_required"
     EXPIRED = "expired"
-
 
 # =============================================================================
 # REFERENCE DATA
@@ -226,11 +208,9 @@ MIN_SCOPE3_LONG_TERM_COVERAGE = 90.0
 # Revalidation thresholds
 REVALIDATION_WARNING_MONTHS = 6  # Warn 6 months before due
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -243,7 +223,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class CommitmentData(BaseModel):
     """SBTi commitment registration data."""
 
@@ -254,7 +233,6 @@ class CommitmentData(BaseModel):
     public_announcement: bool = Field(default=False)
     board_approved: bool = Field(default=False)
     notes: List[str] = Field(default_factory=list)
-
 
 class InventorySummary(BaseModel):
     """Emissions inventory summary."""
@@ -271,7 +249,6 @@ class InventorySummary(BaseModel):
     total_emissions_tco2e: float = Field(default=0.0, ge=0.0)
     ghg_verified: bool = Field(default=False)
     boundary_approach: str = Field(default="operational_control")
-
 
 class TargetSummary(BaseModel):
     """Summary of designed targets."""
@@ -290,7 +267,6 @@ class TargetSummary(BaseModel):
     is_flag: bool = Field(default=False)
     is_fi: bool = Field(default=False)
 
-
 class ValidationSummary(BaseModel):
     """Summary of 42-criterion validation."""
 
@@ -302,7 +278,6 @@ class ValidationSummary(BaseModel):
     submission_ready: bool = Field(default=False)
     blocking_criteria: List[str] = Field(default_factory=list)
     gaps_count: int = Field(default=0)
-
 
 class SubmissionPackage(BaseModel):
     """Submission readiness package."""
@@ -316,7 +291,6 @@ class SubmissionPackage(BaseModel):
     missing_documents: List[str] = Field(default_factory=list)
     review_notes: List[str] = Field(default_factory=list)
 
-
 class TrackingSummary(BaseModel):
     """Annual progress tracking summary."""
 
@@ -328,7 +302,6 @@ class TrackingSummary(BaseModel):
     corrective_actions_count: int = Field(default=0)
     carbon_budget_used_pct: float = Field(default=0.0)
 
-
 class ReviewSummary(BaseModel):
     """Periodic review summary."""
 
@@ -339,7 +312,6 @@ class ReviewSummary(BaseModel):
     targets_adjusted: int = Field(default=0)
     variance_drivers: List[str] = Field(default_factory=list)
     recommendations: List[str] = Field(default_factory=list)
-
 
 class RevalidationAssessment(BaseModel):
     """5-year revalidation assessment."""
@@ -353,7 +325,6 @@ class RevalidationAssessment(BaseModel):
     ambition_still_sufficient: bool = Field(default=True)
     scope_changes: List[str] = Field(default_factory=list)
     revalidation_actions: List[str] = Field(default_factory=list)
-
 
 class LifecycleConfig(BaseModel):
     """Configuration for the full SBTi lifecycle workflow."""
@@ -427,7 +398,6 @@ class LifecycleConfig(BaseModel):
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
 
-
 class LifecycleResult(BaseModel):
     """Complete result from the full SBTi lifecycle workflow."""
 
@@ -448,11 +418,9 @@ class LifecycleResult(BaseModel):
     overall_readiness_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class FullSBTiLifecycleWorkflow:
     """
@@ -515,7 +483,7 @@ class FullSBTiLifecycleWorkflow:
             commitment, inventory, targets, validation, submission,
             tracking, review, and revalidation data.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting full SBTi lifecycle workflow %s, entity=%s, type=%s",
             self.workflow_id, config.entity_name, config.entity_type.value,
@@ -623,7 +591,7 @@ class FullSBTiLifecycleWorkflow:
         # Calculate overall readiness
         overall_readiness = self._calculate_readiness()
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         result = LifecycleResult(
             workflow_id=self.workflow_id,
             status=overall_status,
@@ -690,18 +658,18 @@ class FullSBTiLifecycleWorkflow:
 
     async def _phase_commitment(self, config: LifecycleConfig) -> PhaseResult:
         """Register SBTi commitment letter and timeline."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
         # Determine commitment date
-        commit_date = config.commitment_date or _utcnow().strftime("%Y-%m-%d")
+        commit_date = config.commitment_date or utcnow().strftime("%Y-%m-%d")
 
         # Calculate submission deadline (24 months)
         try:
             dt = datetime.fromisoformat(commit_date)
         except ValueError:
-            dt = _utcnow()
+            dt = utcnow()
         deadline_dt = dt.replace(year=dt.year + 2)
         deadline_str = deadline_dt.strftime("%Y-%m-%d")
 
@@ -746,7 +714,7 @@ class FullSBTiLifecycleWorkflow:
         outputs["public_announcement"] = config.public_announcement
         outputs["months_to_deadline"] = 24
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Commitment: type=%s, date=%s, deadline=%s",
             config.commitment_type.value, commit_date, deadline_str,
@@ -766,7 +734,7 @@ class FullSBTiLifecycleWorkflow:
 
     async def _phase_inventory(self, config: LifecycleConfig) -> PhaseResult:
         """Build and validate emissions inventory (S1+S2+S3)."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         errors: List[str] = []
@@ -818,7 +786,7 @@ class FullSBTiLifecycleWorkflow:
         outputs["ghg_verified"] = config.ghg_verified
         outputs["categories_screened"] = config.scope3_categories_screened
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Inventory: total=%.2f, S3=%.1f%%, FLAG=%.1f%%",
             total, scope3_pct, flag_pct,
@@ -839,7 +807,7 @@ class FullSBTiLifecycleWorkflow:
 
     async def _phase_target_set(self, config: LifecycleConfig) -> PhaseResult:
         """Design targets with conditional FLAG and FI pathways."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._targets = []
@@ -1014,7 +982,7 @@ class FullSBTiLifecycleWorkflow:
         for t in self._targets:
             outputs[f"{t.target_id}_reduction"] = round(t.reduction_pct, 2)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Target set: %d targets, method=%s, FLAG=%s, FI=%s",
             len(self._targets), method.value, flag_required, is_fi,
@@ -1034,7 +1002,7 @@ class FullSBTiLifecycleWorkflow:
 
     async def _phase_validate(self, config: LifecycleConfig) -> PhaseResult:
         """Run 42-criterion validation and readiness check."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -1120,7 +1088,7 @@ class FullSBTiLifecycleWorkflow:
                 f"Not submission-ready: {failed} criteria failed ({', '.join(blocking)})"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Validate: readiness=%.1f%%, submission_ready=%s, failed=%d",
             readiness, submission_ready, failed,
@@ -1140,7 +1108,7 @@ class FullSBTiLifecycleWorkflow:
 
     async def _phase_submit(self, config: LifecycleConfig) -> PhaseResult:
         """Prepare submission package and readiness gate."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -1184,7 +1152,7 @@ class FullSBTiLifecycleWorkflow:
             deadline = self._commitment.submission_deadline
             try:
                 deadline_dt = datetime.fromisoformat(deadline)
-                days_to_deadline = (deadline_dt - _utcnow()).days
+                days_to_deadline = (deadline_dt - utcnow()).days
             except ValueError:
                 days_to_deadline = 0
 
@@ -1206,7 +1174,7 @@ class FullSBTiLifecycleWorkflow:
         self._submission = SubmissionPackage(
             readiness=readiness,
             readiness_score=round(readiness_score, 2),
-            submission_date=_utcnow().strftime("%Y-%m-%d") if readiness == SubmissionReadiness.READY else "",
+            submission_date=utcnow().strftime("%Y-%m-%d") if readiness == SubmissionReadiness.READY else "",
             deadline_date=deadline,
             days_until_deadline=max(days_to_deadline, 0),
             package_complete=package_complete,
@@ -1221,7 +1189,7 @@ class FullSBTiLifecycleWorkflow:
         outputs["targets_defined"] = len(self._targets)
         outputs["days_to_deadline"] = max(days_to_deadline, 0)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Submit: readiness=%s (%.0f%%), missing_docs=%d",
             readiness.value, readiness_score, len(missing_docs),
@@ -1241,11 +1209,11 @@ class FullSBTiLifecycleWorkflow:
 
     async def _phase_track(self, config: LifecycleConfig) -> PhaseResult:
         """Annual progress tracking with RAG status."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
-        tracking_year = config.current_year or _utcnow().year
+        tracking_year = config.current_year or utcnow().year
         current_scope12 = config.current_scope1_tco2e + config.current_scope2_tco2e
         current_total = current_scope12 + config.current_scope3_tco2e
 
@@ -1261,7 +1229,7 @@ class FullSBTiLifecycleWorkflow:
             outputs["overall_rag"] = RAGStatus.NOT_ASSESSED.value
             outputs["no_data"] = True
 
-            elapsed = (_utcnow() - started).total_seconds()
+            elapsed = (utcnow() - started).total_seconds()
             return PhaseResult(
                 phase_name="track",
                 status=PhaseStatus.COMPLETED,
@@ -1351,7 +1319,7 @@ class FullSBTiLifecycleWorkflow:
                 f"RED status: {behind} target(s) significantly behind pathway"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Track: year=%d, RAG=%s, on_track=%d, behind=%d",
             tracking_year, worst_rag.value, on_track, behind,
@@ -1371,11 +1339,11 @@ class FullSBTiLifecycleWorkflow:
 
     async def _phase_review(self, config: LifecycleConfig) -> PhaseResult:
         """Periodic review with variance analysis and recalculation check."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
-        review_year = config.current_year or _utcnow().year
+        review_year = config.current_year or utcnow().year
 
         # Check if base year recalculation is needed
         recalc_required = False
@@ -1437,7 +1405,7 @@ class FullSBTiLifecycleWorkflow:
         outputs["variance_drivers"] = len(variance_drivers)
         outputs["recommendations"] = len(recommendations)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Review: year=%d, recalc=%s, recommendations=%d",
             review_year, recalc_required, len(recommendations),
@@ -1457,7 +1425,7 @@ class FullSBTiLifecycleWorkflow:
 
     async def _phase_revalidate(self, config: LifecycleConfig) -> PhaseResult:
         """5-year revalidation cycle assessment."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -1554,7 +1522,7 @@ class FullSBTiLifecycleWorkflow:
         outputs["methodology_changes"] = len(methodology_changes)
         outputs["actions_required"] = len(actions)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Revalidate: status=%s, years_since=%d, actions=%d",
             reval_status.value, years_since, len(actions),

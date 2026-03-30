@@ -60,6 +60,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import statistics
 
 from pydantic import BaseModel, Field, validator
+from greenlang.schemas.enums import AlertSeverity, HealthStatus
 
 
 logger = logging.getLogger(__name__)
@@ -148,15 +149,6 @@ SCANNER_DEGRADATION: Dict[str, Dict[str, float]] = {
 # ENUMS
 # =============================================================================
 
-class HealthStatus(str, Enum):
-    """Component health status classification per API 535."""
-    EXCELLENT = "excellent"    # 90-100: No action required
-    GOOD = "good"              # 70-89: Monitor
-    FAIR = "fair"              # 50-69: Plan maintenance
-    POOR = "poor"              # 25-49: Schedule maintenance
-    CRITICAL = "critical"      # 0-24: Immediate action required
-
-
 class MaintenancePriority(str, Enum):
     """Maintenance priority levels."""
     NONE = "none"              # No maintenance needed
@@ -180,14 +172,6 @@ class FailureMode(str, Enum):
     MECHANICAL_WEAR = "mechanical_wear"
     SEAT_WEAR = "seat_wear"
     ACTUATOR_FAILURE = "actuator_failure"
-
-
-class AlertSeverity(str, Enum):
-    """Alert severity levels."""
-    INFO = "info"
-    WARNING = "warning"
-    ALARM = "alarm"
-    CRITICAL = "critical"
 
 
 # =============================================================================

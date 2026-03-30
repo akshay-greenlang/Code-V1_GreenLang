@@ -47,18 +47,14 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -70,11 +66,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SBTiPathway(str, Enum):
     ACA_15C = "aca_15c"
@@ -83,12 +77,10 @@ class SBTiPathway(str, Enum):
     FLAG = "flag"
     MIXED = "mixed"
 
-
 class SBTiTargetType(str, Enum):
     NEAR_TERM = "near_term"
     LONG_TERM = "long_term"
     NET_ZERO = "net_zero"
-
 
 class CriteriaStatus(str, Enum):
     PASS = "pass"
@@ -96,7 +88,6 @@ class CriteriaStatus(str, Enum):
     WARNING = "warning"
     NOT_APPLICABLE = "not_applicable"
     PENDING = "pending"
-
 
 class SBTiSubmissionStatus(str, Enum):
     DRAFT = "draft"
@@ -106,7 +97,6 @@ class SBTiSubmissionStatus(str, Enum):
     REVISION_REQUIRED = "revision_required"
     REJECTED = "rejected"
 
-
 class TemperatureRating(str, Enum):
     BELOW_15C = "below_1.5C"
     C_15 = "1.5C"
@@ -115,11 +105,9 @@ class TemperatureRating(str, Enum):
     ABOVE_2C = "above_2C"
     NOT_ALIGNED = "not_aligned"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class SBTiBridgeConfig(BaseModel):
     pack_id: str = Field(default="PACK-027")
@@ -135,7 +123,6 @@ class SBTiBridgeConfig(BaseModel):
     rate_limit_per_minute: int = Field(default=20, ge=1, le=60)
     enable_provenance: bool = Field(default=True)
 
-
 class CriteriaValidation(BaseModel):
     criteria_id: str = Field(default="")
     criteria_name: str = Field(default="")
@@ -143,7 +130,6 @@ class CriteriaValidation(BaseModel):
     status: CriteriaStatus = Field(default=CriteriaStatus.PENDING)
     evidence: str = Field(default="")
     remediation: str = Field(default="")
-
 
 class SBTiTargetDefinition(BaseModel):
     target_type: SBTiTargetType = Field(...)
@@ -156,7 +142,6 @@ class SBTiTargetDefinition(BaseModel):
     scope3_coverage_pct: float = Field(default=67.0)
     annual_reduction_rate_pct: float = Field(default=4.2)
     temperature_alignment: TemperatureRating = Field(default=TemperatureRating.C_15)
-
 
 class SBTiValidationResult(BaseModel):
     result_id: str = Field(default_factory=_new_uuid)
@@ -175,7 +160,6 @@ class SBTiValidationResult(BaseModel):
     improvement_actions: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class SBTiProgressReport(BaseModel):
     report_id: str = Field(default_factory=_new_uuid)
     reporting_year: int = Field(default=2025)
@@ -187,7 +171,6 @@ class SBTiProgressReport(BaseModel):
     gap_tco2e: float = Field(default=0.0)
     required_annual_reduction_pct: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # SBTi Criteria Database (28 near-term + 14 net-zero)
@@ -241,11 +224,9 @@ SBTI_NET_ZERO_CRITERIA: List[Dict[str, str]] = [
     {"id": "NZ-C14", "name": "Public net-zero pledge", "category": "communication"},
 ]
 
-
 # ---------------------------------------------------------------------------
 # SBTiBridge
 # ---------------------------------------------------------------------------
-
 
 class SBTiBridge:
     """SBTi Corporate Standard target management for PACK-027.
@@ -368,7 +349,7 @@ class SBTiBridge:
         return {
             "submission_id": _new_uuid(),
             "status": SBTiSubmissionStatus.SUBMITTED.value,
-            "submitted_at": _utcnow().isoformat(),
+            "submitted_at": utcnow().isoformat(),
             "estimated_review_weeks": 12,
             "confirmation": f"SBTi-{self.config.base_year}-{_new_uuid()[:8].upper()}",
             "message": "Targets submitted to SBTi for validation review",

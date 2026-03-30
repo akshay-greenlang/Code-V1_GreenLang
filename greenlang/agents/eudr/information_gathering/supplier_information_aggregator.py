@@ -62,6 +62,7 @@ from greenlang.agents.eudr.information_gathering.models import (
     SupplierProfile,
 )
 from greenlang.agents.eudr.information_gathering.provenance import ProvenanceTracker
+from greenlang.schemas import utcnow
 from greenlang.agents.eudr.information_gathering.metrics import (
     record_supplier_aggregated,
     observe_aggregation_duration,
@@ -99,16 +100,9 @@ _PROFILE_FIELD_WEIGHTS: Dict[str, Decimal] = {
     "tier_depth": Decimal("0.05"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute deterministic SHA-256 hash of data.
@@ -121,7 +115,6 @@ def _compute_hash(data: Any) -> str:
     """
     canonical = json.dumps(data, sort_keys=True, separators=(",", ":"), default=str)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-
 
 def _get_source_priority(source: str) -> int:
     """Return numeric priority for a data source (lower = higher authority).
@@ -136,11 +129,9 @@ def _get_source_priority(source: str) -> int:
     """
     return _SOURCE_PRIORITY.get(source, 99)
 
-
 # ---------------------------------------------------------------------------
 # Jaro-Winkler Similarity (Full Implementation)
 # ---------------------------------------------------------------------------
-
 
 def _jaro_similarity(s1: str, s2: str) -> float:
     """Compute Jaro similarity between two strings.
@@ -210,7 +201,6 @@ def _jaro_similarity(s1: str, s2: str) -> float:
 
     return jaro
 
-
 def _jaro_winkler_similarity(
     s1: str,
     s2: str,
@@ -254,11 +244,9 @@ def _jaro_winkler_similarity(
 
     return jaro + prefix_len * p * (1.0 - jaro)
 
-
 # ---------------------------------------------------------------------------
 # Main Engine
 # ---------------------------------------------------------------------------
-
 
 class SupplierInformationAggregator:
     """Engine for aggregating supplier information from multiple sources.
@@ -338,7 +326,7 @@ class SupplierInformationAggregator:
             "sources": list(sources.keys()),
             "completeness": str(profile.completeness_score),
         })
-        profile.last_updated = _utcnow()
+        profile.last_updated = utcnow()
 
         # Store in cache
         self._profiles[supplier_id] = profile
@@ -455,7 +443,7 @@ class SupplierInformationAggregator:
             plot_ids=all_plots,
             tier_depth=tier_depth,
             data_sources=source_names,
-            last_updated=_utcnow(),
+            last_updated=utcnow(),
         )
 
     def _compute_confidence(

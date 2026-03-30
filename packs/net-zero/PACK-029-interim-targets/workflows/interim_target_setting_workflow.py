@@ -51,31 +51,24 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "29.0.0"
 _PACK_ID = "PACK-029"
 
-
 # =============================================================================
 # HELPERS
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
 
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
 
-
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 def _interpolate_linear(base_val: float, target_val: float, base_yr: int,
                          target_yr: int, current_yr: int) -> float:
@@ -84,7 +77,6 @@ def _interpolate_linear(base_val: float, target_val: float, base_yr: int,
         return target_val
     t = min(max((current_yr - base_yr) / (target_yr - base_yr), 0.0), 1.0)
     return base_val + t * (target_val - base_val)
-
 
 def _interpolate_exponential(base_val: float, target_val: float, base_yr: int,
                               target_yr: int, current_yr: int) -> float:
@@ -96,7 +88,6 @@ def _interpolate_exponential(base_val: float, target_val: float, base_yr: int,
     t = min(max(current_yr - base_yr, 0), target_yr - base_yr)
     return base_val * math.exp(-k * t)
 
-
 def _interpolate_contraction(base_val: float, target_val: float, base_yr: int,
                               target_yr: int, current_yr: int) -> float:
     """Absolute contraction approach (equal annual absolute reductions)."""
@@ -106,13 +97,11 @@ def _interpolate_contraction(base_val: float, target_val: float, base_yr: int,
     elapsed = min(max(current_yr - base_yr, 0), target_yr - base_yr)
     return max(base_val - annual_reduction * elapsed, 0.0)
 
-
 def _calc_cagr(start_val: float, end_val: float, years: int) -> float:
     """Calculate compound annual growth rate (reduction rate if negative)."""
     if years <= 0 or start_val <= 0 or end_val <= 0:
         return 0.0
     return ((end_val / start_val) ** (1.0 / years) - 1.0) * 100.0
-
 
 def _carbon_budget_remaining(base_emissions: float, target_emissions: float,
                               base_yr: int, target_yr: int,
@@ -124,11 +113,9 @@ def _carbon_budget_remaining(base_emissions: float, target_emissions: float,
     total_budget = (base_emissions + target_emissions) / 2.0 * total_years
     return max(total_budget - actual_cumulative, 0.0)
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a single workflow phase."""
@@ -138,7 +125,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "pending"
@@ -147,13 +133,11 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class TargetType(str, Enum):
     """Type of emissions target."""
     ABSOLUTE = "absolute"
     INTENSITY = "intensity"
     BOTH = "both"
-
 
 class TargetScope(str, Enum):
     """GHG Protocol scope coverage."""
@@ -163,7 +147,6 @@ class TargetScope(str, Enum):
     SCOPE_3 = "scope_3"
     ALL_SCOPES = "all_scopes"
 
-
 class TargetTimeframe(str, Enum):
     """SBTi target timeframe classification."""
     NEAR_TERM = "near_term"          # 5-10 years
@@ -171,7 +154,6 @@ class TargetTimeframe(str, Enum):
     INTERIM_5Y = "interim_5y"        # 5-year interim milestone
     INTERIM_10Y = "interim_10y"      # 10-year interim milestone
     ANNUAL = "annual"                # Annual pathway point
-
 
 class BudgetMethod(str, Enum):
     """Carbon budget allocation method."""
@@ -181,13 +163,11 @@ class BudgetMethod(str, Enum):
     ECONOMIC_INTENSITY = "economic_intensity"
     PROPORTIONAL = "proportional"
 
-
 class SBTiAmbition(str, Enum):
     """SBTi ambition level for near-term targets."""
     WELL_BELOW_2C = "well_below_2c"
     ONE_POINT_FIVE_C = "1.5c"
     NET_ZERO = "net_zero"
-
 
 class ValidationResult(str, Enum):
     """Validation pass/fail result."""
@@ -197,18 +177,15 @@ class ValidationResult(str, Enum):
     WARNING = "warning"
     NOT_APPLICABLE = "not_applicable"
 
-
 class RAGStatus(str, Enum):
     """Red-Amber-Green status indicator."""
     RED = "red"
     AMBER = "amber"
     GREEN = "green"
 
-
 # =============================================================================
 # SBTI MINIMUM AMBITION THRESHOLDS (Zero-Hallucination Published Data)
 # =============================================================================
-
 
 SBTI_NEAR_TERM_THRESHOLDS: Dict[str, Dict[str, Any]] = {
     "1.5c": {
@@ -332,11 +309,9 @@ BU_ALLOCATION_WEIGHTS: Dict[str, Dict[str, float]] = {
     },
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -350,7 +325,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
     dag_node_id: str = Field(default="")
-
 
 class BaselineData(BaseModel):
     """Loaded baseline and long-term target data."""
@@ -378,7 +352,6 @@ class BaselineData(BaseModel):
     source_pack: str = Field(default="PACK-021")
     provenance_hash: str = Field(default="")
 
-
 class InterimTarget(BaseModel):
     """A single interim target milestone."""
     target_id: str = Field(default="")
@@ -402,7 +375,6 @@ class InterimTarget(BaseModel):
     sbti_ambition: str = Field(default="1.5c")
     provenance_hash: str = Field(default="")
 
-
 class InterimTargetSet(BaseModel):
     """Complete set of interim targets."""
     entity_id: str = Field(default="")
@@ -418,7 +390,6 @@ class InterimTargetSet(BaseModel):
     meets_sbti_long_term: bool = Field(default=False)
     provenance_hash: str = Field(default="")
 
-
 class ValidationFinding(BaseModel):
     """A single SBTi validation finding."""
     criterion_id: str = Field(default="")
@@ -430,7 +401,6 @@ class ValidationFinding(BaseModel):
     finding: str = Field(default="")
     remediation: str = Field(default="")
     severity: str = Field(default="info")
-
 
 class ValidationSummary(BaseModel):
     """Summary of SBTi validation results."""
@@ -446,7 +416,6 @@ class ValidationSummary(BaseModel):
     improvement_actions: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class AnnualPathwayPoint(BaseModel):
     """A single year-point on the annual pathway."""
     year: int = Field(default=2025)
@@ -459,7 +428,6 @@ class AnnualPathwayPoint(BaseModel):
     carbon_budget_remaining_tco2e: float = Field(default=0.0, ge=0.0)
     is_milestone_year: bool = Field(default=False)
     milestone_name: str = Field(default="")
-
 
 class AnnualPathway(BaseModel):
     """Complete annual emissions pathway."""
@@ -474,7 +442,6 @@ class AnnualPathway(BaseModel):
     front_loaded: bool = Field(default=False)
     provenance_hash: str = Field(default="")
 
-
 class BUBudgetAllocation(BaseModel):
     """Carbon budget allocation for a single business unit."""
     bu_id: str = Field(default="")
@@ -487,7 +454,6 @@ class BUBudgetAllocation(BaseModel):
     weight: float = Field(default=0.0, ge=0.0, le=1.0)
     five_year_budget_tco2e: float = Field(default=0.0, ge=0.0)
     ten_year_budget_tco2e: float = Field(default=0.0, ge=0.0)
-
 
 class CarbonBudgetAllocation(BaseModel):
     """Complete carbon budget allocation."""
@@ -503,7 +469,6 @@ class CarbonBudgetAllocation(BaseModel):
     remaining_budget_tco2e: float = Field(default=0.0, ge=0.0)
     budget_depletion_year: int = Field(default=2050)
     provenance_hash: str = Field(default="")
-
 
 class InterimTargetReport(BaseModel):
     """Complete interim target summary report."""
@@ -522,7 +487,6 @@ class InterimTargetReport(BaseModel):
     output_formats: List[str] = Field(default_factory=lambda: ["json", "html"])
     data_quality_score: float = Field(default=0.0, ge=0.0, le=5.0)
     provenance_hash: str = Field(default="")
-
 
 class InterimTargetSettingConfig(BaseModel):
     """Configuration for the interim target setting workflow."""
@@ -552,7 +516,6 @@ class InterimTargetSettingConfig(BaseModel):
     retry_on_failure: bool = Field(default=True)
     max_retries: int = Field(default=3, ge=0, le=10)
 
-
 class InterimTargetSettingInput(BaseModel):
     """Input data for the interim target setting workflow."""
     config: InterimTargetSettingConfig = Field(default_factory=InterimTargetSettingConfig)
@@ -569,7 +532,6 @@ class InterimTargetSettingInput(BaseModel):
         default_factory=list,
         description="Existing external target commitments",
     )
-
 
 class InterimTargetSettingResult(BaseModel):
     """Result of the interim target setting workflow."""
@@ -589,11 +551,9 @@ class InterimTargetSettingResult(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class InterimTargetSettingWorkflow:
     """
@@ -640,7 +600,7 @@ class InterimTargetSettingWorkflow:
 
     async def execute(self, input_data: InterimTargetSettingInput) -> InterimTargetSettingResult:
         """Execute the 6-phase interim target setting workflow."""
-        started_at = _utcnow()
+        started_at = utcnow()
         self.config = input_data.config
         self._phase_results = []
         overall_status = WorkflowStatus.RUNNING
@@ -688,7 +648,7 @@ class InterimTargetSettingWorkflow:
                 status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
 
         result = InterimTargetSettingResult(
             workflow_id=self.workflow_id,
@@ -715,7 +675,7 @@ class InterimTargetSettingWorkflow:
 
     async def _phase_load_baseline(self, input_data: InterimTargetSettingInput) -> PhaseResult:
         """Load baseline emissions and long-term targets from upstream packs."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -809,7 +769,7 @@ class InterimTargetSettingWorkflow:
         outputs["source_pack"] = bl.source_pack
         outputs["historical_years"] = len(input_data.historical_emissions)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="load_baseline", phase_number=1,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -824,7 +784,7 @@ class InterimTargetSettingWorkflow:
 
     async def _phase_calc_interim_targets(self, input_data: InterimTargetSettingInput) -> PhaseResult:
         """Calculate 5-year and 10-year interim targets using SBTi criteria."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -973,7 +933,7 @@ class InterimTargetSettingWorkflow:
             outputs[f"target_{t.target_year}_tco2e"] = t.target_value_tco2e
             outputs[f"target_{t.target_year}_reduction_pct"] = t.reduction_pct
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="calc_interim_targets", phase_number=2,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -988,7 +948,7 @@ class InterimTargetSettingWorkflow:
 
     async def _phase_validate_targets(self, input_data: InterimTargetSettingInput) -> PhaseResult:
         """Validate interim targets against SBTi near-term and long-term criteria."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         findings: List[ValidationFinding] = []
@@ -1224,7 +1184,7 @@ class InterimTargetSettingWorkflow:
         outputs["overall_result"] = overall.value
         outputs["sbti_submission_ready"] = overall == ValidationResult.PASS
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="validate_targets", phase_number=3,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -1239,7 +1199,7 @@ class InterimTargetSettingWorkflow:
 
     async def _phase_generate_pathway(self, input_data: InterimTargetSettingInput) -> PhaseResult:
         """Generate year-by-year emissions pathway from base year to long-term target."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -1358,7 +1318,7 @@ class InterimTargetSettingWorkflow:
         outputs["base_year_emissions"] = total_base
         outputs["target_year_emissions"] = round(total_target, 2)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="generate_pathway", phase_number=4,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -1373,7 +1333,7 @@ class InterimTargetSettingWorkflow:
 
     async def _phase_allocate_budget(self, input_data: InterimTargetSettingInput) -> PhaseResult:
         """Allocate carbon budget across scopes and business units."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -1504,7 +1464,7 @@ class InterimTargetSettingWorkflow:
         outputs["ten_year_budget_tco2e"] = round(ten_yr_budget_total, 2)
         outputs["budget_depletion_year"] = depletion_year
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="allocate_budget", phase_number=5,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -1519,7 +1479,7 @@ class InterimTargetSettingWorkflow:
 
     async def _phase_summary_report(self, input_data: InterimTargetSettingInput) -> PhaseResult:
         """Generate interim target summary report."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -1563,7 +1523,7 @@ class InterimTargetSettingWorkflow:
 
         self._report = InterimTargetReport(
             report_id=f"ITR-{self.workflow_id[:8]}",
-            report_date=_utcnow().strftime("%Y-%m-%d"),
+            report_date=utcnow().strftime("%Y-%m-%d"),
             company_name=bl.company_name,
             entity_id=bl.entity_id,
             baseline=bl,
@@ -1589,7 +1549,7 @@ class InterimTargetSettingWorkflow:
         outputs["output_formats"] = self.config.output_formats
         outputs["sbti_submission_ready"] = self._validation.sbti_submission_ready
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="summary_report", phase_number=6,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),

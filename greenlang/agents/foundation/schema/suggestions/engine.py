@@ -52,7 +52,7 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from ..compiler.ir import SchemaIR
 from ..models.config import ValidationOptions, PatchLevel
@@ -68,6 +68,7 @@ from .patches import (
 )
 from .safety import PatchSafetyClassifier, PatchContext
 from .heuristics import FixHeuristics
+from greenlang.schemas import GreenLangBase
 
 
 logger = logging.getLogger(__name__)
@@ -103,7 +104,7 @@ on the specific context (e.g., defaults available, close matches found).
 # =============================================================================
 
 
-class SuggestionEngineResult(BaseModel):
+class SuggestionEngineResult(GreenLangBase):
     """
     Result from the suggestion engine.
 

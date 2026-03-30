@@ -42,20 +42,15 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -68,18 +63,15 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EEIOModel(str, Enum):
     """Supported EEIO models."""
 
     USEEIO_2_0 = "useeio_2.0"
     EXIOBASE_3 = "exiobase_3"
-
 
 class CurrencyCode(str, Enum):
     """Common currency codes."""
@@ -104,7 +96,6 @@ class CurrencyCode(str, Enum):
     ZAR = "ZAR"
     NZD = "NZD"
     THB = "THB"
-
 
 # ---------------------------------------------------------------------------
 # USEEIO 2.0 Sector Emission Intensities (kgCO2e per USD, 2022 prices)
@@ -200,11 +191,9 @@ CPI_DEFLATORS: Dict[int, float] = {
     2026: 1.105,
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class EEIOFactorResult(BaseModel):
     """Result of an EEIO emission factor lookup."""
@@ -222,13 +211,11 @@ class EEIOFactorResult(BaseModel):
     adjustment_year: Optional[int] = Field(None)
     confidence: float = Field(default=0.0, ge=0.0, le=1.0)
     provenance_hash: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # EEIOFactorBridge
 # ---------------------------------------------------------------------------
-
 
 class EEIOFactorBridge:
     """EEIO emission factor database integration.

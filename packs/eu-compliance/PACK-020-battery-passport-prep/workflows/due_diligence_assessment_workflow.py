@@ -35,35 +35,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class WorkflowPhase(str, Enum):
     """Phases of the due diligence assessment workflow."""
@@ -71,7 +63,6 @@ class WorkflowPhase(str, Enum):
     RISK_ASSESSMENT = "risk_assessment"
     MITIGATION_PLANNING = "mitigation_planning"
     AUDIT_VERIFICATION = "audit_verification"
-
 
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
@@ -81,7 +72,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class PhaseStatus(str, Enum):
     """Status of a single phase."""
     PENDING = "pending"
@@ -90,7 +80,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class SupplierTier(str, Enum):
     """Supply chain tier classification."""
     TIER_1 = "tier_1"
@@ -98,7 +87,6 @@ class SupplierTier(str, Enum):
     TIER_3 = "tier_3"
     TIER_4_PLUS = "tier_4_plus"
     UNKNOWN = "unknown"
-
 
 class RiskCategory(str, Enum):
     """Due diligence risk categories per Annex X."""
@@ -113,7 +101,6 @@ class RiskCategory(str, Enum):
     WATER_POLLUTION = "water_pollution"
     DEFORESTATION = "deforestation"
 
-
 class RiskLevel(str, Enum):
     """Risk severity level."""
     CRITICAL = "critical"
@@ -122,7 +109,6 @@ class RiskLevel(str, Enum):
     LOW = "low"
     NEGLIGIBLE = "negligible"
     NOT_ASSESSED = "not_assessed"
-
 
 class MitigationStatus(str, Enum):
     """Status of risk mitigation action."""
@@ -133,14 +119,12 @@ class MitigationStatus(str, Enum):
     FAILED = "failed"
     NOT_REQUIRED = "not_required"
 
-
 class AuditOutcome(str, Enum):
     """Third-party audit outcome."""
     CONFORMANT = "conformant"
     MINOR_NON_CONFORMANCE = "minor_non_conformance"
     MAJOR_NON_CONFORMANCE = "major_non_conformance"
     NOT_AUDITED = "not_audited"
-
 
 # =============================================================================
 # HIGH-RISK REGIONS AND MATERIALS
@@ -169,11 +153,9 @@ RISK_WEIGHTS: Dict[str, float] = {
     RiskCategory.DEFORESTATION.value: 0.02,
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -184,7 +166,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class SupplierRecord(BaseModel):
     """Supply chain participant record."""
@@ -203,7 +184,6 @@ class SupplierRecord(BaseModel):
     annual_volume_kg: float = Field(default=0.0, ge=0.0)
     is_critical: bool = Field(default=False, description="Single-source critical supplier")
 
-
 class RiskAssessmentResult(BaseModel):
     """Risk assessment for a specific supplier."""
     assessment_id: str = Field(default_factory=lambda: f"ra-{_new_uuid()[:8]}")
@@ -218,7 +198,6 @@ class RiskAssessmentResult(BaseModel):
     in_high_risk_region: bool = Field(default=False)
     conflict_mineral_exposure: bool = Field(default=False)
 
-
 class MitigationAction(BaseModel):
     """Risk mitigation action plan."""
     action_id: str = Field(default_factory=lambda: f"mit-{_new_uuid()[:8]}")
@@ -231,7 +210,6 @@ class MitigationAction(BaseModel):
     responsible_party: str = Field(default="")
     estimated_cost_eur: float = Field(default=0.0, ge=0.0)
 
-
 class AuditRecord(BaseModel):
     """Third-party audit record."""
     audit_id: str = Field(default_factory=lambda: f"aud-{_new_uuid()[:8]}")
@@ -243,7 +221,6 @@ class AuditRecord(BaseModel):
     findings_count: int = Field(default=0, ge=0)
     critical_findings: int = Field(default=0, ge=0)
     corrective_actions_required: int = Field(default=0, ge=0)
-
 
 class DueDiligenceInput(BaseModel):
     """Input data model for DueDiligenceAssessmentWorkflow."""
@@ -258,7 +235,6 @@ class DueDiligenceInput(BaseModel):
         description="Risk score threshold for mitigation requirement"
     )
     config: Dict[str, Any] = Field(default_factory=dict)
-
 
 class DueDiligenceResult(BaseModel):
     """Complete result from due diligence assessment workflow."""
@@ -282,11 +258,9 @@ class DueDiligenceResult(BaseModel):
     executed_at: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class DueDiligenceAssessmentWorkflow:
     """
@@ -357,7 +331,7 @@ class DueDiligenceAssessmentWorkflow:
         if input_data is None:
             input_data = DueDiligenceInput(config=config or {})
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting due diligence workflow %s", self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = WorkflowStatus.IN_PROGRESS
@@ -380,7 +354,7 @@ class DueDiligenceAssessmentWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         high_risk_count = sum(
             1 for a in self._assessments
             if a.risk_level in (RiskLevel.HIGH, RiskLevel.CRITICAL)
@@ -413,7 +387,7 @@ class DueDiligenceAssessmentWorkflow:
             supply_chain_coverage_pct=coverage,
             due_diligence_compliant=self._compliant,
             reporting_year=input_data.reporting_year,
-            executed_at=_utcnow().isoformat(),
+            executed_at=utcnow().isoformat(),
         )
         result.provenance_hash = self._compute_provenance(result)
         self.logger.info(
@@ -430,7 +404,7 @@ class DueDiligenceAssessmentWorkflow:
         self, input_data: DueDiligenceInput,
     ) -> PhaseResult:
         """Map upstream supply chain and classify tiers."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -484,7 +458,7 @@ class DueDiligenceAssessmentWorkflow:
         if not self._suppliers:
             warnings.append("No suppliers provided; due diligence cannot proceed")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 1 SupplierMapping: %d suppliers, %d countries",
             len(self._suppliers), len(country_counts),
@@ -504,7 +478,7 @@ class DueDiligenceAssessmentWorkflow:
         self, input_data: DueDiligenceInput,
     ) -> PhaseResult:
         """Assess ESG and regulatory risks per supplier."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._assessments = []
@@ -546,7 +520,7 @@ class DueDiligenceAssessmentWorkflow:
                     f"flags: {', '.join(a.high_risk_flags)}"
                 )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 2 RiskAssessment: %d assessed, avg score %.2f",
             len(self._assessments), avg_score,
@@ -677,7 +651,7 @@ class DueDiligenceAssessmentWorkflow:
         self, input_data: DueDiligenceInput,
     ) -> PhaseResult:
         """Plan risk mitigation actions for high-risk suppliers."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._mitigations = []
@@ -730,7 +704,7 @@ class DueDiligenceAssessmentWorkflow:
                     f"{critical} critical-priority mitigation actions required"
                 )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 3 MitigationPlanning: %d actions, cost EUR %.0f",
             len(self._mitigations), total_cost,
@@ -816,7 +790,7 @@ class DueDiligenceAssessmentWorkflow:
         self, input_data: DueDiligenceInput,
     ) -> PhaseResult:
         """Verify due diligence through third-party audits."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -887,7 +861,7 @@ class DueDiligenceAssessmentWorkflow:
                 f"{major_nc} audits resulted in major non-conformance"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 4 AuditVerification: coverage %.1f%%, compliant=%s",
             audit_coverage_pct, self._compliant,

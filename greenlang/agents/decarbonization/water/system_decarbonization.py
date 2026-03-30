@@ -37,10 +37,11 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +78,7 @@ class TargetType(str, Enum):
 # PYDANTIC MODELS - INPUT
 # =============================================================================
 
-class BaselineEmissions(BaseModel):
+class BaselineEmissions(GreenLangBase):
     """Baseline emissions inventory."""
     year: int
     scope1_emissions_tco2e: float = Field(..., ge=0)
@@ -97,7 +98,7 @@ class BaselineEmissions(BaseModel):
     water_treated_million_m3: float = Field(default=0, ge=0)
 
 
-class InterventionOption(BaseModel):
+class InterventionOption(GreenLangBase):
     """Decarbonization intervention option."""
     intervention_id: str
     name: str
@@ -126,7 +127,7 @@ class InterventionOption(BaseModel):
     scalability_factor: float = Field(default=1.0, ge=0)
 
 
-class DecarbonizationTarget(BaseModel):
+class DecarbonizationTarget(GreenLangBase):
     """Decarbonization target."""
     target_type: TargetType
     target_year: int
@@ -134,7 +135,7 @@ class DecarbonizationTarget(BaseModel):
     interim_targets: Dict[int, float] = Field(default_factory=dict)
 
 
-class DecarbonizationInput(BaseModel):
+class DecarbonizationInput(GreenLangBase):
     """Input for decarbonization planning."""
     utility_id: str
     utility_name: Optional[str] = None
@@ -150,7 +151,7 @@ class DecarbonizationInput(BaseModel):
 # PYDANTIC MODELS - OUTPUT
 # =============================================================================
 
-class YearlyProjection(BaseModel):
+class YearlyProjection(GreenLangBase):
     """Yearly emission projection."""
     year: int
     baseline_emissions_tco2e: float
@@ -162,7 +163,7 @@ class YearlyProjection(BaseModel):
     cumulative_cost: float
 
 
-class InterventionSchedule(BaseModel):
+class InterventionSchedule(GreenLangBase):
     """Scheduled intervention."""
     intervention_id: str
     name: str
@@ -174,7 +175,7 @@ class InterventionSchedule(BaseModel):
     priority_rank: int
 
 
-class DecarbonizationPathway(BaseModel):
+class DecarbonizationPathway(GreenLangBase):
     """Complete decarbonization pathway."""
     pathway_id: str
     target_type: str
@@ -200,7 +201,7 @@ class DecarbonizationPathway(BaseModel):
     gap_to_target_tco2e: float
 
 
-class DecarbonizationOutput(BaseModel):
+class DecarbonizationOutput(GreenLangBase):
     """Output from decarbonization planning."""
     utility_id: str
     baseline_year: int

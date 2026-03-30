@@ -29,6 +29,7 @@ from datetime import datetime, timedelta
 from collections import defaultdict, deque
 from enum import Enum
 import json
+from greenlang.schemas.enums import AlertSeverity
 
 logger = logging.getLogger(__name__)
 
@@ -40,15 +41,6 @@ class MetricType(str, Enum):
     GAUGE = "gauge"  # Current value (active requests, circuit state)
     HISTOGRAM = "histogram"  # Distribution (latency, token count)
     SUMMARY = "summary"  # Aggregated stats (avg, p50, p95, p99)
-
-
-class AlertSeverity(str, Enum):
-    """Alert severity levels"""
-
-    INFO = "info"
-    WARNING = "warning"
-    ERROR = "error"
-    CRITICAL = "critical"
 
 
 @dataclass

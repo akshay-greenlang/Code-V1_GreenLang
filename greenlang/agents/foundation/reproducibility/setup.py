@@ -78,7 +78,6 @@ except ImportError:
     FastAPI = None  # type: ignore[assignment, misc]
     FASTAPI_AVAILABLE = False
 
-
 # ===================================================================
 # ReproducibilityService facade
 # ===================================================================
@@ -86,12 +85,6 @@ except ImportError:
 # Thread-safe singleton lock
 _singleton_lock = threading.Lock()
 _singleton_instance: Optional["ReproducibilityService"] = None
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 class ReproducibilityService:
     """Unified facade over the Reproducibility SDK.
@@ -661,11 +654,9 @@ class ReproducibilityService:
         self._started = False
         logger.info("ReproducibilityService shut down")
 
-
 # ===================================================================
 # Thread-safe singleton access
 # ===================================================================
-
 
 def _get_singleton() -> ReproducibilityService:
     """Get or create the singleton ReproducibilityService instance.
@@ -680,11 +671,9 @@ def _get_singleton() -> ReproducibilityService:
                 _singleton_instance = ReproducibilityService()
     return _singleton_instance
 
-
 # ===================================================================
 # FastAPI integration
 # ===================================================================
-
 
 async def configure_reproducibility(
     app: Any,
@@ -728,7 +717,6 @@ async def configure_reproducibility(
     logger.info("Reproducibility service configured on app")
     return service
 
-
 def get_reproducibility(app: Any) -> ReproducibilityService:
     """Get the ReproducibilityService instance from app state.
 
@@ -749,7 +737,6 @@ def get_reproducibility(app: Any) -> ReproducibilityService:
         )
     return service
 
-
 def get_router() -> Any:
     """Get the reproducibility API router.
 
@@ -761,7 +748,6 @@ def get_router() -> Any:
         return router
     except ImportError:
         return None
-
 
 __all__ = [
     "ReproducibilityService",

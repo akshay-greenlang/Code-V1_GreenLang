@@ -39,20 +39,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -65,11 +60,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CertificationScheme(str, Enum):
     """Supported green building certification schemes."""
@@ -85,7 +78,6 @@ class CertificationScheme(str, Enum):
     DGNB = "dgnb"
     HQE = "hqe"
     WELL_V2 = "well_v2"
-
 
 class CertificationLevel(str, Enum):
     """Certification achievement levels."""
@@ -113,7 +105,6 @@ class CertificationLevel(str, Enum):
     # General
     NOT_CERTIFIED = "not_certified"
 
-
 class CreditStatus(str, Enum):
     """Status of a certification credit/prerequisite."""
 
@@ -123,11 +114,9 @@ class CreditStatus(str, Enum):
     NOT_APPLICABLE = "not_applicable"
     REQUIRES_DOCUMENTATION = "requires_documentation"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class CreditEvaluation(BaseModel):
     """Evaluation of a single certification credit or prerequisite."""
@@ -144,7 +133,6 @@ class CreditEvaluation(BaseModel):
     gap: Optional[float] = Field(None)
     documentation_required: List[str] = Field(default_factory=list)
     recommendations: List[str] = Field(default_factory=list)
-
 
 class CertificationEvaluation(BaseModel):
     """Complete certification evaluation result."""
@@ -164,9 +152,8 @@ class CertificationEvaluation(BaseModel):
     credits: List[CreditEvaluation] = Field(default_factory=list)
     gap_analysis: Dict[str, Any] = Field(default_factory=dict)
     documentation_checklist: List[str] = Field(default_factory=list)
-    evaluated_at: datetime = Field(default_factory=_utcnow)
+    evaluated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class MultiSchemeComparison(BaseModel):
     """Comparison across multiple certification schemes."""
@@ -178,7 +165,6 @@ class MultiSchemeComparison(BaseModel):
     recommendation_reason: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 class CertificationBridgeConfig(BaseModel):
     """Configuration for the Certification Bridge."""
 
@@ -187,7 +173,6 @@ class CertificationBridgeConfig(BaseModel):
     target_level: str = Field(default="", description="Target certification level")
     include_documentation: bool = Field(default=True)
     country_code: str = Field(default="GB")
-
 
 # ---------------------------------------------------------------------------
 # Certification Scheme Definitions
@@ -273,11 +258,9 @@ NABERS_STAR_THRESHOLDS: Dict[str, float] = {
     "1_star": 1.50,
 }
 
-
 # ---------------------------------------------------------------------------
 # CertificationBridge
 # ---------------------------------------------------------------------------
-
 
 class CertificationBridge:
     """Green building certification integration for PACK-032.

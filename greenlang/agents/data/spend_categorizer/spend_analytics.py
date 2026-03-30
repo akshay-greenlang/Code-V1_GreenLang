@@ -51,7 +51,9 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+
+from greenlang.schemas import GreenLangBase, utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -62,21 +64,13 @@ __all__ = [
     "SpendAnalyticsEngine",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _generate_id(prefix: str = "agg") -> str:
     """Generate a unique identifier with a prefix."""
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 # ---------------------------------------------------------------------------
 # Industry benchmarks (kgCO2e per USD of revenue, by industry)
@@ -95,13 +89,11 @@ _INDUSTRY_BENCHMARKS: Dict[str, Dict[str, float]] = {
     "professional_services": {"intensity_kgco2e_per_usd": 0.06, "cat1_share": 0.50, "cat6_share": 0.20, "cat7_share": 0.10},
 }
 
-
 # ---------------------------------------------------------------------------
 # Data models
 # ---------------------------------------------------------------------------
 
-
-class SpendAggregate(BaseModel):
+class SpendAggregate(GreenLangBase):
     """Aggregated spend and emissions for a group."""
 
     group_key: str = Field(..., description="Group identifier (category, vendor, period)")
@@ -119,8 +111,7 @@ class SpendAggregate(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class HotspotResult(BaseModel):
+class HotspotResult(GreenLangBase):
     """Emissions hotspot identification result."""
 
     rank: int = Field(..., ge=1, description="Hotspot rank (1=highest)")
@@ -136,8 +127,7 @@ class HotspotResult(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class TrendDataPoint(BaseModel):
+class TrendDataPoint(GreenLangBase):
     """A single data point in a trend analysis."""
 
     period: str = Field(..., description="Period label (e.g. 2024-Q1, 2024-01)")
@@ -152,11 +142,9 @@ class TrendDataPoint(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
 # ---------------------------------------------------------------------------
 # SpendAnalyticsEngine
 # ---------------------------------------------------------------------------
-
 
 class SpendAnalyticsEngine:
     """Spend analytics and hotspot identification engine.
@@ -1014,6 +1002,6 @@ class SpendAnalyticsEngine:
             "v1": str(value1),
             "v2": str(value2),
             "v3": str(value3),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }, sort_keys=True)
         return hashlib.sha256(payload.encode("utf-8")).hexdigest()

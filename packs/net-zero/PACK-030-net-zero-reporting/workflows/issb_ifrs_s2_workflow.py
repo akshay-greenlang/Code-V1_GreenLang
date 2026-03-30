@@ -42,28 +42,22 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "30.0.0"
 _PACK_ID = "PACK-030"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -72,7 +66,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
@@ -80,19 +73,16 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class RAGStatus(str, Enum):
     RED = "red"
     AMBER = "amber"
     GREEN = "green"
-
 
 class IFRSS2Pillar(str, Enum):
     GOVERNANCE = "governance"
     STRATEGY = "strategy"
     RISK_MANAGEMENT = "risk_management"
     METRICS_TARGETS = "metrics_targets"
-
 
 # =============================================================================
 # IFRS S2 REFERENCE DATA (Zero-Hallucination: IFRS S2 2023)
@@ -146,11 +136,9 @@ IFRS_S2_REQUIREMENTS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase_name: str = Field(...)
@@ -164,7 +152,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     dag_node_id: str = Field(default="")
 
-
 class IFRSS2PillarContent(BaseModel):
     pillar: IFRSS2Pillar = Field(...)
     pillar_name: str = Field(default="")
@@ -177,14 +164,12 @@ class IFRSS2PillarContent(BaseModel):
     completeness_pct: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class XBRLTagSet(BaseModel):
     tag_count: int = Field(default=0)
     taxonomy_version: str = Field(default="IFRS-S2-2023")
     tags: List[Dict[str, Any]] = Field(default_factory=list)
     validation_passed: bool = Field(default=True)
     provenance_hash: str = Field(default="")
-
 
 class IFRSS2ValidationResult(BaseModel):
     is_valid: bool = Field(default=True)
@@ -195,7 +180,6 @@ class IFRSS2ValidationResult(BaseModel):
     warnings: List[Dict[str, str]] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class IFRSS2RenderedOutput(BaseModel):
     output_id: str = Field(default="")
     format: str = Field(default="pdf")
@@ -203,7 +187,6 @@ class IFRSS2RenderedOutput(BaseModel):
     file_size_bytes: int = Field(default=0)
     content_hash: str = Field(default="")
     provenance_hash: str = Field(default="")
-
 
 # -- Config / Input / Result --
 
@@ -232,7 +215,6 @@ class IFRSS2Config(BaseModel):
     revenue_million_usd: float = Field(default=0.0)
     output_formats: List[str] = Field(default_factory=lambda: ["pdf", "xbrl"])
 
-
 class IFRSS2Input(BaseModel):
     config: IFRSS2Config = Field(default_factory=IFRSS2Config)
     governance_data: Dict[str, Any] = Field(default_factory=dict)
@@ -240,7 +222,6 @@ class IFRSS2Input(BaseModel):
     opportunity_data: List[Dict[str, Any]] = Field(default_factory=list)
     industry_metrics: Dict[str, Any] = Field(default_factory=dict)
     scenario_data: List[Dict[str, Any]] = Field(default_factory=list)
-
 
 class IFRSS2Result(BaseModel):
     workflow_id: str = Field(...)
@@ -257,11 +238,9 @@ class IFRSS2Result(BaseModel):
     overall_rag_status: RAGStatus = Field(default=RAGStatus.GREEN)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class IFRSS2Workflow:
     """7-phase DAG workflow for ISSB IFRS S2 climate disclosure."""
@@ -280,7 +259,7 @@ class IFRSS2Workflow:
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     async def execute(self, input_data: IFRSS2Input) -> IFRSS2Result:
-        started_at = _utcnow()
+        started_at = utcnow()
         self.config = input_data.config
         self._phase_results = []
         self._pillars = []
@@ -309,7 +288,7 @@ class IFRSS2Workflow:
                 status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
 
         result = IFRSS2Result(
             workflow_id=self.workflow_id,
@@ -327,7 +306,7 @@ class IFRSS2Workflow:
         return result
 
     async def _phase_governance(self, input_data: IFRSS2Input) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         cfg = self.config
         gov = input_data.governance_data
         reqs = IFRS_S2_REQUIREMENTS["governance"]["requirements"]
@@ -355,7 +334,7 @@ class IFRSS2Workflow:
         pillar.provenance_hash = _compute_hash(pillar.model_dump_json(exclude={"provenance_hash"}))
         self._pillars.append(pillar)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="governance_disclosure", phase_number=1,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -365,7 +344,7 @@ class IFRSS2Workflow:
         )
 
     async def _phase_strategy(self, input_data: IFRSS2Input) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         cfg = self.config
         reqs = IFRS_S2_REQUIREMENTS["strategy"]["requirements"]
         risks = input_data.risk_data or [{"type": "Transition", "impact": "High"}]
@@ -395,7 +374,7 @@ class IFRSS2Workflow:
         pillar.provenance_hash = _compute_hash(pillar.model_dump_json(exclude={"provenance_hash"}))
         self._pillars.append(pillar)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="strategy_disclosure", phase_number=2,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -405,7 +384,7 @@ class IFRSS2Workflow:
         )
 
     async def _phase_risk_management(self, input_data: IFRSS2Input) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         cfg = self.config
         reqs = IFRS_S2_REQUIREMENTS["risk_management"]["requirements"]
 
@@ -428,7 +407,7 @@ class IFRSS2Workflow:
         pillar.provenance_hash = _compute_hash(pillar.model_dump_json(exclude={"provenance_hash"}))
         self._pillars.append(pillar)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="risk_management_disclosure", phase_number=3,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -438,7 +417,7 @@ class IFRSS2Workflow:
         )
 
     async def _phase_metrics_targets(self, input_data: IFRSS2Input) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         cfg = self.config
         base_e = cfg.base_year_emissions_tco2e or 100_000.0
         s1 = cfg.scope1_tco2e or base_e * 0.45
@@ -485,7 +464,7 @@ class IFRSS2Workflow:
         pillar.provenance_hash = _compute_hash(pillar.model_dump_json(exclude={"provenance_hash"}))
         self._pillars.append(pillar)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="metrics_targets_disclosure", phase_number=4,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -495,7 +474,7 @@ class IFRSS2Workflow:
         )
 
     async def _phase_xbrl_tagging(self, input_data: IFRSS2Input) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         cfg = self.config
         base_e = cfg.base_year_emissions_tco2e or 100_000.0
         s1 = cfg.scope1_tco2e or base_e * 0.45
@@ -515,7 +494,7 @@ class IFRSS2Workflow:
         )
         self._xbrl.provenance_hash = _compute_hash(self._xbrl.model_dump_json(exclude={"provenance_hash"}))
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="xbrl_tagging", phase_number=5,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -525,7 +504,7 @@ class IFRSS2Workflow:
         )
 
     async def _phase_validate(self, input_data: IFRSS2Input) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         total_reqs = sum(len(v["requirements"]) for v in IFRS_S2_REQUIREMENTS.values())
         met_reqs = sum(len(p.requirements_met) for p in self._pillars)
         completeness = round((met_reqs / max(total_reqs, 1)) * 100, 1)
@@ -545,7 +524,7 @@ class IFRSS2Workflow:
         )
         self._validation.provenance_hash = _compute_hash(self._validation.model_dump_json(exclude={"provenance_hash"}))
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="validate_ifrs_s2", phase_number=6,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -555,7 +534,7 @@ class IFRSS2Workflow:
         )
 
     async def _phase_render(self, input_data: IFRSS2Input) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         cfg = self.config
         self._outputs = []
 
@@ -574,7 +553,7 @@ class IFRSS2Workflow:
                 provenance_hash=_compute_hash(content),
             ))
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="render_outputs", phase_number=7,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),

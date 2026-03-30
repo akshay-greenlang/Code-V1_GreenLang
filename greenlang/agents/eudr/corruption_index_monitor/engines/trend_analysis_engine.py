@@ -71,6 +71,8 @@ from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -82,12 +84,6 @@ _MODULE_VERSION: str = "1.0.0"
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -107,7 +103,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str = "trend") -> str:
     """Generate a unique identifier with a given prefix.
 
@@ -118,7 +113,6 @@ def _generate_id(prefix: str = "trend") -> str:
         ID in format ``{prefix}-{hex12}``.
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 def _to_decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
@@ -139,7 +133,6 @@ def _to_decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError) as exc:
         raise ValueError(f"Cannot convert {value!r} to Decimal") from exc
 
-
 def _clamp_decimal(value: Decimal, lo: Decimal, hi: Decimal) -> Decimal:
     """Clamp a Decimal value to [lo, hi] range.
 
@@ -157,11 +150,9 @@ def _clamp_decimal(value: Decimal, lo: Decimal, hi: Decimal) -> Decimal:
         return hi
     return value
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class TrendDirection(str, Enum):
     """Direction of a corruption index trend over the analysis period.
@@ -180,7 +171,6 @@ class TrendDirection(str, Enum):
     VOLATILE = "VOLATILE"
     INSUFFICIENT_DATA = "INSUFFICIENT_DATA"
 
-
 class IndexType(str, Enum):
     """Type of corruption index being analyzed.
 
@@ -196,7 +186,6 @@ class IndexType(str, Enum):
     BRIBERY = "BRIBERY"
     COMPOSITE = "COMPOSITE"
 
-
 class PredictionModel(str, Enum):
     """Prediction model type for forecasting future index values.
 
@@ -209,7 +198,6 @@ class PredictionModel(str, Enum):
     LINEAR = "linear"
     WMA = "wma"
     ETS = "ets"
-
 
 class ConfidenceLevel(str, Enum):
     """Confidence level for trend analysis results.
@@ -225,7 +213,6 @@ class ConfidenceLevel(str, Enum):
     MEDIUM = "MEDIUM"
     LOW = "LOW"
     VERY_LOW = "VERY_LOW"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -557,11 +544,9 @@ COUNTRY_REGIONS: Dict[str, str] = {
     "MZ": "africa", "LR": "africa", "BO": "americas",
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class TrendResult:
@@ -637,7 +622,6 @@ class TrendResult:
             "provenance_hash": self.provenance_hash,
         }
 
-
 @dataclass
 class TrendPrediction:
     """Prediction of a future corruption index value.
@@ -697,7 +681,6 @@ class TrendPrediction:
             "provenance_hash": self.provenance_hash,
         }
 
-
 @dataclass
 class Breakpoint:
     """A detected structural break in a corruption index time series.
@@ -747,7 +730,6 @@ class Breakpoint:
             "significance": self.significance,
             "provenance_hash": self.provenance_hash,
         }
-
 
 @dataclass
 class TrajectoryResult:
@@ -805,7 +787,6 @@ class TrajectoryResult:
             "provenance_hash": self.provenance_hash,
         }
 
-
 @dataclass
 class CountryTrendSummary:
     """Summary of a country's trend for screening lists.
@@ -850,11 +831,9 @@ class CountryTrendSummary:
             "provenance_hash": self.provenance_hash,
         }
 
-
 # ---------------------------------------------------------------------------
 # TrendAnalysisEngine
 # ---------------------------------------------------------------------------
-
 
 class TrendAnalysisEngine:
     """Production-grade corruption index trend analysis for EUDR compliance.
@@ -1420,7 +1399,7 @@ class TrendAnalysisEngine:
             processing_time_ms = (time.monotonic() - start_time) * 1000.0
             out = result.to_dict()
             out["processing_time_ms"] = round(processing_time_ms, 3)
-            out["calculation_timestamp"] = _utcnow().isoformat()
+            out["calculation_timestamp"] = utcnow().isoformat()
             logger.info(
                 "Trend analysis for %s/%s: INSUFFICIENT_DATA (%d points) "
                 "time_ms=%.1f",
@@ -1487,7 +1466,7 @@ class TrendAnalysisEngine:
 
         out = result.to_dict()
         out["processing_time_ms"] = round(processing_time_ms, 3)
-        out["calculation_timestamp"] = _utcnow().isoformat()
+        out["calculation_timestamp"] = utcnow().isoformat()
 
         logger.info(
             "Trend analysis for %s/%s: direction=%s slope=%s r2=%s "
@@ -1534,7 +1513,7 @@ class TrendAnalysisEngine:
             raise ValueError("window_years must be >= 2")
 
         # Determine year range based on window
-        current_year = _utcnow().year
+        current_year = utcnow().year
         start_year = current_year - window_years
         data = self._get_time_series(
             country_code, index_type, start_year, current_year,
@@ -1555,7 +1534,7 @@ class TrendAnalysisEngine:
             processing_time_ms = (time.monotonic() - start_time) * 1000.0
             out = traj.to_dict()
             out["processing_time_ms"] = round(processing_time_ms, 3)
-            out["calculation_timestamp"] = _utcnow().isoformat()
+            out["calculation_timestamp"] = utcnow().isoformat()
             return out
 
         sorted_years = sorted(data.keys())
@@ -1629,7 +1608,7 @@ class TrendAnalysisEngine:
 
         out = traj.to_dict()
         out["processing_time_ms"] = round(processing_time_ms, 3)
-        out["calculation_timestamp"] = _utcnow().isoformat()
+        out["calculation_timestamp"] = utcnow().isoformat()
 
         logger.info(
             "Trajectory for %s/%s: direction=%s velocity=%s accel=%s "
@@ -1679,7 +1658,7 @@ class TrendAnalysisEngine:
         if model not in valid_models:
             raise ValueError(f"model must be one of {sorted(valid_models)}")
 
-        current_year = _utcnow().year
+        current_year = utcnow().year
         if target_year is None:
             target_year = current_year + DEFAULT_PREDICTION_YEARS
 
@@ -1701,7 +1680,7 @@ class TrendAnalysisEngine:
             processing_time_ms = (time.monotonic() - start_time) * 1000.0
             out = pred.to_dict()
             out["processing_time_ms"] = round(processing_time_ms, 3)
-            out["calculation_timestamp"] = _utcnow().isoformat()
+            out["calculation_timestamp"] = utcnow().isoformat()
             return out
 
         sorted_years = sorted(data.keys())
@@ -1811,7 +1790,7 @@ class TrendAnalysisEngine:
 
         out = pred.to_dict()
         out["processing_time_ms"] = round(processing_time_ms, 3)
-        out["calculation_timestamp"] = _utcnow().isoformat()
+        out["calculation_timestamp"] = utcnow().isoformat()
 
         logger.info(
             "Prediction for %s/%s target=%d: value=%s CI=[%s,%s] "
@@ -1906,7 +1885,7 @@ class TrendAnalysisEngine:
             "improving_count": len(improving),
             "improving_countries": improving,
             "processing_time_ms": round(processing_time_ms, 3),
-            "calculation_timestamp": _utcnow().isoformat(),
+            "calculation_timestamp": utcnow().isoformat(),
             "provenance_hash": "",
         }
         result["provenance_hash"] = _compute_hash(result)
@@ -2002,7 +1981,7 @@ class TrendAnalysisEngine:
             "deteriorating_count": len(deteriorating),
             "deteriorating_countries": deteriorating,
             "processing_time_ms": round(processing_time_ms, 3),
-            "calculation_timestamp": _utcnow().isoformat(),
+            "calculation_timestamp": utcnow().isoformat(),
             "provenance_hash": "",
         }
         result["provenance_hash"] = _compute_hash(result)
@@ -2130,7 +2109,7 @@ class TrendAnalysisEngine:
             "breakpoints": breakpoints,
             "warnings": warnings_list,
             "processing_time_ms": round(processing_time_ms, 3),
-            "calculation_timestamp": _utcnow().isoformat(),
+            "calculation_timestamp": utcnow().isoformat(),
             "provenance_hash": "",
         }
         result["provenance_hash"] = _compute_hash(result)
@@ -2238,7 +2217,7 @@ class TrendAnalysisEngine:
             "direction_counts": direction_counts,
             "country_summaries": summaries,
             "processing_time_ms": round(processing_time_ms, 3),
-            "calculation_timestamp": _utcnow().isoformat(),
+            "calculation_timestamp": utcnow().isoformat(),
             "provenance_hash": "",
         }
         result["provenance_hash"] = _compute_hash(result)
@@ -2338,7 +2317,7 @@ class TrendAnalysisEngine:
             "years_span": year_b - year_a,
             "warnings": warnings_list,
             "processing_time_ms": round(processing_time_ms, 3),
-            "calculation_timestamp": _utcnow().isoformat(),
+            "calculation_timestamp": utcnow().isoformat(),
             "provenance_hash": "",
         }
         result["provenance_hash"] = _compute_hash(result)
@@ -2405,7 +2384,7 @@ class TrendAnalysisEngine:
             "direction_summary": direction_counts,
             "results": per_country_results,
             "processing_time_ms": round(processing_time_ms, 3),
-            "calculation_timestamp": _utcnow().isoformat(),
+            "calculation_timestamp": utcnow().isoformat(),
             "provenance_hash": "",
         }
         result_batch["provenance_hash"] = _compute_hash(result_batch)

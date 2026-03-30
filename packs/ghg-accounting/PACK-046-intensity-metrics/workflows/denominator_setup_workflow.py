@@ -55,36 +55,28 @@ from typing import Any, Dict, List, Optional, Sequence
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas.enums import ValidationSeverity
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> str:
-    """Return current UTC timestamp as ISO-8601 string."""
-    return datetime.utcnow().isoformat() + "Z"
-
-
 def _new_uuid() -> str:
     """Return a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash of JSON-serialisable data."""
     serialised = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialised.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -95,7 +87,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -105,7 +96,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class SetupPhase(str, Enum):
     """Denominator setup workflow phases."""
 
@@ -113,7 +103,6 @@ class SetupPhase(str, Enum):
     DENOMINATOR_SELECTION = "denominator_selection"
     DATA_COLLECTION = "data_collection"
     VALIDATION = "validation"
-
 
 class SectorClassification(str, Enum):
     """High-level sector classification for denominator mapping."""
@@ -132,7 +121,6 @@ class SectorClassification(str, Enum):
     TRANSPORTATION = "transportation"
     OTHER = "other"
 
-
 class DenominatorType(str, Enum):
     """Type of denominator used for intensity metrics."""
 
@@ -148,7 +136,6 @@ class DenominatorType(str, Enum):
     ROOMS = "rooms"
     ASSETS_UNDER_MANAGEMENT = "assets_under_management"
     CUSTOM = "custom"
-
 
 class DenominatorUnit(str, Enum):
     """Unit of measurement for denominators."""
@@ -167,7 +154,6 @@ class DenominatorUnit(str, Enum):
     UNIT_COUNT = "unit_count"
     CUSTOM = "custom"
 
-
 class DataQualityGrade(str, Enum):
     """Data quality grade for collected denominator values."""
 
@@ -176,15 +162,6 @@ class DataQualityGrade(str, Enum):
     LOW = "low"
     ESTIMATED = "estimated"
     UNAVAILABLE = "unavailable"
-
-
-class ValidationSeverity(str, Enum):
-    """Severity level for validation findings."""
-
-    ERROR = "error"
-    WARNING = "warning"
-    INFO = "info"
-
 
 # =============================================================================
 # SECTOR DENOMINATOR MAPPING (Zero-Hallucination Reference Data)
@@ -217,11 +194,9 @@ FRAMEWORK_REQUIRED_DENOMINATORS: Dict[str, List[str]] = {
     "ifrs_s2": ["revenue"],
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -235,7 +210,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
 
-
 class SectorProfile(BaseModel):
     """Identified sector profile for the reporting entity."""
 
@@ -245,7 +219,6 @@ class SectorProfile(BaseModel):
     recommended_denominators: List[str] = Field(default_factory=list)
     sector_specific_denominator: str = Field(default="")
     notes: str = Field(default="")
-
 
 class DenominatorCandidate(BaseModel):
     """A candidate denominator recommended for the entity."""
@@ -257,7 +230,6 @@ class DenominatorCandidate(BaseModel):
     data_available: bool = Field(default=False)
     selected: bool = Field(default=False)
     selection_reason: str = Field(default="")
-
 
 class DenominatorRecord(BaseModel):
     """Collected denominator value for a specific period."""
@@ -271,7 +243,6 @@ class DenominatorRecord(BaseModel):
     notes: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 class ValidationFinding(BaseModel):
     """A finding from denominator data validation."""
 
@@ -282,11 +253,9 @@ class ValidationFinding(BaseModel):
     message: str = Field(default="")
     recommendation: str = Field(default="")
 
-
 # =============================================================================
 # INPUT / OUTPUT
 # =============================================================================
-
 
 class DenominatorSetupInput(BaseModel):
     """Input data model for DenominatorSetupWorkflow."""
@@ -320,7 +289,6 @@ class DenominatorSetupInput(BaseModel):
     tenant_id: str = Field(default="")
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class DenominatorSetupResult(BaseModel):
     """Complete result from denominator setup workflow."""
 
@@ -338,11 +306,9 @@ class DenominatorSetupResult(BaseModel):
     readiness_score: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class DenominatorSetupWorkflow:
     """

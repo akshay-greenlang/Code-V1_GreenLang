@@ -17,7 +17,8 @@ from datetime import datetime
 from typing import Optional, List, Dict, Any
 from enum import Enum
 
-from pydantic import BaseModel, Field, field_validator, ConfigDict
+from pydantic import Field, field_validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 
 
 class LifecycleState(str, Enum):
@@ -34,11 +35,8 @@ class LifecycleState(str, Enum):
 # =============================================================================
 
 
-class SemanticVersion(BaseModel):
+class SemanticVersion(GreenLangBase):
     """Parsed semantic version components."""
-
-    model_config = ConfigDict(extra="forbid")
-
     major: int = Field(..., ge=0, description="Major version (breaking changes)")
     minor: int = Field(..., ge=0, description="Minor version (new features)")
     patch: int = Field(..., ge=0, description="Patch version (bug fixes)")
@@ -55,7 +53,7 @@ class SemanticVersion(BaseModel):
         return version
 
 
-class AgentCapability(BaseModel):
+class AgentCapability(GreenLangBase):
     """Describes a single capability of an agent."""
 
     model_config = ConfigDict(extra="allow")
@@ -66,7 +64,7 @@ class AgentCapability(BaseModel):
     output_schema: Optional[str] = Field(None, description="JSON Schema reference for output")
 
 
-class RuntimeRequirements(BaseModel):
+class RuntimeRequirements(GreenLangBase):
     """Runtime resource requirements for an agent."""
 
     model_config = ConfigDict(extra="allow")
@@ -82,7 +80,7 @@ class RuntimeRequirements(BaseModel):
     llm_providers: Optional[List[Dict[str, Any]]] = Field(None, description="Required LLM providers")
 
 
-class AgentMetadata(BaseModel):
+class AgentMetadata(GreenLangBase):
     """Core agent metadata independent of version."""
 
     model_config = ConfigDict(
@@ -139,7 +137,7 @@ class AgentMetadata(BaseModel):
     updated_at: Optional[datetime] = Field(None, description="Last update timestamp")
 
 
-class AgentVersion(BaseModel):
+class AgentVersion(GreenLangBase):
     """Version-specific agent data."""
 
     model_config = ConfigDict(
@@ -186,7 +184,7 @@ class AgentVersion(BaseModel):
 # =============================================================================
 
 
-class PublishRequest(BaseModel):
+class PublishRequest(GreenLangBase):
     """Request to publish a new agent or agent version."""
 
     model_config = ConfigDict(
@@ -270,11 +268,8 @@ class PublishRequest(BaseModel):
         )
 
 
-class PromoteRequest(BaseModel):
+class PromoteRequest(GreenLangBase):
     """Request to promote an agent version to the next lifecycle state."""
-
-    model_config = ConfigDict(extra="forbid")
-
     target_state: LifecycleState = Field(
         ...,
         description="Target lifecycle state",
@@ -295,11 +290,8 @@ class PromoteRequest(BaseModel):
     )
 
 
-class ListAgentsQuery(BaseModel):
+class ListAgentsQuery(GreenLangBase):
     """Query parameters for listing agents."""
-
-    model_config = ConfigDict(extra="forbid")
-
     domain: Optional[str] = Field(None, description="Filter by domain")
     type: Optional[str] = Field(None, description="Filter by type")
     tenant_id: Optional[str] = Field(None, description="Filter by tenant")
@@ -316,11 +308,8 @@ class ListAgentsQuery(BaseModel):
 # =============================================================================
 
 
-class PublishResponse(BaseModel):
+class PublishResponse(GreenLangBase):
     """Response from agent publish operation."""
-
-    model_config = ConfigDict(extra="forbid")
-
     success: bool = Field(..., description="Whether publish succeeded")
     agent_id: str = Field(..., description="Published agent identifier")
     version_id: str = Field(..., description="Published version identifier")
@@ -330,11 +319,8 @@ class PublishResponse(BaseModel):
     created_at: datetime = Field(..., description="Creation timestamp")
 
 
-class PromoteResponse(BaseModel):
+class PromoteResponse(GreenLangBase):
     """Response from agent promotion operation."""
-
-    model_config = ConfigDict(extra="forbid")
-
     success: bool = Field(..., description="Whether promotion succeeded")
     version_id: str = Field(..., description="Promoted version identifier")
     from_state: LifecycleState = Field(..., description="Previous state")
@@ -343,22 +329,16 @@ class PromoteResponse(BaseModel):
     transitioned_at: datetime = Field(..., description="Transition timestamp")
 
 
-class AgentDetail(BaseModel):
+class AgentDetail(GreenLangBase):
     """Detailed agent information including versions."""
-
-    model_config = ConfigDict(extra="forbid")
-
     agent: AgentMetadata = Field(..., description="Agent metadata")
     versions: List[AgentVersion] = Field(..., description="All versions")
     latest_version: Optional[AgentVersion] = Field(None, description="Latest version")
     version_count: int = Field(..., description="Total version count")
 
 
-class ListAgentsResponse(BaseModel):
+class ListAgentsResponse(GreenLangBase):
     """Paginated list of agents response."""
-
-    model_config = ConfigDict(extra="forbid")
-
     agents: List[AgentMetadata] = Field(..., description="List of agents")
     total: int = Field(..., description="Total number of agents")
     page: int = Field(..., description="Current page number")
@@ -368,22 +348,16 @@ class ListAgentsResponse(BaseModel):
     has_prev: bool = Field(..., description="Whether there are previous pages")
 
 
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     """Standard error response."""
-
-    model_config = ConfigDict(extra="forbid")
-
     error: str = Field(..., description="Error type")
     message: str = Field(..., description="Error message")
     details: Optional[Dict[str, Any]] = Field(None, description="Additional details")
     request_id: Optional[str] = Field(None, description="Request tracking ID")
 
 
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Health check response."""
-
-    model_config = ConfigDict(extra="forbid")
-
     status: str = Field(..., description="Overall health status")
     database: str = Field(..., description="Database connection status")
     version: str = Field(..., description="API version")

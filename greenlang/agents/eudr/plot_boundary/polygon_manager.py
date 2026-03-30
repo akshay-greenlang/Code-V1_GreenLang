@@ -73,6 +73,8 @@ from .models import (
 )
 from .provenance import ProvenanceTracker
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -85,17 +87,10 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # WGS84 Ellipsoid Constants
@@ -165,11 +160,9 @@ _KML_NS_OLD = "{http://earth.google.com/kml/2.1}"
 _GPX_NS = "{http://www.topografix.com/GPX/1/1}"
 _GPX_NS_OLD = "{http://www.topografix.com/GPX/1/0}"
 
-
 # ===========================================================================
 # PolygonManager
 # ===========================================================================
-
 
 class PolygonManager:
     """Polygon Lifecycle Manager for EUDR plot boundary CRUD and CRS transformation.
@@ -276,7 +269,7 @@ class PolygonManager:
             plot_id = request.plot_id or str(uuid.uuid4())
 
             # Step 6: Build PlotBoundary
-            now = _utcnow()
+            now = utcnow()
             boundary = PlotBoundary(
                 plot_id=plot_id,
                 geometry_type=GeometryType.POLYGON,
@@ -380,7 +373,7 @@ class PolygonManager:
                 + sum(len(h.coordinates) for h in holes)
             )
             existing.version += 1
-            existing.updated_at = _utcnow()
+            existing.updated_at = utcnow()
 
             self.provenance.record_operation(
                 entity_type="boundary",
@@ -447,7 +440,7 @@ class PolygonManager:
             return True
 
         boundary.is_active = False
-        boundary.updated_at = _utcnow()
+        boundary.updated_at = utcnow()
 
         self.provenance.record_operation(
             entity_type="boundary",
@@ -1333,7 +1326,6 @@ class PolygonManager:
             min_lat=min_lat, min_lon=min_lon,
             max_lat=max_lat, max_lon=max_lon,
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

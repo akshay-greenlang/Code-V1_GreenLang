@@ -31,6 +31,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 from pydantic import BaseModel, Field, validator
+from greenlang.schemas.enums import AlertSeverity
 
 
 # =============================================================================
@@ -91,14 +92,6 @@ class SensorType(str, Enum):
     TEMPERATURE_IR = "temperature_ir"
     TEMPERATURE_WIRELESS = "temperature_wireless"
     CONDUCTIVITY = "conductivity"
-
-
-class AlertSeverity(str, Enum):
-    """Alert severity levels."""
-    CRITICAL = "critical"      # Immediate action required
-    WARNING = "warning"        # Attention needed
-    INFO = "info"              # Informational
-    NORMAL = "normal"          # Normal operation
 
 
 # =============================================================================

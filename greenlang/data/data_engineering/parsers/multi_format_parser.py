@@ -11,7 +11,6 @@ Created: 2025-12-04
 """
 
 from typing import Dict, List, Optional, Any, Union, BinaryIO
-from enum import Enum
 from datetime import datetime
 from pathlib import Path
 from dataclasses import dataclass, field
@@ -22,21 +21,9 @@ import io
 import hashlib
 
 from pydantic import BaseModel, Field
+from greenlang.schemas.enums import FileFormat
 
 logger = logging.getLogger(__name__)
-
-
-class FileFormat(str, Enum):
-    """Supported file formats."""
-    CSV = "csv"
-    TSV = "tsv"
-    EXCEL_XLSX = "xlsx"
-    EXCEL_XLS = "xls"
-    JSON = "json"
-    JSONL = "jsonl"
-    XML = "xml"
-    PARQUET = "parquet"
-    UNKNOWN = "unknown"
 
 
 class ParserConfig(BaseModel):

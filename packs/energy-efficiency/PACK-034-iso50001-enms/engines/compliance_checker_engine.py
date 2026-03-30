@@ -75,25 +75,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute deterministic SHA-256 hash excluding volatile fields."""
@@ -112,7 +106,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -122,7 +115,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(num: Decimal, den: Decimal,
                  default: Decimal = Decimal("0")) -> Decimal:
     """Safely divide; return default on zero denominator."""
@@ -130,27 +122,22 @@ def _safe_divide(num: Decimal, den: Decimal,
         return default
     return num / den
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute part/whole*100 safely."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 2) -> Decimal:
     """Round Decimal to *places* using ROUND_HALF_UP."""
     q = "0." + "0" * places
     return value.quantize(Decimal(q), rounding=ROUND_HALF_UP)
 
-
 def _today_str() -> str:
     """Return current UTC date as ISO string."""
     return datetime.now(timezone.utc).date().isoformat()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ClauseStatus(str, Enum):
     """Assessment status of an ISO 50001 clause."""
@@ -160,7 +147,6 @@ class ClauseStatus(str, Enum):
     COMPLIANT = "compliant"
     NOT_APPLICABLE = "not_applicable"
 
-
 class AssessmentType(str, Enum):
     """Type of compliance assessment."""
     INITIAL_GAP = "initial_gap"
@@ -169,14 +155,12 @@ class AssessmentType(str, Enum):
     INTERNAL_AUDIT = "internal_audit"
     PRE_CERTIFICATION = "pre_certification"
 
-
 class NonconformitySeverity(str, Enum):
     """Severity classification of a nonconformity."""
     OBSERVATION = "observation"
     MINOR = "minor"
     MAJOR = "major"
     CRITICAL = "critical"
-
 
 class CorrectionStatus(str, Enum):
     """Lifecycle status of a corrective action."""
@@ -186,7 +170,6 @@ class CorrectionStatus(str, Enum):
     VERIFIED = "verified"
     CLOSED = "closed"
 
-
 class CertificationReadiness(str, Enum):
     """Overall certification readiness level."""
     NOT_READY = "not_ready"
@@ -194,7 +177,6 @@ class CertificationReadiness(str, Enum):
     NEARLY_READY = "nearly_ready"
     READY = "ready"
     CERTIFIED = "certified"
-
 
 class DocumentType(str, Enum):
     """Type of documented information per ISO 50001."""
@@ -206,7 +188,6 @@ class DocumentType(str, Enum):
     PLAN = "plan"
     REPORT = "report"
     REGISTER = "register"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -239,11 +220,9 @@ READINESS_NEARLY_READY: Decimal = Decimal("80")
 
 MAX_MINOR_NCS_NEARLY_READY: int = 3
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class ISO50001Clause(BaseModel):
     """ISO 50001:2018 clause definition with audit requirements."""
@@ -262,7 +241,6 @@ class ISO50001Clause(BaseModel):
         if not v:
             raise ValueError("clause_number must not be empty")
         return v
-
 
 class ClauseAssessment(BaseModel):
     """Assessment result for a single clause."""
@@ -285,7 +263,6 @@ class ClauseAssessment(BaseModel):
                 pass
         return v
 
-
 class DocumentChecklist(BaseModel):
     """Document completeness checklist item."""
     document_type: DocumentType = Field(...)
@@ -306,7 +283,6 @@ class DocumentChecklist(BaseModel):
             except ValueError:
                 pass
         return v
-
 
 class Nonconformity(BaseModel):
     """Nonconformity identified during assessment."""
@@ -341,7 +317,6 @@ class Nonconformity(BaseModel):
                 pass
         return v
 
-
 class AuditFinding(BaseModel):
     """Audit finding generated during assessment."""
     finding_id: str = Field(default_factory=_new_uuid)
@@ -360,7 +335,6 @@ class AuditFinding(BaseModel):
             return "observation"
         return v
 
-
 class ComplianceScore(BaseModel):
     """Overall compliance score with category breakdown."""
     overall_score: Decimal = Field(default=Decimal("0"), ge=0, le=Decimal("100"))
@@ -369,7 +343,6 @@ class ComplianceScore(BaseModel):
     readiness: CertificationReadiness = Field(default=CertificationReadiness.NOT_READY)
     critical_gaps: List[str] = Field(default_factory=list)
     strengths: List[str] = Field(default_factory=list)
-
 
 class ComplianceResult(BaseModel):
     """Complete compliance assessment result."""
@@ -398,7 +371,6 @@ class ComplianceResult(BaseModel):
                 pass
         return v
 
-
 # ---------------------------------------------------------------------------
 # Model Rebuild
 # ---------------------------------------------------------------------------
@@ -409,7 +381,6 @@ Nonconformity.model_rebuild()
 AuditFinding.model_rebuild()
 ComplianceScore.model_rebuild()
 ComplianceResult.model_rebuild()
-
 
 # ---------------------------------------------------------------------------
 # ISO 50001:2018 Clause Definitions (25 sub-clauses: 4.1-10.2)
@@ -443,11 +414,9 @@ _CLAUSE_DEFS: List[Dict[str, Any]] = [
     {"clause_number": "10.2", "title": "Continual improvement", "description": "Continually improve the EnMS and demonstrate energy performance improvement.", "parent_clause": "10", "mandatory_documents": ["Continual improvement plan or programme", "Methodology for demonstrating improvement"], "mandatory_records": ["Records demonstrating continual improvement", "EnPI trend data showing improvement", "Records of improvement initiatives and outcomes", "Year-on-year energy performance comparisons"], "audit_questions": ["How does the organisation demonstrate continual improvement?", "What evidence shows improvement over time?", "How are initiatives identified and prioritised?", "Are EnPI trends showing sustained improvement?", "How is EnMS improvement demonstrated?"]},
 ]
 
-
 def _build_clause_tree() -> List[ISO50001Clause]:
     """Build complete ISO 50001:2018 clause tree."""
     return [ISO50001Clause(**d) for d in _CLAUSE_DEFS]
-
 
 _MANDATORY_DOC_DEFS: List[Dict[str, Any]] = [
     {"document_type": DocumentType.REPORT, "title": "Context analysis (internal and external issues)", "clause_references": ["4.1"], "required": True},
@@ -477,7 +446,6 @@ _MANDATORY_DOC_DEFS: List[Dict[str, Any]] = [
     {"document_type": DocumentType.PROCEDURE, "title": "Nonconformity and corrective action procedure", "clause_references": ["10.1"], "required": True},
     {"document_type": DocumentType.PLAN, "title": "Continual improvement plan", "clause_references": ["10.2"], "required": True},
 ]
-
 
 class ComplianceCheckerEngine:
     """ISO 50001:2018 Clauses 4-10 gap analysis and certification readiness engine.

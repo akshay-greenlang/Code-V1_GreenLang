@@ -50,6 +50,7 @@ import time
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.data.duplicate_detector.models import (
     FieldComparisonConfig,
@@ -63,22 +64,14 @@ __all__ = [
     "SimilarityScorer",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_provenance(operation: str, data_repr: str) -> str:
     """Compute SHA-256 provenance hash."""
-    payload = f"{operation}:{data_repr}:{_utcnow().isoformat()}"
+    payload = f"{operation}:{data_repr}:{utcnow().isoformat()}"
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Soundex table
@@ -94,11 +87,9 @@ _SOUNDEX_TABLE: Dict[str, str] = {
     "r": "6",
 }
 
-
 # =============================================================================
 # SimilarityScorer
 # =============================================================================
-
 
 class SimilarityScorer:
     """Similarity scoring engine with 8 deterministic algorithms.
@@ -564,7 +555,7 @@ class SimilarityScorer:
             self._invocations += 1
             self._successes += 1
             self._total_duration_ms += ms
-            self._last_invoked_at = _utcnow()
+            self._last_invoked_at = utcnow()
 
     def _record_failure(self, elapsed_seconds: float) -> None:
         """Record a failed invocation."""
@@ -573,4 +564,4 @@ class SimilarityScorer:
             self._invocations += 1
             self._failures += 1
             self._total_duration_ms += ms
-            self._last_invoked_at = _utcnow()
+            self._last_invoked_at = utcnow()

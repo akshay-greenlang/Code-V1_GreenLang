@@ -37,6 +37,7 @@ import uuid
 from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.mrv.steam_heat_purchase.models import (
     FUEL_EMISSION_FACTORS,
@@ -64,7 +65,6 @@ except ImportError:
     _METRICS_AVAILABLE = False
     _get_metrics = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # Biogenic fuel set
 # ---------------------------------------------------------------------------
@@ -88,16 +88,9 @@ _ZERO_EMISSION_FUELS: frozenset = frozenset({
     "electric",
 })
 
-
 # ---------------------------------------------------------------------------
 # Utility helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _canonical_json(data: Dict[str, Any]) -> str:
     """Serialize dictionary to canonical JSON for hashing.
@@ -113,7 +106,6 @@ def _canonical_json(data: Dict[str, Any]) -> str:
     """
     return json.dumps(data, sort_keys=True, default=str)
 
-
 def _sha256(payload: str) -> str:
     """Compute SHA-256 hex digest of a string payload.
 
@@ -125,11 +117,9 @@ def _sha256(payload: str) -> str:
     """
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
-
 # ===========================================================================
 # SteamHeatDatabaseEngine
 # ===========================================================================
-
 
 class SteamHeatDatabaseEngine:
     """Engine 1: Emission factor database for Scope 2 Steam/Heat Purchase
@@ -284,7 +274,7 @@ class SteamHeatDatabaseEngine:
         payload = {
             "engine": self.ENGINE_ID,
             "operation": operation,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "data": data,
         }
         hash_value = _sha256(_canonical_json(payload))
@@ -2002,7 +1992,7 @@ class SteamHeatDatabaseEngine:
             "status": overall_status,
             "engine_id": self.ENGINE_ID,
             "engine_version": self.ENGINE_VERSION,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "checks": checks,
             "checks_passed": sum(
                 1 for c in checks if c["status"] == "healthy"
@@ -2153,7 +2143,7 @@ class SteamHeatDatabaseEngine:
                 Decimal("0.001"), ROUND_HALF_UP,
             ),
             "is_biogenic": is_biogenic,
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
         with self._state_lock:
@@ -2257,7 +2247,7 @@ class SteamHeatDatabaseEngine:
             "distribution_loss_pct": distribution_loss_pct.quantize(
                 Decimal("0.01"), ROUND_HALF_UP,
             ),
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
         with self._state_lock:
@@ -2364,7 +2354,7 @@ class SteamHeatDatabaseEngine:
                 Decimal("0.1"), ROUND_HALF_UP,
             ),
             "energy_source": energy_source,
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
         with self._state_lock:
@@ -2462,7 +2452,7 @@ class SteamHeatDatabaseEngine:
             "overall_efficiency": overall_efficiency.quantize(
                 Decimal("0.001"), ROUND_HALF_UP,
             ),
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
         with self._state_lock:
@@ -2613,14 +2603,12 @@ class SteamHeatDatabaseEngine:
             cls._instance = None
         logger.info("SteamHeatDatabaseEngine singleton reset")
 
-
 # ===========================================================================
 # Module-level convenience functions
 # ===========================================================================
 
 _module_engine: Optional[SteamHeatDatabaseEngine] = None
 _module_lock = threading.Lock()
-
 
 def get_database(
     config: Any = None,
@@ -2648,7 +2636,6 @@ def get_database(
                 )
     return _module_engine
 
-
 def get_fuel_ef(fuel_type: str) -> Dict[str, Any]:
     """Module-level convenience: get fuel emission factor.
 
@@ -2660,7 +2647,6 @@ def get_fuel_ef(fuel_type: str) -> Dict[str, Any]:
     """
     return get_database().get_fuel_ef(fuel_type)
 
-
 def get_all_fuel_efs() -> Dict[str, Dict[str, Any]]:
     """Module-level convenience: get all fuel emission factors.
 
@@ -2669,7 +2655,6 @@ def get_all_fuel_efs() -> Dict[str, Dict[str, Any]]:
     """
     return get_database().get_all_fuel_efs()
 
-
 def get_fuel_types() -> List[str]:
     """Module-level convenience: list available fuel types.
 
@@ -2677,7 +2662,6 @@ def get_fuel_types() -> List[str]:
         Sorted list of fuel type identifiers.
     """
     return get_database().get_fuel_types()
-
 
 def is_biogenic_fuel(fuel_type: str) -> bool:
     """Module-level convenience: check if fuel is biogenic.
@@ -2690,7 +2674,6 @@ def is_biogenic_fuel(fuel_type: str) -> bool:
     """
     return get_database().is_biogenic_fuel(fuel_type)
 
-
 def get_default_efficiency(fuel_type: str) -> Decimal:
     """Module-level convenience: get default boiler efficiency.
 
@@ -2701,7 +2684,6 @@ def get_default_efficiency(fuel_type: str) -> Decimal:
         Default thermal efficiency as Decimal.
     """
     return get_database().get_default_efficiency(fuel_type)
-
 
 def get_dh_factor(region: str) -> Dict[str, Any]:
     """Module-level convenience: get district heating factor.
@@ -2714,7 +2696,6 @@ def get_dh_factor(region: str) -> Dict[str, Any]:
     """
     return get_database().get_dh_factor(region)
 
-
 def get_all_dh_factors() -> Dict[str, Dict[str, Any]]:
     """Module-level convenience: get all district heating factors.
 
@@ -2723,7 +2704,6 @@ def get_all_dh_factors() -> Dict[str, Dict[str, Any]]:
     """
     return get_database().get_all_dh_factors()
 
-
 def get_dh_regions() -> List[str]:
     """Module-level convenience: list available DH regions.
 
@@ -2731,7 +2711,6 @@ def get_dh_regions() -> List[str]:
         Sorted list of region identifiers.
     """
     return get_database().get_dh_regions()
-
 
 def get_distribution_loss_pct(region: str) -> Decimal:
     """Module-level convenience: get DH distribution loss.
@@ -2744,7 +2723,6 @@ def get_distribution_loss_pct(region: str) -> Decimal:
     """
     return get_database().get_distribution_loss_pct(region)
 
-
 def get_cooling_factor(technology: str) -> Dict[str, Any]:
     """Module-level convenience: get cooling system parameters.
 
@@ -2756,7 +2734,6 @@ def get_cooling_factor(technology: str) -> Dict[str, Any]:
     """
     return get_database().get_cooling_factor(technology)
 
-
 def get_all_cooling_factors() -> Dict[str, Dict[str, Any]]:
     """Module-level convenience: get all cooling factors.
 
@@ -2765,7 +2742,6 @@ def get_all_cooling_factors() -> Dict[str, Dict[str, Any]]:
     """
     return get_database().get_all_cooling_factors()
 
-
 def get_cooling_technologies() -> List[str]:
     """Module-level convenience: list cooling technologies.
 
@@ -2773,7 +2749,6 @@ def get_cooling_technologies() -> List[str]:
         Sorted list of cooling technology identifiers.
     """
     return get_database().get_cooling_technologies()
-
 
 def get_cop(technology: str) -> Decimal:
     """Module-level convenience: get default COP.
@@ -2786,7 +2761,6 @@ def get_cop(technology: str) -> Decimal:
     """
     return get_database().get_cop(technology)
 
-
 def get_cooling_energy_source(technology: str) -> str:
     """Module-level convenience: get cooling energy source.
 
@@ -2797,7 +2771,6 @@ def get_cooling_energy_source(technology: str) -> str:
         Energy source string.
     """
     return get_database().get_cooling_energy_source(technology)
-
 
 def get_chp_defaults(fuel_type: str) -> Dict[str, Any]:
     """Module-level convenience: get CHP default efficiencies.
@@ -2810,7 +2783,6 @@ def get_chp_defaults(fuel_type: str) -> Dict[str, Any]:
     """
     return get_database().get_chp_defaults(fuel_type)
 
-
 def get_all_chp_defaults() -> Dict[str, Dict[str, Any]]:
     """Module-level convenience: get all CHP defaults.
 
@@ -2818,7 +2790,6 @@ def get_all_chp_defaults() -> Dict[str, Dict[str, Any]]:
         Dictionary mapping fuel_type to CHP efficiency dictionaries.
     """
     return get_database().get_all_chp_defaults()
-
 
 def get_gwp_values(source: str) -> Dict[str, Any]:
     """Module-level convenience: get GWP values.
@@ -2831,7 +2802,6 @@ def get_gwp_values(source: str) -> Dict[str, Any]:
     """
     return get_database().get_gwp_values(source)
 
-
 def get_gwp(gas: str, source: str) -> Decimal:
     """Module-level convenience: get specific GWP.
 
@@ -2843,7 +2813,6 @@ def get_gwp(gas: str, source: str) -> Decimal:
         GWP multiplier as Decimal.
     """
     return get_database().get_gwp(gas, source)
-
 
 def convert_energy(
     value: Decimal,
@@ -2862,7 +2831,6 @@ def convert_energy(
     """
     return get_database().convert_energy(value, from_unit, to_unit)
 
-
 def get_conversion_factor(conversion: str) -> Decimal:
     """Module-level convenience: get raw conversion factor.
 
@@ -2873,7 +2841,6 @@ def get_conversion_factor(conversion: str) -> Decimal:
         Conversion factor as Decimal.
     """
     return get_database().get_conversion_factor(conversion)
-
 
 def get_blended_ef(
     fuel_mix: Dict[str, Decimal],
@@ -2888,7 +2855,6 @@ def get_blended_ef(
     """
     return get_database().get_blended_ef(fuel_mix)
 
-
 def search_factors(query: str) -> List[Dict[str, Any]]:
     """Module-level convenience: search factor databases.
 
@@ -2900,7 +2866,6 @@ def search_factors(query: str) -> List[Dict[str, Any]]:
     """
     return get_database().search_factors(query)
 
-
 def get_database_stats() -> Dict[str, Any]:
     """Module-level convenience: get database statistics.
 
@@ -2908,7 +2873,6 @@ def get_database_stats() -> Dict[str, Any]:
         Statistics dictionary.
     """
     return get_database().get_database_stats()
-
 
 def health_check() -> Dict[str, Any]:
     """Module-level convenience: perform health check.

@@ -55,6 +55,7 @@ import logging
 from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Set, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.due_diligence_orchestrator.config import (
     DueDiligenceOrchestratorConfig,
@@ -251,7 +252,7 @@ class RiskAssessmentCoordinator:
             >>> profile = coordinator.compute_composite_risk("wf-001", scores)
             >>> assert profile.composite_score == Decimal("50.0000")
         """
-        start_time = _utcnow()
+        start_time = utcnow()
         weights = self._config.get_weight_dict()
 
         # Validate input scores
@@ -337,13 +338,13 @@ class RiskAssessmentCoordinator:
             highest_risk_dimensions=top_dimensions,
             all_dimensions_scored=(scored_count == total_dimensions),
             coverage_pct=coverage_pct,
-            assessed_at=_utcnow(),
+            assessed_at=utcnow(),
             provenance_hash=self._hash_profile(
                 workflow_id, composite, contributions
             ),
         )
 
-        duration_ms = (_utcnow() - start_time).total_seconds() * 1000
+        duration_ms = (utcnow() - start_time).total_seconds() * 1000
         logger.info(
             f"Composite risk score for {workflow_id}: {composite} "
             f"({risk_level}) from {scored_count}/{total_dimensions} agents "

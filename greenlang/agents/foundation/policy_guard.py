@@ -43,10 +43,11 @@ from enum import Enum
 from functools import lru_cache
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
-from pydantic import BaseModel, Field, validator
+from pydantic import Field, validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -131,7 +132,7 @@ DEFAULT_ROLE_PERMISSIONS: Dict[RoleType, Set[str]] = {
 # =============================================================================
 
 
-class Principal(BaseModel):
+class Principal(GreenLangBase):
     """Represents a user, service, or entity requesting access."""
     principal_id: str = Field(..., description="Unique identifier for the principal")
     principal_type: str = Field(default="user", description="Type: user, service, agent")
@@ -154,7 +155,7 @@ class Principal(BaseModel):
         return v
 
 
-class Resource(BaseModel):
+class Resource(GreenLangBase):
     """Represents a resource being accessed."""
     resource_id: str = Field(..., description="Unique identifier for the resource")
     resource_type: str = Field(..., description="Type of resource: data, agent, report, etc.")
@@ -177,7 +178,7 @@ class Resource(BaseModel):
         return v
 
 
-class AccessRequest(BaseModel):
+class AccessRequest(GreenLangBase):
     """Represents an access control request."""
     request_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     principal: Principal = Field(..., description="The requesting principal")
@@ -189,7 +190,7 @@ class AccessRequest(BaseModel):
     user_agent: Optional[str] = Field(None, description="User agent string")
 
 
-class PolicyRule(BaseModel):
+class PolicyRule(GreenLangBase):
     """A single policy rule definition."""
     rule_id: str = Field(..., description="Unique rule identifier")
     name: str = Field(..., description="Human-readable rule name")
@@ -229,7 +230,7 @@ class PolicyRule(BaseModel):
         return v
 
 
-class Policy(BaseModel):
+class Policy(GreenLangBase):
     """A collection of policy rules."""
     policy_id: str = Field(..., description="Unique policy identifier")
     name: str = Field(..., description="Policy name")
@@ -267,7 +268,7 @@ class Policy(BaseModel):
         return hashlib.sha256(policy_str.encode()).hexdigest()
 
 
-class AccessDecisionResult(BaseModel):
+class AccessDecisionResult(GreenLangBase):
     """Result of an access control decision."""
     request_id: str = Field(..., description="Original request ID")
     decision: AccessDecision = Field(..., description="The access decision")
@@ -287,7 +288,7 @@ class AccessDecisionResult(BaseModel):
     decision_hash: str = Field(default="", description="SHA-256 hash of the decision")
 
 
-class AuditEvent(BaseModel):
+class AuditEvent(GreenLangBase):
     """An audit log entry."""
     event_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     event_type: AuditEventType = Field(..., description="Type of audit event")
@@ -312,7 +313,7 @@ class AuditEvent(BaseModel):
     retention_days: int = Field(default=365, description="Days to retain this event")
 
 
-class RateLimitConfig(BaseModel):
+class RateLimitConfig(GreenLangBase):
     """Rate limiting configuration."""
     requests_per_minute: int = Field(default=100, ge=1, description="Requests per minute")
     requests_per_hour: int = Field(default=1000, ge=1, description="Requests per hour")
@@ -329,7 +330,7 @@ class RateLimitConfig(BaseModel):
     )
 
 
-class PolicyGuardConfig(BaseModel):
+class PolicyGuardConfig(GreenLangBase):
     """Configuration for the Policy Guard Agent."""
     # Mode
     simulation_mode: bool = Field(default=False, description="Run in simulation mode (log only, don't enforce)")
@@ -356,7 +357,7 @@ class PolicyGuardConfig(BaseModel):
     policy_cache_ttl_seconds: int = Field(default=300, description="Policy cache TTL")
 
 
-class ComplianceReport(BaseModel):
+class ComplianceReport(GreenLangBase):
     """Compliance report for policy enforcement."""
     report_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     generated_at: datetime = Field(default_factory=DeterministicClock.now)
@@ -395,7 +396,7 @@ class ComplianceReport(BaseModel):
         return hashlib.sha256(report_str.encode()).hexdigest()
 
 
-class PolicySimulationResult(BaseModel):
+class PolicySimulationResult(GreenLangBase):
     """Result of a policy simulation run."""
     simulation_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     run_at: datetime = Field(default_factory=DeterministicClock.now)

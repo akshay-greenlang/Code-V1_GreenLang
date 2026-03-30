@@ -35,7 +35,7 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.agents.base_agents import DeterministicAgent, AuditEntry
@@ -45,6 +45,7 @@ from greenlang.utilities.determinism import (
     content_hash,
     deterministic_id,
 )
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -128,7 +129,7 @@ DEFAULT_SOURCES = {
 # Pydantic Models
 # =============================================================================
 
-class CostRange(BaseModel):
+class CostRange(GreenLangBase):
     """Cost range with uncertainty bounds."""
     low: float = Field(..., description="Low cost estimate ($/tCO2e)")
     mid: float = Field(..., description="Mid/expected cost estimate ($/tCO2e)")
@@ -146,7 +147,7 @@ class CostRange(BaseModel):
         return v
 
 
-class EmissionReductionPotential(BaseModel):
+class EmissionReductionPotential(GreenLangBase):
     """Emission reduction potential for an abatement option."""
     reduction_tco2e_per_year: float = Field(..., ge=0, description="Absolute reduction potential (tCO2e/year)")
     reduction_percentage: float = Field(..., ge=0, le=100, description="Percentage reduction potential")
@@ -154,7 +155,7 @@ class EmissionReductionPotential(BaseModel):
     uncertainty_percentage: float = Field(default=20.0, ge=0, le=100, description="Uncertainty in estimate")
 
 
-class ImplementationTimeline(BaseModel):
+class ImplementationTimeline(GreenLangBase):
     """Implementation timeline for an abatement option."""
     planning_months: int = Field(default=6, ge=0, description="Planning phase duration")
     procurement_months: int = Field(default=3, ge=0, description="Procurement phase duration")
@@ -172,7 +173,7 @@ class ImplementationTimeline(BaseModel):
         )
 
 
-class CoBenefit(BaseModel):
+class CoBenefit(GreenLangBase):
     """Co-benefit associated with an abatement option."""
     benefit_type: str = Field(..., description="Type of co-benefit")
     description: str = Field(..., description="Description of the co-benefit")
@@ -181,7 +182,7 @@ class CoBenefit(BaseModel):
     confidence: str = Field(default="medium", description="Confidence in estimate (low/medium/high)")
 
 
-class SourceCitation(BaseModel):
+class SourceCitation(GreenLangBase):
     """Citation for data provenance."""
     source_id: str = Field(..., description="Unique source identifier")
     source_name: str = Field(..., description="Full source name/title")
@@ -191,7 +192,7 @@ class SourceCitation(BaseModel):
     page_reference: Optional[str] = Field(None, description="Page or section reference")
 
 
-class AbatementOption(BaseModel):
+class AbatementOption(GreenLangBase):
     """
     Complete abatement option record.
 
@@ -263,7 +264,7 @@ class AbatementOption(BaseModel):
         return content_hash(hash_data)
 
 
-class AbatementOptionsLibraryInput(BaseModel):
+class AbatementOptionsLibraryInput(GreenLangBase):
     """Input model for AbatementOptionsLibraryAgent."""
     operation: str = Field(
         ...,
@@ -287,7 +288,7 @@ class AbatementOptionsLibraryInput(BaseModel):
     offset: int = Field(default=0, ge=0, description="Offset for pagination")
 
 
-class AbatementOptionsLibraryOutput(BaseModel):
+class AbatementOptionsLibraryOutput(GreenLangBase):
     """Output model for AbatementOptionsLibraryAgent."""
     operation: str = Field(..., description="Operation performed")
     success: bool = Field(..., description="Whether operation succeeded")

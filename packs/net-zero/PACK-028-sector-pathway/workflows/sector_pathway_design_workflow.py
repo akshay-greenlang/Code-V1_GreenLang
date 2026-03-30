@@ -49,31 +49,24 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "28.0.0"
 _PACK_ID = "PACK-028"
 
-
 # =============================================================================
 # HELPERS
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
 
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
 
-
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 def _interpolate_linear(base_val: float, target_val: float, base_yr: int,
                          target_yr: int, current_yr: int) -> float:
@@ -82,7 +75,6 @@ def _interpolate_linear(base_val: float, target_val: float, base_yr: int,
         return target_val
     t = min(max((current_yr - base_yr) / (target_yr - base_yr), 0.0), 1.0)
     return base_val + t * (target_val - base_val)
-
 
 def _interpolate_exponential(base_val: float, target_val: float, base_yr: int,
                               target_yr: int, current_yr: int) -> float:
@@ -93,7 +85,6 @@ def _interpolate_exponential(base_val: float, target_val: float, base_yr: int,
     k = -math.log(safe_target / base_val) / (target_yr - base_yr)
     t = min(max(current_yr - base_yr, 0), target_yr - base_yr)
     return base_val * math.exp(-k * t)
-
 
 def _interpolate_scurve(base_val: float, target_val: float, base_yr: int,
                          target_yr: int, current_yr: int,
@@ -106,11 +97,9 @@ def _interpolate_scurve(base_val: float, target_val: float, base_yr: int,
     sigmoid = 1.0 / (1.0 + math.exp(-steepness * (t - mid_yr)))
     return base_val + (target_val - base_val) * sigmoid
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a single workflow phase."""
@@ -120,7 +109,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "pending"
@@ -129,13 +117,11 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class SDAEligibility(str, Enum):
     """SBTi Sectoral Decarbonisation Approach eligibility."""
     ELIGIBLE = "eligible"
     NOT_ELIGIBLE = "not_eligible"
     PARTIAL = "partial"
-
 
 class ConvergenceModel(str, Enum):
     """Convergence curve model type."""
@@ -143,7 +129,6 @@ class ConvergenceModel(str, Enum):
     EXPONENTIAL = "exponential"
     S_CURVE = "s_curve"
     STEPPED = "stepped"
-
 
 class ClimateScenario(str, Enum):
     """IEA / SBTi climate scenario identifiers."""
@@ -153,7 +138,6 @@ class ClimateScenario(str, Enum):
     APS = "aps"                  # Announced Pledges Scenario, ~1.7C
     STEPS = "steps"              # Stated Policies Scenario, ~2.4C
 
-
 class GapSeverity(str, Enum):
     """Severity of gap between current trajectory and pathway."""
     ON_TRACK = "on_track"
@@ -162,14 +146,12 @@ class GapSeverity(str, Enum):
     SIGNIFICANT_GAP = "significant_gap"
     CRITICAL_GAP = "critical_gap"
 
-
 class ValidationStatus(str, Enum):
     """SBTi pathway validation status."""
     PASS = "pass"
     FAIL = "fail"
     CONDITIONAL = "conditional"
     NOT_APPLICABLE = "not_applicable"
-
 
 # =============================================================================
 # SDA SECTOR TAXONOMY (Zero-Hallucination: SBTi Published Data)
@@ -618,11 +600,9 @@ for sector_key, sector_data in SDA_SECTORS.items():
     for code in sector_data.get("isic_codes", []):
         ISIC_TO_SECTOR[code] = sector_key
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -636,7 +616,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
     dag_node_id: str = Field(default="")
-
 
 class SectorClassification(BaseModel):
     """Result of sector classification phase."""
@@ -655,7 +634,6 @@ class SectorClassification(BaseModel):
     classification_confidence: float = Field(default=0.0, ge=0.0, le=100.0)
     iea_chapter: str = Field(default="")
 
-
 class IntensityMetric(BaseModel):
     """Sector-specific intensity metric result."""
     metric_name: str = Field(default="")
@@ -673,7 +651,6 @@ class IntensityMetric(BaseModel):
     scope1_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     scope2_pct: float = Field(default=0.0, ge=0.0, le=100.0)
 
-
 class PathwayPoint(BaseModel):
     """A single year-point on a decarbonisation pathway."""
     year: int = Field(default=2025)
@@ -682,7 +659,6 @@ class PathwayPoint(BaseModel):
     cumulative_reduction_pct: float = Field(default=0.0)
     annual_reduction_rate_pct: float = Field(default=0.0)
     convergence_model: str = Field(default="linear")
-
 
 class SectorPathway(BaseModel):
     """Complete sector convergence pathway for a given scenario."""
@@ -699,7 +675,6 @@ class SectorPathway(BaseModel):
     required_annual_reduction_pct: float = Field(default=0.0)
     sbti_aligned: bool = Field(default=False)
     provenance_hash: str = Field(default="")
-
 
 class GapAnalysisResult(BaseModel):
     """Result of gap analysis between current trajectory and pathway."""
@@ -720,7 +695,6 @@ class GapAnalysisResult(BaseModel):
     leader_gap_pct: float = Field(default=0.0, description="% gap to sector leader")
     recommendations: List[str] = Field(default_factory=list)
 
-
 class ValidationCriterion(BaseModel):
     """A single SBTi validation criterion check."""
     criterion_id: str = Field(default="")
@@ -731,7 +705,6 @@ class ValidationCriterion(BaseModel):
     required_value: str = Field(default="")
     finding: str = Field(default="")
     remediation: str = Field(default="")
-
 
 class ValidationReport(BaseModel):
     """Complete SBTi pathway validation report."""
@@ -748,7 +721,6 @@ class ValidationReport(BaseModel):
     sbti_submission_ready: bool = Field(default=False)
     improvement_actions: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class SectorPathwayDesignConfig(BaseModel):
     """Configuration for the sector pathway design workflow."""
@@ -800,7 +772,6 @@ class SectorPathwayDesignConfig(BaseModel):
     sbti_coverage_scope2_pct: float = Field(default=95.0, ge=0.0, le=100.0)
     sbti_coverage_scope3_pct: float = Field(default=67.0, ge=0.0, le=100.0)
 
-
 class SectorPathwayDesignInput(BaseModel):
     """Input data for the sector pathway design workflow."""
     config: SectorPathwayDesignConfig = Field(
@@ -818,7 +789,6 @@ class SectorPathwayDesignInput(BaseModel):
         default_factory=list,
         description="Planned reduction actions with expected impact",
     )
-
 
 class SectorPathwayDesignResult(BaseModel):
     """Complete result from the sector pathway design workflow."""
@@ -848,11 +818,9 @@ class SectorPathwayDesignResult(BaseModel):
     next_steps: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class SectorPathwayDesignWorkflow:
     """
@@ -894,7 +862,7 @@ class SectorPathwayDesignWorkflow:
 
     async def execute(self, input_data: SectorPathwayDesignInput) -> SectorPathwayDesignResult:
         """Execute the 5-phase sector pathway design workflow."""
-        started_at = _utcnow()
+        started_at = utcnow()
         self.config = input_data.config
         self._phase_results = []
         overall_status = WorkflowStatus.RUNNING
@@ -936,7 +904,7 @@ class SectorPathwayDesignWorkflow:
                 status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
 
         # Determine recommended scenario
         recommended = self._select_recommended_scenario()
@@ -968,7 +936,7 @@ class SectorPathwayDesignWorkflow:
 
     async def _phase_sector_classify(self, input_data: SectorPathwayDesignInput) -> PhaseResult:
         """Classify company into SBTi SDA sector using NACE/GICS/ISIC codes."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -1109,7 +1077,7 @@ class SectorPathwayDesignWorkflow:
         outputs["sub_sectors_count"] = len(sub_sectors)
         outputs["intensity_metric"] = sector_data["intensity_metric"]
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="sector_classify", phase_number=1,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -1124,7 +1092,7 @@ class SectorPathwayDesignWorkflow:
 
     async def _phase_intensity_calc(self, input_data: SectorPathwayDesignInput) -> PhaseResult:
         """Calculate sector-specific intensity metrics."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -1234,7 +1202,7 @@ class SectorPathwayDesignWorkflow:
             ((current_intensity / max(sector_data["2020_global_intensity"], 1e-10)) - 1.0) * 100, 1,
         )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="intensity_calc", phase_number=2,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -1345,7 +1313,7 @@ class SectorPathwayDesignWorkflow:
 
     async def _phase_pathway_gen(self, input_data: SectorPathwayDesignInput) -> PhaseResult:
         """Generate SBTi SDA + IEA NZE convergence pathways for 5 scenarios."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -1493,7 +1461,7 @@ class SectorPathwayDesignWorkflow:
         outputs["years_modeled"] = target_yr - base_yr
         outputs["points_per_pathway"] = len(self._pathways[0].pathway_points) if self._pathways else 0
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="pathway_gen", phase_number=3,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -1508,7 +1476,7 @@ class SectorPathwayDesignWorkflow:
 
     async def _phase_gap_analysis(self, input_data: SectorPathwayDesignInput) -> PhaseResult:
         """Quantify gap between current trajectory and sector pathway."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -1642,7 +1610,7 @@ class SectorPathwayDesignWorkflow:
             self._gap_analyses, key=lambda g: abs(g.intensity_gap_pct),
         ).scenario if self._gap_analyses else ""
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="gap_analysis", phase_number=4,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -1742,7 +1710,7 @@ class SectorPathwayDesignWorkflow:
 
     async def _phase_validation_report(self, input_data: SectorPathwayDesignInput) -> PhaseResult:
         """Produce SBTi pathway validation report with pass/fail criteria."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -1978,7 +1946,7 @@ class SectorPathwayDesignWorkflow:
         outputs["sbti_submission_ready"] = submission_ready
         outputs["improvement_actions_count"] = len(actions)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="validation_report", phase_number=5,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),

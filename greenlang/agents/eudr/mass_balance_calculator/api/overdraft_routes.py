@@ -37,6 +37,7 @@ from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.mass_balance_calculator.api.dependencies import (
     AuthUser,
@@ -82,22 +83,14 @@ _exemption_store: Dict[str, Dict] = {}
 # Mock ledger data for overdraft checks (in production, queried from DB)
 _mock_ledger_balances: Dict[str, Dict[str, Any]] = {}
 
-
 def _compute_provenance_hash(data: dict) -> str:
     """Compute SHA-256 hash for provenance tracking."""
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ---------------------------------------------------------------------------
 # POST /overdraft/check
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/overdraft/check",
@@ -138,7 +131,7 @@ async def check_overdraft(
     """
     start = time.monotonic()
     try:
-        now = _utcnow()
+        now = utcnow()
 
         # In production, query actual ledger balance from DB
         # Here we use a simulated balance lookup
@@ -244,11 +237,9 @@ async def check_overdraft(
             detail="Failed to check overdraft status",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /overdraft/alerts/{facility_id}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/overdraft/alerts/{facility_id}",
@@ -312,7 +303,7 @@ async def get_overdraft_alerts(
             total_unresolved=len(alerts),
             critical_count=critical_count,
             processing_time_ms=elapsed_ms,
-            timestamp=_utcnow(),
+            timestamp=utcnow(),
         )
 
     except HTTPException:
@@ -327,11 +318,9 @@ async def get_overdraft_alerts(
             detail="Failed to retrieve overdraft alerts",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /overdraft/forecast
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/overdraft/forecast",
@@ -368,7 +357,7 @@ async def forecast_output(
     """
     start = time.monotonic()
     try:
-        now = _utcnow()
+        now = utcnow()
 
         # Simulated balance lookup
         ledger_data = _mock_ledger_balances.get(body.ledger_id)
@@ -423,11 +412,9 @@ async def forecast_output(
             detail="Failed to forecast available output",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /overdraft/exemption
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/overdraft/exemption",
@@ -470,7 +457,7 @@ async def request_exemption(
     """
     start = time.monotonic()
     try:
-        now = _utcnow()
+        now = utcnow()
 
         # Verify overdraft event exists
         alert = _overdraft_alert_store.get(body.event_id)
@@ -532,11 +519,9 @@ async def request_exemption(
             detail="Failed to submit exemption request",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /overdraft/history/{facility_id}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/overdraft/history/{facility_id}",
@@ -619,7 +604,7 @@ async def get_overdraft_history(
             events=alert_schemas,
             pagination=meta,
             processing_time_ms=elapsed_ms,
-            timestamp=_utcnow(),
+            timestamp=utcnow(),
         )
 
     except HTTPException:
@@ -634,11 +619,9 @@ async def get_overdraft_history(
             detail="Failed to retrieve overdraft history",
         )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
 
 def _create_overdraft_alert(
     ledger_id: str,
@@ -664,7 +647,7 @@ def _create_overdraft_alert(
         Alert event_id.
     """
     event_id = str(uuid.uuid4())
-    now = _utcnow()
+    now = utcnow()
 
     _overdraft_alert_store[event_id] = {
         "event_id": event_id,
@@ -691,7 +674,6 @@ def _create_overdraft_alert(
     )
 
     return event_id
-
 
 # ---------------------------------------------------------------------------
 # Public API

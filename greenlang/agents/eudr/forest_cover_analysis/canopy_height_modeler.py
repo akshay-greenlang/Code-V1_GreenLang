@@ -81,12 +81,6 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance.
 
@@ -105,7 +99,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str = "cht") -> str:
     """Generate a unique identifier with a given prefix.
 
@@ -116,7 +109,6 @@ def _generate_id(prefix: str = "cht") -> str:
         ID in format ``{prefix}-{hex12}``.
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 # ---------------------------------------------------------------------------
 # Constants: FAO Threshold
@@ -294,11 +286,9 @@ TEXTURE_R_SQUARED: Dict[str, float] = {
     "agroforestry": 0.35,
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class SourceHeightEstimate:
@@ -345,7 +335,6 @@ class SourceHeightEstimate:
             "quality_flag": round(self.quality_flag, 3),
             "provenance_hash": self.provenance_hash,
         }
-
 
 @dataclass
 class CanopyHeightEstimate:
@@ -404,7 +393,6 @@ class CanopyHeightEstimate:
             "source_count": len(self.source_estimates),
         }
 
-
 @dataclass
 class BatchHeightResult:
     """Result of batch height estimation across multiple plots.
@@ -440,11 +428,9 @@ class BatchHeightResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # CanopyHeightModeler
 # ---------------------------------------------------------------------------
-
 
 class CanopyHeightModeler:
     """Multi-source canopy height estimation engine for EUDR compliance.
@@ -1110,7 +1096,7 @@ class CanopyHeightModeler:
             biome=effective_biome,
             confidence_score=round(confidence, 3),
             processing_time_ms=round(elapsed_ms, 2),
-            created_at=str(_utcnow()),
+            created_at=str(utcnow()),
         )
         result.provenance_hash = _compute_hash(result.to_dict())
 
@@ -1510,6 +1496,8 @@ class CanopyHeightModeler:
         Raises:
             ValueError: If any weight is negative or sum deviates
                 from 1.0 by more than 0.01.
+
+from greenlang.schemas import utcnow
         """
         for source, w in weights.items():
             if w < 0.0:
@@ -1538,7 +1526,6 @@ class CanopyHeightModeler:
                 f"Unknown biome '{biome}'. Valid biomes: "
                 f"{list(BIOME_CALIBRATION_OFFSETS.keys())}"
             )
-
 
 # ---------------------------------------------------------------------------
 # Module Exports

@@ -66,6 +66,7 @@ from greenlang.agents.eudr.risk_assessment_engine.models import (
     RiskDimension,
 )
 from greenlang.agents.eudr.risk_assessment_engine.provenance import ProvenanceTracker
+from greenlang.schemas import utcnow
 from greenlang.agents.eudr.risk_assessment_engine.metrics import (
     record_risk_classification,
 )
@@ -81,16 +82,9 @@ _MODULE_VERSION = "1.0.0"
 _CONCERN_ESCALATION_THRESHOLD = 3  # 3+ CONCERN criteria -> escalate
 _SCORE_PRECISION = Decimal("0.01")
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute deterministic SHA-256 hash of data.
@@ -104,7 +98,6 @@ def _compute_hash(data: Any) -> str:
     canonical = json.dumps(data, sort_keys=True, separators=(",", ":"), default=str)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Risk level ordering for comparison
 # ---------------------------------------------------------------------------
@@ -116,7 +109,6 @@ _RISK_LEVEL_ORDER: Dict[RiskLevel, int] = {
     RiskLevel.HIGH: 3,
     RiskLevel.CRITICAL: 4,
 }
-
 
 def _risk_level_above(a: RiskLevel, b: RiskLevel) -> bool:
     """Check if risk level a is strictly above b.
@@ -130,7 +122,6 @@ def _risk_level_above(a: RiskLevel, b: RiskLevel) -> bool:
     """
     return _RISK_LEVEL_ORDER.get(a, 0) > _RISK_LEVEL_ORDER.get(b, 0)
 
-
 def _risk_level_below(a: RiskLevel, b: RiskLevel) -> bool:
     """Check if risk level a is strictly below b.
 
@@ -142,7 +133,6 @@ def _risk_level_below(a: RiskLevel, b: RiskLevel) -> bool:
         True if a < b in severity ordering.
     """
     return _RISK_LEVEL_ORDER.get(a, 0) < _RISK_LEVEL_ORDER.get(b, 0)
-
 
 def _next_level_up(level: RiskLevel) -> RiskLevel:
     """Return the next higher risk level.
@@ -159,7 +149,6 @@ def _next_level_up(level: RiskLevel) -> RiskLevel:
             return rl
     return RiskLevel.CRITICAL
 
-
 def _next_level_down(level: RiskLevel) -> RiskLevel:
     """Return the next lower risk level.
 
@@ -175,11 +164,9 @@ def _next_level_down(level: RiskLevel) -> RiskLevel:
             return rl
     return RiskLevel.NEGLIGIBLE
 
-
 # ---------------------------------------------------------------------------
 # Main Engine
 # ---------------------------------------------------------------------------
-
 
 class RiskClassificationEngine:
     """Engine for classifying composite risk scores into 5-tier risk levels.
@@ -468,7 +455,7 @@ class RiskClassificationEngine:
             all_countries_low=all(
                 b.level == CountryBenchmarkLevel.LOW for b in benchmarks
             ) if benchmarks else False,
-            evaluated_at=_utcnow(),
+            evaluated_at=utcnow(),
             provenance_hash=provenance_hash,
         )
 

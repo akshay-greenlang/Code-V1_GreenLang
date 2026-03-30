@@ -58,8 +58,10 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, FrozenSet, List, Optional, Set, Tuple, Union
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ReportFormat
 
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -147,32 +149,22 @@ JSONLD_CONTEXT = {
     }
 }
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_provenance_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str) -> str:
     """Generate a unique identifier with prefix."""
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class LayoutAlgorithm(str, Enum):
     """Available graph layout algorithms."""
@@ -181,15 +173,6 @@ class LayoutAlgorithm(str, Enum):
     HIERARCHICAL = "hierarchical"
     GEOGRAPHIC = "geographic"
     CIRCULAR = "circular"
-
-
-class ExportFormat(str, Enum):
-    """Available graph export formats."""
-
-    GEOJSON = "geojson"
-    GRAPHML = "graphml"
-    JSONLD = "jsonld"
-
 
 class ColorScheme(str, Enum):
     """Available color coding schemes for nodes and edges."""
@@ -200,11 +183,9 @@ class ColorScheme(str, Enum):
     TIER_DEPTH = "tier_depth"
     COUNTRY = "country"
 
-
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
-
 
 @dataclass(frozen=True)
 class VisualizationConfig:
@@ -244,11 +225,9 @@ class VisualizationConfig:
     enable_edge_bundling: bool = False
     max_layout_time_ms: float = 5000.0
 
-
 # ---------------------------------------------------------------------------
 # Data Structures
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class NodePosition:
@@ -301,7 +280,6 @@ class NodePosition:
             result["metadata"] = self.metadata
         return result
 
-
 @dataclass
 class EdgePath:
     """Computed path and style for a single graph edge.
@@ -344,7 +322,6 @@ class EdgePath:
             result["metadata"] = self.metadata
         return result
 
-
 @dataclass
 class ClusterGroup:
     """A group of nodes that have been clustered for layout optimization.
@@ -382,7 +359,6 @@ class ClusterGroup:
             "metadata": self.metadata,
         }
 
-
 @dataclass
 class SankeyNode:
     """A single node in a Sankey diagram.
@@ -407,7 +383,6 @@ class SankeyNode:
             "color": self.color,
             "value": round(self.value, 4),
         }
-
 
 @dataclass
 class SankeyLink:
@@ -438,7 +413,6 @@ class SankeyLink:
         if self.label:
             result["label"] = self.label
         return result
-
 
 @dataclass
 class LayoutResult:
@@ -473,7 +447,7 @@ class LayoutResult:
     total_nodes: int = 0
     total_edges: int = 0
     provenance_hash: str = ""
-    created_at: datetime = field(default_factory=_utcnow)
+    created_at: datetime = field(default_factory=utcnow)
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary for JSON export / frontend consumption."""
@@ -498,7 +472,6 @@ class LayoutResult:
             "created_at": self.created_at.isoformat(),
         }
 
-
 @dataclass
 class SankeyResult:
     """Complete Sankey diagram data for a supply chain graph.
@@ -521,7 +494,7 @@ class SankeyResult:
     total_flow: float = 0.0
     commodity_filter: Optional[str] = None
     computation_time_ms: float = 0.0
-    created_at: datetime = field(default_factory=_utcnow)
+    created_at: datetime = field(default_factory=utcnow)
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary."""
@@ -535,7 +508,6 @@ class SankeyResult:
             "computation_time_ms": round(self.computation_time_ms, 2),
             "created_at": self.created_at.isoformat(),
         }
-
 
 @dataclass
 class GraphFilter:
@@ -561,11 +533,9 @@ class GraphFilter:
     node_types: Optional[List[str]] = None
     node_ids: Optional[List[str]] = None
 
-
 # ---------------------------------------------------------------------------
 # Visualization Engine
 # ---------------------------------------------------------------------------
-
 
 class VisualizationEngine:
     """Backend engine for EUDR supply chain graph visualization.
@@ -1465,7 +1435,7 @@ class VisualizationEngine:
                 "total_edges": sum(
                     1 for f in features if f["properties"].get("feature_type") == "edge"
                 ),
-                "generated_at": _utcnow().isoformat(),
+                "generated_at": utcnow().isoformat(),
                 "generator": "GreenLang VisualizationEngine",
                 "version": _MODULE_VERSION,
             },
@@ -1631,7 +1601,7 @@ class VisualizationEngine:
         document["identifier"] = graph_id
         document["nodes"] = node_items
         document["edges"] = edge_items
-        document["dateGenerated"] = _utcnow().isoformat()
+        document["dateGenerated"] = utcnow().isoformat()
 
         return document
 
@@ -1739,7 +1709,7 @@ class VisualizationEngine:
                 "nodes": nodes,
                 "edges": edges,
             }),
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
         cache_key = f"{graph_id}:{version}"
@@ -2181,7 +2151,6 @@ class VisualizationEngine:
             return (float(coords[0]), float(coords[1]))
         return None
 
-
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
@@ -2193,7 +2162,7 @@ __all__ = [
     "VisualizationConfig",
     # Enumerations
     "LayoutAlgorithm",
-    "ExportFormat",
+    "ReportFormat",
     "ColorScheme",
     # Data structures
     "NodePosition",

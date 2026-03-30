@@ -62,6 +62,7 @@ from greenlang.agents.data.missing_value_imputer.metrics import (
     inc_errors,
 )
 from greenlang.agents.data.missing_value_imputer.provenance import ProvenanceTracker
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -69,16 +70,9 @@ __all__ = [
     "RuleBasedImputerEngine",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _is_missing(value: Any) -> bool:
     """Determine whether a value is considered missing."""
@@ -90,12 +84,10 @@ def _is_missing(value: Any) -> bool:
         return True
     return False
 
-
 def _compute_provenance(operation: str, data_repr: str) -> str:
     """Compute SHA-256 provenance hash."""
-    payload = f"{operation}:{data_repr}:{_utcnow().isoformat()}"
+    payload = f"{operation}:{data_repr}:{utcnow().isoformat()}"
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
-
 
 def _classify_confidence(score: float) -> ConfidenceLevel:
     """Classify a numeric confidence score into a level."""
@@ -106,7 +98,6 @@ def _classify_confidence(score: float) -> ConfidenceLevel:
     if score >= 0.50:
         return ConfidenceLevel.LOW
     return ConfidenceLevel.VERY_LOW
-
 
 # Priority ordering (higher numeric = evaluated first)
 _PRIORITY_ORDER: Dict[RulePriority, int] = {
@@ -126,11 +117,9 @@ _PRIORITY_CONFIDENCE: Dict[RulePriority, float] = {
     RulePriority.DEFAULT: 0.60,
 }
 
-
 # ===========================================================================
 # RuleBasedImputerEngine
 # ===========================================================================
-
 
 class RuleBasedImputerEngine:
     """Rule-based imputation engine for domain-driven missing value handling.

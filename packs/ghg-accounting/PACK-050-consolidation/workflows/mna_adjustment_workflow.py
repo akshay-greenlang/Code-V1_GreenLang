@@ -43,26 +43,20 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -71,13 +65,11 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
-
 
 class MnAPhase(str, Enum):
     EVENT_CAPTURE = "event_capture"
@@ -85,7 +77,6 @@ class MnAPhase(str, Enum):
     PRO_RATA_CALCULATION = "pro_rata_calculation"
     BASE_YEAR_RESTATEMENT = "base_year_restatement"
     DISCLOSURE_GENERATION = "disclosure_generation"
-
 
 class MnAEventType(str, Enum):
     ACQUISITION = "acquisition"
@@ -96,13 +87,11 @@ class MnAEventType(str, Enum):
     JOINT_VENTURE_ENTRY = "joint_venture_entry"
     JOINT_VENTURE_EXIT = "joint_venture_exit"
 
-
 class BoundaryImpact(str, Enum):
     ENTITY_ADDED = "entity_added"
     ENTITY_REMOVED = "entity_removed"
     OWNERSHIP_CHANGED = "ownership_changed"
     NO_IMPACT = "no_impact"
-
 
 class RestatementTrigger(str, Enum):
     STRUCTURAL_CHANGE = "structural_change"
@@ -111,13 +100,11 @@ class RestatementTrigger(str, Enum):
     THRESHOLD_EXCEEDED = "threshold_exceeded"
     NOT_TRIGGERED = "not_triggered"
 
-
 class EmissionScope(str, Enum):
     SCOPE_1 = "scope_1"
     SCOPE_2_LOCATION = "scope_2_location"
     SCOPE_2_MARKET = "scope_2_market"
     SCOPE_3 = "scope_3"
-
 
 # =============================================================================
 # REFERENCE DATA
@@ -126,11 +113,9 @@ class EmissionScope(str, Enum):
 DEFAULT_RESTATEMENT_THRESHOLD_PCT = Decimal("5.0")
 DAYS_IN_YEAR = Decimal("365")
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -142,7 +127,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class MnAEvent(BaseModel):
     """M&A event record."""
@@ -165,7 +149,6 @@ class MnAEvent(BaseModel):
     scope_breakdown: Dict[str, Decimal] = Field(default_factory=dict)
     notes: str = Field("")
 
-
 class BoundaryImpactAssessment(BaseModel):
     """Assessment of M&A event's impact on boundary."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -179,7 +162,6 @@ class BoundaryImpactAssessment(BaseModel):
     emissions_impact_pct: Decimal = Field(Decimal("0"))
     triggers_restatement: bool = Field(False)
     assessment_notes: str = Field("")
-
 
 class ProRataResult(BaseModel):
     """Pro-rata emissions calculation for partial year."""
@@ -200,7 +182,6 @@ class ProRataResult(BaseModel):
     pro_rata_total_tco2e: Decimal = Field(Decimal("0"))
     method: str = Field("", description="Pro-rata calculation method")
 
-
 class BaseYearRestatementResult(BaseModel):
     """Base year restatement calculation."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -217,7 +198,6 @@ class BaseYearRestatementResult(BaseModel):
     restatement_method: str = Field("")
     scope_adjustments: Dict[str, Decimal] = Field(default_factory=dict)
 
-
 class DisclosureNote(BaseModel):
     """Generated M&A disclosure note."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -231,7 +211,6 @@ class DisclosureNote(BaseModel):
     pro_rata_applied: bool = Field(False)
     frameworks_applicable: List[str] = Field(default_factory=list)
     provenance_hash: str = Field("")
-
 
 class MnAInput(BaseModel):
     """Input for the M&A adjustment workflow."""
@@ -248,7 +227,6 @@ class MnAInput(BaseModel):
     )
     restatement_threshold_pct: Decimal = Field(DEFAULT_RESTATEMENT_THRESHOLD_PCT)
     skip_phases: List[str] = Field(default_factory=list)
-
 
 class MnAResult(BaseModel):
     """Output from the M&A adjustment workflow."""
@@ -273,11 +251,9 @@ class MnAResult(BaseModel):
     started_at: str = Field("")
     completed_at: str = Field("")
 
-
 # =============================================================================
 # WORKFLOW CLASS
 # =============================================================================
-
 
 class MnAAdjustmentWorkflow:
     """
@@ -318,7 +294,7 @@ class MnAAdjustmentWorkflow:
 
     def execute(self, input_data: MnAInput) -> MnAResult:
         """Execute the full 5-phase M&A adjustment workflow."""
-        start = _utcnow()
+        start = utcnow()
         result = MnAResult(
             organisation_id=input_data.organisation_id,
             reporting_year=input_data.reporting_year,
@@ -342,10 +318,10 @@ class MnAAdjustmentWorkflow:
                 ))
                 continue
 
-            phase_start = _utcnow()
+            phase_start = utcnow()
             try:
                 phase_out = phase_methods[phase](input_data, result)
-                elapsed = (_utcnow() - phase_start).total_seconds()
+                elapsed = (utcnow() - phase_start).total_seconds()
                 ph_hash = _compute_hash(str(phase_out))
                 result.phase_results.append(PhaseResult(
                     phase_name=phase.value, phase_number=idx,
@@ -353,7 +329,7 @@ class MnAAdjustmentWorkflow:
                     outputs=phase_out, provenance_hash=ph_hash,
                 ))
             except Exception as exc:
-                elapsed = (_utcnow() - phase_start).total_seconds()
+                elapsed = (utcnow() - phase_start).total_seconds()
                 logger.error("Phase %s failed: %s", phase.value, exc, exc_info=True)
                 result.phase_results.append(PhaseResult(
                     phase_name=phase.value, phase_number=idx,
@@ -367,7 +343,7 @@ class MnAAdjustmentWorkflow:
         if result.status != WorkflowStatus.FAILED:
             result.status = WorkflowStatus.COMPLETED
 
-        end = _utcnow()
+        end = utcnow()
         result.completed_at = end.isoformat()
         result.duration_seconds = (end - start).total_seconds()
         result.provenance_hash = _compute_hash(
@@ -741,7 +717,7 @@ class MnAAdjustmentWorkflow:
         """Generate M&A disclosure notes for reporting."""
         logger.info("Phase 5 -- Disclosure Generation")
         notes: List[DisclosureNote] = []
-        now_iso = _utcnow().isoformat()
+        now_iso = utcnow().isoformat()
 
         for event in self._events:
             impact = next(
@@ -846,7 +822,6 @@ class MnAAdjustmentWorkflow:
             return Decimal(str(value))
         except Exception:
             return Decimal("0")
-
 
 # =============================================================================
 # MODULE EXPORTS

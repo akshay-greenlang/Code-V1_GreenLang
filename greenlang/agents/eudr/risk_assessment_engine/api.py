@@ -38,7 +38,7 @@ from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException, Query
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.eudr.risk_assessment_engine.models import (
     Article10CriteriaResult,
@@ -55,6 +55,7 @@ from greenlang.agents.eudr.risk_assessment_engine.models import (
     SimplifiedDDEligibility,
 )
 from greenlang.agents.eudr.risk_assessment_engine.setup import get_service
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +64,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-class AssessRiskRequest(BaseModel):
+class AssessRiskRequest(GreenLangBase):
     """Request body for the full risk assessment pipeline."""
 
     operator_id: str = Field(..., description="EUDR operator identifier")
@@ -77,7 +78,7 @@ class AssessRiskRequest(BaseModel):
     )
 
 
-class CalculateCompositeRequest(BaseModel):
+class CalculateCompositeRequest(GreenLangBase):
     """Request body for composite risk score calculation."""
 
     factor_inputs: List[Dict[str, Any]] = Field(
@@ -89,7 +90,7 @@ class CalculateCompositeRequest(BaseModel):
     )
 
 
-class EvaluateCriteriaRequest(BaseModel):
+class EvaluateCriteriaRequest(GreenLangBase):
     """Request body for Article 10(2) criteria evaluation."""
 
     factor_inputs: List[Dict[str, Any]] = Field(
@@ -103,7 +104,7 @@ class EvaluateCriteriaRequest(BaseModel):
     )
 
 
-class ApplyOverrideRequest(BaseModel):
+class ApplyOverrideRequest(GreenLangBase):
     """Request body for applying a risk override."""
 
     assessment_id: str = Field(
@@ -123,7 +124,7 @@ class ApplyOverrideRequest(BaseModel):
     )
 
 
-class BatchAssessRequest(BaseModel):
+class BatchAssessRequest(GreenLangBase):
     """Request body for batch risk assessment."""
 
     assessments: List[AssessRiskRequest] = Field(
@@ -131,7 +132,7 @@ class BatchAssessRequest(BaseModel):
     )
 
 
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     """Standard error response body."""
 
     detail: str = Field(..., description="Error description")

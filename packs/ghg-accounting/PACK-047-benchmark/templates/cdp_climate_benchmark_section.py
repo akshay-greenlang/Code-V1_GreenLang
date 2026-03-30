@@ -42,29 +42,23 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 def _compute_hash(content: str) -> str:
     """Compute SHA-256 hash of string content."""
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -77,7 +71,6 @@ class OutputFormat(str, Enum):
     PDF = "pdf"
     JSON = "json"
 
-
 class CDPBand(str, Enum):
     """CDP performance band."""
     A = "A"
@@ -89,7 +82,6 @@ class CDPBand(str, Enum):
     D = "D"
     D_MINUS = "D-"
     F = "F"
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Input Models
@@ -107,7 +99,6 @@ class C6BenchmarkMetric(BaseModel):
     yoy_change_pct: Optional[float] = Field(None, description="Year-over-year change (%)")
     benchmark_context: str = Field("", description="Contextual benchmark note")
 
-
 class C7SectorComparison(BaseModel):
     """CDP C7 emissions breakdown sector comparison."""
     breakdown_category: str = Field(..., description="Breakdown category (e.g., by country)")
@@ -117,7 +108,6 @@ class C7SectorComparison(BaseModel):
     org_share_pct: float = Field(0.0, description="Organisation share (%)")
     sector_avg_share_pct: Optional[float] = Field(None, description="Sector avg share (%)")
     unit: str = Field("", description="Unit")
-
 
 class PerformanceBandPosition(BaseModel):
     """CDP performance band positioning."""
@@ -135,7 +125,6 @@ class PerformanceBandPosition(BaseModel):
     )
     year: int = Field(0, description="CDP scoring year")
 
-
 class SectorSupplementaryData(BaseModel):
     """CDP sector-specific supplementary data."""
     sector_module: str = Field("", description="CDP sector module code (e.g., C-EU)")
@@ -146,7 +135,6 @@ class SectorSupplementaryData(BaseModel):
     sector_average: Optional[float] = Field(None, description="Sector average")
     unit: str = Field("", description="Unit")
     benchmark_note: str = Field("", description="Benchmark context note")
-
 
 class CDPBenchmarkInput(BaseModel):
     """Complete input model for CDPClimateBenchmarkSection."""
@@ -166,7 +154,6 @@ class CDPBenchmarkInput(BaseModel):
         default_factory=list, description="Sector supplementary data"
     )
 
-
 # ---------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------
@@ -185,7 +172,6 @@ def _band_color(band: CDPBand) -> str:
         CDPBand.F: "#780000",
     }
     return mapping.get(band, "#888888")
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -244,7 +230,7 @@ class CDPClimateBenchmarkSection:
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render CDP benchmark section as Markdown."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_md(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -252,7 +238,7 @@ class CDPClimateBenchmarkSection:
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render CDP benchmark section as HTML."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_html(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -260,7 +246,7 @@ class CDPClimateBenchmarkSection:
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render CDP benchmark section as JSON dict."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_json(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -300,7 +286,7 @@ class CDPClimateBenchmarkSection:
         return (
             f"# CDP Climate Benchmark Section - {company}\n\n"
             f"**Reporting Year:** {year} | "
-            f"**Report Date:** {_utcnow().strftime('%Y-%m-%d')}\n\n"
+            f"**Report Date:** {utcnow().strftime('%Y-%m-%d')}\n\n"
             "---"
         )
 

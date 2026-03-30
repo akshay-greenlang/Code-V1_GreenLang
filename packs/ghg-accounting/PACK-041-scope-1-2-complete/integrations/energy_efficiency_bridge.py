@@ -42,25 +42,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -73,11 +67,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EfficiencyPackSource(str, Enum):
     """Source energy efficiency packs."""
@@ -87,7 +79,6 @@ class EfficiencyPackSource(str, Enum):
     PACK_033 = "PACK-033"
     PACK_034 = "PACK-034"
     PACK_035 = "PACK-035"
-
 
 class MeasureCategory(str, Enum):
     """Energy efficiency measure categories."""
@@ -103,7 +94,6 @@ class MeasureCategory(str, Enum):
     BEHAVIORAL = "behavioral"
     OTHER = "other"
 
-
 class EmissionScope(str, Enum):
     """Emission scope affected by efficiency measure."""
 
@@ -111,11 +101,9 @@ class EmissionScope(str, Enum):
     SCOPE_2 = "scope_2"
     BOTH = "both"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class AuditFinding(BaseModel):
     """Energy audit finding from PACK-031."""
@@ -131,7 +119,6 @@ class AuditFinding(BaseModel):
     payback_years: float = Field(default=0.0, ge=0.0)
     scope_affected: EmissionScope = Field(default=EmissionScope.SCOPE_2)
 
-
 class BuildingAssessmentData(BaseModel):
     """Building assessment data from PACK-032."""
 
@@ -144,7 +131,6 @@ class BuildingAssessmentData(BaseModel):
     eui_kbtu_per_sqft: float = Field(default=0.0, ge=0.0)
     energy_star_score: Optional[int] = Field(None, ge=1, le=100)
     retrofit_opportunities: List[Dict[str, Any]] = Field(default_factory=list)
-
 
 class QuickWinMeasure(BaseModel):
     """Quick win measure from PACK-033."""
@@ -159,7 +145,6 @@ class QuickWinMeasure(BaseModel):
     payback_months: float = Field(default=0.0, ge=0.0)
     complexity: str = Field(default="low")
 
-
 class ISO50001Data(BaseModel):
     """ISO 50001 EnMS data from PACK-034."""
 
@@ -172,7 +157,6 @@ class ISO50001Data(BaseModel):
     improvement_pct: float = Field(default=0.0)
     significant_energy_uses: List[Dict[str, Any]] = Field(default_factory=list)
 
-
 class BenchmarkResult(BaseModel):
     """Benchmark result from PACK-035."""
 
@@ -183,7 +167,6 @@ class BenchmarkResult(BaseModel):
     peer_median: float = Field(default=0.0)
     peer_top_quartile: float = Field(default=0.0)
     percentile_rank: int = Field(default=50, ge=1, le=100)
-
 
 class EmissionReductionLink(BaseModel):
     """Link between efficiency measure and emission reduction."""
@@ -200,7 +183,6 @@ class EmissionReductionLink(BaseModel):
     gas_ef_kgco2_per_therm: float = Field(default=5.302)
     provenance_hash: str = Field(default="")
 
-
 class ImportResult(BaseModel):
     """Result of importing data from an efficiency pack."""
 
@@ -211,13 +193,11 @@ class ImportResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
     processing_time_ms: float = Field(default=0.0)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # EnergyEfficiencyBridge
 # ---------------------------------------------------------------------------
-
 
 class EnergyEfficiencyBridge:
     """Integration with Energy Efficiency Packs (PACK-031 to PACK-040).

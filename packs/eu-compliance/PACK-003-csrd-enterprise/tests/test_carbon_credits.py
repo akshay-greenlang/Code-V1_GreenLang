@@ -18,6 +18,8 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 from conftest import _compute_hash, _new_uuid, _utcnow
 
+from greenlang.schemas import utcnow
+
 
 class TestCarbonCredits:
     """Test suite for carbon credit lifecycle engine."""
@@ -47,7 +49,7 @@ class TestCarbonCredits:
             "from_entity": "GlobalTech AG",
             "to_entity": "GreenPartner GmbH",
             "quantity_tco2e": 100,
-            "transfer_date": _utcnow().strftime("%Y-%m-%d"),
+            "transfer_date": utcnow().strftime("%Y-%m-%d"),
             "provenance_hash": _compute_hash({
                 "credit_id": credit["credit_id"],
                 "transfer": "to_GreenPartner",

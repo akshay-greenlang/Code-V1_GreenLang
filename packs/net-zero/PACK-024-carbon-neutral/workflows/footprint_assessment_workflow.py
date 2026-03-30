@@ -39,25 +39,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "24.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
@@ -65,11 +59,9 @@ def _compute_hash(data: str) -> str:
         data = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(str(data).encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a single workflow phase."""
@@ -79,7 +71,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "pending"
@@ -88,7 +79,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class FootprintPhase(str, Enum):
     """The 4 phases of the footprint assessment workflow."""
     BOUNDARY_DEFINITION = "boundary_definition"
@@ -96,13 +86,11 @@ class FootprintPhase(str, Enum):
     QUANTIFICATION = "quantification"
     QUALITY_ASSURANCE = "quality_assurance"
 
-
 class BoundaryApproach(str, Enum):
     """GHG Protocol consolidation approaches."""
     OPERATIONAL_CONTROL = "operational_control"
     FINANCIAL_CONTROL = "financial_control"
     EQUITY_SHARE = "equity_share"
-
 
 class EmissionScope(str, Enum):
     """GHG Protocol emission scopes."""
@@ -111,14 +99,12 @@ class EmissionScope(str, Enum):
     SCOPE_2_MARKET = "scope_2_market"
     SCOPE_3 = "scope_3"
 
-
 class DataQualityTier(str, Enum):
     """Data quality tiers per GHG Protocol guidance."""
     PRIMARY = "primary"
     SECONDARY = "secondary"
     ESTIMATED = "estimated"
     DEFAULT = "default"
-
 
 class QuantificationMethod(str, Enum):
     """Emission quantification methodologies."""
@@ -130,14 +116,12 @@ class QuantificationMethod(str, Enum):
     ACTIVITY_BASED = "activity_based"
     HYBRID = "hybrid"
 
-
 class UncertaintyLevel(str, Enum):
     """Uncertainty classification levels."""
     LOW = "low"           # <5%
     MODERATE = "moderate"  # 5-20%
     HIGH = "high"          # 20-50%
     VERY_HIGH = "very_high"  # >50%
-
 
 # =============================================================================
 # REFERENCE DATA (Zero-Hallucination Lookups)
@@ -194,11 +178,9 @@ UNCERTAINTY_BY_TIER: Dict[str, float] = {
 # Minimum data quality score for PAS 2060 compliance
 MIN_DATA_QUALITY_SCORE = 60.0
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -209,7 +191,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class ScopeBreakdown(BaseModel):
     """Emissions breakdown for a single scope."""
@@ -224,7 +205,6 @@ class ScopeBreakdown(BaseModel):
     gases: Dict[str, float] = Field(default_factory=dict, description="Breakdown by gas type")
     notes: List[str] = Field(default_factory=list)
 
-
 class CategoryBreakdown(BaseModel):
     """Emissions breakdown for a Scope 3 category."""
     category_id: int = Field(..., ge=1, le=15)
@@ -237,7 +217,6 @@ class CategoryBreakdown(BaseModel):
     data_quality_tier: DataQualityTier = Field(default=DataQualityTier.ESTIMATED)
     methodology: QuantificationMethod = Field(default=QuantificationMethod.SPEND_BASED)
     uncertainty_pct: float = Field(default=0.0, ge=0.0, le=100.0)
-
 
 class DataQualityAssessment(BaseModel):
     """Overall data quality assessment for the footprint."""
@@ -252,7 +231,6 @@ class DataQualityAssessment(BaseModel):
     technological_representativeness: str = Field(default="")
     meets_pas2060_threshold: bool = Field(default=False)
     improvement_recommendations: List[str] = Field(default_factory=list)
-
 
 class BoundaryDefinition(BaseModel):
     """Organizational and operational boundary definition."""
@@ -278,7 +256,6 @@ class BoundaryDefinition(BaseModel):
                 raise ValueError(f"Scope 3 category must be 1-15, got {cat_id}")
         return v
 
-
 class FootprintAssessmentConfig(BaseModel):
     """Configuration for the footprint assessment workflow."""
     boundary: BoundaryDefinition = Field(...)
@@ -290,7 +267,6 @@ class FootprintAssessmentConfig(BaseModel):
     pas2060_compliance: bool = Field(default=True)
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
-
 
 class FootprintAssessmentResult(BaseModel):
     """Complete result from the footprint assessment workflow."""
@@ -310,11 +286,9 @@ class FootprintAssessmentResult(BaseModel):
     pas2060_compliant: bool = Field(default=False)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class FootprintAssessmentWorkflow:
     """
@@ -369,7 +343,7 @@ class FootprintAssessmentWorkflow:
         Returns:
             FootprintAssessmentResult with emissions quantification.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting footprint assessment %s, org=%s, year=%d",
             self.workflow_id, config.boundary.org_name, config.boundary.reporting_year,
@@ -408,7 +382,7 @@ class FootprintAssessmentWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         net_emissions = self._total_emissions - self._removals
         result = FootprintAssessmentResult(
             workflow_id=self.workflow_id,
@@ -440,7 +414,7 @@ class FootprintAssessmentWorkflow:
 
     async def _phase_boundary_definition(self, config: FootprintAssessmentConfig) -> PhaseResult:
         """Define organizational and operational boundaries per GHG Protocol."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         errors: List[str] = []
@@ -499,7 +473,7 @@ class FootprintAssessmentWorkflow:
         outputs["subject_of_claim"] = boundary.subject_of_claim
 
         status = PhaseStatus.FAILED if errors else PhaseStatus.COMPLETED
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
 
         return PhaseResult(
             phase_name=FootprintPhase.BOUNDARY_DEFINITION.value,
@@ -517,7 +491,7 @@ class FootprintAssessmentWorkflow:
 
     async def _phase_data_collection(self, config: FootprintAssessmentConfig) -> PhaseResult:
         """Collect activity data across all emission scopes."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         errors: List[str] = []
@@ -566,7 +540,7 @@ class FootprintAssessmentWorkflow:
         outputs["gwp_assessment_report"] = config.gwp_assessment_report
 
         status = PhaseStatus.FAILED if errors else PhaseStatus.COMPLETED
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
 
         return PhaseResult(
             phase_name=FootprintPhase.DATA_COLLECTION.value,
@@ -584,7 +558,7 @@ class FootprintAssessmentWorkflow:
 
     async def _phase_quantification(self, config: FootprintAssessmentConfig) -> PhaseResult:
         """Calculate emissions using appropriate methodologies."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         errors: List[str] = []
@@ -686,7 +660,7 @@ class FootprintAssessmentWorkflow:
         outputs["gwp_values_used"] = config.gwp_assessment_report
 
         status = PhaseStatus.FAILED if errors else PhaseStatus.COMPLETED
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
 
         return PhaseResult(
             phase_name=FootprintPhase.QUANTIFICATION.value,
@@ -704,7 +678,7 @@ class FootprintAssessmentWorkflow:
 
     async def _phase_quality_assurance(self, config: FootprintAssessmentConfig) -> PhaseResult:
         """Validate results, assess data quality, compute uncertainty."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         errors: List[str] = []
@@ -794,7 +768,7 @@ class FootprintAssessmentWorkflow:
         outputs["improvement_count"] = len(improvements)
 
         status = PhaseStatus.FAILED if errors else PhaseStatus.COMPLETED
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
 
         return PhaseResult(
             phase_name=FootprintPhase.QUALITY_ASSURANCE.value,

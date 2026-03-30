@@ -39,26 +39,19 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -71,11 +64,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Agent Stubs
 # ---------------------------------------------------------------------------
-
 
 class _AgentStub:
     """Stub for unavailable MRV agent modules."""
@@ -95,7 +86,6 @@ class _AgentStub:
             }
         return _stub_method
 
-
 def _try_import_mrv_agent(agent_id: str, module_path: str) -> Any:
     """Try to import an MRV agent with graceful fallback.
 
@@ -108,16 +98,15 @@ def _try_import_mrv_agent(agent_id: str, module_path: str) -> Any:
     """
     try:
         import importlib
+
         return importlib.import_module(module_path)
     except ImportError:
         logger.debug("MRV agent %s not available, using stub", agent_id)
         return _AgentStub(agent_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class MRVScope(str, Enum):
     """GHG Protocol emission scopes."""
@@ -125,7 +114,6 @@ class MRVScope(str, Enum):
     SCOPE_1 = "scope_1"
     SCOPE_2_LOCATION = "scope_2_location"
     SCOPE_2_MARKET = "scope_2_market"
-
 
 class MVEmissionCategory(str, Enum):
     """M&V emission reduction categories."""
@@ -137,7 +125,6 @@ class MVEmissionCategory(str, Enum):
     FUEL_OIL_SAVINGS = "fuel_oil_savings"
     DEMAND_REDUCTION = "demand_reduction"
 
-
 class EmissionFactorSource(str, Enum):
     """Sources for emission factors."""
 
@@ -146,7 +133,6 @@ class EmissionFactorSource(str, Enum):
     DEFRA = "defra"
     CUSTOM = "custom"
     MRV_AGENT = "mrv_agent"
-
 
 class MeterType(str, Enum):
     """Metering types for M&V."""
@@ -157,14 +143,12 @@ class MeterType(str, Enum):
     VIRTUAL_METER = "virtual_meter"
     CT_CLAMP = "ct_clamp"
 
-
 class AccountingMethod(str, Enum):
     """Emissions accounting methods for Scope 2."""
 
     LOCATION_BASED = "location_based"
     MARKET_BASED = "market_based"
     DUAL_REPORTING = "dual_reporting"
-
 
 class SavingsType(str, Enum):
     """Types of verified savings."""
@@ -173,7 +157,6 @@ class SavingsType(str, Enum):
     NORMALIZED_SAVINGS = "normalized_savings"
     COST_SAVINGS = "cost_savings"
     DEMAND_SAVINGS = "demand_savings"
-
 
 # ---------------------------------------------------------------------------
 # Grid Emission Factors (kg CO2e per kWh) by ISO/RTO region
@@ -206,11 +189,9 @@ GAS_EMISSION_FACTORS: Dict[str, float] = {
     "FUEL_OIL_6": 11.27,
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class EmissionFactorSet(BaseModel):
     """Emission factor set for a grid region or fuel type."""
@@ -224,7 +205,6 @@ class EmissionFactorSet(BaseModel):
     valid_from: Optional[str] = Field(None)
     valid_to: Optional[str] = Field(None)
 
-
 class MRVRouteConfig(BaseModel):
     """Configuration for routing savings to MRV agents."""
 
@@ -236,7 +216,6 @@ class MRVRouteConfig(BaseModel):
     accounting_method: AccountingMethod = Field(default=AccountingMethod.LOCATION_BASED)
     emission_factor: Optional[EmissionFactorSet] = Field(None)
     enabled: bool = Field(default=True)
-
 
 class MRVRequest(BaseModel):
     """Request to route verified savings to MRV agent."""
@@ -254,8 +233,7 @@ class MRVRequest(BaseModel):
     reporting_period_end: str = Field(default="")
     grid_region: str = Field(default="US_AVERAGE")
     accounting_method: AccountingMethod = Field(default=AccountingMethod.LOCATION_BASED)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class MRVResponse(BaseModel):
     """Response from MRV agent after emissions reduction calculation."""
@@ -273,13 +251,11 @@ class MRVResponse(BaseModel):
     status: str = Field(default="success")
     provenance_hash: str = Field(default="")
     processing_time_ms: float = Field(default=0.0)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # MRVBridge
 # ---------------------------------------------------------------------------
-
 
 class MRVBridge:
     """Bridge between M&V verified savings and MRV emissions agents.

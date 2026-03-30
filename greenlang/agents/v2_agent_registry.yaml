@@ -1,5 +1,6 @@
 registry_version: "2.0"
 agents:
+  # ── Platform Runtime ──────────────────────────────────────────
   - agent_id: "greenlang.agent.runtime.orchestrator"
     owner_team: "platform-runtime"
     support_channel: "#gl-runtime"
@@ -7,6 +8,7 @@ agents:
     state: "production"
     deprecation_date: null
     replacement_agent_id: null
+
   - agent_id: "greenlang.agent.connector.reliability"
     owner_team: "app-reliability"
     support_channel: "#gl-reliability"
@@ -14,6 +16,49 @@ agents:
     state: "production"
     deprecation_date: null
     replacement_agent_id: null
+
+  - agent_id: "greenlang.agent.runtime.scheduler"
+    owner_team: "platform-runtime"
+    support_channel: "#gl-runtime"
+    current_version: "2.0.0"
+    state: "production"
+    deprecation_date: null
+    replacement_agent_id: null
+
+  - agent_id: "greenlang.agent.runtime.gateway"
+    owner_team: "platform-runtime"
+    support_channel: "#gl-runtime"
+    current_version: "2.0.0"
+    state: "production"
+    deprecation_date: null
+    replacement_agent_id: null
+
+  # ── CBAM Domain ───────────────────────────────────────────────
+  - agent_id: "greenlang.agent.cbam.pipeline"
+    owner_team: "cbam-domain"
+    support_channel: "#gl-cbam"
+    current_version: "2.1.0"
+    state: "production"
+    deprecation_date: null
+    replacement_agent_id: null
+
+  - agent_id: "greenlang.agent.cbam.emission-calculator"
+    owner_team: "cbam-domain"
+    support_channel: "#gl-cbam"
+    current_version: "2.0.0"
+    state: "production"
+    deprecation_date: null
+    replacement_agent_id: null
+
+  - agent_id: "greenlang.agent.cbam.xml-validator"
+    owner_team: "cbam-domain"
+    support_channel: "#gl-cbam"
+    current_version: "2.0.0"
+    state: "production"
+    deprecation_date: null
+    replacement_agent_id: null
+
+  # ── CSRD Domain ───────────────────────────────────────────────
   - agent_id: "greenlang.agent.csrd.narrative.legacy"
     owner_team: "csrd-domain"
     support_channel: "#gl-csrd"
@@ -21,6 +66,7 @@ agents:
     state: "deprecated"
     deprecation_date: "2026-12-31"
     replacement_agent_id: "greenlang.agent.csrd.narrative.v2"
+
   - agent_id: "greenlang.agent.csrd.narrative.v2"
     owner_team: "csrd-domain"
     support_channel: "#gl-csrd"
@@ -28,6 +74,158 @@ agents:
     state: "production"
     deprecation_date: null
     replacement_agent_id: null
+
+  - agent_id: "greenlang.agent.csrd.esrs-pipeline"
+    owner_team: "csrd-domain"
+    support_channel: "#gl-csrd"
+    current_version: "2.0.0"
+    state: "production"
+    deprecation_date: null
+    replacement_agent_id: null
+
+  - agent_id: "greenlang.agent.csrd.xbrl-formatter"
+    owner_team: "csrd-domain"
+    support_channel: "#gl-csrd"
+    current_version: "2.0.0"
+    state: "production"
+    deprecation_date: null
+    replacement_agent_id: null
+
+  # ── VCCI / Scope 3 Domain ────────────────────────────────────
+  - agent_id: "greenlang.agent.vcci.scope3-calculator"
+    owner_team: "vcci-domain"
+    support_channel: "#gl-vcci"
+    current_version: "2.0.0"
+    state: "production"
+    deprecation_date: null
+    replacement_agent_id: null
+
+  - agent_id: "greenlang.agent.vcci.supplier-mapper"
+    owner_team: "vcci-domain"
+    support_channel: "#gl-vcci"
+    current_version: "2.0.0"
+    state: "production"
+    deprecation_date: null
+    replacement_agent_id: null
+
+  # ── EUDR Domain ──────────────────────────────────────────────
+  - agent_id: "greenlang.agent.eudr.due-diligence"
+    owner_team: "eudr-domain"
+    support_channel: "#gl-eudr"
+    current_version: "2.0.0"
+    state: "production"
+    deprecation_date: null
+    replacement_agent_id: null
+
+  - agent_id: "greenlang.agent.eudr.risk-classifier"
+    owner_team: "eudr-domain"
+    support_channel: "#gl-eudr"
+    current_version: "2.0.0"
+    state: "production"
+    deprecation_date: null
+    replacement_agent_id: null
+
+  - agent_id: "greenlang.agent.eudr.geo-verifier"
+    owner_team: "eudr-domain"
+    support_channel: "#gl-eudr"
+    current_version: "1.0.0"
+    state: "qualified"
+    deprecation_date: null
+    replacement_agent_id: null
+
+  # ── GHG Domain ───────────────────────────────────────────────
+  - agent_id: "greenlang.agent.ghg.inventory-engine"
+    owner_team: "ghg-domain"
+    support_channel: "#gl-ghg"
+    current_version: "2.0.0"
+    state: "production"
+    deprecation_date: null
+    replacement_agent_id: null
+
+  - agent_id: "greenlang.agent.ghg.emission-factor-resolver"
+    owner_team: "ghg-domain"
+    support_channel: "#gl-ghg"
+    current_version: "2.0.0"
+    state: "production"
+    deprecation_date: null
+    replacement_agent_id: null
+
+  - agent_id: "greenlang.agent.ghg.scope-allocator"
+    owner_team: "ghg-domain"
+    support_channel: "#gl-ghg"
+    current_version: "2.0.0"
+    state: "production"
+    deprecation_date: null
+    replacement_agent_id: null
+
+  # ── ISO 14064 Domain ─────────────────────────────────────────
+  - agent_id: "greenlang.agent.iso14064.verification-engine"
+    owner_team: "iso14064-domain"
+    support_channel: "#gl-iso14064"
+    current_version: "2.0.0"
+    state: "production"
+    deprecation_date: null
+    replacement_agent_id: null
+
+  - agent_id: "greenlang.agent.iso14064.conformance-scorer"
+    owner_team: "iso14064-domain"
+    support_channel: "#gl-iso14064"
+    current_version: "2.0.0"
+    state: "production"
+    deprecation_date: null
+    replacement_agent_id: null
+
+  # ── Governance & Policy ──────────────────────────────────────
+  - agent_id: "greenlang.agent.governance.policy-enforcer"
+    owner_team: "platform-governance"
+    support_channel: "#gl-governance"
+    current_version: "2.0.0"
+    state: "production"
+    deprecation_date: null
+    replacement_agent_id: null
+
+  - agent_id: "greenlang.agent.governance.audit-bundler"
+    owner_team: "platform-governance"
+    support_channel: "#gl-governance"
+    current_version: "2.0.0"
+    state: "production"
+    deprecation_date: null
+    replacement_agent_id: null
+
+  - agent_id: "greenlang.agent.governance.release-train-controller"
+    owner_team: "platform-governance"
+    support_channel: "#gl-governance"
+    current_version: "2.0.0"
+    state: "production"
+    deprecation_date: null
+    replacement_agent_id: null
+
+  # ── Data & Integration ───────────────────────────────────────
+  - agent_id: "greenlang.agent.data.normalizer"
+    owner_team: "data-engineering"
+    support_channel: "#gl-data"
+    current_version: "2.0.0"
+    state: "production"
+    deprecation_date: null
+    replacement_agent_id: null
+
+  - agent_id: "greenlang.agent.data.erp-connector"
+    owner_team: "data-engineering"
+    support_channel: "#gl-data"
+    current_version: "1.5.0"
+    state: "qualified"
+    deprecation_date: null
+    replacement_agent_id: null
+
+  - agent_id: "greenlang.agent.data.file-parser"
+    owner_team: "data-engineering"
+    support_channel: "#gl-data"
+    current_version: "2.0.0"
+    state: "production"
+    deprecation_date: null
+    replacement_agent_id: null
+
+  # ── Incubating / Experimental ────────────────────────────────
   - agent_id: "greenlang.agent.experimental.graph-builder"
     owner_team: "platform-runtime"
     support_channel: "#gl-runtime"
@@ -35,6 +233,16 @@ agents:
     state: "incubating"
     deprecation_date: null
     replacement_agent_id: null
+
+  - agent_id: "greenlang.agent.experimental.llm-classifier"
+    owner_team: "platform-ai"
+    support_channel: "#gl-ai"
+    current_version: "0.2.0"
+    state: "incubating"
+    deprecation_date: null
+    replacement_agent_id: null
+
+  # ── Retired ──────────────────────────────────────────────────
   - agent_id: "greenlang.agent.retired.taxonomy-v1"
     owner_team: "compliance-engineering"
     support_channel: "#gl-compliance"

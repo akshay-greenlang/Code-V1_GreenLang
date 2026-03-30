@@ -45,18 +45,13 @@ from uuid import uuid4
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # Utility Helpers
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute a SHA-256 hash of arbitrary data."""
@@ -64,11 +59,9 @@ def _hash_data(data: Any) -> str:
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # Enums
 # =============================================================================
-
 
 class WizardStepId(str, Enum):
     """Wizard step identifiers."""
@@ -81,7 +74,6 @@ class WizardStepId(str, Enum):
     REPORTING_SCHEDULE = "reporting_schedule"
     VALIDATION_DEPLOYMENT = "validation_deployment"
 
-
 class StepStatus(str, Enum):
     """Status of a wizard step."""
     PENDING = "pending"
@@ -89,7 +81,6 @@ class StepStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class ProductType(str, Enum):
     """Financial product types under SFDR."""
@@ -100,7 +91,6 @@ class ProductType(str, Enum):
     STRUCTURED = "structured"
     PORTFOLIO_MANAGEMENT = "portfolio_management"
 
-
 class PresetId(str, Enum):
     """Configuration presets."""
     ASSET_MANAGER = "asset_manager"
@@ -110,11 +100,9 @@ class PresetId(str, Enum):
     WEALTH_MANAGER = "wealth_manager"
     CUSTOM = "custom"
 
-
 # =============================================================================
 # Data Models
 # =============================================================================
-
 
 class SetupWizardConfig(BaseModel):
     """Configuration for the Setup Wizard."""
@@ -135,7 +123,6 @@ class SetupWizardConfig(BaseModel):
         description="Enable test run in validation step",
     )
 
-
 class WizardStepState(BaseModel):
     """State of a single wizard step."""
     step_number: int = Field(default=0, description="Step number (1-8)")
@@ -154,7 +141,6 @@ class WizardStepState(BaseModel):
     )
     started_at: Optional[str] = Field(None, description="Start timestamp")
     completed_at: Optional[str] = Field(None, description="Completion timestamp")
-
 
 class WizardResult(BaseModel):
     """Final result of the setup wizard."""
@@ -187,17 +173,15 @@ class WizardResult(BaseModel):
     test_run_executed: bool = Field(default=False, description="Test run executed")
     warnings: List[str] = Field(default_factory=list, description="Setup warnings")
     created_at: str = Field(
-        default_factory=lambda: _utcnow().isoformat(),
+        default_factory=lambda: utcnow().isoformat(),
         description="Wizard start timestamp",
     )
     completed_at: Optional[str] = Field(None, description="Completion timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 # =============================================================================
 # Step Definitions
 # =============================================================================
-
 
 WIZARD_STEPS: List[Dict[str, Any]] = [
     {
@@ -396,11 +380,9 @@ PRESETS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # Setup Wizard
 # =============================================================================
-
 
 class SFDRSetupWizard:
     """8-step guided setup wizard for SFDR Article 8 Pack.
@@ -477,7 +459,7 @@ class SFDRSetupWizard:
             self._accumulated_config = dict(PRESETS[self.config.default_preset])
 
         self._steps[1].status = StepStatus.IN_PROGRESS
-        self._steps[1].started_at = _utcnow().isoformat()
+        self._steps[1].started_at = utcnow().isoformat()
 
         return {
             "wizard_id": self._wizard_id,
@@ -544,7 +526,7 @@ class SFDRSetupWizard:
 
         step = self._steps[step_number]
         step.status = StepStatus.IN_PROGRESS
-        step.started_at = step.started_at or _utcnow().isoformat()
+        step.started_at = step.started_at or utcnow().isoformat()
 
         # Validate step answers
         errors = self._validate_step(step_number, answers)
@@ -562,13 +544,13 @@ class SFDRSetupWizard:
         self._accumulated_config.update(answers)
         step.data = answers
         step.status = StepStatus.COMPLETED
-        step.completed_at = _utcnow().isoformat()
+        step.completed_at = utcnow().isoformat()
 
         # Advance to next step
         next_step = step_number + 1
         if next_step <= len(self._steps):
             self._steps[next_step].status = StepStatus.IN_PROGRESS
-            self._steps[next_step].started_at = _utcnow().isoformat()
+            self._steps[next_step].started_at = utcnow().isoformat()
 
         self.logger.info(
             "Step %d completed: %s", step_number, step.display_name,
@@ -597,7 +579,7 @@ class SFDRSetupWizard:
             validation_result = self._run_validation()
             self._steps[8].data = validation_result
             self._steps[8].status = StepStatus.COMPLETED
-            self._steps[8].completed_at = _utcnow().isoformat()
+            self._steps[8].completed_at = utcnow().isoformat()
             completed += 1
 
         is_complete = completed >= 7  # At least 7/8 steps needed
@@ -635,7 +617,7 @@ class SFDRSetupWizard:
             ),
             validation_passed=self._steps[8].data.get("passed", False),
             test_run_executed=self._steps[8].data.get("test_run", False),
-            completed_at=_utcnow().isoformat(),
+            completed_at=utcnow().isoformat(),
         )
         result.provenance_hash = _hash_data(result.model_dump())
 
@@ -714,7 +696,7 @@ class SFDRSetupWizard:
             "enable_provenance": True,
             "enable_quality_gates": True,
             "preset_used": self._preset_used,
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
             "provenance_hash": _hash_data(self._accumulated_config),
         }
 
@@ -829,5 +811,5 @@ class SFDRSetupWizard:
             "warnings": warnings,
             "test_run": test_run,
             "config_complete": passed,
-            "validated_at": _utcnow().isoformat(),
+            "validated_at": utcnow().isoformat(),
         }

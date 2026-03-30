@@ -39,35 +39,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class WorkflowPhase(str, Enum):
     """Phases of the grievance management workflow."""
@@ -75,7 +67,6 @@ class WorkflowPhase(str, Enum):
     CHANNEL_SETUP = "channel_setup"
     CASE_PROCESSING = "case_processing"
     RESOLUTION_TRACKING = "resolution_tracking"
-
 
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
@@ -85,7 +76,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class PhaseStatus(str, Enum):
     """Status of a single phase."""
     PENDING = "pending"
@@ -93,7 +83,6 @@ class PhaseStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class ChannelType(str, Enum):
     """Types of grievance reporting channels."""
@@ -106,7 +95,6 @@ class ChannelType(str, Enum):
     TRADE_UNION = "trade_union"
     THIRD_PARTY = "third_party"
 
-
 class CaseStatus(str, Enum):
     """Status of a grievance case."""
     SUBMITTED = "submitted"
@@ -118,7 +106,6 @@ class CaseStatus(str, Enum):
     APPEALED = "appealed"
     REJECTED = "rejected"
 
-
 class CaseCategory(str, Enum):
     """Category of grievance per CSDDD Annexes."""
     HUMAN_RIGHTS = "human_rights"
@@ -128,7 +115,6 @@ class CaseCategory(str, Enum):
     HEALTH_SAFETY = "health_safety"
     CORRUPTION = "corruption"
     OTHER = "other"
-
 
 class UNGPCriteria(str, Enum):
     """UNGP Principle 31 effectiveness criteria."""
@@ -141,11 +127,9 @@ class UNGPCriteria(str, Enum):
     CONTINUOUS_LEARNING = "continuous_learning"
     DIALOGUE_BASED = "dialogue_based"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -156,7 +140,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class MechanismConfig(BaseModel):
     """Configuration for the grievance mechanism."""
@@ -179,7 +162,6 @@ class MechanismConfig(BaseModel):
     )
     independent_oversight: bool = Field(default=False, description="External oversight body")
 
-
 class GrievanceCase(BaseModel):
     """Individual grievance case record."""
     case_id: str = Field(default_factory=lambda: f"case-{_new_uuid()[:8]}")
@@ -198,7 +180,6 @@ class GrievanceCase(BaseModel):
     days_to_resolve: int = Field(default=0, ge=0)
     appealed: bool = Field(default=False)
 
-
 class StakeholderGroup(BaseModel):
     """Stakeholder group for accessibility assessment."""
     group_name: str = Field(default="", description="Name of stakeholder group")
@@ -207,7 +188,6 @@ class StakeholderGroup(BaseModel):
     digital_access: bool = Field(default=True, description="Has digital access")
     location: str = Field(default="", description="Geographic location")
     awareness_of_mechanism: bool = Field(default=False)
-
 
 class GrievanceManagementInput(BaseModel):
     """Input data model for GrievanceManagementWorkflow."""
@@ -224,7 +204,6 @@ class GrievanceManagementInput(BaseModel):
         default_factory=list, description="Stakeholder groups for accessibility"
     )
     config: Dict[str, Any] = Field(default_factory=dict)
-
 
 class GrievanceManagementResult(BaseModel):
     """Complete result from grievance management workflow."""
@@ -256,11 +235,9 @@ class GrievanceManagementResult(BaseModel):
     executed_at: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class GrievanceManagementWorkflow:
     """
@@ -328,7 +305,7 @@ class GrievanceManagementWorkflow:
         if input_data is None:
             input_data = GrievanceManagementInput(config=config or {})
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting grievance management workflow %s", self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = WorkflowStatus.IN_PROGRESS
@@ -346,7 +323,7 @@ class GrievanceManagementWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         completed_count = sum(1 for p in phase_results if p.status == PhaseStatus.COMPLETED)
 
         cases = input_data.cases
@@ -389,7 +366,7 @@ class GrievanceManagementWorkflow:
             cases_by_channel=by_channel,
             cases_by_status=by_status,
             reporting_year=input_data.reporting_year,
-            executed_at=_utcnow().isoformat(),
+            executed_at=utcnow().isoformat(),
         )
         result.provenance_hash = self._compute_provenance(result)
         self.logger.info(
@@ -406,7 +383,7 @@ class GrievanceManagementWorkflow:
         self, input_data: GrievanceManagementInput,
     ) -> PhaseResult:
         """Assess grievance mechanism design against Art. 11 and UNGP P31."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -462,7 +439,7 @@ class GrievanceManagementWorkflow:
         if not mc.independent_oversight:
             warnings.append("No independent oversight -- consider appointing external monitor")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 1 MechanismDesign: Art.11=%.1f%%, UNGP=%.1f%%, overall=%.1f%%",
             art11_score, self._ungp_score, self._mechanism_score,
@@ -482,7 +459,7 @@ class GrievanceManagementWorkflow:
         self, input_data: GrievanceManagementInput,
     ) -> PhaseResult:
         """Assess channel accessibility for all stakeholder groups."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -561,7 +538,7 @@ class GrievanceManagementWorkflow:
         if not groups:
             warnings.append("No stakeholder groups defined for accessibility assessment")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 2 ChannelSetup: accessibility=%.1f%%, %d groups assessed",
             self._accessibility_score, len(group_scores),
@@ -581,7 +558,7 @@ class GrievanceManagementWorkflow:
         self, input_data: GrievanceManagementInput,
     ) -> PhaseResult:
         """Process and categorize submitted grievance cases."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -637,7 +614,7 @@ class GrievanceManagementWorkflow:
         if by_severity.get("critical", 0) > 0:
             warnings.append(f"{by_severity['critical']} critical cases require escalated attention")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 3 CaseProcessing: %d cases, %d late ack, %d overdue",
             len(cases), len(late_ack), len(overdue),
@@ -657,7 +634,7 @@ class GrievanceManagementWorkflow:
         self, input_data: GrievanceManagementInput,
     ) -> PhaseResult:
         """Track resolution outcomes and compute resolution metrics."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -726,7 +703,7 @@ class GrievanceManagementWorkflow:
                 f"Average resolution time ({avg_resolution} days) exceeds target ({target_days} days)"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 4 ResolutionTracking: rate=%.1f%%, avg=%.0f days, appeals=%.1f%%",
             resolution_rate, avg_resolution, appeal_rate,

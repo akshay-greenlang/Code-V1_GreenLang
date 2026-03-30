@@ -16,10 +16,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +35,7 @@ class EmergencyServiceType(str, Enum):
     DISPATCH = "dispatch"
 
 
-class EmergencyResource(BaseModel):
+class EmergencyResource(GreenLangBase):
     """Emergency service resource."""
     resource_id: str = Field(...)
     name: str = Field(...)
@@ -47,7 +48,7 @@ class EmergencyResource(BaseModel):
     backup_power_hours: float = Field(default=0.0, ge=0)
 
 
-class ResponseCapability(BaseModel):
+class ResponseCapability(GreenLangBase):
     """Response capability assessment."""
     capability_id: str = Field(...)
     emergency_type: str = Field(...)
@@ -57,7 +58,7 @@ class ResponseCapability(BaseModel):
     improvement_recommendations: List[str] = Field(default_factory=list)
 
 
-class EmergencyServicesPlan(BaseModel):
+class EmergencyServicesPlan(GreenLangBase):
     """Emergency services adaptation plan."""
     plan_id: str = Field(...)
     jurisdiction_name: str = Field(...)
@@ -72,7 +73,7 @@ class EmergencyServicesPlan(BaseModel):
     provenance_hash: Optional[str] = Field(None)
 
 
-class EmergencyServicesInput(BaseModel):
+class EmergencyServicesInput(GreenLangBase):
     """Input for Emergency Services Agent."""
     action: str = Field(...)
     plan_id: Optional[str] = Field(None)
@@ -91,7 +92,7 @@ class EmergencyServicesInput(BaseModel):
         return v
 
 
-class EmergencyServicesOutput(BaseModel):
+class EmergencyServicesOutput(GreenLangBase):
     """Output from Emergency Services Agent."""
     success: bool = Field(...)
     action: str = Field(...)

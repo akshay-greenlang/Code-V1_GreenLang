@@ -61,24 +61,18 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC timestamp with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 provenance hash, excluding volatile fields."""
@@ -96,7 +90,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert any value to Decimal."""
     if isinstance(value, Decimal):
@@ -105,7 +98,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -117,21 +109,17 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> Decimal:
     """Round a value to two decimal places using ROUND_HALF_UP."""
     return Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-
 
 def _round4(value: Any) -> Decimal:
     """Round a value to four decimal places using ROUND_HALF_UP."""
     return Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ScopeType(str, Enum):
     """GHG emission scope categories."""
@@ -140,7 +128,6 @@ class ScopeType(str, Enum):
     SCOPE_2_MARKET = "SCOPE_2_MARKET"
     SCOPE_3 = "SCOPE_3"
 
-
 class ReconciliationStatus(str, Enum):
     """Outcome of equity share reconciliation."""
     RECONCILED = "RECONCILED"
@@ -148,18 +135,15 @@ class ReconciliationStatus(str, Enum):
     MAJOR_VARIANCE = "MAJOR_VARIANCE"
     INCOMPLETE = "INCOMPLETE"
 
-
 # ---------------------------------------------------------------------------
 # Default Configuration
 # ---------------------------------------------------------------------------
 
 DEFAULT_RECONCILIATION_TOLERANCE_PCT = Decimal("1")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class EquityShareInput(BaseModel):
     """Input data for equity share calculation for a single entity.
@@ -224,7 +208,6 @@ class EquityShareInput(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Any:
         return Decimal(str(v))
-
 
 class EntityEquityContribution(BaseModel):
     """Equity-adjusted emissions for a single entity.
@@ -312,7 +295,6 @@ class EntityEquityContribution(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Any:
         return Decimal(str(v))
 
-
 class EquityShareResult(BaseModel):
     """Complete equity share consolidation result.
 
@@ -364,14 +346,13 @@ class EquityShareResult(BaseModel):
         description="Average equity share percentage.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When this result was generated.",
     )
     provenance_hash: str = Field(
         default="",
         description="SHA-256 hash.",
     )
-
 
 class EquityReconciliation(BaseModel):
     """Reconciliation of equity shares for an entity.
@@ -432,11 +413,9 @@ class EquityReconciliation(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Any:
         return Decimal(str(v))
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class EquityShareEngine:
     """Calculates equity share approach GHG consolidation.
@@ -617,7 +596,7 @@ class EquityShareEngine:
             "result_id": result.result_id,
             "entity_count": len(entity_inputs),
             "consolidated_total": str(consolidated_total),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         })
 
         logger.info(

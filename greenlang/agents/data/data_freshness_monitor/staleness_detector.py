@@ -48,7 +48,8 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase, utcnow
 
 # ---------------------------------------------------------------------------
 # Graceful imports -- models.py
@@ -82,7 +83,7 @@ except ImportError:  # pragma: no cover -- fallback when models not yet built
         HIGH = "high"
         CRITICAL = "critical"
 
-    class StalenessPattern(BaseModel):  # type: ignore[no-redef]
+    class StalenessPattern(GreenLangBase):
         """Describes a detected staleness pattern for a dataset."""
 
         pattern_id: str = Field(
@@ -120,7 +121,7 @@ except ImportError:  # pragma: no cover -- fallback when models not yet built
             default="", description="SHA-256 provenance hash",
         )
 
-    class SourceReliability(BaseModel):  # type: ignore[no-redef]
+    class SourceReliability(GreenLangBase):
         """Reliability metrics for a data source."""
 
         source_name: str = Field(
@@ -150,7 +151,6 @@ except ImportError:  # pragma: no cover -- fallback when models not yet built
         provenance_hash: str = Field(
             default="", description="SHA-256 provenance hash",
         )
-
 
 # ---------------------------------------------------------------------------
 # Graceful imports -- provenance.py
@@ -219,7 +219,6 @@ except ImportError:  # pragma: no cover
             with self._lock:
                 return len(self._chain)
 
-
 # ---------------------------------------------------------------------------
 # Graceful imports -- metrics.py
 # ---------------------------------------------------------------------------
@@ -241,7 +240,6 @@ except ImportError:  # pragma: no cover
     def _observe_duration(operation: str, seconds: float) -> None:  # type: ignore[misc]
         """No-op metric stub."""
 
-
 # ---------------------------------------------------------------------------
 # Graceful imports -- config.py
 # ---------------------------------------------------------------------------
@@ -253,19 +251,11 @@ except ImportError:  # pragma: no cover
     def get_config() -> Any:  # type: ignore[misc]
         return None
 
-
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Pure-Python statistics helpers (no numpy/scipy)
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _safe_mean(values: List[float]) -> float:
     """Compute arithmetic mean, returning 0.0 for empty lists.
@@ -279,7 +269,6 @@ def _safe_mean(values: List[float]) -> float:
     if not values:
         return 0.0
     return sum(values) / len(values)
-
 
 def _safe_std(values: List[float], mean: Optional[float] = None) -> float:
     """Compute population standard deviation.
@@ -296,7 +285,6 @@ def _safe_std(values: List[float], mean: Optional[float] = None) -> float:
     m = mean if mean is not None else _safe_mean(values)
     variance = sum((x - m) ** 2 for x in values) / len(values)
     return math.sqrt(variance)
-
 
 def _safe_median(values: List[float]) -> float:
     """Compute median of values.
@@ -316,7 +304,6 @@ def _safe_median(values: List[float]) -> float:
         return (s[mid - 1] + s[mid]) / 2.0
     return s[mid]
 
-
 def _coefficient_of_variation(values: List[float]) -> float:
     """Compute coefficient of variation (stddev / mean).
 
@@ -331,7 +318,6 @@ def _coefficient_of_variation(values: List[float]) -> float:
         return 0.0
     std = _safe_std(values, mean)
     return std / abs(mean)
-
 
 def _linear_regression_slope(values: List[float]) -> float:
     """Compute the slope of a simple linear regression y = a + bx.
@@ -363,7 +349,6 @@ def _linear_regression_slope(values: List[float]) -> float:
         return 0.0
     return (n * sum_xy - sum_x * sum_y) / denom
 
-
 def _intervals_from_history(
     refresh_history: List[datetime],
 ) -> List[float]:
@@ -383,7 +368,6 @@ def _intervals_from_history(
         delta = (sorted_ts[i] - sorted_ts[i - 1]).total_seconds() / 3600.0
         intervals.append(delta)
     return intervals
-
 
 def _severity_from_ratio(ratio: float) -> BreachSeverity:
     """Map a staleness ratio to a BreachSeverity level.
@@ -407,11 +391,9 @@ def _severity_from_ratio(ratio: float) -> BreachSeverity:
         return BreachSeverity.LOW
     return BreachSeverity.INFO
 
-
 # ---------------------------------------------------------------------------
 # StalenessDetectorEngine
 # ---------------------------------------------------------------------------
-
 
 class StalenessDetectorEngine:
     """Detects staleness patterns in dataset refresh histories.
@@ -1364,7 +1346,6 @@ class StalenessDetectorEngine:
         if change_pct > 0.10:
             return "degrading"
         return "stable"
-
 
 # ---------------------------------------------------------------------------
 # Module exports

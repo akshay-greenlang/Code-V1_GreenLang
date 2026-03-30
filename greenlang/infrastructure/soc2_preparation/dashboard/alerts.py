@@ -40,6 +40,7 @@ from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
+from greenlang.schemas.enums import AlertSeverity
 
 logger = logging.getLogger(__name__)
 
@@ -47,25 +48,6 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
-
-class AlertSeverity(str, Enum):
-    """Alert severity levels."""
-
-    CRITICAL = "critical"
-    """Requires immediate action - audit at risk."""
-
-    HIGH = "high"
-    """Urgent attention needed - significant impact."""
-
-    MEDIUM = "medium"
-    """Should be addressed soon - moderate impact."""
-
-    LOW = "low"
-    """Informational - minor impact."""
-
-    INFO = "info"
-    """Advisory only - no action required."""
 
 
 class AlertCondition(str, Enum):

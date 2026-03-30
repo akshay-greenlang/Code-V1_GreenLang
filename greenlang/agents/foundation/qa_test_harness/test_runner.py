@@ -37,6 +37,7 @@ from typing import Any, Dict, List, Optional, Type
 
 from greenlang.agents.foundation.qa_test_harness.config import QATestHarnessConfig
 from greenlang.agents.foundation.qa_test_harness.assertion_engine import AssertionEngine
+from greenlang.schemas import utcnow
 from greenlang.agents.foundation.qa_test_harness.models import (
     TestAssertion,
     TestCaseInput,
@@ -54,12 +55,6 @@ from greenlang.agents.foundation.qa_test_harness.metrics import (
 )
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 class TestRunner:
     """Test execution engine for individual tests and suites.
@@ -117,7 +112,7 @@ class TestRunner:
             TestCaseResult with test outcome.
         """
         self._test_count += 1
-        started_at = _utcnow()
+        started_at = utcnow()
         start_time = time.time()
 
         result = TestCaseResult(
@@ -137,7 +132,7 @@ class TestRunner:
         # Handle skip
         if test_input.skip:
             result.status = TestStatus.SKIPPED
-            result.completed_at = _utcnow()
+            result.completed_at = utcnow()
             result.duration_ms = (time.time() - start_time) * 1000
             result.metadata["skip_reason"] = test_input.skip_reason
             self._record_run(test_input, result)
@@ -204,7 +199,7 @@ class TestRunner:
             logger.error("Test error: %s", e, exc_info=True)
 
         # Finalize timing
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         result.duration_ms = (time.time() - start_time) * 1000
 
         # Record metrics
@@ -238,7 +233,7 @@ class TestRunner:
         Returns:
             TestSuiteResult with all test outcomes.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         start_time = time.time()
 
         logger.info("Starting test suite: %s", suite_input.name)
@@ -279,7 +274,7 @@ class TestRunner:
         else:
             overall_status = TestStatus.PASSED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         duration_ms = (time.time() - start_time) * 1000
 
         # Build result
@@ -523,7 +518,7 @@ class TestRunner:
             "suite_name": suite_input.name,
             "test_count": len(results),
             "result_hashes": [r.output_hash for r in results],
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
         return hashlib.sha256(
             json.dumps(provenance_data, sort_keys=True, default=str).encode()
@@ -569,7 +564,6 @@ class TestRunner:
     def fail_count(self) -> int:
         """Return number of tests failed."""
         return self._fail_count
-
 
 __all__ = [
     "TestRunner",

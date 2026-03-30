@@ -67,6 +67,7 @@ import zipfile
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 from xml.etree import ElementTree as ET
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.plot_boundary.config import (
     PlotBoundaryConfig,
@@ -122,22 +123,14 @@ _EUDR_NS = "urn:eu:eudr:dds:1.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a unique identifier using UUID4."""
     return str(uuid.uuid4())
-
 
 def _polygon_area_ha(boundary: PlotBoundary) -> float:
     """Compute approximate polygon area in hectares."""
@@ -158,7 +151,6 @@ def _polygon_area_ha(boundary: PlotBoundary) -> float:
     area_m2 = area_deg2 * m_per_deg * m_per_deg * cos_lat
     return area_m2 / 10_000.0
 
-
 def _centroid(ring: Ring) -> Coordinate:
     """Compute the centroid of a ring."""
     if not ring:
@@ -168,11 +160,9 @@ def _centroid(ring: Ring) -> Coordinate:
         lon=sum(c.lon for c in ring) / len(ring),
     )
 
-
 # =============================================================================
 # ComplianceReporter
 # =============================================================================
-
 
 class ComplianceReporter:
     """Multi-format boundary export and compliance reporting engine.
@@ -295,7 +285,7 @@ class ComplianceReporter:
             total_area_hectares=round(total_area, 4),
             file_size_bytes=file_size,
             provenance_hash=_compute_hash(provenance_data),
-            created_at=_utcnow(),
+            created_at=utcnow(),
         )
 
         logger.info(
@@ -615,7 +605,7 @@ class ComplianceReporter:
         """
         root = ET.Element("DueDiligenceStatement", xmlns=_EUDR_NS)
         ET.SubElement(root, "StatementId").text = _generate_id()
-        ET.SubElement(root, "GeneratedAt").text = _utcnow().isoformat()
+        ET.SubElement(root, "GeneratedAt").text = utcnow().isoformat()
         ET.SubElement(root, "Version").text = _MODULE_VERSION
 
         plots_elem = ET.SubElement(root, "Plots")
@@ -901,7 +891,7 @@ class ComplianceReporter:
 
         report = {
             "report_id": _generate_id(),
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
             "total_plots": total,
             "valid_plots": valid,
             "invalid_plots": invalid,
@@ -1323,7 +1313,6 @@ class ComplianceReporter:
             f"precision={self._config.export_default_precision}, "
             f"threshold={self._config.area_threshold_hectares}ha)"
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

@@ -79,6 +79,7 @@ import time
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Set, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -147,7 +148,7 @@ except ImportError:
             Returns:
                 A stub object with a ``hash_value`` attribute.
             """
-            ts = _utcnow().isoformat()
+            ts = utcnow().isoformat()
             if metadata is None:
                 serialized = "null"
             else:
@@ -215,7 +216,6 @@ except ImportError:
             with self._lock:
                 self._chain.clear()
                 self._last_chain_hash = self.GENESIS_HASH
-
 
 # ---------------------------------------------------------------------------
 # Optional dependency: Prometheus metrics
@@ -291,7 +291,6 @@ except ImportError:
     ) -> None:
         """No-op fallback when metrics module is not available."""
 
-
 # ---------------------------------------------------------------------------
 # Optional dependency: Config
 # ---------------------------------------------------------------------------
@@ -309,7 +308,6 @@ except ImportError:
     def _get_config() -> Any:  # type: ignore[misc]
         """No-op fallback returning None when config is not available."""
         return None
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -403,7 +401,6 @@ REGION_BOUNDS: Dict[str, Tuple[float, float, float, float]] = {
     "arctic": (66.5, 90.0, -180.0, 180.0),
     "antarctic": (-90.0, -60.0, -180.0, 180.0),
 }
-
 
 # ---------------------------------------------------------------------------
 # Built-in data source definitions
@@ -764,20 +761,9 @@ BUILTIN_SOURCES: List[Dict[str, Any]] = [
     },
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed for determinism.
-
-    Returns:
-        Current UTC datetime with microseconds set to zero.
-    """
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _build_sha256(data: Any) -> str:
     """Build a deterministic SHA-256 hash from any JSON-serializable value.
@@ -793,7 +779,6 @@ def _build_sha256(data: Any) -> str:
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
-
 def _clamp(value: float, low: float, high: float) -> float:
     """Clamp a numeric value to [low, high].
 
@@ -807,11 +792,9 @@ def _clamp(value: float, low: float, high: float) -> float:
     """
     return max(low, min(value, high))
 
-
 # ---------------------------------------------------------------------------
 # HazardDatabaseEngine
 # ---------------------------------------------------------------------------
-
 
 class HazardDatabaseEngine:
     """Pure-Python engine for unified climate hazard data ingestion and query.
@@ -1182,7 +1165,7 @@ class HazardDatabaseEngine:
         provenance tracking (to keep the genesis chain clean). Sets
         the status to 'active' and marks them as built-in.
         """
-        now_str = _utcnow().isoformat()
+        now_str = utcnow().isoformat()
         for src_def in BUILTIN_SOURCES:
             source_id = src_def["source_id"]
             hazard_types_list = [
@@ -1327,7 +1310,7 @@ class HazardDatabaseEngine:
         clean_coverage = coverage.strip().lower() if coverage else "global"
 
         # -- Build source record --
-        now_str = _utcnow().isoformat()
+        now_str = utcnow().isoformat()
 
         source_record: dict = {
             "source_id": clean_id,
@@ -1679,7 +1662,7 @@ class HazardDatabaseEngine:
                     record["status"] = status_lower
 
             # Update timestamp
-            record["updated_at"] = _utcnow().isoformat()
+            record["updated_at"] = utcnow().isoformat()
 
             # Re-index new state
             self._add_to_index(
@@ -1909,7 +1892,7 @@ class HazardDatabaseEngine:
         clean_region = (
             region.strip().lower() if region else None
         )
-        now_str = _utcnow().isoformat()
+        now_str = utcnow().isoformat()
 
         # Validate and build records outside lock for performance
         ingested_records: List[dict] = []
@@ -2518,7 +2501,7 @@ class HazardDatabaseEngine:
 
         # -- Build event record --
         event_id = self._generate_id("EVT-")
-        now_str = _utcnow().isoformat()
+        now_str = utcnow().isoformat()
 
         event_record: dict = {
             "event_id": event_id,
@@ -3340,7 +3323,6 @@ class HazardDatabaseEngine:
             "with %d built-in sources",
             len(self._sources),
         )
-
 
 # ---------------------------------------------------------------------------
 # Public surface

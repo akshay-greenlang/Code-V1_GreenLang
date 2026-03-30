@@ -42,25 +42,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -73,11 +67,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class TOUPeriod(str, Enum):
     """Time-of-use period classifications."""
@@ -87,7 +79,6 @@ class TOUPeriod(str, Enum):
     OFF_PEAK = "off_peak"
     SUPER_OFF_PEAK = "super_off_peak"
     CRITICAL_PEAK = "critical_peak"
-
 
 class RateType(str, Enum):
     """Utility rate structure types."""
@@ -100,7 +91,6 @@ class RateType(str, Enum):
     CRITICAL_PEAK_PRICING = "critical_peak_pricing"
     DEMAND_RESPONSE_RATE = "demand_response_rate"
 
-
 class DemandChargeType(str, Enum):
     """Types of demand charges."""
 
@@ -110,7 +100,6 @@ class DemandChargeType(str, Enum):
     RATCHETED = "ratcheted"
     DISTRIBUTION = "distribution"
     TRANSMISSION = "transmission"
-
 
 class BillingComponent(str, Enum):
     """Utility bill cost components."""
@@ -122,7 +111,6 @@ class BillingComponent(str, Enum):
     DISTRIBUTION = "distribution"
     TAXES_FEES = "taxes_fees"
 
-
 class ImportStatus(str, Enum):
     """Data import status."""
 
@@ -131,11 +119,9 @@ class ImportStatus(str, Enum):
     FAILED = "failed"
     CACHED = "cached"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class Pack036Config(BaseModel):
     """Configuration for importing PACK-036 utility analysis data."""
@@ -147,7 +133,6 @@ class Pack036Config(BaseModel):
     import_demand_charges: bool = Field(default=True)
     import_billing_analysis: bool = Field(default=True)
     base_currency: str = Field(default="USD")
-
 
 class RateStructure(BaseModel):
     """Utility rate structure from PACK-036."""
@@ -173,7 +158,6 @@ class RateStructure(BaseModel):
     critical_peak_events_per_year: int = Field(default=0, ge=0)
     provenance_hash: str = Field(default="")
 
-
 class TariffData(BaseModel):
     """Detailed tariff data for peak shaving value calculation."""
 
@@ -191,7 +175,6 @@ class TariffData(BaseModel):
     annual_demand_cost_usd: float = Field(default=0.0, ge=0.0)
     peak_shaving_savings_potential_usd: float = Field(default=0.0, ge=0.0)
     provenance_hash: str = Field(default="")
-
 
 class DemandChargeProfile(BaseModel):
     """Demand charge analysis profile from PACK-036."""
@@ -211,11 +194,9 @@ class DemandChargeProfile(BaseModel):
     shaving_savings_potential_usd: float = Field(default=0.0, ge=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Pack036Bridge
 # ---------------------------------------------------------------------------
-
 
 class Pack036Bridge:
     """Bridge to PACK-036 Utility Analysis data for peak shaving.

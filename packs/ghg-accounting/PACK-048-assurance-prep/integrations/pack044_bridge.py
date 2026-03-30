@@ -45,25 +45,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -76,11 +70,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class ApprovalStatus(str, Enum):
     """Multi-level approval status."""
@@ -92,7 +84,6 @@ class ApprovalStatus(str, Enum):
     APPROVED_L2 = "approved_l2"
     APPROVED_FINAL = "approved_final"
     REJECTED = "rejected"
-
 
 class DocumentType(str, Enum):
     """Documentation record types."""
@@ -106,7 +97,6 @@ class DocumentType(str, Enum):
     IMPACT_ASSESSMENT = "impact_assessment"
     BOUNDARY_DEFINITION = "boundary_definition"
 
-
 class ChangeType(str, Enum):
     """Change management change types."""
 
@@ -116,11 +106,9 @@ class ChangeType(str, Enum):
     DATA_CORRECTION = "data_correction"
     STRUCTURAL_CHANGE = "structural_change"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class Pack044Config(BaseModel):
     """Configuration for PACK-044 bridge."""
@@ -130,7 +118,6 @@ class Pack044Config(BaseModel):
     )
     timeout_s: float = Field(60.0, ge=5.0)
     cache_ttl_s: float = Field(1800.0)
-
 
 class ReviewRecord(BaseModel):
     """Review/approval record from PACK-044."""
@@ -147,7 +134,6 @@ class ReviewRecord(BaseModel):
     sign_off_hash: str = ""
     provenance_hash: str = ""
 
-
 class DocumentationRecord(BaseModel):
     """Documentation record from PACK-044."""
 
@@ -163,7 +149,6 @@ class DocumentationRecord(BaseModel):
     is_current: bool = True
     provenance_hash: str = ""
 
-
 class QualityRecord(BaseModel):
     """Quality management record from PACK-044."""
 
@@ -175,7 +160,6 @@ class QualityRecord(BaseModel):
     findings: List[str] = Field(default_factory=list)
     corrective_actions: List[str] = Field(default_factory=list)
     provenance_hash: str = ""
-
 
 class ChangeRecord(BaseModel):
     """Change management record from PACK-044."""
@@ -192,7 +176,6 @@ class ChangeRecord(BaseModel):
     impact_tco2e: float = 0.0
     provenance_hash: str = ""
 
-
 class InventoryEvidenceRequest(BaseModel):
     """Request for inventory evidence from PACK-044."""
 
@@ -201,7 +184,6 @@ class InventoryEvidenceRequest(BaseModel):
     include_documentation: bool = Field(True)
     include_quality_records: bool = Field(True)
     include_change_records: bool = Field(True)
-
 
 class InventoryEvidenceResponse(BaseModel):
     """Response with inventory evidence from PACK-044."""
@@ -220,11 +202,9 @@ class InventoryEvidenceResponse(BaseModel):
     duration_ms: float = 0.0
     warnings: List[str] = Field(default_factory=list)
 
-
 # ---------------------------------------------------------------------------
 # Bridge Implementation
 # ---------------------------------------------------------------------------
-
 
 class Pack044Bridge:
     """
@@ -295,7 +275,7 @@ class Pack044Bridge:
                 total_records=total,
                 approval_status=approval,
                 provenance_hash=provenance,
-                retrieved_at=_utcnow().isoformat(),
+                retrieved_at=utcnow().isoformat(),
                 duration_ms=duration,
             )
 
@@ -306,7 +286,7 @@ class Pack044Bridge:
                 success=False,
                 period=period,
                 warnings=[f"Retrieval failed: {str(e)}"],
-                retrieved_at=_utcnow().isoformat(),
+                retrieved_at=utcnow().isoformat(),
                 duration_ms=duration,
             )
 

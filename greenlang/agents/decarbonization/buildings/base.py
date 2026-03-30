@@ -28,7 +28,8 @@ from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Any, Dict, List, Optional, TypeVar, Generic
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -87,7 +88,7 @@ class RiskLevel(str, Enum):
 # DATA MODELS
 # =============================================================================
 
-class TechnologySpec(BaseModel):
+class TechnologySpec(GreenLangBase):
     """Technology specification for decarbonization measure."""
     technology_id: str
     category: TechnologyCategory
@@ -99,7 +100,7 @@ class TechnologySpec(BaseModel):
     lifespan_years: int = Field(default=15, ge=1, le=50)
 
 
-class FinancialMetrics(BaseModel):
+class FinancialMetrics(GreenLangBase):
     """Financial analysis for decarbonization measure."""
     capital_cost_usd: Decimal = Field(..., ge=0)
     annual_operating_cost_usd: Decimal = Field(default=Decimal("0"), ge=0)
@@ -111,7 +112,7 @@ class FinancialMetrics(BaseModel):
     available_incentives_usd: Decimal = Field(default=Decimal("0"), ge=0)
 
 
-class DecarbonizationMeasure(BaseModel):
+class DecarbonizationMeasure(GreenLangBase):
     """Individual decarbonization measure recommendation."""
     measure_id: str
     name: str
@@ -133,7 +134,7 @@ class DecarbonizationMeasure(BaseModel):
     co_benefits: List[str] = Field(default_factory=list)
 
 
-class DecarbonizationPathway(BaseModel):
+class DecarbonizationPathway(GreenLangBase):
     """Complete decarbonization pathway with phases."""
     pathway_id: str
     name: str
@@ -157,7 +158,7 @@ class DecarbonizationPathway(BaseModel):
 # INPUT/OUTPUT MODELS
 # =============================================================================
 
-class BuildingBaseline(BaseModel):
+class BuildingBaseline(GreenLangBase):
     """Building baseline data for decarbonization analysis."""
     building_id: str
     building_type: str
@@ -175,7 +176,7 @@ class BuildingBaseline(BaseModel):
     other_fuel_percent: Decimal = Field(default=Decimal("0"), ge=0, le=100)
 
 
-class DecarbonizationTarget(BaseModel):
+class DecarbonizationTarget(GreenLangBase):
     """Decarbonization target specification."""
     target_year: int = Field(..., ge=2025, le=2100)
     target_type: str = Field(default="net_zero")  # net_zero, percent_reduction, absolute
@@ -184,7 +185,7 @@ class DecarbonizationTarget(BaseModel):
     interim_targets: Dict[int, Decimal] = Field(default_factory=dict)
 
 
-class DecarbonizationInput(BaseModel):
+class DecarbonizationInput(GreenLangBase):
     """Base input model for decarbonization agents."""
     building_baseline: BuildingBaseline
     target: DecarbonizationTarget
@@ -204,7 +205,7 @@ class DecarbonizationInput(BaseModel):
     carbon_price_per_tonne: Optional[Decimal] = Field(None, ge=0)
 
 
-class DecarbonizationOutput(BaseModel):
+class DecarbonizationOutput(GreenLangBase):
     """Base output model for decarbonization agents."""
     # Identification
     analysis_id: str

@@ -40,6 +40,7 @@ from enum import Enum
 from typing import Any, Callable, Coroutine, Dict, List, Optional, Set
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -47,25 +48,17 @@ _MODULE_VERSION = "25.0.0"
 
 ProgressCallback = Callable[[str, float, str], Coroutine[Any, Any, None]]
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: Any) -> str:
     if isinstance(data, dict):
         data = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(str(data).encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -73,7 +66,6 @@ class PhaseStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
@@ -83,14 +75,12 @@ class WorkflowStatus(str, Enum):
     PARTIAL = "partial"
     CANCELLED = "cancelled"
 
-
 class PartnershipPhase(str, Enum):
     PARTNER_DISCOVERY = "partner_discovery"
     COLLABORATION_AGREEMENT = "collaboration_agreement"
     JOINT_TARGET_SETTING = "joint_target_setting"
     PERFORMANCE_TRACKING = "performance_tracking"
     IMPACT_REPORTING = "impact_reporting"
-
 
 class PartnerType(str, Enum):
     STANDARD_SETTER = "standard_setter"
@@ -102,13 +92,11 @@ class PartnerType(str, Enum):
     ACADEMIA = "academia"
     TECHNOLOGY_PROVIDER = "technology_provider"
 
-
 class EngagementLevel(str, Enum):
     STRATEGIC = "strategic"
     ACTIVE = "active"
     PARTICIPATING = "participating"
     EXPLORATORY = "exploratory"
-
 
 class CollaborationStatus(str, Enum):
     PROPOSED = "proposed"
@@ -116,7 +104,6 @@ class CollaborationStatus(str, Enum):
     ACTIVE = "active"
     COMPLETED = "completed"
     TERMINATED = "terminated"
-
 
 # =============================================================================
 # REFERENCE DATA
@@ -214,11 +201,9 @@ PHASE_EXECUTION_ORDER: List[PartnershipPhase] = [
     PartnershipPhase.IMPACT_REPORTING,
 ]
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase: PartnershipPhase = Field(...)
@@ -232,7 +217,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class PartnerMatch(BaseModel):
     partner_id: str = Field(default="")
     partner_name: str = Field(default="")
@@ -241,7 +225,6 @@ class PartnerMatch(BaseModel):
     focus_areas: List[str] = Field(default_factory=list)
     reporting_channel: str = Field(default="")
     recommended: bool = Field(default=False)
-
 
 class CollaborationAgreement(BaseModel):
     agreement_id: str = Field(default="")
@@ -254,7 +237,6 @@ class CollaborationAgreement(BaseModel):
     start_date: str = Field(default="")
     review_date: str = Field(default="")
 
-
 class JointTarget(BaseModel):
     target_id: str = Field(default="")
     partner_id: str = Field(default="")
@@ -264,7 +246,6 @@ class JointTarget(BaseModel):
     target_year: int = Field(default=2030)
     baseline_value: float = Field(default=0.0)
     progress_pct: float = Field(default=0.0)
-
 
 class PartnershipEngagementConfig(BaseModel):
     pack_id: str = Field(default="PACK-025")
@@ -281,7 +262,6 @@ class PartnershipEngagementConfig(BaseModel):
     enable_provenance: bool = Field(default=True)
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
-
 
 class PartnershipEngagementResult(BaseModel):
     execution_id: str = Field(default_factory=_new_uuid)
@@ -303,11 +283,9 @@ class PartnershipEngagementResult(BaseModel):
     quality_score: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class PartnershipEngagementWorkflow:
     """
@@ -341,7 +319,7 @@ class PartnershipEngagementWorkflow:
         input_data = input_data or {}
         result = PartnershipEngagementResult(
             org_name=self.config.org_name,
-            status=WorkflowStatus.RUNNING, started_at=_utcnow(),
+            status=WorkflowStatus.RUNNING, started_at=utcnow(),
         )
         self._results[result.execution_id] = result
         start_time = time.monotonic()
@@ -388,7 +366,7 @@ class PartnershipEngagementWorkflow:
             result.errors.append(str(exc))
 
         finally:
-            result.completed_at = _utcnow()
+            result.completed_at = utcnow()
             result.total_duration_ms = (time.monotonic() - start_time) * 1000
             result.partner_matches = self._build_matches(ctx)
             result.agreements = self._build_agreements(ctx)
@@ -411,7 +389,7 @@ class PartnershipEngagementWorkflow:
         return {"cancelled": True}
 
     async def _run_phase(self, phase: PartnershipPhase, ctx: Dict[str, Any]) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         st = time.monotonic()
         handler = {
             PartnershipPhase.PARTNER_DISCOVERY: self._ph_discovery,
@@ -427,7 +405,7 @@ class PartnershipEngagementWorkflow:
             out, warn, err, rec = {}, [], [str(exc)], 0
             status = PhaseStatus.FAILED
         return PhaseResult(
-            phase=phase, status=status, started_at=started, completed_at=_utcnow(),
+            phase=phase, status=status, started_at=started, completed_at=utcnow(),
             duration_ms=round((time.monotonic() - st) * 1000, 2), records_processed=rec,
             outputs=out, warnings=warn, errors=err,
             provenance_hash=_compute_hash(out) if self.config.enable_provenance else "",
@@ -493,6 +471,7 @@ class PartnershipEngagementWorkflow:
         agreements: List[Dict[str, Any]] = []
         from datetime import timedelta
 
+
         for match in matches:
             agreement = {
                 "agreement_id": _new_uuid()[:12],
@@ -507,8 +486,8 @@ class PartnershipEngagementWorkflow:
                 ],
                 "reporting_frequency": "annual",
                 "status": "active",
-                "start_date": _utcnow().strftime("%Y-%m-%d"),
-                "review_date": (_utcnow() + timedelta(days=365)).strftime("%Y-%m-%d"),
+                "start_date": utcnow().strftime("%Y-%m-%d"),
+                "review_date": (utcnow() + timedelta(days=365)).strftime("%Y-%m-%d"),
                 "reporting_channel": match["reporting_channel"],
             }
             agreements.append(agreement)

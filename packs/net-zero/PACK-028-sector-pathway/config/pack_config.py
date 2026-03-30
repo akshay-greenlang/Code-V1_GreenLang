@@ -91,12 +91,13 @@ from typing import Any, Dict, List, Optional, Union
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # Base directory for all pack configuration files
 PACK_BASE_DIR = Path(__file__).resolve().parent.parent
 CONFIG_DIR = Path(__file__).resolve().parent
-
 
 # =============================================================================
 # Constants
@@ -121,7 +122,6 @@ SUPPORTED_PRESETS: Dict[str, str] = {
     "buildings": "Commercial/residential with heat pumps, insulation, renewable heat",
     "mixed_sectors": "Conglomerates with multiple SDA-eligible sectors",
 }
-
 
 # =============================================================================
 # SBTi SDA Sector Reference Data
@@ -470,21 +470,13 @@ SECTOR_INFO: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # Helper Functions
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hash of a string.
@@ -497,11 +489,9 @@ def _compute_hash(data: str) -> str:
     """
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # Enums (8 enums)
 # =============================================================================
-
 
 class PrimarySector(str, Enum):
     """Primary sector classification for the organization.
@@ -527,14 +517,12 @@ class PrimarySector(str, Enum):
     OIL_GAS = "OIL_GAS"
     MIXED = "MIXED"
 
-
 class SBTiPathway(str, Enum):
     """SBTi temperature alignment pathway level."""
 
     CELSIUS_1_5 = "CELSIUS_1_5"
     WELL_BELOW_2 = "WELL_BELOW_2"
     CELSIUS_2 = "CELSIUS_2"
-
 
 class IEAScenario(str, Enum):
     """IEA World Energy Outlook scenario selection."""
@@ -545,14 +533,12 @@ class IEAScenario(str, Enum):
     APS = "APS"
     STEPS = "STEPS"
 
-
 class IPCCOvershoot(str, Enum):
     """IPCC AR6 pathway overshoot classification."""
 
     NO = "no"
     LIMITED = "limited"
     HIGH = "high"
-
 
 class ConvergenceModel(str, Enum):
     """Intensity convergence mathematical model.
@@ -566,14 +552,12 @@ class ConvergenceModel(str, Enum):
     S_CURVE = "s_curve"
     STEPPED = "stepped"
 
-
 class CapExPhasing(str, Enum):
     """Capital expenditure phasing strategy for technology transitions."""
 
     FRONT_LOADED = "front_loaded"
     LINEAR = "linear"
     BACK_LOADED = "back_loaded"
-
 
 class IntensityBoundary(str, Enum):
     """Emission scope boundary for intensity metric calculation."""
@@ -582,7 +566,6 @@ class IntensityBoundary(str, Enum):
     SCOPE_1_2 = "scope_1_2"
     SCOPE_1_2_3 = "scope_1_2_3"
 
-
 class AssuranceLevel(str, Enum):
     """External assurance engagement level for reported data."""
 
@@ -590,13 +573,11 @@ class AssuranceLevel(str, Enum):
     LIMITED = "limited"
     REASONABLE = "reasonable"
 
-
 class PeerSelection(str, Enum):
     """Peer group selection method for benchmarking."""
 
     AUTO = "auto"
     MANUAL = "manual"
-
 
 class ReportingFrequency(str, Enum):
     """Reporting and monitoring frequency."""
@@ -606,11 +587,9 @@ class ReportingFrequency(str, Enum):
     SEMI_ANNUAL = "semi_annual"
     ANNUAL = "annual"
 
-
 # =============================================================================
 # Pydantic Sub-Config Models (8 models)
 # =============================================================================
-
 
 class SBTiSDAConfig(BaseModel):
     """Configuration for SBTi Sectoral Decarbonization Approach.
@@ -710,7 +689,6 @@ class SBTiSDAConfig(BaseModel):
             )
         return self
 
-
 class IEANZEConfig(BaseModel):
     """Configuration for IEA Net Zero Emissions 2050 scenario alignment.
 
@@ -757,7 +735,6 @@ class IEANZEConfig(BaseModel):
             )
         return v
 
-
 class IPCCConfig(BaseModel):
     """Configuration for IPCC AR6 pathway alignment.
 
@@ -794,7 +771,6 @@ class IPCCConfig(BaseModel):
                 f"Invalid IPCC pathway: {v}. Must be one of: {sorted(IPCC_PATHWAYS.keys())}"
             )
         return v
-
 
 class IntensityConfig(BaseModel):
     """Configuration for sector-specific intensity metric calculation.
@@ -838,7 +814,6 @@ class IntensityConfig(BaseModel):
         le=20.0,
         description="Annual production growth rate (%) for pathway modeling",
     )
-
 
 class ConvergenceConfig(BaseModel):
     """Configuration for intensity convergence modeling.
@@ -911,7 +886,6 @@ class ConvergenceConfig(BaseModel):
                 )
         return self
 
-
 class TechnologyRoadmapConfig(BaseModel):
     """Configuration for sector technology transition roadmap planning.
 
@@ -968,7 +942,6 @@ class TechnologyRoadmapConfig(BaseModel):
         True,
         description="Model technology adoption using S-curve diffusion",
     )
-
 
 class MACCConfig(BaseModel):
     """Configuration for Marginal Abatement Cost Curve (MACC) waterfall.
@@ -1036,7 +1009,6 @@ class MACCConfig(BaseModel):
             )
         return self
 
-
 class BenchmarkConfig(BaseModel):
     """Configuration for sector benchmarking analysis.
 
@@ -1092,7 +1064,6 @@ class BenchmarkConfig(BaseModel):
         ],
         description="Benchmarking dimensions for multi-dimensional comparison",
     )
-
 
 class ScenarioAnalysisConfig(BaseModel):
     """Configuration for multi-scenario pathway comparison.
@@ -1157,7 +1128,6 @@ class ScenarioAnalysisConfig(BaseModel):
             )
         return v
 
-
 class ReportingConfig(BaseModel):
     """Configuration for multi-framework reporting.
 
@@ -1215,7 +1185,6 @@ class ReportingConfig(BaseModel):
             )
         return v
 
-
 class PerformanceConfig(BaseModel):
     """Configuration for runtime performance tuning.
 
@@ -1260,11 +1229,9 @@ class PerformanceConfig(BaseModel):
         description="Memory limit in MB for the calculation pipeline",
     )
 
-
 # =============================================================================
 # Main Configuration Model
 # =============================================================================
-
 
 class SectorPathwayConfig(BaseModel):
     """Main configuration model for PACK-028 Sector Pathway Pack.
@@ -1503,11 +1470,9 @@ class SectorPathwayConfig(BaseModel):
         sda_key = sector_map.get(self.primary_sector.value, self.primary_sector.value)
         return SDA_2050_TARGETS.get(sda_key)
 
-
 # =============================================================================
 # Pack Configuration Wrapper
 # =============================================================================
-
 
 class PackConfig(BaseModel):
     """Top-level pack configuration wrapper for PACK-028.
@@ -1660,11 +1625,9 @@ class PackConfig(BaseModel):
         """
         return SectorPathwayConfig.model_json_schema()
 
-
 # =============================================================================
 # Utility Functions
 # =============================================================================
-
 
 def load_config(yaml_path: Union[str, Path]) -> PackConfig:
     """Load configuration from a YAML file.
@@ -1678,7 +1641,6 @@ def load_config(yaml_path: Union[str, Path]) -> PackConfig:
         PackConfig instance.
     """
     return PackConfig.from_yaml(yaml_path)
-
 
 def load_preset(
     preset_name: str,
@@ -1696,7 +1658,6 @@ def load_preset(
         PackConfig instance with preset applied.
     """
     return PackConfig.from_preset(preset_name, overrides)
-
 
 def get_sector_defaults(
     sector: Union[str, PrimarySector],
@@ -1744,7 +1705,6 @@ def get_sector_defaults(
         ),
     )
 
-
 def _merge_config(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
     """Deep merge two dictionaries, with override taking precedence.
 
@@ -1763,7 +1723,6 @@ def _merge_config(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, A
             result[key] = value
     return result
 
-
 def merge_config(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
     """Public deep merge two dictionaries, with override taking precedence.
 
@@ -1775,7 +1734,6 @@ def merge_config(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, An
         Merged dictionary.
     """
     return _merge_config(base, override)
-
 
 def _get_env_overrides(prefix: str) -> Dict[str, Any]:
     """Load configuration overrides from environment variables.
@@ -1817,7 +1775,6 @@ def _get_env_overrides(prefix: str) -> Dict[str, Any]:
                         current[parts[-1]] = value
     return overrides
 
-
 def get_env_overrides(prefix: str) -> Dict[str, Any]:
     """Public wrapper for loading environment variable overrides.
 
@@ -1828,7 +1785,6 @@ def get_env_overrides(prefix: str) -> Dict[str, Any]:
         Dictionary of parsed overrides.
     """
     return _get_env_overrides(prefix)
-
 
 def validate_config(config: SectorPathwayConfig) -> List[str]:
     """Validate a sector pathway configuration and return any warnings.
@@ -1954,7 +1910,6 @@ def validate_config(config: SectorPathwayConfig) -> List[str]:
 
     return warnings
 
-
 def get_sector_info(sector: Union[str, PrimarySector]) -> Dict[str, Any]:
     """Get detailed information about a sector.
 
@@ -1974,7 +1929,6 @@ def get_sector_info(sector: Union[str, PrimarySector]) -> Dict[str, Any]:
         "typical_scope_split": "Varies",
     })
 
-
 def get_sda_intensity_metric(sector: str) -> str:
     """Get the SDA intensity metric for a given sector.
 
@@ -1986,7 +1940,6 @@ def get_sda_intensity_metric(sector: str) -> str:
     """
     return ALL_INTENSITY_METRICS.get(sector, "tCO2e/unit")
 
-
 def get_sda_2050_target(sector: str) -> Optional[float]:
     """Get the SDA 2050 convergence target for a sector.
 
@@ -1997,7 +1950,6 @@ def get_sda_2050_target(sector: str) -> Optional[float]:
         Target intensity value, or None if not available.
     """
     return SDA_2050_TARGETS.get(sector)
-
 
 def get_iea_scenario_info(scenario: Union[str, IEAScenario]) -> Dict[str, Any]:
     """Get IEA scenario parameters.
@@ -2011,7 +1963,6 @@ def get_iea_scenario_info(scenario: Union[str, IEAScenario]) -> Dict[str, Any]:
     key = scenario.value if isinstance(scenario, IEAScenario) else scenario
     return IEA_SCENARIOS.get(key, IEA_SCENARIOS["NZE"])
 
-
 def get_ipcc_pathway_info(pathway: str) -> Dict[str, Any]:
     """Get IPCC AR6 pathway parameters.
 
@@ -2022,7 +1973,6 @@ def get_ipcc_pathway_info(pathway: str) -> Dict[str, Any]:
         Dictionary with temperature, overshoot, and description.
     """
     return IPCC_PATHWAYS.get(pathway, IPCC_PATHWAYS["C1"])
-
 
 def get_sector_levers(sector: Union[str, PrimarySector]) -> List[str]:
     """Get decarbonization levers for a sector.
@@ -2035,7 +1985,6 @@ def get_sector_levers(sector: Union[str, PrimarySector]) -> List[str]:
     """
     key = sector.value if isinstance(sector, PrimarySector) else sector
     return SECTOR_DECARBONIZATION_LEVERS.get(key, [])
-
 
 def get_sbti_reduction_rate(ambition: Union[str, SBTiPathway]) -> Dict[str, float]:
     """Get SBTi minimum annual reduction rates for an ambition level.
@@ -2050,7 +1999,6 @@ def get_sbti_reduction_rate(ambition: Union[str, SBTiPathway]) -> Dict[str, floa
     key = ambition.value if isinstance(ambition, SBTiPathway) else ambition
     return SBTI_REDUCTION_RATES.get(key, SBTI_REDUCTION_RATES["CELSIUS_1_5"])
 
-
 def get_gwp100(gas: str) -> int:
     """Get IPCC AR6 GWP100 value for a greenhouse gas.
 
@@ -2062,7 +2010,6 @@ def get_gwp100(gas: str) -> int:
     """
     return IPCC_AR6_GWP100.get(gas.upper(), 0)
 
-
 def list_available_presets() -> Dict[str, str]:
     """List all available configuration presets.
 
@@ -2070,7 +2017,6 @@ def list_available_presets() -> Dict[str, str]:
         Dictionary mapping preset names to descriptions.
     """
     return SUPPORTED_PRESETS.copy()
-
 
 def list_sda_sectors() -> Dict[str, str]:
     """List all supported SBTi SDA sectors.
@@ -2080,7 +2026,6 @@ def list_sda_sectors() -> Dict[str, str]:
     """
     return SDA_SECTORS.copy()
 
-
 def list_iea_scenarios() -> Dict[str, str]:
     """List all supported IEA scenarios.
 
@@ -2088,7 +2033,6 @@ def list_iea_scenarios() -> Dict[str, str]:
         Dictionary mapping scenario codes to names.
     """
     return {k: v["name"] for k, v in IEA_SCENARIOS.items()}
-
 
 def list_primary_sectors() -> Dict[str, str]:
     """List all supported primary sectors.

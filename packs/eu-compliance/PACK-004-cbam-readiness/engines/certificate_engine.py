@@ -47,25 +47,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -78,7 +72,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -88,23 +81,19 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _round_eur(value: Decimal, places: int = 2) -> float:
     """Round a Decimal to euro cents and return float."""
     rounded = value.quantize(Decimal(10) ** -places, rounding=ROUND_HALF_UP)
     return float(rounded)
-
 
 def _round_cert(value: Decimal, places: int = 4) -> float:
     """Round certificate quantities to 4 decimal places."""
     rounded = value.quantize(Decimal(10) ** -places, rounding=ROUND_HALF_UP)
     return float(rounded)
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # Free allocation phase-out schedule per CBAM Regulation Article 31
 # Key: year, Value: percentage of free allocation remaining (%)
@@ -121,7 +110,6 @@ FREE_ALLOCATION_PHASE_OUT: Dict[int, float] = {
     2034: 0.0,
 }
 
-
 # EU ETS benchmark values (tCO2e per tonne of product) per goods category
 # These are used to calculate free allocation amounts
 ETS_BENCHMARKS: Dict[str, float] = {
@@ -132,7 +120,6 @@ ETS_BENCHMARKS: Dict[str, float] = {
     "electricity": 0.0,    # No free allocation for electricity
     "hydrogen": 8.850,     # Hydrogen benchmark (grey reference)
 }
-
 
 # Default ETS price scenarios (EUR per tCO2e) by year
 # Source: Consensus forecasts from major analysts (2026 projections)
@@ -151,11 +138,9 @@ ETS_PRICE_SCENARIOS: Dict[str, Dict[int, float]] = {
     },
 }
 
-
 # Quarterly holding requirement: percentage of annual obligation
 # that must be held as certificates at the end of each quarter
 QUARTERLY_HOLDING_PCT: float = 50.0
-
 
 # Known carbon pricing schemes and their approximate prices (EUR/tCO2e)
 # Used when no explicit carbon price is provided for a country
@@ -172,11 +157,9 @@ COUNTRY_CARBON_PRICES: Dict[str, Dict[str, Any]] = {
     "MX": {"price_eur": 3.5, "scheme": "Mexico Carbon Tax", "exchange_rate": 0.054},
 }
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CostScenario(str, Enum):
     """ETS price scenario for cost projections."""
@@ -184,7 +167,6 @@ class CostScenario(str, Enum):
     LOW = "LOW"
     MID = "MID"
     HIGH = "HIGH"
-
 
 class CBAMGoodsCategory(str, Enum):
     """CBAM goods categories (mirrored locally to avoid cross-engine imports)."""
@@ -196,11 +178,9 @@ class CBAMGoodsCategory(str, Enum):
     ELECTRICITY = "electricity"
     HYDROGEN = "hydrogen"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class CertificateObligation(BaseModel):
     """Annual CBAM certificate obligation for an importer.
@@ -245,13 +225,12 @@ class CertificateObligation(BaseModel):
         description="ETS certificate price used for cost estimate",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of obligation calculation",
     )
     provenance_hash: str = Field(
         "", description="SHA-256 hash of inputs + outputs for audit trail",
     )
-
 
 class FreeAllocationSchedule(BaseModel):
     """Free allocation phase-out schedule entry for a single year.
@@ -276,7 +255,6 @@ class FreeAllocationSchedule(BaseModel):
         ..., ge=0, le=1,
         description="Factor to apply (phase_out_percentage / 100)",
     )
-
 
 class CarbonPriceDeduction(BaseModel):
     """Carbon price paid in country of origin for CBAM deduction.
@@ -310,7 +288,6 @@ class CarbonPriceDeduction(BaseModel):
     def uppercase_country(cls, v: str) -> str:
         """Ensure country code is uppercase."""
         return v.strip().upper()
-
 
 class CostProjection(BaseModel):
     """Cost projection under a specific ETS price scenario.
@@ -350,7 +327,6 @@ class CostProjection(BaseModel):
         "", description="SHA-256 hash for audit trail",
     )
 
-
 class QuarterlyHolding(BaseModel):
     """Quarterly certificate holding compliance check.
 
@@ -385,15 +361,13 @@ class QuarterlyHolding(BaseModel):
         ..., description="Positive = surplus, negative = deficit",
     )
     checked_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of check",
     )
-
 
 # ---------------------------------------------------------------------------
 # Lightweight EmissionResult stub for type reference
 # ---------------------------------------------------------------------------
-
 
 class _EmissionResultRef(BaseModel):
     """Minimal emission result reference (avoids cross-engine import)."""
@@ -403,11 +377,9 @@ class _EmissionResultRef(BaseModel):
     total_embedded_emissions_tco2e: float = 0.0
     country_of_origin: str = ""
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class CertificateEngine:
     """CBAM certificate obligation calculation engine.
@@ -640,7 +612,7 @@ class CertificateEngine:
 
         # Resolve ETS price
         if ets_price is None:
-            ets_price = self._get_ets_price(_utcnow().year)
+            ets_price = self._get_ets_price(utcnow().year)
 
         # Calculate effective deduction
         # Deduction = emissions * min(country_price / ets_price, 1.0)
@@ -704,7 +676,7 @@ class CertificateEngine:
         Returns:
             CostProjection with estimated cost.
         """
-        target_year = year or _utcnow().year
+        target_year = year or utcnow().year
 
         if ets_price is not None:
             price = ets_price

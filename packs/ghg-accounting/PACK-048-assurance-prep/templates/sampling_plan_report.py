@@ -45,29 +45,23 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 def _compute_hash(content: str) -> str:
     """Compute SHA-256 hash of string content."""
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -80,7 +74,6 @@ class OutputFormat(str, Enum):
     PDF = "pdf"
     JSON = "json"
 
-
 class SamplingMethod(str, Enum):
     """Sampling method classification."""
     MONETARY_UNIT = "monetary_unit"
@@ -89,7 +82,6 @@ class SamplingMethod(str, Enum):
     STRATIFIED = "stratified"
     JUDGMENTAL = "judgmental"
 
-
 class SelectionReason(str, Enum):
     """Reason for item selection."""
     HIGH_VALUE = "high_value"
@@ -97,7 +89,6 @@ class SelectionReason(str, Enum):
     UNUSUAL_ITEM = "unusual_item"
     JUDGMENTAL = "judgmental"
     RANDOM = "random"
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Input Models
@@ -114,7 +105,6 @@ class PopulationDescription(BaseModel):
     period_start: Optional[str] = Field(None, description="Period start (ISO)")
     period_end: Optional[str] = Field(None, description="Period end (ISO)")
 
-
 class StratumEntry(BaseModel):
     """Single stratum in the stratification table."""
     stratum_id: str = Field("", description="Stratum identifier")
@@ -128,7 +118,6 @@ class StratumEntry(BaseModel):
     )
     coverage_pct: float = Field(0.0, ge=0, le=100, description="Coverage % by value")
 
-
 class HighValueItem(BaseModel):
     """Item requiring 100% testing."""
     item_id: str = Field("", description="Item identifier")
@@ -138,7 +127,6 @@ class HighValueItem(BaseModel):
     category: str = Field("", description="Emissions category")
     reason: str = Field("high_value", description="Reason for 100% testing")
     threshold_exceeded: Optional[float] = Field(None, description="Threshold exceeded (tCO2e)")
-
 
 class KeyItem(BaseModel):
     """Item selected for judgmental review."""
@@ -151,7 +139,6 @@ class KeyItem(BaseModel):
     risk_factors: List[str] = Field(default_factory=list, description="Risk factors identified")
     notes: str = Field("", description="Review notes")
 
-
 class SampleMethodology(BaseModel):
     """Sample selection methodology description."""
     primary_method: SamplingMethod = Field(
@@ -163,7 +150,6 @@ class SampleMethodology(BaseModel):
     selection_criteria: List[str] = Field(
         default_factory=list, description="Selection criteria"
     )
-
 
 class StatisticalParameters(BaseModel):
     """Statistical sampling parameters."""
@@ -182,7 +168,6 @@ class StatisticalParameters(BaseModel):
     )
     precision_tco2e: Optional[float] = Field(None, ge=0, description="Precision (tCO2e)")
     risk_of_material_misstatement: str = Field("", description="Risk assessment")
-
 
 class SamplingPlanInput(BaseModel):
     """Complete input model for SamplingPlanReport."""
@@ -207,7 +192,6 @@ class SamplingPlanInput(BaseModel):
     statistical_params: Optional[StatisticalParameters] = Field(
         None, description="Statistical parameters"
     )
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -266,7 +250,7 @@ class SamplingPlanReport:
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render sampling plan as Markdown."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_md(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -274,7 +258,7 @@ class SamplingPlanReport:
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render sampling plan as HTML."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_html(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -282,7 +266,7 @@ class SamplingPlanReport:
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render sampling plan as JSON dict."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_json(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -324,7 +308,7 @@ class SamplingPlanReport:
         return (
             f"# Sampling Plan Report - {company}\n\n"
             f"**Reporting Period:** {period} | "
-            f"**Report Date:** {_utcnow().strftime('%Y-%m-%d')}\n\n"
+            f"**Report Date:** {utcnow().strftime('%Y-%m-%d')}\n\n"
             "---"
         )
 
@@ -535,7 +519,7 @@ class SamplingPlanReport:
             '<div class="section">\n'
             f"<h1>Sampling Plan Report &mdash; {company}</h1>\n"
             f"<p><strong>Reporting Period:</strong> {period} | "
-            f"<strong>Report Date:</strong> {_utcnow().strftime('%Y-%m-%d')}</p>\n"
+            f"<strong>Report Date:</strong> {utcnow().strftime('%Y-%m-%d')}</p>\n"
             "<hr>\n</div>"
         )
 

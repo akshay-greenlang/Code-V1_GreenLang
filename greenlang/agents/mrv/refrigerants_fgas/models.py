@@ -41,18 +41,14 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ReportingPeriod
 
 # ---------------------------------------------------------------------------
 # Helper
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -87,11 +83,9 @@ GWP_REFERENCE: Dict[str, Dict[str, float]] = {
     "AR6": {"CO2": 1.0, "CH4": 27.3, "N2O": 273.0, "SF6": 25200.0, "NF3": 17400.0},
 }
 
-
 # =============================================================================
 # Enumerations (15)
 # =============================================================================
-
 
 class RefrigerantCategory(str, Enum):
     """Broad classification of refrigerant and fluorinated gas types.
@@ -121,7 +115,6 @@ class RefrigerantCategory(str, Enum):
     CFC = "cfc"
     NATURAL = "natural"
     OTHER = "other"
-
 
 class RefrigerantType(str, Enum):
     """Specific refrigerant type identifiers for fluorinated gas tracking.
@@ -209,7 +202,6 @@ class RefrigerantType(str, Enum):
     # -- Custom / user-defined ----------------------------------------------
     CUSTOM = "CUSTOM"
 
-
 class GWPSource(str, Enum):
     """IPCC Assessment Report edition used for GWP conversion factors.
 
@@ -226,7 +218,6 @@ class GWPSource(str, Enum):
     AR6_20YR = "AR6_20YR"
     CUSTOM = "CUSTOM"
 
-
 class GWPTimeframe(str, Enum):
     """Time horizon for GWP integration.
 
@@ -236,7 +227,6 @@ class GWPTimeframe(str, Enum):
 
     GWP_20YR = "GWP_20YR"
     GWP_100YR = "GWP_100YR"
-
 
 class CalculationMethod(str, Enum):
     """Methodology for calculating refrigerant and F-gas emissions.
@@ -256,7 +246,6 @@ class CalculationMethod(str, Enum):
     SCREENING = "SCREENING"
     DIRECT_MEASUREMENT = "DIRECT_MEASUREMENT"
     TOP_DOWN = "TOP_DOWN"
-
 
 class EquipmentType(str, Enum):
     """Classification of refrigerant-containing equipment.
@@ -281,7 +270,6 @@ class EquipmentType(str, Enum):
     AEROSOLS = "aerosols"
     SOLVENTS = "solvents"
 
-
 class EquipmentStatus(str, Enum):
     """Operational status of refrigerant-containing equipment.
 
@@ -295,7 +283,6 @@ class EquipmentStatus(str, Enum):
     INACTIVE = "inactive"
     DECOMMISSIONED = "decommissioned"
     MAINTENANCE = "maintenance"
-
 
 class ServiceEventType(str, Enum):
     """Type of service event performed on refrigerant-containing equipment.
@@ -320,7 +307,6 @@ class ServiceEventType(str, Enum):
     DECOMMISSIONING = "decommissioning"
     CONVERSION = "conversion"
 
-
 class LifecycleStage(str, Enum):
     """Lifecycle stage of refrigerant-containing equipment.
 
@@ -337,7 +323,6 @@ class LifecycleStage(str, Enum):
     OPERATING = "operating"
     END_OF_LIFE = "end_of_life"
 
-
 class CalculationStatus(str, Enum):
     """Status of a refrigerant emission calculation.
 
@@ -353,20 +338,6 @@ class CalculationStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     CANCELLED = "cancelled"
-
-
-class ReportingPeriod(str, Enum):
-    """Temporal granularity for emission reporting aggregation.
-
-    MONTHLY: Calendar month aggregation.
-    QUARTERLY: Calendar quarter (Q1-Q4) aggregation.
-    ANNUAL: Full calendar or fiscal year aggregation.
-    """
-
-    MONTHLY = "monthly"
-    QUARTERLY = "quarterly"
-    ANNUAL = "annual"
-
 
 class RegulatoryFramework(str, Enum):
     """Regulatory framework governing calculation methodology and reporting.
@@ -393,7 +364,6 @@ class RegulatoryFramework(str, Enum):
     KIGALI_AMENDMENT = "kigali_amendment"
     UK_FGAS = "uk_fgas"
 
-
 class ComplianceStatus(str, Enum):
     """Compliance status against a specific regulatory requirement.
 
@@ -410,7 +380,6 @@ class ComplianceStatus(str, Enum):
     EXEMPTED = "exempted"
     NOT_APPLICABLE = "not_applicable"
 
-
 class PhaseDownSchedule(str, Enum):
     """HFC phase-down schedule for quota and compliance tracking.
 
@@ -424,7 +393,6 @@ class PhaseDownSchedule(str, Enum):
     EU_FGAS = "eu_fgas"
     KIGALI_A5 = "kigali_a5"
     KIGALI_NON_A5 = "kigali_non_a5"
-
 
 class UnitType(str, Enum):
     """Physical units for refrigerant mass measurement.
@@ -444,13 +412,11 @@ class UnitType(str, Enum):
     TONNE = "tonne"
     METRIC_TON = "metric_ton"
 
-
 # =============================================================================
 # Data Models (14)
 # =============================================================================
 
-
-class GWPValue(BaseModel):
+class GWPValue(GreenLangBase):
     """Global Warming Potential value for a specific source and timeframe.
 
     Captures the GWP numeric value along with its provenance (which IPCC
@@ -481,8 +447,7 @@ class GWPValue(BaseModel):
         description="Date from which this GWP value is applicable",
     )
 
-
-class BlendComponent(BaseModel):
+class BlendComponent(GreenLangBase):
     """A single constituent gas in a blended refrigerant mixture.
 
     Defines the weight fraction and individual GWP of one component
@@ -520,8 +485,7 @@ class BlendComponent(BaseModel):
             )
         return v
 
-
-class RefrigerantProperties(BaseModel):
+class RefrigerantProperties(GreenLangBase):
     """Physical and chemical properties of a refrigerant type.
 
     Defines GWP values, molecular properties, ozone depletion potential,
@@ -621,8 +585,7 @@ class RefrigerantProperties(BaseModel):
                 )
         return v
 
-
-class EquipmentProfile(BaseModel):
+class EquipmentProfile(GreenLangBase):
     """Operational profile for a refrigerant-containing equipment unit.
 
     Equipment profiles enable equipment-based calculations by incorporating
@@ -683,8 +646,7 @@ class EquipmentProfile(BaseModel):
         description="Optional override leak rate (fraction per year, 0.0-1.0)",
     )
 
-
-class ServiceEvent(BaseModel):
+class ServiceEvent(GreenLangBase):
     """A refrigerant service event on a specific equipment unit.
 
     Records additions, removals, and handling of refrigerant during
@@ -734,8 +696,7 @@ class ServiceEvent(BaseModel):
         description="Optional description or technician notes",
     )
 
-
-class LeakRateProfile(BaseModel):
+class LeakRateProfile(GreenLangBase):
     """Effective leak rate profile for an equipment type and lifecycle stage.
 
     Combines base leak rate with adjustment factors for equipment age,
@@ -794,8 +755,7 @@ class LeakRateProfile(BaseModel):
         description="Computed effective annual leak rate",
     )
 
-
-class MassBalanceData(BaseModel):
+class MassBalanceData(GreenLangBase):
     """Mass balance input data for a single refrigerant type.
 
     Implements the mass-balance equation per EPA 40 CFR Part 98 Subpart OO:
@@ -853,8 +813,7 @@ class MassBalanceData(BaseModel):
         description="Net change in total equipment charge capacity (kg)",
     )
 
-
-class CalculationInput(BaseModel):
+class CalculationInput(GreenLangBase):
     """Input data for a refrigerant and F-gas emission calculation.
 
     Supports multiple calculation methods: equipment-based (requires
@@ -930,8 +889,7 @@ class CalculationInput(BaseModel):
         description="Service events to include in calculation",
     )
 
-
-class GasEmission(BaseModel):
+class GasEmission(GreenLangBase):
     """Emission result for a single refrigerant gas from an emission event.
 
     Captures the calculated gas loss and CO2-equivalent emissions along
@@ -987,8 +945,7 @@ class GasEmission(BaseModel):
         description="Whether this is a decomposed blend component",
     )
 
-
-class CalculationResult(BaseModel):
+class CalculationResult(GreenLangBase):
     """Complete result of a single refrigerant and F-gas emission calculation.
 
     Contains all calculated emissions by gas, total CO2e, the methodology
@@ -1044,7 +1001,7 @@ class CalculationResult(BaseModel):
         description="SHA-256 hash for audit trail integrity",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the calculation was performed",
     )
     calculation_trace: List[str] = Field(
@@ -1053,8 +1010,7 @@ class CalculationResult(BaseModel):
         description="Ordered list of human-readable calculation steps",
     )
 
-
-class BatchCalculationRequest(BaseModel):
+class BatchCalculationRequest(GreenLangBase):
     """Request model for batch refrigerant and F-gas calculations.
 
     Groups multiple calculation inputs for processing as a single
@@ -1076,8 +1032,7 @@ class BatchCalculationRequest(BaseModel):
         description="Whether to process calculations in parallel",
     )
 
-
-class BatchCalculationResponse(BaseModel):
+class BatchCalculationResponse(GreenLangBase):
     """Response model for a batch refrigerant and F-gas calculation.
 
     Aggregates individual calculation results with batch-level totals
@@ -1121,8 +1076,7 @@ class BatchCalculationResponse(BaseModel):
         description="SHA-256 hash covering the entire batch result",
     )
 
-
-class UncertaintyResult(BaseModel):
+class UncertaintyResult(GreenLangBase):
     """Monte Carlo uncertainty quantification result for a refrigerant calculation.
 
     Provides statistical characterization of emission estimate uncertainty
@@ -1201,8 +1155,7 @@ class UncertaintyResult(BaseModel):
         description="Data quality indicator (1-5 scale, GHG Protocol guidance)",
     )
 
-
-class ComplianceRecord(BaseModel):
+class ComplianceRecord(GreenLangBase):
     """Regulatory compliance assessment for refrigerant and F-gas emissions.
 
     Tracks compliance status against specific frameworks including
@@ -1264,7 +1217,6 @@ class ComplianceRecord(BaseModel):
         # This is a soft validation; non-compliant usage is permitted
         # but tracked via ComplianceStatus.NON_COMPLIANT
         return v
-
 
 # ---------------------------------------------------------------------------
 # Public API

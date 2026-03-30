@@ -35,20 +35,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -61,11 +56,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class WizardStep(str, Enum):
     """Names of setup wizard steps in execution order."""
@@ -79,7 +72,6 @@ class WizardStep(str, Enum):
     REPORT_PREFERENCES = "report_preferences"
     CONFIRMATION = "confirmation"
 
-
 class StepStatus(str, Enum):
     """Status of a wizard step."""
 
@@ -87,7 +79,6 @@ class StepStatus(str, Enum):
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
     SKIPPED = "skipped"
-
 
 class FacilityType(str, Enum):
     """Facility types for benchmark context."""
@@ -103,11 +94,9 @@ class FacilityType(str, Enum):
     MIXED_USE = "mixed_use"
     RESIDENTIAL_MULTI = "residential_multi"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class SetupWizardConfig(BaseModel):
     """Configuration for the setup wizard."""
@@ -115,7 +104,6 @@ class SetupWizardConfig(BaseModel):
     pack_id: str = Field(default="PACK-035")
     pack_version: str = Field(default="1.0.0")
     enable_provenance: bool = Field(default=True)
-
 
 class FacilitySetup(BaseModel):
     """Facility profile data from the wizard."""
@@ -142,7 +130,6 @@ class FacilitySetup(BaseModel):
     report_format: str = Field(default="pdf", description="pdf|html|excel")
     include_portfolio_view: bool = Field(default=False)
 
-
 class WizardStepState(BaseModel):
     """State of a single wizard step."""
 
@@ -155,7 +142,6 @@ class WizardStepState(BaseModel):
     completed_at: Optional[datetime] = Field(None)
     execution_time_ms: float = Field(default=0.0)
 
-
 class WizardState(BaseModel):
     """Complete state of the setup wizard."""
 
@@ -164,9 +150,8 @@ class WizardState(BaseModel):
     steps: Dict[str, WizardStepState] = Field(default_factory=dict)
     facility_setup: Optional[FacilitySetup] = Field(None)
     is_complete: bool = Field(default=False)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     completed_at: Optional[datetime] = Field(None)
-
 
 class StepResult(BaseModel):
     """Result of processing a wizard step."""
@@ -175,7 +160,6 @@ class StepResult(BaseModel):
     status: StepStatus = Field(default=StepStatus.PENDING)
     validation_errors: List[str] = Field(default_factory=list)
     execution_time_ms: float = Field(default=0.0)
-
 
 class SetupResult(BaseModel):
     """Final setup result."""
@@ -193,9 +177,8 @@ class SetupResult(BaseModel):
     total_steps_completed: int = Field(default=0)
     total_steps: int = Field(default=8)
     configuration_hash: str = Field(default="")
-    generated_at: datetime = Field(default_factory=_utcnow)
+    generated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Step Definitions
@@ -222,7 +205,6 @@ STEP_DISPLAY_NAMES: Dict[WizardStep, str] = {
     WizardStep.REPORT_PREFERENCES: "Report Preferences",
     WizardStep.CONFIRMATION: "Review & Confirm",
 }
-
 
 # ---------------------------------------------------------------------------
 # Facility Presets (8 presets)
@@ -287,11 +269,9 @@ FACILITY_PRESETS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # SetupWizard
 # ---------------------------------------------------------------------------
-
 
 class SetupWizard:
     """8-step guided facility configuration wizard for PACK-035.
@@ -329,7 +309,7 @@ class SetupWizard:
         Returns:
             Initial WizardState with all steps in PENDING status.
         """
-        wizard_id = _compute_hash(f"benchmark-wizard:{_utcnow().isoformat()}")[:16]
+        wizard_id = _compute_hash(f"benchmark-wizard:{utcnow().isoformat()}")[:16]
         steps: Dict[str, WizardStepState] = {}
         for step_name in STEP_ORDER:
             steps[step_name.value] = WizardStepState(
@@ -358,7 +338,7 @@ class SetupWizard:
             raise ValueError(f"Step '{current.value}' not found")
 
         step.status = StepStatus.IN_PROGRESS
-        step.started_at = _utcnow()
+        step.started_at = utcnow()
         start_time = time.monotonic()
 
         handler = self._step_handlers.get(current)
@@ -376,7 +356,7 @@ class SetupWizard:
                 step.validation_errors = errors
             else:
                 step.status = StepStatus.COMPLETED
-                step.completed_at = _utcnow()
+                step.completed_at = utcnow()
                 step.validation_errors = []
                 self._advance_to_next(current)
         except Exception as exc:
@@ -532,7 +512,7 @@ class SetupWizard:
                 self._state.current_step = STEP_ORDER[idx + 1]
             else:
                 self._state.is_complete = True
-                self._state.completed_at = _utcnow()
+                self._state.completed_at = utcnow()
         except ValueError:
             pass
 

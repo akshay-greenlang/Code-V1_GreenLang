@@ -37,35 +37,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class WorkflowPhase(str, Enum):
     """Phases of the monitoring review workflow."""
@@ -73,7 +65,6 @@ class WorkflowPhase(str, Enum):
     DATA_COLLECTION = "data_collection"
     PERFORMANCE_ANALYSIS = "performance_analysis"
     ANNUAL_REVIEW = "annual_review"
-
 
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
@@ -83,7 +74,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class PhaseStatus(str, Enum):
     """Status of a single phase."""
     PENDING = "pending"
@@ -91,7 +81,6 @@ class PhaseStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class KPICategory(str, Enum):
     """Categories of monitoring KPIs."""
@@ -103,7 +92,6 @@ class KPICategory(str, Enum):
     POLICY_IMPLEMENTATION = "policy_implementation"
     CLIMATE_TRANSITION = "climate_transition"
 
-
 class KPIStatus(str, Enum):
     """KPI target achievement status."""
     ON_TRACK = "on_track"
@@ -112,14 +100,12 @@ class KPIStatus(str, Enum):
     ACHIEVED = "achieved"
     NOT_STARTED = "not_started"
 
-
 class TrendDirection(str, Enum):
     """Trend direction for performance analysis."""
     IMPROVING = "improving"
     STABLE = "stable"
     DECLINING = "declining"
     INSUFFICIENT_DATA = "insufficient_data"
-
 
 class ReviewOutcome(str, Enum):
     """Outcome of the annual review."""
@@ -128,11 +114,9 @@ class ReviewOutcome(str, Enum):
     UNSATISFACTORY = "unsatisfactory"
     MAJOR_REVISION_REQUIRED = "major_revision_required"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -143,7 +127,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class KPIDefinition(BaseModel):
     """Definition of a monitoring KPI."""
@@ -159,7 +142,6 @@ class KPIDefinition(BaseModel):
     csddd_article: str = Field(default="art_12", description="Relevant CSDDD article")
     responsible: str = Field(default="", description="Responsible department/person")
 
-
 class MonitoringDataPoint(BaseModel):
     """Single data point for KPI monitoring."""
     data_point_id: str = Field(default_factory=lambda: f"dp-{_new_uuid()[:8]}")
@@ -170,7 +152,6 @@ class MonitoringDataPoint(BaseModel):
     verified: bool = Field(default=False, description="Data verified by independent party")
     notes: str = Field(default="")
 
-
 class PreviousReview(BaseModel):
     """Summary of a previous annual review for comparison."""
     review_year: int = Field(default=0, ge=0)
@@ -179,7 +160,6 @@ class PreviousReview(BaseModel):
     kpis_total: int = Field(default=0, ge=0)
     key_findings: List[str] = Field(default_factory=list)
     outstanding_actions: List[str] = Field(default_factory=list)
-
 
 class MonitoringReviewInput(BaseModel):
     """Input data model for MonitoringReviewWorkflow."""
@@ -197,7 +177,6 @@ class MonitoringReviewInput(BaseModel):
     )
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class KPIResult(BaseModel):
     """Analysis result for a single KPI."""
     kpi_id: str = Field(...)
@@ -211,7 +190,6 @@ class KPIResult(BaseModel):
     trend: TrendDirection = Field(default=TrendDirection.INSUFFICIENT_DATA)
     data_points_count: int = Field(default=0, ge=0)
     data_verified_pct: float = Field(default=0.0, ge=0.0, le=100.0)
-
 
 class MonitoringReviewResult(BaseModel):
     """Complete result from monitoring review workflow."""
@@ -241,11 +219,9 @@ class MonitoringReviewResult(BaseModel):
     executed_at: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class MonitoringReviewWorkflow:
     """
@@ -309,7 +285,7 @@ class MonitoringReviewWorkflow:
         if input_data is None:
             input_data = MonitoringReviewInput(config=config or {})
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting monitoring review workflow %s", self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = WorkflowStatus.IN_PROGRESS
@@ -327,7 +303,7 @@ class MonitoringReviewWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         completed_count = sum(1 for p in phase_results if p.status == PhaseStatus.COMPLETED)
 
         on_track = sum(1 for kr in self._kpi_results if kr.status == KPIStatus.ON_TRACK)
@@ -367,7 +343,7 @@ class MonitoringReviewWorkflow:
             recommendations=self._recommendations,
             year_over_year_change=yoy_change,
             reporting_year=input_data.reporting_year,
-            executed_at=_utcnow().isoformat(),
+            executed_at=utcnow().isoformat(),
         )
         result.provenance_hash = self._compute_provenance(result)
         self.logger.info(
@@ -384,7 +360,7 @@ class MonitoringReviewWorkflow:
         self, input_data: MonitoringReviewInput,
     ) -> PhaseResult:
         """Define and validate monitoring KPIs."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -430,7 +406,7 @@ class MonitoringReviewWorkflow:
         if missing_categories:
             warnings.append(f"Missing KPI categories: {', '.join(sorted(missing_categories))}")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 1 KPIDefinition: %d KPIs, %d valid, %d categories",
             len(kpis), valid_kpis, len(present_categories),
@@ -450,7 +426,7 @@ class MonitoringReviewWorkflow:
         self, input_data: MonitoringReviewInput,
     ) -> PhaseResult:
         """Collect and validate monitoring data points."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -499,7 +475,7 @@ class MonitoringReviewWorkflow:
         if verified_count < len(data_points) * 0.5 and data_points:
             warnings.append("Less than 50% of data points are independently verified")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 2 DataCollection: %d points, %d valid, %.1f%% coverage",
             len(data_points), valid_points, outputs["data_coverage_pct"],
@@ -519,7 +495,7 @@ class MonitoringReviewWorkflow:
         self, input_data: MonitoringReviewInput,
     ) -> PhaseResult:
         """Analyse performance trends and achievement against targets."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._kpi_results = []
@@ -621,7 +597,7 @@ class MonitoringReviewWorkflow:
                 f"{status_dist['off_track']} KPIs are off track -- corrective action needed"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 3 PerformanceAnalysis: score=%.1f%%, %d KPIs",
             self._overall_score, len(self._kpi_results),
@@ -641,7 +617,7 @@ class MonitoringReviewWorkflow:
         self, input_data: MonitoringReviewInput,
     ) -> PhaseResult:
         """Produce annual review findings and recommendations."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._recommendations = []
@@ -710,7 +686,7 @@ class MonitoringReviewWorkflow:
         if yoy_change < -10:
             warnings.append(f"Performance declined by {abs(yoy_change)}% year-over-year")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 4 AnnualReview: outcome=%s, %d recommendations",
             review_outcome, len(self._recommendations),

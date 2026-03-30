@@ -70,25 +70,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "43.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -106,7 +100,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serialisable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -115,7 +108,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -127,22 +119,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class LifecycleStage(str, Enum):
     """Product lifecycle stage per ISO 14040.
@@ -159,7 +147,6 @@ class LifecycleStage(str, Enum):
     USE_PHASE = "use_phase"
     END_OF_LIFE = "end_of_life"
 
-
 class DisposalMethod(str, Enum):
     """End-of-life disposal method.
 
@@ -174,7 +161,6 @@ class DisposalMethod(str, Enum):
     RECYCLING = "recycling"
     COMPOSTING = "composting"
     REUSE = "reuse"
-
 
 class ProductType(str, Enum):
     """Product archetype for use-phase modelling defaults.
@@ -201,7 +187,6 @@ class ProductType(str, Enum):
     MACHINERY = "machinery"
     CONSUMER_GOOD = "consumer_good"
 
-
 class CalculationStatus(str, Enum):
     """Status of LCA calculation.
 
@@ -212,7 +197,6 @@ class CalculationStatus(str, Enum):
     COMPLETE = "complete"
     PARTIAL = "partial"
     ERROR = "error"
-
 
 # ---------------------------------------------------------------------------
 # Material Emission Factors (kgCO2e per kg of material)
@@ -314,7 +298,6 @@ MATERIAL_WASTE_FACTORS: Dict[str, Decimal] = {
     "polyester": Decimal("0.08"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Disposal Emission Factors (kgCO2e per kg disposed)
 # ---------------------------------------------------------------------------
@@ -400,7 +383,6 @@ MATERIAL_TO_DISPOSAL_CATEGORY: Dict[str, str] = {
     "ethanol": "general", "methanol": "general", "ammonia": "general",
     "sulfuric": "general", "sodium": "general",
 }
-
 
 # ---------------------------------------------------------------------------
 # Product Lifetime and Use-Phase Defaults
@@ -511,11 +493,9 @@ TRANSPORT_EF: Dict[str, Decimal] = {
     "barge_inland": Decimal("0.031"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class BOMComponent(BaseModel):
     """A single component in a bill of materials.
@@ -538,7 +518,6 @@ class BOMComponent(BaseModel):
     supplier_ef_override: Optional[Decimal] = Field(
         default=None, ge=0, description="Supplier EF override kgCO2e/kg"
     )
-
 
 class ProductBOM(BaseModel):
     """Bill of materials for a product.
@@ -582,7 +561,6 @@ class ProductBOM(BaseModel):
         default="road_truck", description="Transport mode"
     )
 
-
 class LifecycleConfig(BaseModel):
     """Configuration for lifecycle calculation.
 
@@ -619,7 +597,6 @@ class LifecycleConfig(BaseModel):
         description="Stages to include",
     )
 
-
 class UsageProfile(BaseModel):
     """Product usage profile for use-phase modelling.
 
@@ -643,7 +620,6 @@ class UsageProfile(BaseModel):
     grid_ef_kwh: Decimal = Field(
         default=DEFAULT_GRID_EF, ge=0, description="Grid EF"
     )
-
 
 class DisposalMix(BaseModel):
     """End-of-life disposal scenario mix.
@@ -671,7 +647,6 @@ class DisposalMix(BaseModel):
         default=Decimal("0.05"), ge=0, le=1, description="Reuse fraction"
     )
 
-
 class ProcessEnergy(BaseModel):
     """Energy profile for downstream processing (Cat 10).
 
@@ -690,11 +665,9 @@ class ProcessEnergy(BaseModel):
         default=Decimal("0"), ge=0, description="Direct process kgCO2e/kg"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class StageResult(BaseModel):
     """Emission result for a single lifecycle stage.
@@ -709,7 +682,6 @@ class StageResult(BaseModel):
     emissions_kgco2e: Decimal = Field(default=Decimal("0"), description="kgCO2e")
     share_of_total_pct: Decimal = Field(default=Decimal("0"), description="Share %")
     details: Dict[str, Any] = Field(default_factory=dict, description="Details")
-
 
 class ComponentResult(BaseModel):
     """Emission result for a single BOM component.
@@ -734,7 +706,6 @@ class ComponentResult(BaseModel):
     waste_factor: Decimal = Field(default=Decimal("0"), description="Waste factor")
     emissions_kgco2e: Decimal = Field(default=Decimal("0"), description="kgCO2e")
     ecoinvent_process: str = Field(default="", description="ecoinvent process")
-
 
 class LifecycleResult(BaseModel):
     """Complete lifecycle result for a product.
@@ -761,7 +732,6 @@ class LifecycleResult(BaseModel):
     )
     hotspot_stage: str = Field(default="", description="Hotspot stage")
     hotspot_material: str = Field(default="", description="Hotspot material")
-
 
 class ProductCarbonFootprint(BaseModel):
     """Complete product carbon footprint with metadata.
@@ -813,12 +783,11 @@ class ProductCarbonFootprint(BaseModel):
     status: CalculationStatus = Field(
         default=CalculationStatus.COMPLETE, description="Status"
     )
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Timestamp")
     processing_time_ms: Decimal = Field(
         default=Decimal("0"), description="Processing ms"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class SensitivityResult(BaseModel):
     """Sensitivity analysis result for a single parameter.
@@ -844,7 +813,6 @@ class SensitivityResult(BaseModel):
     sensitivity_pct: Decimal = Field(default=Decimal("0"), description="Sensitivity %")
     is_significant: bool = Field(default=False, description="Significant")
 
-
 class ProductComparison(BaseModel):
     """Comparative carbon intensity result.
 
@@ -865,7 +833,6 @@ class ProductComparison(BaseModel):
         default="kgCO2e_per_unit", description="Metric"
     )
 
-
 # ---------------------------------------------------------------------------
 # Model Rebuild
 # ---------------------------------------------------------------------------
@@ -883,11 +850,9 @@ ProductCarbonFootprint.model_rebuild()
 SensitivityResult.model_rebuild()
 ProductComparison.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class LCAIntegrationEngine:
     """Integrate product lifecycle assessment data for Scope 3 categories.

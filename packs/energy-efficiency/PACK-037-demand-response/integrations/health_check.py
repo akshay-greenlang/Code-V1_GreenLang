@@ -46,22 +46,18 @@ from typing import Any, Callable, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import HealthStatus
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
 PACK_BASE_DIR = Path(__file__).parent.parent
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -74,20 +70,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
-
-class HealthStatus(str, Enum):
-    """Health check status values."""
-
-    HEALTHY = "HEALTHY"
-    DEGRADED = "DEGRADED"
-    UNHEALTHY = "UNHEALTHY"
-    UNKNOWN = "UNKNOWN"
-
 
 class HealthSeverity(str, Enum):
     """Severity levels for health issues."""
@@ -97,7 +82,6 @@ class HealthSeverity(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     INFO = "info"
-
 
 class HealthCategory(str, Enum):
     """Health check categories (20 total)."""
@@ -123,7 +107,6 @@ class HealthCategory(str, Enum):
     DER_ASSETS = "der_assets"
     AUTH = "auth"
 
-
 QUICK_CHECK_CATEGORIES = {
     HealthCategory.DR_FLEXIBILITY_ENGINE,
     HealthCategory.DISPATCH_ENGINE,
@@ -133,11 +116,9 @@ QUICK_CHECK_CATEGORIES = {
     HealthCategory.METER_DATA,
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class HealthResult(BaseModel):
     """Health status of a single check component."""
@@ -150,8 +131,7 @@ class HealthResult(BaseModel):
     details: Dict[str, Any] = Field(default_factory=dict)
     severity: HealthSeverity = Field(default=HealthSeverity.INFO)
     remediation: Optional[str] = Field(None)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class HealthCheckConfig(BaseModel):
     """Configuration for the health check."""
@@ -161,7 +141,6 @@ class HealthCheckConfig(BaseModel):
     skip_categories: List[str] = Field(default_factory=list)
     timeout_per_check_ms: float = Field(default=5000.0)
     verbose: bool = Field(default=False)
-
 
 class SystemHealth(BaseModel):
     """Complete result of the health check."""
@@ -178,10 +157,9 @@ class SystemHealth(BaseModel):
     overall_status: HealthStatus = Field(default=HealthStatus.HEALTHY)
     categories: Dict[str, List[HealthResult]] = Field(default_factory=dict)
     total_duration_ms: float = Field(default=0.0)
-    executed_at: datetime = Field(default_factory=_utcnow)
+    executed_at: datetime = Field(default_factory=utcnow)
     quick_mode: bool = Field(default=False)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Component Lists
@@ -226,11 +204,9 @@ DR_INTEGRATIONS = [
     "alert_bridge",
 ]
 
-
 # ---------------------------------------------------------------------------
 # HealthCheck
 # ---------------------------------------------------------------------------
-
 
 class HealthCheck:
     """20-category health check for Demand Response Pack.

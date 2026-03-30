@@ -76,6 +76,7 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any, AsyncIterator, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -208,21 +209,13 @@ from greenlang.agents.eudr.risk_assessment_engine.models import (
     SimplifiedDDEligibility,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute deterministic SHA-256 hash for provenance.
@@ -236,11 +229,9 @@ def _compute_hash(data: Any) -> str:
     canonical = json.dumps(data, sort_keys=True, separators=(",", ":"), default=str)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Service Facade
 # ---------------------------------------------------------------------------
-
 
 class RiskAssessmentEngineService:
     """High-level service facade for the Risk Assessment Engine Agent.
@@ -512,7 +503,7 @@ class RiskAssessmentEngineService:
 
             # Step 10: Mark operation complete
             operation.status = RiskAssessmentStatus.COMPLETED
-            operation.completed_at = _utcnow()
+            operation.completed_at = utcnow()
             elapsed_ms = int((time.monotonic() - start) * 1000)
             operation.duration_ms = elapsed_ms
             operation.provenance_hash = _compute_hash(
@@ -542,7 +533,7 @@ class RiskAssessmentEngineService:
 
         except Exception as e:
             operation.status = RiskAssessmentStatus.FAILED
-            operation.completed_at = _utcnow()
+            operation.completed_at = utcnow()
             elapsed_ms = int((time.monotonic() - start) * 1000)
             operation.duration_ms = elapsed_ms
 
@@ -817,7 +808,7 @@ class RiskAssessmentEngineService:
                 operator_id=operator_id,
                 commodity=commodity,
                 score=composite.overall_score,
-                timestamp=_utcnow(),
+                timestamp=utcnow(),
             )
         except Exception as e:
             logger.warning(
@@ -1046,7 +1037,7 @@ class RiskAssessmentEngineService:
             reason=reason,
             justification=justification.strip(),
             overridden_by=overridden_by,
-            created_at=_utcnow(),
+            created_at=utcnow(),
         )
 
         # Calculate provenance hash
@@ -1161,7 +1152,7 @@ class RiskAssessmentEngineService:
                     country_codes=req.get("country_codes", []),
                     supplier_ids=req.get("supplier_ids", []),
                     status=RiskAssessmentStatus.FAILED,
-                    completed_at=_utcnow(),
+                    completed_at=utcnow(),
                 )
                 results.append(failed_op)
 
@@ -1193,7 +1184,7 @@ class RiskAssessmentEngineService:
             "initialized": self._initialized,
             "engines": {},
             "connections": {},
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
         # Check database
@@ -1284,14 +1275,12 @@ class RiskAssessmentEngineService:
         """Return whether the service has been initialized."""
         return self._initialized
 
-
 # ---------------------------------------------------------------------------
 # Thread-safe singleton
 # ---------------------------------------------------------------------------
 
 _service_lock = threading.Lock()
 _service_instance: Optional[RiskAssessmentEngineService] = None
-
 
 def get_service(
     config: Optional[RiskAssessmentEngineConfig] = None,
@@ -1318,7 +1307,6 @@ def get_service(
                 _service_instance = RiskAssessmentEngineService(config)
     return _service_instance
 
-
 def reset_service() -> None:
     """Reset the global service singleton to None.
 
@@ -1328,11 +1316,9 @@ def reset_service() -> None:
     with _service_lock:
         _service_instance = None
 
-
 # ---------------------------------------------------------------------------
 # FastAPI lifespan context manager
 # ---------------------------------------------------------------------------
-
 
 @asynccontextmanager
 async def lifespan(app: Any) -> AsyncIterator[None]:

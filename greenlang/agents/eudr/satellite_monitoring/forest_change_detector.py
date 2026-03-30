@@ -63,6 +63,7 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import date, datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.satellite_monitoring.imagery_acquisition import (
     ImageryAcquisitionEngine,
@@ -89,22 +90,14 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a unique identifier using UUID4."""
     return str(uuid.uuid4())
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -136,7 +129,6 @@ BFAST_MIN_BREAK_MAGNITUDE: float = 0.10
 
 #: Default pixel size in metres for area calculations.
 DEFAULT_PIXEL_SIZE_M: float = 10.0
-
 
 # ---------------------------------------------------------------------------
 # Per-Commodity Change Sensitivity Thresholds
@@ -217,11 +209,9 @@ COMMODITY_CHANGE_THRESHOLDS: Dict[str, Dict[str, float]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class ChangeClassification:
@@ -247,7 +237,6 @@ class ChangeClassification:
     commodity_threshold_used: float = 0.0
     evidence_summary: str = ""
     provenance_hash: str = ""
-
 
 @dataclass
 class ChangeDetectionResult:
@@ -303,11 +292,9 @@ class ChangeDetectionResult:
     processing_time_ms: float = 0.0
     provenance_hash: str = ""
 
-
 # ---------------------------------------------------------------------------
 # ForestChangeDetector
 # ---------------------------------------------------------------------------
-
 
 class ForestChangeDetector:
     """Production-grade multi-method forest change detection for EUDR.
@@ -405,7 +392,7 @@ class ForestChangeDetector:
             raise ValueError("polygon_vertices must not be empty")
 
         if analysis_date is None:
-            analysis_date = _utcnow().strftime("%Y-%m-%d")
+            analysis_date = utcnow().strftime("%Y-%m-%d")
 
         commodity_lower = commodity.lower().strip()
 
@@ -956,7 +943,7 @@ class ForestChangeDetector:
         start_time = time.monotonic()
 
         if analysis_date is None:
-            analysis_date = _utcnow().strftime("%Y-%m-%d")
+            analysis_date = utcnow().strftime("%Y-%m-%d")
 
         results: List[ChangeDetectionResult] = []
 
@@ -1030,7 +1017,7 @@ class ForestChangeDetector:
             parts = analysis_date.split("-")
             target = date(int(parts[0]), int(parts[1]), int(parts[2]))
         except (ValueError, IndexError):
-            target = _utcnow().date()
+            target = utcnow().date()
 
         from datetime import timedelta
         search_start = target - timedelta(days=30)
@@ -1396,7 +1383,6 @@ class ForestChangeDetector:
             "commodity_threshold_used": classification.commodity_threshold_used,
         }
         return _compute_hash(hash_data)
-
 
 # ---------------------------------------------------------------------------
 # Module Exports

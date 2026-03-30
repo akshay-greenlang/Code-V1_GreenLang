@@ -78,25 +78,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -114,7 +108,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -123,7 +116,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -135,22 +127,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* and return a float."""
     quantizer = Decimal(10) ** -places
     return float(value.quantize(quantizer, rounding=ROUND_HALF_UP))
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
@@ -158,13 +146,11 @@ def _round3(value: float) -> float:
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 def _round4(value: float) -> float:
     """Round to 4 decimal places using ROUND_HALF_UP."""
     return float(
         Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP)
     )
-
 
 def _round6(value: float) -> float:
     """Round to 6 decimal places using ROUND_HALF_UP."""
@@ -172,11 +158,9 @@ def _round6(value: float) -> float:
         Decimal(str(value)).quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class RegressionModel(str, Enum):
     """Regression model types for weather normalisation.
@@ -197,7 +181,6 @@ class RegressionModel(str, Enum):
     FOUR_PARAMETER = "four_parameter"
     FIVE_PARAMETER = "five_parameter"
 
-
 class WeatherSource(str, Enum):
     """Weather data source identifier.
 
@@ -217,7 +200,6 @@ class WeatherSource(str, Enum):
     IWEC = "iwec"
     CUSTOM = "custom"
 
-
 class NormalizationType(str, Enum):
     """Normalisation methodology.
 
@@ -228,7 +210,6 @@ class NormalizationType(str, Enum):
     DEGREE_DAY = "degree_day"
     ENTHALPY = "enthalpy"
     BIN_METHOD = "bin_method"
-
 
 class ClimateScenario(str, Enum):
     """IPCC climate scenario for future projections.
@@ -249,7 +230,6 @@ class ClimateScenario(str, Enum):
     SSP_245 = "ssp_245"
     SSP_585 = "ssp_585"
 
-
 class ValidationStatus(str, Enum):
     """Model validation status per ASHRAE Guideline 14 criteria.
 
@@ -261,7 +241,6 @@ class ValidationStatus(str, Enum):
     MARGINAL = "marginal"
     FAILED = "failed"
 
-
 class TemperatureUnit(str, Enum):
     """Temperature measurement unit.
 
@@ -270,7 +249,6 @@ class TemperatureUnit(str, Enum):
     """
     CELSIUS = "celsius"
     FAHRENHEIT = "fahrenheit"
-
 
 class ModelFit(str, Enum):
     """Qualitative model fit rating.
@@ -286,7 +264,6 @@ class ModelFit(str, Enum):
     ACCEPTABLE = "acceptable"
     POOR = "poor"
     UNUSABLE = "unusable"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -333,11 +310,9 @@ _CLIMATE_DELTA_PER_DECADE: Dict[str, float] = {
     ClimateScenario.SSP_585.value: 0.45,
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Data
 # ---------------------------------------------------------------------------
-
 
 class WeatherStation(BaseModel):
     """Weather station metadata.
@@ -364,7 +339,6 @@ class WeatherStation(BaseModel):
     data_completeness_pct: float = Field(
         default=100.0, ge=0.0, le=100.0, description="Data completeness (%)"
     )
-
 
 class DailyWeather(BaseModel):
     """Daily weather observation.
@@ -402,7 +376,6 @@ class DailyWeather(BaseModel):
         """Coerce average temperature to float."""
         return float(v) if v is not None else 0.0
 
-
 class DegreeDays(BaseModel):
     """Aggregated degree-day result for a period.
 
@@ -426,7 +399,6 @@ class DegreeDays(BaseModel):
         default=18.0, description="Cooling base temperature (C)"
     )
     days_in_period: int = Field(default=0, ge=0, le=366, description="Days in period")
-
 
 class MonthlyConsumptionWeather(BaseModel):
     """Monthly utility consumption aligned with weather data.
@@ -459,11 +431,9 @@ class MonthlyConsumptionWeather(BaseModel):
     )
     billing_days: int = Field(default=30, ge=1, le=366, description="Billing days")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Regression Results
 # ---------------------------------------------------------------------------
-
 
 class RegressionCoefficients(BaseModel):
     """Fitted regression coefficients and goodness-of-fit statistics.
@@ -493,7 +463,6 @@ class RegressionCoefficients(BaseModel):
         default_factory=dict, description="p-values per coefficient"
     )
 
-
 class ChangePointModel(BaseModel):
     """Change-point regression model parameters.
 
@@ -519,7 +488,6 @@ class ChangePointModel(BaseModel):
     cooling_slope: float = Field(default=0.0, description="Cooling slope")
     r_squared: float = Field(default=0.0, ge=0.0, le=1.0, description="R-squared")
     cv_rmse_pct: float = Field(default=0.0, ge=0.0, description="CV(RMSE) %")
-
 
 class ModelValidation(BaseModel):
     """Model validation result per ASHRAE Guideline 14.
@@ -547,11 +515,9 @@ class ModelValidation(BaseModel):
         default_factory=list, description="Recommendations"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Normalisation Results
 # ---------------------------------------------------------------------------
-
 
 class NormalizationResult(BaseModel):
     """Per-period weather normalisation result.
@@ -595,7 +561,6 @@ class NormalizationResult(BaseModel):
     actual_cdd: float = Field(default=0.0, description="Actual CDD")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 class WeatherImpact(BaseModel):
     """Weather-vs-operational impact decomposition for a period.
 
@@ -619,7 +584,6 @@ class WeatherImpact(BaseModel):
     weather_pct_of_change: float = Field(
         default=0.0, description="Weather % of total change"
     )
-
 
 class ClimateProjection(BaseModel):
     """Climate scenario projection for future energy impact.
@@ -647,7 +611,6 @@ class ClimateProjection(BaseModel):
         default=0.0, description="Cost delta (EUR)"
     )
 
-
 class WeatherAnalysisResult(BaseModel):
     """Complete weather normalisation analysis result.
 
@@ -667,7 +630,7 @@ class WeatherAnalysisResult(BaseModel):
     result_id: str = Field(default_factory=_new_uuid, description="Result ID")
     engine_version: str = Field(default=_MODULE_VERSION, description="Engine version")
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     facility_id: str = Field(default="", description="Facility ID")
@@ -688,11 +651,9 @@ class WeatherAnalysisResult(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Calculation Engine
 # ---------------------------------------------------------------------------
-
 
 class WeatherNormalizationEngine:
     """Weather normalisation engine for utility consumption analysis.

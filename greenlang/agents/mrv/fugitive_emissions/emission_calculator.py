@@ -64,6 +64,7 @@ from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -117,15 +118,9 @@ except ImportError:
     _METRICS_AVAILABLE = False
     _record_calc_operation = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -143,7 +138,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Decimal precision constant
 # ---------------------------------------------------------------------------
@@ -152,7 +146,6 @@ _PRECISION = Decimal("0.00000001")  # 8 decimal places
 _ZERO = Decimal("0")
 _ONE = Decimal("1")
 _HOURS_PER_YEAR = Decimal("8760")
-
 
 def _D(value: Any) -> Decimal:
     """Convert a value to Decimal with controlled precision.
@@ -173,7 +166,6 @@ def _D(value: Any) -> Decimal:
     except (InvalidOperation, ValueError) as exc:
         raise ValueError(f"Cannot convert {value!r} to Decimal") from exc
 
-
 def _quantize(value: Decimal) -> Decimal:
     """Quantize a Decimal to the standard 8-decimal-place precision.
 
@@ -185,11 +177,9 @@ def _quantize(value: Decimal) -> Decimal:
     """
     return value.quantize(_PRECISION, rounding=ROUND_HALF_UP)
 
-
 # ===========================================================================
 # Enumerations
 # ===========================================================================
-
 
 class CalculationMethod(str, Enum):
     """Supported fugitive emission calculation methods."""
@@ -200,7 +190,6 @@ class CalculationMethod(str, Enum):
     ENGINEERING_ESTIMATE = "ENGINEERING_ESTIMATE"
     DIRECT_MEASUREMENT = "DIRECT_MEASUREMENT"
 
-
 class EngineeringSubmethod(str, Enum):
     """Engineering estimate sub-methods."""
 
@@ -209,7 +198,6 @@ class EngineeringSubmethod(str, Enum):
     COAL_MINE = "COAL_MINE"
     WASTEWATER = "WASTEWATER"
 
-
 class CalculationStatus(str, Enum):
     """Result status codes."""
 
@@ -217,11 +205,9 @@ class CalculationStatus(str, Enum):
     PARTIAL = "PARTIAL"
     ERROR = "ERROR"
 
-
 # ===========================================================================
 # Data classes for per-gas results
 # ===========================================================================
-
 
 @dataclass
 class GasResult:
@@ -243,11 +229,9 @@ class GasResult:
     co2e_kg: Decimal
     co2e_tonnes: Decimal
 
-
 # ===========================================================================
 # EmissionCalculatorEngine
 # ===========================================================================
-
 
 class EmissionCalculatorEngine:
     """Core calculation engine for fugitive emissions implementing five
@@ -432,7 +416,7 @@ class EmissionCalculatorEngine:
                 "total_co2e_tonnes": str(total_co2e_tonnes),
                 "calculation_details": method_result.get("details", {}),
                 "processing_time_ms": round(elapsed_ms, 3),
-                "calculated_at": _utcnow().isoformat(),
+                "calculated_at": utcnow().isoformat(),
             }
             result["provenance_hash"] = _compute_hash(result)
 
@@ -456,7 +440,7 @@ class EmissionCalculatorEngine:
                 "error": str(exc),
                 "error_type": type(exc).__name__,
                 "processing_time_ms": round(elapsed_ms, 3),
-                "calculated_at": _utcnow().isoformat(),
+                "calculated_at": utcnow().isoformat(),
             }
             error_result["provenance_hash"] = _compute_hash(error_result)
 
@@ -1254,7 +1238,7 @@ class EmissionCalculatorEngine:
             "failed": failed,
             "continue_on_error": continue_on_error,
             "processing_time_ms": round(elapsed_ms, 3),
-            "calculated_at": _utcnow().isoformat(),
+            "calculated_at": utcnow().isoformat(),
         }
         batch_result["provenance_hash"] = _compute_hash({
             k: v for k, v in batch_result.items()

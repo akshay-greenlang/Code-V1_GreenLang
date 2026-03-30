@@ -39,7 +39,8 @@ from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 
 
 # ---------------------------------------------------------------------------
@@ -222,7 +223,7 @@ class DataCategory(str, Enum):
 # ---------------------------------------------------------------------------
 
 
-class ComplianceStatus(BaseModel):
+class ComplianceStatus(GreenLangBase):
     """Current compliance status for a framework.
 
     Represents the overall compliance posture for a specific regulatory
@@ -323,7 +324,7 @@ class ComplianceStatus(BaseModel):
         return v.astimezone(timezone.utc)
 
 
-class ControlMapping(BaseModel):
+class ControlMapping(GreenLangBase):
     """Mapping between a framework control and technical controls.
 
     Maps abstract compliance framework controls (e.g., ISO 27001 A.8.5)
@@ -389,7 +390,7 @@ class ControlMapping(BaseModel):
     )
 
 
-class DSARRequest(BaseModel):
+class DSARRequest(GreenLangBase):
     """Data Subject Access Request (GDPR).
 
     Represents a request from a data subject to exercise their rights
@@ -564,7 +565,7 @@ class DSARRequest(BaseModel):
         return delta.days
 
 
-class ConsentRecord(BaseModel):
+class ConsentRecord(GreenLangBase):
     """Record of user consent for a specific purpose.
 
     Tracks when consent was granted, by whom, through which mechanism,
@@ -652,7 +653,7 @@ class ConsentRecord(BaseModel):
         return self.revoked_at is None
 
 
-class DataRecord(BaseModel):
+class DataRecord(GreenLangBase):
     """Discovered user data record.
 
     Represents a piece of data discovered during DSAR processing or
@@ -736,7 +737,7 @@ class DataRecord(BaseModel):
     )
 
 
-class RetentionPolicy(BaseModel):
+class RetentionPolicy(GreenLangBase):
     """Data retention policy definition.
 
     Defines how long data of a specific category should be retained
@@ -808,7 +809,7 @@ class RetentionPolicy(BaseModel):
         return v_lower
 
 
-class EvidenceSource(BaseModel):
+class EvidenceSource(GreenLangBase):
     """Compliance evidence source definition.
 
     Defines where to collect evidence for a specific compliance control.
@@ -869,7 +870,7 @@ class EvidenceSource(BaseModel):
     )
 
 
-class ComplianceReport(BaseModel):
+class ComplianceReport(GreenLangBase):
     """Compliance assessment report.
 
     A comprehensive report of compliance status for one or more frameworks.
@@ -953,7 +954,7 @@ class ComplianceReport(BaseModel):
     )
 
 
-class ComplianceGap(BaseModel):
+class ComplianceGap(GreenLangBase):
     """Identified compliance gap.
 
     Represents a gap between current state and compliance requirements.

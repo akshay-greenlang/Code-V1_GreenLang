@@ -32,35 +32,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "21.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a single workflow phase."""
@@ -71,7 +63,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -81,14 +72,12 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class RAGStatus(str, Enum):
     """Red-Amber-Green status indicator."""
 
     GREEN = "green"      # On-track or ahead
     AMBER = "amber"      # Slightly behind (within threshold)
     RED = "red"          # Significantly behind target
-
 
 class TrendDirection(str, Enum):
     """Emission trend direction."""
@@ -97,11 +86,9 @@ class TrendDirection(str, Enum):
     FLAT = "flat"
     INCREASING = "increasing"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -113,7 +100,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class AnnualEmissions(BaseModel):
     """Emissions data for a single reporting year."""
@@ -129,14 +115,12 @@ class AnnualEmissions(BaseModel):
     floor_area_sqm: Optional[float] = Field(None, ge=0.0)
     data_quality_score: float = Field(default=3.0, ge=1.0, le=5.0)
 
-
 class TargetPathwayPoint(BaseModel):
     """Expected emissions at a given year on the target pathway."""
 
     year: int = Field(..., ge=2015, le=2060)
     target_tco2e: float = Field(default=0.0, ge=0.0)
     reduction_from_base_pct: float = Field(default=0.0, ge=0.0, le=100.0)
-
 
 class ProgressReviewConfig(BaseModel):
     """Configuration for the progress review workflow."""
@@ -163,7 +147,6 @@ class ProgressReviewConfig(BaseModel):
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
 
-
 class YearOverYearChange(BaseModel):
     """Year-over-year change metrics."""
 
@@ -174,7 +157,6 @@ class YearOverYearChange(BaseModel):
     scope1_change_pct: float = Field(default=0.0)
     scope2_change_pct: float = Field(default=0.0)
     scope3_change_pct: float = Field(default=0.0)
-
 
 class CumulativeProgress(BaseModel):
     """Cumulative progress against base year."""
@@ -188,7 +170,6 @@ class CumulativeProgress(BaseModel):
     years_elapsed: int = Field(default=0, ge=0)
     annualised_reduction_rate_pct: float = Field(default=0.0)
 
-
 class IntensityMetric(BaseModel):
     """Emission intensity metric."""
 
@@ -197,7 +178,6 @@ class IntensityMetric(BaseModel):
     base_year_value: float = Field(default=0.0)
     current_value: float = Field(default=0.0)
     change_pct: float = Field(default=0.0)
-
 
 class GapAnalysisResult(BaseModel):
     """Result of gap analysis against target pathway."""
@@ -213,7 +193,6 @@ class GapAnalysisResult(BaseModel):
     additional_reduction_needed_tco2e: float = Field(default=0.0, ge=0.0)
     additional_annual_rate_needed_pct: float = Field(default=0.0, ge=0.0)
 
-
 class TrendDataPoint(BaseModel):
     """Single point for trend chart data."""
 
@@ -221,7 +200,6 @@ class TrendDataPoint(BaseModel):
     actual_tco2e: Optional[float] = Field(None, ge=0.0)
     target_tco2e: Optional[float] = Field(None, ge=0.0)
     projected_tco2e: Optional[float] = Field(None, ge=0.0)
-
 
 class CorrectiveAction(BaseModel):
     """Recommended corrective action."""
@@ -231,7 +209,6 @@ class CorrectiveAction(BaseModel):
     expected_impact_tco2e: float = Field(default=0.0, ge=0.0)
     timeframe: str = Field(default="")
 
-
 class ProgressSummary(BaseModel):
     """Summary of progress for the review year."""
 
@@ -239,7 +216,6 @@ class ProgressSummary(BaseModel):
     yoy_changes: List[YearOverYearChange] = Field(default_factory=list)
     cumulative_progress: CumulativeProgress = Field(default_factory=CumulativeProgress)
     intensity_metrics: List[IntensityMetric] = Field(default_factory=list)
-
 
 class ProgressReviewResult(BaseModel):
     """Complete result from the progress review workflow."""
@@ -256,11 +232,9 @@ class ProgressReviewResult(BaseModel):
     recommendations: List[CorrectiveAction] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class ProgressReviewWorkflow:
     """
@@ -307,7 +281,7 @@ class ProgressReviewWorkflow:
         Returns:
             ProgressReviewResult with progress summary, gap analysis, and recommendations.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting progress review workflow %s, review_year=%d",
             self.workflow_id, config.review_year,
@@ -340,7 +314,7 @@ class ProgressReviewWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         result = ProgressReviewResult(
             workflow_id=self.workflow_id,
             status=overall_status,
@@ -367,7 +341,7 @@ class ProgressReviewWorkflow:
 
     async def _phase_data_update(self, config: ProgressReviewConfig) -> PhaseResult:
         """Ingest and validate new year's emissions data."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         errors: List[str] = []
@@ -413,7 +387,7 @@ class ProgressReviewWorkflow:
         outputs["historical_years"] = len(config.historical_emissions)
         outputs["data_quality_score"] = current.data_quality_score
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         status = PhaseStatus.COMPLETED if not errors else PhaseStatus.FAILED
         return PhaseResult(
             phase_name="data_update",
@@ -431,7 +405,7 @@ class ProgressReviewWorkflow:
 
     async def _phase_progress_calc(self, config: ProgressReviewConfig) -> PhaseResult:
         """Calculate year-over-year change, cumulative progress, intensity metrics."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -518,7 +492,7 @@ class ProgressReviewWorkflow:
         outputs["yoy_comparisons"] = len(yoy_changes)
         outputs["intensity_metrics"] = len(intensities)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Progress calc: cumulative %.1f%% reduction, annualised %.2f%%/yr",
             pct_reduction, ann_rate,
@@ -558,7 +532,7 @@ class ProgressReviewWorkflow:
 
     async def _phase_gap_analysis(self, config: ProgressReviewConfig) -> PhaseResult:
         """Compare actual trajectory to target pathway, assess RAG status."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -626,7 +600,7 @@ class ProgressReviewWorkflow:
         outputs["on_track"] = on_track
         outputs["trend"] = trend.value
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Gap analysis: RAG=%s, gap=%.1f tCO2e (%.1f%%), on_track=%s",
             rag.value, gap, gap_pct, on_track,
@@ -726,7 +700,7 @@ class ProgressReviewWorkflow:
 
     async def _phase_report_generation(self, config: ProgressReviewConfig) -> PhaseResult:
         """Generate progress report with recommendations and corrective actions."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -738,7 +712,7 @@ class ProgressReviewWorkflow:
         outputs["trend"] = self._gap.trend.value
         outputs["trend_data_points"] = len(self._trend_data)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Report generated: %d corrective actions", len(self._recommendations))
         return PhaseResult(
             phase_name="report_generation",

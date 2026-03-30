@@ -63,25 +63,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -94,11 +88,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Agent Stubs
 # ---------------------------------------------------------------------------
-
 
 class _AgentStub:
     """Stub for unavailable DECARB-X agent modules."""
@@ -117,7 +109,6 @@ class _AgentStub:
             }
         return _stub_method
 
-
 def _try_import_decarb_agent(agent_id: str, module_path: str) -> Any:
     """Try to import a DECARB-X agent with graceful fallback.
 
@@ -134,11 +125,9 @@ def _try_import_decarb_agent(agent_id: str, module_path: str) -> Any:
         logger.debug("DECARB agent %s not available, using stub", agent_id)
         return _AgentStub(agent_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DecarbLever(str, Enum):
     """Decarbonisation lever categories."""
@@ -156,7 +145,6 @@ class DecarbLever(str, Enum):
     FLEET_DECARBONISATION = "fleet_decarbonisation"
     BUILDING_DECARBONISATION = "building_decarbonisation"
 
-
 class TechnologyReadiness(str, Enum):
     """Technology readiness level."""
 
@@ -167,11 +155,9 @@ class TechnologyReadiness(str, Enum):
     PROTOTYPE = "prototype"
     CONCEPT = "concept"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class DecarbBridgeConfig(BaseModel):
     """Configuration for the Decarb Bridge."""
@@ -183,7 +169,6 @@ class DecarbBridgeConfig(BaseModel):
     sector: str = Field(default="general")
     discount_rate: float = Field(default=0.08, ge=0.0, le=0.25)
     carbon_price_eur_per_tco2e: float = Field(default=80.0, ge=0.0)
-
 
 class AbatementOption(BaseModel):
     """Single abatement option with cost and potential."""
@@ -200,7 +185,6 @@ class AbatementOption(BaseModel):
     technology_readiness: str = Field(default="mature")
     implementation_years: int = Field(default=1, ge=1)
 
-
 class AbatementResult(BaseModel):
     """Result of abatement options retrieval."""
 
@@ -212,7 +196,6 @@ class AbatementResult(BaseModel):
     average_marginal_cost: float = Field(default=0.0)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class MACCResult(BaseModel):
     """Result of MACC generation."""
@@ -227,7 +210,6 @@ class MACCResult(BaseModel):
     economic_abatement_tco2e: float = Field(default=0.0)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class RoadmapResult(BaseModel):
     """Result of decarbonisation roadmap generation."""
@@ -244,7 +226,6 @@ class RoadmapResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class TechnologyResult(BaseModel):
     """Result of technology assessment."""
 
@@ -254,7 +235,6 @@ class TechnologyResult(BaseModel):
     recommended: List[str] = Field(default_factory=list)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class LeverPlanResult(BaseModel):
     """Result of a specific decarbonisation lever plan."""
@@ -269,7 +249,6 @@ class LeverPlanResult(BaseModel):
     actions: List[Dict[str, Any]] = Field(default_factory=list)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class ProgressMonitorResult(BaseModel):
     """Result of decarbonisation progress monitoring."""
@@ -286,7 +265,6 @@ class ProgressMonitorResult(BaseModel):
     corrective_actions: List[str] = Field(default_factory=list)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # DECARB Agent Routing
@@ -316,11 +294,9 @@ DECARB_AGENT_ROUTING: Dict[str, Dict[str, str]] = {
     "DECARB-X-021": {"name": "Business Case Generator", "module": "greenlang.agents.decarb.business_case"},
 }
 
-
 # ---------------------------------------------------------------------------
 # DecarbBridge
 # ---------------------------------------------------------------------------
-
 
 class DecarbBridge:
     """Bridge to 21 DECARB-X agents for decarbonisation planning.

@@ -79,23 +79,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -112,7 +107,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -121,7 +115,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -129,14 +122,11 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round4(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 def _round6(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP))
-
 
 def _median_decimal(values: List[Decimal]) -> Decimal:
     if not values:
@@ -147,7 +137,6 @@ def _median_decimal(values: List[Decimal]) -> Decimal:
     if n % 2 == 1:
         return sorted_vals[mid]
     return (sorted_vals[mid - 1] + sorted_vals[mid]) / Decimal("2")
-
 
 def _percentile_decimal(values: List[Decimal], pct: Decimal) -> Decimal:
     if not values:
@@ -164,7 +153,6 @@ def _percentile_decimal(values: List[Decimal], pct: Decimal) -> Decimal:
     frac = rank - Decimal(str(lower))
     return sorted_vals[lower] + frac * (sorted_vals[upper] - sorted_vals[lower])
 
-
 def _std_deviation_decimal(values: List[Decimal]) -> Decimal:
     if len(values) < 2:
         return Decimal("0")
@@ -175,11 +163,9 @@ def _std_deviation_decimal(values: List[Decimal]) -> Decimal:
     std_float = float(variance) ** 0.5
     return _decimal(std_float)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class TrajectoryDirection(str, Enum):
     """Direction of emissions trajectory."""
@@ -187,20 +173,17 @@ class TrajectoryDirection(str, Enum):
     FLAT = "flat"
     INCREASING = "increasing"
 
-
 class AccelerationStatus(str, Enum):
     """Acceleration/deceleration of decarbonisation."""
     ACCELERATING = "accelerating"
     CONSTANT = "constant"
     DECELERATING = "decelerating"
 
-
 class ConvergenceStatus(str, Enum):
     """Convergence/divergence relative to peer median."""
     CONVERGING = "converging"
     PARALLEL = "parallel"
     DIVERGING = "diverging"
-
 
 class BreakType(str, Enum):
     """Type of structural break detected."""
@@ -209,7 +192,6 @@ class BreakType(str, Enum):
     DIVESTMENT = "divestment"
     DATA_ERROR = "data_error"
     UNKNOWN = "unknown"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -220,11 +202,9 @@ MIN_YEARS_FOR_CARR: int = 2
 MAX_HISTORY_YEARS: int = 30
 MIN_PEERS_FOR_TRAJECTORY: int = 5
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class TrajectoryPoint(BaseModel):
     """A single year data point on a trajectory.
@@ -241,7 +221,6 @@ class TrajectoryPoint(BaseModel):
     def coerce_val(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class EntityTrajectory(BaseModel):
     """Historical trajectory for an entity.
 
@@ -255,7 +234,6 @@ class EntityTrajectory(BaseModel):
     entity_name: str = Field(default="", description="Entity name")
     points: List[TrajectoryPoint] = Field(default_factory=list, description="Data points")
     is_org: bool = Field(default=False, description="Is reference org")
-
 
 class TrajectoryInput(BaseModel):
     """Input for trajectory benchmarking analysis.
@@ -275,11 +253,9 @@ class TrajectoryInput(BaseModel):
     carr_window_years: int = Field(default=5, ge=2, le=20)
     output_precision: int = Field(default=4, ge=0, le=12)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class CARRResult(BaseModel):
     """CARR calculation result for an entity.
@@ -307,7 +283,6 @@ class CARRResult(BaseModel):
     direction: TrajectoryDirection = Field(default=TrajectoryDirection.FLAT)
     rank: int = Field(default=0)
 
-
 class AccelerationResult(BaseModel):
     """Acceleration/deceleration detection result.
 
@@ -323,7 +298,6 @@ class AccelerationResult(BaseModel):
     status: AccelerationStatus = Field(default=AccelerationStatus.CONSTANT)
     recent_carr: Decimal = Field(default=Decimal("0"))
     prior_carr: Decimal = Field(default=Decimal("0"))
-
 
 class ConvergenceResult(BaseModel):
     """Convergence/divergence analysis.
@@ -341,7 +315,6 @@ class ConvergenceResult(BaseModel):
     gap_current: Decimal = Field(default=Decimal("0"))
     gap_previous: Decimal = Field(default=Decimal("0"))
 
-
 class StructuralBreak(BaseModel):
     """A detected structural break.
 
@@ -357,7 +330,6 @@ class StructuralBreak(BaseModel):
     change_pct: Decimal = Field(default=Decimal("0"))
     threshold_multiple: Decimal = Field(default=Decimal("0"))
     break_type: BreakType = Field(default=BreakType.UNKNOWN)
-
 
 class FanChartBand(BaseModel):
     """A single year of fan chart data.
@@ -376,7 +348,6 @@ class FanChartBand(BaseModel):
     p50: Decimal = Field(default=Decimal("0"))
     p75: Decimal = Field(default=Decimal("0"))
     p90: Decimal = Field(default=Decimal("0"))
-
 
 class TrajectoryAnalysis(BaseModel):
     """Complete trajectory benchmarking result.
@@ -412,11 +383,9 @@ class TrajectoryAnalysis(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class TrajectoryBenchmarkingEngine:
     """Analyses emissions trajectories across peer groups.
@@ -546,7 +515,7 @@ class TrajectoryBenchmarkingEngine:
             org_percentile_rank=org_pct,
             peer_count=peer_count,
             warnings=warnings,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         result.provenance_hash = _compute_hash(result)
@@ -849,7 +818,6 @@ class TrajectoryBenchmarkingEngine:
 
     def get_version(self) -> str:
         return self._version
-
 
 # ---------------------------------------------------------------------------
 # __all__

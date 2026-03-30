@@ -38,6 +38,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas.enums import AlertSeverity
 
 logger = logging.getLogger(__name__)
 
@@ -65,14 +66,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
-
-class AlertSeverity(str, Enum):
-    """Alert severity classification."""
-
-    CRITICAL = "critical"
-    WARNING = "warning"
-    INFORMATIONAL = "informational"
 
 
 class AlertType(str, Enum):

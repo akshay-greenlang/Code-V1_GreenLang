@@ -36,18 +36,14 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -59,11 +55,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EnterpriseWizardStep(str, Enum):
     ORGANIZATION_PROFILE = "organization_profile"
@@ -75,14 +69,12 @@ class EnterpriseWizardStep(str, Enum):
     SECTOR_PRESET = "sector_preset"
     ASSURANCE_READINESS = "assurance_readiness"
 
-
 class StepStatus(str, Enum):
     PENDING = "pending"
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class ERPSystem(str, Enum):
     SAP_S4HANA = "sap_s4hana"
@@ -91,7 +83,6 @@ class ERPSystem(str, Enum):
     MICROSOFT_D365 = "microsoft_d365"
     OTHER = "other"
     NONE = "none"
-
 
 class SectorPreset(str, Enum):
     MANUFACTURING = "manufacturing_enterprise"
@@ -103,11 +94,9 @@ class SectorPreset(str, Enum):
     REAL_ESTATE = "real_estate"
     HEALTHCARE_PHARMA = "healthcare_pharma"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class EnterpriseOrgProfile(BaseModel):
     organization_name: str = Field(..., min_length=1, max_length=500)
@@ -122,7 +111,6 @@ class EnterpriseOrgProfile(BaseModel):
     stock_exchange: str = Field(default="")
     parent_company: str = Field(default="")
 
-
 class EntityHierarchySetup(BaseModel):
     total_entities: int = Field(default=50, ge=1, le=500)
     countries: int = Field(default=10)
@@ -131,14 +119,12 @@ class EntityHierarchySetup(BaseModel):
     associates: int = Field(default=3)
     franchises: int = Field(default=0)
 
-
 class ERPSetup(BaseModel):
     primary_erp: ERPSystem = Field(default=ERPSystem.SAP_S4HANA)
     secondary_erps: List[ERPSystem] = Field(default_factory=list)
     hcm_system: ERPSystem = Field(default=ERPSystem.WORKDAY)
     connected: bool = Field(default=False)
     company_codes: List[str] = Field(default_factory=list)
-
 
 class WizardStepState(BaseModel):
     name: EnterpriseWizardStep = Field(...)
@@ -148,7 +134,6 @@ class WizardStepState(BaseModel):
     validation_errors: List[str] = Field(default_factory=list)
     execution_time_ms: float = Field(default=0.0)
 
-
 class WizardState(BaseModel):
     wizard_id: str = Field(default="")
     current_step: EnterpriseWizardStep = Field(
@@ -156,9 +141,8 @@ class WizardState(BaseModel):
     )
     steps: Dict[str, WizardStepState] = Field(default_factory=dict)
     is_complete: bool = Field(default=False)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     completed_at: Optional[datetime] = Field(None)
-
 
 class EnterpriseSetupResult(BaseModel):
     result_id: str = Field(default_factory=_new_uuid)
@@ -180,7 +164,6 @@ class EnterpriseSetupResult(BaseModel):
     total_steps: int = Field(default=8)
     configuration_hash: str = Field(default="")
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Step Definitions
@@ -208,11 +191,9 @@ STEP_DISPLAY_NAMES: Dict[EnterpriseWizardStep, str] = {
     EnterpriseWizardStep.ASSURANCE_READINESS: "Assurance & Verification",
 }
 
-
 # ---------------------------------------------------------------------------
 # EnterpriseSetupWizard
 # ---------------------------------------------------------------------------
-
 
 class EnterpriseSetupWizard:
     """8-step enterprise onboarding wizard for PACK-027.
@@ -230,7 +211,7 @@ class EnterpriseSetupWizard:
         self.logger.info("EnterpriseSetupWizard initialized: 8 steps")
 
     def start(self) -> WizardState:
-        wizard_id = _compute_hash(f"ent-wizard:{_utcnow().isoformat()}")[:16]
+        wizard_id = _compute_hash(f"ent-wizard:{utcnow().isoformat()}")[:16]
         steps: Dict[str, WizardStepState] = {}
         for step in STEP_ORDER:
             steps[step.value] = WizardStepState(
@@ -384,6 +365,6 @@ class EnterpriseSetupWizard:
                 self._state.current_step = STEP_ORDER[idx + 1]
             else:
                 self._state.is_complete = True
-                self._state.completed_at = _utcnow()
+                self._state.completed_at = utcnow()
         except ValueError:
             pass

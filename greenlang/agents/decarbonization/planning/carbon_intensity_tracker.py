@@ -16,12 +16,13 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig
 from greenlang.agents.base_agents import DeterministicAgent
 from greenlang.agents.categories import AgentCategory, AgentMetadata
 from greenlang.utilities.determinism import DeterministicClock, content_hash, deterministic_id
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +35,7 @@ class IntensityMetricType(str, Enum):
     PER_ENERGY = "per_energy"  # tCO2e/MWh
 
 
-class IntensityDataPoint(BaseModel):
+class IntensityDataPoint(GreenLangBase):
     period: str = Field(..., description="Period (e.g., 2024-Q1)")
     year: int = Field(...)
     quarter: Optional[int] = Field(None, ge=1, le=4)
@@ -56,7 +57,7 @@ class IntensityDataPoint(BaseModel):
     activity_unit: str = Field(...)
 
 
-class IntensityTrend(BaseModel):
+class IntensityTrend(GreenLangBase):
     metric_type: IntensityMetricType = Field(...)
     base_period: str = Field(...)
     base_value: float = Field(...)
@@ -68,7 +69,7 @@ class IntensityTrend(BaseModel):
     periods_analyzed: int = Field(...)
 
 
-class CarbonIntensityInput(BaseModel):
+class CarbonIntensityInput(GreenLangBase):
     operation: str = Field(default="track")
     metric_type: IntensityMetricType = Field(default=IntensityMetricType.PER_REVENUE)
     data_points: List[Dict[str, Any]] = Field(default_factory=list)
@@ -76,7 +77,7 @@ class CarbonIntensityInput(BaseModel):
     base_year: Optional[int] = Field(None)
 
 
-class CarbonIntensityOutput(BaseModel):
+class CarbonIntensityOutput(GreenLangBase):
     operation: str = Field(...)
     success: bool = Field(...)
     data_points: List[IntensityDataPoint] = Field(default_factory=list)

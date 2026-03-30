@@ -46,25 +46,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -77,11 +71,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class GapSeverity(str, Enum):
     """Severity level for compliance gaps."""
@@ -91,7 +83,6 @@ class GapSeverity(str, Enum):
     LOW = "LOW"
     INFO = "INFO"
 
-
 class ComplianceStatus(str, Enum):
     """Current compliance status for a requirement."""
     COMPLIANT = "COMPLIANT"
@@ -99,7 +90,6 @@ class ComplianceStatus(str, Enum):
     NON_COMPLIANT = "NON_COMPLIANT"
     NOT_ASSESSED = "NOT_ASSESSED"
     NOT_APPLICABLE = "NOT_APPLICABLE"
-
 
 class RequirementCategory(str, Enum):
     """Category of compliance requirement."""
@@ -109,7 +99,6 @@ class RequirementCategory(str, Enum):
     VERIFICATION = "VERIFICATION"
     TECHNOLOGY = "TECHNOLOGY"
 
-
 class RemediationPriority(str, Enum):
     """Priority level for remediation actions."""
     IMMEDIATE = "IMMEDIATE"
@@ -117,11 +106,9 @@ class RemediationPriority(str, Enum):
     MEDIUM_TERM = "MEDIUM_TERM"
     LONG_TERM = "LONG_TERM"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class ComplianceRequirement(BaseModel):
     """A single compliance requirement from a regulation."""
@@ -135,7 +122,6 @@ class ComplianceRequirement(BaseModel):
     )
     reference: str = Field(default="", description="Regulatory reference (article, section)")
     effective_date: str = Field(default="2025-01-01", description="Date the requirement becomes effective")
-
 
 class Gap(BaseModel):
     """An identified compliance gap."""
@@ -154,7 +140,6 @@ class Gap(BaseModel):
     remediation_priority: str = Field(default="MEDIUM_TERM", description="Remediation priority level")
     remediation_actions: List[str] = Field(default_factory=list, description="Recommended remediation actions")
 
-
 class RemediationRoadmapItem(BaseModel):
     """A single item in a remediation roadmap."""
     item_id: str = Field(default_factory=_new_uuid, description="Item identifier")
@@ -169,7 +154,6 @@ class RemediationRoadmapItem(BaseModel):
     regulations_addressed: List[str] = Field(default_factory=list, description="Regulations addressed")
     phase: int = Field(default=1, ge=1, le=4, description="Implementation phase (1-4)")
 
-
 class CrossImpactEntry(BaseModel):
     """Entry in the cross-impact matrix."""
     regulation_a: str = Field(default="", description="First regulation")
@@ -177,7 +161,6 @@ class CrossImpactEntry(BaseModel):
     shared_gaps: int = Field(default=0, description="Number of gaps affecting both")
     impact_score: float = Field(default=0.0, description="Cross-impact score")
     shared_requirement_ids: List[str] = Field(default_factory=list, description="Shared requirement IDs")
-
 
 class GapAnalysisResult(BaseModel):
     """Complete result of a gap analysis scan."""
@@ -199,14 +182,12 @@ class GapAnalysisResult(BaseModel):
     total_remediation_cost_eur: float = Field(default=0.0, description="Total remediation cost EUR")
     overall_compliance_score: float = Field(default=0.0, description="Overall compliance score 0-100")
     regulations_analyzed: List[str] = Field(default_factory=list, description="Regulations analyzed")
-    timestamp: str = Field(default_factory=lambda: _utcnow().isoformat(), description="Analysis timestamp")
+    timestamp: str = Field(default_factory=lambda: utcnow().isoformat(), description="Analysis timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
-
 
 class GapAnalyzerConfig(BaseModel):
     """Configuration for the CrossRegulationGapAnalyzerEngine."""
@@ -238,7 +219,6 @@ class GapAnalyzerConfig(BaseModel):
         val = str(v).upper()
         return val if val in allowed else "LOW"
 
-
 # ---------------------------------------------------------------------------
 # Model rebuilds
 # ---------------------------------------------------------------------------
@@ -249,7 +229,6 @@ Gap.model_rebuild()
 RemediationRoadmapItem.model_rebuild()
 CrossImpactEntry.model_rebuild()
 GapAnalysisResult.model_rebuild()
-
 
 # ---------------------------------------------------------------------------
 # Compliance Requirements Database (~80 requirements across 4 regulations)
@@ -341,11 +320,9 @@ COMPLIANCE_REQUIREMENTS: Dict[str, List[Dict[str, Any]]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # CrossRegulationGapAnalyzerEngine
 # ---------------------------------------------------------------------------
-
 
 class CrossRegulationGapAnalyzerEngine:
     """

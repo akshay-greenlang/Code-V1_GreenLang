@@ -80,25 +80,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "43.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -116,7 +110,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serialisable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -125,7 +118,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -137,22 +129,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class TargetType(str, Enum):
     """SBTi target type for Scope 3.
@@ -167,7 +155,6 @@ class TargetType(str, Enum):
     ECONOMIC_INTENSITY = "economic_intensity"
     SUPPLIER_ENGAGEMENT = "supplier_engagement"
 
-
 class AmbitionLevel(str, Enum):
     """SBTi ambition level.
 
@@ -179,7 +166,6 @@ class AmbitionLevel(str, Enum):
     WELL_BELOW_2C = "well_below_2C"
     BELOW_2C = "below_2C"
 
-
 class TargetTimeframe(str, Enum):
     """SBTi target timeframe.
 
@@ -188,7 +174,6 @@ class TargetTimeframe(str, Enum):
     """
     NEAR_TERM = "near_term"
     LONG_TERM = "long_term"
-
 
 class FLAGSector(str, Enum):
     """SBTi FLAG (Forest, Land and Agriculture) sectors.
@@ -203,7 +188,6 @@ class FLAGSector(str, Enum):
     TEXTILES_NATURAL = "textiles_natural_fibres"
     RUBBER = "rubber"
     NONE = "none"
-
 
 class TrackingStatus(str, Enum):
     """Progress tracking status.
@@ -220,13 +204,11 @@ class TrackingStatus(str, Enum):
     AHEAD = "ahead"
     NOT_STARTED = "not_started"
 
-
 class EngineStatus(str, Enum):
     """Engine processing status."""
     COMPLETE = "complete"
     PARTIAL = "partial"
     ERROR = "error"
-
 
 # ---------------------------------------------------------------------------
 # SBTi Constants
@@ -292,11 +274,9 @@ CATEGORY_NAMES: Dict[int, str] = {
 # FLAG-intensive categories (typically Cat 1 for agricultural/forestry inputs)
 FLAG_CATEGORIES: List[int] = [1, 5, 12]
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class Scope3Inventory(BaseModel):
     """Scope 3 inventory data for SBTi pathway analysis.
@@ -344,7 +324,6 @@ class Scope3Inventory(BaseModel):
         default_factory=list, description="Included categories"
     )
 
-
 class ActualTrajectory(BaseModel):
     """Actual emissions trajectory for progress tracking.
 
@@ -356,7 +335,6 @@ class ActualTrajectory(BaseModel):
     emissions_tco2e: List[Decimal] = Field(
         default_factory=list, description="Emissions by year"
     )
-
 
 class TargetEvidence(BaseModel):
     """Evidence package for SBTi submission.
@@ -390,11 +368,9 @@ class TargetEvidence(BaseModel):
         default_factory=list, description="Exclusions"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class MaterialityCheck(BaseModel):
     """Scope 3 materiality check result.
@@ -425,7 +401,6 @@ class MaterialityCheck(BaseModel):
         default=False, description="Target required"
     )
     recommendation: str = Field(default="", description="Recommendation")
-
 
 class SBTiTarget(BaseModel):
     """An SBTi target definition.
@@ -481,7 +456,6 @@ class SBTiTarget(BaseModel):
     is_flag_target: bool = Field(default=False, description="FLAG target")
     description: str = Field(default="", description="Description")
 
-
 class PathwayResult(BaseModel):
     """Year-by-year pathway from base year to target year.
 
@@ -499,7 +473,6 @@ class PathwayResult(BaseModel):
     five_year_milestones: List[Dict[str, Any]] = Field(
         default_factory=list, description="5-year milestones"
     )
-
 
 class ProgressTracking(BaseModel):
     """Progress tracking against an SBTi target.
@@ -553,7 +526,6 @@ class ProgressTracking(BaseModel):
         default_factory=list, description="Year-by-year"
     )
 
-
 class CoverageCheck(BaseModel):
     """Coverage check result.
 
@@ -587,7 +559,6 @@ class CoverageCheck(BaseModel):
         default=TargetTimeframe.NEAR_TERM, description="Timeframe"
     )
     recommendation: str = Field(default="", description="Recommendation")
-
 
 class FLAGPathway(BaseModel):
     """FLAG sector pathway result.
@@ -623,7 +594,6 @@ class FLAGPathway(BaseModel):
         default="Zero deforestation/land conversion by 2025",
         description="Deforestation commitment",
     )
-
 
 class SubmissionPackage(BaseModel):
     """SBTi target submission package.
@@ -664,7 +634,6 @@ class SubmissionPackage(BaseModel):
     recommendations: List[str] = Field(
         default_factory=list, description="Recommendations"
     )
-
 
 class SBTiPathwayResult(BaseModel):
     """Complete SBTi pathway analysis result.
@@ -710,12 +679,11 @@ class SBTiPathwayResult(BaseModel):
     status: EngineStatus = Field(
         default=EngineStatus.COMPLETE, description="Status"
     )
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Timestamp")
     processing_time_ms: Decimal = Field(
         default=Decimal("0"), description="Processing ms"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 # ---------------------------------------------------------------------------
 # Model Rebuild
@@ -733,11 +701,9 @@ FLAGPathway.model_rebuild()
 SubmissionPackage.model_rebuild()
 SBTiPathwayResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class SBTiPathwayEngine:
     """SBTi target setting, pathway modelling, and progress tracking.

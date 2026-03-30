@@ -3,16 +3,35 @@
 GreenLang Shared Enumerations
 ==============================
 
-Centralized enumerations that are duplicated across 50+ agent model files.
-Agent-specific enums (e.g. ``FuelType``, ``NodeType``) remain in their
-respective agent modules. Only commonly-reused enums live here.
+Centralized enumerations that replace 1,200+ duplicated enum definitions
+across the GreenLang codebase. Agent-specific enums (e.g. ``FuelType``,
+``NodeType``) remain in their respective agent modules.
+
+Categories (30 enums total):
+    - Job/Calculation Lifecycle (3): CalculationStatus, JobStatus, ProcessingStatus
+    - Execution (1): ExecutionStatus
+    - Severity/Priority (3): Severity, ValidationSeverity, Priority
+    - Data Quality (3): DataQualityLevel, MatchStatus, ResolutionStatus
+    - Reporting (2): ReportingPeriod, RegulatoryFramework
+    - Risk/Compliance (2): RiskLevel, ComplianceStatus
+    - Organizational (1): ControlApproach
+    - Units (1): EmissionUnit
+    - Config/Infrastructure (8): Environment, LogLevel, HealthStatus,
+          NotificationChannel, StorageBackend, ProtocolType, SortOrder,
+          ScheduleFrequency
+    - Alerts (2): AlertSeverity, AlertStatus
+    - Formats (2): ReportFormat, FileFormat
+    - i18n (1): LanguageCode
+    - Geography (1): GeographicRegion
 
 Usage::
 
     from greenlang.schemas.enums import CalculationStatus, JobStatus
+    from greenlang.schemas.enums import Environment, LogLevel, HealthStatus
+    from greenlang.schemas.enums import ReportFormat, AlertSeverity
 
 Author: GreenLang Platform Team
-Date: March 2026
+Date: March 2026 (expanded 2026-03-30)
 Status: Production Ready
 """
 
@@ -243,3 +262,267 @@ class EmissionUnit(str, Enum):
     MT_CO2E = "mt_co2e"
     KG = "kg"
     TONNES = "tonnes"
+
+
+# =============================================================================
+# Execution
+# =============================================================================
+
+
+class ExecutionStatus(str, Enum):
+    """Execution lifecycle status for pipelines, workflows, and tasks.
+
+    Replaces 8+ duplicate ExecutionStatus/PipelineStatus/WorkflowStatus enums
+    in orchestrator, schema_migration, integration, and execution modules.
+    """
+
+    PENDING = "pending"
+    RUNNING = "running"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
+    TIMEOUT = "timeout"
+    RETRYING = "retrying"
+
+
+# =============================================================================
+# Config / Infrastructure
+# =============================================================================
+
+
+class Environment(str, Enum):
+    """Deployment environment.
+
+    Replaces 5+ duplicate Environment/EnvironmentName enums in config,
+    vector DB, agent factory, feature flags, and infrastructure modules.
+    """
+
+    DEVELOPMENT = "development"
+    STAGING = "staging"
+    PRODUCTION = "production"
+    TEST = "test"
+
+
+class LogLevel(str, Enum):
+    """Standard logging levels.
+
+    Replaces 3+ duplicate LogLevel enums in monitoring, observability,
+    and orchestrator modules.
+    """
+
+    DEBUG = "debug"
+    INFO = "info"
+    WARNING = "warning"
+    ERROR = "error"
+    CRITICAL = "critical"
+
+
+class HealthStatus(str, Enum):
+    """Service/component health status.
+
+    Replaces 44+ duplicate HealthStatus enums across EUDR setup.py files,
+    monitoring modules, and infrastructure components.
+    """
+
+    HEALTHY = "healthy"
+    DEGRADED = "degraded"
+    UNHEALTHY = "unhealthy"
+    UNKNOWN = "unknown"
+    STARTING = "starting"
+
+
+class NotificationChannel(str, Enum):
+    """Notification delivery channel.
+
+    Replaces 19+ duplicate NotificationChannel enums in alerting,
+    monitoring, EUDR agents, and infrastructure modules.
+    """
+
+    EMAIL = "email"
+    SLACK = "slack"
+    PAGERDUTY = "pagerduty"
+    OPSGENIE = "opsgenie"
+    TEAMS = "teams"
+    WEBHOOK = "webhook"
+    LOG = "log"
+
+
+class StorageBackend(str, Enum):
+    """Data storage backend type.
+
+    Replaces 5+ duplicate StorageBackend/StorageType enums in config,
+    execution, and infrastructure modules.
+    """
+
+    MEMORY = "memory"
+    POSTGRESQL = "postgresql"
+    REDIS = "redis"
+    MONGODB = "mongodb"
+    S3 = "s3"
+    FILE = "file"
+
+
+class ProtocolType(str, Enum):
+    """Communication protocol type.
+
+    Replaces 8+ duplicate ProtocolType/BMSProtocol/CommunicationProtocol
+    enums in SCADA, BMS, IoT, and execution modules.
+    """
+
+    HTTP = "http"
+    HTTPS = "https"
+    WEBSOCKET = "websocket"
+    GRPC = "grpc"
+    MQTT = "mqtt"
+    MODBUS = "modbus"
+    BACNET = "bacnet"
+    OPCUA = "opcua"
+
+
+class SortOrder(str, Enum):
+    """Sort direction for queries and results.
+
+    Replaces 5+ duplicate SortOrder enums in data gateway, GraphQL,
+    and EUDR API schemas.
+    """
+
+    ASC = "asc"
+    DESC = "desc"
+
+
+class ScheduleFrequency(str, Enum):
+    """Scheduling/monitoring frequency.
+
+    Replaces 10+ duplicate ScheduleFrequency/MonitoringFrequency/
+    UpdateFrequency enums. Extends ReportingPeriod with sub-daily
+    and real-time granularity.
+    """
+
+    REALTIME = "realtime"
+    MINUTELY = "minutely"
+    HOURLY = "hourly"
+    DAILY = "daily"
+    WEEKLY = "weekly"
+    MONTHLY = "monthly"
+    QUARTERLY = "quarterly"
+    ANNUAL = "annual"
+
+
+# =============================================================================
+# Alerts
+# =============================================================================
+
+
+class AlertSeverity(str, Enum):
+    """Alert severity level for monitoring and incident management.
+
+    Replaces 47+ duplicate AlertSeverity enums across EUDR agents,
+    process heat agents, data agents, and infrastructure modules.
+    """
+
+    CRITICAL = "critical"
+    ERROR = "error"
+    WARNING = "warning"
+    INFO = "info"
+
+
+class AlertStatus(str, Enum):
+    """Alert lifecycle status.
+
+    Replaces duplicate AlertStatus enums in alerting service,
+    monitoring, and EUDR agent modules.
+    """
+
+    FIRING = "firing"
+    ACKNOWLEDGED = "acknowledged"
+    INVESTIGATING = "investigating"
+    RESOLVED = "resolved"
+    SUPPRESSED = "suppressed"
+
+
+# =============================================================================
+# Formats
+# =============================================================================
+
+
+class ReportFormat(str, Enum):
+    """Output report format.
+
+    Replaces 30+ duplicate ReportFormat/ExportFormat enums across data
+    agents, EUDR agents, and pack engines.
+    """
+
+    JSON = "json"
+    CSV = "csv"
+    PDF = "pdf"
+    HTML = "html"
+    EXCEL = "excel"
+    XML = "xml"
+
+
+class FileFormat(str, Enum):
+    """Input/output file format for data processing.
+
+    Replaces 15+ duplicate FileFormat/DocumentFormat enums in data
+    ingestion, parsing, and export modules.
+    """
+
+    CSV = "csv"
+    JSON = "json"
+    XML = "xml"
+    YAML = "yaml"
+    PDF = "pdf"
+    EXCEL = "excel"
+    PARQUET = "parquet"
+    PNG = "png"
+    JPG = "jpg"
+    TIFF = "tiff"
+    SHAPEFILE = "shapefile"
+    GEOJSON = "geojson"
+
+
+# =============================================================================
+# Internationalization
+# =============================================================================
+
+
+class LanguageCode(str, Enum):
+    """ISO 639-1 language codes for multi-language support.
+
+    Replaces 8+ duplicate LanguageCode/DocumentLanguage/ReportLanguage
+    enums in EUDR agents and reporting modules.
+    """
+
+    EN = "en"
+    ES = "es"
+    FR = "fr"
+    DE = "de"
+    PT = "pt"
+    ZH = "zh"
+    JA = "ja"
+    KO = "ko"
+    AR = "ar"
+    HI = "hi"
+    IT = "it"
+    NL = "nl"
+
+
+# =============================================================================
+# Geography
+# =============================================================================
+
+
+class GeographicRegion(str, Enum):
+    """Major geographic regions for compliance and reporting.
+
+    Replaces 15+ duplicate Region/RegionType enums in MRV agents,
+    finance agents, and compliance modules.
+    """
+
+    NORTH_AMERICA = "north_america"
+    SOUTH_AMERICA = "south_america"
+    EUROPE = "europe"
+    ASIA_PACIFIC = "asia_pacific"
+    AFRICA = "africa"
+    MIDDLE_EAST = "middle_east"
+    OCEANIA = "oceania"

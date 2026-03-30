@@ -42,8 +42,10 @@ from decimal import Decimal
 from typing import Dict, List, Optional, Any, Union
 from datetime import datetime, date
 from enum import Enum
-from pydantic import BaseModel, Field, validator, field_validator, model_validator
-from pydantic import ConfigDict
+from pydantic import Field, validator, field_validator, model_validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
+from greenlang.schemas.enums import ReportFormat
+
 import hashlib
 
 # ==============================================================================
@@ -345,15 +347,6 @@ class CurrencyCode(str, Enum):
     SEK = "SEK"
     NOK = "NOK"
     DKK = "DKK"
-
-
-class ExportFormat(str, Enum):
-    """Export format for results."""
-
-    JSON = "json"
-    CSV = "csv"
-    XLSX = "xlsx"
-    PDF = "pdf"
 
 
 class BatchStatus(str, Enum):
@@ -1063,7 +1056,7 @@ NET_CALORIFIC_VALUES: Dict[WasteCategory, Decimal] = {
 # ==============================================================================
 
 
-class WasteCompositionInput(BaseModel):
+class WasteCompositionInput(GreenLangBase):
     """
     Waste composition breakdown by material type.
 
@@ -1087,7 +1080,7 @@ class WasteCompositionInput(BaseModel):
         return v
 
 
-class WasteStreamInput(BaseModel):
+class WasteStreamInput(GreenLangBase):
     """
     Waste stream input record.
 
@@ -1154,7 +1147,7 @@ class WasteStreamInput(BaseModel):
         return self
 
 
-class LandfillInput(BaseModel):
+class LandfillInput(GreenLangBase):
     """
     Landfill-specific calculation parameters for FOD model.
     """
@@ -1190,7 +1183,7 @@ class LandfillInput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class IncinerationInput(BaseModel):
+class IncinerationInput(GreenLangBase):
     """
     Incineration-specific calculation parameters.
     """
@@ -1220,7 +1213,7 @@ class IncinerationInput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class RecyclingInput(BaseModel):
+class RecyclingInput(GreenLangBase):
     """
     Recycling-specific calculation parameters.
     """
@@ -1244,7 +1237,7 @@ class RecyclingInput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class CompostingInput(BaseModel):
+class CompostingInput(GreenLangBase):
     """
     Composting-specific calculation parameters.
     """
@@ -1271,7 +1264,7 @@ class CompostingInput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class AnaerobicDigestionInput(BaseModel):
+class AnaerobicDigestionInput(GreenLangBase):
     """
     Anaerobic digestion (AD) specific calculation parameters.
     """
@@ -1304,7 +1297,7 @@ class AnaerobicDigestionInput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class WastewaterInput(BaseModel):
+class WastewaterInput(GreenLangBase):
     """
     Wastewater treatment emissions calculation parameters.
     """
@@ -1340,7 +1333,7 @@ class WastewaterInput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class WasteEmissionFactor(BaseModel):
+class WasteEmissionFactor(GreenLangBase):
     """
     Waste emission factor record.
 
@@ -1367,7 +1360,7 @@ class WasteEmissionFactor(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class WasteClassificationResult(BaseModel):
+class WasteClassificationResult(GreenLangBase):
     """
     Waste classification engine output.
     """
@@ -1393,7 +1386,7 @@ class WasteClassificationResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class LandfillEmissionsResult(BaseModel):
+class LandfillEmissionsResult(GreenLangBase):
     """
     Landfill emissions calculation output (FOD model).
     """
@@ -1423,7 +1416,7 @@ class LandfillEmissionsResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class IncinerationEmissionsResult(BaseModel):
+class IncinerationEmissionsResult(GreenLangBase):
     """
     Incineration emissions calculation output.
     """
@@ -1452,7 +1445,7 @@ class IncinerationEmissionsResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class RecyclingCompostingResult(BaseModel):
+class RecyclingCompostingResult(GreenLangBase):
     """
     Recycling, composting, or anaerobic digestion calculation output.
     """
@@ -1482,7 +1475,7 @@ class RecyclingCompostingResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class WastewaterEmissionsResult(BaseModel):
+class WastewaterEmissionsResult(GreenLangBase):
     """
     Wastewater treatment emissions calculation output.
     """
@@ -1510,7 +1503,7 @@ class WastewaterEmissionsResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class WasteCalculationResult(BaseModel):
+class WasteCalculationResult(GreenLangBase):
     """
     Complete waste emissions calculation result for a single waste stream.
     """
@@ -1565,7 +1558,7 @@ class WasteCalculationResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class WasteBatchResult(BaseModel):
+class WasteBatchResult(GreenLangBase):
     """
     Batch waste emissions calculation output.
     """
@@ -1597,7 +1590,7 @@ class WasteBatchResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class WasteAggregation(BaseModel):
+class WasteAggregation(GreenLangBase):
     """
     Single aggregation dimension (e.g., by treatment method, by waste type).
     """
@@ -1611,7 +1604,7 @@ class WasteAggregation(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class WasteAggregationResult(BaseModel):
+class WasteAggregationResult(GreenLangBase):
     """
     Aggregated waste emissions by multiple dimensions.
     """
@@ -1659,7 +1652,7 @@ class WasteAggregationResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class ComplianceCheckInput(BaseModel):
+class ComplianceCheckInput(GreenLangBase):
     """
     Compliance check request input.
     """
@@ -1678,7 +1671,7 @@ class ComplianceCheckInput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class ComplianceCheckResult(BaseModel):
+class ComplianceCheckResult(GreenLangBase):
     """
     Compliance check output for a single framework.
     """
@@ -1716,7 +1709,7 @@ class ComplianceCheckResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class UncertaintyInput(BaseModel):
+class UncertaintyInput(GreenLangBase):
     """
     Uncertainty analysis request input.
     """
@@ -1733,7 +1726,7 @@ class UncertaintyInput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class UncertaintyResult(BaseModel):
+class UncertaintyResult(GreenLangBase):
     """
     Uncertainty analysis output.
     """
@@ -1762,7 +1755,7 @@ class UncertaintyResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class DataQualityInput(BaseModel):
+class DataQualityInput(GreenLangBase):
     """
     Data quality assessment input.
     """
@@ -1779,7 +1772,7 @@ class DataQualityInput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class DataQualityResult(BaseModel):
+class DataQualityResult(GreenLangBase):
     """
     Data quality assessment output.
     """
@@ -1811,7 +1804,7 @@ class DataQualityResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class ProvenanceRecord(BaseModel):
+class ProvenanceRecord(GreenLangBase):
     """
     Provenance chain record for a single pipeline stage.
     """
@@ -1839,7 +1832,7 @@ class ProvenanceRecord(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class ProvenanceChainResult(BaseModel):
+class ProvenanceChainResult(GreenLangBase):
     """
     Complete provenance chain for a calculation.
     """
@@ -1862,7 +1855,7 @@ class ProvenanceChainResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class WasteDiversionAnalysis(BaseModel):
+class WasteDiversionAnalysis(GreenLangBase):
     """
     Waste diversion rate analysis output.
     """
@@ -1908,7 +1901,7 @@ class WasteDiversionAnalysis(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class WasteCompositionProfile(BaseModel):
+class WasteCompositionProfile(GreenLangBase):
     """
     Waste composition profile for a region or facility.
     """
@@ -1943,7 +1936,7 @@ class WasteCompositionProfile(BaseModel):
         return self
 
 
-class SpendBasedInput(BaseModel):
+class SpendBasedInput(GreenLangBase):
     """
     Spend-based calculation input for waste management spend.
     """
@@ -2077,7 +2070,7 @@ __all__ = [
     "DQIScore",
     "ComplianceStatus",
     "CurrencyCode",
-    "ExportFormat",
+    "ReportFormat",
     "BatchStatus",
 
     # Constants

@@ -47,6 +47,7 @@ import threading
 import time
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Set
+from greenlang.schemas import utcnow
 
 from greenlang.agents.data.supplier_questionnaire.models import (
     Answer,
@@ -67,16 +68,9 @@ __all__ = [
     "ValidationEngine",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # CDP-specific required question codes
@@ -95,11 +89,9 @@ _ECOVADIS_ACTION_CODES = {"ENV.2", "LAB.2", "ETH.2", "SUP.3"}
 _ECOVADIS_CERT_CODES = {"ENV.4"}
 _ECOVADIS_METRIC_CODES = {"ENV.3", "LAB.3", "SUP.2"}
 
-
 # ---------------------------------------------------------------------------
 # ValidationEngine
 # ---------------------------------------------------------------------------
-
 
 class ValidationEngine:
     """Questionnaire response validation engine.
@@ -695,7 +687,7 @@ class ValidationEngine:
             return {
                 **self._stats,
                 "cached_results": len(self._validation_results),
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }
 
     # ------------------------------------------------------------------
@@ -1249,7 +1241,7 @@ class ValidationEngine:
             Hex-encoded SHA-256 digest.
         """
         combined = json.dumps(
-            {"parts": list(parts), "timestamp": _utcnow().isoformat()},
+            {"parts": list(parts), "timestamp": utcnow().isoformat()},
             sort_keys=True,
         )
         return hashlib.sha256(combined.encode("utf-8")).hexdigest()

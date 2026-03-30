@@ -42,25 +42,19 @@ from typing import Any, Dict, List, Optional, Set
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash."""
@@ -73,11 +67,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class RegulationSource(str, Enum):
     """Source of regulatory change."""
@@ -88,7 +80,6 @@ class RegulationSource(str, Enum):
     ISSB = "issb"
     NATIONAL_AUTHORITY = "national_authority"
 
-
 class ChangeSeverity(str, Enum):
     """Severity of a regulatory change."""
 
@@ -97,7 +88,6 @@ class ChangeSeverity(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     INFORMATIONAL = "informational"
-
 
 class DeadlineStatus(str, Enum):
     """Status of a regulatory deadline."""
@@ -108,7 +98,6 @@ class DeadlineStatus(str, Enum):
     COMPLETED = "completed"
     NOT_APPLICABLE = "not_applicable"
 
-
 class GapStatus(str, Enum):
     """Current compliance status for a gap."""
 
@@ -117,11 +106,9 @@ class GapStatus(str, Enum):
     NON_COMPLIANT = "non_compliant"
     NOT_ASSESSED = "not_assessed"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class RegulatoryChange(BaseModel):
     """A registered regulatory change."""
@@ -140,10 +127,9 @@ class RegulatoryChange(BaseModel):
         None, description="URL to official source document"
     )
     registered_at: datetime = Field(
-        default_factory=_utcnow, description="Registration timestamp"
+        default_factory=utcnow, description="Registration timestamp"
     )
     provenance_hash: str = Field("", description="SHA-256 hash")
-
 
 class ImpactAssessment(BaseModel):
     """Impact assessment for a regulatory change."""
@@ -167,10 +153,9 @@ class ImpactAssessment(BaseModel):
     )
     priority: str = Field("medium", description="Remediation priority")
     assessed_at: datetime = Field(
-        default_factory=_utcnow, description="Assessment timestamp"
+        default_factory=utcnow, description="Assessment timestamp"
     )
     provenance_hash: str = Field("", description="SHA-256 hash")
-
 
 class ComplianceGap(BaseModel):
     """A detected gap between current state and requirements."""
@@ -186,7 +171,6 @@ class ComplianceGap(BaseModel):
     remediation_plan: str = Field("", description="Planned remediation approach")
     provenance_hash: str = Field("", description="SHA-256 hash")
 
-
 class RegulatoryDeadline(BaseModel):
     """A regulatory deadline with status tracking."""
 
@@ -200,7 +184,6 @@ class RegulatoryDeadline(BaseModel):
     )
     days_remaining: int = Field(0, description="Days until deadline")
 
-
 class RegulatoryCalendar(BaseModel):
     """A calendar of regulatory deadlines."""
 
@@ -213,14 +196,12 @@ class RegulatoryCalendar(BaseModel):
     )
     total_upcoming: int = Field(0, description="Upcoming deadlines count")
     total_overdue: int = Field(0, description="Overdue deadlines count")
-    generated_at: datetime = Field(default_factory=_utcnow, description="Generated at")
+    generated_at: datetime = Field(default_factory=utcnow, description="Generated at")
     provenance_hash: str = Field("", description="SHA-256 hash")
-
 
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
-
 
 class RegulatoryConfig(BaseModel):
     """Configuration for the regulatory impact engine."""
@@ -237,7 +218,6 @@ class RegulatoryConfig(BaseModel):
     track_issb_convergence: bool = Field(
         True, description="Include ISSB convergence deadlines"
     )
-
 
 # ---------------------------------------------------------------------------
 # Pre-Built Deadlines
@@ -300,11 +280,9 @@ _DEFAULT_DEADLINES: List[Dict[str, Any]] = [
      "description": "EU Taxonomy environmental delegated acts for remaining objectives"},
 ]
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class RegulatoryImpactEngine:
     """Regulatory change impact analysis engine.

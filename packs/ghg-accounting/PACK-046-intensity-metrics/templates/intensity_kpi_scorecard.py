@@ -44,29 +44,23 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 def _compute_hash(content: str) -> str:
     """Compute SHA-256 hash of string content."""
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -79,7 +73,6 @@ class OutputFormat(str, Enum):
     PDF = "pdf"
     JSON = "json"
 
-
 class KPIStatus(str, Enum):
     """KPI traffic light status."""
     ON_TARGET = "on_target"
@@ -87,14 +80,12 @@ class KPIStatus(str, Enum):
     OFF_TARGET = "off_target"
     NO_TARGET = "no_target"
 
-
 class TrendDirection(str, Enum):
     """Trend direction for metric."""
     IMPROVING = "improving"
     STABLE = "stable"
     DETERIORATING = "deteriorating"
     UNKNOWN = "unknown"
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Input Models
@@ -122,7 +113,6 @@ class MetricCard(BaseModel):
         True, description="Whether lower values are better (typical for intensity)"
     )
 
-
 class ScorecardActionItem(BaseModel):
     """Action item from scorecard review."""
     priority: int = Field(1, ge=1, le=5, description="Priority (1=highest)")
@@ -130,7 +120,6 @@ class ScorecardActionItem(BaseModel):
     action: str = Field(..., description="Action description")
     owner: str = Field("", description="Responsible party")
     due_date: str = Field("", description="Due date")
-
 
 class KPIScorecardInput(BaseModel):
     """Complete input model for IntensityKPIScorecard."""
@@ -151,7 +140,6 @@ class KPIScorecardInput(BaseModel):
     next_review_date: str = Field("", description="Next scheduled review date")
     reviewer: str = Field("", description="Reviewer name")
 
-
 # ---------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------
@@ -166,7 +154,6 @@ def _status_label(status: KPIStatus) -> str:
     }
     return mapping.get(status, "UNKNOWN")
 
-
 def _status_css(status: KPIStatus) -> str:
     """Return CSS class for KPI status."""
     mapping = {
@@ -176,7 +163,6 @@ def _status_css(status: KPIStatus) -> str:
         KPIStatus.NO_TARGET: "kpi-grey",
     }
     return mapping.get(status, "kpi-grey")
-
 
 def _status_color(status: KPIStatus) -> str:
     """Return hex colour for KPI status."""
@@ -188,7 +174,6 @@ def _status_color(status: KPIStatus) -> str:
     }
     return mapping.get(status, "#888888")
 
-
 def _trend_label(trend: TrendDirection) -> str:
     """Return human-readable trend label."""
     mapping = {
@@ -198,7 +183,6 @@ def _trend_label(trend: TrendDirection) -> str:
         TrendDirection.UNKNOWN: "Unknown",
     }
     return mapping.get(trend, "Unknown")
-
 
 def _trend_arrow(trend: TrendDirection) -> str:
     """Return text arrow for trend direction."""
@@ -210,7 +194,6 @@ def _trend_arrow(trend: TrendDirection) -> str:
     }
     return mapping.get(trend, "?")
 
-
 def _trend_html_arrow(trend: TrendDirection) -> str:
     """Return HTML arrow for trend direction."""
     mapping = {
@@ -221,7 +204,6 @@ def _trend_html_arrow(trend: TrendDirection) -> str:
     }
     return mapping.get(trend, "&#8211;")
 
-
 def _trend_css(trend: TrendDirection) -> str:
     """Return CSS class for trend."""
     mapping = {
@@ -231,7 +213,6 @@ def _trend_css(trend: TrendDirection) -> str:
         TrendDirection.UNKNOWN: "trend-unknown",
     }
     return mapping.get(trend, "trend-unknown")
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -280,7 +261,7 @@ class IntensityKPIScorecard:
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render KPI scorecard as Markdown."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_md(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -288,7 +269,7 @@ class IntensityKPIScorecard:
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render KPI scorecard as HTML."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_html(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -296,7 +277,7 @@ class IntensityKPIScorecard:
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render KPI scorecard as JSON dict."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_json(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -326,7 +307,7 @@ class IntensityKPIScorecard:
             f"# Intensity KPI Scorecard - {company}\n\n"
             f"**Period:** {period} | "
             f"**Overall Status:** {_status_label(overall)} | "
-            f"**Report Date:** {_utcnow().strftime('%Y-%m-%d')}\n\n"
+            f"**Report Date:** {utcnow().strftime('%Y-%m-%d')}\n\n"
             "---"
         )
 

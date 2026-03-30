@@ -39,35 +39,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "22.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a single workflow phase."""
@@ -78,7 +70,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -88,7 +79,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class ClaimTier(str, Enum):
     """VCMI claim tiers."""
 
@@ -96,7 +86,6 @@ class ClaimTier(str, Enum):
     GOLD = "gold"
     PLATINUM = "platinum"
     NOT_ELIGIBLE = "not_eligible"
-
 
 class CriterionStatus(str, Enum):
     """Status of a single foundational criterion."""
@@ -106,14 +95,12 @@ class CriterionStatus(str, Enum):
     FAIL = "fail"
     NOT_ASSESSED = "not_assessed"
 
-
 class GreenwashingRisk(str, Enum):
     """Greenwashing risk levels."""
 
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
-
 
 # =============================================================================
 # VCMI REFERENCE DATA (Zero-Hallucination, from VCMI Claims Code)
@@ -189,11 +176,9 @@ CLAIM_TIER_REQUIREMENTS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -206,7 +191,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class EvidenceItem(BaseModel):
     """A single piece of evidence for VCMI assessment."""
 
@@ -217,7 +201,6 @@ class EvidenceItem(BaseModel):
     verified: bool = Field(default=False)
     verification_body: str = Field(default="")
     score_contribution: float = Field(default=0.0, ge=0.0, le=100.0)
-
 
 class CreditPortfolioItem(BaseModel):
     """A carbon credit in the portfolio."""
@@ -232,7 +215,6 @@ class CreditPortfolioItem(BaseModel):
     corresponding_adjustment: bool = Field(default=False)
     is_removal: bool = Field(default=False)
 
-
 class CriterionAssessment(BaseModel):
     """Assessment result for a single VCMI criterion."""
 
@@ -245,7 +227,6 @@ class CriterionAssessment(BaseModel):
     findings: List[str] = Field(default_factory=list)
     gaps: List[str] = Field(default_factory=list)
 
-
 class ClaimDetermination(BaseModel):
     """VCMI claim tier determination."""
 
@@ -257,7 +238,6 @@ class ClaimDetermination(BaseModel):
     greenwashing_risk: GreenwashingRisk = Field(default=GreenwashingRisk.MEDIUM)
     greenwashing_flags: List[str] = Field(default_factory=list)
     tier_gap_analysis: str = Field(default="")
-
 
 class VCMICertificationConfig(BaseModel):
     """Configuration for the VCMI certification workflow."""
@@ -299,7 +279,6 @@ class VCMICertificationConfig(BaseModel):
             raise ValueError("target_tier must be silver, gold, or platinum")
         return v
 
-
 class VCMICertificationResult(BaseModel):
     """Complete result from the VCMI certification workflow."""
 
@@ -313,11 +292,9 @@ class VCMICertificationResult(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class VCMICertificationWorkflow:
     """
@@ -366,7 +343,7 @@ class VCMICertificationWorkflow:
             VCMICertificationResult with criterion assessments, claim
             determination, and recommendations.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting VCMI certification workflow %s, target_tier=%s",
             self.workflow_id, config.target_tier,
@@ -397,7 +374,7 @@ class VCMICertificationWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         result = VCMICertificationResult(
             workflow_id=self.workflow_id,
             status=overall_status,
@@ -423,7 +400,7 @@ class VCMICertificationWorkflow:
 
     async def _phase_evidence_collection(self, config: VCMICertificationConfig) -> PhaseResult:
         """Collect evidence for 4 foundational criteria."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -530,7 +507,7 @@ class VCMICertificationWorkflow:
             ))
 
             # Vintage check
-            current_year = _utcnow().year
+            current_year = utcnow().year
             recent_count = sum(1 for c in config.credit_portfolio if current_year - c.vintage_year <= 5)
             vintage_pct = (recent_count / total_credits * 100.0) if total_credits > 0 else 0.0
             evidence_map["FC4_credit_quality"].append(EvidenceItem(
@@ -549,7 +526,7 @@ class VCMICertificationWorkflow:
         # Store for later phases
         self._evidence_map = evidence_map
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Evidence collection: %d items collected", total_evidence)
         return PhaseResult(
             phase_name="evidence_collection",
@@ -574,7 +551,7 @@ class VCMICertificationWorkflow:
 
     async def _phase_criteria_check(self, config: VCMICertificationConfig) -> PhaseResult:
         """Evaluate each criterion with scoring."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -621,7 +598,7 @@ class VCMICertificationWorkflow:
             outputs[f"{assessment.criterion_id}_status"] = assessment.status.value
             outputs[f"{assessment.criterion_id}_score"] = assessment.score
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Criteria check: %d criteria evaluated", len(self._assessments))
         return PhaseResult(
             phase_name="criteria_check",
@@ -685,7 +662,7 @@ class VCMICertificationWorkflow:
 
     async def _phase_claim_validation(self, config: VCMICertificationConfig) -> PhaseResult:
         """Determine eligible claim tier and check greenwashing risks."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -741,7 +718,7 @@ class VCMICertificationWorkflow:
         outputs["greenwashing_risk"] = gw_risk.value
         outputs["greenwashing_flags"] = len(gw_flags)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Claim validation: eligible=%s, score=%.1f, coverage=%.1f%%",
                          eligible_tier.value, total_score, credit_coverage_pct)
         return PhaseResult(
@@ -778,7 +755,7 @@ class VCMICertificationWorkflow:
             flags.append("Emissions not independently verified")
 
         # Old vintages
-        current_year = _utcnow().year
+        current_year = utcnow().year
         if config.credit_portfolio:
             old_credits = [c for c in config.credit_portfolio if current_year - c.vintage_year > 5]
             if old_credits:
@@ -833,7 +810,7 @@ class VCMICertificationWorkflow:
 
     async def _phase_certification_report(self, config: VCMICertificationConfig) -> PhaseResult:
         """Generate certification report with recommendations."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -868,7 +845,7 @@ class VCMICertificationWorkflow:
         outputs["greenwashing_risk"] = self._determination.greenwashing_risk.value
         outputs["total_gaps"] = sum(len(a.gaps) for a in self._assessments)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Certification report: %d recommendations", len(self._recommendations))
         return PhaseResult(
             phase_name="certification_report",

@@ -75,7 +75,6 @@ except ImportError:
     FastAPI = None  # type: ignore[assignment, misc]
     FASTAPI_AVAILABLE = False
 
-
 # ===================================================================
 # QATestHarnessService facade
 # ===================================================================
@@ -83,12 +82,6 @@ except ImportError:
 # Thread-safe singleton lock
 _singleton_lock = threading.Lock()
 _singleton_instance: Optional["QATestHarnessService"] = None
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 class QATestHarnessService:
     """Unified facade over the QA Test Harness SDK.
@@ -725,11 +718,9 @@ class QATestHarnessService:
         self._started = False
         logger.info("QATestHarnessService shut down")
 
-
 # ===================================================================
 # Thread-safe singleton access
 # ===================================================================
-
 
 def _get_singleton() -> QATestHarnessService:
     """Get or create the singleton QATestHarnessService instance.
@@ -744,11 +735,9 @@ def _get_singleton() -> QATestHarnessService:
                 _singleton_instance = QATestHarnessService()
     return _singleton_instance
 
-
 # ===================================================================
 # FastAPI integration
 # ===================================================================
-
 
 async def configure_qa_test_harness(
     app: Any,
@@ -792,7 +781,6 @@ async def configure_qa_test_harness(
     logger.info("QA test harness service configured on app")
     return service
 
-
 def get_qa_test_harness(app: Any) -> QATestHarnessService:
     """Get the QATestHarnessService instance from app state.
 
@@ -813,7 +801,6 @@ def get_qa_test_harness(app: Any) -> QATestHarnessService:
         )
     return service
 
-
 def get_router() -> Any:
     """Get the QA test harness API router.
 
@@ -825,7 +812,6 @@ def get_router() -> Any:
         return router
     except ImportError:
         return None
-
 
 __all__ = [
     "QATestHarnessService",

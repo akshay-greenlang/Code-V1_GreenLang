@@ -14,7 +14,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, List, Optional, Any
 from enum import Enum
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.mrv.agriculture.base import (
     BaseAgricultureMRVAgent,
@@ -24,6 +24,7 @@ from greenlang.agents.mrv.agriculture.base import (
     EmissionScope,
     CalculationStep,
 )
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +66,7 @@ ENERGY_FACTORS: Dict[str, Decimal] = {
 }
 
 
-class ProcessingRecord(BaseModel):
+class ProcessingRecord(GreenLangBase):
     """Processing operation record."""
 
     facility_id: Optional[str] = Field(None, description="Facility ID")

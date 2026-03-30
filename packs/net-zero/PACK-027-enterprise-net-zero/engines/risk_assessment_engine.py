@@ -74,17 +74,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
@@ -124,7 +122,6 @@ def _round_val(value: Decimal, places: int = 6) -> Decimal:
 
 def _round3(value: float) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -178,7 +175,6 @@ class ClimateScenario(str, Enum):
     DISORDERLY_2C = "disorderly_2c"
     HOT_HOUSE_3C = "hot_house_3c_plus"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -206,7 +202,6 @@ REGIONAL_PHYSICAL_RISK: Dict[str, Dict[str, Decimal]] = {
     "GLOBAL_AVG": {"flood": Decimal("3"), "storm": Decimal("3"), "heatwave": Decimal("3"),
                    "wildfire": Decimal("2"), "drought": Decimal("3"), "sea_level_rise": Decimal("2")},
 }
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
@@ -264,7 +259,6 @@ class RiskAssessmentInput(BaseModel):
     )
     materiality_threshold_usd: Decimal = Field(default=Decimal("1000000"), ge=Decimal("0"))
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
@@ -319,7 +313,7 @@ class RiskAssessmentResult(BaseModel):
     """Complete risk assessment result."""
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     organization_name: str = Field(default="")
 
     physical_risk_scores: List[RiskScore] = Field(default_factory=list)
@@ -345,7 +339,6 @@ class RiskAssessmentResult(BaseModel):
     ])
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine

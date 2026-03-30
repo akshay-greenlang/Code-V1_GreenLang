@@ -29,7 +29,7 @@ from decimal import Decimal
 from enum import Enum
 from typing import Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.mrv.buildings.base import (
     BuildingMRVBaseAgent,
@@ -45,6 +45,7 @@ from greenlang.agents.mrv.buildings.base import (
     VerificationStatus,
     GRID_EF_BY_REGION_KGCO2E_PER_KWH,
 )
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -109,7 +110,7 @@ LIGHTING_EFFICACY = {
 # INPUT/OUTPUT MODELS
 # =============================================================================
 
-class LightingFixture(BaseModel):
+class LightingFixture(GreenLangBase):
     """Individual lighting fixture specification."""
     fixture_id: str
     lighting_type: LightingType

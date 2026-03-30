@@ -55,25 +55,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -86,7 +80,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -96,11 +89,9 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class VerificationStatus(str, Enum):
     """Supplier verification status."""
@@ -110,7 +101,6 @@ class VerificationStatus(str, Enum):
     EXPIRED = "EXPIRED"
     REJECTED = "REJECTED"
 
-
 class SubmissionStatus(str, Enum):
     """Emission data submission lifecycle status."""
 
@@ -119,7 +109,6 @@ class SubmissionStatus(str, Enum):
     REVIEWED = "REVIEWED"
     ACCEPTED = "ACCEPTED"
     REJECTED = "REJECTED"
-
 
 class CBAMGoodsCategory(str, Enum):
     """CBAM goods categories (mirrored for self-containment)."""
@@ -131,14 +120,12 @@ class CBAMGoodsCategory(str, Enum):
     ELECTRICITY = "electricity"
     HYDROGEN = "hydrogen"
 
-
 class CalculationMethod(str, Enum):
     """Emission calculation method."""
 
     ACTUAL = "actual"
     DEFAULT = "default"
     COUNTRY_DEFAULT = "country_default"
-
 
 # ---------------------------------------------------------------------------
 # Plausible emission intensity ranges by goods category (tCO2e/t product)
@@ -154,11 +141,9 @@ PLAUSIBLE_INTENSITY_RANGES: Dict[str, Dict[str, float]] = {
     "hydrogen": {"min": 0.2, "max": 12.0},
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class Installation(BaseModel):
     """Production installation registered under a supplier.
@@ -201,7 +186,7 @@ class Installation(BaseModel):
         description="Annual production capacity in tonnes",
     )
     registered_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Registration timestamp",
     )
 
@@ -210,7 +195,6 @@ class Installation(BaseModel):
     def uppercase_country(cls, v: str) -> str:
         """Ensure country code is uppercase."""
         return v.strip().upper()
-
 
 class SupplierProfile(BaseModel):
     """Supplier profile for CBAM data management.
@@ -264,7 +248,7 @@ class SupplierProfile(BaseModel):
         description="Overall data quality score (0-100)",
     )
     registration_date: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Date supplier was registered",
     )
     last_submission_date: Optional[datetime] = Field(
@@ -276,7 +260,6 @@ class SupplierProfile(BaseModel):
     def uppercase_country(cls, v: str) -> str:
         """Ensure country code is uppercase."""
         return v.strip().upper()
-
 
 class EmissionSubmission(BaseModel):
     """Emission data submission from a supplier for a specific period.
@@ -351,18 +334,16 @@ class EmissionSubmission(BaseModel):
         None, description="Timestamp of review",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record creation timestamp",
     )
     provenance_hash: str = Field(
         "", description="SHA-256 hash for audit trail",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class SupplierManagementEngine:
     """Supplier and installation management engine for CBAM compliance.
@@ -492,7 +473,7 @@ class SupplierManagementEngine:
             "period": period,
             "goods_categories": goods_categories or [],
             "status": "SENT",
-            "requested_at": _utcnow().isoformat(),
+            "requested_at": utcnow().isoformat(),
             "installations": [i.installation_id for i in supplier.installations],
         }
 
@@ -537,11 +518,11 @@ class SupplierManagementEngine:
         # Auto-score quality
         submission.quality_score = self.score_data_quality(submission)
         submission.status = SubmissionStatus.SUBMITTED
-        submission.submitted_at = _utcnow()
+        submission.submitted_at = utcnow()
         submission.provenance_hash = _compute_hash(submission)
 
         # Update supplier last submission date
-        supplier.last_submission_date = _utcnow()
+        supplier.last_submission_date = utcnow()
 
         self._submissions[submission.submission_id] = submission
 
@@ -588,7 +569,7 @@ class SupplierManagementEngine:
         submission.status = SubmissionStatus(decision)
         submission.reviewer_id = reviewer
         submission.review_comments = comments
-        submission.reviewed_at = _utcnow()
+        submission.reviewed_at = utcnow()
         submission.provenance_hash = _compute_hash(submission)
 
         # Update supplier quality score if accepted

@@ -44,7 +44,8 @@ from typing import Any, Callable, Dict, List, Optional
 
 from fastapi import Depends, HTTPException, Path, Query, Request, status
 from fastapi.security import APIKeyHeader, OAuth2PasswordBearer
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +69,7 @@ api_key_header = APIKeyHeader(
 # ---------------------------------------------------------------------------
 
 
-class AuthUser(BaseModel):
+class AuthUser(GreenLangBase):
     """Authenticated user context extracted from JWT or API key.
 
     Attributes:
@@ -248,7 +249,7 @@ def require_permission(permission: str) -> Callable:
 # ---------------------------------------------------------------------------
 
 
-class PaginationParams(BaseModel):
+class PaginationParams(GreenLangBase):
     """Standard pagination query parameters.
 
     Attributes:
@@ -281,7 +282,7 @@ def get_pagination(
 # ---------------------------------------------------------------------------
 
 
-class DateRangeParams(BaseModel):
+class DateRangeParams(GreenLangBase):
     """Common date range filter parameters.
 
     Attributes:
@@ -330,7 +331,7 @@ def get_date_range(
 # ---------------------------------------------------------------------------
 
 
-class SortParams(BaseModel):
+class SortParams(GreenLangBase):
     """Sort field and order parameters.
 
     Attributes:
@@ -593,7 +594,7 @@ def validate_commodity_path(
 # ---------------------------------------------------------------------------
 
 
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     """Structured error response for all API endpoints.
 
     Attributes:
@@ -614,7 +615,7 @@ class ErrorResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class SuccessResponse(BaseModel):
+class SuccessResponse(GreenLangBase):
     """Standard success response wrapper.
 
     Attributes:

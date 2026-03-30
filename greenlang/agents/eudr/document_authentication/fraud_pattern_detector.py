@@ -65,6 +65,7 @@ import time
 import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Set, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.document_authentication.config import (
     DocumentAuthenticationConfig,
@@ -99,12 +100,6 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance.
 
@@ -117,7 +112,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str = "FRD") -> str:
     """Generate a prefixed UUID4 string identifier.
 
@@ -128,7 +122,6 @@ def _generate_id(prefix: str = "FRD") -> str:
         Prefixed UUID4 string.
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 # ---------------------------------------------------------------------------
 # Required documents per EUDR commodity
@@ -213,11 +206,9 @@ SERIAL_FORMAT_PATTERNS: Dict[str, List[str]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # FraudRule dataclass (internal)
 # ---------------------------------------------------------------------------
-
 
 class _FraudRule:
     """Internal representation of a single fraud detection rule.
@@ -263,11 +254,9 @@ class _FraudRule:
             "enabled": self.enabled,
         }
 
-
 # ---------------------------------------------------------------------------
 # FraudPatternDetector
 # ---------------------------------------------------------------------------
-
 
 class FraudPatternDetector:
     """Deterministic fraud pattern detector for EUDR document authentication.
@@ -688,7 +677,7 @@ class FraudPatternDetector:
                 "document_id": document_id,
                 "shipment_id": shipment_id,
                 "supplier_id": supplier_id,
-                "registered_at": _utcnow().isoformat(),
+                "registered_at": utcnow().isoformat(),
             })
 
     # ------------------------------------------------------------------
@@ -1134,7 +1123,7 @@ class FraudPatternDetector:
                 ))
 
         # Check if creation date is in the future
-        now = _utcnow()
+        now = utcnow()
         if creation and creation > now:
             alerts.append(self._create_alert(
                 rule=rule,
@@ -1175,7 +1164,7 @@ class FraudPatternDetector:
         validity_end = self._parse_date(document_data.get("validity_end"))
         submission = self._parse_date(
             document_data.get("submission_date"),
-        ) or _utcnow()
+        ) or utcnow()
 
         if not validity_end:
             return []
@@ -1537,7 +1526,7 @@ class FraudPatternDetector:
         supplier_id = document_data.get("supplier_id", "")
         submission_date = self._parse_date(
             document_data.get("submission_date"),
-        ) or _utcnow()
+        ) or utcnow()
 
         if not supplier_id:
             return []
@@ -1743,7 +1732,7 @@ class FraudPatternDetector:
                     "document_id": document_id,
                     "serial_number": serial_number,
                     "block_preview": block[:80],
-                    "registered_at": _utcnow().isoformat(),
+                    "registered_at": utcnow().isoformat(),
                 })
 
             if matches:
@@ -1935,7 +1924,7 @@ class FraudPatternDetector:
         """
         severity = severity_override or rule.default_severity
         alert_id = _generate_id("ALERT")
-        now = _utcnow()
+        now = utcnow()
 
         alert: Dict[str, Any] = {
             "alert_id": alert_id,
@@ -2199,7 +2188,6 @@ class FraudPatternDetector:
         """Return the number of stored alerts."""
         with self._lock:
             return len(self._alerts)
-
 
 # ---------------------------------------------------------------------------
 # Public API

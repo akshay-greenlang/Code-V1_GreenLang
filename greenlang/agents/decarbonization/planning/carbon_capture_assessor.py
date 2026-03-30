@@ -16,12 +16,13 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig
 from greenlang.agents.base_agents import DeterministicAgent
 from greenlang.agents.categories import AgentCategory, AgentMetadata
 from greenlang.utilities.determinism import DeterministicClock, content_hash, deterministic_id
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +41,7 @@ class StorageType(str, Enum):
     UTILIZATION = "utilization"
 
 
-class CCUSOpportunity(BaseModel):
+class CCUSOpportunity(GreenLangBase):
     opportunity_id: str = Field(...)
     name: str = Field(...)
     capture_type: CaptureType = Field(...)
@@ -68,7 +69,7 @@ class CCUSOpportunity(BaseModel):
     pipeline_distance_km: Optional[float] = Field(None, ge=0)
 
 
-class CCUSAssessment(BaseModel):
+class CCUSAssessment(GreenLangBase):
     assessment_id: str = Field(...)
     facility_name: str = Field(...)
     total_emissions_tco2e: float = Field(..., ge=0)
@@ -79,7 +80,7 @@ class CCUSAssessment(BaseModel):
     provenance_hash: str = Field(default="")
 
 
-class CarbonCaptureInput(BaseModel):
+class CarbonCaptureInput(GreenLangBase):
     operation: str = Field(default="assess")
     facility_name: str = Field(default="Industrial Facility")
     total_emissions_tco2e: float = Field(default=100000, ge=0)
@@ -88,7 +89,7 @@ class CarbonCaptureInput(BaseModel):
     pipeline_distance_km: Optional[float] = Field(None, ge=0)
 
 
-class CarbonCaptureOutput(BaseModel):
+class CarbonCaptureOutput(GreenLangBase):
     operation: str = Field(...)
     success: bool = Field(...)
     assessment: Optional[CCUSAssessment] = Field(None)

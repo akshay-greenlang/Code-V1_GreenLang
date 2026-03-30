@@ -52,20 +52,15 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "36.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC timestamp with zero microseconds."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -82,11 +77,9 @@ def _compute_hash(data: Any) -> str:
         json.dumps(s, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -96,7 +89,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "pending"
@@ -104,7 +96,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class ForecastMethod(str, Enum):
     """Forecast methodology classification."""
@@ -114,7 +105,6 @@ class ForecastMethod(str, Enum):
     EXPONENTIAL_SMOOTHING = "exponential_smoothing"
     FLAT_BASELINE = "flat_baseline"
 
-
 class ScenarioType(str, Enum):
     """Budget scenario classification."""
     BASE = "base"
@@ -122,7 +112,6 @@ class ScenarioType(str, Enum):
     PESSIMISTIC = "pessimistic"
     STRETCH = "stretch"
     CUSTOM = "custom"
-
 
 # =============================================================================
 # REFERENCE DATA (Zero-Hallucination)
@@ -166,11 +155,9 @@ CPI_ENERGY_INDEX: Dict[int, float] = {
     2026: 1.238,
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -182,7 +169,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class HistoricalPeriod(BaseModel):
     """Historical consumption and cost record.
@@ -209,7 +195,6 @@ class HistoricalPeriod(BaseModel):
     heating_degree_days: float = Field(default=0.0, ge=0.0)
     cooling_degree_days: float = Field(default=0.0, ge=0.0)
     utility_type: str = Field(default="electricity")
-
 
 class BudgetScenario(BaseModel):
     """A budget scenario with forecast and variance.
@@ -238,7 +223,6 @@ class BudgetScenario(BaseModel):
     weather_adjustment: float = Field(default=1.0)
     variance_from_base_pct: float = Field(default=0.0)
     confidence_level: float = Field(default=0.80, ge=0.0, le=1.0)
-
 
 class BudgetPlanningInput(BaseModel):
     """Input data model for BudgetPlanningWorkflow.
@@ -274,7 +258,6 @@ class BudgetPlanningInput(BaseModel):
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
 
-
 class BudgetPlanningResult(BaseModel):
     """Complete result from budget planning workflow."""
     workflow_id: str = Field(..., description="Unique execution ID")
@@ -292,11 +275,9 @@ class BudgetPlanningResult(BaseModel):
     duration_seconds: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class BudgetPlanningWorkflow:
     """
@@ -828,7 +809,7 @@ class BudgetPlanningWorkflow:
         ]
 
         outputs["report_id"] = report_id
-        outputs["generated_at"] = _utcnow().isoformat()
+        outputs["generated_at"] = utcnow().isoformat()
         outputs["facility_id"] = input_data.facility_id
         outputs["forecast_year"] = input_data.forecast_year
         outputs["forecast_method"] = input_data.forecast_method.value

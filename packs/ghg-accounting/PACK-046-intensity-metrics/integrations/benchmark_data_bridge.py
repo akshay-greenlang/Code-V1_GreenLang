@@ -43,25 +43,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -74,11 +68,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class BenchmarkSource(str, Enum):
     """External benchmark data sources."""
@@ -88,7 +80,6 @@ class BenchmarkSource(str, Enum):
     GRESB = "gresb"
     CRREM = "crrem"
 
-
 class IntensityMetricType(str, Enum):
     """Types of intensity metrics for benchmarking."""
 
@@ -97,7 +88,6 @@ class IntensityMetricType(str, Enum):
     PRODUCTION = "tco2e_per_unit"
     FLOOR_AREA = "tco2e_per_sqm"
     ENERGY = "tco2e_per_mwh"
-
 
 # ---------------------------------------------------------------------------
 # Sector Reference Data
@@ -132,11 +122,9 @@ TPI_SECTORS: Dict[str, str] = {
     "shipping": "Shipping",
 }
 
-
 # ---------------------------------------------------------------------------
 # Cache Implementation
 # ---------------------------------------------------------------------------
-
 
 class _BenchmarkCache:
     """TTL-based cache for benchmark data."""
@@ -176,11 +164,9 @@ class _BenchmarkCache:
         """Number of cached entries."""
         return len(self._store)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class BenchmarkConfig(BaseModel):
     """Configuration for benchmark data bridge."""
@@ -198,7 +184,6 @@ class BenchmarkConfig(BaseModel):
     enable_tpi: bool = Field(True)
     enable_gresb: bool = Field(True)
     enable_crrem: bool = Field(True)
-
 
 class SectorBenchmark(BaseModel):
     """Benchmark data for a specific sector."""
@@ -220,7 +205,6 @@ class SectorBenchmark(BaseModel):
     provenance_hash: str = ""
     last_updated: str = ""
 
-
 class TPIBenchmark(BaseModel):
     """TPI benchmark result for a sector."""
 
@@ -233,7 +217,6 @@ class TPIBenchmark(BaseModel):
     benchmark_year: int = 0
     companies_assessed: int = 0
     provenance_hash: str = ""
-
 
 class GRESBBenchmark(BaseModel):
     """GRESB benchmark result for real estate."""
@@ -248,7 +231,6 @@ class GRESBBenchmark(BaseModel):
     peer_group_size: int = 0
     year: int = 0
     provenance_hash: str = ""
-
 
 class CRREMPathway(BaseModel):
     """CRREM decarbonisation pathway for a building type."""
@@ -265,7 +247,6 @@ class CRREMPathway(BaseModel):
     is_aligned: bool = False
     provenance_hash: str = ""
 
-
 class BenchmarkRequest(BaseModel):
     """Request for benchmark data."""
 
@@ -273,7 +254,6 @@ class BenchmarkRequest(BaseModel):
     sector: str = Field(..., description="Sector or property type identifier")
     year: int = Field(0, description="Data year (0 = latest available)")
     country: str = Field("", description="Country filter (for CRREM)")
-
 
 class BenchmarkDataResponse(BaseModel):
     """Response with benchmark data."""
@@ -291,11 +271,9 @@ class BenchmarkDataResponse(BaseModel):
     duration_ms: float = 0.0
     warnings: List[str] = Field(default_factory=list)
 
-
 # ---------------------------------------------------------------------------
 # Bridge Implementation
 # ---------------------------------------------------------------------------
-
 
 class BenchmarkDataBridge:
     """
@@ -357,7 +335,7 @@ class BenchmarkDataBridge:
                 "sector": sector,
                 "year": year,
             }),
-            last_updated=_utcnow().isoformat(),
+            last_updated=utcnow().isoformat(),
         )
 
         self._cache.put(cache_key, result)
@@ -477,7 +455,7 @@ class BenchmarkDataBridge:
             response = BenchmarkDataResponse(
                 success=True,
                 source=request.source,
-                retrieved_at=_utcnow().isoformat(),
+                retrieved_at=utcnow().isoformat(),
             )
 
             if request.source == BenchmarkSource.CDP.value:
@@ -521,7 +499,7 @@ class BenchmarkDataBridge:
                 success=False,
                 source=request.source,
                 warnings=[f"Retrieval failed: {str(e)}"],
-                retrieved_at=_utcnow().isoformat(),
+                retrieved_at=utcnow().isoformat(),
                 duration_ms=duration,
             )
 

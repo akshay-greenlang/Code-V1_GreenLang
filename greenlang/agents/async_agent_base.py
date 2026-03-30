@@ -49,7 +49,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, Generic, List, Optional, TypeVar
 
 import yaml
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import Field, ValidationError
 
 from greenlang.utilities.determinism import DeterministicClock, deterministic_uuid
 from greenlang.exceptions import (
@@ -60,6 +60,7 @@ from greenlang.exceptions import (
 from greenlang.specs.agentspec_v2 import AgentSpecV2
 from greenlang.specs.errors import GLVErr, raise_validation_error
 from greenlang.agents.base import AgentResult
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -93,7 +94,7 @@ class AsyncAgentLifecycleState:
 # Async Agent Execution Context
 # ==============================================================================
 
-class AsyncAgentExecutionContext(BaseModel):
+class AsyncAgentExecutionContext(GreenLangBase):
     """Context object passed through async agent lifecycle."""
 
     execution_id: str = Field(default_factory=lambda: str(deterministic_uuid(__name__, str(DeterministicClock.now()))))

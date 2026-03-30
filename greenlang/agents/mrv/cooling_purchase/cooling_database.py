@@ -39,6 +39,7 @@ import uuid
 from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.mrv.cooling_purchase.models import (
     COOLING_TECHNOLOGY_SPECS,
@@ -74,7 +75,6 @@ try:
 except ImportError:
     _METRICS_AVAILABLE = False
     _get_metrics = None  # type: ignore[assignment]
-
 
 # ---------------------------------------------------------------------------
 # Technology classification sets
@@ -128,16 +128,9 @@ _ZERO_EMISSION_HEAT_SOURCES: frozenset = frozenset({
     HeatSource.HEAT_PUMP.value,
 })
 
-
 # ---------------------------------------------------------------------------
 # Utility helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _canonical_json(data: Dict[str, Any]) -> str:
     """Serialize dictionary to canonical JSON for hashing.
@@ -153,7 +146,6 @@ def _canonical_json(data: Dict[str, Any]) -> str:
     """
     return json.dumps(data, sort_keys=True, default=str)
 
-
 def _sha256(payload: str) -> str:
     """Compute SHA-256 hex digest of a string payload.
 
@@ -165,11 +157,9 @@ def _sha256(payload: str) -> str:
     """
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
-
 # ===========================================================================
 # CoolingDatabaseEngine
 # ===========================================================================
-
 
 class CoolingDatabaseEngine:
     """Engine 1: Reference data database for Scope 2 Cooling Purchase
@@ -327,7 +317,7 @@ class CoolingDatabaseEngine:
         payload = {
             "engine": self.ENGINE_ID,
             "operation": operation,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "data": data,
         }
         hash_value = _sha256(_canonical_json(payload))
@@ -2572,7 +2562,7 @@ class CoolingDatabaseEngine:
             "status": overall_status,
             "engine_id": self.ENGINE_ID,
             "engine_version": self.ENGINE_VERSION,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "checks": checks,
             "checks_passed": sum(
                 1 for c in checks if c["status"] == "healthy"
@@ -2880,14 +2870,12 @@ class CoolingDatabaseEngine:
             cls._instance = None
         logger.info("CoolingDatabaseEngine singleton reset")
 
-
 # ===========================================================================
 # Module-level convenience functions
 # ===========================================================================
 
 _module_engine: Optional[CoolingDatabaseEngine] = None
 _module_lock = threading.Lock()
-
 
 def get_database(
     config: Any = None,
@@ -2915,7 +2903,6 @@ def get_database(
                 )
     return _module_engine
 
-
 def get_technology_spec(technology: str) -> CoolingTechnologySpec:
     """Module-level convenience: get cooling technology specification.
 
@@ -2927,7 +2914,6 @@ def get_technology_spec(technology: str) -> CoolingTechnologySpec:
     """
     return get_database().get_technology_spec(technology)
 
-
 def get_all_technologies() -> Dict[str, CoolingTechnologySpec]:
     """Module-level convenience: get all cooling technology specifications.
 
@@ -2935,7 +2921,6 @@ def get_all_technologies() -> Dict[str, CoolingTechnologySpec]:
         Dictionary mapping technology to CoolingTechnologySpec instances.
     """
     return get_database().get_all_technologies()
-
 
 def get_default_cop(technology: str) -> Decimal:
     """Module-level convenience: get default COP for a technology.
@@ -2948,7 +2933,6 @@ def get_default_cop(technology: str) -> Decimal:
     """
     return get_database().get_default_cop(technology)
 
-
 def get_cop_range(technology: str) -> Tuple[Decimal, Decimal]:
     """Module-level convenience: get COP range for a technology.
 
@@ -2959,7 +2943,6 @@ def get_cop_range(technology: str) -> Tuple[Decimal, Decimal]:
         Tuple of (cop_min, cop_max).
     """
     return get_database().get_cop_range(technology)
-
 
 def get_iplv(technology: str) -> Optional[Decimal]:
     """Module-level convenience: get IPLV for a technology.
@@ -2972,7 +2955,6 @@ def get_iplv(technology: str) -> Optional[Decimal]:
     """
     return get_database().get_iplv(technology)
 
-
 def get_energy_source(technology: str) -> str:
     """Module-level convenience: get energy source for a technology.
 
@@ -2983,7 +2965,6 @@ def get_energy_source(technology: str) -> str:
         Energy source string.
     """
     return get_database().get_energy_source(technology)
-
 
 def is_electric_technology(technology: str) -> bool:
     """Module-level convenience: check if technology is electric chiller.
@@ -2996,7 +2977,6 @@ def is_electric_technology(technology: str) -> bool:
     """
     return get_database().is_electric_technology(technology)
 
-
 def is_absorption_technology(technology: str) -> bool:
     """Module-level convenience: check if technology is absorption chiller.
 
@@ -3007,7 +2987,6 @@ def is_absorption_technology(technology: str) -> bool:
         True if absorption chiller technology.
     """
     return get_database().is_absorption_technology(technology)
-
 
 def is_free_cooling_technology(technology: str) -> bool:
     """Module-level convenience: check if technology is free cooling.
@@ -3020,7 +2999,6 @@ def is_free_cooling_technology(technology: str) -> bool:
     """
     return get_database().is_free_cooling_technology(technology)
 
-
 def is_tes_technology(technology: str) -> bool:
     """Module-level convenience: check if technology is TES.
 
@@ -3031,7 +3009,6 @@ def is_tes_technology(technology: str) -> bool:
         True if TES technology.
     """
     return get_database().is_tes_technology(technology)
-
 
 def get_district_cooling_factor(
     region: str,
@@ -3046,7 +3023,6 @@ def get_district_cooling_factor(
     """
     return get_database().get_district_cooling_factor(region)
 
-
 def get_all_district_cooling_factors() -> Dict[str, DistrictCoolingFactor]:
     """Module-level convenience: get all district cooling factors.
 
@@ -3054,7 +3030,6 @@ def get_all_district_cooling_factors() -> Dict[str, DistrictCoolingFactor]:
         Dictionary mapping region to DistrictCoolingFactor instances.
     """
     return get_database().get_all_district_cooling_factors()
-
 
 def get_district_ef(region: str) -> Decimal:
     """Module-level convenience: get district cooling emission factor.
@@ -3067,7 +3042,6 @@ def get_district_ef(region: str) -> Decimal:
     """
     return get_database().get_district_ef(region)
 
-
 def get_heat_source_factor(source: str) -> HeatSourceFactor:
     """Module-level convenience: get heat source factor.
 
@@ -3079,7 +3053,6 @@ def get_heat_source_factor(source: str) -> HeatSourceFactor:
     """
     return get_database().get_heat_source_factor(source)
 
-
 def get_all_heat_source_factors() -> Dict[str, HeatSourceFactor]:
     """Module-level convenience: get all heat source factors.
 
@@ -3087,7 +3060,6 @@ def get_all_heat_source_factors() -> Dict[str, HeatSourceFactor]:
         Dictionary mapping heat source to HeatSourceFactor instances.
     """
     return get_database().get_all_heat_source_factors()
-
 
 def get_heat_source_ef(source: str) -> Decimal:
     """Module-level convenience: get heat source emission factor value.
@@ -3100,7 +3072,6 @@ def get_heat_source_ef(source: str) -> Decimal:
     """
     return get_database().get_heat_source_ef(source)
 
-
 def is_zero_emission_heat_source(source: str) -> bool:
     """Module-level convenience: check if heat source is zero-emission.
 
@@ -3111,7 +3082,6 @@ def is_zero_emission_heat_source(source: str) -> bool:
         True if zero direct emissions.
     """
     return get_database().is_zero_emission_heat_source(source)
-
 
 def get_refrigerant_data(refrigerant: str) -> RefrigerantData:
     """Module-level convenience: get refrigerant GWP data.
@@ -3124,7 +3094,6 @@ def get_refrigerant_data(refrigerant: str) -> RefrigerantData:
     """
     return get_database().get_refrigerant_data(refrigerant)
 
-
 def get_all_refrigerants() -> Dict[str, RefrigerantData]:
     """Module-level convenience: get all refrigerant data.
 
@@ -3132,7 +3101,6 @@ def get_all_refrigerants() -> Dict[str, RefrigerantData]:
         Dictionary mapping refrigerant to RefrigerantData instances.
     """
     return get_database().get_all_refrigerants()
-
 
 def get_refrigerant_gwp(refrigerant: str, gwp_source: str) -> Decimal:
     """Module-level convenience: get refrigerant GWP for a source.
@@ -3145,7 +3113,6 @@ def get_refrigerant_gwp(refrigerant: str, gwp_source: str) -> Decimal:
         GWP value as Decimal.
     """
     return get_database().get_refrigerant_gwp(refrigerant, gwp_source)
-
 
 def convert_efficiency(
     value: Decimal,
@@ -3163,7 +3130,6 @@ def convert_efficiency(
         Converted efficiency value as Decimal.
     """
     return get_database().convert_efficiency(value, from_metric, to_metric)
-
 
 def calculate_iplv(
     cop_100: Decimal,
@@ -3184,7 +3150,6 @@ def calculate_iplv(
     """
     return get_database().calculate_iplv(cop_100, cop_75, cop_50, cop_25)
 
-
 def get_part_load_weights() -> Dict[str, Decimal]:
     """Module-level convenience: get AHRI part-load weights.
 
@@ -3192,7 +3157,6 @@ def get_part_load_weights() -> Dict[str, Decimal]:
         Dictionary mapping load percentage to Decimal weight.
     """
     return get_database().get_part_load_weights()
-
 
 def convert_cooling_units(
     value: Decimal,
@@ -3210,7 +3174,6 @@ def convert_cooling_units(
         Converted quantity as Decimal.
     """
     return get_database().convert_cooling_units(value, from_unit, to_unit)
-
 
 def get_gwp(gas: str, source: str) -> Decimal:
     """Module-level convenience: get GWP for a gas and source.

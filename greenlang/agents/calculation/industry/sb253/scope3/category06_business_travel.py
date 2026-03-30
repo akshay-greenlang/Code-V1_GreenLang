@@ -38,7 +38,7 @@ from datetime import datetime
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, List, Optional, Any
 
-from pydantic import BaseModel, Field, validator
+from pydantic import Field, validator
 
 from .base import (
     Scope3CategoryCalculator,
@@ -50,11 +50,12 @@ from .base import (
     EmissionFactorSource,
     DataQualityTier,
 )
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
 
-class Trip(BaseModel):
+class Trip(GreenLangBase):
     """Individual business trip record."""
 
     # Basic trip info

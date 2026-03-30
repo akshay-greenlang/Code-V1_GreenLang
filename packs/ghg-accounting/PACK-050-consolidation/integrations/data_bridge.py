@@ -45,25 +45,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -76,11 +70,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class DataFormat(str, Enum):
     """Supported data input formats."""
@@ -91,7 +83,6 @@ class DataFormat(str, Enum):
     JSON = "json"
     ERP = "erp"
     API = "api"
-
 
 class DataAgentTarget(str, Enum):
     """Target DATA agent for routing."""
@@ -105,7 +96,6 @@ class DataAgentTarget(str, Enum):
     LINEAGE_TRACKER = "DATA-018"
     VALIDATION_ENGINE = "DATA-019"
 
-
 class IngestionStatus(str, Enum):
     """Data ingestion status."""
 
@@ -113,7 +103,6 @@ class IngestionStatus(str, Enum):
     PARTIAL = "partial"
     FAILED = "failed"
     VALIDATION_ERROR = "validation_error"
-
 
 class QualityGrade(str, Enum):
     """Data quality grades."""
@@ -124,11 +113,9 @@ class QualityGrade(str, Enum):
     POOR = "poor"
     INSUFFICIENT = "insufficient"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class DataBridgeConfig(BaseModel):
     """Configuration for data bridge."""
@@ -139,7 +126,6 @@ class DataBridgeConfig(BaseModel):
     enable_reconciliation: bool = Field(True)
     enable_schema_validation: bool = Field(True)
     batch_size: int = Field(50, ge=1, le=500)
-
 
 class DataIngestionResult(BaseModel):
     """Result of ingesting entity data through DATA agents."""
@@ -158,7 +144,6 @@ class DataIngestionResult(BaseModel):
     provenance_hash: str = ""
     ingested_at: str = ""
     duration_ms: float = 0.0
-
 
 class DataQualityProfile(BaseModel):
     """Data quality profile for an entity's submission data."""
@@ -181,7 +166,6 @@ class DataQualityProfile(BaseModel):
     profiled_at: str = ""
     duration_ms: float = 0.0
 
-
 class ReconciliationResult(BaseModel):
     """Result of cross-source reconciliation for an entity."""
 
@@ -194,7 +178,6 @@ class ReconciliationResult(BaseModel):
     tolerance_pct: float = 5.0
     unreconciled_items: List[Dict[str, Any]] = Field(default_factory=list)
     provenance_hash: str = ""
-
 
 class BatchIngestionResult(BaseModel):
     """Result of batch data ingestion across multiple entities."""
@@ -209,11 +192,9 @@ class BatchIngestionResult(BaseModel):
     provenance_hash: str = ""
     duration_ms: float = 0.0
 
-
 # ---------------------------------------------------------------------------
 # Bridge Implementation
 # ---------------------------------------------------------------------------
-
 
 class DataBridge:
     """
@@ -275,7 +256,7 @@ class DataBridge:
                 "format": source_format,
                 "records": record_count,
             }),
-            ingested_at=_utcnow().isoformat(),
+            ingested_at=utcnow().isoformat(),
             duration_ms=duration,
         )
 
@@ -306,7 +287,7 @@ class DataBridge:
             status=IngestionStatus.SUCCESS.value,
             agent_id=DataAgentTarget.VALIDATION_ENGINE.value,
             provenance_hash=_compute_hash({"entity_id": entity_id, "action": "validate"}),
-            ingested_at=_utcnow().isoformat(),
+            ingested_at=utcnow().isoformat(),
             duration_ms=duration,
         )
 
@@ -338,7 +319,7 @@ class DataBridge:
                 "period": period,
                 "action": "quality_profile",
             }),
-            profiled_at=_utcnow().isoformat(),
+            profiled_at=utcnow().isoformat(),
             duration_ms=duration,
         )
 

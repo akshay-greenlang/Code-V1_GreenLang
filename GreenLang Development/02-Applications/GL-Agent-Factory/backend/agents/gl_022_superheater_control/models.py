@@ -1,10 +1,11 @@
 """Input/Output models for GL-022 Superheater Control Agent."""
 from datetime import datetime
 from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 
 
-class SuperheaterInput(BaseModel):
+class SuperheaterInput(GreenLangBase):
     """Input parameters for superheater temperature control."""
 
     # Steam conditions
@@ -38,7 +39,7 @@ class SuperheaterInput(BaseModel):
     equipment_id: str = Field(..., description="Superheater equipment ID")
 
 
-class SprayControlAction(BaseModel):
+class SprayControlAction(GreenLangBase):
     """Spray water control recommendation."""
 
     target_spray_flow_kg_s: float = Field(..., description="Recommended spray flow (kg/s)")
@@ -47,7 +48,7 @@ class SprayControlAction(BaseModel):
     action_type: str = Field(..., description="INCREASE, DECREASE, or MAINTAIN")
 
 
-class ControlParameters(BaseModel):
+class ControlParameters(GreenLangBase):
     """Control loop parameters."""
 
     kp: float = Field(..., description="Proportional gain")
@@ -57,7 +58,7 @@ class ControlParameters(BaseModel):
     max_rate_c_per_min: float = Field(..., description="Max temperature rate (°C/min)")
 
 
-class SuperheaterOutput(BaseModel):
+class SuperheaterOutput(GreenLangBase):
     """Output from superheater control agent."""
 
     # Control actions

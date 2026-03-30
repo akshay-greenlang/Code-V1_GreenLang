@@ -48,25 +48,19 @@ from typing import Any, Dict, List, Optional, Set
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -84,13 +78,11 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _safe_div(numerator: float, denominator: float, default: float = 0.0) -> float:
     """Divide safely, returning *default* when denominator is zero."""
     if denominator == 0.0:
         return default
     return numerator / denominator
-
 
 def _parse_date(value: Any) -> Optional[date]:
     """Parse a date from a string or date/datetime object."""
@@ -106,11 +98,9 @@ def _parse_date(value: Any) -> Optional[date]:
                 continue
     return None
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class RegulationType(str, Enum):
     """Supported EU regulations."""
@@ -118,7 +108,6 @@ class RegulationType(str, Enum):
     CBAM = "CBAM"
     EU_TAXONOMY = "EU_TAXONOMY"
     EUDR = "EUDR"
-
 
 class EvidenceType(str, Enum):
     """Categories of evidence artefacts."""
@@ -141,7 +130,6 @@ class EvidenceType(str, Enum):
     EXTERNAL_ASSURANCE = "EXTERNAL_ASSURANCE"
     INTERNAL_CONTROL = "INTERNAL_CONTROL"
 
-
 class EvidenceStatus(str, Enum):
     """Lifecycle status of an evidence item."""
     DRAFT = "DRAFT"
@@ -151,11 +139,9 @@ class EvidenceStatus(str, Enum):
     SUPERSEDED = "SUPERSEDED"
     ARCHIVED = "ARCHIVED"
 
-
 # ---------------------------------------------------------------------------
 # Reference Data - Evidence Requirements
 # ---------------------------------------------------------------------------
-
 
 EVIDENCE_REQUIREMENTS: Dict[str, Dict[str, List[str]]] = {
     "CSRD": {
@@ -247,7 +233,6 @@ EVIDENCE_REQUIREMENTS: Dict[str, Dict[str, List[str]]] = {
         "EUDR-INF-01": ["DATA_EXTRACT", "METHODOLOGY_DOCUMENT"],
     },
 }
-
 
 EVIDENCE_REUSE_MAP: Dict[str, Dict[str, List[str]]] = {
     "AUDIT_REPORT": {
@@ -356,7 +341,6 @@ EVIDENCE_REUSE_MAP: Dict[str, Dict[str, List[str]]] = {
     },
 }
 
-
 # Average cost per evidence collection (EUR) for savings calculation
 _EVIDENCE_COST_TABLE: Dict[str, float] = {
     "AUDIT_REPORT": 15000.0,
@@ -379,11 +363,9 @@ _EVIDENCE_COST_TABLE: Dict[str, float] = {
     "INTERNAL_CONTROL": 2500.0,
 }
 
-
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
-
 
 class EvidenceConfig(BaseModel):
     """Configuration for the CrossRegulationEvidenceEngine."""
@@ -409,11 +391,9 @@ class EvidenceConfig(BaseModel):
         description="Cost table for savings calculation (evidence_type -> EUR)",
     )
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class EvidenceItem(BaseModel):
     """A single evidence artefact in the repository."""
@@ -435,7 +415,6 @@ class EvidenceItem(BaseModel):
     metadata: Dict[str, Any] = Field(default_factory=dict, description="Additional metadata")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class EvidenceMapping(BaseModel):
     """Mapping of an evidence item to a specific regulatory requirement."""
 
@@ -447,7 +426,6 @@ class EvidenceMapping(BaseModel):
         default=100.0, ge=0.0, le=100.0,
         description="Percentage of the requirement covered by this evidence",
     )
-
 
 class EvidenceGap(BaseModel):
     """A missing evidence item for a requirement."""
@@ -461,7 +439,6 @@ class EvidenceGap(BaseModel):
         default_factory=list, description="Evidence types not yet provided"
     )
     coverage_pct: float = Field(default=0.0, description="Current coverage percentage")
-
 
 class ExpiringEvidence(BaseModel):
     """An evidence item approaching its expiry date."""
@@ -477,7 +454,6 @@ class ExpiringEvidence(BaseModel):
         default_factory=list, description="Requirements affected by expiry"
     )
 
-
 class ReuseSavings(BaseModel):
     """Calculated savings from evidence reuse across regulations."""
 
@@ -489,7 +465,6 @@ class ReuseSavings(BaseModel):
     savings_eur: float = Field(default=0.0, description="Total savings in EUR")
     savings_pct: float = Field(default=0.0, description="Savings as percentage")
 
-
 class CoverageMatrix(BaseModel):
     """Coverage matrix showing evidence coverage per regulation and requirement."""
 
@@ -500,7 +475,6 @@ class CoverageMatrix(BaseModel):
     requirement_details: Dict[str, float] = Field(
         default_factory=dict, description="Requirement ID -> coverage percentage"
     )
-
 
 class EvidenceResult(BaseModel):
     """Complete result from the CrossRegulationEvidenceEngine."""
@@ -523,11 +497,9 @@ class EvidenceResult(BaseModel):
     engine_version: str = Field(default=_MODULE_VERSION, description="Engine version")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class CrossRegulationEvidenceEngine:
     """
@@ -582,7 +554,7 @@ class CrossRegulationEvidenceEngine:
             The registered item with provenance hash and mappings populated.
         """
         if not item.upload_date:
-            item.upload_date = _utcnow().date().isoformat()
+            item.upload_date = utcnow().date().isoformat()
 
         if self.config.require_hash and not item.file_hash:
             item.file_hash = self.compute_hash(item.title + item.evidence_type + item.upload_date)
@@ -654,7 +626,7 @@ class CrossRegulationEvidenceEngine:
         Returns:
             EvidenceResult with coverage matrix, gaps, expiring items, and savings.
         """
-        start = _utcnow()
+        start = utcnow()
 
         coverage_matrix = self._build_coverage_matrix()
         gaps = self.identify_gaps()
@@ -663,7 +635,7 @@ class CrossRegulationEvidenceEngine:
         reuse_count = len(reusable)
         savings = self.calculate_reuse_savings() if self.config.enable_reuse_tracking else None
 
-        elapsed_ms = (_utcnow() - start).total_seconds() * 1000
+        elapsed_ms = (utcnow() - start).total_seconds() * 1000
 
         result = EvidenceResult(
             items=list(self._items),
@@ -727,7 +699,7 @@ class CrossRegulationEvidenceEngine:
         Returns:
             List of ExpiringEvidence objects within the warning window.
         """
-        today = _utcnow().date()
+        today = utcnow().date()
         warning_cutoff = today + timedelta(days=self.config.expiry_warning_days)
         expiring: List[ExpiringEvidence] = []
 

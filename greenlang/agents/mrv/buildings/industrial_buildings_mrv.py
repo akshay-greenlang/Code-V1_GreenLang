@@ -29,7 +29,7 @@ import logging
 from decimal import Decimal
 from typing import Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.mrv.buildings.base import (
     BuildingMRVBaseAgent,
@@ -50,6 +50,7 @@ from greenlang.agents.mrv.buildings.base import (
     FUEL_OIL_EF_KGCO2E_PER_GALLON,
     GRID_EF_BY_REGION_KGCO2E_PER_KWH,
 )
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 

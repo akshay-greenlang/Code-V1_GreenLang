@@ -78,6 +78,8 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -90,27 +92,18 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a unique identifier using UUID4."""
     return str(uuid.uuid4())
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class ForestType(str, Enum):
     """EUDR regulatory forest type classification.
@@ -131,7 +124,6 @@ class ForestType(str, Enum):
     AGROFORESTRY = "AGROFORESTRY"
     NON_FOREST = "NON_FOREST"
 
-
 class ClassificationMethod(str, Enum):
     """Available forest type classification methods."""
 
@@ -140,7 +132,6 @@ class ClassificationMethod(str, Enum):
     STRUCTURAL = "STRUCTURAL"
     MULTI_TEMPORAL = "MULTI_TEMPORAL"
     ENSEMBLE = "ENSEMBLE"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -333,11 +324,9 @@ DEFAULT_ENSEMBLE_WEIGHTS: Dict[str, float] = {
     ClassificationMethod.MULTI_TEMPORAL.value: 0.25,
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class ForestClassificationResult:
@@ -414,7 +403,6 @@ class ForestClassificationResult:
             "metadata": self.metadata,
         }
 
-
 @dataclass
 class ClassificationInput:
     """Input data for forest type classification.
@@ -449,11 +437,9 @@ class ClassificationInput:
     latitude: Optional[float] = None
     longitude: Optional[float] = None
 
-
 # ---------------------------------------------------------------------------
 # ForestTypeClassifier
 # ---------------------------------------------------------------------------
-
 
 class ForestTypeClassifier:
     """Production-grade forest type classifier for EUDR compliance.
@@ -547,7 +533,7 @@ class ForestTypeClassifier:
         self._validate_input(input_data, method)
 
         result_id = _generate_id()
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         # Dispatch to classification method
         scores, method_metadata = self._dispatch_classification(
@@ -1566,7 +1552,7 @@ class ForestTypeClassifier:
             secondary_confidence=0.0,
             is_forest_eudr=False,
             method_used=method.value,
-            timestamp=_utcnow().isoformat(),
+            timestamp=utcnow().isoformat(),
             metadata={"error": error_msg},
         )
         result.provenance_hash = self._compute_result_hash(result)
@@ -1602,7 +1588,6 @@ class ForestTypeClassifier:
             "timestamp": result.timestamp,
         }
         return _compute_hash(hash_data)
-
 
 # ---------------------------------------------------------------------------
 # Module Exports

@@ -76,25 +76,20 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import AlertSeverity
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -107,7 +102,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -117,7 +111,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
 ) -> Decimal:
@@ -125,7 +118,6 @@ def _safe_divide(
     if denominator == Decimal("0"):
         return default
     return numerator / denominator
-
 
 def _safe_pct(
     part: Decimal, whole: Decimal, places: int = 2
@@ -137,12 +129,10 @@ def _safe_pct(
         Decimal("0." + "0" * places), rounding=ROUND_HALF_UP
     )
 
-
 def _round_val(value: Decimal, places: int = 4) -> Decimal:
     """Round a Decimal value to the specified number of decimal places."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _log_mean(a: Decimal, b: Decimal) -> Decimal:
     """Calculate logarithmic mean of two values.
@@ -174,7 +164,6 @@ def _log_mean(a: Decimal, b: Decimal) -> Decimal:
     result = (a_f - b_f) / (ln_a - ln_b)
     return _decimal(result)
 
-
 # ---------------------------------------------------------------------------
 # Reference Data: Alert Thresholds
 # ---------------------------------------------------------------------------
@@ -185,17 +174,14 @@ DEFAULT_ALERT_THRESHOLDS: Dict[str, Decimal] = {
     "red": Decimal("20"),       # 20% deviation from plan
 }
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DecompositionMethod(str, Enum):
     """Decomposition method selection."""
     LMDI_I = "lmdi_i"
     SIMPLE_RATIO = "simple_ratio"
-
 
 class DecompositionEffect(str, Enum):
     """Type of decomposition effect."""
@@ -204,21 +190,11 @@ class DecompositionEffect(str, Enum):
     STRUCTURAL = "structural"
     TOTAL = "total"
 
-
 class ForecastHorizon(str, Enum):
     """Rolling forecast horizon."""
     ONE_YEAR = "1_year"
     TWO_YEAR = "2_year"
     THREE_YEAR = "3_year"
-
-
-class AlertSeverity(str, Enum):
-    """Alert severity level for early warning."""
-    GREEN = "green"
-    YELLOW = "yellow"
-    ORANGE = "orange"
-    RED = "red"
-
 
 class ScopeFilter(str, Enum):
     """Scope filter for decomposition."""
@@ -227,11 +203,9 @@ class ScopeFilter(str, Enum):
     SCOPE_3 = "scope_3"
     ALL_SCOPES = "all_scopes"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class SegmentData(BaseModel):
     """Emissions and activity data for a single segment in one year."""
@@ -247,7 +221,6 @@ class SegmentData(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class YearDecomposition(BaseModel):
     """Decomposition result for a single year transition (year0 -> year1)."""
@@ -268,7 +241,7 @@ class YearDecomposition(BaseModel):
     intensity_effect_pct: Decimal = Field(default=Decimal("0"), description="Intensity effect %")
     structural_effect_pct: Decimal = Field(default=Decimal("0"), description="Structural effect %")
     segment_count: int = Field(default=0, description="Number of segments decomposed")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Calculation timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Calculation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("total_change", "activity_effect", "intensity_effect",
@@ -281,7 +254,6 @@ class YearDecomposition(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class DriverAttribution(BaseModel):
     """Attribution of emissions change to a specific driver/segment."""
@@ -310,7 +282,6 @@ class DriverAttribution(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class ForecastPoint(BaseModel):
     """A single point in a rolling forecast."""
     year: int = Field(description="Forecast year")
@@ -338,7 +309,6 @@ class ForecastPoint(BaseModel):
             return None
         return _decimal(v)
 
-
 class EarlyWarningAlert(BaseModel):
     """Early warning alert when actual deviates from plan."""
     alert_id: str = Field(default_factory=_new_uuid, description="Alert identifier")
@@ -351,7 +321,7 @@ class EarlyWarningAlert(BaseModel):
     deviation_absolute: Decimal = Field(description="Absolute deviation (tCO2e)")
     deviation_pct: Decimal = Field(description="Deviation percentage")
     message: str = Field(default="", description="Human-readable alert message")
-    created_at: datetime = Field(default_factory=_utcnow, description="Alert timestamp")
+    created_at: datetime = Field(default_factory=utcnow, description="Alert timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("actual_emissions", "planned_emissions",
@@ -359,7 +329,6 @@ class EarlyWarningAlert(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class CumulativeEffect(BaseModel):
     """Cumulative decomposition effect over multiple years."""
@@ -374,7 +343,6 @@ class CumulativeEffect(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class VarianceResult(BaseModel):
     """Complete variance decomposition result."""
@@ -399,14 +367,12 @@ class VarianceResult(BaseModel):
     )
     years_analyzed: int = Field(default=0, description="Number of years analyzed")
     segments_analyzed: int = Field(default=0, description="Number of segments analyzed")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Calculation timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Calculation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 # ---------------------------------------------------------------------------
 # Engine Configuration
 # ---------------------------------------------------------------------------
-
 
 class VarianceDecompositionConfig(BaseModel):
     """Configuration for the VarianceDecompositionEngine."""
@@ -437,7 +403,6 @@ class VarianceDecompositionConfig(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic model_rebuild
 # ---------------------------------------------------------------------------
@@ -451,11 +416,9 @@ CumulativeEffect.model_rebuild()
 VarianceResult.model_rebuild()
 VarianceDecompositionConfig.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # VarianceDecompositionEngine
 # ---------------------------------------------------------------------------
-
 
 class VarianceDecompositionEngine:
     """

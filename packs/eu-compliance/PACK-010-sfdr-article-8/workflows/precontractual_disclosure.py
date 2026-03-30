@@ -57,18 +57,13 @@ from typing import Any, Callable, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # UTILITIES
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return current UTC time with timezone info."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute SHA-256 provenance hash of arbitrary data."""
@@ -76,11 +71,9 @@ def _hash_data(data: Any) -> str:
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -90,7 +83,6 @@ class PhaseStatus(str, Enum):
     FAILED = "FAILED"
     SKIPPED = "SKIPPED"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "PENDING"
@@ -99,7 +91,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "FAILED"
     PARTIAL = "PARTIAL"
 
-
 class SFDRClassification(str, Enum):
     """SFDR product classification level."""
     ARTICLE_6 = "ARTICLE_6"
@@ -107,13 +98,11 @@ class SFDRClassification(str, Enum):
     ARTICLE_8_PLUS = "ARTICLE_8_PLUS"
     ARTICLE_9 = "ARTICLE_9"
 
-
 class CharacteristicType(str, Enum):
     """Environmental or social characteristic type."""
     ENVIRONMENTAL = "ENVIRONMENTAL"
     SOCIAL = "SOCIAL"
     GOVERNANCE = "GOVERNANCE"
-
 
 class ReviewStatus(str, Enum):
     """Document review workflow status."""
@@ -124,17 +113,15 @@ class ReviewStatus(str, Enum):
     FINAL_APPROVED = "FINAL_APPROVED"
     PUBLISHED = "PUBLISHED"
 
-
 # =============================================================================
 # DATA MODELS - SHARED
 # =============================================================================
-
 
 class WorkflowContext(BaseModel):
     """Shared state passed between workflow phases."""
     workflow_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     organization_id: str = Field(..., description="Organization identifier")
-    execution_timestamp: datetime = Field(default_factory=_utcnow)
+    execution_timestamp: datetime = Field(default_factory=utcnow)
     config: Dict[str, Any] = Field(default_factory=dict)
     phase_states: Dict[str, PhaseStatus] = Field(default_factory=dict)
     phase_outputs: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
@@ -157,7 +144,6 @@ class WorkflowContext(BaseModel):
         """Check if a phase has already completed."""
         return self.phase_states.get(phase_name) == PhaseStatus.COMPLETED
 
-
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
     phase_name: str = Field(..., description="Phase identifier")
@@ -171,7 +157,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     records_processed: int = Field(default=0)
 
-
 class WorkflowResult(BaseModel):
     """Complete result from a multi-phase workflow execution."""
     workflow_id: str = Field(..., description="Unique workflow execution ID")
@@ -184,11 +169,9 @@ class WorkflowResult(BaseModel):
     summary: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # DATA MODELS - PRE-CONTRACTUAL DISCLOSURE
 # =============================================================================
-
 
 class ESCharacteristic(BaseModel):
     """Environmental or social characteristic promoted by the product."""
@@ -206,7 +189,6 @@ class ESCharacteristic(BaseModel):
         default=True, description="Whether this is a binding element"
     )
 
-
 class ExclusionCriteria(BaseModel):
     """Negative screening exclusion criterion."""
     criterion_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -220,7 +202,6 @@ class ExclusionCriteria(BaseModel):
         default="all", description="Scope: all, direct, indirect"
     )
     binding: bool = Field(default=True)
-
 
 class AssetAllocationTarget(BaseModel):
     """Target asset allocation proportions."""
@@ -248,7 +229,6 @@ class AssetAllocationTarget(BaseModel):
         default=0.0, ge=0.0, le=100.0,
         description="% not aligned with E/S characteristics"
     )
-
 
 class PrecontractualDisclosureInput(BaseModel):
     """Input configuration for the pre-contractual disclosure workflow."""
@@ -325,7 +305,6 @@ class PrecontractualDisclosureInput(BaseModel):
             raise ValueError("reporting_date must be YYYY-MM-DD format")
         return v
 
-
 class PrecontractualDisclosureResult(WorkflowResult):
     """Complete result from the pre-contractual disclosure workflow."""
     product_name: str = Field(default="")
@@ -340,11 +319,9 @@ class PrecontractualDisclosureResult(WorkflowResult):
     review_status: str = Field(default="DRAFT")
     completeness_pct: float = Field(default=0.0)
 
-
 # =============================================================================
 # PHASE IMPLEMENTATIONS
 # =============================================================================
-
 
 class ProductClassificationPhase:
     """
@@ -367,7 +344,7 @@ class ProductClassificationPhase:
         Returns:
             PhaseResult with classification determination.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -473,7 +450,7 @@ class ProductClassificationPhase:
             status = PhaseStatus.FAILED
             records = 0
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -486,7 +463,6 @@ class ProductClassificationPhase:
             provenance_hash=_hash_data(outputs),
             records_processed=records,
         )
-
 
 class InvestmentStrategyPhase:
     """
@@ -509,7 +485,7 @@ class InvestmentStrategyPhase:
         Returns:
             PhaseResult with strategy definition and allocation targets.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -656,7 +632,7 @@ class InvestmentStrategyPhase:
             errors.append(f"Investment strategy definition failed: {str(exc)}")
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -668,7 +644,6 @@ class InvestmentStrategyPhase:
             warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 class SustainabilityAssessmentPhase:
     """
@@ -691,7 +666,7 @@ class SustainabilityAssessmentPhase:
         Returns:
             PhaseResult with sustainability metrics and DNSH approach.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -801,7 +776,7 @@ class SustainabilityAssessmentPhase:
             errors.append(f"Sustainability assessment failed: {str(exc)}")
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -899,7 +874,6 @@ class SustainabilityAssessmentPhase:
             ],
         }
 
-
 class TemplatePopulationPhase:
     """
     Phase 4: Template Population.
@@ -935,7 +909,7 @@ class TemplatePopulationPhase:
         Returns:
             PhaseResult with populated Annex II template.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -1115,7 +1089,7 @@ class TemplatePopulationPhase:
             )
             outputs["template_version"] = "1.0"
             outputs["template_format"] = "structured_json"
-            outputs["generated_at"] = _utcnow().isoformat()
+            outputs["generated_at"] = utcnow().isoformat()
 
             # Check for incomplete sections
             incomplete = []
@@ -1135,7 +1109,7 @@ class TemplatePopulationPhase:
             errors.append(f"Template population failed: {str(exc)}")
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -1256,7 +1230,6 @@ class TemplatePopulationPhase:
             },
         }
 
-
 class ReviewApprovalPhase:
     """
     Phase 5: Review and Approval.
@@ -1277,7 +1250,7 @@ class ReviewApprovalPhase:
         Returns:
             PhaseResult with completeness assessment and review status.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -1362,7 +1335,7 @@ class ReviewApprovalPhase:
                 "version_id": str(uuid.uuid4()),
                 "version_number": "1.0" if not previous_version else "1.1",
                 "previous_version_id": previous_version,
-                "created_at": _utcnow().isoformat(),
+                "created_at": utcnow().isoformat(),
                 "created_by": "system",
                 "change_summary": (
                     "Initial pre-contractual disclosure" if not previous_version
@@ -1407,7 +1380,7 @@ class ReviewApprovalPhase:
             errors.append(f"Review and approval failed: {str(exc)}")
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -1420,11 +1393,9 @@ class ReviewApprovalPhase:
             provenance_hash=_hash_data(outputs),
         )
 
-
 # =============================================================================
 # WORKFLOW ORCHESTRATOR
 # =============================================================================
-
 
 class PrecontractualDisclosureWorkflow:
     """
@@ -1499,7 +1470,7 @@ class PrecontractualDisclosureWorkflow:
         Returns:
             PrecontractualDisclosureResult with per-phase details and summary.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         logger.info(
             "Starting precontractual disclosure workflow %s for org=%s product=%s",
             self.workflow_id, input_data.organization_id,
@@ -1563,7 +1534,7 @@ class PrecontractualDisclosureWorkflow:
                 error_result = PhaseResult(
                     phase_name=phase_name,
                     status=PhaseStatus.FAILED,
-                    started_at=_utcnow(),
+                    started_at=utcnow(),
                     errors=[str(exc)],
                     provenance_hash=_hash_data({"error": str(exc)}),
                 )
@@ -1581,7 +1552,7 @@ class PrecontractualDisclosureWorkflow:
                 WorkflowStatus.COMPLETED if all_ok else WorkflowStatus.PARTIAL
             )
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         total_duration = (completed_at - started_at).total_seconds()
         summary = self._build_summary(context)
         provenance = _hash_data({

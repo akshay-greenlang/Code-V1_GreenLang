@@ -61,13 +61,11 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import (
-    BaseModel,
-    ConfigDict,
     Field,
     field_validator,
     model_validator,
 )
-
+from greenlang.schemas import GreenLangBase, utcnow
 
 # ---------------------------------------------------------------------------
 # Cross-agent commodity import (graceful fallback)
@@ -78,16 +76,9 @@ try:
 except ImportError:
     EUDRCommodity = None  # type: ignore[assignment,misc]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -141,11 +132,9 @@ DEFAULT_CONFIRMATION_DEPTHS: Dict[str, int] = {
     "besu": 1,
 }
 
-
 # =============================================================================
 # Enumerations
 # =============================================================================
-
 
 class BlockchainNetwork(str, Enum):
     """Supported blockchain networks for EUDR compliance anchoring.
@@ -169,7 +158,6 @@ class BlockchainNetwork(str, Enum):
     FABRIC = "fabric"
     BESU = "besu"
 
-
 class AnchorStatus(str, Enum):
     """Status of an on-chain anchor record.
 
@@ -191,7 +179,6 @@ class AnchorStatus(str, Enum):
     CONFIRMED = "confirmed"
     FAILED = "failed"
     EXPIRED = "expired"
-
 
 class AnchorEventType(str, Enum):
     """Type of EUDR supply chain event being anchored on-chain.
@@ -226,7 +213,6 @@ class AnchorEventType(str, Enum):
     DOCUMENT_AUTHENTICATION = "document_authentication"
     GEOLOCATION_VERIFICATION = "geolocation_verification"
 
-
 class AnchorPriority(str, Enum):
     """Priority level for anchor submission scheduling.
 
@@ -245,7 +231,6 @@ class AnchorPriority(str, Enum):
     P1_STANDARD = "p1_standard"
     P2_BATCH = "p2_batch"
 
-
 class ContractType(str, Enum):
     """Type of smart contract deployed for EUDR compliance.
 
@@ -261,7 +246,6 @@ class ContractType(str, Enum):
     ANCHOR_REGISTRY = "anchor_registry"
     CUSTODY_TRANSFER = "custody_transfer"
     COMPLIANCE_CHECK = "compliance_check"
-
 
 class ContractStatus(str, Enum):
     """Lifecycle status of a deployed smart contract.
@@ -280,7 +264,6 @@ class ContractStatus(str, Enum):
     DEPLOYED = "deployed"
     PAUSED = "paused"
     DEPRECATED = "deprecated"
-
 
 class VerificationStatus(str, Enum):
     """Result status of an anchor verification operation.
@@ -301,7 +284,6 @@ class VerificationStatus(str, Enum):
     NOT_FOUND = "not_found"
     ERROR = "error"
 
-
 class EventType(str, Enum):
     """Type of on-chain event emitted by EUDR smart contracts.
 
@@ -319,7 +301,6 @@ class EventType(str, Enum):
     CUSTODY_TRANSFER_RECORDED = "custody_transfer_recorded"
     COMPLIANCE_CHECK_COMPLETED = "compliance_check_completed"
     PARTY_REGISTERED = "party_registered"
-
 
 class AccessLevel(str, Enum):
     """Access level for cross-party data sharing grants.
@@ -339,7 +320,6 @@ class AccessLevel(str, Enum):
     AUDITOR = "auditor"
     SUPPLY_CHAIN_PARTNER = "supply_chain_partner"
 
-
 class AccessStatus(str, Enum):
     """Status of a cross-party data access grant.
 
@@ -354,7 +334,6 @@ class AccessStatus(str, Enum):
     ACTIVE = "active"
     REVOKED = "revoked"
     EXPIRED = "expired"
-
 
 class EvidenceFormat(str, Enum):
     """Output format for EUDR compliance evidence packages.
@@ -371,7 +350,6 @@ class EvidenceFormat(str, Enum):
     PDF = "pdf"
     EUDR_XML = "eudr_xml"
 
-
 class ProofFormat(str, Enum):
     """Output format for Merkle proofs.
 
@@ -383,7 +361,6 @@ class ProofFormat(str, Enum):
 
     JSON = "json"
     BINARY = "binary"
-
 
 class TransactionStatus(str, Enum):
     """Status of a blockchain transaction.
@@ -401,7 +378,6 @@ class TransactionStatus(str, Enum):
     MINED = "mined"
     CONFIRMED = "confirmed"
     REVERTED = "reverted"
-
 
 class ChainConnectionStatus(str, Enum):
     """Status of a blockchain network connection.
@@ -421,7 +397,6 @@ class ChainConnectionStatus(str, Enum):
     ERROR = "error"
     RECONNECTING = "reconnecting"
 
-
 class BatchJobStatus(str, Enum):
     """Status of a batch processing job.
 
@@ -438,13 +413,11 @@ class BatchJobStatus(str, Enum):
     FAILED = "failed"
     CANCELLED = "cancelled"
 
-
 # =============================================================================
 # Core Models
 # =============================================================================
 
-
-class AnchorRecord(BaseModel):
+class AnchorRecord(GreenLangBase):
     """An on-chain anchor record for EUDR supply chain compliance data.
 
     Represents a single piece of EUDR compliance data (DDS submission,
@@ -591,7 +564,7 @@ class AnchorRecord(BaseModel):
         description="Error message if anchor failed",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when anchor was created",
     )
     submitted_at: Optional[datetime] = Field(
@@ -623,8 +596,7 @@ class AnchorRecord(BaseModel):
             )
         return v.lower()
 
-
-class MerkleLeaf(BaseModel):
+class MerkleLeaf(GreenLangBase):
     """A single leaf in a Merkle tree.
 
     Attributes:
@@ -663,8 +635,7 @@ class MerkleLeaf(BaseModel):
         description="Computed leaf hash",
     )
 
-
-class MerkleTree(BaseModel):
+class MerkleTree(GreenLangBase):
     """A Merkle tree constructed from batched anchor records.
 
     Represents a complete Merkle tree built from a set of anchor data
@@ -743,7 +714,7 @@ class MerkleTree(BaseModel):
         description="Anchor IDs included in this tree",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when tree was constructed",
     )
     provenance_hash: Optional[str] = Field(
@@ -751,8 +722,7 @@ class MerkleTree(BaseModel):
         description="SHA-256 provenance chain hash",
     )
 
-
-class MerkleProof(BaseModel):
+class MerkleProof(GreenLangBase):
     """A Merkle inclusion proof for verifying a leaf against a root.
 
     Attributes:
@@ -828,7 +798,7 @@ class MerkleProof(BaseModel):
         description="Whether proof has been locally verified",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when proof was generated",
     )
 
@@ -842,8 +812,7 @@ class MerkleProof(BaseModel):
             )
         return self
 
-
-class SmartContract(BaseModel):
+class SmartContract(GreenLangBase):
     """A deployed smart contract for EUDR compliance operations.
 
     Attributes:
@@ -912,7 +881,7 @@ class SmartContract(BaseModel):
         description="Current contract lifecycle status",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when record was created",
     )
     deployed_at: Optional[datetime] = Field(
@@ -932,8 +901,7 @@ class SmartContract(BaseModel):
         description="SHA-256 provenance chain hash",
     )
 
-
-class ContractEvent(BaseModel):
+class ContractEvent(GreenLangBase):
     """An on-chain event emitted by an EUDR smart contract.
 
     Attributes:
@@ -998,7 +966,7 @@ class ContractEvent(BaseModel):
         description="Decoded event data payload",
     )
     indexed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when event was indexed",
     )
     provenance_hash: Optional[str] = Field(
@@ -1006,8 +974,7 @@ class ContractEvent(BaseModel):
         description="SHA-256 provenance chain hash",
     )
 
-
-class ChainConnection(BaseModel):
+class ChainConnection(GreenLangBase):
     """A blockchain network connection descriptor.
 
     Attributes:
@@ -1078,8 +1045,7 @@ class ChainConnection(BaseModel):
         description="Error message if in error state",
     )
 
-
-class VerificationResult(BaseModel):
+class VerificationResult(GreenLangBase):
     """Result of an anchor or Merkle proof verification operation.
 
     Attributes:
@@ -1162,7 +1128,7 @@ class VerificationResult(BaseModel):
         description="Error message if verification failed",
     )
     verified_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of verification",
     )
     provenance_hash: Optional[str] = Field(
@@ -1170,8 +1136,7 @@ class VerificationResult(BaseModel):
         description="SHA-256 provenance chain hash",
     )
 
-
-class AccessGrant(BaseModel):
+class AccessGrant(GreenLangBase):
     """A cross-party data access grant for EUDR compliance sharing.
 
     Attributes:
@@ -1239,7 +1204,7 @@ class AccessGrant(BaseModel):
         description="Number of confirmations required",
     )
     granted_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when grant was issued",
     )
     expires_at: Optional[datetime] = Field(
@@ -1259,8 +1224,7 @@ class AccessGrant(BaseModel):
         description="SHA-256 provenance chain hash",
     )
 
-
-class EvidencePackage(BaseModel):
+class EvidencePackage(GreenLangBase):
     """An EUDR compliance evidence package containing blockchain proofs.
 
     Attributes:
@@ -1338,7 +1302,7 @@ class EvidencePackage(BaseModel):
         description="Retention date per EUDR Article 14",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when package was created",
     )
     provenance_hash: Optional[str] = Field(
@@ -1346,8 +1310,7 @@ class EvidencePackage(BaseModel):
         description="SHA-256 provenance chain hash",
     )
 
-
-class GasCost(BaseModel):
+class GasCost(GreenLangBase):
     """Gas cost estimation or actual spend record for a blockchain transaction.
 
     Attributes:
@@ -1412,12 +1375,11 @@ class GasCost(BaseModel):
         description="Associated transaction hash",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of estimation or spend",
     )
 
-
-class BatchJob(BaseModel):
+class BatchJob(GreenLangBase):
     """A batch processing job for bulk anchor operations.
 
     Attributes:
@@ -1491,7 +1453,7 @@ class BatchJob(BaseModel):
         description="UTC timestamp when processing completed",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when job was created",
     )
     provenance_hash: Optional[str] = Field(
@@ -1499,8 +1461,7 @@ class BatchJob(BaseModel):
         description="SHA-256 provenance chain hash",
     )
 
-
-class AuditLogEntry(BaseModel):
+class AuditLogEntry(GreenLangBase):
     """An audit log entry for blockchain integration operations.
 
     Attributes:
@@ -1559,7 +1520,7 @@ class AuditLogEntry(BaseModel):
         description="User agent string",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of the action",
     )
     provenance_hash: Optional[str] = Field(
@@ -1567,13 +1528,11 @@ class AuditLogEntry(BaseModel):
         description="SHA-256 provenance chain hash",
     )
 
-
 # =============================================================================
 # Request Models
 # =============================================================================
 
-
-class CreateAnchorRequest(BaseModel):
+class CreateAnchorRequest(GreenLangBase):
     """Request to create a new anchor record.
 
     Attributes:
@@ -1633,8 +1592,7 @@ class CreateAnchorRequest(BaseModel):
         description="Additional metadata about the payload",
     )
 
-
-class BatchAnchorRequest(BaseModel):
+class BatchAnchorRequest(GreenLangBase):
     """Request to create multiple anchor records in a batch.
 
     Attributes:
@@ -1664,8 +1622,7 @@ class BatchAnchorRequest(BaseModel):
         description="EUDR operator identifier",
     )
 
-
-class VerifyAnchorRequest(BaseModel):
+class VerifyAnchorRequest(GreenLangBase):
     """Request to verify an anchor record against on-chain data.
 
     Attributes:
@@ -1698,8 +1655,7 @@ class VerifyAnchorRequest(BaseModel):
         description="Include Merkle proof in response",
     )
 
-
-class BuildMerkleTreeRequest(BaseModel):
+class BuildMerkleTreeRequest(GreenLangBase):
     """Request to build a Merkle tree from anchor records.
 
     Attributes:
@@ -1727,8 +1683,7 @@ class BuildMerkleTreeRequest(BaseModel):
         description="Sort leaves before building",
     )
 
-
-class GenerateMerkleProofRequest(BaseModel):
+class GenerateMerkleProofRequest(GreenLangBase):
     """Request to generate a Merkle proof for an anchor.
 
     Attributes:
@@ -1757,8 +1712,7 @@ class GenerateMerkleProofRequest(BaseModel):
         description="Desired output format",
     )
 
-
-class DeployContractRequest(BaseModel):
+class DeployContractRequest(GreenLangBase):
     """Request to deploy a smart contract.
 
     Attributes:
@@ -1797,8 +1751,7 @@ class DeployContractRequest(BaseModel):
         description="Gas limit for deployment",
     )
 
-
-class SubmitTransactionRequest(BaseModel):
+class SubmitTransactionRequest(GreenLangBase):
     """Request to submit a raw transaction to the blockchain.
 
     Attributes:
@@ -1850,8 +1803,7 @@ class SubmitTransactionRequest(BaseModel):
         description="ETH/MATIC value to send (in wei)",
     )
 
-
-class StartListenerRequest(BaseModel):
+class StartListenerRequest(GreenLangBase):
     """Request to start an on-chain event listener.
 
     Attributes:
@@ -1885,8 +1837,7 @@ class StartListenerRequest(BaseModel):
         description="Block number to start listening from",
     )
 
-
-class GrantAccessRequest(BaseModel):
+class GrantAccessRequest(GreenLangBase):
     """Request to grant cross-party access to anchor data.
 
     Attributes:
@@ -1927,8 +1878,7 @@ class GrantAccessRequest(BaseModel):
         description="Number of days until grant expires",
     )
 
-
-class RevokeAccessRequest(BaseModel):
+class RevokeAccessRequest(GreenLangBase):
     """Request to revoke a previously issued access grant.
 
     Attributes:
@@ -1951,8 +1901,7 @@ class RevokeAccessRequest(BaseModel):
         description="Reason for revocation",
     )
 
-
-class CreateEvidenceRequest(BaseModel):
+class CreateEvidenceRequest(GreenLangBase):
     """Request to create an evidence package.
 
     Attributes:
@@ -1996,8 +1945,7 @@ class CreateEvidenceRequest(BaseModel):
         description="Digitally sign the package",
     )
 
-
-class EstimateGasRequest(BaseModel):
+class EstimateGasRequest(GreenLangBase):
     """Request to estimate gas for a blockchain operation.
 
     Attributes:
@@ -2025,8 +1973,7 @@ class EstimateGasRequest(BaseModel):
         description="Operation-specific parameters",
     )
 
-
-class SubmitBatchRequest(BaseModel):
+class SubmitBatchRequest(GreenLangBase):
     """Request to submit a batch processing job.
 
     Attributes:
@@ -2056,8 +2003,7 @@ class SubmitBatchRequest(BaseModel):
         description="EUDR operator identifier",
     )
 
-
-class SearchAnchorsRequest(BaseModel):
+class SearchAnchorsRequest(GreenLangBase):
     """Request to search anchor records with filters.
 
     Attributes:
@@ -2117,8 +2063,7 @@ class SearchAnchorsRequest(BaseModel):
         description="Offset for pagination",
     )
 
-
-class GetEventsRequest(BaseModel):
+class GetEventsRequest(GreenLangBase):
     """Request to retrieve indexed on-chain events.
 
     Attributes:
@@ -2170,13 +2115,11 @@ class GetEventsRequest(BaseModel):
         description="Offset for pagination",
     )
 
-
 # =============================================================================
 # Response Models
 # =============================================================================
 
-
-class AnchorResponse(BaseModel):
+class AnchorResponse(GreenLangBase):
     """Response for a single anchor operation.
 
     Attributes:
@@ -2204,8 +2147,7 @@ class AnchorResponse(BaseModel):
         None, description="SHA-256 provenance chain hash",
     )
 
-
-class BatchAnchorResponse(BaseModel):
+class BatchAnchorResponse(GreenLangBase):
     """Response for a batch anchor creation operation.
 
     Attributes:
@@ -2237,8 +2179,7 @@ class BatchAnchorResponse(BaseModel):
         default=0.0, description="Processing duration in ms",
     )
 
-
-class VerificationResponse(BaseModel):
+class VerificationResponse(GreenLangBase):
     """Response for an anchor verification operation.
 
     Attributes:
@@ -2264,8 +2205,7 @@ class VerificationResponse(BaseModel):
         None, description="SHA-256 provenance chain hash",
     )
 
-
-class MerkleTreeResponse(BaseModel):
+class MerkleTreeResponse(GreenLangBase):
     """Response for a Merkle tree construction operation.
 
     Attributes:
@@ -2291,8 +2231,7 @@ class MerkleTreeResponse(BaseModel):
         None, description="SHA-256 provenance chain hash",
     )
 
-
-class MerkleProofResponse(BaseModel):
+class MerkleProofResponse(GreenLangBase):
     """Response for a Merkle proof generation operation.
 
     Attributes:
@@ -2314,8 +2253,7 @@ class MerkleProofResponse(BaseModel):
         default=0.0, description="Processing duration in ms",
     )
 
-
-class ContractResponse(BaseModel):
+class ContractResponse(GreenLangBase):
     """Response for a smart contract operation.
 
     Attributes:
@@ -2339,8 +2277,7 @@ class ContractResponse(BaseModel):
         default=0.0, description="Processing duration in ms",
     )
 
-
-class TransactionResponse(BaseModel):
+class TransactionResponse(GreenLangBase):
     """Response for a blockchain transaction submission.
 
     Attributes:
@@ -2376,8 +2313,7 @@ class TransactionResponse(BaseModel):
         default=0.0, description="Processing duration in ms",
     )
 
-
-class ListenerResponse(BaseModel):
+class ListenerResponse(GreenLangBase):
     """Response for an event listener operation.
 
     Attributes:
@@ -2409,8 +2345,7 @@ class ListenerResponse(BaseModel):
     )
     error: Optional[str] = Field(None, description="Error message")
 
-
-class AccessGrantResponse(BaseModel):
+class AccessGrantResponse(GreenLangBase):
     """Response for an access grant operation.
 
     Attributes:
@@ -2434,8 +2369,7 @@ class AccessGrantResponse(BaseModel):
         default=0.0, description="Processing duration in ms",
     )
 
-
-class AccessRevokeResponse(BaseModel):
+class AccessRevokeResponse(GreenLangBase):
     """Response for an access revocation operation.
 
     Attributes:
@@ -2459,8 +2393,7 @@ class AccessRevokeResponse(BaseModel):
         default=0.0, description="Processing duration in ms",
     )
 
-
-class EvidenceResponse(BaseModel):
+class EvidenceResponse(GreenLangBase):
     """Response for an evidence package creation operation.
 
     Attributes:
@@ -2484,8 +2417,7 @@ class EvidenceResponse(BaseModel):
         default=0.0, description="Processing duration in ms",
     )
 
-
-class GasEstimateResponse(BaseModel):
+class GasEstimateResponse(GreenLangBase):
     """Response for a gas estimation operation.
 
     Attributes:
@@ -2509,8 +2441,7 @@ class GasEstimateResponse(BaseModel):
         default=0.0, description="Processing duration in ms",
     )
 
-
-class BatchResponse(BaseModel):
+class BatchResponse(GreenLangBase):
     """Response for a batch processing job submission.
 
     Attributes:
@@ -2534,8 +2465,7 @@ class BatchResponse(BaseModel):
         default=0.0, description="Processing duration in ms",
     )
 
-
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Health check response for the blockchain integration service.
 
     Attributes:
@@ -2574,12 +2504,11 @@ class HealthResponse(BaseModel):
         default=0.0, ge=0.0, description="Service uptime in seconds",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of health check",
     )
 
-
-class DashboardResponse(BaseModel):
+class DashboardResponse(GreenLangBase):
     """Dashboard summary response for the blockchain integration service.
 
     Attributes:
@@ -2640,10 +2569,9 @@ class DashboardResponse(BaseModel):
         default=0, ge=0, description="Active event listeners",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of dashboard snapshot",
     )
-
 
 # =============================================================================
 # Public API

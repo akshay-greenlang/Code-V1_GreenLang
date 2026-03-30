@@ -52,17 +52,13 @@ from .models import (
 )
 from .provenance import get_tracker
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 #: Maximum sourcing concentration (HHI) before flagging as high risk.
 #: HHI = sum(market_share_i^2) * 10000. Range 0-10000.
@@ -165,11 +161,9 @@ _DEFORESTATION_ALERTS_DB: Dict[str, Tuple[str, str, float, float, str, str]] = {
     "ALERT_CO_001": ("CO", "GV", 2.0000, -72.5000, "2025-12-01", "HIGH"),
 }
 
-
 # ---------------------------------------------------------------------------
 # GeographicSourcingAnalyzer
 # ---------------------------------------------------------------------------
-
 
 class GeographicSourcingAnalyzer:
     """Analyze supplier geographic sourcing patterns against deforestation risk.
@@ -331,7 +325,7 @@ class GeographicSourcingAnalyzer:
             new_region_risk=Decimal(str(new_region_risk)),
             supply_depth_analysis=supply_depth_analysis,
             deforestation_alerts=deforestation_alerts,
-            assessed_at=_utcnow(),
+            assessed_at=utcnow(),
         )
 
         # Store profile

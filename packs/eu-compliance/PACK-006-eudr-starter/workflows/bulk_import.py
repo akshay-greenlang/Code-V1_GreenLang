@@ -38,6 +38,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas.enums import FileFormat
 
 logger = logging.getLogger(__name__)
 
@@ -54,14 +55,6 @@ class PhaseStatus(str, Enum):
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
     SKIPPED = "SKIPPED"
-
-
-class FileFormat(str, Enum):
-    """Supported import file formats."""
-    CSV = "csv"
-    EXCEL = "excel"
-    JSON = "json"
-    GEOJSON = "geojson"
 
 
 class RecordType(str, Enum):

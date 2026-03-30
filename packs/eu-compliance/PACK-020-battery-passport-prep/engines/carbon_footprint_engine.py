@@ -81,25 +81,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -119,7 +113,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely.
 
@@ -133,7 +126,6 @@ def _decimal(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _safe_divide(
     numerator: float, denominator: float, default: float = 0.0
 ) -> float:
@@ -142,20 +134,17 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.01"), rounding=ROUND_HALF_UP
     ))
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value to the specified number of decimal places.
@@ -172,11 +161,9 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class LifecycleStage(str, Enum):
     """Lifecycle stage for battery carbon footprint per Annex II.
@@ -189,7 +176,6 @@ class LifecycleStage(str, Enum):
     MANUFACTURING = "manufacturing"
     DISTRIBUTION = "distribution"
     END_OF_LIFE = "end_of_life"
-
 
 class CarbonFootprintClass(str, Enum):
     """Carbon footprint performance class per Art 7(2)(d).
@@ -204,7 +190,6 @@ class CarbonFootprintClass(str, Enum):
     CLASS_D = "class_d"
     CLASS_E = "class_e"
 
-
 class BatteryCategory(str, Enum):
     """Battery category per Regulation (EU) 2023/1542 Art 2.
 
@@ -217,7 +202,6 @@ class BatteryCategory(str, Enum):
     LMT = "lmt"
     PORTABLE = "portable"
     SLI = "sli"
-
 
 class BatteryChemistry(str, Enum):
     """Battery chemistry type.
@@ -240,11 +224,9 @@ class BatteryChemistry(str, Enum):
     SODIUM_ION = "sodium_ion"
     SOLID_STATE = "solid_state"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # Performance class upper bounds in kgCO2e/kWh (inclusive).
 # CLASS_E has no upper bound.
@@ -254,7 +236,6 @@ PERFORMANCE_CLASS_THRESHOLDS: Dict[str, Decimal] = {
     CarbonFootprintClass.CLASS_C.value: Decimal("100"),
     CarbonFootprintClass.CLASS_D.value: Decimal("120"),
 }
-
 
 # Maximum carbon footprint thresholds per battery category (Art 7(3)).
 # These thresholds apply from 18 February 2028.
@@ -266,7 +247,6 @@ CATEGORY_MAX_THRESHOLDS: Dict[str, Decimal] = {
     BatteryCategory.SLI.value: Decimal("250"),
     # Portable batteries do not have a mandated threshold yet
 }
-
 
 # Typical emission factor ranges by chemistry (kgCO2e/kWh) for
 # benchmarking and plausibility checks.  These are reference values
@@ -352,7 +332,6 @@ CHEMISTRY_BENCHMARKS: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # Lifecycle stage display labels.
 LIFECYCLE_STAGE_LABELS: Dict[str, str] = {
     LifecycleStage.RAW_MATERIAL_EXTRACTION.value: (
@@ -369,7 +348,6 @@ LIFECYCLE_STAGE_LABELS: Dict[str, str] = {
     ),
 }
 
-
 # Battery category display labels.
 CATEGORY_LABELS: Dict[str, str] = {
     BatteryCategory.EV.value: "Electric Vehicle (EV) battery",
@@ -378,7 +356,6 @@ CATEGORY_LABELS: Dict[str, str] = {
     BatteryCategory.PORTABLE.value: "Portable battery",
     BatteryCategory.SLI.value: "Starting, Lighting, and Ignition (SLI) battery",
 }
-
 
 # Methodology references for the carbon footprint declaration.
 METHODOLOGY_REFERENCES: Dict[str, str] = {
@@ -398,11 +375,9 @@ METHODOLOGY_REFERENCES: Dict[str, str] = {
     ),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class LifecycleEmissions(BaseModel):
     """Emissions data for a single lifecycle stage per Annex II.
@@ -440,7 +415,6 @@ class LifecycleEmissions(BaseModel):
                 f"data_quality must be one of {allowed}, got '{v}'"
             )
         return v.lower()
-
 
 class CarbonFootprintInput(BaseModel):
     """Input data for battery carbon footprint calculation per Art 7.
@@ -519,7 +493,6 @@ class CarbonFootprintInput(BaseModel):
             raise ValueError("At least one lifecycle stage must be provided")
         return v
 
-
 class LifecycleBreakdown(BaseModel):
     """Breakdown of a single lifecycle stage within the total footprint.
 
@@ -550,7 +523,6 @@ class LifecycleBreakdown(BaseModel):
         default="primary",
         description="Data quality indicator",
     )
-
 
 class BenchmarkComparison(BaseModel):
     """Comparison of the battery carbon footprint against benchmarks.
@@ -591,7 +563,6 @@ class BenchmarkComparison(BaseModel):
         description="Percentage deviation from typical benchmark value",
     )
 
-
 class CarbonFootprintResult(BaseModel):
     """Result of battery carbon footprint calculation per Art 7.
 
@@ -608,7 +579,7 @@ class CarbonFootprintResult(BaseModel):
         description="Engine version used for this calculation",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of calculation (UTC)",
     )
     battery_id: str = Field(
@@ -700,11 +671,9 @@ class CarbonFootprintResult(BaseModel):
         description="SHA-256 hash of the entire result",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class CarbonFootprintEngine:
     """Battery carbon footprint engine per EU Battery Regulation Art 7.

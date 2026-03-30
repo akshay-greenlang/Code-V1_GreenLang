@@ -65,9 +65,9 @@ from greenlang.agents.mrv.stationary_combustion.models import (
     ReportingPeriod,
     UncertaintyResult,
 )
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Optional engine imports (graceful degradation)
@@ -123,7 +123,6 @@ except ImportError:
     def record_pipeline_run(status: str) -> None:  # type: ignore[misc]
         """No-op fallback when metrics module is unavailable."""
 
-
 # ---------------------------------------------------------------------------
 # Pipeline stage constants
 # ---------------------------------------------------------------------------
@@ -138,25 +137,17 @@ PIPELINE_STAGES: List[str] = [
     "AGGREGATE",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Utility helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _utcnow_iso() -> str:
     """Return current UTC datetime as an ISO-8601 string."""
-    return _utcnow().isoformat()
-
+    return utcnow().isoformat()
 
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -176,11 +167,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ===================================================================
 # StationaryCombustionPipelineEngine
 # ===================================================================
-
 
 class StationaryCombustionPipelineEngine:
     """End-to-end orchestration pipeline for stationary combustion calculations.
@@ -1526,11 +1515,9 @@ class StationaryCombustionPipelineEngine:
             }),
         )
 
-
 # ===================================================================
 # Module-level serialisation helpers
 # ===================================================================
-
 
 def _serialise_results(
     results: List[CalculationResult],
@@ -1545,7 +1532,6 @@ def _serialise_results(
     """
     return [r.model_dump(mode="json") for r in results]
 
-
 def _serialise_uncertainty(
     results: List[UncertaintyResult],
 ) -> List[Dict[str, Any]]:
@@ -1559,7 +1545,6 @@ def _serialise_uncertainty(
     """
     return [r.model_dump(mode="json") for r in results]
 
-
 def _serialise_audit(
     entries: List[AuditEntry],
 ) -> List[Dict[str, Any]]:
@@ -1572,7 +1557,6 @@ def _serialise_audit(
         List of dictionaries.
     """
     return [e.model_dump(mode="json") for e in entries]
-
 
 def _strip_internal_keys(
     stage_results: List[Dict[str, Any]],
@@ -1603,7 +1587,6 @@ def _strip_internal_keys(
             k: v for k, v in stage.items() if k not in internal_keys
         })
     return cleaned
-
 
 # ===================================================================
 # Public API

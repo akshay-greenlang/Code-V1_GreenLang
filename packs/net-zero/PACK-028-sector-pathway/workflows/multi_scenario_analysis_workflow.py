@@ -50,28 +50,22 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "28.0.0"
 _PACK_ID = "PACK-028"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -80,7 +74,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
@@ -88,14 +81,12 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class ClimateScenario(str, Enum):
     NZE_15C = "nze_15c"
     WB2C = "wb2c"
     TWO_C = "2c"
     APS = "aps"
     STEPS = "steps"
-
 
 class RiskCategory(str, Enum):
     TRANSITION = "transition"
@@ -105,19 +96,16 @@ class RiskCategory(str, Enum):
     MARKET = "market"
     REPUTATIONAL = "reputational"
 
-
 class RiskLevel(str, Enum):
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
     VERY_HIGH = "very_high"
 
-
 class RecommendationConfidence(str, Enum):
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 # =============================================================================
 # SCENARIO DEFINITIONS (Zero-Hallucination: IEA Published Data)
@@ -534,11 +522,9 @@ COMPARISON_DIMENSIONS: Dict[str, Dict[str, str]] = {
     },
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase_name: str = Field(...)
@@ -552,7 +538,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     dag_node_id: str = Field(default="")
 
-
 class ScenarioSetup(BaseModel):
     """Setup configuration for a single scenario."""
     scenario_id: str = Field(default="")
@@ -565,7 +550,6 @@ class ScenarioSetup(BaseModel):
     sector_intensity_2030: float = Field(default=0.0)
     sector_intensity_2050: float = Field(default=0.0)
     technology_mix: Dict[str, float] = Field(default_factory=dict)
-
 
 class ScenarioPathwayResult(BaseModel):
     """Modeled pathway for a single scenario."""
@@ -581,7 +565,6 @@ class ScenarioPathwayResult(BaseModel):
     carbon_budget_consumed_pct: float = Field(default=0.0)
     runs_completed: int = Field(default=0)
 
-
 class RiskAssessment(BaseModel):
     """Risk assessment for a scenario-sector combination."""
     scenario_id: str = Field(default="")
@@ -593,7 +576,6 @@ class RiskAssessment(BaseModel):
     mitigation_actions: List[str] = Field(default_factory=list)
     financial_impact_usd: float = Field(default=0.0)
 
-
 class ScenarioRiskProfile(BaseModel):
     """Complete risk profile for a scenario."""
     scenario_id: str = Field(default="")
@@ -601,7 +583,6 @@ class ScenarioRiskProfile(BaseModel):
     overall_risk_level: RiskLevel = Field(default=RiskLevel.MEDIUM)
     overall_risk_score: float = Field(default=0.0)
     total_risk_adjusted_cost_usd: float = Field(default=0.0)
-
 
 class ScenarioComparisonMetric(BaseModel):
     """A single comparison metric across scenarios."""
@@ -612,7 +593,6 @@ class ScenarioComparisonMetric(BaseModel):
     worst_scenario: str = Field(default="")
     dimension: str = Field(default="", description="cost|risk|ambition|timeline|technology|regulatory")
 
-
 class ScenarioComparisonMatrix(BaseModel):
     """Complete scenario comparison matrix."""
     scenarios: List[str] = Field(default_factory=list)
@@ -621,7 +601,6 @@ class ScenarioComparisonMatrix(BaseModel):
     dimension_weights: Dict[str, float] = Field(default_factory=dict)
     rankings: Dict[str, int] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
-
 
 class StrategyRecommendation(BaseModel):
     """Strategic recommendation output."""
@@ -637,7 +616,6 @@ class StrategyRecommendation(BaseModel):
     alternative_scenario: str = Field(default="")
     alternative_rationale: str = Field(default="")
     provenance_hash: str = Field(default="")
-
 
 class MultiScenarioConfig(BaseModel):
     company_name: str = Field(default="")
@@ -664,12 +642,10 @@ class MultiScenarioConfig(BaseModel):
         },
     )
 
-
 class MultiScenarioInput(BaseModel):
     config: MultiScenarioConfig = Field(default_factory=MultiScenarioConfig)
     custom_scenarios: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
     current_portfolio: Dict[str, Any] = Field(default_factory=dict)
-
 
 class MultiScenarioResult(BaseModel):
     workflow_id: str = Field(...)
@@ -691,11 +667,9 @@ class MultiScenarioResult(BaseModel):
     next_steps: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class MultiScenarioAnalysisWorkflow:
     """
@@ -727,7 +701,7 @@ class MultiScenarioAnalysisWorkflow:
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     async def execute(self, input_data: MultiScenarioInput) -> MultiScenarioResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         self.config = input_data.config
         self._phase_results = []
         overall_status = WorkflowStatus.RUNNING
@@ -759,7 +733,7 @@ class MultiScenarioAnalysisWorkflow:
                 status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
 
         result = MultiScenarioResult(
             workflow_id=self.workflow_id,
@@ -784,7 +758,7 @@ class MultiScenarioAnalysisWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_scenario_setup(self, input_data: MultiScenarioInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         self._setups = []
@@ -823,7 +797,7 @@ class MultiScenarioAnalysisWorkflow:
         outputs["scenarios"] = [s.scenario_id for s in self._setups]
         outputs["temperature_range"] = f"{min(s.temperature_c for s in self._setups):.1f}C - {max(s.temperature_c for s in self._setups):.1f}C"
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="scenario_setup", phase_number=1,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -837,7 +811,7 @@ class MultiScenarioAnalysisWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_pathway_modeling(self, input_data: MultiScenarioInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         self._pathways = []
@@ -915,7 +889,7 @@ class MultiScenarioAnalysisWorkflow:
             (p.probability_target_pct for p in self._pathways if p.scenario_id == "nze_15c"), 0,
         )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="pathway_modeling", phase_number=2,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -929,7 +903,7 @@ class MultiScenarioAnalysisWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_risk_analysis(self, input_data: MultiScenarioInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         self._risks = []
@@ -1103,7 +1077,7 @@ class MultiScenarioAnalysisWorkflow:
             self._risks, key=lambda r: r.overall_risk_score,
         ).scenario_id if self._risks else ""
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="risk_analysis", phase_number=3,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -1117,7 +1091,7 @@ class MultiScenarioAnalysisWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_scenario_comparison(self, input_data: MultiScenarioInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         metrics: List[ScenarioComparisonMetric] = []
@@ -1301,7 +1275,7 @@ class MultiScenarioAnalysisWorkflow:
         outputs["top_score"] = round(ranked[0][1], 2) if ranked else 0
         outputs["rankings"] = rankings
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="scenario_comparison", phase_number=4,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -1315,7 +1289,7 @@ class MultiScenarioAnalysisWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_strategy_recommend(self, input_data: MultiScenarioInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         # Select top-ranked scenario
@@ -1412,7 +1386,7 @@ class MultiScenarioAnalysisWorkflow:
         outputs["risk_adjusted_score"] = self._recommendation.risk_adjusted_score
         outputs["alternative"] = self._recommendation.alternative_scenario
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="strategy_recommend", phase_number=5,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),

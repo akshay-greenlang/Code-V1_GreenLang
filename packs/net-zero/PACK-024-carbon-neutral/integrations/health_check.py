@@ -45,6 +45,8 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import HealthStatus
 
 logger = logging.getLogger(__name__)
 
@@ -52,19 +54,12 @@ _MODULE_VERSION: str = "1.0.0"
 
 PACK_BASE_DIR = Path(__file__).parent.parent
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -76,20 +71,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
-
-class HealthStatus(str, Enum):
-    """Health check status values."""
-
-    PASS = "PASS"
-    FAIL = "FAIL"
-    WARN = "WARN"
-    SKIP = "SKIP"
-
 
 class HealthSeverity(str, Enum):
     """Severity levels for health issues."""
@@ -99,7 +83,6 @@ class HealthSeverity(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     INFO = "info"
-
 
 class CheckCategory(str, Enum):
     """Health check categories (20 total)."""
@@ -125,7 +108,6 @@ class CheckCategory(str, Enum):
     PAS_2060_READINESS = "pas_2060_readiness"
     OVERALL = "overall"
 
-
 QUICK_CHECK_CATEGORIES = {
     CheckCategory.ENGINES,
     CheckCategory.WORKFLOWS,
@@ -135,11 +117,9 @@ QUICK_CHECK_CATEGORIES = {
     CheckCategory.PAS_2060_READINESS,
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class RemediationSuggestion(BaseModel):
     """Remediation suggestion for a failed check."""
@@ -149,7 +129,6 @@ class RemediationSuggestion(BaseModel):
     message: str = Field(...)
     action: str = Field(default="")
     documentation_url: Optional[str] = Field(None)
-
 
 class ComponentHealth(BaseModel):
     """Health status of a single component."""
@@ -161,7 +140,6 @@ class ComponentHealth(BaseModel):
     details: Dict[str, Any] = Field(default_factory=dict)
     duration_ms: float = Field(default=0.0)
     remediation: Optional[RemediationSuggestion] = Field(None)
-
 
 class HealthCheckConfig(BaseModel):
     """Configuration for the Carbon Neutral Health Check."""
@@ -176,14 +154,13 @@ class HealthCheckConfig(BaseModel):
     expected_templates: int = Field(default=10)
     expected_presets: int = Field(default=6)
 
-
 class HealthCheckResult(BaseModel):
     """Complete health check result."""
 
     check_id: str = Field(default_factory=_new_uuid)
     pack_id: str = Field(default="PACK-024")
     status: HealthStatus = Field(default=HealthStatus.PASS)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     total_checks: int = Field(default=0)
     passed: int = Field(default=0)
     failed: int = Field(default=0)
@@ -195,7 +172,6 @@ class HealthCheckResult(BaseModel):
     pas_2060_ready: bool = Field(default=False)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Expected Components Reference
@@ -242,11 +218,9 @@ PAS_2060_READINESS_CHECKS = [
     "public_disclosure_planned",
 ]
 
-
 # ---------------------------------------------------------------------------
 # CarbonNeutralHealthCheck
 # ---------------------------------------------------------------------------
-
 
 class CarbonNeutralHealthCheck:
     """20-category system health verification for PACK-024.
@@ -560,6 +534,7 @@ class CarbonNeutralHealthCheck:
     def _check_pack023(self) -> ComponentHealth:
         try:
             from .pack023_bridge import Pack023Bridge
+
             bridge = Pack023Bridge()
             status_data = bridge.get_bridge_status()
             available = status_data.get("pack023_available", False)

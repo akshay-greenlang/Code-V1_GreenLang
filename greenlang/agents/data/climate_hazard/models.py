@@ -43,7 +43,9 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ReportFormat
 
 # ---------------------------------------------------------------------------
 # Layer 1 Re-exports (best-effort with stubs on ImportError)
@@ -64,7 +66,6 @@ except ImportError:  # pragma: no cover
 
         pass
 
-
 try:
     from greenlang.agents.data.gis_connector.boundary_resolver import (  # type: ignore[import]
         BoundaryResolverEngine as L1BoundaryResolverEngine,
@@ -79,7 +80,6 @@ except ImportError:  # pragma: no cover
         """Stub re-export when gis_connector.boundary_resolver is unavailable."""
 
         pass
-
 
 try:
     from greenlang.agents.data.gis_connector.crs_transformer import (  # type: ignore[import]
@@ -96,16 +96,9 @@ except ImportError:  # pragma: no cover
 
         pass
 
-
 # ---------------------------------------------------------------------------
 # Helper
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -177,11 +170,9 @@ TIME_HORIZON_RANGES: Dict[str, tuple] = {
     "end_century": (2081, 2100),
 }
 
-
 # =============================================================================
 # Enumerations (12)
 # =============================================================================
-
 
 class HazardType(str, Enum):
     """Classification of physical climate hazards.
@@ -218,7 +209,6 @@ class HazardType(str, Enum):
     LANDSLIDE = "landslide"
     COASTAL_EROSION = "coastal_erosion"
 
-
 class RiskLevel(str, Enum):
     """Qualitative risk classification derived from a numeric risk score.
 
@@ -238,7 +228,6 @@ class RiskLevel(str, Enum):
     MEDIUM = "medium"
     HIGH = "high"
     EXTREME = "extreme"
-
 
 class Scenario(str, Enum):
     """IPCC climate scenario pathways for forward-looking projections.
@@ -266,7 +255,6 @@ class Scenario(str, Enum):
     RCP4_5 = "rcp4_5"
     RCP8_5 = "rcp8_5"
 
-
 class TimeHorizon(str, Enum):
     """Climate projection time horizons aligned with IPCC AR6 conventions.
 
@@ -286,7 +274,6 @@ class TimeHorizon(str, Enum):
     MID_TERM = "mid_term"
     LONG_TERM = "long_term"
     END_CENTURY = "end_century"
-
 
 class AssetType(str, Enum):
     """Classification of physical and operational assets subject to risk.
@@ -315,7 +302,6 @@ class AssetType(str, Enum):
     WATER_SOURCE = "water_source"
     COASTAL_ASSET = "coastal_asset"
 
-
 class ReportType(str, Enum):
     """Type of climate risk report to generate.
 
@@ -335,24 +321,6 @@ class ReportType(str, Enum):
     ADAPTATION_SCREENING = "adaptation_screening"
     EXPOSURE_SUMMARY = "exposure_summary"
     EXECUTIVE_DASHBOARD = "executive_dashboard"
-
-
-class ReportFormat(str, Enum):
-    """Output format for a climate risk report.
-
-    JSON: Structured JSON for programmatic consumption and integration.
-    HTML: Self-contained HTML page with formatting, maps, and charts.
-    MARKDOWN: Markdown-formatted report for documentation systems.
-    TEXT: Plain-text summary for terminal or log output.
-    CSV: Comma-separated values for spreadsheet import and analysis.
-    """
-
-    JSON = "json"
-    HTML = "html"
-    MARKDOWN = "markdown"
-    TEXT = "text"
-    CSV = "csv"
-
 
 class DataSourceType(str, Enum):
     """Classification of external data sources for hazard information.
@@ -376,7 +344,6 @@ class DataSourceType(str, Enum):
     SATELLITE = "satellite"
     REANALYSIS = "reanalysis"
 
-
 class ExposureLevel(str, Enum):
     """Qualitative exposure classification for an asset to a hazard.
 
@@ -396,7 +363,6 @@ class ExposureLevel(str, Enum):
     MODERATE = "moderate"
     HIGH = "high"
     CRITICAL = "critical"
-
 
 class SensitivityLevel(str, Enum):
     """Qualitative sensitivity classification for an entity to a hazard.
@@ -418,7 +384,6 @@ class SensitivityLevel(str, Enum):
     HIGH = "high"
     VERY_HIGH = "very_high"
 
-
 class AdaptiveCapacity(str, Enum):
     """Qualitative adaptive capacity classification for an entity.
 
@@ -438,7 +403,6 @@ class AdaptiveCapacity(str, Enum):
     MODERATE = "moderate"
     HIGH = "high"
     VERY_HIGH = "very_high"
-
 
 class VulnerabilityLevel(str, Enum):
     """Composite vulnerability classification combining exposure, sensitivity,
@@ -462,13 +426,11 @@ class VulnerabilityLevel(str, Enum):
     HIGH = "high"
     CRITICAL = "critical"
 
-
 # =============================================================================
 # SDK Data Models (14)
 # =============================================================================
 
-
-class Location(BaseModel):
+class Location(GreenLangBase):
     """A geographic point location with optional metadata.
 
     Represents a WGS84 coordinate pair used to pin hazard data,
@@ -537,8 +499,7 @@ class Location(BaseModel):
             )
         return v
 
-
-class HazardSource(BaseModel):
+class HazardSource(GreenLangBase):
     """A registered external data source providing climate hazard information.
 
     Tracks the provenance and configuration of each data feed ingested
@@ -621,11 +582,11 @@ class HazardSource(BaseModel):
         description="Actor that registered this source",
     )
     registered_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the source was registered",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the source was last modified",
     )
 
@@ -647,8 +608,7 @@ class HazardSource(BaseModel):
             raise ValueError(f"Invalid source_type: {v}")
         return v
 
-
-class HazardDataRecord(BaseModel):
+class HazardDataRecord(GreenLangBase):
     """A single hazard data observation or measurement from an external source.
 
     Represents one spatio-temporal data point ingested from a registered
@@ -729,7 +689,7 @@ class HazardDataRecord(BaseModel):
         description="Projection time horizon (None for historical data)",
     )
     observed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of the observation or model output date",
     )
     metadata: Dict[str, Any] = Field(
@@ -741,7 +701,7 @@ class HazardDataRecord(BaseModel):
         description="SHA-256 hash of the record for audit trail",
     )
     ingested_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the record was ingested",
     )
 
@@ -765,8 +725,7 @@ class HazardDataRecord(BaseModel):
             )
         return v
 
-
-class HazardEvent(BaseModel):
+class HazardEvent(GreenLangBase):
     """A recorded historical climate hazard event.
 
     Captures key attributes of a past hazard event from an event
@@ -875,7 +834,7 @@ class HazardEvent(BaseModel):
         description="SHA-256 hash of the event record for audit trail",
     )
     recorded_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the event was recorded",
     )
 
@@ -897,8 +856,7 @@ class HazardEvent(BaseModel):
             raise ValueError(f"deaths must be >= 0, got {v}")
         return v
 
-
-class RiskIndex(BaseModel):
+class RiskIndex(GreenLangBase):
     """A computed risk index for a specific hazard at a specific location.
 
     Represents the output of the risk calculation engine, combining
@@ -1007,7 +965,7 @@ class RiskIndex(BaseModel):
         description="Actor or service that calculated the risk index",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the risk index was calculated",
     )
 
@@ -1043,8 +1001,7 @@ class RiskIndex(BaseModel):
             )
         return v
 
-
-class ScenarioProjection(BaseModel):
+class ScenarioProjection(GreenLangBase):
     """A forward-looking risk projection under a specific climate scenario.
 
     Represents the output of the scenario projection engine, comparing
@@ -1145,7 +1102,7 @@ class ScenarioProjection(BaseModel):
         description="Actor or service that calculated the projection",
     )
     projected_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the projection was calculated",
     )
 
@@ -1181,8 +1138,7 @@ class ScenarioProjection(BaseModel):
             )
         return v
 
-
-class Asset(BaseModel):
+class Asset(GreenLangBase):
     """A physical or operational asset registered for climate risk assessment.
 
     Represents any entity with a geographic location that is subject
@@ -1275,11 +1231,11 @@ class Asset(BaseModel):
         description="Actor that registered this asset",
     )
     registered_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the asset was registered",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the asset was last modified",
     )
 
@@ -1311,8 +1267,7 @@ class Asset(BaseModel):
             )
         return v
 
-
-class ExposureResult(BaseModel):
+class ExposureResult(GreenLangBase):
     """Result of an exposure assessment for an asset against a specific hazard.
 
     Captures how exposed a registered asset is to a particular climate
@@ -1417,7 +1372,7 @@ class ExposureResult(BaseModel):
         description="Actor or service that performed the assessment",
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the assessment was performed",
     )
 
@@ -1451,8 +1406,7 @@ class ExposureResult(BaseModel):
             )
         return v
 
-
-class SensitivityProfile(BaseModel):
+class SensitivityProfile(GreenLangBase):
     """A sensitivity profile for an entity describing how strongly it is
     affected by climate hazards.
 
@@ -1534,11 +1488,11 @@ class SensitivityProfile(BaseModel):
         description="Actor that created the profile",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the profile was created",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the profile was last modified",
     )
 
@@ -1562,8 +1516,7 @@ class SensitivityProfile(BaseModel):
             )
         return v
 
-
-class AdaptiveCapacityProfile(BaseModel):
+class AdaptiveCapacityProfile(GreenLangBase):
     """An adaptive capacity profile for an entity describing its ability
     to cope with or adjust to climate hazards.
 
@@ -1670,11 +1623,11 @@ class AdaptiveCapacityProfile(BaseModel):
         description="Actor that created the profile",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the profile was created",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the profile was last modified",
     )
 
@@ -1698,8 +1651,7 @@ class AdaptiveCapacityProfile(BaseModel):
             )
         return v
 
-
-class VulnerabilityScore(BaseModel):
+class VulnerabilityScore(GreenLangBase):
     """A composite vulnerability score combining exposure, sensitivity, and
     adaptive capacity.
 
@@ -1820,7 +1772,7 @@ class VulnerabilityScore(BaseModel):
         description="Actor or service that calculated the score",
     )
     scored_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the score was calculated",
     )
 
@@ -1874,8 +1826,7 @@ class VulnerabilityScore(BaseModel):
             )
         return v
 
-
-class CompoundHazard(BaseModel):
+class CompoundHazard(GreenLangBase):
     """A compound (multi-hazard) interaction definition.
 
     Describes how two or more climate hazards interact to produce
@@ -1970,11 +1921,11 @@ class CompoundHazard(BaseModel):
         description="Actor that created the compound hazard definition",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the definition was created",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the definition was last modified",
     )
 
@@ -2008,8 +1959,7 @@ class CompoundHazard(BaseModel):
             )
         return v
 
-
-class ComplianceReport(BaseModel):
+class ComplianceReport(GreenLangBase):
     """A generated climate risk compliance report in a specified format.
 
     Produced by the reporting engine to render climate risk assessment
@@ -2111,7 +2061,7 @@ class ComplianceReport(BaseModel):
         description="Actor (user or service) that requested the report",
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the report was generated",
     )
     provenance_hash: str = Field(
@@ -2129,8 +2079,7 @@ class ComplianceReport(BaseModel):
             raise ValueError("framework must be non-empty")
         return v
 
-
-class PipelineRun(BaseModel):
+class PipelineRun(GreenLangBase):
     """A record of a complete Climate Hazard Connector pipeline execution.
 
     Tracks the end-to-end execution of the climate hazard assessment
@@ -2240,7 +2189,7 @@ class PipelineRun(BaseModel):
         description="Actor or service that triggered the pipeline",
     )
     started_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the pipeline started",
     )
     completed_at: Optional[datetime] = Field(
@@ -2261,13 +2210,11 @@ class PipelineRun(BaseModel):
             )
         return v
 
-
 # =============================================================================
 # Request Models (8)
 # =============================================================================
 
-
-class RegisterSourceRequest(BaseModel):
+class RegisterSourceRequest(GreenLangBase):
     """Request body for registering a new hazard data source.
 
     Attributes:
@@ -2339,8 +2286,7 @@ class RegisterSourceRequest(BaseModel):
             raise ValueError("name must be non-empty")
         return v
 
-
-class IngestDataRequest(BaseModel):
+class IngestDataRequest(GreenLangBase):
     """Request body for ingesting hazard data records from a registered source.
 
     Attributes:
@@ -2404,8 +2350,7 @@ class IngestDataRequest(BaseModel):
             )
         return v
 
-
-class CalculateRiskRequest(BaseModel):
+class CalculateRiskRequest(GreenLangBase):
     """Request body for calculating a risk index for a hazard at a location.
 
     Attributes:
@@ -2471,8 +2416,7 @@ class CalculateRiskRequest(BaseModel):
             )
         return v
 
-
-class ProjectScenarioRequest(BaseModel):
+class ProjectScenarioRequest(GreenLangBase):
     """Request body for projecting risk under a specific climate scenario.
 
     Attributes:
@@ -2527,8 +2471,7 @@ class ProjectScenarioRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class RegisterAssetRequest(BaseModel):
+class RegisterAssetRequest(GreenLangBase):
     """Request body for registering a new asset for climate risk assessment.
 
     Attributes:
@@ -2619,8 +2562,7 @@ class RegisterAssetRequest(BaseModel):
             )
         return v
 
-
-class AssessExposureRequest(BaseModel):
+class AssessExposureRequest(GreenLangBase):
     """Request body for assessing an asset's exposure to a specific hazard.
 
     Attributes:
@@ -2694,8 +2636,7 @@ class AssessExposureRequest(BaseModel):
             )
         return v
 
-
-class ScoreVulnerabilityRequest(BaseModel):
+class ScoreVulnerabilityRequest(GreenLangBase):
     """Request body for scoring the vulnerability of an entity to a hazard.
 
     Attributes:
@@ -2800,8 +2741,7 @@ class ScoreVulnerabilityRequest(BaseModel):
             )
         return v
 
-
-class GenerateReportRequest(BaseModel):
+class GenerateReportRequest(GreenLangBase):
     """Request body for generating a climate risk compliance report.
 
     Triggers the reporting engine to produce a climate risk report in
@@ -2891,7 +2831,6 @@ class GenerateReportRequest(BaseModel):
         if not v or not v.strip():
             raise ValueError("framework must be non-empty")
         return v
-
 
 # =============================================================================
 # __all__ export list

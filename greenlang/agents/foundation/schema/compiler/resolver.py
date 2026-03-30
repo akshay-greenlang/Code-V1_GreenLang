@@ -50,6 +50,7 @@ from greenlang.agents.foundation.schema.constants import (
     GREENLANG_SCHEMA_PREFIX,
 )
 from greenlang.agents.foundation.schema.errors import ErrorCode, format_error_message
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -162,7 +163,7 @@ class MaxExpansionsExceededError(Exception):
 
 
 if PYDANTIC_AVAILABLE:
-    class SchemaSource(BaseModel):
+    class SchemaSource(GreenLangBase):
         """
         Schema source retrieved from a registry.
 

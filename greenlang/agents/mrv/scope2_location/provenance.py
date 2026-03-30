@@ -112,21 +112,9 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 logger = logging.getLogger(__name__)
 
-
 # ---------------------------------------------------------------------------
 # Utility helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed.
-
-    Returns:
-        UTC datetime with microsecond component set to zero for
-        reproducible ISO timestamp strings.
-    """
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _safe_str(value: Any) -> str:
     """Convert a value to its string representation for hashing.
@@ -145,7 +133,6 @@ def _safe_str(value: Any) -> str:
         return "null"
     return str(value)
 
-
 def _canonical_json(data: Dict[str, Any]) -> str:
     """Serialize a dictionary to canonical JSON form.
 
@@ -161,7 +148,6 @@ def _canonical_json(data: Dict[str, Any]) -> str:
         Canonical JSON string with sorted keys.
     """
     return json.dumps(data, sort_keys=True, default=str)
-
 
 # ---------------------------------------------------------------------------
 # Valid provenance stages
@@ -225,11 +211,9 @@ VALID_STAGES = frozenset({
     "audit_verify",
 })
 
-
 # ---------------------------------------------------------------------------
 # ProvenanceEntry dataclass (frozen for immutability)
 # ---------------------------------------------------------------------------
-
 
 @dataclass(frozen=True)
 class ProvenanceEntry:
@@ -337,11 +321,9 @@ class ProvenanceEntry:
             metadata=data.get("metadata", {}),
         )
 
-
 # ---------------------------------------------------------------------------
 # Scope2LocationProvenance
 # ---------------------------------------------------------------------------
-
 
 class Scope2LocationProvenance:
     """SHA-256 provenance chain for Scope 2 location-based emission calculations.
@@ -519,7 +501,7 @@ class Scope2LocationProvenance:
             entry = ProvenanceEntry(
                 stage=stage,
                 hash_value=hash_value,
-                timestamp=_utcnow().isoformat(),
+                timestamp=utcnow().isoformat(),
                 previous_hash=previous,
                 metadata=data,
             )
@@ -1018,6 +1000,8 @@ class Scope2LocationProvenance:
                 applied to adjust consumption. Must be in [0.0, 100.0].
             total_co2e: The calculated total CO2e emissions resulting
                 from the electricity consumption. This is the output
+
+from greenlang.schemas import utcnow
                 of the deterministic formula.
 
         Returns:
@@ -2421,7 +2405,7 @@ class Scope2LocationProvenance:
             "max_entries": self._max_entries,
             "entries": entries,
             "stage_summary": stage_summary,
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
     @classmethod
@@ -2601,7 +2585,7 @@ class Scope2LocationProvenance:
             "merged_chain_hash": other_chain_hash,
             "merged_chain_length": other_chain_length,
             "merged_stage_summary": other_stage_summary,
-            "merge_timestamp": _utcnow().isoformat(),
+            "merge_timestamp": utcnow().isoformat(),
         }
 
         logger.info(
@@ -2839,11 +2823,9 @@ class Scope2LocationProvenance:
         with self._lock:
             return self._chain[index]
 
-
 # ---------------------------------------------------------------------------
 # Module-level factory function
 # ---------------------------------------------------------------------------
-
 
 def create_provenance(
     max_entries: int = Scope2LocationProvenance.DEFAULT_MAX_ENTRIES,
@@ -2871,14 +2853,12 @@ def create_provenance(
     """
     return Scope2LocationProvenance(max_entries=max_entries)
 
-
 # ---------------------------------------------------------------------------
 # Thread-safe singleton helpers
 # ---------------------------------------------------------------------------
 
 _singleton_lock = threading.Lock()
 _singleton_instance: Optional[Scope2LocationProvenance] = None
-
 
 def get_provenance_tracker() -> Scope2LocationProvenance:
     """Return the process-wide singleton Scope2LocationProvenance.
@@ -2906,7 +2886,6 @@ def get_provenance_tracker() -> Scope2LocationProvenance:
                 )
     return _singleton_instance
 
-
 def set_provenance_tracker(
     tracker: Scope2LocationProvenance,
 ) -> None:
@@ -2933,7 +2912,6 @@ def set_provenance_tracker(
         "Scope 2 location-based provenance tracker singleton replaced"
     )
 
-
 def reset_provenance_tracker() -> None:
     """Destroy the current singleton and reset to None.
 
@@ -2952,11 +2930,9 @@ def reset_provenance_tracker() -> None:
         "Scope 2 location-based provenance tracker singleton reset"
     )
 
-
 # ---------------------------------------------------------------------------
 # Utility functions
 # ---------------------------------------------------------------------------
-
 
 def compute_standalone_hash(data: Dict[str, Any]) -> str:
     """Compute a standalone SHA-256 hash for arbitrary data.
@@ -2980,7 +2956,6 @@ def compute_standalone_hash(data: Dict[str, Any]) -> str:
     canonical = _canonical_json(data)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
-
 def verify_hash(
     data: Dict[str, Any], expected_hash: str,
 ) -> bool:
@@ -2999,7 +2974,6 @@ def verify_hash(
     """
     computed = compute_standalone_hash(data)
     return computed == expected_hash
-
 
 def compute_chain_entry_hash(
     previous_hash: str,
@@ -3027,7 +3001,6 @@ def compute_chain_entry_hash(
     canonical = _canonical_json(data)
     payload = f"{previous_hash}|{stage}|{canonical}"
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
-
 
 def verify_chain_entries(
     entries: List[Dict[str, Any]],
@@ -3096,7 +3069,6 @@ def verify_chain_entries(
 
     return True, None
 
-
 def diff_chains(
     chain_a: Scope2LocationProvenance,
     chain_b: Scope2LocationProvenance,
@@ -3152,7 +3124,6 @@ def diff_chains(
         "first_divergence_index": first_divergence,
         "divergent_stages": divergent_stages,
     }
-
 
 # ---------------------------------------------------------------------------
 # Public API

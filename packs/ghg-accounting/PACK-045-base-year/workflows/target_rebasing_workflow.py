@@ -45,6 +45,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas.enums import NotificationChannel
 
 logger = logging.getLogger(__name__)
 
@@ -112,16 +113,6 @@ class TargetFramework(str, Enum):
     REGULATORY = "regulatory"
     RE100 = "re100"
     RACE_TO_ZERO = "race_to_zero"
-
-
-class NotificationChannel(str, Enum):
-    """Stakeholder notification channel."""
-
-    EMAIL = "email"
-    PORTAL = "portal"
-    API = "api"
-    REPORT = "report"
-    BOARD_PACKAGE = "board_package"
 
 
 class NotificationStatus(str, Enum):

@@ -46,29 +46,23 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 def _compute_hash(content: str) -> str:
     """Compute SHA-256 hash of string content."""
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -81,7 +75,6 @@ class OutputFormat(str, Enum):
     PDF = "pdf"
     JSON = "json"
 
-
 class PCAFScore(int, Enum):
     """PCAF data quality score (1=highest, 5=lowest)."""
     SCORE_1 = 1
@@ -90,13 +83,11 @@ class PCAFScore(int, Enum):
     SCORE_4 = 4
     SCORE_5 = 5
 
-
 class WaterfallBarType(str, Enum):
     """Waterfall chart bar type."""
     INCREASE = "increase"
     DECREASE = "decrease"
     TOTAL = "total"
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Input Models
@@ -113,7 +104,6 @@ class WACIComparison(BaseModel):
     currency: str = Field("EUR", description="Revenue currency")
     as_of_date: str = Field("", description="Measurement date (ISO)")
 
-
 class CarbonFootprintTrend(BaseModel):
     """Carbon footprint for a single period."""
     period: str = Field(..., description="Period label (e.g., 2023, Q1 2024)")
@@ -122,7 +112,6 @@ class CarbonFootprintTrend(BaseModel):
     portfolio_waci: float = Field(0.0, description="Portfolio WACI")
     index_waci: Optional[float] = Field(None, description="Index WACI")
     aum: Optional[float] = Field(None, description="Assets under management")
-
 
 class SectorAttributionEntry(BaseModel):
     """Sector attribution waterfall entry."""
@@ -135,7 +124,6 @@ class SectorAttributionEntry(BaseModel):
         WaterfallBarType.INCREASE, description="Waterfall bar type"
     )
 
-
 class TopContributor(BaseModel):
     """Top contributor to portfolio carbon footprint."""
     rank: int = Field(0, ge=0, description="Rank (1=highest contributor)")
@@ -147,7 +135,6 @@ class TopContributor(BaseModel):
     intensity: Optional[float] = Field(None, description="Carbon intensity")
     pcaf_score: Optional[int] = Field(None, ge=1, le=5, description="PCAF data quality")
 
-
 class PCAFDistribution(BaseModel):
     """PCAF data quality score distribution."""
     score_1_pct: float = Field(0.0, description="% of portfolio at PCAF Score 1")
@@ -158,7 +145,6 @@ class PCAFDistribution(BaseModel):
     weighted_average_score: float = Field(0.0, description="Weighted average PCAF score")
     coverage_pct: float = Field(0.0, description="% of portfolio with emissions data")
 
-
 class HoldingHeatmapEntry(BaseModel):
     """Single holding in the heatmap."""
     entity_name: str = Field(..., description="Issuer name")
@@ -168,7 +154,6 @@ class HoldingHeatmapEntry(BaseModel):
     yoy_change_pct: Optional[float] = Field(None, description="YoY intensity change (%)")
     pcaf_score: Optional[int] = Field(None, ge=1, le=5, description="PCAF score")
     heat_category: str = Field("medium", description="Heat category (low/medium/high)")
-
 
 class PortfolioBenchmarkInput(BaseModel):
     """Complete input model for PortfolioBenchmarkReport."""
@@ -194,7 +179,6 @@ class PortfolioBenchmarkInput(BaseModel):
     holdings_heatmap: List[HoldingHeatmapEntry] = Field(
         default_factory=list, description="Holdings heatmap data"
     )
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -252,7 +236,7 @@ class PortfolioBenchmarkReport:
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render portfolio benchmark as Markdown."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_md(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -260,7 +244,7 @@ class PortfolioBenchmarkReport:
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render portfolio benchmark as HTML."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_html(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -268,7 +252,7 @@ class PortfolioBenchmarkReport:
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render portfolio benchmark as JSON dict."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_json(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -314,7 +298,7 @@ class PortfolioBenchmarkReport:
         return (
             f"{title}\n\n"
             f"**Reporting Period:** {period} | "
-            f"**Report Date:** {_utcnow().strftime('%Y-%m-%d')}\n\n"
+            f"**Report Date:** {utcnow().strftime('%Y-%m-%d')}\n\n"
             "---"
         )
 
@@ -516,7 +500,7 @@ class PortfolioBenchmarkReport:
             '<div class="section">\n'
             f"<h1>{title}</h1>\n"
             f"<p><strong>Reporting Period:</strong> {period} | "
-            f"<strong>Report Date:</strong> {_utcnow().strftime('%Y-%m-%d')}</p>\n"
+            f"<strong>Report Date:</strong> {utcnow().strftime('%Y-%m-%d')}</p>\n"
             "<hr>\n</div>"
         )
 

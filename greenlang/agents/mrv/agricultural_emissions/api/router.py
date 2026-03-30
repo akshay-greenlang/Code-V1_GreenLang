@@ -41,6 +41,7 @@ from __future__ import annotations
 import logging
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +64,7 @@ if FASTAPI_AVAILABLE:
     # Calculation models
     # --------------------------------------------------------------
 
-    class SingleCalculationRequest(BaseModel):
+    class SingleCalculationRequest(GreenLangBase):
         """Request body for a single agricultural emission calculation.
 
         Supports enteric fermentation (CH4 from livestock digestion),
@@ -374,7 +375,7 @@ if FASTAPI_AVAILABLE:
             "to this calculation",
         )
 
-    class BatchCalculationBody(BaseModel):
+    class BatchCalculationBody(GreenLangBase):
         """Request body for batch agricultural emission calculations."""
 
         calculations: List[Dict[str, Any]] = Field(
@@ -397,7 +398,7 @@ if FASTAPI_AVAILABLE:
     # Farm models
     # --------------------------------------------------------------
 
-    class FarmBody(BaseModel):
+    class FarmBody(GreenLangBase):
         """Request body for registering an agricultural farm."""
 
         name: str = Field(
@@ -461,7 +462,7 @@ if FASTAPI_AVAILABLE:
             "irrigated_sprinkler, irrigated_flood, none)",
         )
 
-    class FarmUpdateBody(BaseModel):
+    class FarmUpdateBody(GreenLangBase):
         """Request body for updating a farm's attributes."""
 
         name: Optional[str] = Field(
@@ -505,7 +506,7 @@ if FASTAPI_AVAILABLE:
     # Livestock models
     # --------------------------------------------------------------
 
-    class LivestockBody(BaseModel):
+    class LivestockBody(GreenLangBase):
         """Request body for registering a livestock herd or flock."""
 
         farm_id: str = Field(
@@ -564,7 +565,7 @@ if FASTAPI_AVAILABLE:
             description="Owning tenant identifier",
         )
 
-    class LivestockUpdateBody(BaseModel):
+    class LivestockUpdateBody(GreenLangBase):
         """Request body for updating a livestock herd's attributes."""
 
         head_count: Optional[int] = Field(
@@ -608,7 +609,7 @@ if FASTAPI_AVAILABLE:
     # Cropland input model
     # --------------------------------------------------------------
 
-    class CroplandInputBody(BaseModel):
+    class CroplandInputBody(GreenLangBase):
         """Request body for recording cropland nitrogen and liming inputs."""
 
         farm_id: str = Field(
@@ -679,7 +680,7 @@ if FASTAPI_AVAILABLE:
     # Rice field model
     # --------------------------------------------------------------
 
-    class RiceFieldBody(BaseModel):
+    class RiceFieldBody(GreenLangBase):
         """Request body for registering a rice paddy field."""
 
         farm_id: str = Field(
@@ -743,7 +744,7 @@ if FASTAPI_AVAILABLE:
     # Field burning model
     # --------------------------------------------------------------
 
-    class FieldBurningBody(BaseModel):
+    class FieldBurningBody(GreenLangBase):
         """Request body for recording a field burning event."""
 
         farm_id: str = Field(
@@ -801,7 +802,7 @@ if FASTAPI_AVAILABLE:
     # Compliance & uncertainty models
     # --------------------------------------------------------------
 
-    class ComplianceCheckBody(BaseModel):
+    class ComplianceCheckBody(GreenLangBase):
         """Request body for a compliance check."""
 
         calculation_id: str = Field(
@@ -820,7 +821,7 @@ if FASTAPI_AVAILABLE:
             description="Tenant identifier for scoping",
         )
 
-    class UncertaintyBody(BaseModel):
+    class UncertaintyBody(GreenLangBase):
         """Request body for Monte Carlo uncertainty analysis."""
 
         calculation_id: str = Field(

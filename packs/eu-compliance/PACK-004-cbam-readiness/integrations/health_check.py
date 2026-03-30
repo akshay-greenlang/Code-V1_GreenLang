@@ -43,21 +43,13 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas.enums import HealthStatus, Severity
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # Enums
 # =============================================================================
-
-
-class HealthStatus(str, Enum):
-    """Overall health status."""
-    HEALTHY = "healthy"
-    DEGRADED = "degraded"
-    UNHEALTHY = "unhealthy"
-    UNKNOWN = "unknown"
-
 
 class CheckCategory(str, Enum):
     """Categories of health checks."""
@@ -74,18 +66,9 @@ class CheckCategory(str, Enum):
     SUPPLIER_PORTAL_STATUS = "supplier_portal_status"
     COMPLIANCE_RULE_COVERAGE = "compliance_rule_coverage"
 
-
-class Severity(str, Enum):
-    """Finding severity level."""
-    CRITICAL = "critical"
-    WARNING = "warning"
-    INFO = "info"
-
-
 # =============================================================================
 # Data Models
 # =============================================================================
-
 
 class Finding(BaseModel):
     """A health check finding."""
@@ -94,7 +77,6 @@ class Finding(BaseModel):
     finding: str = Field(..., description="What was found")
     suggestion: str = Field(default="", description="Remediation suggestion")
     auto_fixable: bool = Field(default=False, description="Whether auto-fixable")
-
 
 class CategoryResult(BaseModel):
     """Result of a single health check category."""
@@ -106,7 +88,6 @@ class CategoryResult(BaseModel):
     findings: List[Finding] = Field(default_factory=list, description="Findings")
     details: Dict[str, Any] = Field(default_factory=dict, description="Detailed results")
     execution_time_ms: float = Field(default=0.0, description="Check time in ms")
-
 
 class HealthCheckResult(BaseModel):
     """Complete health check result."""
@@ -132,7 +113,6 @@ class HealthCheckResult(BaseModel):
         description="Check timestamp",
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 # =============================================================================
 # Expected Resources
@@ -238,11 +218,9 @@ REQUIRED_EF_CATEGORIES: List[str] = [
     "ELECTRICITY",
 ]
 
-
 # =============================================================================
 # Health Check Implementation
 # =============================================================================
-
 
 class CBAMHealthCheck:
     """12-category health check for CBAM Readiness Pack.
@@ -1287,11 +1265,9 @@ class CBAMHealthCheck:
         )
         return result
 
-
 # =============================================================================
 # Module-Level Helper
 # =============================================================================
-
 
 def _compute_hash(data: str) -> str:
     """Compute a SHA-256 hash of the given string.

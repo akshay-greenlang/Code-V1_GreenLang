@@ -23,6 +23,8 @@ import logging
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _SECTIONS: List[str] = [
@@ -32,12 +34,6 @@ _SECTIONS: List[str] = [
     "project_details",
     "sbti_compliance",
 ]
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -49,7 +45,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 class CarbonCreditsReportTemplate:
     """
@@ -78,7 +73,7 @@ class CarbonCreditsReportTemplate:
 
     def render(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render full report as structured dict."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result: Dict[str, Any] = {}
         for section in _SECTIONS:
             result[section] = self.render_section(section, data)
@@ -111,7 +106,7 @@ class CarbonCreditsReportTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render carbon credits report as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [
             self._md_header(data),
             self._md_portfolio(data),
@@ -127,7 +122,7 @@ class CarbonCreditsReportTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render carbon credits report as HTML."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         body = "\n".join([
             self._html_header(data),
@@ -145,7 +140,7 @@ class CarbonCreditsReportTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render carbon credits report as JSON."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         credits = data.get("carbon_credits", [])
         total_tco2e = sum(c.get("tco2e", 0.0) for c in credits)
         result = {

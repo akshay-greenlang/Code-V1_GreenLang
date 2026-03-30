@@ -42,23 +42,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ReportFormat
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -70,11 +66,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Agent Stubs
 # ---------------------------------------------------------------------------
-
 
 class _AgentStub:
     """Stub for unavailable GL-GHG-APP modules."""
@@ -93,7 +87,6 @@ class _AgentStub:
             }
         return _stub_method
 
-
 def _try_import_ghg_component(component_id: str, module_path: str) -> Any:
     try:
         return importlib.import_module(module_path)
@@ -101,11 +94,9 @@ def _try_import_ghg_component(component_id: str, module_path: str) -> Any:
         logger.debug("GHG component %s not available, using stub", component_id)
         return _AgentStub(component_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class GHGScope(str, Enum):
     SCOPE_1 = "scope_1"
@@ -113,20 +104,11 @@ class GHGScope(str, Enum):
     SCOPE_2_MARKET = "scope_2_market"
     SCOPE_3 = "scope_3"
 
-
-class ReportFormat(str, Enum):
-    PDF = "pdf"
-    EXCEL = "excel"
-    JSON = "json"
-    XHTML = "xhtml"
-
-
 class CompletenessLevel(str, Enum):
     COMPLETE = "complete"
     SUBSTANTIALLY_COMPLETE = "substantially_complete"
     PARTIAL = "partial"
     INSUFFICIENT = "insufficient"
-
 
 class BaseYearValidity(str, Enum):
     VALID = "valid"
@@ -134,11 +116,9 @@ class BaseYearValidity(str, Enum):
     TOO_OLD = "too_old"
     INVALID = "invalid"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class GHGAppBridgeConfig(BaseModel):
     """Configuration for the GHG App bridge."""
@@ -154,7 +134,6 @@ class GHGAppBridgeConfig(BaseModel):
     scope3_categories: List[int] = Field(default_factory=lambda: list(range(1, 16)))
     materiality_threshold_pct: float = Field(default=5.0, ge=0.0, le=100.0)
     timeout_seconds: int = Field(default=300, ge=30)
-
 
 class InventoryResult(BaseModel):
     """GHG inventory result."""
@@ -172,8 +151,7 @@ class InventoryResult(BaseModel):
     data_quality_score: float = Field(default=0.0, ge=0.0, le=100.0)
     completeness: str = Field(default="partial")
     provenance_hash: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class BaseYearResult(BaseModel):
     """Base year emissions result."""
@@ -189,7 +167,6 @@ class BaseYearResult(BaseModel):
     last_recalculated: Optional[datetime] = Field(None)
     provenance_hash: str = Field(default="")
 
-
 class AggregationResult(BaseModel):
     """Scope aggregation result."""
 
@@ -202,7 +179,6 @@ class AggregationResult(BaseModel):
     total_market_tco2e: float = Field(default=0.0)
     scope_breakdown_pct: Dict[str, float] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
-
 
 class CompletenessResult(BaseModel):
     """Inventory completeness assessment."""
@@ -218,7 +194,6 @@ class CompletenessResult(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     r2z_reporting_ready: bool = Field(default=False)
 
-
 class MultiYearResult(BaseModel):
     """Multi-year emissions trend data."""
 
@@ -232,7 +207,6 @@ class MultiYearResult(BaseModel):
     on_track_2030: bool = Field(default=False)
     projected_2030_tco2e: float = Field(default=0.0)
 
-
 class ReportResult(BaseModel):
     """GHG report generation result."""
 
@@ -241,14 +215,12 @@ class ReportResult(BaseModel):
     title: str = Field(default="")
     pages: int = Field(default=0)
     file_path: str = Field(default="")
-    generated_at: datetime = Field(default_factory=_utcnow)
+    generated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # GHGAppBridge
 # ---------------------------------------------------------------------------
-
 
 class GHGAppBridge:
     """Bridge to GL-GHG-APP for Race to Zero GHG inventory management.

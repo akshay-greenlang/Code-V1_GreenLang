@@ -28,6 +28,7 @@ from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.commodity_risk_analyzer.api.dependencies import (
     AuthUser,
@@ -66,12 +67,6 @@ router = APIRouter(tags=["Due Diligence"])
 
 _workflow_store: Dict[str, DDWorkflowResponse] = {}
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # Default next steps per commodity type
 _DEFAULT_STEPS: List[DDNextStep] = [
     DDNextStep(
@@ -101,11 +96,9 @@ _DEFAULT_STEPS: List[DDNextStep] = [
     ),
 ]
 
-
 # ---------------------------------------------------------------------------
 # POST /due-diligence/initiate
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/due-diligence/initiate",
@@ -165,7 +158,7 @@ async def initiate_workflow(
             evidence_items=[],
             next_steps=next_steps,
             trigger=body.trigger,
-            initiated_at=_utcnow(),
+            initiated_at=utcnow(),
         )
 
         _workflow_store[workflow_id] = workflow
@@ -187,11 +180,9 @@ async def initiate_workflow(
             detail="Due diligence workflow initiation failed",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /due-diligence/{workflow_id}/status
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/due-diligence/{workflow_id}/status",
@@ -233,11 +224,9 @@ async def get_workflow_status(
         )
     return workflow
 
-
 # ---------------------------------------------------------------------------
 # POST /due-diligence/{workflow_id}/evidence
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/due-diligence/{workflow_id}/evidence",
@@ -298,7 +287,7 @@ async def submit_evidence(
     evidence_item = DDEvidenceItem(
         evidence_type=body.evidence_type,
         status="pending_review",
-        submitted_at=_utcnow(),
+        submitted_at=utcnow(),
     )
     workflow.evidence_items.append(evidence_item)
 
@@ -345,11 +334,9 @@ async def submit_evidence(
 
     return workflow
 
-
 # ---------------------------------------------------------------------------
 # GET /due-diligence/pending
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/due-diligence/pending",
@@ -421,11 +408,9 @@ async def get_pending_workflows(
         ),
     )
 
-
 # ---------------------------------------------------------------------------
 # POST /due-diligence/{workflow_id}/complete
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/due-diligence/{workflow_id}/complete",
@@ -496,7 +481,7 @@ async def complete_workflow(
         )
 
     # Mark as completed
-    now = _utcnow()
+    now = utcnow()
     workflow.status = DDWorkflowStatusEnum.COMPLETED
     workflow.completion_pct = Decimal("100.0")
     workflow.completed_at = now

@@ -55,6 +55,7 @@ import json
 import logging
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.due_diligence_orchestrator.config import (
     DueDiligenceOrchestratorConfig,
@@ -319,7 +320,7 @@ class QualityGateEngine:
             if check_scores is None:
                 check_scores = {}
 
-        start_time = _utcnow()
+        start_time = utcnow()
 
         # Get check definitions and threshold for this gate
         check_defs = self._get_check_definitions(gate_id)
@@ -395,13 +396,13 @@ class QualityGateEngine:
             checks=checks,
             override_justification=override_justification if override else None,
             override_by=override_by if override else None,
-            evaluated_at=_utcnow(),
+            evaluated_at=utcnow(),
             provenance_hash=self._hash_evaluation(
                 workflow_id, gate_id, weighted_score, result, checks
             ),
         )
 
-        duration_ms = (_utcnow() - start_time).total_seconds() * 1000
+        duration_ms = (utcnow() - start_time).total_seconds() * 1000
         logger.info(
             f"Quality gate {gate_id.value} evaluation for {workflow_id}: "
             f"score={weighted_score}, threshold={threshold}, "
@@ -549,7 +550,7 @@ class QualityGateEngine:
             checks=evaluation.checks,
             override_justification=justification.strip(),
             override_by=override_by.strip(),
-            evaluated_at=_utcnow(),
+            evaluated_at=utcnow(),
             provenance_hash=self._hash_evaluation(
                 evaluation.workflow_id,
                 evaluation.gate_id,

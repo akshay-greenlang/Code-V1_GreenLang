@@ -10,7 +10,8 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, Field, validator
+from pydantic import Field, validator
+from greenlang.schemas import GreenLangBase
 
 
 class DecarbonizationPathway(str, Enum):
@@ -104,7 +105,7 @@ class CCUSTechnology(str, Enum):
 # Base Models
 # =============================================================================
 
-class DecarbonizationBaseInput(BaseModel):
+class DecarbonizationBaseInput(GreenLangBase):
     """Base input for decarbonization planning agents."""
 
     organization_id: str = Field(..., description="Organization identifier")
@@ -126,7 +127,7 @@ class DecarbonizationBaseInput(BaseModel):
     )
 
 
-class DecarbonizationBaseOutput(BaseModel):
+class DecarbonizationBaseOutput(GreenLangBase):
     """Base output for decarbonization planning agents."""
 
     organization_id: str = Field(...)

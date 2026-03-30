@@ -43,25 +43,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -74,11 +68,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class ConsolidationRunStatus(str, Enum):
     """Consolidation run lifecycle status."""
@@ -88,7 +80,6 @@ class ConsolidationRunStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     CANCELLED = "cancelled"
-
 
 class SubmissionStatus(str, Enum):
     """Site submission lifecycle status."""
@@ -101,7 +92,6 @@ class SubmissionStatus(str, Enum):
     REJECTED = "rejected"
     RESUBMITTED = "resubmitted"
 
-
 class ReviewOutcome(str, Enum):
     """Review outcome classification."""
 
@@ -110,17 +100,14 @@ class ReviewOutcome(str, Enum):
     REJECTED = "rejected"
     REQUIRES_RESUBMISSION = "requires_resubmission"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class Pack044Config(BaseModel):
     """Configuration for PACK-044 bridge."""
 
     timeout_s: float = Field(30.0, ge=5.0)
-
 
 class Pack044ConsolidationRun(BaseModel):
     """Consolidation run record from PACK-044."""
@@ -139,7 +126,6 @@ class Pack044ConsolidationRun(BaseModel):
     completed_at: str = ""
     provenance_hash: str = ""
 
-
 class Pack044SubmissionStatus(BaseModel):
     """Per-site submission status from PACK-044."""
 
@@ -157,7 +143,6 @@ class Pack044SubmissionStatus(BaseModel):
     resubmission_count: int = 0
     provenance_hash: str = ""
 
-
 class ReviewRecord(BaseModel):
     """Review record with approval chain details."""
 
@@ -170,11 +155,9 @@ class ReviewRecord(BaseModel):
     reviewed_at: str = ""
     provenance_hash: str = ""
 
-
 # ---------------------------------------------------------------------------
 # Bridge Implementation
 # ---------------------------------------------------------------------------
-
 
 class Pack044Bridge:
     """

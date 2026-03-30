@@ -52,23 +52,18 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -80,11 +75,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class GrantRegion(str, Enum):
     UK = "UK"
@@ -94,13 +87,11 @@ class GrantRegion(str, Enum):
     NZ = "NZ"
     CA = "CA"
 
-
 class GrantStatus(str, Enum):
     OPEN = "open"
     CLOSING_SOON = "closing_soon"
     CLOSED = "closed"
     UPCOMING = "upcoming"
-
 
 class GrantCategory(str, Enum):
     ENERGY_EFFICIENCY = "energy_efficiency"
@@ -112,7 +103,6 @@ class GrantCategory(str, Enum):
     INNOVATION = "innovation"
     GENERAL_GREEN = "general_green"
 
-
 class ApplicationStatus(str, Enum):
     NOT_STARTED = "not_started"
     DRAFT = "draft"
@@ -121,7 +111,6 @@ class ApplicationStatus(str, Enum):
     APPROVED = "approved"
     REJECTED = "rejected"
     WITHDRAWN = "withdrawn"
-
 
 # ---------------------------------------------------------------------------
 # Grant Database
@@ -386,11 +375,9 @@ GRANT_DATABASE: List[Dict[str, Any]] = [
     },
 ]
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class GrantDatabaseConfig(BaseModel):
     """Configuration for the Grant Database Bridge."""
@@ -401,7 +388,6 @@ class GrantDatabaseConfig(BaseModel):
     max_results: int = Field(default=20, ge=1, le=100)
     min_match_score: float = Field(default=0.5, ge=0.0, le=1.0)
     enable_provenance: bool = Field(default=True)
-
 
 class GrantMatch(BaseModel):
     """A matched grant with eligibility scoring."""
@@ -423,7 +409,6 @@ class GrantMatch(BaseModel):
     days_until_deadline: int = Field(default=0)
     match_rate_pct: int = Field(default=0)
 
-
 class GrantSearchResult(BaseModel):
     """Result of a grant database search."""
 
@@ -437,11 +422,10 @@ class GrantSearchResult(BaseModel):
     total_funding_available: float = Field(default=0.0)
     currency: str = Field(default="GBP")
     matches: List[GrantMatch] = Field(default_factory=list)
-    searched_at: datetime = Field(default_factory=_utcnow)
+    searched_at: datetime = Field(default_factory=utcnow)
     next_sync: str = Field(default="")
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class GrantApplication(BaseModel):
     """Grant application tracking record."""
@@ -457,9 +441,8 @@ class GrantApplication(BaseModel):
     deadline: str = Field(default="")
     notes: str = Field(default="")
     documents: List[str] = Field(default_factory=list)
-    created_at: datetime = Field(default_factory=_utcnow)
-    updated_at: datetime = Field(default_factory=_utcnow)
-
+    created_at: datetime = Field(default_factory=utcnow)
+    updated_at: datetime = Field(default_factory=utcnow)
 
 class DeadlineAlert(BaseModel):
     """Grant deadline alert."""
@@ -471,11 +454,9 @@ class DeadlineAlert(BaseModel):
     urgency: str = Field(default="normal")
     message: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # GrantDatabaseBridge
 # ---------------------------------------------------------------------------
-
 
 class GrantDatabaseBridge:
     """Grant and funding database integration for SME net-zero.
@@ -503,7 +484,7 @@ class GrantDatabaseBridge:
         self.logger = logging.getLogger(self.__class__.__name__)
         self._grant_db: List[Dict[str, Any]] = list(GRANT_DATABASE)
         self._applications: Dict[str, GrantApplication] = {}
-        self._last_sync = _utcnow()
+        self._last_sync = utcnow()
 
         self.logger.info(
             "GrantDatabaseBridge initialized: %d grants, region=%s",
@@ -736,11 +717,11 @@ class GrantDatabaseBridge:
             return None
 
         app.status = status
-        app.updated_at = _utcnow()
+        app.updated_at = utcnow()
         if notes:
             app.notes = notes
         if status == ApplicationStatus.SUBMITTED:
-            app.submitted_at = _utcnow()
+            app.submitted_at = utcnow()
 
         return app
 
@@ -758,7 +739,7 @@ class GrantDatabaseBridge:
         Returns:
             Dict with sync status.
         """
-        self._last_sync = _utcnow()
+        self._last_sync = utcnow()
         return {
             "status": "synced",
             "grants_count": len(self._grant_db),
@@ -771,7 +752,7 @@ class GrantDatabaseBridge:
     def get_sync_status(self) -> Dict[str, Any]:
         """Get current sync status."""
         next_sync = self._last_sync + timedelta(days=self.config.sync_interval_days)
-        overdue = _utcnow() > next_sync
+        overdue = utcnow() > next_sync
         return {
             "last_sync": self._last_sync.isoformat(),
             "next_sync": next_sync.isoformat(),

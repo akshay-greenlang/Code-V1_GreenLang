@@ -35,9 +35,10 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -113,7 +114,7 @@ class AnomalyType(str, Enum):
 # PYDANTIC MODELS
 # =============================================================================
 
-class MeterLocation(BaseModel):
+class MeterLocation(GreenLangBase):
     """Meter location information."""
     building_id: str = Field(...)
     building_name: Optional[str] = Field(None)
@@ -123,7 +124,7 @@ class MeterLocation(BaseModel):
     coordinates: Optional[Dict[str, float]] = Field(None)
 
 
-class MeterSpecification(BaseModel):
+class MeterSpecification(GreenLangBase):
     """Meter technical specifications."""
     manufacturer: str = Field(...)
     model: str = Field(...)
@@ -139,7 +140,7 @@ class MeterSpecification(BaseModel):
     warranty_end: Optional[date] = Field(None)
 
 
-class CalibrationRecord(BaseModel):
+class CalibrationRecord(GreenLangBase):
     """Calibration record."""
     calibration_id: str = Field(...)
     meter_id: str = Field(...)
@@ -153,7 +154,7 @@ class CalibrationRecord(BaseModel):
     notes: Optional[str] = Field(None)
 
 
-class MeterReading(BaseModel):
+class MeterReading(GreenLangBase):
     """Meter reading."""
     reading_id: str = Field(...)
     meter_id: str = Field(...)
@@ -165,7 +166,7 @@ class MeterReading(BaseModel):
     anomaly_detected: bool = Field(default=False)
 
 
-class MeterAnomaly(BaseModel):
+class MeterAnomaly(GreenLangBase):
     """Detected meter anomaly."""
     anomaly_id: str = Field(...)
     meter_id: str = Field(...)
@@ -178,7 +179,7 @@ class MeterAnomaly(BaseModel):
     resolution_notes: Optional[str] = Field(None)
 
 
-class MeterTrustScore(BaseModel):
+class MeterTrustScore(GreenLangBase):
     """Meter trust score calculation."""
     meter_id: str = Field(...)
     calculated_at: datetime = Field(...)
@@ -188,7 +189,7 @@ class MeterTrustScore(BaseModel):
     factors: Dict[str, Any] = Field(default_factory=dict)
 
 
-class Meter(BaseModel):
+class Meter(GreenLangBase):
     """Meter definition."""
     meter_id: str = Field(...)
     name: str = Field(...)
@@ -206,7 +207,7 @@ class Meter(BaseModel):
     current_trust_score: Optional[float] = Field(None)
 
 
-class VirtualMeterConfig(BaseModel):
+class VirtualMeterConfig(GreenLangBase):
     """Virtual meter configuration."""
     meter_id: str = Field(...)
     name: str = Field(...)
@@ -216,7 +217,7 @@ class VirtualMeterConfig(BaseModel):
     unit: str = Field(...)
 
 
-class MeterQueryInput(BaseModel):
+class MeterQueryInput(GreenLangBase):
     """Input for meter operations."""
     operation: str = Field(...)  # register, update, query, calibrate, trust_score, anomaly
     meter: Optional[Meter] = Field(None)
@@ -231,7 +232,7 @@ class MeterQueryInput(BaseModel):
     tenant_id: Optional[str] = Field(None)
 
 
-class MeterQueryOutput(BaseModel):
+class MeterQueryOutput(GreenLangBase):
     """Output from meter operations."""
     operation: str = Field(...)
     meters: List[Meter] = Field(default_factory=list)

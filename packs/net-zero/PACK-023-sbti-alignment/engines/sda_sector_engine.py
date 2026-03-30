@@ -84,21 +84,13 @@ logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -116,7 +108,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -125,7 +116,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -137,24 +127,20 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
-
 
 def _interpolate_linear(
     y_start: Decimal,
@@ -180,11 +166,9 @@ def _interpolate_linear(
     fraction = _decimal(t - t_start) / _decimal(t_end - t_start)
     return y_start + (y_end - y_start) * fraction
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SdaSector(str, Enum):
     """SDA-eligible homogeneous sectors per SBTi SDA V2.1.
@@ -205,7 +189,6 @@ class SdaSector(str, Enum):
     AGRICULTURE = "agriculture"
     AVIATION = "aviation"
 
-
 class IntensityUnit(str, Enum):
     """Physical intensity metric units per sector.
 
@@ -224,7 +207,6 @@ class IntensityUnit(str, Enum):
     TCO2E_PER_TONNE_CROP = "tCO2e/t crop"
     TCO2E_PER_RPK = "tCO2e/RPK"
 
-
 class ConvergenceStatus(str, Enum):
     """Status of convergence to the sector pathway.
 
@@ -240,7 +222,6 @@ class ConvergenceStatus(str, Enum):
     INSUFFICIENT = "insufficient"
     NOT_ASSESSED = "not_assessed"
 
-
 class ValidationStatus(str, Enum):
     """Cross-validation result against SBTi SDA Tool V3.0.
 
@@ -253,7 +234,6 @@ class ValidationStatus(str, Enum):
     MARGINAL = "marginal"
     FAIL = "fail"
     NOT_VALIDATED = "not_validated"
-
 
 class AmbitionLevel(str, Enum):
     """Target ambition level per SBTi classification.
@@ -268,7 +248,6 @@ class AmbitionLevel(str, Enum):
     NET_ZERO = "net_zero"
     BELOW_MINIMUM = "below_minimum"
 
-
 class ScopeInclusion(str, Enum):
     """Which scopes are included in the SDA target.
 
@@ -279,7 +258,6 @@ class ScopeInclusion(str, Enum):
     SCOPE_1 = "scope_1"
     SCOPE_1_2 = "scope_1_2"
     SCOPE_2 = "scope_2"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- IEA NZE 2023 Sector Benchmarks
@@ -530,11 +508,9 @@ MIN_BASE_YEAR: int = 2015
 # Total number of SDA-eligible sectors.
 TOTAL_SDA_SECTORS: int = 12
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class CompanyIntensityInput(BaseModel):
     """Company-specific intensity data for SDA convergence.
@@ -649,7 +625,6 @@ class CompanyIntensityInput(BaseModel):
             return base
         return v
 
-
 class CrossValidationInput(BaseModel):
     """Cross-validation reference data from SBTi SDA Tool V3.0.
 
@@ -670,7 +645,6 @@ class CrossValidationInput(BaseModel):
         default=Decimal("0"), ge=0,
         description="Absolute emissions from SBTi SDA Tool"
     )
-
 
 class SdaInput(BaseModel):
     """Complete SDA analysis input.
@@ -712,11 +686,9 @@ class SdaInput(BaseModel):
         description="Include production volume projections"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class AnnualMilestone(BaseModel):
     """A single year's intensity milestone on the SDA pathway.
@@ -739,7 +711,6 @@ class AnnualMilestone(BaseModel):
     is_on_track: bool = Field(default=True)
     absolute_emissions_tco2e: Decimal = Field(default=Decimal("0"))
     production_volume: Decimal = Field(default=Decimal("0"))
-
 
 class ConvergenceAssessment(BaseModel):
     """SDA convergence assessment result.
@@ -781,7 +752,6 @@ class ConvergenceAssessment(BaseModel):
     convergence_year: int = Field(default=0)
     message: str = Field(default="")
 
-
 class AmbitionAssessment(BaseModel):
     """Ambition level assessment per SBTi classification.
 
@@ -812,7 +782,6 @@ class AmbitionAssessment(BaseModel):
     gap_to_c15_pct: Decimal = Field(default=Decimal("0"))
     message: str = Field(default="")
 
-
 class CrossValidationResult(BaseModel):
     """Cross-validation result against SBTi SDA Tool V3.0.
 
@@ -832,7 +801,6 @@ class CrossValidationResult(BaseModel):
     relative_deviation_pct: Decimal = Field(default=Decimal("0"))
     validation_status: str = Field(default=ValidationStatus.NOT_VALIDATED.value)
     within_tolerance: bool = Field(default=True)
-
 
 class CrossValidationSummary(BaseModel):
     """Summary of SDA Tool cross-validation.
@@ -858,7 +826,6 @@ class CrossValidationSummary(BaseModel):
     details: List[CrossValidationResult] = Field(default_factory=list)
     message: str = Field(default="")
 
-
 class AbsolutePathwayPoint(BaseModel):
     """A single year's absolute emissions on the SDA pathway.
 
@@ -875,7 +842,6 @@ class AbsolutePathwayPoint(BaseModel):
     absolute_emissions_tco2e: Decimal = Field(default=Decimal("0"))
     reduction_from_base_pct: Decimal = Field(default=Decimal("0"))
 
-
 class ProductionForecast(BaseModel):
     """Production volume forecast for absolute pathway.
 
@@ -889,7 +855,6 @@ class ProductionForecast(BaseModel):
     base_production: Decimal = Field(default=Decimal("0"))
     annual_growth_pct: Decimal = Field(default=Decimal("0"))
     projected_years: List[Dict[str, Any]] = Field(default_factory=list)
-
 
 class SectorBenchmarkInfo(BaseModel):
     """Sector benchmark reference information.
@@ -917,7 +882,6 @@ class SectorBenchmarkInfo(BaseModel):
     c15_annual_rate_pct: Decimal = Field(default=Decimal("0"))
     source: str = Field(default="IEA Net Zero Emissions by 2050 (NZE 2023)")
 
-
 class SdaRecommendation(BaseModel):
     """A single SDA-specific recommendation.
 
@@ -937,7 +901,6 @@ class SdaRecommendation(BaseModel):
     rationale: str = Field(default="")
     estimated_impact: str = Field(default="")
     timeline_months: int = Field(default=12)
-
 
 class SdaResult(BaseModel):
     """Complete SDA analysis result.
@@ -963,7 +926,7 @@ class SdaResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     company_name: str = Field(default="")
     sector: str = Field(default="")
     convergence: Optional[ConvergenceAssessment] = Field(None)
@@ -979,11 +942,9 @@ class SdaResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class SDASectorEngine:
     """SBTi Sectoral Decarbonisation Approach (SDA) engine.
@@ -2048,6 +2009,8 @@ class SDASectorEngine:
 
         Projects production using compound annual growth rate
         from base year to target year.
+
+from greenlang.schemas import utcnow
 
         Args:
             company: Company input data.

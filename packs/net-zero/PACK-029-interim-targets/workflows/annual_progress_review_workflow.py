@@ -48,34 +48,28 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import AlertSeverity
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "29.0.0"
 _PACK_ID = "PACK-029"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 def _calc_cagr(start_val: float, end_val: float, years: int) -> float:
     if years <= 0 or start_val <= 0 or end_val <= 0:
         return 0.0
     return ((end_val / start_val) ** (1.0 / years) - 1.0) * 100.0
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -84,7 +78,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
@@ -92,18 +85,15 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class RAGStatus(str, Enum):
     RED = "red"
     AMBER = "amber"
     GREEN = "green"
 
-
 class TrendDirection(str, Enum):
     IMPROVING = "improving"
     STABLE = "stable"
     DETERIORATING = "deteriorating"
-
 
 class VarianceType(str, Enum):
     ACTIVITY = "activity"
@@ -113,24 +103,15 @@ class VarianceType(str, Enum):
     ACQUISITION = "acquisition"
     METHODOLOGICAL = "methodological"
 
-
 class ProjectionMethod(str, Enum):
     LINEAR = "linear"
     EXPONENTIAL = "exponential"
     POLYNOMIAL = "polynomial"
     MONTE_CARLO = "monte_carlo"
 
-
-class AlertSeverity(str, Enum):
-    CRITICAL = "critical"
-    WARNING = "warning"
-    INFO = "info"
-
-
 # =============================================================================
 # MRV SCOPE COVERAGE MAP (Zero-Hallucination: Actual Agent References)
 # =============================================================================
-
 
 MRV_SCOPE_COVERAGE: Dict[str, Dict[str, Any]] = {
     "scope1": {
@@ -223,11 +204,9 @@ PROGRESS_KPIS: List[Dict[str, Any]] = [
      "target_type": "higher_is_better", "weight": 0.05},
 ]
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase_name: str = Field(...)
@@ -240,7 +219,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
     dag_node_id: str = Field(default="")
-
 
 class EmissionsActual(BaseModel):
     """Actual emissions data for a reporting period."""
@@ -260,7 +238,6 @@ class EmissionsActual(BaseModel):
     mrv_agents_used: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class TargetComparison(BaseModel):
     """Comparison of actual vs target for a single metric."""
     metric_name: str = Field(default="")
@@ -275,7 +252,6 @@ class TargetComparison(BaseModel):
     yoy_change_pct: float = Field(default=0.0)
     cumulative_reduction_pct: float = Field(default=0.0)
 
-
 class ProgressSummary(BaseModel):
     """Summary of progress against all interim targets."""
     review_year: int = Field(default=2025)
@@ -288,7 +264,6 @@ class ProgressSummary(BaseModel):
     next_milestone_year: int = Field(default=2030)
     provenance_hash: str = Field(default="")
 
-
 class VarianceComponent(BaseModel):
     """A single variance decomposition component."""
     component_type: VarianceType = Field(default=VarianceType.ACTIVITY)
@@ -298,7 +273,6 @@ class VarianceComponent(BaseModel):
     direction: str = Field(default="neutral")
     explanation: str = Field(default="")
     data_quality: float = Field(default=3.0, ge=0.0, le=5.0)
-
 
 class VarianceDecomposition(BaseModel):
     """Complete variance decomposition result."""
@@ -311,7 +285,6 @@ class VarianceDecomposition(BaseModel):
     largest_contributor: str = Field(default="")
     net_favorable: bool = Field(default=True)
     provenance_hash: str = Field(default="")
-
 
 class TrendProjection(BaseModel):
     """Trend extrapolation result for a single method."""
@@ -328,7 +301,6 @@ class TrendProjection(BaseModel):
     meets_target_2030: bool = Field(default=False)
     meets_target_2050: bool = Field(default=False)
 
-
 class TrendAnalysis(BaseModel):
     """Complete trend analysis with multiple methods."""
     projections: List[TrendProjection] = Field(default_factory=list)
@@ -339,7 +311,6 @@ class TrendAnalysis(BaseModel):
     years_to_target: int = Field(default=0)
     acceleration_needed_pct: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class ProgressAlert(BaseModel):
     """An alert generated during progress review."""
@@ -352,7 +323,6 @@ class ProgressAlert(BaseModel):
     threshold_value: str = Field(default="")
     recommended_action: str = Field(default="")
 
-
 class ProgressKPI(BaseModel):
     """A single progress KPI."""
     kpi_id: str = Field(default="")
@@ -364,7 +334,6 @@ class ProgressKPI(BaseModel):
     trend: TrendDirection = Field(default=TrendDirection.STABLE)
     rag_status: RAGStatus = Field(default=RAGStatus.GREEN)
     weight: float = Field(default=0.0)
-
 
 class AnnualProgressReport(BaseModel):
     """Complete annual progress report."""
@@ -384,7 +353,6 @@ class AnnualProgressReport(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     data_quality_score: float = Field(default=0.0, ge=0.0, le=5.0)
     provenance_hash: str = Field(default="")
-
 
 class AnnualProgressReviewConfig(BaseModel):
     company_name: str = Field(default="")
@@ -407,7 +375,6 @@ class AnnualProgressReviewConfig(BaseModel):
     output_formats: List[str] = Field(default_factory=lambda: ["json", "html"])
     alert_threshold_pct: float = Field(default=10.0, ge=0.0, le=100.0)
 
-
 class AnnualProgressReviewInput(BaseModel):
     config: AnnualProgressReviewConfig = Field(default_factory=AnnualProgressReviewConfig)
     current_actuals: EmissionsActual = Field(default_factory=EmissionsActual)
@@ -421,7 +388,6 @@ class AnnualProgressReviewInput(BaseModel):
         description="Annual pathway [{year, target_tco2e, intensity_target}]",
     )
     previous_year_actuals: Optional[EmissionsActual] = Field(default=None)
-
 
 class AnnualProgressReviewResult(BaseModel):
     workflow_id: str = Field(...)
@@ -440,11 +406,9 @@ class AnnualProgressReviewResult(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class AnnualProgressReviewWorkflow:
     """
@@ -483,7 +447,7 @@ class AnnualProgressReviewWorkflow:
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     async def execute(self, input_data: AnnualProgressReviewInput) -> AnnualProgressReviewResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         self.config = input_data.config
         self._phase_results = []
         overall_status = WorkflowStatus.RUNNING
@@ -520,7 +484,7 @@ class AnnualProgressReviewWorkflow:
                 status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
 
         result = AnnualProgressReviewResult(
             workflow_id=self.workflow_id,
@@ -546,7 +510,7 @@ class AnnualProgressReviewWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_collect_actuals(self, input_data: AnnualProgressReviewInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -602,7 +566,7 @@ class AnnualProgressReviewWorkflow:
         outputs["data_quality_score"] = actuals.data_quality_score
         outputs["mrv_agents_count"] = len(mrv_agents)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="collect_actuals", phase_number=1,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -616,7 +580,7 @@ class AnnualProgressReviewWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_compare_target(self, input_data: AnnualProgressReviewInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -778,7 +742,7 @@ class AnnualProgressReviewWorkflow:
         outputs["yoy_change_pct"] = round(yoy, 2)
         outputs["cumulative_reduction_pct"] = round(cum_red, 2)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="compare_target", phase_number=2,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -792,7 +756,7 @@ class AnnualProgressReviewWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_variance_analysis(self, input_data: AnnualProgressReviewInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -927,7 +891,7 @@ class AnnualProgressReviewWorkflow:
         outputs["net_favorable"] = total_variance <= 0
         outputs["components_count"] = len(components)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="variance_analysis", phase_number=3,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -941,7 +905,7 @@ class AnnualProgressReviewWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_trend_extrapolation(self, input_data: AnnualProgressReviewInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -1126,7 +1090,7 @@ class AnnualProgressReviewWorkflow:
         outputs["acceleration_needed_pct"] = round(acceleration, 2)
         outputs["recommended_method"] = recommended.value
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="trend_extrapolation", phase_number=4,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -1140,7 +1104,7 @@ class AnnualProgressReviewWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_annual_report(self, input_data: AnnualProgressReviewInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -1266,7 +1230,7 @@ class AnnualProgressReviewWorkflow:
 
         self._report = AnnualProgressReport(
             report_id=f"APR-{self.workflow_id[:8]}",
-            report_date=_utcnow().strftime("%Y-%m-%d"),
+            report_date=utcnow().strftime("%Y-%m-%d"),
             review_year=self.config.review_year,
             company_name=self.config.company_name,
             entity_id=self.config.entity_id,
@@ -1292,7 +1256,7 @@ class AnnualProgressReviewWorkflow:
         outputs["executive_summary_length"] = len(executive_summary)
         outputs["overall_rag"] = self._progress.overall_rag.value
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="annual_report", phase_number=5,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),

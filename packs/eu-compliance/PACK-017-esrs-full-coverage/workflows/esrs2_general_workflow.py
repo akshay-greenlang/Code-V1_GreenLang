@@ -28,33 +28,25 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class WorkflowPhase(str, Enum):
     """Phases of the ESRS 2 general disclosures workflow."""
@@ -64,7 +56,6 @@ class WorkflowPhase(str, Enum):
     MDR_VALIDATION = "mdr_validation"
     REPORT_GENERATION = "report_generation"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "pending"
@@ -72,7 +63,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class PhaseStatus(str, Enum):
     """Status of a single phase."""
@@ -82,7 +72,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class GovernanceArea(str, Enum):
     """ESRS 2 GOV disclosure areas."""
     GOV_1 = "gov_1_board_role"
@@ -91,19 +80,16 @@ class GovernanceArea(str, Enum):
     GOV_4 = "gov_4_due_diligence_statement"
     GOV_5 = "gov_5_risk_management"
 
-
 class StrategyArea(str, Enum):
     """ESRS 2 SBM disclosure areas."""
     SBM_1 = "sbm_1_strategy_business_model"
     SBM_2 = "sbm_2_stakeholder_interests"
     SBM_3 = "sbm_3_material_impacts"
 
-
 class IROArea(str, Enum):
     """ESRS 2 IRO disclosure areas."""
     IRO_1 = "iro_1_materiality_process"
     IRO_2 = "iro_2_esrs_disclosure_requirements"
-
 
 class MDRType(str, Enum):
     """Minimum Disclosure Requirement types."""
@@ -112,11 +98,9 @@ class MDRType(str, Enum):
     MDR_T = "mdr_t_targets"
     MDR_M = "mdr_m_metrics"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -128,7 +112,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class GovernanceRecord(BaseModel):
     """Governance assessment data for GOV-1 to GOV-5."""
     record_id: str = Field(default_factory=lambda: f"gov-{_new_uuid()[:8]}")
@@ -139,7 +122,6 @@ class GovernanceRecord(BaseModel):
     gaps_identified: List[str] = Field(default_factory=list)
     score: float = Field(default=0.0, ge=0.0, le=100.0, description="Compliance score 0-100")
 
-
 class StrategyRecord(BaseModel):
     """Strategy and business model assessment data."""
     record_id: str = Field(default_factory=lambda: f"sbm-{_new_uuid()[:8]}")
@@ -149,7 +131,6 @@ class StrategyRecord(BaseModel):
     stakeholder_groups: List[str] = Field(default_factory=list)
     material_impacts: List[str] = Field(default_factory=list)
     score: float = Field(default=0.0, ge=0.0, le=100.0)
-
 
 class IRORecord(BaseModel):
     """Impact, risk, and opportunity identification record."""
@@ -162,7 +143,6 @@ class IRORecord(BaseModel):
     materiality_topics: List[str] = Field(default_factory=list)
     score: float = Field(default=0.0, ge=0.0, le=100.0)
 
-
 class MDRRecord(BaseModel):
     """Minimum Disclosure Requirement validation record."""
     record_id: str = Field(default_factory=lambda: f"mdr-{_new_uuid()[:8]}")
@@ -172,14 +152,12 @@ class MDRRecord(BaseModel):
     completeness_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     gaps: List[str] = Field(default_factory=list)
 
-
 class MaterialityResult(BaseModel):
     """External materiality assessment result."""
     topic: str = Field(default="")
     is_material: bool = Field(default=False)
     impact_score: float = Field(default=0.0)
     financial_score: float = Field(default=0.0)
-
 
 class ESRS2GeneralInput(BaseModel):
     """Input data model for ESRS2GeneralWorkflow."""
@@ -206,7 +184,6 @@ class ESRS2GeneralInput(BaseModel):
     entity_name: str = Field(default="")
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class ESRS2WorkflowResult(BaseModel):
     """Complete result from ESRS 2 general disclosures workflow."""
     workflow_id: str = Field(..., description="Unique execution ID")
@@ -226,11 +203,9 @@ class ESRS2WorkflowResult(BaseModel):
     reporting_year: int = Field(default=2025)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class ESRS2GeneralWorkflow:
     """
@@ -306,7 +281,7 @@ class ESRS2GeneralWorkflow:
         if input_data is None:
             input_data = ESRS2GeneralInput(config=config or {})
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting ESRS 2 general disclosures workflow %s", self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = WorkflowStatus.IN_PROGRESS
@@ -331,7 +306,7 @@ class ESRS2GeneralWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
 
         # Calculate overall compliance
         all_scores: List[float] = []
@@ -372,7 +347,7 @@ class ESRS2GeneralWorkflow:
         self, input_data: ESRS2GeneralInput,
     ) -> PhaseResult:
         """Evaluate governance disclosures GOV-1 through GOV-5."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._governance_scores = {}
@@ -399,7 +374,7 @@ class ESRS2GeneralWorkflow:
         outputs["areas_assessed"] = len(self._governance_scores)
         outputs["areas_with_gaps"] = sum(1 for s in self._governance_scores.values() if s < 100.0)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 1 GovernanceAssessment: %d areas, avg score %.1f%%",
             len(self._governance_scores), avg_score,
@@ -419,7 +394,7 @@ class ESRS2GeneralWorkflow:
         self, input_data: ESRS2GeneralInput,
     ) -> PhaseResult:
         """Assess strategy and business model disclosures SBM-1 to SBM-3."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._strategy_scores = {}
@@ -455,7 +430,7 @@ class ESRS2GeneralWorkflow:
         outputs["stakeholder_groups_count"] = stakeholder_count
         outputs["material_topics_linked"] = len(material_topics)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 2 StrategyAnalysis: %d areas, avg score %.1f%%",
             len(self._strategy_scores), avg_score,
@@ -475,7 +450,7 @@ class ESRS2GeneralWorkflow:
         self, input_data: ESRS2GeneralInput,
     ) -> PhaseResult:
         """Process impact, risk, and opportunity identification (IRO-1, IRO-2)."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._iro_summary = {}
@@ -527,7 +502,7 @@ class ESRS2GeneralWorkflow:
         outputs["total_risks"] = total_risks
         outputs["total_opportunities"] = total_opportunities
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 3 IROIdentification: %d impacts, %d risks, %d opportunities",
             total_impacts, total_risks, total_opportunities,
@@ -547,7 +522,7 @@ class ESRS2GeneralWorkflow:
         self, input_data: ESRS2GeneralInput,
     ) -> PhaseResult:
         """Validate Minimum Disclosure Requirements (MDR-P, MDR-A, MDR-T, MDR-M)."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._mdr_compliance = {}
@@ -585,7 +560,7 @@ class ESRS2GeneralWorkflow:
             1 for v in self._mdr_compliance.values() if v >= 100.0
         )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 4 MDRValidation: avg MDR compliance %.1f%%", avg_mdr,
         )
@@ -604,7 +579,7 @@ class ESRS2GeneralWorkflow:
         self, input_data: ESRS2GeneralInput,
     ) -> PhaseResult:
         """Compile complete ESRS 2 disclosure report."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -654,7 +629,7 @@ class ESRS2GeneralWorkflow:
                 f"High gap count ({self._total_gaps}): disclosure may require additional work"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 5 ReportGeneration: ESRS 2 disclosure ready, %d gaps",
             self._total_gaps,

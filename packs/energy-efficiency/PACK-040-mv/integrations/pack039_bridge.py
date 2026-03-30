@@ -36,26 +36,19 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -68,11 +61,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class MonitoringMeterType(str, Enum):
     """Meter types from PACK-039 monitoring system."""
@@ -82,7 +73,6 @@ class MonitoringMeterType(str, Enum):
     VIRTUAL = "virtual"
     CT_CLAMP = "ct_clamp"
     PULSE = "pulse"
-
 
 class DataInterval(str, Enum):
     """Monitoring data interval lengths."""
@@ -95,7 +85,6 @@ class DataInterval(str, Enum):
     DAILY = "daily"
     MONTHLY = "monthly"
 
-
 class DataQualityFlag(str, Enum):
     """Data quality flags from PACK-039 validation."""
 
@@ -104,7 +93,6 @@ class DataQualityFlag(str, Enum):
     INTERPOLATED = "interpolated"
     SUSPECT = "suspect"
     MISSING = "missing"
-
 
 class EnPICategory(str, Enum):
     """Energy Performance Indicator categories from monitoring."""
@@ -117,7 +105,6 @@ class EnPICategory(str, Enum):
     EUI = "eui"
     CUSTOM = "custom"
 
-
 class MeterProtocol(str, Enum):
     """Communication protocols for meters."""
 
@@ -128,11 +115,9 @@ class MeterProtocol(str, Enum):
     OPC_UA = "opc_ua"
     PULSE_COUNT = "pulse_count"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class MeterRegistryEntry(BaseModel):
     """Meter registry entry from PACK-039."""
@@ -151,7 +136,6 @@ class MeterRegistryEntry(BaseModel):
     calibration_due: Optional[str] = Field(None)
     active: bool = Field(default=True)
 
-
 class MeterReading(BaseModel):
     """Validated meter reading from PACK-039."""
 
@@ -163,7 +147,6 @@ class MeterReading(BaseModel):
     quality_flag: DataQualityFlag = Field(default=DataQualityFlag.VALIDATED)
     demand_kw: Optional[float] = Field(None, ge=0.0)
     power_factor: Optional[float] = Field(None, ge=0.0, le=1.0)
-
 
 class EnPIBaseline(BaseModel):
     """EnPI baseline from PACK-039 monitoring system."""
@@ -178,7 +161,6 @@ class EnPIBaseline(BaseModel):
     baseline_year: int = Field(default=2023, ge=2000)
     improvement_pct: float = Field(default=0.0)
     regression_r_squared: Optional[float] = Field(None, ge=0.0, le=1.0)
-
 
 class Pack039ImportResult(BaseModel):
     """Result of importing data from PACK-039."""
@@ -196,13 +178,11 @@ class Pack039ImportResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
     processing_time_ms: float = Field(default=0.0)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # Pack039Bridge
 # ---------------------------------------------------------------------------
-
 
 class Pack039Bridge:
     """Bridge to PACK-039 Energy Monitoring data.
@@ -435,6 +415,7 @@ class Pack039Bridge:
         """Check if PACK-039 module is importable."""
         try:
             import importlib
+
             importlib.import_module(
                 "packs.energy_efficiency.PACK_039_energy_monitoring"
             )

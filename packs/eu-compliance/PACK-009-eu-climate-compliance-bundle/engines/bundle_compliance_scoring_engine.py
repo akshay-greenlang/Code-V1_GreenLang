@@ -47,25 +47,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -83,23 +77,19 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _safe_div(numerator: float, denominator: float, default: float = 0.0) -> float:
     """Divide safely, returning *default* when denominator is zero."""
     if denominator == 0.0:
         return default
     return numerator / denominator
 
-
 def _clamp(value: float, lo: float = 0.0, hi: float = 100.0) -> float:
     """Clamp a value within [lo, hi]."""
     return max(lo, min(hi, value))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class MaturityLevel(int, Enum):
     """Five-level maturity scale."""
@@ -109,14 +99,12 @@ class MaturityLevel(int, Enum):
     MANAGED = 4
     OPTIMIZED = 5
 
-
 class RiskSeverity(str, Enum):
     """Risk severity categories."""
     LOW = "LOW"
     MEDIUM = "MEDIUM"
     HIGH = "HIGH"
     CRITICAL = "CRITICAL"
-
 
 class HeatmapStatus(str, Enum):
     """Status for heatmap cells."""
@@ -125,11 +113,9 @@ class HeatmapStatus(str, Enum):
     ORANGE = "ORANGE"
     RED = "RED"
 
-
 # ---------------------------------------------------------------------------
 # Reference Data
 # ---------------------------------------------------------------------------
-
 
 DEFAULT_WEIGHTS: Dict[str, Dict[str, float]] = {
     "default": {"CSRD": 0.30, "CBAM": 0.25, "EU_TAXONOMY": 0.25, "EUDR": 0.20},
@@ -141,7 +127,6 @@ DEFAULT_WEIGHTS: Dict[str, Dict[str, float]] = {
     "retail": {"CSRD": 0.25, "CBAM": 0.20, "EU_TAXONOMY": 0.20, "EUDR": 0.35},
     "food_beverage": {"CSRD": 0.20, "CBAM": 0.15, "EU_TAXONOMY": 0.20, "EUDR": 0.45},
 }
-
 
 MATURITY_DEFINITIONS: Dict[str, Dict[int, Dict[str, str]]] = {
     "CSRD": {
@@ -182,7 +167,6 @@ INDUSTRY_BENCHMARKS: Dict[str, Dict[str, float]] = {
     "energy": {"CSRD": 60.0, "CBAM": 60.0, "EU_TAXONOMY": 55.0, "EUDR": 30.0},
 }
 
-
 # Upcoming compliance deadlines (month/year) for deadline-proximity boost
 _REGULATION_DEADLINES: Dict[str, str] = {
     "CSRD": "2026-07",
@@ -191,11 +175,9 @@ _REGULATION_DEADLINES: Dict[str, str] = {
     "EUDR": "2026-12",
 }
 
-
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
-
 
 class ScoringConfig(BaseModel):
     """Configuration for the BundleComplianceScoringEngine."""
@@ -233,11 +215,9 @@ class ScoringConfig(BaseModel):
             raise ValueError(f"Weights must sum to 1.0, got {total:.4f}")
         return v
 
-
 # ---------------------------------------------------------------------------
 # Data Models - Inputs
 # ---------------------------------------------------------------------------
-
 
 class RegulationInput(BaseModel):
     """Input data for scoring a single regulation."""
@@ -253,11 +233,9 @@ class RegulationInput(BaseModel):
     data_quality_score: float = Field(default=0.0, ge=0.0, le=100.0, description="Data quality 0-100")
     gaps: List[str] = Field(default_factory=list, description="Identified compliance gaps")
 
-
 # ---------------------------------------------------------------------------
 # Data Models - Outputs
 # ---------------------------------------------------------------------------
-
 
 class MaturityAssessment(BaseModel):
     """Maturity assessment for a single regulation."""
@@ -273,7 +251,6 @@ class MaturityAssessment(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class ComplianceScore(BaseModel):
     """Compliance score for a single regulation."""
 
@@ -287,7 +264,6 @@ class ComplianceScore(BaseModel):
     weight: float = Field(default=0.0, description="Regulation weight")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class HeatmapCell(BaseModel):
     """A single cell in the compliance heatmap."""
 
@@ -295,7 +271,6 @@ class HeatmapCell(BaseModel):
     dimension: str = Field(..., description="Compliance dimension")
     score: float = Field(default=0.0, description="Score for this cell")
     status: str = Field(default="GREEN", description="Heatmap colour status")
-
 
 class Recommendation(BaseModel):
     """A single improvement recommendation."""
@@ -308,7 +283,6 @@ class Recommendation(BaseModel):
     effort_estimate: str = Field(default="", description="Estimated effort (LOW/MEDIUM/HIGH)")
     impact_estimate: str = Field(default="", description="Expected impact (LOW/MEDIUM/HIGH)")
 
-
 class BenchmarkComparison(BaseModel):
     """Comparison of scores against industry benchmarks."""
 
@@ -317,7 +291,6 @@ class BenchmarkComparison(BaseModel):
     benchmark_score: float = Field(default=0.0, description="Industry benchmark score")
     delta: float = Field(default=0.0, description="Difference (company - benchmark)")
     position: str = Field(default="", description="Position relative to benchmark (ABOVE/AT/BELOW)")
-
 
 class BundleScoringResult(BaseModel):
     """Complete result from the BundleComplianceScoringEngine."""
@@ -343,11 +316,9 @@ class BundleScoringResult(BaseModel):
     engine_version: str = Field(default=_MODULE_VERSION, description="Engine version")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class BundleComplianceScoringEngine:
     """
@@ -396,7 +367,7 @@ class BundleComplianceScoringEngine:
             BundleScoringResult with overall score, per-regulation scores,
             maturity profile, heatmap, recommendations, and benchmarks.
         """
-        start = _utcnow()
+        start = utcnow()
 
         per_regulation: List[ComplianceScore] = []
         maturity_profile: List[MaturityAssessment] = []
@@ -427,7 +398,7 @@ class BundleComplianceScoringEngine:
         recommendations = self.get_improvement_recommendations(inputs, per_regulation)
         benchmarks = self.compare_to_benchmark(per_regulation)
 
-        elapsed_ms = (_utcnow() - start).total_seconds() * 1000
+        elapsed_ms = (utcnow() - start).total_seconds() * 1000
 
         result = BundleScoringResult(
             overall_score=round(overall, 2),

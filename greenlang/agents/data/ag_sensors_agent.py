@@ -35,9 +35,10 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -106,7 +107,7 @@ class FertilizerType(str, Enum):
 # PYDANTIC MODELS
 # =============================================================================
 
-class AgIoTConnectionConfig(BaseModel):
+class AgIoTConnectionConfig(GreenLangBase):
     """Agricultural IoT connection configuration."""
     connection_id: str = Field(...)
     platform: AgIoTPlatform = Field(...)
@@ -118,7 +119,7 @@ class AgIoTConnectionConfig(BaseModel):
     timezone: str = Field(default="UTC")
 
 
-class FieldConfig(BaseModel):
+class FieldConfig(GreenLangBase):
     """Field/paddock configuration."""
     field_id: str = Field(...)
     field_name: str = Field(...)
@@ -129,7 +130,7 @@ class FieldConfig(BaseModel):
     irrigation_type: Optional[str] = Field(None)
 
 
-class SensorConfig(BaseModel):
+class SensorConfig(GreenLangBase):
     """Sensor configuration."""
     sensor_id: str = Field(...)
     sensor_type: SensorType = Field(...)
@@ -139,7 +140,7 @@ class SensorConfig(BaseModel):
     calibration_date: Optional[date] = Field(None)
 
 
-class SensorReading(BaseModel):
+class SensorReading(GreenLangBase):
     """Sensor reading."""
     sensor_id: str = Field(...)
     sensor_type: SensorType = Field(...)
@@ -150,7 +151,7 @@ class SensorReading(BaseModel):
     field_id: Optional[str] = Field(None)
 
 
-class IrrigationEvent(BaseModel):
+class IrrigationEvent(GreenLangBase):
     """Irrigation event."""
     event_id: str = Field(...)
     field_id: str = Field(...)
@@ -161,7 +162,7 @@ class IrrigationEvent(BaseModel):
     source: str = Field(default="groundwater")
 
 
-class FertilizerApplication(BaseModel):
+class FertilizerApplication(GreenLangBase):
     """Fertilizer application record."""
     application_id: str = Field(...)
     field_id: str = Field(...)
@@ -173,7 +174,7 @@ class FertilizerApplication(BaseModel):
     estimated_n2o_kgco2e: Optional[float] = Field(None)
 
 
-class CropYield(BaseModel):
+class CropYield(GreenLangBase):
     """Crop yield record."""
     field_id: str = Field(...)
     harvest_date: date = Field(...)
@@ -184,7 +185,7 @@ class CropYield(BaseModel):
     yield_per_ha: float = Field(...)
 
 
-class AgQueryInput(BaseModel):
+class AgQueryInput(GreenLangBase):
     """Input for agricultural data query."""
     connection_id: str = Field(...)
     query_type: str = Field(...)
@@ -196,7 +197,7 @@ class AgQueryInput(BaseModel):
     calculate_emissions: bool = Field(default=True)
 
 
-class AgQueryOutput(BaseModel):
+class AgQueryOutput(GreenLangBase):
     """Output from agricultural data query."""
     connection_id: str = Field(...)
     farm_id: str = Field(...)

@@ -45,14 +45,9 @@ from greenlang.agents.foundation.reproducibility.models import (
     DEFAULT_DRIFT_HARD_THRESHOLD,
 )
 from greenlang.agents.foundation.reproducibility.metrics import record_drift
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 class DriftDetector:
     """Drift detection engine.
@@ -356,7 +351,7 @@ class DriftDetector:
             baseline_data=new_data,
             baseline_hash=new_hash,
             created_at=baseline.created_at,
-            updated_at=_utcnow(),
+            updated_at=utcnow(),
             is_active=baseline.is_active,
         )
 
@@ -410,7 +405,7 @@ class DriftDetector:
             baseline_data=baseline.baseline_data,
             baseline_hash=baseline.baseline_hash,
             created_at=baseline.created_at,
-            updated_at=_utcnow(),
+            updated_at=utcnow(),
             is_active=False,
         )
         self._baselines[baseline_id] = updated
@@ -451,7 +446,6 @@ class DriftDetector:
             hard_threshold=hard_threshold or self._config.drift_hard_threshold,
             tolerance=tolerance or self._config.default_absolute_tolerance,
         )
-
 
 __all__ = [
     "DriftDetector",

@@ -32,10 +32,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.agents.categories import AgentCategory
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +92,7 @@ GBP_COMPONENTS = {
 # =============================================================================
 
 
-class UseOfProceeds(BaseModel):
+class UseOfProceeds(GreenLangBase):
     """Use of proceeds specification."""
     category: UseOfProceedsCategory
     allocation_pct: float = Field(..., ge=0, le=100)
@@ -102,7 +103,7 @@ class UseOfProceeds(BaseModel):
     impact_metrics: Dict[str, Any] = Field(default_factory=dict)
 
 
-class BondFramework(BaseModel):
+class BondFramework(GreenLangBase):
     """Green bond framework specification."""
     framework_id: str = Field(..., description="Framework identifier")
     issuer_name: str = Field(..., description="Issuer name")
@@ -137,7 +138,7 @@ class BondFramework(BaseModel):
     eu_taxonomy_alignment_target: float = Field(default=0, ge=0, le=100)
 
 
-class GreenBondAssessment(BaseModel):
+class GreenBondAssessment(GreenLangBase):
     """Assessment of a green bond framework."""
     framework_id: str
     issuer_name: str
@@ -168,7 +169,7 @@ class GreenBondAssessment(BaseModel):
     use_of_proceeds_breakdown: Dict[str, float] = Field(default_factory=dict)
 
 
-class AlignmentScore(BaseModel):
+class AlignmentScore(GreenLangBase):
     """Detailed alignment score breakdown."""
     standard: BondStandard
     overall_alignment: AssessmentResult
@@ -178,7 +179,7 @@ class AlignmentScore(BaseModel):
     requirements_not_met: List[str] = Field(default_factory=list)
 
 
-class GreenBondInput(BaseModel):
+class GreenBondInput(GreenLangBase):
     """Input for green bond analysis."""
     operation: str = Field(
         default="assess_framework",
@@ -194,7 +195,7 @@ class GreenBondInput(BaseModel):
     strict_mode: bool = Field(default=False)
 
 
-class GreenBondOutput(BaseModel):
+class GreenBondOutput(GreenLangBase):
     """Output from green bond analysis."""
     success: bool
     operation: str

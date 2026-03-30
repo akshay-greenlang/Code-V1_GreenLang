@@ -48,20 +48,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute a SHA-256 hash of arbitrary data."""
     return hashlib.sha256(
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
-
 
 class Pillar3Template(str, Enum):
     """EBA Pillar 3 ESG disclosure templates."""
@@ -76,14 +71,12 @@ class Pillar3Template(str, Enum):
     TEMPLATE_9 = "template_9_mitigating_non_taxonomy"
     TEMPLATE_10 = "template_10_mitigating_climate"
 
-
 class FilingFormat(str, Enum):
     """Filing format for Pillar 3 submissions."""
     XBRL = "xbrl"
     XHTML = "xhtml"
     CSV = "csv"
     JSON = "json"
-
 
 class EBAPillar3BridgeConfig(BaseModel):
     """Configuration for the EBA Pillar 3 Bridge."""
@@ -112,7 +105,6 @@ class EBAPillar3BridgeConfig(BaseModel):
         default="2024", description="EBA ITS version for Pillar 3 ESG",
     )
 
-
 class TemplateResult(BaseModel):
     """Result of generating a single Pillar 3 template."""
     template_id: str = Field(default="", description="Template identifier")
@@ -128,7 +120,6 @@ class TemplateResult(BaseModel):
     data_summary: Dict[str, Any] = Field(
         default_factory=dict, description="Summary statistics",
     )
-
 
 class Pillar3Result(BaseModel):
     """Complete result of Pillar 3 template generation."""
@@ -152,7 +143,6 @@ class Pillar3Result(BaseModel):
         description="XBRL taxonomy version",
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 # Template definitions with metadata
 TEMPLATE_DEFINITIONS: Dict[str, Dict[str, Any]] = {
@@ -217,7 +207,6 @@ TEMPLATE_DEFINITIONS: Dict[str, Dict[str, Any]] = {
         "required_data": [],
     },
 }
-
 
 class EBAPillar3Bridge:
     """EBA Pillar 3 ITS data integration bridge.

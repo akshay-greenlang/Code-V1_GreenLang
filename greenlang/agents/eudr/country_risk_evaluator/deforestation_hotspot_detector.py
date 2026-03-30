@@ -69,8 +69,9 @@ from .models import (
 )
 from .provenance import get_provenance_tracker
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -88,28 +89,19 @@ _SEVERITY_WEIGHTS: Dict[str, Decimal] = {
     "fire_correlation": Decimal("0.05"),
 }
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal for precise arithmetic."""
     if isinstance(value, Decimal):
         return value
     return Decimal(str(value))
 
-
 def _float(value: Decimal) -> float:
     """Convert Decimal to float for API responses."""
     return float(value)
 
-
 # ---------------------------------------------------------------------------
 # Spatial utilities
 # ---------------------------------------------------------------------------
-
 
 def _haversine_distance(
     lat1: float, lon1: float, lat2: float, lon2: float,
@@ -141,7 +133,6 @@ def _haversine_distance(
 
     return _EARTH_RADIUS_KM * c
 
-
 def _calculate_cluster_centroid(
     points: List[Tuple[float, float]],
 ) -> Tuple[float, float]:
@@ -161,7 +152,6 @@ def _calculate_cluster_centroid(
     n = len(points)
 
     return (lat_sum / n, lon_sum / n)
-
 
 def _calculate_cluster_radius(
     centroid: Tuple[float, float],
@@ -186,7 +176,6 @@ def _calculate_cluster_radius(
 
     return max(distances) if distances else 0.0
 
-
 def _calculate_cluster_area(
     radius_km: float,
 ) -> float:
@@ -204,11 +193,9 @@ def _calculate_cluster_area(
     area_ha = area_km2 * 100.0
     return area_ha
 
-
 # ---------------------------------------------------------------------------
 # DeforestationHotspotDetector
 # ---------------------------------------------------------------------------
-
 
 class DeforestationHotspotDetector:
     """Sub-national deforestation hotspot detection using spatial clustering.
@@ -420,7 +407,7 @@ class DeforestationHotspotDetector:
             ]
 
         if active_only:
-            cutoff_date = _utcnow() - timedelta(days=90)
+            cutoff_date = utcnow() - timedelta(days=90)
             results = [
                 h for h in results if h.detected_at >= cutoff_date
             ]

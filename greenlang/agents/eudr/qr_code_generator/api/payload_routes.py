@@ -30,6 +30,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.qr_code_generator.api.dependencies import (
     AuthUser,
@@ -61,22 +62,14 @@ router = APIRouter(tags=["Payload Composition"])
 
 _payload_store: Dict[str, Dict] = {}
 
-
 def _get_payload_store() -> Dict[str, Dict]:
     """Return the payload record store singleton."""
     return _payload_store
-
 
 def _compute_provenance_hash(data: dict) -> str:
     """Compute SHA-256 hash for provenance tracking."""
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Built-in payload schemas (5 content types per EUDR spec)
@@ -148,11 +141,9 @@ _PAYLOAD_SCHEMAS: List[PayloadSchemaItem] = [
     ),
 ]
 
-
 # ---------------------------------------------------------------------------
 # POST /payloads/compose
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/payloads/compose",
@@ -195,7 +186,7 @@ async def compose_payload(
     start = time.monotonic()
     try:
         payload_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         # Serialize and compute hash
         serialized = json.dumps(body.data, sort_keys=True, default=str)
@@ -289,11 +280,9 @@ async def compose_payload(
             detail="Failed to compose data payload",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /payloads/validate
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/payloads/validate",
@@ -386,11 +375,9 @@ async def validate_payload(
             detail="Failed to validate payload",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /payloads/{payload_id}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/payloads/{payload_id}",
@@ -450,11 +437,9 @@ async def get_payload_detail(
             detail="Failed to retrieve payload details",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /payloads/schemas
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/payloads/schemas",
@@ -492,7 +477,6 @@ async def list_payload_schemas(
         schemas=_PAYLOAD_SCHEMAS,
         total=len(_PAYLOAD_SCHEMAS),
     )
-
 
 # ---------------------------------------------------------------------------
 # Public API

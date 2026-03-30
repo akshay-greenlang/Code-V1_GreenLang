@@ -41,18 +41,14 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -64,7 +60,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 class _PackStub:
     """Stub for PACK-028 components when not available."""
     def __init__(self, component: str) -> None:
@@ -75,7 +70,6 @@ class _PackStub:
             return {"component": self._component, "status": "not_available", "pack": "PACK-028"}
         return _stub
 
-
 def _try_import_pack028(component: str, module_path: str) -> Any:
     """Attempt to import a PACK-028 component."""
     try:
@@ -84,11 +78,9 @@ def _try_import_pack028(component: str, module_path: str) -> Any:
         logger.debug("PACK-028 component '%s' not available, using stub", component)
         return _PackStub(component)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SectorType(str, Enum):
     POWER_GENERATION = "power_generation"
@@ -108,14 +100,12 @@ class SectorType(str, Enum):
     OIL_GAS = "oil_gas"
     CROSS_SECTOR = "cross_sector"
 
-
 class MilestoneType(str, Enum):
     INTENSITY_TARGET = "intensity_target"
     TECHNOLOGY_DEPLOYMENT = "technology_deployment"
     POLICY_COMPLIANCE = "policy_compliance"
     ABSOLUTE_REDUCTION = "absolute_reduction"
     BENCHMARK_ALIGNMENT = "benchmark_alignment"
-
 
 class BenchmarkTier(str, Enum):
     PEER_AVERAGE = "peer_average"
@@ -124,7 +114,6 @@ class BenchmarkTier(str, Enum):
     SBTI_15C = "sbti_15c"
     SBTI_WB2C = "sbti_wb2c"
 
-
 class LeverPriority(str, Enum):
     CRITICAL = "critical"
     HIGH = "high"
@@ -132,14 +121,12 @@ class LeverPriority(str, Enum):
     LOW = "low"
     DEFERRED = "deferred"
 
-
 class MilestoneStatus(str, Enum):
     ON_TRACK = "on_track"
     AT_RISK = "at_risk"
     OFF_TRACK = "off_track"
     ACHIEVED = "achieved"
     NOT_STARTED = "not_started"
-
 
 # ---------------------------------------------------------------------------
 # PACK-028 Component Registry
@@ -178,7 +165,6 @@ PACK028_COMPONENTS: Dict[str, Dict[str, str]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Sector Interim Milestone Tables (SDA 1.5C)
 # ---------------------------------------------------------------------------
@@ -212,7 +198,6 @@ SECTOR_INTENSITY_METRICS: Dict[str, str] = {
     "buildings_residential": "kgCO2/m2/year",
     "buildings_commercial": "kgCO2/m2/year",
 }
-
 
 # IEA NZE technology milestones per sector (key milestones by year)
 IEA_TECHNOLOGY_MILESTONES: Dict[str, List[Dict[str, Any]]] = {
@@ -264,11 +249,9 @@ SECTOR_BENCHMARKS: Dict[str, Dict[str, float]] = {
     "buildings_commercial": {"peer_average": 36.0, "peer_leader": 25.0, "iea_nze_2030": 23.0},
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class PACK028BridgeConfig(BaseModel):
     """Configuration for the PACK-028 to PACK-029 bridge."""
@@ -284,7 +267,6 @@ class PACK028BridgeConfig(BaseModel):
     retry_attempts: int = Field(default=3, ge=1, le=10)
     retry_delay_seconds: float = Field(default=1.0, ge=0.1, le=30.0)
 
-
 class SectorMilestoneImport(BaseModel):
     """Imported sector-specific interim milestone from PACK-028."""
     import_id: str = Field(default_factory=_new_uuid)
@@ -296,7 +278,6 @@ class SectorMilestoneImport(BaseModel):
     milestone_type: MilestoneType = Field(default=MilestoneType.INTENSITY_TARGET)
     status: MilestoneStatus = Field(default=MilestoneStatus.NOT_STARTED)
     provenance_hash: str = Field(default="")
-
 
 class TechnologyRoadmapImport(BaseModel):
     """Imported technology roadmap milestone from PACK-028 / IEA NZE."""
@@ -311,7 +292,6 @@ class TechnologyRoadmapImport(BaseModel):
     abatement_potential_tco2e: float = Field(default=0.0)
     capex_usd: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class AbatementLeverImport(BaseModel):
     """Imported abatement lever from PACK-028 MACC curve."""
@@ -328,7 +308,6 @@ class AbatementLeverImport(BaseModel):
     cumulative_abatement_by_year: Dict[int, float] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
 
-
 class SectorBenchmarkImport(BaseModel):
     """Imported sector benchmark from PACK-028."""
     import_id: str = Field(default_factory=_new_uuid)
@@ -344,7 +323,6 @@ class SectorBenchmarkImport(BaseModel):
     gap_to_nze_pct: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class PACK028IntegrationResult(BaseModel):
     """Complete PACK-028 integration result for PACK-029."""
     result_id: str = Field(default_factory=_new_uuid)
@@ -359,11 +337,9 @@ class PACK028IntegrationResult(BaseModel):
     integration_quality_score: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # PACK028Bridge
 # ---------------------------------------------------------------------------
-
 
 class PACK028Bridge:
     """PACK-028 Sector Pathway Pack integration bridge for PACK-029.

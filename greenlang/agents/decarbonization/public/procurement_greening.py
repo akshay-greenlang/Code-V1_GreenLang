@@ -33,10 +33,11 @@ from datetime import date, datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +100,7 @@ class ComplianceStatus(str, Enum):
 # Pydantic Models
 # =============================================================================
 
-class SupplierAssessment(BaseModel):
+class SupplierAssessment(GreenLangBase):
     """Sustainability assessment of a supplier."""
 
     supplier_id: str = Field(..., description="Supplier identifier")
@@ -140,7 +141,7 @@ class SupplierAssessment(BaseModel):
     assessment_notes: Optional[str] = Field(None)
 
 
-class ProcurementItem(BaseModel):
+class ProcurementItem(GreenLangBase):
     """Individual procurement item."""
 
     item_id: str = Field(..., description="Item identifier")
@@ -175,7 +176,7 @@ class ProcurementItem(BaseModel):
     green_criteria_met: List[SustainabilityCriteria] = Field(default_factory=list)
 
 
-class GreenProcurementPolicy(BaseModel):
+class GreenProcurementPolicy(GreenLangBase):
     """Green procurement policy definition."""
 
     policy_id: str = Field(..., description="Policy identifier")
@@ -201,7 +202,7 @@ class GreenProcurementPolicy(BaseModel):
     quality_weight_percent: float = Field(default=20.0, ge=0, le=100)
 
 
-class ProcurementPlan(BaseModel):
+class ProcurementPlan(GreenLangBase):
     """Green procurement plan."""
 
     plan_id: str = Field(..., description="Plan identifier")
@@ -248,7 +249,7 @@ class ProcurementPlan(BaseModel):
 # Agent Input/Output Models
 # =============================================================================
 
-class ProcurementGreeningInput(BaseModel):
+class ProcurementGreeningInput(GreenLangBase):
     """Input for Procurement Greening Agent."""
 
     action: str = Field(..., description="Action to perform")
@@ -293,7 +294,7 @@ class ProcurementGreeningInput(BaseModel):
         return v
 
 
-class ProcurementGreeningOutput(BaseModel):
+class ProcurementGreeningOutput(GreenLangBase):
     """Output from Procurement Greening Agent."""
 
     success: bool = Field(...)

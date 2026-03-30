@@ -45,6 +45,8 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -57,17 +59,10 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -75,11 +70,9 @@ def _compute_hash(data: Any) -> str:
 
 EARTH_RADIUS_KM: float = 6_371.0
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class LandUseType(str, Enum):
     """Classification of land use at a coordinate."""
@@ -96,11 +89,9 @@ class LandUseType(str, Enum):
     MIXED = "mixed"
     UNKNOWN = "unknown"
 
-
 # ---------------------------------------------------------------------------
 # Result Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class LandUseContext:
@@ -119,7 +110,6 @@ class LandUseContext:
     biome: str = "unknown"
     vegetation_zone: str = "unknown"
     confidence: float = 0.5
-
 
 @dataclass
 class ReverseGeocodeResult:
@@ -158,7 +148,6 @@ class ReverseGeocodeResult:
     provenance_hash: str = ""
     geocoded_at: str = ""
     processing_time_ms: float = 0.0
-
 
 # ---------------------------------------------------------------------------
 # Country Bounding Boxes (200+ countries)
@@ -273,7 +262,6 @@ COUNTRY_DB: Dict[str, Tuple[str, float, float, float, float]] = {
     "NE": ("Niger", 11.70, 23.52, 0.17, 15.99),
     "TD": ("Chad", 7.44, 23.45, 13.47, 24.00),
 }
-
 
 # ---------------------------------------------------------------------------
 # Administrative Regions for Key EUDR Countries
@@ -403,7 +391,6 @@ ADMIN_REGIONS: Dict[str, List[Tuple[str, float, float, float, float]]] = {
         ("Sidama", 5.50, 7.50, 37.50, 39.50),
     ],
 }
-
 
 # ---------------------------------------------------------------------------
 # Places Database (5000+ entries, representative subset shown)
@@ -538,7 +525,6 @@ PLACES_DB: List[Tuple[str, str, float, float, str]] = [
     ("Lisbon", "PT", 38.72, -9.14, "large"),
 ]
 
-
 # ---------------------------------------------------------------------------
 # Commodity Production Zones
 # ---------------------------------------------------------------------------
@@ -563,7 +549,6 @@ COMMODITY_ZONES: List[Tuple[str, float, float, float, float, List[str]]] = [
     ("Sahel Cattle Zone", 10.0, 16.0, -17.0, 15.0, ["cattle"]),
     ("Southern Africa Savanna", -25.0, -10.0, 20.0, 40.0, ["cattle", "wood"]),
 ]
-
 
 # ---------------------------------------------------------------------------
 # Simplified Elevation Grid
@@ -592,7 +577,6 @@ CONTINENTAL_ELEVATION_FALLBACK: Dict[str, Tuple[float, float, float, float, floa
     "east_asia": (18.0, 54.0, 73.0, 135.0, 1100.0),
     "south_asia": (5.0, 38.0, 60.0, 98.0, 800.0),
 }
-
 
 # ---------------------------------------------------------------------------
 # Land Use Classification Zones
@@ -630,7 +614,6 @@ LAND_USE_ZONES: List[Tuple[LandUseType, str, str, float, float, float, float]] =
      -22.0, -15.0, -58.0, -54.0),
 ]
 
-
 # ---------------------------------------------------------------------------
 # Coastline Reference (for distance_to_coast)
 # ---------------------------------------------------------------------------
@@ -647,11 +630,9 @@ COASTLINE_POINTS: List[Tuple[float, float]] = [
     (8.0, 77.0), (13.0, 80.0), (19.0, 73.0),
 ]
 
-
 # ===========================================================================
 # ReverseGeocoder
 # ===========================================================================
-
 
 class ReverseGeocoder:
     """Offline reverse geocoding engine for EUDR GPS coordinate context.
@@ -710,7 +691,7 @@ class ReverseGeocoder:
         """
         start_time = time.monotonic()
         result = ReverseGeocodeResult(lat=lat, lon=lon)
-        result.geocoded_at = _utcnow().isoformat()
+        result.geocoded_at = utcnow().isoformat()
 
         # 1. Country lookup
         country_iso, country_name = self.lookup_country(lat, lon)
@@ -1123,7 +1104,6 @@ class ReverseGeocoder:
             "is_on_land": result.is_on_land,
         }
         return _compute_hash(hash_data)
-
 
 # ---------------------------------------------------------------------------
 # Module Exports

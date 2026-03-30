@@ -60,6 +60,7 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import date, datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.satellite_monitoring.imagery_acquisition import (
     DataQualityAssessment,
@@ -84,22 +85,14 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a unique identifier using UUID4."""
     return str(uuid.uuid4())
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -116,7 +109,6 @@ DEFAULT_SEARCH_WINDOW_DAYS: int = 90
 
 #: Minimum acceptable scene quality score for baseline.
 MIN_BASELINE_QUALITY_SCORE: float = 40.0
-
 
 # ---------------------------------------------------------------------------
 # Biome Thresholds Reference Data
@@ -194,11 +186,9 @@ BIOME_THRESHOLDS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class BaselineSnapshot:
@@ -262,11 +252,9 @@ class BaselineSnapshot:
     provenance_hash: str = ""
     metadata: Dict[str, Any] = field(default_factory=dict)
 
-
 # ---------------------------------------------------------------------------
 # BaselineManager
 # ---------------------------------------------------------------------------
-
 
 class BaselineManager:
     """Production-grade baseline manager for EUDR forest baselines.
@@ -473,7 +461,7 @@ class BaselineManager:
             classification_biome=biome.lower().strip(),
             quality_score=quality_assessment.overall_score,
             is_forested=is_forested,
-            established_at=_utcnow(),
+            established_at=utcnow(),
             metadata={
                 "search_window_days": self.search_window_days,
                 "scenes_found": len(scenes),
@@ -571,7 +559,7 @@ class BaselineManager:
         new_baseline.previous_baseline_id = prev_id
         new_baseline.previous_baseline_hash = prev_hash
         new_baseline.metadata["re_establishment_reason"] = reason
-        new_baseline.metadata["re_established_at"] = str(_utcnow())
+        new_baseline.metadata["re_established_at"] = str(utcnow())
 
         # Recompute provenance hash with audit trail
         new_baseline.provenance_hash = self._compute_baseline_hash(
@@ -914,7 +902,6 @@ class BaselineManager:
             "previous_baseline_hash": baseline.previous_baseline_hash,
         }
         return _compute_hash(hash_data)
-
 
 # ---------------------------------------------------------------------------
 # Module Exports

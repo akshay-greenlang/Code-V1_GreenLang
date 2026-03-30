@@ -50,13 +50,13 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from greenlang.agents.data.deforestation_satellite.config import get_config
+from greenlang.schemas import utcnow
 from greenlang.agents.data.deforestation_satellite.models import (
     ForestClassification,
     LandCoverClass,
 )
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -87,21 +87,13 @@ _EVI_WEIGHT = 0.4
 # Canopy height model: height_m = coeff * tree_cover%
 _HEIGHT_COEFF = 0.3
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # =============================================================================
 # DeforestationClassifierEngine
 # =============================================================================
-
 
 class DeforestationClassifierEngine:
     """Engine for land cover classification and forest determination.
@@ -544,7 +536,6 @@ class DeforestationClassifierEngine:
             Integer count of classifications.
         """
         return self._classification_count
-
 
 __all__ = [
     "DeforestationClassifierEngine",

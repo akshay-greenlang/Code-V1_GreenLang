@@ -40,35 +40,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.utcnow()
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hash of a string."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -79,7 +71,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -89,7 +80,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class EventSeverity(str, Enum):
     """DR event severity classification."""
 
@@ -97,7 +87,6 @@ class EventSeverity(str, Enum):
     MODERATE = "moderate"
     HIGH = "high"
     CRITICAL = "critical"
-
 
 class PreConditioningStrategy(str, Enum):
     """Pre-conditioning strategies available."""
@@ -108,7 +97,6 @@ class PreConditioningStrategy(str, Enum):
     PROCESS_RAMP_DOWN = "process_ramp_down"
     EV_CHARGE_ADVANCE = "ev_charge_advance"
     LIGHTING_BOOST = "lighting_boost"
-
 
 # =============================================================================
 # REFERENCE DATA (Zero-Hallucination)
@@ -166,11 +154,9 @@ PRECONDITION_PARAMS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -184,7 +170,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list, description="Errors encountered")
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
 
-
 class DispatchAction(BaseModel):
     """A single load dispatch action in the shed sequence."""
 
@@ -197,7 +182,6 @@ class DispatchAction(BaseModel):
     cumulative_kw: Decimal = Field(default=Decimal("0"), ge=0, description="Running total kW")
     ramp_time_min: int = Field(default=0, ge=0, description="Time to execute action")
 
-
 class PreConditionAction(BaseModel):
     """A pre-conditioning action to activate before the event."""
 
@@ -206,7 +190,6 @@ class PreConditionAction(BaseModel):
     lead_time_min: int = Field(default=0, ge=0, description="Minutes before event start")
     energy_cost_kwh: Decimal = Field(default=Decimal("0"), ge=0)
     loads_affected: List[str] = Field(default_factory=list)
-
 
 class EventPreparationInput(BaseModel):
     """Input data model for EventPreparationWorkflow."""
@@ -236,7 +219,6 @@ class EventPreparationInput(BaseModel):
             raise ValueError("event_start_utc must not be blank")
         return stripped
 
-
 class EventPreparationResult(BaseModel):
     """Complete result from event preparation workflow."""
 
@@ -254,11 +236,9 @@ class EventPreparationResult(BaseModel):
     calculated_at: str = Field(default="", description="ISO 8601 timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 of complete result")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class EventPreparationWorkflow:
     """
@@ -318,7 +298,7 @@ class EventPreparationWorkflow:
             ValueError: If input validation fails.
         """
         t_start = time.perf_counter()
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting event preparation workflow %s event=%s target=%.0f kW",
             self.preparation_id, input_data.event_id,
@@ -413,7 +393,7 @@ class EventPreparationWorkflow:
             warnings.append("Could not parse event timestamps; defaulting to 4-hour duration")
 
         # Calculate lead time
-        notification_time = input_data.notification_received_utc or _utcnow().isoformat() + "Z"
+        notification_time = input_data.notification_received_utc or utcnow().isoformat() + "Z"
         try:
             notif_dt = datetime.fromisoformat(notification_time.replace("Z", "+00:00"))
             lead_time_min = max(0.0, (start_dt - notif_dt).total_seconds() / 60.0)

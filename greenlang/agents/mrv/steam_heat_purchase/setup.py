@@ -34,6 +34,7 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -135,12 +136,7 @@ except ImportError:
     logger.warning("ProvenanceTracker not available")
     ProvenanceTracker = None
 
-
 # Utility functions
-def _utcnow() -> datetime:
-    """Get current UTC timestamp without microseconds."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash of data for provenance."""
@@ -148,14 +144,12 @@ def _compute_hash(data: Any) -> str:
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 def _round_decimal(value: float, precision: int = 4) -> Decimal:
     """Round value to Decimal with specified precision."""
     if value is None:
         return None
     quantize_str = "0." + "0" * precision
     return Decimal(str(value)).quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 class SteamHeatPurchaseService:
     """
@@ -220,7 +214,7 @@ class SteamHeatPurchaseService:
             return
 
         self._initialized = True
-        self._init_time = _utcnow()
+        self._init_time = utcnow()
         self._request_count = 0
         self._error_count = 0
 
@@ -359,7 +353,7 @@ class SteamHeatPurchaseService:
                 "service": "SteamHeatPurchaseService",
                 "method": "calculate_steam_emissions",
                 "processing_time_ms": (time.time() - start_time) * 1000,
-                "timestamp": _utcnow().isoformat()
+                "timestamp": utcnow().isoformat()
             }
 
             # Track metrics
@@ -390,7 +384,7 @@ class SteamHeatPurchaseService:
                 "status": "error",
                 "error": str(e),
                 "error_type": type(e).__name__,
-                "timestamp": _utcnow().isoformat()
+                "timestamp": utcnow().isoformat()
             }
 
     def calculate_heating_emissions(self, request: Dict[str, Any]) -> Dict[str, Any]:
@@ -430,7 +424,7 @@ class SteamHeatPurchaseService:
                 "service": "SteamHeatPurchaseService",
                 "method": "calculate_heating_emissions",
                 "processing_time_ms": (time.time() - start_time) * 1000,
-                "timestamp": _utcnow().isoformat()
+                "timestamp": utcnow().isoformat()
             }
 
             if _METRICS_AVAILABLE:
@@ -460,7 +454,7 @@ class SteamHeatPurchaseService:
                 "status": "error",
                 "error": str(e),
                 "error_type": type(e).__name__,
-                "timestamp": _utcnow().isoformat()
+                "timestamp": utcnow().isoformat()
             }
 
     def calculate_cooling_emissions(self, request: Dict[str, Any]) -> Dict[str, Any]:
@@ -500,7 +494,7 @@ class SteamHeatPurchaseService:
                 "service": "SteamHeatPurchaseService",
                 "method": "calculate_cooling_emissions",
                 "processing_time_ms": (time.time() - start_time) * 1000,
-                "timestamp": _utcnow().isoformat()
+                "timestamp": utcnow().isoformat()
             }
 
             if _METRICS_AVAILABLE:
@@ -530,7 +524,7 @@ class SteamHeatPurchaseService:
                 "status": "error",
                 "error": str(e),
                 "error_type": type(e).__name__,
-                "timestamp": _utcnow().isoformat()
+                "timestamp": utcnow().isoformat()
             }
 
     def calculate_chp_emissions(self, request: Dict[str, Any]) -> Dict[str, Any]:
@@ -570,7 +564,7 @@ class SteamHeatPurchaseService:
                 "service": "SteamHeatPurchaseService",
                 "method": "calculate_chp_emissions",
                 "processing_time_ms": (time.time() - start_time) * 1000,
-                "timestamp": _utcnow().isoformat()
+                "timestamp": utcnow().isoformat()
             }
 
             if _METRICS_AVAILABLE:
@@ -600,7 +594,7 @@ class SteamHeatPurchaseService:
                 "status": "error",
                 "error": str(e),
                 "error_type": type(e).__name__,
-                "timestamp": _utcnow().isoformat()
+                "timestamp": utcnow().isoformat()
             }
 
     def run_batch(self, requests: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -627,7 +621,7 @@ class SteamHeatPurchaseService:
                 "service": "SteamHeatPurchaseService",
                 "method": "run_batch",
                 "processing_time_ms": (time.time() - start_time) * 1000,
-                "timestamp": _utcnow().isoformat()
+                "timestamp": utcnow().isoformat()
             }
 
             if _METRICS_AVAILABLE:
@@ -651,7 +645,7 @@ class SteamHeatPurchaseService:
                 "status": "error",
                 "error": str(e),
                 "error_type": type(e).__name__,
-                "timestamp": _utcnow().isoformat()
+                "timestamp": utcnow().isoformat()
             }
 
     def aggregate_results(
@@ -683,7 +677,7 @@ class SteamHeatPurchaseService:
                 "service": "SteamHeatPurchaseService",
                 "method": "aggregate_results",
                 "processing_time_ms": (time.time() - start_time) * 1000,
-                "timestamp": _utcnow().isoformat()
+                "timestamp": utcnow().isoformat()
             }
 
             return result
@@ -696,7 +690,7 @@ class SteamHeatPurchaseService:
                 "status": "error",
                 "error": str(e),
                 "error_type": type(e).__name__,
-                "timestamp": _utcnow().isoformat()
+                "timestamp": utcnow().isoformat()
             }
 
     # -------------------------------------------------------------------------
@@ -1009,7 +1003,7 @@ class SteamHeatPurchaseService:
                     key=lambda x: x["emissions_kg_co2e"]
                 ),
                 "processing_time_ms": (time.time() - start_time) * 1000,
-                "timestamp": _utcnow().isoformat()
+                "timestamp": utcnow().isoformat()
             }
 
             return comparison
@@ -1027,7 +1021,7 @@ class SteamHeatPurchaseService:
         """
         health = {
             "status": "healthy",
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "engines": {}
         }
 
@@ -1074,7 +1068,7 @@ class SteamHeatPurchaseService:
         Returns:
             Service statistics (uptime, request count, error rate)
         """
-        uptime_seconds = (_utcnow() - self._init_time).total_seconds()
+        uptime_seconds = (utcnow() - self._init_time).total_seconds()
 
         return {
             "status": "success",
@@ -1088,7 +1082,7 @@ class SteamHeatPurchaseService:
                 if self._request_count > 0
                 else 0.0
             ),
-            "timestamp": _utcnow().isoformat()
+            "timestamp": utcnow().isoformat()
         }
 
     def get_service_info(self) -> Dict[str, Any]:
@@ -1130,7 +1124,7 @@ class SteamHeatPurchaseService:
                 "compliance_checker": _COMPLIANCE_AVAILABLE,
                 "pipeline": _PIPELINE_AVAILABLE
             },
-            "timestamp": _utcnow().isoformat()
+            "timestamp": utcnow().isoformat()
         }
 
     @classmethod
@@ -1139,7 +1133,6 @@ class SteamHeatPurchaseService:
         with cls._lock:
             cls._instance = None
             logger.info("SteamHeatPurchaseService reset")
-
 
 # -----------------------------------------------------------------------------
 # Factory Functions
@@ -1161,7 +1154,6 @@ def get_service(config: Optional[Any] = None) -> SteamHeatPurchaseService:
     """
     return SteamHeatPurchaseService(config)
 
-
 def create_service(config: Optional[Any] = None) -> SteamHeatPurchaseService:
     """
     Create service instance (alias for get_service).
@@ -1173,7 +1165,6 @@ def create_service(config: Optional[Any] = None) -> SteamHeatPurchaseService:
         Service instance
     """
     return SteamHeatPurchaseService(config)
-
 
 def reset_service():
     """

@@ -105,6 +105,7 @@ from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -143,15 +144,9 @@ except ImportError:
     _METRICS_AVAILABLE = False
     _record_uncertainty_run = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -169,7 +164,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Decimal helpers
 # ---------------------------------------------------------------------------
@@ -178,7 +172,6 @@ _PRECISION = Decimal("0.00000001")
 _ZERO = Decimal("0")
 _ONE = Decimal("1")
 _HUNDRED = Decimal("100")
-
 
 def _D(value: Any) -> Decimal:
     """Convert a value to Decimal.
@@ -192,7 +185,6 @@ def _D(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
     return Decimal(str(value))
-
 
 def _safe_decimal(value: Any, default: Decimal = _ZERO) -> Decimal:
     """Safely convert to Decimal, returning *default* on failure.
@@ -210,7 +202,6 @@ def _safe_decimal(value: Any, default: Decimal = _ZERO) -> Decimal:
         return _D(value)
     except (InvalidOperation, ValueError, TypeError):
         return default
-
 
 def _decimal_sqrt(value: Decimal) -> Decimal:
     """Compute square root of a Decimal value.
@@ -233,11 +224,9 @@ def _decimal_sqrt(value: Decimal) -> Decimal:
         return _ZERO
     return _D(str(math.sqrt(float(value))))
 
-
 # ===========================================================================
 # Enumerations
 # ===========================================================================
-
 
 class AgriculturalSourceCategory(str, Enum):
     """Agricultural emission source categories for uncertainty lookup."""
@@ -249,7 +238,6 @@ class AgriculturalSourceCategory(str, Enum):
     FIELD_BURNING = "FIELD_BURNING"
     LIMING = "LIMING"
     UREA_APPLICATION = "UREA_APPLICATION"
-
 
 class AgriculturalCalculationTier(str, Enum):
     """IPCC calculation tier for emission factor specificity.
@@ -263,7 +251,6 @@ class AgriculturalCalculationTier(str, Enum):
     TIER_2 = "TIER_2"
     TIER_1 = "TIER_1"
 
-
 class AgriculturalCalculationMethod(str, Enum):
     """Agricultural emission calculation method types."""
 
@@ -275,7 +262,6 @@ class AgriculturalCalculationMethod(str, Enum):
     EMISSION_FACTOR = "EMISSION_FACTOR"
     MASS_BALANCE = "MASS_BALANCE"
 
-
 class DQIDimension(str, Enum):
     """Data Quality Indicator dimensions (ISO 14044 / GHG Protocol)."""
 
@@ -284,7 +270,6 @@ class DQIDimension(str, Enum):
     TEMPORAL_CORRELATION = "temporal_correlation"
     GEOGRAPHICAL_CORRELATION = "geographical_correlation"
     TECHNOLOGICAL_CORRELATION = "technological_correlation"
-
 
 # ===========================================================================
 # Z-Scores for Common Confidence Levels
@@ -297,7 +282,6 @@ Z_SCORES: Dict[int, float] = {
     95: 1.960,
     99: 2.576,
 }
-
 
 # ===========================================================================
 # PARAMETER_DISTRIBUTIONS - Agriculture-Specific (15 entries)
@@ -422,7 +406,6 @@ PARAMETER_DISTRIBUTIONS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ===========================================================================
 # DEFAULT_CV - Flattened CV percentages (18 parameters x 3 tiers)
 # ===========================================================================
@@ -458,7 +441,6 @@ DEFAULT_CV: Dict[str, Dict[str, float]] = {
     "LIMING_EF": {"TIER_1": 25.0, "TIER_2": 15.0, "TIER_3": 8.0},
     "UREA_EF": {"TIER_1": 20.0, "TIER_2": 12.0, "TIER_3": 5.0},
 }
-
 
 # ===========================================================================
 # DQI Scoring Reference
@@ -514,7 +496,6 @@ DQI_UNCERTAINTY_MULTIPLIERS: Dict[str, float] = {
     "VERY_POOR": 2.5,
 }
 
-
 # ===========================================================================
 # Source-specific uncertainty ranges
 # ===========================================================================
@@ -560,7 +541,6 @@ SOURCE_UNCERTAINTY_RANGES: Dict[str, Dict[str, Tuple[float, float]]] = {
     },
 }
 
-
 # ===========================================================================
 # Default parameter uncertainties (flat lookup for analytical propagation)
 # ===========================================================================
@@ -589,11 +569,9 @@ DEFAULT_PARAMETER_UNCERTAINTIES: Dict[str, float] = {
     "combustion_factor": 25.0,
 }
 
-
 # ===========================================================================
 # UncertaintyQuantifierEngine
 # ===========================================================================
-
 
 class UncertaintyQuantifierEngine:
     """Uncertainty quantification engine for agricultural emissions.
@@ -630,7 +608,7 @@ class UncertaintyQuantifierEngine:
         """
         self._config = config or {}
         self._lock = threading.RLock()
-        self._created_at = _utcnow()
+        self._created_at = utcnow()
 
         self._default_iterations: int = int(
             self._config.get("monte_carlo_iterations", 5000),

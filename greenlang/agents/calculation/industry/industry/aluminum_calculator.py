@@ -26,11 +26,12 @@ CBAM Compliance: Annex III aluminum-specific methodology
 
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, List, Optional, Literal
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 from enum import Enum
 import hashlib
 import json
 from datetime import datetime, timezone
+from greenlang.schemas import GreenLangBase
 
 
 # =============================================================================
@@ -114,7 +115,7 @@ class PFCPerformanceLevel(str, Enum):
     POOR = "POOR"  # Older facilities
 
 
-class AluminumCalculationInput(BaseModel):
+class AluminumCalculationInput(GreenLangBase):
     """Input parameters for aluminum emission calculation."""
 
     production_route: AluminumProductionRoute = Field(
@@ -183,7 +184,7 @@ class AluminumCalculationInput(BaseModel):
     )
 
 
-class CalculationStep(BaseModel):
+class CalculationStep(GreenLangBase):
     """Individual calculation step with full provenance."""
     step_number: int
     description: str
@@ -194,7 +195,7 @@ class CalculationStep(BaseModel):
     source: str
 
 
-class AluminumCalculationResult(BaseModel):
+class AluminumCalculationResult(GreenLangBase):
     """Complete calculation result with CBAM-compliant output."""
 
     # Identification

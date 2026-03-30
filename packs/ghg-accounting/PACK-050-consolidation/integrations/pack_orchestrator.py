@@ -70,27 +70,22 @@ from typing import Any, Callable, Coroutine, Dict, List, Optional, Set
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ExecutionStatus
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
 ProgressCallback = Callable[[str, float, str], Coroutine[Any, Any, None]]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for provenance tracking.
@@ -110,7 +105,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _chain_hash(previous_hash: str, current_data: Any) -> str:
     """Chain a new hash to a previous provenance hash.
 
@@ -125,11 +119,9 @@ def _chain_hash(previous_hash: str, current_data: Any) -> str:
     combined = f"{previous_hash}:{current_hash}"
     return hashlib.sha256(combined.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class PipelinePhase(str, Enum):
     """Enumeration of the 10 consolidation pipeline phases."""
@@ -144,18 +136,6 @@ class PipelinePhase(str, Enum):
     ADJUSTMENT = "adjustment"
     REPORTING = "reporting"
     AUDIT = "audit"
-
-
-class ExecutionStatus(str, Enum):
-    """Phase execution status."""
-
-    PENDING = "pending"
-    RUNNING = "running"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    SKIPPED = "skipped"
-    RETRYING = "retrying"
-
 
 # ---------------------------------------------------------------------------
 # DAG Definition
@@ -194,11 +174,9 @@ CONDITIONAL_PHASES: Dict[PipelinePhase, str] = {
     PipelinePhase.ADJUSTMENT: "enable_adjustments",
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class PipelineConfig(BaseModel):
     """Configuration for the corporate consolidation pipeline."""
@@ -239,7 +217,6 @@ class PipelineConfig(BaseModel):
     )
     preset_name: str = Field("", description="Preset configuration name")
 
-
 class PhaseResult(BaseModel):
     """Result of a single phase execution."""
 
@@ -252,7 +229,6 @@ class PhaseResult(BaseModel):
     output_summary: Dict[str, Any] = Field(default_factory=dict)
     error_message: Optional[str] = None
     retry_count: int = 0
-
 
 class PipelineResult(BaseModel):
     """Complete pipeline execution result."""
@@ -268,7 +244,6 @@ class PipelineResult(BaseModel):
     phases_failed: int
     phases_skipped: int
 
-
 class PipelineStatus(BaseModel):
     """Current pipeline status for progress monitoring."""
 
@@ -279,11 +254,9 @@ class PipelineStatus(BaseModel):
     total_phases: int = 10
     is_running: bool = False
 
-
 # ---------------------------------------------------------------------------
 # Kahn's Topological Sort
 # ---------------------------------------------------------------------------
-
 
 def topological_sort_phases() -> List[PipelinePhase]:
     """Compute execution order using Kahn's algorithm.
@@ -321,11 +294,9 @@ def topological_sort_phases() -> List[PipelinePhase]:
 
     return sorted_phases
 
-
 # ---------------------------------------------------------------------------
 # Phase Cache
 # ---------------------------------------------------------------------------
-
 
 class _PhaseCache:
     """Simple TTL cache for phase results."""
@@ -359,11 +330,9 @@ class _PhaseCache:
         self._store.clear()
         self._timestamps.clear()
 
-
 # ---------------------------------------------------------------------------
 # Pipeline Orchestrator
 # ---------------------------------------------------------------------------
-
 
 class PackOrchestrator:
     """
@@ -427,7 +396,7 @@ class PackOrchestrator:
             PipelineResult with all phase results and provenance chain.
         """
         start_time = time.monotonic()
-        started_at = _utcnow()
+        started_at = utcnow()
         self._is_running = True
         completed_count = 0
         failed_count = 0
@@ -466,7 +435,7 @@ class PackOrchestrator:
             pipeline_id=self.config.pipeline_id,
             status=overall_status,
             started_at=started_at.isoformat(),
-            completed_at=_utcnow().isoformat(),
+            completed_at=utcnow().isoformat(),
             total_duration_ms=total_duration,
             provenance_chain_hash=self.provenance_chain,
             phase_results=list(self.phase_results.values()),
@@ -573,7 +542,7 @@ class PackOrchestrator:
             return cached
 
         phase_start = time.monotonic()
-        started_at = _utcnow()
+        started_at = utcnow()
         retry_count = 0
 
         while retry_count <= self.config.max_retries:
@@ -596,7 +565,7 @@ class PackOrchestrator:
                     phase=phase,
                     status=ExecutionStatus.COMPLETED,
                     started_at=started_at.isoformat(),
-                    completed_at=_utcnow().isoformat(),
+                    completed_at=utcnow().isoformat(),
                     duration_ms=duration,
                     provenance_hash=self.provenance_chain,
                     output_summary=output if isinstance(output, dict) else {"result": str(output)},
@@ -636,7 +605,7 @@ class PackOrchestrator:
                         phase=phase,
                         status=ExecutionStatus.FAILED,
                         started_at=started_at.isoformat(),
-                        completed_at=_utcnow().isoformat(),
+                        completed_at=utcnow().isoformat(),
                         duration_ms=duration,
                         error_message=str(e),
                         retry_count=retry_count - 1,

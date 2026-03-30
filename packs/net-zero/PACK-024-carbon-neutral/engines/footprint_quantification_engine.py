@@ -76,26 +76,19 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -113,7 +106,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -122,7 +114,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -134,17 +125,14 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
@@ -152,11 +140,9 @@ def _round3(value: float) -> float:
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ScopeBoundary(str, Enum):
     """Scope boundary configuration for carbon neutral claims.
@@ -171,7 +157,6 @@ class ScopeBoundary(str, Enum):
     SCOPE_1_2_3_FULL = "scope_1_2_3_full"
     CUSTOM = "custom"
 
-
 class ConsolidationApproach(str, Enum):
     """GHG consolidation approach per ISO 14064-1:2018 Clause 5.1.
 
@@ -182,7 +167,6 @@ class ConsolidationApproach(str, Enum):
     EQUITY_SHARE = "equity_share"
     OPERATIONAL_CONTROL = "operational_control"
     FINANCIAL_CONTROL = "financial_control"
-
 
 class QuantificationPeriod(str, Enum):
     """Period type for carbon footprint quantification.
@@ -196,7 +180,6 @@ class QuantificationPeriod(str, Enum):
     PERIODIC = "periodic"
     EVENT_BASED = "event_based"
     MULTI_YEAR = "multi_year"
-
 
 class GasType(str, Enum):
     """Greenhouse gas types per IPCC AR6.
@@ -223,7 +206,6 @@ class GasType(str, Enum):
     PFC_218 = "pfc_218"
     PFC_318 = "pfc_318"
 
-
 class EmissionSourceType(str, Enum):
     """Classification of emission sources per ISO 14064-1.
 
@@ -245,7 +227,6 @@ class EmissionSourceType(str, Enum):
     SCOPE3_CATEGORY = "scope3_category"
     LAND_USE = "land_use"
 
-
 class DataQualityLevel(str, Enum):
     """Data quality classification per ISO 14064-1:2018 Annex A.
 
@@ -261,7 +242,6 @@ class DataQualityLevel(str, Enum):
     LOW = "low"
     VERY_LOW = "very_low"
 
-
 class Scope2Method(str, Enum):
     """Scope 2 accounting method per GHG Protocol Scope 2 Guidance.
 
@@ -270,7 +250,6 @@ class Scope2Method(str, Enum):
     """
     LOCATION_BASED = "location_based"
     MARKET_BASED = "market_based"
-
 
 class FootprintStatus(str, Enum):
     """Status of footprint quantification.
@@ -284,7 +263,6 @@ class FootprintStatus(str, Enum):
     REVIEWED = "reviewed"
     VERIFIED = "verified"
     PUBLISHED = "published"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- GWP Values (IPCC AR6 WG1 Table 7.15, 100-year)
@@ -341,11 +319,9 @@ DEFAULT_UNCERTAINTIES: Dict[str, Decimal] = {
     EmissionSourceType.LAND_USE.value: Decimal("25.0"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class EmissionSourceInput(BaseModel):
     """Input data for a single emission source.
@@ -434,7 +410,6 @@ class EmissionSourceInput(BaseModel):
             raise ValueError(f"Unknown quality level '{v}'. Must be one of: {sorted(valid)}")
         return v
 
-
 class FacilityInput(BaseModel):
     """Input data for a facility/entity in the consolidation boundary.
 
@@ -469,7 +444,6 @@ class FacilityInput(BaseModel):
     employee_count: int = Field(default=0, ge=0, description="Employee count")
     revenue_usd: Decimal = Field(default=Decimal("0"), ge=0, description="Revenue in USD")
     notes: str = Field(default="", description="Additional notes")
-
 
 class FootprintQuantificationInput(BaseModel):
     """Complete input for carbon footprint quantification.
@@ -583,11 +557,9 @@ class FootprintQuantificationInput(BaseModel):
             raise ValueError(f"Unknown Scope 2 method '{v}'.")
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class EmissionSourceResult(BaseModel):
     """Quantification result for a single emission source.
@@ -637,7 +609,6 @@ class EmissionSourceResult(BaseModel):
     pct_of_scope: Decimal = Field(default=Decimal("0"))
     pct_of_total: Decimal = Field(default=Decimal("0"))
 
-
 class ScopeSummary(BaseModel):
     """Summary of emissions for a single scope.
 
@@ -661,7 +632,6 @@ class ScopeSummary(BaseModel):
     uncertainty_pct: Decimal = Field(default=Decimal("0"))
     pct_of_total: Decimal = Field(default=Decimal("0"))
     scope3_category_breakdown: Dict[str, Decimal] = Field(default_factory=dict)
-
 
 class FacilitySummary(BaseModel):
     """Summary of emissions for a single facility.
@@ -689,7 +659,6 @@ class FacilitySummary(BaseModel):
     source_count: int = Field(default=0)
     pct_of_total: Decimal = Field(default=Decimal("0"))
 
-
 class IntensityMetrics(BaseModel):
     """Intensity metrics for the footprint.
 
@@ -709,7 +678,6 @@ class IntensityMetrics(BaseModel):
     scope1_2_per_revenue_musd: Decimal = Field(default=Decimal("0"))
     total_employees: int = Field(default=0)
     total_revenue_usd: Decimal = Field(default=Decimal("0"))
-
 
 class UncertaintyAssessment(BaseModel):
     """Uncertainty assessment per IPCC 2006 Guidelines.
@@ -733,7 +701,6 @@ class UncertaintyAssessment(BaseModel):
     confidence_level: str = Field(default="95%")
     method: str = Field(default="error_propagation")
 
-
 class MaterialityAssessment(BaseModel):
     """Materiality assessment for excluded sources.
 
@@ -753,7 +720,6 @@ class MaterialityAssessment(BaseModel):
     individually_material_excluded: List[str] = Field(default_factory=list)
     exclusion_justified: bool = Field(default=True)
     message: str = Field(default="")
-
 
 class BaseYearComparison(BaseModel):
     """Comparison of current footprint to base year.
@@ -778,7 +744,6 @@ class BaseYearComparison(BaseModel):
     annualized_rate: Decimal = Field(default=Decimal("0"))
     on_track_for_neutrality: bool = Field(default=False)
     message: str = Field(default="")
-
 
 class FootprintQuantificationResult(BaseModel):
     """Complete footprint quantification result.
@@ -820,7 +785,7 @@ class FootprintQuantificationResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     reporting_year: int = Field(default=0)
     period_type: str = Field(default="annual")
@@ -852,11 +817,9 @@ class FootprintQuantificationResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class FootprintQuantificationEngine:
     """ISO 14064-1 aligned carbon footprint quantification engine.
@@ -1511,6 +1474,7 @@ class FootprintQuantificationEngine:
         ann_rate = Decimal("0")
         if years > 0 and base_tco2e > Decimal("0"):
             import math
+
             ratio = float(current_tco2e / base_tco2e)
             if ratio > 0:
                 ann_rate = _decimal(

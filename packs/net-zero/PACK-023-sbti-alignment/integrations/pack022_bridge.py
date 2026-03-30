@@ -48,25 +48,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -79,11 +73,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Agent Stubs
 # ---------------------------------------------------------------------------
-
 
 class _AgentStub:
     """Stub for unavailable PACK-022 engine modules."""
@@ -102,7 +94,6 @@ class _AgentStub:
             }
         return _stub_method
 
-
 def _try_import_pack022_engine(engine_id: str, module_path: str) -> Any:
     """Try to import a PACK-022 engine with graceful fallback."""
     try:
@@ -111,11 +102,9 @@ def _try_import_pack022_engine(engine_id: str, module_path: str) -> Any:
         logger.debug("PACK-022 engine %s not available, using stub", engine_id)
         return _AgentStub(engine_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ScenarioType(str, Enum):
     """Scenario analysis types."""
@@ -126,14 +115,12 @@ class ScenarioType(str, Enum):
     CONSERVATIVE = "conservative"
     CUSTOM = "custom"
 
-
 class TemperatureHorizon(str, Enum):
     """Temperature scoring time horizons."""
 
     SHORT_TERM = "short_term"
     MID_TERM = "mid_term"
     LONG_TERM = "long_term"
-
 
 class AggregationMethod(str, Enum):
     """SBTi TR v2.0 portfolio aggregation methods."""
@@ -145,11 +132,9 @@ class AggregationMethod(str, Enum):
     ECOTS = "ECOTS"
     AOTS = "AOTS"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class Pack022BridgeConfig(BaseModel):
     """Configuration for the PACK-022 Bridge."""
@@ -162,7 +147,6 @@ class Pack022BridgeConfig(BaseModel):
     pathway: str = Field(default="1.5C")
     sector: str = Field(default="general")
     sda_sector: str = Field(default="")
-
 
 class ScenarioResult(BaseModel):
     """Scenario analysis result from PACK-022."""
@@ -187,7 +171,6 @@ class ScenarioResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class SDAPathwayResult(BaseModel):
     """SDA pathway result from PACK-022."""
 
@@ -209,7 +192,6 @@ class SDAPathwayResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class TemperatureScoreResult(BaseModel):
     """Temperature scoring result from PACK-022 (SBTi TR v2.0)."""
 
@@ -226,7 +208,6 @@ class TemperatureScoreResult(BaseModel):
     methodology: str = Field(default="SBTi Temperature Rating v2.0")
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class SupplierEngagementResult(BaseModel):
     """Supplier engagement status from PACK-022."""
@@ -246,7 +227,6 @@ class SupplierEngagementResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class MultiEntityResult(BaseModel):
     """Multi-entity consolidation result from PACK-022."""
 
@@ -263,7 +243,6 @@ class MultiEntityResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class MACCResult(BaseModel):
     """Marginal Abatement Cost Curve from PACK-022."""
 
@@ -278,7 +257,6 @@ class MACCResult(BaseModel):
     sbti_gap_covered_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class FinanceMetricsResult(BaseModel):
     """Finance metrics from PACK-022."""
@@ -296,7 +274,6 @@ class FinanceMetricsResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class AnalyticsResult(BaseModel):
     """Analytics result from PACK-022."""
 
@@ -310,7 +287,6 @@ class AnalyticsResult(BaseModel):
     sbti_progress_trajectory: List[Dict[str, Any]] = Field(default_factory=list)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # PACK-022 Engine Mapping
@@ -355,11 +331,9 @@ SDA_2050_BENCHMARKS: Dict[str, float] = {
     "buildings_residential": 2.3,
 }
 
-
 # ---------------------------------------------------------------------------
 # Pack022Bridge
 # ---------------------------------------------------------------------------
-
 
 class Pack022Bridge:
     """Bridge to PACK-022 Net Zero Acceleration Pack for SBTi alignment.

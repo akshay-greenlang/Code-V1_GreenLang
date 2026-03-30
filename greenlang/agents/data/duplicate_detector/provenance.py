@@ -34,13 +34,9 @@ import threading
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 class ProvenanceTracker:
     """Tracks provenance for duplicate detection operations with SHA-256 chain hashing.
@@ -112,7 +108,7 @@ class ProvenanceTracker:
         Returns:
             New chain hash linking this entry to the previous.
         """
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
         meta = metadata or {}
 
         entry = {
@@ -163,7 +159,7 @@ class ProvenanceTracker:
         Returns:
             Chain hash of the new entry.
         """
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
         store_key = f"{entity_type}:{entity_id}"
 
         entry = {
@@ -374,7 +370,6 @@ class ProvenanceTracker:
         """
         serialized = json.dumps(data, sort_keys=True, default=str)
         return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
 
 __all__ = [
     "ProvenanceTracker",

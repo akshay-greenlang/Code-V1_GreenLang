@@ -72,8 +72,9 @@ from .models import (
 )
 from .provenance import get_tracker
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -101,28 +102,19 @@ _ESCALATION_CRITICAL_NC_COUNT: int = 1
 _ESCALATION_MAJOR_NC_COUNT: int = 3
 _ESCALATION_OVERDUE_DAYS: int = 30
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal for precise arithmetic."""
     if isinstance(value, Decimal):
         return value
     return Decimal(str(value))
 
-
 def _float(value: Decimal) -> float:
     """Convert Decimal to float for API responses."""
     return float(value)
 
-
 # ---------------------------------------------------------------------------
 # DueDiligenceTracker
 # ---------------------------------------------------------------------------
-
 
 class DueDiligenceTracker:
     """Track all due diligence activities per supplier per EUDR Articles 8-11.
@@ -198,7 +190,7 @@ class DueDiligenceTracker:
 
             # Step 3: Create activity record
             activity_id = str(uuid.uuid4())
-            now = _utcnow()
+            now = utcnow()
 
             activity = DDActivity(
                 activity_id=activity_id,
@@ -408,7 +400,7 @@ class DueDiligenceTracker:
             record = self._dd_records[record_id]
 
         nc_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         nc = NonConformance(
             nc_id=nc_id,
@@ -469,7 +461,7 @@ class DueDiligenceTracker:
             nc = self._non_conformances[nc_id]
 
         cap_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         cap = CorrectiveActionPlan(
             cap_id=cap_id,
@@ -604,7 +596,7 @@ class DueDiligenceTracker:
             record.escalation_required = True
             record.escalation_reason = reason
             record.escalated_to = escalated_to
-            record.escalation_date = _utcnow()
+            record.escalation_date = utcnow()
 
         logger.warning(
             "Supplier DD escalated: supplier_id=%s, reason=%s, escalated_to=%s",
@@ -800,7 +792,7 @@ class DueDiligenceTracker:
 
             # Create new record
             record_id = str(uuid.uuid4())
-            now = _utcnow()
+            now = utcnow()
 
             record = DueDiligenceRecord(
                 record_id=record_id,
@@ -933,7 +925,7 @@ class DueDiligenceTracker:
                 gaps.append(f"Missing {activity_type.replace('_', ' ')} activity")
 
         # Check for overdue activities
-        now = _utcnow()
+        now = utcnow()
         if dd_record.next_dd_date and dd_record.next_dd_date < now:
             days_overdue = (now - dd_record.next_dd_date).days
             gaps.append(f"DD reassessment overdue by {days_overdue} days")
@@ -983,7 +975,7 @@ class DueDiligenceTracker:
             return True
 
         # Overdue reassessment
-        now = _utcnow()
+        now = utcnow()
         if dd_record.next_dd_date:
             days_overdue = (now - dd_record.next_dd_date).days
             if days_overdue > _ESCALATION_OVERDUE_DAYS:
@@ -1030,7 +1022,7 @@ class DueDiligenceTracker:
             nc_component = nc_resolution_rate * Decimal("0.3")
 
         # Freshness component
-        now = _utcnow()
+        now = utcnow()
         days_since_last_dd = (now - dd_record.last_dd_date).days
         if days_since_last_dd < 90:
             freshness_component = Decimal("0.2")
@@ -1066,7 +1058,7 @@ class DueDiligenceTracker:
             NonConformance object.
         """
         nc_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         return NonConformance(
             nc_id=nc_id,

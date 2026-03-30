@@ -35,6 +35,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "29.0.0"
@@ -83,10 +85,6 @@ XBRL_TAGS: Dict[str, str] = {
     "emission_factor_effect": "gl:LMDIEmissionFactorEffect",
     "decomposition_residual": "gl:LMDIDecompositionResidual",
 }
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
@@ -141,7 +139,6 @@ def _logarithmic_mean(a: float, b: float) -> float:
         return a
     return (a - b) / math.log(a / b)
 
-
 class VarianceAnalysisReportTemplate:
     """
     Variance analysis report template with LMDI decomposition for PACK-029.
@@ -169,7 +166,7 @@ class VarianceAnalysisReportTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render full variance analysis report as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [
             self._md_header(data), self._md_executive_summary(data),
             self._md_lmdi(data), self._md_kaya(data),
@@ -184,7 +181,7 @@ class VarianceAnalysisReportTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render full variance analysis report as HTML."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         parts = [
             self._html_header(data), self._html_executive_summary(data),
@@ -205,7 +202,7 @@ class VarianceAnalysisReportTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render full report as structured JSON."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         prior = float(data.get("prior_year_emissions", 0))
         current = float(data.get("current_year_emissions", 0))
         target = float(data.get("target_emissions", 0))

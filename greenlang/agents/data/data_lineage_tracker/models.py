@@ -43,7 +43,9 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ReportFormat
 
 # ---------------------------------------------------------------------------
 # Layer 1 Re-exports (best-effort with stubs on ImportError)
@@ -69,7 +71,6 @@ except ImportError:  # pragma: no cover
         UNIQUENESS = "uniqueness"
         ACCURACY = "accuracy"
 
-
 try:
     from greenlang.agents.data.cross_source_reconciliation.source_registry import (  # type: ignore[import]
         SourceRegistryEngine as L1SourceRegistryEngine,
@@ -85,16 +86,9 @@ except ImportError:  # pragma: no cover
 
         pass
 
-
 # ---------------------------------------------------------------------------
 # Helper
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -139,11 +133,9 @@ SUPPORTED_REPORT_FORMATS: tuple = ("mermaid", "dot", "json", "d3", "text", "html
 #: Impact severity ordering from least to most severe (for comparisons).
 IMPACT_SEVERITY_ORDER: tuple = ("low", "medium", "high", "critical")
 
-
 # =============================================================================
 # Enumerations (14)
 # =============================================================================
-
 
 class AssetType(str, Enum):
     """Type classification for a registered data asset.
@@ -169,7 +161,6 @@ class AssetType(str, Enum):
     METRIC = "metric"
     EXTERNAL_SOURCE = "external_source"
 
-
 class AssetClassification(str, Enum):
     """Data classification level for access control and governance.
 
@@ -188,7 +179,6 @@ class AssetClassification(str, Enum):
     CONFIDENTIAL = "confidential"
     RESTRICTED = "restricted"
 
-
 class AssetStatus(str, Enum):
     """Lifecycle status of a registered data asset.
 
@@ -203,7 +193,6 @@ class AssetStatus(str, Enum):
     ACTIVE = "active"
     DEPRECATED = "deprecated"
     ARCHIVED = "archived"
-
 
 class TransformationType(str, Enum):
     """Type of data transformation applied by an agent or pipeline step.
@@ -239,7 +228,6 @@ class TransformationType(str, Enum):
     NORMALIZE = "normalize"
     CLASSIFY = "classify"
 
-
 class EdgeType(str, Enum):
     """Granularity level of a lineage edge in the graph.
 
@@ -254,7 +242,6 @@ class EdgeType(str, Enum):
     DATASET_LEVEL = "dataset_level"
     COLUMN_LEVEL = "column_level"
 
-
 class TraversalDirection(str, Enum):
     """Direction of graph traversal for impact analysis and lineage queries.
 
@@ -264,7 +251,6 @@ class TraversalDirection(str, Enum):
 
     FORWARD = "forward"
     BACKWARD = "backward"
-
 
 class ImpactSeverity(str, Enum):
     """Severity classification for an affected asset in impact analysis.
@@ -283,7 +269,6 @@ class ImpactSeverity(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
 
-
 class ValidationResult(str, Enum):
     """Outcome of a lineage graph validation check.
 
@@ -299,7 +284,6 @@ class ValidationResult(str, Enum):
     PASS_RESULT = "pass"
     WARN = "warn"
     FAIL = "fail"
-
 
 class ReportType(str, Enum):
     """Type of lineage report to generate.
@@ -320,28 +304,6 @@ class ReportType(str, Enum):
     CUSTOM = "custom"
     VISUALIZATION = "visualization"
 
-
-class ReportFormat(str, Enum):
-    """Output format for a lineage report or visualization.
-
-    MERMAID: Mermaid diagram syntax (Markdown-embeddable).
-    DOT: Graphviz DOT language for graph rendering.
-    JSON: Structured JSON for programmatic consumption.
-    D3: D3.js-compatible JSON for interactive web visualization.
-    TEXT: Plain-text summary for terminal or log output.
-    HTML: Self-contained HTML page with embedded visualization.
-    PDF: Portable Document Format for formal distribution.
-    """
-
-    MERMAID = "mermaid"
-    DOT = "dot"
-    JSON = "json"
-    D3 = "d3"
-    TEXT = "text"
-    HTML = "html"
-    PDF = "pdf"
-
-
 class ChangeType(str, Enum):
     """Type of structural change detected between two graph snapshots.
 
@@ -361,7 +323,6 @@ class ChangeType(str, Enum):
     EDGE_REMOVED = "edge_removed"
     TOPOLOGY_CHANGED = "topology_changed"
 
-
 class ChangeSeverity(str, Enum):
     """Severity classification for a graph change event.
 
@@ -375,7 +336,6 @@ class ChangeSeverity(str, Enum):
     MEDIUM = "medium"
     HIGH = "high"
     CRITICAL = "critical"
-
 
 class ScoreTier(str, Enum):
     """Quality score tier for data lineage completeness and health.
@@ -395,7 +355,6 @@ class ScoreTier(str, Enum):
     FAIR = "fair"
     POOR = "poor"
     CRITICAL = "critical"
-
 
 class TransformationLogicType(str, Enum):
     """Type of column-level transformation logic recorded on a lineage edge.
@@ -423,13 +382,11 @@ class TransformationLogicType(str, Enum):
     MERGE_FIELDS = "merge_fields"
     SPLIT_FIELD = "split_field"
 
-
 # =============================================================================
 # SDK Data Models (16)
 # =============================================================================
 
-
-class DataAsset(BaseModel):
+class DataAsset(GreenLangBase):
     """A registered data asset in the Data Lineage Tracker registry.
 
     Represents any addressable data entity in the GreenLang platform:
@@ -499,11 +456,11 @@ class DataAsset(BaseModel):
         description="Additional unstructured metadata key-value pairs",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the asset was first registered",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the asset was last updated",
     )
 
@@ -517,8 +474,7 @@ class DataAsset(BaseModel):
             raise ValueError("qualified_name must be non-empty")
         return v
 
-
-class TransformationEvent(BaseModel):
+class TransformationEvent(GreenLangBase):
     """A recorded data transformation event in the lineage graph.
 
     Captures the details of a single transformation operation performed
@@ -607,7 +563,7 @@ class TransformationEvent(BaseModel):
         description="Wall-clock duration in milliseconds",
     )
     started_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the transformation began",
     )
     completed_at: Optional[datetime] = Field(
@@ -629,8 +585,7 @@ class TransformationEvent(BaseModel):
             raise ValueError(f"Invalid transformation_type: {v}")
         return v
 
-
-class LineageEdge(BaseModel):
+class LineageEdge(GreenLangBase):
     """A directed edge in the lineage graph connecting two data assets.
 
     Represents a data flow relationship from a source asset to a target
@@ -689,7 +644,7 @@ class LineageEdge(BaseModel):
         description="Confidence score for this edge (0.0 to 1.0)",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the edge was created",
     )
 
@@ -719,8 +674,7 @@ class LineageEdge(BaseModel):
             raise ValueError(f"confidence must be between 0.0 and 1.0, got {v}")
         return v
 
-
-class GraphSnapshot(BaseModel):
+class GraphSnapshot(GreenLangBase):
     """A point-in-time snapshot of the lineage graph topology.
 
     Snapshots are periodically captured to enable change detection,
@@ -785,7 +739,7 @@ class GraphSnapshot(BaseModel):
         description="SHA-256 hash of the graph topology for tamper detection",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the snapshot was captured",
     )
 
@@ -799,8 +753,7 @@ class GraphSnapshot(BaseModel):
             raise ValueError(f"coverage_score must be between 0.0 and 1.0, got {v}")
         return v
 
-
-class ImpactAnalysisResult(BaseModel):
+class ImpactAnalysisResult(GreenLangBase):
     """Result of an impact analysis traversal from a root asset.
 
     Produced by traversing the lineage graph forward (downstream impact)
@@ -876,7 +829,7 @@ class ImpactAnalysisResult(BaseModel):
         description="Fraction of total graph nodes affected (0.0 to 1.0)",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the analysis was performed",
     )
 
@@ -898,8 +851,7 @@ class ImpactAnalysisResult(BaseModel):
             raise ValueError(f"blast_radius must be between 0.0 and 1.0, got {v}")
         return v
 
-
-class ValidationReport(BaseModel):
+class ValidationReport(GreenLangBase):
     """Result of a lineage graph validation and health check.
 
     Produced by the validation engine to detect structural issues
@@ -970,7 +922,7 @@ class ValidationReport(BaseModel):
         description="List of suggested remediation actions",
     )
     validated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the validation was performed",
     )
 
@@ -1002,8 +954,7 @@ class ValidationReport(BaseModel):
             raise ValueError(f"freshness_score must be between 0.0 and 1.0, got {v}")
         return v
 
-
-class LineageReport(BaseModel):
+class LineageReport(GreenLangBase):
     """A generated lineage report in a specified format.
 
     Produced by the reporting engine to render lineage information
@@ -1056,14 +1007,13 @@ class LineageReport(BaseModel):
         description="Actor (user or service) that requested the report",
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the report was generated",
     )
 
     model_config = {"extra": "forbid"}
 
-
-class ChangeEvent(BaseModel):
+class ChangeEvent(GreenLangBase):
     """A structural change detected between two lineage graph snapshots.
 
     Produced by the change detection engine when comparing consecutive
@@ -1115,7 +1065,7 @@ class ChangeEvent(BaseModel):
         description="Impact severity of this change",
     )
     detected_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the change was detected",
     )
 
@@ -1145,8 +1095,7 @@ class ChangeEvent(BaseModel):
             raise ValueError("entity_id must be non-empty")
         return v
 
-
-class QualityScore(BaseModel):
+class QualityScore(GreenLangBase):
     """A composite quality score for a data asset's lineage health.
 
     Aggregates multiple quality dimensions into a single overall score
@@ -1214,7 +1163,7 @@ class QualityScore(BaseModel):
         description="Detailed breakdown of score components and weights",
     )
     scored_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the score was calculated",
     )
 
@@ -1246,8 +1195,7 @@ class QualityScore(BaseModel):
             raise ValueError(f"overall_score must be between 0.0 and 1.0, got {v}")
         return v
 
-
-class AuditEntry(BaseModel):
+class AuditEntry(GreenLangBase):
     """An immutable audit log entry for any data lineage action.
 
     All create, update, delete, and query actions in the Data Lineage
@@ -1310,7 +1258,7 @@ class AuditEntry(BaseModel):
         description="SHA-256 hash of the immediately preceding audit entry",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the audit entry was created",
     )
 
@@ -1340,8 +1288,7 @@ class AuditEntry(BaseModel):
             raise ValueError("entity_id must be non-empty")
         return v
 
-
-class GraphNode(BaseModel):
+class GraphNode(GreenLangBase):
     """A lightweight view of an asset node in the lineage graph.
 
     Used in subgraph query results and visualization payloads to
@@ -1393,8 +1340,7 @@ class GraphNode(BaseModel):
             raise ValueError("asset_id must be non-empty")
         return v
 
-
-class GraphEdgeView(BaseModel):
+class GraphEdgeView(GreenLangBase):
     """A lightweight view of a lineage edge for graph query results.
 
     Used in subgraph query results and visualization payloads to
@@ -1470,8 +1416,7 @@ class GraphEdgeView(BaseModel):
             raise ValueError(f"confidence must be between 0.0 and 1.0, got {v}")
         return v
 
-
-class SubgraphResult(BaseModel):
+class SubgraphResult(GreenLangBase):
     """Result of a subgraph extraction query around a root asset.
 
     Contains the set of nodes and edges reachable from the root
@@ -1525,8 +1470,7 @@ class SubgraphResult(BaseModel):
             raise ValueError("root_asset_id must be non-empty")
         return v
 
-
-class LineageChain(BaseModel):
+class LineageChain(GreenLangBase):
     """An ordered chain of lineage steps from a root asset.
 
     Represents a single path through the lineage graph, either
@@ -1576,8 +1520,7 @@ class LineageChain(BaseModel):
             raise ValueError("asset_id must be non-empty")
         return v
 
-
-class LineageStatistics(BaseModel):
+class LineageStatistics(GreenLangBase):
     """Aggregated operational statistics for the Data Lineage Tracker service.
 
     Provides high-level metrics for service health monitoring, capacity
@@ -1651,8 +1594,7 @@ class LineageStatistics(BaseModel):
             raise ValueError(f"coverage_score must be between 0.0 and 1.0, got {v}")
         return v
 
-
-class PipelineResult(BaseModel):
+class PipelineResult(GreenLangBase):
     """The complete result of a full data lineage pipeline run.
 
     A pipeline run encompasses all stages: asset registration,
@@ -1716,13 +1658,11 @@ class PipelineResult(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
 # =============================================================================
 # Request Models (8)
 # =============================================================================
 
-
-class RegisterAssetRequest(BaseModel):
+class RegisterAssetRequest(GreenLangBase):
     """Request body for registering a new data asset.
 
     Attributes:
@@ -1784,8 +1724,7 @@ class RegisterAssetRequest(BaseModel):
             raise ValueError("qualified_name must be non-empty")
         return v
 
-
-class UpdateAssetRequest(BaseModel):
+class UpdateAssetRequest(GreenLangBase):
     """Request body for updating mutable fields of an existing data asset.
 
     Only fields explicitly included in this model can be updated.
@@ -1833,8 +1772,7 @@ class UpdateAssetRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class RecordTransformationRequest(BaseModel):
+class RecordTransformationRequest(GreenLangBase):
     """Request body for recording a data transformation event.
 
     Captures the details of a transformation performed by an agent or
@@ -1916,8 +1854,7 @@ class RecordTransformationRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class CreateEdgeRequest(BaseModel):
+class CreateEdgeRequest(GreenLangBase):
     """Request body for creating a lineage edge between two assets.
 
     Attributes:
@@ -1992,8 +1929,7 @@ class CreateEdgeRequest(BaseModel):
             raise ValueError(f"confidence must be between 0.0 and 1.0, got {v}")
         return v
 
-
-class RunImpactAnalysisRequest(BaseModel):
+class RunImpactAnalysisRequest(GreenLangBase):
     """Request body for running impact analysis from a root asset.
 
     Triggers a graph traversal from the specified asset in the given
@@ -2030,8 +1966,7 @@ class RunImpactAnalysisRequest(BaseModel):
             raise ValueError("asset_id must be non-empty")
         return v
 
-
-class RunValidationRequest(BaseModel):
+class RunValidationRequest(GreenLangBase):
     """Request body for running lineage graph validation.
 
     Triggers the validation engine to check the lineage graph for
@@ -2058,8 +1993,7 @@ class RunValidationRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class GenerateReportRequest(BaseModel):
+class GenerateReportRequest(GreenLangBase):
     """Request body for generating a lineage report.
 
     Triggers the reporting engine to produce a lineage report in the
@@ -2099,8 +2033,7 @@ class GenerateReportRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class RunPipelineRequest(BaseModel):
+class RunPipelineRequest(GreenLangBase):
     """Request body for running the full end-to-end data lineage pipeline.
 
     A single pipeline invocation encompasses all stages: asset registration,
@@ -2147,7 +2080,6 @@ class RunPipelineRequest(BaseModel):
     )
 
     model_config = {"extra": "forbid"}
-
 
 # =============================================================================
 # __all__ export list

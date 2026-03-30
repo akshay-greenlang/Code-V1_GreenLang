@@ -73,18 +73,13 @@ from .models import (
 from .protected_area_checker import ProtectedAreaChecker
 from .deforestation_verifier import DeforestationCutoffVerifier
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -104,7 +99,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 def _generate_id(prefix: str) -> str:
     """Generate a unique identifier with a given prefix.
 
@@ -115,7 +109,6 @@ def _generate_id(prefix: str) -> str:
         ID in format "{prefix}-{hex12}".
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -171,11 +164,9 @@ DEFAULT_BUFFER_KM: float = 5.0
 #: Rate limit: minimum seconds between satellite data calls per plot.
 RATE_LIMIT_INTERVAL_S: float = 0.05
 
-
 # ---------------------------------------------------------------------------
 # BatchVerificationPipeline
 # ---------------------------------------------------------------------------
-
 
 class BatchVerificationPipeline:
     """Batch verification pipeline for EUDR geolocation compliance.
@@ -282,7 +273,7 @@ class BatchVerificationPipeline:
             raise ValueError("Batch request must contain at least one plot")
 
         batch_id = _generate_id("BVR")
-        started_at = _utcnow()
+        started_at = utcnow()
 
         logger.info(
             "Batch %s started: %d plots, level=%s, operator=%s",
@@ -320,7 +311,7 @@ class BatchVerificationPipeline:
                 total_plots=len(request.plots),
                 verification_level=request.verification_level,
                 started_at=started_at,
-                completed_at=_utcnow(),
+                completed_at=utcnow(),
             )
 
         with self._lock:
@@ -496,7 +487,7 @@ class BatchVerificationPipeline:
             )
 
         elapsed_s = time.monotonic() - start_time
-        completed_at = _utcnow()
+        completed_at = utcnow()
 
         # Calculate average accuracy score
         avg_score = self._calculate_average_score(results)
@@ -728,7 +719,7 @@ class BatchVerificationPipeline:
             deforestation_result=df_result,
             issues_count=issues_count,
             critical_issues_count=critical_issues_count,
-            verified_at=_utcnow(),
+            verified_at=utcnow(),
             processing_time_ms=round(elapsed_ms, 2),
         )
         result.provenance_hash = _compute_hash(result)
@@ -1031,7 +1022,7 @@ class BatchVerificationPipeline:
             overall_status=VerificationStatus.FAILED,
             issues_count=1,
             critical_issues_count=1,
-            verified_at=_utcnow(),
+            verified_at=utcnow(),
             processing_time_ms=0.0,
         )
         result.provenance_hash = _compute_hash(result)
@@ -1256,7 +1247,6 @@ class BatchVerificationPipeline:
         }
 
         return summary
-
 
 # ---------------------------------------------------------------------------
 # Module Exports

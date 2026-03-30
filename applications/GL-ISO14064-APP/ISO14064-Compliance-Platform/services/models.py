@@ -27,7 +27,8 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 
 from .config import (
     ActionCategory,
@@ -75,7 +76,7 @@ def _sha256(payload: str) -> str:
 # Organization & Entity Models
 # ---------------------------------------------------------------------------
 
-class Entity(BaseModel):
+class Entity(GreenLangBase):
     """
     An organizational entity (subsidiary, facility, or operation).
 
@@ -110,7 +111,7 @@ class Entity(BaseModel):
     updated_at: datetime = Field(default_factory=_now)
 
 
-class Organization(BaseModel):
+class Organization(GreenLangBase):
     """
     Top-level organization performing ISO 14064-1 GHG accounting.
 
@@ -138,7 +139,7 @@ class Organization(BaseModel):
 # Inventory Boundary Models
 # ---------------------------------------------------------------------------
 
-class InventoryBoundary(BaseModel):
+class InventoryBoundary(GreenLangBase):
     """
     Organizational and operational boundary for an ISO 14064-1 inventory.
 
@@ -177,7 +178,7 @@ class InventoryBoundary(BaseModel):
 # Base Year Models
 # ---------------------------------------------------------------------------
 
-class Recalculation(BaseModel):
+class Recalculation(GreenLangBase):
     """A base year recalculation event per ISO 14064-1 Clause 5.3."""
 
     id: str = Field(default_factory=_new_id)
@@ -205,7 +206,7 @@ class Recalculation(BaseModel):
         return ((self.new_total - self.original_total) / self.original_total) * 100
 
 
-class BaseYear(BaseModel):
+class BaseYear(GreenLangBase):
     """
     Base year definition with emissions snapshot per ISO 14064-1 Clause 5.3.
 
@@ -248,7 +249,7 @@ class BaseYear(BaseModel):
 # GHG Gas Breakdown
 # ---------------------------------------------------------------------------
 
-class GHGGasBreakdown(BaseModel):
+class GHGGasBreakdown(GreenLangBase):
     """
     Breakdown of emissions by individual GHG gas per ISO 14064-1 Clause 5.2.4.
 
@@ -281,7 +282,7 @@ class GHGGasBreakdown(BaseModel):
 # Emission Source & Category Models
 # ---------------------------------------------------------------------------
 
-class EmissionSource(BaseModel):
+class EmissionSource(GreenLangBase):
     """
     An individual emission source within an ISO 14064-1 category.
 
@@ -340,7 +341,7 @@ class EmissionSource(BaseModel):
             self.provenance_hash = _sha256(payload)
 
 
-class FacilityEmissions(BaseModel):
+class FacilityEmissions(GreenLangBase):
     """Aggregated emissions for a single facility."""
 
     facility_id: str = Field(..., description="Facility entity ID")
@@ -353,7 +354,7 @@ class FacilityEmissions(BaseModel):
     source_count: int = Field(default=0, ge=0, description="Number of emission sources")
 
 
-class EntityEmissions(BaseModel):
+class EntityEmissions(GreenLangBase):
     """Aggregated emissions for an organizational entity."""
 
     entity_id: str = Field(..., description="Entity ID")
@@ -372,7 +373,7 @@ class EntityEmissions(BaseModel):
     )
 
 
-class CategoryResult(BaseModel):
+class CategoryResult(GreenLangBase):
     """
     Aggregated result for a single ISO 14064-1 category.
 
@@ -421,7 +422,7 @@ class CategoryResult(BaseModel):
 # Removals Models
 # ---------------------------------------------------------------------------
 
-class RemovalSource(BaseModel):
+class RemovalSource(GreenLangBase):
     """
     A GHG removal source per ISO 14064-1:2018 Clause 5.2.3.
 
@@ -481,7 +482,7 @@ class RemovalSource(BaseModel):
             self.provenance_hash = _sha256(payload)
 
 
-class BiogenicEmissions(BaseModel):
+class BiogenicEmissions(GreenLangBase):
     """
     Separate tracking of biogenic CO2 per ISO 14064-1 reporting requirements.
 
@@ -505,7 +506,7 @@ class BiogenicEmissions(BaseModel):
     )
 
 
-class NetEmissionsResult(BaseModel):
+class NetEmissionsResult(GreenLangBase):
     """
     Net emissions calculation per ISO 14064-1:2018.
 
@@ -560,7 +561,7 @@ class NetEmissionsResult(BaseModel):
 # Significance Models
 # ---------------------------------------------------------------------------
 
-class SignificanceCriteria(BaseModel):
+class SignificanceCriteria(GreenLangBase):
     """
     Individual criteria scores for significance assessment.
 
@@ -609,7 +610,7 @@ class SignificanceCriteria(BaseModel):
         return total / 5
 
 
-class SignificanceAssessment(BaseModel):
+class SignificanceAssessment(GreenLangBase):
     """
     Significance assessment for an indirect ISO 14064-1 category (3-6).
 
@@ -650,7 +651,7 @@ class SignificanceAssessment(BaseModel):
 # Uncertainty Models
 # ---------------------------------------------------------------------------
 
-class UncertaintyResult(BaseModel):
+class UncertaintyResult(GreenLangBase):
     """
     Uncertainty analysis results per ISO 14064-1:2018 Clause 6.3.
 
@@ -703,7 +704,7 @@ class UncertaintyResult(BaseModel):
 # Quality Models
 # ---------------------------------------------------------------------------
 
-class DataQualityScore(BaseModel):
+class DataQualityScore(GreenLangBase):
     """
     Composite data quality score per ISO 14064-1:2018 Clause 6.3.
 
@@ -744,7 +745,7 @@ class DataQualityScore(BaseModel):
     assessed_at: datetime = Field(default_factory=_now)
 
 
-class CorrectiveAction(BaseModel):
+class CorrectiveAction(GreenLangBase):
     """
     A corrective action arising from a verification finding or quality issue.
 
@@ -765,7 +766,7 @@ class CorrectiveAction(BaseModel):
     completed_at: Optional[datetime] = Field(None)
 
 
-class QualityManagementPlan(BaseModel):
+class QualityManagementPlan(GreenLangBase):
     """
     Quality management plan per ISO 14064-1:2018 Clause 6.
 
@@ -801,7 +802,7 @@ class QualityManagementPlan(BaseModel):
 # Management Plan Models
 # ---------------------------------------------------------------------------
 
-class ImprovementAction(BaseModel):
+class ImprovementAction(GreenLangBase):
     """
     A planned improvement action per ISO 14064-1:2018 Clause 9.
 
@@ -838,7 +839,7 @@ class ImprovementAction(BaseModel):
     updated_at: datetime = Field(default_factory=_now)
 
 
-class ManagementPlan(BaseModel):
+class ManagementPlan(GreenLangBase):
     """
     GHG management plan per ISO 14064-1:2018 Clause 9.
 
@@ -873,7 +874,7 @@ class ManagementPlan(BaseModel):
 # Verification Models
 # ---------------------------------------------------------------------------
 
-class Finding(BaseModel):
+class Finding(GreenLangBase):
     """
     A verification finding per ISO 14064-3:2019.
 
@@ -897,7 +898,7 @@ class Finding(BaseModel):
     resolved_at: Optional[datetime] = Field(None)
 
 
-class FindingsSummary(BaseModel):
+class FindingsSummary(GreenLangBase):
     """Summary of all findings from a verification engagement."""
 
     total_findings: int = Field(default=0, ge=0)
@@ -915,7 +916,7 @@ class FindingsSummary(BaseModel):
     )
 
 
-class VerificationRecord(BaseModel):
+class VerificationRecord(GreenLangBase):
     """
     A verification / assurance record per ISO 14064-3:2019.
 
@@ -979,7 +980,7 @@ class VerificationRecord(BaseModel):
 # Cross-Walk Models
 # ---------------------------------------------------------------------------
 
-class CrossWalkMapping(BaseModel):
+class CrossWalkMapping(GreenLangBase):
     """
     Maps an ISO 14064-1 category to a GHG Protocol scope.
 
@@ -1003,7 +1004,7 @@ class CrossWalkMapping(BaseModel):
     notes: Optional[str] = Field(None, description="Mapping notes or caveats")
 
 
-class CrossWalkResult(BaseModel):
+class CrossWalkResult(GreenLangBase):
     """
     Side-by-side comparison of ISO 14064-1 vs GHG Protocol reporting.
 
@@ -1034,7 +1035,7 @@ class CrossWalkResult(BaseModel):
 # Report Models
 # ---------------------------------------------------------------------------
 
-class ReportSection(BaseModel):
+class ReportSection(GreenLangBase):
     """A single section of a generated ISO 14064-1 report."""
 
     key: str = Field(..., description="Section key (e.g. organization_description)")
@@ -1043,7 +1044,7 @@ class ReportSection(BaseModel):
     order: int = Field(default=0)
 
 
-class MandatoryElement(BaseModel):
+class MandatoryElement(GreenLangBase):
     """
     One of the 14 mandatory reporting elements per ISO 14064-1:2018 Clause 9.
 
@@ -1063,7 +1064,7 @@ class MandatoryElement(BaseModel):
     notes: Optional[str] = Field(None, description="Additional notes")
 
 
-class Disclosure(BaseModel):
+class Disclosure(GreenLangBase):
     """A disclosure element within the ISO 14064-1 report."""
 
     id: str = Field(default_factory=_new_id)
@@ -1074,7 +1075,7 @@ class Disclosure(BaseModel):
     evidence: Optional[str] = Field(None, description="Evidence reference")
 
 
-class Report(BaseModel):
+class Report(GreenLangBase):
     """A generated ISO 14064-1 compliance report."""
 
     id: str = Field(default_factory=_new_id)
@@ -1117,7 +1118,7 @@ class Report(BaseModel):
 # ISO Inventory -- The Central Object
 # ---------------------------------------------------------------------------
 
-class ISOInventory(BaseModel):
+class ISOInventory(GreenLangBase):
     """
     Complete ISO 14064-1:2018 GHG inventory for an organization-year.
 
@@ -1222,7 +1223,7 @@ class ISOInventory(BaseModel):
 # Dashboard Models
 # ---------------------------------------------------------------------------
 
-class TrendDataPoint(BaseModel):
+class TrendDataPoint(GreenLangBase):
     """A single data point in a time-series trend."""
 
     year: int = Field(..., ge=1990, le=2100)
@@ -1232,7 +1233,7 @@ class TrendDataPoint(BaseModel):
     )
 
 
-class CategoryBreakdown(BaseModel):
+class CategoryBreakdown(GreenLangBase):
     """Breakdown of emissions for a single ISO category (dashboard)."""
 
     iso_category: ISOCategory = Field(...)
@@ -1247,7 +1248,7 @@ class CategoryBreakdown(BaseModel):
     yoy_change_pct: Optional[Decimal] = Field(None)
 
 
-class DashboardAlert(BaseModel):
+class DashboardAlert(GreenLangBase):
     """An alert surfaced on the dashboard."""
 
     id: str = Field(default_factory=_new_id)
@@ -1259,7 +1260,7 @@ class DashboardAlert(BaseModel):
     dismissed: bool = Field(default=False)
 
 
-class DashboardMetrics(BaseModel):
+class DashboardMetrics(GreenLangBase):
     """
     Aggregated dashboard metrics for a single ISO 14064-1 inventory year.
 
@@ -1298,7 +1299,7 @@ class DashboardMetrics(BaseModel):
 # Request / Response Models
 # ---------------------------------------------------------------------------
 
-class CreateOrganizationRequest(BaseModel):
+class CreateOrganizationRequest(GreenLangBase):
     """Request to create a new organization."""
 
     name: str = Field(..., min_length=1, max_length=500)
@@ -1309,7 +1310,7 @@ class CreateOrganizationRequest(BaseModel):
     contact_email: Optional[str] = Field(None, max_length=255)
 
 
-class AddEntityRequest(BaseModel):
+class AddEntityRequest(GreenLangBase):
     """Request to add an entity to an organization."""
 
     name: str = Field(..., min_length=1, max_length=255)
@@ -1327,7 +1328,7 @@ class AddEntityRequest(BaseModel):
     production_unit_name: Optional[str] = Field(None)
 
 
-class SetBoundaryRequest(BaseModel):
+class SetBoundaryRequest(GreenLangBase):
     """Request to set organizational/operational boundary."""
 
     consolidation_approach: ConsolidationApproach = Field(...)
@@ -1343,7 +1344,7 @@ class SetBoundaryRequest(BaseModel):
     entity_ids: Optional[List[str]] = Field(None)
 
 
-class CreateInventoryRequest(BaseModel):
+class CreateInventoryRequest(GreenLangBase):
     """Request to create a new ISO 14064-1 GHG inventory."""
 
     year: int = Field(..., ge=1990, le=2100)
@@ -1352,7 +1353,7 @@ class CreateInventoryRequest(BaseModel):
     gwp_source: GWPSource = Field(default=GWPSource.AR5)
 
 
-class AddEmissionSourceRequest(BaseModel):
+class AddEmissionSourceRequest(GreenLangBase):
     """Request to add an emission source to an inventory category."""
 
     name: str = Field(..., min_length=1, max_length=255)
@@ -1373,7 +1374,7 @@ class AddEmissionSourceRequest(BaseModel):
     notes: Optional[str] = Field(None, max_length=2000)
 
 
-class AddRemovalRequest(BaseModel):
+class AddRemovalRequest(GreenLangBase):
     """Request to add a GHG removal source."""
 
     name: str = Field(..., min_length=1, max_length=255)
@@ -1394,7 +1395,7 @@ class AddRemovalRequest(BaseModel):
     notes: Optional[str] = Field(None, max_length=2000)
 
 
-class RunSignificanceRequest(BaseModel):
+class RunSignificanceRequest(GreenLangBase):
     """Request to run significance assessment for indirect categories."""
 
     categories: List[ISOCategory] = Field(
@@ -1414,7 +1415,7 @@ class RunSignificanceRequest(BaseModel):
     )
 
 
-class RunUncertaintyRequest(BaseModel):
+class RunUncertaintyRequest(GreenLangBase):
     """Request to run uncertainty analysis on the inventory."""
 
     methodology: str = Field(
@@ -1428,7 +1429,7 @@ class RunUncertaintyRequest(BaseModel):
     )
 
 
-class GenerateReportRequest(BaseModel):
+class GenerateReportRequest(GreenLangBase):
     """Request to generate an ISO 14064-1 compliance report."""
 
     format: ReportFormat = Field(default=ReportFormat.JSON)
@@ -1445,7 +1446,7 @@ class GenerateReportRequest(BaseModel):
     )
 
 
-class ExportDataRequest(BaseModel):
+class ExportDataRequest(GreenLangBase):
     """Request to export raw inventory data."""
 
     format: ReportFormat = Field(default=ReportFormat.CSV)
@@ -1457,7 +1458,7 @@ class ExportDataRequest(BaseModel):
     include_biogenic: bool = Field(default=True)
 
 
-class SetTargetRequest(BaseModel):
+class SetTargetRequest(GreenLangBase):
     """Request to set an emission reduction target."""
 
     name: str = Field(default="", max_length=255)
@@ -1484,7 +1485,7 @@ class SetTargetRequest(BaseModel):
         return v
 
 
-class AddImprovementActionRequest(BaseModel):
+class AddImprovementActionRequest(GreenLangBase):
     """Request to add an improvement action to the management plan."""
 
     name: str = Field(..., min_length=1, max_length=255)
@@ -1501,7 +1502,7 @@ class AddImprovementActionRequest(BaseModel):
     assigned_to: Optional[str] = Field(None)
 
 
-class StartVerificationRequest(BaseModel):
+class StartVerificationRequest(GreenLangBase):
     """Request to start a verification engagement."""
 
     level: VerificationLevel = Field(default=VerificationLevel.LIMITED)
@@ -1514,7 +1515,7 @@ class StartVerificationRequest(BaseModel):
     )
 
 
-class AddFindingRequest(BaseModel):
+class AddFindingRequest(GreenLangBase):
     """Request to add a verification finding."""
 
     description: str = Field(..., min_length=10)
@@ -1523,7 +1524,7 @@ class AddFindingRequest(BaseModel):
     severity: FindingSeverity = Field(default=FindingSeverity.LOW)
 
 
-class UpdateSettingsRequest(BaseModel):
+class UpdateSettingsRequest(GreenLangBase):
     """Request to update platform configuration settings."""
 
     default_consolidation_approach: Optional[ConsolidationApproach] = Field(None)
@@ -1548,7 +1549,7 @@ class UpdateSettingsRequest(BaseModel):
 # Generic API Response Models
 # ---------------------------------------------------------------------------
 
-class ApiError(BaseModel):
+class ApiError(GreenLangBase):
     """Standard API error response."""
 
     code: str = Field(..., description="Error code (e.g. VALIDATION_ERROR)")
@@ -1559,7 +1560,7 @@ class ApiError(BaseModel):
     timestamp: datetime = Field(default_factory=_now)
 
 
-class ApiResponse(BaseModel):
+class ApiResponse(GreenLangBase):
     """Standard API success response wrapper."""
 
     success: bool = Field(default=True)
@@ -1572,7 +1573,7 @@ class ApiResponse(BaseModel):
     )
 
 
-class PaginatedResponse(BaseModel):
+class PaginatedResponse(GreenLangBase):
     """Paginated list response for collection endpoints."""
 
     items: List[Any] = Field(default_factory=list)

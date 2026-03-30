@@ -56,25 +56,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -99,7 +93,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -109,31 +102,25 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(num: Decimal, den: Decimal, default: Decimal = Decimal("0")) -> Decimal:
     """Safely divide two Decimals, returning *default* on zero denominator."""
     return default if den == Decimal("0") else num / den
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* decimal digits and return float."""
     return float(value.quantize(Decimal(10) ** -places, rounding=ROUND_HALF_UP))
 
-
 def _round3(value: Any) -> float:
     """Round to 3 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
-
 
 def _round2(value: Any) -> float:
     """Round to 2 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class BoilerType(str, Enum):
     """Industrial boiler types."""
@@ -141,7 +128,6 @@ class BoilerType(str, Enum):
     WATER_TUBE = "water_tube"
     ELECTRIC = "electric"
     WASTE_HEAT = "waste_heat"
-
 
 class FuelType(str, Enum):
     """Boiler fuel types with Siegert coefficients available."""
@@ -154,14 +140,12 @@ class FuelType(str, Enum):
     LPG = "lpg"
     BIOGAS = "biogas"
 
-
 class SteamTrapType(str, Enum):
     """Steam trap mechanism types."""
     THERMODYNAMIC = "thermodynamic"
     THERMOSTATIC = "thermostatic"
     MECHANICAL = "mechanical"
     FIXED_ORIFICE = "fixed_orifice"
-
 
 class TrapStatus(str, Enum):
     """Steam trap operational status."""
@@ -170,7 +154,6 @@ class TrapStatus(str, Enum):
     FAILED_CLOSED = "failed_closed"
     LEAKING = "leaking"
     NOT_INSPECTED = "not_inspected"
-
 
 class InsulationMaterial(str, Enum):
     """Pipe insulation material types."""
@@ -181,14 +164,12 @@ class InsulationMaterial(str, Enum):
     POLYURETHANE = "polyurethane"
     NONE = "none"
 
-
 class InsulationCondition(str, Enum):
     """Insulation condition categories."""
     GOOD = "good"
     DAMAGED = "damaged"
     MISSING = "missing"
     WET = "wet"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -400,11 +381,9 @@ CHP_CAPEX_EUR_PER_KWE: Decimal = Decimal("1200")
 # Hours per year.
 HOURS_PER_YEAR: int = 8760
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class FlueGasAnalysis(BaseModel):
     """Flue gas analysis data from stack measurement.
@@ -426,7 +405,6 @@ class FlueGasAnalysis(BaseModel):
     ambient_temp_c: float = Field(default=20.0, ge=-20.0, le=50.0)
     excess_air_pct: float = Field(default=0.0, ge=0.0, le=500.0)
     combustion_efficiency_pct: float = Field(default=0.0, ge=0.0, le=100.0)
-
 
 class Boiler(BaseModel):
     """Individual boiler unit data.
@@ -464,7 +442,6 @@ class Boiler(BaseModel):
     annual_fuel_consumption_kwh: float = Field(default=0.0, ge=0.0)
     flue_gas: Optional[FlueGasAnalysis] = Field(default=None)
 
-
 class SteamTrapRecord(BaseModel):
     """Individual steam trap record from a survey.
 
@@ -482,7 +459,6 @@ class SteamTrapRecord(BaseModel):
     orifice_mm: float = Field(default=5.0, ge=1.0, le=25.0)
     operating_pressure_bar: float = Field(default=5.0, ge=0.1, le=50.0)
     location: str = Field(default="")
-
 
 class PipeSection(BaseModel):
     """Individual pipe section for insulation assessment.
@@ -504,7 +480,6 @@ class PipeSection(BaseModel):
     insulation_condition: InsulationCondition = Field(default=InsulationCondition.GOOD)
     insulation_thickness_mm: float = Field(default=50.0, ge=0.0, le=300.0)
 
-
 class CondensateSystem(BaseModel):
     """Condensate return system data.
 
@@ -524,7 +499,6 @@ class CondensateSystem(BaseModel):
     makeup_water_rate_pct: float = Field(default=50.0, ge=0.0, le=100.0)
     total_condensate_flow_kg_h: float = Field(default=0.0, ge=0.0)
     condensate_pressure_bar: float = Field(default=5.0, ge=0.1, le=50.0)
-
 
 class SteamSystem(BaseModel):
     """Complete steam system data for a facility.
@@ -551,7 +525,6 @@ class SteamSystem(BaseModel):
     total_steam_demand_kg_h: float = Field(default=0.0, ge=0.0)
     operating_hours: int = Field(default=6000, ge=0, le=8760)
     energy_cost_eur_per_kwh: float = Field(default=0.06, ge=0.0)
-
 
 class BoilerEfficiencyResult(BaseModel):
     """Efficiency result for a single boiler.
@@ -583,7 +556,6 @@ class BoilerEfficiencyResult(BaseModel):
     annual_savings_kwh: float = Field(default=0.0)
     annual_savings_eur: float = Field(default=0.0)
 
-
 class SteamTrapSurveyResult(BaseModel):
     """Steam trap survey analysis result.
 
@@ -614,7 +586,6 @@ class SteamTrapSurveyResult(BaseModel):
     replacement_cost_eur: float = Field(default=0.0)
     payback_years: float = Field(default=0.0)
 
-
 class InsulationAssessmentResult(BaseModel):
     """Insulation assessment result for the pipe network.
 
@@ -642,7 +613,6 @@ class InsulationAssessmentResult(BaseModel):
     insulation_cost_eur: float = Field(default=0.0)
     payback_years: float = Field(default=0.0)
 
-
 class FlashSteamRecoveryResult(BaseModel):
     """Flash steam recovery analysis result.
 
@@ -662,7 +632,6 @@ class FlashSteamRecoveryResult(BaseModel):
     annual_savings_eur: float = Field(default=0.0)
     equipment_cost_eur: float = Field(default=0.0)
     payback_years: float = Field(default=0.0)
-
 
 class BlowdownRecoveryResult(BaseModel):
     """Blowdown heat recovery analysis result.
@@ -690,7 +659,6 @@ class BlowdownRecoveryResult(BaseModel):
     equipment_cost_eur: float = Field(default=0.0)
     payback_years: float = Field(default=0.0)
 
-
 class CHPOpportunity(BaseModel):
     """Combined Heat and Power opportunity assessment.
 
@@ -714,7 +682,6 @@ class CHPOpportunity(BaseModel):
     capex_eur: float = Field(default=0.0)
     payback_years: float = Field(default=0.0)
     co2_savings_tonnes: float = Field(default=0.0)
-
 
 class SteamOptimizationResult(BaseModel):
     """Complete steam system optimisation result with full provenance.
@@ -759,14 +726,12 @@ class SteamOptimizationResult(BaseModel):
     methodology_notes: List[str] = Field(default_factory=list)
     processing_time_ms: float = Field(default=0.0)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class SteamOptimizationEngine:
     """Zero-hallucination steam system optimisation engine.
@@ -823,7 +788,7 @@ class SteamOptimizationEngine:
         t0 = time.perf_counter()
         self._notes = [
             f"Engine version: {self.engine_version}",
-            f"Analysis timestamp: {_utcnow().isoformat()}",
+            f"Analysis timestamp: {utcnow().isoformat()}",
         ]
 
         if not system.boilers:

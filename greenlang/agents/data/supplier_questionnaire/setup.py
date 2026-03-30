@@ -34,7 +34,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.data.supplier_questionnaire.config import (
     SupplierQuestionnaireConfig,
@@ -55,6 +55,7 @@ from greenlang.agents.data.supplier_questionnaire.metrics import (
     record_processing_error,
     record_data_quality,
 )
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -69,13 +70,11 @@ except ImportError:
     FastAPI = None  # type: ignore[assignment, misc]
     FASTAPI_AVAILABLE = False
 
-
 # ===================================================================
 # Lightweight Pydantic models used by the facade
 # ===================================================================
 
-
-class QuestionnaireTemplate(BaseModel):
+class QuestionnaireTemplate(GreenLangBase):
     """Questionnaire template definition.
 
     Attributes:
@@ -113,8 +112,7 @@ class QuestionnaireTemplate(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc).isoformat(),
     )
 
-
-class Distribution(BaseModel):
+class Distribution(GreenLangBase):
     """Questionnaire distribution record.
 
     Attributes:
@@ -146,8 +144,7 @@ class Distribution(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc).isoformat(),
     )
 
-
-class QuestionnaireResponse(BaseModel):
+class QuestionnaireResponse(GreenLangBase):
     """Supplier questionnaire response record.
 
     Attributes:
@@ -179,8 +176,7 @@ class QuestionnaireResponse(BaseModel):
     finalized_at: Optional[str] = Field(default=None)
     provenance_hash: str = Field(default="")
 
-
-class ValidationResult(BaseModel):
+class ValidationResult(GreenLangBase):
     """Result of a questionnaire response validation.
 
     Attributes:
@@ -212,8 +208,7 @@ class ValidationResult(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc).isoformat(),
     )
 
-
-class ScoringResult(BaseModel):
+class ScoringResult(GreenLangBase):
     """Result of scoring a questionnaire response.
 
     Attributes:
@@ -243,8 +238,7 @@ class ScoringResult(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc).isoformat(),
     )
 
-
-class FollowUpAction(BaseModel):
+class FollowUpAction(GreenLangBase):
     """Follow-up action record for a distribution.
 
     Attributes:
@@ -272,8 +266,7 @@ class FollowUpAction(BaseModel):
     message: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
-class CampaignAnalytics(BaseModel):
+class CampaignAnalytics(GreenLangBase):
     """Analytics summary for a questionnaire campaign.
 
     Attributes:
@@ -303,8 +296,7 @@ class CampaignAnalytics(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc).isoformat(),
     )
 
-
-class QuestionnaireStatistics(BaseModel):
+class QuestionnaireStatistics(GreenLangBase):
     """Aggregate statistics for the supplier questionnaire service.
 
     Attributes:
@@ -334,11 +326,9 @@ class QuestionnaireStatistics(BaseModel):
     avg_response_rate_pct: float = Field(default=0.0)
     avg_score: float = Field(default=0.0)
 
-
 # ===================================================================
 # Provenance helper
 # ===================================================================
-
 
 class _ProvenanceTracker:
     """Minimal provenance tracker recording SHA-256 audit entries.
@@ -388,7 +378,6 @@ class _ProvenanceTracker:
         self.entry_count += 1
         return entry_hash
 
-
 # ===================================================================
 # SupplierQuestionnaireService facade
 # ===================================================================
@@ -396,12 +385,6 @@ class _ProvenanceTracker:
 # Thread-safe singleton lock
 _singleton_lock = threading.Lock()
 _singleton_instance: Optional["SupplierQuestionnaireService"] = None
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -418,7 +401,6 @@ def _compute_hash(data: Any) -> str:
         serializable = data
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 class SupplierQuestionnaireService:
     """Unified facade over the Supplier Questionnaire Processor SDK.
@@ -2047,11 +2029,9 @@ class SupplierQuestionnaireService:
         self._started = False
         logger.info("SupplierQuestionnaireService shut down")
 
-
 # ===================================================================
 # Thread-safe singleton access
 # ===================================================================
-
 
 def _get_singleton() -> SupplierQuestionnaireService:
     """Get or create the singleton SupplierQuestionnaireService instance.
@@ -2066,11 +2046,9 @@ def _get_singleton() -> SupplierQuestionnaireService:
                 _singleton_instance = SupplierQuestionnaireService()
     return _singleton_instance
 
-
 # ===================================================================
 # FastAPI integration
 # ===================================================================
-
 
 async def configure_supplier_questionnaire(
     app: Any,
@@ -2116,7 +2094,6 @@ async def configure_supplier_questionnaire(
     logger.info("Supplier questionnaire service configured on app")
     return service
 
-
 def get_supplier_questionnaire(app: Any) -> SupplierQuestionnaireService:
     """Get the SupplierQuestionnaireService instance from app state.
 
@@ -2137,7 +2114,6 @@ def get_supplier_questionnaire(app: Any) -> SupplierQuestionnaireService:
         )
     return service
 
-
 def get_router(service: Optional[SupplierQuestionnaireService] = None) -> Any:
     """Get the supplier questionnaire API router.
 
@@ -2152,7 +2128,6 @@ def get_router(service: Optional[SupplierQuestionnaireService] = None) -> Any:
         return router
     except ImportError:
         return None
-
 
 __all__ = [
     "SupplierQuestionnaireService",

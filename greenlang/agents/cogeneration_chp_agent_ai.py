@@ -128,7 +128,7 @@ from datetime import datetime
 from enum import Enum
 import logging
 
-from pydantic import BaseModel, Field, validator
+from pydantic import Field, validator
 import numpy as np
 
 # GreenLang core
@@ -136,6 +136,7 @@ from greenlang.core.chat_session import ChatSession
 from greenlang.core.tool_registry import ToolRegistry
 from greenlang.provenance import ProvenanceTracker
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -430,7 +431,7 @@ class CHPTechnologyDatabase:
 # Configuration
 # ============================================================================
 
-class CogenerationCHPConfig(BaseModel):
+class CogenerationCHPConfig(GreenLangBase):
     """
     Configuration for CogenerationCHPAgentAI
 

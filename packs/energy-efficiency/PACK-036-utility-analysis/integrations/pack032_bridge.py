@@ -38,20 +38,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -69,11 +64,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EPCRating(str, Enum):
     """Energy Performance Certificate ratings."""
@@ -87,7 +80,6 @@ class EPCRating(str, Enum):
     F = "F"
     G = "G"
 
-
 class HVACSystemType(str, Enum):
     """HVAC system type categories."""
 
@@ -100,11 +92,9 @@ class HVACSystemType(str, Enum):
     DISTRICT = "district"
     RADIANT = "radiant"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class AssessmentImportConfig(BaseModel):
     """Configuration for importing PACK-032 assessment data."""
@@ -116,7 +106,6 @@ class AssessmentImportConfig(BaseModel):
     import_envelope_data: bool = Field(default=True)
     import_hvac_data: bool = Field(default=True)
     sync_performance_back: bool = Field(default=True)
-
 
 class BuildingDataImport(BaseModel):
     """Result of importing building assessment data from PACK-032."""
@@ -139,7 +128,6 @@ class BuildingDataImport(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class ZoneData(BaseModel):
     """Building zone data from PACK-032 assessment."""
 
@@ -151,7 +139,6 @@ class ZoneData(BaseModel):
     setpoint_heating_c: float = Field(default=21.0)
     setpoint_cooling_c: float = Field(default=24.0)
     internal_gains_w_per_m2: float = Field(default=0.0)
-
 
 class EnvelopePerformance(BaseModel):
     """Building envelope performance from PACK-032."""
@@ -167,7 +154,6 @@ class EnvelopePerformance(BaseModel):
     thermal_bridging_psi: float = Field(default=0.0, description="W/mK")
     provenance_hash: str = Field(default="")
 
-
 class PerformanceExport(BaseModel):
     """Performance data exported back to PACK-032."""
 
@@ -180,14 +166,12 @@ class PerformanceExport(BaseModel):
     performance_gap_pct: float = Field(default=0.0)
     weather_normalized_eui: float = Field(default=0.0)
     cost_per_m2_eur: float = Field(default=0.0)
-    exported_at: datetime = Field(default_factory=_utcnow)
+    exported_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Pack032Bridge
 # ---------------------------------------------------------------------------
-
 
 class Pack032Bridge:
     """Bridge to PACK-032 Building Energy Assessment data.

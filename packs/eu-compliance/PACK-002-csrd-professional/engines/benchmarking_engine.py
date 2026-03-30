@@ -40,25 +40,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash."""
@@ -70,7 +64,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 def _percentile(values: List[float], pct: float) -> float:
     """Compute the pct-th percentile of a sorted list.
@@ -97,7 +90,6 @@ def _percentile(values: List[float], pct: float) -> float:
         return values[int(k)]
     return values[f] * (c - k) + values[c] * (k - f)
 
-
 def _percentile_rank(values: List[float], target: float) -> float:
     """Compute percentile rank of target within values.
 
@@ -115,11 +107,9 @@ def _percentile_rank(values: List[float], target: float) -> float:
     rank = ((below + 0.5 * equal) / len(values)) * 100
     return round(rank, 2)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class BenchmarkDataset(BaseModel):
     """Anonymized peer benchmark dataset."""
@@ -146,7 +136,6 @@ class BenchmarkDataset(BaseModel):
             raise ValueError(f"company_size must be one of {allowed}")
         return v.lower()
 
-
 class PeerComparison(BaseModel):
     """Comparison of a single metric against peers."""
 
@@ -162,7 +151,6 @@ class PeerComparison(BaseModel):
         0.0, ge=0.0, le=100.0, description="Company percentile rank"
     )
     quartile: int = Field(1, ge=1, le=4, description="Company quartile (1=top)")
-
 
 class ESGRatingPrediction(BaseModel):
     """Predicted ESG rating for a specific framework."""
@@ -188,7 +176,6 @@ class ESGRatingPrediction(BaseModel):
     )
     provenance_hash: str = Field("", description="SHA-256 hash")
 
-
 class TrendAnalysis(BaseModel):
     """Multi-year trend analysis for a metric."""
 
@@ -201,7 +188,6 @@ class TrendAnalysis(BaseModel):
     )
     volatility: float = Field(0.0, description="Standard deviation of values")
     projection_next_year: float = Field(0.0, description="Projected next year value")
-
 
 class BenchmarkReport(BaseModel):
     """Complete benchmark analysis report."""
@@ -219,14 +205,12 @@ class BenchmarkReport(BaseModel):
     improvement_priorities: List[Dict[str, Any]] = Field(
         default_factory=list, description="Prioritized improvement areas"
     )
-    generated_at: datetime = Field(default_factory=_utcnow, description="Report time")
+    generated_at: datetime = Field(default_factory=utcnow, description="Report time")
     provenance_hash: str = Field("", description="SHA-256 hash")
-
 
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
-
 
 class BenchmarkingConfig(BaseModel):
     """Configuration for the benchmarking engine."""
@@ -257,7 +241,6 @@ class BenchmarkingConfig(BaseModel):
         ],
         description="Metrics where lower values are better",
     )
-
 
 # ---------------------------------------------------------------------------
 # ESG Rating Scoring Matrices
@@ -295,11 +278,9 @@ _CDP_SCORING: List[Tuple[float, str]] = [
     (0.0, "D-"),
 ]
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class BenchmarkingEngine:
     """Peer comparison and ESG rating alignment engine.
@@ -644,7 +625,7 @@ class BenchmarkingEngine:
         Returns:
             Complete BenchmarkReport.
         """
-        start = _utcnow()
+        start = utcnow()
 
         # Peer comparisons
         try:
@@ -680,7 +661,7 @@ class BenchmarkingEngine:
         )
         report.provenance_hash = _compute_hash(report)
 
-        elapsed = (_utcnow() - start).total_seconds() * 1000
+        elapsed = (utcnow() - start).total_seconds() * 1000
         logger.info(
             "Benchmark report generated: %d comparisons, %d predictions, %d trends (%.1fms)",
             len(comparisons),

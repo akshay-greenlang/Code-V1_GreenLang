@@ -50,19 +50,13 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # =============================================================================
 # Utility Helpers
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute a SHA-256 hash of arbitrary data."""
@@ -70,11 +64,9 @@ def _hash_data(data: Any) -> str:
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # Agent Stub
 # =============================================================================
-
 
 class _AgentStub:
     """Deferred agent loader for lazy initialization."""
@@ -107,11 +99,9 @@ class _AgentStub:
         """Whether the agent has been loaded."""
         return self._instance is not None
 
-
 # =============================================================================
 # Enums
 # =============================================================================
-
 
 class CheckCategory(str, Enum):
     """Health check categories (20 total)."""
@@ -136,7 +126,6 @@ class CheckCategory(str, Enum):
     API_SERVICES = "api_services"
     SYSTEM_RESOURCES = "system_resources"
 
-
 class CheckStatus(str, Enum):
     """Status of a single health check."""
     PASS = "pass"
@@ -145,7 +134,6 @@ class CheckStatus(str, Enum):
     SKIP = "skip"
     ERROR = "error"
 
-
 class ReadinessLevel(str, Enum):
     """Overall system readiness level."""
     READY = "ready"
@@ -153,11 +141,9 @@ class ReadinessLevel(str, Enum):
     NOT_READY = "not_ready"
     CRITICAL = "critical"
 
-
 # =============================================================================
 # Data Models
 # =============================================================================
-
 
 class HealthCheckConfig(BaseModel):
     """Configuration for the Article 9 Health Check."""
@@ -189,7 +175,6 @@ class HealthCheckConfig(BaseModel):
         default=True, description="Enable provenance hash tracking"
     )
 
-
 class ComponentCheck(BaseModel):
     """Result of checking a single component within a category."""
     component_id: str = Field(default="", description="Component identifier")
@@ -202,7 +187,6 @@ class ComponentCheck(BaseModel):
     details: Dict[str, Any] = Field(
         default_factory=dict, description="Additional details"
     )
-
 
 class CategoryResult(BaseModel):
     """Result of checking a single health check category."""
@@ -233,7 +217,6 @@ class CategoryResult(BaseModel):
     execution_time_ms: float = Field(
         default=0.0, description="Category check execution time"
     )
-
 
 class HealthCheckResult(BaseModel):
     """Complete health check result for Article 9 readiness."""
@@ -283,11 +266,9 @@ class HealthCheckResult(BaseModel):
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
     execution_time_ms: float = Field(default=0.0, description="Total execution time")
 
-
 # =============================================================================
 # Category Definitions
 # =============================================================================
-
 
 CATEGORY_DEFINITIONS: Dict[str, Dict[str, Any]] = {
     CheckCategory.MRV_AGENTS.value: {
@@ -498,11 +479,9 @@ CATEGORY_DEFINITIONS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # Health Check
 # =============================================================================
-
 
 class HealthCheck:
     """20-category system verification for Article 9 readiness.
@@ -584,8 +563,8 @@ class HealthCheck:
         elapsed_ms = (time.time() - start_time) * 1000
 
         result = HealthCheckResult(
-            check_id=f"HC-{_utcnow().strftime('%Y%m%d%H%M%S')}",
-            checked_at=_utcnow().isoformat(),
+            check_id=f"HC-{utcnow().strftime('%Y%m%d%H%M%S')}",
+            checked_at=utcnow().isoformat(),
             is_ready=is_ready,
             readiness_level=readiness,
             overall_score=overall_score,
@@ -890,6 +869,7 @@ class HealthCheck:
         if comp_id == "SYS-MEMORY":
             try:
                 import os
+
                 # Basic memory check (platform-independent)
                 if hasattr(os, "sysconf"):
                     pages = os.sysconf("SC_PHYS_PAGES")

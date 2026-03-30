@@ -99,6 +99,7 @@ from datetime import date, datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Set, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -163,16 +164,9 @@ from greenlang.agents.mrv.dual_reporting_reconciliation.models import (
     MAX_FACILITIES,
 )
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Decimal precision constants
@@ -193,11 +187,9 @@ _ZERO = Decimal("0")
 #: Hundred constant.
 _HUNDRED = Decimal("100")
 
-
 # ---------------------------------------------------------------------------
 # Decimal arithmetic helpers
 # ---------------------------------------------------------------------------
-
 
 def _D(value: Any) -> Decimal:
     """Convert a value to Decimal with controlled precision.
@@ -212,7 +204,6 @@ def _D(value: Any) -> Decimal:
         return value.quantize(_PRECISION, rounding=_ROUNDING)
     return Decimal(str(value)).quantize(_PRECISION, rounding=_ROUNDING)
 
-
 def _quantize(value: Decimal, precision: Decimal = _PRECISION) -> Decimal:
     """Quantize a Decimal to the given precision using ROUND_HALF_UP.
 
@@ -224,7 +215,6 @@ def _quantize(value: Decimal, precision: Decimal = _PRECISION) -> Decimal:
         Quantized Decimal value.
     """
     return value.quantize(precision, rounding=_ROUNDING)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -251,7 +241,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serialisable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _pct_difference(
     value_a: Decimal,
     value_b: Decimal,
@@ -274,7 +263,6 @@ def _pct_difference(
         return _ZERO
     diff = abs(value_a - value_b)
     return _quantize((diff / denominator) * _HUNDRED)
-
 
 def _determine_direction(
     location: Decimal,
@@ -299,11 +287,9 @@ def _determine_direction(
         return DiscrepancyDirection.MARKET_LOWER
     return DiscrepancyDirection.MARKET_HIGHER
 
-
 # ===========================================================================
 # Engine
 # ===========================================================================
-
 
 class DualResultCollectorEngine:
     """Engine 1 of 7 -- Upstream result collection, alignment, and workspace assembly.
@@ -436,7 +422,7 @@ class DualResultCollectorEngine:
             # Internal state
             self._internal_lock = threading.RLock()
             self._engine_id: str = f"drr-collector-{uuid4().hex[:8]}"
-            self._created_at: datetime = _utcnow()
+            self._created_at: datetime = utcnow()
             self._total_collections: int = 0
             self._total_alignments: int = 0
             self._total_mappings: int = 0
@@ -2406,7 +2392,7 @@ class DualResultCollectorEngine:
         """
         self._inc_health_checks()
 
-        now = _utcnow()
+        now = utcnow()
         uptime = (now - self._created_at).total_seconds()
 
         with self._internal_lock:

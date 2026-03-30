@@ -49,29 +49,23 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 def _compute_hash(content: str) -> str:
     """Compute SHA-256 hash of string content."""
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -85,13 +79,11 @@ class OutputFormat(str, Enum):
     JSON = "json"
     XBRL = "xbrl"
 
-
 class SectionStatus(str, Enum):
     """Section completion status."""
     COMPLETE = "complete"
     PARTIAL = "partial"
     NOT_STARTED = "not_started"
-
 
 class EvidenceQuality(str, Enum):
     """Evidence quality rating."""
@@ -99,7 +91,6 @@ class EvidenceQuality(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     INSUFFICIENT = "insufficient"
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Input Models
@@ -113,7 +104,6 @@ class EvidenceReference(BaseModel):
     quality: EvidenceQuality = Field(EvidenceQuality.MEDIUM, description="Quality")
     sha256_hash: str = Field("", description="SHA-256 hash")
     notes: str = Field("", description="Notes")
-
 
 class ISAESection(BaseModel):
     """Single ISAE 3410 section."""
@@ -133,7 +123,6 @@ class ISAESection(BaseModel):
         default_factory=list, description="Actions still required"
     )
 
-
 class XBRLMapping(BaseModel):
     """XBRL tag mapping for ISAE 3410 field."""
     field_name: str = Field(..., description="Field name")
@@ -142,7 +131,6 @@ class XBRLMapping(BaseModel):
     section: int = Field(0, ge=0, le=8, description="Related ISAE section")
     value: str = Field("", description="Current value")
     data_type: str = Field("string", description="Data type (string, decimal, date)")
-
 
 class ISAE3410BundleInput(BaseModel):
     """Complete input model for ISAE3410EvidenceBundle."""
@@ -162,7 +150,6 @@ class ISAE3410BundleInput(BaseModel):
         0.0, ge=0, le=100, description="Overall bundle completion %"
     )
 
-
 # ---------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------
@@ -170,7 +157,6 @@ class ISAE3410BundleInput(BaseModel):
 def _status_label(status: str) -> str:
     """Return display label for status."""
     return status.replace("_", " ").title()
-
 
 def _status_css(status: str) -> str:
     """Return CSS class for status."""
@@ -180,7 +166,6 @@ def _status_css(status: str) -> str:
         "not_started": "sec-not-started",
     }
     return mapping.get(status, "sec-partial")
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -241,7 +226,7 @@ class ISAE3410EvidenceBundle:
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render evidence bundle as Markdown."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_md(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -249,7 +234,7 @@ class ISAE3410EvidenceBundle:
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render evidence bundle as HTML."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_html(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -257,7 +242,7 @@ class ISAE3410EvidenceBundle:
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render evidence bundle as JSON dict."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_json(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -265,7 +250,7 @@ class ISAE3410EvidenceBundle:
     def render_xbrl(self, data: Dict[str, Any]) -> str:
         """Render XBRL tagged output."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_xbrl(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -309,7 +294,7 @@ class ISAE3410EvidenceBundle:
             f"**Reporting Period:** {period} | "
             f"**Assurance Level:** {level.title()} | "
             f"**Verifier:** {verifier}\n\n"
-            f"**Report Date:** {_utcnow().strftime('%Y-%m-%d')}\n\n"
+            f"**Report Date:** {utcnow().strftime('%Y-%m-%d')}\n\n"
             "---"
         )
 
@@ -473,7 +458,7 @@ class ISAE3410EvidenceBundle:
             f"<p><strong>Reporting Period:</strong> {period} | "
             f"<strong>Level:</strong> {level.title()} | "
             f"<strong>Verifier:</strong> {verifier} | "
-            f"<strong>Date:</strong> {_utcnow().strftime('%Y-%m-%d')}</p>\n"
+            f"<strong>Date:</strong> {utcnow().strftime('%Y-%m-%d')}</p>\n"
             "<hr>\n</div>"
         )
 
@@ -583,7 +568,7 @@ class ISAE3410EvidenceBundle:
         provenance = self._compute_provenance(data)
         company = self._get_val(data, "company_name", "Organization")
         period = self._get_val(data, "reporting_period", "")
-        ts = self.generated_at.isoformat() if self.generated_at else _utcnow().isoformat()
+        ts = self.generated_at.isoformat() if self.generated_at else utcnow().isoformat()
         lines = [
             '<?xml version="1.0" encoding="UTF-8"?>',
             '<xbrli:xbrl xmlns:xbrli="http://www.xbrl.org/2003/instance"',

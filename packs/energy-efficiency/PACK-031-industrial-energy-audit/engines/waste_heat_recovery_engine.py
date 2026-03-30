@@ -80,25 +80,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -116,7 +110,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -125,7 +118,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -137,17 +129,14 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
@@ -155,11 +144,9 @@ def _round3(value: float) -> float:
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class HeatSourceType(str, Enum):
     """Waste heat source classification.
@@ -186,7 +173,6 @@ class HeatSourceType(str, Enum):
     EFFLUENT = "effluent"
     RADIATION = "radiation"
 
-
 class TemperatureGrade(str, Enum):
     """Waste heat temperature grade classification.
 
@@ -197,7 +183,6 @@ class TemperatureGrade(str, Enum):
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 class HeatExchangerType(str, Enum):
     """Heat exchanger technology type.
@@ -224,7 +209,6 @@ class HeatExchangerType(str, Enum):
     AIR_PREHEATER = "air_preheater"
     CONDENSING = "condensing"
 
-
 class RecoveryTechnologyType(str, Enum):
     """Waste heat recovery technology.
 
@@ -247,7 +231,6 @@ class RecoveryTechnologyType(str, Enum):
     THERMOELECTRIC = "thermoelectric"
     PREHEATER = "preheater"
     DESALINATION = "desalination"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Specific Heat Capacities (kJ/(kg*K))
@@ -379,11 +362,9 @@ DEFAULT_CO2_FACTOR_KG_KWH: Decimal = Decimal("0.4")
 # Ambient temperature.
 DEFAULT_AMBIENT_TEMP_C: Decimal = Decimal("20")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class WasteHeatSource(BaseModel):
     """A waste heat source in the facility.
@@ -439,7 +420,6 @@ class WasteHeatSource(BaseModel):
             raise ValueError(f"Unknown source type '{v}'. Must be one of: {sorted(valid)}")
         return v
 
-
 class HeatSink(BaseModel):
     """A heat demand (sink) that could use recovered heat.
 
@@ -489,7 +469,6 @@ class HeatSink(BaseModel):
         default=8000, ge=0, le=8760, description="Annual operating hours"
     )
     notes: str = Field(default="", description="Additional notes")
-
 
 class WasteHeatRecoveryInput(BaseModel):
     """Complete input for waste heat recovery analysis.
@@ -545,11 +524,9 @@ class WasteHeatRecoveryInput(BaseModel):
         default=True, description="Include HX sizing"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class SourceAnalysis(BaseModel):
     """Analysis result for a single waste heat source.
@@ -572,7 +549,6 @@ class SourceAnalysis(BaseModel):
     annual_heat_mwh: Decimal = Field(default=Decimal("0"))
     annual_value_eur: Decimal = Field(default=Decimal("0"))
     carnot_efficiency: Decimal = Field(default=Decimal("0"))
-
 
 class PinchAnalysisResult(BaseModel):
     """Pinch analysis results.
@@ -597,7 +573,6 @@ class PinchAnalysisResult(BaseModel):
     dt_min_c: Decimal = Field(default=Decimal("10"))
     hot_composite: List[Dict[str, str]] = Field(default_factory=list)
     cold_composite: List[Dict[str, str]] = Field(default_factory=list)
-
 
 class HeatExchangerDesign(BaseModel):
     """Heat exchanger design parameters.
@@ -624,7 +599,6 @@ class HeatExchangerDesign(BaseModel):
     area_m2: Decimal = Field(default=Decimal("0"))
     fouling_factor: Decimal = Field(default=Decimal("0"))
     estimated_cost_eur: Decimal = Field(default=Decimal("0"))
-
 
 class TechnologyRecommendation(BaseModel):
     """Technology recommendation for a recovery opportunity.
@@ -655,7 +629,6 @@ class TechnologyRecommendation(BaseModel):
     simple_payback_years: Decimal = Field(default=Decimal("0"))
     co2_savings_tco2e: Decimal = Field(default=Decimal("0"))
     suitability_score: Decimal = Field(default=Decimal("0"))
-
 
 class WasteHeatResult(BaseModel):
     """Complete waste heat recovery analysis result.
@@ -692,7 +665,7 @@ class WasteHeatResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     facility_id: str = Field(default="")
     facility_name: str = Field(default="")
     source_analyses: List[SourceAnalysis] = Field(default_factory=list)
@@ -719,11 +692,9 @@ class WasteHeatResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class WasteHeatRecoveryEngine:
     """Waste heat recovery opportunity identification and quantification engine.

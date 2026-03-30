@@ -49,25 +49,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -85,7 +79,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -95,31 +88,25 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(num: Decimal, den: Decimal, default: Decimal = Decimal("0")) -> Decimal:
     """Safely divide two Decimals, returning *default* on zero denominator."""
     return default if den == Decimal("0") else num / den
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* decimal digits and return float."""
     return float(value.quantize(Decimal(10) ** -places, rounding=ROUND_HALF_UP))
 
-
 def _round3(value: Any) -> float:
     """Round to 3 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
-
 
 def _round2(value: Any) -> float:
     """Round to 2 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class FixtureType(str, Enum):
     """Lighting fixture / lamp types."""
@@ -131,7 +118,6 @@ class FixtureType(str, Enum):
     HALOGEN = "halogen"
     CFL = "cfl"
     INCANDESCENT = "incandescent"
-
 
 class SpaceType(str, Enum):
     """Space classification for LPD benchmarking (EN 12464-1)."""
@@ -150,7 +136,6 @@ class SpaceType(str, Enum):
     COLD_STORE = "cold_store"
     MECHANICAL_ROOM = "mechanical_room"
 
-
 class HVACSystemType(str, Enum):
     """HVAC system types."""
     SPLIT_SYSTEM = "split_system"
@@ -163,7 +148,6 @@ class HVACSystemType(str, Enum):
     DISTRICT_HEATING = "district_heating"
     GAS_FIRED_HEATER = "gas_fired_heater"
 
-
 class ClimateZone(str, Enum):
     """European climate zones for free-cooling estimation."""
     NORTHERN = "northern"           # Scandinavia, Baltics
@@ -173,7 +157,6 @@ class ClimateZone(str, Enum):
     SOUTHERN_CONTINENTAL = "southern_continental"  # E Spain, S Italy, Greece
     MEDITERRANEAN = "mediterranean"        # Cyprus, Malta, S Greece
 
-
 class VentilationStrategy(str, Enum):
     """Ventilation control strategies."""
     CONSTANT_VOLUME = "constant_volume"
@@ -182,7 +165,6 @@ class VentilationStrategy(str, Enum):
     DCV_OCCUPANCY = "demand_controlled_occupancy"
     NATURAL = "natural"
     HYBRID = "hybrid"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -391,11 +373,9 @@ LED_RETROFIT_COST: Dict[str, float] = {
 # VSD retrofit cost (EUR/kW motor nameplate).
 VSD_COST_EUR_PER_KW: Decimal = Decimal("120")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class LightingZone(BaseModel):
     """Individual lighting zone within a facility.
@@ -429,7 +409,6 @@ class LightingZone(BaseModel):
     has_occupancy_sensor: bool = Field(default=False)
     has_daylight_sensor: bool = Field(default=False)
     daylight_factor: float = Field(default=0.0, ge=0.0, le=1.0)
-
 
 class HVACSystem(BaseModel):
     """HVAC system data.
@@ -467,7 +446,6 @@ class HVACSystem(BaseModel):
     has_heat_recovery: bool = Field(default=False)
     ventilation_strategy: VentilationStrategy = Field(default=VentilationStrategy.CONSTANT_VOLUME)
 
-
 class VSDCandidate(BaseModel):
     """Motor / equipment candidate for VSD retrofit.
 
@@ -488,7 +466,6 @@ class VSDCandidate(BaseModel):
     operating_hours: int = Field(default=6000, ge=0, le=8760)
     has_vsd: bool = Field(default=False)
 
-
 class BuildingEnvelope(BaseModel):
     """Building envelope data for HVAC load analysis.
 
@@ -508,7 +485,6 @@ class BuildingEnvelope(BaseModel):
     window_to_wall_ratio: float = Field(default=0.25, ge=0.0, le=1.0)
     air_changes_per_hour: float = Field(default=0.7, ge=0.0, le=20.0)
     infiltration_rate: float = Field(default=5.0, ge=0.0, le=50.0)
-
 
 class FacilityLightingHVACData(BaseModel):
     """Complete lighting and HVAC data for a facility.
@@ -534,7 +510,6 @@ class FacilityLightingHVACData(BaseModel):
     electricity_cost_eur_per_kwh: float = Field(default=0.12, ge=0.0)
     gas_cost_eur_per_kwh: float = Field(default=0.04, ge=0.0)
 
-
 # --- Result models ---
 
 class LightingRetrofitResult(BaseModel):
@@ -553,7 +528,6 @@ class LightingRetrofitResult(BaseModel):
     occupancy_sensor_savings_kwh: float = Field(default=0.0)
     daylight_savings_kwh: float = Field(default=0.0)
 
-
 class VSDRetrofitResult(BaseModel):
     """VSD retrofit analysis for one motor / equipment."""
     equipment_id: str = Field(default="")
@@ -566,7 +540,6 @@ class VSDRetrofitResult(BaseModel):
     cost_eur: float = Field(default=0.0)
     payback_years: float = Field(default=0.0)
 
-
 class EconomizerAnalysisResult(BaseModel):
     """Economiser (free cooling) analysis."""
     climate_zone: str = Field(default="")
@@ -575,7 +548,6 @@ class EconomizerAnalysisResult(BaseModel):
     savings_eur: float = Field(default=0.0)
     equipment_cost_eur: float = Field(default=0.0)
     payback_years: float = Field(default=0.0)
-
 
 class HVACEfficiencyResult(BaseModel):
     """HVAC efficiency assessment for one system."""
@@ -588,7 +560,6 @@ class HVACEfficiencyResult(BaseModel):
     improvement_potential_pct: float = Field(default=0.0)
     savings_kwh: float = Field(default=0.0)
     savings_eur: float = Field(default=0.0)
-
 
 class LightingHVACResult(BaseModel):
     """Complete lighting and HVAC optimisation result with provenance.
@@ -635,14 +606,12 @@ class LightingHVACResult(BaseModel):
     methodology_notes: List[str] = Field(default_factory=list)
     processing_time_ms: float = Field(default=0.0)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class LightingHVACEngine:
     """Zero-hallucination lighting and HVAC optimisation engine.
@@ -691,7 +660,7 @@ class LightingHVACEngine:
         t0 = time.perf_counter()
         self._notes = [
             f"Engine version: {self.engine_version}",
-            f"Analysis timestamp: {_utcnow().isoformat()}",
+            f"Analysis timestamp: {utcnow().isoformat()}",
         ]
 
         total_lighting_kwh = Decimal("0")

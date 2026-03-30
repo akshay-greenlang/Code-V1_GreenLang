@@ -66,18 +66,11 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
-
+from pydantic import Field, field_validator
 
 # ---------------------------------------------------------------------------
 # Helper
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -104,11 +97,9 @@ MAX_PARCELS_PER_TENANT: int = 50_000
 #: Default transition period for land-use conversion (years).
 DEFAULT_TRANSITION_YEARS: int = 20
 
-
 # =============================================================================
 # Enumerations (16)
 # =============================================================================
-
 
 class LandCategory(str, Enum):
     """IPCC land-use categories for LULUCF reporting.
@@ -140,7 +131,6 @@ class LandCategory(str, Enum):
     SETTLEMENT = "settlement"
     OTHER_LAND = "other_land"
 
-
 class CarbonPool(str, Enum):
     """IPCC carbon pools tracked in LULUCF calculations.
 
@@ -166,7 +156,6 @@ class CarbonPool(str, Enum):
     DEAD_WOOD = "dead_wood"
     LITTER = "litter"
     SOIL_ORGANIC_CARBON = "soil_organic_carbon"
-
 
 class ClimateZone(str, Enum):
     """IPCC climate zones for emission factor stratification.
@@ -213,7 +202,6 @@ class ClimateZone(str, Enum):
     POLAR_MOIST = "polar_moist"
     POLAR_DRY = "polar_dry"
 
-
 class SoilType(str, Enum):
     """IPCC soil types for SOC reference stock stratification.
 
@@ -244,7 +232,6 @@ class SoilType(str, Enum):
     WETLAND_ORGANIC = "wetland_organic"
     OTHER = "other"
 
-
 class CalculationTier(str, Enum):
     """IPCC calculation tier levels for methodological complexity.
 
@@ -260,7 +247,6 @@ class CalculationTier(str, Enum):
     TIER_2 = "tier_2"
     TIER_3 = "tier_3"
 
-
 class CalculationMethod(str, Enum):
     """Methodology for calculating carbon stock changes.
 
@@ -275,7 +261,6 @@ class CalculationMethod(str, Enum):
 
     STOCK_DIFFERENCE = "stock_difference"
     GAIN_LOSS = "gain_loss"
-
 
 class EmissionGas(str, Enum):
     """Greenhouse gases tracked in land use emission calculations.
@@ -295,7 +280,6 @@ class EmissionGas(str, Enum):
     N2O = "N2O"
     CO = "CO"
 
-
 class GWPSource(str, Enum):
     """IPCC Assessment Report source for Global Warming Potential values.
 
@@ -310,7 +294,6 @@ class GWPSource(str, Enum):
     IPCC_AR5 = "AR5"
     IPCC_AR6 = "AR6"
     IPCC_AR6_GTP = "AR6_GTP"
-
 
 class EmissionFactorSource(str, Enum):
     """Authoritative source for emission factors and default values.
@@ -332,7 +315,6 @@ class EmissionFactorSource(str, Enum):
     LITERATURE = "LITERATURE"
     CUSTOM = "CUSTOM"
 
-
 class TransitionType(str, Enum):
     """Type of land-use transition for LULUCF reporting.
 
@@ -346,7 +328,6 @@ class TransitionType(str, Enum):
 
     REMAINING = "remaining"
     CONVERSION = "conversion"
-
 
 class DisturbanceType(str, Enum):
     """Type of disturbance event affecting carbon stocks.
@@ -377,7 +358,6 @@ class DisturbanceType(str, Enum):
     LAND_CLEARING = "land_clearing"
     NONE = "none"
 
-
 class PeatlandStatus(str, Enum):
     """Management status of peatland areas for emission estimation.
 
@@ -386,6 +366,8 @@ class PeatlandStatus(str, Enum):
     DRAINED: Peatland with water table lowered by drainage for
         agriculture, forestry, or peat extraction. High CO2 emissions
         from aerobic decomposition, reduced CH4.
+
+from greenlang.schemas import GreenLangBase, utcnow
     REWETTED: Previously drained peatland with water table restored.
         Reduced CO2 emissions compared to drained, moderate CH4.
     EXTRACTED: Peatland under active peat extraction (horticultural
@@ -396,7 +378,6 @@ class PeatlandStatus(str, Enum):
     DRAINED = "drained"
     REWETTED = "rewetted"
     EXTRACTED = "extracted"
-
 
 class ManagementPractice(str, Enum):
     """Soil management practices affecting SOC stocks.
@@ -422,7 +403,6 @@ class ManagementPractice(str, Enum):
     DEGRADED = "degraded"
     NOMINALLY_MANAGED = "nominally_managed"
 
-
 class InputLevel(str, Enum):
     """Level of carbon inputs to soil from residues and amendments.
 
@@ -441,7 +421,6 @@ class InputLevel(str, Enum):
     HIGH = "high"
     HIGH_WITH_MANURE = "high_with_manure"
 
-
 class ComplianceStatus(str, Enum):
     """Result of a regulatory compliance check.
 
@@ -457,7 +436,6 @@ class ComplianceStatus(str, Enum):
     PARTIAL = "partial"
     NOT_ASSESSED = "not_assessed"
 
-
 class ReportingPeriod(str, Enum):
     """Time granularity for emission aggregation and reporting.
 
@@ -472,11 +450,9 @@ class ReportingPeriod(str, Enum):
     ANNUAL = "annual"
     CUSTOM = "custom"
 
-
 # =============================================================================
 # Constant Tables (all Decimal for deterministic arithmetic)
 # =============================================================================
-
 
 # ---------------------------------------------------------------------------
 # GWP values by IPCC Assessment Report
@@ -508,7 +484,6 @@ GWP_VALUES: Dict[GWPSource, Dict[EmissionGas, Decimal]] = {
         EmissionGas.CO: Decimal("0"),
     },
 }
-
 
 # ---------------------------------------------------------------------------
 # IPCC default above-ground biomass (AGB) in tC/ha
@@ -568,7 +543,6 @@ IPCC_AGB_DEFAULTS: Dict[Tuple[LandCategory, ClimateZone], Decimal] = {
     (LandCategory.OTHER_LAND, ClimateZone.BOREAL_MOIST): Decimal("0.5"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Root-to-shoot ratios (BGB/AGB) by land category and climate zone
 # ---------------------------------------------------------------------------
@@ -609,7 +583,6 @@ ROOT_SHOOT_RATIOS: Dict[Tuple[LandCategory, ClimateZone], Decimal] = {
     (LandCategory.GRASSLAND, ClimateZone.BOREAL_DRY): Decimal("4.00"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Dead wood fraction of AGB by climate zone
 # ---------------------------------------------------------------------------
@@ -628,7 +601,6 @@ DEAD_WOOD_FRACTION: Dict[ClimateZone, Decimal] = {
     ClimateZone.POLAR_MOIST: Decimal("0.10"),
     ClimateZone.POLAR_DRY: Decimal("0.08"),
 }
-
 
 # ---------------------------------------------------------------------------
 # Litter stocks in tC/ha by land category and climate zone
@@ -669,7 +641,6 @@ LITTER_STOCKS: Dict[Tuple[LandCategory, ClimateZone], Decimal] = {
     (LandCategory.GRASSLAND, ClimateZone.BOREAL_MOIST): Decimal("3.0"),
     (LandCategory.GRASSLAND, ClimateZone.BOREAL_DRY): Decimal("2.0"),
 }
-
 
 # ---------------------------------------------------------------------------
 # SOC reference stocks in tC/ha for 0-30 cm depth
@@ -768,7 +739,6 @@ SOC_REFERENCE_STOCKS: Dict[Tuple[ClimateZone, SoilType], Decimal] = {
     (ClimateZone.POLAR_DRY, SoilType.OTHER): Decimal("10"),
 }
 
-
 # ---------------------------------------------------------------------------
 # SOC land use factors (F_LU) by land category and climate zone
 # IPCC 2006 Guidelines Volume 4 Table 5.5
@@ -820,7 +790,6 @@ SOC_LAND_USE_FACTORS: Dict[Tuple[LandCategory, ClimateZone], Decimal] = {
     (LandCategory.OTHER_LAND, ClimateZone.COOL_TEMPERATE_MOIST): Decimal("0.45"),
     (LandCategory.OTHER_LAND, ClimateZone.BOREAL_MOIST): Decimal("0.45"),
 }
-
 
 # ---------------------------------------------------------------------------
 # SOC management factors (F_MG) by management practice and climate zone
@@ -894,7 +863,6 @@ SOC_MANAGEMENT_FACTORS: Dict[Tuple[ManagementPractice, ClimateZone], Decimal] = 
     (ManagementPractice.NOMINALLY_MANAGED, ClimateZone.BOREAL_DRY): Decimal("1.0"),
 }
 
-
 # ---------------------------------------------------------------------------
 # SOC input factors (F_I) by input level
 # IPCC 2006 Guidelines Volume 4 Table 5.5
@@ -906,7 +874,6 @@ SOC_INPUT_FACTORS: Dict[InputLevel, Decimal] = {
     InputLevel.HIGH: Decimal("1.11"),
     InputLevel.HIGH_WITH_MANURE: Decimal("1.37"),
 }
-
 
 # ---------------------------------------------------------------------------
 # Annual biomass growth rates (increment) in tC/ha/yr
@@ -948,13 +915,11 @@ BIOMASS_GROWTH_RATES: Dict[Tuple[LandCategory, ClimateZone], Decimal] = {
     (LandCategory.CROPLAND, ClimateZone.BOREAL_DRY): Decimal("0.3"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Carbon fraction of dry matter (default IPCC value)
 # ---------------------------------------------------------------------------
 
 CARBON_FRACTION: Decimal = Decimal("0.47")
-
 
 # ---------------------------------------------------------------------------
 # Combustion factors (fraction of biomass consumed) by land/disturbance
@@ -987,7 +952,6 @@ COMBUSTION_FACTORS: Dict[Tuple[LandCategory, DisturbanceType], Decimal] = {
     (LandCategory.OTHER_LAND, DisturbanceType.NONE): Decimal("0.0"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Fire emission factors in g gas per kg dry matter burned
 # IPCC 2006 Guidelines Volume 4 Table 2.5
@@ -999,7 +963,6 @@ FIRE_EMISSION_FACTORS: Dict[EmissionGas, Decimal] = {
     EmissionGas.N2O: Decimal("0.20"),
     EmissionGas.CO: Decimal("104"),
 }
-
 
 # ---------------------------------------------------------------------------
 # Peatland emission factors by status and climate zone
@@ -1129,7 +1092,6 @@ PEATLAND_EF: Dict[
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # IPCC default N2O emission factor for direct soil emissions (EF1)
 # IPCC 2006 Guidelines Volume 4 Chapter 11 Table 11.1
@@ -1138,20 +1100,17 @@ PEATLAND_EF: Dict[
 
 N2O_SOIL_EF: Decimal = Decimal("0.01")
 
-
 # ---------------------------------------------------------------------------
 # CO2-to-C conversion factor (molecular weight ratio 44/12)
 # ---------------------------------------------------------------------------
 
 CONVERSION_FACTOR_CO2_C: Decimal = Decimal("3.6667")
 
-
 # =============================================================================
 # Pydantic Data Models (16)
 # =============================================================================
 
-
-class LandParcelInfo(BaseModel):
+class LandParcelInfo(GreenLangBase):
     """Information about a land parcel for LULUCF tracking.
 
     Represents a single parcel of managed land with its geographic,
@@ -1243,16 +1202,15 @@ class LandParcelInfo(BaseModel):
         description="Peatland management status if applicable",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of parcel registration",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of last update",
     )
 
-
-class CarbonStockSnapshot(BaseModel):
+class CarbonStockSnapshot(GreenLangBase):
     """Point-in-time carbon stock measurement for a parcel and pool.
 
     Represents a single carbon stock observation used in the
@@ -1317,8 +1275,7 @@ class CarbonStockSnapshot(BaseModel):
         description="Optional notes about the measurement",
     )
 
-
-class EmissionFactorRecord(BaseModel):
+class EmissionFactorRecord(GreenLangBase):
     """Emission factor record for land use emission calculations.
 
     Stores a single emission factor with its source, applicability
@@ -1396,8 +1353,7 @@ class EmissionFactorRecord(BaseModel):
         description="Bibliographic reference string",
     )
 
-
-class LandUseTransitionRecord(BaseModel):
+class LandUseTransitionRecord(GreenLangBase):
     """Record of a land-use transition event.
 
     Tracks a parcel's transition from one IPCC land category to
@@ -1462,12 +1418,11 @@ class LandUseTransitionRecord(BaseModel):
         description="Optional notes about the transition",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of record creation",
     )
 
-
-class CalculationRequest(BaseModel):
+class CalculationRequest(GreenLangBase):
     """Request for a land use emission calculation.
 
     Specifies all parameters needed to compute carbon stock changes
@@ -1611,8 +1566,7 @@ class CalculationRequest(BaseModel):
             )
         return v
 
-
-class CalculationDetailResult(BaseModel):
+class CalculationDetailResult(GreenLangBase):
     """Detailed emission result for a single pool/gas combination.
 
     Attributes:
@@ -1660,8 +1614,7 @@ class CalculationDetailResult(BaseModel):
         description="Textual description of the calculation formula",
     )
 
-
-class CalculationResult(BaseModel):
+class CalculationResult(GreenLangBase):
     """Complete result of a land use emission calculation.
 
     Attributes:
@@ -1731,7 +1684,7 @@ class CalculationResult(BaseModel):
         description="Ordered list of calculation trace steps",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of calculation completion",
     )
     provenance_hash: str = Field(
@@ -1755,8 +1708,7 @@ class CalculationResult(BaseModel):
             )
         return v
 
-
-class BatchCalculationRequest(BaseModel):
+class BatchCalculationRequest(GreenLangBase):
     """Batch request for multiple land use emission calculations.
 
     Attributes:
@@ -1802,8 +1754,7 @@ class BatchCalculationRequest(BaseModel):
             )
         return v
 
-
-class BatchCalculationResult(BaseModel):
+class BatchCalculationResult(GreenLangBase):
     """Result of a batch land use emission calculation.
 
     Attributes:
@@ -1848,7 +1799,7 @@ class BatchCalculationResult(BaseModel):
         description="Number of calculations in the batch",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of batch completion",
     )
     processing_time_ms: Decimal = Field(
@@ -1857,8 +1808,7 @@ class BatchCalculationResult(BaseModel):
         description="Total processing duration in milliseconds",
     )
 
-
-class SOCAssessmentRequest(BaseModel):
+class SOCAssessmentRequest(GreenLangBase):
     """Request for a soil organic carbon assessment.
 
     Uses IPCC Tier 1 approach: SOC = SOC_ref * F_LU * F_MG * F_I
@@ -1937,8 +1887,7 @@ class SOCAssessmentRequest(BaseModel):
         description="Previous input level",
     )
 
-
-class SOCAssessmentResult(BaseModel):
+class SOCAssessmentResult(GreenLangBase):
     """Result of a soil organic carbon assessment.
 
     Attributes:
@@ -2013,12 +1962,11 @@ class SOCAssessmentResult(BaseModel):
         description="Depth of the assessment in cm",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of assessment completion",
     )
 
-
-class UncertaintyRequest(BaseModel):
+class UncertaintyRequest(GreenLangBase):
     """Request for uncertainty quantification of a calculation.
 
     Attributes:
@@ -2061,8 +2009,7 @@ class UncertaintyRequest(BaseModel):
         description="Confidence level percentage",
     )
 
-
-class UncertaintyResult(BaseModel):
+class UncertaintyResult(GreenLangBase):
     """Result of uncertainty quantification analysis.
 
     Attributes:
@@ -2128,12 +2075,11 @@ class UncertaintyResult(BaseModel):
         description="Coefficient of variation as a percentage",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of analysis completion",
     )
 
-
-class ComplianceCheckResult(BaseModel):
+class ComplianceCheckResult(GreenLangBase):
     """Result of a regulatory compliance check.
 
     Attributes:
@@ -2191,12 +2137,11 @@ class ComplianceCheckResult(BaseModel):
         description="List of remediation recommendations",
     )
     checked_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of the compliance check",
     )
 
-
-class AggregationRequest(BaseModel):
+class AggregationRequest(GreenLangBase):
     """Request for aggregating land use emission results.
 
     Attributes:
@@ -2249,8 +2194,7 @@ class AggregationRequest(BaseModel):
         description="Optional filter by climate zones",
     )
 
-
-class AggregationResult(BaseModel):
+class AggregationResult(GreenLangBase):
     """Result of a land use emission aggregation.
 
     Attributes:
@@ -2315,10 +2259,9 @@ class AggregationResult(BaseModel):
         description="End date of the aggregation window",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of aggregation completion",
     )
-
 
 # =============================================================================
 # Public API

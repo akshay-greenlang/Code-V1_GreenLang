@@ -45,29 +45,23 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 def _compute_hash(content: str) -> str:
     """Compute SHA-256 hash of string content."""
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -80,7 +74,6 @@ class OutputFormat(str, Enum):
     PDF = "pdf"
     JSON = "json"
 
-
 class MaterialityBasis(str, Enum):
     """Basis for materiality calculation."""
     TOTAL_EMISSIONS = "total_emissions"
@@ -88,14 +81,12 @@ class MaterialityBasis(str, Enum):
     REVENUE = "revenue"
     CUSTOM = "custom"
 
-
 class QualitativeImpact(str, Enum):
     """Qualitative impact level."""
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
     NOT_APPLICABLE = "not_applicable"
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Input Models
@@ -113,7 +104,6 @@ class MaterialityThreshold(BaseModel):
     )
     rationale: str = Field("", description="Rationale for threshold")
 
-
 class ScopeMateriality(BaseModel):
     """Scope-specific materiality breakdown."""
     scope: str = Field(..., description="Scope label (Scope 1, Scope 2, Scope 3)")
@@ -123,7 +113,6 @@ class ScopeMateriality(BaseModel):
     clearly_trivial_tco2e: float = Field(0.0, ge=0, description="Clearly trivial threshold")
     performance_materiality_tco2e: float = Field(0.0, ge=0, description="Performance materiality")
     notes: str = Field("", description="Scope-specific notes")
-
 
 class QualitativeFactor(BaseModel):
     """Single qualitative materiality factor."""
@@ -135,7 +124,6 @@ class QualitativeFactor(BaseModel):
     consideration: str = Field("", description="Materiality consideration")
     affects_threshold: bool = Field(False, description="Whether this affects quantitative threshold")
     adjustment_direction: str = Field("", description="Increase/decrease/none")
-
 
 class MaterialityMethodology(BaseModel):
     """Materiality methodology description."""
@@ -149,7 +137,6 @@ class MaterialityMethodology(BaseModel):
     standard_reference: str = Field("", description="Standard reference (e.g., ISAE 3410 para 18)")
     limitations: List[str] = Field(default_factory=list, description="Known limitations")
 
-
 class PriorPeriodComparison(BaseModel):
     """Prior-period materiality comparison."""
     prior_period: str = Field("", description="Prior reporting period label")
@@ -160,7 +147,6 @@ class PriorPeriodComparison(BaseModel):
     change_tco2e: Optional[float] = Field(None, description="Change in tCO2e")
     change_pct: Optional[float] = Field(None, description="Change in %")
     reason_for_change: str = Field("", description="Reason for change")
-
 
 class MaterialityAssessmentInput(BaseModel):
     """Complete input model for MaterialityAssessmentReport."""
@@ -184,7 +170,6 @@ class MaterialityAssessmentInput(BaseModel):
         None, description="Prior period comparison"
     )
 
-
 # ---------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------
@@ -193,13 +178,11 @@ def _impact_label(impact: str) -> str:
     """Return display label for impact."""
     return impact.replace("_", " ").upper()
 
-
 def _format_tco2e(value: Optional[float]) -> str:
     """Format tCO2e value or return N/A."""
     if value is None:
         return "N/A"
     return f"{value:,.1f}"
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -258,7 +241,7 @@ class MaterialityAssessmentReport:
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render materiality assessment as Markdown."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_md(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -266,7 +249,7 @@ class MaterialityAssessmentReport:
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render materiality assessment as HTML."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_html(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -274,7 +257,7 @@ class MaterialityAssessmentReport:
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render materiality assessment as JSON dict."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_json(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -317,7 +300,7 @@ class MaterialityAssessmentReport:
             f"# Materiality Assessment Report - {company}\n\n"
             f"**Reporting Period:** {period} | "
             f"**Assurance Level:** {level.title()} | "
-            f"**Report Date:** {_utcnow().strftime('%Y-%m-%d')}\n\n"
+            f"**Report Date:** {utcnow().strftime('%Y-%m-%d')}\n\n"
             "---"
         )
 
@@ -525,7 +508,7 @@ class MaterialityAssessmentReport:
             f"<h1>Materiality Assessment Report &mdash; {company}</h1>\n"
             f"<p><strong>Reporting Period:</strong> {period} | "
             f"<strong>Assurance Level:</strong> {level.title()} | "
-            f"<strong>Report Date:</strong> {_utcnow().strftime('%Y-%m-%d')}</p>\n"
+            f"<strong>Report Date:</strong> {utcnow().strftime('%Y-%m-%d')}</p>\n"
             "<hr>\n</div>"
         )
 

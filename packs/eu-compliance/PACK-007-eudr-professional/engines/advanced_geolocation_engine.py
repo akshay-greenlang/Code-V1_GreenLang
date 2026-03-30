@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from pydantic import BaseModel, Field, validator
+from greenlang.schemas.enums import AlertSeverity
 
 logger = logging.getLogger(__name__)
 
@@ -36,14 +37,6 @@ class ValidationStatus(str, Enum):
     VALID = "VALID"
     INVALID = "INVALID"
     UNCERTAIN = "UNCERTAIN"
-
-
-class AlertSeverity(str, Enum):
-    """Deforestation alert severity levels."""
-    LOW = "LOW"
-    MEDIUM = "MEDIUM"
-    HIGH = "HIGH"
-    CRITICAL = "CRITICAL"
 
 
 class ProtectedAreaType(str, Enum):

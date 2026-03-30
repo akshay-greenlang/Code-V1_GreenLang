@@ -40,7 +40,8 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException, Query
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +53,7 @@ router = APIRouter(prefix="/v1/gateway", tags=["Data Gateway"])
 # =============================================================================
 
 
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Health check response."""
     status: str = "healthy"
     agent_id: str = "GL-DATA-GW-001"
@@ -61,13 +62,13 @@ class HealthResponse(BaseModel):
     timestamp: str = ""
 
 
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     """Standard error response."""
     error: str
     detail: str = ""
 
 
-class QueryResultResponse(BaseModel):
+class QueryResultResponse(GreenLangBase):
     """Query result response."""
     query_id: str
     source_id: str = ""
@@ -78,7 +79,7 @@ class QueryResultResponse(BaseModel):
     execution_time_ms: float = 0.0
 
 
-class SourceResponse(BaseModel):
+class SourceResponse(GreenLangBase):
     """Data source response."""
     source_id: str
     name: str
@@ -87,7 +88,7 @@ class SourceResponse(BaseModel):
     description: str = ""
 
 
-class CacheStatsResponse(BaseModel):
+class CacheStatsResponse(GreenLangBase):
     """Cache statistics response."""
     total_entries: int = 0
     hits: int = 0
@@ -96,7 +97,7 @@ class CacheStatsResponse(BaseModel):
     total_size_bytes: int = 0
 
 
-class TemplateResponse(BaseModel):
+class TemplateResponse(GreenLangBase):
     """Query template response."""
     template_id: str
     name: str = ""

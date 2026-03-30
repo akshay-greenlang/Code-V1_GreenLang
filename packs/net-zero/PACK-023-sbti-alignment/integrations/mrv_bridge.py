@@ -68,25 +68,19 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -99,11 +93,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Agent Stubs
 # ---------------------------------------------------------------------------
-
 
 class _AgentStub:
     """Stub for unavailable MRV agent modules.
@@ -128,7 +120,6 @@ class _AgentStub:
             }
         return _stub_method
 
-
 def _try_import_mrv_agent(agent_id: str, module_path: str) -> Any:
     """Try to import an MRV agent with graceful fallback.
 
@@ -145,11 +136,9 @@ def _try_import_mrv_agent(agent_id: str, module_path: str) -> Any:
         logger.debug("MRV agent %s not available, using stub", agent_id)
         return _AgentStub(agent_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EmissionSource(str, Enum):
     """Emission source categories mapped to MRV agents."""
@@ -189,7 +178,6 @@ class EmissionSource(str, Enum):
     SCOPE3_MAPPER = "scope3_mapper"
     AUDIT_TRAIL = "audit_trail"
 
-
 class MRVScope(str, Enum):
     """GHG Protocol emission scopes."""
 
@@ -197,7 +185,6 @@ class MRVScope(str, Enum):
     SCOPE_2 = "scope_2"
     SCOPE_3 = "scope_3"
     CROSS_CUTTING = "cross_cutting"
-
 
 class SBTiTargetBoundary(str, Enum):
     """SBTi target boundary classifications."""
@@ -208,11 +195,9 @@ class SBTiTargetBoundary(str, Enum):
     FLAG = "flag"
     FI_PORTFOLIO = "fi_portfolio"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class MRVAgentRoute(BaseModel):
     """Routing entry mapping an emission source to an MRV agent."""
@@ -233,7 +218,6 @@ class MRVAgentRoute(BaseModel):
         description="Whether this source contributes to FLAG emissions",
     )
 
-
 class RoutingResult(BaseModel):
     """Result of routing a calculation request to an MRV agent."""
 
@@ -252,7 +236,6 @@ class RoutingResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class MRVBridgeConfig(BaseModel):
     """Configuration for the SBTi MRV Bridge."""
 
@@ -267,7 +250,6 @@ class MRVBridgeConfig(BaseModel):
     reporting_year: int = Field(default=2025, ge=2020, le=2035)
     flag_threshold_pct: float = Field(default=20.0, ge=0.0, le=100.0)
     scope3_materiality_threshold_pct: float = Field(default=40.0, ge=0.0, le=100.0)
-
 
 class BatchRoutingResult(BaseModel):
     """Result of routing multiple calculation requests."""
@@ -291,7 +273,6 @@ class BatchRoutingResult(BaseModel):
     results: List[RoutingResult] = Field(default_factory=list)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class SBTiInventoryResult(BaseModel):
     """SBTi-formatted GHG inventory result."""
@@ -320,7 +301,6 @@ class SBTiInventoryResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class Scope3ScreeningResult(BaseModel):
     """Scope 3 screening result for SBTi 40% materiality assessment."""
 
@@ -339,7 +319,6 @@ class Scope3ScreeningResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class FLAGEmissionsResult(BaseModel):
     """FLAG emissions extraction result for SBTi 20% threshold."""
 
@@ -354,7 +333,6 @@ class FLAGEmissionsResult(BaseModel):
     sources: List[str] = Field(default_factory=list)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # MRV Agent Routing Table (30 agents)
@@ -619,11 +597,9 @@ FLAG_RELEVANT_SOURCES: Set[EmissionSource] = {
     EmissionSource.AGRICULTURAL,
 }
 
-
 # ---------------------------------------------------------------------------
 # SBTiMRVBridge
 # ---------------------------------------------------------------------------
-
 
 class SBTiMRVBridge:
     """Bridge to 30 MRV agents for SBTi GHG inventory and screening.

@@ -51,9 +51,9 @@ from greenlang.agents.data.time_series_gap_filler.provenance import (
     ProvenanceTracker,
     get_provenance_tracker,
 )
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Graceful imports for optional sibling modules (metrics, models)
@@ -79,21 +79,13 @@ except ImportError:
     _ExtFillResult = None  # type: ignore[assignment, misc]
     _MODELS_AVAILABLE = False
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ---------------------------------------------------------------------------
 # Local metric helper stubs (delegate when metrics module is present)
 # ---------------------------------------------------------------------------
-
 
 def _inc_gaps_filled(method: str, count: int = 1) -> None:
     """Increment the gaps-filled counter by method.
@@ -106,7 +98,6 @@ def _inc_gaps_filled(method: str, count: int = 1) -> None:
     """
     if _METRICS_AVAILABLE and _metrics_mod is not None:
         _metrics_mod.inc_gaps_filled(method, count)
-
 
 def _observe_confidence(method: str, confidence: float) -> None:
     """Observe a fill confidence score.
@@ -122,7 +113,6 @@ def _observe_confidence(method: str, confidence: float) -> None:
     if _METRICS_AVAILABLE and _metrics_mod is not None:
         _metrics_mod.observe_confidence(confidence)
 
-
 def _observe_duration(operation: str, duration: float) -> None:
     """Observe processing duration in seconds.
 
@@ -135,11 +125,9 @@ def _observe_duration(operation: str, duration: float) -> None:
     if _METRICS_AVAILABLE and _metrics_mod is not None:
         _metrics_mod.observe_duration(operation, duration)
 
-
 # ---------------------------------------------------------------------------
 # Local enumerations and data models (used when models.py is absent)
 # ---------------------------------------------------------------------------
-
 
 class FillStrategy(str, Enum):
     """Strategy for filling time series gaps.
@@ -158,7 +146,6 @@ class FillStrategy(str, Enum):
     AKIMA = "akima"
     NEAREST = "nearest"
     PCHIP = "pchip"
-
 
 @dataclass
 class FilledPoint:
@@ -183,7 +170,6 @@ class FilledPoint:
     method: str
     gap_length: int = 0
     provenance_hash: str = ""
-
 
 @dataclass
 class FillResult:
@@ -219,7 +205,6 @@ class FillResult:
     created_at: str = ""
     metadata: Dict[str, Any] = field(default_factory=dict)
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -243,11 +228,9 @@ _METHOD_CONFIDENCE_BASE: Dict[str, float] = {
     "pchip": 0.87,
 }
 
-
 # ============================================================================
 # InterpolationEngine
 # ============================================================================
-
 
 class InterpolationEngine:
     """Pure-Python interpolation engine for time series gap filling.
@@ -1933,7 +1916,7 @@ class InterpolationEngine:
             min_confidence=round(min_conf, 6),
             processing_time_ms=round(elapsed_ms, 3),
             provenance_hash=op_provenance,
-            created_at=_utcnow().isoformat(),
+            created_at=utcnow().isoformat(),
             metadata={
                 "engine": "InterpolationEngine",
                 "version": "1.0.0",
@@ -2005,7 +1988,6 @@ class InterpolationEngine:
             filled, filled_points, method_name,
             gaps_found, total_missing, start_time,
         )
-
 
 # ============================================================================
 # Module exports

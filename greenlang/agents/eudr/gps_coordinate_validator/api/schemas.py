@@ -22,18 +22,13 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import ConfigDict, Field, field_validator
 
+from greenlang.schemas import GreenLangBase, utcnow
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -64,13 +59,11 @@ VALID_SOURCE_TYPES: List[str] = [
     "unknown",
 ]
 
-
 # =============================================================================
 # Pagination
 # =============================================================================
 
-
-class PaginatedMeta(BaseModel):
+class PaginatedMeta(GreenLangBase):
     """Pagination metadata for list responses."""
 
     total: int = Field(..., ge=0, description="Total number of results")
@@ -78,8 +71,7 @@ class PaginatedMeta(BaseModel):
     offset: int = Field(..., ge=0, description="Results skipped")
     has_more: bool = Field(..., description="Whether more results exist")
 
-
-class PaginatedResponse(BaseModel):
+class PaginatedResponse(GreenLangBase):
     """Generic paginated response wrapper."""
 
     items: List[Dict[str, Any]] = Field(
@@ -89,20 +81,17 @@ class PaginatedResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class PaginationParams(BaseModel):
+class PaginationParams(GreenLangBase):
     """Standard pagination query parameters."""
 
     limit: int = Field(default=50, ge=1, le=1000, description="Results per page")
     offset: int = Field(default=0, ge=0, description="Number of results to skip")
 
-
 # =============================================================================
 # Response Wrappers
 # =============================================================================
 
-
-class ApiResponse(BaseModel):
+class ApiResponse(GreenLangBase):
     """Standard API success response wrapper."""
 
     status: str = Field(default="success", description="Response status")
@@ -110,13 +99,12 @@ class ApiResponse(BaseModel):
     data: Optional[Any] = Field(None, description="Response payload")
     request_id: Optional[str] = Field(None, description="Request correlation ID")
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     """Structured error response for all API endpoints."""
 
     error: str = Field(..., description="Error type identifier")
@@ -124,13 +112,11 @@ class ErrorResponse(BaseModel):
     detail: Optional[str] = Field(None, description="Additional error details")
     request_id: Optional[str] = Field(None, description="Request correlation ID")
 
-
 # =============================================================================
 # Coordinate Input Schemas
 # =============================================================================
 
-
-class RawCoordinateSchema(BaseModel):
+class RawCoordinateSchema(GreenLangBase):
     """Raw coordinate input before parsing.
 
     Accepts any string-format GPS coordinate (DD, DMS, DDM, UTM, MGRS) with
@@ -230,8 +216,7 @@ class RawCoordinateSchema(BaseModel):
             )
         return v
 
-
-class CoordinatePairSchema(BaseModel):
+class CoordinatePairSchema(GreenLangBase):
     """Pre-parsed coordinate pair with optional context.
 
     Standard WGS84 coordinate pair used throughout the validation,
@@ -304,13 +289,11 @@ class CoordinatePairSchema(BaseModel):
             )
         return v
 
-
 # =============================================================================
 # Parse Schemas
 # =============================================================================
 
-
-class ParseRequestSchema(BaseModel):
+class ParseRequestSchema(GreenLangBase):
     """Request to parse a raw coordinate string into decimal degrees.
 
     Supports DD, DMS, DDM, UTM, and MGRS formats with automatic detection
@@ -362,8 +345,7 @@ class ParseRequestSchema(BaseModel):
             )
         return v
 
-
-class ParseResponseSchema(BaseModel):
+class ParseResponseSchema(GreenLangBase):
     """Response from coordinate parsing."""
 
     latitude: float = Field(
@@ -401,14 +383,13 @@ class ParseResponseSchema(BaseModel):
         description="SHA-256 provenance hash",
     )
     parsed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Parse timestamp",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchParseRequestSchema(BaseModel):
+class BatchParseRequestSchema(GreenLangBase):
     """Request to parse multiple raw coordinate strings in batch."""
 
     coordinates: List[RawCoordinateSchema] = Field(
@@ -432,8 +413,7 @@ class BatchParseRequestSchema(BaseModel):
         },
     )
 
-
-class BatchParseResponseSchema(BaseModel):
+class BatchParseResponseSchema(GreenLangBase):
     """Response from batch coordinate parsing."""
 
     total: int = Field(..., ge=0, description="Total coordinates submitted")
@@ -457,14 +437,13 @@ class BatchParseResponseSchema(BaseModel):
         description="SHA-256 batch provenance hash",
     )
     parsed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Batch parse timestamp",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class FormatDetectionResponseSchema(BaseModel):
+class FormatDetectionResponseSchema(GreenLangBase):
     """Response from coordinate format detection."""
 
     detected_format: str = Field(
@@ -486,14 +465,13 @@ class FormatDetectionResponseSchema(BaseModel):
         description="The input string that was analyzed",
     )
     detected_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Detection timestamp",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class NormalizeResponseSchema(BaseModel):
+class NormalizeResponseSchema(GreenLangBase):
     """Response from coordinate normalization to WGS84."""
 
     latitude: float = Field(
@@ -534,19 +512,17 @@ class NormalizeResponseSchema(BaseModel):
         description="SHA-256 provenance hash",
     )
     normalized_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Normalization timestamp",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Validation Schemas
 # =============================================================================
 
-
-class ValidateRequestSchema(BaseModel):
+class ValidateRequestSchema(GreenLangBase):
     """Request to validate a coordinate pair."""
 
     latitude: float = Field(
@@ -623,8 +599,7 @@ class ValidateRequestSchema(BaseModel):
             )
         return v
 
-
-class ValidationErrorSchema(BaseModel):
+class ValidationErrorSchema(GreenLangBase):
     """A single validation error or warning."""
 
     error_type: str = Field(
@@ -650,8 +625,7 @@ class ValidationErrorSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ValidationResponseSchema(BaseModel):
+class ValidationResponseSchema(GreenLangBase):
     """Response from coordinate validation."""
 
     is_valid: bool = Field(
@@ -679,14 +653,13 @@ class ValidationResponseSchema(BaseModel):
         description="SHA-256 provenance hash",
     )
     validated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Validation timestamp",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchValidateRequestSchema(BaseModel):
+class BatchValidateRequestSchema(GreenLangBase):
     """Request to validate multiple coordinate pairs."""
 
     coordinates: List[CoordinatePairSchema] = Field(
@@ -710,8 +683,7 @@ class BatchValidateRequestSchema(BaseModel):
         },
     )
 
-
-class BatchValidateResponseSchema(BaseModel):
+class BatchValidateResponseSchema(GreenLangBase):
     """Response from batch coordinate validation."""
 
     total: int = Field(..., ge=0, description="Total coordinates submitted")
@@ -741,14 +713,13 @@ class BatchValidateResponseSchema(BaseModel):
         description="SHA-256 batch provenance hash",
     )
     validated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Batch validation timestamp",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class RangeCheckResponseSchema(BaseModel):
+class RangeCheckResponseSchema(GreenLangBase):
     """Response from coordinate range check."""
 
     latitude: float = Field(..., description="Checked latitude")
@@ -780,8 +751,7 @@ class RangeCheckResponseSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class SwapDetectionRequestSchema(BaseModel):
+class SwapDetectionRequestSchema(GreenLangBase):
     """Request to detect swapped latitude/longitude."""
 
     latitude: float = Field(
@@ -820,8 +790,7 @@ class SwapDetectionRequestSchema(BaseModel):
             return v
         return v.upper().strip()
 
-
-class SwapDetectionResponseSchema(BaseModel):
+class SwapDetectionResponseSchema(GreenLangBase):
     """Response from swap detection analysis."""
 
     is_swapped: bool = Field(
@@ -843,14 +812,13 @@ class SwapDetectionResponseSchema(BaseModel):
         description="Explanation of swap detection reasoning",
     )
     detected_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Detection timestamp",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class DuplicateDetectionRequestSchema(BaseModel):
+class DuplicateDetectionRequestSchema(GreenLangBase):
     """Request to detect duplicate coordinates in a set."""
 
     coordinates: List[CoordinatePairSchema] = Field(
@@ -882,8 +850,7 @@ class DuplicateDetectionRequestSchema(BaseModel):
         },
     )
 
-
-class DuplicateDetectionResponseSchema(BaseModel):
+class DuplicateDetectionResponseSchema(GreenLangBase):
     """Response from duplicate detection analysis."""
 
     total_coordinates: int = Field(
@@ -914,19 +881,17 @@ class DuplicateDetectionResponseSchema(BaseModel):
         description="Distance threshold used",
     )
     detected_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Detection timestamp",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Plausibility Schemas
 # =============================================================================
 
-
-class PlausibilityRequestSchema(BaseModel):
+class PlausibilityRequestSchema(GreenLangBase):
     """Request for full plausibility analysis of a coordinate."""
 
     latitude: float = Field(
@@ -993,8 +958,7 @@ class PlausibilityRequestSchema(BaseModel):
             )
         return v
 
-
-class PlausibilityResponseSchema(BaseModel):
+class PlausibilityResponseSchema(GreenLangBase):
     """Response from full plausibility analysis."""
 
     is_on_land: bool = Field(
@@ -1043,14 +1007,13 @@ class PlausibilityResponseSchema(BaseModel):
         description="SHA-256 provenance hash",
     )
     analyzed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Analysis timestamp",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class LandOceanResponseSchema(BaseModel):
+class LandOceanResponseSchema(GreenLangBase):
     """Response from land/ocean detection."""
 
     is_on_land: bool = Field(
@@ -1073,14 +1036,13 @@ class LandOceanResponseSchema(BaseModel):
         description="Data source for land/ocean determination",
     )
     checked_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Check timestamp",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CountryResponseSchema(BaseModel):
+class CountryResponseSchema(GreenLangBase):
     """Response from country detection and matching."""
 
     detected_iso: Optional[str] = Field(
@@ -1105,14 +1067,13 @@ class CountryResponseSchema(BaseModel):
         description="Distance to nearest international border in km",
     )
     checked_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Check timestamp",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CommodityResponseSchema(BaseModel):
+class CommodityResponseSchema(GreenLangBase):
     """Response from commodity plausibility check."""
 
     is_plausible: bool = Field(
@@ -1136,14 +1097,13 @@ class CommodityResponseSchema(BaseModel):
         description="Known growing regions for this commodity",
     )
     checked_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Check timestamp",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ElevationResponseSchema(BaseModel):
+class ElevationResponseSchema(GreenLangBase):
     """Response from elevation plausibility check."""
 
     is_plausible: bool = Field(
@@ -1169,19 +1129,17 @@ class ElevationResponseSchema(BaseModel):
         description="Elevation confidence",
     )
     checked_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Check timestamp",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Assessment Schemas
 # =============================================================================
 
-
-class AssessmentRequestSchema(BaseModel):
+class AssessmentRequestSchema(GreenLangBase):
     """Request for full accuracy assessment of a coordinate."""
 
     latitude: float = Field(
@@ -1235,8 +1193,7 @@ class AssessmentRequestSchema(BaseModel):
             return v
         return v.upper().strip()
 
-
-class AccuracyScoreSchema(BaseModel):
+class AccuracyScoreSchema(GreenLangBase):
     """Accuracy scoring breakdown for a coordinate."""
 
     overall_score: float = Field(
@@ -1285,8 +1242,7 @@ class AccuracyScoreSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class AssessmentResponseSchema(BaseModel):
+class AssessmentResponseSchema(GreenLangBase):
     """Response from full accuracy assessment."""
 
     assessment_id: str = Field(
@@ -1318,14 +1274,13 @@ class AssessmentResponseSchema(BaseModel):
         description="SHA-256 provenance hash",
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Assessment timestamp",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchAssessmentRequestSchema(BaseModel):
+class BatchAssessmentRequestSchema(GreenLangBase):
     """Request for batch accuracy assessment."""
 
     coordinates: List[AssessmentRequestSchema] = Field(
@@ -1352,8 +1307,7 @@ class BatchAssessmentRequestSchema(BaseModel):
         },
     )
 
-
-class BatchAssessmentResponseSchema(BaseModel):
+class BatchAssessmentResponseSchema(GreenLangBase):
     """Response from batch accuracy assessment."""
 
     total: int = Field(..., ge=0, description="Total coordinates assessed")
@@ -1375,14 +1329,13 @@ class BatchAssessmentResponseSchema(BaseModel):
         description="SHA-256 batch provenance hash",
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Batch assessment timestamp",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class PrecisionRequestSchema(BaseModel):
+class PrecisionRequestSchema(GreenLangBase):
     """Request for precision analysis only."""
 
     latitude: float = Field(
@@ -1403,8 +1356,7 @@ class PrecisionRequestSchema(BaseModel):
         },
     )
 
-
-class PrecisionResponseSchema(BaseModel):
+class PrecisionResponseSchema(GreenLangBase):
     """Response from precision analysis."""
 
     decimal_places_lat: int = Field(
@@ -1448,19 +1400,17 @@ class PrecisionResponseSchema(BaseModel):
         description="SHA-256 provenance hash",
     )
     analyzed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Analysis timestamp",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Report Schemas
 # =============================================================================
 
-
-class ComplianceCertRequestSchema(BaseModel):
+class ComplianceCertRequestSchema(GreenLangBase):
     """Request to generate a compliance certificate for a coordinate."""
 
     latitude: float = Field(
@@ -1528,8 +1478,7 @@ class ComplianceCertRequestSchema(BaseModel):
             )
         return v
 
-
-class ComplianceCertResponseSchema(BaseModel):
+class ComplianceCertResponseSchema(GreenLangBase):
     """Response with generated compliance certificate."""
 
     cert_id: str = Field(
@@ -1551,7 +1500,7 @@ class ComplianceCertResponseSchema(BaseModel):
         description="Certified coordinate",
     )
     issued_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Certificate issuance timestamp",
     )
     valid_until: datetime = Field(
@@ -1569,8 +1518,7 @@ class ComplianceCertResponseSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchSummaryResponseSchema(BaseModel):
+class BatchSummaryResponseSchema(GreenLangBase):
     """Aggregate summary for batch operations."""
 
     total: int = Field(..., ge=0, description="Total coordinates processed")
@@ -1598,14 +1546,13 @@ class BatchSummaryResponseSchema(BaseModel):
         description="Improvement recommendations",
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Summary generation timestamp",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class RemediationItemSchema(BaseModel):
+class RemediationItemSchema(GreenLangBase):
     """A single remediation action item."""
 
     index: int = Field(
@@ -1640,8 +1587,7 @@ class RemediationItemSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class RemediationResponseSchema(BaseModel):
+class RemediationResponseSchema(GreenLangBase):
     """Response with remediation plan for failed coordinates."""
 
     total_errors: int = Field(
@@ -1668,14 +1614,13 @@ class RemediationResponseSchema(BaseModel):
         description="Error counts grouped by type",
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Remediation plan generation timestamp",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ReportResponseSchema(BaseModel):
+class ReportResponseSchema(GreenLangBase):
     """Response for retrieving a stored report."""
 
     report_id: str = Field(
@@ -1703,7 +1648,7 @@ class ReportResponseSchema(BaseModel):
         description="Download URL for PDF/CSV format",
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Report generation timestamp",
     )
     provenance_hash: str = Field(
@@ -1713,13 +1658,11 @@ class ReportResponseSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Datum Schemas
 # =============================================================================
 
-
-class DatumTransformRequestSchema(BaseModel):
+class DatumTransformRequestSchema(GreenLangBase):
     """Request to transform coordinates between geodetic datums."""
 
     latitude: float = Field(
@@ -1765,8 +1708,7 @@ class DatumTransformRequestSchema(BaseModel):
             )
         return v
 
-
-class DatumTransformResponseSchema(BaseModel):
+class DatumTransformResponseSchema(GreenLangBase):
     """Response from datum transformation."""
 
     latitude: float = Field(
@@ -1799,14 +1741,13 @@ class DatumTransformResponseSchema(BaseModel):
         description="SHA-256 provenance hash",
     )
     transformed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Transformation timestamp",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchDatumTransformRequestSchema(BaseModel):
+class BatchDatumTransformRequestSchema(GreenLangBase):
     """Request to transform multiple coordinates between datums."""
 
     coordinates: List[DatumTransformRequestSchema] = Field(
@@ -1818,8 +1759,7 @@ class BatchDatumTransformRequestSchema(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class BatchDatumTransformResponseSchema(BaseModel):
+class BatchDatumTransformResponseSchema(GreenLangBase):
     """Response from batch datum transformation."""
 
     total: int = Field(..., ge=0, description="Total coordinates transformed")
@@ -1833,14 +1773,13 @@ class BatchDatumTransformResponseSchema(BaseModel):
         description="Total processing time in milliseconds",
     )
     transformed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Batch transformation timestamp",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class DatumInfoSchema(BaseModel):
+class DatumInfoSchema(GreenLangBase):
     """Information about a supported geodetic datum."""
 
     code: str = Field(..., description="Datum code identifier")
@@ -1851,8 +1790,7 @@ class DatumInfoSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class DatumListResponseSchema(BaseModel):
+class DatumListResponseSchema(GreenLangBase):
     """Response listing all supported datums."""
 
     datums: List[DatumInfoSchema] = Field(
@@ -1867,13 +1805,11 @@ class DatumListResponseSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Reverse Geocoding Schemas
 # =============================================================================
 
-
-class ReverseGeocodeRequestSchema(BaseModel):
+class ReverseGeocodeRequestSchema(GreenLangBase):
     """Request for reverse geocoding of a coordinate."""
 
     latitude: float = Field(
@@ -1898,8 +1834,7 @@ class ReverseGeocodeRequestSchema(BaseModel):
         },
     )
 
-
-class ReverseGeocodeResponseSchema(BaseModel):
+class ReverseGeocodeResponseSchema(GreenLangBase):
     """Response from reverse geocoding."""
 
     country_iso: Optional[str] = Field(
@@ -1940,14 +1875,13 @@ class ReverseGeocodeResponseSchema(BaseModel):
         description="SHA-256 provenance hash",
     )
     geocoded_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Geocoding timestamp",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchReverseGeocodeRequestSchema(BaseModel):
+class BatchReverseGeocodeRequestSchema(GreenLangBase):
     """Request for batch reverse geocoding."""
 
     coordinates: List[ReverseGeocodeRequestSchema] = Field(
@@ -1959,8 +1893,7 @@ class BatchReverseGeocodeRequestSchema(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class BatchReverseGeocodeResponseSchema(BaseModel):
+class BatchReverseGeocodeResponseSchema(GreenLangBase):
     """Response from batch reverse geocoding."""
 
     total: int = Field(..., ge=0, description="Total coordinates geocoded")
@@ -1974,14 +1907,13 @@ class BatchReverseGeocodeResponseSchema(BaseModel):
         description="Total processing time in milliseconds",
     )
     geocoded_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Batch geocoding timestamp",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CountryLookupResponseSchema(BaseModel):
+class CountryLookupResponseSchema(GreenLangBase):
     """Response from country lookup for a coordinate."""
 
     latitude: float = Field(..., description="Queried latitude")
@@ -2003,19 +1935,17 @@ class CountryLookupResponseSchema(BaseModel):
         description="Administrative region hierarchy",
     )
     checked_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Lookup timestamp",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Batch Job Schemas
 # =============================================================================
 
-
-class BatchJobRequestSchema(BaseModel):
+class BatchJobRequestSchema(GreenLangBase):
     """Request to submit a large batch processing job."""
 
     coordinates: List[CoordinatePairSchema] = Field(
@@ -2074,8 +2004,7 @@ class BatchJobRequestSchema(BaseModel):
             )
         return v
 
-
-class BatchJobResponseSchema(BaseModel):
+class BatchJobResponseSchema(GreenLangBase):
     """Response after submitting a batch job."""
 
     job_id: str = Field(
@@ -2100,7 +2029,7 @@ class BatchJobResponseSchema(BaseModel):
         description="Job priority",
     )
     submitted_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Job submission timestamp",
     )
     estimated_completion_seconds: Optional[float] = Field(
@@ -2121,8 +2050,7 @@ class BatchJobResponseSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchJobCancelResponseSchema(BaseModel):
+class BatchJobCancelResponseSchema(GreenLangBase):
     """Response after cancelling a batch job."""
 
     job_id: str = Field(
@@ -2144,19 +2072,17 @@ class BatchJobCancelResponseSchema(BaseModel):
         description="Total coordinates in job",
     )
     cancelled_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Cancellation timestamp",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Health Check
 # =============================================================================
 
-
-class HealthResponseSchema(BaseModel):
+class HealthResponseSchema(GreenLangBase):
     """Health check response for GPS Coordinate Validator API."""
 
     status: str = Field(default="healthy", description="Service health status")
@@ -2170,7 +2096,7 @@ class HealthResponseSchema(BaseModel):
     )
     version: str = Field(default="1.0.0", description="API version")
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Current server timestamp",
     )
     supported_formats: List[str] = Field(
@@ -2186,7 +2112,6 @@ class HealthResponseSchema(BaseModel):
     )
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Public API

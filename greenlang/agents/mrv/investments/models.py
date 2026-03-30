@@ -44,8 +44,9 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, List, Optional, Any
 from datetime import datetime, date
 from enum import Enum
-from pydantic import BaseModel, Field, validator
-from pydantic import ConfigDict
+from pydantic import Field, validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
+
 import hashlib
 import json
 
@@ -1103,7 +1104,7 @@ PORTFOLIO_ALIGNMENT_THRESHOLDS: Dict[str, Dict[str, Decimal]] = {
 # ==============================================================================
 
 
-class EquityInvestmentInput(BaseModel):
+class EquityInvestmentInput(GreenLangBase):
     """Input for listed equity or private equity financed emissions calculation.
 
     PCAF attribution: outstanding_amount / EVIC.
@@ -1193,7 +1194,7 @@ class EquityInvestmentInput(BaseModel):
         return v.upper()
 
 
-class DebtInvestmentInput(BaseModel):
+class DebtInvestmentInput(GreenLangBase):
     """Input for corporate bond / debt financed emissions calculation.
 
     PCAF attribution: outstanding_amount / (total_equity + total_debt).
@@ -1266,7 +1267,7 @@ class DebtInvestmentInput(BaseModel):
         return v.upper()
 
 
-class ProjectFinanceInput(BaseModel):
+class ProjectFinanceInput(GreenLangBase):
     """Input for project finance financed emissions calculation.
 
     PCAF attribution: outstanding_amount / total_project_cost.
@@ -1334,7 +1335,7 @@ class ProjectFinanceInput(BaseModel):
         return v.upper()
 
 
-class CREInvestmentInput(BaseModel):
+class CREInvestmentInput(GreenLangBase):
     """Input for commercial real estate financed emissions calculation.
 
     PCAF attribution: outstanding_amount / property_value.
@@ -1411,7 +1412,7 @@ class CREInvestmentInput(BaseModel):
         return v.upper()
 
 
-class MortgageInput(BaseModel):
+class MortgageInput(GreenLangBase):
     """Input for residential mortgage financed emissions calculation.
 
     PCAF attribution: outstanding_loan / property_value.
@@ -1475,7 +1476,7 @@ class MortgageInput(BaseModel):
         return v.upper()
 
 
-class MotorVehicleLoanInput(BaseModel):
+class MotorVehicleLoanInput(GreenLangBase):
     """Input for motor vehicle loan financed emissions calculation.
 
     PCAF attribution: outstanding_loan / vehicle_value.
@@ -1543,7 +1544,7 @@ class MotorVehicleLoanInput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class SovereignBondInput(BaseModel):
+class SovereignBondInput(GreenLangBase):
     """Input for sovereign bond financed emissions calculation.
 
     PCAF attribution: outstanding_amount / GDP_PPP.
@@ -1592,7 +1593,7 @@ class SovereignBondInput(BaseModel):
         return v.upper()
 
 
-class PortfolioInput(BaseModel):
+class PortfolioInput(GreenLangBase):
     """Input for portfolio-level financed emissions calculation.
 
     Wraps a list of investments across multiple asset classes for
@@ -1636,7 +1637,7 @@ class PortfolioInput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class InvestmentCalculationResult(BaseModel):
+class InvestmentCalculationResult(GreenLangBase):
     """Result from a single investment financed emissions calculation."""
 
     investment_id: str = Field(
@@ -1686,7 +1687,7 @@ class InvestmentCalculationResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class PortfolioAggregationResult(BaseModel):
+class PortfolioAggregationResult(GreenLangBase):
     """Aggregated portfolio-level financed emissions result."""
 
     total_financed_emissions_tco2e: Decimal = Field(
@@ -1735,7 +1736,7 @@ class PortfolioAggregationResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class ComplianceResult(BaseModel):
+class ComplianceResult(GreenLangBase):
     """Result from compliance check against a specific framework."""
 
     framework: ComplianceFramework = Field(
@@ -1760,7 +1761,7 @@ class ComplianceResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class ProvenanceRecord(BaseModel):
+class ProvenanceRecord(GreenLangBase):
     """Provenance record for audit trail."""
 
     record_id: str = Field(
@@ -1791,7 +1792,7 @@ class ProvenanceRecord(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class DataQualityScore(BaseModel):
+class DataQualityScore(GreenLangBase):
     """Detailed data quality score with PCAF and DQI dimensions."""
 
     pcaf_score: PCAFDataQuality = Field(
@@ -1825,7 +1826,7 @@ class DataQualityScore(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class UncertaintyResult(BaseModel):
+class UncertaintyResult(GreenLangBase):
     """Result from uncertainty quantification."""
 
     method: UncertaintyMethod = Field(
@@ -1853,7 +1854,7 @@ class UncertaintyResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class CarbonIntensityResult(BaseModel):
+class CarbonIntensityResult(GreenLangBase):
     """Carbon intensity metrics for portfolio or investment."""
 
     waci: Optional[Decimal] = Field(
@@ -1876,7 +1877,7 @@ class CarbonIntensityResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class PortfolioAlignmentResult(BaseModel):
+class PortfolioAlignmentResult(GreenLangBase):
     """Portfolio alignment assessment result."""
 
     alignment_status: PortfolioAlignment = Field(

@@ -51,8 +51,9 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, List, Optional, Any, Tuple
 from datetime import datetime
 from enum import Enum
-from pydantic import BaseModel, Field, validator
-from pydantic import ConfigDict
+from pydantic import Field, validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
+
 import hashlib
 import json
 
@@ -1262,7 +1263,7 @@ FRAMEWORK_REQUIRED_DISCLOSURES: Dict[ComplianceFramework, List[str]] = {
 # ==============================================================================
 
 
-class BuildingAssetInput(BaseModel):
+class BuildingAssetInput(GreenLangBase):
     """
     Input for building/real-estate leased asset emissions calculation.
 
@@ -1386,7 +1387,7 @@ class BuildingAssetInput(BaseModel):
         return v
 
 
-class VehicleAssetInput(BaseModel):
+class VehicleAssetInput(GreenLangBase):
     """
     Input for leased vehicle fleet emissions calculation.
 
@@ -1471,7 +1472,7 @@ class VehicleAssetInput(BaseModel):
         return v
 
 
-class EquipmentAssetInput(BaseModel):
+class EquipmentAssetInput(GreenLangBase):
     """
     Input for leased equipment emissions calculation.
 
@@ -1552,7 +1553,7 @@ class EquipmentAssetInput(BaseModel):
         return v
 
 
-class ITAssetInput(BaseModel):
+class ITAssetInput(GreenLangBase):
     """
     Input for leased IT asset emissions calculation.
 
@@ -1651,7 +1652,7 @@ class ITAssetInput(BaseModel):
         return v
 
 
-class LessorDataInput(BaseModel):
+class LessorDataInput(GreenLangBase):
     """
     Input for lessor-specific emissions data (primary data from landlord).
 
@@ -1722,7 +1723,7 @@ class LessorDataInput(BaseModel):
         return v
 
 
-class SpendInput(BaseModel):
+class SpendInput(GreenLangBase):
     """
     Input for spend-based emissions calculation using EEIO factors.
 
@@ -1790,7 +1791,7 @@ class SpendInput(BaseModel):
         return v
 
 
-class AssetInventoryInput(BaseModel):
+class AssetInventoryInput(GreenLangBase):
     """
     Input for complete leased asset inventory (all categories combined).
 
@@ -1853,7 +1854,7 @@ class AssetInventoryInput(BaseModel):
         return v
 
 
-class AllocationInput(BaseModel):
+class AllocationInput(GreenLangBase):
     """
     Input for emissions allocation across organizational units.
 
@@ -1893,7 +1894,7 @@ class AllocationInput(BaseModel):
         return v
 
 
-class BatchAssetInput(BaseModel):
+class BatchAssetInput(GreenLangBase):
     """
     Batch input for processing multiple individual assets in a single request.
 
@@ -1945,7 +1946,7 @@ class BatchAssetInput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class ComplianceCheckInput(BaseModel):
+class ComplianceCheckInput(GreenLangBase):
     """
     Input for compliance checking against regulatory frameworks.
 
@@ -2005,7 +2006,7 @@ class ComplianceCheckInput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class UncertaintyInput(BaseModel):
+class UncertaintyInput(GreenLangBase):
     """
     Input for uncertainty quantification of emissions estimates.
 
@@ -2054,7 +2055,7 @@ class UncertaintyInput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class PortfolioInput(BaseModel):
+class PortfolioInput(GreenLangBase):
     """
     Input for portfolio-level analysis across all leased assets.
 

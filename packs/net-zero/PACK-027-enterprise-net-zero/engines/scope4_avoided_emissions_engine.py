@@ -68,18 +68,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
@@ -122,11 +119,9 @@ def _round_val(value: Decimal, places: int = 6) -> Decimal:
 def _round3(value: float) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class AvoidedEmissionCategory(str, Enum):
     """Categories of avoided emissions."""
@@ -135,14 +130,12 @@ class AvoidedEmissionCategory(str, Enum):
     ENABLING_EFFECT = "enabling_effect"
     SYSTEMIC_CHANGE = "systemic_change"
 
-
 class BaselineType(str, Enum):
     """Baseline scenario types."""
     MARKET_AVERAGE = "market_average"
     REGULATORY_MINIMUM = "regulatory_minimum"
     INDUSTRY_BEST_PRACTICE = "industry_best_practice"
     CUSTOM = "custom"
-
 
 class AdditionalityLevel(str, Enum):
     """Additionality assessment levels."""
@@ -151,13 +144,11 @@ class AdditionalityLevel(str, Enum):
     LOW = "low"
     NONE = "none"
 
-
 class ConfidenceLevel(str, Enum):
     """Confidence level for the estimate."""
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -187,11 +178,9 @@ UNCERTAINTY_RANGES: Dict[str, Dict[str, Decimal]] = {
     ConfidenceLevel.LOW: {"lower_factor": Decimal("0.50"), "upper_factor": Decimal("1.50")},
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class ProductAvoidedEmissionEntry(BaseModel):
     """A single product/service avoided emission entry.
@@ -229,7 +218,6 @@ class ProductAvoidedEmissionEntry(BaseModel):
     time_horizon_years: int = Field(default=1, ge=1, le=30)
     decay_rate_pct: Decimal = Field(default=Decimal("0"), ge=Decimal("0"), le=Decimal("100"))
 
-
 class Scope4Input(BaseModel):
     """Complete input for Scope 4 avoided emissions calculation.
 
@@ -244,11 +232,9 @@ class Scope4Input(BaseModel):
     total_footprint_tco2e: Decimal = Field(default=Decimal("0"), ge=Decimal("0"))
     products: List[ProductAvoidedEmissionEntry] = Field(default_factory=list)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class ProductAvoidedResult(BaseModel):
     """Avoided emission result for a single product."""
@@ -265,19 +251,17 @@ class ProductAvoidedResult(BaseModel):
     pct_of_total_avoided: Decimal = Field(default=Decimal("0"))
     methodology_notes: List[str] = Field(default_factory=list)
 
-
 class DoubleCounting(BaseModel):
     """Double-counting prevention assessment."""
     scope3_overlap_categories: List[str] = Field(default_factory=list)
     overlap_risk: str = Field(default="low")
     mitigation_measures: List[str] = Field(default_factory=list)
 
-
 class Scope4Result(BaseModel):
     """Complete Scope 4 avoided emissions result."""
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     organization_name: str = Field(default="")
     reporting_year: int = Field(default=0)
 
@@ -301,11 +285,9 @@ class Scope4Result(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class Scope4AvoidedEmissionsEngine:
     """Scope 4 avoided emissions quantification engine.

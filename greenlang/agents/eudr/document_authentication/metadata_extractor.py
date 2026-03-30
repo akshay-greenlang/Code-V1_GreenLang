@@ -63,6 +63,7 @@ import time
 import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.document_authentication.config import (
     DocumentAuthenticationConfig,
@@ -96,12 +97,6 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance.
 
@@ -114,7 +109,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str = "META") -> str:
     """Generate a prefixed UUID4 string identifier.
 
@@ -125,7 +119,6 @@ def _generate_id(prefix: str = "META") -> str:
         Prefixed UUID4 string.
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 # ---------------------------------------------------------------------------
 # Known PDF producers / creators for mismatch detection
@@ -246,11 +239,9 @@ SUSPICIOUS_CREATORS: List[str] = [
     "PDFCreator",
 ]
 
-
 # ---------------------------------------------------------------------------
 # MetadataExtractorEngine
 # ---------------------------------------------------------------------------
-
 
 class MetadataExtractorEngine:
     """Engine for extracting and validating document metadata for EUDR authentication.
@@ -458,7 +449,7 @@ class MetadataExtractorEngine:
             )
 
             # Step 13: Build metadata record
-            now = _utcnow()
+            now = utcnow()
             creation_date = self._parse_date_field(
                 merged.get("creation_date"),
             )
@@ -2467,7 +2458,6 @@ class MetadataExtractorEngine:
         """Return the number of stored metadata records."""
         with self._lock:
             return len(self._metadata_store)
-
 
 # ---------------------------------------------------------------------------
 # Public API

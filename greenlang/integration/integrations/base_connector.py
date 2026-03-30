@@ -82,19 +82,10 @@ TConfig = TypeVar('TConfig', bound=BaseModel)
 logger = logging.getLogger(__name__)
 
 from greenlang.v2.reliability_runtime import (
+from greenlang.schemas.enums import HealthStatus
     classify_connector_error,
     get_reliability_profile,
 )
-
-
-class HealthStatus(str, Enum):
-    """Connector health status enumeration."""
-
-    UNKNOWN = "unknown"
-    HEALTHY = "healthy"
-    DEGRADED = "degraded"
-    UNHEALTHY = "unhealthy"
-    DISCONNECTED = "disconnected"
 
 
 class ConnectionState(str, Enum):

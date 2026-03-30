@@ -41,19 +41,13 @@ from greenlang.agents.data.time_series_gap_filler.metrics import (
     observe_duration,
 )
 from greenlang.agents.data.time_series_gap_filler.provenance import ProvenanceTracker
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _is_missing(value: Any) -> bool:
     """Determine whether a value represents a missing data point.
@@ -72,11 +66,9 @@ def _is_missing(value: Any) -> bool:
         return True
     return False
 
-
 # ---------------------------------------------------------------------------
 # Lightweight data models (self-contained until models.py is built)
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class SeasonalDecomposition:
@@ -98,7 +90,6 @@ class SeasonalDecomposition:
     period: int = 0
     original: List[Optional[float]] = field(default_factory=list)
     provenance_hash: str = ""
-
 
 @dataclass
 class FillResult:
@@ -132,7 +123,6 @@ class FillResult:
     provenance_hash: str = ""
     details: Dict[str, Any] = field(default_factory=dict)
 
-
 @dataclass
 class CalendarDefinition:
     """Calendar specification for calendar-aware gap filling.
@@ -150,11 +140,9 @@ class CalendarDefinition:
     holidays: List[str] = field(default_factory=list)
     fiscal_periods: Dict[str, Tuple[int, int]] = field(default_factory=dict)
 
-
 # ---------------------------------------------------------------------------
 # Private computational helpers
 # ---------------------------------------------------------------------------
-
 
 def _safe_mean(values: List[float]) -> float:
     """Compute arithmetic mean, returning 0.0 for empty lists.
@@ -168,7 +156,6 @@ def _safe_mean(values: List[float]) -> float:
     if not values:
         return 0.0
     return sum(values) / len(values)
-
 
 def _centered_moving_average(
     values: List[Optional[float]],
@@ -233,7 +220,6 @@ def _centered_moving_average(
 
     return result
 
-
 def _autocorrelation(values: List[float], lag: int) -> float:
     """Compute the autocorrelation of *values* at the given *lag*.
 
@@ -263,7 +249,6 @@ def _autocorrelation(values: List[float], lag: int) -> float:
 
     return cov_sum / var_sum
 
-
 def _detrend(
     values: List[Optional[float]],
     trend: List[Optional[float]],
@@ -285,7 +270,6 @@ def _detrend(
         else:
             result.append(v - t)  # type: ignore[operator]
     return result
-
 
 def _compute_confidence(num_cycles: int, method: str) -> float:
     """Compute a fill confidence score based on available seasonal cycles.
@@ -326,11 +310,9 @@ def _compute_confidence(num_cycles: int, method: str) -> float:
     adjustment = method_bonus.get(method, 0.0)
     return max(0.0, min(1.0, base + adjustment))
 
-
 # ===========================================================================
 # SeasonalFillerEngine
 # ===========================================================================
-
 
 class SeasonalFillerEngine:
     """Pure-Python seasonal decomposition and pattern-based gap filler.
@@ -1484,7 +1466,6 @@ class SeasonalFillerEngine:
             "significance_threshold": 0.0,
             "provenance_hash": provenance_hash,
         }
-
 
 __all__ = [
     "SeasonalFillerEngine",

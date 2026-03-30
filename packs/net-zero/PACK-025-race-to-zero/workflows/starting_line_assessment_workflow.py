@@ -41,36 +41,30 @@ from typing import Any, Callable, Coroutine, Dict, List, Optional, Set
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ComplianceStatus
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "25.0.0"
 
 ProgressCallback = Callable[[str, float, str], Coroutine[Any, Any, None]]
 
-
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: Any) -> str:
     if isinstance(data, dict):
         data = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(str(data).encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -78,7 +72,6 @@ class PhaseStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
@@ -88,13 +81,11 @@ class WorkflowStatus(str, Enum):
     PARTIAL = "partial"
     CANCELLED = "cancelled"
 
-
 class StartingLinePhase(str, Enum):
     CRITERIA_CHECK = "starting_line_criteria_check"
     GAP_ANALYSIS = "gap_analysis"
     REMEDIATION_PLAN = "remediation_plan"
     COMPLIANCE_CERTIFICATION = "compliance_certification"
-
 
 class CriterionStatus(str, Enum):
     PASS = "pass"
@@ -102,19 +93,11 @@ class CriterionStatus(str, Enum):
     PARTIAL = "partial"
     NOT_APPLICABLE = "not_applicable"
 
-
-class ComplianceStatus(str, Enum):
-    COMPLIANT = "compliant"
-    NON_COMPLIANT = "non_compliant"
-    PARTIALLY_COMPLIANT = "partially_compliant"
-
-
 class GapSeverity(str, Enum):
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 class RemediationPriority(str, Enum):
     IMMEDIATE = "immediate"
@@ -122,13 +105,11 @@ class RemediationPriority(str, Enum):
     MEDIUM_TERM = "medium_term"
     LONG_TERM = "long_term"
 
-
 class StartingLinePillar(str, Enum):
     PLEDGE = "pledge"
     PLAN = "plan"
     PROCEED = "proceed"
     PUBLISH = "publish"
-
 
 # =============================================================================
 # REFERENCE DATA (Zero-Hallucination Lookups)
@@ -266,7 +247,6 @@ STARTING_LINE_CRITERIA: List[Dict[str, Any]] = [
 PILLAR_PASS_THRESHOLD = 0.80  # 80% of sub-criteria must pass within pillar
 OVERALL_PASS_THRESHOLD = 0.75  # 75% of all criteria must pass for overall compliance
 
-
 # Phase dependencies DAG
 PHASE_DEPENDENCIES: Dict[StartingLinePhase, List[StartingLinePhase]] = {
     StartingLinePhase.CRITERIA_CHECK: [],
@@ -282,11 +262,9 @@ PHASE_EXECUTION_ORDER: List[StartingLinePhase] = [
     StartingLinePhase.COMPLIANCE_CERTIFICATION,
 ]
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase: StartingLinePhase = Field(...)
@@ -300,7 +278,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class CriterionResult(BaseModel):
     criterion_id: str = Field(default="")
     pillar: str = Field(default="")
@@ -310,7 +287,6 @@ class CriterionResult(BaseModel):
     evidence_reference: str = Field(default="")
     notes: str = Field(default="")
 
-
 class GapItem(BaseModel):
     gap_id: str = Field(default="")
     criterion_id: str = Field(default="")
@@ -319,7 +295,6 @@ class GapItem(BaseModel):
     severity: GapSeverity = Field(default=GapSeverity.MEDIUM)
     effort_hours: int = Field(default=0)
     evidence_needed: str = Field(default="")
-
 
 class RemediationAction(BaseModel):
     action_id: str = Field(default="")
@@ -331,7 +306,6 @@ class RemediationAction(BaseModel):
     deadline_months: int = Field(default=3)
     responsible_role: str = Field(default="")
     dependencies: List[str] = Field(default_factory=list)
-
 
 class ComplianceCertificate(BaseModel):
     certificate_id: str = Field(default="")
@@ -345,7 +319,6 @@ class ComplianceCertificate(BaseModel):
     gaps_remaining: int = Field(default=0)
     remediation_timeline_months: int = Field(default=0)
     next_review_date: str = Field(default="")
-
 
 class StartingLineConfig(BaseModel):
     pack_id: str = Field(default="PACK-025")
@@ -385,7 +358,6 @@ class StartingLineConfig(BaseModel):
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
 
-
 class StartingLineResult(BaseModel):
     execution_id: str = Field(default_factory=_new_uuid)
     pack_id: str = Field(default="PACK-025")
@@ -408,11 +380,9 @@ class StartingLineResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class StartingLineAssessmentWorkflow:
     """
@@ -452,7 +422,7 @@ class StartingLineAssessmentWorkflow:
         result = StartingLineResult(
             org_name=self.config.org_name,
             status=WorkflowStatus.RUNNING,
-            started_at=_utcnow(),
+            started_at=utcnow(),
         )
         self._results[result.execution_id] = result
 
@@ -514,7 +484,7 @@ class StartingLineAssessmentWorkflow:
             result.errors.append(str(exc))
 
         finally:
-            result.completed_at = _utcnow()
+            result.completed_at = utcnow()
             result.total_duration_ms = (time.monotonic() - start_time) * 1000
             result.criteria_results = self._extract_criteria(shared_context)
             result.gaps = self._extract_gaps(shared_context)
@@ -553,7 +523,7 @@ class StartingLineAssessmentWorkflow:
     async def _execute_phase(
         self, phase: StartingLinePhase, context: Dict[str, Any]
     ) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         start_time = time.monotonic()
         handler = self._get_phase_handler(phase)
         try:
@@ -564,7 +534,7 @@ class StartingLineAssessmentWorkflow:
             status = PhaseStatus.FAILED
         elapsed_ms = (time.monotonic() - start_time) * 1000
         return PhaseResult(
-            phase=phase, status=status, started_at=started, completed_at=_utcnow(),
+            phase=phase, status=status, started_at=started, completed_at=utcnow(),
             duration_ms=round(elapsed_ms, 2), records_processed=records,
             outputs=outputs, warnings=warnings, errors=errors,
             provenance_hash=_compute_hash(outputs) if self.config.enable_provenance else "",
@@ -925,12 +895,12 @@ class StartingLineAssessmentWorkflow:
 
         # Generate certificate
         from datetime import timedelta
-        assessment_date = _utcnow().strftime("%Y-%m-%d")
+        assessment_date = utcnow().strftime("%Y-%m-%d")
         remediation_months = remediation_data.get("estimated_completion_months", 0)
         next_review = (
-            _utcnow() + timedelta(days=remediation_months * 30)
+            utcnow() + timedelta(days=remediation_months * 30)
         ).strftime("%Y-%m-%d") if remediation_months > 0 else (
-            _utcnow() + timedelta(days=365)
+            utcnow() + timedelta(days=365)
         ).strftime("%Y-%m-%d")
 
         certificate = {

@@ -54,8 +54,10 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from .models import (
+
     OverlapSeverity,
     ProtectedAreaCheckResult,
     ProtectedAreaOverlap,
@@ -64,16 +66,9 @@ from .models import (
 
 logger = logging.getLogger(__name__)
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -93,7 +88,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 def _generate_id(prefix: str) -> str:
     """Generate a unique identifier with a given prefix.
 
@@ -104,7 +98,6 @@ def _generate_id(prefix: str) -> str:
         ID in format "{prefix}-{hex12}".
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -138,11 +131,9 @@ PA_TYPE_PRIORITY: Dict[str, int] = {
 #: Module version for provenance tracking.
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Protected Area Record (internal reference database entry)
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class ProtectedAreaRecord:
@@ -171,7 +162,6 @@ class ProtectedAreaRecord:
     lon_min: float = 0.0
     lon_max: float = 0.0
     area_ha: float = 0.0
-
 
 # ---------------------------------------------------------------------------
 # Built-in Protected Area Reference Database (~96 entries)
@@ -314,11 +304,9 @@ def _build_reference_database() -> List[ProtectedAreaRecord]:
     logger.info("Built protected area reference database: %d entries", len(records))
     return records
 
-
 # ---------------------------------------------------------------------------
 # ProtectedAreaChecker
 # ---------------------------------------------------------------------------
-
 
 class ProtectedAreaChecker:
     """Protected area overlap and proximity checker for EUDR compliance.
@@ -837,7 +825,6 @@ class ProtectedAreaChecker:
     def buffer_km_default(self) -> float:
         """Return the default buffer distance in km."""
         return self._buffer_km_default
-
 
 # ---------------------------------------------------------------------------
 # Module Exports

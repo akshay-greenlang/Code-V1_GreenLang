@@ -59,6 +59,7 @@ from greenlang.agents.eudr.information_gathering.models import (
     CERTIFICATION_COMMODITY_MAP,
 )
 from greenlang.agents.eudr.information_gathering.provenance import ProvenanceTracker
+from greenlang.schemas import utcnow
 from greenlang.agents.eudr.information_gathering.metrics import (
     record_certification_verified,
     observe_certification_duration,
@@ -69,16 +70,9 @@ logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute deterministic SHA-256 hash of data.
@@ -92,7 +86,6 @@ def _compute_hash(data: Any) -> str:
     canonical = json.dumps(data, sort_keys=True, separators=(",", ":"), default=str)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
-
 def _days_until(dt: Optional[datetime]) -> Optional[int]:
     """Calculate days from now until a future datetime.
 
@@ -104,14 +97,12 @@ def _days_until(dt: Optional[datetime]) -> Optional[int]:
     """
     if dt is None:
         return None
-    delta = dt - _utcnow()
+    delta = dt - utcnow()
     return max(delta.days, 0)
-
 
 # ---------------------------------------------------------------------------
 # Verification Cache
 # ---------------------------------------------------------------------------
-
 
 class VerificationCache:
     """In-memory cache for certificate verification results with TTL.
@@ -176,11 +167,9 @@ class VerificationCache:
         """Number of entries currently in cache."""
         return len(self._store)
 
-
 # ---------------------------------------------------------------------------
 # Abstract Certification Body Adapter
 # ---------------------------------------------------------------------------
-
 
 class CertBodyAdapter(abc.ABC):
     """Abstract base class for certification body verification adapters.
@@ -249,15 +238,13 @@ class CertBodyAdapter(abc.ABC):
             commodity_scope=commodity_scope or [],
             chain_of_custody_model=chain_of_custody_model,
             days_until_expiry=days_expiry,
-            last_verified=_utcnow(),
+            last_verified=utcnow(),
             provenance_hash=provenance_hash,
         )
-
 
 # ---------------------------------------------------------------------------
 # Concrete Adapters
 # ---------------------------------------------------------------------------
-
 
 class FSCAdapter(CertBodyAdapter):
     """Forest Stewardship Council (FSC) certificate verification adapter.
@@ -281,8 +268,8 @@ class FSCAdapter(CertBodyAdapter):
         # Stub: simulate FSC registry lookup
         is_valid = cert_id.startswith("FSC-") and len(cert_id) >= 8
         status = CertVerificationStatus.VALID if is_valid else CertVerificationStatus.NOT_FOUND
-        valid_from = _utcnow() - timedelta(days=365) if is_valid else None
-        valid_until = _utcnow() + timedelta(days=730) if is_valid else None
+        valid_from = utcnow() - timedelta(days=365) if is_valid else None
+        valid_until = utcnow() + timedelta(days=730) if is_valid else None
         return self._build_result(
             cert_id=cert_id,
             status=status,
@@ -293,7 +280,6 @@ class FSCAdapter(CertBodyAdapter):
             commodity_scope=[EUDRCommodity.WOOD] if is_valid else [],
             chain_of_custody_model="Transfer" if is_valid else None,
         )
-
 
 class RSPOAdapter(CertBodyAdapter):
     """Roundtable on Sustainable Palm Oil (RSPO) verification adapter.
@@ -315,8 +301,8 @@ class RSPOAdapter(CertBodyAdapter):
         """
         is_valid = cert_id.startswith("RSPO-") or cert_id.startswith("SCC-")
         status = CertVerificationStatus.VALID if is_valid else CertVerificationStatus.NOT_FOUND
-        valid_from = _utcnow() - timedelta(days=180) if is_valid else None
-        valid_until = _utcnow() + timedelta(days=550) if is_valid else None
+        valid_from = utcnow() - timedelta(days=180) if is_valid else None
+        valid_until = utcnow() + timedelta(days=550) if is_valid else None
         return self._build_result(
             cert_id=cert_id,
             status=status,
@@ -327,7 +313,6 @@ class RSPOAdapter(CertBodyAdapter):
             commodity_scope=[EUDRCommodity.OIL_PALM] if is_valid else [],
             chain_of_custody_model="Mass Balance" if is_valid else None,
         )
-
 
 class PEFCAdapter(CertBodyAdapter):
     """Programme for the Endorsement of Forest Certification adapter.
@@ -349,8 +334,8 @@ class PEFCAdapter(CertBodyAdapter):
         """
         is_valid = cert_id.startswith("PEFC/") or cert_id.startswith("PEFC-")
         status = CertVerificationStatus.VALID if is_valid else CertVerificationStatus.NOT_FOUND
-        valid_from = _utcnow() - timedelta(days=270) if is_valid else None
-        valid_until = _utcnow() + timedelta(days=460) if is_valid else None
+        valid_from = utcnow() - timedelta(days=270) if is_valid else None
+        valid_until = utcnow() + timedelta(days=460) if is_valid else None
         return self._build_result(
             cert_id=cert_id,
             status=status,
@@ -361,7 +346,6 @@ class PEFCAdapter(CertBodyAdapter):
             commodity_scope=[EUDRCommodity.WOOD] if is_valid else [],
             chain_of_custody_model="Percentage" if is_valid else None,
         )
-
 
 class RainforestAllianceAdapter(CertBodyAdapter):
     """Rainforest Alliance Certified verification adapter.
@@ -382,8 +366,8 @@ class RainforestAllianceAdapter(CertBodyAdapter):
             Verification result with commodity scope.
         """
         is_valid = cert_id.startswith("RA-") or cert_id.startswith("RAC-")
-        valid_from = _utcnow() - timedelta(days=200) if is_valid else None
-        valid_until = _utcnow() + timedelta(days=165) if is_valid else None
+        valid_from = utcnow() - timedelta(days=200) if is_valid else None
+        valid_until = utcnow() + timedelta(days=165) if is_valid else None
         # Check for near-expiry
         if is_valid and valid_until:
             days_left = _days_until(valid_until)
@@ -403,7 +387,6 @@ class RainforestAllianceAdapter(CertBodyAdapter):
             commodity_scope=[EUDRCommodity.COCOA, EUDRCommodity.COFFEE] if is_valid else [],
             chain_of_custody_model="Identity Preserved" if is_valid else None,
         )
-
 
 class UTZAdapter(CertBodyAdapter):
     """UTZ/SAN (now Rainforest Alliance) legacy certificate adapter.
@@ -427,12 +410,12 @@ class UTZAdapter(CertBodyAdapter):
         # UTZ merged into RA; many legacy certs now expired
         if is_valid and cert_id.startswith("UTZ-"):
             status = CertVerificationStatus.EXPIRED
-            valid_from = _utcnow() - timedelta(days=900)
-            valid_until = _utcnow() - timedelta(days=30)
+            valid_from = utcnow() - timedelta(days=900)
+            valid_until = utcnow() - timedelta(days=30)
         elif is_valid:
             status = CertVerificationStatus.VALID
-            valid_from = _utcnow() - timedelta(days=150)
-            valid_until = _utcnow() + timedelta(days=215)
+            valid_from = utcnow() - timedelta(days=150)
+            valid_until = utcnow() + timedelta(days=215)
         else:
             status = CertVerificationStatus.NOT_FOUND
             valid_from = None
@@ -447,7 +430,6 @@ class UTZAdapter(CertBodyAdapter):
             commodity_scope=[EUDRCommodity.COCOA, EUDRCommodity.COFFEE] if is_valid else [],
             chain_of_custody_model="Mass Balance" if is_valid else None,
         )
-
 
 class EUOrganicAdapter(CertBodyAdapter):
     """EU Organic Farming Information System (OFIS) verification adapter.
@@ -470,8 +452,8 @@ class EUOrganicAdapter(CertBodyAdapter):
         """
         is_valid = cert_id.startswith("EU-BIO-") or cert_id.startswith("EU-ORG-")
         status = CertVerificationStatus.VALID if is_valid else CertVerificationStatus.NOT_FOUND
-        valid_from = _utcnow() - timedelta(days=300) if is_valid else None
-        valid_until = _utcnow() + timedelta(days=425) if is_valid else None
+        valid_from = utcnow() - timedelta(days=300) if is_valid else None
+        valid_until = utcnow() + timedelta(days=425) if is_valid else None
         return self._build_result(
             cert_id=cert_id,
             status=status,
@@ -482,7 +464,6 @@ class EUOrganicAdapter(CertBodyAdapter):
             commodity_scope=[EUDRCommodity.COFFEE, EUDRCommodity.COCOA] if is_valid else [],
             chain_of_custody_model="Identity Preserved" if is_valid else None,
         )
-
 
 # ---------------------------------------------------------------------------
 # Adapter Registry
@@ -497,11 +478,9 @@ _CERT_ADAPTER_MAP: Dict[CertificationBody, type] = {
     CertificationBody.EU_ORGANIC: EUOrganicAdapter,
 }
 
-
 # ---------------------------------------------------------------------------
 # Main Engine
 # ---------------------------------------------------------------------------
-
 
 class CertificationVerificationEngine:
     """Engine for verifying sustainability certificates against official registries.
@@ -617,7 +596,7 @@ class CertificationVerificationEngine:
                 certificate_id=cert_id,
                 certification_body=body,
                 verification_status=CertVerificationStatus.ERROR,
-                last_verified=_utcnow(),
+                last_verified=utcnow(),
                 provenance_hash=_compute_hash(
                     {"cert_id": cert_id, "body": body.value, "error": str(exc)}
                 ),
@@ -652,7 +631,7 @@ class CertificationVerificationEngine:
                         certificate_id=cid,
                         certification_body=body,
                         verification_status=CertVerificationStatus.ERROR,
-                        last_verified=_utcnow(),
+                        last_verified=utcnow(),
                         provenance_hash=_compute_hash(
                             {"cert_id": cid, "body": body.value, "error": str(result)}
                         ),
@@ -677,8 +656,8 @@ class CertificationVerificationEngine:
             List of certificates expiring within the window,
             sorted by expiry date ascending.
         """
-        cutoff = _utcnow() + timedelta(days=days_ahead)
-        now = _utcnow()
+        cutoff = utcnow() + timedelta(days=days_ahead)
+        now = utcnow()
         expiring: List[CertificateVerificationResult] = []
 
         for result in self._verified_history:
@@ -689,7 +668,7 @@ class CertificationVerificationEngine:
             if now <= result.valid_until <= cutoff:
                 expiring.append(result)
 
-        expiring.sort(key=lambda r: r.valid_until or _utcnow())
+        expiring.sort(key=lambda r: r.valid_until or utcnow())
         logger.info(
             "Found %d certificates expiring within %d days", len(expiring), days_ahead
         )

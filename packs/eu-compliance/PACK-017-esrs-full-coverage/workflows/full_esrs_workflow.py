@@ -40,33 +40,25 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class WorkflowPhase(str, Enum):
     """Phases of the full ESRS workflow."""
@@ -85,7 +77,6 @@ class WorkflowPhase(str, Enum):
     REPORT_ASSEMBLY = "report_assembly"
     COMPLIANCE_SCORING = "compliance_scoring"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "pending"
@@ -93,7 +84,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class PhaseStatus(str, Enum):
     """Status of a single phase."""
@@ -103,7 +93,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class StandardStatus(str, Enum):
     """Status of an individual ESRS standard."""
     COMPLETE = "complete"
@@ -112,11 +101,9 @@ class StandardStatus(str, Enum):
     NOT_MATERIAL = "not_material"
     SKIPPED = "skipped"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -127,7 +114,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class StandardResult(BaseModel):
     """Result summary for an individual ESRS standard."""
@@ -142,7 +128,6 @@ class StandardResult(BaseModel):
     drs_missing: int = Field(default=0)
     key_metrics: Dict[str, Any] = Field(default_factory=dict)
     warnings: List[str] = Field(default_factory=list)
-
 
 class FullESRSInput(BaseModel):
     """Input data model for FullESRSWorkflow."""
@@ -171,7 +156,6 @@ class FullESRSInput(BaseModel):
     g1_data: Dict[str, Any] = Field(default_factory=dict)
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class FullESRSResult(BaseModel):
     """Complete result from full ESRS workflow."""
     workflow_id: str = Field(..., description="Unique execution ID")
@@ -194,7 +178,6 @@ class FullESRSResult(BaseModel):
     reporting_year: int = Field(default=2025)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # STANDARD DEFINITIONS
 # =============================================================================
@@ -213,11 +196,9 @@ ESRS_STANDARDS: List[Dict[str, Any]] = [
     {"id": "G1", "name": "Business Conduct", "drs": 6, "key": "g1", "mandatory": False},
 ]
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class FullESRSWorkflow:
     """
@@ -279,7 +260,7 @@ class FullESRSWorkflow:
         if input_data is None:
             input_data = FullESRSInput(config=config or {})
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting full ESRS workflow %s for %s",
                          self.workflow_id, input_data.entity_name)
         phase_results: List[PhaseResult] = []
@@ -316,7 +297,7 @@ class FullESRSWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         completed_count = sum(1 for p in phase_results if p.status == PhaseStatus.COMPLETED)
 
         material = sum(1 for sr in self._standard_results if sr.is_material)
@@ -363,7 +344,7 @@ class FullESRSWorkflow:
 
     async def _phase_materiality_check(self, input_data: FullESRSInput) -> PhaseResult:
         """Determine which ESRS standards are material."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -379,7 +360,7 @@ class FullESRSWorkflow:
             warnings.append("ESRS 2 is mandatory; forcing material status")
             mat["esrs2"] = True
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 1 MaterialityCheck: %d material, %d non-material",
                          len(material_list), len(non_material))
         return PhaseResult(
@@ -399,7 +380,7 @@ class FullESRSWorkflow:
         input_data: FullESRSInput,
     ) -> PhaseResult:
         """Generic method to run a standard-specific phase."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -414,7 +395,7 @@ class FullESRSWorkflow:
                 completeness_pct=100.0, drs_total=std_def["drs"],
             ))
             outputs["status"] = "not_material"
-            elapsed = (_utcnow() - started).total_seconds()
+            elapsed = (utcnow() - started).total_seconds()
             return PhaseResult(
                 phase_name=phase.value, status=PhaseStatus.COMPLETED,
                 duration_seconds=elapsed, outputs=outputs, warnings=warnings,
@@ -453,7 +434,7 @@ class FullESRSWorkflow:
             warnings=warnings,
         ))
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase %s: %s %.1f%% complete",
                          phase.value, std_def["id"], completeness)
         return PhaseResult(
@@ -523,7 +504,7 @@ class FullESRSWorkflow:
 
     async def _phase_report_assembly(self, input_data: FullESRSInput) -> PhaseResult:
         """Assemble full ESRS disclosure package."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -549,7 +530,7 @@ class FullESRSWorkflow:
         if partial > 0:
             warnings.append(f"{partial} material standards are partially complete")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 13 ReportAssembly: %d/%d standards complete, %d/%d DRs",
                          complete, len(material_results), total_drs_complete, total_drs)
         return PhaseResult(
@@ -564,7 +545,7 @@ class FullESRSWorkflow:
 
     async def _phase_compliance_scoring(self, input_data: FullESRSInput) -> PhaseResult:
         """Calculate final compliance score across all standards."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -585,7 +566,7 @@ class FullESRSWorkflow:
             outputs["rating"] = "needs_improvement"
             warnings.append(f"Compliance score of {score}% is below 50% threshold")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 14 ComplianceScoring: score=%.1f%%, rating=%s",
                          score, outputs["rating"])
         return PhaseResult(

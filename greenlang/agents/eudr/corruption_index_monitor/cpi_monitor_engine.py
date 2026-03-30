@@ -66,6 +66,7 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -190,7 +191,6 @@ else:
     _cpi_high_risk_countries = None  # type: ignore[assignment]
     _cpi_errors_total = None  # type: ignore[assignment]
 
-
 def _inc_cpi_queries() -> None:
     """Safely increment CPI query counter."""
     if PROMETHEUS_AVAILABLE and _cpi_queries_total is not None:
@@ -201,12 +201,10 @@ def _inc_cpi_queries() -> None:
         except Exception:
             pass
 
-
 def _inc_cpi_batch_queries() -> None:
     """Safely increment CPI batch query counter."""
     if PROMETHEUS_AVAILABLE and _cpi_batch_queries_total is not None:
         _cpi_batch_queries_total.inc()
-
 
 def _observe_cpi_duration(seconds: float) -> None:
     """Safely observe CPI query duration."""
@@ -218,7 +216,6 @@ def _observe_cpi_duration(seconds: float) -> None:
         except Exception:
             pass
 
-
 def _inc_cpi_error(operation: str) -> None:
     """Safely increment CPI error counter."""
     if PROMETHEUS_AVAILABLE and _cpi_errors_total is not None:
@@ -229,16 +226,9 @@ def _inc_cpi_error(operation: str) -> None:
         except Exception:
             pass
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _to_decimal(value: Any) -> Decimal:
     """Convert a numeric value to Decimal via string for determinism.
@@ -253,7 +243,6 @@ def _to_decimal(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance.
 
@@ -266,11 +255,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class CorruptionRiskLevel(str, Enum):
     """Corruption risk classification based on CPI score.
@@ -289,7 +276,6 @@ class CorruptionRiskLevel(str, Enum):
     HIGH = "HIGH"
     VERY_HIGH = "VERY_HIGH"
 
-
 class CPIRegion(str, Enum):
     """Transparency International regional groupings for CPI analysis.
 
@@ -304,7 +290,6 @@ class CPIRegion(str, Enum):
     SUB_SAHARAN_AFRICA = "sub_saharan_africa"
     WESTERN_EUROPE_EU = "western_europe_eu"
 
-
 class CPITrendDirection(str, Enum):
     """Direction of CPI score change over time."""
 
@@ -312,11 +297,9 @@ class CPITrendDirection(str, Enum):
     DECLINING = "DECLINING"
     STABLE = "STABLE"
 
-
 # ---------------------------------------------------------------------------
 # Data classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class CPIScore:
@@ -373,7 +356,6 @@ class CPIScore:
             "change_from_previous": str(self.change_from_previous),
         }
 
-
 @dataclass
 class CPIScoreResult:
     """Result wrapper for a single CPI score query.
@@ -395,7 +377,6 @@ class CPIScoreResult:
     calculation_timestamp: str = ""
     warnings: List[str] = field(default_factory=list)
     error: Optional[str] = None
-
 
 @dataclass
 class CPIHistoryResult:
@@ -431,7 +412,6 @@ class CPIHistoryResult:
     warnings: List[str] = field(default_factory=list)
     error: Optional[str] = None
 
-
 @dataclass
 class CPIRankingsResult:
     """Result wrapper for CPI rankings queries.
@@ -459,7 +439,6 @@ class CPIRankingsResult:
     calculation_timestamp: str = ""
     warnings: List[str] = field(default_factory=list)
     error: Optional[str] = None
-
 
 @dataclass
 class CPIRegionalResult:
@@ -501,7 +480,6 @@ class CPIRegionalResult:
     warnings: List[str] = field(default_factory=list)
     error: Optional[str] = None
 
-
 @dataclass
 class CPIBatchResult:
     """Result wrapper for batch CPI queries across multiple countries.
@@ -529,7 +507,6 @@ class CPIBatchResult:
     calculation_timestamp: str = ""
     warnings: List[str] = field(default_factory=list)
     error: Optional[str] = None
-
 
 @dataclass
 class CPISummaryResult:
@@ -576,7 +553,6 @@ class CPISummaryResult:
     calculation_timestamp: str = ""
     warnings: List[str] = field(default_factory=list)
     error: Optional[str] = None
-
 
 # ---------------------------------------------------------------------------
 # CPI Reference Data (Transparency International, 2012-2024)
@@ -1203,11 +1179,9 @@ CPI_SCORES_DB: Dict[str, Dict[int, Tuple[int, int, int]]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # CPI Monitor Engine
 # ---------------------------------------------------------------------------
-
 
 class CPIMonitorEngine:
     """Transparency International CPI monitoring engine for EUDR compliance.
@@ -1281,7 +1255,7 @@ class CPIMonitorEngine:
             metadata including EUDR risk factor and corruption risk level.
         """
         start = time.perf_counter()
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         try:
             cc = country_code.upper().strip()
@@ -1408,7 +1382,7 @@ class CPIMonitorEngine:
             average score, and net change over the period.
         """
         start = time.perf_counter()
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         try:
             cc = country_code.upper().strip()
@@ -1534,7 +1508,7 @@ class CPIMonitorEngine:
             CPIRankingsResult with countries sorted by rank.
         """
         start = time.perf_counter()
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         try:
             entries: List[Tuple[str, int, int, int]] = []
@@ -1622,7 +1596,7 @@ class CPIMonitorEngine:
             min, max, standard deviation, high-risk count).
         """
         start = time.perf_counter()
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         try:
             if year is None:
@@ -1733,7 +1707,7 @@ class CPIMonitorEngine:
             counts, and aggregate provenance hash.
         """
         start = time.perf_counter()
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         try:
             if not country_codes:
@@ -1813,7 +1787,7 @@ class CPIMonitorEngine:
             across risk categories, and regional averages.
         """
         start = time.perf_counter()
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         try:
             if year is None:
@@ -2119,7 +2093,6 @@ class CPIMonitorEngine:
             )
         except Exception as exc:
             logger.debug("Provenance recording failed: %s", exc)
-
 
 # ---------------------------------------------------------------------------
 # Public API

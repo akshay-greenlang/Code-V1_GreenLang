@@ -39,19 +39,14 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -63,7 +58,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 class _PackStub:
     def __init__(self, component: str) -> None:
         self._component = component
@@ -73,7 +67,6 @@ class _PackStub:
             return {"component": self._component, "status": "not_available", "pack": "PACK-029"}
         return _stub
 
-
 def _try_import(component: str, module_path: str) -> Any:
     try:
         return importlib.import_module(module_path)
@@ -81,11 +74,9 @@ def _try_import(component: str, module_path: str) -> Any:
         logger.debug("PACK-029 component '%s' not available, using stub", component)
         return _PackStub(component)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class TargetScope(str, Enum):
     SCOPE_1 = "scope_1"
@@ -94,11 +85,9 @@ class TargetScope(str, Enum):
     SCOPE_3 = "scope_3"
     ALL_SCOPES = "all_scopes"
 
-
 class TargetType(str, Enum):
     ABSOLUTE = "absolute"
     INTENSITY = "intensity"
-
 
 class TargetStatus(str, Enum):
     ON_TRACK = "on_track"
@@ -107,18 +96,15 @@ class TargetStatus(str, Enum):
     ACHIEVED = "achieved"
     NOT_STARTED = "not_started"
 
-
 class VarianceDirection(str, Enum):
     FAVORABLE = "favorable"
     UNFAVORABLE = "unfavorable"
     NEUTRAL = "neutral"
 
-
 class RAGStatus(str, Enum):
     GREEN = "green"
     AMBER = "amber"
     RED = "red"
-
 
 class ImportStatus(str, Enum):
     SUCCESS = "success"
@@ -126,7 +112,6 @@ class ImportStatus(str, Enum):
     FAILED = "failed"
     STALE = "stale"
     CACHED = "cached"
-
 
 # ---------------------------------------------------------------------------
 # Component Registry
@@ -160,11 +145,9 @@ PACK029_COMPONENTS: Dict[str, Dict[str, str]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class PACK029IntegrationConfig(BaseModel):
     pack_id: str = Field(default="PACK-030")
@@ -181,7 +164,6 @@ class PACK029IntegrationConfig(BaseModel):
     retry_attempts: int = Field(default=3, ge=1, le=10)
     retry_delay_seconds: float = Field(default=1.0)
 
-
 class InterimTarget(BaseModel):
     """Interim target milestone from PACK-029."""
     target_id: str = Field(default_factory=_new_uuid)
@@ -197,7 +179,6 @@ class InterimTarget(BaseModel):
     pathway: str = Field(default="aca_15c")
     status: TargetStatus = Field(default=TargetStatus.NOT_STARTED)
 
-
 class TargetPortfolio(BaseModel):
     """Portfolio of all interim targets from PACK-029."""
     portfolio_id: str = Field(default_factory=_new_uuid)
@@ -209,8 +190,7 @@ class TargetPortfolio(BaseModel):
     net_zero_year: int = Field(default=2050)
     overall_status: TargetStatus = Field(default=TargetStatus.NOT_STARTED)
     provenance_hash: str = Field(default="")
-    fetched_at: datetime = Field(default_factory=_utcnow)
-
+    fetched_at: datetime = Field(default_factory=utcnow)
 
 class ProgressRecord(BaseModel):
     """Progress monitoring record from PACK-029."""
@@ -228,7 +208,6 @@ class ProgressRecord(BaseModel):
     on_track_for_net_zero: bool = Field(default=True)
     quarterly_data: Dict[str, float] = Field(default_factory=dict)
 
-
 class ProgressSummary(BaseModel):
     """Progress monitoring summary from PACK-029."""
     summary_id: str = Field(default_factory=_new_uuid)
@@ -245,8 +224,7 @@ class ProgressSummary(BaseModel):
     cumulative_reduction_pct: float = Field(default=0.0)
     linear_trajectory_gap_pct: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-    fetched_at: datetime = Field(default_factory=_utcnow)
-
+    fetched_at: datetime = Field(default_factory=utcnow)
 
 class VarianceDetail(BaseModel):
     """Variance analysis detail from PACK-029."""
@@ -259,7 +237,6 @@ class VarianceDetail(BaseModel):
     root_cause: str = Field(default="")
     corrective_action: str = Field(default="")
     expected_recovery_year: int = Field(default=0)
-
 
 class VarianceReport(BaseModel):
     """Variance analysis report from PACK-029."""
@@ -274,8 +251,7 @@ class VarianceReport(BaseModel):
     top_contributors: List[Dict[str, Any]] = Field(default_factory=list)
     narrative_summary: str = Field(default="")
     provenance_hash: str = Field(default="")
-    fetched_at: datetime = Field(default_factory=_utcnow)
-
+    fetched_at: datetime = Field(default_factory=utcnow)
 
 class PACK029IntegrationResult(BaseModel):
     result_id: str = Field(default_factory=_new_uuid)
@@ -288,14 +264,12 @@ class PACK029IntegrationResult(BaseModel):
     frameworks_serviced: List[str] = Field(default_factory=list)
     validation_errors: List[str] = Field(default_factory=list)
     validation_warnings: List[str] = Field(default_factory=list)
-    fetched_at: datetime = Field(default_factory=_utcnow)
+    fetched_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # PACK029Integration
 # ---------------------------------------------------------------------------
-
 
 class PACK029Integration:
     """PACK-029 Interim Targets Pack integration for PACK-030.
@@ -372,6 +346,7 @@ class PACK029Integration:
                 attempt += 1
                 if attempt < self.config.retry_attempts:
                     import asyncio
+
                     await asyncio.sleep(self.config.retry_delay_seconds * attempt)
         return []
 

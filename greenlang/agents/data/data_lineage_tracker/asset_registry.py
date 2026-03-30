@@ -62,6 +62,7 @@ import time
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Set
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -133,7 +134,7 @@ except ImportError:
             Returns:
                 A stub object with a ``hash_value`` attribute.
             """
-            ts = _utcnow().isoformat()
+            ts = utcnow().isoformat()
             if metadata is None:
                 serialized = "null"
             else:
@@ -222,7 +223,6 @@ except ImportError:
     ) -> None:
         """No-op fallback when metrics module is not available."""
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -268,20 +268,9 @@ MAX_TAG_LENGTH: int = 64
 #: Maximum description length.
 MAX_DESCRIPTION_LENGTH: int = 4_096
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed for determinism.
-
-    Returns:
-        Current UTC datetime with microseconds set to zero.
-    """
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _build_sha256(data: Any) -> str:
     """Build a deterministic SHA-256 hash from any JSON-serializable value.
@@ -296,7 +285,6 @@ def _build_sha256(data: Any) -> str:
     """
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
 
 def _normalize_tags(tags: Optional[List[str]]) -> List[str]:
     """Normalize, deduplicate, and sort a list of tags.
@@ -323,7 +311,6 @@ def _normalize_tags(tags: Optional[List[str]]) -> List[str]:
             result.append(normalized)
     return sorted(result)
 
-
 def _validate_qualified_name(qualified_name: str) -> None:
     """Validate that a qualified name is non-empty and within length limits.
 
@@ -346,7 +333,6 @@ def _validate_qualified_name(qualified_name: str) -> None:
             f"{MAX_QUALIFIED_NAME_LENGTH} characters."
         )
 
-
 def _validate_tags_list(tags: List[str]) -> None:
     """Raise ValueError if any individual tag exceeds the maximum length.
 
@@ -363,11 +349,9 @@ def _validate_tags_list(tags: List[str]) -> None:
                 f"{MAX_TAG_LENGTH} characters."
             )
 
-
 # ---------------------------------------------------------------------------
 # AssetRegistryEngine
 # ---------------------------------------------------------------------------
-
 
 class AssetRegistryEngine:
     """Pure-Python engine for managing data assets as lineage graph nodes.
@@ -586,7 +570,7 @@ class AssetRegistryEngine:
 
         # -- Build asset record --
         asset_id = str(uuid.uuid4())
-        now_str = _utcnow().isoformat()
+        now_str = utcnow().isoformat()
 
         asset_record: dict = {
             "asset_id": asset_id,
@@ -898,7 +882,7 @@ class AssetRegistryEngine:
 
             # Bump version and update timestamp
             record["version"] = record.get("version", 1) + 1
-            record["updated_at"] = _utcnow().isoformat()
+            record["updated_at"] = utcnow().isoformat()
 
             # Compute new provenance hash
             data_hash = _build_sha256(
@@ -1003,7 +987,7 @@ class AssetRegistryEngine:
             else:
                 # Soft delete: set status to archived
                 record["status"] = "archived"
-                record["updated_at"] = _utcnow().isoformat()
+                record["updated_at"] = utcnow().isoformat()
                 record["version"] = record.get("version", 1) + 1
                 action = "asset_soft_deleted"
 
@@ -1807,7 +1791,6 @@ class AssetRegistryEngine:
                     result.append({"hash_value": str(entry)})
             return result
         return []
-
 
 # ---------------------------------------------------------------------------
 # Module exports

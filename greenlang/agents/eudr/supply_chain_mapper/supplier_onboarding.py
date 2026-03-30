@@ -91,20 +91,16 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Protocol, Sequence, Tuple
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import ConfigDict, Field, field_validator, model_validator
+
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ValidationSeverity
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -124,7 +120,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 def _generate_id(prefix: str) -> str:
     """Generate a prefixed unique identifier.
 
@@ -135,7 +130,6 @@ def _generate_id(prefix: str) -> str:
         Formatted identifier string like ``prefix-uuid4_hex[:12]``.
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -220,11 +214,9 @@ WIZARD_STEPS: Tuple[str, ...] = (
 #: Total number of required field groups across all steps.
 TOTAL_FIELD_GROUPS: int = sum(len(fields) for fields in STEP_FIELDS.values())
 
-
 # ===========================================================================
 # Enumerations
 # ===========================================================================
-
 
 class OnboardingStatus(str, Enum):
     """Status of a supplier onboarding session.
@@ -242,7 +234,6 @@ class OnboardingStatus(str, Enum):
     EXPIRED = "expired"
     CANCELLED = "cancelled"
 
-
 class ReminderType(str, Enum):
     """Type of automated reminder.
 
@@ -254,7 +245,6 @@ class ReminderType(str, Enum):
     EMAIL = "email"
     WEBHOOK = "webhook"
     IN_APP = "in_app"
-
 
 class ReminderStatus(str, Enum):
     """Delivery status of a reminder.
@@ -269,20 +259,6 @@ class ReminderStatus(str, Enum):
     SENT = "sent"
     FAILED = "failed"
     SKIPPED = "skipped"
-
-
-class ValidationSeverity(str, Enum):
-    """Severity level for validation findings.
-
-    ERROR: Blocks submission; must be fixed before proceeding.
-    WARNING: Does not block but flags potential compliance issue.
-    INFO: Informational feedback for the supplier.
-    """
-
-    ERROR = "error"
-    WARNING = "warning"
-    INFO = "info"
-
 
 class BulkImportStatus(str, Enum):
     """Status of a bulk import operation.
@@ -300,11 +276,9 @@ class BulkImportStatus(str, Enum):
     PARTIAL = "partial"
     FAILED = "failed"
 
-
 # ===========================================================================
 # Protocol Interfaces
 # ===========================================================================
-
 
 class GraphEngineProtocol(Protocol):
     """Protocol for SupplyChainGraphEngine integration.
@@ -336,7 +310,6 @@ class GraphEngineProtocol(Protocol):
         """Add an edge to the supply chain graph."""
         ...
 
-
 class GeolocationLinkerProtocol(Protocol):
     """Protocol for GeolocationLinker integration.
 
@@ -358,7 +331,6 @@ class GeolocationLinkerProtocol(Protocol):
     ) -> Dict[str, Any]:
         """Link a producer node to a plot with geolocation data."""
         ...
-
 
 class NotificationServiceProtocol(Protocol):
     """Protocol for email/webhook notification delivery.
@@ -385,7 +357,6 @@ class NotificationServiceProtocol(Protocol):
         """Send a webhook notification. Returns True on success."""
         ...
 
-
 class QuestionnaireProcessorProtocol(Protocol):
     """Protocol for AGENT-DATA-008 Supplier Questionnaire Processor.
 
@@ -401,13 +372,11 @@ class QuestionnaireProcessorProtocol(Protocol):
         """Process questionnaire responses. Returns normalized data."""
         ...
 
-
 # ===========================================================================
 # Pydantic Data Models
 # ===========================================================================
 
-
-class PlotData(BaseModel):
+class PlotData(GreenLangBase):
     """Production plot geolocation data captured during onboarding.
 
     Attributes:
@@ -486,8 +455,7 @@ class PlotData(BaseModel):
             )
         return v.lower().strip()
 
-
-class CertificationData(BaseModel):
+class CertificationData(GreenLangBase):
     """Certification record captured during onboarding.
 
     Attributes:
@@ -526,8 +494,7 @@ class CertificationData(BaseModel):
         description="Scope description of the certification",
     )
 
-
-class SubTierSupplierData(BaseModel):
+class SubTierSupplierData(GreenLangBase):
     """Sub-tier supplier information collected during onboarding.
 
     Attributes:
@@ -577,8 +544,7 @@ class SubTierSupplierData(BaseModel):
         """Normalize country code to uppercase."""
         return v.upper().strip()
 
-
-class OnboardingStepResult(BaseModel):
+class OnboardingStepResult(GreenLangBase):
     """Result of validating and submitting a single onboarding step.
 
     Attributes:
@@ -604,11 +570,10 @@ class OnboardingStepResult(BaseModel):
     )
     fields_completed: int = Field(default=0, ge=0)
     fields_total: int = Field(default=0, ge=0)
-    submitted_at: datetime = Field(default_factory=_utcnow)
+    submitted_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
 
-
-class ReminderRecord(BaseModel):
+class ReminderRecord(GreenLangBase):
     """Record of a scheduled or sent reminder.
 
     Attributes:
@@ -640,7 +605,7 @@ class ReminderRecord(BaseModel):
         description="Delivery status",
     )
     scheduled_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the reminder is scheduled",
     )
     sent_at: Optional[datetime] = Field(None, description="When actually sent")
@@ -649,8 +614,7 @@ class ReminderRecord(BaseModel):
     attempt_count: int = Field(default=0, ge=0, description="Delivery attempts")
     error_message: Optional[str] = Field(None, description="Error on failure")
 
-
-class OnboardingSession(BaseModel):
+class OnboardingSession(GreenLangBase):
     """Complete onboarding session state for a single supplier.
 
     Tracks all wizard steps, submitted data, completion percentage,
@@ -745,8 +709,8 @@ class OnboardingSession(BaseModel):
     created_edge_ids: List[str] = Field(
         default_factory=list, description="Graph edge IDs created"
     )
-    created_at: datetime = Field(default_factory=_utcnow)
-    updated_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
+    updated_at: datetime = Field(default_factory=utcnow)
     completed_at: Optional[datetime] = Field(None, description="Completion timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 session hash")
 
@@ -761,8 +725,7 @@ class OnboardingSession(BaseModel):
             )
         return v
 
-
-class BulkImportResult(BaseModel):
+class BulkImportResult(GreenLangBase):
     """Result of a bulk supplier import operation.
 
     Attributes:
@@ -799,8 +762,7 @@ class BulkImportResult(BaseModel):
     processing_time_ms: float = Field(default=0.0, ge=0.0)
     provenance_hash: str = Field(default="")
 
-
-class OnboardingMetrics(BaseModel):
+class OnboardingMetrics(GreenLangBase):
     """Aggregated metrics for onboarding operations.
 
     Attributes:
@@ -823,11 +785,9 @@ class OnboardingMetrics(BaseModel):
     reminders_sent: int = Field(default=0, ge=0)
     bulk_imports: int = Field(default=0, ge=0)
 
-
 # ===========================================================================
 # SupplierOnboardingEngine
 # ===========================================================================
-
 
 class SupplierOnboardingEngine:
     """Supplier onboarding workflow engine for EUDR compliance.
@@ -942,7 +902,7 @@ class SupplierOnboardingEngine:
             return False
         if session.token_expires_at is None:
             return False
-        return _utcnow() <= session.token_expires_at
+        return utcnow() <= session.token_expires_at
 
     def validate_token(self, token: str) -> Optional[OnboardingSession]:
         """Validate an onboarding token and return the associated session.
@@ -972,7 +932,7 @@ class SupplierOnboardingEngine:
                 "Token validation failed: token expired for session %s", session_id
             )
             session.status = OnboardingStatus.EXPIRED
-            session.updated_at = _utcnow()
+            session.updated_at = utcnow()
             return None
 
         if session.status in (OnboardingStatus.CANCELLED, OnboardingStatus.EXPIRED):
@@ -1046,7 +1006,7 @@ class SupplierOnboardingEngine:
             supplier_email=supplier_email.strip(),
             commodity=commodity.strip().lower(),
             language=language.lower().strip(),
-            token_expires_at=_utcnow() + timedelta(days=expiry_days),
+            token_expires_at=utcnow() + timedelta(days=expiry_days),
         )
 
         # Generate secure token
@@ -1119,7 +1079,7 @@ class SupplierOnboardingEngine:
             return None
 
         session.status = OnboardingStatus.CANCELLED
-        session.updated_at = _utcnow()
+        session.updated_at = utcnow()
 
         # Skip pending reminders
         for reminder in session.reminders:
@@ -1210,7 +1170,7 @@ class SupplierOnboardingEngine:
         # Check token validity
         if not self._is_token_valid(session):
             session.status = OnboardingStatus.EXPIRED
-            session.updated_at = _utcnow()
+            session.updated_at = utcnow()
             raise ValueError("Session token has expired")
 
         # Validate the step data
@@ -1236,13 +1196,13 @@ class SupplierOnboardingEngine:
         # Check if all steps are complete
         if set(session.steps_completed) == set(WIZARD_STEPS):
             session.status = OnboardingStatus.COMPLETED
-            session.completed_at = _utcnow()
+            session.completed_at = utcnow()
             # Skip remaining reminders
             for reminder in session.reminders:
                 if reminder.status == ReminderStatus.PENDING:
                     reminder.status = ReminderStatus.SKIPPED
 
-        session.updated_at = _utcnow()
+        session.updated_at = utcnow()
         session.provenance_hash = _compute_hash(session)
 
         elapsed_ms = (time.monotonic() - start_time) * 1000
@@ -1896,7 +1856,7 @@ class SupplierOnboardingEngine:
                 data.get("deforestation_free_declaration", False)
             ),
             "legality_declaration": bool(data.get("legality_declaration", False)),
-            "declaration_date": _utcnow().isoformat(),
+            "declaration_date": utcnow().isoformat(),
         }
 
     def _apply_sub_tier_suppliers(
@@ -1992,7 +1952,7 @@ class SupplierOnboardingEngine:
             List of processed ReminderRecord objects.
         """
         processed: List[ReminderRecord] = []
-        now = _utcnow()
+        now = utcnow()
 
         for session in self._sessions.values():
             if session.status in (
@@ -2035,7 +1995,7 @@ class SupplierOnboardingEngine:
         if self._notification_service is None:
             # No notification service -- mark as sent for dev/testing
             reminder.status = ReminderStatus.SENT
-            reminder.sent_at = _utcnow()
+            reminder.sent_at = utcnow()
             logger.info(
                 "Reminder %s marked as sent (no notification service): "
                 "session=%s, email=%s",
@@ -2058,7 +2018,7 @@ class SupplierOnboardingEngine:
 
             if success:
                 reminder.status = ReminderStatus.SENT
-                reminder.sent_at = _utcnow()
+                reminder.sent_at = utcnow()
             else:
                 reminder.status = ReminderStatus.FAILED
                 reminder.error_message = "Notification service returned False"
@@ -2411,7 +2371,7 @@ class SupplierOnboardingEngine:
                     e,
                 )
 
-        session.updated_at = _utcnow()
+        session.updated_at = utcnow()
         session.provenance_hash = _compute_hash(session)
 
         elapsed_ms = (time.monotonic() - start_time) * 1000
@@ -2581,7 +2541,6 @@ class SupplierOnboardingEngine:
     def session_count(self) -> int:
         """Total number of onboarding sessions."""
         return len(self._sessions)
-
 
 # ===========================================================================
 # Public API

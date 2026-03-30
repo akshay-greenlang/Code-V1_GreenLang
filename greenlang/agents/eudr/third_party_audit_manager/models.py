@@ -47,30 +47,21 @@ from datetime import date, datetime, timezone
 from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import GreenLangBase, utcnow
 
 from pydantic import (
-    BaseModel,
-    ConfigDict,
     Field,
     field_validator,
     model_validator,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Return a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -122,11 +113,9 @@ EU_MEMBER_STATES: List[str] = [
     "PL", "PT", "RO", "SK", "SI", "ES", "SE",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Enumerations (7)
 # ---------------------------------------------------------------------------
-
 
 class AuditStatus(str, Enum):
     """Audit lifecycle status.
@@ -166,7 +155,6 @@ class AuditStatus(str, Enum):
     CANCELLED = "cancelled"
     """Audit cancelled (rescheduled or no longer required)."""
 
-
 class AuditScope(str, Enum):
     """Audit scope classification.
 
@@ -188,7 +176,6 @@ class AuditScope(str, Enum):
     UNSCHEDULED = "unscheduled"
     """Event-triggered audit (deforestation alert, cert suspension)."""
 
-
 class AuditModality(str, Enum):
     """Audit execution modality.
 
@@ -208,7 +195,6 @@ class AuditModality(str, Enum):
 
     UNANNOUNCED = "unannounced"
     """Unannounced on-site audit without advance notice."""
-
 
 class NCSeverity(str, Enum):
     """Non-conformance severity classification.
@@ -234,7 +220,6 @@ class NCSeverity(str, Enum):
     OBSERVATION = "observation"
     """Not an NC; opportunity for improvement (OFI).
     No corrective action required; tracked for trend analysis."""
-
 
 class CARStatus(str, Enum):
     """Corrective Action Request lifecycle status.
@@ -279,7 +264,6 @@ class CARStatus(str, Enum):
     ESCALATED = "escalated"
     """Escalated to higher management or authority."""
 
-
 class CertificationScheme(str, Enum):
     """Major certification schemes for EUDR compliance verification.
 
@@ -302,7 +286,6 @@ class CertificationScheme(str, Enum):
 
     ISCC = "iscc"
     """International Sustainability and Carbon Certification; annual."""
-
 
 class AuthorityInteractionType(str, Enum):
     """EU Member State competent authority interaction types.
@@ -332,13 +315,11 @@ class AuthorityInteractionType(str, Enum):
     INFORMATION_REQUEST = "information_request"
     """Article 21: Request for self-disclosure information."""
 
-
 # ---------------------------------------------------------------------------
 # Core Models (10)
 # ---------------------------------------------------------------------------
 
-
-class Audit(BaseModel):
+class Audit(GreenLangBase):
     """Core audit record for third-party EUDR compliance verification.
 
     Represents a single audit lifecycle from planning through execution,
@@ -496,11 +477,11 @@ class Audit(BaseModel):
         description="SHA-256 hash for audit trail",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record creation timestamp (UTC)",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record last update timestamp (UTC)",
     )
 
@@ -510,8 +491,7 @@ class Audit(BaseModel):
         """Ensure country_code is uppercase."""
         return v.upper()
 
-
-class Auditor(BaseModel):
+class Auditor(GreenLangBase):
     """Auditor profile with ISO/IEC 17065 and 17021-1 competence tracking.
 
     Maintains comprehensive auditor qualification data including
@@ -648,16 +628,15 @@ class Auditor(BaseModel):
         description="SHA-256 hash for audit trail",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record creation timestamp (UTC)",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record last update timestamp (UTC)",
     )
 
-
-class AuditChecklist(BaseModel):
+class AuditChecklist(GreenLangBase):
     """Audit checklist with EUDR and scheme-specific criteria.
 
     Manages structured audit checklists for EUDR compliance assessment
@@ -736,16 +715,15 @@ class AuditChecklist(BaseModel):
         description="SHA-256 hash for audit trail",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record creation timestamp (UTC)",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record last update timestamp (UTC)",
     )
 
-
-class AuditEvidence(BaseModel):
+class AuditEvidence(GreenLangBase):
     """Audit evidence item with integrity verification.
 
     Represents a single piece of evidence collected during audit
@@ -849,12 +827,11 @@ class AuditEvidence(BaseModel):
         description="SHA-256 hash for audit trail",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record creation timestamp (UTC)",
     )
 
-
-class RootCauseAnalysis(BaseModel):
+class RootCauseAnalysis(GreenLangBase):
     """Root cause analysis output using 5-Whys or Ishikawa framework.
 
     Structured RCA supporting both the 5-Whys sequential questioning
@@ -935,12 +912,11 @@ class RootCauseAnalysis(BaseModel):
         description="SHA-256 hash for audit trail",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record creation timestamp (UTC)",
     )
 
-
-class NonConformance(BaseModel):
+class NonConformance(GreenLangBase):
     """Non-conformance finding from audit execution.
 
     Represents a structured audit finding classified by severity
@@ -1055,7 +1031,7 @@ class NonConformance(BaseModel):
         description="SHA-256 hash for audit trail",
     )
     detected_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="NC detection timestamp (UTC)",
     )
     resolved_at: Optional[datetime] = Field(
@@ -1063,8 +1039,7 @@ class NonConformance(BaseModel):
         description="NC resolution timestamp (UTC)",
     )
 
-
-class CorrectiveActionRequest(BaseModel):
+class CorrectiveActionRequest(GreenLangBase):
     """Corrective Action Request (CAR) with full lifecycle management.
 
     Manages the complete CAR lifecycle from issuance through verified
@@ -1139,7 +1114,7 @@ class CorrectiveActionRequest(BaseModel):
         description="Auditor or authority who issued the CAR",
     )
     issued_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="CAR issuance timestamp",
     )
     acknowledged_at: Optional[datetime] = Field(
@@ -1197,8 +1172,7 @@ class CorrectiveActionRequest(BaseModel):
         description="SHA-256 hash for audit trail",
     )
 
-
-class CertificateRecord(BaseModel):
+class CertificateRecord(GreenLangBase):
     """Certification scheme certificate status record.
 
     Tracks certificate status for FSC, PEFC, RSPO, Rainforest Alliance,
@@ -1303,16 +1277,15 @@ class CertificateRecord(BaseModel):
         description="SHA-256 hash for audit trail",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record creation timestamp (UTC)",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record last update timestamp (UTC)",
     )
 
-
-class CompetentAuthorityInteraction(BaseModel):
+class CompetentAuthorityInteraction(GreenLangBase):
     """EU competent authority interaction record.
 
     Tracks all interactions with EU Member State competent authorities
@@ -1416,11 +1389,11 @@ class CompetentAuthorityInteraction(BaseModel):
         description="SHA-256 hash for audit trail",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record creation timestamp (UTC)",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record last update timestamp (UTC)",
     )
 
@@ -1430,8 +1403,7 @@ class CompetentAuthorityInteraction(BaseModel):
         """Ensure member_state is uppercase."""
         return v.upper()
 
-
-class AuditReport(BaseModel):
+class AuditReport(GreenLangBase):
     """ISO 19011:2018 compliant audit report.
 
     Structured audit report containing all required sections per
@@ -1563,7 +1535,7 @@ class AuditReport(BaseModel):
         description="Report amendment history",
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Report generation timestamp",
     )
     provenance_hash: Optional[str] = Field(
@@ -1571,13 +1543,11 @@ class AuditReport(BaseModel):
         description="SHA-256 hash for audit trail",
     )
 
-
 # ---------------------------------------------------------------------------
 # Request Models (7)
 # ---------------------------------------------------------------------------
 
-
-class ScheduleAuditRequest(BaseModel):
+class ScheduleAuditRequest(GreenLangBase):
     """Request to generate risk-based audit schedule for suppliers.
 
     Attributes:
@@ -1621,8 +1591,7 @@ class ScheduleAuditRequest(BaseModel):
         description="Client-provided request identifier",
     )
 
-
-class MatchAuditorRequest(BaseModel):
+class MatchAuditorRequest(GreenLangBase):
     """Request to match qualified auditors to an audit assignment.
 
     Attributes:
@@ -1680,8 +1649,7 @@ class MatchAuditorRequest(BaseModel):
         description="Client-provided request identifier",
     )
 
-
-class ClassifyNCRequest(BaseModel):
+class ClassifyNCRequest(GreenLangBase):
     """Request to classify a non-conformance finding.
 
     Attributes:
@@ -1729,8 +1697,7 @@ class ClassifyNCRequest(BaseModel):
         description="Client-provided request identifier",
     )
 
-
-class IssueCARRequest(BaseModel):
+class IssueCARRequest(GreenLangBase):
     """Request to issue a corrective action request.
 
     Attributes:
@@ -1776,8 +1743,7 @@ class IssueCARRequest(BaseModel):
         description="Client-provided request identifier",
     )
 
-
-class GenerateReportRequest(BaseModel):
+class GenerateReportRequest(GreenLangBase):
     """Request to generate an ISO 19011 compliant audit report.
 
     Attributes:
@@ -1816,8 +1782,7 @@ class GenerateReportRequest(BaseModel):
         description="Client-provided request identifier",
     )
 
-
-class LogAuthorityInteractionRequest(BaseModel):
+class LogAuthorityInteractionRequest(GreenLangBase):
     """Request to log a competent authority interaction.
 
     Attributes:
@@ -1871,8 +1836,7 @@ class LogAuthorityInteractionRequest(BaseModel):
         description="Client-provided request identifier",
     )
 
-
-class CalculateAnalyticsRequest(BaseModel):
+class CalculateAnalyticsRequest(GreenLangBase):
     """Request to calculate audit analytics and trends.
 
     Attributes:
@@ -1915,13 +1879,11 @@ class CalculateAnalyticsRequest(BaseModel):
         description="Client-provided request identifier",
     )
 
-
 # ---------------------------------------------------------------------------
 # Response Models (7)
 # ---------------------------------------------------------------------------
 
-
-class ScheduleAuditResponse(BaseModel):
+class ScheduleAuditResponse(GreenLangBase):
     """Response from audit scheduling engine.
 
     Attributes:
@@ -1972,8 +1934,7 @@ class ScheduleAuditResponse(BaseModel):
         description="Client-provided request identifier",
     )
 
-
-class MatchAuditorResponse(BaseModel):
+class MatchAuditorResponse(GreenLangBase):
     """Response from auditor matching engine.
 
     Attributes:
@@ -2014,8 +1975,7 @@ class MatchAuditorResponse(BaseModel):
         description="Client-provided request identifier",
     )
 
-
-class ClassifyNCResponse(BaseModel):
+class ClassifyNCResponse(GreenLangBase):
     """Response from non-conformance classification engine.
 
     Attributes:
@@ -2055,8 +2015,7 @@ class ClassifyNCResponse(BaseModel):
         description="Client-provided request identifier",
     )
 
-
-class IssueCARResponse(BaseModel):
+class IssueCARResponse(GreenLangBase):
     """Response from CAR issuance.
 
     Attributes:
@@ -2091,8 +2050,7 @@ class IssueCARResponse(BaseModel):
         description="Client-provided request identifier",
     )
 
-
-class GenerateReportResponse(BaseModel):
+class GenerateReportResponse(GreenLangBase):
     """Response from audit report generation.
 
     Attributes:
@@ -2134,8 +2092,7 @@ class GenerateReportResponse(BaseModel):
         description="Client-provided request identifier",
     )
 
-
-class LogAuthorityInteractionResponse(BaseModel):
+class LogAuthorityInteractionResponse(GreenLangBase):
     """Response from competent authority interaction logging.
 
     Attributes:
@@ -2170,8 +2127,7 @@ class LogAuthorityInteractionResponse(BaseModel):
         description="Client-provided request identifier",
     )
 
-
-class CalculateAnalyticsResponse(BaseModel):
+class CalculateAnalyticsResponse(GreenLangBase):
     """Response from audit analytics calculation.
 
     Attributes:

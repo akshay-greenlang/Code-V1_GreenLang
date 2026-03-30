@@ -86,25 +86,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -122,7 +116,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -131,7 +124,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -143,22 +135,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class InstrumentType(str, Enum):
     """Contractual instrument type for market-based Scope 2.
@@ -185,7 +173,6 @@ class InstrumentType(str, Enum):
     GREEN_TARIFF = "green_tariff"
     SUPPLIER_SPECIFIC = "supplier_specific"
 
-
 class Scope2Method(str, Enum):
     """Scope 2 calculation method.
 
@@ -194,7 +181,6 @@ class Scope2Method(str, Enum):
     """
     LOCATION_BASED = "location_based"
     MARKET_BASED = "market_based"
-
 
 class EnergyType(str, Enum):
     """Type of purchased energy for Scope 2.
@@ -208,7 +194,6 @@ class EnergyType(str, Enum):
     STEAM = "steam"
     HEAT = "heat"
     COOLING = "cooling"
-
 
 class InstrumentQualityTier(str, Enum):
     """GHG Protocol Scope 2 Guidance instrument quality hierarchy.
@@ -227,7 +212,6 @@ class InstrumentQualityTier(str, Enum):
     TIER_4 = "tier_4_supplier"
     TIER_5 = "tier_5_residual"
     TIER_6 = "tier_6_location"
-
 
 class ValidationIssueType(str, Enum):
     """Types of instrument validation issues.
@@ -248,7 +232,6 @@ class ValidationIssueType(str, Enum):
     EXPIRED = "expired"
     MISSING_EVIDENCE = "missing_evidence"
 
-
 class AllocationStatus(str, Enum):
     """Status of instrument allocation to a facility.
 
@@ -261,7 +244,6 @@ class AllocationStatus(str, Enum):
     PARTIALLY_ALLOCATED = "partially_allocated"
     UNALLOCATED = "unallocated"
     REJECTED = "rejected"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -309,11 +291,9 @@ THERMAL_FACTORS: Dict[str, Decimal] = {
     EnergyType.COOLING.value: Decimal("0.150"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class ContractualInstrument(BaseModel):
     """A contractual instrument for market-based Scope 2 accounting.
@@ -385,7 +365,6 @@ class ContractualInstrument(BaseModel):
         allocated = _decimal(data.get("allocated_mwh", 0))
         return volume - allocated
 
-
 class FacilityScope2Input(BaseModel):
     """Scope 2 input data for a single facility.
 
@@ -439,11 +418,9 @@ class FacilityScope2Input(BaseModel):
         default_factory=list, description="Assigned instrument IDs"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class InstrumentAllocation(BaseModel):
     """Record of instrument allocation to a facility.
@@ -482,7 +459,6 @@ class InstrumentAllocation(BaseModel):
         default=AllocationStatus.ALLOCATED, description="Status"
     )
     notes: str = Field(default="", description="Notes")
-
 
 class FacilityScope2Result(BaseModel):
     """Scope 2 results for a single facility (both methods).
@@ -538,7 +514,6 @@ class FacilityScope2Result(BaseModel):
         default=Decimal("0"), description="Market after boundary"
     )
 
-
 class Scope2LocationResult(BaseModel):
     """Aggregated location-based Scope 2 result.
 
@@ -560,7 +535,6 @@ class Scope2LocationResult(BaseModel):
     by_country: Dict[str, Decimal] = Field(
         default_factory=dict, description="By country"
     )
-
 
 class Scope2MarketResult(BaseModel):
     """Aggregated market-based Scope 2 result.
@@ -596,7 +570,6 @@ class Scope2MarketResult(BaseModel):
         default=Decimal("0"), description="RE coverage %"
     )
 
-
 class DualReportReconciliation(BaseModel):
     """Reconciliation of location-based and market-based Scope 2 results.
 
@@ -625,7 +598,6 @@ class DualReportReconciliation(BaseModel):
         default=Decimal("0"), description="RE instruments impact"
     )
 
-
 class ValidationIssue(BaseModel):
     """A validation issue with a contractual instrument.
 
@@ -643,7 +615,6 @@ class ValidationIssue(BaseModel):
     description: str = Field(default="", description="Description")
     severity: str = Field(default="medium", description="Severity")
     recommendation: str = Field(default="", description="Recommendation")
-
 
 class Scope2ConsolidationResult(BaseModel):
     """Complete Scope 2 consolidation result.
@@ -688,13 +659,12 @@ class Scope2ConsolidationResult(BaseModel):
     reporting_year: int = Field(default=2024, description="Reporting year")
     warnings: List[str] = Field(default_factory=list, description="Warnings")
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp"
+        default_factory=utcnow, description="Timestamp"
     )
     processing_time_ms: Decimal = Field(
         default=Decimal("0"), description="Processing time (ms)"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 # ---------------------------------------------------------------------------
 # Model Rebuild (resolve forward references from __future__ annotations)
@@ -710,11 +680,9 @@ DualReportReconciliation.model_rebuild()
 ValidationIssue.model_rebuild()
 Scope2ConsolidationResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class Scope2ConsolidationEngine:
     """Scope 2 consolidation engine with dual reporting.

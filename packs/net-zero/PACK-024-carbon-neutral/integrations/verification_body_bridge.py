@@ -48,23 +48,18 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -76,18 +71,15 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class AssuranceLevel(str, Enum):
     """Assurance levels for verification."""
 
     LIMITED = "limited"
     REASONABLE = "reasonable"
-
 
 class OpinionType(str, Enum):
     """Verification opinion types."""
@@ -97,7 +89,6 @@ class OpinionType(str, Enum):
     ADVERSE = "adverse"
     DISCLAIMER = "disclaimer"
 
-
 class FindingSeverity(str, Enum):
     """Verification finding severity."""
 
@@ -105,7 +96,6 @@ class FindingSeverity(str, Enum):
     MINOR_NONCONFORMITY = "minor_nonconformity"
     OBSERVATION = "observation"
     OPPORTUNITY_FOR_IMPROVEMENT = "opportunity_for_improvement"
-
 
 class VerificationScope(str, Enum):
     """Verification scope areas."""
@@ -119,7 +109,6 @@ class VerificationScope(str, Enum):
     CLAIM_VALIDITY = "claim_validity"
     PAS_2060_COMPLIANCE = "pas_2060_compliance"
 
-
 class EngagementStatus(str, Enum):
     """Verification engagement status."""
 
@@ -128,7 +117,6 @@ class EngagementStatus(str, Enum):
     REPORTING = "reporting"
     COMPLETED = "completed"
     CANCELLED = "cancelled"
-
 
 # ---------------------------------------------------------------------------
 # Verification Body Reference Data
@@ -185,11 +173,9 @@ PAS_2060_VERIFICATION_CHECKLIST = [
     "Prior-period declarations (if renewal) reviewed",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class VerificationBodyBridgeConfig(BaseModel):
     """Configuration for the Verification Body Bridge."""
@@ -199,7 +185,6 @@ class VerificationBodyBridgeConfig(BaseModel):
     preferred_body: str = Field(default="")
     assurance_level: str = Field(default="limited")
     auto_package_assembly: bool = Field(default=True)
-
 
 class VerificationFinding(BaseModel):
     """Individual verification finding."""
@@ -214,7 +199,6 @@ class VerificationFinding(BaseModel):
     resolution_date: Optional[str] = Field(default=None)
     resolution_evidence: str = Field(default="")
 
-
 class EvidencePackage(BaseModel):
     """Verification evidence package."""
 
@@ -225,7 +209,6 @@ class EvidencePackage(BaseModel):
     completeness_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     ready_for_verification: bool = Field(default=False)
     provenance_hash: str = Field(default="")
-
 
 class VerificationEngagement(BaseModel):
     """Verification engagement record."""
@@ -243,7 +226,6 @@ class VerificationEngagement(BaseModel):
     open_findings: int = Field(default=0)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class VerificationOpinion(BaseModel):
     """Verification opinion result."""
@@ -266,11 +248,9 @@ class VerificationOpinion(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # CarbonNeutralVerificationBodyBridge
 # ---------------------------------------------------------------------------
-
 
 class CarbonNeutralVerificationBodyBridge:
     """Bridge to verification bodies for PAS 2060 carbon neutrality.
@@ -415,7 +395,7 @@ class CarbonNeutralVerificationBodyBridge:
             Updated VerificationFinding.
         """
         finding.resolved = True
-        finding.resolution_date = _utcnow().isoformat()
+        finding.resolution_date = utcnow().isoformat()
         finding.resolution_evidence = resolution_evidence
         return finding
 

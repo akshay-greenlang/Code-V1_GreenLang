@@ -38,25 +38,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -69,11 +63,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class RecalculationStatus(str, Enum):
     """Base year recalculation status."""
@@ -84,11 +76,9 @@ class RecalculationStatus(str, Enum):
     COMPLETED = "completed"
     NOT_SIGNIFICANT = "not_significant"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class Pack045Config(BaseModel):
     """Configuration for PACK-045 bridge."""
@@ -98,7 +88,6 @@ class Pack045Config(BaseModel):
     )
     timeout_s: float = Field(60.0, ge=5.0)
     cache_ttl_s: float = Field(3600.0)
-
 
 class BaseYearRequest(BaseModel):
     """Request for base year data from PACK-045."""
@@ -119,7 +108,6 @@ class BaseYearRequest(BaseModel):
         True, description="Include recalculation-adjusted time series"
     )
 
-
 class BaseYearEmissions(BaseModel):
     """Base year emission totals from PACK-045."""
 
@@ -133,7 +121,6 @@ class BaseYearEmissions(BaseModel):
     adjustment_date: Optional[str] = None
     original_total_tco2e: float = 0.0
     provenance_hash: str = ""
-
 
 class BaseYearDenominators(BaseModel):
     """Base year denominator (activity) data from PACK-045."""
@@ -149,7 +136,6 @@ class BaseYearDenominators(BaseModel):
     )
     provenance_hash: str = ""
 
-
 class TimeSeriesPoint(BaseModel):
     """A single point in the adjusted time series."""
 
@@ -160,7 +146,6 @@ class TimeSeriesPoint(BaseModel):
     is_base_year: bool = False
     is_adjusted: bool = False
 
-
 class AdjustedTimeSeries(BaseModel):
     """Recalculation-adjusted historical time series."""
 
@@ -169,7 +154,6 @@ class AdjustedTimeSeries(BaseModel):
     points: List[TimeSeriesPoint] = Field(default_factory=list)
     base_year: str = ""
     provenance_hash: str = ""
-
 
 class RecalculationFlag(BaseModel):
     """Recalculation flag from PACK-045."""
@@ -183,7 +167,6 @@ class RecalculationFlag(BaseModel):
     recalculation_status: str = RecalculationStatus.NO_RECALCULATION.value
     recalculated_at: Optional[str] = None
     provenance_hash: str = ""
-
 
 class BaseYearResponse(BaseModel):
     """Complete response from PACK-045."""
@@ -200,11 +183,9 @@ class BaseYearResponse(BaseModel):
     duration_ms: float = 0.0
     warnings: List[str] = Field(default_factory=list)
 
-
 # ---------------------------------------------------------------------------
 # Bridge Implementation
 # ---------------------------------------------------------------------------
-
 
 class Pack045Bridge:
     """

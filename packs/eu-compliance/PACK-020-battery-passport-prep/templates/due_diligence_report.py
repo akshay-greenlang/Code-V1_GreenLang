@@ -66,16 +66,9 @@ _RISK_CATEGORIES: List[str] = [
     "indigenous_rights",
 ]
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -87,7 +80,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 class DueDiligenceReportTemplate:
     """
@@ -102,6 +94,8 @@ class DueDiligenceReportTemplate:
         - Regulation (EU) 2023/1542, Article 48
         - OECD Due Diligence Guidance for Responsible Supply Chains of Minerals
           from Conflict-Affected and High-Risk Areas (3rd Edition)
+
+from greenlang.schemas import utcnow
         - Regulation (EU) 2017/821 (Conflict Minerals Regulation)
         - UN Guiding Principles on Business and Human Rights
 
@@ -123,7 +117,7 @@ class DueDiligenceReportTemplate:
 
     def render(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render full report as structured dict."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result: Dict[str, Any] = {
             "report_id": _new_uuid(),
             "generated_at": self.generated_at.isoformat(),
@@ -162,7 +156,7 @@ class DueDiligenceReportTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render due diligence report as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [
             self._md_header(data),
             self._md_supplier_assessment(data),
@@ -178,7 +172,7 @@ class DueDiligenceReportTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render due diligence report as HTML."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         body = "\n".join([
             self._html_header(data),
@@ -199,7 +193,7 @@ class DueDiligenceReportTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render due diligence report as JSON."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result: Dict[str, Any] = {
             "template": "due_diligence_report",
             "regulation_reference": "EU Battery Regulation 2023/1542, Art 48",

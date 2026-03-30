@@ -33,6 +33,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.blockchain_integration.api.dependencies import (
     AuthUser,
@@ -71,22 +72,14 @@ router = APIRouter(tags=["Anchoring"])
 
 _anchor_store: Dict[str, Dict] = {}
 
-
 def _get_anchor_store() -> Dict[str, Dict]:
     """Return the anchor record store singleton."""
     return _anchor_store
-
 
 def _compute_provenance_hash(data: dict) -> str:
     """Compute SHA-256 hash for provenance tracking."""
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _create_anchor_record(
     req: AnchorCreateRequest,
@@ -104,7 +97,7 @@ def _create_anchor_record(
         Dict representing the anchor record.
     """
     anchor_id = str(uuid.uuid4())
-    now = _utcnow()
+    now = utcnow()
 
     # Simulate tx_hash generation (deterministic from anchor data)
     tx_data = f"{anchor_id}:{req.record_id}:{req.data_hash}"
@@ -141,11 +134,9 @@ def _create_anchor_record(
         ),
     }
 
-
 # ---------------------------------------------------------------------------
 # POST /anchors
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/anchors",
@@ -211,11 +202,9 @@ async def create_anchor(
             detail="Failed to create anchor record",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /anchors/batch
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/anchors/batch",
@@ -297,11 +286,9 @@ async def batch_anchor(
             detail="Failed to batch anchor records",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /anchors/{anchor_id}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/anchors/{anchor_id}",
@@ -361,11 +348,9 @@ async def get_anchor(
             detail="Failed to retrieve anchor",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /anchors/status/{tx_hash}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/anchors/status/{tx_hash}",
@@ -431,11 +416,9 @@ async def get_anchor_by_tx_hash(
             detail="Failed to retrieve anchor by transaction hash",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /anchors/history/{record_id}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/anchors/history/{record_id}",
@@ -517,7 +500,6 @@ async def get_anchor_history(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve anchor history",
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

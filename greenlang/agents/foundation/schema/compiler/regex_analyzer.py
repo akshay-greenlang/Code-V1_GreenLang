@@ -55,13 +55,14 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, FrozenSet, List, Optional, Set, Tuple, Union
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.foundation.schema.constants import (
     MAX_REGEX_COMPLEXITY_SCORE,
     MAX_REGEX_LENGTH,
     REGEX_TIMEOUT_MS,
 )
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -88,7 +89,7 @@ class VulnerabilityType(str, Enum):
 # ANALYSIS RESULT MODEL
 # ============================================================================
 
-class RegexAnalysisResult(BaseModel):
+class RegexAnalysisResult(GreenLangBase):
     """
     Result of regex safety analysis.
 

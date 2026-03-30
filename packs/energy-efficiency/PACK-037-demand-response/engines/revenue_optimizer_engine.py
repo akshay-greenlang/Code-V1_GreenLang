@@ -73,25 +73,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -109,7 +103,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -118,7 +111,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -130,22 +122,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class RevenueStreamType(str, Enum):
     """Revenue stream type classification.
@@ -161,7 +149,6 @@ class RevenueStreamType(str, Enum):
     ANCILLARY_PAYMENT = "ancillary_payment"
     DEMAND_CHARGE_SAVINGS = "demand_charge_savings"
     PRICE_ARBITRAGE = "price_arbitrage"
-
 
 class CostCategory(str, Enum):
     """Cost category classification.
@@ -182,7 +169,6 @@ class CostCategory(str, Enum):
     ANNUAL_OPEX = "annual_opex"
     MAINTENANCE = "maintenance"
 
-
 class ScenarioParameter(str, Enum):
     """Parameter to vary in what-if analysis.
 
@@ -202,7 +188,6 @@ class ScenarioParameter(str, Enum):
     CURTAILMENT_KW = "curtailment_kw"
     PENALTY_RATE = "penalty_rate"
 
-
 class OptimisationObjective(str, Enum):
     """Portfolio optimisation objective.
 
@@ -216,7 +201,6 @@ class OptimisationObjective(str, Enum):
     MINIMIZE_PAYBACK = "minimize_payback"
     MAXIMIZE_NPV = "maximize_npv"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -228,11 +212,9 @@ DEFAULT_COST_ESCALATION: Decimal = Decimal("0.025")
 MAX_IRR_ITERATIONS: int = 100
 IRR_TOLERANCE: Decimal = Decimal("0.0001")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class RevenueStream(BaseModel):
     """Single revenue stream definition.
@@ -285,7 +267,6 @@ class RevenueStream(BaseModel):
                 )
         return v
 
-
 class CostItem(BaseModel):
     """Single cost item.
 
@@ -312,7 +293,6 @@ class CostItem(BaseModel):
         default=DEFAULT_COST_ESCALATION, ge=0, le=Decimal("0.15"),
         description="Annual escalation rate"
     )
-
 
 class ProgrammeFinancials(BaseModel):
     """Financial parameters for a DR programme.
@@ -372,11 +352,9 @@ class ProgrammeFinancials(BaseModel):
         description="Avg event duration (hours)"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class AnnualCashFlow(BaseModel):
     """Year-by-year cash flow projection.
@@ -401,7 +379,6 @@ class AnnualCashFlow(BaseModel):
     cumulative_net: Decimal = Field(default=Decimal("0"))
     discounted_net: Decimal = Field(default=Decimal("0"))
     cumulative_discounted: Decimal = Field(default=Decimal("0"))
-
 
 class RevenueForecast(BaseModel):
     """Annual revenue forecast.
@@ -436,9 +413,8 @@ class RevenueForecast(BaseModel):
     cash_flows: List[AnnualCashFlow] = Field(default_factory=list)
     revenue_by_stream: Dict[str, Decimal] = Field(default_factory=dict)
     is_profitable: bool = Field(default=False)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class WhatIfScenario(BaseModel):
     """What-if scenario analysis result.
@@ -472,7 +448,6 @@ class WhatIfScenario(BaseModel):
     scenario_payback_years: Decimal = Field(default=Decimal("0"))
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 class RevenueOptimization(BaseModel):
     """Portfolio revenue optimisation result.
 
@@ -500,14 +475,12 @@ class RevenueOptimization(BaseModel):
     portfolio_roi_pct: Decimal = Field(default=Decimal("0"))
     portfolio_payback_years: Decimal = Field(default=Decimal("0"))
     recommendations: List[str] = Field(default_factory=list)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class RevenueOptimizerEngine:
     """Revenue optimisation engine for demand response programmes.

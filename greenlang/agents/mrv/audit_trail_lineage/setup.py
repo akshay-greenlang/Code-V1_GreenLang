@@ -73,7 +73,8 @@ from decimal import Decimal
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
-from pydantic import BaseModel, Field, validator
+from pydantic import Field, validator
+from greenlang.schemas import GreenLangBase
 
 # Thread-safe singleton lock
 _service_lock = threading.RLock()
@@ -87,7 +88,7 @@ logger = logging.getLogger(__name__)
 # ============================================================================
 
 
-class RecordEventRequest(BaseModel):
+class RecordEventRequest(GreenLangBase):
     """Request model for recording a single audit event."""
 
     event_type: str = Field(
@@ -150,7 +151,7 @@ class RecordEventRequest(BaseModel):
         return v
 
 
-class RecordBatchRequest(BaseModel):
+class RecordBatchRequest(GreenLangBase):
     """Request model for recording a batch of audit events."""
 
     events: List[Dict[str, Any]] = Field(
@@ -160,7 +161,7 @@ class RecordBatchRequest(BaseModel):
     tenant_id: Optional[str] = Field(None, description="Tenant identifier")
 
 
-class GetEventsRequest(BaseModel):
+class GetEventsRequest(GreenLangBase):
     """Request model for querying audit events."""
 
     organization_id: str = Field(..., description="Organization identifier")
@@ -175,7 +176,7 @@ class GetEventsRequest(BaseModel):
     offset: int = Field(default=0, ge=0)
 
 
-class VerifyChainRequest(BaseModel):
+class VerifyChainRequest(GreenLangBase):
     """Request model for chain integrity verification."""
 
     organization_id: str = Field(..., description="Organization identifier")
@@ -184,7 +185,7 @@ class VerifyChainRequest(BaseModel):
     end_position: Optional[int] = Field(None, ge=0)
 
 
-class AddLineageNodeRequest(BaseModel):
+class AddLineageNodeRequest(GreenLangBase):
     """Request model for adding a lineage graph node."""
 
     node_id: str = Field(..., description="Unique node identifier")
@@ -202,7 +203,7 @@ class AddLineageNodeRequest(BaseModel):
     tenant_id: Optional[str] = Field(None, description="Tenant identifier")
 
 
-class AddLineageEdgeRequest(BaseModel):
+class AddLineageEdgeRequest(GreenLangBase):
     """Request model for adding a lineage graph edge."""
 
     source_node_id: str = Field(..., description="Source node identifier")
@@ -217,7 +218,7 @@ class AddLineageEdgeRequest(BaseModel):
     tenant_id: Optional[str] = Field(None, description="Tenant identifier")
 
 
-class GetLineageGraphRequest(BaseModel):
+class GetLineageGraphRequest(GreenLangBase):
     """Request model for retrieving a lineage graph."""
 
     organization_id: str = Field(..., description="Organization identifier")
@@ -226,7 +227,7 @@ class GetLineageGraphRequest(BaseModel):
     max_depth: Optional[int] = Field(None, ge=1, le=500)
 
 
-class TraceLineageRequest(BaseModel):
+class TraceLineageRequest(GreenLangBase):
     """Request model for tracing lineage from a node."""
 
     node_id: str = Field(..., description="Starting node identifier")
@@ -244,7 +245,7 @@ class TraceLineageRequest(BaseModel):
         return v
 
 
-class CreateEvidencePackageRequest(BaseModel):
+class CreateEvidencePackageRequest(GreenLangBase):
     """Request model for creating an evidence package."""
 
     organization_id: str = Field(..., description="Organization identifier")
@@ -268,7 +269,7 @@ class CreateEvidencePackageRequest(BaseModel):
         return v
 
 
-class TraceComplianceRequest(BaseModel):
+class TraceComplianceRequest(GreenLangBase):
     """Request model for compliance traceability."""
 
     organization_id: str = Field(..., description="Organization identifier")
@@ -279,7 +280,7 @@ class TraceComplianceRequest(BaseModel):
     tenant_id: Optional[str] = Field(None, description="Tenant identifier")
 
 
-class DetectChangeRequest(BaseModel):
+class DetectChangeRequest(GreenLangBase):
     """Request model for change detection."""
 
     calculation_id: str = Field(
@@ -296,7 +297,7 @@ class DetectChangeRequest(BaseModel):
     tenant_id: Optional[str] = Field(None, description="Tenant identifier")
 
 
-class ExecutePipelineRequest(BaseModel):
+class ExecutePipelineRequest(GreenLangBase):
     """Request model for pipeline execution."""
 
     organization_id: str = Field(..., description="Organization identifier")
@@ -310,7 +311,7 @@ class ExecutePipelineRequest(BaseModel):
     tenant_id: Optional[str] = Field(None, description="Tenant identifier")
 
 
-class ExecutePipelineBatchRequest(BaseModel):
+class ExecutePipelineBatchRequest(GreenLangBase):
     """Request model for batch pipeline execution."""
 
     requests: List[ExecutePipelineRequest] = Field(
@@ -320,7 +321,7 @@ class ExecutePipelineBatchRequest(BaseModel):
     tenant_id: Optional[str] = Field(None, description="Tenant identifier")
 
 
-class ComplianceCheckRequest(BaseModel):
+class ComplianceCheckRequest(GreenLangBase):
     """Request model for multi-framework compliance checking."""
 
     organization_id: str = Field(..., description="Organization identifier")
@@ -339,7 +340,7 @@ class ComplianceCheckRequest(BaseModel):
 # ============================================================================
 
 
-class RecordEventResponse(BaseModel):
+class RecordEventResponse(GreenLangBase):
     """Response model for recording a single audit event."""
 
     success: bool = Field(..., description="Success flag")
@@ -353,7 +354,7 @@ class RecordEventResponse(BaseModel):
     error: Optional[str] = Field(None, description="Error message if failed")
 
 
-class RecordBatchResponse(BaseModel):
+class RecordBatchResponse(GreenLangBase):
     """Response model for batch event recording."""
 
     success: bool = Field(..., description="Success flag")
@@ -363,7 +364,7 @@ class RecordBatchResponse(BaseModel):
     processing_time_ms: float = Field(..., description="Processing time in ms")
 
 
-class GetEventsResponse(BaseModel):
+class GetEventsResponse(GreenLangBase):
     """Response model for event queries."""
 
     success: bool = Field(..., description="Success flag")
@@ -375,7 +376,7 @@ class GetEventsResponse(BaseModel):
     error: Optional[str] = Field(None, description="Error message if failed")
 
 
-class VerifyChainResponse(BaseModel):
+class VerifyChainResponse(GreenLangBase):
     """Response model for chain verification."""
 
     success: bool = Field(..., description="Success flag")
@@ -389,7 +390,7 @@ class VerifyChainResponse(BaseModel):
     verification_time_ms: float = Field(..., description="Verification time in ms")
 
 
-class LineageResponse(BaseModel):
+class LineageResponse(GreenLangBase):
     """Response model for lineage graph operations."""
 
     success: bool = Field(..., description="Success flag")
@@ -400,7 +401,7 @@ class LineageResponse(BaseModel):
     error: Optional[str] = Field(None, description="Error message if failed")
 
 
-class EvidencePackageResponse(BaseModel):
+class EvidencePackageResponse(GreenLangBase):
     """Response model for evidence package operations."""
 
     success: bool = Field(..., description="Success flag")
@@ -414,7 +415,7 @@ class EvidencePackageResponse(BaseModel):
     error: Optional[str] = Field(None, description="Error message if failed")
 
 
-class ComplianceTraceResponse(BaseModel):
+class ComplianceTraceResponse(GreenLangBase):
     """Response model for compliance traceability."""
 
     success: bool = Field(..., description="Success flag")
@@ -425,7 +426,7 @@ class ComplianceTraceResponse(BaseModel):
     error: Optional[str] = Field(None, description="Error message if failed")
 
 
-class ChangeDetectionResponse(BaseModel):
+class ChangeDetectionResponse(GreenLangBase):
     """Response model for change detection."""
 
     success: bool = Field(..., description="Success flag")
@@ -440,7 +441,7 @@ class ChangeDetectionResponse(BaseModel):
     error: Optional[str] = Field(None, description="Error message if failed")
 
 
-class PipelineResponse(BaseModel):
+class PipelineResponse(GreenLangBase):
     """Response model for pipeline execution."""
 
     success: bool = Field(..., description="Success flag")
@@ -455,7 +456,7 @@ class PipelineResponse(BaseModel):
     error: Optional[str] = Field(None, description="Error message if failed")
 
 
-class PipelineBatchResponse(BaseModel):
+class PipelineBatchResponse(GreenLangBase):
     """Response model for batch pipeline execution."""
 
     success: bool = Field(..., description="Overall success flag")
@@ -467,7 +468,7 @@ class PipelineBatchResponse(BaseModel):
     processing_time_ms: float = Field(..., description="Total processing time")
 
 
-class ComplianceCheckResponse(BaseModel):
+class ComplianceCheckResponse(GreenLangBase):
     """Response model for multi-framework compliance checking."""
 
     success: bool = Field(..., description="Success flag")
@@ -483,7 +484,7 @@ class ComplianceCheckResponse(BaseModel):
     processing_time_ms: float = Field(..., description="Processing time")
 
 
-class AuditTrailSummaryResponse(BaseModel):
+class AuditTrailSummaryResponse(GreenLangBase):
     """Response model for audit trail summary."""
 
     success: bool = Field(..., description="Success flag")
@@ -502,7 +503,7 @@ class AuditTrailSummaryResponse(BaseModel):
     error: Optional[str] = Field(None)
 
 
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Response model for health check."""
 
     status: str = Field(..., description="Service status: healthy, degraded, unhealthy")

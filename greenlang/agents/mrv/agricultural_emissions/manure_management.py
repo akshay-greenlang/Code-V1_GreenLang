@@ -99,6 +99,7 @@ from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -156,15 +157,9 @@ except ImportError:
     _DB_AVAILABLE = False
     _DatabaseEngine = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -181,7 +176,6 @@ def _compute_hash(data: Any) -> str:
         serializable = data
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Decimal precision constants
@@ -215,7 +209,6 @@ EF4_DEFAULT = Decimal("0.01")
 #: IPCC 2006 Vol 4 Ch 10, Table 10.22 default = 0.0075 kg N2O-N/kg N leached
 EF5_DEFAULT = Decimal("0.0075")
 
-
 def _D(value: Any) -> Decimal:
     """Convert a value to Decimal with controlled precision.
 
@@ -235,7 +228,6 @@ def _D(value: Any) -> Decimal:
     except (InvalidOperation, ValueError) as exc:
         raise ValueError(f"Cannot convert {value!r} to Decimal") from exc
 
-
 def _safe_decimal(value: Any, default: Decimal = _ZERO) -> Decimal:
     """Safely convert a value to Decimal, returning default on failure.
 
@@ -253,7 +245,6 @@ def _safe_decimal(value: Any, default: Decimal = _ZERO) -> Decimal:
     except (InvalidOperation, ValueError, TypeError):
         return default
 
-
 def _quantize(value: Decimal) -> Decimal:
     """Quantize a Decimal to the standard 8-decimal-place precision.
 
@@ -264,7 +255,6 @@ def _quantize(value: Decimal) -> Decimal:
         Quantized Decimal.
     """
     return value.quantize(_PRECISION, rounding=ROUND_HALF_UP)
-
 
 # ===========================================================================
 # GWP Values (fallback when database module is not available)
@@ -293,11 +283,9 @@ GWP_VALUES: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ===========================================================================
 # Enumerations
 # ===========================================================================
-
 
 class AnimalType(str, Enum):
     """Livestock categories with IPCC manure parameters."""
@@ -323,7 +311,6 @@ class AnimalType(str, Enum):
     OSTRICH = "OSTRICH"
     SWINE_NURSERY = "SWINE_NURSERY"
 
-
 class AWMSType(str, Enum):
     """Animal Waste Management System types with IPCC MCF and EF3 values."""
 
@@ -343,14 +330,12 @@ class AWMSType(str, Enum):
     COMPOSTING_IN_VESSEL = "COMPOSTING_IN_VESSEL"
     COMPOSTING_STATIC_PILE = "COMPOSTING_STATIC_PILE"
 
-
 class TemperatureRange(str, Enum):
     """Temperature classification for MCF lookup."""
 
     COOL = "COOL"       # < 15 C annual mean
     TEMPERATE = "TEMPERATE"  # 15-25 C annual mean
     WARM = "WARM"       # > 25 C annual mean
-
 
 class CalculationStatus(str, Enum):
     """Result status codes."""
@@ -360,11 +345,9 @@ class CalculationStatus(str, Enum):
     ERROR = "ERROR"
     VALIDATION_ERROR = "VALIDATION_ERROR"
 
-
 # ===========================================================================
 # Trace Step Dataclass
 # ===========================================================================
-
 
 @dataclass
 class TraceStep:
@@ -396,7 +379,6 @@ class TraceStep:
             "output": self.output,
             "unit": self.unit,
         }
-
 
 # ===========================================================================
 # IPCC Default Parameters -- Volatile Solids (VS) by Animal Type
@@ -740,11 +722,9 @@ DEFAULT_AWMS_ALLOCATIONS: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ===========================================================================
 # ManureManagementEngine
 # ===========================================================================
-
 
 class ManureManagementEngine:
     """Core calculation engine for CH4 and N2O emissions from animal manure
@@ -791,7 +771,7 @@ class ManureManagementEngine:
         self._lock = threading.RLock()
         self._total_calculations: int = 0
         self._total_errors: int = 0
-        self._created_at = _utcnow()
+        self._created_at = utcnow()
 
         self._default_gwp_source: str = self._config.get(
             "default_gwp_source", "AR6",
@@ -1477,7 +1457,7 @@ class ManureManagementEngine:
                 },
                 "trace_steps": [s.to_dict() for s in trace_steps],
                 "processing_time_ms": round(elapsed_ms, 3),
-                "calculated_at": _utcnow().isoformat(),
+                "calculated_at": utcnow().isoformat(),
             }
             result["provenance_hash"] = _compute_hash(result)
 
@@ -1696,7 +1676,7 @@ class ManureManagementEngine:
                 },
                 "trace_steps": [s.to_dict() for s in trace_steps],
                 "processing_time_ms": round(elapsed_ms, 3),
-                "calculated_at": _utcnow().isoformat(),
+                "calculated_at": utcnow().isoformat(),
             }
             result["provenance_hash"] = _compute_hash(result)
 
@@ -2010,7 +1990,7 @@ class ManureManagementEngine:
                 },
                 "trace_steps": [s.to_dict() for s in trace_steps],
                 "processing_time_ms": round(elapsed_ms, 3),
-                "calculated_at": _utcnow().isoformat(),
+                "calculated_at": utcnow().isoformat(),
             }
             result["provenance_hash"] = _compute_hash(result)
 
@@ -2185,7 +2165,7 @@ class ManureManagementEngine:
                     "n2o_indirect": n2o_indirect_result,
                 },
                 "processing_time_ms": round(elapsed_ms, 3),
-                "calculated_at": _utcnow().isoformat(),
+                "calculated_at": utcnow().isoformat(),
             }
             result["provenance_hash"] = _compute_hash(result)
 
@@ -2342,7 +2322,7 @@ class ManureManagementEngine:
                     },
                 },
                 "processing_time_ms": round(elapsed_ms, 3),
-                "calculated_at": _utcnow().isoformat(),
+                "calculated_at": utcnow().isoformat(),
             }
 
             if errors_collected:
@@ -2506,7 +2486,7 @@ class ManureManagementEngine:
                     "total_co2e_tonnes": str(total_co2e_tonnes),
                 },
                 "processing_time_ms": round(elapsed_ms, 3),
-                "calculated_at": _utcnow().isoformat(),
+                "calculated_at": utcnow().isoformat(),
             }
             batch_result["provenance_hash"] = _compute_hash(batch_result)
 
@@ -2637,7 +2617,7 @@ class ManureManagementEngine:
             "status": CalculationStatus.VALIDATION_ERROR.value,
             "errors": errors,
             "processing_time_ms": round(elapsed_ms, 3),
-            "calculated_at": _utcnow().isoformat(),
+            "calculated_at": utcnow().isoformat(),
         }
         result["provenance_hash"] = _compute_hash(result)
 
@@ -2675,7 +2655,7 @@ class ManureManagementEngine:
             "error": str(exc),
             "error_type": type(exc).__name__,
             "processing_time_ms": round(elapsed_ms, 3),
-            "calculated_at": _utcnow().isoformat(),
+            "calculated_at": utcnow().isoformat(),
         }
         result["provenance_hash"] = _compute_hash(result)
 

@@ -22,7 +22,8 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 
 
 # =============================================================================
@@ -73,7 +74,7 @@ class HealthStatus(str, Enum):
 # =============================================================================
 
 
-class ErrorDetail(BaseModel):
+class ErrorDetail(GreenLangBase):
     """Detailed error information."""
     code: str = Field(..., description="GreenLang error code (GL-E-*)")
     message: str = Field(..., description="Human-readable error message")
@@ -81,7 +82,7 @@ class ErrorDetail(BaseModel):
     details: Optional[Dict[str, Any]] = Field(None, description="Additional error details")
 
 
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     """Standard error response format."""
     error: str = Field(..., description="Error type")
     message: str = Field(..., description="Error message")
@@ -113,7 +114,7 @@ class ErrorResponse(BaseModel):
 # =============================================================================
 
 
-class StepDefinitionRequest(BaseModel):
+class StepDefinitionRequest(GreenLangBase):
     """Step definition in a pipeline registration request."""
     id: str = Field(..., min_length=1, max_length=63, description="Unique step identifier")
     agent: str = Field(..., description="Agent ID (format: GL-CATEGORY-TYPE-NUMBER)")
@@ -127,7 +128,7 @@ class StepDefinitionRequest(BaseModel):
     model_config = {"populate_by_name": True}
 
 
-class PipelineSpecRequest(BaseModel):
+class PipelineSpecRequest(GreenLangBase):
     """Pipeline specification in a registration request."""
     parameters: Dict[str, Any] = Field(default_factory=dict, description="Pipeline parameters schema")
     steps: List[StepDefinitionRequest] = Field(..., min_length=1, description="Pipeline steps")
@@ -137,7 +138,7 @@ class PipelineSpecRequest(BaseModel):
     model_config = {"populate_by_name": True}
 
 
-class PipelineMetadataRequest(BaseModel):
+class PipelineMetadataRequest(GreenLangBase):
     """Pipeline metadata in a registration request."""
     name: str = Field(..., min_length=1, max_length=253, description="Pipeline name")
     namespace: str = Field(default="default", min_length=1, max_length=63, description="Namespace")
@@ -150,7 +151,7 @@ class PipelineMetadataRequest(BaseModel):
     tags: List[str] = Field(default_factory=list, description="Tags for categorization")
 
 
-class PipelineRegisterRequest(BaseModel):
+class PipelineRegisterRequest(GreenLangBase):
     """Request to register a new pipeline."""
     api_version: str = Field(default="greenlang/v1", alias="apiVersion", description="API version")
     kind: str = Field(default="Pipeline", description="Resource kind")
@@ -195,7 +196,7 @@ class PipelineRegisterRequest(BaseModel):
     }
 
 
-class PipelineResponse(BaseModel):
+class PipelineResponse(GreenLangBase):
     """Response for pipeline operations."""
     pipeline_id: str = Field(..., description="Unique pipeline identifier")
     name: str = Field(..., description="Pipeline name")
@@ -232,7 +233,7 @@ class PipelineResponse(BaseModel):
     }
 
 
-class PipelineListResponse(BaseModel):
+class PipelineListResponse(GreenLangBase):
     """Response for listing pipelines."""
     pipelines: List[PipelineResponse] = Field(..., description="List of pipelines")
     total: int = Field(..., description="Total count of matching pipelines")
@@ -252,7 +253,7 @@ class PipelineDetailResponse(PipelineResponse):
 # =============================================================================
 
 
-class RunSubmitRequest(BaseModel):
+class RunSubmitRequest(GreenLangBase):
     """Request to submit a new pipeline run."""
     pipeline_id: str = Field(..., description="Pipeline ID to execute")
     parameters: Dict[str, Any] = Field(default_factory=dict, description="Run parameters")
@@ -283,7 +284,7 @@ class RunSubmitRequest(BaseModel):
     }
 
 
-class StepStatusResponse(BaseModel):
+class StepStatusResponse(GreenLangBase):
     """Status of a single pipeline step."""
     step_id: str = Field(..., description="Step identifier")
     agent_id: str = Field(..., description="Agent ID executing the step")
@@ -297,7 +298,7 @@ class StepStatusResponse(BaseModel):
     progress_percent: Optional[float] = Field(None, ge=0, le=100, description="Progress percentage")
 
 
-class RunResponse(BaseModel):
+class RunResponse(GreenLangBase):
     """Response for run operations."""
     run_id: str = Field(..., description="Unique run identifier")
     pipeline_id: str = Field(..., description="Pipeline ID")
@@ -341,7 +342,7 @@ class RunResponse(BaseModel):
     }
 
 
-class RunListResponse(BaseModel):
+class RunListResponse(GreenLangBase):
     """Response for listing runs."""
     runs: List[RunResponse] = Field(..., description="List of runs")
     total: int = Field(..., description="Total count of matching runs")
@@ -359,13 +360,13 @@ class RunDetailResponse(RunResponse):
     lineage: Optional[Dict[str, Any]] = Field(None, description="Data lineage information")
 
 
-class RunCancelRequest(BaseModel):
+class RunCancelRequest(GreenLangBase):
     """Request to cancel a running run."""
     reason: Optional[str] = Field(None, max_length=500, description="Cancellation reason")
     force: bool = Field(default=False, description="Force immediate cancellation")
 
 
-class RunCancelResponse(BaseModel):
+class RunCancelResponse(GreenLangBase):
     """Response for run cancellation."""
     run_id: str = Field(..., description="Run identifier")
     status: RunStatus = Field(..., description="New run status")
@@ -378,7 +379,7 @@ class RunCancelResponse(BaseModel):
 # =============================================================================
 
 
-class LogEntry(BaseModel):
+class LogEntry(GreenLangBase):
     """A single log entry."""
     timestamp: datetime = Field(..., description="Log timestamp")
     level: LogLevel = Field(..., description="Log level")
@@ -388,7 +389,7 @@ class LogEntry(BaseModel):
     context: Optional[Dict[str, Any]] = Field(None, description="Additional context")
 
 
-class RunLogsResponse(BaseModel):
+class RunLogsResponse(GreenLangBase):
     """Response for run logs."""
     run_id: str = Field(..., description="Run identifier")
     logs: List[LogEntry] = Field(..., description="Log entries")
@@ -402,7 +403,7 @@ class RunLogsResponse(BaseModel):
 # =============================================================================
 
 
-class AuditEvent(BaseModel):
+class AuditEvent(GreenLangBase):
     """A single audit event."""
     event_id: str = Field(..., description="Unique event identifier")
     event_type: str = Field(..., description="Event type (e.g., RUN_SUBMITTED, STEP_COMPLETED)")
@@ -413,7 +414,7 @@ class AuditEvent(BaseModel):
     event_hash: str = Field(..., description="This event's hash")
 
 
-class RunAuditResponse(BaseModel):
+class RunAuditResponse(GreenLangBase):
     """Response for run audit trail."""
     run_id: str = Field(..., description="Run identifier")
     events: List[AuditEvent] = Field(..., description="Audit events")
@@ -427,7 +428,7 @@ class RunAuditResponse(BaseModel):
 # =============================================================================
 
 
-class ComponentHealth(BaseModel):
+class ComponentHealth(GreenLangBase):
     """Health status of a system component."""
     name: str = Field(..., description="Component name")
     status: HealthStatus = Field(..., description="Component health status")
@@ -436,7 +437,7 @@ class ComponentHealth(BaseModel):
     last_checked: datetime = Field(..., description="Last health check timestamp")
 
 
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Response for health check endpoint."""
     status: HealthStatus = Field(..., description="Overall health status")
     version: str = Field(..., description="API version")
@@ -468,13 +469,13 @@ class HealthResponse(BaseModel):
     }
 
 
-class ReadinessResponse(BaseModel):
+class ReadinessResponse(GreenLangBase):
     """Response for readiness probe."""
     ready: bool = Field(..., description="Whether service is ready")
     message: Optional[str] = Field(None, description="Status message")
 
 
-class MetricsResponse(BaseModel):
+class MetricsResponse(GreenLangBase):
     """Response for metrics endpoint (Prometheus format or JSON)."""
     runs_total: int = Field(..., description="Total runs processed")
     runs_active: int = Field(..., description="Currently active runs")
@@ -496,7 +497,7 @@ class MetricsResponse(BaseModel):
 # =============================================================================
 
 
-class AgentCapabilityResponse(BaseModel):
+class AgentCapabilityResponse(GreenLangBase):
     """Agent capability information."""
     name: str = Field(..., description="Capability name")
     category: str = Field(..., description="Capability category")
@@ -505,7 +506,7 @@ class AgentCapabilityResponse(BaseModel):
     output_types: List[str] = Field(default_factory=list, description="Output types")
 
 
-class AgentResponse(BaseModel):
+class AgentResponse(GreenLangBase):
     """Response for agent registry operations."""
     agent_id: str = Field(..., description="Agent identifier")
     name: str = Field(..., description="Agent name")
@@ -550,7 +551,7 @@ class AgentResponse(BaseModel):
     }
 
 
-class AgentListResponse(BaseModel):
+class AgentListResponse(GreenLangBase):
     """Response for listing agents."""
     agents: List[AgentResponse] = Field(..., description="List of agents")
     total: int = Field(..., description="Total count of matching agents")
@@ -573,7 +574,7 @@ class AgentDetailResponse(AgentResponse):
 # =============================================================================
 
 
-class PipelineListParams(BaseModel):
+class PipelineListParams(GreenLangBase):
     """Query parameters for listing pipelines."""
     namespace: Optional[str] = Field(None, description="Filter by namespace")
     owner: Optional[str] = Field(None, description="Filter by owner")
@@ -584,7 +585,7 @@ class PipelineListParams(BaseModel):
     limit: int = Field(default=100, ge=1, le=1000, description="Pagination limit")
 
 
-class RunListParams(BaseModel):
+class RunListParams(GreenLangBase):
     """Query parameters for listing runs."""
     status: Optional[RunStatus] = Field(None, description="Filter by status")
     pipeline_id: Optional[str] = Field(None, description="Filter by pipeline ID")
@@ -597,7 +598,7 @@ class RunListParams(BaseModel):
     limit: int = Field(default=100, ge=1, le=1000, description="Pagination limit")
 
 
-class LogsQueryParams(BaseModel):
+class LogsQueryParams(GreenLangBase):
     """Query parameters for logs."""
     level: Optional[LogLevel] = Field(None, description="Filter by log level")
     step_id: Optional[str] = Field(None, description="Filter by step ID")
@@ -608,7 +609,7 @@ class LogsQueryParams(BaseModel):
     limit: int = Field(default=100, ge=1, le=1000, description="Max entries to return")
 
 
-class AgentListParams(BaseModel):
+class AgentListParams(GreenLangBase):
     """Query parameters for listing agents."""
     layer: Optional[str] = Field(None, description="Filter by layer")
     sector: Optional[str] = Field(None, description="Filter by sector")
@@ -701,7 +702,7 @@ class ApprovalDecisionEnum(str, Enum):
     REJECTED = "rejected"
 
 
-class ApprovalSubmitRequest(BaseModel):
+class ApprovalSubmitRequest(GreenLangBase):
     """Request to submit an approval decision."""
     decision: ApprovalDecisionEnum = Field(..., description="APPROVED or REJECTED")
     reason: Optional[str] = Field(None, max_length=2000, description="Explanation for decision")
@@ -724,7 +725,7 @@ class ApprovalSubmitRequest(BaseModel):
     }
 
 
-class ApprovalAttestationResponse(BaseModel):
+class ApprovalAttestationResponse(GreenLangBase):
     """Response containing signed attestation details."""
     approver_id: str = Field(..., description="Approver identifier")
     approver_name: Optional[str] = Field(None, description="Approver name")
@@ -737,7 +738,7 @@ class ApprovalAttestationResponse(BaseModel):
     signature_valid: Optional[bool] = Field(None, description="Whether signature verified")
 
 
-class ApprovalRequestResponse(BaseModel):
+class ApprovalRequestResponse(GreenLangBase):
     """Response for an approval request."""
     request_id: str = Field(..., description="Unique request identifier")
     run_id: str = Field(..., description="Associated run ID")
@@ -770,14 +771,14 @@ class ApprovalRequestResponse(BaseModel):
     }
 
 
-class ApprovalListResponse(BaseModel):
+class ApprovalListResponse(GreenLangBase):
     """Response for listing approvals."""
     approvals: List[ApprovalRequestResponse] = Field(..., description="List of approvals")
     total: int = Field(..., description="Total count")
     run_id: str = Field(..., description="Run ID filter")
 
 
-class ApprovalSubmitResponse(BaseModel):
+class ApprovalSubmitResponse(GreenLangBase):
     """Response after submitting an approval."""
     request_id: str = Field(..., description="Approval request ID")
     status: ApprovalStatusEnum = Field(..., description="New status")
@@ -800,7 +801,7 @@ class CheckpointStatusEnum(str, Enum):
     CANCELED = "canceled"
 
 
-class StepCheckpointResponse(BaseModel):
+class StepCheckpointResponse(GreenLangBase):
     """Response for a single step checkpoint state."""
     step_id: str = Field(..., description="Step identifier")
     status: CheckpointStatusEnum = Field(..., description="Checkpoint status")
@@ -828,7 +829,7 @@ class StepCheckpointResponse(BaseModel):
     }
 
 
-class RunCheckpointResponse(BaseModel):
+class RunCheckpointResponse(GreenLangBase):
     """Response for run checkpoint state."""
     run_id: str = Field(..., description="Run identifier")
     plan_id: str = Field(..., description="Execution plan ID")
@@ -878,7 +879,7 @@ class RunCheckpointResponse(BaseModel):
     }
 
 
-class RunRetryRequest(BaseModel):
+class RunRetryRequest(GreenLangBase):
     """Request to retry a failed run from checkpoint."""
     from_checkpoint: bool = Field(
         default=True,
@@ -915,7 +916,7 @@ class RunRetryRequest(BaseModel):
     }
 
 
-class NonIdempotentStepWarning(BaseModel):
+class NonIdempotentStepWarning(GreenLangBase):
     """Warning about a non-idempotent step that may have side effects."""
     step_id: str = Field(..., description="Step identifier")
     warning_message: str = Field(..., description="Warning description")
@@ -923,7 +924,7 @@ class NonIdempotentStepWarning(BaseModel):
     recommendation: str = Field(..., description="Recommended action")
 
 
-class RunRetryResponse(BaseModel):
+class RunRetryResponse(GreenLangBase):
     """Response for run retry operation."""
     new_run_id: str = Field(..., description="New run identifier for the retry")
     original_run_id: str = Field(..., description="Original run that is being retried")
@@ -966,7 +967,7 @@ class RunRetryResponse(BaseModel):
     }
 
 
-class CheckpointClearResponse(BaseModel):
+class CheckpointClearResponse(GreenLangBase):
     """Response for checkpoint clear operation."""
     run_id: str = Field(..., description="Run identifier")
     cleared: bool = Field(..., description="Whether checkpoint was successfully cleared")

@@ -35,6 +35,7 @@ from typing import Any, Dict, List, Optional, Union
 
 import yaml
 from pydantic import BaseModel, Field, field_validator, model_validator
+from greenlang.schemas.enums import NotificationChannel
 
 logger = logging.getLogger(__name__)
 
@@ -139,14 +140,6 @@ class ReportingFrequency(str, Enum):
     MONTHLY = "MONTHLY"
     QUARTERLY = "QUARTERLY"
     ANNUAL = "ANNUAL"
-
-
-class NotificationChannel(str, Enum):
-    EMAIL = "EMAIL"
-    SLACK = "SLACK"
-    TEAMS = "TEAMS"
-    WEBHOOK = "WEBHOOK"
-    IN_APP = "IN_APP"
 
 
 class FrameworkType(str, Enum):

@@ -26,6 +26,7 @@ from dataclasses import dataclass, field, asdict
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
+from greenlang.schemas.enums import ExecutionStatus
 
 logger = logging.getLogger(__name__)
 
@@ -44,16 +45,6 @@ except ImportError:
 # ===================================================================
 # Enums
 # ===================================================================
-
-
-class ExecutionStatus(str, Enum):
-    """Status of a complete DAG execution."""
-    PENDING = "pending"
-    RUNNING = "running"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    CANCELLED = "cancelled"
-    COMPENSATING = "compensating"
 
 
 class NodeStatus(str, Enum):

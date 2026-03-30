@@ -57,6 +57,8 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -69,27 +71,18 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a unique identifier using UUID4."""
     return str(uuid.uuid4())
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class RiskTier(str, Enum):
     """Conversion risk tier classification.
@@ -107,7 +100,6 @@ class RiskTier(str, Enum):
     MODERATE = "MODERATE"
     HIGH = "HIGH"
     CRITICAL = "CRITICAL"
-
 
 # ---------------------------------------------------------------------------
 # Constants: Risk Factor Weights
@@ -215,11 +207,9 @@ _SLOPE_RISK_TABLE: List[Tuple[float, float]] = [
 ]
 _SLOPE_VERY_STEEP_SCORE: float = 10.0  # > 30 deg
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class RiskPlotInput:
@@ -257,7 +247,6 @@ class RiskPlotInput:
     distance_to_protected_area_km: float = -1.0
     slope_deg: float = -1.0
     area_ha: float = 1.0
-
 
 @dataclass
 class ConversionRisk:
@@ -324,11 +313,9 @@ class ConversionRisk:
             "metadata": self.metadata,
         }
 
-
 # ---------------------------------------------------------------------------
 # ConversionRiskAssessor
 # ---------------------------------------------------------------------------
-
 
 class ConversionRiskAssessor:
     """Scores each plot's risk of future land use conversion.
@@ -457,7 +444,7 @@ class ConversionRiskAssessor:
             country_code=plot.country_code,
             commodity=commodity,
             processing_time_ms=round(elapsed_ms, 2),
-            timestamp=_utcnow().isoformat(),
+            timestamp=utcnow().isoformat(),
         )
         result.provenance_hash = self._compute_result_hash(result)
 
@@ -1176,7 +1163,7 @@ class ConversionRiskAssessor:
             longitude=plot.longitude,
             country_code=plot.country_code,
             commodity=plot.commodity,
-            timestamp=_utcnow().isoformat(),
+            timestamp=utcnow().isoformat(),
             metadata={"error": error_msg},
         )
         result.provenance_hash = self._compute_result_hash(result)
@@ -1209,7 +1196,6 @@ class ConversionRiskAssessor:
             "timestamp": result.timestamp,
         }
         return _compute_hash(hash_data)
-
 
 # ---------------------------------------------------------------------------
 # Module Exports

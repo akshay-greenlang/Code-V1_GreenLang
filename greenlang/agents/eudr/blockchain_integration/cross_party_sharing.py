@@ -63,6 +63,7 @@ import time
 import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Set, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.blockchain_integration.config import (
     BlockchainIntegrationConfig,
@@ -96,12 +97,6 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance.
 
@@ -114,7 +109,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str = "GNT") -> str:
     """Generate a prefixed UUID4 string identifier.
 
@@ -125,7 +119,6 @@ def _generate_id(prefix: str = "GNT") -> str:
         Prefixed UUID4 string.
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 # ---------------------------------------------------------------------------
 # Valid access levels
@@ -141,7 +134,6 @@ VALID_ACCESS_LEVELS: Set[str] = {
 # ---------------------------------------------------------------------------
 # Access request data model
 # ---------------------------------------------------------------------------
-
 
 class AccessRequest:
     """Represents a pending access request from a party.
@@ -192,7 +184,7 @@ class AccessRequest:
         self.justification = justification
         self.status = "pending"
         self.reviewer_id: Optional[str] = None
-        self.created_at = _utcnow()
+        self.created_at = utcnow()
         self.reviewed_at: Optional[datetime] = None
 
     def to_dict(self) -> Dict[str, Any]:
@@ -215,11 +207,9 @@ class AccessRequest:
             ),
         }
 
-
 # ---------------------------------------------------------------------------
 # Shared record data model
 # ---------------------------------------------------------------------------
-
 
 class SharedRecord:
     """Represents a record shared with a specific party.
@@ -269,7 +259,7 @@ class SharedRecord:
         self.grantee_id = grantee_id
         self.access_level = access_level
         self.expires_at = expires_at
-        self.shared_at = _utcnow()
+        self.shared_at = utcnow()
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize shared record to dictionary.
@@ -289,11 +279,9 @@ class SharedRecord:
             "shared_at": self.shared_at.isoformat(),
         }
 
-
 # ---------------------------------------------------------------------------
 # Multi-party confirmation tracker
 # ---------------------------------------------------------------------------
-
 
 class ConfirmationTracker:
     """Tracks multi-party confirmations for an action.
@@ -341,7 +329,7 @@ class ConfirmationTracker:
         self.required_confirmations = required_confirmations
         self.confirmers: Set[str] = set()
         self.is_complete = False
-        self.created_at = _utcnow()
+        self.created_at = utcnow()
         self.completed_at: Optional[datetime] = None
 
     def add_confirmation(self, confirmer_id: str) -> bool:
@@ -357,7 +345,7 @@ class ConfirmationTracker:
         if len(self.confirmers) >= self.required_confirmations:
             if not self.is_complete:
                 self.is_complete = True
-                self.completed_at = _utcnow()
+                self.completed_at = utcnow()
                 return True
         return False
 
@@ -381,11 +369,9 @@ class ConfirmationTracker:
             ),
         }
 
-
 # ---------------------------------------------------------------------------
 # Dispute record
 # ---------------------------------------------------------------------------
-
 
 class DisputeRecord:
     """Record of a data dispute filed by a party.
@@ -431,7 +417,7 @@ class DisputeRecord:
         self.reason = reason
         self.status = "open"
         self.resolution: Optional[str] = None
-        self.created_at = _utcnow()
+        self.created_at = utcnow()
         self.resolved_at: Optional[datetime] = None
 
     def to_dict(self) -> Dict[str, Any]:
@@ -453,11 +439,9 @@ class DisputeRecord:
             ),
         }
 
-
 # ==========================================================================
 # CrossPartySharing
 # ==========================================================================
-
 
 class CrossPartySharing:
     """Cross-party data sharing and access control engine for EUDR blockchain integration.
@@ -656,7 +640,7 @@ class CrossPartySharing:
 
         # Compute expiry
         effective_expiry = expiry or (
-            _utcnow() + timedelta(days=self._config.grant_expiry_days)
+            utcnow() + timedelta(days=self._config.grant_expiry_days)
         )
 
         # Determine required confirmations
@@ -810,7 +794,7 @@ class CrossPartySharing:
         # Revoke the grant
         with self._lock:
             grant.status = "revoked"
-            grant.revoked_at = _utcnow()
+            grant.revoked_at = utcnow()
             grant.revocation_reason = reason
 
         self._total_grants_revoked += 1
@@ -879,7 +863,7 @@ class CrossPartySharing:
             raise ValueError("party_id must not be empty")
 
         self._total_access_checks += 1
-        now = _utcnow()
+        now = utcnow()
 
         # Access level hierarchy (higher = more permissive)
         level_hierarchy = {
@@ -956,7 +940,7 @@ class CrossPartySharing:
         if not record_id:
             raise ValueError("record_id must not be empty")
 
-        now = _utcnow()
+        now = utcnow()
         results: List[AccessGrant] = []
 
         with self._lock:
@@ -1533,7 +1517,7 @@ class CrossPartySharing:
         if grant.status != "active":
             return grant.status == "expired"
 
-        if grant.expires_at is not None and grant.expires_at <= _utcnow():
+        if grant.expires_at is not None and grant.expires_at <= utcnow():
             grant.status = "expired"
             logger.debug(
                 "Grant auto-expired: id=%s expires_at=%s",
@@ -1582,7 +1566,7 @@ class CrossPartySharing:
             grant_hash = _compute_hash(grant_data)
 
             # Simulate tx_hash as hash of (grant_hash + network + timestamp)
-            tx_data = f"{grant_hash}:{network}:{_utcnow().isoformat()}"
+            tx_data = f"{grant_hash}:{network}:{utcnow().isoformat()}"
             tx_hash = hashlib.sha256(tx_data.encode("utf-8")).hexdigest()
 
             logger.debug(
@@ -1650,7 +1634,6 @@ class CrossPartySharing:
             action,
             actor_id[:16],
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

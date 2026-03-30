@@ -73,25 +73,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -109,7 +103,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -118,7 +111,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -130,17 +122,14 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _date_from_str(value: Any) -> date:
     """Convert a string or datetime to a date object."""
@@ -152,11 +141,9 @@ def _date_from_str(value: Any) -> date:
         return date.fromisoformat(value)
     raise ValueError(f"Cannot convert {type(value)} to date")
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CommodityType(str, Enum):
     """Utility commodity type.
@@ -173,7 +160,6 @@ class CommodityType(str, Enum):
     STEAM = "steam"
     CHILLED_WATER = "chilled_water"
 
-
 class BillStatus(str, Enum):
     """Bill reading / processing status.
 
@@ -188,7 +174,6 @@ class BillStatus(str, Enum):
     ADJUSTED = "adjusted"
     CORRECTED = "corrected"
     CANCELLED = "cancelled"
-
 
 class BillErrorType(str, Enum):
     """Detected bill error classification.
@@ -215,7 +200,6 @@ class BillErrorType(str, Enum):
     MISSING_FIELD = "missing_field"
     RATE_CHANGE_UNNOTIFIED = "rate_change_unnotified"
 
-
 class ReadType(str, Enum):
     """Meter read type.
 
@@ -228,7 +212,6 @@ class ReadType(str, Enum):
     ESTIMATED = "estimated"
     CUSTOMER = "customer"
     PRORATED = "prorated"
-
 
 class ChargeCategory(str, Enum):
     """Utility bill charge classification.
@@ -259,7 +242,6 @@ class ChargeCategory(str, Enum):
     ADJUSTMENT = "adjustment"
     OTHER = "other"
 
-
 class ErrorSeverity(str, Enum):
     """Error severity classification.
 
@@ -274,7 +256,6 @@ class ErrorSeverity(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     INFO = "info"
-
 
 class BillFormat(str, Enum):
     """Source format of the utility bill.
@@ -296,7 +277,6 @@ class BillFormat(str, Enum):
     GREEN_BUTTON_XML = "green_button_xml"
     MANUAL = "manual"
     API = "api"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -382,11 +362,9 @@ MIN_PROFILE_MONTHS: int = 3
 MIN_BILLING_DAYS: int = 25
 MAX_BILLING_DAYS: int = 35
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class MeterReading(BaseModel):
     """A single meter reading from a utility bill.
@@ -427,7 +405,6 @@ class MeterReading(BaseModel):
             return ReadType.ACTUAL.value
         return v
 
-
 class BillLineItem(BaseModel):
     """A single line item / charge on a utility bill.
 
@@ -462,7 +439,6 @@ class BillLineItem(BaseModel):
             return ChargeCategory.OTHER.value
         return v
 
-
 class BillError(BaseModel):
     """A detected error or anomaly on a utility bill.
 
@@ -495,7 +471,6 @@ class BillError(BaseModel):
     auto_correctable: bool = Field(
         default=False, description="Whether auto-correctable"
     )
-
 
 class UtilityBill(BaseModel):
     """Parsed utility bill with all extracted fields.
@@ -577,7 +552,7 @@ class UtilityBill(BaseModel):
     due_date: Optional[date] = Field(default=None, description="Due date")
     currency: str = Field(default="EUR", description="Currency ISO 4217")
     parsed_at: datetime = Field(
-        default_factory=_utcnow, description="Parse timestamp"
+        default_factory=utcnow, description="Parse timestamp"
     )
 
     @field_validator("commodity_type")
@@ -597,7 +572,6 @@ class UtilityBill(BaseModel):
         if v not in valid:
             return BillStatus.ACTUAL.value
         return v
-
 
 class ConsumptionProfile(BaseModel):
     """Statistical consumption profile built from historical bills.
@@ -644,7 +618,6 @@ class ConsumptionProfile(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 class ValidationCheck(BaseModel):
     """Individual validation check result.
 
@@ -656,7 +629,6 @@ class ValidationCheck(BaseModel):
     check_name: str = Field(..., description="Check name")
     passed: bool = Field(default=True, description="Pass / fail")
     message: str = Field(default="", description="Result message")
-
 
 class BillValidation(BaseModel):
     """Aggregated validation result for a single bill.
@@ -677,7 +649,6 @@ class BillValidation(BaseModel):
     failed: int = Field(default=0, description="Failed checks")
     warnings: int = Field(default=0, description="Warning checks")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class ParsedBillResult(BaseModel):
     """Result of parsing one or more utility bills.
@@ -712,14 +683,12 @@ class ParsedBillResult(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class UtilityBillParserEngine:
     """Comprehensive utility bill parsing and error detection engine.
@@ -2472,7 +2441,6 @@ class UtilityBillParserEngine:
                 return Decimal("0")
             return delta * reading.multiplier
         return Decimal("0")
-
 
 # ---------------------------------------------------------------------------
 # Public API

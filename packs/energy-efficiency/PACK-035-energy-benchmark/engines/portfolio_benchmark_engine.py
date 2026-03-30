@@ -69,25 +69,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -105,7 +99,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -114,7 +107,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -126,36 +118,29 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* decimal digits and return float."""
     return float(value.quantize(Decimal(10) ** -places, rounding=ROUND_HALF_UP))
 
-
 def _round2(value: Any) -> float:
     """Round to 2 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round3(value: Any) -> float:
     """Round to 3 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: Any) -> float:
     """Round to 4 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class AggregationMethod(str, Enum):
     """Method for aggregating facility-level EUI into portfolio-level.
@@ -169,7 +154,6 @@ class AggregationMethod(str, Enum):
     SIMPLE_AVERAGE = "simple_average"
     CONSUMPTION_WEIGHTED = "consumption_weighted"
     MEDIAN = "median"
-
 
 class RankingCriteria(str, Enum):
     """Criteria for ranking facilities within a portfolio.
@@ -186,7 +170,6 @@ class RankingCriteria(str, Enum):
     CARBON_INTENSITY = "carbon_intensity"
     COST_INTENSITY = "cost_intensity"
 
-
 class PortfolioTier(str, Enum):
     """Quartile classification within portfolio.
 
@@ -199,7 +182,6 @@ class PortfolioTier(str, Enum):
     SECOND_QUARTILE = "second_quartile"
     THIRD_QUARTILE = "third_quartile"
     BOTTOM_QUARTILE = "bottom_quartile"
-
 
 class EntityLevel(str, Enum):
     """Hierarchy levels in a multi-entity portfolio.
@@ -216,7 +198,6 @@ class EntityLevel(str, Enum):
     BUSINESS_UNIT = "business_unit"
     SITE = "site"
 
-
 class OutlierDetectionMethod(str, Enum):
     """Method for detecting outlier facilities in a portfolio.
 
@@ -229,7 +210,6 @@ class OutlierDetectionMethod(str, Enum):
     Z_SCORE = "z_score"
     MODIFIED_Z = "modified_z"
     PERCENTILE = "percentile"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -297,11 +277,9 @@ IMPROVEMENT_RATE_THRESHOLDS: Dict[str, Dict[str, Any]] = {
 # Source: Standard statistical analysis practice.
 DEFAULT_PERCENTILES: List[float] = [5.0, 10.0, 25.0, 50.0, 75.0, 90.0, 95.0]
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class PortfolioDefinition(BaseModel):
     """Definition of a portfolio for benchmarking.
@@ -322,7 +300,6 @@ class PortfolioDefinition(BaseModel):
     description: str = Field(default="", description="Portfolio description")
     target_eui: Optional[float] = Field(default=None, ge=0.0, description="Target EUI kWh/m2/year")
     target_year: Optional[int] = Field(default=None, ge=2020, le=2060, description="Target year")
-
 
 class FacilityMembership(BaseModel):
     """A single facility within a portfolio.
@@ -367,11 +344,9 @@ class FacilityMembership(BaseModel):
             self.eui_kwh_per_m2 = self.energy_consumption_kwh / self.gross_floor_area_m2
         return self
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class PortfolioMetrics(BaseModel):
     """Aggregated metrics for a portfolio or sub-portfolio.
@@ -405,7 +380,6 @@ class PortfolioMetrics(BaseModel):
     carbon_intensity_kgco2_per_m2: float = Field(default=0.0)
     cost_intensity_eur_per_m2: float = Field(default=0.0)
 
-
 class FacilityRanking(BaseModel):
     """Ranking of a single facility within its portfolio.
 
@@ -437,7 +411,6 @@ class FacilityRanking(BaseModel):
     yoy_improvement_pct: float = Field(default=0.0)
     improvement_assessment: str = Field(default="")
     is_outlier: bool = Field(default=False)
-
 
 class PortfolioDistribution(BaseModel):
     """Statistical distribution of EUI across a portfolio.
@@ -475,7 +448,6 @@ class PortfolioDistribution(BaseModel):
     outlier_count: int = Field(default=0, ge=0)
     outlier_facility_ids: List[str] = Field(default_factory=list)
 
-
 class PortfolioTrend(BaseModel):
     """Year-over-year trend data for the portfolio.
 
@@ -491,7 +463,6 @@ class PortfolioTrend(BaseModel):
     area_weighted_eui: float = Field(default=0.0)
     yoy_change_pct: float = Field(default=0.0)
     cumulative_change_pct: float = Field(default=0.0)
-
 
 class PortfolioBenchmarkResult(BaseModel):
     """Complete portfolio benchmarking result.
@@ -526,14 +497,12 @@ class PortfolioBenchmarkResult(BaseModel):
     methodology_notes: List[str] = Field(default_factory=list)
     processing_time_ms: float = Field(default=0.0)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class PortfolioBenchmarkEngine:
     """Zero-hallucination portfolio benchmarking engine.
@@ -1483,7 +1452,6 @@ class PortfolioBenchmarkEngine:
             groups[key].append(f)
         return groups
 
-
 # ---------------------------------------------------------------------------
 # Pydantic v2 model_rebuild for forward-reference resolution
 # ---------------------------------------------------------------------------
@@ -1499,7 +1467,6 @@ FacilityRanking.model_rebuild()
 PortfolioDistribution.model_rebuild()
 PortfolioTrend.model_rebuild()
 PortfolioBenchmarkResult.model_rebuild()
-
 
 # ---------------------------------------------------------------------------
 # Public Aliases -- required by PACK-035 __init__.py symbol contract

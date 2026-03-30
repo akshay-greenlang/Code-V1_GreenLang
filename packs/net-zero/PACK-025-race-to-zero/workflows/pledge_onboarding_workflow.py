@@ -42,6 +42,7 @@ from enum import Enum
 from typing import Any, Callable, Coroutine, Dict, List, Optional, Set
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -49,21 +50,13 @@ _MODULE_VERSION = "25.0.0"
 
 ProgressCallback = Callable[[str, float, str], Coroutine[Any, Any, None]]
 
-
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hex digest of *data*."""
@@ -71,11 +64,9 @@ def _compute_hash(data: Any) -> str:
         data = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(str(data).encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a single workflow phase."""
@@ -84,7 +75,6 @@ class PhaseStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
@@ -95,7 +85,6 @@ class WorkflowStatus(str, Enum):
     PARTIAL = "partial"
     CANCELLED = "cancelled"
 
-
 class OnboardingPhase(str, Enum):
     """The 5 phases of the pledge onboarding workflow."""
     ORGANIZATION_PROFILING = "organization_profiling"
@@ -103,7 +92,6 @@ class OnboardingPhase(str, Enum):
     BASELINE_VALIDATION = "baseline_validation"
     TARGET_PROPOSAL = "target_proposal"
     COMMITMENT_DOCUMENTATION = "commitment_documentation"
-
 
 class ActorType(str, Enum):
     """Race to Zero actor types."""
@@ -114,7 +102,6 @@ class ActorType(str, Enum):
     UNIVERSITY = "university"
     HEALTHCARE = "healthcare"
     SME = "sme"
-
 
 class PartnerInitiative(str, Enum):
     """Race to Zero partner initiatives (accelerators)."""
@@ -129,7 +116,6 @@ class PartnerInitiative(str, Enum):
     SME_CLIMATE_HUB = "sme_climate_hub"
     HEALTH_CARE_WITHOUT_HARM = "health_care_without_harm"
 
-
 class PledgeQuality(str, Enum):
     """Pledge quality assessment level."""
     STRONG = "strong"
@@ -137,13 +123,11 @@ class PledgeQuality(str, Enum):
     WEAK = "weak"
     INELIGIBLE = "ineligible"
 
-
 class EligibilityStatus(str, Enum):
     """Eligibility determination status."""
     ELIGIBLE = "eligible"
     CONDITIONAL = "conditional"
     INELIGIBLE = "ineligible"
-
 
 class TargetAmbition(str, Enum):
     """Target ambition level relative to 1.5C pathway."""
@@ -152,13 +136,11 @@ class TargetAmbition(str, Enum):
     BELOW_2C = "below_2c"
     INSUFFICIENT = "insufficient"
 
-
 class ScopeType(str, Enum):
     """GHG Protocol emission scopes."""
     SCOPE_1 = "scope_1"
     SCOPE_2 = "scope_2"
     SCOPE_3 = "scope_3"
-
 
 # =============================================================================
 # REFERENCE DATA (Zero-Hallucination Lookups)
@@ -254,7 +236,6 @@ IPCC_2030_REDUCTION_PCT = 43.0  # IPCC AR6: 43% CO2 reduction by 2030 vs 2019
 R2Z_2030_TARGET_PCT = 50.0      # Race to Zero: ~50% by 2030
 MIN_SCOPE3_COVERAGE_PCT = 67.0  # SBTi minimum Scope 3 coverage
 
-
 # Phase dependencies DAG
 PHASE_DEPENDENCIES: Dict[OnboardingPhase, List[OnboardingPhase]] = {
     OnboardingPhase.ORGANIZATION_PROFILING: [],
@@ -273,11 +254,9 @@ PHASE_EXECUTION_ORDER: List[OnboardingPhase] = [
     OnboardingPhase.COMMITMENT_DOCUMENTATION,
 ]
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -291,7 +270,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class OrganizationProfile(BaseModel):
     """Organization profile for Race to Zero onboarding."""
@@ -307,7 +285,6 @@ class OrganizationProfile(BaseModel):
     existing_commitments: List[str] = Field(default_factory=list)
     partner_initiatives: List[PartnerInitiative] = Field(default_factory=list)
 
-
 class EligibilityAssessment(BaseModel):
     """Eligibility assessment for Race to Zero participation."""
     status: EligibilityStatus = Field(default=EligibilityStatus.INELIGIBLE)
@@ -318,7 +295,6 @@ class EligibilityAssessment(BaseModel):
     gaps: List[str] = Field(default_factory=list)
     recommendations: List[str] = Field(default_factory=list)
     partner_alignment: Dict[str, bool] = Field(default_factory=dict)
-
 
 class BaselineEmissions(BaseModel):
     """Baseline emissions for target setting."""
@@ -334,7 +310,6 @@ class BaselineEmissions(BaseModel):
     is_valid: bool = Field(default=False)
     validation_issues: List[str] = Field(default_factory=list)
 
-
 class TargetProposal(BaseModel):
     """Proposed targets for Race to Zero commitment."""
     interim_target_year: int = Field(default=2030)
@@ -347,7 +322,6 @@ class TargetProposal(BaseModel):
     methodology: str = Field(default="absolute_contraction")
     fair_share_assessment: str = Field(default="")
     pathway_aligned: bool = Field(default=False)
-
 
 class CommitmentPackage(BaseModel):
     """Complete commitment package for Race to Zero submission."""
@@ -364,7 +338,6 @@ class CommitmentPackage(BaseModel):
     documents_generated: List[str] = Field(default_factory=list)
     submission_ready: bool = Field(default=False)
     submission_deadline: str = Field(default="")
-
 
 class PledgeOnboardingConfig(BaseModel):
     """Configuration for the pledge onboarding workflow."""
@@ -405,7 +378,6 @@ class PledgeOnboardingConfig(BaseModel):
                 raise ValueError(f"Scope 3 category must be 1-15, got {cat_id}")
         return v
 
-
 class PledgeOnboardingResult(BaseModel):
     """Complete result from the pledge onboarding workflow."""
     execution_id: str = Field(default_factory=_new_uuid)
@@ -429,11 +401,9 @@ class PledgeOnboardingResult(BaseModel):
     quality_score: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class PledgeOnboardingWorkflow:
     """
@@ -502,7 +472,7 @@ class PledgeOnboardingWorkflow:
         result = PledgeOnboardingResult(
             org_name=self.config.org_name,
             status=WorkflowStatus.RUNNING,
-            started_at=_utcnow(),
+            started_at=utcnow(),
         )
         self._results[result.execution_id] = result
 
@@ -583,7 +553,7 @@ class PledgeOnboardingWorkflow:
             result.errors.append(str(exc))
 
         finally:
-            result.completed_at = _utcnow()
+            result.completed_at = utcnow()
             result.total_duration_ms = (time.monotonic() - start_time) * 1000
             result.quality_score = self._compute_quality_score(result)
             result.profile = self._extract_profile(shared_context)
@@ -620,7 +590,7 @@ class PledgeOnboardingWorkflow:
         self, phase: OnboardingPhase, context: Dict[str, Any]
     ) -> PhaseResult:
         """Execute a single phase of the onboarding workflow."""
-        started = _utcnow()
+        started = utcnow()
         start_time = time.monotonic()
 
         handler = self._get_phase_handler(phase)
@@ -640,7 +610,7 @@ class PledgeOnboardingWorkflow:
             phase=phase,
             status=status,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             duration_ms=round(elapsed_ms, 2),
             records_processed=records,
             outputs=outputs,
@@ -1223,7 +1193,8 @@ class PledgeOnboardingWorkflow:
 
         # Submission deadline (12 months from current date)
         from datetime import timedelta
-        submission_deadline = (_utcnow() + timedelta(days=365)).strftime("%Y-%m-%d")
+
+        submission_deadline = (utcnow() + timedelta(days=365)).strftime("%Y-%m-%d")
 
         package_id = _new_uuid()
         outputs["package_id"] = package_id

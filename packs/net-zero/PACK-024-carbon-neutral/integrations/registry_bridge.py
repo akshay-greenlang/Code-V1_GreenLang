@@ -39,23 +39,18 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -67,11 +62,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class RegistryName(str, Enum):
     """Supported carbon credit registries."""
@@ -83,7 +76,6 @@ class RegistryName(str, Enum):
     CDM = "cdm"
     PURO = "puro"
 
-
 class CreditStatus(str, Enum):
     """Credit lifecycle status."""
 
@@ -92,7 +84,6 @@ class CreditStatus(str, Enum):
     CANCELLED = "cancelled"
     PENDING = "pending"
     INVALID = "invalid"
-
 
 class RetirementPurpose(str, Enum):
     """Retirement purpose categories."""
@@ -103,7 +94,6 @@ class RetirementPurpose(str, Enum):
     NET_ZERO = "net_zero"
     BEYOND_VALUE_CHAIN = "beyond_value_chain"
 
-
 class VerificationStatus(str, Enum):
     """Registry verification status."""
 
@@ -111,7 +101,6 @@ class VerificationStatus(str, Enum):
     PENDING_VERIFICATION = "pending_verification"
     FAILED = "failed"
     NOT_FOUND = "not_found"
-
 
 # ---------------------------------------------------------------------------
 # Registry Configuration Reference
@@ -174,11 +163,9 @@ REGISTRY_ENDPOINTS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class RegistryBridgeConfig(BaseModel):
     """Configuration for the Registry Bridge."""
@@ -189,7 +176,6 @@ class RegistryBridgeConfig(BaseModel):
     default_retirement_purpose: str = Field(default="carbon_neutrality")
     beneficiary_name: str = Field(default="")
     verify_on_retirement: bool = Field(default=True)
-
 
 class CreditRecord(BaseModel):
     """Individual carbon credit record."""
@@ -206,7 +192,6 @@ class CreditRecord(BaseModel):
     methodology: str = Field(default="")
     country: str = Field(default="")
     sdg_contributions: List[int] = Field(default_factory=list)
-
 
 class RegistryVerificationResult(BaseModel):
     """Credit verification result from registry."""
@@ -226,7 +211,6 @@ class RegistryVerificationResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class RetirementRequest(BaseModel):
     """Credit retirement request."""
 
@@ -237,7 +221,6 @@ class RetirementRequest(BaseModel):
     purpose: str = Field(default="carbon_neutrality")
     retirement_date: Optional[str] = Field(default=None)
     reporting_year: int = Field(default=2025)
-
 
 class RetirementResult(BaseModel):
     """Credit retirement result."""
@@ -257,7 +240,6 @@ class RetirementResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class BatchRetirementResult(BaseModel):
     """Batch retirement result across registries."""
 
@@ -269,7 +251,6 @@ class BatchRetirementResult(BaseModel):
     all_confirmed: bool = Field(default=False)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class PortfolioValidationResult(BaseModel):
     """Portfolio-level registry validation result."""
@@ -288,11 +269,9 @@ class PortfolioValidationResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # CarbonNeutralRegistryBridge
 # ---------------------------------------------------------------------------
-
 
 class CarbonNeutralRegistryBridge:
     """Bridge to 5 carbon credit registries for PAS 2060 neutralization.
@@ -376,7 +355,7 @@ class CarbonNeutralRegistryBridge:
         start = time.monotonic()
         context = context or {}
         beneficiary = request.beneficiary or self.config.beneficiary_name
-        retirement_date = request.retirement_date or _utcnow().isoformat()
+        retirement_date = request.retirement_date or utcnow().isoformat()
 
         # PAS 2060 compliance: purpose must be carbon neutrality, beneficiary must match
         pas_compliant = (

@@ -18,7 +18,8 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import ConfigDict, Field, field_validator
+from greenlang.schemas import GreenLangBase, utcnow
 
 from greenlang.agents.eudr.supply_chain_mapper.models import (
     ComplianceStatus,
@@ -43,18 +44,11 @@ from greenlang.agents.eudr.supply_chain_mapper.models import (
     TransportMode,
 )
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # =============================================================================
 # Paginated List Responses
 # =============================================================================
 
-
-class PaginatedMeta(BaseModel):
+class PaginatedMeta(GreenLangBase):
     """Pagination metadata for list responses."""
 
     total: int = Field(..., ge=0, description="Total number of results")
@@ -62,8 +56,7 @@ class PaginatedMeta(BaseModel):
     offset: int = Field(..., ge=0, description="Results skipped")
     has_more: bool = Field(..., description="Whether more results exist")
 
-
-class GraphListResponse(BaseModel):
+class GraphListResponse(GreenLangBase):
     """Paginated response for listing supply chain graphs."""
 
     graphs: List[GraphSummary] = Field(
@@ -73,8 +66,7 @@ class GraphListResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class GraphSummary(BaseModel):
+class GraphSummary(GreenLangBase):
     """Summary view of a supply chain graph for list endpoints."""
 
     graph_id: str = Field(..., description="Unique graph identifier")
@@ -87,17 +79,15 @@ class GraphSummary(BaseModel):
     traceability_score: float = Field(default=0.0, ge=0.0, le=100.0)
     compliance_readiness: float = Field(default=0.0, ge=0.0, le=100.0)
     version: int = Field(default=1, ge=1)
-    created_at: datetime = Field(default_factory=_utcnow)
-    updated_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
+    updated_at: datetime = Field(default_factory=utcnow)
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # Fix forward reference
 GraphListResponse.model_rebuild()
 
-
-class GapListResponse(BaseModel):
+class GapListResponse(GreenLangBase):
     """Paginated response for listing gaps."""
 
     gaps: List[SupplyChainGap] = Field(
@@ -107,13 +97,11 @@ class GapListResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Graph CRUD API Models
 # =============================================================================
 
-
-class GraphCreateRequest(BaseModel):
+class GraphCreateRequest(GreenLangBase):
     """Request to create a new supply chain graph."""
 
     commodity: EUDRCommodity = Field(
@@ -135,8 +123,7 @@ class GraphCreateRequest(BaseModel):
         },
     )
 
-
-class GraphCreateResponse(BaseModel):
+class GraphCreateResponse(GreenLangBase):
     """Response after creating a supply chain graph."""
 
     graph_id: str = Field(..., description="Unique graph identifier")
@@ -144,25 +131,22 @@ class GraphCreateResponse(BaseModel):
     commodity: EUDRCommodity = Field(..., description="Primary commodity")
     graph_name: Optional[str] = Field(None)
     status: str = Field(default="created")
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class GraphDeleteResponse(BaseModel):
+class GraphDeleteResponse(GreenLangBase):
     """Response after deleting a supply chain graph."""
 
     graph_id: str = Field(..., description="Deleted graph identifier")
     status: str = Field(default="deleted")
-    deleted_at: datetime = Field(default_factory=_utcnow)
-
+    deleted_at: datetime = Field(default_factory=utcnow)
 
 # =============================================================================
 # Mapping API Models
 # =============================================================================
 
-
-class DiscoverRequest(BaseModel):
+class DiscoverRequest(GreenLangBase):
     """Request to trigger multi-tier recursive discovery."""
 
     max_depth: int = Field(
@@ -193,8 +177,7 @@ class DiscoverRequest(BaseModel):
         },
     )
 
-
-class DiscoverResponse(BaseModel):
+class DiscoverResponse(GreenLangBase):
     """Response from multi-tier discovery operation."""
 
     graph_id: str = Field(..., description="Graph ID")
@@ -209,13 +192,11 @@ class DiscoverResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Risk API Models
 # =============================================================================
 
-
-class RiskPropagateRequest(BaseModel):
+class RiskPropagateRequest(GreenLangBase):
     """Request to trigger risk propagation across the graph."""
 
     risk_weights: Optional[Dict[str, float]] = Field(
@@ -267,8 +248,7 @@ class RiskPropagateRequest(BaseModel):
             )
         return v
 
-
-class RiskPropagateResponse(BaseModel):
+class RiskPropagateResponse(GreenLangBase):
     """Response from risk propagation operation."""
 
     graph_id: str = Field(..., description="Graph ID")
@@ -281,8 +261,7 @@ class RiskPropagateResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class RiskHeatmapResponse(BaseModel):
+class RiskHeatmapResponse(GreenLangBase):
     """Risk heatmap data for visualization."""
 
     graph_id: str = Field(..., description="Graph ID")
@@ -293,17 +272,15 @@ class RiskHeatmapResponse(BaseModel):
     risk_distribution: Dict[str, int] = Field(
         default_factory=lambda: {"low": 0, "standard": 0, "high": 0}
     )
-    generated_at: datetime = Field(default_factory=_utcnow)
+    generated_at: datetime = Field(default_factory=utcnow)
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Gap Analysis API Models
 # =============================================================================
 
-
-class GapAnalyzeRequest(BaseModel):
+class GapAnalyzeRequest(GreenLangBase):
     """Request to trigger gap analysis on a graph."""
 
     include_resolved: bool = Field(
@@ -327,8 +304,7 @@ class GapAnalyzeRequest(BaseModel):
         },
     )
 
-
-class GapResolveRequest(BaseModel):
+class GapResolveRequest(GreenLangBase):
     """Request to mark a gap as resolved."""
 
     resolution_notes: str = Field(
@@ -365,14 +341,13 @@ class GapResolveRequest(BaseModel):
             raise ValueError("resolution_notes must be non-empty")
         return v
 
-
-class GapResolveResponse(BaseModel):
+class GapResolveResponse(GreenLangBase):
     """Response after resolving a gap."""
 
     gap_id: str = Field(..., description="Resolved gap ID")
     graph_id: str = Field(..., description="Parent graph ID")
     status: str = Field(default="resolved")
-    resolved_at: datetime = Field(default_factory=_utcnow)
+    resolved_at: datetime = Field(default_factory=utcnow)
     compliance_readiness: float = Field(
         default=0.0, ge=0.0, le=100.0,
         description="Updated compliance readiness score",
@@ -380,13 +355,11 @@ class GapResolveResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Visualization API Models
 # =============================================================================
 
-
-class LayoutRequest(BaseModel):
+class LayoutRequest(GreenLangBase):
     """Optional query params for layout generation."""
 
     algorithm: str = Field(
@@ -394,13 +367,11 @@ class LayoutRequest(BaseModel):
         description="Layout algorithm: force_directed, hierarchical, radial",
     )
 
-
 # =============================================================================
 # Onboarding API Models
 # =============================================================================
 
-
-class OnboardingInviteRequest(BaseModel):
+class OnboardingInviteRequest(GreenLangBase):
     """Request to invite a supplier for onboarding."""
 
     supplier_name: str = Field(
@@ -477,8 +448,7 @@ class OnboardingInviteRequest(BaseModel):
             raise ValueError("supplier_name must be non-empty")
         return v
 
-
-class OnboardingInviteResponse(BaseModel):
+class OnboardingInviteResponse(GreenLangBase):
     """Response after creating a supplier onboarding invitation."""
 
     invitation_id: str = Field(..., description="Unique invitation ID")
@@ -486,15 +456,14 @@ class OnboardingInviteResponse(BaseModel):
     supplier_name: str = Field(...)
     supplier_email: str = Field(...)
     status: str = Field(default="pending")
-    expires_at: datetime = Field(default_factory=_utcnow)
+    expires_at: datetime = Field(default_factory=utcnow)
     onboarding_url: str = Field(
         default="", description="URL for the supplier to complete onboarding"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class OnboardingStatusResponse(BaseModel):
+class OnboardingStatusResponse(GreenLangBase):
     """Response for checking onboarding invitation status."""
 
     invitation_id: str = Field(...)
@@ -504,13 +473,12 @@ class OnboardingStatusResponse(BaseModel):
     commodity: EUDRCommodity = Field(...)
     supplier_country: str = Field(...)
     graph_id: Optional[str] = Field(None)
-    expires_at: datetime = Field(default_factory=_utcnow)
+    expires_at: datetime = Field(default_factory=utcnow)
     submitted_at: Optional[datetime] = Field(None)
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class OnboardingSubmitRequest(BaseModel):
+class OnboardingSubmitRequest(GreenLangBase):
     """Request from a supplier submitting their onboarding data."""
 
     operator_name: str = Field(
@@ -581,8 +549,7 @@ class OnboardingSubmitRequest(BaseModel):
             )
         return v
 
-
-class OnboardingSubmitResponse(BaseModel):
+class OnboardingSubmitResponse(GreenLangBase):
     """Response after a supplier submits their onboarding data."""
 
     invitation_id: str = Field(...)
@@ -590,17 +557,15 @@ class OnboardingSubmitResponse(BaseModel):
         None, description="Node ID if automatically added to graph"
     )
     status: str = Field(default="submitted")
-    submitted_at: datetime = Field(default_factory=_utcnow)
+    submitted_at: datetime = Field(default_factory=utcnow)
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Batch Trace API Models
 # =============================================================================
 
-
-class BatchTraceResponse(BaseModel):
+class BatchTraceResponse(GreenLangBase):
     """Response for batch-level traceability query."""
 
     batch_id: str = Field(..., description="Batch/lot identifier queried")
@@ -627,23 +592,20 @@ class BatchTraceResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Health Check
 # =============================================================================
 
-
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Health check response."""
 
     status: str = Field(default="healthy")
     agent_id: str = Field(default="GL-EUDR-SCM-001")
     agent_name: str = Field(default="EUDR Supply Chain Mapping Master")
     version: str = Field(default="1.0.0")
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Public API

@@ -38,20 +38,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -63,7 +58,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 class GHGDataSource(str, Enum):
     """GHG inventory data source types."""
@@ -79,7 +73,6 @@ class GHGDataSource(str, Enum):
     SUPPLIER_DATA = "supplier_data"
     MANUAL_ENTRY = "manual_entry"
 
-
 class DataFormat(str, Enum):
     """Supported input data formats."""
 
@@ -89,7 +82,6 @@ class DataFormat(str, Enum):
     JSON = "json"
     XML = "xml"
     API = "api"
-
 
 class DataAgentTarget(str, Enum):
     """Target DATA agent identifiers."""
@@ -103,7 +95,6 @@ class DataAgentTarget(str, Enum):
     DATA_014 = "DATA-014"
     DATA_018 = "DATA-018"
 
-
 class QualityLevel(str, Enum):
     """Data quality assessment levels."""
 
@@ -111,7 +102,6 @@ class QualityLevel(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     INSUFFICIENT = "insufficient"
-
 
 class DataRouteConfig(BaseModel):
     """Configuration for routing data to a DATA agent."""
@@ -125,7 +115,6 @@ class DataRouteConfig(BaseModel):
     batch_size: int = Field(default=1000, ge=1)
     timeout_seconds: int = Field(default=120, ge=10)
 
-
 class DataRequest(BaseModel):
     """Request to ingest or process GHG data."""
 
@@ -138,8 +127,7 @@ class DataRequest(BaseModel):
     reporting_year: int = Field(default=2025)
     facility_ids: List[str] = Field(default_factory=list)
     quality_check: bool = Field(default=True)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class DataResponse(BaseModel):
     """Response from DATA agent processing."""
@@ -157,8 +145,7 @@ class DataResponse(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
     processing_time_ms: float = Field(default=0.0)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class QualityReport(BaseModel):
     """Data quality profiling report."""
@@ -178,8 +165,7 @@ class QualityReport(BaseModel):
     issues: List[Dict[str, Any]] = Field(default_factory=list)
     recommendations: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class LineageRecord(BaseModel):
     """Data lineage tracking record."""
@@ -193,8 +179,7 @@ class LineageRecord(BaseModel):
     record_count: int = Field(default=0)
     input_hash: str = Field(default="")
     output_hash: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class DataBridge:
     """Bridge between GHG inventory data operations and DATA agents.

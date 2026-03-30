@@ -16,10 +16,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism.clock import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +42,7 @@ class CoastalHabitatType(str, Enum):
     OYSTER_REEF = "oyster_reef"
 
 
-class CoastalSite(BaseModel):
+class CoastalSite(GreenLangBase):
     site_id: str = Field(...)
     coastline_km: float = Field(..., gt=0)
     habitat_type: CoastalHabitatType = Field(...)
@@ -52,7 +53,7 @@ class CoastalSite(BaseModel):
     protected_assets_value_million: float = Field(default=10, ge=0)
 
 
-class CoastalProtectionPlan(BaseModel):
+class CoastalProtectionPlan(GreenLangBase):
     site_id: str = Field(...)
     erosion_risk_level: ErosionRisk = Field(...)
     wave_attenuation_pct: float = Field(..., ge=0, le=100)
@@ -64,14 +65,14 @@ class CoastalProtectionPlan(BaseModel):
     recommended_interventions: List[str] = Field(...)
 
 
-class CoastalProtectionInput(BaseModel):
+class CoastalProtectionInput(GreenLangBase):
     project_id: str = Field(...)
     sites: List[CoastalSite] = Field(..., min_length=1)
     climate_scenario: str = Field(default="RCP4.5")
     planning_horizon_years: int = Field(default=30, ge=10, le=100)
 
 
-class CoastalProtectionOutput(BaseModel):
+class CoastalProtectionOutput(GreenLangBase):
     project_id: str = Field(...)
     calculation_date: datetime = Field(default_factory=DeterministicClock.now)
     total_coastline_km: float = Field(...)

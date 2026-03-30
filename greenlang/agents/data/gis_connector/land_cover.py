@@ -34,14 +34,9 @@ import time
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -53,7 +48,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Land Cover Type Enumeration
@@ -78,7 +72,6 @@ LAND_COVER_TYPES = frozenset({
     "coastal_lagoon", "estuary", "sea_ocean",
     "unknown",
 })
-
 
 # ---------------------------------------------------------------------------
 # CORINE Code to Land Cover Type Mapping (44 CLC codes)
@@ -130,7 +123,6 @@ CORINE_MAPPING: Dict[str, str] = {
     "522": "estuary",
     "523": "sea_ocean",
 }
-
 
 # ---------------------------------------------------------------------------
 # Carbon Stock Estimates (tonnes C/ha) - IPCC 2006 / 2019 Refinement defaults
@@ -189,7 +181,6 @@ FOREST_TYPES = frozenset({
     "transitional_woodland", "agro_forestry",
 })
 
-
 # ---------------------------------------------------------------------------
 # Latitude-based simplified land cover zones (for deterministic fallback)
 # ---------------------------------------------------------------------------
@@ -233,7 +224,6 @@ def _latitude_land_cover(lat: float, lon: float) -> str:
         return "sparse_vegetation"
     return "glacier_snow"
 
-
 # ---------------------------------------------------------------------------
 # Data Structures
 # ---------------------------------------------------------------------------
@@ -272,9 +262,8 @@ def _make_classification(
         "source": source,
         "carbon_stock": carbon_stock or {},
         "metadata": metadata or {},
-        "created_at": _utcnow().isoformat(),
+        "created_at": utcnow().isoformat(),
     }
-
 
 # ---------------------------------------------------------------------------
 # Engine
@@ -506,7 +495,7 @@ class LandCoverEngine:
             "has_changed": has_changed,
             "change_type": change_type,
             "carbon_stock_delta_tonnes_ha": round(carbon_delta, 2),
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
     def get_forest_cover(self, coordinate: List[float]) -> Dict[str, Any]:
@@ -641,7 +630,6 @@ class LandCoverEngine:
             "corine_codes_available": len(CORINE_MAPPING),
             "carbon_estimates_available": len(CARBON_STOCK_ESTIMATES),
         }
-
 
 __all__ = [
     "LandCoverEngine",

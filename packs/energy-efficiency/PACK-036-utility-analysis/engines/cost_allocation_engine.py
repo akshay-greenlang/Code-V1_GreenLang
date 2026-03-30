@@ -88,25 +88,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -133,7 +127,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -149,7 +142,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -170,7 +162,6 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100).
 
@@ -182,7 +173,6 @@ def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
         Percentage as Decimal; Decimal("0") when whole is zero.
     """
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* and return a float.
@@ -199,21 +189,17 @@ def _round_val(value: Decimal, places: int = 6) -> float:
     quantizer = Decimal(10) ** -places
     return float(value.quantize(quantizer, rounding=ROUND_HALF_UP))
 
-
 def _round2(value: Decimal) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(value.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round4(value: Decimal) -> float:
     """Round to 4 decimal places using ROUND_HALF_UP."""
     return float(value.quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class AllocationMethod(str, Enum):
     """Method used to allocate utility costs to entities.
@@ -237,7 +223,6 @@ class AllocationMethod(str, Enum):
     WEIGHTED_COMBINATION = "weighted_combination"
     REGRESSION = "regression"
     FIXED_PERCENTAGE = "fixed_percentage"
-
 
 class CostComponent(str, Enum):
     """Utility bill cost component categories.
@@ -266,7 +251,6 @@ class CostComponent(str, Enum):
     BASE_BUILDING = "base_building"
     RENEWABLE_LEVY = "renewable_levy"
 
-
 class TenantType(str, Enum):
     """Tenant / entity type classification for allocation purposes.
 
@@ -288,7 +272,6 @@ class TenantType(str, Enum):
     MECHANICAL = "mechanical"
     PARKING = "parking"
 
-
 class ReconciliationStatus(str, Enum):
     """Status of cost allocation reconciliation against actual billing.
 
@@ -302,7 +285,6 @@ class ReconciliationStatus(str, Enum):
     VARIANCE_HIGH = "variance_high"
     UNRECONCILED = "unreconciled"
 
-
 class AllocationFrequency(str, Enum):
     """Frequency of cost allocation cycles.
 
@@ -313,7 +295,6 @@ class AllocationFrequency(str, Enum):
     MONTHLY = "monthly"
     QUARTERLY = "quarterly"
     ANNUAL = "annual"
-
 
 class DemandAllocationMethod(str, Enum):
     """Method used to allocate demand (kW) charges.
@@ -329,7 +310,6 @@ class DemandAllocationMethod(str, Enum):
     DIVERSIFIED = "diversified"
     FOUR_CP = "four_cp"
     AREA_BASED = "area_based"
-
 
 # ---------------------------------------------------------------------------
 # Constants / Reference Data
@@ -385,11 +365,9 @@ STANDARD_OPERATING_HOURS: Dict[str, Decimal] = {
 # Tax rate defaults by cost component (for invoice generation).
 DEFAULT_TAX_RATE: Decimal = Decimal("0.19")  # 19% standard EU VAT
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class AllocationEntity(BaseModel):
     """Tenant, department, or process that receives allocated costs.
@@ -439,7 +417,6 @@ class AllocationEntity(BaseModel):
             raise ValueError("Floor area exceeds 2 million m2 sanity check")
         return v
 
-
 class AllocationRule(BaseModel):
     """Rule defining how a specific cost component should be allocated.
 
@@ -462,7 +439,6 @@ class AllocationRule(BaseModel):
     priority: int = Field(
         default=100, ge=1, le=1000, description="Rule priority (1 = highest)"
     )
-
 
 class CostPool(BaseModel):
     """Pool of costs to be allocated across entities.
@@ -498,7 +474,6 @@ class CostPool(BaseModel):
             raise ValueError("Cost exceeds EUR 100 million sanity check")
         return v
 
-
 class SubMeterData(BaseModel):
     """Sub-meter reading data for a specific entity and period.
 
@@ -529,11 +504,9 @@ class SubMeterData(BaseModel):
             raise ValueError("Consumption exceeds 100 GWh per period sanity check")
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class AllocationLineItem(BaseModel):
     """Single line item in a cost allocation result.
@@ -565,7 +538,6 @@ class AllocationLineItem(BaseModel):
         default=0.0, description="Share percentage of total"
     )
 
-
 class AllocationResult(BaseModel):
     """Complete cost allocation result for a period.
 
@@ -575,7 +547,7 @@ class AllocationResult(BaseModel):
     result_id: str = Field(default_factory=_new_uuid, description="Unique result ID")
     engine_version: str = Field(default=_MODULE_VERSION, description="Engine version")
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     processing_time_ms: float = Field(
         default=0.0, description="Processing time (ms)"
@@ -613,7 +585,6 @@ class AllocationResult(BaseModel):
         default="", description="SHA-256 provenance hash"
     )
 
-
 class TenantInvoice(BaseModel):
     """Invoice generated for a single tenant from allocation results.
 
@@ -644,7 +615,6 @@ class TenantInvoice(BaseModel):
     provenance_hash: str = Field(
         default="", description="SHA-256 provenance hash"
     )
-
 
 class ReconciliationReport(BaseModel):
     """Reconciliation report comparing allocated costs to actual billing.
@@ -681,7 +651,6 @@ class ReconciliationReport(BaseModel):
     provenance_hash: str = Field(
         default="", description="SHA-256 provenance hash"
     )
-
 
 class FairnessMetrics(BaseModel):
     """Fairness and equity metrics for cost allocation evaluation.
@@ -725,11 +694,9 @@ class FairnessMetrics(BaseModel):
         default="", description="SHA-256 provenance hash"
     )
 
-
 # ---------------------------------------------------------------------------
 # Calculation Engine
 # ---------------------------------------------------------------------------
-
 
 class CostAllocationEngine:
     """Energy cost allocation engine for multi-tenant and multi-use facilities.

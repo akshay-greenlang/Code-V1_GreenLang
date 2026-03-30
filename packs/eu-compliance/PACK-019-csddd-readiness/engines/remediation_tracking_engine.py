@@ -71,25 +71,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -109,13 +103,11 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely."""
     if isinstance(value, Decimal):
         return value
     return Decimal(str(value))
-
 
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
@@ -124,7 +116,6 @@ def _safe_divide(
     if denominator == Decimal("0"):
         return default
     return numerator / denominator
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value using ROUND_HALF_UP.
@@ -139,20 +130,17 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.01"), rounding=ROUND_HALF_UP
     ))
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
-
 
 def _pct(part: int, total: int) -> Decimal:
     """Calculate percentage as Decimal, rounded to 1 decimal place."""
@@ -162,18 +150,15 @@ def _pct(part: int, total: int) -> Decimal:
         _decimal(part) / _decimal(total) * Decimal("100"), 1
     )
 
-
 def _pct_dec(part: Decimal, total: Decimal) -> Decimal:
     """Calculate percentage from Decimal values, rounded to 1 dp."""
     if total == Decimal("0"):
         return Decimal("0.0")
     return _round_val(part / total * Decimal("100"), 1)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class RemediationStatus(str, Enum):
     """Status of a remediation action under CSDDD Art 10.
@@ -192,7 +177,6 @@ class RemediationStatus(str, Enum):
     COMPLETED = "completed"
     VERIFIED = "verified"
     FAILED = "failed"
-
 
 class RemediationType(str, Enum):
     """Type of remediation per UNGPs and OECD Guidance.
@@ -214,7 +198,6 @@ class RemediationType(str, Enum):
     APOLOGY = "apology"
     OPERATIONAL_CHANGE = "operational_change"
 
-
 class CompanyContribution(str, Enum):
     """Level of company contribution to the adverse impact.
 
@@ -226,7 +209,6 @@ class CompanyContribution(str, Enum):
     JOINTLY_CAUSED = "jointly_caused"
     CONTRIBUTED = "contributed"
     DIRECTLY_LINKED = "directly_linked"
-
 
 class VictimEngagementLevel(str, Enum):
     """Level of engagement with affected persons / victims.
@@ -240,18 +222,15 @@ class VictimEngagementLevel(str, Enum):
     ACTIVELY_ENGAGED = "actively_engaged"
     CO_DESIGNED = "co_designed"
 
-
 class ImpactDomain(str, Enum):
     """Domain of the adverse impact being remediated."""
     HUMAN_RIGHTS = "human_rights"
     ENVIRONMENTAL = "environmental"
     BOTH = "both"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # Victim engagement score mapping
 ENGAGEMENT_SCORES: Dict[str, Decimal] = {
@@ -284,11 +263,9 @@ REMEDIATION_COMPLETENESS_CRITERIA: List[str] = [
     "has_contribution_level",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class RemediationAction(BaseModel):
     """A single remediation action per CSDDD Art 10.
@@ -441,7 +418,6 @@ class RemediationAction(BaseModel):
             raise ValueError("Country code must be alphabetic")
         return v.upper()
 
-
 class TimelineAnalysis(BaseModel):
     """Timeline analysis for remediation actions.
 
@@ -494,7 +470,6 @@ class TimelineAnalysis(BaseModel):
         description="Latest target completion date",
     )
 
-
 class FinancialAnalysis(BaseModel):
     """Financial analysis of remediation provisions and disbursements.
 
@@ -538,7 +513,6 @@ class FinancialAnalysis(BaseModel):
         default=Decimal("0"),
         description="Average financial provision per affected person",
     )
-
 
 class VictimEngagementAnalysis(BaseModel):
     """Analysis of victim / affected person engagement.
@@ -592,7 +566,6 @@ class VictimEngagementAnalysis(BaseModel):
         description="Percentage of actions using grievance mechanism",
     )
 
-
 class CompletenessAssessment(BaseModel):
     """Completeness assessment for remediation action documentation.
 
@@ -621,7 +594,6 @@ class CompletenessAssessment(BaseModel):
         default_factory=list,
         description="List of missing elements",
     )
-
 
 class RemediationResult(BaseModel):
     """Complete remediation tracking assessment result.
@@ -707,7 +679,7 @@ class RemediationResult(BaseModel):
         description="Processing time in milliseconds",
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Assessment timestamp (UTC)",
     )
     provenance_hash: str = Field(
@@ -715,11 +687,9 @@ class RemediationResult(BaseModel):
         description="SHA-256 hash for audit trail provenance",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class RemediationTrackingEngine:
     """CSDDD Remediation Tracking assessment engine.
@@ -960,7 +930,7 @@ class RemediationTrackingEngine:
             return TimelineAnalysis()
 
         n = len(actions)
-        now = _utcnow()
+        now = utcnow()
 
         # Actions with timeline (have both start and target)
         with_timeline = [
@@ -1355,7 +1325,7 @@ class RemediationTrackingEngine:
                     "requires companies to provide remediation where they "
                     "have caused or contributed to actual adverse impacts."
                 ],
-                assessed_at=_utcnow(),
+                assessed_at=utcnow(),
             )
             empty_result.provenance_hash = _compute_hash(empty_result)
             return empty_result
@@ -1459,7 +1429,7 @@ class RemediationTrackingEngine:
             impacts_with_remediation=impacts_with_remediation,
             recommendations=recommendations,
             processing_time_ms=_round2(processing_time_ms),
-            assessed_at=_utcnow(),
+            assessed_at=utcnow(),
         )
 
         # Step 13: Compute provenance hash

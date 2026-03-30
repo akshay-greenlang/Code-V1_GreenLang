@@ -74,6 +74,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -112,15 +113,9 @@ except ImportError:
     _METRICS_AVAILABLE = False
     _record_component_operation = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -138,11 +133,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ===========================================================================
 # Enumerations
 # ===========================================================================
-
 
 class ComponentType(str, Enum):
     """Fugitive emission component types per EPA Method 21 / LDAR programs.
@@ -170,7 +163,6 @@ class ComponentType(str, Enum):
     PNEUMATIC_DEVICE = "pneumatic_device"
     OTHER = "other"
 
-
 class ServiceType(str, Enum):
     """Service type classification for leak rate determination.
 
@@ -187,7 +179,6 @@ class ServiceType(str, Enum):
     LIGHT_LIQUID = "light_liquid"
     HEAVY_LIQUID = "heavy_liquid"
     HYDROGEN = "hydrogen"
-
 
 class TankType(str, Enum):
     """Storage tank construction types for AP-42 loss calculations.
@@ -207,7 +198,6 @@ class TankType(str, Enum):
     PRESSURIZED = "pressurized"
     UNDERGROUND = "underground"
 
-
 class PneumaticDeviceType(str, Enum):
     """Pneumatic device bleed rate classification per EPA/CCAC.
 
@@ -221,7 +211,6 @@ class PneumaticDeviceType(str, Enum):
     LOW_BLEED = "low_bleed"
     INTERMITTENT = "intermittent"
     ZERO_BLEED = "zero_bleed"
-
 
 class ComponentCondition(str, Enum):
     """Component physical condition assessment levels.
@@ -238,7 +227,6 @@ class ComponentCondition(str, Enum):
     POOR = "poor"
     CRITICAL = "critical"
     DECOMMISSIONED = "decommissioned"
-
 
 class RimSealType(str, Enum):
     """Floating roof rim seal types for AP-42 loss factors.
@@ -257,7 +245,6 @@ class RimSealType(str, Enum):
     MECHANICAL_SHOE_SECONDARY = "mechanical_shoe_secondary"
     LIQUID_MOUNTED_SECONDARY = "liquid_mounted_secondary"
     VAPOR_MOUNTED_SECONDARY = "vapor_mounted_secondary"
-
 
 # ===========================================================================
 # Reference Data Tables
@@ -309,11 +296,9 @@ FIXED_ROOF_CONSTANTS: Dict[str, float] = {
     "molecular_weight_air": 28.97,    # lb/lb-mol
 }
 
-
 # ===========================================================================
 # Data classes for component records
 # ===========================================================================
-
 
 @dataclass
 class ComponentRecord:
@@ -351,7 +336,6 @@ class ComponentRecord:
     updated_at: str = ""
     provenance_hash: str = ""
 
-
 @dataclass
 class RepairRecord:
     """Record of a component repair event.
@@ -381,7 +365,6 @@ class RepairRecord:
     technician: str = ""
     notes: str = ""
     provenance_hash: str = ""
-
 
 @dataclass
 class TankParameters:
@@ -423,11 +406,9 @@ class TankParameters:
     deck_seam_length_ft: float = 0.0
     breather_vent_setting_psig: float = 0.03
 
-
 # ===========================================================================
 # EquipmentComponentEngine
 # ===========================================================================
-
 
 class EquipmentComponentEngine:
     """Equipment component registry, tank loss calculator, and pneumatic
@@ -523,7 +504,7 @@ class EquipmentComponentEngine:
         self._validate_service_type(service_type)
 
         component_id = f"comp_{uuid4().hex[:12]}"
-        now_iso = _utcnow().isoformat()
+        now_iso = utcnow().isoformat()
 
         record = ComponentRecord(
             component_id=component_id,
@@ -681,7 +662,7 @@ class EquipmentComponentEngine:
                 if key in allowed_fields:
                     setattr(record, key, value)
 
-            record.updated_at = _utcnow().isoformat()
+            record.updated_at = utcnow().isoformat()
             record.provenance_hash = _compute_hash({
                 "component_id": component_id,
                 "action": "update",
@@ -714,7 +695,7 @@ class EquipmentComponentEngine:
 
             record.is_active = False
             record.condition = ComponentCondition.DECOMMISSIONED.value
-            record.updated_at = _utcnow().isoformat()
+            record.updated_at = utcnow().isoformat()
             record.metadata["decommission_reason"] = reason
             record.metadata["decommissioned_at"] = record.updated_at
 
@@ -1295,7 +1276,7 @@ class EquipmentComponentEngine:
         record = RepairRecord(
             repair_id=repair_id,
             component_id=component_id,
-            repair_date=data.get("repair_date", _utcnow().isoformat()),
+            repair_date=data.get("repair_date", utcnow().isoformat()),
             leak_rate_before_ppmv=float(
                 data.get("leak_rate_before_ppmv", 0),
             ),
@@ -1439,7 +1420,7 @@ class EquipmentComponentEngine:
         condition_counts: Dict[str, int] = defaultdict(int)
         age_years_sum = 0.0
         age_count = 0
-        now = _utcnow()
+        now = utcnow()
 
         for comp in facility_components:
             condition_counts[comp.condition] += 1

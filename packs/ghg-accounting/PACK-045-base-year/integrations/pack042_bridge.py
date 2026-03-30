@@ -22,26 +22,21 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 class Pack042Config(BaseModel):
     """Configuration for PACK-042 bridge."""
     pack042_endpoint: str = Field("internal://pack-042")
     timeout_s: float = Field(60.0, ge=5.0)
     include_screening: bool = Field(True)
-
 
 class Scope3CategoryResult(BaseModel):
     """Result for a single Scope 3 category."""
@@ -52,7 +47,6 @@ class Scope3CategoryResult(BaseModel):
     data_quality_score: float = 0.0
     is_material: bool = False
     spend_million: float = 0.0
-
 
 class Scope3ImportResult(BaseModel):
     """Result of importing Scope 3 data from PACK-042."""
@@ -66,7 +60,6 @@ class Scope3ImportResult(BaseModel):
     provenance_hash: str = ""
     warnings: List[str] = Field(default_factory=list)
     duration_ms: float = 0.0
-
 
 class Pack042Bridge:
     """
@@ -104,7 +97,7 @@ class Pack042Bridge:
             duration = (time.monotonic() - start_time) * 1000
             return Scope3ImportResult(
                 success=True,
-                imported_at=_utcnow().isoformat(),
+                imported_at=utcnow().isoformat(),
                 base_year=base_year,
                 total_scope3_tco2e=total,
                 categories_imported=len(categories),
@@ -119,7 +112,7 @@ class Pack042Bridge:
             logger.error("PACK-042 import failed: %s", e, exc_info=True)
             return Scope3ImportResult(
                 success=False,
-                imported_at=_utcnow().isoformat(),
+                imported_at=utcnow().isoformat(),
                 base_year=base_year,
                 warnings=[f"Import failed: {str(e)}"],
                 duration_ms=duration,

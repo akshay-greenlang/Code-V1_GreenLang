@@ -34,7 +34,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.data.spend_categorizer.config import (
     SpendCategorizerConfig,
@@ -55,6 +55,7 @@ from greenlang.agents.data.spend_categorizer.metrics import (
     record_processing_error,
     record_factor_lookup,
 )
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -69,13 +70,11 @@ except ImportError:
     FastAPI = None  # type: ignore[assignment, misc]
     FASTAPI_AVAILABLE = False
 
-
 # ===================================================================
 # Lightweight Pydantic models used by the facade
 # ===================================================================
 
-
-class SpendRecordResponse(BaseModel):
+class SpendRecordResponse(GreenLangBase):
     """Spend record response model.
 
     Attributes:
@@ -135,8 +134,7 @@ class SpendRecordResponse(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc).isoformat(),
     )
 
-
-class ClassificationResponse(BaseModel):
+class ClassificationResponse(GreenLangBase):
     """Classification result for a spend record.
 
     Attributes:
@@ -168,8 +166,7 @@ class ClassificationResponse(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc).isoformat(),
     )
 
-
-class Scope3AssignmentResponse(BaseModel):
+class Scope3AssignmentResponse(GreenLangBase):
     """Scope 3 category assignment result.
 
     Attributes:
@@ -195,8 +192,7 @@ class Scope3AssignmentResponse(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc).isoformat(),
     )
 
-
-class EmissionCalculationResponse(BaseModel):
+class EmissionCalculationResponse(GreenLangBase):
     """Emission calculation result for a spend record.
 
     Attributes:
@@ -226,8 +222,7 @@ class EmissionCalculationResponse(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc).isoformat(),
     )
 
-
-class CategoryRuleResponse(BaseModel):
+class CategoryRuleResponse(GreenLangBase):
     """Category classification rule definition.
 
     Attributes:
@@ -263,8 +258,7 @@ class CategoryRuleResponse(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc).isoformat(),
     )
 
-
-class AnalyticsResponse(BaseModel):
+class AnalyticsResponse(GreenLangBase):
     """Analytics summary for spend categorization.
 
     Attributes:
@@ -298,8 +292,7 @@ class AnalyticsResponse(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc).isoformat(),
     )
 
-
-class ReportResponse(BaseModel):
+class ReportResponse(GreenLangBase):
     """Generated report metadata.
 
     Attributes:
@@ -325,8 +318,7 @@ class ReportResponse(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc).isoformat(),
     )
 
-
-class SpendCategorizerStatisticsResponse(BaseModel):
+class SpendCategorizerStatisticsResponse(GreenLangBase):
     """Aggregate statistics for the spend categorizer service.
 
     Attributes:
@@ -354,11 +346,9 @@ class SpendCategorizerStatisticsResponse(BaseModel):
     avg_confidence: float = Field(default=0.0)
     active_batches: int = Field(default=0)
 
-
 # ===================================================================
 # Provenance helper
 # ===================================================================
-
 
 class _ProvenanceTracker:
     """Minimal provenance tracker recording SHA-256 audit entries.
@@ -408,7 +398,6 @@ class _ProvenanceTracker:
         self.entry_count += 1
         return entry_hash
 
-
 # ===================================================================
 # Scope 3 category reference data
 # ===================================================================
@@ -431,7 +420,6 @@ _SCOPE3_CATEGORIES: Dict[int, str] = {
     15: "Investments",
 }
 
-
 # ===================================================================
 # SpendCategorizerService facade
 # ===================================================================
@@ -439,12 +427,6 @@ _SCOPE3_CATEGORIES: Dict[int, str] = {
 # Thread-safe singleton lock
 _singleton_lock = threading.Lock()
 _singleton_instance: Optional["SpendCategorizerService"] = None
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -461,7 +443,6 @@ def _compute_hash(data: Any) -> str:
         serializable = data
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 class SpendCategorizerService:
     """Unified facade over the Spend Data Categorizer SDK.
@@ -2092,11 +2073,9 @@ class SpendCategorizerService:
         self._started = False
         logger.info("SpendCategorizerService shut down")
 
-
 # ===================================================================
 # Thread-safe singleton access
 # ===================================================================
-
 
 def _get_singleton() -> SpendCategorizerService:
     """Get or create the singleton SpendCategorizerService instance.
@@ -2111,11 +2090,9 @@ def _get_singleton() -> SpendCategorizerService:
                 _singleton_instance = SpendCategorizerService()
     return _singleton_instance
 
-
 # ===================================================================
 # FastAPI integration
 # ===================================================================
-
 
 async def configure_spend_categorizer(
     app: Any,
@@ -2161,7 +2138,6 @@ async def configure_spend_categorizer(
     logger.info("Spend categorizer service configured on app")
     return service
 
-
 def get_spend_categorizer(app: Any) -> SpendCategorizerService:
     """Get the SpendCategorizerService instance from app state.
 
@@ -2182,7 +2158,6 @@ def get_spend_categorizer(app: Any) -> SpendCategorizerService:
         )
     return service
 
-
 def get_router(service: Optional[SpendCategorizerService] = None) -> Any:
     """Get the spend categorizer API router.
 
@@ -2197,7 +2172,6 @@ def get_router(service: Optional[SpendCategorizerService] = None) -> Any:
         return router
     except ImportError:
         return None
-
 
 __all__ = [
     "SpendCategorizerService",

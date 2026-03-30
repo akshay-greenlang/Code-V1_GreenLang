@@ -45,25 +45,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -76,11 +70,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Agent Stubs
 # ---------------------------------------------------------------------------
-
 
 class _AgentStub:
     """Stub for unavailable PACK-021 engine modules."""
@@ -99,7 +91,6 @@ class _AgentStub:
             }
         return _stub_method
 
-
 def _try_import_pack021_engine(engine_id: str, module_path: str) -> Any:
     """Try to import a PACK-021 engine with graceful fallback.
 
@@ -116,11 +107,9 @@ def _try_import_pack021_engine(engine_id: str, module_path: str) -> Any:
         logger.debug("PACK-021 engine %s not available, using stub", engine_id)
         return _AgentStub(engine_id)
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class Pack021BridgeConfig(BaseModel):
     """Configuration for the PACK-021 Bridge."""
@@ -131,7 +120,6 @@ class Pack021BridgeConfig(BaseModel):
     base_year: int = Field(default=2019, ge=2015, le=2025)
     reporting_year: int = Field(default=2025, ge=2020, le=2035)
     pathway: str = Field(default="1.5C", description="SBTi pathway: 1.5C, well_below_2C, 2C")
-
 
 class BaselineResult(BaseModel):
     """Baseline emissions from PACK-021."""
@@ -151,7 +139,6 @@ class BaselineResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class TargetsResult(BaseModel):
     """Existing targets from PACK-021."""
 
@@ -167,7 +154,6 @@ class TargetsResult(BaseModel):
     sbti_aligned: bool = Field(default=False)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class GapAnalysisResult(BaseModel):
     """Gap analysis from PACK-021 for SBTi progress tracking."""
@@ -188,7 +174,6 @@ class GapAnalysisResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class RoadmapResult(BaseModel):
     """Reduction roadmap from PACK-021."""
 
@@ -204,7 +189,6 @@ class RoadmapResult(BaseModel):
     sbti_pathway_aligned: bool = Field(default=False)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class ResidualBudgetResult(BaseModel):
     """Residual emissions budget for net-zero neutralization."""
@@ -222,7 +206,6 @@ class ResidualBudgetResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class OffsetPortfolioResult(BaseModel):
     """Offset portfolio from PACK-021."""
 
@@ -238,7 +221,6 @@ class OffsetPortfolioResult(BaseModel):
     sbti_compliant: bool = Field(default=False)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class ScorecardResult(BaseModel):
     """Net-zero scorecard from PACK-021."""
@@ -256,7 +238,6 @@ class ScorecardResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class BenchmarkResult(BaseModel):
     """Sector benchmark from PACK-021."""
 
@@ -273,7 +254,6 @@ class BenchmarkResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # PACK-021 Engine Mapping
 # ---------------------------------------------------------------------------
@@ -288,11 +268,9 @@ PACK021_ENGINES: Dict[str, str] = {
     "reporting_engine": "packs.net_zero.PACK_021_net_zero_starter.engines.reporting_engine",
 }
 
-
 # ---------------------------------------------------------------------------
 # Pack021Bridge
 # ---------------------------------------------------------------------------
-
 
 class Pack021Bridge:
     """Bridge to PACK-021 Net Zero Starter Pack for SBTi alignment.

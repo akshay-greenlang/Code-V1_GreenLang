@@ -22,7 +22,8 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase
 
 
 # ---------------------------------------------------------------------------
@@ -181,7 +182,7 @@ EUDR_ARTICLES_MONITORED: List[str] = [
 # ---------------------------------------------------------------------------
 
 
-class SupplierChange(BaseModel):
+class SupplierChange(GreenLangBase):
     """A detected change in supplier data."""
     supplier_id: str = Field(..., description="Supplier identifier")
     field_changed: str = Field(..., description="Field that changed")
@@ -192,7 +193,7 @@ class SupplierChange(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class CertificationCheck(BaseModel):
+class CertificationCheck(GreenLangBase):
     """Certification expiry check result."""
     certification_id: str = Field(..., description="Certification identifier")
     supplier_id: str = Field(..., description="Supplier identifier")
@@ -204,7 +205,7 @@ class CertificationCheck(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class GeolocationShift(BaseModel):
+class GeolocationShift(GreenLangBase):
     """Detected geolocation coordinate shift."""
     entity_id: str = Field(..., description="Entity identifier (plot or supplier)")
     original_lat: Decimal = Field(default=Decimal("0"), description="Original latitude")
@@ -217,7 +218,7 @@ class GeolocationShift(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class DeforestationCorrelation(BaseModel):
+class DeforestationCorrelation(GreenLangBase):
     """Correlation between deforestation alert and supply chain entity."""
     alert_id: str = Field(..., description="Deforestation alert ID")
     entity_id: str = Field(..., description="Correlated entity ID (plot/supplier)")
@@ -229,7 +230,7 @@ class DeforestationCorrelation(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class ComplianceCheckItem(BaseModel):
+class ComplianceCheckItem(GreenLangBase):
     """A single compliance check within an audit."""
     check_id: str = Field(..., description="Check identifier")
     article_reference: str = Field(..., description="EUDR article reference")
@@ -240,7 +241,7 @@ class ComplianceCheckItem(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class RiskScoreSnapshot(BaseModel):
+class RiskScoreSnapshot(GreenLangBase):
     """Point-in-time risk score snapshot for trend analysis."""
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     entity_id: str = Field(..., description="Entity identifier")
@@ -250,7 +251,7 @@ class RiskScoreSnapshot(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class StaleEntity(BaseModel):
+class StaleEntity(GreenLangBase):
     """An entity with stale data."""
     entity_id: str = Field(..., description="Entity identifier")
     entity_type: str = Field(default="supplier", description="Entity type")
@@ -262,7 +263,7 @@ class StaleEntity(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class RegulatoryUpdate(BaseModel):
+class RegulatoryUpdate(GreenLangBase):
     """A detected regulatory update or change."""
     update_id: str = Field(..., description="Update identifier")
     source: str = Field(default="", description="Source (eur-lex, etc.)")
@@ -275,7 +276,7 @@ class RegulatoryUpdate(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class ActionRecommendation(BaseModel):
+class ActionRecommendation(GreenLangBase):
     """Recommended action from monitoring analysis."""
     action: str = Field(..., description="Action description")
     priority: str = Field(default="medium", description="Priority (low/medium/high/critical)")
@@ -290,7 +291,7 @@ class ActionRecommendation(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class SupplyChainScanRecord(BaseModel):
+class SupplyChainScanRecord(GreenLangBase):
     """Supply chain monitoring scan record.
 
     Represents a complete scan cycle across suppliers, certifications,
@@ -316,7 +317,7 @@ class SupplyChainScanRecord(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class DeforestationMonitorRecord(BaseModel):
+class DeforestationMonitorRecord(GreenLangBase):
     """Deforestation monitoring record.
 
     Integrates with EUDR-020 (Deforestation Alert System) for alert
@@ -337,7 +338,7 @@ class DeforestationMonitorRecord(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class ComplianceAuditRecord(BaseModel):
+class ComplianceAuditRecord(GreenLangBase):
     """Automated compliance audit record.
 
     Verifies EUDR compliance across Article 8, risk assessments,
@@ -362,7 +363,7 @@ class ComplianceAuditRecord(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class ChangeDetectionRecord(BaseModel):
+class ChangeDetectionRecord(GreenLangBase):
     """Change detection record across supply chain entities.
 
     Detects and classifies changes in supplier status, certifications,
@@ -385,7 +386,7 @@ class ChangeDetectionRecord(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class RiskScoreMonitorRecord(BaseModel):
+class RiskScoreMonitorRecord(GreenLangBase):
     """Risk score monitoring and trend analysis record.
 
     Tracks risk score trends over time, detects degradation,
@@ -410,7 +411,7 @@ class RiskScoreMonitorRecord(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class DataFreshnessRecord(BaseModel):
+class DataFreshnessRecord(GreenLangBase):
     """Data freshness validation record.
 
     Validates data currency across the supply chain, identifies
@@ -433,7 +434,7 @@ class DataFreshnessRecord(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class RegulatoryTrackingRecord(BaseModel):
+class RegulatoryTrackingRecord(GreenLangBase):
     """Regulatory change tracking record.
 
     Monitors regulatory updates from EU and national sources,
@@ -454,7 +455,7 @@ class RegulatoryTrackingRecord(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class MonitoringAlert(BaseModel):
+class MonitoringAlert(GreenLangBase):
     """A monitoring alert generated by any engine."""
     alert_id: str = Field(..., description="Unique alert identifier")
     operator_id: str = Field(..., description="Operator identifier")
@@ -475,7 +476,7 @@ class MonitoringAlert(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class InvestigationRecord(BaseModel):
+class InvestigationRecord(GreenLangBase):
     """Investigation triggered by monitoring alerts."""
     investigation_id: str = Field(..., description="Unique investigation identifier")
     operator_id: str = Field(..., description="Operator identifier")
@@ -492,7 +493,7 @@ class InvestigationRecord(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class MonitoringSummary(BaseModel):
+class MonitoringSummary(GreenLangBase):
     """Periodic monitoring summary across all engines."""
     summary_id: str = Field(..., description="Unique summary identifier")
     operator_id: str = Field(..., description="Operator identifier")
@@ -516,7 +517,7 @@ class MonitoringSummary(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class AuditEntry(BaseModel):
+class AuditEntry(GreenLangBase):
     """An audit trail entry for continuous monitoring events."""
     entry_id: str = Field(..., description="Unique audit entry identifier")
     entity_type: str = Field(..., description="Entity type being audited")
@@ -530,7 +531,7 @@ class AuditEntry(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class HealthStatus(BaseModel):
+class HealthStatus(GreenLangBase):
     """Health check response for the Continuous Monitoring Agent."""
     agent_id: str = AGENT_ID
     status: str = "healthy"

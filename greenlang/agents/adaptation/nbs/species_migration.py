@@ -16,10 +16,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism.clock import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +42,7 @@ class TaxonomicGroup(str, Enum):
     INVERTEBRATES = "invertebrates"
 
 
-class SpeciesRecord(BaseModel):
+class SpeciesRecord(GreenLangBase):
     species_id: str = Field(...)
     common_name: str = Field(...)
     scientific_name: str = Field(...)
@@ -53,7 +54,7 @@ class SpeciesRecord(BaseModel):
     is_endemic: bool = Field(default=False)
 
 
-class MigrationProjection(BaseModel):
+class MigrationProjection(GreenLangBase):
     species_id: str = Field(...)
     species_name: str = Field(...)
     current_suitable_area_km2: float = Field(...)
@@ -68,7 +69,7 @@ class MigrationProjection(BaseModel):
     conservation_priority: str = Field(...)
 
 
-class SpeciesMigrationInput(BaseModel):
+class SpeciesMigrationInput(GreenLangBase):
     project_id: str = Field(...)
     species: List[SpeciesRecord] = Field(..., min_length=1)
     climate_scenario: str = Field(default="RCP4.5")
@@ -76,7 +77,7 @@ class SpeciesMigrationInput(BaseModel):
     temperature_increase_c: float = Field(default=1.5)
 
 
-class SpeciesMigrationOutput(BaseModel):
+class SpeciesMigrationOutput(GreenLangBase):
     project_id: str = Field(...)
     calculation_date: datetime = Field(default_factory=DeterministicClock.now)
     total_species: int = Field(...)

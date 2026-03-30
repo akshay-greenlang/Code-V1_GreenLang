@@ -43,25 +43,19 @@ from typing import Any, Deque, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -74,11 +68,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Rate Limiter
 # ---------------------------------------------------------------------------
-
 
 class RateLimiter:
     """Token-bucket rate limiter for Xero API (5 req/sec)."""
@@ -102,11 +94,9 @@ class RateLimiter:
 
         self._timestamps.append(time.monotonic())
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class XeroConnectionStatus(str, Enum):
     """Xero connection lifecycle status."""
@@ -116,7 +106,6 @@ class XeroConnectionStatus(str, Enum):
     CONNECTED = "connected"
     TOKEN_EXPIRED = "token_expired"
     ERROR = "error"
-
 
 class XeroAccountType(str, Enum):
     """Xero account types relevant for emission categorization."""
@@ -128,7 +117,6 @@ class XeroAccountType(str, Enum):
     CURRENT = "CURRENT"
     REVENUE = "REVENUE"
     OTHER = "OTHER"
-
 
 # ---------------------------------------------------------------------------
 # GL Code to Emission Category Mapping
@@ -156,11 +144,9 @@ XERO_GL_EMISSION_MAP: Dict[str, Dict[str, str]] = {
     "501": {"category": "packaging", "scope": "scope_3", "description": "Cost of Sales - Packaging"},
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class XeroConfig(BaseModel):
     """Xero connector configuration."""
@@ -184,7 +170,6 @@ class XeroConfig(BaseModel):
     max_retries: int = Field(default=3, ge=0, le=10)
     enable_provenance: bool = Field(default=True)
 
-
 class XeroTokens(BaseModel):
     """OAuth2 token storage."""
 
@@ -194,7 +179,6 @@ class XeroTokens(BaseModel):
     expires_at: Optional[datetime] = Field(None)
     scope: str = Field(default="")
     id_token: str = Field(default="")
-
 
 class XeroAccount(BaseModel):
     """Xero chart of accounts entry."""
@@ -207,7 +191,6 @@ class XeroAccount(BaseModel):
     status: str = Field(default="ACTIVE")
     emission_category: str = Field(default="")
     emission_scope: str = Field(default="")
-
 
 class XeroTransaction(BaseModel):
     """Xero transaction record."""
@@ -224,7 +207,6 @@ class XeroTransaction(BaseModel):
     contact_name: str = Field(default="")
     emission_category: str = Field(default="")
     emission_scope: str = Field(default="")
-
 
 class XeroExportResult(BaseModel):
     """Result of a Xero data export operation."""
@@ -245,7 +227,6 @@ class XeroExportResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class XeroAggregation(BaseModel):
     """Monthly or annual aggregation of Xero spend data."""
 
@@ -256,11 +237,9 @@ class XeroAggregation(BaseModel):
     transaction_count: int = Field(default=0)
     currency: str = Field(default="GBP")
 
-
 # ---------------------------------------------------------------------------
 # XeroConnector
 # ---------------------------------------------------------------------------
-
 
 class XeroConnector:
     """Xero accounting integration for SME net-zero carbon footprint.
@@ -347,7 +326,7 @@ class XeroConnector:
                 access_token=f"xero_at_{_new_uuid()[:16]}",
                 refresh_token=f"xero_rt_{_new_uuid()[:16]}",
                 token_type="Bearer",
-                expires_at=_utcnow(),
+                expires_at=utcnow(),
                 scope=" ".join(self.config.scopes),
             )
             self._status = XeroConnectionStatus.CONNECTED
@@ -377,7 +356,7 @@ class XeroConnector:
 
         try:
             self._tokens.access_token = f"xero_at_{_new_uuid()[:16]}"
-            self._tokens.expires_at = _utcnow()
+            self._tokens.expires_at = utcnow()
             self._status = XeroConnectionStatus.CONNECTED
 
             self.logger.info("Xero tokens refreshed successfully")
@@ -475,7 +454,7 @@ class XeroConnector:
         """
         start = time.monotonic()
         result = XeroExportResult(
-            started_at=_utcnow(),
+            started_at=utcnow(),
             period_start=period_start,
             period_end=period_end,
             connection_status=self._status.value,
@@ -520,7 +499,7 @@ class XeroConnector:
             result.errors.append(str(exc))
             self.logger.error("Xero export failed: %s", exc)
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         result.duration_ms = (time.monotonic() - start) * 1000
 
         if self.config.enable_provenance:

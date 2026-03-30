@@ -30,18 +30,14 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "22.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if isinstance(data, dict):
@@ -50,7 +46,6 @@ def _compute_hash(data: Any) -> str:
         raw = str(data)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _dec(val: Any, places: int = 2) -> str:
     try:
         d = Decimal(str(val))
@@ -58,7 +53,6 @@ def _dec(val: Any, places: int = 2) -> str:
         return str(d.quantize(Decimal(q), rounding=ROUND_HALF_UP))
     except Exception:
         return str(val)
-
 
 def _dec_comma(val: Any, places: int = 2) -> str:
     try:
@@ -83,14 +77,12 @@ def _dec_comma(val: Any, places: int = 2) -> str:
     except Exception:
         return str(val)
 
-
 _FOUNDATIONAL_CRITERIA = [
     {"id": "FC1", "name": "Emissions Reduction Target", "description": "Company has set a science-based near-term emissions reduction target (SBTi or equivalent)"},
     {"id": "FC2", "name": "Progress on Target", "description": "Company is making demonstrable progress towards its emissions reduction target"},
     {"id": "FC3", "name": "Public Commitment", "description": "Company has made a public commitment to net-zero with a long-term target"},
     {"id": "FC4", "name": "Transparency & Reporting", "description": "Company publicly discloses emissions, targets, and credit retirement details"},
 ]
-
 
 class VCMIClaimsReportTemplate:
     """
@@ -114,7 +106,7 @@ class VCMIClaimsReportTemplate:
     # ------------------------------------------------------------------
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections: List[str] = [
             self._md_header(data),
             self._md_eligibility_summary(data),
@@ -134,7 +126,7 @@ class VCMIClaimsReportTemplate:
         return content + f"\n\n<!-- Provenance: {prov} -->"
 
     def render_html(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         body = "\n".join([
             self._html_header(data),
@@ -160,7 +152,7 @@ class VCMIClaimsReportTemplate:
         )
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         criteria_results = data.get("criteria_results", {})
         pass_count = sum(
             1 for c in _FOUNDATIONAL_CRITERIA

@@ -44,18 +44,14 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -67,11 +63,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SupplierTier(str, Enum):
     CRITICAL = "tier_1_critical"
@@ -79,13 +73,11 @@ class SupplierTier(str, Enum):
     MANAGED = "tier_3_managed"
     MONITORED = "tier_4_monitored"
 
-
 class EngagementStage(str, Enum):
     AWARENESS = "awareness"
     MEASUREMENT = "measurement"
     TARGET_SETTING = "target_setting"
     REDUCTION = "reduction"
-
 
 class CDPScore(str, Enum):
     A = "A"
@@ -98,7 +90,6 @@ class CDPScore(str, Enum):
     D_MINUS = "D-"
     NOT_DISCLOSED = "not_disclosed"
 
-
 class QuestionnaireStatus(str, Enum):
     NOT_SENT = "not_sent"
     SENT = "sent"
@@ -107,11 +98,9 @@ class QuestionnaireStatus(str, Enum):
     VERIFIED = "verified"
     OVERDUE = "overdue"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class SupplyChainPortalConfig(BaseModel):
     pack_id: str = Field(default="PACK-027")
@@ -122,7 +111,6 @@ class SupplyChainPortalConfig(BaseModel):
     questionnaire_deadline_days: int = Field(default=60)
     rate_limit_per_minute: int = Field(default=60, ge=1, le=200)
     enable_provenance: bool = Field(default=True)
-
 
 class Supplier(BaseModel):
     supplier_id: str = Field(default_factory=_new_uuid)
@@ -141,7 +129,6 @@ class Supplier(BaseModel):
     data_quality_score: float = Field(default=0.0, ge=0.0, le=1.0)
     last_updated: Optional[datetime] = Field(None)
 
-
 class SupplierScorecard(BaseModel):
     supplier_id: str = Field(default="")
     supplier_name: str = Field(default="")
@@ -153,7 +140,6 @@ class SupplierScorecard(BaseModel):
     improvement_yoy_pct: float = Field(default=0.0)
     recommendations: List[str] = Field(default_factory=list)
 
-
 class HotspotAnalysis(BaseModel):
     analysis_id: str = Field(default_factory=_new_uuid)
     total_scope3_tco2e: float = Field(default=0.0)
@@ -163,7 +149,6 @@ class HotspotAnalysis(BaseModel):
     engagement_coverage_pct: float = Field(default=0.0)
     sbti_coverage_pct: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class EngagementProgress(BaseModel):
     total_suppliers: int = Field(default=0)
@@ -178,11 +163,9 @@ class EngagementProgress(BaseModel):
     scope3_coverage_pct: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # SupplyChainPortal
 # ---------------------------------------------------------------------------
-
 
 class SupplyChainPortal:
     """Supplier data collection and engagement portal for PACK-027.

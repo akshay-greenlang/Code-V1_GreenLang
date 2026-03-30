@@ -40,6 +40,7 @@ import uuid
 from collections import defaultdict
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.data.duplicate_detector.models import (
     BlockingStrategy,
@@ -52,21 +53,14 @@ __all__ = [
     "BlockingEngine",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_provenance(operation: str, data_repr: str) -> str:
     """Compute SHA-256 provenance hash for a blocking operation."""
-    payload = f"{operation}:{data_repr}:{_utcnow().isoformat()}"
+    payload = f"{operation}:{data_repr}:{utcnow().isoformat()}"
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -83,7 +77,6 @@ _SOUNDEX_TABLE: Dict[str, str] = {
 _DEFAULT_WINDOW_SIZE: int = 10
 _DEFAULT_KEY_SIZE: int = 3
 _MIN_CANOPY_RECORDS: int = 3
-
 
 class BlockingEngine:
     """Blocking engine for candidate pair generation.
@@ -392,7 +385,7 @@ class BlockingEngine:
             self._invocations += 1
             self._successes += 1
             self._total_duration_ms += elapsed_seconds * 1000.0
-            self._last_invoked_at = _utcnow()
+            self._last_invoked_at = utcnow()
 
     def _record_failure(self, elapsed_seconds: float) -> None:
         """Record a failed invocation."""
@@ -400,4 +393,4 @@ class BlockingEngine:
             self._invocations += 1
             self._failures += 1
             self._total_duration_ms += elapsed_seconds * 1000.0
-            self._last_invoked_at = _utcnow()
+            self._last_invoked_at = utcnow()

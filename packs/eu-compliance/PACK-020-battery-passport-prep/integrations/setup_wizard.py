@@ -48,25 +48,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -79,11 +73,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SetupStatus(str, Enum):
     """Setup wizard execution status."""
@@ -92,7 +84,6 @@ class SetupStatus(str, Enum):
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
     FAILED = "failed"
-
 
 class BatteryCategory(str, Enum):
     """EU Battery Regulation battery categories (Art 2)."""
@@ -103,7 +94,6 @@ class BatteryCategory(str, Enum):
     SLI = "sli"
     PORTABLE = "portable"
     STATIONARY_STORAGE = "stationary_storage"
-
 
 class ChemistryType(str, Enum):
     """Common battery chemistry types."""
@@ -118,11 +108,9 @@ class ChemistryType(str, Enum):
     SODIUM_ION = "Na-ion"
     SOLID_STATE = "Solid-State"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class WizardConfig(BaseModel):
     """Configuration for the setup wizard."""
@@ -130,7 +118,6 @@ class WizardConfig(BaseModel):
     interactive_mode: bool = Field(default=False)
     generate_output_file: bool = Field(default=True)
     output_dir: Optional[Path] = Field(None)
-
 
 class ManufacturerProfile(BaseModel):
     """Manufacturer profile for setup wizard."""
@@ -151,7 +138,6 @@ class ManufacturerProfile(BaseModel):
         """Validate manufacturer name is not empty for production use."""
         return v.strip()
 
-
 class RequirementsEstimate(BaseModel):
     """Estimated data and compliance requirements."""
 
@@ -171,7 +157,6 @@ class RequirementsEstimate(BaseModel):
     estimated_supplier_assessments: int = Field(default=0)
     complexity_level: str = Field(default="medium")
 
-
 class SetupResult(BaseModel):
     """Result of setup wizard execution."""
 
@@ -188,7 +173,6 @@ class SetupResult(BaseModel):
     validation_errors: List[str] = Field(default_factory=list)
     warnings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Category Preset Defaults
@@ -351,11 +335,9 @@ CATEGORY_DEFAULTS: Dict[str, Dict[str, Any]] = {
 
 AVAILABLE_PRESETS: List[str] = list(CATEGORY_DEFAULTS.keys())
 
-
 # ---------------------------------------------------------------------------
 # BatteryPassportSetupWizard
 # ---------------------------------------------------------------------------
-
 
 class BatteryPassportSetupWizard:
     """Configuration setup wizard for PACK-020 Battery Passport Prep.
@@ -406,7 +388,7 @@ class BatteryPassportSetupWizard:
             SetupResult with generated configuration and validation status.
         """
         result = SetupResult(
-            started_at=_utcnow(),
+            started_at=utcnow(),
             status=SetupStatus.IN_PROGRESS,
             profile=profile,
         )
@@ -440,7 +422,7 @@ class BatteryPassportSetupWizard:
                 result.config_file_path = str(config_path)
 
             result.status = SetupStatus.COMPLETED
-            result.completed_at = _utcnow()
+            result.completed_at = utcnow()
 
         except Exception as exc:
             result.status = SetupStatus.FAILED
@@ -449,7 +431,7 @@ class BatteryPassportSetupWizard:
 
         if result.started_at:
             result.duration_ms = (
-                _utcnow() - result.started_at
+                utcnow() - result.started_at
             ).total_seconds() * 1000
 
         result.provenance_hash = _compute_hash(result)
@@ -665,7 +647,7 @@ class BatteryPassportSetupWizard:
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
         org_slug = profile.manufacturer_name.lower().replace(" ", "_")[:20]
-        timestamp = _utcnow().strftime("%Y%m%d_%H%M%S")
+        timestamp = utcnow().strftime("%Y%m%d_%H%M%S")
         filename = f"pack_config_{org_slug}_{timestamp}.json"
         output_path = self.output_dir / filename
 
@@ -675,11 +657,9 @@ class BatteryPassportSetupWizard:
         logger.info("Generated config file: %s", output_path)
         return output_path
 
-
 # ---------------------------------------------------------------------------
 # CLI Entry Point
 # ---------------------------------------------------------------------------
-
 
 def main() -> None:
     """CLI entry point for setup wizard."""
@@ -710,7 +690,6 @@ def main() -> None:
         print(f"Validation errors: {len(result.validation_errors)}")
 
     sys.exit(0 if result.status == SetupStatus.COMPLETED else 1)
-
 
 if __name__ == "__main__":
     main()

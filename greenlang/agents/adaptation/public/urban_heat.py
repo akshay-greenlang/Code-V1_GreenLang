@@ -25,10 +25,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +50,7 @@ class VulnerabilityLevel(str, Enum):
     EXTREME = "extreme"
 
 
-class HeatVulnerabilityZone(BaseModel):
+class HeatVulnerabilityZone(GreenLangBase):
     """Zone with heat vulnerability assessment."""
     zone_id: str = Field(...)
     zone_name: str = Field(...)
@@ -63,7 +64,7 @@ class HeatVulnerabilityZone(BaseModel):
     cooling_centers_available: int = Field(default=0, ge=0)
 
 
-class CoolingCenter(BaseModel):
+class CoolingCenter(GreenLangBase):
     """Cooling center facility."""
     center_id: str = Field(...)
     name: str = Field(...)
@@ -77,7 +78,7 @@ class CoolingCenter(BaseModel):
     longitude: Optional[float] = Field(None)
 
 
-class HeatActionPlan(BaseModel):
+class HeatActionPlan(GreenLangBase):
     """Heat action plan for municipality."""
     plan_id: str = Field(...)
     municipality_name: str = Field(...)
@@ -93,7 +94,7 @@ class HeatActionPlan(BaseModel):
     provenance_hash: Optional[str] = Field(None)
 
 
-class UrbanHeatActionInput(BaseModel):
+class UrbanHeatActionInput(GreenLangBase):
     """Input for Urban Heat Action Agent."""
     action: str = Field(...)
     plan_id: Optional[str] = Field(None)
@@ -113,7 +114,7 @@ class UrbanHeatActionInput(BaseModel):
         return v
 
 
-class UrbanHeatActionOutput(BaseModel):
+class UrbanHeatActionOutput(GreenLangBase):
     """Output from Urban Heat Action Agent."""
     success: bool = Field(...)
     action: str = Field(...)

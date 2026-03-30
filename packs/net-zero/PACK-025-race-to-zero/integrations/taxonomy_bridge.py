@@ -42,23 +42,18 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -69,7 +64,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 class _AgentStub:
     def __init__(self, component_name: str) -> None:
@@ -85,7 +79,6 @@ class _AgentStub:
             }
         return _stub_method
 
-
 def _try_import_taxonomy_component(component_id: str, module_path: str) -> Any:
     try:
         return importlib.import_module(module_path)
@@ -93,11 +86,9 @@ def _try_import_taxonomy_component(component_id: str, module_path: str) -> Any:
         logger.debug("Taxonomy component %s not available, using stub", component_id)
         return _AgentStub(component_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class TaxonomyObjective(str, Enum):
     CLIMATE_MITIGATION = "climate_change_mitigation"
@@ -107,13 +98,11 @@ class TaxonomyObjective(str, Enum):
     POLLUTION = "pollution_prevention"
     BIODIVERSITY = "biodiversity"
 
-
 class AlignmentStatus(str, Enum):
     ALIGNED = "aligned"
     PARTIALLY_ALIGNED = "partially_aligned"
     NOT_ALIGNED = "not_aligned"
     ASSESSMENT_PENDING = "assessment_pending"
-
 
 class DNSHStatus(str, Enum):
     COMPLIANT = "compliant"
@@ -121,13 +110,11 @@ class DNSHStatus(str, Enum):
     ASSESSMENT_PENDING = "assessment_pending"
     NOT_APPLICABLE = "not_applicable"
 
-
 class SubstantialContributionLevel(str, Enum):
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
     NONE = "none"
-
 
 class TransitionPlanStatus(str, Enum):
     COMPLIANT = "compliant"
@@ -135,11 +122,9 @@ class TransitionPlanStatus(str, Enum):
     NON_COMPLIANT = "non_compliant"
     NOT_ASSESSED = "not_assessed"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class TaxonomyBridgeConfig(BaseModel):
     pack_id: str = Field(default="PACK-025")
@@ -149,7 +134,6 @@ class TaxonomyBridgeConfig(BaseModel):
     nace_codes: List[str] = Field(default_factory=list)
     reporting_year: int = Field(default=2025, ge=2020, le=2035)
     timeout_seconds: int = Field(default=300, ge=30)
-
 
 class TSCCriteria(BaseModel):
     """Technical Screening Criteria for taxonomy alignment."""
@@ -161,7 +145,6 @@ class TSCCriteria(BaseModel):
     threshold_value: Optional[float] = Field(None)
     threshold_unit: str = Field(default="")
     met: bool = Field(default=False)
-
 
 class AlignmentResult(BaseModel):
     """EU Taxonomy alignment assessment result."""
@@ -178,7 +161,6 @@ class AlignmentResult(BaseModel):
     tsc_results: List[Dict[str, Any]] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class SubstantialContributionResult(BaseModel):
     """Substantial contribution assessment."""
 
@@ -189,7 +171,6 @@ class SubstantialContributionResult(BaseModel):
     score: float = Field(default=0.0, ge=0.0, le=100.0)
     evidence: str = Field(default="")
 
-
 class DNSHResult(BaseModel):
     """Do No Significant Harm assessment result."""
 
@@ -198,7 +179,6 @@ class DNSHResult(BaseModel):
     objectives_assessed: Dict[str, str] = Field(default_factory=dict)
     issues: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class TaxonomyKPIResult(BaseModel):
     """Taxonomy-aligned KPI calculation result."""
@@ -209,7 +189,6 @@ class TaxonomyKPIResult(BaseModel):
     taxonomy_aligned: bool = Field(default=False)
     benchmark: Optional[float] = Field(None)
     trend: str = Field(default="stable")
-
 
 class GreenInvestmentResult(BaseModel):
     """Green investment alignment result."""
@@ -224,7 +203,6 @@ class GreenInvestmentResult(BaseModel):
     r2z_investment_score: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
 
-
 class TransitionPlanResult(BaseModel):
     """Climate transition plan validation result."""
 
@@ -236,11 +214,9 @@ class TransitionPlanResult(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # TaxonomyBridge
 # ---------------------------------------------------------------------------
-
 
 class TaxonomyBridge:
     """Bridge to GL-Taxonomy-APP for Race to Zero.

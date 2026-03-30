@@ -72,21 +72,13 @@ logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -105,7 +97,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -114,7 +105,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -126,22 +116,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ReportType(str, Enum):
     """Report type for quick-win outputs.
@@ -164,21 +150,6 @@ class ReportType(str, Enum):
     EXECUTIVE_SUMMARY = "executive_summary"
     REBATE_OPPORTUNITIES = "rebate_opportunities"
 
-
-class ReportFormat(str, Enum):
-    """Supported export formats.
-
-    MARKDOWN: Markdown text with tables.
-    HTML: HTML with inline CSS.
-    JSON: Structured JSON object.
-    CSV: Comma-separated values.
-    """
-    MARKDOWN = "markdown"
-    HTML = "html"
-    JSON = "json"
-    CSV = "csv"
-
-
 class VerificationMethod(str, Enum):
     """IPMVP-aligned savings verification method.
 
@@ -191,7 +162,6 @@ class VerificationMethod(str, Enum):
     IPMVP_OPTION_B = "ipmvp_option_b"
     STIPULATED = "stipulated"
     UTILITY_BILLS = "utility_bills"
-
 
 class DashboardWidget(str, Enum):
     """Dashboard visualisation widget types.
@@ -214,7 +184,6 @@ class DashboardWidget(str, Enum):
     WATERFALL = "waterfall"
     HEATMAP = "heatmap"
 
-
 class ProgressStatus(str, Enum):
     """Implementation progress status.
 
@@ -230,7 +199,6 @@ class ProgressStatus(str, Enum):
     VERIFIED = "verified"
     CANCELLED = "cancelled"
 
-
 class TrendDirection(str, Enum):
     """KPI trend direction indicator.
 
@@ -241,7 +209,6 @@ class TrendDirection(str, Enum):
     IMPROVING = "improving"
     STABLE = "stable"
     DECLINING = "declining"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -272,11 +239,9 @@ DEFAULT_ENERGY_PRICE_EUR_KWH: Decimal = Decimal("0.15")
 # Variance threshold for trend determination (+/- pct).
 TREND_THRESHOLD_PCT: Decimal = Decimal("5")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class KPIMetric(BaseModel):
     """Single KPI metric for dashboard display.
@@ -305,7 +270,6 @@ class KPIMetric(BaseModel):
     change_pct: Optional[Decimal] = Field(
         default=None, description="Change percentage"
     )
-
 
 class ProgressEntry(BaseModel):
     """Progress tracking entry for a single measure.
@@ -364,7 +328,6 @@ class ProgressEntry(BaseModel):
                 return ProgressStatus(v)
         return v
 
-
 class SavingsVerification(BaseModel):
     """Savings verification result for a single measure.
 
@@ -405,7 +368,6 @@ class SavingsVerification(BaseModel):
     )
     notes: str = Field(default="", max_length=2000, description="Notes")
 
-
 class DashboardData(BaseModel):
     """Aggregated dashboard dataset for UI rendering.
 
@@ -439,7 +401,6 @@ class DashboardData(BaseModel):
     top_performers: List[Dict[str, Any]] = Field(
         default_factory=list, description="Top performers"
     )
-
 
 class ExecutiveSummary(BaseModel):
     """Executive-level summary for C-suite reporting.
@@ -487,7 +448,6 @@ class ExecutiveSummary(BaseModel):
         default_factory=list, description="Next steps"
     )
 
-
 class ReportOutput(BaseModel):
     """Final report output container.
 
@@ -512,10 +472,9 @@ class ReportOutput(BaseModel):
         default_factory=dict, description="Report metadata"
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow, description="Generation timestamp"
+        default_factory=utcnow, description="Generation timestamp"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 # ---------------------------------------------------------------------------
 # Model Rebuild (required for Pydantic v2 + __future__.annotations)
@@ -528,11 +487,9 @@ DashboardData.model_rebuild()
 ExecutiveSummary.model_rebuild()
 ReportOutput.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class QuickWinsReportingEngine:
     """Quick wins reporting, dashboard, and verification engine.
@@ -734,6 +691,9 @@ class QuickWinsReportingEngine:
 
         Extracts headline metrics, achievements, risks, and next steps
         from the aggregated dashboard for C-suite reporting.
+
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ReportFormat
 
         Args:
             dashboard: Aggregated dashboard data.
@@ -1078,7 +1038,7 @@ class QuickWinsReportingEngine:
         title = report_type.value.replace("_", " ").title()
         lines.append(f"# {title}")
         lines.append("")
-        lines.append(f"**Generated:** {_utcnow().isoformat()}")
+        lines.append(f"**Generated:** {utcnow().isoformat()}")
         lines.append(f"**Engine:** QuickWinsReportingEngine v{self.engine_version}")
         lines.append("")
 
@@ -1132,7 +1092,7 @@ class QuickWinsReportingEngine:
             f"<style>{css}</style>",
             "</head><body>",
             f"<h1>{title}</h1>",
-            f"<p><em>Generated: {_utcnow().isoformat()} | "
+            f"<p><em>Generated: {utcnow().isoformat()} | "
             f"Engine: QuickWinsReportingEngine v{self.engine_version}</em></p>",
         ]
 
@@ -1161,7 +1121,7 @@ class QuickWinsReportingEngine:
         return {
             "report_type": report_type.value,
             "engine_version": self.engine_version,
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
             "data": data,
         }
 

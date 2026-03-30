@@ -48,8 +48,9 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, List, Optional, Any
 from datetime import datetime
 from enum import Enum
-from pydantic import BaseModel, Field, validator, model_validator
-from pydantic import ConfigDict
+from pydantic import Field, validator, model_validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
+
 import hashlib
 import json
 
@@ -1244,7 +1245,7 @@ UNCERTAINTY_RANGES: Dict[str, Dict[str, Decimal]] = {
 # ==============================================================================
 
 
-class ProductEOLInput(BaseModel):
+class ProductEOLInput(GreenLangBase):
     """
     Primary input for end-of-life treatment emissions calculation of a sold product.
 
@@ -1321,7 +1322,7 @@ class ProductEOLInput(BaseModel):
         return self
 
 
-class MaterialComposition(BaseModel):
+class MaterialComposition(GreenLangBase):
     """
     Material composition entry for a product's bill-of-materials.
 
@@ -1339,7 +1340,7 @@ class MaterialComposition(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class TreatmentScenario(BaseModel):
+class TreatmentScenario(GreenLangBase):
     """
     Treatment scenario for a specific end-of-life pathway.
 
@@ -1374,7 +1375,7 @@ class TreatmentScenario(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class WasteTypeResult(BaseModel):
+class WasteTypeResult(GreenLangBase):
     """
     Waste-type-specific calculation result for a single material-treatment pair.
 
@@ -1396,7 +1397,7 @@ class WasteTypeResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class AverageDataResult(BaseModel):
+class AverageDataResult(GreenLangBase):
     """
     Average-data calculation result for a product category.
 
@@ -1413,7 +1414,7 @@ class AverageDataResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class ProducerSpecificResult(BaseModel):
+class ProducerSpecificResult(GreenLangBase):
     """
     Producer-specific (EPD) calculation result.
 
@@ -1432,7 +1433,7 @@ class ProducerSpecificResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class AvoidedEmissions(BaseModel):
+class AvoidedEmissions(GreenLangBase):
     """
     Avoided emissions summary (memo items only, NOT deducted from totals).
 
@@ -1453,7 +1454,7 @@ class AvoidedEmissions(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class CircularityScore(BaseModel):
+class CircularityScore(GreenLangBase):
     """
     Circularity metrics for the product portfolio's end-of-life performance.
 
@@ -1480,7 +1481,7 @@ class CircularityScore(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class DataQualityScore(BaseModel):
+class DataQualityScore(GreenLangBase):
     """
     Data Quality Indicator (DQI) assessment with 5-dimension scoring.
 
@@ -1516,7 +1517,7 @@ class DataQualityScore(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class UncertaintyResult(BaseModel):
+class UncertaintyResult(GreenLangBase):
     """
     Uncertainty analysis result for emissions estimates.
 
@@ -1541,7 +1542,7 @@ class UncertaintyResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class CalculationResult(BaseModel):
+class CalculationResult(GreenLangBase):
     """
     Complete calculation result for end-of-life treatment of sold products.
 
@@ -1593,7 +1594,7 @@ class CalculationResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class AggregationResult(BaseModel):
+class AggregationResult(GreenLangBase):
     """
     Aggregated emissions result across multiple products, periods, or regions.
 
@@ -1623,7 +1624,7 @@ class AggregationResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class ComplianceResult(BaseModel):
+class ComplianceResult(GreenLangBase):
     """
     Compliance check result for a single regulatory framework.
 
@@ -1645,7 +1646,7 @@ class ComplianceResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class ProvenanceRecord(BaseModel):
+class ProvenanceRecord(GreenLangBase):
     """
     Provenance chain record for a single pipeline stage.
 

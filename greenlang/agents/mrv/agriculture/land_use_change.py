@@ -14,7 +14,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, List, Optional, Any
 from enum import Enum
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.mrv.agriculture.base import (
     BaseAgricultureMRVAgent,
@@ -25,6 +25,7 @@ from greenlang.agents.mrv.agriculture.base import (
     CalculationStep,
     ClimateZone,
 )
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +63,7 @@ CARBON_STOCK: Dict[str, Dict[str, Decimal]] = {
 }
 
 
-class LandUseRecord(BaseModel):
+class LandUseRecord(GreenLangBase):
     """Land use change record."""
 
     record_id: Optional[str] = Field(None, description="Record ID")

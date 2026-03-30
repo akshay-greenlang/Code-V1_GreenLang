@@ -78,6 +78,7 @@ from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -128,15 +129,9 @@ except ImportError:
     _record_methane_recovery = None  # type: ignore[assignment]
     _record_calculation_error = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -154,7 +149,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Decimal precision constants
 # ---------------------------------------------------------------------------
@@ -168,7 +162,6 @@ _TONNES_TO_KG = Decimal("1000")
 
 #: CH4 density at STP in tonnes per cubic metre (0.0007168 t/m3)
 _CH4_DENSITY_T_PER_M3 = Decimal("0.0007168")
-
 
 def _D(value: Any) -> Decimal:
     """Convert a value to Decimal with controlled precision.
@@ -189,7 +182,6 @@ def _D(value: Any) -> Decimal:
     except (InvalidOperation, ValueError) as exc:
         raise ValueError(f"Cannot convert {value!r} to Decimal") from exc
 
-
 def _safe_decimal(value: Any, default: Decimal = _ZERO) -> Decimal:
     """Safely convert a value to Decimal, returning default on failure.
 
@@ -207,7 +199,6 @@ def _safe_decimal(value: Any, default: Decimal = _ZERO) -> Decimal:
     except (InvalidOperation, ValueError, TypeError):
         return default
 
-
 def _quantize(value: Decimal) -> Decimal:
     """Quantize a Decimal to the standard 8-decimal-place precision.
 
@@ -223,11 +214,9 @@ def _quantize(value: Decimal) -> Decimal:
         logger.warning("Failed to quantize value: %s", value)
         return value
 
-
 # ===========================================================================
 # Enumerations
 # ===========================================================================
-
 
 class CompostingType(str, Enum):
     """Supported composting system types."""
@@ -238,7 +227,6 @@ class CompostingType(str, Enum):
     VERMICOMPOSTING = "VERMICOMPOSTING"
     HOME_COMPOSTING = "HOME_COMPOSTING"
 
-
 class ADProcessType(str, Enum):
     """Anaerobic digestion process configurations."""
 
@@ -248,14 +236,12 @@ class ADProcessType(str, Enum):
     DRY_THERMOPHILIC = "DRY_THERMOPHILIC"
     TWO_STAGE = "TWO_STAGE"
 
-
 class MBTType(str, Enum):
     """MBT configuration types."""
 
     MBT_AEROBIC = "MBT_AEROBIC"
     MBT_ANAEROBIC = "MBT_ANAEROBIC"
     MBT_BIODRYING = "MBT_BIODRYING"
-
 
 class WasteCategory(str, Enum):
     """Waste feedstock categories for biological treatment."""
@@ -271,7 +257,6 @@ class WasteCategory(str, Enum):
     MSW_ORGANIC_FRACTION = "MSW_ORGANIC_FRACTION"
     INDUSTRIAL_ORGANIC = "INDUSTRIAL_ORGANIC"
 
-
 class BiofilterType(str, Enum):
     """Biofilter system types for methane oxidation."""
 
@@ -281,14 +266,12 @@ class BiofilterType(str, Enum):
     BIOCOVER = "BIOCOVER"
     COMPOST_COVER = "COMPOST_COVER"
 
-
 class ManagementQuality(str, Enum):
     """Composting facility management quality levels."""
 
     WELL_MANAGED = "WELL_MANAGED"
     NOT_WELL_MANAGED = "NOT_WELL_MANAGED"
     UNMANAGED = "UNMANAGED"
-
 
 class CalculationStatus(str, Enum):
     """Result status codes."""
@@ -297,11 +280,9 @@ class CalculationStatus(str, Enum):
     PARTIAL = "PARTIAL"
     ERROR = "ERROR"
 
-
 # ===========================================================================
 # Trace Step Dataclass
 # ===========================================================================
-
 
 @dataclass
 class TraceStep:
@@ -334,7 +315,6 @@ class TraceStep:
             "unit": self.unit,
         }
 
-
 # ===========================================================================
 # GWP Lookup Tables (built-in fallback)
 # ===========================================================================
@@ -361,7 +341,6 @@ _GWP_TABLE: Dict[str, Dict[str, Decimal]] = {
         "N2O": Decimal("273"),
     },
 }
-
 
 # ===========================================================================
 # Composting Emission Factor Tables (IPCC 2019 Refined, Vol 5, Ch 4, T4.1)
@@ -447,7 +426,6 @@ _COMPOSTING_EF_N2O: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ===========================================================================
 # Composting-type specific management-quality mapping
 # ===========================================================================
@@ -460,7 +438,6 @@ _COMPOSTING_TYPE_QUALITY_MAP: Dict[str, str] = {
     "VERMICOMPOSTING": "WELL_MANAGED",
     "HOME_COMPOSTING": "NOT_WELL_MANAGED",
 }
-
 
 # ===========================================================================
 # Biofilter Efficiency Lookup
@@ -582,11 +559,9 @@ _MBT_BIO_FRACTION: Dict[str, Decimal] = {
     "MBT_BIODRYING": Decimal("0.60"),
 }
 
-
 # ===========================================================================
 # BiologicalTreatmentEngine
 # ===========================================================================
-
 
 class BiologicalTreatmentEngine:
     """Core calculation engine for biological waste treatment emissions
@@ -660,7 +635,7 @@ class BiologicalTreatmentEngine:
         self._total_calculations: int = 0
         self._total_batches: int = 0
         self._total_errors: int = 0
-        self._created_at: datetime = _utcnow()
+        self._created_at: datetime = utcnow()
 
         logger.info(
             "BiologicalTreatmentEngine initialized: default_gwp=%s, "
@@ -981,7 +956,7 @@ class BiologicalTreatmentEngine:
                 "gwp_source": gwp,
                 "calculation_trace": [ts.to_dict() for ts in trace_steps],
                 "processing_time_ms": round(elapsed_ms, 3),
-                "calculated_at": _utcnow().isoformat(),
+                "calculated_at": utcnow().isoformat(),
             }
             result["provenance_hash"] = _compute_hash(result)
 
@@ -1024,7 +999,7 @@ class BiologicalTreatmentEngine:
                 "error": str(exc),
                 "error_type": type(exc).__name__,
                 "processing_time_ms": round(elapsed_ms, 3),
-                "calculated_at": _utcnow().isoformat(),
+                "calculated_at": utcnow().isoformat(),
             }
             error_result["provenance_hash"] = _compute_hash(error_result)
 
@@ -1443,7 +1418,7 @@ class BiologicalTreatmentEngine:
                 "gwp_source": gwp,
                 "calculation_trace": [ts.to_dict() for ts in trace_steps],
                 "processing_time_ms": round(elapsed_ms, 3),
-                "calculated_at": _utcnow().isoformat(),
+                "calculated_at": utcnow().isoformat(),
             }
             result["provenance_hash"] = _compute_hash(result)
 
@@ -1488,7 +1463,7 @@ class BiologicalTreatmentEngine:
                 "error": str(exc),
                 "error_type": type(exc).__name__,
                 "processing_time_ms": round(elapsed_ms, 3),
-                "calculated_at": _utcnow().isoformat(),
+                "calculated_at": utcnow().isoformat(),
             }
             error_result["provenance_hash"] = _compute_hash(error_result)
 
@@ -1723,7 +1698,7 @@ class BiologicalTreatmentEngine:
                 "gwp_source": gwp,
                 "calculation_trace": [ts.to_dict() for ts in trace_steps],
                 "processing_time_ms": round(elapsed_ms, 3),
-                "calculated_at": _utcnow().isoformat(),
+                "calculated_at": utcnow().isoformat(),
             }
             result["provenance_hash"] = _compute_hash(result)
 
@@ -1766,7 +1741,7 @@ class BiologicalTreatmentEngine:
                 "error": str(exc),
                 "error_type": type(exc).__name__,
                 "processing_time_ms": round(elapsed_ms, 3),
-                "calculated_at": _utcnow().isoformat(),
+                "calculated_at": utcnow().isoformat(),
             }
             error_result["provenance_hash"] = _compute_hash(error_result)
 
@@ -1867,7 +1842,7 @@ class BiologicalTreatmentEngine:
                     ),
                     "error_type": "ValueError",
                     "processing_time_ms": 0.0,
-                    "calculated_at": _utcnow().isoformat(),
+                    "calculated_at": utcnow().isoformat(),
                 }
                 result["provenance_hash"] = _compute_hash(result)
 
@@ -2123,7 +2098,7 @@ class BiologicalTreatmentEngine:
             total_errors, created_at, uptime_seconds.
         """
         with self._lock:
-            now = _utcnow()
+            now = utcnow()
             uptime = (now - self._created_at).total_seconds()
             return {
                 "total_calculations": self._total_calculations,

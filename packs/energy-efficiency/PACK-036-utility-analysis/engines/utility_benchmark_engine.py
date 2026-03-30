@@ -82,25 +82,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -127,7 +121,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -143,7 +136,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -164,7 +156,6 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100).
 
@@ -176,7 +167,6 @@ def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
         Percentage as Decimal; Decimal("0") when whole is zero.
     """
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* and return a float.
@@ -193,26 +183,21 @@ def _round_val(value: Decimal, places: int = 6) -> float:
     quantizer = Decimal(10) ** -places
     return float(value.quantize(quantizer, rounding=ROUND_HALF_UP))
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: float) -> float:
     """Round to 4 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class BenchmarkStandard(str, Enum):
     """Benchmark standard frameworks for energy performance comparison.
@@ -235,7 +220,6 @@ class BenchmarkStandard(str, Enum):
     NABERS = "nabers"
     BREEAM = "breeam"
 
-
 class EUIUnit(str, Enum):
     """Energy Use Intensity measurement units.
 
@@ -248,7 +232,6 @@ class EUIUnit(str, Enum):
     KWH_M2_YR = "kwh_m2_yr"
     GJ_M2_YR = "gj_m2_yr"
     MJ_M2_YR = "mj_m2_yr"
-
 
 class BuildingType(str, Enum):
     """Building use type classification for benchmark selection.
@@ -272,7 +255,6 @@ class BuildingType(str, Enum):
     RESTAURANT = "restaurant"
     WORSHIP = "worship"
 
-
 class PerformanceQuartile(str, Enum):
     """Performance quartile classification by EUI ranking.
 
@@ -286,7 +268,6 @@ class PerformanceQuartile(str, Enum):
     THIRD_25 = "third_25"
     BOTTOM_25 = "bottom_25"
 
-
 class BenchmarkScope(str, Enum):
     """Energy accounting scope for benchmark comparison.
 
@@ -297,7 +278,6 @@ class BenchmarkScope(str, Enum):
     SITE = "site"
     SOURCE = "source"
     PRIMARY = "primary"
-
 
 class TrendDirection(str, Enum):
     """Direction of performance trend over time.
@@ -311,7 +291,6 @@ class TrendDirection(str, Enum):
     DECLINING = "declining"
     STABLE = "stable"
     INSUFFICIENT_DATA = "insufficient_data"
-
 
 class CommodityType(str, Enum):
     """Utility commodity types tracked in consumption data.
@@ -327,7 +306,6 @@ class CommodityType(str, Enum):
     WATER = "water"
     STEAM = "steam"
     CHILLED_WATER = "chilled_water"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Source Energy Factors
@@ -360,7 +338,6 @@ SOURCE_ENERGY_FACTORS: Dict[CommodityType, Dict[str, Any]] = {
 }
 """Site-to-source energy multipliers from ENERGY STAR Technical Reference."""
 
-
 # ---------------------------------------------------------------------------
 # Constants -- Unit Conversions
 # ---------------------------------------------------------------------------
@@ -381,7 +358,6 @@ KBTU_FT2_TO_KWH_M2: Decimal = Decimal("3.15459")
 KWH_M2_TO_KBTU_FT2: Decimal = Decimal("0.31700")
 KWH_M2_TO_GJ_M2: Decimal = Decimal("0.0036")
 KWH_M2_TO_MJ_M2: Decimal = Decimal("3.6")
-
 
 # ---------------------------------------------------------------------------
 # Constants -- ENERGY STAR National Median Source EUI (kBtu/ft2/yr)
@@ -488,7 +464,6 @@ ENERGY_STAR_MEDIAN_SOURCE_EUI: Dict[BuildingType, Dict[str, Any]] = {
     },
 }
 """National median source EUI by building type from CBECS / ENERGY STAR."""
-
 
 # ---------------------------------------------------------------------------
 # Constants -- CIBSE TM46 Benchmarks (kWh/m2/yr)
@@ -613,11 +588,9 @@ CIBSE_TM46_BENCHMARKS: Dict[BuildingType, Dict[str, Any]] = {
 }
 """CIBSE TM46:2008 energy benchmarks by building type."""
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class FacilityMetrics(BaseModel):
     """Facility profile and physical characteristics for benchmarking.
@@ -694,7 +667,6 @@ class FacilityMetrics(BaseModel):
             raise ValueError("Floor area exceeds 5 million m2 sanity check")
         return v
 
-
 class EnergyConsumption(BaseModel):
     """Annual energy consumption record for a single commodity.
 
@@ -755,11 +727,9 @@ class EnergyConsumption(BaseModel):
             )
         return self
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Intermediate / Output
 # ---------------------------------------------------------------------------
-
 
 class EUICalculation(BaseModel):
     """Calculated Energy Use Intensity values for a facility.
@@ -785,8 +755,7 @@ class EUICalculation(BaseModel):
     weather_normalized: bool = Field(default=False, description="Weather normalised")
     total_site_energy_kbtu: float = Field(default=0.0, description="Total site energy (kBtu)")
     total_source_energy_kbtu: float = Field(default=0.0, description="Total source energy (kBtu)")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Calculation timestamp")
-
+    calculated_at: datetime = Field(default_factory=utcnow, description="Calculation timestamp")
 
 class BenchmarkTarget(BaseModel):
     """Benchmark reference target from a specific standard.
@@ -815,7 +784,6 @@ class BenchmarkTarget(BaseModel):
     performance_label: str = Field(
         default="", description="Performance classification label"
     )
-
 
 class EnergyStarScore(BaseModel):
     """ENERGY STAR score estimation for a facility.
@@ -853,7 +821,6 @@ class EnergyStarScore(BaseModel):
         default=75, description="Score threshold for certification"
     )
 
-
 class PeerComparison(BaseModel):
     """Peer group benchmarking result for a single facility.
 
@@ -882,7 +849,6 @@ class PeerComparison(BaseModel):
         default=PerformanceQuartile.BOTTOM_25, description="Performance quartile"
     )
 
-
 class PortfolioRanking(BaseModel):
     """Portfolio-level ranking and statistics across multiple facilities.
 
@@ -905,8 +871,7 @@ class PortfolioRanking(BaseModel):
     portfolio_median_eui: float = Field(default=0.0, ge=0, description="Median EUI")
     spread: float = Field(default=0.0, ge=0, description="EUI spread (max - min)")
     facility_count: int = Field(default=0, ge=0, description="Number of facilities")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Timestamp")
-
+    calculated_at: datetime = Field(default_factory=utcnow, description="Timestamp")
 
 class TrendAnalysis(BaseModel):
     """Multi-period EUI trend analysis for a single facility.
@@ -936,7 +901,6 @@ class TrendAnalysis(BaseModel):
         default=0.0, description="Cumulative change (%)"
     )
 
-
 class NormalizationFactor(BaseModel):
     """A normalisation factor applied to an EUI calculation.
 
@@ -950,7 +914,6 @@ class NormalizationFactor(BaseModel):
     factor_value: float = Field(..., description="Factor value")
     source: str = Field(default="", description="Factor source reference")
     applied_to: str = Field(default="", description="Which metric was adjusted")
-
 
 class BenchmarkResult(BaseModel):
     """Complete benchmark result for a single facility.
@@ -996,7 +959,7 @@ class BenchmarkResult(BaseModel):
         default_factory=list, description="Normalisation factors applied"
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Timestamp")
     processing_time_ms: float = Field(
         default=0.0, description="Processing time (ms)"
     )
@@ -1004,11 +967,9 @@ class BenchmarkResult(BaseModel):
         default=_MODULE_VERSION, description="Engine version"
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class UtilityBenchmarkEngine:
     """Utility performance benchmarking engine.
@@ -1046,7 +1007,7 @@ class UtilityBenchmarkEngine:
     def __init__(self) -> None:
         """Initialise UtilityBenchmarkEngine."""
         self.engine_id: str = _new_uuid()
-        self.created_at: datetime = _utcnow()
+        self.created_at: datetime = utcnow()
         logger.info(
             "UtilityBenchmarkEngine v%s initialised [engine_id=%s]",
             _MODULE_VERSION,

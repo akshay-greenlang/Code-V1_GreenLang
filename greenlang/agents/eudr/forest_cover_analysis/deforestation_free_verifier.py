@@ -79,6 +79,8 @@ from datetime import date, datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -91,27 +93,18 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a unique identifier using UUID4."""
     return str(uuid.uuid4())
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class DeforestationVerdict(str, Enum):
     """EUDR deforestation-free verification verdict.
@@ -128,7 +121,6 @@ class DeforestationVerdict(str, Enum):
     DEGRADED = "DEGRADED"
     INCONCLUSIVE = "INCONCLUSIVE"
 
-
 class VerificationStep(str, Enum):
     """Steps in the verification pipeline for provenance tracking."""
 
@@ -138,7 +130,6 @@ class VerificationStep(str, Enum):
     STATE_COMPARISON = "STATE_COMPARISON"
     DECISION_LOGIC = "DECISION_LOGIC"
     EVIDENCE_ASSEMBLY = "EVIDENCE_ASSEMBLY"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -233,11 +224,9 @@ VERDICT_REGULATORY_REFERENCES: Dict[str, List[str]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class VerificationInput:
@@ -280,7 +269,6 @@ class VerificationInput:
     degradation_threshold_pct: Optional[float] = None
     confidence_min: float = DEFAULT_CONFIDENCE_MIN
 
-
 @dataclass
 class CanopyChangeResult:
     """Result of canopy density change computation.
@@ -303,7 +291,6 @@ class CanopyChangeResult:
     exceeds_degradation: bool = False
     degradation_threshold: float = 0.0
 
-
 @dataclass
 class EvidenceItem:
     """A single piece of evidence in the verification package.
@@ -319,7 +306,6 @@ class EvidenceItem:
     description: str = ""
     data: Dict[str, Any] = field(default_factory=dict)
     provenance_hash: str = ""
-
 
 @dataclass
 class DeforestationFreeResult:
@@ -419,11 +405,9 @@ class DeforestationFreeResult:
             "metadata": self.metadata,
         }
 
-
 # ---------------------------------------------------------------------------
 # DeforestationFreeVerifier
 # ---------------------------------------------------------------------------
-
 
 class DeforestationFreeVerifier:
     """Production-grade EUDR deforestation-free verification engine.
@@ -520,7 +504,7 @@ class DeforestationFreeVerifier:
             raise ValueError("plot_id must not be empty")
 
         result_id = _generate_id()
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         step_hashes: Dict[str, str] = {}
         evidence_items: List[EvidenceItem] = []
@@ -1212,7 +1196,7 @@ class DeforestationFreeVerifier:
             verdict_confidence=0.0,
             verdict_reason=f"Verification failed: {error_msg}",
             biome=input_data.biome,
-            timestamp=_utcnow().isoformat(),
+            timestamp=utcnow().isoformat(),
             metadata={"error": error_msg},
         )
         result.provenance_hash = _compute_hash({
@@ -1220,7 +1204,6 @@ class DeforestationFreeVerifier:
             "error": error_msg,
         })
         return result
-
 
 # ---------------------------------------------------------------------------
 # Module Exports

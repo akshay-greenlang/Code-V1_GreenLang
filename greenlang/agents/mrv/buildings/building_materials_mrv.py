@@ -30,7 +30,7 @@ from decimal import Decimal
 from enum import Enum
 from typing import Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.mrv.buildings.base import (
     BuildingMRVBaseAgent,
@@ -43,6 +43,7 @@ from greenlang.agents.mrv.buildings.base import (
     DataQuality,
     VerificationStatus,
 )
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -159,7 +160,7 @@ TYPICAL_MATERIAL_QUANTITIES = {
 # INPUT/OUTPUT MODELS
 # =============================================================================
 
-class MaterialQuantity(BaseModel):
+class MaterialQuantity(GreenLangBase):
     """Material quantity specification."""
     material_id: str = Field(..., description="Material identifier")
     material_type: str = Field(..., description="Material type key")

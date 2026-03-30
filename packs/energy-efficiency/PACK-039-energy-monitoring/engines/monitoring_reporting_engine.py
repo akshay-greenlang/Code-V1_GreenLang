@@ -78,25 +78,20 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ReportFormat
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -114,7 +109,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -123,7 +117,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -135,22 +128,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ReportType(str, Enum):
     """Report type classification.
@@ -173,23 +162,6 @@ class ReportType(str, Enum):
     EXCEPTION = "exception"
     CUSTOM = "custom"
 
-
-class ReportFormat(str, Enum):
-    """Report output format.
-
-    MARKDOWN:  Markdown text format.
-    HTML:      HTML format for web display.
-    JSON:      Structured JSON data.
-    CSV:       Comma-separated values for data export.
-    PDF:       PDF document format.
-    """
-    MARKDOWN = "markdown"
-    HTML = "html"
-    JSON = "json"
-    CSV = "csv"
-    PDF = "pdf"
-
-
 class ScheduleFrequency(str, Enum):
     """Report schedule frequency.
 
@@ -207,7 +179,6 @@ class ScheduleFrequency(str, Enum):
     ANNUAL = "annual"
     ON_DEMAND = "on_demand"
 
-
 class DistributionChannel(str, Enum):
     """Report distribution channel.
 
@@ -223,7 +194,6 @@ class DistributionChannel(str, Enum):
     API = "api"
     PRINT = "print"
 
-
 class ReportStatus(str, Enum):
     """Report generation lifecycle status.
 
@@ -238,7 +208,6 @@ class ReportStatus(str, Enum):
     COMPLETE = "complete"
     FAILED = "failed"
     DISTRIBUTED = "distributed"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -292,11 +261,9 @@ MONTHLY_SECTIONS: List[str] = [
     "anomaly_details", "weather_impact", "recommendations", "appendix",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class ReportConfig(BaseModel):
     """Report generation configuration.
@@ -376,7 +343,6 @@ class ReportConfig(BaseModel):
             return "Unnamed Report"
         return v
 
-
 class ReportSchedule(BaseModel):
     """Report schedule tracking.
 
@@ -402,7 +368,7 @@ class ReportSchedule(BaseModel):
         default=None, description="Last run"
     )
     next_run: datetime = Field(
-        default_factory=_utcnow, description="Next run"
+        default_factory=utcnow, description="Next run"
     )
     run_count: int = Field(
         default=0, ge=0, description="Run count"
@@ -414,9 +380,8 @@ class ReportSchedule(BaseModel):
         default=True, description="Active"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Created"
+        default_factory=utcnow, description="Created"
     )
-
 
 class ReportSection(BaseModel):
     """Individual report section content.
@@ -459,7 +424,6 @@ class ReportSection(BaseModel):
     is_exception: bool = Field(
         default=False, description="Is exception"
     )
-
 
 class ReportOutput(BaseModel):
     """Generated report output.
@@ -507,10 +471,9 @@ class ReportOutput(BaseModel):
         default_factory=list, description="Channels used"
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow, description="Generated at"
+        default_factory=utcnow, description="Generated at"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class ReportingResult(BaseModel):
     """Comprehensive reporting engine result.
@@ -550,18 +513,16 @@ class ReportingResult(BaseModel):
         default=None, description="Schedule"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp"
+        default_factory=utcnow, description="Timestamp"
     )
     processing_time_ms: float = Field(
         default=0.0, description="Processing time (ms)"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class MonitoringReportingEngine:
     """Automated scheduled report generation engine.
@@ -739,7 +700,7 @@ class MonitoringReportingEngine:
             report_config.schedule_frequency.value,
         )
 
-        now = _utcnow()
+        now = utcnow()
         interval = SCHEDULE_INTERVALS.get(
             report_config.schedule_frequency.value,
             timedelta(days=1),
@@ -940,7 +901,7 @@ class MonitoringReportingEngine:
             dist_entry: Dict[str, Any] = {
                 "channel": channel.value,
                 "status": "distributed",
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }
 
             if channel == DistributionChannel.EMAIL:
@@ -972,7 +933,7 @@ class MonitoringReportingEngine:
                 d for d in distribution_results if d["status"] == "distributed"
             ]),
             "distribution_details": distribution_results,
-            "calculated_at": _utcnow().isoformat(),
+            "calculated_at": utcnow().isoformat(),
             "processing_time_ms": round(elapsed, 2),
         }
         result["provenance_hash"] = _compute_hash(result)
@@ -1251,7 +1212,7 @@ class MonitoringReportingEngine:
         Returns:
             Updated ReportSchedule.
         """
-        now = _utcnow()
+        now = utcnow()
         interval = SCHEDULE_INTERVALS.get(
             report_config.schedule_frequency.value,
             timedelta(days=1),
@@ -1290,7 +1251,7 @@ class MonitoringReportingEngine:
             Markdown string.
         """
         lines = [f"# {title or 'Energy Monitoring Report'}", ""]
-        lines.append(f"**Generated:** {_utcnow().isoformat()}")
+        lines.append(f"**Generated:** {utcnow().isoformat()}")
         lines.append(f"**Company:** {self._company_name}")
         lines.append("")
 
@@ -1330,7 +1291,7 @@ class MonitoringReportingEngine:
             ".summary{background:#f8f9fa;padding:1em;border-radius:4px;}"
             "</style></head><body>",
             f"<h1>{title or 'Energy Monitoring Report'}</h1>",
-            f"<p><em>Generated: {_utcnow().isoformat()}</em></p>",
+            f"<p><em>Generated: {utcnow().isoformat()}</em></p>",
         ]
 
         for section in sections:
@@ -1359,7 +1320,7 @@ class MonitoringReportingEngine:
         """
         data = {
             "title": title or "Energy Monitoring Report",
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
             "company": self._company_name,
             "sections": [
                 {

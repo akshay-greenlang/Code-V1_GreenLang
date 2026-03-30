@@ -17,9 +17,11 @@ from typing import Any, Dict, List
 import pytest
 
 import sys, os
+from greenlang.schemas import utcnow
 sys.path.insert(0, os.path.dirname(__file__))
 
 from conftest import (
+
     StubCBAMApp,
     StubCertificateEngine,
     StubCustoms,
@@ -392,7 +394,7 @@ class TestVerificationEngine:
             "scope": ["steel", "aluminium"],
             "reporting_year": 2026,
             "status": "initiated",
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
         assert engagement["status"] == "initiated"
         assert engagement["verifier_id"] == "VER-DAkkS-001"
@@ -438,7 +440,7 @@ class TestVerificationEngine:
             "opinion": "unqualified",
             "scope": sample_verifier["scopes"],
             "valid_until": sample_verifier["accreditation_valid_until"],
-            "issued_at": _utcnow().isoformat(),
+            "issued_at": utcnow().isoformat(),
             "provenance_hash": _compute_hash({
                 "verifier": sample_verifier["verifier_id"],
                 "opinion": "unqualified",

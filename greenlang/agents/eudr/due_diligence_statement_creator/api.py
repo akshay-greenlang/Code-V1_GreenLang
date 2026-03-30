@@ -57,9 +57,10 @@ import logging
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException, Query, Response
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.eudr.due_diligence_statement_creator.setup import get_service
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +70,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-class CreateDDSRequest(BaseModel):
+class CreateDDSRequest(GreenLangBase):
     """Request body for creating a new DDS."""
     operator_id: str = Field(..., description="EUDR operator identifier")
     operator_name: str = Field(..., description="Operator legal name")
@@ -80,7 +81,7 @@ class CreateDDSRequest(BaseModel):
     language: str = Field(default="en", description="Primary language")
 
 
-class AssembleDDSRequest(BaseModel):
+class AssembleDDSRequest(GreenLangBase):
     """Request body for assembling a DDS with full data."""
     operator_id: str = Field(..., description="EUDR operator identifier")
     operator_name: str = Field(..., description="Operator legal name")
@@ -100,12 +101,12 @@ class AssembleDDSRequest(BaseModel):
     metadata: Optional[Dict[str, Any]] = Field(None, description="Additional metadata")
 
 
-class UpdateStatusRequest(BaseModel):
+class UpdateStatusRequest(GreenLangBase):
     """Request body for updating DDS status."""
     status: str = Field(..., description="New DDS status")
 
 
-class FormatGeolocationRequest(BaseModel):
+class FormatGeolocationRequest(GreenLangBase):
     """Request body for formatting geolocation data."""
     plot_id: str = Field(..., description="Plot identifier")
     latitude: float = Field(..., description="Latitude (WGS84)")
@@ -116,7 +117,7 @@ class FormatGeolocationRequest(BaseModel):
     collection_method: str = Field(default="gps_field_survey", description="Method")
 
 
-class IntegrateRiskRequest(BaseModel):
+class IntegrateRiskRequest(GreenLangBase):
     """Request body for integrating risk data."""
     risk_id: str = Field(..., description="Risk assessment identifier")
     source_agent: str = Field(..., description="Source EUDR agent ID")
@@ -128,7 +129,7 @@ class IntegrateRiskRequest(BaseModel):
     data_sources: Optional[List[str]] = Field(None, description="Data sources")
 
 
-class CompileSupplyChainRequest(BaseModel):
+class CompileSupplyChainRequest(GreenLangBase):
     """Request body for compiling supply chain data."""
     supply_chain_id: str = Field(..., description="Supply chain identifier")
     commodity: str = Field(..., description="Commodity type")
@@ -138,7 +139,7 @@ class CompileSupplyChainRequest(BaseModel):
     traceability_score: float = Field(default=0.0, description="Traceability score")
 
 
-class AddDocumentRequest(BaseModel):
+class AddDocumentRequest(GreenLangBase):
     """Request body for adding a document to the package."""
     document_type: str = Field(..., description="Document type")
     filename: str = Field(..., description="Filename")
@@ -150,7 +151,7 @@ class AddDocumentRequest(BaseModel):
     language: str = Field(default="en", description="Document language")
 
 
-class ApplySignatureRequest(BaseModel):
+class ApplySignatureRequest(GreenLangBase):
     """Request body for applying a digital signature."""
     signer_name: str = Field(..., description="Signer name")
     signer_role: str = Field(default="", description="Signer role")
@@ -159,7 +160,7 @@ class ApplySignatureRequest(BaseModel):
     signed_hash: str = Field(default="", description="SHA-256 hash of signed content")
 
 
-class CreateAmendmentRequest(BaseModel):
+class CreateAmendmentRequest(GreenLangBase):
     """Request body for creating a DDS amendment."""
     reason: str = Field(..., description="Amendment reason")
     description: str = Field(..., description="Description of changes")
@@ -169,12 +170,12 @@ class CreateAmendmentRequest(BaseModel):
     approved_by: str = Field(default="", description="User approving the amendment")
 
 
-class SubmitDDSRequest(BaseModel):
+class SubmitDDSRequest(GreenLangBase):
     """Request body for submitting a DDS to the EU IS."""
     additional_documents: Optional[List[Dict[str, Any]]] = Field(None, description="Extra docs")
 
 
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     """Standard error response body."""
     detail: str = Field(..., description="Error description")
     error_code: str = Field(default="internal_error", description="Error classification")

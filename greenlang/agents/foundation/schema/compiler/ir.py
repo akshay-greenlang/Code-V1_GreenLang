@@ -37,7 +37,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, FrozenSet, List, Optional, Set, Tuple, Union
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import ConfigDict, Field, field_validator
+from greenlang.schemas import GreenLangBase
 
 
 # =============================================================================
@@ -52,7 +53,7 @@ COMPILER_VERSION: str = "0.1.0"
 # =============================================================================
 
 
-class CompiledPattern(BaseModel):
+class CompiledPattern(GreenLangBase):
     """
     Precompiled regex pattern with safety metadata.
 
@@ -142,7 +143,7 @@ class CompiledPattern(BaseModel):
 # =============================================================================
 
 
-class NumericConstraintIR(BaseModel):
+class NumericConstraintIR(GreenLangBase):
     """
     Precompiled numeric constraints for fast validation.
 
@@ -231,7 +232,7 @@ class NumericConstraintIR(BaseModel):
         return None
 
 
-class StringConstraintIR(BaseModel):
+class StringConstraintIR(GreenLangBase):
     """
     Precompiled string constraints for fast validation.
 
@@ -298,7 +299,7 @@ class StringConstraintIR(BaseModel):
         return self.format is not None
 
 
-class ArrayConstraintIR(BaseModel):
+class ArrayConstraintIR(GreenLangBase):
     """
     Precompiled array constraints for fast validation.
 
@@ -352,7 +353,7 @@ class ArrayConstraintIR(BaseModel):
 # =============================================================================
 
 
-class UnitSpecIR(BaseModel):
+class UnitSpecIR(GreenLangBase):
     """
     Compiled unit specification for fast validation.
 
@@ -408,7 +409,7 @@ class UnitSpecIR(BaseModel):
 # =============================================================================
 
 
-class RuleBindingIR(BaseModel):
+class RuleBindingIR(GreenLangBase):
     """
     Compiled rule binding for cross-field validation.
 
@@ -495,7 +496,7 @@ class RuleBindingIR(BaseModel):
 # =============================================================================
 
 
-class PropertyIR(BaseModel):
+class PropertyIR(GreenLangBase):
     """
     Compiled property information for fast validation.
 
@@ -549,7 +550,7 @@ class PropertyIR(BaseModel):
 # =============================================================================
 
 
-class DeprecationInfoIR(BaseModel):
+class DeprecationInfoIR(GreenLangBase):
     """
     Compiled deprecation information for a field.
 
@@ -598,7 +599,7 @@ class DeprecationInfoIR(BaseModel):
 # =============================================================================
 
 
-class SchemaIR(BaseModel):
+class SchemaIR(GreenLangBase):
     """
     Compiled schema Intermediate Representation.
 
@@ -890,7 +891,7 @@ class SchemaIR(BaseModel):
 # =============================================================================
 
 
-class CompilationResult(BaseModel):
+class CompilationResult(GreenLangBase):
     """
     Result of schema compilation.
 

@@ -76,13 +76,9 @@ from .metrics import (
 )
 from .provenance import GENESIS_HASH, ProvenanceTracker
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 class LifecycleManager:
     """Reference number lifecycle state management engine.
@@ -273,7 +269,7 @@ class LifecycleManager:
         )
 
         # Update revoked_at timestamp
-        ref_data["revoked_at"] = _utcnow().isoformat()
+        ref_data["revoked_at"] = utcnow().isoformat()
 
         record_reference_revoked(reason)
 
@@ -324,7 +320,7 @@ class LifecycleManager:
 
         # Create transfer record
         transfer_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         transfer_record = {
             "transfer_id": transfer_id,
@@ -378,7 +374,7 @@ class LifecycleManager:
         if not self.config.enable_auto_expiration:
             return []
 
-        now = _utcnow()
+        now = utcnow()
         expired: List[Dict[str, Any]] = []
 
         refs_to_check = (
@@ -470,7 +466,7 @@ class LifecycleManager:
 
         # Update timestamp fields based on state
         if to_state == ReferenceNumberStatus.USED:
-            ref_data["used_at"] = _utcnow().isoformat()
+            ref_data["used_at"] = utcnow().isoformat()
 
         # Log lifecycle event
         event = await self._log_lifecycle_event(
@@ -513,7 +509,7 @@ class LifecycleManager:
             Lifecycle event dictionary.
         """
         event_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         event = {
             "event_id": event_id,

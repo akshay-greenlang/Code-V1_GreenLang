@@ -16,10 +16,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism.clock import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +58,7 @@ BASELINE_DEFORESTATION_RATES = {
 }
 
 
-class REDDPlusSite(BaseModel):
+class REDDPlusSite(GreenLangBase):
     site_id: str = Field(...)
     area_ha: float = Field(..., gt=0)
     forest_type: ForestType = Field(...)
@@ -65,7 +66,7 @@ class REDDPlusSite(BaseModel):
     primary_driver: DeforestationDriver = Field(...)
 
 
-class REDDPlusPlan(BaseModel):
+class REDDPlusPlan(GreenLangBase):
     site_id: str = Field(...)
     baseline_deforestation_rate: float = Field(...)
     projected_avoided_area_ha: float = Field(...)
@@ -76,14 +77,14 @@ class REDDPlusPlan(BaseModel):
     leakage_discount_percent: float = Field(...)
 
 
-class REDDPlusInput(BaseModel):
+class REDDPlusInput(GreenLangBase):
     project_id: str = Field(...)
     sites: List[REDDPlusSite] = Field(..., min_length=1)
     project_duration_years: int = Field(default=30)
     leakage_discount: float = Field(default=0.15, ge=0, le=0.5)
 
 
-class REDDPlusOutput(BaseModel):
+class REDDPlusOutput(GreenLangBase):
     project_id: str = Field(...)
     calculation_date: datetime = Field(default_factory=DeterministicClock.now)
     total_area_ha: float = Field(...)

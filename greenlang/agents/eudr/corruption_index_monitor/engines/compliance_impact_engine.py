@@ -74,6 +74,8 @@ from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -85,12 +87,6 @@ _MODULE_VERSION: str = "1.0.0"
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -110,7 +106,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str = "impact") -> str:
     """Generate a unique identifier with a given prefix.
 
@@ -121,7 +116,6 @@ def _generate_id(prefix: str = "impact") -> str:
         ID in format ``{prefix}-{hex12}``.
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 def _to_decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
@@ -142,7 +136,6 @@ def _to_decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError) as exc:
         raise ValueError(f"Cannot convert {value!r} to Decimal") from exc
 
-
 def _clamp_decimal(value: Decimal, lo: Decimal, hi: Decimal) -> Decimal:
     """Clamp a Decimal value to [lo, hi] range.
 
@@ -160,11 +153,9 @@ def _clamp_decimal(value: Decimal, lo: Decimal, hi: Decimal) -> Decimal:
         return hi
     return value
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class EUDRCountryClassification(str, Enum):
     """EUDR Article 29 country risk classification.
@@ -179,7 +170,6 @@ class EUDRCountryClassification(str, Enum):
     STANDARD_RISK = "STANDARD_RISK"
     HIGH_RISK = "HIGH_RISK"
 
-
 class DueDiligenceLevel(str, Enum):
     """Level of due diligence required under EUDR.
 
@@ -192,7 +182,6 @@ class DueDiligenceLevel(str, Enum):
     SIMPLIFIED = "SIMPLIFIED"
     STANDARD = "STANDARD"
     ENHANCED = "ENHANCED"
-
 
 class RecommendationPriority(str, Enum):
     """Priority level for due diligence recommendations.
@@ -208,7 +197,6 @@ class RecommendationPriority(str, Enum):
     HIGH = "HIGH"
     MEDIUM = "MEDIUM"
     LOW = "LOW"
-
 
 class MonitoringFrequency(str, Enum):
     """Required monitoring frequency based on risk classification.
@@ -226,7 +214,6 @@ class MonitoringFrequency(str, Enum):
     QUARTERLY = "quarterly"
     SEMI_ANNUAL = "semi_annual"
     ANNUAL = "annual"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -551,11 +538,9 @@ RISK_FACTORS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class ComplianceImpact:
@@ -628,7 +613,6 @@ class ComplianceImpact:
             "provenance_hash": self.provenance_hash,
         }
 
-
 @dataclass
 class DDRecommendation:
     """A due diligence recommendation for a specific country/commodity pair.
@@ -679,7 +663,6 @@ class DDRecommendation:
             "provenance_hash": self.provenance_hash,
         }
 
-
 @dataclass
 class CountryImpactProfile:
     """Detailed impact profile for a country covering all commodities.
@@ -721,11 +704,9 @@ class CountryImpactProfile:
             "provenance_hash": self.provenance_hash,
         }
 
-
 # ---------------------------------------------------------------------------
 # ComplianceImpactEngine
 # ---------------------------------------------------------------------------
-
 
 class ComplianceImpactEngine:
     """Production-grade EUDR compliance impact assessment engine.
@@ -1280,7 +1261,7 @@ class ComplianceImpactEngine:
                 impact.eudr_classification, commodity,
             )
             out["processing_time_ms"] = round(processing_time_ms, 3)
-            out["calculation_timestamp"] = _utcnow().isoformat()
+            out["calculation_timestamp"] = utcnow().isoformat()
             return out
 
         # Extract raw scores
@@ -1341,7 +1322,7 @@ class ComplianceImpactEngine:
         out["mitigation_requirements"] = mitigation_reqs
         out["commodity"] = commodity
         out["processing_time_ms"] = round(processing_time_ms, 3)
-        out["calculation_timestamp"] = _utcnow().isoformat()
+        out["calculation_timestamp"] = utcnow().isoformat()
 
         logger.info(
             "Compliance impact for %s: composite=%s classification=%s "
@@ -1405,7 +1386,7 @@ class ComplianceImpactEngine:
 
         out = profile.to_dict()
         out["processing_time_ms"] = round(processing_time_ms, 3)
-        out["calculation_timestamp"] = _utcnow().isoformat()
+        out["calculation_timestamp"] = utcnow().isoformat()
 
         logger.info(
             "Impact profile for %s: %d recommendations (%d critical) "
@@ -1464,7 +1445,7 @@ class ComplianceImpactEngine:
             "high_count": sum(1 for r in recommendations if r.get("priority") == "HIGH"),
             "recommendations": recommendations,
             "processing_time_ms": round(processing_time_ms, 3),
-            "calculation_timestamp": _utcnow().isoformat(),
+            "calculation_timestamp": utcnow().isoformat(),
             "provenance_hash": "",
         }
         result["provenance_hash"] = _compute_hash(result)
@@ -1542,7 +1523,7 @@ class ComplianceImpactEngine:
             "enhanced_dd_trigger_count": len(enhanced_triggers),
             "warnings": warnings_list,
             "processing_time_ms": round(processing_time_ms, 3),
-            "calculation_timestamp": _utcnow().isoformat(),
+            "calculation_timestamp": utcnow().isoformat(),
             "provenance_hash": "",
         }
         result["provenance_hash"] = _compute_hash(result)
@@ -1602,7 +1583,7 @@ class ComplianceImpactEngine:
             "classification_summary": class_counts,
             "classifications": classifications,
             "processing_time_ms": round(processing_time_ms, 3),
-            "calculation_timestamp": _utcnow().isoformat(),
+            "calculation_timestamp": utcnow().isoformat(),
             "provenance_hash": "",
         }
         result["provenance_hash"] = _compute_hash(result)

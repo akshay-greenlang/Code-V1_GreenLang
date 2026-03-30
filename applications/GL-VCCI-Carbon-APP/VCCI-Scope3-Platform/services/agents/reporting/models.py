@@ -12,7 +12,8 @@ Date: 2025-10-30
 
 from datetime import datetime
 from typing import Optional, List, Dict, Any, Union
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 from enum import Enum
 
 from .config import ReportStandard, ExportFormat, ValidationLevel
@@ -22,7 +23,7 @@ from .config import ReportStandard, ExportFormat, ValidationLevel
 # INPUT MODELS
 # ============================================================================
 
-class CompanyInfo(BaseModel):
+class CompanyInfo(GreenLangBase):
     """Company information for report headers."""
 
     name: str = Field(..., description="Company legal name")
@@ -49,7 +50,7 @@ class CompanyInfo(BaseModel):
     primary_color: Optional[str] = Field(None, description="Primary brand color (hex)")
 
 
-class EmissionsData(BaseModel):
+class EmissionsData(GreenLangBase):
     """Emissions data for reporting."""
 
     # Scope 1
@@ -88,7 +89,7 @@ class EmissionsData(BaseModel):
     yoy_change_pct: Optional[float] = Field(None, description="Year-over-year change %")
 
 
-class EnergyData(BaseModel):
+class EnergyData(GreenLangBase):
     """Energy consumption data for reporting."""
 
     total_energy_mwh: float = Field(..., ge=0, description="Total energy consumption (MWh)")
@@ -109,7 +110,7 @@ class EnergyData(BaseModel):
     energy_intensity_per_fte: Optional[float] = Field(None, description="MWh per FTE")
 
 
-class IntensityMetrics(BaseModel):
+class IntensityMetrics(GreenLangBase):
     """Carbon intensity metrics."""
 
     # Per revenue
@@ -126,7 +127,7 @@ class IntensityMetrics(BaseModel):
     custom_metrics: Optional[Dict[str, float]] = Field(None, description="Custom intensity metrics")
 
 
-class RisksOpportunities(BaseModel):
+class RisksOpportunities(GreenLangBase):
     """Climate risks and opportunities for IFRS S2."""
 
     physical_risks: List[Dict[str, Any]] = Field(default_factory=list, description="Physical climate risks")
@@ -137,7 +138,7 @@ class RisksOpportunities(BaseModel):
     resilience_strategy: Optional[str] = Field(None, description="Climate resilience strategy")
 
 
-class TransportData(BaseModel):
+class TransportData(GreenLangBase):
     """Transport emissions data for ISO 14083."""
 
     transport_by_mode: Dict[str, Dict[str, Any]] = Field(..., description="Breakdown by mode")
@@ -157,7 +158,7 @@ class TransportData(BaseModel):
 # VALIDATION MODELS
 # ============================================================================
 
-class ValidationCheck(BaseModel):
+class ValidationCheck(GreenLangBase):
     """Individual validation check result."""
 
     check_name: str = Field(..., description="Check name")
@@ -167,7 +168,7 @@ class ValidationCheck(BaseModel):
     details: Optional[Dict[str, Any]] = Field(None, description="Additional details")
 
 
-class ValidationResult(BaseModel):
+class ValidationResult(GreenLangBase):
     """Complete validation result."""
 
     is_valid: bool = Field(..., description="Overall validation status")
@@ -194,7 +195,7 @@ class ValidationResult(BaseModel):
 # OUTPUT MODELS
 # ============================================================================
 
-class ChartInfo(BaseModel):
+class ChartInfo(GreenLangBase):
     """Generated chart information."""
 
     chart_id: str = Field(..., description="Chart identifier")
@@ -211,7 +212,7 @@ class ChartInfo(BaseModel):
     format: str = Field(default="png", description="Image format")
 
 
-class ReportMetadata(BaseModel):
+class ReportMetadata(GreenLangBase):
     """Report generation metadata."""
 
     report_id: str = Field(..., description="Unique report identifier")
@@ -236,7 +237,7 @@ class ReportMetadata(BaseModel):
     data_quality_score: float = Field(..., ge=0, le=100, description="Overall DQI score")
 
 
-class ReportResult(BaseModel):
+class ReportResult(GreenLangBase):
     """Result of report generation."""
 
     success: bool = Field(..., description="Generation success")
@@ -265,7 +266,7 @@ class ReportResult(BaseModel):
     content: Optional[Dict[str, Any]] = Field(None, description="Report content (JSON)")
 
 
-class BatchReportResult(BaseModel):
+class BatchReportResult(GreenLangBase):
     """Result of batch report generation."""
 
     total_reports: int = Field(..., ge=0, description="Total reports requested")

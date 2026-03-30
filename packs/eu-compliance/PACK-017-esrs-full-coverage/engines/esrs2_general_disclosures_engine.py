@@ -75,25 +75,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -113,7 +107,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely.
 
@@ -127,7 +120,6 @@ def _decimal(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
 ) -> Decimal:
@@ -135,7 +127,6 @@ def _safe_divide(
     if denominator == Decimal("0"):
         return default
     return numerator / denominator
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value to the specified number of decimal places.
@@ -152,11 +143,9 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class GovernanceBodyType(str, Enum):
     """Types of administrative, management and supervisory bodies.
@@ -173,7 +162,6 @@ class GovernanceBodyType(str, Enum):
     RISK_COMMITTEE = "risk_committee"
     REMUNERATION_COMMITTEE = "remuneration_committee"
 
-
 class BoardMemberRole(str, Enum):
     """Roles of members on governance bodies.
 
@@ -186,7 +174,6 @@ class BoardMemberRole(str, Enum):
     NON_EXECUTIVE_DIRECTOR = "non_executive_director"
     INDEPENDENT_DIRECTOR = "independent_director"
     EMPLOYEE_REPRESENTATIVE = "employee_representative"
-
 
 class SustainabilityExpertise(str, Enum):
     """Areas of sustainability expertise held by governance members.
@@ -202,7 +189,6 @@ class SustainabilityExpertise(str, Enum):
     SUPPLY_CHAIN = "supply_chain"
     FINANCE_ESG = "finance_esg"
 
-
 class DueDiligenceScope(str, Enum):
     """Scope of due diligence coverage in the value chain.
 
@@ -213,7 +199,6 @@ class DueDiligenceScope(str, Enum):
     UPSTREAM_SUPPLY_CHAIN = "upstream_supply_chain"
     DOWNSTREAM_VALUE_CHAIN = "downstream_value_chain"
     FULL_VALUE_CHAIN = "full_value_chain"
-
 
 class IncentiveMetricType(str, Enum):
     """Types of sustainability metrics used in incentive schemes.
@@ -229,7 +214,6 @@ class IncentiveMetricType(str, Enum):
     ESG_RATING = "esg_rating"
     CIRCULAR_ECONOMY = "circular_economy"
 
-
 class IncentiveSchemeType(str, Enum):
     """Types of incentive schemes linked to sustainability performance.
 
@@ -240,7 +224,6 @@ class IncentiveSchemeType(str, Enum):
     LONG_TERM_INCENTIVE = "long_term_incentive"
     EQUITY = "equity"
     DEFERRED_COMPENSATION = "deferred_compensation"
-
 
 class StakeholderGroup(str, Enum):
     """Categories of stakeholders per ESRS 2 SBM-2.
@@ -259,7 +242,6 @@ class StakeholderGroup(str, Enum):
     MEDIA = "media"
     ACADEMIA = "academia"
 
-
 class MaterialityDetermination(str, Enum):
     """Outcome of the materiality assessment for an ESRS topic.
 
@@ -269,7 +251,6 @@ class MaterialityDetermination(str, Enum):
     MATERIAL = "material"
     NOT_MATERIAL = "not_material"
     PHASE_IN = "phase_in"
-
 
 class MaterialityType(str, Enum):
     """Type of materiality assessment per double materiality principle.
@@ -281,7 +262,6 @@ class MaterialityType(str, Enum):
     FINANCIAL = "financial"
     DOUBLE = "double"
 
-
 class TimeHorizon(str, Enum):
     """Time horizons for impacts, risks and opportunities.
 
@@ -292,11 +272,9 @@ class TimeHorizon(str, Enum):
     MEDIUM_TERM = "medium_term"
     LONG_TERM = "long_term"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # ESRS 2 GOV required data points for completeness validation.
 ESRS2_GOV_DATAPOINTS: List[str] = [
@@ -391,11 +369,9 @@ THREE_LINES_OF_DEFENSE_MODEL: Dict[str, str] = {
     "third_line": "Internal audit providing independent assurance",
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class GovernanceBody(BaseModel):
     """A governance body with sustainability oversight per GOV-1.
@@ -458,7 +434,6 @@ class GovernanceBody(BaseModel):
             3,
         )
 
-
 class BoardMember(BaseModel):
     """Individual governance body member per GOV-1 Para 22.
 
@@ -501,7 +476,6 @@ class BoardMember(BaseModel):
         default_factory=list,
         description="Committee memberships",
     )
-
 
 class IncentiveScheme(BaseModel):
     """Sustainability-linked incentive scheme per GOV-3 Para 31.
@@ -559,7 +533,6 @@ class IncentiveScheme(BaseModel):
         description="Mapping of metric type to target description",
     )
 
-
 class DueDiligenceProcess(BaseModel):
     """Due diligence process per GOV-4 Para 35-37.
 
@@ -607,7 +580,6 @@ class DueDiligenceProcess(BaseModel):
             )
         return v
 
-
 class RiskManagementIntegration(BaseModel):
     """Risk management and internal controls per GOV-5 Para 39-41.
 
@@ -640,11 +612,9 @@ class RiskManagementIntegration(BaseModel):
         description="Whether external assurance is obtained for sustainability",
     )
 
-
 # Backward-compatible aliases
 RiskManagementProcess = RiskManagementIntegration
 InternalControlSystem = RiskManagementIntegration
-
 
 class StrategyElement(BaseModel):
     """Strategy and business model element per SBM-1 Para 43-47.
@@ -674,7 +644,6 @@ class StrategyElement(BaseModel):
         default_factory=list,
         description="Products, services, or markets affected",
     )
-
 
 class StakeholderEngagement(BaseModel):
     """Stakeholder engagement record per SBM-2 Para 49-52.
@@ -709,7 +678,6 @@ class StakeholderEngagement(BaseModel):
     def key_concerns_raised(self) -> List[str]:
         """Backward-compatible alias."""
         return self.key_concerns
-
 
 class MaterialIRO(BaseModel):
     """Material impact, risk or opportunity per IRO-1/IRO-2.
@@ -753,7 +721,6 @@ class MaterialIRO(BaseModel):
         description="Stage of the value chain where the IRO occurs",
         max_length=200,
     )
-
 
 class MinimumDisclosureRequirement(BaseModel):
     """Minimum Disclosure Requirement (MDR) entry per ESRS 2.
@@ -808,7 +775,6 @@ class MinimumDisclosureRequirement(BaseModel):
             )
         return v
 
-
 class ESRS2GeneralResult(BaseModel):
     """Complete ESRS 2 General Disclosures result.
 
@@ -825,7 +791,7 @@ class ESRS2GeneralResult(BaseModel):
         description="Engine version used for this assessment",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of calculation (UTC)",
     )
 
@@ -925,11 +891,9 @@ class ESRS2GeneralResult(BaseModel):
         description="SHA-256 hash of all inputs and calculation steps",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class GeneralDisclosuresEngine:
     """ESRS 2 General Disclosures assessment engine.

@@ -71,6 +71,8 @@ from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -82,12 +84,6 @@ _MODULE_VERSION: str = "1.0.0"
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -107,7 +103,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str = "ci") -> str:
     """Generate a unique identifier with a given prefix.
 
@@ -118,7 +113,6 @@ def _generate_id(prefix: str = "ci") -> str:
         ID in format ``{prefix}-{hex12}``.
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 def _to_decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
@@ -139,7 +133,6 @@ def _to_decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError) as exc:
         raise ValueError(f"Cannot convert {value!r} to Decimal") from exc
 
-
 def _clamp_decimal(value: Decimal, lo: Decimal, hi: Decimal) -> Decimal:
     """Clamp a Decimal value to [lo, hi] range.
 
@@ -157,11 +150,9 @@ def _clamp_decimal(value: Decimal, lo: Decimal, hi: Decimal) -> Decimal:
         return hi
     return value
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class ComplianceOutcome(str, Enum):
     """EUDR compliance outcome for affected supply chain entities.
@@ -179,7 +170,6 @@ class ComplianceOutcome(str, Enum):
     UNDER_REVIEW = "UNDER_REVIEW"
     REMEDIATION_REQUIRED = "REMEDIATION_REQUIRED"
     SUSPENDED = "SUSPENDED"
-
 
 class RemediationAction(str, Enum):
     """Required remediation actions for affected entities.
@@ -200,7 +190,6 @@ class RemediationAction(str, Enum):
     PRODUCT_WITHDRAWAL = "PRODUCT_WITHDRAWAL"
     SUPPLY_CHAIN_RESTRUCTURE = "SUPPLY_CHAIN_RESTRUCTURE"
 
-
 class RemediationPriority(str, Enum):
     """Priority level for remediation actions.
 
@@ -216,7 +205,6 @@ class RemediationPriority(str, Enum):
     HIGH = "HIGH"
     STANDARD = "STANDARD"
 
-
 class ImpactSeverity(str, Enum):
     """Impact severity classification.
 
@@ -231,7 +219,6 @@ class ImpactSeverity(str, Enum):
     HIGH = "HIGH"
     MEDIUM = "MEDIUM"
     LOW = "LOW"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -425,11 +412,9 @@ ALERT_SUPPLIER_MAP: Dict[str, List[str]] = {
     "sample_uncertain": ["SUP-001"],
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class AffectedSupplier:
@@ -468,7 +453,6 @@ class AffectedSupplier:
             "risk_level": self.risk_level,
         }
 
-
 @dataclass
 class AffectedProduct:
     """A product affected by a deforestation alert.
@@ -502,7 +486,6 @@ class AffectedProduct:
             "market_restriction": self.market_restriction,
             "withdrawal_required": self.withdrawal_required,
         }
-
 
 @dataclass
 class ComplianceImpact:
@@ -577,7 +560,6 @@ class ComplianceImpact:
             "provenance_hash": self.provenance_hash,
         }
 
-
 @dataclass
 class RemediationPlan:
     """Remediation plan for a compliance impact.
@@ -624,11 +606,9 @@ class RemediationPlan:
             "provenance_hash": self.provenance_hash,
         }
 
-
 # ---------------------------------------------------------------------------
 # ComplianceImpactAssessor
 # ---------------------------------------------------------------------------
-
 
 class ComplianceImpactAssessor:
     """Production-grade EUDR compliance impact assessment engine.
@@ -856,7 +836,7 @@ class ComplianceImpactAssessor:
             dds_affected_count=dds_count,
             assessment_notes=notes,
             regulatory_references=reg_refs,
-            assessment_timestamp=_utcnow().isoformat(),
+            assessment_timestamp=utcnow().isoformat(),
             processing_time_ms=round(processing_time_ms, 3),
         )
         impact.provenance_hash = _compute_hash(impact)

@@ -35,29 +35,23 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "24.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: Any) -> str:
     if isinstance(data, dict):
         data = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(str(data).encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -66,7 +60,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
@@ -74,13 +67,11 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class ClaimsPhase(str, Enum):
     CLAIM_FORMULATION = "claim_formulation"
     COMPLIANCE_ASSESSMENT = "compliance_assessment"
     EVIDENCE_VERIFICATION = "evidence_verification"
     APPROVAL_GATE = "approval_gate"
-
 
 class ClaimType(str, Enum):
     CARBON_NEUTRAL_ORG = "carbon_neutral_organization"
@@ -91,7 +82,6 @@ class ClaimType(str, Enum):
     CLIMATE_POSITIVE = "climate_positive"
     NET_ZERO = "net_zero"
 
-
 class ClaimStatus(str, Enum):
     DRAFT = "draft"
     UNDER_REVIEW = "under_review"
@@ -101,7 +91,6 @@ class ClaimStatus(str, Enum):
     WITHDRAWN = "withdrawn"
     EXPIRED = "expired"
 
-
 class ComplianceFramework(str, Enum):
     PAS_2060 = "pas_2060"
     VCMI = "vcmi"
@@ -109,13 +98,11 @@ class ComplianceFramework(str, Enum):
     EU_GREEN_CLAIMS = "eu_green_claims"
     ISO_14064 = "iso_14064"
 
-
 class RiskLevel(str, Enum):
     LOW = "low"
     MODERATE = "moderate"
     HIGH = "high"
     CRITICAL = "critical"
-
 
 # =============================================================================
 # REFERENCE DATA
@@ -166,11 +153,9 @@ ACCEPTABLE_CLAIM_TEMPLATES: Dict[str, str] = {
     ),
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase_name: str = Field(...)
@@ -180,7 +165,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class ClaimAssessment(BaseModel):
     claim_id: str = Field(default="")
@@ -197,7 +181,6 @@ class ClaimAssessment(BaseModel):
     approved_by: str = Field(default="")
     approval_date: Optional[datetime] = Field(None)
 
-
 class ComplianceCheck(BaseModel):
     framework: ComplianceFramework = Field(...)
     requirement_id: str = Field(default="")
@@ -206,7 +189,6 @@ class ComplianceCheck(BaseModel):
     is_met: bool = Field(default=False)
     evidence_reference: str = Field(default="")
     notes: str = Field(default="")
-
 
 class SubstantiationEvidence(BaseModel):
     evidence_id: str = Field(default="")
@@ -217,7 +199,6 @@ class SubstantiationEvidence(BaseModel):
     verified_by: str = Field(default="")
     verification_date: Optional[datetime] = Field(None)
     hash: str = Field(default="")
-
 
 class ClaimsValidationConfig(BaseModel):
     org_name: str = Field(default="")
@@ -238,7 +219,6 @@ class ClaimsValidationConfig(BaseModel):
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
 
-
 class ClaimsValidationResult(BaseModel):
     workflow_id: str = Field(...)
     workflow_name: str = Field(default="claims_validation")
@@ -254,11 +234,9 @@ class ClaimsValidationResult(BaseModel):
     recommended_action: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class ClaimsValidationWorkflow:
     """
@@ -281,7 +259,7 @@ class ClaimsValidationWorkflow:
 
     async def execute(self, config: ClaimsValidationConfig) -> ClaimsValidationResult:
         """Execute the 4-phase claims validation workflow."""
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting claims validation %s", self.workflow_id)
         self._phase_results = []
         overall_status = WorkflowStatus.RUNNING
@@ -309,7 +287,7 @@ class ClaimsValidationWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         total_checks = len(self._checks)
         passed_checks = len([c for c in self._checks if c.is_met])
         compliance_pct = (passed_checks / max(total_checks, 1)) * 100.0
@@ -338,7 +316,7 @@ class ClaimsValidationWorkflow:
 
     async def _phase_claim_formulation(self, config: ClaimsValidationConfig) -> PhaseResult:
         """Define claim scope, language, and initial substantiation."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         errors: List[str] = []
@@ -386,7 +364,7 @@ class ClaimsValidationWorkflow:
         outputs["is_substantiated"] = is_substantiated
 
         status = PhaseStatus.COMPLETED
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name=ClaimsPhase.CLAIM_FORMULATION.value,
             status=status, duration_seconds=round(elapsed, 4),
@@ -396,7 +374,7 @@ class ClaimsValidationWorkflow:
 
     async def _phase_compliance_assessment(self, config: ClaimsValidationConfig) -> PhaseResult:
         """Check claim against regulatory frameworks."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         errors: List[str] = []
@@ -445,7 +423,7 @@ class ClaimsValidationWorkflow:
         outputs["frameworks_assessed"] = [f.value for f in config.frameworks]
 
         status = PhaseStatus.COMPLETED
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name=ClaimsPhase.COMPLIANCE_ASSESSMENT.value,
             status=status, duration_seconds=round(elapsed, 4),
@@ -455,7 +433,7 @@ class ClaimsValidationWorkflow:
 
     async def _phase_evidence_verification(self, config: ClaimsValidationConfig) -> PhaseResult:
         """Verify all supporting evidence is complete and valid."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         errors: List[str] = []
@@ -489,7 +467,7 @@ class ClaimsValidationWorkflow:
         outputs["missing_items"] = len(evidence_items) - verified_count
 
         status = PhaseStatus.COMPLETED
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name=ClaimsPhase.EVIDENCE_VERIFICATION.value,
             status=status, duration_seconds=round(elapsed, 4),
@@ -499,7 +477,7 @@ class ClaimsValidationWorkflow:
 
     async def _phase_approval_gate(self, config: ClaimsValidationConfig) -> PhaseResult:
         """Final approval gate with risk assessment."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         errors: List[str] = []
@@ -524,7 +502,7 @@ class ClaimsValidationWorkflow:
         if self._claim:
             if decision == "APPROVE":
                 self._claim.claim_status = ClaimStatus.APPROVED
-                self._claim.approval_date = _utcnow()
+                self._claim.approval_date = utcnow()
             elif decision == "REJECT":
                 self._claim.claim_status = ClaimStatus.REJECTED
             self._claim.risk_level = risk
@@ -535,7 +513,7 @@ class ClaimsValidationWorkflow:
         outputs["missing_evidence"] = len(missing_evidence)
 
         status = PhaseStatus.COMPLETED
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name=ClaimsPhase.APPROVAL_GATE.value,
             status=status, duration_seconds=round(elapsed, 4),

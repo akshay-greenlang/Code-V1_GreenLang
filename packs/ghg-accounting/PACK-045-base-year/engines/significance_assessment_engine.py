@@ -98,25 +98,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -145,7 +139,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -161,7 +154,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -182,7 +174,6 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely: (part / whole) * 100.
 
@@ -194,7 +185,6 @@ def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
         Percentage as Decimal; Decimal('0') when whole is zero.
     """
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 4) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP.
@@ -209,7 +199,6 @@ def _round_val(value: Decimal, places: int = 4) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 def _abs_decimal(value: Decimal) -> Decimal:
     """Return the absolute value of a Decimal.
 
@@ -221,11 +210,9 @@ def _abs_decimal(value: Decimal) -> Decimal:
     """
     return value if value >= Decimal("0") else -value
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SignificanceMethod(str, Enum):
     """Method used for significance assessment.
@@ -241,7 +228,6 @@ class SignificanceMethod(str, Enum):
     CUMULATIVE = "cumulative"
     COMBINED = "combined"
 
-
 class AssessmentOutcome(str, Enum):
     """Result of a significance assessment.
 
@@ -255,7 +241,6 @@ class AssessmentOutcome(str, Enum):
     SIGNIFICANT = "significant"
     NOT_SIGNIFICANT = "not_significant"
     BORDERLINE = "borderline"
-
 
 class SensitivityScenario(str, Enum):
     """Sensitivity analysis scenario for impact estimation uncertainty.
@@ -271,7 +256,6 @@ class SensitivityScenario(str, Enum):
     BASE_CASE = "base_case"
     LOW_IMPACT = "low_impact"
     HIGH_IMPACT = "high_impact"
-
 
 class TriggerType(str, Enum):
     """Types of events that may trigger base year recalculation.
@@ -295,7 +279,6 @@ class TriggerType(str, Enum):
     SOURCE_BOUNDARY_CHANGE = "source_boundary_change"
     OUTSOURCING_INSOURCING = "outsourcing_insourcing"
 
-
 class EvidenceCategory(str, Enum):
     """Category of evidence in an evidence package.
 
@@ -312,7 +295,6 @@ class EvidenceCategory(str, Enum):
     SENSITIVITY = "sensitivity"
     RECOMMENDATION = "recommendation"
     REGULATORY_REF = "regulatory_ref"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -340,11 +322,9 @@ SBTI_SIGNIFICANCE_THRESHOLD_PCT: Decimal = Decimal("5.0")
 # Maximum triggers per assessment run.
 MAX_TRIGGERS_PER_ASSESSMENT: int = 200
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class TriggerInput(BaseModel):
     """Input representation of a confirmed trigger for significance assessment.
@@ -390,7 +370,6 @@ class TriggerInput(BaseModel):
     def coerce_decimal(cls, v: Any) -> Decimal:
         """Coerce emission impact to Decimal."""
         return _decimal(v)
-
 
 class AssessmentPolicy(BaseModel):
     """Policy configuration for significance assessment.
@@ -484,11 +463,9 @@ class AssessmentPolicy(BaseModel):
             self.merger_always_significant = True
         return self
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class TriggerAssessment(BaseModel):
     """Individual significance assessment result for a single trigger.
@@ -551,7 +528,6 @@ class TriggerAssessment(BaseModel):
         """Coerce numeric fields to Decimal."""
         return _decimal(v)
 
-
 class CumulativeAssessment(BaseModel):
     """Cumulative significance assessment across all triggers.
 
@@ -605,7 +581,6 @@ class CumulativeAssessment(BaseModel):
         """Coerce numeric fields to Decimal."""
         return _decimal(v)
 
-
 class SensitivityResult(BaseModel):
     """Result of a sensitivity scenario analysis.
 
@@ -648,7 +623,6 @@ class SensitivityResult(BaseModel):
         """Coerce numeric fields to Decimal."""
         return _decimal(v)
 
-
 class EvidenceItem(BaseModel):
     """A single item in an evidence package for audit and verification.
 
@@ -673,7 +647,6 @@ class EvidenceItem(BaseModel):
         default="", description="Regulatory/standard reference"
     )
 
-
 class EvidencePackage(BaseModel):
     """Complete evidence package for audit and third-party verification.
 
@@ -697,7 +670,7 @@ class EvidencePackage(BaseModel):
         default=None, description="Base year"
     )
     assessment_date: datetime = Field(
-        default_factory=_utcnow, description="Assessment date"
+        default_factory=utcnow, description="Assessment date"
     )
     items: List[EvidenceItem] = Field(
         default_factory=list, description="Evidence items"
@@ -706,7 +679,6 @@ class EvidencePackage(BaseModel):
     provenance_hash: str = Field(
         default="", description="SHA-256 provenance hash"
     )
-
 
 class SignificanceResult(BaseModel):
     """Complete significance assessment result with full provenance.
@@ -738,7 +710,7 @@ class SignificanceResult(BaseModel):
         default=_MODULE_VERSION, description="Engine version"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Assessment timestamp"
+        default_factory=utcnow, description="Assessment timestamp"
     )
     processing_time_ms: float = Field(
         default=0.0, ge=0, description="Processing time (ms)"
@@ -783,7 +755,6 @@ class SignificanceResult(BaseModel):
         """Coerce base year total to Decimal."""
         return _decimal(v)
 
-
 # ---------------------------------------------------------------------------
 # Model Rebuild (Pydantic v2 deferred annotations resolution)
 # ---------------------------------------------------------------------------
@@ -797,11 +768,9 @@ EvidenceItem.model_rebuild()
 EvidencePackage.model_rebuild()
 SignificanceResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class SignificanceAssessmentEngine:
     """Quantitative significance testing engine per GHG Protocol Ch 5.

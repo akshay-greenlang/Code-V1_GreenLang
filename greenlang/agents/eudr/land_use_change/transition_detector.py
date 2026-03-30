@@ -67,6 +67,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.land_use_change.land_use_classifier import (
     LandUseCategory,
@@ -89,27 +90,18 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a unique identifier using UUID4."""
     return str(uuid.uuid4())
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class TransitionType(str, Enum):
     """EUDR-relevant land use transition types.
@@ -145,7 +137,6 @@ class TransitionType(str, Enum):
     AGRICULTURAL_INTENSIFICATION = "agricultural_intensification"
     ABANDONMENT = "abandonment"
     STABLE = "stable"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -208,7 +199,6 @@ MIN_TRANSITION_DATE_CONFIDENCE: float = 0.50
 # based on category group membership.
 
 _TRANSITION_LOOKUP: Dict[Tuple[str, str], TransitionType] = {}
-
 
 def _build_transition_lookup() -> None:
     """Populate the transition lookup table with all EUDR-relevant rules.
@@ -312,15 +302,12 @@ def _build_transition_lookup() -> None:
     # agriculture -> forest is REFORESTATION (already set above)
     # agriculture -> shrubland is ABANDONMENT (already set above)
 
-
 # Build the lookup table on module load.
 _build_transition_lookup()
-
 
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class TransitionPlotInput:
@@ -355,7 +342,6 @@ class TransitionPlotInput:
     to_date: str = ""
     commodity_context: Optional[str] = None
     area_ha: float = 1.0
-
 
 @dataclass
 class LandUseTransition:
@@ -448,7 +434,6 @@ class LandUseTransition:
             "metadata": self.metadata,
         }
 
-
 @dataclass
 class TransitionMatrix:
     """Full 10x10 transition matrix for a region.
@@ -505,11 +490,9 @@ class TransitionMatrix:
             "timestamp": self.timestamp,
         }
 
-
 # ---------------------------------------------------------------------------
 # TransitionDetector
 # ---------------------------------------------------------------------------
-
 
 class TransitionDetector:
     """Production-grade land use transition detection engine for EUDR.
@@ -778,7 +761,7 @@ class TransitionDetector:
             from_date=date_from.isoformat(),
             to_date=date_to.isoformat(),
             region_bounds=region_bounds,
-            timestamp=_utcnow().isoformat(),
+            timestamp=utcnow().isoformat(),
         )
 
         result.provenance_hash = _compute_hash(result.to_dict())
@@ -815,7 +798,7 @@ class TransitionDetector:
         self._validate_plot_input(plot)
 
         result_id = _generate_id()
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         # Obtain classifications at both dates
         from_class = plot.from_classification
@@ -1520,14 +1503,13 @@ class TransitionDetector:
             area_ha=plot.area_ha,
             processing_time_ms=0.0,
             provenance_hash="",
-            timestamp=_utcnow().isoformat(),
+            timestamp=utcnow().isoformat(),
             metadata={
                 "error": True,
                 "error_message": error_msg,
                 "module_version": _MODULE_VERSION,
             },
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

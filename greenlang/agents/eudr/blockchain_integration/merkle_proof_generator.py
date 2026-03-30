@@ -59,6 +59,7 @@ import time
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.blockchain_integration.config import (
     BlockchainIntegrationConfig,
@@ -93,12 +94,6 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance.
 
@@ -111,7 +106,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str = "MKL") -> str:
     """Generate a prefixed UUID4 string identifier.
 
@@ -122,7 +116,6 @@ def _generate_id(prefix: str = "MKL") -> str:
         Prefixed UUID4 string.
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 # ---------------------------------------------------------------------------
 # Hash algorithm registry
@@ -152,11 +145,9 @@ except ImportError:
     except ImportError:
         logger.debug("keccak256 not available; sha256 and sha512 only")
 
-
 # ---------------------------------------------------------------------------
 # Proof step data model
 # ---------------------------------------------------------------------------
-
 
 class ProofStep:
     """A single step in a Merkle proof authentication path.
@@ -198,11 +189,9 @@ class ProofStep:
             "level": self.level,
         }
 
-
 # ---------------------------------------------------------------------------
 # Internal tree representation
 # ---------------------------------------------------------------------------
-
 
 class InternalTree:
     """Internal representation of a complete Merkle tree with all levels.
@@ -267,18 +256,16 @@ class InternalTree:
         self.hash_algorithm = hash_algorithm
         self.is_sorted = is_sorted
         self.anchor_ids = anchor_ids
-        self.created_at = _utcnow()
+        self.created_at = utcnow()
 
         # Build reverse lookup: leaf_hash -> index
         self.leaf_to_index: Dict[str, int] = {
             h: i for i, h in enumerate(leaf_hashes)
         }
 
-
 # ==========================================================================
 # MerkleProofGenerator
 # ==========================================================================
-
 
 class MerkleProofGenerator:
     """Deterministic Merkle tree construction and cryptographic proof generation engine.
@@ -492,7 +479,7 @@ class MerkleProofGenerator:
                 hash_algorithm=effective_algorithm,
                 sorted=effective_sorted,
                 anchor_ids=sorted_anchor_ids,
-                created_at=_utcnow(),
+                created_at=utcnow(),
             )
 
             # Step 7: Store tree
@@ -643,7 +630,7 @@ class MerkleProofGenerator:
             proof_format=effective_format,
             anchor_id=anchor_id,
             verified=None,
-            created_at=_utcnow(),
+            created_at=utcnow(),
         )
 
         # Verify the proof locally
@@ -1357,7 +1344,7 @@ class MerkleProofGenerator:
             hash_algorithm=algorithm,
             sorted=is_sorted,
             anchor_ids=anchor_ids,
-            created_at=_utcnow(),
+            created_at=utcnow(),
         )
         return tree_model
 
@@ -1421,7 +1408,7 @@ class MerkleProofGenerator:
             depth=depth,
             hash_algorithm=algorithm,
             sorted=is_sorted,
-            created_at=_utcnow(),
+            created_at=utcnow(),
         )
 
         with self._lock:
@@ -1434,7 +1421,6 @@ class MerkleProofGenerator:
             leaf_count,
         )
         return tree_model
-
 
 # ---------------------------------------------------------------------------
 # Public API

@@ -28,6 +28,7 @@ import uuid
 from pydantic import BaseModel, Field, validator
 
 from greenlang.agents.process_heat.gl_014_heat_exchanger.config import (
+from greenlang.schemas.enums import HealthStatus
     AlertSeverity,
     CleaningMethod,
     ExchangerType,
@@ -40,15 +41,6 @@ from greenlang.agents.process_heat.gl_014_heat_exchanger.config import (
 # =============================================================================
 # ENUMS
 # =============================================================================
-
-class HealthStatus(str, Enum):
-    """Equipment health status."""
-    EXCELLENT = "excellent"  # >90% effectiveness
-    GOOD = "good"  # 80-90% effectiveness
-    FAIR = "fair"  # 70-80% effectiveness
-    POOR = "poor"  # 60-70% effectiveness
-    CRITICAL = "critical"  # <60% effectiveness
-
 
 class TrendDirection(str, Enum):
     """Parameter trend direction."""

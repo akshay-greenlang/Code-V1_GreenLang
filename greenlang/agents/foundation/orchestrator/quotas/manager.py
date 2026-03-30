@@ -43,7 +43,8 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +73,7 @@ DEFAULT_QUEUE_TIMEOUT_SECONDS = 300.0  # 5 minutes default queue timeout
 # =============================================================================
 
 
-class QuotaConfig(BaseModel):
+class QuotaConfig(GreenLangBase):
     """
     Configuration for namespace quotas.
 
@@ -134,7 +135,7 @@ class QuotaConfig(BaseModel):
         }
 
 
-class QuotaUsage(BaseModel):
+class QuotaUsage(GreenLangBase):
     """
     Real-time usage tracking for a namespace.
 
@@ -194,7 +195,7 @@ class QuotaUsage(BaseModel):
         }
 
 
-class QuotaMetrics(BaseModel):
+class QuotaMetrics(GreenLangBase):
     """
     Metrics for quota monitoring (Prometheus-compatible).
 

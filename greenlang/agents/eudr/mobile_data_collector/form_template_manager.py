@@ -74,6 +74,8 @@ from .config import get_config
 from .metrics import record_api_error
 from .provenance import get_provenance_tracker
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -119,12 +121,6 @@ EUDR_FORM_TYPES: frozenset = frozenset({
     "producer_registration", "plot_survey", "harvest_log",
     "custody_transfer", "quality_inspection", "smallholder_declaration",
 })
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Default templates for 6 EUDR form types
@@ -327,11 +323,9 @@ def _build_default_templates() -> Dict[str, Dict[str, Any]]:
 
     return defaults
 
-
 # ---------------------------------------------------------------------------
 # FormTemplateManager
 # ---------------------------------------------------------------------------
-
 
 class FormTemplateManager:
     """Dynamic form template management engine for EUDR mobile data collection.
@@ -442,7 +436,7 @@ class FormTemplateManager:
         self._validate_validation_rules(validation_rules or [], resolved_fields)
 
         template_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         template: Dict[str, Any] = {
             "template_id": template_id,
@@ -566,7 +560,7 @@ class FormTemplateManager:
             if metadata is not None:
                 template["metadata"].update(metadata)
 
-            template["updated_at"] = _utcnow().isoformat()
+            template["updated_at"] = utcnow().isoformat()
             self._versions[template_id].append(copy.deepcopy(template))
 
         self._record_provenance(template_id, "update", template)
@@ -604,7 +598,7 @@ class FormTemplateManager:
             current = template["status"]
             if current == "draft":
                 template["status"] = "review"
-                template["updated_at"] = _utcnow().isoformat()
+                template["updated_at"] = utcnow().isoformat()
                 logger.info(
                     "Template transitioned draft->review: id=%s",
                     template_id[:12],
@@ -612,7 +606,7 @@ class FormTemplateManager:
 
             if template["status"] == "review":
                 template["status"] = "published"
-                template["updated_at"] = _utcnow().isoformat()
+                template["updated_at"] = utcnow().isoformat()
                 template["schema_definition"] = self._generate_schema_internal(
                     template,
                 )
@@ -660,7 +654,7 @@ class FormTemplateManager:
 
             template["status"] = "deprecated"
             template["is_active"] = False
-            template["updated_at"] = _utcnow().isoformat()
+            template["updated_at"] = utcnow().isoformat()
             template["metadata"]["deprecation_reason"] = reason
             self._versions[template_id].append(copy.deepcopy(template))
 
@@ -1477,7 +1471,7 @@ class FormTemplateManager:
         new_version = self._increment_version(current_version, bump)
 
         new_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         new_template = copy.deepcopy(source)
         new_template["template_id"] = new_id
@@ -1843,7 +1837,6 @@ class FormTemplateManager:
         with self._lock:
             return len(self._templates)
 
-
 # ---------------------------------------------------------------------------
 # Helper
 # ---------------------------------------------------------------------------
@@ -1871,7 +1864,6 @@ def _safe_compare(a: Any, b: Any, op: str) -> bool:
     except TypeError:
         return False
     return False
-
 
 # ---------------------------------------------------------------------------
 # Public API

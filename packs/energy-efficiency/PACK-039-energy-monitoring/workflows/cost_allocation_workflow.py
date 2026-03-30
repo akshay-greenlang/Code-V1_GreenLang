@@ -41,35 +41,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.utcnow()
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hash of a string."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -80,7 +72,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -89,7 +80,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class AllocationBasis(str, Enum):
     """Basis for cost allocation."""
@@ -101,7 +91,6 @@ class AllocationBasis(str, Enum):
     FIXED_SPLIT = "fixed_split"
     HYBRID = "hybrid"
 
-
 class BillStatus(str, Enum):
     """Internal bill status."""
 
@@ -109,7 +98,6 @@ class BillStatus(str, Enum):
     ISSUED = "issued"
     DISPUTED = "disputed"
     PAID = "paid"
-
 
 # =============================================================================
 # REFERENCE DATA (Zero-Hallucination)
@@ -166,11 +154,9 @@ ALLOCATION_METHODS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -184,7 +170,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list, description="Errors encountered")
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
 
-
 class CostCentre(BaseModel):
     """A cost centre for allocation."""
 
@@ -196,7 +181,6 @@ class CostCentre(BaseModel):
     production_units: Decimal = Field(default=Decimal("0"), ge=0, description="Production output")
     allocation_pct: Decimal = Field(default=Decimal("0"), ge=0, le=100, description="Fixed allocation %")
     department: str = Field(default="", description="Department or business unit")
-
 
 class CostAllocationInput(BaseModel):
     """Input data model for CostAllocationWorkflow."""
@@ -247,7 +231,6 @@ class CostAllocationInput(BaseModel):
             raise ValueError("facility_name must not be blank")
         return stripped
 
-
 class CostAllocationResult(BaseModel):
     """Complete result from cost allocation workflow."""
 
@@ -270,11 +253,9 @@ class CostAllocationResult(BaseModel):
     calculated_at: str = Field(default="", description="ISO 8601 timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 of complete result")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class CostAllocationWorkflow:
     """
@@ -334,7 +315,7 @@ class CostAllocationWorkflow:
             ValueError: If input validation fails.
         """
         t_start = time.perf_counter()
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting cost allocation workflow %s for facility=%s period=%s method=%s",
             self.allocation_id, input_data.facility_name,
@@ -609,7 +590,7 @@ class CostAllocationWorkflow:
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
 
-        bill_date = _utcnow().isoformat() + "Z"
+        bill_date = utcnow().isoformat() + "Z"
 
         for cc_id, cost_data in self._costs.items():
             bill = {

@@ -22,13 +22,9 @@ import uuid
 from datetime import date, datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import ConfigDict, Field, field_validator
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
+from greenlang.schemas import GreenLangBase, utcnow
 
 # =============================================================================
 # Enumerations (string literals)
@@ -70,13 +66,11 @@ _VALID_BANDS = frozenset({
     "QA_PIXEL",
 })
 
-
 # =============================================================================
 # Pagination
 # =============================================================================
 
-
-class PaginatedMeta(BaseModel):
+class PaginatedMeta(GreenLangBase):
     """Pagination metadata for list responses."""
 
     total: int = Field(..., ge=0, description="Total number of results")
@@ -84,8 +78,7 @@ class PaginatedMeta(BaseModel):
     offset: int = Field(..., ge=0, description="Results skipped")
     has_more: bool = Field(..., description="Whether more results exist")
 
-
-class PaginatedResponse(BaseModel):
+class PaginatedResponse(GreenLangBase):
     """Generic paginated response wrapper."""
 
     items: List[Dict[str, Any]] = Field(
@@ -95,20 +88,17 @@ class PaginatedResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class PaginationParams(BaseModel):
+class PaginationParams(GreenLangBase):
     """Standard pagination query parameters."""
 
     limit: int = Field(default=50, ge=1, le=1000, description="Results per page")
     offset: int = Field(default=0, ge=0, description="Number of results to skip")
 
-
 # =============================================================================
 # Response Wrappers
 # =============================================================================
 
-
-class ApiResponse(BaseModel):
+class ApiResponse(GreenLangBase):
     """Standard API success response wrapper."""
 
     status: str = Field(default="success", description="Response status")
@@ -116,13 +106,12 @@ class ApiResponse(BaseModel):
     data: Optional[Any] = Field(None, description="Response payload")
     request_id: Optional[str] = Field(None, description="Request correlation ID")
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     """Structured error response for all API endpoints."""
 
     error: str = Field(..., description="Error type identifier")
@@ -130,13 +119,11 @@ class ErrorResponse(BaseModel):
     detail: Optional[str] = Field(None, description="Additional error details")
     request_id: Optional[str] = Field(None, description="Request correlation ID")
 
-
 # =============================================================================
 # Imagery Schemas
 # =============================================================================
 
-
-class SearchScenesApiRequest(BaseModel):
+class SearchScenesApiRequest(GreenLangBase):
     """Request to search available satellite scenes for a polygon area."""
 
     polygon_vertices: List[Tuple[float, float]] = Field(
@@ -223,8 +210,7 @@ class SearchScenesApiRequest(BaseModel):
             )
         return v
 
-
-class SceneMetadataResponse(BaseModel):
+class SceneMetadataResponse(GreenLangBase):
     """Metadata for a single satellite scene."""
 
     scene_id: str = Field(..., description="Unique scene identifier")
@@ -257,8 +243,7 @@ class SceneMetadataResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class SearchScenesApiResponse(BaseModel):
+class SearchScenesApiResponse(GreenLangBase):
     """Response from satellite scene search."""
 
     total_scenes: int = Field(..., ge=0, description="Total scenes found")
@@ -276,13 +261,12 @@ class SearchScenesApiResponse(BaseModel):
         default=0.0, ge=0.0, description="Search processing time in ms"
     )
     searched_at: datetime = Field(
-        default_factory=_utcnow, description="Search timestamp"
+        default_factory=utcnow, description="Search timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class DownloadBandsApiRequest(BaseModel):
+class DownloadBandsApiRequest(GreenLangBase):
     """Request to download specific bands from a satellite scene."""
 
     scene_id: str = Field(
@@ -328,8 +312,7 @@ class DownloadBandsApiRequest(BaseModel):
             normalized.append(band)
         return normalized
 
-
-class DownloadBandsApiResponse(BaseModel):
+class DownloadBandsApiResponse(GreenLangBase):
     """Response from band download request."""
 
     scene_id: str = Field(..., description="Scene identifier")
@@ -350,13 +333,12 @@ class DownloadBandsApiResponse(BaseModel):
         default=0.0, ge=0.0, description="Download processing time in ms"
     )
     downloaded_at: datetime = Field(
-        default_factory=_utcnow, description="Download timestamp"
+        default_factory=utcnow, description="Download timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class AvailabilityResponse(BaseModel):
+class AvailabilityResponse(GreenLangBase):
     """Data availability summary for a location."""
 
     lat: float = Field(..., description="Query latitude")
@@ -375,18 +357,16 @@ class AvailabilityResponse(BaseModel):
         None, description="ID of scene with lowest cloud cover"
     )
     queried_at: datetime = Field(
-        default_factory=_utcnow, description="Query timestamp"
+        default_factory=utcnow, description="Query timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Analysis Schemas - Spectral Index
 # =============================================================================
 
-
-class CalculateIndexApiRequest(BaseModel):
+class CalculateIndexApiRequest(GreenLangBase):
     """Request to calculate a spectral vegetation index."""
 
     red_band: List[List[float]] = Field(
@@ -454,8 +434,7 @@ class CalculateIndexApiRequest(BaseModel):
             )
         return v
 
-
-class SpectralIndexApiResponse(BaseModel):
+class SpectralIndexApiResponse(GreenLangBase):
     """Response from spectral index calculation."""
 
     index_type: str = Field(..., description="Computed index type")
@@ -476,18 +455,16 @@ class SpectralIndexApiResponse(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Analysis Schemas - Baseline
 # =============================================================================
 
-
-class EstablishBaselineApiRequest(BaseModel):
+class EstablishBaselineApiRequest(GreenLangBase):
     """Request to establish a Dec 2020 baseline snapshot for a plot."""
 
     plot_id: str = Field(
@@ -590,8 +567,7 @@ class EstablishBaselineApiRequest(BaseModel):
             )
         return v
 
-
-class BaselineApiResponse(BaseModel):
+class BaselineApiResponse(GreenLangBase):
     """Response from baseline establishment."""
 
     baseline_id: str = Field(..., description="Unique baseline snapshot identifier")
@@ -629,18 +605,16 @@ class BaselineApiResponse(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
     established_at: datetime = Field(
-        default_factory=_utcnow, description="Baseline establishment timestamp"
+        default_factory=utcnow, description="Baseline establishment timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Analysis Schemas - Change Detection
 # =============================================================================
 
-
-class DetectChangeApiRequest(BaseModel):
+class DetectChangeApiRequest(GreenLangBase):
     """Request to run deforestation change detection on a plot."""
 
     plot_id: str = Field(
@@ -728,8 +702,7 @@ class DetectChangeApiRequest(BaseModel):
             )
         return v
 
-
-class ChangeDetectionApiResponse(BaseModel):
+class ChangeDetectionApiResponse(GreenLangBase):
     """Response from change detection analysis."""
 
     detection_id: str = Field(..., description="Unique detection identifier")
@@ -785,18 +758,16 @@ class ChangeDetectionApiResponse(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
     detected_at: datetime = Field(
-        default_factory=_utcnow, description="Detection timestamp"
+        default_factory=utcnow, description="Detection timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Analysis Schemas - Multi-Source Fusion
 # =============================================================================
 
-
-class FusionSourceResult(BaseModel):
+class FusionSourceResult(GreenLangBase):
     """Single source result for fusion input."""
 
     source: str = Field(..., description="Data source: sentinel2, landsat, gfw")
@@ -821,8 +792,7 @@ class FusionSourceResult(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class FusionApiRequest(BaseModel):
+class FusionApiRequest(GreenLangBase):
     """Request to run multi-source data fusion analysis."""
 
     plot_id: str = Field(
@@ -897,8 +867,7 @@ class FusionApiRequest(BaseModel):
             )
         return v
 
-
-class FusionApiResponse(BaseModel):
+class FusionApiResponse(GreenLangBase):
     """Response from multi-source fusion analysis."""
 
     fusion_id: str = Field(..., description="Unique fusion result identifier")
@@ -931,18 +900,16 @@ class FusionApiResponse(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
     fused_at: datetime = Field(
-        default_factory=_utcnow, description="Fusion timestamp"
+        default_factory=utcnow, description="Fusion timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Monitoring Schemas
 # =============================================================================
 
-
-class CreateMonitoringApiRequest(BaseModel):
+class CreateMonitoringApiRequest(GreenLangBase):
     """Request to create a continuous monitoring schedule for a plot."""
 
     plot_id: str = Field(
@@ -1078,8 +1045,7 @@ class CreateMonitoringApiRequest(BaseModel):
             )
         return v
 
-
-class UpdateMonitoringApiRequest(BaseModel):
+class UpdateMonitoringApiRequest(GreenLangBase):
     """Request to update an existing monitoring schedule."""
 
     interval: Optional[str] = Field(
@@ -1150,8 +1116,7 @@ class UpdateMonitoringApiRequest(BaseModel):
             )
         return v
 
-
-class MonitoringScheduleResponse(BaseModel):
+class MonitoringScheduleResponse(GreenLangBase):
     """Response with monitoring schedule details."""
 
     schedule_id: str = Field(..., description="Unique schedule identifier")
@@ -1175,16 +1140,15 @@ class MonitoringScheduleResponse(BaseModel):
         default=0, ge=0, description="Total executions performed"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Schedule creation timestamp"
+        default_factory=utcnow, description="Schedule creation timestamp"
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow, description="Last update timestamp"
+        default_factory=utcnow, description="Last update timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class MonitoringResultResponse(BaseModel):
+class MonitoringResultResponse(GreenLangBase):
     """Response with a single monitoring execution result."""
 
     result_id: str = Field(..., description="Unique result identifier")
@@ -1223,8 +1187,7 @@ class MonitoringResultResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class MonitoringExecuteRequest(BaseModel):
+class MonitoringExecuteRequest(GreenLangBase):
     """Request to trigger manual monitoring execution."""
 
     schedule_id: str = Field(
@@ -1236,13 +1199,11 @@ class MonitoringExecuteRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
 # =============================================================================
 # Alert Schemas
 # =============================================================================
 
-
-class AlertDetailResponse(BaseModel):
+class AlertDetailResponse(GreenLangBase):
     """Detailed satellite monitoring alert."""
 
     alert_id: str = Field(..., description="Unique alert identifier")
@@ -1288,13 +1249,12 @@ class AlertDetailResponse(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Alert creation timestamp"
+        default_factory=utcnow, description="Alert creation timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class AlertListResponse(BaseModel):
+class AlertListResponse(GreenLangBase):
     """Paginated list of satellite monitoring alerts."""
 
     alerts: List[AlertDetailResponse] = Field(
@@ -1304,8 +1264,7 @@ class AlertListResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class AcknowledgeAlertRequest(BaseModel):
+class AcknowledgeAlertRequest(GreenLangBase):
     """Request to acknowledge a satellite alert."""
 
     notes: Optional[str] = Field(
@@ -1325,8 +1284,7 @@ class AcknowledgeAlertRequest(BaseModel):
         },
     )
 
-
-class AlertSummaryResponse(BaseModel):
+class AlertSummaryResponse(GreenLangBase):
     """Alert summary statistics."""
 
     total_alerts: int = Field(default=0, ge=0, description="Total alerts")
@@ -1361,18 +1319,16 @@ class AlertSummaryResponse(BaseModel):
         default=0.0, ge=0.0, description="Total forest loss across all alerts"
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow, description="Summary generation timestamp"
+        default_factory=utcnow, description="Summary generation timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Evidence Schemas
 # =============================================================================
 
-
-class GenerateEvidenceApiRequest(BaseModel):
+class GenerateEvidenceApiRequest(GreenLangBase):
     """Request to generate an evidence package for a plot."""
 
     plot_id: str = Field(
@@ -1425,8 +1381,7 @@ class GenerateEvidenceApiRequest(BaseModel):
             )
         return v
 
-
-class EvidencePackageResponse(BaseModel):
+class EvidencePackageResponse(GreenLangBase):
     """Response with generated evidence package."""
 
     package_id: str = Field(..., description="Unique evidence package identifier")
@@ -1474,18 +1429,16 @@ class EvidencePackageResponse(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
     generated_at: datetime = Field(
-        default_factory=_utcnow, description="Package generation timestamp"
+        default_factory=utcnow, description="Package generation timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Batch Analysis Schemas
 # =============================================================================
 
-
-class BatchPlotEntry(BaseModel):
+class BatchPlotEntry(GreenLangBase):
     """Single plot entry in a batch analysis request."""
 
     plot_id: str = Field(
@@ -1554,8 +1507,7 @@ class BatchPlotEntry(BaseModel):
             )
         return v
 
-
-class BatchAnalysisApiRequest(BaseModel):
+class BatchAnalysisApiRequest(GreenLangBase):
     """Request to submit a batch satellite analysis job."""
 
     operator_id: str = Field(
@@ -1619,8 +1571,7 @@ class BatchAnalysisApiRequest(BaseModel):
             )
         return v
 
-
-class BatchAnalysisApiResponse(BaseModel):
+class BatchAnalysisApiResponse(GreenLangBase):
     """Response after submitting a batch analysis job."""
 
     batch_id: str = Field(..., description="Unique batch job identifier")
@@ -1632,7 +1583,7 @@ class BatchAnalysisApiResponse(BaseModel):
     operator_id: str = Field(..., description="Operator identifier")
     analysis_level: str = Field(default="standard", description="Analysis depth")
     submitted_at: datetime = Field(
-        default_factory=_utcnow, description="Submission timestamp"
+        default_factory=utcnow, description="Submission timestamp"
     )
     estimated_completion_seconds: Optional[float] = Field(
         None, description="Estimated time to complete in seconds"
@@ -1640,8 +1591,7 @@ class BatchAnalysisApiResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchResultsResponse(BaseModel):
+class BatchResultsResponse(GreenLangBase):
     """Response with batch job status and results."""
 
     batch_id: str = Field(..., description="Batch job identifier")
@@ -1679,8 +1629,7 @@ class BatchResultsResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchProgressResponse(BaseModel):
+class BatchProgressResponse(GreenLangBase):
     """Real-time progress of a batch analysis job."""
 
     batch_id: str = Field(..., description="Batch job identifier")
@@ -1702,8 +1651,7 @@ class BatchProgressResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchCancelResponse(BaseModel):
+class BatchCancelResponse(GreenLangBase):
     """Response after cancelling a batch analysis job."""
 
     batch_id: str = Field(..., description="Cancelled batch job identifier")
@@ -1715,28 +1663,25 @@ class BatchCancelResponse(BaseModel):
         default=0, ge=0, description="Total plots that were in the batch"
     )
     cancelled_at: datetime = Field(
-        default_factory=_utcnow, description="Cancellation timestamp"
+        default_factory=utcnow, description="Cancellation timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Health Check
 # =============================================================================
 
-
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Health check response."""
 
     status: str = Field(default="healthy")
     agent_id: str = Field(default="GL-EUDR-SAT-003")
     agent_name: str = Field(default="EUDR Satellite Monitoring Agent")
     version: str = Field(default="1.0.0")
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Public API

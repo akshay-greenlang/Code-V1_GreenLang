@@ -59,6 +59,7 @@ from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -86,16 +87,9 @@ except ImportError:
 # UTC helper
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ---------------------------------------------------------------------------
 # Deterministic SHA-256 hash helper
 # ---------------------------------------------------------------------------
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -112,7 +106,6 @@ def _compute_hash(data: Any) -> str:
         serializable = data
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Decimal precision constants
@@ -139,7 +132,6 @@ _BTU_TO_GJ = Decimal("0.0000010551")
 _KBTU_TO_GJ = Decimal("0.0010551")
 _TON_REFRIGERATION_HR_TO_GJ = Decimal("0.01267")  # 1 ton-hr = 12,670 BTU
 
-
 def _D(value: Any) -> Decimal:
     """Convert a value to Decimal with controlled precision.
 
@@ -159,7 +151,6 @@ def _D(value: Any) -> Decimal:
     except (InvalidOperation, ValueError) as exc:
         raise ValueError(f"Cannot convert {value!r} to Decimal") from exc
 
-
 def _quantize(value: Decimal) -> Decimal:
     """Quantize a Decimal to the standard 8-decimal-place precision.
 
@@ -170,7 +161,6 @@ def _quantize(value: Decimal) -> Decimal:
         Quantized Decimal with ROUND_HALF_UP.
     """
     return value.quantize(_PRECISION, rounding=ROUND_HALF_UP)
-
 
 def _quantize_3(value: Decimal) -> Decimal:
     """Quantize a Decimal to 3 decimal places for tCO2e output.
@@ -183,11 +173,9 @@ def _quantize_3(value: Decimal) -> Decimal:
     """
     return value.quantize(_PRECISION_3, rounding=ROUND_HALF_UP)
 
-
 # ===========================================================================
 # Enumerations
 # ===========================================================================
-
 
 class SteamType(str, Enum):
     """Supported steam fuel types for emission factor lookup."""
@@ -198,7 +186,6 @@ class SteamType(str, Enum):
     OIL = "oil"
     MIXED = "mixed"
 
-
 class HeatingType(str, Enum):
     """Supported heating system types for emission factor lookup."""
 
@@ -208,7 +195,6 @@ class HeatingType(str, Enum):
     HEAT_PUMP = "heat_pump"
     BIOMASS = "biomass"
 
-
 class CoolingType(str, Enum):
     """Supported cooling system types for emission factor lookup."""
 
@@ -217,14 +203,12 @@ class CoolingType(str, Enum):
     DISTRICT = "district"
     FREE_COOLING = "free_cooling"
 
-
 class EnergyType(str, Enum):
     """Broad energy type categories."""
 
     STEAM = "steam"
     HEATING = "heating"
     COOLING = "cooling"
-
 
 class CHPMethod(str, Enum):
     """CHP emission allocation methods per GHG Protocol."""
@@ -233,14 +217,12 @@ class CHPMethod(str, Enum):
     ENERGY_METHOD = "energy_method"
     EXERGY_METHOD = "exergy_method"
 
-
 class CalculationStatus(str, Enum):
     """Calculation result status codes."""
 
     SUCCESS = "SUCCESS"
     PARTIAL = "PARTIAL"
     ERROR = "ERROR"
-
 
 # ===========================================================================
 # Default Emission Factor Tables (kgCO2e per GJ, all Decimal)
@@ -294,11 +276,9 @@ _DEFAULT_HEAT_EXERGY_FACTOR = Decimal("0.30")
 # Electricity exergy factor is 1.0 (pure exergy)
 _ELECTRICITY_EXERGY_FACTOR = Decimal("1.00")
 
-
 # ===========================================================================
 # SteamHeatCoolingEngine
 # ===========================================================================
-
 
 class SteamHeatCoolingEngine:
     """Engine 3: Calculates Scope 2 emissions from purchased steam,
@@ -927,7 +907,7 @@ class SteamHeatCoolingEngine:
                 "country_code": country_code,
                 "calculation_trace": trace,
                 "processing_time_ms": round(elapsed_ms, 3),
-                "calculated_at": _utcnow().isoformat(),
+                "calculated_at": utcnow().isoformat(),
             }
             result["provenance_hash"] = _compute_hash(result)
             trace.append(
@@ -1061,7 +1041,7 @@ class SteamHeatCoolingEngine:
                 "biogenic_co2_tonnes": str(biogenic_co2_tonnes),
                 "calculation_trace": trace,
                 "processing_time_ms": round(elapsed_ms, 3),
-                "calculated_at": _utcnow().isoformat(),
+                "calculated_at": utcnow().isoformat(),
             }
             result["provenance_hash"] = _compute_hash(result)
             trace.append(
@@ -1186,7 +1166,7 @@ class SteamHeatCoolingEngine:
                 "country_code": country_code,
                 "calculation_trace": trace,
                 "processing_time_ms": round(elapsed_ms, 3),
-                "calculated_at": _utcnow().isoformat(),
+                "calculated_at": utcnow().isoformat(),
             }
             result["provenance_hash"] = _compute_hash(result)
             trace.append(
@@ -1302,7 +1282,7 @@ class SteamHeatCoolingEngine:
                 "country_code": country_code,
                 "calculation_trace": trace,
                 "processing_time_ms": round(elapsed_ms, 3),
-                "calculated_at": _utcnow().isoformat(),
+                "calculated_at": utcnow().isoformat(),
             }
             result["provenance_hash"] = _compute_hash(result)
             trace.append(
@@ -1415,7 +1395,7 @@ class SteamHeatCoolingEngine:
                 "country_code": country_code,
                 "calculation_trace": trace,
                 "processing_time_ms": round(elapsed_ms, 3),
-                "calculated_at": _utcnow().isoformat(),
+                "calculated_at": utcnow().isoformat(),
             }
             result["provenance_hash"] = _compute_hash(result)
             trace.append(
@@ -1526,7 +1506,7 @@ class SteamHeatCoolingEngine:
                 "country_code": country_code,
                 "calculation_trace": trace,
                 "processing_time_ms": round(elapsed_ms, 3),
-                "calculated_at": _utcnow().isoformat(),
+                "calculated_at": utcnow().isoformat(),
             }
             result["provenance_hash"] = _compute_hash(result)
             trace.append(
@@ -1638,7 +1618,7 @@ class SteamHeatCoolingEngine:
                 "country_code": country_code,
                 "calculation_trace": trace,
                 "processing_time_ms": round(elapsed_ms, 3),
-                "calculated_at": _utcnow().isoformat(),
+                "calculated_at": utcnow().isoformat(),
             }
             result["provenance_hash"] = _compute_hash(result)
             trace.append(
@@ -1738,7 +1718,7 @@ class SteamHeatCoolingEngine:
                 "biogenic_co2_tonnes": str(_ZERO),
                 "calculation_trace": trace,
                 "processing_time_ms": round(elapsed_ms, 3),
-                "calculated_at": _utcnow().isoformat(),
+                "calculated_at": utcnow().isoformat(),
             }
             result["provenance_hash"] = _compute_hash(result)
             trace.append(
@@ -1914,7 +1894,7 @@ class SteamHeatCoolingEngine:
                 "scope1_power_co2e_tonnes": str(power_emissions_tonnes),
                 "calculation_trace": trace,
                 "processing_time_ms": round(elapsed_ms, 3),
-                "calculated_at": _utcnow().isoformat(),
+                "calculated_at": utcnow().isoformat(),
             }
             result["provenance_hash"] = _compute_hash(result)
             trace.append(
@@ -2123,7 +2103,7 @@ class SteamHeatCoolingEngine:
             "biogenic_total_co2_tonnes": str(biogenic_total_tonnes),
             "results": results,
             "processing_time_ms": round(elapsed_ms, 3),
-            "calculated_at": _utcnow().isoformat(),
+            "calculated_at": utcnow().isoformat(),
         }
         combined_result["provenance_hash"] = _compute_hash({
             "batch_id": batch_id,
@@ -2262,7 +2242,7 @@ class SteamHeatCoolingEngine:
             "total_biogenic_co2_tonnes": str(total_biogenic_tonnes),
             "results": results,
             "processing_time_ms": round(elapsed_ms, 3),
-            "calculated_at": _utcnow().isoformat(),
+            "calculated_at": utcnow().isoformat(),
         }
         batch_result["provenance_hash"] = _compute_hash({
             "batch_id": batch_id,
@@ -2650,7 +2630,7 @@ class SteamHeatCoolingEngine:
             "total_co2e_tonnes": str(_ZERO),
             "calculation_trace": trace,
             "processing_time_ms": round(elapsed_ms, 3),
-            "calculated_at": _utcnow().isoformat(),
+            "calculated_at": utcnow().isoformat(),
         }
         error_result["provenance_hash"] = _compute_hash(error_result)
 

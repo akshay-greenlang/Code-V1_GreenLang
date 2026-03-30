@@ -37,23 +37,18 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "27.0.0"
 _PACK_ID = "PACK-027"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -62,14 +57,12 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class RegulatoryFramework(str, Enum):
     SEC_CLIMATE = "sec_climate"
@@ -81,7 +74,6 @@ class RegulatoryFramework(str, Enum):
     ISSB_S2 = "issb_s2"
     TCFD = "tcfd"
 
-
 class FilingStatus(str, Enum):
     NOT_STARTED = "not_started"
     DRAFT = "draft"
@@ -90,7 +82,6 @@ class FilingStatus(str, Enum):
     SUBMITTED = "submitted"
     ACCEPTED = "accepted"
     REVISION_REQUIRED = "revision_required"
-
 
 # =============================================================================
 # FRAMEWORK REQUIREMENTS DATABASE
@@ -197,11 +188,9 @@ FRAMEWORK_REQUIREMENTS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase_name: str = Field(...)
@@ -214,7 +203,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
     dag_node_id: str = Field(default="")
-
 
 class FrameworkFiling(BaseModel):
     framework: str = Field(default="")
@@ -230,7 +218,6 @@ class FrameworkFiling(BaseModel):
     sha256_hash: str = Field(default="")
     app_bridge: str = Field(default="")
 
-
 class CrosswalkMapping(BaseModel):
     datapoint_name: str = Field(default="")
     frameworks_using: List[str] = Field(default_factory=list)
@@ -238,14 +225,12 @@ class CrosswalkMapping(BaseModel):
     is_consistent: bool = Field(default=True)
     reconciliation_note: str = Field(default="")
 
-
 class RegulatoryFilingConfig(BaseModel):
     reporting_year: int = Field(default=2025, ge=2020, le=2035)
     frameworks_selected: List[str] = Field(default_factory=list)
     auto_generate_all: bool = Field(default=True)
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
-
 
 class RegulatoryFilingInput(BaseModel):
     config: RegulatoryFilingConfig = Field(default_factory=RegulatoryFilingConfig)
@@ -257,7 +242,6 @@ class RegulatoryFilingInput(BaseModel):
     targets: List[Dict[str, Any]] = Field(default_factory=list)
     carbon_price_usd: float = Field(default=0.0)
     assurance_completed: bool = Field(default=False)
-
 
 class RegulatoryFilingResult(BaseModel):
     workflow_id: str = Field(...)
@@ -275,11 +259,9 @@ class RegulatoryFilingResult(BaseModel):
     next_steps: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class RegulatoryFilingWorkflow:
     """
@@ -314,7 +296,7 @@ class RegulatoryFilingWorkflow:
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     async def execute(self, input_data: RegulatoryFilingInput) -> RegulatoryFilingResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         self.config = input_data.config
         self._phase_results = []
         overall_status = WorkflowStatus.RUNNING
@@ -349,7 +331,7 @@ class RegulatoryFilingWorkflow:
                 status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
 
         total_dp = sum(f.datapoints_total for f in self._filings)
         populated_dp = sum(f.datapoints_populated for f in self._filings)
@@ -376,7 +358,7 @@ class RegulatoryFilingWorkflow:
         return result
 
     async def _phase_framework_selection(self, input_data: RegulatoryFilingInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         selected = self.config.frameworks_selected
@@ -386,7 +368,7 @@ class RegulatoryFilingWorkflow:
             fw: FRAMEWORK_REQUIREMENTS.get(fw, {}).get("name", fw) for fw in selected
         }
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="framework_selection", phase_number=1,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -396,7 +378,7 @@ class RegulatoryFilingWorkflow:
         )
 
     async def _phase_datapoint_mapping(self, input_data: RegulatoryFilingInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         total_datapoints = 0
@@ -408,7 +390,7 @@ class RegulatoryFilingWorkflow:
         outputs["total_datapoints_mapped"] = total_datapoints
         outputs["frameworks_mapped"] = len(self.config.frameworks_selected)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="datapoint_mapping", phase_number=2,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -418,7 +400,7 @@ class RegulatoryFilingWorkflow:
         )
 
     async def _phase_data_validation(self, input_data: RegulatoryFilingInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -439,7 +421,7 @@ class RegulatoryFilingWorkflow:
         outputs["carbon_price_available"] = input_data.carbon_price_usd > 0
         outputs["assurance_completed"] = input_data.assurance_completed
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="data_validation", phase_number=3,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -449,7 +431,7 @@ class RegulatoryFilingWorkflow:
         )
 
     async def _phase_crosswalk_reconciliation(self, input_data: RegulatoryFilingInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         # Common datapoints across frameworks
@@ -498,7 +480,7 @@ class RegulatoryFilingWorkflow:
         outputs["consistent_mappings"] = len(self._crosswalks) - inconsistencies
         outputs["inconsistencies"] = inconsistencies
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="crosswalk_reconciliation", phase_number=4,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -508,7 +490,7 @@ class RegulatoryFilingWorkflow:
         )
 
     async def _phase_document_generation(self, input_data: RegulatoryFilingInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         self._filings = []
@@ -532,7 +514,7 @@ class RegulatoryFilingWorkflow:
                 assurance_required=req.get("assurance_required", False),
                 document_format="PDF",
                 page_count=20 + dp_count * 2,
-                sha256_hash=_compute_hash(f"{fw}_{_utcnow().isoformat()}"),
+                sha256_hash=_compute_hash(f"{fw}_{utcnow().isoformat()}"),
                 app_bridge=req.get("app_bridge", ""),
             )
             self._filings.append(filing)
@@ -540,7 +522,7 @@ class RegulatoryFilingWorkflow:
         outputs["filings_generated"] = len(self._filings)
         outputs["total_pages"] = sum(f.page_count for f in self._filings)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="document_generation", phase_number=5,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -550,7 +532,7 @@ class RegulatoryFilingWorkflow:
         )
 
     async def _phase_quality_review(self, input_data: RegulatoryFilingInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         outputs["review_checklist"] = [
@@ -564,7 +546,7 @@ class RegulatoryFilingWorkflow:
         ]
         outputs["sign_off_required_from"] = ["CSO", "CFO", "General Counsel"]
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="quality_review", phase_number=6,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -574,7 +556,7 @@ class RegulatoryFilingWorkflow:
         )
 
     async def _phase_filing_submission(self, input_data: RegulatoryFilingInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         submission_channels = {
@@ -594,7 +576,7 @@ class RegulatoryFilingWorkflow:
             1 for f in self._filings if f.completeness_pct >= 90
         )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="filing_submission", phase_number=7,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -604,7 +586,7 @@ class RegulatoryFilingWorkflow:
         )
 
     async def _phase_compliance_tracker(self, input_data: RegulatoryFilingInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         calendar = self._build_filing_calendar()
@@ -612,7 +594,7 @@ class RegulatoryFilingWorkflow:
         outputs["next_deadline"] = calendar[0] if calendar else {}
         outputs["total_filings_tracked"] = len(self._filings)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="compliance_tracker", phase_number=8,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),

@@ -52,6 +52,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 from .config import ReferenceNumberGeneratorConfig, get_config
+from greenlang.schemas import utcnow
 from .metrics import (
     observe_collision_resolution_duration,
     record_collision_detected,
@@ -60,12 +61,6 @@ from .metrics import (
 )
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 class BloomFilter:
     """Simple Bloom filter implementation for collision pre-check.
@@ -115,6 +110,7 @@ class BloomFilter:
         """Compute hash of item with seed."""
         import hashlib
 
+
         h = hashlib.sha256(f"{item}:{seed}".encode("utf-8")).digest()
         return int.from_bytes(h[:8], "big")
 
@@ -122,7 +118,6 @@ class BloomFilter:
     def count(self) -> int:
         """Return approximate number of items added."""
         return self._count
-
 
 class CollisionDetector:
     """Reference number collision detection and resolution engine.
@@ -234,7 +229,7 @@ class CollisionDetector:
             Collision record ID.
         """
         collision_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         collision_record = {
             "collision_id": collision_id,

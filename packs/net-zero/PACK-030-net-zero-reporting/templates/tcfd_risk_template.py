@@ -34,6 +34,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "30.0.0"
@@ -63,10 +65,6 @@ XBRL_TAGS: Dict[str, str] = {
     "risk_score": "gl:TCFDRiskManagementScore",
 }
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 
@@ -81,7 +79,6 @@ def _dec(val: Any, places: int = 2) -> str:
         return str(d.quantize(Decimal(q), rounding=ROUND_HALF_UP))
     except Exception:
         return str(val)
-
 
 class TCFDRiskTemplate:
     """
@@ -107,7 +104,7 @@ class TCFDRiskTemplate:
         self.generated_at: Optional[datetime] = None
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [
             self._md_header(data), self._md_executive_summary(data),
             self._md_identification(data), self._md_assessment(data),
@@ -121,7 +118,7 @@ class TCFDRiskTemplate:
         return content + f"\n\n<!-- Provenance: {prov} -->"
 
     def render_html(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         parts = [
             self._html_header(data), self._html_executive_summary(data),
@@ -139,7 +136,7 @@ class TCFDRiskTemplate:
         )
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         risks = data.get("risks", [])
         transition = [r for r in risks if r.get("type") == "Transition"]
         physical = [r for r in risks if r.get("type") == "Physical"]

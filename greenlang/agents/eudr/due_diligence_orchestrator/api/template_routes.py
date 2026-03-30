@@ -29,6 +29,7 @@ from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.due_diligence_orchestrator.api.dependencies import (
     AuthUser,
@@ -318,7 +319,7 @@ async def create_template(
         "agent_count": len(body.nodes),
         "edge_count": len(body.edges),
         "valid": True,
-        "created_at": _utcnow().isoformat(),
+        "created_at": utcnow().isoformat(),
         "created_by": user.user_id,
     }
 

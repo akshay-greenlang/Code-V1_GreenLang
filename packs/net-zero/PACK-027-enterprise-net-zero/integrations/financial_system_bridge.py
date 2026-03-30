@@ -35,18 +35,14 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -58,18 +54,15 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CarbonPricingApproach(str, Enum):
     SHADOW_PRICE = "shadow_price"
     INTERNAL_FEE = "internal_fee"
     IMPLICIT_PRICE = "implicit_price"
     REGULATORY_PRICE = "regulatory_price"
-
 
 class AllocationMethod(str, Enum):
     DIRECT_MEASUREMENT = "direct_measurement"
@@ -78,11 +71,9 @@ class AllocationMethod(str, Enum):
     AREA_BASED = "area_based"
     ACTIVITY_BASED = "activity_based"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class FinancialBridgeConfig(BaseModel):
     pack_id: str = Field(default="PACK-027")
@@ -96,7 +87,6 @@ class FinancialBridgeConfig(BaseModel):
     ets_price_per_tco2e_eur: float = Field(default=65.0)
     enable_provenance: bool = Field(default=True)
 
-
 class CostCenterAllocation(BaseModel):
     cost_center_id: str = Field(default="")
     cost_center_name: str = Field(default="")
@@ -108,7 +98,6 @@ class CostCenterAllocation(BaseModel):
     carbon_cost_usd: float = Field(default=0.0)
     revenue_usd: float = Field(default=0.0)
     carbon_intensity_tco2e_per_musd: float = Field(default=0.0)
-
 
 class CarbonAdjustedPL(BaseModel):
     result_id: str = Field(default_factory=_new_uuid)
@@ -128,7 +117,6 @@ class CarbonAdjustedPL(BaseModel):
     by_business_unit: List[CostCenterAllocation] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class InvestmentAppraisal(BaseModel):
     project_name: str = Field(default="")
     npv_without_carbon_usd: float = Field(default=0.0)
@@ -139,7 +127,6 @@ class InvestmentAppraisal(BaseModel):
     payback_years: float = Field(default=0.0)
     recommendation: str = Field(default="")
 
-
 class CBAMExposure(BaseModel):
     result_id: str = Field(default_factory=_new_uuid)
     total_cbam_cost_eur: float = Field(default=0.0)
@@ -149,11 +136,9 @@ class CBAMExposure(BaseModel):
     cbam_certificate_price_eur: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # FinancialSystemBridge
 # ---------------------------------------------------------------------------
-
 
 class FinancialSystemBridge:
     """General ledger carbon allocation bridge for PACK-027.

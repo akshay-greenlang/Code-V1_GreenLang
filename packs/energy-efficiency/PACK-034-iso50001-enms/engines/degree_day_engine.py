@@ -86,26 +86,19 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -123,7 +116,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -132,7 +124,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -144,22 +135,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DegreeDayType(str, Enum):
     """Type of degree day calculation.
@@ -171,7 +158,6 @@ class DegreeDayType(str, Enum):
     HEATING = "heating"
     COOLING = "cooling"
     COMBINED = "combined"
-
 
 class ChangePointModel(str, Enum):
     """ASHRAE change-point energy regression model type.
@@ -188,7 +174,6 @@ class ChangePointModel(str, Enum):
     FOUR_PARAMETER = "four_parameter"
     FIVE_PARAMETER = "five_parameter"
 
-
 class TemperatureUnit(str, Enum):
     """Temperature measurement unit.
 
@@ -197,7 +182,6 @@ class TemperatureUnit(str, Enum):
     """
     CELSIUS = "celsius"
     FAHRENHEIT = "fahrenheit"
-
 
 class BaseTemperatureMethod(str, Enum):
     """Method for determining base (balance point) temperature.
@@ -209,7 +193,6 @@ class BaseTemperatureMethod(str, Enum):
     FIXED = "fixed"
     VARIABLE = "variable"
     OPTIMIZED = "optimized"
-
 
 class NormalizationBasis(str, Enum):
     """Reference dataset for weather normalisation.
@@ -223,7 +206,6 @@ class NormalizationBasis(str, Enum):
     TEN_YEAR_AVERAGE = "ten_year_average"
     FIVE_YEAR_AVERAGE = "five_year_average"
     CUSTOM_REFERENCE = "custom_reference"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Default Base Temperatures
@@ -433,11 +415,9 @@ _MIN_DATA_POINTS: int = 6
 _DEFAULT_SEARCH_RANGE_C: Tuple[Decimal, Decimal] = (Decimal("5"), Decimal("30"))
 _DEFAULT_SEARCH_STEP_C: Decimal = Decimal("0.5")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input / Intermediate
 # ---------------------------------------------------------------------------
-
 
 class DailyTemperature(BaseModel):
     """Daily outdoor temperature observation.
@@ -472,7 +452,6 @@ class DailyTemperature(BaseModel):
             )
         return v
 
-
 class EnergyDataPoint(BaseModel):
     """Energy consumption data point for regression analysis.
 
@@ -492,11 +471,9 @@ class EnergyDataPoint(BaseModel):
         description="Fuel or energy type identifier",
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class DegreeDayResult(BaseModel):
     """Aggregated degree day result for a defined period.
@@ -526,7 +503,6 @@ class DegreeDayResult(BaseModel):
         default=Decimal("0"), description="Average daily temperature"
     )
 
-
 class MonthlyDegreeDays(BaseModel):
     """Monthly degree day aggregation.
 
@@ -546,7 +522,6 @@ class MonthlyDegreeDays(BaseModel):
         default=Decimal("0"), description="Mean monthly temperature"
     )
     days: int = Field(default=0, ge=0, description="Days with data")
-
 
 class ChangePointModelResult(BaseModel):
     """Result of fitting a change-point energy regression model.
@@ -592,7 +567,6 @@ class ChangePointModelResult(BaseModel):
         default_factory=dict, description="Full model parameters"
     )
 
-
 class WeatherNormalization(BaseModel):
     """Weather-normalised consumption result.
 
@@ -631,7 +605,6 @@ class WeatherNormalization(BaseModel):
         ..., description="Change-point model used for normalisation"
     )
 
-
 class BaseTemperatureOptimization(BaseModel):
     """Result of base temperature optimisation via grid search.
 
@@ -665,7 +638,6 @@ class BaseTemperatureOptimization(BaseModel):
     step_size: Decimal = Field(
         ..., description="Grid search step size"
     )
-
 
 class DegreeDayAnalysisResult(BaseModel):
     """Complete degree day analysis result with provenance.
@@ -713,11 +685,9 @@ class DegreeDayAnalysisResult(BaseModel):
         default=0, ge=0, description="Calculation time (ms)"
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class DegreeDayEngine:
     """HDD/CDD calculation and weather normalisation engine.
@@ -2677,11 +2647,9 @@ class DegreeDayEngine:
         )
         return summary
 
-
 # ---------------------------------------------------------------------------
 # Module-Level Helper -- Date Increment
 # ---------------------------------------------------------------------------
-
 
 def _next_date(d: date) -> date:
     """Return the next calendar date after *d*.
@@ -2693,4 +2661,5 @@ def _next_date(d: date) -> date:
         The date one day after *d*.
     """
     from datetime import timedelta
+
     return d + timedelta(days=1)

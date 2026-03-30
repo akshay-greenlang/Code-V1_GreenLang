@@ -6,7 +6,8 @@ Core data models for the enterprise data pipeline system.
 Handles versioning, change tracking, validation results, and job management.
 """
 
-from pydantic import BaseModel, Field, HttpUrl, validator
+from pydantic import Field, HttpUrl, validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 from typing import Optional, List, Dict, Any, Literal
 from datetime import datetime
 from enum import Enum
@@ -51,7 +52,7 @@ class DataQualityTier(str, Enum):
     TIER_4 = "Tier 4 - Continuous Monitoring"
 
 
-class FactorVersion(BaseModel):
+class FactorVersion(GreenLangBase):
     """
     Version history for emission factors.
 
@@ -101,7 +102,7 @@ class FactorVersion(BaseModel):
         return hashlib.sha256(data_str.encode()).hexdigest()
 
 
-class ChangeLog(BaseModel):
+class ChangeLog(GreenLangBase):
     """
     Change log entry for tracking all modifications.
 
@@ -138,7 +139,7 @@ class ChangeLog(BaseModel):
         use_enum_values = True
 
 
-class ValidationResult(BaseModel):
+class ValidationResult(GreenLangBase):
     """
     Result of data validation.
 
@@ -179,7 +180,7 @@ class ValidationResult(BaseModel):
     validation_duration_ms: float = 0.0
 
 
-class DataQualityMetrics(BaseModel):
+class DataQualityMetrics(GreenLangBase):
     """
     Comprehensive data quality metrics.
 
@@ -231,7 +232,7 @@ class DataQualityMetrics(BaseModel):
     tier_distribution: Dict[str, int] = Field(default_factory=dict)
 
 
-class ImportJob(BaseModel):
+class ImportJob(GreenLangBase):
     """
     Import job tracking and management.
 
@@ -303,7 +304,7 @@ class ImportJob(BaseModel):
         ]
 
 
-class ChangeRequest(BaseModel):
+class ChangeRequest(GreenLangBase):
     """
     Change request for emission factor updates.
 
@@ -351,7 +352,7 @@ class ChangeRequest(BaseModel):
         use_enum_values = True
 
 
-class URIAccessibilityCheck(BaseModel):
+class URIAccessibilityCheck(GreenLangBase):
     """URI accessibility validation result."""
     uri: str
     accessible: bool
@@ -361,7 +362,7 @@ class URIAccessibilityCheck(BaseModel):
     checked_at: datetime = Field(default_factory=datetime.now)
 
 
-class FactorRangeCheck(BaseModel):
+class FactorRangeCheck(GreenLangBase):
     """Emission factor range validation result."""
     factor_id: str
     value: float

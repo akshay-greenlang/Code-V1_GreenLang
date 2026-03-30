@@ -43,7 +43,9 @@ import time
 from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+
+from greenlang.schemas import GreenLangBase, utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -52,23 +54,15 @@ __all__ = [
     "ValidationEngine",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Data models
 # ---------------------------------------------------------------------------
 
-
-class ValidationResult(BaseModel):
+class ValidationResult(GreenLangBase):
     """Result of a single validation check."""
 
     rule_name: str = Field(..., description="Validation rule identifier")
@@ -85,7 +79,6 @@ class ValidationResult(BaseModel):
     )
 
     model_config = {"extra": "forbid"}
-
 
 # ---------------------------------------------------------------------------
 # Built-in rule configurations
@@ -136,11 +129,9 @@ _DATE_ORDERING: Dict[str, List[Tuple[str, str]]] = {
     "utility_bill": [("billing_period_start", "billing_period_end")],
 }
 
-
 # ---------------------------------------------------------------------------
 # ValidationEngine
 # ---------------------------------------------------------------------------
-
 
 class ValidationEngine:
     """Cross-field validation engine with built-in and custom rules.
@@ -517,7 +508,7 @@ class ValidationEngine:
                 "by_type": dict(self._stats["by_type"]),
                 "custom_rules_registered": len(self._custom_rules),
                 "errors": self._stats["errors"],
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }
 
     # ------------------------------------------------------------------
@@ -656,7 +647,7 @@ class ValidationEngine:
 
         # Future date checks
         if self._future_check:
-            now = _utcnow()
+            now = utcnow()
             for field, dt in parsed.items():
                 days_ahead = (dt - now.replace(tzinfo=None)).days
                 if days_ahead > self._max_future_days:

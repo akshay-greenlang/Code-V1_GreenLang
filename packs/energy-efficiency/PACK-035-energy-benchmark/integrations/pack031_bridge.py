@@ -29,20 +29,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -55,11 +50,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class Pack031BridgeConfig(BaseModel):
     """Configuration for importing PACK-031 audit baseline data."""
@@ -71,7 +64,6 @@ class Pack031BridgeConfig(BaseModel):
     import_equipment_data: bool = Field(default=True)
     import_audit_findings: bool = Field(default=False)
 
-
 class AuditBaselineRequest(BaseModel):
     """Request for energy audit baseline data."""
 
@@ -81,7 +73,6 @@ class AuditBaselineRequest(BaseModel):
     baseline_year: int = Field(default=2024, ge=2020, le=2035)
     include_enpi: bool = Field(default=True)
     include_equipment: bool = Field(default=True)
-
 
 class AuditBaselineResult(BaseModel):
     """Result of importing energy audit baseline from PACK-031."""
@@ -105,11 +96,9 @@ class AuditBaselineResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Pack031Bridge
 # ---------------------------------------------------------------------------
-
 
 class Pack031Bridge:
     """Bridge to PACK-031 Industrial Energy Audit baselines.

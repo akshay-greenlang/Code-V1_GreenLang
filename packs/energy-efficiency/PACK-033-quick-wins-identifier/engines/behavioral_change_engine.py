@@ -71,25 +71,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -107,7 +101,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -116,7 +109,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -128,22 +120,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class BehavioralCategory(str, Enum):
     """Category of behavioral energy-saving action.
@@ -166,7 +154,6 @@ class BehavioralCategory(str, Enum):
     PROCUREMENT = "procurement"
     AWARENESS = "awareness"
 
-
 class AdoptionStage(str, Enum):
     """Rogers Diffusion of Innovation adoption stages.
 
@@ -184,7 +171,6 @@ class AdoptionStage(str, Enum):
     ADOPTION = "adoption"
     CONFIRMATION = "confirmation"
 
-
 class AdopterType(str, Enum):
     """Rogers adopter categories based on innovativeness.
 
@@ -199,7 +185,6 @@ class AdopterType(str, Enum):
     EARLY_MAJORITY = "early_majority"
     LATE_MAJORITY = "late_majority"
     LAGGARD = "laggard"
-
 
 class EngagementChannel(str, Enum):
     """Communication channel for behavioral engagement programs.
@@ -222,7 +207,6 @@ class EngagementChannel(str, Enum):
     APP = "app"
     SOCIAL_MEDIA = "social_media"
 
-
 class PersistenceLevel(str, Enum):
     """Persistence classification for behavioral savings over time.
 
@@ -235,7 +219,6 @@ class PersistenceLevel(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     VERY_LOW = "very_low"
-
 
 class ProgramStatus(str, Enum):
     """Lifecycle status of a behavioral engagement program.
@@ -251,7 +234,6 @@ class ProgramStatus(str, Enum):
     PAUSED = "paused"
     COMPLETED = "completed"
     ARCHIVED = "archived"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -300,7 +282,6 @@ GAMIFICATION_BADGES: List[Dict[str, Any]] = [
     {"name": "Sustainability Hero", "actions_required": 15, "points_bonus": 750},
     {"name": "Planet Defender", "actions_required": 20, "points_bonus": 1000},
 ]
-
 
 # ---------------------------------------------------------------------------
 # Behavioral Actions Library (40+ actions)
@@ -680,11 +661,9 @@ BEHAVIORAL_ACTIONS_LIBRARY: List[Dict[str, Any]] = [
      "co_benefits": ["culture building", "early engagement"]},
 ]
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class BehavioralAction(BaseModel):
     """A single behavioral energy-saving action from the library.
@@ -733,7 +712,6 @@ class BehavioralAction(BaseModel):
         default_factory=list, description="Co-benefits",
     )
 
-
 class OrganizationProfile(BaseModel):
     """Profile of the organisation implementing behavioral programs.
 
@@ -779,7 +757,6 @@ class OrganizationProfile(BaseModel):
             raise ValueError(f"Sustainability maturity must be 1-5, got {v}")
         return v
 
-
 class AdoptionCurvePoint(BaseModel):
     """A single point on the adoption S-curve trajectory.
 
@@ -803,7 +780,6 @@ class AdoptionCurvePoint(BaseModel):
     savings_realized_pct: Decimal = Field(
         default=Decimal("0"), ge=0, description="Savings realized %",
     )
-
 
 class PersistenceModel(BaseModel):
     """Persistence decay model for a behavioral action.
@@ -840,7 +816,6 @@ class PersistenceModel(BaseModel):
     reinforcement_needed: bool = Field(
         default=True, description="Reinforcement recommended",
     )
-
 
 class EngagementProgram(BaseModel):
     """Design specification for a behavioral engagement program.
@@ -881,7 +856,6 @@ class EngagementProgram(BaseModel):
         default=Decimal("0"), ge=0, description="Estimated savings (kWh)",
     )
 
-
 class GamificationScore(BaseModel):
     """Gamification score for a program participant.
 
@@ -903,7 +877,6 @@ class GamificationScore(BaseModel):
         default=Decimal("0"), ge=0, description="Savings (kWh)",
     )
     actions_completed: int = Field(default=0, ge=0, description="Actions completed")
-
 
 class BehavioralProgramResult(BaseModel):
     """Complete result of behavioral change program design and analysis.
@@ -954,9 +927,8 @@ class BehavioralProgramResult(BaseModel):
     gamification_summary: Dict[str, Any] = Field(
         default_factory=dict, description="Gamification summary",
     )
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 # ---------------------------------------------------------------------------
 # Model rebuild (required with `from __future__ import annotations`)
@@ -970,11 +942,9 @@ EngagementProgram.model_rebuild()
 GamificationScore.model_rebuild()
 BehavioralProgramResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class BehavioralChangeEngine:
     """Behavioral change program design and energy savings engine.

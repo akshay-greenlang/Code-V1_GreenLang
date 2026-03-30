@@ -36,19 +36,14 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -60,11 +55,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class TCFDPillar(str, Enum):
     GOVERNANCE = "governance"
@@ -72,14 +65,12 @@ class TCFDPillar(str, Enum):
     RISK_MANAGEMENT = "risk_management"
     METRICS_TARGETS = "metrics_targets"
 
-
 class ScenarioType(str, Enum):
     NZE_15C = "nze_1.5c"
     BELOW_2C = "below_2c"
     NDC = "ndc"
     BAU = "bau"
     HIGH_WARMING_4C = "high_warming_4c"
-
 
 class RiskType(str, Enum):
     TRANSITION_POLICY = "transition_policy"
@@ -89,14 +80,12 @@ class RiskType(str, Enum):
     PHYSICAL_ACUTE = "physical_acute"
     PHYSICAL_CHRONIC = "physical_chronic"
 
-
 class RiskLikelihood(str, Enum):
     VERY_LIKELY = "very_likely"
     LIKELY = "likely"
     POSSIBLE = "possible"
     UNLIKELY = "unlikely"
     VERY_UNLIKELY = "very_unlikely"
-
 
 class RiskImpact(str, Enum):
     VERY_HIGH = "very_high"
@@ -105,12 +94,10 @@ class RiskImpact(str, Enum):
     LOW = "low"
     VERY_LOW = "very_low"
 
-
 class RiskTimeHorizon(str, Enum):
     SHORT_TERM = "short_term"
     MEDIUM_TERM = "medium_term"
     LONG_TERM = "long_term"
-
 
 class OpportunityType(str, Enum):
     RESOURCE_EFFICIENCY = "resource_efficiency"
@@ -119,7 +106,6 @@ class OpportunityType(str, Enum):
     MARKETS = "markets"
     RESILIENCE = "resilience"
 
-
 class ImportStatus(str, Enum):
     SUCCESS = "success"
     PARTIAL = "partial"
@@ -127,11 +113,9 @@ class ImportStatus(str, Enum):
     STALE = "stale"
     CACHED = "cached"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class GLTCFDAppConfig(BaseModel):
     pack_id: str = Field(default="PACK-030")
@@ -147,7 +131,6 @@ class GLTCFDAppConfig(BaseModel):
     cache_ttl_seconds: int = Field(default=3600)
     retry_attempts: int = Field(default=3, ge=1, le=10)
     retry_delay_seconds: float = Field(default=1.0)
-
 
 class ScenarioResult(BaseModel):
     """Climate scenario analysis result from GL-TCFD-APP."""
@@ -166,7 +149,6 @@ class ScenarioResult(BaseModel):
     strategy_resilience: str = Field(default="")
     key_assumptions: List[str] = Field(default_factory=list)
 
-
 class ScenarioAnalysis(BaseModel):
     """Complete scenario analysis from GL-TCFD-APP."""
     analysis_id: str = Field(default_factory=_new_uuid)
@@ -176,8 +158,7 @@ class ScenarioAnalysis(BaseModel):
     analysis_year: int = Field(default=2025)
     methodology: str = Field(default="Quantitative scenario analysis per TCFD guidance")
     provenance_hash: str = Field(default="")
-    fetched_at: datetime = Field(default_factory=_utcnow)
-
+    fetched_at: datetime = Field(default_factory=utcnow)
 
 class ClimateRisk(BaseModel):
     """Climate risk assessment from GL-TCFD-APP."""
@@ -194,7 +175,6 @@ class ClimateRisk(BaseModel):
     affected_assets_pct: float = Field(default=0.0)
     residual_risk_level: str = Field(default="low")
 
-
 class RiskAssessment(BaseModel):
     """Complete risk assessment from GL-TCFD-APP."""
     assessment_id: str = Field(default_factory=_new_uuid)
@@ -206,8 +186,7 @@ class RiskAssessment(BaseModel):
     total_financial_impact_usd: float = Field(default=0.0)
     high_impact_risks: int = Field(default=0)
     provenance_hash: str = Field(default="")
-    fetched_at: datetime = Field(default_factory=_utcnow)
-
+    fetched_at: datetime = Field(default_factory=utcnow)
 
 class ClimateOpportunity(BaseModel):
     """Climate opportunity from GL-TCFD-APP."""
@@ -221,7 +200,6 @@ class ClimateOpportunity(BaseModel):
     likelihood: RiskLikelihood = Field(default=RiskLikelihood.LIKELY)
     strategic_actions: List[str] = Field(default_factory=list)
 
-
 class OpportunityAssessment(BaseModel):
     """Complete opportunity assessment from GL-TCFD-APP."""
     assessment_id: str = Field(default_factory=_new_uuid)
@@ -230,8 +208,7 @@ class OpportunityAssessment(BaseModel):
     total_opportunities: int = Field(default=0)
     total_financial_impact_usd: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-    fetched_at: datetime = Field(default_factory=_utcnow)
-
+    fetched_at: datetime = Field(default_factory=utcnow)
 
 class GLTCFDAppResult(BaseModel):
     result_id: str = Field(default_factory=_new_uuid)
@@ -244,14 +221,12 @@ class GLTCFDAppResult(BaseModel):
     frameworks_serviced: List[str] = Field(default_factory=list)
     validation_errors: List[str] = Field(default_factory=list)
     validation_warnings: List[str] = Field(default_factory=list)
-    fetched_at: datetime = Field(default_factory=_utcnow)
+    fetched_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # GLTCFDAppIntegration
 # ---------------------------------------------------------------------------
-
 
 class GLTCFDAppIntegration:
     """GL-TCFD-APP integration for PACK-030.
@@ -305,6 +280,7 @@ class GLTCFDAppIntegration:
                 attempt += 1
                 if attempt < self.config.retry_attempts:
                     import asyncio
+
                     await asyncio.sleep(self.config.retry_delay_seconds * attempt)
         return []
 

@@ -42,36 +42,29 @@ from typing import Any, Dict, List, Optional, Union
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ReportFormat
+
 logger = logging.getLogger(__name__)
 
 PACK_BASE_DIR = Path(__file__).parent.parent
 CONFIG_DIR = Path(__file__).parent
 
-
 # =============================================================================
 # Helper Functions
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime (mockable for testing)."""
-    return datetime.now(timezone.utc)
-
 
 def _new_uuid() -> str:
     """Return new UUID4 string (mockable for testing)."""
     return str(uuid.uuid4())
 
-
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hash of a string for provenance tracking."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # Enums (18 total)
 # =============================================================================
-
 
 class FacilityType(str, Enum):
     """Classification of facility type within the organisational portfolio."""
@@ -98,7 +91,6 @@ class FacilityType(str, Enum):
     DISTRIBUTION_CENTER = "DISTRIBUTION_CENTER"
     OTHER = "OTHER"
 
-
 class FacilityLifecycle(str, Enum):
     """Lifecycle stage of a facility within the portfolio."""
     PLANNED = "PLANNED"
@@ -109,13 +101,11 @@ class FacilityLifecycle(str, Enum):
     DECOMMISSIONING = "DECOMMISSIONING"
     DECOMMISSIONED = "DECOMMISSIONED"
 
-
 class ConsolidationApproach(str, Enum):
     """GHG Protocol organisational boundary consolidation approach."""
     EQUITY_SHARE = "EQUITY_SHARE"
     OPERATIONAL_CONTROL = "OPERATIONAL_CONTROL"
     FINANCIAL_CONTROL = "FINANCIAL_CONTROL"
-
 
 class OwnershipType(str, Enum):
     """Ownership or control relationship for a facility."""
@@ -128,14 +118,12 @@ class OwnershipType(str, Enum):
     LEASED_OPERATING = "LEASED_OPERATING"
     MINORITY_INTEREST = "MINORITY_INTEREST"
 
-
 class CollectionPeriodType(str, Enum):
     """Frequency of data collection from facilities."""
     MONTHLY = "MONTHLY"
     QUARTERLY = "QUARTERLY"
     SEMI_ANNUAL = "SEMI_ANNUAL"
     ANNUAL = "ANNUAL"
-
 
 class SubmissionStatus(str, Enum):
     """Status of a facility's data submission for a reporting period."""
@@ -148,7 +136,6 @@ class SubmissionStatus(str, Enum):
     RESUBMITTED = "RESUBMITTED"
     OVERDUE = "OVERDUE"
 
-
 class DataEntryMode(str, Enum):
     """Method of data entry for facility-level emission data."""
     MANUAL = "MANUAL"
@@ -156,7 +143,6 @@ class DataEntryMode(str, Enum):
     API_PUSH = "API_PUSH"
     ERP_CONNECTOR = "ERP_CONNECTOR"
     IOT_FEED = "IOT_FEED"
-
 
 class AllocationMethod(str, Enum):
     """Method for allocating shared emissions across tenants or units."""
@@ -168,7 +154,6 @@ class AllocationMethod(str, Enum):
     OPERATING_HOURS = "OPERATING_HOURS"
     CUSTOM_FORMULA = "CUSTOM_FORMULA"
 
-
 class LandlordTenantSplit(str, Enum):
     """Approach for splitting emissions between landlord and tenant."""
     WHOLE_BUILDING = "WHOLE_BUILDING"
@@ -176,13 +161,11 @@ class LandlordTenantSplit(str, Enum):
     COMMON_AREA_PROPORTIONAL = "COMMON_AREA_PROPORTIONAL"
     SUB_METERED = "SUB_METERED"
 
-
 class CogenerationType(str, Enum):
     """Method for allocating cogeneration (CHP) emissions."""
     EFFICIENCY_METHOD = "EFFICIENCY_METHOD"
     ENERGY_CONTENT_METHOD = "ENERGY_CONTENT_METHOD"
     RESIDUAL_METHOD = "RESIDUAL_METHOD"
-
 
 class FactorTier(str, Enum):
     """Emission factor data quality tier (higher = more site-specific)."""
@@ -190,7 +173,6 @@ class FactorTier(str, Enum):
     TIER_2_NATIONAL = "TIER_2_NATIONAL"
     TIER_1_REGIONAL = "TIER_1_REGIONAL"
     TIER_0_IPCC_DEFAULT = "TIER_0_IPCC_DEFAULT"
-
 
 class FactorSource(str, Enum):
     """Source database or publication for emission factors."""
@@ -205,7 +187,6 @@ class FactorSource(str, Enum):
     SUPPLIER_SPECIFIC = "SUPPLIER_SPECIFIC"
     CUSTOM = "CUSTOM"
 
-
 class QualityDimension(str, Enum):
     """Dimension of data quality assessment for site-level data."""
     ACCURACY = "ACCURACY"
@@ -215,7 +196,6 @@ class QualityDimension(str, Enum):
     METHODOLOGY = "METHODOLOGY"
     DOCUMENTATION = "DOCUMENTATION"
 
-
 class QualityScore(str, Enum):
     """Quality score rating for site-level data (1=best, 5=worst)."""
     SCORE_1_VERIFIED = "SCORE_1_VERIFIED"
@@ -223,7 +203,6 @@ class QualityScore(str, Enum):
     SCORE_3_ESTIMATED = "SCORE_3_ESTIMATED"
     SCORE_4_EXTRAPOLATED = "SCORE_4_EXTRAPOLATED"
     SCORE_5_PROXY = "SCORE_5_PROXY"
-
 
 class ComparisonKPI(str, Enum):
     """Key performance indicator for cross-site benchmarking."""
@@ -235,7 +214,6 @@ class ComparisonKPI(str, Enum):
     ENERGY_PER_FTE = "ENERGY_PER_FTE"
     WASTE_PER_FTE = "WASTE_PER_FTE"
     WATER_PER_M2 = "WATER_PER_M2"
-
 
 class ReportType(str, Enum):
     """Type of multi-site report output."""
@@ -250,16 +228,6 @@ class ReportType(str, Enum):
     QUALITY_HEATMAP = "QUALITY_HEATMAP"
     TREND = "TREND"
 
-
-class ExportFormat(str, Enum):
-    """Supported report output formats."""
-    MARKDOWN = "MARKDOWN"
-    HTML = "HTML"
-    JSON = "JSON"
-    CSV = "CSV"
-    XBRL = "XBRL"
-
-
 class AlertType(str, Enum):
     """Type of multi-site management alert."""
     DEADLINE_APPROACHING = "DEADLINE_APPROACHING"
@@ -269,11 +237,9 @@ class AlertType(str, Enum):
     ALLOCATION_VARIANCE = "ALLOCATION_VARIANCE"
     COMPLETENESS_GAP = "COMPLETENESS_GAP"
 
-
 # =============================================================================
 # Reference Data Constants
 # =============================================================================
-
 
 DEFAULT_FACILITY_TYPES: Dict[str, Dict[str, Any]] = {
     "MANUFACTURING": {
@@ -425,7 +391,6 @@ DEFAULT_FACILITY_TYPES: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 DEFAULT_ALLOCATION_PRIORITIES: List[str] = [
     AllocationMethod.FLOOR_AREA.value,
     AllocationMethod.HEADCOUNT.value,
@@ -436,7 +401,6 @@ DEFAULT_ALLOCATION_PRIORITIES: List[str] = [
     AllocationMethod.CUSTOM_FORMULA.value,
 ]
 
-
 DEFAULT_QUALITY_WEIGHTS: Dict[str, Decimal] = {
     QualityDimension.ACCURACY.value: Decimal("0.25"),
     QualityDimension.COMPLETENESS.value: Decimal("0.25"),
@@ -446,7 +410,6 @@ DEFAULT_QUALITY_WEIGHTS: Dict[str, Decimal] = {
     QualityDimension.DOCUMENTATION.value: Decimal("0.10"),
 }
 
-
 DEFAULT_DEADLINE_REMINDERS_DAYS: List[int] = [14, 7, 3, 1]
 
 DEFAULT_MATERIALITY_THRESHOLD: Decimal = Decimal("0.05")
@@ -454,7 +417,6 @@ DEFAULT_MATERIALITY_THRESHOLD: Decimal = Decimal("0.05")
 DEFAULT_DE_MINIMIS_THRESHOLD: Decimal = Decimal("0.01")
 
 DEFAULT_COMPLETENESS_TARGET: Decimal = Decimal("0.95")
-
 
 CONSOLIDATION_APPROACH_GUIDANCE: Dict[str, Dict[str, Any]] = {
     "EQUITY_SHARE": {
@@ -503,7 +465,6 @@ CONSOLIDATION_APPROACH_GUIDANCE: Dict[str, Dict[str, Any]] = {
         "standard_reference": "GHG Protocol Corporate Standard, Chapter 3",
     },
 }
-
 
 REGIONAL_FACTOR_DATABASES: Dict[str, Dict[str, Any]] = {
     "IPCC_2019": {
@@ -564,7 +525,6 @@ REGIONAL_FACTOR_DATABASES: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 AVAILABLE_PRESETS: Dict[str, str] = {
     "corporate_general": (
         "General multi-site corporate portfolio with operational control, "
@@ -600,11 +560,9 @@ AVAILABLE_PRESETS: Dict[str, str] = {
     ),
 }
 
-
 # =============================================================================
 # Sub-Config Models (15 Pydantic v2 models)
 # =============================================================================
-
 
 class SiteRegistryConfig(BaseModel):
     """Configuration for the site registry and facility management."""
@@ -653,7 +611,6 @@ class SiteRegistryConfig(BaseModel):
         if v < 1:
             raise ValueError("max_sites must be at least 1")
         return v
-
 
 class DataCollectionConfig(BaseModel):
     """Configuration for decentralised data collection from facilities."""
@@ -705,7 +662,6 @@ class DataCollectionConfig(BaseModel):
             raise ValueError(f"validation_strictness must be one of {allowed}, got '{v}'")
         return v.upper()
 
-
 class BoundaryConfig(BaseModel):
     """Configuration for organisational boundary definition."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -741,7 +697,6 @@ class BoundaryConfig(BaseModel):
         ge=Decimal("0"), le=Decimal("100"),
         description="Default equity share for wholly-owned subsidiaries",
     )
-
 
 class RegionalFactorConfig(BaseModel):
     """Configuration for regional emission factor assignment."""
@@ -792,7 +747,6 @@ class RegionalFactorConfig(BaseModel):
             )
         return v.upper()
 
-
 class ConsolidationConfig(BaseModel):
     """Configuration for multi-site inventory consolidation."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -836,7 +790,6 @@ class ConsolidationConfig(BaseModel):
         if v.upper() not in allowed:
             raise ValueError(f"estimation_method must be one of {allowed}, got '{v}'")
         return v.upper()
-
 
 class AllocationConfig(BaseModel):
     """Configuration for shared-services and tenant emission allocation."""
@@ -887,7 +840,6 @@ class AllocationConfig(BaseModel):
             )
         return v.upper()
 
-
 class ComparisonConfig(BaseModel):
     """Configuration for cross-site benchmarking and comparison."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -925,7 +877,6 @@ class ComparisonConfig(BaseModel):
         ge=Decimal("1.0"), le=Decimal("5.0"),
         description="Standard deviation threshold for outlier detection",
     )
-
 
 class CompletionConfig(BaseModel):
     """Configuration for portfolio completeness tracking."""
@@ -965,7 +916,6 @@ class CompletionConfig(BaseModel):
         if v.upper() not in allowed:
             raise ValueError(f"gap_report_frequency must be one of {allowed}, got '{v}'")
         return v.upper()
-
 
 class QualityConfig(BaseModel):
     """Configuration for multi-dimension data quality scoring."""
@@ -1007,13 +957,12 @@ class QualityConfig(BaseModel):
             )
         return self
 
-
 class ReportingConfig(BaseModel):
     """Configuration for multi-site report generation."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    default_format: ExportFormat = Field(
-        ExportFormat.HTML,
+    default_format: ReportFormat = Field(
+        ReportFormat.HTML,
         description="Default output format for generated reports",
     )
     drill_down_levels: int = Field(
@@ -1045,7 +994,6 @@ class ReportingConfig(BaseModel):
         description="Report branding configuration",
     )
 
-
 class SecurityConfig(BaseModel):
     """Configuration for access control and data protection."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -1071,7 +1019,6 @@ class SecurityConfig(BaseModel):
         description="Restrict users to their assigned sites only",
     )
 
-
 class PerformanceConfig(BaseModel):
     """Configuration for computational performance tuning."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -1096,7 +1043,6 @@ class PerformanceConfig(BaseModel):
         True,
         description="Run consolidation across sites in parallel",
     )
-
 
 class IntegrationConfig(BaseModel):
     """Configuration for integration with other GreenLang components."""
@@ -1131,7 +1077,6 @@ class IntegrationConfig(BaseModel):
         description="Pack dependencies for multi-site management",
     )
 
-
 class AlertConfig(BaseModel):
     """Configuration for multi-site management alerting."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -1162,7 +1107,6 @@ class AlertConfig(BaseModel):
         description="Suppress non-critical alerts outside business hours",
     )
 
-
 class MigrationConfig(BaseModel):
     """Configuration for database schema migration."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -1184,11 +1128,9 @@ class MigrationConfig(BaseModel):
         description="Last migration version for PACK-049",
     )
 
-
 # =============================================================================
 # Main Configuration Model
 # =============================================================================
-
 
 class MultiSitePackConfig(BaseModel):
     """
@@ -1300,11 +1242,9 @@ class MultiSitePackConfig(BaseModel):
                 )
         return self
 
-
 # =============================================================================
 # Pack Configuration Wrapper
 # =============================================================================
-
 
 class PackConfig(BaseModel):
     """
@@ -1477,11 +1417,9 @@ class PackConfig(BaseModel):
         """
         return list(self.pack.scopes_in_scope)
 
-
 # =============================================================================
 # Utility Functions
 # =============================================================================
-
 
 def load_preset(preset_name: str, overrides: Optional[Dict[str, Any]] = None) -> PackConfig:
     """
@@ -1495,7 +1433,6 @@ def load_preset(preset_name: str, overrides: Optional[Dict[str, Any]] = None) ->
         Initialised PackConfig from the named preset.
     """
     return PackConfig.from_preset(preset_name, overrides)
-
 
 def validate_config(config: MultiSitePackConfig) -> List[str]:
     """
@@ -1606,7 +1543,6 @@ def validate_config(config: MultiSitePackConfig) -> List[str]:
 
     return warnings
 
-
 def get_default_config(
     approach: ConsolidationApproach = ConsolidationApproach.OPERATIONAL_CONTROL,
 ) -> MultiSitePackConfig:
@@ -1621,7 +1557,6 @@ def get_default_config(
     """
     return MultiSitePackConfig(consolidation_approach=approach)
 
-
 def list_available_presets() -> Dict[str, str]:
     """
     Return a copy of all available preset names and descriptions.
@@ -1630,7 +1565,6 @@ def list_available_presets() -> Dict[str, str]:
         Dict mapping preset name to human-readable description.
     """
     return AVAILABLE_PRESETS.copy()
-
 
 def get_facility_type_defaults(facility_type: str) -> Optional[Dict[str, Any]]:
     """
@@ -1644,7 +1578,6 @@ def get_facility_type_defaults(facility_type: str) -> Optional[Dict[str, Any]]:
     """
     return DEFAULT_FACILITY_TYPES.get(facility_type)
 
-
 def get_consolidation_guidance(approach: str) -> Optional[Dict[str, Any]]:
     """
     Return consolidation approach guidance.
@@ -1656,7 +1589,6 @@ def get_consolidation_guidance(approach: str) -> Optional[Dict[str, Any]]:
         Dict of guidance data, or None if not found.
     """
     return CONSOLIDATION_APPROACH_GUIDANCE.get(approach)
-
 
 def get_regional_factor_database(source: str) -> Optional[Dict[str, Any]]:
     """
@@ -1670,7 +1602,6 @@ def get_regional_factor_database(source: str) -> Optional[Dict[str, Any]]:
     """
     return REGIONAL_FACTOR_DATABASES.get(source)
 
-
 def get_quality_weights() -> Dict[str, Decimal]:
     """
     Return default quality dimension weights.
@@ -1679,7 +1610,6 @@ def get_quality_weights() -> Dict[str, Decimal]:
         Dict mapping quality dimension to weight.
     """
     return dict(DEFAULT_QUALITY_WEIGHTS)
-
 
 def get_allocation_priorities() -> List[str]:
     """

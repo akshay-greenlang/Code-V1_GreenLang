@@ -53,6 +53,7 @@ import threading
 import time
 from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.data.duplicate_detector.models import (
     ConflictResolution,
@@ -68,22 +69,14 @@ __all__ = [
     "MergeEngine",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_provenance(operation: str, data_repr: str) -> str:
     """Compute SHA-256 provenance hash for a merge operation."""
-    payload = f"{operation}:{data_repr}:{_utcnow().isoformat()}"
+    payload = f"{operation}:{data_repr}:{utcnow().isoformat()}"
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
-
 
 def _is_empty(value: Any) -> bool:
     """Check if a value is empty (None or empty string after strip)."""
@@ -93,16 +86,13 @@ def _is_empty(value: Any) -> bool:
         return True
     return False
 
-
 def _record_completeness(record: Dict[str, Any]) -> int:
     """Count non-empty fields in a record."""
     return sum(1 for v in record.values() if not _is_empty(v))
 
-
 # =============================================================================
 # MergeEngine
 # =============================================================================
-
 
 class MergeEngine:
     """Merge engine for combining duplicate records.
@@ -913,7 +903,7 @@ class MergeEngine:
             self._invocations += 1
             self._successes += 1
             self._total_duration_ms += ms
-            self._last_invoked_at = _utcnow()
+            self._last_invoked_at = utcnow()
 
     def _record_failure(self, elapsed_seconds: float) -> None:
         """Record a failed invocation."""
@@ -922,4 +912,4 @@ class MergeEngine:
             self._invocations += 1
             self._failures += 1
             self._total_duration_ms += ms
-            self._last_invoked_at = _utcnow()
+            self._last_invoked_at = utcnow()

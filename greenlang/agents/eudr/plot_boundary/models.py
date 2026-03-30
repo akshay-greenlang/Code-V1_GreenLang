@@ -15,7 +15,7 @@ reproducibility across all plot boundary management operations.
 Enumerations (12):
     - GeometryType, CoordinateReferenceSystem, ValidationErrorType,
       RepairStrategy, OverlapSeverity, OverlapResolution,
-      VersionChangeReason, SimplificationMethod, ExportFormat,
+      VersionChangeReason, SimplificationMethod, ReportFormat,
       ThresholdClassification, CompactnessIndex, BatchStatus
 
 Core Models (14):
@@ -58,25 +58,18 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import (
-    BaseModel,
-    ConfigDict,
     Field,
     field_validator,
     model_validator,
 )
 
 from greenlang.agents.data.eudr_traceability.models import EUDRCommodity
-
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ReportFormat
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -103,11 +96,9 @@ WGS84_FLATTENING: float = 1.0 / 298.257223563
 #: Minimum vertices for a valid polygon (closed triangle).
 MIN_POLYGON_VERTICES: int = 4
 
-
 # =============================================================================
 # Enumerations
 # =============================================================================
-
 
 class GeometryType(str, Enum):
     """Geometry type classification for plot boundaries.
@@ -138,7 +129,6 @@ class GeometryType(str, Enum):
     MULTI_POLYGON = "multi_polygon"
     LINE_STRING = "line_string"
     GEOMETRY_COLLECTION = "geometry_collection"
-
 
 class CoordinateReferenceSystem(str, Enum):
     """Coordinate reference system identifiers for boundary data.
@@ -204,7 +194,6 @@ class CoordinateReferenceSystem(str, Enum):
     PRS92 = "prs92"
     GRS80 = "grs80"
 
-
 class ValidationErrorType(str, Enum):
     """Geometry validation error type classification.
 
@@ -252,7 +241,6 @@ class ValidationErrorType(str, Enum):
     NESTED_SHELLS = "nested_shells"
     ZERO_AREA = "zero_area"
 
-
 class RepairStrategy(str, Enum):
     """Geometry repair strategy classification.
 
@@ -285,7 +273,6 @@ class RepairStrategy(str, Enum):
     CONVEX_HULL_FALLBACK = "convex_hull_fallback"
     INTERPOLATION = "interpolation"
 
-
 class OverlapSeverity(str, Enum):
     """Overlap severity classification.
 
@@ -302,7 +289,6 @@ class OverlapSeverity(str, Enum):
     MODERATE = "moderate"
     MAJOR = "major"
     CRITICAL = "critical"
-
 
 class OverlapResolution(str, Enum):
     """Overlap resolution strategy.
@@ -326,7 +312,6 @@ class OverlapResolution(str, Enum):
     SPLIT = "split"
     MERGE = "merge"
     MANUAL_REVIEW = "manual_review"
-
 
 class VersionChangeReason(str, Enum):
     """Boundary version change reason classification.
@@ -353,7 +338,6 @@ class VersionChangeReason(str, Enum):
     REPAIR = "repair"
     IMPORT = "import"
 
-
 class SimplificationMethod(str, Enum):
     """Polygon simplification algorithm selection.
 
@@ -369,30 +353,6 @@ class SimplificationMethod(str, Enum):
     VISVALINGAM_WHYATT = "visvalingam_whyatt"
     TOPOLOGY_PRESERVING = "topology_preserving"
 
-
-class ExportFormat(str, Enum):
-    """Boundary export format selection.
-
-    GEOJSON: GeoJSON format (RFC 7946). Default exchange format.
-    KML: Keyhole Markup Language for Google Earth compatibility.
-    WKT: Well-Known Text per OGC Simple Features.
-    WKB: Well-Known Binary per OGC Simple Features.
-    SHAPEFILE: ESRI Shapefile format.
-    EUDR_XML: EUDR-specific XML schema for regulatory submission.
-    GPX: GPS Exchange Format.
-    GML: Geography Markup Language (OGC standard).
-    """
-
-    GEOJSON = "geojson"
-    KML = "kml"
-    WKT = "wkt"
-    WKB = "wkb"
-    SHAPEFILE = "shapefile"
-    EUDR_XML = "eudr_xml"
-    GPX = "gpx"
-    GML = "gml"
-
-
 class ThresholdClassification(str, Enum):
     """EUDR area threshold classification result.
 
@@ -404,7 +364,6 @@ class ThresholdClassification(str, Enum):
 
     POLYGON_REQUIRED = "polygon_required"
     POINT_SUFFICIENT = "point_sufficient"
-
 
 class CompactnessIndex(str, Enum):
     """Polygon compactness index measurement method.
@@ -420,7 +379,6 @@ class CompactnessIndex(str, Enum):
     POLSBY_POPPER = "polsby_popper"
     SCHWARTZBERG = "schwartzberg"
     CONVEX_HULL_RATIO = "convex_hull_ratio"
-
 
 class BatchStatus(str, Enum):
     """Batch boundary operation status.
@@ -438,13 +396,11 @@ class BatchStatus(str, Enum):
     FAILED = "failed"
     CANCELLED = "cancelled"
 
-
 # =============================================================================
 # Core Data Models
 # =============================================================================
 
-
-class Coordinate(BaseModel):
+class Coordinate(GreenLangBase):
     """A geographic coordinate with optional metadata.
 
     Attributes:
@@ -496,8 +452,7 @@ class Coordinate(BaseModel):
             )
         return self
 
-
-class BoundingBox(BaseModel):
+class BoundingBox(GreenLangBase):
     """Axis-aligned bounding box for spatial queries.
 
     Attributes:
@@ -586,8 +541,7 @@ class BoundingBox(BaseModel):
         """
         return (self.max_lat - self.min_lat) * (self.max_lon - self.min_lon)
 
-
-class Ring(BaseModel):
+class Ring(GreenLangBase):
     """A ring of coordinates forming a closed polygon boundary.
 
     Attributes:
@@ -655,8 +609,7 @@ class Ring(BaseModel):
             total -= coords[j].lon * coords[i].lat
         return total / 2.0
 
-
-class PlotBoundary(BaseModel):
+class PlotBoundary(GreenLangBase):
     """Complete plot boundary with geometry, metadata, and metrics.
 
     The primary data model for EUDR plot boundary management.
@@ -727,11 +680,11 @@ class PlotBoundary(BaseModel):
         description="External certification reference",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Boundary creation timestamp (UTC)",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Most recent update timestamp (UTC)",
     )
     version: int = Field(
@@ -778,8 +731,7 @@ class PlotBoundary(BaseModel):
                 pass  # Allow for backwards compatibility
         return self
 
-
-class ValidationError(BaseModel):
+class ValidationError(GreenLangBase):
     """A single geometry validation error or warning.
 
     Attributes:
@@ -818,8 +770,7 @@ class ValidationError(BaseModel):
         description="Suggested repair strategy",
     )
 
-
-class ValidationResult(BaseModel):
+class ValidationResult(GreenLangBase):
     """Complete validation result for a plot boundary.
 
     Attributes:
@@ -865,8 +816,7 @@ class ValidationResult(BaseModel):
         description="OGC Simple Features compliant",
     )
 
-
-class AreaResult(BaseModel):
+class AreaResult(GreenLangBase):
     """Geodetic area calculation result for a plot boundary.
 
     Attributes:
@@ -927,8 +877,7 @@ class AreaResult(BaseModel):
         description="Estimated area uncertainty (sq metres)",
     )
 
-
-class OverlapRecord(BaseModel):
+class OverlapRecord(GreenLangBase):
     """Detected overlap between two plot boundaries.
 
     Attributes:
@@ -980,7 +929,7 @@ class OverlapRecord(BaseModel):
         description="WKT of the overlap geometry",
     )
     detected_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Detection timestamp (UTC)",
     )
 
@@ -994,8 +943,7 @@ class OverlapRecord(BaseModel):
             )
         return self
 
-
-class BoundaryVersion(BaseModel):
+class BoundaryVersion(GreenLangBase):
     """A versioned snapshot of a plot boundary.
 
     Supports EUDR Article 31 record-keeping (5-year retention).
@@ -1037,7 +985,7 @@ class BoundaryVersion(BaseModel):
         description="User or system that made the change",
     )
     changed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Version creation timestamp (UTC)",
     )
     previous_version: Optional[int] = Field(
@@ -1067,8 +1015,7 @@ class BoundaryVersion(BaseModel):
             )
         return self
 
-
-class SimplificationResult(BaseModel):
+class SimplificationResult(GreenLangBase):
     """Result of polygon boundary simplification.
 
     Attributes:
@@ -1129,8 +1076,7 @@ class SimplificationResult(BaseModel):
             )
         return self
 
-
-class SplitResult(BaseModel):
+class SplitResult(GreenLangBase):
     """Result of a plot boundary split operation.
 
     Attributes:
@@ -1166,8 +1112,7 @@ class SplitResult(BaseModel):
         description="SHA-256 hash of split operation",
     )
 
-
-class MergeResult(BaseModel):
+class MergeResult(GreenLangBase):
     """Result of a plot boundary merge operation.
 
     Attributes:
@@ -1197,8 +1142,7 @@ class MergeResult(BaseModel):
         description="SHA-256 hash of merge operation",
     )
 
-
-class ExportResult(BaseModel):
+class ExportResult(GreenLangBase):
     """Result of a boundary export operation.
 
     Attributes:
@@ -1214,7 +1158,7 @@ class ExportResult(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-    format: ExportFormat = Field(
+    format: ReportFormat = Field(
         ...,
         description="Export format used",
     )
@@ -1243,7 +1187,7 @@ class ExportResult(BaseModel):
         description="Coordinate precision (decimal places)",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Export timestamp (UTC)",
     )
     metadata: Dict[str, Any] = Field(
@@ -1251,8 +1195,7 @@ class ExportResult(BaseModel):
         description="Additional export metadata",
     )
 
-
-class BatchJob(BaseModel):
+class BatchJob(GreenLangBase):
     """Batch boundary processing job.
 
     Attributes:
@@ -1313,7 +1256,7 @@ class BatchJob(BaseModel):
         description="Processing priority (1-10)",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Job creation timestamp (UTC)",
     )
     started_at: Optional[datetime] = Field(
@@ -1354,13 +1297,11 @@ class BatchJob(BaseModel):
             )
         return v
 
-
 # =============================================================================
 # Request Models
 # =============================================================================
 
-
-class CreateBoundaryRequest(BaseModel):
+class CreateBoundaryRequest(GreenLangBase):
     """Request to create a new plot boundary.
 
     Attributes:
@@ -1420,8 +1361,7 @@ class CreateBoundaryRequest(BaseModel):
         description="Auto-repair geometry errors",
     )
 
-
-class UpdateBoundaryRequest(BaseModel):
+class UpdateBoundaryRequest(GreenLangBase):
     """Request to update an existing plot boundary.
 
     Attributes:
@@ -1462,8 +1402,7 @@ class UpdateBoundaryRequest(BaseModel):
         description="Auto-repair geometry errors",
     )
 
-
-class ValidateRequest(BaseModel):
+class ValidateRequest(GreenLangBase):
     """Request to validate a plot boundary.
 
     Attributes:
@@ -1493,8 +1432,7 @@ class ValidateRequest(BaseModel):
         description="Enforce strict OGC compliance",
     )
 
-
-class RepairRequest(BaseModel):
+class RepairRequest(GreenLangBase):
     """Request to repair a plot boundary.
 
     Attributes:
@@ -1526,8 +1464,7 @@ class RepairRequest(BaseModel):
         description="Prioritize area preservation",
     )
 
-
-class AreaCalculationRequest(BaseModel):
+class AreaCalculationRequest(GreenLangBase):
     """Request to calculate geodetic area for a plot boundary.
 
     Attributes:
@@ -1562,8 +1499,7 @@ class AreaCalculationRequest(BaseModel):
         description="Compactness index method",
     )
 
-
-class OverlapDetectionRequest(BaseModel):
+class OverlapDetectionRequest(GreenLangBase):
     """Request to detect overlaps for a plot boundary.
 
     Attributes:
@@ -1594,8 +1530,7 @@ class OverlapDetectionRequest(BaseModel):
         description="Include overlap geometry in response",
     )
 
-
-class SimplifyRequest(BaseModel):
+class SimplifyRequest(GreenLangBase):
     """Request to simplify a plot boundary.
 
     Attributes:
@@ -1633,8 +1568,7 @@ class SimplifyRequest(BaseModel):
         description="Preserve topological relationships",
     )
 
-
-class SplitRequest(BaseModel):
+class SplitRequest(GreenLangBase):
     """Request to split a plot boundary.
 
     Attributes:
@@ -1665,8 +1599,7 @@ class SplitRequest(BaseModel):
         description="User or system performing the split",
     )
 
-
-class MergeRequest(BaseModel):
+class MergeRequest(GreenLangBase):
     """Request to merge plot boundaries.
 
     Attributes:
@@ -1696,8 +1629,7 @@ class MergeRequest(BaseModel):
         description="Metadata for merged boundary",
     )
 
-
-class ExportRequest(BaseModel):
+class ExportRequest(GreenLangBase):
     """Request to export plot boundaries.
 
     Attributes:
@@ -1715,8 +1647,8 @@ class ExportRequest(BaseModel):
         min_length=1,
         description="Plot identifiers to export",
     )
-    format: ExportFormat = Field(
-        default=ExportFormat.GEOJSON,
+    format: ReportFormat = Field(
+        default=ReportFormat.GEOJSON,
         description="Export format",
     )
     crs: str = Field(
@@ -1734,8 +1666,7 @@ class ExportRequest(BaseModel):
         description="Include boundary metadata in export",
     )
 
-
-class BatchBoundaryRequest(BaseModel):
+class BatchBoundaryRequest(GreenLangBase):
     """Request for batch boundary operations.
 
     Attributes:
@@ -1777,13 +1708,11 @@ class BatchBoundaryRequest(BaseModel):
             )
         return v
 
-
 # =============================================================================
 # Response Models
 # =============================================================================
 
-
-class BoundaryResponse(BaseModel):
+class BoundaryResponse(GreenLangBase):
     """Response from a boundary create or update operation.
 
     Attributes:
@@ -1818,8 +1747,7 @@ class BoundaryResponse(BaseModel):
         description="Warning messages",
     )
 
-
-class ValidationResponse(BaseModel):
+class ValidationResponse(GreenLangBase):
     """Response from a boundary validation request.
 
     Attributes:
@@ -1844,8 +1772,7 @@ class ValidationResponse(BaseModel):
         description="Boundary after repair (if applied)",
     )
 
-
-class AreaResponse(BaseModel):
+class AreaResponse(GreenLangBase):
     """Response from an area calculation request.
 
     Attributes:
@@ -1870,8 +1797,7 @@ class AreaResponse(BaseModel):
         description="Warning messages",
     )
 
-
-class OverlapResponse(BaseModel):
+class OverlapResponse(GreenLangBase):
     """Response from an overlap detection request.
 
     Attributes:
@@ -1908,8 +1834,7 @@ class OverlapResponse(BaseModel):
         description="Warning messages",
     )
 
-
-class VersionResponse(BaseModel):
+class VersionResponse(GreenLangBase):
     """Response from a version history query.
 
     Attributes:
@@ -1941,8 +1866,7 @@ class VersionResponse(BaseModel):
         description="Processing time (milliseconds)",
     )
 
-
-class SimplificationResponse(BaseModel):
+class SimplificationResponse(GreenLangBase):
     """Response from a simplification request.
 
     Attributes:
@@ -1972,8 +1896,7 @@ class SimplificationResponse(BaseModel):
         description="Warning messages",
     )
 
-
-class SplitMergeResponse(BaseModel):
+class SplitMergeResponse(GreenLangBase):
     """Response from a split or merge operation.
 
     Attributes:
@@ -2003,8 +1926,7 @@ class SplitMergeResponse(BaseModel):
         description="Warning messages",
     )
 
-
-class ExportResponse(BaseModel):
+class ExportResponse(GreenLangBase):
     """Response from a boundary export operation.
 
     Attributes:
@@ -2028,7 +1950,6 @@ class ExportResponse(BaseModel):
         default_factory=list,
         description="Warning messages",
     )
-
 
 # ---------------------------------------------------------------------------
 # Public API
@@ -2054,7 +1975,7 @@ __all__ = [
     "OverlapResolution",
     "VersionChangeReason",
     "SimplificationMethod",
-    "ExportFormat",
+    "ReportFormat",
     "ThresholdClassification",
     "CompactnessIndex",
     "BatchStatus",

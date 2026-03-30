@@ -46,6 +46,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -58,22 +60,14 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str = "ce") -> str:
     """Generate a unique identifier with the given prefix."""
     return f"{prefix}-{uuid.uuid4().hex[:16]}"
-
 
 # ---------------------------------------------------------------------------
 # Constants: Contamination Pathway Definitions
@@ -445,11 +439,9 @@ CORRECTIVE_ACTION_TEMPLATES: Dict[str, Dict[str, List[str]]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Internal Dataclass Result Types
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class ContaminationEventRecord:
@@ -485,7 +477,6 @@ class ContaminationEventRecord:
     metadata: Dict[str, Any] = field(default_factory=dict)
     provenance_hash: str = ""
 
-
 @dataclass
 class ContaminationDetectionResult:
     """Result of a contamination risk detection scan for a facility.
@@ -512,7 +503,6 @@ class ContaminationDetectionResult:
     recommendations: List[str]
     provenance_hash: str = ""
 
-
 @dataclass
 class ContaminationImpactResult:
     """Result of tracing downstream impact of a contamination event.
@@ -533,7 +523,6 @@ class ContaminationImpactResult:
     propagation_depth: int
     provenance_hash: str = ""
 
-
 @dataclass
 class RiskHeatmapData:
     """Risk heatmap data for a facility's segregation zones.
@@ -552,11 +541,9 @@ class RiskHeatmapData:
     generated_at: str
     provenance_hash: str = ""
 
-
 # ---------------------------------------------------------------------------
 # CrossContaminationDetector Engine
 # ---------------------------------------------------------------------------
-
 
 class CrossContaminationDetector:
     """Detects and manages cross-contamination risks for EUDR segregation.
@@ -1071,7 +1058,7 @@ class CrossContaminationDetector:
             )
 
         event_id = _generate_id("ce")
-        now = _utcnow()
+        now = utcnow()
 
         event = ContaminationEventRecord(
             event_id=event_id,
@@ -1269,7 +1256,7 @@ class CrossContaminationDetector:
                         f"depth: {depth})"
                     ),
                     "event_id": event_id,
-                    "timestamp": _utcnow().isoformat(),
+                    "timestamp": utcnow().isoformat(),
                 })
 
         logger.info(
@@ -1310,7 +1297,7 @@ class CrossContaminationDetector:
                 f"Contamination event {event_id} is already resolved"
             )
 
-        now = _utcnow()
+        now = utcnow()
         resolved_event = ContaminationEventRecord(
             event_id=event.event_id,
             facility_id=event.facility_id,
@@ -1436,7 +1423,7 @@ class CrossContaminationDetector:
             if zone_scores else 0.0
         )
 
-        now = _utcnow()
+        now = utcnow()
         result = RiskHeatmapData(
             facility_id=facility_id,
             zones=zones_result,
@@ -1588,7 +1575,7 @@ class CrossContaminationDetector:
                 if event_ts.tzinfo is None:
                     event_ts = event_ts.replace(tzinfo=timezone.utc)
                 age_days = (
-                    _utcnow() - event_ts
+                    utcnow() - event_ts
                 ).total_seconds() / 86400.0
                 recency_factor = max(0.2, 1.0 - (age_days / 365.0))
             except (ValueError, TypeError):
@@ -2069,7 +2056,6 @@ class CrossContaminationDetector:
 
         parsed.sort(key=lambda e: e["_parsed_ts"])
         return parsed
-
 
 # ---------------------------------------------------------------------------
 # Public API

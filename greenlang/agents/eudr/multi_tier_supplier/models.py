@@ -54,25 +54,18 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import (
-    BaseModel,
-    ConfigDict,
     Field,
     field_validator,
     model_validator,
 )
 
 from greenlang.agents.data.eudr_traceability.models import EUDRCommodity
-
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ReportFormat
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -131,11 +124,9 @@ TYPICAL_CHAIN_DEPTHS: Dict[str, Tuple[int, int]] = {
     "wood": (4, 6),
 }
 
-
 # =============================================================================
 # Enumerations
 # =============================================================================
-
 
 class SupplierTier(str, Enum):
     """Supplier tier level in the supply chain hierarchy.
@@ -179,7 +170,6 @@ class SupplierTier(str, Enum):
     TIER_15 = "tier_15"
     UNKNOWN = "unknown"
 
-
 class RelationshipStatus(str, Enum):
     """Lifecycle status of a supplier relationship.
 
@@ -199,7 +189,6 @@ class RelationshipStatus(str, Enum):
     SUSPENDED = "suspended"
     TERMINATED = "terminated"
 
-
 class RelationshipConfidence(str, Enum):
     """Confidence level of a discovered supplier relationship.
 
@@ -216,7 +205,6 @@ class RelationshipConfidence(str, Enum):
     DECLARED = "declared"
     INFERRED = "inferred"
     SUSPECTED = "suspected"
-
 
 class RiskCategory(str, Enum):
     """Risk assessment category for supplier evaluation.
@@ -239,7 +227,6 @@ class RiskCategory(str, Enum):
     DATA_QUALITY = "data_quality"
     CONCENTRATION_RISK = "concentration_risk"
 
-
 class ComplianceStatus(str, Enum):
     """EUDR compliance status for a supplier.
 
@@ -259,7 +246,6 @@ class ComplianceStatus(str, Enum):
     UNVERIFIED = "unverified"
     EXPIRED = "expired"
 
-
 class GapSeverity(str, Enum):
     """Severity classification for data gaps.
 
@@ -271,7 +257,6 @@ class GapSeverity(str, Enum):
     CRITICAL = "critical"
     MAJOR = "major"
     MINOR = "minor"
-
 
 class CertificationType(str, Enum):
     """Sustainability certification types relevant to EUDR commodities.
@@ -294,7 +279,6 @@ class CertificationType(str, Enum):
     ORGANIC = "organic"
     FAIRTRADE = "fairtrade"
     OTHER = "other"
-
 
 class SupplierType(str, Enum):
     """Type of entity in the commodity supply chain.
@@ -323,7 +307,6 @@ class SupplierType(str, Enum):
     IMPORTER = "importer"
     RETAILER = "retailer"
 
-
 class CommodityType(str, Enum):
     """EUDR-regulated commodity types and their derived products.
 
@@ -349,22 +332,6 @@ class CommodityType(str, Enum):
     WOOD = "wood"
     DERIVED = "derived"
 
-
-class ReportFormat(str, Enum):
-    """Output format for audit and compliance reports.
-
-    JSON: Machine-readable JSON format.
-    PDF: Human-readable PDF report.
-    CSV: Tabular CSV data export.
-    EUDR_XML: EU Information System compatible XML format.
-    """
-
-    JSON = "json"
-    PDF = "pdf"
-    CSV = "csv"
-    EUDR_XML = "eudr_xml"
-
-
 class BatchStatus(str, Enum):
     """Status of a batch processing job.
 
@@ -381,7 +348,6 @@ class BatchStatus(str, Enum):
     FAILED = "failed"
     CANCELLED = "cancelled"
 
-
 class RiskPropagationMethod(str, Enum):
     """Method for propagating risk through the supplier hierarchy.
 
@@ -393,7 +359,6 @@ class RiskPropagationMethod(str, Enum):
     MAX = "max"
     WEIGHTED_AVERAGE = "weighted_average"
     VOLUME_WEIGHTED = "volume_weighted"
-
 
 class DiscoverySource(str, Enum):
     """Source from which a supplier relationship was discovered.
@@ -415,13 +380,11 @@ class DiscoverySource(str, Enum):
     MANUAL = "manual"
     INFERRED = "inferred"
 
-
 # =============================================================================
 # Core Models
 # =============================================================================
 
-
-class CertificationRecord(BaseModel):
+class CertificationRecord(GreenLangBase):
     """A sustainability certification held by a supplier.
 
     Tracks certification type, validity, and linkage to the certifying
@@ -495,11 +458,11 @@ class CertificationRecord(BaseModel):
         description="Last independent verification timestamp",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record creation timestamp",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record last update timestamp",
     )
 
@@ -514,8 +477,7 @@ class CertificationRecord(BaseModel):
             )
         return v.lower()
 
-
-class SupplierProfile(BaseModel):
+class SupplierProfile(GreenLangBase):
     """Comprehensive supplier profile with EUDR compliance metadata.
 
     Maintains all required supplier information per EUDR Article 9
@@ -713,11 +675,11 @@ class SupplierProfile(BaseModel):
         description="Additional structured metadata",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record creation timestamp",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record last update timestamp",
     )
 
@@ -727,8 +689,7 @@ class SupplierProfile(BaseModel):
         """Normalize country ISO code to uppercase."""
         return v.upper()
 
-
-class SupplierRelationship(BaseModel):
+class SupplierRelationship(GreenLangBase):
     """A relationship link between two suppliers in the hierarchy.
 
     Represents a buyer-supplier connection with lifecycle status,
@@ -862,11 +823,11 @@ class SupplierRelationship(BaseModel):
         description="Additional structured metadata",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record creation timestamp",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record last update timestamp",
     )
 
@@ -877,8 +838,7 @@ class SupplierRelationship(BaseModel):
             raise ValueError("buyer_id and supplier_id must be different")
         return self
 
-
-class TierDepthResult(BaseModel):
+class TierDepthResult(GreenLangBase):
     """Result of a tier depth assessment for a supply chain.
 
     Quantifies how deep the supply chain visibility extends and
@@ -959,7 +919,7 @@ class TierDepthResult(BaseModel):
         description="Percentage of chain fully traced to origin",
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Assessment timestamp",
     )
     metadata: Dict[str, Any] = Field(
@@ -967,8 +927,7 @@ class TierDepthResult(BaseModel):
         description="Additional assessment metadata",
     )
 
-
-class RiskScore(BaseModel):
+class RiskScore(GreenLangBase):
     """Composite risk assessment for a supplier.
 
     Contains individual risk category scores and the weighted composite
@@ -1062,7 +1021,7 @@ class RiskScore(BaseModel):
         description="Key factors driving the risk score",
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Assessment timestamp",
     )
     valid_until: Optional[datetime] = Field(
@@ -1074,8 +1033,7 @@ class RiskScore(BaseModel):
         description="Additional risk metadata",
     )
 
-
-class RiskPropagationResult(BaseModel):
+class RiskPropagationResult(GreenLangBase):
     """Result of propagating risk through the supplier hierarchy.
 
     Shows how deep-tier risk flows upstream to Tier 1 and the operator.
@@ -1145,7 +1103,7 @@ class RiskPropagationResult(BaseModel):
         description="Total suppliers included in propagation",
     )
     propagated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Propagation timestamp",
     )
     metadata: Dict[str, Any] = Field(
@@ -1153,8 +1111,7 @@ class RiskPropagationResult(BaseModel):
         description="Additional propagation metadata",
     )
 
-
-class ComplianceCheckResult(BaseModel):
+class ComplianceCheckResult(GreenLangBase):
     """Result of a compliance status check for a supplier.
 
     Evaluates the supplier against EUDR compliance dimensions: DDS
@@ -1254,7 +1211,7 @@ class ComplianceCheckResult(BaseModel):
         description="Whether status changed from previous check",
     )
     checked_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Check timestamp",
     )
     next_check_due: Optional[datetime] = Field(
@@ -1266,8 +1223,7 @@ class ComplianceCheckResult(BaseModel):
         description="Additional check metadata",
     )
 
-
-class DataGap(BaseModel):
+class DataGap(GreenLangBase):
     """A data gap identified in supplier profile or supply chain.
 
     Represents missing, incomplete, or outdated data that impacts
@@ -1353,7 +1309,7 @@ class DataGap(BaseModel):
         description="Commodity affected by the gap",
     )
     detected_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the gap was detected",
     )
     metadata: Dict[str, Any] = Field(
@@ -1361,8 +1317,7 @@ class DataGap(BaseModel):
         description="Additional gap metadata",
     )
 
-
-class RemediationPlan(BaseModel):
+class RemediationPlan(GreenLangBase):
     """Action plan for remediating supplier data gaps.
 
     Contains prioritized steps, progress tracking, and completion
@@ -1458,11 +1413,11 @@ class RemediationPlan(BaseModel):
         description="When the plan was completed",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record creation timestamp",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record last update timestamp",
     )
     metadata: Dict[str, Any] = Field(
@@ -1481,13 +1436,11 @@ class RemediationPlan(BaseModel):
             )
         return v.lower()
 
-
 # =============================================================================
 # Request Models
 # =============================================================================
 
-
-class DiscoverSuppliersRequest(BaseModel):
+class DiscoverSuppliersRequest(GreenLangBase):
     """Request to discover sub-tier suppliers from various sources.
 
     Attributes:
@@ -1546,8 +1499,7 @@ class DiscoverSuppliersRequest(BaseModel):
         description="Additional request metadata",
     )
 
-
-class CreateSupplierRequest(BaseModel):
+class CreateSupplierRequest(GreenLangBase):
     """Request to create a new supplier profile.
 
     Attributes:
@@ -1642,8 +1594,7 @@ class CreateSupplierRequest(BaseModel):
         """Normalize country ISO code to uppercase."""
         return v.upper()
 
-
-class AssessTierDepthRequest(BaseModel):
+class AssessTierDepthRequest(GreenLangBase):
     """Request to assess tier depth for a supply chain.
 
     Attributes:
@@ -1672,8 +1623,7 @@ class AssessTierDepthRequest(BaseModel):
         description="Additional request metadata",
     )
 
-
-class AssessRiskRequest(BaseModel):
+class AssessRiskRequest(GreenLangBase):
     """Request to assess risk for a supplier.
 
     Attributes:
@@ -1707,8 +1657,7 @@ class AssessRiskRequest(BaseModel):
         description="Additional request metadata",
     )
 
-
-class CheckComplianceRequest(BaseModel):
+class CheckComplianceRequest(GreenLangBase):
     """Request to check compliance status for a supplier.
 
     Attributes:
@@ -1747,8 +1696,7 @@ class CheckComplianceRequest(BaseModel):
         description="Additional request metadata",
     )
 
-
-class AnalyzeGapsRequest(BaseModel):
+class AnalyzeGapsRequest(GreenLangBase):
     """Request to analyze data gaps for a supplier or supply chain.
 
     Attributes:
@@ -1796,8 +1744,7 @@ class AnalyzeGapsRequest(BaseModel):
             )
         return self
 
-
-class GenerateReportRequest(BaseModel):
+class GenerateReportRequest(GreenLangBase):
     """Request to generate an audit or compliance report.
 
     Attributes:
@@ -1877,13 +1824,11 @@ class GenerateReportRequest(BaseModel):
             )
         return v.lower()
 
-
 # =============================================================================
 # Response Models
 # =============================================================================
 
-
-class DiscoverSuppliersResponse(BaseModel):
+class DiscoverSuppliersResponse(GreenLangBase):
     """Response from supplier discovery operation.
 
     Attributes:
@@ -1957,8 +1902,7 @@ class DiscoverSuppliersResponse(BaseModel):
         description="Additional response metadata",
     )
 
-
-class CreateSupplierResponse(BaseModel):
+class CreateSupplierResponse(GreenLangBase):
     """Response from supplier profile creation.
 
     Attributes:
@@ -2010,8 +1954,7 @@ class CreateSupplierResponse(BaseModel):
         description="Additional response metadata",
     )
 
-
-class AssessTierDepthResponse(BaseModel):
+class AssessTierDepthResponse(GreenLangBase):
     """Response from tier depth assessment.
 
     Attributes:
@@ -2046,8 +1989,7 @@ class AssessTierDepthResponse(BaseModel):
         description="Additional response metadata",
     )
 
-
-class AssessRiskResponse(BaseModel):
+class AssessRiskResponse(GreenLangBase):
     """Response from risk assessment.
 
     Attributes:
@@ -2087,8 +2029,7 @@ class AssessRiskResponse(BaseModel):
         description="Additional response metadata",
     )
 
-
-class CheckComplianceResponse(BaseModel):
+class CheckComplianceResponse(GreenLangBase):
     """Response from compliance status check.
 
     Attributes:
@@ -2123,8 +2064,7 @@ class CheckComplianceResponse(BaseModel):
         description="Additional response metadata",
     )
 
-
-class AnalyzeGapsResponse(BaseModel):
+class AnalyzeGapsResponse(GreenLangBase):
     """Response from gap analysis.
 
     Attributes:
@@ -2195,8 +2135,7 @@ class AnalyzeGapsResponse(BaseModel):
         description="Additional response metadata",
     )
 
-
-class GenerateReportResponse(BaseModel):
+class GenerateReportResponse(GreenLangBase):
     """Response from report generation.
 
     Attributes:
@@ -2266,7 +2205,7 @@ class GenerateReportResponse(BaseModel):
         description="SHA-256 provenance hash",
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Report generation timestamp",
     )
     metadata: Dict[str, Any] = Field(
@@ -2274,8 +2213,7 @@ class GenerateReportResponse(BaseModel):
         description="Additional response metadata",
     )
 
-
-class BatchResult(BaseModel):
+class BatchResult(GreenLangBase):
     """Result of a batch processing job.
 
     Attributes:

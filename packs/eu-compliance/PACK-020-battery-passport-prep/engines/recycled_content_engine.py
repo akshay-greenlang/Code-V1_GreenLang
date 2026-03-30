@@ -64,25 +64,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -102,7 +96,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely.
 
@@ -116,7 +109,6 @@ def _decimal(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _safe_divide(
     numerator: float, denominator: float, default: float = 0.0
 ) -> float:
@@ -125,20 +117,17 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.01"), rounding=ROUND_HALF_UP
     ))
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value to the specified number of decimal places.
@@ -155,11 +144,9 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CriticalRawMaterial(str, Enum):
     """Critical raw material subject to recycled content requirements.
@@ -174,7 +161,6 @@ class CriticalRawMaterial(str, Enum):
     LEAD = "lead"
     MANGANESE = "manganese"
 
-
 class RecycledContentPhase(str, Enum):
     """Regulatory phase for recycled content requirements.
 
@@ -185,7 +171,6 @@ class RecycledContentPhase(str, Enum):
     DOCUMENTATION_2028 = "documentation_2028"
     MINIMUM_2031 = "minimum_2031"
     INCREASED_2036 = "increased_2036"
-
 
 class ComplianceStatus(str, Enum):
     """Compliance status for recycled content assessment.
@@ -198,7 +183,6 @@ class ComplianceStatus(str, Enum):
     BELOW_TARGET = "below_target"
     NO_TARGET = "no_target"
     DOCUMENTATION_ONLY = "documentation_only"
-
 
 class VerificationMethod(str, Enum):
     """Method used to verify recycled content claims.
@@ -213,11 +197,9 @@ class VerificationMethod(str, Enum):
     SELF_DECLARATION = "self_declaration"
     NOT_VERIFIED = "not_verified"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # Mandatory recycled content targets by phase and material.
 # Values are percentages (e.g., 16 means 16%).
@@ -246,14 +228,12 @@ RECYCLED_CONTENT_TARGETS: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # Phase effective dates.
 PHASE_EFFECTIVE_DATES: Dict[str, str] = {
     RecycledContentPhase.DOCUMENTATION_2028.value: "2028-08-18",
     RecycledContentPhase.MINIMUM_2031.value: "2031-08-18",
     RecycledContentPhase.INCREASED_2036.value: "2036-08-18",
 }
-
 
 # Phase descriptions.
 PHASE_DESCRIPTIONS: Dict[str, str] = {
@@ -271,7 +251,6 @@ PHASE_DESCRIPTIONS: Dict[str, str] = {
         "content levels of 26% cobalt, 12% lithium, 15% nickel, and 85% lead."
     ),
 }
-
 
 # Material display labels and context.
 MATERIAL_LABELS: Dict[str, Dict[str, str]] = {
@@ -307,7 +286,6 @@ MATERIAL_LABELS: Dict[str, Dict[str, str]] = {
     },
 }
 
-
 # Verification method descriptions.
 VERIFICATION_DESCRIPTIONS: Dict[str, str] = {
     VerificationMethod.MASS_BALANCE.value: (
@@ -335,11 +313,9 @@ VERIFICATION_DESCRIPTIONS: Dict[str, str] = {
     ),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class MaterialInput(BaseModel):
     """Input data for a single material's recycled content.
@@ -405,7 +381,6 @@ class MaterialInput(BaseModel):
             )
         return v
 
-
 class RecycledContentInput(BaseModel):
     """Input data for battery recycled content calculation per Art 8.
 
@@ -453,7 +428,6 @@ class RecycledContentInput(BaseModel):
                 )
             materials_seen.add(m.material.value)
         return v
-
 
 class MaterialResult(BaseModel):
     """Result for a single material's recycled content assessment.
@@ -514,7 +488,6 @@ class MaterialResult(BaseModel):
         description="SHA-256 provenance hash for this material result",
     )
 
-
 class RecycledContentResult(BaseModel):
     """Result of battery recycled content calculation per Art 8.
 
@@ -530,7 +503,7 @@ class RecycledContentResult(BaseModel):
         description="Engine version used for this calculation",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of calculation (UTC)",
     )
     battery_id: str = Field(
@@ -606,11 +579,9 @@ class RecycledContentResult(BaseModel):
         description="SHA-256 hash of the entire result",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class RecycledContentEngine:
     """Battery recycled content engine per EU Battery Regulation Art 8.

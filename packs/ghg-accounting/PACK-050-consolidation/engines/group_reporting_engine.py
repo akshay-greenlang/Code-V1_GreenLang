@@ -56,24 +56,18 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC timestamp with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 provenance hash, excluding volatile fields."""
@@ -91,7 +85,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert any value to Decimal."""
     if isinstance(value, Decimal):
@@ -100,7 +93,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -112,21 +104,17 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> Decimal:
     """Round a value to two decimal places using ROUND_HALF_UP."""
     return Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-
 
 def _round4(value: Any) -> Decimal:
     """Round a value to four decimal places using ROUND_HALF_UP."""
     return Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ReportingFramework(str, Enum):
     """Supported reporting frameworks."""
@@ -140,14 +128,12 @@ class ReportingFramework(str, Enum):
     UK_SECR = "UK_SECR"
     ISO_14064 = "ISO_14064"
 
-
 class IntensityMetricType(str, Enum):
     """Types of emission intensity metrics."""
     PER_REVENUE = "PER_REVENUE"
     PER_EMPLOYEE = "PER_EMPLOYEE"
     PER_PRODUCTION_UNIT = "PER_PRODUCTION_UNIT"
     PER_FLOOR_AREA = "PER_FLOOR_AREA"
-
 
 # ---------------------------------------------------------------------------
 # Framework Disclosure Maps
@@ -204,11 +190,9 @@ _FRAMEWORK_DISCLOSURE_MAP: Dict[str, List[Dict[str, str]]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class ScopeBreakdown(BaseModel):
     """Scope-level breakdown of consolidated emissions."""
@@ -239,7 +223,6 @@ class ScopeBreakdown(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Any:
         return Decimal(str(v))
 
-
 class TrendData(BaseModel):
     """Year-over-year trend data point."""
     model_config = ConfigDict(
@@ -265,7 +248,6 @@ class TrendData(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Any:
         return Decimal(str(v))
 
-
 class ContributionWaterfall(BaseModel):
     """Entity contribution waterfall showing each entity's share."""
     model_config = ConfigDict(
@@ -287,7 +269,6 @@ class ContributionWaterfall(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Any:
         return Decimal(str(v))
 
-
 class GeographicBreakdown(BaseModel):
     """Emissions breakdown by geography."""
     model_config = ConfigDict(
@@ -308,7 +289,6 @@ class GeographicBreakdown(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Any:
         return Decimal(str(v))
 
-
 class FrameworkMapping(BaseModel):
     """Mapping of consolidated data to a reporting framework."""
     model_config = ConfigDict(
@@ -327,7 +307,6 @@ class FrameworkMapping(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Any:
         return Decimal(str(v))
-
 
 class GroupReport(BaseModel):
     """Complete consolidated group GHG report."""
@@ -352,7 +331,7 @@ class GroupReport(BaseModel):
     sbti_target_progress: Optional[Dict[str, Any]] = Field(None)
     variance_vs_prior: Optional[Dict[str, Any]] = Field(None)
     variance_vs_target: Optional[Dict[str, Any]] = Field(None)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
 
     @field_validator(
@@ -363,11 +342,9 @@ class GroupReport(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Any:
         return Decimal(str(v))
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class GroupReportingEngine:
     """Generates consolidated group GHG reports.

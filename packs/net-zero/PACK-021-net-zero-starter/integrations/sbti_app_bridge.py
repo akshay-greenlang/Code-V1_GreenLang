@@ -37,26 +37,19 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -69,11 +62,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Agent Stubs
 # ---------------------------------------------------------------------------
-
 
 class _AgentStub:
     """Stub for unavailable GL-SBTi-APP modules."""
@@ -92,7 +83,6 @@ class _AgentStub:
             }
         return _stub_method
 
-
 def _try_import_sbti_component(component_id: str, module_path: str) -> Any:
     """Try to import a GL-SBTi-APP component with graceful fallback.
 
@@ -105,16 +95,15 @@ def _try_import_sbti_component(component_id: str, module_path: str) -> Any:
     """
     try:
         import importlib
+
         return importlib.import_module(module_path)
     except ImportError:
         logger.debug("SBTi component %s not available, using stub", component_id)
         return _AgentStub(component_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class PathwayType(str, Enum):
     """SBTi pathway types."""
@@ -123,7 +112,6 @@ class PathwayType(str, Enum):
     PATHWAY_WB2C = "well_below_2C"
     PATHWAY_2C = "2C"
 
-
 class TargetScope(str, Enum):
     """Target scope coverage."""
 
@@ -131,13 +119,11 @@ class TargetScope(str, Enum):
     LONG_TERM = "long_term"
     NET_ZERO = "net_zero"
 
-
 class TargetType(str, Enum):
     """Target type: absolute or intensity."""
 
     ABSOLUTE = "absolute"
     INTENSITY = "intensity"
-
 
 class ValidationStatus(str, Enum):
     """SBTi target validation status."""
@@ -147,11 +133,9 @@ class ValidationStatus(str, Enum):
     PENDING_REVIEW = "pending_review"
     NEEDS_ADJUSTMENT = "needs_adjustment"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class SBTiAppBridgeConfig(BaseModel):
     """Configuration for the SBTi App Bridge."""
@@ -163,7 +147,6 @@ class SBTiAppBridgeConfig(BaseModel):
     long_term_target_year: int = Field(default=2050, ge=2040, le=2060)
     pathway: PathwayType = Field(default=PathwayType.PATHWAY_1_5C)
     sector: str = Field(default="general")
-
 
 class TargetResult(BaseModel):
     """Result of target setting operation."""
@@ -184,7 +167,6 @@ class TargetResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class ValidationResult(BaseModel):
     """Result of target validation against SBTi criteria."""
 
@@ -199,7 +181,6 @@ class ValidationResult(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class PathwayResult(BaseModel):
     """Result of pathway calculation."""
@@ -216,7 +197,6 @@ class PathwayResult(BaseModel):
     required_annual_reduction_pct: float = Field(default=0.0)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class ProgressResult(BaseModel):
     """Result of progress tracking."""
@@ -236,7 +216,6 @@ class ProgressResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class TemperatureScoreResult(BaseModel):
     """Result of temperature scoring."""
 
@@ -249,7 +228,6 @@ class TemperatureScoreResult(BaseModel):
     methodology: str = Field(default="SBTi Temperature Rating v2")
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # SBTi APP Component Mapping
@@ -288,11 +266,9 @@ SBTI_REDUCTION_REQUIREMENTS: Dict[str, Dict[str, float]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # SBTiAppBridge
 # ---------------------------------------------------------------------------
-
 
 class SBTiAppBridge:
     """Bridge to GL-SBTi-APP for science-based target setting.

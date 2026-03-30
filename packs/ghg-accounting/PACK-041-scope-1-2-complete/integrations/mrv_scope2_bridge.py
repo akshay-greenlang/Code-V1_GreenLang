@@ -38,25 +38,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -69,18 +63,15 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class Scope2Method(str, Enum):
     """Scope 2 accounting methods per GHG Protocol Scope 2 Guidance."""
 
     LOCATION_BASED = "location_based"
     MARKET_BASED = "market_based"
-
 
 class EnergyType(str, Enum):
     """Types of purchased energy for Scope 2."""
@@ -89,7 +80,6 @@ class EnergyType(str, Enum):
     STEAM = "steam"
     HEAT = "heat"
     COOLING = "cooling"
-
 
 class MarketInstrument(str, Enum):
     """Market-based contractual instruments."""
@@ -102,14 +92,12 @@ class MarketInstrument(str, Enum):
     SUPPLIER_SPECIFIC = "supplier_specific"
     RESIDUAL_MIX = "residual_mix"
 
-
 class ReconciliationStatus(str, Enum):
     """Dual reporting reconciliation status."""
 
     PASS = "PASS"
     FAIL = "FAIL"
     WARNING = "WARNING"
-
 
 # ---------------------------------------------------------------------------
 # Grid Emission Factors (kg CO2e per kWh) by region
@@ -157,11 +145,9 @@ COOLING_EMISSION_FACTORS: Dict[str, float] = {
     "district_cooling": 0.120,
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class Scope2AgentConfig(BaseModel):
     """Configuration for Scope 2 agent routing."""
@@ -171,7 +157,6 @@ class Scope2AgentConfig(BaseModel):
     default_residual_mix_region: str = Field(default="US_AVERAGE")
     require_dual_reporting: bool = Field(default=True)
     rec_retirement_tracking: bool = Field(default=True)
-
 
 class Scope2Result(BaseModel):
     """Result from a Scope 2 agent execution."""
@@ -193,8 +178,7 @@ class Scope2Result(BaseModel):
     details: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
     processing_time_ms: float = Field(default=0.0)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class Scope2DualResult(BaseModel):
     """Combined dual-reporting Scope 2 result."""
@@ -214,13 +198,11 @@ class Scope2DualResult(BaseModel):
     by_facility: Dict[str, Dict[str, float]] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
     processing_time_ms: float = Field(default=0.0)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # MRVScope2Bridge
 # ---------------------------------------------------------------------------
-
 
 class MRVScope2Bridge:
     """Bridge to all 5 Scope 2 MRV agents (MRV-009 through MRV-013).

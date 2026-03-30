@@ -37,7 +37,8 @@ import math
 import logging
 from datetime import datetime
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
+from greenlang.schemas import GreenLangBase
 
 # Set high precision for Decimal operations
 getcontext().prec = 50
@@ -133,7 +134,7 @@ class UnitSystem(str, Enum):
 # PYDANTIC INPUT/OUTPUT MODELS
 # =============================================================================
 
-class HumidityRatioInput(BaseModel):
+class HumidityRatioInput(GreenLangBase):
     """
     Input model for humidity ratio calculation from dry-bulb and wet-bulb temperatures.
 
@@ -169,7 +170,7 @@ class HumidityRatioInput(BaseModel):
         return self
 
 
-class HumidityRatioOutput(BaseModel):
+class HumidityRatioOutput(GreenLangBase):
     """
     Output model for humidity ratio calculation.
 
@@ -210,7 +211,7 @@ class HumidityRatioOutput(BaseModel):
     )
 
 
-class RelativeHumidityInput(BaseModel):
+class RelativeHumidityInput(GreenLangBase):
     """
     Input model for relative humidity calculation from dry-bulb and dew point.
 
@@ -240,7 +241,7 @@ class RelativeHumidityInput(BaseModel):
         return self
 
 
-class RelativeHumidityOutput(BaseModel):
+class RelativeHumidityOutput(GreenLangBase):
     """
     Output model for relative humidity calculation.
 
@@ -273,7 +274,7 @@ class RelativeHumidityOutput(BaseModel):
     )
 
 
-class DewPointInput(BaseModel):
+class DewPointInput(GreenLangBase):
     """
     Input model for dew point temperature calculation.
 
@@ -301,7 +302,7 @@ class DewPointInput(BaseModel):
         return v
 
 
-class DewPointOutput(BaseModel):
+class DewPointOutput(GreenLangBase):
     """
     Output model for dew point temperature calculation.
 
@@ -332,7 +333,7 @@ class DewPointOutput(BaseModel):
     )
 
 
-class WetBulbInput(BaseModel):
+class WetBulbInput(GreenLangBase):
     """
     Input model for wet-bulb temperature calculation.
 
@@ -358,7 +359,7 @@ class WetBulbInput(BaseModel):
     )
 
 
-class WetBulbOutput(BaseModel):
+class WetBulbOutput(GreenLangBase):
     """
     Output model for wet-bulb temperature calculation.
 
@@ -394,7 +395,7 @@ class WetBulbOutput(BaseModel):
     )
 
 
-class EnthalpyInput(BaseModel):
+class EnthalpyInput(GreenLangBase):
     """
     Input model for specific enthalpy calculation.
 
@@ -414,7 +415,7 @@ class EnthalpyInput(BaseModel):
     )
 
 
-class EnthalpyOutput(BaseModel):
+class EnthalpyOutput(GreenLangBase):
     """
     Output model for specific enthalpy calculation.
 
@@ -447,7 +448,7 @@ class EnthalpyOutput(BaseModel):
     )
 
 
-class SpecificVolumeInput(BaseModel):
+class SpecificVolumeInput(GreenLangBase):
     """
     Input model for specific volume calculation.
 
@@ -473,7 +474,7 @@ class SpecificVolumeInput(BaseModel):
     )
 
 
-class SpecificVolumeOutput(BaseModel):
+class SpecificVolumeOutput(GreenLangBase):
     """
     Output model for specific volume calculation.
 
@@ -504,7 +505,7 @@ class SpecificVolumeOutput(BaseModel):
     )
 
 
-class SaturationPressureInput(BaseModel):
+class SaturationPressureInput(GreenLangBase):
     """
     Input model for saturation vapor pressure calculation.
 
@@ -522,7 +523,7 @@ class SaturationPressureInput(BaseModel):
     )
 
 
-class SaturationPressureOutput(BaseModel):
+class SaturationPressureOutput(GreenLangBase):
     """
     Output model for saturation vapor pressure calculation.
 
@@ -557,7 +558,7 @@ class SaturationPressureOutput(BaseModel):
     )
 
 
-class CompletePsychrometricInput(BaseModel):
+class CompletePsychrometricInput(GreenLangBase):
     """
     Input model for complete psychrometric state calculation.
 
@@ -619,7 +620,7 @@ class CompletePsychrometricInput(BaseModel):
         return self
 
 
-class CompletePsychrometricOutput(BaseModel):
+class CompletePsychrometricOutput(GreenLangBase):
     """
     Output model for complete psychrometric state.
 

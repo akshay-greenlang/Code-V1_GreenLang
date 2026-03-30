@@ -413,7 +413,7 @@ class ProtectedAreaEngine:
             UNESCOSite(unesco_id="UNESCO-180", name="Salonga National Park", country="COD",
                       area_km2=36000.0, lat=-2.3, lon=21.2, inscription_year=1984,
                       criteria=["vii", "ix"]),
-            UNESCOSite(unesco-555552="UNESCO-63", name="Virunga National Park", country="COD",
+            UNESCOSite(unesco_id="UNESCO-63", name="Virunga National Park", country="COD",
                       area_km2=7900.0, lat=-0.9, lon=29.5, inscription_year=1979,
                       criteria=["vii", "viii", "x"]),
             UNESCOSite(unesco_id="UNESCO-137", name="Manu National Park", country="PER",

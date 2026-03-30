@@ -52,26 +52,19 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -84,7 +77,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _safe_divide(
     numerator: float, denominator: float, default: float = 0.0,
 ) -> float:
@@ -93,41 +85,34 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(numerator: float, denominator: float) -> float:
     """Calculate percentage safely."""
     if denominator == 0.0:
         return 0.0
     return (numerator / denominator) * 100.0
 
-
 def _clamp(value: float, low: float = 0.0, high: float = 100.0) -> float:
     """Clamp a value to [low, high] range."""
     return max(low, min(high, value))
-
 
 def _round_val(value: float, places: int = 4) -> float:
     """Round a float to specified decimal places."""
     return round(value, places)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class MaterialityDimension(str, Enum):
     """Materiality assessment dimension per ESRS 1."""
     FINANCIAL = "financial"         # Outside-in
     IMPACT = "impact"               # Inside-out
 
-
 class IROType(str, Enum):
     """Impact, Risk, Opportunity classification per ESRS 2."""
     IMPACT = "impact"
     RISK = "risk"
     OPPORTUNITY = "opportunity"
-
 
 class ESRSStandard(str, Enum):
     """ESRS topical standards."""
@@ -142,7 +127,6 @@ class ESRSStandard(str, Enum):
     S4 = "S4"   # Consumers and end-users
     G1 = "G1"   # Business conduct
 
-
 class SeverityScale(str, Enum):
     """Severity scale for impact assessment (ESRS 1 para 45)."""
     NEGLIGIBLE = "negligible"
@@ -150,7 +134,6 @@ class SeverityScale(str, Enum):
     MODERATE = "moderate"
     SIGNIFICANT = "significant"
     CRITICAL = "critical"
-
 
 class LikelihoodScale(str, Enum):
     """Likelihood scale for risk/opportunity assessment."""
@@ -160,13 +143,11 @@ class LikelihoodScale(str, Enum):
     LIKELY = "likely"
     VERY_LIKELY = "very_likely"
 
-
 class MaterialityOutcome(str, Enum):
     """Whether a topic is material or not."""
     MATERIAL = "material"
     NOT_MATERIAL = "not_material"
     UNDER_REVIEW = "under_review"
-
 
 class StakeholderGroup(str, Enum):
     """Stakeholder groups for FI materiality assessment."""
@@ -178,7 +159,6 @@ class StakeholderGroup(str, Enum):
     NGOS = "ngos"
     SUPPLIERS = "suppliers"
     INDUSTRY_BODIES = "industry_bodies"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -387,11 +367,9 @@ ESRS_DATAPOINT_REGISTRY: Dict[str, List[str]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class MaterialityTopicData(BaseModel):
     """Input data for a single materiality topic.
@@ -467,7 +445,6 @@ class MaterialityTopicData(BaseModel):
         default=IROType.IMPACT, description="Predominant IRO type",
     )
 
-
 class StakeholderInput(BaseModel):
     """Stakeholder engagement input for materiality assessment."""
     stakeholder_id: str = Field(
@@ -488,9 +465,8 @@ class StakeholderInput(BaseModel):
         default="survey", description="Engagement method",
     )
     response_date: datetime = Field(
-        default_factory=_utcnow, description="Response date",
+        default_factory=utcnow, description="Response date",
     )
-
 
 class IROAssessment(BaseModel):
     """Impact, Risk, or Opportunity assessment result per topic."""
@@ -521,7 +497,6 @@ class IROAssessment(BaseModel):
     )
     is_material: bool = Field(default=False, description="Is topic material")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class FinancedImpactAssessment(BaseModel):
     """Assessment of financed/insured/advisory impact.
@@ -560,7 +535,6 @@ class FinancedImpactAssessment(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class DatapointMapping(BaseModel):
     """Mapping of a material topic to ESRS datapoints."""
     mapping_id: str = Field(
@@ -579,7 +553,6 @@ class DatapointMapping(BaseModel):
         default=0, ge=0, description="Total datapoints for this standard",
     )
     is_material: bool = Field(default=False, description="Is topic material")
-
 
 class MaterialityMatrix(BaseModel):
     """Materiality matrix visualization data.
@@ -606,7 +579,6 @@ class MaterialityMatrix(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class FSMaterialityResult(BaseModel):
     """Complete double materiality assessment result for a financial institution."""
     result_id: str = Field(default_factory=_new_uuid, description="Result ID")
@@ -614,7 +586,7 @@ class FSMaterialityResult(BaseModel):
         default="", description="Financial institution name",
     )
     reporting_date: datetime = Field(
-        default_factory=_utcnow, description="Reporting date",
+        default_factory=utcnow, description="Reporting date",
     )
 
     # IRO assessments
@@ -675,15 +647,13 @@ class FSMaterialityResult(BaseModel):
         default=_MODULE_VERSION, description="Engine version",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp",
+        default_factory=utcnow, description="Calculation timestamp",
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 # ---------------------------------------------------------------------------
 # Engine Configuration
 # ---------------------------------------------------------------------------
-
 
 class FSMaterialityConfig(BaseModel):
     """Configuration for the FSDoubleMaterialityEngine.
@@ -748,7 +718,6 @@ class FSMaterialityConfig(BaseModel):
                 )
         return self
 
-
 # ---------------------------------------------------------------------------
 # model_rebuild for forward reference resolution
 # ---------------------------------------------------------------------------
@@ -762,11 +731,9 @@ DatapointMapping.model_rebuild()
 MaterialityMatrix.model_rebuild()
 FSMaterialityResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # FSDoubleMaterialityEngine
 # ---------------------------------------------------------------------------
-
 
 class FSDoubleMaterialityEngine:
     """
@@ -823,9 +790,10 @@ class FSDoubleMaterialityEngine:
             Complete FSMaterialityResult.
         """
         import time
+
         start = time.perf_counter()
 
-        r_date = reporting_date or _utcnow()
+        r_date = reporting_date or utcnow()
         stakeholder_inputs = stakeholder_inputs or []
         financed_impacts = financed_impacts or []
 

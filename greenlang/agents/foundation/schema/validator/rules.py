@@ -40,11 +40,12 @@ import re
 import time
 from typing import Any, Callable, Dict, List, Optional, Union
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import ConfigDict, Field, field_validator
 
 from greenlang.agents.foundation.schema.compiler.ir import RuleBindingIR, SchemaIR
 from greenlang.agents.foundation.schema.models.config import ValidationOptions
 from greenlang.agents.foundation.schema.models.finding import Finding, FindingHint, Severity
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +64,7 @@ ERROR_CODE_CONSISTENCY_ERROR = "GLSCHEMA-E402"
 # =============================================================================
 
 
-class RuleExpression(BaseModel):
+class RuleExpression(GreenLangBase):
     """
     A rule expression to evaluate.
 
@@ -161,7 +162,7 @@ class RuleExpression(BaseModel):
         return self.operator in ("is_null", "is_not_null", "exists", "not_exists")
 
 
-class Rule(BaseModel):
+class Rule(GreenLangBase):
     """
     A cross-field validation rule.
 

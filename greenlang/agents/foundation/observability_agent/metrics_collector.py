@@ -39,18 +39,13 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Data Models
@@ -60,7 +55,6 @@ def _utcnow() -> datetime:
 DEFAULT_HISTOGRAM_BUCKETS: Tuple[float, ...] = (
     0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0,
 )
-
 
 @dataclass
 class MetricDefinition:
@@ -82,13 +76,12 @@ class MetricDefinition:
     description: str = ""
     labels: List[str] = field(default_factory=list)
     buckets: Tuple[float, ...] = DEFAULT_HISTOGRAM_BUCKETS
-    created_at: datetime = field(default_factory=_utcnow)
+    created_at: datetime = field(default_factory=utcnow)
 
     def __post_init__(self) -> None:
         """Generate metric_id if not provided."""
         if not self.metric_id:
             self.metric_id = str(uuid.uuid4())
-
 
 @dataclass
 class MetricRecording:
@@ -107,14 +100,13 @@ class MetricRecording:
     metric_name: str = ""
     value: float = 0.0
     labels: Dict[str, str] = field(default_factory=dict)
-    timestamp: datetime = field(default_factory=_utcnow)
+    timestamp: datetime = field(default_factory=utcnow)
     provenance_hash: str = ""
 
     def __post_init__(self) -> None:
         """Generate recording_id if not provided."""
         if not self.recording_id:
             self.recording_id = str(uuid.uuid4())
-
 
 @dataclass
 class MetricSeries:
@@ -135,16 +127,14 @@ class MetricSeries:
     labels: Dict[str, str] = field(default_factory=dict)
     value: float = 0.0
     recordings: int = 0
-    last_updated: datetime = field(default_factory=_utcnow)
+    last_updated: datetime = field(default_factory=utcnow)
     histogram_counts: Dict[float, int] = field(default_factory=dict)
     histogram_sum: float = 0.0
     histogram_count: int = 0
 
-
 # =============================================================================
 # MetricsCollector
 # =============================================================================
-
 
 class MetricsCollector:
     """Unified Prometheus-compatible metric collection engine.
@@ -280,7 +270,7 @@ class MetricsCollector:
         definition = self._metrics[name]
         self._validate_labels(definition, labels)
 
-        now = _utcnow()
+        now = utcnow()
         provenance_hash = self._compute_recording_hash(name, value, labels, now)
 
         labels_key = self._labels_to_key(labels)
@@ -370,7 +360,7 @@ class MetricsCollector:
             )
 
         labels = labels or {}
-        now = _utcnow()
+        now = utcnow()
         provenance_hash = self._compute_recording_hash(name, value, labels, now)
         labels_key = self._labels_to_key(labels)
         series_key = f"{name}:{labels_key}"
@@ -609,7 +599,7 @@ class MetricsCollector:
         Returns:
             Number of series removed.
         """
-        cutoff = _utcnow().timestamp() - self._retention_seconds
+        cutoff = utcnow().timestamp() - self._retention_seconds
         removed = 0
 
         with self._lock:
@@ -927,7 +917,6 @@ class MetricsCollector:
         if value == int(value) and not math.isinf(value):
             return str(int(value))
         return repr(value)
-
 
 __all__ = [
     "MetricsCollector",

@@ -70,26 +70,19 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -107,7 +100,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -116,7 +108,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -128,22 +119,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ObjectiveWeight(str, Enum):
     """Predefined dispatch objective weighting profiles.
@@ -160,7 +147,6 @@ class ObjectiveWeight(str, Enum):
     MAX_RESPONSE = "max_response"
     MIN_REBOUND = "min_rebound"
 
-
 class CurtailmentStrategy(str, Enum):
     """Load curtailment strategy.
 
@@ -173,7 +159,6 @@ class CurtailmentStrategy(str, Enum):
     SEQUENTIAL = "sequential"
     PRIORITY_BASED = "priority_based"
     OPTIMISED = "optimised"
-
 
 class CommandType(str, Enum):
     """Type of load control command.
@@ -190,7 +175,6 @@ class CommandType(str, Enum):
     RAMP = "ramp"
     HOLD = "hold"
 
-
 class PlanStatus(str, Enum):
     """Dispatch plan status.
 
@@ -206,7 +190,6 @@ class PlanStatus(str, Enum):
     OPTIMISED = "optimised"
     FALLBACK = "fallback"
 
-
 class ReboundSeverity(str, Enum):
     """Severity of post-event rebound demand.
 
@@ -219,7 +202,6 @@ class ReboundSeverity(str, Enum):
     MODERATE = "moderate"
     SEVERE = "severe"
     CRITICAL = "critical"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -268,11 +250,9 @@ DEFAULT_DECAY_TIME_CONSTANT: Decimal = Decimal("30")
 # Maximum shortfall penalty multiplier for LP objective.
 SHORTFALL_PENALTY: Decimal = Decimal("1000")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class DispatchLoad(BaseModel):
     """A load available for dispatch during a DR event.
@@ -322,7 +302,6 @@ class DispatchLoad(BaseModel):
         default=5, ge=1, le=10, description="Priority (1=curtail first)"
     )
 
-
 class DispatchInput(BaseModel):
     """Input for dispatch optimisation.
 
@@ -365,11 +344,9 @@ class DispatchInput(BaseModel):
         default=None, ge=0, description="Max ramp rate (kW/min)"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class LoadAllocation(BaseModel):
     """Curtailment allocation for a single load in the dispatch plan.
@@ -395,7 +372,6 @@ class LoadAllocation(BaseModel):
     comfort_cost: Decimal = Field(default=Decimal("0"))
     rebound_kw: Decimal = Field(default=Decimal("0"))
 
-
 class CurtailmentCommand(BaseModel):
     """A time-sequenced load control command.
 
@@ -415,7 +391,6 @@ class CurtailmentCommand(BaseModel):
     target_kw: Decimal = Field(default=Decimal("0"))
     execute_at_minute: int = Field(default=0)
     ramp_minutes: int = Field(default=0)
-
 
 class DispatchPlan(BaseModel):
     """Optimised dispatch plan for a DR event.
@@ -456,9 +431,8 @@ class DispatchPlan(BaseModel):
     )
     loads_curtailed: int = Field(default=0)
     loads_available: int = Field(default=0)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class ReboundForecast(BaseModel):
     """Post-event rebound demand forecast.
@@ -487,14 +461,12 @@ class ReboundForecast(BaseModel):
     total_rebound_kwh: Decimal = Field(default=Decimal("0"))
     diversity_factor: Decimal = Field(default=Decimal("0.80"))
     mitigation_recommendations: List[str] = Field(default_factory=list)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class DispatchOptimizerEngine:
     """Multi-objective load curtailment dispatch optimiser.
@@ -905,6 +877,7 @@ class DispatchOptimizerEngine:
         """
         try:
             from scipy.optimize import linprog
+
         except ImportError:
             return self._dispatch_priority(dispatch_input, eligible)
 

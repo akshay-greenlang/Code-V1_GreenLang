@@ -95,23 +95,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -128,7 +123,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -137,7 +131,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -145,15 +138,12 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ControlCategory(str, Enum):
     """Control category."""
@@ -162,7 +152,6 @@ class ControlCategory(str, Enum):
     REVIEW = "review"
     REPORTING = "reporting"
     IT_GENERAL = "it_general"
-
 
 class ControlType(str, Enum):
     """Control type.
@@ -174,7 +163,6 @@ class ControlType(str, Enum):
     PREVENTIVE = "preventive"
     DETECTIVE = "detective"
     CORRECTIVE = "corrective"
-
 
 class DeficiencyLevel(str, Enum):
     """Deficiency classification.
@@ -188,7 +176,6 @@ class DeficiencyLevel(str, Enum):
     DEFICIENCY = "deficiency"
     SIGNIFICANT_DEFICIENCY = "significant_deficiency"
     MATERIAL_WEAKNESS = "material_weakness"
-
 
 class MaturityLevel(str, Enum):
     """Control maturity level.
@@ -204,7 +191,6 @@ class MaturityLevel(str, Enum):
     DEFINED = "defined"
     MANAGED = "managed"
     OPTIMISED = "optimised"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Standard Controls
@@ -308,11 +294,9 @@ SAMPLE_SIZE_RULES: List[Tuple[int, int, Decimal]] = [
     (999999, 30, Decimal("0.10")),
 ]
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class Control(BaseModel):
     """A control definition with assessment scores.
@@ -367,7 +351,6 @@ class Control(BaseModel):
     def coerce_score(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class ControlTestingConfig(BaseModel):
     """Configuration for control testing.
 
@@ -386,7 +369,6 @@ class ControlTestingConfig(BaseModel):
     freq_weight: Decimal = Field(default=DEFAULT_FREQ_WEIGHT, ge=0, le=1)
     output_precision: int = Field(default=2, ge=0, le=6, description="Output precision")
 
-
 class ControlTestingInput(BaseModel):
     """Input for control testing engine.
 
@@ -399,11 +381,9 @@ class ControlTestingInput(BaseModel):
         default_factory=ControlTestingConfig, description="Configuration"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class ControlTest(BaseModel):
     """Result of testing a single control.
@@ -445,7 +425,6 @@ class ControlTest(BaseModel):
         default=MaturityLevel.AD_HOC.value, description="Maturity"
     )
 
-
 class ControlDeficiency(BaseModel):
     """Identified control deficiency.
 
@@ -467,7 +446,6 @@ class ControlDeficiency(BaseModel):
     impact: str = Field(default="", description="Impact")
     root_cause: str = Field(default="", description="Root cause")
     remediation: str = Field(default="", description="Remediation")
-
 
 class RemediationPlan(BaseModel):
     """Remediation plan for identified deficiencies.
@@ -493,7 +471,6 @@ class RemediationPlan(BaseModel):
         default=Decimal("0"), description="Effort (days)"
     )
 
-
 class CategorySummary(BaseModel):
     """Summary for a control category.
 
@@ -515,7 +492,6 @@ class CategorySummary(BaseModel):
     maturity_level: str = Field(default="", description="Maturity")
     deficiency_count: int = Field(default=0, description="Deficiencies")
     material_weakness_count: int = Field(default=0, description="Material weaknesses")
-
 
 class ControlResult(BaseModel):
     """Complete result of control testing.
@@ -565,11 +541,9 @@ class ControlResult(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ControlTestingEngine:
     """Evaluates internal controls over GHG reporting.
@@ -674,7 +648,7 @@ class ControlTestingEngine:
             material_weaknesses=mw_count,
             significant_deficiencies=sd_count,
             warnings=warnings,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         result.provenance_hash = _compute_hash(result)
@@ -956,7 +930,6 @@ class ControlTestingEngine:
 
     def get_version(self) -> str:
         return self._version
-
 
 # ---------------------------------------------------------------------------
 # __all__

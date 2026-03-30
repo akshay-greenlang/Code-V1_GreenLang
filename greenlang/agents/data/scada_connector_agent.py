@@ -35,9 +35,10 @@ from enum import Enum
 from functools import lru_cache
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -113,7 +114,7 @@ class GreenLangDataCategory(str, Enum):
 # PYDANTIC MODELS
 # =============================================================================
 
-class ConnectionConfig(BaseModel):
+class ConnectionConfig(GreenLangBase):
     """SCADA/historian connection configuration."""
     connection_id: str = Field(..., description="Unique connection identifier")
     protocol: ProtocolType = Field(..., description="Communication protocol")
@@ -129,7 +130,7 @@ class ConnectionConfig(BaseModel):
     certificate_path: Optional[str] = Field(None)
 
 
-class TagMapping(BaseModel):
+class TagMapping(GreenLangBase):
     """Mapping from SCADA tag to GreenLang schema."""
     tag_id: str = Field(..., description="SCADA tag identifier")
     tag_path: str = Field(..., description="Full tag path in SCADA system")
@@ -145,7 +146,7 @@ class TagMapping(BaseModel):
     facility_id: Optional[str] = Field(None, description="Facility identifier")
 
 
-class DataPoint(BaseModel):
+class DataPoint(GreenLangBase):
     """A single time-series data point."""
     timestamp: datetime = Field(..., description="Point timestamp")
     value: Union[float, int, bool, str] = Field(..., description="Point value")
@@ -154,7 +155,7 @@ class DataPoint(BaseModel):
     unit: Optional[str] = Field(None)
 
 
-class TimeSeriesData(BaseModel):
+class TimeSeriesData(GreenLangBase):
     """Time-series data for a tag."""
     tag_id: str = Field(..., description="Tag identifier")
     tag_path: str = Field(..., description="Full tag path")
@@ -168,7 +169,7 @@ class TimeSeriesData(BaseModel):
     quality_summary: Dict[str, int] = Field(default_factory=dict)
 
 
-class SCADAQueryInput(BaseModel):
+class SCADAQueryInput(GreenLangBase):
     """Input for SCADA data query."""
     connection_id: str = Field(..., description="Connection to use")
     tag_ids: List[str] = Field(..., description="Tags to query")
@@ -182,7 +183,7 @@ class SCADAQueryInput(BaseModel):
     tenant_id: Optional[str] = Field(None)
 
 
-class SCADAQueryOutput(BaseModel):
+class SCADAQueryOutput(GreenLangBase):
     """Output from SCADA data query."""
     connection_id: str = Field(..., description="Connection used")
     query_start_time: datetime = Field(..., description="Query start")
@@ -197,7 +198,7 @@ class SCADAQueryOutput(BaseModel):
     warnings: List[str] = Field(default_factory=list)
 
 
-class TagDiscoveryInput(BaseModel):
+class TagDiscoveryInput(GreenLangBase):
     """Input for tag discovery."""
     connection_id: str = Field(..., description="Connection to use")
     browse_path: Optional[str] = Field(None, description="Starting path for browse")
@@ -205,7 +206,7 @@ class TagDiscoveryInput(BaseModel):
     max_tags: int = Field(default=1000, ge=1, le=10000)
 
 
-class TagDiscoveryOutput(BaseModel):
+class TagDiscoveryOutput(GreenLangBase):
     """Output from tag discovery."""
     connection_id: str = Field(...)
     browse_path: str = Field(...)

@@ -39,18 +39,11 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
-
+from pydantic import Field, field_validator
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -144,11 +137,9 @@ ISSUE_SEVERITY_ORDER: tuple = ("info", "low", "medium", "high", "critical")
 #: Report format options.
 REPORT_FORMAT_OPTIONS: tuple = ("json", "markdown", "html", "text", "csv")
 
-
 # =============================================================================
 # Enumerations (13)
 # =============================================================================
-
 
 class FingerprintAlgorithm(str, Enum):
     """Algorithm used for generating record fingerprints.
@@ -162,7 +153,6 @@ class FingerprintAlgorithm(str, Enum):
     SHA256 = "sha256"
     SIMHASH = "simhash"
     MINHASH = "minhash"
-
 
 class BlockingStrategy(str, Enum):
     """Strategy for generating candidate record pairs.
@@ -181,7 +171,6 @@ class BlockingStrategy(str, Enum):
     STANDARD = "standard"
     CANOPY = "canopy"
     NONE = "none"
-
 
 class SimilarityAlgorithm(str, Enum):
     """Algorithm for computing field-level similarity scores.
@@ -209,7 +198,6 @@ class SimilarityAlgorithm(str, Enum):
     NUMERIC = "numeric"
     DATE = "date"
 
-
 class MatchClassification(str, Enum):
     """Classification outcome of a record pair comparison.
 
@@ -222,7 +210,6 @@ class MatchClassification(str, Enum):
     NON_MATCH = "non_match"
     POSSIBLE = "possible"
 
-
 class ClusterAlgorithm(str, Enum):
     """Algorithm for grouping matched pairs into duplicate clusters.
 
@@ -234,7 +221,6 @@ class ClusterAlgorithm(str, Enum):
 
     UNION_FIND = "union_find"
     CONNECTED_COMPONENTS = "connected_components"
-
 
 class MergeStrategy(str, Enum):
     """Strategy for merging duplicate records within a cluster.
@@ -258,7 +244,6 @@ class MergeStrategy(str, Enum):
     GOLDEN_RECORD = "golden_record"
     CUSTOM = "custom"
 
-
 class ConflictResolution(str, Enum):
     """Method for resolving field-level conflicts during record merge.
 
@@ -278,12 +263,14 @@ class ConflictResolution(str, Enum):
     LONGEST = "longest"
     SHORTEST = "shortest"
 
-
 class JobStatus(str, Enum):
     """Lifecycle status of a deduplication job.
 
     Tracks the current execution state of a dedup pipeline
     from submission through completion, failure, or cancellation.
+
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ReportFormat
     """
 
     PENDING = "pending"
@@ -291,7 +278,6 @@ class JobStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     CANCELLED = "cancelled"
-
 
 class PipelineStage(str, Enum):
     """Stage in the deduplication pipeline.
@@ -309,7 +295,6 @@ class PipelineStage(str, Enum):
     MERGE = "merge"
     COMPLETE = "complete"
 
-
 class RecordSource(str, Enum):
     """Source mode for record deduplication.
 
@@ -321,7 +306,6 @@ class RecordSource(str, Enum):
 
     SINGLE_DATASET = "single_dataset"
     CROSS_DATASET = "cross_dataset"
-
 
 class FieldType(str, Enum):
     """Data type classification for comparison field configuration.
@@ -336,7 +320,6 @@ class FieldType(str, Enum):
     BOOLEAN = "boolean"
     CATEGORICAL = "categorical"
 
-
 class IssueSeverity(str, Enum):
     """Severity classification for deduplication issues.
 
@@ -350,27 +333,11 @@ class IssueSeverity(str, Enum):
     LOW = "low"
     INFO = "info"
 
-
-class ReportFormat(str, Enum):
-    """Output format for deduplication reports.
-
-    Defines the serialization format for generated reports
-    including summaries, cluster details, and merge decisions.
-    """
-
-    JSON = "json"
-    MARKDOWN = "markdown"
-    HTML = "html"
-    TEXT = "text"
-    CSV = "csv"
-
-
 # =============================================================================
 # SDK Data Models (15)
 # =============================================================================
 
-
-class RecordFingerprint(BaseModel):
+class RecordFingerprint(GreenLangBase):
     """Fingerprint computed from one or more fields of a record.
 
     Record fingerprints enable fast exact-match detection and serve
@@ -412,7 +379,7 @@ class RecordFingerprint(BaseModel):
         description="Whether fields were normalized before hashing",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the fingerprint was computed",
     )
     provenance_hash: str = Field(
@@ -430,8 +397,7 @@ class RecordFingerprint(BaseModel):
             raise ValueError("record_id must be non-empty")
         return v
 
-
-class BlockResult(BaseModel):
+class BlockResult(GreenLangBase):
     """Result of a blocking operation for candidate pair generation.
 
     Contains the blocking key, the strategy used, and the list of
@@ -463,7 +429,7 @@ class BlockResult(BaseModel):
         description="Number of records in this block",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the block was created",
     )
     provenance_hash: str = Field(
@@ -481,8 +447,7 @@ class BlockResult(BaseModel):
             raise ValueError("block_key must be non-empty")
         return v
 
-
-class SimilarityResult(BaseModel):
+class SimilarityResult(GreenLangBase):
     """Result of pairwise field-level similarity comparison.
 
     Contains per-field similarity scores, the weighted overall
@@ -544,8 +509,7 @@ class SimilarityResult(BaseModel):
             raise ValueError("record_b_id must be non-empty")
         return v
 
-
-class FieldComparisonConfig(BaseModel):
+class FieldComparisonConfig(GreenLangBase):
     """Configuration for comparing a specific field across record pairs.
 
     Defines the similarity algorithm, weight, field type, and
@@ -601,8 +565,7 @@ class FieldComparisonConfig(BaseModel):
             raise ValueError("field_name must be non-empty")
         return v
 
-
-class MatchResult(BaseModel):
+class MatchResult(GreenLangBase):
     """Classification result for a record pair comparison.
 
     Combines the similarity scores with classification decision,
@@ -668,8 +631,7 @@ class MatchResult(BaseModel):
             raise ValueError("record_b_id must be non-empty")
         return v
 
-
-class MergeConflict(BaseModel):
+class MergeConflict(GreenLangBase):
     """A field-level conflict encountered during record merge.
 
     Represents a disagreement between source records on a specific
@@ -714,8 +676,7 @@ class MergeConflict(BaseModel):
             raise ValueError("field_name must be non-empty")
         return v
 
-
-class DuplicateCluster(BaseModel):
+class DuplicateCluster(GreenLangBase):
     """A cluster of duplicate records identified during deduplication.
 
     Groups record identifiers that have been transitively linked
@@ -780,8 +741,7 @@ class DuplicateCluster(BaseModel):
                 raise ValueError("member_record_ids must not contain empty strings")
         return v
 
-
-class MergeDecision(BaseModel):
+class MergeDecision(GreenLangBase):
     """Decision record for merging a duplicate cluster into one record.
 
     Contains the merge strategy used, the merged output record,
@@ -822,7 +782,7 @@ class MergeDecision(BaseModel):
         description="SHA-256 provenance chain hash for audit trail",
     )
     decided_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the merge decision was made",
     )
 
@@ -836,8 +796,7 @@ class MergeDecision(BaseModel):
             raise ValueError("cluster_id must be non-empty")
         return v
 
-
-class DedupRule(BaseModel):
+class DedupRule(GreenLangBase):
     """A deduplication rule defining how records are compared and matched.
 
     Encapsulates the full comparison configuration including field-level
@@ -901,7 +860,7 @@ class DedupRule(BaseModel):
         description="Whether this rule is currently active",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the rule was created",
     )
     updated_at: Optional[datetime] = Field(
@@ -943,8 +902,7 @@ class DedupRule(BaseModel):
             )
         return v
 
-
-class DedupJob(BaseModel):
+class DedupJob(GreenLangBase):
     """A deduplication job tracking the full pipeline execution.
 
     Represents a single end-to-end dedup run from fingerprinting
@@ -1069,8 +1027,7 @@ class DedupJob(BaseModel):
             return 0.0
         return self.matched / self.total_records
 
-
-class PipelineCheckpoint(BaseModel):
+class PipelineCheckpoint(GreenLangBase):
     """Checkpoint for resuming a dedup pipeline after interruption.
 
     Stores the job identifier, current stage, progress counter,
@@ -1106,7 +1063,7 @@ class PipelineCheckpoint(BaseModel):
         description="Serialized pipeline state for resume",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the checkpoint was saved",
     )
     provenance_hash: str = Field(
@@ -1124,8 +1081,7 @@ class PipelineCheckpoint(BaseModel):
             raise ValueError("job_id must be non-empty")
         return v
 
-
-class DedupStatistics(BaseModel):
+class DedupStatistics(GreenLangBase):
     """Aggregated operational statistics for the dedup service.
 
     Provides high-level metrics for monitoring the overall
@@ -1182,14 +1138,13 @@ class DedupStatistics(BaseModel):
         description="Count of jobs per blocking strategy",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when statistics were computed",
     )
 
     model_config = {"extra": "forbid"}
 
-
-class DedupIssueSummary(BaseModel):
+class DedupIssueSummary(GreenLangBase):
     """Summary of an issue detected during the dedup pipeline.
 
     Represents a warning, error, or informational message about
@@ -1243,8 +1198,7 @@ class DedupIssueSummary(BaseModel):
             raise ValueError("description must be non-empty")
         return v
 
-
-class DedupJobSummary(BaseModel):
+class DedupJobSummary(GreenLangBase):
     """Lightweight summary of a dedup job for listing and searching.
 
     Provides key metadata without loading full cluster and merge
@@ -1311,8 +1265,7 @@ class DedupJobSummary(BaseModel):
             raise ValueError("job_id must be non-empty")
         return v
 
-
-class DedupReport(BaseModel):
+class DedupReport(GreenLangBase):
     """Complete deduplication report for a job.
 
     Aggregates job summary, cluster details, merge decisions,
@@ -1364,7 +1317,7 @@ class DedupReport(BaseModel):
         description="List of issues encountered during the pipeline",
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the report was generated",
     )
     provenance_hash: str = Field(
@@ -1382,13 +1335,11 @@ class DedupReport(BaseModel):
             raise ValueError("job_id must be non-empty")
         return v
 
-
 # =============================================================================
 # Request Models (7)
 # =============================================================================
 
-
-class FingerprintRequest(BaseModel):
+class FingerprintRequest(GreenLangBase):
     """Request body for computing record fingerprints.
 
     Attributes:
@@ -1426,8 +1377,7 @@ class FingerprintRequest(BaseModel):
                 raise ValueError("field_set must not contain empty strings")
         return v
 
-
-class BlockRequest(BaseModel):
+class BlockRequest(GreenLangBase):
     """Request body for blocking records into candidate groups.
 
     Attributes:
@@ -1456,8 +1406,7 @@ class BlockRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class CompareRequest(BaseModel):
+class CompareRequest(GreenLangBase):
     """Request body for pairwise record comparison within blocks.
 
     Attributes:
@@ -1481,8 +1430,7 @@ class CompareRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class ClassifyRequest(BaseModel):
+class ClassifyRequest(GreenLangBase):
     """Request body for classifying comparison results.
 
     Attributes:
@@ -1521,8 +1469,7 @@ class ClassifyRequest(BaseModel):
             )
         return v
 
-
-class ClusterRequest(BaseModel):
+class ClusterRequest(GreenLangBase):
     """Request body for clustering matched record pairs.
 
     Attributes:
@@ -1546,8 +1493,7 @@ class ClusterRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class MergeRequest(BaseModel):
+class MergeRequest(GreenLangBase):
     """Request body for merging duplicate clusters.
 
     Attributes:
@@ -1577,8 +1523,7 @@ class MergeRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class PipelineRequest(BaseModel):
+class PipelineRequest(GreenLangBase):
     """Request body for running the full deduplication pipeline.
 
     Encapsulates input records, the dedup rule to apply, and
@@ -1619,7 +1564,6 @@ class PipelineRequest(BaseModel):
     def validate_records_not_empty(cls, v: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Validate records list is non-empty (enforced by min_length)."""
         return v
-
 
 # =============================================================================
 # __all__ export list

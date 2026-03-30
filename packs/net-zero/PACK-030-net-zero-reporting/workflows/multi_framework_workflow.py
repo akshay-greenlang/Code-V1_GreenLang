@@ -47,6 +47,8 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "30.0.0"
@@ -54,23 +56,15 @@ _PACK_ID = "PACK-030"
 
 SUPPORTED_FRAMEWORKS = ["SBTi", "CDP", "TCFD", "GRI", "ISSB", "SEC", "CSRD"]
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -79,7 +73,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
@@ -87,12 +80,10 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class RAGStatus(str, Enum):
     RED = "red"
     AMBER = "amber"
     GREEN = "green"
-
 
 class ConsistencyLevel(str, Enum):
     CONSISTENT = "consistent"
@@ -100,14 +91,12 @@ class ConsistencyLevel(str, Enum):
     MAJOR_DISCREPANCY = "major_discrepancy"
     INCONSISTENT = "inconsistent"
 
-
 class DashboardViewType(str, Enum):
     EXECUTIVE = "executive"
     INVESTOR = "investor"
     REGULATOR = "regulator"
     CUSTOMER = "customer"
     EMPLOYEE = "employee"
-
 
 # =============================================================================
 # CROSS-FRAMEWORK CONSISTENCY RULES
@@ -180,11 +169,9 @@ CONSISTENCY_RULES: List[Dict[str, Any]] = [
     },
 ]
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase_name: str = Field(...)
@@ -197,7 +184,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
     dag_node_id: str = Field(default="")
-
 
 class AggregatedData(BaseModel):
     """Unified data aggregated once from all sources."""
@@ -226,14 +212,12 @@ class AggregatedData(BaseModel):
     lineage: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
 
-
 class SharedNarrativeSet(BaseModel):
     """Shared narratives adapted for each framework."""
     narratives: Dict[str, Dict[str, str]] = Field(default_factory=dict)
     total_narratives: int = Field(default=0)
     consistency_score: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class FrameworkReport(BaseModel):
     """Result of a single framework workflow execution."""
@@ -248,7 +232,6 @@ class FrameworkReport(BaseModel):
     output_files: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class ConsistencyCheckResult(BaseModel):
     """Cross-framework consistency validation result."""
     rule_id: str = Field(default="")
@@ -261,7 +244,6 @@ class ConsistencyCheckResult(BaseModel):
     severity: str = Field(default="medium")
     provenance_hash: str = Field(default="")
 
-
 class ConsistencyReport(BaseModel):
     """Overall cross-framework consistency report."""
     total_checks: int = Field(default=0)
@@ -271,7 +253,6 @@ class ConsistencyReport(BaseModel):
     consistency_level: ConsistencyLevel = Field(default=ConsistencyLevel.CONSISTENT)
     check_results: List[ConsistencyCheckResult] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class ExecutiveDashboard(BaseModel):
     """Executive dashboard showing all frameworks."""
@@ -284,7 +265,6 @@ class ExecutiveDashboard(BaseModel):
     charts: List[Dict[str, Any]] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class MasterEvidenceBundle(BaseModel):
     """Master assurance evidence bundle."""
     bundle_id: str = Field(default="")
@@ -296,7 +276,6 @@ class MasterEvidenceBundle(BaseModel):
     readiness_score: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class ReportPackage(BaseModel):
     """Final packaged deliverable with all reports."""
     package_id: str = Field(default="")
@@ -306,7 +285,6 @@ class ReportPackage(BaseModel):
     ready_for_delivery: bool = Field(default=False)
     delivery_formats: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 # -- Config / Input / Result --
 
@@ -337,7 +315,6 @@ class MultiFrameworkConfig(BaseModel):
     include_dashboard: bool = Field(default=True)
     output_formats: List[str] = Field(default_factory=lambda: ["pdf", "html", "excel", "json", "xbrl"])
 
-
 class MultiFrameworkInput(BaseModel):
     config: MultiFrameworkConfig = Field(default_factory=MultiFrameworkConfig)
     governance_data: Dict[str, Any] = Field(default_factory=dict)
@@ -347,7 +324,6 @@ class MultiFrameworkInput(BaseModel):
     initiative_data: List[Dict[str, Any]] = Field(default_factory=list)
     financial_data: Dict[str, Any] = Field(default_factory=dict)
     branding_config: Dict[str, Any] = Field(default_factory=dict)
-
 
 class MultiFrameworkResult(BaseModel):
     workflow_id: str = Field(...)
@@ -367,11 +343,9 @@ class MultiFrameworkResult(BaseModel):
     overall_rag_status: RAGStatus = Field(default=RAGStatus.GREEN)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class MultiFrameworkWorkflow:
     """
@@ -411,7 +385,7 @@ class MultiFrameworkWorkflow:
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     async def execute(self, input_data: MultiFrameworkInput) -> MultiFrameworkResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         self.config = input_data.config
         self._phase_results = []
         overall_status = WorkflowStatus.RUNNING
@@ -441,7 +415,7 @@ class MultiFrameworkWorkflow:
                 status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
 
         result = MultiFrameworkResult(
             workflow_id=self.workflow_id,
@@ -468,7 +442,7 @@ class MultiFrameworkWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_aggregate(self, input_data: MultiFrameworkInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         cfg = self.config
         base_e = cfg.base_year_emissions_tco2e or 100_000.0
         s1 = cfg.scope1_tco2e or base_e * 0.45
@@ -500,7 +474,7 @@ class MultiFrameworkWorkflow:
             self._aggregated.model_dump_json(exclude={"provenance_hash"}),
         )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="aggregate_all_data", phase_number=1,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -515,7 +489,7 @@ class MultiFrameworkWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_narratives(self, input_data: MultiFrameworkInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         cfg = self.config
         d = self._aggregated
         progress = round(((d.base_year_emissions_tco2e - d.total_tco2e) / max(d.base_year_emissions_tco2e, 1e-10)) * 100, 2)
@@ -573,7 +547,7 @@ class MultiFrameworkWorkflow:
             self._narratives.model_dump_json(exclude={"provenance_hash"}),
         )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="generate_shared_narratives", phase_number=2,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -588,7 +562,7 @@ class MultiFrameworkWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_execute_frameworks(self, input_data: MultiFrameworkInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         cfg = self.config
@@ -634,7 +608,7 @@ class MultiFrameworkWorkflow:
         outputs["all_completed"] = all(r.status == WorkflowStatus.COMPLETED for r in self._fw_reports)
         outputs["total_output_files"] = sum(len(r.output_files) for r in self._fw_reports)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="execute_framework_workflows", phase_number=3,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -648,7 +622,7 @@ class MultiFrameworkWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_consistency(self, input_data: MultiFrameworkInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         checks: List[ConsistencyCheckResult] = []
 
@@ -720,7 +694,7 @@ class MultiFrameworkWorkflow:
         outputs["consistency_score"] = score
         outputs["consistency_level"] = level.value
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="validate_cross_consistency", phase_number=4,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -734,7 +708,7 @@ class MultiFrameworkWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_dashboard(self, input_data: MultiFrameworkInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         cfg = self.config
 
@@ -791,7 +765,7 @@ class MultiFrameworkWorkflow:
         outputs["framework_count"] = len(coverage)
         outputs["chart_count"] = len(self._dashboard.charts)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="generate_executive_dashboard", phase_number=5,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -805,7 +779,7 @@ class MultiFrameworkWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_evidence(self, input_data: MultiFrameworkInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         evidence_docs = [
@@ -855,7 +829,7 @@ class MultiFrameworkWorkflow:
         outputs["framework_provenances"] = len(fw_provenances)
         outputs["readiness_score"] = 90.0
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="create_master_evidence_bundle", phase_number=6,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -869,7 +843,7 @@ class MultiFrameworkWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_package(self, input_data: MultiFrameworkInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         cfg = self.config
 
@@ -894,7 +868,7 @@ class MultiFrameworkWorkflow:
         outputs["ready_for_delivery"] = ready
         outputs["frameworks_included"] = len(self._fw_reports)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="package_all_reports", phase_number=7,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),

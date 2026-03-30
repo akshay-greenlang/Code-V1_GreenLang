@@ -41,7 +41,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, List, Optional, Any
 from enum import Enum
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.mrv.agriculture.base import (
     BaseAgricultureMRVAgent,
@@ -55,6 +55,7 @@ from greenlang.agents.mrv.agriculture.base import (
     CalculationStep,
     ClimateZone,
 )
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -279,7 +280,7 @@ MANURE_N2O_FACTORS: Dict[str, Decimal] = {
 # Input Models
 # =============================================================================
 
-class LivestockRecord(BaseModel):
+class LivestockRecord(GreenLangBase):
     """Individual livestock record."""
 
     # Identification

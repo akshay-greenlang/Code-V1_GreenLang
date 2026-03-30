@@ -48,27 +48,22 @@ from typing import Any, Callable, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import HealthStatus
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
 PACK_BASE_DIR = Path(__file__).parent.parent
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -81,20 +76,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
-
-class HealthStatus(str, Enum):
-    """Health check status values."""
-
-    PASS = "PASS"
-    FAIL = "FAIL"
-    WARN = "WARN"
-    SKIP = "SKIP"
-
 
 class HealthSeverity(str, Enum):
     """Severity levels for health issues."""
@@ -104,7 +88,6 @@ class HealthSeverity(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     INFO = "info"
-
 
 class CheckCategory(str, Enum):
     """Health check categories (22 total)."""
@@ -132,7 +115,6 @@ class CheckCategory(str, Enum):
     CACHE = "cache"
     OVERALL = "overall"
 
-
 QUICK_CHECK_CATEGORIES = {
     CheckCategory.ENGINES,
     CheckCategory.WORKFLOWS,
@@ -142,11 +124,9 @@ QUICK_CHECK_CATEGORIES = {
     CheckCategory.PACK021,
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class RemediationSuggestion(BaseModel):
     """Remediation suggestion for a failed check."""
@@ -156,7 +136,6 @@ class RemediationSuggestion(BaseModel):
     message: str = Field(...)
     action: str = Field(default="")
     documentation_url: Optional[str] = Field(None)
-
 
 class ComponentHealth(BaseModel):
     """Health status of a single check component."""
@@ -168,8 +147,7 @@ class ComponentHealth(BaseModel):
     duration_ms: float = Field(default=0.0)
     details: Dict[str, Any] = Field(default_factory=dict)
     remediation: Optional[RemediationSuggestion] = Field(None)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class HealthCheckConfig(BaseModel):
     """Configuration for the health check."""
@@ -179,7 +157,6 @@ class HealthCheckConfig(BaseModel):
     skip_categories: List[str] = Field(default_factory=list)
     timeout_per_check_ms: float = Field(default=5000.0)
     verbose: bool = Field(default=False)
-
 
 class HealthCheckResult(BaseModel):
     """Complete result of the health check."""
@@ -197,10 +174,9 @@ class HealthCheckResult(BaseModel):
     categories: Dict[str, List[ComponentHealth]] = Field(default_factory=dict)
     remediations: List[RemediationSuggestion] = Field(default_factory=list)
     total_duration_ms: float = Field(default=0.0)
-    executed_at: datetime = Field(default_factory=_utcnow)
+    executed_at: datetime = Field(default_factory=utcnow)
     quick_mode: bool = Field(default=False)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Component Lists
@@ -272,11 +248,9 @@ FOUND_AGENTS = [
     "gl_reproducibility", "gl_qa_test_harness", "gl_observability_telemetry",
 ]
 
-
 # ---------------------------------------------------------------------------
 # NetZeroAccelerationHealthCheck
 # ---------------------------------------------------------------------------
-
 
 class NetZeroAccelerationHealthCheck:
     """22-category health check for Net Zero Acceleration Pack.

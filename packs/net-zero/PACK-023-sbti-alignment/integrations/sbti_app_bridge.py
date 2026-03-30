@@ -37,24 +37,18 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -67,11 +61,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Agent Stubs
 # ---------------------------------------------------------------------------
-
 
 class _AgentStub:
     """Stub for unavailable GL-SBTi-APP engine modules."""
@@ -90,7 +82,6 @@ class _AgentStub:
             }
         return _stub_method
 
-
 def _try_import_sbti_component(component_id: str, module_path: str) -> Any:
     """Try to import an SBTi component with graceful fallback."""
     try:
@@ -99,11 +90,9 @@ def _try_import_sbti_component(component_id: str, module_path: str) -> Any:
         logger.debug("SBTi component %s not available, using stub", component_id)
         return _AgentStub(component_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class PathwayType(str, Enum):
     """SBTi pathway ambition levels."""
@@ -112,7 +101,6 @@ class PathwayType(str, Enum):
     PATHWAY_WB2C = "well_below_2C"
     PATHWAY_2C = "2C"
 
-
 class TargetScope(str, Enum):
     """Target scope categories."""
 
@@ -120,13 +108,11 @@ class TargetScope(str, Enum):
     LONG_TERM = "long_term"
     NET_ZERO = "net_zero"
 
-
 class TargetType(str, Enum):
     """Target type: absolute or intensity."""
 
     ABSOLUTE = "absolute"
     INTENSITY = "intensity"
-
 
 class PathwayMethod(str, Enum):
     """Pathway calculation method."""
@@ -135,11 +121,9 @@ class PathwayMethod(str, Enum):
     SDA = "SDA"
     FLAG = "FLAG"
 
-
 # ---------------------------------------------------------------------------
 # Config
 # ---------------------------------------------------------------------------
-
 
 class SBTiAppBridgeConfig(BaseModel):
     """Configuration for the SBTi App Bridge."""
@@ -155,11 +139,9 @@ class SBTiAppBridgeConfig(BaseModel):
     is_sda_sector: bool = Field(default=False)
     is_financial_institution: bool = Field(default=False)
 
-
 # ---------------------------------------------------------------------------
 # Result Models
 # ---------------------------------------------------------------------------
-
 
 class TargetResult(BaseModel):
     """Result of target configuration retrieval."""
@@ -180,7 +162,6 @@ class TargetResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class ValidationResult(BaseModel):
     """Result of target validation against SBTi criteria."""
 
@@ -196,7 +177,6 @@ class ValidationResult(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class PathwayResult(BaseModel):
     """Result of pathway calculation."""
@@ -215,7 +195,6 @@ class PathwayResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class TemperatureResult(BaseModel):
     """Result of temperature scoring (SBTi TR v2.0)."""
 
@@ -230,7 +209,6 @@ class TemperatureResult(BaseModel):
     aggregation_method: str = Field(default="WATS")
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class ProgressResult(BaseModel):
     """Result of progress tracking against targets."""
@@ -251,7 +229,6 @@ class ProgressResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class SectorResult(BaseModel):
     """Result of SDA sector data retrieval."""
 
@@ -268,7 +245,6 @@ class SectorResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class FLAGResult(BaseModel):
     """Result of FLAG assessment."""
 
@@ -283,7 +259,6 @@ class FLAGResult(BaseModel):
     land_use_change_tco2e: float = Field(default=0.0, ge=0.0)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class FIResult(BaseModel):
     """Result of FI portfolio analysis."""
@@ -300,7 +275,6 @@ class FIResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class CrosswalkResult(BaseModel):
     """Result of cross-framework alignment crosswalk."""
 
@@ -315,7 +289,6 @@ class CrosswalkResult(BaseModel):
     alignment_score_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # SBTi-APP Engine Mapping (14 engines)
@@ -396,11 +369,9 @@ TEMPERATURE_MAPPING: List[Dict[str, float]] = [
     {"arr_pct": 0.0, "temp_c": 3.20},
 ]
 
-
 # ---------------------------------------------------------------------------
 # SBTiAppBridge
 # ---------------------------------------------------------------------------
-
 
 class SBTiAppBridge:
     """Bridge to GL-SBTi-APP with full 14-engine API for PACK-023.

@@ -75,9 +75,9 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, ConfigDict, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Optional engine imports (graceful degradation)
@@ -164,7 +164,6 @@ try:
     )
 except ImportError:
     Scope2LocationPipelineEngine = None  # type: ignore[assignment, misc]
-
 
 # ===================================================================
 # Constants
@@ -275,26 +274,17 @@ VALID_COOLING_TYPES: frozenset = frozenset({
     "district",
 })
 
-
 # ===================================================================
 # Utility helpers
 # ===================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _utcnow_iso() -> str:
     """Return current UTC datetime as an ISO-8601 string."""
-    return _utcnow().isoformat()
-
+    return utcnow().isoformat()
 
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _short_id(prefix: str = "s2l") -> str:
     """Generate a short prefixed identifier for records.
@@ -306,7 +296,6 @@ def _short_id(prefix: str = "s2l") -> str:
         A string of the form ``{prefix}_{12-char-hex}``.
     """
     return f"{prefix}_{uuid.uuid4().hex[:12]}"
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -326,7 +315,6 @@ def _compute_hash(data: Any) -> str:
         serializable = data
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 def _safe_float(value: Any, default: float = 0.0) -> float:
     """Convert a value to float with graceful fallback.
@@ -348,7 +336,6 @@ def _safe_float(value: Any, default: float = 0.0) -> float:
     except (ValueError, TypeError, ArithmeticError):
         return default
 
-
 def _safe_decimal(value: Any, default: str = "0") -> Decimal:
     """Convert a value to Decimal with graceful fallback.
 
@@ -366,7 +353,6 @@ def _safe_decimal(value: Any, default: str = "0") -> Decimal:
     except Exception:
         return Decimal(default)
 
-
 def _elapsed_ms(start: float) -> float:
     """Calculate elapsed milliseconds since a monotonic start time.
 
@@ -377,7 +363,6 @@ def _elapsed_ms(start: float) -> float:
         Elapsed time in milliseconds, rounded to 3 decimal places.
     """
     return round((time.monotonic() - start) * 1000.0, 3)
-
 
 def _validate_required_fields(
     data: Dict[str, Any],
@@ -402,7 +387,6 @@ def _validate_required_fields(
                 f"Missing required field '{field}' in {context}"
             )
     return errors
-
 
 def _validate_enum_field(
     value: Any,
@@ -429,11 +413,9 @@ def _validate_enum_field(
         )
     return None
 
-
 # ===================================================================
 # Pydantic Response Models (14 models)
 # ===================================================================
-
 
 class CalculateResponse(BaseModel):
     """Single Scope 2 location-based emission calculation response."""
@@ -461,7 +443,6 @@ class CalculateResponse(BaseModel):
     timestamp: str = Field(default_factory=_utcnow_iso)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-
 class BatchCalculateResponse(BaseModel):
     """Batch Scope 2 location-based emission calculation response."""
 
@@ -478,7 +459,6 @@ class BatchCalculateResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
     timestamp: str = Field(default_factory=_utcnow_iso)
-
 
 class FacilityResponse(BaseModel):
     """Response for a single facility record."""
@@ -497,7 +477,6 @@ class FacilityResponse(BaseModel):
     created_at: str = Field(default="")
     updated_at: str = Field(default="")
 
-
 class FacilityListResponse(BaseModel):
     """Response listing registered facilities."""
 
@@ -507,7 +486,6 @@ class FacilityListResponse(BaseModel):
     total: int = Field(default=0)
     page: int = Field(default=1)
     page_size: int = Field(default=50)
-
 
 class ConsumptionResponse(BaseModel):
     """Response for a single energy consumption record."""
@@ -525,7 +503,6 @@ class ConsumptionResponse(BaseModel):
     meter_id: Optional[str] = Field(default=None)
     created_at: str = Field(default="")
 
-
 class ConsumptionListResponse(BaseModel):
     """Response listing energy consumption records."""
 
@@ -533,7 +510,6 @@ class ConsumptionListResponse(BaseModel):
 
     records: List[Dict[str, Any]] = Field(default_factory=list)
     total: int = Field(default=0)
-
 
 class GridFactorResponse(BaseModel):
     """Response for a single grid emission factor."""
@@ -552,7 +528,6 @@ class GridFactorResponse(BaseModel):
     td_loss_pct: float = Field(default=0.0)
     notes: str = Field(default="")
 
-
 class GridFactorListResponse(BaseModel):
     """Response listing grid emission factors."""
 
@@ -562,7 +537,6 @@ class GridFactorListResponse(BaseModel):
     total: int = Field(default=0)
     source_filter: Optional[str] = Field(default=None)
 
-
 class TDLossListResponse(BaseModel):
     """Response listing T&D loss factors."""
 
@@ -571,7 +545,6 @@ class TDLossListResponse(BaseModel):
     factors: Dict[str, Any] = Field(default_factory=dict)
     total: int = Field(default=0)
     source: str = Field(default="world_bank_iea")
-
 
 class ComplianceCheckResponse(BaseModel):
     """Regulatory compliance check response."""
@@ -588,7 +561,6 @@ class ComplianceCheckResponse(BaseModel):
     results: List[Dict[str, Any]] = Field(default_factory=list)
     checked_at: str = Field(default_factory=_utcnow_iso)
     provenance_hash: str = Field(default="")
-
 
 class UncertaintyResponse(BaseModel):
     """Monte Carlo or analytical uncertainty analysis response."""
@@ -608,7 +580,6 @@ class UncertaintyResponse(BaseModel):
     provenance_hash: str = Field(default="")
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
 class AggregationResponse(BaseModel):
     """Aggregated Scope 2 location-based emissions response."""
 
@@ -621,7 +592,6 @@ class AggregationResponse(BaseModel):
     calculation_count: int = Field(default=0)
     period: str = Field(default="all")
     timestamp: str = Field(default_factory=_utcnow_iso)
-
 
 class HealthResponse(BaseModel):
     """Service health check response."""
@@ -636,7 +606,6 @@ class HealthResponse(BaseModel):
     config_valid: bool = Field(default=True)
     uptime_seconds: float = Field(default=0.0)
     timestamp: str = Field(default_factory=_utcnow_iso)
-
 
 class StatsResponse(BaseModel):
     """Service aggregate statistics response."""
@@ -653,14 +622,12 @@ class StatsResponse(BaseModel):
     uptime_seconds: float = Field(default=0.0)
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
 # ===================================================================
 # Scope2LocationService facade
 # ===================================================================
 
 _singleton_lock = threading.Lock()
 _service_instance: Optional["Scope2LocationService"] = None
-
 
 class Scope2LocationService:
     """Unified facade over the Scope 2 Location-Based Emissions Agent SDK.
@@ -3307,11 +3274,9 @@ class Scope2LocationService:
         self._cumulative_co2e_tonnes = 0.0
         logger.info("Scope2LocationService state reset")
 
-
 # ===================================================================
 # GWP lookup table (deterministic Decimal values)
 # ===================================================================
-
 
 _GWP_TABLES: Dict[str, Dict[str, Decimal]] = {
     "AR4": {
@@ -3336,7 +3301,6 @@ _GWP_TABLES: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 def _get_gwp_table(gwp_source: str) -> Dict[str, Decimal]:
     """Get the GWP conversion table for a given IPCC AR source.
 
@@ -3352,11 +3316,9 @@ def _get_gwp_table(gwp_source: str) -> Dict[str, Decimal]:
         _GWP_TABLES["AR5"],
     )
 
-
 # ===================================================================
 # Module-level singleton
 # ===================================================================
-
 
 def get_service() -> Scope2LocationService:
     """Return the module-level Scope2LocationService singleton.
@@ -3379,7 +3341,6 @@ def get_service() -> Scope2LocationService:
                 _service_instance = Scope2LocationService()
     return _service_instance
 
-
 def reset_service() -> None:
     """Reset the module-level service singleton.
 
@@ -3390,7 +3351,6 @@ def reset_service() -> None:
     with _singleton_lock:
         _service_instance = None
     logger.debug("Scope2LocationService singleton reset")
-
 
 def get_service_with_config(
     config: Any = None,
@@ -3422,7 +3382,6 @@ def get_service_with_config(
         cfg.merge(overrides)
 
     return Scope2LocationService(config=cfg)
-
 
 # ===================================================================
 # Public API

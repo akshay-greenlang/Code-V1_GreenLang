@@ -70,6 +70,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Set
 
 from greenlang.agents.eudr.qr_code_generator.config import get_config
+from greenlang.schemas import utcnow
 from greenlang.agents.eudr.qr_code_generator.models import (
     CodeStatus,
     CounterfeitRiskLevel,
@@ -88,7 +89,6 @@ from greenlang.agents.eudr.qr_code_generator.metrics import (
 )
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -115,16 +115,9 @@ VALID_TRANSITIONS: Dict[str, Set[str]] = {
     CodeStatus.REVOKED.value: set(),  # Terminal state
 }
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -144,7 +137,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str) -> str:
     """Generate a unique identifier with a given prefix.
 
@@ -156,46 +148,37 @@ def _generate_id(prefix: str) -> str:
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
 
-
 # ---------------------------------------------------------------------------
 # Custom Exceptions
 # ---------------------------------------------------------------------------
-
 
 class LifecycleError(Exception):
     """Base exception for code lifecycle management errors."""
     pass
 
-
 class InvalidTransitionError(LifecycleError):
     """Raised when a state transition is not allowed."""
     pass
-
 
 class CodeNotFoundError(LifecycleError):
     """Raised when a code ID is not found in the registry."""
     pass
 
-
 class ReprintLimitExceededError(LifecycleError):
     """Raised when the maximum reprint count has been reached."""
     pass
-
 
 class CodeAlreadyRevokedError(LifecycleError):
     """Raised when attempting to modify a revoked code."""
     pass
 
-
 class ScanRecordingError(LifecycleError):
     """Raised when scan event recording fails."""
     pass
 
-
 # ---------------------------------------------------------------------------
 # Internal Code State
 # ---------------------------------------------------------------------------
-
 
 class _CodeState:
     """Internal mutable state for a managed QR code.
@@ -236,7 +219,7 @@ class _CodeState:
         """Initialize a new code state."""
         self.code_id = code_id
         self.status = CodeStatus.CREATED.value
-        self.created_at = _utcnow()
+        self.created_at = utcnow()
         self.activated_at: Optional[datetime] = None
         self.deactivated_at: Optional[datetime] = None
         self.revoked_at: Optional[datetime] = None
@@ -251,11 +234,9 @@ class _CodeState:
         self.replacement_code_id: Optional[str] = None
         self.original_code_id: Optional[str] = None
 
-
 # ---------------------------------------------------------------------------
 # CodeLifecycleManager
 # ---------------------------------------------------------------------------
-
 
 class CodeLifecycleManager:
     """Manages the complete lifecycle of EUDR QR codes.
@@ -376,7 +357,7 @@ class CodeLifecycleManager:
         )
 
         previous_status = state.status
-        now = _utcnow()
+        now = utcnow()
 
         with self._lock:
             state.status = CodeStatus.ACTIVE.value
@@ -435,7 +416,7 @@ class CodeLifecycleManager:
         )
 
         previous_status = state.status
-        now = _utcnow()
+        now = utcnow()
 
         with self._lock:
             state.status = CodeStatus.DEACTIVATED.value
@@ -493,7 +474,7 @@ class CodeLifecycleManager:
         )
 
         previous_status = state.status
-        now = _utcnow()
+        now = utcnow()
 
         with self._lock:
             state.status = CodeStatus.REVOKED.value
@@ -550,7 +531,7 @@ class CodeLifecycleManager:
             else self._config.default_ttl_years
         )
 
-        now = _utcnow()
+        now = utcnow()
         expiry_dt = state.created_at + timedelta(
             days=resolved_ttl * 365,
         )
@@ -588,7 +569,7 @@ class CodeLifecycleManager:
         )
 
         previous_status = state.status
-        now = _utcnow()
+        now = utcnow()
 
         with self._lock:
             state.status = CodeStatus.EXPIRED.value
@@ -851,7 +832,7 @@ class CodeLifecycleManager:
                 f"limit of {self._config.max_reprints}"
             )
 
-        now = _utcnow()
+        now = utcnow()
         reprint_record: Dict[str, Any] = {
             "reprint_id": _generate_id("rpt"),
             "code_id": code_id,
@@ -930,7 +911,7 @@ class CodeLifecycleManager:
 
         # Generate new code ID
         new_code_id = _generate_id("qr")
-        now = _utcnow()
+        now = utcnow()
 
         # Register the replacement code
         new_state = self.register_code(
@@ -1310,14 +1291,13 @@ class CodeLifecycleManager:
         if not state.scans:
             return 0
 
-        now = _utcnow()
+        now = utcnow()
         one_minute_ago = now.timestamp() - 60.0
 
         return sum(
             1 for scan in state.scans
             if scan.scanned_at.timestamp() > one_minute_ago
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

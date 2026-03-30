@@ -68,25 +68,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -106,7 +100,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _safe_divide(numerator: float, denominator: float, default: float = 0.0) -> float:
     """Safely divide two numbers, returning default on zero denominator.
 
@@ -122,7 +115,6 @@ def _safe_divide(numerator: float, denominator: float, default: float = 0.0) -> 
         return default
     return numerator / denominator
 
-
 def _safe_pct(numerator: float, denominator: float) -> float:
     """Calculate percentage safely.
 
@@ -137,16 +129,13 @@ def _safe_pct(numerator: float, denominator: float) -> float:
         return 0.0
     return (numerator / denominator) * 100.0
 
-
 def _round_val(value: float, places: int = 4) -> float:
     """Round a float to specified decimal places."""
     return round(value, places)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EstimationType(str, Enum):
     """Estimation methodology types for BTAR."""
@@ -156,7 +145,6 @@ class EstimationType(str, Enum):
     THIRD_PARTY = "third_party"             # Third-party data provider
     GEOGRAPHIC_PROXY = "geographic_proxy"   # Country-level proxy
     CONSERVATIVE_DEFAULT = "conservative_default"  # 0% alignment default
-
 
 class ExposureCategory(str, Enum):
     """Banking book exposure categories."""
@@ -171,7 +159,6 @@ class ExposureCategory(str, Enum):
     TRADING_BOOK = "trading_book"                       # Trading book (excluded from BB)
     OTHER = "other"                                     # Other banking book items
 
-
 class ConfidenceLevel(str, Enum):
     """Confidence level for estimated alignment."""
     HIGH = "high"           # CSRD-reported data
@@ -179,7 +166,6 @@ class ConfidenceLevel(str, Enum):
     MEDIUM = "medium"       # Internal ESG / sector proxy
     LOW = "low"             # Geographic proxy
     VERY_LOW = "very_low"   # Conservative default
-
 
 # ---------------------------------------------------------------------------
 # Default Sector Proxy Alignment Rates
@@ -254,11 +240,9 @@ ESTIMATION_CONFIDENCE: Dict[str, float] = {
     EstimationType.CONSERVATIVE_DEFAULT.value: 0.10,
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Data Models
 # ---------------------------------------------------------------------------
-
 
 class BankingBookData(BaseModel):
     """Input data for a single banking book exposure.
@@ -350,7 +334,6 @@ class BankingBookData(BaseModel):
         description="GAR alignment percentage (if in scope)",
     )
 
-
 class SectorProxyResult(BaseModel):
     """Result of sector proxy estimation for an exposure.
 
@@ -375,7 +358,6 @@ class SectorProxyResult(BaseModel):
         description="Confidence score",
     )
     source: str = Field(default="PCAF/EBA sector averages", description="Data source")
-
 
 class EstimationMethodology(BaseModel):
     """Estimation methodology applied to a single exposure.
@@ -402,7 +384,6 @@ class EstimationMethodology(BaseModel):
     data_source: str = Field(default="", description="Source of estimation data")
     methodology_note: str = Field(default="", description="Methodology description")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class DataCoverageReport(BaseModel):
     """Data coverage statistics for the banking book.
@@ -437,7 +418,6 @@ class DataCoverageReport(BaseModel):
         description="Count by estimation method",
     )
 
-
 class BTARvsGARReconciliation(BaseModel):
     """Reconciliation between BTAR and GAR.
 
@@ -468,7 +448,6 @@ class BTARvsGARReconciliation(BaseModel):
     )
     explanation: str = Field(default="", description="Explanation of gap")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class BTARResult(BaseModel):
     """Complete BTAR calculation result.
@@ -541,15 +520,13 @@ class BTARResult(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     engine_version: str = Field(default=_MODULE_VERSION, description="Engine version")
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp",
+        default_factory=utcnow, description="Calculation timestamp",
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 # ---------------------------------------------------------------------------
 # Engine Configuration
 # ---------------------------------------------------------------------------
-
 
 class BTARConfig(BaseModel):
     """Configuration for the BTARCalculatorEngine.
@@ -628,7 +605,6 @@ class BTARConfig(BaseModel):
         description="Decimal places for rounding",
     )
 
-
 # ---------------------------------------------------------------------------
 # Model rebuilds for forward references
 # ---------------------------------------------------------------------------
@@ -641,11 +617,9 @@ BTARvsGARReconciliation.model_rebuild()
 BTARResult.model_rebuild()
 BTARConfig.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # BTARCalculatorEngine
 # ---------------------------------------------------------------------------
-
 
 class BTARCalculatorEngine:
     """
@@ -726,7 +700,7 @@ class BTARCalculatorEngine:
         Raises:
             ValueError: If exposures list is empty.
         """
-        start = _utcnow()
+        start = utcnow()
 
         if not exposures:
             raise ValueError("Exposures list cannot be empty")
@@ -788,7 +762,7 @@ class BTARCalculatorEngine:
         # Methodology notes
         notes = self._generate_methodology_notes(exposures, estimations, coverage)
 
-        end = _utcnow()
+        end = utcnow()
         processing_ms = (end - start).total_seconds() * 1000.0
 
         result = BTARResult(

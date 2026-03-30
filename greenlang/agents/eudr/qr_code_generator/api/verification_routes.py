@@ -31,6 +31,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Dict
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.qr_code_generator.api.dependencies import (
     AuthUser,
@@ -65,22 +66,14 @@ _verification_store: Dict[str, Dict] = {}
 # HMAC secret key (would come from Vault in production)
 _HMAC_SECRET = b"eudr-qrg-hmac-secret-key-replace-in-production"
 
-
 def _get_verification_store() -> Dict[str, Dict]:
     """Return the verification record store singleton."""
     return _verification_store
-
 
 def _compute_provenance_hash(data: dict) -> str:
     """Compute SHA-256 hash for provenance tracking."""
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _generate_hmac_token(code_id: str, operator_id: str) -> str:
     """Generate an HMAC-SHA256 token for a QR code.
@@ -94,7 +87,6 @@ def _generate_hmac_token(code_id: str, operator_id: str) -> str:
     """
     message = f"{code_id}:{operator_id}".encode("utf-8")
     return hmac.new(_HMAC_SECRET, message, hashlib.sha256).hexdigest()
-
 
 def _verify_hmac_token(code_id: str, token: str) -> bool:
     """Verify an HMAC token against known records.
@@ -111,16 +103,14 @@ def _verify_hmac_token(code_id: str, token: str) -> bool:
         if record.get("code_id") == code_id and record.get("token") == token:
             # Check expiry
             expires_at = record.get("token_expires_at")
-            if expires_at and expires_at < _utcnow():
+            if expires_at and expires_at < utcnow():
                 return False
             return True
     return False
 
-
 # ---------------------------------------------------------------------------
 # POST /verify/build-url
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/verify/build-url",
@@ -163,7 +153,7 @@ async def build_verification_url(
     start = time.monotonic()
     try:
         url_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         # Generate HMAC token
         token = _generate_hmac_token(body.code_id, body.operator_id)
@@ -242,11 +232,9 @@ async def build_verification_url(
             detail="Failed to build verification URL",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /verify/signature
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/verify/signature",
@@ -287,7 +275,7 @@ async def verify_signature(
     """
     start = time.monotonic()
     try:
-        now = _utcnow()
+        now = utcnow()
 
         # Compute expected HMAC
         expected_hmac = hmac.new(
@@ -328,11 +316,9 @@ async def verify_signature(
             detail="Failed to verify signature",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /verify/{code_id}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/verify/{code_id}",
@@ -371,7 +357,7 @@ async def get_verification_status(
         VerificationStatusResponse with status details.
     """
     try:
-        now = _utcnow()
+        now = utcnow()
         store = _get_verification_store()
 
         # Find verification record for this code_id
@@ -417,11 +403,9 @@ async def get_verification_status(
             detail="Failed to retrieve verification status",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /verify/offline
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/verify/offline",
@@ -460,7 +444,7 @@ async def offline_verify(
         OfflineVerifyResponse with verification result.
     """
     try:
-        now = _utcnow()
+        now = utcnow()
 
         # Verify HMAC token
         hmac_valid = _verify_hmac_token(body.code_id, body.hmac_token)
@@ -494,7 +478,6 @@ async def offline_verify(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to perform offline verification",
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

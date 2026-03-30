@@ -41,35 +41,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.utcnow()
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hash of a string."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -80,7 +72,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -90,7 +81,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class AnomalySeverity(str, Enum):
     """Anomaly severity classification."""
 
@@ -98,7 +88,6 @@ class AnomalySeverity(str, Enum):
     MEDIUM = "medium"
     HIGH = "high"
     CRITICAL = "critical"
-
 
 class AnomalyType(str, Enum):
     """Type of energy anomaly detected."""
@@ -111,7 +100,6 @@ class AnomalyType(str, Enum):
     SEASONAL_DEVIATION = "seasonal_deviation"
     LOAD_IMBALANCE = "load_imbalance"
 
-
 class ResolutionStatus(str, Enum):
     """Resolution action status."""
 
@@ -120,7 +108,6 @@ class ResolutionStatus(str, Enum):
     RESOLVED = "resolved"
     DEFERRED = "deferred"
     FALSE_POSITIVE = "false_positive"
-
 
 # =============================================================================
 # REFERENCE DATA (Zero-Hallucination)
@@ -225,11 +212,9 @@ ANOMALY_THRESHOLDS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -243,7 +228,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list, description="Errors encountered")
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
 
-
 class EnergyReading(BaseModel):
     """A single energy consumption reading for anomaly analysis."""
 
@@ -253,7 +237,6 @@ class EnergyReading(BaseModel):
     meter_id: str = Field(default="", description="Source meter identifier")
     channel_name: str = Field(default="active_power", description="Channel name")
     quality: str = Field(default="good", description="Data quality flag")
-
 
 class AnomalyResponseInput(BaseModel):
     """Input data model for AnomalyResponseWorkflow."""
@@ -300,7 +283,6 @@ class AnomalyResponseInput(BaseModel):
             raise ValueError("facility_name must not be blank")
         return stripped
 
-
 class AnomalyResponseResult(BaseModel):
     """Complete result from anomaly response workflow."""
 
@@ -321,11 +303,9 @@ class AnomalyResponseResult(BaseModel):
     calculated_at: str = Field(default="", description="ISO 8601 timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 of complete result")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class AnomalyResponseWorkflow:
     """
@@ -387,7 +367,7 @@ class AnomalyResponseWorkflow:
             ValueError: If input validation fails.
         """
         t_start = time.perf_counter()
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting anomaly response workflow %s for facility=%s type=%s",
             self.response_id, input_data.facility_name, input_data.energy_type,
@@ -651,7 +631,7 @@ class AnomalyResponseWorkflow:
                 "annual_impact_kwh": annual_impact_kwh,
                 "annual_cost_impact": annual_cost_impact,
                 "priority": anomaly.get("severity", "low"),
-                "investigated_at": _utcnow().isoformat() + "Z",
+                "investigated_at": utcnow().isoformat() + "Z",
             }
             self._investigations.append(investigation)
 
@@ -787,7 +767,7 @@ class AnomalyResponseWorkflow:
                 "estimated_savings_cost": investigation.get("annual_cost_impact", 0),
                 "status": status,
                 "assigned_to": "",
-                "created_at": _utcnow().isoformat() + "Z",
+                "created_at": utcnow().isoformat() + "Z",
             }
             self._resolutions.append(resolution)
 
@@ -798,7 +778,7 @@ class AnomalyResponseWorkflow:
                     "resolution_id": f"res-{_new_uuid()[:8]}",
                     "anomaly_id": active.get("anomaly_id", ""),
                     "status": ResolutionStatus.RESOLVED.value,
-                    "resolved_at": _utcnow().isoformat() + "Z",
+                    "resolved_at": utcnow().isoformat() + "Z",
                 })
 
         outputs["actions_recommended"] = len(self._resolutions)

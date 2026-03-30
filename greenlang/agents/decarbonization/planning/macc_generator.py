@@ -33,7 +33,7 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.agents.base_agents import DeterministicAgent, AuditEntry
@@ -50,6 +50,7 @@ from greenlang.agents.decarbonization.planning.abatement_options_library import 
     TechnologyReadinessLevel,
     CostRange,
 )
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +78,7 @@ class CostMetric(str, Enum):
 # Pydantic Models
 # =============================================================================
 
-class MACCDataPoint(BaseModel):
+class MACCDataPoint(GreenLangBase):
     """Single data point on the MAC curve."""
     option_id: str = Field(..., description="Abatement option ID")
     name: str = Field(..., description="Option name")
@@ -103,7 +104,7 @@ class MACCDataPoint(BaseModel):
     is_cost_negative: bool = Field(..., description="Whether option has negative cost")
 
 
-class MACCCurve(BaseModel):
+class MACCCurve(GreenLangBase):
     """Complete MAC curve with data points and statistics."""
     curve_id: str = Field(..., description="Unique curve identifier")
     generated_at: datetime = Field(default_factory=DeterministicClock.now)
@@ -134,7 +135,7 @@ class MACCCurve(BaseModel):
     provenance_hash: str = Field(default="", description="Hash of complete curve")
 
 
-class MACCGeneratorInput(BaseModel):
+class MACCGeneratorInput(GreenLangBase):
     """Input model for MACCGeneratorAgent."""
     operation: str = Field(
         default="generate",
@@ -173,7 +174,7 @@ class MACCGeneratorInput(BaseModel):
     output_format: MACCOutputFormat = Field(default=MACCOutputFormat.JSON)
 
 
-class MACCGeneratorOutput(BaseModel):
+class MACCGeneratorOutput(GreenLangBase):
     """Output model for MACCGeneratorAgent."""
     operation: str = Field(..., description="Operation performed")
     success: bool = Field(..., description="Whether operation succeeded")

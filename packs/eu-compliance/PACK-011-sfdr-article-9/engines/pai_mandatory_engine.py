@@ -63,25 +63,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -101,7 +95,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _safe_divide(numerator: float, denominator: float, default: float = 0.0) -> float:
     """Safely divide two numbers, returning default on zero denominator.
 
@@ -117,7 +110,6 @@ def _safe_divide(numerator: float, denominator: float, default: float = 0.0) -> 
         return default
     return numerator / denominator
 
-
 def _safe_pct(numerator: float, denominator: float) -> float:
     """Calculate percentage safely.
 
@@ -132,11 +124,9 @@ def _safe_pct(numerator: float, denominator: float) -> float:
         return 0.0
     return (numerator / denominator) * 100.0
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class PAIMandatoryStatus(str, Enum):
     """Overall PAI compliance status for Article 9."""
@@ -145,14 +135,12 @@ class PAIMandatoryStatus(str, Enum):
     PARTIAL = "partial"
     INSUFFICIENT_DATA = "insufficient_data"
 
-
 class DataQualityLevel(str, Enum):
     """Data quality classification for PAI data."""
     REPORTED = "REPORTED"
     ESTIMATED = "ESTIMATED"
     MODELED = "MODELED"
     NOT_AVAILABLE = "NOT_AVAILABLE"
-
 
 class PAIIndicatorId(str, Enum):
     """All 18 mandatory PAI indicators plus additional Table 2/3 indicators."""
@@ -188,7 +176,6 @@ class PAIIndicatorId(str, Enum):
     T3_NO_GRIEVANCE = "T3_NO_GRIEVANCE"
     T3_NO_WHISTLEBLOWER = "T3_NO_WHISTLEBLOWER"
 
-
 class PAICategory(str, Enum):
     """PAI indicator groupings."""
     CLIMATE_GHG = "climate_ghg"
@@ -198,7 +185,6 @@ class PAICategory(str, Enum):
     REAL_ESTATE = "real_estate"
     ADDITIONAL_ENVIRONMENTAL = "additional_environmental"
     ADDITIONAL_SOCIAL = "additional_social"
-
 
 # ---------------------------------------------------------------------------
 # PAI Metadata Registry
@@ -405,11 +391,9 @@ PAI_METADATA: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class InvesteeFullData(BaseModel):
     """Complete PAI data for a single investee holding.
@@ -537,7 +521,6 @@ class InvesteeFullData(BaseModel):
             )
         return self
 
-
 class PAISingleResult(BaseModel):
     """Result for a single PAI indicator calculation."""
     indicator_id: str = Field(description="PAI indicator identifier")
@@ -564,7 +547,6 @@ class PAISingleResult(BaseModel):
     methodology_note: str = Field(default="", description="Calculation methodology")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 class IntegrationAssessment(BaseModel):
     """Assessment of PAI integration in investment decisions."""
     assessment_id: str = Field(default_factory=_new_uuid, description="Unique identifier")
@@ -588,9 +570,8 @@ class IntegrationAssessment(BaseModel):
         default_factory=list, description="Examples of PAI-informed decisions"
     )
     assessment_notes: str = Field(default="", description="Assessment notes")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class ActionPlanItem(BaseModel):
     """A single action item in a PAI action plan."""
@@ -600,7 +581,6 @@ class ActionPlanItem(BaseModel):
     timeline: str = Field(default="", description="Implementation timeline")
     expected_impact: str = Field(default="", description="Expected impact")
     status: str = Field(default="proposed", description="Status")
-
 
 class ActionPlan(BaseModel):
     """Action plan for addressing adverse PAI impacts."""
@@ -614,9 +594,8 @@ class ActionPlan(BaseModel):
     indicators_addressed: List[str] = Field(
         default_factory=list, description="PAI indicators addressed"
     )
-    generated_at: datetime = Field(default_factory=_utcnow, description="Timestamp")
+    generated_at: datetime = Field(default_factory=utcnow, description="Timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class DataQualityReport(BaseModel):
     """Data quality assessment report for PAI indicators."""
@@ -643,9 +622,8 @@ class DataQualityReport(BaseModel):
     sufficient_data_points: int = Field(
         default=0, description="Data points meeting threshold"
     )
-    generated_at: datetime = Field(default_factory=_utcnow, description="Timestamp")
+    generated_at: datetime = Field(default_factory=utcnow, description="Timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class AdditionalPAIResult(BaseModel):
     """Result for additional Table 2/3 PAI indicators."""
@@ -658,7 +636,6 @@ class AdditionalPAIResult(BaseModel):
         default=0.0, description="Average data coverage (%)"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class PAIMandatoryResult(BaseModel):
     """Complete PAI mandatory calculation result for Article 9 products.
@@ -696,14 +673,12 @@ class PAIMandatoryResult(BaseModel):
     total_nav_eur: float = Field(default=0.0, description="Total NAV (EUR)")
     total_holdings: int = Field(default=0, description="Total holdings")
     reporting_period: str = Field(default="", description="Reporting period")
-    generated_at: datetime = Field(default_factory=_utcnow, description="Timestamp")
+    generated_at: datetime = Field(default_factory=utcnow, description="Timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 # ---------------------------------------------------------------------------
 # Engine Configuration
 # ---------------------------------------------------------------------------
-
 
 class PAIMandatoryConfig(BaseModel):
     """Configuration for the PAIMandatoryEngine."""
@@ -753,7 +728,6 @@ class PAIMandatoryConfig(BaseModel):
         description="NACE sectors for PAI 6",
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic model_rebuild
 # ---------------------------------------------------------------------------
@@ -768,11 +742,9 @@ DataQualityReport.model_rebuild()
 AdditionalPAIResult.model_rebuild()
 PAIMandatoryResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # PAIMandatoryEngine
 # ---------------------------------------------------------------------------
-
 
 class PAIMandatoryEngine:
     """
@@ -840,7 +812,7 @@ class PAIMandatoryEngine:
         Returns:
             PAIMandatoryResult with complete PAI assessment.
         """
-        start = _utcnow()
+        start = utcnow()
         self._holdings = holdings
         self._ensure_weights(holdings)
 
@@ -904,7 +876,7 @@ class PAIMandatoryEngine:
             mandatory_coverage,
             len(all_indicators),
             len(holdings),
-            int((_utcnow() - start).total_seconds() * 1000),
+            int((utcnow() - start).total_seconds() * 1000),
         )
         return result
 

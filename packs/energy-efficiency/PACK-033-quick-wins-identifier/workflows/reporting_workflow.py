@@ -33,6 +33,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas.enums import ReportFormat
 
 logger = logging.getLogger(__name__)
 
@@ -72,15 +73,6 @@ class ReportType(str, Enum):
     IMPLEMENTATION_PLAN = "implementation_plan"
     PROGRESS_REPORT = "progress_report"
     BENCHMARK_COMPARISON = "benchmark_comparison"
-
-
-class ReportFormat(str, Enum):
-    """Output format for reports."""
-
-    JSON = "json"
-    PDF = "pdf"
-    HTML = "html"
-    CSV = "csv"
 
 
 # =============================================================================

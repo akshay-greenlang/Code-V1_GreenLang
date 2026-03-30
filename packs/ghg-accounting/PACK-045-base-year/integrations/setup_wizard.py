@@ -34,19 +34,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 class SetupStep(str, Enum):
     """Wizard setup steps."""
@@ -59,7 +55,6 @@ class SetupStep(str, Enum):
     NOTIFICATION_PREFERENCES = "notification_preferences"
     VALIDATION_ACTIVATION = "validation_activation"
 
-
 class StepStatus(str, Enum):
     """Step completion status."""
     NOT_STARTED = "not_started"
@@ -67,7 +62,6 @@ class StepStatus(str, Enum):
     COMPLETED = "completed"
     SKIPPED = "skipped"
     ERROR = "error"
-
 
 STEP_ORDER: List[SetupStep] = [
     SetupStep.ORGANIZATION_PROFILE,
@@ -91,7 +85,6 @@ STEP_DESCRIPTIONS: Dict[SetupStep, str] = {
     SetupStep.VALIDATION_ACTIVATION: "Validate configuration and activate base year management",
 }
 
-
 class StepData(BaseModel):
     """Data collected for a wizard step."""
     step: str
@@ -100,7 +93,6 @@ class StepData(BaseModel):
     completed_at: Optional[str] = None
     validated: bool = False
     errors: List[str] = Field(default_factory=list)
-
 
 class WizardState(BaseModel):
     """Current state of the setup wizard."""
@@ -111,7 +103,6 @@ class WizardState(BaseModel):
     started_at: str = ""
     last_updated: str = ""
     is_complete: bool = False
-
 
 class PackConfig(BaseModel):
     """Final pack configuration produced by the wizard."""
@@ -127,7 +118,6 @@ class PackConfig(BaseModel):
     notification_channels: List[str] = Field(default_factory=list)
     provenance_hash: str = ""
     activated_at: str = ""
-
 
 class SetupWizard:
     """
@@ -158,8 +148,8 @@ class SetupWizard:
         self._state = WizardState(
             wizard_id=wizard_id,
             steps=steps,
-            started_at=_utcnow().isoformat(),
-            last_updated=_utcnow().isoformat(),
+            started_at=utcnow().isoformat(),
+            last_updated=utcnow().isoformat(),
         )
         logger.info("Wizard session started: %s", wizard_id)
         return self._state
@@ -192,7 +182,7 @@ class SetupWizard:
                     StepStatus.COMPLETED.value if step_data.validated
                     else StepStatus.ERROR.value
                 )
-                step_data.completed_at = _utcnow().isoformat()
+                step_data.completed_at = utcnow().isoformat()
                 step_found = True
                 break
 
@@ -202,7 +192,7 @@ class SetupWizard:
         # Update progress
         completed = sum(1 for s in self._state.steps if s.status == StepStatus.COMPLETED.value)
         self._state.overall_progress_pct = (completed / len(STEP_ORDER)) * 100
-        self._state.last_updated = _utcnow().isoformat()
+        self._state.last_updated = utcnow().isoformat()
 
         # Advance current step
         for step in STEP_ORDER:
@@ -261,7 +251,7 @@ class SetupWizard:
             targets=targets.get("targets", []),
             integrations=integrations.get("enabled", []),
             notification_channels=notif.get("channels", []),
-            activated_at=_utcnow().isoformat(),
+            activated_at=utcnow().isoformat(),
         )
         config.provenance_hash = _compute_hash(config.model_dump())
 

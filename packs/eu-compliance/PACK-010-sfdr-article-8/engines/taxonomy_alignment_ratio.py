@@ -43,25 +43,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -81,7 +75,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -91,12 +84,10 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to specified places and return float."""
     rounded = value.quantize(Decimal(10) ** -places, rounding=ROUND_HALF_UP)
     return float(rounded)
-
 
 def _safe_divide(numerator: Decimal, denominator: Decimal) -> Decimal:
     """Divide safely, returning zero when denominator is zero."""
@@ -104,16 +95,13 @@ def _safe_divide(numerator: Decimal, denominator: Decimal) -> Decimal:
         return Decimal("0")
     return numerator / denominator
 
-
 def _pct(numerator: Decimal, denominator: Decimal) -> Decimal:
     """Calculate percentage safely."""
     return _safe_divide(numerator, denominator) * Decimal("100")
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EnvironmentalObjective(str, Enum):
     """EU Taxonomy six environmental objectives (Article 9)."""
@@ -125,7 +113,6 @@ class EnvironmentalObjective(str, Enum):
     PPC = "PPC"   # Pollution Prevention and Control
     BIO = "BIO"   # Protection & Restoration of Biodiversity & Ecosystems
 
-
 OBJECTIVE_NAMES: Dict[str, str] = {
     "CCM": "Climate Change Mitigation",
     "CCA": "Climate Change Adaptation",
@@ -134,7 +121,6 @@ OBJECTIVE_NAMES: Dict[str, str] = {
     "PPC": "Pollution Prevention and Control",
     "BIO": "Protection and Restoration of Biodiversity and Ecosystems",
 }
-
 
 class AlignmentCategory(str, Enum):
     """Taxonomy alignment classification for a holding."""
@@ -146,7 +132,6 @@ class AlignmentCategory(str, Enum):
     SOVEREIGN = "SOVEREIGN"             # Sovereign bonds (excluded from Taxonomy)
     CASH_DERIVATIVES = "CASH_DERIVATIVES"  # Cash and derivatives (excluded)
 
-
 class GASExposureType(str, Enum):
     """Types of natural gas/nuclear energy exposure under CDA."""
 
@@ -154,11 +139,9 @@ class GASExposureType(str, Enum):
     NUCLEAR = "nuclear"
     NONE = "none"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class TaxonomyAlignmentConfig(BaseModel):
     """Configuration for the Taxonomy Alignment Ratio Engine.
@@ -195,7 +178,6 @@ class TaxonomyAlignmentConfig(BaseModel):
         default=True,
         description="Enable Complementary Delegated Act gas/nuclear disclosure",
     )
-
 
 class HoldingAlignmentData(BaseModel):
     """Taxonomy alignment data for a single portfolio holding.
@@ -293,7 +275,6 @@ class HoldingAlignmentData(BaseModel):
             raise ValueError(f"holding_type must be one of {allowed}, got '{v}'")
         return upper
 
-
 class ObjectiveBreakdown(BaseModel):
     """Alignment breakdown for a single environmental objective."""
 
@@ -326,7 +307,6 @@ class ObjectiveBreakdown(BaseModel):
         ..., ge=0, description="Number of aligned holdings",
     )
 
-
 class PieChartSlice(BaseModel):
     """A single slice for the mandatory SFDR RTS pie chart."""
 
@@ -334,7 +314,6 @@ class PieChartSlice(BaseModel):
     value_pct: float = Field(..., ge=0.0, le=100.0, description="Slice percentage")
     value_eur: float = Field(..., ge=0, description="Slice value in EUR")
     color_hint: str = Field(default="", description="Suggested color code")
-
 
 class CommitmentAdherence(BaseModel):
     """Tracks whether actual alignment meets pre-contractual commitment."""
@@ -356,7 +335,6 @@ class CommitmentAdherence(BaseModel):
         default="not_applicable",
         description="COMPLIANT, SHORTFALL, or not_applicable",
     )
-
 
 class AlignmentResult(BaseModel):
     """Complete Taxonomy alignment calculation result for a fund.
@@ -463,7 +441,7 @@ class AlignmentResult(BaseModel):
 
     # --- Provenance ---
     calculation_timestamp: datetime = Field(
-        default_factory=_utcnow, description="When calculated",
+        default_factory=utcnow, description="When calculated",
     )
     processing_time_ms: float = Field(
         default=0.0, description="Processing time (ms)",
@@ -475,11 +453,9 @@ class AlignmentResult(BaseModel):
         default="", description="SHA-256 provenance hash",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class TaxonomyAlignmentRatioEngine:
     """EU Taxonomy Alignment Ratio Calculator for SFDR Article 8 Products.
@@ -548,7 +524,7 @@ class TaxonomyAlignmentRatioEngine:
         Raises:
             ValueError: If holdings list is empty.
         """
-        start = _utcnow()
+        start = utcnow()
         self._calculation_count += 1
 
         if not holdings:
@@ -581,7 +557,7 @@ class TaxonomyAlignmentRatioEngine:
         # Step 7: Pie chart data
         pie_data = self._generate_pie_chart_data(category_values, denominator)
 
-        elapsed_ms = (_utcnow() - start).total_seconds() * 1000
+        elapsed_ms = (utcnow() - start).total_seconds() * 1000
 
         result = AlignmentResult(
             fund_name=fund_name,

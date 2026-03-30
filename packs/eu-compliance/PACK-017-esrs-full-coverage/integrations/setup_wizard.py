@@ -60,25 +60,19 @@ from typing import Any, Dict, List, Optional
 import yaml
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -91,11 +85,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SetupStatus(str, Enum):
     """Setup wizard execution status."""
@@ -104,7 +96,6 @@ class SetupStatus(str, Enum):
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
     FAILED = "failed"
-
 
 class SectorType(str, Enum):
     """Business sector types."""
@@ -117,7 +108,6 @@ class SectorType(str, Enum):
     MULTI_SECTOR = "multi_sector"
     UNKNOWN = "unknown"
 
-
 class MaterialityLevel(str, Enum):
     """ESRS topic materiality levels."""
 
@@ -127,11 +117,9 @@ class MaterialityLevel(str, Enum):
     NOT_MATERIAL = "NOT_MATERIAL"
     CONTEXT_DEPENDENT = "CONTEXT_DEPENDENT"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class WizardConfig(BaseModel):
     """Configuration for the setup wizard."""
@@ -142,7 +130,6 @@ class WizardConfig(BaseModel):
     suggest_presets: bool = Field(default=True)
     generate_output_file: bool = Field(default=True)
     output_dir: Optional[Path] = Field(None)
-
 
 class OrganizationProfile(BaseModel):
     """Organization profile for setup wizard."""
@@ -169,7 +156,6 @@ class OrganizationProfile(BaseModel):
             raise ValueError(f"Invalid NACE division: {v[0]}")
         return v.upper()
 
-
 class MaterialityPreferences(BaseModel):
     """User preferences for materiality assessment."""
 
@@ -183,7 +169,6 @@ class MaterialityPreferences(BaseModel):
     s3_affected_communities: MaterialityLevel = Field(default=MaterialityLevel.MAY_BE_MATERIAL)
     s4_consumers_end_users: MaterialityLevel = Field(default=MaterialityLevel.CONTEXT_DEPENDENT)
     g1_business_conduct: MaterialityLevel = Field(default=MaterialityLevel.MATERIAL)
-
 
 class SetupResult(BaseModel):
     """Result of setup wizard execution."""
@@ -200,7 +185,6 @@ class SetupResult(BaseModel):
     validation_errors: List[str] = Field(default_factory=list)
     warnings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # NACE Code Mapping
@@ -288,11 +272,9 @@ AVAILABLE_PRESETS: List[str] = [
     "multi_sector",
 ]
 
-
 # ---------------------------------------------------------------------------
 # PackSetupWizard
 # ---------------------------------------------------------------------------
-
 
 class PackSetupWizard:
     """Interactive setup wizard for PACK-017 ESRS Full Coverage Pack.
@@ -336,7 +318,7 @@ class PackSetupWizard:
             SetupResult with generated configuration and status.
         """
         result = SetupResult(
-            started_at=_utcnow(),
+            started_at=utcnow(),
             status=SetupStatus.IN_PROGRESS,
         )
 
@@ -414,7 +396,7 @@ class PackSetupWizard:
                     print(f"\n✓ Configuration saved to: {config_path}")
 
             result.status = SetupStatus.COMPLETED
-            result.completed_at = _utcnow()
+            result.completed_at = utcnow()
 
             print("\n" + "=" * 70)
             print("  Setup Complete!")
@@ -440,7 +422,7 @@ class PackSetupWizard:
 
         if result.started_at:
             result.duration_ms = (
-                _utcnow() - result.started_at
+                utcnow() - result.started_at
             ).total_seconds() * 1000
 
         result.provenance_hash = _compute_hash(result)
@@ -587,7 +569,7 @@ class PackSetupWizard:
 
         # Generate output filename
         org_slug = profile.organization_name.lower().replace(" ", "_")[:20]
-        timestamp = _utcnow().strftime("%Y%m%d_%H%M%S")
+        timestamp = utcnow().strftime("%Y%m%d_%H%M%S")
         filename = f"pack_config_{org_slug}_{timestamp}.yaml"
         output_path = self.output_dir / filename
 
@@ -842,11 +824,9 @@ class PackSetupWizard:
                 return False
             print("  ⚠️  Please enter 'y' or 'n'.")
 
-
 # ---------------------------------------------------------------------------
 # CLI Entry Point
 # ---------------------------------------------------------------------------
-
 
 def main() -> None:
     """CLI entry point for setup wizard."""
@@ -859,7 +839,6 @@ def main() -> None:
     result = wizard.run_setup()
 
     sys.exit(0 if result.status == SetupStatus.COMPLETED else 1)
-
 
 if __name__ == "__main__":
     main()

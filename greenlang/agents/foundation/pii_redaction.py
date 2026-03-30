@@ -39,10 +39,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Pattern, Set, Tuple, Union
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -200,7 +201,7 @@ NAME_SUFFIXES = {'jr', 'sr', 'ii', 'iii', 'iv', 'phd', 'md', 'esq'}
 # Pydantic Models
 # =============================================================================
 
-class PIIMatch(BaseModel):
+class PIIMatch(GreenLangBase):
     """Represents a detected PII match."""
     pii_type: PIIType = Field(..., description="Type of PII detected")
     value: str = Field(..., description="Original value (before redaction)")
@@ -214,7 +215,7 @@ class PIIMatch(BaseModel):
     pattern_name: Optional[str] = Field(None, description="Pattern that matched")
 
 
-class RedactedMatch(BaseModel):
+class RedactedMatch(GreenLangBase):
     """Represents a redacted PII match."""
     original_match: PIIMatch = Field(..., description="Original PII match")
     redacted_value: str = Field(..., description="Redacted value")
@@ -222,7 +223,7 @@ class RedactedMatch(BaseModel):
     token: Optional[str] = Field(None, description="Token for reversible redaction")
 
 
-class TokenEntry(BaseModel):
+class TokenEntry(GreenLangBase):
     """Entry in the token vault for reversible tokenization."""
     token_id: str = Field(..., description="Unique token identifier")
     pii_type: PIIType = Field(..., description="Type of PII")
@@ -234,7 +235,7 @@ class TokenEntry(BaseModel):
     access_count: int = Field(default=0, description="Number of detokenization requests")
 
 
-class RedactionPolicy(BaseModel):
+class RedactionPolicy(GreenLangBase):
     """Policy for how to handle different types of PII."""
     pii_type: PIIType = Field(..., description="Type of PII")
     strategy: RedactionStrategy = Field(
@@ -256,7 +257,7 @@ class RedactionPolicy(BaseModel):
     )
 
 
-class PIIRedactionInput(BaseModel):
+class PIIRedactionInput(GreenLangBase):
     """Input for PII redaction operations."""
     operation: str = Field(..., description="Operation to perform")
     content: Optional[str] = Field(None, description="Text content to process")
@@ -289,7 +290,7 @@ class PIIRedactionInput(BaseModel):
         return v
 
 
-class PIIRedactionOutput(BaseModel):
+class PIIRedactionOutput(GreenLangBase):
     """Output from PII redaction operations."""
     success: bool = Field(..., description="Whether operation succeeded")
     operation: str = Field(..., description="Operation performed")
@@ -313,7 +314,7 @@ class PIIRedactionOutput(BaseModel):
     timestamp: datetime = Field(default_factory=DeterministicClock.now)
 
 
-class AuditLogEntry(BaseModel):
+class AuditLogEntry(GreenLangBase):
     """Audit log entry for PII operations."""
     entry_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     timestamp: datetime = Field(default_factory=DeterministicClock.now)

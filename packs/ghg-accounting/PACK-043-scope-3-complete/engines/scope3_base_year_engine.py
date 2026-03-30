@@ -69,25 +69,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "43.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -112,7 +106,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -121,7 +114,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -133,21 +125,17 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round2(value: Any) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: Any) -> float:
     """Round to 4 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
-
 
 def _days_in_year(year: int) -> int:
     """Return the number of days in a given year (handles leap years)."""
@@ -155,11 +143,9 @@ def _days_in_year(year: int) -> int:
         return 366
     return 365
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class RecalculationTriggerType(str, Enum):
     """Types of events that trigger base year recalculation.
@@ -173,7 +159,6 @@ class RecalculationTriggerType(str, Enum):
     ERROR_CORRECTION = "error_correction"
     STRUCTURAL_CHANGE = "structural_change"
 
-
 class RecalculationStatus(str, Enum):
     """Status of a recalculation assessment."""
     PENDING = "pending"
@@ -182,13 +167,11 @@ class RecalculationStatus(str, Enum):
     RECALCULATED = "recalculated"
     DEFERRED = "deferred"
 
-
 class TrendDirection(str, Enum):
     """Direction of emission trend."""
     DECREASING = "decreasing"
     INCREASING = "increasing"
     STABLE = "stable"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -231,11 +214,9 @@ TRIGGER_DESCRIPTIONS: Dict[str, str] = {
 }
 """Descriptions of each trigger type for documentation and audit trail."""
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Data Models
 # ---------------------------------------------------------------------------
-
 
 class CategoryBaseline(BaseModel):
     """Baseline data for a single Scope 3 category.
@@ -256,7 +237,6 @@ class CategoryBaseline(BaseModel):
     data_quality_score: int = Field(default=1, ge=1, le=5, description="DQ score 1-5")
     is_material: bool = Field(default=True, description="Is material category")
     notes: str = Field(default="", description="Notes")
-
 
 class BaseYear(BaseModel):
     """Base year record for Scope 3 inventory.
@@ -296,7 +276,6 @@ class BaseYear(BaseModel):
     provenance_hash: str = ""
     calculated_at: str = ""
 
-
 class ChangeEvent(BaseModel):
     """Change event that may trigger recalculation.
 
@@ -327,7 +306,6 @@ class ChangeEvent(BaseModel):
         default_factory=list, description="Evidence references"
     )
 
-
 class RecalculationTrigger(BaseModel):
     """Recalculation trigger assessment result.
 
@@ -353,7 +331,6 @@ class RecalculationTrigger(BaseModel):
     rationale: str
     provenance_hash: str = ""
     calculated_at: str = ""
-
 
 class RecalculationResult(BaseModel):
     """Result of a base year recalculation.
@@ -386,7 +363,6 @@ class RecalculationResult(BaseModel):
     provenance_hash: str = ""
     calculated_at: str = ""
 
-
 class TrendComparison(BaseModel):
     """Multi-year trend comparison from base year.
 
@@ -415,7 +391,6 @@ class TrendComparison(BaseModel):
     provenance_hash: str = ""
     calculated_at: str = ""
 
-
 class YearInventory(BaseModel):
     """Inventory data for a single year.
 
@@ -429,7 +404,6 @@ class YearInventory(BaseModel):
     by_category: Dict[int, float] = Field(
         default_factory=dict, description="Category -> tCO2e"
     )
-
 
 class ChangeDecomposition(BaseModel):
     """Decomposition of changes into real vs. methodology.
@@ -454,7 +428,6 @@ class ChangeDecomposition(BaseModel):
     by_category: Dict[str, Dict[str, float]] = Field(default_factory=dict)
     provenance_hash: str = ""
     calculated_at: str = ""
-
 
 class CumulativeReduction(BaseModel):
     """Cumulative reduction since base year.
@@ -486,11 +459,9 @@ class CumulativeReduction(BaseModel):
     provenance_hash: str = ""
     calculated_at: str = ""
 
-
 # ---------------------------------------------------------------------------
 # Engine Class
 # ---------------------------------------------------------------------------
-
 
 class Scope3BaseYearEngine:
     """Manages Scope 3 base year data and recalculations.
@@ -561,11 +532,11 @@ class Scope3BaseYearEngine:
             total += _decimal(cat.tco2e)
             included_cats.append(cat.category)
 
-        by = base_year or _utcnow().year
+        by = base_year or utcnow().year
 
         result = BaseYear(
             base_year=by,
-            established_date=_utcnow().isoformat(),
+            established_date=utcnow().isoformat(),
             total_tco2e=_round2(total),
             by_category=inventory,
             methodology_log=methodology_log or {},
@@ -574,7 +545,7 @@ class Scope3BaseYearEngine:
             organisation_boundary=organisation_boundary,
             version=1,
             is_recalculated=False,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         )
         result.provenance_hash = _compute_hash(result)
 
@@ -653,7 +624,7 @@ class Scope3BaseYearEngine:
             should_recalculate=should_recalculate,
             status=status,
             rationale=rationale,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         )
         result.provenance_hash = _compute_hash(result)
 
@@ -743,7 +714,7 @@ class Scope3BaseYearEngine:
             pro_rata_applied=pro_rata_applied,
             pro_rata_factor=_round4(pro_rata_factor),
             new_version=base_year.version + 1,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         )
         result.provenance_hash = _compute_hash(result)
 
@@ -873,7 +844,7 @@ class Scope3BaseYearEngine:
             trend_direction=direction,
             cagr_pct=_round2(cagr),
             by_category=by_category,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         )
         result.provenance_hash = _compute_hash(result)
 
@@ -928,7 +899,7 @@ class Scope3BaseYearEngine:
             real_change_pct=_round2(real_pct),
             methodology_change_pct=_round2(meth_pct),
             baseline_tco2e=_round2(original),
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         )
         result.provenance_hash = _compute_hash(result)
 
@@ -967,7 +938,7 @@ class Scope3BaseYearEngine:
 
         base_total = _decimal(base_year.total_tco2e)
         current = _decimal(current_year_tco2e)
-        yr = current_year or _utcnow().year
+        yr = current_year or utcnow().year
 
         reduction = base_total - current
         reduction_pct = _safe_pct(reduction, base_total)
@@ -999,7 +970,7 @@ class Scope3BaseYearEngine:
             on_track_for_target=on_track,
             target_pct=target_pct,
             target_year=target_year,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         )
         result.provenance_hash = _compute_hash(result)
 
@@ -1060,7 +1031,6 @@ class Scope3BaseYearEngine:
             SHA-256 hex digest (64 characters).
         """
         return _compute_hash(data)
-
 
 # ---------------------------------------------------------------------------
 # Pydantic v2 model_rebuild for forward-reference resolution

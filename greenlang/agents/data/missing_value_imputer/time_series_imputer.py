@@ -54,6 +54,7 @@ from greenlang.agents.data.missing_value_imputer.metrics import (
     observe_duration,
 )
 from greenlang.agents.data.missing_value_imputer.provenance import ProvenanceTracker
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -61,16 +62,9 @@ __all__ = [
     "TimeSeriesImputerEngine",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _is_missing(value: Any) -> bool:
     """Determine whether a value is considered missing."""
@@ -80,12 +74,10 @@ def _is_missing(value: Any) -> bool:
         return True
     return False
 
-
 def _compute_provenance(operation: str, data_repr: str) -> str:
     """Compute SHA-256 provenance hash."""
-    payload = f"{operation}:{data_repr}:{_utcnow().isoformat()}"
+    payload = f"{operation}:{data_repr}:{utcnow().isoformat()}"
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
-
 
 def _classify_confidence(score: float) -> ConfidenceLevel:
     """Classify a numeric confidence score into a level."""
@@ -97,7 +89,6 @@ def _classify_confidence(score: float) -> ConfidenceLevel:
         return ConfidenceLevel.LOW
     return ConfidenceLevel.VERY_LOW
 
-
 def _safe_stdev(values: List[float]) -> float:
     """Compute sample standard deviation, returning 0.0 for < 2 values."""
     if len(values) < 2:
@@ -106,11 +97,9 @@ def _safe_stdev(values: List[float]) -> float:
     var = sum((v - mean) ** 2 for v in values) / (len(values) - 1)
     return math.sqrt(var) if var > 0 else 0.0
 
-
 # ===========================================================================
 # TimeSeriesImputerEngine
 # ===========================================================================
-
 
 class TimeSeriesImputerEngine:
     """Time-series-aware imputation engine.

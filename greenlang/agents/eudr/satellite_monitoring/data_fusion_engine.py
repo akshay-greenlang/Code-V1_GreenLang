@@ -56,18 +56,13 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -87,7 +82,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str) -> str:
     """Generate a unique identifier with a given prefix.
 
@@ -98,7 +92,6 @@ def _generate_id(prefix: str) -> str:
         ID in format ``{prefix}-{hex12}``.
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -138,11 +131,9 @@ QUALITY_EXCELLENT_THRESHOLD: float = 0.85
 QUALITY_GOOD_THRESHOLD: float = 0.70
 QUALITY_FAIR_THRESHOLD: float = 0.50
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class SourceResult:
@@ -193,7 +184,6 @@ class SourceResult:
             "metadata": self.metadata,
         }
 
-
 @dataclass
 class FusionResult:
     """Result of multi-source data fusion.
@@ -215,7 +205,7 @@ class FusionResult:
     """
 
     fusion_id: str = field(default_factory=lambda: _generate_id("FUS"))
-    fused_at: datetime = field(default_factory=_utcnow)
+    fused_at: datetime = field(default_factory=utcnow)
     sources_used: List[str] = field(default_factory=list)
     source_count: int = 0
     weighted_deforestation_score: float = 0.0
@@ -252,7 +242,6 @@ class FusionResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 @dataclass
 class DataQualityAssessment:
     """Assessment of fused data quality.
@@ -273,7 +262,7 @@ class DataQualityAssessment:
     """
 
     assessment_id: str = field(default_factory=lambda: _generate_id("DQA"))
-    assessed_at: datetime = field(default_factory=_utcnow)
+    assessed_at: datetime = field(default_factory=utcnow)
     overall_quality: float = 0.0
     quality_tier: str = "poor"
     source_count: int = 0
@@ -302,11 +291,9 @@ class DataQualityAssessment:
             "provenance_hash": self.provenance_hash,
         }
 
-
 # ---------------------------------------------------------------------------
 # DataFusionEngine
 # ---------------------------------------------------------------------------
-
 
 class DataFusionEngine:
     """Multi-source satellite data fusion engine for EUDR compliance.
@@ -904,7 +891,7 @@ class DataFusionEngine:
 
         # Recency bonus: check if any source has data from the last 30 days
         recency_bonus = 0.0
-        now = _utcnow()
+        now = utcnow()
         for source in sources:
             if source.observation_date is not None:
                 try:
@@ -1094,7 +1081,6 @@ class DataFusionEngine:
     def fusion_count(self) -> int:
         """Return the number of stored fusion results."""
         return len(self._fusion_store)
-
 
 # ---------------------------------------------------------------------------
 # Module Exports

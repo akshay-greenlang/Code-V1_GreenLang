@@ -72,25 +72,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -108,7 +102,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -117,7 +110,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -129,22 +121,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class AnomalyMethod(str, Enum):
     """Statistical method used for anomaly detection.
@@ -165,7 +153,6 @@ class AnomalyMethod(str, Enum):
     SCHEDULE_BASED = "schedule_based"
     COMBINED = "combined"
 
-
 class AnomalyType(str, Enum):
     """Classification of detected anomaly.
 
@@ -185,7 +172,6 @@ class AnomalyType(str, Enum):
     WEATHER_ANOMALY = "weather_anomaly"
     SIMULTANEOUS_HEATING_COOLING = "simultaneous_heating_cooling"
 
-
 class AnomalySeverity(str, Enum):
     """Severity level of a detected anomaly.
 
@@ -198,7 +184,6 @@ class AnomalySeverity(str, Enum):
     MEDIUM = "medium"
     HIGH = "high"
     CRITICAL = "critical"
-
 
 class InvestigationStatus(str, Enum):
     """Status of an anomaly investigation.
@@ -215,7 +200,6 @@ class InvestigationStatus(str, Enum):
     FALSE_ALARM = "false_alarm"
     RESOLVED = "resolved"
 
-
 class TimeContext(str, Enum):
     """Time context for schedule-based detection.
 
@@ -230,7 +214,6 @@ class TimeContext(str, Enum):
     WEEKEND = "weekend"
     HOLIDAY = "holiday"
     SHUTDOWN = "shutdown"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -274,11 +257,9 @@ DEFAULT_OCCUPIED_END: int = 19
 # Weekend day indices (0=Monday in Python).
 WEEKEND_DAYS: List[int] = [5, 6]
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class AnomalyConfig(BaseModel):
     """Configuration for anomaly detection parameters.
@@ -314,7 +295,6 @@ class AnomalyConfig(BaseModel):
     min_data_points: int = Field(default=30, ge=10)
     holidays: List[str] = Field(default_factory=list)
 
-
 class AnomalyBaseline(BaseModel):
     """Statistical baseline for anomaly detection.
 
@@ -340,8 +320,8 @@ class AnomalyBaseline(BaseModel):
     """
     baseline_id: str = Field(default_factory=_new_uuid)
     meter_id: str = Field(default="")
-    period_start: datetime = Field(default_factory=_utcnow)
-    period_end: datetime = Field(default_factory=_utcnow)
+    period_start: datetime = Field(default_factory=utcnow)
+    period_end: datetime = Field(default_factory=utcnow)
     mean: Decimal = Field(default=Decimal("0"))
     median: Decimal = Field(default=Decimal("0"))
     std_dev: Decimal = Field(default=Decimal("0"))
@@ -354,9 +334,8 @@ class AnomalyBaseline(BaseModel):
     data_points: int = Field(default=0, ge=0)
     hourly_means: Dict[str, Decimal] = Field(default_factory=dict)
     weekday_means: Dict[str, Decimal] = Field(default_factory=dict)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class DetectedAnomaly(BaseModel):
     """A single detected anomaly instance.
@@ -381,7 +360,7 @@ class DetectedAnomaly(BaseModel):
     """
     anomaly_id: str = Field(default_factory=_new_uuid)
     meter_id: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     value: Decimal = Field(default=Decimal("0"))
     expected_value: Decimal = Field(default=Decimal("0"))
     deviation: Decimal = Field(default=Decimal("0"))
@@ -395,7 +374,6 @@ class DetectedAnomaly(BaseModel):
     message: str = Field(default="", max_length=1000)
     estimated_cost: Decimal = Field(default=Decimal("0"))
     provenance_hash: str = Field(default="")
-
 
 class InvestigationRecord(BaseModel):
     """Record of anomaly investigation progress.
@@ -421,10 +399,9 @@ class InvestigationRecord(BaseModel):
     action_taken: str = Field(default="", max_length=1000)
     energy_saved_kwh: Decimal = Field(default=Decimal("0"))
     cost_saved: Decimal = Field(default=Decimal("0"))
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     resolved_at: Optional[datetime] = Field(default=None)
     notes: str = Field(default="", max_length=2000)
-
 
 class AnomalyReport(BaseModel):
     """Complete anomaly detection report.
@@ -453,8 +430,8 @@ class AnomalyReport(BaseModel):
     """
     report_id: str = Field(default_factory=_new_uuid)
     meter_id: str = Field(default="")
-    analysis_start: datetime = Field(default_factory=_utcnow)
-    analysis_end: datetime = Field(default_factory=_utcnow)
+    analysis_start: datetime = Field(default_factory=utcnow)
+    analysis_end: datetime = Field(default_factory=utcnow)
     method_used: str = Field(default="combined")
     baseline: AnomalyBaseline = Field(default_factory=AnomalyBaseline)
     anomalies: List[DetectedAnomaly] = Field(default_factory=list)
@@ -469,14 +446,12 @@ class AnomalyReport(BaseModel):
     investigations: List[InvestigationRecord] = Field(default_factory=list)
     recommendations: List[str] = Field(default_factory=list)
     processing_time_ms: Decimal = Field(default=Decimal("0"))
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class AnomalyDetectionEngine:
     """Statistical anomaly detection engine for energy monitoring.
@@ -545,7 +520,7 @@ class AnomalyDetectionEngine:
             return report
 
         values = [_decimal(r.get("value", 0)) for r in readings]
-        timestamps = [r.get("timestamp", _utcnow()) for r in readings]
+        timestamps = [r.get("timestamp", utcnow()) for r in readings]
 
         # Compute baseline if not provided
         if baseline is None:
@@ -606,8 +581,8 @@ class AnomalyDetectionEngine:
 
         report = AnomalyReport(
             meter_id=meter_id,
-            analysis_start=min(timestamps) if timestamps else _utcnow(),
-            analysis_end=max(timestamps) if timestamps else _utcnow(),
+            analysis_start=min(timestamps) if timestamps else utcnow(),
+            analysis_end=max(timestamps) if timestamps else utcnow(),
             method_used=method.value,
             baseline=baseline,
             anomalies=deduped[:500],
@@ -685,7 +660,7 @@ class AnomalyDetectionEngine:
                 s_neg = Decimal("0")  # Reset after alarm
 
             if is_anomaly:
-                ts = timestamps[i] if i < len(timestamps) else _utcnow()
+                ts = timestamps[i] if i < len(timestamps) else utcnow()
                 dev_pct = _safe_pct(abs(deviation), target)
                 anomalies.append(DetectedAnomaly(
                     meter_id=baseline.meter_id,
@@ -747,7 +722,7 @@ class AnomalyDetectionEngine:
             z_t = lam * x + (Decimal("1") - lam) * z_t
 
             if z_t > ucl or z_t < lcl:
-                ts = timestamps[i] if i < len(timestamps) else _utcnow()
+                ts = timestamps[i] if i < len(timestamps) else utcnow()
                 deviation = x - mu
                 dev_pct = _safe_pct(abs(deviation), mu)
                 anomalies.append(DetectedAnomaly(
@@ -790,7 +765,7 @@ class AnomalyDetectionEngine:
         )
 
         values = sorted([_decimal(r.get("value", 0)) for r in readings])
-        timestamps = [r.get("timestamp", _utcnow()) for r in readings]
+        timestamps = [r.get("timestamp", utcnow()) for r in readings]
 
         if not values:
             result = AnomalyBaseline(meter_id=meter_id)
@@ -847,8 +822,8 @@ class AnomalyDetectionEngine:
             for wd in range(7)
         }
 
-        period_start = min(timestamps) if timestamps else _utcnow()
-        period_end = max(timestamps) if timestamps else _utcnow()
+        period_start = min(timestamps) if timestamps else utcnow()
+        period_end = max(timestamps) if timestamps else utcnow()
 
         result = AnomalyBaseline(
             meter_id=meter_id,
@@ -906,7 +881,7 @@ class AnomalyDetectionEngine:
         """
         t0 = time.perf_counter()
 
-        resolved_at = _utcnow() if status == InvestigationStatus.RESOLVED else None
+        resolved_at = utcnow() if status == InvestigationStatus.RESOLVED else None
 
         record = InvestigationRecord(
             anomaly_id=anomaly_id,
@@ -1000,7 +975,7 @@ class AnomalyDetectionEngine:
                 MODIFIED_ZSCORE_CONSTANT * abs(x - median), mad
             )
             if m_score > threshold:
-                ts = timestamps[i] if i < len(timestamps) else _utcnow()
+                ts = timestamps[i] if i < len(timestamps) else utcnow()
                 deviation = x - median
                 dev_pct = _safe_pct(abs(deviation), median)
                 anomalies.append(DetectedAnomaly(
@@ -1037,7 +1012,7 @@ class AnomalyDetectionEngine:
         anomalies: List[DetectedAnomaly] = []
         for i, x in enumerate(values):
             if x < lower_fence or x > upper_fence:
-                ts = timestamps[i] if i < len(timestamps) else _utcnow()
+                ts = timestamps[i] if i < len(timestamps) else utcnow()
                 expected = baseline.median
                 deviation = x - expected
                 dev_pct = _safe_pct(abs(deviation), expected)

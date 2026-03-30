@@ -36,21 +36,15 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -62,7 +56,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 class _AgentStub:
     """Stub for unavailable DATA agent modules."""
@@ -81,21 +74,19 @@ class _AgentStub:
             }
         return _stub_method
 
-
 def _try_import_data_agent(agent_id: str, module_path: str) -> Any:
     """Try to import a DATA agent with graceful fallback."""
     try:
         import importlib
+
         return importlib.import_module(module_path)
     except ImportError:
         logger.debug("DATA agent %s not available, using stub", agent_id)
         return _AgentStub(agent_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class PSDataSource(str, Enum):
     """Peak shaving data source categories."""
@@ -110,7 +101,6 @@ class PSDataSource(str, Enum):
     BESS_TELEMETRY = "bess_telemetry"
     DEMAND_REGISTER = "demand_register"
 
-
 class DataFormatType(str, Enum):
     """Supported data file formats."""
 
@@ -122,7 +112,6 @@ class DataFormatType(str, Enum):
     API = "api"
     ODATA = "odata"
 
-
 class QualityDimension(str, Enum):
     """Data quality assessment dimensions."""
 
@@ -131,7 +120,6 @@ class QualityDimension(str, Enum):
     CONSISTENCY = "consistency"
     TIMELINESS = "timeliness"
     UNIQUENESS = "uniqueness"
-
 
 class ReconciliationStatus(str, Enum):
     """Cross-source reconciliation status."""
@@ -142,7 +130,6 @@ class ReconciliationStatus(str, Enum):
     RESOLVED = "resolved"
     UNRESOLVED = "unresolved"
 
-
 class GapFillMethod(str, Enum):
     """Time series gap fill methods."""
 
@@ -152,11 +139,9 @@ class GapFillMethod(str, Enum):
     SIMILAR_DAY = "similar_day"
     REGRESSION = "regression"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class DataRequest(BaseModel):
     """Request to route data intake to a DATA agent."""
@@ -169,7 +154,6 @@ class DataRequest(BaseModel):
     date_range_start: Optional[str] = Field(None)
     date_range_end: Optional[str] = Field(None)
     interval_minutes: int = Field(default=15, ge=1, le=60)
-
 
 class DataQualityReport(BaseModel):
     """Result of a data quality assessment."""
@@ -189,7 +173,6 @@ class DataQualityReport(BaseModel):
     is_valid: bool = Field(default=False)
     provenance_hash: str = Field(default="")
 
-
 class DataResponse(BaseModel):
     """Result of routing a data operation to a DATA agent."""
 
@@ -207,7 +190,6 @@ class DataResponse(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class DataAgentRoute(BaseModel):
     """Routing entry mapping a data source to a DATA agent."""
 
@@ -217,7 +199,6 @@ class DataAgentRoute(BaseModel):
     module_path: str = Field(default="")
     description: str = Field(default="")
     file_formats: List[str] = Field(default_factory=list)
-
 
 class DataRouteConfig(BaseModel):
     """Configuration for the Data Peak Shaving Bridge."""
@@ -229,7 +210,6 @@ class DataRouteConfig(BaseModel):
     enable_reconciliation: bool = Field(default=True)
     max_records_per_batch: int = Field(default=100000, ge=100)
     default_interval_minutes: int = Field(default=15, ge=1, le=60)
-
 
 # ---------------------------------------------------------------------------
 # Data Agent Routing Table
@@ -301,11 +281,9 @@ DATA_AGENT_ROUTES: List[DataAgentRoute] = [
     ),
 ]
 
-
 # ---------------------------------------------------------------------------
 # DataBridge
 # ---------------------------------------------------------------------------
-
 
 class DataBridge:
     """Bridge to DATA agents for peak shaving data intake and quality.

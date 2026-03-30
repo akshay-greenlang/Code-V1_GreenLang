@@ -29,7 +29,8 @@ from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase, utcnow
 
 from greenlang.agents.eudr.due_diligence_orchestrator.api.dependencies import (
     AuthUser,
@@ -56,7 +57,7 @@ router = APIRouter(prefix="/workflows", tags=["Quality Gate Management"])
 # ---------------------------------------------------------------------------
 
 
-class GateOverrideRequest(BaseModel):
+class GateOverrideRequest(GreenLangBase):
     """Request to override a failed quality gate."""
 
     justification: str = Field(
@@ -176,7 +177,7 @@ async def get_quality_gates(
         "all_gates_passed": all_passed,
         "gates_evaluated": len(evaluated_gates),
         "gates_total": 3,
-        "retrieved_at": _utcnow().isoformat(),
+        "retrieved_at": utcnow().isoformat(),
     }
 
 

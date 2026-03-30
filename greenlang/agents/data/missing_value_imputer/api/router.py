@@ -39,6 +39,7 @@ Status: Production Ready
 
 import logging
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +67,7 @@ except ImportError:
 
 if FASTAPI_AVAILABLE:
 
-    class CreateJobBody(BaseModel):
+    class CreateJobBody(GreenLangBase):
         """Request body for creating an imputation job."""
         dataset_id: str = Field(
             default="", description="Identifier of the dataset to impute",
@@ -81,7 +82,7 @@ if FASTAPI_AVAILABLE:
             None, description="Optional template ID to apply",
         )
 
-    class AnalyzeBody(BaseModel):
+    class AnalyzeBody(GreenLangBase):
         """Request body for analyzing missingness."""
         records: List[Dict[str, Any]] = Field(
             ..., description="List of record dicts to analyze",
@@ -90,7 +91,7 @@ if FASTAPI_AVAILABLE:
             None, description="Columns to analyze (all if omitted)",
         )
 
-    class ImputeBody(BaseModel):
+    class ImputeBody(GreenLangBase):
         """Request body for imputing values in a single column."""
         records: List[Dict[str, Any]] = Field(
             ..., description="List of record dicts to impute",
@@ -110,7 +111,7 @@ if FASTAPI_AVAILABLE:
             None, description="Additional imputation options",
         )
 
-    class BatchImputeBody(BaseModel):
+    class BatchImputeBody(GreenLangBase):
         """Request body for batch imputation across columns."""
         records: List[Dict[str, Any]] = Field(
             ..., description="List of record dicts to impute",
@@ -120,7 +121,7 @@ if FASTAPI_AVAILABLE:
             description="Column-to-strategy mapping (auto-select if omitted)",
         )
 
-    class ValidateBody(BaseModel):
+    class ValidateBody(GreenLangBase):
         """Request body for validating imputation results."""
         original_records: List[Dict[str, Any]] = Field(
             ..., description="Original records before imputation",
@@ -135,7 +136,7 @@ if FASTAPI_AVAILABLE:
             "cross_validation)",
         )
 
-    class CreateRuleBody(BaseModel):
+    class CreateRuleBody(GreenLangBase):
         """Request body for creating an imputation rule."""
         name: str = Field(
             ..., description="Human-readable rule name",
@@ -158,7 +159,7 @@ if FASTAPI_AVAILABLE:
             description="Justification for the rule",
         )
 
-    class UpdateRuleBody(BaseModel):
+    class UpdateRuleBody(GreenLangBase):
         """Request body for updating an imputation rule."""
         name: Optional[str] = Field(
             None, description="Updated rule name",
@@ -182,7 +183,7 @@ if FASTAPI_AVAILABLE:
             None, description="Updated justification",
         )
 
-    class CreateTemplateBody(BaseModel):
+    class CreateTemplateBody(GreenLangBase):
         """Request body for creating an imputation template."""
         name: str = Field(
             ..., description="Human-readable template name",
@@ -196,7 +197,7 @@ if FASTAPI_AVAILABLE:
             description="Column-to-strategy mapping",
         )
 
-    class RunPipelineBody(BaseModel):
+    class RunPipelineBody(GreenLangBase):
         """Request body for running the full imputation pipeline."""
         records: List[Dict[str, Any]] = Field(
             ..., description="List of record dicts to impute",

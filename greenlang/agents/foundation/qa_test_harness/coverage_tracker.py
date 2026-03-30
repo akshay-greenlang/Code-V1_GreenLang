@@ -35,14 +35,9 @@ from greenlang.agents.foundation.qa_test_harness.models import (
     CoverageSnapshot,
 )
 from greenlang.agents.foundation.qa_test_harness.metrics import update_coverage
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 class CoverageTracker:
     """Test coverage tracking engine for QA test harness.
@@ -278,7 +273,6 @@ class CoverageTracker:
             and callable(getattr(agent_class, m, None))
         ]
         return sorted(methods)
-
 
 __all__ = [
     "CoverageTracker",

@@ -36,6 +36,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 from .sector_pathway_design_workflow import (
     SectorPathwayDesignConfig,
@@ -65,6 +66,7 @@ from .progress_monitoring_workflow import (
     IntensityDataPoint,
 )
 from .multi_scenario_analysis_workflow import (
+
     MultiScenarioConfig,
     MultiScenarioInput,
     MultiScenarioResult,
@@ -76,23 +78,15 @@ logger = logging.getLogger(__name__)
 _MODULE_VERSION = "28.0.0"
 _PACK_ID = "PACK-028"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -101,14 +95,12 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class MaturityLevel(str, Enum):
     """Sector pathway maturity level."""
@@ -118,11 +110,9 @@ class MaturityLevel(str, Enum):
     ADVANCED = "advanced"
     LEADING = "leading"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase_name: str = Field(...)
@@ -136,7 +126,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     dag_node_id: str = Field(default="")
 
-
 class SectorScorecard(BaseModel):
     """Sector pathway assessment scorecard."""
     classification_score: float = Field(default=0.0, ge=0.0, le=100.0)
@@ -147,7 +136,6 @@ class SectorScorecard(BaseModel):
     scenario_score: float = Field(default=0.0, ge=0.0, le=100.0)
     overall_score: float = Field(default=0.0, ge=0.0, le=100.0)
     maturity: MaturityLevel = Field(default=MaturityLevel.NASCENT)
-
 
 class AbatementLever(BaseModel):
     """A single abatement lever in the waterfall."""
@@ -162,7 +150,6 @@ class AbatementLever(BaseModel):
     trl: int = Field(default=9, ge=1, le=9)
     dependencies: List[str] = Field(default_factory=list)
 
-
 class AbatementWaterfall(BaseModel):
     """Sector abatement waterfall analysis."""
     sector: str = Field(default="")
@@ -172,7 +159,6 @@ class AbatementWaterfall(BaseModel):
     weighted_avg_cost_usd: float = Field(default=0.0)
     coverage_pct: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class SectorStrategySummary(BaseModel):
     """Unified sector transition strategy summary."""
@@ -226,7 +212,6 @@ class SectorStrategySummary(BaseModel):
     key_risks: List[str] = Field(default_factory=list)
     key_findings: List[str] = Field(default_factory=list)
 
-
 class FullSectorAssessmentConfig(BaseModel):
     """Configuration for the full sector assessment."""
     # Company identification
@@ -275,7 +260,6 @@ class FullSectorAssessmentConfig(BaseModel):
     current_trajectory_annual_reduction: float = Field(default=0.02)
     sector_abatement_cost_usd_per_tco2e: float = Field(default=80.0)
 
-
 class FullSectorAssessmentInput(BaseModel):
     config: FullSectorAssessmentConfig = Field(
         default_factory=FullSectorAssessmentConfig,
@@ -284,7 +268,6 @@ class FullSectorAssessmentInput(BaseModel):
     peer_data: List[Dict[str, Any]] = Field(default_factory=list)
     planned_actions: List[Dict[str, Any]] = Field(default_factory=list)
     current_tech_portfolio: Dict[str, float] = Field(default_factory=dict)
-
 
 class FullSectorAssessmentResult(BaseModel):
     workflow_id: str = Field(...)
@@ -310,7 +293,6 @@ class FullSectorAssessmentResult(BaseModel):
         default_factory=SectorStrategySummary,
     )
     provenance_hash: str = Field(default="")
-
 
 # =============================================================================
 # SECTOR ABATEMENT LEVERS (Zero-Hallucination: IEA/McKinsey MACC Data)
@@ -475,11 +457,9 @@ DEFAULT_LEVERS: List[Dict[str, Any]] = [
     {"lever": "Digital Optimisation", "cat": "digital", "abatement_pct": 8, "cost": 10, "trl": 9, "start": 2025, "end": 2030},
 ]
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class FullSectorAssessmentWorkflow:
     """
@@ -518,7 +498,7 @@ class FullSectorAssessmentWorkflow:
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     async def execute(self, input_data: FullSectorAssessmentInput) -> FullSectorAssessmentResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         config = input_data.config
         self._phase_results = []
         overall_status = WorkflowStatus.RUNNING
@@ -574,7 +554,7 @@ class FullSectorAssessmentWorkflow:
                 status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
 
         result = FullSectorAssessmentResult(
             workflow_id=self.workflow_id,
@@ -600,7 +580,7 @@ class FullSectorAssessmentWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_classify_and_pathway(self, input_data: FullSectorAssessmentInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         config = input_data.config
         outputs: Dict[str, Any] = {}
 
@@ -657,7 +637,7 @@ class FullSectorAssessmentWorkflow:
             outputs["error"] = str(exc)
             status = PhaseStatus.FAILED
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="classify_and_pathway", phase_number=1,
             status=status, duration_seconds=round(elapsed, 4),
@@ -672,7 +652,7 @@ class FullSectorAssessmentWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_validation(self, input_data: FullSectorAssessmentInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         config = input_data.config
         outputs: Dict[str, Any] = {}
 
@@ -739,7 +719,7 @@ class FullSectorAssessmentWorkflow:
             outputs["error"] = str(exc)
             status = PhaseStatus.FAILED
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="pathway_validation", phase_number=2,
             status=status, duration_seconds=round(elapsed, 4),
@@ -754,7 +734,7 @@ class FullSectorAssessmentWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_technology(self, input_data: FullSectorAssessmentInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         config = input_data.config
         outputs: Dict[str, Any] = {}
 
@@ -806,7 +786,7 @@ class FullSectorAssessmentWorkflow:
             outputs["error"] = str(exc)
             status = PhaseStatus.FAILED
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="technology_planning", phase_number=3,
             status=status, duration_seconds=round(elapsed, 4),
@@ -821,7 +801,7 @@ class FullSectorAssessmentWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_abatement(self, input_data: FullSectorAssessmentInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         config = input_data.config
         outputs: Dict[str, Any] = {}
 
@@ -879,7 +859,7 @@ class FullSectorAssessmentWorkflow:
         outputs["coverage_pct"] = self._abatement.coverage_pct
         outputs["wavg_cost_usd_per_tco2e"] = self._abatement.weighted_avg_cost_usd
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="abatement_waterfall", phase_number=4,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -893,7 +873,7 @@ class FullSectorAssessmentWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_benchmark(self, input_data: FullSectorAssessmentInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         config = input_data.config
         outputs: Dict[str, Any] = {}
 
@@ -957,7 +937,7 @@ class FullSectorAssessmentWorkflow:
             outputs["error"] = str(exc)
             status = PhaseStatus.FAILED
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="benchmark", phase_number=5,
             status=status, duration_seconds=round(elapsed, 4),
@@ -972,7 +952,7 @@ class FullSectorAssessmentWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_scenarios(self, input_data: FullSectorAssessmentInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         config = input_data.config
         outputs: Dict[str, Any] = {}
 
@@ -1022,7 +1002,7 @@ class FullSectorAssessmentWorkflow:
             outputs["error"] = str(exc)
             status = PhaseStatus.FAILED
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="scenarios", phase_number=6,
             status=status, duration_seconds=round(elapsed, 4),
@@ -1037,7 +1017,7 @@ class FullSectorAssessmentWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_strategy(self, input_data: FullSectorAssessmentInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         config = input_data.config
         outputs: Dict[str, Any] = {}
 
@@ -1181,7 +1161,7 @@ class FullSectorAssessmentWorkflow:
             nze_prob = nze_pw.probability_target_pct if nze_pw else 0.0
 
         self._strategy = SectorStrategySummary(
-            assessment_date=_utcnow().isoformat(),
+            assessment_date=utcnow().isoformat(),
             company_name=config.company_name,
             sector=sector,
             sector_name=sector_data["name"],
@@ -1224,7 +1204,7 @@ class FullSectorAssessmentWorkflow:
         outputs["key_risks_count"] = len(key_risks)
         outputs["report_formats"] = ["MD", "HTML", "JSON", "PDF"]
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="strategy_compilation", phase_number=7,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),

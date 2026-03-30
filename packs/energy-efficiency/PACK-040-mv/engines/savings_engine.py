@@ -70,25 +70,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -106,7 +100,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -115,7 +108,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -127,22 +119,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SavingsType(str, Enum):
     """Type of savings calculation.
@@ -159,7 +147,6 @@ class SavingsType(str, Enum):
     DEMAND = "demand"
     COMBINED = "combined"
 
-
 class ReportingPeriodType(str, Enum):
     """Type of reporting period.
 
@@ -174,7 +161,6 @@ class ReportingPeriodType(str, Enum):
     ANNUAL = "annual"
     CUSTOM = "custom"
     PARTIAL = "partial"
-
 
 class SavingsStatus(str, Enum):
     """Verification status of savings calculation.
@@ -193,7 +179,6 @@ class SavingsStatus(str, Enum):
     DISPUTED = "disputed"
     ADJUSTED = "adjusted"
 
-
 class EnergyUnit(str, Enum):
     """Unit of energy measurement.
 
@@ -211,7 +196,6 @@ class EnergyUnit(str, Enum):
     GJ = "GJ"
     KBtu = "kBtu"
 
-
 class CurrencyUnit(str, Enum):
     """Currency unit for cost savings.
 
@@ -227,7 +211,6 @@ class CurrencyUnit(str, Enum):
     CAD = "CAD"
     AUD = "AUD"
 
-
 class DemandUnit(str, Enum):
     """Unit for demand measurement.
 
@@ -238,7 +221,6 @@ class DemandUnit(str, Enum):
     KW = "kW"
     MW = "MW"
     KVA = "kVA"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -278,11 +260,9 @@ MIN_SAVINGS_PCT: Decimal = Decimal("1")
 # Maximum reasonable savings percentage (sanity check).
 MAX_SAVINGS_PCT: Decimal = Decimal("90")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class PeriodEnergyData(BaseModel):
     """Energy data for a single sub-period (month, week, etc.).
@@ -299,10 +279,10 @@ class PeriodEnergyData(BaseModel):
         notes: Additional notes.
     """
     period_start: datetime = Field(
-        default_factory=_utcnow, description="Period start"
+        default_factory=utcnow, description="Period start"
     )
     period_end: datetime = Field(
-        default_factory=_utcnow, description="Period end"
+        default_factory=utcnow, description="Period end"
     )
     baseline_energy: Decimal = Field(
         default=Decimal("0"), ge=0, description="Adjusted baseline energy"
@@ -321,7 +301,6 @@ class PeriodEnergyData(BaseModel):
     )
     is_valid: bool = Field(default=True, description="Data quality flag")
     notes: str = Field(default="", max_length=500, description="Notes")
-
 
 class CostRateSchedule(BaseModel):
     """Energy cost rate schedule for monetary savings.
@@ -363,7 +342,6 @@ class CostRateSchedule(BaseModel):
         default=CurrencyUnit.USD, description="Currency"
     )
 
-
 class SavingsConfig(BaseModel):
     """Configuration for savings calculation.
 
@@ -393,10 +371,10 @@ class SavingsConfig(BaseModel):
         default="", max_length=500, description="Facility name"
     )
     reporting_period_start: datetime = Field(
-        default_factory=_utcnow, description="Reporting period start"
+        default_factory=utcnow, description="Reporting period start"
     )
     reporting_period_end: datetime = Field(
-        default_factory=_utcnow, description="Reporting period end"
+        default_factory=utcnow, description="Reporting period end"
     )
     reporting_period_type: ReportingPeriodType = Field(
         default=ReportingPeriodType.ANNUAL, description="Period type"
@@ -432,11 +410,9 @@ class SavingsConfig(BaseModel):
         default=None, ge=0, description="Guaranteed savings target"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class PeriodSavingsDetail(BaseModel):
     """Savings detail for a single sub-period.
@@ -455,8 +431,8 @@ class PeriodSavingsDetail(BaseModel):
         calculated_at: Calculation timestamp.
         provenance_hash: SHA-256 audit hash.
     """
-    period_start: datetime = Field(default_factory=_utcnow)
-    period_end: datetime = Field(default_factory=_utcnow)
+    period_start: datetime = Field(default_factory=utcnow)
+    period_end: datetime = Field(default_factory=utcnow)
     days: int = Field(default=30)
     baseline_energy: Decimal = Field(default=Decimal("0"))
     actual_energy: Decimal = Field(default=Decimal("0"))
@@ -465,9 +441,8 @@ class PeriodSavingsDetail(BaseModel):
     demand_savings_kw: Decimal = Field(default=Decimal("0"))
     cost_savings: Decimal = Field(default=Decimal("0"))
     is_positive_savings: bool = Field(default=True)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class CostSavingsBreakdown(BaseModel):
     """Breakdown of cost savings by component.
@@ -494,9 +469,8 @@ class CostSavingsBreakdown(BaseModel):
     blended_rate_used: Decimal = Field(default=Decimal("0"))
     demand_rate_used: Decimal = Field(default=Decimal("0"))
     currency: CurrencyUnit = Field(default=CurrencyUnit.USD)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class GHGSavingsResult(BaseModel):
     """GHG emissions reduction from energy savings.
@@ -517,9 +491,8 @@ class GHGSavingsResult(BaseModel):
     ghg_savings_kg_co2e: Decimal = Field(default=Decimal("0"))
     ghg_savings_tonnes_co2e: Decimal = Field(default=Decimal("0"))
     ghg_savings_metric_tons: Decimal = Field(default=Decimal("0"))
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class CumulativeSavingsRecord(BaseModel):
     """Cumulative savings tracking record.
@@ -548,9 +521,8 @@ class CumulativeSavingsRecord(BaseModel):
     cumulative_ghg_savings_tonnes: Decimal = Field(default=Decimal("0"))
     guaranteed_savings: Optional[Decimal] = Field(default=None)
     pct_of_guaranteed: Decimal = Field(default=Decimal("0"))
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class SavingsResult(BaseModel):
     """Complete savings calculation result.
@@ -594,8 +566,8 @@ class SavingsResult(BaseModel):
     ecm_id: str = Field(default="")
     facility_id: str = Field(default="")
     facility_name: str = Field(default="", max_length=500)
-    reporting_period_start: datetime = Field(default_factory=_utcnow)
-    reporting_period_end: datetime = Field(default_factory=_utcnow)
+    reporting_period_start: datetime = Field(default_factory=utcnow)
+    reporting_period_end: datetime = Field(default_factory=utcnow)
     reporting_period_type: ReportingPeriodType = Field(
         default=ReportingPeriodType.ANNUAL
     )
@@ -621,14 +593,12 @@ class SavingsResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     recommendations: List[str] = Field(default_factory=list)
     processing_time_ms: Decimal = Field(default=Decimal("0"))
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class SavingsEngine:
     """Energy savings calculation engine for M&V per IPMVP / ASHRAE 14.

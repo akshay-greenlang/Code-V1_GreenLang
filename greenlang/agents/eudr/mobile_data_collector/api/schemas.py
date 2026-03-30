@@ -28,28 +28,21 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import ConfigDict, Field, field_validator
 
+from greenlang.schemas import GreenLangBase, utcnow
 
 # =============================================================================
 # Helpers
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_id() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 # =============================================================================
 # Enumerations (API-layer mirrors of domain enums)
 # =============================================================================
-
 
 class FormStatusSchema(str, Enum):
     """Form submission lifecycle status."""
@@ -59,7 +52,6 @@ class FormStatusSchema(str, Enum):
     SYNCING = "syncing"
     SYNCED = "synced"
     FAILED = "failed"
-
 
 class FormTypeSchema(str, Enum):
     """EUDR form type classifications."""
@@ -71,7 +63,6 @@ class FormTypeSchema(str, Enum):
     QUALITY_INSPECTION = "quality_inspection"
     SMALLHOLDER_DECLARATION = "smallholder_declaration"
 
-
 class AccuracyTierSchema(str, Enum):
     """GPS capture accuracy classification."""
 
@@ -80,7 +71,6 @@ class AccuracyTierSchema(str, Enum):
     ACCEPTABLE = "acceptable"
     POOR = "poor"
     REJECTED = "rejected"
-
 
 class PhotoTypeSchema(str, Enum):
     """Photo evidence category."""
@@ -92,7 +82,6 @@ class PhotoTypeSchema(str, Enum):
     TRANSPORT_PHOTO = "transport_photo"
     IDENTITY_PHOTO = "identity_photo"
 
-
 class SyncStatusSchema(str, Enum):
     """Synchronization queue item status."""
 
@@ -101,7 +90,6 @@ class SyncStatusSchema(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PERMANENTLY_FAILED = "permanently_failed"
-
 
 class ConflictResolutionSchema(str, Enum):
     """Sync conflict resolution strategy."""
@@ -113,14 +101,12 @@ class ConflictResolutionSchema(str, Enum):
     SET_UNION = "set_union"
     STATE_MACHINE = "state_machine"
 
-
 class TemplateTypeSchema(str, Enum):
     """Form template type."""
 
     BASE = "base"
     CUSTOM = "custom"
     INHERITED = "inherited"
-
 
 class TemplateStatusSchema(str, Enum):
     """Form template lifecycle status."""
@@ -129,13 +115,11 @@ class TemplateStatusSchema(str, Enum):
     PUBLISHED = "published"
     DEPRECATED = "deprecated"
 
-
 class SignatureAlgorithmSchema(str, Enum):
     """Digital signature algorithm."""
 
     ECDSA_P256 = "ecdsa_p256"
     ECDSA_P384 = "ecdsa_p384"
-
 
 class PackageStatusSchema(str, Enum):
     """Data package lifecycle status."""
@@ -146,7 +130,6 @@ class PackageStatusSchema(str, Enum):
     VERIFIED = "verified"
     EXPIRED = "expired"
 
-
 class DeviceStatusSchema(str, Enum):
     """Mobile device status."""
 
@@ -156,14 +139,12 @@ class DeviceStatusSchema(str, Enum):
     LOW_STORAGE = "low_storage"
     DECOMMISSIONED = "decommissioned"
 
-
 class DevicePlatformSchema(str, Enum):
     """Mobile device OS platform."""
 
     ANDROID = "android"
     IOS = "ios"
     HARMONYOS = "harmonyos"
-
 
 class CommodityTypeSchema(str, Enum):
     """EUDR-regulated commodity types per EU 2023/1115 Article 1."""
@@ -176,7 +157,6 @@ class CommodityTypeSchema(str, Enum):
     SOYA = "soya"
     WOOD = "wood"
 
-
 class ExportFormatSchema(str, Enum):
     """Data package export format."""
 
@@ -184,13 +164,11 @@ class ExportFormatSchema(str, Enum):
     TAR_GZ = "tar_gz"
     JSON_LD = "json_ld"
 
-
 # =============================================================================
 # Common Schemas
 # =============================================================================
 
-
-class PaginationSchema(BaseModel):
+class PaginationSchema(GreenLangBase):
     """Pagination metadata for list responses.
 
     Attributes:
@@ -207,8 +185,7 @@ class PaginationSchema(BaseModel):
     page_size: int = Field(..., ge=1, description="Records per page")
     has_more: bool = Field(..., description="More records exist")
 
-
-class ErrorSchema(BaseModel):
+class ErrorSchema(GreenLangBase):
     """Standard error response.
 
     Attributes:
@@ -227,8 +204,7 @@ class ErrorSchema(BaseModel):
         None, description="Request correlation ID"
     )
 
-
-class HealthComponentSchema(BaseModel):
+class HealthComponentSchema(GreenLangBase):
     """Health status for a single service component.
 
     Attributes:
@@ -249,8 +225,7 @@ class HealthComponentSchema(BaseModel):
         None, description="Health details"
     )
 
-
-class HealthSchema(BaseModel):
+class HealthSchema(GreenLangBase):
     """Health check response for the Mobile Data Collector API.
 
     Attributes:
@@ -300,11 +275,10 @@ class HealthSchema(BaseModel):
         description="Component health details",
     )
     checked_at: datetime = Field(
-        default_factory=_utcnow, description="Health check timestamp"
+        default_factory=utcnow, description="Health check timestamp"
     )
 
-
-class SuccessSchema(BaseModel):
+class SuccessSchema(GreenLangBase):
     """Standard success response.
 
     Attributes:
@@ -319,8 +293,7 @@ class SuccessSchema(BaseModel):
     message: str = Field(default="", description="Success message")
     data: Optional[Any] = Field(None, description="Response payload")
 
-
-class ProvenanceInfo(BaseModel):
+class ProvenanceInfo(GreenLangBase):
     """Provenance tracking metadata for audit trails.
 
     Attributes:
@@ -338,16 +311,14 @@ class ProvenanceInfo(BaseModel):
         default="sha256", description="Hash algorithm used"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Provenance timestamp"
+        default_factory=utcnow, description="Provenance timestamp"
     )
-
 
 # =============================================================================
 # Form Schemas
 # =============================================================================
 
-
-class FormSubmitSchema(BaseModel):
+class FormSubmitSchema(GreenLangBase):
     """Request to submit a new form from a device.
 
     Attributes:
@@ -446,8 +417,7 @@ class FormSubmitSchema(BaseModel):
                 )
         return v
 
-
-class FormUpdateSchema(BaseModel):
+class FormUpdateSchema(GreenLangBase):
     """Request to update a draft form.
 
     Attributes:
@@ -498,8 +468,7 @@ class FormUpdateSchema(BaseModel):
                 )
         return v
 
-
-class FormResponseSchema(BaseModel):
+class FormResponseSchema(GreenLangBase):
     """Response for form submission operations.
 
     Attributes:
@@ -568,14 +537,13 @@ class FormResponseSchema(BaseModel):
     )
     message: str = Field(default="", description="Status message")
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation timestamp"
+        default_factory=utcnow, description="Creation timestamp"
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow, description="Last update timestamp"
+        default_factory=utcnow, description="Last update timestamp"
     )
 
-
-class FormListSchema(BaseModel):
+class FormListSchema(GreenLangBase):
     """Response listing forms with pagination.
 
     Attributes:
@@ -594,8 +562,7 @@ class FormListSchema(BaseModel):
         default=0.0, ge=0.0, description="Query duration in ms"
     )
 
-
-class FormValidationSchema(BaseModel):
+class FormValidationSchema(GreenLangBase):
     """Response for form validation operations.
 
     Attributes:
@@ -636,13 +603,11 @@ class FormValidationSchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
 
-
 # =============================================================================
 # GPS Schemas
 # =============================================================================
 
-
-class GPSCaptureSchema(BaseModel):
+class GPSCaptureSchema(GreenLangBase):
     """Request to record a GPS point capture.
 
     Attributes:
@@ -730,8 +695,7 @@ class GPSCaptureSchema(BaseModel):
         default_factory=dict, description="Additional capture metadata",
     )
 
-
-class PolygonCaptureSchema(BaseModel):
+class PolygonCaptureSchema(GreenLangBase):
     """Request to record a polygon boundary trace.
 
     Attributes:
@@ -816,8 +780,7 @@ class PolygonCaptureSchema(BaseModel):
                 )
         return v
 
-
-class GPSResponseSchema(BaseModel):
+class GPSResponseSchema(GreenLangBase):
     """Response for GPS point capture operations.
 
     Attributes:
@@ -871,11 +834,10 @@ class GPSResponseSchema(BaseModel):
     )
     message: str = Field(default="", description="Status message")
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation timestamp"
+        default_factory=utcnow, description="Creation timestamp"
     )
 
-
-class PolygonResponseSchema(BaseModel):
+class PolygonResponseSchema(GreenLangBase):
     """Response for polygon trace operations.
 
     Attributes:
@@ -923,11 +885,10 @@ class PolygonResponseSchema(BaseModel):
     )
     message: str = Field(default="", description="Status message")
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation timestamp"
+        default_factory=utcnow, description="Creation timestamp"
     )
 
-
-class AreaResponseSchema(BaseModel):
+class AreaResponseSchema(GreenLangBase):
     """Response for polygon area calculation.
 
     Attributes:
@@ -952,8 +913,7 @@ class AreaResponseSchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
 
-
-class GPSValidateSchema(BaseModel):
+class GPSValidateSchema(GreenLangBase):
     """Request to validate GPS coordinates.
 
     Attributes:
@@ -979,8 +939,7 @@ class GPSValidateSchema(BaseModel):
         None, description="Expected EUDR commodity context",
     )
 
-
-class GPSValidateResponseSchema(BaseModel):
+class GPSValidateResponseSchema(GreenLangBase):
     """Response for GPS coordinate validation.
 
     Attributes:
@@ -1007,8 +966,7 @@ class GPSValidateResponseSchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
 
-
-class DistanceRequestSchema(BaseModel):
+class DistanceRequestSchema(GreenLangBase):
     """Request to calculate distance between two GPS points.
 
     Attributes:
@@ -1029,8 +987,7 @@ class DistanceRequestSchema(BaseModel):
         ..., ge=-180.0, le=180.0, description="Second longitude"
     )
 
-
-class DistanceResponseSchema(BaseModel):
+class DistanceResponseSchema(GreenLangBase):
     """Response for distance calculation.
 
     Attributes:
@@ -1053,13 +1010,11 @@ class DistanceResponseSchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
 
-
 # =============================================================================
 # Photo Schemas
 # =============================================================================
 
-
-class PhotoUploadSchema(BaseModel):
+class PhotoUploadSchema(GreenLangBase):
     """Request to record photo capture metadata.
 
     Attributes:
@@ -1171,8 +1126,7 @@ class PhotoUploadSchema(BaseModel):
         default_factory=dict, description="Additional photo metadata",
     )
 
-
-class PhotoResponseSchema(BaseModel):
+class PhotoResponseSchema(GreenLangBase):
     """Response for photo capture operations.
 
     Attributes:
@@ -1218,11 +1172,10 @@ class PhotoResponseSchema(BaseModel):
     )
     message: str = Field(default="", description="Status message")
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation timestamp"
+        default_factory=utcnow, description="Creation timestamp"
     )
 
-
-class PhotoListSchema(BaseModel):
+class PhotoListSchema(GreenLangBase):
     """Response listing photos with pagination.
 
     Attributes:
@@ -1241,8 +1194,7 @@ class PhotoListSchema(BaseModel):
         default=0.0, ge=0.0, description="Query duration in ms"
     )
 
-
-class PhotoAnnotationSchema(BaseModel):
+class PhotoAnnotationSchema(GreenLangBase):
     """Request to add an annotation to a photo.
 
     Attributes:
@@ -1261,8 +1213,7 @@ class PhotoAnnotationSchema(BaseModel):
         description="Operator adding the annotation",
     )
 
-
-class GeotagValidationSchema(BaseModel):
+class GeotagValidationSchema(GreenLangBase):
     """Request to validate photo geotag proximity.
 
     Attributes:
@@ -1292,8 +1243,7 @@ class GeotagValidationSchema(BaseModel):
         description="Maximum acceptable distance in meters",
     )
 
-
-class GeotagValidationResponseSchema(BaseModel):
+class GeotagValidationResponseSchema(GreenLangBase):
     """Response for geotag validation.
 
     Attributes:
@@ -1316,13 +1266,11 @@ class GeotagValidationResponseSchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
 
-
 # =============================================================================
 # Sync Schemas
 # =============================================================================
 
-
-class SyncTriggerSchema(BaseModel):
+class SyncTriggerSchema(GreenLangBase):
     """Request to trigger a sync session.
 
     Attributes:
@@ -1358,8 +1306,7 @@ class SyncTriggerSchema(BaseModel):
         None, description="Filter item types (form, gps, photo, signature, package)",
     )
 
-
-class SyncStatusResponseSchema(BaseModel):
+class SyncStatusResponseSchema(GreenLangBase):
     """Response for sync status query.
 
     Attributes:
@@ -1406,8 +1353,7 @@ class SyncStatusResponseSchema(BaseModel):
     )
     message: str = Field(default="", description="Status message")
 
-
-class SyncQueueItemSchema(BaseModel):
+class SyncQueueItemSchema(GreenLangBase):
     """Sync queue item representation.
 
     Attributes:
@@ -1437,11 +1383,10 @@ class SyncQueueItemSchema(BaseModel):
     )
     error_message: Optional[str] = Field(None, description="Last error")
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Created at"
+        default_factory=utcnow, description="Created at"
     )
 
-
-class ConflictListSchema(BaseModel):
+class ConflictListSchema(GreenLangBase):
     """Response listing unresolved sync conflicts.
 
     Attributes:
@@ -1460,8 +1405,7 @@ class ConflictListSchema(BaseModel):
         default=0.0, ge=0.0, description="Query duration in ms"
     )
 
-
-class ConflictResolutionRequestSchema(BaseModel):
+class ConflictResolutionRequestSchema(GreenLangBase):
     """Request to resolve a sync conflict.
 
     Attributes:
@@ -1487,8 +1431,7 @@ class ConflictResolutionRequestSchema(BaseModel):
         None, max_length=2000, description="Resolution reason",
     )
 
-
-class ConflictResolutionResponseSchema(BaseModel):
+class ConflictResolutionResponseSchema(GreenLangBase):
     """Response for conflict resolution.
 
     Attributes:
@@ -1511,8 +1454,7 @@ class ConflictResolutionResponseSchema(BaseModel):
     )
     message: str = Field(default="", description="Status message")
 
-
-class SyncHistorySchema(BaseModel):
+class SyncHistorySchema(GreenLangBase):
     """Response for sync session history.
 
     Attributes:
@@ -1531,13 +1473,11 @@ class SyncHistorySchema(BaseModel):
         default=0.0, ge=0.0, description="Query duration in ms"
     )
 
-
 # =============================================================================
 # Template Schemas
 # =============================================================================
 
-
-class TemplateCreateSchema(BaseModel):
+class TemplateCreateSchema(GreenLangBase):
     """Request to create a form template.
 
     Attributes:
@@ -1616,8 +1556,7 @@ class TemplateCreateSchema(BaseModel):
         default_factory=dict, description="Additional template metadata",
     )
 
-
-class TemplateUpdateSchema(BaseModel):
+class TemplateUpdateSchema(GreenLangBase):
     """Request to update a draft form template.
 
     Attributes:
@@ -1655,8 +1594,7 @@ class TemplateUpdateSchema(BaseModel):
         None, description="Updated metadata",
     )
 
-
-class TemplateResponseSchema(BaseModel):
+class TemplateResponseSchema(GreenLangBase):
     """Response for template operations.
 
     Attributes:
@@ -1717,14 +1655,13 @@ class TemplateResponseSchema(BaseModel):
     )
     message: str = Field(default="", description="Status message")
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation timestamp"
+        default_factory=utcnow, description="Creation timestamp"
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow, description="Last update timestamp"
+        default_factory=utcnow, description="Last update timestamp"
     )
 
-
-class TemplateListSchema(BaseModel):
+class TemplateListSchema(GreenLangBase):
     """Response listing templates with pagination.
 
     Attributes:
@@ -1743,8 +1680,7 @@ class TemplateListSchema(BaseModel):
         default=0.0, ge=0.0, description="Query duration in ms"
     )
 
-
-class TemplateRenderSchema(BaseModel):
+class TemplateRenderSchema(GreenLangBase):
     """Request to render a template for a specific language.
 
     Attributes:
@@ -1762,8 +1698,7 @@ class TemplateRenderSchema(BaseModel):
         default=True, description="Include JSON schema in response",
     )
 
-
-class TemplateRenderResponseSchema(BaseModel):
+class TemplateRenderResponseSchema(GreenLangBase):
     """Response for template rendering.
 
     Attributes:
@@ -1788,13 +1723,11 @@ class TemplateRenderResponseSchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
 
-
 # =============================================================================
 # Signature Schemas
 # =============================================================================
 
-
-class SignatureCreateSchema(BaseModel):
+class SignatureCreateSchema(GreenLangBase):
     """Request to create a digital signature.
 
     Attributes:
@@ -1865,8 +1798,7 @@ class SignatureCreateSchema(BaseModel):
         default_factory=dict, description="Additional signature metadata",
     )
 
-
-class SignatureResponseSchema(BaseModel):
+class SignatureResponseSchema(GreenLangBase):
     """Response for signature operations.
 
     Attributes:
@@ -1906,11 +1838,10 @@ class SignatureResponseSchema(BaseModel):
     )
     message: str = Field(default="", description="Status message")
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation timestamp"
+        default_factory=utcnow, description="Creation timestamp"
     )
 
-
-class SignatureVerifySchema(BaseModel):
+class SignatureVerifySchema(GreenLangBase):
     """Response for signature verification.
 
     Attributes:
@@ -1937,8 +1868,7 @@ class SignatureVerifySchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
 
-
-class CustodyTransferSchema(BaseModel):
+class CustodyTransferSchema(GreenLangBase):
     """Request to create a custody transfer signature.
 
     Attributes:
@@ -1993,8 +1923,7 @@ class CustodyTransferSchema(BaseModel):
         default_factory=dict, description="Additional transfer metadata",
     )
 
-
-class MultiSigSchema(BaseModel):
+class MultiSigSchema(GreenLangBase):
     """Request to create a multi-signature.
 
     Attributes:
@@ -2025,8 +1954,7 @@ class MultiSigSchema(BaseModel):
         default_factory=dict, description="Additional multi-sig metadata",
     )
 
-
-class SignatureListSchema(BaseModel):
+class SignatureListSchema(GreenLangBase):
     """Response listing signatures with pagination.
 
     Attributes:
@@ -2045,13 +1973,11 @@ class SignatureListSchema(BaseModel):
         default=0.0, ge=0.0, description="Query duration in ms"
     )
 
-
 # =============================================================================
 # Package Schemas
 # =============================================================================
 
-
-class PackageCreateSchema(BaseModel):
+class PackageCreateSchema(GreenLangBase):
     """Request to create a new data package.
 
     Attributes:
@@ -2087,8 +2013,7 @@ class PackageCreateSchema(BaseModel):
         default_factory=dict, description="Additional package metadata",
     )
 
-
-class PackageAddItemSchema(BaseModel):
+class PackageAddItemSchema(GreenLangBase):
     """Request to add an item to a package.
 
     Attributes:
@@ -2106,8 +2031,7 @@ class PackageAddItemSchema(BaseModel):
         None, description="Type of item for explicit specification",
     )
 
-
-class PackageSealSchema(BaseModel):
+class PackageSealSchema(GreenLangBase):
     """Request to seal a data package.
 
     Attributes:
@@ -2124,8 +2048,7 @@ class PackageSealSchema(BaseModel):
         default=True, description="Sign the manifest with ECDSA",
     )
 
-
-class PackageResponseSchema(BaseModel):
+class PackageResponseSchema(GreenLangBase):
     """Response for data package operations.
 
     Attributes:
@@ -2190,14 +2113,13 @@ class PackageResponseSchema(BaseModel):
     )
     message: str = Field(default="", description="Status message")
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation timestamp"
+        default_factory=utcnow, description="Creation timestamp"
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow, description="Last update timestamp"
+        default_factory=utcnow, description="Last update timestamp"
     )
 
-
-class PackageExportSchema(BaseModel):
+class PackageExportSchema(GreenLangBase):
     """Response for package export/download.
 
     Attributes:
@@ -2228,8 +2150,7 @@ class PackageExportSchema(BaseModel):
         default="application/zip", description="MIME content type"
     )
 
-
-class ManifestSchema(BaseModel):
+class ManifestSchema(GreenLangBase):
     """Response for package manifest.
 
     Attributes:
@@ -2264,8 +2185,7 @@ class ManifestSchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
 
-
-class PackageListSchema(BaseModel):
+class PackageListSchema(GreenLangBase):
     """Response listing packages with pagination.
 
     Attributes:
@@ -2284,8 +2204,7 @@ class PackageListSchema(BaseModel):
         default=0.0, ge=0.0, description="Query duration in ms"
     )
 
-
-class PackageValidateSchema(BaseModel):
+class PackageValidateSchema(GreenLangBase):
     """Response for sealed package validation.
 
     Attributes:
@@ -2316,13 +2235,11 @@ class PackageValidateSchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
 
-
 # =============================================================================
 # Device Schemas
 # =============================================================================
 
-
-class DeviceRegisterSchema(BaseModel):
+class DeviceRegisterSchema(GreenLangBase):
     """Request to register a new device in the fleet.
 
     Attributes:
@@ -2375,8 +2292,7 @@ class DeviceRegisterSchema(BaseModel):
         default_factory=dict, description="Additional device metadata",
     )
 
-
-class DeviceUpdateSchema(BaseModel):
+class DeviceUpdateSchema(GreenLangBase):
     """Request to update a device registration.
 
     Attributes:
@@ -2401,8 +2317,7 @@ class DeviceUpdateSchema(BaseModel):
         None, description="Updated metadata",
     )
 
-
-class DeviceResponseSchema(BaseModel):
+class DeviceResponseSchema(GreenLangBase):
     """Response for device operations.
 
     Attributes:
@@ -2467,14 +2382,13 @@ class DeviceResponseSchema(BaseModel):
     )
     message: str = Field(default="", description="Status message")
     registered_at: datetime = Field(
-        default_factory=_utcnow, description="Registration timestamp"
+        default_factory=utcnow, description="Registration timestamp"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation timestamp"
+        default_factory=utcnow, description="Creation timestamp"
     )
 
-
-class FleetStatusSchema(BaseModel):
+class FleetStatusSchema(GreenLangBase):
     """Response for fleet dashboard status.
 
     Attributes:
@@ -2529,8 +2443,7 @@ class FleetStatusSchema(BaseModel):
     )
     message: str = Field(default="", description="Status message")
 
-
-class HeartbeatSchema(BaseModel):
+class HeartbeatSchema(GreenLangBase):
     """Request to record a device heartbeat.
 
     Attributes:
@@ -2600,8 +2513,7 @@ class HeartbeatSchema(BaseModel):
         None, description="Device clock timestamp"
     )
 
-
-class TelemetrySchema(BaseModel):
+class TelemetrySchema(GreenLangBase):
     """Request to update device telemetry.
 
     Attributes:
@@ -2652,8 +2564,7 @@ class TelemetrySchema(BaseModel):
         None, description="Device clock timestamp"
     )
 
-
-class CampaignSchema(BaseModel):
+class CampaignSchema(GreenLangBase):
     """Request to create a collection campaign.
 
     Attributes:
@@ -2707,8 +2618,7 @@ class CampaignSchema(BaseModel):
         default_factory=dict, description="Additional campaign metadata"
     )
 
-
-class CampaignResponseSchema(BaseModel):
+class CampaignResponseSchema(GreenLangBase):
     """Response for campaign operations.
 
     Attributes:
@@ -2758,11 +2668,10 @@ class CampaignResponseSchema(BaseModel):
     )
     message: str = Field(default="", description="Status message")
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation timestamp"
+        default_factory=utcnow, description="Creation timestamp"
     )
 
-
-class DeviceListSchema(BaseModel):
+class DeviceListSchema(GreenLangBase):
     """Response listing devices with pagination.
 
     Attributes:
@@ -2780,7 +2689,6 @@ class DeviceListSchema(BaseModel):
     processing_time_ms: float = Field(
         default=0.0, ge=0.0, description="Query duration in ms"
     )
-
 
 # =============================================================================
 # Public API

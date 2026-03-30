@@ -57,25 +57,18 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import (
-    BaseModel,
-    ConfigDict,
     Field,
     field_validator,
     model_validator,
 )
 
 from greenlang.agents.data.eudr_traceability.models import EUDRCommodity
-
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ReportFormat
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -118,11 +111,9 @@ WGS84_INV_FLATTENING: float = 298.257223563
 #: WGS84 flattening.
 WGS84_FLATTENING: float = 1.0 / WGS84_INV_FLATTENING
 
-
 # =============================================================================
 # Enumerations
 # =============================================================================
-
 
 class CoordinateFormat(str, Enum):
     """Supported GPS coordinate input formats.
@@ -149,7 +140,6 @@ class CoordinateFormat(str, Enum):
     SIGNED_DD = "signed_dd"
     DD_SUFFIX = "dd_suffix"
     UNKNOWN = "unknown"
-
 
 class GeodeticDatum(str, Enum):
     """Geodetic reference datums supported for coordinate transformation.
@@ -237,7 +227,6 @@ class GeodeticDatum(str, Enum):
     HARTEBEESTHOEK94 = "hartebeesthoek94"
     UNKNOWN = "unknown"
 
-
 class PrecisionLevel(str, Enum):
     """Classification of coordinate precision based on ground resolution.
 
@@ -261,7 +250,6 @@ class PrecisionLevel(str, Enum):
     MODERATE = "moderate"
     LOW = "low"
     INADEQUATE = "inadequate"
-
 
 class ValidationErrorType(str, Enum):
     """Classification of coordinate validation errors.
@@ -307,7 +295,6 @@ class ValidationErrorType(str, Enum):
     ARTIFICIALLY_ROUNDED = "artificially_rounded"
     FORMAT_ERROR = "format_error"
 
-
 class PlausibilityCheckResult(str, Enum):
     """Classification of spatial plausibility check outcomes.
 
@@ -341,7 +328,6 @@ class PlausibilityCheckResult(str, Enum):
     URBAN_AREA = "urban_area"
     PROTECTED_AREA = "protected_area"
 
-
 class AccuracyTier(str, Enum):
     """Accuracy tier classification based on composite quality score.
 
@@ -362,7 +348,6 @@ class AccuracyTier(str, Enum):
     SILVER = "silver"
     BRONZE = "bronze"
     UNVERIFIED = "unverified"
-
 
 class CorrectionType(str, Enum):
     """Classification of auto-correction actions for coordinate errors.
@@ -389,22 +374,6 @@ class CorrectionType(str, Enum):
     PRECISION_ENHANCE = "precision_enhance"
     NO_CORRECTION = "no_correction"
 
-
-class ReportFormat(str, Enum):
-    """Supported output formats for compliance reports.
-
-    JSON: Machine-readable JSON format for API consumers.
-    PDF: Human-readable PDF format for regulatory submission.
-    CSV: Tabular CSV format for spreadsheet analysis.
-    EUDR_XML: EU Information System XML format per Article 33.
-    """
-
-    JSON = "json"
-    PDF = "pdf"
-    CSV = "csv"
-    EUDR_XML = "eudr_xml"
-
-
 class ComplianceStatus(str, Enum):
     """EUDR compliance status for a validated coordinate.
 
@@ -422,7 +391,6 @@ class ComplianceStatus(str, Enum):
     NON_COMPLIANT = "non_compliant"
     NEEDS_REVIEW = "needs_review"
     INSUFFICIENT_DATA = "insufficient_data"
-
 
 class SourceType(str, Enum):
     """Classification of coordinate data source for quality weighting.
@@ -456,7 +424,6 @@ class SourceType(str, Enum):
     GOVERNMENT_REGISTRY = "government_registry"
     UNKNOWN = "unknown"
 
-
 class LandUseContext(str, Enum):
     """Land use classification at the coordinate location.
 
@@ -482,7 +449,6 @@ class LandUseContext(str, Enum):
     WETLAND = "wetland"
     UNKNOWN = "unknown"
 
-
 class BatchStatus(str, Enum):
     """Processing status for a batch coordinate validation job.
 
@@ -498,7 +464,6 @@ class BatchStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     CANCELLED = "cancelled"
-
 
 class ElevationSource(str, Enum):
     """Source of elevation data used for plausibility checking.
@@ -517,7 +482,6 @@ class ElevationSource(str, Enum):
     MANUAL = "manual"
     ESTIMATED = "estimated"
 
-
 class HemisphereIndicator(str, Enum):
     """Cardinal hemisphere indicator for DMS/DDM coordinate formats.
 
@@ -532,13 +496,11 @@ class HemisphereIndicator(str, Enum):
     EAST = "E"
     WEST = "W"
 
-
 # =============================================================================
 # Core Data Models
 # =============================================================================
 
-
-class RawCoordinate(BaseModel):
+class RawCoordinate(GreenLangBase):
     """A raw, unparsed GPS coordinate input for validation.
 
     Represents the original coordinate data as received from any
@@ -603,8 +565,7 @@ class RawCoordinate(BaseModel):
             )
         return v
 
-
-class ParsedCoordinate(BaseModel):
+class ParsedCoordinate(GreenLangBase):
     """A coordinate parsed from its raw format into numeric values.
 
     Contains the extracted latitude and longitude in decimal degrees,
@@ -659,8 +620,7 @@ class ParsedCoordinate(BaseModel):
         description="Warnings generated during parsing",
     )
 
-
-class NormalizedCoordinate(BaseModel):
+class NormalizedCoordinate(GreenLangBase):
     """A coordinate normalized to WGS84 decimal degrees.
 
     Contains the final latitude and longitude values after format
@@ -730,8 +690,7 @@ class NormalizedCoordinate(BaseModel):
         description="Displacement from datum transformation in meters",
     )
 
-
-class CoordinateValidationError(BaseModel):
+class CoordinateValidationError(GreenLangBase):
     """A single error or issue detected during coordinate validation.
 
     Represents one specific problem found with a GPS coordinate,
@@ -793,8 +752,7 @@ class CoordinateValidationError(BaseModel):
             )
         return v
 
-
-class ValidationResult(BaseModel):
+class ValidationResult(GreenLangBase):
     """Complete validation result for a single coordinate.
 
     Aggregates all validation checks (range, format, precision,
@@ -838,8 +796,7 @@ class ValidationResult(BaseModel):
         description="SHA-256 hash for audit trail",
     )
 
-
-class PrecisionResult(BaseModel):
+class PrecisionResult(GreenLangBase):
     """Result of coordinate precision analysis.
 
     Provides detailed assessment of coordinate precision including
@@ -899,8 +856,7 @@ class PrecisionResult(BaseModel):
         description="Whether coordinate appears artificially rounded",
     )
 
-
-class DatumTransformResult(BaseModel):
+class DatumTransformResult(GreenLangBase):
     """Result of a geodetic datum transformation.
 
     Contains the transformed coordinate, transformation parameters used,
@@ -964,13 +920,11 @@ class DatumTransformResult(BaseModel):
         description="Transformation parameters applied",
     )
 
-
 # =============================================================================
 # Result Models
 # =============================================================================
 
-
-class PlausibilityResult(BaseModel):
+class PlausibilityResult(GreenLangBase):
     """Result of spatial plausibility checking for a coordinate.
 
     Contains the outcomes of all plausibility checks including
@@ -1034,8 +988,7 @@ class PlausibilityResult(BaseModel):
         description="Additional plausibility check details",
     )
 
-
-class ReverseGeocodeResult(BaseModel):
+class ReverseGeocodeResult(GreenLangBase):
     """Result of reverse geocoding a coordinate to a location.
 
     Contains geographic context information including country,
@@ -1094,8 +1047,7 @@ class ReverseGeocodeResult(BaseModel):
         description="Source of elevation data",
     )
 
-
-class AccuracyScore(BaseModel):
+class AccuracyScore(GreenLangBase):
     """Composite GPS coordinate accuracy score.
 
     Provides a weighted composite score from 0-100 based on four
@@ -1160,8 +1112,7 @@ class AccuracyScore(BaseModel):
         description="Scoring rationale per component",
     )
 
-
-class ComplianceCertificate(BaseModel):
+class ComplianceCertificate(GreenLangBase):
     """EUDR compliance certificate for a validated GPS coordinate.
 
     Represents a formal certification that a GPS coordinate meets
@@ -1204,7 +1155,7 @@ class ComplianceCertificate(BaseModel):
         description="Full validation result details",
     )
     issued_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when certificate was issued",
     )
     valid_until: Optional[datetime] = Field(
@@ -1216,13 +1167,11 @@ class ComplianceCertificate(BaseModel):
         description="SHA-256 hash for tamper detection",
     )
 
-
 # =============================================================================
 # Request Models
 # =============================================================================
 
-
-class ParseCoordinateRequest(BaseModel):
+class ParseCoordinateRequest(GreenLangBase):
     """Request body for parsing a raw coordinate string.
 
     Attributes:
@@ -1230,9 +1179,6 @@ class ParseCoordinateRequest(BaseModel):
         format_hint: Optional format hint to guide parsing.
         datum_hint: Optional datum hint for the input coordinate.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     raw_input: str = Field(
         ...,
         min_length=1,
@@ -1248,8 +1194,7 @@ class ParseCoordinateRequest(BaseModel):
         description="Optional datum hint",
     )
 
-
-class ValidateCoordinateRequest(BaseModel):
+class ValidateCoordinateRequest(GreenLangBase):
     """Request body for validating a single coordinate.
 
     Attributes:
@@ -1258,9 +1203,6 @@ class ValidateCoordinateRequest(BaseModel):
         correction_confidence_threshold: Minimum confidence for
             auto-correction (0.0-1.0).
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     raw_coordinate: RawCoordinate = Field(
         ...,
         description="Raw coordinate input to validate",
@@ -1276,8 +1218,7 @@ class ValidateCoordinateRequest(BaseModel):
         description="Minimum confidence for auto-correction",
     )
 
-
-class TransformDatumRequest(BaseModel):
+class TransformDatumRequest(GreenLangBase):
     """Request body for transforming a coordinate to a different datum.
 
     Attributes:
@@ -1287,9 +1228,6 @@ class TransformDatumRequest(BaseModel):
         target_datum: Target geodetic datum.
         method: Transformation method preference.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     latitude: float = Field(
         ...,
         description="Latitude in source datum",
@@ -1323,8 +1261,7 @@ class TransformDatumRequest(BaseModel):
             )
         return v
 
-
-class AnalyzePrecisionRequest(BaseModel):
+class AnalyzePrecisionRequest(GreenLangBase):
     """Request body for analyzing coordinate precision.
 
     Attributes:
@@ -1332,9 +1269,6 @@ class AnalyzePrecisionRequest(BaseModel):
         longitude: Longitude value to analyze.
         original_format: Original coordinate format string.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     latitude: float = Field(
         ...,
         description="Latitude value to analyze",
@@ -1348,8 +1282,7 @@ class AnalyzePrecisionRequest(BaseModel):
         description="Original coordinate format string",
     )
 
-
-class CheckPlausibilityRequest(BaseModel):
+class CheckPlausibilityRequest(GreenLangBase):
     """Request body for checking spatial plausibility.
 
     Attributes:
@@ -1362,9 +1295,6 @@ class CheckPlausibilityRequest(BaseModel):
         enable_commodity_check: Whether to check commodity plausibility.
         enable_elevation_check: Whether to check elevation plausibility.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     latitude: float = Field(
         ...,
         ge=-90.0,
@@ -1418,8 +1348,7 @@ class CheckPlausibilityRequest(BaseModel):
             )
         return v
 
-
-class ReverseGeocodeRequest(BaseModel):
+class ReverseGeocodeRequest(GreenLangBase):
     """Request body for reverse geocoding a coordinate.
 
     Attributes:
@@ -1428,9 +1357,6 @@ class ReverseGeocodeRequest(BaseModel):
         include_elevation: Whether to include elevation data.
         include_land_use: Whether to include land use classification.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     latitude: float = Field(
         ...,
         ge=-90.0,
@@ -1452,8 +1378,7 @@ class ReverseGeocodeRequest(BaseModel):
         description="Whether to include land use classification",
     )
 
-
-class AssessAccuracyRequest(BaseModel):
+class AssessAccuracyRequest(GreenLangBase):
     """Request body for assessing GPS coordinate accuracy.
 
     Attributes:
@@ -1463,9 +1388,6 @@ class AssessAccuracyRequest(BaseModel):
         source_type: How the coordinate was originally captured.
         weights: Optional custom quality dimension weights.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     coordinate: NormalizedCoordinate = Field(
         ...,
         description="Normalized coordinate to assess",
@@ -1505,8 +1427,7 @@ class AssessAccuracyRequest(BaseModel):
                 )
         return self
 
-
-class GenerateReportRequest(BaseModel):
+class GenerateReportRequest(GreenLangBase):
     """Request body for generating a GPS validation compliance report.
 
     Attributes:
@@ -1517,9 +1438,6 @@ class GenerateReportRequest(BaseModel):
         include_details: Whether to include per-coordinate details.
         include_certificates: Whether to include compliance certificates.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     operator_id: str = Field(
         ...,
         min_length=1,
@@ -1569,13 +1487,11 @@ class GenerateReportRequest(BaseModel):
             )
         return v
 
-
 # =============================================================================
 # Response Models
 # =============================================================================
 
-
-class ParseCoordinateResponse(BaseModel):
+class ParseCoordinateResponse(GreenLangBase):
     """Response for a coordinate parsing operation.
 
     Attributes:
@@ -1610,8 +1526,7 @@ class ParseCoordinateResponse(BaseModel):
         description="SHA-256 hash for audit trail",
     )
 
-
-class ValidateCoordinateResponse(BaseModel):
+class ValidateCoordinateResponse(GreenLangBase):
     """Response for a coordinate validation operation.
 
     Attributes:
@@ -1646,8 +1561,7 @@ class ValidateCoordinateResponse(BaseModel):
         description="SHA-256 hash for audit trail",
     )
 
-
-class TransformDatumResponse(BaseModel):
+class TransformDatumResponse(GreenLangBase):
     """Response for a datum transformation operation.
 
     Attributes:
@@ -1682,8 +1596,7 @@ class TransformDatumResponse(BaseModel):
         description="SHA-256 hash for audit trail",
     )
 
-
-class AnalyzePrecisionResponse(BaseModel):
+class AnalyzePrecisionResponse(GreenLangBase):
     """Response for a precision analysis operation.
 
     Attributes:
@@ -1708,8 +1621,7 @@ class AnalyzePrecisionResponse(BaseModel):
         description="SHA-256 hash for audit trail",
     )
 
-
-class CheckPlausibilityResponse(BaseModel):
+class CheckPlausibilityResponse(GreenLangBase):
     """Response for a plausibility check operation.
 
     Attributes:
@@ -1739,8 +1651,7 @@ class CheckPlausibilityResponse(BaseModel):
         description="SHA-256 hash for audit trail",
     )
 
-
-class ReverseGeocodeResponse(BaseModel):
+class ReverseGeocodeResponse(GreenLangBase):
     """Response for a reverse geocoding operation.
 
     Attributes:
@@ -1775,8 +1686,7 @@ class ReverseGeocodeResponse(BaseModel):
         description="SHA-256 hash for audit trail",
     )
 
-
-class AssessAccuracyResponse(BaseModel):
+class AssessAccuracyResponse(GreenLangBase):
     """Response for an accuracy assessment operation.
 
     Attributes:
@@ -1806,8 +1716,7 @@ class AssessAccuracyResponse(BaseModel):
         description="SHA-256 hash for audit trail",
     )
 
-
-class BatchValidationResult(BaseModel):
+class BatchValidationResult(GreenLangBase):
     """Complete result of a batch coordinate validation job.
 
     Provides aggregate statistics and individual coordinate validation
@@ -1873,7 +1782,7 @@ class BatchValidationResult(BaseModel):
         description="Aggregate summary statistics",
     )
     started_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when batch started",
     )
     completed_at: Optional[datetime] = Field(
@@ -1889,7 +1798,6 @@ class BatchValidationResult(BaseModel):
         default="",
         description="SHA-256 hash of the complete batch result",
     )
-
 
 # =============================================================================
 # Public API

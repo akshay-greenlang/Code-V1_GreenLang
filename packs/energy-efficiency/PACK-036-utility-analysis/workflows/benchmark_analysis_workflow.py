@@ -51,20 +51,15 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "36.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC timestamp with zero microseconds."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -81,11 +76,9 @@ def _compute_hash(data: Any) -> str:
         json.dumps(s, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -95,7 +88,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "pending"
@@ -103,7 +95,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class BuildingType(str, Enum):
     """Building type classification."""
@@ -120,14 +111,12 @@ class BuildingType(str, Enum):
     DATA_CENTRE = "data_centre"
     MIXED_USE = "mixed_use"
 
-
 class PerformanceLevel(str, Enum):
     """Benchmark performance level classification."""
     TOP_QUARTILE = "top_quartile"
     ABOVE_MEDIAN = "above_median"
     BELOW_MEDIAN = "below_median"
     BOTTOM_QUARTILE = "bottom_quartile"
-
 
 # =============================================================================
 # REFERENCE DATA (Zero-Hallucination)
@@ -170,11 +159,9 @@ PEER_STD_DEV_FRACTION: Dict[str, float] = {
     "data_centre": 0.40, "mixed_use": 0.35, "default": 0.35,
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -186,7 +173,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class BenchmarkComparison(BaseModel):
     """A benchmark comparison result.
@@ -213,7 +199,6 @@ class BenchmarkComparison(BaseModel):
     percentile: float = Field(default=50.0)
     performance_level: str = Field(default="")
     unit: str = Field(default="")
-
 
 class BenchmarkAnalysisInput(BaseModel):
     """Input data model for BenchmarkAnalysisWorkflow.
@@ -253,7 +238,6 @@ class BenchmarkAnalysisInput(BaseModel):
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
 
-
 class BenchmarkAnalysisResult(BaseModel):
     """Complete result from benchmark analysis workflow."""
     workflow_id: str = Field(..., description="Unique execution ID")
@@ -270,11 +254,9 @@ class BenchmarkAnalysisResult(BaseModel):
     duration_seconds: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class BenchmarkAnalysisWorkflow:
     """
@@ -748,7 +730,7 @@ class BenchmarkAnalysisWorkflow:
                     })
 
         outputs["report_id"] = report_id
-        outputs["generated_at"] = _utcnow().isoformat()
+        outputs["generated_at"] = utcnow().isoformat()
         outputs["facility_id"] = input_data.facility_id
         outputs["building_type"] = input_data.building_type.value
         outputs["metrics_compared"] = len(self._comparisons)

@@ -45,29 +45,23 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 def _compute_hash(content: str) -> str:
     """Compute SHA-256 hash of string content."""
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -80,14 +74,12 @@ class OutputFormat(str, Enum):
     PDF = "pdf"
     JSON = "json"
 
-
 class QueryPriority(str, Enum):
     """Query priority classification."""
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 class QueryStatus(str, Enum):
     """Query status."""
@@ -97,7 +89,6 @@ class QueryStatus(str, Enum):
     CLOSED = "closed"
     OVERDUE = "overdue"
 
-
 class QueryType(str, Enum):
     """Query type classification."""
     INFORMATION_REQUEST = "information_request"
@@ -105,14 +96,12 @@ class QueryType(str, Enum):
     FINDING = "finding"
     RECOMMENDATION = "recommendation"
 
-
 class FindingSeverity(str, Enum):
     """Finding severity classification."""
     MATERIAL = "material"
     SIGNIFICANT = "significant"
     MINOR = "minor"
     OBSERVATION = "observation"
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Input Models
@@ -139,7 +128,6 @@ class QueryEntry(BaseModel):
     evidence_refs: List[str] = Field(default_factory=list, description="Evidence references")
     notes: str = Field("", description="Additional notes")
 
-
 class SLAComplianceSummary(BaseModel):
     """SLA compliance summary."""
     total_queries: int = Field(0, ge=0, description="Total queries raised")
@@ -148,7 +136,6 @@ class SLAComplianceSummary(BaseModel):
     pending: int = Field(0, ge=0, description="Pending (not yet due)")
     sla_compliance_pct: float = Field(0.0, ge=0, le=100, description="SLA compliance %")
     average_response_days: float = Field(0.0, ge=0, description="Avg days to respond")
-
 
 class EscalationEntry(BaseModel):
     """Single escalation event."""
@@ -159,7 +146,6 @@ class EscalationEntry(BaseModel):
     reason: str = Field("", description="Escalation reason")
     resolution: str = Field("", description="Escalation resolution")
     resolved_date: Optional[str] = Field(None, description="Resolution date (ISO)")
-
 
 class QueryRegisterInput(BaseModel):
     """Complete input model for VerifierQueryRegister."""
@@ -178,7 +164,6 @@ class QueryRegisterInput(BaseModel):
         default_factory=list, description="Escalation history"
     )
 
-
 # ---------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------
@@ -186,7 +171,6 @@ class QueryRegisterInput(BaseModel):
 def _priority_label(priority: str) -> str:
     """Return display label for priority."""
     return priority.upper()
-
 
 def _priority_css(priority: str) -> str:
     """Return CSS class for priority."""
@@ -198,11 +182,9 @@ def _priority_css(priority: str) -> str:
     }
     return mapping.get(priority, "pri-medium")
 
-
 def _status_label(status: str) -> str:
     """Return display label for status."""
     return status.replace("_", " ").title()
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -261,7 +243,7 @@ class VerifierQueryRegister:
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render query register as Markdown."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_md(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -269,7 +251,7 @@ class VerifierQueryRegister:
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render query register as HTML."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_html(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -277,7 +259,7 @@ class VerifierQueryRegister:
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render query register as JSON dict."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_json(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -321,7 +303,7 @@ class VerifierQueryRegister:
             f"# Verifier Query Register - {company}\n\n"
             f"**Reporting Period:** {period} | "
             f"**Verifier:** {verifier} | "
-            f"**Report Date:** {_utcnow().strftime('%Y-%m-%d')}\n\n"
+            f"**Report Date:** {utcnow().strftime('%Y-%m-%d')}\n\n"
             "---"
         )
 
@@ -529,7 +511,7 @@ class VerifierQueryRegister:
             f"<h1>Verifier Query Register &mdash; {company}</h1>\n"
             f"<p><strong>Reporting Period:</strong> {period} | "
             f"<strong>Verifier:</strong> {verifier} | "
-            f"<strong>Report Date:</strong> {_utcnow().strftime('%Y-%m-%d')}</p>\n"
+            f"<strong>Report Date:</strong> {utcnow().strftime('%Y-%m-%d')}</p>\n"
             "<hr>\n</div>"
         )
 

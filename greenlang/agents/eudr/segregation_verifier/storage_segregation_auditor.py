@@ -58,6 +58,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -70,22 +72,14 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a unique identifier using UUID4."""
     return str(uuid.uuid4())
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -181,11 +175,9 @@ VALID_INCIDENT_TYPES: Tuple[str, ...] = (
     "spill", "overflow", "misplacement", "barrier_breach",
 )
 
-
 # ---------------------------------------------------------------------------
 # Internal Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class ZoneRecord:
@@ -251,7 +243,6 @@ class ZoneRecord:
             "created_at": str(self.created_at) if self.created_at else "",
         }
 
-
 @dataclass
 class StorageEventRecord:
     """Internal record for a storage event.
@@ -293,7 +284,6 @@ class StorageEventRecord:
             "operator_id": self.operator_id,
             "metadata": dict(self.metadata),
         }
-
 
 @dataclass
 class StorageAuditResult:
@@ -349,7 +339,6 @@ class StorageAuditResult:
             "processing_time_ms": self.processing_time_ms,
         }
 
-
 @dataclass
 class ContaminationIncident:
     """Record of a contamination incident at a storage zone.
@@ -398,11 +387,9 @@ class ContaminationIncident:
             "reported_by": self.reported_by,
         }
 
-
 # ---------------------------------------------------------------------------
 # StorageSegregationAuditor
 # ---------------------------------------------------------------------------
-
 
 class StorageSegregationAuditor:
     """Production-grade storage segregation auditing engine for EUDR compliance.
@@ -548,7 +535,7 @@ class StorageSegregationAuditor:
                 f"Zone '{zone_id}' already exists"
             )
 
-        now = _utcnow()
+        now = utcnow()
         zone = ZoneRecord(
             zone_id=zone_id,
             facility_id=facility_id,
@@ -670,7 +657,7 @@ class StorageSegregationAuditor:
                 f"quantity_kg must be >= 0, got {quantity_kg}"
             )
 
-        now = _utcnow()
+        now = utcnow()
         event = StorageEventRecord(
             event_id=_generate_id(),
             zone_id=zone_id,
@@ -842,7 +829,7 @@ class StorageSegregationAuditor:
             + avg_capacity * AUDIT_SCORE_WEIGHTS["capacity_utilization"]
         )
 
-        now = _utcnow()
+        now = utcnow()
         elapsed_ms = (time.monotonic() - start_time) * 1000.0
 
         result = StorageAuditResult(
@@ -1074,7 +1061,7 @@ class StorageSegregationAuditor:
             raise ValueError(f"Zone '{zone_id}' not found")
 
         max_interval = CLEANING_INTERVALS.get(zone.storage_type, 30)
-        now = _utcnow()
+        now = utcnow()
 
         if zone.last_cleaning_date is None:
             return {
@@ -1180,7 +1167,7 @@ class StorageSegregationAuditor:
             zone_details.append(zone_detail)
 
         elapsed_ms = (time.monotonic() - start_time) * 1000.0
-        now = _utcnow()
+        now = utcnow()
 
         result = {
             "facility_id": facility_id,
@@ -1253,7 +1240,7 @@ class StorageSegregationAuditor:
             incident_type, severity, quantity_kg, len(affected_batches),
         )
 
-        now = _utcnow()
+        now = utcnow()
         incident = ContaminationIncident(
             incident_id=_generate_id(),
             zone_id=zone_id,
@@ -1339,7 +1326,7 @@ class StorageSegregationAuditor:
         # Most recent first
         events = sorted(
             events,
-            key=lambda e: e.timestamp or _utcnow(),
+            key=lambda e: e.timestamp or utcnow(),
             reverse=True,
         )
 
@@ -1366,7 +1353,7 @@ class StorageSegregationAuditor:
             if inc.facility_id == facility_id
         ]
         incidents.sort(
-            key=lambda i: i.timestamp or _utcnow(),
+            key=lambda i: i.timestamp or utcnow(),
             reverse=True,
         )
         return incidents
@@ -1566,7 +1553,6 @@ class StorageSegregationAuditor:
             f"facilities={self.facility_count}, "
             f"incidents={self.incident_count})"
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

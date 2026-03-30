@@ -80,26 +80,19 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -117,7 +110,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -126,7 +118,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -138,17 +129,14 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
@@ -156,11 +144,9 @@ def _round3(value: float) -> float:
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ReadinessDimension(str, Enum):
     """Five readiness assessment dimensions.
@@ -177,7 +163,6 @@ class ReadinessDimension(str, Enum):
     PROCESS = "process"
     DATA = "data"
 
-
 class CriterionStatus(str, Enum):
     """Compliance status for a single criterion.
 
@@ -193,7 +178,6 @@ class CriterionStatus(str, Enum):
     NOT_ASSESSED = "not_assessed"
     NOT_APPLICABLE = "not_applicable"
 
-
 class OverallReadiness(str, Enum):
     """Overall submission readiness classification.
 
@@ -207,7 +191,6 @@ class OverallReadiness(str, Enum):
     SIGNIFICANT_GAPS = "significant_gaps"
     NOT_READY = "not_ready"
 
-
 class GapPriority(str, Enum):
     """Priority classification for gap closure actions.
 
@@ -220,7 +203,6 @@ class GapPriority(str, Enum):
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 class EffortLevel(str, Enum):
     """Estimated effort for gap closure.
@@ -237,7 +219,6 @@ class EffortLevel(str, Enum):
     HIGH = "high"
     VERY_HIGH = "very_high"
 
-
 class TargetType(str, Enum):
     """SBTi target type for submission.
 
@@ -248,7 +229,6 @@ class TargetType(str, Enum):
     NEAR_TERM = "near_term"
     LONG_TERM = "long_term"
     BOTH = "both"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- SBTi Criteria Reference (V5.3 + NZ V1.3)
@@ -681,11 +661,9 @@ CRITERIA_DEFINITIONS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class CriterionInput(BaseModel):
     """Input assessment for a single criterion.
@@ -767,7 +745,6 @@ class CriterionInput(BaseModel):
                 f"Must be one of: {sorted(CRITERIA_DEFINITIONS.keys())}"
             )
         return v
-
 
 class SubmissionReadinessInput(BaseModel):
     """Complete submission readiness assessment input.
@@ -877,11 +854,9 @@ class SubmissionReadinessInput(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class CriterionAssessmentResult(BaseModel):
     """Assessment result for a single criterion.
@@ -917,7 +892,6 @@ class CriterionAssessmentResult(BaseModel):
     estimated_weeks: int = Field(default=0)
     recommendations: List[str] = Field(default_factory=list)
 
-
 class DimensionScoreResult(BaseModel):
     """Score result for a readiness dimension.
 
@@ -950,7 +924,6 @@ class DimensionScoreResult(BaseModel):
     blocking_gaps: List[str] = Field(default_factory=list)
     message: str = Field(default="")
 
-
 class TimelineEstimate(BaseModel):
     """Timeline estimation to submission-ready.
 
@@ -978,7 +951,6 @@ class TimelineEstimate(BaseModel):
     days_margin: int = Field(default=0)
     phases: List[Dict[str, Any]] = Field(default_factory=list)
     message: str = Field(default="")
-
 
 class GapClosureAction(BaseModel):
     """A prioritised gap closure action.
@@ -1010,7 +982,6 @@ class GapClosureAction(BaseModel):
     is_blocking: bool = Field(default=False)
     priority_score: Decimal = Field(default=Decimal("0"))
 
-
 class DocumentationChecklistItem(BaseModel):
     """A single documentation checklist item.
 
@@ -1030,7 +1001,6 @@ class DocumentationChecklistItem(BaseModel):
     sbti_reference: str = Field(default="")
     is_required: bool = Field(default=True)
     notes: str = Field(default="")
-
 
 class ComplianceSummary(BaseModel):
     """42-criterion compliance summary.
@@ -1060,7 +1030,6 @@ class ComplianceSummary(BaseModel):
     by_dimension: Dict[str, Dict[str, int]] = Field(default_factory=dict)
     message: str = Field(default="")
 
-
 class SubmissionReadinessResult(BaseModel):
     """Complete submission readiness assessment result.
 
@@ -1087,7 +1056,7 @@ class SubmissionReadinessResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     target_type: str = Field(default=TargetType.NEAR_TERM.value)
     overall_readiness: str = Field(default=OverallReadiness.NOT_READY.value)
@@ -1109,11 +1078,9 @@ class SubmissionReadinessResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class SubmissionReadinessEngine:
     """SBTi target submission readiness assessment engine.
@@ -1910,7 +1877,8 @@ class SubmissionReadinessEngine:
 
         # Estimated ready date
         from datetime import timedelta
-        now = _utcnow()
+
+        now = utcnow()
         ready_date = now + timedelta(weeks=total_est)
         ready_date_str = ready_date.strftime("%Y-%m-%d")
 

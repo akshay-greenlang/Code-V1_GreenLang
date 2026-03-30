@@ -65,6 +65,7 @@ from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from greenlang.agents.eudr.blockchain_integration.config import get_config
+from greenlang.schemas import utcnow
 from greenlang.agents.eudr.blockchain_integration.metrics import (
     record_api_error,
     record_contract_deployed,
@@ -94,12 +95,6 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance.
 
@@ -112,7 +107,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a new UUID4 string identifier.
 
@@ -120,7 +114,6 @@ def _generate_id() -> str:
         UUID4 string.
     """
     return str(uuid.uuid4())
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -295,11 +288,9 @@ _BYTECODE_SIZES: Dict[str, int] = {
     "compliance_check": 3584,
 }
 
-
 # ==========================================================================
 # SmartContractManager
 # ==========================================================================
-
 
 class SmartContractManager:
     """Smart contract lifecycle management engine for EUDR compliance.
@@ -428,7 +419,7 @@ class SmartContractManager:
         self._validate_address(deployer_address)
 
         contract_id = _generate_id()
-        now = _utcnow()
+        now = utcnow()
 
         # Get ABI and compute hash
         abi = self._get_abi(contract_type)
@@ -555,7 +546,7 @@ class SmartContractManager:
                     f"'{contract.status}'"
                 )
 
-            now = _utcnow()
+            now = utcnow()
             contract.status = ContractStatus.DEPLOYED
             contract.deploy_block_number = block_number
             contract.deployed_at = now
@@ -935,7 +926,7 @@ class SmartContractManager:
                 raise ValueError(f"Contract not found: {contract_id}")
 
         subscription_id = _generate_id()
-        now = _utcnow()
+        now = utcnow()
 
         subscription = {
             "subscription_id": subscription_id,
@@ -1381,7 +1372,7 @@ class SmartContractManager:
         Returns:
             Simulated transaction receipt.
         """
-        now = _utcnow()
+        now = utcnow()
         tx_hash = "0x" + _compute_hash({
             "contract_id": contract_id,
             "method": method,
@@ -1474,7 +1465,7 @@ class SmartContractManager:
                     f"'{target}'. Valid: {valid_targets}"
                 )
 
-            now = _utcnow()
+            now = utcnow()
             contract.status = target_status
 
             if hasattr(contract, timestamp_field):
@@ -1557,7 +1548,7 @@ class SmartContractManager:
         Returns:
             Simulated transaction hash string.
         """
-        data = f"{contract_type}:{network}:{deployer_address}:{_utcnow().isoformat()}"
+        data = f"{contract_type}:{network}:{deployer_address}:{utcnow().isoformat()}"
         return "0x" + hashlib.sha256(data.encode("utf-8")).hexdigest()
 
     def _derive_contract_address(
@@ -1626,7 +1617,6 @@ class SmartContractManager:
             self._populate_abi_cache()
 
         logger.info("SmartContractManager state cleared")
-
 
 # ---------------------------------------------------------------------------
 # Public API

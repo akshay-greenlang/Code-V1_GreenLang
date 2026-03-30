@@ -45,6 +45,8 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 __all__ = [
@@ -59,21 +61,13 @@ __all__ = [
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for provenance tracking."""
@@ -86,11 +80,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class WizardStep(str, Enum):
     """The 8 steps of the setup wizard."""
@@ -104,7 +96,6 @@ class WizardStep(str, Enum):
     NOTIFICATION_CONFIG = "notification_config"
     VALIDATION = "validation"
 
-
 class StepStatus(str, Enum):
     """Status of a single wizard step."""
 
@@ -113,7 +104,6 @@ class StepStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class SectorPreset(str, Enum):
     """Available sector presets for configuration."""
@@ -126,7 +116,6 @@ class SectorPreset(str, Enum):
     TECHNOLOGY = "technology"
     CONSTRUCTION = "construction"
     MULTI_SECTOR = "multi_sector"
-
 
 # ---------------------------------------------------------------------------
 # Wizard Step Order
@@ -206,11 +195,9 @@ SECTOR_CLAIM_FOCUS: Dict[SectorPreset, List[str]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class WizardConfig(BaseModel):
     """Configuration for the setup wizard."""
@@ -219,7 +206,6 @@ class WizardConfig(BaseModel):
     enable_sector_detection: bool = Field(default=True)
     allow_skip_steps: bool = Field(default=False)
     enable_provenance: bool = Field(default=True)
-
 
 class StepResult(BaseModel):
     """Result of a single wizard step execution."""
@@ -231,7 +217,6 @@ class StepResult(BaseModel):
     validation_warnings: List[str] = Field(default_factory=list)
     completed_at: Optional[datetime] = Field(None)
     provenance_hash: str = Field(default="")
-
 
 class WizardState(BaseModel):
     """Tracks overall wizard progress."""
@@ -247,15 +232,13 @@ class WizardState(BaseModel):
     is_complete: bool = Field(default=False)
     entity_name: str = Field(default="")
     sector: str = Field(default="")
-    started_at: datetime = Field(default_factory=_utcnow)
+    started_at: datetime = Field(default_factory=utcnow)
     completed_at: Optional[datetime] = Field(None)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # GreenClaimsSetupWizard
 # ---------------------------------------------------------------------------
-
 
 class GreenClaimsSetupWizard:
     """8-step configuration wizard for PACK-018.
@@ -340,7 +323,7 @@ class GreenClaimsSetupWizard:
 
         if next_idx >= len(WIZARD_STEP_ORDER):
             self.state.is_complete = True
-            self.state.completed_at = _utcnow()
+            self.state.completed_at = utcnow()
             if self.config.enable_provenance:
                 self.state.provenance_hash = _compute_hash(self.state)
             return {
@@ -408,7 +391,7 @@ class GreenClaimsSetupWizard:
         Returns:
             Dict with wizard state, step results, and provenance hash.
         """
-        start = _utcnow()
+        start = utcnow()
 
         # Step 1: Entity Profile
         self.run_step(WizardStep.ENTITY_PROFILE, {
@@ -445,7 +428,7 @@ class GreenClaimsSetupWizard:
         # Step 8: Validation
         self.run_step(WizardStep.VALIDATION, {})
 
-        self.state.completed_at = _utcnow()
+        self.state.completed_at = utcnow()
         if self.config.enable_provenance:
             self.state.provenance_hash = _compute_hash(self.state)
 
@@ -617,7 +600,7 @@ class GreenClaimsSetupWizard:
                 step_name: step_result.data_collected
                 for step_name, step_result in self.state.step_results.items()
             },
-            "generated_at": str(_utcnow()),
+            "generated_at": str(utcnow()),
         }
         config["config_hash"] = _compute_hash(config)
         logger.info("SetupWizard configuration generated (hash=%s)", config["config_hash"][:12])
@@ -698,7 +681,7 @@ class GreenClaimsSetupWizard:
         }
         result.validation_errors = errors
         result.validation_warnings = warnings
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         return result
 
     def _step_claim_inventory(self, data: Dict[str, Any]) -> StepResult:
@@ -716,7 +699,7 @@ class GreenClaimsSetupWizard:
                 "claim_id": _new_uuid(),
                 "text": claim.get("text", "") if isinstance(claim, dict) else str(claim),
                 "type": claim.get("type", "unclassified") if isinstance(claim, dict) else "unclassified",
-                "registered_at": str(_utcnow()),
+                "registered_at": str(utcnow()),
             })
 
         result.status = StepStatus.COMPLETED
@@ -725,7 +708,7 @@ class GreenClaimsSetupWizard:
             "claims": registered,
         }
         result.validation_warnings = warnings
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         return result
 
     def _step_evidence_sources(self, data: Dict[str, Any]) -> StepResult:
@@ -752,7 +735,7 @@ class GreenClaimsSetupWizard:
             "sources": configured,
         }
         result.validation_warnings = warnings
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         return result
 
     def _step_label_registry(self, data: Dict[str, Any]) -> StepResult:
@@ -780,7 +763,7 @@ class GreenClaimsSetupWizard:
             "labels": registered,
         }
         result.validation_warnings = warnings
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         return result
 
     def _step_sector_config(self, data: Dict[str, Any]) -> StepResult:
@@ -801,7 +784,7 @@ class GreenClaimsSetupWizard:
             "claim_focus_areas": claim_focus,
             "custom_rules": data.get("custom_rules", []),
         }
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         return result
 
     def _step_verification_setup(self, data: Dict[str, Any]) -> StepResult:
@@ -815,7 +798,7 @@ class GreenClaimsSetupWizard:
             "auto_verify": data.get("auto_verify", False),
             "verification_frequency": data.get("verification_frequency", "annual"),
         }
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         return result
 
     def _step_notification_config(self, data: Dict[str, Any]) -> StepResult:
@@ -831,7 +814,7 @@ class GreenClaimsSetupWizard:
             "alert_on_deadline": data.get("alert_on_deadline", True),
             "digest_frequency": data.get("digest_frequency", "weekly"),
         }
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         return result
 
     def _step_validation(self, data: Dict[str, Any]) -> StepResult:
@@ -857,7 +840,7 @@ class GreenClaimsSetupWizard:
         else:
             result.status = StepStatus.COMPLETED
             self.state.is_complete = True
-            self.state.completed_at = _utcnow()
+            self.state.completed_at = utcnow()
 
         result.data_collected = {
             "steps_completed": completed_count,
@@ -869,7 +852,7 @@ class GreenClaimsSetupWizard:
         }
         result.validation_errors = errors
         result.validation_warnings = warnings
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         return result
 
     # ------------------------------------------------------------------

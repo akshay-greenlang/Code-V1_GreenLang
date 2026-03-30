@@ -48,6 +48,9 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import HealthStatus
+
 logger = logging.getLogger(__name__)
 
 __all__ = [
@@ -65,21 +68,13 @@ _MODULE_VERSION: str = "1.0.0"
 
 PACK_BASE_DIR = Path(__file__).parent.parent
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for provenance tracking."""
@@ -92,20 +87,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
-
-class HealthStatus(str, Enum):
-    """Health check status values."""
-
-    HEALTHY = "healthy"
-    DEGRADED = "degraded"
-    UNHEALTHY = "unhealthy"
-    UNKNOWN = "unknown"
-
 
 class HealthSeverity(str, Enum):
     """Severity of a health issue."""
@@ -113,7 +97,6 @@ class HealthSeverity(str, Enum):
     CRITICAL = "critical"
     WARNING = "warning"
     INFO = "info"
-
 
 class HealthCheckCategory(str, Enum):
     """The 20 health check categories for PACK-018."""
@@ -138,7 +121,6 @@ class HealthCheckCategory(str, Enum):
     CONFIG = "config"
     MANIFEST = "manifest"
     DATABASE = "database"
-
 
 # ---------------------------------------------------------------------------
 # Component Verification Mappings
@@ -167,11 +149,9 @@ BRIDGE_MODULE_MAP: Dict[HealthCheckCategory, str] = {
     HealthCheckCategory.ORCHESTRATOR: "integrations.pack_orchestrator",
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class ComponentHealth(BaseModel):
     """Health result for a single component."""
@@ -182,8 +162,7 @@ class ComponentHealth(BaseModel):
     message: str = Field(default="")
     details: Dict[str, Any] = Field(default_factory=dict)
     check_duration_ms: float = Field(default=0.0)
-    checked_at: datetime = Field(default_factory=_utcnow)
-
+    checked_at: datetime = Field(default_factory=utcnow)
 
 class RemediationSuggestion(BaseModel):
     """Remediation suggestion for a health issue."""
@@ -192,7 +171,6 @@ class RemediationSuggestion(BaseModel):
     severity: HealthSeverity = Field(default=HealthSeverity.WARNING)
     suggestion: str = Field(default="")
     documentation_link: str = Field(default="")
-
 
 class HealthCheckResult(BaseModel):
     """Complete health check result for PACK-018."""
@@ -207,9 +185,8 @@ class HealthCheckResult(BaseModel):
     component_results: List[ComponentHealth] = Field(default_factory=list)
     remediations: List[RemediationSuggestion] = Field(default_factory=list)
     total_duration_ms: float = Field(default=0.0)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class HealthCheckConfig(BaseModel):
     """Configuration for the health check."""
@@ -225,11 +202,9 @@ class HealthCheckConfig(BaseModel):
         description="Skip database connectivity check if DB not available",
     )
 
-
 # ---------------------------------------------------------------------------
 # GreenClaimsHealthCheck
 # ---------------------------------------------------------------------------
-
 
 class GreenClaimsHealthCheck:
     """20-category system health verification for PACK-018.
@@ -410,7 +385,7 @@ class GreenClaimsHealthCheck:
             "hash_algorithm": "SHA-256",
             "documents_verified": 0,
             "documents_failed": 0,
-            "last_check": str(_utcnow()),
+            "last_check": str(utcnow()),
             "provenance_hash": _compute_hash({"integrity_check": True}),
         }
 

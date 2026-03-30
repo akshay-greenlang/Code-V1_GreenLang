@@ -46,23 +46,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "29.0.0"
 _PACK_ID = "PACK-029"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 def _log_mean(a: float, b: float) -> float:
     """Logarithmic mean for LMDI decomposition."""
@@ -72,11 +67,9 @@ def _log_mean(a: float, b: float) -> float:
         return a
     return (a - b) / math.log(a / b)
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -85,7 +78,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
@@ -93,13 +85,11 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class DecompositionMethod(str, Enum):
     LMDI_ADD = "lmdi_additive"
     LMDI_MULT = "lmdi_multiplicative"
     KAYA = "kaya_identity"
     SDA = "structural_decomposition"
-
 
 class VarianceDriverType(str, Enum):
     ACTIVITY = "activity"
@@ -112,18 +102,15 @@ class VarianceDriverType(str, Enum):
     OPERATIONAL = "operational"
     METHODOLOGICAL = "methodological"
 
-
 class FactorClassification(str, Enum):
     INTERNAL = "internal"
     EXTERNAL = "external"
     MIXED = "mixed"
 
-
 class ControlLevel(str, Enum):
     FULLY_CONTROLLABLE = "fully_controllable"
     PARTIALLY_CONTROLLABLE = "partially_controllable"
     UNCONTROLLABLE = "uncontrollable"
-
 
 class InitiativeStatus(str, Enum):
     ON_TRACK = "on_track"
@@ -133,12 +120,10 @@ class InitiativeStatus(str, Enum):
     NOT_STARTED = "not_started"
     COMPLETED = "completed"
 
-
 class RAGStatus(str, Enum):
     RED = "red"
     AMBER = "amber"
     GREEN = "green"
-
 
 # =============================================================================
 # KAYA IDENTITY DECOMPOSITION FACTORS
@@ -249,11 +234,9 @@ ROOT_CAUSE_CATEGORIES: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase_name: str = Field(...)
@@ -267,7 +250,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     dag_node_id: str = Field(default="")
 
-
 class LMDIComponent(BaseModel):
     """A single LMDI decomposition component."""
     component_name: str = Field(default="")
@@ -280,7 +262,6 @@ class LMDIComponent(BaseModel):
     log_mean_weight: float = Field(default=0.0)
     direction: str = Field(default="neutral")
 
-
 class KayaDecomposition(BaseModel):
     """Kaya Identity decomposition result."""
     total_change_tco2e: float = Field(default=0.0)
@@ -290,7 +271,6 @@ class KayaDecomposition(BaseModel):
     carbon_intensity_effect_tco2e: float = Field(default=0.0)
     residual_tco2e: float = Field(default=0.0)
     dominant_factor: str = Field(default="")
-
 
 class RootCause(BaseModel):
     """A single root cause attribution."""
@@ -307,7 +287,6 @@ class RootCause(BaseModel):
     actionable: bool = Field(default=True)
     recommended_action: str = Field(default="")
 
-
 class FactorClassificationResult(BaseModel):
     """Classification of all root causes into internal vs external."""
     internal_total_tco2e: float = Field(default=0.0)
@@ -318,7 +297,6 @@ class FactorClassificationResult(BaseModel):
     mixed_total_pct: float = Field(default=0.0)
     controllable_pct: float = Field(default=0.0)
     classified_causes: List[RootCause] = Field(default_factory=list)
-
 
 class InitiativeEffectiveness(BaseModel):
     """Effectiveness assessment for a single reduction initiative."""
@@ -333,7 +311,6 @@ class InitiativeEffectiveness(BaseModel):
     root_cause_of_variance: str = Field(default="")
     recommendation: str = Field(default="")
 
-
 class InitiativePortfolio(BaseModel):
     """Portfolio-level initiative effectiveness summary."""
     total_planned_reduction_tco2e: float = Field(default=0.0)
@@ -345,7 +322,6 @@ class InitiativePortfolio(BaseModel):
     overperforming_count: int = Field(default=0)
     gap_tco2e: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class VarianceInvestigationReport(BaseModel):
     """Complete variance investigation report."""
@@ -365,7 +341,6 @@ class VarianceInvestigationReport(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class VarianceInvestigationConfig(BaseModel):
     company_name: str = Field(default="")
     entity_id: str = Field(default="")
@@ -377,7 +352,6 @@ class VarianceInvestigationConfig(BaseModel):
     include_scope3: bool = Field(default=True)
     significance_threshold_pct: float = Field(default=2.0, ge=0.0, le=100.0)
     output_formats: List[str] = Field(default_factory=lambda: ["json", "html"])
-
 
 class VarianceInvestigationInput(BaseModel):
     config: VarianceInvestigationConfig = Field(default_factory=VarianceInvestigationConfig)
@@ -401,7 +375,6 @@ class VarianceInvestigationInput(BaseModel):
         description="Structural changes [{type, description, emissions_impact}]",
     )
 
-
 class VarianceInvestigationResult(BaseModel):
     workflow_id: str = Field(...)
     workflow_name: str = Field(default="variance_investigation")
@@ -419,11 +392,9 @@ class VarianceInvestigationResult(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class VarianceInvestigationWorkflow:
     """
@@ -455,7 +426,7 @@ class VarianceInvestigationWorkflow:
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     async def execute(self, input_data: VarianceInvestigationInput) -> VarianceInvestigationResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         self.config = input_data.config
         self._phase_results = []
         overall_status = WorkflowStatus.RUNNING
@@ -492,7 +463,7 @@ class VarianceInvestigationWorkflow:
                 status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
 
         result = VarianceInvestigationResult(
             workflow_id=self.workflow_id,
@@ -518,7 +489,7 @@ class VarianceInvestigationWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_decompose(self, input_data: VarianceInvestigationInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -660,7 +631,7 @@ class VarianceInvestigationWorkflow:
         if self.config.include_kaya:
             outputs["kaya_dominant_factor"] = self._kaya.dominant_factor
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="decompose_variance", phase_number=1,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -674,7 +645,7 @@ class VarianceInvestigationWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_attribute_root_causes(self, input_data: VarianceInvestigationInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -759,7 +730,7 @@ class VarianceInvestigationWorkflow:
             outputs[f"cause_{i+1}_tco2e"] = c.contribution_tco2e
             outputs[f"cause_{i+1}_pct"] = c.contribution_pct
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="attribute_root_causes", phase_number=2,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -773,7 +744,7 @@ class VarianceInvestigationWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_classify_factors(self, input_data: VarianceInvestigationInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         for cause in self._root_causes:
@@ -823,7 +794,7 @@ class VarianceInvestigationWorkflow:
         outputs["controllable_pct"] = round(controllable_pct, 1)
         outputs["actionable_causes"] = sum(1 for c in self._root_causes if c.actionable)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="classify_factors", phase_number=3,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -837,7 +808,7 @@ class VarianceInvestigationWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_quantify_initiatives(self, input_data: VarianceInvestigationInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -909,7 +880,7 @@ class VarianceInvestigationWorkflow:
         outputs["underperforming_count"] = self._initiatives.underperforming_count
         outputs["gap_tco2e"] = round(total_planned - total_actual, 2)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="quantify_initiatives", phase_number=4,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -923,7 +894,7 @@ class VarianceInvestigationWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_variance_report(self, input_data: VarianceInvestigationInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         findings = self._generate_findings()
@@ -950,7 +921,7 @@ class VarianceInvestigationWorkflow:
 
         self._report = VarianceInvestigationReport(
             report_id=f"VIR-{self.workflow_id[:8]}",
-            report_date=_utcnow().strftime("%Y-%m-%d"),
+            report_date=utcnow().strftime("%Y-%m-%d"),
             company_name=self.config.company_name,
             investigation_period=str(self.config.investigation_year),
             total_variance_tco2e=round(self._total_variance, 2),
@@ -974,7 +945,7 @@ class VarianceInvestigationWorkflow:
         outputs["findings_count"] = len(findings)
         outputs["recommendations_count"] = len(recommendations)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="variance_report", phase_number=5,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),

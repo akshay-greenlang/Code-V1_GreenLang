@@ -58,25 +58,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -96,7 +90,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely.
 
@@ -110,7 +103,6 @@ def _decimal(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _safe_divide(
     numerator: Decimal,
     denominator: Decimal,
@@ -120,7 +112,6 @@ def _safe_divide(
     if denominator == Decimal("0"):
         return default
     return numerator / denominator
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value to the specified number of decimal places.
@@ -137,11 +128,9 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ESRSStandard(str, Enum):
     """All 12 ESRS standards in Set 1.
@@ -165,7 +154,6 @@ class ESRSStandard(str, Enum):
     S4 = "s4"
     G1 = "g1"
 
-
 class DisclosureStatus(str, Enum):
     """Status of a single disclosure requirement.
 
@@ -181,7 +169,6 @@ class DisclosureStatus(str, Enum):
     OMITTED_PHASE_IN = "omitted_phase_in"
     OMITTED_TRANSITIONAL = "omitted_transitional"
 
-
 class ComplianceLevel(str, Enum):
     """Overall compliance level for the sustainability statement.
 
@@ -192,7 +179,6 @@ class ComplianceLevel(str, Enum):
     SUBSTANTIAL = "substantial"
     PARTIAL = "partial"
     NON_COMPLIANT = "non_compliant"
-
 
 class PhaseInYear(str, Enum):
     """Financial year for phase-in provisions per ESRS 1 Appendix C.
@@ -206,7 +192,6 @@ class PhaseInYear(str, Enum):
     FY2027 = "fy2027"
     FY2028 = "fy2028"
 
-
 class AuditReadiness(str, Enum):
     """Audit readiness classification for the sustainability statement.
 
@@ -218,7 +203,6 @@ class AuditReadiness(str, Enum):
     NEEDS_REVIEW = "needs_review"
     SIGNIFICANT_GAPS = "significant_gaps"
     NOT_READY = "not_ready"
-
 
 class ReportSection(str, Enum):
     """Top-level sections of the ESRS sustainability statement.
@@ -233,7 +217,6 @@ class ReportSection(str, Enum):
     SOCIAL = "social"
     GOVERNANCE = "governance"
     APPENDIX = "appendix"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Master Disclosure Requirement Map
@@ -524,11 +507,9 @@ _DR_NAMES: Dict[str, str] = {
     "G1-6": "Payment practices",
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class DisclosureRequirementStatus(BaseModel):
     """Status of a single ESRS disclosure requirement."""
@@ -543,7 +524,6 @@ class DisclosureRequirementStatus(BaseModel):
     omission_reason: Optional[str] = Field(default=None, description="Reason for omission if applicable", max_length=1000)
     notes: str = Field(default="", description="Additional notes or observations", max_length=2000)
 
-
 class StandardCoverage(BaseModel):
     """Coverage summary for one ESRS standard."""
 
@@ -557,7 +537,6 @@ class StandardCoverage(BaseModel):
     is_material: bool = Field(default=True, description="Whether this standard is material per DMA")
     phase_in_applicable: bool = Field(default=False, description="Whether phase-in provisions apply to any DR")
 
-
 class ConsistencyCheck(BaseModel):
     """Result of a cross-standard consistency check."""
 
@@ -568,7 +547,6 @@ class ConsistencyCheck(BaseModel):
     finding: str = Field(default="", description="Detailed finding from the check", max_length=2000)
     recommendation: str = Field(default="", description="Recommended action to resolve findings", max_length=2000)
 
-
 class GapAnalysisItem(BaseModel):
     """A single gap identified in the ESRS disclosure coverage."""
 
@@ -578,7 +556,6 @@ class GapAnalysisItem(BaseModel):
     severity: str = Field(default="medium", description="Gap severity: critical, high, medium, low", max_length=20)
     effort_estimate_hours: Decimal = Field(default=Decimal("0"), description="Estimated hours to close the gap", ge=Decimal("0"))
     data_sources_needed: List[str] = Field(default_factory=list, description="Data sources required to close the gap")
-
 
 class ComplianceScorecard(BaseModel):
     """Unified compliance scorecard across all ESRS standards."""
@@ -595,10 +572,9 @@ class ComplianceScorecard(BaseModel):
     total_datapoints: int = Field(default=0, description="Total datapoints", ge=0)
     populated_datapoints: int = Field(default=0, description="Populated datapoints", ge=0)
     phase_in_readiness: str = Field(default="", description="Phase-in readiness summary", max_length=500)
-    generated_at: datetime = Field(default_factory=_utcnow, description="Timestamp (UTC)")
+    generated_at: datetime = Field(default_factory=utcnow, description="Timestamp (UTC)")
     processing_time_ms: float = Field(default=0.0, description="Processing time in milliseconds")
     provenance_hash: str = Field(default="", description="SHA-256 hash of the complete scorecard")
-
 
 class AuditReadinessAssessment(BaseModel):
     """Assessment of readiness for external assurance engagement."""
@@ -613,7 +589,6 @@ class AuditReadinessAssessment(BaseModel):
     recommendations: List[str] = Field(default_factory=list, description="Recommendations to improve readiness")
     provenance_hash: str = Field(default="", description="SHA-256 hash of this assessment")
 
-
 class DigitalStatementMetadata(BaseModel):
     """Metadata for the ESRS digital sustainability statement."""
 
@@ -626,14 +601,12 @@ class DigitalStatementMetadata(BaseModel):
     omissions: List[Dict[str, str]] = Field(default_factory=list, description="Omitted DRs with reasons")
     assurance_provider: str = Field(default="", description="Assurance provider name", max_length=300)
     xbrl_taxonomy_version: str = Field(default="ESRS_Set1_2024", description="XBRL taxonomy version", max_length=50)
-    generation_timestamp: datetime = Field(default_factory=_utcnow, description="Generation timestamp (UTC)")
+    generation_timestamp: datetime = Field(default_factory=utcnow, description="Generation timestamp (UTC)")
     statement_hash: str = Field(default="", description="SHA-256 hash of the digital statement")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ESRSCoverageOrchestratorEngine:
     """Cross-cutting ESRS compliance orchestrator engine.

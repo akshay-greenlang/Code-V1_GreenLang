@@ -65,18 +65,11 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
-
+from pydantic import Field, field_validator
 
 # ---------------------------------------------------------------------------
 # Helper
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -106,11 +99,9 @@ DEFAULT_CONFIDENCE_LEVEL: Decimal = Decimal("0.95")
 #: Prefix for all database table names in this module.
 TABLE_PREFIX: str = "gl_shp_"
 
-
 # =============================================================================
 # Enumerations (18)
 # =============================================================================
-
 
 class EnergyType(str, Enum):
     """Classification of purchased thermal energy types for Scope 2.
@@ -152,7 +143,6 @@ class EnergyType(str, Enum):
     DISTRICT_COOLING = "district_cooling"
     CHP_STEAM = "chp_steam"
     CHP_HEATING = "chp_heating"
-
 
 class FuelType(str, Enum):
     """Classification of fuel types used in steam and heat generation.
@@ -224,7 +214,6 @@ class FuelType(str, Enum):
     SOLAR_THERMAL = "solar_thermal"
     ELECTRIC = "electric"
 
-
 class CoolingTechnology(str, Enum):
     """Classification of cooling technologies for district cooling systems.
 
@@ -279,7 +268,6 @@ class CoolingTechnology(str, Enum):
     ICE_STORAGE = "ice_storage"
     THERMAL_STORAGE = "thermal_storage"
 
-
 class CHPAllocMethod(str, Enum):
     """Allocation method for CHP/cogeneration emission apportionment.
 
@@ -316,7 +304,6 @@ class CHPAllocMethod(str, Enum):
     EFFICIENCY = "efficiency"
     ENERGY = "energy"
     EXERGY = "exergy"
-
 
 class CalculationMethod(str, Enum):
     """Methodology for calculating Scope 2 thermal energy emissions.
@@ -356,7 +343,6 @@ class CalculationMethod(str, Enum):
     COP_BASED = "cop_based"
     CHP_ALLOCATED = "chp_allocated"
 
-
 class EmissionGas(str, Enum):
     """Greenhouse gases tracked in Scope 2 steam/heat calculations.
 
@@ -385,7 +371,6 @@ class EmissionGas(str, Enum):
     CO2E = "CO2e"
     BIOGENIC_CO2 = "biogenic_CO2"
 
-
 class GWPSource(str, Enum):
     """IPCC Assessment Report edition used for Global Warming Potential values.
 
@@ -409,7 +394,6 @@ class GWPSource(str, Enum):
     AR6 = "AR6"
     AR6_20YR = "AR6_20YR"
 
-
 class ComplianceStatus(str, Enum):
     """Result of a regulatory compliance check for a calculation.
 
@@ -426,7 +410,6 @@ class ComplianceStatus(str, Enum):
     NON_COMPLIANT = "non_compliant"
     PARTIAL = "partial"
     NOT_APPLICABLE = "not_applicable"
-
 
 class DataQualityTier(str, Enum):
     """Data quality classification for emission factor inputs.
@@ -452,7 +435,6 @@ class DataQualityTier(str, Enum):
     TIER_1 = "tier_1"
     TIER_2 = "tier_2"
     TIER_3 = "tier_3"
-
 
 class EnergyUnit(str, Enum):
     """Units of measurement for thermal energy consumption quantities.
@@ -483,7 +465,6 @@ class EnergyUnit(str, Enum):
     THERM = "therm"
     MJ = "mj"
 
-
 class TemperatureUnit(str, Enum):
     """Units of temperature measurement for steam and heating systems.
 
@@ -501,7 +482,6 @@ class TemperatureUnit(str, Enum):
     CELSIUS = "celsius"
     FAHRENHEIT = "fahrenheit"
     KELVIN = "kelvin"
-
 
 class SteamPressure(str, Enum):
     """Classification of steam pressure levels in steam systems.
@@ -531,7 +511,6 @@ class SteamPressure(str, Enum):
     HIGH = "high"
     VERY_HIGH = "very_high"
 
-
 class SteamQuality(str, Enum):
     """Classification of steam thermodynamic quality.
 
@@ -556,7 +535,6 @@ class SteamQuality(str, Enum):
     SATURATED = "saturated"
     SUPERHEATED = "superheated"
     WET = "wet"
-
 
 class NetworkType(str, Enum):
     """Classification of district energy network types.
@@ -587,7 +565,6 @@ class NetworkType(str, Enum):
     CAMPUS = "campus"
     MIXED = "mixed"
 
-
 class FacilityType(str, Enum):
     """Classification of reporting facilities by primary function.
 
@@ -617,23 +594,6 @@ class FacilityType(str, Enum):
     DATA_CENTER = "data_center"
     CAMPUS = "campus"
 
-
-class ReportingPeriod(str, Enum):
-    """Time period for emission aggregation and reporting outputs.
-
-    MONTHLY: Calendar month. Used for operational dashboards
-        and trend analysis of thermal energy consumption.
-    QUARTERLY: Calendar quarter (Q1-Q4). Used for interim
-        management reporting and progress tracking.
-    ANNUAL: Full calendar or fiscal year. Standard for CDP, CSRD,
-        and GHG Protocol corporate inventories.
-    """
-
-    MONTHLY = "monthly"
-    QUARTERLY = "quarterly"
-    ANNUAL = "annual"
-
-
 class AggregationType(str, Enum):
     """Dimension for aggregating calculation results.
 
@@ -659,7 +619,6 @@ class AggregationType(str, Enum):
     BY_SUPPLIER = "by_supplier"
     BY_PERIOD = "by_period"
 
-
 class BatchStatus(str, Enum):
     """Processing status of a batch calculation request.
 
@@ -684,11 +643,9 @@ class BatchStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 # =============================================================================
 # Constant Tables (all Decimal for deterministic arithmetic)
 # =============================================================================
-
 
 # ---------------------------------------------------------------------------
 # GWP values by IPCC Assessment Report
@@ -724,7 +681,6 @@ GWP_VALUES: Dict[str, Dict[str, Decimal]] = {
         "N2O": Decimal("273"),
     },
 }
-
 
 # ---------------------------------------------------------------------------
 # Fuel Emission Factors
@@ -849,7 +805,6 @@ FUEL_EMISSION_FACTORS: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # District Heating Regional Factors
 # ---------------------------------------------------------------------------
@@ -932,7 +887,6 @@ DISTRICT_HEATING_FACTORS: Dict[str, Dict[str, Decimal]] = {
         "distribution_loss_pct": Decimal("0.12"),
     },
 }
-
 
 # ---------------------------------------------------------------------------
 # Cooling System Factors
@@ -1024,7 +978,6 @@ COOLING_ENERGY_SOURCE: Dict[str, str] = {
     "thermal_storage": "electricity",
 }
 
-
 # ---------------------------------------------------------------------------
 # CHP Default Efficiencies
 # ---------------------------------------------------------------------------
@@ -1072,7 +1025,6 @@ CHP_DEFAULT_EFFICIENCIES: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Energy Unit Conversion Factors
 # ---------------------------------------------------------------------------
@@ -1102,18 +1054,15 @@ UNIT_CONVERSIONS: Dict[str, Decimal] = {
     "gj_to_mj": Decimal("1000.0"),
 }
 
-
 # =============================================================================
 # Data Models (20)
 # =============================================================================
-
 
 # ---------------------------------------------------------------------------
 # 1. FuelEmissionFactor
 # ---------------------------------------------------------------------------
 
-
-class FuelEmissionFactor(BaseModel):
+class FuelEmissionFactor(GreenLangBase):
     """Emission factor record for a specific fuel type.
 
     Encapsulates the CO2, CH4, and N2O emission factors per GJ of fuel
@@ -1175,13 +1124,11 @@ class FuelEmissionFactor(BaseModel):
         description="Whether fuel is biogenic (biomass)",
     )
 
-
 # ---------------------------------------------------------------------------
 # 2. DistrictHeatingFactor
 # ---------------------------------------------------------------------------
 
-
-class DistrictHeatingFactor(BaseModel):
+class DistrictHeatingFactor(GreenLangBase):
     """Emission factor record for a district heating network region.
 
     Encapsulates the composite emission factor (kgCO2e per GJ) and
@@ -1246,13 +1193,11 @@ class DistrictHeatingFactor(BaseModel):
         """Normalise region identifier to lowercase."""
         return v.strip().lower()
 
-
 # ---------------------------------------------------------------------------
 # 3. CoolingSystemFactor
 # ---------------------------------------------------------------------------
 
-
-class CoolingSystemFactor(BaseModel):
+class CoolingSystemFactor(GreenLangBase):
     """Performance parameters for a cooling system technology.
 
     Encapsulates the COP range and default COP value for a specific
@@ -1330,13 +1275,11 @@ class CoolingSystemFactor(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # 4. CHPParameters
 # ---------------------------------------------------------------------------
 
-
-class CHPParameters(BaseModel):
+class CHPParameters(GreenLangBase):
     """Configuration parameters for a CHP/cogeneration plant.
 
     Encapsulates the key performance characteristics of a combined
@@ -1420,13 +1363,11 @@ class CHPParameters(BaseModel):
                 )
         return v
 
-
 # ---------------------------------------------------------------------------
 # 5. FacilityInfo
 # ---------------------------------------------------------------------------
 
-
-class FacilityInfo(BaseModel):
+class FacilityInfo(GreenLangBase):
     """Metadata record for a reporting facility consuming thermal energy.
 
     Represents a single physical facility (building, campus, or site)
@@ -1522,7 +1463,7 @@ class FacilityInfo(BaseModel):
         description="Owning tenant identifier for multi-tenancy",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of facility record creation",
     )
 
@@ -1548,13 +1489,11 @@ class FacilityInfo(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # 6. SteamSupplier
 # ---------------------------------------------------------------------------
 
-
-class SteamSupplier(BaseModel):
+class SteamSupplier(GreenLangBase):
     """Profile of a steam or heat supplier for emission calculations.
 
     Represents an external entity that generates and delivers steam
@@ -1654,13 +1593,11 @@ class SteamSupplier(BaseModel):
                 )
         return v
 
-
 # ---------------------------------------------------------------------------
 # 7. SteamCalculationRequest
 # ---------------------------------------------------------------------------
 
-
-class SteamCalculationRequest(BaseModel):
+class SteamCalculationRequest(GreenLangBase):
     """Request for a purchased steam emission calculation.
 
     Contains all parameters needed to calculate Scope 2 emissions
@@ -1757,7 +1694,7 @@ class SteamCalculationRequest(BaseModel):
         description="Time period for the calculation",
     )
     calculation_date: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Date/time the calculation is performed",
     )
     tenant_id: str = Field(
@@ -1767,13 +1704,11 @@ class SteamCalculationRequest(BaseModel):
         description="Owning tenant identifier for multi-tenancy",
     )
 
-
 # ---------------------------------------------------------------------------
 # 8. HeatingCalculationRequest
 # ---------------------------------------------------------------------------
 
-
-class HeatingCalculationRequest(BaseModel):
+class HeatingCalculationRequest(GreenLangBase):
     """Request for a district heating emission calculation.
 
     Contains all parameters needed to calculate Scope 2 emissions
@@ -1857,13 +1792,11 @@ class HeatingCalculationRequest(BaseModel):
         """Normalise region identifier to lowercase."""
         return v.strip().lower()
 
-
 # ---------------------------------------------------------------------------
 # 9. CoolingCalculationRequest
 # ---------------------------------------------------------------------------
 
-
-class CoolingCalculationRequest(BaseModel):
+class CoolingCalculationRequest(GreenLangBase):
     """Request for a district cooling emission calculation.
 
     Contains all parameters needed to calculate Scope 2 emissions
@@ -1940,17 +1873,18 @@ class CoolingCalculationRequest(BaseModel):
         description="Owning tenant identifier for multi-tenancy",
     )
 
-
 # ---------------------------------------------------------------------------
 # 10. CHPAllocationRequest
 # ---------------------------------------------------------------------------
 
-
-class CHPAllocationRequest(BaseModel):
+class CHPAllocationRequest(GreenLangBase):
     """Request for CHP emission allocation calculation.
 
     Contains all parameters needed to allocate total fuel emissions
     from a CHP/cogeneration plant between its electrical and thermal
+
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ReportingPeriod
     outputs using one of three allocation methods.
 
     Attributes:
@@ -2073,13 +2007,11 @@ class CHPAllocationRequest(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # 11. GasEmissionDetail
 # ---------------------------------------------------------------------------
 
-
-class GasEmissionDetail(BaseModel):
+class GasEmissionDetail(GreenLangBase):
     """Breakdown of emissions for a single greenhouse gas species.
 
     Provides the individual gas emission quantity, the GWP multiplier
@@ -2128,13 +2060,11 @@ class GasEmissionDetail(BaseModel):
         description="CO2-equivalent emission in kg",
     )
 
-
 # ---------------------------------------------------------------------------
 # 12. CalculationResult
 # ---------------------------------------------------------------------------
 
-
-class CalculationResult(BaseModel):
+class CalculationResult(GreenLangBase):
     """Result of a Scope 2 thermal energy emission calculation.
 
     Contains the complete calculation output including total CO2e,
@@ -2233,7 +2163,7 @@ class CalculationResult(BaseModel):
         description="SHA-256 provenance hash for audit trail",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of the calculation",
     )
     tenant_id: str = Field(
@@ -2267,13 +2197,11 @@ class CalculationResult(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # 13. CHPAllocationResult
 # ---------------------------------------------------------------------------
 
-
-class CHPAllocationResult(BaseModel):
+class CHPAllocationResult(GreenLangBase):
     """Result of a CHP emission allocation calculation.
 
     Contains the allocation shares, allocated emissions for heat,
@@ -2382,13 +2310,11 @@ class CHPAllocationResult(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # 14. BatchCalculationRequest
 # ---------------------------------------------------------------------------
 
-
-class BatchCalculationRequest(BaseModel):
+class BatchCalculationRequest(GreenLangBase):
     """Batch request for multiple thermal energy emission calculations.
 
     Aggregates multiple calculation request instances (steam, heating,
@@ -2432,13 +2358,11 @@ class BatchCalculationRequest(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # 15. BatchCalculationResult
 # ---------------------------------------------------------------------------
 
-
-class BatchCalculationResult(BaseModel):
+class BatchCalculationResult(GreenLangBase):
     """Result of a batch thermal energy emission calculation.
 
     Aggregates results from all individual calculations in a batch
@@ -2503,13 +2427,11 @@ class BatchCalculationResult(BaseModel):
         description="Overall batch processing status",
     )
 
-
 # ---------------------------------------------------------------------------
 # 16. UncertaintyRequest
 # ---------------------------------------------------------------------------
 
-
-class UncertaintyRequest(BaseModel):
+class UncertaintyRequest(GreenLangBase):
     """Request for uncertainty quantification on a calculation result.
 
     Specifies the calculation result to analyse and the uncertainty
@@ -2593,13 +2515,11 @@ class UncertaintyRequest(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # 17. UncertaintyResult
 # ---------------------------------------------------------------------------
 
-
-class UncertaintyResult(BaseModel):
+class UncertaintyResult(GreenLangBase):
     """Result of uncertainty quantification for a thermal energy calculation.
 
     Provides the mean, standard deviation, confidence interval, and
@@ -2671,13 +2591,11 @@ class UncertaintyResult(BaseModel):
         description="SHA-256 provenance hash for audit trail",
     )
 
-
 # ---------------------------------------------------------------------------
 # 18. ComplianceCheckResult
 # ---------------------------------------------------------------------------
 
-
-class ComplianceCheckResult(BaseModel):
+class ComplianceCheckResult(GreenLangBase):
     """Result of a regulatory compliance check for a calculation.
 
     Evaluates a completed thermal energy calculation against a
@@ -2736,7 +2654,7 @@ class ComplianceCheckResult(BaseModel):
         description="Compliance score percentage (0-100)",
     )
     checked_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of the compliance check",
     )
 
@@ -2762,13 +2680,11 @@ class ComplianceCheckResult(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # 19. AggregationRequest
 # ---------------------------------------------------------------------------
 
-
-class AggregationRequest(BaseModel):
+class AggregationRequest(GreenLangBase):
     """Request for aggregating multiple calculation results.
 
     Specifies which calculation results to aggregate and the
@@ -2814,13 +2730,11 @@ class AggregationRequest(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # 20. AggregationResult
 # ---------------------------------------------------------------------------
 
-
-class AggregationResult(BaseModel):
+class AggregationResult(GreenLangBase):
     """Aggregated emission result across multiple calculations.
 
     Provides portfolio-level or group-level totals for Scope 2

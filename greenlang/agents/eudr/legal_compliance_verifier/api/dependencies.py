@@ -36,7 +36,8 @@ from typing import Any, Callable, Dict, List, Optional
 
 from fastapi import Depends, HTTPException, Query, Request, status
 from fastapi.security import APIKeyHeader, OAuth2PasswordBearer
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +61,7 @@ api_key_header = APIKeyHeader(
 # ---------------------------------------------------------------------------
 
 
-class AuthUser(BaseModel):
+class AuthUser(GreenLangBase):
     """Authenticated user context extracted from JWT or API key."""
 
     user_id: str = Field(..., description="Unique user identifier")
@@ -231,7 +232,7 @@ def require_permission(permission: str) -> Callable:
 # ---------------------------------------------------------------------------
 
 
-class PaginationParams(BaseModel):
+class PaginationParams(GreenLangBase):
     """Standard pagination query parameters."""
 
     limit: int = Field(default=50, ge=1, le=1000, description="Results per page")

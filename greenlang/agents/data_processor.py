@@ -5,7 +5,7 @@ Specialized base class for data transformation and batch processing operations.
 """
 
 from typing import Any, Dict, List, Optional, Callable, Union, Iterator
-from pydantic import BaseModel, Field, validator
+from pydantic import Field, validator
 from abc import abstractmethod
 import logging
 from datetime import datetime
@@ -14,6 +14,7 @@ from tqdm import tqdm
 
 from .base import BaseAgent, AgentConfig, AgentResult, AgentMetrics
 from greenlang.utilities.determinism import FinancialDecimal
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +43,7 @@ class DataProcessorConfig(AgentConfig):
         return v
 
 
-class ProcessingError(BaseModel):
+class ProcessingError(GreenLangBase):
     """Record of a processing error."""
     record_id: Union[int, str] = Field(..., description="ID of the failed record")
     record_data: Dict[str, Any] = Field(..., description="The failed record data")

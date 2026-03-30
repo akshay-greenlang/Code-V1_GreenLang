@@ -33,20 +33,15 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -59,11 +54,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ClimateZone(str, Enum):
     """Simplified Koppen-Geiger climate zones."""
@@ -76,14 +69,12 @@ class ClimateZone(str, Enum):
     POLAR = "polar"
     MEDITERRANEAN = "mediterranean"
 
-
 class DegreeDayMethod(str, Enum):
     """Degree-day calculation methods."""
 
     DAILY_MEAN = "daily_mean"
     HOURLY_INTEGRATION = "hourly_integration"
     MIN_MAX_AVERAGE = "min_max_average"
-
 
 class WeatherSource(str, Enum):
     """Weather data source types."""
@@ -93,11 +84,9 @@ class WeatherSource(str, Enum):
     API_SERVICE = "api_service"
     MANUAL_ENTRY = "manual_entry"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class WeatherStationConfig(BaseModel):
     """Configuration for a weather data source."""
@@ -112,7 +101,6 @@ class WeatherStationConfig(BaseModel):
     wmo_id: Optional[str] = Field(None, description="WMO station identifier")
     distance_to_facility_km: float = Field(default=0.0, ge=0)
 
-
 class DailyWeatherRecord(BaseModel):
     """Daily weather observation record."""
 
@@ -124,7 +112,6 @@ class DailyWeatherRecord(BaseModel):
     wind_speed_ms: float = Field(default=0.0, ge=0)
     solar_radiation_wm2: float = Field(default=0.0, ge=0)
     precipitation_mm: float = Field(default=0.0, ge=0)
-
 
 class DegreeDayResult(BaseModel):
     """Result of degree-day calculation for a period."""
@@ -141,7 +128,6 @@ class DegreeDayResult(BaseModel):
     data_completeness_pct: float = Field(default=0.0, ge=0, le=100)
     provenance_hash: str = Field(default="")
 
-
 class WeatherNormalizationResult(BaseModel):
     """Result of weather-normalizing energy consumption."""
 
@@ -156,7 +142,6 @@ class WeatherNormalizationResult(BaseModel):
     weather_dependent_kwh: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class SeasonalAdjustmentFactor(BaseModel):
     """Monthly or seasonal adjustment factors."""
 
@@ -166,7 +151,6 @@ class SeasonalAdjustmentFactor(BaseModel):
     cdd_factor: float = Field(default=1.0)
     production_factor: float = Field(default=1.0)
     combined_factor: float = Field(default=1.0)
-
 
 class WeatherNormalizationBridgeConfig(BaseModel):
     """Configuration for the Weather Normalization Bridge."""
@@ -179,7 +163,6 @@ class WeatherNormalizationBridgeConfig(BaseModel):
     base_load_estimation_method: str = Field(
         default="summer_minimum", description="summer_minimum|regression|manual"
     )
-
 
 # ---------------------------------------------------------------------------
 # Default TMY Degree Days (selected European cities)
@@ -227,11 +210,9 @@ MONTH_NAMES = [
     "July", "August", "September", "October", "November", "December",
 ]
 
-
 # ---------------------------------------------------------------------------
 # WeatherNormalizationBridge
 # ---------------------------------------------------------------------------
-
 
 class WeatherNormalizationBridge:
     """Weather data integration for baseline energy normalization.

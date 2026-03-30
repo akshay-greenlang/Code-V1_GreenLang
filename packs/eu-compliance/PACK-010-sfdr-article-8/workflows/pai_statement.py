@@ -67,18 +67,13 @@ from typing import Any, Callable, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # UTILITIES
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return current UTC time with timezone info."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute SHA-256 provenance hash of arbitrary data."""
@@ -86,11 +81,9 @@ def _hash_data(data: Any) -> str:
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -100,7 +93,6 @@ class PhaseStatus(str, Enum):
     FAILED = "FAILED"
     SKIPPED = "SKIPPED"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "PENDING"
@@ -108,7 +100,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
     PARTIAL = "PARTIAL"
-
 
 class PAICategory(str, Enum):
     """PAI indicator category."""
@@ -119,7 +110,6 @@ class PAICategory(str, Enum):
     SOVEREIGN = "SOVEREIGN"
     REAL_ESTATE = "REAL_ESTATE"
 
-
 class DataSource(str, Enum):
     """Data source type for PAI indicators."""
     COMPANY_REPORTED = "COMPANY_REPORTED"
@@ -127,7 +117,6 @@ class DataSource(str, Enum):
     ESTIMATED = "ESTIMATED"
     PROXY = "PROXY"
     NOT_AVAILABLE = "NOT_AVAILABLE"
-
 
 class ActionType(str, Enum):
     """Type of engagement/remediation action."""
@@ -137,17 +126,15 @@ class ActionType(str, Enum):
     DIVESTMENT = "DIVESTMENT"
     VOTING = "VOTING"
 
-
 # =============================================================================
 # DATA MODELS - SHARED
 # =============================================================================
-
 
 class WorkflowContext(BaseModel):
     """Shared state passed between workflow phases."""
     workflow_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     organization_id: str = Field(..., description="Organization identifier")
-    execution_timestamp: datetime = Field(default_factory=_utcnow)
+    execution_timestamp: datetime = Field(default_factory=utcnow)
     config: Dict[str, Any] = Field(default_factory=dict)
     phase_states: Dict[str, PhaseStatus] = Field(default_factory=dict)
     phase_outputs: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
@@ -170,7 +157,6 @@ class WorkflowContext(BaseModel):
         """Check if a phase has already completed."""
         return self.phase_states.get(phase_name) == PhaseStatus.COMPLETED
 
-
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
     phase_name: str = Field(..., description="Phase identifier")
@@ -184,7 +170,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     records_processed: int = Field(default=0)
 
-
 class WorkflowResult(BaseModel):
     """Complete result from a multi-phase workflow execution."""
     workflow_id: str = Field(..., description="Unique workflow execution ID")
@@ -197,11 +182,9 @@ class WorkflowResult(BaseModel):
     summary: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # DATA MODELS - PAI STATEMENT
 # =============================================================================
-
 
 class InvesteeData(BaseModel):
     """Investee-level data for PAI calculation."""
@@ -228,7 +211,6 @@ class InvesteeData(BaseModel):
     board_gender_diversity_pct: Optional[float] = Field(None, ge=0.0, le=100.0)
     controversial_weapons: bool = Field(default=False)
     data_source: DataSource = Field(default=DataSource.COMPANY_REPORTED)
-
 
 class PAIStatementInput(BaseModel):
     """Input configuration for the PAI statement workflow."""
@@ -267,7 +249,6 @@ class PAIStatementInput(BaseModel):
             raise ValueError("Date must be YYYY-MM-DD format")
         return v
 
-
 class PAIStatementResult(WorkflowResult):
     """Complete result from the PAI statement workflow."""
     product_name: str = Field(default="")
@@ -280,11 +261,9 @@ class PAIStatementResult(WorkflowResult):
     action_items_count: int = Field(default=0)
     worst_performers_identified: int = Field(default=0)
 
-
 # =============================================================================
 # PHASE IMPLEMENTATIONS
 # =============================================================================
-
 
 class DataSourcingPhase:
     """
@@ -307,7 +286,7 @@ class DataSourcingPhase:
         Returns:
             PhaseResult with sourced data and gap analysis.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -435,7 +414,7 @@ class DataSourcingPhase:
             status = PhaseStatus.FAILED
             records = 0
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -448,7 +427,6 @@ class DataSourcingPhase:
             provenance_hash=_hash_data(outputs),
             records_processed=records,
         )
-
 
 class PAICalculationPhase:
     """
@@ -470,7 +448,7 @@ class PAICalculationPhase:
         Returns:
             PhaseResult with calculated PAI indicator values.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -734,7 +712,7 @@ class PAICalculationPhase:
             status = PhaseStatus.FAILED
             records = 0
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -815,7 +793,6 @@ class PAICalculationPhase:
             return weighted_intensity / total_weight
         return 0.0
 
-
 class PAIReportingPhase:
     """
     Phase 3: Reporting.
@@ -836,7 +813,7 @@ class PAIReportingPhase:
         Returns:
             PhaseResult with formatted PAI statement.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -860,7 +837,7 @@ class PAIReportingPhase:
                 ),
                 "product_name": product_name,
                 "reporting_period": f"{period_start} to {period_end}",
-                "generated_at": _utcnow().isoformat(),
+                "generated_at": utcnow().isoformat(),
                 "introduction": (
                     f"{product_name} considers principal adverse impacts of "
                     f"its investment decisions on sustainability factors. "
@@ -930,7 +907,7 @@ class PAIReportingPhase:
             errors.append(f"PAI reporting failed: {str(exc)}")
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -983,7 +960,6 @@ class PAIReportingPhase:
             "to improve performance on this indicator."
         )
 
-
 class ActionPlanningPhase:
     """
     Phase 4: Action Planning.
@@ -1004,7 +980,7 @@ class ActionPlanningPhase:
         Returns:
             PhaseResult with action plan, worst performers, and schedule.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -1131,7 +1107,7 @@ class ActionPlanningPhase:
             errors.append(f"Action planning failed: {str(exc)}")
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -1144,11 +1120,9 @@ class ActionPlanningPhase:
             provenance_hash=_hash_data(outputs),
         )
 
-
 # =============================================================================
 # WORKFLOW ORCHESTRATOR
 # =============================================================================
-
 
 class PAIStatementWorkflow:
     """
@@ -1215,7 +1189,7 @@ class PAIStatementWorkflow:
         Returns:
             PAIStatementResult with per-phase details and summary.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         logger.info(
             "Starting PAI statement workflow %s for org=%s product=%s",
             self.workflow_id, input_data.organization_id,
@@ -1274,7 +1248,7 @@ class PAIStatementWorkflow:
                 error_result = PhaseResult(
                     phase_name=phase_name,
                     status=PhaseStatus.FAILED,
-                    started_at=_utcnow(),
+                    started_at=utcnow(),
                     errors=[str(exc)],
                     provenance_hash=_hash_data({"error": str(exc)}),
                 )
@@ -1292,7 +1266,7 @@ class PAIStatementWorkflow:
                 WorkflowStatus.COMPLETED if all_ok else WorkflowStatus.PARTIAL
             )
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         total_duration = (completed_at - started_at).total_seconds()
         summary = self._build_summary(context)
         provenance = _hash_data({

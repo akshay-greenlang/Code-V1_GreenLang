@@ -60,20 +60,15 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "36.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC timestamp with zero microseconds."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -90,11 +85,9 @@ def _compute_hash(data: Any) -> str:
         json.dumps(s, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -104,7 +97,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "pending"
@@ -112,7 +104,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class UtilityType(str, Enum):
     """Utility commodity classification."""
@@ -124,7 +115,6 @@ class UtilityType(str, Enum):
     FUEL_OIL = "fuel_oil"
     PROPANE = "propane"
     SEWER = "sewer"
-
 
 class BuildingType(str, Enum):
     """Building type classification."""
@@ -141,14 +131,12 @@ class BuildingType(str, Enum):
     DATA_CENTRE = "data_centre"
     MIXED_USE = "mixed_use"
 
-
 class PriorityLevel(str, Enum):
     """Action item priority classification."""
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 # =============================================================================
 # REFERENCE DATA (Zero-Hallucination)
@@ -191,11 +179,9 @@ SAVINGS_POTENTIAL_BENCHMARKS: Dict[str, Tuple[float, float]] = {
     "efficiency": (0.10, 0.30),
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase.
@@ -219,7 +205,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class UtilityBillSummary(BaseModel):
     """Summary record of a utility bill for ingestion.
 
@@ -242,7 +227,6 @@ class UtilityBillSummary(BaseModel):
     peak_demand_kw: float = Field(default=0.0, ge=0.0)
     rate_per_unit: float = Field(default=0.0, ge=0.0)
 
-
 class FacilityProfile(BaseModel):
     """Facility metadata for analysis context.
 
@@ -264,7 +248,6 @@ class FacilityProfile(BaseModel):
     operating_hours_per_year: float = Field(default=2500.0, ge=0.0)
     year_built: int = Field(default=2000, ge=1900, le=2030)
     country: str = Field(default="")
-
 
 class FullUtilityAnalysisInput(BaseModel):
     """Input data model for FullUtilityAnalysisWorkflow.
@@ -312,7 +295,6 @@ class FullUtilityAnalysisInput(BaseModel):
             raise ValueError("Facility must have a facility_name or facility_id")
         return v
 
-
 class FullUtilityAnalysisResult(BaseModel):
     """Complete result from full utility analysis workflow.
 
@@ -355,11 +337,9 @@ class FullUtilityAnalysisResult(BaseModel):
     duration_seconds: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class FullUtilityAnalysisWorkflow:
     """
@@ -1158,7 +1138,7 @@ class FullUtilityAnalysisWorkflow:
         ]
 
         outputs["report_id"] = report_id
-        outputs["generated_at"] = _utcnow().isoformat()
+        outputs["generated_at"] = utcnow().isoformat()
         outputs["facility_id"] = input_data.facility.facility_id
         outputs["facility_name"] = input_data.facility.facility_name
         outputs["total_utility_spend"] = round(total_spend, 2)

@@ -55,23 +55,18 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -83,11 +78,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Agent Stubs
 # ---------------------------------------------------------------------------
-
 
 class _AgentStub:
     """Stub for unavailable DECARB-X agent modules."""
@@ -106,7 +99,6 @@ class _AgentStub:
             }
         return _stub_method
 
-
 def _try_import_decarb_agent(agent_id: str, module_path: str) -> Any:
     try:
         return importlib.import_module(module_path)
@@ -114,11 +106,9 @@ def _try_import_decarb_agent(agent_id: str, module_path: str) -> Any:
         logger.debug("DECARB agent %s not available, using stub", agent_id)
         return _AgentStub(agent_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DecarbLever(str, Enum):
     """Decarbonisation lever categories."""
@@ -137,7 +127,6 @@ class DecarbLever(str, Enum):
     BUILDING_DECARBONISATION = "building_decarbonisation"
     OFFSET_STRATEGY = "offset_strategy"
 
-
 class TechnologyReadiness(str, Enum):
     """Technology Readiness Level (TRL) classification."""
 
@@ -147,7 +136,6 @@ class TechnologyReadiness(str, Enum):
     PILOT = "pilot"
     R_AND_D = "r_and_d"
 
-
 class PAS2060ReductionAlignment(str, Enum):
     """PAS 2060 reduction requirement alignment."""
 
@@ -155,7 +143,6 @@ class PAS2060ReductionAlignment(str, Enum):
     BEHIND = "behind"
     AT_RISK = "at_risk"
     NOT_STARTED = "not_started"
-
 
 # ---------------------------------------------------------------------------
 # DECARB-X Routing Table (21 agents)
@@ -185,11 +172,9 @@ DECARB_ROUTING_TABLE: Dict[str, Dict[str, Any]] = {
     "business_case": {"agent": "DECARB-X-021", "module": "greenlang.agents.decarb.business_case"},
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class DecarbBridgeConfig(BaseModel):
     """Configuration for the DECARB Bridge."""
@@ -199,7 +184,6 @@ class DecarbBridgeConfig(BaseModel):
     planning_horizon_years: int = Field(default=10, ge=1, le=30)
     discount_rate_pct: float = Field(default=8.0, ge=0.0, le=30.0)
     carbon_price_usd: float = Field(default=50.0, ge=0.0)
-
 
 class AbatementOption(BaseModel):
     """Single abatement option from DECARB agents."""
@@ -215,7 +199,6 @@ class AbatementOption(BaseModel):
     scope: str = Field(default="scope_1")
     implementation_year: int = Field(default=2025)
 
-
 class AbatementResult(BaseModel):
     """Abatement catalog result."""
 
@@ -227,7 +210,6 @@ class AbatementResult(BaseModel):
     avg_cost_per_tco2e: float = Field(default=0.0)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class MACCResult(BaseModel):
     """Marginal Abatement Cost Curve result."""
@@ -241,7 +223,6 @@ class MACCResult(BaseModel):
     break_even_price: float = Field(default=0.0)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class RoadmapResult(BaseModel):
     """Decarbonisation roadmap result aligned with PAS 2060."""
@@ -257,7 +238,6 @@ class RoadmapResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class TechnologyResult(BaseModel):
     """Technology assessment result."""
 
@@ -268,7 +248,6 @@ class TechnologyResult(BaseModel):
     total_potential_tco2e: float = Field(default=0.0, ge=0.0)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class ProgressMonitorResult(BaseModel):
     """Progress monitoring result."""
@@ -284,7 +263,6 @@ class ProgressMonitorResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class BusinessCaseResult(BaseModel):
     """Business case generation result."""
 
@@ -299,11 +277,9 @@ class BusinessCaseResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # CarbonNeutralDecarbBridge
 # ---------------------------------------------------------------------------
-
 
 class CarbonNeutralDecarbBridge:
     """Bridge to 21 DECARB-X agents for PAS 2060 reduction planning.

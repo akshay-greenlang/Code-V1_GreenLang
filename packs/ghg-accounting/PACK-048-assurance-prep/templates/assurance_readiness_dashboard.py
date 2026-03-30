@@ -47,29 +47,23 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 def _compute_hash(content: str) -> str:
     """Compute SHA-256 hash of string content."""
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -82,13 +76,11 @@ class OutputFormat(str, Enum):
     PDF = "pdf"
     JSON = "json"
 
-
 class TrafficLight(str, Enum):
     """Traffic-light status indicators."""
     GREEN = "green"
     AMBER = "amber"
     RED = "red"
-
 
 class AssuranceStandard(str, Enum):
     """Supported assurance standards."""
@@ -96,13 +88,11 @@ class AssuranceStandard(str, Enum):
     ISO_14064_3 = "ISO 14064-3"
     AA1000AS = "AA1000AS"
 
-
 class GapSeverity(str, Enum):
     """Gap severity classification."""
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Input Models
@@ -118,13 +108,11 @@ class CategoryScore(BaseModel):
     findings_count: int = Field(0, ge=0, description="Number of open findings")
     description: str = Field("", description="Short category description")
 
-
 class SparklinePoint(BaseModel):
     """Single data point in the readiness sparkline."""
     assessment_date: str = Field(..., description="Assessment date (ISO)")
     cycle_label: str = Field("", description="Cycle label (e.g., Q1 2026)")
     score: float = Field(0.0, ge=0, le=100, description="Readiness score")
-
 
 class RemediationGap(BaseModel):
     """Single remediation gap item."""
@@ -139,7 +127,6 @@ class RemediationGap(BaseModel):
     due_date: Optional[str] = Field(None, description="Target due date (ISO)")
     status: str = Field("open", description="Current status (open/in_progress/closed)")
 
-
 class TimeToReadyEstimate(BaseModel):
     """Time-to-ready estimate."""
     estimated_weeks: float = Field(0.0, ge=0, description="Estimated weeks to readiness")
@@ -151,7 +138,6 @@ class TimeToReadyEstimate(BaseModel):
         default_factory=list, description="Key assumptions"
     )
     target_date: Optional[str] = Field(None, description="Target ready date (ISO)")
-
 
 class StandardSpecificView(BaseModel):
     """Standard-specific readiness view."""
@@ -165,7 +151,6 @@ class StandardSpecificView(BaseModel):
         default_factory=list, description="Key gaps for this standard"
     )
     notes: str = Field("", description="Additional notes")
-
 
 class ReadinessDashboardInput(BaseModel):
     """Complete input model for AssuranceReadinessDashboard."""
@@ -194,7 +179,6 @@ class ReadinessDashboardInput(BaseModel):
     assurance_level: str = Field("limited", description="Target assurance level")
     engagement_scope: str = Field("", description="Engagement scope description")
 
-
 # ---------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------
@@ -202,7 +186,6 @@ class ReadinessDashboardInput(BaseModel):
 def _tl_label(status: TrafficLight) -> str:
     """Return uppercase label for traffic light."""
     return status.value.upper()
-
 
 def _tl_color(status: TrafficLight) -> str:
     """Return hex colour for traffic-light status."""
@@ -213,7 +196,6 @@ def _tl_color(status: TrafficLight) -> str:
     }
     return mapping.get(status, "#e9c46a")
 
-
 def _tl_css(status: TrafficLight) -> str:
     """Return CSS class for traffic-light status."""
     mapping = {
@@ -223,18 +205,15 @@ def _tl_css(status: TrafficLight) -> str:
     }
     return mapping.get(status, "tl-amber")
 
-
 def _format_decimal(value: Optional[float], places: int = 1) -> str:
     """Format a float or return N/A."""
     if value is None:
         return "N/A"
     return f"{value:,.{places}f}"
 
-
 def _severity_label(severity: str) -> str:
     """Return display label for severity."""
     return severity.upper()
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -310,7 +289,7 @@ class AssuranceReadinessDashboard:
             Markdown string with provenance hash.
         """
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_md(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -326,7 +305,7 @@ class AssuranceReadinessDashboard:
             Self-contained HTML string.
         """
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_html(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -342,7 +321,7 @@ class AssuranceReadinessDashboard:
             JSON-serializable dict with provenance hash.
         """
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_json(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -386,7 +365,7 @@ class AssuranceReadinessDashboard:
             f"# Assurance Readiness Dashboard - {company}\n\n"
             f"**Reporting Period:** {period} | "
             f"**Assurance Level:** {level.title()} | "
-            f"**Report Date:** {_utcnow().strftime('%Y-%m-%d')}\n\n"
+            f"**Report Date:** {utcnow().strftime('%Y-%m-%d')}\n\n"
             "---"
         )
 
@@ -602,7 +581,7 @@ class AssuranceReadinessDashboard:
             f"<h1>Assurance Readiness Dashboard &mdash; {company}</h1>\n"
             f"<p><strong>Reporting Period:</strong> {period} | "
             f"<strong>Assurance Level:</strong> {level.title()} | "
-            f"<strong>Report Date:</strong> {_utcnow().strftime('%Y-%m-%d')}</p>\n"
+            f"<strong>Report Date:</strong> {utcnow().strftime('%Y-%m-%d')}</p>\n"
             "<hr>\n</div>"
         )
 

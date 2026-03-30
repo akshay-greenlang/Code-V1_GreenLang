@@ -57,6 +57,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import yaml
 from pydantic import BaseModel, Field, field_validator, model_validator
+from greenlang.schemas.enums import ReportFormat
 
 logger = logging.getLogger(__name__)
 
@@ -230,15 +231,6 @@ class TransitionPlanStatus(str, Enum):
     ON_TRACK = "ON_TRACK"
     BEHIND_SCHEDULE = "BEHIND_SCHEDULE"
     ACHIEVED = "ACHIEVED"
-
-
-class ReportFormat(str, Enum):
-    """Output report format for CSDDD compliance reports."""
-
-    PDF = "PDF"
-    HTML = "HTML"
-    JSON = "JSON"
-    EXCEL = "EXCEL"
 
 
 class CacheBackend(str, Enum):

@@ -45,25 +45,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -76,11 +70,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class WizardStep(str, Enum):
     """Names of setup wizard steps in execution order."""
@@ -95,7 +87,6 @@ class WizardStep(str, Enum):
     COMPLIANCE_FRAMEWORK = "compliance_framework"
     REVIEW_CONFIRM = "review_confirm"
 
-
 class StepStatus(str, Enum):
     """Status of a wizard step."""
 
@@ -103,7 +94,6 @@ class StepStatus(str, Enum):
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
     SKIPPED = "skipped"
-
 
 class MVTier(str, Enum):
     """M&V complexity tier presets."""
@@ -113,7 +103,6 @@ class MVTier(str, Enum):
     COMPREHENSIVE = "comprehensive"
     INVESTMENT_GRADE = "investment_grade"
 
-
 class IPMVPOptionWZ(str, Enum):
     """IPMVP options for wizard selection."""
 
@@ -122,7 +111,6 @@ class IPMVPOptionWZ(str, Enum):
     OPTION_C = "option_c"
     OPTION_D = "option_d"
 
-
 class ReportFrequency(str, Enum):
     """M&V report generation frequency."""
 
@@ -130,7 +118,6 @@ class ReportFrequency(str, Enum):
     QUARTERLY = "quarterly"
     SEMI_ANNUAL = "semi_annual"
     ANNUAL = "annual"
-
 
 class FacilityMVType(str, Enum):
     """Facility types for M&V wizard presets."""
@@ -144,11 +131,9 @@ class FacilityMVType(str, Enum):
     ESCO_CONTRACT = "esco_performance_contract"
     PORTFOLIO_MV = "portfolio_mv"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class WizardStepState(BaseModel):
     """State of a single wizard step."""
@@ -158,7 +143,6 @@ class WizardStepState(BaseModel):
     data: Dict[str, Any] = Field(default_factory=dict)
     validation_errors: List[str] = Field(default_factory=list)
     completed_at: Optional[datetime] = Field(None)
-
 
 class FacilityMVProfile(BaseModel):
     """Facility M&V profile collected in step 1."""
@@ -176,7 +160,6 @@ class FacilityMVProfile(BaseModel):
     annual_energy_cost_usd: float = Field(default=0.0, ge=0.0)
     esco_contract: bool = Field(default=False)
     mv_tier: MVTier = Field(default=MVTier.STANDARD)
-
 
 class PresetConfig(BaseModel):
     """Preset configuration for a facility type."""
@@ -198,7 +181,6 @@ class PresetConfig(BaseModel):
     min_r_squared: float = Field(default=0.75)
     confidence_level_pct: float = Field(default=90.0)
 
-
 class WizardConfig(BaseModel):
     """Complete wizard configuration output."""
 
@@ -218,7 +200,6 @@ class WizardConfig(BaseModel):
     persistence_tracking: bool = Field(default=True)
     preset_applied: str = Field(default="")
 
-
 class SetupResult(BaseModel):
     """Result of completing the setup wizard."""
 
@@ -230,8 +211,7 @@ class SetupResult(BaseModel):
     wizard_config: Optional[WizardConfig] = Field(None)
     provenance_hash: str = Field(default="")
     processing_time_ms: float = Field(default=0.0)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # Facility Presets
@@ -350,11 +330,9 @@ STEP_ORDER: List[WizardStep] = [
     WizardStep.REVIEW_CONFIRM,
 ]
 
-
 # ---------------------------------------------------------------------------
 # SetupWizard
 # ---------------------------------------------------------------------------
-
 
 class SetupWizard:
     """9-step M&V project configuration wizard.
@@ -448,7 +426,7 @@ class SetupWizard:
             state.status = StepStatus.COMPLETED
             state.data = data
             state.validation_errors = []
-            state.completed_at = _utcnow()
+            state.completed_at = utcnow()
             self._apply_step_data(step, data)
             self.logger.info("Step %s completed", step.value)
 

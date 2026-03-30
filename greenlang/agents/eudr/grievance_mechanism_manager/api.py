@@ -50,9 +50,10 @@ import logging
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException, Query
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.eudr.grievance_mechanism_manager.setup import get_service
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -61,61 +62,61 @@ logger = logging.getLogger(__name__)
 # Request Schemas
 # ---------------------------------------------------------------------------
 
-class AnalyzePatternsRequest(BaseModel):
+class AnalyzePatternsRequest(GreenLangBase):
     operator_id: str = Field(..., description="Operator identifier")
     grievances: List[Dict[str, Any]] = Field(..., description="Grievance data list")
 
-class AnalyzeRootCauseRequest(BaseModel):
+class AnalyzeRootCauseRequest(GreenLangBase):
     grievance_id: str = Field(..., description="Grievance ID from EUDR-031")
     operator_id: str = Field(..., description="Operator identifier")
     grievance_data: Dict[str, Any] = Field(..., description="Grievance details")
     method: Optional[str] = Field(None, description="Analysis method override")
 
-class InitiateMediationRequest(BaseModel):
+class InitiateMediationRequest(GreenLangBase):
     grievance_id: str = Field(..., description="Grievance ID from EUDR-031")
     operator_id: str = Field(..., description="Operator identifier")
     parties: List[Dict[str, Any]] = Field(..., description="Involved parties")
     mediator_type: str = Field(default="internal", description="Mediator type")
     mediator_id: Optional[str] = Field(None, description="Mediator ID")
 
-class RecordSessionRequest(BaseModel):
+class RecordSessionRequest(GreenLangBase):
     summary: str = Field(default="", description="Session summary")
     duration_minutes: int = Field(default=120, description="Session duration")
     attendees: List[str] = Field(default_factory=list, description="Attendees")
     outcomes: List[str] = Field(default_factory=list, description="Outcomes")
 
-class RecordAgreementRequest(BaseModel):
+class RecordAgreementRequest(GreenLangBase):
     clause: str = Field(..., description="Agreement clause")
     agreed_by: List[str] = Field(default_factory=list, description="Agreeing parties")
 
-class SetSettlementRequest(BaseModel):
+class SetSettlementRequest(GreenLangBase):
     settlement_terms: Dict[str, Any] = Field(..., description="Settlement terms")
     status: str = Field(default="accepted", description="Settlement status")
 
-class CreateRemediationRequest(BaseModel):
+class CreateRemediationRequest(GreenLangBase):
     grievance_id: str = Field(..., description="Grievance ID from EUDR-031")
     operator_id: str = Field(..., description="Operator identifier")
     remediation_type: str = Field(..., description="Remediation type")
     actions: Optional[List[Dict[str, Any]]] = Field(None, description="Actions")
 
-class UpdateProgressRequest(BaseModel):
+class UpdateProgressRequest(GreenLangBase):
     completion_percentage: float = Field(..., description="Completion %")
     status: Optional[str] = Field(None, description="Status override")
 
-class VerifyRemediationRequest(BaseModel):
+class VerifyRemediationRequest(GreenLangBase):
     verification_evidence: List[Dict[str, Any]] = Field(..., description="Evidence")
     effectiveness_indicators: Optional[Dict[str, Any]] = Field(None)
 
-class RecordSatisfactionRequest(BaseModel):
+class RecordSatisfactionRequest(GreenLangBase):
     satisfaction_score: float = Field(..., ge=1, le=5, description="Score 1-5")
 
-class ComputeRiskScoreRequest(BaseModel):
+class ComputeRiskScoreRequest(GreenLangBase):
     operator_id: str = Field(..., description="Operator identifier")
     scope: str = Field(..., description="Scope: operator/supplier/commodity/region")
     scope_identifier: str = Field(..., description="Entity within scope")
     grievances: List[Dict[str, Any]] = Field(..., description="Grievance data")
 
-class CreateCollectiveRequest(BaseModel):
+class CreateCollectiveRequest(GreenLangBase):
     operator_id: str = Field(..., description="Operator identifier")
     title: str = Field(..., description="Collective grievance title")
     individual_ids: Optional[List[str]] = Field(None, description="Individual grievance IDs")
@@ -124,19 +125,19 @@ class CreateCollectiveRequest(BaseModel):
     lead_complainant_id: Optional[str] = Field(None)
     affected_count: int = Field(default=1, ge=1)
 
-class AddDemandsRequest(BaseModel):
+class AddDemandsRequest(GreenLangBase):
     demands: List[Dict[str, Any]] = Field(..., description="Demands list")
 
-class UpdateStatusRequest(BaseModel):
+class UpdateStatusRequest(GreenLangBase):
     status: str = Field(..., description="New status")
 
-class GenerateReportRequest(BaseModel):
+class GenerateReportRequest(GreenLangBase):
     operator_id: str = Field(..., description="Operator identifier")
     report_type: str = Field(..., description="Report type")
     grievances: Optional[List[Dict[str, Any]]] = Field(None)
     remediations: Optional[List[Dict[str, Any]]] = Field(None)
 
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     detail: str = Field(..., description="Error description")
     error_code: str = Field(default="internal_error")
 

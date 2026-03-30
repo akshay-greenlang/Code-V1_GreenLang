@@ -49,25 +49,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -80,11 +74,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class ConsolidationApproach(str, Enum):
     """GHG Protocol consolidation approaches."""
@@ -92,7 +84,6 @@ class ConsolidationApproach(str, Enum):
     OPERATIONAL_CONTROL = "operational_control"
     FINANCIAL_CONTROL = "financial_control"
     EQUITY_SHARE = "equity_share"
-
 
 class EntityType(str, Enum):
     """Legal entity type classification."""
@@ -106,7 +97,6 @@ class EntityType(str, Enum):
     SPV = "special_purpose_vehicle"
     OTHER = "other"
 
-
 class FactorTier(str, Enum):
     """Emission factor data quality tier per GHG Protocol."""
 
@@ -115,18 +105,15 @@ class FactorTier(str, Enum):
     TIER_3 = "tier_3"
     CUSTOM = "custom"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class Pack041Config(BaseModel):
     """Configuration for PACK-041 bridge."""
 
     timeout_s: float = Field(30.0, ge=5.0)
     cache_ttl_s: float = Field(1800.0)
-
 
 class Pack041Entity(BaseModel):
     """Entity-level record from PACK-041."""
@@ -148,7 +135,6 @@ class Pack041Entity(BaseModel):
     scope2_market_tco2e: float = 0.0
     provenance_hash: str = ""
 
-
 class Pack041Boundary(BaseModel):
     """Organisational boundary definition from PACK-041."""
 
@@ -163,7 +149,6 @@ class Pack041Boundary(BaseModel):
     exclusion_reasons: Dict[str, int] = Field(default_factory=dict)
     is_locked: bool = False
     provenance_hash: str = ""
-
 
 class Pack041EmissionFactors(BaseModel):
     """Emission factor assignments from PACK-041."""
@@ -180,7 +165,6 @@ class Pack041EmissionFactors(BaseModel):
     is_override: bool = False
     override_justification: str = ""
     provenance_hash: str = ""
-
 
 class EntityScope1Scope2Totals(BaseModel):
     """Per-entity Scope 1 and Scope 2 totals from PACK-041."""
@@ -199,11 +183,9 @@ class EntityScope1Scope2Totals(BaseModel):
     provenance_hash: str = ""
     retrieved_at: str = ""
 
-
 # ---------------------------------------------------------------------------
 # Bridge Implementation
 # ---------------------------------------------------------------------------
-
 
 class Pack041Bridge:
     """
@@ -304,7 +286,7 @@ class Pack041Bridge:
                 "period": period,
                 "action": "s1s2_totals",
             }),
-            retrieved_at=_utcnow().isoformat(),
+            retrieved_at=utcnow().isoformat(),
         )
 
     async def get_all_entity_totals(

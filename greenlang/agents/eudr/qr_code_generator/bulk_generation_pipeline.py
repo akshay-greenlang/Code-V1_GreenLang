@@ -66,6 +66,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Generator, List, Optional, Tuple
 
 from greenlang.agents.eudr.qr_code_generator.config import get_config
+from greenlang.schemas import utcnow
 from greenlang.agents.eudr.qr_code_generator.models import (
     BulkJob,
     BulkJobStatus,
@@ -86,7 +87,6 @@ from greenlang.agents.eudr.qr_code_generator.metrics import (
 
 logger = logging.getLogger(__name__)
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -97,16 +97,9 @@ DEFAULT_STREAM_CHUNK_SIZE: int = 100
 #: Minimum progress update interval in seconds.
 _PROGRESS_UPDATE_INTERVAL_S: float = 1.0
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -126,7 +119,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str) -> str:
     """Generate a unique identifier with a given prefix.
 
@@ -138,51 +130,41 @@ def _generate_id(prefix: str) -> str:
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
 
-
 # ---------------------------------------------------------------------------
 # Custom Exceptions
 # ---------------------------------------------------------------------------
-
 
 class BulkGenerationError(Exception):
     """Base exception for bulk generation pipeline errors."""
     pass
 
-
 class JobNotFoundError(BulkGenerationError):
     """Raised when a bulk job ID is not found in the registry."""
     pass
-
 
 class JobAlreadyExistsError(BulkGenerationError):
     """Raised when attempting to submit a duplicate job ID."""
     pass
 
-
 class JobCancelledError(BulkGenerationError):
     """Raised when a job has been cancelled during processing."""
     pass
-
 
 class JobValidationError(BulkGenerationError):
     """Raised when output validation detects invalid QR codes."""
     pass
 
-
 class JobTimeoutError(BulkGenerationError):
     """Raised when a job exceeds the configured timeout."""
     pass
-
 
 class InvalidJobStateError(BulkGenerationError):
     """Raised when an operation is invalid for the current job state."""
     pass
 
-
 # ---------------------------------------------------------------------------
 # GeneratedCode (lightweight internal model)
 # ---------------------------------------------------------------------------
-
 
 class GeneratedCode:
     """Lightweight container for a single generated QR code in a bulk job.
@@ -224,11 +206,9 @@ class GeneratedCode:
         self.is_valid = is_valid
         self.error = error
 
-
 # ---------------------------------------------------------------------------
 # BulkGenerationPipeline
 # ---------------------------------------------------------------------------
-
 
 class BulkGenerationPipeline:
     """Orchestrates high-volume QR code generation for EUDR compliance.
@@ -427,7 +407,7 @@ class BulkGenerationPipeline:
 
         # Transition to PROCESSING
         self._update_job_status(job_id, BulkJobStatus.PROCESSING)
-        job.started_at = _utcnow()
+        job.started_at = utcnow()
         set_active_bulk_jobs(self._count_active_jobs())
 
         completed = 0
@@ -549,7 +529,7 @@ class BulkGenerationPipeline:
 
         # Update final job state
         job = self._get_job(job_id)
-        job.completed_at = _utcnow()
+        job.completed_at = utcnow()
 
         # Record provenance for completion
         self._provenance.record(
@@ -609,7 +589,7 @@ class BulkGenerationPipeline:
             and total_processed > 0
             and job.status == BulkJobStatus.PROCESSING.value
         ):
-            elapsed = (_utcnow() - job.started_at).total_seconds()
+            elapsed = (utcnow() - job.started_at).total_seconds()
             rate = total_processed / max(elapsed, 0.001)
             remaining = job.total_codes - total_processed
             eta_seconds = remaining / max(rate, 0.001)
@@ -660,7 +640,7 @@ class BulkGenerationPipeline:
             entity_type="bulk_job",
             action="cancel",
             entity_id=job_id,
-            data={"cancelled_at": _utcnow().isoformat()},
+            data={"cancelled_at": utcnow().isoformat()},
             metadata={"job_id": job_id},
         )
 
@@ -1164,7 +1144,7 @@ class BulkGenerationPipeline:
             "operator_id": operator_id,
             "content_type": content_type,
             "error_correction": error_correction,
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
         }
         payload_json = json.dumps(payload, sort_keys=True)
         payload_hash = hashlib.sha256(
@@ -1215,7 +1195,7 @@ class BulkGenerationPipeline:
             "index": index,
             "operator_id": operator_id,
             "spec": spec,
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
         }
         payload_json = json.dumps(payload, sort_keys=True, default=str)
         payload_hash = hashlib.sha256(
@@ -1253,7 +1233,6 @@ class BulkGenerationPipeline:
                 f"{code.payload_hash},{code.image_hash},{code.is_valid}"
             )
         return "\n".join(lines) + "\n"
-
 
 # ---------------------------------------------------------------------------
 # Public API

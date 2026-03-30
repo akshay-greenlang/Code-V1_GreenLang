@@ -79,23 +79,18 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -112,7 +107,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -121,7 +115,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -129,26 +122,21 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     return float(
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums & Constants
 # ---------------------------------------------------------------------------
-
 
 class ReadinessLevel(str, Enum):
     """Race to Zero readiness level."""
@@ -158,14 +146,12 @@ class ReadinessLevel(str, Enum):
     EARLY_STAGE = "EARLY_STAGE"
     PRE_PLEDGE = "PRE_PLEDGE"
 
-
 class RAGStatus(str, Enum):
     """RAG status classification."""
     GREEN = "GREEN"
     AMBER = "AMBER"
     RED = "RED"
     BLACK = "BLACK"
-
 
 class DimensionId(str, Enum):
     """Readiness dimension identifiers."""
@@ -178,14 +164,12 @@ class DimensionId(str, Enum):
     PARTNERSHIP = "partnership_engagement"
     CREDIBILITY = "hleg_credibility"
 
-
 class UrgencyLevel(str, Enum):
     """Urgency level for improvement actions."""
     CRITICAL = "CRITICAL"
     HIGH = "HIGH"
     MEDIUM = "MEDIUM"
     LOW = "LOW"
-
 
 # ---------------------------------------------------------------------------
 # Dimension Configuration
@@ -347,11 +331,9 @@ IMPROVEMENT_ACTIONS: Dict[str, List[Dict[str, str]]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # Input / Output Models
 # ---------------------------------------------------------------------------
-
 
 class DimensionInput(BaseModel):
     """Input for a single readiness dimension (from source engine output)."""
@@ -365,7 +347,6 @@ class DimensionInput(BaseModel):
     @classmethod
     def validate_score(cls, v: float) -> float:
         return max(0.0, min(100.0, v))
-
 
 class ReadinessInput(BaseModel):
     """Input for race readiness assessment."""
@@ -419,7 +400,6 @@ class ReadinessInput(BaseModel):
             raise ValueError(f"Reporting year {v} out of valid range [2015, 2060]")
         return v
 
-
 class DimensionScore(BaseModel):
     """Score for a single readiness dimension."""
     dimension_id: str
@@ -435,7 +415,6 @@ class DimensionScore(BaseModel):
     improvement_actions: List[str]
     status_detail: Optional[str] = None
 
-
 class ImprovementPriority(BaseModel):
     """Ranked improvement priority action."""
     rank: int
@@ -448,7 +427,6 @@ class ImprovementPriority(BaseModel):
     current_score: float
     target_score: float
 
-
 class ReadinessTimeline(BaseModel):
     """Estimated timeline to achieve readiness levels."""
     current_level: str
@@ -458,7 +436,6 @@ class ReadinessTimeline(BaseModel):
     critical_path_dimensions: List[str]
     parallelizable_actions: int
     sequential_actions: int
-
 
 class ReadinessResult(BaseModel):
     """Complete race readiness assessment result."""
@@ -508,11 +485,9 @@ class ReadinessResult(BaseModel):
     processing_time_ms: float
     provenance_hash: str
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class RaceReadinessEngine:
     """
@@ -612,7 +587,7 @@ class RaceReadinessEngine:
             entity_id=data.entity_id,
             entity_name=data.entity_name,
             reporting_year=data.reporting_year,
-            assessment_date=data.assessment_date or _utcnow().isoformat(),
+            assessment_date=data.assessment_date or utcnow().isoformat(),
             composite_score=_round3(composite),
             readiness_level=readiness_level,
             readiness_description=readiness_desc,
@@ -633,7 +608,7 @@ class RaceReadinessEngine:
             campaign_standing_risk=standing_risk,
             engine_version=self._module_version,
             module_version=self._module_version,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 2),
             provenance_hash="",
         )

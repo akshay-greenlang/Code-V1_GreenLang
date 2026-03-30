@@ -46,9 +46,9 @@ from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Model imports (graceful fallback)
@@ -224,16 +224,9 @@ except ImportError:
             with self._lock:
                 return len(self._chain)
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _clamp(value: float, low: float, high: float) -> float:
     """Clamp a value to a range.
@@ -248,7 +241,6 @@ def _clamp(value: float, low: float, high: float) -> float:
     """
     return max(low, min(high, value))
 
-
 def _safe_mean(values: List[float]) -> float:
     """Compute arithmetic mean, returning 0.0 for empty lists.
 
@@ -262,11 +254,9 @@ def _safe_mean(values: List[float]) -> float:
         return 0.0
     return sum(values) / len(values)
 
-
 # ---------------------------------------------------------------------------
 # Jaro-Winkler similarity (pure Python, no external dependency)
 # ---------------------------------------------------------------------------
-
 
 def _jaro_similarity(s1: str, s2: str) -> float:
     """Compute Jaro similarity between two strings.
@@ -337,7 +327,6 @@ def _jaro_similarity(s1: str, s2: str) -> float:
 
     return jaro
 
-
 def _jaro_winkler_similarity(
     s1: str,
     s2: str,
@@ -372,7 +361,6 @@ def _jaro_winkler_similarity(
             break
 
     return jaro + prefix_len * prefix_weight * (1.0 - jaro)
-
 
 # ---------------------------------------------------------------------------
 # Certification score lookup
@@ -416,11 +404,9 @@ CADENCE_TIMEDELTAS: Dict[str, timedelta] = {
     "annual": timedelta(days=365),
 }
 
-
 # ---------------------------------------------------------------------------
 # Unit conversion helpers using models.SUPPORTED_UNITS
 # ---------------------------------------------------------------------------
-
 
 def _get_conversion_factor_from_map(
     unit_from: str,
@@ -458,7 +444,6 @@ def _get_conversion_factor_from_map(
 
     return None
 
-
 # ---------------------------------------------------------------------------
 # Default tolerance rules
 # ---------------------------------------------------------------------------
@@ -495,11 +480,9 @@ DEFAULT_TOLERANCE_DEFS: List[Dict[str, Any]] = [
     },
 ]
 
-
 # ---------------------------------------------------------------------------
 # Internal wrapper for source state beyond Pydantic model
 # ---------------------------------------------------------------------------
-
 
 class _SourceState:
     """Internal mutable state tracked per source beyond the Pydantic model.
@@ -533,13 +516,11 @@ class _SourceState:
         self.last_refresh: Optional[datetime] = None
         self.record_count: int = 0
         self.provenance_hash: str = ""
-        self.updated_at: datetime = _utcnow()
-
+        self.updated_at: datetime = utcnow()
 
 # ---------------------------------------------------------------------------
 # SourceRegistryEngine
 # ---------------------------------------------------------------------------
-
 
 class SourceRegistryEngine:
     """Pure-Python engine for managing data sources in cross-source reconciliation.
@@ -811,7 +792,7 @@ class SourceRegistryEngine:
         # Update state
         state.definition = new_def
         state.version += 1
-        state.updated_at = _utcnow()
+        state.updated_at = utcnow()
 
         # Compute provenance
         input_hash = self._provenance.hash_record({
@@ -1964,7 +1945,7 @@ class SourceRegistryEngine:
         if cadence_td is None:
             return 0.5
 
-        now = _utcnow()
+        now = utcnow()
         elapsed = now - state.last_refresh
         cadence_seconds = cadence_td.total_seconds()
 
@@ -2535,7 +2516,6 @@ class SourceRegistryEngine:
             self._tolerance_rules.clear()
 
         logger.info("SourceRegistryEngine state cleared")
-
 
 # ---------------------------------------------------------------------------
 # __all__ export list

@@ -60,23 +60,18 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -93,7 +88,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -101,7 +95,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal, denominator: Decimal,
@@ -111,22 +104,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     return float(
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ActionScope(str, Enum):
     """Emission scope affected by the action."""
@@ -134,7 +123,6 @@ class ActionScope(str, Enum):
     SCOPE_2 = "scope_2"
     SCOPE_3 = "scope_3"
     SCOPE_1_2 = "scope_1_2"
-
 
 class ActionEase(str, Enum):
     """Ease of implementation on 1-5 scale.
@@ -151,20 +139,17 @@ class ActionEase(str, Enum):
     HARD = "4"
     VERY_HARD = "5"
 
-
 class RoadmapPhase(str, Enum):
     """Phase in the implementation roadmap."""
     YEAR_1 = "year_1"
     YEAR_2 = "year_2"
     YEAR_3 = "year_3"
 
-
 class SensitivityScenario(str, Enum):
     """Sensitivity analysis scenario."""
     BASE = "base"
     OPTIMISTIC = "optimistic"       # -20% cost, +20% savings
     CONSERVATIVE = "conservative"   # +20% cost, -20% savings
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -186,11 +171,9 @@ EASE_WEIGHTS: Dict[str, Decimal] = {
     "5": Decimal("0.6"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class ActionInput(BaseModel):
     """A single decarbonization action to be prioritized.
@@ -256,7 +239,6 @@ class ActionInput(BaseModel):
             raise ValueError("CapEx exceeds SME reasonable range ($10M)")
         return v
 
-
 class PrioritizationInput(BaseModel):
     """Complete input for action prioritization.
 
@@ -303,11 +285,9 @@ class PrioritizationInput(BaseModel):
             raise ValueError("Maximum 10 actions for SME prioritization")
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class FinancialMetrics(BaseModel):
     """Financial analysis for a single action.
@@ -331,7 +311,6 @@ class FinancialMetrics(BaseModel):
     total_5yr_savings_usd: Decimal = Field(default=Decimal("0"))
     roi_pct: Decimal = Field(default=Decimal("0"))
 
-
 class SensitivityResult(BaseModel):
     """Sensitivity analysis result for one scenario.
 
@@ -347,7 +326,6 @@ class SensitivityResult(BaseModel):
     irr_pct: Decimal = Field(default=Decimal("0"))
     payback_years: Decimal = Field(default=Decimal("0"))
     still_viable: bool = Field(default=True)
-
 
 class PrioritizedAction(BaseModel):
     """A single prioritized action with financial analysis.
@@ -385,7 +363,6 @@ class PrioritizedAction(BaseModel):
     passes_irr_target: bool = Field(default=False)
     passes_payback_target: bool = Field(default=False)
 
-
 class RoadmapSummary(BaseModel):
     """Summary of the phased implementation roadmap.
 
@@ -414,7 +391,6 @@ class RoadmapSummary(BaseModel):
     total_5yr_savings_usd: Decimal = Field(default=Decimal("0"))
     total_npv_usd: Decimal = Field(default=Decimal("0"))
 
-
 class PrioritizationResult(BaseModel):
     """Complete action prioritization result.
 
@@ -433,7 +409,7 @@ class PrioritizationResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
 
     actions: List[PrioritizedAction] = Field(default_factory=list)
@@ -445,11 +421,9 @@ class PrioritizationResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ActionPrioritizationEngine:
     """MACC-lite action prioritization engine for SMEs.

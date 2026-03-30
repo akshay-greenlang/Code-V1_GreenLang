@@ -46,25 +46,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -84,16 +78,13 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _round_val(value: float, places: int = 4) -> float:
     """Round a float to specified decimal places."""
     return round(value, places)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class PAICategory(str, Enum):
     """PAI indicator groupings relevant to DNSH assessment."""
@@ -104,7 +95,6 @@ class PAICategory(str, Enum):
     SOVEREIGN = "sovereign"
     REAL_ESTATE = "real_estate"
 
-
 class DNSHStatus(str, Enum):
     """DNSH assessment outcome for a single check."""
 
@@ -114,7 +104,6 @@ class DNSHStatus(str, Enum):
     NOT_APPLICABLE = "NOT_APPLICABLE"
     INSUFFICIENT_DATA = "INSUFFICIENT_DATA"
 
-
 class ThresholdDirection(str, Enum):
     """Direction of threshold check."""
 
@@ -122,7 +111,6 @@ class ThresholdDirection(str, Enum):
     MIN = "MIN"   # Fail if value < threshold (e.g., board diversity)
     BOOLEAN_TRUE_FAILS = "BOOLEAN_TRUE_FAILS"    # Fail if True (e.g., violations)
     BOOLEAN_FALSE_FAILS = "BOOLEAN_FALSE_FAILS"  # Fail if False (e.g., lacks compliance)
-
 
 class SeverityLevel(str, Enum):
     """Severity classification for DNSH failures."""
@@ -133,11 +121,9 @@ class SeverityLevel(str, Enum):
     LOW = "LOW"               # Minor concern
     INFORMATIONAL = "INFORMATIONAL"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class PAIThreshold(BaseModel):
     """Configurable threshold for a single PAI indicator DNSH check.
@@ -191,7 +177,6 @@ class PAIThreshold(BaseModel):
         default=True, description="Whether check is active",
     )
 
-
 class DNSHConfig(BaseModel):
     """Configuration for the SFDR DNSH Engine.
 
@@ -223,7 +208,6 @@ class DNSHConfig(BaseModel):
         default=50.0, ge=0.0, le=100.0,
         description="Minimum data coverage to consider DNSH result valid (%)",
     )
-
 
 class PAIDNSHCheck(BaseModel):
     """Result of a single PAI indicator DNSH check for one investment."""
@@ -263,7 +247,6 @@ class PAIDNSHCheck(BaseModel):
     explanation: str = Field(
         default="", description="Human-readable explanation of the result",
     )
-
 
 class DNSHAssessment(BaseModel):
     """Complete SFDR DNSH assessment for a single investment.
@@ -321,9 +304,8 @@ class DNSHAssessment(BaseModel):
         default="", description="SHA-256 provenance hash",
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow, description="Assessment timestamp",
+        default_factory=utcnow, description="Assessment timestamp",
     )
-
 
 class InvestmentPAIData(BaseModel):
     """PAI indicator data for a single investment for DNSH screening.
@@ -351,7 +333,6 @@ class InvestmentPAIData(BaseModel):
         default_factory=dict,
         description="Boolean PAI indicator flags (e.g., PAI_4, PAI_10)",
     )
-
 
 class PortfolioDNSHResult(BaseModel):
     """Portfolio-level DNSH compliance aggregation.
@@ -398,10 +379,9 @@ class PortfolioDNSHResult(BaseModel):
         description="PAI indicators sorted by failure frequency",
     )
     provenance_hash: str = Field(default="")
-    assessed_at: datetime = Field(default_factory=_utcnow)
+    assessed_at: datetime = Field(default_factory=utcnow)
     processing_time_ms: float = Field(default=0.0)
     engine_version: str = Field(default=_MODULE_VERSION)
-
 
 class DNSHReportSection(BaseModel):
     """A section of the DNSH compliance report."""
@@ -415,11 +395,9 @@ class DNSHReportSection(BaseModel):
     indicators_no_data: int = Field(..., ge=0)
     details: List[Dict[str, Any]] = Field(default_factory=list)
 
-
 # ---------------------------------------------------------------------------
 # Default Threshold Configuration
 # ---------------------------------------------------------------------------
-
 
 def _build_default_thresholds() -> List[PAIThreshold]:
     """Build default PAI indicator thresholds for SFDR DNSH screening.
@@ -630,11 +608,9 @@ def _build_default_thresholds() -> List[PAIThreshold]:
         ),
     ]
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class SFDRDNSHEngine:
     """SFDR-specific Do No Significant Harm Assessment Engine.
@@ -724,7 +700,7 @@ class SFDRDNSHEngine:
         Raises:
             ValueError: If investment_id is empty.
         """
-        start = _utcnow()
+        start = utcnow()
         self._assessment_count += 1
 
         if not investment_data.investment_id:
@@ -815,7 +791,7 @@ class SFDRDNSHEngine:
             "critical": critical,
         })
 
-        elapsed_ms = (_utcnow() - start).total_seconds() * 1000
+        elapsed_ms = (utcnow() - start).total_seconds() * 1000
         logger.info(
             "DNSH assessment for %s: overall=%s, passed=%d, failed=%d, "
             "warning=%d, critical=%d, time=%.1fms",
@@ -845,7 +821,7 @@ class SFDRDNSHEngine:
         Raises:
             ValueError: If investments list is empty.
         """
-        start = _utcnow()
+        start = utcnow()
 
         if not investments:
             raise ValueError("Investments list cannot be empty")
@@ -894,7 +870,7 @@ class SFDRDNSHEngine:
         # Most common failures
         failure_freq = self._compute_failure_frequency(assessments)
 
-        elapsed_ms = (_utcnow() - start).total_seconds() * 1000
+        elapsed_ms = (utcnow() - start).total_seconds() * 1000
 
         result = PortfolioDNSHResult(
             portfolio_name=portfolio_name,

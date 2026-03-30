@@ -29,7 +29,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
 import httpx
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.foundation.orchestrator.executors.base import (
     ArtifactReference,
@@ -38,6 +38,7 @@ from greenlang.agents.foundation.orchestrator.executors.base import (
     StepResult,
 )
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +60,7 @@ class AuthType(str, Enum):
     OAUTH2 = "oauth2"
 
 
-class AdapterConfig(BaseModel):
+class AdapterConfig(GreenLangBase):
     """Configuration for a legacy HTTP agent adapter."""
     # Identity
     agent_id: str = Field(..., description="Agent ID being adapted")

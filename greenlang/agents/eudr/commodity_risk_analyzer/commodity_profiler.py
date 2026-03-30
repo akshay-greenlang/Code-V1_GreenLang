@@ -59,6 +59,7 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, FrozenSet, List, Optional, Set, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -226,16 +227,9 @@ TRACEABILITY_DIFFICULTY: Dict[str, Decimal] = {
     "wood": Decimal("45.00"),     # Lower: log marking systems, FSC chain of custody
 }
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed for consistency."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _to_decimal(value: float | int | str | Decimal) -> Decimal:
     """Convert a numeric value to Decimal via string to avoid IEEE 754 artefacts.
@@ -250,7 +244,6 @@ def _to_decimal(value: float | int | str | Decimal) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _clamp_risk(value: Decimal) -> Decimal:
     """Clamp a risk score to [0.00, 100.00] and apply precision.
 
@@ -263,7 +256,6 @@ def _clamp_risk(value: Decimal) -> Decimal:
     clamped = max(_MIN_RISK, min(_MAX_RISK, value))
     return clamped.quantize(_RISK_PRECISION, rounding=ROUND_HALF_UP)
 
-
 def _compute_provenance_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance.
 
@@ -275,7 +267,6 @@ def _compute_provenance_hash(data: Any) -> str:
     """
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
 
 def _validate_commodity_type(commodity_type: str) -> str:
     """Validate and normalize a commodity type string.
@@ -298,7 +289,6 @@ def _validate_commodity_type(commodity_type: str) -> str:
             f"Must be one of: {sorted(EUDR_COMMODITIES)}"
         )
     return normalized
-
 
 # ---------------------------------------------------------------------------
 # Prometheus metrics integration (graceful fallback)
@@ -334,6 +324,7 @@ try:
                 if hasattr(collector, "_name") and collector._name == name:
                     return collector
             from prometheus_client import CollectorRegistry
+
             kw = {}
             if buckets:
                 kw["buckets"] = buckets
@@ -368,29 +359,24 @@ except ImportError:
         "prometheus_client not installed; commodity profiler metrics disabled"
     )
 
-
 def _record_profile_created(commodity_type: str) -> None:
     """Record a profile creation metric."""
     if _PROMETHEUS_AVAILABLE and _PROFILES_CREATED_TOTAL is not None:
         _PROFILES_CREATED_TOTAL.labels(commodity_type=commodity_type).inc()
-
 
 def _observe_profile_duration(operation: str, seconds: float) -> None:
     """Record a profiling duration metric."""
     if _PROMETHEUS_AVAILABLE and _PROFILE_DURATION_SECONDS is not None:
         _PROFILE_DURATION_SECONDS.labels(operation=operation).observe(seconds)
 
-
 def _record_profile_error(operation: str) -> None:
     """Record a profiling error metric."""
     if _PROMETHEUS_AVAILABLE and _PROFILE_ERRORS_TOTAL is not None:
         _PROFILE_ERRORS_TOTAL.labels(operation=operation).inc()
 
-
 # ---------------------------------------------------------------------------
 # CommodityProfiler
 # ---------------------------------------------------------------------------
-
 
 class CommodityProfiler:
     """Deep profiling engine for EUDR-regulated commodities.
@@ -627,7 +613,7 @@ class CommodityProfiler:
                 "risk_level": risk_level,
                 "sourcing_countries": sourcing_risk,
                 "provenance_hash": provenance_hash,
-                "created_at": _utcnow().isoformat(),
+                "created_at": utcnow().isoformat(),
                 "processing_time_ms": round(elapsed_ms, 2),
                 "version": _MODULE_VERSION,
             }
@@ -766,7 +752,7 @@ class CommodityProfiler:
                 "commodity_count": len(profiles),
                 "provenance_hash": provenance_hash,
                 "processing_time_ms": round(elapsed_ms, 2),
-                "created_at": _utcnow().isoformat(),
+                "created_at": utcnow().isoformat(),
             }
 
             logger.info(
@@ -1216,7 +1202,7 @@ class CommodityProfiler:
             "dimension_leaders": dimension_leaders,
             "provenance_hash": provenance_hash,
             "processing_time_ms": round(elapsed_ms, 2),
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
         logger.info(
@@ -1583,7 +1569,6 @@ class CommodityProfiler:
             f"cached_profiles={self.cached_profile_count}, "
             f"weights={{{', '.join(f'{k}={v}' for k, v in self._profile_weights.items())}}})"
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

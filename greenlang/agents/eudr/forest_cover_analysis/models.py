@@ -55,25 +55,18 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import (
-    BaseModel,
-    ConfigDict,
     Field,
     field_validator,
     model_validator,
 )
 
 from greenlang.agents.data.eudr_traceability.models import EUDRCommodity
-
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ReportFormat
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -111,11 +104,9 @@ BIOME_COUNT: int = 16
 #: Guidelines for National Greenhouse Gas Inventories, Vol 4, Ch 4.
 AGB_CONVERSION_FACTOR: float = 0.47
 
-
 # =============================================================================
 # Enumerations
 # =============================================================================
-
 
 class ForestType(str, Enum):
     """Forest type classification following EUDR and FAO categories.
@@ -165,7 +156,6 @@ class ForestType(str, Enum):
     AGROFORESTRY = "agroforestry"
     NON_FOREST = "non_forest"
 
-
 class CanopyDensityClass(str, Enum):
     """Canopy density classification bins for forest cover assessment.
 
@@ -193,7 +183,6 @@ class CanopyDensityClass(str, Enum):
     LOW = "low"
     SPARSE = "sparse"
     OPEN = "open"
-
 
 class DeforestationVerdict(str, Enum):
     """Deforestation-free verification verdict for EUDR compliance.
@@ -223,7 +212,6 @@ class DeforestationVerdict(str, Enum):
     DEGRADED = "degraded"
     INCONCLUSIVE = "inconclusive"
 
-
 class DensityMethod(str, Enum):
     """Method for deriving continuous canopy density from satellite imagery.
 
@@ -248,7 +236,6 @@ class DensityMethod(str, Enum):
     NDVI_REGRESSION = "ndvi_regression"
     DIMIDIATION = "dimidiation"
     SUB_PIXEL_DETECTION = "sub_pixel_detection"
-
 
 class ClassificationMethod(str, Enum):
     """Method for classifying forest type from remote sensing data.
@@ -278,7 +265,6 @@ class ClassificationMethod(str, Enum):
     STRUCTURAL = "structural"
     MULTI_TEMPORAL = "multi_temporal"
     ENSEMBLE = "ensemble"
-
 
 class HeightSource(str, Enum):
     """Data source for canopy height estimation.
@@ -313,7 +299,6 @@ class HeightSource(str, Enum):
     GLOBAL_MAP_ETH = "global_map_eth"
     GLOBAL_MAP_META = "global_map_meta"
 
-
 class BiomassSource(str, Enum):
     """Data source for above-ground biomass (AGB) estimation.
 
@@ -341,7 +326,6 @@ class BiomassSource(str, Enum):
     GEDI_L4A = "gedi_l4a"
     SAR_REGRESSION = "sar_regression"
     NDVI_ALLOMETRIC = "ndvi_allometric"
-
 
 class FragmentationLevel(str, Enum):
     """Landscape fragmentation classification level.
@@ -376,26 +360,6 @@ class FragmentationLevel(str, Enum):
     HIGHLY_FRAGMENTED = "highly_fragmented"
     SEVERELY_FRAGMENTED = "severely_fragmented"
 
-
-class ReportFormat(str, Enum):
-    """Output format for compliance reports.
-
-    JSON: Machine-readable JSON format for API integration and
-        downstream processing in GreenLang pipelines.
-    PDF: Human-readable PDF report with maps, charts, and
-        narrative summaries for regulatory submission.
-    CSV: Tabular CSV format for bulk data export and spreadsheet
-        analysis.
-    EUDR_XML: EUDR-specific XML schema for direct submission to
-        the EU Information System per Implementing Regulation.
-    """
-
-    JSON = "json"
-    PDF = "pdf"
-    CSV = "csv"
-    EUDR_XML = "eudr_xml"
-
-
 class AnalysisStatus(str, Enum):
     """Status of a forest cover analysis operation.
 
@@ -416,7 +380,6 @@ class AnalysisStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     CANCELLED = "cancelled"
-
 
 class DataQualityTier(str, Enum):
     """Data quality tier classification for analysis confidence.
@@ -443,13 +406,11 @@ class DataQualityTier(str, Enum):
     BRONZE = "bronze"
     INSUFFICIENT = "insufficient"
 
-
 # =============================================================================
 # Core Data Models
 # =============================================================================
 
-
-class CanopyDensityResult(BaseModel):
+class CanopyDensityResult(GreenLangBase):
     """Result of canopy density analysis for a plot.
 
     Contains the continuous canopy cover percentage, classified
@@ -534,8 +495,7 @@ class CanopyDensityResult(BaseModel):
         description="Date of the source imagery used",
     )
 
-
-class ForestClassificationResult(BaseModel):
+class ForestClassificationResult(GreenLangBase):
     """Result of forest type classification for a plot.
 
     Contains the primary and secondary forest type classifications
@@ -603,8 +563,7 @@ class ForestClassificationResult(BaseModel):
         description="Date of source data used",
     )
 
-
-class HistoricalCoverRecord(BaseModel):
+class HistoricalCoverRecord(GreenLangBase):
     """Historical forest cover state at a specific point in time.
 
     Reconstructs the forest cover condition of a plot at or near
@@ -685,8 +644,7 @@ class HistoricalCoverRecord(BaseModel):
         description="Latest observation date in composite",
     )
 
-
-class DeforestationFreeResult(BaseModel):
+class DeforestationFreeResult(GreenLangBase):
     """Result of deforestation-free verification for EUDR compliance.
 
     Contains the regulatory verdict comparing forest cover at the
@@ -771,8 +729,7 @@ class DeforestationFreeResult(BaseModel):
             pass
         return self
 
-
-class CanopyHeightEstimate(BaseModel):
+class CanopyHeightEstimate(GreenLangBase):
     """Canopy height estimate for a plot from remote sensing data.
 
     Provides tree height measurements from LiDAR or model-derived
@@ -839,8 +796,7 @@ class CanopyHeightEstimate(BaseModel):
         description="Number of LiDAR footprints/samples in plot",
     )
 
-
-class FragmentationMetrics(BaseModel):
+class FragmentationMetrics(GreenLangBase):
     """Landscape fragmentation metrics for a forest plot or landscape.
 
     Computes standard landscape ecology metrics to assess the
@@ -925,8 +881,7 @@ class FragmentationMetrics(BaseModel):
         description="Total landscape area (hectares)",
     )
 
-
-class BiomassEstimate(BaseModel):
+class BiomassEstimate(GreenLangBase):
     """Above-ground biomass (AGB) estimate for a forest plot.
 
     Provides AGB and derived carbon stock estimates from remote
@@ -994,8 +949,7 @@ class BiomassEstimate(BaseModel):
         description="Total carbon stock for entire plot (tC)",
     )
 
-
-class ComplianceReport(BaseModel):
+class ComplianceReport(GreenLangBase):
     """Generated compliance report for EUDR forest cover assessment.
 
     Contains metadata for a compliance report generated from forest
@@ -1047,7 +1001,7 @@ class ComplianceReport(BaseModel):
         description="Brief narrative summary of findings",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of report generation",
     )
     provenance_hash: str = Field(
@@ -1067,8 +1021,7 @@ class ComplianceReport(BaseModel):
         description="Reviewer identifier for approved reports",
     )
 
-
-class DataQualityAssessment(BaseModel):
+class DataQualityAssessment(GreenLangBase):
     """Composite data quality assessment for forest cover analysis.
 
     Scores multiple quality dimensions and classifies the overall
@@ -1145,7 +1098,6 @@ class DataQualityAssessment(BaseModel):
             self.tier = expected_tier
         return self
 
-
 def _score_to_tier(score: float) -> DataQualityTier:
     """Map a quality score to a DataQualityTier.
 
@@ -1164,8 +1116,7 @@ def _score_to_tier(score: float) -> DataQualityTier:
     else:
         return DataQualityTier.INSUFFICIENT
 
-
-class PlotForestProfile(BaseModel):
+class PlotForestProfile(GreenLangBase):
     """Complete forest profile for a single plot combining all analysis results.
 
     Aggregates canopy density, forest type, height, biomass,
@@ -1249,17 +1200,15 @@ class PlotForestProfile(BaseModel):
         description="SHA-256 hash of complete profile",
     )
     last_updated: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of last profile update",
     )
-
 
 # =============================================================================
 # Request Models
 # =============================================================================
 
-
-class AnalyzeDensityRequest(BaseModel):
+class AnalyzeDensityRequest(GreenLangBase):
     """Request to perform canopy density analysis for a plot.
 
     Attributes:
@@ -1297,8 +1246,7 @@ class AnalyzeDensityRequest(BaseModel):
         description="Biome identifier for calibrated thresholds",
     )
 
-
-class ClassifyForestRequest(BaseModel):
+class ClassifyForestRequest(GreenLangBase):
     """Request to classify forest type for a plot.
 
     Attributes:
@@ -1349,8 +1297,7 @@ class ClassifyForestRequest(BaseModel):
             )
         return self
 
-
-class ReconstructHistoryRequest(BaseModel):
+class ReconstructHistoryRequest(GreenLangBase):
     """Request to reconstruct historical forest cover at a target date.
 
     Attributes:
@@ -1385,8 +1332,7 @@ class ReconstructHistoryRequest(BaseModel):
         description="Composite window size in years",
     )
 
-
-class VerifyDeforestationFreeRequest(BaseModel):
+class VerifyDeforestationFreeRequest(GreenLangBase):
     """Request to verify deforestation-free status for EUDR compliance.
 
     Attributes:
@@ -1418,8 +1364,7 @@ class VerifyDeforestationFreeRequest(BaseModel):
         description="Include detailed evidence narrative",
     )
 
-
-class BatchAnalysisRequest(BaseModel):
+class BatchAnalysisRequest(GreenLangBase):
     """Request to perform batch forest cover analysis for multiple plots.
 
     Attributes:
@@ -1463,8 +1408,7 @@ class BatchAnalysisRequest(BaseModel):
             )
         return v
 
-
-class GenerateReportRequest(BaseModel):
+class GenerateReportRequest(GreenLangBase):
     """Request to generate a compliance report for a plot.
 
     Attributes:
@@ -1495,13 +1439,11 @@ class GenerateReportRequest(BaseModel):
         description="Include map visualizations (PDF only)",
     )
 
-
 # =============================================================================
 # Response Models
 # =============================================================================
 
-
-class BatchAnalysisResponse(BaseModel):
+class BatchAnalysisResponse(GreenLangBase):
     """Response from a batch forest cover analysis request.
 
     Attributes:
@@ -1558,8 +1500,7 @@ class BatchAnalysisResponse(BaseModel):
         description="UTC timestamp of batch completion",
     )
 
-
-class BatchProgress(BaseModel):
+class BatchProgress(GreenLangBase):
     """Progress information for a running batch analysis.
 
     Attributes:
@@ -1593,8 +1534,7 @@ class BatchProgress(BaseModel):
         description="Current processing throughput",
     )
 
-
-class AnalysisSummary(BaseModel):
+class AnalysisSummary(GreenLangBase):
     """Aggregate summary of forest cover analysis across multiple plots.
 
     Provides count-based summaries for dashboards and overview
@@ -1662,8 +1602,7 @@ class AnalysisSummary(BaseModel):
         description="Average data quality score",
     )
 
-
-class ForestCoverDashboard(BaseModel):
+class ForestCoverDashboard(GreenLangBase):
     """Dashboard view aggregating forest cover analysis results.
 
     Provides a comprehensive overview combining summary statistics,
@@ -1724,10 +1663,9 @@ class ForestCoverDashboard(BaseModel):
         description="Total carbon stock (tonnes C)",
     )
     last_updated: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of last dashboard update",
     )
-
 
 # ---------------------------------------------------------------------------
 # Public API

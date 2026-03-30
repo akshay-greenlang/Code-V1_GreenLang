@@ -38,6 +38,7 @@ Status: Production Ready
 
 import logging
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +64,7 @@ except ImportError:
 
 if FASTAPI_AVAILABLE:
 
-    class RecordMetricBody(BaseModel):
+    class RecordMetricBody(GreenLangBase):
         """Request body for recording a metric observation."""
         metric_name: str = Field(..., description="Name of the metric to record")
         value: float = Field(..., description="Metric observation value")
@@ -76,7 +77,7 @@ if FASTAPI_AVAILABLE:
         description: str = Field(default="", description="Metric description")
         unit: str = Field(default="", description="Metric unit")
 
-    class ExportMetricsBody(BaseModel):
+    class ExportMetricsBody(GreenLangBase):
         """Request body for exporting metrics."""
         format: str = Field(default="prometheus", description="Export format")
         metric_names: List[str] = Field(
@@ -85,7 +86,7 @@ if FASTAPI_AVAILABLE:
         )
         tenant_id: Optional[str] = Field(None, description="Filter by tenant")
 
-    class CreateSpanBody(BaseModel):
+    class CreateSpanBody(GreenLangBase):
         """Request body for creating/starting a trace span."""
         operation_name: str = Field(..., description="Name of the operation")
         trace_id: Optional[str] = Field(
@@ -99,7 +100,7 @@ if FASTAPI_AVAILABLE:
             default_factory=dict, description="Span attributes",
         )
 
-    class EndSpanBody(BaseModel):
+    class EndSpanBody(GreenLangBase):
         """Request body for ending/updating a trace span."""
         status: str = Field(
             default="ok", description="Span status (ok, error, timeout, cancelled)",
@@ -108,7 +109,7 @@ if FASTAPI_AVAILABLE:
             default_factory=dict, description="Additional attributes to set on close",
         )
 
-    class IngestLogBody(BaseModel):
+    class IngestLogBody(GreenLangBase):
         """Request body for ingesting structured log entries."""
         level: str = Field(
             default="info",
@@ -130,7 +131,7 @@ if FASTAPI_AVAILABLE:
             default_factory=dict, description="Structured log attributes",
         )
 
-    class CreateAlertRuleBody(BaseModel):
+    class CreateAlertRuleBody(GreenLangBase):
         """Request body for creating/updating an alert rule."""
         name: str = Field(..., description="Alert rule name")
         metric_name: str = Field(..., description="Metric name to evaluate")
@@ -153,7 +154,7 @@ if FASTAPI_AVAILABLE:
             description="Alert annotations (summary, description, runbook)",
         )
 
-    class RunHealthCheckBody(BaseModel):
+    class RunHealthCheckBody(GreenLangBase):
         """Request body for running health check probes."""
         probe_type: Optional[str] = Field(
             None, description="Probe type (liveness, readiness, startup) or None for all",
@@ -162,7 +163,7 @@ if FASTAPI_AVAILABLE:
             None, description="Filter checks by service name pattern",
         )
 
-    class CreateSLOBody(BaseModel):
+    class CreateSLOBody(GreenLangBase):
         """Request body for creating/updating an SLO definition."""
         name: str = Field(..., description="SLO name")
         description: str = Field(default="", description="SLO description")

@@ -77,21 +77,13 @@ logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -109,7 +101,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -118,7 +109,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -130,37 +120,30 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* and return a float."""
     quantizer = Decimal(10) ** -places
     return float(value.quantize(quantizer, rounding=ROUND_HALF_UP))
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: float) -> float:
     """Round to 4 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class BenchmarkSource(str, Enum):
     """Published benchmark data sources.
@@ -173,7 +156,6 @@ class BenchmarkSource(str, Enum):
     RT_2020 = "rt_2020"
     BPIE = "bpie"
     NATIONAL_AGENCY = "national_agency"
-
 
 class BuildingType(str, Enum):
     """Comprehensive building type classification (50+ types).
@@ -258,7 +240,6 @@ class BuildingType(str, Enum):
     PARKING_MULTI_STOREY = "parking_multi_storey"
     OTHER = "other"
 
-
 class BenchmarkLevel(str, Enum):
     """Benchmark performance tiers.
 
@@ -269,7 +250,6 @@ class BenchmarkLevel(str, Enum):
     TYPICAL = "typical"
     GOOD_PRACTICE = "good_practice"
     BEST_PRACTICE = "best_practice"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- CIBSE TM46 Benchmarks
@@ -378,7 +358,6 @@ CIBSE_TM46_BENCHMARKS: Dict[str, Dict[str, Any]] = {
 }
 """CIBSE TM46:2008 energy benchmarks by building category."""
 
-
 # ENERGY STAR median source EUI values (kWh/m2/yr, converted from kBtu/ft2/yr).
 # Conversion: 1 kBtu/ft2/yr = 3.155 kWh/m2/yr.
 # Source: EPA ENERGY STAR Portfolio Manager, U.S. National Medians (2023).
@@ -458,7 +437,6 @@ ENERGY_STAR_MEDIANS: Dict[str, Dict[str, Any]] = {
 }
 """ENERGY STAR national median source EUI values."""
 
-
 # DIN V 18599 reference building energy use profiles (kWh/m2/yr total).
 # Source: DIN V 18599-10:2018, Nutzungsprofile.
 DIN_V_18599_REFERENCE: Dict[str, Dict[str, Any]] = {
@@ -519,11 +497,9 @@ DIN_V_18599_REFERENCE: Dict[str, Dict[str, Any]] = {
 }
 """DIN V 18599 reference building energy use profiles."""
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input/Output
 # ---------------------------------------------------------------------------
-
 
 class BenchmarkRecord(BaseModel):
     """A single benchmark record from a published source.
@@ -551,7 +527,6 @@ class BenchmarkRecord(BaseModel):
     )
     reference_source: str = Field(default="", description="Source citation")
 
-
 class SectorBenchmarkResult(BaseModel):
     """Sector benchmark lookup result with multi-source data.
 
@@ -572,7 +547,6 @@ class SectorBenchmarkResult(BaseModel):
         default_factory=list, description="Available sources"
     )
 
-
 class BenchmarkComparison(BaseModel):
     """Comparison of actual facility EUI against sector benchmarks.
 
@@ -581,7 +555,7 @@ class BenchmarkComparison(BaseModel):
     result_id: str = Field(default_factory=_new_uuid, description="Result ID")
     engine_version: str = Field(default=_MODULE_VERSION, description="Engine version")
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
 
@@ -614,7 +588,6 @@ class BenchmarkComparison(BaseModel):
         default_factory=list, description="Actionable recommendations"
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 # ---------------------------------------------------------------------------
 # Building Type Mapping
@@ -688,17 +661,17 @@ BUILDING_TYPE_ALIASES: Dict[str, BuildingType] = {
 }
 """Aliases for mapping user input to BuildingType enum."""
 
-
 # ---------------------------------------------------------------------------
 # Calculation Engine
 # ---------------------------------------------------------------------------
-
 
 class SectorBenchmarkEngine:
     """Sector benchmark lookup and comparison engine.
 
     Maintains comprehensive benchmark databases for 50+ building types
     from multiple published sources.  Provides:
+
+from greenlang.schemas import utcnow
     - Benchmark lookup by building type and source
     - Comparison of actual EUI against typical/good/best practice
     - Building type mapping from free-text to standard classification

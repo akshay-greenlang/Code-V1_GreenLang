@@ -57,25 +57,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -93,7 +87,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -102,7 +95,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -114,17 +106,14 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places."""
@@ -132,11 +121,9 @@ def _round3(value: float) -> float:
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SectorCode(str, Enum):
     """Unified sector classification covering SBTi SDA + IEA NZE sectors.
@@ -160,14 +147,12 @@ class SectorCode(str, Enum):
     OIL_GAS = "oil_gas"
     CROSS_SECTOR = "cross_sector"
 
-
 class ClassificationSystem(str, Enum):
     """Industry classification system identifiers."""
     NACE_REV2 = "nace_rev2"
     GICS = "gics"
     ISIC_REV4 = "isic_rev4"
     MANUAL = "manual"
-
 
 class SDAEligibility(str, Enum):
     """SBTi SDA eligibility status."""
@@ -176,14 +161,12 @@ class SDAEligibility(str, Enum):
     PARTIAL = "partial"
     REQUIRES_REVIEW = "requires_review"
 
-
 class PathwayApproach(str, Enum):
     """Decarbonization pathway approach based on sector classification."""
     SDA = "sda"
     ACA = "aca"
     FLAG = "flag"
     HYBRID = "hybrid"
-
 
 class SectorPriority(str, Enum):
     """Priority level for sector classification."""
@@ -192,14 +175,12 @@ class SectorPriority(str, Enum):
     TERTIARY = "tertiary"
     MINOR = "minor"
 
-
 class DataQuality(str, Enum):
     """Data quality tier for classification inputs."""
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
     ESTIMATED = "estimated"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- NACE Rev.2 -> Sector Mapping
@@ -396,7 +377,6 @@ NACE_TO_SECTOR: Dict[str, SectorCode] = {
     "L68.32": SectorCode.BUILDINGS_COMMERCIAL,
 }
 
-
 # ---------------------------------------------------------------------------
 # Constants -- GICS -> Sector Mapping
 # ---------------------------------------------------------------------------
@@ -466,7 +446,6 @@ GICS_TO_SECTOR: Dict[str, SectorCode] = {
     "30202010": SectorCode.AGRICULTURE,       # Agricultural Products & Svc
     "30202030": SectorCode.FOOD_BEVERAGE,     # Tobacco
 }
-
 
 # ---------------------------------------------------------------------------
 # Constants -- ISIC Rev.4 -> Sector Mapping
@@ -554,7 +533,6 @@ ISIC_TO_SECTOR: Dict[str, SectorCode] = {
     "681": SectorCode.BUILDINGS_RESIDENTIAL,
     "682": SectorCode.BUILDINGS_COMMERCIAL,
 }
-
 
 # ---------------------------------------------------------------------------
 # Constants -- SDA Sector Metadata
@@ -795,11 +773,9 @@ SDA_SECTOR_METADATA: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class IndustryCodeEntry(BaseModel):
     """A single industry classification code with optional metadata.
@@ -828,7 +804,6 @@ class IndustryCodeEntry(BaseModel):
         default=False, description="Primary activity indicator"
     )
 
-
 class ManualSectorOverride(BaseModel):
     """Manual sector assignment for cases where code lookup is insufficient.
 
@@ -845,7 +820,6 @@ class ManualSectorOverride(BaseModel):
         default=Decimal("100"), ge=Decimal("0"), le=Decimal("100"),
         description="Revenue share"
     )
-
 
 class EmissionsCoverage(BaseModel):
     """Emissions coverage data for SDA eligibility assessment.
@@ -882,7 +856,6 @@ class EmissionsCoverage(BaseModel):
         default=Decimal("0"), ge=Decimal("0"),
         description="Covered Scope 3 (tCO2e)"
     )
-
 
 class ClassificationInput(BaseModel):
     """Input for sector classification.
@@ -935,11 +908,9 @@ class ClassificationInput(BaseModel):
         default=True, description="Include IEA sector mapping"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class SectorMatch(BaseModel):
     """A single sector match from classification.
@@ -967,7 +938,6 @@ class SectorMatch(BaseModel):
     activity_metric: str = Field(default="")
     pathway_approach: str = Field(default=PathwayApproach.ACA.value)
 
-
 class SDAValidation(BaseModel):
     """SDA eligibility validation result.
 
@@ -994,7 +964,6 @@ class SDAValidation(BaseModel):
     methodology: str = Field(default="")
     validation_notes: List[str] = Field(default_factory=list)
 
-
 class IEASectorMapping(BaseModel):
     """IEA sector mapping for a matched sector.
 
@@ -1017,7 +986,6 @@ class IEASectorMapping(BaseModel):
     key_milestones_available: int = Field(default=0)
     technology_count: int = Field(default=0)
 
-
 class MultiSectorSummary(BaseModel):
     """Summary for multi-sector companies.
 
@@ -1037,7 +1005,6 @@ class MultiSectorSummary(BaseModel):
     secondary_sectors: List[str] = Field(default_factory=list)
     requires_split_pathway: bool = Field(default=False)
     recommended_approach: str = Field(default="")
-
 
 class ClassificationResult(BaseModel):
     """Complete sector classification result.
@@ -1065,7 +1032,7 @@ class ClassificationResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     entity_id: str = Field(default="")
     reporting_year: int = Field(default=0)
@@ -1083,11 +1050,9 @@ class ClassificationResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class SectorClassificationEngine:
     """Sector classification engine for PACK-028 Sector Pathway Pack.

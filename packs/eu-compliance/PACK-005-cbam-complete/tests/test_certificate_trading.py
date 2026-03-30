@@ -19,9 +19,11 @@ import pytest
 
 import sys
 import os
+from greenlang.schemas import utcnow
 sys.path.insert(0, os.path.dirname(__file__))
 
 from conftest import (
+
     _compute_hash,
     _new_uuid,
     _utcnow,
@@ -91,7 +93,7 @@ class TestOrderSubmission:
             "order_id": f"ORD-{_new_uuid()[:8]}",
             "order_type": "market",
             "quantity_tco2e": 100,
-            "submitted_at": _utcnow().isoformat(),
+            "submitted_at": utcnow().isoformat(),
             "status": "submitted",
         }
         assert order["order_type"] == "market"
@@ -105,7 +107,7 @@ class TestOrderSubmission:
             "order_type": "limit",
             "quantity_tco2e": 50,
             "limit_price_eur": Decimal("75.00"),
-            "submitted_at": _utcnow().isoformat(),
+            "submitted_at": utcnow().isoformat(),
             "status": "submitted",
         }
         assert order["order_type"] == "limit"
@@ -122,7 +124,7 @@ class TestOrderSubmission:
             "quantity_tco2e": quantity,
             "total_cost_eur": total_cost,
             "status": "executed",
-            "executed_at": _utcnow().isoformat(),
+            "executed_at": utcnow().isoformat(),
         }
         assert execution["status"] == "executed"
         assert execution["total_cost_eur"] == Decimal("7850.00")
@@ -333,7 +335,7 @@ class TestAdditionalTradingFeatures:
             "to_entity": to_entity,
             "quantity": 20,
             "status": "completed",
-            "transferred_at": _utcnow().isoformat(),
+            "transferred_at": utcnow().isoformat(),
         }
         assert transfer["status"] == "completed"
         assert transfer["from_entity"] != transfer["to_entity"]

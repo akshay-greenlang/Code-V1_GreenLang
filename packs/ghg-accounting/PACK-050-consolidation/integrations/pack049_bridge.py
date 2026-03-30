@@ -46,25 +46,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -77,11 +71,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class SiteEntityMappingType(str, Enum):
     """How a site maps to an entity."""
@@ -89,7 +81,6 @@ class SiteEntityMappingType(str, Enum):
     EXCLUSIVE = "exclusive"
     SHARED = "shared"
     PARTIAL = "partial"
-
 
 class FacilityType(str, Enum):
     """Facility type classification."""
@@ -107,7 +98,6 @@ class FacilityType(str, Enum):
     MIXED_USE = "mixed_use"
     OTHER = "other"
 
-
 class AllocationMethod(str, Enum):
     """Shared site allocation method."""
 
@@ -119,18 +109,15 @@ class AllocationMethod(str, Enum):
     ENERGY_CONSUMPTION = "energy_consumption"
     CUSTOM = "custom"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class Pack049Config(BaseModel):
     """Configuration for PACK-049 bridge."""
 
     timeout_s: float = Field(30.0, ge=5.0)
     default_allocation_method: str = Field(AllocationMethod.FLOOR_AREA.value)
-
 
 class SiteRecord(BaseModel):
     """Physical site record from PACK-049."""
@@ -155,7 +142,6 @@ class SiteRecord(BaseModel):
     total_tco2e: float = 0.0
     provenance_hash: str = ""
 
-
 class SiteEntityMapping(BaseModel):
     """Mapping of a physical site to a legal entity."""
 
@@ -169,7 +155,6 @@ class SiteEntityMapping(BaseModel):
     allocation_method: str = AllocationMethod.FLOOR_AREA.value
     allocated_tco2e: float = 0.0
     provenance_hash: str = ""
-
 
 class EntitySiteAggregation(BaseModel):
     """Aggregated site-level emissions for an entity from PACK-049."""
@@ -191,7 +176,6 @@ class EntitySiteAggregation(BaseModel):
     retrieved_at: str = ""
     duration_ms: float = 0.0
 
-
 class SharedSiteAllocation(BaseModel):
     """Allocation result for a shared site across entities."""
 
@@ -204,11 +188,9 @@ class SharedSiteAllocation(BaseModel):
     is_balanced: bool = True
     provenance_hash: str = ""
 
-
 # ---------------------------------------------------------------------------
 # Bridge Implementation
 # ---------------------------------------------------------------------------
-
 
 class Pack049Bridge:
     """
@@ -289,7 +271,7 @@ class Pack049Bridge:
                 "period": period,
                 "action": "site_aggregation",
             }),
-            retrieved_at=_utcnow().isoformat(),
+            retrieved_at=utcnow().isoformat(),
             duration_ms=duration,
         )
 

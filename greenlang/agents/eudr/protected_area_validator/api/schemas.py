@@ -46,23 +46,17 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import ConfigDict, Field, field_validator
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
+from greenlang.schemas import GreenLangBase, utcnow
 
 def _new_id() -> str:
     """Generate a new UUID4 string identifier."""
     return str(uuid.uuid4())
 
-
 # =============================================================================
 # Enumerations (API-level mirrors for OpenAPI documentation)
 # =============================================================================
-
 
 class ProtectedAreaTypeEnum(str, Enum):
     """IUCN protected area management categories."""
@@ -81,7 +75,6 @@ class ProtectedAreaTypeEnum(str, Enum):
     KEY_BIODIVERSITY_AREA = "key_biodiversity_area"
     OTHER = "other"
 
-
 class DesignationStatusEnum(str, Enum):
     """Protected area designation lifecycle status."""
 
@@ -94,7 +87,6 @@ class DesignationStatusEnum(str, Enum):
     DEGAZETTED = "degazetted"
     UNKNOWN = "unknown"
 
-
 class OverlapTypeEnum(str, Enum):
     """Types of spatial overlap between plot and protected area."""
 
@@ -104,7 +96,6 @@ class OverlapTypeEnum(str, Enum):
     ADJACENT = "adjacent"
     NONE = "none"
 
-
 class RiskLevelEnum(str, Enum):
     """Risk level classification for protected area proximity."""
 
@@ -113,7 +104,6 @@ class RiskLevelEnum(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     NEGLIGIBLE = "negligible"
-
 
 class ViolationTypeEnum(str, Enum):
     """Types of protected area violations."""
@@ -126,7 +116,6 @@ class ViolationTypeEnum(str, Enum):
     ACTIVITY_RESTRICTION = "activity_restriction"
     OTHER = "other"
 
-
 class ViolationStatusEnum(str, Enum):
     """Violation lifecycle status."""
 
@@ -137,7 +126,6 @@ class ViolationStatusEnum(str, Enum):
     ESCALATED = "escalated"
     DISMISSED = "dismissed"
     FALSE_POSITIVE = "false_positive"
-
 
 class PADDDEventTypeEnum(str, Enum):
     """PADDD (Protected Area Downgrading, Downsizing, Degazettement) event types."""
@@ -150,7 +138,6 @@ class PADDDEventTypeEnum(str, Enum):
     PROPOSED_DEGAZETTE = "proposed_degazette"
     REVERSED = "reversed"
 
-
 class ComplianceOutcomeEnum(str, Enum):
     """Compliance assessment outcome for protected area validation."""
 
@@ -159,7 +146,6 @@ class ComplianceOutcomeEnum(str, Enum):
     AT_RISK = "at_risk"
     REQUIRES_INVESTIGATION = "requires_investigation"
     REMEDIATION_REQUIRED = "remediation_required"
-
 
 class EUDRCommodityEnum(str, Enum):
     """EUDR-regulated commodity types per Article 1."""
@@ -172,7 +158,6 @@ class EUDRCommodityEnum(str, Enum):
     SOYA = "soya"
     WOOD = "wood"
 
-
 class DataSourceEnum(str, Enum):
     """Protected area data source identifiers."""
 
@@ -184,14 +169,12 @@ class DataSourceEnum(str, Enum):
     RAMSAR = "ramsar"
     CUSTOM = "custom"
 
-
 class EscalationLevelEnum(str, Enum):
     """Escalation level for violations."""
 
     LEVEL_1 = "level_1"
     LEVEL_2 = "level_2"
     LEVEL_3 = "level_3"
-
 
 class AuditActionEnum(str, Enum):
     """Audit trail action types."""
@@ -209,13 +192,11 @@ class AuditActionEnum(str, Enum):
     PADDD_DETECTED = "paddd_detected"
     BUFFER_VIOLATION = "buffer_violation"
 
-
 # =============================================================================
 # Common / Shared Schemas
 # =============================================================================
 
-
-class ProvenanceInfo(BaseModel):
+class ProvenanceInfo(GreenLangBase):
     """Provenance tracking information for audit trail."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -231,12 +212,11 @@ class ProvenanceInfo(BaseModel):
         description="Agent identifier",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of operation",
     )
 
-
-class MetadataSchema(BaseModel):
+class MetadataSchema(GreenLangBase):
     """Response metadata for traceability."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -257,8 +237,7 @@ class MetadataSchema(BaseModel):
         default="1.0.0", description="API version"
     )
 
-
-class PaginatedMeta(BaseModel):
+class PaginatedMeta(GreenLangBase):
     """Pagination metadata for list responses."""
 
     total: int = Field(..., ge=0, description="Total number of records")
@@ -266,8 +245,7 @@ class PaginatedMeta(BaseModel):
     offset: int = Field(..., ge=0, description="Number of records skipped")
     has_more: bool = Field(..., description="Whether more pages exist")
 
-
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     """Structured error response for all API endpoints."""
 
     error: str = Field(..., description="Error type identifier")
@@ -275,8 +253,7 @@ class ErrorResponse(BaseModel):
     detail: Optional[str] = Field(None, description="Additional error details")
     request_id: Optional[str] = Field(None, description="Request correlation ID")
 
-
-class GeoPointSchema(BaseModel):
+class GeoPointSchema(GreenLangBase):
     """Geographic coordinate point with regulatory-grade precision."""
 
     latitude: Decimal = Field(
@@ -292,8 +269,7 @@ class GeoPointSchema(BaseModel):
         description="WGS84 longitude in decimal degrees",
     )
 
-
-class GeoPolygonSchema(BaseModel):
+class GeoPolygonSchema(GreenLangBase):
     """Geographic polygon defined by ordered coordinate points."""
 
     coordinates: List[GeoPointSchema] = Field(
@@ -310,8 +286,7 @@ class GeoPolygonSchema(BaseModel):
             raise ValueError("Polygon must have at least 3 vertices")
         return v
 
-
-class GeoBoundingBoxSchema(BaseModel):
+class GeoBoundingBoxSchema(GreenLangBase):
     """Geographic bounding box for spatial queries."""
 
     min_latitude: Decimal = Field(
@@ -340,8 +315,7 @@ class GeoBoundingBoxSchema(BaseModel):
             raise ValueError("max_latitude must be >= min_latitude")
         return v
 
-
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Health check response schema."""
 
     status: str = Field(default="healthy", description="Service health status")
@@ -353,13 +327,11 @@ class HealthResponse(BaseModel):
     )
     version: str = Field(default="1.0.0", description="API version")
 
-
 # =============================================================================
 # 1. Protected Area Schemas
 # =============================================================================
 
-
-class ProtectedAreaCreateRequest(BaseModel):
+class ProtectedAreaCreateRequest(GreenLangBase):
     """Request to register a new protected area."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -426,8 +398,7 @@ class ProtectedAreaCreateRequest(BaseModel):
         description="Additional notes or metadata",
     )
 
-
-class ProtectedAreaEntry(BaseModel):
+class ProtectedAreaEntry(GreenLangBase):
     """A single protected area record."""
 
     area_id: str = Field(..., description="Unique protected area identifier")
@@ -471,14 +442,13 @@ class ProtectedAreaEntry(BaseModel):
         default=True, description="Whether area record is active",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation timestamp",
+        default_factory=utcnow, description="Creation timestamp",
     )
     updated_at: Optional[datetime] = Field(
         None, description="Last update timestamp",
     )
 
-
-class ProtectedAreaResponse(BaseModel):
+class ProtectedAreaResponse(GreenLangBase):
     """Response for a single protected area."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -493,8 +463,7 @@ class ProtectedAreaResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata",
     )
 
-
-class ProtectedAreaUpdateRequest(BaseModel):
+class ProtectedAreaUpdateRequest(GreenLangBase):
     """Request to update a protected area."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -530,8 +499,7 @@ class ProtectedAreaUpdateRequest(BaseModel):
         description="Updated notes",
     )
 
-
-class ProtectedAreaListResponse(BaseModel):
+class ProtectedAreaListResponse(GreenLangBase):
     """Paginated list of protected areas."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -552,8 +520,7 @@ class ProtectedAreaListResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata",
     )
 
-
-class ProtectedAreaSearchRequest(BaseModel):
+class ProtectedAreaSearchRequest(GreenLangBase):
     """Request for advanced spatial search of protected areas."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -596,8 +563,7 @@ class ProtectedAreaSearchRequest(BaseModel):
         description="Include buffer zones in spatial search",
     )
 
-
-class ProtectedAreaSearchResponse(BaseModel):
+class ProtectedAreaSearchResponse(GreenLangBase):
     """Response for spatial search of protected areas."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -621,13 +587,11 @@ class ProtectedAreaSearchResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata",
     )
 
-
 # =============================================================================
 # 2. Overlap Detection Schemas
 # =============================================================================
 
-
-class OverlapDetectRequest(BaseModel):
+class OverlapDetectRequest(GreenLangBase):
     """Request to detect overlaps between a plot and protected areas."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -658,8 +622,7 @@ class OverlapDetectRequest(BaseModel):
         None, description="Commodities produced on the plot",
     )
 
-
-class OverlapEntry(BaseModel):
+class OverlapEntry(GreenLangBase):
     """A single overlap detection result."""
 
     overlap_id: str = Field(
@@ -708,8 +671,7 @@ class OverlapEntry(BaseModel):
         None, description="IUCN category",
     )
 
-
-class OverlapDetectResponse(BaseModel):
+class OverlapDetectResponse(GreenLangBase):
     """Response for overlap detection."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -742,8 +704,7 @@ class OverlapDetectResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata",
     )
 
-
-class OverlapAnalyzeRequest(BaseModel):
+class OverlapAnalyzeRequest(GreenLangBase):
     """Request for detailed overlap analysis between plot and protected areas."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -766,8 +727,7 @@ class OverlapAnalyzeRequest(BaseModel):
         None, description="Commodities produced on the plot",
     )
 
-
-class OverlapAnalyzeResponse(BaseModel):
+class OverlapAnalyzeResponse(GreenLangBase):
     """Response for detailed overlap analysis."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -818,8 +778,7 @@ class OverlapAnalyzeResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata",
     )
 
-
-class OverlapBulkRequest(BaseModel):
+class OverlapBulkRequest(GreenLangBase):
     """Request for bulk overlap detection across multiple plots."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -833,8 +792,7 @@ class OverlapBulkRequest(BaseModel):
         description="Include buffer zone overlaps",
     )
 
-
-class OverlapBulkResultEntry(BaseModel):
+class OverlapBulkResultEntry(GreenLangBase):
     """Result for a single plot in bulk overlap detection."""
 
     plot_id: str = Field(..., description="Plot identifier")
@@ -855,8 +813,7 @@ class OverlapBulkResultEntry(BaseModel):
         None, description="Error message if processing failed",
     )
 
-
-class OverlapBulkResponse(BaseModel):
+class OverlapBulkResponse(GreenLangBase):
     """Response for bulk overlap detection."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -886,8 +843,7 @@ class OverlapBulkResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata",
     )
 
-
-class OverlapByPlotResponse(BaseModel):
+class OverlapByPlotResponse(GreenLangBase):
     """Response for overlaps by plot."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -909,8 +865,7 @@ class OverlapByPlotResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata",
     )
 
-
-class OverlapByAreaResponse(BaseModel):
+class OverlapByAreaResponse(GreenLangBase):
     """Response for overlaps by protected area."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -933,13 +888,11 @@ class OverlapByAreaResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata",
     )
 
-
 # =============================================================================
 # 3. Buffer Zone Schemas
 # =============================================================================
 
-
-class BufferZoneMonitorRequest(BaseModel):
+class BufferZoneMonitorRequest(GreenLangBase):
     """Request to monitor buffer zone compliance for plots."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -963,8 +916,7 @@ class BufferZoneMonitorRequest(BaseModel):
         None, description="Filter by protected area types",
     )
 
-
-class BufferZoneMonitorEntry(BaseModel):
+class BufferZoneMonitorEntry(GreenLangBase):
     """Buffer zone monitoring result for a single protected area."""
 
     area_id: str = Field(..., description="Protected area ID")
@@ -992,8 +944,7 @@ class BufferZoneMonitorEntry(BaseModel):
         ..., description="Risk level assessment",
     )
 
-
-class BufferZoneMonitorResponse(BaseModel):
+class BufferZoneMonitorResponse(GreenLangBase):
     """Response for buffer zone monitoring."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1018,8 +969,7 @@ class BufferZoneMonitorResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata",
     )
 
-
-class BufferZoneViolationEntry(BaseModel):
+class BufferZoneViolationEntry(GreenLangBase):
     """A buffer zone violation record."""
 
     violation_id: str = Field(
@@ -1044,15 +994,14 @@ class BufferZoneViolationEntry(BaseModel):
         ..., description="Risk level",
     )
     detected_at: datetime = Field(
-        default_factory=_utcnow, description="Detection timestamp",
+        default_factory=utcnow, description="Detection timestamp",
     )
     status: ViolationStatusEnum = Field(
         default=ViolationStatusEnum.DETECTED,
         description="Violation status",
     )
 
-
-class BufferZoneViolationsResponse(BaseModel):
+class BufferZoneViolationsResponse(GreenLangBase):
     """Paginated list of buffer zone violations."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1073,8 +1022,7 @@ class BufferZoneViolationsResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata",
     )
 
-
-class BufferZoneAnalyzeRequest(BaseModel):
+class BufferZoneAnalyzeRequest(GreenLangBase):
     """Request for proximity analysis between a point and protected areas."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1095,8 +1043,7 @@ class BufferZoneAnalyzeRequest(BaseModel):
         default=True, description="Include distance calculations",
     )
 
-
-class BufferZoneAnalyzeEntry(BaseModel):
+class BufferZoneAnalyzeEntry(GreenLangBase):
     """Proximity analysis result for a single protected area."""
 
     area_id: str = Field(..., description="Protected area ID")
@@ -1120,8 +1067,7 @@ class BufferZoneAnalyzeEntry(BaseModel):
         ..., description="Risk assessment",
     )
 
-
-class BufferZoneAnalyzeResponse(BaseModel):
+class BufferZoneAnalyzeResponse(GreenLangBase):
     """Response for proximity analysis."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1148,8 +1094,7 @@ class BufferZoneAnalyzeResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata",
     )
 
-
-class BufferZoneBulkRequest(BaseModel):
+class BufferZoneBulkRequest(GreenLangBase):
     """Request for bulk buffer zone monitoring."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1159,8 +1104,7 @@ class BufferZoneBulkRequest(BaseModel):
         description="Plots to monitor (max 500)",
     )
 
-
-class BufferZoneBulkResultEntry(BaseModel):
+class BufferZoneBulkResultEntry(GreenLangBase):
     """Result for a single plot in bulk buffer monitoring."""
 
     plot_id: str = Field(..., description="Plot identifier")
@@ -1177,8 +1121,7 @@ class BufferZoneBulkResultEntry(BaseModel):
         None, description="Error if processing failed",
     )
 
-
-class BufferZoneBulkResponse(BaseModel):
+class BufferZoneBulkResponse(GreenLangBase):
     """Response for bulk buffer zone monitoring."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1208,13 +1151,11 @@ class BufferZoneBulkResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata",
     )
 
-
 # =============================================================================
 # 4. Designation Validation Schemas
 # =============================================================================
 
-
-class DesignationValidateRequest(BaseModel):
+class DesignationValidateRequest(GreenLangBase):
     """Request to validate designation status of protected areas affecting a plot."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1241,8 +1182,7 @@ class DesignationValidateRequest(BaseModel):
         description="Verify current legal designation status",
     )
 
-
-class DesignationValidationEntry(BaseModel):
+class DesignationValidationEntry(GreenLangBase):
     """Validation result for a single protected area designation."""
 
     area_id: str = Field(..., description="Protected area ID")
@@ -1274,8 +1214,7 @@ class DesignationValidationEntry(BaseModel):
         None, description="Notes from verification",
     )
 
-
-class DesignationValidateResponse(BaseModel):
+class DesignationValidateResponse(GreenLangBase):
     """Response for designation validation."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1302,8 +1241,7 @@ class DesignationValidateResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata",
     )
 
-
-class DesignationStatusResponse(BaseModel):
+class DesignationStatusResponse(GreenLangBase):
     """Response for current designation status of a protected area."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1344,8 +1282,7 @@ class DesignationStatusResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata",
     )
 
-
-class DesignationHistoryEntry(BaseModel):
+class DesignationHistoryEntry(GreenLangBase):
     """A single designation history event."""
 
     event_date: date = Field(
@@ -1367,8 +1304,7 @@ class DesignationHistoryEntry(BaseModel):
         None, description="Event notes",
     )
 
-
-class DesignationHistoryResponse(BaseModel):
+class DesignationHistoryResponse(GreenLangBase):
     """Response for designation history of a protected area."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1391,13 +1327,11 @@ class DesignationHistoryResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata",
     )
 
-
 # =============================================================================
 # 5. Risk Scoring Schemas
 # =============================================================================
 
-
-class RiskScoreRequest(BaseModel):
+class RiskScoreRequest(GreenLangBase):
     """Request to calculate protected area risk score for a plot."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1427,8 +1361,7 @@ class RiskScoreRequest(BaseModel):
         description="Custom scoring weights (proximity, overlap, designation, iucn, biodiversity)",
     )
 
-
-class RiskScoreBreakdown(BaseModel):
+class RiskScoreBreakdown(GreenLangBase):
     """Detailed risk score component breakdown."""
 
     proximity_score: Decimal = Field(
@@ -1478,8 +1411,7 @@ class RiskScoreBreakdown(BaseModel):
         description="Final risk score after multipliers",
     )
 
-
-class RiskScoreResponse(BaseModel):
+class RiskScoreResponse(GreenLangBase):
     """Response for risk score calculation."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1517,8 +1449,7 @@ class RiskScoreResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata",
     )
 
-
-class RiskHeatmapCell(BaseModel):
+class RiskHeatmapCell(GreenLangBase):
     """A single cell in the risk heatmap grid."""
 
     latitude: Decimal = Field(..., description="Cell center latitude")
@@ -1537,8 +1468,7 @@ class RiskHeatmapCell(BaseModel):
         default=0, ge=0, description="Protected areas affecting this cell",
     )
 
-
-class RiskHeatmapResponse(BaseModel):
+class RiskHeatmapResponse(GreenLangBase):
     """Response for risk heatmap data."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1565,8 +1495,7 @@ class RiskHeatmapResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata",
     )
 
-
-class RiskSummaryByCategory(BaseModel):
+class RiskSummaryByCategory(GreenLangBase):
     """Risk summary grouped by a category."""
 
     category: str = Field(..., description="Category name")
@@ -1578,8 +1507,7 @@ class RiskSummaryByCategory(BaseModel):
         None, description="Percentage of total",
     )
 
-
-class RiskSummaryResponse(BaseModel):
+class RiskSummaryResponse(GreenLangBase):
     """Response for risk summary statistics."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1613,8 +1541,7 @@ class RiskSummaryResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata",
     )
 
-
-class ProximityAlertEntry(BaseModel):
+class ProximityAlertEntry(GreenLangBase):
     """A high-risk proximity alert."""
 
     alert_id: str = Field(
@@ -1637,11 +1564,10 @@ class ProximityAlertEntry(BaseModel):
         ..., description="Reason for the alert",
     )
     detected_at: datetime = Field(
-        default_factory=_utcnow, description="Detection timestamp",
+        default_factory=utcnow, description="Detection timestamp",
     )
 
-
-class ProximityAlertsResponse(BaseModel):
+class ProximityAlertsResponse(GreenLangBase):
     """Response for proximity alerts."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1668,13 +1594,11 @@ class ProximityAlertsResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata",
     )
 
-
 # =============================================================================
 # 6. Violation Detection Schemas
 # =============================================================================
 
-
-class ViolationDetectRequest(BaseModel):
+class ViolationDetectRequest(GreenLangBase):
     """Request to detect protected area violations for a plot."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1698,8 +1622,7 @@ class ViolationDetectRequest(BaseModel):
         default=True, description="Include designation non-compliance",
     )
 
-
-class ViolationEntry(BaseModel):
+class ViolationEntry(GreenLangBase):
     """A single violation detection result."""
 
     violation_id: str = Field(
@@ -1731,14 +1654,13 @@ class ViolationEntry(BaseModel):
         None, description="Applicable regulatory reference",
     )
     detected_at: datetime = Field(
-        default_factory=_utcnow, description="Detection timestamp",
+        default_factory=utcnow, description="Detection timestamp",
     )
     resolved_at: Optional[datetime] = Field(
         None, description="Resolution timestamp",
     )
 
-
-class ViolationDetectResponse(BaseModel):
+class ViolationDetectResponse(GreenLangBase):
     """Response for violation detection."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1764,8 +1686,7 @@ class ViolationDetectResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata",
     )
 
-
-class ViolationListResponse(BaseModel):
+class ViolationListResponse(GreenLangBase):
     """Paginated list of violations."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1786,8 +1707,7 @@ class ViolationListResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata",
     )
 
-
-class ViolationResolveRequest(BaseModel):
+class ViolationResolveRequest(GreenLangBase):
     """Request to resolve a violation."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1809,8 +1729,7 @@ class ViolationResolveRequest(BaseModel):
         default=False, description="Mark as false positive",
     )
 
-
-class ViolationResolveResponse(BaseModel):
+class ViolationResolveResponse(GreenLangBase):
     """Response for violation resolution."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1826,7 +1745,7 @@ class ViolationResolveResponse(BaseModel):
         ..., description="User who resolved",
     )
     resolved_at: datetime = Field(
-        default_factory=_utcnow, description="Resolution timestamp",
+        default_factory=utcnow, description="Resolution timestamp",
     )
     provenance: ProvenanceInfo = Field(
         ..., description="Provenance tracking information",
@@ -1835,8 +1754,7 @@ class ViolationResolveResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata",
     )
 
-
-class ViolationEscalateRequest(BaseModel):
+class ViolationEscalateRequest(GreenLangBase):
     """Request to escalate a violation."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1855,8 +1773,7 @@ class ViolationEscalateRequest(BaseModel):
         description="Whether competent authority notification is required",
     )
 
-
-class ViolationEscalateResponse(BaseModel):
+class ViolationEscalateResponse(GreenLangBase):
     """Response for violation escalation."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1875,7 +1792,7 @@ class ViolationEscalateResponse(BaseModel):
         ..., description="User who escalated",
     )
     escalated_at: datetime = Field(
-        default_factory=_utcnow, description="Escalation timestamp",
+        default_factory=utcnow, description="Escalation timestamp",
     )
     provenance: ProvenanceInfo = Field(
         ..., description="Provenance tracking information",
@@ -1884,13 +1801,11 @@ class ViolationEscalateResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata",
     )
 
-
 # =============================================================================
 # 7. Compliance Assessment Schemas
 # =============================================================================
 
-
-class ComplianceAssessRequest(BaseModel):
+class ComplianceAssessRequest(GreenLangBase):
     """Request for full protected area compliance assessment."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1926,8 +1841,7 @@ class ComplianceAssessRequest(BaseModel):
         default=True, description="Include risk score calculation",
     )
 
-
-class ComplianceAssessResponse(BaseModel):
+class ComplianceAssessResponse(GreenLangBase):
     """Response for full compliance assessment."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1984,8 +1898,7 @@ class ComplianceAssessResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata",
     )
 
-
-class ComplianceReportResponse(BaseModel):
+class ComplianceReportResponse(GreenLangBase):
     """Response for compliance report generation."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -2019,7 +1932,7 @@ class ComplianceReportResponse(BaseModel):
         default_factory=dict, description="PADDD events summary",
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow, description="Report generation timestamp",
+        default_factory=utcnow, description="Report generation timestamp",
     )
     provenance: ProvenanceInfo = Field(
         ..., description="Provenance tracking information",
@@ -2028,8 +1941,7 @@ class ComplianceReportResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata",
     )
 
-
-class AuditTrailEntry(BaseModel):
+class AuditTrailEntry(GreenLangBase):
     """A single audit trail record."""
 
     entry_id: str = Field(
@@ -2048,7 +1960,7 @@ class AuditTrailEntry(BaseModel):
         ..., description="User who performed the action",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Action timestamp",
+        default_factory=utcnow, description="Action timestamp",
     )
     details: Optional[Dict[str, Any]] = Field(
         None, description="Additional details",
@@ -2057,8 +1969,7 @@ class AuditTrailEntry(BaseModel):
         None, description="Client IP address",
     )
 
-
-class ComplianceAuditTrailResponse(BaseModel):
+class ComplianceAuditTrailResponse(GreenLangBase):
     """Response for compliance audit trail."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -2080,13 +1991,11 @@ class ComplianceAuditTrailResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata",
     )
 
-
 # =============================================================================
 # 8. PADDD Monitoring Schemas
 # =============================================================================
 
-
-class PADDDMonitorRequest(BaseModel):
+class PADDDMonitorRequest(GreenLangBase):
     """Request to monitor PADDD events for protected areas near plots."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -2114,8 +2023,7 @@ class PADDDMonitorRequest(BaseModel):
         None, description="Only events after this date",
     )
 
-
-class PADDDEventEntry(BaseModel):
+class PADDDEventEntry(GreenLangBase):
     """A single PADDD event record."""
 
     event_id: str = Field(
@@ -2154,8 +2062,7 @@ class PADDDEventEntry(BaseModel):
         default=False, description="Whether event has been reversed",
     )
 
-
-class PADDDMonitorResponse(BaseModel):
+class PADDDMonitorResponse(GreenLangBase):
     """Response for PADDD event monitoring."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -2183,8 +2090,7 @@ class PADDDMonitorResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata",
     )
 
-
-class PADDDEventsResponse(BaseModel):
+class PADDDEventsResponse(GreenLangBase):
     """Paginated list of PADDD events."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -2205,8 +2111,7 @@ class PADDDEventsResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata",
     )
 
-
-class PADDDImpactAssessmentRequest(BaseModel):
+class PADDDImpactAssessmentRequest(GreenLangBase):
     """Request for PADDD impact assessment on supply chain plots."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -2229,8 +2134,7 @@ class PADDDImpactAssessmentRequest(BaseModel):
         description="Include risk score reassessment",
     )
 
-
-class PADDDImpactAssessmentResponse(BaseModel):
+class PADDDImpactAssessmentResponse(GreenLangBase):
     """Response for PADDD impact assessment."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -2266,7 +2170,6 @@ class PADDDImpactAssessmentResponse(BaseModel):
     metadata: MetadataSchema = Field(
         default_factory=MetadataSchema, description="Response metadata",
     )
-
 
 # =============================================================================
 # Public API

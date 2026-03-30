@@ -32,11 +32,12 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field, validator
+from pydantic import Field, validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.agents.base_agents import DeterministicAgent, AuditEntry
 from greenlang.agents.categories import AgentCategory
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -156,7 +157,7 @@ REGIONAL_PRICES: Dict[str, float] = {
 # =============================================================================
 
 
-class InternalCarbonPrice(BaseModel):
+class InternalCarbonPrice(GreenLangBase):
     """Internal carbon price specification."""
     price_id: str = Field(..., description="Unique identifier for the price")
     price_per_tco2e: float = Field(..., ge=0, description="Price per tCO2e")
@@ -172,7 +173,7 @@ class InternalCarbonPrice(BaseModel):
     notes: str = Field(default="", description="Additional notes")
 
 
-class CarbonPriceImpact(BaseModel):
+class CarbonPriceImpact(GreenLangBase):
     """Impact of carbon pricing on operations."""
     total_emissions_tco2e: float = Field(..., ge=0, description="Total emissions in tCO2e")
     carbon_cost: float = Field(..., ge=0, description="Total carbon cost")
@@ -188,7 +189,7 @@ class CarbonPriceImpact(BaseModel):
     )
 
 
-class ScenarioPriceProjection(BaseModel):
+class ScenarioPriceProjection(GreenLangBase):
     """Carbon price projection for a scenario."""
     scenario: CarbonPriceScenario = Field(..., description="Scenario name")
     year: int = Field(..., ge=2020, le=2100, description="Projection year")
@@ -198,7 +199,7 @@ class ScenarioPriceProjection(BaseModel):
     confidence_interval_high: float = Field(..., ge=0, description="High confidence bound")
 
 
-class CarbonPricingInput(BaseModel):
+class CarbonPricingInput(GreenLangBase):
     """Input for carbon pricing calculations."""
     operation: str = Field(
         default="calculate_impact",
@@ -232,7 +233,7 @@ class CarbonPricingInput(BaseModel):
     )
 
 
-class CarbonPricingOutput(BaseModel):
+class CarbonPricingOutput(GreenLangBase):
     """Output from carbon pricing calculations."""
     success: bool = Field(..., description="Whether operation succeeded")
     operation: str = Field(..., description="Operation performed")

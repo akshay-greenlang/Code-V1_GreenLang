@@ -38,35 +38,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "23.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a single workflow phase."""
@@ -77,7 +69,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -86,7 +77,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class CriterionStatus(str, Enum):
     """Assessment status for a single criterion."""
@@ -97,7 +87,6 @@ class CriterionStatus(str, Enum):
     NOT_APPLICABLE = "not_applicable"
     NOT_ASSESSED = "not_assessed"
 
-
 class GapPriority(str, Enum):
     """Priority level for identified gaps."""
 
@@ -105,7 +94,6 @@ class GapPriority(str, Enum):
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 class CriterionCategory(str, Enum):
     """Category grouping for SBTi criteria."""
@@ -121,7 +109,6 @@ class CriterionCategory(str, Enum):
     LONG_TERM = "long_term"
     RESIDUAL = "residual"
     TRANSITION = "transition"
-
 
 # =============================================================================
 # CRITERIA DEFINITIONS (Zero-Hallucination, from SBTi V5.3 / NZ V1.3)
@@ -217,11 +204,9 @@ NET_ZERO_CRITERIA: Dict[str, Dict[str, Any]] = {
                "description": "Just transition principles addressed"},
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -234,7 +219,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class EvidenceItem(BaseModel):
     """Supporting evidence document for validation."""
 
@@ -244,7 +228,6 @@ class EvidenceItem(BaseModel):
     document_type: str = Field(default="")
     available: bool = Field(default=False)
     notes: str = Field(default="")
-
 
 class CriterionCheck(BaseModel):
     """Assessment result for a single SBTi criterion."""
@@ -258,7 +241,6 @@ class CriterionCheck(BaseModel):
     evidence_refs: List[str] = Field(default_factory=list)
     remediation: str = Field(default="")
 
-
 class GapItem(BaseModel):
     """Identified gap with remediation guidance."""
 
@@ -270,7 +252,6 @@ class GapItem(BaseModel):
     remediation_steps: List[str] = Field(default_factory=list)
     estimated_effort_days: int = Field(default=0)
     blocking_submission: bool = Field(default=False)
-
 
 class ValidationConfig(BaseModel):
     """Configuration for the validation workflow."""
@@ -317,7 +298,6 @@ class ValidationConfig(BaseModel):
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
 
-
 class ValidationResult(BaseModel):
     """Complete result from the validation workflow."""
 
@@ -336,11 +316,9 @@ class ValidationResult(BaseModel):
     submission_ready: bool = Field(default=False)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class ValidationWorkflow:
     """
@@ -390,7 +368,7 @@ class ValidationWorkflow:
         Returns:
             ValidationResult with criteria checks, gaps, and readiness score.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting validation workflow %s", self.workflow_id)
         self._phase_results = []
         overall_status = WorkflowStatus.RUNNING
@@ -418,7 +396,7 @@ class ValidationWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
 
         nt_pass = sum(1 for c in self._criteria_checks if c.criterion_id.startswith("C") and c.status == CriterionStatus.PASS)
         nt_fail = sum(1 for c in self._criteria_checks if c.criterion_id.startswith("C") and c.status == CriterionStatus.FAIL)
@@ -459,7 +437,7 @@ class ValidationWorkflow:
 
     async def _phase_data_collect(self, config: ValidationConfig) -> PhaseResult:
         """Collect all required data and documentation evidence."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -490,7 +468,7 @@ class ValidationWorkflow:
         outputs["total_emissions_tco2e"] = round(total_emissions, 2)
         outputs["data_completeness"] = "complete" if total_emissions > 0 else "incomplete"
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Data collect: %d evidence flags, %d missing", len(self._evidence_map), len(missing_evidence))
         return PhaseResult(
             phase_name="data_collect",
@@ -507,7 +485,7 @@ class ValidationWorkflow:
 
     async def _phase_criteria_check(self, config: ValidationConfig) -> PhaseResult:
         """Run 42-criterion validation (C1-C28 + NZ-C1 to NZ-C14)."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._criteria_checks = []
@@ -541,7 +519,7 @@ class ValidationWorkflow:
         outputs["warning_count"] = warn_count
         outputs["na_count"] = na_count
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Criteria check: %d total, %d pass, %d fail, %d warning",
             len(self._criteria_checks), pass_count, fail_count, warn_count,
@@ -557,7 +535,7 @@ class ValidationWorkflow:
 
     def _check_near_term_criteria(self, config: ValidationConfig) -> None:
         """Evaluate all 28 near-term criteria."""
-        current_year = _utcnow().year
+        current_year = utcnow().year
         nt_years = config.near_term_target_year - config.base_year
 
         # C1: GHG inventory boundary
@@ -857,7 +835,7 @@ class ValidationWorkflow:
 
     async def _phase_gap_analysis(self, config: ValidationConfig) -> PhaseResult:
         """Identify gaps with remediation guidance and priority."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._gaps = []
@@ -908,7 +886,7 @@ class ValidationWorkflow:
         outputs["blocking_gaps"] = blocking_count
         outputs["total_effort_days"] = total_effort
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Gap analysis: %d gaps (%d critical, %d blocking), effort=%d days",
             len(self._gaps), critical_count, blocking_count, total_effort,
@@ -954,7 +932,7 @@ class ValidationWorkflow:
 
     async def _phase_report(self, config: ValidationConfig) -> PhaseResult:
         """Generate validation report with readiness score."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -1001,7 +979,7 @@ class ValidationWorkflow:
                 f"({', '.join(blocking_criteria)})"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Report: readiness=%.1f%%, submission_ready=%s, gaps=%d",
             readiness, submission_ready, len(self._gaps),

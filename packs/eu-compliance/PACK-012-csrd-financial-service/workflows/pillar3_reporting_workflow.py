@@ -26,20 +26,15 @@ from typing import Any, Callable, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC time with timezone info."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute SHA-256 provenance hash of arbitrary data."""
     return hashlib.sha256(
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
-
 
 class PhaseStatus(str, Enum):
     PENDING = "PENDING"
@@ -48,7 +43,6 @@ class PhaseStatus(str, Enum):
     FAILED = "FAILED"
     SKIPPED = "SKIPPED"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "PENDING"
     RUNNING = "RUNNING"
@@ -56,11 +50,10 @@ class WorkflowStatus(str, Enum):
     FAILED = "FAILED"
     PARTIAL = "PARTIAL"
 
-
 class WorkflowContext(BaseModel):
     workflow_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     organization_id: str = Field(..., description="Organization identifier")
-    execution_timestamp: datetime = Field(default_factory=_utcnow)
+    execution_timestamp: datetime = Field(default_factory=utcnow)
     config: Dict[str, Any] = Field(default_factory=dict)
     phase_states: Dict[str, PhaseStatus] = Field(default_factory=dict)
     phase_outputs: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
@@ -79,7 +72,6 @@ class WorkflowContext(BaseModel):
     def is_phase_completed(self, phase_name: str) -> bool:
         return self.phase_states.get(phase_name) == PhaseStatus.COMPLETED
 
-
 class PhaseResult(BaseModel):
     phase_name: str = Field(..., description="Phase identifier")
     status: PhaseStatus = Field(..., description="Phase completion status")
@@ -92,7 +84,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     records_processed: int = Field(default=0)
 
-
 class WorkflowResult(BaseModel):
     workflow_id: str = Field(..., description="Unique workflow execution ID")
     workflow_name: str = Field(..., description="Workflow type identifier")
@@ -103,8 +94,6 @@ class WorkflowResult(BaseModel):
     phases: List[PhaseResult] = Field(default_factory=list)
     summary: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
-
-
 
 # ---------------------------------------------------------------------------
 #  Input / Result Models
@@ -121,7 +110,6 @@ class Pillar3DataRecord(BaseModel):
     sector: str = Field(default="")
     maturity_bucket: str = Field(default="")
     geography: str = Field(default="")
-
 
 class Pillar3ReportingInput(BaseModel):
     """Input for the Pillar 3 reporting workflow."""
@@ -144,7 +132,6 @@ class Pillar3ReportingInput(BaseModel):
         datetime.strptime(v, "%Y-%m-%d")
         return v
 
-
 class Pillar3ReportingResult(WorkflowResult):
     """Result from the Pillar 3 reporting workflow."""
     templates_populated: int = Field(default=0)
@@ -154,7 +141,6 @@ class Pillar3ReportingResult(WorkflowResult):
     filing_ready: bool = Field(default=False)
     issues_count: int = Field(default=0)
     completeness_pct: float = Field(default=0.0)
-
 
 # ---------------------------------------------------------------------------
 #  Phases
@@ -178,7 +164,7 @@ class DataExtractionPhase:
     ]
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -215,7 +201,7 @@ class DataExtractionPhase:
             errors.append(f"Data extraction failed: {str(exc)}")
             status = PhaseStatus.FAILED
             records_count = 0
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -224,13 +210,12 @@ class DataExtractionPhase:
             provenance_hash=_hash_data(outputs), records_processed=records_count,
         )
 
-
 class TemplatePopulationPhase:
     """Populate EBA ITS quantitative and qualitative templates."""
     PHASE_NAME = "template_population"
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -283,7 +268,7 @@ class TemplatePopulationPhase:
             logger.error("TemplatePopulation failed: %s", exc, exc_info=True)
             errors.append(f"Template population failed: {str(exc)}")
             status = PhaseStatus.FAILED
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -292,13 +277,12 @@ class TemplatePopulationPhase:
             provenance_hash=_hash_data(outputs),
         )
 
-
 class QualityValidationPhase:
     """Validate data consistency and completeness for Pillar 3."""
     PHASE_NAME = "quality_validation"
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -338,7 +322,7 @@ class QualityValidationPhase:
             logger.error("QualityValidation failed: %s", exc, exc_info=True)
             errors.append(f"Quality validation failed: {str(exc)}")
             status = PhaseStatus.FAILED
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -347,13 +331,12 @@ class QualityValidationPhase:
             provenance_hash=_hash_data(outputs),
         )
 
-
 class FilingPreparationPhase:
     """Prepare final Pillar 3 ESG filing package."""
     PHASE_NAME = "filing_preparation"
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -372,7 +355,7 @@ class FilingPreparationPhase:
                 "completeness_pct": validation.get("completeness_pct", 0.0),
                 "data_quality_score": validation.get("data_quality_score", 0.0),
                 "issues_count": validation.get("issues_count", 0),
-                "generated_at": _utcnow().isoformat(),
+                "generated_at": utcnow().isoformat(),
             }
             if not filing_ready:
                 warnings.append("Filing package not ready: validation issues exist")
@@ -382,7 +365,7 @@ class FilingPreparationPhase:
             logger.error("FilingPreparation failed: %s", exc, exc_info=True)
             errors.append(f"Filing preparation failed: {str(exc)}")
             status = PhaseStatus.FAILED
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -390,7 +373,6 @@ class FilingPreparationPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 class Pillar3ReportingWorkflow:
     """Four-phase Pillar 3 ESG reporting workflow for EBA ITS compliance."""
@@ -411,7 +393,7 @@ class Pillar3ReportingWorkflow:
 
     async def run(self, input_data: Pillar3ReportingInput) -> Pillar3ReportingResult:
         """Execute the workflow."""
-        started_at = _utcnow()
+        started_at = utcnow()
         logger.info("Starting %s workflow %s org=%s", self.WORKFLOW_NAME,
                      self.workflow_id, input_data.organization_id)
         context = WorkflowContext(
@@ -452,7 +434,7 @@ class Pillar3ReportingWorkflow:
                 logger.error("Phase '%s' raised: %s", phase_name, exc, exc_info=True)
                 completed_phases.append(PhaseResult(
                     phase_name=phase_name, status=PhaseStatus.FAILED,
-                    started_at=_utcnow(), errors=[str(exc)],
+                    started_at=utcnow(), errors=[str(exc)],
                     provenance_hash=_hash_data({"error": str(exc)}),
                 ))
                 context.mark_phase(phase_name, PhaseStatus.FAILED)
@@ -464,7 +446,7 @@ class Pillar3ReportingWorkflow:
                          for p in completed_phases)
             overall_status = WorkflowStatus.COMPLETED if all_ok else WorkflowStatus.PARTIAL
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         duration = (completed_at - started_at).total_seconds()
         summary = self._build_summary(context)
         provenance = _hash_data({
@@ -487,7 +469,6 @@ class Pillar3ReportingWorkflow:
                 self._progress_callback(phase, message, min(pct, 1.0))
             except Exception:
                 logger.debug("Progress callback failed for phase=%s", phase)
-
 
     def _build_summary(self, context: WorkflowContext) -> Dict[str, Any]:
         pop = context.get_phase_output("template_population")

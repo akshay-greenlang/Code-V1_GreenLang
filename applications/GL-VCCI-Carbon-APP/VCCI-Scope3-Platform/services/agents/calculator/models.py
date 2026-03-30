@@ -11,7 +11,8 @@ Date: 2025-10-30
 
 from datetime import datetime
 from typing import Optional, List, Dict, Any, Union
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 from enum import Enum
 
 from .config import (
@@ -32,7 +33,7 @@ from .config import (
 # CALCULATION INPUT MODELS
 # ============================================================================
 
-class Category1Input(BaseModel):
+class Category1Input(GreenLangBase):
     """Input data for Category 1 (Purchased Goods & Services) calculation."""
 
     product_name: str = Field(
@@ -96,7 +97,7 @@ class Category1Input(BaseModel):
     data_quality_notes: Optional[str] = Field(default=None)
 
 
-class Category4Input(BaseModel):
+class Category4Input(GreenLangBase):
     """Input data for Category 4 (Upstream Transportation & Distribution) - ISO 14083."""
 
     transport_mode: TransportMode = Field(
@@ -151,7 +152,7 @@ class Category4Input(BaseModel):
     shipment_date: Optional[datetime] = Field(default=None)
 
 
-class Category6FlightInput(BaseModel):
+class Category6FlightInput(GreenLangBase):
     """Input data for Category 6 flight emissions."""
 
     distance_km: float = Field(
@@ -188,7 +189,7 @@ class Category6FlightInput(BaseModel):
     travel_date: Optional[datetime] = Field(default=None)
 
 
-class Category6HotelInput(BaseModel):
+class Category6HotelInput(GreenLangBase):
     """Input data for Category 6 hotel emissions."""
 
     nights: int = Field(
@@ -213,7 +214,7 @@ class Category6HotelInput(BaseModel):
     check_in_date: Optional[datetime] = Field(default=None)
 
 
-class Category6GroundTransportInput(BaseModel):
+class Category6GroundTransportInput(GreenLangBase):
     """Input data for Category 6 ground transport emissions."""
 
     distance_km: float = Field(
@@ -237,7 +238,7 @@ class Category6GroundTransportInput(BaseModel):
     trip_date: Optional[datetime] = Field(default=None)
 
 
-class Category6Input(BaseModel):
+class Category6Input(GreenLangBase):
     """Combined input for Category 6 (Business Travel)."""
 
     flights: List[Category6FlightInput] = Field(default_factory=list)
@@ -250,7 +251,7 @@ class Category6Input(BaseModel):
     trip_purpose: Optional[str] = Field(default=None)
 
 
-class Category2Input(BaseModel):
+class Category2Input(GreenLangBase):
     """Input data for Category 2 (Capital Goods) calculation."""
 
     asset_description: str = Field(
@@ -311,7 +312,7 @@ class Category2Input(BaseModel):
     data_quality_notes: Optional[str] = Field(default=None)
 
 
-class Category3Input(BaseModel):
+class Category3Input(GreenLangBase):
     """Input data for Category 3 (Fuel & Energy-Related Activities) calculation."""
 
     fuel_or_energy_type: str = Field(
@@ -364,7 +365,7 @@ class Category3Input(BaseModel):
     data_quality_notes: Optional[str] = Field(default=None)
 
 
-class Category5Input(BaseModel):
+class Category5Input(GreenLangBase):
     """Input data for Category 5 (Waste Generated in Operations) calculation."""
 
     waste_description: str = Field(
@@ -417,7 +418,7 @@ class Category5Input(BaseModel):
     data_quality_notes: Optional[str] = Field(default=None)
 
 
-class Category7Input(BaseModel):
+class Category7Input(GreenLangBase):
     """Input data for Category 7 (Employee Commuting) calculation."""
 
     commute_mode: Optional[CommuteMode] = Field(
@@ -466,7 +467,7 @@ class Category7Input(BaseModel):
     location: Optional[str] = Field(default=None)
 
 
-class Category8Input(BaseModel):
+class Category8Input(GreenLangBase):
     """Input data for Category 8 (Upstream Leased Assets) calculation."""
 
     lease_type: str = Field(
@@ -503,7 +504,7 @@ class Category8Input(BaseModel):
     lease_end_date: Optional[datetime] = Field(default=None)
 
 
-class Category9Input(BaseModel):
+class Category9Input(GreenLangBase):
     """Input data for Category 9 (Downstream Transportation & Distribution) calculation."""
 
     transport_mode: TransportMode = Field(
@@ -537,7 +538,7 @@ class Category9Input(BaseModel):
     shipment_date: Optional[datetime] = Field(default=None)
 
 
-class Category10Input(BaseModel):
+class Category10Input(GreenLangBase):
     """Input data for Category 10 (Processing of Sold Products) calculation."""
 
     product_description: str = Field(
@@ -571,7 +572,7 @@ class Category10Input(BaseModel):
     sale_date: Optional[datetime] = Field(default=None)
 
 
-class Category11Input(BaseModel):
+class Category11Input(GreenLangBase):
     """Input data for Category 11 (Use of Sold Products) calculation."""
 
     product_type: ProductType = Field(
@@ -606,7 +607,7 @@ class Category11Input(BaseModel):
     sale_date: Optional[datetime] = Field(default=None)
 
 
-class Category12Input(BaseModel):
+class Category12Input(GreenLangBase):
     """Input data for Category 12 (End-of-Life Treatment) calculation."""
 
     product_description: str = Field(
@@ -640,7 +641,7 @@ class Category12Input(BaseModel):
     recycling_rate: Optional[float] = Field(default=None, ge=0, le=1)
 
 
-class Category13Input(BaseModel):
+class Category13Input(GreenLangBase):
     """Input data for Category 13 (Downstream Leased Assets) calculation."""
 
     building_type: Optional[BuildingType] = Field(
@@ -676,7 +677,7 @@ class Category13Input(BaseModel):
     tenant_name: Optional[str] = Field(default=None)
 
 
-class Category14Input(BaseModel):
+class Category14Input(GreenLangBase):
     """Input data for Category 14 (Franchises) calculation."""
 
     franchise_type: Optional[FranchiseType] = Field(
@@ -713,7 +714,7 @@ class Category14Input(BaseModel):
     energy_consumed: Optional[float] = Field(default=None, ge=0)
 
 
-class Category15Input(BaseModel):
+class Category15Input(GreenLangBase):
     """Input data for Category 15 (Investments) calculation - PCAF Standard."""
 
     portfolio_company: str = Field(
@@ -756,7 +757,7 @@ class Category15Input(BaseModel):
 # CALCULATION OUTPUT MODELS
 # ============================================================================
 
-class UncertaintyResult(BaseModel):
+class UncertaintyResult(GreenLangBase):
     """Monte Carlo uncertainty propagation result."""
 
     mean: float = Field(description="Mean value")
@@ -771,7 +772,7 @@ class UncertaintyResult(BaseModel):
     iterations: int = Field(description="Number of Monte Carlo iterations")
 
 
-class EmissionFactorInfo(BaseModel):
+class EmissionFactorInfo(GreenLangBase):
     """Emission factor information with provenance."""
 
     factor_id: str = Field(description="Unique factor identifier")
@@ -787,7 +788,7 @@ class EmissionFactorInfo(BaseModel):
     hash: str = Field(description="SHA256 hash for provenance")
 
 
-class DataQualityInfo(BaseModel):
+class DataQualityInfo(GreenLangBase):
     """Data quality information."""
 
     dqi_score: float = Field(ge=0, le=100, description="DQI score (0-100)")
@@ -797,7 +798,7 @@ class DataQualityInfo(BaseModel):
     warnings: List[str] = Field(default_factory=list)
 
 
-class ProvenanceChain(BaseModel):
+class ProvenanceChain(GreenLangBase):
     """Complete provenance chain for calculation."""
 
     calculation_id: str = Field(description="Unique calculation identifier")
@@ -822,7 +823,7 @@ class ProvenanceChain(BaseModel):
     )
 
 
-class CalculationResult(BaseModel):
+class CalculationResult(GreenLangBase):
     """Generic calculation result for any category."""
 
     # Core results
@@ -860,7 +861,7 @@ class CalculationResult(BaseModel):
         return self.uncertainty.coefficient_of_variation < 0.2
 
 
-class BatchResult(BaseModel):
+class BatchResult(GreenLangBase):
     """Batch calculation result."""
 
     total_records: int = Field(description="Total number of records")
@@ -890,7 +891,7 @@ class BatchResult(BaseModel):
 # ISO 14083 TEST CASE MODEL
 # ============================================================================
 
-class ISO14083TestCase(BaseModel):
+class ISO14083TestCase(GreenLangBase):
     """Test case for ISO 14083 compliance verification."""
 
     test_id: str = Field(description="Test case identifier")

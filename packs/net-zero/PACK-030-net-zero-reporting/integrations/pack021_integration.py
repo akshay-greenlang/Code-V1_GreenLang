@@ -44,19 +44,14 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -68,7 +63,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 class _PackStub:
     """Stub for PACK-021 components when not available."""
     def __init__(self, component: str) -> None:
@@ -79,7 +73,6 @@ class _PackStub:
             return {"component": self._component, "status": "not_available", "pack": "PACK-021"}
         return _stub
 
-
 def _try_import(component: str, module_path: str) -> Any:
     """Attempt to import a PACK-021 component."""
     try:
@@ -88,11 +81,9 @@ def _try_import(component: str, module_path: str) -> Any:
         logger.debug("PACK-021 component '%s' not available, using stub", component)
         return _PackStub(component)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class BaselineStatus(str, Enum):
     NOT_STARTED = "not_started"
@@ -101,14 +92,12 @@ class BaselineStatus(str, Enum):
     VALIDATED = "validated"
     EXPIRED = "expired"
 
-
 class InventoryScope(str, Enum):
     SCOPE_1 = "scope_1"
     SCOPE_2_LOCATION = "scope_2_location"
     SCOPE_2_MARKET = "scope_2_market"
     SCOPE_3 = "scope_3"
     TOTAL = "total"
-
 
 class DataQualityTier(str, Enum):
     TIER_1 = "tier_1"  # Primary measured data
@@ -117,12 +106,10 @@ class DataQualityTier(str, Enum):
     TIER_4 = "tier_4"  # Spend-based estimates
     TIER_5 = "tier_5"  # Extrapolated / modelled
 
-
 class BoundaryApproach(str, Enum):
     OPERATIONAL_CONTROL = "operational_control"
     FINANCIAL_CONTROL = "financial_control"
     EQUITY_SHARE = "equity_share"
-
 
 class ImportStatus(str, Enum):
     SUCCESS = "success"
@@ -130,7 +117,6 @@ class ImportStatus(str, Enum):
     FAILED = "failed"
     STALE = "stale"
     CACHED = "cached"
-
 
 class ActivityDataCategory(str, Enum):
     STATIONARY_COMBUSTION = "stationary_combustion"
@@ -151,7 +137,6 @@ class ActivityDataCategory(str, Enum):
     INVESTMENTS = "investments"
     FRANCHISES = "franchises"
     LEASED_ASSETS = "leased_assets"
-
 
 # ---------------------------------------------------------------------------
 # PACK-021 Component Registry
@@ -190,7 +175,6 @@ PACK021_COMPONENTS: Dict[str, Dict[str, str]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Scope 3 Category Names (CDP/GHG Protocol standard)
 # ---------------------------------------------------------------------------
@@ -213,11 +197,9 @@ SCOPE3_CATEGORY_NAMES: Dict[int, str] = {
     15: "Investments",
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class PACK021IntegrationConfig(BaseModel):
     """Configuration for the PACK-021 to PACK-030 integration."""
@@ -239,7 +221,6 @@ class PACK021IntegrationConfig(BaseModel):
     retry_delay_seconds: float = Field(default=1.0, ge=0.1, le=30.0)
     api_base_url: str = Field(default="")
     api_timeout_seconds: float = Field(default=30.0)
-
 
 class BaselineData(BaseModel):
     """Baseline emissions data from PACK-021."""
@@ -263,9 +244,8 @@ class BaselineData(BaseModel):
     boundary_approach: BoundaryApproach = Field(default=BoundaryApproach.OPERATIONAL_CONTROL)
     methodology_notes: str = Field(default="")
     verification_status: str = Field(default="unverified")
-    fetched_at: datetime = Field(default_factory=_utcnow)
+    fetched_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class InventoryData(BaseModel):
     """Detailed GHG inventory data from PACK-021."""
@@ -295,9 +275,8 @@ class InventoryData(BaseModel):
     consolidation_approach: str = Field(default="operational_control")
     base_year_recalculation: bool = Field(default=False)
     recalculation_reason: str = Field(default="")
-    fetched_at: datetime = Field(default_factory=_utcnow)
+    fetched_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class ActivityDataRecord(BaseModel):
     """Activity data record from PACK-021."""
@@ -317,7 +296,6 @@ class ActivityDataRecord(BaseModel):
     country: str = Field(default="")
     reporting_year: int = Field(default=2025)
 
-
 class ActivityDataBundle(BaseModel):
     """Complete activity data bundle from PACK-021."""
     bundle_id: str = Field(default_factory=_new_uuid)
@@ -328,9 +306,8 @@ class ActivityDataBundle(BaseModel):
     total_tco2e: float = Field(default=0.0)
     categories_covered: List[str] = Field(default_factory=list)
     data_quality_summary: Dict[str, int] = Field(default_factory=dict)
-    fetched_at: datetime = Field(default_factory=_utcnow)
+    fetched_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class PACK021IntegrationResult(BaseModel):
     """Complete PACK-021 integration result for PACK-030."""
@@ -346,14 +323,12 @@ class PACK021IntegrationResult(BaseModel):
     frameworks_serviced: List[str] = Field(default_factory=list)
     validation_errors: List[str] = Field(default_factory=list)
     validation_warnings: List[str] = Field(default_factory=list)
-    fetched_at: datetime = Field(default_factory=_utcnow)
+    fetched_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # PACK021Integration
 # ---------------------------------------------------------------------------
-
 
 class PACK021Integration:
     """PACK-021 Net Zero Starter Pack integration for PACK-030.
@@ -451,6 +426,7 @@ class PACK021Integration:
                 )
                 if attempt < self.config.retry_attempts:
                     import asyncio
+
                     await asyncio.sleep(self.config.retry_delay_seconds * attempt)
         return []
 

@@ -49,9 +49,10 @@ import logging
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException, Query
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.eudr.continuous_monitoring.setup import get_service
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -60,44 +61,44 @@ logger = logging.getLogger(__name__)
 # Request Schemas
 # ---------------------------------------------------------------------------
 
-class ScanSupplyChainRequest(BaseModel):
+class ScanSupplyChainRequest(GreenLangBase):
     operator_id: str = Field(..., description="Operator identifier")
     suppliers: List[Dict[str, Any]] = Field(..., description="Supplier data list")
 
-class CheckDeforestationRequest(BaseModel):
+class CheckDeforestationRequest(GreenLangBase):
     operator_id: str = Field(..., description="Operator identifier")
     alerts: List[Dict[str, Any]] = Field(..., description="Deforestation alerts from EUDR-020")
     supply_chain_entities: Optional[List[Dict[str, Any]]] = Field(None, description="Supply chain entities")
 
-class RunComplianceAuditRequest(BaseModel):
+class RunComplianceAuditRequest(GreenLangBase):
     operator_id: str = Field(..., description="Operator identifier")
     operator_data: Dict[str, Any] = Field(..., description="Operator compliance data")
 
-class DetectChangesRequest(BaseModel):
+class DetectChangesRequest(GreenLangBase):
     operator_id: str = Field(..., description="Operator identifier")
     entity_snapshots: List[Dict[str, Any]] = Field(..., description="Entity old/new state pairs")
 
-class MonitorRiskScoresRequest(BaseModel):
+class MonitorRiskScoresRequest(GreenLangBase):
     operator_id: str = Field(..., description="Operator identifier")
     entity_id: str = Field(..., description="Entity to monitor")
     score_history: List[Dict[str, Any]] = Field(..., description="Historical score data")
     entity_type: str = Field(default="supplier", description="Entity type")
     incidents: Optional[List[Dict[str, Any]]] = Field(None, description="Related incidents")
 
-class ValidateFreshnessRequest(BaseModel):
+class ValidateFreshnessRequest(GreenLangBase):
     operator_id: str = Field(..., description="Operator identifier")
     entities: List[Dict[str, Any]] = Field(..., description="Entity data with timestamps")
 
-class CheckRegulatoryRequest(BaseModel):
+class CheckRegulatoryRequest(GreenLangBase):
     operator_id: str = Field(..., description="Operator identifier")
     updates: Optional[List[Dict[str, Any]]] = Field(None, description="Regulatory updates")
 
-class GenerateSummaryRequest(BaseModel):
+class GenerateSummaryRequest(GreenLangBase):
     operator_id: str = Field(..., description="Operator identifier")
     period_start: Optional[str] = Field(None, description="Period start ISO date")
     period_end: Optional[str] = Field(None, description="Period end ISO date")
 
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     detail: str = Field(..., description="Error description")
     error_code: str = Field(default="internal_error")
 

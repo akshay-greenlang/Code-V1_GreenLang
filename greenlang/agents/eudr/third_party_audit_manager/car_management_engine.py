@@ -59,6 +59,7 @@ import logging
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.third_party_audit_manager.config import (
     ThirdPartyAuditManagerConfig,
@@ -117,12 +118,6 @@ ESCALATION_DESCRIPTIONS: Dict[int, str] = {
     4: "SLA + 30 days: formal competent authority report filed",
 }
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_provenance_hash(data: Dict[str, Any]) -> str:
     """Compute SHA-256 hash for provenance tracking.
 
@@ -134,7 +129,6 @@ def _compute_provenance_hash(data: Dict[str, Any]) -> str:
     """
     canonical = json.dumps(data, sort_keys=True, default=str, separators=(",", ":"))
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-
 
 class CARManagementEngine:
     """Corrective Action Request lifecycle management engine.
@@ -175,10 +169,10 @@ class CARManagementEngine:
         Returns:
             IssueCARResponse with issued CAR and SLA details.
         """
-        start_time = _utcnow()
+        start_time = utcnow()
 
         try:
-            now = _utcnow()
+            now = utcnow()
 
             # Determine SLA from severity (use custom if provided)
             severity = self._determine_severity(request.nc_ids)
@@ -214,7 +208,7 @@ class CARManagementEngine:
             })
 
             processing_time = Decimal(str(
-                (_utcnow() - start_time).total_seconds() * 1000
+                (utcnow() - start_time).total_seconds() * 1000
             )).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
             sla_details = {
@@ -295,7 +289,7 @@ class CARManagementEngine:
                 f"Allowed transitions: {allowed}"
             )
 
-        now = _utcnow()
+        now = utcnow()
 
         # Update status and relevant timestamp
         car.status = new_status
@@ -346,7 +340,7 @@ class CARManagementEngine:
         Returns:
             Dictionary with SLA status details.
         """
-        now = _utcnow()
+        now = utcnow()
 
         if car.status == CARStatus.CLOSED:
             return {
@@ -422,7 +416,7 @@ class CARManagementEngine:
                 "reason": "CAR is closed",
             }
 
-        now = _utcnow()
+        now = utcnow()
         total_sla_seconds = (
             car.sla_deadline - car.issued_at
         ).total_seconds()
@@ -513,7 +507,7 @@ class CARManagementEngine:
                 f"maximum ({self.config.max_escalation_levels})"
             )
 
-        now = _utcnow()
+        now = utcnow()
 
         escalation_event = {
             "from_level": car.escalation_level,
@@ -582,7 +576,7 @@ class CARManagementEngine:
         return {
             "results": results,
             "summary": summary,
-            "checked_at": _utcnow().isoformat(),
+            "checked_at": utcnow().isoformat(),
         }
 
     def _determine_severity(

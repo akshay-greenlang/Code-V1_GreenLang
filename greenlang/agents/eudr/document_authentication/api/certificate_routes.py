@@ -30,6 +30,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.document_authentication.api.dependencies import (
     AuthUser,
@@ -63,27 +64,18 @@ router = APIRouter(tags=["Certificates"])
 _validation_store: Dict[str, Dict] = {}
 _trusted_ca_store: Dict[str, Dict] = {}
 
-
 def _get_validation_store() -> Dict[str, Dict]:
     """Return the certificate validation store singleton."""
     return _validation_store
-
 
 def _get_trusted_ca_store() -> Dict[str, Dict]:
     """Return the trusted CA store singleton."""
     return _trusted_ca_store
 
-
 def _compute_provenance_hash(data: dict) -> str:
     """Compute SHA-256 hash for provenance tracking."""
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _validate_cert_chain_logic(reference: str) -> Dict[str, Any]:
     """Deterministic certificate chain validation simulation.
@@ -96,7 +88,7 @@ def _validate_cert_chain_logic(reference: str) -> Dict[str, Any]:
     Returns:
         Dict with certificate validation fields.
     """
-    now = _utcnow()
+    now = utcnow()
     ref_lower = reference.lower()
 
     # Simulate different chain statuses based on reference patterns
@@ -153,11 +145,9 @@ def _validate_cert_chain_logic(reference: str) -> Dict[str, Any]:
         "issues": issues,
     }
 
-
 # ---------------------------------------------------------------------------
 # POST /certificates/validate
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/certificates/validate",
@@ -197,7 +187,7 @@ async def validate_certificate(
     start = time.monotonic()
     try:
         validation_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         chain_result = _validate_cert_chain_logic(body.document_reference)
 
@@ -259,11 +249,9 @@ async def validate_certificate(
             detail="Failed to validate certificate chain",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /certificates/{validation_id}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/certificates/{validation_id}",
@@ -327,11 +315,9 @@ async def get_validation(
             detail="Failed to retrieve validation",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /certificates/trusted-cas
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/certificates/trusted-cas",
@@ -367,7 +353,7 @@ async def add_trusted_ca(
     start = time.monotonic()
     try:
         ca_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         fingerprint = hashlib.sha256(
             body.certificate_pem.encode("utf-8")
@@ -407,11 +393,9 @@ async def add_trusted_ca(
             detail="Failed to add trusted CA",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /certificates/trusted-cas
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/certificates/trusted-cas",
@@ -459,7 +443,7 @@ async def list_trusted_cas(
             cas=cas,
             total_count=len(cas),
             processing_time_ms=elapsed_ms,
-            timestamp=_utcnow(),
+            timestamp=utcnow(),
         )
 
     except HTTPException:
@@ -470,7 +454,6 @@ async def list_trusted_cas(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to list trusted CAs",
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

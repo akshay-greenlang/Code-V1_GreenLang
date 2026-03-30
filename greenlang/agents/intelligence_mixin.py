@@ -45,18 +45,19 @@ from __future__ import annotations
 import logging
 import asyncio
 from typing import Any, Dict, List, Optional, Callable
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.intelligence import create_provider
 from greenlang.agents.intelligence.providers.base import LLMProvider
 from greenlang.agents.intelligence.runtime.session import ChatSession
 from greenlang.agents.intelligence.runtime.budget import Budget, BudgetExceeded
 from greenlang.agents.intelligence.schemas.messages import ChatMessage, Role
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
 
-class IntelligenceConfig(BaseModel):
+class IntelligenceConfig(GreenLangBase):
     """Configuration for the intelligence mixin."""
     enabled: bool = Field(default=True, description="Enable/disable intelligence")
     model: str = Field(default="auto", description="LLM model to use")
@@ -69,7 +70,7 @@ class IntelligenceConfig(BaseModel):
     cache_enabled: bool = Field(default=True, description="Enable response caching")
 
 
-class IntelligenceMetricsMixin(BaseModel):
+class IntelligenceMetricsMixin(GreenLangBase):
     """Metrics tracked by the intelligence mixin."""
     llm_calls: int = 0
     total_tokens: int = 0

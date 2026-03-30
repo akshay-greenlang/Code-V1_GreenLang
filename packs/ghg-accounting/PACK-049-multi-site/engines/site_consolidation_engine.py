@@ -75,24 +75,18 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC timestamp with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 provenance hash, excluding volatile fields."""
@@ -110,7 +104,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert any value to Decimal."""
     if isinstance(value, Decimal):
@@ -119,7 +112,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -131,28 +123,23 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> Decimal:
     """Round a value to two decimal places using ROUND_HALF_UP."""
     return Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-
 
 def _round4(value: Any) -> Decimal:
     """Round a value to four decimal places using ROUND_HALF_UP."""
     return Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ConsolidationApproach(str, Enum):
     """GHG Protocol consolidation approaches."""
     EQUITY_SHARE = "EQUITY_SHARE"
     OPERATIONAL_CONTROL = "OPERATIONAL_CONTROL"
     FINANCIAL_CONTROL = "FINANCIAL_CONTROL"
-
 
 class EliminationType(str, Enum):
     """Types of inter-site transfer eliminations."""
@@ -165,7 +152,6 @@ class EliminationType(str, Enum):
     INTERNAL_TRANSPORT = "INTERNAL_TRANSPORT"
     OTHER = "OTHER"
 
-
 class ScopeType(str, Enum):
     """GHG emission scope categories."""
     SCOPE_1 = "SCOPE_1"
@@ -173,20 +159,16 @@ class ScopeType(str, Enum):
     SCOPE_2_MARKET = "SCOPE_2_MARKET"
     SCOPE_3 = "SCOPE_3"
 
-
 # ---------------------------------------------------------------------------
 # Default Configuration
 # ---------------------------------------------------------------------------
 
-
 DEFAULT_RECONCILIATION_TOLERANCE_PCT = Decimal("5")
 DEFAULT_SIGNIFICANCE_THRESHOLD_PCT = Decimal("1")
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class SiteTotal(BaseModel):
     """GHG emission totals for a single site.
@@ -269,7 +251,6 @@ class SiteTotal(BaseModel):
             self.scope1 + self.scope2_location + scope3_total
         )
 
-
 class EliminationEntry(BaseModel):
     """An inter-site transfer elimination entry.
 
@@ -330,7 +311,6 @@ class EliminationEntry(BaseModel):
             logger.warning("Elimination type '%s' not standard; accepted.", v)
         return v.upper()
 
-
 class EquityAdjustment(BaseModel):
     """Record of an equity-share adjustment to site emissions.
 
@@ -390,7 +370,6 @@ class EquityAdjustment(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Any:
         return Decimal(str(v))
 
-
 class ReconciliationResult(BaseModel):
     """Result of reconciling bottom-up vs top-down totals.
 
@@ -447,7 +426,6 @@ class ReconciliationResult(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Any:
         return Decimal(str(v))
-
 
 class ConsolidationRun(BaseModel):
     """A complete consolidation run for a reporting period.
@@ -539,7 +517,7 @@ class ConsolidationRun(BaseModel):
         description="Reason for restatement.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the run was created.",
     )
     provenance_hash: str = Field(
@@ -557,7 +535,6 @@ class ConsolidationRun(BaseModel):
                 f"Must be one of {sorted(valid)}."
             )
         return v.upper()
-
 
 class ContributionAnalysis(BaseModel):
     """Contribution analysis showing each site's share of total."""
@@ -587,7 +564,6 @@ class ContributionAnalysis(BaseModel):
     provenance_hash: str = Field(
         default="", description="SHA-256 hash."
     )
-
 
 class ScopeBreakdown(BaseModel):
     """Scope-level breakdown of consolidated emissions."""
@@ -633,11 +609,9 @@ class ScopeBreakdown(BaseModel):
         default="", description="SHA-256 hash."
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class SiteConsolidationEngine:
     """Consolidates site-level GHG data into corporate inventory.

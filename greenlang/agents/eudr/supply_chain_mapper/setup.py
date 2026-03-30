@@ -101,16 +101,9 @@ except ImportError:
     otel_trace = None  # type: ignore[assignment]
     OTEL_AVAILABLE = False
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_service_hash(config: SupplyChainMapperConfig) -> str:
     """Compute SHA-256 hash of the service configuration for provenance.
@@ -124,11 +117,9 @@ def _compute_service_hash(config: SupplyChainMapperConfig) -> str:
     raw = json.dumps(config.to_dict(), sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Health status model
 # ---------------------------------------------------------------------------
-
 
 class HealthStatus:
     """Health check result container.
@@ -153,7 +144,7 @@ class HealthStatus:
     ) -> None:
         self.status = status
         self.checks = checks or {}
-        self.timestamp = timestamp or _utcnow()
+        self.timestamp = timestamp or utcnow()
         self.version = version
         self.uptime_seconds = uptime_seconds
 
@@ -167,11 +158,9 @@ class HealthStatus:
             "uptime_seconds": round(self.uptime_seconds, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # SupplyChainMapperService
 # ---------------------------------------------------------------------------
-
 
 class SupplyChainMapperService:
     """Facade service for the EUDR Supply Chain Mapping Master Agent.
@@ -527,7 +516,7 @@ class SupplyChainMapperService:
         health = HealthStatus(
             status=overall,
             checks=checks,
-            timestamp=_utcnow(),
+            timestamp=utcnow(),
             version="1.0.0",
             uptime_seconds=self.uptime_seconds,
         )
@@ -1280,11 +1269,9 @@ class SupplyChainMapperService:
         ]
         return sum(1 for e in engines if e is not None)
 
-
 # ---------------------------------------------------------------------------
 # FastAPI lifespan context manager
 # ---------------------------------------------------------------------------
-
 
 @asynccontextmanager
 async def lifespan(app: Any) -> AsyncIterator[None]:
@@ -1298,6 +1285,7 @@ async def lifespan(app: Any) -> AsyncIterator[None]:
 
         from fastapi import FastAPI
         from greenlang.agents.eudr.supply_chain_mapper.setup import lifespan
+from greenlang.schemas import utcnow
 
         app = FastAPI(lifespan=lifespan)
 
@@ -1315,14 +1303,12 @@ async def lifespan(app: Any) -> AsyncIterator[None]:
     finally:
         await service.shutdown()
 
-
 # ---------------------------------------------------------------------------
 # Thread-safe singleton accessor
 # ---------------------------------------------------------------------------
 
 _service_instance: Optional[SupplyChainMapperService] = None
 _service_lock = threading.Lock()
-
 
 def get_service(
     config: Optional[SupplyChainMapperConfig] = None,
@@ -1350,7 +1336,6 @@ def get_service(
                 _service_instance = SupplyChainMapperService(config=config)
     return _service_instance
 
-
 def set_service(service: SupplyChainMapperService) -> None:
     """Replace the singleton SupplyChainMapperService instance.
 
@@ -1364,7 +1349,6 @@ def set_service(service: SupplyChainMapperService) -> None:
         _service_instance = service
     logger.info("SupplyChainMapperService singleton replaced")
 
-
 def reset_service() -> None:
     """Reset the singleton SupplyChainMapperService to None.
 
@@ -1375,7 +1359,6 @@ def reset_service() -> None:
     with _service_lock:
         _service_instance = None
     logger.debug("SupplyChainMapperService singleton reset")
-
 
 # ---------------------------------------------------------------------------
 # Public API

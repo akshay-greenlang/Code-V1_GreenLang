@@ -53,26 +53,19 @@ from enum import Enum
 from typing import Any, Callable, Coroutine, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -92,11 +85,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class WebhookEventType(str, Enum):
     """Event types that can trigger webhook notifications."""
@@ -117,7 +108,6 @@ class WebhookEventType(str, Enum):
     DATA_QUALITY_ALERT = "data_quality_alert"
     DEADLINE_APPROACHING = "deadline_approaching"
 
-
 class WebhookChannel(str, Enum):
     """Supported notification delivery channels."""
 
@@ -125,7 +115,6 @@ class WebhookChannel(str, Enum):
     EMAIL = "email"
     SLACK = "slack"
     TEAMS = "teams"
-
 
 class DeliveryStatus(str, Enum):
     """Status of a webhook delivery attempt."""
@@ -135,11 +124,9 @@ class DeliveryStatus(str, Enum):
     RETRYING = "retrying"
     DEAD_LETTER = "dead_letter"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class WebhookSubscription(BaseModel):
     """A webhook subscription binding event types to a delivery channel."""
@@ -164,13 +151,12 @@ class WebhookSubscription(BaseModel):
     active: bool = Field(default=True, description="Whether subscription is active")
     description: str = Field(default="", description="Human-readable description")
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Subscription creation timestamp"
+        default_factory=utcnow, description="Subscription creation timestamp"
     )
     metadata: Dict[str, Any] = Field(
         default_factory=dict,
         description="Arbitrary metadata attached to subscription",
     )
-
 
 class WebhookEvent(BaseModel):
     """A single event to be dispatched to matching subscriptions."""
@@ -181,7 +167,7 @@ class WebhookEvent(BaseModel):
     )
     event_type: WebhookEventType = Field(..., description="Type of event")
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Event timestamp"
+        default_factory=utcnow, description="Event timestamp"
     )
     payload: Dict[str, Any] = Field(
         default_factory=dict, description="Event payload data"
@@ -196,7 +182,6 @@ class WebhookEvent(BaseModel):
     provenance_hash: str = Field(
         default="", description="SHA-256 provenance hash of payload"
     )
-
 
 class DeliveryResult(BaseModel):
     """Result of a single delivery attempt."""
@@ -222,9 +207,8 @@ class DeliveryResult(BaseModel):
         None, description="Error message if delivery failed"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Delivery attempt timestamp"
+        default_factory=utcnow, description="Delivery attempt timestamp"
     )
-
 
 class DeadLetterEntry(BaseModel):
     """An entry in the dead-letter queue for failed deliveries."""
@@ -240,11 +224,10 @@ class DeadLetterEntry(BaseModel):
         default_factory=list, description="All failed delivery attempts"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="When the entry was created"
+        default_factory=utcnow, description="When the entry was created"
     )
     total_attempts: int = Field(default=0, description="Total delivery attempts")
     last_error: str = Field(default="", description="Most recent error message")
-
 
 class WebhookManagerConfig(BaseModel):
     """Configuration for the WebhookManager."""
@@ -289,7 +272,6 @@ class WebhookManagerConfig(BaseModel):
         description="Maximum response body length to store",
     )
 
-
 class DeliveryStats(BaseModel):
     """Delivery statistics for monitoring and observability."""
 
@@ -326,11 +308,9 @@ class DeliveryStats(BaseModel):
         default="", description="Stats provenance hash"
     )
 
-
 # ---------------------------------------------------------------------------
 # WebhookManager Implementation
 # ---------------------------------------------------------------------------
-
 
 class WebhookManager:
     """Webhook and event notification manager for CSRD Professional Pack.
@@ -627,7 +607,7 @@ class WebhookManager:
                     self._by_channel[subscription.channel.value] = (
                         self._by_channel.get(subscription.channel.value, 0) + 1
                     )
-                    self._last_delivery_at = _utcnow()
+                    self._last_delivery_at = utcnow()
                     self._delivery_history.append(result)
                     return result
 
@@ -641,7 +621,7 @@ class WebhookManager:
                         self.config.backoff_max,
                     )
                     result.status = DeliveryStatus.RETRYING
-                    result.next_retry = _utcnow() + timedelta(seconds=backoff)
+                    result.next_retry = utcnow() + timedelta(seconds=backoff)
                     logger.warning(
                         "Delivery to %s failed (attempt %d/%d), "
                         "retrying in %.1fs: %s",
@@ -975,6 +955,7 @@ class WebhookManager:
 
         try:
             import httpx
+
             async with httpx.AsyncClient(
                 timeout=self.config.delivery_timeout_seconds
             ) as client:
@@ -1340,7 +1321,6 @@ class WebhookManager:
         )
         self._subscriptions.clear()
         self._delivery_history.clear()
-
 
 # ---------------------------------------------------------------------------
 # Event Formatting Constants

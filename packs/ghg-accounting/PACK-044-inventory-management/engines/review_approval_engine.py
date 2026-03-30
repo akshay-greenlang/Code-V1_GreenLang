@@ -72,25 +72,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -119,7 +113,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -128,7 +121,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -140,17 +132,14 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round_val(value: Decimal, places: int = 4) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ReviewStage(str, Enum):
     """Stage in the four-stage review workflow.
@@ -166,7 +155,6 @@ class ReviewStage(str, Enum):
     APPROVAL = "approval"
     VERIFICATION = "verification"
     COMPLETE = "complete"
-
 
 class ReviewStatus(str, Enum):
     """Status of a review at a particular stage.
@@ -191,7 +179,6 @@ class ReviewStatus(str, Enum):
     DELEGATED = "delegated"
     SKIPPED = "skipped"
 
-
 class CommentType(str, Enum):
     """Type of review comment.
 
@@ -209,7 +196,6 @@ class CommentType(str, Enum):
     CLARIFICATION = "clarification"
     RECOMMENDATION = "recommendation"
 
-
 class FindingSeverity(str, Enum):
     """Severity of a review finding.
 
@@ -224,7 +210,6 @@ class FindingSeverity(str, Enum):
     MAJOR = "major"
     MINOR = "minor"
     INFORMATIONAL = "informational"
-
 
 class EscalationReason(str, Enum):
     """Reason for escalating a review.
@@ -242,7 +227,6 @@ class EscalationReason(str, Enum):
     VERIFICATION_FAILURE = "verification_failure"
     CONFLICT_OF_INTEREST = "conflict_of_interest"
     SCOPE_EXCEEDS_AUTHORITY = "scope_exceeds_authority"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -283,11 +267,9 @@ PROGRESSION_STATUSES = frozenset({
     ReviewStatus.SKIPPED,
 })
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class ReviewComment(BaseModel):
     """A comment within a review thread.
@@ -341,10 +323,9 @@ class ReviewComment(BaseModel):
         default=None, description="Resolution timestamp"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation timestamp"
+        default_factory=utcnow, description="Creation timestamp"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class StageSignOff(BaseModel):
     """Digital sign-off record for a review stage.
@@ -380,10 +361,9 @@ class StageSignOff(BaseModel):
         default="", description="Sign-off statement"
     )
     signed_at: datetime = Field(
-        default_factory=_utcnow, description="Sign-off timestamp"
+        default_factory=utcnow, description="Sign-off timestamp"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class ReviewRequest(BaseModel):
     """A review request for an inventory section or complete inventory.
@@ -462,17 +442,15 @@ class ReviewRequest(BaseModel):
         description="Deadline per stage (hours)",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation timestamp"
+        default_factory=utcnow, description="Creation timestamp"
     )
     metadata: Dict[str, Any] = Field(
         default_factory=dict, description="Additional metadata"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class ReviewDecision(BaseModel):
     """Decision outcome for a review stage.
@@ -520,7 +498,6 @@ class ReviewDecision(BaseModel):
     )
     rationale: str = Field(default="", description="Decision rationale")
 
-
 class ApprovalRecord(BaseModel):
     """Permanent approval record for the inventory.
 
@@ -565,7 +542,6 @@ class ApprovalRecord(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 class ReviewApprovalResult(BaseModel):
     """Complete result from the review and approval engine.
 
@@ -601,13 +577,12 @@ class ReviewApprovalResult(BaseModel):
     )
     warnings: List[str] = Field(default_factory=list, description="Warnings")
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Processing timestamp"
+        default_factory=utcnow, description="Processing timestamp"
     )
     processing_time_ms: Decimal = Field(
         default=Decimal("0"), description="Processing time (ms)"
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 # ---------------------------------------------------------------------------
 # Model Rebuild (resolve forward references from __future__ annotations)
@@ -620,11 +595,9 @@ ReviewDecision.model_rebuild()
 ApprovalRecord.model_rebuild()
 ReviewApprovalResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ReviewApprovalEngine:
     """Multi-level review and sign-off engine for GHG inventories.
@@ -1002,7 +975,7 @@ class ReviewApprovalEngine:
             if comment.comment_id == comment_id:
                 comment.is_resolved = True
                 comment.resolved_by = resolver_id
-                comment.resolved_at = _utcnow()
+                comment.resolved_at = utcnow()
                 comment.provenance_hash = _compute_hash(comment)
                 logger.info(
                     "Comment %s resolved by %s",
@@ -1068,7 +1041,7 @@ class ReviewApprovalEngine:
                 and critical_unresolved == 0
                 and final in (ReviewStatus.APPROVED, ReviewStatus.APPROVED_WITH_CONDITIONS)
             ),
-            approved_at=_utcnow() if all_complete else None,
+            approved_at=utcnow() if all_complete else None,
         )
         record.provenance_hash = _compute_hash(record)
 
@@ -1097,7 +1070,7 @@ class ReviewApprovalEngine:
         Returns:
             List of escalation dicts with reason and details.
         """
-        now = current_time or _utcnow()
+        now = current_time or utcnow()
         escalations: List[Dict[str, Any]] = []
 
         # Check revision rounds.
@@ -1384,7 +1357,7 @@ class ReviewApprovalEngine:
             "reason": reason.value,
             "details": details,
             "current_stage": request.current_stage.value,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
         self._escalations.append(escalation)
         self._warnings.append(f"ESCALATION: {reason.value} - {details}")
@@ -1418,7 +1391,7 @@ class ReviewApprovalEngine:
             "actor_id": actor_id,
             "actor_name": actor_name,
             "details": details,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
         entry["provenance_hash"] = _compute_hash(entry)
         self._audit_entries.append(entry)

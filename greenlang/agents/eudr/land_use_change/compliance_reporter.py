@@ -58,6 +58,8 @@ from datetime import date, datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree as ET
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ReportFormat
 
 logger = logging.getLogger(__name__)
 
@@ -71,32 +73,22 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a unique identifier using UUID4."""
     return str(uuid.uuid4())
-
 
 def _today_iso() -> str:
     """Return today's date in ISO format."""
     return datetime.now(timezone.utc).date().isoformat()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class ReportType(str, Enum):
     """Type of compliance report to generate.
@@ -113,22 +105,6 @@ class ReportType(str, Enum):
     COMMODITY_CONVERSION = "COMMODITY_CONVERSION"
     CUTOFF_COMPLIANCE = "CUTOFF_COMPLIANCE"
     RISK_ASSESSMENT = "RISK_ASSESSMENT"
-
-
-class ReportFormat(str, Enum):
-    """Output format for the compliance report.
-
-    JSON:      Machine-readable JSON for API integration.
-    CSV:       Tabular CSV for spreadsheet analysis.
-    PDF:       Human-readable PDF structure for renderer.
-    EUDR_XML:  EUDR-specific XML for EU Information System.
-    """
-
-    JSON = "JSON"
-    CSV = "CSV"
-    PDF = "PDF"
-    EUDR_XML = "EUDR_XML"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -185,11 +161,9 @@ BATCH_CSV_COLUMNS: List[str] = [
     "provenance_hash",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class ReportConfig:
@@ -218,7 +192,6 @@ class ReportConfig:
     include_maps: bool = False
     include_evidence_chain: bool = True
     reviewer: str = ""
-
 
 @dataclass
 class ComplianceReport:
@@ -287,11 +260,9 @@ class ComplianceReport:
             "metadata": self.metadata,
         }
 
-
 # ---------------------------------------------------------------------------
 # ComplianceReporter
 # ---------------------------------------------------------------------------
-
 
 class ComplianceReporter:
     """Generates regulatory-grade evidence packages for DDS submission.
@@ -439,6 +410,7 @@ class ComplianceReporter:
         )
 
         from datetime import timedelta
+
         valid_until = (
             datetime.now(timezone.utc).date()
             + timedelta(days=DEFAULT_VALIDITY_DAYS)
@@ -460,7 +432,7 @@ class ComplianceReporter:
             evidence_chain=evidence_chain,
             report_hash=report_hash,
             regulatory_framework=REGULATORY_FRAMEWORK,
-            created_at=_utcnow().isoformat(),
+            created_at=utcnow().isoformat(),
             valid_until=valid_until.isoformat(),
             reviewer=opts.get("reviewer", ""),
             processing_time_ms=round(elapsed_ms, 2),
@@ -1080,7 +1052,7 @@ class ComplianceReporter:
         ET.SubElement(header, "RegulatoryFramework").text = REGULATORY_FRAMEWORK
         ET.SubElement(header, "CutoffDate").text = EUDR_CUTOFF_DATE.isoformat()
         ET.SubElement(header, "AssessmentDate").text = _today_iso()
-        ET.SubElement(header, "GeneratedAt").text = _utcnow().isoformat()
+        ET.SubElement(header, "GeneratedAt").text = utcnow().isoformat()
 
         summary_elem = ET.SubElement(root, "Summary")
         ET.SubElement(summary_elem, "TotalPlots").text = str(
@@ -1185,7 +1157,7 @@ class ComplianceReporter:
             "input_hashes": input_hashes,
             "chain_hash": chain_hash,
             "module_version": _MODULE_VERSION,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     # ------------------------------------------------------------------
@@ -1440,12 +1412,11 @@ class ComplianceReporter:
             plot_ids=list(config.plot_ids),
             total_plots=len(config.plot_ids),
             summary=f"Report generation failed: {error_msg}",
-            created_at=_utcnow().isoformat(),
+            created_at=utcnow().isoformat(),
             metadata={"error": error_msg},
         )
         report.report_hash = _compute_hash({"error": error_msg})
         return report
-
 
 # ---------------------------------------------------------------------------
 # Module Exports

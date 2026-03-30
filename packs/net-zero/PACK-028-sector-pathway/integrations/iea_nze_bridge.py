@@ -47,18 +47,14 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -70,11 +66,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class IEAScenario(str, Enum):
     """IEA climate scenarios."""
@@ -83,7 +77,6 @@ class IEAScenario(str, Enum):
     STEPS = "steps"       # Stated Policies Scenario (~2.4C)
     WB2C = "wb2c"         # Well-Below 2C (<2C, 66%)
     C2 = "2c"             # 2 Degrees (2C, 50%)
-
 
 class IEASector(str, Enum):
     """IEA NZE sector classifications."""
@@ -103,7 +96,6 @@ class IEASector(str, Enum):
     FOOD_BEVERAGE = "food_beverage"
     OIL_GAS = "oil_gas"
 
-
 class IEARegion(str, Enum):
     """IEA regional pathway variants."""
     GLOBAL = "global"
@@ -115,7 +107,6 @@ class IEARegion(str, Enum):
     CHINA = "china"
     INDIA = "india"
 
-
 class MilestoneStatus(str, Enum):
     """IEA milestone tracking status."""
     ON_TRACK = "on_track"
@@ -124,7 +115,6 @@ class MilestoneStatus(str, Enum):
     ACHIEVED = "achieved"
     PLANNED = "planned"
     NOT_STARTED = "not_started"
-
 
 class TechnologyReadinessLevel(int, Enum):
     """Technology readiness levels (TRL 1-9)."""
@@ -137,7 +127,6 @@ class TechnologyReadinessLevel(int, Enum):
     TRL_7 = 7   # System prototype demonstrated
     TRL_8 = 8   # System complete and qualified
     TRL_9 = 9   # System proven in operational environment
-
 
 # ---------------------------------------------------------------------------
 # IEA NZE 2050 Scenario Data Tables
@@ -328,11 +317,9 @@ TECHNOLOGY_INTERDEPENDENCIES: Dict[str, List[str]] = {
     "saf_production": ["aviation_decarbonization", "green_hydrogen_production"],
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class IEANZEBridgeConfig(BaseModel):
     """Configuration for the IEA NZE bridge."""
@@ -348,7 +335,6 @@ class IEANZEBridgeConfig(BaseModel):
     cache_pathway_lookups: bool = Field(default=True)
     milestone_tracking_enabled: bool = Field(default=True)
 
-
 class SectorPathwayData(BaseModel):
     """Sector pathway data for a specific scenario and region."""
     sector: str = Field(default="")
@@ -363,7 +349,6 @@ class SectorPathwayData(BaseModel):
     reduction_2050_pct: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class MilestoneTrackingResult(BaseModel):
     """Result of milestone compliance tracking."""
     sector: str = Field(default="")
@@ -377,7 +362,6 @@ class MilestoneTrackingResult(BaseModel):
     compliance_score: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
 
-
 class ScenarioComparisonResult(BaseModel):
     """Multi-scenario pathway comparison result."""
     result_id: str = Field(default_factory=_new_uuid)
@@ -389,7 +373,6 @@ class ScenarioComparisonResult(BaseModel):
     optimal_scenario: str = Field(default="nze")
     risk_assessment: str = Field(default="moderate")
     provenance_hash: str = Field(default="")
-
 
 class TechnologyAdoptionCurve(BaseModel):
     """S-curve technology adoption model."""
@@ -404,11 +387,9 @@ class TechnologyAdoptionCurve(BaseModel):
     cost_decline_curve: List[Dict[str, float]] = Field(default_factory=list)
     learning_rate_pct: float = Field(default=15.0)
 
-
 # ---------------------------------------------------------------------------
 # IEANZEBridge
 # ---------------------------------------------------------------------------
-
 
 class IEANZEBridge:
     """IEA Net Zero by 2050 sector pathway integration for PACK-028.

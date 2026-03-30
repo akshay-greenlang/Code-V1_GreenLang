@@ -51,6 +51,7 @@ import threading
 from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +80,6 @@ except ImportError:  # pragma: no cover
     def record_fuel_lookup(*_args: Any, **_kwargs: Any) -> None:
         """No-op fallback when metrics module is unavailable."""
 
-
 def record_factor_selection(
     fuel_type: str = "",
     gas: str = "",
@@ -103,15 +103,9 @@ try:
 except ImportError:  # pragma: no cover
     get_provenance_tracker = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Authoritative Emission Factor Databases (kg per GJ, HHV basis)
@@ -364,11 +358,9 @@ _SOURCE_GEOGRAPHY_COVERAGE: Dict[str, List[str]] = {
 # Plausible range tolerance for custom factor validation (fraction of IPCC default)
 _CUSTOM_FACTOR_TOLERANCE = Decimal("0.50")  # +/- 50%
 
-
 # ---------------------------------------------------------------------------
 # EmissionFactorSelectorEngine
 # ---------------------------------------------------------------------------
-
 
 class EmissionFactorSelectorEngine:
     """Three-tier emission factor selection engine for stationary combustion.
@@ -658,7 +650,7 @@ class EmissionFactorSelectorEngine:
             "tier": tier,
             "source": source.upper(),
             "value": str(value),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "origin": "manual_record",
         }
 
@@ -1152,7 +1144,7 @@ class EmissionFactorSelectorEngine:
             "unit": result["unit"],
             "geography": result.get("geography"),
             "reference": result["reference"],
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "trace": list(trace),
             "origin": "auto_select",
             "provenance_hash": self._compute_hash({
@@ -1210,7 +1202,6 @@ class EmissionFactorSelectorEngine:
         """
         serialized = json.dumps(data, sort_keys=True, default=str)
         return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Public API

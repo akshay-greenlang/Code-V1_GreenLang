@@ -67,6 +67,7 @@ from typing import Any, Dict, List, Optional
 from urllib.parse import urlencode, urlparse, parse_qs, urlunparse
 
 from greenlang.agents.eudr.qr_code_generator.config import get_config
+from greenlang.schemas import utcnow
 from greenlang.agents.eudr.qr_code_generator.models import (
     ComplianceStatus,
     VerificationURL,
@@ -81,7 +82,6 @@ from greenlang.agents.eudr.qr_code_generator.metrics import (
 )
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -110,16 +110,9 @@ _ANDROID_INTENT_SUFFIX = (
     "S.browser_fallback_url={fallback};end"
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -139,7 +132,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str) -> str:
     """Generate a unique identifier with a given prefix.
 
@@ -151,51 +143,41 @@ def _generate_id(prefix: str) -> str:
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
 
-
 # ---------------------------------------------------------------------------
 # Custom Exceptions
 # ---------------------------------------------------------------------------
-
 
 class VerificationURLError(Exception):
     """Base exception for verification URL construction errors."""
     pass
 
-
 class HMACKeyMissingError(VerificationURLError):
     """Raised when HMAC secret key is not configured."""
     pass
-
 
 class ShortURLServiceError(VerificationURLError):
     """Raised when short URL service is unreachable or returns an error."""
     pass
 
-
 class InvalidTokenError(VerificationURLError):
     """Raised when a verification token fails validation."""
     pass
-
 
 class URLExpiredError(VerificationURLError):
     """Raised when a verification URL has expired."""
     pass
 
-
 class InvalidPlatformError(VerificationURLError):
     """Raised when an unsupported deep-link platform is requested."""
     pass
-
 
 class InvalidLanguageError(VerificationURLError):
     """Raised when an unsupported language code is provided."""
     pass
 
-
 # ---------------------------------------------------------------------------
 # VerificationURLBuilder
 # ---------------------------------------------------------------------------
-
 
 class VerificationURLBuilder:
     """Constructs HMAC-signed verification URLs for EUDR QR codes.
@@ -290,7 +272,7 @@ class VerificationURLBuilder:
             signature = self.sign_url(url_path, hmac_key)
 
             # Step 4: Build timestamps
-            now = _utcnow()
+            now = utcnow()
             ttl_years = self._config.verification_token_ttl_years
             expires_at = now + timedelta(days=ttl_years * 365)
             created_epoch = int(now.timestamp())
@@ -701,7 +683,7 @@ class VerificationURLBuilder:
             created_epoch, tz=timezone.utc,
         )
         max_age_delta = timedelta(days=max_age_years * 365)
-        now = _utcnow()
+        now = utcnow()
 
         if now - created_dt > max_age_delta:
             logger.info(
@@ -759,7 +741,7 @@ class VerificationURLBuilder:
                 "compliance_status must not be empty"
             )
 
-        now = _utcnow()
+        now = utcnow()
         ttl_years = self._config.verification_token_ttl_years
         expires_at = now + timedelta(days=ttl_years * 365)
 
@@ -937,7 +919,7 @@ class VerificationURLBuilder:
         if ttl_years is None:
             ttl_years = self._config.verification_token_ttl_years
 
-        now = _utcnow()
+        now = utcnow()
 
         # Check explicit expiry timestamp first
         if url_record.token_expires_at is not None:
@@ -1065,7 +1047,6 @@ class VerificationURLBuilder:
         params["t"] = str(created_epoch)
         params["exp"] = str(expiry_epoch)
         return params
-
 
 # ---------------------------------------------------------------------------
 # Public API

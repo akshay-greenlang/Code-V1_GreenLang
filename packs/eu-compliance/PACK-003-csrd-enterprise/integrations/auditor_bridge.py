@@ -44,26 +44,19 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -76,18 +69,15 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class AssuranceLevel(str, Enum):
     """CSRD assurance levels per Article 34."""
 
     LIMITED = "limited"
     REASONABLE = "reasonable"
-
 
 class EngagementStatus(str, Enum):
     """Audit engagement lifecycle status."""
@@ -98,7 +88,6 @@ class EngagementStatus(str, Enum):
     COMPLETED = "completed"
     CANCELLED = "cancelled"
 
-
 class FindingSeverity(str, Enum):
     """Audit finding severity levels."""
 
@@ -107,7 +96,6 @@ class FindingSeverity(str, Enum):
     MINOR = "minor"
     OBSERVATION = "observation"
     BEST_PRACTICE = "best_practice"
-
 
 class FindingStatus(str, Enum):
     """Audit finding resolution status."""
@@ -118,7 +106,6 @@ class FindingStatus(str, Enum):
     ACCEPTED = "accepted"
     DISPUTED = "disputed"
 
-
 class OpinionType(str, Enum):
     """Types of audit opinions."""
 
@@ -126,7 +113,6 @@ class OpinionType(str, Enum):
     QUALIFIED = "qualified"
     ADVERSE = "adverse"
     DISCLAIMER = "disclaimer"
-
 
 class AuditorPermission(str, Enum):
     """Auditor access permission levels."""
@@ -139,11 +125,9 @@ class AuditorPermission(str, Enum):
     READ_EVIDENCE = "read_evidence"
     DOWNLOAD_EVIDENCE = "download_evidence"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class AuditEngagement(BaseModel):
     """Audit engagement record."""
@@ -161,10 +145,9 @@ class AuditEngagement(BaseModel):
     engagement_letter_ref: Optional[str] = Field(None)
     auditors: List[str] = Field(default_factory=list)
     findings_count: int = Field(default=0)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     completed_at: Optional[datetime] = Field(None)
     provenance_hash: str = Field(default="")
-
 
 class AuditorAccess(BaseModel):
     """Auditor access grant record."""
@@ -176,11 +159,10 @@ class AuditorAccess(BaseModel):
     auditor_name: Optional[str] = Field(None)
     permissions: List[AuditorPermission] = Field(default_factory=list)
     is_active: bool = Field(default=True)
-    granted_at: datetime = Field(default_factory=_utcnow)
+    granted_at: datetime = Field(default_factory=utcnow)
     expires_at: Optional[datetime] = Field(None)
     revoked_at: Optional[datetime] = Field(None)
     provenance_hash: str = Field(default="")
-
 
 class EvidencePackage(BaseModel):
     """Evidence package for auditor review per ISAE 3000/3410."""
@@ -191,10 +173,9 @@ class EvidencePackage(BaseModel):
     documents: List[Dict[str, Any]] = Field(default_factory=list)
     total_documents: int = Field(default=0)
     total_size_mb: float = Field(default=0.0)
-    generated_at: datetime = Field(default_factory=_utcnow)
+    generated_at: datetime = Field(default_factory=utcnow)
     valid_until: Optional[datetime] = Field(None)
     provenance_hash: str = Field(default="")
-
 
 class AuditFinding(BaseModel):
     """Audit finding submitted by an auditor."""
@@ -210,10 +191,9 @@ class AuditFinding(BaseModel):
     status: FindingStatus = Field(default=FindingStatus.OPEN)
     management_response: Optional[str] = Field(None)
     response_evidence: List[str] = Field(default_factory=list)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     resolved_at: Optional[datetime] = Field(None)
     provenance_hash: str = Field(default="")
-
 
 class AuditOpinion(BaseModel):
     """Formal audit opinion issued at engagement completion."""
@@ -225,9 +205,8 @@ class AuditOpinion(BaseModel):
     qualifications: List[str] = Field(default_factory=list)
     scope_covered: List[str] = Field(default_factory=list)
     issued_by: str = Field(default="")
-    issued_at: datetime = Field(default_factory=_utcnow)
+    issued_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class EngagementProgress(BaseModel):
     """Progress tracking for an audit engagement."""
@@ -242,7 +221,6 @@ class EngagementProgress(BaseModel):
     evidence_packages: int = Field(default=0)
     days_elapsed: int = Field(default=0)
     estimated_days_remaining: int = Field(default=0)
-
 
 # ---------------------------------------------------------------------------
 # Evidence Categories per ISAE 3000/3410
@@ -266,11 +244,9 @@ EVIDENCE_CATEGORIES: Dict[str, str] = {
     "value_chain": "Value chain assessment and Scope 3 documentation",
 }
 
-
 # ---------------------------------------------------------------------------
 # AuditorBridge
 # ---------------------------------------------------------------------------
-
 
 class AuditorBridge:
     """Auditor access and engagement management bridge for CSRD Enterprise Pack.
@@ -453,7 +429,7 @@ class AuditorBridge:
         for grant in grants:
             if grant.auditor_id == auditor_id:
                 grant.is_active = False
-                grant.revoked_at = _utcnow()
+                grant.revoked_at = utcnow()
                 self.logger.info(
                     "Auditor access revoked: engagement=%s, auditor=%s",
                     engagement_id, auditor_id,
@@ -462,7 +438,7 @@ class AuditorBridge:
                     "engagement_id": engagement_id,
                     "auditor_id": auditor_id,
                     "revoked": True,
-                    "timestamp": _utcnow().isoformat(),
+                    "timestamp": utcnow().isoformat(),
                 }
 
         return {
@@ -606,7 +582,7 @@ class AuditorBridge:
                         "finding_id": finding_id,
                         "status": finding.status.value,
                         "response_recorded": True,
-                        "timestamp": _utcnow().isoformat(),
+                        "timestamp": utcnow().isoformat(),
                     }
 
         return {
@@ -650,7 +626,7 @@ class AuditorBridge:
         reviewed = int(total_items * 0.7)  # Stub progress
         progress_pct = (reviewed / total_items * 100) if total_items > 0 else 0.0
 
-        days_elapsed = (_utcnow() - engagement.created_at).days
+        days_elapsed = (utcnow() - engagement.created_at).days
 
         return EngagementProgress(
             engagement_id=engagement_id,
@@ -711,7 +687,7 @@ class AuditorBridge:
 
         # Mark engagement as completed
         engagement.status = EngagementStatus.COMPLETED
-        engagement.completed_at = _utcnow()
+        engagement.completed_at = utcnow()
 
         self.logger.info(
             "Audit opinion issued: engagement=%s, type=%s",

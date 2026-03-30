@@ -48,7 +48,9 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ReportFormat
 
 # ---------------------------------------------------------------------------
 # Re-export Layer 1 models from data_quality_profiler
@@ -76,16 +78,9 @@ except ImportError:
     CompletenessAnalyzer = None  # type: ignore[assignment, misc]
     CompletenessReport = None  # type: ignore[assignment, misc]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -159,11 +154,9 @@ INTERPOLATION_METHODS: tuple = (
 #: Report format options.
 REPORT_FORMAT_OPTIONS: tuple = ("json", "csv", "markdown", "html", "pdf")
 
-
 # =============================================================================
 # Enumerations (12)
 # =============================================================================
-
 
 class MissingnessType(str, Enum):
     """Classification of the missingness mechanism.
@@ -181,7 +174,6 @@ class MissingnessType(str, Enum):
     MAR = "mar"
     MNAR = "mnar"
     UNKNOWN = "unknown"
-
 
 class ImputationStrategy(str, Enum):
     """Strategy for imputing missing values.
@@ -229,7 +221,6 @@ class ImputationStrategy(str, Enum):
     REGULATORY_DEFAULT = "regulatory_default"
     CUSTOM = "custom"
 
-
 class ImputationStatus(str, Enum):
     """Lifecycle status of an imputation job.
 
@@ -243,7 +234,6 @@ class ImputationStatus(str, Enum):
     VALIDATING = "validating"
     COMPLETED = "completed"
     FAILED = "failed"
-
 
 class ConfidenceLevel(str, Enum):
     """Confidence level classification for imputed values.
@@ -259,7 +249,6 @@ class ConfidenceLevel(str, Enum):
     LOW = "low"
     VERY_LOW = "very_low"
 
-
 class DataColumnType(str, Enum):
     """Data type classification for dataset columns.
 
@@ -272,7 +261,6 @@ class DataColumnType(str, Enum):
     DATETIME = "datetime"
     BOOLEAN = "boolean"
     TEXT = "text"
-
 
 class ValidationMethod(str, Enum):
     """Statistical method for validating imputation quality.
@@ -290,7 +278,6 @@ class ValidationMethod(str, Enum):
     DISTRIBUTION_PRESERVATION = "distribution_preservation"
     CROSS_VALIDATION = "cross_validation"
 
-
 class RuleConditionType(str, Enum):
     """Condition type for rule-based imputation rules.
 
@@ -307,7 +294,6 @@ class RuleConditionType(str, Enum):
     REGEX = "regex"
     IS_NULL = "is_null"
 
-
 class RulePriority(str, Enum):
     """Priority level for imputation rules.
 
@@ -320,22 +306,6 @@ class RulePriority(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     DEFAULT = "default"
-
-
-class ReportFormat(str, Enum):
-    """Output format for imputation reports.
-
-    Defines the serialization format for generated reports
-    including analysis summaries, imputation details, and validation
-    results.
-    """
-
-    JSON = "json"
-    CSV = "csv"
-    MARKDOWN = "markdown"
-    HTML = "html"
-    PDF = "pdf"
-
 
 class PipelineStage(str, Enum):
     """Stage in the imputation pipeline.
@@ -350,7 +320,6 @@ class PipelineStage(str, Enum):
     IMPUTE = "impute"
     VALIDATE = "validate"
     DOCUMENT = "document"
-
 
 class PatternType(str, Enum):
     """Classification of missing data patterns.
@@ -367,7 +336,6 @@ class PatternType(str, Enum):
     ARBITRARY = "arbitrary"
     PLANNED = "planned"
 
-
 class TimeSeriesFrequency(str, Enum):
     """Frequency classification for time-series data.
 
@@ -382,13 +350,11 @@ class TimeSeriesFrequency(str, Enum):
     QUARTERLY = "quarterly"
     YEARLY = "yearly"
 
-
 # =============================================================================
 # SDK Data Models (20)
 # =============================================================================
 
-
-class MissingnessPattern(BaseModel):
+class MissingnessPattern(GreenLangBase):
     """Pattern analysis result for missing data in a dataset.
 
     Describes the spatial and statistical pattern of missing values
@@ -445,7 +411,7 @@ class MissingnessPattern(BaseModel):
         description="Overall fraction of missing values",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the pattern was analyzed",
     )
     provenance_hash: str = Field(
@@ -455,8 +421,7 @@ class MissingnessPattern(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class ColumnAnalysis(BaseModel):
+class ColumnAnalysis(GreenLangBase):
     """Missing value analysis for a single dataset column.
 
     Provides detailed statistics about missing values in one column
@@ -545,8 +510,7 @@ class ColumnAnalysis(BaseModel):
             raise ValueError("column_name must be non-empty")
         return v
 
-
-class MissingnessReport(BaseModel):
+class MissingnessReport(GreenLangBase):
     """Complete missingness analysis report for a dataset.
 
     Aggregates pattern analysis, per-column analysis, and overall
@@ -601,7 +565,7 @@ class MissingnessReport(BaseModel):
         description="Fraction of records that are complete",
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the report was generated",
     )
     provenance_hash: str = Field(
@@ -611,8 +575,7 @@ class MissingnessReport(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class RuleCondition(BaseModel):
+class RuleCondition(GreenLangBase):
     """A single condition within an imputation rule.
 
     Defines a predicate that is evaluated against record fields
@@ -649,8 +612,7 @@ class RuleCondition(BaseModel):
             raise ValueError("field_name must be non-empty")
         return v
 
-
-class ImputationRule(BaseModel):
+class ImputationRule(GreenLangBase):
     """A rule defining conditional imputation logic.
 
     Encapsulates conditions that must be met and the imputation
@@ -705,7 +667,7 @@ class ImputationRule(BaseModel):
         description="Whether this rule is currently active",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the rule was created",
     )
     updated_at: Optional[datetime] = Field(
@@ -735,8 +697,7 @@ class ImputationRule(BaseModel):
             raise ValueError("target_column must be non-empty")
         return v
 
-
-class LookupEntry(BaseModel):
+class LookupEntry(GreenLangBase):
     """A single entry in a lookup table for imputation.
 
     Attributes:
@@ -766,8 +727,7 @@ class LookupEntry(BaseModel):
             raise ValueError("key must be non-empty")
         return v
 
-
-class LookupTable(BaseModel):
+class LookupTable(GreenLangBase):
     """Reference lookup table for lookup-based imputation.
 
     Provides a mapping from key column values to imputation values,
@@ -810,7 +770,7 @@ class LookupTable(BaseModel):
         None, description="Value to use when no key matches",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the table was created",
     )
     provenance_hash: str = Field(
@@ -844,8 +804,7 @@ class LookupTable(BaseModel):
             raise ValueError("target_column must be non-empty")
         return v
 
-
-class ImputedValue(BaseModel):
+class ImputedValue(GreenLangBase):
     """A single imputed value with provenance and confidence.
 
     Represents one missing value that has been filled by an imputation
@@ -907,8 +866,7 @@ class ImputedValue(BaseModel):
             raise ValueError("column_name must be non-empty")
         return v
 
-
-class ImputationResult(BaseModel):
+class ImputationResult(GreenLangBase):
     """Result of imputing missing values for a single column.
 
     Contains the list of imputed values, strategy used, overall
@@ -981,8 +939,7 @@ class ImputationResult(BaseModel):
             raise ValueError("column_name must be non-empty")
         return v
 
-
-class ImputationBatch(BaseModel):
+class ImputationBatch(GreenLangBase):
     """Batch of imputation results across multiple columns.
 
     Groups per-column imputation results into a single batch for
@@ -1023,7 +980,7 @@ class ImputationBatch(BaseModel):
         description="Total processing time for the batch",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the batch was processed",
     )
     provenance_hash: str = Field(
@@ -1033,8 +990,7 @@ class ImputationBatch(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class ValidationResult(BaseModel):
+class ValidationResult(GreenLangBase):
     """Result of validating an imputed column using a statistical test.
 
     Attributes:
@@ -1088,8 +1044,7 @@ class ValidationResult(BaseModel):
             raise ValueError("column_name must be non-empty")
         return v
 
-
-class ValidationReport(BaseModel):
+class ValidationReport(GreenLangBase):
     """Complete validation report for an imputation batch.
 
     Aggregates per-column validation results and provides an
@@ -1130,7 +1085,7 @@ class ValidationReport(BaseModel):
         description="Number of columns that failed validation",
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the report was generated",
     )
     provenance_hash: str = Field(
@@ -1140,8 +1095,7 @@ class ValidationReport(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class ImputationTemplate(BaseModel):
+class ImputationTemplate(GreenLangBase):
     """Reusable imputation template for consistent processing.
 
     Defines a named set of column-level strategy assignments,
@@ -1199,7 +1153,7 @@ class ImputationTemplate(BaseModel):
         description="Whether this template is currently active",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the template was created",
     )
     updated_at: Optional[datetime] = Field(
@@ -1221,8 +1175,7 @@ class ImputationTemplate(BaseModel):
             raise ValueError("name must be non-empty")
         return v
 
-
-class TimeSeriesConfig(BaseModel):
+class TimeSeriesConfig(GreenLangBase):
     """Configuration for time-series imputation methods.
 
     Defines the temporal parameters needed for time-series aware
@@ -1277,8 +1230,7 @@ class TimeSeriesConfig(BaseModel):
             raise ValueError("time_column must be non-empty")
         return v
 
-
-class MLModelConfig(BaseModel):
+class MLModelConfig(GreenLangBase):
     """Configuration for ML-based imputation models.
 
     Defines hyperparameters for random forest and gradient boosting
@@ -1330,8 +1282,7 @@ class MLModelConfig(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class StrategySelection(BaseModel):
+class StrategySelection(GreenLangBase):
     """Recommended strategy selection for a column.
 
     Output of the auto-strategy selection engine that recommends
@@ -1390,8 +1341,7 @@ class StrategySelection(BaseModel):
             raise ValueError("column_name must be non-empty")
         return v
 
-
-class PipelineConfig(BaseModel):
+class PipelineConfig(GreenLangBase):
     """Configuration for the full imputation pipeline.
 
     Defines pipeline-level settings including strategy overrides,
@@ -1450,8 +1400,7 @@ class PipelineConfig(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class PipelineResult(BaseModel):
+class PipelineResult(GreenLangBase):
     """Complete result of an imputation pipeline run.
 
     Aggregates analysis, imputation, and validation results into
@@ -1504,7 +1453,7 @@ class PipelineResult(BaseModel):
         description="Total pipeline processing time in milliseconds",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the pipeline completed",
     )
     provenance_hash: str = Field(
@@ -1514,8 +1463,7 @@ class PipelineResult(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class ImputationJobConfig(BaseModel):
+class ImputationJobConfig(GreenLangBase):
     """Configuration and tracking for an imputation job.
 
     Represents a single end-to-end imputation run with progress
@@ -1626,8 +1574,7 @@ class ImputationJobConfig(BaseModel):
             return 0.0
         return stage_progress.get(self.stage, 0.0)
 
-
-class ImputationStatistics(BaseModel):
+class ImputationStatistics(GreenLangBase):
     """Aggregated operational statistics for the imputation service.
 
     Provides high-level metrics for monitoring the overall
@@ -1684,19 +1631,17 @@ class ImputationStatistics(BaseModel):
         description="Count of columns per missingness type",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when statistics were computed",
     )
 
     model_config = {"extra": "forbid"}
 
-
 # =============================================================================
 # Request Models (8)
 # =============================================================================
 
-
-class CreateJobRequest(BaseModel):
+class CreateJobRequest(GreenLangBase):
     """Request body for creating a new imputation job.
 
     Attributes:
@@ -1722,8 +1667,7 @@ class CreateJobRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class AnalyzeMissingnessRequest(BaseModel):
+class AnalyzeMissingnessRequest(GreenLangBase):
     """Request body for analyzing missingness patterns.
 
     Attributes:
@@ -1746,8 +1690,7 @@ class AnalyzeMissingnessRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class ImputeValuesRequest(BaseModel):
+class ImputeValuesRequest(GreenLangBase):
     """Request body for imputing missing values in a dataset.
 
     Attributes:
@@ -1779,8 +1722,7 @@ class ImputeValuesRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class BatchImputeRequest(BaseModel):
+class BatchImputeRequest(GreenLangBase):
     """Request body for batch imputation across multiple datasets.
 
     Attributes:
@@ -1803,8 +1745,7 @@ class BatchImputeRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class ValidateRequest(BaseModel):
+class ValidateRequest(GreenLangBase):
     """Request body for validating imputation results.
 
     Attributes:
@@ -1833,8 +1774,7 @@ class ValidateRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class CreateRuleRequest(BaseModel):
+class CreateRuleRequest(GreenLangBase):
     """Request body for creating a new imputation rule.
 
     Attributes:
@@ -1890,8 +1830,7 @@ class CreateRuleRequest(BaseModel):
             raise ValueError("target_column must be non-empty")
         return v
 
-
-class CreateTemplateRequest(BaseModel):
+class CreateTemplateRequest(GreenLangBase):
     """Request body for creating a new imputation template.
 
     Attributes:
@@ -1942,8 +1881,7 @@ class CreateTemplateRequest(BaseModel):
             raise ValueError("name must be non-empty")
         return v
 
-
-class RunPipelineRequest(BaseModel):
+class RunPipelineRequest(GreenLangBase):
     """Request body for running the full imputation pipeline.
 
     Encapsulates input records, optional pipeline configuration,
@@ -1976,7 +1914,6 @@ class RunPipelineRequest(BaseModel):
     )
 
     model_config = {"extra": "forbid"}
-
 
 # =============================================================================
 # __all__ export list

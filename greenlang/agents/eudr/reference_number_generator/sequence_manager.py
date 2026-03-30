@@ -40,19 +40,15 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 from .config import ReferenceNumberGeneratorConfig, get_config
+from greenlang.schemas import utcnow
 from .models import (
+
     SequenceCounter,
     SequenceOverflowStrategy,
     SequenceStatus,
 )
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 class SequenceManager:
     """Sequential numbering management engine.
@@ -135,7 +131,7 @@ class SequenceManager:
                     "max_value": self.config.sequence_end,
                     "reserved_count": 0,
                     "overflow_strategy": self.config.sequence_overflow_strategy,
-                    "last_incremented_at": _utcnow().isoformat(),
+                    "last_incremented_at": utcnow().isoformat(),
                 }
                 self._counters[key] = counter
 
@@ -162,7 +158,7 @@ class SequenceManager:
                     )
 
             counter["current_value"] = next_val
-            counter["last_incremented_at"] = _utcnow().isoformat()
+            counter["last_incremented_at"] = utcnow().isoformat()
             self._total_increments += 1
 
         elapsed = time.monotonic() - start
@@ -221,7 +217,7 @@ class SequenceManager:
                     "max_value": self.config.sequence_end,
                     "reserved_count": 0,
                     "overflow_strategy": self.config.sequence_overflow_strategy,
-                    "last_incremented_at": _utcnow().isoformat(),
+                    "last_incremented_at": utcnow().isoformat(),
                 }
                 self._counters[key] = counter
 
@@ -248,7 +244,7 @@ class SequenceManager:
                 reserved.append(counter["current_value"])
 
             counter["reserved_count"] += count
-            counter["last_incremented_at"] = _utcnow().isoformat()
+            counter["last_incremented_at"] = utcnow().isoformat()
             self._total_increments += count
 
         # Store reservation for tracking
@@ -279,7 +275,7 @@ class SequenceManager:
             SequenceStatus dictionary.
         """
         if year is None:
-            year = _utcnow().year
+            year = utcnow().year
 
         key = self._counter_key(operator_id, member_state, year)
         counter = self._counters.get(key)
@@ -360,7 +356,7 @@ class SequenceManager:
                 return False
             self._counters[key]["current_value"] = self.config.sequence_start - 1
             self._counters[key]["reserved_count"] = 0
-            self._counters[key]["last_incremented_at"] = _utcnow().isoformat()
+            self._counters[key]["last_incremented_at"] = utcnow().isoformat()
 
         logger.info("Sequence counter reset for %s", key)
         return True

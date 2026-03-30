@@ -36,23 +36,17 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID-4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hex digest for provenance tracking."""
@@ -65,11 +59,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Execution status for a single workflow phase."""
@@ -78,7 +70,6 @@ class PhaseStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class ImpactCategory(str, Enum):
     """PEF impact categories (16 categories per EU PEF 3.0)."""
@@ -99,7 +90,6 @@ class ImpactCategory(str, Enum):
     RESOURCE_USE_MINERALS = "resource_use_minerals"
     RESOURCE_USE_FOSSILS = "resource_use_fossils"
 
-
 class PEFPerformanceClass(str, Enum):
     """PEF performance class (A-E)."""
     CLASS_A = "A"
@@ -108,11 +98,9 @@ class PEFPerformanceClass(str, Enum):
     CLASS_D = "D"
     CLASS_E = "E"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class WorkflowInput(BaseModel):
     """Input model for LifecycleVerificationWorkflow."""
@@ -126,7 +114,6 @@ class WorkflowInput(BaseModel):
     entity_name: str = Field(default="", description="Reporting entity")
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
     phase_name: str = Field(..., description="Phase identifier")
@@ -135,7 +122,6 @@ class PhaseResult(BaseModel):
     completed_at: Optional[datetime] = Field(default=None)
     result_data: Dict[str, Any] = Field(default_factory=dict)
     error_message: Optional[str] = Field(default=None)
-
 
 class WorkflowResult(BaseModel):
     """Complete result from LifecycleVerificationWorkflow."""
@@ -148,11 +134,9 @@ class WorkflowResult(BaseModel):
     started_at: Optional[datetime] = Field(default=None)
     completed_at: Optional[datetime] = Field(default=None)
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class LifecycleVerificationWorkflow:
     """
@@ -224,7 +208,7 @@ class LifecycleVerificationWorkflow:
             config=kwargs.get("config", {}),
         )
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting %s workflow %s for product '%s'",
                          self.WORKFLOW_NAME, self.workflow_id, input_data.product_name)
         phase_results: List[PhaseResult] = []
@@ -258,12 +242,12 @@ class LifecycleVerificationWorkflow:
             phase_results.append(PhaseResult(
                 phase_name="error_capture",
                 status=PhaseStatus.FAILED,
-                started_at=_utcnow(),
-                completed_at=_utcnow(),
+                started_at=utcnow(),
+                completed_at=utcnow(),
                 error_message=str(exc),
             ))
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
 
         completed_phases = [p for p in phase_results if p.status == PhaseStatus.COMPLETED]
         overall_result: Dict[str, Any] = {
@@ -295,7 +279,7 @@ class LifecycleVerificationWorkflow:
 
     def _phase_scope_definition(self, input_data: WorkflowInput) -> PhaseResult:
         """Define system boundaries, functional unit, and scope."""
-        started = _utcnow()
+        started = utcnow()
         self.logger.info("Phase 1/5 ScopeDefinition")
 
         lifecycle_stages = input_data.lifecycle_data.get("stages", [
@@ -324,7 +308,7 @@ class LifecycleVerificationWorkflow:
             phase_name="ScopeDefinition",
             status=PhaseStatus.COMPLETED,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             result_data=result_data,
         )
 
@@ -334,7 +318,7 @@ class LifecycleVerificationWorkflow:
 
     def _phase_inventory_analysis(self, input_data: WorkflowInput) -> PhaseResult:
         """Analyse material and energy inputs/outputs across lifecycle."""
-        started = _utcnow()
+        started = utcnow()
         self.logger.info("Phase 2/5 InventoryAnalysis")
 
         materials = input_data.lifecycle_data.get("materials", [])
@@ -375,7 +359,7 @@ class LifecycleVerificationWorkflow:
             phase_name="InventoryAnalysis",
             status=PhaseStatus.COMPLETED,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             result_data=result_data,
         )
 
@@ -387,7 +371,7 @@ class LifecycleVerificationWorkflow:
         self, input_data: WorkflowInput, inventory_data: Dict[str, Any],
     ) -> PhaseResult:
         """Calculate environmental impact category results."""
-        started = _utcnow()
+        started = utcnow()
         self.logger.info("Phase 3/5 ImpactAssessment")
 
         material_co2 = inventory_data.get("total_material_co2_eq_kg", 0.0)
@@ -441,7 +425,7 @@ class LifecycleVerificationWorkflow:
             phase_name="ImpactAssessment",
             status=PhaseStatus.COMPLETED,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             result_data=result_data,
         )
 
@@ -453,7 +437,7 @@ class LifecycleVerificationWorkflow:
         self, input_data: WorkflowInput, impact_data: Dict[str, Any],
     ) -> PhaseResult:
         """Interpret results, identify hotspots, and assess data quality."""
-        started = _utcnow()
+        started = utcnow()
         self.logger.info("Phase 4/5 Interpretation")
 
         # Identify the dominant contributor
@@ -483,7 +467,7 @@ class LifecycleVerificationWorkflow:
             phase_name="Interpretation",
             status=PhaseStatus.COMPLETED,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             result_data=result_data,
         )
 
@@ -498,7 +482,7 @@ class LifecycleVerificationWorkflow:
         interpretation_data: Dict[str, Any],
     ) -> PhaseResult:
         """Compute final PEF score and assign performance class."""
-        started = _utcnow()
+        started = utcnow()
         self.logger.info("Phase 5/5 PEFScoring")
 
         total_co2 = impact_data.get("total_climate_change_kg_co2_eq", 0.0)
@@ -533,7 +517,7 @@ class LifecycleVerificationWorkflow:
             phase_name="PEFScoring",
             status=PhaseStatus.COMPLETED,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             result_data=result_data,
         )
 

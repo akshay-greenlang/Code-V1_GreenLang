@@ -34,7 +34,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.data.excel_normalizer.config import ExcelNormalizerConfig, get_config
 from greenlang.agents.data.excel_normalizer.metrics import (
@@ -51,6 +51,7 @@ from greenlang.agents.data.excel_normalizer.metrics import (
     update_active_jobs,
     update_queue_size,
 )
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -65,13 +66,11 @@ except ImportError:
     FastAPI = None  # type: ignore[assignment, misc]
     FASTAPI_AVAILABLE = False
 
-
 # ===================================================================
 # Lightweight Pydantic models used by the facade
 # ===================================================================
 
-
-class SheetInfo(BaseModel):
+class SheetInfo(GreenLangBase):
     """Metadata for a single sheet within a workbook.
 
     Attributes:
@@ -87,8 +86,7 @@ class SheetInfo(BaseModel):
     column_count: int = Field(default=0)
     headers: List[str] = Field(default_factory=list)
 
-
-class FileRecord(BaseModel):
+class FileRecord(GreenLangBase):
     """Record representing an uploaded and normalised file.
 
     Attributes:
@@ -138,8 +136,7 @@ class FileRecord(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc).isoformat(),
     )
 
-
-class NormalizationJob(BaseModel):
+class NormalizationJob(GreenLangBase):
     """Represents an asynchronous normalization job.
 
     Attributes:
@@ -163,8 +160,7 @@ class NormalizationJob(BaseModel):
     completed_at: Optional[str] = Field(default=None)
     provenance_hash: str = Field(default="")
 
-
-class BatchJob(BaseModel):
+class BatchJob(GreenLangBase):
     """Represents a batch normalization job.
 
     Attributes:
@@ -186,8 +182,7 @@ class BatchJob(BaseModel):
     )
     provenance_hash: str = Field(default="")
 
-
-class ColumnMapping(BaseModel):
+class ColumnMapping(GreenLangBase):
     """Result of column mapping operation.
 
     Attributes:
@@ -203,8 +198,7 @@ class ColumnMapping(BaseModel):
     unmapped: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
-class TypeDetectionResult(BaseModel):
+class TypeDetectionResult(GreenLangBase):
     """Result of column data type detection.
 
     Attributes:
@@ -218,8 +212,7 @@ class TypeDetectionResult(BaseModel):
     sample_count: int = Field(default=0)
     provenance_hash: str = Field(default="")
 
-
-class NormalizeResult(BaseModel):
+class NormalizeResult(GreenLangBase):
     """Result of inline data normalization.
 
     Attributes:
@@ -235,8 +228,7 @@ class NormalizeResult(BaseModel):
     quality_score: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
-class ValidationResult(BaseModel):
+class ValidationResult(GreenLangBase):
     """Result of schema validation.
 
     Attributes:
@@ -252,8 +244,7 @@ class ValidationResult(BaseModel):
     schema_name: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
-class TransformResult(BaseModel):
+class TransformResult(GreenLangBase):
     """Result of applying transform operations.
 
     Attributes:
@@ -267,8 +258,7 @@ class TransformResult(BaseModel):
     operations_applied: int = Field(default=0)
     provenance_hash: str = Field(default="")
 
-
-class MappingTemplate(BaseModel):
+class MappingTemplate(GreenLangBase):
     """Column mapping template definition.
 
     Attributes:
@@ -290,8 +280,7 @@ class MappingTemplate(BaseModel):
     )
     provenance_hash: str = Field(default="")
 
-
-class CanonicalFieldsResult(BaseModel):
+class CanonicalFieldsResult(GreenLangBase):
     """Result of canonical field listing.
 
     Attributes:
@@ -303,8 +292,7 @@ class CanonicalFieldsResult(BaseModel):
     category: Optional[str] = Field(default=None)
     count: int = Field(default=0)
 
-
-class ExcelStatistics(BaseModel):
+class ExcelStatistics(GreenLangBase):
     """Aggregate statistics for the Excel normalizer service.
 
     Attributes:
@@ -332,11 +320,9 @@ class ExcelStatistics(BaseModel):
     files_by_format: Dict[str, int] = Field(default_factory=dict)
     columns_by_match_type: Dict[str, int] = Field(default_factory=dict)
 
-
 # ===================================================================
 # Provenance helper
 # ===================================================================
-
 
 class _ProvenanceTracker:
     """Minimal provenance tracker recording SHA-256 audit entries.
@@ -386,7 +372,6 @@ class _ProvenanceTracker:
         self.entry_count += 1
         return entry_hash
 
-
 # ===================================================================
 # ExcelNormalizerService facade
 # ===================================================================
@@ -394,12 +379,6 @@ class _ProvenanceTracker:
 # Thread-safe singleton lock
 _singleton_lock = threading.Lock()
 _singleton_instance: Optional["ExcelNormalizerService"] = None
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -416,7 +395,6 @@ def _compute_hash(data: Any) -> str:
         serializable = data
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 def _detect_format(file_name: str) -> str:
     """Detect file format from extension.
@@ -437,7 +415,6 @@ def _detect_format(file_name: str) -> str:
     if lower.endswith(".tsv"):
         return "tsv"
     return "unknown"
-
 
 # GreenLang canonical fields for sustainability data
 _CANONICAL_FIELDS: List[Dict[str, Any]] = [
@@ -494,7 +471,6 @@ _CANONICAL_FIELDS: List[Dict[str, Any]] = [
     {"name": "notes", "category": "metadata", "type": "string",
      "description": "Additional notes or comments"},
 ]
-
 
 class ExcelNormalizerService:
     """Unified facade over the Excel & CSV Normalizer SDK.
@@ -1940,11 +1916,9 @@ class ExcelNormalizerService:
         self._started = False
         logger.info("ExcelNormalizerService shut down")
 
-
 # ===================================================================
 # Thread-safe singleton access
 # ===================================================================
-
 
 def _get_singleton() -> ExcelNormalizerService:
     """Get or create the singleton ExcelNormalizerService instance.
@@ -1959,11 +1933,9 @@ def _get_singleton() -> ExcelNormalizerService:
                 _singleton_instance = ExcelNormalizerService()
     return _singleton_instance
 
-
 # ===================================================================
 # FastAPI integration
 # ===================================================================
-
 
 async def configure_excel_normalizer(
     app: Any,
@@ -2011,7 +1983,6 @@ async def configure_excel_normalizer(
     logger.info("Excel normalizer service configured on app")
     return service
 
-
 def get_excel_normalizer(app: Any) -> ExcelNormalizerService:
     """Get the ExcelNormalizerService instance from app state.
 
@@ -2032,7 +2003,6 @@ def get_excel_normalizer(app: Any) -> ExcelNormalizerService:
         )
     return service
 
-
 def get_router(service: Optional[ExcelNormalizerService] = None) -> Any:
     """Get the Excel normalizer API router.
 
@@ -2047,7 +2017,6 @@ def get_router(service: Optional[ExcelNormalizerService] = None) -> Any:
         return router
     except ImportError:
         return None
-
 
 __all__ = [
     "ExcelNormalizerService",

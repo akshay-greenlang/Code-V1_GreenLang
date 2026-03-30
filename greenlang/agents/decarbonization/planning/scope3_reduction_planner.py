@@ -16,12 +16,13 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig
 from greenlang.agents.base_agents import DeterministicAgent
 from greenlang.agents.categories import AgentCategory, AgentMetadata
 from greenlang.utilities.determinism import DeterministicClock, content_hash, deterministic_id
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +45,7 @@ class Scope3Category(str, Enum):
     CAT_15_INVESTMENTS = "cat_15_investments"
 
 
-class Scope3Intervention(BaseModel):
+class Scope3Intervention(GreenLangBase):
     intervention_id: str = Field(...)
     name: str = Field(...)
     category: Scope3Category = Field(...)
@@ -63,7 +64,7 @@ class Scope3Intervention(BaseModel):
     levers: List[str] = Field(default_factory=list)
 
 
-class Scope3ReductionPlan(BaseModel):
+class Scope3ReductionPlan(GreenLangBase):
     plan_id: str = Field(...)
     total_scope3_tco2e: float = Field(..., ge=0)
     target_reduction_percent: float = Field(..., ge=0, le=100)
@@ -80,14 +81,14 @@ class Scope3ReductionPlan(BaseModel):
     provenance_hash: str = Field(default="")
 
 
-class Scope3ReductionInput(BaseModel):
+class Scope3ReductionInput(GreenLangBase):
     operation: str = Field(default="plan")
     total_scope3_tco2e: float = Field(default=500000, ge=0)
     target_reduction_percent: float = Field(default=25, ge=0, le=100)
     category_breakdown: Dict[str, float] = Field(default_factory=dict)
 
 
-class Scope3ReductionOutput(BaseModel):
+class Scope3ReductionOutput(GreenLangBase):
     operation: str = Field(...)
     success: bool = Field(...)
     plan: Optional[Scope3ReductionPlan] = Field(None)

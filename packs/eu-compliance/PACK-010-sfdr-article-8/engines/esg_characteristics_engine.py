@@ -49,25 +49,19 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -87,7 +81,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _safe_divide(numerator: float, denominator: float, default: float = 0.0) -> float:
     """Safely divide two numbers, returning default on zero denominator.
 
@@ -103,7 +96,6 @@ def _safe_divide(numerator: float, denominator: float, default: float = 0.0) -> 
         return default
     return numerator / denominator
 
-
 def _clamp(value: float, min_val: float, max_val: float) -> float:
     """Clamp a value within a given range.
 
@@ -117,17 +109,14 @@ def _clamp(value: float, min_val: float, max_val: float) -> float:
     """
     return max(min_val, min(value, max_val))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CharacteristicType(str, Enum):
     """Type of ESG characteristic promoted under Article 8."""
     ENVIRONMENTAL = "environmental"
     SOCIAL = "social"
-
 
 class CharacteristicStatus(str, Enum):
     """Lifecycle status of a characteristic."""
@@ -136,7 +125,6 @@ class CharacteristicStatus(str, Enum):
     SUSPENDED = "suspended"
     RETIRED = "retired"
 
-
 class AttainmentStatus(str, Enum):
     """Whether a characteristic target has been met."""
     ATTAINED = "attained"
@@ -144,14 +132,12 @@ class AttainmentStatus(str, Enum):
     NOT_ATTAINED = "not_attained"
     NOT_MEASURED = "not_measured"
 
-
 class BindingElementStatus(str, Enum):
     """Enforcement status of a binding element."""
     COMPLIANT = "compliant"
     BREACHED = "breached"
     WARNING = "warning"
     NOT_EVALUATED = "not_evaluated"
-
 
 class MeasurementFrequency(str, Enum):
     """Frequency of sustainability indicator measurement."""
@@ -162,7 +148,6 @@ class MeasurementFrequency(str, Enum):
     SEMI_ANNUALLY = "semi_annually"
     ANNUALLY = "annually"
 
-
 class BenchmarkType(str, Enum):
     """Type of reference benchmark for comparison."""
     DESIGNATED_REFERENCE = "designated_reference"
@@ -171,11 +156,9 @@ class BenchmarkType(str, Enum):
     BROAD_MARKET = "broad_market"
     CUSTOM = "custom"
 
-
 # ---------------------------------------------------------------------------
 # Pre-defined Characteristic Definitions
 # ---------------------------------------------------------------------------
-
 
 ENVIRONMENTAL_CHARACTERISTICS: Dict[str, Dict[str, Any]] = {
     "climate_mitigation": {
@@ -383,11 +366,9 @@ SOCIAL_CHARACTERISTICS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class SustainabilityIndicator(BaseModel):
     """Quantitative indicator used to measure ESG characteristic attainment.
@@ -410,7 +391,6 @@ class SustainabilityIndicator(BaseModel):
     target_value: Optional[float] = Field(default=None, description="Target value")
     measurement_date: Optional[datetime] = Field(default=None, description="Date of current measurement")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class BindingElement(BaseModel):
     """Binding element that constitutes a hard constraint in the strategy.
@@ -444,7 +424,6 @@ class BindingElement(BaseModel):
         except (TypeError, ValueError):
             return 0.0
 
-
 class CharacteristicDefinition(BaseModel):
     """Definition of a promoted ESG characteristic.
 
@@ -473,10 +452,9 @@ class CharacteristicDefinition(BaseModel):
     binding_elements: List[BindingElement] = Field(
         default_factory=list, description="Binding elements (hard constraints)"
     )
-    created_at: datetime = Field(default_factory=_utcnow, description="Creation timestamp")
-    updated_at: datetime = Field(default_factory=_utcnow, description="Last update timestamp")
+    created_at: datetime = Field(default_factory=utcnow, description="Creation timestamp")
+    updated_at: datetime = Field(default_factory=utcnow, description="Last update timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class AttainmentResult(BaseModel):
     """Result of measuring characteristic attainment against target.
@@ -498,9 +476,8 @@ class AttainmentResult(BaseModel):
         default=None, description="Change vs previous period"
     )
     notes: str = Field(default="", description="Additional context")
-    measured_at: datetime = Field(default_factory=_utcnow, description="Measurement timestamp")
+    measured_at: datetime = Field(default_factory=utcnow, description="Measurement timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class BenchmarkComparison(BaseModel):
     """Comparison of product ESG performance vs reference benchmark.
@@ -523,9 +500,8 @@ class BenchmarkComparison(BaseModel):
     )
     outperforms: bool = Field(description="Whether product outperforms benchmark")
     unit: str = Field(default="", description="Unit of measurement")
-    comparison_date: datetime = Field(default_factory=_utcnow, description="Comparison timestamp")
+    comparison_date: datetime = Field(default_factory=utcnow, description="Comparison timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class StrategyValidationResult(BaseModel):
     """Result of validating the overall ESG strategy configuration.
@@ -543,9 +519,8 @@ class StrategyValidationResult(BaseModel):
     errors: List[str] = Field(default_factory=list, description="Validation errors")
     warnings: List[str] = Field(default_factory=list, description="Validation warnings")
     checks_passed: List[str] = Field(default_factory=list, description="Checks that passed")
-    validated_at: datetime = Field(default_factory=_utcnow, description="Validation timestamp")
+    validated_at: datetime = Field(default_factory=utcnow, description="Validation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class CharacteristicsSummary(BaseModel):
     """Summary of all promoted characteristics and their status.
@@ -567,14 +542,12 @@ class CharacteristicsSummary(BaseModel):
     benchmark_comparisons: List[BenchmarkComparison] = Field(
         default_factory=list, description="Benchmark comparisons"
     )
-    generated_at: datetime = Field(default_factory=_utcnow, description="Generation timestamp")
+    generated_at: datetime = Field(default_factory=utcnow, description="Generation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 # ---------------------------------------------------------------------------
 # Engine Configuration
 # ---------------------------------------------------------------------------
-
 
 class ESGCharacteristicsConfig(BaseModel):
     """Configuration for the ESGCharacteristicsEngine.
@@ -609,7 +582,6 @@ class ESGCharacteristicsConfig(BaseModel):
         default=50, description="Maximum number of characteristics allowed"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic model_rebuild for forward reference resolution
 # ---------------------------------------------------------------------------
@@ -623,11 +595,9 @@ BenchmarkComparison.model_rebuild()
 StrategyValidationResult.model_rebuild()
 CharacteristicsSummary.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # ESGCharacteristicsEngine
 # ---------------------------------------------------------------------------
-
 
 class ESGCharacteristicsEngine:
     """
@@ -702,7 +672,7 @@ class ESGCharacteristicsEngine:
         Raises:
             ValueError: If a key is not found in either catalog.
         """
-        start = _utcnow()
+        start = utcnow()
         custom_targets = custom_targets or {}
         created: List[CharacteristicDefinition] = []
 
@@ -745,7 +715,7 @@ class ESGCharacteristicsEngine:
         logger.info(
             "Defined %d characteristics in %dms",
             len(created),
-            int((_utcnow() - start).total_seconds() * 1000),
+            int((utcnow() - start).total_seconds() * 1000),
         )
         return created
 
@@ -868,7 +838,7 @@ class ESGCharacteristicsEngine:
 
         char.binding_elements.append(element)
         char.binding = True
-        char.updated_at = _utcnow()
+        char.updated_at = utcnow()
 
         logger.info(
             "Added binding element '%s' to characteristic '%s' (threshold=%.2f)",
@@ -894,7 +864,7 @@ class ESGCharacteristicsEngine:
         Returns:
             List of all BindingElement objects with updated status.
         """
-        start = _utcnow()
+        start = utcnow()
         evaluated: List[BindingElement] = []
 
         for char in self._characteristics.values():
@@ -902,7 +872,7 @@ class ESGCharacteristicsEngine:
             for element in char.binding_elements:
                 if current_value is not None:
                     element.current_value = current_value
-                    element.last_evaluated = _utcnow()
+                    element.last_evaluated = utcnow()
                     element.status = self._evaluate_single_binding(
                         element, current_value
                     )
@@ -916,7 +886,7 @@ class ESGCharacteristicsEngine:
             "Evaluated %d binding elements (%d breached) in %dms",
             len(evaluated),
             breached,
-            int((_utcnow() - start).total_seconds() * 1000),
+            int((utcnow() - start).total_seconds() * 1000),
         )
         return evaluated
 
@@ -983,7 +953,7 @@ class ESGCharacteristicsEngine:
         indicator.provenance_hash = _compute_hash(indicator)
 
         char.indicators.append(indicator)
-        char.updated_at = _utcnow()
+        char.updated_at = utcnow()
 
         logger.info(
             "Added indicator '%s' to characteristic '%s'",
@@ -1032,7 +1002,7 @@ class ESGCharacteristicsEngine:
                 if indicator.indicator_id == indicator_id:
                     indicator.previous_value = indicator.current_value
                     indicator.current_value = value
-                    indicator.measurement_date = measurement_date or _utcnow()
+                    indicator.measurement_date = measurement_date or utcnow()
                     indicator.provenance_hash = _compute_hash(indicator)
                     logger.info(
                         "Updated indicator '%s' value: %.4f -> %.4f",
@@ -1071,7 +1041,7 @@ class ESGCharacteristicsEngine:
         Returns:
             List of AttainmentResult objects.
         """
-        start = _utcnow()
+        start = utcnow()
         results: List[AttainmentResult] = []
 
         for char_id, char in self._characteristics.items():
@@ -1113,7 +1083,7 @@ class ESGCharacteristicsEngine:
         logger.info(
             "Measured attainment for %d characteristics in %dms",
             len(results),
-            int((_utcnow() - start).total_seconds() * 1000),
+            int((utcnow() - start).total_seconds() * 1000),
         )
         return results
 
@@ -1175,7 +1145,7 @@ class ESGCharacteristicsEngine:
         Raises:
             ValueError: If benchmark data has not been set.
         """
-        start = _utcnow()
+        start = utcnow()
         bm_name = benchmark_name or self.config.default_benchmark_name
         bm_type = benchmark_type or self.config.default_benchmark_type
 
@@ -1220,7 +1190,7 @@ class ESGCharacteristicsEngine:
             "Compared %d characteristics to benchmark '%s' in %dms",
             len(comparisons),
             bm_name,
-            int((_utcnow() - start).total_seconds() * 1000),
+            int((utcnow() - start).total_seconds() * 1000),
         )
         return comparisons
 
@@ -1240,7 +1210,7 @@ class ESGCharacteristicsEngine:
         Returns:
             StrategyValidationResult with errors, warnings, and passed checks.
         """
-        start = _utcnow()
+        start = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         checks_passed: List[str] = []
@@ -1338,7 +1308,7 @@ class ESGCharacteristicsEngine:
             "PASSED" if is_valid else "FAILED",
             len(errors),
             len(warnings),
-            int((_utcnow() - start).total_seconds() * 1000),
+            int((utcnow() - start).total_seconds() * 1000),
         )
         return result
 
@@ -1363,7 +1333,7 @@ class ESGCharacteristicsEngine:
         Returns:
             CharacteristicsSummary with all metrics.
         """
-        start = _utcnow()
+        start = utcnow()
         active_chars = self.list_characteristics(status=CharacteristicStatus.ACTIVE)
         env_count = sum(
             1 for c in active_chars
@@ -1419,7 +1389,7 @@ class ESGCharacteristicsEngine:
             "Generated characteristics summary: %d chars, %.1f%% attainment in %dms",
             len(active_chars),
             overall_att,
-            int((_utcnow() - start).total_seconds() * 1000),
+            int((utcnow() - start).total_seconds() * 1000),
         )
         return summary
 
@@ -1448,7 +1418,7 @@ class ESGCharacteristicsEngine:
 
         old_status = char.status
         char.status = new_status
-        char.updated_at = _utcnow()
+        char.updated_at = utcnow()
         char.provenance_hash = _compute_hash(char)
 
         logger.info(

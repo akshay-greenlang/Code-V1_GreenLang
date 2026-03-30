@@ -34,23 +34,17 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID-4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hex digest for provenance tracking."""
@@ -63,11 +57,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Execution status for a single workflow phase."""
@@ -77,14 +69,12 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class LabelAuditPhase(str, Enum):
     """Label audit workflow phase identifiers."""
     LABEL_INVENTORY = "LabelInventory"
     SCHEME_VALIDATION = "SchemeValidation"
     CERTIFICATE_VERIFICATION = "CertificateVerification"
     COMPLIANCE_REPORT = "ComplianceReport"
-
 
 class LabelSchemeType(str, Enum):
     """ISO label scheme type classification."""
@@ -96,7 +86,6 @@ class LabelSchemeType(str, Enum):
     NATIONAL = "national_scheme"
     UNKNOWN = "unknown"
 
-
 class CertificateStatus(str, Enum):
     """Certificate validity status."""
     VALID = "valid"
@@ -105,11 +94,9 @@ class CertificateStatus(str, Enum):
     NOT_PROVIDED = "not_provided"
     REVOKED = "revoked"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class LabelAuditConfig(BaseModel):
     """Configuration for LabelAuditWorkflow."""
@@ -127,7 +114,6 @@ class LabelAuditConfig(BaseModel):
         description="List of EU-approved scheme identifiers",
     )
 
-
 class LabelAuditResult(BaseModel):
     """Final result model for per-label audit assessment."""
     label_id: str = Field(..., description="Unique label identifier")
@@ -139,7 +125,6 @@ class LabelAuditResult(BaseModel):
     issues: List[str] = Field(default_factory=list, description="Identified issues")
     recommendation: str = Field(default="", description="Remediation recommendation")
 
-
 class WorkflowInput(BaseModel):
     """Input model for LabelAuditWorkflow."""
     labels_data: List[Dict[str, Any]] = Field(
@@ -150,7 +135,6 @@ class WorkflowInput(BaseModel):
     reporting_year: int = Field(default=2025, ge=2020, le=2050)
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
     phase_name: str = Field(..., description="Phase identifier")
@@ -159,7 +143,6 @@ class PhaseResult(BaseModel):
     completed_at: Optional[datetime] = Field(default=None)
     result_data: Dict[str, Any] = Field(default_factory=dict)
     error_message: Optional[str] = Field(default=None)
-
 
 class WorkflowResult(BaseModel):
     """Complete result from LabelAuditWorkflow."""
@@ -172,11 +155,9 @@ class WorkflowResult(BaseModel):
     started_at: Optional[datetime] = Field(default=None)
     completed_at: Optional[datetime] = Field(default=None)
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class LabelAuditWorkflow:
     """
@@ -239,7 +220,7 @@ class LabelAuditWorkflow:
             config=kwargs.get("config", {}),
         )
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting %s workflow %s", self.WORKFLOW_NAME, self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = PhaseStatus.RUNNING
@@ -269,12 +250,12 @@ class LabelAuditWorkflow:
             phase_results.append(PhaseResult(
                 phase_name="error_capture",
                 status=PhaseStatus.FAILED,
-                started_at=_utcnow(),
-                completed_at=_utcnow(),
+                started_at=utcnow(),
+                completed_at=utcnow(),
                 error_message=str(exc),
             ))
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
 
         completed_phases = [p for p in phase_results if p.status == PhaseStatus.COMPLETED]
         overall_result: Dict[str, Any] = {
@@ -352,7 +333,7 @@ class LabelAuditWorkflow:
 
     def _run_label_inventory(self, input_data: WorkflowInput) -> PhaseResult:
         """Catalogue all eco-labels and certifications in use."""
-        started = _utcnow()
+        started = utcnow()
         self.logger.info("Phase 1/4 LabelInventory -- cataloguing %d labels",
                          len(input_data.labels_data))
 
@@ -386,7 +367,7 @@ class LabelAuditWorkflow:
             phase_name=LabelAuditPhase.LABEL_INVENTORY.value,
             status=PhaseStatus.COMPLETED,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             result_data=result_data,
         )
 
@@ -396,7 +377,7 @@ class LabelAuditWorkflow:
 
     def _run_scheme_validation(self, inventory_data: Dict[str, Any]) -> PhaseResult:
         """Verify each label scheme against Article 10 criteria."""
-        started = _utcnow()
+        started = utcnow()
         self.logger.info("Phase 2/4 SchemeValidation -- checking Article 10 criteria")
 
         validations: List[Dict[str, Any]] = []
@@ -438,7 +419,7 @@ class LabelAuditWorkflow:
             phase_name=LabelAuditPhase.SCHEME_VALIDATION.value,
             status=PhaseStatus.COMPLETED,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             result_data=result_data,
         )
 
@@ -448,12 +429,12 @@ class LabelAuditWorkflow:
 
     def _run_certificate_verification(self, inventory_data: Dict[str, Any]) -> PhaseResult:
         """Validate certificates and determine expiry status."""
-        started = _utcnow()
+        started = utcnow()
         self.logger.info("Phase 3/4 CertificateVerification -- validating certificates")
 
         verifications: List[Dict[str, Any]] = []
         status_counts: Dict[str, int] = {s.value: 0 for s in CertificateStatus}
-        now = _utcnow()
+        now = utcnow()
 
         for item in inventory_data.get("inventory", []):
             cert_status = self._verify_certificate(item, now)
@@ -490,7 +471,7 @@ class LabelAuditWorkflow:
             phase_name=LabelAuditPhase.CERTIFICATE_VERIFICATION.value,
             status=PhaseStatus.COMPLETED,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             result_data=result_data,
         )
 
@@ -506,7 +487,7 @@ class LabelAuditWorkflow:
         cert_data: Dict[str, Any],
     ) -> PhaseResult:
         """Generate per-label compliance assessment report."""
-        started = _utcnow()
+        started = utcnow()
         self.logger.info("Phase 4/4 ComplianceReport -- assembling per-label assessments")
 
         scheme_by_id = {
@@ -560,7 +541,7 @@ class LabelAuditWorkflow:
             phase_name=LabelAuditPhase.COMPLIANCE_REPORT.value,
             status=PhaseStatus.COMPLETED,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             result_data=result_data,
         )
 

@@ -51,6 +51,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -231,26 +232,17 @@ try:
 except ImportError:
     PurchasedGoodsServicesMetrics = None  # type: ignore[assignment, misc]
 
-
 # ===================================================================
 # Utility helpers
 # ===================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _utcnow_iso() -> str:
     """Return current UTC datetime as an ISO-8601 string."""
-    return _utcnow().isoformat()
-
+    return utcnow().isoformat()
 
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _short_id(prefix: str = "pgs") -> str:
     """Generate a short unique identifier with a given prefix.
@@ -262,7 +254,6 @@ def _short_id(prefix: str = "pgs") -> str:
         A string like ``pgs_a1b2c3d4e5f6``.
     """
     return f"{prefix}_{uuid.uuid4().hex[:12]}"
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -281,7 +272,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 def _quantize(value: Decimal, places: int = 8) -> Decimal:
     """Quantize a Decimal to the given number of decimal places.
 
@@ -294,7 +284,6 @@ def _quantize(value: Decimal, places: int = 8) -> Decimal:
     """
     quantizer = Decimal(10) ** -places
     return value.quantize(quantizer, rounding=ROUND_HALF_UP)
-
 
 def _safe_float(value: Any, default: float = 0.0) -> float:
     """Convert a value to float, returning default on failure.
@@ -311,7 +300,6 @@ def _safe_float(value: Any, default: float = 0.0) -> float:
     except (TypeError, ValueError, ArithmeticError):
         return default
 
-
 def _safe_decimal(value: Any, default: Decimal = Decimal("0")) -> Decimal:
     """Convert a value to Decimal, returning default on failure.
 
@@ -327,7 +315,6 @@ def _safe_decimal(value: Any, default: Decimal = Decimal("0")) -> Decimal:
     except Exception:
         return default
 
-
 # ===================================================================
 # Default compliance frameworks for Category 1
 # ===================================================================
@@ -342,11 +329,9 @@ DEFAULT_COMPLIANCE_FRAMEWORKS: List[str] = [
     "iso_14064",
 ]
 
-
 # ===================================================================
 # Lightweight Pydantic response models (16 models)
 # ===================================================================
-
 
 class SpendBasedResponse(BaseModel):
     """Response for a spend-based emission calculation."""
@@ -368,7 +353,6 @@ class SpendBasedResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
 class AverageDataResponse(BaseModel):
     """Response for an average-data emission calculation."""
 
@@ -389,7 +373,6 @@ class AverageDataResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
 class SupplierSpecificResponse(BaseModel):
     """Response for a supplier-specific emission calculation."""
 
@@ -408,7 +391,6 @@ class SupplierSpecificResponse(BaseModel):
     provenance_hash: str = Field(default="")
     processing_time_ms: float = Field(default=0.0)
     timestamp: str = Field(default_factory=_utcnow_iso)
-
 
 class HybridCalculationResponse(BaseModel):
     """Response for a hybrid (multi-method) emission calculation."""
@@ -431,7 +413,6 @@ class HybridCalculationResponse(BaseModel):
     provenance_hash: str = Field(default="")
     processing_time_ms: float = Field(default=0.0)
     timestamp: str = Field(default_factory=_utcnow_iso)
-
 
 class PipelineResponse(BaseModel):
     """Response for a full pipeline execution."""
@@ -458,7 +439,6 @@ class PipelineResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
 class BatchCalculateResponse(BaseModel):
     """Response for a batch calculation across multiple periods."""
 
@@ -475,7 +455,6 @@ class BatchCalculateResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
 class EEIOFactorResponse(BaseModel):
     """Response for an EEIO emission factor lookup."""
 
@@ -489,7 +468,6 @@ class EEIOFactorResponse(BaseModel):
     base_year: int = Field(default=2019)
     provenance_hash: str = Field(default="")
 
-
 class PhysicalEFResponse(BaseModel):
     """Response for a physical emission factor lookup."""
 
@@ -501,7 +479,6 @@ class PhysicalEFResponse(BaseModel):
     source: str = Field(default="")
     material_category: str = Field(default="")
     provenance_hash: str = Field(default="")
-
 
 class ComplianceCheckResponse(BaseModel):
     """Response for a regulatory compliance check."""
@@ -518,7 +495,6 @@ class ComplianceCheckResponse(BaseModel):
     results: List[Dict[str, Any]] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
     timestamp: str = Field(default_factory=_utcnow_iso)
-
 
 class DQIScoreResponse(BaseModel):
     """Response for a data quality indicator scoring."""
@@ -537,7 +513,6 @@ class DQIScoreResponse(BaseModel):
     quality_tier: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 class ExportResponse(BaseModel):
     """Response for an export operation."""
 
@@ -548,7 +523,6 @@ class ExportResponse(BaseModel):
     content: Any = Field(default=None)
     size_bytes: int = Field(default=0)
     timestamp: str = Field(default_factory=_utcnow_iso)
-
 
 class AggregationResponse(BaseModel):
     """Response for an aggregated emissions summary."""
@@ -562,7 +536,6 @@ class AggregationResponse(BaseModel):
     coverage_level: str = Field(default="minimal")
     period: str = Field(default="annual")
     timestamp: str = Field(default_factory=_utcnow_iso)
-
 
 class HealthResponse(BaseModel):
     """Service health check response."""
@@ -578,7 +551,6 @@ class HealthResponse(BaseModel):
     uptime_seconds: float = Field(default=0.0)
     total_calculations: int = Field(default=0)
     timestamp: str = Field(default_factory=_utcnow_iso)
-
 
 class StatsResponse(BaseModel):
     """Service aggregate statistics response."""
@@ -600,11 +572,9 @@ class StatsResponse(BaseModel):
     uptime_seconds: float = Field(default=0.0)
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
 # ===================================================================
 # PurchasedGoodsServicesService facade
 # ===================================================================
-
 
 class PurchasedGoodsServicesService:
     """Unified facade over the Purchased Goods & Services Agent SDK.
@@ -2896,14 +2866,12 @@ class PurchasedGoodsServicesService:
             }
         return {"value": str(item)}
 
-
 # ===================================================================
 # Thread-safe singleton access
 # ===================================================================
 
 _service_instance: Optional[PurchasedGoodsServicesService] = None
 _service_lock = threading.Lock()
-
 
 def get_service() -> PurchasedGoodsServicesService:
     """Get or create the singleton PurchasedGoodsServicesService instance.
@@ -2920,7 +2888,6 @@ def get_service() -> PurchasedGoodsServicesService:
             if _service_instance is None:
                 _service_instance = PurchasedGoodsServicesService()
     return _service_instance
-
 
 def get_router() -> Any:
     """Get the FastAPI router for purchased goods & services.
@@ -2943,7 +2910,6 @@ def get_router() -> Any:
             "Purchased goods & services API router module not available"
         )
         return None
-
 
 def configure_purchased_goods(
     app: Any,
@@ -3001,7 +2967,6 @@ def configure_purchased_goods(
         VERSION if MODELS_AVAILABLE else "1.0.0",
     )
     return service
-
 
 # ===================================================================
 # Public API (__all__)

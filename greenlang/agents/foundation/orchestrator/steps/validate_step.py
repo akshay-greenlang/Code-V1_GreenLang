@@ -48,7 +48,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
 
 # Schema validator integration
 from greenlang.agents.foundation.schema.validator.core import SchemaValidator
@@ -62,6 +62,7 @@ from greenlang.agents.foundation.schema.models.finding import Finding, Severity
 from greenlang.agents.foundation.schema.models.report import ValidationReport
 from greenlang.agents.foundation.schema.models.schema_ref import SchemaRef
 from greenlang.agents.foundation.schema.registry.resolver import SchemaRegistry
+from greenlang.schemas import GreenLangBase
 
 # NOTE: Step registry functions are defined in __init__.py
 # We avoid importing them here to prevent circular imports.
@@ -139,7 +140,7 @@ class ValidationFailedError(Exception):
 # =============================================================================
 
 
-class ValidateStepConfig(BaseModel):
+class ValidateStepConfig(GreenLangBase):
     """
     Configuration for ValidateStep.
 
@@ -356,7 +357,7 @@ class ValidateStepConfig(BaseModel):
 # =============================================================================
 
 
-class ValidateStepInput(BaseModel):
+class ValidateStepInput(GreenLangBase):
     """
     Input data model for ValidateStep.
 
@@ -423,7 +424,7 @@ class ValidateStepInput(BaseModel):
         return v
 
 
-class ValidateStepFinding(BaseModel):
+class ValidateStepFinding(GreenLangBase):
     """
     Simplified finding model for step output.
 
@@ -461,7 +462,7 @@ class ValidateStepFinding(BaseModel):
         )
 
 
-class ValidateStepOutput(BaseModel):
+class ValidateStepOutput(GreenLangBase):
     """
     Output data model for ValidateStep.
 

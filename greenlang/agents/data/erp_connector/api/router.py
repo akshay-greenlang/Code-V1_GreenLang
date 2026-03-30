@@ -38,6 +38,7 @@ Status: Production Ready
 
 import logging
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +64,7 @@ except ImportError:
 
 if FASTAPI_AVAILABLE:
 
-    class RegisterConnectionBody(BaseModel):
+    class RegisterConnectionBody(GreenLangBase):
         """Request body for registering an ERP connection."""
         erp_system: str = Field(
             ..., description="ERP system type (sap, oracle, netsuite, dynamics, simulated)",
@@ -90,7 +91,7 @@ if FASTAPI_AVAILABLE:
             default_factory=dict, description="Additional connection parameters",
         )
 
-    class SyncSpendBody(BaseModel):
+    class SyncSpendBody(GreenLangBase):
         """Request body for syncing spend data."""
         connection_id: str = Field(
             ..., description="ERP connection ID to sync from",
@@ -111,7 +112,7 @@ if FASTAPI_AVAILABLE:
             default=True, description="Whether to use incremental sync",
         )
 
-    class SyncPOBody(BaseModel):
+    class SyncPOBody(GreenLangBase):
         """Request body for syncing purchase orders."""
         connection_id: str = Field(
             ..., description="ERP connection ID to sync from",
@@ -129,7 +130,7 @@ if FASTAPI_AVAILABLE:
             default=True, description="Whether to use incremental sync",
         )
 
-    class SyncInventoryBody(BaseModel):
+    class SyncInventoryBody(GreenLangBase):
         """Request body for syncing inventory data."""
         connection_id: str = Field(
             ..., description="ERP connection ID to sync from",
@@ -141,7 +142,7 @@ if FASTAPI_AVAILABLE:
             default_factory=list, description="Optional material group filter",
         )
 
-    class MapVendorBody(BaseModel):
+    class MapVendorBody(GreenLangBase):
         """Request body for mapping a vendor to a Scope 3 category."""
         vendor_id: str = Field(
             ..., description="Vendor identifier from ERP",
@@ -159,7 +160,7 @@ if FASTAPI_AVAILABLE:
             None, ge=0.0, description="Custom emission factor (kgCO2e per unit currency)",
         )
 
-    class MapMaterialBody(BaseModel):
+    class MapMaterialBody(GreenLangBase):
         """Request body for mapping a material to a Scope 3 category."""
         material_id: str = Field(
             ..., description="Material identifier from ERP",
@@ -177,7 +178,7 @@ if FASTAPI_AVAILABLE:
             None, ge=0.0, description="Custom emission factor (kgCO2e per unit)",
         )
 
-    class CalculateEmissionsBody(BaseModel):
+    class CalculateEmissionsBody(GreenLangBase):
         """Request body for calculating Scope 3 emissions."""
         connection_id: str = Field(
             ..., description="ERP connection ID with synced data",

@@ -44,6 +44,7 @@ from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.mass_balance_calculator.api.dependencies import (
     AuthUser,
@@ -81,22 +82,14 @@ router = APIRouter(tags=["Consolidation"])
 _report_store: Dict[str, Dict] = {}
 _group_store: Dict[str, Dict] = {}
 
-
 def _compute_provenance_hash(data: dict) -> str:
     """Compute SHA-256 hash for provenance tracking."""
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ---------------------------------------------------------------------------
 # POST /consolidation/report
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/consolidation/report",
@@ -138,7 +131,7 @@ async def generate_report(
     start = time.monotonic()
     try:
         report_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         # Resolve facility IDs from group if needed
         facility_ids = list(body.facility_ids)
@@ -221,11 +214,9 @@ async def generate_report(
             detail="Failed to generate consolidation report",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /consolidation/groups
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/consolidation/groups",
@@ -266,7 +257,7 @@ async def create_facility_group(
     start = time.monotonic()
     try:
         group_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         provenance_hash = _compute_provenance_hash({
             "group_id": group_id,
@@ -319,11 +310,9 @@ async def create_facility_group(
             detail="Failed to create facility group",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /consolidation/dashboard
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/consolidation/dashboard",
@@ -361,7 +350,7 @@ async def get_dashboard(
     """
     start = time.monotonic()
     try:
-        now = _utcnow()
+        now = utcnow()
 
         # Simulated enterprise-level aggregation
         commodity_breakdown = [
@@ -436,11 +425,9 @@ async def get_dashboard(
             detail="Failed to retrieve consolidation dashboard",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /consolidation/report/{report_id}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/consolidation/report/{report_id}",
@@ -505,11 +492,9 @@ async def get_report(
             detail="Failed to retrieve report details",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /consolidation/report/{report_id}/download
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/consolidation/report/{report_id}/download",
@@ -556,7 +541,7 @@ async def download_report(
                 detail=f"Report {report_id} not found",
             )
 
-        now = _utcnow()
+        now = utcnow()
         # Simulated pre-signed URL (in production, generated from S3/object storage)
         from datetime import timedelta
         expires_at = now + timedelta(hours=1)
@@ -592,7 +577,6 @@ async def download_report(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve report download information",
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

@@ -32,10 +32,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.agents.categories import AgentCategory
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -131,7 +132,7 @@ TSC_THRESHOLDS: Dict[str, Dict[str, Any]] = {
 # =============================================================================
 
 
-class EconomicActivity(BaseModel):
+class EconomicActivity(GreenLangBase):
     """An economic activity to be assessed for taxonomy alignment."""
     activity_id: str = Field(..., description="Unique identifier")
     name: str = Field(..., description="Activity name")
@@ -166,7 +167,7 @@ class EconomicActivity(BaseModel):
     water_permit: bool = Field(default=False)
 
 
-class TaxonomyEligibility(BaseModel):
+class TaxonomyEligibility(GreenLangBase):
     """Eligibility assessment result."""
     activity_id: str
     is_eligible: bool
@@ -176,7 +177,7 @@ class TaxonomyEligibility(BaseModel):
     eligibility_rationale: str
 
 
-class DNSHAssessment(BaseModel):
+class DNSHAssessment(GreenLangBase):
     """DNSH assessment for an activity."""
     activity_id: str
     assessed_for_objective: EnvironmentalObjective
@@ -195,7 +196,7 @@ class DNSHAssessment(BaseModel):
     assessment_notes: List[str] = Field(default_factory=list)
 
 
-class TaxonomyAlignment(BaseModel):
+class TaxonomyAlignment(GreenLangBase):
     """Full taxonomy alignment assessment."""
     activity_id: str
     activity_name: str
@@ -227,7 +228,7 @@ class TaxonomyAlignment(BaseModel):
     alignment_percentage: float = Field(default=0, ge=0, le=100)
 
 
-class TaxonomyAlignmentInput(BaseModel):
+class TaxonomyAlignmentInput(GreenLangBase):
     """Input for taxonomy alignment assessment."""
     operation: str = Field(
         default="assess_alignment",
@@ -253,7 +254,7 @@ class TaxonomyAlignmentInput(BaseModel):
     has_anti_corruption_policy: bool = Field(default=False)
 
 
-class TaxonomyAlignmentOutput(BaseModel):
+class TaxonomyAlignmentOutput(GreenLangBase):
     """Output from taxonomy alignment assessment."""
     success: bool
     operation: str

@@ -93,6 +93,7 @@ from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from enum import Enum
 from typing import Any, Dict, FrozenSet, List, Optional, Set, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -133,15 +134,9 @@ except ImportError:
     _record_material_operation = None  # type: ignore[assignment]
     _observe_calculation_duration = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _to_decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
@@ -162,7 +157,6 @@ def _to_decimal(value: Any) -> Decimal:
     except (InvalidOperation, ValueError, TypeError) as exc:
         raise ValueError(f"Cannot convert {value!r} to Decimal") from exc
 
-
 def _decimal_clamp(value: Decimal, low: Decimal, high: Decimal) -> Decimal:
     """Clamp a Decimal value to [low, high].
 
@@ -176,11 +170,9 @@ def _decimal_clamp(value: Decimal, low: Decimal, high: Decimal) -> Decimal:
     """
     return max(low, min(high, value))
 
-
 # ===========================================================================
 # Enumerations
 # ===========================================================================
-
 
 class AbatementTechnologyType(str, Enum):
     """Supported abatement technology types.
@@ -222,7 +214,6 @@ class AbatementTechnologyType(str, Enum):
     FLARE = "FLARE"
     BIOFILTER = "BIOFILTER"
 
-
 class MaintenanceStatus(str, Enum):
     """Maintenance status for an abatement technology installation.
 
@@ -241,7 +232,6 @@ class MaintenanceStatus(str, Enum):
     FAILED = "FAILED"
     DECOMMISSIONED = "DECOMMISSIONED"
 
-
 class VerificationStatus(str, Enum):
     """Third-party verification status.
 
@@ -255,7 +245,6 @@ class VerificationStatus(str, Enum):
     UNVERIFIED = "UNVERIFIED"
     EXPIRED = "EXPIRED"
     PENDING = "PENDING"
-
 
 class MonitoringFrequency(str, Enum):
     """Required monitoring frequency for abatement systems.
@@ -274,7 +263,6 @@ class MonitoringFrequency(str, Enum):
     MONTHLY = "MONTHLY"
     QUARTERLY = "QUARTERLY"
     ANNUAL = "ANNUAL"
-
 
 # ===========================================================================
 # Default Technology Database
@@ -679,11 +667,9 @@ _PRECISION_2 = Decimal("0.01")
 _ZERO = Decimal("0")
 _ONE = Decimal("1")
 
-
 # ===========================================================================
 # Dataclasses
 # ===========================================================================
-
 
 @dataclass
 class AbatementTechnology:
@@ -770,7 +756,6 @@ class AbatementTechnology:
             "updated_at": self.updated_at,
         }
 
-
 @dataclass
 class AbatementPerformance:
     """Performance snapshot for an abatement installation at a point in time.
@@ -810,7 +795,6 @@ class AbatementPerformance:
             "notes": self.notes,
             "provenance_hash": self.provenance_hash,
         }
-
 
 @dataclass
 class AbatementCostAnalysis:
@@ -864,11 +848,9 @@ class AbatementCostAnalysis:
             "timestamp": self.timestamp,
         }
 
-
 # ===========================================================================
 # AbatementTrackerEngine
 # ===========================================================================
-
 
 class AbatementTrackerEngine:
     """Abatement technology tracking engine for process emissions.
@@ -1003,7 +985,7 @@ class AbatementTrackerEngine:
 
             # Installation date and age
             install_date_str = registration.get(
-                "installation_date", _utcnow().date().isoformat()
+                "installation_date", utcnow().date().isoformat()
             )
             age_years = self._calculate_age_years(install_date_str)
 
@@ -1041,7 +1023,7 @@ class AbatementTrackerEngine:
             ).upper().strip()
             ver_expiry = registration.get("verification_expiry")
 
-            now = _utcnow()
+            now = utcnow()
 
             name = registration.get("name", f"{tech_type} ({process_type})")
 
@@ -1205,7 +1187,7 @@ class AbatementTrackerEngine:
             "individual_efficiencies": individual,
             "technology_count": len(technology_ids),
             "technology_ids": technology_ids,
-            "as_of_date": as_of_date or _utcnow().date().isoformat(),
+            "as_of_date": as_of_date or utcnow().date().isoformat(),
             "provenance_hash": provenance_hash,
             "processing_time_ms": round(elapsed_ms, 3),
         }
@@ -1297,7 +1279,7 @@ class AbatementTrackerEngine:
         measured = _decimal_clamp(measured, _ZERO, _ONE)
 
         if measurement_date is None:
-            measurement_date = _utcnow().date().isoformat()
+            measurement_date = utcnow().date().isoformat()
 
         with self._lock:
             tech = self._get_technology(technology_id)
@@ -1346,7 +1328,7 @@ class AbatementTrackerEngine:
             # Update technology record
             tech.current_efficiency = measured
             tech.last_inspection_date = measurement_date
-            tech.updated_at = _utcnow().isoformat()
+            tech.updated_at = utcnow().isoformat()
 
             # Auto-detect degraded status
             if not is_within_spec and deviation_pct < _ZERO:
@@ -1489,7 +1471,7 @@ class AbatementTrackerEngine:
             analysis_period_years=period,
             carbon_price_usd_per_tco2e=carbon_price,
             provenance_hash=provenance_hash,
-            timestamp=_utcnow().isoformat(),
+            timestamp=utcnow().isoformat(),
         )
 
         logger.info(
@@ -1767,7 +1749,7 @@ class AbatementTrackerEngine:
             tech = self._get_technology(technology_id)
             old_status = tech.maintenance_status
             tech.maintenance_status = status_upper
-            tech.updated_at = _utcnow().isoformat()
+            tech.updated_at = utcnow().isoformat()
 
             # Recalculate current efficiency with new status
             age = self._calculate_age_years(tech.installation_date)
@@ -1816,7 +1798,7 @@ class AbatementTrackerEngine:
             tech = self._get_technology(technology_id)
             tech.verification_status = status_upper
             tech.verification_expiry = expiry_date
-            tech.updated_at = _utcnow().isoformat()
+            tech.updated_at = utcnow().isoformat()
 
             logger.info(
                 "Verification status updated: %s -> %s (expiry: %s)",
@@ -1961,9 +1943,9 @@ class AbatementTrackerEngine:
             try:
                 ref = date.fromisoformat(as_of_date_str)
             except (ValueError, TypeError):
-                ref = _utcnow().date()
+                ref = utcnow().date()
         else:
-            ref = _utcnow().date()
+            ref = utcnow().date()
 
         delta_days = (ref - install).days
         if delta_days < 0:
@@ -2008,7 +1990,7 @@ class AbatementTrackerEngine:
             Hexadecimal SHA-256 hash.
         """
         hash_input = json.dumps(
-            {"operation": operation, "data": data, "timestamp": _utcnow().isoformat()},
+            {"operation": operation, "data": data, "timestamp": utcnow().isoformat()},
             sort_keys=True,
             default=str,
         )

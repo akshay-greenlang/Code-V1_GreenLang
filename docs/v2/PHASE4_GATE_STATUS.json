@@ -1,0 +1,22 @@
+{
+  "phase": "V2-Phase4",
+  "phase4_complete": true,
+  "generated_at_utc": "2026-03-29T05:20:50Z",
+  "reference_commit_sha": "498189af076f48be82aeb22e2c906f042eb253c7",
+  "checklist": {
+    "org_policy_bundles_present": true,
+    "determinism_contract_release_blocker": true,
+    "policy_tests_release_blocker": true,
+    "security_scans_release_blocker": true
+  },
+  "evidence_files": [
+    "greenlang/governance/policy/bundles/v2_authz.rego",
+    "greenlang/governance/policy/bundles/v2_pack_trust.rego",
+    "greenlang/governance/policy/bundles/v2_egress_controls.rego",
+    "greenlang/governance/policy/bundles/v2_data_controls.rego",
+    "greenlang/v2/conformance.py",
+    "tests/v2/test_phase4_security_determinism.py",
+    ".github/workflows/v2-security-governance-ci.yml",
+    ".github/workflows/greenlang-v2-platform-ci.yml"
+  ]
+}

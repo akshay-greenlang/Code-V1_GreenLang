@@ -67,25 +67,20 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ReportFormat
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -104,7 +99,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -113,7 +107,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -125,22 +118,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DashboardPanel(str, Enum):
     """Dashboard panel types for DR programme monitoring.
@@ -163,7 +152,6 @@ class DashboardPanel(str, Enum):
     COMPLIANCE_MONITOR = "compliance_monitor"
     REVENUE_FORECAST = "revenue_forecast"
 
-
 class ReportType(str, Enum):
     """Report type for DR programme outputs.
 
@@ -182,23 +170,6 @@ class ReportType(str, Enum):
     CARBON_REPORT = "carbon_report"
     EXECUTIVE_SUMMARY = "executive_summary"
     SETTLEMENT_PACKAGE = "settlement_package"
-
-
-class ExportFormat(str, Enum):
-    """Supported export formats for reports.
-
-    MARKDOWN:  Markdown text with tables.
-    HTML:      HTML with inline CSS.
-    PDF:       PDF document (rendered from HTML).
-    JSON:      Structured JSON object.
-    CSV:       Comma-separated values (tabular data).
-    """
-    MARKDOWN = "markdown"
-    HTML = "html"
-    PDF = "pdf"
-    JSON = "json"
-    CSV = "csv"
-
 
 class WidgetType(str, Enum):
     """Dashboard widget types for data visualisation.
@@ -221,7 +192,6 @@ class WidgetType(str, Enum):
     TIMELINE = "timeline"
     HEATMAP = "heatmap"
 
-
 class TrendDirection(str, Enum):
     """KPI trend direction indicator.
 
@@ -233,7 +203,6 @@ class TrendDirection(str, Enum):
     STABLE = "stable"
     DECLINING = "declining"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -241,11 +210,9 @@ class TrendDirection(str, Enum):
 # Trend determination threshold.
 TREND_THRESHOLD_PCT: Decimal = Decimal("5")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class KPIMetric(BaseModel):
     """Single KPI metric for dashboard display.
@@ -275,7 +242,6 @@ class KPIMetric(BaseModel):
         default=None, description="Change percentage"
     )
 
-
 class DashboardWidget(BaseModel):
     """Single dashboard widget definition.
 
@@ -297,7 +263,6 @@ class DashboardWidget(BaseModel):
     panel: DashboardPanel = Field(
         default=DashboardPanel.FLEXIBILITY_PROFILE, description="Panel"
     )
-
 
 class ProgrammeMetrics(BaseModel):
     """Metrics for a single DR programme.
@@ -327,7 +292,6 @@ class ProgrammeMetrics(BaseModel):
     compliance_rate_pct: Decimal = Field(default=Decimal("0"))
     avg_performance_ratio_pct: Decimal = Field(default=Decimal("0"))
 
-
 class EventSummary(BaseModel):
     """Summary data for a single DR event.
 
@@ -346,7 +310,7 @@ class EventSummary(BaseModel):
         avoided_co2e_tonnes: Avoided emissions (tCO2e).
     """
     event_id: str = Field(default="", description="Event ID")
-    event_date: datetime = Field(default_factory=_utcnow)
+    event_date: datetime = Field(default_factory=utcnow)
     programme_name: str = Field(default="", max_length=500)
     duration_hours: Decimal = Field(default=Decimal("1"))
     baseline_kwh: Decimal = Field(default=Decimal("0"), ge=0)
@@ -358,11 +322,9 @@ class EventSummary(BaseModel):
     penalty: Decimal = Field(default=Decimal("0"), ge=0)
     avoided_co2e_tonnes: Decimal = Field(default=Decimal("0"), ge=0)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class DashboardData(BaseModel):
     """Complete dashboard data payload.
@@ -381,9 +343,8 @@ class DashboardData(BaseModel):
     panels: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
     kpis: List[KPIMetric] = Field(default_factory=list)
     widgets: List[DashboardWidget] = Field(default_factory=list)
-    generated_at: datetime = Field(default_factory=_utcnow)
+    generated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class ReportOutput(BaseModel):
     """Generated report output.
@@ -401,12 +362,11 @@ class ReportOutput(BaseModel):
     report_id: str = Field(default_factory=_new_uuid)
     report_type: ReportType = Field(default=ReportType.EXECUTIVE_SUMMARY)
     title: str = Field(default="", max_length=500)
-    format: ExportFormat = Field(default=ExportFormat.MARKDOWN)
+    format: ReportFormat = Field(default=ReportFormat.MARKDOWN)
     content: str = Field(default="")
     metadata: Dict[str, Any] = Field(default_factory=dict)
-    generated_at: datetime = Field(default_factory=_utcnow)
+    generated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class ExecutiveSummary(BaseModel):
     """Executive summary report output.
@@ -445,9 +405,8 @@ class ExecutiveSummary(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     programme_rankings: List[Dict[str, Any]] = Field(default_factory=list)
     content_md: str = Field(default="")
-    generated_at: datetime = Field(default_factory=_utcnow)
+    generated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class SettlementPackage(BaseModel):
     """DR programme settlement submission package.
@@ -484,14 +443,12 @@ class SettlementPackage(BaseModel):
     compliance_summary: Dict[str, int] = Field(default_factory=dict)
     verification_method: str = Field(default="interval_metering")
     certifications: List[str] = Field(default_factory=list)
-    generated_at: datetime = Field(default_factory=_utcnow)
+    generated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class DRReportingEngine:
     """Reporting engine for demand response programmes.
@@ -513,7 +470,7 @@ class DRReportingEngine:
         settlement = engine.generate_settlement(
             programme, events, "2026-Jul"
         )
-        exported = engine.export_report(report, ExportFormat.HTML)
+        exported = engine.export_report(report, ReportFormat.HTML)
 
     All arithmetic uses ``Decimal`` for deterministic, audit-grade precision.
     Every result carries a SHA-256 provenance hash.
@@ -533,8 +490,8 @@ class DRReportingEngine:
         self.config = config or {}
         self._company = self.config.get("company_name", "Organisation")
         self._currency = self.config.get("currency_symbol", "$")
-        self._default_format = ExportFormat(
-            self.config.get("default_format", ExportFormat.MARKDOWN.value)
+        self._default_format = ReportFormat(
+            self.config.get("default_format", ReportFormat.MARKDOWN.value)
         )
         logger.info(
             "DRReportingEngine v%s initialised (company=%s)",
@@ -639,7 +596,7 @@ class DRReportingEngine:
         programmes: List[ProgrammeMetrics],
         events: List[EventSummary],
         report_type: ReportType,
-        fmt: Optional[ExportFormat] = None,
+        fmt: Optional[ReportFormat] = None,
     ) -> ReportOutput:
         """Generate a report of the specified type.
 
@@ -833,7 +790,7 @@ class DRReportingEngine:
             f"Total events: {len(events)}",
             f"Verification method: interval_metering",
             f"Data integrity: SHA-256 provenance hashed",
-            f"Generated: {_utcnow().isoformat()}",
+            f"Generated: {utcnow().isoformat()}",
             f"Engine version: {self.engine_version}",
         ]
 
@@ -866,7 +823,7 @@ class DRReportingEngine:
     def export_report(
         self,
         report: ReportOutput,
-        fmt: ExportFormat,
+        fmt: ReportFormat,
     ) -> ReportOutput:
         """Export a report to a different format.
 
@@ -885,15 +842,15 @@ class DRReportingEngine:
             report.report_id, report.format.value, fmt.value,
         )
 
-        if fmt == ExportFormat.JSON:
+        if fmt == ReportFormat.JSON:
             content = json.dumps(
                 report.model_dump(mode="json"), indent=2, default=str,
             )
-        elif fmt == ExportFormat.HTML:
+        elif fmt == ReportFormat.HTML:
             content = self._markdown_to_html(report.content)
-        elif fmt == ExportFormat.CSV:
+        elif fmt == ReportFormat.CSV:
             content = self._extract_csv(report.content)
-        elif fmt == ExportFormat.PDF:
+        elif fmt == ReportFormat.PDF:
             content = self._markdown_to_html(report.content)
         else:
             content = report.content
@@ -1215,7 +1172,7 @@ class DRReportingEngine:
         programmes: List[ProgrammeMetrics],
         events: List[EventSummary],
         report_type: ReportType,
-        fmt: ExportFormat,
+        fmt: ReportFormat,
     ) -> str:
         """Render report content in the specified format.
 
@@ -1231,18 +1188,18 @@ class DRReportingEngine:
         # Build markdown first, then convert if needed
         md = self._render_markdown(programmes, events, report_type)
 
-        if fmt == ExportFormat.MARKDOWN:
+        if fmt == ReportFormat.MARKDOWN:
             return md
-        if fmt == ExportFormat.HTML:
+        if fmt == ReportFormat.HTML:
             return self._markdown_to_html(md)
-        if fmt == ExportFormat.JSON:
+        if fmt == ReportFormat.JSON:
             return json.dumps({
                 "report_type": report_type.value,
                 "programmes": [p.model_dump(mode="json") for p in programmes],
                 "events_count": len(events),
                 "content_md": md,
             }, indent=2, default=str)
-        if fmt == ExportFormat.CSV:
+        if fmt == ReportFormat.CSV:
             return self._extract_csv(md)
         return md
 
@@ -1267,7 +1224,7 @@ class DRReportingEngine:
             f"# {title}",
             f"",
             f"**Organisation:** {self._company}",
-            f"**Generated:** {_utcnow().isoformat()}",
+            f"**Generated:** {utcnow().isoformat()}",
             f"**Engine:** DRReportingEngine v{self.engine_version}",
             f"",
         ]
@@ -1505,7 +1462,7 @@ class DRReportingEngine:
             "",
             f"**Organisation:** {self._company}",
             f"**Reporting Period:** {period}",
-            f"**Generated:** {_utcnow().isoformat()}",
+            f"**Generated:** {utcnow().isoformat()}",
             "",
             "## Key Performance Indicators",
             "",

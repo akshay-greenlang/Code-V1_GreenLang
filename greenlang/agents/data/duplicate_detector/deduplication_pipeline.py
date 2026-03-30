@@ -81,6 +81,7 @@ from greenlang.agents.data.duplicate_detector.models import (
 )
 from greenlang.agents.data.duplicate_detector.record_fingerprinter import RecordFingerprinter
 from greenlang.agents.data.duplicate_detector.similarity_scorer import SimilarityScorer
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -88,22 +89,14 @@ __all__ = [
     "DeduplicationPipeline",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_provenance(operation: str, data_repr: str) -> str:
     """Compute SHA-256 provenance hash for a pipeline operation."""
-    payload = f"{operation}:{data_repr}:{_utcnow().isoformat()}"
+    payload = f"{operation}:{data_repr}:{utcnow().isoformat()}"
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -113,11 +106,9 @@ _DEFAULT_BATCH_SIZE: int = 10_000
 _MAX_COMPARISONS_PER_BLOCK: int = 50_000
 _CHECKPOINT_INTERVAL: int = 1000
 
-
 # =============================================================================
 # DeduplicationPipeline
 # =============================================================================
-
 
 class DeduplicationPipeline:
     """End-to-end deduplication pipeline orchestrating 6 core engines.
@@ -203,7 +194,7 @@ class DeduplicationPipeline:
             status=JobStatus.RUNNING,
             stage=PipelineStage.FINGERPRINT,
             total_records=len(records),
-            started_at=_utcnow(),
+            started_at=utcnow(),
         )
 
         issues: List[DedupIssueSummary] = []
@@ -260,7 +251,7 @@ class DeduplicationPipeline:
             # Stage 7: Complete
             job.stage = PipelineStage.COMPLETE
             job.status = JobStatus.COMPLETED
-            job.completed_at = _utcnow()
+            job.completed_at = utcnow()
 
             # Generate report
             report = self.generate_report(
@@ -279,7 +270,7 @@ class DeduplicationPipeline:
         except Exception as e:
             job.status = JobStatus.FAILED
             job.error_message = str(e)
-            job.completed_at = _utcnow()
+            job.completed_at = utcnow()
             self._record_failure(time.monotonic() - start_time)
             logger.error("Pipeline failed: %s", e, exc_info=True)
             raise
@@ -1071,7 +1062,7 @@ class DeduplicationPipeline:
             self._invocations += 1
             self._successes += 1
             self._total_duration_ms += ms
-            self._last_invoked_at = _utcnow()
+            self._last_invoked_at = utcnow()
 
     def _record_failure(self, elapsed_seconds: float) -> None:
         """Record a failed invocation."""
@@ -1080,4 +1071,4 @@ class DeduplicationPipeline:
             self._invocations += 1
             self._failures += 1
             self._total_duration_ms += ms
-            self._last_invoked_at = _utcnow()
+            self._last_invoked_at = utcnow()

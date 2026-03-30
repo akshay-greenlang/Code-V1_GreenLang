@@ -38,25 +38,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -69,11 +63,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SupplierTier(str, Enum):
     """Supplier tier classification in the value chain."""
@@ -84,7 +76,6 @@ class SupplierTier(str, Enum):
     TIER_N = "tier_n"
     DOWNSTREAM = "downstream"
 
-
 class SupplierRiskLevel(str, Enum):
     """Supplier-level due diligence risk classification."""
 
@@ -93,7 +84,6 @@ class SupplierRiskLevel(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     NOT_ASSESSED = "not_assessed"
-
 
 class RiskCategory(str, Enum):
     """Category of adverse impact risk in the supply chain."""
@@ -107,7 +97,6 @@ class RiskCategory(str, Enum):
     HEALTH_SAFETY = "health_safety"
     LAND_RIGHTS = "land_rights"
 
-
 class ValueChainDirection(str, Enum):
     """Direction in the value chain."""
 
@@ -115,11 +104,9 @@ class ValueChainDirection(str, Enum):
     DOWNSTREAM = "downstream"
     OWN_OPERATIONS = "own_operations"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class SupplyChainBridgeConfig(BaseModel):
     """Configuration for the Supply Chain Bridge."""
@@ -139,7 +126,6 @@ class SupplyChainBridgeConfig(BaseModel):
         description="Maximum supply chain tier depth to map",
     )
 
-
 class SupplierProfile(BaseModel):
     """Profile of a supplier in the value chain."""
 
@@ -158,7 +144,6 @@ class SupplierProfile(BaseModel):
     employee_count: Optional[int] = Field(None, ge=0)
     direction: ValueChainDirection = Field(default=ValueChainDirection.UPSTREAM)
 
-
 class ValueChainMap(BaseModel):
     """Complete value chain map for CSDDD due diligence."""
 
@@ -173,7 +158,6 @@ class ValueChainMap(BaseModel):
     dd_clause_coverage_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
 
-
 class SupplierRiskAssessment(BaseModel):
     """Detailed risk assessment for a single supplier."""
 
@@ -186,7 +170,6 @@ class SupplierRiskAssessment(BaseModel):
     recommended_actions: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class BridgeResult(BaseModel):
     """Result of a supply chain bridge operation."""
 
@@ -198,7 +181,6 @@ class BridgeResult(BaseModel):
     records_processed: int = Field(default=0)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Country and Sector Risk Factors
@@ -220,11 +202,9 @@ SECTOR_RISK: Dict[str, float] = {
     "financial": 0.2, "healthcare": 0.3, "retail": 0.5,
 }
 
-
 # ---------------------------------------------------------------------------
 # SupplyChainBridge
 # ---------------------------------------------------------------------------
-
 
 class SupplyChainBridge:
     """Value chain due diligence bridge for PACK-019 CSDDD Readiness.
@@ -262,7 +242,7 @@ class SupplyChainBridge:
         Returns:
             BridgeResult with status and records processed.
         """
-        result = BridgeResult(started_at=_utcnow())
+        result = BridgeResult(started_at=utcnow())
         ctx = context or {}
 
         try:
@@ -287,7 +267,7 @@ class SupplyChainBridge:
             result.errors.append(str(exc))
             logger.error("Supplier data retrieval failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at

@@ -59,6 +59,8 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 from pydantic import BaseModel, Field, field_validator, computed_field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
@@ -66,21 +68,13 @@ _MODULE_VERSION: str = "1.0.0"
 # Salience threshold: scores above this are considered "high"
 _SALIENCE_THRESHOLD: float = 5.0
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash."""
@@ -93,11 +87,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class StakeholderCategory(str, Enum):
     """Stakeholder group categories per ESRS 1."""
@@ -111,7 +103,6 @@ class StakeholderCategory(str, Enum):
     NGO = "ngo"
     BOARD_MEMBER = "board_member"
 
-
 class EngagementType(str, Enum):
     """Types of stakeholder engagement activity."""
 
@@ -121,7 +112,6 @@ class EngagementType(str, Enum):
     WRITTEN_CONSULTATION = "written_consultation"
     FOCUS_GROUP = "focus_group"
     ADVISORY_PANEL = "advisory_panel"
-
 
 class SalienceCategory(str, Enum):
     """Salience quadrant based on power/legitimacy/urgency."""
@@ -135,11 +125,9 @@ class SalienceCategory(str, Enum):
     DEMANDING = "demanding"
     NON_STAKEHOLDER = "non_stakeholder"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class Stakeholder(BaseModel):
     """A stakeholder entity with salience attributes."""
@@ -159,7 +147,7 @@ class Stakeholder(BaseModel):
         0.0, ge=0.0, le=10.0, description="Time sensitivity (0-10)"
     )
     registered_at: datetime = Field(
-        default_factory=_utcnow, description="Registration timestamp"
+        default_factory=utcnow, description="Registration timestamp"
     )
 
     @computed_field
@@ -196,7 +184,6 @@ class Stakeholder(BaseModel):
         else:
             return SalienceCategory.NON_STAKEHOLDER.value
 
-
 class EngagementActivity(BaseModel):
     """A recorded stakeholder engagement activity."""
 
@@ -219,7 +206,6 @@ class EngagementActivity(BaseModel):
         0, ge=0, description="Duration in minutes"
     )
 
-
 class MaterialityInput(BaseModel):
     """A materiality assessment input from a stakeholder."""
 
@@ -237,7 +223,6 @@ class MaterialityInput(BaseModel):
         0.5, ge=0.0, le=1.0, description="Confidence in assessment (0-1)"
     )
 
-
 class SalienceMap(BaseModel):
     """Stakeholders grouped by salience quadrant."""
 
@@ -251,7 +236,6 @@ class SalienceMap(BaseModel):
     non_stakeholder: List[str] = Field(default_factory=list, description="No high attributes")
     total_stakeholders: int = Field(0, description="Total count")
     provenance_hash: str = Field("", description="SHA-256 hash")
-
 
 class EngagementReport(BaseModel):
     """Summary report of stakeholder engagement activities."""
@@ -279,14 +263,12 @@ class EngagementReport(BaseModel):
         default_factory=dict,
         description="Evidence type counts",
     )
-    generated_at: datetime = Field(default_factory=_utcnow, description="Report time")
+    generated_at: datetime = Field(default_factory=utcnow, description="Report time")
     provenance_hash: str = Field("", description="SHA-256 hash")
-
 
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
-
 
 class StakeholderConfig(BaseModel):
     """Configuration for the stakeholder engine."""
@@ -307,11 +289,9 @@ class StakeholderConfig(BaseModel):
         description="Weight materiality inputs by stakeholder salience score",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class StakeholderEngine:
     """Stakeholder engagement management engine for ESRS materiality assessment.
@@ -480,7 +460,7 @@ class StakeholderEngine:
             "target_participants": target_ids,
             "target_groups": [g.value for g in groups] if groups else ["all"],
             "total_participants": len(target_ids),
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
             "provenance_hash": "",
         }
         survey["provenance_hash"] = _compute_hash(survey)
@@ -655,7 +635,7 @@ class StakeholderEngine:
 
         package = {
             "package_id": _new_uuid(),
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
             "stakeholder_registry": {
                 "total": len(self.stakeholders),
                 "by_category": dict(categories_count),

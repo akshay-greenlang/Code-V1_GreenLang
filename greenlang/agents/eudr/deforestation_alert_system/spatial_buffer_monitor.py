@@ -61,6 +61,7 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -109,16 +110,9 @@ except ImportError:
     set_active_buffers = None  # type: ignore[misc,assignment]
     record_api_error = None  # type: ignore[misc,assignment]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance.
@@ -132,7 +126,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a unique identifier using UUID4.
 
@@ -140,7 +133,6 @@ def _generate_id() -> str:
         String representation of a new UUID4.
     """
     return str(uuid.uuid4())
-
 
 def _safe_decimal(value: Any, default: Decimal = Decimal("0")) -> Decimal:
     """Safely convert a value to Decimal.
@@ -159,7 +151,6 @@ def _safe_decimal(value: Any, default: Decimal = Decimal("0")) -> Decimal:
     except (InvalidOperation, ValueError, TypeError):
         return default
 
-
 def _elapsed_ms(start: float) -> float:
     """Calculate elapsed milliseconds since start.
 
@@ -170,7 +161,6 @@ def _elapsed_ms(start: float) -> float:
         Elapsed time in milliseconds.
     """
     return round((time.perf_counter() - start) * 1000, 2)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -225,11 +215,9 @@ COUNTRY_RISK_MULTIPLIERS: Dict[str, Decimal] = {
     "_DEFAULT": Decimal("1.0"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class BufferType(str, Enum):
     """Types of spatial buffer geometries.
@@ -243,7 +231,6 @@ class BufferType(str, Enum):
     POLYGON = "polygon"
     ADAPTIVE = "adaptive"
 
-
 class ViolationSeverity(str, Enum):
     """Severity levels for buffer zone violations."""
 
@@ -252,11 +239,9 @@ class ViolationSeverity(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class GeoPoint:
@@ -285,7 +270,6 @@ class GeoPoint:
             Tuple of (latitude, longitude) as floats.
         """
         return (float(self.lat), float(self.lon))
-
 
 @dataclass
 class BufferZone:
@@ -329,7 +313,7 @@ class BufferZone:
         if not self.buffer_id:
             self.buffer_id = _generate_id()
         if not self.created_at:
-            self.created_at = _utcnow().isoformat()
+            self.created_at = utcnow().isoformat()
         if not self.updated_at:
             self.updated_at = self.created_at
 
@@ -354,7 +338,6 @@ class BufferZone:
             "updated_at": self.updated_at,
             "metadata": self.metadata,
         }
-
 
 @dataclass
 class BufferViolation:
@@ -396,7 +379,7 @@ class BufferViolation:
         if not self.violation_id:
             self.violation_id = _generate_id()
         if not self.violation_time:
-            self.violation_time = _utcnow().isoformat()
+            self.violation_time = utcnow().isoformat()
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize violation to dictionary.
@@ -418,7 +401,6 @@ class BufferViolation:
             "provenance_hash": self.provenance_hash,
             "metadata": self.metadata,
         }
-
 
 @dataclass
 class BufferResult:
@@ -443,7 +425,7 @@ class BufferResult:
     def __post_init__(self) -> None:
         """Set calculation timestamp if unset."""
         if not self.calculation_timestamp:
-            self.calculation_timestamp = _utcnow().isoformat()
+            self.calculation_timestamp = utcnow().isoformat()
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary.
@@ -459,7 +441,6 @@ class BufferResult:
             "provenance_hash": self.provenance_hash,
             "calculation_timestamp": self.calculation_timestamp,
         }
-
 
 @dataclass
 class CheckResult:
@@ -494,7 +475,7 @@ class CheckResult:
     def __post_init__(self) -> None:
         """Set calculation timestamp if unset."""
         if not self.calculation_timestamp:
-            self.calculation_timestamp = _utcnow().isoformat()
+            self.calculation_timestamp = utcnow().isoformat()
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary.
@@ -515,7 +496,6 @@ class CheckResult:
             "provenance_hash": self.provenance_hash,
             "calculation_timestamp": self.calculation_timestamp,
         }
-
 
 @dataclass
 class ViolationsResult:
@@ -538,7 +518,7 @@ class ViolationsResult:
     def __post_init__(self) -> None:
         """Set calculation timestamp if unset."""
         if not self.calculation_timestamp:
-            self.calculation_timestamp = _utcnow().isoformat()
+            self.calculation_timestamp = utcnow().isoformat()
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary.
@@ -552,7 +532,6 @@ class ViolationsResult:
             "provenance_hash": self.provenance_hash,
             "calculation_timestamp": self.calculation_timestamp,
         }
-
 
 @dataclass
 class ZonesResult:
@@ -575,7 +554,7 @@ class ZonesResult:
     def __post_init__(self) -> None:
         """Set calculation timestamp if unset."""
         if not self.calculation_timestamp:
-            self.calculation_timestamp = _utcnow().isoformat()
+            self.calculation_timestamp = utcnow().isoformat()
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary.
@@ -590,11 +569,9 @@ class ZonesResult:
             "calculation_timestamp": self.calculation_timestamp,
         }
 
-
 # ---------------------------------------------------------------------------
 # SpatialBufferMonitor Engine
 # ---------------------------------------------------------------------------
-
 
 class SpatialBufferMonitor:
     """Production-grade geofencing engine for supply chain plot monitoring.
@@ -914,7 +891,7 @@ class SpatialBufferMonitor:
                 f"Active status updated to {is_active}"
             )
 
-        zone.updated_at = _utcnow().isoformat()
+        zone.updated_at = utcnow().isoformat()
 
         # Update gauge
         if set_active_buffers:
@@ -1493,7 +1470,6 @@ class SpatialBufferMonitor:
             raise ValueError(
                 f"Longitude must be between -180 and 180, got {lon}"
             )
-
 
 # ---------------------------------------------------------------------------
 # Public API

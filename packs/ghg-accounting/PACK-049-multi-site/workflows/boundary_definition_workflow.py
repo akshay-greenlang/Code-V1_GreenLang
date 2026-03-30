@@ -42,26 +42,20 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -70,13 +64,11 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
-
 
 class BoundaryPhase(str, Enum):
     ENTITY_MAPPING = "entity_mapping"
@@ -85,12 +77,10 @@ class BoundaryPhase(str, Enum):
     MATERIALITY_CHECK = "materiality_check"
     BOUNDARY_LOCK = "boundary_lock"
 
-
 class ConsolidationApproach(str, Enum):
     EQUITY_SHARE = "equity_share"
     FINANCIAL_CONTROL = "financial_control"
     OPERATIONAL_CONTROL = "operational_control"
-
 
 class EntityType(str, Enum):
     PARENT = "parent"
@@ -100,12 +90,10 @@ class EntityType(str, Enum):
     FRANCHISE = "franchise"
     SPECIAL_PURPOSE = "special_purpose"
 
-
 class ControlType(str, Enum):
     FINANCIAL = "financial"
     OPERATIONAL = "operational"
     NONE = "none"
-
 
 class MaterialityClassification(str, Enum):
     MATERIAL = "material"
@@ -113,13 +101,11 @@ class MaterialityClassification(str, Enum):
     DE_MINIMIS = "de_minimis"
     EXCLUDED = "excluded"
 
-
 class BoundaryLockStatus(str, Enum):
     DRAFT = "draft"
     UNDER_REVIEW = "under_review"
     LOCKED = "locked"
     SUPERSEDED = "superseded"
-
 
 # =============================================================================
 # REFERENCE DATA
@@ -152,11 +138,9 @@ CONSOLIDATION_RULES: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -168,7 +152,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class LegalEntity(BaseModel):
     """A legal entity in the corporate structure."""
@@ -182,7 +165,6 @@ class LegalEntity(BaseModel):
     incorporation_date: str = Field("")
     is_active: bool = Field(True)
 
-
 class EntityFacilityMapping(BaseModel):
     """Maps a legal entity to its physical facilities / sites."""
     entity_id: str = Field(...)
@@ -190,7 +172,6 @@ class EntityFacilityMapping(BaseModel):
     facility_ids: List[str] = Field(default_factory=list)
     facility_names: List[str] = Field(default_factory=list)
     facility_count: int = Field(0)
-
 
 class OwnershipLink(BaseModel):
     """A single ownership / control link between entities."""
@@ -203,7 +184,6 @@ class OwnershipLink(BaseModel):
     relationship_type: EntityType = Field(EntityType.SUBSIDIARY)
     effective_date: str = Field("")
     notes: str = Field("")
-
 
 class ConsolidationResult(BaseModel):
     """Result of applying a consolidation approach to an entity."""
@@ -218,7 +198,6 @@ class ConsolidationResult(BaseModel):
     exclusion_reason: str = Field("")
     control_type: ControlType = Field(ControlType.OPERATIONAL)
 
-
 class MaterialityAssessment(BaseModel):
     """Materiality assessment for a single entity."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -229,7 +208,6 @@ class MaterialityAssessment(BaseModel):
     classification: MaterialityClassification = Field(MaterialityClassification.MATERIAL)
     rationale: str = Field("")
     is_included_override: Optional[bool] = Field(None)
-
 
 class BoundaryDocument(BaseModel):
     """Final locked boundary document."""
@@ -249,7 +227,6 @@ class BoundaryDocument(BaseModel):
     locked_by: str = Field("")
     change_log: List[str] = Field(default_factory=list)
     provenance_hash: str = Field("")
-
 
 class BoundaryDefinitionInput(BaseModel):
     """Input for the boundary definition workflow."""
@@ -272,7 +249,6 @@ class BoundaryDefinitionInput(BaseModel):
     locked_by: str = Field("system", description="User locking the boundary")
     skip_phases: List[str] = Field(default_factory=list)
 
-
 class BoundaryDefinitionResult(BaseModel):
     """Output from the boundary definition workflow."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -293,11 +269,9 @@ class BoundaryDefinitionResult(BaseModel):
     started_at: str = Field("")
     completed_at: str = Field("")
 
-
 # =============================================================================
 # WORKFLOW CLASS
 # =============================================================================
-
 
 class BoundaryDefinitionWorkflow:
     """
@@ -334,7 +308,7 @@ class BoundaryDefinitionWorkflow:
 
     def execute(self, input_data: BoundaryDefinitionInput) -> BoundaryDefinitionResult:
         """Execute the full 5-phase boundary definition workflow."""
-        start = _utcnow()
+        start = utcnow()
         result = BoundaryDefinitionResult(
             organisation_id=input_data.organisation_id,
             reporting_year=input_data.reporting_year,
@@ -357,17 +331,17 @@ class BoundaryDefinitionWorkflow:
                 ))
                 continue
 
-            phase_start = _utcnow()
+            phase_start = utcnow()
             try:
                 phase_out = phase_methods[phase](input_data, result)
-                elapsed = (_utcnow() - phase_start).total_seconds()
+                elapsed = (utcnow() - phase_start).total_seconds()
                 result.phase_results.append(PhaseResult(
                     phase_name=phase.value, phase_number=idx,
                     status=PhaseStatus.COMPLETED, duration_seconds=elapsed,
                     outputs=phase_out, provenance_hash=_compute_hash(str(phase_out)),
                 ))
             except Exception as exc:
-                elapsed = (_utcnow() - phase_start).total_seconds()
+                elapsed = (utcnow() - phase_start).total_seconds()
                 logger.error("Phase %s failed: %s", phase.value, exc, exc_info=True)
                 result.phase_results.append(PhaseResult(
                     phase_name=phase.value, phase_number=idx,
@@ -381,7 +355,7 @@ class BoundaryDefinitionWorkflow:
         if result.status != WorkflowStatus.FAILED:
             result.status = WorkflowStatus.COMPLETED
 
-        end = _utcnow()
+        end = utcnow()
         result.completed_at = end.isoformat()
         result.duration_seconds = (end - start).total_seconds()
         result.provenance_hash = _compute_hash(
@@ -716,7 +690,7 @@ class BoundaryDefinitionWorkflow:
     ) -> Dict[str, Any]:
         """Lock the boundary and generate documentation."""
         logger.info("Phase 5 -- Boundary Lock")
-        now_iso = _utcnow().isoformat()
+        now_iso = utcnow().isoformat()
 
         # Build entity list for document
         entity_list: List[Dict[str, Any]] = []
@@ -805,7 +779,6 @@ class BoundaryDefinitionWorkflow:
             "yoy_changes": len(yoy_changes),
             "provenance_hash": prov_hash,
         }
-
 
 # =============================================================================
 # MODULE EXPORTS

@@ -27,24 +27,19 @@ from typing import Any, Callable, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 #  Utilities
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return current UTC time with timezone info."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute SHA-256 provenance hash of arbitrary data."""
     return hashlib.sha256(
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 #  Enums
@@ -58,7 +53,6 @@ class PhaseStatus(str, Enum):
     FAILED = "FAILED"
     SKIPPED = "SKIPPED"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "PENDING"
@@ -66,7 +60,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
     PARTIAL = "PARTIAL"
-
 
 # ---------------------------------------------------------------------------
 #  Shared models
@@ -76,7 +69,7 @@ class WorkflowContext(BaseModel):
     """Shared state passed between workflow phases."""
     workflow_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     organization_id: str = Field(..., description="Organization identifier")
-    execution_timestamp: datetime = Field(default_factory=_utcnow)
+    execution_timestamp: datetime = Field(default_factory=utcnow)
     config: Dict[str, Any] = Field(default_factory=dict)
     phase_states: Dict[str, PhaseStatus] = Field(default_factory=dict)
     phase_outputs: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
@@ -99,7 +92,6 @@ class WorkflowContext(BaseModel):
         """Check whether a phase has completed successfully."""
         return self.phase_states.get(phase_name) == PhaseStatus.COMPLETED
 
-
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
     phase_name: str = Field(..., description="Phase identifier")
@@ -113,7 +105,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     records_processed: int = Field(default=0)
 
-
 class WorkflowResult(BaseModel):
     """Complete result from a multi-phase workflow execution."""
     workflow_id: str = Field(..., description="Unique workflow execution ID")
@@ -125,7 +116,6 @@ class WorkflowResult(BaseModel):
     phases: List[PhaseResult] = Field(default_factory=list)
     summary: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 #  Input / Result
@@ -139,7 +129,6 @@ class FacilityRecord(BaseModel):
     sector: str = Field(default="", description="NACE sector code")
     sub_sector: str = Field(default="", description="Manufacturing sub-sector")
 
-
 class ProductionVolume(BaseModel):
     """Production volume for a facility / product."""
     facility_id: str = Field(...)
@@ -147,7 +136,6 @@ class ProductionVolume(BaseModel):
     product_name: str = Field(default="")
     quantity: float = Field(..., ge=0.0, description="Quantity produced")
     unit: str = Field(default="tonnes")
-
 
 class EnergyRecord(BaseModel):
     """Energy consumption record."""
@@ -157,7 +145,6 @@ class EnergyRecord(BaseModel):
     unit: str = Field(default="MWh")
     emission_factor: float = Field(default=0.0, ge=0.0, description="kgCO2e per unit")
     scope: str = Field(default="scope2", description="scope1 or scope2")
-
 
 class ManufacturingEmissionsInput(BaseModel):
     """Input for manufacturing emissions workflow."""
@@ -186,7 +173,6 @@ class ManufacturingEmissionsInput(BaseModel):
             raise ValueError("Reporting year must be 2015 or later")
         return v
 
-
 class ManufacturingEmissionsResult(WorkflowResult):
     """Result from the manufacturing emissions workflow."""
     scope1_total: float = Field(default=0.0, description="Total Scope 1 tCO2e")
@@ -197,7 +183,6 @@ class ManufacturingEmissionsResult(WorkflowResult):
     emission_intensity: float = Field(default=0.0, description="tCO2e per tonne product")
     energy_intensity: float = Field(default=0.0, description="MWh per tonne product")
     methodology_notes: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 #  Phase 1: Data Collection
@@ -210,7 +195,7 @@ class DataCollectionPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Ingest and validate facility, production, and energy data."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -260,7 +245,7 @@ class DataCollectionPhase:
             status = PhaseStatus.FAILED
             records = 0
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -268,7 +253,6 @@ class DataCollectionPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs), records_processed=records,
         )
-
 
 # ---------------------------------------------------------------------------
 #  Phase 2: Process Calculation
@@ -281,7 +265,7 @@ class ProcessCalculationPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Calculate process and combustion Scope 1 emissions."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -335,7 +319,7 @@ class ProcessCalculationPhase:
             errors.append(f"Process calculation failed: {str(exc)}")
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -343,7 +327,6 @@ class ProcessCalculationPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 # ---------------------------------------------------------------------------
 #  Phase 3: Energy Analysis
@@ -356,7 +339,7 @@ class EnergyAnalysisPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Calculate Scope 2 emissions, energy mix, and intensity."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -419,7 +402,7 @@ class EnergyAnalysisPhase:
             errors.append(f"Energy analysis failed: {str(exc)}")
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -427,7 +410,6 @@ class EnergyAnalysisPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 # ---------------------------------------------------------------------------
 #  Phase 4: Consolidation
@@ -440,7 +422,7 @@ class ConsolidationPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Consolidate all scope emissions and compute intensity metrics."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -492,7 +474,7 @@ class ConsolidationPhase:
             errors.append(f"Consolidation failed: {str(exc)}")
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -500,7 +482,6 @@ class ConsolidationPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 # ---------------------------------------------------------------------------
 #  Workflow Orchestrator
@@ -538,7 +519,7 @@ class ManufacturingEmissionsWorkflow:
 
     async def run(self, input_data: ManufacturingEmissionsInput) -> ManufacturingEmissionsResult:
         """Execute the complete 4-phase manufacturing emissions workflow."""
-        started_at = _utcnow()
+        started_at = utcnow()
         logger.info(
             "Starting manufacturing emissions workflow %s org=%s year=%d",
             self.workflow_id, input_data.organization_id, input_data.reporting_year,
@@ -583,7 +564,7 @@ class ManufacturingEmissionsWorkflow:
                 logger.error("Phase '%s' raised: %s", phase_name, exc, exc_info=True)
                 completed_phases.append(PhaseResult(
                     phase_name=phase_name, status=PhaseStatus.FAILED,
-                    started_at=_utcnow(), errors=[str(exc)],
+                    started_at=utcnow(), errors=[str(exc)],
                     provenance_hash=_hash_data({"error": str(exc)}),
                 ))
                 context.mark_phase(phase_name, PhaseStatus.FAILED)
@@ -597,7 +578,7 @@ class ManufacturingEmissionsWorkflow:
             )
             overall_status = WorkflowStatus.COMPLETED if all_ok else WorkflowStatus.PARTIAL
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         duration = (completed_at - started_at).total_seconds()
         summary = self._build_summary(context)
         provenance = _hash_data({

@@ -13,6 +13,7 @@ from typing import Any, Dict, List, Optional
 import uuid
 
 from pydantic import BaseModel, Field, validator
+from greenlang.schemas.enums import AlertSeverity
 
 
 class CondenserStatus(Enum):
@@ -33,14 +34,6 @@ class CleaningStatus(Enum):
     REQUIRED = "required"
     URGENT = "urgent"
     IN_PROGRESS = "in_progress"
-
-
-class AlertSeverity(Enum):
-    """Alert severity levels."""
-    INFO = "info"
-    WARNING = "warning"
-    ALARM = "alarm"
-    CRITICAL = "critical"
 
 
 # =============================================================================

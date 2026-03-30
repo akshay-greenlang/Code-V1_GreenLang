@@ -58,26 +58,19 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -90,7 +83,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _safe_divide(
     numerator: float, denominator: float, default: float = 0.0,
 ) -> float:
@@ -99,28 +91,23 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(numerator: float, denominator: float) -> float:
     """Calculate percentage safely."""
     if denominator == 0.0:
         return 0.0
     return (numerator / denominator) * 100.0
 
-
 def _clamp(value: float, low: float = 0.0, high: float = 100.0) -> float:
     """Clamp a value to [low, high] range."""
     return max(low, min(high, value))
-
 
 def _round_val(value: float, places: int = 4) -> float:
     """Round a float to specified decimal places."""
     return round(value, places)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class Pillar3TemplateType(str, Enum):
     """EBA Pillar 3 ESG template identifiers."""
@@ -130,7 +117,6 @@ class Pillar3TemplateType(str, Enum):
     TEMPLATE_4 = "template_4"   # Top 20 carbon-intensive
     TEMPLATE_5 = "template_5"   # Taxonomy alignment (GAR/BTAR)
     TEMPLATE_10 = "template_10" # Qualitative ESG risk
-
 
 class EPCLabel(str, Enum):
     """Energy Performance Certificate labels per EU EPBD."""
@@ -142,7 +128,6 @@ class EPCLabel(str, Enum):
     F = "F"
     G = "G"
     NONE = "NONE"  # No EPC available
-
 
 class NACESector(str, Enum):
     """NACE sector classification for Pillar 3 reporting."""
@@ -167,7 +152,6 @@ class NACESector(str, Enum):
     S = "S"    # Other services
     OTHER = "OTHER"
 
-
 class PDRange(str, Enum):
     """Probability of Default ranges per EBA ITS."""
     PD_0_0_15 = "0.00-0.15%"
@@ -179,7 +163,6 @@ class PDRange(str, Enum):
     PD_10_00_100 = "10.00-100%"
     DEFAULT = "Default"
 
-
 class MaturityRange(str, Enum):
     """Residual maturity ranges per EBA ITS."""
     M_0_5Y = "0-5 years"
@@ -187,12 +170,10 @@ class MaturityRange(str, Enum):
     M_10_20Y = "10-20 years"
     M_GT_20Y = ">20 years"
 
-
 class PhysicalRiskClassification(str, Enum):
     """Physical risk classification for Template 2."""
     CHRONIC = "chronic"
     ACUTE = "acute"
-
 
 class GeographicRegion(str, Enum):
     """Geographic region classification for Template 2."""
@@ -200,7 +181,6 @@ class GeographicRegion(str, Enum):
     NON_EU_DEVELOPED = "non_eu_developed"
     EMERGING = "emerging"
     HIGH_RISK = "high_risk"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -256,11 +236,9 @@ EPC_ORDER = ["A", "B", "C", "D", "E", "F", "G", "NONE"]
 # Climate-sensitive NACE sectors (per EBA ITS)
 CLIMATE_SENSITIVE_NACE = {"A", "B", "C", "D", "E", "F", "H", "L"}
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class BankingBookExposure(BaseModel):
     """Single banking book exposure for Pillar 3 ESG templates.
@@ -383,7 +361,7 @@ class BankingBookExposure(BaseModel):
 
     # Metadata
     reporting_date: datetime = Field(
-        default_factory=_utcnow, description="Reporting date",
+        default_factory=utcnow, description="Reporting date",
     )
 
     @model_validator(mode="after")
@@ -392,7 +370,6 @@ class BankingBookExposure(BaseModel):
         if not self.nace_section and self.nace_code:
             self.nace_section = self.nace_code[0].upper()
         return self
-
 
 class TransitionRiskTemplate(BaseModel):
     """Template 1: Transition risk by sector, PD, and maturity."""
@@ -442,7 +419,6 @@ class TransitionRiskTemplate(BaseModel):
         default="", description="SHA-256 provenance hash",
     )
 
-
 class PhysicalRiskTemplate(BaseModel):
     """Template 2: Physical risk by geography and hazard type."""
     template_id: str = Field(
@@ -485,7 +461,6 @@ class PhysicalRiskTemplate(BaseModel):
     provenance_hash: str = Field(
         default="", description="SHA-256 provenance hash",
     )
-
 
 class RealEstateTemplate(BaseModel):
     """Template 3: Real estate collateral by EPC label and energy efficiency."""
@@ -532,7 +507,6 @@ class RealEstateTemplate(BaseModel):
         default="", description="SHA-256 provenance hash",
     )
 
-
 class Top20CarbonExposure(BaseModel):
     """Template 4: Top 20 carbon-intensive counterparties."""
     template_id: str = Field(
@@ -569,7 +543,6 @@ class Top20CarbonExposure(BaseModel):
     provenance_hash: str = Field(
         default="", description="SHA-256 provenance hash",
     )
-
 
 class TaxonomyAlignmentTemplate(BaseModel):
     """Template 5: EU Taxonomy alignment KPIs (GAR and BTAR)."""
@@ -631,7 +604,6 @@ class TaxonomyAlignmentTemplate(BaseModel):
         default="", description="SHA-256 provenance hash",
     )
 
-
 class QualitativeDisclosure(BaseModel):
     """Template 10: Qualitative ESG risk disclosures."""
     template_id: str = Field(
@@ -674,7 +646,6 @@ class QualitativeDisclosure(BaseModel):
         default="", description="SHA-256 provenance hash",
     )
 
-
 class Pillar3Result(BaseModel):
     """Complete Pillar 3 ESG disclosure result."""
     result_id: str = Field(
@@ -684,7 +655,7 @@ class Pillar3Result(BaseModel):
         default="", description="Credit institution name",
     )
     reporting_date: datetime = Field(
-        default_factory=_utcnow, description="Reporting date",
+        default_factory=utcnow, description="Reporting date",
     )
 
     # Templates
@@ -738,17 +709,15 @@ class Pillar3Result(BaseModel):
         default=_MODULE_VERSION, description="Engine version",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp",
+        default_factory=utcnow, description="Calculation timestamp",
     )
     provenance_hash: str = Field(
         default="", description="SHA-256 provenance hash",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine Configuration
 # ---------------------------------------------------------------------------
-
 
 class Pillar3Config(BaseModel):
     """Configuration for the Pillar3ESGEngine.
@@ -765,7 +734,7 @@ class Pillar3Config(BaseModel):
         default="Credit Institution", description="Institution name",
     )
     reporting_date: datetime = Field(
-        default_factory=_utcnow, description="Reporting date",
+        default_factory=utcnow, description="Reporting date",
     )
     templates_to_generate: List[Pillar3TemplateType] = Field(
         default_factory=lambda: [
@@ -790,7 +759,6 @@ class Pillar3Config(BaseModel):
         description="Custom climate-sensitive NACE sections",
     )
 
-
 # ---------------------------------------------------------------------------
 # model_rebuild for forward reference resolution
 # ---------------------------------------------------------------------------
@@ -805,11 +773,9 @@ TaxonomyAlignmentTemplate.model_rebuild()
 QualitativeDisclosure.model_rebuild()
 Pillar3Result.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # Pillar3ESGEngine
 # ---------------------------------------------------------------------------
-
 
 class Pillar3ESGEngine:
     """
@@ -865,6 +831,7 @@ class Pillar3ESGEngine:
             Complete Pillar3Result with all configured templates.
         """
         import time
+
         start = time.perf_counter()
 
         qualitative_data = qualitative_data or {}

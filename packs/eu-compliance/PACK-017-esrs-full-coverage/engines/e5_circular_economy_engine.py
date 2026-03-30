@@ -68,25 +68,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -106,7 +100,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely.
 
@@ -120,7 +113,6 @@ def _decimal(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
 ) -> Decimal:
@@ -128,7 +120,6 @@ def _safe_divide(
     if denominator == Decimal("0"):
         return default
     return numerator / denominator
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value to the specified number of decimal places.
@@ -145,13 +136,11 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
-
 
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
@@ -159,16 +148,13 @@ def _round2(value: float) -> float:
         Decimal("0.01"), rounding=ROUND_HALF_UP
     ))
 
-
 def _round6(value: Decimal) -> Decimal:
     """Round Decimal to 6 decimal places using ROUND_HALF_UP."""
     return value.quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class MaterialType(str, Enum):
     """Material types for resource inflow classification.
@@ -186,7 +172,6 @@ class MaterialType(str, Enum):
     TEXTILES = "textiles"
     PACKAGING = "packaging"
 
-
 class MaterialOrigin(str, Enum):
     """Origin classification for material inflows.
 
@@ -198,7 +183,6 @@ class MaterialOrigin(str, Enum):
     RENEWABLE = "renewable"
     SECONDARY = "secondary"
 
-
 class WasteCategory(str, Enum):
     """Waste categories per EU Waste Framework Directive.
 
@@ -208,7 +192,6 @@ class WasteCategory(str, Enum):
     HAZARDOUS = "hazardous"
     NON_HAZARDOUS = "non_hazardous"
     RADIOACTIVE = "radioactive"
-
 
 class WasteDestination(str, Enum):
     """Waste treatment destinations per waste hierarchy.
@@ -224,7 +207,6 @@ class WasteDestination(str, Enum):
     LANDFILL = "landfill"
     OTHER_DISPOSAL = "other_disposal"
 
-
 class ProductDesignStrategy(str, Enum):
     """Circular product design strategies.
 
@@ -237,7 +219,6 @@ class ProductDesignStrategy(str, Enum):
     DESIGN_FOR_DISASSEMBLY = "design_for_disassembly"
     DESIGN_FOR_REUSE = "design_for_reuse"
     MODULAR_DESIGN = "modular_design"
-
 
 class CircularBusinessModel(str, Enum):
     """Circular business model types.
@@ -252,11 +233,9 @@ class CircularBusinessModel(str, Enum):
     REFURBISHMENT = "refurbishment"
     REMANUFACTURING = "remanufacturing"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # ESRS E5-1 required data points for policies disclosure.
 E5_1_DATAPOINTS: List[str] = [
@@ -361,11 +340,9 @@ DESIGN_STRATEGY_WEIGHTS: Dict[str, Decimal] = {
     "modular_design": Decimal("0.10"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class CircularPolicy(BaseModel):
     """Policy related to resource use and circular economy per E5-1.
@@ -409,7 +386,6 @@ class CircularPolicy(BaseModel):
         description="Whether the policy addresses substances of concern",
     )
 
-
 class CircularAction(BaseModel):
     """Action related to resource use and circular economy per E5-2.
 
@@ -451,7 +427,6 @@ class CircularAction(BaseModel):
         description="Action status (planned, in_progress, completed)",
         max_length=50,
     )
-
 
 class CircularTarget(BaseModel):
     """Target related to resource use and circular economy per E5-3.
@@ -516,7 +491,6 @@ class CircularTarget(BaseModel):
             )
         return v
 
-
 class ResourceInflow(BaseModel):
     """Resource inflow data per ESRS E5-4.
 
@@ -567,7 +541,6 @@ class ResourceInflow(BaseModel):
         ge=0,
     )
 
-
 class ResourceOutflow(BaseModel):
     """Resource outflow (waste) data per ESRS E5-5.
 
@@ -608,7 +581,6 @@ class ResourceOutflow(BaseModel):
         description="Reporting year for this outflow",
         ge=0,
     )
-
 
 class ProductCircularity(BaseModel):
     """Product-level circularity assessment per ESRS E5-5.
@@ -662,7 +634,6 @@ class ProductCircularity(BaseModel):
         le=Decimal("10"),
     )
 
-
 class CircularFinancialEffect(BaseModel):
     """Anticipated financial effect from circular economy per E5-6.
 
@@ -703,7 +674,6 @@ class CircularFinancialEffect(BaseModel):
         max_length=50,
     )
 
-
 class E5CircularResult(BaseModel):
     """Complete E5 circular economy disclosure result.
 
@@ -719,7 +689,7 @@ class E5CircularResult(BaseModel):
         description="Engine version used for this calculation",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of calculation (UTC)",
     )
     reporting_year: int = Field(
@@ -835,11 +805,9 @@ class E5CircularResult(BaseModel):
         description="SHA-256 hash of all inputs and calculation steps",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class CircularEconomyEngine:
     """E5 Resource Use and Circular Economy calculation engine.

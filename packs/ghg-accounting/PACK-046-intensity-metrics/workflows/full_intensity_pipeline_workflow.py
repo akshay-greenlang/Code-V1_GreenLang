@@ -65,37 +65,28 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> str:
-    """Return current UTC timestamp as ISO-8601 string."""
-    return datetime.utcnow().isoformat() + "Z"
-
-
 def _new_uuid() -> str:
     """Return a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash of JSON-serialisable data."""
     serialised = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialised.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -106,7 +97,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -115,7 +105,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class PipelinePhase(str, Enum):
     """Full intensity pipeline phases."""
@@ -129,7 +118,6 @@ class PipelinePhase(str, Enum):
     DISCLOSURE_MAPPING = "disclosure_mapping"
     REPORT_GENERATION = "report_generation"
 
-
 class PipelineMilestoneType(str, Enum):
     """Major milestones in the pipeline."""
 
@@ -142,7 +130,6 @@ class PipelineMilestoneType(str, Enum):
     DISCLOSURES_MAPPED = "disclosures_mapped"
     REPORTS_GENERATED = "reports_generated"
 
-
 class ReportType(str, Enum):
     """Type of generated report."""
 
@@ -152,11 +139,9 @@ class ReportType(str, Enum):
     DISCLOSURE_REPORT = "disclosure_report"
     DASHBOARD_DATA = "dashboard_data"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -169,7 +154,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
-
 
 class PipelinePhaseStatus(BaseModel):
     """Status of a pipeline phase with metadata."""
@@ -184,7 +168,6 @@ class PipelinePhaseStatus(BaseModel):
     skip_reason: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 class PipelineCheckpoint(BaseModel):
     """Checkpoint for pipeline resumption."""
 
@@ -196,7 +179,6 @@ class PipelineCheckpoint(BaseModel):
     state_hash: str = Field(default="")
     resumable: bool = Field(default=True)
 
-
 class PipelineMilestone(BaseModel):
     """Record of a pipeline milestone achievement."""
 
@@ -205,7 +187,6 @@ class PipelineMilestone(BaseModel):
     achieved_at: str = Field(default="")
     phase_number: int = Field(default=0)
     details: Dict[str, Any] = Field(default_factory=dict)
-
 
 class PipelineReport(BaseModel):
     """Generated pipeline report."""
@@ -217,7 +198,6 @@ class PipelineReport(BaseModel):
     page_count: int = Field(default=0, ge=0)
     provenance_hash: str = Field(default="")
 
-
 class EmissionsInput(BaseModel):
     """Emissions data input for the pipeline."""
 
@@ -227,7 +207,6 @@ class EmissionsInput(BaseModel):
     scope2_market_tco2e: float = Field(default=0.0, ge=0.0)
     scope3_tco2e: float = Field(default=0.0, ge=0.0)
 
-
 class PeerInput(BaseModel):
     """Peer data input for benchmarking."""
 
@@ -236,11 +215,9 @@ class PeerInput(BaseModel):
     intensity_value: float = Field(default=0.0, ge=0.0)
     sector: str = Field(default="")
 
-
 # =============================================================================
 # INPUT / OUTPUT
 # =============================================================================
-
 
 class PipelineConfig(BaseModel):
     """Full configuration for intensity pipeline."""
@@ -277,7 +254,6 @@ class PipelineConfig(BaseModel):
     random_seed: int = Field(default=42)
     tenant_id: str = Field(default="")
 
-
 class PipelineInput(BaseModel):
     """Input data model for FullIntensityPipelineWorkflow."""
 
@@ -288,7 +264,6 @@ class PipelineInput(BaseModel):
         description="Checkpoint ID to resume from",
     )
     tenant_id: str = Field(default="")
-
 
 class PipelineResult(BaseModel):
     """Complete result from full intensity pipeline workflow."""
@@ -309,11 +284,9 @@ class PipelineResult(BaseModel):
     target_progress_pct: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class FullIntensityPipelineWorkflow:
     """
@@ -993,7 +966,7 @@ class FullIntensityPipelineWorkflow:
         started = time.monotonic()
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
-        now_iso = _utcnow()
+        now_iso = utcnow()
 
         self._reports = []
 
@@ -1114,7 +1087,7 @@ class FullIntensityPipelineWorkflow:
         self._milestones.append(PipelineMilestone(
             milestone=milestone,
             achieved=True,
-            achieved_at=_utcnow(),
+            achieved_at=utcnow(),
             phase_number=phase_number,
             details=details,
         ))
@@ -1130,7 +1103,7 @@ class FullIntensityPipelineWorkflow:
             workflow_id=self.workflow_id,
             last_completed_phase=phase_number,
             phase_name=phase_name,
-            created_at=_utcnow(),
+            created_at=utcnow(),
             state_hash=_compute_hash(state_data),
             resumable=True,
         ))
@@ -1145,7 +1118,7 @@ class FullIntensityPipelineWorkflow:
         self._phase_statuses.append(PipelinePhaseStatus(
             phase=phase,
             status=status,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             outputs_summary=outputs_summary,
             is_conditional=is_conditional,
             skip_reason=skip_reason,
@@ -1173,6 +1146,7 @@ class FullIntensityPipelineWorkflow:
                         phase_number, attempt, self.MAX_RETRIES, exc, delay,
                     )
                     import asyncio
+
                     await asyncio.sleep(delay)
         return PhaseResult(
             phase_name=f"phase_{phase_number}_failed",

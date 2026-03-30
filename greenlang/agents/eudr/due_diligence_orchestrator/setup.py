@@ -47,6 +47,7 @@ import logging
 from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.due_diligence_orchestrator.config import (
     DueDiligenceOrchestratorConfig,
@@ -248,7 +249,7 @@ class DueDiligenceOrchestratorService:
         Raises:
             ValueError: If request parameters are invalid.
         """
-        start_time = _utcnow()
+        start_time = utcnow()
         workflow_id = _new_uuid()
 
         logger.info(
@@ -317,7 +318,7 @@ class DueDiligenceOrchestratorService:
         )
 
         elapsed_ms = Decimal(str(
-            (_utcnow() - start_time).total_seconds() * 1000
+            (utcnow() - start_time).total_seconds() * 1000
         )).quantize(Decimal("0.01"))
 
         agent_count = len(definition.nodes)
@@ -354,7 +355,7 @@ class DueDiligenceOrchestratorService:
             ValueError: If workflow cannot be started.
         """
         workflow_id = request.workflow_id
-        start_time = _utcnow()
+        start_time = utcnow()
 
         logger.info(f"Starting workflow {workflow_id}")
 
@@ -388,7 +389,7 @@ class DueDiligenceOrchestratorService:
         )
 
         elapsed_ms = Decimal(str(
-            (_utcnow() - start_time).total_seconds() * 1000
+            (utcnow() - start_time).total_seconds() * 1000
         )).quantize(Decimal("0.01"))
 
         logger.info(
@@ -432,7 +433,7 @@ class DueDiligenceOrchestratorService:
         self._event_bus.publish_event(
             WORKFLOW_PAUSED,
             workflow_id,
-            {"paused_at": _utcnow().isoformat()},
+            {"paused_at": utcnow().isoformat()},
         )
 
         return WorkflowStatusResponse(
@@ -475,7 +476,7 @@ class DueDiligenceOrchestratorService:
         self._event_bus.publish_event(
             WORKFLOW_RESUMED,
             workflow_id,
-            {"resumed_at": _utcnow().isoformat()},
+            {"resumed_at": utcnow().isoformat()},
         )
 
         return WorkflowStatusResponse(
@@ -519,7 +520,7 @@ class DueDiligenceOrchestratorService:
             WORKFLOW_CANCELLED,
             workflow_id,
             {
-                "cancelled_at": _utcnow().isoformat(),
+                "cancelled_at": utcnow().isoformat(),
                 "reason": reason,
             },
         )
@@ -632,7 +633,7 @@ class DueDiligenceOrchestratorService:
         """
         workflow_id = request.workflow_id
         gate_id = request.gate_id  # Already a QualityGateId enum
-        start_time = _utcnow()
+        start_time = utcnow()
 
         logger.info(
             f"Evaluating {gate_id.value} for workflow {workflow_id}"
@@ -726,7 +727,7 @@ class DueDiligenceOrchestratorService:
         )
 
         elapsed_ms = Decimal(str(
-            (_utcnow() - start_time).total_seconds() * 1000
+            (utcnow() - start_time).total_seconds() * 1000
         )).quantize(Decimal("0.01"))
 
         logger.info(
@@ -850,7 +851,7 @@ class DueDiligenceOrchestratorService:
             PackageGenerationResponse with the generated package.
         """
         workflow_id = request.workflow_id
-        start_time = _utcnow()
+        start_time = utcnow()
 
         logger.info(
             f"Generating due diligence package for workflow {workflow_id}"
@@ -918,11 +919,11 @@ class DueDiligenceOrchestratorService:
             self._event_bus.publish_event(
                 WORKFLOW_COMPLETED,
                 workflow_id,
-                {"completed_at": _utcnow().isoformat()},
+                {"completed_at": utcnow().isoformat()},
             )
 
             elapsed_ms = Decimal(str(
-                (_utcnow() - start_time).total_seconds() * 1000
+                (utcnow() - start_time).total_seconds() * 1000
             )).quantize(Decimal("0.01"))
 
             logger.info(
@@ -1094,7 +1095,7 @@ class DueDiligenceOrchestratorService:
                 "details": agent_health,
             },
             "event_bus": self._event_bus.get_stats(),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     def get_metrics(self) -> Dict[str, Any]:
@@ -1110,7 +1111,7 @@ class DueDiligenceOrchestratorService:
             "provenance_stats": {
                 "chain_valid": self._provenance.verify_chain(),
             },
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     def get_audit_trail(
@@ -1154,7 +1155,7 @@ class DueDiligenceOrchestratorService:
             ],
             "event_timeline": timeline,
             "state_transitions": transitions,
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
         }
 
     # ------------------------------------------------------------------

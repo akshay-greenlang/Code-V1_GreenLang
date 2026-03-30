@@ -83,26 +83,19 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -129,7 +122,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -146,7 +138,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal,
     denominator: Decimal,
@@ -157,36 +148,29 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round2(value: Any) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
-
 def _round3(value: Any) -> float:
     """Round to 3 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
-
 
 def _round4(value: Any) -> float:
     """Round to 4 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 def _round6(value: Any) -> float:
     """Round to 6 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class UncertaintyDistribution(str, Enum):
     """Statistical distribution types for uncertainty modelling.
@@ -204,7 +188,6 @@ class UncertaintyDistribution(str, Enum):
     LOGNORMAL = "lognormal"
     UNIFORM = "uniform"
     TRIANGULAR = "triangular"
-
 
 class SourceCategoryType(str, Enum):
     """GHG source categories aligned with MRV agent naming.
@@ -226,7 +209,6 @@ class SourceCategoryType(str, Enum):
     SCOPE2_COOLING = "scope2_cooling"
     SCOPE2_DUAL_REPORTING = "scope2_dual_reporting"
 
-
 class DataQualityTier(str, Enum):
     """Data quality tiers per IPCC 2006 Table 3.5 / GHG Protocol guidance.
 
@@ -238,7 +220,6 @@ class DataQualityTier(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
 
-
 class AggregationMethod(str, Enum):
     """Method used for uncertainty aggregation.
 
@@ -249,7 +230,6 @@ class AggregationMethod(str, Enum):
     ANALYTICAL = "analytical"
     MONTE_CARLO = "monte_carlo"
     BOTH = "both"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Default Uncertainty Ranges
@@ -328,7 +308,6 @@ DEFAULT_UNCERTAINTY_RANGES: Dict[str, Dict[str, float]] = {
 }
 """Default uncertainty percentages per source category from IPCC 2006."""
 
-
 # Data quality tier multipliers for adjusting default uncertainty ranges.
 # Higher multiplier = wider uncertainty bounds for lower quality data.
 DATA_QUALITY_MULTIPLIERS: Dict[str, float] = {
@@ -337,7 +316,6 @@ DATA_QUALITY_MULTIPLIERS: Dict[str, float] = {
     DataQualityTier.LOW: 1.8,
 }
 """Multipliers applied to default uncertainty ranges based on data quality."""
-
 
 # Improvement recommendations by source category for top contributors.
 IMPROVEMENT_RECOMMENDATIONS: Dict[str, str] = {
@@ -396,11 +374,9 @@ IMPROVEMENT_RECOMMENDATIONS: Dict[str, str] = {
 }
 """Improvement recommendations per source category."""
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class SourceUncertainty(BaseModel):
     """Uncertainty profile for a single emission source category.
@@ -472,7 +448,6 @@ class SourceUncertainty(BaseModel):
         """Coerce uncertainty values to Decimal."""
         return _decimal(v)
 
-
 class MonteCarloConfig(BaseModel):
     """Configuration for Monte Carlo uncertainty simulation.
 
@@ -508,11 +483,9 @@ class MonteCarloConfig(BaseModel):
         """Coerce to Decimal."""
         return _decimal(v)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class AnalyticalResult(BaseModel):
     """Result from analytical (quadrature) uncertainty aggregation.
@@ -545,7 +518,6 @@ class AnalyticalResult(BaseModel):
         default="IPCC Approach 1 (error propagation via quadrature)",
         description="Aggregation method"
     )
-
 
 class MonteCarloResult(BaseModel):
     """Result from Monte Carlo uncertainty simulation.
@@ -585,7 +557,6 @@ class MonteCarloResult(BaseModel):
     )
     seed_used: int = Field(default=42, description="Random seed")
 
-
 class UncertaintyContributor(BaseModel):
     """Contribution of a single source to overall uncertainty.
 
@@ -615,7 +586,6 @@ class UncertaintyContributor(BaseModel):
     recommended_improvement: str = Field(
         default="", description="Improvement recommendation"
     )
-
 
 class DataQualityAssessment(BaseModel):
     """Assessment of overall data quality across all sources.
@@ -647,7 +617,6 @@ class DataQualityAssessment(BaseModel):
         default_factory=list, description="Assessment notes"
     )
 
-
 class UncertaintyAggregationResult(BaseModel):
     """Complete uncertainty aggregation result with full provenance.
 
@@ -672,7 +641,7 @@ class UncertaintyAggregationResult(BaseModel):
     result_id: str = Field(default_factory=_new_uuid, description="Unique result ID")
     engine_version: str = Field(default=_MODULE_VERSION, description="Engine version")
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     processing_time_ms: float = Field(
         default=0.0, description="Processing time (ms)"
@@ -701,11 +670,9 @@ class UncertaintyAggregationResult(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class UncertaintyAggregationEngine:
     """Organisation-level GHG uncertainty aggregation engine.
@@ -1354,6 +1321,7 @@ class UncertaintyAggregationEngine:
         """
         import random as py_random
 
+
         rng = py_random.Random(config.seed)
         n_iter = config.iterations
         totals: List[float] = []
@@ -1561,7 +1529,6 @@ class UncertaintyAggregationEngine:
             "Upgrade from IPCC Tier 1 default values to site-specific "
             "emission factors and metered activity data."
         )
-
 
 # ---------------------------------------------------------------------------
 # Pydantic v2 model_rebuild for forward-reference resolution

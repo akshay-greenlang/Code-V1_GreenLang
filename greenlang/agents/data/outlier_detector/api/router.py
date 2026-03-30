@@ -39,6 +39,7 @@ Status: Production Ready
 
 import logging
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +67,7 @@ except ImportError:
 
 if FASTAPI_AVAILABLE:
 
-    class CreateJobBody(BaseModel):
+    class CreateJobBody(GreenLangBase):
         """Request body for creating a detection job."""
         dataset_id: str = Field(
             default="", description="Identifier of the dataset to analyze",
@@ -78,7 +79,7 @@ if FASTAPI_AVAILABLE:
             None, description="Optional pipeline configuration",
         )
 
-    class DetectBody(BaseModel):
+    class DetectBody(GreenLangBase):
         """Request body for detecting outliers in a single column."""
         records: List[Dict[str, Any]] = Field(
             ..., description="List of record dicts to analyze",
@@ -96,7 +97,7 @@ if FASTAPI_AVAILABLE:
             None, description="Additional detection options",
         )
 
-    class BatchDetectBody(BaseModel):
+    class BatchDetectBody(GreenLangBase):
         """Request body for batch detection across columns."""
         records: List[Dict[str, Any]] = Field(
             ..., description="List of record dicts to analyze",
@@ -106,7 +107,7 @@ if FASTAPI_AVAILABLE:
             description="Columns to analyze (auto-detect numeric if omitted)",
         )
 
-    class ClassifyBody(BaseModel):
+    class ClassifyBody(GreenLangBase):
         """Request body for classifying detected outliers."""
         detections: List[Dict[str, Any]] = Field(
             ..., description="List of outlier detection score dicts",
@@ -115,7 +116,7 @@ if FASTAPI_AVAILABLE:
             ..., description="Original record dicts for context",
         )
 
-    class TreatBody(BaseModel):
+    class TreatBody(GreenLangBase):
         """Request body for treating detected outliers."""
         records: List[Dict[str, Any]] = Field(
             ..., description="Original record dicts",
@@ -132,7 +133,7 @@ if FASTAPI_AVAILABLE:
             None, description="Additional treatment options",
         )
 
-    class CreateThresholdBody(BaseModel):
+    class CreateThresholdBody(GreenLangBase):
         """Request body for creating a domain threshold."""
         column: str = Field(
             ..., description="Column name this threshold applies to",
@@ -153,7 +154,7 @@ if FASTAPI_AVAILABLE:
             description="Additional description or context",
         )
 
-    class SubmitFeedbackBody(BaseModel):
+    class SubmitFeedbackBody(GreenLangBase):
         """Request body for submitting feedback."""
         detection_id: str = Field(
             ..., description="Identifier of the detection being reviewed",
@@ -168,7 +169,7 @@ if FASTAPI_AVAILABLE:
             description="Human notes or justification",
         )
 
-    class ImpactBody(BaseModel):
+    class ImpactBody(GreenLangBase):
         """Request body for impact analysis."""
         original: List[Dict[str, Any]] = Field(
             ..., description="Original record dicts before treatment",
@@ -177,7 +178,7 @@ if FASTAPI_AVAILABLE:
             ..., description="Record dicts after treatment",
         )
 
-    class RunPipelineBody(BaseModel):
+    class RunPipelineBody(GreenLangBase):
         """Request body for running the full detection pipeline."""
         records: List[Dict[str, Any]] = Field(
             ..., description="List of record dicts to process",

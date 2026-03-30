@@ -51,9 +51,9 @@ from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Graceful imports for sibling modules (provenance, metrics, config)
@@ -83,7 +83,6 @@ try:
 except ImportError:
     get_config = None  # type: ignore[misc, assignment]
     _CONFIG_AVAILABLE = False
-
 
 # ---------------------------------------------------------------------------
 # Graceful imports for sibling engines
@@ -143,7 +142,6 @@ except ImportError:
     AlertManagerEngine = None  # type: ignore[misc, assignment]
     _ALERT_AVAILABLE = False
 
-
 # ---------------------------------------------------------------------------
 # Graceful imports for models
 # ---------------------------------------------------------------------------
@@ -163,16 +161,9 @@ try:
 except ImportError:
     _MODELS_AVAILABLE = False
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _safe_mean(values: List[float]) -> float:
     """Compute arithmetic mean, returning 0.0 for empty lists.
@@ -186,7 +177,6 @@ def _safe_mean(values: List[float]) -> float:
     if not values:
         return 0.0
     return sum(values) / len(values)
-
 
 def _compute_sha256(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -203,11 +193,9 @@ def _compute_sha256(data: Any) -> str:
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Local metric helper stubs (delegate when metrics module is present)
 # ---------------------------------------------------------------------------
-
 
 def _inc_pipeline_runs(status: str) -> None:
     """Increment the pipeline runs counter.
@@ -221,7 +209,6 @@ def _inc_pipeline_runs(status: str) -> None:
         except AttributeError:
             pass
 
-
 def _inc_datasets_checked(count: int = 1) -> None:
     """Increment the datasets checked counter.
 
@@ -233,7 +220,6 @@ def _inc_datasets_checked(count: int = 1) -> None:
             _metrics_mod.inc_datasets_checked(count)
         except AttributeError:
             pass
-
 
 def _inc_breaches_found(severity: str, count: int = 1) -> None:
     """Increment the SLA breaches found counter.
@@ -248,7 +234,6 @@ def _inc_breaches_found(severity: str, count: int = 1) -> None:
         except AttributeError:
             pass
 
-
 def _inc_alerts_sent(channel: str, count: int = 1) -> None:
     """Increment the alerts sent counter.
 
@@ -262,7 +247,6 @@ def _inc_alerts_sent(channel: str, count: int = 1) -> None:
         except AttributeError:
             pass
 
-
 def _observe_pipeline_duration(duration: float) -> None:
     """Observe pipeline processing duration in seconds.
 
@@ -274,7 +258,6 @@ def _observe_pipeline_duration(duration: float) -> None:
             _metrics_mod.observe_pipeline_duration(duration)
         except AttributeError:
             pass
-
 
 def _inc_errors(error_type: str) -> None:
     """Record a processing error event.
@@ -288,7 +271,6 @@ def _inc_errors(error_type: str) -> None:
         except AttributeError:
             pass
 
-
 # ---------------------------------------------------------------------------
 # Pipeline stage enumeration
 # ---------------------------------------------------------------------------
@@ -297,7 +279,6 @@ _STAGES = (
     "register", "check", "staleness",
     "predict", "sla_eval", "alert", "report",
 )
-
 
 # ---------------------------------------------------------------------------
 # Fallback data models (used when models.py is not yet available)
@@ -470,11 +451,9 @@ if not _MODELS_AVAILABLE:
         compliance_status: str = "unknown"
         provenance_hash: str = ""
 
-
 # ---------------------------------------------------------------------------
 # Local data models
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class PipelineStageResult:
@@ -495,7 +474,6 @@ class PipelineStageResult:
     records_processed: int = 0
     output_summary: Dict[str, Any] = field(default_factory=dict)
     error: Optional[str] = None
-
 
 @dataclass
 class PipelineStatistics:
@@ -525,11 +503,9 @@ class PipelineStatistics:
     by_freshness_tier: Dict[str, int] = field(default_factory=dict)
     avg_freshness_score: float = 0.0
 
-
 # ============================================================================
 # FreshnessMonitorPipelineEngine
 # ============================================================================
-
 
 class FreshnessMonitorPipelineEngine:
     """Orchestrates the full data freshness monitoring pipeline.
@@ -796,7 +772,7 @@ class FreshnessMonitorPipelineEngine:
             results, and provenance hash.
         """
         run_id = f"MR-{uuid4().hex[:12]}"
-        started_at = _utcnow()
+        started_at = utcnow()
         pipeline_start = time.time()
         stage_results: Dict[str, Dict[str, Any]] = {}
 
@@ -896,7 +872,7 @@ class FreshnessMonitorPipelineEngine:
             _inc_errors("pipeline")
 
         # Assemble MonitoringRun
-        completed_at = _utcnow()
+        completed_at = utcnow()
         elapsed = time.time() - pipeline_start
 
         provenance_hash = self._compute_provenance(
@@ -1232,7 +1208,7 @@ class FreshnessMonitorPipelineEngine:
         Returns:
             FreshnessReport with full details and provenance hash.
         """
-        now = _utcnow()
+        now = utcnow()
 
         # Compute tier distribution
         tier_counts: Dict[str, int] = {}
@@ -1312,7 +1288,7 @@ class FreshnessMonitorPipelineEngine:
         Returns:
             FreshnessReport with compliance-specific summary.
         """
-        now = _utcnow()
+        now = utcnow()
 
         scores = [
             getattr(c, "freshness_score", 0.0) for c in checks
@@ -1398,7 +1374,7 @@ class FreshnessMonitorPipelineEngine:
             including scope coverage, data quality tier, and
             recommendations.
         """
-        now = _utcnow()
+        now = utcnow()
 
         scores = [
             getattr(c, "freshness_score", 0.0) for c in checks
@@ -1487,7 +1463,7 @@ class FreshnessMonitorPipelineEngine:
             including ESRS disclosure references, data timeliness
             scores, and audit readiness status.
         """
-        now = _utcnow()
+        now = utcnow()
 
         scores = [
             getattr(c, "freshness_score", 0.0) for c in checks
@@ -1695,7 +1671,7 @@ class FreshnessMonitorPipelineEngine:
         """
         dataset_id = dataset.get("dataset_id", str(uuid4()))
         last_updated_str = dataset.get("last_updated", "")
-        now = _utcnow()
+        now = utcnow()
 
         age_hours = self._compute_age_hours(last_updated_str, now)
         tier = self._classify_freshness_tier(age_hours)
@@ -1771,7 +1747,7 @@ class FreshnessMonitorPipelineEngine:
             pattern_type=pattern_type,
             avg_refresh_hours=round(avg_hours, 4),
             stddev_refresh_hours=round(stddev_hours, 4),
-            detected_at=_utcnow().isoformat(),
+            detected_at=utcnow().isoformat(),
             confidence=round(confidence, 4),
         )
 
@@ -1821,7 +1797,7 @@ class FreshnessMonitorPipelineEngine:
         return RefreshPrediction(
             prediction_id=f"RP-{uuid4().hex[:12]}",
             dataset_id=dataset_id,
-            predicted_at=_utcnow().isoformat(),
+            predicted_at=utcnow().isoformat(),
             next_refresh_at=predicted_next.isoformat(),
             confidence=confidence,
             method="mean_interval",
@@ -1851,7 +1827,7 @@ class FreshnessMonitorPipelineEngine:
         breaches: List[SLABreach] = []
         warning_hours = sla.get("warning_hours", 24.0)
         critical_hours = sla.get("critical_hours", 72.0)
-        now = _utcnow()
+        now = utcnow()
 
         if age_hours >= critical_hours:
             breaches.append(SLABreach(
@@ -1907,7 +1883,7 @@ class FreshnessMonitorPipelineEngine:
             dataset_id=dataset_id,
             severity=severity,
             channel=channel,
-            sent_at=_utcnow().isoformat(),
+            sent_at=utcnow().isoformat(),
             acknowledged=False,
         )
 
@@ -2322,11 +2298,9 @@ class FreshnessMonitorPipelineEngine:
         )
         return hashlib.sha256(combined.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Fallback provenance tracker (minimal, used when provenance.py absent)
 # ---------------------------------------------------------------------------
-
 
 class _FallbackProvenanceTracker:
     """Minimal provenance tracker used when the real tracker is unavailable.
@@ -2418,7 +2392,6 @@ class _FallbackProvenanceTracker:
             Hex-encoded SHA-256 hash.
         """
         return _compute_sha256(data)
-
 
 # ---------------------------------------------------------------------------
 # Module exports

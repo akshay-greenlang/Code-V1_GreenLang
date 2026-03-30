@@ -67,25 +67,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -105,7 +99,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely.
 
@@ -119,7 +112,6 @@ def _decimal(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
 ) -> Decimal:
@@ -127,7 +119,6 @@ def _safe_divide(
     if denominator == Decimal("0"):
         return default
     return numerator / denominator
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value to the specified number of decimal places.
@@ -144,23 +135,19 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
 
-
 def _round6(value: Decimal) -> Decimal:
     """Round Decimal to 6 decimal places using ROUND_HALF_UP."""
     return value.quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class PollutantType(str, Enum):
     """Pollutant types relevant to ESRS E2 disclosures.
@@ -178,7 +165,6 @@ class PollutantType(str, Enum):
     PERSISTENT_ORGANIC = "persistent_organic"
     MICROPLASTICS = "microplastics"
 
-
 class PollutantMedium(str, Enum):
     """Environmental medium into which pollutants are released.
 
@@ -188,7 +174,6 @@ class PollutantMedium(str, Enum):
     AIR = "air"
     WATER = "water"
     SOIL = "soil"
-
 
 class SubstanceCategory(str, Enum):
     """Classification categories for substances per REACH regulation.
@@ -202,7 +187,6 @@ class SubstanceCategory(str, Enum):
     REACH_RESTRICTED = "reach_restricted"
     CANDIDATE_LIST = "candidate_list"
 
-
 class TargetType(str, Enum):
     """Target types for pollution reduction per ESRS E2-3.
 
@@ -212,7 +196,6 @@ class TargetType(str, Enum):
     ABSOLUTE = "absolute"
     INTENSITY = "intensity"
     ELIMINATION = "elimination"
-
 
 class PolicyScope(str, Enum):
     """Scope of pollution policies per ESRS E2-1.
@@ -225,7 +208,6 @@ class PolicyScope(str, Enum):
     DOWNSTREAM = "downstream"
     FULL_VALUE_CHAIN = "full_value_chain"
 
-
 class RiskCategory(str, Enum):
     """Risk categories for pollution-related financial effects.
 
@@ -237,11 +219,9 @@ class RiskCategory(str, Enum):
     REGULATORY = "regulatory"
     LITIGATION = "litigation"
 
-
 # ---------------------------------------------------------------------------
 # E2 Datapoint Constants
 # ---------------------------------------------------------------------------
-
 
 E2_1_DATAPOINTS: List[str] = [
     "e2_1_01_policy_existence",
@@ -304,7 +284,6 @@ ALL_E2_DATAPOINTS: List[str] = (
     + E2_4_DATAPOINTS + E2_5_DATAPOINTS + E2_6_DATAPOINTS
 )
 
-
 # Pollutant names for human-readable labels.
 POLLUTANT_NAMES: Dict[str, str] = {
     "nox": "Nitrogen Oxides (NOx)",
@@ -338,11 +317,9 @@ REGULATORY_THRESHOLDS_KG: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class PollutionPolicy(BaseModel):
     """A pollution prevention/control policy per ESRS E2-1.
@@ -396,7 +373,6 @@ class PollutionPolicy(BaseModel):
                 "A policy must cover at least one pollutant type"
             )
         return v
-
 
 class PollutionAction(BaseModel):
     """An action or resource commitment for pollution reduction per E2-2.
@@ -452,7 +428,6 @@ class PollutionAction(BaseModel):
         default=PolicyScope.OWN_OPERATIONS,
         description="Value chain scope covered by this action",
     )
-
 
 class PollutionTarget(BaseModel):
     """A measurable pollution reduction target per ESRS E2-3.
@@ -517,7 +492,6 @@ class PollutionTarget(BaseModel):
             )
         return v
 
-
 class PollutantEmission(BaseModel):
     """A single pollutant emission record per ESRS E2-4.
 
@@ -567,7 +541,6 @@ class PollutantEmission(BaseModel):
         max_length=3,
     )
 
-
 class SubstanceRecord(BaseModel):
     """A substance of concern or SVHC record per ESRS E2-5.
 
@@ -615,7 +588,6 @@ class SubstanceRecord(BaseModel):
         default=False,
         description="True if substance is produced, False if used/purchased",
     )
-
 
 class PollutionFinancialEffect(BaseModel):
     """An anticipated financial effect from pollution per ESRS E2-6.
@@ -665,7 +637,6 @@ class PollutionFinancialEffect(BaseModel):
         ge=Decimal("0"),
     )
 
-
 class E2PollutionResult(BaseModel):
     """Complete E2 Pollution disclosure result.
 
@@ -681,7 +652,7 @@ class E2PollutionResult(BaseModel):
         description="Engine version used for this calculation",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of calculation (UTC)",
     )
     # E2-1 Policies
@@ -780,11 +751,9 @@ class E2PollutionResult(BaseModel):
         description="SHA-256 hash of all inputs and calculation steps",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class PollutionEngine:
     """E2 Pollution assessment engine per ESRS E2.

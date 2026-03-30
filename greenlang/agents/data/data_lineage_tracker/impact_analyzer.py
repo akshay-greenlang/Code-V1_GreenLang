@@ -76,6 +76,7 @@ from greenlang.agents.data.data_lineage_tracker.metrics import (
     record_impact_analysis,
 )
 from greenlang.agents.data.data_lineage_tracker.provenance import ProvenanceTracker
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -116,20 +117,13 @@ _DEFAULT_ASSET_TYPE_WEIGHT: float = 0.35
 # Maximum paths returned by find_critical_paths to prevent combinatorial blow-up.
 _MAX_CRITICAL_PATHS: int = 50
 
-
 # ---------------------------------------------------------------------------
 # Helper: UTC timestamp
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ---------------------------------------------------------------------------
 # ImpactAnalyzerEngine
 # ---------------------------------------------------------------------------
-
 
 class ImpactAnalyzerEngine:
     """Performs forward and backward lineage traversal with impact scoring.
@@ -279,7 +273,7 @@ class ImpactAnalyzerEngine:
         source_count = self._count_terminal_sources(affected_assets)
 
         analysis_id = str(uuid.uuid4())
-        created_at = _utcnow().isoformat()
+        created_at = utcnow().isoformat()
 
         result: dict = {
             "analysis_id": analysis_id,
@@ -430,7 +424,7 @@ class ImpactAnalyzerEngine:
         blast_radius = self._compute_blast_radius_value(len(affected_assets))
 
         analysis_id = str(uuid.uuid4())
-        created_at = _utcnow().isoformat()
+        created_at = utcnow().isoformat()
 
         # Determine highest severity for metrics reporting
         highest_severity = self._highest_severity(severity_counts)
@@ -866,7 +860,7 @@ class ImpactAnalyzerEngine:
         total_unique = len(backward_ids | forward_ids)
 
         analysis_id = str(uuid.uuid4())
-        created_at = _utcnow().isoformat()
+        created_at = utcnow().isoformat()
 
         result: dict = {
             "analysis_id": analysis_id,
@@ -1394,7 +1388,6 @@ class ImpactAnalyzerEngine:
 
         record_impact_analysis(direction, severity)
         observe_processing_duration("impact_analyze", elapsed)
-
 
 # ---------------------------------------------------------------------------
 # Public surface

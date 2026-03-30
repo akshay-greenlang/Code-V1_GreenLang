@@ -43,20 +43,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -74,11 +69,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class WholesaleMarket(str, Enum):
     """Wholesale energy market exchanges."""
@@ -89,7 +82,6 @@ class WholesaleMarket(str, Enum):
     CME = "cme"
     EEX = "eex"
     OMIE = "omie"
-
 
 class CommodityMarket(str, Enum):
     """Energy commodity markets."""
@@ -102,7 +94,6 @@ class CommodityMarket(str, Enum):
     CARBON_UKA = "carbon_uka"
     RENEWABLE_GO = "renewable_go"
     RENEWABLE_REC = "renewable_rec"
-
 
 class PriceRegion(str, Enum):
     """Price delivery regions."""
@@ -119,7 +110,6 @@ class PriceRegion(str, Enum):
     PJM = "pjm"
     ERCOT = "ercot"
 
-
 class GasHub(str, Enum):
     """Natural gas trading hubs."""
 
@@ -130,11 +120,9 @@ class GasHub(str, Enum):
     HENRY_HUB = "henry_hub"
     JKM = "jkm"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class MarketDataConfig(BaseModel):
     """Configuration for the Market Data Bridge."""
@@ -145,7 +133,6 @@ class MarketDataConfig(BaseModel):
     default_gas_hub: GasHub = Field(default=GasHub.TTF)
     default_currency: str = Field(default="EUR")
     cache_ttl_minutes: int = Field(default=15, ge=1, le=1440)
-
 
 class MarketPriceRecord(BaseModel):
     """A single market price data point."""
@@ -162,7 +149,6 @@ class MarketPriceRecord(BaseModel):
     source: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 class PriceForecast(BaseModel):
     """Forward price curve / forecast data."""
 
@@ -176,7 +162,6 @@ class PriceForecast(BaseModel):
     curve_type: str = Field(default="forward", description="forward|forecast")
     provenance_hash: str = Field(default="")
 
-
 class CarbonPriceData(BaseModel):
     """Carbon market price data."""
 
@@ -188,7 +173,6 @@ class CarbonPriceData(BaseModel):
     volume_traded: Optional[float] = Field(None)
     year_to_date_avg: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class MarketSummary(BaseModel):
     """Market data summary for a period."""
@@ -203,7 +187,6 @@ class MarketSummary(BaseModel):
     carbon_avg_eur_tco2: float = Field(default=0.0)
     yoy_change_pct: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Reference Prices (stub data for offline operation)
@@ -237,11 +220,9 @@ REFERENCE_CARBON_PRICES: Dict[str, float] = {
     "UK_ETS": 45.0,
 }
 
-
 # ---------------------------------------------------------------------------
 # MarketDataBridge
 # ---------------------------------------------------------------------------
-
 
 class MarketDataBridge:
     """Energy market data integration for utility analysis.
@@ -383,7 +364,7 @@ class MarketDataBridge:
         result = CarbonPriceData(
             market=market,
             price_eur_per_tco2=price,
-            date=_utcnow().strftime("%Y-%m-%d"),
+            date=utcnow().strftime("%Y-%m-%d"),
             settlement_type="spot",
             year_to_date_avg=round(price * 0.95, 2),
         )
@@ -431,7 +412,7 @@ class MarketDataBridge:
         result = PriceForecast(
             commodity=comm,
             region=region,
-            base_date=_utcnow().strftime("%Y-%m-%d"),
+            base_date=utcnow().strftime("%Y-%m-%d"),
             delivery_periods=periods,
             unit="EUR/MWh",
             source="forward_curve",

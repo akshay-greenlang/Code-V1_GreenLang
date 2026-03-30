@@ -47,18 +47,13 @@ from typing import Any, Callable, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # UTILITIES
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return current UTC time with timezone info."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute SHA-256 provenance hash of arbitrary data."""
@@ -66,11 +61,9 @@ def _hash_data(data: Any) -> str:
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -80,7 +73,6 @@ class PhaseStatus(str, Enum):
     FAILED = "FAILED"
     SKIPPED = "SKIPPED"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "PENDING"
@@ -89,14 +81,12 @@ class WorkflowStatus(str, Enum):
     FAILED = "FAILED"
     PARTIAL = "PARTIAL"
 
-
 class AttainmentStatus(str, Enum):
     """Sustainable objective attainment status."""
     MET = "MET"
     PARTIALLY_MET = "PARTIALLY_MET"
     NOT_MET = "NOT_MET"
     NOT_APPLICABLE = "NOT_APPLICABLE"
-
 
 class DataQualityTier(str, Enum):
     """Data quality tier classification."""
@@ -105,17 +95,15 @@ class DataQualityTier(str, Enum):
     PROXY = "PROXY"
     UNAVAILABLE = "UNAVAILABLE"
 
-
 # =============================================================================
 # DATA MODELS - SHARED
 # =============================================================================
-
 
 class WorkflowContext(BaseModel):
     """Shared state passed between workflow phases."""
     workflow_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     organization_id: str = Field(..., description="Organization identifier")
-    execution_timestamp: datetime = Field(default_factory=_utcnow)
+    execution_timestamp: datetime = Field(default_factory=utcnow)
     config: Dict[str, Any] = Field(default_factory=dict)
     phase_states: Dict[str, PhaseStatus] = Field(default_factory=dict)
     phase_outputs: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
@@ -138,7 +126,6 @@ class WorkflowContext(BaseModel):
         """Check if a phase has already completed."""
         return self.phase_states.get(phase_name) == PhaseStatus.COMPLETED
 
-
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
     phase_name: str = Field(..., description="Phase identifier")
@@ -152,7 +139,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     records_processed: int = Field(default=0)
 
-
 class WorkflowResult(BaseModel):
     """Complete result from a multi-phase workflow execution."""
     workflow_id: str = Field(..., description="Unique workflow execution ID")
@@ -165,11 +151,9 @@ class WorkflowResult(BaseModel):
     summary: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # DATA MODELS - ANNEX V REPORTING
 # =============================================================================
-
 
 class PortfolioHolding(BaseModel):
     """A single holding in the portfolio at reporting date."""
@@ -190,7 +174,6 @@ class PortfolioHolding(BaseModel):
     dnsh_compliant: bool = Field(default=True)
     good_governance_verified: bool = Field(default=True)
 
-
 class PAIIndicatorData(BaseModel):
     """Principal Adverse Impact indicator input data."""
     indicator_id: str = Field(..., description="PAI indicator ID")
@@ -201,7 +184,6 @@ class PAIIndicatorData(BaseModel):
     unit: str = Field(default="")
     coverage_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     data_quality: DataQualityTier = Field(default=DataQualityTier.REPORTED)
-
 
 class AnnexVReportingInput(BaseModel):
     """Input configuration for the Annex V periodic reporting workflow."""
@@ -243,7 +225,6 @@ class AnnexVReportingInput(BaseModel):
             raise ValueError("Date must be YYYY-MM-DD format")
         return v
 
-
 class AnnexVReportingResult(WorkflowResult):
     """Complete result from the Annex V reporting workflow."""
     product_name: str = Field(default="")
@@ -258,11 +239,9 @@ class AnnexVReportingResult(WorkflowResult):
     average_pai_coverage_pct: float = Field(default=0.0)
     filing_package_id: str = Field(default="")
 
-
 # =============================================================================
 # PHASE IMPLEMENTATIONS
 # =============================================================================
-
 
 class DataCollectionPhase:
     """
@@ -276,7 +255,7 @@ class DataCollectionPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Execute data collection phase."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -432,7 +411,7 @@ class DataCollectionPhase:
             status = PhaseStatus.FAILED
             records = 0
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -446,7 +425,6 @@ class DataCollectionPhase:
             records_processed=records,
         )
 
-
 class ObjectiveAttainmentAssessmentPhase:
     """
     Phase 2: Objective Attainment Assessment.
@@ -459,7 +437,7 @@ class ObjectiveAttainmentAssessmentPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Execute objective attainment assessment phase."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -603,7 +581,7 @@ class ObjectiveAttainmentAssessmentPhase:
             )
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -615,7 +593,6 @@ class ObjectiveAttainmentAssessmentPhase:
             warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 class PAICalculationPhase:
     """
@@ -650,7 +627,7 @@ class PAICalculationPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Execute PAI calculation phase."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -745,7 +722,7 @@ class PAICalculationPhase:
             status = PhaseStatus.FAILED
             records = 0
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -759,7 +736,6 @@ class PAICalculationPhase:
             records_processed=records,
         )
 
-
 class TemplateGenerationPhase:
     """
     Phase 4: Template Generation.
@@ -772,7 +748,7 @@ class TemplateGenerationPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Execute template generation phase."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -797,7 +773,7 @@ class TemplateGenerationPhase:
                         f"{period_start} to {period_end}"
                     ),
                     "classification": "ARTICLE_9",
-                    "generated_at": _utcnow().isoformat(),
+                    "generated_at": utcnow().isoformat(),
                 },
                 "sustainable_objective_attainment": {
                     "description": (
@@ -874,7 +850,7 @@ class TemplateGenerationPhase:
             outputs["annex_v_template"] = template
             outputs["template_version"] = "1.0"
             outputs["template_format"] = "structured_json"
-            outputs["generated_at"] = _utcnow().isoformat()
+            outputs["generated_at"] = utcnow().isoformat()
 
             status = PhaseStatus.COMPLETED
 
@@ -885,7 +861,7 @@ class TemplateGenerationPhase:
             errors.append(f"Template generation failed: {str(exc)}")
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -897,7 +873,6 @@ class TemplateGenerationPhase:
             warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 class FilingPackagePhase:
     """
@@ -911,7 +886,7 @@ class FilingPackagePhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Execute filing package assembly phase."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -932,7 +907,7 @@ class FilingPackagePhase:
 
             outputs["package_manifest"] = {
                 "package_id": package_id,
-                "created_at": _utcnow().isoformat(),
+                "created_at": utcnow().isoformat(),
                 "product_name": config.get("product_name", ""),
                 "reporting_period": (
                     f"{config.get('reporting_period_start', '')} to "
@@ -991,7 +966,7 @@ class FilingPackagePhase:
 
             compliance_certificate = {
                 "certificate_id": str(uuid.uuid4()),
-                "issued_at": _utcnow().isoformat(),
+                "issued_at": utcnow().isoformat(),
                 "product_name": config.get("product_name", ""),
                 "is_compliant": is_compliant,
                 "checks": {
@@ -1068,7 +1043,7 @@ class FilingPackagePhase:
             )
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -1081,11 +1056,9 @@ class FilingPackagePhase:
             provenance_hash=_hash_data(outputs),
         )
 
-
 # =============================================================================
 # WORKFLOW ORCHESTRATOR
 # =============================================================================
-
 
 class AnnexVReportingWorkflow:
     """
@@ -1136,7 +1109,7 @@ class AnnexVReportingWorkflow:
         self, input_data: AnnexVReportingInput
     ) -> AnnexVReportingResult:
         """Execute the complete 5-phase Annex V reporting workflow."""
-        started_at = _utcnow()
+        started_at = utcnow()
         logger.info(
             "Starting Annex V reporting workflow %s for org=%s product=%s",
             self.workflow_id, input_data.organization_id,
@@ -1207,7 +1180,7 @@ class AnnexVReportingWorkflow:
                 error_result = PhaseResult(
                     phase_name=phase_name,
                     status=PhaseStatus.FAILED,
-                    started_at=_utcnow(),
+                    started_at=utcnow(),
                     errors=[str(exc)],
                     provenance_hash=_hash_data({"error": str(exc)}),
                 )
@@ -1226,7 +1199,7 @@ class AnnexVReportingWorkflow:
                 else WorkflowStatus.PARTIAL
             )
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         total_duration = (completed_at - started_at).total_seconds()
         summary = self._build_summary(context)
         provenance = _hash_data({

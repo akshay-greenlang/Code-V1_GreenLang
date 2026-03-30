@@ -58,25 +58,20 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import HealthStatus
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -89,11 +84,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class HealthCheckCategory(str, Enum):
     """Health check categories (20 total)."""
@@ -121,23 +114,12 @@ class HealthCheckCategory(str, Enum):
     BRIDGE_BENCHMARK_DATA = "bridge_benchmark_data"
     BRIDGE_SBTI_PATHWAY = "bridge_sbti_pathway"
 
-
-class HealthStatus(str, Enum):
-    """Health status levels."""
-
-    HEALTHY = "healthy"
-    DEGRADED = "degraded"
-    UNHEALTHY = "unhealthy"
-    UNKNOWN = "unknown"
-
-
 class HealthSeverity(str, Enum):
     """Health issue severity."""
 
     CRITICAL = "critical"
     WARNING = "warning"
     INFO = "info"
-
 
 class CheckType(str, Enum):
     """Type of health check."""
@@ -147,11 +129,9 @@ class CheckType(str, Enum):
     PERFORMANCE = "performance"
     DATA_INTEGRITY = "data_integrity"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class ComponentHealth(BaseModel):
     """Health status of a single component."""
@@ -163,7 +143,6 @@ class ComponentHealth(BaseModel):
     last_checked: str = ""
     message: str = ""
     details: Dict[str, Any] = Field(default_factory=dict)
-
 
 class SystemHealth(BaseModel):
     """Overall system health report."""
@@ -182,7 +161,6 @@ class SystemHealth(BaseModel):
     provenance_hash: str = ""
     duration_ms: float = 0.0
 
-
 class HealthCheckConfig(BaseModel):
     """Configuration for health checks."""
 
@@ -192,11 +170,9 @@ class HealthCheckConfig(BaseModel):
         default_factory=lambda: list(HealthCheckCategory)
     )
 
-
 # ---------------------------------------------------------------------------
 # Health Check Implementation
 # ---------------------------------------------------------------------------
-
 
 class HealthCheck:
     """
@@ -266,7 +242,7 @@ class HealthCheck:
         report = SystemHealth(
             overall_status=overall,
             health_score=health_score,
-            checked_at=_utcnow().isoformat(),
+            checked_at=utcnow().isoformat(),
             total_checks=total,
             healthy_count=healthy,
             degraded_count=degraded,
@@ -368,7 +344,7 @@ class HealthCheck:
                 status=status,
                 check_type=check_type,
                 response_time_ms=response_time,
-                last_checked=_utcnow().isoformat(),
+                last_checked=utcnow().isoformat(),
                 message=message,
                 details=details,
             )
@@ -383,7 +359,7 @@ class HealthCheck:
                 status=HealthStatus.UNHEALTHY.value,
                 check_type=CheckType.AVAILABILITY.value,
                 response_time_ms=response_time,
-                last_checked=_utcnow().isoformat(),
+                last_checked=utcnow().isoformat(),
                 message=f"Check failed: {str(e)}",
             )
 

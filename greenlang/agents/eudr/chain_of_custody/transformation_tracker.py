@@ -59,6 +59,8 @@ from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Any, Dict, FrozenSet, List, Optional, Sequence, Set, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -70,12 +72,6 @@ _MODULE_VERSION = "1.0.0"
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed for determinism."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -98,7 +94,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str) -> str:
     """Generate a unique identifier with the given prefix.
 
@@ -109,7 +104,6 @@ def _generate_id(prefix: str) -> str:
         Prefixed UUID string.
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -136,7 +130,6 @@ DERIVED_COMMODITIES: FrozenSet[str] = frozenset({
     "live_cattle", "carcass", "beef", "leather", "hide",
     "tallow", "bone_meal", "gelatin",
 })
-
 
 class ProcessType(str, Enum):
     """Supported processing/transformation types.
@@ -175,14 +168,12 @@ class ProcessType(str, Enum):
     PEELING = "peeling"
     VULCANIZATION = "vulcanization"
 
-
 class AllocationMethod(str, Enum):
     """Co-product allocation methods per ISO 14044."""
 
     MASS = "mass"
     ECONOMIC = "economic"
     ENERGY = "energy"
-
 
 class TransformationStatus(str, Enum):
     """Transformation record status."""
@@ -193,14 +184,12 @@ class TransformationStatus(str, Enum):
     YIELD_ALERT = "yield_alert"
     ERROR = "error"
 
-
 class YieldVerdict(str, Enum):
     """Yield validation verdict."""
 
     PASS = "pass"
     WARNING = "warning"
     FAIL = "fail"
-
 
 # ---------------------------------------------------------------------------
 # Reference Yield Ratios (Appendix A)
@@ -349,11 +338,9 @@ COMMODITY_FORM_CHAINS: Dict[str, List[str]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models (local dataclasses)
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class InputOutput:
@@ -388,7 +375,6 @@ class InputOutput:
             "origin_plot_ids": list(self.origin_plot_ids),
             "metadata": dict(self.metadata),
         }
-
 
 @dataclass
 class TransformationRecord:
@@ -431,13 +417,13 @@ class TransformationRecord:
     expected_yield_max: float = 0.0
     yield_source: str = ""
     yield_verdict: str = "pass"
-    timestamp: datetime = field(default_factory=_utcnow)
+    timestamp: datetime = field(default_factory=utcnow)
     duration_minutes: float = 0.0
     operator_id: str = ""
     notes: str = ""
     status: str = "recorded"
     provenance_hash: str = ""
-    created_at: datetime = field(default_factory=_utcnow)
+    created_at: datetime = field(default_factory=utcnow)
     metadata: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -465,7 +451,6 @@ class TransformationRecord:
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "metadata": dict(self.metadata),
         }
-
 
 @dataclass
 class YieldValidation:
@@ -503,7 +488,7 @@ class YieldValidation:
     verdict: str = "pass"
     message: str = ""
     provenance_hash: str = ""
-    validated_at: datetime = field(default_factory=_utcnow)
+    validated_at: datetime = field(default_factory=utcnow)
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary for JSON export."""
@@ -526,7 +511,6 @@ class YieldValidation:
                 self.validated_at.isoformat() if self.validated_at else None
             ),
         }
-
 
 @dataclass
 class ByProductRecord:
@@ -558,7 +542,7 @@ class ByProductRecord:
     total_output_qty: float = 0.0
     mass_balance_check: bool = True
     provenance_hash: str = ""
-    recorded_at: datetime = field(default_factory=_utcnow)
+    recorded_at: datetime = field(default_factory=utcnow)
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary for JSON export."""
@@ -580,7 +564,6 @@ class ByProductRecord:
                 self.recorded_at.isoformat() if self.recorded_at else None
             ),
         }
-
 
 @dataclass
 class TransformationChainStep:
@@ -627,7 +610,6 @@ class TransformationChainStep:
             ),
         }
 
-
 @dataclass
 class TransformationChain:
     """A complete multi-step transformation chain from raw to final product.
@@ -658,7 +640,7 @@ class TransformationChain:
     chain_complete: bool = False
     gaps: List[str] = field(default_factory=list)
     provenance_hash: str = ""
-    assembled_at: datetime = field(default_factory=_utcnow)
+    assembled_at: datetime = field(default_factory=utcnow)
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary for JSON export."""
@@ -678,7 +660,6 @@ class TransformationChain:
                 self.assembled_at.isoformat() if self.assembled_at else None
             ),
         }
-
 
 @dataclass
 class CoProductAllocation:
@@ -706,7 +687,7 @@ class CoProductAllocation:
     total_allocation_pct: float = 0.0
     notes: str = ""
     provenance_hash: str = ""
-    allocated_at: datetime = field(default_factory=_utcnow)
+    allocated_at: datetime = field(default_factory=utcnow)
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary for JSON export."""
@@ -724,7 +705,6 @@ class CoProductAllocation:
                 self.allocated_at.isoformat() if self.allocated_at else None
             ),
         }
-
 
 @dataclass
 class YieldStatistics:
@@ -764,7 +744,7 @@ class YieldStatistics:
     outlier_count: int = 0
     outlier_pct: float = 0.0
     provenance_hash: str = ""
-    computed_at: datetime = field(default_factory=_utcnow)
+    computed_at: datetime = field(default_factory=utcnow)
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary for JSON export."""
@@ -788,7 +768,6 @@ class YieldStatistics:
                 self.computed_at.isoformat() if self.computed_at else None
             ),
         }
-
 
 @dataclass
 class BatchTransformResult:
@@ -818,7 +797,7 @@ class BatchTransformResult:
     yield_alerts: int = 0
     processing_time_ms: float = 0.0
     provenance_hash: str = ""
-    completed_at: datetime = field(default_factory=_utcnow)
+    completed_at: datetime = field(default_factory=utcnow)
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary for JSON export."""
@@ -837,7 +816,6 @@ class BatchTransformResult:
                 self.completed_at.isoformat() if self.completed_at else None
             ),
         }
-
 
 @dataclass
 class TransformationTrackerConfig:
@@ -895,11 +873,9 @@ class TransformationTrackerConfig:
                 + "\n".join(f"  - {e}" for e in errors)
             )
 
-
 # ===========================================================================
 # TransformationTracker Engine
 # ===========================================================================
-
 
 class TransformationTracker:
     """Transformation tracking engine for EUDR chain of custody.
@@ -1281,7 +1257,7 @@ class TransformationTracker:
 
         # Sort by timestamp
         chain_transforms.sort(
-            key=lambda t: t.timestamp if t.timestamp else _utcnow()
+            key=lambda t: t.timestamp if t.timestamp else utcnow()
         )
 
         # Build chain steps
@@ -1410,7 +1386,7 @@ class TransformationTracker:
             "input_commodity": input_commodity,
             "output_commodity": output_commodity,
             "transition_valid": transition_valid,
-            "recorded_at": _utcnow().isoformat(),
+            "recorded_at": utcnow().isoformat(),
         }
         self._derived_product_store.append(derived_info)
 
@@ -1700,7 +1676,7 @@ class TransformationTracker:
 
         elapsed_ms = (time.monotonic() - start_time) * 1000
         result.processing_time_ms = round(elapsed_ms, 2)
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
 
         if self.config.enable_provenance:
             result.provenance_hash = _compute_hash(result)
@@ -2083,7 +2059,7 @@ class TransformationTracker:
             Parsed datetime. Defaults to current UTC if None.
         """
         if ts_value is None:
-            return _utcnow()
+            return utcnow()
         if isinstance(ts_value, datetime):
             return ts_value
         if isinstance(ts_value, str):
@@ -2094,8 +2070,8 @@ class TransformationTracker:
                     "Could not parse timestamp '%s', using current UTC",
                     ts_value,
                 )
-                return _utcnow()
-        return _utcnow()
+                return utcnow()
+        return utcnow()
 
     def _store_record(self, record: TransformationRecord) -> None:
         """Store a transformation record and update indexes.

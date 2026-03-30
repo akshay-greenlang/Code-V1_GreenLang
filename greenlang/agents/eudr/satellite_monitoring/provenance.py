@@ -74,18 +74,13 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # ProvenanceEntry dataclass
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class ProvenanceEntry:
@@ -135,7 +130,6 @@ class ProvenanceEntry:
             "metadata": self.metadata,
         }
 
-
 # ---------------------------------------------------------------------------
 # Valid entity types and actions
 # ---------------------------------------------------------------------------
@@ -178,11 +172,9 @@ VALID_ACTIONS = frozenset({
     "export_evidence",
 })
 
-
 # ---------------------------------------------------------------------------
 # ProvenanceTracker
 # ---------------------------------------------------------------------------
-
 
 class ProvenanceTracker:
     """Tracks provenance for satellite monitoring operations with SHA-256 chain hashing.
@@ -318,7 +310,7 @@ class ProvenanceTracker:
         if not entity_id:
             raise ValueError("entity_id must not be empty")
 
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
         data_hash = self._hash_data(data)
         store_key = f"{entity_type}:{entity_id}"
 
@@ -606,14 +598,12 @@ class ProvenanceTracker:
         """
         return self._hash_data(data)
 
-
 # ---------------------------------------------------------------------------
 # Thread-safe singleton helpers
 # ---------------------------------------------------------------------------
 
 _singleton_lock = threading.Lock()
 _singleton_tracker: Optional[ProvenanceTracker] = None
-
 
 def get_provenance_tracker() -> ProvenanceTracker:
     """Return the process-wide singleton ProvenanceTracker.
@@ -640,7 +630,6 @@ def get_provenance_tracker() -> ProvenanceTracker:
                 )
     return _singleton_tracker
 
-
 def set_provenance_tracker(tracker: ProvenanceTracker) -> None:
     """Replace the process-wide singleton with a custom tracker.
 
@@ -664,7 +653,6 @@ def set_provenance_tracker(tracker: ProvenanceTracker) -> None:
         "Satellite monitoring ProvenanceTracker singleton replaced"
     )
 
-
 def reset_provenance_tracker() -> None:
     """Destroy the current singleton and reset to None.
 
@@ -681,7 +669,6 @@ def reset_provenance_tracker() -> None:
     logger.info(
         "Satellite monitoring ProvenanceTracker singleton reset to None"
     )
-
 
 # ---------------------------------------------------------------------------
 # Public API

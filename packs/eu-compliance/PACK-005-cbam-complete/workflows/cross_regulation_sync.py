@@ -41,6 +41,7 @@ from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Set
 
 from pydantic import BaseModel, Field
+from greenlang.schemas.enums import ReportFormat
 
 logger = logging.getLogger(__name__)
 
@@ -87,13 +88,6 @@ class TargetRegulation(str, Enum):
     EU_TAXONOMY = "EU_TAXONOMY"
     EU_ETS = "EU_ETS"
     EUDR = "EUDR"
-
-
-class ExportFormat(str, Enum):
-    """Output format for regulation exports."""
-    JSON = "JSON"
-    CSV = "CSV"
-    XML = "XML"
 
 
 class ConflictSeverity(str, Enum):
@@ -275,8 +269,8 @@ class CrossRegulationSyncInput(BaseModel):
         default_factory=dict,
         description="Current CBAM data for mapping"
     )
-    export_formats: List[ExportFormat] = Field(
-        default_factory=lambda: [ExportFormat.JSON]
+    export_formats: List[ReportFormat] = Field(
+        default_factory=lambda: [ReportFormat.JSON]
     )
     notify_teams: Dict[str, List[str]] = Field(
         default_factory=dict,

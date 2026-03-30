@@ -22,7 +22,8 @@ Date: 2025-10-30
 
 from typing import Dict, List, Optional, Any
 from datetime import datetime
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 from enum import Enum
 
 from .constants import (
@@ -44,7 +45,7 @@ from .constants import (
 # PEDIGREE SCORE MODELS
 # ============================================================================
 
-class PedigreeScore(BaseModel):
+class PedigreeScore(GreenLangBase):
     """
     ILCD Pedigree Matrix score for a single data point.
 
@@ -163,7 +164,7 @@ class PedigreeScore(BaseModel):
 # DATA QUALITY INDEX (DQI) MODELS
 # ============================================================================
 
-class DQIScore(BaseModel):
+class DQIScore(GreenLangBase):
     """
     Data Quality Index (DQI) assessment result.
 
@@ -250,7 +251,7 @@ class DQIScore(BaseModel):
 # UNCERTAINTY MODELS
 # ============================================================================
 
-class UncertaintyResult(BaseModel):
+class UncertaintyResult(GreenLangBase):
     """
     Uncertainty quantification result for an emission value.
 
@@ -356,7 +357,7 @@ class UncertaintyResult(BaseModel):
 # MONTE CARLO SIMULATION MODELS
 # ============================================================================
 
-class MonteCarloInput(BaseModel):
+class MonteCarloInput(GreenLangBase):
     """
     Input parameter for Monte Carlo simulation.
 
@@ -382,7 +383,7 @@ class MonteCarloInput(BaseModel):
     )
 
 
-class MonteCarloResult(BaseModel):
+class MonteCarloResult(GreenLangBase):
     """
     Monte Carlo simulation result with statistical summary.
 

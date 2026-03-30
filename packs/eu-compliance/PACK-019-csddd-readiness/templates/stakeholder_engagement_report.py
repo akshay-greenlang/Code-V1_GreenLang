@@ -32,6 +32,8 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
@@ -71,16 +73,9 @@ _AA1000_PRINCIPLES: List[Dict[str, str]] = [
      "description": "Monitoring, measuring and being accountable for impact on stakeholders"},
 ]
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -92,7 +87,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 class StakeholderEngagementReportTemplate:
     """
@@ -121,7 +115,7 @@ class StakeholderEngagementReportTemplate:
 
     def render(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render full report as structured dict."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         report_id = _new_uuid()
         result: Dict[str, Any] = {"report_id": report_id}
         for section in _SECTIONS:
@@ -157,7 +151,7 @@ class StakeholderEngagementReportTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render stakeholder engagement report as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [
             self._md_header(data),
             self._md_engagement_overview(data),
@@ -174,7 +168,7 @@ class StakeholderEngagementReportTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render stakeholder engagement report as HTML."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         body = "\n".join([
             self._html_header(data),
@@ -195,7 +189,7 @@ class StakeholderEngagementReportTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render stakeholder engagement report as JSON."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result: Dict[str, Any] = {
             "template": "stakeholder_engagement_report",
             "directive_reference": "Directive (EU) 2024/1760, Art 10",

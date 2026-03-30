@@ -80,23 +80,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ReportFormat
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -113,7 +109,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -122,7 +117,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -130,31 +124,17 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _chain_hashes(hashes: List[str]) -> str:
     """Chain multiple hashes into a single provenance hash."""
     combined = "||".join(h for h in hashes if h)
     return hashlib.sha256(combined.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
-
-class ExportFormat(str, Enum):
-    """Export format for reports."""
-    MARKDOWN = "markdown"
-    HTML = "html"
-    PDF = "pdf"
-    JSON = "json"
-    CSV = "csv"
-    XBRL = "xbrl"
-
 
 class ReportSectionType(str, Enum):
     """Types of report sections."""
@@ -172,7 +152,6 @@ class ReportSectionType(str, Enum):
     HEATMAP = "heatmap"
     SPARKLINES = "sparklines"
 
-
 class SortField(str, Enum):
     """Sort fields for league table."""
     INTENSITY = "intensity"
@@ -181,7 +160,6 @@ class SortField(str, Enum):
     RISK_SCORE = "risk_score"
     DATA_QUALITY = "data_quality"
     PERCENTILE = "percentile"
-
 
 class Framework(str, Enum):
     """Disclosure framework."""
@@ -192,11 +170,9 @@ class Framework(str, Enum):
     SBTI = "SBTi"
     IFRS_S2 = "IFRS_S2"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class ReportSection(BaseModel):
     """A section of source data for the report.
@@ -211,7 +187,6 @@ class ReportSection(BaseModel):
     title: str = Field(default="", description="Title")
     data: Dict[str, Any] = Field(default_factory=dict, description="Section data")
     provenance_hash: str = Field(default="", description="Source hash")
-
 
 class LeagueTableEntry(BaseModel):
     """A single entry in a league table.
@@ -246,7 +221,6 @@ class LeagueTableEntry(BaseModel):
     def coerce_dec(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class RadarDimension(BaseModel):
     """A dimension of a radar chart.
 
@@ -258,7 +232,6 @@ class RadarDimension(BaseModel):
     name: str = Field(..., description="Dimension name")
     value: Decimal = Field(default=Decimal("0"), ge=0, le=100)
     label: str = Field(default="", description="Display label")
-
 
 class HeatmapCell(BaseModel):
     """A single cell in a heatmap.
@@ -274,7 +247,6 @@ class HeatmapCell(BaseModel):
     value: Decimal = Field(default=Decimal("0"))
     color_bin: int = Field(default=3, ge=1, le=5)
 
-
 class SparklinePoint(BaseModel):
     """A point in a sparkline trend.
 
@@ -284,7 +256,6 @@ class SparklinePoint(BaseModel):
     """
     year: int = Field(..., description="Year")
     value: Decimal = Field(default=Decimal("0"))
-
 
 class ReportInput(BaseModel):
     """Input for benchmark report generation.
@@ -313,16 +284,14 @@ class ReportInput(BaseModel):
     heatmap_cells: List[HeatmapCell] = Field(default_factory=list)
     sparklines: Dict[str, List[SparklinePoint]] = Field(default_factory=dict)
     frameworks: List[Framework] = Field(default_factory=list)
-    export_formats: List[ExportFormat] = Field(
-        default_factory=lambda: [ExportFormat.JSON, ExportFormat.MARKDOWN]
+    export_formats: List[ReportFormat] = Field(
+        default_factory=lambda: [ReportFormat.JSON, ReportFormat.MARKDOWN]
     )
     output_precision: int = Field(default=2, ge=0, le=6)
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class LeagueTable(BaseModel):
     """Generated league table.
@@ -340,7 +309,6 @@ class LeagueTable(BaseModel):
     sort_field: str = Field(default="")
     sort_ascending: bool = Field(default=True)
 
-
 class RadarChart(BaseModel):
     """Generated radar chart data.
 
@@ -350,7 +318,6 @@ class RadarChart(BaseModel):
     """
     entity_name: str = Field(default="")
     dimensions: List[RadarDimension] = Field(default_factory=list)
-
 
 class HeatmapData(BaseModel):
     """Generated heatmap data.
@@ -363,7 +330,6 @@ class HeatmapData(BaseModel):
     rows: List[str] = Field(default_factory=list)
     columns: List[str] = Field(default_factory=list)
     cells: List[HeatmapCell] = Field(default_factory=list)
-
 
 class DisclosureSection(BaseModel):
     """Framework-specific disclosure section.
@@ -383,7 +349,6 @@ class DisclosureSection(BaseModel):
     data_references: List[str] = Field(default_factory=list)
     completeness_pct: Decimal = Field(default=Decimal("0"))
 
-
 class ExportResult(BaseModel):
     """Result of report export.
 
@@ -397,7 +362,6 @@ class ExportResult(BaseModel):
     content: str = Field(default="")
     size_bytes: int = Field(default=0)
     success: bool = Field(default=True)
-
 
 class ExecutiveSummary(BaseModel):
     """Executive summary content.
@@ -416,7 +380,6 @@ class ExecutiveSummary(BaseModel):
     trajectory_status: str = Field(default="")
     risk_assessment: str = Field(default="")
     recommendations: List[str] = Field(default_factory=list)
-
 
 class ReportPackage(BaseModel):
     """Complete benchmark report package.
@@ -456,11 +419,9 @@ class ReportPackage(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     provenance_hash: str = Field(default="", description="SHA-256 chain hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class BenchmarkReportingEngine:
     """Aggregates benchmark engine outputs into structured reports.
@@ -548,7 +509,7 @@ class BenchmarkReportingEngine:
             exports=exports,
             section_hashes=section_hashes,
             warnings=warnings,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         result.provenance_hash = _chain_hashes(section_hashes) if section_hashes else _compute_hash(result)
@@ -574,7 +535,7 @@ class BenchmarkReportingEngine:
 
     def export_to_format(
         self,
-        format_type: ExportFormat,
+        format_type: ReportFormat,
         report: ReportPackage,
     ) -> ExportResult:
         """Export report to a specific format.
@@ -804,13 +765,13 @@ class BenchmarkReportingEngine:
 
     def _export_report(
         self,
-        fmt: ExportFormat,
+        fmt: ReportFormat,
         input_data: ReportInput,
         exec_summary: ExecutiveSummary,
         league: Optional[LeagueTable],
     ) -> ExportResult:
         """Export report to specified format."""
-        if fmt == ExportFormat.JSON:
+        if fmt == ReportFormat.JSON:
             content = json.dumps({
                 "title": input_data.report_title,
                 "organisation": input_data.organisation_name,
@@ -824,21 +785,21 @@ class BenchmarkReportingEngine:
                 size_bytes=len(content.encode("utf-8")), success=True,
             )
 
-        if fmt == ExportFormat.MARKDOWN:
+        if fmt == ReportFormat.MARKDOWN:
             content = self._to_markdown(input_data, exec_summary, league)
             return ExportResult(
                 format=fmt.value, content=content,
                 size_bytes=len(content.encode("utf-8")), success=True,
             )
 
-        if fmt == ExportFormat.CSV:
+        if fmt == ReportFormat.CSV:
             content = self._to_csv(league)
             return ExportResult(
                 format=fmt.value, content=content,
                 size_bytes=len(content.encode("utf-8")), success=True,
             )
 
-        if fmt == ExportFormat.HTML:
+        if fmt == ReportFormat.HTML:
             content = self._to_html(input_data, exec_summary, league)
             return ExportResult(
                 format=fmt.value, content=content,
@@ -852,10 +813,10 @@ class BenchmarkReportingEngine:
         )
 
     def _export_package(
-        self, fmt: ExportFormat, report: ReportPackage,
+        self, fmt: ReportFormat, report: ReportPackage,
     ) -> ExportResult:
         """Export a full report package."""
-        if fmt == ExportFormat.JSON:
+        if fmt == ReportFormat.JSON:
             content = json.dumps(report.model_dump(mode="json"), default=str, indent=2)
             return ExportResult(
                 format=fmt.value, content=content,
@@ -972,14 +933,13 @@ class BenchmarkReportingEngine:
     def get_version(self) -> str:
         return self._version
 
-
 # ---------------------------------------------------------------------------
 # __all__
 # ---------------------------------------------------------------------------
 
 __all__ = [
     # Enums
-    "ExportFormat",
+    "ReportFormat",
     "ReportSectionType",
     "SortField",
     "Framework",

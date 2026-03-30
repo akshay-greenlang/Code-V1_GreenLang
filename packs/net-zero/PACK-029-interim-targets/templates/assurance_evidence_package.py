@@ -34,6 +34,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "29.0.0"
@@ -84,10 +86,6 @@ XBRL_TAGS: Dict[str, str] = {
     "evidence_tier_avg": "gl:EvidenceTierAverage",
 }
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 
@@ -126,7 +124,6 @@ def _dec_comma(val: Any, places: int = 2) -> str:
     except Exception:
         return str(val)
 
-
 class AssuranceEvidencePackageTemplate:
     """
     Assurance evidence package template for PACK-029 Interim Targets Pack.
@@ -152,7 +149,7 @@ class AssuranceEvidencePackageTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render assurance evidence package as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [
             self._md_header(data), self._md_executive_summary(data),
             self._md_workpaper(data), self._md_evidence_hierarchy(data),
@@ -168,7 +165,7 @@ class AssuranceEvidencePackageTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render assurance evidence package as HTML."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         parts = [
             self._html_header(data), self._html_executive_summary(data),
@@ -190,7 +187,7 @@ class AssuranceEvidencePackageTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render as structured JSON."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         checklist_results = data.get("checklist_results", {})
         passed = sum(1 for v in checklist_results.values() if v.get("status") == "pass")
         total = len(ASSURANCE_CHECKLIST)

@@ -46,25 +46,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -84,7 +78,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -94,17 +87,14 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _round_tco2e(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to specified places and return float."""
     rounded = value.quantize(Decimal(10) ** -places, rounding=ROUND_HALF_UP)
     return float(rounded)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CBAMGoodsCategory(str, Enum):
     """CBAM Annex I goods categories."""
@@ -116,14 +106,12 @@ class CBAMGoodsCategory(str, Enum):
     ELECTRICITY = "electricity"
     HYDROGEN = "hydrogen"
 
-
 class CalculationMethod(str, Enum):
     """Emission calculation methodology."""
 
     ACTUAL = "actual"
     DEFAULT = "default"
     COUNTRY_DEFAULT = "country_default"
-
 
 # ---------------------------------------------------------------------------
 # EU Default Emission Factors
@@ -246,7 +234,6 @@ DEFAULT_EMISSION_FACTORS: Dict[str, Dict[str, Dict[str, float]]] = {
     },
 }
 
-
 # Country-specific grid emission factors (tCO2/MWh) for electricity
 # and indirect emission calculations
 COUNTRY_GRID_FACTORS: Dict[str, float] = {
@@ -302,7 +289,6 @@ COUNTRY_GRID_FACTORS: Dict[str, float] = {
     "_WORLD_AVERAGE": 0.440,
     "_DEFAULT": 0.440,
 }
-
 
 # Valid CBAM Annex I CN code prefixes
 VALID_CN_PREFIXES: Dict[str, CBAMGoodsCategory] = {
@@ -367,11 +353,9 @@ VALID_CN_PREFIXES: Dict[str, CBAMGoodsCategory] = {
     "2804": CBAMGoodsCategory.HYDROGEN,
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class PrecursorInput(BaseModel):
     """Upstream precursor material for embedded emission calculation.
@@ -400,7 +384,6 @@ class PrecursorInput(BaseModel):
         None, min_length=2, max_length=2,
         description="ISO 3166-1 alpha-2 country code",
     )
-
 
 class EmissionInput(BaseModel):
     """Input data for a single CBAM embedded emission calculation.
@@ -475,7 +458,6 @@ class EmissionInput(BaseModel):
         """Ensure country code is uppercase."""
         return v.strip().upper()
 
-
 class EmissionResult(BaseModel):
     """Output of an embedded emission calculation.
 
@@ -530,18 +512,16 @@ class EmissionResult(BaseModel):
         None, description="Supplier identifier",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of calculation",
     )
     provenance_hash: str = Field(
         ..., description="SHA-256 hash of inputs + outputs for audit trail",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class CBAMCalculationEngine:
     """Embedded emissions calculation engine for all six CBAM goods categories.
@@ -619,7 +599,7 @@ class CBAMCalculationEngine:
         Raises:
             ValueError: If CN code is invalid or emission factors are negative.
         """
-        start = _utcnow()
+        start = utcnow()
         input_ref = _new_uuid()
         self._calculation_count += 1
 

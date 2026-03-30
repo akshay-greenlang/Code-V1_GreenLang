@@ -36,7 +36,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.schemas import (
     GreenLangBase,
@@ -48,14 +48,11 @@ from greenlang.schemas import (
     new_uuid,
     prefixed_uuid,
 )
-
+from greenlang.schemas.enums import CalculationStatus, ControlApproach, RegulatoryFramework, ReportingPeriod
 
 # ---------------------------------------------------------------------------
 # Helper (local alias for backward compatibility)
 # ---------------------------------------------------------------------------
-
-_utcnow = utcnow
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -86,11 +83,9 @@ GWP_VALUES: Dict[str, Dict[str, float]] = {
     "AR6": {"CO2": 1.0, "CH4": 27.3, "N2O": 273.0},
 }
 
-
 # =============================================================================
 # Enumerations (13)
 # =============================================================================
-
 
 class FuelCategory(str, Enum):
     """Broad classification of combustion fuels by physical phase.
@@ -110,7 +105,6 @@ class FuelCategory(str, Enum):
     LIQUID = "liquid"
     SOLID = "solid"
     BIOMASS = "biomass"
-
 
 class FuelType(str, Enum):
     """Specific fuel type identifiers for stationary combustion sources.
@@ -149,7 +143,6 @@ class FuelType(str, Enum):
     WASTE_OIL = "waste_oil"
     MSW = "msw"
 
-
 class EmissionGas(str, Enum):
     """Greenhouse gases tracked in stationary combustion calculations.
 
@@ -162,7 +155,6 @@ class EmissionGas(str, Enum):
     CH4 = "CH4"
     N2O = "N2O"
 
-
 class GWPSource(str, Enum):
     """IPCC Assessment Report edition used for GWP conversion factors.
 
@@ -174,7 +166,6 @@ class GWPSource(str, Enum):
     AR4 = "AR4"
     AR5 = "AR5"
     AR6 = "AR6"
-
 
 class EFSource(str, Enum):
     """Source authority for emission factor values.
@@ -192,7 +183,6 @@ class EFSource(str, Enum):
     EU_ETS = "EU_ETS"
     CUSTOM = "CUSTOM"
 
-
 class CalculationTier(str, Enum):
     """GHG Protocol / IPCC calculation methodology tier level.
 
@@ -208,7 +198,6 @@ class CalculationTier(str, Enum):
     TIER_1 = "TIER_1"
     TIER_2 = "TIER_2"
     TIER_3 = "TIER_3"
-
 
 class EquipmentType(str, Enum):
     """Classification of stationary combustion equipment.
@@ -232,7 +221,6 @@ class EquipmentType(str, Enum):
     INCINERATOR = "incinerator"
     THERMAL_OXIDIZER = "thermal_oxidizer"
 
-
 class HeatingValueBasis(str, Enum):
     """Basis for fuel heating value used in energy content calculations.
 
@@ -245,71 +233,6 @@ class HeatingValueBasis(str, Enum):
 
     HHV = "HHV"
     NCV = "NCV"
-
-
-class ControlApproach(str, Enum):
-    """Organizational boundary approach for emission ownership.
-
-    OPERATIONAL: Organization reports 100% of emissions from operations
-        over which it has operational control.
-    FINANCIAL: Organization reports 100% of emissions from operations
-        over which it has financial control.
-    EQUITY_SHARE: Organization reports emissions proportional to its
-        equity share in each operation.
-    """
-
-    OPERATIONAL = "operational"
-    FINANCIAL = "financial"
-    EQUITY_SHARE = "equity_share"
-
-
-class CalculationStatus(str, Enum):
-    """Status of a combustion emission calculation.
-
-    PENDING: Calculation queued but not yet started.
-    RUNNING: Calculation in progress.
-    COMPLETED: Calculation finished successfully.
-    FAILED: Calculation terminated with an error.
-    """
-
-    PENDING = "pending"
-    RUNNING = "running"
-    COMPLETED = "completed"
-    FAILED = "failed"
-
-
-class ReportingPeriod(str, Enum):
-    """Temporal granularity for emission reporting aggregation.
-
-    MONTHLY: Calendar month aggregation.
-    QUARTERLY: Calendar quarter (Q1-Q4) aggregation.
-    ANNUAL: Full calendar or fiscal year aggregation.
-    """
-
-    MONTHLY = "monthly"
-    QUARTERLY = "quarterly"
-    ANNUAL = "annual"
-
-
-class RegulatoryFramework(str, Enum):
-    """Regulatory framework governing calculation methodology and reporting.
-
-    GHG_PROTOCOL: WRI/WBCSD Corporate GHG Protocol.
-    ISO_14064: ISO 14064-1 Organizational Level GHG Quantification.
-    CSRD_ESRS_E1: EU Corporate Sustainability Reporting Directive,
-        European Sustainability Reporting Standard E1 (Climate Change).
-    EPA_40CFR98: US EPA Mandatory Greenhouse Gas Reporting Rule.
-    UK_SECR: UK Streamlined Energy and Carbon Reporting.
-    EU_ETS: European Union Emissions Trading System.
-    """
-
-    GHG_PROTOCOL = "ghg_protocol"
-    ISO_14064 = "iso_14064"
-    CSRD_ESRS_E1 = "csrd_esrs_e1"
-    EPA_40CFR98 = "epa_40cfr98"
-    UK_SECR = "uk_secr"
-    EU_ETS = "eu_ets"
-
 
 class UnitType(str, Enum):
     """Physical units for fuel quantity measurement and energy content.
@@ -340,13 +263,11 @@ class UnitType(str, Enum):
     MCF = "mcf"
     SCF = "scf"
 
-
 # =============================================================================
 # Data Models (12)
 # =============================================================================
 
-
-class EmissionFactor(BaseModel):
+class EmissionFactor(GreenLangBase):
     """A single emission factor record for a specific fuel-gas combination.
 
     Emission factors define the mass of GHG released per unit of fuel
@@ -436,8 +357,7 @@ class EmissionFactor(BaseModel):
                 )
         return v
 
-
-class FuelProperties(BaseModel):
+class FuelProperties(GreenLangBase):
     """Physical and chemical properties of a fuel type.
 
     Defines the heating values, density, carbon content, and oxidation
@@ -514,8 +434,7 @@ class FuelProperties(BaseModel):
         description="IPCC 2006 GL fuel code for cross-reference",
     )
 
-
-class EquipmentProfile(BaseModel):
+class EquipmentProfile(GreenLangBase):
     """Operational profile for a stationary combustion equipment unit.
 
     Equipment profiles enable Tier 2/3 calculations by incorporating
@@ -612,8 +531,7 @@ class EquipmentProfile(BaseModel):
             return normalised
         return v
 
-
-class CombustionInput(BaseModel):
+class CombustionInput(GreenLangBase):
     """Input data for a single stationary combustion emission calculation.
 
     Represents one fuel consumption record for a specific time period,
@@ -716,8 +634,7 @@ class CombustionInput(BaseModel):
             )
         return v
 
-
-class GasEmission(BaseModel):
+class GasEmission(GreenLangBase):
     """Emission result for a single greenhouse gas from a combustion event.
 
     Captures the calculated emissions in both native mass units and
@@ -769,7 +686,6 @@ class GasEmission(BaseModel):
         gt=0,
         description="GWP multiplier applied for CO2e conversion",
     )
-
 
 class CalculationResult(GreenLangBase, ProvenanceMixin):
     """Complete result of a single stationary combustion emission calculation.
@@ -887,7 +803,7 @@ class CalculationResult(GreenLangBase, ProvenanceMixin):
         description="Ordered list of human-readable calculation steps",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the calculation was performed",
     )
     facility_id: Optional[str] = Field(
@@ -906,7 +822,6 @@ class CalculationResult(GreenLangBase, ProvenanceMixin):
         default=None,
         description="End of the consumption reporting period",
     )
-
 
 class BatchCalculationRequest(GreenLangRequest):
     """Request model for batch stationary combustion calculations.
@@ -952,7 +867,6 @@ class BatchCalculationRequest(GreenLangRequest):
         default=None,
         description="Temporal granularity for the batch",
     )
-
 
 class BatchCalculationResponse(GreenLangBase, ProvenanceMixin):
     """Response model for a batch stationary combustion calculation.
@@ -1035,8 +949,7 @@ class BatchCalculationResponse(GreenLangBase, ProvenanceMixin):
         description="GWP source used for this batch",
     )
 
-
-class UncertaintyResult(BaseModel):
+class UncertaintyResult(GreenLangBase):
     """Monte Carlo uncertainty quantification result for an emission calculation.
 
     Provides statistical characterization of emission estimate uncertainty
@@ -1098,8 +1011,7 @@ class UncertaintyResult(BaseModel):
         description="Parameter contribution to total variance (name -> fraction)",
     )
 
-
-class FacilityAggregation(BaseModel):
+class FacilityAggregation(GreenLangBase):
     """Facility-level emission aggregation across all combustion sources.
 
     Rolls up individual calculation results into a facility total
@@ -1207,8 +1119,7 @@ class FacilityAggregation(BaseModel):
             )
         return v
 
-
-class AuditEntry(BaseModel):
+class AuditEntry(GreenLangBase):
     """A single step in the calculation audit trail.
 
     Records the input, output, and methodology reference for one
@@ -1267,7 +1178,7 @@ class AuditEntry(BaseModel):
         description="Regulatory or methodological citation for this step",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when this step was executed",
     )
     provenance_hash: str = Field(
@@ -1275,8 +1186,7 @@ class AuditEntry(BaseModel):
         description="SHA-256 hash for this audit entry",
     )
 
-
-class ComplianceMapping(BaseModel):
+class ComplianceMapping(GreenLangBase):
     """Mapping of a regulatory requirement to how the agent satisfies it.
 
     Tracks how the Stationary Combustion Agent meets specific
@@ -1336,7 +1246,6 @@ class ComplianceMapping(BaseModel):
                 f"got '{v}'"
             )
         return normalised
-
 
 # ---------------------------------------------------------------------------
 # Public API

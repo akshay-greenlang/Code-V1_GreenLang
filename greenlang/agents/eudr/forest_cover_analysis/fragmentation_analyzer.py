@@ -67,6 +67,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Set, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -78,12 +80,6 @@ _MODULE_VERSION = "1.0.0"
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance.
@@ -103,7 +99,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str = "frag") -> str:
     """Generate a unique identifier with a given prefix.
 
@@ -114,7 +109,6 @@ def _generate_id(prefix: str = "frag") -> str:
         ID in format ``{prefix}-{hex12}``.
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -182,11 +176,9 @@ FRAGMENTATION_RISK_SCORES: Dict[str, float] = {
     "SEVERELY_FRAGMENTED": 0.95,
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class PatchInfo:
@@ -233,7 +225,6 @@ class PatchInfo:
             "core_pixel_count": self.core_pixel_count,
             "par": round(self.par, 6),
         }
-
 
 @dataclass
 class FragmentationMetrics:
@@ -323,7 +314,6 @@ class FragmentationMetrics:
             "created_at": self.created_at,
         }
 
-
 @dataclass
 class FragmentationComparison:
     """Comparison of fragmentation between two time periods.
@@ -373,11 +363,9 @@ class FragmentationComparison:
             "trend": self.trend,
         }
 
-
 # ---------------------------------------------------------------------------
 # FragmentationAnalyzer
 # ---------------------------------------------------------------------------
-
 
 class FragmentationAnalyzer:
     """Landscape-level forest fragmentation analysis engine.
@@ -985,7 +973,7 @@ class FragmentationAnalyzer:
             fragmentation_level=frag_level,
             deforestation_risk_score=risk_score,
             processing_time_ms=round(elapsed_ms, 2),
-            created_at=str(_utcnow()),
+            created_at=str(utcnow()),
         )
         result.provenance_hash = _compute_hash(result.to_dict())
 
@@ -1397,7 +1385,6 @@ class FragmentationAnalyzer:
                     f"Forest mask row {i} has {len(row)} columns, "
                     f"expected {n_cols}"
                 )
-
 
 # ---------------------------------------------------------------------------
 # Module Exports

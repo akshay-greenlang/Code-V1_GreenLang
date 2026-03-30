@@ -43,18 +43,14 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -66,11 +62,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class GHGSpecies(str, Enum):
     """Greenhouse gas species with GWP values."""
@@ -101,7 +95,6 @@ class GHGSpecies(str, Enum):
     R407C = "r407c"
     R404A = "r404a"
 
-
 class SSPScenario(str, Enum):
     """IPCC Shared Socioeconomic Pathways."""
     SSP1_19 = "ssp1_1.9"   # 1.5C with no/limited overshoot
@@ -109,7 +102,6 @@ class SSPScenario(str, Enum):
     SSP2_45 = "ssp2_4.5"   # Intermediate
     SSP3_70 = "ssp3_7.0"   # High emissions
     SSP5_85 = "ssp5_8.5"   # Very high emissions
-
 
 class IPCCSector(str, Enum):
     """IPCC emission factor sectors (2006 Guidelines)."""
@@ -119,7 +111,6 @@ class IPCCSector(str, Enum):
     AGRICULTURE = "agriculture"
     LULUCF = "lulucf"
     WASTE = "waste"
-
 
 class FuelType(str, Enum):
     """Fuel types for emission factor lookups."""
@@ -143,7 +134,6 @@ class FuelType(str, Enum):
     COKE_OVEN_GAS = "coke_oven_gas"
     BLAST_FURNACE_GAS = "blast_furnace_gas"
     NAPHTHA = "naphtha"
-
 
 # ---------------------------------------------------------------------------
 # IPCC AR6 GWP-100 Values (Table 7.15, AR6 WGI)
@@ -281,11 +271,9 @@ SSP_EMISSION_PATHWAYS: Dict[str, Dict[int, float]] = {
     "ssp5_8.5": {2020: 40.0, 2025: 45.0, 2030: 52.0, 2035: 58.0, 2040: 65.0, 2045: 72.0, 2050: 80.0},
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class IPCCAR6BridgeConfig(BaseModel):
     """Configuration for the IPCC AR6 bridge."""
@@ -297,7 +285,6 @@ class IPCCAR6BridgeConfig(BaseModel):
     enable_provenance: bool = Field(default=True)
     include_ar5_comparison: bool = Field(default=False)
 
-
 class GWPLookupResult(BaseModel):
     """Result of a GWP value lookup."""
     species: str = Field(default="")
@@ -307,7 +294,6 @@ class GWPLookupResult(BaseModel):
     category: str = Field(default="")
     assessment: str = Field(default="AR6")
     provenance_hash: str = Field(default="")
-
 
 class EmissionFactorResult(BaseModel):
     """Result of an emission factor lookup."""
@@ -320,7 +306,6 @@ class EmissionFactorResult(BaseModel):
     co2e_factor_kg_per_tj: float = Field(default=0.0)
     source: str = Field(default="IPCC 2006/2019")
     provenance_hash: str = Field(default="")
-
 
 class CarbonBudgetResult(BaseModel):
     """Result of carbon budget alignment calculation."""
@@ -336,7 +321,6 @@ class CarbonBudgetResult(BaseModel):
     on_budget: bool = Field(default=False)
     provenance_hash: str = Field(default="")
 
-
 class GHGConversionResult(BaseModel):
     """Result of GHG unit conversion."""
     input_species: str = Field(default="")
@@ -345,7 +329,6 @@ class GHGConversionResult(BaseModel):
     co2e_kg: float = Field(default=0.0)
     co2e_tonnes: float = Field(default=0.0)
     assessment: str = Field(default="AR6")
-
 
 class SSPAlignmentResult(BaseModel):
     """Result of SSP scenario alignment check."""
@@ -358,11 +341,9 @@ class SSPAlignmentResult(BaseModel):
     pathway_data: List[Dict[str, float]] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # IPCCAR6Bridge
 # ---------------------------------------------------------------------------
-
 
 class IPCCAR6Bridge:
     """IPCC AR6 pathway and emission factor integration for PACK-028.

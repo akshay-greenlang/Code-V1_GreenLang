@@ -54,21 +54,13 @@ logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -81,7 +73,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -91,12 +82,10 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _round_val(value: Decimal, places: int = 4) -> float:
     """Round a Decimal to specified places and return float."""
     rounded = value.quantize(Decimal(10) ** -places, rounding=ROUND_HALF_UP)
     return float(rounded)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -114,11 +103,9 @@ ALERT_THRESHOLDS: Dict[str, Tuple[float, float]] = {
     "EXCEEDED": (100.0, float("inf")),
 }
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SectorGroup(str, Enum):
     """CBAM sector groups for de minimis threshold tracking.
@@ -134,7 +121,6 @@ class SectorGroup(str, Enum):
     ELECTRICITY = "electricity"
     HYDROGEN = "hydrogen"
 
-
 class AlertLevel(str, Enum):
     """Alert level for threshold utilization."""
 
@@ -144,11 +130,9 @@ class AlertLevel(str, Enum):
     CRITICAL = "CRITICAL"
     EXCEEDED = "EXCEEDED"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class ThresholdStatus(BaseModel):
     """Status of a single sector group against the de minimis threshold.
@@ -192,7 +176,6 @@ class ThresholdStatus(BaseModel):
         0, ge=0, description="Number of imports tracked",
     )
 
-
 class DeMinimisAssessment(BaseModel):
     """Annual de minimis assessment across all sector groups.
 
@@ -224,13 +207,12 @@ class DeMinimisAssessment(BaseModel):
         ..., description="True if ALL sector groups are below threshold",
     )
     assessment_date: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of assessment",
     )
     provenance_hash: str = Field(
         "", description="SHA-256 hash for audit trail",
     )
-
 
 class ImportRecord(BaseModel):
     """Internal record of a tracked import for de minimis accounting."""
@@ -258,15 +240,13 @@ class ImportRecord(BaseModel):
         description="Country of origin",
     )
     recorded_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the import was recorded",
     )
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class DeMinimisEngine:
     """De minimis threshold tracking engine for CBAM compliance.
@@ -341,13 +321,13 @@ class DeMinimisEngine:
         if quantity_tonnes <= 0:
             raise ValueError(f"Import quantity must be > 0, got {quantity_tonnes}")
 
-        target_year = year or _utcnow().year
+        target_year = year or utcnow().year
         qty = _decimal(quantity_tonnes)
 
         # Update cumulative total
         self._cumulative[target_year][sector_group] += qty
         self._counts[target_year][sector_group] += 1
-        self._last_import[target_year][sector_group] = _utcnow()
+        self._last_import[target_year][sector_group] = utcnow()
 
         # Store record
         record = ImportRecord(
@@ -388,7 +368,7 @@ class DeMinimisEngine:
         Returns:
             Cumulative tonnes imported year-to-date.
         """
-        target_year = year or _utcnow().year
+        target_year = year or utcnow().year
         return _round_val(self._cumulative[target_year][sector_group], 4)
 
     def assess_threshold(
@@ -405,7 +385,7 @@ class DeMinimisEngine:
         Returns:
             Current ThresholdStatus.
         """
-        target_year = year or _utcnow().year
+        target_year = year or utcnow().year
         return self._build_status(sector_group, target_year)
 
     def run_annual_assessment(
@@ -423,7 +403,7 @@ class DeMinimisEngine:
         Returns:
             DeMinimisAssessment with per-sector statuses.
         """
-        target_year = year or _utcnow().year
+        target_year = year or utcnow().year
 
         statuses: List[ThresholdStatus] = []
         for sector in SectorGroup:
@@ -472,7 +452,7 @@ class DeMinimisEngine:
         Returns:
             Projected annual volume in tonnes.
         """
-        now = _utcnow()
+        now = utcnow()
         current_year = now.year
 
         if historical_data:
@@ -514,7 +494,7 @@ class DeMinimisEngine:
         Returns:
             True if exempt (below threshold), False if obligations apply.
         """
-        target_year = year or _utcnow().year
+        target_year = year or utcnow().year
         cumulative = self._cumulative[target_year][sector_group]
         threshold = _decimal(DE_MINIMIS_THRESHOLD_TONNES)
         return cumulative < threshold
@@ -558,7 +538,7 @@ class DeMinimisEngine:
         Returns:
             List of ImportRecord sorted by date.
         """
-        target_year = year or _utcnow().year
+        target_year = year or utcnow().year
         records = self._records[target_year][sector_group]
         return sorted(records, key=lambda r: r.recorded_at)
 
@@ -571,6 +551,8 @@ class DeMinimisEngine:
 
         Used for corrections or re-initialization. Clears cumulative totals,
         import counts, and records.
+
+from greenlang.schemas import utcnow
 
         Args:
             year: Calendar year to reset.

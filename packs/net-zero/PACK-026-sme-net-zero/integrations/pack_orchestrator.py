@@ -67,27 +67,22 @@ from typing import Any, Callable, Coroutine, Dict, List, Optional, Set
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ExecutionStatus
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
 ProgressCallback = Callable[[str, float, str], Coroutine[Any, Any, None]]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for provenance tracking.
@@ -106,7 +101,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # SME-Friendly Error Messages
@@ -158,7 +152,6 @@ SME_ERROR_MESSAGES: Dict[str, str] = {
     ),
 }
 
-
 def _sme_error_message(error_key: str, fallback: str = "") -> str:
     """Get an SME-friendly error message.
 
@@ -171,11 +164,9 @@ def _sme_error_message(error_key: str, fallback: str = "") -> str:
     """
     return SME_ERROR_MESSAGES.get(error_key, fallback or SME_ERROR_MESSAGES["unknown_error"])
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SMEPipelinePhase(str, Enum):
     """The 6 phases of the SME net-zero pipeline."""
@@ -187,24 +178,11 @@ class SMEPipelinePhase(str, Enum):
     GRANT_SEARCH = "grant_search"
     REPORTING = "reporting"
 
-
-class ExecutionStatus(str, Enum):
-    """Pipeline execution lifecycle status."""
-
-    PENDING = "pending"
-    RUNNING = "running"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    CANCELLED = "cancelled"
-    SKIPPED = "skipped"
-
-
 class SMEPathType(str, Enum):
     """SME pipeline path selection."""
 
     SIMPLIFIED = "simplified"
     STANDARD = "standard"
-
 
 class DataQualityTier(str, Enum):
     """Data quality tiers for SME classification."""
@@ -213,11 +191,9 @@ class DataQualityTier(str, Enum):
     SILVER = "silver"
     GOLD = "gold"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class RetryConfig(BaseModel):
     """Retry configuration with exponential backoff and jitter."""
@@ -228,7 +204,6 @@ class RetryConfig(BaseModel):
     jitter_factor: float = Field(
         default=0.5, ge=0.0, le=1.0, description="Jitter multiplier"
     )
-
 
 class SMEOrchestratorConfig(BaseModel):
     """Configuration for the SME Net Zero Pipeline Orchestrator."""
@@ -262,7 +237,6 @@ class SMEOrchestratorConfig(BaseModel):
         default_factory=lambda: [1, 6, 7],
     )
 
-
 class PhaseProvenance(BaseModel):
     """Provenance tracking for a single phase execution."""
 
@@ -271,8 +245,7 @@ class PhaseProvenance(BaseModel):
     output_hash: str = Field(default="")
     duration_ms: float = Field(default=0.0)
     attempt: int = Field(default=1)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class PhaseResult(BaseModel):
     """Result of a single phase execution."""
@@ -289,7 +262,6 @@ class PhaseResult(BaseModel):
     outputs: Dict[str, Any] = Field(default_factory=dict)
     provenance: Optional[PhaseProvenance] = Field(None)
     retry_count: int = Field(default=0)
-
 
 class PipelineResult(BaseModel):
     """Complete result of the SME net-zero pipeline execution."""
@@ -315,7 +287,6 @@ class PipelineResult(BaseModel):
     quick_wins_identified: int = Field(default=0)
     provenance_hash: str = Field(default="")
 
-
 class PhaseProgress(BaseModel):
     """Real-time progress tracking for a pipeline execution."""
 
@@ -326,8 +297,7 @@ class PhaseProgress(BaseModel):
     progress_pct: float = Field(default=0.0)
     message: str = Field(default="")
     estimated_remaining_seconds: float = Field(default=0.0)
-    updated_at: datetime = Field(default_factory=_utcnow)
-
+    updated_at: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # DAG Dependency Map
@@ -372,11 +342,9 @@ PHASE_ESTIMATED_DURATIONS_MS: Dict[SMEPipelinePhase, float] = {
     SMEPipelinePhase.REPORTING: 12000.0,
 }
 
-
 # ---------------------------------------------------------------------------
 # SMENetZeroPipelineOrchestrator
 # ---------------------------------------------------------------------------
-
 
 class SMENetZeroPipelineOrchestrator:
     """6-phase net-zero pipeline orchestrator for SMEs (PACK-026).
@@ -484,7 +452,7 @@ class SMENetZeroPipelineOrchestrator:
             path_type=self.config.path_type,
             data_quality_tier=self.config.data_quality_tier,
             status=ExecutionStatus.RUNNING,
-            started_at=_utcnow(),
+            started_at=utcnow(),
         )
         self._results[result.execution_id] = result
 
@@ -537,8 +505,8 @@ class SMENetZeroPipelineOrchestrator:
                     phase_result = PhaseResult(
                         phase=phase,
                         status=ExecutionStatus.SKIPPED,
-                        started_at=_utcnow(),
-                        completed_at=_utcnow(),
+                        started_at=utcnow(),
+                        completed_at=utcnow(),
                     )
                     result.phase_results[phase.value] = phase_result
                     result.phases_skipped.append(phase.value)
@@ -580,7 +548,7 @@ class SMENetZeroPipelineOrchestrator:
                         for p in phases[phase_idx:]
                     )
                     progress.estimated_remaining_seconds = remaining_ms / 1000.0
-                    progress.updated_at = _utcnow()
+                    progress.updated_at = utcnow()
 
                 if self._progress_callback:
                     await self._progress_callback(
@@ -621,7 +589,7 @@ class SMENetZeroPipelineOrchestrator:
             result.sme_error_summary.append(_sme_error_message("unknown_error"))
 
         finally:
-            result.completed_at = _utcnow()
+            result.completed_at = utcnow()
             result.total_duration_ms = (time.monotonic() - start_time) * 1000
             result.quality_score = self._compute_quality_score(result)
 
@@ -688,7 +656,7 @@ class SMENetZeroPipelineOrchestrator:
             "cancelled": True,
             "reason": "Cancellation signal sent",
             "message": "Your process is being cancelled. Progress has been saved.",
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     # -------------------------------------------------------------------------
@@ -883,8 +851,8 @@ class SMENetZeroPipelineOrchestrator:
         return PhaseResult(
             phase=phase,
             status=ExecutionStatus.FAILED,
-            started_at=_utcnow(),
-            completed_at=_utcnow(),
+            started_at=utcnow(),
+            completed_at=utcnow(),
             errors=[last_error or "Unknown error"],
             sme_error_messages=[_sme_error_message(error_key, last_error or "")],
             retry_count=retry_config.max_retries,
@@ -929,7 +897,7 @@ class SMENetZeroPipelineOrchestrator:
             PhaseResult with execution details.
         """
         start_time = time.monotonic()
-        phase_start = _utcnow()
+        phase_start = utcnow()
 
         self.logger.info("Executing phase '%s' (attempt %d)", phase.value, attempt + 1)
 
@@ -971,7 +939,7 @@ class SMENetZeroPipelineOrchestrator:
             phase=phase,
             status=ExecutionStatus.COMPLETED,
             started_at=phase_start,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             duration_ms=elapsed_ms,
             records_processed=records,
             outputs=outputs,
@@ -1263,7 +1231,7 @@ class SMENetZeroPipelineOrchestrator:
             "grants_matched": len(matched),
             "grants": matched,
             "region": region,
-            "search_timestamp": _utcnow().isoformat(),
+            "search_timestamp": utcnow().isoformat(),
             "next_sync_date": "monthly",
         }
 

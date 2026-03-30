@@ -13,9 +13,11 @@ from typing import Any, Dict, List
 import pytest
 
 import sys, os
+from greenlang.schemas import utcnow
 sys.path.insert(0, os.path.dirname(__file__))
 
 from conftest import (
+
     StubCBAMApp,
     StubCustoms,
     StubETSFeed,
@@ -64,7 +66,7 @@ class TestPackOrchestrator:
             "workflow_id": "quarterly_reporting",
             "completed_phases": ["data_collection", "emission_calculation"],
             "next_phase": "report_assembly",
-            "saved_at": _utcnow().isoformat(),
+            "saved_at": utcnow().isoformat(),
         }
         assert checkpoint["next_phase"] == "report_assembly"
         assert len(checkpoint["completed_phases"]) == 2
@@ -265,7 +267,7 @@ class TestHealthCheck:
             "checks_total": 7,
             "checks_passed": 7,
             "checks_failed": 0,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
         assert health["status"] == "healthy"
         assert health["checks_failed"] == 0

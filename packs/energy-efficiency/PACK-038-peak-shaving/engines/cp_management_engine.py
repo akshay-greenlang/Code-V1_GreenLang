@@ -76,25 +76,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -112,7 +106,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -121,7 +114,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -133,22 +125,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CPMethodology(str, Enum):
     """ISO/RTO coincident peak methodology.
@@ -171,7 +159,6 @@ class CPMethodology(str, Enum):
     UK_TRIAD = "uk_triad"
     GENERIC = "generic"
 
-
 class CPStatus(str, Enum):
     """Coincident peak event tracking status.
 
@@ -186,7 +173,6 @@ class CPStatus(str, Enum):
     ACTIVE = "active"
     CONFIRMED = "confirmed"
     CLEARED = "cleared"
-
 
 class ResponseAction(str, Enum):
     """CP response action type.
@@ -203,7 +189,6 @@ class ResponseAction(str, Enum):
     SHIFT = "shift"
     COMBINED = "combined"
 
-
 class PredictionConfidence(str, Enum):
     """CP prediction confidence level.
 
@@ -217,7 +202,6 @@ class PredictionConfidence(str, Enum):
     HIGH = "high"
     VERY_HIGH = "very_high"
 
-
 class AlertLevel(str, Enum):
     """CP alert severity level.
 
@@ -228,7 +212,6 @@ class AlertLevel(str, Enum):
     WATCH = "watch"
     WARNING = "warning"
     EMERGENCY = "emergency"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- ISO/RTO CP Parameters
@@ -367,11 +350,9 @@ CONFIDENCE_THRESHOLDS: Dict[str, Decimal] = {
     PredictionConfidence.VERY_HIGH.value: Decimal("1.00"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class CPEvent(BaseModel):
     """Coincident peak event record.
@@ -398,7 +379,7 @@ class CPEvent(BaseModel):
         default=CPMethodology.PJM_5CP, description="CP methodology"
     )
     event_date: datetime = Field(
-        default_factory=_utcnow, description="Event date/time"
+        default_factory=utcnow, description="Event date/time"
     )
     system_peak_mw: Decimal = Field(
         default=Decimal("0"), ge=0, description="System peak demand (MW)"
@@ -443,7 +424,6 @@ class CPEvent(BaseModel):
                 )
         return v
 
-
 class CPPrediction(BaseModel):
     """CP event prediction inputs.
 
@@ -467,7 +447,7 @@ class CPPrediction(BaseModel):
         default=CPMethodology.PJM_5CP, description="CP methodology"
     )
     prediction_date: datetime = Field(
-        default_factory=_utcnow, description="Date being predicted"
+        default_factory=utcnow, description="Date being predicted"
     )
     temperature_f: Decimal = Field(
         default=Decimal("85"), description="Forecast temperature (F)"
@@ -505,11 +485,9 @@ class CPPrediction(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class CPResponse(BaseModel):
     """CP response plan.
@@ -559,10 +537,9 @@ class CPResponse(BaseModel):
     )
     notes: str = Field(default="", max_length=2000, description="Notes")
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class CPCharge(BaseModel):
     """CP transmission charge calculation.
@@ -624,10 +601,9 @@ class CPCharge(BaseModel):
         default=Decimal("0"), description="Savings (%)"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class CPManagementResult(BaseModel):
     """Comprehensive CP management analysis result.
@@ -702,18 +678,16 @@ class CPManagementResult(BaseModel):
         default=2026, description="Season year"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     processing_time_ms: float = Field(
         default=0.0, description="Processing time (ms)"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class CPManagementEngine:
     """Coincident Peak management engine for transmission charge optimisation.
@@ -1162,7 +1136,7 @@ class CPManagementEngine:
             empty_result: Dict[str, Any] = {
                 "total_events": 0,
                 "performance_summary": "No events to evaluate",
-                "calculated_at": _utcnow().isoformat(),
+                "calculated_at": utcnow().isoformat(),
             }
             empty_result["provenance_hash"] = _compute_hash(empty_result)
             return empty_result
@@ -1253,7 +1227,7 @@ class CPManagementEngine:
             "estimated_annual_savings_usd": str(_round_val(estimated_annual_savings, 2)),
             "methodology": methodology.value,
             "event_details": event_results,
-            "calculated_at": _utcnow().isoformat(),
+            "calculated_at": utcnow().isoformat(),
             "processing_time_ms": round(elapsed, 2),
         }
         result["provenance_hash"] = _compute_hash(result)
@@ -1304,7 +1278,7 @@ class CPManagementEngine:
 
         year_forecasts: List[Dict[str, Any]] = []
         cumulative_savings = Decimal("0")
-        base_year = _utcnow().year
+        base_year = utcnow().year
 
         for yr in range(years):
             year_num = yr + 1
@@ -1377,7 +1351,7 @@ class CPManagementEngine:
             "savings_pct": str(_round_val(
                 _safe_pct(cumulative_savings, total_without), 2
             )),
-            "calculated_at": _utcnow().isoformat(),
+            "calculated_at": utcnow().isoformat(),
             "processing_time_ms": round(elapsed, 2),
         }
         result["provenance_hash"] = _compute_hash(result)

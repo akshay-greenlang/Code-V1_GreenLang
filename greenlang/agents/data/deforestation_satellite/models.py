@@ -44,28 +44,22 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import ConfigDict, Field
 
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import AlertSeverity
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_id(prefix: str) -> str:
     """Generate a short prefixed unique identifier."""
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
 
-
 # =============================================================================
 # Enumerations
 # =============================================================================
-
 
 class SatelliteSource(str, Enum):
     """Satellite data sources supported for image acquisition.
@@ -80,7 +74,6 @@ class SatelliteSource(str, Enum):
     LANDSAT9 = "landsat9"
     MODIS = "modis"
     HARMONIZED = "harmonized"
-
 
 class VegetationIndex(str, Enum):
     """Spectral vegetation indices computable from satellite imagery.
@@ -97,7 +90,6 @@ class VegetationIndex(str, Enum):
     MSAVI = "msavi"
     NDMI = "ndmi"
 
-
 class ChangeType(str, Enum):
     """Types of land cover change detected between temporal windows.
 
@@ -110,7 +102,6 @@ class ChangeType(str, Enum):
     DEGRADATION = "degradation"
     PARTIAL_LOSS = "partial_loss"
     REGROWTH = "regrowth"
-
 
 class LandCoverClass(str, Enum):
     """Land cover classification types for pixel-level labelling.
@@ -130,7 +121,6 @@ class LandCoverClass(str, Enum):
     WETLAND = "wetland"
     UNKNOWN = "unknown"
 
-
 class ForestStatus(str, Enum):
     """Forest status classification for EUDR compliance assessment.
 
@@ -147,7 +137,6 @@ class ForestStatus(str, Enum):
     PLANTATION = "plantation"
     UNKNOWN = "unknown"
 
-
 class DeforestationRisk(str, Enum):
     """Risk level classification for deforestation compliance.
 
@@ -161,7 +150,6 @@ class DeforestationRisk(str, Enum):
     CRITICAL = "critical"
     VIOLATION = "violation"
 
-
 class ComplianceStatus(str, Enum):
     """EUDR compliance determination status.
 
@@ -172,7 +160,6 @@ class ComplianceStatus(str, Enum):
     COMPLIANT = "compliant"
     REVIEW_REQUIRED = "review_required"
     NON_COMPLIANT = "non_compliant"
-
 
 class AlertSource(str, Enum):
     """External and internal deforestation alert data sources.
@@ -187,7 +174,6 @@ class AlertSource(str, Enum):
     GFW = "gfw"
     INTERNAL = "internal"
 
-
 class AlertConfidence(str, Enum):
     """Confidence levels for deforestation alerts.
 
@@ -198,20 +184,6 @@ class AlertConfidence(str, Enum):
     LOW = "low"
     NOMINAL = "nominal"
     HIGH = "high"
-
-
-class AlertSeverity(str, Enum):
-    """Severity levels for deforestation alerts.
-
-    Classifies the urgency of detected deforestation events
-    for prioritised response and escalation.
-    """
-
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
-    CRITICAL = "critical"
-
 
 class PipelineStage(str, Enum):
     """Stages of the deforestation monitoring pipeline.
@@ -228,7 +200,6 @@ class PipelineStage(str, Enum):
     ALERT_INTEGRATION = "alert_integration"
     REPORT_GENERATION = "report_generation"
 
-
 class MonitoringFrequency(str, Enum):
     """Supported monitoring schedule frequencies.
 
@@ -241,13 +212,11 @@ class MonitoringFrequency(str, Enum):
     MONTHLY = "monthly"
     QUARTERLY = "quarterly"
 
-
 # =============================================================================
 # Core Data Models
 # =============================================================================
 
-
-class SatelliteScene(BaseModel):
+class SatelliteScene(GreenLangBase):
     """Metadata for an acquired satellite scene.
 
     Represents a single satellite image tile with acquisition date,
@@ -314,8 +283,7 @@ class SatelliteScene(BaseModel):
         if not self.scene_id:
             self.scene_id = _new_id("SCN")
 
-
-class VegetationIndexResult(BaseModel):
+class VegetationIndexResult(GreenLangBase):
     """Result of a vegetation index computation over a satellite scene.
 
     Contains the computed index type, pixel value array, and summary
@@ -362,8 +330,7 @@ class VegetationIndexResult(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ChangeDetectionResult(BaseModel):
+class ChangeDetectionResult(GreenLangBase):
     """Result of a temporal change detection analysis.
 
     Compares vegetation indices between two temporal windows to
@@ -435,8 +402,7 @@ class ChangeDetectionResult(BaseModel):
         if not self.change_id:
             self.change_id = _new_id("CHG")
 
-
-class ForestClassification(BaseModel):
+class ForestClassification(GreenLangBase):
     """Result of a forest/land cover classification for a geographic area.
 
     Contains the classified land cover type, tree cover percentage,
@@ -494,8 +460,7 @@ class ForestClassification(BaseModel):
         if not self.classification_id:
             self.classification_id = _new_id("FCL")
 
-
-class DeforestationAlert(BaseModel):
+class DeforestationAlert(GreenLangBase):
     """A deforestation alert from external or internal monitoring systems.
 
     Represents a single alert detection with geographic coordinates,
@@ -568,8 +533,7 @@ class DeforestationAlert(BaseModel):
         if not self.alert_id:
             self.alert_id = _new_id("ALT")
 
-
-class ForestDefinition(BaseModel):
+class ForestDefinition(GreenLangBase):
     """Country-specific or international forest definition parameters.
 
     Captures the minimum thresholds that define what constitutes
@@ -627,8 +591,7 @@ class ForestDefinition(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BaselineAssessment(BaseModel):
+class BaselineAssessment(GreenLangBase):
     """EUDR baseline assessment result for a geographic coordinate or area.
 
     Provides a comprehensive deforestation risk assessment including
@@ -733,8 +696,7 @@ class BaselineAssessment(BaseModel):
         if not self.assessment_date:
             self.assessment_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
-
-class ComplianceReport(BaseModel):
+class ComplianceReport(GreenLangBase):
     """EUDR compliance report for a geographic polygon.
 
     Aggregates satellite analysis, alert data, and risk scoring
@@ -839,8 +801,7 @@ class ComplianceReport(BaseModel):
         if not self.created_at:
             self.created_at = datetime.now(timezone.utc).isoformat()
 
-
-class MonitoringJob(BaseModel):
+class MonitoringJob(GreenLangBase):
     """A recurring deforestation monitoring job for a geographic area.
 
     Tracks the lifecycle of a scheduled monitoring pipeline including
@@ -915,8 +876,7 @@ class MonitoringJob(BaseModel):
         if not self.started_at:
             self.started_at = datetime.now(timezone.utc).isoformat()
 
-
-class PipelineResult(BaseModel):
+class PipelineResult(GreenLangBase):
     """Result of a single pipeline stage execution.
 
     Records the stage, status, result data, and performance metrics
@@ -970,8 +930,7 @@ class PipelineResult(BaseModel):
         if not self.created_at:
             self.created_at = datetime.now(timezone.utc).isoformat()
 
-
-class AlertAggregation(BaseModel):
+class AlertAggregation(GreenLangBase):
     """Aggregated deforestation alert statistics for a geographic area.
 
     Summarises alert counts by source and severity, total affected area,
@@ -1038,8 +997,7 @@ class AlertAggregation(BaseModel):
         if not self.aggregation_id:
             self.aggregation_id = _new_id("AGG")
 
-
-class TrendAnalysis(BaseModel):
+class TrendAnalysis(GreenLangBase):
     """Vegetation trend analysis result over a multi-year period.
 
     Summarises pixel-level NDVI trend slopes to quantify the rate
@@ -1086,8 +1044,7 @@ class TrendAnalysis(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class DeforestationStatistics(BaseModel):
+class DeforestationStatistics(GreenLangBase):
     """Aggregated operational statistics for the deforestation satellite service.
 
     Provides high-level metrics for monitoring overall service health,
@@ -1139,8 +1096,7 @@ class DeforestationStatistics(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CountryRiskProfile(BaseModel):
+class CountryRiskProfile(GreenLangBase):
     """Country-level deforestation risk profile.
 
     Contains the base risk adjustment factor and list of high-risk
@@ -1174,13 +1130,11 @@ class CountryRiskProfile(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Request Models
 # =============================================================================
 
-
-class AcquireSatelliteRequest(BaseModel):
+class AcquireSatelliteRequest(GreenLangBase):
     """Request body for acquiring satellite imagery for a polygon.
 
     Attributes:
@@ -1215,8 +1169,7 @@ class AcquireSatelliteRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class DetectChangeRequest(BaseModel):
+class DetectChangeRequest(GreenLangBase):
     """Request body for detecting vegetation change between two temporal windows.
 
     Attributes:
@@ -1256,8 +1209,7 @@ class DetectChangeRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class CheckBaselineRequest(BaseModel):
+class CheckBaselineRequest(GreenLangBase):
     """Request body for checking EUDR baseline at a single coordinate.
 
     Attributes:
@@ -1286,8 +1238,7 @@ class CheckBaselineRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class CheckBaselinePolygonRequest(BaseModel):
+class CheckBaselinePolygonRequest(GreenLangBase):
     """Request body for checking EUDR baseline across a polygon area.
 
     Attributes:
@@ -1317,8 +1268,7 @@ class CheckBaselinePolygonRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class QueryAlertsRequest(BaseModel):
+class QueryAlertsRequest(GreenLangBase):
     """Request body for querying deforestation alerts within a polygon and date range.
 
     Attributes:
@@ -1353,8 +1303,7 @@ class QueryAlertsRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class StartMonitoringRequest(BaseModel):
+class StartMonitoringRequest(GreenLangBase):
     """Request body for starting a recurring deforestation monitoring job.
 
     Attributes:
@@ -1383,7 +1332,6 @@ class StartMonitoringRequest(BaseModel):
     )
 
     model_config = ConfigDict(extra="forbid")
-
 
 # ---------------------------------------------------------------------------
 # Public API

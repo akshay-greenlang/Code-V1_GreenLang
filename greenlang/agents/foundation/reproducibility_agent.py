@@ -40,12 +40,13 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism.clock import DeterministicClock
 from greenlang.utilities.determinism.random import DeterministicRandom, set_global_random_seed
 from greenlang.utilities.determinism.uuid import content_hash, deterministic_id
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -95,7 +96,7 @@ DEFAULT_DRIFT_HARD_THRESHOLD = 0.05  # 5%
 # Pydantic Models - Input/Output
 # =============================================================================
 
-class EnvironmentFingerprint(BaseModel):
+class EnvironmentFingerprint(GreenLangBase):
     """Captured execution environment details."""
     python_version: str = Field(..., description="Python version")
     platform_system: str = Field(..., description="Operating system")
@@ -119,7 +120,7 @@ class EnvironmentFingerprint(BaseModel):
     )
 
 
-class SeedConfiguration(BaseModel):
+class SeedConfiguration(GreenLangBase):
     """Configuration for random seed management."""
     global_seed: int = Field(default=42, description="Global random seed")
     numpy_seed: Optional[int] = Field(default=42, description="NumPy random seed")
@@ -142,7 +143,7 @@ class SeedConfiguration(BaseModel):
             self.seed_hash = content_hash(seed_data)[:16]
 
 
-class VersionPin(BaseModel):
+class VersionPin(GreenLangBase):
     """Version pin for a component."""
     component_type: str = Field(..., description="Type: agent, model, factor, data")
     component_id: str = Field(..., description="Component identifier")
@@ -151,7 +152,7 @@ class VersionPin(BaseModel):
     pinned_at: datetime = Field(default_factory=DeterministicClock.now)
 
 
-class VersionManifest(BaseModel):
+class VersionManifest(GreenLangBase):
     """Complete version manifest for reproducibility."""
     manifest_id: str = Field(default="", description="Unique manifest ID")
     created_at: datetime = Field(default_factory=DeterministicClock.now)
@@ -174,7 +175,7 @@ class VersionManifest(BaseModel):
     manifest_hash: str = Field(default="", description="Hash of entire manifest")
 
 
-class VerificationCheck(BaseModel):
+class VerificationCheck(GreenLangBase):
     """Result of a single verification check."""
     check_name: str = Field(..., description="Name of the check")
     status: VerificationStatus = Field(..., description="Check status")
@@ -186,7 +187,7 @@ class VerificationCheck(BaseModel):
     timestamp: datetime = Field(default_factory=DeterministicClock.now)
 
 
-class DriftDetection(BaseModel):
+class DriftDetection(GreenLangBase):
     """Result of drift detection analysis."""
     baseline_hash: str = Field(..., description="Hash of baseline result")
     current_hash: str = Field(..., description="Hash of current result")
@@ -203,7 +204,7 @@ class DriftDetection(BaseModel):
     is_acceptable: bool = Field(default=True, description="Within acceptable limits")
 
 
-class ReplayConfiguration(BaseModel):
+class ReplayConfiguration(GreenLangBase):
     """Configuration for replay mode execution."""
     original_execution_id: str = Field(..., description="ID of original execution")
     captured_inputs: Dict[str, Any] = Field(..., description="Captured input data")
@@ -219,7 +220,7 @@ class ReplayConfiguration(BaseModel):
     )
 
 
-class ReproducibilityInput(BaseModel):
+class ReproducibilityInput(GreenLangBase):
     """Input model for ReproducibilityAgent."""
     execution_id: str = Field(..., description="Unique execution ID")
     input_data: Dict[str, Any] = Field(..., description="Input data to verify")
@@ -279,7 +280,7 @@ class ReproducibilityInput(BaseModel):
         return v
 
 
-class ReproducibilityOutput(BaseModel):
+class ReproducibilityOutput(GreenLangBase):
     """Output model for ReproducibilityAgent."""
     execution_id: str = Field(..., description="Execution ID")
     verification_status: VerificationStatus = Field(
@@ -337,7 +338,7 @@ class ReproducibilityOutput(BaseModel):
     )
 
 
-class ReproducibilityReport(BaseModel):
+class ReproducibilityReport(GreenLangBase):
     """Comprehensive reproducibility report."""
     report_id: str = Field(..., description="Unique report ID")
     execution_id: str = Field(..., description="Execution ID")

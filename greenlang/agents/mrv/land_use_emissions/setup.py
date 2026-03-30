@@ -53,6 +53,7 @@ from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -137,26 +138,17 @@ try:
 except ImportError:
     ProvenanceTracker = None  # type: ignore[assignment, misc]
 
-
 # ===================================================================
 # Utility helpers
 # ===================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _utcnow_iso() -> str:
     """Return current UTC datetime as an ISO-8601 string."""
-    return _utcnow().isoformat()
-
+    return utcnow().isoformat()
 
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -166,7 +158,6 @@ def _compute_hash(data: Any) -> str:
         serializable = data
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 # ===================================================================
 # IPCC land categories (used for transition matrix defaults)
@@ -181,11 +172,9 @@ IPCC_LAND_CATEGORIES: List[str] = [
     "other_land",
 ]
 
-
 # ===================================================================
 # Lightweight Pydantic response models (14 models)
 # ===================================================================
-
 
 class CalculateResponse(BaseModel):
     """Single land use emission calculation response."""
@@ -209,7 +198,6 @@ class CalculateResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
 class BatchCalculateResponse(BaseModel):
     """Batch land use emission calculation response."""
 
@@ -225,7 +213,6 @@ class BatchCalculateResponse(BaseModel):
     net_co2e_tonnes: float = Field(default=0.0)
     results: List[Dict[str, Any]] = Field(default_factory=list)
     processing_time_ms: float = Field(default=0.0)
-
 
 class ParcelResponse(BaseModel):
     """Response for a single land parcel."""
@@ -248,7 +235,6 @@ class ParcelResponse(BaseModel):
     created_at: str = Field(default="")
     updated_at: str = Field(default="")
 
-
 class ParcelListResponse(BaseModel):
     """Response listing land parcels."""
 
@@ -258,7 +244,6 @@ class ParcelListResponse(BaseModel):
     total: int = Field(default=0)
     page: int = Field(default=1)
     page_size: int = Field(default=20)
-
 
 class CarbonStockResponse(BaseModel):
     """Response for a carbon stock snapshot."""
@@ -274,7 +259,6 @@ class CarbonStockResponse(BaseModel):
     source: str = Field(default="IPCC_2006")
     provenance_hash: str = Field(default="")
 
-
 class TransitionResponse(BaseModel):
     """Response for a land-use transition record."""
 
@@ -289,7 +273,6 @@ class TransitionResponse(BaseModel):
     transition_type: str = Field(default="")
     disturbance_type: str = Field(default="none")
 
-
 class TransitionMatrixResponse(BaseModel):
     """Response for the 6x6 transition matrix."""
 
@@ -299,7 +282,6 @@ class TransitionMatrixResponse(BaseModel):
     matrix: Dict[str, Dict[str, float]] = Field(default_factory=dict)
     total_area_ha: float = Field(default=0.0)
     total_transitions: int = Field(default=0)
-
 
 class SOCAssessmentResponse(BaseModel):
     """Response for a soil organic carbon assessment."""
@@ -319,7 +301,6 @@ class SOCAssessmentResponse(BaseModel):
     depth_cm: int = Field(default=30)
     provenance_hash: str = Field(default="")
 
-
 class UncertaintyResponse(BaseModel):
     """Monte Carlo uncertainty analysis response."""
 
@@ -337,7 +318,6 @@ class UncertaintyResponse(BaseModel):
     coefficient_of_variation: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class ComplianceCheckResponse(BaseModel):
     """Regulatory compliance check response."""
 
@@ -350,7 +330,6 @@ class ComplianceCheckResponse(BaseModel):
     non_compliant: int = Field(default=0)
     partial: int = Field(default=0)
     results: List[Dict[str, Any]] = Field(default_factory=list)
-
 
 class AggregationResponse(BaseModel):
     """Aggregated land use emissions response."""
@@ -365,7 +344,6 @@ class AggregationResponse(BaseModel):
     calculation_count: int = Field(default=0)
     period: str = Field(default="annual")
 
-
 class HealthResponse(BaseModel):
     """Service health check response."""
 
@@ -375,7 +353,6 @@ class HealthResponse(BaseModel):
     service: str = Field(default="land-use-emissions")
     version: str = Field(default="1.0.0")
     engines: Dict[str, str] = Field(default_factory=dict)
-
 
 class StatsResponse(BaseModel):
     """Service aggregate statistics response."""
@@ -390,14 +367,12 @@ class StatsResponse(BaseModel):
     total_compliance_checks: int = Field(default=0)
     uptime_seconds: float = Field(default=0.0)
 
-
 # ===================================================================
 # LandUseEmissionsService facade
 # ===================================================================
 
 _singleton_lock = threading.Lock()
 _singleton_instance: Optional["LandUseEmissionsService"] = None
-
 
 class LandUseEmissionsService:
     """Unified facade over the Land Use Emissions Agent SDK.
@@ -1973,14 +1948,12 @@ class LandUseEmissionsService:
             uptime_seconds=round(uptime, 3),
         )
 
-
 # ===================================================================
 # Thread-safe singleton access
 # ===================================================================
 
 _service_instance: Optional[LandUseEmissionsService] = None
 _service_lock = threading.Lock()
-
 
 def get_service() -> LandUseEmissionsService:
     """Get or create the singleton LandUseEmissionsService instance.
@@ -1994,7 +1967,6 @@ def get_service() -> LandUseEmissionsService:
             if _service_instance is None:
                 _service_instance = LandUseEmissionsService()
     return _service_instance
-
 
 def get_router() -> Any:
     """Get the FastAPI router for land use emissions.
@@ -2013,7 +1985,6 @@ def get_router() -> Any:
             "Land use emissions API router module not available"
         )
         return None
-
 
 def configure_land_use(
     app: Any,
@@ -2052,7 +2023,6 @@ def configure_land_use(
 
     logger.info("Land Use Emissions service configured")
     return service
-
 
 # ===================================================================
 # Public API

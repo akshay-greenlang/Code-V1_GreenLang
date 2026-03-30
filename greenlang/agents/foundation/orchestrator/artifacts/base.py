@@ -14,7 +14,8 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, BinaryIO, Dict, List, Optional, Union
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase
 
 
 class ArtifactType(str, Enum):
@@ -26,7 +27,7 @@ class ArtifactType(str, Enum):
     ERROR = "error"  # error.json (on failure)
 
 
-class ArtifactMetadata(BaseModel):
+class ArtifactMetadata(GreenLangBase):
     """Metadata for a stored artifact."""
     artifact_id: str = Field(..., description="Unique artifact identifier")
     uri: str = Field(..., description="Full URI to artifact")
@@ -54,7 +55,7 @@ class ArtifactMetadata(BaseModel):
     consumed_by_steps: List[str] = Field(default_factory=list, description="Steps that consumed this")
 
 
-class ArtifactManifest(BaseModel):
+class ArtifactManifest(GreenLangBase):
     """Manifest of all artifacts for a run/step."""
     run_id: str = Field(..., description="Run ID")
     step_id: Optional[str] = Field(None, description="Step ID (None for run-level)")
@@ -64,7 +65,7 @@ class ArtifactManifest(BaseModel):
     manifest_checksum: str = Field(default="", description="Checksum of manifest")
 
 
-class RetentionPolicy(BaseModel):
+class RetentionPolicy(GreenLangBase):
     """Artifact retention policy."""
     retention_days: int = Field(default=90, description="Days to retain artifacts")
     legal_hold: bool = Field(default=False, description="Whether artifacts are under legal hold")

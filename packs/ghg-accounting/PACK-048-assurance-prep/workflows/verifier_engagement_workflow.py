@@ -58,37 +58,28 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> str:
-    """Return current UTC timestamp as ISO-8601 string."""
-    return datetime.utcnow().isoformat() + "Z"
-
-
 def _new_uuid() -> str:
     """Return a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash of JSON-serialisable data."""
     serialised = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialised.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -99,7 +90,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -108,7 +98,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class EngagementPhase(str, Enum):
     """Verifier engagement workflow phases."""
@@ -119,7 +108,6 @@ class EngagementPhase(str, Enum):
     FINDING_TRACKING = "finding_tracking"
     ENGAGEMENT_CLOSEOUT = "engagement_closeout"
 
-
 class EngagementStatus(str, Enum):
     """Overall engagement status."""
 
@@ -129,13 +117,11 @@ class EngagementStatus(str, Enum):
     REPORTING = "reporting"
     CLOSED = "closed"
 
-
 class AssuranceLevel(str, Enum):
     """Assurance engagement level."""
 
     LIMITED = "limited"
     REASONABLE = "reasonable"
-
 
 class QueryStatus(str, Enum):
     """Status of an information request / query."""
@@ -148,7 +134,6 @@ class QueryStatus(str, Enum):
     ESCALATED = "escalated"
     WITHDRAWN = "withdrawn"
 
-
 class QueryPriority(str, Enum):
     """Priority of a query."""
 
@@ -157,7 +142,6 @@ class QueryPriority(str, Enum):
     STANDARD = "standard"
     LOW = "low"
 
-
 class FindingSeverity(str, Enum):
     """Severity of an assurance finding."""
 
@@ -165,7 +149,6 @@ class FindingSeverity(str, Enum):
     EMPHASIS_OF_MATTER = "emphasis_of_matter"
     RECOMMENDATION = "recommendation"
     OBSERVATION = "observation"
-
 
 class FindingStatus(str, Enum):
     """Status of an assurance finding."""
@@ -176,7 +159,6 @@ class FindingStatus(str, Enum):
     CLOSED = "closed"
     ACCEPTED = "accepted"
 
-
 class OpinionType(str, Enum):
     """Type of assurance opinion."""
 
@@ -185,7 +167,6 @@ class OpinionType(str, Enum):
     MODIFIED_ADVERSE = "modified_adverse"
     DISCLAIMER = "disclaimer"
 
-
 class AccessLevel(str, Enum):
     """Data room access level."""
 
@@ -193,11 +174,9 @@ class AccessLevel(str, Enum):
     READ_ONLY = "read_only"
     RESTRICTED = "restricted"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -210,7 +189,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
-
 
 class EngagementScope(BaseModel):
     """Agreed engagement scope definition."""
@@ -228,7 +206,6 @@ class EngagementScope(BaseModel):
     key_milestones: List[Dict[str, str]] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class VerifierAccess(BaseModel):
     """Verifier access configuration."""
 
@@ -242,7 +219,6 @@ class VerifierAccess(BaseModel):
     key_contacts: List[Dict[str, str]] = Field(default_factory=list)
     communication_protocol: str = Field(default="email")
     provenance_hash: str = Field(default="")
-
 
 class QueryRecord(BaseModel):
     """Record of an information request / query."""
@@ -262,7 +238,6 @@ class QueryRecord(BaseModel):
     days_outstanding: int = Field(default=0, ge=0)
     provenance_hash: str = Field(default="")
 
-
 class FindingRecord(BaseModel):
     """Record of an assurance finding."""
 
@@ -280,7 +255,6 @@ class FindingRecord(BaseModel):
     closure_evidence: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 class EngagementCloseoutRecord(BaseModel):
     """Engagement closeout record."""
 
@@ -293,11 +267,9 @@ class EngagementCloseoutRecord(BaseModel):
     archive_reference: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # INPUT / OUTPUT
 # =============================================================================
-
 
 class VerifierEngagementInput(BaseModel):
     """Input data model for VerifierEngagementWorkflow."""
@@ -327,7 +299,6 @@ class VerifierEngagementInput(BaseModel):
     tenant_id: str = Field(default="")
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class VerifierEngagementResult(BaseModel):
     """Complete result from verifier engagement workflow."""
 
@@ -349,11 +320,9 @@ class VerifierEngagementResult(BaseModel):
     engagement_status: EngagementStatus = Field(default=EngagementStatus.SCOPING)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class VerifierEngagementWorkflow:
     """
@@ -532,7 +501,7 @@ class VerifierEngagementWorkflow:
             scope_boundaries=input_data.scope_boundaries,
             materiality_threshold_pct=input_data.materiality_threshold_pct,
             agreed_criteria="GHG Protocol Corporate Standard / ISO 14064-1:2018",
-            engagement_start_date=input_data.engagement_start_date or _utcnow(),
+            engagement_start_date=input_data.engagement_start_date or utcnow(),
             engagement_end_date=input_data.engagement_end_date or "",
             key_milestones=milestones,
             provenance_hash=_compute_hash(scope_data),
@@ -655,7 +624,7 @@ class VerifierEngagementWorkflow:
             query = QueryRecord(
                 query_number=idx,
                 issued_by=q_data.get("issued_by", "verifier"),
-                issued_date=q_data.get("issued_date", _utcnow()),
+                issued_date=q_data.get("issued_date", utcnow()),
                 subject=q_data.get("subject", f"Query {idx}"),
                 description=q_data.get("description", ""),
                 priority=priority,
@@ -845,7 +814,7 @@ class VerifierEngagementWorkflow:
         }
         self._closeout = EngagementCloseoutRecord(
             opinion_type=opinion,
-            opinion_date=_utcnow(),
+            opinion_date=utcnow(),
             report_title=(
                 f"Assurance Report - {input_data.organization_name or input_data.organization_id} "
                 f"- {input_data.reporting_period}"
@@ -902,6 +871,7 @@ class VerifierEngagementWorkflow:
                         phase_number, attempt, self.MAX_RETRIES, exc, delay,
                     )
                     import asyncio
+
                     await asyncio.sleep(delay)
         return PhaseResult(
             phase_name=f"phase_{phase_number}_failed",

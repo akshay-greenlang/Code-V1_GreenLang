@@ -16,9 +16,11 @@ import pytest
 import yaml
 
 import sys, os
+from greenlang.schemas import utcnow
 sys.path.insert(0, os.path.dirname(__file__))
 
 from conftest import (
+
     ENTERPRISE_WORKFLOW_IDS,
     PACK_YAML_PATH,
     StubAuditorPortal,
@@ -207,7 +209,7 @@ class TestRealTimeMonitoringWorkflow:
             "device_id": sample_iot_readings[0]["device_id"],
             "severity": "warning",
             "message": "Unusual reading detected",
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
         assert alert["severity"] in ("info", "warning", "critical")
 
@@ -215,7 +217,7 @@ class TestRealTimeMonitoringWorkflow:
         """Test monitoring session lifecycle."""
         session = {
             "session_id": _new_uuid(),
-            "started_at": _utcnow().isoformat(),
+            "started_at": utcnow().isoformat(),
             "status": "active",
             "readings_processed": 500,
             "anomalies_detected": 3,

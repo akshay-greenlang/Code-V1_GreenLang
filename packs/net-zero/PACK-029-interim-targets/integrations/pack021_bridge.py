@@ -41,19 +41,14 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -65,7 +60,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 class _PackStub:
     """Stub for PACK-021 components when not available."""
     def __init__(self, component: str) -> None:
@@ -76,7 +70,6 @@ class _PackStub:
             return {"component": self._component, "status": "not_available", "pack": "PACK-021"}
         return _stub
 
-
 def _try_import_pack021(component: str, module_path: str) -> Any:
     """Attempt to import a PACK-021 component."""
     try:
@@ -85,11 +78,9 @@ def _try_import_pack021(component: str, module_path: str) -> Any:
         logger.debug("PACK-021 component '%s' not available, using stub", component)
         return _PackStub(component)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class BaselineStatus(str, Enum):
     NOT_STARTED = "not_started"
@@ -98,7 +89,6 @@ class BaselineStatus(str, Enum):
     VALIDATED = "validated"
     EXPIRED = "expired"
 
-
 class SBTiPathwayType(str, Enum):
     ACA_15C = "aca_15c"
     ACA_WB2C = "aca_wb2c"
@@ -106,12 +96,10 @@ class SBTiPathwayType(str, Enum):
     FLAG = "flag"
     HYBRID = "hybrid"
 
-
 class BoundaryApproach(str, Enum):
     OPERATIONAL_CONTROL = "operational_control"
     FINANCIAL_CONTROL = "financial_control"
     EQUITY_SHARE = "equity_share"
-
 
 class DataQualityTier(str, Enum):
     TIER_1 = "tier_1"  # Primary measured data
@@ -120,13 +108,11 @@ class DataQualityTier(str, Enum):
     TIER_4 = "tier_4"  # Spend-based estimates
     TIER_5 = "tier_5"  # Extrapolated / modelled
 
-
 class ImportStatus(str, Enum):
     SUCCESS = "success"
     PARTIAL = "partial"
     FAILED = "failed"
     STALE = "stale"
-
 
 # ---------------------------------------------------------------------------
 # PACK-021 Component Registry
@@ -165,7 +151,6 @@ PACK021_COMPONENTS: Dict[str, Dict[str, str]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # SBTi Minimum Ambition Tables
 # ---------------------------------------------------------------------------
@@ -199,11 +184,9 @@ SBTI_MINIMUM_AMBITION: Dict[str, Dict[str, float]] = {
 
 SCOPE3_THRESHOLD_PCT: float = 40.0
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class PACK021BridgeConfig(BaseModel):
     """Configuration for the PACK-021 to PACK-029 bridge."""
@@ -225,7 +208,6 @@ class PACK021BridgeConfig(BaseModel):
     cache_ttl_seconds: int = Field(default=3600, ge=60, le=86400)
     retry_attempts: int = Field(default=3, ge=1, le=10)
     retry_delay_seconds: float = Field(default=1.0, ge=0.1, le=30.0)
-
 
 class BaselineImport(BaseModel):
     """Imported baseline data from PACK-021 for interim target decomposition."""
@@ -249,9 +231,8 @@ class BaselineImport(BaseModel):
     data_quality_tier: DataQualityTier = Field(default=DataQualityTier.TIER_3)
     data_quality_score: float = Field(default=0.0, ge=0.0, le=1.0)
     boundary_approach: BoundaryApproach = Field(default=BoundaryApproach.OPERATIONAL_CONTROL)
-    imported_at: datetime = Field(default_factory=_utcnow)
+    imported_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class LongTermTargetImport(BaseModel):
     """Imported long-term net-zero target from PACK-021."""
@@ -268,7 +249,6 @@ class LongTermTargetImport(BaseModel):
     total_reduction_pct: float = Field(default=90.0)
     neutralization_plan: str = Field(default="")
     provenance_hash: str = Field(default="")
-
 
 class SBTiPathwayImport(BaseModel):
     """Imported SBTi pathway selection from PACK-021."""
@@ -288,7 +268,6 @@ class SBTiPathwayImport(BaseModel):
     sbti_submission_status: str = Field(default="draft")
     provenance_hash: str = Field(default="")
 
-
 class BoundaryImport(BaseModel):
     """Imported organizational boundary from PACK-021."""
     import_id: str = Field(default_factory=_new_uuid)
@@ -304,7 +283,6 @@ class BoundaryImport(BaseModel):
     consolidation_notes: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 class PACK021IntegrationResult(BaseModel):
     """Complete PACK-021 integration result for PACK-029."""
     result_id: str = Field(default_factory=_new_uuid)
@@ -319,14 +297,12 @@ class PACK021IntegrationResult(BaseModel):
     integration_quality_score: float = Field(default=0.0, ge=0.0, le=100.0)
     validation_errors: List[str] = Field(default_factory=list)
     validation_warnings: List[str] = Field(default_factory=list)
-    imported_at: datetime = Field(default_factory=_utcnow)
+    imported_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # PACK021Bridge
 # ---------------------------------------------------------------------------
-
 
 class PACK021Bridge:
     """PACK-021 Net Zero Starter Pack integration bridge for PACK-029.
@@ -424,6 +400,7 @@ class PACK021Bridge:
                 )
                 if attempt < self.config.retry_attempts:
                     import asyncio
+
                     await asyncio.sleep(self.config.retry_delay_seconds * attempt)
         return []
 
@@ -834,7 +811,7 @@ class PACK021Bridge:
         result = await self.get_full_integration()
         return {
             "synced": True,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "status": result.import_status.value,
             "quality_score": result.integration_quality_score,
             "baseline_total_tco2e": result.baseline.total_tco2e if result.baseline else 0.0,

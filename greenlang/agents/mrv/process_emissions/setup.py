@@ -50,6 +50,7 @@ from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -182,26 +183,17 @@ except ImportError:
     PROCESS_CATEGORY_MAP = {}  # type: ignore[assignment]
     PROCESS_DEFAULT_GASES = {}  # type: ignore[assignment]
 
-
 # ===================================================================
 # Utility helpers
 # ===================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _utcnow_iso() -> str:
     """Return current UTC datetime as an ISO-8601 string."""
-    return _utcnow().isoformat()
-
+    return utcnow().isoformat()
 
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -219,11 +211,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ===================================================================
 # Lightweight Pydantic response models used by the facade / API layer
 # ===================================================================
-
 
 class CalculateResponse(BaseModel):
     """Single process emission calculation response.
@@ -264,7 +254,6 @@ class CalculateResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
 class BatchCalculateResponse(BaseModel):
     """Batch process emission calculation response.
 
@@ -288,7 +277,6 @@ class BatchCalculateResponse(BaseModel):
     results: List[Dict[str, Any]] = Field(default_factory=list)
     processing_time_ms: float = Field(default=0.0)
 
-
 class ProcessListResponse(BaseModel):
     """Response listing registered process types.
 
@@ -305,7 +293,6 @@ class ProcessListResponse(BaseModel):
     total: int = Field(default=0)
     page: int = Field(default=1)
     page_size: int = Field(default=20)
-
 
 class ProcessDetailResponse(BaseModel):
     """Detailed response for a single process type.
@@ -332,7 +319,6 @@ class ProcessDetailResponse(BaseModel):
     default_emission_factor: Optional[float] = Field(default=None)
     production_routes: List[str] = Field(default_factory=list)
 
-
 class MaterialListResponse(BaseModel):
     """Response listing registered raw materials.
 
@@ -345,7 +331,6 @@ class MaterialListResponse(BaseModel):
 
     materials: List[Dict[str, Any]] = Field(default_factory=list)
     total: int = Field(default=0)
-
 
 class MaterialDetailResponse(BaseModel):
     """Detailed response for a single raw material.
@@ -364,7 +349,6 @@ class MaterialDetailResponse(BaseModel):
     carbon_content: Optional[float] = Field(default=None)
     carbonate_content: Optional[float] = Field(default=None)
 
-
 class ProcessUnitListResponse(BaseModel):
     """Response listing registered process units.
 
@@ -377,7 +361,6 @@ class ProcessUnitListResponse(BaseModel):
 
     units: List[Dict[str, Any]] = Field(default_factory=list)
     total: int = Field(default=0)
-
 
 class ProcessUnitDetailResponse(BaseModel):
     """Detailed response for a single process unit.
@@ -396,7 +379,6 @@ class ProcessUnitDetailResponse(BaseModel):
     unit_type: str = Field(default="")
     process_type: str = Field(default="")
 
-
 class FactorListResponse(BaseModel):
     """Response listing registered emission factors.
 
@@ -409,7 +391,6 @@ class FactorListResponse(BaseModel):
 
     factors: List[Dict[str, Any]] = Field(default_factory=list)
     total: int = Field(default=0)
-
 
 class FactorDetailResponse(BaseModel):
     """Detailed response for a single emission factor.
@@ -430,7 +411,6 @@ class FactorDetailResponse(BaseModel):
     value: float = Field(default=0.0)
     source: str = Field(default="")
 
-
 class AbatementListResponse(BaseModel):
     """Response listing registered abatement records.
 
@@ -443,7 +423,6 @@ class AbatementListResponse(BaseModel):
 
     records: List[Dict[str, Any]] = Field(default_factory=list)
     total: int = Field(default=0)
-
 
 class UncertaintyResponse(BaseModel):
     """Monte Carlo uncertainty analysis response.
@@ -470,7 +449,6 @@ class UncertaintyResponse(BaseModel):
     )
     dqi_score: Optional[float] = Field(default=None)
 
-
 class ComplianceCheckResponse(BaseModel):
     """Regulatory compliance check response.
 
@@ -492,7 +470,6 @@ class ComplianceCheckResponse(BaseModel):
     partial: int = Field(default=0)
     results: List[Dict[str, Any]] = Field(default_factory=list)
 
-
 class HealthResponse(BaseModel):
     """Service health check response.
 
@@ -509,7 +486,6 @@ class HealthResponse(BaseModel):
     service: str = Field(default="process-emissions")
     version: str = Field(default="1.0.0")
     engines: Dict[str, str] = Field(default_factory=dict)
-
 
 class StatsResponse(BaseModel):
     """Service aggregate statistics response.
@@ -530,7 +506,6 @@ class StatsResponse(BaseModel):
     total_materials: int = Field(default=0)
     uptime_seconds: float = Field(default=0.0)
 
-
 # ===================================================================
 # ProcessEmissionsService facade
 # ===================================================================
@@ -538,7 +513,6 @@ class StatsResponse(BaseModel):
 # Thread-safe singleton lock
 _singleton_lock = threading.Lock()
 _singleton_instance: Optional["ProcessEmissionsService"] = None
-
 
 class ProcessEmissionsService:
     """Unified facade over the Process Emissions Agent SDK.
@@ -1883,15 +1857,12 @@ class ProcessEmissionsService:
             "requirements": requirements,
         }
 
-
 # ===================================================================
 # Thread-safe singleton access
 # ===================================================================
 
-
 _service_instance: Optional[ProcessEmissionsService] = None
 _service_lock = threading.Lock()
-
 
 def get_service() -> ProcessEmissionsService:
     """Get or create the singleton ProcessEmissionsService instance.
@@ -1908,7 +1879,6 @@ def get_service() -> ProcessEmissionsService:
             if _service_instance is None:
                 _service_instance = ProcessEmissionsService()
     return _service_instance
-
 
 def get_router() -> Any:
     """Get the FastAPI router for process emissions.
@@ -1929,7 +1899,6 @@ def get_router() -> Any:
             "Process emissions API router module not available"
         )
         return None
-
 
 def configure_process_emissions(
     app: Any,
@@ -1971,7 +1940,6 @@ def configure_process_emissions(
 
     logger.info("Process Emissions service configured")
     return service
-
 
 # ===================================================================
 # Public API

@@ -34,9 +34,10 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -108,7 +109,7 @@ class ChangeType(str, Enum):
 # PYDANTIC MODELS
 # =============================================================================
 
-class SatelliteConnectionConfig(BaseModel):
+class SatelliteConnectionConfig(GreenLangBase):
     """Satellite data connection configuration."""
     connection_id: str = Field(...)
     provider: SatelliteProvider = Field(...)
@@ -117,7 +118,7 @@ class SatelliteConnectionConfig(BaseModel):
     cloud_cover_max_pct: float = Field(default=20.0)
 
 
-class BoundingBox(BaseModel):
+class BoundingBox(GreenLangBase):
     """Geographic bounding box."""
     min_lat: float = Field(..., ge=-90, le=90)
     max_lat: float = Field(..., ge=-90, le=90)
@@ -125,7 +126,7 @@ class BoundingBox(BaseModel):
     max_lon: float = Field(..., ge=-180, le=180)
 
 
-class AreaOfInterest(BaseModel):
+class AreaOfInterest(GreenLangBase):
     """Area of interest for satellite queries."""
     aoi_id: str = Field(...)
     name: str = Field(...)
@@ -137,7 +138,7 @@ class AreaOfInterest(BaseModel):
     region: Optional[str] = Field(None)
 
 
-class VegetationIndexValue(BaseModel):
+class VegetationIndexValue(GreenLangBase):
     """Vegetation index observation."""
     observation_id: str = Field(...)
     aoi_id: str = Field(...)
@@ -153,7 +154,7 @@ class VegetationIndexValue(BaseModel):
     provider: SatelliteProvider = Field(...)
 
 
-class LandCoverObservation(BaseModel):
+class LandCoverObservation(GreenLangBase):
     """Land cover classification observation."""
     observation_id: str = Field(...)
     aoi_id: str = Field(...)
@@ -166,7 +167,7 @@ class LandCoverObservation(BaseModel):
     provider: SatelliteProvider = Field(...)
 
 
-class LandUseChange(BaseModel):
+class LandUseChange(GreenLangBase):
     """Land use change detection."""
     change_id: str = Field(...)
     aoi_id: str = Field(...)
@@ -180,7 +181,7 @@ class LandUseChange(BaseModel):
     carbon_impact_tco2e: Optional[float] = Field(None)
 
 
-class CarbonStockEstimate(BaseModel):
+class CarbonStockEstimate(GreenLangBase):
     """Forest carbon stock estimate."""
     estimate_id: str = Field(...)
     aoi_id: str = Field(...)
@@ -196,7 +197,7 @@ class CarbonStockEstimate(BaseModel):
     methodology: str = Field(default="IPCC_Tier1")
 
 
-class SatelliteQueryInput(BaseModel):
+class SatelliteQueryInput(GreenLangBase):
     """Input for satellite data query."""
     connection_id: str = Field(...)
     query_type: str = Field(...)  # indices, land_cover, change, carbon
@@ -209,7 +210,7 @@ class SatelliteQueryInput(BaseModel):
     calculate_carbon: bool = Field(default=True)
 
 
-class SatelliteQueryOutput(BaseModel):
+class SatelliteQueryOutput(GreenLangBase):
     """Output from satellite data query."""
     connection_id: str = Field(...)
     query_type: str = Field(...)

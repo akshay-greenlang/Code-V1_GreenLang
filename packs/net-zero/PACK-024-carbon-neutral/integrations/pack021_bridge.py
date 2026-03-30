@@ -43,23 +43,18 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -71,11 +66,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Agent Stubs
 # ---------------------------------------------------------------------------
-
 
 class _PackStub:
     """Stub for unavailable PACK-021 components."""
@@ -89,14 +82,12 @@ class _PackStub:
             return {"component": self._name, "method": n, "status": "degraded", "stub": True}
         return _stub
 
-
 def _try_import_pack021(component: str, module_path: str) -> Any:
     try:
         return importlib.import_module(module_path)
     except ImportError:
         logger.debug("PACK-021 component %s not available", component)
         return _PackStub(component)
-
 
 # ---------------------------------------------------------------------------
 # PACK-021 Component Mapping
@@ -113,11 +104,9 @@ PACK021_COMPONENTS: Dict[str, str] = {
     "benchmarking": "packs.net_zero.PACK_021_net_zero_starter.engines.benchmarking_engine",
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class Pack021BridgeConfig(BaseModel):
     """Configuration for PACK-021 Bridge."""
@@ -125,7 +114,6 @@ class Pack021BridgeConfig(BaseModel):
     pack_id: str = Field(default="PACK-024")
     enable_provenance: bool = Field(default=True)
     pack021_required: bool = Field(default=False)
-
 
 class BaselineResult(BaseModel):
     """Baseline assessment from PACK-021."""
@@ -140,7 +128,6 @@ class BaselineResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class TargetsResult(BaseModel):
     """Target setting result from PACK-021."""
 
@@ -153,7 +140,6 @@ class TargetsResult(BaseModel):
     pathway: str = Field(default="1.5C")
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class GapAnalysisResult(BaseModel):
     """Gap analysis from PACK-021."""
@@ -168,7 +154,6 @@ class GapAnalysisResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class RoadmapResult(BaseModel):
     """Roadmap from PACK-021."""
 
@@ -178,7 +163,6 @@ class RoadmapResult(BaseModel):
     total_planned_reduction_tco2e: float = Field(default=0.0, ge=0.0)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class ResidualBudgetResult(BaseModel):
     """Residual budget from PACK-021."""
@@ -190,7 +174,6 @@ class ResidualBudgetResult(BaseModel):
     offset_budget_usd: float = Field(default=0.0, ge=0.0)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class OffsetPortfolioResult(BaseModel):
     """Offset portfolio assessment from PACK-021."""
@@ -204,7 +187,6 @@ class OffsetPortfolioResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class ScorecardResult(BaseModel):
     """Scorecard from PACK-021."""
 
@@ -214,7 +196,6 @@ class ScorecardResult(BaseModel):
     dimensions: Dict[str, float] = Field(default_factory=dict)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class BenchmarkResult(BaseModel):
     """Benchmark from PACK-021."""
@@ -226,11 +207,9 @@ class BenchmarkResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Pack021Bridge
 # ---------------------------------------------------------------------------
-
 
 class Pack021Bridge:
     """Optional bridge to PACK-021 Net Zero Starter Pack.

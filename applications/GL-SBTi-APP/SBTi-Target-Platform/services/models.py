@@ -38,7 +38,8 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 
 from .config import (
     AmbitionLevel,
@@ -82,7 +83,7 @@ def _sha256(payload: str) -> str:
 # Organization Models
 # ---------------------------------------------------------------------------
 
-class Organization(BaseModel):
+class Organization(GreenLangBase):
     """
     Organization registered on the SBTi Target Validation Platform.
 
@@ -139,7 +140,7 @@ class Organization(BaseModel):
 # Emissions Inventory Models
 # ---------------------------------------------------------------------------
 
-class Scope3CategoryEmissions(BaseModel):
+class Scope3CategoryEmissions(GreenLangBase):
     """Emissions data for a single Scope 3 category."""
 
     category_number: int = Field(..., ge=1, le=15, description="Category number (1-15)")
@@ -158,7 +159,7 @@ class Scope3CategoryEmissions(BaseModel):
     exclusion_reason: Optional[str] = Field(None, max_length=500)
 
 
-class EmissionsInventory(BaseModel):
+class EmissionsInventory(GreenLangBase):
     """
     Complete GHG emissions inventory for a given year.
 
@@ -267,7 +268,7 @@ class EmissionsInventory(BaseModel):
 # Target Models
 # ---------------------------------------------------------------------------
 
-class TargetScopeDetail(BaseModel):
+class TargetScopeDetail(GreenLangBase):
     """
     Per-scope details within a target.
 
@@ -298,7 +299,7 @@ class TargetScopeDetail(BaseModel):
     notes: Optional[str] = Field(None, max_length=2000)
 
 
-class Target(BaseModel):
+class Target(GreenLangBase):
     """
     An SBTi science-based target definition.
 
@@ -428,7 +429,7 @@ class Target(BaseModel):
 # Pathway Models
 # ---------------------------------------------------------------------------
 
-class PathwayMilestone(BaseModel):
+class PathwayMilestone(GreenLangBase):
     """A single year-by-year milestone in a calculated pathway."""
 
     year: int = Field(..., ge=2015, le=2100, description="Milestone year")
@@ -448,7 +449,7 @@ class PathwayMilestone(BaseModel):
     )
 
 
-class Pathway(BaseModel):
+class Pathway(GreenLangBase):
     """
     Calculated emissions reduction pathway for a target.
 
@@ -500,7 +501,7 @@ class Pathway(BaseModel):
 # Validation Models
 # ---------------------------------------------------------------------------
 
-class CriterionCheck(BaseModel):
+class CriterionCheck(GreenLangBase):
     """Result of evaluating a single SBTi validation criterion."""
 
     criterion_id: str = Field(..., description="Criterion ID (e.g. C1, NZ-C3)")
@@ -520,7 +521,7 @@ class CriterionCheck(BaseModel):
     )
 
 
-class ValidationSummary(BaseModel):
+class ValidationSummary(GreenLangBase):
     """Summary statistics of a validation run."""
 
     total_criteria: int = Field(default=0, ge=0)
@@ -534,7 +535,7 @@ class ValidationSummary(BaseModel):
     )
 
 
-class ValidationResult(BaseModel):
+class ValidationResult(GreenLangBase):
     """
     Complete validation result for one or more targets.
 
@@ -609,7 +610,7 @@ class ValidationResult(BaseModel):
 # Scope 3 Screening Models
 # ---------------------------------------------------------------------------
 
-class CategoryBreakdown(BaseModel):
+class CategoryBreakdown(GreenLangBase):
     """Emissions breakdown for a single Scope 3 category in screening."""
 
     category_number: int = Field(..., ge=1, le=15)
@@ -626,7 +627,7 @@ class CategoryBreakdown(BaseModel):
     is_material: bool = Field(default=False, description="Whether category is material (>1%)")
 
 
-class Scope3Screening(BaseModel):
+class Scope3Screening(GreenLangBase):
     """
     Scope 3 screening result per SBTi criteria.
 
@@ -678,7 +679,7 @@ class Scope3Screening(BaseModel):
 # FLAG Models
 # ---------------------------------------------------------------------------
 
-class CommodityData(BaseModel):
+class CommodityData(GreenLangBase):
     """Commodity-level data for FLAG assessment."""
 
     commodity: str = Field(..., max_length=100, description="FLAG commodity name")
@@ -700,7 +701,7 @@ class CommodityData(BaseModel):
     data_quality: str = Field(default="estimated")
 
 
-class FLAGAssessment(BaseModel):
+class FLAGAssessment(GreenLangBase):
     """
     FLAG assessment per SBTi FLAG Guidance v1.0.
 
@@ -753,7 +754,7 @@ class FLAGAssessment(BaseModel):
 # Sector Pathway Models
 # ---------------------------------------------------------------------------
 
-class SectorPathway(BaseModel):
+class SectorPathway(GreenLangBase):
     """
     Sector-specific intensity pathway for SDA target alignment.
 
@@ -783,7 +784,7 @@ class SectorPathway(BaseModel):
 # Progress Tracking Models
 # ---------------------------------------------------------------------------
 
-class ProgressRecord(BaseModel):
+class ProgressRecord(GreenLangBase):
     """
     Annual progress record against a target.
 
@@ -840,7 +841,7 @@ class ProgressRecord(BaseModel):
             self.provenance_hash = _sha256(payload)
 
 
-class ProgressSummary(BaseModel):
+class ProgressSummary(GreenLangBase):
     """Summary of progress against a target across all tracked years."""
 
     target_id: str = Field(..., description="Target ID")
@@ -877,7 +878,7 @@ class ProgressSummary(BaseModel):
 # Temperature Scoring Models
 # ---------------------------------------------------------------------------
 
-class ScopeTemperatureScore(BaseModel):
+class ScopeTemperatureScore(GreenLangBase):
     """Temperature score for a specific scope."""
 
     scope: TargetScope = Field(..., description="Scope")
@@ -892,7 +893,7 @@ class ScopeTemperatureScore(BaseModel):
     )
 
 
-class TemperatureScore(BaseModel):
+class TemperatureScore(GreenLangBase):
     """
     Company-level temperature score based on SBTi Temperature Rating methodology.
 
@@ -936,7 +937,7 @@ class TemperatureScore(BaseModel):
             self.provenance_hash = _sha256(payload)
 
 
-class PortfolioTemperature(BaseModel):
+class PortfolioTemperature(GreenLangBase):
     """
     Portfolio-level temperature score (for financial institutions).
 
@@ -983,7 +984,7 @@ class PortfolioTemperature(BaseModel):
 # Recalculation Models
 # ---------------------------------------------------------------------------
 
-class Recalculation(BaseModel):
+class Recalculation(GreenLangBase):
     """
     Base-year recalculation record per SBTi criteria.
 
@@ -1055,7 +1056,7 @@ class Recalculation(BaseModel):
 # Five-Year Review Models
 # ---------------------------------------------------------------------------
 
-class FiveYearReview(BaseModel):
+class FiveYearReview(GreenLangBase):
     """
     Five-year review cycle record per SBTi requirements.
 
@@ -1091,7 +1092,7 @@ class FiveYearReview(BaseModel):
 # Financial Institution Models
 # ---------------------------------------------------------------------------
 
-class PortfolioHolding(BaseModel):
+class PortfolioHolding(GreenLangBase):
     """A single holding within an FI portfolio for financed emissions tracking."""
 
     id: str = Field(default_factory=_new_id, description="Holding ID")
@@ -1117,7 +1118,7 @@ class PortfolioHolding(BaseModel):
     country: Optional[str] = Field(None, max_length=3)
 
 
-class EngagementRecord(BaseModel):
+class EngagementRecord(GreenLangBase):
     """Record of engagement with an investee company on target setting."""
 
     id: str = Field(default_factory=_new_id, description="Engagement record ID")
@@ -1142,7 +1143,7 @@ class EngagementRecord(BaseModel):
     updated_at: datetime = Field(default_factory=_now)
 
 
-class FIPortfolio(BaseModel):
+class FIPortfolio(GreenLangBase):
     """
     Financial institution portfolio for financed emissions and target tracking.
 
@@ -1213,7 +1214,7 @@ class FIPortfolio(BaseModel):
 # Framework Alignment Models
 # ---------------------------------------------------------------------------
 
-class AlignmentItem(BaseModel):
+class AlignmentItem(GreenLangBase):
     """Alignment mapping between an SBTi requirement and a framework requirement."""
 
     sbti_reference: str = Field(..., description="SBTi criterion or section")
@@ -1226,7 +1227,7 @@ class AlignmentItem(BaseModel):
     notes: Optional[str] = Field(None, max_length=1000)
 
 
-class FrameworkMapping(BaseModel):
+class FrameworkMapping(GreenLangBase):
     """
     Cross-framework alignment mapping for a specific external framework.
 
@@ -1262,7 +1263,7 @@ class FrameworkMapping(BaseModel):
 # Report Models
 # ---------------------------------------------------------------------------
 
-class Report(BaseModel):
+class Report(GreenLangBase):
     """
     Generated report from the SBTi platform.
 
@@ -1297,7 +1298,7 @@ class Report(BaseModel):
             self.provenance_hash = _sha256(payload)
 
 
-class SubmissionForm(BaseModel):
+class SubmissionForm(GreenLangBase):
     """
     SBTi target submission form containing all required fields.
 
@@ -1359,7 +1360,7 @@ class SubmissionForm(BaseModel):
 # Gap Analysis Models
 # ---------------------------------------------------------------------------
 
-class GapItem(BaseModel):
+class GapItem(GreenLangBase):
     """A single identified gap in SBTi target readiness."""
 
     id: str = Field(default_factory=_new_id, description="Gap item ID")
@@ -1383,7 +1384,7 @@ class GapItem(BaseModel):
     created_at: datetime = Field(default_factory=_now)
 
 
-class ActionPlanItem(BaseModel):
+class ActionPlanItem(GreenLangBase):
     """A specific action in the gap closure action plan."""
 
     id: str = Field(default_factory=_new_id, description="Action ID")
@@ -1397,7 +1398,7 @@ class ActionPlanItem(BaseModel):
     completed_at: Optional[datetime] = Field(None)
 
 
-class GapAssessment(BaseModel):
+class GapAssessment(GreenLangBase):
     """
     Complete gap analysis for SBTi target readiness.
 
@@ -1457,7 +1458,7 @@ class GapAssessment(BaseModel):
 # MRV Data Connector Models
 # ---------------------------------------------------------------------------
 
-class MRVDataPoint(BaseModel):
+class MRVDataPoint(GreenLangBase):
     """A data point retrieved from an MRV agent for SBTi target tracking."""
 
     agent_id: str = Field(..., description="MRV agent ID (e.g. MRV-001)")
@@ -1484,7 +1485,7 @@ class MRVDataPoint(BaseModel):
             self.provenance_hash = _sha256(payload)
 
 
-class MRVPopulationResult(BaseModel):
+class MRVPopulationResult(GreenLangBase):
     """Result of auto-populating emissions data from MRV agents."""
 
     inventory_id: str = Field(...)
@@ -1515,7 +1516,7 @@ class MRVPopulationResult(BaseModel):
 # Dashboard Models
 # ---------------------------------------------------------------------------
 
-class DashboardAlert(BaseModel):
+class DashboardAlert(GreenLangBase):
     """An alert surfaced on the SBTi dashboard."""
 
     id: str = Field(default_factory=_new_id)
@@ -1527,7 +1528,7 @@ class DashboardAlert(BaseModel):
     dismissed: bool = Field(default=False)
 
 
-class DashboardMetrics(BaseModel):
+class DashboardMetrics(GreenLangBase):
     """
     Aggregated dashboard metrics for the SBTi platform.
 
@@ -1573,7 +1574,7 @@ class DashboardMetrics(BaseModel):
 # Request / Response API Models
 # ---------------------------------------------------------------------------
 
-class CreateOrganizationRequest(BaseModel):
+class CreateOrganizationRequest(GreenLangBase):
     """Request to register a new organization on the SBTi platform."""
 
     name: str = Field(..., min_length=1, max_length=500)
@@ -1592,7 +1593,7 @@ class CreateOrganizationRequest(BaseModel):
     commitment_date: Optional[date] = Field(None)
 
 
-class UpdateOrganizationRequest(BaseModel):
+class UpdateOrganizationRequest(GreenLangBase):
     """Request to update an existing organization."""
 
     name: Optional[str] = Field(None, min_length=1, max_length=500)
@@ -1606,7 +1607,7 @@ class UpdateOrganizationRequest(BaseModel):
     contact_email: Optional[str] = Field(None, max_length=255)
 
 
-class CreateInventoryRequest(BaseModel):
+class CreateInventoryRequest(GreenLangBase):
     """Request to create or update an emissions inventory."""
 
     year: int = Field(..., ge=2010, le=2100)
@@ -1621,7 +1622,7 @@ class CreateInventoryRequest(BaseModel):
     data_quality_overall: str = Field(default="estimated")
 
 
-class CreateTargetRequest(BaseModel):
+class CreateTargetRequest(GreenLangBase):
     """Request to create a new SBTi target."""
 
     name: Optional[str] = Field(None, max_length=500)
@@ -1642,7 +1643,7 @@ class CreateTargetRequest(BaseModel):
     deforestation_commitment: bool = Field(default=False)
 
 
-class UpdateTargetRequest(BaseModel):
+class UpdateTargetRequest(GreenLangBase):
     """Request to update an existing target."""
 
     name: Optional[str] = Field(None, max_length=500)
@@ -1652,7 +1653,7 @@ class UpdateTargetRequest(BaseModel):
     notes: Optional[str] = Field(None, max_length=5000)
 
 
-class CalculatePathwayRequest(BaseModel):
+class CalculatePathwayRequest(GreenLangBase):
     """Request to calculate an emissions pathway for a target."""
 
     target_id: str = Field(...)
@@ -1661,7 +1662,7 @@ class CalculatePathwayRequest(BaseModel):
     granularity: str = Field(default="annual", description="annual or five_year")
 
 
-class RunValidationRequest(BaseModel):
+class RunValidationRequest(GreenLangBase):
     """Request to run SBTi criteria validation."""
 
     target_ids: List[str] = Field(...)
@@ -1671,14 +1672,14 @@ class RunValidationRequest(BaseModel):
     include_recommendations: bool = Field(default=True)
 
 
-class Scope3ScreeningRequest(BaseModel):
+class Scope3ScreeningRequest(GreenLangBase):
     """Request to run Scope 3 screening assessment."""
 
     inventory_id: str = Field(...)
     include_materiality: bool = Field(default=True)
 
 
-class FLAGAssessmentRequest(BaseModel):
+class FLAGAssessmentRequest(GreenLangBase):
     """Request to run FLAG assessment."""
 
     inventory_id: str = Field(...)
@@ -1686,7 +1687,7 @@ class FLAGAssessmentRequest(BaseModel):
     include_deforestation_check: bool = Field(default=True)
 
 
-class ProgressRecordRequest(BaseModel):
+class ProgressRecordRequest(GreenLangBase):
     """Request to record annual progress against a target."""
 
     target_id: str = Field(...)
@@ -1698,14 +1699,14 @@ class ProgressRecordRequest(BaseModel):
     data_quality: str = Field(default="estimated")
 
 
-class TemperatureScoreRequest(BaseModel):
+class TemperatureScoreRequest(GreenLangBase):
     """Request to calculate temperature score for an organization."""
 
     include_portfolio: bool = Field(default=False)
     methodology_version: str = Field(default="v2.0")
 
 
-class RecalculationRequest(BaseModel):
+class RecalculationRequest(GreenLangBase):
     """Request to initiate a base-year recalculation."""
 
     target_id: str = Field(...)
@@ -1716,7 +1717,7 @@ class RecalculationRequest(BaseModel):
     methodology_used: Optional[str] = Field(None, max_length=500)
 
 
-class FIPortfolioRequest(BaseModel):
+class FIPortfolioRequest(GreenLangBase):
     """Request to create or update an FI portfolio."""
 
     name: str = Field(default="Main Portfolio", max_length=255)
@@ -1726,7 +1727,7 @@ class FIPortfolioRequest(BaseModel):
     target_coverage_by_year: Optional[Dict[int, Decimal]] = Field(None)
 
 
-class GenerateReportRequest(BaseModel):
+class GenerateReportRequest(GreenLangBase):
     """Request to generate a report."""
 
     report_type: str = Field(
@@ -1741,7 +1742,7 @@ class GenerateReportRequest(BaseModel):
     include_framework_mapping: bool = Field(default=False)
 
 
-class RunGapAnalysisRequest(BaseModel):
+class RunGapAnalysisRequest(GreenLangBase):
     """Request to run gap analysis."""
 
     assessment_type: str = Field(
@@ -1751,14 +1752,14 @@ class RunGapAnalysisRequest(BaseModel):
     include_action_plan: bool = Field(default=True)
 
 
-class FrameworkMappingRequest(BaseModel):
+class FrameworkMappingRequest(GreenLangBase):
     """Request to generate framework alignment mapping."""
 
     framework: str = Field(..., max_length=50, description="Framework key (cdp, tcfd, csrd, etc.)")
     include_gap_analysis: bool = Field(default=False)
 
 
-class FiveYearReviewRequest(BaseModel):
+class FiveYearReviewRequest(GreenLangBase):
     """Request to initiate or complete a five-year review."""
 
     target_id: str = Field(...)
@@ -1767,7 +1768,7 @@ class FiveYearReviewRequest(BaseModel):
     readiness_assessment: Optional[str] = Field(None, max_length=5000)
 
 
-class PopulateFromMRVRequest(BaseModel):
+class PopulateFromMRVRequest(GreenLangBase):
     """Request to populate emissions data from MRV agents."""
 
     inventory_id: str = Field(...)
@@ -1776,7 +1777,7 @@ class PopulateFromMRVRequest(BaseModel):
     overwrite_existing: bool = Field(default=False)
 
 
-class UpdateSettingsRequest(BaseModel):
+class UpdateSettingsRequest(GreenLangBase):
     """Request to update platform configuration."""
 
     default_ambition: Optional[AmbitionLevel] = Field(None)
@@ -1790,7 +1791,7 @@ class UpdateSettingsRequest(BaseModel):
 # Generic API Response Models
 # ---------------------------------------------------------------------------
 
-class ApiError(BaseModel):
+class ApiError(GreenLangBase):
     """Standard API error response."""
 
     code: str = Field(..., description="Error code (e.g. VALIDATION_ERROR)")
@@ -1799,7 +1800,7 @@ class ApiError(BaseModel):
     timestamp: datetime = Field(default_factory=_now)
 
 
-class ApiResponse(BaseModel):
+class ApiResponse(GreenLangBase):
     """Standard API success response wrapper."""
 
     success: bool = Field(default=True)
@@ -1810,7 +1811,7 @@ class ApiResponse(BaseModel):
     provenance_hash: Optional[str] = Field(None)
 
 
-class PaginatedResponse(BaseModel):
+class PaginatedResponse(GreenLangBase):
     """Paginated list response for collection endpoints."""
 
     items: List[Any] = Field(default_factory=list)

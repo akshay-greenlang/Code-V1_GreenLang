@@ -31,6 +31,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, validator
+from greenlang.schemas.enums import ReportFormat
 
 try:
     from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
@@ -86,15 +87,6 @@ class ReportType(str, Enum):
     AD_HOC = "ad_hoc"
     VERIFICATION = "verification"
     DISCLOSURE = "disclosure"
-
-
-class ReportFormat(str, Enum):
-    """Report export formats."""
-    PDF = "pdf"
-    EXCEL = "excel"
-    JSON = "json"
-    XML = "xml"
-    CSV = "csv"
 
 
 class ScopeInclusion(str, Enum):

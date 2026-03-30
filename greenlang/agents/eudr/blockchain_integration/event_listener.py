@@ -63,6 +63,7 @@ import time
 import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.blockchain_integration.config import (
     BlockchainIntegrationConfig,
@@ -99,12 +100,6 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance.
 
@@ -117,7 +112,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str = "EVT") -> str:
     """Generate a prefixed UUID4 string identifier.
 
@@ -129,11 +123,9 @@ def _generate_id(prefix: str = "EVT") -> str:
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
 
-
 # ---------------------------------------------------------------------------
 # Subscription data model
 # ---------------------------------------------------------------------------
-
 
 class Subscription:
     """Represents an event listener subscription.
@@ -193,7 +185,7 @@ class Subscription:
         self.chain = chain
         self.webhook_url = webhook_url
         self.active = True
-        self.created_at = _utcnow()
+        self.created_at = utcnow()
         self.events_received = 0
         self.last_event_at: Optional[datetime] = None
         self.filters = filters or {}
@@ -219,11 +211,9 @@ class Subscription:
             "filters": dict(self.filters),
         }
 
-
 # ---------------------------------------------------------------------------
 # Event filter data model
 # ---------------------------------------------------------------------------
-
 
 class EventFilter:
     """Filter criteria for querying indexed events.
@@ -333,11 +323,9 @@ class EventFilter:
         result["offset"] = self.offset
         return result
 
-
 # ---------------------------------------------------------------------------
 # Reorg record
 # ---------------------------------------------------------------------------
-
 
 class ReorgRecord:
     """Record of a detected chain reorganization.
@@ -385,7 +373,7 @@ class ReorgRecord:
         self.old_head_block = old_head_block
         self.new_head_block = new_head_block
         self.affected_events = 0
-        self.detected_at = _utcnow()
+        self.detected_at = utcnow()
         self.resolved = False
 
     def to_dict(self) -> Dict[str, Any]:
@@ -405,11 +393,9 @@ class ReorgRecord:
             "resolved": self.resolved,
         }
 
-
 # ---------------------------------------------------------------------------
 # Webhook delivery result
 # ---------------------------------------------------------------------------
-
 
 class WebhookDeliveryResult:
     """Result of a webhook notification delivery attempt.
@@ -461,7 +447,7 @@ class WebhookDeliveryResult:
         self.success = False
         self.retry_count = 0
         self.error_message: Optional[str] = None
-        self.delivered_at = _utcnow()
+        self.delivered_at = utcnow()
         self.latency_ms: float = 0.0
 
     def to_dict(self) -> Dict[str, Any]:
@@ -482,7 +468,6 @@ class WebhookDeliveryResult:
             "delivered_at": self.delivered_at.isoformat(),
             "latency_ms": self.latency_ms,
         }
-
 
 # ---------------------------------------------------------------------------
 # Valid event types for subscription filtering
@@ -533,11 +518,9 @@ _EVENT_TO_CONTRACT: Dict[str, str] = {
     "party_registered": "anchor_registry",
 }
 
-
 # ==========================================================================
 # EventListener
 # ==========================================================================
-
 
 class EventListener:
     """On-chain event listener, indexer, and notification engine for EUDR blockchain integration.
@@ -1193,7 +1176,7 @@ class EventListener:
                 block_hash=raw_event["block_hash"],
                 log_index=raw_event["log_index"],
                 event_data=raw_event.get("event_data", {}),
-                indexed_at=_utcnow(),
+                indexed_at=utcnow(),
             )
 
             # Check for chain reorganization before indexing
@@ -1873,7 +1856,7 @@ class EventListener:
 
             # Update subscription stats
             sub.events_received += 1
-            sub.last_event_at = _utcnow()
+            sub.last_event_at = utcnow()
 
             # Invoke callback if registered
             if sub.callback is not None:
@@ -2053,7 +2036,6 @@ class EventListener:
                 return False
 
         return True
-
 
 # ---------------------------------------------------------------------------
 # Public API

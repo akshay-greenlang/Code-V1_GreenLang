@@ -61,6 +61,7 @@ from greenlang.agents.eudr.risk_assessment_engine.models import (
     TrendDirection,
 )
 from greenlang.agents.eudr.risk_assessment_engine.provenance import ProvenanceTracker
+from greenlang.schemas import utcnow
 from greenlang.agents.eudr.risk_assessment_engine.metrics import (
     record_trend_analysis,
 )
@@ -77,16 +78,9 @@ _SCORE_PRECISION = Decimal("0.01")
 _MIN_POINTS_FOR_TREND = 3
 _STABLE_THRESHOLD = Decimal("3")  # Score change <= 3 points = stable
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute deterministic SHA-256 hash of data.
@@ -100,7 +94,6 @@ def _compute_hash(data: Any) -> str:
     canonical = json.dumps(data, sort_keys=True, separators=(",", ":"), default=str)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
-
 def _make_trend_key(operator_id: str, commodity: str) -> str:
     """Build a composite key for trend data storage.
 
@@ -113,11 +106,9 @@ def _make_trend_key(operator_id: str, commodity: str) -> str:
     """
     return f"{operator_id}:{commodity.lower().strip()}"
 
-
 # ---------------------------------------------------------------------------
 # Main Engine
 # ---------------------------------------------------------------------------
-
 
 class RiskTrendAnalyzer:
     """Engine for tracking and analyzing risk score trends over time.
@@ -181,7 +172,7 @@ class RiskTrendAnalyzer:
             The created RiskTrendPoint.
         """
         key = _make_trend_key(operator_id, commodity)
-        now = _utcnow()
+        now = utcnow()
 
         point = RiskTrendPoint(
             point_id=f"trp_{uuid.uuid4().hex[:12]}",
@@ -246,7 +237,7 @@ class RiskTrendAnalyzer:
                 change_30d=None,
                 change_90d=None,
                 change_365d=None,
-                analyzed_at=_utcnow(),
+                analyzed_at=utcnow(),
                 provenance_hash=_compute_hash({
                     "operator_id": operator_id,
                     "commodity": commodity,
@@ -266,7 +257,7 @@ class RiskTrendAnalyzer:
 
         # Compute window-based changes
         latest = sorted_points[-1]
-        now = _utcnow()
+        now = utcnow()
         change_30d = self._compute_window_change(sorted_points, now, days=30)
         change_90d = self._compute_window_change(sorted_points, now, days=90)
         change_365d = self._compute_window_change(sorted_points, now, days=365)
@@ -290,7 +281,7 @@ class RiskTrendAnalyzer:
             change_30d=change_30d,
             change_90d=change_90d,
             change_365d=change_365d,
-            analyzed_at=_utcnow(),
+            analyzed_at=utcnow(),
             provenance_hash=provenance_hash,
         )
 
@@ -334,7 +325,7 @@ class RiskTrendAnalyzer:
         if not points:
             return []
 
-        cutoff = _utcnow() - timedelta(days=days)
+        cutoff = utcnow() - timedelta(days=days)
         filtered = [p for p in points if p.timestamp >= cutoff]
         return sorted(filtered, key=lambda p: p.timestamp)
 

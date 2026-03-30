@@ -33,35 +33,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "21.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a single workflow phase."""
@@ -72,7 +64,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -82,14 +73,12 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class BoundaryMethod(str, Enum):
     """GHG Protocol organisational boundary approaches."""
 
     OPERATIONAL_CONTROL = "operational_control"
     FINANCIAL_CONTROL = "financial_control"
     EQUITY_SHARE = "equity_share"
-
 
 class DataQualityLevel(str, Enum):
     """GHG Protocol data quality levels (1=highest, 5=lowest)."""
@@ -99,7 +88,6 @@ class DataQualityLevel(str, Enum):
     LEVEL_3 = "3"
     LEVEL_4 = "4"
     LEVEL_5 = "5"
-
 
 class FuelType(str, Enum):
     """Stationary and mobile combustion fuel types."""
@@ -112,7 +100,6 @@ class FuelType(str, Enum):
     COAL = "coal"
     BIOMASS = "biomass"
     PROPANE = "propane"
-
 
 class Scope3Category(str, Enum):
     """GHG Protocol Scope 3 categories."""
@@ -132,7 +119,6 @@ class Scope3Category(str, Enum):
     CAT13_DOWNSTREAM_LEASED = "cat13_downstream_leased"
     CAT14_FRANCHISES = "cat14_franchises"
     CAT15_INVESTMENTS = "cat15_investments"
-
 
 # =============================================================================
 # EMISSION FACTOR CONSTANTS (Zero-Hallucination, DEFRA / IEA 2024)
@@ -203,11 +189,9 @@ SCOPE3_SPEND_EF_KGCO2E_PER_USD: Dict[str, float] = {
 # WTT uplift factor for Scope 3 Category 3 (Fuel-and-energy-related)
 WTT_UPLIFT_FACTOR = 0.20
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -220,7 +204,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list, description="Errors encountered")
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
 
-
 class FacilityRecord(BaseModel):
     """A single operational facility / site."""
 
@@ -231,7 +214,6 @@ class FacilityRecord(BaseModel):
     floor_area_sqm: float = Field(default=0.0, ge=0.0)
     employee_count: int = Field(default=0, ge=0)
     facility_type: str = Field(default="office", description="office|factory|warehouse|retail|other")
-
 
 class EnergyDataRecord(BaseModel):
     """Energy consumption record (stationary combustion / purchased electricity)."""
@@ -249,7 +231,6 @@ class EnergyDataRecord(BaseModel):
     period_start: str = Field(default="", description="YYYY-MM-DD")
     period_end: str = Field(default="", description="YYYY-MM-DD")
 
-
 class FuelRecord(BaseModel):
     """Fuel combustion record for Scope 1 stationary sources."""
 
@@ -259,7 +240,6 @@ class FuelRecord(BaseModel):
     consumption_litres: float = Field(default=0.0, ge=0.0)
     consumption_tonnes: float = Field(default=0.0, ge=0.0)
     data_quality: str = Field(default="measured")
-
 
 class FleetRecord(BaseModel):
     """Fleet / mobile combustion record."""
@@ -272,7 +252,6 @@ class FleetRecord(BaseModel):
     distance_km: float = Field(default=0.0, ge=0.0)
     data_quality: str = Field(default="measured")
 
-
 class ProcurementRecord(BaseModel):
     """Procurement spend record for Scope 3 spend-based estimation."""
 
@@ -281,7 +260,6 @@ class ProcurementRecord(BaseModel):
     spend_usd: float = Field(default=0.0, ge=0.0)
     supplier_specific_ef: Optional[float] = Field(None, ge=0.0, description="kgCO2e per USD if known")
     data_quality: str = Field(default="estimated")
-
 
 class OnboardingConfig(BaseModel):
     """Configuration for the net-zero onboarding workflow."""
@@ -310,7 +288,6 @@ class OnboardingConfig(BaseModel):
             raise ValueError(f"boundary_method must be one of {allowed}")
         return v
 
-
 class OnboardingInput(BaseModel):
     """Input data for the net-zero onboarding workflow."""
 
@@ -320,7 +297,6 @@ class OnboardingInput(BaseModel):
     fleet_data: List[FleetRecord] = Field(default_factory=list, description="Fleet / mobile records")
     procurement_data: List[ProcurementRecord] = Field(default_factory=list, description="Procurement spend records")
     config: OnboardingConfig = Field(default_factory=OnboardingConfig)
-
 
 class ScopeBreakdown(BaseModel):
     """Emissions breakdown by scope."""
@@ -334,7 +310,6 @@ class ScopeBreakdown(BaseModel):
     scope3_total_tco2e: float = Field(default=0.0, ge=0.0)
     total_tco2e: float = Field(default=0.0, ge=0.0)
 
-
 class DataQualityItem(BaseModel):
     """Data quality assessment for a single data source."""
 
@@ -345,7 +320,6 @@ class DataQualityItem(BaseModel):
     completeness_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     issues: List[str] = Field(default_factory=list)
 
-
 class DataQualityReport(BaseModel):
     """Aggregate data quality report."""
 
@@ -354,7 +328,6 @@ class DataQualityReport(BaseModel):
     missing_scope3_categories: List[str] = Field(default_factory=list)
     gaps: List[str] = Field(default_factory=list)
     improvement_recommendations: List[str] = Field(default_factory=list)
-
 
 class BaselineReportSummary(BaseModel):
     """Baseline summary report output."""
@@ -368,7 +341,6 @@ class BaselineReportSummary(BaseModel):
     data_quality_matrix: DataQualityReport = Field(default_factory=DataQualityReport)
     top_emission_sources: List[Dict[str, Any]] = Field(default_factory=list)
     recommendations: List[str] = Field(default_factory=list)
-
 
 class OnboardingResult(BaseModel):
     """Complete result from the net-zero onboarding workflow."""
@@ -385,11 +357,9 @@ class OnboardingResult(BaseModel):
     reporting_year: int = Field(default=2025)
     provenance_hash: str = Field(default="", description="SHA-256 of complete output")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class NetZeroOnboardingWorkflow:
     """
@@ -441,7 +411,7 @@ class NetZeroOnboardingWorkflow:
         Raises:
             ValueError: If critical input data is missing.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         cfg = input_data.config
         self.config = cfg
         self.logger.info(
@@ -477,7 +447,7 @@ class NetZeroOnboardingWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         result = OnboardingResult(
             workflow_id=self.workflow_id,
             status=overall_status,
@@ -502,7 +472,7 @@ class NetZeroOnboardingWorkflow:
 
     async def _phase_data_collection(self, input_data: OnboardingInput) -> PhaseResult:
         """Validate and normalise input data from all sources."""
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         errors: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -544,7 +514,7 @@ class NetZeroOnboardingWorkflow:
         normalised_count = self._normalise_energy_units(input_data)
         outputs["records_normalised"] = normalised_count
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         status = PhaseStatus.COMPLETED if not errors else PhaseStatus.FAILED
         return PhaseResult(
             phase_name="data_collection",
@@ -577,7 +547,7 @@ class NetZeroOnboardingWorkflow:
 
     async def _phase_baseline_calc(self, input_data: OnboardingInput) -> PhaseResult:
         """Calculate Scope 1+2+3 emissions baseline."""
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
 
@@ -624,7 +594,7 @@ class NetZeroOnboardingWorkflow:
         if total <= 0:
             warnings.append("Total emissions are zero; check that input data has non-zero consumption")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Baseline calc: S1=%.2f S2=%.2f S3=%.2f Total=%.2f tCO2e",
             scope1_total, scope2_location, scope3_total, total,
@@ -731,7 +701,7 @@ class NetZeroOnboardingWorkflow:
 
     async def _phase_data_quality(self, input_data: OnboardingInput) -> PhaseResult:
         """Score data quality per GHG Protocol (1 = best, 5 = worst)."""
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
         items: List[DataQualityItem] = []
@@ -808,7 +778,7 @@ class NetZeroOnboardingWorkflow:
         outputs["gap_count"] = len(gaps)
         outputs["missing_scope3_count"] = len(missing)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Data quality score: %.2f/5.0", self._dq_report.overall_score)
         return PhaseResult(
             phase_name="data_quality",
@@ -956,7 +926,7 @@ class NetZeroOnboardingWorkflow:
 
     async def _phase_baseline_report(self, input_data: OnboardingInput) -> PhaseResult:
         """Generate baseline summary report with emissions breakdown."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -979,7 +949,7 @@ class NetZeroOnboardingWorkflow:
         outputs["top_source_count"] = len(top_sources)
         outputs["recommendation_count"] = len(recommendations)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Baseline report generated: %d recommendations", len(recommendations))
         return PhaseResult(
             phase_name="baseline_report",

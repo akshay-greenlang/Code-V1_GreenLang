@@ -49,25 +49,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -80,7 +74,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -90,7 +83,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -98,11 +90,9 @@ def _decimal(value: Any) -> Decimal:
 # Default materiality threshold (percentage of total reported emissions)
 MATERIALITY_THRESHOLD_PCT: float = 5.0
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CBAMGoodsCategory(str, Enum):
     """CBAM goods categories (mirrored for self-containment)."""
@@ -114,13 +104,11 @@ class CBAMGoodsCategory(str, Enum):
     ELECTRICITY = "electricity"
     HYDROGEN = "hydrogen"
 
-
 class AssuranceLevel(str, Enum):
     """Verification assurance level."""
 
     LIMITED = "LIMITED"
     REASONABLE = "REASONABLE"
-
 
 class EngagementStatus(str, Enum):
     """Verification engagement lifecycle status."""
@@ -130,7 +118,6 @@ class EngagementStatus(str, Enum):
     COMPLETED = "COMPLETED"
     FINDINGS_OPEN = "FINDINGS_OPEN"
 
-
 class FindingCategory(str, Enum):
     """Category of verification finding."""
 
@@ -139,13 +126,11 @@ class FindingCategory(str, Enum):
     METHODOLOGY = "METHODOLOGY"
     DOCUMENTATION = "DOCUMENTATION"
 
-
 class FindingSeverity(str, Enum):
     """Severity of verification finding."""
 
     MATERIAL = "MATERIAL"
     IMMATERIAL = "IMMATERIAL"
-
 
 class VerificationOpinion(str, Enum):
     """Verification statement opinion types."""
@@ -155,11 +140,9 @@ class VerificationOpinion(str, Enum):
     ADVERSE = "ADVERSE"
     DISCLAIMER = "DISCLAIMER"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class AccreditedVerifier(BaseModel):
     """Accredited third-party verifier for CBAM emission data.
@@ -204,7 +187,7 @@ class AccreditedVerifier(BaseModel):
         ..., description="Accreditation validity end date",
     )
     registered_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Registration timestamp",
     )
 
@@ -213,7 +196,6 @@ class AccreditedVerifier(BaseModel):
     def uppercase_country(cls, v: str) -> str:
         """Ensure country code is uppercase."""
         return v.strip().upper()
-
 
 class VerificationFinding(BaseModel):
     """Individual finding from a verification engagement.
@@ -266,10 +248,9 @@ class VerificationFinding(BaseModel):
         None, description="Date the finding was resolved",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Finding creation timestamp",
     )
-
 
 class VerificationEngagement(BaseModel):
     """Verification engagement between an importer and an accredited verifier.
@@ -341,18 +322,16 @@ class VerificationEngagement(BaseModel):
         None, description="Actual completion timestamp",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Engagement creation timestamp",
     )
     provenance_hash: str = Field(
         "", description="SHA-256 hash for audit trail",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class VerificationEngine:
     """Accredited verifier management and verification engagement engine.
@@ -410,7 +389,7 @@ class VerificationEngine:
                 )
 
         # Check accreditation is not expired
-        today = _utcnow().date()
+        today = utcnow().date()
         if verifier.valid_until < today:
             raise ValueError(
                 f"Accreditation expired on {verifier.valid_until}; "
@@ -538,7 +517,7 @@ class VerificationEngine:
             "reporting_year": engagement.reporting_year,
             "scope": [s.value for s in engagement.scope],
             "assurance_level": engagement.assurance_level.value,
-            "prepared_at": _utcnow().isoformat(),
+            "prepared_at": utcnow().isoformat(),
             "sections": {},
         }
 
@@ -652,7 +631,7 @@ class VerificationEngine:
 
         if resolve:
             finding.resolved = True
-            finding.resolution_date = _utcnow()
+            finding.resolution_date = utcnow()
 
         # Check if all material findings for the engagement are resolved
         engagement = self._engagements.get(finding.engagement_id)
@@ -770,7 +749,7 @@ class VerificationEngine:
         engagement.verification_statement = statement_text
         engagement.opinion = opinion
         engagement.status = EngagementStatus.COMPLETED
-        engagement.actual_completion = _utcnow()
+        engagement.actual_completion = utcnow()
         engagement.provenance_hash = _compute_hash(engagement)
 
         # Summary statistics
@@ -826,7 +805,7 @@ class VerificationEngine:
             verifiers = [v for v in verifiers if v.country == country_upper]
 
         # Filter out expired
-        today = _utcnow().date()
+        today = utcnow().date()
         verifiers = [v for v in verifiers if v.valid_until >= today]
 
         return sorted(verifiers, key=lambda v: v.name)
@@ -942,7 +921,7 @@ class VerificationEngine:
 
         footer = (
             f"\nFindings Summary: {total_findings} total ({material_count} material)\n"
-            f"Date: {_utcnow().date().isoformat()}\n"
+            f"Date: {utcnow().date().isoformat()}\n"
         )
 
         return header + body + footer

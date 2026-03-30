@@ -32,18 +32,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ReportFormat
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -55,7 +52,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 class _AgentStub:
     """Stub for unavailable GL-GHG-APP modules."""
     def __init__(self, component_name: str) -> None:
@@ -66,7 +62,6 @@ class _AgentStub:
             return {"component": self._component_name, "method": name, "status": "degraded", "message": f"{self._component_name} not available"}
         return _stub_method
 
-
 def _try_import_ghg_component(component_id: str, module_path: str) -> Any:
     try:
         return importlib.import_module(module_path)
@@ -74,20 +69,11 @@ def _try_import_ghg_component(component_id: str, module_path: str) -> Any:
         logger.debug("GHG component %s not available, using stub", component_id)
         return _AgentStub(component_id)
 
-
 class GHGScope(str, Enum):
     SCOPE_1 = "scope_1"
     SCOPE_2_LOCATION = "scope_2_location"
     SCOPE_2_MARKET = "scope_2_market"
     SCOPE_3 = "scope_3"
-
-
-class ReportFormat(str, Enum):
-    PDF = "pdf"
-    EXCEL = "excel"
-    JSON = "json"
-    XHTML = "xhtml"
-
 
 class GHGAppBridgeConfig(BaseModel):
     pack_id: str = Field(default="PACK-022")
@@ -98,7 +84,6 @@ class GHGAppBridgeConfig(BaseModel):
     multi_entity: bool = Field(default=False)
     entity_ids: List[str] = Field(default_factory=list)
     consolidation_approach: str = Field(default="operational_control")
-
 
 class InventoryResult(BaseModel):
     operation_id: str = Field(default_factory=_new_uuid)
@@ -116,7 +101,6 @@ class InventoryResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class BaseYearResult(BaseModel):
     operation_id: str = Field(default_factory=_new_uuid)
     status: str = Field(default="pending")
@@ -130,7 +114,6 @@ class BaseYearResult(BaseModel):
     recalculation_triggers: List[str] = Field(default_factory=list)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class AggregationResult(BaseModel):
     operation_id: str = Field(default_factory=_new_uuid)
@@ -147,7 +130,6 @@ class AggregationResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class MultiYearResult(BaseModel):
     operation_id: str = Field(default_factory=_new_uuid)
     status: str = Field(default="pending")
@@ -157,7 +139,6 @@ class MultiYearResult(BaseModel):
     cagr_pct: float = Field(default=0.0)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class ReportResult(BaseModel):
     operation_id: str = Field(default_factory=_new_uuid)
@@ -171,7 +152,6 @@ class ReportResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 GHG_COMPONENTS: Dict[str, str] = {
     "inventory_manager": "greenlang.apps.ghg.inventory_manager",
     "scope_aggregator": "greenlang.apps.ghg.scope_aggregator",
@@ -179,7 +159,6 @@ GHG_COMPONENTS: Dict[str, str] = {
     "completeness_checker": "greenlang.apps.ghg.completeness_checker",
     "report_generator": "greenlang.apps.ghg.report_generator",
 }
-
 
 class GHGAppBridge:
     """Bridge to GL-GHG-APP for multi-entity inventory management.

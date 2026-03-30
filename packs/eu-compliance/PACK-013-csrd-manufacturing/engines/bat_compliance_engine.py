@@ -58,25 +58,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -96,7 +90,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -106,17 +99,14 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _round_value(value: Decimal, places: int = 3) -> float:
     """Round a Decimal to specified places and return float."""
     rounded = value.quantize(Decimal(10) ** -places, rounding=ROUND_HALF_UP)
     return float(rounded)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class BREFDocument(str, Enum):
     """BREF reference documents per IED Annex I activities."""
@@ -138,7 +128,6 @@ class BREFDocument(str, Enum):
     STORAGE = "storage"
     COMMON_WASTE_WATER = "common_waste_water"
 
-
 class ComplianceStatus(str, Enum):
     """Compliance status against BAT-AEL range."""
     COMPLIANT = "compliant"
@@ -146,7 +135,6 @@ class ComplianceStatus(str, Enum):
     NON_COMPLIANT = "non_compliant"
     DEROGATION_GRANTED = "derogation_granted"
     NOT_ASSESSED = "not_assessed"
-
 
 class TechnologyReadinessLevel(int, Enum):
     """Technology readiness level (TRL) for abatement options."""
@@ -160,7 +148,6 @@ class TechnologyReadinessLevel(int, Enum):
     TRL_8 = 8
     TRL_9 = 9
 
-
 class TransformationStatus(str, Enum):
     """Status of a BAT transformation plan."""
     NOT_STARTED = "not_started"
@@ -168,7 +155,6 @@ class TransformationStatus(str, Enum):
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
     DEFERRED = "deferred"
-
 
 # ---------------------------------------------------------------------------
 # Constants - BAT-AEL Database
@@ -388,11 +374,9 @@ IED_PENALTY_TURNOVER_PCT: float = 3.0  # 3% of annual turnover
 # BAT Conclusions compliance deadlines (years after publication)
 BAT_COMPLIANCE_DEADLINE_YEARS: int = 4
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class BATConfig(BaseModel):
     """Configuration for BAT compliance assessment."""
@@ -432,7 +416,6 @@ class BATConfig(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class BREFReference(BaseModel):
     """Reference to a specific BAT-AEL from a BREF document."""
     bref_document: BREFDocument = Field(description="Source BREF document")
@@ -441,7 +424,6 @@ class BREFReference(BaseModel):
     bat_ael_upper: float = Field(description="Upper bound of BAT-AEL range")
     unit: str = Field(description="Unit of measurement")
     notes: str = Field(default="", description="Additional notes from BAT conclusions")
-
 
 class MeasuredParameter(BaseModel):
     """A measured parameter value from a facility."""
@@ -465,7 +447,6 @@ class MeasuredParameter(BaseModel):
         if val < 0:
             raise ValueError("Measured value cannot be negative")
         return val
-
 
 class FacilityBATData(BaseModel):
     """Facility data for BAT compliance assessment."""
@@ -504,7 +485,6 @@ class FacilityBATData(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class ParameterResult(BaseModel):
     """Compliance result for a single measured parameter."""
     parameter_name: str = Field(description="Parameter name")
@@ -515,7 +495,6 @@ class ParameterResult(BaseModel):
     compliance_status: ComplianceStatus = Field(description="Compliance status")
     gap_pct: float = Field(default=0.0, description="Gap above upper limit (%)")
     notes: str = Field(default="", description="BAT conclusion reference notes")
-
 
 class TransformationPlan(BaseModel):
     """BAT transformation plan for achieving compliance."""
@@ -542,7 +521,6 @@ class TransformationPlan(BaseModel):
         description="Parameters requiring improvement",
     )
 
-
 class AbatementOption(BaseModel):
     """An abatement technology option for compliance improvement."""
     technology: str = Field(description="Technology name")
@@ -554,7 +532,6 @@ class AbatementOption(BaseModel):
         description="Marginal abatement cost (EUR/tCO2e)"
     )
     payback_years: float = Field(description="Estimated payback period (years)")
-
 
 class BATComplianceResult(BaseModel):
     """Complete BAT compliance assessment result with provenance."""
@@ -595,14 +572,12 @@ class BATComplianceResult(BaseModel):
     )
     processing_time_ms: float = Field(default=0.0, description="Processing time in milliseconds")
     engine_version: str = Field(default=_MODULE_VERSION, description="Engine version")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Calculation timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Calculation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class BATComplianceEngine:
     """BAT/BREF compliance assessment engine for IED compliance.

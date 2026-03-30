@@ -72,25 +72,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -108,7 +102,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -117,7 +110,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -129,22 +121,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class RatchetType(str, Enum):
     """Ratchet clause type.
@@ -158,7 +146,6 @@ class RatchetType(str, Enum):
     SEASONAL = "seasonal"
     ROLLING = "rolling"
     FIXED_PERIOD = "fixed_period"
-
 
 class RatchetPercentage(str, Enum):
     """Ratchet percentage threshold.
@@ -178,7 +165,6 @@ class RatchetPercentage(str, Enum):
     PCT_90 = "90"
     PCT_100 = "100"
 
-
 class SpikeCause(str, Enum):
     """Root cause classification for demand spikes.
 
@@ -196,7 +182,6 @@ class SpikeCause(str, Enum):
     UTILITY_ERROR = "utility_error"
     UNKNOWN = "unknown"
 
-
 class PreventionStrategy(str, Enum):
     """Demand spike prevention strategy.
 
@@ -212,7 +197,6 @@ class PreventionStrategy(str, Enum):
     DEMAND_CONTROLLER = "demand_controller"
     COMBINED = "combined"
 
-
 class RiskLevel(str, Enum):
     """Ratchet risk level.
 
@@ -225,7 +209,6 @@ class RiskLevel(str, Enum):
     MODERATE = "moderate"
     HIGH = "high"
     CRITICAL = "critical"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -298,11 +281,9 @@ SPIKE_THRESHOLD_STD_DEVS: Decimal = Decimal("2.0")
 STARTUP_WINDOW_MINUTES: int = 60
 MAX_MONTHLY_RECORDS: int = 120
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class RatchetDemand(BaseModel):
     """Monthly demand record for ratchet analysis.
@@ -362,7 +343,6 @@ class RatchetDemand(BaseModel):
             raise ValueError("Peak demand cannot be negative.")
         return v
 
-
 class SpikeAnalysis(BaseModel):
     """Demand spike data for root cause analysis.
 
@@ -383,7 +363,7 @@ class SpikeAnalysis(BaseModel):
         default_factory=_new_uuid, description="Spike ID"
     )
     spike_date: datetime = Field(
-        default_factory=_utcnow, description="Spike date/time"
+        default_factory=utcnow, description="Spike date/time"
     )
     spike_demand_kw: Decimal = Field(
         default=Decimal("0"), ge=0, description="Spike demand (kW)"
@@ -413,11 +393,9 @@ class SpikeAnalysis(BaseModel):
         default="", max_length=1000, description="Notes"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class RatchetImpact(BaseModel):
     """Ratchet clause financial impact analysis.
@@ -483,10 +461,9 @@ class RatchetImpact(BaseModel):
         default=RiskLevel.LOW, description="Risk level"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class PreventionPlan(BaseModel):
     """Ratchet spike prevention plan.
@@ -552,10 +529,9 @@ class PreventionPlan(BaseModel):
         default="", max_length=2000, description="Recommendation"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class RatchetResult(BaseModel):
     """Comprehensive ratchet analysis result.
@@ -606,18 +582,16 @@ class RatchetResult(BaseModel):
         default=0, ge=0, description="Months analysed"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     processing_time_ms: float = Field(
         default=0.0, description="Processing time (ms)"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class RatchetAnalysisEngine:
     """Ratchet demand analysis engine for billing peak persistence.
@@ -880,7 +854,7 @@ class RatchetAnalysisEngine:
                 _safe_divide(total_excess, _decimal(len(sorted_records))), 2
             )),
             "monthly_details": monthly_details,
-            "calculated_at": _utcnow().isoformat(),
+            "calculated_at": utcnow().isoformat(),
             "processing_time_ms": round(elapsed, 2),
         }
         result["provenance_hash"] = _compute_hash(result)
@@ -918,7 +892,7 @@ class RatchetAnalysisEngine:
             empty: Dict[str, Any] = {
                 "total_spikes": 0,
                 "classifications": [],
-                "calculated_at": _utcnow().isoformat(),
+                "calculated_at": utcnow().isoformat(),
             }
             empty["provenance_hash"] = _compute_hash(empty)
             return empty
@@ -990,7 +964,7 @@ class RatchetAnalysisEngine:
             "cause_breakdown": breakdown,
             "classifications": classifications,
             "demand_std_dev_kw": str(_round_val(demand_std_dev, 2)),
-            "calculated_at": _utcnow().isoformat(),
+            "calculated_at": utcnow().isoformat(),
             "processing_time_ms": round(elapsed, 2),
         }
         result["provenance_hash"] = _compute_hash(result)
@@ -1076,8 +1050,8 @@ class RatchetAnalysisEngine:
             # Break-even date
             if monthly_net_savings > Decimal("0"):
                 months_int = int(_round_val(payback_months, 0))
-                be_year = _utcnow().year + months_int // 12
-                be_month = _utcnow().month + months_int % 12
+                be_year = utcnow().year + months_int // 12
+                be_month = utcnow().month + months_int % 12
                 if be_month > 12:
                     be_year += 1
                     be_month -= 12
@@ -1234,7 +1208,7 @@ class RatchetAnalysisEngine:
             "projection_months": projection_months,
             "months_to_reset": reset_month,
             "timeline": timeline,
-            "calculated_at": _utcnow().isoformat(),
+            "calculated_at": utcnow().isoformat(),
             "processing_time_ms": round(elapsed, 2),
         }
         result["provenance_hash"] = _compute_hash(result)

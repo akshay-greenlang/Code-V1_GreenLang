@@ -36,19 +36,13 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # =============================================================================
 # Utility Helpers
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute a SHA-256 hash of arbitrary data."""
@@ -56,11 +50,9 @@ def _hash_data(data: Any) -> str:
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # Agent Stub
 # =============================================================================
-
 
 class _AgentStub:
     """Deferred agent loader for lazy initialization."""
@@ -77,6 +69,7 @@ class _AgentStub:
             return self._instance
         try:
             import importlib
+
             mod = importlib.import_module(self.module_path)
             cls = getattr(mod, self.class_name)
             self._instance = cls()
@@ -92,18 +85,15 @@ class _AgentStub:
         """Whether the agent has been loaded."""
         return self._instance is not None
 
-
 # =============================================================================
 # Enums
 # =============================================================================
-
 
 class CSRDPackTier(str, Enum):
     """CSRD pack tier selection."""
     STARTER = "starter"
     PROFESSIONAL = "professional"
     ENTERPRISE = "enterprise"
-
 
 class ESRSStandard(str, Enum):
     """ESRS standards supported."""
@@ -119,7 +109,6 @@ class ESRSStandard(str, Enum):
     ESRS_S4 = "ESRS_S4"
     ESRS_G1 = "ESRS_G1"
 
-
 class BridgeFeature(str, Enum):
     """Features available from CSRD base packs."""
     ESRS_CORE = "esrs_core"
@@ -131,11 +120,9 @@ class BridgeFeature(str, Enum):
     XBRL_TAGGER = "xbrl_tagger"
     AUDIT_SUPPORT = "audit_support"
 
-
 # =============================================================================
 # Data Models
 # =============================================================================
-
 
 class CSRDBridgeConfig(BaseModel):
     """Configuration for the CSRD Pack Bridge."""
@@ -178,7 +165,6 @@ class CSRDBridgeConfig(BaseModel):
         description="FI-specific ESRS extensions to add on top of base CSRD",
     )
 
-
 class ESRSCoreResult(BaseModel):
     """Result of ESRS core logic retrieval."""
     standards_available: List[str] = Field(
@@ -196,7 +182,6 @@ class ESRSCoreResult(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class QualityGateResult(BaseModel):
     """Result of CSRD quality gate validation."""
     total_gates: int = Field(default=0, description="Total quality gates evaluated")
@@ -211,7 +196,6 @@ class QualityGateResult(BaseModel):
         default_factory=list, description="FI-specific gate results"
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class ConsolidationResult(BaseModel):
     """Result of group consolidation from enterprise pack."""
@@ -229,7 +213,6 @@ class ConsolidationResult(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class DataGovernanceResult(BaseModel):
     """Result of data governance check from CSRD pack."""
     data_sources_registered: int = Field(
@@ -246,11 +229,9 @@ class DataGovernanceResult(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 # =============================================================================
 # ESRS Standard Definitions
 # =============================================================================
-
 
 ESRS_STANDARDS: Dict[str, Dict[str, Any]] = {
     "ESRS_2": {
@@ -355,11 +336,9 @@ FI_QUALITY_GATES: List[Dict[str, Any]] = [
      "category": "fi_specific", "critical": True},
 ]
 
-
 # =============================================================================
 # CSRD Pack Bridge
 # =============================================================================
-
 
 class CSRDPackBridge:
     """Bridge connecting PACK-012 (CSRD FS) with PACK-001/002/003 (CSRD base).

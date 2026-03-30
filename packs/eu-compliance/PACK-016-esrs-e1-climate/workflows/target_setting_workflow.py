@@ -28,33 +28,25 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class WorkflowPhase(str, Enum):
     """Phases of the target setting workflow."""
@@ -64,7 +56,6 @@ class WorkflowPhase(str, Enum):
     PROGRESS_ASSESSMENT = "progress_assessment"
     REPORT_GENERATION = "report_generation"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "pending"
@@ -72,7 +63,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class PhaseStatus(str, Enum):
     """Status of a single phase."""
@@ -82,7 +72,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class TargetType(str, Enum):
     """Climate target type classification."""
     ABSOLUTE = "absolute"
@@ -90,7 +79,6 @@ class TargetType(str, Enum):
     RENEWABLE_ENERGY = "renewable_energy"
     ENERGY_EFFICIENCY = "energy_efficiency"
     NET_ZERO = "net_zero"
-
 
 class TargetScope(str, Enum):
     """Scope to which a target applies."""
@@ -100,7 +88,6 @@ class TargetScope(str, Enum):
     SCOPE_3 = "scope_3"
     ALL_SCOPES = "all_scopes"
 
-
 class SBTiStatus(str, Enum):
     """SBTi target validation status."""
     VALIDATED = "validated"
@@ -108,7 +95,6 @@ class SBTiStatus(str, Enum):
     PENDING = "pending"
     NOT_SUBMITTED = "not_submitted"
     NON_COMPLIANT = "non_compliant"
-
 
 class ProgressStatus(str, Enum):
     """Progress towards target."""
@@ -118,11 +104,9 @@ class ProgressStatus(str, Enum):
     EXCEEDED = "exceeded"
     NOT_STARTED = "not_started"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -133,7 +117,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class ClimateTarget(BaseModel):
     """A defined climate target."""
@@ -154,7 +137,6 @@ class ClimateTarget(BaseModel):
     is_science_based: bool = Field(default=False)
     description: str = Field(default="")
 
-
 class SBTiValidationResult(BaseModel):
     """SBTi validation assessment for a target."""
     target_id: str = Field(default="")
@@ -166,7 +148,6 @@ class SBTiValidationResult(BaseModel):
     base_year_valid: bool = Field(default=False)
     time_frame_valid: bool = Field(default=False)
     issues: List[str] = Field(default_factory=list)
-
 
 class TargetSettingInput(BaseModel):
     """Input data model for TargetSettingWorkflow."""
@@ -181,7 +162,6 @@ class TargetSettingInput(BaseModel):
     entity_name: str = Field(default="")
     sbti_sector: str = Field(default="", description="SBTi sector classification")
     config: Dict[str, Any] = Field(default_factory=dict)
-
 
 class TargetSettingResult(BaseModel):
     """Complete result from target setting workflow."""
@@ -202,7 +182,6 @@ class TargetSettingResult(BaseModel):
     all_sbti_compliant: bool = Field(default=False)
     reporting_year: int = Field(default=2025)
     provenance_hash: str = Field(default="")
-
 
 # =============================================================================
 # SBTI REQUIREMENTS
@@ -225,11 +204,9 @@ SBTI_REQUIREMENTS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class TargetSettingWorkflow:
     """
@@ -303,7 +280,7 @@ class TargetSettingWorkflow:
                 config=config or {},
             )
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting target setting workflow %s", self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = WorkflowStatus.IN_PROGRESS
@@ -322,7 +299,7 @@ class TargetSettingWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         completed_count = sum(1 for p in phase_results if p.status == PhaseStatus.COMPLETED)
         on_track = sum(1 for s in self._progress_map.values() if s in (ProgressStatus.ON_TRACK, ProgressStatus.EXCEEDED))
         behind = sum(1 for s in self._progress_map.values() if s in (ProgressStatus.SLIGHTLY_BEHIND, ProgressStatus.SIGNIFICANTLY_BEHIND))
@@ -364,7 +341,7 @@ class TargetSettingWorkflow:
         self, input_data: TargetSettingInput,
     ) -> PhaseResult:
         """Establish base year emissions for target tracking."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -386,7 +363,7 @@ class TargetSettingWorkflow:
 
         outputs["base_years_used"] = sorted(list(base_years))
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 1 BaselineDetermination: total=%.0f tCO2e", total_current)
         return PhaseResult(
             phase_name=WorkflowPhase.BASELINE_DETERMINATION.value, status=PhaseStatus.COMPLETED,
@@ -402,7 +379,7 @@ class TargetSettingWorkflow:
         self, input_data: TargetSettingInput,
     ) -> PhaseResult:
         """Catalog and validate target definitions."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -430,7 +407,7 @@ class TargetSettingWorkflow:
         if not long_term:
             warnings.append("No long-term targets (beyond 10 years)")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 2 TargetDefinition: %d targets defined", len(self._targets))
         return PhaseResult(
             phase_name=WorkflowPhase.TARGET_DEFINITION.value, status=PhaseStatus.COMPLETED,
@@ -446,7 +423,7 @@ class TargetSettingWorkflow:
         self, input_data: TargetSettingInput,
     ) -> PhaseResult:
         """Validate targets against SBTi criteria."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._sbti_results = []
@@ -465,7 +442,7 @@ class TargetSettingWorkflow:
                 f"{len(self._sbti_results) - compliant_count} targets do not meet SBTi criteria"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 3 SBTiValidation: %d compliant of %d",
             compliant_count, len(self._sbti_results),
@@ -542,7 +519,7 @@ class TargetSettingWorkflow:
         self, input_data: TargetSettingInput,
     ) -> PhaseResult:
         """Assess progress toward each target."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._progress_map = {}
@@ -566,7 +543,7 @@ class TargetSettingWorkflow:
         if behind_targets:
             warnings.append(f"{len(behind_targets)} targets are behind schedule")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 4 ProgressAssessment: %s", status_counts)
         return PhaseResult(
             phase_name=WorkflowPhase.PROGRESS_ASSESSMENT.value, status=PhaseStatus.COMPLETED,
@@ -608,7 +585,7 @@ class TargetSettingWorkflow:
         self, input_data: TargetSettingInput,
     ) -> PhaseResult:
         """Generate E1-4 disclosure-ready output."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -643,7 +620,7 @@ class TargetSettingWorkflow:
 
         outputs["report_ready"] = True
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 5 ReportGeneration: E1-4 disclosure ready")
         return PhaseResult(
             phase_name=WorkflowPhase.REPORT_GENERATION.value, status=PhaseStatus.COMPLETED,

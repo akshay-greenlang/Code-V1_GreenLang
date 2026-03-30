@@ -37,25 +37,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -68,11 +62,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DataSourceType(str, Enum):
     """Supported data source types for CSDDD due diligence."""
@@ -86,7 +78,6 @@ class DataSourceType(str, Enum):
     AUDIT_REPORT = "audit_report"
     GRIEVANCE_LOG = "grievance_log"
 
-
 class QualityLevel(str, Enum):
     """Data quality assessment level."""
 
@@ -96,7 +87,6 @@ class QualityLevel(str, Enum):
     UNVERIFIED = "unverified"
     FAILED = "failed"
 
-
 class FreshnessStatus(str, Enum):
     """Data freshness status."""
 
@@ -105,7 +95,6 @@ class FreshnessStatus(str, Enum):
     STALE = "stale"
     EXPIRED = "expired"
     UNKNOWN = "unknown"
-
 
 class DataAgentId(str, Enum):
     """AGENT-DATA identifiers relevant to CSDDD."""
@@ -120,11 +109,9 @@ class DataAgentId(str, Enum):
     FRESHNESS_MONITOR = "DATA-016"
     VALIDATION_ENGINE = "DATA-019"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class DataBridgeConfig(BaseModel):
     """Configuration for the Data Bridge."""
@@ -144,7 +131,6 @@ class DataBridgeConfig(BaseModel):
         description="Minimum data quality score for acceptance",
     )
 
-
 class DataSourceRecord(BaseModel):
     """A data source record ingested by a DATA agent."""
 
@@ -154,12 +140,11 @@ class DataSourceRecord(BaseModel):
     company_id: str = Field(default="")
     file_name: Optional[str] = Field(None)
     record_count: int = Field(default=0, ge=0)
-    ingested_at: datetime = Field(default_factory=_utcnow)
+    ingested_at: datetime = Field(default_factory=utcnow)
     quality_score: float = Field(default=0.0, ge=0.0, le=1.0)
     quality_level: QualityLevel = Field(default=QualityLevel.UNVERIFIED)
     freshness: FreshnessStatus = Field(default=FreshnessStatus.UNKNOWN)
     validation_errors: List[str] = Field(default_factory=list)
-
 
 class QuestionnaireData(BaseModel):
     """Processed supplier questionnaire data."""
@@ -175,7 +160,6 @@ class QuestionnaireData(BaseModel):
     governance_responses: Dict[str, Any] = Field(default_factory=dict)
     risk_flags: List[str] = Field(default_factory=list)
 
-
 class SpendDataSummary(BaseModel):
     """Aggregated spend data for CSDDD value chain analysis."""
 
@@ -186,7 +170,6 @@ class SpendDataSummary(BaseModel):
     country_breakdown: Dict[str, float] = Field(default_factory=dict)
     high_risk_spend_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     uncategorized_spend_pct: float = Field(default=0.0, ge=0.0, le=100.0)
-
 
 class DataAggregation(BaseModel):
     """Aggregated data from multiple sources."""
@@ -200,7 +183,6 @@ class DataAggregation(BaseModel):
     overall_quality: QualityLevel = Field(default=QualityLevel.UNVERIFIED)
     overall_freshness: FreshnessStatus = Field(default=FreshnessStatus.UNKNOWN)
     provenance_hash: str = Field(default="")
-
 
 class DataQualityReport(BaseModel):
     """Data quality validation report."""
@@ -217,7 +199,6 @@ class DataQualityReport(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class BridgeResult(BaseModel):
     """Result of a data bridge operation."""
 
@@ -230,11 +211,9 @@ class BridgeResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # DataBridge
 # ---------------------------------------------------------------------------
-
 
 class DataBridge:
     """AGENT-DATA integration bridge for PACK-019 CSDDD Readiness.
@@ -273,7 +252,7 @@ class DataBridge:
         Returns:
             BridgeResult with status and records processed.
         """
-        result = BridgeResult(started_at=_utcnow())
+        result = BridgeResult(started_at=utcnow())
         ctx = context or {}
 
         try:
@@ -312,7 +291,7 @@ class DataBridge:
             result.errors.append(str(exc))
             logger.error("Questionnaire data retrieval failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at

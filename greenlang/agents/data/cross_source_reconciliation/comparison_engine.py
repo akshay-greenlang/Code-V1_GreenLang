@@ -37,16 +37,15 @@ from dataclasses import asdict, dataclass, field
 from datetime import date, datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Module-level exports
 # ---------------------------------------------------------------------------
 
 __all__ = ["ComparisonEngine"]
-
 
 # ---------------------------------------------------------------------------
 # Unit Conversion Tables
@@ -166,11 +165,9 @@ for _dim, _units in UNIT_CONVERSIONS.items():
     for _unit_name, _multiplier in _units.items():
         _UNIT_LOOKUP[_unit_name.lower()] = (_dim, _multiplier)
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class FieldType(str, Enum):
     """Supported field types for comparison routing."""
@@ -183,7 +180,6 @@ class FieldType(str, Enum):
     CURRENCY = "currency"
     UNIT_VALUE = "unit_value"
 
-
 class ComparisonResult(str, Enum):
     """Outcome of a single field comparison."""
 
@@ -195,7 +191,6 @@ class ComparisonResult(str, Enum):
     MISSING_BOTH = "missing_both"
     INCOMPARABLE = "incomparable"
 
-
 class DiscrepancySeverity(str, Enum):
     """Severity classification of a discrepancy."""
 
@@ -206,11 +201,9 @@ class DiscrepancySeverity(str, Enum):
     INFO = "info"
     NONE = "none"
 
-
 # ---------------------------------------------------------------------------
 # Data Models (self-contained until models.py is built)
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class ToleranceRule:
@@ -247,7 +240,6 @@ class ToleranceRule:
     currency_b: str = "USD"
     unit_a: str = ""
     unit_b: str = ""
-
 
 @dataclass
 class FieldComparison:
@@ -289,7 +281,6 @@ class FieldComparison:
         """
         return asdict(self)
 
-
 @dataclass
 class ComparisonSummary:
     """Aggregated summary of multiple field comparisons.
@@ -324,7 +315,6 @@ class ComparisonSummary:
         """
         return asdict(self)
 
-
 # ---------------------------------------------------------------------------
 # Metrics helpers (safe when prometheus_client is absent)
 # ---------------------------------------------------------------------------
@@ -340,7 +330,6 @@ except ImportError:
     _inc_comparisons_raw = None  # type: ignore[assignment]
     _observe_duration_raw = None  # type: ignore[assignment]
 
-
 def _inc_comparisons(result: str, count: int = 1) -> None:
     """Safely increment comparison counter.
 
@@ -355,7 +344,6 @@ def _inc_comparisons(result: str, count: int = 1) -> None:
         except Exception:
             pass
 
-
 def _observe_duration(duration: float) -> None:
     """Safely observe processing duration.
 
@@ -368,7 +356,6 @@ def _observe_duration(duration: float) -> None:
         except Exception:
             pass
 
-
 # ---------------------------------------------------------------------------
 # Provenance helper (safe when provenance module is absent)
 # ---------------------------------------------------------------------------
@@ -380,7 +367,6 @@ try:
     _PROVENANCE_MODULE_AVAILABLE = True
 except ImportError:
     _PROVENANCE_MODULE_AVAILABLE = False
-
 
 # ---------------------------------------------------------------------------
 # Private helpers
@@ -410,12 +396,6 @@ _DEFAULT_DATE_FORMATS: Tuple[str, ...] = (
     "%Y%m%d",
 )
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _is_missing(value: Any) -> bool:
     """Determine whether a value represents a missing data point.
 
@@ -434,7 +414,6 @@ def _is_missing(value: Any) -> bool:
     if isinstance(value, float) and (math.isnan(value) or math.isinf(value)):
         return True
     return False
-
 
 def _to_float(value: Any) -> Optional[float]:
     """Safely convert a value to float.
@@ -456,7 +435,6 @@ def _to_float(value: Any) -> Optional[float]:
         except (ValueError, TypeError):
             return None
     return None
-
 
 def _to_bool(value: Any) -> Optional[bool]:
     """Convert a value to boolean, handling truthy/falsy strings.
@@ -481,7 +459,6 @@ def _to_bool(value: Any) -> Optional[bool]:
             return False
     return None
 
-
 def _build_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
 
@@ -494,11 +471,9 @@ def _build_hash(data: Any) -> str:
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
-
 # ===========================================================================
 # ComparisonEngine
 # ===========================================================================
-
 
 class ComparisonEngine:
     """Field-by-field tolerance-aware comparison engine.
@@ -2116,7 +2091,7 @@ class ComparisonEngine:
         Returns:
             Hex-encoded SHA-256 hash string.
         """
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
         payload = {
             "operation": operation,
             "input": input_data,

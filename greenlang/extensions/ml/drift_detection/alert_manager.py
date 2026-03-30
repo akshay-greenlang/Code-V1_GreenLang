@@ -33,6 +33,7 @@ from collections import deque
 
 import requests
 from pydantic import BaseModel, Field, validator
+from greenlang.schemas.enums import AlertSeverity, AlertStatus
 
 logger = logging.getLogger(__name__)
 
@@ -40,14 +41,6 @@ logger = logging.getLogger(__name__)
 # =============================================================================
 # Enums
 # =============================================================================
-
-class AlertSeverity(str, Enum):
-    """Alert severity levels."""
-
-    INFO = "info"
-    WARNING = "warning"
-    CRITICAL = "critical"
-
 
 class AlertChannel(str, Enum):
     """Alert notification channels."""
@@ -57,16 +50,6 @@ class AlertChannel(str, Enum):
     EMAIL = "email"
     WEBHOOK = "webhook"
     LOG = "log"
-
-
-class AlertStatus(str, Enum):
-    """Alert status."""
-
-    PENDING = "pending"
-    DISPATCHED = "dispatched"
-    ACKNOWLEDGED = "acknowledged"
-    RESOLVED = "resolved"
-    ESCALATED = "escalated"
 
 
 class RemediationAction(str, Enum):

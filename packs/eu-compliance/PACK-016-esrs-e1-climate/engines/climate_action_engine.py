@@ -63,25 +63,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -101,7 +95,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely.
 
@@ -115,7 +108,6 @@ def _decimal(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _safe_divide(
     numerator: float, denominator: float, default: float = 0.0
 ) -> float:
@@ -124,13 +116,11 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.01"), rounding=ROUND_HALF_UP
     ))
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
@@ -138,13 +128,11 @@ def _round3(value: float) -> float:
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
 
-
 def _round4(value: float) -> float:
     """Round to 4 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.0001"), rounding=ROUND_HALF_UP
     ))
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value to the specified number of decimal places.
@@ -161,11 +149,9 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class PolicyType(str, Enum):
     """Type of climate-related policy per ESRS E1-2.
@@ -181,7 +167,6 @@ class PolicyType(str, Enum):
     SUPPLY_CHAIN = "supply_chain"
     PRODUCT_DESIGN = "product_design"
 
-
 class PolicyScope(str, Enum):
     """Scope of a climate policy per ESRS E1-2 Para 23(a).
 
@@ -192,7 +177,6 @@ class PolicyScope(str, Enum):
     BUSINESS_UNIT = "business_unit"
     SITE_LEVEL = "site_level"
     SUPPLY_CHAIN = "supply_chain"
-
 
 class ActionCategory(str, Enum):
     """Category of climate action per ESRS E1-3 and AR E1-18.
@@ -212,7 +196,6 @@ class ActionCategory(str, Enum):
     PRODUCT_REDESIGN = "product_redesign"
     OFFSET = "offset"
 
-
 class ActionStatus(str, Enum):
     """Status of a climate action per ESRS E1-3 Para 27.
 
@@ -225,7 +208,6 @@ class ActionStatus(str, Enum):
     CANCELLED = "cancelled"
     ON_HOLD = "on_hold"
 
-
 class ResourceType(str, Enum):
     """Type of resource allocated to climate actions per ESRS E1-3 Para 27.
 
@@ -237,11 +219,9 @@ class ResourceType(str, Enum):
     HUMAN = "human"
     TECHNOLOGY = "technology"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # Required ESRS E1-2 data points for policies disclosure.
 # Each key is a data point identifier; the value is a human-readable label.
@@ -277,7 +257,6 @@ E1_3_DATAPOINTS: Dict[str, str] = {
     "e1_3_dp13": "Responsible entity or individual for each action",
     "e1_3_dp14": "Actions grouped by category (energy efficiency, renewable energy, etc.)",
 }
-
 
 # EU Taxonomy substantial contribution mapping for climate actions.
 # Maps action categories to EU Taxonomy climate objectives.
@@ -354,7 +333,6 @@ ACTION_TAXONOMY_ALIGNMENT: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # Policy type descriptions for reporting.
 POLICY_TYPE_DESCRIPTIONS: Dict[str, str] = {
     "mitigation": "Climate change mitigation policy addressing GHG emission reductions",
@@ -364,7 +342,6 @@ POLICY_TYPE_DESCRIPTIONS: Dict[str, str] = {
     "supply_chain": "Supply chain climate policy for value chain emission reduction",
     "product_design": "Product design policy for lower-carbon products and services",
 }
-
 
 # Action category descriptions for reporting.
 ACTION_CATEGORY_DESCRIPTIONS: Dict[str, str] = {
@@ -380,11 +357,9 @@ ACTION_CATEGORY_DESCRIPTIONS: Dict[str, str] = {
     "offset": "Carbon offset purchases (voluntary market credits, compliance market allowances)",
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class ClimatePolicy(BaseModel):
     """A climate-related policy per ESRS E1-2.
@@ -470,7 +445,6 @@ class ClimatePolicy(BaseModel):
         if not v.strip():
             raise ValueError("Policy name cannot be empty")
         return v.strip()
-
 
 class ClimateAction(BaseModel):
     """A climate action per ESRS E1-3.
@@ -564,7 +538,6 @@ class ClimateAction(BaseModel):
             raise ValueError("Action name cannot be empty")
         return v.strip()
 
-
 class ResourceAllocation(BaseModel):
     """Resource allocation for a climate action per ESRS E1-3 Para 27.
 
@@ -604,7 +577,6 @@ class ResourceAllocation(BaseModel):
         description="SHA-256 provenance hash",
     )
 
-
 class ClimateActionResult(BaseModel):
     """Result of climate action plan compilation per ESRS E1-2 and E1-3.
 
@@ -621,7 +593,7 @@ class ClimateActionResult(BaseModel):
         description="Engine version used for this compilation",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of compilation (UTC)",
     )
     policies: List[ClimatePolicy] = Field(
@@ -701,11 +673,9 @@ class ClimateActionResult(BaseModel):
         description="SHA-256 hash of the entire result",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ClimateActionEngine:
     """Climate action and policy engine per ESRS E1-2 and E1-3.

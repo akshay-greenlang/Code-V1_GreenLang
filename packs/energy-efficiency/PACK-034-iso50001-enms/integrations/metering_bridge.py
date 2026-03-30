@@ -35,20 +35,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -61,11 +56,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class MeterType(str, Enum):
     """Types of energy meters in the hierarchy."""
@@ -76,7 +69,6 @@ class MeterType(str, Enum):
     VIRTUAL = "virtual"
     CALCULATED = "calculated"
 
-
 class ReadingQuality(str, Enum):
     """Quality classification for meter readings."""
 
@@ -86,7 +78,6 @@ class ReadingQuality(str, Enum):
     INTERPOLATED = "interpolated"
     MISSING = "missing"
 
-
 class ReconciliationStatus(str, Enum):
     """Status of meter reconciliation."""
 
@@ -95,11 +86,9 @@ class ReconciliationStatus(str, Enum):
     PARTIAL = "partial"
     NOT_RECONCILED = "not_reconciled"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class MeterConfig(BaseModel):
     """Configuration for a single meter in the hierarchy."""
@@ -120,7 +109,6 @@ class MeterConfig(BaseModel):
     calibration_due: Optional[str] = Field(None)
     is_active: bool = Field(default=True)
 
-
 class MeterHierarchy(BaseModel):
     """Tree structure representing the metering hierarchy."""
 
@@ -134,19 +122,17 @@ class MeterHierarchy(BaseModel):
     coverage_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
 
-
 class MeterReading(BaseModel):
     """A meter reading with quality classification."""
 
     reading_id: str = Field(default_factory=_new_uuid)
     meter_id: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     value_kwh: float = Field(default=0.0)
     quality: ReadingQuality = Field(default=ReadingQuality.MEASURED)
     period_start: Optional[datetime] = Field(None)
     period_end: Optional[datetime] = Field(None)
     notes: str = Field(default="")
-
 
 class ReconciliationResult(BaseModel):
     """Result of reconciling meter readings against the hierarchy."""
@@ -162,15 +148,13 @@ class ReconciliationResult(BaseModel):
     tolerance_pct: float = Field(default=5.0)
     sub_meter_count: int = Field(default=0)
     missing_sub_meters: List[str] = Field(default_factory=list)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     message: str = Field(default="")
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # MeteringBridge
 # ---------------------------------------------------------------------------
-
 
 class MeteringBridge:
     """Sub-metering hierarchy and data reconciliation for ISO 50001 EnMS.
@@ -426,7 +410,7 @@ class MeteringBridge:
             "input_values": readings,
             "calculated_value_kwh": round(result_value, 2),
             "quality": ReadingQuality.CALCULATED.value,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "provenance_hash": _compute_hash(readings),
         }
 

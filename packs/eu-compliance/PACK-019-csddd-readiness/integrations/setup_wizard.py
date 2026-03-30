@@ -47,25 +47,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -78,11 +72,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SetupStatus(str, Enum):
     """Setup wizard execution status."""
@@ -91,7 +83,6 @@ class SetupStatus(str, Enum):
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
     FAILED = "failed"
-
 
 class SectorType(str, Enum):
     """Business sector types for CSDDD configuration."""
@@ -105,7 +96,6 @@ class SectorType(str, Enum):
     MULTI_SECTOR = "multi_sector"
     UNKNOWN = "unknown"
 
-
 class CompanyGroup(str, Enum):
     """CSDDD company group classification per Article 2."""
 
@@ -113,7 +103,6 @@ class CompanyGroup(str, Enum):
     GROUP_2 = "group_2"
     FRANCHISE = "franchise"
     OUT_OF_SCOPE = "out_of_scope"
-
 
 class ValueChainDepth(str, Enum):
     """Value chain mapping depth configuration."""
@@ -123,11 +112,9 @@ class ValueChainDepth(str, Enum):
     FULL_UPSTREAM = "full_upstream"
     FULL_UPSTREAM_DOWNSTREAM = "full_upstream_downstream"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class WizardConfig(BaseModel):
     """Configuration for the setup wizard."""
@@ -136,7 +123,6 @@ class WizardConfig(BaseModel):
     auto_detect_sector: bool = Field(default=True)
     generate_output_file: bool = Field(default=True)
     output_dir: Optional[str] = Field(None)
-
 
 class CompanyProfile(BaseModel):
     """Company profile for CSDDD scope determination."""
@@ -162,7 +148,6 @@ class CompanyProfile(BaseModel):
             raise ValueError(f"Invalid NACE division: {v[0]}")
         return v.upper()
 
-
 class CSDDDConfiguration(BaseModel):
     """Generated CSDDD readiness configuration."""
 
@@ -179,9 +164,8 @@ class CSDDDConfiguration(BaseModel):
     preset_name: str = Field(default="")
     engines_enabled: List[str] = Field(default_factory=list)
     bridges_enabled: List[str] = Field(default_factory=list)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class ImplementationPhase(BaseModel):
     """A phase in the CSDDD implementation plan."""
@@ -192,7 +176,6 @@ class ImplementationPhase(BaseModel):
     duration_months: int = Field(default=0)
     csddd_articles: List[str] = Field(default_factory=list)
     deliverables: List[str] = Field(default_factory=list)
-
 
 class ImplementationPlan(BaseModel):
     """Generated CSDDD implementation plan."""
@@ -205,7 +188,6 @@ class ImplementationPlan(BaseModel):
     phases: List[ImplementationPhase] = Field(default_factory=list)
     recommendations: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class SetupResult(BaseModel):
     """Result of setup wizard execution."""
@@ -220,7 +202,6 @@ class SetupResult(BaseModel):
     validation_errors: List[str] = Field(default_factory=list)
     warnings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # NACE Code Mapping
@@ -379,11 +360,9 @@ SECTOR_PRESETS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # CSDDDSetupWizard
 # ---------------------------------------------------------------------------
-
 
 class CSDDDSetupWizard:
     """Guided configuration wizard for PACK-019 CSDDD Readiness Pack.
@@ -432,7 +411,7 @@ class CSDDDSetupWizard:
             SetupResult with generated configuration and implementation plan.
         """
         result = SetupResult(
-            started_at=_utcnow(),
+            started_at=utcnow(),
             status=SetupStatus.IN_PROGRESS,
         )
 
@@ -509,10 +488,10 @@ class CSDDDSetupWizard:
             result.validation_errors.append(str(exc))
             logger.error("Setup wizard failed: %s", str(exc), exc_info=True)
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
-                _utcnow() - result.started_at
+                utcnow() - result.started_at
             ).total_seconds() * 1000
         result.provenance_hash = _compute_hash(result)
         return result

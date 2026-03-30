@@ -43,26 +43,20 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -71,13 +65,11 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
-
 
 class ConsolidationExecPhase(str, Enum):
     DATA_GATHERING = "data_gathering"
@@ -87,12 +79,10 @@ class ConsolidationExecPhase(str, Enum):
     ADJUSTMENT_APPLICATION = "adjustment_application"
     CONSOLIDATED_TOTAL = "consolidated_total"
 
-
 class ConsolidationApproach(str, Enum):
     EQUITY_SHARE = "equity_share"
     FINANCIAL_CONTROL = "financial_control"
     OPERATIONAL_CONTROL = "operational_control"
-
 
 class EmissionScope(str, Enum):
     SCOPE_1 = "scope_1"
@@ -100,14 +90,12 @@ class EmissionScope(str, Enum):
     SCOPE_2_MARKET = "scope_2_market"
     SCOPE_3 = "scope_3"
 
-
 class AdjustmentType(str, Enum):
     CORRECTION = "correction"
     RECLASSIFICATION = "reclassification"
     RESTATEMENT = "restatement"
     METHODOLOGY_CHANGE = "methodology_change"
     DATA_IMPROVEMENT = "data_improvement"
-
 
 class EliminationType(str, Enum):
     INTER_ENTITY_ENERGY = "inter_entity_energy"
@@ -117,13 +105,11 @@ class EliminationType(str, Enum):
     SHARED_SERVICE = "shared_service"
     OTHER = "other"
 
-
 class ReconciliationStatus(str, Enum):
     RECONCILED = "reconciled"
     MINOR_VARIANCE = "minor_variance"
     MAJOR_VARIANCE = "major_variance"
     NOT_RECONCILED = "not_reconciled"
-
 
 # =============================================================================
 # REFERENCE DATA
@@ -134,11 +120,9 @@ RECONCILIATION_THRESHOLDS = {
     "major_variance_pct": Decimal("10.0"),
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -150,7 +134,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class EntityEmissionRecord(BaseModel):
     """Validated emission record for a single entity."""
@@ -170,7 +153,6 @@ class EntityEmissionRecord(BaseModel):
         ConsolidationApproach.OPERATIONAL_CONTROL
     )
 
-
 class EquityAdjustmentRecord(BaseModel):
     """Equity share adjustment for a single entity."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -186,7 +168,6 @@ class EquityAdjustmentRecord(BaseModel):
     adjusted_scope_3: Decimal = Field(Decimal("0"))
     adjusted_total_tco2e: Decimal = Field(Decimal("0"))
 
-
 class ControlAdjustmentRecord(BaseModel):
     """Control-based adjustment for a single entity."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -198,7 +179,6 @@ class ControlAdjustmentRecord(BaseModel):
     inclusion_factor: Decimal = Field(Decimal("1.0"))
     pre_adjustment_tco2e: Decimal = Field(Decimal("0"))
     post_adjustment_tco2e: Decimal = Field(Decimal("0"))
-
 
 class EliminationEntry(BaseModel):
     """Intercompany elimination entry."""
@@ -213,7 +193,6 @@ class EliminationEntry(BaseModel):
     description: str = Field("")
     evidence_ref: str = Field("")
 
-
 class ManualAdjustment(BaseModel):
     """Manual adjustment record."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -226,7 +205,6 @@ class ManualAdjustment(BaseModel):
     reason: str = Field("")
     approved_by: str = Field("")
     applied_at: str = Field("")
-
 
 class ConsolidatedTotal(BaseModel):
     """Final consolidated emission totals."""
@@ -246,7 +224,6 @@ class ConsolidatedTotal(BaseModel):
     entities_count: int = Field(0)
     reconciliation_status: ReconciliationStatus = Field(ReconciliationStatus.NOT_RECONCILED)
     provenance_hash: str = Field("")
-
 
 class ConsolidationExecInput(BaseModel):
     """Input for the consolidation execution workflow."""
@@ -269,7 +246,6 @@ class ConsolidationExecInput(BaseModel):
     top_down_estimates: Optional[Dict[str, Any]] = Field(None)
     skip_phases: List[str] = Field(default_factory=list)
 
-
 class ConsolidationExecResult(BaseModel):
     """Output from the consolidation execution workflow."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -291,11 +267,9 @@ class ConsolidationExecResult(BaseModel):
     started_at: str = Field("")
     completed_at: str = Field("")
 
-
 # =============================================================================
 # WORKFLOW CLASS
 # =============================================================================
-
 
 class ConsolidationExecutionWorkflow:
     """
@@ -334,7 +308,7 @@ class ConsolidationExecutionWorkflow:
 
     def execute(self, input_data: ConsolidationExecInput) -> ConsolidationExecResult:
         """Execute the full 6-phase consolidation execution workflow."""
-        start = _utcnow()
+        start = utcnow()
         result = ConsolidationExecResult(
             organisation_id=input_data.organisation_id,
             reporting_year=input_data.reporting_year,
@@ -359,10 +333,10 @@ class ConsolidationExecutionWorkflow:
                 ))
                 continue
 
-            phase_start = _utcnow()
+            phase_start = utcnow()
             try:
                 phase_out = phase_methods[phase](input_data, result)
-                elapsed = (_utcnow() - phase_start).total_seconds()
+                elapsed = (utcnow() - phase_start).total_seconds()
                 ph_hash = _compute_hash(str(phase_out))
                 result.phase_results.append(PhaseResult(
                     phase_name=phase.value, phase_number=idx,
@@ -370,7 +344,7 @@ class ConsolidationExecutionWorkflow:
                     outputs=phase_out, provenance_hash=ph_hash,
                 ))
             except Exception as exc:
-                elapsed = (_utcnow() - phase_start).total_seconds()
+                elapsed = (utcnow() - phase_start).total_seconds()
                 logger.error("Phase %s failed: %s", phase.value, exc, exc_info=True)
                 result.phase_results.append(PhaseResult(
                     phase_name=phase.value, phase_number=idx,
@@ -384,7 +358,7 @@ class ConsolidationExecutionWorkflow:
         if result.status != WorkflowStatus.FAILED:
             result.status = WorkflowStatus.COMPLETED
 
-        end = _utcnow()
+        end = utcnow()
         result.completed_at = end.isoformat()
         result.duration_seconds = (end - start).total_seconds()
         result.provenance_hash = _compute_hash(
@@ -632,7 +606,7 @@ class ConsolidationExecutionWorkflow:
 
         applied: List[ManualAdjustment] = []
         total_adjustment = Decimal("0")
-        now_iso = _utcnow().isoformat()
+        now_iso = utcnow().isoformat()
 
         for raw in input_data.manual_adjustments:
             try:
@@ -747,7 +721,7 @@ class ConsolidationExecutionWorkflow:
         # Reconciliation
         recon_status = self._reconcile_with_top_down(input_data, s1, s2l, s3, result)
 
-        now_iso = _utcnow().isoformat()
+        now_iso = utcnow().isoformat()
         prov = _compute_hash(
             f"{input_data.organisation_id}|{input_data.reporting_year}|"
             f"{float(s1)}|{float(s2l)}|{float(s2m)}|{float(s3)}|{now_iso}"
@@ -826,7 +800,6 @@ class ConsolidationExecutionWorkflow:
             return Decimal(str(value))
         except Exception:
             return Decimal("0")
-
 
 # =============================================================================
 # MODULE EXPORTS

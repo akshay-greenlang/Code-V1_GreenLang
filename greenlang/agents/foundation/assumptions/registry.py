@@ -55,6 +55,7 @@ from greenlang.agents.foundation.assumptions.models import (
 )
 from greenlang.agents.foundation.assumptions.validator import AssumptionValidator
 from greenlang.agents.foundation.assumptions.provenance import ProvenanceTracker
+from greenlang.schemas import utcnow
 from greenlang.agents.foundation.assumptions.metrics import (
     record_operation,
     record_version_create,
@@ -63,12 +64,6 @@ from greenlang.agents.foundation.assumptions.metrics import (
 )
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 class AssumptionRegistry:
     """Core registry for managing assumptions.
@@ -227,7 +222,7 @@ class AssumptionRegistry:
         initial_version = AssumptionVersion(
             version_number=1,
             value=value,
-            effective_from=_utcnow(),
+            effective_from=utcnow(),
             created_by=user_id,
             change_reason=change_reason,
             change_type=ChangeType.CREATE,
@@ -329,7 +324,7 @@ class AssumptionRegistry:
         new_version = AssumptionVersion(
             version_number=len(assumption.versions) + 1,
             value=value,
-            effective_from=_utcnow(),
+            effective_from=utcnow(),
             created_by=user_id,
             change_reason=reason,
             change_type=ChangeType.UPDATE,
@@ -348,12 +343,12 @@ class AssumptionRegistry:
 
         # Mark previous version as expired
         if assumption.versions:
-            assumption.versions[-1].effective_until = _utcnow()
+            assumption.versions[-1].effective_until = utcnow()
 
         # Update assumption
         assumption.versions.append(new_version)
         assumption.current_value = value
-        assumption.updated_at = _utcnow()
+        assumption.updated_at = utcnow()
         assumption.provenance_hash = self._compute_hash(
             assumption.model_dump(mode="json"),
         )
@@ -552,7 +547,7 @@ class AssumptionRegistry:
         start = time.monotonic()
 
         export_data: Dict[str, Any] = {
-            "export_timestamp": _utcnow().isoformat(),
+            "export_timestamp": utcnow().isoformat(),
             "exported_by": user_id,
             "assumptions": [
                 a.model_dump(mode="json")
@@ -674,7 +669,6 @@ class AssumptionRegistry:
             return hashlib.sha256(json_str.encode()).hexdigest()
         except Exception:
             return hashlib.sha256(str(data).encode()).hexdigest()
-
 
 __all__ = [
     "AssumptionRegistry",

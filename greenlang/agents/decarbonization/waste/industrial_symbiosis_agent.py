@@ -23,7 +23,7 @@ from typing import Any, Dict, List, Optional
 from enum import Enum
 import logging
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.decarbonization.waste.base import (
     BaseWasteDecarbAgent,
@@ -36,6 +36,7 @@ from greenlang.agents.decarbonization.waste.base import (
     CostCategory,
     ConfidenceLevel,
 )
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +53,7 @@ class WasteStreamCategory(str, Enum):
     MINERALS = "minerals"
 
 
-class SymbiosisExchange(BaseModel):
+class SymbiosisExchange(GreenLangBase):
     """Individual symbiosis exchange."""
     exchange_id: str
     waste_type: WasteStreamCategory
@@ -85,7 +86,7 @@ class IndustrialSymbiosisInput(WasteDecarbInput):
     )
 
 
-class SymbiosisNetworkMetrics(BaseModel):
+class SymbiosisNetworkMetrics(GreenLangBase):
     """Symbiosis network metrics."""
     connectivity_index: Decimal = Field(Decimal("0"), description="Network connectivity (0-1)")
     material_synergy_rate: Decimal = Field(Decimal("0"), description="Waste utilized rate")

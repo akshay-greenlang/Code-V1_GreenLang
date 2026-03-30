@@ -72,25 +72,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -110,7 +104,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely.
 
@@ -124,7 +117,6 @@ def _decimal(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
 ) -> Decimal:
@@ -132,7 +124,6 @@ def _safe_divide(
     if denominator == Decimal("0"):
         return default
     return numerator / denominator
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value to the specified number of decimal places.
@@ -149,23 +140,19 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
 
-
 def _round6(value: Decimal) -> Decimal:
     """Round Decimal to 6 decimal places using ROUND_HALF_UP."""
     return value.quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class LandUseType(str, Enum):
     """Land-use classification for site biodiversity assessments.
@@ -181,7 +168,6 @@ class LandUseType(str, Enum):
     BARE_LAND = "bare_land"
     WATER_BODY = "water_body"
 
-
 class BiodiversitySensitivity(str, Enum):
     """Sensitivity level of a site with respect to biodiversity.
 
@@ -193,7 +179,6 @@ class BiodiversitySensitivity(str, Enum):
     MEDIUM = "medium"
     HIGH = "high"
     CRITICAL = "critical"
-
 
 class ProtectedAreaType(str, Enum):
     """Classification of protected and sensitive area designations.
@@ -208,7 +193,6 @@ class ProtectedAreaType(str, Enum):
     KEY_BIODIVERSITY_AREA = "key_biodiversity_area"
     OTHER_PROTECTED = "other_protected"
 
-
 class EcosystemService(str, Enum):
     """Categories of ecosystem services per the Millennium Ecosystem
     Assessment framework.
@@ -220,7 +204,6 @@ class EcosystemService(str, Enum):
     REGULATING = "regulating"
     CULTURAL = "cultural"
     SUPPORTING = "supporting"
-
 
 class SpeciesRedListCategory(str, Enum):
     """IUCN Red List threat categories for species impact assessment.
@@ -236,7 +219,6 @@ class SpeciesRedListCategory(str, Enum):
     CRITICALLY_ENDANGERED = "critically_endangered"
     EXTINCT_IN_WILD = "extinct_in_wild"
 
-
 class ImpactDriver(str, Enum):
     """Primary drivers of biodiversity loss per IPBES classification.
 
@@ -249,7 +231,6 @@ class ImpactDriver(str, Enum):
     POLLUTION = "pollution"
     INVASIVE_SPECIES = "invasive_species"
 
-
 class DeforestationStatus(str, Enum):
     """Deforestation-free status classification for supply chain nodes.
 
@@ -260,11 +241,9 @@ class DeforestationStatus(str, Enum):
     NOT_ASSESSED = "not_assessed"
     NON_COMPLIANT = "non_compliant"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # ESRS E4-1 required data points: Transition plan (Para 11-17).
 E4_1_DATAPOINTS: List[str] = [
@@ -370,11 +349,9 @@ SENSITIVITY_MULTIPLIERS: Dict[str, Decimal] = {
     "critical": Decimal("2.00"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class BiodiversityTransitionPlan(BaseModel):
     """Transition plan per ESRS E4-1 (Para 11-17).
@@ -414,7 +391,6 @@ class BiodiversityTransitionPlan(BaseModel):
         description="Alignment with Kunming-Montreal GBF targets",
     )
 
-
 class BiodiversityPolicy(BaseModel):
     """Policy disclosure per ESRS E4-2 (Para 19-22).
 
@@ -452,7 +428,6 @@ class BiodiversityPolicy(BaseModel):
         description="Whether the policy addresses ecosystem service dependencies",
     )
 
-
 class BiodiversityAction(BaseModel):
     """Action disclosure per ESRS E4-3 (Para 24-27).
 
@@ -488,7 +463,6 @@ class BiodiversityAction(BaseModel):
         description="Timeline for action implementation",
         max_length=200,
     )
-
 
 class BiodiversityTarget(BaseModel):
     """Target disclosure per ESRS E4-4 (Para 29-32).
@@ -547,7 +521,6 @@ class BiodiversityTarget(BaseModel):
                 f"target_year ({v}) must be >= base_year ({base})"
             )
         return v
-
 
 class SiteBiodiversityAssessment(BaseModel):
     """Site-level biodiversity assessment per ESRS E4-5 (Para 36-39).
@@ -613,7 +586,6 @@ class SiteBiodiversityAssessment(BaseModel):
             )
         return v
 
-
 class LandUseChange(BaseModel):
     """Land-use change record per ESRS E4-5 (Para 38, AR E4-24).
 
@@ -658,7 +630,6 @@ class LandUseChange(BaseModel):
             self.is_deforestation = True
         return self
 
-
 class SpeciesImpact(BaseModel):
     """Species-level impact record per ESRS E4-5 (Para 40, AR E4-26).
 
@@ -689,7 +660,6 @@ class SpeciesImpact(BaseModel):
         max_length=1000,
     )
 
-
 class BiodiversityFinancialEffect(BaseModel):
     """Financial effect disclosure per ESRS E4-6 (Para 45-47).
 
@@ -719,7 +689,6 @@ class BiodiversityFinancialEffect(BaseModel):
         description="Time horizon (short_term, medium_term, long_term)",
         max_length=50,
     )
-
 
 class E4BiodiversityResult(BaseModel):
     """Complete ESRS E4 biodiversity disclosure result.
@@ -810,7 +779,7 @@ class E4BiodiversityResult(BaseModel):
         description="SHA-256 hash of all inputs and calculation steps",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of calculation (UTC)",
     )
     processing_time_ms: float = Field(
@@ -818,11 +787,9 @@ class E4BiodiversityResult(BaseModel):
         description="Processing time in milliseconds",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class BiodiversityEngine:
     """ESRS E4 Biodiversity and Ecosystems calculation engine.
@@ -1339,7 +1306,7 @@ class BiodiversityEngine:
             total_progress += target.progress_pct
 
             # Determine expected progress based on elapsed time
-            current_year = _utcnow().year
+            current_year = utcnow().year
             total_span = _decimal(target.target_year - target.base_year)
             elapsed = _decimal(max(0, current_year - target.base_year))
             expected_pct = _round_val(

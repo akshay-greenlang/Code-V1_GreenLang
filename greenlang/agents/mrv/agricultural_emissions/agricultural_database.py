@@ -77,6 +77,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -115,15 +116,9 @@ except ImportError:
     _METRICS_AVAILABLE = False
     _record_db_operation = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -141,13 +136,11 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Decimal precision constant
 # ---------------------------------------------------------------------------
 
 _PRECISION = Decimal("0.00000001")  # 8 decimal places
-
 
 def _D(value: Any) -> Decimal:
     """Convert a value to Decimal with controlled precision.
@@ -162,11 +155,9 @@ def _D(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 # ===========================================================================
 # Enumerations
 # ===========================================================================
-
 
 class AnimalType(str, Enum):
     """IPCC livestock categories per 2006 Guidelines Vol 4 Ch 10.
@@ -189,7 +180,6 @@ class AnimalType(str, Enum):
     POULTRY_LAYERS = "POULTRY_LAYERS"
     POULTRY_BROILERS = "POULTRY_BROILERS"
     RABBITS = "RABBITS"
-
 
 class ManureSystem(str, Enum):
     """Animal Waste Management Systems (AWMS) per IPCC 2006 Vol 4 Ch 10.
@@ -214,7 +204,6 @@ class ManureSystem(str, Enum):
     AEROBIC_TREATMENT = "AEROBIC_TREATMENT"
     BURNED_AS_FUEL = "BURNED_AS_FUEL"
 
-
 class WaterRegime(str, Enum):
     """Rice water regime categories per IPCC 2006 Vol 4 Ch 5 Table 5.12.
 
@@ -230,7 +219,6 @@ class WaterRegime(str, Enum):
     DEEPWATER = "DEEPWATER"
     UPLAND = "UPLAND"
 
-
 class PreSeasonFlooding(str, Enum):
     """Pre-season water status for rice paddies per IPCC 2006 Vol 4 Ch 5.
 
@@ -242,7 +230,6 @@ class PreSeasonFlooding(str, Enum):
     NOT_FLOODED_GT_180 = "NOT_FLOODED_GT_180"
     FLOODED_LT_30 = "FLOODED_LT_30"
     FLOODED_GT_30 = "FLOODED_GT_30"
-
 
 class OrganicAmendment(str, Enum):
     """Organic amendment types for rice cultivation per IPCC 2006 Vol 4 Ch 5.
@@ -256,7 +243,6 @@ class OrganicAmendment(str, Enum):
     COMPOST = "COMPOST"
     FARM_YARD_MANURE = "FARM_YARD_MANURE"
     GREEN_MANURE = "GREEN_MANURE"
-
 
 class CropType(str, Enum):
     """Crop types for field burning and residue parameter lookups.
@@ -280,7 +266,6 @@ class CropType(str, Enum):
     GROUNDNUTS = "GROUNDNUTS"
     RAPESEED = "RAPESEED"
 
-
 class SoilN2OFactorType(str, Enum):
     """Direct N2O emission factor types per IPCC 2006 Vol 4 Ch 11.
 
@@ -296,7 +281,6 @@ class SoilN2OFactorType(str, Enum):
     EF3_PRP = "EF3_PRP"
     EF3_PRP_CPP = "EF3_PRP_CPP"
     EF3_PRP_SO = "EF3_PRP_SO"
-
 
 class IndirectN2OFractionType(str, Enum):
     """Indirect N2O fraction types per IPCC 2006 Vol 4 Ch 11.
@@ -314,7 +298,6 @@ class IndirectN2OFractionType(str, Enum):
     EF4 = "EF4"
     EF5 = "EF5"
 
-
 class LimingMaterial(str, Enum):
     """Liming material types per IPCC 2006 Vol 4 Ch 11.
 
@@ -324,7 +307,6 @@ class LimingMaterial(str, Enum):
 
     LIMESTONE = "LIMESTONE"
     DOLOMITE = "DOLOMITE"
-
 
 class GWPSource(str, Enum):
     """IPCC Assessment Report editions for GWP values.
@@ -340,7 +322,6 @@ class GWPSource(str, Enum):
     AR6 = "AR6"
     AR6_20YR = "AR6_20YR"
 
-
 class RegionType(str, Enum):
     """Broad region classification for enteric fermentation Tier 1 EFs.
 
@@ -351,7 +332,6 @@ class RegionType(str, Enum):
     DEVELOPED = "DEVELOPED"
     DEVELOPING = "DEVELOPING"
 
-
 class TemperatureRange(str, Enum):
     """Temperature ranges for manure MCF selection.
 
@@ -361,7 +341,6 @@ class TemperatureRange(str, Enum):
     COOL = "COOL"
     TEMPERATE = "TEMPERATE"
     WARM = "WARM"
-
 
 class EmissionFactorSource(str, Enum):
     """Sources for emission factor data.
@@ -383,11 +362,9 @@ class EmissionFactorSource(str, Enum):
     SITE_MEASURED = "SITE_MEASURED"
     CUSTOM = "CUSTOM"
 
-
 # ===========================================================================
 # Dataclasses for structured lookups
 # ===========================================================================
-
 
 @dataclass(frozen=True)
 class FieldBurningRecord:
@@ -415,7 +392,6 @@ class FieldBurningRecord:
     combustion_factor: Decimal
     source: str
 
-
 @dataclass(frozen=True)
 class CropResidueRecord:
     """Crop residue parameters for N2O soil emission calculations.
@@ -439,7 +415,6 @@ class CropResidueRecord:
     n_ag: Decimal
     n_bg: Decimal
     source: str
-
 
 # ===========================================================================
 # GWP Values (IPCC AR4/AR5/AR6/AR6_20YR)
@@ -477,7 +452,6 @@ GWP_VALUES: Dict[str, Dict[str, Decimal]] = {
         "N2O": _D("273"),
     },
 }
-
 
 # ===========================================================================
 # Enteric Fermentation Emission Factors (kg CH4/head/yr)
@@ -546,7 +520,6 @@ ENTERIC_EF: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ===========================================================================
 # Manure Volatile Solids (VS) (kg VS/head/day)
 # IPCC 2006 Vol 4 Ch 10 Table 10.13A
@@ -572,7 +545,6 @@ MANURE_VS: Dict[str, Decimal] = {
     "RABBITS": _D("0.05"),
 }
 
-
 # ===========================================================================
 # Manure Maximum CH4 Producing Capacity (Bo) (m3 CH4/kg VS)
 # IPCC 2006 Vol 4 Ch 10 Table 10.16
@@ -597,7 +569,6 @@ MANURE_BO: Dict[str, Decimal] = {
     "CAMELS": _D("0.10"),
     "RABBITS": _D("0.32"),
 }
-
 
 # ===========================================================================
 # Manure MCF - Methane Correction Factor by AWMS and Temperature
@@ -686,7 +657,6 @@ MANURE_MCF: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ===========================================================================
 # Manure N2O Emission Factors by AWMS
 # IPCC 2006 Vol 4 Ch 10 Table 10.21
@@ -713,7 +683,6 @@ MANURE_N2O_EF: Dict[str, Decimal] = {
     "BURNED_AS_FUEL": _D("0"),
 }
 
-
 # ===========================================================================
 # Manure Nitrogen Excretion (Nex) (kg N/head/yr)
 # IPCC 2006 Vol 4 Ch 10 Table 10.19
@@ -739,7 +708,6 @@ MANURE_NEX: Dict[str, Decimal] = {
     "RABBITS": _D("5.6"),
 }
 
-
 # ===========================================================================
 # Direct Soil N2O Emission Factors
 # IPCC 2006 Vol 4 Ch 11 Table 11.1
@@ -762,7 +730,6 @@ SOIL_N2O_FACTORS: Dict[str, Decimal] = {
     "EF3_PRP_SO": _D("0.01"),
 }
 
-
 # ===========================================================================
 # Indirect N2O Fractions and Emission Factors
 # IPCC 2006 Vol 4 Ch 11 Table 11.3
@@ -783,7 +750,6 @@ INDIRECT_N2O_FACTORS: Dict[str, Decimal] = {
     "EF5": _D("0.0075"),
 }
 
-
 # ===========================================================================
 # Liming Emission Factors
 # IPCC 2006 Vol 4 Ch 11 Eq 11.12
@@ -796,7 +762,6 @@ LIMING_FACTORS: Dict[str, Decimal] = {
     "DOLOMITE": _D("0.13"),
 }
 
-
 # ===========================================================================
 # Urea Emission Factor
 # IPCC 2006 Vol 4 Ch 11 Eq 11.13
@@ -807,7 +772,6 @@ LIMING_FACTORS: Dict[str, Decimal] = {
 #: Source: IPCC 2006 Vol 4 Ch 11 Eq 11.13.
 UREA_FACTOR: Decimal = _D("0.20")
 
-
 # ===========================================================================
 # Rice Cultivation Baseline Emission Factor
 # IPCC 2006 Vol 4 Ch 5 Table 5.11
@@ -817,7 +781,6 @@ UREA_FACTOR: Decimal = _D("0.20")
 #: Units: kg CH4 per hectare per day.
 #: Source: IPCC 2006 Vol 4 Ch 5 Table 5.11.
 RICE_BASELINE_EF: Decimal = _D("1.30")
-
 
 # ===========================================================================
 # Rice Water Regime Scaling Factor
@@ -837,7 +800,6 @@ RICE_WATER_REGIME_SF: Dict[str, Decimal] = {
     "UPLAND": _D("0"),
 }
 
-
 # ===========================================================================
 # Rice Pre-Season Flooding Scaling Factor
 # IPCC 2006 Vol 4 Ch 5 Table 5.13
@@ -851,7 +813,6 @@ RICE_PRESEASON_SF: Dict[str, Decimal] = {
     "FLOODED_LT_30": _D("1.90"),
     "FLOODED_GT_30": _D("2.40"),
 }
-
 
 # ===========================================================================
 # Rice Organic Amendment Conversion Factor (CFOA)
@@ -868,7 +829,6 @@ RICE_ORGANIC_CFOA: Dict[str, Decimal] = {
     "FARM_YARD_MANURE": _D("0.14"),
     "GREEN_MANURE": _D("0.50"),
 }
-
 
 # ===========================================================================
 # Field Burning Emission Factors and Residue Parameters
@@ -981,7 +941,6 @@ FIELD_BURNING_EF: Dict[str, FieldBurningRecord] = {
     ),
 }
 
-
 # ===========================================================================
 # Tier 2 Maintenance Coefficients (Cfi)
 # IPCC 2006 Vol 4 Ch 10 Table 10.4
@@ -1006,7 +965,6 @@ MAINTENANCE_COEFFICIENTS: Dict[str, Decimal] = {
     "POULTRY_BROILERS": _D("0"),
     "RABBITS": _D("0"),
 }
-
 
 # ===========================================================================
 # Default Body Weights (kg)
@@ -1033,7 +991,6 @@ BODY_WEIGHT_DEFAULTS: Dict[str, Decimal] = {
     "RABBITS": _D("3.5"),
 }
 
-
 # ===========================================================================
 # Milk Yield Defaults (kg/head/yr)
 # IPCC 2006 Vol 4 Ch 10 Table 10.8
@@ -1053,7 +1010,6 @@ MILK_YIELD_DEFAULTS: Dict[str, Decimal] = {
     "DEVELOPING_MIDDLE_EAST": _D("1100"),
     "GLOBAL_AVERAGE": _D("2400"),
 }
-
 
 # ===========================================================================
 # Feed Digestibility (DE%) by Feed Type
@@ -1076,7 +1032,6 @@ FEED_DIGESTIBILITY: Dict[str, Decimal] = {
     "TOTAL_MIXED_RATION": _D("78"),
     "CONCENTRATE_HEAVY": _D("82"),
 }
-
 
 # ===========================================================================
 # Crop Residue Parameters for N2O Soil Calculations
@@ -1228,7 +1183,6 @@ CROP_RESIDUE_PARAMS: Dict[str, CropResidueRecord] = {
     ),
 }
 
-
 # ===========================================================================
 # DEFRA Agricultural Emission Factors
 # Units: kg CO2e per head per year (livestock) or per tonne (crops)
@@ -1303,7 +1257,6 @@ DEFRA_AG_FACTORS: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ===========================================================================
 # EPA 40 CFR 98 Subpart JJ Factors
 # Units: metric tonnes CO2e per head per year
@@ -1369,7 +1322,6 @@ EPA_AG_FACTORS: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ===========================================================================
 # Conversion Constants
 # ===========================================================================
@@ -1392,11 +1344,9 @@ METHANE_ENERGY_MJ_M3: Decimal = _D("35.84")
 #: Days per year (non-leap).
 DAYS_PER_YEAR: Decimal = _D("365")
 
-
 # ===========================================================================
 # AgriculturalDatabaseEngine
 # ===========================================================================
-
 
 class AgriculturalDatabaseEngine:
     """Reference data repository for IPCC/EPA/DEFRA agricultural emission factors.
@@ -1431,7 +1381,7 @@ class AgriculturalDatabaseEngine:
         self._lock = threading.RLock()
         self._total_lookups: int = 0
         self._cache: Dict[str, Any] = {}
-        self._created_at = _utcnow()
+        self._created_at = utcnow()
 
         logger.info(
             "AgriculturalDatabaseEngine initialized: "
@@ -2738,7 +2688,7 @@ class AgriculturalDatabaseEngine:
                 "value": str(value),
                 "source": source,
                 "description": description,
-                "registered_at": _utcnow().isoformat(),
+                "registered_at": utcnow().isoformat(),
             }
             self._custom_factors[factor_type][key] = record
 

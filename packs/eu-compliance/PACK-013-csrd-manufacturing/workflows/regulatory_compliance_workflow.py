@@ -26,20 +26,15 @@ from typing import Any, Callable, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC time with timezone info."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute SHA-256 provenance hash of arbitrary data."""
     return hashlib.sha256(
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
-
 
 class PhaseStatus(str, Enum):
     PENDING = "PENDING"
@@ -48,7 +43,6 @@ class PhaseStatus(str, Enum):
     FAILED = "FAILED"
     SKIPPED = "SKIPPED"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "PENDING"
     RUNNING = "RUNNING"
@@ -56,12 +50,11 @@ class WorkflowStatus(str, Enum):
     FAILED = "FAILED"
     PARTIAL = "PARTIAL"
 
-
 class WorkflowContext(BaseModel):
     """Shared state passed between workflow phases."""
     workflow_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     organization_id: str = Field(..., description="Organization identifier")
-    execution_timestamp: datetime = Field(default_factory=_utcnow)
+    execution_timestamp: datetime = Field(default_factory=utcnow)
     config: Dict[str, Any] = Field(default_factory=dict)
     phase_states: Dict[str, PhaseStatus] = Field(default_factory=dict)
     phase_outputs: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
@@ -77,7 +70,6 @@ class WorkflowContext(BaseModel):
     def mark_phase(self, phase_name: str, status: PhaseStatus) -> None:
         self.phase_states[phase_name] = status
 
-
 class PhaseResult(BaseModel):
     phase_name: str = Field(...)
     status: PhaseStatus = Field(...)
@@ -90,7 +82,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     records_processed: int = Field(default=0)
 
-
 class WorkflowResult(BaseModel):
     workflow_id: str = Field(...)
     workflow_name: str = Field(...)
@@ -101,7 +92,6 @@ class WorkflowResult(BaseModel):
     phases: List[PhaseResult] = Field(default_factory=list)
     summary: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 #  Input / Result
@@ -118,7 +108,6 @@ class RegulationRecord(BaseModel):
     penalty_range_eur: str = Field(default="", description="e.g. 10K-1M")
     current_status: str = Field(default="unknown", description="compliant, partial, non_compliant, unknown")
 
-
 class RegulatoryComplianceInput(BaseModel):
     """Input for regulatory compliance workflow."""
     organization_id: str = Field(...)
@@ -129,14 +118,12 @@ class RegulatoryComplianceInput(BaseModel):
     existing_certifications: List[str] = Field(default_factory=list)
     skip_phases: List[str] = Field(default_factory=list)
 
-
 class RegulatoryComplianceResult(WorkflowResult):
     """Result from the regulatory compliance workflow."""
     regulation_status: Dict[str, str] = Field(default_factory=dict)
     gaps: List[Dict[str, Any]] = Field(default_factory=list)
     action_items: List[Dict[str, Any]] = Field(default_factory=list)
     timeline: List[Dict[str, Any]] = Field(default_factory=list)
-
 
 # ---------------------------------------------------------------------------
 #  Phase 1: Regulation Mapping
@@ -161,7 +148,7 @@ class RegulationMappingPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Identify and map all applicable regulations."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -202,7 +189,7 @@ class RegulationMappingPhase:
             errors.append(str(exc))
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -210,7 +197,6 @@ class RegulationMappingPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 # ---------------------------------------------------------------------------
 #  Phase 2: Compliance Assessment
@@ -223,7 +209,7 @@ class ComplianceAssessmentPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Assess current compliance level for each mapped regulation."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -300,7 +286,7 @@ class ComplianceAssessmentPhase:
             errors.append(str(exc))
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -308,7 +294,6 @@ class ComplianceAssessmentPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 # ---------------------------------------------------------------------------
 #  Phase 3: Action Planning
@@ -321,7 +306,7 @@ class ActionPlanningPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Create prioritized action plan for compliance gaps."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -394,7 +379,7 @@ class ActionPlanningPhase:
             errors.append(str(exc))
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -402,7 +387,6 @@ class ActionPlanningPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 # ---------------------------------------------------------------------------
 #  Workflow Orchestrator
@@ -438,7 +422,7 @@ class RegulatoryComplianceWorkflow:
 
     async def run(self, input_data: RegulatoryComplianceInput) -> RegulatoryComplianceResult:
         """Execute the complete 3-phase regulatory compliance workflow."""
-        started_at = _utcnow()
+        started_at = utcnow()
         logger.info("Starting regulatory compliance workflow %s", self.workflow_id)
         context = WorkflowContext(
             workflow_id=self.workflow_id,
@@ -474,7 +458,7 @@ class RegulatoryComplianceWorkflow:
                 logger.error("Phase '%s' raised: %s", phase_name, exc, exc_info=True)
                 completed_phases.append(PhaseResult(
                     phase_name=phase_name, status=PhaseStatus.FAILED,
-                    started_at=_utcnow(), errors=[str(exc)],
+                    started_at=utcnow(), errors=[str(exc)],
                     provenance_hash=_hash_data({"error": str(exc)}),
                 ))
                 context.mark_phase(phase_name, PhaseStatus.FAILED)
@@ -488,7 +472,7 @@ class RegulatoryComplianceWorkflow:
             )
             overall_status = WorkflowStatus.COMPLETED if all_ok else WorkflowStatus.PARTIAL
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         duration = (completed_at - started_at).total_seconds()
         summary = self._build_summary(context)
         provenance = _hash_data({

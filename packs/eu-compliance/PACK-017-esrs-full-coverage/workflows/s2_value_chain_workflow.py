@@ -28,33 +28,25 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class WorkflowPhase(str, Enum):
     """Phases of the S2 value chain workers workflow."""
@@ -64,7 +56,6 @@ class WorkflowPhase(str, Enum):
     TARGET_TRACKING = "target_tracking"
     REPORT_GENERATION = "report_generation"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "pending"
@@ -72,7 +63,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class PhaseStatus(str, Enum):
     """Status of a single phase."""
@@ -82,7 +72,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkerCategory(str, Enum):
     """Value chain worker category."""
     DIRECT_SUPPLIER = "direct_supplier"
@@ -91,7 +80,6 @@ class WorkerCategory(str, Enum):
     AGENCY_WORKER = "agency_worker"
     SUBCONTRACTOR = "subcontractor"
 
-
 class RiskLevel(str, Enum):
     """Human rights risk level classification."""
     LOW = "low"
@@ -99,11 +87,9 @@ class RiskLevel(str, Enum):
     HIGH = "high"
     VERY_HIGH = "very_high"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -114,7 +100,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class SupplierRecord(BaseModel):
     """Supplier assessment record for value chain workers."""
@@ -128,7 +113,6 @@ class SupplierRecord(BaseModel):
     engagement_channel: str = Field(default="")
     issues_identified: List[str] = Field(default_factory=list)
 
-
 class PolicyRecord(BaseModel):
     """Value chain worker policy record."""
     policy_id: str = Field(default_factory=lambda: f"pol-{_new_uuid()[:8]}")
@@ -141,7 +125,6 @@ class PolicyRecord(BaseModel):
     aligned_with_ungp: bool = Field(default=False)
     scope_covers_value_chain: bool = Field(default=False)
 
-
 class EngagementRecord(BaseModel):
     """Engagement process record."""
     engagement_id: str = Field(default_factory=lambda: f"eng-{_new_uuid()[:8]}")
@@ -150,7 +133,6 @@ class EngagementRecord(BaseModel):
     worker_count_reached: int = Field(default=0, ge=0)
     frequency: str = Field(default="annual")
     findings_count: int = Field(default=0, ge=0)
-
 
 class ValueChainTarget(BaseModel):
     """Value chain workers target."""
@@ -162,7 +144,6 @@ class ValueChainTarget(BaseModel):
     target_year: int = Field(default=2030)
     target_value: float = Field(default=0.0)
     current_value: float = Field(default=0.0)
-
 
 class S2ValueChainInput(BaseModel):
     """Input data model for S2ValueChainWorkflow."""
@@ -186,7 +167,6 @@ class S2ValueChainInput(BaseModel):
     )
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class S2ValueChainWorkflowResult(BaseModel):
     """Complete result from S2 value chain workers workflow."""
     workflow_id: str = Field(..., description="Unique execution ID")
@@ -208,11 +188,9 @@ class S2ValueChainWorkflowResult(BaseModel):
     reporting_year: int = Field(default=2025)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class S2ValueChainWorkflow:
     """
@@ -278,7 +256,7 @@ class S2ValueChainWorkflow:
         if input_data is None:
             input_data = S2ValueChainInput(config=config or {})
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting S2 value chain workflow %s", self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = WorkflowStatus.IN_PROGRESS
@@ -303,7 +281,7 @@ class S2ValueChainWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
 
         self._suppliers = list(input_data.supplier_data)
         high_risk = sum(1 for s in self._suppliers if s.risk_level in (RiskLevel.HIGH, RiskLevel.VERY_HIGH))
@@ -358,7 +336,7 @@ class S2ValueChainWorkflow:
 
     async def _phase_policy_assessment(self, input_data: S2ValueChainInput) -> PhaseResult:
         """Assess value chain worker policies for scope and alignment."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -377,7 +355,7 @@ class S2ValueChainWorkflow:
         if not any(p.covers_forced_labour for p in policies):
             warnings.append("No policy explicitly covers forced labour")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 1 PolicyAssessment: %d policies", len(policies))
         return PhaseResult(
             phase_name=WorkflowPhase.POLICY_ASSESSMENT.value,
@@ -392,7 +370,7 @@ class S2ValueChainWorkflow:
 
     async def _phase_engagement_evaluation(self, input_data: S2ValueChainInput) -> PhaseResult:
         """Evaluate engagement processes with value chain workers."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -415,7 +393,7 @@ class S2ValueChainWorkflow:
         if coverage_pct < 50.0 and total_suppliers > 0:
             warnings.append(f"Low supplier engagement coverage: {coverage_pct}%")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 2 EngagementEvaluation: %.1f%% supplier coverage", coverage_pct)
         return PhaseResult(
             phase_name=WorkflowPhase.ENGAGEMENT_EVALUATION.value,
@@ -430,7 +408,7 @@ class S2ValueChainWorkflow:
 
     async def _phase_risk_assessment(self, input_data: S2ValueChainInput) -> PhaseResult:
         """Perform value chain due diligence and risk assessment."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -468,7 +446,7 @@ class S2ValueChainWorkflow:
         if dd_pct < 50.0 and suppliers:
             warnings.append(f"Low due diligence coverage: {dd_pct}%")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 3 RiskAssessment: %d suppliers, %d high risk", len(suppliers), len(high_risk))
         return PhaseResult(
             phase_name=WorkflowPhase.RISK_ASSESSMENT.value,
@@ -483,7 +461,7 @@ class S2ValueChainWorkflow:
 
     async def _phase_target_tracking(self, input_data: S2ValueChainInput) -> PhaseResult:
         """Track progress against value chain worker targets."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._target_progress = {}
@@ -508,7 +486,7 @@ class S2ValueChainWorkflow:
         if not input_data.targets:
             warnings.append("No value chain worker targets defined (S2-5)")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 4 TargetTracking: %d targets assessed", len(self._target_progress))
         return PhaseResult(
             phase_name=WorkflowPhase.TARGET_TRACKING.value,
@@ -523,7 +501,7 @@ class S2ValueChainWorkflow:
 
     async def _phase_report_generation(self, input_data: S2ValueChainInput) -> PhaseResult:
         """Compile full S2 value chain workers disclosure."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -544,7 +522,7 @@ class S2ValueChainWorkflow:
         }
         outputs["report_ready"] = True
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 5 ReportGeneration: S2 disclosure ready")
         return PhaseResult(
             phase_name=WorkflowPhase.REPORT_GENERATION.value,

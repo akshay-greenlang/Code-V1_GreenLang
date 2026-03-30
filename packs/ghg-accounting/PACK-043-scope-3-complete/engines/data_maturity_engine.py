@@ -68,26 +68,19 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "43.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -105,7 +98,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serialisable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -114,7 +106,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -126,17 +117,14 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _sqrt_decimal(value: Decimal) -> Decimal:
     """Compute square root of a Decimal using Newton's method."""
@@ -144,13 +132,12 @@ def _sqrt_decimal(value: Decimal) -> Decimal:
         return Decimal("0")
     # Use Python float sqrt then convert back for sufficient precision
     import math
-    return _decimal(math.sqrt(float(value)))
 
+    return _decimal(math.sqrt(float(value)))
 
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class MaturityLevel(str, Enum):
     """Data maturity level for Scope 3 methodology.
@@ -166,7 +153,6 @@ class MaturityLevel(str, Enum):
     AVERAGE_DATA = "average_data"
     HYBRID = "hybrid"
     SUPPLIER_SPECIFIC = "supplier_specific"
-
 
 class CategoryType(str, Enum):
     """Scope 3 category archetype for cost estimation.
@@ -189,7 +175,6 @@ class CategoryType(str, Enum):
     WASTE = "waste"
     ENERGY = "energy"
 
-
 class UpgradePriority(str, Enum):
     """Priority level for a maturity upgrade.
 
@@ -203,7 +188,6 @@ class UpgradePriority(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
 
-
 class AssessmentStatus(str, Enum):
     """Status of the maturity assessment.
 
@@ -214,7 +198,6 @@ class AssessmentStatus(str, Enum):
     COMPLETE = "complete"
     PARTIAL = "partial"
     ERROR = "error"
-
 
 # ---------------------------------------------------------------------------
 # Maturity Level Numeric Mapping
@@ -231,7 +214,6 @@ MATURITY_LEVEL_NUMBER: Dict[MaturityLevel, int] = {
 NUMBER_TO_MATURITY: Dict[int, MaturityLevel] = {
     v: k for k, v in MATURITY_LEVEL_NUMBER.items()
 }
-
 
 # ---------------------------------------------------------------------------
 # Category Type Mapping
@@ -274,7 +256,6 @@ CATEGORY_NAMES: Dict[int, str] = {
     15: "Investments",
 }
 
-
 # ---------------------------------------------------------------------------
 # Uncertainty by Maturity Level (% of estimate, symmetric)
 # ---------------------------------------------------------------------------
@@ -288,7 +269,6 @@ UNCERTAINTY_BY_TIER: Dict[MaturityLevel, Decimal] = {
     MaturityLevel.HYBRID: Decimal("15"),              # +/- 15%
     MaturityLevel.SUPPLIER_SPECIFIC: Decimal("5"),    # +/- 5%
 }
-
 
 # ---------------------------------------------------------------------------
 # Upgrade Costs (USD) by Category Type x Tier Transition
@@ -406,11 +386,9 @@ UPGRADE_DURATION_MONTHS: Dict[int, int] = {
     4: 18,  # 4-tier jump
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class CategoryData(BaseModel):
     """Per-category maturity assessment input.
@@ -441,7 +419,6 @@ class CategoryData(BaseModel):
     data_quality_score: Decimal = Field(
         default=Decimal("4.0"), ge=1, le=5, description="DQR score (1-5)"
     )
-
 
 class MaturityAssessmentInput(BaseModel):
     """Input for a full maturity assessment.
@@ -477,11 +454,9 @@ class MaturityAssessmentInput(BaseModel):
         default=MaturityLevel.AVERAGE_DATA, description="Target tier"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class CategoryMaturity(BaseModel):
     """Per-category maturity assessment result.
@@ -531,7 +506,6 @@ class CategoryMaturity(BaseModel):
         default=Decimal("0"), description="ROI (acc pts / $1K)"
     )
 
-
 class UpgradePathway(BaseModel):
     """A single upgrade step in the roadmap.
 
@@ -574,7 +548,6 @@ class UpgradePathway(BaseModel):
     within_budget: bool = Field(default=True, description="Within budget")
     description: str = Field(default="", description="Upgrade description")
 
-
 class ROIAnalysis(BaseModel):
     """ROI analysis for a specific tier transition.
 
@@ -611,7 +584,6 @@ class ROIAnalysis(BaseModel):
     )
     payback_narrative: str = Field(default="", description="Payback narrative")
 
-
 class BudgetAllocation(BaseModel):
     """Budget allocation result from optimisation.
 
@@ -634,7 +606,6 @@ class BudgetAllocation(BaseModel):
         default_factory=list, description="Allocations"
     )
 
-
 class UncertaintyProjection(BaseModel):
     """Projected uncertainty before and after upgrades.
 
@@ -656,7 +627,6 @@ class UncertaintyProjection(BaseModel):
     category_projections: List[Dict[str, Any]] = Field(
         default_factory=list, description="Per-category projections"
     )
-
 
 class SimulatedInventory(BaseModel):
     """Simulated post-upgrade inventory summary.
@@ -685,7 +655,6 @@ class SimulatedInventory(BaseModel):
     methodology_mix: Dict[str, int] = Field(
         default_factory=dict, description="Tier mix"
     )
-
 
 class MaturityAssessment(BaseModel):
     """Complete maturity assessment result.
@@ -749,12 +718,11 @@ class MaturityAssessment(BaseModel):
     status: AssessmentStatus = Field(
         default=AssessmentStatus.COMPLETE, description="Status"
     )
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Timestamp")
     processing_time_ms: Decimal = Field(
         default=Decimal("0"), description="Processing ms"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 # ---------------------------------------------------------------------------
 # Model Rebuild
@@ -770,11 +738,9 @@ UncertaintyProjection.model_rebuild()
 SimulatedInventory.model_rebuild()
 MaturityAssessment.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class DataMaturityEngine:
     """Assess Scope 3 data maturity and generate upgrade roadmaps.

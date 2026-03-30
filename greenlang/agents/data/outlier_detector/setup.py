@@ -35,7 +35,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.data.outlier_detector.config import (
     OutlierDetectorConfig,
@@ -56,6 +56,7 @@ from greenlang.agents.data.outlier_detector.metrics import (
     set_active_jobs,
     set_total_outliers_flagged,
 )
+from greenlang.schemas import GreenLangBase, utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -70,13 +71,11 @@ except ImportError:
     FastAPI = None  # type: ignore[assignment, misc]
     FASTAPI_AVAILABLE = False
 
-
 # ===================================================================
 # Lightweight Pydantic response models used by the facade
 # ===================================================================
 
-
-class DetectionResponse(BaseModel):
+class DetectionResponse(GreenLangBase):
     """Single-column outlier detection result.
 
     Attributes:
@@ -106,8 +105,7 @@ class DetectionResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
-class BatchDetectionResponse(BaseModel):
+class BatchDetectionResponse(GreenLangBase):
     """Batch detection result across multiple columns.
 
     Attributes:
@@ -129,8 +127,7 @@ class BatchDetectionResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
-class ClassificationResponse(BaseModel):
+class ClassificationResponse(GreenLangBase):
     """Outlier classification result.
 
     Attributes:
@@ -150,8 +147,7 @@ class ClassificationResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
-class TreatmentResponse(BaseModel):
+class TreatmentResponse(GreenLangBase):
     """Outlier treatment result.
 
     Attributes:
@@ -173,8 +169,7 @@ class TreatmentResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
-class ThresholdResponse(BaseModel):
+class ThresholdResponse(GreenLangBase):
     """Domain threshold management result.
 
     Attributes:
@@ -198,8 +193,7 @@ class ThresholdResponse(BaseModel):
     created_at: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
-class FeedbackResponse(BaseModel):
+class FeedbackResponse(GreenLangBase):
     """Feedback submission result.
 
     Attributes:
@@ -219,8 +213,7 @@ class FeedbackResponse(BaseModel):
     created_at: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
-class PipelineResponse(BaseModel):
+class PipelineResponse(GreenLangBase):
     """Full outlier detection pipeline result.
 
     Attributes:
@@ -247,8 +240,7 @@ class PipelineResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
-class StatsResponse(BaseModel):
+class StatsResponse(GreenLangBase):
     """Aggregate statistics for the outlier detection service.
 
     Attributes:
@@ -286,11 +278,9 @@ class StatsResponse(BaseModel):
     by_status: Dict[str, int] = Field(default_factory=dict)
     provenance_entries: int = Field(default=0)
 
-
 # ===================================================================
 # Provenance helper
 # ===================================================================
-
 
 class _ProvenanceTracker:
     """Minimal provenance tracker recording SHA-256 audit entries.
@@ -342,21 +332,13 @@ class _ProvenanceTracker:
         self.entry_count += 1
         return entry_hash
 
-
 # ===================================================================
 # Helper utilities
 # ===================================================================
 
-
 # Thread-safe singleton lock
 _singleton_lock = threading.Lock()
 _singleton_instance: Optional["OutlierDetectorService"] = None
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -373,7 +355,6 @@ def _compute_hash(data: Any) -> str:
         serializable = data
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 def _is_numeric(value: Any) -> bool:
     """Check whether a value can be interpreted as numeric.
@@ -394,7 +375,6 @@ def _is_numeric(value: Any) -> bool:
     except (ValueError, TypeError):
         return False
 
-
 def _safe_float(value: Any) -> Optional[float]:
     """Safely convert a value to float, returning None on failure.
 
@@ -413,7 +393,6 @@ def _safe_float(value: Any) -> Optional[float]:
         return f
     except (ValueError, TypeError):
         return None
-
 
 def _auto_detect_numeric_columns(
     records: List[Dict[str, Any]],
@@ -450,11 +429,9 @@ def _auto_detect_numeric_columns(
 
     return numeric_cols
 
-
 # ===================================================================
 # OutlierDetectorService facade
 # ===================================================================
-
 
 class OutlierDetectorService:
     """Unified facade over the Outlier Detection SDK.
@@ -735,7 +712,7 @@ class OutlierDetectorService:
             "treatments_applied": 0,
             "pipeline_config": request.get("pipeline_config"),
             "error_message": None,
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
             "started_at": None,
             "completed_at": None,
             "provenance_hash": "",
@@ -810,7 +787,7 @@ class OutlierDetectorService:
             return False
 
         job["status"] = "cancelled"
-        job["completed_at"] = _utcnow().isoformat()
+        job["completed_at"] = utcnow().isoformat()
 
         self.provenance.record(
             entity_type="detection_job",
@@ -1763,7 +1740,7 @@ class OutlierDetectorService:
             source=source,
             context=context,
             active=True,
-            created_at=_utcnow().isoformat(),
+            created_at=utcnow().isoformat(),
         )
         threshold.provenance_hash = _compute_hash(threshold)
 
@@ -1819,7 +1796,7 @@ class OutlierDetectorService:
             feedback_type=feedback_type,
             notes=notes,
             accepted=True,
-            created_at=_utcnow().isoformat(),
+            created_at=utcnow().isoformat(),
         )
         feedback.provenance_hash = _compute_hash(feedback)
 
@@ -2366,11 +2343,9 @@ class OutlierDetectorService:
             "provenance_entries": stats.provenance_entries,
         }
 
-
 # ===================================================================
 # Module-level configuration functions
 # ===================================================================
-
 
 async def configure_outlier_detector(
     app: Any,
@@ -2412,7 +2387,6 @@ async def configure_outlier_detector(
     logger.info("Outlier detector service configured and started")
     return service
 
-
 def get_outlier_detector(app: Any) -> OutlierDetectorService:
     """Get the OutlierDetectorService instance from app state.
 
@@ -2433,7 +2407,6 @@ def get_outlier_detector(app: Any) -> OutlierDetectorService:
         )
     return service
 
-
 def get_router(service: Optional[OutlierDetectorService] = None) -> Any:
     """Get the outlier detector API router.
 
@@ -2448,7 +2421,6 @@ def get_router(service: Optional[OutlierDetectorService] = None) -> Any:
         return router
     except ImportError:
         return None
-
 
 __all__ = [
     "OutlierDetectorService",

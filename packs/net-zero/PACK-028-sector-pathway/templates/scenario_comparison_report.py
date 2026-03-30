@@ -34,6 +34,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "28.0.0"
@@ -62,10 +64,6 @@ XBRL_SCENARIO_TAGS: Dict[str, str] = {
     "risk_score": "gl:ScenarioRiskScore",
     "carbon_budget_consumed": "gl:CarbonBudgetConsumedPercentage",
 }
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
@@ -107,7 +105,6 @@ def _scenario_lookup(sid: str) -> Optional[Dict[str, Any]]:
             return s
     return None
 
-
 class ScenarioComparisonReportTemplate:
     """
     Multi-scenario pathway comparison report template.
@@ -127,7 +124,7 @@ class ScenarioComparisonReportTemplate:
         self.generated_at: Optional[datetime] = None
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [
             self._md_header(data), self._md_exec_summary(data),
             self._md_scenario_defs(data), self._md_comparison_matrix(data),
@@ -142,7 +139,7 @@ class ScenarioComparisonReportTemplate:
         return content + f"\n\n<!-- Provenance: {prov} -->"
 
     def render_html(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         parts = [
             self._html_header(data), self._html_exec_summary(data),
@@ -163,7 +160,7 @@ class ScenarioComparisonReportTemplate:
         )
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         scenarios = data.get("scenarios", {})
         recommended = data.get("recommended_scenario", "nze")
         result = {

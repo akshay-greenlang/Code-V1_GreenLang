@@ -41,25 +41,19 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -72,11 +66,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class MappingType(str, Enum):
     """Type of field mapping between regulations."""
@@ -84,14 +76,12 @@ class MappingType(str, Enum):
     APPROXIMATE = "APPROXIMATE"
     DERIVED = "DERIVED"
 
-
 class Regulation(str, Enum):
     """Supported EU regulations."""
     CSRD = "CSRD"
     CBAM = "CBAM"
     EUDR = "EUDR"
     EU_TAXONOMY = "EU_TAXONOMY"
-
 
 class MappingCategory(str, Enum):
     """Thematic mapping category."""
@@ -103,11 +93,9 @@ class MappingCategory(str, Enum):
     WATER_POLLUTION = "WATER_POLLUTION"
     BIODIVERSITY = "BIODIVERSITY"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class FieldMapping(BaseModel):
     """Single field-level mapping between two regulations."""
@@ -133,7 +121,6 @@ class FieldMapping(BaseModel):
             return "APPROXIMATE"
         return val
 
-
 class MappingResult(BaseModel):
     """Result of a single field mapping operation."""
     result_id: str = Field(default_factory=_new_uuid, description="Result identifier")
@@ -147,9 +134,8 @@ class MappingResult(BaseModel):
     confidence: float = Field(default=0.0, description="Mapping confidence")
     conversion_applied: bool = Field(default=False, description="Whether conversion was applied")
     conversion_notes: str = Field(default="", description="Conversion details")
-    timestamp: str = Field(default_factory=lambda: _utcnow().isoformat(), description="Mapping timestamp")
+    timestamp: str = Field(default_factory=lambda: utcnow().isoformat(), description="Mapping timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class BatchMappingResult(BaseModel):
     """Result of a batch mapping operation."""
@@ -160,9 +146,8 @@ class BatchMappingResult(BaseModel):
     mappings: List[MappingResult] = Field(default_factory=list, description="Individual mapping results")
     unmapped_fields: List[str] = Field(default_factory=list, description="Fields that could not be mapped")
     average_confidence: float = Field(default=0.0, description="Average mapping confidence")
-    timestamp: str = Field(default_factory=lambda: _utcnow().isoformat(), description="Batch timestamp")
+    timestamp: str = Field(default_factory=lambda: utcnow().isoformat(), description="Batch timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class OverlapStatistics(BaseModel):
     """Statistics on field overlap between regulations."""
@@ -177,7 +162,6 @@ class OverlapStatistics(BaseModel):
     categories_covered: List[str] = Field(default_factory=list, description="Categories with mappings")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class MappingPath(BaseModel):
     """Multi-hop mapping path between two fields via intermediate regulations."""
     path_id: str = Field(default_factory=_new_uuid, description="Path identifier")
@@ -190,11 +174,9 @@ class MappingPath(BaseModel):
     path_length: int = Field(default=0, description="Number of hops")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
-
 
 class CrossFrameworkDataMapperConfig(BaseModel):
     """Configuration for the CrossFrameworkDataMapperEngine."""
@@ -216,7 +198,6 @@ class CrossFrameworkDataMapperConfig(BaseModel):
         default="tCO2e", description="Default emission unit for conversion"
     )
 
-
 # ---------------------------------------------------------------------------
 # Model rebuilds for forward reference resolution
 # ---------------------------------------------------------------------------
@@ -227,7 +208,6 @@ MappingResult.model_rebuild()
 BatchMappingResult.model_rebuild()
 OverlapStatistics.model_rebuild()
 MappingPath.model_rebuild()
-
 
 # ---------------------------------------------------------------------------
 # Cross-Framework Mapping Database (100+ mappings)
@@ -584,7 +564,6 @@ CROSS_FRAMEWORK_MAPPINGS: Dict[str, List[Dict[str, Any]]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # Conversion Functions Registry
 # ---------------------------------------------------------------------------
@@ -599,11 +578,9 @@ CONVERSION_FUNCTIONS: Dict[str, Callable] = {
     "identity": lambda v: v,
 }
 
-
 # ---------------------------------------------------------------------------
 # CrossFrameworkDataMapperEngine
 # ---------------------------------------------------------------------------
-
 
 class CrossFrameworkDataMapperEngine:
     """

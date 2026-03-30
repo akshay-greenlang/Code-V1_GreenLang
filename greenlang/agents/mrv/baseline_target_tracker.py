@@ -26,11 +26,12 @@ from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base_agents import DeterministicAgent
 from greenlang.agents.categories import AgentCategory, AgentMetadata
 from greenlang.utilities.determinism.clock import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +59,7 @@ class TargetStatus(str, Enum):
     NOT_STARTED = "not_started"
 
 
-class BaselineData(BaseModel):
+class BaselineData(GreenLangBase):
     """Baseline year emissions data."""
     baseline_year: int = Field(..., ge=1990, le=2050)
     scope1_tco2e: float = Field(..., ge=0)
@@ -72,7 +73,7 @@ class BaselineData(BaseModel):
     intensity_value: Optional[float] = Field(None)
 
 
-class EmissionsTarget(BaseModel):
+class EmissionsTarget(GreenLangBase):
     """An emissions reduction target."""
     target_id: str = Field(...)
     target_name: str = Field(...)
@@ -86,7 +87,7 @@ class EmissionsTarget(BaseModel):
     sbti_pathway: Optional[str] = Field(None)
 
 
-class AnnualEmissions(BaseModel):
+class AnnualEmissions(GreenLangBase):
     """Annual emissions data for tracking."""
     year: int = Field(...)
     scope1_tco2e: float = Field(default=0)
@@ -96,7 +97,7 @@ class AnnualEmissions(BaseModel):
     production_units: Optional[float] = Field(None)
 
 
-class TargetProgress(BaseModel):
+class TargetProgress(GreenLangBase):
     """Progress toward a target."""
     target_id: str = Field(...)
     target_name: str = Field(...)
@@ -114,7 +115,7 @@ class TargetProgress(BaseModel):
     provenance_hash: str = Field(...)
 
 
-class BaselineTargetInput(BaseModel):
+class BaselineTargetInput(GreenLangBase):
     """Input model for BaselineTargetTracker."""
     baseline: Optional[BaselineData] = Field(None)
     targets: Optional[List[EmissionsTarget]] = Field(None)
@@ -123,7 +124,7 @@ class BaselineTargetInput(BaseModel):
     organization_id: Optional[str] = Field(None)
 
 
-class BaselineTargetOutput(BaseModel):
+class BaselineTargetOutput(GreenLangBase):
     """Output model for BaselineTargetTracker."""
     success: bool = Field(...)
     baseline_summary: Optional[Dict[str, Any]] = Field(None)

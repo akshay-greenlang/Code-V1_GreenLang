@@ -36,20 +36,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -62,11 +57,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EquipmentCategory(str, Enum):
     """Major equipment categories relevant to energy audits."""
@@ -92,7 +85,6 @@ class EquipmentCategory(str, Enum):
     KILN = "kiln"
     OVEN = "oven"
 
-
 class EquipmentCondition(str, Enum):
     """Equipment condition assessment grades."""
 
@@ -102,7 +94,6 @@ class EquipmentCondition(str, Enum):
     POOR = "poor"
     CRITICAL = "critical"
     DECOMMISSIONED = "decommissioned"
-
 
 class EfficiencyRating(str, Enum):
     """Equipment efficiency rating (IE class for motors, etc.)."""
@@ -115,7 +106,6 @@ class EfficiencyRating(str, Enum):
     NOT_RATED = "not_rated"
     CUSTOM = "custom"
 
-
 class MaintenanceType(str, Enum):
     """Types of maintenance activities."""
 
@@ -125,11 +115,9 @@ class MaintenanceType(str, Enum):
     CONDITION_BASED = "condition_based"
     OVERHAUL = "overhaul"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class NameplateData(BaseModel):
     """Equipment nameplate data for energy audit assessment."""
@@ -146,7 +134,6 @@ class NameplateData(BaseModel):
     cop_or_eer: Optional[float] = Field(None, ge=0, description="COP or EER for chillers/heat pumps")
     flow_rate_m3h: Optional[float] = Field(None, ge=0)
     pressure_bar: Optional[float] = Field(None, ge=0)
-
 
 class EquipmentRecord(BaseModel):
     """Equipment master data record."""
@@ -173,7 +160,6 @@ class EquipmentRecord(BaseModel):
     replacement_candidate: bool = Field(default=False)
     estimated_annual_kwh: float = Field(default=0.0, ge=0)
 
-
 class MaintenanceRecord(BaseModel):
     """Maintenance activity record."""
 
@@ -188,7 +174,6 @@ class MaintenanceRecord(BaseModel):
     run_hours_at_service: float = Field(default=0.0, ge=0)
     findings: str = Field(default="")
     energy_impact_notes: str = Field(default="")
-
 
 class ReplacementAssessment(BaseModel):
     """Equipment replacement assessment for energy savings."""
@@ -206,7 +191,6 @@ class ReplacementAssessment(BaseModel):
     recommended: bool = Field(default=False)
     provenance_hash: str = Field(default="")
 
-
 class EquipmentRegistryBridgeConfig(BaseModel):
     """Configuration for the Equipment Registry Bridge."""
 
@@ -217,11 +201,9 @@ class EquipmentRegistryBridgeConfig(BaseModel):
     )
     default_electricity_cost_eur_per_kwh: float = Field(default=0.15, ge=0.0)
 
-
 # ---------------------------------------------------------------------------
 # EquipmentRegistryBridge
 # ---------------------------------------------------------------------------
-
 
 class EquipmentRegistryBridge:
     """Asset management and CMMS integration for energy audits.

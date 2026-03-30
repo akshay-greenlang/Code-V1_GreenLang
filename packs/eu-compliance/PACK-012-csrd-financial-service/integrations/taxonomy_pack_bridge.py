@@ -35,21 +35,15 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute a SHA-256 hash of arbitrary data."""
     return hashlib.sha256(
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
-
 
 class _AgentStub:
     """Deferred agent loader for lazy initialization."""
@@ -66,6 +60,7 @@ class _AgentStub:
             return self._instance
         try:
             import importlib
+
             mod = importlib.import_module(self.module_path)
             cls = getattr(mod, self.class_name)
             self._instance = cls()
@@ -79,7 +74,6 @@ class _AgentStub:
         """Whether the agent has been loaded."""
         return self._instance is not None
 
-
 class EnvironmentalObjective(str, Enum):
     """EU Taxonomy environmental objectives."""
     CLIMATE_MITIGATION = "climate_change_mitigation"
@@ -88,7 +82,6 @@ class EnvironmentalObjective(str, Enum):
     CIRCULAR_ECONOMY = "circular_economy"
     POLLUTION = "pollution_prevention"
     BIODIVERSITY = "biodiversity_ecosystems"
-
 
 class TaxonomyBridgeConfig(BaseModel):
     """Configuration for the EU Taxonomy Pack Bridge."""
@@ -116,7 +109,6 @@ class TaxonomyBridgeConfig(BaseModel):
         default="turnover", description="GAR weighting basis (turnover/capex/opex)",
     )
 
-
 class TaxonomyAssessmentResult(BaseModel):
     """Result of taxonomy alignment assessment for FI counterparties."""
     total_counterparties: int = Field(default=0, description="Total assessed")
@@ -137,7 +129,6 @@ class TaxonomyAssessmentResult(BaseModel):
     taxonomy_version: str = Field(default="", description="Taxonomy version used")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class EligibilityScreenResult(BaseModel):
     """Result of taxonomy eligibility screening."""
     counterparty_id: str = Field(default="", description="Counterparty ID")
@@ -150,7 +141,6 @@ class EligibilityScreenResult(BaseModel):
         default="", description="Basis for eligibility determination",
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class TaxonomyPackBridge:
     """Bridge connecting PACK-012 with PACK-008 EU Taxonomy.

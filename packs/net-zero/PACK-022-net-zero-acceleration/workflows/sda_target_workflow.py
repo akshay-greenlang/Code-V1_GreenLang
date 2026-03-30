@@ -41,35 +41,27 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "22.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a single workflow phase."""
@@ -80,7 +72,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -89,7 +80,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class SDASector(str, Enum):
     """SDA-eligible sectors with IEA benchmarks."""
@@ -104,7 +94,6 @@ class SDASector(str, Enum):
     REAL_ESTATE = "real_estate"
     CHEMICALS = "chemicals"
     AUTOMOTIVE = "automotive"
-
 
 # =============================================================================
 # SDA REFERENCE DATA (Zero-Hallucination, from IEA NZE / SBTi SDA)
@@ -231,11 +220,9 @@ SDA_MIN_ANNUAL_REDUCTION_PCT = 4.2
 # ACA comparison annual reduction rate (cross-sector 1.5C)
 ACA_ANNUAL_REDUCTION_PCT = 4.2
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -248,7 +235,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class SectorClassificationResult(BaseModel):
     """Output of sector classification phase."""
 
@@ -260,7 +246,6 @@ class SectorClassificationResult(BaseModel):
     benchmark_available: bool = Field(default=False)
     alternative_pathway: str = Field(default="absolute_contraction")
 
-
 class BenchmarkPathwayPoint(BaseModel):
     """Single point on the sector benchmark pathway."""
 
@@ -268,7 +253,6 @@ class BenchmarkPathwayPoint(BaseModel):
     benchmark_intensity: float = Field(default=0.0)
     company_target_intensity: float = Field(default=0.0)
     reduction_from_base_pct: float = Field(default=0.0)
-
 
 class BenchmarkPathway(BaseModel):
     """Complete sector benchmark convergence pathway."""
@@ -280,7 +264,6 @@ class BenchmarkPathway(BaseModel):
     target_year_benchmark: float = Field(default=0.0)
     total_reduction_pct: float = Field(default=0.0)
 
-
 class CompanyIntensityTarget(BaseModel):
     """Company-specific intensity target for a given year."""
 
@@ -290,7 +273,6 @@ class CompanyIntensityTarget(BaseModel):
     convergence_pct: float = Field(default=0.0, description="How close to benchmark (100% = converged)")
     emissions_budget_tco2e: float = Field(default=0.0)
     reduction_from_base_pct: float = Field(default=0.0)
-
 
 class ACAComparison(BaseModel):
     """Comparison between SDA and ACA approaches."""
@@ -302,7 +284,6 @@ class ACAComparison(BaseModel):
     more_ambitious_approach: str = Field(default="")
     recommendation: str = Field(default="")
 
-
 class SDAValidationFinding(BaseModel):
     """A single SDA validation finding."""
 
@@ -310,7 +291,6 @@ class SDAValidationFinding(BaseModel):
     description: str = Field(default="")
     severity: str = Field(default="pass")
     detail: str = Field(default="")
-
 
 class SDAValidationReport(BaseModel):
     """SDA validation report against SBTi criteria."""
@@ -321,7 +301,6 @@ class SDAValidationReport(BaseModel):
     warning_count: int = Field(default=0)
     fail_count: int = Field(default=0)
     aca_comparison: ACAComparison = Field(default_factory=ACAComparison)
-
 
 class SDATargetConfig(BaseModel):
     """Configuration for the SDA target workflow."""
@@ -344,7 +323,6 @@ class SDATargetConfig(BaseModel):
         v = v.lower().strip()
         return v
 
-
 class SDATargetResult(BaseModel):
     """Complete result from the SDA target workflow."""
 
@@ -361,11 +339,9 @@ class SDATargetResult(BaseModel):
     validation: SDAValidationReport = Field(default_factory=SDAValidationReport)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class SDATargetWorkflow:
     """
@@ -417,7 +393,7 @@ class SDATargetWorkflow:
             SDATargetResult with benchmark pathway, company targets,
             and SBTi validation.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting SDA target workflow %s, sector=%s",
             self.workflow_id, config.sector,
@@ -448,7 +424,7 @@ class SDATargetWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         result = SDATargetResult(
             workflow_id=self.workflow_id,
             status=overall_status,
@@ -476,7 +452,7 @@ class SDATargetWorkflow:
 
     async def _phase_sector_classification(self, config: SDATargetConfig) -> PhaseResult:
         """Classify company into SDA sector, determine activity metrics."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -508,7 +484,7 @@ class SDATargetWorkflow:
         outputs["activity_metric"] = activity_metric
         outputs["intensity_unit"] = intensity_unit
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Sector classification: %s, SDA-eligible=%s", sector, is_eligible)
         return PhaseResult(
             phase_name="sector_classification",
@@ -525,7 +501,7 @@ class SDATargetWorkflow:
 
     async def _phase_benchmark_calculation(self, config: SDATargetConfig) -> PhaseResult:
         """Calculate sector benchmark convergence pathway from IEA NZE data."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -545,7 +521,7 @@ class SDATargetWorkflow:
         outputs["total_reduction_pct"] = round(self._benchmark.total_reduction_pct, 2)
         outputs["pathway_points"] = len(self._benchmark.pathway_points)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Benchmark: %s, base=%.4f, target=%.4f, reduction=%.1f%%",
             sector, self._benchmark.base_year_benchmark,
@@ -647,7 +623,7 @@ class SDATargetWorkflow:
 
     async def _phase_target_setting(self, config: SDATargetConfig) -> PhaseResult:
         """Set company-specific intensity targets converging to benchmark."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -726,7 +702,7 @@ class SDATargetWorkflow:
             outputs["long_term_intensity"] = self._long_term.target_intensity
             outputs["long_term_reduction_pct"] = self._long_term.reduction_from_base_pct
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Targets set: %d points, NT=%.4f, LT=%.4f",
             len(self._targets),
@@ -779,7 +755,7 @@ class SDATargetWorkflow:
 
     async def _phase_validation(self, config: SDATargetConfig) -> PhaseResult:
         """Validate against SBTi SDA criteria and compare with ACA."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         findings: List[SDAValidationFinding] = []
 
@@ -889,7 +865,7 @@ class SDATargetWorkflow:
         outputs["fail_count"] = fail_count
         outputs["more_ambitious"] = aca_comparison.more_ambitious_approach
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Validation: valid=%s, pass=%d, warn=%d, fail=%d",
             self._validation.overall_valid, pass_count, warn_count, fail_count,

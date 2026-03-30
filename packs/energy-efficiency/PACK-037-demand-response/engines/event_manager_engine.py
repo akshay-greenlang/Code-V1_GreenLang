@@ -81,26 +81,19 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -118,7 +111,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -127,7 +119,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -139,22 +130,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EventType(str, Enum):
     """Type of demand response event.
@@ -172,7 +159,6 @@ class EventType(str, Enum):
     ANCILLARY = "ancillary"
     CPP = "critical_peak_pricing"
     TEST = "test"
-
 
 class EventStatus(str, Enum):
     """Current status of a DR event.
@@ -193,7 +179,6 @@ class EventStatus(str, Enum):
     FAILED = "failed"
     CANCELLED = "cancelled"
 
-
 class EventPhase(str, Enum):
     """Five-phase event lifecycle.
 
@@ -208,7 +193,6 @@ class EventPhase(str, Enum):
     EXECUTION = "execution"
     TERMINATION = "termination"
     ASSESSMENT = "assessment"
-
 
 class PerformanceGrade(str, Enum):
     """Event performance grade.
@@ -225,7 +209,6 @@ class PerformanceGrade(str, Enum):
     POOR = "poor"
     FAILED = "failed"
 
-
 class CommandStatus(str, Enum):
     """Status of a load control command.
 
@@ -240,7 +223,6 @@ class CommandStatus(str, Enum):
     CONFIRMED = "confirmed"
     FAILED = "failed"
     OVERRIDDEN = "overridden"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -266,11 +248,9 @@ DEFAULT_RAMP_STAGGER_MIN: int = 5
 # Performance deviation alert threshold (%).
 DEVIATION_ALERT_PCT: Decimal = Decimal("15")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class PerformanceInterval(BaseModel):
     """Real-time performance data for a single 1-minute interval.
@@ -294,7 +274,6 @@ class PerformanceInterval(BaseModel):
     cumulative_kwh: Decimal = Field(default=Decimal("0"))
     deviation_flag: bool = Field(default=False)
 
-
 class LoadControlCommand(BaseModel):
     """A load control command issued during event execution.
 
@@ -314,11 +293,10 @@ class LoadControlCommand(BaseModel):
     load_name: str = Field(default="", max_length=500)
     command_type: str = Field(default="curtail")
     target_kw: Decimal = Field(default=Decimal("0"), ge=0)
-    issued_at: datetime = Field(default_factory=_utcnow)
+    issued_at: datetime = Field(default_factory=utcnow)
     status: CommandStatus = Field(default=CommandStatus.QUEUED)
     response_time_seconds: Optional[int] = Field(default=None, ge=0)
     notes: str = Field(default="", max_length=2000)
-
 
 class DREvent(BaseModel):
     """A demand response event record.
@@ -365,9 +343,8 @@ class DREvent(BaseModel):
     penalty_rate: Decimal = Field(default=Decimal("1.50"), ge=0)
     commands: List[LoadControlCommand] = Field(default_factory=list)
     performance_data: List[PerformanceInterval] = Field(default_factory=list)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class EventExecution(BaseModel):
     """Real-time event execution summary.
@@ -402,9 +379,8 @@ class EventExecution(BaseModel):
     commands_issued: int = Field(default=0)
     commands_confirmed: int = Field(default=0)
     commands_failed: int = Field(default=0)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class EventAssessment(BaseModel):
     """Post-event performance assessment and settlement.
@@ -457,14 +433,12 @@ class EventAssessment(BaseModel):
     time_at_target_minutes: int = Field(default=0)
     deviation_minutes: int = Field(default=0)
     lessons_learned: List[str] = Field(default_factory=list)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class EventManagerEngine:
     """Demand response event lifecycle management engine.
@@ -569,7 +543,7 @@ class EventManagerEngine:
             target_kw=_round_val(target_kw, 2),
             enrolled_kw=_round_val(enrolled_kw or target_kw, 2),
             scheduled_start=scheduled_start,
-            notification_received_at=_utcnow(),
+            notification_received_at=utcnow(),
             duration_minutes=duration_minutes,
             energy_rate=energy_rate,
             capacity_rate=capacity_rate,
@@ -579,6 +553,7 @@ class EventManagerEngine:
         if scheduled_start:
             # Calculate scheduled end
             from datetime import timedelta
+
             event.scheduled_end = scheduled_start + timedelta(
                 minutes=duration_minutes
             )
@@ -643,7 +618,7 @@ class EventManagerEngine:
 
         event.status = EventStatus.ACTIVE
         event.phase = EventPhase.EXECUTION
-        event.actual_start = _utcnow()
+        event.actual_start = utcnow()
 
         performance: List[PerformanceInterval] = []
         cumulative_kwh = Decimal("0")
@@ -704,7 +679,7 @@ class EventManagerEngine:
 
         event.status = EventStatus.TERMINATING
         event.phase = EventPhase.TERMINATION
-        event.actual_end = _utcnow()
+        event.actual_end = utcnow()
         event.provenance_hash = _compute_hash(event)
 
         elapsed = (time.perf_counter() - t0) * 1000.0
@@ -865,7 +840,7 @@ class EventManagerEngine:
                 load_name=lt.get("load_name", ""),
                 command_type=lt.get("command_type", "curtail"),
                 target_kw=_decimal(lt.get("target_kw", 0)),
-                issued_at=_utcnow(),
+                issued_at=utcnow(),
                 status=CommandStatus.QUEUED,
             )
             commands.append(cmd)

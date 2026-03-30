@@ -33,6 +33,7 @@ import time
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import utcnow
 
 from greenlang.agents.data.eudr_traceability.models import (
     ClassifyCommodityRequest,
@@ -44,12 +45,6 @@ from greenlang.agents.data.eudr_traceability.models import (
 
 logger = logging.getLogger(__name__)
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
     if hasattr(data, "model_dump"):
@@ -58,7 +53,6 @@ def _compute_hash(data: Any) -> str:
         serializable = data
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 class CommodityClassifier:
     """EUDR commodity classification engine.
@@ -458,7 +452,6 @@ class CommodityClassifier:
     def classification_count(self) -> int:
         """Return the total number of classifications."""
         return len(self._classifications)
-
 
 __all__ = [
     "CommodityClassifier",

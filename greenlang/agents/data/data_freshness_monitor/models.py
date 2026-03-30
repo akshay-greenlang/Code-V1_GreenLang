@@ -49,7 +49,9 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import AlertSeverity, AlertStatus
 
 # ---------------------------------------------------------------------------
 # Re-export Layer 1 models from data_quality_profiler.timeliness_tracker
@@ -99,16 +101,9 @@ try:
 except ImportError:
     FRESHNESS_BOUNDARIES_HOURS = None  # type: ignore[assignment, misc]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -148,11 +143,9 @@ MAX_SLA_WARNING_HOURS: float = 8760.0
 #: Module version string.
 VERSION: str = "1.0.0"
 
-
 # =============================================================================
 # Enumerations (13)
 # =============================================================================
-
 
 class DatasetStatus(str, Enum):
     """Operational status of a registered dataset.
@@ -170,7 +163,6 @@ class DatasetStatus(str, Enum):
     ARCHIVED = "archived"
     ERROR = "error"
 
-
 class DatasetPriority(str, Enum):
     """Priority classification for a monitored dataset.
 
@@ -186,7 +178,6 @@ class DatasetPriority(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     INFORMATIONAL = "informational"
-
 
 class RefreshCadence(str, Enum):
     """Expected refresh frequency for a dataset.
@@ -212,7 +203,6 @@ class RefreshCadence(str, Enum):
     ANNUAL = "annual"
     ON_DEMAND = "on_demand"
 
-
 class FreshnessLevel(str, Enum):
     """Qualitative freshness assessment of a dataset.
 
@@ -228,7 +218,6 @@ class FreshnessLevel(str, Enum):
     FAIR = "fair"
     POOR = "poor"
     STALE = "stale"
-
 
 class SLAStatus(str, Enum):
     """SLA compliance status for a freshness check.
@@ -246,7 +235,6 @@ class SLAStatus(str, Enum):
     CRITICAL = "critical"
     UNKNOWN = "unknown"
 
-
 class BreachSeverity(str, Enum):
     """Severity level of an SLA breach event.
 
@@ -263,7 +251,6 @@ class BreachSeverity(str, Enum):
     HIGH = "high"
     CRITICAL = "critical"
 
-
 class BreachStatus(str, Enum):
     """Lifecycle status of an SLA breach.
 
@@ -279,7 +266,6 @@ class BreachStatus(str, Enum):
     INVESTIGATING = "investigating"
     RESOLVED = "resolved"
     EXPIRED = "expired"
-
 
 class AlertChannel(str, Enum):
     """Delivery channel for a freshness alert notification.
@@ -299,39 +285,6 @@ class AlertChannel(str, Enum):
     TEAMS = "teams"
     LOG = "log"
 
-
-class AlertStatus(str, Enum):
-    """Lifecycle status of a freshness alert.
-
-    PENDING: Alert has been created but not yet sent.
-    SENT: Alert has been delivered to the channel.
-    ACKNOWLEDGED: Alert has been acknowledged by a recipient.
-    RESOLVED: Alert has been resolved (underlying breach resolved).
-    SUPPRESSED: Alert was suppressed by a suppression rule.
-    """
-
-    PENDING = "pending"
-    SENT = "sent"
-    ACKNOWLEDGED = "acknowledged"
-    RESOLVED = "resolved"
-    SUPPRESSED = "suppressed"
-
-
-class AlertSeverity(str, Enum):
-    """Severity level of a freshness alert.
-
-    INFO: Informational notification.
-    WARNING: Warning-level notification.
-    CRITICAL: Critical-level notification requiring action.
-    EMERGENCY: Emergency-level notification requiring immediate action.
-    """
-
-    INFO = "info"
-    WARNING = "warning"
-    CRITICAL = "critical"
-    EMERGENCY = "emergency"
-
-
 class PatternType(str, Enum):
     """Classification of a detected staleness pattern.
 
@@ -350,7 +303,6 @@ class PatternType(str, Enum):
     RANDOM_GAPS = "random_gaps"
     SYSTEMATIC_DELAY = "systematic_delay"
 
-
 class PredictionStatus(str, Enum):
     """Status of a refresh prediction relative to actual outcome.
 
@@ -366,7 +318,6 @@ class PredictionStatus(str, Enum):
     LATE = "late"
     VERY_LATE = "very_late"
     MISSED = "missed"
-
 
 class MonitoringStatus(str, Enum):
     """Execution status of a monitoring pipeline run.
@@ -384,13 +335,11 @@ class MonitoringStatus(str, Enum):
     FAILED = "failed"
     CANCELLED = "cancelled"
 
-
 # =============================================================================
 # SDK Data Models (20)
 # =============================================================================
 
-
-class DatasetDefinition(BaseModel):
+class DatasetDefinition(GreenLangBase):
     """A registered dataset monitored for data freshness.
 
     Contains metadata, refresh expectations, priority, operational
@@ -456,11 +405,11 @@ class DatasetDefinition(BaseModel):
         description="Timestamp of the most recent data refresh",
     )
     registered_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the dataset was registered",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the dataset record was last updated",
     )
     version: int = Field(
@@ -482,8 +431,7 @@ class DatasetDefinition(BaseModel):
             raise ValueError("name must be non-empty")
         return v
 
-
-class SLADefinition(BaseModel):
+class SLADefinition(GreenLangBase):
     """Service-level agreement definition for dataset freshness.
 
     Specifies warning and critical hour thresholds, breach severity,
@@ -529,7 +477,7 @@ class SLADefinition(BaseModel):
         description="Whether SLA enforcement is limited to business hours",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When this SLA was created",
     )
 
@@ -553,8 +501,7 @@ class SLADefinition(BaseModel):
             )
         return self
 
-
-class FreshnessCheck(BaseModel):
+class FreshnessCheck(GreenLangBase):
     """Result of a single freshness check for a dataset.
 
     Records the check timestamp, computed data age, freshness score,
@@ -580,7 +527,7 @@ class FreshnessCheck(BaseModel):
         ..., description="Identifier of the checked dataset",
     )
     checked_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the check was performed",
     )
     age_hours: float = Field(
@@ -618,8 +565,7 @@ class FreshnessCheck(BaseModel):
             raise ValueError("dataset_id must be non-empty")
         return v
 
-
-class RefreshEvent(BaseModel):
+class RefreshEvent(GreenLangBase):
     """Record of a dataset refresh event.
 
     Captures the refresh timestamp, data size, record count, source
@@ -643,7 +589,7 @@ class RefreshEvent(BaseModel):
         ..., description="Identifier of the refreshed dataset",
     )
     refreshed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the refresh occurred",
     )
     data_size_bytes: Optional[int] = Field(
@@ -673,8 +619,7 @@ class RefreshEvent(BaseModel):
             raise ValueError("dataset_id must be non-empty")
         return v
 
-
-class StalenessPattern(BaseModel):
+class StalenessPattern(GreenLangBase):
     """A detected staleness pattern for a monitored dataset.
 
     Records the pattern type, detection timestamp, recurrence
@@ -703,7 +648,7 @@ class StalenessPattern(BaseModel):
         description="Classification of the staleness pattern",
     )
     detected_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the pattern was detected",
     )
     frequency_hours: Optional[float] = Field(
@@ -733,8 +678,7 @@ class StalenessPattern(BaseModel):
             raise ValueError("dataset_id must be non-empty")
         return v
 
-
-class SLABreach(BaseModel):
+class SLABreach(GreenLangBase):
     """Record of an SLA breach event for a monitored dataset.
 
     Tracks the breach lifecycle from detection through acknowledgement
@@ -768,7 +712,7 @@ class SLABreach(BaseModel):
         description="Severity level of the breach",
     )
     detected_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the breach was detected",
     )
     acknowledged_at: Optional[datetime] = Field(
@@ -810,8 +754,7 @@ class SLABreach(BaseModel):
             raise ValueError("sla_id must be non-empty")
         return v
 
-
-class FreshnessAlert(BaseModel):
+class FreshnessAlert(GreenLangBase):
     """A freshness alert notification sent for an SLA breach.
 
     Records the alert delivery channel, severity, message content,
@@ -875,8 +818,7 @@ class FreshnessAlert(BaseModel):
             raise ValueError("breach_id must be non-empty")
         return v
 
-
-class RefreshPrediction(BaseModel):
+class RefreshPrediction(GreenLangBase):
     """A prediction for the next expected refresh of a dataset.
 
     Records the predicted refresh time, confidence, actual outcome
@@ -929,8 +871,7 @@ class RefreshPrediction(BaseModel):
             raise ValueError("dataset_id must be non-empty")
         return v
 
-
-class FreshnessReport(BaseModel):
+class FreshnessReport(GreenLangBase):
     """Compliance-grade report summarizing freshness status across datasets.
 
     Provides aggregate counts, compliance statistics, a human-readable
@@ -956,7 +897,7 @@ class FreshnessReport(BaseModel):
         description="Type of the report (e.g. 'daily_summary', 'sla_compliance')",
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the report was generated",
     )
     dataset_count: int = Field(
@@ -982,8 +923,7 @@ class FreshnessReport(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class AuditEntry(BaseModel):
+class AuditEntry(GreenLangBase):
     """An audit log entry for a data freshness monitoring operation.
 
     Records the operation type, affected entity, detail payload,
@@ -1017,7 +957,7 @@ class AuditEntry(BaseModel):
         description="Arbitrary detail payload for the operation",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the operation was performed",
     )
     provenance_hash: str = Field(
@@ -1051,8 +991,7 @@ class AuditEntry(BaseModel):
             raise ValueError("entity_id must be non-empty")
         return v
 
-
-class DatasetGroup(BaseModel):
+class DatasetGroup(GreenLangBase):
     """A logical grouping of monitored datasets.
 
     Groups datasets for collective SLA enforcement, batch monitoring,
@@ -1115,8 +1054,7 @@ class DatasetGroup(BaseModel):
                 raise ValueError("dataset_ids must contain non-empty strings")
         return v
 
-
-class FreshnessSummary(BaseModel):
+class FreshnessSummary(GreenLangBase):
     """Lightweight freshness summary for a single dataset.
 
     Provides the current freshness snapshot without full check history,
@@ -1170,8 +1108,7 @@ class FreshnessSummary(BaseModel):
             raise ValueError("dataset_id must be non-empty")
         return v
 
-
-class SourceReliability(BaseModel):
+class SourceReliability(GreenLangBase):
     """Reliability metrics for an upstream data source.
 
     Aggregates refresh statistics, on-time rate, average delay,
@@ -1231,8 +1168,7 @@ class SourceReliability(BaseModel):
             )
         return v
 
-
-class EscalationLevel(BaseModel):
+class EscalationLevel(GreenLangBase):
     """A single level within an escalation policy.
 
     Defines the delay before escalation, delivery channel,
@@ -1264,8 +1200,7 @@ class EscalationLevel(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class EscalationPolicy(BaseModel):
+class EscalationPolicy(GreenLangBase):
     """Multi-level escalation policy for SLA breach notifications.
 
     Defines an ordered list of escalation levels and the maximum
@@ -1287,8 +1222,7 @@ class EscalationPolicy(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class MonitoringRun(BaseModel):
+class MonitoringRun(GreenLangBase):
     """Record of a single monitoring pipeline execution.
 
     Tracks the run lifecycle, dataset coverage, breach and alert
@@ -1310,7 +1244,7 @@ class MonitoringRun(BaseModel):
         description="Unique identifier for this monitoring run",
     )
     started_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the run started",
     )
     completed_at: Optional[datetime] = Field(
@@ -1340,13 +1274,11 @@ class MonitoringRun(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
 # =============================================================================
 # Request Models (8)
 # =============================================================================
 
-
-class RegisterDatasetRequest(BaseModel):
+class RegisterDatasetRequest(GreenLangBase):
     """Request body for registering a new dataset for freshness monitoring.
 
     Attributes:
@@ -1402,8 +1334,7 @@ class RegisterDatasetRequest(BaseModel):
             raise ValueError("name must be non-empty")
         return v
 
-
-class UpdateDatasetRequest(BaseModel):
+class UpdateDatasetRequest(GreenLangBase):
     """Request body for updating an existing dataset registration.
 
     All fields are optional; only provided fields will be updated.
@@ -1462,8 +1393,7 @@ class UpdateDatasetRequest(BaseModel):
             raise ValueError("name must be non-empty when provided")
         return v
 
-
-class CreateSLARequest(BaseModel):
+class CreateSLARequest(GreenLangBase):
     """Request body for creating a new SLA definition.
 
     Attributes:
@@ -1519,8 +1449,7 @@ class CreateSLARequest(BaseModel):
             )
         return self
 
-
-class UpdateSLARequest(BaseModel):
+class UpdateSLARequest(GreenLangBase):
     """Request body for updating an existing SLA definition.
 
     All fields are optional; only provided fields will be updated.
@@ -1556,8 +1485,7 @@ class UpdateSLARequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class RunFreshnessCheckRequest(BaseModel):
+class RunFreshnessCheckRequest(GreenLangBase):
     """Request body for running a freshness check on a single dataset.
 
     Attributes:
@@ -1588,8 +1516,7 @@ class RunFreshnessCheckRequest(BaseModel):
             raise ValueError("dataset_id must be non-empty")
         return v
 
-
-class RunBatchCheckRequest(BaseModel):
+class RunBatchCheckRequest(GreenLangBase):
     """Request body for running freshness checks on multiple datasets.
 
     Attributes:
@@ -1637,8 +1564,7 @@ class RunBatchCheckRequest(BaseModel):
                     raise ValueError("dataset_ids must contain non-empty strings")
         return v
 
-
-class UpdateBreachRequest(BaseModel):
+class UpdateBreachRequest(GreenLangBase):
     """Request body for updating an SLA breach status.
 
     Attributes:
@@ -1656,8 +1582,7 @@ class UpdateBreachRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class RunPipelineRequest(BaseModel):
+class RunPipelineRequest(GreenLangBase):
     """Request body for running the full monitoring pipeline.
 
     Triggers end-to-end freshness checking, SLA evaluation, breach
@@ -1703,7 +1628,6 @@ class RunPipelineRequest(BaseModel):
                 if not did or not did.strip():
                     raise ValueError("dataset_ids must contain non-empty strings")
         return v
-
 
 # =============================================================================
 # __all__ export list

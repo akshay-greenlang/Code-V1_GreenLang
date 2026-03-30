@@ -107,18 +107,15 @@ except ImportError:
     otel_trace = None  # type: ignore[assignment]
     OTEL_AVAILABLE = False
 
-
 # ---------------------------------------------------------------------------
 # Environment variable based configuration
 # ---------------------------------------------------------------------------
 
 _ENV_PREFIX = "GL_EUDR_SGV_"
 
-
 def _env(key: str, default: str = "") -> str:
     """Read an environment variable with the GL_EUDR_SGV_ prefix."""
     return os.environ.get(f"{_ENV_PREFIX}{key}", default)
-
 
 def _env_int(key: str, default: int = 0) -> int:
     """Read an integer environment variable."""
@@ -128,7 +125,6 @@ def _env_int(key: str, default: int = 0) -> int:
     except (ValueError, TypeError):
         return default
 
-
 def _env_float(key: str, default: float = 0.0) -> float:
     """Read a float environment variable."""
     raw = _env(key, str(default))
@@ -137,38 +133,27 @@ def _env_float(key: str, default: float = 0.0) -> float:
     except (ValueError, TypeError):
         return default
 
-
 def _env_bool(key: str, default: bool = False) -> bool:
     """Read a boolean environment variable."""
     raw = _env(key, str(default)).lower()
     return raw in ("true", "1", "yes", "on")
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_provenance_hash(*parts: str) -> str:
     """Compute SHA-256 hash over concatenated string parts."""
     combined = "|".join(str(p) for p in parts)
     return hashlib.sha256(combined.encode("utf-8")).hexdigest()
 
-
 def _generate_request_id() -> str:
     """Generate a unique request identifier."""
     return f"SGV-{uuid.uuid4().hex[:12]}"
 
-
 # ---------------------------------------------------------------------------
 # Health status model
 # ---------------------------------------------------------------------------
-
 
 class HealthStatus:
     """Health check result container.
@@ -193,7 +178,7 @@ class HealthStatus:
     ) -> None:
         self.status = status
         self.checks = checks or {}
-        self.timestamp = timestamp or _utcnow()
+        self.timestamp = timestamp or utcnow()
         self.version = version
         self.uptime_seconds = uptime_seconds
 
@@ -207,11 +192,9 @@ class HealthStatus:
             "uptime_seconds": round(self.uptime_seconds, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: SCPResult
 # ---------------------------------------------------------------------------
-
 
 class SCPResult:
     """Result from a segregation control point operation.
@@ -261,11 +244,9 @@ class SCPResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: StorageResult
 # ---------------------------------------------------------------------------
-
 
 class StorageResult:
     """Result from a storage zone operation.
@@ -315,11 +296,9 @@ class StorageResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: TransportResult
 # ---------------------------------------------------------------------------
-
 
 class TransportResult:
     """Result from a transport segregation operation.
@@ -369,11 +348,9 @@ class TransportResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: ProcessingResult
 # ---------------------------------------------------------------------------
-
 
 class ProcessingResult:
     """Result from a processing line operation.
@@ -423,11 +400,9 @@ class ProcessingResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: ContaminationResult
 # ---------------------------------------------------------------------------
-
 
 class ContaminationResult:
     """Result from a contamination detection or recording operation.
@@ -477,11 +452,9 @@ class ContaminationResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: LabelResult
 # ---------------------------------------------------------------------------
-
 
 class LabelResult:
     """Result from a labeling verification operation.
@@ -531,11 +504,9 @@ class LabelResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: AssessmentResult
 # ---------------------------------------------------------------------------
-
 
 class AssessmentResult:
     """Result from a facility assessment operation.
@@ -585,11 +556,9 @@ class AssessmentResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: ReportResult
 # ---------------------------------------------------------------------------
-
 
 class ReportResult:
     """Result from a report generation operation.
@@ -639,11 +608,9 @@ class ReportResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: VerificationResult
 # ---------------------------------------------------------------------------
-
 
 class VerificationResult:
     """Result from a cross-service verification operation.
@@ -689,11 +656,9 @@ class VerificationResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: BatchJobResult
 # ---------------------------------------------------------------------------
-
 
 class BatchJobResult:
     """Result from a batch processing job.
@@ -743,11 +708,9 @@ class BatchJobResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ===========================================================================
 # SegregationVerifierService - Main facade
 # ===========================================================================
-
 
 class SegregationVerifierService:
     """Facade for the Segregation Verifier Agent (AGENT-EUDR-010).
@@ -3390,11 +3353,9 @@ class SegregationVerifierService:
             )
             return None
 
-
 # ---------------------------------------------------------------------------
 # FastAPI lifespan context manager
 # ---------------------------------------------------------------------------
-
 
 @asynccontextmanager
 async def lifespan(app: Any) -> AsyncIterator[None]:
@@ -3408,6 +3369,7 @@ async def lifespan(app: Any) -> AsyncIterator[None]:
 
         from fastapi import FastAPI
         from greenlang.agents.eudr.segregation_verifier.setup import lifespan
+from greenlang.schemas import utcnow
 
         app = FastAPI(lifespan=lifespan)
 
@@ -3425,14 +3387,12 @@ async def lifespan(app: Any) -> AsyncIterator[None]:
     finally:
         await service.shutdown()
 
-
 # ---------------------------------------------------------------------------
 # Thread-safe singleton accessor
 # ---------------------------------------------------------------------------
 
 _service_instance: Optional[SegregationVerifierService] = None
 _service_lock = threading.Lock()
-
 
 def get_service() -> SegregationVerifierService:
     """Return the singleton SegregationVerifierService instance.
@@ -3454,7 +3414,6 @@ def get_service() -> SegregationVerifierService:
                 _service_instance = SegregationVerifierService()
     return _service_instance
 
-
 def set_service(service: SegregationVerifierService) -> None:
     """Replace the singleton SegregationVerifierService instance.
 
@@ -3468,7 +3427,6 @@ def set_service(service: SegregationVerifierService) -> None:
         _service_instance = service
     logger.info("SegregationVerifierService singleton replaced")
 
-
 def reset_service() -> None:
     """Reset the singleton SegregationVerifierService to None.
 
@@ -3479,7 +3437,6 @@ def reset_service() -> None:
     with _service_lock:
         _service_instance = None
     logger.debug("SegregationVerifierService singleton reset")
-
 
 # ---------------------------------------------------------------------------
 # Public API

@@ -30,6 +30,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.qr_code_generator.api.dependencies import (
     AuthUser,
@@ -72,22 +73,14 @@ _analytics: Dict[str, int] = {
     "hmac_failures": 0,
 }
 
-
 def _get_revocation_store() -> Dict[str, Dict]:
     """Return the revocation record store singleton."""
     return _revocation_store
-
 
 def _compute_provenance_hash(data: dict) -> str:
     """Compute SHA-256 hash for provenance tracking."""
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _check_scan_velocity(code_id: str, threshold: int = 100) -> bool:
     """Check if scan velocity exceeds threshold.
@@ -110,11 +103,9 @@ def _check_scan_velocity(code_id: str, threshold: int = 100) -> bool:
 
     return len(_scan_history[code_id]) > threshold
 
-
 # ---------------------------------------------------------------------------
 # POST /counterfeit/check
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/counterfeit/check",
@@ -154,7 +145,7 @@ async def counterfeit_check(
         CounterfeitCheckResponse with risk assessment.
     """
     try:
-        now = _utcnow()
+        now = utcnow()
         alerts: List[str] = []
         risk_score = 0.0
 
@@ -245,11 +236,9 @@ async def counterfeit_check(
             detail="Failed to perform counterfeit check",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /counterfeit/revoke/{code_id}
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/counterfeit/revoke/{code_id}",
@@ -291,7 +280,7 @@ async def revoke_counterfeit_code(
         HTTPException: 409 if code already revoked.
     """
     try:
-        now = _utcnow()
+        now = utcnow()
         store = _get_revocation_store()
 
         if code_id in store:
@@ -349,11 +338,9 @@ async def revoke_counterfeit_code(
             detail="Failed to revoke counterfeit code",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /counterfeit/revocation-list
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/counterfeit/revocation-list",
@@ -437,11 +424,9 @@ async def get_revocation_list(
             detail="Failed to retrieve revocation list",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /counterfeit/analytics
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/counterfeit/analytics",
@@ -477,7 +462,7 @@ async def get_counterfeit_analytics(
         CounterfeitAnalyticsResponse with analytics data.
     """
     try:
-        now = _utcnow()
+        now = utcnow()
 
         # Build risk distribution from check counter
         risk_distribution = {
@@ -521,7 +506,6 @@ async def get_counterfeit_analytics(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve counterfeit analytics",
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

@@ -55,25 +55,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -86,11 +80,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Agent Stubs
 # ---------------------------------------------------------------------------
-
 
 class _AgentStub:
     """Stub for unavailable MRV agent modules."""
@@ -110,7 +102,6 @@ class _AgentStub:
             }
         return _stub_method
 
-
 def _try_import_mrv_agent(agent_id: str, module_path: str) -> Any:
     """Try to import an MRV agent with graceful fallback."""
     try:
@@ -119,11 +110,9 @@ def _try_import_mrv_agent(agent_id: str, module_path: str) -> Any:
         logger.debug("MRV agent %s not available, using stub", agent_id)
         return _AgentStub(agent_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class MRVScope(str, Enum):
     """GHG Protocol emission scopes."""
@@ -132,7 +121,6 @@ class MRVScope(str, Enum):
     SCOPE_2 = "scope_2"
     SCOPE_3 = "scope_3"
     CROSS_CUTTING = "cross_cutting"
-
 
 class CalculationMethod(str, Enum):
     """Emissions calculation method preference."""
@@ -143,7 +131,6 @@ class CalculationMethod(str, Enum):
     AVERAGE_DATA = "average_data"
     SUPPLIER_SPECIFIC = "supplier_specific"
 
-
 class DataQualityTier(str, Enum):
     """Data quality tiers for Race to Zero reporting."""
 
@@ -151,7 +138,6 @@ class DataQualityTier(str, Enum):
     SECONDARY = "secondary"
     ESTIMATED = "estimated"
     DEFAULT = "default"
-
 
 # ---------------------------------------------------------------------------
 # MRV Agent Routing Table
@@ -385,11 +371,9 @@ MRV_AGENT_ROUTES: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class MRVBridgeConfig(BaseModel):
     """Configuration for the MRV bridge."""
@@ -407,7 +391,6 @@ class MRVBridgeConfig(BaseModel):
     timeout_seconds: int = Field(default=300, ge=30)
     max_concurrent_agents: int = Field(default=5, ge=1, le=30)
 
-
 class MRVAgentRoute(BaseModel):
     """Routing information for an MRV agent."""
 
@@ -418,7 +401,6 @@ class MRVAgentRoute(BaseModel):
     calculation_method: CalculationMethod = Field(default=CalculationMethod.ACTIVITY_BASED)
     available: bool = Field(default=True)
     scope3_category: Optional[int] = Field(None)
-
 
 class EmissionSource(BaseModel):
     """An emission source to route to an MRV agent."""
@@ -432,7 +414,6 @@ class EmissionSource(BaseModel):
     calculation_method: Optional[CalculationMethod] = Field(None)
     data_quality: DataQualityTier = Field(default=DataQualityTier.SECONDARY)
     metadata: Dict[str, Any] = Field(default_factory=dict)
-
 
 class RoutingResult(BaseModel):
     """Result of routing a single emission source."""
@@ -449,7 +430,6 @@ class RoutingResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
-
 
 class BatchRoutingResult(BaseModel):
     """Result of batch routing multiple emission sources."""
@@ -469,7 +449,6 @@ class BatchRoutingResult(BaseModel):
     data_quality_summary: Dict[str, int] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
 
-
 class AggregationResult(BaseModel):
     """Result of scope-level emissions aggregation."""
 
@@ -486,11 +465,9 @@ class AggregationResult(BaseModel):
     completeness_pct: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # MRVBridge
 # ---------------------------------------------------------------------------
-
 
 class MRVBridge:
     """Bridge to 30 MRV agents for Race to Zero emissions calculation.

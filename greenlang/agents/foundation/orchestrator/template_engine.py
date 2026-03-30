@@ -53,7 +53,8 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -107,7 +108,7 @@ class TemplateStatus(str, Enum):
 # Template Parameter Definition
 # ==============================================================================
 
-class TemplateParameter(BaseModel):
+class TemplateParameter(GreenLangBase):
     """
     Definition for a template parameter.
 
@@ -255,7 +256,7 @@ class TemplateParameter(BaseModel):
 # Template Step Definition
 # ==============================================================================
 
-class TemplateStep(BaseModel):
+class TemplateStep(GreenLangBase):
     """
     Step definition within a template.
 
@@ -351,7 +352,7 @@ class TemplateStep(BaseModel):
 # Pipeline Template
 # ==============================================================================
 
-class PipelineTemplate(BaseModel):
+class PipelineTemplate(GreenLangBase):
     """
     Reusable pipeline template definition.
 
@@ -522,7 +523,7 @@ class PipelineTemplate(BaseModel):
 # Template Import Definition
 # ==============================================================================
 
-class TemplateImport(BaseModel):
+class TemplateImport(GreenLangBase):
     """
     Template import declaration for a pipeline.
 
@@ -574,7 +575,7 @@ class TemplateImport(BaseModel):
 # Template Expansion Result
 # ==============================================================================
 
-class ExpandedStep(BaseModel):
+class ExpandedStep(GreenLangBase):
     """A step after template expansion with all parameters substituted."""
 
     id: str = Field(..., description="Unique step ID (may include prefix)")
@@ -591,7 +592,7 @@ class ExpandedStep(BaseModel):
     model_config = {"populate_by_name": True}
 
 
-class TemplateExpansionResult(BaseModel):
+class TemplateExpansionResult(GreenLangBase):
     """
     Result of template expansion with expanded steps and metadata.
 

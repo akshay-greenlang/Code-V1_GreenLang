@@ -32,6 +32,7 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 import pytest
 import yaml
 
+from greenlang.schemas import utcnow
 
 # ---------------------------------------------------------------------------
 # Paths & sys.path setup
@@ -61,7 +62,6 @@ TEMPLATES_DIR = PACK_ROOT / "templates"
 ENGINES_DIR = PACK_ROOT / "engines"
 INTEGRATIONS_DIR = PACK_ROOT / "integrations"
 
-
 # ---------------------------------------------------------------------------
 # Utility helpers
 # ---------------------------------------------------------------------------
@@ -76,16 +76,9 @@ def _compute_hash(data: Any) -> str:
         raw = json.dumps(str(data), sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4."""
     return str(uuid.uuid4())
-
 
 def assert_provenance_hash(result: Dict[str, Any]) -> None:
     """Verify result contains a valid SHA-256 provenance hash."""
@@ -95,14 +88,12 @@ def assert_provenance_hash(result: Dict[str, Any]) -> None:
     assert len(h) == 64, f"SHA-256 hash should be 64 hex chars, got {len(h)}"
     assert all(c in "0123456789abcdef" for c in h), "Invalid hex chars in hash"
 
-
 def assert_valid_uuid(value: str) -> None:
     """Verify value is a valid UUID format."""
     try:
         uuid.UUID(value)
     except (ValueError, AttributeError):
         raise AssertionError(f"Invalid UUID format: {value}")
-
 
 def assert_decimal_precision(value: Any, places: int) -> None:
     """Verify Decimal or float has correct precision."""
@@ -119,7 +110,6 @@ def assert_decimal_precision(value: Any, places: int) -> None:
         assert len(significant) <= places, (
             f"Expected at most {places} decimal places, got {len(significant)}"
         )
-
 
 def generate_cn_codes(category: str, count: int) -> List[str]:
     """Generate test CN codes for a given goods category."""
@@ -150,7 +140,6 @@ def generate_cn_codes(category: str, count: int) -> List[str]:
         result.append(codes[i % len(codes)])
     return result
 
-
 def generate_import_portfolio(
     entities: List[Dict[str, Any]], count: int
 ) -> List[Dict[str, Any]]:
@@ -176,7 +165,6 @@ def generate_import_portfolio(
         })
     return records
 
-
 # ---------------------------------------------------------------------------
 # Pack YAML fixtures
 # ---------------------------------------------------------------------------
@@ -186,7 +174,6 @@ def pack_yaml_path() -> Path:
     """Return the absolute path to pack.yaml."""
     return PACK_YAML_PATH
 
-
 @pytest.fixture(scope="session")
 def pack_yaml_raw(pack_yaml_path) -> str:
     """Return the raw text content of pack.yaml."""
@@ -194,14 +181,12 @@ def pack_yaml_raw(pack_yaml_path) -> str:
         return pack_yaml_path.read_text(encoding="utf-8")
     return ""
 
-
 @pytest.fixture(scope="session")
 def pack_yaml(pack_yaml_raw) -> Dict[str, Any]:
     """Return the parsed pack.yaml as a dictionary."""
     if pack_yaml_raw:
         return yaml.safe_load(pack_yaml_raw)
     return {}
-
 
 # ---------------------------------------------------------------------------
 # Preset / Sector / Demo loading fixtures
@@ -216,7 +201,6 @@ def preset_files() -> Dict[str, Path]:
             result[f.stem] = f
     return result
 
-
 @pytest.fixture(scope="session")
 def sector_files() -> Dict[str, Path]:
     """Return mapping of sector ID to file path."""
@@ -226,12 +210,10 @@ def sector_files() -> Dict[str, Path]:
             result[f.stem] = f
     return result
 
-
 @pytest.fixture(scope="session")
 def demo_config_path() -> Path:
     """Return path to demo configuration."""
     return DEMO_DIR / "demo_config.yaml"
-
 
 @pytest.fixture(scope="session")
 def demo_config(demo_config_path) -> Dict[str, Any]:
@@ -240,12 +222,10 @@ def demo_config(demo_config_path) -> Dict[str, Any]:
         return yaml.safe_load(demo_config_path.read_text(encoding="utf-8"))
     return {}
 
-
 @pytest.fixture(scope="session")
 def demo_portfolio_csv_path() -> Path:
     """Return path to demo portfolio CSV."""
     return DEMO_DIR / "demo_portfolio.csv"
-
 
 # ---------------------------------------------------------------------------
 # CBAMCompleteConfig fixture (dict-based, no external deps)
@@ -417,7 +397,6 @@ def sample_config() -> Dict[str, Any]:
         },
     }
 
-
 # ---------------------------------------------------------------------------
 # Entity Group fixture
 # ---------------------------------------------------------------------------
@@ -462,7 +441,6 @@ def sample_entity_group() -> Dict[str, Any]:
         "created_at": "2026-01-01T00:00:00Z",
     }
 
-
 # ---------------------------------------------------------------------------
 # Certificate Portfolio fixture
 # ---------------------------------------------------------------------------
@@ -502,9 +480,8 @@ def sample_certificate_portfolio() -> Dict[str, Any]:
         "active_certificates": active_count,
         "total_active_value_eur": total_value,
         "valuation_method": "FIFO",
-        "as_of_date": _utcnow().strftime("%Y-%m-%d"),
+        "as_of_date": utcnow().strftime("%Y-%m-%d"),
     }
-
 
 # ---------------------------------------------------------------------------
 # Import Records fixture
@@ -550,7 +527,6 @@ def sample_import_records() -> List[Dict[str, Any]]:
             "methodology": "actual" if i % 2 == 0 else "default_values",
         })
     return records
-
 
 # ---------------------------------------------------------------------------
 # Precursor Chain fixture
@@ -627,7 +603,6 @@ def sample_precursor_chain() -> Dict[str, Any]:
         "provenance_hash": _compute_hash({"chain_id": "PC-STEEL-001"}),
     }
 
-
 # ---------------------------------------------------------------------------
 # Customs Declaration fixture
 # ---------------------------------------------------------------------------
@@ -703,7 +678,6 @@ def sample_customs_declaration() -> Dict[str, Any]:
         "total_non_cbam_items": 1,
     }
 
-
 # ---------------------------------------------------------------------------
 # CBAM data for cross-regulation mapping
 # ---------------------------------------------------------------------------
@@ -736,7 +710,6 @@ def sample_cbam_data() -> Dict[str, Any]:
         "verified": True,
         "verification_body": "TUV Rheinland Energy GmbH",
     }
-
 
 # ---------------------------------------------------------------------------
 # Audit Repository fixture
@@ -790,7 +763,6 @@ def sample_audit_repository() -> Dict[str, Any]:
         ],
     }
 
-
 # ---------------------------------------------------------------------------
 # Workflow Context fixture
 # ---------------------------------------------------------------------------
@@ -803,7 +775,7 @@ def sample_workflow_context() -> Dict[str, Any]:
         "workflow_type": "certificate_trading",
         "entity_group_id": "GRP-EUROSTEEL-001",
         "reporting_year": 2026,
-        "started_at": _utcnow().isoformat(),
+        "started_at": utcnow().isoformat(),
         "current_phase": "order_placement",
         "phases_completed": ["portfolio_review"],
         "phases_remaining": [
@@ -820,7 +792,6 @@ def sample_workflow_context() -> Dict[str, Any]:
         "provenance_hash": _compute_hash({"workflow_type": "certificate_trading"}),
     }
 
-
 # ---------------------------------------------------------------------------
 # PACK-005 Engine IDs
 # ---------------------------------------------------------------------------
@@ -836,7 +807,6 @@ PACK005_ENGINE_IDS = [
     "audit_management",
 ]
 
-
 # ---------------------------------------------------------------------------
 # PACK-005 Workflow IDs
 # ---------------------------------------------------------------------------
@@ -850,7 +820,6 @@ PACK005_WORKFLOW_IDS = [
     "audit_preparation",
 ]
 
-
 # ---------------------------------------------------------------------------
 # PACK-005 Template IDs
 # ---------------------------------------------------------------------------
@@ -863,7 +832,6 @@ PACK005_TEMPLATE_IDS = [
     "customs_integration_report",
     "audit_readiness_scorecard",
 ]
-
 
 # ---------------------------------------------------------------------------
 # PACK-005 Integration IDs
@@ -879,30 +847,25 @@ PACK005_INTEGRATION_IDS = [
     "health_check",
 ]
 
-
 @pytest.fixture
 def engine_ids() -> List[str]:
     """Return the 8 PACK-005 engine IDs."""
     return list(PACK005_ENGINE_IDS)
-
 
 @pytest.fixture
 def workflow_ids() -> List[str]:
     """Return the 6 PACK-005 workflow IDs."""
     return list(PACK005_WORKFLOW_IDS)
 
-
 @pytest.fixture
 def template_ids() -> List[str]:
     """Return the 6 PACK-005 template IDs."""
     return list(PACK005_TEMPLATE_IDS)
 
-
 @pytest.fixture
 def integration_ids() -> List[str]:
     """Return the 7 PACK-005 integration IDs."""
     return list(PACK005_INTEGRATION_IDS)
-
 
 # ---------------------------------------------------------------------------
 # Stub classes for PACK-005 external dependencies
@@ -922,7 +885,7 @@ class StubRegistryClient:
         decl_id = declaration.get("declaration_id", f"DECL-{_new_uuid()[:8]}")
         self._declarations[decl_id] = {**declaration, "status": "submitted"}
         return {"declaration_id": decl_id, "status": "submitted",
-                "submitted_at": _utcnow().isoformat()}
+                "submitted_at": utcnow().isoformat()}
 
     def amend_declaration(self, decl_id: str, amendments: Dict) -> Dict[str, Any]:
         if decl_id not in self._declarations:
@@ -958,11 +921,11 @@ class StubRegistryClient:
                 "new_balance": self._balance, "status": "resold"}
 
     def get_balance(self) -> Dict[str, Any]:
-        return {"balance": self._balance, "as_of": _utcnow().isoformat()}
+        return {"balance": self._balance, "as_of": utcnow().isoformat()}
 
     def get_current_price(self) -> Dict[str, Any]:
         return {"price_eur": self._current_price, "source": "EU_ETS_AUCTION",
-                "timestamp": _utcnow().isoformat()}
+                "timestamp": utcnow().isoformat()}
 
     def register_installation(self, data: Dict) -> Dict[str, Any]:
         inst_id = data.get("installation_id", f"INST-{_new_uuid()[:8]}")
@@ -970,7 +933,6 @@ class StubRegistryClient:
 
     def check_declarant_status(self, eori: str) -> Dict[str, Any]:
         return {"eori": eori, "status": "active", "member_state": eori[:2]}
-
 
 class StubTARICClient:
     """Stub for EU TARIC/customs CN code lookup."""
@@ -1018,7 +980,6 @@ class StubTARICClient:
         return {"eori": eori, "aeo_status": "AEOC",
                 "valid_until": "2027-12-31"}
 
-
 class StubETSBridge:
     """Stub for EU ETS bridge providing benchmarks and prices."""
 
@@ -1045,8 +1006,7 @@ class StubETSBridge:
 
     def get_current_price(self) -> Dict[str, Any]:
         return {"price_eur": 78.50, "currency": "EUR",
-                "source": "EU_ETS_AUCTION", "timestamp": _utcnow().isoformat()}
-
+                "source": "EU_ETS_AUCTION", "timestamp": utcnow().isoformat()}
 
 # ---------------------------------------------------------------------------
 # Template render helper
@@ -1076,7 +1036,7 @@ def render_template_stub(
         content = json.dumps({
             "template_id": template_id, "title": title,
             "data": data, "provenance_hash": provenance_hash,
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
         }, indent=2, default=str)
     else:
         content = f"{title}: {json.dumps(data, default=str)}"
@@ -1084,27 +1044,23 @@ def render_template_stub(
     return {
         "template_id": template_id, "format": output_format,
         "content": content, "provenance_hash": provenance_hash,
-        "generated_at": _utcnow().isoformat(),
+        "generated_at": utcnow().isoformat(),
     }
-
 
 @pytest.fixture
 def template_renderer():
     """Return the template render stub function."""
     return render_template_stub
 
-
 @pytest.fixture
 def mock_registry_client() -> StubRegistryClient:
     """Return a StubRegistryClient instance."""
     return StubRegistryClient()
 
-
 @pytest.fixture
 def mock_taric_client() -> StubTARICClient:
     """Return a StubTARICClient instance."""
     return StubTARICClient()
-
 
 @pytest.fixture
 def mock_ets_bridge() -> StubETSBridge:

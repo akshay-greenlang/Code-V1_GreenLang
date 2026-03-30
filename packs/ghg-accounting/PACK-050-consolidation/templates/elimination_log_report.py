@@ -31,21 +31,16 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Input Models
@@ -66,7 +61,6 @@ class TransferRecord(BaseModel):
     period: str = Field("")
     verified: bool = Field(False)
 
-
 class EliminationEntry(BaseModel):
     """A matched elimination entry."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -80,7 +74,6 @@ class EliminationEntry(BaseModel):
     match_status: str = Field("matched", description="matched, unmatched, partial")
     notes: str = Field("")
 
-
 class MatchVerification(BaseModel):
     """Verification status for a transfer pair."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -93,7 +86,6 @@ class MatchVerification(BaseModel):
     variance_pct: Decimal = Field(Decimal("0"))
     status: str = Field("matched")
 
-
 class EliminationLogReportInput(BaseModel):
     """Complete input for the elimination log report."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -104,7 +96,6 @@ class EliminationLogReportInput(BaseModel):
     transfers: List[Dict[str, Any]] = Field(default_factory=list)
     eliminations: List[Dict[str, Any]] = Field(default_factory=list)
     verifications: List[Dict[str, Any]] = Field(default_factory=list)
-
 
 # ---------------------------------------------------------------------------
 # Output Model
@@ -132,7 +123,6 @@ class EliminationLogReportOutput(BaseModel):
     unmatched_count: int = Field(0)
     partial_count: int = Field(0)
     provenance_hash: str = Field("")
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -163,7 +153,7 @@ class EliminationLogReport:
     def render(self, data: Dict[str, Any]) -> EliminationLogReportOutput:
         """Render elimination log from input data."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         inp = EliminationLogReportInput(**data) if isinstance(data, dict) else data
 
         transfers = [TransferRecord(**t) if isinstance(t, dict) else t for t in inp.transfers]
@@ -333,7 +323,6 @@ class EliminationLogReport:
                 f"{t.emissions_tco2e},{t.verified}"
             )
         return "\n".join(lines_out)
-
 
 __all__ = [
     "EliminationLogReport",

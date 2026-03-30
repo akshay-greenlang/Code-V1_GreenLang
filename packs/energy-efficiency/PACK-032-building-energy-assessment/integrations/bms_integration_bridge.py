@@ -42,20 +42,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -67,7 +62,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 class _AgentStub:
     """Stub for unavailable BMS protocol modules."""
@@ -86,11 +80,9 @@ class _AgentStub:
             }
         return _stub_method
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ProtocolType(str, Enum):
     """BMS communication protocol types."""
@@ -104,7 +96,6 @@ class ProtocolType(str, Enum):
     REST_API = "rest_api"
     LONWORKS = "lonworks"
     KNXIP = "knx_ip"
-
 
 class DataPointType(str, Enum):
     """Types of BMS data points."""
@@ -128,7 +119,6 @@ class DataPointType(str, Enum):
     SOLAR_IRRADIANCE = "solar_irradiance"
     WIND_SPEED = "wind_speed"
 
-
 class AlarmSeverity(str, Enum):
     """BMS alarm severity levels."""
 
@@ -137,7 +127,6 @@ class AlarmSeverity(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     INFO = "info"
-
 
 class ConnectionStatus(str, Enum):
     """BMS connection status."""
@@ -148,7 +137,6 @@ class ConnectionStatus(str, Enum):
     TIMEOUT = "timeout"
     AUTH_FAILED = "auth_failed"
     NOT_CONFIGURED = "not_configured"
-
 
 class HaystackMarker(str, Enum):
     """Project Haystack point markers."""
@@ -174,11 +162,9 @@ class HaystackMarker(str, Enum):
     CMD = "cmd"
     SP = "sp"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class ProtocolConfig(BaseModel):
     """Configuration for a BMS protocol connection."""
@@ -198,7 +184,6 @@ class ProtocolConfig(BaseModel):
     retry_attempts: int = Field(default=3, ge=0, le=10)
     api_base_url: str = Field(default="", description="REST API base URL")
     api_key: str = Field(default="", description="REST API key")
-
 
 class DataPointMapping(BaseModel):
     """Mapping of a BMS data point to a building energy parameter."""
@@ -226,21 +211,19 @@ class DataPointMapping(BaseModel):
     is_writable: bool = Field(default=False)
     polling_priority: int = Field(default=5, ge=1, le=10)
 
-
 class MeterReading(BaseModel):
     """A single meter or sensor reading from BMS."""
 
     reading_id: str = Field(default_factory=_new_uuid)
     point_id: str = Field(default="")
     point_name: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     value: float = Field(default=0.0)
     unit: str = Field(default="")
     quality: str = Field(default="good", description="good/uncertain/bad")
     source_protocol: str = Field(default="")
     raw_value: Optional[float] = Field(None)
     provenance_hash: str = Field(default="")
-
 
 class AlarmEvent(BaseModel):
     """A BMS alarm event."""
@@ -253,10 +236,9 @@ class AlarmEvent(BaseModel):
     message: str = Field(default="")
     value: Optional[float] = Field(None)
     threshold: Optional[float] = Field(None)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     acknowledged: bool = Field(default=False)
     zone: str = Field(default="")
-
 
 class HistoricalDataRequest(BaseModel):
     """Request for historical data from BMS trend logs."""
@@ -266,7 +248,6 @@ class HistoricalDataRequest(BaseModel):
     end_time: str = Field(default="", description="ISO 8601 end")
     interval_minutes: int = Field(default=15, ge=1, le=1440)
     aggregation: str = Field(default="average", description="average/sum/min/max/count")
-
 
 class HistoricalDataResult(BaseModel):
     """Result of historical data retrieval."""
@@ -283,7 +264,6 @@ class HistoricalDataResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class BMSConnectionResult(BaseModel):
     """Result of BMS connection attempt."""
 
@@ -296,8 +276,7 @@ class BMSConnectionResult(BaseModel):
     latency_ms: float = Field(default=0.0)
     points_discovered: int = Field(default=0)
     firmware_version: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class BMSIntegrationBridgeConfig(BaseModel):
     """Configuration for the BMS Integration Bridge."""
@@ -311,7 +290,6 @@ class BMSIntegrationBridgeConfig(BaseModel):
     enable_haystack: bool = Field(default=True)
     alarm_severity_threshold: AlarmSeverity = Field(default=AlarmSeverity.LOW)
     data_retention_days: int = Field(default=365, ge=30, le=3650)
-
 
 # ---------------------------------------------------------------------------
 # Default Point Mappings (Haystack-tagged)
@@ -386,11 +364,9 @@ DEFAULT_POINT_TEMPLATES: Dict[str, List[Dict[str, Any]]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # BMSIntegrationBridge
 # ---------------------------------------------------------------------------
-
 
 class BMSIntegrationBridge:
     """BACnet/Modbus/OPC-UA/MQTT building management system integration.

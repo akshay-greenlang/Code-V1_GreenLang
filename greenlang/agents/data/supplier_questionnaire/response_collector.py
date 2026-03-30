@@ -55,6 +55,7 @@ import time
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import utcnow
 
 from greenlang.agents.data.supplier_questionnaire.models import (
     Answer,
@@ -69,27 +70,18 @@ __all__ = [
     "ResponseCollectorEngine",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # Regex for numeric value extraction
 _NUMERIC_PATTERN = re.compile(
     r"^[^\d]*(-?\d[\d,]*\.?\d*)\s*(%|tCO2e|MWh|kg|t|m3|ML|GJ)?$"
 )
 
-
 # ---------------------------------------------------------------------------
 # ResponseCollectorEngine
 # ---------------------------------------------------------------------------
-
 
 class ResponseCollectorEngine:
     """Questionnaire response collection and management engine.
@@ -319,7 +311,7 @@ class ResponseCollectorEngine:
         with self._lock:
             record = self._responses[response_id]
             record.answers = merged_answers
-            record.updated_at = _utcnow()
+            record.updated_at = utcnow()
             record.status = ResponseStatus.IN_PROGRESS
             record.provenance_hash = self._compute_provenance(
                 "update_response", response_id, str(len(merged_answers)),
@@ -361,7 +353,7 @@ class ResponseCollectorEngine:
                 f"(status: {response.status.value})"
             )
 
-        now = _utcnow()
+        now = utcnow()
         with self._lock:
             record = self._responses[response_id]
             record.status = ResponseStatus.SUBMITTED
@@ -465,7 +457,7 @@ class ResponseCollectorEngine:
         with self._lock:
             record = self._responses[response_id]
             record.status = ResponseStatus.REOPENED
-            record.updated_at = _utcnow()
+            record.updated_at = utcnow()
             record.provenance_hash = self._compute_provenance(
                 "reopen_response", response_id, reason,
             )
@@ -624,7 +616,7 @@ class ResponseCollectorEngine:
 
         token_seed = (
             f"ack:{response_id}:{response.supplier_id}:"
-            f"{_utcnow().isoformat()}"
+            f"{utcnow().isoformat()}"
         )
         token = hashlib.sha256(token_seed.encode("utf-8")).hexdigest()
 
@@ -648,7 +640,7 @@ class ResponseCollectorEngine:
             return {
                 **self._stats,
                 "active_responses": len(self._responses),
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }
 
     # ------------------------------------------------------------------
@@ -791,7 +783,7 @@ class ResponseCollectorEngine:
             Hex-encoded SHA-256 digest.
         """
         combined = json.dumps(
-            {"parts": list(parts), "timestamp": _utcnow().isoformat()},
+            {"parts": list(parts), "timestamp": utcnow().isoformat()},
             sort_keys=True,
         )
         return hashlib.sha256(combined.encode("utf-8")).hexdigest()

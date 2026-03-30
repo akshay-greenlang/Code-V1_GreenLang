@@ -35,6 +35,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "30.0.0"
@@ -81,19 +83,12 @@ XBRL_TAGS: Dict[str, str] = {
     "methodology": "gl:SBTiMethodology",
 }
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str) if isinstance(data, dict) else str(data)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 def _dec(val: Any, places: int = 2) -> str:
     try:
@@ -102,7 +97,6 @@ def _dec(val: Any, places: int = 2) -> str:
         return str(d.quantize(Decimal(q), rounding=ROUND_HALF_UP))
     except Exception:
         return str(val)
-
 
 def _dec_comma(val: Any, places: int = 2) -> str:
     try:
@@ -127,14 +121,12 @@ def _dec_comma(val: Any, places: int = 2) -> str:
     except Exception:
         return str(val)
 
-
 def _pct_change(current: Any, baseline: Any) -> Decimal:
     c = Decimal(str(current))
     b = Decimal(str(baseline))
     if b == 0:
         return Decimal("0.00")
     return ((c - b) / b * Decimal("100")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-
 
 def _variance(actual: float, target: float) -> Dict[str, Any]:
     diff = actual - target
@@ -151,7 +143,6 @@ def _variance(actual: float, target: float) -> Dict[str, Any]:
         "on_track": actual <= target,
     }
 
-
 def _progress_pct(baseline: float, current: float, target: float) -> float:
     """Calculate progress percentage from baseline toward target."""
     total_reduction_needed = baseline - target
@@ -159,7 +150,6 @@ def _progress_pct(baseline: float, current: float, target: float) -> float:
         return 100.0
     actual_reduction = baseline - current
     return round(min(actual_reduction / total_reduction_needed * 100, 100.0), 2)
-
 
 class SBTiProgressTemplate:
     """
@@ -196,7 +186,7 @@ class SBTiProgressTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render full SBTi progress report as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [
             self._md_header(data),
             self._md_executive_summary(data),
@@ -219,7 +209,7 @@ class SBTiProgressTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render full SBTi progress report as HTML."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         parts = [
             self._html_header(data),
@@ -248,7 +238,7 @@ class SBTiProgressTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render as structured JSON."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         actual = data.get("actual_emissions", {})
         target = data.get("target_emissions", {})
         baseline = data.get("baseline_emissions", {})

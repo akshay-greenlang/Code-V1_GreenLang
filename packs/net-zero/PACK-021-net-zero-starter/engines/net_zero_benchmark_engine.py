@@ -62,25 +62,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -93,13 +87,11 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely."""
     if isinstance(value, Decimal):
         return value
     return Decimal(str(value))
-
 
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
@@ -109,7 +101,6 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(
     part: Decimal, whole: Decimal, default: Decimal = Decimal("0")
 ) -> Decimal:
@@ -118,19 +109,16 @@ def _safe_pct(
         return default
     return part / whole * Decimal("100")
 
-
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
-
 
 def _percentile_rank(values: List[float], target: float) -> float:
     """Compute percentile rank of target within a list of values.
@@ -154,11 +142,9 @@ def _percentile_rank(values: List[float], target: float) -> float:
     rank = ((below + 0.5 * equal) / n) * 100
     return round(rank, 2)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class BenchmarkSector(str, Enum):
     """Sector classification for benchmarking.
@@ -189,7 +175,6 @@ class BenchmarkSector(str, Enum):
     CONSTRUCTION = "construction"
     FOOD_BEVERAGE = "food_beverage"
 
-
 class PerformanceIndicator(str, Enum):
     """Key Performance Indicator for benchmarking."""
     ABSOLUTE_EMISSIONS = "absolute_emissions"
@@ -201,14 +186,12 @@ class PerformanceIndicator(str, Enum):
     RENEWABLE_ELECTRICITY_PCT = "renewable_electricity_pct"
     CDP_SCORE = "cdp_score"
 
-
 class PerformanceTrend(str, Enum):
     """Performance trend direction."""
     IMPROVING = "improving"
     STABLE = "stable"
     DECLINING = "declining"
     INSUFFICIENT_DATA = "insufficient_data"
-
 
 class Percentile(str, Enum):
     """Percentile bracket classification."""
@@ -218,18 +201,15 @@ class Percentile(str, Enum):
     BOTTOM_50 = "bottom_50"
     BOTTOM_25 = "bottom_25"
 
-
 class SBTiStatus(str, Enum):
     """SBTi target status classification."""
     APPROVED = "approved"
     COMMITTED = "committed"
     NONE = "none"
 
-
 # ---------------------------------------------------------------------------
 # Reference Data Constants
 # ---------------------------------------------------------------------------
-
 
 # CDP score numeric mapping (for comparison purposes).
 CDP_SCORE_MAP: Dict[str, Decimal] = {
@@ -244,14 +224,12 @@ CDP_SCORE_MAP: Dict[str, Decimal] = {
     "F": Decimal("0"),
 }
 
-
 # SBTi status scoring for benchmarking.
 SBTI_STATUS_SCORE: Dict[str, Decimal] = {
     SBTiStatus.APPROVED.value: Decimal("100"),
     SBTiStatus.COMMITTED.value: Decimal("50"),
     SBTiStatus.NONE.value: Decimal("0"),
 }
-
 
 # Sector benchmark data: typical values for each KPI.
 # Based on CDP 2024, TPI 2024, SBTi Progress Report 2024.
@@ -691,7 +669,6 @@ SECTOR_BENCHMARKS: Dict[str, Dict[str, Dict[str, Any]]] = {
     },
 }
 
-
 # Best practices reference by KPI.
 BEST_PRACTICES: Dict[str, List[str]] = {
     PerformanceIndicator.CARBON_INTENSITY_REVENUE.value: [
@@ -726,11 +703,9 @@ BEST_PRACTICES: Dict[str, List[str]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class BenchmarkInput(BaseModel):
     """Input data for benchmarking analysis.
@@ -791,7 +766,6 @@ class BenchmarkInput(BaseModel):
         description="Prior year KPI values for trend analysis",
     )
 
-
 class KPIBenchmark(BaseModel):
     """Benchmark result for a single KPI."""
     kpi: PerformanceIndicator = Field(
@@ -843,7 +817,6 @@ class KPIBenchmark(BaseModel):
         default="", description="SHA-256 hash"
     )
 
-
 class PeerComparison(BaseModel):
     """Summary of peer comparison position."""
     sector: str = Field(default="", description="Sector")
@@ -870,7 +843,6 @@ class PeerComparison(BaseModel):
         default="", description="SHA-256 hash"
     )
 
-
 class BenchmarkResult(BaseModel):
     """Complete benchmarking result.
 
@@ -884,7 +856,7 @@ class BenchmarkResult(BaseModel):
         default=_MODULE_VERSION, description="Engine version"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp"
+        default_factory=utcnow, description="Timestamp"
     )
     entity_name: str = Field(
         default="", description="Entity name"
@@ -925,11 +897,9 @@ class BenchmarkResult(BaseModel):
         default="", description="SHA-256 hash"
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class NetZeroBenchmarkEngine:
     """Peer benchmarking engine for net-zero performance.

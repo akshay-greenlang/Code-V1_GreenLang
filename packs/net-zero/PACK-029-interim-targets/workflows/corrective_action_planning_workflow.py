@@ -44,28 +44,22 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "29.0.0"
 _PACK_ID = "PACK-029"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -74,14 +68,12 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class GapSeverity(str, Enum):
     ON_TRACK = "on_track"
@@ -90,13 +82,11 @@ class GapSeverity(str, Enum):
     SIGNIFICANT = "significant"
     CRITICAL = "critical"
 
-
 class InitiativePriority(str, Enum):
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 class InitiativeCategory(str, Enum):
     ENERGY_EFFICIENCY = "energy_efficiency"
@@ -109,19 +99,16 @@ class InitiativeCategory(str, Enum):
     CARBON_REMOVAL = "carbon_removal"
     OPERATIONAL = "operational"
 
-
 class RiskLevel(str, Enum):
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
     VERY_HIGH = "very_high"
 
-
 class RAGStatus(str, Enum):
     RED = "red"
     AMBER = "amber"
     GREEN = "green"
-
 
 class DeploymentPhase(str, Enum):
     IMMEDIATE = "immediate"        # 0-3 months
@@ -129,11 +116,9 @@ class DeploymentPhase(str, Enum):
     MEDIUM_TERM = "medium_term"    # 1-3 years
     LONG_TERM = "long_term"        # 3-5 years
 
-
 # =============================================================================
 # MACC INITIATIVE LIBRARY (Zero-Hallucination: Published Abatement Costs)
 # =============================================================================
-
 
 MACC_INITIATIVE_LIBRARY: Dict[str, Dict[str, Any]] = {
     "energy_audit": {
@@ -306,11 +291,9 @@ MACC_INITIATIVE_LIBRARY: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase_name: str = Field(...)
@@ -324,7 +307,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     dag_node_id: str = Field(default="")
 
-
 class GapQuantification(BaseModel):
     """Quantified gap to target."""
     gap_tco2e: float = Field(default=0.0)
@@ -336,7 +318,6 @@ class GapQuantification(BaseModel):
     required_additional_reduction_pct: float = Field(default=0.0)
     carbon_budget_gap_tco2e: float = Field(default=0.0)
     rag_status: RAGStatus = Field(default=RAGStatus.GREEN)
-
 
 class CandidateInitiative(BaseModel):
     """A candidate corrective action initiative."""
@@ -356,7 +337,6 @@ class CandidateInitiative(BaseModel):
     cumulative_abatement_tco2e: float = Field(default=0.0)
     macc_rank: int = Field(default=0)
 
-
 class OptimizedPortfolio(BaseModel):
     """Optimized initiative portfolio."""
     selected_initiatives: List[CandidateInitiative] = Field(default_factory=list)
@@ -370,7 +350,6 @@ class OptimizedPortfolio(BaseModel):
     net_savings_usd: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class DeploymentSchedule(BaseModel):
     """Deployment schedule for selected initiatives."""
     immediate_initiatives: List[str] = Field(default_factory=list)
@@ -382,7 +361,6 @@ class DeploymentSchedule(BaseModel):
     critical_path_initiatives: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class BudgetUpdate(BaseModel):
     """Updated carbon budget after corrective actions."""
     original_budget_tco2e: float = Field(default=0.0)
@@ -393,7 +371,6 @@ class BudgetUpdate(BaseModel):
     capex_required_usd: float = Field(default=0.0)
     roi_pct: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class CorrectiveActionReport(BaseModel):
     """Complete corrective action plan report."""
@@ -408,7 +385,6 @@ class CorrectiveActionReport(BaseModel):
     key_findings: List[str] = Field(default_factory=list)
     recommendations: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class CorrectiveActionConfig(BaseModel):
     company_name: str = Field(default="")
@@ -425,7 +401,6 @@ class CorrectiveActionConfig(BaseModel):
     optimization_target: str = Field(default="cost", description="cost|speed|risk")
     output_formats: List[str] = Field(default_factory=lambda: ["json", "html"])
 
-
 class CorrectiveActionInput(BaseModel):
     config: CorrectiveActionConfig = Field(default_factory=CorrectiveActionConfig)
     existing_initiatives: List[Dict[str, Any]] = Field(default_factory=list)
@@ -438,7 +413,6 @@ class CorrectiveActionInput(BaseModel):
         default_factory=dict,
         description="Constraints {max_capex, max_risk, min_trl, max_implementation_months}",
     )
-
 
 class CorrectiveActionResult(BaseModel):
     workflow_id: str = Field(...)
@@ -456,11 +430,9 @@ class CorrectiveActionResult(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class CorrectiveActionPlanningWorkflow:
     """
@@ -492,7 +464,7 @@ class CorrectiveActionPlanningWorkflow:
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     async def execute(self, input_data: CorrectiveActionInput) -> CorrectiveActionResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         self.config = input_data.config
         self._phase_results = []
         overall_status = WorkflowStatus.RUNNING
@@ -532,7 +504,7 @@ class CorrectiveActionPlanningWorkflow:
                 status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
 
         result = CorrectiveActionResult(
             workflow_id=self.workflow_id,
@@ -553,7 +525,7 @@ class CorrectiveActionPlanningWorkflow:
         return result
 
     async def _phase_quantify_gap(self, input_data: CorrectiveActionInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         current = self.config.current_emissions_tco2e
@@ -613,7 +585,7 @@ class CorrectiveActionPlanningWorkflow:
         outputs["years_remaining"] = years_remaining
         outputs["required_annual_reduction_pct"] = round(required_rate, 2)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="quantify_gap", phase_number=1,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -623,7 +595,7 @@ class CorrectiveActionPlanningWorkflow:
         )
 
     async def _phase_identify_initiatives(self, input_data: CorrectiveActionInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         candidates: List[CandidateInitiative] = []
@@ -697,7 +669,7 @@ class CorrectiveActionPlanningWorkflow:
             sum(c.abatement_potential_tco2e for c in candidates), 2,
         )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="identify_initiatives", phase_number=2,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -707,7 +679,7 @@ class CorrectiveActionPlanningWorkflow:
         )
 
     async def _phase_optimize_portfolio(self, input_data: CorrectiveActionInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         gap = self._gap.gap_tco2e
@@ -776,7 +748,7 @@ class CorrectiveActionPlanningWorkflow:
         outputs["net_savings_usd"] = round(net_savings, 2)
         outputs["portfolio_risk"] = portfolio_risk.value
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="optimize_portfolio", phase_number=3,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -786,7 +758,7 @@ class CorrectiveActionPlanningWorkflow:
         )
 
     async def _phase_schedule_deployment(self, input_data: CorrectiveActionInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         immediate: List[str] = []
@@ -843,7 +815,7 @@ class CorrectiveActionPlanningWorkflow:
         outputs["total_deployment_months"] = max_months
         outputs["critical_path_count"] = len(critical)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="schedule_deployment", phase_number=4,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -853,7 +825,7 @@ class CorrectiveActionPlanningWorkflow:
         )
 
     async def _phase_update_budget(self, input_data: CorrectiveActionInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         original = self.config.carbon_budget_remaining_tco2e or self._gap.cumulative_gap_tco2e * 2
@@ -886,7 +858,7 @@ class CorrectiveActionPlanningWorkflow:
         outputs["capex_usd"] = round(capex, 2)
         outputs["roi_pct"] = round(roi, 1)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="update_budget", phase_number=5,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -896,7 +868,7 @@ class CorrectiveActionPlanningWorkflow:
         )
 
     async def _phase_generate_report(self, input_data: CorrectiveActionInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         findings = self._generate_findings()
@@ -914,7 +886,7 @@ class CorrectiveActionPlanningWorkflow:
 
         self._report = CorrectiveActionReport(
             report_id=f"CAP-{self.workflow_id[:8]}",
-            report_date=_utcnow().strftime("%Y-%m-%d"),
+            report_date=utcnow().strftime("%Y-%m-%d"),
             company_name=self.config.company_name,
             gap=self._gap,
             portfolio=self._portfolio,
@@ -932,7 +904,7 @@ class CorrectiveActionPlanningWorkflow:
         outputs["findings_count"] = len(findings)
         outputs["recommendations_count"] = len(recommendations)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="generate_report", phase_number=6,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),

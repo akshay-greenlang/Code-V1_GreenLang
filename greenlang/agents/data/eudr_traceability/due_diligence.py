@@ -43,14 +43,9 @@ from greenlang.agents.data.eudr_traceability.models import (
     GenerateDDSRequest,
     RiskLevel,
 )
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -60,7 +55,6 @@ def _compute_hash(data: Any) -> str:
         serializable = data
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 class DueDiligenceEngine:
     """Due Diligence Statement lifecycle management engine.
@@ -261,8 +255,8 @@ class DueDiligenceEngine:
 
         # Update status
         dds.status = DDSStatus.SUBMITTED
-        dds.submission_date = _utcnow()
-        dds.updated_at = _utcnow()
+        dds.submission_date = utcnow()
+        dds.updated_at = utcnow()
 
         # Record provenance
         if self._provenance is not None:
@@ -302,7 +296,7 @@ class DueDiligenceEngine:
             raise ValueError("Signature must not be empty")
 
         dds.digital_signature = signature
-        dds.updated_at = _utcnow()
+        dds.updated_at = utcnow()
 
         # Record provenance
         if self._provenance is not None:
@@ -471,7 +465,6 @@ class DueDiligenceEngine:
     def dds_count(self) -> int:
         """Return the total number of DDS records."""
         return len(self._statements)
-
 
 __all__ = [
     "DueDiligenceEngine",

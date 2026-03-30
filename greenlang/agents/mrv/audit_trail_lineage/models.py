@@ -56,10 +56,11 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, List, Optional, Any
 from datetime import datetime, date
 from enum import Enum
-from pydantic import BaseModel, Field, validator
+from pydantic import Field, validator
 from pydantic import ConfigDict
 import hashlib
 import json
+from greenlang.schemas import GreenLangBase
 
 # ==============================================================================
 # AGENT METADATA
@@ -912,7 +913,7 @@ def category_name(category: Scope3Category) -> str:
 # ==============================================================================
 
 
-class AuditEventInput(BaseModel):
+class AuditEventInput(GreenLangBase):
     """Input for recording a single audit event in the hash chain.
 
     Each audit event captures a discrete, auditable action performed by
@@ -997,7 +998,7 @@ class AuditEventInput(BaseModel):
         return v
 
 
-class LineageNodeInput(BaseModel):
+class LineageNodeInput(GreenLangBase):
     """Input for creating a lineage node in the DAG.
 
     A lineage node represents a data artefact at a specific point in
@@ -1069,7 +1070,7 @@ class LineageNodeInput(BaseModel):
         return v
 
 
-class LineageEdgeInput(BaseModel):
+class LineageEdgeInput(GreenLangBase):
     """Input for creating a lineage edge in the DAG.
 
     Edges connect source nodes to target nodes and describe the
@@ -1126,7 +1127,7 @@ class LineageEdgeInput(BaseModel):
         return v
 
 
-class EvidencePackageRequest(BaseModel):
+class EvidencePackageRequest(GreenLangBase):
     """Request to assemble an evidence package for assurance readiness.
 
     An evidence package bundles all relevant audit events, lineage graphs,
@@ -1189,7 +1190,7 @@ class EvidencePackageRequest(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class ComplianceTraceRequest(BaseModel):
+class ComplianceTraceRequest(GreenLangBase):
     """Request to trace compliance requirements to evidence.
 
     Maps each disclosure requirement of a specific framework to the
@@ -1235,7 +1236,7 @@ class ComplianceTraceRequest(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class ChangeDetectionInput(BaseModel):
+class ChangeDetectionInput(GreenLangBase):
     """Input for registering a detected change that may trigger recalculation.
 
     Changes to emission factors, activity data, methodologies, or
@@ -1319,7 +1320,7 @@ class ChangeDetectionInput(BaseModel):
         return v
 
 
-class BatchAuditRequest(BaseModel):
+class BatchAuditRequest(GreenLangBase):
     """Batch request for recording multiple audit events atomically.
 
     Supports validation-only mode (dry run) to check event consistency
@@ -1355,7 +1356,7 @@ class BatchAuditRequest(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class LineageQueryInput(BaseModel):
+class LineageQueryInput(GreenLangBase):
     """Input for querying the lineage graph from a starting node.
 
     Supports both forward (source-to-reporting) and backward
@@ -1406,7 +1407,7 @@ class LineageQueryInput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class ChainVerificationRequest(BaseModel):
+class ChainVerificationRequest(GreenLangBase):
     """Request to verify integrity of the audit event hash chain.
 
     Verifies sequential hash links between events from start_position
@@ -1461,7 +1462,7 @@ class ChainVerificationRequest(BaseModel):
         return v
 
 
-class RecalculationRequest(BaseModel):
+class RecalculationRequest(GreenLangBase):
     """Request to analyse or execute a recalculation cascade.
 
     When a change is detected, this request determines which calculations
@@ -1517,7 +1518,7 @@ class RecalculationRequest(BaseModel):
 # ==============================================================================
 
 
-class AuditEventOutput(BaseModel):
+class AuditEventOutput(GreenLangBase):
     """Output from recording a single audit event.
 
     Contains the event hash, chain position, and verification status
@@ -1572,7 +1573,7 @@ class AuditEventOutput(BaseModel):
         return v.quantize(_QUANT_2DP, rounding=ROUND_HALF_UP)
 
 
-class LineageNodeOutput(BaseModel):
+class LineageNodeOutput(GreenLangBase):
     """Output representation of a lineage node."""
 
     node_id: str = Field(
@@ -1610,7 +1611,7 @@ class LineageNodeOutput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class LineageEdgeOutput(BaseModel):
+class LineageEdgeOutput(GreenLangBase):
     """Output representation of a lineage edge."""
 
     edge_id: str = Field(
@@ -1638,7 +1639,7 @@ class LineageEdgeOutput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class LineageGraphOutput(BaseModel):
+class LineageGraphOutput(GreenLangBase):
     """Output from a lineage graph query.
 
     Contains the complete subgraph of nodes and edges that were
@@ -1690,7 +1691,7 @@ class LineageGraphOutput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class LineageChainOutput(BaseModel):
+class LineageChainOutput(GreenLangBase):
     """Output from a linear chain traversal (source to target path).
 
     Represents a single path through the lineage DAG from a source
@@ -1729,7 +1730,7 @@ class LineageChainOutput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class EvidencePackageOutput(BaseModel):
+class EvidencePackageOutput(GreenLangBase):
     """Output from evidence package assembly.
 
     Contains the assembled evidence package metadata, completeness
@@ -1793,7 +1794,7 @@ class EvidencePackageOutput(BaseModel):
         return v.quantize(_QUANT_4DP, rounding=ROUND_HALF_UP)
 
 
-class ComplianceTraceOutput(BaseModel):
+class ComplianceTraceOutput(GreenLangBase):
     """Output from a compliance trace analysis.
 
     Maps framework requirements to evidence, identifies coverage
@@ -1851,7 +1852,7 @@ class ComplianceTraceOutput(BaseModel):
         return v.quantize(_QUANT_4DP, rounding=ROUND_HALF_UP)
 
 
-class ChangeDetectionOutput(BaseModel):
+class ChangeDetectionOutput(GreenLangBase):
     """Output from change detection and impact analysis.
 
     Assesses the impact of a detected change on reported emissions,
@@ -1913,7 +1914,7 @@ class ChangeDetectionOutput(BaseModel):
         return v.quantize(_QUANT_4DP, rounding=ROUND_HALF_UP)
 
 
-class ChainVerificationOutput(BaseModel):
+class ChainVerificationOutput(GreenLangBase):
     """Output from hash chain integrity verification.
 
     Reports whether the chain is intact, how many events were verified,
@@ -1961,7 +1962,7 @@ class ChainVerificationOutput(BaseModel):
         return v.quantize(_QUANT_2DP, rounding=ROUND_HALF_UP)
 
 
-class AuditTrailSummary(BaseModel):
+class AuditTrailSummary(GreenLangBase):
     """Summary of an organization's audit trail for a reporting period.
 
     Provides high-level metrics on audit trail completeness, chain
@@ -2038,7 +2039,7 @@ class AuditTrailSummary(BaseModel):
         return v.quantize(_QUANT_4DP, rounding=ROUND_HALF_UP)
 
 
-class ComplianceReport(BaseModel):
+class ComplianceReport(GreenLangBase):
     """Full compliance report for a specific framework.
 
     Provides a comprehensive assessment of compliance readiness,
@@ -2116,7 +2117,7 @@ class ComplianceReport(BaseModel):
 # ==============================================================================
 
 
-class AuditTrailCalculationResult(BaseModel):
+class AuditTrailCalculationResult(GreenLangBase):
     """Top-level result from the Audit Trail & Lineage Agent.
 
     Encapsulates all outputs from a complete audit trail processing run,
@@ -2206,7 +2207,7 @@ class AuditTrailCalculationResult(BaseModel):
 # ==============================================================================
 
 
-class ProvenanceRecord(BaseModel):
+class ProvenanceRecord(GreenLangBase):
     """Provenance record for the 10-stage pipeline audit trail.
 
     Each pipeline stage produces a provenance record that is
@@ -2241,7 +2242,7 @@ class ProvenanceRecord(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class BatchAuditResult(BaseModel):
+class BatchAuditResult(GreenLangBase):
     """Result from a batch audit event recording operation.
 
     Includes per-event results and aggregate statistics for the batch.
@@ -2290,7 +2291,7 @@ class BatchAuditResult(BaseModel):
         return v.quantize(_QUANT_2DP, rounding=ROUND_HALF_UP)
 
 
-class RecalculationImpact(BaseModel):
+class RecalculationImpact(GreenLangBase):
     """Impact analysis result from a recalculation request.
 
     Details which calculations, scopes, and categories are affected
@@ -2364,7 +2365,7 @@ class RecalculationImpact(BaseModel):
         return v.quantize(_QUANT_4DP, rounding=ROUND_HALF_UP)
 
 
-class DataQualityAssessment(BaseModel):
+class DataQualityAssessment(GreenLangBase):
     """Data quality assessment summary for audit trail evidence.
 
     Aggregates data quality scores across all lineage nodes in the

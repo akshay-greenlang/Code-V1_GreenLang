@@ -80,25 +80,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -116,7 +110,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serialisable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -125,7 +118,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -137,22 +129,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class HotspotType(str, Enum):
     """Type of hotspot identified.
@@ -166,7 +154,6 @@ class HotspotType(str, Enum):
     SUPPLIER = "supplier"
     PRODUCT = "product"
     GEOGRAPHIC = "geographic"
-
 
 class ReductionLever(str, Enum):
     """Type of reduction lever available.
@@ -189,7 +176,6 @@ class ReductionLever(str, Enum):
     SWITCHING = "switching"
     DEMAND_REDUCTION = "demand_reduction"
 
-
 class ImprovementDifficulty(str, Enum):
     """Difficulty of implementing a reduction measure.
 
@@ -203,13 +189,11 @@ class ImprovementDifficulty(str, Enum):
     DIFFICULT = "difficult"
     VERY_HARD = "very_hard"
 
-
 class AnalysisStatus(str, Enum):
     """Status of the hotspot analysis."""
     COMPLETE = "complete"
     PARTIAL = "partial"
     ERROR = "error"
-
 
 # ---------------------------------------------------------------------------
 # Sector Benchmark Data
@@ -443,11 +427,9 @@ TIER_UPGRADE_RATIOS: Dict[str, Decimal] = {
     "spend_to_supplier": Decimal("0.50"),  # Supplier-specific typically 50% of spend-based
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class CategoryInput(BaseModel):
     """Category emission data for hotspot analysis.
@@ -468,7 +450,6 @@ class CategoryInput(BaseModel):
     data_quality_score: Decimal = Field(
         default=Decimal("4.0"), ge=1, le=5, description="DQ score"
     )
-
 
 class SupplierData(BaseModel):
     """Supplier emission contribution data.
@@ -493,7 +474,6 @@ class SupplierData(BaseModel):
     categories_contributed: List[int] = Field(
         default_factory=list, description="Categories contributed"
     )
-
 
 class ProductData(BaseModel):
     """Product emission intensity data.
@@ -520,7 +500,6 @@ class ProductData(BaseModel):
     co2e_per_eur_revenue: Decimal = Field(
         default=Decimal("0"), ge=0, description="tCO2e per EUR"
     )
-
 
 class HotspotAnalysisInput(BaseModel):
     """Input data for hotspot analysis.
@@ -560,11 +539,9 @@ class HotspotAnalysisInput(BaseModel):
     )
     top_n_suppliers: int = Field(default=20, ge=1, description="Top N suppliers")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class ParetoItem(BaseModel):
     """A single item in the Pareto analysis.
@@ -586,7 +563,6 @@ class ParetoItem(BaseModel):
     is_in_pareto_set: bool = Field(default=False, description="In Pareto set")
     rank: int = Field(default=0, description="Rank")
 
-
 class SupplierConcentration(BaseModel):
     """Supplier concentration analysis result.
 
@@ -607,7 +583,6 @@ class SupplierConcentration(BaseModel):
         default_factory=list, description="Top suppliers"
     )
 
-
 class MaterialityScore(BaseModel):
     """Materiality matrix score for a category.
 
@@ -627,7 +602,6 @@ class MaterialityScore(BaseModel):
     )
     combined_score: Decimal = Field(default=Decimal("0"), description="Combined")
     quadrant: str = Field(default="", description="Quadrant")
-
 
 class SectorBenchmarkResult(BaseModel):
     """Sector benchmark comparison result.
@@ -651,7 +625,6 @@ class SectorBenchmarkResult(BaseModel):
         default_factory=list, description="Under-represented"
     )
 
-
 class GeographicDistribution(BaseModel):
     """Geographic distribution of emissions.
 
@@ -665,7 +638,6 @@ class GeographicDistribution(BaseModel):
     total_co2e_tonnes: Decimal = Field(default=Decimal("0"), description="tCO2e")
     share_of_total_pct: Decimal = Field(default=Decimal("0"), description="Share %")
     supplier_count: int = Field(default=0, description="Supplier count")
-
 
 class ReductionOpportunity(BaseModel):
     """A quantified emission reduction opportunity.
@@ -699,7 +671,6 @@ class ReductionOpportunity(BaseModel):
     timeframe_years: int = Field(default=0, description="Timeframe years")
     priority_rank: int = Field(default=0, description="Priority rank")
 
-
 class TierUpgradeImpact(BaseModel):
     """Impact of upgrading methodology tier for a category.
 
@@ -727,7 +698,6 @@ class TierUpgradeImpact(BaseModel):
     estimated_change_pct: Decimal = Field(
         default=Decimal("0"), description="Change %"
     )
-
 
 class HotspotResult(BaseModel):
     """Complete hotspot analysis result.
@@ -795,10 +765,9 @@ class HotspotResult(BaseModel):
     status: AnalysisStatus = Field(
         default=AnalysisStatus.COMPLETE, description="Status"
     )
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Timestamp")
     processing_time_ms: Decimal = Field(default=Decimal("0"), description="Processing ms")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 # ---------------------------------------------------------------------------
 # Model Rebuild
@@ -817,11 +786,9 @@ ReductionOpportunity.model_rebuild()
 TierUpgradeImpact.model_rebuild()
 HotspotResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class HotspotAnalysisEngine:
     """Identify emission hotspots and prioritise reduction efforts.

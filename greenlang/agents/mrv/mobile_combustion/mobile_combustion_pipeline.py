@@ -51,9 +51,9 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Optional config import
@@ -70,7 +70,6 @@ except ImportError:
     def get_config() -> Any:  # type: ignore[misc]
         """No-op fallback when config module is unavailable."""
         return None
-
 
 # ---------------------------------------------------------------------------
 # Optional model imports (graceful degradation)
@@ -118,7 +117,6 @@ except ImportError:
     UncertaintyResult = None  # type: ignore[assignment, misc]
     VehicleCategory = None  # type: ignore[assignment, misc]
     VehicleType = None  # type: ignore[assignment, misc]
-
 
 # ---------------------------------------------------------------------------
 # Optional engine imports (graceful degradation)
@@ -174,11 +172,9 @@ except ImportError:
     def record_calculation(method: str, vehicle_type: str, status: str) -> None:  # type: ignore[misc]
         """No-op fallback when metrics module is unavailable."""
 
-
 # ---------------------------------------------------------------------------
 # Pipeline stage enum and constants
 # ---------------------------------------------------------------------------
-
 
 class PipelineStage(str, Enum):
     """Enumeration of the 8 mobile combustion pipeline stages.
@@ -195,7 +191,6 @@ class PipelineStage(str, Enum):
     QUANTIFY_UNCERTAINTY = "QUANTIFY_UNCERTAINTY"
     CHECK_COMPLIANCE = "CHECK_COMPLIANCE"
     GENERATE_AUDIT = "GENERATE_AUDIT"
-
 
 PIPELINE_STAGES: List[str] = [stage.value for stage in PipelineStage]
 
@@ -442,26 +437,17 @@ UNCERTAINTY_PARAMETERS: Dict[str, Dict[str, float]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Utility helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _utcnow_iso() -> str:
     """Return current UTC datetime as an ISO-8601 string."""
-    return _utcnow().isoformat()
-
+    return utcnow().isoformat()
 
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -479,7 +465,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 def _chain_hashes(prev_hash: str, current_data: Any) -> str:
     """Chain a previous provenance hash with new data.
 
@@ -494,11 +479,9 @@ def _chain_hashes(prev_hash: str, current_data: Any) -> str:
     combined = f"{prev_hash}:{current_hash}"
     return hashlib.sha256(combined.encode()).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # StageResult dataclass
 # ---------------------------------------------------------------------------
-
 
 class StageResult:
     """Container for individual pipeline stage execution results.
@@ -558,11 +541,9 @@ class StageResult:
             "provenance_hash": self.provenance_hash,
         }
 
-
 # ---------------------------------------------------------------------------
 # PipelineContext
 # ---------------------------------------------------------------------------
-
 
 class PipelineContext:
     """Mutable context carried between pipeline stages.
@@ -634,11 +615,9 @@ class PipelineContext:
         self.errors: List[str] = []
         self.warnings: List[str] = []
 
-
 # ===================================================================
 # MobileCombustionPipelineEngine
 # ===================================================================
-
 
 class MobileCombustionPipelineEngine:
     """End-to-end orchestration pipeline for mobile combustion emissions.
@@ -2578,7 +2557,6 @@ class MobileCombustionPipelineEngine:
                 self.config, "default_fuel_type", "GASOLINE",
             )
         return "GASOLINE"
-
 
 # ===================================================================
 # Public API

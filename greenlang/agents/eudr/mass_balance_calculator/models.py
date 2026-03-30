@@ -65,13 +65,12 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import (
-    BaseModel,
-    ConfigDict,
     Field,
     field_validator,
     model_validator,
 )
-
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ReportFormat
 
 # ---------------------------------------------------------------------------
 # Cross-agent commodity import (graceful fallback)
@@ -82,16 +81,9 @@ try:
 except ImportError:
     EUDRCommodity = None  # type: ignore[assignment,misc]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -165,11 +157,9 @@ DERIVED_TO_PRIMARY: Dict[str, str] = {
     "plywood": "wood",
 }
 
-
 # =============================================================================
 # Enumerations
 # =============================================================================
-
 
 class LedgerEntryType(str, Enum):
     """Type of mass balance ledger entry.
@@ -204,7 +194,6 @@ class LedgerEntryType(str, Enum):
     CARRY_FORWARD_OUT = "carry_forward_out"
     EXPIRY = "expiry"
 
-
 class PeriodStatus(str, Enum):
     """Lifecycle status of a credit period.
 
@@ -223,7 +212,6 @@ class PeriodStatus(str, Enum):
     RECONCILING = "reconciling"
     CLOSED = "closed"
 
-
 class OverdraftSeverity(str, Enum):
     """Severity classification for overdraft events.
 
@@ -240,7 +228,6 @@ class OverdraftSeverity(str, Enum):
     VIOLATION = "violation"
     CRITICAL = "critical"
 
-
 class OverdraftMode(str, Enum):
     """Overdraft enforcement mode.
 
@@ -255,7 +242,6 @@ class OverdraftMode(str, Enum):
     ZERO_TOLERANCE = "zero_tolerance"
     PERCENTAGE = "percentage"
     ABSOLUTE = "absolute"
-
 
 class LossType(str, Enum):
     """Type of material loss in the supply chain.
@@ -280,7 +266,6 @@ class LossType(str, Enum):
     SPILLAGE = "spillage"
     CONTAMINATION_LOSS = "contamination_loss"
 
-
 class WasteType(str, Enum):
     """Type of waste material generated during processing.
 
@@ -297,7 +282,6 @@ class WasteType(str, Enum):
     BY_PRODUCT = "by_product"
     WASTE_MATERIAL = "waste_material"
     HAZARDOUS_WASTE = "hazardous_waste"
-
 
 class ConversionStatus(str, Enum):
     """Validation status of a conversion factor.
@@ -318,7 +302,6 @@ class ConversionStatus(str, Enum):
     REJECTED = "rejected"
     PENDING = "pending"
 
-
 class VarianceClassification(str, Enum):
     """Classification of reconciliation variance.
 
@@ -333,7 +316,6 @@ class VarianceClassification(str, Enum):
     ACCEPTABLE = "acceptable"
     WARNING = "warning"
     VIOLATION = "violation"
-
 
 class ReconciliationStatus(str, Enum):
     """Status of a period reconciliation process.
@@ -351,7 +333,6 @@ class ReconciliationStatus(str, Enum):
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
     SIGNED_OFF = "signed_off"
-
 
 class CarryForwardStatus(str, Enum):
     """Status of a carry-forward balance transfer.
@@ -371,22 +352,6 @@ class CarryForwardStatus(str, Enum):
     UTILIZED = "utilized"
     PARTIAL = "partial"
 
-
-class ReportFormat(str, Enum):
-    """Output format for mass balance reports.
-
-    JSON: Machine-readable JSON format for API integration.
-    CSV: Tabular CSV format for spreadsheet analysis.
-    PDF: Human-readable PDF format for regulatory submission.
-    EUDR_XML: EU Information System XML schema for DDS submission.
-    """
-
-    JSON = "json"
-    CSV = "csv"
-    PDF = "pdf"
-    EUDR_XML = "eudr_xml"
-
-
 class ReportType(str, Enum):
     """Type of mass balance report.
 
@@ -404,7 +369,6 @@ class ReportType(str, Enum):
     VARIANCE = "variance"
     EVIDENCE = "evidence"
 
-
 class FacilityGroupType(str, Enum):
     """Type of facility grouping for consolidation.
 
@@ -418,7 +382,6 @@ class FacilityGroupType(str, Enum):
     COUNTRY = "country"
     COMMODITY = "commodity"
     CUSTOM = "custom"
-
 
 class ComplianceStatus(str, Enum):
     """Compliance status for mass balance operations.
@@ -437,7 +400,6 @@ class ComplianceStatus(str, Enum):
     NON_COMPLIANT = "non_compliant"
     PENDING = "pending"
     UNDER_REVIEW = "under_review"
-
 
 class StandardType(str, Enum):
     """Certification standard governing the mass balance.
@@ -463,13 +425,11 @@ class StandardType(str, Enum):
     FAIRTRADE = "fairtrade"
     EUDR_DEFAULT = "eudr_default"
 
-
 # =============================================================================
 # Core Models
 # =============================================================================
 
-
-class Ledger(BaseModel):
+class Ledger(GreenLangBase):
     """A double-entry mass balance ledger for a facility/commodity/standard.
 
     Represents a single mass balance account that tracks certified
@@ -563,16 +523,15 @@ class Ledger(BaseModel):
         description="SHA-256 provenance hash for audit trail",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the ledger was created",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the ledger was last updated",
     )
 
-
-class LedgerEntry(BaseModel):
+class LedgerEntry(GreenLangBase):
     """A single entry in the mass balance ledger.
 
     Records a debit or credit to the mass balance account. Every entry
@@ -642,7 +601,7 @@ class LedgerEntry(BaseModel):
         description="Conversion factor applied to this entry",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the entry was recorded",
     )
     operator_id: Optional[str] = Field(
@@ -678,12 +637,11 @@ class LedgerEntry(BaseModel):
         description="Additional contextual key-value pairs",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the record was created",
     )
 
-
-class CreditPeriod(BaseModel):
+class CreditPeriod(GreenLangBase):
     """A credit period for mass balance accounting.
 
     Represents a defined time window within which mass balance inputs
@@ -787,11 +745,11 @@ class CreditPeriod(BaseModel):
         description="SHA-256 provenance hash",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the period was created",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the period was last updated",
     )
 
@@ -805,8 +763,7 @@ class CreditPeriod(BaseModel):
             )
         return self
 
-
-class ConversionFactor(BaseModel):
+class ConversionFactor(GreenLangBase):
     """A conversion factor for commodity processing.
 
     Represents the yield ratio (output_mass / input_mass) for a specific
@@ -903,12 +860,11 @@ class ConversionFactor(BaseModel):
         description="SHA-256 provenance hash",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the factor was created",
     )
 
-
-class OverdraftEvent(BaseModel):
+class OverdraftEvent(GreenLangBase):
     """An overdraft event detected in the mass balance ledger.
 
     Records when an output entry causes the ledger balance to go
@@ -1007,12 +963,11 @@ class OverdraftEvent(BaseModel):
         description="SHA-256 provenance hash",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the event was detected",
     )
 
-
-class LossRecord(BaseModel):
+class LossRecord(GreenLangBase):
     """A record of material loss or waste in the supply chain.
 
     Captures the details of material lost during processing, transport,
@@ -1115,12 +1070,11 @@ class LossRecord(BaseModel):
         description="SHA-256 provenance hash",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the loss was recorded",
     )
 
-
-class CarryForward(BaseModel):
+class CarryForward(GreenLangBase):
     """A carry-forward balance transfer between credit periods.
 
     Records the transfer of unused certified balance from one credit
@@ -1205,11 +1159,11 @@ class CarryForward(BaseModel):
         description="SHA-256 provenance hash",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the carry-forward was created",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the carry-forward was last updated",
     )
 
@@ -1220,8 +1174,7 @@ class CarryForward(BaseModel):
             self.remaining_amount = self.amount_kg - self.utilized_amount
         return self
 
-
-class Reconciliation(BaseModel):
+class Reconciliation(GreenLangBase):
     """A period-end reconciliation record.
 
     Captures the results of reconciling a credit period including
@@ -1332,16 +1285,15 @@ class Reconciliation(BaseModel):
         description="SHA-256 provenance hash",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the reconciliation was created",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when last updated",
     )
 
-
-class FacilityGroup(BaseModel):
+class FacilityGroup(GreenLangBase):
     """A group of facilities for consolidated reporting.
 
     Organizes multiple facilities into a logical group for
@@ -1387,16 +1339,15 @@ class FacilityGroup(BaseModel):
         description="Additional contextual key-value pairs",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the group was created",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the group was last updated",
     )
 
-
-class ConsolidationReport(BaseModel):
+class ConsolidationReport(GreenLangBase):
     """A consolidated multi-facility mass balance report.
 
     Aggregates mass balance data across multiple facilities for
@@ -1451,7 +1402,7 @@ class ConsolidationReport(BaseModel):
         description="Report period end date",
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the report was generated",
     )
     generated_by: Optional[str] = Field(
@@ -1484,8 +1435,7 @@ class ConsolidationReport(BaseModel):
         description="Additional contextual key-value pairs",
     )
 
-
-class BatchJob(BaseModel):
+class BatchJob(GreenLangBase):
     """A batch processing job record.
 
     Tracks the lifecycle of a batch processing job including progress,
@@ -1541,7 +1491,7 @@ class BatchJob(BaseModel):
         description="List of error descriptions",
     )
     started_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the job started",
     )
     completed_at: Optional[datetime] = Field(
@@ -1562,13 +1512,11 @@ class BatchJob(BaseModel):
         description="SHA-256 provenance hash",
     )
 
-
 # =============================================================================
 # Request Models
 # =============================================================================
 
-
-class CreateLedgerRequest(BaseModel):
+class CreateLedgerRequest(GreenLangBase):
     """Request to create a new mass balance ledger.
 
     Attributes:
@@ -1587,8 +1535,7 @@ class CreateLedgerRequest(BaseModel):
     initial_balance: Decimal = Field(default=Decimal("0"), ge=0)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-
-class RecordEntryRequest(BaseModel):
+class RecordEntryRequest(GreenLangBase):
     """Request to record a single ledger entry.
 
     Attributes:
@@ -1615,8 +1562,7 @@ class RecordEntryRequest(BaseModel):
     notes: Optional[str] = Field(None)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-
-class BulkEntryRequest(BaseModel):
+class BulkEntryRequest(GreenLangBase):
     """Request to record multiple ledger entries in bulk.
 
     Attributes:
@@ -1644,8 +1590,7 @@ class BulkEntryRequest(BaseModel):
             )
         return v
 
-
-class SearchLedgerRequest(BaseModel):
+class SearchLedgerRequest(GreenLangBase):
     """Request to search ledgers by criteria.
 
     Attributes:
@@ -1670,8 +1615,7 @@ class SearchLedgerRequest(BaseModel):
     limit: int = Field(default=50, ge=1, le=1000)
     offset: int = Field(default=0, ge=0)
 
-
-class CreatePeriodRequest(BaseModel):
+class CreatePeriodRequest(GreenLangBase):
     """Request to create a new credit period.
 
     Attributes:
@@ -1694,8 +1638,7 @@ class CreatePeriodRequest(BaseModel):
     opening_balance: Decimal = Field(default=Decimal("0"), ge=0)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-
-class ExtendPeriodRequest(BaseModel):
+class ExtendPeriodRequest(GreenLangBase):
     """Request to extend a credit period's end date.
 
     Attributes:
@@ -1712,8 +1655,7 @@ class ExtendPeriodRequest(BaseModel):
     reason: str = Field(..., min_length=1)
     operator_id: str = Field(..., min_length=1)
 
-
-class RolloverPeriodRequest(BaseModel):
+class RolloverPeriodRequest(GreenLangBase):
     """Request to rollover a credit period to a new one.
 
     Attributes:
@@ -1734,8 +1676,7 @@ class RolloverPeriodRequest(BaseModel):
     notes: Optional[str] = Field(None)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-
-class ValidateFactorRequest(BaseModel):
+class ValidateFactorRequest(GreenLangBase):
     """Request to validate a conversion factor against reference data.
 
     Attributes:
@@ -1754,8 +1695,7 @@ class ValidateFactorRequest(BaseModel):
     facility_id: Optional[str] = Field(None)
     source: Optional[str] = Field(None)
 
-
-class RegisterCustomFactorRequest(BaseModel):
+class RegisterCustomFactorRequest(GreenLangBase):
     """Request to register a custom conversion factor.
 
     Attributes:
@@ -1780,8 +1720,7 @@ class RegisterCustomFactorRequest(BaseModel):
     source: Optional[str] = Field(None)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-
-class CheckOverdraftRequest(BaseModel):
+class CheckOverdraftRequest(GreenLangBase):
     """Request to check for potential overdraft before recording output.
 
     Attributes:
@@ -1796,8 +1735,7 @@ class CheckOverdraftRequest(BaseModel):
     output_quantity_kg: Decimal = Field(..., gt=0)
     dry_run: bool = Field(default=True)
 
-
-class ForecastOutputRequest(BaseModel):
+class ForecastOutputRequest(GreenLangBase):
     """Request to forecast maximum available output quantity.
 
     Attributes:
@@ -1812,8 +1750,7 @@ class ForecastOutputRequest(BaseModel):
     include_carry_forward: bool = Field(default=True)
     include_pending_inputs: bool = Field(default=False)
 
-
-class RequestExemptionRequest(BaseModel):
+class RequestExemptionRequest(GreenLangBase):
     """Request an exemption for an overdraft event.
 
     Attributes:
@@ -1832,8 +1769,7 @@ class RequestExemptionRequest(BaseModel):
     supporting_evidence: Optional[str] = Field(None)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-
-class RecordLossRequest(BaseModel):
+class RecordLossRequest(GreenLangBase):
     """Request to record a material loss.
 
     Attributes:
@@ -1858,8 +1794,7 @@ class RecordLossRequest(BaseModel):
     notes: Optional[str] = Field(None)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-
-class ValidateLossRequest(BaseModel):
+class ValidateLossRequest(GreenLangBase):
     """Request to validate a loss against tolerance thresholds.
 
     Attributes:
@@ -1878,8 +1813,7 @@ class ValidateLossRequest(BaseModel):
     input_quantity_kg: Decimal = Field(..., gt=0)
     process_type: Optional[str] = Field(None)
 
-
-class RunReconciliationRequest(BaseModel):
+class RunReconciliationRequest(GreenLangBase):
     """Request to run a period reconciliation.
 
     Attributes:
@@ -1904,8 +1838,7 @@ class RunReconciliationRequest(BaseModel):
     notes: Optional[str] = Field(None)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-
-class SignOffReconciliationRequest(BaseModel):
+class SignOffReconciliationRequest(GreenLangBase):
     """Request to sign off on a completed reconciliation.
 
     Attributes:
@@ -1922,8 +1855,7 @@ class SignOffReconciliationRequest(BaseModel):
     notes: Optional[str] = Field(None)
     auto_rollover: bool = Field(default=True)
 
-
-class GenerateConsolidationRequest(BaseModel):
+class GenerateConsolidationRequest(GreenLangBase):
     """Request to generate a consolidation report.
 
     Attributes:
@@ -1959,8 +1891,7 @@ class GenerateConsolidationRequest(BaseModel):
             )
         return self
 
-
-class CreateFacilityGroupRequest(BaseModel):
+class CreateFacilityGroupRequest(GreenLangBase):
     """Request to create a facility group.
 
     Attributes:
@@ -1979,13 +1910,11 @@ class CreateFacilityGroupRequest(BaseModel):
     description: Optional[str] = Field(None)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-
 # =============================================================================
 # Response Models
 # =============================================================================
 
-
-class LedgerResponse(BaseModel):
+class LedgerResponse(GreenLangBase):
     """Response after creating or retrieving a ledger.
 
     Attributes:
@@ -2010,10 +1939,9 @@ class LedgerResponse(BaseModel):
     compliance_status: ComplianceStatus = Field(...)
     provenance_hash: str = Field(...)
     processing_time_ms: float = Field(...)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
-
-class LedgerBalanceResponse(BaseModel):
+class LedgerBalanceResponse(GreenLangBase):
     """Response with detailed ledger balance information.
 
     Attributes:
@@ -2042,10 +1970,9 @@ class LedgerBalanceResponse(BaseModel):
     carry_forward_available: Decimal = Field(default=Decimal("0"))
     overdraft_status: bool = Field(default=False)
     processing_time_ms: float = Field(...)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
-
-class EntryHistoryResponse(BaseModel):
+class EntryHistoryResponse(GreenLangBase):
     """Response with ledger entry history.
 
     Attributes:
@@ -2066,10 +1993,9 @@ class EntryHistoryResponse(BaseModel):
     page_size: int = Field(..., ge=0)
     page_offset: int = Field(default=0, ge=0)
     processing_time_ms: float = Field(...)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
-
-class PeriodResponse(BaseModel):
+class PeriodResponse(GreenLangBase):
     """Response after creating or retrieving a credit period.
 
     Attributes:
@@ -2102,10 +2028,9 @@ class PeriodResponse(BaseModel):
     current_balance: Optional[Decimal] = Field(None)
     provenance_hash: str = Field(...)
     processing_time_ms: float = Field(...)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
-
-class ActivePeriodsResponse(BaseModel):
+class ActivePeriodsResponse(GreenLangBase):
     """Response listing active credit periods.
 
     Attributes:
@@ -2120,10 +2045,9 @@ class ActivePeriodsResponse(BaseModel):
     periods: List[CreditPeriod] = Field(default_factory=list)
     total_count: int = Field(..., ge=0)
     processing_time_ms: float = Field(...)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
-
-class FactorValidationResponse(BaseModel):
+class FactorValidationResponse(GreenLangBase):
     """Response after validating a conversion factor.
 
     Attributes:
@@ -2152,10 +2076,9 @@ class FactorValidationResponse(BaseModel):
     message: str = Field(...)
     provenance_hash: str = Field(...)
     processing_time_ms: float = Field(...)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
-
-class ReferenceFactorsResponse(BaseModel):
+class ReferenceFactorsResponse(GreenLangBase):
     """Response listing reference conversion factors.
 
     Attributes:
@@ -2172,10 +2095,9 @@ class ReferenceFactorsResponse(BaseModel):
     factors: Dict[str, float] = Field(default_factory=dict)
     source: str = Field(default="EUDR reference data")
     processing_time_ms: float = Field(...)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
-
-class OverdraftCheckResponse(BaseModel):
+class OverdraftCheckResponse(GreenLangBase):
     """Response after checking for potential overdraft.
 
     Attributes:
@@ -2202,10 +2124,9 @@ class OverdraftCheckResponse(BaseModel):
     allowed: bool = Field(...)
     message: str = Field(...)
     processing_time_ms: float = Field(...)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
-
-class OverdraftAlertResponse(BaseModel):
+class OverdraftAlertResponse(GreenLangBase):
     """Response with overdraft alert details.
 
     Attributes:
@@ -2232,10 +2153,9 @@ class OverdraftAlertResponse(BaseModel):
     resolution_deadline: Optional[datetime] = Field(None)
     unresolved_count: int = Field(default=0, ge=0)
     processing_time_ms: float = Field(...)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
-
-class ForecastResponse(BaseModel):
+class ForecastResponse(GreenLangBase):
     """Response with output forecast information.
 
     Attributes:
@@ -2256,10 +2176,9 @@ class ForecastResponse(BaseModel):
     pending_inputs_included: bool = Field(...)
     max_output_kg: Decimal = Field(...)
     processing_time_ms: float = Field(...)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
-
-class LossValidationResponse(BaseModel):
+class LossValidationResponse(GreenLangBase):
     """Response after validating a loss against tolerances.
 
     Attributes:
@@ -2286,10 +2205,9 @@ class LossValidationResponse(BaseModel):
     within_tolerance: bool = Field(...)
     message: str = Field(...)
     processing_time_ms: float = Field(...)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
-
-class LossTrendsResponse(BaseModel):
+class LossTrendsResponse(GreenLangBase):
     """Response with loss trend analysis.
 
     Attributes:
@@ -2312,10 +2230,9 @@ class LossTrendsResponse(BaseModel):
     trend_direction: str = Field(...)
     anomalies: List[Dict[str, Any]] = Field(default_factory=list)
     processing_time_ms: float = Field(...)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
-
-class ReconciliationResponse(BaseModel):
+class ReconciliationResponse(GreenLangBase):
     """Response after running a reconciliation.
 
     Attributes:
@@ -2350,10 +2267,9 @@ class ReconciliationResponse(BaseModel):
     status: ReconciliationStatus = Field(...)
     provenance_hash: str = Field(...)
     processing_time_ms: float = Field(...)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
-
-class ReconciliationHistoryResponse(BaseModel):
+class ReconciliationHistoryResponse(GreenLangBase):
     """Response with reconciliation history.
 
     Attributes:
@@ -2372,10 +2288,9 @@ class ReconciliationHistoryResponse(BaseModel):
     reconciliations: List[Reconciliation] = Field(default_factory=list)
     total_count: int = Field(..., ge=0)
     processing_time_ms: float = Field(...)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
-
-class ConsolidationDashboardResponse(BaseModel):
+class ConsolidationDashboardResponse(GreenLangBase):
     """Response with consolidated dashboard data.
 
     Attributes:
@@ -2402,10 +2317,9 @@ class ConsolidationDashboardResponse(BaseModel):
     compliance_summary: Dict[str, int] = Field(default_factory=dict)
     commodity_breakdown: Dict[str, Any] = Field(default_factory=dict)
     processing_time_ms: float = Field(...)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
-
-class ConsolidationReportResponse(BaseModel):
+class ConsolidationReportResponse(GreenLangBase):
     """Response after generating a consolidation report.
 
     Attributes:
@@ -2430,10 +2344,9 @@ class ConsolidationReportResponse(BaseModel):
     file_size_bytes: Optional[int] = Field(None, ge=0)
     provenance_hash: str = Field(...)
     processing_time_ms: float = Field(...)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
-
-class BatchJobResponse(BaseModel):
+class BatchJobResponse(GreenLangBase):
     """Response for a batch processing job.
 
     Attributes:
@@ -2458,10 +2371,9 @@ class BatchJobResponse(BaseModel):
     failed_items: int = Field(default=0, ge=0)
     processing_time_ms: float = Field(...)
     provenance_hash: Optional[str] = Field(None)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
-
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Health check response for the mass balance calculator service.
 
     Attributes:
@@ -2488,8 +2400,7 @@ class HealthResponse(BaseModel):
     active_periods: int = Field(default=0, ge=0)
     unresolved_overdrafts: int = Field(default=0, ge=0)
     uptime_seconds: float = Field(default=0.0, ge=0.0)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # Public API

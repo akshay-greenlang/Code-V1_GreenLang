@@ -46,6 +46,7 @@ from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
+from greenlang.schemas.enums import HealthStatus
 
 logger = logging.getLogger(__name__)
 
@@ -53,13 +54,6 @@ logger = logging.getLogger(__name__)
 # =============================================================================
 # Enums
 # =============================================================================
-
-
-class HealthStatus(str, Enum):
-    """Health status for a category or overall result."""
-    HEALTHY = "HEALTHY"
-    DEGRADED = "DEGRADED"
-    UNHEALTHY = "UNHEALTHY"
 
 
 class HealthCategory(str, Enum):

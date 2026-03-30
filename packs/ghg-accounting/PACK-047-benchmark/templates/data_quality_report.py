@@ -46,29 +46,23 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 def _compute_hash(content: str) -> str:
     """Compute SHA-256 hash of string content."""
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -81,13 +75,11 @@ class OutputFormat(str, Enum):
     PDF = "pdf"
     JSON = "json"
 
-
 class TrafficLight(str, Enum):
     """Traffic light status indicators."""
     GREEN = "green"
     AMBER = "amber"
     RED = "red"
-
 
 class DataSource(str, Enum):
     """Data source hierarchy."""
@@ -96,7 +88,6 @@ class DataSource(str, Enum):
     ESTIMATED_PHYSICAL = "estimated_physical"
     ESTIMATED_ECONOMIC = "estimated_economic"
     PROXY = "proxy"
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Input Models
@@ -109,7 +100,6 @@ class QualityScoreBin(BaseModel):
     pct_of_total: float = Field(0.0, description="Percentage of total")
     org_in_bin: bool = Field(False, description="Whether org falls in this bin")
 
-
 class CoverageMetric(BaseModel):
     """Coverage of a specific metric across peers."""
     metric_name: str = Field(..., description="Metric name")
@@ -119,7 +109,6 @@ class CoverageMetric(BaseModel):
     data_year: Optional[int] = Field(None, description="Year of data")
     quality_tier: str = Field("", description="Quality tier (high/medium/low)")
     status: TrafficLight = Field(TrafficLight.AMBER, description="Status")
-
 
 class SourceBreakdown(BaseModel):
     """Source hierarchy breakdown entry."""
@@ -131,7 +120,6 @@ class SourceBreakdown(BaseModel):
     pct_of_total: float = Field(0.0, description="Percentage of total")
     avg_quality_score: Optional[float] = Field(None, description="Average quality score")
 
-
 class ConfidenceIntervalEntry(BaseModel):
     """Confidence interval for a metric."""
     metric_name: str = Field(..., description="Metric name")
@@ -142,7 +130,6 @@ class ConfidenceIntervalEntry(BaseModel):
     half_width_pct: float = Field(0.0, description="Half-width as % of estimate")
     unit: str = Field("", description="Metric unit")
 
-
 class QualityRecommendation(BaseModel):
     """Quality improvement recommendation."""
     priority: int = Field(1, ge=1, le=10, description="Priority (1=highest)")
@@ -152,7 +139,6 @@ class QualityRecommendation(BaseModel):
     expected_impact: str = Field("", description="Expected quality improvement")
     effort_level: str = Field("", description="Effort level (low/medium/high)")
 
-
 class PCAFScoreEntry(BaseModel):
     """PCAF score distribution entry."""
     score: int = Field(1, ge=1, le=5, description="PCAF score (1-5)")
@@ -160,7 +146,6 @@ class PCAFScoreEntry(BaseModel):
     portfolio_pct: float = Field(0.0, description="% of portfolio at this score")
     financed_emissions_pct: float = Field(0.0, description="% of financed emissions")
     entity_count: int = Field(0, ge=0, description="Number of entities")
-
 
 class DataQualityInput(BaseModel):
     """Complete input model for DataQualityReport."""
@@ -190,7 +175,6 @@ class DataQualityInput(BaseModel):
         default_factory=list, description="PCAF score distribution (portfolio)"
     )
 
-
 # ---------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------
@@ -198,7 +182,6 @@ class DataQualityInput(BaseModel):
 def _tl_label(status: TrafficLight) -> str:
     """Return uppercase label for traffic light."""
     return status.value.upper()
-
 
 def _tl_color(status: TrafficLight) -> str:
     """Return hex colour for traffic light."""
@@ -208,7 +191,6 @@ def _tl_color(status: TrafficLight) -> str:
         TrafficLight.RED: "#e76f51",
     }
     return mapping.get(status, "#e9c46a")
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -267,7 +249,7 @@ class DataQualityReport:
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render data quality report as Markdown."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_md(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -275,7 +257,7 @@ class DataQualityReport:
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render data quality report as HTML."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_html(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -283,7 +265,7 @@ class DataQualityReport:
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render data quality report as JSON dict."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_json(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -326,7 +308,7 @@ class DataQualityReport:
         return (
             f"# Data Quality Report - {company}\n\n"
             f"**Reporting Period:** {period} | "
-            f"**Report Date:** {_utcnow().strftime('%Y-%m-%d')}\n\n"
+            f"**Report Date:** {utcnow().strftime('%Y-%m-%d')}\n\n"
             "---"
         )
 
@@ -535,7 +517,7 @@ class DataQualityReport:
             '<div class="section">\n'
             f"<h1>Data Quality Report &mdash; {company}</h1>\n"
             f"<p><strong>Reporting Period:</strong> {period} | "
-            f"<strong>Report Date:</strong> {_utcnow().strftime('%Y-%m-%d')}</p>\n"
+            f"<strong>Report Date:</strong> {utcnow().strftime('%Y-%m-%d')}</p>\n"
             "<hr>\n</div>"
         )
 

@@ -21,11 +21,12 @@ CBAM Compliance: Annex III calculation methodology
 
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, List, Optional, Literal
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 from enum import Enum
 import hashlib
 import json
 from datetime import datetime, timezone
+from greenlang.schemas import GreenLangBase
 
 
 # =============================================================================
@@ -100,7 +101,7 @@ class HydrogenSource(str, Enum):
     GRAY = "GRAY"     # SMR without CCS
 
 
-class SteelCalculationInput(BaseModel):
+class SteelCalculationInput(GreenLangBase):
     """Input parameters for steel emission calculation."""
 
     production_route: SteelProductionRoute = Field(
@@ -170,7 +171,7 @@ class SteelCalculationInput(BaseModel):
         return v
 
 
-class CalculationStep(BaseModel):
+class CalculationStep(GreenLangBase):
     """Individual calculation step with full provenance."""
     step_number: int
     description: str
@@ -181,7 +182,7 @@ class CalculationStep(BaseModel):
     source: str
 
 
-class SteelCalculationResult(BaseModel):
+class SteelCalculationResult(GreenLangBase):
     """Complete calculation result with CBAM-compliant output."""
 
     # Identification

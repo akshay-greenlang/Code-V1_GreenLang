@@ -67,7 +67,7 @@ from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from enum import Enum
 from typing import Any, Dict, FrozenSet, List, Optional, Set, Tuple
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import ConfigDict, Field, field_validator
 
 from greenlang.agents.data.eudr_traceability.models import (
     BatchRecord,
@@ -76,19 +76,14 @@ from greenlang.agents.data.eudr_traceability.models import (
     DERIVED_TO_PRIMARY,
     PlotRecord,
 )
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import AlertSeverity
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed for determinism."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -112,7 +107,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str) -> str:
     """Generate a unique identifier with the given prefix.
 
@@ -123,7 +117,6 @@ def _generate_id(prefix: str) -> str:
         ID string in format ``"{prefix}-{hex12}"``.
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
@@ -147,11 +140,9 @@ def _decimal(value: Any) -> Decimal:
             f"Cannot convert {value!r} to Decimal: {exc}"
         ) from exc
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class BatchOperationType(str, Enum):
     """Type of batch operation in the traceability graph.
@@ -168,23 +159,11 @@ class BatchOperationType(str, Enum):
     MERGE = "merge"
     TRANSFORM = "transform"
 
-
-class AlertSeverity(str, Enum):
-    """Severity level for compliance alerts."""
-
-    CRITICAL = "critical"
-    HIGH = "high"
-    MEDIUM = "medium"
-    LOW = "low"
-    INFO = "info"
-
-
 # ---------------------------------------------------------------------------
 # Pydantic Result Models
 # ---------------------------------------------------------------------------
 
-
-class BatchOperation(BaseModel):
+class BatchOperation(GreenLangBase):
     """Immutable record of a single batch operation with provenance.
 
     Every split, merge, transform, or registration is recorded as a
@@ -255,7 +234,7 @@ class BatchOperation(BaseModel):
         description="SHA-256 hash of all operation data",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of the operation",
     )
     operator_id: Optional[str] = Field(
@@ -271,8 +250,7 @@ class BatchOperation(BaseModel):
         description="Additional key-value metadata",
     )
 
-
-class TraceResult(BaseModel):
+class TraceResult(GreenLangBase):
     """Result of a forward or backward trace through the batch graph.
 
     Attributes:
@@ -341,8 +319,7 @@ class TraceResult(BaseModel):
         description="SHA-256 hash of the trace result",
     )
 
-
-class MassBalanceResult(BaseModel):
+class MassBalanceResult(GreenLangBase):
     """Result of mass balance verification for a batch or operation.
 
     Uses Decimal strings to preserve bit-perfect precision in serialization.
@@ -408,8 +385,7 @@ class MassBalanceResult(BaseModel):
         description="SHA-256 hash of the balance result",
     )
 
-
-class ComplianceAlert(BaseModel):
+class ComplianceAlert(GreenLangBase):
     """Compliance alert raised by the batch traceability engine.
 
     Attributes:
@@ -459,12 +435,11 @@ class ComplianceAlert(BaseModel):
         description="Structured details about the alert",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the alert was raised",
     )
 
-
-class TraceabilityScore(BaseModel):
+class TraceabilityScore(GreenLangBase):
     """Traceability completeness score for a batch under a custody model.
 
     For Identity Preserved and Segregated models, the score is binary
@@ -527,11 +502,9 @@ class TraceabilityScore(BaseModel):
         description="SHA-256 hash for audit",
     )
 
-
 # ---------------------------------------------------------------------------
 # Internal graph node for batch lineage
 # ---------------------------------------------------------------------------
-
 
 class _BatchNode:
     """Internal mutable node in the batch lineage graph.
@@ -567,11 +540,9 @@ class _BatchNode:
         self.is_leaf: bool = len(batch.parent_batch_ids) == 0
         self.original_quantity: Decimal = batch.quantity
 
-
 # ===========================================================================
 # BatchTraceabilityEngine
 # ===========================================================================
-
 
 class BatchTraceabilityEngine:
     """Many-to-many batch traceability engine for EUDR supply chains.
@@ -2195,7 +2166,6 @@ class BatchTraceabilityEngine:
             record_batch_operation(operation, duration_seconds)
         except ImportError:
             pass
-
 
 __all__ = [
     "BatchTraceabilityEngine",

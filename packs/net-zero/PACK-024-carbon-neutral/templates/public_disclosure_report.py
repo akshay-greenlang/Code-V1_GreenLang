@@ -25,10 +25,11 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "24.0.0"
 
-def _utcnow(): return datetime.now(timezone.utc).replace(microsecond=0)
 def _new_uuid(): return str(uuid.uuid4())
 def _compute_hash(d):
     r = json.dumps(d, sort_keys=True, default=str) if isinstance(d, dict) else str(d)
@@ -54,7 +55,6 @@ def _pct(v):
     try: return _dec(v, 1) + "%"
     except: return str(v)
 
-
 class PublicDisclosureReportTemplate:
     """Public disclosure report template for PACK-024."""
 
@@ -63,7 +63,7 @@ class PublicDisclosureReportTemplate:
         self.generated_at: Optional[datetime] = None
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [
             self._md_header(data), self._md_declaration(data), self._md_commitment(data),
             self._md_emissions(data), self._md_reductions(data), self._md_offsetting(data),
@@ -74,7 +74,7 @@ class PublicDisclosureReportTemplate:
         return content + f"\n\n<!-- Provenance: {_compute_hash(content)} -->"
 
     def render_html(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = ("body{font-family:'Segoe UI',sans-serif;padding:0;margin:0;background:#f0f4f0;}"
                ".report{max-width:900px;margin:40px auto;background:#fff;padding:50px;border-radius:16px;"
                "box-shadow:0 4px 20px rgba(0,0,0,0.1);}"
@@ -103,7 +103,7 @@ class PublicDisclosureReportTemplate:
         return f'<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="UTF-8">\n<title>Carbon Neutrality Disclosure</title>\n<style>\n{css}\n</style>\n</head>\n<body>\n<div class="report">\n{body}\n</div>\n</body>\n</html>'
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = {"template": "public_disclosure_report", "version": _MODULE_VERSION,
                   "generated_at": self.generated_at.isoformat(), "report_id": _new_uuid(),
                   "org_name": data.get("org_name", ""), "reporting_year": data.get("reporting_year", ""),

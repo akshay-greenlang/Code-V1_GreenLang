@@ -90,6 +90,7 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -158,15 +159,9 @@ except ImportError:
     IncineratorType = None  # type: ignore[assignment,misc]
     WasteCategory = None  # type: ignore[assignment,misc]
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Decimal precision
@@ -182,7 +177,6 @@ _CO2_C_RATIO = Decimal("3.66666667")
 # Gg-to-tonne conversion: 1 Gg = 1000 tonnes; IPCC EFs are kg/Gg
 # kg/Gg -> tonnes/tonne: multiply by 1e-6
 _KG_PER_GG_TO_TONNES_PER_TONNE = Decimal("0.000001")
-
 
 # =========================================================================
 # Built-in reference data (IPCC 2006 Vol 5 Table 5.2)
@@ -311,7 +305,6 @@ _IPCC_TABLE_5_2: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # =========================================================================
 # IPCC Table 5.3 -- Incinerator N2O and CH4 EFs (kg per Gg of waste)
 # =========================================================================
@@ -325,7 +318,6 @@ _INCINERATOR_EF: Dict[str, Dict[str, Decimal]] = {
     "modular": {"N2O": Decimal("55"), "CH4": Decimal("3.0")},
 }
 
-
 # =========================================================================
 # Open burning emission factors (IPCC 2006 Vol 5 Ch 5 / EPA AP-42)
 # CH4: 6.5 g/kg dry matter, N2O: 0.15 g/kg dry matter
@@ -335,7 +327,6 @@ _OPEN_BURN_CH4_G_PER_KG_DM = Decimal("6.5")     # g CH4 / kg dry matter
 _OPEN_BURN_N2O_G_PER_KG_DM = Decimal("0.15")     # g N2O / kg dry matter
 _OPEN_BURN_OXIDATION_FACTOR = Decimal("0.58")     # incomplete combustion
 _G_PER_KG_TO_TONNES_PER_TONNE = Decimal("0.001")  # g/kg = t/t * 1e-3
-
 
 # =========================================================================
 # Net Calorific Value (NCV) GJ per tonne wet waste
@@ -367,7 +358,6 @@ _WASTE_NCV: Dict[str, Decimal] = {
     "garden": Decimal("5.5"),
 }
 
-
 # =========================================================================
 # GWP fallback values (used only when models.py is unavailable)
 # =========================================================================
@@ -395,7 +385,6 @@ _FALLBACK_GWP: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # =========================================================================
 # Pyrolysis default parameters
 # =========================================================================
@@ -408,7 +397,6 @@ _PYROLYSIS_DEFAULTS: Dict[str, Decimal] = {
     "syngas_ch4_fraction": Decimal("0.10"),        # 10% of syngas is CH4
     "char_carbon_stability": Decimal("0.80"),      # 80% of char carbon stable
 }
-
 
 # =========================================================================
 # Gasification default parameters
@@ -424,7 +412,6 @@ _GASIFICATION_DEFAULTS: Dict[str, Decimal] = {
     "tar_fraction": Decimal("0.02"),               # 2% tar in product gas
     "equivalence_ratio_default": Decimal("0.30"),  # ER = 0.3 typical
 }
-
 
 # ---------------------------------------------------------------------------
 # Hash helper
@@ -447,7 +434,6 @@ def _compute_hash(data: Any) -> str:
         canonical = str(data)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
-
 def _d(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -469,7 +455,6 @@ def _d(value: Any) -> Decimal:
             f"Cannot convert {value!r} (type={type(value).__name__}) to Decimal"
         ) from exc
 
-
 def _q(value: Decimal) -> Decimal:
     """Quantize a Decimal to 8 decimal places with ROUND_HALF_UP.
 
@@ -480,7 +465,6 @@ def _q(value: Decimal) -> Decimal:
         Quantized Decimal.
     """
     return value.quantize(_PRECISION, rounding=ROUND_HALF_UP)
-
 
 def _normalize_category(raw: str) -> str:
     """Normalize a waste category string for dictionary lookup.
@@ -495,7 +479,6 @@ def _normalize_category(raw: str) -> str:
     """
     return raw.strip().lower().replace(" ", "_").replace("-", "_")
 
-
 def _normalize_incinerator(raw: str) -> str:
     """Normalize an incinerator type string for dictionary lookup.
 
@@ -506,7 +489,6 @@ def _normalize_incinerator(raw: str) -> str:
         Normalized lowercase string.
     """
     return raw.strip().lower().replace(" ", "_").replace("-", "_")
-
 
 # =========================================================================
 # ThermalTreatmentEngine
@@ -2358,7 +2340,7 @@ class ThermalTreatmentEngine:
             "calculation_trace": trace,
             "provenance_hash": provenance_hash,
             "processing_time_ms": round(elapsed_ms, 3),
-            "calculated_at": _utcnow().isoformat(),
+            "calculated_at": utcnow().isoformat(),
         }
 
         if extra:
@@ -2415,5 +2397,5 @@ class ThermalTreatmentEngine:
             "calculation_trace": trace,
             "provenance_hash": "",
             "processing_time_ms": round(elapsed_ms, 3),
-            "calculated_at": _utcnow().isoformat(),
+            "calculated_at": utcnow().isoformat(),
         }

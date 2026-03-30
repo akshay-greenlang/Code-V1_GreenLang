@@ -44,25 +44,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -75,11 +69,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class AMIDataFormat(str, Enum):
     """AMI data import formats."""
@@ -90,7 +82,6 @@ class AMIDataFormat(str, Enum):
     FLAT_FILE_CSV = "flat_file_csv"
     PULSE_COUNTER = "pulse_counter"
 
-
 class IntervalLength(str, Enum):
     """Meter interval lengths."""
 
@@ -99,7 +90,6 @@ class IntervalLength(str, Enum):
     FIFTEEN_MINUTE = "15min"
     THIRTY_MINUTE = "30min"
     SIXTY_MINUTE = "60min"
-
 
 class DemandRegisterType(str, Enum):
     """Demand register classifications."""
@@ -110,7 +100,6 @@ class DemandRegisterType(str, Enum):
     MID_PEAK = "mid_peak"
     SHOULDER = "shoulder"
     CRITICAL_PEAK = "critical_peak"
-
 
 class MeterChannel(str, Enum):
     """Standard AMI meter data channels."""
@@ -124,7 +113,6 @@ class MeterChannel(str, Enum):
     CURRENT_A = "current_a"
     FREQUENCY_HZ = "frequency_hz"
 
-
 class DataQuality(str, Enum):
     """AMI data quality indicators."""
 
@@ -135,11 +123,9 @@ class DataQuality(str, Enum):
     MISSING = "missing"
     INVALID = "invalid"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class AMIConfig(BaseModel):
     """Configuration for the AMI Bridge."""
@@ -154,21 +140,19 @@ class AMIConfig(BaseModel):
     max_gap_intervals: int = Field(default=4, ge=1, description="Max consecutive missing intervals")
     timezone_id: str = Field(default="UTC", description="Meter timezone")
 
-
 class IntervalData(BaseModel):
     """A single interval meter reading."""
 
     interval_id: str = Field(default_factory=_new_uuid)
     meter_id: str = Field(default="")
     channel: MeterChannel = Field(default=MeterChannel.ENERGY_KWH)
-    timestamp_start: datetime = Field(default_factory=_utcnow)
+    timestamp_start: datetime = Field(default_factory=utcnow)
     timestamp_end: Optional[datetime] = Field(None)
     interval_length: IntervalLength = Field(default=IntervalLength.FIFTEEN_MINUTE)
     value: float = Field(default=0.0)
     unit: str = Field(default="kWh")
     quality: DataQuality = Field(default=DataQuality.ACTUAL)
     provenance_hash: str = Field(default="")
-
 
 class DemandRegister(BaseModel):
     """A demand register reading from a revenue meter."""
@@ -177,12 +161,11 @@ class DemandRegister(BaseModel):
     meter_id: str = Field(default="")
     register_type: DemandRegisterType = Field(default=DemandRegisterType.TOTAL)
     demand_kw: float = Field(default=0.0, ge=0.0)
-    demand_timestamp: datetime = Field(default_factory=_utcnow)
+    demand_timestamp: datetime = Field(default_factory=utcnow)
     billing_period_start: Optional[str] = Field(None)
     billing_period_end: Optional[str] = Field(None)
     reset_count: int = Field(default=0, ge=0)
     provenance_hash: str = Field(default="")
-
 
 class AMIImportResult(BaseModel):
     """Result of importing AMI interval data."""
@@ -203,7 +186,6 @@ class AMIImportResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class MeterConfig(BaseModel):
     """Smart meter configuration."""
 
@@ -217,11 +199,9 @@ class MeterConfig(BaseModel):
     pt_ratio: float = Field(default=1.0, ge=1.0)
     multiplier: float = Field(default=1.0, ge=0.001)
 
-
 # ---------------------------------------------------------------------------
 # AMIBridge
 # ---------------------------------------------------------------------------
-
 
 class AMIBridge:
     """Advanced Metering Infrastructure integration for energy monitoring.

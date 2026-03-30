@@ -79,25 +79,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -115,7 +109,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -124,7 +117,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -136,22 +128,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ChargeType(str, Enum):
     """Type of demand charge component.
@@ -174,7 +162,6 @@ class ChargeType(str, Enum):
     PF_PENALTY = "pf_penalty"
     REACTIVE = "reactive"
 
-
 class RateStructure(str, Enum):
     """Rate structure for tiered demand charges.
 
@@ -188,7 +175,6 @@ class RateStructure(str, Enum):
     DECLINING_BLOCK = "declining_block"
     TOU_OVERLAY = "tou_overlay"
 
-
 class BillingDeterminant(str, Enum):
     """Unit of measure for billing demand.
 
@@ -199,7 +185,6 @@ class BillingDeterminant(str, Enum):
     KW = "kw"
     KVA = "kva"
     KVAR = "kvar"
-
 
 class TariffPeriod(str, Enum):
     """Time-of-use tariff period.
@@ -214,7 +199,6 @@ class TariffPeriod(str, Enum):
     OFF_PEAK = "off_peak"
     SUPER_PEAK = "super_peak"
 
-
 class Season(str, Enum):
     """Tariff season for seasonal demand charges.
 
@@ -225,7 +209,6 @@ class Season(str, Enum):
     SUMMER = "summer"
     WINTER = "winter"
     SHOULDER = "shoulder"
-
 
 class CurrencyCode(str, Enum):
     """Currency for demand charges.
@@ -241,7 +224,6 @@ class CurrencyCode(str, Enum):
     GBP = "GBP"
     AUD = "AUD"
     CAD = "CAD"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -321,11 +303,9 @@ DEFAULT_TIERS: List[Dict[str, Decimal]] = [
 # Monthly escalation rate for charge projection.
 DEFAULT_ANNUAL_ESCALATION: Decimal = Decimal("0.03")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input / Output
 # ---------------------------------------------------------------------------
-
 
 class TariffComponent(BaseModel):
     """A single component of a demand tariff.
@@ -367,7 +347,6 @@ class TariffComponent(BaseModel):
     currency: CurrencyCode = Field(default=CurrencyCode.USD)
     notes: str = Field(default="", max_length=2000)
 
-
 class DemandCharge(BaseModel):
     """Calculated demand charge for a billing period.
 
@@ -393,9 +372,8 @@ class DemandCharge(BaseModel):
     charge_amount: Decimal = Field(default=Decimal("0"))
     currency: CurrencyCode = Field(default=CurrencyCode.USD)
     notes: str = Field(default="", max_length=2000)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class ChargeBreakdown(BaseModel):
     """Complete breakdown of demand charges for a billing period.
@@ -430,9 +408,8 @@ class ChargeBreakdown(BaseModel):
     total_bill: Decimal = Field(default=Decimal("0"))
     demand_charge_pct: Decimal = Field(default=Decimal("0"))
     currency: CurrencyCode = Field(default=CurrencyCode.USD)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class MarginalValue(BaseModel):
     """Marginal value of demand reduction at each kW level.
@@ -451,7 +428,6 @@ class MarginalValue(BaseModel):
     cumulative_savings: Decimal = Field(default=Decimal("0"))
     marginal_rate: Decimal = Field(default=Decimal("0"))
     currency: CurrencyCode = Field(default=CurrencyCode.USD)
-
 
 class DemandChargeResult(BaseModel):
     """Complete demand charge analysis result.
@@ -486,14 +462,12 @@ class DemandChargeResult(BaseModel):
     avg_demand_charge_rate: Decimal = Field(default=Decimal("0"))
     recommendations: List[str] = Field(default_factory=list)
     processing_time_ms: Decimal = Field(default=Decimal("0"))
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class DemandChargeEngine:
     """Tariff decomposition and demand charge calculation engine.

@@ -19,16 +19,15 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
 
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 class LeagueTableRow(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -106,7 +105,6 @@ class ComparisonReportOutput(BaseModel):
     total_reduction_potential_tco2e: Decimal = Field(Decimal("0"))
     provenance_hash: str = Field("")
 
-
 class SiteComparisonReport:
     """Cross-site benchmarking report template."""
 
@@ -117,7 +115,7 @@ class SiteComparisonReport:
 
     def render(self, data: Dict[str, Any]) -> ComparisonReportOutput:
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         inp = ComparisonReportInput(**data) if isinstance(data, dict) else data
 
         league = [LeagueTableRow(**r) if isinstance(r, dict) else r for r in inp.league_table]
@@ -212,6 +210,5 @@ class SiteComparisonReport:
         for row in r.league_table:
             lines_out.append(f"{row.rank},{row.site_name},{row.peer_group},{row.kpi_name},{row.kpi_value},{row.performance_band}")
         return "\n".join(lines_out)
-
 
 __all__ = ["SiteComparisonReport", "ComparisonReportInput", "ComparisonReportOutput"]

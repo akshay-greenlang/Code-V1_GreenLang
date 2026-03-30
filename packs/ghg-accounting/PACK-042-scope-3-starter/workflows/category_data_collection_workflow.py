@@ -45,13 +45,13 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas.enums import ValidationSeverity
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -62,7 +62,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -71,7 +70,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class Scope3Category(str, Enum):
     """GHG Protocol Scope 3 categories (1-15)."""
@@ -92,7 +90,6 @@ class Scope3Category(str, Enum):
     CAT_14_FRANCHISES = "cat_14_franchises"
     CAT_15_INVESTMENTS = "cat_15_investments"
 
-
 class MethodologyTier(str, Enum):
     """Methodology tier for Scope 3 calculation."""
 
@@ -100,7 +97,6 @@ class MethodologyTier(str, Enum):
     AVERAGE_DATA = "average_data"
     SUPPLIER_SPECIFIC = "supplier_specific"
     HYBRID = "hybrid"
-
 
 class DataSourceType(str, Enum):
     """Types of data sources for Scope 3 data collection."""
@@ -113,15 +109,6 @@ class DataSourceType(str, Enum):
     QUESTIONNAIRE = "questionnaire"
     ESTIMATED = "estimated"
 
-
-class ValidationSeverity(str, Enum):
-    """Severity level for validation issues."""
-
-    ERROR = "error"
-    WARNING = "warning"
-    INFO = "info"
-
-
 class CompletionStatus(str, Enum):
     """Completion status for data collection per category."""
 
@@ -131,7 +118,6 @@ class CompletionStatus(str, Enum):
     COMPLETE = "complete"
     BLOCKED = "blocked"
 
-
 class UnitSystem(str, Enum):
     """Unit measurement systems."""
 
@@ -139,11 +125,9 @@ class UnitSystem(str, Enum):
     IMPERIAL = "imperial"
     MIXED = "mixed"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -159,7 +143,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list, description="Errors encountered")
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
 
-
 class WorkflowState(BaseModel):
     """Persistent state for checkpoint/resume capability."""
 
@@ -170,7 +153,6 @@ class WorkflowState(BaseModel):
     checkpoint_data: Dict[str, Any] = Field(default_factory=dict)
     created_at: str = Field(default="")
     updated_at: str = Field(default="")
-
 
 class DataRequirementField(BaseModel):
     """Single required data field for a Scope 3 category."""
@@ -193,7 +175,6 @@ class DataRequirementField(BaseModel):
         description="Minimum methodology tier that requires this field",
     )
 
-
 class CategoryDataRequirements(BaseModel):
     """Data requirements for a single Scope 3 category and tier."""
 
@@ -205,7 +186,6 @@ class CategoryDataRequirements(BaseModel):
     supported_sources: List[DataSourceType] = Field(default_factory=list)
     data_collection_guidance: str = Field(default="")
     estimated_effort_hours: float = Field(default=0.0, ge=0.0)
-
 
 class IngestedDataRecord(BaseModel):
     """Single data record ingested for a Scope 3 category."""
@@ -224,7 +204,6 @@ class IngestedDataRecord(BaseModel):
     normalized_value: float = Field(default=0.0)
     timestamp: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
 
-
 class ValidationIssue(BaseModel):
     """Single validation issue found in data."""
 
@@ -237,7 +216,6 @@ class ValidationIssue(BaseModel):
     message: str = Field(default="")
     record_id: str = Field(default="")
     suggested_action: str = Field(default="")
-
 
 class CategoryCollectionProgress(BaseModel):
     """Collection progress for a single Scope 3 category."""
@@ -253,11 +231,9 @@ class CategoryCollectionProgress(BaseModel):
     data_sources_used: List[str] = Field(default_factory=list)
     tier: MethodologyTier = Field(default=MethodologyTier.SPEND_BASED)
 
-
 # =============================================================================
 # INPUT / OUTPUT
 # =============================================================================
-
 
 class CategoryDataCollectionInput(BaseModel):
     """Input data model for CategoryDataCollectionWorkflow."""
@@ -287,7 +263,6 @@ class CategoryDataCollectionInput(BaseModel):
         """Ensure at least one category is selected."""
         return v  # Empty is allowed for initial exploration
 
-
 class CategoryDataCollectionResult(BaseModel):
     """Complete result from category data collection workflow."""
 
@@ -304,7 +279,6 @@ class CategoryDataCollectionResult(BaseModel):
     overall_completeness_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     progress_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
-
 
 # =============================================================================
 # PER-CATEGORY DATA REQUIREMENT TEMPLATES (Zero-Hallucination)
@@ -497,7 +471,6 @@ def _build_requirement_templates() -> Dict[str, Dict[str, List[Dict[str, Any]]]]
 
     return templates
 
-
 REQUIREMENT_TEMPLATES = _build_requirement_templates()
 
 # Category names mapping
@@ -544,11 +517,9 @@ PLAUSIBILITY_BENCHMARKS: Dict[str, Dict[str, Dict[str, float]]] = {
     },
 }
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class CategoryDataCollectionWorkflow:
     """

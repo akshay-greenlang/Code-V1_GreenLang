@@ -43,29 +43,23 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 def _compute_hash(content: str) -> str:
     """Compute SHA-256 hash of string content."""
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -78,13 +72,11 @@ class OutputFormat(str, Enum):
     PDF = "pdf"
     JSON = "json"
 
-
 class ChangeDirection(str, Enum):
     """CDP change direction options."""
     INCREASED = "increased"
     DECREASED = "decreased"
     NO_CHANGE = "no_change"
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Input Models
@@ -117,7 +109,6 @@ class CDPC610Row(BaseModel):
         description="Scope coverage for this metric",
     )
 
-
 class CDPSectorMetric(BaseModel):
     """CDP sector-specific intensity metric."""
     sector_module: str = Field("", description="CDP sector module (e.g., C-EU, C-OG)")
@@ -131,7 +122,6 @@ class CDPSectorMetric(BaseModel):
     denominator_unit: str = Field("", description="Denominator unit")
     prior_year_value: Optional[float] = Field(None, description="Prior year intensity")
     change_pct: Optional[float] = Field(None, description="YoY change %")
-
 
 class CDPDisclosureInput(BaseModel):
     """Complete input model for CDP Intensity Disclosure."""
@@ -151,7 +141,6 @@ class CDPDisclosureInput(BaseModel):
     verification_status: str = Field(
         "", description="Third-party verification status"
     )
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -199,7 +188,7 @@ class CDPIntensityDisclosure:
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render CDP disclosure as Markdown."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_md(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -207,7 +196,7 @@ class CDPIntensityDisclosure:
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render CDP disclosure as HTML."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_html(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -215,7 +204,7 @@ class CDPIntensityDisclosure:
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render CDP disclosure as JSON dict."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_json(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -244,7 +233,7 @@ class CDPIntensityDisclosure:
         return (
             f"# CDP C6.10 Intensity Disclosure - {company}\n\n"
             f"**Reporting Year:** {year} | "
-            f"**Report Date:** {_utcnow().strftime('%Y-%m-%d')}\n\n"
+            f"**Report Date:** {utcnow().strftime('%Y-%m-%d')}\n\n"
             "---"
         )
 

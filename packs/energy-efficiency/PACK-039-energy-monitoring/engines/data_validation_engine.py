@@ -80,25 +80,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -116,7 +110,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -125,7 +118,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -137,22 +129,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ValidationCheck(str, Enum):
     """Validation check type identifiers per ASHRAE Guideline 14.
@@ -183,7 +171,6 @@ class ValidationCheck(str, Enum):
     DUPLICATE = "duplicate"
     COMPLETENESS = "completeness"
 
-
 class ValidationSeverity(str, Enum):
     """Severity of a validation finding.
 
@@ -196,7 +183,6 @@ class ValidationSeverity(str, Enum):
     WARNING = "warning"
     ERROR = "error"
     CRITICAL = "critical"
-
 
 class QualityGrade(str, Enum):
     """Data quality grade per ASHRAE Guideline 14 criteria.
@@ -213,7 +199,6 @@ class QualityGrade(str, Enum):
     D_POOR = "D_poor"
     F_FAIL = "F_fail"
 
-
 class CorrectionMethod(str, Enum):
     """Method for correcting invalid data.
 
@@ -228,7 +213,6 @@ class CorrectionMethod(str, Enum):
     AVERAGE = "average"
     MANUAL = "manual"
     REJECT = "reject"
-
 
 class DataSource(str, Enum):
     """Origin of the data being validated.
@@ -246,7 +230,6 @@ class DataSource(str, Enum):
     AMI = "ami"
     IOT = "iot"
     MANUAL = "manual"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -303,11 +286,9 @@ SEVERITY_THRESHOLDS: Dict[str, Decimal] = {
     "warning": Decimal("5"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class ValidationRule(BaseModel):
     """Configuration for a single validation check.
@@ -339,7 +320,6 @@ class ValidationRule(BaseModel):
     severity: ValidationSeverity = Field(default=ValidationSeverity.WARNING)
     correction: CorrectionMethod = Field(default=CorrectionMethod.MANUAL)
 
-
 class ValidationFinding(BaseModel):
     """A single validation finding (issue detected).
 
@@ -369,7 +349,6 @@ class ValidationFinding(BaseModel):
     correction: CorrectionMethod = Field(default=CorrectionMethod.MANUAL)
     corrected_value: Optional[Decimal] = Field(default=None)
     is_corrected: bool = Field(default=False)
-
 
 class QualityScore(BaseModel):
     """Composite data quality score.
@@ -404,9 +383,8 @@ class QualityScore(BaseModel):
     error_count: int = Field(default=0, ge=0)
     warning_count: int = Field(default=0, ge=0)
     info_count: int = Field(default=0, ge=0)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class DataCorrection(BaseModel):
     """Applied data correction record.
@@ -427,7 +405,6 @@ class DataCorrection(BaseModel):
     method: CorrectionMethod = Field(default=CorrectionMethod.INTERPOLATE)
     reason: str = Field(default="", max_length=500)
     confidence_pct: Decimal = Field(default=Decimal("100"))
-
 
 class ValidationReport(BaseModel):
     """Complete validation report for a set of readings.
@@ -450,22 +427,20 @@ class ValidationReport(BaseModel):
     report_id: str = Field(default_factory=_new_uuid)
     meter_id: str = Field(default="")
     source: DataSource = Field(default=DataSource.METER)
-    period_start: datetime = Field(default_factory=_utcnow)
-    period_end: datetime = Field(default_factory=_utcnow)
+    period_start: datetime = Field(default_factory=utcnow)
+    period_end: datetime = Field(default_factory=utcnow)
     quality_score: QualityScore = Field(default_factory=QualityScore)
     findings: List[ValidationFinding] = Field(default_factory=list)
     corrections: List[DataCorrection] = Field(default_factory=list)
     check_summary: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
     recommendations: List[str] = Field(default_factory=list)
     processing_time_ms: Decimal = Field(default=Decimal("0"))
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class DataValidationEngine:
     """12-check automated data quality validation engine per ASHRAE 14.
@@ -560,7 +535,7 @@ class DataValidationEngine:
 
         # Extract values and timestamps
         values = [_decimal(r.get("value", 0)) for r in readings]
-        timestamps = [r.get("timestamp", _utcnow()) for r in readings]
+        timestamps = [r.get("timestamp", utcnow()) for r in readings]
 
         # Run each check
         check_results: Dict[str, Tuple[int, int]] = {}
@@ -669,8 +644,8 @@ class DataValidationEngine:
             quality_score, all_findings, check_results,
         )
 
-        period_start = min(timestamps) if timestamps else _utcnow()
-        period_end = max(timestamps) if timestamps else _utcnow()
+        period_start = min(timestamps) if timestamps else utcnow()
+        period_end = max(timestamps) if timestamps else utcnow()
         elapsed_ms = _decimal((time.perf_counter() - t0) * 1000.0)
 
         report = ValidationReport(

@@ -73,23 +73,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ReportFormat
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -106,7 +102,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -115,31 +110,17 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _round2(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _chain_hashes(hashes: List[str]) -> str:
     """Chain multiple hashes into a single provenance hash."""
     combined = "||".join(h for h in hashes if h)
     return hashlib.sha256(combined.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
-
-class ExportFormat(str, Enum):
-    """Export format for reports."""
-    MARKDOWN = "markdown"
-    HTML = "html"
-    PDF = "pdf"
-    JSON = "json"
-    CSV = "csv"
-    XBRL = "xbrl"
-
 
 class ReportSectionType(str, Enum):
     """Types of report sections."""
@@ -153,14 +134,12 @@ class ReportSectionType(str, Enum):
     DATA_QUALITY = "data_quality"
     DISCLOSURE_READINESS = "disclosure_readiness"
 
-
 class ReportStatus(str, Enum):
     """Report generation status."""
     COMPLETE = "complete"
     PARTIAL = "partial"
     DRAFT = "draft"
     ERROR = "error"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -178,11 +157,9 @@ SECTION_ORDER: List[str] = [
     ReportSectionType.DISCLOSURE_READINESS.value,
 ]
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class MetricSummary(BaseModel):
     """Summary of a single intensity metric for the report.
@@ -214,7 +191,6 @@ class MetricSummary(BaseModel):
     uncertainty_pct: Optional[Decimal] = Field(default=None, description="Uncertainty (%)")
     percentile_rank: Optional[Decimal] = Field(default=None, description="Percentile rank")
 
-
 class EngineOutput(BaseModel):
     """Output from a single engine for inclusion in the report.
 
@@ -230,7 +206,6 @@ class EngineOutput(BaseModel):
     output_data: Dict[str, Any] = Field(default_factory=dict, description="Output data")
     provenance_hash: str = Field(default="", description="Provenance hash")
     status: str = Field(default="complete", description="Status")
-
 
 class ReportInput(BaseModel):
     """Input for intensity report generation.
@@ -257,8 +232,8 @@ class ReportInput(BaseModel):
         default_factory=list, description="Engine outputs"
     )
     target_frameworks: List[str] = Field(default_factory=list, description="Target frameworks")
-    export_formats: List[ExportFormat] = Field(
-        default_factory=lambda: [ExportFormat.JSON],
+    export_formats: List[ReportFormat] = Field(
+        default_factory=lambda: [ReportFormat.JSON],
         description="Export formats"
     )
     include_sections: List[ReportSectionType] = Field(
@@ -270,11 +245,9 @@ class ReportInput(BaseModel):
     )
     report_subtitle: str = Field(default="", description="Report subtitle")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class ReportSection(BaseModel):
     """A single section of the intensity report.
@@ -297,7 +270,6 @@ class ReportSection(BaseModel):
     source_engine: str = Field(default="", description="Source engine")
     provenance_hash: str = Field(default="", description="Provenance hash")
     is_populated: bool = Field(default=False, description="Is populated")
-
 
 class DashboardData(BaseModel):
     """Dashboard-ready data for frontend consumption.
@@ -335,7 +307,6 @@ class DashboardData(BaseModel):
         default_factory=dict, description="Framework readiness"
     )
 
-
 class ExportedReport(BaseModel):
     """An exported report in a specific format.
 
@@ -344,10 +315,9 @@ class ExportedReport(BaseModel):
         content:     Content (string for text formats, dict for JSON).
         byte_size:   Size in bytes.
     """
-    format: ExportFormat = Field(..., description="Format")
+    format: ReportFormat = Field(..., description="Format")
     content: str = Field(default="", description="Content")
     byte_size: int = Field(default=0, description="Size (bytes)")
-
 
 class ReportResult(BaseModel):
     """Result of intensity report generation.
@@ -391,11 +361,9 @@ class ReportResult(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class IntensityReportingEngine:
     """Aggregates engine outputs into structured intensity reports.
@@ -492,7 +460,7 @@ class IntensityReportingEngine:
             provenance_chain=chain_hash,
             source_hashes=source_hashes,
             warnings=warnings,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         result.provenance_hash = _compute_hash(result)
@@ -817,19 +785,19 @@ class IntensityReportingEngine:
 
     def _export_report(
         self,
-        fmt: ExportFormat,
+        fmt: ReportFormat,
         input_data: ReportInput,
         sections: List[ReportSection],
         dashboard: DashboardData,
     ) -> ExportedReport:
         """Export report in requested format."""
-        if fmt == ExportFormat.JSON:
+        if fmt == ReportFormat.JSON:
             return self._export_json(input_data, sections, dashboard)
-        elif fmt == ExportFormat.MARKDOWN:
+        elif fmt == ReportFormat.MARKDOWN:
             return self._export_markdown(input_data, sections)
-        elif fmt == ExportFormat.CSV:
+        elif fmt == ReportFormat.CSV:
             return self._export_csv(input_data, sections)
-        elif fmt == ExportFormat.HTML:
+        elif fmt == ReportFormat.HTML:
             return self._export_html(input_data, sections)
         else:
             # PDF and XBRL are placeholder stubs
@@ -851,7 +819,7 @@ class IntensityReportingEngine:
         }
         content = json.dumps(data, indent=2, default=str)
         return ExportedReport(
-            format=ExportFormat.JSON,
+            format=ReportFormat.JSON,
             content=content,
             byte_size=len(content.encode("utf-8")),
         )
@@ -884,7 +852,7 @@ class IntensityReportingEngine:
 
         content = "\n".join(lines)
         return ExportedReport(
-            format=ExportFormat.MARKDOWN,
+            format=ReportFormat.MARKDOWN,
             content=content,
             byte_size=len(content.encode("utf-8")),
         )
@@ -907,7 +875,7 @@ class IntensityReportingEngine:
 
         content = "\n".join(lines)
         return ExportedReport(
-            format=ExportFormat.CSV,
+            format=ReportFormat.CSV,
             content=content,
             byte_size=len(content.encode("utf-8")),
         )
@@ -946,7 +914,7 @@ class IntensityReportingEngine:
         parts.append("</body></html>")
         content = "\n".join(parts)
         return ExportedReport(
-            format=ExportFormat.HTML,
+            format=ReportFormat.HTML,
             content=content,
             byte_size=len(content.encode("utf-8")),
         )
@@ -954,14 +922,13 @@ class IntensityReportingEngine:
     def get_version(self) -> str:
         return self._version
 
-
 # ---------------------------------------------------------------------------
 # __all__
 # ---------------------------------------------------------------------------
 
 __all__ = [
     # Enums
-    "ExportFormat",
+    "ReportFormat",
     "ReportSectionType",
     "ReportStatus",
     # Input Models

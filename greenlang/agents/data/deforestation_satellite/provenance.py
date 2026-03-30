@@ -44,18 +44,13 @@ import logging
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Valid operation types
@@ -71,11 +66,9 @@ VALID_OPERATION_TYPES = frozenset({
     "pipeline_execution",
 })
 
-
 # =============================================================================
 # ProvenanceTracker
 # =============================================================================
-
 
 class ProvenanceTracker:
     """Tracks provenance for deforestation satellite operations with SHA-256 chain hashing.
@@ -139,7 +132,7 @@ class ProvenanceTracker:
         Returns:
             Chain hash of the new entry.
         """
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         entry = {
             "entity_type": entity_type,
@@ -303,7 +296,6 @@ class ProvenanceTracker:
         """
         serialized = json.dumps(data, sort_keys=True, default=str)
         return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
 
 __all__ = [
     "ProvenanceTracker",

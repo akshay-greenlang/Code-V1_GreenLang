@@ -54,25 +54,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -99,7 +93,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -115,7 +108,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -136,7 +128,6 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100).
 
@@ -148,7 +139,6 @@ def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
         Percentage as Decimal; Decimal("0") when whole is zero.
     """
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* and return a float.
@@ -165,26 +155,21 @@ def _round_val(value: Decimal, places: int = 6) -> float:
     quantizer = Decimal(10) ** -places
     return float(value.quantize(quantizer, rounding=ROUND_HALF_UP))
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: float) -> float:
     """Round to 4 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class LampType(str, Enum):
     """Lamp technology types.
@@ -201,7 +186,6 @@ class LampType(str, Enum):
     HID_SODIUM = "hid_sodium"
     INCANDESCENT = "incandescent"
 
-
 class ControlType(str, Enum):
     """Lighting control strategies.
 
@@ -215,7 +199,6 @@ class ControlType(str, Enum):
     DALI_ADDRESSABLE = "dali_addressable"
     SCENE_SETTING = "scene_setting"
     ABSENCE_DETECTION = "absence_detection"
-
 
 class SpaceCategory(str, Enum):
     """Space categories per EN 12464-1:2021.
@@ -243,7 +226,6 @@ class SpaceCategory(str, Enum):
     KITCHEN = "kitchen"
     RECEPTION = "reception"
 
-
 class EnvironmentCleanliness(str, Enum):
     """Luminaire environment cleanliness for maintenance factor.
 
@@ -254,7 +236,6 @@ class EnvironmentCleanliness(str, Enum):
     CLEAN = "clean"
     NORMAL = "normal"
     DIRTY = "dirty"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Lighting Power Density Benchmarks (W/m2)
@@ -399,7 +380,6 @@ LPD_BENCHMARKS: Dict[str, Dict[str, float]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Constants -- LENI Benchmarks (kWh/m2/yr)
 # ---------------------------------------------------------------------------
@@ -464,7 +444,6 @@ LENI_BENCHMARKS: Dict[str, Dict[str, float]] = {
         "source": "EN 15193-1 Table B.1",
     },
 }
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Illuminance Requirements (lux)
@@ -608,7 +587,6 @@ ILLUMINANCE_REQUIREMENTS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Constants -- Lamp Efficacy (lm/W)
 # ---------------------------------------------------------------------------
@@ -666,7 +644,6 @@ LAMP_EFFICACY: Dict[str, Dict[str, float]] = {
         "source": "EU phase-out completed, legacy stock only",
     },
 }
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Control Energy Savings Factors
@@ -726,7 +703,6 @@ CONTROL_FACTOR: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Constants -- Daylight Factor Targets
 # ---------------------------------------------------------------------------
@@ -784,7 +760,6 @@ DAYLIGHT_FACTOR_TARGETS: Dict[str, Dict[str, float]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Constants -- LED Retrofit Costs (EUR per fixture)
 # ---------------------------------------------------------------------------
@@ -833,7 +808,6 @@ LED_RETROFIT_COST_EUR: Dict[str, Dict[str, float]] = {
         "source": "UK/EU trade pricing 2025",
     },
 }
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Maintenance Factor
@@ -902,11 +876,9 @@ MAINTENANCE_FACTOR: Dict[str, Dict[str, float]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Input Models
 # ---------------------------------------------------------------------------
-
 
 class LightingZoneInput(BaseModel):
     """A single lighting zone / space within the building."""
@@ -950,7 +922,6 @@ class LightingZoneInput(BaseModel):
         description="Environment cleanliness for maintenance factor",
     )
 
-
 class LightingAssessmentInput(BaseModel):
     """Top-level lighting assessment input."""
 
@@ -982,11 +953,9 @@ class LightingAssessmentInput(BaseModel):
         15, gt=0, le=30, description="Analysis period for financial calculations"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Result Models
 # ---------------------------------------------------------------------------
-
 
 class ZoneLPDResult(BaseModel):
     """Lighting Power Density result for a single zone."""
@@ -1020,7 +989,6 @@ class ZoneLPDResult(BaseModel):
         ..., description="Energy saving from controls as percentage"
     )
 
-
 class LENIResult(BaseModel):
     """Lighting Energy Numeric Indicator result per EN 15193."""
 
@@ -1046,7 +1014,6 @@ class LENIResult(BaseModel):
         ..., description="Parasitic power from controls in kWh/yr"
     )
 
-
 class DaylightResult(BaseModel):
     """Daylight assessment result for a zone."""
 
@@ -1063,7 +1030,6 @@ class DaylightResult(BaseModel):
     estimated_daylight_saving_pct: float = Field(
         ..., description="Estimated energy saving from daylight harvesting"
     )
-
 
 class ControlsResult(BaseModel):
     """Lighting controls assessment result."""
@@ -1082,7 +1048,6 @@ class ControlsResult(BaseModel):
     upgrade_cost_eur: float = Field(
         ..., description="Estimated upgrade cost in EUR"
     )
-
 
 class RetrofitResult(BaseModel):
     """LED retrofit analysis result for a zone."""
@@ -1117,7 +1082,6 @@ class RetrofitResult(BaseModel):
         ..., description="Whether zone already has LED lighting"
     )
 
-
 class VisualQualityResult(BaseModel):
     """Visual quality compliance result for a zone."""
 
@@ -1137,7 +1101,6 @@ class VisualQualityResult(BaseModel):
     maintenance_factor: float = Field(
         ..., description="Calculated maintenance factor"
     )
-
 
 class LightingAssessmentResult(BaseModel):
     """Complete lighting assessment result."""
@@ -1197,11 +1160,9 @@ class LightingAssessmentResult(BaseModel):
         ..., description="SHA-256 provenance hash"
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class LightingAssessmentEngine:
     """Building lighting energy and quality assessment engine.
@@ -1328,7 +1289,7 @@ class LightingAssessmentEngine:
             total_retrofit_cost_eur=_round2(float(total_retrofit_capex)),
             overall_retrofit_payback_years=_round2(float(overall_payback)),
             recommendations=recommendations,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=_round3(processing_ms),
             provenance_hash="",
         )

@@ -68,24 +68,18 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC timestamp with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 provenance hash, excluding volatile fields."""
@@ -103,7 +97,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert any value to Decimal."""
     if isinstance(value, Decimal):
@@ -112,7 +105,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -124,16 +116,13 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> Decimal:
     """Round a value to two decimal places using ROUND_HALF_UP."""
     return Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
-
 def _round4(value: Any) -> Decimal:
     """Round a value to four decimal places using ROUND_HALF_UP."""
     return Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP)
-
 
 def _days_in_year(year: int) -> int:
     """Return the number of days in a given year."""
@@ -141,11 +130,9 @@ def _days_in_year(year: int) -> int:
     end = date(year + 1, 1, 1)
     return (end - start).days
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class MnAEventType(str, Enum):
     """Types of M&A events affecting GHG inventory boundaries."""
@@ -158,7 +145,6 @@ class MnAEventType(str, Enum):
     OUTSOURCING = "OUTSOURCING"
     INSOURCING = "INSOURCING"
 
-
 class RestatementTrigger(str, Enum):
     """Triggers for base year restatement per GHG Protocol Chapter 5."""
     STRUCTURAL_CHANGE = "STRUCTURAL_CHANGE"
@@ -166,18 +152,15 @@ class RestatementTrigger(str, Enum):
     ERROR_CORRECTION = "ERROR_CORRECTION"
     SCOPE_BOUNDARY_CHANGE = "SCOPE_BOUNDARY_CHANGE"
 
-
 # ---------------------------------------------------------------------------
 # Default Configuration
 # ---------------------------------------------------------------------------
 
 DEFAULT_SIGNIFICANCE_THRESHOLD_PCT = Decimal("5")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class MnAEvent(BaseModel):
     """An M&A event that changes the organisational boundary.
@@ -260,7 +243,7 @@ class MnAEvent(BaseModel):
         description="Whether this event triggers base year restatement.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the event was registered.",
     )
     provenance_hash: str = Field(
@@ -286,7 +269,6 @@ class MnAEvent(BaseModel):
                 f"Invalid event_type '{v}'. Must be one of {sorted(valid)}."
             )
         return v.upper()
-
 
 class ProRataCalculation(BaseModel):
     """Pro-rata emission calculation for a partial-year event.
@@ -368,7 +350,7 @@ class ProRataCalculation(BaseModel):
         description="Equity percentage applied.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the calculation was performed.",
     )
     provenance_hash: str = Field(
@@ -385,7 +367,6 @@ class ProRataCalculation(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Any:
         return Decimal(str(v))
-
 
 class BaseYearRestatement(BaseModel):
     """Base year restatement record per GHG Protocol Chapter 5.
@@ -449,7 +430,7 @@ class BaseYearRestatement(BaseModel):
         description="Description of the restatement.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the restatement was recorded.",
     )
     provenance_hash: str = Field(
@@ -468,7 +449,6 @@ class BaseYearRestatement(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Any:
         return Decimal(str(v))
-
 
 class StructuralChangeRecord(BaseModel):
     """Summary of all structural changes in a reporting period.
@@ -514,7 +494,7 @@ class StructuralChangeRecord(BaseModel):
         description="Base year restatements triggered.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
     )
     provenance_hash: str = Field(default="")
 
@@ -522,7 +502,6 @@ class StructuralChangeRecord(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Any:
         return Decimal(str(v))
-
 
 class OrganicGrowthAnalysis(BaseModel):
     """Separates organic growth from structural growth.
@@ -585,7 +564,7 @@ class OrganicGrowthAnalysis(BaseModel):
         description="Total change as % of original base year.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
     )
     provenance_hash: str = Field(default="")
 
@@ -600,11 +579,9 @@ class OrganicGrowthAnalysis(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Any:
         return Decimal(str(v))
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class AcquisitionDivestitureEngine:
     """Handles M&A events and their impact on GHG inventories.

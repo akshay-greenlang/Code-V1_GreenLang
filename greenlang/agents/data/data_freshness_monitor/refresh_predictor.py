@@ -51,7 +51,9 @@ from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
+
+from greenlang.schemas import GreenLangBase, utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -61,16 +63,9 @@ __all__ = [
     "RefreshPredictorEngine",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _generate_id(prefix: str = "RPR") -> str:
     """Generate a unique identifier with the given prefix.
@@ -83,7 +78,6 @@ def _generate_id(prefix: str = "RPR") -> str:
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
 
-
 def _compute_provenance(operation: str, data_repr: str) -> str:
     """Compute SHA-256 provenance hash for a prediction operation.
 
@@ -94,9 +88,8 @@ def _compute_provenance(operation: str, data_repr: str) -> str:
     Returns:
         Hex-encoded SHA-256 digest.
     """
-    payload = f"{operation}:{data_repr}:{_utcnow().isoformat()}"
+    payload = f"{operation}:{data_repr}:{utcnow().isoformat()}"
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
-
 
 def _safe_stdev(values: List[float]) -> float:
     """Compute sample standard deviation, 0.0 for fewer than 2 values.
@@ -110,7 +103,6 @@ def _safe_stdev(values: List[float]) -> float:
     if len(values) < 2:
         return 0.0
     return statistics.stdev(values)
-
 
 def _compute_intervals_hours(refresh_history: List[datetime]) -> List[float]:
     """Compute consecutive intervals in hours from sorted refresh timestamps.
@@ -130,11 +122,9 @@ def _compute_intervals_hours(refresh_history: List[datetime]) -> List[float]:
         intervals.append(max(0.0, delta_hours))
     return intervals
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class PredictionStatus(str, Enum):
     """Status of a refresh prediction evaluation.
@@ -153,13 +143,11 @@ class PredictionStatus(str, Enum):
     VERY_LATE = "very_late"
     MISSED = "missed"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
 
-
-class RefreshPrediction(BaseModel):
+class RefreshPrediction(GreenLangBase):
     """A single refresh prediction for a monitored dataset.
 
     Contains the predicted next refresh time, the confidence of the
@@ -228,7 +216,7 @@ class RefreshPrediction(BaseModel):
         description="SHA-256 provenance chain hash for audit trail",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when prediction was created",
     )
 
@@ -241,7 +229,6 @@ class RefreshPrediction(BaseModel):
         if not v or not v.strip():
             raise ValueError("dataset_id must be non-empty")
         return v
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -268,11 +255,9 @@ _RECENCY_WINDOW = 5
 #: Recency tolerance multiplier relative to cadence.
 _RECENCY_TOLERANCE_FACTOR = 1.5
 
-
 # ---------------------------------------------------------------------------
 # RefreshPredictorEngine
 # ---------------------------------------------------------------------------
-
 
 class RefreshPredictorEngine:
     """Predicts when the next data refresh will arrive for monitored datasets.
@@ -915,7 +900,7 @@ class RefreshPredictorEngine:
             Dict with: is_anomalous, expected_at, delay_hours,
             delay_factor, current_time, provenance_hash.
         """
-        now = current_time if current_time is not None else _utcnow()
+        now = current_time if current_time is not None else utcnow()
         expected_at = last_refresh + timedelta(hours=cadence_hours)
         delay_seconds = (now - expected_at).total_seconds()
         delay_hours = delay_seconds / 3600.0
@@ -1052,7 +1037,7 @@ class RefreshPredictorEngine:
             "avg_prediction_time_ms": round(avg_time, 2),
             "avg_error_hours": round(avg_error, 4),
             "total_evaluated_records": len(self._evaluated),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     # ------------------------------------------------------------------
@@ -1139,7 +1124,7 @@ class RefreshPredictorEngine:
         if sorted_history:
             last_refresh = sorted_history[-1]
         else:
-            last_refresh = _utcnow()
+            last_refresh = utcnow()
 
         predicted_at = self.estimate_next_by_cadence(last_refresh, cadence_hours)
         confidence = 0.3  # Low confidence for cadence-only prediction

@@ -61,6 +61,7 @@ import threading
 from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, FrozenSet, List, Optional, Set, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.due_diligence_orchestrator.config import (
     DueDiligenceOrchestratorConfig,
@@ -235,7 +236,7 @@ class WorkflowStateManager:
             product_ids=product_ids or [],
             shipment_ids=shipment_ids or [],
             country_codes=country_codes or [],
-            created_at=_utcnow(),
+            created_at=utcnow(),
             created_by=created_by,
         )
 
@@ -315,7 +316,7 @@ class WorkflowStateManager:
             state.status = to_status
 
             # Update timestamps based on transition
-            now = _utcnow()
+            now = utcnow()
             if to_status == WorkflowStatus.RUNNING and state.started_at is None:
                 state.started_at = now
             elif to_status in _TERMINAL_STATES:
@@ -474,7 +475,7 @@ class WorkflowStateManager:
                 agent_outputs=agent_outputs,
                 quality_gate_results=qg_results,
                 cumulative_provenance_hash=cumulative_hash,
-                created_at=_utcnow(),
+                created_at=utcnow(),
                 created_by=created_by,
             )
 
@@ -640,7 +641,7 @@ class WorkflowStateManager:
                 workflow_id=workflow_id,
                 agent_id=agent_id,
                 status=AgentExecutionStatus.RUNNING,
-                started_at=_utcnow(),
+                started_at=utcnow(),
             )
             state.agent_executions[agent_id] = record
             self._update_progress(state)
@@ -676,7 +677,7 @@ class WorkflowStateManager:
                 )
                 state.agent_executions[agent_id] = record
 
-            now = _utcnow()
+            now = utcnow()
             record.status = AgentExecutionStatus.COMPLETED
             record.completed_at = now
             record.output_ref = output_ref
@@ -720,7 +721,7 @@ class WorkflowStateManager:
                 )
                 state.agent_executions[agent_id] = record
 
-            now = _utcnow()
+            now = utcnow()
             record.status = AgentExecutionStatus.FAILED
             record.completed_at = now
             record.error_message = error_message

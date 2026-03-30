@@ -74,25 +74,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -121,7 +115,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -130,7 +123,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -142,22 +134,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 4) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ChangeCategory(str, Enum):
     """Category of change affecting the GHG inventory.
@@ -182,7 +170,6 @@ class ChangeCategory(str, Enum):
     REGULATORY = "regulatory"
     ERROR_CORRECTION = "error_correction"
 
-
 class ChangeStatus(str, Enum):
     """Lifecycle status of a change request.
 
@@ -204,7 +191,6 @@ class ChangeStatus(str, Enum):
     IMPLEMENTED = "implemented"
     WITHDRAWN = "withdrawn"
 
-
 class ImpactSeverity(str, Enum):
     """Severity classification of a change's impact on the inventory.
 
@@ -218,7 +204,6 @@ class ImpactSeverity(str, Enum):
     HIGH = "high"
     CRITICAL = "critical"
 
-
 class ApprovalLevel(str, Enum):
     """Approval level required based on impact severity.
 
@@ -231,7 +216,6 @@ class ApprovalLevel(str, Enum):
     SINGLE_APPROVER = "single_approver"
     DUAL_APPROVAL = "dual_approval"
     BOARD_LEVEL = "board_level"
-
 
 class BaseYearTriggerType(str, Enum):
     """Type of base year recalculation trigger detected.
@@ -249,7 +233,6 @@ class BaseYearTriggerType(str, Enum):
     BOUNDARY_EXPANSION = "boundary_expansion"
     SCOPE_RECLASSIFICATION = "scope_reclassification"
     NO_TRIGGER = "no_trigger"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -294,11 +277,9 @@ VALID_TRANSITIONS: Dict[ChangeStatus, List[ChangeStatus]] = {
     ChangeStatus.WITHDRAWN: [],
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class AffectedSource(BaseModel):
     """A single emission source affected by a change.
@@ -336,7 +317,6 @@ class AffectedSource(BaseModel):
         """Auto-compute delta if not provided explicitly."""
         return _decimal(v)
 
-
 class ChangeRequest(BaseModel):
     """A change request submitted against the GHG inventory.
 
@@ -370,7 +350,7 @@ class ChangeRequest(BaseModel):
     requester_id: str = Field(default="", description="Requester user ID")
     requester_name: str = Field(default="", description="Requester display name")
     requested_at: datetime = Field(
-        default_factory=_utcnow, description="Submission timestamp"
+        default_factory=utcnow, description="Submission timestamp"
     )
     effective_date: Optional[str] = Field(
         default=None, description="Effective date (ISO format)"
@@ -403,11 +383,9 @@ class ChangeRequest(BaseModel):
         """Coerce total inventory to Decimal."""
         return _decimal(v)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class ChangeImpact(BaseModel):
     """Impact assessment for a single change request.
@@ -458,7 +436,6 @@ class ChangeImpact(BaseModel):
         default_factory=list, description="Assessment notes"
     )
 
-
 class ChangeApproval(BaseModel):
     """Approval routing decision for a change request.
 
@@ -494,7 +471,6 @@ class ChangeApproval(BaseModel):
     escalation_deadline_hours: int = Field(
         default=72, ge=0, description="Hours before escalation"
     )
-
 
 class BaseYearTriggerDetection(BaseModel):
     """Result of base year recalculation trigger detection.
@@ -537,7 +513,6 @@ class BaseYearTriggerDetection(BaseModel):
         default_factory=list, description="Recommended actions"
     )
 
-
 class ChangeLogEntry(BaseModel):
     """Audit log entry for a change request lifecycle event.
 
@@ -555,7 +530,7 @@ class ChangeLogEntry(BaseModel):
     """
     entry_id: str = Field(default_factory=_new_uuid, description="Log entry ID")
     request_id: str = Field(default="", description="Change request ID")
-    timestamp: datetime = Field(default_factory=_utcnow, description="Event timestamp")
+    timestamp: datetime = Field(default_factory=utcnow, description="Event timestamp")
     action: str = Field(default="", description="Action performed")
     actor_id: str = Field(default="system", description="Actor user ID")
     actor_name: str = Field(default="System", description="Actor display name")
@@ -563,7 +538,6 @@ class ChangeLogEntry(BaseModel):
     new_status: Optional[str] = Field(default=None, description="New status")
     details: str = Field(default="", description="Event details")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class ChangeManagementResult(BaseModel):
     """Complete result from the change management engine.
@@ -600,13 +574,12 @@ class ChangeManagementResult(BaseModel):
     )
     warnings: List[str] = Field(default_factory=list, description="Warnings")
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Processing timestamp"
+        default_factory=utcnow, description="Processing timestamp"
     )
     processing_time_ms: Decimal = Field(
         default=Decimal("0"), description="Processing time (ms)"
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 # ---------------------------------------------------------------------------
 # Model Rebuild (resolve forward references from __future__ annotations)
@@ -620,11 +593,9 @@ BaseYearTriggerDetection.model_rebuild()
 ChangeLogEntry.model_rebuild()
 ChangeManagementResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ChangeManagementEngine:
     """Organisational and methodology change tracking engine.

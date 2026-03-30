@@ -46,23 +46,18 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -74,11 +69,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Agent Stubs
 # ---------------------------------------------------------------------------
-
 
 class _PackStub:
     """Stub for unavailable PACK-023 components."""
@@ -92,14 +85,12 @@ class _PackStub:
             return {"component": self._name, "method": n, "status": "degraded", "stub": True}
         return _stub
 
-
 def _try_import_pack023(component: str, module_path: str) -> Any:
     try:
         return importlib.import_module(module_path)
     except ImportError:
         logger.debug("PACK-023 component %s not available", component)
         return _PackStub(component)
-
 
 # ---------------------------------------------------------------------------
 # PACK-023 Component Mapping
@@ -118,11 +109,9 @@ PACK023_COMPONENTS: Dict[str, str] = {
     "submission_readiness": "packs.net_zero.PACK_023_sbti_alignment.engines.submission_readiness_engine",
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class Pack023BridgeConfig(BaseModel):
     """Configuration for PACK-023 Bridge."""
@@ -130,7 +119,6 @@ class Pack023BridgeConfig(BaseModel):
     pack_id: str = Field(default="PACK-024")
     enable_provenance: bool = Field(default=True)
     pack023_required: bool = Field(default=False)
-
 
 class SBTiTargetResult(BaseModel):
     """SBTi target data from PACK-023."""
@@ -148,7 +136,6 @@ class SBTiTargetResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class PathwayResult(BaseModel):
     """SBTi pathway data from PACK-023."""
 
@@ -162,7 +149,6 @@ class PathwayResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class TemperatureScoreResult(BaseModel):
     """Temperature score from PACK-023."""
 
@@ -174,7 +160,6 @@ class TemperatureScoreResult(BaseModel):
     alignment: str = Field(default="")
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class ProgressResult(BaseModel):
     """Progress tracking from PACK-023."""
@@ -189,7 +174,6 @@ class ProgressResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class Scope3ScreeningResult(BaseModel):
     """Scope 3 screening from PACK-023."""
 
@@ -202,7 +186,6 @@ class Scope3ScreeningResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class FLAGResult(BaseModel):
     """FLAG assessment from PACK-023."""
 
@@ -214,7 +197,6 @@ class FLAGResult(BaseModel):
     commodities: List[str] = Field(default_factory=list)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class ValidationResult(BaseModel):
     """SBTi validation status from PACK-023."""
@@ -229,11 +211,9 @@ class ValidationResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Pack023Bridge
 # ---------------------------------------------------------------------------
-
 
 class Pack023Bridge:
     """Optional bridge to PACK-023 SBTi Alignment Pack.

@@ -66,9 +66,9 @@ from .models import (
     EUDR_SME_ENFORCEMENT_DATE,
 )
 from .provenance import get_provenance_tracker
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -110,12 +110,6 @@ _IMPACT_WEIGHTS: Dict[str, float] = {
     "high_to_low": 50.0,
 }
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _parse_date(date_str: str) -> datetime:
     """Parse ISO date string to datetime.
 
@@ -127,11 +121,9 @@ def _parse_date(date_str: str) -> datetime:
     """
     return datetime.fromisoformat(date_str).replace(tzinfo=timezone.utc)
 
-
 # ---------------------------------------------------------------------------
 # RegulatoryUpdateTracker
 # ---------------------------------------------------------------------------
-
 
 class RegulatoryUpdateTracker:
     """Track and process EUDR regulatory updates and country reclassifications.
@@ -236,7 +228,7 @@ class RegulatoryUpdateTracker:
 
         # -- Effective date and grace period ---------------------------------
         if effective_date is None:
-            effective_date = _utcnow()
+            effective_date = utcnow()
 
         grace_period_end = None
         if change_type == "reclassification":
@@ -418,7 +410,7 @@ class RegulatoryUpdateTracker:
 
         # Sort by effective_date descending
         reclassifications.sort(
-            key=lambda u: u.effective_date or _utcnow(),
+            key=lambda u: u.effective_date or utcnow(),
             reverse=True,
         )
 
@@ -531,9 +523,9 @@ class RegulatoryUpdateTracker:
 
             # Grace period timeline
             grace_period_end = self._calculate_grace_period(
-                update.effective_date or _utcnow()
+                update.effective_date or utcnow()
             )
-            days_remaining = (grace_period_end - _utcnow()).days
+            days_remaining = (grace_period_end - utcnow()).days
 
             # Priority level
             priority = self._determine_notification_priority(previous, new, days_remaining)
@@ -580,7 +572,7 @@ class RegulatoryUpdateTracker:
             timeline.append({
                 "date": event_date.isoformat(),
                 "event": event_name.replace("_", " ").title(),
-                "status": "completed" if event_date < _utcnow() else "upcoming",
+                "status": "completed" if event_date < utcnow() else "upcoming",
                 "country_specific": False,
             })
 
@@ -623,7 +615,7 @@ class RegulatoryUpdateTracker:
             List of deadline dictionaries with date, description, and
             update_id.
         """
-        now = _utcnow()
+        now = utcnow()
         deadlines = []
 
         with self._lock:
@@ -685,9 +677,9 @@ class RegulatoryUpdateTracker:
             new = update.new_classification or "standard"
 
             grace_period_end = self._calculate_grace_period(
-                update.effective_date or _utcnow()
+                update.effective_date or utcnow()
             )
-            days_remaining = (grace_period_end - _utcnow()).days
+            days_remaining = (grace_period_end - utcnow()).days
 
             priority = self._determine_notification_priority(
                 previous, new, days_remaining,
@@ -700,7 +692,7 @@ class RegulatoryUpdateTracker:
             # Create reminder notifications at key intervals
             for reminder_days in _REMINDER_PERIODS_DAYS:
                 if days_remaining >= reminder_days:
-                    reminder_date = _utcnow() + timedelta(
+                    reminder_date = utcnow() + timedelta(
                         days=(days_remaining - reminder_days)
                     )
                     notifications.append({
@@ -898,6 +890,7 @@ class RegulatoryUpdateTracker:
 
         # Scale by number of affected imports (logarithmic scaling)
         import math
+
         if affected_imports_count > 0:
             import_factor = min(1.5, 1.0 + math.log10(affected_imports_count) / 10.0)
         else:

@@ -30,21 +30,16 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Input Models
@@ -68,7 +63,6 @@ class EntityContribution(BaseModel):
     adjusted_total_tco2e: Decimal = Field(Decimal("0"))
     contribution_pct: Decimal = Field(Decimal("0"))
 
-
 class WaterfallStep(BaseModel):
     """Single step in the waterfall chart."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -76,7 +70,6 @@ class WaterfallStep(BaseModel):
     step_value_tco2e: Decimal = Field(Decimal("0"))
     cumulative_tco2e: Decimal = Field(Decimal("0"))
     contribution_pct: Decimal = Field(Decimal("0"))
-
 
 class EntityBreakdownReportInput(BaseModel):
     """Complete input for the entity breakdown report."""
@@ -87,7 +80,6 @@ class EntityBreakdownReportInput(BaseModel):
     group_total_tco2e: Decimal = Field(Decimal("0"))
     entities: List[Dict[str, Any]] = Field(default_factory=list)
     top_n: int = Field(10, ge=1, le=100)
-
 
 # ---------------------------------------------------------------------------
 # Output Model
@@ -108,7 +100,6 @@ class EntityBreakdownReportOutput(BaseModel):
     top_entities: List[EntityContribution] = Field(default_factory=list)
     top_entities_pct: Decimal = Field(Decimal("0"))
     provenance_hash: str = Field("")
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -139,7 +130,7 @@ class EntityBreakdownReport:
     def render(self, data: Dict[str, Any]) -> EntityBreakdownReportOutput:
         """Render entity breakdown from input data."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         inp = EntityBreakdownReportInput(**data) if isinstance(data, dict) else data
 
         entities = [EntityContribution(**e) if isinstance(e, dict) else e for e in inp.entities]
@@ -305,7 +296,6 @@ class EntityBreakdownReport:
                 f"{e.raw_total_tco2e},{e.adjusted_total_tco2e},{e.contribution_pct}"
             )
         return "\n".join(lines_out)
-
 
 __all__ = [
     "EntityBreakdownReport",

@@ -37,13 +37,13 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas.enums import ValidationSeverity
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -54,7 +54,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -63,7 +62,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class EPCBand(str, Enum):
     """EPC rating bands per EN 15217."""
@@ -77,7 +75,6 @@ class EPCBand(str, Enum):
     F = "F"
     G = "G"
 
-
 class EPCMethodology(str, Enum):
     """National EPC calculation methodology."""
 
@@ -88,13 +85,11 @@ class EPCMethodology(str, Enum):
     EN_15603 = "en_15603"
     GENERIC = "generic"
 
-
 class BuildingUseType(str, Enum):
     """Building use type for EPC methodology selection."""
 
     DWELLING = "dwelling"
     NON_DWELLING = "non_dwelling"
-
 
 class HeatingFuelType(str, Enum):
     """Heating fuel types for CO2 calculation."""
@@ -109,7 +104,6 @@ class HeatingFuelType(str, Enum):
     HEAT_PUMP_AIR = "heat_pump_air"
     HEAT_PUMP_GROUND = "heat_pump_ground"
 
-
 class CertificateStatus(str, Enum):
     """EPC certificate status."""
 
@@ -117,15 +111,6 @@ class CertificateStatus(str, Enum):
     ISSUED = "issued"
     LODGED = "lodged"
     EXPIRED = "expired"
-
-
-class ValidationSeverity(str, Enum):
-    """Validation check severity."""
-
-    ERROR = "error"
-    WARNING = "warning"
-    INFO = "info"
-
 
 # =============================================================================
 # ZERO-HALLUCINATION REFERENCE CONSTANTS
@@ -305,11 +290,9 @@ EPC_RECOMMENDATIONS_TEMPLATE: List[Dict[str, Any]] = [
      "cost_range": "50-150", "payback_years": 1.0},
 ]
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -323,7 +306,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list, description="Errors encountered")
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
 
-
 class ValidationCheck(BaseModel):
     """Individual validation check result."""
 
@@ -333,7 +315,6 @@ class ValidationCheck(BaseModel):
     passed: bool = Field(default=True)
     message: str = Field(default="")
     value: Optional[Any] = Field(default=None)
-
 
 class FabricInput(BaseModel):
     """Building fabric input data for EPC calculation."""
@@ -351,7 +332,6 @@ class FabricInput(BaseModel):
     air_permeability_m3_h_m2: float = Field(default=7.0, ge=0.0, le=50.0)
     thermal_bridging_y_value: float = Field(default=0.10, ge=0.0, le=1.0)
 
-
 class SystemsInput(BaseModel):
     """Building systems input data for EPC calculation."""
 
@@ -368,7 +348,6 @@ class SystemsInput(BaseModel):
     renewable_generation_kwh: float = Field(default=0.0, ge=0.0, description="On-site annual gen")
     renewable_type: str = Field(default="none", description="solar_pv|solar_thermal|wind|none")
 
-
 class GeometryInput(BaseModel):
     """Building geometry input data."""
 
@@ -378,7 +357,6 @@ class GeometryInput(BaseModel):
     floor_to_ceiling_height_m: float = Field(default=2.7, ge=2.0, le=10.0)
     building_type: str = Field(default="office")
     building_use: BuildingUseType = Field(default=BuildingUseType.NON_DWELLING)
-
 
 class EnergyDemandBreakdown(BaseModel):
     """Breakdown of energy demand by end-use."""
@@ -393,7 +371,6 @@ class EnergyDemandBreakdown(BaseModel):
     net_delivered_kwh: float = Field(default=0.0, ge=0.0)
     heating_fuel_split: Dict[str, float] = Field(default_factory=dict)
 
-
 class RatingResult(BaseModel):
     """EPC rating calculation result."""
 
@@ -406,7 +383,6 @@ class RatingResult(BaseModel):
     energy_rating_number: int = Field(default=0, ge=0, le=200)
     reference_building_primary: float = Field(default=0.0, ge=0.0)
     improvement_potential_pct: float = Field(default=0.0, ge=0.0, le=100.0)
-
 
 class EPCRecommendation(BaseModel):
     """EPC improvement recommendation."""
@@ -423,7 +399,6 @@ class EPCRecommendation(BaseModel):
     applicable: bool = Field(default=True)
     post_improvement_band: str = Field(default="")
 
-
 class LodgementData(BaseModel):
     """Data for EPC lodgement with national authority."""
 
@@ -435,7 +410,6 @@ class LodgementData(BaseModel):
     methodology: str = Field(default="")
     building_reference: str = Field(default="")
     lodgement_status: CertificateStatus = Field(default=CertificateStatus.DRAFT)
-
 
 class EPCGenerationInput(BaseModel):
     """Input data model for EPCGenerationWorkflow."""
@@ -463,7 +437,6 @@ class EPCGenerationInput(BaseModel):
             raise ValueError("total_floor_area_sqm must be > 0")
         return v
 
-
 class EPCGenerationResult(BaseModel):
     """Complete result from EPC generation workflow."""
 
@@ -489,11 +462,9 @@ class EPCGenerationResult(BaseModel):
     reporting_year: int = Field(default=2025)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class EPCGenerationWorkflow:
     """

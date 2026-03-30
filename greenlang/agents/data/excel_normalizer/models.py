@@ -38,33 +38,18 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import FileFormat
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # =============================================================================
 # Enumerations
 # =============================================================================
-
-
-class FileFormat(str, Enum):
-    """Supported spreadsheet and delimited file formats."""
-
-    XLSX = "xlsx"
-    XLS = "xls"
-    CSV = "csv"
-    TSV = "tsv"
-    AUTO = "auto"
-
 
 class DelimiterType(str, Enum):
     """Delimiter types for CSV/delimited file parsing."""
@@ -75,7 +60,6 @@ class DelimiterType(str, Enum):
     PIPE = "pipe"
     SPACE = "space"
     AUTO = "auto"
-
 
 class DataType(str, Enum):
     """Detected data types for spreadsheet columns."""
@@ -95,7 +79,6 @@ class DataType(str, Enum):
     EMPTY = "empty"
     UNKNOWN = "unknown"
 
-
 class MappingStrategy(str, Enum):
     """Strategies for mapping source columns to canonical fields."""
 
@@ -105,7 +88,6 @@ class MappingStrategy(str, Enum):
     PATTERN = "pattern"
     MANUAL = "manual"
 
-
 class JobStatus(str, Enum):
     """Lifecycle status of a normalization job."""
 
@@ -114,7 +96,6 @@ class JobStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     CANCELLED = "cancelled"
-
 
 class QualityLevel(str, Enum):
     """Data quality tier based on overall quality score.
@@ -131,7 +112,6 @@ class QualityLevel(str, Enum):
     FAIR = "fair"
     POOR = "poor"
 
-
 class TransformOperation(str, Enum):
     """Supported data transformation operations."""
 
@@ -146,13 +126,11 @@ class TransformOperation(str, Enum):
     CAST = "cast"
     FILL_MISSING = "fill_missing"
 
-
 # =============================================================================
 # SDK Data Models
 # =============================================================================
 
-
-class SpreadsheetFile(BaseModel):
+class SpreadsheetFile(GreenLangBase):
     """Persistent record of an uploaded spreadsheet or CSV file.
 
     Captures metadata about a file that has been uploaded and registered
@@ -205,7 +183,7 @@ class SpreadsheetFile(BaseModel):
         description="Maximum number of columns across all sheets",
     )
     upload_timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the file was uploaded",
     )
     tenant_id: str = Field(
@@ -231,8 +209,7 @@ class SpreadsheetFile(BaseModel):
             raise ValueError("file_name must be non-empty")
         return v
 
-
-class SheetMetadata(BaseModel):
+class SheetMetadata(GreenLangBase):
     """Metadata for a single sheet within a workbook.
 
     Captures structural information about a sheet including row/column
@@ -296,8 +273,7 @@ class SheetMetadata(BaseModel):
             raise ValueError("file_id must be non-empty")
         return v
 
-
-class ColumnMapping(BaseModel):
+class ColumnMapping(GreenLangBase):
     """Mapping from a source column to a canonical field.
 
     Captures the mapping strategy, confidence score, detected data type,
@@ -371,8 +347,7 @@ class ColumnMapping(BaseModel):
             raise ValueError("source_column must be non-empty")
         return v
 
-
-class NormalizationJob(BaseModel):
+class NormalizationJob(GreenLangBase):
     """Record of a file normalization job execution.
 
     Tracks the lifecycle, configuration, row counts, errors, and
@@ -426,7 +401,7 @@ class NormalizationJob(BaseModel):
         description="List of error messages encountered during processing",
     )
     started_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the job started processing",
     )
     completed_at: Optional[datetime] = Field(
@@ -455,8 +430,7 @@ class NormalizationJob(BaseModel):
             raise ValueError("file_id must be non-empty")
         return v
 
-
-class NormalizedRecord(BaseModel):
+class NormalizedRecord(GreenLangBase):
     """A single normalized row from a spreadsheet.
 
     Contains original and normalized values, quality score,
@@ -515,8 +489,7 @@ class NormalizedRecord(BaseModel):
             raise ValueError("job_id must be non-empty")
         return v
 
-
-class MappingTemplate(BaseModel):
+class MappingTemplate(GreenLangBase):
     """Reusable template defining column mapping patterns.
 
     Templates allow users to define repeatable column mappings for
@@ -554,11 +527,11 @@ class MappingTemplate(BaseModel):
         description="List of column mapping definitions",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the template was created",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the template was last updated",
     )
     usage_count: int = Field(
@@ -580,8 +553,7 @@ class MappingTemplate(BaseModel):
             raise ValueError("template_name must be non-empty")
         return v
 
-
-class DataQualityReport(BaseModel):
+class DataQualityReport(GreenLangBase):
     """Comprehensive data quality assessment report for a file.
 
     Contains overall and per-dimension quality scores, row-level
@@ -674,8 +646,7 @@ class DataQualityReport(BaseModel):
             raise ValueError("file_id must be non-empty")
         return v
 
-
-class ValidationFinding(BaseModel):
+class ValidationFinding(GreenLangBase):
     """A single validation finding for a specific cell or row.
 
     Captures the location, severity, rule, and descriptive message
@@ -739,8 +710,7 @@ class ValidationFinding(BaseModel):
             raise ValueError("file_id must be non-empty")
         return v
 
-
-class TransformResult(BaseModel):
+class TransformResult(GreenLangBase):
     """Result of a data transformation operation.
 
     Captures the operation type, configuration, row counts,
@@ -803,8 +773,7 @@ class TransformResult(BaseModel):
             raise ValueError("source_file_id must be non-empty")
         return v
 
-
-class ExcelStatistics(BaseModel):
+class ExcelStatistics(GreenLangBase):
     """Aggregated statistics for the Excel normalizer service.
 
     Attributes:
@@ -853,13 +822,11 @@ class ExcelStatistics(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
 # =============================================================================
 # Request Models
 # =============================================================================
 
-
-class UploadFileRequest(BaseModel):
+class UploadFileRequest(GreenLangBase):
     """Request body for uploading a single spreadsheet or CSV file.
 
     Attributes:
@@ -905,8 +872,7 @@ class UploadFileRequest(BaseModel):
             raise ValueError("file_content_base64 must be non-empty")
         return v
 
-
-class BatchUploadRequest(BaseModel):
+class BatchUploadRequest(GreenLangBase):
     """Request body for uploading a batch of files.
 
     Attributes:
@@ -932,8 +898,7 @@ class BatchUploadRequest(BaseModel):
             raise ValueError("files list must be non-empty")
         return v
 
-
-class MapColumnsRequest(BaseModel):
+class MapColumnsRequest(GreenLangBase):
     """Request body for mapping columns to canonical fields.
 
     Attributes:
@@ -975,8 +940,7 @@ class MapColumnsRequest(BaseModel):
             raise ValueError("columns list must be non-empty")
         return v
 
-
-class NormalizeRequest(BaseModel):
+class NormalizeRequest(GreenLangBase):
     """Request body for normalizing data records.
 
     Attributes:
@@ -1016,8 +980,7 @@ class NormalizeRequest(BaseModel):
             raise ValueError("column_mappings must be non-empty")
         return v
 
-
-class TransformRequest(BaseModel):
+class TransformRequest(GreenLangBase):
     """Request body for applying data transformations.
 
     Attributes:
@@ -1052,8 +1015,7 @@ class TransformRequest(BaseModel):
             raise ValueError("operations list must be non-empty")
         return v
 
-
-class CreateTemplateRequest(BaseModel):
+class CreateTemplateRequest(GreenLangBase):
     """Request body for creating a new mapping template.
 
     Attributes:
@@ -1088,7 +1050,6 @@ class CreateTemplateRequest(BaseModel):
         if not v or not v.strip():
             raise ValueError("template_name must be non-empty")
         return v
-
 
 __all__ = [
     # Enumerations

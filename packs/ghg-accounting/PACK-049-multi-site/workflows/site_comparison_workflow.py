@@ -37,26 +37,20 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -65,13 +59,11 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
-
 
 class ComparisonPhase(str, Enum):
     PEER_GROUP_BUILD = "peer_group_build"
@@ -79,7 +71,6 @@ class ComparisonPhase(str, Enum):
     RANK = "rank"
     GAP_ANALYSIS = "gap_analysis"
     BEST_PRACTICE_REPORT = "best_practice_report"
-
 
 class PeerGroupCriteria(str, Enum):
     FACILITY_TYPE = "facility_type"
@@ -89,7 +80,6 @@ class PeerGroupCriteria(str, Enum):
     BUSINESS_UNIT = "business_unit"
     CUSTOM = "custom"
 
-
 class KPIType(str, Enum):
     TCO2E_PER_SQM = "tco2e_per_sqm"
     TCO2E_PER_FTE = "tco2e_per_fte"
@@ -98,18 +88,15 @@ class KPIType(str, Enum):
     TCO2E_PER_HOUR = "tco2e_per_hour"
     ABSOLUTE_TCO2E = "absolute_tco2e"
 
-
 class PerformanceBand(str, Enum):
     TOP_QUARTILE = "top_quartile"
     SECOND_QUARTILE = "second_quartile"
     THIRD_QUARTILE = "third_quartile"
     BOTTOM_QUARTILE = "bottom_quartile"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -121,7 +108,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class SiteMetrics(BaseModel):
     """Site-level metrics input for comparison."""
@@ -143,7 +129,6 @@ class SiteMetrics(BaseModel):
     production_unit: str = Field("")
     operating_hours_yr: Decimal = Field(Decimal("0"))
 
-
 class PeerGroup(BaseModel):
     """A constructed peer group."""
     group_id: str = Field(default_factory=_new_uuid)
@@ -152,7 +137,6 @@ class PeerGroup(BaseModel):
     criteria_value: str = Field("")
     site_ids: List[str] = Field(default_factory=list)
     site_count: int = Field(0)
-
 
 class SiteKPI(BaseModel):
     """Calculated KPI for a site."""
@@ -164,7 +148,6 @@ class SiteKPI(BaseModel):
     kpi_unit: str = Field("")
     numerator: Decimal = Field(Decimal("0"))
     denominator: Decimal = Field(Decimal("0"))
-
 
 class SiteRanking(BaseModel):
     """Ranking of a site within its peer group for a KPI."""
@@ -178,7 +161,6 @@ class SiteRanking(BaseModel):
     percentile: Decimal = Field(Decimal("0"))
     performance_band: PerformanceBand = Field(PerformanceBand.SECOND_QUARTILE)
     kpi_value: Decimal = Field(Decimal("0"))
-
 
 class GapAnalysisItem(BaseModel):
     """Gap-to-best-practice for a site."""
@@ -196,7 +178,6 @@ class GapAnalysisItem(BaseModel):
     gap_to_median_pct: Decimal = Field(Decimal("0"))
     reduction_potential_tco2e: Decimal = Field(Decimal("0"))
 
-
 class BestPracticeEntry(BaseModel):
     """Best practice entry for a peer group."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -209,7 +190,6 @@ class BestPracticeEntry(BaseModel):
     median_value: Decimal = Field(Decimal("0"))
     worst_value: Decimal = Field(Decimal("0"))
     std_dev: Decimal = Field(Decimal("0"))
-
 
 class SiteComparisonInput(BaseModel):
     """Input for the site comparison workflow."""
@@ -225,7 +205,6 @@ class SiteComparisonInput(BaseModel):
         default_factory=lambda: ["tco2e_per_sqm", "tco2e_per_fte"],
     )
     skip_phases: List[str] = Field(default_factory=list)
-
 
 class SiteComparisonResult(BaseModel):
     """Output from the site comparison workflow."""
@@ -248,11 +227,9 @@ class SiteComparisonResult(BaseModel):
     started_at: str = Field("")
     completed_at: str = Field("")
 
-
 # =============================================================================
 # WORKFLOW CLASS
 # =============================================================================
-
 
 class SiteComparisonWorkflow:
     """
@@ -286,7 +263,7 @@ class SiteComparisonWorkflow:
         self._rankings: List[SiteRanking] = []
 
     def execute(self, input_data: SiteComparisonInput) -> SiteComparisonResult:
-        start = _utcnow()
+        start = utcnow()
         result = SiteComparisonResult(
             organisation_id=input_data.organisation_id,
             reporting_year=input_data.reporting_year,
@@ -307,17 +284,17 @@ class SiteComparisonWorkflow:
                     phase_name=phase.value, phase_number=idx, status=PhaseStatus.SKIPPED,
                 ))
                 continue
-            phase_start = _utcnow()
+            phase_start = utcnow()
             try:
                 phase_out = phase_methods[phase](input_data, result)
-                elapsed = (_utcnow() - phase_start).total_seconds()
+                elapsed = (utcnow() - phase_start).total_seconds()
                 result.phase_results.append(PhaseResult(
                     phase_name=phase.value, phase_number=idx,
                     status=PhaseStatus.COMPLETED, duration_seconds=elapsed,
                     outputs=phase_out, provenance_hash=_compute_hash(str(phase_out)),
                 ))
             except Exception as exc:
-                elapsed = (_utcnow() - phase_start).total_seconds()
+                elapsed = (utcnow() - phase_start).total_seconds()
                 logger.error("Phase %s failed: %s", phase.value, exc, exc_info=True)
                 result.phase_results.append(PhaseResult(
                     phase_name=phase.value, phase_number=idx,
@@ -329,7 +306,7 @@ class SiteComparisonWorkflow:
 
         if result.status != WorkflowStatus.FAILED:
             result.status = WorkflowStatus.COMPLETED
-        end = _utcnow()
+        end = utcnow()
         result.completed_at = end.isoformat()
         result.duration_seconds = (end - start).total_seconds()
         result.provenance_hash = _compute_hash(
@@ -694,7 +671,6 @@ class SiteComparisonWorkflow:
             return Decimal(str(value))
         except Exception:
             return Decimal("0")
-
 
 __all__ = [
     "SiteComparisonWorkflow",

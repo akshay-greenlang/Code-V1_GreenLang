@@ -76,21 +76,15 @@ from greenlang.agents.eudr.information_gathering.metrics import (
     record_package_assembled,
     observe_package_assembly_duration,
 )
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute deterministic SHA-256 hash of data.
@@ -104,7 +98,6 @@ def _compute_hash(data: Any) -> str:
     canonical = json.dumps(data, sort_keys=True, separators=(",", ":"), default=str)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str = "PKG") -> str:
     """Generate a unique identifier with a prefix.
 
@@ -116,11 +109,9 @@ def _generate_id(prefix: str = "PKG") -> str:
     """
     return f"{prefix}-{uuid.uuid4().hex[:8].upper()}"
 
-
 # ---------------------------------------------------------------------------
 # Main Engine
 # ---------------------------------------------------------------------------
-
 
 class PackageAssemblyEngine:
     """Engine for assembling gathered information into EUDR information packages.
@@ -227,7 +218,7 @@ class PackageAssemblyEngine:
         )
 
         # Compute validity period
-        assembled_at = _utcnow()
+        assembled_at = utcnow()
         valid_until = assembled_at + timedelta(days=self._config.retention_days)
 
         # Assemble the package
@@ -311,7 +302,7 @@ class PackageAssemblyEngine:
         )
 
         # Generate S3 path
-        now = _utcnow()
+        now = utcnow()
         s3_path = (
             f"s3://{self._config.s3_bucket}/{self._config.s3_prefix}"
             f"{now.strftime('%Y/%m/%d')}/{artifact_id}.{format}"
@@ -597,7 +588,7 @@ class PackageAssemblyEngine:
 
         # Check 4: Retention period
         if package.valid_until:
-            retention_valid = package.valid_until > _utcnow()
+            retention_valid = package.valid_until > utcnow()
             checks["retention_valid"] = retention_valid
             if not retention_valid:
                 errors.append("Package has exceeded its retention period")
@@ -672,7 +663,7 @@ class PackageAssemblyEngine:
             removed_elements=removed,
             changed_elements=changed,
             score_delta=score_delta,
-            compared_at=_utcnow(),
+            compared_at=utcnow(),
         )
 
         logger.info(

@@ -66,25 +66,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -104,13 +98,11 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely."""
     if isinstance(value, Decimal):
         return value
     return Decimal(str(value))
-
 
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
@@ -119,7 +111,6 @@ def _safe_divide(
     if denominator == Decimal("0"):
         return default
     return numerator / denominator
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value using ROUND_HALF_UP.
@@ -134,20 +125,17 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.01"), rounding=ROUND_HALF_UP
     ))
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
-
 
 def _pct(part: int, total: int) -> Decimal:
     """Calculate percentage as Decimal, rounded to 1 decimal place."""
@@ -157,18 +145,15 @@ def _pct(part: int, total: int) -> Decimal:
         _decimal(part) / _decimal(total) * Decimal("100"), 1
     )
 
-
 def _pct_dec(part: Decimal, total: Decimal) -> Decimal:
     """Calculate percentage from Decimal values, rounded to 1 dp."""
     if total == Decimal("0"):
         return Decimal("0.0")
     return _round_val(part / total * Decimal("100"), 1)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class GrievanceStatus(str, Enum):
     """Status of a grievance case through the resolution lifecycle.
@@ -182,7 +167,6 @@ class GrievanceStatus(str, Enum):
     RESOLVED = "resolved"
     CLOSED = "closed"
     ESCALATED = "escalated"
-
 
 class StakeholderGroup(str, Enum):
     """Stakeholder groups who may submit grievances per Art 12(3).
@@ -199,7 +183,6 @@ class StakeholderGroup(str, Enum):
     CONSUMERS = "consumers"
     REGULATORS = "regulators"
 
-
 class GrievanceChannel(str, Enum):
     """Channels through which grievances can be submitted.
 
@@ -214,7 +197,6 @@ class GrievanceChannel(str, Enum):
     MOBILE_APP = "mobile_app"
     POSTAL = "postal"
     TRADE_UNION_REP = "trade_union_rep"
-
 
 class MechanismCriteria(str, Enum):
     """UNGP Principle 31 effectiveness criteria for grievance mechanisms.
@@ -231,7 +213,6 @@ class MechanismCriteria(str, Enum):
     RIGHTS_COMPATIBLE = "rights_compatible"
     CONTINUOUS_LEARNING = "continuous_learning"
     BASED_ON_ENGAGEMENT_DIALOGUE = "based_on_engagement_dialogue"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -270,11 +251,9 @@ ACCESSIBILITY_SUBCRITERIA: List[str] = [
     "geographically_accessible",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class GrievanceCase(BaseModel):
     """A single grievance case submitted through the mechanism.
@@ -335,7 +314,7 @@ class GrievanceCase(BaseModel):
         ge=0,
     )
     submitted_date: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Date the grievance was submitted",
     )
     acknowledged_date: Optional[datetime] = Field(
@@ -354,7 +333,6 @@ class GrievanceCase(BaseModel):
         default=None,
         description="Whether the complainant was satisfied with the outcome",
     )
-
 
 class MechanismConfig(BaseModel):
     """Configuration of the grievance mechanism per Art 12 CSDDD.
@@ -459,7 +437,6 @@ class MechanismConfig(BaseModel):
         ge=1,
     )
 
-
 class MechanismAssessment(BaseModel):
     """Assessment of a single UNGP effectiveness criterion.
 
@@ -488,7 +465,6 @@ class MechanismAssessment(BaseModel):
         default_factory=list,
         description="Recommendations to address gaps",
     )
-
 
 class ResolutionStats(BaseModel):
     """Statistical summary of grievance resolution outcomes."""
@@ -534,7 +510,6 @@ class ResolutionStats(BaseModel):
     anonymous_pct: Decimal = Field(
         default=Decimal("0.0"), description="Anonymous submission rate (%)"
     )
-
 
 class ResponseTimeStats(BaseModel):
     """Statistical summary of grievance response times."""
@@ -583,7 +558,6 @@ class ResponseTimeStats(BaseModel):
         default=0, description="Cases with resolution time data"
     )
 
-
 class GrievanceResult(BaseModel):
     """Complete grievance mechanism assessment result per Art 12 CSDDD.
 
@@ -598,7 +572,7 @@ class GrievanceResult(BaseModel):
         default=_MODULE_VERSION, description="Engine version used"
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp of assessment (UTC)"
+        default_factory=utcnow, description="Timestamp of assessment (UTC)"
     )
     entity_name: str = Field(
         default="", description="Entity or undertaking name"
@@ -652,11 +626,9 @@ class GrievanceResult(BaseModel):
         description="SHA-256 hash of all inputs and assessment steps",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class GrievanceMechanismEngine:
     """CSDDD Article 12 grievance mechanism assessment engine.

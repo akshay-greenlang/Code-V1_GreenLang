@@ -59,6 +59,9 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ReportFormat
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
@@ -68,21 +71,13 @@ _MODULE_VERSION: str = "1.0.0"
 # ---------------------------------------------------------------------------
 REPORT_VERSION: str = "35.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -100,7 +95,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -109,7 +103,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -121,36 +114,29 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* decimal digits and return float."""
     return float(value.quantize(Decimal(10) ** -places, rounding=ROUND_HALF_UP))
 
-
 def _round2(value: Any) -> float:
     """Round to 2 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round3(value: Any) -> float:
     """Round to 3 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: Any) -> float:
     """Round to 4 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ReportType(str, Enum):
     """Types of benchmark reports.
@@ -168,23 +154,6 @@ class ReportType(str, Enum):
     EXECUTIVE_SUMMARY = "executive_summary"
     TREND_ANALYSIS = "trend_analysis"
     GAP_ANALYSIS = "gap_analysis"
-
-
-class ExportFormat(str, Enum):
-    """Supported report export formats.
-
-    MARKDOWN:   Structured Markdown text.
-    HTML:       HTML document skeleton.
-    JSON:       Machine-readable JSON.
-    CSV:        Tabular CSV data.
-    PDF_DATA:   JSON data structure for PDF rendering.
-    """
-    MARKDOWN = "markdown"
-    HTML = "html"
-    JSON = "json"
-    CSV = "csv"
-    PDF_DATA = "pdf_data"
-
 
 class ReportSection(str, Enum):
     """Individual sections of a benchmark report.
@@ -207,7 +176,6 @@ class ReportSection(str, Enum):
     RECOMMENDATIONS = "recommendations"
     PROVENANCE = "provenance"
 
-
 class ChartType(str, Enum):
     """Chart types for report visualisation."""
     BAR = "bar"
@@ -219,14 +187,12 @@ class ChartType(str, Enum):
     BOX_PLOT = "box_plot"
     HEATMAP = "heatmap"
 
-
 class ExportTarget(str, Enum):
     """Export target destination."""
     FILE = "file"
     API = "api"
     EMAIL = "email"
     DASHBOARD = "dashboard"
-
 
 class ReportTemplate(str, Enum):
     """Pre-defined report templates."""
@@ -236,11 +202,9 @@ class ReportTemplate(str, Enum):
     REGULATORY = "regulatory"
     EXECUTIVE = "executive"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class ReportConfig(BaseModel):
     """Configuration for report generation.
@@ -261,7 +225,7 @@ class ReportConfig(BaseModel):
         language: Report language (ISO 639-1).
     """
     report_type: ReportType = Field(default=ReportType.FACILITY_BENCHMARK)
-    export_format: ExportFormat = Field(default=ExportFormat.MARKDOWN)
+    export_format: ReportFormat = Field(default=ReportFormat.MARKDOWN)
     template: ReportTemplate = Field(default=ReportTemplate.STANDARD)
     sections: List[ReportSection] = Field(
         default_factory=lambda: list(ReportSection),
@@ -276,7 +240,6 @@ class ReportConfig(BaseModel):
     include_raw_data: bool = Field(default=False)
     currency_symbol: str = Field(default="EUR", max_length=5)
     language: str = Field(default="en", max_length=5)
-
 
 class FacilityReportData(BaseModel):
     """Data payload for a single-facility report.
@@ -338,7 +301,6 @@ class FacilityReportData(BaseModel):
     recommendations: List[Dict[str, Any]] = Field(default_factory=list)
     methodology_notes: List[str] = Field(default_factory=list)
 
-
 class PortfolioReportData(BaseModel):
     """Data payload for a portfolio-level report.
 
@@ -379,11 +341,9 @@ class PortfolioReportData(BaseModel):
     trends: List[Dict[str, Any]] = Field(default_factory=list)
     reporting_year: int = Field(default=2025)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class ChartData(BaseModel):
     """Data structure for chart rendering.
@@ -403,7 +363,6 @@ class ChartData(BaseModel):
     series: List[Dict[str, Any]] = Field(default_factory=list)
     categories: List[str] = Field(default_factory=list)
 
-
 class TableData(BaseModel):
     """Data structure for table rendering.
 
@@ -417,7 +376,6 @@ class TableData(BaseModel):
     headers: List[str] = Field(default_factory=list)
     rows: List[List[Any]] = Field(default_factory=list)
     footer: List[Any] = Field(default_factory=list)
-
 
 class ReportMetadata(BaseModel):
     """Report metadata and identification.
@@ -442,11 +400,10 @@ class ReportMetadata(BaseModel):
     subtitle: str = Field(default="")
     author: str = Field(default="")
     organisation: str = Field(default="")
-    generated_at: datetime = Field(default_factory=_utcnow)
+    generated_at: datetime = Field(default_factory=utcnow)
     data_as_of: str = Field(default="")
     engine_version: str = Field(default=_MODULE_VERSION)
     pack_version: str = Field(default=REPORT_VERSION)
-
 
 class ReportOutput(BaseModel):
     """Rendered report output in the requested format.
@@ -459,13 +416,12 @@ class ReportOutput(BaseModel):
         kpis: Key performance indicators.
         metadata: Report metadata.
     """
-    format: ExportFormat = Field(default=ExportFormat.MARKDOWN)
+    format: ReportFormat = Field(default=ReportFormat.MARKDOWN)
     content: str = Field(default="")
     charts: List[ChartData] = Field(default_factory=list)
     tables: List[TableData] = Field(default_factory=list)
     kpis: Dict[str, Any] = Field(default_factory=dict)
     metadata: Optional[ReportMetadata] = Field(default=None)
-
 
 class BenchmarkReportResult(BaseModel):
     """Complete benchmark report result.
@@ -486,14 +442,12 @@ class BenchmarkReportResult(BaseModel):
     methodology_notes: List[str] = Field(default_factory=list)
     processing_time_ms: float = Field(default=0.0)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class BenchmarkReportEngine:
     """Zero-hallucination benchmark report generation engine.
@@ -653,7 +607,7 @@ class BenchmarkReportEngine:
             f"**Facilities:** {data.facility_count}\n"
             f"**Total Area:** {data.total_area_m2:,.0f} m2\n"
             f"**Reporting Year:** {data.reporting_year}\n"
-            f"**Generated:** {_utcnow().isoformat()}\n\n"
+            f"**Generated:** {utcnow().isoformat()}\n\n"
         )
         sections["header"] = header
         section_hashes["header"] = _compute_hash(header)
@@ -769,7 +723,7 @@ class BenchmarkReportEngine:
     def export_report(
         self,
         report: BenchmarkReportResult,
-        target_format: ExportFormat,
+        target_format: ReportFormat,
     ) -> str:
         """Export a report to a different format.
 
@@ -783,13 +737,13 @@ class BenchmarkReportEngine:
         if report.report is None:
             return ""
 
-        if target_format == ExportFormat.JSON:
+        if target_format == ReportFormat.JSON:
             return json.dumps(report.report.model_dump(mode="json"), indent=2, default=str)
-        elif target_format == ExportFormat.CSV:
+        elif target_format == ReportFormat.CSV:
             return self._export_kpis_csv(report.report.kpis)
-        elif target_format == ExportFormat.HTML:
+        elif target_format == ReportFormat.HTML:
             return self._wrap_html(report.report.content, report.report.metadata)
-        elif target_format == ExportFormat.PDF_DATA:
+        elif target_format == ReportFormat.PDF_DATA:
             return json.dumps({
                 "content": report.report.content,
                 "kpis": report.report.kpis,
@@ -878,7 +832,7 @@ class BenchmarkReportEngine:
             f"| Floor Area | {data.gross_floor_area_m2:,.0f} m2 |\n"
             f"| Reporting Year | {data.reporting_year} |\n"
             f"| Organisation | {config.organisation} |\n"
-            f"| Generated | {_utcnow().isoformat()} |\n"
+            f"| Generated | {utcnow().isoformat()} |\n"
             f"| Engine | PACK-035 v{_MODULE_VERSION} |\n\n"
         )
 
@@ -1039,13 +993,13 @@ class BenchmarkReportEngine:
         )
 
         # Format conversion.
-        if config.export_format == ExportFormat.JSON:
+        if config.export_format == ReportFormat.JSON:
             content = json.dumps({
                 "sections": sections,
                 "kpis": kpis,
                 "metadata": metadata.model_dump(mode="json"),
             }, indent=2, default=str)
-        elif config.export_format == ExportFormat.HTML:
+        elif config.export_format == ReportFormat.HTML:
             content = self._wrap_html(content, metadata)
 
         return ReportOutput(
@@ -1086,7 +1040,7 @@ class BenchmarkReportEngine:
             data_as_of=str(data.reporting_year),
         )
 
-        if config.export_format == ExportFormat.JSON:
+        if config.export_format == ReportFormat.JSON:
             content = json.dumps({
                 "sections": sections,
                 "kpis": kpis,
@@ -1246,7 +1200,6 @@ class BenchmarkReportEngine:
             lines.append(f"{k},{v}")
         return "\n".join(lines)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic v2 model_rebuild for forward-reference resolution
 # ---------------------------------------------------------------------------
@@ -1260,10 +1213,9 @@ ReportMetadata.model_rebuild()
 ReportOutput.model_rebuild()
 BenchmarkReportResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # Public Aliases -- required by PACK-035 __init__.py symbol contract
 # ---------------------------------------------------------------------------
 
-ReportFormat = ExportFormat
-"""Alias: ``ReportFormat`` -> :class:`ExportFormat`."""
+ReportFormat = ReportFormat
+"""Alias: ``ReportFormat`` -> :class:`ReportFormat`."""

@@ -39,25 +39,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -70,11 +64,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ClaimType(str, Enum):
     """Type of environmental or remediation claim."""
@@ -86,7 +78,6 @@ class ClaimType(str, Enum):
     CIRCULAR_ECONOMY = "circular_economy"
     BIODIVERSITY = "biodiversity"
 
-
 class SubstantiationStatus(str, Enum):
     """Status of claim substantiation per Green Claims Directive."""
 
@@ -96,7 +87,6 @@ class SubstantiationStatus(str, Enum):
     UNDER_REVIEW = "under_review"
     NOT_ASSESSED = "not_assessed"
 
-
 class GreenwashingRiskLevel(str, Enum):
     """Greenwashing risk classification."""
 
@@ -105,7 +95,6 @@ class GreenwashingRiskLevel(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     NONE = "none"
-
 
 class GreenwashingCategory(str, Enum):
     """Category of greenwashing risk."""
@@ -118,11 +107,9 @@ class GreenwashingCategory(str, Enum):
     NO_PROOF = "no_proof"
     MISLEADING_COMPARISONS = "misleading_comparisons"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class GreenClaimsBridgeConfig(BaseModel):
     """Configuration for the Green Claims Bridge."""
@@ -138,7 +125,6 @@ class GreenClaimsBridgeConfig(BaseModel):
         description="Require third-party verification per GCD Art 10",
     )
 
-
 class EnvironmentalClaim(BaseModel):
     """An environmental or remediation claim to validate."""
 
@@ -152,7 +138,6 @@ class EnvironmentalClaim(BaseModel):
     verification_body: str = Field(default="")
     publication_date: Optional[datetime] = Field(None)
     is_comparative: bool = Field(default=False)
-
 
 class ClaimValidationResult(BaseModel):
     """Result of validating a single claim."""
@@ -168,7 +153,6 @@ class ClaimValidationResult(BaseModel):
     gcd_articles_triggered: List[str] = Field(default_factory=list)
     score: float = Field(default=0.0, ge=0.0, le=100.0)
 
-
 class GreenwashingAssessment(BaseModel):
     """Greenwashing risk assessment for a set of statements."""
 
@@ -180,7 +164,6 @@ class GreenwashingAssessment(BaseModel):
     flagged_details: List[Dict[str, Any]] = Field(default_factory=list)
     recommendations: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class BridgeResult(BaseModel):
     """Result of a Green Claims bridge operation."""
@@ -197,7 +180,6 @@ class BridgeResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class CSDDDGreenClaimsMapping(BaseModel):
     """Mapping between CSDDD data and Green Claims Directive requirements."""
 
@@ -208,7 +190,6 @@ class CSDDDGreenClaimsMapping(BaseModel):
     gcd_requirement: str = Field(default="")
     overlap_description: str = Field(default="")
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Vague / Greenwashing Keyword Lists (deterministic detection)
@@ -266,11 +247,9 @@ CSDDD_TO_GCD_MAPPING: List[Dict[str, str]] = [
     },
 ]
 
-
 # ---------------------------------------------------------------------------
 # GreenClaimsBridge
 # ---------------------------------------------------------------------------
-
 
 class GreenClaimsBridge:
     """CSDDD remediation and Green Claims Directive cross-validation bridge.
@@ -308,7 +287,7 @@ class GreenClaimsBridge:
         Returns:
             BridgeResult with validation results for each claim.
         """
-        result = BridgeResult(started_at=_utcnow())
+        result = BridgeResult(started_at=utcnow())
 
         try:
             validations: List[ClaimValidationResult] = []
@@ -358,7 +337,7 @@ class GreenClaimsBridge:
             result.errors.append(str(exc))
             logger.error("Claim validation failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at

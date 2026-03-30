@@ -62,21 +62,13 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC timestamp with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 provenance hash, excluding volatile fields."""
@@ -95,7 +87,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert any value to Decimal."""
     if isinstance(value, Decimal):
@@ -104,7 +95,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -116,21 +106,17 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> Decimal:
     """Round a value to two decimal places using ROUND_HALF_UP."""
     return Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-
 
 def _round6(value: Any) -> Decimal:
     """Round a value to six decimal places using ROUND_HALF_UP."""
     return Decimal(str(value)).quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class FactorType(str, Enum):
     """Types of emission factors."""
@@ -152,7 +138,6 @@ class FactorType(str, Enum):
     WATER_SUPPLY = "WATER_SUPPLY"
     WATER_TREATMENT = "WATER_TREATMENT"
 
-
 class FactorTier(str, Enum):
     """Data quality tiers for emission factors.
 
@@ -163,7 +148,6 @@ class FactorTier(str, Enum):
     NATIONAL = "NATIONAL"
     REGIONAL = "REGIONAL"
     IPCC_DEFAULT = "IPCC_DEFAULT"
-
 
 class FactorSource(str, Enum):
     """Source databases for emission factors."""
@@ -179,7 +163,6 @@ class FactorSource(str, Enum):
     ADEME = "ADEME"
     EXIOBASE = "EXIOBASE"
     CUSTOM = "CUSTOM"
-
 
 # ---------------------------------------------------------------------------
 # Default Factor Databases
@@ -430,11 +413,9 @@ DEFAULT_FACTOR_DATABASES: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class FactorAssignment(BaseModel):
     """An emission factor assigned to a specific site.
@@ -523,7 +504,6 @@ class FactorAssignment(BaseModel):
             logger.warning("Tier '%s' not standard; accepted.", v)
         return v.upper()
 
-
 class GridRegion(BaseModel):
     """Electricity grid region with emission factors.
 
@@ -582,7 +562,6 @@ class GridRegion(BaseModel):
             return Decimal(str(v))
         return v
 
-
 class ClimateZone(BaseModel):
     """Climate zone assignment for a site.
 
@@ -627,7 +606,6 @@ class ClimateZone(BaseModel):
         if v is not None:
             return Decimal(str(v))
         return v
-
 
 class FactorOverride(BaseModel):
     """An override of an emission factor for a specific site.
@@ -682,7 +660,7 @@ class FactorOverride(BaseModel):
         description="Reference to supporting evidence.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the override was created.",
     )
 
@@ -690,7 +668,6 @@ class FactorOverride(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Any:
         return Decimal(str(v))
-
 
 class RegionalFactorResult(BaseModel):
     """Complete factor assignment result for a site.
@@ -736,14 +713,13 @@ class RegionalFactorResult(BaseModel):
         description="Total number of factor assignments.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When this result was generated.",
     )
     provenance_hash: str = Field(
         default="",
         description="SHA-256 hash.",
     )
-
 
 class FactorCoverage(BaseModel):
     """Factor coverage assessment for the portfolio."""
@@ -776,11 +752,9 @@ class FactorCoverage(BaseModel):
         default="", description="SHA-256 hash."
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class RegionalFactorEngine:
     """Manages region-specific emission factor assignments.
@@ -1359,7 +1333,7 @@ class RegionalFactorEngine:
         if override.is_approved:
             raise ValueError(f"Override '{override_id}' is already approved.")
 
-        now = _utcnow()
+        now = utcnow()
         updated = override.model_copy(update={
             "is_approved": True,
             "approved_by": approved_by,
@@ -1455,6 +1429,8 @@ class RegionalFactorEngine:
         Args:
             assignments: List of assignments. If None, aggregates
                 from all sites in internal storage.
+
+from greenlang.schemas import utcnow
 
         Returns:
             Dictionary mapping tier name to count.

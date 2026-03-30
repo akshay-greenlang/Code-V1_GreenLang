@@ -29,26 +29,20 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class Scope1Category(str, Enum):
     """Scope 1 emission categories from PACK-041."""
@@ -62,18 +56,15 @@ class Scope1Category(str, Enum):
     WASTE_TREATMENT = "waste_treatment"
     AGRICULTURAL = "agricultural"
 
-
 class Scope2Method(str, Enum):
     """Scope 2 calculation methods."""
 
     LOCATION_BASED = "location_based"
     MARKET_BASED = "market_based"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class Pack041Config(BaseModel):
     """Configuration for PACK-041 bridge."""
@@ -82,7 +73,6 @@ class Pack041Config(BaseModel):
     timeout_s: float = Field(60.0, ge=5.0)
     cache_ttl_s: float = Field(3600.0)
     include_emission_factors: bool = Field(True)
-
 
 class Scope1Summary(BaseModel):
     """Summary of Scope 1 emissions from PACK-041."""
@@ -97,7 +87,6 @@ class Scope1Summary(BaseModel):
     data_quality_score: float = 0.0
     source_count: int = 0
 
-
 class Scope2Summary(BaseModel):
     """Summary of Scope 2 emissions from PACK-041."""
 
@@ -108,7 +97,6 @@ class Scope2Summary(BaseModel):
     cooling_tco2e: float = 0.0
     grid_regions: List[str] = Field(default_factory=list)
     instruments: List[str] = Field(default_factory=list)
-
 
 class ImportResult(BaseModel):
     """Result of importing data from PACK-041."""
@@ -125,11 +113,9 @@ class ImportResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     duration_ms: float = 0.0
 
-
 # ---------------------------------------------------------------------------
 # Bridge Implementation
 # ---------------------------------------------------------------------------
-
 
 class Pack041Bridge:
     """
@@ -187,7 +173,7 @@ class Pack041Bridge:
 
             result = ImportResult(
                 success=True,
-                imported_at=_utcnow().isoformat(),
+                imported_at=utcnow().isoformat(),
                 base_year=base_year,
                 scope1_total_tco2e=scope1_total,
                 scope2_location_tco2e=scope2_loc,
@@ -209,7 +195,7 @@ class Pack041Bridge:
             logger.error("PACK-041 import failed: %s", e, exc_info=True)
             return ImportResult(
                 success=False,
-                imported_at=_utcnow().isoformat(),
+                imported_at=utcnow().isoformat(),
                 base_year=base_year,
                 warnings=[f"Import failed: {str(e)}"],
                 duration_ms=duration,

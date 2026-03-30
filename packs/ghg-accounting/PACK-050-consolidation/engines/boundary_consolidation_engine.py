@@ -62,24 +62,18 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC timestamp with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 provenance hash, excluding volatile fields."""
@@ -98,7 +92,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert any value to Decimal."""
     if isinstance(value, Decimal):
@@ -107,7 +100,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -119,28 +111,23 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> Decimal:
     """Round a value to two decimal places using ROUND_HALF_UP."""
     return Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-
 
 def _round4(value: Any) -> Decimal:
     """Round a value to four decimal places using ROUND_HALF_UP."""
     return Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ConsolidationApproach(str, Enum):
     """GHG Protocol consolidation approaches per Chapter 3."""
     EQUITY_SHARE = "EQUITY_SHARE"
     OPERATIONAL_CONTROL = "OPERATIONAL_CONTROL"
     FINANCIAL_CONTROL = "FINANCIAL_CONTROL"
-
 
 class BoundaryStatus(str, Enum):
     """Lifecycle status of a boundary definition."""
@@ -149,7 +136,6 @@ class BoundaryStatus(str, Enum):
     APPROVED = "APPROVED"
     LOCKED = "LOCKED"
     SUPERSEDED = "SUPERSEDED"
-
 
 class ChangeJustification(str, Enum):
     """Standard justification types for boundary changes."""
@@ -162,19 +148,15 @@ class ChangeJustification(str, Enum):
     ERROR_CORRECTION = "ERROR_CORRECTION"
     OTHER = "OTHER"
 
-
 # ---------------------------------------------------------------------------
 # Default Configuration
 # ---------------------------------------------------------------------------
 
-
 DEFAULT_MATERIALITY_THRESHOLD_PCT = Decimal("5")
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class EntityInclusion(BaseModel):
     """Defines how a specific entity is included in the boundary.
@@ -239,7 +221,6 @@ class EntityInclusion(BaseModel):
         if v is not None:
             return Decimal(str(v))
         return v
-
 
 class BoundaryDefinition(BaseModel):
     """Complete organizational boundary definition for a reporting period.
@@ -311,11 +292,11 @@ class BoundaryDefinition(BaseModel):
         description="Additional notes.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the boundary was created.",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the boundary was last updated.",
     )
     provenance_hash: str = Field(
@@ -344,7 +325,6 @@ class BoundaryDefinition(BaseModel):
                 f"Must be one of {sorted(valid)}."
             )
         return v.upper()
-
 
 class BoundaryComparison(BaseModel):
     """Comparison of boundary outcomes across consolidation approaches.
@@ -390,14 +370,13 @@ class BoundaryComparison(BaseModel):
         description="Recommendation based on comparison.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When this comparison was generated.",
     )
     provenance_hash: str = Field(
         default="",
         description="SHA-256 hash.",
     )
-
 
 class BoundaryLock(BaseModel):
     """Record of a boundary lock event."""
@@ -416,7 +395,7 @@ class BoundaryLock(BaseModel):
         description="User who locked the boundary.",
     )
     locked_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the lock was applied.",
     )
     reason: Optional[str] = Field(
@@ -428,11 +407,9 @@ class BoundaryLock(BaseModel):
         description="SHA-256 hash.",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class BoundaryConsolidationEngine:
     """Manages organizational boundary consolidation per GHG Protocol Ch. 3.
@@ -534,7 +511,7 @@ class BoundaryConsolidationEngine:
             "year": reporting_year,
             "approach": approach_upper,
             "entities_included": boundary.total_entities_included,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         })
 
         logger.info(
@@ -617,7 +594,7 @@ class BoundaryConsolidationEngine:
         else:
             avg_pct = Decimal("0")
 
-        now = _utcnow()
+        now = utcnow()
         boundary = BoundaryDefinition(
             reporting_year=year,
             consolidation_approach=approach,
@@ -937,7 +914,7 @@ class BoundaryConsolidationEngine:
             boundary.boundary_id, boundary.reporting_year, locked_by,
         )
 
-        now = _utcnow()
+        now = utcnow()
         updated = boundary.model_copy(update={
             "is_locked": True,
             "locked_at": now,
@@ -1005,13 +982,13 @@ class BoundaryConsolidationEngine:
             "justification_type": justification_type.upper(),
             "description": description,
             "affected_entity_ids": affected_entity_ids,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
         updated_changes = list(boundary.change_justifications) + [change_record]
         updated = boundary.model_copy(update={
             "change_justifications": updated_changes,
-            "updated_at": _utcnow(),
+            "updated_at": utcnow(),
         })
         updated.provenance_hash = _compute_hash(updated)
         self._boundaries[updated.boundary_id] = updated
@@ -1021,7 +998,7 @@ class BoundaryConsolidationEngine:
             "boundary_id": boundary.boundary_id,
             "justification_type": justification_type.upper(),
             "affected_entities": len(affected_entity_ids),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         })
 
         logger.info(

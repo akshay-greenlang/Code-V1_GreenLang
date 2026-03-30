@@ -67,18 +67,11 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
-
+from pydantic import Field, field_validator
 
 # ---------------------------------------------------------------------------
 # Helper
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -108,11 +101,9 @@ DEFAULT_CONFIDENCE_LEVEL: Decimal = Decimal("0.95")
 #: Prefix for all database table names in this module.
 TABLE_PREFIX: str = "gl_cp_"
 
-
 # =============================================================================
 # Enumerations (18)
 # =============================================================================
-
 
 class CoolingTechnology(str, Enum):
     """Classification of cooling generation technologies for Scope 2.
@@ -221,7 +212,6 @@ class CoolingTechnology(str, Enum):
     PCM_TES = "pcm_tes"
     DISTRICT_COOLING = "district_cooling"
 
-
 class CompressorType(str, Enum):
     """Classification of electric chiller compressor mechanisms.
 
@@ -260,7 +250,6 @@ class CompressorType(str, Enum):
     RECIPROCATING = "reciprocating"
     SCROLL = "scroll"
 
-
 class CondenserType(str, Enum):
     """Classification of chiller condenser heat rejection methods.
 
@@ -285,7 +274,6 @@ class CondenserType(str, Enum):
 
     WATER_COOLED = "water_cooled"
     AIR_COOLED = "air_cooled"
-
 
 class AbsorptionType(str, Enum):
     """Classification of absorption chiller cycle configurations.
@@ -328,7 +316,6 @@ class AbsorptionType(str, Enum):
     TRIPLE_EFFECT = "triple_effect"
     AMMONIA = "ammonia"
 
-
 class FreeCoolingSource(str, Enum):
     """Classification of natural heat sinks for free cooling systems.
 
@@ -366,7 +353,6 @@ class FreeCoolingSource(str, Enum):
     LAKE = "lake"
     RIVER = "river"
     AMBIENT_AIR = "ambient_air"
-
 
 class TESType(str, Enum):
     """Classification of thermal energy storage technologies.
@@ -407,7 +393,6 @@ class TESType(str, Enum):
     ICE = "ice"
     CHILLED_WATER = "chilled_water"
     PCM = "pcm"
-
 
 class HeatSource(str, Enum):
     """Classification of heat sources for absorption chiller systems.
@@ -482,7 +467,6 @@ class HeatSource(str, Enum):
     ELECTRIC_BOILER = "electric_boiler"
     HEAT_PUMP = "heat_pump"
 
-
 class EfficiencyMetric(str, Enum):
     """Efficiency metrics used for cooling equipment performance rating.
 
@@ -530,7 +514,6 @@ class EfficiencyMetric(str, Enum):
     NPLV = "nplv"
     SEER = "seer"
 
-
 class CoolingUnit(str, Enum):
     """Units of measurement for cooling energy quantities.
 
@@ -567,7 +550,6 @@ class CoolingUnit(str, Enum):
     MJ = "mj"
     TR = "tr"
 
-
 class EmissionGas(str, Enum):
     """Greenhouse gases tracked in Scope 2 cooling calculations.
 
@@ -601,7 +583,6 @@ class EmissionGas(str, Enum):
     N2O = "N2O"
     CO2E = "CO2e"
 
-
 class GWPSource(str, Enum):
     """IPCC Assessment Report edition used for Global Warming Potential values.
 
@@ -632,7 +613,6 @@ class GWPSource(str, Enum):
     AR6 = "AR6"
     AR6_20YR = "AR6_20YR"
 
-
 class ComplianceStatus(str, Enum):
     """Result of a regulatory compliance check for a calculation.
 
@@ -656,7 +636,6 @@ class ComplianceStatus(str, Enum):
     NON_COMPLIANT = "non_compliant"
     PARTIAL = "partial"
     NOT_APPLICABLE = "not_applicable"
-
 
 class DataQualityTier(str, Enum):
     """Data quality classification for cooling emission factor inputs.
@@ -686,7 +665,6 @@ class DataQualityTier(str, Enum):
     TIER_1 = "tier_1"
     TIER_2 = "tier_2"
     TIER_3 = "tier_3"
-
 
 class FacilityType(str, Enum):
     """Classification of reporting facilities by primary function.
@@ -730,25 +708,6 @@ class FacilityType(str, Enum):
     INDUSTRIAL = "industrial"
     DISTRICT = "district"
 
-
-class ReportingPeriod(str, Enum):
-    """Time period for cooling emission aggregation and reporting outputs.
-
-    MONTHLY: Calendar month. Used for operational dashboards,
-        seasonal analysis of cooling demand, and monthly trend
-        tracking. Cooling loads are highly seasonal in most climates.
-    QUARTERLY: Calendar quarter (Q1-Q4). Used for interim management
-        reporting and progress tracking against annual targets.
-    ANNUAL: Full calendar or fiscal year. Standard for CDP, CSRD,
-        and GHG Protocol corporate inventories. Primary reporting
-        period for Scope 2 cooling purchase emissions.
-    """
-
-    MONTHLY = "monthly"
-    QUARTERLY = "quarterly"
-    ANNUAL = "annual"
-
-
 class AggregationType(str, Enum):
     """Dimension for aggregating cooling calculation results.
 
@@ -777,7 +736,6 @@ class AggregationType(str, Enum):
     BY_SUPPLIER = "by_supplier"
     BY_PERIOD = "by_period"
 
-
 class BatchStatus(str, Enum):
     """Processing status of a batch calculation request.
 
@@ -801,7 +759,6 @@ class BatchStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class Refrigerant(str, Enum):
     """Common refrigerant types used in chiller systems.
@@ -871,11 +828,9 @@ class Refrigerant(str, Enum):
     R_717 = "r_717"
     R_718 = "r_718"
 
-
 # =============================================================================
 # Constant Tables (all Decimal for deterministic arithmetic)
 # =============================================================================
-
 
 # ---------------------------------------------------------------------------
 # GWP values by IPCC Assessment Report
@@ -912,7 +867,6 @@ GWP_VALUES: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # AHRI 550/590 Part-Load Weights
 # ---------------------------------------------------------------------------
@@ -937,7 +891,6 @@ AHRI_PART_LOAD_WEIGHTS: Dict[str, Decimal] = {
     "25%": Decimal("0.12"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Efficiency Metric Conversions
 # ---------------------------------------------------------------------------
@@ -960,7 +913,6 @@ EFFICIENCY_CONVERSIONS: Dict[str, Decimal] = {
     "cop_to_kw_per_ton": Decimal("3.517"),
     "seer_to_cop": Decimal("0.293083"),
 }
-
 
 # ---------------------------------------------------------------------------
 # Cooling Unit Conversion Factors
@@ -989,18 +941,15 @@ UNIT_CONVERSIONS: Dict[str, Decimal] = {
     "tr_to_kw": Decimal("3.517"),
 }
 
-
 # =============================================================================
 # Data Models (23)
 # =============================================================================
-
 
 # ---------------------------------------------------------------------------
 # 1. CoolingTechnologySpec
 # ---------------------------------------------------------------------------
 
-
-class CoolingTechnologySpec(BaseModel):
+class CoolingTechnologySpec(GreenLangBase):
     """Performance specification for a cooling generation technology.
 
     Encapsulates the COP range, default COP, IPLV (if applicable),
@@ -1101,7 +1050,6 @@ class CoolingTechnologySpec(BaseModel):
                 f"cop_default ({v}) must be <= cop_max ({cop_max})"
             )
         return v
-
 
 # ---------------------------------------------------------------------------
 # Cooling Technology Specifications Constant Table
@@ -1288,13 +1236,11 @@ COOLING_TECHNOLOGY_SPECS: Dict[str, CoolingTechnologySpec] = {
     ),
 }
 
-
 # ---------------------------------------------------------------------------
 # 2. DistrictCoolingFactor
 # ---------------------------------------------------------------------------
 
-
-class DistrictCoolingFactor(BaseModel):
+class DistrictCoolingFactor(GreenLangBase):
     """Emission factor record for a district cooling network region.
 
     Encapsulates the composite emission factor (kgCO2e per GJ of
@@ -1350,7 +1296,6 @@ class DistrictCoolingFactor(BaseModel):
     def _lowercase_region(cls, v: str) -> str:
         """Normalise region identifier to lowercase."""
         return v.strip().lower()
-
 
 # ---------------------------------------------------------------------------
 # District Cooling Regional Factors Constant Table
@@ -1453,13 +1398,11 @@ DISTRICT_COOLING_FACTORS: Dict[str, DistrictCoolingFactor] = {
     ),
 }
 
-
 # ---------------------------------------------------------------------------
 # 3. HeatSourceFactor
 # ---------------------------------------------------------------------------
 
-
-class HeatSourceFactor(BaseModel):
+class HeatSourceFactor(GreenLangBase):
     """Emission factor record for an absorption chiller heat source.
 
     Encapsulates the emission factor (kgCO2e per GJ of heat input)
@@ -1498,7 +1441,6 @@ class HeatSourceFactor(BaseModel):
         max_length=500,
         description="Additional context about the emission factor",
     )
-
 
 # ---------------------------------------------------------------------------
 # Heat Source Emission Factors Constant Table
@@ -1575,13 +1517,11 @@ HEAT_SOURCE_FACTORS: Dict[str, HeatSourceFactor] = {
     ),
 }
 
-
 # ---------------------------------------------------------------------------
 # 4. RefrigerantData
 # ---------------------------------------------------------------------------
 
-
-class RefrigerantData(BaseModel):
+class RefrigerantData(GreenLangBase):
     """GWP and phase-down data for a chiller refrigerant.
 
     Encapsulates the Global Warming Potential values from IPCC AR5
@@ -1630,7 +1570,6 @@ class RefrigerantData(BaseModel):
         max_length=500,
         description="Regulatory phase-down status and timeline",
     )
-
 
 # ---------------------------------------------------------------------------
 # Refrigerant GWP Constant Table
@@ -1724,13 +1663,11 @@ REFRIGERANT_GWP: Dict[str, RefrigerantData] = {
     ),
 }
 
-
 # ---------------------------------------------------------------------------
 # 5. PartLoadPoint
 # ---------------------------------------------------------------------------
 
-
-class PartLoadPoint(BaseModel):
+class PartLoadPoint(GreenLangBase):
     """Single operating point in a part-load performance curve.
 
     Represents the COP multiplier and AHRI weighting at a specific
@@ -1773,13 +1710,11 @@ class PartLoadPoint(BaseModel):
         description="AHRI 550/590 weighting factor for this load point",
     )
 
-
 # ---------------------------------------------------------------------------
 # 6. FacilityInfo
 # ---------------------------------------------------------------------------
 
-
-class FacilityInfo(BaseModel):
+class FacilityInfo(GreenLangBase):
     """Metadata record for a facility consuming purchased cooling.
 
     Represents a single physical facility (building, campus, data
@@ -1854,17 +1789,15 @@ class FacilityInfo(BaseModel):
         description="Geographic longitude in decimal degrees",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of facility record creation",
     )
-
 
 # ---------------------------------------------------------------------------
 # 7. CoolingSupplier
 # ---------------------------------------------------------------------------
 
-
-class CoolingSupplier(BaseModel):
+class CoolingSupplier(GreenLangBase):
     """Profile of a cooling service supplier or district cooling provider.
 
     Represents an external entity that generates and delivers cooling
@@ -1936,13 +1869,11 @@ class CoolingSupplier(BaseModel):
         description="Annual refrigerant leakage rate (0-1 fraction)",
     )
 
-
 # ---------------------------------------------------------------------------
 # 8. ElectricChillerRequest
 # ---------------------------------------------------------------------------
 
-
-class ElectricChillerRequest(BaseModel):
+class ElectricChillerRequest(GreenLangBase):
     """Request for an electric chiller emission calculation.
 
     Contains all parameters needed to calculate Scope 2 emissions
@@ -2061,13 +1992,11 @@ class ElectricChillerRequest(BaseModel):
         description="Time period for the calculation",
     )
 
-
 # ---------------------------------------------------------------------------
 # 9. AbsorptionCoolingRequest
 # ---------------------------------------------------------------------------
 
-
-class AbsorptionCoolingRequest(BaseModel):
+class AbsorptionCoolingRequest(GreenLangBase):
     """Request for an absorption chiller emission calculation.
 
     Contains all parameters needed to calculate Scope 2 emissions
@@ -2169,13 +2098,11 @@ class AbsorptionCoolingRequest(BaseModel):
         description="Time period for the calculation",
     )
 
-
 # ---------------------------------------------------------------------------
 # 10. FreeCoolingRequest
 # ---------------------------------------------------------------------------
 
-
-class FreeCoolingRequest(BaseModel):
+class FreeCoolingRequest(GreenLangBase):
     """Request for a free cooling emission calculation.
 
     Contains all parameters needed to calculate Scope 2 emissions
@@ -2247,13 +2174,11 @@ class FreeCoolingRequest(BaseModel):
         description="Time period for the calculation",
     )
 
-
 # ---------------------------------------------------------------------------
 # 11. TESRequest
 # ---------------------------------------------------------------------------
 
-
-class TESRequest(BaseModel):
+class TESRequest(GreenLangBase):
     """Request for a thermal energy storage emission calculation.
 
     Contains all parameters needed to calculate Scope 2 emissions
@@ -2358,17 +2283,18 @@ class TESRequest(BaseModel):
         description="Time period for the calculation",
     )
 
-
 # ---------------------------------------------------------------------------
 # 12. DistrictCoolingRequest
 # ---------------------------------------------------------------------------
 
-
-class DistrictCoolingRequest(BaseModel):
+class DistrictCoolingRequest(GreenLangBase):
     """Request for a district cooling network emission calculation.
 
     Contains all parameters needed to calculate Scope 2 emissions
     from purchased cooling from a district cooling network. Accounts
+
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ReportingPeriod
     for generation efficiency, distribution losses, and pump energy.
 
     Attributes:
@@ -2464,13 +2390,11 @@ class DistrictCoolingRequest(BaseModel):
         """Normalise region identifier to lowercase."""
         return v.strip().lower()
 
-
 # ---------------------------------------------------------------------------
 # 13. GasEmissionDetail
 # ---------------------------------------------------------------------------
 
-
-class GasEmissionDetail(BaseModel):
+class GasEmissionDetail(GreenLangBase):
     """Breakdown of emissions for a single greenhouse gas species.
 
     Provides the individual gas emission quantity, the GWP multiplier
@@ -2513,13 +2437,11 @@ class GasEmissionDetail(BaseModel):
         description="CO2-equivalent emission in kg",
     )
 
-
 # ---------------------------------------------------------------------------
 # 14. CalculationResult
 # ---------------------------------------------------------------------------
 
-
-class CalculationResult(BaseModel):
+class CalculationResult(GreenLangBase):
     """Result of a Scope 2 cooling purchase emission calculation.
 
     Contains the complete calculation output including cooling output,
@@ -2604,7 +2526,7 @@ class CalculationResult(BaseModel):
         description="Ordered calculation trace steps",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of the calculation",
     )
     metadata: Dict[str, str] = Field(
@@ -2636,13 +2558,11 @@ class CalculationResult(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # 15. TESCalculationResult
 # ---------------------------------------------------------------------------
 
-
-class TESCalculationResult(BaseModel):
+class TESCalculationResult(GreenLangBase):
     """Result of a thermal energy storage emission calculation.
 
     Extends the standard CalculationResult concepts with TES-specific
@@ -2735,7 +2655,7 @@ class TESCalculationResult(BaseModel):
         description="Ordered calculation trace steps",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of the calculation",
     )
     metadata: Dict[str, str] = Field(
@@ -2767,13 +2687,11 @@ class TESCalculationResult(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # 16. RefrigerantLeakageResult
 # ---------------------------------------------------------------------------
 
-
-class RefrigerantLeakageResult(BaseModel):
+class RefrigerantLeakageResult(GreenLangBase):
     """Informational result of refrigerant leakage emission estimation.
 
     Calculates the CO2-equivalent emissions from estimated annual
@@ -2837,13 +2755,11 @@ class RefrigerantLeakageResult(BaseModel):
         description="Informational note on Scope 1 classification",
     )
 
-
 # ---------------------------------------------------------------------------
 # 17. BatchCalculationRequest
 # ---------------------------------------------------------------------------
 
-
-class BatchCalculationRequest(BaseModel):
+class BatchCalculationRequest(GreenLangBase):
     """Batch request for multiple cooling emission calculations.
 
     Aggregates multiple calculation request instances (electric
@@ -2893,13 +2809,11 @@ class BatchCalculationRequest(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # 18. BatchCalculationResult
 # ---------------------------------------------------------------------------
 
-
-class BatchCalculationResult(BaseModel):
+class BatchCalculationResult(GreenLangBase):
     """Result of a batch cooling emission calculation.
 
     Aggregates results from all individual calculations in a batch
@@ -2987,13 +2901,11 @@ class BatchCalculationResult(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # 19. UncertaintyRequest
 # ---------------------------------------------------------------------------
 
-
-class UncertaintyRequest(BaseModel):
+class UncertaintyRequest(GreenLangBase):
     """Request for uncertainty quantification on a cooling calculation.
 
     Specifies the calculation result to analyse and the uncertainty
@@ -3039,13 +2951,11 @@ class UncertaintyRequest(BaseModel):
         description="Random seed for reproducible Monte Carlo runs",
     )
 
-
 # ---------------------------------------------------------------------------
 # 20. UncertaintyResult
 # ---------------------------------------------------------------------------
 
-
-class UncertaintyResult(BaseModel):
+class UncertaintyResult(GreenLangBase):
     """Result of uncertainty quantification for a cooling calculation.
 
     Provides the mean, standard deviation, confidence interval,
@@ -3161,13 +3071,11 @@ class UncertaintyResult(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # 21. ComplianceCheckResult
 # ---------------------------------------------------------------------------
 
-
-class ComplianceCheckResult(BaseModel):
+class ComplianceCheckResult(GreenLangBase):
     """Result of a regulatory compliance check for a cooling calculation.
 
     Evaluates a completed cooling emission calculation against a
@@ -3228,7 +3136,7 @@ class ComplianceCheckResult(BaseModel):
         description="Compliance score percentage (0-100)",
     )
     checked_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of the compliance check",
     )
 
@@ -3254,13 +3162,11 @@ class ComplianceCheckResult(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # 22. AggregationRequest
 # ---------------------------------------------------------------------------
 
-
-class AggregationRequest(BaseModel):
+class AggregationRequest(GreenLangBase):
     """Request for aggregating multiple cooling calculation results.
 
     Specifies which calculation results to aggregate and the
@@ -3307,13 +3213,11 @@ class AggregationRequest(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # 23. AggregationResult
 # ---------------------------------------------------------------------------
 
-
-class AggregationResult(BaseModel):
+class AggregationResult(GreenLangBase):
     """Aggregated emission result across multiple cooling calculations.
 
     Provides portfolio-level or group-level totals for Scope 2

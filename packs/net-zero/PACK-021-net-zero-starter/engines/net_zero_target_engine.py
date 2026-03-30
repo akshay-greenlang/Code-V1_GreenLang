@@ -64,25 +64,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -100,7 +94,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -109,7 +102,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -121,17 +113,14 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
@@ -139,11 +128,9 @@ def _round3(value: float) -> float:
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class PathwayType(str, Enum):
     """SBTi decarbonization pathway type.
@@ -156,25 +143,21 @@ class PathwayType(str, Enum):
     SDA = "sda"
     FLAG = "flag"
 
-
 class AmbitionLevel(str, Enum):
     """Target ambition level per SBTi classification."""
     PARIS_1_5C = "1.5c"
     WELL_BELOW_2C = "well_below_2c"
     BELOW_2C = "2c"
 
-
 class TargetTimeframe(str, Enum):
     """Target timeframe classification per SBTi Net-Zero Standard."""
     NEAR_TERM = "near_term"
     LONG_TERM = "long_term"
 
-
 class TargetType(str, Enum):
     """Target type classification."""
     ABSOLUTE = "absolute"
     INTENSITY = "intensity"
-
 
 class TemperatureAlignment(str, Enum):
     """Temperature alignment classification."""
@@ -182,7 +165,6 @@ class TemperatureAlignment(str, Enum):
     ALIGNED_WB2C = "well_below_2c_aligned"
     ALIGNED_2C = "2c_aligned"
     NOT_ALIGNED = "not_aligned"
-
 
 class SBTiSector(str, Enum):
     """SBTi sector classification for pathway selection."""
@@ -198,7 +180,6 @@ class SBTiSector(str, Enum):
     FLAG = "flag"
     OTHER = "other"
 
-
 class ScopeCategory(str, Enum):
     """Scope coverage for target setting."""
     SCOPE_1 = "scope_1"
@@ -207,11 +188,9 @@ class ScopeCategory(str, Enum):
     SCOPE_3 = "scope_3"
     ALL_SCOPES = "all_scopes"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # SBTi minimum annual reduction rates by ambition and scope.
 # Source: SBTi Corporate Net-Zero Standard v1.2 (2023), Table 1.
@@ -273,11 +252,9 @@ SDA_BENCHMARKS: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class TargetInput(BaseModel):
     """Input data for target setting.
@@ -355,11 +332,9 @@ class TargetInput(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class TargetDefinition(BaseModel):
     """A single target definition (near-term or long-term).
@@ -395,7 +370,6 @@ class TargetDefinition(BaseModel):
     pathway: str = Field(default="")
     ambition: str = Field(default="")
 
-
 class MilestoneEntry(BaseModel):
     """An interim milestone on the reduction pathway.
 
@@ -409,7 +383,6 @@ class MilestoneEntry(BaseModel):
     target_tco2e: Decimal = Field(default=Decimal("0"))
     reduction_from_base_pct: Decimal = Field(default=Decimal("0"))
     scope: str = Field(default="")
-
 
 class ValidationCheck(BaseModel):
     """A single SBTi validation check result.
@@ -426,7 +399,6 @@ class ValidationCheck(BaseModel):
     required_value: str = Field(default="")
     actual_value: str = Field(default="")
     message: str = Field(default="")
-
 
 class TargetResult(BaseModel):
     """Complete target-setting result.
@@ -452,7 +424,7 @@ class TargetResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     near_term_target: Optional[TargetDefinition] = Field(None)
     long_term_target: Optional[TargetDefinition] = Field(None)
@@ -468,11 +440,9 @@ class TargetResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class NetZeroTargetEngine:
     """SBTi Net-Zero Standard v1.2 target-setting engine.
@@ -1005,7 +975,7 @@ class NetZeroTargetEngine:
             ))
 
         # Check 8: Base year recency
-        current_year = _utcnow().year
+        current_year = utcnow().year
         base_age = current_year - data.base_year
         max_age = int(COVERAGE_REQUIREMENTS["base_year_max_age_years"])
         checks.append(ValidationCheck(

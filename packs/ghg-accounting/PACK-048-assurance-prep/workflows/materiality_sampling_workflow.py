@@ -65,36 +65,28 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas.enums import RiskLevel
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> str:
-    """Return current UTC timestamp as ISO-8601 string."""
-    return datetime.utcnow().isoformat() + "Z"
-
-
 def _new_uuid() -> str:
     """Return a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash of JSON-serialisable data."""
     serialised = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialised.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -105,7 +97,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -114,7 +105,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class MaterialitySamplingPhase(str, Enum):
     """Materiality and sampling workflow phases."""
@@ -125,13 +115,11 @@ class MaterialitySamplingPhase(str, Enum):
     SAMPLE_SIZING = "sample_sizing"
     SELECTION_PLAN = "selection_plan"
 
-
 class AssuranceLevel(str, Enum):
     """Assurance engagement level."""
 
     LIMITED = "limited"
     REASONABLE = "reasonable"
-
 
 class MaterialityBasis(str, Enum):
     """Basis for materiality calculation."""
@@ -141,22 +129,12 @@ class MaterialityBasis(str, Enum):
     SCOPE_1_2 = "scope_1_2"
     SECTOR_BENCHMARK = "sector_benchmark"
 
-
-class RiskLevel(str, Enum):
-    """Risk level for stratification."""
-
-    HIGH = "high"
-    MEDIUM = "medium"
-    LOW = "low"
-
-
 class StratumScope(str, Enum):
     """Scope classification for strata."""
 
     SCOPE_1 = "scope_1"
     SCOPE_2 = "scope_2"
     SCOPE_3 = "scope_3"
-
 
 class SelectionMethod(str, Enum):
     """Sample selection method."""
@@ -166,7 +144,6 @@ class SelectionMethod(str, Enum):
     SYSTEMATIC = "systematic"
     JUDGEMENTAL = "judgemental"
     ALL_ITEMS = "all_items"
-
 
 # =============================================================================
 # MATERIALITY REFERENCE DATA (Zero-Hallucination)
@@ -196,11 +173,9 @@ EXPECTED_ERROR_RATES: Dict[str, Decimal] = {
     "low": Decimal("1.5"),
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -213,7 +188,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
-
 
 class MaterialityResult(BaseModel):
     """Materiality calculation result."""
@@ -229,7 +203,6 @@ class MaterialityResult(BaseModel):
     assurance_level: AssuranceLevel = Field(default=AssuranceLevel.LIMITED)
     provenance_hash: str = Field(default="")
 
-
 class PopulationItem(BaseModel):
     """A single item in the verification population."""
 
@@ -243,7 +216,6 @@ class PopulationItem(BaseModel):
     risk_level: RiskLevel = Field(default=RiskLevel.MEDIUM)
     stratum_id: str = Field(default="")
     provenance_hash: str = Field(default="")
-
 
 class Stratum(BaseModel):
     """A stratum within the sampling plan."""
@@ -260,7 +232,6 @@ class Stratum(BaseModel):
     selection_method: SelectionMethod = Field(default=SelectionMethod.RANDOM)
     provenance_hash: str = Field(default="")
 
-
 class SamplingPlan(BaseModel):
     """Final sampling plan document."""
 
@@ -274,11 +245,9 @@ class SamplingPlan(BaseModel):
     methodology_notes: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # INPUT / OUTPUT
 # =============================================================================
-
 
 class MaterialitySamplingInput(BaseModel):
     """Input data model for MaterialitySamplingWorkflow."""
@@ -309,7 +278,6 @@ class MaterialitySamplingInput(BaseModel):
     tenant_id: str = Field(default="")
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class MaterialitySamplingResult(BaseModel):
     """Complete result from materiality and sampling workflow."""
 
@@ -327,11 +295,9 @@ class MaterialitySamplingResult(BaseModel):
     total_sample_size: int = Field(default=0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class MaterialitySamplingWorkflow:
     """

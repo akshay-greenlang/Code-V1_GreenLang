@@ -66,23 +66,18 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -99,7 +94,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -107,7 +101,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal, denominator: Decimal,
@@ -117,22 +110,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     return float(
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CertificationPathway(str, Enum):
     """Available certification pathways for SMEs."""
@@ -143,7 +132,6 @@ class CertificationPathway(str, Enum):
     CLIMATE_ACTIVE = "climate_active"
     CDP_SUPPLY_CHAIN = "cdp_supply_chain"
 
-
 class ReadinessDimension(str, Enum):
     """Readiness assessment dimensions."""
     BASELINE_DATA_QUALITY = "baseline_data_quality"
@@ -151,7 +139,6 @@ class ReadinessDimension(str, Enum):
     ACTION_PLAN_COMPLETENESS = "action_plan_completeness"
     GOVERNANCE_STRUCTURE = "governance_structure"
     DISCLOSURE_REPORTING = "disclosure_reporting"
-
 
 class ReadinessLevel(str, Enum):
     """Readiness level based on overall score."""
@@ -161,7 +148,6 @@ class ReadinessLevel(str, Enum):
     NEARLY_READY = "nearly_ready"    # 76-90
     READY = "ready"                  # 91-100
 
-
 class GapSeverity(str, Enum):
     """Severity of a gap."""
     CRITICAL = "critical"
@@ -169,11 +155,9 @@ class GapSeverity(str, Enum):
     MINOR = "minor"
     NONE = "none"
 
-
 # ---------------------------------------------------------------------------
 # Constants -- Certification Requirements
 # ---------------------------------------------------------------------------
-
 
 # Minimum dimension scores required per certification.
 # Source: Published certification criteria for each program.
@@ -304,11 +288,9 @@ DIMENSION_WEIGHTS: Dict[str, Decimal] = {
     ReadinessDimension.DISCLOSURE_REPORTING: Decimal("0.20"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class DimensionInput(BaseModel):
     """Input data for a single readiness dimension.
@@ -346,7 +328,6 @@ class DimensionInput(BaseModel):
     has_third_party_verification: bool = Field(default=False)
     notes: str = Field(default="", max_length=500)
 
-
 class CertificationReadinessInput(BaseModel):
     """Complete input for certification readiness assessment.
 
@@ -382,11 +363,9 @@ class CertificationReadinessInput(BaseModel):
             raise ValueError("SME headcount must be <= 250")
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class DimensionScore(BaseModel):
     """Score for a single readiness dimension.
@@ -408,7 +387,6 @@ class DimensionScore(BaseModel):
     weight: Decimal = Field(default=Decimal("0"))
     details: List[str] = Field(default_factory=list)
 
-
 class GapRemediationItem(BaseModel):
     """A single remediation action to close a gap.
 
@@ -426,7 +404,6 @@ class GapRemediationItem(BaseModel):
     priority: int = Field(default=1, ge=1, le=10)
     impact: str = Field(default="")
     prerequisites: List[str] = Field(default_factory=list)
-
 
 class CertificationAssessment(BaseModel):
     """Assessment for a single certification pathway.
@@ -460,7 +437,6 @@ class CertificationAssessment(BaseModel):
     is_recommended: bool = Field(default=False)
     recommendation_reason: str = Field(default="")
 
-
 class CertificationReadinessResult(BaseModel):
     """Complete certification readiness result.
 
@@ -480,7 +456,7 @@ class CertificationReadinessResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
 
     assessments: List[CertificationAssessment] = Field(default_factory=list)
@@ -493,11 +469,9 @@ class CertificationReadinessResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class CertificationReadinessEngine:
     """Certification readiness assessment engine for SMEs.

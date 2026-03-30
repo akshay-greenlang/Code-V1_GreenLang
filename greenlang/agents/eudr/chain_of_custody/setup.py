@@ -102,18 +102,15 @@ except ImportError:
     otel_trace = None  # type: ignore[assignment]
     OTEL_AVAILABLE = False
 
-
 # ---------------------------------------------------------------------------
 # Environment variable based configuration
 # ---------------------------------------------------------------------------
 
 _ENV_PREFIX = "GL_EUDR_COC_"
 
-
 def _env(key: str, default: str = "") -> str:
     """Read an environment variable with the GL_EUDR_COC_ prefix."""
     return os.environ.get(f"{_ENV_PREFIX}{key}", default)
-
 
 def _env_int(key: str, default: int = 0) -> int:
     """Read an integer environment variable."""
@@ -123,7 +120,6 @@ def _env_int(key: str, default: int = 0) -> int:
     except (ValueError, TypeError):
         return default
 
-
 def _env_float(key: str, default: float = 0.0) -> float:
     """Read a float environment variable."""
     raw = _env(key, str(default))
@@ -132,38 +128,27 @@ def _env_float(key: str, default: float = 0.0) -> float:
     except (ValueError, TypeError):
         return default
 
-
 def _env_bool(key: str, default: bool = False) -> bool:
     """Read a boolean environment variable."""
     raw = _env(key, str(default)).lower()
     return raw in ("true", "1", "yes", "on")
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_provenance_hash(*parts: str) -> str:
     """Compute SHA-256 hash over concatenated string parts."""
     combined = "|".join(str(p) for p in parts)
     return hashlib.sha256(combined.encode("utf-8")).hexdigest()
 
-
 def _generate_request_id() -> str:
     """Generate a unique request identifier."""
     return f"COC-{uuid.uuid4().hex[:12]}"
 
-
 # ---------------------------------------------------------------------------
 # Health status model
 # ---------------------------------------------------------------------------
-
 
 class HealthStatus:
     """Health check result container.
@@ -188,7 +173,7 @@ class HealthStatus:
     ) -> None:
         self.status = status
         self.checks = checks or {}
-        self.timestamp = timestamp or _utcnow()
+        self.timestamp = timestamp or utcnow()
         self.version = version
         self.uptime_seconds = uptime_seconds
 
@@ -202,11 +187,9 @@ class HealthStatus:
             "uptime_seconds": round(self.uptime_seconds, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: EventResult
 # ---------------------------------------------------------------------------
-
 
 class EventResult:
     """Result from a custody event recording operation.
@@ -273,11 +256,9 @@ class EventResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: BatchResult
 # ---------------------------------------------------------------------------
-
 
 class BatchResult:
     """Result from a batch lifecycle operation.
@@ -340,11 +321,9 @@ class BatchResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: ModelResult
 # ---------------------------------------------------------------------------
-
 
 class ModelResult:
     """Result from a CoC model enforcement operation.
@@ -407,11 +386,9 @@ class ModelResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: BalanceResult
 # ---------------------------------------------------------------------------
-
 
 class BalanceResult:
     """Result from a mass balance operation.
@@ -479,11 +456,9 @@ class BalanceResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: TransformResult
 # ---------------------------------------------------------------------------
-
 
 class TransformResult:
     """Result from a commodity transformation operation.
@@ -555,11 +530,9 @@ class TransformResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: DocumentResult
 # ---------------------------------------------------------------------------
-
 
 class DocumentResult:
     """Result from a document chain verification operation.
@@ -618,11 +591,9 @@ class DocumentResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: VerificationResult
 # ---------------------------------------------------------------------------
-
 
 class VerificationResult:
     """Result from a chain integrity verification operation.
@@ -699,11 +670,9 @@ class VerificationResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: ReportResult
 # ---------------------------------------------------------------------------
-
 
 class ReportResult:
     """Result from a compliance report generation operation.
@@ -770,11 +739,9 @@ class ReportResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: BatchJobResult
 # ---------------------------------------------------------------------------
-
 
 class BatchJobResult:
     """Result from a batch processing job.
@@ -833,11 +800,9 @@ class BatchJobResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ===========================================================================
 # ChainOfCustodyService - Main facade
 # ===========================================================================
-
 
 class ChainOfCustodyService:
     """Facade for the Chain of Custody Agent (AGENT-EUDR-009).
@@ -3101,11 +3066,9 @@ class ChainOfCustodyService:
         batch_id = item.get("batch_id", "")
         return self.verify_chain(batch_id)
 
-
 # ---------------------------------------------------------------------------
 # FastAPI lifespan context manager
 # ---------------------------------------------------------------------------
-
 
 @asynccontextmanager
 async def lifespan(app: Any) -> AsyncIterator[None]:
@@ -3119,6 +3082,7 @@ async def lifespan(app: Any) -> AsyncIterator[None]:
 
         from fastapi import FastAPI
         from greenlang.agents.eudr.chain_of_custody.setup import lifespan
+from greenlang.schemas import utcnow
 
         app = FastAPI(lifespan=lifespan)
 
@@ -3136,14 +3100,12 @@ async def lifespan(app: Any) -> AsyncIterator[None]:
     finally:
         await service.shutdown()
 
-
 # ---------------------------------------------------------------------------
 # Thread-safe singleton accessor
 # ---------------------------------------------------------------------------
 
 _service_instance: Optional[ChainOfCustodyService] = None
 _service_lock = threading.Lock()
-
 
 def get_service() -> ChainOfCustodyService:
     """Return the singleton ChainOfCustodyService instance.
@@ -3165,7 +3127,6 @@ def get_service() -> ChainOfCustodyService:
                 _service_instance = ChainOfCustodyService()
     return _service_instance
 
-
 def set_service(service: ChainOfCustodyService) -> None:
     """Replace the singleton ChainOfCustodyService instance.
 
@@ -3179,7 +3140,6 @@ def set_service(service: ChainOfCustodyService) -> None:
         _service_instance = service
     logger.info("ChainOfCustodyService singleton replaced")
 
-
 def reset_service() -> None:
     """Reset the singleton ChainOfCustodyService to None.
 
@@ -3190,7 +3150,6 @@ def reset_service() -> None:
     with _service_lock:
         _service_instance = None
     logger.debug("ChainOfCustodyService singleton reset")
-
 
 # ---------------------------------------------------------------------------
 # Public API

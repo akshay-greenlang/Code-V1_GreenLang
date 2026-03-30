@@ -71,25 +71,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -107,7 +101,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -116,7 +109,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -128,16 +120,13 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely."""
     return _safe_divide(part * Decimal("100"), whole)
 
-
 def _round2(value: Any) -> float:
     """Round to 2 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _fmt(value: Any) -> str:
     """Format a number with comma separators and 2dp."""
@@ -146,7 +135,6 @@ def _fmt(value: Any) -> str:
     except (ValueError, TypeError):
         return str(value)
 
-
 def _fmt_pct(value: Any) -> str:
     """Format a percentage value."""
     try:
@@ -154,11 +142,9 @@ def _fmt_pct(value: Any) -> str:
     except (ValueError, TypeError):
         return str(value)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class Scope3ReportType(str, Enum):
     """Types of Scope 3 reports.
@@ -185,7 +171,6 @@ class Scope3ReportType(str, Enum):
     TREND_ANALYSIS = "trend_analysis"
     VERIFICATION_PACKAGE = "verification_package"
 
-
 class OutputFormat(str, Enum):
     """Output format for generated reports.
 
@@ -199,11 +184,9 @@ class OutputFormat(str, Enum):
     JSON = "json"
     CSV = "csv"
 
-
 # ---------------------------------------------------------------------------
 # Constants -- Category Names and XBRL Tags
 # ---------------------------------------------------------------------------
-
 
 SCOPE3_CATEGORY_NAMES: Dict[str, str] = {
     "cat_1": "Purchased Goods & Services",
@@ -263,11 +246,9 @@ _HTML_COLOURS: Dict[str, str] = {
 }
 """Colour theme for HTML reports (GreenLang brand)."""
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class OrganizationInfo(BaseModel):
     """Organisation metadata for report headers.
@@ -290,7 +271,6 @@ class OrganizationInfo(BaseModel):
         default="GreenLang Platform", description="Report preparer"
     )
     report_date: str = Field(default="", description="Report date")
-
 
 class ReportConfig(BaseModel):
     """Configuration for report generation.
@@ -321,7 +301,6 @@ class ReportConfig(BaseModel):
     custom_sections: Optional[List[str]] = Field(
         default=None, description="Custom sections"
     )
-
 
 class Scope3ReportData(BaseModel):
     """Aggregated input data for Scope 3 report generation.
@@ -388,11 +367,9 @@ class Scope3ReportData(BaseModel):
     )
     notes: List[str] = Field(default_factory=list, description="Notes")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class ReportSection(BaseModel):
     """A single section of a generated report.
@@ -416,7 +393,6 @@ class ReportSection(BaseModel):
     )
     order: int = Field(default=0, description="Display order")
 
-
 class AppendixItem(BaseModel):
     """An appendix entry.
 
@@ -430,7 +406,6 @@ class AppendixItem(BaseModel):
     title: str = Field(default="", description="Title")
     content: str = Field(default="", description="Content")
     data_type: str = Field(default="text", description="Data type")
-
 
 class ReportOutput(BaseModel):
     """Complete report output.
@@ -455,7 +430,7 @@ class ReportOutput(BaseModel):
     report_id: str = Field(default_factory=_new_uuid, description="Report ID")
     report_type: str = Field(default="", description="Report type")
     generated_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp"
+        default_factory=utcnow, description="Timestamp"
     )
     reporting_year: int = Field(default=0, description="Reporting year")
     organization_name: str = Field(default="", description="Org name")
@@ -478,11 +453,9 @@ class ReportOutput(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class Scope3ReportingEngine:
     """Scope 3 GHG report generation engine.
@@ -1236,7 +1209,7 @@ class Scope3ReportingEngine:
         """Render to Markdown format."""
         lines: List[str] = [
             f"# {title}\n",
-            f"**Generated:** {_utcnow().isoformat()}\n",
+            f"**Generated:** {utcnow().isoformat()}\n",
             f"**Engine:** Scope3ReportingEngine v{_MODULE_VERSION}\n",
             "---\n",
         ]
@@ -1297,7 +1270,7 @@ class Scope3ReportingEngine:
             f"<meta charset=\"UTF-8\">\n<title>{title}</title>\n",
             f"<style>\n{css}</style>\n</head>\n<body>\n",
             f"<h1>{title}</h1>\n",
-            f"<p><em>Generated: {_utcnow().isoformat()} | "
+            f"<p><em>Generated: {utcnow().isoformat()} | "
             f"Engine: Scope3ReportingEngine v{_MODULE_VERSION}</em></p>\n<hr>\n",
         ]
 
@@ -1328,7 +1301,7 @@ class Scope3ReportingEngine:
         """Render to JSON format."""
         output = {
             "title": title,
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
             "engine_version": _MODULE_VERSION,
             "sections": [s.model_dump(mode="json") for s in sections],
             "appendices": [a.model_dump(mode="json") for a in appendices],
@@ -1589,7 +1562,6 @@ class Scope3ReportingEngine:
             bold_text = result[idx + 2:end_idx]
             result = result[:idx] + f"<strong>{bold_text}</strong>" + result[end_idx + 2:]
         return result
-
 
 # ---------------------------------------------------------------------------
 # Pydantic v2 model_rebuild for forward-reference resolution

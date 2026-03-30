@@ -73,17 +73,15 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 from pydantic import BaseModel, Field, ConfigDict
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
@@ -118,7 +116,6 @@ def _round3(value: Decimal) -> Decimal:
     """Round to 3 decimal places."""
     return _round_val(value, 3)
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
@@ -130,7 +127,6 @@ class SupportedLanguage(str, Enum):
     FRENCH = "fr"
     SPANISH = "es"
 
-
 class TranslationQualityTier(str, Enum):
     """Quality tiers for translations."""
     EXCELLENT = "excellent"      # >= 90
@@ -139,14 +135,12 @@ class TranslationQualityTier(str, Enum):
     NEEDS_REVIEW = "needs_review"  # >= 40
     POOR = "poor"                # < 40
 
-
 class TranslationMethod(str, Enum):
     """Method used for translation."""
     GLOSSARY = "glossary"        # Term-level glossary lookup
     TEMPLATE = "template"        # Template-based structural translation
     PASSTHROUGH = "passthrough"  # No translation needed (citations, numbers)
     COMPOSITE = "composite"      # Combination of methods
-
 
 class TextSegmentType(str, Enum):
     """Types of text segments for translation processing."""
@@ -158,7 +152,6 @@ class TextSegmentType(str, Enum):
     FOOTNOTE = "footnote"
     GLOSSARY_TERM = "glossary_term"
 
-
 class FrameworkContext(str, Enum):
     """Framework context for terminology selection."""
     SBTI = "sbti"
@@ -169,7 +162,6 @@ class FrameworkContext(str, Enum):
     SEC = "sec"
     CSRD = "csrd"
     GENERAL = "general"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Climate Glossary
@@ -527,7 +519,6 @@ QUALITY_WEIGHTS: Dict[str, Decimal] = {
     "format_preservation": _decimal("0.15"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
@@ -552,7 +543,6 @@ class TextSegment(BaseModel):
     )
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-
 class GlossaryOverride(BaseModel):
     """Custom glossary term override for organization-specific terminology."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -567,7 +557,6 @@ class GlossaryOverride(BaseModel):
     priority: int = Field(
         default=10, description="Priority (higher wins): 10=default, 20=org, 30=manual"
     )
-
 
 class TranslationInput(BaseModel):
     """Input for the TranslationEngine."""
@@ -603,7 +592,6 @@ class TranslationInput(BaseModel):
         description="Minimum quality score (0-100) for acceptance",
     )
     metadata: Dict[str, Any] = Field(default_factory=dict)
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
@@ -641,7 +629,6 @@ class TranslatedSegment(BaseModel):
         default_factory=list, description="Reasons for review flag"
     )
 
-
 class TerminologyReport(BaseModel):
     """Report on terminology consistency in translations."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -660,7 +647,6 @@ class TerminologyReport(BaseModel):
         default_factory=list, description="Climate terms not in glossary"
     )
 
-
 class CitationReport(BaseModel):
     """Report on citation preservation during translation."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -670,7 +656,6 @@ class CitationReport(BaseModel):
     citations_lost: int = Field(default=0)
     citation_details: List[Dict[str, str]] = Field(default_factory=list)
     integrity_score: Decimal = Field(default=_decimal("0"))
-
 
 class TranslationResult(BaseModel):
     """Complete translation result with quality metadata."""
@@ -716,14 +701,13 @@ class TranslationResult(BaseModel):
     format_preservation_score: Decimal = Field(default=_decimal("0"))
 
     # Provenance
-    calculated_at: str = Field(default_factory=lambda: _utcnow().isoformat())
+    calculated_at: str = Field(default_factory=lambda: utcnow().isoformat())
     processing_time_ms: Decimal = Field(default=_decimal("0"))
     engine_version: str = Field(default=_MODULE_VERSION)
     provenance_hash: str = Field(default="")
 
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
-
 
 # ---------------------------------------------------------------------------
 # TranslationEngine

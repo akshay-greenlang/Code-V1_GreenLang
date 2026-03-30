@@ -103,6 +103,7 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -146,15 +147,9 @@ except ImportError:
     _PROVENANCE_AVAILABLE = False
     _get_provenance_tracker = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # SHA-256 provenance helper
@@ -172,7 +167,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Decimal helpers
 # ---------------------------------------------------------------------------
@@ -182,7 +176,6 @@ _ZERO = Decimal("0")
 _ONE = Decimal("1")
 _TWO = Decimal("2")
 _HUNDRED = Decimal("100")
-
 
 def _D(value: Any) -> Decimal:
     """Convert a value to Decimal.
@@ -196,7 +189,6 @@ def _D(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
     return Decimal(str(value))
-
 
 def _safe_decimal(value: Any, default: Decimal = _ZERO) -> Decimal:
     """Safely convert to Decimal with a fallback.
@@ -214,7 +206,6 @@ def _safe_decimal(value: Any, default: Decimal = _ZERO) -> Decimal:
         return _D(value)
     except (InvalidOperation, ValueError, TypeError):
         return default
-
 
 # ===========================================================================
 # Tier-Based Default Uncertainty Constants
@@ -255,7 +246,6 @@ TIER_DEFAULTS: Dict[str, Dict[str, Decimal]] = {
         "description": "Facility-measured data - lowest uncertainty",
     },
 }
-
 
 # ===========================================================================
 # Activity Data Uncertainty Constants
@@ -314,7 +304,6 @@ ACTIVITY_DATA_UNCERTAINTY: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ===========================================================================
 # Emission Factor Uncertainty Constants
 # ===========================================================================
@@ -352,7 +341,6 @@ EF_UNCERTAINTY: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ===========================================================================
 # Efficiency Uncertainty Constants
 # ===========================================================================
@@ -382,7 +370,6 @@ EFFICIENCY_UNCERTAINTY: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ===========================================================================
 # COP Uncertainty Constants
 # ===========================================================================
@@ -411,7 +398,6 @@ COP_UNCERTAINTY: Dict[str, Dict[str, Any]] = {
         "description": "Unknown COP source",
     },
 }
-
 
 # ===========================================================================
 # CHP Allocation Uncertainty Constants
@@ -446,7 +432,6 @@ CHP_ALLOCATION_UNCERTAINTY: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ===========================================================================
 # Per-Gas EF Uncertainty Constants
 # ===========================================================================
@@ -474,7 +459,6 @@ PER_GAS_EF_UNCERTAINTY: Dict[str, Dict[str, Any]] = {
         "description": "N2O emission factor uncertainty (lognormal, highly variable)",
     },
 }
-
 
 # ===========================================================================
 # DQI Scoring Constants
@@ -520,7 +504,6 @@ EFFICIENCY_VERIFICATION_SCORES: Dict[str, float] = {
     "unknown": 0.30,
 }
 
-
 # ===========================================================================
 # Z-Score Table
 # ===========================================================================
@@ -539,11 +522,9 @@ Z_SCORE_TABLE: Dict[str, Decimal] = {
     "0.999": Decimal("3.291"),
 }
 
-
 # ===========================================================================
 # UncertaintyQuantifierEngine
 # ===========================================================================
-
 
 class UncertaintyQuantifierEngine:
     """Monte Carlo simulation and analytical error propagation for Scope 2
@@ -690,7 +671,7 @@ class UncertaintyQuantifierEngine:
         self._total_dqi: int = 0
         self._total_sensitivity: int = 0
         self._total_batch: int = 0
-        self._created_at: datetime = _utcnow()
+        self._created_at: datetime = utcnow()
 
         logger.info(
             "UncertaintyQuantifierEngine initialised (steam/heat purchase): "
@@ -3014,7 +2995,7 @@ class UncertaintyQuantifierEngine:
         )
 
         uptime = (
-            (_utcnow() - self._created_at).total_seconds()
+            (utcnow() - self._created_at).total_seconds()
             if self._created_at else 0.0
         )
 
@@ -3026,9 +3007,8 @@ class UncertaintyQuantifierEngine:
             "checks": checks,
             "total_analyses": self._total_analyses,
             "uptime_seconds": round(uptime, 1),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
-
 
 # ===========================================================================
 # Module-level singleton accessor
@@ -3057,7 +3037,6 @@ def get_uncertainty_quantifier(
         metrics=metrics,
         provenance=provenance,
     )
-
 
 # ===========================================================================
 # Public API exports

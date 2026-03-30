@@ -76,23 +76,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -109,7 +104,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -118,7 +112,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -126,26 +119,21 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     return float(
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class BalanceStatus(str, Enum):
     """Neutralization balance status.
@@ -160,7 +148,6 @@ class BalanceStatus(str, Enum):
     DEFICIT = "deficit"
     NOT_ASSESSED = "not_assessed"
 
-
 class DeclarationReadiness(str, Enum):
     """Carbon neutral declaration readiness.
 
@@ -171,7 +158,6 @@ class DeclarationReadiness(str, Enum):
     READY = "ready"
     CONDITIONALLY_READY = "conditionally_ready"
     NOT_READY = "not_ready"
-
 
 class TemporalMatchStatus(str, Enum):
     """Temporal matching status for a vintage.
@@ -185,7 +171,6 @@ class TemporalMatchStatus(str, Enum):
     TOO_OLD = "too_old"
     FUTURE = "future"
     INVALID = "invalid"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -206,11 +191,9 @@ DEFAULT_CARRYFORWARD_EXPIRY: int = 1
 # Minimum coverage for conditional declaration.
 CONDITIONAL_COVERAGE_MIN: Decimal = Decimal("95")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class FootprintPeriod(BaseModel):
     """Footprint data for a single period.
@@ -235,7 +218,6 @@ class FootprintPeriod(BaseModel):
     verifier: str = Field(default="", description="Verifier name")
     verification_date: Optional[str] = Field(default=None, description="Verification date")
     scope_boundary: str = Field(default="scope_1_2_3", description="Scope boundary")
-
 
 class RetirementRecord(BaseModel):
     """A retirement record for reconciliation.
@@ -265,7 +247,6 @@ class RetirementRecord(BaseModel):
     quality_score: Decimal = Field(default=Decimal("0"), ge=0, le=Decimal("100"))
     serial_range: str = Field(default="", description="Serial range")
 
-
 class CarryforwardRecord(BaseModel):
     """Carryforward credits from a previous period.
 
@@ -279,7 +260,6 @@ class CarryforwardRecord(BaseModel):
     quantity_tco2e: Decimal = Field(default=Decimal("0"), ge=0)
     expiry_year: int = Field(default=0, description="Expiry year")
     is_expired: bool = Field(default=False)
-
 
 class NeutralizationBalanceInput(BaseModel):
     """Complete input for neutralization balance.
@@ -328,11 +308,9 @@ class NeutralizationBalanceInput(BaseModel):
     )
     include_multi_year: bool = Field(default=False, description="Multi-year analysis")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class TemporalMatchResult(BaseModel):
     """Temporal matching result for a retirement.
@@ -353,7 +331,6 @@ class TemporalMatchResult(BaseModel):
     match_status: str = Field(default=TemporalMatchStatus.INVALID.value)
     is_valid: bool = Field(default=False)
     message: str = Field(default="")
-
 
 class PeriodBalance(BaseModel):
     """Balance for a single period.
@@ -391,7 +368,6 @@ class PeriodBalance(BaseModel):
     all_vintages_valid: bool = Field(default=True)
     footprint_verified: bool = Field(default=False)
 
-
 class DeclarationAssessment(BaseModel):
     """Carbon neutral declaration readiness assessment.
 
@@ -415,7 +391,6 @@ class DeclarationAssessment(BaseModel):
     standard_reference: str = Field(default="")
     conditions: List[str] = Field(default_factory=list)
     message: str = Field(default="")
-
 
 class NeutralizationBalanceResult(BaseModel):
     """Complete neutralization balance result.
@@ -447,7 +422,7 @@ class NeutralizationBalanceResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     assessment_year: int = Field(default=0)
     period_balances: List[PeriodBalance] = Field(default_factory=list)
@@ -469,11 +444,9 @@ class NeutralizationBalanceResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class NeutralizationBalanceEngine:
     """Footprint vs retirements reconciliation engine.

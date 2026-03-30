@@ -44,7 +44,8 @@ import time
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase, utcnow
 
 from greenlang.agents.data.pdf_extractor.field_extractor import (
     ExtractedField,
@@ -60,23 +61,15 @@ __all__ = [
     "ManifestProcessor",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Data models
 # ---------------------------------------------------------------------------
 
-
-class ManifestValidationResult(BaseModel):
+class ManifestValidationResult(GreenLangBase):
     """Result of a single manifest validation check."""
 
     rule_name: str = Field(..., description="Validation rule identifier")
@@ -91,8 +84,7 @@ class ManifestValidationResult(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class ManifestExtraction(BaseModel):
+class ManifestExtraction(GreenLangBase):
     """Complete manifest / BOL extraction result."""
 
     manifest_number: Optional[str] = Field(None)
@@ -113,10 +105,9 @@ class ManifestExtraction(BaseModel):
     validations: List[ManifestValidationResult] = Field(default_factory=list)
     overall_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
     provenance_hash: str = Field(default="")
-    extracted_at: datetime = Field(default_factory=_utcnow)
+    extracted_at: datetime = Field(default_factory=utcnow)
 
     model_config = {"extra": "forbid"}
-
 
 # ---------------------------------------------------------------------------
 # Cargo line-item patterns
@@ -135,11 +126,9 @@ _CARGO_SIMPLE_PATTERN = re.compile(
     re.MULTILINE | re.IGNORECASE,
 )
 
-
 # ---------------------------------------------------------------------------
 # ManifestProcessor
 # ---------------------------------------------------------------------------
-
 
 class ManifestProcessor:
     """Shipping manifest and BOL extraction and validation engine.
@@ -479,7 +468,7 @@ class ManifestProcessor:
                     ), 4,
                 ),
                 "errors": self._stats["errors"],
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }
 
     # ------------------------------------------------------------------

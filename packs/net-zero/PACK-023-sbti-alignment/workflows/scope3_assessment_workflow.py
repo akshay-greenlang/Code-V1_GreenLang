@@ -38,35 +38,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "23.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a single workflow phase."""
@@ -77,7 +69,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -86,7 +77,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class DataQuality(str, Enum):
     """Data quality tier for Scope 3 categories."""
@@ -97,7 +87,6 @@ class DataQuality(str, Enum):
     SPEND = "spend"             # Spend-based estimates
     NOT_ESTIMATED = "not_estimated"
 
-
 class Scope3TargetType(str, Enum):
     """Target type for individual Scope 3 categories."""
 
@@ -105,7 +94,6 @@ class Scope3TargetType(str, Enum):
     INTENSITY = "intensity"
     ENGAGEMENT = "engagement"
     NOT_TARGETED = "not_targeted"
-
 
 # =============================================================================
 # REFERENCE DATA
@@ -153,11 +141,9 @@ LONG_TERM_COVERAGE_MIN = 90.0   # % of Scope 3
 MATERIALITY_TRIGGER = 40.0      # S3 as % of total
 ENGAGEMENT_MIN_COVERAGE = 80.0  # % of suppliers for engagement targets
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -170,7 +156,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class CategoryData(BaseModel):
     """Input data for a single Scope 3 category."""
 
@@ -180,7 +165,6 @@ class CategoryData(BaseModel):
     supplier_count: int = Field(default=0, ge=0)
     data_source: str = Field(default="")
     notes: str = Field(default="")
-
 
 class CategoryScreenResult(BaseModel):
     """Screening result for a single Scope 3 category."""
@@ -197,7 +181,6 @@ class CategoryScreenResult(BaseModel):
     pareto_rank: int = Field(default=0)
     recommended_target_type: str = Field(default="")
 
-
 class MaterialityResult(BaseModel):
     """Materiality analysis summary."""
 
@@ -209,7 +192,6 @@ class MaterialityResult(BaseModel):
     pareto_80_categories: List[int] = Field(default_factory=list)
     top_3_categories: List[int] = Field(default_factory=list)
 
-
 class CoverageResult(BaseModel):
     """Coverage assessment against SBTi requirements."""
 
@@ -220,7 +202,6 @@ class CoverageResult(BaseModel):
     categories_in_target: List[int] = Field(default_factory=list)
     additional_needed_for_67: List[int] = Field(default_factory=list)
     additional_needed_for_90: List[int] = Field(default_factory=list)
-
 
 class CategoryTarget(BaseModel):
     """Target design for a single Scope 3 category."""
@@ -234,7 +215,6 @@ class CategoryTarget(BaseModel):
     base_emissions_tco2e: float = Field(default=0.0, ge=0.0)
     target_emissions_tco2e: float = Field(default=0.0, ge=0.0)
     rationale: str = Field(default="")
-
 
 class Scope3AssessmentConfig(BaseModel):
     """Configuration for the Scope 3 assessment workflow."""
@@ -258,7 +238,6 @@ class Scope3AssessmentConfig(BaseModel):
             seen.add(cat.category_id)
         return v
 
-
 class Scope3AssessmentResult(BaseModel):
     """Complete result from the Scope 3 assessment workflow."""
 
@@ -273,11 +252,9 @@ class Scope3AssessmentResult(BaseModel):
     category_targets: List[CategoryTarget] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class Scope3AssessmentWorkflow:
     """
@@ -329,7 +306,7 @@ class Scope3AssessmentWorkflow:
             Scope3AssessmentResult with screening, materiality, coverage,
             and category targets.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting Scope 3 assessment workflow %s, categories=%d",
             self.workflow_id, len(config.categories),
@@ -360,7 +337,7 @@ class Scope3AssessmentWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         result = Scope3AssessmentResult(
             workflow_id=self.workflow_id,
             status=overall_status,
@@ -386,7 +363,7 @@ class Scope3AssessmentWorkflow:
 
     async def _phase_category_screen(self, config: Scope3AssessmentConfig) -> PhaseResult:
         """Screen all 15 categories with data quality scoring."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._screening = []
@@ -446,7 +423,7 @@ class Scope3AssessmentWorkflow:
         outputs["total_emissions_tco2e"] = round(total_emissions, 2)
         outputs["material_count"] = sum(1 for c in self._screening if c.is_material)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Category screen: %d categories, S3=%.2f tCO2e", 15, scope3_total)
         return PhaseResult(
             phase_name="category_screen",
@@ -474,7 +451,7 @@ class Scope3AssessmentWorkflow:
 
     async def _phase_materiality_calc(self, config: Scope3AssessmentConfig) -> PhaseResult:
         """Calculate materiality (% of total, Pareto analysis)."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -521,7 +498,7 @@ class Scope3AssessmentWorkflow:
                 "target not required but recommended"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Materiality: S3=%.1f%%, required=%s, material=%d, Pareto80=%d",
             scope3_pct, scope3_required, len(material_cats), len(pareto_cats),
@@ -541,7 +518,7 @@ class Scope3AssessmentWorkflow:
 
     async def _phase_coverage_check(self, config: Scope3AssessmentConfig) -> PhaseResult:
         """Check coverage against 67%/90% requirements."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -618,7 +595,7 @@ class Scope3AssessmentWorkflow:
                 f"add categories {additional_90}"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Coverage: NT=%.1f%% (meets=%s), LT=%.1f%% (meets=%s)",
             coverage_pct, nt_meets, lt_coverage_pct, lt_meets,
@@ -638,7 +615,7 @@ class Scope3AssessmentWorkflow:
 
     async def _phase_target_design(self, config: Scope3AssessmentConfig) -> PhaseResult:
         """Design category-specific targets (absolute/intensity/engagement)."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._targets = []
@@ -650,7 +627,7 @@ class Scope3AssessmentWorkflow:
             all_included.update(self._coverage.additional_needed_for_67)
 
         rate = config.annual_reduction_rate
-        nt_years = config.near_term_target_year - _utcnow().year
+        nt_years = config.near_term_target_year - utcnow().year
 
         for cat in self._screening:
             if cat.category_id not in all_included:
@@ -710,7 +687,7 @@ class Scope3AssessmentWorkflow:
         outputs["intensity_targets"] = sum(1 for t in self._targets if t.target_type == Scope3TargetType.INTENSITY)
         outputs["engagement_targets"] = sum(1 for t in self._targets if t.target_type == Scope3TargetType.ENGAGEMENT)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Target design: %d targeted, reduction=%.2f tCO2e",
             targeted_count, total_reduction,

@@ -50,21 +50,15 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -84,7 +78,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _serialize_data(data: Any) -> str:
     """Serialize data to a stable string for hashing.
 
@@ -98,11 +91,9 @@ def _serialize_data(data: Any) -> str:
         return json.dumps(data, sort_keys=True, default=str)
     return str(data)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ScopeType(str, Enum):
     """GHG Protocol emission scope classification."""
@@ -110,14 +101,12 @@ class ScopeType(str, Enum):
     SCOPE_2 = "scope_2"
     SCOPE_3 = "scope_3"
 
-
 class CalculationStatus(str, Enum):
     """Status of a calculation result."""
     SUCCESS = "success"
     PARTIAL = "partial"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class IntensityMetricType(str, Enum):
     """Types of emission intensity metrics."""
@@ -127,7 +116,6 @@ class IntensityMetricType(str, Enum):
     PER_M2 = "per_m2"
     PER_PASSENGER_KM = "per_passenger_km"
 
-
 class ScreeningSignificance(str, Enum):
     """Significance level for Scope 3 category screening."""
     SIGNIFICANT = "significant"
@@ -135,11 +123,9 @@ class ScreeningSignificance(str, Enum):
     NOT_SIGNIFICANT = "not_significant"
     NOT_RELEVANT = "not_relevant"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class ProfessionalMRVBridgeConfig(BaseModel):
     """Configuration for the Professional MRV Bridge."""
@@ -184,7 +170,6 @@ class ProfessionalMRVBridgeConfig(BaseModel):
         description="Percentage change threshold triggering base year recalculation",
     )
 
-
 class ProvenanceChainEntry(BaseModel):
     """A single entry in the provenance chain with professional fields."""
 
@@ -194,7 +179,7 @@ class ProvenanceChainEntry(BaseModel):
     input_hash: str = Field(..., description="SHA-256 hash of input data")
     output_hash: str = Field(..., description="SHA-256 hash of output data")
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Step timestamp"
+        default_factory=utcnow, description="Step timestamp"
     )
     execution_time_ms: float = Field(default=0.0, description="Step duration")
     entity_id: Optional[str] = Field(
@@ -206,7 +191,6 @@ class ProvenanceChainEntry(BaseModel):
     biogenic_flag: bool = Field(
         default=False, description="Whether biogenic carbon was tracked"
     )
-
 
 class MRVRoutingEntry(BaseModel):
     """A single entry in the MRV routing table."""
@@ -220,7 +204,6 @@ class MRVRoutingEntry(BaseModel):
     is_professional: bool = Field(
         default=False, description="Whether this is a PACK-002 professional entry"
     )
-
 
 class CalculationResult(BaseModel):
     """Result from a single MRV calculation."""
@@ -244,7 +227,6 @@ class CalculationResult(BaseModel):
     error_message: Optional[str] = Field(None)
     raw_output: Dict[str, Any] = Field(default_factory=dict)
     entity_id: Optional[str] = Field(None, description="Entity that owns this calc")
-
 
 class IntensityMetrics(BaseModel):
     """Emission intensity metrics for ESRS E1 reporting."""
@@ -270,7 +252,6 @@ class IntensityMetrics(BaseModel):
     )
     provenance_hash: str = Field(default="")
 
-
 class BiogenicCarbonResult(BaseModel):
     """Biogenic carbon tracking result per ESRS E1-6."""
 
@@ -290,7 +271,6 @@ class BiogenicCarbonResult(BaseModel):
     methodology: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 class BaseYearConfig(BaseModel):
     """Configuration for base year recalculation."""
 
@@ -306,7 +286,6 @@ class BaseYearConfig(BaseModel):
         default=5.0, ge=0.0, le=100.0,
         description="Threshold triggering recalculation (%)",
     )
-
 
 class BaseYearResult(BaseModel):
     """Result of a base year recalculation."""
@@ -333,7 +312,6 @@ class BaseYearResult(BaseModel):
     methodology: str = Field(default="GHG Protocol Base Year Recalculation")
     provenance_hash: str = Field(default="")
 
-
 class CategoryScreening(BaseModel):
     """Scope 3 category screening result."""
 
@@ -352,7 +330,6 @@ class CategoryScreening(BaseModel):
     )
     rationale: str = Field(default="", description="Screening rationale")
 
-
 class EntityCalculationResult(BaseModel):
     """Calculation result scoped to a specific entity."""
 
@@ -368,7 +345,6 @@ class EntityCalculationResult(BaseModel):
     biogenic_carbon: Optional[BiogenicCarbonResult] = Field(None)
     provenance_hash: str = Field(default="")
 
-
 class AggregatedEmissions(BaseModel):
     """Aggregated emissions across multiple calculation results."""
 
@@ -382,7 +358,6 @@ class AggregatedEmissions(BaseModel):
     failed_count: int = Field(default=0)
     avg_data_quality: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Static Routing Table (extends PACK-001)
@@ -547,11 +522,9 @@ MRV_ROUTING_TABLE: Dict[str, MRVRoutingEntry] = {
     ),
 }
 
-
 # ---------------------------------------------------------------------------
 # ProfessionalMRVBridge Implementation
 # ---------------------------------------------------------------------------
-
 
 class ProfessionalMRVBridge:
     """Enhanced MRV Bridge for CSRD Professional Pack.
@@ -1197,6 +1170,7 @@ class ProfessionalMRVBridge:
             Dictionary with calculation output.
         """
         import asyncio
+
 
         execute_fn = getattr(agent, "execute", None)
         if execute_fn is None:

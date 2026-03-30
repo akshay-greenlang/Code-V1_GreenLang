@@ -23,19 +23,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 class ChangeType(str, Enum):
     """Types of inventory changes that may trigger recalculation."""
@@ -46,13 +42,11 @@ class ChangeType(str, Enum):
     BOUNDARY = "boundary"
     CONSOLIDATION = "consolidation"
 
-
 class Pack044Config(BaseModel):
     """Configuration for PACK-044 bridge."""
     pack044_endpoint: str = Field("internal://pack-044")
     timeout_s: float = Field(60.0, ge=5.0)
     monitor_changes: bool = Field(True)
-
 
 class ChangeEvent(BaseModel):
     """A change event from PACK-044 inventory management."""
@@ -66,7 +60,6 @@ class ChangeEvent(BaseModel):
     version_before: str = ""
     version_after: str = ""
 
-
 class VersionInfo(BaseModel):
     """Inventory version information."""
     version_id: str = ""
@@ -77,7 +70,6 @@ class VersionInfo(BaseModel):
     total_tco2e: float = 0.0
     provenance_hash: str = ""
 
-
 class Pack044ImportResult(BaseModel):
     """Result of importing data from PACK-044."""
     success: bool
@@ -86,7 +78,6 @@ class Pack044ImportResult(BaseModel):
     current_version: Optional[VersionInfo] = None
     provenance_hash: str = ""
     duration_ms: float = 0.0
-
 
 class Pack044Bridge:
     """
@@ -123,7 +114,7 @@ class Pack044Bridge:
             duration = (time.monotonic() - start_time) * 1000
             return Pack044ImportResult(
                 success=True,
-                imported_at=_utcnow().isoformat(),
+                imported_at=utcnow().isoformat(),
                 changes=changes,
                 current_version=version,
                 provenance_hash=provenance,
@@ -135,7 +126,7 @@ class Pack044Bridge:
             logger.error("PACK-044 import failed: %s", e, exc_info=True)
             return Pack044ImportResult(
                 success=False,
-                imported_at=_utcnow().isoformat(),
+                imported_at=utcnow().isoformat(),
                 duration_ms=duration,
             )
 

@@ -30,6 +30,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "30.0.0"
 _PACK_ID = "PACK-030"
@@ -44,7 +46,6 @@ _LIGHTER = "#f1f8f2"
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow(): return datetime.now(timezone.utc).replace(microsecond=0)
 def _new_uuid(): return str(uuid.uuid4())
 def _compute_hash(data):
     raw = json.dumps(data, sort_keys=True, default=str) if isinstance(data, dict) else str(data)
@@ -89,7 +90,6 @@ CARBON_LABEL_STANDARDS: List[str] = [
     "EU PEF (Product Environmental Footprint)",
 ]
 
-
 class CustomerCarbonTemplate:
     """Customer carbon footprint template for PACK-030. Supports MD, HTML, JSON, PDF."""
 
@@ -102,7 +102,7 @@ class CustomerCarbonTemplate:
     # -----------------------------------------------------------------------
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [
             self._md_header(data), self._md_executive_summary(data),
             self._md_product_footprint(data), self._md_lifecycle(data),
@@ -115,7 +115,7 @@ class CustomerCarbonTemplate:
         return content + f"\n\n<!-- Provenance: {_compute_hash(content)} -->"
 
     def render_html(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         parts = [
             self._html_header(data), self._html_executive_summary(data),
@@ -133,7 +133,7 @@ class CustomerCarbonTemplate:
         )
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         products = data.get("products", [])
         result = {
             "template": _TEMPLATE_ID, "version": _MODULE_VERSION, "pack_id": _PACK_ID,

@@ -35,6 +35,7 @@ import threading
 import time
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import utcnow
 
 from greenlang.agents.foundation.access_guard.models import (
     AccessDecision,
@@ -47,12 +48,6 @@ from greenlang.agents.foundation.access_guard.models import (
 )
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 class PolicyEngine:
     """Core policy evaluation engine.
@@ -105,7 +100,7 @@ class PolicyEngine:
         """
         with self._lock:
             policy.provenance_hash = policy.compute_hash()
-            policy.updated_at = _utcnow()
+            policy.updated_at = utcnow()
             self._policies[policy.policy_id] = policy
 
             if policy.parent_policy_id:
@@ -211,7 +206,7 @@ class PolicyEngine:
             if applies_to is not None:
                 policy.applies_to = applies_to
 
-            policy.updated_at = _utcnow()
+            policy.updated_at = utcnow()
             policy.provenance_hash = policy.compute_hash()
 
         logger.info(
@@ -512,7 +507,7 @@ class PolicyEngine:
         Returns:
             True if all conditions are met.
         """
-        now = _utcnow()
+        now = utcnow()
 
         for rule_id in rule_ids:
             for policy in self._policies.values():
@@ -541,7 +536,6 @@ class PolicyEngine:
     def count(self) -> int:
         """Return the number of loaded policies."""
         return len(self._policies)
-
 
 __all__ = [
     "PolicyEngine",

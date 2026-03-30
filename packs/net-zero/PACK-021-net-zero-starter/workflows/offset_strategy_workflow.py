@@ -36,35 +36,28 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ComplianceStatus
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "21.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a single workflow phase."""
@@ -75,7 +68,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -84,7 +76,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class CreditType(str, Enum):
     """Carbon credit types."""
@@ -101,7 +92,6 @@ class CreditType(str, Enum):
     ENHANCED_WEATHERING = "enhanced_weathering"
     OCEAN_BASED = "ocean_based"
 
-
 class CreditStandard(str, Enum):
     """Carbon credit certification standards."""
 
@@ -113,22 +103,12 @@ class CreditStandard(str, Enum):
     ISOMETRIC = "isometric"
     SOCRATES = "socrates"
 
-
 class VCMIClaimLevel(str, Enum):
     """VCMI Claims Code claim levels."""
 
     SILVER = "silver"
     GOLD = "gold"
     PLATINUM = "platinum"
-
-
-class ComplianceStatus(str, Enum):
-    """Compliance check result."""
-
-    COMPLIANT = "compliant"
-    PARTIALLY_COMPLIANT = "partially_compliant"
-    NON_COMPLIANT = "non_compliant"
-
 
 # =============================================================================
 # CREDIT QUALITY REFERENCE DATA (Zero-Hallucination)
@@ -276,11 +256,9 @@ VCMI_REQUIREMENTS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -293,7 +271,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class ResidualBudget(BaseModel):
     """Residual emissions budget after maximum reduction."""
 
@@ -305,7 +282,6 @@ class ResidualBudget(BaseModel):
     target_year: int = Field(default=2050)
     annual_residual_tco2e: float = Field(default=0.0, ge=0.0)
     years_to_neutralise: int = Field(default=25, ge=1)
-
 
 class CreditScreeningResult(BaseModel):
     """Screening result for a single credit type."""
@@ -322,7 +298,6 @@ class CreditScreeningResult(BaseModel):
     price_range_max: float = Field(default=0.0, ge=0.0)
     screening_notes: List[str] = Field(default_factory=list)
 
-
 class PortfolioAllocation(BaseModel):
     """Allocation of credits within the portfolio."""
 
@@ -332,7 +307,6 @@ class PortfolioAllocation(BaseModel):
     estimated_cost_usd: float = Field(default=0.0, ge=0.0)
     quality_score: int = Field(default=0)
     is_removal: bool = Field(default=False)
-
 
 class PortfolioDesign(BaseModel):
     """Designed credit portfolio."""
@@ -346,7 +320,6 @@ class PortfolioDesign(BaseModel):
     weighted_cost_per_tco2e: float = Field(default=0.0, ge=0.0)
     diversification_count: int = Field(default=0)
 
-
 class ComplianceFinding(BaseModel):
     """A single compliance finding."""
 
@@ -354,7 +327,6 @@ class ComplianceFinding(BaseModel):
     criterion: str = Field(default="")
     status: ComplianceStatus = Field(default=ComplianceStatus.NON_COMPLIANT)
     detail: str = Field(default="")
-
 
 class ComplianceReport(BaseModel):
     """Full compliance check report."""
@@ -364,7 +336,6 @@ class ComplianceReport(BaseModel):
     oxford_compliant: bool = Field(default=False)
     findings: List[ComplianceFinding] = Field(default_factory=list)
     recommendations: List[str] = Field(default_factory=list)
-
 
 class OffsetStrategyConfig(BaseModel):
     """Configuration for the offset strategy workflow."""
@@ -388,7 +359,6 @@ class OffsetStrategyConfig(BaseModel):
             raise ValueError("vcmi_target_claim must be silver, gold, or platinum")
         return v
 
-
 class OffsetStrategyResult(BaseModel):
     """Complete result from the offset strategy workflow."""
 
@@ -403,11 +373,9 @@ class OffsetStrategyResult(BaseModel):
     compliance_status: ComplianceReport = Field(default_factory=ComplianceReport)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class OffsetStrategyWorkflow:
     """
@@ -456,7 +424,7 @@ class OffsetStrategyWorkflow:
         Returns:
             OffsetStrategyResult with portfolio design and compliance status.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting offset strategy workflow %s, baseline=%.2f, reduction=%.2f%%",
             self.workflow_id, config.baseline_total_tco2e, config.reduction_achieved_pct,
@@ -487,7 +455,7 @@ class OffsetStrategyWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         result = OffsetStrategyResult(
             workflow_id=self.workflow_id,
             status=overall_status,
@@ -515,7 +483,7 @@ class OffsetStrategyWorkflow:
 
     async def _phase_residual_calc(self, config: OffsetStrategyConfig) -> PhaseResult:
         """Calculate residual emissions after maximum reduction."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -539,7 +507,7 @@ class OffsetStrategyWorkflow:
                 "Residual emissions can only be 'neutralised' if abatement reaches 90%+."
             )
 
-        years_to_target = max(config.long_term_target_year - _utcnow().year, 1)
+        years_to_target = max(config.long_term_target_year - utcnow().year, 1)
         annual_residual = residual / years_to_target if years_to_target > 0 else residual
 
         self._residual = ResidualBudget(
@@ -558,7 +526,7 @@ class OffsetStrategyWorkflow:
         outputs["residual_tco2e"] = self._residual.residual_tco2e
         outputs["annual_residual_tco2e"] = self._residual.annual_residual_tco2e
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Residual: %.2f tCO2e (%.1f%% of baseline)", residual, residual_pct)
         return PhaseResult(
             phase_name="residual_calc",
@@ -575,7 +543,7 @@ class OffsetStrategyWorkflow:
 
     async def _phase_credit_screening(self, config: OffsetStrategyConfig) -> PhaseResult:
         """Screen available credit types against quality criteria."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         screened: List[CreditScreeningResult] = []
@@ -619,7 +587,7 @@ class OffsetStrategyWorkflow:
         if not passing:
             warnings.append("No credit types pass the minimum quality threshold")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Credit screening: %d/%d pass quality threshold", len(passing), len(screened))
         return PhaseResult(
             phase_name="credit_screening",
@@ -636,7 +604,7 @@ class OffsetStrategyWorkflow:
 
     async def _phase_portfolio_design(self, config: OffsetStrategyConfig) -> PhaseResult:
         """Design optimal credit portfolio with diversification."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -648,7 +616,7 @@ class OffsetStrategyWorkflow:
             outputs["portfolio_empty"] = True
             if residual <= 0:
                 warnings.append("No residual emissions; no offset portfolio needed")
-            elapsed = (_utcnow() - started).total_seconds()
+            elapsed = (utcnow() - started).total_seconds()
             return PhaseResult(
                 phase_name="portfolio_design",
                 status=PhaseStatus.COMPLETED,
@@ -696,7 +664,7 @@ class OffsetStrategyWorkflow:
         outputs["nature_based_share_pct"] = self._portfolio.nature_based_share_pct
         outputs["average_quality_score"] = self._portfolio.average_quality_score
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Portfolio designed: %d types, %.0f tCO2e, $%.0f, avg quality %.1f",
             len(allocations), total_volume, total_cost, avg_quality,
@@ -720,7 +688,7 @@ class OffsetStrategyWorkflow:
         allocations: List[PortfolioAllocation] = []
 
         # Strategy: prioritise removals (Oxford Principles shift)
-        current_year = _utcnow().year
+        current_year = utcnow().year
         target_removal_pct = 20.0
         for yr, pct in sorted(OXFORD_REMOVAL_TARGETS_BY_YEAR.items()):
             if current_year >= yr:
@@ -792,7 +760,7 @@ class OffsetStrategyWorkflow:
 
     async def _phase_compliance_check(self, config: OffsetStrategyConfig) -> PhaseResult:
         """Validate against SBTi, VCMI Claims Code, and Oxford Principles."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         findings: List[ComplianceFinding] = []
         recommendations: List[str] = []
@@ -827,7 +795,7 @@ class OffsetStrategyWorkflow:
         outputs["oxford_compliant"] = oxford_ok
         outputs["finding_count"] = len(findings)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Compliance: SBTi=%s, VCMI=%s, Oxford=%s",
             sbti_ok, vcmi_claim, oxford_ok,
@@ -941,7 +909,7 @@ class OffsetStrategyWorkflow:
     def _check_oxford_compliance(self, config: OffsetStrategyConfig) -> List[ComplianceFinding]:
         """Check Oxford Principles for Net Zero Aligned Carbon Offsetting."""
         findings: List[ComplianceFinding] = []
-        current_year = _utcnow().year
+        current_year = utcnow().year
 
         # Oxford Principle 1: Shift from avoidance to removal
         target_removal = 20.0

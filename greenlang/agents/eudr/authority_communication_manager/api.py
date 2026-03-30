@@ -61,9 +61,10 @@ from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException, Query
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.eudr.authority_communication_manager.setup import get_service
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -73,7 +74,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-class CreateCommunicationRequest(BaseModel):
+class CreateCommunicationRequest(GreenLangBase):
     """Request body for creating a new communication."""
 
     operator_id: str = Field(..., description="EUDR operator identifier")
@@ -88,7 +89,7 @@ class CreateCommunicationRequest(BaseModel):
     document_ids: List[str] = Field(default_factory=list, description="Attached docs")
 
 
-class RespondRequest(BaseModel):
+class RespondRequest(GreenLangBase):
     """Request body for responding to a communication."""
 
     responder_id: str = Field(..., description="Responder identity")
@@ -96,7 +97,7 @@ class RespondRequest(BaseModel):
     document_ids: List[str] = Field(default_factory=list, description="Supporting docs")
 
 
-class InformationRequestBody(BaseModel):
+class InformationRequestBody(GreenLangBase):
     """Request body for handling an authority information request."""
 
     operator_id: str = Field(..., description="Target operator")
@@ -109,7 +110,7 @@ class InformationRequestBody(BaseModel):
     language: str = Field(default="en", description="Response language")
 
 
-class ScheduleInspectionRequest(BaseModel):
+class ScheduleInspectionRequest(GreenLangBase):
     """Request body for scheduling an inspection."""
 
     operator_id: str = Field(..., description="Operator to inspect")
@@ -121,21 +122,21 @@ class ScheduleInspectionRequest(BaseModel):
     inspector_name: str = Field(default="", description="Inspector name")
 
 
-class UpdateInspectionStatusRequest(BaseModel):
+class UpdateInspectionStatusRequest(GreenLangBase):
     """Request body for updating inspection status."""
 
     new_status: str = Field(..., description="Target status")
     notes: str = Field(default="", description="Status change notes")
 
 
-class RecordFindingsRequest(BaseModel):
+class RecordFindingsRequest(GreenLangBase):
     """Request body for recording inspection findings."""
 
     findings: List[str] = Field(..., min_length=1, description="Findings list")
     corrective_actions: List[str] = Field(default_factory=list, description="Corrective actions")
 
 
-class RecordViolationRequest(BaseModel):
+class RecordViolationRequest(GreenLangBase):
     """Request body for recording a non-compliance violation."""
 
     operator_id: str = Field(..., description="Violating operator")
@@ -151,7 +152,7 @@ class RecordViolationRequest(BaseModel):
     penalty_override: Optional[str] = Field(default=None, description="Penalty override as decimal string")
 
 
-class FileAppealRequest(BaseModel):
+class FileAppealRequest(GreenLangBase):
     """Request body for filing an appeal."""
 
     non_compliance_id: str = Field(..., description="NC record being appealed")
@@ -161,14 +162,14 @@ class FileAppealRequest(BaseModel):
     supporting_evidence: List[str] = Field(default_factory=list)
 
 
-class AppealDecisionRequest(BaseModel):
+class AppealDecisionRequest(GreenLangBase):
     """Request body for recording an appeal decision."""
 
     decision: str = Field(..., description="Decision outcome")
     reason: str = Field(default="", description="Decision reasoning")
 
 
-class UploadDocumentRequest(BaseModel):
+class UploadDocumentRequest(GreenLangBase):
     """Request body for document upload metadata."""
 
     communication_id: str = Field(..., description="Parent communication")
@@ -181,7 +182,7 @@ class UploadDocumentRequest(BaseModel):
     uploaded_by: str = Field(..., description="Uploader identity")
 
 
-class SendNotificationRequest(BaseModel):
+class SendNotificationRequest(GreenLangBase):
     """Request body for sending a notification."""
 
     communication_id: str = Field(..., description="Related communication")
@@ -194,7 +195,7 @@ class SendNotificationRequest(BaseModel):
     language: str = Field(default="en", description="Language")
 
 
-class RenderTemplateRequest(BaseModel):
+class RenderTemplateRequest(GreenLangBase):
     """Request body for rendering a template."""
 
     template_name: str = Field(..., description="Template name")
@@ -202,7 +203,7 @@ class RenderTemplateRequest(BaseModel):
     variables: Dict[str, str] = Field(default_factory=dict, description="Placeholder values")
 
 
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     """Standard error response body."""
 
     detail: str = Field(..., description="Error description")

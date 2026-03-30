@@ -40,20 +40,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -66,11 +61,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EEDArticle(str, Enum):
     """EU Energy Efficiency Directive articles relevant to ISO 50001."""
@@ -82,7 +75,6 @@ class EEDArticle(str, Enum):
     ARTICLE_25 = "article_25"   # Heating and cooling assessment
     ARTICLE_26 = "article_26"   # District heating efficiency
 
-
 class ExemptionStatus(str, Enum):
     """EED exemption status for ISO 50001 certified organizations."""
 
@@ -92,7 +84,6 @@ class ExemptionStatus(str, Enum):
     EXPIRED = "expired"
     PENDING_REVIEW = "pending_review"
 
-
 class ComplianceLevel(str, Enum):
     """Compliance level for EED requirements."""
 
@@ -101,11 +92,9 @@ class ComplianceLevel(str, Enum):
     NON_COMPLIANT = "non_compliant"
     NOT_APPLICABLE = "not_applicable"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class EEDComplianceConfig(BaseModel):
     """Configuration for the EED Compliance Bridge."""
@@ -119,7 +108,6 @@ class EEDComplianceConfig(BaseModel):
         default=0.0, ge=0.0, description="Annual primary energy consumption"
     )
     employee_count: int = Field(default=0, ge=0)
-
 
 class EEDComplianceResult(BaseModel):
     """Result of an EED compliance assessment."""
@@ -137,7 +125,6 @@ class EEDComplianceResult(BaseModel):
     message: str = Field(default="")
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # ISO 50001 to EED Mapping
@@ -166,11 +153,9 @@ ARTICLE_8_EXEMPTION_CONDITIONS: List[str] = [
     "Certificate is within validity period (3 years)",
 ]
 
-
 # ---------------------------------------------------------------------------
 # EEDComplianceBridge
 # ---------------------------------------------------------------------------
-
 
 class EEDComplianceBridge:
     """EU Energy Efficiency Directive compliance bridge for EnMS.
@@ -332,7 +317,7 @@ class EEDComplianceBridge:
         evidence = {
             "evidence_id": _new_uuid(),
             "enms_id": enms_id,
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
             "eed_directive": self.config.eed_version,
             "member_state": self.config.member_state,
             "evidence_items": [

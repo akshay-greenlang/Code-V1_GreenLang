@@ -62,25 +62,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -107,7 +101,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -123,7 +116,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -144,7 +136,6 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100).
 
@@ -156,7 +147,6 @@ def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
         Percentage as Decimal; Decimal("0") when whole is zero.
     """
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* and return a float.
@@ -173,26 +163,21 @@ def _round_val(value: Decimal, places: int = 6) -> float:
     quantizer = Decimal(10) ** -places
     return float(value.quantize(quantizer, rounding=ROUND_HALF_UP))
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: float) -> float:
     """Round to 4 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EPCMethodology(str, Enum):
     """EPC calculation methodology by country.
@@ -207,7 +192,6 @@ class EPCMethodology(str, Enum):
     APE_2015 = "ape_2015"
     EPBD_GENERIC = "epbd_generic"
 
-
 class EPCRating(str, Enum):
     """EPC rating bands per EPBD directive.
 
@@ -221,7 +205,6 @@ class EPCRating(str, Enum):
     E = "E"
     F = "F"
     G = "G"
-
 
 class BuildingUseType(str, Enum):
     """Building use type for EPC assessment.
@@ -240,7 +223,6 @@ class BuildingUseType(str, Enum):
     RESTAURANT = "restaurant"
     LEISURE = "leisure"
 
-
 class HeatingFuelType(str, Enum):
     """Heating fuel types for primary energy and emission calculations.
 
@@ -258,7 +240,6 @@ class HeatingFuelType(str, Enum):
     HEAT_PUMP_AIR = "heat_pump_air"
     HEAT_PUMP_GROUND = "heat_pump_ground"
 
-
 class CoolingSystemType(str, Enum):
     """Cooling system types for EPC assessment."""
     NONE = "none"
@@ -269,7 +250,6 @@ class CoolingSystemType(str, Enum):
     DISTRICT_COOLING = "district_cooling"
     HEAT_PUMP_REVERSIBLE = "heat_pump_reversible"
 
-
 class RenewableType(str, Enum):
     """Renewable energy system types for on-site generation."""
     SOLAR_PV = "solar_pv"
@@ -279,11 +259,9 @@ class RenewableType(str, Enum):
     MICRO_CHP = "micro_chp"
     NONE = "none"
 
-
 # ---------------------------------------------------------------------------
 # Constants -- Primary Energy Factors
 # ---------------------------------------------------------------------------
-
 
 # Primary energy factors (fp) by fuel type and country.
 # Total primary energy factor = non-renewable + renewable components.
@@ -486,7 +464,6 @@ PRIMARY_ENERGY_FACTORS: Dict[str, Dict[str, float]] = {
 """Primary energy factors by fuel type and country.
 Source: EN 15603:2008 Annex E, national implementations."""
 
-
 # CO2 emission factors (kgCO2/kWh delivered energy) by fuel type and country.
 # Sources: BEIS/DEFRA 2024, UBA (DE), ADEME (FR), ISPRA (IT), Eurostat.
 CO2_EMISSION_FACTORS: Dict[str, Dict[str, float]] = {
@@ -578,7 +555,6 @@ CO2_EMISSION_FACTORS: Dict[str, Dict[str, float]] = {
 """CO2 emission factors (kgCO2/kWh) by fuel type and country.
 Source: BEIS/DEFRA 2024, UBA (DE), ADEME (FR), Eurostat."""
 
-
 # EPC rating thresholds: primary energy (kWh/m2/yr) boundaries for each band.
 # Format: {country: {building_type: [(band_letter, upper_limit), ...]}}
 # Source: Official national EPC regulations.
@@ -656,7 +632,6 @@ EPC_RATING_THRESHOLDS: Dict[str, Dict[str, List[Tuple[str, float]]]] = {
 """EPC rating thresholds (kWh/m2/yr primary energy) by country and building type.
 Source: Official national EPC regulations and EPBD transposition."""
 
-
 # Reference building U-values for notional building comparison per EPBD.
 # These represent the "reference building" against which actual performance
 # is compared.  Values are typical national building regulations targets.
@@ -672,7 +647,6 @@ REFERENCE_BUILDING_VALUES: Dict[str, Dict[str, float]] = {
 }
 """Reference building U-values by country per national building regulations.
 Source: National building regulations transposing EPBD."""
-
 
 # Heating system seasonal efficiency by system type, fuel, and age.
 # Format: {(system_type, fuel_type, age_category): seasonal_efficiency}
@@ -718,7 +692,6 @@ HEATING_SYSTEM_EFFICIENCY: Dict[str, Dict[str, Dict[str, float]]] = {
 """Heating system seasonal efficiency by type, fuel, and age.
 Source: SAP 10.2 Table 4a, DIN V 18599-5, EN 15316-4-1."""
 
-
 # Cooling system SEER values by system type and age.
 # Sources: EN 14825, ASHRAE 90.1, Eurovent certification data.
 COOLING_SYSTEM_EFFICIENCY: Dict[str, Dict[str, float]] = {
@@ -731,7 +704,6 @@ COOLING_SYSTEM_EFFICIENCY: Dict[str, Dict[str, float]] = {
 }
 """Cooling system SEER values by type and age category.
 Source: EN 14825, Eurovent certification data."""
-
 
 # DHW (Domestic Hot Water) system efficiency by system type.
 # Sources: SAP 10.2 Table 4c, EN 15316-3.
@@ -750,7 +722,6 @@ DHW_SYSTEM_EFFICIENCY: Dict[str, float] = {
 """DHW system efficiency by type.
 Source: SAP 10.2 Table 4c, EN 15316-3."""
 
-
 # Lighting power density allowance (W/m2) by building type.
 # Sources: EN 15193, CIBSE Guide F, ASHRAE 90.1.
 LIGHTING_ALLOWANCE: Dict[str, float] = {
@@ -768,7 +739,6 @@ LIGHTING_ALLOWANCE: Dict[str, float] = {
 """Lighting power density (W/m2) by building type.
 Source: EN 15193, CIBSE Guide F."""
 
-
 # Internal heat gains (W/m2) by building type (occupancy + equipment + lighting).
 # Sources: CIBSE Guide A Table 6.3, EN ISO 13790 Table G.8.
 INTERNAL_GAINS: Dict[str, float] = {
@@ -785,7 +755,6 @@ INTERNAL_GAINS: Dict[str, float] = {
 }
 """Internal heat gains (W/m2) by building type.
 Source: CIBSE Guide A Table 6.3, EN ISO 13790 Table G.8."""
-
 
 # National climate weighting / HDD for EPC normalisation.
 # Sources: CIBSE Guide A, Eurostat, national meteorological data.
@@ -809,7 +778,6 @@ NATIONAL_CLIMATE_DATA: Dict[str, Dict[str, float]] = {
 }
 """National climate data (HDD/CDD/heating season) by country.
 Source: CIBSE Guide A, Eurostat climate data."""
-
 
 # Minimum Energy Efficiency Standards (MEES) / Building Performance Standards.
 # Minimum EPC band required for rental or sale per national regulations.
@@ -845,7 +813,6 @@ MEES_REQUIREMENTS: Dict[str, Dict[str, str]] = {
 """Minimum Energy Efficiency Standards (MEES) by country.
 Source: National MEES / BPS regulations."""
 
-
 # Operating hours by building type (hours/year for energy calculations).
 # Sources: EN 15193, CIBSE Guide F, national standards.
 OPERATING_HOURS: Dict[str, float] = {
@@ -863,11 +830,9 @@ OPERATING_HOURS: Dict[str, float] = {
 """Annual operating hours by building type.
 Source: EN 15193, CIBSE Guide F."""
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class HeatingSystem(BaseModel):
     """Heating system specification for EPC calculation.
@@ -899,7 +864,6 @@ class HeatingSystem(BaseModel):
         default=1.0, ge=0, le=1.0, description="Fraction of heating demand"
     )
 
-
 class CoolingSystem(BaseModel):
     """Cooling system specification for EPC calculation.
 
@@ -924,7 +888,6 @@ class CoolingSystem(BaseModel):
         default=1.0, ge=0, le=1.0, description="Fraction of cooling demand"
     )
 
-
 class DHWSystem(BaseModel):
     """Domestic hot water system specification.
 
@@ -942,7 +905,6 @@ class DHWSystem(BaseModel):
     solar_fraction: float = Field(
         default=0.0, ge=0, le=1.0, description="Solar thermal fraction"
     )
-
 
 class LightingSystem(BaseModel):
     """Lighting system specification.
@@ -962,7 +924,6 @@ class LightingSystem(BaseModel):
         default=1.0, gt=0, le=1.0, description="Control factor (1=no controls)"
     )
 
-
 class RenewableSystem(BaseModel):
     """On-site renewable energy system.
 
@@ -978,7 +939,6 @@ class RenewableSystem(BaseModel):
     annual_generation_kwh: Optional[float] = Field(
         None, ge=0, description="Annual generation (kWh)"
     )
-
 
 class EnvelopeSummary(BaseModel):
     """Simplified envelope data for EPC calculation.
@@ -998,7 +958,6 @@ class EnvelopeSummary(BaseModel):
     door_area_m2: float = Field(default=4.0, gt=0, description="Door area (m2)")
     airtightness_n50: float = Field(default=7.0, ge=0, description="n50 (ACH at 50Pa)")
     heated_volume_m3: float = Field(default=250.0, gt=0, description="Heated volume (m3)")
-
 
 class BuildingData(BaseModel):
     """Complete building input data for EPC rating.
@@ -1054,11 +1013,9 @@ class BuildingData(BaseModel):
             raise ValueError("Floor area exceeds 1,000,000 m2 sanity check")
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class EnergyBreakdown(BaseModel):
     """Energy demand breakdown by end use.
@@ -1080,7 +1037,6 @@ class EnergyBreakdown(BaseModel):
     renewable_generation_kwh: float = Field(default=0.0, description="Renewable gen (kWh/yr)")
     net_delivered_energy_kwh: float = Field(default=0.0, description="Net delivered (kWh/yr)")
 
-
 class ImprovementMeasure(BaseModel):
     """EPC improvement recommendation.
 
@@ -1097,7 +1053,6 @@ class ImprovementMeasure(BaseModel):
     cost_category: str = Field(default="medium", description="Cost category")
     priority: int = Field(default=0, description="Priority")
 
-
 class EPCResult(BaseModel):
     """Complete EPC rating result with full provenance.
 
@@ -1107,7 +1062,7 @@ class EPCResult(BaseModel):
     result_id: str = Field(default_factory=_new_uuid, description="Unique result ID")
     engine_version: str = Field(default=_MODULE_VERSION, description="Engine version")
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
 
@@ -1167,11 +1122,9 @@ class EPCResult(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 # ---------------------------------------------------------------------------
 # Calculation Engine
 # ---------------------------------------------------------------------------
-
 
 class EPCRatingEngine:
     """Energy Performance Certificate (EPC) rating engine per EPBD.

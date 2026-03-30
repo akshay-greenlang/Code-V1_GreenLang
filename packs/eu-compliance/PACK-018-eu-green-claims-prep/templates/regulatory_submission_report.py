@@ -29,6 +29,8 @@ import logging
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 __all__ = ["RegulatorySubmissionReportTemplate"]
@@ -44,12 +46,6 @@ _SECTIONS: List[Dict[str, Any]] = [
     {"id": "provenance", "title": "Provenance", "order": 8},
 ]
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
     if hasattr(data, "model_dump"):
@@ -60,7 +56,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 class RegulatorySubmissionReportTemplate:
     """
@@ -90,7 +85,7 @@ class RegulatorySubmissionReportTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render regulatory submission report as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [
             self._md_cover_page(data),
             self._md_substantiation_summary(data),
@@ -108,7 +103,7 @@ class RegulatorySubmissionReportTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render regulatory submission report as HTML."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         body = "\n".join([
             self._html_cover_page(data),
@@ -129,7 +124,7 @@ class RegulatorySubmissionReportTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render regulatory submission report as structured JSON."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result: Dict[str, Any] = {
             "template": "regulatory_submission_report",
             "directive_reference": "EU Green Claims Directive 2023/0085",
@@ -186,7 +181,7 @@ class RegulatorySubmissionReportTemplate:
             "cab_name": data.get("cab_name", ""),
             "cab_accreditation": data.get("cab_accreditation", ""),
             "submission_date": data.get(
-                "submission_date", _utcnow().isoformat()
+                "submission_date", utcnow().isoformat()
             ),
             "submission_type": data.get("submission_type", "initial"),
             "total_claims": len(claims),
@@ -298,7 +293,7 @@ class RegulatorySubmissionReportTemplate:
         return {
             "title": "Trader Declaration",
             "declaration_date": data.get(
-                "declaration_date", _utcnow().isoformat()
+                "declaration_date", utcnow().isoformat()
             ),
             "trader_name": trader.get("name", ""),
             "trader_title": trader.get("title", ""),

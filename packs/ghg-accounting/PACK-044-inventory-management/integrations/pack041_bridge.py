@@ -42,21 +42,13 @@ logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -69,11 +61,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class Scope1Category(str, Enum):
     """Scope 1 emission categories from PACK-041."""
@@ -87,13 +77,11 @@ class Scope1Category(str, Enum):
     WASTE_TREATMENT = "waste_treatment"
     AGRICULTURAL = "agricultural"
 
-
 class Scope2Method(str, Enum):
     """Scope 2 calculation methods."""
 
     LOCATION_BASED = "location_based"
     MARKET_BASED = "market_based"
-
 
 class ImportStatus(str, Enum):
     """Import operation status."""
@@ -103,11 +91,9 @@ class ImportStatus(str, Enum):
     FAILED = "failed"
     NO_DATA = "no_data"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class Scope12ImportConfig(BaseModel):
     """Configuration for importing PACK-041 data."""
@@ -118,7 +104,6 @@ class Scope12ImportConfig(BaseModel):
     include_uncertainty: bool = Field(default=True)
     include_trends: bool = Field(default=True)
     include_compliance: bool = Field(default=True)
-
 
 class Scope1Summary(BaseModel):
     """Scope 1 emission summary imported from PACK-041."""
@@ -134,7 +119,6 @@ class Scope1Summary(BaseModel):
     data_quality_score: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class Scope2Summary(BaseModel):
     """Scope 2 emission summary imported from PACK-041."""
 
@@ -147,7 +131,6 @@ class Scope2Summary(BaseModel):
     rec_certificates_mwh: float = Field(default=0.0)
     reconciliation_status: str = Field(default="")
     provenance_hash: str = Field(default="")
-
 
 class ImportResult(BaseModel):
     """Result of a PACK-041 data import operation."""
@@ -164,13 +147,11 @@ class ImportResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
     processing_time_ms: float = Field(default=0.0)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # Pack041Bridge
 # ---------------------------------------------------------------------------
-
 
 class Pack041Bridge:
     """Bridge to PACK-041 Scope 1-2 Complete Pack.
@@ -178,6 +159,8 @@ class Pack041Bridge:
     Imports Scope 1 and Scope 2 emission totals, consolidation results,
     uncertainty ranges, trend analysis, and compliance mapping status
     from PACK-041 into the PACK-044 inventory management workflow.
+
+from greenlang.schemas import utcnow
 
     Attributes:
         config: Import configuration.

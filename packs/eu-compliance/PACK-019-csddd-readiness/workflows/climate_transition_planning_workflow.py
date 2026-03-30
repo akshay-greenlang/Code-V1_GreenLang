@@ -37,35 +37,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class WorkflowPhase(str, Enum):
     """Phases of the climate transition planning workflow."""
@@ -73,7 +65,6 @@ class WorkflowPhase(str, Enum):
     TARGET_SETTING = "target_setting"
     PATHWAY_DESIGN = "pathway_design"
     PROGRESS_TRACKING = "progress_tracking"
-
 
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
@@ -83,7 +74,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class PhaseStatus(str, Enum):
     """Status of a single phase."""
     PENDING = "pending"
@@ -92,13 +82,11 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class EmissionScope(str, Enum):
     """GHG emission scope categories."""
     SCOPE_1 = "scope_1"
     SCOPE_2 = "scope_2"
     SCOPE_3 = "scope_3"
-
 
 class TargetType(str, Enum):
     """Types of climate targets per Art. 15(3)."""
@@ -106,7 +94,6 @@ class TargetType(str, Enum):
     INTENSITY = "intensity"         # Per unit of revenue/output
     NET_ZERO = "net_zero"           # Net-zero by target year
     CARBON_NEUTRAL = "carbon_neutral"
-
 
 class TargetAlignment(str, Enum):
     """Target alignment with Paris Agreement."""
@@ -116,7 +103,6 @@ class TargetAlignment(str, Enum):
     NOT_ALIGNED = "not_aligned"
     INSUFFICIENT_DATA = "insufficient_data"
 
-
 class PathwayStatus(str, Enum):
     """Status of the decarbonisation pathway."""
     ON_TRACK = "on_track"
@@ -124,11 +110,9 @@ class PathwayStatus(str, Enum):
     SIGNIFICANTLY_OFF = "significantly_off"
     NO_PATHWAY = "no_pathway"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -140,7 +124,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class EmissionData(BaseModel):
     """Emission data record for baseline and tracking."""
     year: int = Field(..., ge=2015, le=2060)
@@ -151,7 +134,6 @@ class EmissionData(BaseModel):
     revenue_eur: float = Field(default=0.0, ge=0.0, description="Revenue for intensity calc")
     intensity_tco2e_per_meur: float = Field(default=0.0, ge=0.0)
     data_quality: str = Field(default="estimated", description="measured/calculated/estimated")
-
 
 class ClimateTarget(BaseModel):
     """Climate target per Art. 15(3)."""
@@ -169,7 +151,6 @@ class ClimateTarget(BaseModel):
     sbti_validated: bool = Field(default=False, description="Validated by SBTi")
     current_progress_pct: float = Field(default=0.0, ge=0.0, le=200.0)
 
-
 class TransitionAction(BaseModel):
     """Action within the transition plan pathway."""
     action_id: str = Field(default_factory=lambda: f"ta-{_new_uuid()[:8]}")
@@ -180,7 +161,6 @@ class TransitionAction(BaseModel):
     start_year: int = Field(default=2026)
     completion_year: int = Field(default=2030)
     status: str = Field(default="planned", description="planned/in_progress/completed")
-
 
 class ClimateTransitionPlanningInput(BaseModel):
     """Input data model for ClimateTransitionPlanningWorkflow."""
@@ -199,7 +179,6 @@ class ClimateTransitionPlanningInput(BaseModel):
     sector: str = Field(default="", description="Company sector for benchmark")
     has_transition_plan: bool = Field(default=False, description="Whether a formal plan exists")
     config: Dict[str, Any] = Field(default_factory=dict)
-
 
 class ClimateTransitionPlanningResult(BaseModel):
     """Complete result from climate transition planning workflow."""
@@ -234,11 +213,9 @@ class ClimateTransitionPlanningResult(BaseModel):
     executed_at: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # PARIS-ALIGNED REDUCTION BENCHMARKS
 # =============================================================================
-
 
 PARIS_BENCHMARKS: Dict[str, Dict[str, float]] = {
     # Required cumulative reduction % from 2019 baseline
@@ -252,11 +229,9 @@ PARIS_BENCHMARKS: Dict[str, Dict[str, float]] = {
     },
 }
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class ClimateTransitionPlanningWorkflow:
     """
@@ -323,7 +298,7 @@ class ClimateTransitionPlanningWorkflow:
         if input_data is None:
             input_data = ClimateTransitionPlanningInput(config=config or {})
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting climate transition planning workflow %s", self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = WorkflowStatus.IN_PROGRESS
@@ -341,7 +316,7 @@ class ClimateTransitionPlanningWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         completed_count = sum(1 for p in phase_results if p.status == PhaseStatus.COMPLETED)
 
         baseline_total = self._baseline.total_tco2e if self._baseline else 0.0
@@ -394,7 +369,7 @@ class ClimateTransitionPlanningWorkflow:
             art15_compliance_score=self._art15_score,
             progress_by_target=progress_by_target,
             reporting_year=input_data.reporting_year,
-            executed_at=_utcnow().isoformat(),
+            executed_at=utcnow().isoformat(),
         )
         result.provenance_hash = self._compute_provenance(result)
         self.logger.info(
@@ -411,7 +386,7 @@ class ClimateTransitionPlanningWorkflow:
         self, input_data: ClimateTransitionPlanningInput,
     ) -> PhaseResult:
         """Assess current emissions and establish baseline."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -469,7 +444,7 @@ class ClimateTransitionPlanningWorkflow:
             outputs["years_of_data"] = 0
             warnings.append("No emission data provided -- cannot establish baseline")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 1 BaselineAssessment: %d years, baseline=%s",
             outputs.get("years_of_data", 0),
@@ -490,7 +465,7 @@ class ClimateTransitionPlanningWorkflow:
         self, input_data: ClimateTransitionPlanningInput,
     ) -> PhaseResult:
         """Evaluate climate targets against Paris Agreement benchmarks."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -501,7 +476,7 @@ class ClimateTransitionPlanningWorkflow:
             outputs["targets_count"] = 0
             outputs["alignment"] = self._target_alignment
             warnings.append("No climate targets defined -- Art. 15(3) requires time-bound targets")
-            elapsed = (_utcnow() - started).total_seconds()
+            elapsed = (utcnow() - started).total_seconds()
             return PhaseResult(
                 phase_name=WorkflowPhase.TARGET_SETTING.value,
                 status=PhaseStatus.COMPLETED,
@@ -570,7 +545,7 @@ class ClimateTransitionPlanningWorkflow:
         if scope_3_targets == 0:
             warnings.append("No targets include Scope 3 -- value chain emissions should be covered")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 2 TargetSetting: %d targets, alignment=%s",
             len(targets), self._target_alignment,
@@ -590,7 +565,7 @@ class ClimateTransitionPlanningWorkflow:
         self, input_data: ClimateTransitionPlanningInput,
     ) -> PhaseResult:
         """Design decarbonisation pathway with milestones."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -602,7 +577,7 @@ class ClimateTransitionPlanningWorkflow:
             outputs["actions_count"] = 0
             outputs["pathway_status"] = self._pathway_status
             warnings.append("No transition actions defined -- pathway design required per Art. 15")
-            elapsed = (_utcnow() - started).total_seconds()
+            elapsed = (utcnow() - started).total_seconds()
             return PhaseResult(
                 phase_name=WorkflowPhase.PATHWAY_DESIGN.value,
                 status=PhaseStatus.COMPLETED,
@@ -681,7 +656,7 @@ class ClimateTransitionPlanningWorkflow:
         if pathway_reduction_pct < 42:
             warnings.append("Pathway does not achieve 42% reduction by planned period -- misaligned with 1.5C")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 3 PathwayDesign: %d actions, %.1f%% reduction, status=%s",
             len(actions), pathway_reduction_pct, self._pathway_status,
@@ -701,7 +676,7 @@ class ClimateTransitionPlanningWorkflow:
         self, input_data: ClimateTransitionPlanningInput,
     ) -> PhaseResult:
         """Track progress against transition plan targets."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -790,7 +765,7 @@ class ClimateTransitionPlanningWorkflow:
         if off_track_targets:
             warnings.append(f"{len(off_track_targets)} targets are off track")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 4 ProgressTracking: progress=%.1f%%, Art.15=%.1f%%",
             self._progress_score, self._art15_score,

@@ -42,35 +42,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.utcnow()
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hash of a string."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -81,7 +73,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -90,7 +81,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class CurtailmentStatus(str, Enum):
     """Status of load curtailment execution."""
@@ -102,7 +92,6 @@ class CurtailmentStatus(str, Enum):
     FAILED = "failed"
     RESTORED = "restored"
 
-
 class PerformanceRating(str, Enum):
     """Performance rating for event execution."""
 
@@ -111,7 +100,6 @@ class PerformanceRating(str, Enum):
     MARGINAL = "marginal"
     UNDERPERFORMS = "underperforms"
     FAILS = "fails"
-
 
 # =============================================================================
 # REFERENCE DATA (Zero-Hallucination)
@@ -134,11 +122,9 @@ RESTORATION_PRIORITY: Dict[str, int] = {
     "sheddable": 4,
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -152,7 +138,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list, description="Errors encountered")
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
 
-
 class CurtailmentAction(BaseModel):
     """Record of a curtailment action executed on a load."""
 
@@ -164,7 +149,6 @@ class CurtailmentAction(BaseModel):
     curtailment_pct: Decimal = Field(default=Decimal("0"), ge=0, le=100)
     executed_at: str = Field(default="", description="ISO 8601 timestamp")
 
-
 class IntervalReading(BaseModel):
     """Interval metering reading during event."""
 
@@ -174,7 +158,6 @@ class IntervalReading(BaseModel):
     baseline_kw: Decimal = Field(default=Decimal("0"), ge=0)
     curtailment_kw: Decimal = Field(default=Decimal("0"), ge=0)
     on_target: bool = Field(default=False)
-
 
 class EventExecutionInput(BaseModel):
     """Input data model for EventExecutionWorkflow."""
@@ -206,7 +189,6 @@ class EventExecutionInput(BaseModel):
             raise ValueError("event_start_utc must not be blank")
         return stripped
 
-
 class EventExecutionResult(BaseModel):
     """Complete result from event execution workflow."""
 
@@ -226,11 +208,9 @@ class EventExecutionResult(BaseModel):
     calculated_at: str = Field(default="", description="ISO 8601 timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 of complete result")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class EventExecutionWorkflow:
     """
@@ -289,7 +269,7 @@ class EventExecutionWorkflow:
             ValueError: If input validation fails.
         """
         t_start = time.perf_counter()
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting event execution workflow %s event=%s committed=%.0f kW",
             self.execution_id, input_data.event_id,
@@ -391,7 +371,7 @@ class EventExecutionWorkflow:
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
 
-        now_iso = _utcnow().isoformat() + "Z"
+        now_iso = utcnow().isoformat() + "Z"
         total_target = Decimal("0")
         total_actual = Decimal("0")
 
@@ -632,7 +612,7 @@ class EventExecutionWorkflow:
         outputs["restoration_order"] = [
             a.load_id for a in restoration_order
         ]
-        outputs["restored_at"] = _utcnow().isoformat() + "Z"
+        outputs["restored_at"] = utcnow().isoformat() + "Z"
 
         if not restoration_complete:
             warnings.append(

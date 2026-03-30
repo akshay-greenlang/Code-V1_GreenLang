@@ -29,20 +29,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -55,11 +50,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class WeatherConfig(BaseModel):
     """Configuration for the Weather Bridge."""
@@ -68,7 +61,6 @@ class WeatherConfig(BaseModel):
     enable_provenance: bool = Field(default=True)
     base_temperature_heating_c: float = Field(default=18.0, description="HDD base temp")
     base_temperature_cooling_c: float = Field(default=22.0, description="CDD base temp")
-
 
 class DegreeDayData(BaseModel):
     """Degree-day calculation result for a location and period."""
@@ -85,7 +77,6 @@ class DegreeDayData(BaseModel):
     data_completeness_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
 
-
 class ClimateNormalization(BaseModel):
     """Result of weather-normalizing energy consumption."""
 
@@ -97,7 +88,6 @@ class ClimateNormalization(BaseModel):
     adjustment_factor: float = Field(default=1.0)
     dd_type: str = Field(default="hdd", description="hdd or cdd")
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Reference Data
@@ -133,11 +123,9 @@ CLIMATE_ZONES: Dict[str, str] = {
     "PT": "mediterranean",
 }
 
-
 # ---------------------------------------------------------------------------
 # WeatherBridge
 # ---------------------------------------------------------------------------
-
 
 class WeatherBridge:
     """Weather data integration for quick win savings normalization.

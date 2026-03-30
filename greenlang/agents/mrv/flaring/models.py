@@ -49,18 +49,13 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
 
+from greenlang.schemas import GreenLangBase, utcnow
 
 # ---------------------------------------------------------------------------
 # Helper
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -166,11 +161,9 @@ DEFAULT_COMBUSTION_EFFICIENCY: Dict[str, Decimal] = {
     "LOW_PRESSURE": Decimal("0.95"),
 }
 
-
 # =============================================================================
 # Enumerations (16)
 # =============================================================================
-
 
 class FlareType(str, Enum):
     """Classification of flare system design and configuration.
@@ -205,7 +198,6 @@ class FlareType(str, Enum):
     CANDLESTICK = "candlestick"
     LOW_PRESSURE = "low_pressure"
 
-
 class FlaringEventCategory(str, Enum):
     """Classification of flaring event type for regulatory reporting.
 
@@ -227,7 +219,6 @@ class FlaringEventCategory(str, Enum):
     PILOT_PURGE = "pilot_purge"
     WELL_COMPLETION = "well_completion"
 
-
 class CalculationMethod(str, Enum):
     """Calculation methodology for flaring emission quantification.
 
@@ -246,7 +237,6 @@ class CalculationMethod(str, Enum):
     ENGINEERING_ESTIMATE = "engineering_estimate"
     DIRECT_MEASUREMENT = "direct_measurement"
 
-
 class EmissionFactorSource(str, Enum):
     """Source authority for emission factor values.
 
@@ -264,7 +254,6 @@ class EmissionFactorSource(str, Enum):
     EU_ETS = "EU_ETS"
     API = "API"
     CUSTOM = "CUSTOM"
-
 
 class GasComponent(str, Enum):
     """Individual gas species in flare gas composition analysis.
@@ -289,7 +278,6 @@ class GasComponent(str, Enum):
     C3H6 = "C3H6"
     H2O = "H2O"
 
-
 class EmissionGas(str, Enum):
     """Greenhouse gases tracked in flaring emission calculations.
 
@@ -303,7 +291,6 @@ class EmissionGas(str, Enum):
     CH4 = "CH4"
     N2O = "N2O"
     BLACK_CARBON = "BLACK_CARBON"
-
 
 class GWPSource(str, Enum):
     """IPCC Assessment Report edition used for GWP conversion factors.
@@ -319,7 +306,6 @@ class GWPSource(str, Enum):
     AR6 = "AR6"
     AR6_20YR = "AR6_20YR"
 
-
 class StandardCondition(str, Enum):
     """Standard temperature and pressure reference conditions.
 
@@ -331,7 +317,6 @@ class StandardCondition(str, Enum):
 
     EPA_60F = "EPA_60F"
     ISO_15C = "ISO_15C"
-
 
 class AssistType(str, Enum):
     """Type of combustion assist medium for flare operation.
@@ -347,7 +332,6 @@ class AssistType(str, Enum):
     AIR = "air"
     NONE = "none"
 
-
 class FlaringStatus(str, Enum):
     """Operational status of a flare system.
 
@@ -361,7 +345,6 @@ class FlaringStatus(str, Enum):
     INACTIVE = "inactive"
     DECOMMISSIONED = "decommissioned"
     UNDER_CONSTRUCTION = "under_construction"
-
 
 class OGMPLevel(str, Enum):
     """OGMP 2.0 reporting level for methane emission quantification.
@@ -378,7 +361,6 @@ class OGMPLevel(str, Enum):
     LEVEL_3 = "LEVEL_3"
     LEVEL_4 = "LEVEL_4"
     LEVEL_5 = "LEVEL_5"
-
 
 class ComplianceFramework(str, Enum):
     """Regulatory framework governing flaring emission reporting.
@@ -402,7 +384,6 @@ class ComplianceFramework(str, Enum):
     WORLD_BANK_ZRF = "world_bank_zrf"
     OGMP_2_0 = "ogmp_2_0"
 
-
 class CalculationStatus(str, Enum):
     """Status of a flaring emission calculation.
 
@@ -419,7 +400,6 @@ class CalculationStatus(str, Enum):
     FAILED = "failed"
     VALIDATED = "validated"
 
-
 class DataQualityTier(str, Enum):
     """Data quality tier for input data classification.
 
@@ -433,7 +413,6 @@ class DataQualityTier(str, Enum):
     MEDIUM = "MEDIUM"
     LOW = "LOW"
     DEFAULT = "DEFAULT"
-
 
 class SeverityLevel(str, Enum):
     """Severity level for compliance findings and validation messages.
@@ -449,7 +428,6 @@ class SeverityLevel(str, Enum):
     ERROR = "ERROR"
     CRITICAL = "CRITICAL"
 
-
 class ComplianceStatus(str, Enum):
     """Overall compliance status for a regulatory framework check.
 
@@ -464,13 +442,11 @@ class ComplianceStatus(str, Enum):
     PARTIAL = "partial"
     NOT_APPLICABLE = "not_applicable"
 
-
 # =============================================================================
 # Data Models (16+)
 # =============================================================================
 
-
-class GasComposition(BaseModel):
+class GasComposition(GreenLangBase):
     """Gas composition analysis for flare gas stream.
 
     Represents a complete molar or volumetric gas analysis with component
@@ -548,8 +524,7 @@ class GasComposition(BaseModel):
             )
         return v
 
-
-class FlareSystemConfig(BaseModel):
+class FlareSystemConfig(GreenLangBase):
     """Configuration and specifications for a flare system.
 
     Describes the physical and operational characteristics of a flare
@@ -648,8 +623,7 @@ class FlareSystemConfig(BaseModel):
         description="OGMP 2.0 reporting level assigned",
     )
 
-
-class FlaringEventRecord(BaseModel):
+class FlaringEventRecord(GreenLangBase):
     """Individual flaring event record for tracking and reporting.
 
     Captures a discrete flaring event including its category, timing,
@@ -749,8 +723,7 @@ class FlaringEventRecord(BaseModel):
                 raise ValueError("end_time must be after start_time")
         return v
 
-
-class PilotPurgeConfig(BaseModel):
+class PilotPurgeConfig(GreenLangBase):
     """Configuration for pilot and purge gas accounting.
 
     Tracks continuous pilot flame and purge gas consumption, which
@@ -810,8 +783,7 @@ class PilotPurgeConfig(BaseModel):
         description="Whether purge gas is inert (N2) with zero emissions",
     )
 
-
-class CombustionEfficiencyParams(BaseModel):
+class CombustionEfficiencyParams(GreenLangBase):
     """Parameters affecting combustion efficiency of a flare.
 
     Models the factors that influence the actual combustion efficiency
@@ -867,8 +839,7 @@ class CombustionEfficiencyParams(BaseModel):
         description="Type of flare system for default CE selection",
     )
 
-
-class CalculationInput(BaseModel):
+class CalculationInput(GreenLangBase):
     """Input data for a single flaring emission calculation.
 
     Contains all parameters needed to compute GHG emissions from a
@@ -998,8 +969,7 @@ class CalculationInput(BaseModel):
             )
         return self
 
-
-class EmissionDetail(BaseModel):
+class EmissionDetail(GreenLangBase):
     """Detailed emission result for a single greenhouse gas.
 
     Captures the calculated emissions for one gas species including
@@ -1054,8 +1024,7 @@ class EmissionDetail(BaseModel):
         description="Brief explanation of calculation approach",
     )
 
-
-class CalculationResult(BaseModel):
+class CalculationResult(GreenLangBase):
     """Complete result of a single flaring emission calculation.
 
     Contains all calculated emissions by gas, total CO2e, the
@@ -1181,7 +1150,7 @@ class CalculationResult(BaseModel):
         description="Ordered human-readable calculation steps",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when calculation was performed",
     )
     facility_id: Optional[str] = Field(
@@ -1202,8 +1171,7 @@ class CalculationResult(BaseModel):
         description="Calculation wall-clock time in milliseconds",
     )
 
-
-class BatchCalculationRequest(BaseModel):
+class BatchCalculationRequest(GreenLangBase):
     """Request model for batch flaring emission calculations.
 
     Groups multiple calculation inputs for processing as a single
@@ -1242,8 +1210,7 @@ class BatchCalculationRequest(BaseModel):
         description="Optional batch identifier for tracking",
     )
 
-
-class BatchCalculationResponse(BaseModel):
+class BatchCalculationResponse(GreenLangBase):
     """Response model for a batch flaring emission calculation.
 
     Aggregates individual calculation results with batch-level totals
@@ -1338,8 +1305,7 @@ class BatchCalculationResponse(BaseModel):
         description="GWP source used for this batch",
     )
 
-
-class UncertaintyInput(BaseModel):
+class UncertaintyInput(GreenLangBase):
     """Input parameters for Monte Carlo uncertainty analysis.
 
     Specifies the calculation input and uncertainty parameters for
@@ -1407,8 +1373,7 @@ class UncertaintyInput(BaseModel):
                 )
         return v
 
-
-class UncertaintyResult(BaseModel):
+class UncertaintyResult(GreenLangBase):
     """Monte Carlo uncertainty quantification result.
 
     Provides statistical characterization of emission estimate
@@ -1472,8 +1437,7 @@ class UncertaintyResult(BaseModel):
         description="SHA-256 hash for this uncertainty result",
     )
 
-
-class ComplianceCheckInput(BaseModel):
+class ComplianceCheckInput(GreenLangBase):
     """Input for a regulatory compliance check against a framework.
 
     Specifies the calculation result and framework to validate
@@ -1522,8 +1486,7 @@ class ComplianceCheckInput(BaseModel):
         description="Tenant identifier for multi-tenancy isolation",
     )
 
-
-class ComplianceCheckResult(BaseModel):
+class ComplianceCheckResult(GreenLangBase):
     """Result of a regulatory compliance check.
 
     Contains the overall compliance status, individual findings, and
@@ -1584,12 +1547,11 @@ class ComplianceCheckResult(BaseModel):
         description="SHA-256 hash for this compliance result",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the check was performed",
     )
 
-
-class FlareSystemRegistration(BaseModel):
+class FlareSystemRegistration(GreenLangBase):
     """Request model for registering a new flare system.
 
     Contains all required and optional parameters for adding a flare
@@ -1682,8 +1644,7 @@ class FlareSystemRegistration(BaseModel):
         description="Tenant identifier",
     )
 
-
-class FlaringStats(BaseModel):
+class FlaringStats(GreenLangBase):
     """Service-level statistics for the flaring agent.
 
     Provides aggregate operational metrics for monitoring and
@@ -1756,8 +1717,7 @@ class FlaringStats(BaseModel):
         description="Service uptime in seconds",
     )
 
-
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Health check response for the flaring agent service.
 
     Attributes:
@@ -1809,7 +1769,7 @@ class HealthResponse(BaseModel):
         description="Service uptime in seconds",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of the health check",
     )
 
@@ -1824,7 +1784,6 @@ class HealthResponse(BaseModel):
                 f"status must be one of {sorted(valid_statuses)}, got '{v}'"
             )
         return normalised
-
 
 # ---------------------------------------------------------------------------
 # Public API

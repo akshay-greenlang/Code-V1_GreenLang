@@ -48,25 +48,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -79,11 +73,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SupplierTier(int, Enum):
     """Supply chain tier depth."""
@@ -93,7 +85,6 @@ class SupplierTier(int, Enum):
     TIER_3 = 3
     TIER_4 = 4
 
-
 class RiskTier(str, Enum):
     """ESG risk classification tier."""
 
@@ -101,7 +92,6 @@ class RiskTier(str, Enum):
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 class QuestionnaireStatus(str, Enum):
     """Status of a supplier questionnaire."""
@@ -112,7 +102,6 @@ class QuestionnaireStatus(str, Enum):
     COMPLETED = "completed"
     OVERDUE = "overdue"
 
-
 class ImprovementStatus(str, Enum):
     """Status of an improvement plan."""
 
@@ -121,11 +110,9 @@ class ImprovementStatus(str, Enum):
     COMPLETED = "completed"
     OVERDUE = "overdue"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class Supplier(BaseModel):
     """Supplier registration record."""
@@ -162,7 +149,6 @@ class Supplier(BaseModel):
         """Validate country is 2-letter ISO code."""
         return v.upper()
 
-
 class ESGScore(BaseModel):
     """ESG assessment score for a supplier."""
 
@@ -189,13 +175,12 @@ class ESGScore(BaseModel):
         0.0, description="Country risk score adjustment"
     )
     assessment_date: datetime = Field(
-        default_factory=_utcnow, description="Assessment date"
+        default_factory=utcnow, description="Assessment date"
     )
     data_sources: List[str] = Field(
         default_factory=list, description="Data sources used"
     )
     provenance_hash: str = Field("", description="SHA-256 provenance hash")
-
 
 class SupplierQuestionnaire(BaseModel):
     """ESG questionnaire sent to a supplier."""
@@ -225,7 +210,6 @@ class SupplierQuestionnaire(BaseModel):
     sent_at: Optional[datetime] = Field(None, description="Date sent")
     due_date: Optional[datetime] = Field(None, description="Response due date")
 
-
 class Finding(BaseModel):
     """An ESG finding from supplier assessment."""
 
@@ -234,7 +218,6 @@ class Finding(BaseModel):
     description: str = Field(..., description="Finding description")
     severity: RiskTier = Field(..., description="Severity level")
     evidence: str = Field("", description="Supporting evidence")
-
 
 class Action(BaseModel):
     """An improvement action item."""
@@ -246,7 +229,6 @@ class Action(BaseModel):
     status: ImprovementStatus = Field(
         ImprovementStatus.PLANNED, description="Action status"
     )
-
 
 class ImprovementPlan(BaseModel):
     """Supplier ESG improvement plan."""
@@ -268,10 +250,9 @@ class ImprovementPlan(BaseModel):
         0.0, ge=0, le=100, description="Overall progress 0-100"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation date"
+        default_factory=utcnow, description="Creation date"
     )
     provenance_hash: str = Field("", description="SHA-256 provenance hash")
-
 
 # ---------------------------------------------------------------------------
 # Reference Data
@@ -312,11 +293,9 @@ _CERTIFICATION_SCORES: Dict[str, float] = {
     "SBTi": 10.0,
 }
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class SupplyChainESGEngine:
     """Multi-tier supplier ESG scoring and management engine.
@@ -563,7 +542,7 @@ class SupplyChainESGEngine:
             template_version=template,
             status=QuestionnaireStatus.SENT,
             total_questions=template_questions.get(template, 40),
-            sent_at=_utcnow(),
+            sent_at=utcnow(),
         )
 
         self._questionnaires[q.questionnaire_id] = q
@@ -594,7 +573,7 @@ class SupplyChainESGEngine:
 
         q = self._questionnaires[questionnaire_id]
         q.status = QuestionnaireStatus.COMPLETED
-        q.response_date = _utcnow()
+        q.response_date = utcnow()
         q.questions_answered = len(responses)
 
         # Extract scores

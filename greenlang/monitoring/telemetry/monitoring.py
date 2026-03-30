@@ -10,7 +10,6 @@ import time
 from typing import Dict, Any, Optional, List, Callable
 from dataclasses import dataclass, field, asdict
 from datetime import datetime, timedelta
-from enum import Enum
 from collections import deque
 import yaml
 
@@ -20,26 +19,9 @@ from .health import get_health_checker
 from .logging import get_log_aggregator
 from .performance import get_performance_monitor
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas.enums import AlertSeverity, AlertStatus
 
 logger = logging.getLogger(__name__)
-
-
-class AlertSeverity(Enum):
-    """Alert severity levels"""
-
-    INFO = "info"
-    WARNING = "warning"
-    ERROR = "error"
-    CRITICAL = "critical"
-
-
-class AlertStatus(Enum):
-    """Alert status"""
-
-    FIRING = "firing"
-    RESOLVED = "resolved"
-    ACKNOWLEDGED = "acknowledged"
-    SILENCED = "silenced"
 
 
 @dataclass

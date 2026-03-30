@@ -16,10 +16,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism.clock import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +61,7 @@ PRACTICE_COSTS = {
 }
 
 
-class SoilSite(BaseModel):
+class SoilSite(GreenLangBase):
     """Soil site assessment."""
     site_id: str = Field(...)
     area_ha: float = Field(..., gt=0)
@@ -69,7 +70,7 @@ class SoilSite(BaseModel):
     current_practices: List[EnhancementPractice] = Field(default_factory=list)
 
 
-class SoilEnhancementStrategy(BaseModel):
+class SoilEnhancementStrategy(GreenLangBase):
     """Soil enhancement strategy for a site."""
     site_id: str = Field(...)
     recommended_practices: List[EnhancementPractice] = Field(...)
@@ -81,7 +82,7 @@ class SoilEnhancementStrategy(BaseModel):
     permanence_risk: str = Field(...)
 
 
-class SoilEnhancementInput(BaseModel):
+class SoilEnhancementInput(GreenLangBase):
     """Input for Soil Carbon Enhancement Agent."""
     project_id: str = Field(...)
     sites: List[SoilSite] = Field(..., min_length=1)
@@ -91,7 +92,7 @@ class SoilEnhancementInput(BaseModel):
     project_duration_years: int = Field(default=20)
 
 
-class SoilEnhancementOutput(BaseModel):
+class SoilEnhancementOutput(GreenLangBase):
     """Output from Soil Carbon Enhancement Agent."""
     project_id: str = Field(...)
     calculation_date: datetime = Field(default_factory=DeterministicClock.now)

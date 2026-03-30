@@ -49,22 +49,17 @@ from collections import Counter
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 __all__ = [
     "DatasetProfiler",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _generate_id(prefix: str = "PRF") -> str:
     """Generate a unique identifier with the given prefix.
@@ -77,7 +72,6 @@ def _generate_id(prefix: str = "PRF") -> str:
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
 
-
 def _compute_provenance(operation: str, data_repr: str) -> str:
     """Compute SHA-256 provenance hash for a profiling operation.
 
@@ -88,9 +82,8 @@ def _compute_provenance(operation: str, data_repr: str) -> str:
     Returns:
         Hex-encoded SHA-256 digest.
     """
-    payload = f"{operation}:{data_repr}:{_utcnow().isoformat()}"
+    payload = f"{operation}:{data_repr}:{utcnow().isoformat()}"
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Constants - Data Type Detection
@@ -117,7 +110,6 @@ ALL_DATA_TYPES = frozenset({
     DATA_TYPE_PHONE, DATA_TYPE_IP_ADDRESS, DATA_TYPE_UUID, DATA_TYPE_JSON_STR,
     DATA_TYPE_UNKNOWN,
 })
-
 
 # ---------------------------------------------------------------------------
 # Pattern Regexes (20+)
@@ -239,11 +231,9 @@ _PATTERN_REGISTRY: Dict[str, re.Pattern[str]] = {
 # Percentile levels to compute
 _PERCENTILE_LEVELS = (25, 50, 75, 95, 99)
 
-
 # ---------------------------------------------------------------------------
 # Statistical Helpers (pure Python, no numpy/scipy)
 # ---------------------------------------------------------------------------
-
 
 def _safe_mean(values: List[float]) -> float:
     """Compute mean, returning 0.0 for empty lists.
@@ -258,7 +248,6 @@ def _safe_mean(values: List[float]) -> float:
         return 0.0
     return statistics.mean(values)
 
-
 def _safe_median(values: List[float]) -> float:
     """Compute median, returning 0.0 for empty lists.
 
@@ -271,7 +260,6 @@ def _safe_median(values: List[float]) -> float:
     if not values:
         return 0.0
     return statistics.median(values)
-
 
 def _safe_stdev(values: List[float]) -> float:
     """Compute sample standard deviation, 0.0 for < 2 values.
@@ -286,7 +274,6 @@ def _safe_stdev(values: List[float]) -> float:
         return 0.0
     return statistics.stdev(values)
 
-
 def _safe_variance(values: List[float]) -> float:
     """Compute sample variance, 0.0 for < 2 values.
 
@@ -299,7 +286,6 @@ def _safe_variance(values: List[float]) -> float:
     if len(values) < 2:
         return 0.0
     return statistics.variance(values)
-
 
 def _percentile(sorted_values: List[float], p: float) -> float:
     """Compute the p-th percentile using linear interpolation.
@@ -325,7 +311,6 @@ def _percentile(sorted_values: List[float], p: float) -> float:
     d1 = sorted_values[int(c)] * (k - f)
     return d0 + d1
 
-
 def _skewness(values: List[float]) -> float:
     """Compute sample skewness (Fisher's definition).
 
@@ -347,7 +332,6 @@ def _skewness(values: List[float]) -> float:
         return 0.0
     m3 = sum(((x - mean_val) / std_val) ** 3 for x in values)
     return (n / ((n - 1) * (n - 2))) * m3
-
 
 def _kurtosis(values: List[float]) -> float:
     """Compute excess kurtosis (Fisher's definition).
@@ -374,7 +358,6 @@ def _kurtosis(values: List[float]) -> float:
     term2 = (3 * (n - 1) ** 2) / ((n - 2) * (n - 3))
     return term1 * m4 - term2
 
-
 def _is_json_string(value: str) -> bool:
     """Check if a string is valid JSON (object or array).
 
@@ -393,7 +376,6 @@ def _is_json_string(value: str) -> bool:
     except (json.JSONDecodeError, ValueError):
         return False
 
-
 def _try_parse_number(value: str) -> Optional[float]:
     """Try to parse a string as a number.
 
@@ -408,11 +390,9 @@ def _try_parse_number(value: str) -> Optional[float]:
     except (ValueError, TypeError):
         return None
 
-
 # ---------------------------------------------------------------------------
 # DatasetProfiler Engine
 # ---------------------------------------------------------------------------
-
 
 class DatasetProfiler:
     """Schema inference and statistical profiling engine.
@@ -546,7 +526,7 @@ class DatasetProfiler:
             "profiling_time_ms": round(elapsed_ms, 2),
             "sampled": row_count > self._max_sample_size,
             "sample_size": len(sample),
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
         # Store and update stats
@@ -1049,7 +1029,7 @@ class DatasetProfiler:
                 ),
                 "avg_profiling_time_ms": round(avg_time, 2),
                 "stored_profiles": len(self._profiles),
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }
 
     # ------------------------------------------------------------------

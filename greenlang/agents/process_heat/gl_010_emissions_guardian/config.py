@@ -40,6 +40,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from pydantic import BaseModel, Field, validator, root_validator
+from greenlang.schemas.enums import AlertSeverity
 
 
 # =============================================================================
@@ -110,16 +111,6 @@ class RegulatoryProgram(str, Enum):
     CA_MRR = "ca_mrr"  # California MRR
     RGGI = "rggi"  # Regional GHG Initiative
     STATE_PERMIT = "state_permit"  # State air permit
-
-
-class AlertSeverity(str, Enum):
-    """Alert severity levels for emissions monitoring."""
-    INFO = "info"
-    ADVISORY = "advisory"
-    WARNING = "warning"
-    ALARM = "alarm"
-    CRITICAL = "critical"
-    EXCEEDANCE = "exceedance"
 
 
 class ComplianceStatus(str, Enum):

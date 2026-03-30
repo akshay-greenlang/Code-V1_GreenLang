@@ -39,20 +39,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -65,11 +60,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class BenchmarkDatabaseSource(str, Enum):
     """Benchmark data sources."""
@@ -84,7 +77,6 @@ class BenchmarkDatabaseSource(str, Enum):
     NETHERLANDS_NTA = "netherlands_nta"
     SWEDEN_BBR = "sweden_bbr"
     CUSTOM = "custom"
-
 
 class BuildingClassification(str, Enum):
     """Standard building classification categories."""
@@ -119,7 +111,6 @@ class BuildingClassification(str, Enum):
     LABORATORY = "laboratory"
     WORKSHOP = "workshop"
 
-
 # ---------------------------------------------------------------------------
 # CIBSE TM46 Benchmark Data (kWh/m2/yr)
 # ---------------------------------------------------------------------------
@@ -151,11 +142,9 @@ CIBSE_TM46_BENCHMARKS: Dict[str, Dict[str, float]] = {
     "laboratory": {"typical": 340, "good_practice": 260, "electricity": 160, "fossil_thermal": 215},
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class BenchmarkDatabaseConfig(BaseModel):
     """Configuration for the Benchmark Database Bridge."""
@@ -166,7 +155,6 @@ class BenchmarkDatabaseConfig(BaseModel):
     country_code: str = Field(default="GB", description="ISO 3166-1 alpha-2")
     include_all_sources: bool = Field(default=False)
 
-
 class BenchmarkQuery(BaseModel):
     """Query for benchmark data from databases."""
 
@@ -176,7 +164,6 @@ class BenchmarkQuery(BaseModel):
     country_code: str = Field(default="GB")
     climate_zone: str = Field(default="")
     year: int = Field(default=2025, ge=2000, le=2035)
-
 
 class BenchmarkDatabaseResult(BaseModel):
     """Result of a benchmark database query."""
@@ -197,11 +184,9 @@ class BenchmarkDatabaseResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # BenchmarkDatabaseBridge
 # ---------------------------------------------------------------------------
-
 
 class BenchmarkDatabaseBridge:
     """Unified interface to energy benchmark databases.

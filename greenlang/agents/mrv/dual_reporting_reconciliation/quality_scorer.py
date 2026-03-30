@@ -82,6 +82,7 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from typing import Any, Dict, List, Optional, Set, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -159,7 +160,6 @@ try:
 except ImportError:
     _METRICS_AVAILABLE = False
     _Metrics = None  # type: ignore[misc,assignment]
-
 
 # ---------------------------------------------------------------------------
 # Decimal precision constants
@@ -281,16 +281,9 @@ RECOGNISED_EF_DATABASES: frozenset = frozenset({
     "residual mix", "residual_mix", "unfccc",
 })
 
-
 # ---------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _clamp(
     value: Decimal,
@@ -313,7 +306,6 @@ def _clamp(
         return ceiling
     return value
 
-
 def _safe_divide(
     numerator: Decimal,
     denominator: Decimal,
@@ -333,7 +325,6 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _quantize(value: Decimal) -> Decimal:
     """Quantize a Decimal to 8 decimal places with ROUND_HALF_UP.
 
@@ -344,7 +335,6 @@ def _quantize(value: Decimal) -> Decimal:
         Quantized Decimal with 8 decimal places.
     """
     return value.quantize(_PRECISION, rounding=ROUND_HALF_UP)
-
 
 def _D(value: Any) -> Decimal:
     """Convert a value to Decimal.
@@ -358,7 +348,6 @@ def _D(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
     return Decimal(str(value))
-
 
 def _safe_decimal(value: Any, default: Decimal = _ZERO) -> Decimal:
     """Safely convert a value to Decimal, returning default on failure.
@@ -377,7 +366,6 @@ def _safe_decimal(value: Any, default: Decimal = _ZERO) -> Decimal:
     except (InvalidOperation, ValueError, TypeError):
         return default
 
-
 def _hash_dict(data: Dict[str, Any]) -> str:
     """Compute SHA-256 hash of a dictionary.
 
@@ -389,7 +377,6 @@ def _hash_dict(data: Dict[str, Any]) -> str:
     """
     json_str = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(json_str.encode("utf-8")).hexdigest()
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -419,7 +406,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _contains_year(text: str) -> bool:
     """Check whether text contains a plausible year reference (2000-2099).
 
@@ -431,7 +417,6 @@ def _contains_year(text: str) -> bool:
     """
     matches = re.findall(r'\b(20\d{2})\b', text)
     return len(matches) > 0
-
 
 def _extract_vintage_year(ef_source: str) -> Optional[str]:
     """Extract a 4-digit year from an emission factor source string.
@@ -450,11 +435,9 @@ def _extract_vintage_year(ef_source: str) -> Optional[str]:
     matches = re.findall(r'\b(20\d{2})\b', ef_source)
     return matches[0] if matches else None
 
-
 # ===========================================================================
 # QualityScorerEngine
 # ===========================================================================
-
 
 class QualityScorerEngine:
     """Engine 3: Scores data quality across 4 dimensions with composite grading.
@@ -583,7 +566,7 @@ class QualityScorerEngine:
         self._total_assessments: int = 0
         self._total_cross_checks: int = 0
         self._total_flags_generated: int = 0
-        self._created_at: datetime = _utcnow()
+        self._created_at: datetime = utcnow()
 
     # ------------------------------------------------------------------
     # Singleton management
@@ -1792,7 +1775,7 @@ class QualityScorerEngine:
             health["status"] = "healthy" if all_ok else "degraded"
 
             # Uptime
-            now = _utcnow()
+            now = utcnow()
             uptime = int((now - self._created_at).total_seconds())
             health["uptime_seconds"] = uptime
 
@@ -2647,11 +2630,9 @@ class QualityScorerEngine:
                         "Provenance recording skipped: %s", exc,
                     )
 
-
 # ===========================================================================
 # Module-level convenience functions
 # ===========================================================================
-
 
 def score_quality(
     workspace: ReconciliationWorkspace,
@@ -2678,7 +2659,6 @@ def score_quality(
     engine = QualityScorerEngine()
     return engine.score_quality(workspace)
 
-
 def get_quality_weights() -> Dict[str, Decimal]:
     """Get the configured quality dimension weights.
 
@@ -2689,7 +2669,6 @@ def get_quality_weights() -> Dict[str, Decimal]:
     """
     engine = QualityScorerEngine()
     return engine.get_quality_weights()
-
 
 def assign_grade(composite_score: Decimal) -> QualityGrade:
     """Assign a letter grade from a composite quality score.
@@ -2705,7 +2684,6 @@ def assign_grade(composite_score: Decimal) -> QualityGrade:
     engine = QualityScorerEngine()
     return engine.assign_grade(composite_score)
 
-
 def is_assurance_ready(assessment: QualityAssessment) -> bool:
     """Check whether a quality assessment is assurance-ready.
 
@@ -2720,7 +2698,6 @@ def is_assurance_ready(assessment: QualityAssessment) -> bool:
     engine = QualityScorerEngine()
     return engine.is_assurance_ready(assessment)
 
-
 def summarize_quality(assessment: QualityAssessment) -> Dict[str, Any]:
     """Generate a human-readable quality summary.
 
@@ -2734,7 +2711,6 @@ def summarize_quality(assessment: QualityAssessment) -> Dict[str, Any]:
     """
     engine = QualityScorerEngine()
     return engine.summarize_quality(assessment)
-
 
 def cross_check_emissions(
     workspace: ReconciliationWorkspace,
@@ -2752,7 +2728,6 @@ def cross_check_emissions(
     engine = QualityScorerEngine()
     return engine.cross_check_emissions(workspace)
 
-
 def assess_ef_hierarchy_distribution(
     workspace: ReconciliationWorkspace,
 ) -> Dict[str, int]:
@@ -2769,11 +2744,9 @@ def assess_ef_hierarchy_distribution(
     engine = QualityScorerEngine()
     return engine.assess_ef_hierarchy_distribution(workspace)
 
-
 # ===========================================================================
 # Exports
 # ===========================================================================
-
 
 __all__ = [
     # Engine class

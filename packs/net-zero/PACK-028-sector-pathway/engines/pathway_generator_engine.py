@@ -60,23 +60,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -93,7 +88,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -102,30 +96,24 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(n: Decimal, d: Decimal, default: Decimal = Decimal("0")) -> Decimal:
     if d == Decimal("0"):
         return default
     return n / d
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     q = "0." + "0" * places
     return value.quantize(Decimal(q), rounding=ROUND_HALF_UP)
 
-
 def _round3(value: float) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
-
 
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class PathwaySector(str, Enum):
     """Sector identifiers for pathway generation."""
@@ -146,7 +134,6 @@ class PathwaySector(str, Enum):
     OIL_GAS = "oil_gas"
     CROSS_SECTOR = "cross_sector"
 
-
 class ClimateScenario(str, Enum):
     """Climate scenario identifiers."""
     NZE = "nze"        # 1.5C, net zero by 2050
@@ -155,7 +142,6 @@ class ClimateScenario(str, Enum):
     APS = "aps"         # Announced Pledges
     STEPS = "steps"     # Stated Policies
 
-
 class ConvergenceModel(str, Enum):
     """Convergence trajectory models."""
     LINEAR = "linear"
@@ -163,14 +149,12 @@ class ConvergenceModel(str, Enum):
     S_CURVE = "s_curve"
     STEPPED = "stepped"
 
-
 class PathwayStatus(str, Enum):
     """Status of the generated pathway."""
     VALID = "valid"
     NEEDS_REVIEW = "needs_review"
     INFEASIBLE = "infeasible"
     NOT_APPLICABLE = "not_applicable"
-
 
 class RegionalVariant(str, Enum):
     """Regional pathway variant."""
@@ -180,7 +164,6 @@ class RegionalVariant(str, Enum):
     EU = "eu"
     NORTH_AMERICA = "north_america"
     ASIA_PACIFIC = "asia_pacific"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Sector Pathway Benchmarks
@@ -312,11 +295,9 @@ REGIONAL_ADJUSTMENTS: Dict[str, Decimal] = {
     RegionalVariant.ASIA_PACIFIC: Decimal("1.10"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class PathwayInput(BaseModel):
     """Input for pathway generation.
@@ -403,11 +384,9 @@ class PathwayInput(BaseModel):
             raise ValueError(f"target_year ({v}) must be after base_year ({base})")
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class PathwayPoint(BaseModel):
     """A single point on the intensity convergence pathway.
@@ -425,7 +404,6 @@ class PathwayPoint(BaseModel):
     reduction_from_base_pct: Decimal = Field(default=Decimal("0"))
     cumulative_reduction_pct: Decimal = Field(default=Decimal("0"))
 
-
 class AbsolutePathwayPoint(BaseModel):
     """Absolute emissions at a pathway year.
 
@@ -441,7 +419,6 @@ class AbsolutePathwayPoint(BaseModel):
     projected_activity: Decimal = Field(default=Decimal("0"))
     target_emissions_tco2e: Decimal = Field(default=Decimal("0"))
     reduction_from_base_pct: Decimal = Field(default=Decimal("0"))
-
 
 class ScenarioPathway(BaseModel):
     """A complete pathway for a single climate scenario.
@@ -465,7 +442,6 @@ class ScenarioPathway(BaseModel):
     annual_reduction_rate_pct: Decimal = Field(default=Decimal("0"))
     pathway_points: List[PathwayPoint] = Field(default_factory=list)
 
-
 class PathwayValidation(BaseModel):
     """Pathway validation checks.
 
@@ -483,7 +459,6 @@ class PathwayValidation(BaseModel):
     coverage_sufficient: bool = Field(default=True)
     annual_reduction_sufficient: bool = Field(default=False)
     validation_notes: List[str] = Field(default_factory=list)
-
 
 class PathwayResult(BaseModel):
     """Complete pathway generation result.
@@ -514,7 +489,7 @@ class PathwayResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     sector: str = Field(default="")
     scenario: str = Field(default="")
@@ -535,11 +510,9 @@ class PathwayResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class PathwayGeneratorEngine:
     """SBTi SDA + IEA NZE pathway generation engine.

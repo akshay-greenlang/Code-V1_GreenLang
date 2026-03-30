@@ -99,6 +99,7 @@ from collections import defaultdict
 from datetime import date, datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.mrv.capital_goods.models import (
     AllocationMethod,
@@ -211,26 +212,17 @@ _PCF_MAX_AGE_YEARS: int = 3
 #: Batch processing chunk size.
 _DEFAULT_BATCH_SIZE: int = 1000
 
-
 # ============================================================================
 # Helper: UTC timestamp
 # ============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _current_year() -> int:
     """Return the current calendar year."""
     return date.today().year
 
-
 # ============================================================================
 # SupplierSpecificCalculatorEngine (thread-safe singleton)
 # ============================================================================
-
 
 class SupplierSpecificCalculatorEngine:
     """Supplier-specific calculation engine for capital goods emissions.
@@ -385,7 +377,7 @@ class SupplierSpecificCalculatorEngine:
             "version": ENGINE_VERSION,
             "record_id": record.record_id,
             "asset_id": asset.asset_id,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
         logger.debug(
@@ -2441,11 +2433,9 @@ class SupplierSpecificCalculatorEngine:
         # Deterministic serialization: sorted keys, no spaces
         return json.dumps(payload, sort_keys=True, separators=(",", ":"))
 
-
 # ============================================================================
 # Module-level Utility: Decimal Square Root
 # ============================================================================
-
 
 def _sqrt_decimal(value: Decimal, precision: int = DECIMAL_PLACES) -> Decimal:
     """Compute the square root of a Decimal using Newton's method.
@@ -2493,11 +2483,9 @@ def _sqrt_decimal(value: Decimal, precision: int = DECIMAL_PLACES) -> Decimal:
 
     return guess.quantize(quantizer, rounding=ROUND_HALF_UP)
 
-
 # ============================================================================
 # Module-level Factory
 # ============================================================================
-
 
 def get_supplier_specific_calculator(
     config: Optional[Dict[str, Any]] = None,

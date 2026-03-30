@@ -64,25 +64,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -102,7 +96,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely.
 
@@ -116,7 +109,6 @@ def _decimal(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
 ) -> Decimal:
@@ -124,7 +116,6 @@ def _safe_divide(
     if denominator == Decimal("0"):
         return default
     return numerator / denominator
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value to the specified number of decimal places.
@@ -141,13 +132,11 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
-
 
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
@@ -155,16 +144,13 @@ def _round2(value: float) -> float:
         Decimal("0.01"), rounding=ROUND_HALF_UP
     ))
 
-
 def _round6(value: Decimal) -> Decimal:
     """Round Decimal to 6 decimal places using ROUND_HALF_UP."""
     return value.quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class TargetType(str, Enum):
     """Type of climate target per ESRS E1-4 Para 31.
@@ -176,7 +162,6 @@ class TargetType(str, Enum):
     ABSOLUTE = "absolute"
     INTENSITY = "intensity"
     NET_ZERO = "net_zero"
-
 
 class TargetScope(str, Enum):
     """GHG scope coverage of the target.
@@ -190,7 +175,6 @@ class TargetScope(str, Enum):
     SCOPE_1_2 = "scope_1_2"
     SCOPE_1_2_3 = "scope_1_2_3"
 
-
 class TargetPathway(str, Enum):
     """Climate pathway the target aligns with.
 
@@ -201,7 +185,6 @@ class TargetPathway(str, Enum):
     PATHWAY_WELL_BELOW_2C = "well_below_2c"
     PATHWAY_2C = "2c"
     PATHWAY_UNSPECIFIED = "unspecified"
-
 
 class TargetStatus(str, Enum):
     """Current status of the climate target.
@@ -215,7 +198,6 @@ class TargetStatus(str, Enum):
     REVISED = "revised"
     RETIRED = "retired"
 
-
 class BaseYearApproach(str, Enum):
     """Base year emissions recalculation approach.
 
@@ -226,11 +208,9 @@ class BaseYearApproach(str, Enum):
     ROLLING_BASE_YEAR = "rolling_base_year"
     TARGET_RECALCULATION = "target_recalculation"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # SBTi minimum annual linear reduction rates by pathway.
 # Source: SBTi Corporate Net-Zero Standard, v1.0 (2021).
@@ -293,11 +273,9 @@ TARGET_ASSESSMENT_CRITERIA: List[str] = [
     "has_third_party_validation",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class ClimateTarget(BaseModel):
     """A single climate change target per ESRS E1-4.
@@ -433,7 +411,6 @@ class ClimateTarget(BaseModel):
                 )
         return v
 
-
 class TargetProgressResult(BaseModel):
     """Progress assessment for a single climate target.
 
@@ -519,7 +496,6 @@ class TargetProgressResult(BaseModel):
         default="", description="SHA-256 hash"
     )
 
-
 class BaseYearRecalculation(BaseModel):
     """Base year recalculation result.
 
@@ -562,7 +538,6 @@ class BaseYearRecalculation(BaseModel):
         default="", description="SHA-256 hash"
     )
 
-
 class BatchTargetResult(BaseModel):
     """Batch assessment result for multiple targets.
 
@@ -593,7 +568,7 @@ class BatchTargetResult(BaseModel):
         default=_MODULE_VERSION, description="Engine version"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp"
+        default_factory=utcnow, description="Timestamp"
     )
     reporting_year: int = Field(
         default=0, description="Reporting year"
@@ -632,11 +607,9 @@ class BatchTargetResult(BaseModel):
         default="", description="SHA-256 hash"
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ClimateTargetEngine:
     """Climate target assessment engine per ESRS E1-4.
@@ -955,7 +928,7 @@ class ClimateTargetEngine:
             }
 
         # Base year recency check
-        current_year = _utcnow().year
+        current_year = utcnow().year
         base_year_age = current_year - target.base_year
         base_year_ok = base_year_age <= 5  # SBTi allows up to 5 years
 

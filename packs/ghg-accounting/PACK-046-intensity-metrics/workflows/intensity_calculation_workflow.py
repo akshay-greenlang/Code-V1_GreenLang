@@ -56,37 +56,28 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> str:
-    """Return current UTC timestamp as ISO-8601 string."""
-    return datetime.utcnow().isoformat() + "Z"
-
-
 def _new_uuid() -> str:
     """Return a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash of JSON-serialisable data."""
     serialised = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialised.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -97,7 +88,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -107,7 +97,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class CalcPhase(str, Enum):
     """Intensity calculation workflow phases."""
 
@@ -115,7 +104,6 @@ class CalcPhase(str, Enum):
     SCOPE_CONFIGURATION = "scope_configuration"
     INTENSITY_CALCULATION = "intensity_calculation"
     QUALITY_ASSURANCE = "quality_assurance"
-
 
 class ScopeInclusion(str, Enum):
     """Scope inclusion rules for intensity calculation."""
@@ -128,7 +116,6 @@ class ScopeInclusion(str, Enum):
     SCOPE_1_2_3 = "scope_1_2_3"
     SCOPE_3_ONLY = "scope_3_only"
     ALL_SCOPES = "all_scopes"
-
 
 class IntensityUnit(str, Enum):
     """Unit of intensity metric output."""
@@ -145,7 +132,6 @@ class IntensityUnit(str, Enum):
     TCO2E_PER_UNIT = "tCO2e/unit"
     CUSTOM = "custom"
 
-
 class QualityCheckType(str, Enum):
     """Type of quality assurance check."""
 
@@ -155,7 +141,6 @@ class QualityCheckType(str, Enum):
     REASONABLENESS = "reasonableness"
     CROSS_FRAMEWORK = "cross_framework"
 
-
 class QualityOutcome(str, Enum):
     """Outcome of a quality check."""
 
@@ -163,7 +148,6 @@ class QualityOutcome(str, Enum):
     FAIL = "fail"
     WARNING = "warning"
     NOT_APPLICABLE = "not_applicable"
-
 
 # =============================================================================
 # FRAMEWORK SCOPE RULES (Zero-Hallucination Reference Data)
@@ -180,11 +164,9 @@ FRAMEWORK_SCOPE_RULES: Dict[str, List[str]] = {
     "ifrs_s2": ["scope_1_2_location", "scope_1_2_3"],
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -198,7 +180,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
 
-
 class EmissionsDataSet(BaseModel):
     """Emissions data for intensity calculation."""
 
@@ -211,7 +192,6 @@ class EmissionsDataSet(BaseModel):
     data_quality_score: float = Field(default=0.0, ge=0.0, le=100.0)
     source: str = Field(default="mrv_agents")
 
-
 class DenominatorDataSet(BaseModel):
     """Denominator data for intensity calculation."""
 
@@ -222,14 +202,12 @@ class DenominatorDataSet(BaseModel):
     data_quality_score: float = Field(default=0.0, ge=0.0, le=100.0)
     source: str = Field(default="denominator_setup")
 
-
 class ScopeRule(BaseModel):
     """Configured scope inclusion rule for a framework."""
 
     framework: str = Field(...)
     scope_inclusion: ScopeInclusion = Field(...)
     description: str = Field(default="")
-
 
 class IntensityMetric(BaseModel):
     """A computed intensity metric."""
@@ -245,7 +223,6 @@ class IntensityMetric(BaseModel):
     frameworks: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class QualityCheckResult(BaseModel):
     """Result of a single quality assurance check."""
 
@@ -256,11 +233,9 @@ class QualityCheckResult(BaseModel):
     threshold: float = Field(default=0.0)
     actual_value: float = Field(default=0.0)
 
-
 # =============================================================================
 # INPUT / OUTPUT
 # =============================================================================
-
 
 class IntensityCalcInput(BaseModel):
     """Input data model for IntensityCalculationWorkflow."""
@@ -290,7 +265,6 @@ class IntensityCalcInput(BaseModel):
     tenant_id: str = Field(default="")
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class IntensityCalcResult(BaseModel):
     """Complete result from intensity calculation workflow."""
 
@@ -307,11 +281,9 @@ class IntensityCalcResult(BaseModel):
     metrics_count: int = Field(default=0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class IntensityCalculationWorkflow:
     """
@@ -930,6 +902,7 @@ class IntensityCalculationWorkflow:
                         phase_number, attempt, self.MAX_RETRIES, exc, delay,
                     )
                     import asyncio
+
                     await asyncio.sleep(delay)
         return PhaseResult(
             phase_name=f"phase_{phase_number}_failed",

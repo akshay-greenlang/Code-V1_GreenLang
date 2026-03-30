@@ -39,6 +39,7 @@ from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
+from greenlang.schemas.enums import AlertSeverity, HealthStatus
 
 logger = logging.getLogger(__name__)
 
@@ -54,21 +55,6 @@ class MetricType(str, Enum):
     GAUGE = "gauge"
     HISTOGRAM = "histogram"
     SUMMARY = "summary"
-
-
-class AlertSeverity(str, Enum):
-    """Alert severity levels."""
-    INFO = "info"
-    WARNING = "warning"
-    ERROR = "error"
-    CRITICAL = "critical"
-
-
-class HealthStatus(str, Enum):
-    """System health status."""
-    HEALTHY = "healthy"
-    DEGRADED = "degraded"
-    UNHEALTHY = "unhealthy"
 
 
 # =============================================================================

@@ -91,25 +91,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -127,7 +121,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -136,7 +129,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -148,11 +140,9 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
@@ -161,7 +151,6 @@ def _round_val(value: Decimal, places: int = 6) -> Decimal:
         return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
     except (InvalidOperation, OverflowError):
         return Decimal("0")
-
 
 def _decimal_sqrt(value: Decimal) -> Decimal:
     """Compute square root of a Decimal via float intermediary.
@@ -173,7 +162,6 @@ def _decimal_sqrt(value: Decimal) -> Decimal:
         return Decimal("0")
     return _decimal(math.sqrt(float(value)))
 
-
 def _decimal_ln(value: Decimal) -> Decimal:
     """Compute natural logarithm of a Decimal via float intermediary."""
     fv = float(value)
@@ -181,11 +169,9 @@ def _decimal_ln(value: Decimal) -> Decimal:
         return Decimal("0")
     return _decimal(math.log(fv))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class BaselineModelType(str, Enum):
     """Energy baseline regression model types per ISO 50006.
@@ -206,7 +192,6 @@ class BaselineModelType(str, Enum):
     CHANGE_POINT_4P = "change_point_4p"
     CHANGE_POINT_5P = "change_point_5p"
 
-
 class BaselineStatus(str, Enum):
     """Lifecycle status of an energy baseline.
 
@@ -222,7 +207,6 @@ class BaselineStatus(str, Enum):
     ADJUSTED = "adjusted"
     SUPERSEDED = "superseded"
 
-
 class VariableType(str, Enum):
     """Classification of baseline variables per ISO 50006.
 
@@ -233,7 +217,6 @@ class VariableType(str, Enum):
     STATIC_FACTOR = "static_factor"
     RELEVANT_VARIABLE = "relevant_variable"
     ENERGY_DRIVER = "energy_driver"
-
 
 class AdjustmentTrigger(str, Enum):
     """Events that trigger a baseline adjustment per ISO 50006 clause 6.5.
@@ -250,7 +233,6 @@ class AdjustmentTrigger(str, Enum):
     METHODOLOGY_CHANGE = "methodology_change"
     DATA_ERROR_CORRECTION = "data_error_correction"
 
-
 class DataGranularity(str, Enum):
     """Temporal granularity of baseline energy data.
 
@@ -265,7 +247,6 @@ class DataGranularity(str, Enum):
     WEEKLY = "weekly"
     MONTHLY = "monthly"
     ANNUAL = "annual"
-
 
 # ---------------------------------------------------------------------------
 # Constants / Reference Data
@@ -348,11 +329,9 @@ CV_RMSE_THRESHOLDS: Dict[str, Decimal] = {
     DataGranularity.ANNUAL.value: Decimal("20.0"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Data / Configuration
 # ---------------------------------------------------------------------------
-
 
 class BaselineDataPoint(BaseModel):
     """A single observation in the baseline dataset.
@@ -389,7 +368,6 @@ class BaselineDataPoint(BaseModel):
             return {k: _decimal(val) for k, val in v.items()}
         return v
 
-
 class RegressionCoefficient(BaseModel):
     """A single regression coefficient with significance statistics.
 
@@ -417,7 +395,6 @@ class RegressionCoefficient(BaseModel):
     is_significant: bool = Field(
         default=False, description="Significant at alpha level"
     )
-
 
 class RegressionModel(BaseModel):
     """Complete regression model specification and fit statistics.
@@ -483,7 +460,6 @@ class RegressionModel(BaseModel):
                 )
         return v
 
-
 class StaticFactor(BaseModel):
     """A static factor (unchanging condition) during the baseline period.
 
@@ -511,7 +487,6 @@ class StaticFactor(BaseModel):
         if not isinstance(v, Decimal):
             return _decimal(v)
         return v
-
 
 class RelevantVariable(BaseModel):
     """A relevant variable that routinely affects energy consumption.
@@ -559,7 +534,6 @@ class RelevantVariable(BaseModel):
                     f"Unknown variable type '{v}'. Must be one of: {sorted(valid)}"
                 )
         return v
-
 
 class BaselineConfig(BaseModel):
     """Configuration parameters for baseline establishment.
@@ -609,11 +583,9 @@ class BaselineConfig(BaseModel):
                 )
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class BaselineResult(BaseModel):
     """Complete energy baseline establishment result.
@@ -675,7 +647,7 @@ class BaselineResult(BaseModel):
         default=BaselineStatus.DRAFT, description="Baseline status"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     processing_time_ms: int = Field(
         default=0, ge=0, description="Processing time (ms)"
@@ -683,7 +655,6 @@ class BaselineResult(BaseModel):
     provenance_hash: str = Field(
         default="", description="SHA-256 provenance hash"
     )
-
 
 class BaselineAdjustment(BaseModel):
     """Record of an adjustment made to an approved baseline.
@@ -737,7 +708,6 @@ class BaselineAdjustment(BaseModel):
                 )
         return v
 
-
 class BaselineValidation(BaseModel):
     """Validation result for a baseline model.
 
@@ -774,7 +744,6 @@ class BaselineValidation(BaseModel):
         default="", description="SHA-256 provenance hash"
     )
 
-
 class ModelComparison(BaseModel):
     """Result of comparing multiple candidate baseline models.
 
@@ -801,11 +770,9 @@ class ModelComparison(BaseModel):
         default="", description="SHA-256 provenance hash"
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class EnergyBaselineEngine:
     """Energy Baseline (EnB) establishment engine per ISO 50006.
@@ -973,7 +940,7 @@ class EnergyBaselineEngine:
             residuals=[_round_val(r, 4) for r in residuals],
             confidence_intervals=confidence_intervals,
             status=BaselineStatus.DRAFT,
-            calculated_at=_utcnow(),
+            calculated_at=utcnow(),
             processing_time_ms=elapsed_ms,
         )
         result.provenance_hash = _compute_hash(result)
@@ -1710,7 +1677,7 @@ class EnergyBaselineEngine:
             residuals=baseline.residuals,
             confidence_intervals=baseline.confidence_intervals,
             status=BaselineStatus.ADJUSTED,
-            calculated_at=_utcnow(),
+            calculated_at=utcnow(),
             processing_time_ms=elapsed_ms,
         )
         adjusted.provenance_hash = _compute_hash(adjusted)

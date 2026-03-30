@@ -36,25 +36,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -67,11 +61,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class E1WizardStep(str, Enum):
     """The 6 steps of the E1 Setup Wizard."""
@@ -83,7 +75,6 @@ class E1WizardStep(str, Enum):
     CARBON_PRICING = "carbon_pricing"
     REPORTING = "reporting"
 
-
 class StepStatus(str, Enum):
     """Step completion status."""
 
@@ -93,7 +84,6 @@ class StepStatus(str, Enum):
     SKIPPED = "skipped"
     ERROR = "error"
 
-
 class ConsolidationApproach(str, Enum):
     """GHG consolidation approach."""
 
@@ -101,11 +91,9 @@ class ConsolidationApproach(str, Enum):
     FINANCIAL_CONTROL = "financial_control"
     EQUITY_SHARE = "equity_share"
 
-
 # ---------------------------------------------------------------------------
 # Step Data Models
 # ---------------------------------------------------------------------------
-
 
 class CompanyProfile(BaseModel):
     """Step 1: Company profile data."""
@@ -118,7 +106,6 @@ class CompanyProfile(BaseModel):
     headquarters_country: str = Field(default="", description="ISO 3166-1 alpha-2")
     reporting_year: int = Field(default=2025, ge=2020, le=2030)
     currency: str = Field(default="EUR")
-
 
 class GHGScope(BaseModel):
     """Step 2: GHG scope definition."""
@@ -136,7 +123,6 @@ class GHGScope(BaseModel):
     base_year: int = Field(default=2019, ge=2000, le=2030)
     recalculation_threshold_pct: float = Field(default=5.0, ge=0.0, le=100.0)
 
-
 class EnergyScope(BaseModel):
     """Step 3: Energy scope definition."""
 
@@ -147,7 +133,6 @@ class EnergyScope(BaseModel):
     renewable_target_year: int = Field(default=2030, ge=2025, le=2050)
     energy_unit: str = Field(default="MWh")
     include_self_generated: bool = Field(default=True)
-
 
 class TargetConfig(BaseModel):
     """Step 4: Climate target configuration."""
@@ -162,7 +147,6 @@ class TargetConfig(BaseModel):
         default_factory=lambda: ["absolute", "intensity"]
     )
 
-
 class CarbonPricingConfig(BaseModel):
     """Step 5: Carbon pricing configuration."""
 
@@ -172,7 +156,6 @@ class CarbonPricingConfig(BaseModel):
     shadow_price_eur: float = Field(default=0.0, ge=0.0)
     include_carbon_credits: bool = Field(default=False)
     carbon_tax_jurisdictions: List[str] = Field(default_factory=list)
-
 
 class ReportingConfig(BaseModel):
     """Step 6: Reporting preferences."""
@@ -187,11 +170,9 @@ class ReportingConfig(BaseModel):
     assurance_provider: str = Field(default="")
     include_prior_year: bool = Field(default=True)
 
-
 # ---------------------------------------------------------------------------
 # Wizard State
 # ---------------------------------------------------------------------------
-
 
 class WizardStepState(BaseModel):
     """State of a single wizard step."""
@@ -202,17 +183,15 @@ class WizardStepState(BaseModel):
     errors: List[str] = Field(default_factory=list)
     completed_at: Optional[datetime] = Field(None)
 
-
 class WizardState(BaseModel):
     """Complete wizard state."""
 
     wizard_id: str = Field(default_factory=_new_uuid)
     pack_id: str = Field(default="PACK-016")
-    started_at: datetime = Field(default_factory=_utcnow)
+    started_at: datetime = Field(default_factory=utcnow)
     steps: Dict[str, WizardStepState] = Field(default_factory=dict)
     current_step: E1WizardStep = Field(default=E1WizardStep.COMPANY_PROFILE)
     completed: bool = Field(default=False)
-
 
 class SetupResult(BaseModel):
     """Result of the setup wizard."""
@@ -229,7 +208,6 @@ class SetupResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Step Order
 # ---------------------------------------------------------------------------
@@ -243,11 +221,9 @@ WIZARD_STEP_ORDER: List[E1WizardStep] = [
     E1WizardStep.REPORTING,
 ]
 
-
 # ---------------------------------------------------------------------------
 # E1SetupWizard
 # ---------------------------------------------------------------------------
-
 
 class E1SetupWizard:
     """6-step guided configuration wizard for E1 Climate PACK-016.
@@ -319,7 +295,7 @@ class E1SetupWizard:
         if validation["valid"]:
             step_state.data = data
             step_state.status = StepStatus.COMPLETED
-            step_state.completed_at = _utcnow()
+            step_state.completed_at = utcnow()
             step_state.errors = []
 
             # Advance to next step
@@ -380,7 +356,7 @@ class E1SetupWizard:
                 "At least company_profile and ghg_scope must be completed"
             )
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at
@@ -554,7 +530,7 @@ class E1SetupWizard:
         config: Dict[str, Any] = {
             "pack_id": "PACK-016",
             "pack_version": "1.0.0",
-            "assembled_at": _utcnow().isoformat(),
+            "assembled_at": utcnow().isoformat(),
         }
 
         for step_name, step_state in self.state.steps.items():

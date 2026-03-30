@@ -40,6 +40,7 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas.enums import ReportFormat
 
 logger = logging.getLogger(__name__)
 
@@ -214,14 +215,6 @@ class AssuranceLevel(str, Enum):
     LIMITED = "limited"
     REASONABLE = "reasonable"
     VERIFICATION = "verification"
-
-
-class ExportFormat(str, Enum):
-    """Supported export formats."""
-
-    JSON = "json"
-    SUMMARY = "summary"
-    XBRL_ANCHOR = "xbrl_anchor"
 
 
 # ==============================================================================

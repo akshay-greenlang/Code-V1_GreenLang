@@ -29,6 +29,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "23.0.0"
@@ -43,20 +45,13 @@ AGGREGATION_METHODS = {
     "AOTS": "Revenue Allocated Temperature Score",
 }
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -66,7 +61,6 @@ def _compute_hash(data: Any) -> str:
         raw = str(data)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _dec(val: Any, places: int = 2) -> str:
     """Format a value as a Decimal string with fixed decimal places."""
     try:
@@ -75,7 +69,6 @@ def _dec(val: Any, places: int = 2) -> str:
         return str(d.quantize(Decimal(q), rounding=ROUND_HALF_UP))
     except Exception:
         return str(val)
-
 
 def _dec_comma(val: Any, places: int = 2) -> str:
     """Format a Decimal value with thousands separator."""
@@ -101,14 +94,12 @@ def _dec_comma(val: Any, places: int = 2) -> str:
     except Exception:
         return str(val)
 
-
 def _pct(val: Any) -> str:
     """Format a value as percentage string."""
     try:
         return _dec(val, 1) + "%"
     except Exception:
         return str(val)
-
 
 def _temp_label(temp: float) -> str:
     """Return alignment label based on temperature score."""
@@ -125,7 +116,6 @@ def _temp_label(temp: float) -> str:
     else:
         return "Strongly misaligned"
 
-
 def _temp_color(temp: float) -> str:
     """Return CSS color class based on temperature score."""
     if temp <= 1.5:
@@ -138,7 +128,6 @@ def _temp_color(temp: float) -> str:
         return "temp-32"
     else:
         return "temp-high"
-
 
 class TemperatureRatingReportTemplate:
     """
@@ -165,7 +154,7 @@ class TemperatureRatingReportTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render temperature rating report as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections: List[str] = [
             self._md_header(data),
             self._md_score_summary(data),
@@ -183,7 +172,7 @@ class TemperatureRatingReportTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render temperature rating report as self-contained HTML."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         body = "\n".join([
             self._html_header(data),
@@ -207,7 +196,7 @@ class TemperatureRatingReportTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render temperature rating report as structured JSON."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         scores = data.get("scores", {})
         scope_timeframe = data.get("scope_timeframe", [])
         aggregation = data.get("aggregation_methods", [])

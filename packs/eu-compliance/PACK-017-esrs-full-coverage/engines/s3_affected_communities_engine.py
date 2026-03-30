@@ -73,25 +73,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -111,7 +105,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely.
 
@@ -125,7 +118,6 @@ def _decimal(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
 ) -> Decimal:
@@ -133,7 +125,6 @@ def _safe_divide(
     if denominator == Decimal("0"):
         return default
     return numerator / denominator
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value to the specified number of decimal places.
@@ -150,13 +141,11 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
-
 
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
@@ -164,16 +153,13 @@ def _round2(value: float) -> float:
         Decimal("0.01"), rounding=ROUND_HALF_UP
     ))
 
-
 def _round1(value: Decimal) -> Decimal:
     """Round Decimal to 1 decimal place using ROUND_HALF_UP."""
     return value.quantize(Decimal("0.1"), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CommunityType(str, Enum):
     """Types of affected communities per ESRS S3.
@@ -187,7 +173,6 @@ class CommunityType(str, Enum):
     URBAN_COMMUNITIES = "urban_communities"
     NOMADIC_PEOPLES = "nomadic_peoples"
     DISPLACED_PERSONS = "displaced_persons"
-
 
 class ImpactArea(str, Enum):
     """Impact areas on affected communities per ESRS S3.
@@ -205,7 +190,6 @@ class ImpactArea(str, Enum):
     ENVIRONMENT_DEGRADATION = "environment_degradation"
     FOOD_SECURITY = "food_security"
 
-
 class ConsentType(str, Enum):
     """Types of consent processes for community engagement.
 
@@ -217,7 +201,6 @@ class ConsentType(str, Enum):
     CONSULTATION = "consultation"
     NOTIFICATION = "notification"
     NONE = "none"
-
 
 class EngagementLevel(str, Enum):
     """Levels of community engagement per IAP2 spectrum.
@@ -231,7 +214,6 @@ class EngagementLevel(str, Enum):
     COLLABORATE = "collaborate"
     EMPOWER = "empower"
 
-
 class RightsFramework(str, Enum):
     """International rights frameworks referenced in community policies.
 
@@ -243,7 +225,6 @@ class RightsFramework(str, Enum):
     UN_DRIP = "un_drip"
     OECD_GUIDELINES = "oecd_guidelines"
     VGGT = "vggt"
-
 
 class GrievanceStatus(str, Enum):
     """Status of a community grievance case.
@@ -258,7 +239,6 @@ class GrievanceStatus(str, Enum):
     CLOSED = "closed"
     ESCALATED = "escalated"
 
-
 class ActionStatus(str, Enum):
     """Status of a community action item.
 
@@ -271,7 +251,6 @@ class ActionStatus(str, Enum):
     ON_HOLD = "on_hold"
     CANCELLED = "cancelled"
 
-
 class SeverityLevel(str, Enum):
     """Severity level for impact assessments.
 
@@ -283,7 +262,6 @@ class SeverityLevel(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
 
-
 class TargetType(str, Enum):
     """Target type for S3-5 targets.
 
@@ -293,11 +271,9 @@ class TargetType(str, Enum):
     ABSOLUTE = "absolute"
     RELATIVE = "relative"
 
-
 # ---------------------------------------------------------------------------
 # Constants - ESRS S3 Required Data Points
 # ---------------------------------------------------------------------------
-
 
 S3_1_DATAPOINTS: List[str] = [
     "s3_1_01_policies_for_affected_communities",
@@ -382,11 +358,9 @@ SEVERITY_WEIGHTS: Dict[str, Decimal] = {
     "low": Decimal("1.0"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class CommunityPolicy(BaseModel):
     """Policy related to affected communities per ESRS S3-1.
@@ -437,7 +411,6 @@ class CommunityPolicy(BaseModel):
             raise ValueError("Policy name must not be empty")
         return v.strip()
 
-
 class CommunityEngagement(BaseModel):
     """Community engagement process per ESRS S3-2.
 
@@ -482,7 +455,6 @@ class CommunityEngagement(BaseModel):
         max_length=2000,
     )
 
-
 class CommunityGrievance(BaseModel):
     """Community grievance case per ESRS S3-3.
 
@@ -525,7 +497,6 @@ class CommunityGrievance(BaseModel):
         description="Days from grievance raised to resolution (None if unresolved)",
         ge=0,
     )
-
 
 class CommunityAction(BaseModel):
     """Action taken on material impacts per ESRS S3-4.
@@ -579,7 +550,6 @@ class CommunityAction(BaseModel):
             raise ValueError("Action description must not be empty")
         return v.strip()
 
-
 class CommunityImpactAssessment(BaseModel):
     """Impact assessment for a specific site/community per ESRS S3-4.
 
@@ -622,7 +592,6 @@ class CommunityImpactAssessment(BaseModel):
         default_factory=list,
         description="List of mitigation measures in place or planned",
     )
-
 
 class CommunityTarget(BaseModel):
     """Target for managing impacts on communities per ESRS S3-5.
@@ -678,7 +647,6 @@ class CommunityTarget(BaseModel):
             raise ValueError("Target metric must not be empty")
         return v.strip()
 
-
 class S3CommunitiesResult(BaseModel):
     """Complete ESRS S3 Affected Communities disclosure result.
 
@@ -695,7 +663,7 @@ class S3CommunitiesResult(BaseModel):
         description="Engine version used for this calculation",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of calculation (UTC)",
     )
 
@@ -769,11 +737,9 @@ class S3CommunitiesResult(BaseModel):
         description="SHA-256 hash of all inputs and calculation steps",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class AffectedCommunitiesEngine:
     """ESRS S3 Affected Communities calculation engine.

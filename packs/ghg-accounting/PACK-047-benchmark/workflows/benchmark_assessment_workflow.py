@@ -65,37 +65,28 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> str:
-    """Return current UTC timestamp as ISO-8601 string."""
-    return datetime.utcnow().isoformat() + "Z"
-
-
 def _new_uuid() -> str:
     """Return a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash of JSON-serialisable data."""
     serialised = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialised.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -106,7 +97,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -115,7 +105,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class AssessmentPhase(str, Enum):
     """Benchmark assessment workflow phases."""
@@ -126,14 +115,12 @@ class AssessmentPhase(str, Enum):
     PERCENTILE_RANKING = "percentile_ranking"
     REPORT_GENERATION = "report_generation"
 
-
 class GWPVintage(str, Enum):
     """GWP assessment report vintage."""
 
     AR4 = "ar4"
     AR5 = "ar5"
     AR6 = "ar6"
-
 
 class NormalisationMethod(str, Enum):
     """Method used for scope normalisation."""
@@ -142,7 +129,6 @@ class NormalisationMethod(str, Enum):
     CURRENCY_CONVERSION = "currency_conversion"
     PERIOD_ANNUALISATION = "period_annualisation"
     SCOPE_ALIGNMENT = "scope_alignment"
-
 
 class PerformanceBand(str, Enum):
     """Performance band assignment based on percentile ranking."""
@@ -153,7 +139,6 @@ class PerformanceBand(str, Enum):
     BELOW_AVERAGE = "below_average"
     LAGGARD = "laggard"
 
-
 class RankingMetric(str, Enum):
     """Metrics used for percentile ranking."""
 
@@ -163,7 +148,6 @@ class RankingMetric(str, Enum):
     SCOPE_3_RATIO = "scope_3_ratio"
     DATA_QUALITY = "data_quality"
 
-
 class ReportSection(str, Enum):
     """Sections of the benchmark assessment report."""
 
@@ -172,7 +156,6 @@ class ReportSection(str, Enum):
     RANKING_ANALYSIS = "ranking_analysis"
     GAP_ANALYSIS = "gap_analysis"
     METHODOLOGY = "methodology"
-
 
 # =============================================================================
 # GWP CONVERSION FACTORS (Zero-Hallucination Reference Data)
@@ -205,11 +188,9 @@ PERCENTILE_BAND_MAP: Dict[str, Tuple[float, float]] = {
     "laggard": (80.0, 100.1),
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -222,7 +203,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
-
 
 class EntityEmissions(BaseModel):
     """Emissions data for an entity (organisation or peer)."""
@@ -243,7 +223,6 @@ class EntityEmissions(BaseModel):
     is_organisation: bool = Field(default=False)
     data_quality_score: float = Field(default=0.0, ge=0.0, le=100.0)
 
-
 class NormalisationAdjustment(BaseModel):
     """Record of a normalisation adjustment applied to emissions data."""
 
@@ -254,7 +233,6 @@ class NormalisationAdjustment(BaseModel):
     adjustment_factor: float = Field(default=1.0)
     notes: str = Field(default="")
     provenance_hash: str = Field(default="")
-
 
 class PeerDistribution(BaseModel):
     """Distribution statistics for the peer group."""
@@ -273,7 +251,6 @@ class PeerDistribution(BaseModel):
     iqr: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class GapAnalysisResult(BaseModel):
     """Gap analysis between organisation and peer metric."""
 
@@ -287,7 +264,6 @@ class GapAnalysisResult(BaseModel):
     direction: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 class PercentileRank(BaseModel):
     """Percentile ranking for a specific metric."""
 
@@ -299,7 +275,6 @@ class PercentileRank(BaseModel):
     rank_position: int = Field(default=0)
     provenance_hash: str = Field(default="")
 
-
 class ReportItem(BaseModel):
     """Generated report section."""
 
@@ -309,11 +284,9 @@ class ReportItem(BaseModel):
     data_points: int = Field(default=0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # INPUT / OUTPUT
 # =============================================================================
-
 
 class BenchmarkAssessmentInput(BaseModel):
     """Input data model for BenchmarkAssessmentWorkflow."""
@@ -346,7 +319,6 @@ class BenchmarkAssessmentInput(BaseModel):
     tenant_id: str = Field(default="")
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class BenchmarkAssessmentResult(BaseModel):
     """Complete result from benchmark assessment workflow."""
 
@@ -365,11 +337,9 @@ class BenchmarkAssessmentResult(BaseModel):
     overall_band: PerformanceBand = Field(default=PerformanceBand.AVERAGE)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class BenchmarkAssessmentWorkflow:
     """
@@ -866,7 +836,7 @@ class BenchmarkAssessmentWorkflow:
         outputs: Dict[str, Any] = {}
 
         self._reports = []
-        now_iso = _utcnow()
+        now_iso = utcnow()
 
         # Executive Summary
         exec_text = (
@@ -978,6 +948,7 @@ class BenchmarkAssessmentWorkflow:
                         phase_number, attempt, self.MAX_RETRIES, exc, delay,
                     )
                     import asyncio
+
                     await asyncio.sleep(delay)
         return PhaseResult(
             phase_name=f"phase_{phase_number}_failed",

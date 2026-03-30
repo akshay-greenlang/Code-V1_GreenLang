@@ -131,11 +131,9 @@ ONE_HUNDRED: Decimal = Decimal("100")
 ONE_THOUSAND: Decimal = Decimal("1000")
 _PRECISION: Decimal = Decimal(10) ** -DECIMAL_PLACES
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class ProductCategory(str, Enum):
     """Intermediate product categories for Category 10 processing.
@@ -159,7 +157,6 @@ class ProductCategory(str, Enum):
     MINERALS = "MINERALS"
     AGRICULTURAL = "AGRICULTURAL"
 
-
 class ProcessingType(str, Enum):
     """Processing types for downstream manufacturing operations.
 
@@ -167,6 +164,8 @@ class ProcessingType(str, Enum):
     operations that downstream processors apply to intermediate products.
     Each type has an associated energy intensity (kWh per tonne) derived
     from industry benchmarks and LCA databases.
+
+from greenlang.schemas import utcnow
     """
 
     MACHINING = "MACHINING"
@@ -188,7 +187,6 @@ class ProcessingType(str, Enum):
     FERMENTATION = "FERMENTATION"
     TEXTILE_FINISHING = "TEXTILE_FINISHING"
 
-
 class AverageDataMethod(str, Enum):
     """Sub-methods available for average-data calculation.
 
@@ -202,7 +200,6 @@ class AverageDataMethod(str, Enum):
     ENERGY_INTENSITY = "energy_intensity"
     SECTOR_BENCHMARK = "sector_benchmark"
     CHAIN = "chain"
-
 
 class AllocationMethod(str, Enum):
     """Allocation methods for multi-use intermediate products.
@@ -218,11 +215,9 @@ class AllocationMethod(str, Enum):
     UNITS = "units"
     EQUAL = "equal"
 
-
 # ---------------------------------------------------------------------------
 # Emission Factor Tables -- All Decimal for Deterministic Arithmetic
 # ---------------------------------------------------------------------------
-
 
 # PRD Section 5.1: Processing Emission Factors by Product Category (kgCO2e/tonne)
 PROCESSING_EMISSION_FACTORS: Dict[str, Decimal] = {
@@ -240,7 +235,6 @@ PROCESSING_EMISSION_FACTORS: Dict[str, Decimal] = {
     ProductCategory.AGRICULTURAL.value: Decimal("110"),
 }
 
-
 # PRD Section 5.1: Uncertainty percentages by product category
 CATEGORY_UNCERTAINTY_PCT: Dict[str, Decimal] = {
     ProductCategory.METALS_FERROUS.value: Decimal("25"),
@@ -256,7 +250,6 @@ CATEGORY_UNCERTAINTY_PCT: Dict[str, Decimal] = {
     ProductCategory.MINERALS.value: Decimal("25"),
     ProductCategory.AGRICULTURAL.value: Decimal("20"),
 }
-
 
 # PRD Section 5.2: Energy Intensity by Processing Type (kWh/tonne, default/mid value)
 ENERGY_INTENSITY_FACTORS: Dict[str, Decimal] = {
@@ -280,7 +273,6 @@ ENERGY_INTENSITY_FACTORS: Dict[str, Decimal] = {
     ProcessingType.TEXTILE_FINISHING.value: Decimal("420"),
 }
 
-
 # PRD Section 5.2: Energy Intensity ranges (low, mid, high) kWh/tonne
 ENERGY_INTENSITY_RANGES: Dict[str, Tuple[Decimal, Decimal, Decimal]] = {
     ProcessingType.MACHINING.value: (Decimal("150"), Decimal("280"), Decimal("450")),
@@ -303,7 +295,6 @@ ENERGY_INTENSITY_RANGES: Dict[str, Tuple[Decimal, Decimal, Decimal]] = {
     ProcessingType.TEXTILE_FINISHING.value: (Decimal("200"), Decimal("420"), Decimal("700")),
 }
 
-
 # PRD Section 5.4: Grid Emission Factors (kgCO2e/kWh by Country/Region)
 GRID_EMISSION_FACTORS: Dict[str, Decimal] = {
     "US": Decimal("0.417"),
@@ -323,7 +314,6 @@ GRID_EMISSION_FACTORS: Dict[str, Decimal] = {
     "PL": Decimal("0.635"),
     "GLOBAL": Decimal("0.475"),
 }
-
 
 # PRD Section 5.6: Multi-Step Processing Chains (combined EFs in kgCO2e/tonne)
 PROCESSING_CHAINS: Dict[str, Dict[str, Any]] = {
@@ -377,7 +367,6 @@ PROCESSING_CHAINS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # Sector benchmark factors (kgCO2e/tonne processed)
 # Derived from cross-referencing industry averages with DEFRA/EPA benchmarks
 SECTOR_BENCHMARK_FACTORS: Dict[str, Decimal] = {
@@ -395,7 +384,6 @@ SECTOR_BENCHMARK_FACTORS: Dict[str, Decimal] = {
     ProductCategory.AGRICULTURAL.value: Decimal("125"),
 }
 
-
 # Sector benchmark uncertainty (always higher than process EF uncertainty)
 SECTOR_UNCERTAINTY_PCT: Dict[str, Decimal] = {
     ProductCategory.METALS_FERROUS.value: Decimal("35"),
@@ -411,7 +399,6 @@ SECTOR_UNCERTAINTY_PCT: Dict[str, Decimal] = {
     ProductCategory.MINERALS.value: Decimal("35"),
     ProductCategory.AGRICULTURAL.value: Decimal("30"),
 }
-
 
 # Default DQI scores for average-data methods (scale 1-5, lower is better)
 # PRD Section 5.8 medium-quality tier
@@ -461,11 +448,9 @@ _UNCERTAINTY_BOUNDS: Dict[str, Tuple[Decimal, Decimal, Decimal]] = {
 # Maximum batch size per calculation invocation
 _MAX_BATCH_SIZE: int = 100_000
 
-
 # ---------------------------------------------------------------------------
 # Data classes for results
 # ---------------------------------------------------------------------------
-
 
 class DataQualityScore:
     """Data quality indicator score for an average-data calculation.
@@ -534,7 +519,6 @@ class DataQualityScore:
             "method": self.method,
         }
 
-
 class UncertaintyResult:
     """Uncertainty quantification result for emission calculations.
 
@@ -595,7 +579,6 @@ class UncertaintyResult:
             "confidence_level": self.confidence_level,
             "method": self.method,
         }
-
 
 class ProductBreakdown:
     """Per-product emission breakdown from average-data calculation.
@@ -667,7 +650,6 @@ class ProductBreakdown:
                     result[slot] = val
         return result
 
-
 class CalculationResult:
     """Aggregated calculation result from average-data engine.
 
@@ -735,20 +717,9 @@ class CalculationResult:
                     result[slot] = val
         return result
 
-
 # ---------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed.
-
-    Returns:
-        datetime: Current UTC time with microsecond=0.
-    """
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _quantize(value: Decimal) -> Decimal:
     """Quantize a Decimal to the configured precision.
@@ -768,7 +739,6 @@ def _quantize(value: Decimal) -> Decimal:
         logger.warning("Quantize failed for value=%s, returning ZERO", value)
         return ZERO
 
-
 def _safe_divide(
     numerator: Decimal,
     denominator: Decimal,
@@ -787,7 +757,6 @@ def _safe_divide(
     if denominator == ZERO or denominator is None:
         return default
     return _quantize(numerator / denominator)
-
 
 def _compute_sha256(data: Any) -> str:
     """Compute SHA-256 hex digest for arbitrary data.
@@ -812,7 +781,6 @@ def _compute_sha256(data: Any) -> str:
     except (TypeError, ValueError) as exc:
         logger.warning("SHA-256 hashing failed: %s", exc)
         return hashlib.sha256(b"fallback").hexdigest()
-
 
 def _validate_quantity(quantity: Any, field_name: str = "quantity") -> Decimal:
     """Validate and coerce a quantity value to a positive Decimal.
@@ -841,7 +809,6 @@ def _validate_quantity(quantity: Any, field_name: str = "quantity") -> Decimal:
         )
     return dec_val
 
-
 def _resolve_category(category: Any) -> str:
     """Resolve a product category to its string key.
 
@@ -866,7 +833,6 @@ def _resolve_category(category: Any) -> str:
         f"Valid categories: {[pc.value for pc in ProductCategory]}"
     )
 
-
 def _resolve_processing_type(processing_type: Any) -> str:
     """Resolve a processing type to its string key.
 
@@ -890,11 +856,9 @@ def _resolve_processing_type(processing_type: Any) -> str:
         f"Valid types: {[pt.value for pt in ProcessingType]}"
     )
 
-
 # ===========================================================================
 # AverageDataCalculatorEngine -- Thread-Safe Singleton
 # ===========================================================================
-
 
 class AverageDataCalculatorEngine:
     """Engine 3: Average-data emission calculator for Processing of Sold Products.
@@ -1218,7 +1182,7 @@ class AverageDataCalculatorEngine:
                 uncertainty=uncertainty,
                 provenance_hash=provenance_hash,
                 processing_time_ms=elapsed_ms,
-                calculated_at=_utcnow(),
+                calculated_at=utcnow(),
                 warnings=warnings,
                 errors=errors,
             )
@@ -1312,7 +1276,7 @@ class AverageDataCalculatorEngine:
             dqi=dqi,
             uncertainty=uncertainty,
             provenance_hash=provenance_hash,
-            calculated_at=_utcnow(),
+            calculated_at=utcnow(),
         )
 
     # ------------------------------------------------------------------
@@ -1416,7 +1380,7 @@ class AverageDataCalculatorEngine:
                 uncertainty=uncertainty,
                 provenance_hash=provenance_hash,
                 processing_time_ms=elapsed_ms,
-                calculated_at=_utcnow(),
+                calculated_at=utcnow(),
                 warnings=warnings,
                 errors=errors,
             )
@@ -1527,7 +1491,7 @@ class AverageDataCalculatorEngine:
             dqi=dqi,
             uncertainty=uncertainty,
             provenance_hash=provenance_hash,
-            calculated_at=_utcnow(),
+            calculated_at=utcnow(),
         )
 
     # ------------------------------------------------------------------
@@ -1620,7 +1584,7 @@ class AverageDataCalculatorEngine:
                 uncertainty=uncertainty,
                 provenance_hash=provenance_hash,
                 processing_time_ms=elapsed_ms,
-                calculated_at=_utcnow(),
+                calculated_at=utcnow(),
                 warnings=warnings,
                 errors=errors,
             )
@@ -1716,7 +1680,7 @@ class AverageDataCalculatorEngine:
             dqi=dqi,
             uncertainty=uncertainty,
             provenance_hash=provenance_hash,
-            calculated_at=_utcnow(),
+            calculated_at=utcnow(),
         )
 
     # ------------------------------------------------------------------
@@ -1864,7 +1828,7 @@ class AverageDataCalculatorEngine:
             dqi=dqi,
             uncertainty=uncertainty,
             provenance_hash=provenance_hash,
-            calculated_at=_utcnow(),
+            calculated_at=utcnow(),
         )
 
     # ------------------------------------------------------------------
@@ -2175,7 +2139,7 @@ class AverageDataCalculatorEngine:
                 uncertainty=uncertainty,
                 provenance_hash=provenance_hash,
                 processing_time_ms=elapsed_ms,
-                calculated_at=_utcnow(),
+                calculated_at=utcnow(),
                 warnings=warnings,
                 errors=errors,
             )
@@ -2240,7 +2204,7 @@ class AverageDataCalculatorEngine:
             "method": method,
             "inputs": inputs,
             "result": result,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
         return _compute_sha256(provenance_data)
 
@@ -2294,7 +2258,7 @@ class AverageDataCalculatorEngine:
             self._calculation_count += 1
             self._batch_count += product_count
             self._total_emissions_kgco2e += emissions_kgco2e
-            self._last_calculation_time = _utcnow()
+            self._last_calculation_time = utcnow()
 
     # ------------------------------------------------------------------
     # Public API: Aggregation Helpers

@@ -65,6 +65,7 @@ import logging
 from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.third_party_audit_manager.config import (
     ThirdPartyAuditManagerConfig,
@@ -264,12 +265,6 @@ SEVERITY_BASE_SCORES: Dict[str, Decimal] = {
     NCSeverity.OBSERVATION.value: Decimal("5"),
 }
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_provenance_hash(data: Dict[str, Any]) -> str:
     """Compute SHA-256 hash for provenance tracking.
 
@@ -281,7 +276,6 @@ def _compute_provenance_hash(data: Dict[str, Any]) -> str:
     """
     canonical = json.dumps(data, sort_keys=True, default=str, separators=(",", ":"))
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-
 
 class NonConformanceDetectionEngine:
     """Non-conformance detection and classification engine.
@@ -325,7 +319,7 @@ class NonConformanceDetectionEngine:
         Returns:
             ClassifyNCResponse with classified NC and rationale.
         """
-        start_time = _utcnow()
+        start_time = utcnow()
 
         try:
             # Evaluate rules against indicators
@@ -397,7 +391,7 @@ class NonConformanceDetectionEngine:
             })
 
             processing_time = Decimal(str(
-                (_utcnow() - start_time).total_seconds() * 1000
+                (utcnow() - start_time).total_seconds() * 1000
             )).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
             response = ClassifyNCResponse(
@@ -518,7 +512,7 @@ class NonConformanceDetectionEngine:
                 "article_frequency": {},
                 "recurring_indicators": [],
                 "trend_direction": "stable",
-                "analyzed_at": _utcnow().isoformat(),
+                "analyzed_at": utcnow().isoformat(),
             }
 
         # Severity distribution
@@ -579,7 +573,7 @@ class NonConformanceDetectionEngine:
             ),
             "trend_direction": trend,
             "time_window_days": time_window_days,
-            "analyzed_at": _utcnow().isoformat(),
+            "analyzed_at": utcnow().isoformat(),
         }
 
     def _evaluate_rules(

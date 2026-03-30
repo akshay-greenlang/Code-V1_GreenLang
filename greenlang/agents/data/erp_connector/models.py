@@ -34,7 +34,8 @@ from datetime import date, datetime, timezone
 from enum import Enum
 from typing import Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
+from greenlang.schemas import GreenLangBase, utcnow
 
 # ---------------------------------------------------------------------------
 # Re-export Layer 1 enumerations
@@ -72,21 +73,13 @@ from greenlang.agents.data.erp_connector_agent import (
     DEFAULT_EMISSION_FACTORS,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # =============================================================================
 # New Enumerations
 # =============================================================================
-
 
 class ConnectionStatus(str, Enum):
     """Lifecycle status of an ERP connection."""
@@ -97,7 +90,6 @@ class ConnectionStatus(str, Enum):
     TESTING = "testing"
     INITIALIZING = "initializing"
 
-
 class SyncMode(str, Enum):
     """Data synchronization modes for ERP data pulls."""
 
@@ -105,7 +97,6 @@ class SyncMode(str, Enum):
     INCREMENTAL = "incremental"
     DELTA = "delta"
     MANUAL = "manual"
-
 
 class EmissionMethodology(str, Enum):
     """Methodology for estimating emissions from spend data."""
@@ -115,13 +106,11 @@ class EmissionMethodology(str, Enum):
     PROCESS_BASED = "process_based"
     SUPPLIER_SPECIFIC = "supplier_specific"
 
-
 # =============================================================================
 # SDK Data Models
 # =============================================================================
 
-
-class ConnectionRecord(BaseModel):
+class ConnectionRecord(GreenLangBase):
     """Persistent record of a registered ERP connection.
 
     Captures metadata about an ERP connection including status, sync
@@ -167,7 +156,7 @@ class ConnectionRecord(BaseModel):
         description="Total number of errors encountered",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the connection was registered",
     )
     tenant_id: str = Field(
@@ -189,8 +178,7 @@ class ConnectionRecord(BaseModel):
             raise ValueError("host must be non-empty")
         return v
 
-
-class SyncJob(BaseModel):
+class SyncJob(GreenLangBase):
     """Record of a data synchronization job execution.
 
     Tracks the lifecycle, configuration, and results of a single
@@ -244,7 +232,7 @@ class SyncJob(BaseModel):
         description="List of error messages encountered during sync",
     )
     started_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the sync job started",
     )
     completed_at: Optional[datetime] = Field(
@@ -273,8 +261,7 @@ class SyncJob(BaseModel):
             raise ValueError("connection_id must be non-empty")
         return v
 
-
-class SpendSummary(BaseModel):
+class SpendSummary(GreenLangBase):
     """Aggregated spend summary for a given period.
 
     Provides high-level spend statistics including total amounts,
@@ -324,8 +311,7 @@ class SpendSummary(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class Scope3Summary(BaseModel):
+class Scope3Summary(GreenLangBase):
     """Summary of spend and emissions for a single Scope 3 category.
 
     Provides detailed statistics for a single GHG Protocol Scope 3
@@ -375,8 +361,7 @@ class Scope3Summary(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class EmissionResult(BaseModel):
+class EmissionResult(GreenLangBase):
     """Result of an emissions calculation for a single spend record.
 
     Contains the calculated emissions estimate with full traceability
@@ -447,8 +432,7 @@ class EmissionResult(BaseModel):
             raise ValueError("vendor_id must be non-empty")
         return v
 
-
-class CurrencyRate(BaseModel):
+class CurrencyRate(GreenLangBase):
     """Exchange rate between two currencies.
 
     Represents a point-in-time exchange rate for currency conversion
@@ -497,8 +481,7 @@ class CurrencyRate(BaseModel):
             raise ValueError("to_currency must be non-empty")
         return v
 
-
-class ERPStatistics(BaseModel):
+class ERPStatistics(GreenLangBase):
     """Aggregated statistics for the ERP connector service.
 
     Provides high-level operational metrics for monitoring the
@@ -550,13 +533,11 @@ class ERPStatistics(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
 # =============================================================================
 # Request Models
 # =============================================================================
 
-
-class RegisterConnectionRequest(BaseModel):
+class RegisterConnectionRequest(GreenLangBase):
     """Request body for registering a new ERP connection.
 
     Attributes:
@@ -611,8 +592,7 @@ class RegisterConnectionRequest(BaseModel):
             raise ValueError("username must be non-empty")
         return v
 
-
-class SyncSpendRequest(BaseModel):
+class SyncSpendRequest(GreenLangBase):
     """Request body for synchronizing spend data from an ERP connection.
 
     Attributes:
@@ -659,8 +639,7 @@ class SyncSpendRequest(BaseModel):
             raise ValueError("connection_id must be non-empty")
         return v
 
-
-class MapVendorRequest(BaseModel):
+class MapVendorRequest(GreenLangBase):
     """Request body for mapping a vendor to a Scope 3 category.
 
     Attributes:
@@ -706,8 +685,7 @@ class MapVendorRequest(BaseModel):
             raise ValueError("vendor_name must be non-empty")
         return v
 
-
-class CalculateEmissionsRequest(BaseModel):
+class CalculateEmissionsRequest(GreenLangBase):
     """Request body for calculating emissions from spend data.
 
     Attributes:
@@ -745,7 +723,6 @@ class CalculateEmissionsRequest(BaseModel):
         if not v or not v.strip():
             raise ValueError("connection_id must be non-empty")
         return v
-
 
 __all__ = [
     # Re-exported enums

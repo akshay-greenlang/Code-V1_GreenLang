@@ -45,10 +45,11 @@ import time
 from datetime import date, datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 # Layer 1 imports
 from greenlang.agents.data.erp_connector_agent import SpendRecord
+from greenlang.schemas import GreenLangBase, utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -57,28 +58,19 @@ __all__ = [
     "CurrencyConverter",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _today() -> date:
     """Return today's date in UTC."""
     return datetime.now(timezone.utc).date()
 
-
 # ---------------------------------------------------------------------------
 # Data models
 # ---------------------------------------------------------------------------
 
-
-class CurrencyRate(BaseModel):
+class CurrencyRate(GreenLangBase):
     """Exchange rate between two currencies.
 
     Stores the rate such that:
@@ -104,7 +96,6 @@ class CurrencyRate(BaseModel):
     )
 
     model_config = {"extra": "forbid"}
-
 
 # ---------------------------------------------------------------------------
 # Default exchange rates (to USD)
@@ -138,11 +129,9 @@ _DEFAULT_RATES_TO_USD: Dict[str, float] = {
     "NZD": 1.63,      # 1 USD = 1.63 NZD
 }
 
-
 # ---------------------------------------------------------------------------
 # CurrencyConverter
 # ---------------------------------------------------------------------------
-
 
 class CurrencyConverter:
     """Multi-currency conversion engine with deterministic rates.
@@ -477,7 +466,7 @@ class CurrencyConverter:
                 ),
                 "custom_rates_count": len(self._custom_rates),
                 "errors": self._stats["errors"],
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }
 
     # ------------------------------------------------------------------

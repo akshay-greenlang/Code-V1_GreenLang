@@ -48,35 +48,27 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "23.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a single workflow phase."""
@@ -87,7 +79,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -97,7 +88,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class RAGStatus(str, Enum):
     """RAG (Red/Amber/Green) progress status."""
 
@@ -105,7 +95,6 @@ class RAGStatus(str, Enum):
     AMBER = "amber"
     RED = "red"
     NOT_ASSESSED = "not_assessed"
-
 
 class TrackingStatus(str, Enum):
     """Detailed tracking status classification."""
@@ -117,7 +106,6 @@ class TrackingStatus(str, Enum):
     NOT_STARTED = "not_started"
     AHEAD_OF_TARGET = "ahead_of_target"
 
-
 class VarianceDriver(str, Enum):
     """Driver type for variance decomposition."""
 
@@ -127,7 +115,6 @@ class VarianceDriver(str, Enum):
     METHODOLOGY = "methodology"
     EXTERNAL = "external"
     UNEXPLAINED = "unexplained"
-
 
 class RecalcTriggerType(str, Enum):
     """Recalculation trigger type."""
@@ -142,7 +129,6 @@ class RecalcTriggerType(str, Enum):
     BOUNDARY_CHANGE = "boundary_change"
     NONE = "none"
 
-
 class CorrectiveActionPriority(str, Enum):
     """Priority of corrective actions."""
 
@@ -150,7 +136,6 @@ class CorrectiveActionPriority(str, Enum):
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 # =============================================================================
 # REFERENCE DATA
@@ -171,11 +156,9 @@ SIGNIFICANCE_THRESHOLD_PCT = 5.0
 BUDGET_WARNING_PCT = 60.0
 BUDGET_HALFWAY_FACTOR = 0.5
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -187,7 +170,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class AnnualEmissions(BaseModel):
     """Emissions data for a single reporting year."""
@@ -212,7 +194,6 @@ class AnnualEmissions(BaseModel):
     def total_emissions(self) -> float:
         return self.scope12_total + self.scope3_total_tco2e
 
-
 class TargetReference(BaseModel):
     """Reference target for progress tracking."""
 
@@ -229,7 +210,6 @@ class TargetReference(BaseModel):
                                           description="Required annual rate (%)")
     is_intensity: bool = Field(default=False)
     intensity_metric: str = Field(default="")
-
 
 class ProgressAssessment(BaseModel):
     """Progress assessment for a single target."""
@@ -258,7 +238,6 @@ class ProgressAssessment(BaseModel):
     carbon_budget_remaining_tco2e: float = Field(default=0.0)
     carbon_budget_used_pct: float = Field(default=0.0)
 
-
 class VarianceComponent(BaseModel):
     """A single variance decomposition component."""
 
@@ -267,7 +246,6 @@ class VarianceComponent(BaseModel):
     impact_tco2e: float = Field(default=0.0)
     impact_pct: float = Field(default=0.0)
     is_controllable: bool = Field(default=True)
-
 
 class VarianceResult(BaseModel):
     """Complete variance analysis for a target."""
@@ -281,7 +259,6 @@ class VarianceResult(BaseModel):
                                   description="improving, deteriorating, or flat")
     year_over_year_change_pct: float = Field(default=0.0)
 
-
 class RecalcTrigger(BaseModel):
     """A recalculation trigger assessment."""
 
@@ -291,7 +268,6 @@ class RecalcTrigger(BaseModel):
     impact_pct: float = Field(default=0.0)
     exceeds_threshold: bool = Field(default=False)
     significance_threshold_pct: float = Field(default=SIGNIFICANCE_THRESHOLD_PCT)
-
 
 class RecalcResult(BaseModel):
     """Recalculation evaluation result."""
@@ -305,7 +281,6 @@ class RecalcResult(BaseModel):
     targets_adjusted: int = Field(default=0)
     notes: List[str] = Field(default_factory=list)
 
-
 class CorrectiveAction(BaseModel):
     """A recommended corrective action."""
 
@@ -316,7 +291,6 @@ class CorrectiveAction(BaseModel):
     expected_impact_tco2e: float = Field(default=0.0)
     timeline_months: int = Field(default=6)
     category: str = Field(default="")
-
 
 class ProgressReport(BaseModel):
     """Complete annual progress report."""
@@ -331,7 +305,6 @@ class ProgressReport(BaseModel):
     key_findings: List[str] = Field(default_factory=list)
     corrective_actions: List[CorrectiveAction] = Field(default_factory=list)
     next_review_date: str = Field(default="")
-
 
 class ProgressReviewConfig(BaseModel):
     """Configuration for the progress review workflow."""
@@ -357,7 +330,6 @@ class ProgressReviewConfig(BaseModel):
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
 
-
 class ProgressReviewResult(BaseModel):
     """Complete result from the progress review workflow."""
 
@@ -372,11 +344,9 @@ class ProgressReviewResult(BaseModel):
     report: Optional[ProgressReport] = Field(None)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class ProgressReviewWorkflow:
     """
@@ -434,7 +404,7 @@ class ProgressReviewWorkflow:
             ProgressReviewResult with assessments, variance analysis,
             recalculation evaluation, and annual report.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting progress review workflow %s, base_year=%d, current_year=%d",
             self.workflow_id,
@@ -477,7 +447,7 @@ class ProgressReviewWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         result = ProgressReviewResult(
             workflow_id=self.workflow_id,
             status=overall_status,
@@ -503,7 +473,7 @@ class ProgressReviewWorkflow:
 
     async def _phase_data_update(self, config: ProgressReviewConfig) -> PhaseResult:
         """Collect and validate current-year emissions data."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         errors: List[str] = []
@@ -566,7 +536,7 @@ class ProgressReviewWorkflow:
             )
             outputs["total_change_pct"] = round(total_change_pct, 2)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Data update: base=%d (%.2f tCO2e), current=%d (%.2f tCO2e)",
             base.year, base.total_emissions, current.year, current.total_emissions,
@@ -587,7 +557,7 @@ class ProgressReviewWorkflow:
 
     async def _phase_progress_calc(self, config: ProgressReviewConfig) -> PhaseResult:
         """Calculate progress against targets with RAG status."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._progress = []
@@ -624,7 +594,7 @@ class ProgressReviewWorkflow:
         outputs["amber_count"] = sum(1 for p in self._progress if p.rag_status == RAGStatus.AMBER)
         outputs["red_count"] = sum(1 for p in self._progress if p.rag_status == RAGStatus.RED)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Progress calc: %d targets, on_track=%d, behind=%d, critical=%d",
             len(self._progress), on_track, behind, len(critical),
@@ -796,7 +766,7 @@ class ProgressReviewWorkflow:
 
     async def _phase_variance_analysis(self, config: ProgressReviewConfig) -> PhaseResult:
         """Decompose variance by driver (structural, activity, intensity)."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._variances = []
@@ -826,7 +796,7 @@ class ProgressReviewWorkflow:
         else:
             outputs["dominant_driver"] = "none"
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Variance analysis: %d targets, total variance=%.2f tCO2e",
             len(self._variances), total_var,
@@ -950,7 +920,7 @@ class ProgressReviewWorkflow:
 
     async def _phase_recalc(self, config: ProgressReviewConfig) -> PhaseResult:
         """Evaluate recalculation triggers and apply if needed."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -1026,7 +996,7 @@ class ProgressReviewWorkflow:
         outputs["adjustment_pct"] = round(adjustment_pct, 2)
         outputs["targets_adjusted"] = targets_adjusted
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Recalc eval: required=%s, triggers=%d, adjustment=%.1f%%",
             recalc_required, len(evaluated_triggers), adjustment_pct,
@@ -1046,7 +1016,7 @@ class ProgressReviewWorkflow:
 
     async def _phase_report(self, config: ProgressReviewConfig) -> PhaseResult:
         """Generate annual progress report with corrective actions."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -1200,7 +1170,7 @@ class ProgressReviewWorkflow:
         )
         outputs["next_review_date"] = next_review
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Report: RAG=%s, on_track=%d/%d, actions=%d",
             overall_rag.value, on_track, len(self._progress), len(actions),

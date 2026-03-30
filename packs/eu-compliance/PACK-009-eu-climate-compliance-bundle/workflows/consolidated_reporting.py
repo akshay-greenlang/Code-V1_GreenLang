@@ -26,6 +26,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Set
 
 from pydantic import BaseModel, Field
+from greenlang.schemas.enums import ReportFormat
 
 logger = logging.getLogger(__name__)
 
@@ -59,15 +60,6 @@ class RegulationPack(str, Enum):
     CBAM = "CBAM"
     EU_TAXONOMY = "EU_TAXONOMY"
     EUDR = "EUDR"
-
-
-class ReportFormat(str, Enum):
-    """Available report output formats."""
-    PDF = "PDF"
-    XHTML = "XHTML"
-    XLSX = "XLSX"
-    JSON = "JSON"
-    XML = "XML"
 
 
 class FilingStatus(str, Enum):

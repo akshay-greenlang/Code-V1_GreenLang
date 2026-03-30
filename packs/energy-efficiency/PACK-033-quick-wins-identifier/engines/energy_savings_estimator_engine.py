@@ -76,25 +76,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -112,7 +106,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -121,7 +114,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -133,22 +125,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EnergyType(str, Enum):
     """Energy source / fuel type.
@@ -171,7 +159,6 @@ class EnergyType(str, Enum):
     STEAM = "steam"
     CHILLED_WATER = "chilled_water"
 
-
 class SavingsUnit(str, Enum):
     """Unit of energy savings measurement.
 
@@ -186,7 +173,6 @@ class SavingsUnit(str, Enum):
     GJ = "gj"
     MMBTU = "mmbtu"
     KW_DEMAND = "kw_demand"
-
 
 class ClimateZone(str, Enum):
     """ASHRAE/IECC climate zones (16 zones).
@@ -213,7 +199,6 @@ class ClimateZone(str, Enum):
     ZONE_7 = "zone_7"
     ZONE_8 = "zone_8"
 
-
 class EstimationMethod(str, Enum):
     """Method used for savings estimation.
 
@@ -226,7 +211,6 @@ class EstimationMethod(str, Enum):
     STIPULATED = "stipulated"
     MEASURED = "measured"
     CALIBRATED_SIMULATION = "calibrated_simulation"
-
 
 class ConfidenceLevel(str, Enum):
     """Confidence level for savings estimate uncertainty bands.
@@ -241,7 +225,6 @@ class ConfidenceLevel(str, Enum):
     LOW_70 = "low_70"
     VERY_LOW_50 = "very_low_50"
 
-
 class InteractionType(str, Enum):
     """Type of interaction between two measures in a bundle.
 
@@ -254,7 +237,6 @@ class InteractionType(str, Enum):
     COMPETING = "competing"
     INDEPENDENT = "independent"
     SEQUENTIAL = "sequential"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -418,11 +400,9 @@ _DEFAULT_INTERACTION_FACTORS: Dict[str, Decimal] = {
 _REFERENCE_CDD: Decimal = Decimal("650")
 _REFERENCE_HDD: Decimal = Decimal("3200")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class FacilityBaseline(BaseModel):
     """Facility energy baseline data for savings estimation.
@@ -497,7 +477,6 @@ class FacilityBaseline(BaseModel):
             return _new_uuid()
         return v
 
-
 class MeasureSavingsInput(BaseModel):
     """Input parameters for a single quick-win measure savings estimate.
 
@@ -566,11 +545,9 @@ class MeasureSavingsInput(BaseModel):
         """Normalise category to lowercase."""
         return v.strip().lower() if v else "other"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class SavingsBand(BaseModel):
     """Uncertainty band for a savings estimate.
@@ -585,7 +562,6 @@ class SavingsBand(BaseModel):
     expected: Decimal = Field(default=Decimal("0"), description="Expected value")
     high: Decimal = Field(default=Decimal("0"), description="Upper bound")
     unit: SavingsUnit = Field(default=SavingsUnit.KWH, description="Unit")
-
 
 class SavingsEstimate(BaseModel):
     """Complete savings estimate for a single measure.
@@ -631,12 +607,11 @@ class SavingsEstimate(BaseModel):
         default="", description="Estimation methodology description"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     provenance_hash: str = Field(
         default="", description="SHA-256 provenance hash"
     )
-
 
 class InteractiveEffect(BaseModel):
     """Interactive effect between two measures in a bundle.
@@ -672,7 +647,6 @@ class InteractiveEffect(BaseModel):
         description="Interaction delta (combined - individual sum)"
     )
     notes: str = Field(default="", description="Interaction description")
-
 
 class BundleSavingsResult(BaseModel):
     """Aggregated savings result for a bundle of measures.
@@ -718,17 +692,15 @@ class BundleSavingsResult(BaseModel):
         description="Percentage of savings lost to interactions"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     provenance_hash: str = Field(
         default="", description="SHA-256 provenance hash"
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class EnergySavingsEstimatorEngine:
     """Quick-win energy savings estimator with ASHRAE 14-2014 uncertainty.
@@ -892,7 +864,7 @@ class EnergySavingsEstimatorEngine:
             rebound_factor=_round_val(rebound, 4),
             net_savings_kwh=_round_val(net_savings, 2),
             methodology_notes=methodology,
-            calculated_at=_utcnow(),
+            calculated_at=utcnow(),
         )
         result.provenance_hash = _compute_hash(result)
 
@@ -1011,7 +983,7 @@ class EnergySavingsEstimatorEngine:
             net_savings_kwh=_round_val(net_savings, 2),
             total_cost_savings=_round_val(total_cost, 2),
             interaction_loss_pct=_round_val(interaction_loss_pct, 2),
-            calculated_at=_utcnow(),
+            calculated_at=utcnow(),
         )
         result.provenance_hash = _compute_hash(result)
 

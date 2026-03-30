@@ -24,17 +24,17 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
 
-def _utcnow(): return datetime.now(timezone.utc).replace(microsecond=0)
 def _new_uuid(): return str(uuid.uuid4())
 def _compute_hash(d):
     if hasattr(d, "model_dump"): s = d.model_dump(mode="json")
     elif isinstance(d, dict): s = d
     else: s = str(d)
     return hashlib.sha256(json.dumps(s, sort_keys=True, default=str).encode()).hexdigest()
-
 
 class _AgentStub:
     def __init__(self, name): self._name = name; self._available = False
@@ -70,7 +70,6 @@ for i in range(1, 16):
     }
 MRV_ROUTING_TABLE["category_mapper"] = {"agent": "MRV-029", "scope": "cross_cutting", "module": "greenlang.agents.mrv.category_mapper"}
 MRV_ROUTING_TABLE["audit_trail"] = {"agent": "MRV-030", "scope": "cross_cutting", "module": "greenlang.agents.mrv.audit_trail"}
-
 
 class MRVAgentRoute(BaseModel):
     source_type: str = Field(default="")
@@ -116,7 +115,6 @@ class FLAGEmissionsResult(BaseModel):
 
 FLAG_RELEVANT_SOURCES = ["land_use", "agriculture"]
 SBTiTargetBoundary = str
-
 
 class CarbonNeutralMRVBridge:
     """Bridge to 30 MRV agents for PACK-024 carbon neutrality footprint."""

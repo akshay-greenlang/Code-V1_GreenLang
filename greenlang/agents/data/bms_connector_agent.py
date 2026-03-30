@@ -35,9 +35,10 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -109,7 +110,7 @@ class DataQuality(str, Enum):
 # PYDANTIC MODELS
 # =============================================================================
 
-class BMSConnectionConfig(BaseModel):
+class BMSConnectionConfig(GreenLangBase):
     """BMS connection configuration."""
     connection_id: str = Field(..., description="Unique connection identifier")
     building_id: str = Field(..., description="Building identifier")
@@ -124,7 +125,7 @@ class BMSConnectionConfig(BaseModel):
     floor_area_sqm: Optional[float] = Field(None, description="Total floor area")
 
 
-class EquipmentConfig(BaseModel):
+class EquipmentConfig(GreenLangBase):
     """Equipment configuration in BMS."""
     equipment_id: str = Field(..., description="Equipment identifier")
     equipment_type: EquipmentType = Field(..., description="Equipment type")
@@ -137,7 +138,7 @@ class EquipmentConfig(BaseModel):
     tags: Dict[str, str] = Field(default_factory=dict, description="BMS point tags")
 
 
-class MeterConfig(BaseModel):
+class MeterConfig(GreenLangBase):
     """Meter configuration."""
     meter_id: str = Field(..., description="Meter identifier")
     meter_type: MeterType = Field(..., description="Meter type")
@@ -148,7 +149,7 @@ class MeterConfig(BaseModel):
     bms_tag: str = Field(..., description="BMS point tag")
 
 
-class WeatherData(BaseModel):
+class WeatherData(GreenLangBase):
     """Weather data point."""
     timestamp: datetime = Field(..., description="Timestamp")
     temperature_c: Optional[float] = Field(None, description="Temperature in Celsius")
@@ -159,7 +160,7 @@ class WeatherData(BaseModel):
     cloud_cover_pct: Optional[float] = Field(None, description="Cloud cover %")
 
 
-class OccupancyData(BaseModel):
+class OccupancyData(GreenLangBase):
     """Occupancy data point."""
     timestamp: datetime = Field(..., description="Timestamp")
     zone_id: str = Field(..., description="Zone identifier")
@@ -168,7 +169,7 @@ class OccupancyData(BaseModel):
     confidence: float = Field(default=1.0, ge=0.0, le=1.0)
 
 
-class BMSDataPoint(BaseModel):
+class BMSDataPoint(GreenLangBase):
     """A single BMS data point."""
     timestamp: datetime = Field(..., description="Point timestamp")
     point_id: str = Field(..., description="BMS point identifier")
@@ -178,7 +179,7 @@ class BMSDataPoint(BaseModel):
     equipment_id: Optional[str] = Field(None)
 
 
-class MeterReading(BaseModel):
+class MeterReading(GreenLangBase):
     """A meter reading."""
     timestamp: datetime = Field(..., description="Reading timestamp")
     meter_id: str = Field(..., description="Meter identifier")
@@ -188,7 +189,7 @@ class MeterReading(BaseModel):
     quality: DataQuality = Field(default=DataQuality.GOOD)
 
 
-class BuildingPerformance(BaseModel):
+class BuildingPerformance(GreenLangBase):
     """Building performance metrics."""
     building_id: str = Field(..., description="Building identifier")
     timestamp: datetime = Field(..., description="Calculation timestamp")
@@ -206,7 +207,7 @@ class BuildingPerformance(BaseModel):
     avg_outdoor_temp_c: Optional[float] = Field(None)
 
 
-class BMSQueryInput(BaseModel):
+class BMSQueryInput(GreenLangBase):
     """Input for BMS data query."""
     connection_id: str = Field(..., description="BMS connection to use")
     query_type: str = Field(..., description="Query type: equipment, meters, occupancy, weather")
@@ -221,7 +222,7 @@ class BMSQueryInput(BaseModel):
     tenant_id: Optional[str] = Field(None)
 
 
-class BMSQueryOutput(BaseModel):
+class BMSQueryOutput(GreenLangBase):
     """Output from BMS data query."""
     connection_id: str = Field(...)
     building_id: str = Field(...)

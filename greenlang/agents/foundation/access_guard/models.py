@@ -30,20 +30,19 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
+from greenlang.schemas import GreenLangBase, utcnow
 
 # =============================================================================
 # Enumerations (mirrored from foundation agent)
 # =============================================================================
-
 
 class AccessDecision(str, Enum):
     """Result of an access control decision."""
     ALLOW = "allow"
     DENY = "deny"
     CONDITIONAL = "conditional"
-
 
 class PolicyType(str, Enum):
     """Types of policies supported by the guard."""
@@ -54,7 +53,6 @@ class PolicyType(str, Enum):
     GEOGRAPHIC = "geographic"
     RATE_LIMIT = "rate_limit"
 
-
 class DataClassification(str, Enum):
     """Data sensitivity classification levels."""
     PUBLIC = "public"
@@ -62,7 +60,6 @@ class DataClassification(str, Enum):
     CONFIDENTIAL = "confidential"
     RESTRICTED = "restricted"
     TOP_SECRET = "top_secret"
-
 
 class RoleType(str, Enum):
     """Standard role types for RBAC."""
@@ -72,7 +69,6 @@ class RoleType(str, Enum):
     ADMIN = "admin"
     SUPER_ADMIN = "super_admin"
     SERVICE_ACCOUNT = "service_account"
-
 
 class AuditEventType(str, Enum):
     """Types of audit events."""
@@ -87,9 +83,7 @@ class AuditEventType(str, Enum):
     POLICY_UPDATED = "policy_updated"
     SIMULATION_RUN = "simulation_run"
 
-
 # -- New enums added by the SDK layer ----------------------------------------
-
 
 class PolicyChangeType(str, Enum):
     """Types of policy mutations for change tracking."""
@@ -99,18 +93,15 @@ class PolicyChangeType(str, Enum):
     ENABLE = "enable"
     DISABLE = "disable"
 
-
 class SimulationMode(str, Enum):
     """Simulation execution modes."""
     DRY_RUN = "dry_run"
     SHADOW = "shadow"
     CANARY = "canary"
 
-
 # =============================================================================
 # Constants
 # =============================================================================
-
 
 CLASSIFICATION_HIERARCHY: Dict[DataClassification, int] = {
     DataClassification.PUBLIC: 0,
@@ -132,28 +123,19 @@ DEFAULT_ROLE_PERMISSIONS: Dict[RoleType, Set[str]] = {
     RoleType.SERVICE_ACCOUNT: {"read", "write", "execute"},
 }
 
-
 # =============================================================================
 # Utility
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 # =============================================================================
 # Core Data Models
 # =============================================================================
 
-
-class Principal(BaseModel):
+class Principal(GreenLangBase):
     """Represents a user, service, or entity requesting access."""
     principal_id: str = Field(..., description="Unique identifier for the principal")
     principal_type: str = Field(default="user", description="Type: user, service, agent")
@@ -180,8 +162,7 @@ class Principal(BaseModel):
             return DataClassification(v.lower())
         return v
 
-
-class Resource(BaseModel):
+class Resource(GreenLangBase):
     """Represents a resource being accessed."""
     resource_id: str = Field(..., description="Unique identifier for the resource")
     resource_type: str = Field(
@@ -210,8 +191,7 @@ class Resource(BaseModel):
             return DataClassification(v.lower())
         return v
 
-
-class AccessRequest(BaseModel):
+class AccessRequest(GreenLangBase):
     """Represents an access control request."""
     request_id: str = Field(default_factory=_new_uuid, description="Request ID")
     principal: Principal = Field(..., description="The requesting principal")
@@ -222,12 +202,11 @@ class AccessRequest(BaseModel):
     context: Dict[str, Any] = Field(
         default_factory=dict, description="Additional context for ABAC",
     )
-    timestamp: datetime = Field(default_factory=_utcnow, description="Request timestamp")
+    timestamp: datetime = Field(default_factory=utcnow, description="Request timestamp")
     source_ip: Optional[str] = Field(None, description="Source IP address")
     user_agent: Optional[str] = Field(None, description="User agent string")
 
-
-class PolicyRule(BaseModel):
+class PolicyRule(GreenLangBase):
     """A single policy rule definition."""
     rule_id: str = Field(..., description="Unique rule identifier")
     name: str = Field(..., description="Human-readable rule name")
@@ -274,7 +253,7 @@ class PolicyRule(BaseModel):
 
     # Metadata
     version: str = Field(default="1.0.0", description="Rule version")
-    created_at: datetime = Field(default_factory=_utcnow, description="Creation timestamp")
+    created_at: datetime = Field(default_factory=utcnow, description="Creation timestamp")
     created_by: Optional[str] = Field(
         None, description="Principal who created the rule",
     )
@@ -288,8 +267,7 @@ class PolicyRule(BaseModel):
             return DataClassification(v.lower())
         return v
 
-
-class Policy(BaseModel):
+class Policy(GreenLangBase):
     """A collection of policy rules."""
     policy_id: str = Field(..., description="Unique policy identifier")
     name: str = Field(..., description="Policy name")
@@ -318,8 +296,8 @@ class Policy(BaseModel):
     )
 
     # Metadata
-    created_at: datetime = Field(default_factory=_utcnow, description="Creation time")
-    updated_at: datetime = Field(default_factory=_utcnow, description="Last update time")
+    created_at: datetime = Field(default_factory=utcnow, description="Creation time")
+    updated_at: datetime = Field(default_factory=utcnow, description="Last update time")
     created_by: Optional[str] = Field(
         None, description="Principal who created the policy",
     )
@@ -344,8 +322,7 @@ class Policy(BaseModel):
         )
         return hashlib.sha256(policy_str.encode()).hexdigest()
 
-
-class AccessDecisionResult(BaseModel):
+class AccessDecisionResult(GreenLangBase):
     """Result of an access control decision."""
     request_id: str = Field(..., description="Original request ID")
     decision: AccessDecision = Field(..., description="The access decision")
@@ -365,7 +342,7 @@ class AccessDecisionResult(BaseModel):
 
     # Audit info
     evaluated_at: datetime = Field(
-        default_factory=_utcnow, description="Evaluation timestamp",
+        default_factory=utcnow, description="Evaluation timestamp",
     )
     evaluation_time_ms: float = Field(
         default=0.0, description="Time to evaluate in milliseconds",
@@ -379,13 +356,12 @@ class AccessDecisionResult(BaseModel):
         default="", description="SHA-256 hash of the decision",
     )
 
-
-class AuditEvent(BaseModel):
+class AuditEvent(GreenLangBase):
     """An audit log entry."""
     event_id: str = Field(default_factory=_new_uuid, description="Event ID")
     event_type: AuditEventType = Field(..., description="Type of audit event")
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Event timestamp",
+        default_factory=utcnow, description="Event timestamp",
     )
 
     # Context
@@ -414,8 +390,7 @@ class AuditEvent(BaseModel):
         default=365, description="Days to retain this event",
     )
 
-
-class RateLimitConfig(BaseModel):
+class RateLimitConfig(GreenLangBase):
     """Rate limiting configuration."""
     requests_per_minute: int = Field(
         default=100, ge=1, description="Requests per minute",
@@ -447,12 +422,11 @@ class RateLimitConfig(BaseModel):
         description="Per-role rate limit overrides",
     )
 
-
-class ComplianceReport(BaseModel):
+class ComplianceReport(GreenLangBase):
     """Compliance report for policy enforcement."""
     report_id: str = Field(default_factory=_new_uuid, description="Report ID")
     generated_at: datetime = Field(
-        default_factory=_utcnow, description="Generation timestamp",
+        default_factory=utcnow, description="Generation timestamp",
     )
     report_period_start: datetime = Field(
         ..., description="Report period start",
@@ -514,14 +488,13 @@ class ComplianceReport(BaseModel):
         )
         return hashlib.sha256(report_str.encode()).hexdigest()
 
-
-class PolicySimulationResult(BaseModel):
+class PolicySimulationResult(GreenLangBase):
     """Result of a policy simulation run."""
     simulation_id: str = Field(
         default_factory=_new_uuid, description="Simulation ID",
     )
     run_at: datetime = Field(
-        default_factory=_utcnow, description="Simulation timestamp",
+        default_factory=utcnow, description="Simulation timestamp",
     )
 
     # Input
@@ -548,13 +521,11 @@ class PolicySimulationResult(BaseModel):
         default_factory=list, description="Uncovered resource patterns",
     )
 
-
 # =============================================================================
 # Versioning Models (new in SDK layer)
 # =============================================================================
 
-
-class PolicyVersion(BaseModel):
+class PolicyVersion(GreenLangBase):
     """A snapshot of a policy at a point in time."""
     version_id: str = Field(
         default_factory=_new_uuid, description="Version record ID",
@@ -568,20 +539,19 @@ class PolicyVersion(BaseModel):
         ..., description="SHA-256 hash of the snapshot",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Version creation time",
+        default_factory=utcnow, description="Version creation time",
     )
     created_by: Optional[str] = Field(
         None, description="User who created this version",
     )
 
-
-class PolicyChangeLogEntry(BaseModel):
+class PolicyChangeLogEntry(GreenLangBase):
     """An entry in the policy change log for auditing mutations."""
     log_id: str = Field(
         default_factory=_new_uuid, description="Change log entry ID",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Change timestamp",
+        default_factory=utcnow, description="Change timestamp",
     )
     change_type: PolicyChangeType = Field(
         ..., description="Type of policy change",
@@ -601,7 +571,6 @@ class PolicyChangeLogEntry(BaseModel):
     details: Dict[str, Any] = Field(
         default_factory=dict, description="Additional change details",
     )
-
 
 __all__ = [
     # Enumerations

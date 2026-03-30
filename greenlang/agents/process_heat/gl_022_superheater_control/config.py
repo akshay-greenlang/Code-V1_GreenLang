@@ -48,6 +48,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from pydantic import BaseModel, Field, validator, root_validator
+from greenlang.schemas.enums import AlertSeverity
 
 
 # =============================================================================
@@ -155,16 +156,6 @@ class SafetyIntegrityLevel(str, Enum):
     SIL_3 = "sil_3"  # PFD 0.001 to 0.0001
     SIL_4 = "sil_4"  # PFD 0.0001 to 0.00001
     NON_SIL = "non_sil"
-
-
-class AlertSeverity(str, Enum):
-    """Alert severity levels for superheater monitoring."""
-    GOOD = "good"
-    ADVISORY = "advisory"
-    WARNING = "warning"
-    ALARM = "alarm"
-    CRITICAL = "critical"
-    TRIP = "trip"
 
 
 class ExplainabilityMethod(str, Enum):

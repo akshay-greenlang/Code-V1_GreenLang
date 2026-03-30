@@ -46,36 +46,27 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
 
-
 # =============================================================================
 # HELPERS
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.utcnow()
-
 
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
 
-
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hash of a string."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -86,7 +77,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -96,7 +86,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class MVMaturityLevel(str, Enum):
     """M&V programme maturity level."""
 
@@ -105,7 +94,6 @@ class MVMaturityLevel(str, Enum):
     DEFINED = "defined"
     MANAGED = "managed"
     OPTIMIZING = "optimizing"
-
 
 # =============================================================================
 # REFERENCE DATA (Zero-Hallucination)
@@ -225,11 +213,9 @@ FULL_WORKFLOW_PHASES: List[Dict[str, Any]] = [
     {"order": 8, "name": "reporting", "description": "Annual Reporting"},
 ]
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -243,7 +229,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list, description="Errors encountered")
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
 
-
 class ECMSummary(BaseModel):
     """Summary ECM for full M&V workflow."""
 
@@ -254,7 +239,6 @@ class ECMSummary(BaseModel):
     estimated_cost: float = Field(default=0.0, ge=0, description="Implementation cost")
     ipmvp_option: str = Field(default="", description="IPMVP option (auto-assigned if empty)")
     installed: bool = Field(default=True, description="Whether ECM is installed")
-
 
 class FullMVInput(BaseModel):
     """Input data model for FullMVWorkflow."""
@@ -301,7 +285,6 @@ class FullMVInput(BaseModel):
             raise ValueError("project_name must not be blank")
         return stripped
 
-
 class FullMVResult(BaseModel):
     """Complete result from full M&V workflow."""
 
@@ -332,11 +315,9 @@ class FullMVResult(BaseModel):
     calculated_at: str = Field(default="", description="ISO 8601 timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 of complete result")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class FullMVWorkflow:
     """
@@ -390,7 +371,7 @@ class FullMVWorkflow:
             ValueError: If input validation fails.
         """
         t_start = time.perf_counter()
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting full M&V workflow %s for project=%s ecms=%d phases=%d",
             self.workflow_id, input_data.project_name,
@@ -735,6 +716,7 @@ class FullMVWorkflow:
         outputs: Dict[str, Any] = {}
 
         import math
+
 
         cvrmse = self._sub_results.get("baseline_dev", {}).get("cvrmse_pct", 10.0)
         n = 12  # monthly data points

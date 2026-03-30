@@ -1,0 +1,16 @@
+{
+  "controls": [
+    {
+      "id": "CTRL-001",
+      "passed": true
+    },
+    {
+      "id": "CTRL-002",
+      "passed": true
+    },
+    {
+      "id": "CTRL-003",
+      "passed": false
+    }
+  ]
+}

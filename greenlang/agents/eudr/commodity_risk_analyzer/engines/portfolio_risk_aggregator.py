@@ -61,6 +61,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -72,12 +74,6 @@ _MODULE_VERSION: str = "1.0.0"
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -97,7 +93,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str = "prt") -> str:
     """Generate a unique identifier with a given prefix.
 
@@ -108,7 +103,6 @@ def _generate_id(prefix: str = "prt") -> str:
         ID in format ``{prefix}-{hex12}``.
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 def _to_decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
@@ -128,7 +122,6 @@ def _to_decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError) as exc:
         raise ValueError(f"Cannot convert {value!r} to Decimal") from exc
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -306,11 +299,9 @@ VAR_Z_SCORES: Dict[str, Decimal] = {
     "0.99": Decimal("2.326"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class CommodityPosition:
@@ -346,7 +337,6 @@ class CommodityPosition:
             "supplier_count": self.supplier_count,
             "origin_countries": self.origin_countries,
         }
-
 
 @dataclass
 class PortfolioSummary:
@@ -404,11 +394,9 @@ class PortfolioSummary:
             "provenance_hash": self.provenance_hash,
         }
 
-
 # ---------------------------------------------------------------------------
 # PortfolioRiskAggregator
 # ---------------------------------------------------------------------------
-
 
 class PortfolioRiskAggregator:
     """Production-grade cross-commodity portfolio risk aggregator for EUDR.
@@ -495,7 +483,7 @@ class PortfolioRiskAggregator:
         var_95 = self._calculate_var_internal(positions, Decimal("0.95"))
 
         total_suppliers = sum(p.supplier_count for p in positions)
-        analysis_ts = _utcnow().isoformat()
+        analysis_ts = utcnow().isoformat()
 
         summary = PortfolioSummary(
             portfolio_id=_generate_id("pf"),

@@ -33,10 +33,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +77,7 @@ class ComponentType(str, Enum):
 # Pydantic Models
 # =============================================================================
 
-class PackComponent(BaseModel):
+class PackComponent(GreenLangBase):
     """A component within a solution pack."""
     component_id: str = Field(default_factory=lambda: str(uuid.uuid4())[:8])
     name: str = Field(..., description="Component name")
@@ -96,7 +97,7 @@ class PackComponent(BaseModel):
     optional: bool = Field(default=False)
 
 
-class PackManifest(BaseModel):
+class PackManifest(GreenLangBase):
     """Manifest describing a solution pack."""
     manifest_version: str = Field(default="1.0")
     pack_id: str = Field(..., description="Unique pack identifier")
@@ -129,7 +130,7 @@ class PackManifest(BaseModel):
     build_hash: Optional[str] = Field(None)
 
 
-class SolutionPack(BaseModel):
+class SolutionPack(GreenLangBase):
     """A complete solution pack."""
     manifest: PackManifest = Field(..., description="Pack manifest")
     build_status: BuildStatus = Field(default=BuildStatus.PENDING)
@@ -138,7 +139,7 @@ class SolutionPack(BaseModel):
     component_count: int = Field(default=0)
 
 
-class PackBuilderInput(BaseModel):
+class PackBuilderInput(GreenLangBase):
     """Input for the Pack Builder Agent."""
     operation: str = Field(..., description="Operation to perform")
     manifest: Optional[PackManifest] = Field(None)
@@ -159,7 +160,7 @@ class PackBuilderInput(BaseModel):
         return v
 
 
-class PackBuilderOutput(BaseModel):
+class PackBuilderOutput(GreenLangBase):
     """Output from the Pack Builder Agent."""
     success: bool = Field(..., description="Whether operation succeeded")
     operation: str = Field(..., description="Operation performed")

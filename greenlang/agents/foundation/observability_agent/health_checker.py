@@ -41,18 +41,13 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Callable, Deque, Dict, List, Optional, Tuple
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -69,11 +64,9 @@ _STATUS_SEVERITY: Dict[str, int] = {
     "UNKNOWN": 3,
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class ProbeDefinition:
@@ -97,13 +90,12 @@ class ProbeDefinition:
     interval_seconds: int = 30
     timeout_seconds: int = 5
     enabled: bool = True
-    created_at: datetime = field(default_factory=_utcnow)
+    created_at: datetime = field(default_factory=utcnow)
 
     def __post_init__(self) -> None:
         """Generate probe_id if not provided."""
         if not self.probe_id:
             self.probe_id = str(uuid.uuid4())
-
 
 @dataclass
 class HealthProbeResult:
@@ -128,7 +120,7 @@ class HealthProbeResult:
     status: str = "UNKNOWN"
     message: str = ""
     latency_ms: float = 0.0
-    checked_at: datetime = field(default_factory=_utcnow)
+    checked_at: datetime = field(default_factory=utcnow)
     timed_out: bool = False
     error: str = ""
     provenance_hash: str = ""
@@ -137,7 +129,6 @@ class HealthProbeResult:
         """Generate result_id if not provided."""
         if not self.result_id:
             self.result_id = str(uuid.uuid4())
-
 
 @dataclass
 class HealthStatus:
@@ -162,14 +153,12 @@ class HealthStatus:
     degraded_count: int = 0
     unhealthy_count: int = 0
     unknown_count: int = 0
-    checked_at: datetime = field(default_factory=_utcnow)
+    checked_at: datetime = field(default_factory=utcnow)
     provenance_hash: str = ""
-
 
 # =============================================================================
 # HealthChecker
 # =============================================================================
-
 
 class HealthChecker:
     """Orchestrated health probe execution engine.
@@ -453,7 +442,7 @@ class HealthChecker:
         if not results:
             return HealthStatus(
                 overall_status="UNKNOWN",
-                checked_at=_utcnow(),
+                checked_at=utcnow(),
             )
 
         healthy = sum(1 for r in results if r.status == "HEALTHY")
@@ -471,7 +460,7 @@ class HealthChecker:
         else:
             overall = "HEALTHY"
 
-        now = _utcnow()
+        now = utcnow()
         status = HealthStatus(
             overall_status=overall,
             probe_results=results,
@@ -607,7 +596,7 @@ class HealthChecker:
             HealthProbeResult with status, message, and latency.
         """
         start = time.monotonic()
-        now = _utcnow()
+        now = utcnow()
 
         if probe.check_func is None:
             return HealthProbeResult(
@@ -738,7 +727,6 @@ class HealthChecker:
             ensure_ascii=True,
         )
         return hashlib.sha256(payload.encode("utf-8")).hexdigest()
-
 
 __all__ = [
     "HealthChecker",

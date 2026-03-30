@@ -51,8 +51,10 @@ import uuid
 from collections import Counter
 from datetime import date, datetime, timezone
 from typing import Any, Dict, List, Optional, Protocol, Tuple, runtime_checkable
+from greenlang.schemas import utcnow
 
 from .models import (
+
     DeforestationStatus,
     DeforestationVerificationResult,
     TreeCoverLossEvent,
@@ -60,16 +62,9 @@ from .models import (
 
 logger = logging.getLogger(__name__)
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -88,7 +83,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -126,11 +120,9 @@ _MODULE_VERSION: str = "1.0.0"
 #: EUDR cutoff as a date object for TreeCoverLossEvent.is_post_cutoff.
 _EUDR_CUTOFF_DATE_OBJ: date = date(2020, 12, 31)
 
-
 # ---------------------------------------------------------------------------
 # Satellite Data Protocol (for dependency inversion)
 # ---------------------------------------------------------------------------
-
 
 @runtime_checkable
 class SatelliteDataProtocol(Protocol):
@@ -190,11 +182,9 @@ class SatelliteDataProtocol(Protocol):
         """
         ...
 
-
 # ---------------------------------------------------------------------------
 # Mock Satellite Provider (for testing)
 # ---------------------------------------------------------------------------
-
 
 class MockSatelliteProvider:
     """Mock satellite data provider for deterministic testing.
@@ -333,11 +323,9 @@ class MockSatelliteProvider:
             return True
         return False
 
-
 # ---------------------------------------------------------------------------
 # DeforestationCutoffVerifier
 # ---------------------------------------------------------------------------
-
 
 class DeforestationCutoffVerifier:
     """Deforestation cutoff date verifier for EUDR compliance.
@@ -912,7 +900,6 @@ class DeforestationCutoffVerifier:
         availability_score = min(50.0, total_weight * 50.0)
         agreement_score = agreement * 50.0
         return min(100.0, max(0.0, round(availability_score + agreement_score, 1)))
-
 
 # ---------------------------------------------------------------------------
 # Module Exports

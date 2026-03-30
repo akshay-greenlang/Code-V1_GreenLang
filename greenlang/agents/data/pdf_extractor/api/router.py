@@ -39,6 +39,7 @@ Status: Production Ready
 
 import logging
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +65,7 @@ except ImportError:
 
 if FASTAPI_AVAILABLE:
 
-    class IngestDocumentBody(BaseModel):
+    class IngestDocumentBody(GreenLangBase):
         """Request body for ingesting a single document."""
         file_path: Optional[str] = Field(
             None, description="Server-side file path to ingest",
@@ -88,14 +89,14 @@ if FASTAPI_AVAILABLE:
             default="default", description="Tenant identifier",
         )
 
-    class BatchDocumentItem(BaseModel):
+    class BatchDocumentItem(GreenLangBase):
         """Single item within a batch ingest request."""
         file_path: Optional[str] = Field(None, description="Server-side path")
         file_content: Optional[str] = Field(None, description="Raw text content")
         file_base64: Optional[str] = Field(None, description="Base64-encoded content")
         document_type: Optional[str] = Field(None, description="Document type hint")
 
-    class BatchIngestBody(BaseModel):
+    class BatchIngestBody(GreenLangBase):
         """Request body for batch document ingestion."""
         documents: List[BatchDocumentItem] = Field(
             ..., description="List of documents to ingest",
@@ -110,7 +111,7 @@ if FASTAPI_AVAILABLE:
             default="default", description="Tenant identifier",
         )
 
-    class ClassifyDocumentBody(BaseModel):
+    class ClassifyDocumentBody(GreenLangBase):
         """Request body for document classification."""
         text: Optional[str] = Field(
             None, description="Extracted text for classification",
@@ -119,7 +120,7 @@ if FASTAPI_AVAILABLE:
             None, description="Original filename for heuristic hints",
         )
 
-    class ExtractInvoiceBody(BaseModel):
+    class ExtractInvoiceBody(GreenLangBase):
         """Request body for invoice extraction."""
         document_id: Optional[str] = Field(
             None, description="Existing document ID to extract from",
@@ -134,7 +135,7 @@ if FASTAPI_AVAILABLE:
             None, description="Extraction template name to apply",
         )
 
-    class ExtractManifestBody(BaseModel):
+    class ExtractManifestBody(GreenLangBase):
         """Request body for manifest extraction."""
         document_id: Optional[str] = Field(
             None, description="Existing document ID to extract from",
@@ -146,7 +147,7 @@ if FASTAPI_AVAILABLE:
             None, ge=0.0, le=1.0, description="Minimum confidence threshold",
         )
 
-    class ExtractUtilityBillBody(BaseModel):
+    class ExtractUtilityBillBody(GreenLangBase):
         """Request body for utility bill extraction."""
         document_id: Optional[str] = Field(
             None, description="Existing document ID to extract from",
@@ -158,7 +159,7 @@ if FASTAPI_AVAILABLE:
             None, ge=0.0, le=1.0, description="Minimum confidence threshold",
         )
 
-    class CreateTemplateBody(BaseModel):
+    class CreateTemplateBody(GreenLangBase):
         """Request body for creating an extraction template."""
         name: str = Field(..., description="Template name")
         template_type: str = Field(

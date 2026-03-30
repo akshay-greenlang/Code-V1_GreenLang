@@ -31,6 +31,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.qr_code_generator.api.dependencies import (
     AuthUser,
@@ -62,27 +63,18 @@ router = APIRouter(tags=["QR Code Generation"])
 
 _qr_code_store: Dict[str, Dict] = {}
 
-
 def _get_qr_store() -> Dict[str, Dict]:
     """Return the QR code record store singleton."""
     return _qr_code_store
-
 
 def _compute_provenance_hash(data: dict) -> str:
     """Compute SHA-256 hash for provenance tracking."""
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ---------------------------------------------------------------------------
 # POST /qr/generate
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/qr/generate",
@@ -126,7 +118,7 @@ async def generate_qr_code(
     start = time.monotonic()
     try:
         code_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         # Compute payload hash
         payload_serialized = json.dumps(body.payload_data, sort_keys=True, default=str)
@@ -207,11 +199,9 @@ async def generate_qr_code(
             detail="Failed to generate QR code",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /qr/generate/data-matrix
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/qr/generate/data-matrix",
@@ -254,7 +244,7 @@ async def generate_data_matrix(
     start = time.monotonic()
     try:
         code_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         payload_serialized = json.dumps(body.payload_data, sort_keys=True, default=str)
         payload_hash = hashlib.sha256(payload_serialized.encode("utf-8")).hexdigest()
@@ -334,11 +324,9 @@ async def generate_data_matrix(
             detail="Failed to generate Data Matrix code",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /qr/{code_id}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/qr/{code_id}",
@@ -398,11 +386,9 @@ async def get_qr_code_detail(
             detail="Failed to retrieve QR code details",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /qr/{code_id}/image
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/qr/{code_id}/image",
@@ -481,11 +467,9 @@ async def get_qr_image(
             detail="Failed to retrieve QR code image",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /qr/{code_id}/image/{format}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/qr/{code_id}/image/{format}",
@@ -569,7 +553,6 @@ async def get_qr_image_format(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve QR code image",
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

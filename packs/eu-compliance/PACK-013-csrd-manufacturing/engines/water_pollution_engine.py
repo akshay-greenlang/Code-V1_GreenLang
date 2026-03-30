@@ -50,25 +50,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -88,7 +82,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -98,12 +91,10 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _round_value(value: Decimal, places: int = 3) -> float:
     """Round a Decimal to specified places and return float."""
     rounded = value.quantize(Decimal(10) ** -places, rounding=ROUND_HALF_UP)
     return float(rounded)
-
 
 def _pct(numerator: Decimal, denominator: Decimal, places: int = 2) -> float:
     """Calculate percentage safely, returning 0.0 when denominator is zero."""
@@ -111,11 +102,9 @@ def _pct(numerator: Decimal, denominator: Decimal, places: int = 2) -> float:
         return 0.0
     return _round_value((numerator / denominator) * Decimal("100"), places)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class WaterSource(str, Enum):
     """Source of water intake per ESRS E3 disclosure."""
@@ -126,7 +115,6 @@ class WaterSource(str, Enum):
     SEAWATER = "seawater"
     PRODUCED_WATER = "produced_water"
 
-
 class WaterStressLevel(str, Enum):
     """Water stress level per WRI Aqueduct classification."""
     LOW = "low"
@@ -135,13 +123,11 @@ class WaterStressLevel(str, Enum):
     HIGH = "high"
     EXTREMELY_HIGH = "extremely_high"
 
-
 class PollutantCategory(str, Enum):
     """Pollutant emission pathway per ESRS E2."""
     AIR = "air"
     WATER = "water"
     SOIL = "soil"
-
 
 class PollutantType(str, Enum):
     """Pollutant type per E-PRTR / IED Annex II."""
@@ -159,7 +145,6 @@ class PollutantType(str, Enum):
     COD = "cod"
     MICROPLASTICS = "microplastics"
 
-
 class TreatmentLevel(str, Enum):
     """Wastewater treatment level."""
     NONE = "none"
@@ -168,14 +153,12 @@ class TreatmentLevel(str, Enum):
     TERTIARY = "tertiary"
     ADVANCED = "advanced"
 
-
 class QualityGrade(str, Enum):
     """Water quality grade for intake."""
     POTABLE = "potable"
     PROCESS_GRADE = "process_grade"
     COOLING_GRADE = "cooling_grade"
     RAW = "raw"
-
 
 class MeasurementMethod(str, Enum):
     """Method used to measure pollutant emissions."""
@@ -185,7 +168,6 @@ class MeasurementMethod(str, Enum):
     EMISSION_FACTOR = "emission_factor"
     ENGINEERING_ESTIMATE = "engineering_estimate"
 
-
 class AuthorizationStatus(str, Enum):
     """REACH SVHC authorization status."""
     AUTHORIZED = "authorized"
@@ -193,7 +175,6 @@ class AuthorizationStatus(str, Enum):
     SUNSET = "sunset"
     EXEMPT = "exempt"
     NOT_REQUIRED = "not_required"
-
 
 # ---------------------------------------------------------------------------
 # Constants - Water Stress Thresholds
@@ -296,11 +277,9 @@ TREATMENT_EFFICIENCY: Dict[str, Dict[str, float]] = {
 # Thermal discharge limits (delta C)
 THERMAL_DISCHARGE_LIMIT_C: float = 3.0  # Maximum temperature rise per WFD
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class WaterPollutionConfig(BaseModel):
     """Configuration for water and pollution assessment."""
@@ -332,7 +311,6 @@ class WaterPollutionConfig(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class WaterIntakeData(BaseModel):
     """Water intake (withdrawal) data for a facility."""
     source: WaterSource = Field(description="Source of water withdrawal")
@@ -352,7 +330,6 @@ class WaterIntakeData(BaseModel):
         if d < 0:
             raise ValueError("Water intake volume cannot be negative")
         return d
-
 
 class WaterDischargeData(BaseModel):
     """Water discharge data for a facility."""
@@ -379,7 +356,6 @@ class WaterDischargeData(BaseModel):
             raise ValueError("Water discharge volume cannot be negative")
         return d
 
-
 class PollutantEmission(BaseModel):
     """Pollutant emission record for E-PRTR / IED reporting."""
     pollutant_type: PollutantType = Field(description="Type of pollutant")
@@ -401,7 +377,6 @@ class PollutantEmission(BaseModel):
         if d < 0:
             raise ValueError("Pollutant emission quantity cannot be negative")
         return d
-
 
 class SVHCSubstance(BaseModel):
     """REACH Substance of Very High Concern (SVHC) record."""
@@ -427,7 +402,6 @@ class SVHCSubstance(BaseModel):
             raise ValueError(f"Concentration {val}% outside valid range 0-100")
         return val
 
-
 class WaterStressAssessment(BaseModel):
     """Result of water stress analysis."""
     total_withdrawal_stressed_m3: Decimal = Field(
@@ -447,7 +421,6 @@ class WaterStressAssessment(BaseModel):
     )
     methodology_notes: List[str] = Field(default_factory=list)
 
-
 class PollutantInventoryItem(BaseModel):
     """Single item in the pollutant inventory."""
     pollutant_type: str = Field(description="Pollutant type")
@@ -458,7 +431,6 @@ class PollutantInventoryItem(BaseModel):
     limit_upper: Optional[float] = Field(default=None, description="BAT-AEL upper limit")
     measurement_methods: List[str] = Field(default_factory=list)
 
-
 class IEDComplianceDetail(BaseModel):
     """IED compliance check detail for a single pollutant."""
     pollutant_type: str = Field(description="Pollutant type")
@@ -468,7 +440,6 @@ class IEDComplianceDetail(BaseModel):
     unit: str = Field(default="mg/Nm3", description="Unit of measurement")
     status: str = Field(default="not_assessed", description="Compliance status")
     gap_pct: float = Field(default=0.0, description="Gap above upper limit (%)")
-
 
 class SVHCAssessmentResult(BaseModel):
     """Result of SVHC assessment."""
@@ -488,7 +459,6 @@ class SVHCAssessmentResult(BaseModel):
     authorization_gaps: List[str] = Field(
         default_factory=list, description="Substances needing authorization"
     )
-
 
 class WaterPollutionResult(BaseModel):
     """Complete water and pollution assessment result with provenance.
@@ -570,14 +540,12 @@ class WaterPollutionResult(BaseModel):
     )
     processing_time_ms: float = Field(default=0.0, description="Processing time in milliseconds")
     engine_version: str = Field(default=_MODULE_VERSION, description="Engine version")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Calculation timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Calculation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class WaterPollutionEngine:
     """Water and pollution assessment engine for ESRS E2/E3 compliance.

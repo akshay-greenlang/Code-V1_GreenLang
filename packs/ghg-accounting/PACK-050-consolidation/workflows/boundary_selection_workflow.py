@@ -41,26 +41,20 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -69,13 +63,11 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
-
 
 class BoundarySelectionPhase(str, Enum):
     APPROACH_EVALUATION = "approach_evaluation"
@@ -83,12 +75,10 @@ class BoundarySelectionPhase(str, Enum):
     STAKEHOLDER_APPROVAL = "stakeholder_approval"
     BOUNDARY_LOCK = "boundary_lock"
 
-
 class ConsolidationApproach(str, Enum):
     EQUITY_SHARE = "equity_share"
     FINANCIAL_CONTROL = "financial_control"
     OPERATIONAL_CONTROL = "operational_control"
-
 
 class ApproachSuitability(str, Enum):
     HIGHLY_SUITABLE = "highly_suitable"
@@ -96,19 +86,16 @@ class ApproachSuitability(str, Enum):
     PARTIALLY_SUITABLE = "partially_suitable"
     NOT_SUITABLE = "not_suitable"
 
-
 class ApprovalDecision(str, Enum):
     APPROVED = "approved"
     REJECTED = "rejected"
     DEFERRED = "deferred"
     CONDITIONAL = "conditional"
 
-
 class BoundaryLockStatus(str, Enum):
     UNLOCKED = "unlocked"
     LOCKED = "locked"
     PENDING_APPROVAL = "pending_approval"
-
 
 # =============================================================================
 # REFERENCE DATA
@@ -138,11 +125,9 @@ SUITABILITY_SCORES: Dict[str, Decimal] = {
     "not_suitable": Decimal("0.25"),
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -155,7 +140,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class EntitySummary(BaseModel):
     """Summary of an entity for approach evaluation."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -166,7 +150,6 @@ class EntitySummary(BaseModel):
     has_operational_control: bool = Field(False)
     has_financial_control: bool = Field(False)
     estimated_emissions_tco2e: Decimal = Field(Decimal("0"))
-
 
 class ApproachEvaluation(BaseModel):
     """Evaluation of a single consolidation approach."""
@@ -186,7 +169,6 @@ class ApproachEvaluation(BaseModel):
     cons: List[str] = Field(default_factory=list)
     recommendation_notes: str = Field("")
 
-
 class ImpactAnalysisResult(BaseModel):
     """Impact analysis for a single approach."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -201,7 +183,6 @@ class ImpactAnalysisResult(BaseModel):
     coverage_pct: Decimal = Field(Decimal("0"), description="Coverage of total org emissions")
     variance_from_equity: Decimal = Field(Decimal("0"), description="Variance vs equity share approach")
 
-
 class StakeholderVote(BaseModel):
     """A stakeholder approval vote record."""
     stakeholder_id: str = Field(default_factory=_new_uuid)
@@ -210,8 +191,7 @@ class StakeholderVote(BaseModel):
     decision: ApprovalDecision = Field(ApprovalDecision.APPROVED)
     selected_approach: ConsolidationApproach = Field(ConsolidationApproach.OPERATIONAL_CONTROL)
     comments: str = Field("")
-    voted_at: str = Field(default_factory=lambda: _utcnow().isoformat())
-
+    voted_at: str = Field(default_factory=lambda: utcnow().isoformat())
 
 class BoundaryLockRecord(BaseModel):
     """Final boundary lock record."""
@@ -228,7 +208,6 @@ class BoundaryLockRecord(BaseModel):
     locked_at: str = Field("")
     locked_by: str = Field("")
     provenance_hash: str = Field("")
-
 
 class BoundarySelectionInput(BaseModel):
     """Input for the boundary selection workflow."""
@@ -251,7 +230,6 @@ class BoundarySelectionInput(BaseModel):
     )
     skip_phases: List[str] = Field(default_factory=list)
 
-
 class BoundarySelectionResult(BaseModel):
     """Output from the boundary selection workflow."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -272,11 +250,9 @@ class BoundarySelectionResult(BaseModel):
     started_at: str = Field("")
     completed_at: str = Field("")
 
-
 # =============================================================================
 # WORKFLOW CLASS
 # =============================================================================
-
 
 class BoundarySelectionWorkflow:
     """
@@ -312,7 +288,7 @@ class BoundarySelectionWorkflow:
 
     def execute(self, input_data: BoundarySelectionInput) -> BoundarySelectionResult:
         """Execute the full 4-phase boundary selection workflow."""
-        start = _utcnow()
+        start = utcnow()
         result = BoundarySelectionResult(
             organisation_id=input_data.organisation_id,
             reporting_year=input_data.reporting_year,
@@ -335,10 +311,10 @@ class BoundarySelectionWorkflow:
                 ))
                 continue
 
-            phase_start = _utcnow()
+            phase_start = utcnow()
             try:
                 phase_out = phase_methods[phase](input_data, result)
-                elapsed = (_utcnow() - phase_start).total_seconds()
+                elapsed = (utcnow() - phase_start).total_seconds()
                 ph_hash = _compute_hash(str(phase_out))
                 result.phase_results.append(PhaseResult(
                     phase_name=phase.value, phase_number=idx,
@@ -346,7 +322,7 @@ class BoundarySelectionWorkflow:
                     outputs=phase_out, provenance_hash=ph_hash,
                 ))
             except Exception as exc:
-                elapsed = (_utcnow() - phase_start).total_seconds()
+                elapsed = (utcnow() - phase_start).total_seconds()
                 logger.error("Phase %s failed: %s", phase.value, exc, exc_info=True)
                 result.phase_results.append(PhaseResult(
                     phase_name=phase.value, phase_number=idx,
@@ -360,7 +336,7 @@ class BoundarySelectionWorkflow:
         if result.status != WorkflowStatus.FAILED:
             result.status = WorkflowStatus.COMPLETED
 
-        end = _utcnow()
+        end = utcnow()
         result.completed_at = end.isoformat()
         result.duration_seconds = (end - start).total_seconds()
         result.provenance_hash = _compute_hash(
@@ -724,7 +700,7 @@ class BoundarySelectionWorkflow:
         Lock the selected consolidation approach for the reporting period.
         """
         logger.info("Phase 4 -- Boundary Lock")
-        now_iso = _utcnow().isoformat()
+        now_iso = utcnow().isoformat()
 
         if self._approved_approach is None:
             self._approved_approach = ConsolidationApproach.OPERATIONAL_CONTROL
@@ -779,7 +755,6 @@ class BoundarySelectionWorkflow:
             return Decimal(str(value))
         except Exception:
             return Decimal("0")
-
 
 # =============================================================================
 # MODULE EXPORTS

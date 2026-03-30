@@ -35,18 +35,13 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # Utility Helpers
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute a SHA-256 hash of arbitrary data."""
@@ -54,11 +49,9 @@ def _hash_data(data: Any) -> str:
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # Enums
 # =============================================================================
-
 
 class RegulatorySource(str, Enum):
     """Source of regulatory updates."""
@@ -69,7 +62,6 @@ class RegulatorySource(str, Enum):
     EFRAG = "efrag"
     PLATFORM_SUSTAINABLE_FINANCE = "platform_sustainable_finance"
 
-
 class ImpactLevel(str, Enum):
     """Impact level of a regulatory change."""
     CRITICAL = "critical"
@@ -77,7 +69,6 @@ class ImpactLevel(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     INFORMATIONAL = "informational"
-
 
 class RegulationStatus(str, Enum):
     """Status of a regulation or update."""
@@ -88,7 +79,6 @@ class RegulationStatus(str, Enum):
     AMENDED = "amended"
     REPEALED = "repealed"
 
-
 class AlertChannel(str, Enum):
     """Notification channel for regulatory alerts."""
     EMAIL = "email"
@@ -96,11 +86,9 @@ class AlertChannel(str, Enum):
     DASHBOARD = "dashboard"
     LOG = "log"
 
-
 # =============================================================================
 # Data Models
 # =============================================================================
-
 
 class RegulatoryTrackingConfig(BaseModel):
     """Configuration for the Regulatory Tracking Bridge."""
@@ -127,7 +115,6 @@ class RegulatoryTrackingConfig(BaseModel):
         default_factory=lambda: ["AMF", "BaFin", "CSSF", "AFM", "CNMV"],
         description="National Competent Authorities to track",
     )
-
 
 class RegulatoryEvent(BaseModel):
     """A single regulatory event or update."""
@@ -156,7 +143,6 @@ class RegulatoryEvent(BaseModel):
     action_required: str = Field(default="", description="Required action")
     reference_url: str = Field(default="", description="Reference URL")
 
-
 class UpdateCheckResult(BaseModel):
     """Result of checking for regulatory updates."""
     total_events: int = Field(default=0, description="Total events found")
@@ -167,7 +153,6 @@ class UpdateCheckResult(BaseModel):
     )
     last_checked: str = Field(default="", description="Last check timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class DeadlineEntry(BaseModel):
     """An upcoming regulatory deadline."""
@@ -180,11 +165,9 @@ class DeadlineEntry(BaseModel):
     description: str = Field(default="", description="Deadline description")
     action_required: str = Field(default="", description="Required action")
 
-
 # =============================================================================
 # Tracked Regulations and Events
 # =============================================================================
-
 
 REGULATORY_SOURCES: Dict[str, Dict[str, str]] = {
     "esma": {
@@ -411,11 +394,9 @@ REGULATORY_EVENTS: List[Dict[str, Any]] = [
     },
 ]
 
-
 # =============================================================================
 # Regulatory Tracking Bridge
 # =============================================================================
-
 
 class RegulatoryTrackingBridge:
     """Monitor SFDR regulatory updates and compliance deadlines.
@@ -514,7 +495,7 @@ class RegulatoryTrackingBridge:
             critical_events=critical,
             high_events=high,
             events=events,
-            last_checked=_utcnow().isoformat(),
+            last_checked=utcnow().isoformat(),
         )
         result.provenance_hash = _hash_data({
             "total": len(events), "critical": critical,
@@ -614,7 +595,7 @@ class RegulatoryTrackingBridge:
         Returns:
             List of upcoming deadlines sorted by date.
         """
-        now = _utcnow()
+        now = utcnow()
         deadlines: List[DeadlineEntry] = []
 
         for event_data in REGULATORY_EVENTS:

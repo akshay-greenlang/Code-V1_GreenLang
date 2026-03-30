@@ -49,6 +49,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -219,26 +220,17 @@ try:
 except ImportError:
     FuelEnergyMetrics = None  # type: ignore[assignment, misc]
 
-
 # ===================================================================
 # Utility helpers
 # ===================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _utcnow_iso() -> str:
     """Return current UTC datetime as an ISO-8601 string."""
-    return _utcnow().isoformat()
-
+    return utcnow().isoformat()
 
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _short_id(prefix: str = "fea") -> str:
     """Generate a short unique identifier with a given prefix.
@@ -250,7 +242,6 @@ def _short_id(prefix: str = "fea") -> str:
         A string like ``fea_a1b2c3d4e5f6``.
     """
     return f"{prefix}_{uuid.uuid4().hex[:12]}"
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -269,7 +260,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 def _quantize(value: Decimal, places: int = 8) -> Decimal:
     """Quantize a Decimal to the given number of decimal places.
 
@@ -282,7 +272,6 @@ def _quantize(value: Decimal, places: int = 8) -> Decimal:
     """
     quantizer = Decimal(10) ** -places
     return value.quantize(quantizer, rounding=ROUND_HALF_UP)
-
 
 def _safe_float(value: Any, default: float = 0.0) -> float:
     """Convert a value to float, returning default on failure.
@@ -299,7 +288,6 @@ def _safe_float(value: Any, default: float = 0.0) -> float:
     except (TypeError, ValueError, ArithmeticError):
         return default
 
-
 def _safe_decimal(value: Any, default: Decimal = Decimal("0")) -> Decimal:
     """Convert a value to Decimal, returning default on failure.
 
@@ -315,7 +303,6 @@ def _safe_decimal(value: Any, default: Decimal = Decimal("0")) -> Decimal:
     except Exception:
         return default
 
-
 # ===================================================================
 # Default compliance frameworks for Category 3
 # ===================================================================
@@ -330,11 +317,9 @@ DEFAULT_COMPLIANCE_FRAMEWORKS: List[str] = [
     "iso_14064",
 ]
 
-
 # ===================================================================
 # Lightweight Pydantic response models (14 models)
 # ===================================================================
-
 
 class Activity3aResponse(BaseModel):
     """Response for Activity 3a upstream fuel emissions calculation."""
@@ -357,7 +342,6 @@ class Activity3aResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
 class Activity3bResponse(BaseModel):
     """Response for Activity 3b upstream electricity emissions calculation."""
 
@@ -378,7 +362,6 @@ class Activity3bResponse(BaseModel):
     provenance_hash: str = Field(default="")
     processing_time_ms: float = Field(default=0.0)
     timestamp: str = Field(default_factory=_utcnow_iso)
-
 
 class Activity3cResponse(BaseModel):
     """Response for Activity 3c T&D loss emissions calculation."""
@@ -403,7 +386,6 @@ class Activity3cResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
 class CalculationResponse(BaseModel):
     """Response for a full pipeline calculation (3a + 3b + 3c + 3d)."""
 
@@ -425,7 +407,6 @@ class CalculationResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
 class BatchResponse(BaseModel):
     """Response for a batch calculation across multiple periods."""
 
@@ -442,7 +423,6 @@ class BatchResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
 class WTTFactorResponse(BaseModel):
     """Response for a well-to-tank emission factor lookup."""
 
@@ -458,7 +438,6 @@ class WTTFactorResponse(BaseModel):
     heating_value_kwh_per_unit: float = Field(default=0.0)
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
 class UpstreamEFResponse(BaseModel):
     """Response for an upstream electricity emission factor lookup."""
 
@@ -473,7 +452,6 @@ class UpstreamEFResponse(BaseModel):
     n2o_kg_per_kwh: float = Field(default=0.0)
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
 class TDLossResponse(BaseModel):
     """Response for a T&D loss factor lookup."""
 
@@ -484,7 +462,6 @@ class TDLossResponse(BaseModel):
     td_loss_percentage: float = Field(default=0.0)
     source: str = Field(default="")
     timestamp: str = Field(default_factory=_utcnow_iso)
-
 
 class ComplianceResponse(BaseModel):
     """Response for a regulatory compliance check."""
@@ -502,7 +479,6 @@ class ComplianceResponse(BaseModel):
     provenance_hash: str = Field(default="")
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
 class DQIResponse(BaseModel):
     """Response for data quality indicator assessment."""
 
@@ -518,7 +494,6 @@ class DQIResponse(BaseModel):
     reliability_score: float = Field(default=0.0)
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
 class UncertaintyResponse(BaseModel):
     """Response for uncertainty quantification."""
 
@@ -531,7 +506,6 @@ class UncertaintyResponse(BaseModel):
     upper_bound_tco2e: float = Field(default=0.0)
     uncertainty_percentage: float = Field(default=0.0)
     timestamp: str = Field(default_factory=_utcnow_iso)
-
 
 class AggregationResponse(BaseModel):
     """Response for an aggregated emissions summary."""
@@ -547,7 +521,6 @@ class AggregationResponse(BaseModel):
     period: str = Field(default="annual")
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
 class HotSpotResponse(BaseModel):
     """Response for hot-spot analysis."""
 
@@ -558,7 +531,6 @@ class HotSpotResponse(BaseModel):
     top_facilities: List[Dict[str, Any]] = Field(default_factory=list)
     top_suppliers: List[Dict[str, Any]] = Field(default_factory=list)
     timestamp: str = Field(default_factory=_utcnow_iso)
-
 
 class MaterialityResponse(BaseModel):
     """Response for materiality assessment."""
@@ -574,11 +546,9 @@ class MaterialityResponse(BaseModel):
     materiality_tier: str = Field(default="low")
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
 # ===================================================================
 # FuelEnergyActivitiesService facade
 # ===================================================================
-
 
 class FuelEnergyActivitiesService:
     """Unified facade over the Fuel & Energy Activities Agent SDK.
@@ -1864,13 +1834,11 @@ class FuelEnergyActivitiesService:
         else:
             return {"result": str(result)}
 
-
 # ===================================================================
 # Module-level singleton accessor
 # ===================================================================
 
 _SERVICE_INSTANCE: Optional[FuelEnergyActivitiesService] = None
-
 
 def get_service(config: Optional[Any] = None) -> FuelEnergyActivitiesService:
     """Get the singleton FuelEnergyActivitiesService instance.
@@ -1886,11 +1854,9 @@ def get_service(config: Optional[Any] = None) -> FuelEnergyActivitiesService:
         _SERVICE_INSTANCE = FuelEnergyActivitiesService(config)
     return _SERVICE_INSTANCE
 
-
 # ===================================================================
 # FastAPI router configuration
 # ===================================================================
-
 
 def get_router() -> Any:
     """Create and configure a FastAPI APIRouter for fuel & energy endpoints.
@@ -2001,11 +1967,9 @@ def get_router() -> Any:
 
     return router
 
-
 # ===================================================================
 # FastAPI app configuration
 # ===================================================================
-
 
 def configure_fuel_energy_activities(app: Any) -> None:
     """Configure a FastAPI app with fuel & energy activities endpoints.

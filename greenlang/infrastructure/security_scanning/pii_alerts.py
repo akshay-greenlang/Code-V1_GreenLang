@@ -35,6 +35,7 @@ from typing import Any, Dict, List, Optional, Callable
 from uuid import UUID, uuid4
 
 from .pii_scanner import PIIFinding, DataClassification, PIIType
+from greenlang.schemas.enums import AlertSeverity, AlertStatus
 
 logger = logging.getLogger(__name__)
 
@@ -42,16 +43,6 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Enums and Constants
 # ---------------------------------------------------------------------------
-
-
-class AlertSeverity(str, Enum):
-    """Alert severity levels."""
-
-    CRITICAL = "critical"
-    HIGH = "high"
-    MEDIUM = "medium"
-    LOW = "low"
-    INFO = "info"
 
 
 class AlertTeam(str, Enum):
@@ -63,16 +54,6 @@ class AlertTeam(str, Enum):
     DATA_STEWARD = "data_steward"
     PRIVACY = "privacy"
     ENGINEERING = "engineering"
-
-
-class AlertStatus(str, Enum):
-    """Alert status."""
-
-    PENDING = "pending"
-    SENT = "sent"
-    ACKNOWLEDGED = "acknowledged"
-    RESOLVED = "resolved"
-    FAILED = "failed"
 
 
 # ---------------------------------------------------------------------------

@@ -35,33 +35,26 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "26.0.0"
 _PACK_ID = "PACK-026"
 
-
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -70,7 +63,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
@@ -78,13 +70,11 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class CertificationType(str, Enum):
     SME_CLIMATE_HUB = "sme_climate_hub"
     B_CORP = "b_corp"
     ISO_14001 = "iso_14001"
     CARBON_TRUST = "carbon_trust"
-
 
 class ReadinessLevel(str, Enum):
     READY = "ready"
@@ -92,13 +82,11 @@ class ReadinessLevel(str, Enum):
     SIGNIFICANT_GAPS = "significant_gaps"
     NOT_READY = "not_ready"
 
-
 class GapSeverity(str, Enum):
     CRITICAL = "critical"
     MAJOR = "major"
     MINOR = "minor"
     INFORMATIONAL = "informational"
-
 
 class DocumentStatus(str, Enum):
     NOT_STARTED = "not_started"
@@ -107,7 +95,6 @@ class DocumentStatus(str, Enum):
     SUBMITTED = "submitted"
     APPROVED = "approved"
     REJECTED = "rejected"
-
 
 class CertificationStatus(str, Enum):
     NOT_STARTED = "not_started"
@@ -118,7 +105,6 @@ class CertificationStatus(str, Enum):
     CERTIFIED = "certified"
     REJECTED = "rejected"
     RENEWAL_DUE = "renewal_due"
-
 
 # =============================================================================
 # CERTIFICATION CRITERIA DATABASE
@@ -351,11 +337,9 @@ CERTIFICATION_CRITERIA: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -371,7 +355,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     mobile_summary: str = Field(default="")
 
-
 class CriterionAssessment(BaseModel):
     """Assessment of a single certification criterion."""
 
@@ -384,7 +367,6 @@ class CriterionAssessment(BaseModel):
     remediation_action: str = Field(default="")
     estimated_effort_hours: float = Field(default=0.0, ge=0.0)
     estimated_cost_gbp: float = Field(default=0.0, ge=0.0)
-
 
 class ReadinessScorecard(BaseModel):
     """Overall readiness assessment scorecard."""
@@ -402,7 +384,6 @@ class ReadinessScorecard(BaseModel):
     estimated_cost_to_ready_gbp: float = Field(default=0.0, ge=0.0)
     criteria_assessments: List[CriterionAssessment] = Field(default_factory=list)
 
-
 class GapClosureAction(BaseModel):
     """Action required to close a certification gap."""
 
@@ -417,7 +398,6 @@ class GapClosureAction(BaseModel):
     status: str = Field(default="not_started")
     deadline: str = Field(default="")
 
-
 class CertificationDocument(BaseModel):
     """Certification submission document."""
 
@@ -428,7 +408,6 @@ class CertificationDocument(BaseModel):
     description: str = Field(default="")
     auto_generated: bool = Field(default=False)
     content_summary: str = Field(default="")
-
 
 class SubmissionRecord(BaseModel):
     """Certification submission record."""
@@ -442,7 +421,6 @@ class SubmissionRecord(BaseModel):
     expected_response_weeks: int = Field(default=4, ge=1)
     notes: List[str] = Field(default_factory=list)
 
-
 class VerificationTracking(BaseModel):
     """Verification/audit tracking record."""
 
@@ -455,7 +433,6 @@ class VerificationTracking(BaseModel):
     corrective_actions: List[str] = Field(default_factory=list)
     result: str = Field(default="pending")
     certificate_expiry: str = Field(default="")
-
 
 class CertificationPathwayConfig(BaseModel):
     """Configuration for certification pathway workflow."""
@@ -478,14 +455,12 @@ class CertificationPathwayConfig(BaseModel):
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
 
-
 class CertificationPathwayInput(BaseModel):
     """Complete input for certification pathway workflow."""
 
     config: CertificationPathwayConfig = Field(
         default_factory=CertificationPathwayConfig,
     )
-
 
 class CertificationPathwayResult(BaseModel):
     """Complete result from certification pathway workflow."""
@@ -505,11 +480,9 @@ class CertificationPathwayResult(BaseModel):
     next_steps: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class CertificationPathwayWorkflow:
     """
@@ -548,7 +521,7 @@ class CertificationPathwayWorkflow:
 
     async def execute(self, input_data: CertificationPathwayInput) -> CertificationPathwayResult:
         """Execute the 6-phase certification pathway workflow."""
-        started_at = _utcnow()
+        started_at = utcnow()
         config = input_data.config
         self.logger.info(
             "Starting certification pathway %s for %s (%s)",
@@ -590,7 +563,7 @@ class CertificationPathwayWorkflow:
                 mobile_summary="Certification workflow failed.",
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         next_steps = self._generate_next_steps(config)
 
         result = CertificationPathwayResult(
@@ -617,7 +590,7 @@ class CertificationPathwayWorkflow:
 
     async def _phase_pathway_selection(self, config: CertificationPathwayConfig) -> PhaseResult:
         """Validate and confirm certification pathway selection."""
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         errors: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -652,7 +625,7 @@ class CertificationPathwayWorkflow:
                 f"(plus implementation costs)"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="pathway_selection", phase_number=1,
             status=PhaseStatus.COMPLETED,
@@ -669,7 +642,7 @@ class CertificationPathwayWorkflow:
 
     async def _phase_readiness_assessment(self, config: CertificationPathwayConfig) -> PhaseResult:
         """Assess readiness against certification criteria."""
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
 
@@ -745,7 +718,7 @@ class CertificationPathwayWorkflow:
         outputs["months_to_ready"] = months_to_ready
         outputs["cost_to_ready_gbp"] = round(total_cost, 2)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Readiness: %s (%.1f%%), %d/%d criteria met, %d critical gaps",
             readiness, overall_score, criteria_met, len(requirements), critical_gaps,
@@ -847,7 +820,7 @@ class CertificationPathwayWorkflow:
 
     async def _phase_gap_closure(self, config: CertificationPathwayConfig) -> PhaseResult:
         """Generate gap closure action plan."""
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
 
@@ -890,7 +863,7 @@ class CertificationPathwayWorkflow:
         outputs["total_effort_hours"] = sum(a.estimated_hours for a in self._gap_actions)
         outputs["total_cost_gbp"] = round(sum(a.estimated_cost_gbp for a in self._gap_actions), 2)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="gap_closure", phase_number=3,
             status=PhaseStatus.COMPLETED,
@@ -907,7 +880,7 @@ class CertificationPathwayWorkflow:
 
     async def _phase_documentation(self, config: CertificationPathwayConfig) -> PhaseResult:
         """Prepare certification submission documents."""
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
 
@@ -982,7 +955,7 @@ class CertificationPathwayWorkflow:
         outputs["documents_ready"] = ready_count
         outputs["documents_pending"] = len(self._documents) - ready_count
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="documentation", phase_number=4,
             status=PhaseStatus.COMPLETED,
@@ -999,7 +972,7 @@ class CertificationPathwayWorkflow:
 
     async def _phase_submission(self, config: CertificationPathwayConfig) -> PhaseResult:
         """Prepare submission to certification body."""
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
 
@@ -1028,7 +1001,7 @@ class CertificationPathwayWorkflow:
             submission_id=_new_uuid(),
             certification_type=config.selected_certification,
             certification_body=cert_info["provider"],
-            submission_date="" if not all_ready else _utcnow().strftime("%Y-%m-%d"),
+            submission_date="" if not all_ready else utcnow().strftime("%Y-%m-%d"),
             documents_submitted=[d.document_id for d in self._documents if d.status == DocumentStatus.READY.value],
             status=submission_status,
             expected_response_weeks=cert_info.get("timeline_months", 3) * 4,
@@ -1039,7 +1012,7 @@ class CertificationPathwayWorkflow:
         outputs["status"] = submission_status
         outputs["documents_submitted"] = len(self._submission.documents_submitted)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="submission", phase_number=5,
             status=PhaseStatus.COMPLETED,
@@ -1056,7 +1029,7 @@ class CertificationPathwayWorkflow:
 
     async def _phase_verification_tracking(self, config: CertificationPathwayConfig) -> PhaseResult:
         """Set up verification/audit tracking framework."""
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
 
@@ -1082,7 +1055,7 @@ class CertificationPathwayWorkflow:
         outputs["renewal_years"] = cert_info.get("renewal_years", 3)
         outputs["pending_corrective_actions"] = len(self._verification.corrective_actions)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="verification_tracking", phase_number=6,
             status=PhaseStatus.COMPLETED,

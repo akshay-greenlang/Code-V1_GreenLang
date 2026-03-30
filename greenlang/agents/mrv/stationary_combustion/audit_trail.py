@@ -62,9 +62,9 @@ import threading
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Conditional imports
@@ -92,20 +92,13 @@ try:
 except ImportError:  # pragma: no cover
     get_provenance_tracker = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ---------------------------------------------------------------------------
 # AuditEntry dataclass
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class AuditEntry:
@@ -130,7 +123,7 @@ class AuditEntry:
     output_data: Dict[str, Any]
     emission_factor_used: Optional[Dict[str, Any]] = None
     methodology_reference: Optional[str] = None
-    timestamp: str = field(default_factory=lambda: _utcnow().isoformat())
+    timestamp: str = field(default_factory=lambda: utcnow().isoformat())
     provenance_hash: str = ""
 
     def to_dict(self) -> Dict[str, Any]:
@@ -150,7 +143,6 @@ class AuditEntry:
             "timestamp": self.timestamp,
             "provenance_hash": self.provenance_hash,
         }
-
 
 # ---------------------------------------------------------------------------
 # Regulatory Compliance Map
@@ -288,11 +280,9 @@ COMPLIANCE_MAP: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # AuditTrailEngine
 # ---------------------------------------------------------------------------
-
 
 class AuditTrailEngine:
     """Complete calculation lineage and regulatory compliance mapping engine.
@@ -531,7 +521,7 @@ class AuditTrailEngine:
             "emission_factors": emission_factors,
             "methodology_references": methodology_refs,
             "compliance_requirements": fw_mapping.get("requirements", []),
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
             "report_hash": self._compute_hash({
                 "calculation_id": calculation_id,
                 "framework": fw_key,
@@ -871,7 +861,6 @@ class AuditTrailEngine:
         """
         serialized = json.dumps(data, sort_keys=True, default=str)
         return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Public API

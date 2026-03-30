@@ -57,7 +57,8 @@ from decimal import Decimal
 from typing import Any, Dict, List, Optional, Union
 from uuid import uuid4
 
-from pydantic import BaseModel, Field, validator
+from pydantic import Field, validator
+from greenlang.schemas import GreenLangBase
 
 # Thread-safe singleton lock
 _service_lock = threading.Lock()
@@ -71,7 +72,7 @@ logger = logging.getLogger(__name__)
 # ============================================================================
 
 
-class TripCalculationRequest(BaseModel):
+class TripCalculationRequest(GreenLangBase):
     """Request model for single trip emissions calculation."""
 
     mode: str = Field(..., description="Transport mode: air, rail, road, bus, taxi, ferry, motorcycle, hotel")
@@ -90,7 +91,7 @@ class TripCalculationRequest(BaseModel):
         return v.lower()
 
 
-class BatchTripCalculationRequest(BaseModel):
+class BatchTripCalculationRequest(GreenLangBase):
     """Request model for batch trip calculations."""
 
     trips: List[TripCalculationRequest] = Field(..., min_length=1, description="List of trips")
@@ -98,7 +99,7 @@ class BatchTripCalculationRequest(BaseModel):
     tenant_id: Optional[str] = Field(None, description="Tenant identifier")
 
 
-class FlightCalculationRequest(BaseModel):
+class FlightCalculationRequest(GreenLangBase):
     """Request model for direct flight calculation."""
 
     origin_iata: str = Field(..., min_length=3, max_length=3, description="Origin IATA code")
@@ -110,7 +111,7 @@ class FlightCalculationRequest(BaseModel):
     tenant_id: Optional[str] = Field(None, description="Tenant identifier")
 
 
-class RailCalculationRequest(BaseModel):
+class RailCalculationRequest(GreenLangBase):
     """Request model for rail calculation."""
 
     rail_type: str = Field(..., description="Rail type: national, international, light_rail, eurostar, etc.")
@@ -119,7 +120,7 @@ class RailCalculationRequest(BaseModel):
     tenant_id: Optional[str] = Field(None, description="Tenant identifier")
 
 
-class RoadCalculationRequest(BaseModel):
+class RoadCalculationRequest(GreenLangBase):
     """Request model for road vehicle calculation."""
 
     vehicle_type: Optional[str] = Field("car_average", description="Vehicle type")
@@ -129,7 +130,7 @@ class RoadCalculationRequest(BaseModel):
     tenant_id: Optional[str] = Field(None, description="Tenant identifier")
 
 
-class HotelCalculationRequest(BaseModel):
+class HotelCalculationRequest(GreenLangBase):
     """Request model for hotel accommodation calculation."""
 
     country_code: str = Field("GLOBAL", description="ISO country code or GLOBAL")
@@ -138,7 +139,7 @@ class HotelCalculationRequest(BaseModel):
     tenant_id: Optional[str] = Field(None, description="Tenant identifier")
 
 
-class SpendCalculationRequest(BaseModel):
+class SpendCalculationRequest(GreenLangBase):
     """Request model for spend-based calculation."""
 
     naics_code: str = Field(..., description="NAICS code for EEIO factor")
@@ -148,7 +149,7 @@ class SpendCalculationRequest(BaseModel):
     tenant_id: Optional[str] = Field(None, description="Tenant identifier")
 
 
-class ComplianceCheckRequest(BaseModel):
+class ComplianceCheckRequest(GreenLangBase):
     """Request model for compliance checking."""
 
     calculation_id: str = Field(..., description="Calculation ID to check")
@@ -159,7 +160,7 @@ class ComplianceCheckRequest(BaseModel):
     tenant_id: Optional[str] = Field(None, description="Tenant identifier")
 
 
-class UncertaintyRequest(BaseModel):
+class UncertaintyRequest(GreenLangBase):
     """Request model for uncertainty analysis."""
 
     calculation_id: str = Field(..., description="Calculation ID")
@@ -169,7 +170,7 @@ class UncertaintyRequest(BaseModel):
     tenant_id: Optional[str] = Field(None, description="Tenant identifier")
 
 
-class HotSpotRequest(BaseModel):
+class HotSpotRequest(GreenLangBase):
     """Request model for hot-spot analysis."""
 
     reporting_period: str = Field(..., description="Reporting period")
@@ -177,7 +178,7 @@ class HotSpotRequest(BaseModel):
     tenant_id: Optional[str] = Field(None, description="Tenant identifier")
 
 
-class CalculationFilterRequest(BaseModel):
+class CalculationFilterRequest(GreenLangBase):
     """Request model for filtering calculations."""
 
     tenant_id: Optional[str] = Field(None, description="Tenant filter")
@@ -188,7 +189,7 @@ class CalculationFilterRequest(BaseModel):
     page_size: int = Field(100, ge=1, le=1000, description="Page size")
 
 
-class AggregationRequest(BaseModel):
+class AggregationRequest(GreenLangBase):
     """Request model for aggregation queries."""
 
     reporting_period: str = Field(..., description="Reporting period")
@@ -201,7 +202,7 @@ class AggregationRequest(BaseModel):
 # ============================================================================
 
 
-class TripCalculationResponse(BaseModel):
+class TripCalculationResponse(GreenLangBase):
     """Response model for single trip calculation."""
 
     success: bool = Field(..., description="Success flag")
@@ -220,7 +221,7 @@ class TripCalculationResponse(BaseModel):
     processing_time_ms: float = Field(..., description="Processing time in ms")
 
 
-class BatchTripResponse(BaseModel):
+class BatchTripResponse(GreenLangBase):
     """Response model for batch trip calculation."""
 
     success: bool = Field(..., description="Overall success flag")
@@ -234,7 +235,7 @@ class BatchTripResponse(BaseModel):
     processing_time_ms: float = Field(..., description="Total processing time")
 
 
-class ComplianceCheckResponse(BaseModel):
+class ComplianceCheckResponse(GreenLangBase):
     """Response model for compliance checking."""
 
     success: bool = Field(..., description="Success flag")
@@ -245,7 +246,7 @@ class ComplianceCheckResponse(BaseModel):
     processing_time_ms: float = Field(..., description="Processing time")
 
 
-class UncertaintyResponse(BaseModel):
+class UncertaintyResponse(GreenLangBase):
     """Response model for uncertainty analysis."""
 
     success: bool = Field(..., description="Success flag")
@@ -259,7 +260,7 @@ class UncertaintyResponse(BaseModel):
     processing_time_ms: float = Field(..., description="Processing time")
 
 
-class HotSpotResponse(BaseModel):
+class HotSpotResponse(GreenLangBase):
     """Response model for hot-spot analysis."""
 
     success: bool = Field(..., description="Success flag")
@@ -269,7 +270,7 @@ class HotSpotResponse(BaseModel):
     processing_time_ms: float = Field(..., description="Processing time")
 
 
-class EmissionFactorListResponse(BaseModel):
+class EmissionFactorListResponse(GreenLangBase):
     """Response model for emission factor listing."""
 
     success: bool = Field(..., description="Success flag")
@@ -279,7 +280,7 @@ class EmissionFactorListResponse(BaseModel):
     total_count: int = Field(..., description="Total factors")
 
 
-class CalculationListResponse(BaseModel):
+class CalculationListResponse(GreenLangBase):
     """Response model for listing calculations."""
 
     success: bool = Field(..., description="Success flag")
@@ -289,7 +290,7 @@ class CalculationListResponse(BaseModel):
     page_size: int = Field(100, description="Page size")
 
 
-class CalculationDetailResponse(BaseModel):
+class CalculationDetailResponse(GreenLangBase):
     """Response model for single calculation detail."""
 
     success: bool = Field(..., description="Success flag")
@@ -297,7 +298,7 @@ class CalculationDetailResponse(BaseModel):
     error: Optional[str] = Field(None, description="Error message")
 
 
-class DeleteResponse(BaseModel):
+class DeleteResponse(GreenLangBase):
     """Response model for deletion."""
 
     success: bool = Field(..., description="Success flag")
@@ -305,7 +306,7 @@ class DeleteResponse(BaseModel):
     message: Optional[str] = Field(None, description="Status message")
 
 
-class AggregationResponse(BaseModel):
+class AggregationResponse(GreenLangBase):
     """Response model for aggregation queries."""
 
     success: bool = Field(..., description="Success flag")
@@ -318,7 +319,7 @@ class AggregationResponse(BaseModel):
     processing_time_ms: float = Field(..., description="Processing time")
 
 
-class ProvenanceResponse(BaseModel):
+class ProvenanceResponse(GreenLangBase):
     """Response model for provenance queries."""
 
     success: bool = Field(..., description="Success flag")
@@ -328,7 +329,7 @@ class ProvenanceResponse(BaseModel):
     is_valid: bool = Field(..., description="Chain integrity verified")
 
 
-class TransportModeInfo(BaseModel):
+class TransportModeInfo(GreenLangBase):
     """Transport mode metadata."""
 
     mode: str = Field(..., description="Mode identifier")
@@ -336,7 +337,7 @@ class TransportModeInfo(BaseModel):
     ef_source: str = Field(..., description="Default EF source")
 
 
-class CabinClassInfo(BaseModel):
+class CabinClassInfo(GreenLangBase):
     """Cabin class metadata."""
 
     cabin_class: str = Field(..., description="Cabin class identifier")
@@ -344,7 +345,7 @@ class CabinClassInfo(BaseModel):
     multiplier: float = Field(..., description="Multiplier relative to economy")
 
 
-class AirportInfo(BaseModel):
+class AirportInfo(GreenLangBase):
     """Airport metadata."""
 
     iata_code: str = Field(..., description="IATA code")
@@ -352,7 +353,7 @@ class AirportInfo(BaseModel):
     country: str = Field(..., description="Country code")
 
 
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Response model for health check."""
 
     status: str = Field(..., description="Service status: healthy, degraded, unhealthy")

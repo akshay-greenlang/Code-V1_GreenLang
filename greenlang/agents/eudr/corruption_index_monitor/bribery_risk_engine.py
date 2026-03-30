@@ -93,6 +93,7 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -211,7 +212,6 @@ else:
     _bribery_high_risk_countries = None  # type: ignore[assignment]
     _bribery_errors_total = None  # type: ignore[assignment]
 
-
 def _inc_bribery_assessments() -> None:
     if PROMETHEUS_AVAILABLE and _bribery_assessments_total is not None:
         _bribery_assessments_total.inc()
@@ -221,11 +221,9 @@ def _inc_bribery_assessments() -> None:
         except Exception:
             pass
 
-
 def _inc_sector_queries() -> None:
     if PROMETHEUS_AVAILABLE and _bribery_sector_queries_total is not None:
         _bribery_sector_queries_total.inc()
-
 
 def _observe_bribery_duration(seconds: float) -> None:
     if PROMETHEUS_AVAILABLE and _bribery_query_duration is not None:
@@ -236,7 +234,6 @@ def _observe_bribery_duration(seconds: float) -> None:
         except Exception:
             pass
 
-
 def _inc_bribery_error(operation: str) -> None:
     if PROMETHEUS_AVAILABLE and _bribery_errors_total is not None:
         _bribery_errors_total.labels(operation=operation).inc()
@@ -246,16 +243,9 @@ def _inc_bribery_error(operation: str) -> None:
         except Exception:
             pass
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _to_decimal(value: Any) -> Decimal:
     """Convert a numeric value to Decimal via string for determinism."""
@@ -263,17 +253,14 @@ def _to_decimal(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _compute_hash(data: Any) -> str:
     """Compute deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class BriberyDomain(str, Enum):
     """TRACE Bribery Risk Matrix assessment domains.
@@ -288,7 +275,6 @@ class BriberyDomain(str, Enum):
     GOVERNMENT_AND_CIVIL_SERVICE_TRANSPARENCY = "GCST"
     CAPACITY_FOR_CIVIL_SOCIETY_OVERSIGHT = "CCSO"
 
-
 class BriberyRiskLevel(str, Enum):
     """Bribery risk classification based on TRACE score (1-100)."""
 
@@ -296,7 +282,6 @@ class BriberyRiskLevel(str, Enum):
     MEDIUM = "MEDIUM"
     HIGH = "HIGH"
     VERY_HIGH = "VERY_HIGH"
-
 
 class EUDRSector(str, Enum):
     """EUDR-relevant commodity sectors for bribery risk adjustment."""
@@ -313,11 +298,9 @@ class EUDRSector(str, Enum):
     OIL_GAS = "oil_gas"
     CONSTRUCTION = "construction"
 
-
 # ---------------------------------------------------------------------------
 # Data classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class SectorBriberyProfile:
@@ -353,7 +336,6 @@ class SectorBriberyProfile:
             "land_tenure_dependency": self.land_tenure_dependency,
             "description": self.description,
         }
-
 
 @dataclass
 class BriberyRiskAssessment:
@@ -392,7 +374,6 @@ class BriberyRiskAssessment:
             "mitigation_measures": self.mitigation_measures,
         }
 
-
 @dataclass
 class BriberyAssessmentResult:
     """Result wrapper for country bribery risk assessment."""
@@ -405,7 +386,6 @@ class BriberyAssessmentResult:
     calculation_timestamp: str = ""
     warnings: List[str] = field(default_factory=list)
     error: Optional[str] = None
-
 
 @dataclass
 class BriberyProfileResult:
@@ -421,7 +401,6 @@ class BriberyProfileResult:
     calculation_timestamp: str = ""
     warnings: List[str] = field(default_factory=list)
     error: Optional[str] = None
-
 
 @dataclass
 class SectorRiskResult:
@@ -441,7 +420,6 @@ class SectorRiskResult:
     warnings: List[str] = field(default_factory=list)
     error: Optional[str] = None
 
-
 @dataclass
 class HighRiskResult:
     """Result wrapper for high-risk country identification."""
@@ -456,7 +434,6 @@ class HighRiskResult:
     calculation_timestamp: str = ""
     warnings: List[str] = field(default_factory=list)
     error: Optional[str] = None
-
 
 @dataclass
 class SectorExposureResult:
@@ -474,7 +451,6 @@ class SectorExposureResult:
     calculation_timestamp: str = ""
     warnings: List[str] = field(default_factory=list)
     error: Optional[str] = None
-
 
 # ---------------------------------------------------------------------------
 # Sector Profiles (EUDR-relevant)
@@ -581,7 +557,6 @@ SECTOR_PROFILES: Dict[str, SectorBriberyProfile] = {
         description="Construction requiring building and land-use permits",
     ),
 }
-
 
 # ---------------------------------------------------------------------------
 # Bribery Risk Reference Data (TRACE-aligned, 2024)
@@ -691,11 +666,9 @@ BRIBERY_COUNTRY_REGIONS: Dict[str, str] = {
     "SL": "sub_saharan_africa",
 }
 
-
 # ---------------------------------------------------------------------------
 # Bribery Risk Engine
 # ---------------------------------------------------------------------------
-
 
 class BriberyRiskEngine:
     """TRACE Bribery Risk Matrix assessment engine for EUDR compliance.
@@ -763,7 +736,7 @@ class BriberyRiskEngine:
             risk level, contributing factors, and EUDR risk factor.
         """
         start = time.perf_counter()
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         try:
             cc = country_code.upper().strip()
@@ -874,7 +847,7 @@ class BriberyRiskEngine:
             BriberyProfileResult with current and historical data.
         """
         start = time.perf_counter()
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         try:
             cc = country_code.upper().strip()
@@ -974,7 +947,7 @@ class BriberyRiskEngine:
             profile details.
         """
         start = time.perf_counter()
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         try:
             cc = country_code.upper().strip()
@@ -1061,7 +1034,7 @@ class BriberyRiskEngine:
             HighRiskResult with list of high-risk countries.
         """
         start = time.perf_counter()
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         try:
             threshold_d = _to_decimal(threshold)
@@ -1134,7 +1107,7 @@ class BriberyRiskEngine:
             SectorExposureResult with per-country adjusted scores.
         """
         start = time.perf_counter()
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         try:
             sector_lower = sector.lower().strip()
@@ -1372,7 +1345,6 @@ class BriberyRiskEngine:
             )
         except Exception as exc:
             logger.debug("Provenance recording failed: %s", exc)
-
 
 # ---------------------------------------------------------------------------
 # Public API

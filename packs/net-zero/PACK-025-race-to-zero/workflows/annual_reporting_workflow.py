@@ -44,31 +44,25 @@ from typing import Any, Callable, Coroutine, Dict, List, Optional, Set
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "25.0.0"
 
 ProgressCallback = Callable[[str, float, str], Coroutine[Any, Any, None]]
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: Any) -> str:
     if isinstance(data, dict):
         data = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(str(data).encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -77,7 +71,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
@@ -85,7 +78,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
     CANCELLED = "cancelled"
-
 
 class ReportingPhase(str, Enum):
     ANNUAL_INVENTORY = "annual_inventory"
@@ -96,20 +88,17 @@ class ReportingPhase(str, Enum):
     REPORT_GENERATION = "report_generation"
     SUBMISSION = "submission"
 
-
 class TrajectoryStatus(str, Enum):
     ON_TRACK = "on_track"
     SLIGHTLY_OFF = "slightly_off"
     SIGNIFICANTLY_OFF = "significantly_off"
     REVERSED = "reversed"
 
-
 class VerificationStatus(str, Enum):
     NOT_STARTED = "not_started"
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
     PENDING_FINDINGS = "pending_findings"
-
 
 class SubmissionChannel(str, Enum):
     CDP = "cdp"
@@ -118,7 +107,6 @@ class SubmissionChannel(str, Enum):
     ICLEI = "iclei"
     SBTI = "sbti"
     RACE_TO_ZERO = "race_to_zero"
-
 
 # =============================================================================
 # REFERENCE DATA
@@ -185,11 +173,9 @@ PHASE_EXECUTION_ORDER: List[ReportingPhase] = [
     ReportingPhase.SUBMISSION,
 ]
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase: ReportingPhase = Field(...)
@@ -202,7 +188,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class ProgressMetrics(BaseModel):
     baseline_tco2e: float = Field(default=0.0, ge=0.0)
@@ -219,7 +204,6 @@ class ProgressMetrics(BaseModel):
     annual_rate_actual: float = Field(default=0.0)
     on_track: bool = Field(default=False)
 
-
 class CredibilityScore(BaseModel):
     overall_score: float = Field(default=0.0, ge=0.0, le=100.0)
     recommendations_assessed: int = Field(default=0)
@@ -227,7 +211,6 @@ class CredibilityScore(BaseModel):
     sub_criteria_total: int = Field(default=45)
     areas_of_concern: List[str] = Field(default_factory=list)
     improvement_actions: List[str] = Field(default_factory=list)
-
 
 class AnnualReport(BaseModel):
     report_id: str = Field(default="")
@@ -239,7 +222,6 @@ class AnnualReport(BaseModel):
     verification_status: VerificationStatus = Field(default=VerificationStatus.NOT_STARTED)
     channels_submitted: List[str] = Field(default_factory=list)
     submission_complete: bool = Field(default=False)
-
 
 class AnnualReportingConfig(BaseModel):
     pack_id: str = Field(default="PACK-025")
@@ -264,7 +246,6 @@ class AnnualReportingConfig(BaseModel):
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
 
-
 class AnnualReportingResult(BaseModel):
     execution_id: str = Field(default_factory=_new_uuid)
     pack_id: str = Field(default="PACK-025")
@@ -285,11 +266,9 @@ class AnnualReportingResult(BaseModel):
     quality_score: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class AnnualReportingWorkflow:
     """
@@ -328,7 +307,7 @@ class AnnualReportingWorkflow:
         result = AnnualReportingResult(
             org_name=self.config.org_name,
             status=WorkflowStatus.RUNNING,
-            started_at=_utcnow(),
+            started_at=utcnow(),
         )
         self._results[result.execution_id] = result
         start_time = time.monotonic()
@@ -356,7 +335,7 @@ class AnnualReportingWorkflow:
                     ReportingPhase.THIRD_PARTY_AUDIT,
                 ) and not self.config.enable_verification:
                     pr = PhaseResult(phase=phase, status=PhaseStatus.SKIPPED,
-                                    started_at=_utcnow(), completed_at=_utcnow())
+                                    started_at=utcnow(), completed_at=utcnow())
                     result.phase_results[phase.value] = pr
                     result.phases_skipped.append(phase.value)
                     continue
@@ -393,7 +372,7 @@ class AnnualReportingWorkflow:
             result.errors.append(str(exc))
 
         finally:
-            result.completed_at = _utcnow()
+            result.completed_at = utcnow()
             result.total_duration_ms = (time.monotonic() - start_time) * 1000
             result.progress = self._extract_progress(shared_context)
             result.credibility = self._extract_credibility(shared_context)
@@ -420,7 +399,7 @@ class AnnualReportingWorkflow:
     # -------------------------------------------------------------------------
 
     async def _execute_phase(self, phase: ReportingPhase, context: Dict[str, Any]) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         start_time = time.monotonic()
         handler = self._get_phase_handler(phase)
         try:
@@ -431,7 +410,7 @@ class AnnualReportingWorkflow:
             status = PhaseStatus.FAILED
         elapsed_ms = (time.monotonic() - start_time) * 1000
         return PhaseResult(
-            phase=phase, status=status, started_at=started, completed_at=_utcnow(),
+            phase=phase, status=status, started_at=started, completed_at=utcnow(),
             duration_ms=round(elapsed_ms, 2), records_processed=records,
             outputs=outputs, warnings=warnings, errors=errors,
             provenance_hash=_compute_hash(outputs) if self.config.enable_provenance else "",
@@ -765,7 +744,7 @@ class AnnualReportingWorkflow:
                 "channel": channel,
                 "report_id": report.get("report_id", ""),
                 "submitted": True,
-                "submission_date": _utcnow().strftime("%Y-%m-%d"),
+                "submission_date": utcnow().strftime("%Y-%m-%d"),
                 "confirmation_id": f"SUB-{channel.upper()}-{_new_uuid()[:6].upper()}",
             })
 
@@ -774,7 +753,7 @@ class AnnualReportingWorkflow:
         outputs["submission_results"] = submission_results
         outputs["all_submitted"] = True
         outputs["submission_complete"] = True
-        outputs["submission_date"] = _utcnow().strftime("%Y-%m-%d")
+        outputs["submission_date"] = utcnow().strftime("%Y-%m-%d")
 
         return outputs, warnings, errors, len(channels)
 

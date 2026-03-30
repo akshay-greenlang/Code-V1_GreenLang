@@ -65,22 +65,14 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a unique identifier using UUID4."""
     return str(uuid.uuid4())
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -116,7 +108,6 @@ WEIGHT_ATMOSPHERIC: float = 0.15
 #: Quality weight for sensor health component.
 WEIGHT_SENSOR: float = 0.10
 
-
 # ---------------------------------------------------------------------------
 # Sentinel-2 Band Specifications
 # ---------------------------------------------------------------------------
@@ -138,7 +129,6 @@ SENTINEL2_BAND_SPECS: Dict[str, Tuple[float, int]] = {
     "B12": (2190.0, 20),   # SWIR 2
 }
 
-
 # ---------------------------------------------------------------------------
 # Landsat Band Specifications
 # ---------------------------------------------------------------------------
@@ -157,7 +147,6 @@ LANDSAT_BAND_SPECS: Dict[str, Tuple[float, int]] = {
     "B10": (10900.0, 100), # Thermal IR 1
     "B11": (12000.0, 100), # Thermal IR 2
 }
-
 
 # ---------------------------------------------------------------------------
 # Tile Grid (Sentinel-2 MGRS tile lookup)
@@ -197,7 +186,6 @@ TILE_GRID: Dict[str, Tuple[float, float, float, float]] = {
     "T37MFN": (2.0, 6.0, 36.0, 40.0),
 }
 
-
 # ---------------------------------------------------------------------------
 # Landsat WRS-2 Path/Row reference (simplified)
 # ---------------------------------------------------------------------------
@@ -218,11 +206,9 @@ _LANDSAT_PATH_ROW: Dict[Tuple[int, int], Tuple[float, float, float, float]] = {
     (169, 60): (-2.0, 2.0, 36.0, 40.0),
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class SceneMetadata:
@@ -260,7 +246,6 @@ class SceneMetadata:
     quality_score: float = 0.0
     provenance_hash: str = ""
 
-
 @dataclass
 class DataQualityAssessment:
     """Quality assessment result for a satellite scene or baseline.
@@ -291,11 +276,9 @@ class DataQualityAssessment:
     details: Dict[str, Any] = field(default_factory=dict)
     provenance_hash: str = ""
 
-
 # ---------------------------------------------------------------------------
 # ImageryAcquisitionEngine
 # ---------------------------------------------------------------------------
-
 
 class ImageryAcquisitionEngine:
     """Production-grade satellite imagery acquisition engine for EUDR compliance.
@@ -332,6 +315,8 @@ class ImageryAcquisitionEngine:
             config: Optional configuration object. If provided,
                 overrides default max_cloud_cover and scene_limit
                 from config attributes.
+
+from greenlang.schemas import utcnow
         """
         self.max_cloud_cover = DEFAULT_MAX_CLOUD_COVER
         self.scene_limit = DEFAULT_SCENE_LIMIT
@@ -1208,7 +1193,6 @@ class ImageryAcquisitionEngine:
             "is_acceptable": assessment.is_acceptable,
         }
         return _compute_hash(hash_data)
-
 
 # ---------------------------------------------------------------------------
 # Module Exports

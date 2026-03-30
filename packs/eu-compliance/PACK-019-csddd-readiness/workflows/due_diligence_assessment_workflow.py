@@ -40,35 +40,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class WorkflowPhase(str, Enum):
     """Phases of the due diligence assessment workflow."""
@@ -78,7 +70,6 @@ class WorkflowPhase(str, Enum):
     RISK_PRIORITIZATION = "risk_prioritization"
     READINESS_SCORING = "readiness_scoring"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "pending"
@@ -86,7 +77,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class PhaseStatus(str, Enum):
     """Status of a single phase."""
@@ -96,7 +86,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class CompanySize(str, Enum):
     """Company size tier for CSDDD scope determination."""
     GROUP_1 = "group_1"        # >1000 employees and >EUR 450M turnover
@@ -105,14 +94,12 @@ class CompanySize(str, Enum):
     NON_EU_GROUP_2 = "non_eu_group_2"  # Non-EU >EUR 80M turnover in EU
     OUT_OF_SCOPE = "out_of_scope"
 
-
 class ArticleStatus(str, Enum):
     """Compliance status per CSDDD article."""
     COMPLIANT = "compliant"
     PARTIALLY_COMPLIANT = "partially_compliant"
     NON_COMPLIANT = "non_compliant"
     NOT_APPLICABLE = "not_applicable"
-
 
 class RiskSeverity(str, Enum):
     """Severity level for identified risks."""
@@ -121,11 +108,9 @@ class RiskSeverity(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -136,7 +121,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class CompanyProfile(BaseModel):
     """Company profile for CSDDD scope determination."""
@@ -152,7 +136,6 @@ class CompanyProfile(BaseModel):
     is_regulated_financial: bool = Field(default=False)
     reporting_year: int = Field(default=2026, ge=2024, le=2050)
 
-
 class PolicyRecord(BaseModel):
     """Record of an existing due diligence policy."""
     policy_id: str = Field(default_factory=lambda: f"pol-{_new_uuid()[:8]}")
@@ -165,7 +148,6 @@ class PolicyRecord(BaseModel):
     has_board_approval: bool = Field(default=False)
     effectiveness_score: float = Field(default=0.0, ge=0.0, le=100.0)
 
-
 class RiskIndicator(BaseModel):
     """Risk indicator for due diligence assessment."""
     indicator_id: str = Field(default_factory=lambda: f"ri-{_new_uuid()[:8]}")
@@ -177,7 +159,6 @@ class RiskIndicator(BaseModel):
     geographic_scope: List[str] = Field(default_factory=list)
     existing_mitigation: str = Field(default="", description="Current mitigation measures")
 
-
 class ArticleAssessment(BaseModel):
     """Assessment result for a specific CSDDD article."""
     article: str = Field(..., description="Article reference (e.g., art_5)")
@@ -186,7 +167,6 @@ class ArticleAssessment(BaseModel):
     score: float = Field(default=0.0, ge=0.0, le=100.0)
     gaps: List[str] = Field(default_factory=list)
     action_items: List[str] = Field(default_factory=list)
-
 
 class DueDiligenceAssessmentInput(BaseModel):
     """Input data model for DueDiligenceAssessmentWorkflow."""
@@ -200,7 +180,6 @@ class DueDiligenceAssessmentInput(BaseModel):
         default_factory=list, description="Identified risk indicators"
     )
     config: Dict[str, Any] = Field(default_factory=dict)
-
 
 class DueDiligenceAssessmentResult(BaseModel):
     """Complete result from due diligence assessment workflow."""
@@ -233,11 +212,9 @@ class DueDiligenceAssessmentResult(BaseModel):
     executed_at: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # CSDDD ARTICLE DEFINITIONS
 # =============================================================================
-
 
 CSDDD_ARTICLES: List[Dict[str, str]] = [
     {"article": "art_5", "title": "Due diligence policy"},
@@ -251,11 +228,9 @@ CSDDD_ARTICLES: List[Dict[str, str]] = [
     {"article": "art_22", "title": "Civil liability"},
 ]
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class DueDiligenceAssessmentWorkflow:
     """
@@ -329,7 +304,7 @@ class DueDiligenceAssessmentWorkflow:
         if input_data is None:
             input_data = DueDiligenceAssessmentInput(config=config or {})
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting DD assessment workflow %s", self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = WorkflowStatus.IN_PROGRESS
@@ -348,7 +323,7 @@ class DueDiligenceAssessmentWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         completed_count = sum(1 for p in phase_results if p.status == PhaseStatus.COMPLETED)
 
         # Risk counts
@@ -378,7 +353,7 @@ class DueDiligenceAssessmentWorkflow:
             medium_risks=risk_counts.get("medium", 0),
             low_risks=risk_counts.get("low", 0),
             reporting_year=input_data.company_profile.reporting_year,
-            executed_at=_utcnow().isoformat(),
+            executed_at=utcnow().isoformat(),
         )
         result.provenance_hash = self._compute_provenance(result)
         self.logger.info(
@@ -395,7 +370,7 @@ class DueDiligenceAssessmentWorkflow:
         self, input_data: DueDiligenceAssessmentInput,
     ) -> PhaseResult:
         """Determine CSDDD applicability based on company profile."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -443,7 +418,7 @@ class DueDiligenceAssessmentWorkflow:
         if cp.is_regulated_financial:
             warnings.append("Financial sector entity -- specific provisions apply under Art. 2")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 1 ScopeDetermination: in_scope=%s, tier=%s",
             self._in_scope, self._company_tier,
@@ -463,7 +438,7 @@ class DueDiligenceAssessmentWorkflow:
         self, input_data: DueDiligenceAssessmentInput,
     ) -> PhaseResult:
         """Review existing policies against CSDDD article requirements."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -507,7 +482,7 @@ class DueDiligenceAssessmentWorkflow:
         if board_approved == 0 and policies:
             warnings.append("No policies with board-level approval")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 2 PolicyReview: %d policies, %d/%d articles covered",
             len(policies), outputs["articles_covered"], outputs["articles_total"],
@@ -527,7 +502,7 @@ class DueDiligenceAssessmentWorkflow:
         self, input_data: DueDiligenceAssessmentInput,
     ) -> PhaseResult:
         """Identify gaps in current DD framework against each CSDDD article."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._article_assessments = []
@@ -639,7 +614,7 @@ class DueDiligenceAssessmentWorkflow:
                 f"{outputs['non_compliant_articles']} articles are non-compliant"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 3 GapAnalysis: %d gaps, %d/%d compliant",
             outputs["total_gaps"], compliant_count, outputs["articles_assessed"],
@@ -659,7 +634,7 @@ class DueDiligenceAssessmentWorkflow:
         self, input_data: DueDiligenceAssessmentInput,
     ) -> PhaseResult:
         """Prioritize risks by severity and likelihood per Art. 6."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -709,7 +684,7 @@ class DueDiligenceAssessmentWorkflow:
         if any(r["risk_score"] > 75 and not r["has_mitigation"] for r in scored_risks):
             warnings.append("Critical risks identified without mitigation measures")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 4 RiskPrioritization: %d risks scored, avg=%.1f",
             len(scored_risks), outputs["avg_risk_score"],
@@ -729,7 +704,7 @@ class DueDiligenceAssessmentWorkflow:
         self, input_data: DueDiligenceAssessmentInput,
     ) -> PhaseResult:
         """Calculate overall CSDDD readiness score."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -779,7 +754,7 @@ class DueDiligenceAssessmentWorkflow:
         elif overall < 60:
             warnings.append("Readiness score below 60% -- moderate improvements needed")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 5 ReadinessScoring: overall=%.1f%% (%s)",
             overall, outputs["readiness_level"],

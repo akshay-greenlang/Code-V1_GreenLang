@@ -22,7 +22,8 @@ import enum
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase
 
 
 # ---------------------------------------------------------------------------
@@ -204,7 +205,7 @@ EUDR_COMMODITIES: List[str] = [
 # ---------------------------------------------------------------------------
 
 
-class ReferenceNumberComponents(BaseModel):
+class ReferenceNumberComponents(GreenLangBase):
     """Decomposed components of a reference number.
 
     Breaks down a reference number string into its constituent parts
@@ -235,7 +236,7 @@ class ReferenceNumberComponents(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class ReferenceNumber(BaseModel):
+class ReferenceNumber(GreenLangBase):
     """A generated EUDR reference number with metadata.
 
     Represents a single reference number including its full string
@@ -284,7 +285,7 @@ class ReferenceNumber(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class SequenceCounter(BaseModel):
+class SequenceCounter(GreenLangBase):
     """Sequence counter state for an operator within a year.
 
     Tracks the current position of the sequential numbering for
@@ -325,7 +326,7 @@ class SequenceCounter(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class BatchRequest(BaseModel):
+class BatchRequest(GreenLangBase):
     """Request for batch reference number generation.
 
     Specifies the parameters for generating multiple reference
@@ -369,7 +370,7 @@ class BatchRequest(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class ValidationLog(BaseModel):
+class ValidationLog(GreenLangBase):
     """Record of a reference number validation check.
 
     Captures the outcome of validating a reference number including
@@ -402,7 +403,7 @@ class ValidationLog(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class FormatRule(BaseModel):
+class FormatRule(GreenLangBase):
     """Format rule for a specific member state.
 
     Defines the reference number format requirements for a
@@ -440,7 +441,7 @@ class FormatRule(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class CollisionRecord(BaseModel):
+class CollisionRecord(GreenLangBase):
     """Record of a detected reference number collision.
 
     Captures information about an attempted duplicate reference
@@ -472,7 +473,7 @@ class CollisionRecord(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class TransferRecord(BaseModel):
+class TransferRecord(GreenLangBase):
     """Record of a reference number transfer between operators.
 
     Captures the transfer of ownership of a reference number from
@@ -507,7 +508,7 @@ class TransferRecord(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class GenerationRequest(BaseModel):
+class GenerationRequest(GreenLangBase):
     """API request model for single reference number generation."""
 
     operator_id: str = Field(
@@ -528,7 +529,7 @@ class GenerationRequest(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class GenerationResponse(BaseModel):
+class GenerationResponse(GreenLangBase):
     """API response model for single reference number generation."""
 
     reference_id: str = Field(
@@ -563,7 +564,7 @@ class GenerationResponse(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class BatchGenerationRequest(BaseModel):
+class BatchGenerationRequest(GreenLangBase):
     """API request model for batch reference number generation."""
 
     operator_id: str = Field(
@@ -584,7 +585,7 @@ class BatchGenerationRequest(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class ValidationRequest(BaseModel):
+class ValidationRequest(GreenLangBase):
     """API request model for reference number validation."""
 
     reference_number: str = Field(
@@ -602,7 +603,7 @@ class ValidationRequest(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class ValidationResponse(BaseModel):
+class ValidationResponse(GreenLangBase):
     """API response model for reference number validation."""
 
     reference_number: str = Field(
@@ -628,7 +629,7 @@ class ValidationResponse(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class SequenceStatus(BaseModel):
+class SequenceStatus(GreenLangBase):
     """Status summary for an operator's sequence counter."""
 
     operator_id: str = Field(
@@ -660,7 +661,7 @@ class SequenceStatus(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class FormatTemplate(BaseModel):
+class FormatTemplate(GreenLangBase):
     """Template defining the reference number format structure."""
 
     template_id: str = Field(
@@ -686,7 +687,7 @@ class FormatTemplate(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class HealthStatus(BaseModel):
+class HealthStatus(GreenLangBase):
     """Health check response for the Reference Number Generator."""
 
     agent_id: str = AGENT_ID

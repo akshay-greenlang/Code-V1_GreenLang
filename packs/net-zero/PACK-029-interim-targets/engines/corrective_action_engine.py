@@ -70,17 +70,15 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
@@ -122,7 +120,6 @@ def _round_val(value: Decimal, places: int = 6) -> Decimal:
 
 def _round3(value: float) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -166,7 +163,6 @@ class DataQuality(str, Enum):
     LOW = "low"
     ESTIMATED = "estimated"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
@@ -200,7 +196,6 @@ class AvailableInitiative(BaseModel):
     risk_factor: Decimal = Field(default=Decimal("0.1"), ge=Decimal("0"), le=Decimal("1"))
     trl: int = Field(default=9, ge=1, le=9)
     max_deployment_pct: Decimal = Field(default=Decimal("100"), ge=Decimal("0"), le=Decimal("100"))
-
 
 class CorrectiveActionInput(BaseModel):
     """Input for corrective action planning.
@@ -240,7 +235,6 @@ class CorrectiveActionInput(BaseModel):
     include_catch_up: bool = Field(default=True)
     include_investment: bool = Field(default=True)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
@@ -262,7 +256,6 @@ class GapQuantification(BaseModel):
     rate_gap_pct: Decimal = Field(default=Decimal("0"))
     urgency: str = Field(default=UrgencyLevel.MEDIUM.value)
     remaining_years: int = Field(default=0)
-
 
 class SelectedInitiative(BaseModel):
     """An initiative selected for the corrective action plan.
@@ -292,7 +285,6 @@ class SelectedInitiative(BaseModel):
     implementation_start_year: int = Field(default=0)
     priority_rank: int = Field(default=0)
 
-
 class AcceleratedScenario(BaseModel):
     """Accelerated reduction scenario.
 
@@ -313,7 +305,6 @@ class AcceleratedScenario(BaseModel):
     additional_annual_reduction_tco2e: Decimal = Field(default=Decimal("0"))
     additional_investment: Decimal = Field(default=Decimal("0"))
 
-
 class CatchUpTimeline(BaseModel):
     """Catch-up timeline modeling.
 
@@ -331,7 +322,6 @@ class CatchUpTimeline(BaseModel):
     return_to_pathway_year: int = Field(default=0)
     is_achievable: bool = Field(default=False)
     annual_pathway: List[Dict[str, Any]] = Field(default_factory=list)
-
 
 class InvestmentAnalysis(BaseModel):
     """Investment requirement analysis.
@@ -355,12 +345,11 @@ class InvestmentAnalysis(BaseModel):
     cost_per_tco2e_abated: Decimal = Field(default=Decimal("0"))
     roi_pct: Decimal = Field(default=Decimal("0"))
 
-
 class CorrectiveActionResult(BaseModel):
     """Complete corrective action result."""
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     entity_id: str = Field(default="")
     gap: Optional[GapQuantification] = Field(default=None)
@@ -376,7 +365,6 @@ class CorrectiveActionResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine

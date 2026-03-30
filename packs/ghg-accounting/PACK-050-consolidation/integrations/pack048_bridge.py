@@ -46,25 +46,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -77,11 +71,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class AssuranceLevel(str, Enum):
     """Assurance engagement level."""
@@ -89,7 +81,6 @@ class AssuranceLevel(str, Enum):
     LIMITED = "limited"
     REASONABLE = "reasonable"
     NO_ASSURANCE = "no_assurance"
-
 
 class ReadinessGrade(str, Enum):
     """Assurance readiness grade."""
@@ -99,7 +90,6 @@ class ReadinessGrade(str, Enum):
     SIGNIFICANT_GAPS = "significant_gaps"
     NOT_READY = "not_ready"
 
-
 class EvidenceStatus(str, Enum):
     """Evidence collection status."""
 
@@ -107,7 +97,6 @@ class EvidenceStatus(str, Enum):
     PARTIAL = "partial"
     MISSING = "missing"
     UNDER_REVIEW = "under_review"
-
 
 class ControlTestResult(str, Enum):
     """Internal control test result."""
@@ -117,18 +106,15 @@ class ControlTestResult(str, Enum):
     INEFFECTIVE = "ineffective"
     NOT_TESTED = "not_tested"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class Pack048Config(BaseModel):
     """Configuration for PACK-048 bridge."""
 
     timeout_s: float = Field(30.0, ge=5.0)
     target_assurance_level: str = Field(AssuranceLevel.LIMITED.value)
-
 
 class EntityAssuranceReadiness(BaseModel):
     """Per-entity assurance readiness from PACK-048."""
@@ -144,7 +130,6 @@ class EntityAssuranceReadiness(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     provenance_hash: str = ""
     assessed_at: str = ""
-
 
 class GroupAssuranceReadiness(BaseModel):
     """Group-level assurance readiness from PACK-048."""
@@ -167,7 +152,6 @@ class GroupAssuranceReadiness(BaseModel):
     assessed_at: str = ""
     duration_ms: float = 0.0
 
-
 class EvidencePackage(BaseModel):
     """Evidence package status for consolidated assurance."""
 
@@ -181,7 +165,6 @@ class EvidencePackage(BaseModel):
     completeness_pct: float = 0.0
     missing_items: List[str] = Field(default_factory=list)
     provenance_hash: str = ""
-
 
 class ControlAssessment(BaseModel):
     """Internal control assessment for consolidation processes."""
@@ -197,11 +180,9 @@ class ControlAssessment(BaseModel):
     remediation_plan: str = ""
     provenance_hash: str = ""
 
-
 # ---------------------------------------------------------------------------
 # Bridge Implementation
 # ---------------------------------------------------------------------------
-
 
 class Pack048Bridge:
     """
@@ -248,7 +229,7 @@ class Pack048Bridge:
                 "period": period,
                 "action": "readiness",
             }),
-            assessed_at=_utcnow().isoformat(),
+            assessed_at=utcnow().isoformat(),
         )
 
     async def get_group_readiness(
@@ -279,7 +260,7 @@ class Pack048Bridge:
                 "period": period,
                 "action": "group_readiness",
             }),
-            assessed_at=_utcnow().isoformat(),
+            assessed_at=utcnow().isoformat(),
             duration_ms=duration,
         )
 

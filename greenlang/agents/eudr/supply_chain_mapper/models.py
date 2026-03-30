@@ -48,8 +48,6 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import (
-    BaseModel,
-    ConfigDict,
     Field,
     field_validator,
     model_validator,
@@ -69,8 +67,6 @@ from greenlang.schemas import (
 # ---------------------------------------------------------------------------
 # Helpers (local alias for backward compatibility)
 # ---------------------------------------------------------------------------
-
-_utcnow = utcnow
 
 
 # ---------------------------------------------------------------------------
@@ -386,7 +382,7 @@ GAP_ARTICLE_MAP: Dict[GapType, str] = {
 # =============================================================================
 
 
-class SupplyChainNode(BaseModel):
+class SupplyChainNode(GreenLangBase):
     """A single actor (node) in the EUDR supply chain graph.
 
     Represents a supply chain participant such as a producer, collector,
@@ -490,11 +486,11 @@ class SupplyChainNode(BaseModel):
         description="Additional key-value metadata",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of node creation",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of last modification",
     )
 
@@ -552,7 +548,7 @@ class SupplyChainNode(BaseModel):
         return self
 
 
-class SupplyChainEdge(BaseModel):
+class SupplyChainEdge(GreenLangBase):
     """A directed edge (custody transfer) between two supply chain nodes.
 
     Represents a single transfer of custody where a commodity or product
@@ -620,7 +616,7 @@ class SupplyChainEdge(BaseModel):
         description="Chain of custody model for this transfer",
     )
     transfer_date: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Date and time of the custody transfer",
     )
     cn_code: Optional[str] = Field(
@@ -644,7 +640,7 @@ class SupplyChainEdge(BaseModel):
         description="Additional key-value metadata",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of edge creation",
     )
 
@@ -683,7 +679,7 @@ class SupplyChainEdge(BaseModel):
         return self
 
 
-class SupplyChainGap(BaseModel):
+class SupplyChainGap(GreenLangBase):
     """A compliance gap identified in the supply chain graph.
 
     Represents a specific deficiency in the supply chain mapping that
@@ -748,7 +744,7 @@ class SupplyChainGap(BaseModel):
         description="Timestamp when the gap was resolved",
     )
     detected_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the gap was detected",
     )
 
@@ -770,7 +766,7 @@ class SupplyChainGap(BaseModel):
         return self
 
 
-class SupplyChainGraph(BaseModel):
+class SupplyChainGraph(GreenLangBase):
     """Complete supply chain graph for one operator and commodity.
 
     The top-level container that holds all nodes, edges, compliance
@@ -862,11 +858,11 @@ class SupplyChainGraph(BaseModel):
         description="Detected compliance gaps",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of graph creation",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of last modification",
     )
     version: int = Field(
@@ -884,7 +880,7 @@ class SupplyChainGraph(BaseModel):
         return v
 
 
-class RiskPropagationResult(BaseModel):
+class RiskPropagationResult(GreenLangBase):
     """Result of risk propagation across the supply chain graph.
 
     Captures the risk score changes for a single node after
@@ -945,7 +941,7 @@ class RiskPropagationResult(BaseModel):
         description="Maximum risk inherited from parent nodes",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of the propagation",
     )
 
@@ -955,16 +951,13 @@ class RiskPropagationResult(BaseModel):
 # =============================================================================
 
 
-class CreateGraphRequest(BaseModel):
+class CreateGraphRequest(GreenLangBase):
     """Request body for creating a new supply chain graph.
 
     Attributes:
         commodity: Primary EUDR commodity for this graph.
         graph_name: Optional human-readable name.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     commodity: EUDRCommodity = Field(
         ...,
         description="Primary EUDR commodity for this graph",
@@ -976,7 +969,7 @@ class CreateGraphRequest(BaseModel):
     )
 
 
-class CreateNodeRequest(BaseModel):
+class CreateNodeRequest(GreenLangBase):
     """Request body for adding a node to a supply chain graph.
 
     Attributes:
@@ -991,9 +984,6 @@ class CreateNodeRequest(BaseModel):
         plot_ids: Linked production plot IDs (producers only).
         metadata: Additional key-value metadata.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     node_type: NodeType = Field(
         ...,
         description="Role of this actor in the supply chain",
@@ -1081,7 +1071,7 @@ class CreateNodeRequest(BaseModel):
         return v
 
 
-class CreateEdgeRequest(BaseModel):
+class CreateEdgeRequest(GreenLangBase):
     """Request body for adding a custody transfer edge to a graph.
 
     Attributes:
@@ -1098,9 +1088,6 @@ class CreateEdgeRequest(BaseModel):
         hs_code: Optional Harmonized System code.
         transport_mode: Optional mode of transport.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     source_node_id: str = Field(
         ...,
         description="ID of the upstream (source) node",
@@ -1185,7 +1172,7 @@ class CreateEdgeRequest(BaseModel):
         return self
 
 
-class UpdateNodeRequest(BaseModel):
+class UpdateNodeRequest(GreenLangBase):
     """Request body for updating a supply chain node's attributes.
 
     All fields are optional; only provided fields are updated.
@@ -1201,9 +1188,6 @@ class UpdateNodeRequest(BaseModel):
         plot_ids: Updated plot ID list.
         metadata: Updated metadata (merged with existing).
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     operator_name: Optional[str] = Field(None, description="Updated legal name")
     country_code: Optional[str] = Field(None, min_length=2, max_length=2)
     region: Optional[str] = Field(None, max_length=200)
@@ -1248,7 +1232,7 @@ class UpdateNodeRequest(BaseModel):
 # =============================================================================
 
 
-class GraphQueryParams(BaseModel):
+class GraphQueryParams(GreenLangBase):
     """Query parameters for listing supply chain graphs.
 
     Attributes:
@@ -1256,15 +1240,12 @@ class GraphQueryParams(BaseModel):
         limit: Maximum number of results to return.
         offset: Number of results to skip for pagination.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     commodity: Optional[EUDRCommodity] = Field(None)
     limit: int = Field(default=50, ge=1, le=1000)
     offset: int = Field(default=0, ge=0)
 
 
-class NodeQueryParams(BaseModel):
+class NodeQueryParams(GreenLangBase):
     """Query parameters for listing nodes within a graph.
 
     Attributes:
@@ -1276,9 +1257,6 @@ class NodeQueryParams(BaseModel):
         limit: Maximum results to return.
         offset: Pagination offset.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     node_type: Optional[NodeType] = Field(None)
     country_code: Optional[str] = Field(None, min_length=2, max_length=2)
     risk_level: Optional[RiskLevel] = Field(None)
@@ -1288,7 +1266,7 @@ class NodeQueryParams(BaseModel):
     offset: int = Field(default=0, ge=0)
 
 
-class EdgeQueryParams(BaseModel):
+class EdgeQueryParams(GreenLangBase):
     """Query parameters for listing edges within a graph.
 
     Attributes:
@@ -1299,9 +1277,6 @@ class EdgeQueryParams(BaseModel):
         limit: Maximum results to return.
         offset: Pagination offset.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     commodity: Optional[EUDRCommodity] = Field(None)
     transfer_date_from: Optional[datetime] = Field(None)
     transfer_date_to: Optional[datetime] = Field(None)
@@ -1315,7 +1290,7 @@ class EdgeQueryParams(BaseModel):
 # =============================================================================
 
 
-class TraceResult(BaseModel):
+class TraceResult(GreenLangBase):
     """Result of a forward or backward trace through the supply chain.
 
     Attributes:
@@ -1384,7 +1359,7 @@ class TraceResult(BaseModel):
     )
 
 
-class TierDistribution(BaseModel):
+class TierDistribution(GreenLangBase):
     """Distribution of supply chain nodes by tier depth.
 
     Attributes:
@@ -1405,7 +1380,7 @@ class TierDistribution(BaseModel):
     median_depth: float = Field(default=0.0, ge=0.0)
 
 
-class RiskSummary(BaseModel):
+class RiskSummary(GreenLangBase):
     """Aggregated risk summary for a supply chain graph.
 
     Attributes:
@@ -1435,7 +1410,7 @@ class RiskSummary(BaseModel):
     )
 
 
-class GapAnalysisResult(BaseModel):
+class GapAnalysisResult(GreenLangBase):
     """Complete gap analysis result for a supply chain graph.
 
     Attributes:
@@ -1462,10 +1437,10 @@ class GapAnalysisResult(BaseModel):
     compliance_readiness: float = Field(default=0.0, ge=0.0, le=100.0)
     gaps: List[SupplyChainGap] = Field(default_factory=list)
     remediation_priority: List[str] = Field(default_factory=list)
-    analysis_timestamp: datetime = Field(default_factory=_utcnow)
+    analysis_timestamp: datetime = Field(default_factory=utcnow)
 
 
-class DDSExportData(BaseModel):
+class DDSExportData(GreenLangBase):
     """Supply chain data formatted for Due Diligence Statement export.
 
     Contains the supply chain section of a DDS as required by
@@ -1503,11 +1478,11 @@ class DDSExportData(BaseModel):
     risk_level: RiskLevel = Field(default=RiskLevel.STANDARD)
     compliance_readiness: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-    export_timestamp: datetime = Field(default_factory=_utcnow)
+    export_timestamp: datetime = Field(default_factory=utcnow)
     supply_chain_summary: Dict[str, Any] = Field(default_factory=dict)
 
 
-class GraphLayoutData(BaseModel):
+class GraphLayoutData(GreenLangBase):
     """Graph layout data for frontend visualization rendering.
 
     Provides node positions, edge paths, and styling metadata for
@@ -1550,7 +1525,7 @@ class GraphLayoutData(BaseModel):
     )
 
 
-class SankeyData(BaseModel):
+class SankeyData(GreenLangBase):
     """Sankey diagram data for commodity flow visualization.
 
     Attributes:

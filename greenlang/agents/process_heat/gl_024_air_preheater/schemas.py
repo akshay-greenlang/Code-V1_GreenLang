@@ -74,6 +74,7 @@ import json
 import uuid
 
 from pydantic import BaseModel, Field, field_validator, model_validator
+from greenlang.schemas.enums import AlertSeverity
 
 
 # =============================================================================
@@ -205,14 +206,6 @@ class AcidDewPointMethod(str, Enum):
     MUELLER = "mueller"
     PIERCE = "pierce"
     MEASURED = "measured"
-
-
-class AlertSeverity(str, Enum):
-    """Alert severity levels."""
-    INFO = "info"
-    WARNING = "warning"
-    ALARM = "alarm"
-    CRITICAL = "critical"
 
 
 class ValidationStatus(str, Enum):

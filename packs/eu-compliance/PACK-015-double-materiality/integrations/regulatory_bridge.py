@@ -51,25 +51,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -82,11 +76,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class RegulatorySource(str, Enum):
     """Sources of regulatory changes."""
@@ -97,7 +89,6 @@ class RegulatorySource(str, Enum):
     EFRAG_GUIDANCE = "efrag_guidance"
     EC_DELEGATED_ACTS = "ec_delegated_acts"
     SECTOR_SPECIFIC_ESRS = "sector_specific_esrs"
-
 
 class ChangeType(str, Enum):
     """Types of regulatory changes."""
@@ -110,7 +101,6 @@ class ChangeType(str, Enum):
     GUIDANCE_UPDATE = "guidance_update"
     REPEAL = "repeal"
 
-
 class ChangeSeverity(str, Enum):
     """Severity of regulatory change impact."""
 
@@ -119,7 +109,6 @@ class ChangeSeverity(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     INFORMATIONAL = "informational"
-
 
 class ChangeStatus(str, Enum):
     """Status of a regulatory change."""
@@ -130,11 +119,9 @@ class ChangeStatus(str, Enum):
     PENDING_TRANSPOSITION = "pending_transposition"
     SUPERSEDED = "superseded"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class RegulatoryBridgeConfig(BaseModel):
     """Configuration for the Regulatory Bridge."""
@@ -150,7 +137,6 @@ class RegulatoryBridgeConfig(BaseModel):
         default=7, ge=1, le=90,
         description="How often to check for regulatory changes",
     )
-
 
 class RegulatoryChange(BaseModel):
     """A single regulatory change record."""
@@ -170,8 +156,7 @@ class RegulatoryChange(BaseModel):
         default="",
         description="How this change affects DMA outcomes",
     )
-    detected_at: datetime = Field(default_factory=_utcnow)
-
+    detected_at: datetime = Field(default_factory=utcnow)
 
 class RegulatoryAlert(BaseModel):
     """Alert generated when a regulatory change is detected."""
@@ -183,9 +168,8 @@ class RegulatoryAlert(BaseModel):
     message: str = Field(default="")
     recommended_action: str = Field(default="")
     affected_dma_phases: List[str] = Field(default_factory=list)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     acknowledged: bool = Field(default=False)
-
 
 class ThresholdUpdate(BaseModel):
     """Update to a materiality threshold based on regulatory guidance."""
@@ -201,7 +185,6 @@ class ThresholdUpdate(BaseModel):
     applied: bool = Field(default=False)
     applied_at: Optional[datetime] = Field(None)
 
-
 class RegulatoryCheckResult(BaseModel):
     """Result of a regulatory change check."""
 
@@ -210,12 +193,11 @@ class RegulatoryCheckResult(BaseModel):
     alerts_generated: int = Field(default=0)
     threshold_updates: int = Field(default=0)
     sources_checked: List[str] = Field(default_factory=list)
-    last_checked_at: datetime = Field(default_factory=_utcnow)
+    last_checked_at: datetime = Field(default_factory=utcnow)
     success: bool = Field(default=False)
     message: str = Field(default="")
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Known Regulatory Changes Catalog
@@ -318,11 +300,9 @@ KNOWN_REGULATORY_CHANGES: List[RegulatoryChange] = [
     ),
 ]
 
-
 # ---------------------------------------------------------------------------
 # RegulatoryBridge
 # ---------------------------------------------------------------------------
-
 
 class RegulatoryBridge:
     """Regulatory change monitoring for Double Materiality Assessment.
@@ -476,7 +456,7 @@ class RegulatoryBridge:
         for update in self._threshold_updates:
             if update.update_id == update_id:
                 update.applied = True
-                update.applied_at = _utcnow()
+                update.applied_at = utcnow()
                 self.logger.info("Threshold update applied: %s", update_id)
                 return True
         return False

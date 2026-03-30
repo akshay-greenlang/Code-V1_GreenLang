@@ -40,35 +40,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.utcnow()
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hash of a string."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -79,7 +71,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -88,7 +79,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class DERType(str, Enum):
     """Type of distributed energy resource."""
@@ -102,7 +92,6 @@ class DERType(str, Enum):
     FUEL_CELL = "fuel_cell"
     THERMAL_STORAGE = "thermal_storage"
 
-
 class DispatchMode(str, Enum):
     """DER dispatch mode during DR event."""
 
@@ -112,7 +101,6 @@ class DispatchMode(str, Enum):
     CURTAIL_EXPORT = "curtail_export"
     V2G = "v2g"
     LOAD_SHIFT = "load_shift"
-
 
 # =============================================================================
 # REFERENCE DATA (Zero-Hallucination)
@@ -179,11 +167,9 @@ DER_PERFORMANCE_SPECS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -196,7 +182,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list, description="Warnings raised")
     errors: List[str] = Field(default_factory=list, description="Errors encountered")
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
-
 
 class DERAsset(BaseModel):
     """A distributed energy resource asset."""
@@ -212,7 +197,6 @@ class DERAsset(BaseModel):
     dispatch_mode: str = Field(default="", description="Active dispatch mode")
     dispatch_duration_hours: Decimal = Field(default=Decimal("0"), ge=0)
 
-
 class DERDispatchPlan(BaseModel):
     """Dispatch plan for a single DER asset."""
 
@@ -224,7 +208,6 @@ class DERDispatchPlan(BaseModel):
     dispatch_energy_kwh: Decimal = Field(default=Decimal("0"), ge=0)
     priority: int = Field(default=0, ge=0, description="Dispatch priority order")
     emissions_kg_co2: Decimal = Field(default=Decimal("0"), ge=0)
-
 
 class DEROptimizationInput(BaseModel):
     """Input data model for DEROptimizationWorkflow."""
@@ -246,7 +229,6 @@ class DEROptimizationInput(BaseModel):
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
 
-
 class DEROptimizationResult(BaseModel):
     """Complete result from DER optimization workflow."""
 
@@ -267,11 +249,9 @@ class DEROptimizationResult(BaseModel):
     calculated_at: str = Field(default="", description="ISO 8601 timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 of complete result")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class DEROptimizationWorkflow:
     """
@@ -328,7 +308,7 @@ class DEROptimizationWorkflow:
             ValueError: If input validation fails.
         """
         t_start = time.perf_counter()
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting DER optimization workflow %s target=%.0f kW",
             self.optimization_id, float(input_data.target_response_kw),

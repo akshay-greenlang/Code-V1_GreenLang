@@ -55,6 +55,7 @@ import time
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import utcnow
 
 from greenlang.agents.data.supplier_questionnaire.models import (
     Framework,
@@ -74,16 +75,9 @@ __all__ = [
     "QuestionnaireTemplateEngine",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Built-in framework section definitions
@@ -227,11 +221,9 @@ _FRAMEWORK_QUESTIONS: Dict[str, Dict[str, List[Dict[str, Any]]]] = {
     Framework.DJSI.value: _DJSI_SECTION_QUESTIONS,
 }
 
-
 # ---------------------------------------------------------------------------
 # QuestionnaireTemplateEngine
 # ---------------------------------------------------------------------------
-
 
 class QuestionnaireTemplateEngine:
     """Questionnaire template lifecycle engine.
@@ -452,7 +444,7 @@ class QuestionnaireTemplateEngine:
 
         # Increment version
         data["version"] = existing.version + 1
-        data["updated_at"] = _utcnow()
+        data["updated_at"] = utcnow()
 
         # Recompute provenance
         data["provenance_hash"] = self._compute_provenance(
@@ -565,7 +557,7 @@ class QuestionnaireTemplateEngine:
 
         with self._lock:
             self._templates[template_id].sections.append(section)
-            self._templates[template_id].updated_at = _utcnow()
+            self._templates[template_id].updated_at = utcnow()
             self._templates[template_id].provenance_hash = (
                 self._compute_provenance(
                     "add_section", template_id, section.section_id,
@@ -618,7 +610,7 @@ class QuestionnaireTemplateEngine:
 
         with self._lock:
             target_section.questions.append(question)
-            self._templates[template_id].updated_at = _utcnow()
+            self._templates[template_id].updated_at = utcnow()
             self._templates[template_id].provenance_hash = (
                 self._compute_provenance(
                     "add_question", template_id, section_id,
@@ -787,8 +779,8 @@ class QuestionnaireTemplateEngine:
         parsed["template_id"] = new_id
         parsed["version"] = 1
         parsed["status"] = QuestionnaireStatus.DRAFT.value
-        parsed["created_at"] = _utcnow().isoformat()
-        parsed["updated_at"] = _utcnow().isoformat()
+        parsed["created_at"] = utcnow().isoformat()
+        parsed["updated_at"] = utcnow().isoformat()
         parsed["provenance_hash"] = self._compute_provenance(
             "import_template", new_id,
         )
@@ -822,7 +814,7 @@ class QuestionnaireTemplateEngine:
             return {
                 **self._stats,
                 "active_templates": len(self._templates),
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }
 
     # ------------------------------------------------------------------
@@ -1084,7 +1076,7 @@ class QuestionnaireTemplateEngine:
             Hex-encoded SHA-256 digest.
         """
         combined = json.dumps(
-            {"parts": list(parts), "timestamp": _utcnow().isoformat()},
+            {"parts": list(parts), "timestamp": utcnow().isoformat()},
             sort_keys=True,
         )
         return hashlib.sha256(combined.encode("utf-8")).hexdigest()

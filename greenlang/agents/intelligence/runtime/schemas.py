@@ -13,7 +13,8 @@ Raw numbers (int/float) are forbidden in tool outputs.
 
 from __future__ import annotations
 from typing import Any, Dict, List, Literal, Union
-from pydantic import BaseModel, Field, validator
+from pydantic import Field, validator
+from greenlang.schemas import GreenLangBase
 
 
 # ============================================================================
@@ -39,7 +40,7 @@ QUANTITY_SCHEMA: Dict[str, Any] = {
 }
 
 
-class Quantity(BaseModel):
+class Quantity(GreenLangBase):
     """
     Quantity: value + unit
 
@@ -64,7 +65,7 @@ class Quantity(BaseModel):
 # ============================================================================
 
 
-class Claim(BaseModel):
+class Claim(GreenLangBase):
     """
     Claim: Links a {{claim:i}} macro in final message to a tool output
 
@@ -156,7 +157,7 @@ ASSISTANT_STEP_SCHEMA: Dict[str, Any] = {
 }
 
 
-class ToolCallStep(BaseModel):
+class ToolCallStep(GreenLangBase):
     """AssistantStep variant: tool_call"""
 
     kind: Literal["tool_call"] = "tool_call"
@@ -164,14 +165,14 @@ class ToolCallStep(BaseModel):
     arguments: Dict[str, Any]
 
 
-class FinalStep(BaseModel):
+class FinalStep(GreenLangBase):
     """AssistantStep variant: final"""
 
     kind: Literal["final"] = "final"
     final: "FinalPayload"
 
 
-class FinalPayload(BaseModel):
+class FinalPayload(GreenLangBase):
     """Final message payload with claims"""
 
     message: str = Field(description="Message with {{claim:i}} macros")

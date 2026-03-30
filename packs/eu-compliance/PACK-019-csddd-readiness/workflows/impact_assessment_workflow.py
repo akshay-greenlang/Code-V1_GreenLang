@@ -37,35 +37,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class WorkflowPhase(str, Enum):
     """Phases of the impact assessment workflow."""
@@ -73,7 +65,6 @@ class WorkflowPhase(str, Enum):
     SEVERITY_LIKELIHOOD_SCORING = "severity_likelihood_scoring"
     PRIORITIZATION = "prioritization"
     STAKEHOLDER_VALIDATION = "stakeholder_validation"
-
 
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
@@ -83,7 +74,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class PhaseStatus(str, Enum):
     """Status of a single phase."""
     PENDING = "pending"
@@ -92,18 +82,15 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class ImpactCategory(str, Enum):
     """Category of adverse impact per CSDDD Annexes."""
     HUMAN_RIGHTS = "human_rights"
     ENVIRONMENT = "environment"
 
-
 class ImpactType(str, Enum):
     """Whether the impact is actual or potential."""
     ACTUAL = "actual"
     POTENTIAL = "potential"
-
 
 class SeverityLevel(str, Enum):
     """Severity classification for adverse impacts per Art. 6(4)."""
@@ -112,7 +99,6 @@ class SeverityLevel(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
 
-
 class StakeholderValidationStatus(str, Enum):
     """Validation status from stakeholder engagement."""
     VALIDATED = "validated"
@@ -120,11 +106,9 @@ class StakeholderValidationStatus(str, Enum):
     NOT_VALIDATED = "not_validated"
     DISPUTED = "disputed"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -135,7 +119,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class AdverseImpact(BaseModel):
     """Record of an actual or potential adverse impact."""
@@ -156,7 +139,6 @@ class AdverseImpact(BaseModel):
     irremediability: float = Field(default=0.0, ge=0.0, le=10.0, description="Irremediable nature (0-10)")
     likelihood: float = Field(default=0.5, ge=0.0, le=1.0, description="Likelihood 0-1")
 
-
 class StakeholderEngagement(BaseModel):
     """Stakeholder engagement record for validation."""
     engagement_id: str = Field(default_factory=lambda: f"eng-{_new_uuid()[:8]}")
@@ -171,7 +153,6 @@ class StakeholderEngagement(BaseModel):
         default=StakeholderValidationStatus.NOT_VALIDATED
     )
     concerns_raised: List[str] = Field(default_factory=list)
-
 
 class ImpactAssessmentInput(BaseModel):
     """Input data model for ImpactAssessmentWorkflow."""
@@ -192,7 +173,6 @@ class ImpactAssessmentInput(BaseModel):
     )
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class ScoredImpact(BaseModel):
     """Impact with computed severity and priority scores."""
     impact_id: str = Field(...)
@@ -206,7 +186,6 @@ class ScoredImpact(BaseModel):
     priority_rank: int = Field(default=0, ge=0)
     validation_status: str = Field(default="not_validated")
     recommended_action: str = Field(default="")
-
 
 class ImpactAssessmentResult(BaseModel):
     """Complete result from impact assessment workflow."""
@@ -238,11 +217,9 @@ class ImpactAssessmentResult(BaseModel):
     executed_at: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class ImpactAssessmentWorkflow:
     """
@@ -306,7 +283,7 @@ class ImpactAssessmentWorkflow:
         if input_data is None:
             input_data = ImpactAssessmentInput(config=config or {})
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting impact assessment workflow %s", self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = WorkflowStatus.IN_PROGRESS
@@ -324,7 +301,7 @@ class ImpactAssessmentWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         completed_count = sum(1 for p in phase_results if p.status == PhaseStatus.COMPLETED)
 
         impacts = input_data.adverse_impacts
@@ -367,7 +344,7 @@ class ImpactAssessmentWorkflow:
             stakeholder_validation_rate=round(validation_rate, 1),
             engagements_conducted=len(input_data.stakeholder_engagements),
             reporting_year=input_data.reporting_year,
-            executed_at=_utcnow().isoformat(),
+            executed_at=utcnow().isoformat(),
         )
         result.provenance_hash = self._compute_provenance(result)
         self.logger.info(
@@ -384,7 +361,7 @@ class ImpactAssessmentWorkflow:
         self, input_data: ImpactAssessmentInput,
     ) -> PhaseResult:
         """Scan value chain for adverse impacts and catalogue them."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -421,7 +398,7 @@ class ImpactAssessmentWorkflow:
         if by_category.get("environment", 0) == 0:
             warnings.append("No environmental impacts identified -- review Annex Part II coverage")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 1 ImpactScanning: %d impacts across %d countries",
             len(impacts), len(by_country),
@@ -441,7 +418,7 @@ class ImpactAssessmentWorkflow:
         self, input_data: ImpactAssessmentInput,
     ) -> PhaseResult:
         """Score each impact by severity (scale, scope, irremediability) and likelihood."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._scored_impacts = []
@@ -508,7 +485,7 @@ class ImpactAssessmentWorkflow:
         if any(si.severity_level == SeverityLevel.CRITICAL for si in self._scored_impacts):
             warnings.append("Critical severity impacts identified -- immediate action required per Art. 8")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 2 SeverityScoring: %d scored, avg=%.1f",
             len(self._scored_impacts), outputs["avg_severity_score"],
@@ -528,7 +505,7 @@ class ImpactAssessmentWorkflow:
         self, input_data: ImpactAssessmentInput,
     ) -> PhaseResult:
         """Rank impacts by priority score for DD action planning."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -572,7 +549,7 @@ class ImpactAssessmentWorkflow:
         if not top_priority:
             warnings.append("No impacts meet top-priority threshold -- verify scoring")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 3 Prioritization: %d ranked, %d top priority",
             len(self._scored_impacts), len(top_priority),
@@ -592,7 +569,7 @@ class ImpactAssessmentWorkflow:
         self, input_data: ImpactAssessmentInput,
     ) -> PhaseResult:
         """Validate impact findings against stakeholder engagement data."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -654,7 +631,7 @@ class ImpactAssessmentWorkflow:
         if disputed > 0:
             warnings.append(f"{disputed} impacts disputed by stakeholders -- review required")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 4 StakeholderValidation: %d validated, %d disputed, rate=%.1f%%",
             validated_count, disputed, outputs["validation_rate_pct"],
@@ -698,7 +675,6 @@ class ImpactAssessmentWorkflow:
         """Compute SHA-256 of a dict."""
         raw = json.dumps(data, sort_keys=True, default=str)
         return _compute_hash(raw)
-
 
 def _validation_rank(status: StakeholderValidationStatus) -> int:
     """Rank validation statuses for comparison (higher = better)."""

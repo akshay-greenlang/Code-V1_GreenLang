@@ -50,25 +50,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -81,11 +75,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class ExternalSource(str, Enum):
     """External benchmark data sources."""
@@ -97,7 +89,6 @@ class ExternalSource(str, Enum):
     ISS_ESG = "iss_esg"
     CUSTOM = "custom"
 
-
 class FreshnessStatus(str, Enum):
     """Data freshness status."""
 
@@ -105,7 +96,6 @@ class FreshnessStatus(str, Enum):
     STALE = "stale"
     EXPIRED = "expired"
     UNKNOWN = "unknown"
-
 
 # ---------------------------------------------------------------------------
 # Sector / Source Reference Data
@@ -152,11 +142,9 @@ DEFAULT_SOURCE_TTL: Dict[str, float] = {
     ExternalSource.CUSTOM.value: 3600.0,    # 1 hour
 }
 
-
 # ---------------------------------------------------------------------------
 # Cache Implementation
 # ---------------------------------------------------------------------------
-
 
 class _DatasetCache:
     """TTL-based cache for external dataset data."""
@@ -203,11 +191,9 @@ class _DatasetCache:
         """Number of cached entries."""
         return len(self._store)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class ExternalDatasetConfig(BaseModel):
     """Configuration for external dataset bridge."""
@@ -232,7 +218,6 @@ class ExternalDatasetConfig(BaseModel):
     enable_crrem: bool = Field(True)
     enable_iss_esg: bool = Field(True)
 
-
 class CDPDataset(BaseModel):
     """CDP Climate Change questionnaire response data."""
 
@@ -253,7 +238,6 @@ class CDPDataset(BaseModel):
     provenance_hash: str = ""
     last_updated: str = ""
 
-
 class TPIDataset(BaseModel):
     """TPI Carbon Performance rating data."""
 
@@ -268,7 +252,6 @@ class TPIDataset(BaseModel):
     pathway_points: Dict[str, float] = Field(default_factory=dict)
     provenance_hash: str = ""
 
-
 class GRESBDataset(BaseModel):
     """GRESB Real Estate and Infrastructure benchmark data."""
 
@@ -282,7 +265,6 @@ class GRESBDataset(BaseModel):
     peer_group_size: int = 0
     year: int = 0
     provenance_hash: str = ""
-
 
 class CRREMDataset(BaseModel):
     """CRREM decarbonisation pathway and stranding year data."""
@@ -299,7 +281,6 @@ class CRREMDataset(BaseModel):
     is_aligned: bool = False
     provenance_hash: str = ""
 
-
 class ISSESGDataset(BaseModel):
     """ISS ESG Climate risk rating data."""
 
@@ -313,7 +294,6 @@ class ISSESGDataset(BaseModel):
     controversy_flag: bool = False
     assessment_date: str = ""
     provenance_hash: str = ""
-
 
 class CustomDataset(BaseModel):
     """Custom dataset with configurable schema."""
@@ -329,7 +309,6 @@ class CustomDataset(BaseModel):
     provenance_hash: str = ""
     ingested_at: str = ""
 
-
 class FreshnessCheck(BaseModel):
     """Data freshness check result."""
 
@@ -340,7 +319,6 @@ class FreshnessCheck(BaseModel):
     is_stale: bool = False
     warning: str = ""
 
-
 class DatasetRequest(BaseModel):
     """Request for external dataset."""
 
@@ -348,7 +326,6 @@ class DatasetRequest(BaseModel):
     sector: str = Field("", description="Sector or property type")
     year: int = Field(0, description="Data year (0 = latest)")
     country: str = Field("", description="Country filter")
-
 
 class DatasetResponse(BaseModel):
     """Response with external dataset data."""
@@ -369,11 +346,9 @@ class DatasetResponse(BaseModel):
     duration_ms: float = 0.0
     warnings: List[str] = Field(default_factory=list)
 
-
 # ---------------------------------------------------------------------------
 # Bridge Implementation
 # ---------------------------------------------------------------------------
-
 
 class ExternalDatasetBridge:
     """
@@ -435,7 +410,7 @@ class ExternalDatasetBridge:
                 "sector": sector,
                 "year": year,
             }),
-            last_updated=_utcnow().isoformat(),
+            last_updated=utcnow().isoformat(),
         )
 
         self._cache.put(cache_key, result)
@@ -616,7 +591,7 @@ class ExternalDatasetBridge:
                 "name": name,
                 "record_count": len(records),
             }),
-            ingested_at=_utcnow().isoformat(),
+            ingested_at=utcnow().isoformat(),
         )
 
         cache_key = f"custom:{name}"
@@ -700,7 +675,7 @@ class ExternalDatasetBridge:
             response = DatasetResponse(
                 success=True,
                 source=request.source,
-                retrieved_at=_utcnow().isoformat(),
+                retrieved_at=utcnow().isoformat(),
             )
 
             if request.source == ExternalSource.CDP.value:
@@ -743,7 +718,7 @@ class ExternalDatasetBridge:
                 success=False,
                 source=request.source,
                 warnings=[f"Retrieval failed: {str(e)}"],
-                retrieved_at=_utcnow().isoformat(),
+                retrieved_at=utcnow().isoformat(),
                 duration_ms=duration,
             )
 

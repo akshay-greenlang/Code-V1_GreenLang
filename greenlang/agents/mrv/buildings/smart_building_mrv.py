@@ -32,7 +32,7 @@ from enum import Enum
 from typing import Dict, List, Optional
 from datetime import datetime
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.mrv.buildings.base import (
     BuildingMRVBaseAgent,
@@ -51,6 +51,7 @@ from greenlang.agents.mrv.buildings.base import (
     VerificationStatus,
     GRID_EF_BY_REGION_KGCO2E_PER_KWH,
 )
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -94,7 +95,7 @@ class AnomalyType(str, Enum):
 # INPUT/OUTPUT MODELS
 # =============================================================================
 
-class SensorReading(BaseModel):
+class SensorReading(GreenLangBase):
     """Individual sensor reading."""
     sensor_id: str
     sensor_type: SensorType
@@ -106,7 +107,7 @@ class SensorReading(BaseModel):
     zone_id: Optional[str] = None
 
 
-class TimeSeriesData(BaseModel):
+class TimeSeriesData(GreenLangBase):
     """Time series energy data."""
     start_time: str
     end_time: str
@@ -114,7 +115,7 @@ class TimeSeriesData(BaseModel):
     readings: List[SensorReading]
 
 
-class AnomalyRecord(BaseModel):
+class AnomalyRecord(GreenLangBase):
     """Detected anomaly record."""
     anomaly_id: str
     sensor_id: str
@@ -152,7 +153,7 @@ class SmartBuildingInput(BuildingMRVInput):
     demand_response_kwh_reduced: Optional[Decimal] = Field(None, ge=0)
 
 
-class ZoneEmissions(BaseModel):
+class ZoneEmissions(GreenLangBase):
     """Emissions by building zone."""
     zone_id: str
     zone_name: Optional[str] = None

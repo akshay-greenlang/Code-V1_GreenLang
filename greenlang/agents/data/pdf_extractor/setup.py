@@ -34,7 +34,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.data.pdf_extractor.config import PDFExtractorConfig, get_config
 from greenlang.agents.data.pdf_extractor.metrics import (
@@ -51,6 +51,7 @@ from greenlang.agents.data.pdf_extractor.metrics import (
     update_active_jobs,
     update_queue_size,
 )
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -65,13 +66,11 @@ except ImportError:
     FastAPI = None  # type: ignore[assignment, misc]
     FASTAPI_AVAILABLE = False
 
-
 # ===================================================================
 # Lightweight Pydantic models used by the facade
 # ===================================================================
 
-
-class DocumentRecord(BaseModel):
+class DocumentRecord(GreenLangBase):
     """Record representing an ingested and processed document.
 
     Attributes:
@@ -105,8 +104,7 @@ class DocumentRecord(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc).isoformat(),
     )
 
-
-class ExtractionJob(BaseModel):
+class ExtractionJob(GreenLangBase):
     """Represents an asynchronous extraction job.
 
     Attributes:
@@ -128,8 +126,7 @@ class ExtractionJob(BaseModel):
     completed_at: Optional[str] = Field(default=None)
     provenance_hash: str = Field(default="")
 
-
-class BatchJob(BaseModel):
+class BatchJob(GreenLangBase):
     """Represents a batch ingestion job.
 
     Attributes:
@@ -149,8 +146,7 @@ class BatchJob(BaseModel):
     )
     provenance_hash: str = Field(default="")
 
-
-class InvoiceExtraction(BaseModel):
+class InvoiceExtraction(GreenLangBase):
     """Structured invoice extraction result.
 
     Attributes:
@@ -176,8 +172,7 @@ class InvoiceExtraction(BaseModel):
     confidence: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
-class ManifestExtraction(BaseModel):
+class ManifestExtraction(GreenLangBase):
     """Structured manifest / bill-of-lading extraction result.
 
     Attributes:
@@ -207,8 +202,7 @@ class ManifestExtraction(BaseModel):
     confidence: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
-class UtilityBillExtraction(BaseModel):
+class UtilityBillExtraction(GreenLangBase):
     """Structured utility bill extraction result.
 
     Attributes:
@@ -240,8 +234,7 @@ class UtilityBillExtraction(BaseModel):
     confidence: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
-class ExtractionTemplate(BaseModel):
+class ExtractionTemplate(GreenLangBase):
     """Extraction template definition.
 
     Attributes:
@@ -265,8 +258,7 @@ class ExtractionTemplate(BaseModel):
     )
     provenance_hash: str = Field(default="")
 
-
-class ValidationResult(BaseModel):
+class ValidationResult(GreenLangBase):
     """Result of a single validation check.
 
     Attributes:
@@ -282,8 +274,7 @@ class ValidationResult(BaseModel):
     message: str = Field(default="")
     field: Optional[str] = Field(default=None)
 
-
-class PDFStatistics(BaseModel):
+class PDFStatistics(GreenLangBase):
     """Aggregate statistics for the PDF extractor service.
 
     Attributes:
@@ -313,11 +304,9 @@ class PDFStatistics(BaseModel):
     total_validation_errors: int = Field(default=0)
     total_ocr_operations: int = Field(default=0)
 
-
 # ===================================================================
 # Provenance helper
 # ===================================================================
-
 
 class _ProvenanceTracker:
     """Minimal provenance tracker recording SHA-256 audit entries.
@@ -367,7 +356,6 @@ class _ProvenanceTracker:
         self.entry_count += 1
         return entry_hash
 
-
 # ===================================================================
 # PDFExtractorService facade
 # ===================================================================
@@ -375,12 +363,6 @@ class _ProvenanceTracker:
 # Thread-safe singleton lock
 _singleton_lock = threading.Lock()
 _singleton_instance: Optional["PDFExtractorService"] = None
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -397,7 +379,6 @@ def _compute_hash(data: Any) -> str:
         serializable = data
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 class PDFExtractorService:
     """Unified facade over the PDF & Invoice Extractor SDK.
@@ -1430,11 +1411,9 @@ class PDFExtractorService:
         self._started = False
         logger.info("PDFExtractorService shut down")
 
-
 # ===================================================================
 # Thread-safe singleton access
 # ===================================================================
-
 
 def _get_singleton() -> PDFExtractorService:
     """Get or create the singleton PDFExtractorService instance.
@@ -1449,11 +1428,9 @@ def _get_singleton() -> PDFExtractorService:
                 _singleton_instance = PDFExtractorService()
     return _singleton_instance
 
-
 # ===================================================================
 # FastAPI integration
 # ===================================================================
-
 
 async def configure_pdf_extractor(
     app: Any,
@@ -1497,7 +1474,6 @@ async def configure_pdf_extractor(
     logger.info("PDF extractor service configured on app")
     return service
 
-
 def get_pdf_extractor(app: Any) -> PDFExtractorService:
     """Get the PDFExtractorService instance from app state.
 
@@ -1518,7 +1494,6 @@ def get_pdf_extractor(app: Any) -> PDFExtractorService:
         )
     return service
 
-
 def get_router(service: Optional[PDFExtractorService] = None) -> Any:
     """Get the PDF extractor API router.
 
@@ -1533,7 +1508,6 @@ def get_router(service: Optional[PDFExtractorService] = None) -> Any:
         return router
     except ImportError:
         return None
-
 
 __all__ = [
     "PDFExtractorService",

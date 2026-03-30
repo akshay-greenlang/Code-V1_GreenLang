@@ -70,6 +70,7 @@ from typing import Any, Dict, List, Optional
 from greenlang.agents.data.data_lineage_tracker.config import get_config
 from greenlang.agents.data.data_lineage_tracker.provenance import ProvenanceTracker
 from greenlang.agents.data.data_lineage_tracker.lineage_graph import LineageGraphEngine
+from greenlang.schemas import utcnow
 from greenlang.agents.data.data_lineage_tracker.metrics import (
     record_validation,
     observe_processing_duration,
@@ -83,7 +84,6 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 __all__ = ["LineageValidatorEngine"]
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -109,16 +109,9 @@ _SCOPE_FULL = "full"
 _SCOPE_PIPELINE = "pipeline"
 _SCOPE_TARGETED = "targeted"
 
-
 # ---------------------------------------------------------------------------
 # Helper
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed for stability."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _generate_validation_id() -> str:
     """Generate a unique validation identifier.
@@ -130,11 +123,9 @@ def _generate_validation_id() -> str:
     """
     return f"VAL-{uuid.uuid4().hex[:12]}"
 
-
 # ---------------------------------------------------------------------------
 # LineageValidatorEngine
 # ---------------------------------------------------------------------------
-
 
 class LineageValidatorEngine:
     """Validates lineage graph completeness and consistency.
@@ -346,7 +337,7 @@ class LineageValidatorEngine:
         result = self._determine_result(completeness, cfg)
 
         # -- Step 9: Assemble report -------------------------------------
-        validated_at = _utcnow().isoformat()
+        validated_at = utcnow().isoformat()
         report: dict = {
             "id": validation_id,
             "scope": scope,
@@ -450,7 +441,7 @@ class LineageValidatorEngine:
             if target_id:
                 connected_ids.add(target_id)
 
-        detected_at = _utcnow().isoformat()
+        detected_at = utcnow().isoformat()
         for node in nodes:
             node_id = node.get("id") or node.get("node_id", "")
             if node_id and node_id not in connected_ids:
@@ -829,7 +820,7 @@ class LineageValidatorEngine:
         )
 
         nodes = self._graph.get_all_nodes()
-        now = _utcnow()
+        now = utcnow()
         stale_list: List[dict] = []
 
         for node in nodes:

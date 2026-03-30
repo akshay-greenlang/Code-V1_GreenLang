@@ -45,7 +45,8 @@ import time
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase, utcnow
 
 from greenlang.agents.data.pdf_extractor.field_extractor import (
     ExtractedField,
@@ -61,23 +62,15 @@ __all__ = [
     "InvoiceProcessor",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Data models
 # ---------------------------------------------------------------------------
 
-
-class ValidationResult(BaseModel):
+class ValidationResult(GreenLangBase):
     """Result of a single validation check."""
 
     rule_name: str = Field(..., description="Validation rule identifier")
@@ -92,8 +85,7 @@ class ValidationResult(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class InvoiceExtraction(BaseModel):
+class InvoiceExtraction(GreenLangBase):
     """Complete invoice extraction result."""
 
     invoice_number: Optional[str] = Field(None)
@@ -116,15 +108,13 @@ class InvoiceExtraction(BaseModel):
     validations: List[ValidationResult] = Field(default_factory=list)
     overall_confidence: float = Field(default=0.0, ge=0.0, le=1.0)
     provenance_hash: str = Field(default="")
-    extracted_at: datetime = Field(default_factory=_utcnow)
+    extracted_at: datetime = Field(default_factory=utcnow)
 
     model_config = {"extra": "forbid"}
-
 
 # ---------------------------------------------------------------------------
 # InvoiceProcessor
 # ---------------------------------------------------------------------------
-
 
 class InvoiceProcessor:
     """Invoice-specific extraction and validation engine.
@@ -509,7 +499,7 @@ class InvoiceProcessor:
                     ), 4,
                 ),
                 "errors": self._stats["errors"],
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }
 
     # ------------------------------------------------------------------

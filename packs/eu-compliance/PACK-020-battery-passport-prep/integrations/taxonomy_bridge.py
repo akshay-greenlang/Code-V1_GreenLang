@@ -42,25 +42,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -73,11 +67,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EnvironmentalObjective(str, Enum):
     """EU Taxonomy six environmental objectives."""
@@ -89,7 +81,6 @@ class EnvironmentalObjective(str, Enum):
     POLLUTION_PREVENTION = "pollution_prevention"
     BIODIVERSITY = "biodiversity_and_ecosystems"
 
-
 class DNSHStatus(str, Enum):
     """Do No Significant Harm assessment status."""
 
@@ -98,7 +89,6 @@ class DNSHStatus(str, Enum):
     NOT_ASSESSED = "not_assessed"
     PARTIALLY_MET = "partially_met"
 
-
 class AlignmentStatus(str, Enum):
     """Taxonomy alignment assessment status."""
 
@@ -106,7 +96,6 @@ class AlignmentStatus(str, Enum):
     ELIGIBLE_NOT_ALIGNED = "eligible_not_aligned"
     NOT_ELIGIBLE = "not_eligible"
     UNDER_REVIEW = "under_review"
-
 
 class TaxonomyActivity(str, Enum):
     """Taxonomy economic activities relevant to battery manufacturing."""
@@ -117,11 +106,9 @@ class TaxonomyActivity(str, Enum):
     RECYCLING = "5.9"
     ENERGY_STORAGE = "4.10"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class TaxonomyBridgeConfig(BaseModel):
     """Configuration for the Taxonomy Bridge."""
@@ -136,7 +123,6 @@ class TaxonomyBridgeConfig(BaseModel):
     nace_code: str = Field(default="C27.2")
     include_minimum_safeguards: bool = Field(default=True)
 
-
 class DNSHCriterion(BaseModel):
     """Single DNSH criterion assessment result."""
 
@@ -149,7 +135,6 @@ class DNSHCriterion(BaseModel):
     evidence_provided: bool = Field(default=False)
     evidence_summary: str = Field(default="")
     battery_reg_reference: str = Field(default="")
-
 
 class DNSHResult(BaseModel):
     """Complete DNSH assessment result."""
@@ -168,7 +153,6 @@ class DNSHResult(BaseModel):
     minimum_safeguards_met: bool = Field(default=False)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class AlignmentResult(BaseModel):
     """Full Taxonomy alignment assessment result."""
@@ -193,7 +177,6 @@ class AlignmentResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class BatteryManufacturingCriteria(BaseModel):
     """Technical screening criteria for battery manufacturing (Activity 3.4)."""
 
@@ -210,7 +193,6 @@ class BatteryManufacturingCriteria(BaseModel):
         default_factory=list
     )
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # TSC Data for Activity 3.4 (Manufacture of batteries)
@@ -286,11 +268,9 @@ BATTERY_REG_CROSS_REFERENCES: List[Dict[str, str]] = [
     {"taxonomy_criterion": "DNSH-3.4-BIO-1", "battery_reg_article": "Art 39", "overlap": "Supply chain DD"},
 ]
 
-
 # ---------------------------------------------------------------------------
 # TaxonomyBridge
 # ---------------------------------------------------------------------------
-
 
 class TaxonomyBridge:
     """EU Taxonomy DNSH validation bridge for PACK-020.
@@ -335,7 +315,7 @@ class TaxonomyBridge:
             DNSHResult with per-objective criterion assessments.
         """
         result = DNSHResult(
-            started_at=_utcnow(),
+            started_at=utcnow(),
             activity=self.config.primary_activity.value,
         )
 
@@ -409,7 +389,7 @@ class TaxonomyBridge:
             result.errors.append(str(exc))
             logger.error("DNSH check failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at

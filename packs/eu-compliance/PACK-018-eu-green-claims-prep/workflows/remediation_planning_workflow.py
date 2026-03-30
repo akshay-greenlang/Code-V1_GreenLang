@@ -32,23 +32,17 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID-4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hex digest for provenance tracking."""
@@ -61,11 +55,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Execution status for a single workflow phase."""
@@ -75,14 +67,12 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class RemediationPhase(str, Enum):
     """Remediation planning workflow phase identifiers."""
     CLAIM_TRIAGE = "ClaimTriage"
     RESOURCE_PLANNING = "ResourcePlanning"
     TIMELINE_GENERATION = "TimelineGeneration"
     PROGRESS_TRACKING = "ProgressTracking"
-
 
 class TriageCategory(str, Enum):
     """Triage category for non-compliant claims."""
@@ -91,14 +81,12 @@ class TriageCategory(str, Enum):
     SUBSTANTIATE = "substantiate"
     REPLACE = "replace"
 
-
 class SeverityLevel(str, Enum):
     """Issue severity classification."""
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 class TrackingStatus(str, Enum):
     """Progress tracking status for individual actions."""
@@ -108,11 +96,9 @@ class TrackingStatus(str, Enum):
     COMPLETED = "completed"
     OVERDUE = "overdue"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class RemediationConfig(BaseModel):
     """Configuration for RemediationPlanningWorkflow."""
@@ -129,7 +115,6 @@ class RemediationConfig(BaseModel):
         description="Default full-time equivalents available for remediation",
     )
 
-
 class RemediationResult(BaseModel):
     """Individual claim remediation plan result."""
     claim_id: str = Field(..., description="Unique claim identifier")
@@ -141,7 +126,6 @@ class RemediationResult(BaseModel):
     target_start_month: int = Field(default=1, ge=1)
     target_completion_month: int = Field(default=1, ge=1)
     tracking_status: str = Field(default="not_started")
-
 
 class WorkflowInput(BaseModel):
     """Input model for RemediationPlanningWorkflow."""
@@ -160,7 +144,6 @@ class WorkflowInput(BaseModel):
     )
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
     phase_name: str = Field(..., description="Phase identifier")
@@ -169,7 +152,6 @@ class PhaseResult(BaseModel):
     completed_at: Optional[datetime] = Field(default=None)
     result_data: Dict[str, Any] = Field(default_factory=dict)
     error_message: Optional[str] = Field(default=None)
-
 
 class WorkflowResult(BaseModel):
     """Complete result from RemediationPlanningWorkflow."""
@@ -182,11 +164,9 @@ class WorkflowResult(BaseModel):
     started_at: Optional[datetime] = Field(default=None)
     completed_at: Optional[datetime] = Field(default=None)
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class RemediationPlanningWorkflow:
     """
@@ -272,7 +252,7 @@ class RemediationPlanningWorkflow:
             config=kwargs.get("config", {}),
         )
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting %s workflow %s -- %d claims",
                          self.WORKFLOW_NAME, self.workflow_id,
                          len(input_data.non_compliant_claims))
@@ -308,12 +288,12 @@ class RemediationPlanningWorkflow:
             phase_results.append(PhaseResult(
                 phase_name="error_capture",
                 status=PhaseStatus.FAILED,
-                started_at=_utcnow(),
-                completed_at=_utcnow(),
+                started_at=utcnow(),
+                completed_at=utcnow(),
                 error_message=str(exc),
             ))
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
 
         completed_phases = [p for p in phase_results if p.status == PhaseStatus.COMPLETED]
         overall_result: Dict[str, Any] = {
@@ -392,7 +372,7 @@ class RemediationPlanningWorkflow:
 
     def _run_claim_triage(self, input_data: WorkflowInput) -> PhaseResult:
         """Categorise non-compliant claims into triage categories."""
-        started = _utcnow()
+        started = utcnow()
         self.logger.info("Phase 1/4 ClaimTriage -- triaging %d claims",
                          len(input_data.non_compliant_claims))
 
@@ -447,7 +427,7 @@ class RemediationPlanningWorkflow:
             phase_name=RemediationPhase.CLAIM_TRIAGE.value,
             status=PhaseStatus.COMPLETED,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             result_data=result_data,
         )
 
@@ -459,7 +439,7 @@ class RemediationPlanningWorkflow:
         self, input_data: WorkflowInput, triage_data: Dict[str, Any],
     ) -> PhaseResult:
         """Estimate effort, cost, and personnel requirements."""
-        started = _utcnow()
+        started = utcnow()
         self.logger.info("Phase 2/4 ResourcePlanning -- estimating resources")
 
         budget_available = input_data.available_resources.get("budget_eur", 0)
@@ -501,7 +481,7 @@ class RemediationPlanningWorkflow:
             phase_name=RemediationPhase.RESOURCE_PLANNING.value,
             status=PhaseStatus.COMPLETED,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             result_data=result_data,
         )
 
@@ -516,7 +496,7 @@ class RemediationPlanningWorkflow:
         resource_data: Dict[str, Any],
     ) -> PhaseResult:
         """Build per-claim remediation timeline."""
-        started = _utcnow()
+        started = utcnow()
         self.logger.info("Phase 3/4 TimelineGeneration -- building timelines")
 
         target_months = input_data.target_months
@@ -585,7 +565,7 @@ class RemediationPlanningWorkflow:
             phase_name=RemediationPhase.TIMELINE_GENERATION.value,
             status=PhaseStatus.COMPLETED,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             result_data=result_data,
         )
 
@@ -597,7 +577,7 @@ class RemediationPlanningWorkflow:
         self, input_data: WorkflowInput, timeline_data: Dict[str, Any],
     ) -> PhaseResult:
         """Set up KPIs, checkpoints, and progress monitoring."""
-        started = _utcnow()
+        started = utcnow()
         self.logger.info("Phase 4/4 ProgressTracking -- configuring monitoring")
 
         total_items = timeline_data.get("total_items", 0)
@@ -682,7 +662,7 @@ class RemediationPlanningWorkflow:
             phase_name=RemediationPhase.PROGRESS_TRACKING.value,
             status=PhaseStatus.COMPLETED,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             result_data=result_data,
         )
 

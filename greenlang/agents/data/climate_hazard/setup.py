@@ -34,7 +34,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.data.climate_hazard.config import (
     ClimateHazardConfig,
@@ -56,6 +56,7 @@ from greenlang.agents.data.climate_hazard.metrics import (
     observe_pipeline_duration,
 )
 from greenlang.agents.data.climate_hazard.provenance import ProvenanceTracker
+from greenlang.schemas import GreenLangBase, utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +70,6 @@ try:
 except ImportError:
     FastAPI = None  # type: ignore[assignment, misc]
     FASTAPI_AVAILABLE = False
-
 
 # ---------------------------------------------------------------------------
 # Optional engine imports (graceful degradation)
@@ -110,13 +110,11 @@ try:
 except ImportError:
     HazardPipelineEngine = None  # type: ignore[assignment, misc]
 
-
 # ===================================================================
 # Lightweight Pydantic response models used by the facade / API layer
 # ===================================================================
 
-
-class SourceResponse(BaseModel):
+class SourceResponse(GreenLangBase):
     """Climate hazard data source registration / retrieval response.
 
     Attributes:
@@ -153,8 +151,7 @@ class SourceResponse(BaseModel):
     )
     provenance_hash: str = Field(default="")
 
-
-class HazardDataResponse(BaseModel):
+class HazardDataResponse(GreenLangBase):
     """Hazard data ingestion / query response.
 
     Attributes:
@@ -188,8 +185,7 @@ class HazardDataResponse(BaseModel):
     timestamp_end: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
-class HazardEventResponse(BaseModel):
+class HazardEventResponse(GreenLangBase):
     """Historical climate hazard event response.
 
     Attributes:
@@ -217,8 +213,7 @@ class HazardEventResponse(BaseModel):
     end_date: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
-class RiskIndexResponse(BaseModel):
+class RiskIndexResponse(GreenLangBase):
     """Climate risk index calculation response.
 
     Attributes:
@@ -249,8 +244,7 @@ class RiskIndexResponse(BaseModel):
     confidence: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
-class MultiHazardResponse(BaseModel):
+class MultiHazardResponse(GreenLangBase):
     """Multi-hazard composite risk index response.
 
     Attributes:
@@ -277,8 +271,7 @@ class MultiHazardResponse(BaseModel):
     interaction_effects: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
 
-
-class LocationComparisonResponse(BaseModel):
+class LocationComparisonResponse(GreenLangBase):
     """Location risk comparison response.
 
     Attributes:
@@ -301,8 +294,7 @@ class LocationComparisonResponse(BaseModel):
     per_location_scores: List[Dict[str, Any]] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
-class ScenarioResponse(BaseModel):
+class ScenarioResponse(GreenLangBase):
     """Climate scenario projection response.
 
     Attributes:
@@ -333,8 +325,7 @@ class ScenarioResponse(BaseModel):
     parameters: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
 
-
-class AssetResponse(BaseModel):
+class AssetResponse(GreenLangBase):
     """Physical or financial asset registration / retrieval response.
 
     Attributes:
@@ -370,8 +361,7 @@ class AssetResponse(BaseModel):
     )
     provenance_hash: str = Field(default="")
 
-
-class ExposureResponse(BaseModel):
+class ExposureResponse(GreenLangBase):
     """Asset-level climate hazard exposure assessment response.
 
     Attributes:
@@ -399,8 +389,7 @@ class ExposureResponse(BaseModel):
     impact_details: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
 
-
-class PortfolioExposureResponse(BaseModel):
+class PortfolioExposureResponse(GreenLangBase):
     """Portfolio-level climate hazard exposure assessment response.
 
     Attributes:
@@ -429,8 +418,7 @@ class PortfolioExposureResponse(BaseModel):
     hotspots: List[Dict[str, Any]] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
-class VulnerabilityResponse(BaseModel):
+class VulnerabilityResponse(GreenLangBase):
     """Vulnerability scoring response.
 
     Attributes:
@@ -464,8 +452,7 @@ class VulnerabilityResponse(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
-class ReportResponse(BaseModel):
+class ReportResponse(GreenLangBase):
     """Compliance report generation response.
 
     Attributes:
@@ -492,8 +479,7 @@ class ReportResponse(BaseModel):
     )
     provenance_hash: str = Field(default="")
 
-
-class PipelineResponse(BaseModel):
+class PipelineResponse(GreenLangBase):
     """End-to-end climate hazard pipeline execution response.
 
     Attributes:
@@ -517,8 +503,7 @@ class PipelineResponse(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Service health check response.
 
     Attributes:
@@ -549,26 +534,17 @@ class HealthResponse(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc).isoformat(),
     )
 
-
 # ===================================================================
 # Utility helpers
 # ===================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _utcnow_iso() -> str:
     """Return current UTC datetime as an ISO-8601 string."""
-    return _utcnow().isoformat()
-
+    return utcnow().isoformat()
 
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -586,7 +562,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ===================================================================
 # ClimateHazardService facade
 # ===================================================================
@@ -594,7 +569,6 @@ def _compute_hash(data: Any) -> str:
 # Thread-safe singleton lock
 _singleton_lock = threading.Lock()
 _singleton_instance: Optional["ClimateHazardService"] = None
-
 
 class ClimateHazardService:
     """Unified facade over the Climate Hazard Connector Agent SDK.
@@ -2731,11 +2705,9 @@ class ClimateHazardService:
         set_high_risk(0)
         logger.info("ClimateHazardService shut down")
 
-
 # ===================================================================
 # Thread-safe singleton access
 # ===================================================================
-
 
 def _get_singleton() -> ClimateHazardService:
     """Get or create the singleton ClimateHazardService instance.
@@ -2750,11 +2722,9 @@ def _get_singleton() -> ClimateHazardService:
                 _singleton_instance = ClimateHazardService()
     return _singleton_instance
 
-
 # ===================================================================
 # FastAPI integration
 # ===================================================================
-
 
 async def configure_climate_hazard(
     app: Any,
@@ -2799,7 +2769,6 @@ async def configure_climate_hazard(
     logger.info("Climate hazard service configured on app")
     return service
 
-
 def get_service() -> ClimateHazardService:
     """Get the singleton ClimateHazardService instance.
 
@@ -2815,7 +2784,6 @@ def get_service() -> ClimateHazardService:
             if _singleton_instance is None:
                 _singleton_instance = ClimateHazardService()
     return _singleton_instance
-
 
 def get_router() -> Any:
     """Get the climate hazard API router.
@@ -2834,7 +2802,6 @@ def get_router() -> Any:
     except ImportError:
         logger.warning("Climate hazard API router module not available")
         return None
-
 
 # ===================================================================
 # Public API

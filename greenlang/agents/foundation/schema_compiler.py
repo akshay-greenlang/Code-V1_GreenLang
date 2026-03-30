@@ -35,7 +35,7 @@ from decimal import Decimal, InvalidOperation
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, Union
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.governance.validation.framework import (
@@ -44,6 +44,7 @@ from greenlang.governance.validation.framework import (
     ValidationSeverity,
 )
 from greenlang.utilities.determinism.clock import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -145,7 +146,7 @@ class FixSuggestionType(str, Enum):
 # Data Models
 # =============================================================================
 
-class FixSuggestion(BaseModel):
+class FixSuggestion(GreenLangBase):
     """A machine-fixable suggestion for correcting validation errors."""
     suggestion_type: FixSuggestionType = Field(
         ..., description="Type of fix suggestion"
@@ -165,7 +166,7 @@ class FixSuggestion(BaseModel):
     )
 
 
-class UnitInfo(BaseModel):
+class UnitInfo(GreenLangBase):
     """Information about a unit and its family."""
     unit: str = Field(..., description="Unit symbol")
     family: str = Field(..., description="Unit family (mass_co2e, energy, etc.)")
@@ -175,7 +176,7 @@ class UnitInfo(BaseModel):
     )
 
 
-class CoercionRecord(BaseModel):
+class CoercionRecord(GreenLangBase):
     """Record of a type coercion operation for audit trails."""
     field: str = Field(..., description="Field that was coerced")
     coercion_type: CoercionType = Field(..., description="Type of coercion")
@@ -188,7 +189,7 @@ class CoercionRecord(BaseModel):
     )
 
 
-class SchemaRegistryEntry(BaseModel):
+class SchemaRegistryEntry(GreenLangBase):
     """An entry in the schema registry."""
     schema_id: str = Field(..., description="Unique schema identifier")
     schema_name: str = Field(..., description="Human-readable schema name")
@@ -216,7 +217,7 @@ class SchemaRegistryEntry(BaseModel):
         return self
 
 
-class SchemaCompilerInput(BaseModel):
+class SchemaCompilerInput(GreenLangBase):
     """Input data model for SchemaCompilerAgent."""
     payload: Dict[str, Any] = Field(..., description="Data payload to validate")
     schema_id: Optional[str] = Field(
@@ -248,7 +249,7 @@ class SchemaCompilerInput(BaseModel):
         return self
 
 
-class SchemaCompilerOutput(BaseModel):
+class SchemaCompilerOutput(GreenLangBase):
     """Output data model for SchemaCompilerAgent."""
     is_valid: bool = Field(..., description="Whether validation passed")
     validation_result: ValidationResult = Field(

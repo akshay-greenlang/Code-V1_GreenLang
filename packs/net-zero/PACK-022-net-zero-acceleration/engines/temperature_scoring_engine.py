@@ -75,25 +75,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -106,7 +100,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -116,7 +109,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
 ) -> Decimal:
@@ -124,7 +116,6 @@ def _safe_divide(
     if denominator == Decimal("0"):
         return default
     return numerator / denominator
-
 
 def _safe_pct(
     part: Decimal, whole: Decimal, places: int = 2
@@ -136,12 +127,10 @@ def _safe_pct(
         Decimal("0." + "0" * places), rounding=ROUND_HALF_UP
     )
 
-
 def _round_val(value: Decimal, places: int = 4) -> Decimal:
     """Round a Decimal value to the specified number of decimal places."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 # ---------------------------------------------------------------------------
 # Reference Data: SBTi Temperature Mapping Table
@@ -182,11 +171,9 @@ TEMPERATURE_BANDS: Dict[str, Tuple[Decimal, Decimal]] = {
     "NO_TARGET": (Decimal("3.20"), Decimal("99.0")),
 }
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ScoreType(str, Enum):
     """Temperature score aggregation method per SBTi TR v2.0."""
@@ -197,19 +184,16 @@ class ScoreType(str, Enum):
     ECOTS = "ecots"
     AOTS = "aots"
 
-
 class TargetScope(str, Enum):
     """Target scope classification."""
     S1S2 = "s1s2"
     S3 = "s3"
     S1S2S3 = "s1s2s3"
 
-
 class TargetTimeframe(str, Enum):
     """Target timeframe classification."""
     NEAR_TERM = "near_term"
     LONG_TERM = "long_term"
-
 
 class AggregationMethod(str, Enum):
     """Weight basis for portfolio aggregation."""
@@ -220,7 +204,6 @@ class AggregationMethod(str, Enum):
     EV_PLUS_CASH = "ev_plus_cash"
     TOTAL_INVESTED_CAPITAL = "total_invested_capital"
 
-
 class TemperatureBand(str, Enum):
     """Temperature alignment band."""
     ALIGNED_1_5C = "1.5C"
@@ -230,7 +213,6 @@ class TemperatureBand(str, Enum):
     ABOVE_2C = "above_2C"
     NO_TARGET = "no_target"
 
-
 class TargetValidityStatus(str, Enum):
     """Validity status of a target for temperature scoring."""
     VALID = "valid"
@@ -238,11 +220,9 @@ class TargetValidityStatus(str, Enum):
     INVALID_ARR = "invalid_arr"
     MISSING = "missing"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class EmissionsTarget(BaseModel):
     """A single emissions reduction target for an entity."""
@@ -257,7 +237,7 @@ class EmissionsTarget(BaseModel):
     reduction_pct: Decimal = Field(default=Decimal("0"), description="Target reduction percentage")
     is_sbti_validated: bool = Field(default=False, description="Whether SBTi validated")
     is_net_zero_aligned: bool = Field(default=False, description="Net-zero aligned")
-    created_at: datetime = Field(default_factory=_utcnow, description="Creation timestamp")
+    created_at: datetime = Field(default_factory=utcnow, description="Creation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("base_year_emissions", "target_year_emissions",
@@ -265,7 +245,6 @@ class EmissionsTarget(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class PortfolioEntity(BaseModel):
     """Entity in a portfolio for temperature scoring."""
@@ -296,7 +275,6 @@ class PortfolioEntity(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class EntityTemperatureScore(BaseModel):
     """Temperature score for a single entity."""
     entity_id: str = Field(description="Entity identifier")
@@ -309,14 +287,13 @@ class EntityTemperatureScore(BaseModel):
     temperature_band: TemperatureBand = Field(description="Temperature alignment band")
     validity_status: TargetValidityStatus = Field(description="Target validity status")
     is_default_score: bool = Field(default=False, description="Whether default 3.2C was used")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Calculation timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Calculation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("annual_reduction_rate", "temperature_score", mode="before")
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class PortfolioTemperatureScore(BaseModel):
     """Aggregated portfolio temperature score."""
@@ -331,14 +308,13 @@ class PortfolioTemperatureScore(BaseModel):
     entities_defaulted: int = Field(default=0, description="Entities using default score")
     coverage_pct: Decimal = Field(default=Decimal("0"), description="Target coverage (% of weight)")
     methodology_version: str = Field(default="SBTi TR v2.0", description="Methodology version")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Calculation timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Calculation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("temperature_score", "coverage_pct", mode="before")
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class ContributionEntry(BaseModel):
     """Contribution of one entity to portfolio temperature."""
@@ -356,7 +332,6 @@ class ContributionEntry(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class WhatIfScenario(BaseModel):
     """What-if scenario definition."""
@@ -381,7 +356,6 @@ class WhatIfScenario(BaseModel):
             return None
         return _decimal(v)
 
-
 class WhatIfResult(BaseModel):
     """Result of what-if analysis."""
     result_id: str = Field(default_factory=_new_uuid, description="Result identifier")
@@ -394,7 +368,7 @@ class WhatIfResult(BaseModel):
     entity_id: str = Field(description="Modified entity")
     original_entity_temperature: Decimal = Field(description="Original entity temp (C)")
     modified_entity_temperature: Decimal = Field(description="Modified entity temp (C)")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Calculation timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Calculation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("original_portfolio_temperature", "modified_portfolio_temperature",
@@ -404,7 +378,6 @@ class WhatIfResult(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class TemperatureResult(BaseModel):
     """Complete temperature scoring result."""
@@ -425,14 +398,12 @@ class TemperatureResult(BaseModel):
         default="SBTi TR v2.0", description="Methodology version"
     )
     entities_assessed: int = Field(default=0, description="Total entities assessed")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Calculation timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Calculation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 # ---------------------------------------------------------------------------
 # Engine Configuration
 # ---------------------------------------------------------------------------
-
 
 class TemperatureScoringConfig(BaseModel):
     """Configuration for the TemperatureScoringEngine."""
@@ -456,7 +427,6 @@ class TemperatureScoringConfig(BaseModel):
         default=4, description="Decimal places for temperature scores"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic model_rebuild for forward reference resolution
 # ---------------------------------------------------------------------------
@@ -471,11 +441,9 @@ WhatIfResult.model_rebuild()
 TemperatureResult.model_rebuild()
 TemperatureScoringConfig.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # TemperatureScoringEngine
 # ---------------------------------------------------------------------------
-
 
 class TemperatureScoringEngine:
     """

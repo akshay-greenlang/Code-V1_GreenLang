@@ -41,25 +41,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -72,11 +66,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ERPSystemType(str, Enum):
     """Supported ERP system types."""
@@ -86,7 +78,6 @@ class ERPSystemType(str, Enum):
     DYNAMICS = "dynamics"
     GENERIC = "generic"
 
-
 class ConnectionStatus(str, Enum):
     """ERP connection status."""
 
@@ -94,7 +85,6 @@ class ConnectionStatus(str, Enum):
     DISCONNECTED = "disconnected"
     ERROR = "error"
     AUTHENTICATING = "authenticating"
-
 
 class ExtractionStatus(str, Enum):
     """Data extraction status."""
@@ -104,11 +94,9 @@ class ExtractionStatus(str, Enum):
     FAILED = "failed"
     NO_DATA = "no_data"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class ERPConnectorConfig(BaseModel):
     """ERP connector configuration."""
@@ -126,13 +114,11 @@ class ERPConnectorConfig(BaseModel):
     company_code: str = Field(default="")
     cost_center_filter: List[str] = Field(default_factory=list)
 
-
 class DateRange(BaseModel):
     """Date range for data extraction."""
 
     start_date: str = Field(default="2025-01-01")
     end_date: str = Field(default="2025-12-31")
-
 
 class FuelPurchase(BaseModel):
     """Fuel purchase record from ERP."""
@@ -148,7 +134,6 @@ class FuelPurchase(BaseModel):
     vendor: str = Field(default="")
     po_number: str = Field(default="")
 
-
 class FleetRecord(BaseModel):
     """Fleet mileage record from ERP."""
 
@@ -161,7 +146,6 @@ class FleetRecord(BaseModel):
     period_start: str = Field(default="")
     period_end: str = Field(default="")
     department: str = Field(default="")
-
 
 class ElectricityRecord(BaseModel):
     """Electricity consumption record from ERP."""
@@ -178,7 +162,6 @@ class ElectricityRecord(BaseModel):
     grid_region: str = Field(default="US_AVERAGE")
     invoice_number: str = Field(default="")
 
-
 class RefrigerantPurchase(BaseModel):
     """Refrigerant purchase record from ERP."""
 
@@ -191,7 +174,6 @@ class RefrigerantPurchase(BaseModel):
     equipment_id: str = Field(default="")
     purpose: str = Field(default="recharge")
     vendor: str = Field(default="")
-
 
 class ProductionRecord(BaseModel):
     """Production volume record from ERP."""
@@ -207,7 +189,6 @@ class ProductionRecord(BaseModel):
     currency: str = Field(default="USD")
     headcount: int = Field(default=0, ge=0)
 
-
 class ExtractionResult(BaseModel):
     """Result of an ERP data extraction operation."""
 
@@ -221,13 +202,11 @@ class ExtractionResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
     processing_time_ms: float = Field(default=0.0)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # ERPConnector
 # ---------------------------------------------------------------------------
-
 
 class ERPConnector:
     """ERP system integration for GHG activity data extraction.
@@ -296,7 +275,7 @@ class ERPConnector:
 
         # Simulated connection (in production, actual ERP SDK/API call)
         self._connected = True
-        self._connection_time = _utcnow()
+        self._connection_time = utcnow()
         self._status = ConnectionStatus.CONNECTED
         elapsed_ms = (time.monotonic() - start_time) * 1000
 
@@ -317,7 +296,7 @@ class ERPConnector:
         self._connected = False
         self._status = ConnectionStatus.DISCONNECTED
         self.logger.info("Disconnected from ERP")
-        return {"status": "disconnected", "timestamp": _utcnow().isoformat()}
+        return {"status": "disconnected", "timestamp": utcnow().isoformat()}
 
     def get_connection_status(self) -> Dict[str, Any]:
         """Get current connection status.

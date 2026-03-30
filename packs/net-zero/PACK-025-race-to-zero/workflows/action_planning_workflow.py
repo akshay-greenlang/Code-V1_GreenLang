@@ -43,31 +43,25 @@ from typing import Any, Callable, Coroutine, Dict, List, Optional, Set
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "25.0.0"
 
 ProgressCallback = Callable[[str, float, str], Coroutine[Any, Any, None]]
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: Any) -> str:
     if isinstance(data, dict):
         data = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(str(data).encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -75,7 +69,6 @@ class PhaseStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
@@ -85,7 +78,6 @@ class WorkflowStatus(str, Enum):
     PARTIAL = "partial"
     CANCELLED = "cancelled"
 
-
 class ActionPlanPhase(str, Enum):
     SECTOR_PATHWAY_SELECTION = "sector_pathway_selection"
     MACC_ANALYSIS = "macc_analysis"
@@ -93,7 +85,6 @@ class ActionPlanPhase(str, Enum):
     ACTION_PRIORITIZATION = "action_prioritization"
     BUDGET_ALLOCATION = "budget_allocation"
     PLAN_DOCUMENTATION = "plan_documentation"
-
 
 class ActionCategory(str, Enum):
     ENERGY_EFFICIENCY = "energy_efficiency"
@@ -109,20 +100,17 @@ class ActionCategory(str, Enum):
     BEHAVIORAL_CHANGE = "behavioral_change"
     POLICY_ADVOCACY = "policy_advocacy"
 
-
 class FeasibilityLevel(str, Enum):
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
     VERY_LOW = "very_low"
 
-
 class TimeHorizon(str, Enum):
     IMMEDIATE = "immediate"       # 0-1 year
     SHORT_TERM = "short_term"     # 1-3 years
     MEDIUM_TERM = "medium_term"   # 3-5 years
     LONG_TERM = "long_term"       # 5-10 years
-
 
 # =============================================================================
 # REFERENCE DATA
@@ -313,7 +301,6 @@ ACTION_PLAN_SECTIONS: List[Dict[str, str]] = [
     {"id": "S10", "title": "Risk Management", "description": "Implementation risks and mitigation strategies"},
 ]
 
-
 # Phase dependencies DAG
 PHASE_DEPENDENCIES: Dict[ActionPlanPhase, List[ActionPlanPhase]] = {
     ActionPlanPhase.SECTOR_PATHWAY_SELECTION: [],
@@ -336,11 +323,9 @@ PHASE_EXECUTION_ORDER: List[ActionPlanPhase] = [
     ActionPlanPhase.PLAN_DOCUMENTATION,
 ]
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase: ActionPlanPhase = Field(...)
@@ -353,7 +338,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class AbatementAction(BaseModel):
     action_id: str = Field(default="")
@@ -369,14 +353,12 @@ class AbatementAction(BaseModel):
     budget_allocated_usd: float = Field(default=0.0, ge=0.0)
     selected: bool = Field(default=False)
 
-
 class PartnerOpportunity(BaseModel):
     partner_name: str = Field(default="")
     partner_type: str = Field(default="")
     collaboration_area: str = Field(default="")
     potential_abatement_tco2e: float = Field(default=0.0, ge=0.0)
     engagement_level: str = Field(default="exploratory")
-
 
 class ActionPlanDocument(BaseModel):
     plan_id: str = Field(default="")
@@ -390,7 +372,6 @@ class ActionPlanDocument(BaseModel):
     timeline_years: int = Field(default=5)
     sector_pathway: str = Field(default="")
     meets_r2z_requirements: bool = Field(default=False)
-
 
 class ActionPlanningConfig(BaseModel):
     pack_id: str = Field(default="PACK-025")
@@ -410,7 +391,6 @@ class ActionPlanningConfig(BaseModel):
     enable_provenance: bool = Field(default=True)
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
-
 
 class ActionPlanningResult(BaseModel):
     execution_id: str = Field(default_factory=_new_uuid)
@@ -436,11 +416,9 @@ class ActionPlanningResult(BaseModel):
     quality_score: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class ActionPlanningWorkflow:
     """
@@ -479,7 +457,7 @@ class ActionPlanningWorkflow:
         result = ActionPlanningResult(
             org_name=self.config.org_name,
             status=WorkflowStatus.RUNNING,
-            started_at=_utcnow(),
+            started_at=utcnow(),
         )
         self._results[result.execution_id] = result
         start_time = time.monotonic()
@@ -538,7 +516,7 @@ class ActionPlanningWorkflow:
             result.errors.append(str(exc))
 
         finally:
-            result.completed_at = _utcnow()
+            result.completed_at = utcnow()
             result.total_duration_ms = (time.monotonic() - start_time) * 1000
             result.sector_pathway = shared_context.get(
                 "sector_pathway_selection", {}
@@ -577,7 +555,7 @@ class ActionPlanningWorkflow:
     # -------------------------------------------------------------------------
 
     async def _execute_phase(self, phase: ActionPlanPhase, context: Dict[str, Any]) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         start_time = time.monotonic()
         handler = self._get_phase_handler(phase)
         try:
@@ -588,7 +566,7 @@ class ActionPlanningWorkflow:
             status = PhaseStatus.FAILED
         elapsed_ms = (time.monotonic() - start_time) * 1000
         return PhaseResult(
-            phase=phase, status=status, started_at=started, completed_at=_utcnow(),
+            phase=phase, status=status, started_at=started, completed_at=utcnow(),
             duration_ms=round(elapsed_ms, 2), records_processed=records,
             outputs=outputs, warnings=warnings, errors=errors,
             provenance_hash=_compute_hash(outputs) if self.config.enable_provenance else "",

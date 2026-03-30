@@ -19,9 +19,11 @@ from typing import Any, Dict, List
 import pytest
 
 import sys, os
+from greenlang.schemas import utcnow
 sys.path.insert(0, os.path.dirname(__file__))
 
 from conftest import (
+
     CBAM_ENGINE_IDS,
     CBAM_TEMPLATE_IDS,
     CBAM_WORKFLOW_IDS,
@@ -474,7 +476,7 @@ class TestE2ECBAM:
             "checks_total": 6,
             "checks_passed": 6,
             "checks_failed": 0,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
         assert health["overall_status"] == "healthy"
         assert health["checks_failed"] == 0

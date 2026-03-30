@@ -73,6 +73,7 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any, AsyncIterator, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -204,21 +205,13 @@ from greenlang.agents.eudr.information_gathering.models import (
     Article9ElementStatus,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute deterministic SHA-256 hash for provenance.
@@ -232,11 +225,9 @@ def _compute_hash(data: Any) -> str:
     canonical = json.dumps(data, sort_keys=True, separators=(",", ":"), default=str)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Service Facade
 # ---------------------------------------------------------------------------
-
 
 class InformationGatheringService:
     """High-level service facade for the Information Gathering Agent.
@@ -496,7 +487,7 @@ class InformationGatheringService:
 
             # Mark operation complete
             operation.status = GatheringOperationStatus.COMPLETED
-            operation.completed_at = _utcnow()
+            operation.completed_at = utcnow()
             elapsed_ms = int((time.monotonic() - start) * 1000)
             operation.duration_ms = elapsed_ms
             operation.provenance_hash = _compute_hash(
@@ -513,7 +504,7 @@ class InformationGatheringService:
 
         except Exception as e:
             operation.status = GatheringOperationStatus.FAILED
-            operation.completed_at = _utcnow()
+            operation.completed_at = utcnow()
             elapsed_ms = int((time.monotonic() - start) * 1000)
             operation.duration_ms = elapsed_ms
 
@@ -1035,7 +1026,7 @@ class InformationGatheringService:
             "initialized": self._initialized,
             "engines": {},
             "connections": {},
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
         # Check database
@@ -1126,14 +1117,12 @@ class InformationGatheringService:
         """Return whether the service has been initialized."""
         return self._initialized
 
-
 # ---------------------------------------------------------------------------
 # Thread-safe singleton
 # ---------------------------------------------------------------------------
 
 _service_lock = threading.Lock()
 _service_instance: Optional[InformationGatheringService] = None
-
 
 def get_service(
     config: Optional[InformationGatheringConfig] = None,
@@ -1160,7 +1149,6 @@ def get_service(
                 _service_instance = InformationGatheringService(config)
     return _service_instance
 
-
 def reset_service() -> None:
     """Reset the global service singleton to None.
 
@@ -1170,11 +1158,9 @@ def reset_service() -> None:
     with _service_lock:
         _service_instance = None
 
-
 # ---------------------------------------------------------------------------
 # FastAPI lifespan context manager
 # ---------------------------------------------------------------------------
-
 
 @asynccontextmanager
 async def lifespan(app: Any) -> AsyncIterator[None]:

@@ -42,6 +42,7 @@ import time
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -49,16 +50,9 @@ __all__ = [
     "OCREngineAdapter",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Graceful SDK imports
@@ -104,11 +98,9 @@ _ENGINE_AVAILABILITY: Dict[str, bool] = {
     "simulated": True,  # always available
 }
 
-
 # ---------------------------------------------------------------------------
 # OCREngineAdapter
 # ---------------------------------------------------------------------------
-
 
 class OCREngineAdapter:
     """Unified OCR interface adapting multiple engine backends.
@@ -310,7 +302,7 @@ class OCREngineAdapter:
                 "errors": self._stats["errors"],
                 "by_engine": by_engine,
                 "available_engines": self.get_available_engines(),
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }
 
     # ------------------------------------------------------------------
@@ -573,6 +565,7 @@ class OCREngineAdapter:
         creds_path = self._config.get("google_credentials_path")
         if creds_path:
             import os
+
             os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = creds_path
 
         client = gv.ImageAnnotatorClient()

@@ -77,18 +77,11 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
-
+from pydantic import ConfigDict, Field, field_validator
 
 # ---------------------------------------------------------------------------
 # Helper
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -121,11 +114,9 @@ DEFAULT_MCF: Decimal = Decimal("0.10")
 #: Default oxidation factor for manure CH4.
 DEFAULT_OXIDATION_FACTOR: Decimal = Decimal("0.10")
 
-
 # =============================================================================
 # Enumerations (18)
 # =============================================================================
-
 
 class AnimalType(str, Enum):
     """IPCC animal categories for enteric fermentation and manure management.
@@ -195,7 +186,6 @@ class AnimalType(str, Enum):
     FUR_BEARING = "fur_bearing"
     OTHER_LIVESTOCK = "other_livestock"
 
-
 class ManureSystem(str, Enum):
     """IPCC Animal Waste Management System (AWMS) types.
 
@@ -252,7 +242,6 @@ class ManureSystem(str, Enum):
     COMPOSTING_INTENSIVE = "composting_intensive"
     ANAEROBIC_DIGESTER = "anaerobic_digester"
 
-
 class CropType(str, Enum):
     """Crop types for agricultural soil N2O and field burning calculations.
 
@@ -287,7 +276,6 @@ class CropType(str, Enum):
     MILLET = "millet"
     OTHER_CEREALS = "other_cereals"
     PULSES = "pulses"
-
 
 class FertilizerType(str, Enum):
     """Fertilizer and amendment types for agricultural soil N2O calculations.
@@ -324,7 +312,6 @@ class FertilizerType(str, Enum):
     DOLOMITE = "dolomite"
     UREA = "urea"
 
-
 class WaterRegime(str, Enum):
     """Rice paddy water management regimes for CH4 emission scaling.
 
@@ -357,7 +344,6 @@ class WaterRegime(str, Enum):
     DEEP_WATER = "deep_water"
     UPLAND = "upland"
 
-
 class OrganicAmendment(str, Enum):
     """Organic amendment types for rice paddy CH4 emission scaling.
 
@@ -384,7 +370,6 @@ class OrganicAmendment(str, Enum):
     COMPOST = "compost"
     FARM_YARD_MANURE = "farm_yard_manure"
     GREEN_MANURE = "green_manure"
-
 
 class CalculationMethod(str, Enum):
     """Methodology for calculating agricultural emissions.
@@ -417,7 +402,6 @@ class CalculationMethod(str, Enum):
     DIRECT_MEASUREMENT = "direct_measurement"
     SPEND_BASED = "spend_based"
 
-
 class EmissionGas(str, Enum):
     """Greenhouse gases tracked in agricultural emission calculations.
 
@@ -433,7 +417,6 @@ class EmissionGas(str, Enum):
     CH4 = "CH4"
     N2O = "N2O"
 
-
 class GWPSource(str, Enum):
     """IPCC Assessment Report source for Global Warming Potential values.
 
@@ -447,7 +430,6 @@ class GWPSource(str, Enum):
     AR5 = "AR5"
     AR6 = "AR6"
     AR6_20YR = "AR6_20YR"
-
 
 class EmissionFactorSource(str, Enum):
     """Authoritative source for agricultural emission factors.
@@ -477,7 +459,6 @@ class EmissionFactorSource(str, Enum):
     NATIONAL_INVENTORY = "NATIONAL_INVENTORY"
     CUSTOM = "CUSTOM"
 
-
 class DataQualityTier(str, Enum):
     """IPCC data quality tier for input data and emission factors.
 
@@ -492,7 +473,6 @@ class DataQualityTier(str, Enum):
     TIER_1 = "tier_1"
     TIER_2 = "tier_2"
     TIER_3 = "tier_3"
-
 
 class FarmType(str, Enum):
     """Type of agricultural operation.
@@ -522,7 +502,6 @@ class FarmType(str, Enum):
     MIXED_CROP_LIVESTOCK = "mixed_crop_livestock"
     POULTRY_FARM = "poultry_farm"
     OTHER = "other"
-
 
 class ClimateZone(str, Enum):
     """IPCC climate zones for agricultural emission factor stratification.
@@ -558,7 +537,6 @@ class ClimateZone(str, Enum):
     BOREAL_WET = "boreal_wet"
     BOREAL_DRY = "boreal_dry"
 
-
 class EmissionSource(str, Enum):
     """Agricultural emission source categories.
 
@@ -586,7 +564,6 @@ class EmissionSource(str, Enum):
     LIMING_UREA = "liming_urea"
     FIELD_BURNING = "field_burning"
 
-
 class ComplianceStatus(str, Enum):
     """Result of a regulatory compliance check.
 
@@ -602,7 +579,6 @@ class ComplianceStatus(str, Enum):
     PARTIAL = "partial"
     NOT_ASSESSED = "not_assessed"
 
-
 class ReportingPeriod(str, Enum):
     """Time granularity for emission aggregation and reporting.
 
@@ -616,7 +592,6 @@ class ReportingPeriod(str, Enum):
     QUARTERLY = "quarterly"
     MONTHLY = "monthly"
     AD_HOC = "ad_hoc"
-
 
 class PreSeasonFlooding(str, Enum):
     """Pre-season water status for rice paddy CH4 scaling.
@@ -635,7 +610,6 @@ class PreSeasonFlooding(str, Enum):
     FLOODED_LONG = "flooded_long"
     NOT_KNOWN = "not_known"
 
-
 class SoilType(str, Enum):
     """Soil types affecting N2O emission factors.
 
@@ -652,6 +626,8 @@ class SoilType(str, Enum):
         and N2O production potential.
     PEAT: Drained peatland used for agriculture. Very high N2O
         from organic matter decomposition.
+
+from greenlang.schemas import GreenLangBase, utcnow
     """
 
     MINERAL = "mineral"
@@ -660,11 +636,9 @@ class SoilType(str, Enum):
     CLAY = "clay"
     PEAT = "peat"
 
-
 # =============================================================================
 # Constant Tables (all Decimal for deterministic arithmetic)
 # =============================================================================
-
 
 # ---------------------------------------------------------------------------
 # GWP values by IPCC Assessment Report
@@ -698,7 +672,6 @@ GWP_VALUES: Dict[GWPSource, Dict[str, Decimal]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Molecular weight / stoichiometric conversion factors
 # ---------------------------------------------------------------------------
@@ -711,7 +684,6 @@ CONVERSION_N_TO_N2O: Decimal = Decimal("1.57143")
 
 #: CH4 to C molecular weight ratio (16/12).
 CH4_C_RATIO: Decimal = Decimal("1.33333")
-
 
 # ---------------------------------------------------------------------------
 # Tier 1 Enteric Fermentation Emission Factors
@@ -803,7 +775,6 @@ ENTERIC_EF_TIER1: Dict[AnimalType, Dict[str, Decimal]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Volatile Solids (VS) excretion defaults
 # IPCC 2006 Volume 4 Table 10.13A
@@ -832,7 +803,6 @@ MANURE_VS_DEFAULTS: Dict[AnimalType, Decimal] = {
     AnimalType.FUR_BEARING: Decimal("0.03"),
     AnimalType.OTHER_LIVESTOCK: Decimal("1.00"),
 }
-
 
 # ---------------------------------------------------------------------------
 # Maximum CH4 producing capacity (Bo)
@@ -863,7 +833,6 @@ MANURE_BO_VALUES: Dict[AnimalType, Decimal] = {
     AnimalType.OTHER_LIVESTOCK: Decimal("0.17"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Nitrogen excretion rates (Nex)
 # IPCC 2006 Volume 4 Table 10.19
@@ -892,7 +861,6 @@ MANURE_NEX_VALUES: Dict[AnimalType, Decimal] = {
     AnimalType.FUR_BEARING: Decimal("1.4"),
     AnimalType.OTHER_LIVESTOCK: Decimal("12.0"),
 }
-
 
 # ---------------------------------------------------------------------------
 # Manure Management MCF values by system and climate
@@ -979,7 +947,6 @@ MANURE_MCF_VALUES: Dict[ManureSystem, Dict[str, Decimal]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Soil N2O emission factors
 # IPCC 2006 Volume 4 Chapter 11 Table 11.1 and 11.3
@@ -1002,7 +969,6 @@ SOIL_N2O_EF: Dict[str, Decimal] = {
     "EF3_PRP_other": Decimal("0.01"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Indirect N2O emission factors and fractions
 # IPCC 2006 Volume 4 Chapter 11 Tables 11.1, 11.3
@@ -1021,7 +987,6 @@ INDIRECT_N2O_FRACTIONS: Dict[str, Decimal] = {
     "EF5": Decimal("0.0075"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Liming emission factors
 # IPCC 2006 Volume 4 Chapter 11 Equation 11.12
@@ -1033,7 +998,6 @@ LIMING_EF: Dict[str, Decimal] = {
     "dolomite": Decimal("0.13"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Urea emission factor
 # IPCC 2006 Volume 4 Chapter 11 Equation 11.13
@@ -1041,7 +1005,6 @@ LIMING_EF: Dict[str, Decimal] = {
 # ---------------------------------------------------------------------------
 
 UREA_EF: Decimal = Decimal("0.20")
-
 
 # ---------------------------------------------------------------------------
 # Rice cultivation CH4 baseline emission factor
@@ -1051,7 +1014,6 @@ UREA_EF: Decimal = Decimal("0.20")
 # ---------------------------------------------------------------------------
 
 RICE_BASELINE_EF: Decimal = Decimal("1.30")
-
 
 # ---------------------------------------------------------------------------
 # Rice water regime scaling factors (SFw)
@@ -1069,7 +1031,6 @@ RICE_WATER_REGIME_SF: Dict[WaterRegime, Decimal] = {
     WaterRegime.UPLAND: Decimal("0.0"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Rice pre-season flooding scaling factors (SFp)
 # IPCC 2006 Volume 4 Table 5.13
@@ -1080,7 +1041,6 @@ RICE_PRESEASON_SF: Dict[PreSeasonFlooding, Decimal] = {
     PreSeasonFlooding.FLOODED_LONG: Decimal("1.22"),
     PreSeasonFlooding.NOT_KNOWN: Decimal("1.0"),
 }
-
 
 # ---------------------------------------------------------------------------
 # Rice organic amendment conversion factors (CFOA)
@@ -1096,7 +1056,6 @@ RICE_ORGANIC_CFOA: Dict[OrganicAmendment, Decimal] = {
     OrganicAmendment.FARM_YARD_MANURE: Decimal("0.14"),
     OrganicAmendment.GREEN_MANURE: Decimal("0.50"),
 }
-
 
 # ---------------------------------------------------------------------------
 # Field burning emission factors
@@ -1209,7 +1168,6 @@ FIELD_BURNING_EF: Dict[CropType, Dict[str, Decimal]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Manure N2O direct emission factor by AWMS
 # IPCC 2006 Volume 4 Table 10.21
@@ -1234,7 +1192,6 @@ MANURE_N2O_EF: Dict[ManureSystem, Decimal] = {
     ManureSystem.ANAEROBIC_DIGESTER: Decimal("0.0"),
 }
 
-
 # ---------------------------------------------------------------------------
 # CH4 density at STP for volume-to-mass conversion
 # Units: kg per m3 at 0 C, 101.325 kPa
@@ -1242,13 +1199,11 @@ MANURE_N2O_EF: Dict[ManureSystem, Decimal] = {
 
 CH4_DENSITY_STP: Decimal = Decimal("0.7168")
 
-
 # =============================================================================
 # Pydantic Data Models (18)
 # =============================================================================
 
-
-class FarmInfo(BaseModel):
+class FarmInfo(GreenLangBase):
     """Agricultural farm/operation registration and metadata.
 
     Represents an agricultural operation with its location, type,
@@ -1353,11 +1308,11 @@ class FarmInfo(BaseModel):
         description="Whether farm is currently operational",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of farm registration",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of last update",
     )
 
@@ -1372,8 +1327,7 @@ class FarmInfo(BaseModel):
             )
         return v_lower
 
-
-class LivestockPopulation(BaseModel):
+class LivestockPopulation(GreenLangBase):
     """Livestock population record for a specific animal type.
 
     Represents the annual average population of a single animal
@@ -1484,8 +1438,7 @@ class LivestockPopulation(BaseModel):
             )
         return v_lower
 
-
-class ManureSystemAllocation(BaseModel):
+class ManureSystemAllocation(GreenLangBase):
     """Allocation of livestock manure to management systems.
 
     Represents the fraction of manure from a livestock population
@@ -1563,8 +1516,7 @@ class ManureSystemAllocation(BaseModel):
             )
         return v_lower
 
-
-class FeedCharacteristics(BaseModel):
+class FeedCharacteristics(GreenLangBase):
     """Feed composition and quality data for Tier 2 enteric calculations.
 
     Provides detailed feed parameters for enhanced enteric
@@ -1694,8 +1646,7 @@ class FeedCharacteristics(BaseModel):
                 )
         return v
 
-
-class EntericCalculationRequest(BaseModel):
+class EntericCalculationRequest(GreenLangBase):
     """Request for enteric fermentation CH4 calculation.
 
     Specifies parameters for calculating methane emissions from
@@ -1743,8 +1694,7 @@ class EntericCalculationRequest(BaseModel):
         description="GWP source for CO2e conversion",
     )
 
-
-class ManureCalculationRequest(BaseModel):
+class ManureCalculationRequest(GreenLangBase):
     """Request for manure management CH4 and N2O calculation.
 
     Specifies parameters for calculating methane and nitrous oxide
@@ -1819,8 +1769,7 @@ class ManureCalculationRequest(BaseModel):
             )
         return v
 
-
-class CroplandInput(BaseModel):
+class CroplandInput(GreenLangBase):
     """Input parameters for agricultural soils N2O calculations.
 
     Captures nitrogen inputs to managed agricultural soils for
@@ -1952,8 +1901,7 @@ class CroplandInput(BaseModel):
         description="Optional notes",
     )
 
-
-class RiceFieldInput(BaseModel):
+class RiceFieldInput(GreenLangBase):
     """Input parameters for rice cultivation CH4 calculations.
 
     Captures the field-level parameters needed for rice paddy
@@ -2072,8 +2020,7 @@ class RiceFieldInput(BaseModel):
                 )
         return v
 
-
-class FieldBurningInput(BaseModel):
+class FieldBurningInput(GreenLangBase):
     """Input parameters for field burning of crop residue calculations.
 
     Captures parameters for calculating CH4 and N2O emissions from
@@ -2155,8 +2102,7 @@ class FieldBurningInput(BaseModel):
         description="Optional notes",
     )
 
-
-class CalculationRequest(BaseModel):
+class CalculationRequest(GreenLangBase):
     """Unified request for agricultural emission calculation.
 
     Specifies all parameters needed to compute GHG emissions from
@@ -2251,8 +2197,7 @@ class CalculationRequest(BaseModel):
         description="Owning tenant identifier",
     )
 
-
-class GasEmissionDetail(BaseModel):
+class GasEmissionDetail(GreenLangBase):
     """Detailed emission result for a single greenhouse gas.
 
     Represents the emission of a single gas from an agricultural
@@ -2315,8 +2260,7 @@ class GasEmissionDetail(BaseModel):
         description="Textual description of the calculation formula",
     )
 
-
-class CalculationResult(BaseModel):
+class CalculationResult(GreenLangBase):
     """Complete result of an agricultural emission calculation.
 
     Attributes:
@@ -2436,7 +2380,7 @@ class CalculationResult(BaseModel):
         description="Ordered list of calculation trace steps",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of calculation completion",
     )
     provenance_hash: str = Field(
@@ -2473,8 +2417,7 @@ class CalculationResult(BaseModel):
             )
         return v
 
-
-class BatchCalculationRequest(BaseModel):
+class BatchCalculationRequest(GreenLangBase):
     """Batch request for multiple agricultural emission calculations.
 
     Attributes:
@@ -2520,8 +2463,7 @@ class BatchCalculationRequest(BaseModel):
             )
         return v
 
-
-class BatchCalculationResult(BaseModel):
+class BatchCalculationResult(GreenLangBase):
     """Result of a batch agricultural emission calculation.
 
     Attributes:
@@ -2572,7 +2514,7 @@ class BatchCalculationResult(BaseModel):
         description="Number of calculations that failed",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of batch completion",
     )
     processing_time_ms: Decimal = Field(
@@ -2581,8 +2523,7 @@ class BatchCalculationResult(BaseModel):
         description="Total processing duration in milliseconds",
     )
 
-
-class ComplianceCheckResult(BaseModel):
+class ComplianceCheckResult(GreenLangBase):
     """Result of a regulatory compliance check.
 
     Evaluates a calculation or farm against one of the seven
@@ -2660,12 +2601,11 @@ class ComplianceCheckResult(BaseModel):
         description="Reference to the farm checked",
     )
     checked_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of the compliance check",
     )
 
-
-class UncertaintyRequest(BaseModel):
+class UncertaintyRequest(GreenLangBase):
     """Request for uncertainty quantification of a calculation.
 
     Uses Monte Carlo simulation to propagate uncertainty through
@@ -2736,8 +2676,7 @@ class UncertaintyRequest(BaseModel):
         description="Livestock population count uncertainty percentage",
     )
 
-
-class UncertaintyResult(BaseModel):
+class UncertaintyResult(GreenLangBase):
     """Result of uncertainty quantification analysis.
 
     Attributes:
@@ -2815,12 +2754,11 @@ class UncertaintyResult(BaseModel):
         description="Uncertainty contribution by emission source (%)",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of analysis completion",
     )
 
-
-class AggregationResult(BaseModel):
+class AggregationResult(GreenLangBase):
     """Result of an agricultural emission aggregation.
 
     Attributes:
@@ -2902,10 +2840,9 @@ class AggregationResult(BaseModel):
         description="End date of the aggregation window",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of aggregation completion",
     )
-
 
 # =============================================================================
 # Public API

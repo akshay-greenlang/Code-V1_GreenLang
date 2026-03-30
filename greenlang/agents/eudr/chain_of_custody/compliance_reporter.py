@@ -75,12 +75,6 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed for determinism."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
 
@@ -99,7 +93,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str) -> str:
     """Generate a unique identifier with the given prefix.
 
@@ -110,7 +103,6 @@ def _generate_id(prefix: str) -> str:
         Prefixed UUID string.
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -134,7 +126,6 @@ SUPPORTED_FORMATS: FrozenSet[str] = frozenset({"json", "csv", "pdf_data", "xml"}
 #: Maximum batch report size
 MAX_BATCH_REPORT_SIZE: int = 200
 
-
 class ReportType(str, Enum):
     """Supported report types."""
 
@@ -145,16 +136,6 @@ class ReportType(str, Enum):
     BATCH_GENEALOGY = "batch_genealogy"
     AUDIT = "audit"
 
-
-class ReportFormat(str, Enum):
-    """Supported output formats."""
-
-    JSON = "json"
-    CSV = "csv"
-    PDF_DATA = "pdf_data"
-    XML = "xml"
-
-
 class ReportStatus(str, Enum):
     """Report generation status."""
 
@@ -162,11 +143,9 @@ class ReportStatus(str, Enum):
     PARTIAL = "partial"
     ERROR = "error"
 
-
 # ---------------------------------------------------------------------------
 # Data Models (local dataclasses)
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class ReportSection:
@@ -195,7 +174,6 @@ class ReportSection:
             "content": self.content,
             "order": self.order,
         }
-
 
 @dataclass
 class ReportEvidence:
@@ -227,7 +205,6 @@ class ReportEvidence:
             "value": self.value,
             "source": self.source,
         }
-
 
 @dataclass
 class TraceabilityReport:
@@ -270,7 +247,7 @@ class TraceabilityReport:
     sections: List[ReportSection] = field(default_factory=list)
     evidence: List[ReportEvidence] = field(default_factory=list)
     provenance_hash: str = ""
-    generated_at: datetime = field(default_factory=_utcnow)
+    generated_at: datetime = field(default_factory=utcnow)
     processing_time_ms: float = 0.0
 
     def to_dict(self) -> Dict[str, Any]:
@@ -297,7 +274,6 @@ class TraceabilityReport:
             ),
             "processing_time_ms": self.processing_time_ms,
         }
-
 
 @dataclass
 class MassBalanceReport:
@@ -340,7 +316,7 @@ class MassBalanceReport:
     entries: List[Dict[str, Any]] = field(default_factory=list)
     reconciliation_status: str = "pending"
     provenance_hash: str = ""
-    generated_at: datetime = field(default_factory=_utcnow)
+    generated_at: datetime = field(default_factory=utcnow)
     processing_time_ms: float = 0.0
 
     def to_dict(self) -> Dict[str, Any]:
@@ -367,7 +343,6 @@ class MassBalanceReport:
             ),
             "processing_time_ms": self.processing_time_ms,
         }
-
 
 @dataclass
 class IntegrityReport:
@@ -404,7 +379,7 @@ class IntegrityReport:
     circular_deps: List[Dict[str, Any]] = field(default_factory=list)
     recommendations: List[str] = field(default_factory=list)
     provenance_hash: str = ""
-    generated_at: datetime = field(default_factory=_utcnow)
+    generated_at: datetime = field(default_factory=utcnow)
     processing_time_ms: float = 0.0
 
     def to_dict(self) -> Dict[str, Any]:
@@ -428,7 +403,6 @@ class IntegrityReport:
             ),
             "processing_time_ms": self.processing_time_ms,
         }
-
 
 @dataclass
 class DocumentReport:
@@ -463,7 +437,7 @@ class DocumentReport:
     gaps: List[Dict[str, Any]] = field(default_factory=list)
     expiry_alerts: List[Dict[str, Any]] = field(default_factory=list)
     provenance_hash: str = ""
-    generated_at: datetime = field(default_factory=_utcnow)
+    generated_at: datetime = field(default_factory=utcnow)
     processing_time_ms: float = 0.0
 
     def to_dict(self) -> Dict[str, Any]:
@@ -486,7 +460,6 @@ class DocumentReport:
             ),
             "processing_time_ms": self.processing_time_ms,
         }
-
 
 @dataclass
 class GenealogyReport:
@@ -517,7 +490,7 @@ class GenealogyReport:
     origin_plots: List[str] = field(default_factory=list)
     commodity_transitions: List[Dict[str, Any]] = field(default_factory=list)
     provenance_hash: str = ""
-    generated_at: datetime = field(default_factory=_utcnow)
+    generated_at: datetime = field(default_factory=utcnow)
     processing_time_ms: float = 0.0
 
     def to_dict(self) -> Dict[str, Any]:
@@ -538,7 +511,6 @@ class GenealogyReport:
             ),
             "processing_time_ms": self.processing_time_ms,
         }
-
 
 @dataclass
 class AuditReport:
@@ -577,7 +549,7 @@ class AuditReport:
     retention_period: Dict[str, Any] = field(default_factory=dict)
     regulatory_references: List[str] = field(default_factory=list)
     provenance_hash: str = ""
-    generated_at: datetime = field(default_factory=_utcnow)
+    generated_at: datetime = field(default_factory=utcnow)
     processing_time_ms: float = 0.0
 
     def to_dict(self) -> Dict[str, Any]:
@@ -602,7 +574,6 @@ class AuditReport:
             ),
             "processing_time_ms": self.processing_time_ms,
         }
-
 
 @dataclass
 class DDSSubmission:
@@ -639,7 +610,7 @@ class DDSSubmission:
     missing_fields: List[str] = field(default_factory=list)
     warnings: List[str] = field(default_factory=list)
     provenance_hash: str = ""
-    assembled_at: datetime = field(default_factory=_utcnow)
+    assembled_at: datetime = field(default_factory=utcnow)
     processing_time_ms: float = 0.0
 
     def to_dict(self) -> Dict[str, Any]:
@@ -663,7 +634,6 @@ class DDSSubmission:
             ),
             "processing_time_ms": self.processing_time_ms,
         }
-
 
 @dataclass
 class BatchReportResult:
@@ -691,7 +661,7 @@ class BatchReportResult:
     formats_generated: List[str] = field(default_factory=list)
     processing_time_ms: float = 0.0
     provenance_hash: str = ""
-    completed_at: datetime = field(default_factory=_utcnow)
+    completed_at: datetime = field(default_factory=utcnow)
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary for JSON export."""
@@ -709,7 +679,6 @@ class BatchReportResult:
                 self.completed_at.isoformat() if self.completed_at else None
             ),
         }
-
 
 @dataclass
 class ComplianceReporterConfig:
@@ -752,11 +721,9 @@ class ComplianceReporterConfig:
                 + "\n".join(f"  - {e}" for e in errors)
             )
 
-
 # ===========================================================================
 # ComplianceReporter Engine
 # ===========================================================================
-
 
 class ComplianceReporter:
     """Compliance reporting engine for EUDR chain of custody.
@@ -1243,6 +1210,9 @@ class ComplianceReporter:
         Produces a report showing the complete parent/child tree
         from any node in the batch genealogy.
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ReportFormat
+
         Args:
             batch_id: Starting batch identifier.
             genealogy_data: Optional genealogy data dict with:
@@ -1493,7 +1463,7 @@ class ComplianceReporter:
         # Build PDF structure
         pdf_data = {
             "title": self._pdf_title(data),
-            "subtitle": f"Generated: {_utcnow().isoformat()}",
+            "subtitle": f"Generated: {utcnow().isoformat()}",
             "regulation": EUDR_REGULATION_REF,
             "header": {
                 "report_id": data.get("report_id", ""),
@@ -1850,7 +1820,7 @@ class ComplianceReporter:
 
         elapsed_ms = (time.monotonic() - start_time) * 1000
         result.processing_time_ms = round(elapsed_ms, 2)
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
 
         if self.config.enable_provenance:
             result.provenance_hash = _compute_hash(result)

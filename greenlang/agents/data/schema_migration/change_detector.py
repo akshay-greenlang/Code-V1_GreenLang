@@ -81,6 +81,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 from greenlang.agents.data.schema_migration.provenance import ProvenanceTracker
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -129,12 +130,6 @@ _NUMERIC_CONSTRAINT_KEYS: frozenset = frozenset(
 # Internal helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _generate_id(prefix: str = "CHG") -> str:
     """Generate a unique identifier with the given prefix.
 
@@ -146,7 +141,6 @@ def _generate_id(prefix: str = "CHG") -> str:
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
 
-
 def _detection_id() -> str:
     """Generate a unique detection run identifier.
 
@@ -154,7 +148,6 @@ def _detection_id() -> str:
         String of the form ``DET-{hex12}``.
     """
     return _generate_id("DET")
-
 
 def _compute_sha256(data: Any) -> str:
     """Compute a SHA-256 hex digest of arbitrary JSON-serialisable data.
@@ -174,11 +167,9 @@ def _compute_sha256(data: Any) -> str:
         serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Pure-Python Jaro-Winkler implementation (~35 lines)
 # ---------------------------------------------------------------------------
-
 
 def _jaro_similarity(s1: str, s2: str) -> float:
     """Compute the Jaro similarity between two strings.
@@ -249,7 +240,6 @@ def _jaro_similarity(s1: str, s2: str) -> float:
         + (matches - transpositions / 2) / matches
     ) / 3.0
 
-
 def _jaro_winkler_similarity(s1: str, s2: str) -> float:
     """Compute the Jaro-Winkler similarity between two strings.
 
@@ -288,11 +278,9 @@ def _jaro_winkler_similarity(s1: str, s2: str) -> float:
 
     return jaro + prefix_len * _WINKLER_SCALING_FACTOR * (1.0 - jaro)
 
-
 # ---------------------------------------------------------------------------
 # Schema field extraction helpers
 # ---------------------------------------------------------------------------
-
 
 def _extract_json_schema_fields(definition: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
     """Extract field descriptors from a JSON Schema definition.
@@ -323,7 +311,6 @@ def _extract_json_schema_fields(definition: Dict[str, Any]) -> Dict[str, Dict[st
         fields[field_name] = descriptor
 
     return fields
-
 
 def _build_json_field_descriptor(
     name: str,
@@ -372,7 +359,6 @@ def _build_json_field_descriptor(
         "multipleOf": field_def.get("multipleOf"),
     }
 
-
 def _extract_avro_fields(definition: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
     """Extract field descriptors from an Apache Avro record schema.
 
@@ -398,7 +384,6 @@ def _extract_avro_fields(definition: Dict[str, Any]) -> Dict[str, Dict[str, Any]
         fields[name] = descriptor
 
     return fields
-
 
 def _build_avro_field_descriptor(
     name: str, field_def: Dict[str, Any]
@@ -462,7 +447,6 @@ def _build_avro_field_descriptor(
         "multipleOf": None,
     }
 
-
 def _detect_schema_format(definition: Dict[str, Any]) -> str:
     """Heuristically detect the schema format of a definition dict.
 
@@ -481,7 +465,6 @@ def _detect_schema_format(definition: Dict[str, Any]) -> str:
         return "avro"
     return "json_schema"
 
-
 def _extract_fields(definition: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
     """Extract fields from a schema definition, auto-detecting format.
 
@@ -496,11 +479,9 @@ def _extract_fields(definition: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
         return _extract_avro_fields(definition)
     return _extract_json_schema_fields(definition)
 
-
 # ---------------------------------------------------------------------------
 # Change classification helper
 # ---------------------------------------------------------------------------
-
 
 def _is_type_widening(old_type: str, new_type: str) -> bool:
     """Return True if the type change is a widening (non-breaking).
@@ -513,7 +494,6 @@ def _is_type_widening(old_type: str, new_type: str) -> bool:
         True if the pair is in the known widening set.
     """
     return (old_type, new_type) in _TYPE_WIDENING_PAIRS
-
 
 def _is_type_narrowing(old_type: str, new_type: str) -> bool:
     """Return True if the type change is a narrowing (breaking).
@@ -530,11 +510,9 @@ def _is_type_narrowing(old_type: str, new_type: str) -> bool:
     """
     return (new_type, old_type) in _TYPE_WIDENING_PAIRS
 
-
 # ---------------------------------------------------------------------------
 # ChangeDetectorEngine
 # ---------------------------------------------------------------------------
-
 
 class ChangeDetectorEngine:
     """Detect structural differences between two schema definitions.
@@ -681,7 +659,7 @@ class ChangeDetectorEngine:
         effective_depth = self._validate_max_depth(max_depth)
         detection_id = _detection_id()
         start_ts = time.monotonic()
-        detected_at = _utcnow().isoformat()
+        detected_at = utcnow().isoformat()
 
         logger.info(
             "ChangeDetectorEngine.detect_changes: detection_id=%s max_depth=%d",

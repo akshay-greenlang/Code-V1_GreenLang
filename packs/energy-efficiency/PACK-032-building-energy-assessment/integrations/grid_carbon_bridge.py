@@ -41,20 +41,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -67,11 +62,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EmissionFactorType(str, Enum):
     """Types of grid emission factors."""
@@ -83,7 +76,6 @@ class EmissionFactorType(str, Enum):
     AVERAGE = "average"
     REAL_TIME = "real_time"
 
-
 class CertificateType(str, Enum):
     """Types of renewable energy certificates."""
 
@@ -93,7 +85,6 @@ class CertificateType(str, Enum):
     REGO = "renewable_energy_guarantee_origin"
     LGC = "large_scale_generation_certificate"
     BUNDLED_PPA = "bundled_ppa"
-
 
 class GridRegion(str, Enum):
     """Grid regions for sub-national emission factors."""
@@ -113,11 +104,9 @@ class GridRegion(str, Enum):
     AU_VIC = "au_vic"
     AU_QLD = "au_qld"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class GridEmissionFactor(BaseModel):
     """Grid emission factor for a country/region and year."""
@@ -132,7 +121,6 @@ class GridEmissionFactor(BaseModel):
     methodology: str = Field(default="")
     confidence: str = Field(default="high")
     provenance_hash: str = Field(default="")
-
 
 class HourlyEmissionProfile(BaseModel):
     """Hourly grid emission factors for a typical day."""
@@ -151,7 +139,6 @@ class HourlyEmissionProfile(BaseModel):
     off_peak_factor_gco2_kwh: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class GridProjection(BaseModel):
     """Grid decarbonization projection for a country."""
 
@@ -162,7 +149,6 @@ class GridProjection(BaseModel):
     scenario: str = Field(default="stated_policies", description="stated_policies/net_zero/current_trend")
     source: str = Field(default="IEA/EMBER")
     provenance_hash: str = Field(default="")
-
 
 class RECertificate(BaseModel):
     """Renewable energy certificate record."""
@@ -180,7 +166,6 @@ class RECertificate(BaseModel):
     beneficiary: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 class GridCarbonBridgeConfig(BaseModel):
     """Configuration for the Grid Carbon Bridge."""
 
@@ -190,7 +175,6 @@ class GridCarbonBridgeConfig(BaseModel):
     default_factor_type: EmissionFactorType = Field(default=EmissionFactorType.LOCATION_BASED)
     reference_year: int = Field(default=2024)
     include_projections: bool = Field(default=True)
-
 
 # ---------------------------------------------------------------------------
 # Reference Data
@@ -259,11 +243,9 @@ HOURLY_PROFILES: Dict[str, List[float]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # GridCarbonBridge
 # ---------------------------------------------------------------------------
-
 
 class GridCarbonBridge:
     """Grid carbon intensity and REC/GO tracking for building energy assessment.
@@ -481,7 +463,7 @@ class GridCarbonBridge:
         for cert in self._certificates:
             if cert.certificate_id == certificate_id and cert.status == "active":
                 cert.status = "retired"
-                cert.retirement_date = _utcnow().isoformat()
+                cert.retirement_date = utcnow().isoformat()
                 cert.beneficiary = beneficiary
                 return {
                     "certificate_id": certificate_id,

@@ -40,27 +40,21 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+
+from greenlang.schemas import GreenLangBase, utcnow
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 # ---------------------------------------------------------------------------
 # ProvenanceEntry model
 # ---------------------------------------------------------------------------
 
-
-class ProvenanceEntry(BaseModel):
+class ProvenanceEntry(GreenLangBase):
     """A single provenance chain entry.
 
     Each entry records a mutation to an entity and is linked to the
@@ -96,7 +90,7 @@ class ProvenanceEntry(BaseModel):
         default="system", description="User who performed the action",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Action timestamp",
+        default_factory=utcnow, description="Action timestamp",
     )
     chain_hash: str = Field(
         default="", description="Chain hash linking to previous entry",
@@ -105,11 +99,9 @@ class ProvenanceEntry(BaseModel):
         default_factory=dict, description="Additional context",
     )
 
-
 # ---------------------------------------------------------------------------
 # ProvenanceTracker
 # ---------------------------------------------------------------------------
-
 
 class ProvenanceTracker:
     """Tracks provenance for access guard entities with SHA-256 chain hashing.
@@ -319,7 +311,6 @@ class ProvenanceTracker:
         """
         serialized = json.dumps(data, sort_keys=True, default=str)
         return hashlib.sha256(serialized.encode()).hexdigest()
-
 
 __all__ = [
     "ProvenanceEntry",

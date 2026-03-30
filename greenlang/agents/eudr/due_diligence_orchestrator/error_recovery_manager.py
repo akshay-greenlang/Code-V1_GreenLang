@@ -58,6 +58,7 @@ import threading
 from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.due_diligence_orchestrator.config import (
     DueDiligenceOrchestratorConfig,
@@ -336,7 +337,7 @@ class ErrorRecoveryManager:
             error_message=error_message,
             error_classification=error_classification,
             outcome="pending",
-            attempted_at=_utcnow(),
+            attempted_at=utcnow(),
         )
 
         with self._lock:
@@ -385,7 +386,7 @@ class ErrorRecoveryManager:
         """
         with self._lock:
             cb = self._get_or_create_cb(agent_id)
-            now = _utcnow()
+            now = utcnow()
             cb.last_success_at = now
 
             if cb.state == CircuitBreakerState.HALF_OPEN:
@@ -416,7 +417,7 @@ class ErrorRecoveryManager:
         """
         with self._lock:
             cb = self._get_or_create_cb(agent_id)
-            now = _utcnow()
+            now = utcnow()
             cb.last_failure_at = now
             cb.failure_count += 1
 
@@ -458,10 +459,10 @@ class ErrorRecoveryManager:
                 return CircuitBreakerState.CLOSED
 
             if cb.state == CircuitBreakerState.OPEN and cb.opened_at:
-                elapsed = (_utcnow() - cb.opened_at).total_seconds()
+                elapsed = (utcnow() - cb.opened_at).total_seconds()
                 if elapsed >= cb.reset_timeout_s:
                     cb.state = CircuitBreakerState.HALF_OPEN
-                    cb.half_open_at = _utcnow()
+                    cb.half_open_at = utcnow()
                     cb.success_count = 0
                     logger.info(
                         f"Circuit breaker for {agent_id}: "
@@ -558,7 +559,7 @@ class ErrorRecoveryManager:
                 retry_history=retry_records,
                 input_data=input_data or {},
                 circuit_breaker_state=cb_state,
-                created_at=_utcnow(),
+                created_at=utcnow(),
             )
 
             self._dead_letter_queue.append(entry)
@@ -609,7 +610,7 @@ class ErrorRecoveryManager:
                 if entry.entry_id == entry_id:
                     entry.resolved = True
                     entry.resolved_by = resolved_by
-                    entry.resolved_at = _utcnow()
+                    entry.resolved_at = utcnow()
                     logger.info(
                         f"Dead letter {entry_id} resolved by {resolved_by}"
                     )

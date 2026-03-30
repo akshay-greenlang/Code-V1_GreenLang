@@ -72,9 +72,9 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, ConfigDict, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Optional engine imports (graceful degradation)
@@ -160,7 +160,6 @@ try:
 except ImportError:
     DualReportingPipelineEngine = None  # type: ignore[assignment, misc]
 
-
 # ===================================================================
 # Constants
 # ===================================================================
@@ -222,26 +221,17 @@ VALID_GROUP_BY: frozenset = frozenset({
 #: Decimal precision for all financial calculations.
 DECIMAL_PLACES: int = 8
 
-
 # ===================================================================
 # Utility helpers
 # ===================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _utcnow_iso() -> str:
     """Return current UTC datetime as an ISO-8601 string."""
-    return _utcnow().isoformat()
-
+    return utcnow().isoformat()
 
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _short_id(prefix: str = "drr") -> str:
     """Generate a short prefixed identifier for records.
@@ -253,7 +243,6 @@ def _short_id(prefix: str = "drr") -> str:
         A string of the form ``{prefix}_{12-char-hex}``.
     """
     return f"{prefix}_{uuid.uuid4().hex[:12]}"
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -274,7 +263,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 def _safe_float(value: Any, default: float = 0.0) -> float:
     """Convert a value to float with graceful fallback.
 
@@ -291,7 +279,6 @@ def _safe_float(value: Any, default: float = 0.0) -> float:
         return float(value)
     except (ValueError, TypeError, ArithmeticError):
         return default
-
 
 def _safe_decimal(value: Any, default: str = "0") -> Decimal:
     """Convert a value to Decimal with graceful fallback.
@@ -310,7 +297,6 @@ def _safe_decimal(value: Any, default: str = "0") -> Decimal:
     except Exception:
         return Decimal(default)
 
-
 def _elapsed_ms(start: float) -> float:
     """Calculate elapsed milliseconds since a monotonic start time.
 
@@ -321,7 +307,6 @@ def _elapsed_ms(start: float) -> float:
         Elapsed time in milliseconds, rounded to 3 decimal places.
     """
     return round((time.monotonic() - start) * 1000.0, 3)
-
 
 def _validate_required_fields(
     data: Dict[str, Any],
@@ -346,7 +331,6 @@ def _validate_required_fields(
                 f"Missing required field '{field}' in {context}"
             )
     return errors
-
 
 def _validate_enum_field(
     value: Any,
@@ -373,11 +357,9 @@ def _validate_enum_field(
         )
     return None
 
-
 # ===================================================================
 # Pydantic Response Models (14 models)
 # ===================================================================
-
 
 class ReconcileResponse(BaseModel):
     """Single reconciliation result response."""
@@ -405,7 +387,6 @@ class ReconcileResponse(BaseModel):
     timestamp: str = Field(default_factory=_utcnow_iso)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-
 class BatchReconcileResponse(BaseModel):
     """Batch reconciliation result response."""
 
@@ -422,7 +403,6 @@ class BatchReconcileResponse(BaseModel):
     provenance_hash: str = Field(default="")
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
 class ReconciliationListResponse(BaseModel):
     """Response listing reconciliation runs."""
 
@@ -432,7 +412,6 @@ class ReconciliationListResponse(BaseModel):
     total: int = Field(default=0)
     skip: int = Field(default=0)
     limit: int = Field(default=20)
-
 
 class DiscrepancyListResponse(BaseModel):
     """Response listing discrepancies for a reconciliation."""
@@ -445,7 +424,6 @@ class DiscrepancyListResponse(BaseModel):
     direction: str = Field(default="equal")
     total_discrepancy_tco2e: float = Field(default=0.0)
 
-
 class WaterfallResponse(BaseModel):
     """Waterfall decomposition response."""
 
@@ -457,7 +435,6 @@ class WaterfallResponse(BaseModel):
     items: List[Dict[str, Any]] = Field(default_factory=list)
     residual_tco2e: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class QualityAssessmentResponse(BaseModel):
     """Quality assessment response."""
@@ -472,7 +449,6 @@ class QualityAssessmentResponse(BaseModel):
     flags: List[Dict[str, Any]] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class ReportingTablesResponse(BaseModel):
     """Multi-framework reporting tables response."""
 
@@ -482,7 +458,6 @@ class ReportingTablesResponse(BaseModel):
     tables: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
     frameworks_generated: int = Field(default=0)
     provenance_hash: str = Field(default="")
-
 
 class TrendAnalysisResponse(BaseModel):
     """Trend analysis response."""
@@ -502,7 +477,6 @@ class TrendAnalysisResponse(BaseModel):
     data_points: List[Dict[str, Any]] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class ComplianceCheckResponse(BaseModel):
     """Regulatory compliance check response."""
 
@@ -520,7 +494,6 @@ class ComplianceCheckResponse(BaseModel):
     checked_at: str = Field(default_factory=_utcnow_iso)
     provenance_hash: str = Field(default="")
 
-
 class AggregationResponse(BaseModel):
     """Aggregated reconciliation response."""
 
@@ -534,7 +507,6 @@ class AggregationResponse(BaseModel):
     reconciliation_count: int = Field(default=0)
     period: str = Field(default="all")
     timestamp: str = Field(default_factory=_utcnow_iso)
-
 
 class ExportResponse(BaseModel):
     """Export report response."""
@@ -551,7 +523,6 @@ class ExportResponse(BaseModel):
     provenance_hash: str = Field(default="")
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
 class HealthResponse(BaseModel):
     """Service health check response."""
 
@@ -565,7 +536,6 @@ class HealthResponse(BaseModel):
     config_valid: bool = Field(default=True)
     uptime_seconds: float = Field(default=0.0)
     timestamp: str = Field(default_factory=_utcnow_iso)
-
 
 class StatsResponse(BaseModel):
     """Service aggregate statistics response."""
@@ -582,14 +552,12 @@ class StatsResponse(BaseModel):
     uptime_seconds: float = Field(default=0.0)
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
 # ===================================================================
 # DualReportingService facade
 # ===================================================================
 
 _singleton_lock = threading.Lock()
 _service_instance: Optional["DualReportingService"] = None
-
 
 class DualReportingService:
     """Unified facade over the Dual Reporting Reconciliation Agent SDK.
@@ -1951,11 +1919,9 @@ class DualReportingService:
             uptime_seconds=round(uptime, 2),
         )
 
-
 # ===================================================================
 # Module-level service accessor
 # ===================================================================
-
 
 def get_service(config: Any = None) -> DualReportingService:
     """Get or create the singleton DualReportingService instance.
@@ -1980,7 +1946,6 @@ def get_service(config: Any = None) -> DualReportingService:
         _service_instance = DualReportingService(config=config)
         return _service_instance
 
-
 def reset_service() -> None:
     """Reset the singleton service instance (for testing only).
 
@@ -1990,7 +1955,6 @@ def reset_service() -> None:
     global _service_instance
     with _singleton_lock:
         _service_instance = None
-
 
 __all__ = [
     "DualReportingService",

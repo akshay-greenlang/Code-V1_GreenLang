@@ -14,17 +14,18 @@ import time
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig
 from greenlang.agents.base_agents import DeterministicAgent
 from greenlang.agents.categories import AgentCategory, AgentMetadata
 from greenlang.utilities.determinism import DeterministicClock, content_hash, deterministic_id
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
 
-class ScenarioMetrics(BaseModel):
+class ScenarioMetrics(GreenLangBase):
     scenario_id: str = Field(...)
     scenario_name: str = Field(...)
 
@@ -47,7 +48,7 @@ class ScenarioMetrics(BaseModel):
     implementation_years: int = Field(default=5, ge=1)
 
 
-class ScenarioComparison(BaseModel):
+class ScenarioComparison(GreenLangBase):
     comparison_id: str = Field(...)
     scenarios: List[ScenarioMetrics] = Field(default_factory=list)
 
@@ -64,12 +65,12 @@ class ScenarioComparison(BaseModel):
     provenance_hash: str = Field(default="")
 
 
-class ScenarioComparisonInput(BaseModel):
+class ScenarioComparisonInput(GreenLangBase):
     operation: str = Field(default="compare")
     scenarios: List[Dict[str, Any]] = Field(default_factory=list)
 
 
-class ScenarioComparisonOutput(BaseModel):
+class ScenarioComparisonOutput(GreenLangBase):
     operation: str = Field(...)
     success: bool = Field(...)
     comparison: Optional[ScenarioComparison] = Field(None)

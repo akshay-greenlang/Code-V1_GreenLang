@@ -32,23 +32,18 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -60,17 +55,14 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SizeTier(str, Enum):
     MICRO = "micro"        # 1-9 employees
     SMALL = "small"        # 10-49 employees
     MEDIUM = "medium"      # 50-249 employees
-
 
 class BenchmarkMetric(str, Enum):
     TOTAL_EMISSIONS = "total_emissions_tco2e"
@@ -81,7 +73,6 @@ class BenchmarkMetric(str, Enum):
     SCOPE3_SHARE = "scope3_share_pct"
     REDUCTION_RATE = "year_on_year_reduction_pct"
     RENEWABLE_ENERGY = "renewable_energy_pct"
-
 
 # ---------------------------------------------------------------------------
 # Industry Benchmark Data (Aggregated, Anonymous)
@@ -177,11 +168,9 @@ INDUSTRY_BENCHMARKS: Dict[str, Dict[str, Dict[str, Any]]] = {
 
 MINIMUM_PEERS_FOR_DISCLOSURE = 5
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class PeerNetworkConfig(BaseModel):
     """Configuration for the Peer Network Bridge."""
@@ -190,7 +179,6 @@ class PeerNetworkConfig(BaseModel):
     enable_provenance: bool = Field(default=True)
     minimum_peers: int = Field(default=5, ge=3, le=20)
     anonymize_data: bool = Field(default=True)
-
 
 class BenchmarkResult(BaseModel):
     """Result of a peer benchmarking comparison."""
@@ -207,9 +195,8 @@ class BenchmarkResult(BaseModel):
     performance_summary: str = Field(default="")
     improvement_areas: List[str] = Field(default_factory=list)
     strengths: List[str] = Field(default_factory=list)
-    generated_at: datetime = Field(default_factory=_utcnow)
+    generated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class PercentileRanking(BaseModel):
     """Percentile ranking for a single metric."""
@@ -223,11 +210,9 @@ class PercentileRanking(BaseModel):
     peer_mean: float = Field(default=0.0)
     interpretation: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # PeerNetworkBridge
 # ---------------------------------------------------------------------------
-
 
 class PeerNetworkBridge:
     """Anonymous peer benchmarking for SME emissions performance.

@@ -68,6 +68,7 @@ from greenlang.agents.eudr.risk_assessment_engine.models import (
     TrendDirection,
 )
 from greenlang.agents.eudr.risk_assessment_engine.provenance import ProvenanceTracker
+from greenlang.schemas import utcnow
 from greenlang.agents.eudr.risk_assessment_engine.metrics import (
     record_report_generation,
 )
@@ -75,7 +76,6 @@ from greenlang.agents.eudr.risk_assessment_engine.metrics import (
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Recommendation templates per risk level
@@ -175,16 +175,9 @@ _TREND_RECOMMENDATIONS: Dict[str, str] = {
     ),
 }
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute deterministic SHA-256 hash of data.
@@ -198,11 +191,9 @@ def _compute_hash(data: Any) -> str:
     canonical = json.dumps(data, sort_keys=True, separators=(",", ":"), default=str)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Main Engine
 # ---------------------------------------------------------------------------
-
 
 class RiskReportGenerator:
     """Engine for generating comprehensive DDS-ready risk assessment reports.
@@ -328,7 +319,7 @@ class RiskReportGenerator:
             risk_level=composite.risk_level,
             recommendations=recommendations,
             dds_ready=dds_ready,
-            generated_at=_utcnow(),
+            generated_at=utcnow(),
             provenance_hash=provenance_hash,
         )
 

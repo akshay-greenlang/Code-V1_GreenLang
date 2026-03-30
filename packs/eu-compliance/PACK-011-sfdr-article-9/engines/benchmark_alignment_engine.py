@@ -55,25 +55,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -93,7 +87,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _safe_divide(numerator: float, denominator: float, default: float = 0.0) -> float:
     """Safely divide two numbers, returning default on zero denominator.
 
@@ -109,7 +102,6 @@ def _safe_divide(numerator: float, denominator: float, default: float = 0.0) -> 
         return default
     return numerator / denominator
 
-
 def _safe_pct(numerator: float, denominator: float) -> float:
     """Calculate percentage safely.
 
@@ -124,11 +116,9 @@ def _safe_pct(numerator: float, denominator: float) -> float:
         return 0.0
     return (numerator / denominator) * 100.0
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class BenchmarkType(str, Enum):
     """EU Climate Benchmark classification."""
@@ -136,14 +126,12 @@ class BenchmarkType(str, Enum):
     PAB = "pab"   # Paris-Aligned Benchmark
     CUSTOM = "custom"  # Custom climate benchmark
 
-
 class ComplianceStatus(str, Enum):
     """Benchmark compliance assessment status."""
     COMPLIANT = "compliant"
     NON_COMPLIANT = "non_compliant"
     PARTIAL = "partial"
     INSUFFICIENT_DATA = "insufficient_data"
-
 
 class ExclusionCategory(str, Enum):
     """Categories of benchmark exclusions."""
@@ -155,7 +143,6 @@ class ExclusionCategory(str, Enum):
     HIGH_CARBON_POWER = "high_carbon_power"
     TOBACCO = "tobacco"
     UNGC_VIOLATIONS = "ungc_violations"
-
 
 # ---------------------------------------------------------------------------
 # PAB / CTB Exclusion Thresholds
@@ -213,11 +200,9 @@ CTB_EXCLUSION_THRESHOLDS: Dict[str, Dict[str, Any]] = {
 # Annual decarbonization rate per EU Low Carbon Benchmarks Regulation
 ANNUAL_DECARBONIZATION_RATE: float = 0.07  # 7% per year
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class HoldingBenchmarkData(BaseModel):
     """Benchmark-relevant data for a single portfolio holding.
@@ -282,7 +267,6 @@ class HoldingBenchmarkData(BaseModel):
                 self.carbon_intensity = total_emissions / revenue_m
         return self
 
-
 class ExclusionViolation(BaseModel):
     """Details of a single exclusion rule violation."""
     violation_id: str = Field(default_factory=_new_uuid, description="Unique violation identifier")
@@ -295,7 +279,6 @@ class ExclusionViolation(BaseModel):
     weight_pct: float = Field(default=0.0, description="Portfolio weight of violating holding (%)")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class TrajectoryDataPoint(BaseModel):
     """A single data point on the decarbonization trajectory."""
     year: int = Field(description="Calendar year")
@@ -307,7 +290,6 @@ class TrajectoryDataPoint(BaseModel):
     gap_pct: float = Field(
         default=0.0, description="Gap between actual and target as percentage"
     )
-
 
 class TrackingErrorResult(BaseModel):
     """Tracking error calculation between portfolio and benchmark."""
@@ -327,9 +309,8 @@ class TrackingErrorResult(BaseModel):
     information_ratio: float = Field(
         default=0.0, description="Information ratio (excess return / tracking error)"
     )
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Calculation timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Calculation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class MethodologyDisclosure(BaseModel):
     """Methodology disclosure details for benchmark alignment."""
@@ -353,7 +334,6 @@ class MethodologyDisclosure(BaseModel):
         default="", description="Additional methodology notes"
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class CTBComplianceResult(BaseModel):
     """Climate Transition Benchmark compliance assessment result."""
@@ -387,9 +367,8 @@ class CTBComplianceResult(BaseModel):
         default=False, description="Whether 7% annual decarbonization target is met"
     )
     holdings_screened: int = Field(default=0, description="Number of holdings screened")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Calculation timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Calculation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class PABComplianceResult(BaseModel):
     """Paris-Aligned Benchmark compliance assessment result."""
@@ -438,9 +417,8 @@ class PABComplianceResult(BaseModel):
         default=False, description="Whether 7% annual decarbonization target is met"
     )
     holdings_screened: int = Field(default=0, description="Number of holdings screened")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Calculation timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Calculation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class BenchmarkResult(BaseModel):
     """Comprehensive benchmark alignment result.
@@ -474,14 +452,12 @@ class BenchmarkResult(BaseModel):
     portfolio_waci: float = Field(
         default=0.0, description="Portfolio WACI (tCO2e/EUR M revenue)"
     )
-    generated_at: datetime = Field(default_factory=_utcnow, description="Generation timestamp")
+    generated_at: datetime = Field(default_factory=utcnow, description="Generation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 # ---------------------------------------------------------------------------
 # Engine Configuration
 # ---------------------------------------------------------------------------
-
 
 class BenchmarkConfig(BaseModel):
     """Configuration for the BenchmarkAlignmentEngine.
@@ -530,7 +506,6 @@ class BenchmarkConfig(BaseModel):
         default=False, description="Include tobacco and UNGC violation exclusions"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic model_rebuild for forward reference resolution
 # ---------------------------------------------------------------------------
@@ -545,11 +520,9 @@ CTBComplianceResult.model_rebuild()
 PABComplianceResult.model_rebuild()
 BenchmarkResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # BenchmarkAlignmentEngine
 # ---------------------------------------------------------------------------
-
 
 class BenchmarkAlignmentEngine:
     """
@@ -622,7 +595,7 @@ class BenchmarkAlignmentEngine:
         Returns:
             BenchmarkResult with complete alignment assessment.
         """
-        start = _utcnow()
+        start = utcnow()
         self._holdings = holdings
         self._total_portfolio_value = sum(h.holding_value for h in holdings)
         self._ensure_weights(holdings)
@@ -688,7 +661,7 @@ class BenchmarkAlignmentEngine:
             overall.value,
             violation_count,
             portfolio_waci,
-            int((_utcnow() - start).total_seconds() * 1000),
+            int((utcnow() - start).total_seconds() * 1000),
         )
         return result
 
@@ -715,7 +688,7 @@ class BenchmarkAlignmentEngine:
         Returns:
             CTBComplianceResult with detailed assessment.
         """
-        start = _utcnow()
+        start = utcnow()
         if holdings is not None:
             self._holdings = holdings
             self._total_portfolio_value = sum(h.holding_value for h in holdings)
@@ -778,7 +751,7 @@ class BenchmarkAlignmentEngine:
             required_reduction,
             weapons_met,
             decarb_rate,
-            int((_utcnow() - start).total_seconds() * 1000),
+            int((utcnow() - start).total_seconds() * 1000),
         )
         return result
 
@@ -807,7 +780,7 @@ class BenchmarkAlignmentEngine:
         Returns:
             PABComplianceResult with detailed assessment.
         """
-        start = _utcnow()
+        start = utcnow()
         if holdings is not None:
             self._holdings = holdings
             self._total_portfolio_value = sum(h.holding_value for h in holdings)
@@ -907,7 +880,7 @@ class BenchmarkAlignmentEngine:
             fossil_met,
             weapons_met,
             decarb_rate,
-            int((_utcnow() - start).total_seconds() * 1000),
+            int((utcnow() - start).total_seconds() * 1000),
         )
         return result
 
@@ -937,7 +910,7 @@ class BenchmarkAlignmentEngine:
         Returns:
             List of TrajectoryDataPoint from base year to projection end.
         """
-        start = _utcnow()
+        start = utcnow()
         if holdings is not None:
             self._holdings = holdings
             self._ensure_weights(holdings)
@@ -987,7 +960,7 @@ class BenchmarkAlignmentEngine:
             end_year,
             b_intensity,
             rate * 100,
-            int((_utcnow() - start).total_seconds() * 1000),
+            int((utcnow() - start).total_seconds() * 1000),
         )
         return trajectory
 
@@ -1014,7 +987,7 @@ class BenchmarkAlignmentEngine:
         Raises:
             ValueError: If return lists have different lengths or fewer than 2 items.
         """
-        start = _utcnow()
+        start = utcnow()
 
         if len(portfolio_returns) != len(benchmark_returns):
             raise ValueError(
@@ -1053,7 +1026,7 @@ class BenchmarkAlignmentEngine:
             te_periodic,
             n,
             info_ratio,
-            int((_utcnow() - start).total_seconds() * 1000),
+            int((utcnow() - start).total_seconds() * 1000),
         )
         return result
 

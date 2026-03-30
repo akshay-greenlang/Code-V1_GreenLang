@@ -58,8 +58,9 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, List, Optional, Any
 from datetime import datetime, date
 from enum import Enum
-from pydantic import BaseModel, Field, validator
-from pydantic import ConfigDict
+from pydantic import Field, validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
+
 import hashlib
 import json
 
@@ -933,7 +934,7 @@ UNCERTAINTY_RANGES: Dict[str, Dict[str, Decimal]] = {
 # ==============================================================================
 
 
-class BuildingAssetInput(BaseModel):
+class BuildingAssetInput(GreenLangBase):
     """
     Input for building-level emissions calculation (Cat 13 lessor perspective).
 
@@ -1000,7 +1001,7 @@ class BuildingAssetInput(BaseModel):
         return v.upper()
 
 
-class VehicleAssetInput(BaseModel):
+class VehicleAssetInput(GreenLangBase):
     """
     Input for vehicle fleet emissions calculation (Cat 13 lessor perspective).
 
@@ -1047,7 +1048,7 @@ class VehicleAssetInput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class EquipmentAssetInput(BaseModel):
+class EquipmentAssetInput(GreenLangBase):
     """
     Input for equipment emissions calculation (Cat 13 lessor perspective).
 
@@ -1095,7 +1096,7 @@ class EquipmentAssetInput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class ITAssetInput(BaseModel):
+class ITAssetInput(GreenLangBase):
     """
     Input for IT asset emissions calculation (Cat 13 lessor perspective).
 
@@ -1150,7 +1151,7 @@ class ITAssetInput(BaseModel):
         return v.upper()
 
 
-class LeaseInfo(BaseModel):
+class LeaseInfo(GreenLangBase):
     """
     Lease metadata for consolidation boundary and reporting.
 
@@ -1193,7 +1194,7 @@ class LeaseInfo(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class AllocationInfo(BaseModel):
+class AllocationInfo(GreenLangBase):
     """
     Tenant allocation parameters for multi-tenant buildings (Cat 13 specific).
 
@@ -1233,7 +1234,7 @@ class AllocationInfo(BaseModel):
 # ==============================================================================
 
 
-class AssetCalculationResult(BaseModel):
+class AssetCalculationResult(GreenLangBase):
     """
     Result from a single asset emissions calculation.
 
@@ -1275,7 +1276,7 @@ class AssetCalculationResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class PortfolioResult(BaseModel):
+class PortfolioResult(GreenLangBase):
     """
     Aggregated portfolio-level result across all downstream leased assets.
 
@@ -1313,7 +1314,7 @@ class PortfolioResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class AvoidedEmissions(BaseModel):
+class AvoidedEmissions(GreenLangBase):
     """
     Avoided emissions from green building and energy efficiency measures.
 
@@ -1337,7 +1338,7 @@ class AvoidedEmissions(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class ComplianceResult(BaseModel):
+class ComplianceResult(GreenLangBase):
     """
     Result from compliance check against a specific framework.
 
@@ -1367,7 +1368,7 @@ class ComplianceResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class ProvenanceRecord(BaseModel):
+class ProvenanceRecord(GreenLangBase):
     """
     Single record in the provenance chain.
 
@@ -1398,7 +1399,7 @@ class ProvenanceRecord(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class DataQualityScore(BaseModel):
+class DataQualityScore(GreenLangBase):
     """
     Composite data quality score across five dimensions.
 
@@ -1428,7 +1429,7 @@ class DataQualityScore(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class UncertaintyResult(BaseModel):
+class UncertaintyResult(GreenLangBase):
     """
     Uncertainty quantification result.
 
@@ -1456,7 +1457,7 @@ class UncertaintyResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class AggregationResult(BaseModel):
+class AggregationResult(GreenLangBase):
     """
     Aggregated emissions result for a reporting period.
 

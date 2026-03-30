@@ -17,10 +17,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +56,7 @@ class RiskRating(str, Enum):
     CRITICAL = "critical"
 
 
-class CriticalAsset(BaseModel):
+class CriticalAsset(GreenLangBase):
     """Critical infrastructure asset."""
     asset_id: str = Field(...)
     name: str = Field(...)
@@ -71,7 +72,7 @@ class CriticalAsset(BaseModel):
     flood_protection_level_ft: Optional[float] = Field(None)
 
 
-class ResilienceAssessment(BaseModel):
+class ResilienceAssessment(GreenLangBase):
     """Resilience assessment for an asset."""
     asset_id: str = Field(...)
     assessment_date: datetime = Field(default_factory=DeterministicClock.now)
@@ -82,7 +83,7 @@ class ResilienceAssessment(BaseModel):
     priority_rank: int = Field(default=0, ge=0)
 
 
-class InfrastructureProtectionPlan(BaseModel):
+class InfrastructureProtectionPlan(GreenLangBase):
     """Infrastructure protection plan."""
     plan_id: str = Field(...)
     jurisdiction_name: str = Field(...)
@@ -97,7 +98,7 @@ class InfrastructureProtectionPlan(BaseModel):
     provenance_hash: Optional[str] = Field(None)
 
 
-class InfrastructureProtectionInput(BaseModel):
+class InfrastructureProtectionInput(GreenLangBase):
     """Input for Infrastructure Protection Agent."""
     action: str = Field(...)
     plan_id: Optional[str] = Field(None)
@@ -116,7 +117,7 @@ class InfrastructureProtectionInput(BaseModel):
         return v
 
 
-class InfrastructureProtectionOutput(BaseModel):
+class InfrastructureProtectionOutput(GreenLangBase):
     """Output from Infrastructure Protection Agent."""
     success: bool = Field(...)
     action: str = Field(...)

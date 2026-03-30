@@ -33,23 +33,18 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "27.0.0"
 _PACK_ID = "PACK-027"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -58,14 +53,12 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class RecalculationTrigger(str, Enum):
     ACQUISITION = "acquisition"
@@ -76,11 +69,9 @@ class RecalculationTrigger(str, Enum):
     OUTSOURCING = "outsourcing"
     INSOURCING = "insourcing"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase_name: str = Field(...)
@@ -94,7 +85,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     dag_node_id: str = Field(default="")
 
-
 class DataRefreshStatus(BaseModel):
     """Status of data refresh for a single entity."""
     entity_id: str = Field(...)
@@ -104,7 +94,6 @@ class DataRefreshStatus(BaseModel):
     records_updated: int = Field(default=0, ge=0)
     last_refresh: Optional[str] = Field(default=None)
     staleness_days: int = Field(default=0, ge=0)
-
 
 class BaseYearRecalculation(BaseModel):
     """Base year recalculation assessment."""
@@ -117,7 +106,6 @@ class BaseYearRecalculation(BaseModel):
     delta_tco2e: float = Field(default=0.0)
     recalculation_required: bool = Field(default=False)
     restated_years: List[int] = Field(default_factory=list)
-
 
 class AnnualComparison(BaseModel):
     """Year-over-year and base-year comparison."""
@@ -133,7 +121,6 @@ class AnnualComparison(BaseModel):
     target_pathway_tco2e: float = Field(default=0.0, ge=0.0)
     gap_to_target_tco2e: float = Field(default=0.0)
 
-
 class AnnualInventoryConfig(BaseModel):
     reporting_year: int = Field(default=2025, ge=2020, le=2035)
     base_year: int = Field(default=2025, ge=2015, le=2035)
@@ -143,7 +130,6 @@ class AnnualInventoryConfig(BaseModel):
     erp_systems: List[str] = Field(default_factory=list)
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
-
 
 class AnnualInventoryInput(BaseModel):
     config: AnnualInventoryConfig = Field(default_factory=AnnualInventoryConfig)
@@ -160,7 +146,6 @@ class AnnualInventoryInput(BaseModel):
     structural_changes: List[Dict[str, Any]] = Field(
         default_factory=list, description="M&A, divestitures, boundary changes",
     )
-
 
 class AnnualInventoryResult(BaseModel):
     workflow_id: str = Field(...)
@@ -181,11 +166,9 @@ class AnnualInventoryResult(BaseModel):
     next_steps: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class AnnualInventoryWorkflow:
     """
@@ -215,7 +198,7 @@ class AnnualInventoryWorkflow:
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     async def execute(self, input_data: AnnualInventoryInput) -> AnnualInventoryResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         self.config = input_data.config
         self._phase_results = []
         overall_status = WorkflowStatus.RUNNING
@@ -249,7 +232,7 @@ class AnnualInventoryWorkflow:
                 status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
 
         # Extract totals from phase outputs
         calc_outputs = next(
@@ -286,7 +269,7 @@ class AnnualInventoryWorkflow:
         return result
 
     async def _phase_data_refresh(self, input_data: AnnualInventoryInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         errors: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -299,7 +282,7 @@ class AnnualInventoryWorkflow:
                 data_source="erp" if self.config.erp_systems else "manual",
                 refresh_status="refreshed",
                 records_updated=100,
-                last_refresh=_utcnow().isoformat(),
+                last_refresh=utcnow().isoformat(),
                 staleness_days=0,
             )
             self._refresh_status.append(refresh)
@@ -317,7 +300,7 @@ class AnnualInventoryWorkflow:
         outputs["total_entities"] = len(input_data.entity_ids)
         outputs["erp_systems"] = self.config.erp_systems
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="data_refresh", phase_number=1,
             status=PhaseStatus.COMPLETED if not errors else PhaseStatus.FAILED,
@@ -329,7 +312,7 @@ class AnnualInventoryWorkflow:
         )
 
     async def _phase_calculation(self, input_data: AnnualInventoryInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         # Simulate calculation (in production, calls enterprise_baseline_engine)
@@ -352,7 +335,7 @@ class AnnualInventoryWorkflow:
         outputs["total_tco2e"] = round(total, 2)
         outputs["mrv_agents_used"] = [f"MRV-{i:03d}" for i in range(1, 31)]
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="calculation", phase_number=2,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -362,7 +345,7 @@ class AnnualInventoryWorkflow:
         )
 
     async def _phase_base_year_check(self, input_data: AnnualInventoryInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
 
@@ -403,7 +386,7 @@ class AnnualInventoryWorkflow:
         )
         outputs["significance_threshold_pct"] = threshold
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="base_year_check", phase_number=3,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -413,14 +396,14 @@ class AnnualInventoryWorkflow:
         )
 
     async def _phase_consolidation(self, input_data: AnnualInventoryInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         outputs["consolidation_approach"] = self.config.consolidation_approach
         outputs["entities_consolidated"] = len(input_data.entity_ids)
         outputs["intercompany_eliminations_applied"] = True
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="consolidation", phase_number=4,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -430,7 +413,7 @@ class AnnualInventoryWorkflow:
         )
 
     async def _phase_annual_report(self, input_data: AnnualInventoryInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         outputs["report_sections"] = [
@@ -451,7 +434,7 @@ class AnnualInventoryWorkflow:
         outputs["report_formats"] = ["MD", "HTML", "JSON", "XLSX", "PDF"]
         outputs["reporting_year"] = self.config.reporting_year
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="annual_report", phase_number=5,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),

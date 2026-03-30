@@ -2181,11 +2181,11 @@ def set_quota_manager(manager) -> None:
 
 
 # Pydantic models for quota API
-from pydantic import BaseModel, Field
+from pydantic import Field
 from typing import Dict, List, Any
 
 
-class QuotaConfigRequest(BaseModel):
+class QuotaConfigRequest(GreenLangBase):
     """Request model for updating namespace quotas."""
     max_concurrent_runs: int = Field(
         default=20, ge=1, le=1000, description="Maximum concurrent runs"
@@ -2204,7 +2204,7 @@ class QuotaConfigRequest(BaseModel):
     )
 
 
-class QuotaConfigResponse(BaseModel):
+class QuotaConfigResponse(GreenLangBase):
     """Response model for quota configuration."""
     namespace: str = Field(..., description="Namespace identifier")
     max_concurrent_runs: int = Field(..., description="Maximum concurrent runs")
@@ -2214,7 +2214,7 @@ class QuotaConfigResponse(BaseModel):
     queue_timeout_seconds: float = Field(..., description="Queue timeout in seconds")
 
 
-class QuotaUsageResponse(BaseModel):
+class QuotaUsageResponse(GreenLangBase):
     """Response model for quota usage."""
     namespace: str = Field(..., description="Namespace identifier")
     current_runs: int = Field(..., description="Current active runs")
@@ -2227,7 +2227,7 @@ class QuotaUsageResponse(BaseModel):
     total_queue_timeouts: int = Field(..., description="Total queue timeouts")
 
 
-class QuotaMetricsResponse(BaseModel):
+class QuotaMetricsResponse(GreenLangBase):
     """Response model for quota metrics."""
     namespace: str = Field(..., description="Namespace identifier")
     quota_usage_percent: float = Field(..., description="Overall quota utilization")
@@ -2237,7 +2237,7 @@ class QuotaMetricsResponse(BaseModel):
     steps_utilization_percent: float = Field(..., description="Step slots utilization")
 
 
-class AllQuotasResponse(BaseModel):
+class AllQuotasResponse(GreenLangBase):
     """Response model for listing all quotas."""
     quotas: List[QuotaConfigResponse] = Field(..., description="List of quota configs")
     total: int = Field(..., description="Total count")
@@ -2515,6 +2515,7 @@ def set_alert_manager(manager) -> None:
 
 
 from pydantic import BaseModel as PydanticBaseModel
+from greenlang.schemas import GreenLangBase
 
 
 class WebhookRegisterRequest(PydanticBaseModel):

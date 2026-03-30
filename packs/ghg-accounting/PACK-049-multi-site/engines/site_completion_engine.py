@@ -65,26 +65,20 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 _ZERO = Decimal("0")
 _ONE = Decimal("1")
@@ -93,28 +87,23 @@ _FIFTY = Decimal("50")
 _DP6 = Decimal("0.000001")
 _DP2 = Decimal("0.01")
 
-
 def _safe_divide(numerator: Decimal, denominator: Decimal) -> Decimal:
     """Divide with zero-guard."""
     if denominator == _ZERO:
         return _ZERO
     return (numerator / denominator).quantize(_DP6, rounding=ROUND_HALF_UP)
 
-
 def _quantise(value: Decimal, precision: Decimal = _DP6) -> Decimal:
     """Quantise a Decimal value."""
     return value.quantize(precision, rounding=ROUND_HALF_UP)
-
 
 def _today() -> date:
     """Return current UTC date (mockable for testing)."""
     return datetime.now(timezone.utc).date()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class GapType(str, Enum):
     """Types of data gaps detected in portfolio completeness."""
@@ -123,7 +112,6 @@ class GapType(str, Enum):
     MISSING_CATEGORY = "MISSING_CATEGORY"
     STALE_DATA = "STALE_DATA"
     ESTIMATION_HEAVY = "ESTIMATION_HEAVY"
-
 
 class SubmissionStatus(str, Enum):
     """Status of a site's data submission."""
@@ -136,7 +124,6 @@ class SubmissionStatus(str, Enum):
     RESUBMITTED = "RESUBMITTED"
     OVERDUE = "OVERDUE"
 
-
 class EscalationLevel(int, Enum):
     """Escalation levels for overdue submissions."""
     NONE = 0
@@ -144,11 +131,9 @@ class EscalationLevel(int, Enum):
     REGIONAL_LEAD = 2
     PORTFOLIO_ADMIN = 3
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class SiteSubmission(BaseModel):
     """A data submission record from a single site."""
@@ -178,7 +163,6 @@ class SiteSubmission(BaseModel):
     floor_area_m2: Decimal = Field(_ZERO, description="Site floor area (m2)")
     evidence_count: int = Field(0, ge=0, description="Number of evidence attachments")
 
-
 class CompletenessScore(BaseModel):
     """Completeness score for a single site / scope / category."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -201,7 +185,6 @@ class CompletenessScore(BaseModel):
         default_factory=list, description="Items with measured/actual data"
     )
 
-
 class SubmissionTracker(BaseModel):
     """Tracks a site's submission against a collection deadline."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -217,7 +200,6 @@ class SubmissionTracker(BaseModel):
     escalation_level: int = Field(
         0, ge=0, le=3, description="Current escalation level (0=none, 3=portfolio admin)"
     )
-
 
 class GapDetection(BaseModel):
     """A detected data gap in the portfolio."""
@@ -242,7 +224,6 @@ class GapDetection(BaseModel):
             raise ValueError(f"gap_type must be one of {sorted(allowed)}, got '{v}'")
         return v.upper()
 
-
 class CompletionResult(BaseModel):
     """Overall portfolio completeness assessment."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -266,7 +247,7 @@ class CompletionResult(BaseModel):
     overdue_sites: List[str] = Field(
         default_factory=list, description="Site IDs with overdue submissions"
     )
-    created_at: datetime = Field(default_factory=_utcnow, description="Assessment timestamp")
+    created_at: datetime = Field(default_factory=utcnow, description="Assessment timestamp")
     provenance_hash: str = Field("", description="SHA-256 provenance hash")
 
     def model_post_init(self, __context: Any) -> None:
@@ -279,7 +260,6 @@ class CompletionResult(BaseModel):
                 f"{len(self.overdue_sites)}"
             )
             self.provenance_hash = _compute_hash(payload)
-
 
 class CollectionRound(BaseModel):
     """Definition of a data collection round."""
@@ -304,11 +284,9 @@ class CollectionRound(BaseModel):
         description="Days before deadline to send reminders",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class SiteCompletionEngine:
     """
@@ -1106,7 +1084,6 @@ class SiteCompletionEngine:
             "first_period": sorted_results[0].round_id,
             "last_period": sorted_results[-1].round_id,
         }
-
 
 # ---------------------------------------------------------------------------
 # Pydantic v2 model rebuild (required with `from __future__ import annotations`)

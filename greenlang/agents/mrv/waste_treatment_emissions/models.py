@@ -71,18 +71,11 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
-
+from pydantic import Field, field_validator
 
 # ---------------------------------------------------------------------------
 # Helper
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -121,11 +114,9 @@ DEFAULT_OPEN_BURN_OXIDATION: Decimal = Decimal("0.58")
 #: Default flare destruction efficiency.
 DEFAULT_FLARE_DESTRUCTION_EFF: Decimal = Decimal("0.98")
 
-
 # =============================================================================
 # Enumerations (16)
 # =============================================================================
-
 
 class WasteCategory(str, Enum):
     """IPCC waste categories for treatment emission calculations.
@@ -196,7 +187,6 @@ class WasteCategory(str, Enum):
     SLUDGE = "sludge"
     MIXED = "mixed"
 
-
 class TreatmentMethod(str, Enum):
     """Waste treatment methods for emission calculation.
 
@@ -253,7 +243,6 @@ class TreatmentMethod(str, Enum):
     OPEN_BURNING = "open_burning"
     OPEN_DUMPING = "open_dumping"
 
-
 class CompostingType(str, Enum):
     """Types of composting systems for biological treatment.
 
@@ -278,7 +267,6 @@ class CompostingType(str, Enum):
     AERATED_STATIC_PILE = "aerated_static_pile"
     VERMICOMPOSTING = "vermicomposting"
     HOME_COMPOSTING = "home_composting"
-
 
 class IncineratorType(str, Enum):
     """Types of incinerator technology for thermal treatment.
@@ -307,7 +295,6 @@ class IncineratorType(str, Enum):
     SEMI_CONTINUOUS = "semi_continuous"
     BATCH_TYPE = "batch_type"
     MODULAR = "modular"
-
 
 class WastewaterSystem(str, Enum):
     """Wastewater treatment system types for MCF determination.
@@ -344,7 +331,6 @@ class WastewaterSystem(str, Enum):
     SEPTIC_SYSTEM = "septic_system"
     UNTREATED_DISCHARGE = "untreated_discharge"
 
-
 class CalculationMethod(str, Enum):
     """Methodology for calculating waste treatment emissions.
 
@@ -380,7 +366,6 @@ class CalculationMethod(str, Enum):
     DIRECT_MEASUREMENT = "direct_measurement"
     SPEND_BASED = "spend_based"
 
-
 class EmissionGas(str, Enum):
     """Greenhouse gases tracked in waste treatment emission calculations.
 
@@ -400,7 +385,6 @@ class EmissionGas(str, Enum):
     N2O = "N2O"
     CO = "CO"
 
-
 class GWPSource(str, Enum):
     """IPCC Assessment Report source for Global Warming Potential values.
 
@@ -418,7 +402,6 @@ class GWPSource(str, Enum):
     AR5 = "AR5"
     AR6 = "AR6"
     AR6_20YR = "AR6_20YR"
-
 
 class EmissionFactorSource(str, Enum):
     """Authoritative source for waste treatment emission factors.
@@ -447,7 +430,6 @@ class EmissionFactorSource(str, Enum):
     NATIONAL = "NATIONAL"
     CUSTOM = "CUSTOM"
 
-
 class DataQualityTier(str, Enum):
     """IPCC data quality tier for input data and emission factors.
 
@@ -465,7 +447,6 @@ class DataQualityTier(str, Enum):
     TIER_1 = "tier_1"
     TIER_2 = "tier_2"
     TIER_3 = "tier_3"
-
 
 class FacilityType(str, Enum):
     """Type of waste treatment facility.
@@ -503,7 +484,6 @@ class FacilityType(str, Enum):
     CHEMICAL_TREATMENT = "chemical_treatment"
     MULTI_STREAM = "multi_stream"
 
-
 class BiogasComponent(str, Enum):
     """Components of biogas from anaerobic digestion.
 
@@ -534,7 +514,6 @@ class BiogasComponent(str, Enum):
     OXYGEN = "oxygen"
     TRACE_GASES = "trace_gases"
 
-
 class ClimateZone(str, Enum):
     """Simplified IPCC climate zones for waste decomposition rates.
 
@@ -561,7 +540,6 @@ class ClimateZone(str, Enum):
     BOREAL = "boreal"
     POLAR = "polar"
 
-
 class ComplianceStatus(str, Enum):
     """Result of a regulatory compliance check.
 
@@ -577,7 +555,6 @@ class ComplianceStatus(str, Enum):
     PARTIAL = "partial"
     NOT_ASSESSED = "not_assessed"
 
-
 class ReportingPeriod(str, Enum):
     """Time granularity for emission aggregation and reporting.
 
@@ -591,7 +568,6 @@ class ReportingPeriod(str, Enum):
     QUARTERLY = "quarterly"
     MONTHLY = "monthly"
     AD_HOC = "ad_hoc"
-
 
 class EmissionScope(str, Enum):
     """GHG Protocol emission scope classification.
@@ -609,11 +585,9 @@ class EmissionScope(str, Enum):
     SCOPE_2 = "scope_2"
     SCOPE_3 = "scope_3"
 
-
 # =============================================================================
 # Constant Tables (all Decimal for deterministic arithmetic)
 # =============================================================================
-
 
 # ---------------------------------------------------------------------------
 # GWP values by IPCC Assessment Report
@@ -651,7 +625,6 @@ GWP_VALUES: Dict[GWPSource, Dict[str, Decimal]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Molecular weight conversion factors
 # ---------------------------------------------------------------------------
@@ -667,7 +640,6 @@ N2O_N_RATIO: Decimal = Decimal("1.57143")
 
 #: CH4 density at Standard Temperature and Pressure (tonnes/m3).
 CH4_DENSITY_STP: Decimal = Decimal("0.0007168")
-
 
 # ---------------------------------------------------------------------------
 # IPCC DOC values (Degradable Organic Carbon fraction)
@@ -697,7 +669,6 @@ IPCC_DOC_VALUES: Dict[WasteCategory, Decimal] = {
     WasteCategory.MIXED: Decimal("0.12"),
 }
 
-
 # ---------------------------------------------------------------------------
 # IPCC MCF values (Methane Correction Factor) by landfill/disposal type
 # IPCC 2006 Guidelines Volume 5 Table 3.1
@@ -712,7 +683,6 @@ IPCC_MCF_VALUES: Dict[str, Decimal] = {
     "uncategorized": Decimal("0.6"),
     "open_dumping": Decimal("0.4"),
 }
-
 
 # ---------------------------------------------------------------------------
 # IPCC Carbon Content by waste type
@@ -820,7 +790,6 @@ IPCC_CARBON_CONTENT: Dict[WasteCategory, Dict[str, Decimal]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # IPCC Composting / Biological Treatment Emission Factors
 # IPCC 2019 Refinement Table 5.1
@@ -866,7 +835,6 @@ IPCC_COMPOSTING_EF: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # IPCC Incineration Emission Factors by incinerator technology
 # IPCC 2006 Guidelines Volume 5 Table 5.3
@@ -901,7 +869,6 @@ IPCC_INCINERATION_EF: Dict[IncineratorType, Dict[str, Decimal]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # IPCC Wastewater MCF values by treatment system type
 # IPCC 2006 Guidelines Volume 5 Chapter 6 Table 6.3
@@ -917,7 +884,6 @@ IPCC_WASTEWATER_MCF: Dict[WastewaterSystem, Decimal] = {
     WastewaterSystem.SEPTIC_SYSTEM: Decimal("0.5"),
     WastewaterSystem.UNTREATED_DISCHARGE: Decimal("0.1"),
 }
-
 
 # ---------------------------------------------------------------------------
 # IPCC Maximum CH4 producing capacity (Bo)
@@ -939,7 +905,6 @@ WASTEWATER_BO: Dict[str, Decimal] = {
     "industrial_refinery_cod": Decimal("0.25"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Wastewater N2O emission factors
 # IPCC 2006 Guidelines Volume 5 Chapter 6
@@ -951,7 +916,6 @@ WASTEWATER_N2O_EF: Dict[str, Decimal] = {
     "effluent_ef": Decimal("0.005"),
     "nitrogen_fraction_protein": Decimal("0.16"),
 }
-
 
 # ---------------------------------------------------------------------------
 # Net Calorific Value (NCV) by waste type in GJ per tonne (wet basis)
@@ -980,7 +944,6 @@ INCINERATION_NCV: Dict[WasteCategory, Decimal] = {
     WasteCategory.SLUDGE: Decimal("2.0"),
     WasteCategory.MIXED: Decimal("8.5"),
 }
-
 
 # ---------------------------------------------------------------------------
 # Half-life values for waste decomposition (years)
@@ -1018,7 +981,6 @@ HALF_LIFE_VALUES: Dict[Tuple[ClimateZone, str], Decimal] = {
     (ClimateZone.POLAR, "very_slowly_degrading"): Decimal("70"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Waste degradability classification by waste category
 # Maps each waste type to its FOD degradability class
@@ -1046,7 +1008,6 @@ WASTE_DEGRADABILITY_CLASS: Dict[WasteCategory, str] = {
     WasteCategory.MIXED: "moderately_degrading",
 }
 
-
 # ---------------------------------------------------------------------------
 # Open burning emission factors
 # g gas per kg dry matter burned
@@ -1059,7 +1020,6 @@ OPEN_BURNING_EF: Dict[EmissionGas, Decimal] = {
     EmissionGas.N2O: Decimal("0.15"),
     EmissionGas.CO: Decimal("69"),
 }
-
 
 # ---------------------------------------------------------------------------
 # Biochemical Methane Potential (BMP) default values
@@ -1078,7 +1038,6 @@ BMP_DEFAULTS: Dict[WasteCategory, Decimal] = {
     WasteCategory.MIXED: Decimal("160"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Volatile Solids (VS) fraction of dry matter by waste type
 # Used for anaerobic digestion calculations
@@ -1095,7 +1054,6 @@ VS_FRACTION: Dict[WasteCategory, Decimal] = {
     WasteCategory.MIXED: Decimal("0.50"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Default methane fraction in biogas by feedstock type
 # ---------------------------------------------------------------------------
@@ -1110,7 +1068,6 @@ BIOGAS_CH4_FRACTION: Dict[WasteCategory, Decimal] = {
     WasteCategory.MSW: Decimal("0.55"),
     WasteCategory.MIXED: Decimal("0.53"),
 }
-
 
 # ---------------------------------------------------------------------------
 # Pyrolysis and gasification emission factors
@@ -1133,13 +1090,11 @@ ADVANCED_THERMAL_EF: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # =============================================================================
 # Pydantic Data Models (18)
 # =============================================================================
 
-
-class WasteComposition(BaseModel):
+class WasteComposition(GreenLangBase):
     """Waste stream composition breakdown by waste category.
 
     Represents the fractional composition of a waste stream,
@@ -1239,8 +1194,7 @@ class WasteComposition(BaseModel):
             )
         return v
 
-
-class TreatmentFacilityInfo(BaseModel):
+class TreatmentFacilityInfo(GreenLangBase):
     """Treatment facility registration and metadata.
 
     Represents a waste treatment facility with its operational
@@ -1334,11 +1288,11 @@ class TreatmentFacilityInfo(BaseModel):
         description="Date facility was commissioned",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of facility registration",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of last update",
     )
 
@@ -1352,8 +1306,7 @@ class TreatmentFacilityInfo(BaseModel):
             raise ValueError("Duplicate treatment methods are not allowed")
         return v
 
-
-class WasteStreamInfo(BaseModel):
+class WasteStreamInfo(GreenLangBase):
     """Waste stream definition with composition and volume.
 
     Represents a defined waste stream entering a treatment facility,
@@ -1431,16 +1384,15 @@ class WasteStreamInfo(BaseModel):
         description="Owning tenant identifier",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of stream registration",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of last update",
     )
 
-
-class EmissionFactorRecord(BaseModel):
+class EmissionFactorRecord(GreenLangBase):
     """Emission factor record for waste treatment calculations.
 
     Stores a single emission factor with its source, applicability
@@ -1523,8 +1475,7 @@ class EmissionFactorRecord(BaseModel):
         description="Bibliographic reference string",
     )
 
-
-class BiologicalTreatmentInput(BaseModel):
+class BiologicalTreatmentInput(GreenLangBase):
     """Input parameters specific to biological treatment methods.
 
     Captures the additional parameters needed for composting,
@@ -1659,8 +1610,7 @@ class BiologicalTreatmentInput(BaseModel):
                 )
         return v
 
-
-class ThermalTreatmentInput(BaseModel):
+class ThermalTreatmentInput(GreenLangBase):
     """Input parameters specific to thermal treatment methods.
 
     Captures the additional parameters needed for incineration,
@@ -1759,8 +1709,7 @@ class ThermalTreatmentInput(BaseModel):
         description="Description of APC equipment",
     )
 
-
-class WastewaterTreatmentInput(BaseModel):
+class WastewaterTreatmentInput(GreenLangBase):
     """Input parameters specific to wastewater treatment.
 
     Captures the additional parameters needed for on-site
@@ -1872,8 +1821,7 @@ class WastewaterTreatmentInput(BaseModel):
             )
         return v_lower
 
-
-class MethaneRecoveryRecord(BaseModel):
+class MethaneRecoveryRecord(GreenLangBase):
     """Record of methane recovery, flaring, and utilization.
 
     Tracks CH4 capture and routing for a treatment facility,
@@ -2009,8 +1957,7 @@ class MethaneRecoveryRecord(BaseModel):
             )
         return v
 
-
-class EnergyRecoveryRecord(BaseModel):
+class EnergyRecoveryRecord(GreenLangBase):
     """Record of energy recovery and grid displacement offsets.
 
     Tracks energy generated from waste treatment (WtE) and the
@@ -2125,12 +2072,13 @@ class EnergyRecoveryRecord(BaseModel):
         description="Owning tenant identifier",
     )
 
-
-class CalculationRequest(BaseModel):
+class CalculationRequest(GreenLangBase):
     """Request for a waste treatment emission calculation.
 
     Specifies all parameters needed to compute GHG emissions
     from a waste treatment event including waste quantity,
+
+from greenlang.schemas import GreenLangBase, utcnow
     treatment method, composition, and method-specific inputs.
 
     Attributes:
@@ -2240,8 +2188,7 @@ class CalculationRequest(BaseModel):
         description="Owning tenant identifier",
     )
 
-
-class GasEmissionDetail(BaseModel):
+class GasEmissionDetail(GreenLangBase):
     """Detailed emission result for a single greenhouse gas.
 
     Represents the emission of a single gas from a waste treatment
@@ -2303,8 +2250,7 @@ class GasEmissionDetail(BaseModel):
         description="Textual description of the calculation formula",
     )
 
-
-class CalculationResult(BaseModel):
+class CalculationResult(GreenLangBase):
     """Complete result of a waste treatment emission calculation.
 
     Attributes:
@@ -2395,7 +2341,7 @@ class CalculationResult(BaseModel):
         description="Ordered list of calculation trace steps",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of calculation completion",
     )
     provenance_hash: str = Field(
@@ -2432,8 +2378,7 @@ class CalculationResult(BaseModel):
             )
         return v
 
-
-class BatchCalculationRequest(BaseModel):
+class BatchCalculationRequest(GreenLangBase):
     """Batch request for multiple waste treatment emission calculations.
 
     Attributes:
@@ -2479,8 +2424,7 @@ class BatchCalculationRequest(BaseModel):
             )
         return v
 
-
-class BatchCalculationResult(BaseModel):
+class BatchCalculationResult(GreenLangBase):
     """Result of a batch waste treatment emission calculation.
 
     Attributes:
@@ -2552,7 +2496,7 @@ class BatchCalculationResult(BaseModel):
         description="Emissions aggregated by waste type (tCO2e)",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of batch completion",
     )
     processing_time_ms: Decimal = Field(
@@ -2561,8 +2505,7 @@ class BatchCalculationResult(BaseModel):
         description="Total processing duration in milliseconds",
     )
 
-
-class ComplianceCheckResult(BaseModel):
+class ComplianceCheckResult(GreenLangBase):
     """Result of a regulatory compliance check.
 
     Evaluates a calculation or facility against one of the seven
@@ -2640,12 +2583,11 @@ class ComplianceCheckResult(BaseModel):
         description="Reference to the facility checked",
     )
     checked_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of the compliance check",
     )
 
-
-class UncertaintyRequest(BaseModel):
+class UncertaintyRequest(GreenLangBase):
     """Request for uncertainty quantification of a calculation.
 
     Uses Monte Carlo simulation to propagate uncertainty through
@@ -2716,8 +2658,7 @@ class UncertaintyRequest(BaseModel):
         description="Waste mass measurement uncertainty percentage",
     )
 
-
-class UncertaintyResult(BaseModel):
+class UncertaintyResult(GreenLangBase):
     """Result of uncertainty quantification analysis.
 
     Attributes:
@@ -2790,12 +2731,11 @@ class UncertaintyResult(BaseModel):
         description="Overall data quality indicator (1-5, 1=best)",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of analysis completion",
     )
 
-
-class AggregationRequest(BaseModel):
+class AggregationRequest(GreenLangBase):
     """Request for aggregating waste treatment emission results.
 
     Attributes:
@@ -2863,8 +2803,7 @@ class AggregationRequest(BaseModel):
         description="Whether to include energy recovery offsets",
     )
 
-
-class AggregationResult(BaseModel):
+class AggregationResult(GreenLangBase):
     """Result of a waste treatment emission aggregation.
 
     Attributes:
@@ -2940,10 +2879,9 @@ class AggregationResult(BaseModel):
         description="End date of the aggregation window",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of aggregation completion",
     )
-
 
 # =============================================================================
 # Public API

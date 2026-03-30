@@ -30,6 +30,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
+from greenlang.schemas.enums import NotificationChannel
 
 logger = logging.getLogger(__name__)
 
@@ -53,16 +54,6 @@ except ImportError:
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
-
-class NotificationChannel(str, Enum):
-    """Supported notification channels."""
-
-    SLACK = "slack"
-    EMAIL = "email"
-    PAGERDUTY = "pagerduty"
-    TEAMS = "teams"
-    WEBHOOK = "webhook"
 
 
 class NotificationPriority(str, Enum):

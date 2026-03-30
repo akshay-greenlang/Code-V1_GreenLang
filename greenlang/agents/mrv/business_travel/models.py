@@ -46,11 +46,13 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, List, Optional, Any
 from datetime import datetime
 from enum import Enum
-from pydantic import BaseModel, Field, validator
+from pydantic import Field, validator
 from pydantic import ConfigDict
 import hashlib
 import json
 import math
+from greenlang.schemas import GreenLangBase
+from greenlang.schemas.enums import ReportFormat
 
 # ==============================================================================
 # AGENT METADATA
@@ -304,15 +306,6 @@ class CurrencyCode(str, Enum):
     SGD = "SGD"  # Singapore Dollar
     BRL = "BRL"  # Brazilian Real
     ZAR = "ZAR"  # South African Rand
-
-
-class ExportFormat(str, Enum):
-    """Export format for results."""
-
-    JSON = "json"  # JSON format
-    CSV = "csv"  # CSV format
-    EXCEL = "excel"  # Excel (XLSX) format
-    PDF = "pdf"  # PDF report
 
 
 class BatchStatus(str, Enum):
@@ -1118,7 +1111,7 @@ AIRPORT_DATABASE: Dict[str, Dict[str, Any]] = {
 # ==============================================================================
 
 
-class FlightInput(BaseModel):
+class FlightInput(GreenLangBase):
     """
     Input for flight emissions calculation (distance-based).
 
@@ -1187,7 +1180,7 @@ class FlightInput(BaseModel):
         return v
 
 
-class RailInput(BaseModel):
+class RailInput(GreenLangBase):
     """
     Input for rail emissions calculation.
 
@@ -1227,7 +1220,7 @@ class RailInput(BaseModel):
         return v
 
 
-class RoadDistanceInput(BaseModel):
+class RoadDistanceInput(GreenLangBase):
     """
     Input for road vehicle distance-based emissions calculation.
 
@@ -1262,7 +1255,7 @@ class RoadDistanceInput(BaseModel):
         return v
 
 
-class RoadFuelInput(BaseModel):
+class RoadFuelInput(GreenLangBase):
     """
     Input for fuel-based road emissions calculation.
 
@@ -1297,7 +1290,7 @@ class RoadFuelInput(BaseModel):
         return v
 
 
-class TaxiInput(BaseModel):
+class TaxiInput(GreenLangBase):
     """
     Input for taxi / ride-hailing emissions calculation.
 
@@ -1324,7 +1317,7 @@ class TaxiInput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class BusInput(BaseModel):
+class BusInput(GreenLangBase):
     """
     Input for bus emissions calculation.
 
@@ -1355,7 +1348,7 @@ class BusInput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class FerryInput(BaseModel):
+class FerryInput(GreenLangBase):
     """
     Input for ferry emissions calculation.
 
@@ -1386,7 +1379,7 @@ class FerryInput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class HotelInput(BaseModel):
+class HotelInput(GreenLangBase):
     """
     Input for hotel accommodation emissions calculation.
 
@@ -1434,7 +1427,7 @@ class HotelInput(BaseModel):
         return v.upper()
 
 
-class SpendInput(BaseModel):
+class SpendInput(GreenLangBase):
     """
     Input for spend-based emissions calculation using EEIO factors.
 
@@ -1479,7 +1472,7 @@ class SpendInput(BaseModel):
         return v
 
 
-class TripInput(BaseModel):
+class TripInput(GreenLangBase):
     """
     Generic trip input wrapping mode-specific data with metadata.
 
@@ -1522,7 +1515,7 @@ class TripInput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class BatchTripInput(BaseModel):
+class BatchTripInput(GreenLangBase):
     """
     Batch input for processing multiple trips in a single request.
 
@@ -1548,7 +1541,7 @@ class BatchTripInput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class ComplianceCheckInput(BaseModel):
+class ComplianceCheckInput(GreenLangBase):
     """
     Input for compliance checking against one or more frameworks.
 
@@ -1580,7 +1573,7 @@ class ComplianceCheckInput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class UncertaintyInput(BaseModel):
+class UncertaintyInput(GreenLangBase):
     """
     Input for uncertainty quantification.
 
@@ -1612,7 +1605,7 @@ class UncertaintyInput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class DataQualityInput(BaseModel):
+class DataQualityInput(GreenLangBase):
     """
     Input for data quality assessment across 5 dimensions.
 
@@ -1640,7 +1633,7 @@ class DataQualityInput(BaseModel):
 # ==============================================================================
 
 
-class FlightResult(BaseModel):
+class FlightResult(GreenLangBase):
     """
     Result from flight emissions calculation.
 
@@ -1694,7 +1687,7 @@ class FlightResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class RailResult(BaseModel):
+class RailResult(GreenLangBase):
     """Result from rail emissions calculation."""
 
     rail_type: RailType = Field(
@@ -1725,7 +1718,7 @@ class RailResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class RoadDistanceResult(BaseModel):
+class RoadDistanceResult(GreenLangBase):
     """Result from road distance-based emissions calculation."""
 
     vehicle_type: RoadVehicleType = Field(
@@ -1753,7 +1746,7 @@ class RoadDistanceResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class RoadFuelResult(BaseModel):
+class RoadFuelResult(GreenLangBase):
     """Result from fuel-based road emissions calculation."""
 
     fuel_type: FuelType = Field(
@@ -1781,7 +1774,7 @@ class RoadFuelResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class HotelResult(BaseModel):
+class HotelResult(GreenLangBase):
     """Result from hotel accommodation emissions calculation."""
 
     country_code: str = Field(
@@ -1812,7 +1805,7 @@ class HotelResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class SpendResult(BaseModel):
+class SpendResult(GreenLangBase):
     """Result from spend-based EEIO emissions calculation."""
 
     naics_code: str = Field(
@@ -1840,7 +1833,7 @@ class SpendResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class TripCalculationResult(BaseModel):
+class TripCalculationResult(GreenLangBase):
     """
     Unified result from any trip segment calculation.
 
@@ -1882,7 +1875,7 @@ class TripCalculationResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class BatchResult(BaseModel):
+class BatchResult(GreenLangBase):
     """Result from batch trip processing."""
 
     results: List[TripCalculationResult] = Field(
@@ -1913,7 +1906,7 @@ class BatchResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class AggregationResult(BaseModel):
+class AggregationResult(GreenLangBase):
     """Aggregated emissions by various dimensions."""
 
     total_co2e: Decimal = Field(
@@ -1942,7 +1935,7 @@ class AggregationResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class ComplianceCheckResult(BaseModel):
+class ComplianceCheckResult(GreenLangBase):
     """Result from compliance check against a specific framework."""
 
     framework: ComplianceFramework = Field(
@@ -1966,7 +1959,7 @@ class ComplianceCheckResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class UncertaintyResult(BaseModel):
+class UncertaintyResult(GreenLangBase):
     """Result from uncertainty quantification."""
 
     mean: Decimal = Field(
@@ -1994,7 +1987,7 @@ class UncertaintyResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class DataQualityResult(BaseModel):
+class DataQualityResult(GreenLangBase):
     """Result from data quality assessment."""
 
     overall_score: Decimal = Field(
@@ -2013,7 +2006,7 @@ class DataQualityResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class ProvenanceRecord(BaseModel):
+class ProvenanceRecord(GreenLangBase):
     """Single record in the provenance chain."""
 
     stage: str = Field(
@@ -2039,7 +2032,7 @@ class ProvenanceRecord(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class ProvenanceChainResult(BaseModel):
+class ProvenanceChainResult(GreenLangBase):
     """Complete provenance chain for an emissions calculation."""
 
     records: List[ProvenanceRecord] = Field(
@@ -2055,7 +2048,7 @@ class ProvenanceChainResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class HotSpotResult(BaseModel):
+class HotSpotResult(GreenLangBase):
     """
     Hot-spot analysis result identifying top emission contributors
     and reduction opportunities.
@@ -2077,7 +2070,7 @@ class HotSpotResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class MetricsSummary(BaseModel):
+class MetricsSummary(GreenLangBase):
     """Summary metrics for monitoring and dashboarding."""
 
     total_calculations: int = Field(
@@ -2409,7 +2402,7 @@ __all__ = [
     "GWPVersion",
     "EmissionGas",
     "CurrencyCode",
-    "ExportFormat",
+    "ReportFormat",
     "BatchStatus",
     "AllocationMethod",
 

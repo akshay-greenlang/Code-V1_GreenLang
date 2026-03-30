@@ -43,26 +43,19 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -75,11 +68,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Agent Stubs
 # ---------------------------------------------------------------------------
-
 
 class _AgentStub:
     """Stub for unavailable MRV agent modules."""
@@ -99,7 +90,6 @@ class _AgentStub:
             }
         return _stub_method
 
-
 def _try_import_mrv_agent(agent_id: str, module_path: str) -> Any:
     """Try to import an MRV agent with graceful fallback.
 
@@ -112,16 +102,15 @@ def _try_import_mrv_agent(agent_id: str, module_path: str) -> Any:
     """
     try:
         import importlib
+
         return importlib.import_module(module_path)
     except ImportError:
         logger.debug("MRV agent %s not available, using stub", agent_id)
         return _AgentStub(agent_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DREmissionCategory(str, Enum):
     """DR event emission accounting categories mapped to MRV agents."""
@@ -133,7 +122,6 @@ class DREmissionCategory(str, Enum):
     DER_DISPATCH = "der_dispatch"
     BACKUP_GENERATOR = "backup_generator"
 
-
 class MRVScope(str, Enum):
     """GHG Protocol emission scopes."""
 
@@ -141,11 +129,9 @@ class MRVScope(str, Enum):
     SCOPE_2 = "scope_2"
     SCOPE_3 = "scope_3"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class MRVRouteConfig(BaseModel):
     """Configuration for the MRV Demand Response Bridge."""
@@ -163,7 +149,6 @@ class MRVRouteConfig(BaseModel):
         default=True, description="Use marginal EF for DR events (recommended)"
     )
 
-
 class MRVRequest(BaseModel):
     """Request to calculate avoided emissions from DR event."""
 
@@ -178,19 +163,17 @@ class MRVRequest(BaseModel):
     event_timestamp: Optional[datetime] = Field(None)
     emission_factor_override: Optional[float] = Field(None, ge=0.0)
 
-
 class EmissionFactorSet(BaseModel):
     """Emission factor data for a grid region and time period."""
 
     factor_id: str = Field(default_factory=_new_uuid)
     grid_region: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     average_ef_kgco2_per_kwh: float = Field(default=0.0, ge=0.0)
     marginal_ef_kgco2_per_kwh: float = Field(default=0.0, ge=0.0)
     source: str = Field(default="", description="WattTime|ElectricityMaps|EPA_eGRID|custom")
     confidence_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
-
 
 class MRVResponse(BaseModel):
     """Response with avoided emissions calculation from DR event."""
@@ -209,7 +192,6 @@ class MRVResponse(BaseModel):
     message: str = Field(default="")
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # MRV Agent Routing Table
@@ -282,11 +264,9 @@ MARGINAL_EMISSION_FACTORS: Dict[str, float] = {
     "FR_GRID": 0.052,
 }
 
-
 # ---------------------------------------------------------------------------
 # MRVBridge
 # ---------------------------------------------------------------------------
-
 
 class MRVBridge:
     """Bridge to MRV agents for demand response emissions accounting.

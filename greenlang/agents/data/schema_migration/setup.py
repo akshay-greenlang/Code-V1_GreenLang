@@ -35,7 +35,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.data.schema_migration.config import (
     SchemaMigrationConfig,
@@ -57,6 +57,7 @@ from greenlang.agents.data.schema_migration.metrics import (
     set_active_migrations,
 )
 from greenlang.agents.data.schema_migration.provenance import ProvenanceTracker
+from greenlang.schemas import GreenLangBase, utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +71,6 @@ try:
 except ImportError:
     FastAPI = None  # type: ignore[assignment, misc]
     FASTAPI_AVAILABLE = False
-
 
 # ---------------------------------------------------------------------------
 # Optional engine imports (graceful degradation)
@@ -111,13 +111,11 @@ try:
 except ImportError:
     SchemaMigrationPipelineEngine = None  # type: ignore[assignment, misc]
 
-
 # ===================================================================
 # Lightweight Pydantic response models used by the facade / API layer
 # ===================================================================
 
-
-class SchemaResponse(BaseModel):
+class SchemaResponse(GreenLangBase):
     """Schema registry entry response.
 
     Attributes:
@@ -154,8 +152,7 @@ class SchemaResponse(BaseModel):
     )
     provenance_hash: str = Field(default="")
 
-
-class SchemaVersionResponse(BaseModel):
+class SchemaVersionResponse(GreenLangBase):
     """Schema version response.
 
     Attributes:
@@ -184,8 +181,7 @@ class SchemaVersionResponse(BaseModel):
     )
     provenance_hash: str = Field(default="")
 
-
-class ChangeDetectionResponse(BaseModel):
+class ChangeDetectionResponse(GreenLangBase):
     """Schema change detection result response.
 
     Attributes:
@@ -212,8 +208,7 @@ class ChangeDetectionResponse(BaseModel):
     )
     provenance_hash: str = Field(default="")
 
-
-class CompatibilityCheckResponse(BaseModel):
+class CompatibilityCheckResponse(GreenLangBase):
     """Schema compatibility check result response.
 
     Attributes:
@@ -241,8 +236,7 @@ class CompatibilityCheckResponse(BaseModel):
     )
     provenance_hash: str = Field(default="")
 
-
-class MigrationPlanResponse(BaseModel):
+class MigrationPlanResponse(GreenLangBase):
     """Migration plan response.
 
     Attributes:
@@ -272,8 +266,7 @@ class MigrationPlanResponse(BaseModel):
     )
     provenance_hash: str = Field(default="")
 
-
-class MigrationExecutionResponse(BaseModel):
+class MigrationExecutionResponse(GreenLangBase):
     """Migration execution result response.
 
     Attributes:
@@ -308,8 +301,7 @@ class MigrationExecutionResponse(BaseModel):
     completed_at: Optional[str] = Field(default=None)
     provenance_hash: str = Field(default="")
 
-
-class PipelineResultResponse(BaseModel):
+class PipelineResultResponse(GreenLangBase):
     """End-to-end pipeline execution result response.
 
     Attributes:
@@ -340,8 +332,7 @@ class PipelineResultResponse(BaseModel):
     elapsed_seconds: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
-class SchemaMigrationStatisticsResponse(BaseModel):
+class SchemaMigrationStatisticsResponse(GreenLangBase):
     """Aggregate statistics for the schema migration service.
 
     Attributes:
@@ -372,26 +363,17 @@ class SchemaMigrationStatisticsResponse(BaseModel):
     success_rate: float = Field(default=0.0)
     active_migrations: int = Field(default=0)
 
-
 # ===================================================================
 # Utility helpers
 # ===================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _utcnow_iso() -> str:
     """Return current UTC datetime as an ISO-8601 string."""
-    return _utcnow().isoformat()
-
+    return utcnow().isoformat()
 
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -409,7 +391,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ===================================================================
 # SchemaMigrationService facade
 # ===================================================================
@@ -417,7 +398,6 @@ def _compute_hash(data: Any) -> str:
 # Thread-safe singleton lock
 _singleton_lock = threading.Lock()
 _singleton_instance: Optional["SchemaMigrationService"] = None
-
 
 class SchemaMigrationService:
     """Unified facade over the Schema Migration Agent SDK.
@@ -2767,11 +2747,9 @@ class SchemaMigrationService:
         self._stats.active_migrations = self._active_migrations
         set_active_migrations(self._active_migrations)
 
-
 # ===================================================================
 # Thread-safe singleton access
 # ===================================================================
-
 
 def _get_singleton() -> SchemaMigrationService:
     """Get or create the singleton SchemaMigrationService instance.
@@ -2786,11 +2764,9 @@ def _get_singleton() -> SchemaMigrationService:
                 _singleton_instance = SchemaMigrationService()
     return _singleton_instance
 
-
 # ===================================================================
 # FastAPI integration
 # ===================================================================
-
 
 async def configure_schema_migration(
     app: Any,
@@ -2836,7 +2812,6 @@ async def configure_schema_migration(
     logger.info("Schema migration service configured on app")
     return service
 
-
 def get_schema_migration(app: Any) -> SchemaMigrationService:
     """Get the SchemaMigrationService instance from app state.
 
@@ -2857,7 +2832,6 @@ def get_schema_migration(app: Any) -> SchemaMigrationService:
         )
     return service
 
-
 def get_router(service: Optional[SchemaMigrationService] = None) -> Any:
     """Get the schema migration API router.
 
@@ -2872,7 +2846,6 @@ def get_router(service: Optional[SchemaMigrationService] = None) -> Any:
         return router
     except ImportError:
         return None
-
 
 # ===================================================================
 # Public API

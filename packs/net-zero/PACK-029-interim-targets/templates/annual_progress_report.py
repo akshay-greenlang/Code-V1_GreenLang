@@ -33,6 +33,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "29.0.0"
@@ -73,10 +75,6 @@ XBRL_TAGS: Dict[str, str] = {
     "initiatives_deployed": "gl:InitiativesDeployed",
     "assurance_level": "gl:AssuranceLevel",
 }
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
@@ -141,7 +139,6 @@ def _variance(actual: float, target: float) -> Dict[str, Any]:
 def _rag_color(status: str) -> str:
     return {"GREEN": _SUCCESS, "AMBER": _WARN, "RED": _DANGER}.get(status, "#999")
 
-
 class AnnualProgressReportTemplate:
     """
     Annual progress report template for PACK-029 Interim Targets Pack.
@@ -169,7 +166,7 @@ class AnnualProgressReportTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render full annual progress report as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [
             self._md_header(data), self._md_executive_summary(data),
             self._md_sbti_disclosure(data), self._md_actual_vs_target(data),
@@ -184,7 +181,7 @@ class AnnualProgressReportTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render full annual progress report as HTML."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         parts = [
             self._html_header(data), self._html_executive_summary(data),
@@ -205,7 +202,7 @@ class AnnualProgressReportTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render full report as structured JSON."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         actual = data.get("actual_emissions", {})
         target = data.get("target_emissions", {})
         total_actual = sum(float(v) for v in actual.values())

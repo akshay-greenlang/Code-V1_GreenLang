@@ -19,16 +19,15 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
 
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 class CorporateTrendPoint(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -98,7 +97,6 @@ class TrendReportOutput(BaseModel):
     structural_changes: List[StructuralChange] = Field(default_factory=list)
     provenance_hash: str = Field("")
 
-
 class MultiSiteTrendReport:
     """Multi-site year-over-year trend report template."""
 
@@ -109,7 +107,7 @@ class MultiSiteTrendReport:
 
     def render(self, data: Dict[str, Any]) -> TrendReportOutput:
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         inp = TrendReportInput(**data) if isinstance(data, dict) else data
 
         corp_trend = [CorporateTrendPoint(**c) if isinstance(c, dict) else c for c in inp.corporate_trend]
@@ -236,6 +234,5 @@ class MultiSiteTrendReport:
             yoy = str(c.yoy_change_pct) if c.yoy_change_pct is not None else ""
             lines_out.append(f"{c.year},{c.scope_1_tco2e},{c.scope_2_tco2e},{c.scope_3_tco2e},{c.total_tco2e},{c.site_count},{yoy}")
         return "\n".join(lines_out)
-
 
 __all__ = ["MultiSiteTrendReport", "TrendReportInput", "TrendReportOutput"]

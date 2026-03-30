@@ -16,12 +16,13 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig
 from greenlang.agents.base_agents import DeterministicAgent
 from greenlang.agents.categories import AgentCategory, AgentMetadata
 from greenlang.utilities.determinism import DeterministicClock, content_hash, deterministic_id
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +49,7 @@ class QualityRating(str, Enum):
     LOW = "low"
 
 
-class OffsetProject(BaseModel):
+class OffsetProject(GreenLangBase):
     project_id: str = Field(...)
     name: str = Field(...)
     offset_type: OffsetType = Field(...)
@@ -71,7 +72,7 @@ class OffsetProject(BaseModel):
     political_risk: str = Field(default="medium")
 
 
-class OffsetPortfolio(BaseModel):
+class OffsetPortfolio(GreenLangBase):
     portfolio_id: str = Field(...)
     target_offset_tco2e: float = Field(..., ge=0)
     projects: List[OffsetProject] = Field(default_factory=list)
@@ -89,7 +90,7 @@ class OffsetPortfolio(BaseModel):
     provenance_hash: str = Field(default="")
 
 
-class OffsetStrategyInput(BaseModel):
+class OffsetStrategyInput(GreenLangBase):
     operation: str = Field(default="plan")
     target_offset_tco2e: float = Field(default=10000, ge=0)
     budget_usd: Optional[float] = Field(None, ge=0)
@@ -98,7 +99,7 @@ class OffsetStrategyInput(BaseModel):
     preferred_types: List[str] = Field(default_factory=list)
 
 
-class OffsetStrategyOutput(BaseModel):
+class OffsetStrategyOutput(GreenLangBase):
     operation: str = Field(...)
     success: bool = Field(...)
     portfolio: Optional[OffsetPortfolio] = Field(None)

@@ -46,35 +46,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "23.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a single workflow phase."""
@@ -85,7 +77,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -94,7 +85,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class AssetClass(str, Enum):
     """PCAF / SBTi FI asset classes."""
@@ -108,7 +98,6 @@ class AssetClass(str, Enum):
     MOTOR_VEHICLES = "motor_vehicles"
     SOVEREIGN_DEBT = "sovereign_debt"
 
-
 class PCAFDataQuality(int, Enum):
     """PCAF data quality scores (1 = best, 5 = worst)."""
 
@@ -117,7 +106,6 @@ class PCAFDataQuality(int, Enum):
     SCORE_3 = 3  # Physical activity-based estimates
     SCORE_4 = 4  # Economic activity-based estimates
     SCORE_5 = 5  # Estimated / proxy data
-
 
 class FITargetMethod(str, Enum):
     """Target-setting methods for FI asset classes."""
@@ -129,7 +117,6 @@ class FITargetMethod(str, Enum):
     ABSOLUTE = "absolute"             # Absolute emissions reduction
     TEMPERATURE = "temperature"       # Temperature rating
 
-
 class TemperatureAlignment(str, Enum):
     """Temperature alignment classification."""
 
@@ -139,14 +126,12 @@ class TemperatureAlignment(str, Enum):
     MISALIGNED = "misaligned"
     NOT_ASSESSED = "not_assessed"
 
-
 class ValidationSeverity(str, Enum):
     """Severity of a validation finding."""
 
     PASS = "pass"
     WARNING = "warning"
     FAIL = "fail"
-
 
 # =============================================================================
 # REFERENCE DATA (Zero-Hallucination Lookups)
@@ -209,11 +194,9 @@ TEMP_ALIGNED_1_5C = 1.5
 TEMP_ALIGNED_WB2C = 1.75
 TEMP_ALIGNED_2C = 2.0
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -225,7 +208,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class PortfolioHolding(BaseModel):
     """A single holding in the FI portfolio."""
@@ -247,7 +229,6 @@ class PortfolioHolding(BaseModel):
     is_high_emitter: bool = Field(default=False)
     is_engaged: bool = Field(default=False)
 
-
 class AssetClassSummary(BaseModel):
     """Portfolio summary for a single asset class."""
 
@@ -261,7 +242,6 @@ class AssetClassSummary(BaseModel):
     weighted_data_quality: float = Field(default=5.0)
     weighted_temperature_score: float = Field(default=3.2)
     recommended_target_method: str = Field(default="")
-
 
 class AssetClassTarget(BaseModel):
     """Target definition for a single asset class."""
@@ -284,7 +264,6 @@ class AssetClassTarget(BaseModel):
     temperature_alignment: TemperatureAlignment = Field(default=TemperatureAlignment.NOT_ASSESSED)
     notes: List[str] = Field(default_factory=list)
 
-
 class CoverageMetrics(BaseModel):
     """Portfolio coverage and engagement metrics."""
 
@@ -303,7 +282,6 @@ class CoverageMetrics(BaseModel):
     meets_minimum_coverage: bool = Field(default=False)
     meets_engagement_requirement: bool = Field(default=False)
 
-
 class ValidationFinding(BaseModel):
     """A single validation finding for FI targets."""
 
@@ -313,7 +291,6 @@ class ValidationFinding(BaseModel):
     description: str = Field(default="")
     remediation: str = Field(default="")
     asset_class: str = Field(default="", description="Specific asset class or 'portfolio'")
-
 
 class FIValidationResult(BaseModel):
     """Complete FI target validation result."""
@@ -325,7 +302,6 @@ class FIValidationResult(BaseModel):
     fail_count: int = Field(default=0)
     warning_count: int = Field(default=0)
     blocking_findings: List[str] = Field(default_factory=list)
-
 
 class FITargetWorkflowConfig(BaseModel):
     """Configuration for the FI target workflow."""
@@ -349,7 +325,6 @@ class FITargetWorkflowConfig(BaseModel):
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
 
-
 class FITargetWorkflowResult(BaseModel):
     """Complete result from the FI target workflow."""
 
@@ -364,11 +339,9 @@ class FITargetWorkflowResult(BaseModel):
     validation: Optional[FIValidationResult] = Field(None)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class FITargetWorkflow:
     """
@@ -426,7 +399,7 @@ class FITargetWorkflow:
             FITargetWorkflowResult with asset class summaries, targets,
             coverage metrics, and validation results.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting FI target workflow %s, holdings=%d, institution=%s",
             self.workflow_id, len(config.holdings), config.institution_name,
@@ -461,7 +434,7 @@ class FITargetWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         result = FITargetWorkflowResult(
             workflow_id=self.workflow_id,
             status=overall_status,
@@ -487,7 +460,7 @@ class FITargetWorkflow:
 
     async def _phase_portfolio_map(self, config: FITargetWorkflowConfig) -> PhaseResult:
         """Map portfolio to asset classes with PCAF financed emissions."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._ac_summaries = []
@@ -581,7 +554,7 @@ class FITargetWorkflow:
             s.asset_class: round(s.financed_emissions_tco2e, 2) for s in self._ac_summaries
         }
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Portfolio map: %d classes, %d holdings, FE=%.2f tCO2e",
             len(self._ac_summaries), len(config.holdings), total_financed_emissions,
@@ -601,7 +574,7 @@ class FITargetWorkflow:
 
     async def _phase_asset_class_target(self, config: FITargetWorkflowConfig) -> PhaseResult:
         """Set asset-class-specific targets using FINZ V1.0 methods."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._ac_targets = []
@@ -642,7 +615,7 @@ class FITargetWorkflow:
             outputs[f"{t.asset_class}_reduction_pct"] = round(t.reduction_pct, 2)
         outputs["methods_used"] = list(set(t.target_method.value for t in self._ac_targets))
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Asset class targets: %d set, methods=%s",
             len(self._ac_targets),
@@ -782,7 +755,7 @@ class FITargetWorkflow:
 
     async def _phase_coverage_calc(self, config: FITargetWorkflowConfig) -> PhaseResult:
         """Calculate portfolio coverage and engagement metrics."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -902,7 +875,7 @@ class FITargetWorkflow:
         outputs["meets_engagement"] = meets_engagement
         outputs["asset_class_coverage"] = ac_coverage
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Coverage calc: coverage=%.1f%%, engagement=%.1f%%, temp=%.2fC",
             portfolio_coverage, engagement_coverage, weighted_temp,
@@ -922,7 +895,7 @@ class FITargetWorkflow:
 
     async def _phase_validate(self, config: FITargetWorkflowConfig) -> PhaseResult:
         """Validate against FINZ V1.0 requirements."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -1097,7 +1070,7 @@ class FITargetWorkflow:
                 f"({', '.join(blocking)})"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Validate: readiness=%.1f%%, submission_ready=%s, findings=%d",
             readiness, submission_ready, len(findings),

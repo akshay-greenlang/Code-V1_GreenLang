@@ -17,6 +17,7 @@ Status: Production Ready
 import logging
 import time
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +43,7 @@ except ImportError:
 
 if FASTAPI_AVAILABLE:
 
-    class RegisterAgentRequest(BaseModel):
+    class RegisterAgentRequest(GreenLangBase):
         """Request body for registering an agent."""
         agent_id: str = Field(..., description="Unique agent identifier")
         name: str = Field(..., description="Human-readable agent name")
@@ -60,7 +61,7 @@ if FASTAPI_AVAILABLE:
         author: Optional[str] = Field(None, description="Agent author")
         documentation_url: Optional[str] = Field(None, description="Documentation URL")
 
-    class UpdateAgentRequest(BaseModel):
+    class UpdateAgentRequest(GreenLangBase):
         """Request body for updating an agent."""
         name: Optional[str] = Field(None, description="New name")
         description: Optional[str] = Field(None, description="New description")
@@ -68,18 +69,18 @@ if FASTAPI_AVAILABLE:
         health_status: Optional[str] = Field(None, description="New health status")
         documentation_url: Optional[str] = Field(None, description="New docs URL")
 
-    class SetHealthRequest(BaseModel):
+    class SetHealthRequest(GreenLangBase):
         """Request body for setting agent health."""
         status: str = Field(..., description="Health status value")
         version: Optional[str] = Field(None, description="Specific version")
 
-    class ResolveRequest(BaseModel):
+    class ResolveRequest(GreenLangBase):
         """Request body for dependency resolution."""
         agent_ids: List[str] = Field(..., description="Agent IDs to resolve")
         include_optional: bool = Field(default=False, description="Include optional deps")
         fail_on_missing: bool = Field(default=True, description="Fail on missing deps")
 
-    class QueryRequest(BaseModel):
+    class QueryRequest(GreenLangBase):
         """Request body for advanced queries."""
         layer: Optional[str] = Field(None, description="Filter by layer")
         sector: Optional[str] = Field(None, description="Filter by sector")

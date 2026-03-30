@@ -80,25 +80,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -116,7 +110,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -125,7 +118,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -137,22 +129,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EnPIType(str, Enum):
     """Type of Energy Performance Indicator methodology.
@@ -166,7 +154,6 @@ class EnPIType(str, Enum):
     REGRESSION = "regression"
     STATISTICAL_MODEL = "statistical_model"
     CUSUM_BASED = "cusum_based"
-
 
 class RelevantVariable(str, Enum):
     """ISO 50006 relevant variables that affect energy consumption.
@@ -185,7 +172,6 @@ class RelevantVariable(str, Enum):
     OPERATING_HOURS = "operating_hours"
     FLOOR_AREA = "floor_area"
 
-
 class BaselineStatus(str, Enum):
     """Status of an energy baseline per ISO 50001.
 
@@ -199,7 +185,6 @@ class BaselineStatus(str, Enum):
     EXPIRED = "expired"
     SUPERSEDED = "superseded"
 
-
 class SignificanceLevel(str, Enum):
     """Statistical significance level for hypothesis testing.
 
@@ -210,7 +195,6 @@ class SignificanceLevel(str, Enum):
     ALPHA_001 = "0.001"
     ALPHA_005 = "0.05"
     ALPHA_010 = "0.10"
-
 
 class PerformanceRating(str, Enum):
     """Energy performance rating relative to baseline.
@@ -227,7 +211,6 @@ class PerformanceRating(str, Enum):
     DECLINED = "declined"
     SIGNIFICANTLY_DECLINED = "significantly_declined"
 
-
 class RegressionQuality(str, Enum):
     """Quality classification of a regression model.
 
@@ -240,7 +223,6 @@ class RegressionQuality(str, Enum):
     GOOD = "good"
     ACCEPTABLE = "acceptable"
     POOR = "poor"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -281,11 +263,9 @@ REGRESSION_QUALITY_THRESHOLDS: List[Tuple[Decimal, Decimal, RegressionQuality]] 
 BASE_TEMP_HEATING_C: Decimal = Decimal("18")
 BASE_TEMP_COOLING_C: Decimal = Decimal("18")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class EnPIDefinition(BaseModel):
     """Definition of an Energy Performance Indicator.
@@ -317,8 +297,7 @@ class EnPIDefinition(BaseModel):
     target_value: Optional[Decimal] = Field(default=None)
     boundary: str = Field(default="whole_facility", max_length=200)
     frequency: str = Field(default="monthly", max_length=20)
-    created_at: datetime = Field(default_factory=_utcnow)
-
+    created_at: datetime = Field(default_factory=utcnow)
 
 class RegressionModel(BaseModel):
     """Regression model parameters and statistics.
@@ -360,7 +339,6 @@ class RegressionModel(BaseModel):
     quality: RegressionQuality = Field(default=RegressionQuality.POOR)
     meets_ashrae14: bool = Field(default=False)
 
-
 class EnergyBaseline(BaseModel):
     """ISO 50001 energy baseline definition.
 
@@ -381,8 +359,8 @@ class EnergyBaseline(BaseModel):
     """
     baseline_id: str = Field(default_factory=_new_uuid)
     name: str = Field(default="", max_length=200)
-    period_start: datetime = Field(default_factory=_utcnow)
-    period_end: datetime = Field(default_factory=_utcnow)
+    period_start: datetime = Field(default_factory=utcnow)
+    period_end: datetime = Field(default_factory=utcnow)
     status: BaselineStatus = Field(default=BaselineStatus.DRAFT)
     total_energy_kwh: Decimal = Field(default=Decimal("0"))
     regression_model: Optional[RegressionModel] = Field(default=None)
@@ -390,9 +368,8 @@ class EnergyBaseline(BaseModel):
     relevant_variables: List[str] = Field(default_factory=list)
     data_points: int = Field(default=0, ge=0)
     notes: str = Field(default="", max_length=2000)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class EnPIValue(BaseModel):
     """A single calculated EnPI value for a reporting period.
@@ -412,8 +389,8 @@ class EnPIValue(BaseModel):
     """
     value_id: str = Field(default_factory=_new_uuid)
     enpi_id: str = Field(default="")
-    period_start: datetime = Field(default_factory=_utcnow)
-    period_end: datetime = Field(default_factory=_utcnow)
+    period_start: datetime = Field(default_factory=utcnow)
+    period_end: datetime = Field(default_factory=utcnow)
     actual_energy_kwh: Decimal = Field(default=Decimal("0"))
     predicted_energy_kwh: Decimal = Field(default=Decimal("0"))
     enpi_value: Decimal = Field(default=Decimal("0"))
@@ -421,7 +398,6 @@ class EnPIValue(BaseModel):
     savings_pct: Decimal = Field(default=Decimal("0"))
     variable_values: Dict[str, Decimal] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
-
 
 class CUSUMTracker(BaseModel):
     """CUSUM (Cumulative Sum) savings tracker.
@@ -452,9 +428,8 @@ class CUSUMTracker(BaseModel):
     )
     std_error: Decimal = Field(default=Decimal("0"))
     is_significant: bool = Field(default=False)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class EnPIResult(BaseModel):
     """Complete EnPI analysis result.
@@ -489,14 +464,12 @@ class EnPIResult(BaseModel):
     total_savings_cost: Decimal = Field(default=Decimal("0"))
     recommendations: List[str] = Field(default_factory=list)
     processing_time_ms: Decimal = Field(default=Decimal("0"))
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class EnPIEngine:
     """ISO 50001 Energy Performance Indicator engine.
@@ -663,10 +636,10 @@ class EnPIEngine:
                 denom_total = _decimal(len(data))
             enpi_baseline_value = _safe_divide(total_energy, denom_total)
 
-        timestamps = [d.get("timestamp", _utcnow()) for d in data]
+        timestamps = [d.get("timestamp", utcnow()) for d in data]
         valid_ts = [t for t in timestamps if isinstance(t, datetime)]
-        period_start = min(valid_ts) if valid_ts else _utcnow()
-        period_end = max(valid_ts) if valid_ts else _utcnow()
+        period_start = min(valid_ts) if valid_ts else utcnow()
+        period_end = max(valid_ts) if valid_ts else utcnow()
 
         baseline = EnergyBaseline(
             name=name,
@@ -731,7 +704,7 @@ class EnPIEngine:
 
         for d in current_data:
             actual = _decimal(d.get("energy_kwh", 0))
-            period_start = d.get("period_start", d.get("timestamp", _utcnow()))
+            period_start = d.get("period_start", d.get("timestamp", utcnow()))
             period_end = d.get("period_end", period_start)
 
             # Predict baseline energy

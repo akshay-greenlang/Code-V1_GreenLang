@@ -69,37 +69,28 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> str:
-    """Return current UTC timestamp as ISO-8601 string."""
-    return datetime.utcnow().isoformat() + "Z"
-
-
 def _new_uuid() -> str:
     """Return a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash of JSON-serialisable data."""
     serialised = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialised.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -110,7 +101,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -119,7 +109,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class ReadinessPhase(str, Enum):
     """Readiness assessment workflow phases."""
@@ -130,7 +119,6 @@ class ReadinessPhase(str, Enum):
     SCORE_CALCULATION = "score_calculation"
     GAP_REPORTING = "gap_reporting"
 
-
 class AssuranceStandard(str, Enum):
     """Supported assurance standards."""
 
@@ -138,13 +126,11 @@ class AssuranceStandard(str, Enum):
     ISO_14064_3 = "iso_14064_3"
     AA1000AS_V3 = "aa1000as_v3"
 
-
 class AssuranceLevel(str, Enum):
     """Assurance engagement level."""
 
     LIMITED = "limited"
     REASONABLE = "reasonable"
-
 
 class EvidenceStatus(str, Enum):
     """Status of evidence against a checklist requirement."""
@@ -152,7 +138,6 @@ class EvidenceStatus(str, Enum):
     AVAILABLE = "available"
     PARTIAL = "partial"
     MISSING = "missing"
-
 
 class ReadinessBand(str, Enum):
     """Readiness classification band."""
@@ -162,7 +147,6 @@ class ReadinessBand(str, Enum):
     PARTIALLY_READY = "partially_ready"
     NOT_READY = "not_ready"
 
-
 class GapPriority(str, Enum):
     """Priority classification for remediation gaps."""
 
@@ -170,7 +154,6 @@ class GapPriority(str, Enum):
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 class ChecklistCategory(str, Enum):
     """Categories within an assurance readiness checklist."""
@@ -183,7 +166,6 @@ class ChecklistCategory(str, Enum):
     DISCLOSURE_REQUIREMENTS = "disclosure_requirements"
     SCOPE_COMPLETENESS = "scope_completeness"
     UNCERTAINTY_MANAGEMENT = "uncertainty_management"
-
 
 # =============================================================================
 # STANDARD-SPECIFIC REFERENCE DATA (Zero-Hallucination)
@@ -299,11 +281,9 @@ GAP_EFFORT_HOURS: Dict[str, Tuple[int, int]] = {
     "low": (2, 12),
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -316,7 +296,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
-
 
 class ChecklistItem(BaseModel):
     """A single checklist requirement within a category."""
@@ -334,7 +313,6 @@ class ChecklistItem(BaseModel):
     notes: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 class CategoryScore(BaseModel):
     """Readiness score for a single category."""
 
@@ -348,7 +326,6 @@ class CategoryScore(BaseModel):
     weight: str = Field(default="0.00", description="Category weight")
     band: ReadinessBand = Field(default=ReadinessBand.NOT_READY)
     provenance_hash: str = Field(default="")
-
 
 class GapItem(BaseModel):
     """A gap identified in readiness assessment."""
@@ -366,7 +343,6 @@ class GapItem(BaseModel):
     target_completion_weeks: int = Field(default=4, ge=1)
     provenance_hash: str = Field(default="")
 
-
 class StandardConfig(BaseModel):
     """Configuration details of the selected assurance standard."""
 
@@ -379,11 +355,9 @@ class StandardConfig(BaseModel):
     total_checklist_items: int = Field(default=0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # INPUT / OUTPUT
 # =============================================================================
-
 
 class ReadinessAssessmentInput(BaseModel):
     """Input data model for ReadinessAssessmentWorkflow."""
@@ -411,7 +385,6 @@ class ReadinessAssessmentInput(BaseModel):
     tenant_id: str = Field(default="")
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class ReadinessAssessmentResult(BaseModel):
     """Complete result from readiness assessment workflow."""
 
@@ -432,11 +405,9 @@ class ReadinessAssessmentResult(BaseModel):
     estimated_remediation_weeks: int = Field(default=0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class ReadinessAssessmentWorkflow:
     """
@@ -1105,6 +1076,7 @@ class ReadinessAssessmentWorkflow:
                         phase_number, attempt, self.MAX_RETRIES, exc, delay,
                     )
                     import asyncio
+
                     await asyncio.sleep(delay)
         return PhaseResult(
             phase_name=f"phase_{phase_number}_failed",

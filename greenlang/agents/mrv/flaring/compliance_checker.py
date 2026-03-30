@@ -78,6 +78,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -116,15 +117,9 @@ except ImportError:
     _METRICS_AVAILABLE = False
     _record_compliance_check = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -134,7 +129,6 @@ def _compute_hash(data: Any) -> str:
         serializable = data
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 # ===========================================================================
 # Constants
@@ -164,11 +158,9 @@ _SEVERITY_PRIORITY: Dict[str, int] = {
     "INFO": 3,
 }
 
-
 # ===========================================================================
 # Requirement Definitions (83 total across 8 frameworks)
 # ===========================================================================
-
 
 def _build_requirements() -> Dict[str, List[Dict[str, Any]]]:
     """Build the complete set of compliance requirements for all frameworks.
@@ -1072,11 +1064,9 @@ def _build_requirements() -> Dict[str, List[Dict[str, Any]]]:
         ],
     }
 
-
 # ===========================================================================
 # ComplianceCheckerEngine
 # ===========================================================================
-
 
 class ComplianceCheckerEngine:
     """Regulatory compliance checker for flaring emission calculations.
@@ -1189,7 +1179,7 @@ class ComplianceCheckerEngine:
             "partial": partial_count,
             "non_compliant": non_compliant_count,
             "results": results,
-            "checked_at": _utcnow().isoformat(),
+            "checked_at": utcnow().isoformat(),
             "processing_time_ms": round(elapsed_ms, 3),
         }
         summary["provenance_hash"] = _compute_hash(summary)
@@ -1426,7 +1416,7 @@ class ComplianceCheckerEngine:
 
         report = {
             "report_id": f"fl_cr_{uuid4().hex[:12]}",
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
             "executive_summary": {
                 "total_frameworks": len(results),
                 "total_requirements": total_reqs,

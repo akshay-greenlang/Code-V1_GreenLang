@@ -18,6 +18,8 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 from conftest import _compute_hash, _new_uuid, _utcnow
 
+from greenlang.schemas import utcnow
+
 
 class TestWorkflowBuilder:
     """Test suite for custom workflow builder engine."""
@@ -152,7 +154,7 @@ class TestWorkflowBuilder:
             "step_id": approval_step["step_id"],
             "approved": True,
             "approver": "jane.reviewer@example.com",
-            "approved_at": _utcnow().isoformat(),
+            "approved_at": utcnow().isoformat(),
             "comments": "LGTM",
         }
         assert simulated_response["approved"] is True

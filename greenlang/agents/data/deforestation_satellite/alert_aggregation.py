@@ -56,6 +56,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 from greenlang.agents.data.deforestation_satellite.config import get_config
+from greenlang.schemas import utcnow
 from greenlang.agents.data.deforestation_satellite.models import (
     AlertAggregation,
     AlertConfidence,
@@ -66,7 +67,6 @@ from greenlang.agents.data.deforestation_satellite.models import (
 )
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -85,28 +85,19 @@ _CONFIDENCE_ORDER = {
     AlertConfidence.HIGH.value: 2,
 }
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _hash_seed(value: str) -> int:
     """Derive a deterministic integer seed from a string value."""
     return int(hashlib.sha256(value.encode("utf-8")).hexdigest()[:8], 16)
-
 
 def _deterministic_float(seed: int, index: int, low: float = 0.0, high: float = 1.0) -> float:
     """Generate a deterministic float in [low, high] from seed and index."""
     combined = hashlib.sha256(f"{seed}:{index}".encode("utf-8")).hexdigest()
     fraction = int(combined[:8], 16) / 0xFFFFFFFF
     return low + fraction * (high - low)
-
 
 def _haversine_distance_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     """Compute Haversine distance in meters between two coordinates.
@@ -129,7 +120,6 @@ def _haversine_distance_m(lat1: float, lon1: float, lat2: float, lon2: float) ->
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
     return _EARTH_RADIUS_M * c
 
-
 def _bbox_from_polygon(polygon_coords: List[List[float]]) -> Tuple[float, float, float, float]:
     """Compute bounding box from polygon coordinate pairs.
 
@@ -146,11 +136,9 @@ def _bbox_from_polygon(polygon_coords: List[List[float]]) -> Tuple[float, float,
     lats = [c[1] for c in polygon_coords]
     return (min(lons), min(lats), max(lons), max(lats))
 
-
 # =============================================================================
 # AlertAggregationEngine
 # =============================================================================
-
 
 class AlertAggregationEngine:
     """Engine for querying, aggregating, and classifying deforestation alerts.
@@ -802,11 +790,9 @@ class AlertAggregationEngine:
         """
         return self._aggregation_count
 
-
 # ---------------------------------------------------------------------------
 # Module-level helper
 # ---------------------------------------------------------------------------
-
 
 def _polygon_to_wkt(polygon_coords: List[List[float]]) -> str:
     """Convert polygon coordinate list to WKT string."""
@@ -814,7 +800,6 @@ def _polygon_to_wkt(polygon_coords: List[List[float]]) -> str:
         return "POLYGON EMPTY"
     pairs = " ".join(f"{c[0]} {c[1]}" for c in polygon_coords)
     return f"POLYGON(({pairs}))"
-
 
 __all__ = [
     "AlertAggregationEngine",

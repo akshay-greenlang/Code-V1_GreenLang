@@ -26,11 +26,12 @@ CBAM Compliance: Annex III chemical products methodology
 
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, List, Optional, Literal
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 from enum import Enum
 import hashlib
 import json
 from datetime import datetime, timezone
+from greenlang.schemas import GreenLangBase
 
 
 # =============================================================================
@@ -148,7 +149,7 @@ class ChemicalProduct(str, Enum):
     ETHYLENE = "ETHYLENE"
 
 
-class AmmoniaCalculationInput(BaseModel):
+class AmmoniaCalculationInput(GreenLangBase):
     """Input parameters for ammonia emission calculation."""
 
     production_route: AmmoniaProductionRoute = Field(
@@ -187,7 +188,7 @@ class AmmoniaCalculationInput(BaseModel):
     )
 
 
-class HydrogenCalculationInput(BaseModel):
+class HydrogenCalculationInput(GreenLangBase):
     """Input parameters for hydrogen emission calculation."""
 
     production_route: HydrogenProductionRoute = Field(
@@ -233,7 +234,7 @@ class HydrogenCalculationInput(BaseModel):
     )
 
 
-class CalculationStep(BaseModel):
+class CalculationStep(GreenLangBase):
     """Individual calculation step with full provenance."""
     step_number: int
     description: str
@@ -244,7 +245,7 @@ class CalculationStep(BaseModel):
     source: str
 
 
-class AmmoniaCalculationResult(BaseModel):
+class AmmoniaCalculationResult(GreenLangBase):
     """Ammonia calculation result with CBAM-compliant output."""
 
     # Identification
@@ -276,7 +277,7 @@ class AmmoniaCalculationResult(BaseModel):
     provenance_hash: str
 
 
-class HydrogenCalculationResult(BaseModel):
+class HydrogenCalculationResult(GreenLangBase):
     """Hydrogen calculation result."""
 
     # Identification

@@ -26,6 +26,7 @@ from pydantic import BaseModel, Field, validator
 import yaml
 import jinja2
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas.enums import Environment
 
 logger = logging.getLogger(__name__)
 
@@ -57,14 +58,6 @@ class Language(str, Enum):
     TYPESCRIPT = "typescript"
     JAVA = "java"
     GO = "go"
-
-
-class Environment(str, Enum):
-    """Deployment environments."""
-    DEVELOPMENT = "development"
-    STAGING = "staging"
-    PRODUCTION = "production"
-    TESTING = "testing"
 
 
 class DeploymentStrategy(str, Enum):

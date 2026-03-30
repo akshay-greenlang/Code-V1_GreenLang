@@ -55,25 +55,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -93,13 +87,11 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _safe_divide(numerator: float, denominator: float, default: float = 0.0) -> float:
     """Safely divide two numbers, returning *default* on zero denominator."""
     if denominator == 0.0:
         return default
     return numerator / denominator
-
 
 def _safe_pct(numerator: float, denominator: float) -> float:
     """Calculate percentage safely, returning 0.0 on zero denominator."""
@@ -107,26 +99,21 @@ def _safe_pct(numerator: float, denominator: float) -> float:
         return 0.0
     return (numerator / denominator) * 100.0
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
-
 
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: float) -> float:
     """Round to 4 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EPRScheme(str, Enum):
     """Extended Producer Responsibility scheme types.
@@ -141,7 +128,6 @@ class EPRScheme(str, Enum):
     VEHICLES = "vehicles"
     FURNITURE = "furniture"
 
-
 class TakeBackType(str, Enum):
     """Collection methods for take-back programmes."""
     IN_STORE = "in_store"
@@ -149,7 +135,6 @@ class TakeBackType(str, Enum):
     COLLECTION_POINT = "collection_point"
     CURBSIDE = "curbside"
     THIRD_PARTY = "third_party"
-
 
 class WasteStream(str, Enum):
     """Waste material streams in retail operations."""
@@ -165,7 +150,6 @@ class WasteStream(str, Enum):
     FURNITURE = "furniture"
     MIXED = "mixed"
 
-
 class CircularStrategy(str, Enum):
     """Circular economy strategies (R-strategies).
 
@@ -180,11 +164,9 @@ class CircularStrategy(str, Enum):
     RECYCLE = "recycle"
     RECOVER = "recover"
 
-
 # ---------------------------------------------------------------------------
 # Embedded Constants
 # ---------------------------------------------------------------------------
-
 
 # EPR recycling targets by scheme and material.
 # Sources: PPWR (2024), WEEE Directive (2012/19/EU recast),
@@ -235,7 +217,6 @@ EPR_RECYCLING_TARGETS: Dict[str, Dict[str, float]] = {
 Sources: EU directive/regulation text. Targets represent 2030 values
 unless otherwise noted."""
 
-
 # Material recovery rates: achievable recovery by waste stream.
 # Based on EU average data from Eurostat (2022-2023).
 MATERIAL_RECOVERY_RATES: Dict[str, float] = {
@@ -255,7 +236,6 @@ MATERIAL_RECOVERY_RATES: Dict[str, float] = {
 Represents the fraction of material that can be recovered/recycled
 under current EU infrastructure. Based on Eurostat 2022-2023 data."""
 
-
 # Circularity weights for R-strategies (0-1 scale).
 # Higher weight = more circular, retains more value.
 CIRCULARITY_WEIGHTS: Dict[str, float] = {
@@ -269,7 +249,6 @@ CIRCULARITY_WEIGHTS: Dict[str, float] = {
 }
 """Circularity weights for R-strategies (0-1 scale).
 Reduce (prevention) is the most circular; energy recovery the least."""
-
 
 # Default EPR base fee rates (EUR per tonne) by scheme and material.
 # These are illustrative EU average rates; actual fees vary by Member State.
@@ -314,7 +293,6 @@ EPR_BASE_FEE_RATES: Dict[str, Dict[str, float]] = {
 """Default EPR base fee rates (EUR per tonne) by scheme and material.
 Illustrative EU average rates. Actual fees set by national PROs."""
 
-
 # Eco-modulation factors (multipliers for EPR fees).
 # Eco-modulated fees encourage better design for recycling.
 # Per PPWR Article 45 and ESPR requirements.
@@ -331,11 +309,9 @@ ECO_MODULATION_RANGE: Dict[str, Tuple[float, float]] = {
 """Eco-modulation factor ranges for EPR fee adjustment.
 Lower factor = lower fee (better design). Per PPWR Article 45."""
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class TakeBackProgram(BaseModel):
     """Take-back programme data for collection/recycling tracking.
@@ -391,7 +367,6 @@ class TakeBackProgram(BaseModel):
         description="Reporting period (e.g. '2025')",
     )
 
-
 class EPRFeeData(BaseModel):
     """EPR fee calculation input data.
 
@@ -424,7 +399,6 @@ class EPRFeeData(BaseModel):
         description="Eco-modulation factor (multiplier for base fee)",
         ge=0.0,
     )
-
 
 class MaterialFlow(BaseModel):
     """Material flow data for MCI calculation.
@@ -472,7 +446,6 @@ class MaterialFlow(BaseModel):
         ge=0.0,
     )
 
-
 class EPRComplianceDetail(BaseModel):
     """Compliance status for a single EPR scheme."""
     scheme: str = Field(..., description="EPR scheme name")
@@ -484,7 +457,6 @@ class EPRComplianceDetail(BaseModel):
     volume_placed_tonnes: float = Field(default=0.0)
     volume_collected_tonnes: float = Field(default=0.0)
 
-
 class CircularStrategyDetail(BaseModel):
     """Breakdown of circular economy activity by strategy."""
     strategy: str = Field(..., description="R-strategy name")
@@ -494,7 +466,6 @@ class CircularStrategyDetail(BaseModel):
     weighted_contribution: float = Field(
         default=0.0, description="Weight * share contribution",
     )
-
 
 class CircularEconomyResult(BaseModel):
     """Complete circular economy analysis result.
@@ -511,7 +482,7 @@ class CircularEconomyResult(BaseModel):
         description="Engine version used for this calculation",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of calculation (UTC)",
     )
     processing_time_ms: float = Field(
@@ -609,11 +580,9 @@ class CircularEconomyResult(BaseModel):
         description="SHA-256 hash of all inputs and calculation steps",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class RetailCircularEconomyEngine:
     """Retail circular economy engine for EPR, MCI, and take-back programmes.

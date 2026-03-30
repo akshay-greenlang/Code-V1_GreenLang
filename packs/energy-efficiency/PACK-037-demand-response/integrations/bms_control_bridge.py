@@ -45,25 +45,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -76,11 +70,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ProtocolType(str, Enum):
     """Industrial communication protocol types."""
@@ -90,7 +82,6 @@ class ProtocolType(str, Enum):
     MODBUS_RTU = "modbus_rtu"
     OPC_UA = "opc_ua"
     REST_API = "rest_api"
-
 
 class ControlAction(str, Enum):
     """Types of control actions for DR events."""
@@ -104,7 +95,6 @@ class ControlAction(str, Enum):
     PRE_COOL = "pre_cool"
     REVERT = "revert"
 
-
 class ControlStatus(str, Enum):
     """Control command execution status."""
 
@@ -116,7 +106,6 @@ class ControlStatus(str, Enum):
     FAILED = "failed"
     REVERTED = "reverted"
 
-
 class ConnectionStatus(str, Enum):
     """Protocol connection status."""
 
@@ -125,7 +114,6 @@ class ConnectionStatus(str, Enum):
     ERROR = "error"
     TIMEOUT = "timeout"
     NOT_CONFIGURED = "not_configured"
-
 
 class DeviceCategory(str, Enum):
     """Controllable device categories."""
@@ -140,11 +128,9 @@ class DeviceCategory(str, Enum):
     PLUG_LOAD = "plug_load"
     RELAY_PANEL = "relay_panel"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class BMSControlConfig(BaseModel):
     """Configuration for the BMS Control Bridge."""
@@ -161,7 +147,6 @@ class BMSControlConfig(BaseModel):
     min_lighting_pct: float = Field(default=20.0, ge=0.0, le=100.0, description="Min lighting level")
     require_confirmation: bool = Field(default=True)
     enable_auto_revert: bool = Field(default=True)
-
 
 class BMSEndpoint(BaseModel):
     """A BMS endpoint representing a controllable device."""
@@ -182,7 +167,6 @@ class BMSEndpoint(BaseModel):
     zone: str = Field(default="")
     connection_status: ConnectionStatus = Field(default=ConnectionStatus.NOT_CONFIGURED)
 
-
 class ControlCommand(BaseModel):
     """A control command to send to a BMS endpoint."""
 
@@ -201,7 +185,6 @@ class ControlCommand(BaseModel):
     completed_at: Optional[datetime] = Field(None)
     provenance_hash: str = Field(default="")
 
-
 class ControlResponse(BaseModel):
     """Response from executing a control command."""
 
@@ -215,7 +198,6 @@ class ControlResponse(BaseModel):
     message: str = Field(default="")
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class DeviceStatus(BaseModel):
     """Current status of a controllable device."""
@@ -232,11 +214,9 @@ class DeviceStatus(BaseModel):
     current_kw: float = Field(default=0.0)
     last_read_at: Optional[datetime] = Field(None)
 
-
 # ---------------------------------------------------------------------------
 # BMSControlBridge
 # ---------------------------------------------------------------------------
-
 
 class BMSControlBridge:
     """BMS control integration for demand response load management.
@@ -366,8 +346,8 @@ class BMSControlBridge:
 
         # Stub: simulate successful execution
         command.status = ControlStatus.COMPLETED
-        command.sent_at = _utcnow()
-        command.completed_at = _utcnow()
+        command.sent_at = utcnow()
+        command.completed_at = utcnow()
 
         if self.config.enable_provenance:
             command.provenance_hash = _compute_hash(command)
@@ -463,7 +443,7 @@ class BMSControlBridge:
             override_source=overridden_by,
             rated_kw=endpoint.rated_kw,
             current_kw=endpoint.rated_kw * 0.75,
-            last_read_at=_utcnow(),
+            last_read_at=utcnow(),
         )
 
     def connect(self, config: Optional[BMSControlConfig] = None) -> bool:

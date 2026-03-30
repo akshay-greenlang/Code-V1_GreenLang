@@ -40,14 +40,9 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from greenlang.agents.foundation.assumptions.models import ChangeLogEntry, ChangeType
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 class ProvenanceTracker:
     """Tracks provenance for assumption changes with SHA-256 chain hashing.
@@ -261,7 +256,6 @@ class ProvenanceTracker:
         """
         serialized = json.dumps(data, sort_keys=True, default=str)
         return hashlib.sha256(serialized.encode()).hexdigest()
-
 
 __all__ = [
     "ProvenanceTracker",

@@ -20,7 +20,8 @@ from decimal import Decimal
 from enum import Enum
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +45,7 @@ class RiskLevel(str, Enum):
     CRITICAL = "CRITICAL"
 
 
-class AdaptationMeasure(BaseModel):
+class AdaptationMeasure(GreenLangBase):
     """Climate adaptation measure."""
     measure_id: str
     name: str
@@ -55,7 +56,7 @@ class AdaptationMeasure(BaseModel):
     implementation_years: int = Field(default=1, ge=1)
 
 
-class AdaptationInput(BaseModel):
+class AdaptationInput(GreenLangBase):
     """Input for adaptation agents."""
     facility_id: str
     sector: str
@@ -71,7 +72,7 @@ class AdaptationInput(BaseModel):
     current_resilience_score: Decimal = Field(default=Decimal("50"), ge=0, le=100)
 
 
-class AdaptationOutput(BaseModel):
+class AdaptationOutput(GreenLangBase):
     """Output from adaptation agents."""
     calculation_id: str
     agent_id: str

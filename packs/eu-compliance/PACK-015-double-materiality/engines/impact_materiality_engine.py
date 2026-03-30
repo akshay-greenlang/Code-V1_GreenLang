@@ -62,25 +62,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -100,7 +94,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely.
 
@@ -114,7 +107,6 @@ def _decimal(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _safe_divide(
     numerator: float, denominator: float, default: float = 0.0
 ) -> float:
@@ -123,13 +115,11 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(numerator: float, denominator: float) -> float:
     """Calculate percentage safely, returning 0.0 on zero denominator."""
     if denominator == 0.0:
         return 0.0
     return (numerator / denominator) * 100.0
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value to the specified number of decimal places.
@@ -146,13 +136,11 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
-
 
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
@@ -160,18 +148,15 @@ def _round2(value: float) -> float:
         Decimal("0.01"), rounding=ROUND_HALF_UP
     ))
 
-
 def _round4(value: float) -> float:
     """Round to 4 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.0001"), rounding=ROUND_HALF_UP
     ))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class TimeHorizon(str, Enum):
     """Time horizon for sustainability impact assessment.
@@ -183,7 +168,6 @@ class TimeHorizon(str, Enum):
     MEDIUM_TERM = "medium_term"
     LONG_TERM = "long_term"
 
-
 class ValueChainStage(str, Enum):
     """Stage of the value chain where the impact occurs.
 
@@ -194,7 +178,6 @@ class ValueChainStage(str, Enum):
     UPSTREAM = "upstream"
     OWN_OPERATIONS = "own_operations"
     DOWNSTREAM = "downstream"
-
 
 class ESRSTopic(str, Enum):
     """ESRS sustainability topics as defined in ESRS 1 Appendix A.
@@ -213,7 +196,6 @@ class ESRSTopic(str, Enum):
     S4_CONSUMERS = "s4_consumers"
     G1_BUSINESS_CONDUCT = "g1_business_conduct"
 
-
 class ImpactType(str, Enum):
     """Type of sustainability impact per ESRS 1 Para 43.
 
@@ -229,7 +211,6 @@ class ImpactType(str, Enum):
     ACTUAL_POSITIVE = "actual_positive"
     POTENTIAL_POSITIVE = "potential_positive"
 
-
 class ScaleLevel(int, Enum):
     """Scale level for impact assessment criteria (1-5).
 
@@ -243,11 +224,9 @@ class ScaleLevel(int, Enum):
     HIGH = 4
     VERY_HIGH = 5
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # ESRS sustainability matters mapping: each topic maps to its sub-topics
 # as defined in ESRS 1 Appendix A and the topical standards.
@@ -338,7 +317,6 @@ ESRS_SUSTAINABILITY_MATTERS: Dict[str, List[str]] = {
     ],
 }
 
-
 # Weights for scale, scope, and irremediability in severity calculation.
 # Per ESRS 1 Para 45, each characteristic has equal weight.  We use
 # geometric mean (cube root of product), which naturally gives equal
@@ -421,11 +399,9 @@ LIKELIHOOD_DESCRIPTIONS: Dict[int, str] = {
     5: "Very Likely: Near certain to occur (> 80% probability)",
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class SustainabilityMatter(BaseModel):
     """A sustainability matter to be assessed for impact materiality.
@@ -471,7 +447,6 @@ class SustainabilityMatter(BaseModel):
         if not v.strip():
             raise ValueError("Sustainability matter name cannot be empty")
         return v.strip()
-
 
 class ImpactAssessment(BaseModel):
     """Assessment inputs for a single sustainability matter's impact.
@@ -536,7 +511,6 @@ class ImpactAssessment(BaseModel):
             raise ValueError(f"Score must be between 1 and 5, got {v}")
         return v
 
-
 class ImpactMaterialityResult(BaseModel):
     """Result of impact materiality assessment for a single matter.
 
@@ -554,7 +528,7 @@ class ImpactMaterialityResult(BaseModel):
         description="Engine version used for this calculation",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of calculation (UTC)",
     )
     matter_id: str = Field(
@@ -622,7 +596,6 @@ class ImpactMaterialityResult(BaseModel):
         description="SHA-256 hash of all inputs and calculation steps",
     )
 
-
 class BatchImpactResult(BaseModel):
     """Result of batch impact materiality assessment.
 
@@ -638,7 +611,7 @@ class BatchImpactResult(BaseModel):
         description="Engine version used for this batch",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of batch calculation (UTC)",
     )
     total_matters: int = Field(
@@ -686,11 +659,9 @@ class BatchImpactResult(BaseModel):
         description="SHA-256 hash of the entire batch result",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ImpactMaterialityEngine:
     """Impact materiality scoring engine per ESRS 1 Para 43-48.

@@ -44,25 +44,19 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -82,7 +76,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -92,7 +85,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _round_val(value: Any, places: int = 6) -> float:
     """Round a Decimal (or numeric) to specified places and return float."""
     if not isinstance(value, Decimal):
@@ -100,18 +92,15 @@ def _round_val(value: Any, places: int = 6) -> float:
     rounded = value.quantize(Decimal(10) ** -places, rounding=ROUND_HALF_UP)
     return float(rounded)
 
-
 def _safe_divide(numerator: Decimal, denominator: Decimal) -> Decimal:
     """Divide safely, returning zero when denominator is zero."""
     if denominator == Decimal("0"):
         return Decimal("0")
     return numerator / denominator
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class PAIIndicatorId(str, Enum):
     """All 18 mandatory PAI indicators from SFDR RTS Table 1."""
@@ -135,7 +124,6 @@ class PAIIndicatorId(str, Enum):
     PAI_17 = "PAI_17"  # Fossil fuels through real estate
     PAI_18 = "PAI_18"  # Energy-inefficient real estate
 
-
 class PAICategory(str, Enum):
     """PAI indicator groupings per SFDR RTS."""
 
@@ -145,7 +133,6 @@ class PAICategory(str, Enum):
     SOVEREIGN = "sovereign"
     REAL_ESTATE = "real_estate"
 
-
 class DataQualityFlag(str, Enum):
     """Data quality classification for investee-level data."""
 
@@ -153,7 +140,6 @@ class DataQualityFlag(str, Enum):
     ESTIMATED = "ESTIMATED"     # Proxy-based or model-estimated by data provider
     MODELED = "MODELED"         # In-house modeled from secondary inputs
     NOT_AVAILABLE = "NOT_AVAILABLE"
-
 
 class NACESector(str, Enum):
     """NACE high-impact climate sectors per SFDR RTS (PAI 6)."""
@@ -167,7 +153,6 @@ class NACESector(str, Enum):
     G = "G"   # Wholesale and retail trade
     H = "H"   # Transportation and storage
     L = "L"   # Real estate activities
-
 
 # ---------------------------------------------------------------------------
 # Indicator Metadata Registry
@@ -338,11 +323,9 @@ PAI_METADATA: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class PAIIndicatorConfig(BaseModel):
     """Configuration for the PAI Indicator Calculator Engine.
@@ -397,7 +380,6 @@ class PAIIndicatorConfig(BaseModel):
             raise ValueError("reporting_period_end must be after reporting_period_start")
         return v
 
-
 class InvesteeGHGData(BaseModel):
     """GHG emissions data for a single investee company."""
 
@@ -432,7 +414,6 @@ class InvesteeGHGData(BaseModel):
             self.total_ghg_tco2eq = s1 + s2 + s3
         return self
 
-
 class InvesteeEnvironmentalData(BaseModel):
     """Environmental data for PAI 7-9."""
 
@@ -451,7 +432,6 @@ class InvesteeEnvironmentalData(BaseModel):
     data_quality: DataQualityFlag = Field(
         default=DataQualityFlag.NOT_AVAILABLE,
     )
-
 
 class InvesteeSocialData(BaseModel):
     """Social/governance data for PAI 10-14."""
@@ -480,7 +460,6 @@ class InvesteeSocialData(BaseModel):
         default=DataQualityFlag.NOT_AVAILABLE,
     )
 
-
 class InvesteeEnergyData(BaseModel):
     """Energy data for PAI 5 and PAI 6."""
 
@@ -503,7 +482,6 @@ class InvesteeEnergyData(BaseModel):
         default=DataQualityFlag.NOT_AVAILABLE,
     )
 
-
 class SovereignData(BaseModel):
     """Data for sovereign bond PAI indicators (15-16)."""
 
@@ -523,7 +501,6 @@ class SovereignData(BaseModel):
     data_quality: DataQualityFlag = Field(
         default=DataQualityFlag.NOT_AVAILABLE,
     )
-
 
 class RealEstateData(BaseModel):
     """Data for real estate PAI indicators (17-18)."""
@@ -545,7 +522,6 @@ class RealEstateData(BaseModel):
     data_quality: DataQualityFlag = Field(
         default=DataQualityFlag.NOT_AVAILABLE,
     )
-
 
 class InvesteeData(BaseModel):
     """Complete data for a single investee holding.
@@ -618,7 +594,6 @@ class InvesteeData(BaseModel):
             )
         return upper
 
-
 class PAICoverage(BaseModel):
     """Data coverage statistics for a single PAI indicator.
 
@@ -653,7 +628,6 @@ class PAICoverage(BaseModel):
     is_sufficient: bool = Field(
         ..., description="Whether coverage meets configured threshold",
     )
-
 
 class PAISingleResult(BaseModel):
     """Result for a single PAI indicator calculation."""
@@ -691,7 +665,6 @@ class PAISingleResult(BaseModel):
         default="", description="RTS table reference",
     )
 
-
 class PAIResult(BaseModel):
     """Complete PAI calculation result for a portfolio.
 
@@ -726,7 +699,7 @@ class PAIResult(BaseModel):
         description="Average data coverage across all indicators",
     )
     calculation_timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the calculation was performed",
     )
     processing_time_ms: float = Field(
@@ -738,7 +711,6 @@ class PAIResult(BaseModel):
     provenance_hash: str = Field(
         default="", description="SHA-256 provenance hash",
     )
-
 
 class PAIPeriodComparison(BaseModel):
     """Period-over-period comparison for a single PAI indicator."""
@@ -766,11 +738,9 @@ class PAIPeriodComparison(BaseModel):
         default="", description="SHA-256 provenance hash",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class PAIIndicatorCalculatorEngine:
     """PAI Indicator Calculator for all 18 mandatory SFDR indicators.
@@ -845,7 +815,7 @@ class PAIIndicatorCalculatorEngine:
         Raises:
             ValueError: If holdings list is empty.
         """
-        start = _utcnow()
+        start = utcnow()
         self._calculation_count += 1
 
         if not holdings:
@@ -869,7 +839,7 @@ class PAIIndicatorCalculatorEngine:
         )
 
         elapsed_ms = (
-            _utcnow() - start
+            utcnow() - start
         ).total_seconds() * 1000
 
         result = PAIResult(

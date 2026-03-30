@@ -48,7 +48,7 @@ import time
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import ConfigDict, Field
 
 from ..compiler.ir import SchemaIR, UnitSpecIR, PropertyIR
 from ..models.config import ValidationOptions, CoercionPolicy
@@ -57,6 +57,7 @@ from ..units.catalog import UnitCatalog
 from .coercions import CoercionEngine, CoercionRecord, get_python_type_name
 from .canonicalizer import UnitCanonicalizer, ConversionRecord
 from .keys import KeyCanonicalizer, KeyRename
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +67,7 @@ logger = logging.getLogger(__name__)
 # =============================================================================
 
 
-class NormalizationMeta(BaseModel):
+class NormalizationMeta(GreenLangBase):
     """
     Metadata about normalization operations.
 
@@ -174,7 +175,7 @@ class NormalizationMeta(BaseModel):
 # =============================================================================
 
 
-class NormalizationResult(BaseModel):
+class NormalizationResult(GreenLangBase):
     """
     Result of normalization operation.
 

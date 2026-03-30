@@ -18,7 +18,8 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException, Query
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +30,7 @@ router = APIRouter(prefix="/v1/eudr", tags=["EUDR Traceability"])
 # =============================================================================
 
 
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Health check response."""
     status: str = "healthy"
     agent_id: str = "GL-DATA-EUDR-001"
@@ -38,13 +39,13 @@ class HealthResponse(BaseModel):
     timestamp: str = ""
 
 
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     """Standard error response."""
     error: str
     detail: str = ""
 
 
-class PlotResponse(BaseModel):
+class PlotResponse(GreenLangBase):
     """Plot registration response."""
     plot_id: str
     commodity: str
@@ -55,7 +56,7 @@ class PlotResponse(BaseModel):
     created_at: str = ""
 
 
-class TransferResponse(BaseModel):
+class TransferResponse(GreenLangBase):
     """Custody transfer response."""
     transfer_id: str
     transaction_id: str
@@ -65,7 +66,7 @@ class TransferResponse(BaseModel):
     verification_status: str = "pending_verification"
 
 
-class DDSResponse(BaseModel):
+class DDSResponse(GreenLangBase):
     """Due Diligence Statement response."""
     dds_id: str
     commodity: str
@@ -75,7 +76,7 @@ class DDSResponse(BaseModel):
     eu_reference_number: Optional[str] = None
 
 
-class RiskResponse(BaseModel):
+class RiskResponse(GreenLangBase):
     """Risk assessment response."""
     assessment_id: str
     overall_risk_score: float
@@ -83,7 +84,7 @@ class RiskResponse(BaseModel):
     risk_factors: List[str] = []
 
 
-class ClassificationResponse(BaseModel):
+class ClassificationResponse(GreenLangBase):
     """Commodity classification response."""
     classification_id: str
     product_name: str
@@ -92,7 +93,7 @@ class ClassificationResponse(BaseModel):
     primary_commodity: Optional[str] = None
 
 
-class ComplianceResponse(BaseModel):
+class ComplianceResponse(GreenLangBase):
     """Compliance check response."""
     target_type: str
     target_id: str
@@ -103,7 +104,7 @@ class ComplianceResponse(BaseModel):
     checks: List[Dict[str, Any]] = []
 
 
-class SubmissionResponse(BaseModel):
+class SubmissionResponse(GreenLangBase):
     """EU submission response."""
     submission_id: str
     dds_id: str

@@ -62,6 +62,7 @@ from greenlang.agents.eudr.information_gathering.models import (
     GapReportItem,
 )
 from greenlang.agents.eudr.information_gathering.provenance import ProvenanceTracker
+from greenlang.schemas import utcnow
 from greenlang.agents.eudr.information_gathering.metrics import (
     record_completeness_validation,
 )
@@ -195,16 +196,9 @@ _ELEMENT_EFFORT: Dict[str, str] = {
     Article9ElementName.SUPPLY_CHAIN_INFORMATION.value: "7-21 days",
 }
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute deterministic SHA-256 hash of data.
@@ -218,11 +212,9 @@ def _compute_hash(data: Any) -> str:
     canonical = json.dumps(data, sort_keys=True, separators=(",", ":"), default=str)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Main Engine
 # ---------------------------------------------------------------------------
-
 
 class CompletenessValidationEngine:
     """Engine for validating completeness of EUDR Article 9 information elements.
@@ -315,7 +307,7 @@ class CompletenessValidationEngine:
                         source="",
                         value_summary="Not provided",
                         confidence=Decimal("0"),
-                        last_updated=_utcnow(),
+                        last_updated=utcnow(),
                     )
                 )
 
@@ -337,7 +329,7 @@ class CompletenessValidationEngine:
             completeness_classification=classification,
             gap_report=gap_report,
             is_simplified_dd=use_simplified,
-            validated_at=_utcnow(),
+            validated_at=utcnow(),
             provenance_hash=provenance_hash,
         )
 
@@ -526,7 +518,7 @@ class CompletenessValidationEngine:
             medium_gaps=medium,
             low_gaps=low,
             items=items,
-            generated_at=_utcnow(),
+            generated_at=utcnow(),
         )
 
         if items:

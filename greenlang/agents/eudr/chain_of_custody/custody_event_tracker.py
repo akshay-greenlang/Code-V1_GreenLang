@@ -52,6 +52,9 @@ from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ValidationSeverity
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -64,22 +67,14 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a unique identifier using UUID4."""
     return str(uuid.uuid4())
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -122,11 +117,9 @@ IMMUTABLE_FIELDS: Tuple[str, ...] = (
     "provenance_hash",
 )
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class EventType(str, Enum):
     """Custody event types per EUDR supply chain flow."""
@@ -142,7 +135,6 @@ class EventType(str, Enum):
     INSPECTION = "inspection"
     SAMPLING = "sampling"
 
-
 class EventStatus(str, Enum):
     """Status of a custody event."""
 
@@ -151,15 +143,6 @@ class EventStatus(str, Enum):
     SUPERSEDED = "superseded"
     VOIDED = "voided"
 
-
-class ValidationSeverity(str, Enum):
-    """Severity levels for validation issues."""
-
-    ERROR = "error"
-    WARNING = "warning"
-    INFO = "info"
-
-
 class ImportSourceFormat(str, Enum):
     """Supported external import formats."""
 
@@ -167,7 +150,6 @@ class ImportSourceFormat(str, Enum):
     XML = "xml"
     CSV = "csv"
     JSON = "json"
-
 
 # ---------------------------------------------------------------------------
 # Event type ordering rules
@@ -244,11 +226,9 @@ FACILITY_EVENT_TYPES: Tuple[str, ...] = (
     EventType.SAMPLING,
 )
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class CustodyEvent:
@@ -349,7 +329,6 @@ class CustodyEvent:
             "updated_at": str(self.updated_at) if self.updated_at else "",
         }
 
-
 @dataclass
 class EventValidation:
     """Result of validating a custody event.
@@ -406,7 +385,6 @@ class EventValidation:
             "validated_at": str(self.validated_at) if self.validated_at else "",
             "processing_time_ms": self.processing_time_ms,
         }
-
 
 @dataclass
 class CustodyGap:
@@ -465,7 +443,6 @@ class CustodyGap:
             "detected_at": str(self.detected_at) if self.detected_at else "",
         }
 
-
 @dataclass
 class EventAmendment:
     """An amendment to an existing custody event.
@@ -517,7 +494,6 @@ class EventAmendment:
             "created_at": str(self.created_at) if self.created_at else "",
         }
 
-
 @dataclass
 class EventChain:
     """An ordered sequence of custody events for a batch.
@@ -568,7 +544,6 @@ class EventChain:
             "created_at": str(self.created_at) if self.created_at else "",
         }
 
-
 @dataclass
 class BulkImportResult:
     """Result of a bulk import operation.
@@ -617,11 +592,9 @@ class BulkImportResult:
             "completed_at": str(self.completed_at) if self.completed_at else "",
         }
 
-
 # ---------------------------------------------------------------------------
 # CustodyEventTracker
 # ---------------------------------------------------------------------------
-
 
 class CustodyEventTracker:
     """Production-grade custody event tracking engine for EUDR compliance.
@@ -811,7 +784,7 @@ class CustodyEventTracker:
         validation = EventValidation(
             validation_id=_generate_id(),
             batch_id=batch_id,
-            validated_at=_utcnow(),
+            validated_at=utcnow(),
         )
 
         new_ts = self._parse_timestamp(new_event.get("timestamp"))
@@ -877,7 +850,7 @@ class CustodyEventTracker:
         validation = EventValidation(
             validation_id=_generate_id(),
             batch_id=batch_id,
-            validated_at=_utcnow(),
+            validated_at=utcnow(),
         )
 
         new_sender = str(new_event.get("sender_id", "")).strip()
@@ -960,7 +933,7 @@ class CustodyEventTracker:
         validation = EventValidation(
             validation_id=_generate_id(),
             batch_id=batch_id,
-            validated_at=_utcnow(),
+            validated_at=utcnow(),
         )
 
         new_facility = str(new_event.get("facility_id", "")).strip()
@@ -1058,7 +1031,7 @@ class CustodyEventTracker:
             return []
 
         gaps: List[CustodyGap] = []
-        now = _utcnow()
+        now = utcnow()
 
         for i in range(len(event_ids) - 1):
             preceding = self._events[event_ids[i]]
@@ -1138,7 +1111,7 @@ class CustodyEventTracker:
             batch_id=batch_id,
             events=events,
             total_events=len(events),
-            created_at=_utcnow(),
+            created_at=utcnow(),
         )
 
         if events:
@@ -1253,7 +1226,7 @@ class CustodyEventTracker:
                     f"Allowed: {AMENDABLE_FIELDS}"
                 )
 
-        now = _utcnow()
+        now = utcnow()
         created_amendments: List[EventAmendment] = []
         amendment_number_start = existing_count + 1
 
@@ -1332,7 +1305,7 @@ class CustodyEventTracker:
             ValueError: If events exceeds maximum bulk import size.
         """
         start_time = time.monotonic()
-        now = _utcnow()
+        now = utcnow()
 
         fmt = source_format.lower().strip()
         if fmt not in SUPPORTED_IMPORT_FORMATS:
@@ -1385,7 +1358,7 @@ class CustodyEventTracker:
                     "Bulk import record %d failed: %s", idx, str(exc)
                 )
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         result.processing_time_ms = (time.monotonic() - start_time) * 1000.0
         result.provenance_hash = _compute_hash(result.to_dict())
 
@@ -1550,7 +1523,7 @@ class CustodyEventTracker:
         Returns:
             Populated CustodyEvent (without provenance hash).
         """
-        now = _utcnow()
+        now = utcnow()
         ts = self._parse_timestamp(event_data.get("timestamp"))
 
         event = CustodyEvent(
@@ -1603,7 +1576,7 @@ class CustodyEventTracker:
             validation_id=_generate_id(),
             event_id=event.event_id,
             batch_id=event.batch_id,
-            validated_at=_utcnow(),
+            validated_at=utcnow(),
         )
 
         event_dict = event.to_dict()

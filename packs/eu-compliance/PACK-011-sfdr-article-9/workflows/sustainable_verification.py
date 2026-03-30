@@ -40,18 +40,13 @@ from typing import Any, Callable, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # UTILITIES
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return current UTC time with timezone info."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute SHA-256 provenance hash of arbitrary data."""
@@ -59,11 +54,9 @@ def _hash_data(data: Any) -> str:
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -73,7 +66,6 @@ class PhaseStatus(str, Enum):
     FAILED = "FAILED"
     SKIPPED = "SKIPPED"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "PENDING"
@@ -81,7 +73,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
     PARTIAL = "PARTIAL"
-
 
 class HoldingClassification(str, Enum):
     """Sustainable investment classification."""
@@ -93,14 +84,12 @@ class HoldingClassification(str, Enum):
     NON_SUSTAINABLE_OTHER = "NON_SUSTAINABLE_OTHER"
     UNDER_REVIEW = "UNDER_REVIEW"
 
-
 class DNSHResult(str, Enum):
     """DNSH assessment result for a holding."""
     PASS = "PASS"
     FAIL = "FAIL"
     INSUFFICIENT_DATA = "INSUFFICIENT_DATA"
     NOT_APPLICABLE = "NOT_APPLICABLE"
-
 
 class GovernanceResult(str, Enum):
     """Good governance verification result."""
@@ -109,17 +98,15 @@ class GovernanceResult(str, Enum):
     PENDING = "PENDING"
     EXEMPT = "EXEMPT"
 
-
 # =============================================================================
 # DATA MODELS - SHARED
 # =============================================================================
-
 
 class WorkflowContext(BaseModel):
     """Shared state passed between workflow phases."""
     workflow_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     organization_id: str = Field(..., description="Organization identifier")
-    execution_timestamp: datetime = Field(default_factory=_utcnow)
+    execution_timestamp: datetime = Field(default_factory=utcnow)
     config: Dict[str, Any] = Field(default_factory=dict)
     phase_states: Dict[str, PhaseStatus] = Field(default_factory=dict)
     phase_outputs: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
@@ -142,7 +129,6 @@ class WorkflowContext(BaseModel):
         """Check if a phase has already completed."""
         return self.phase_states.get(phase_name) == PhaseStatus.COMPLETED
 
-
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
     phase_name: str = Field(..., description="Phase identifier")
@@ -156,7 +142,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     records_processed: int = Field(default=0)
 
-
 class WorkflowResult(BaseModel):
     """Complete result from a multi-phase workflow execution."""
     workflow_id: str = Field(..., description="Unique workflow execution ID")
@@ -169,11 +154,9 @@ class WorkflowResult(BaseModel):
     summary: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # DATA MODELS - SUSTAINABLE VERIFICATION
 # =============================================================================
-
 
 class HoldingInput(BaseModel):
     """Individual holding for sustainable verification."""
@@ -200,7 +183,6 @@ class HoldingInput(BaseModel):
     ungc_compliant: bool = Field(default=True)
     board_independence_pct: Optional[float] = Field(None, ge=0.0, le=100.0)
     tax_transparency_score: Optional[float] = Field(None, ge=0.0, le=100.0)
-
 
 class SustainableVerificationInput(BaseModel):
     """Input for the sustainable verification workflow."""
@@ -236,7 +218,6 @@ class SustainableVerificationInput(BaseModel):
             raise ValueError("verification_date must be YYYY-MM-DD")
         return v
 
-
 class SustainableVerificationResult(WorkflowResult):
     """Complete result from the sustainable verification workflow."""
     product_name: str = Field(default="")
@@ -251,11 +232,9 @@ class SustainableVerificationResult(WorkflowResult):
     fully_compliant_pct: float = Field(default=0.0)
     is_100_pct_sustainable: bool = Field(default=False)
 
-
 # =============================================================================
 # PHASE IMPLEMENTATIONS
 # =============================================================================
-
 
 class HoldingClassificationPhase:
     """
@@ -269,7 +248,7 @@ class HoldingClassificationPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Execute holding classification phase."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -365,7 +344,7 @@ class HoldingClassificationPhase:
             status = PhaseStatus.FAILED
             records = 0
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -379,7 +358,6 @@ class HoldingClassificationPhase:
             records_processed=records,
         )
 
-
 class DNSHScreeningPhase:
     """
     Phase 2: DNSH Screening.
@@ -392,7 +370,7 @@ class DNSHScreeningPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Execute DNSH screening phase."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -553,7 +531,7 @@ class DNSHScreeningPhase:
             status = PhaseStatus.FAILED
             records = 0
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -566,7 +544,6 @@ class DNSHScreeningPhase:
             provenance_hash=_hash_data(outputs),
             records_processed=records,
         )
-
 
 class GovernanceVerificationPhase:
     """
@@ -581,7 +558,7 @@ class GovernanceVerificationPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Execute governance verification phase."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -703,7 +680,7 @@ class GovernanceVerificationPhase:
             status = PhaseStatus.FAILED
             records = 0
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -717,7 +694,6 @@ class GovernanceVerificationPhase:
             records_processed=records,
         )
 
-
 class ComplianceAggregationPhase:
     """
     Phase 4: Compliance Aggregation.
@@ -730,7 +706,7 @@ class ComplianceAggregationPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Execute compliance aggregation phase."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -861,7 +837,7 @@ class ComplianceAggregationPhase:
             )
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -874,11 +850,9 @@ class ComplianceAggregationPhase:
             provenance_hash=_hash_data(outputs),
         )
 
-
 # =============================================================================
 # WORKFLOW ORCHESTRATOR
 # =============================================================================
-
 
 class SustainableVerificationWorkflow:
     """
@@ -926,7 +900,7 @@ class SustainableVerificationWorkflow:
         self, input_data: SustainableVerificationInput
     ) -> SustainableVerificationResult:
         """Execute the complete 4-phase sustainable verification workflow."""
-        started_at = _utcnow()
+        started_at = utcnow()
         logger.info(
             "Starting sustainable verification workflow %s for org=%s",
             self.workflow_id, input_data.organization_id,
@@ -992,7 +966,7 @@ class SustainableVerificationWorkflow:
                 error_result = PhaseResult(
                     phase_name=phase_name,
                     status=PhaseStatus.FAILED,
-                    started_at=_utcnow(),
+                    started_at=utcnow(),
                     errors=[str(exc)],
                     provenance_hash=_hash_data({"error": str(exc)}),
                 )
@@ -1011,7 +985,7 @@ class SustainableVerificationWorkflow:
                 else WorkflowStatus.PARTIAL
             )
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         total_duration = (completed_at - started_at).total_seconds()
         summary = self._build_summary(context)
         provenance = _hash_data({

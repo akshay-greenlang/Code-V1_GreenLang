@@ -32,21 +32,16 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Input Models
@@ -62,7 +57,6 @@ class KpiCard(BaseModel):
     trend_value: str = Field("")
     status: str = Field("", description="good, warning, critical, neutral")
 
-
 class EntityChartBar(BaseModel):
     """Entity contribution bar chart data."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -74,7 +68,6 @@ class EntityChartBar(BaseModel):
     total_tco2e: Decimal = Field(Decimal("0"))
     contribution_pct: Decimal = Field(Decimal("0"))
 
-
 class ScopePieSlice(BaseModel):
     """Scope pie chart slice."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -82,7 +75,6 @@ class ScopePieSlice(BaseModel):
     tco2e: Decimal = Field(Decimal("0"))
     share_pct: Decimal = Field(Decimal("0"))
     color: str = Field("")
-
 
 class GeoHeatMapPoint(BaseModel):
     """Geographic heat map data point."""
@@ -93,7 +85,6 @@ class GeoHeatMapPoint(BaseModel):
     entity_count: int = Field(0)
     intensity_level: str = Field("", description="low, medium, high, very_high")
 
-
 class TimelineEvent(BaseModel):
     """M&A timeline event."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -102,7 +93,6 @@ class TimelineEvent(BaseModel):
     entity_name: str = Field("")
     description: str = Field("")
     impact_tco2e: Decimal = Field(Decimal("0"))
-
 
 class AlertItem(BaseModel):
     """Dashboard alert item."""
@@ -113,7 +103,6 @@ class AlertItem(BaseModel):
     entity_name: str = Field("")
     action_required: str = Field("")
 
-
 class DataQualityIndicator(BaseModel):
     """Data quality indicator for the dashboard."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -121,7 +110,6 @@ class DataQualityIndicator(BaseModel):
     score: Decimal = Field(Decimal("0"))
     max_score: Decimal = Field(Decimal("100"))
     status: str = Field("")
-
 
 class ConsolidationDashboardInput(BaseModel):
     """Complete input for the consolidation dashboard."""
@@ -137,7 +125,6 @@ class ConsolidationDashboardInput(BaseModel):
     data_quality: List[Dict[str, Any]] = Field(default_factory=list)
     total_emissions_tco2e: Decimal = Field(Decimal("0"))
     entity_count: int = Field(0)
-
 
 # ---------------------------------------------------------------------------
 # Output Model
@@ -162,7 +149,6 @@ class ConsolidationDashboardOutput(BaseModel):
     data_quality: List[DataQualityIndicator] = Field(default_factory=list)
     overall_quality_score: Decimal = Field(Decimal("0"))
     provenance_hash: str = Field("")
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -200,7 +186,7 @@ class ConsolidationDashboard:
     def render(self, data: Dict[str, Any]) -> ConsolidationDashboardOutput:
         """Render consolidation dashboard from input data."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         inp = ConsolidationDashboardInput(**data) if isinstance(data, dict) else data
 
         kpi_cards = [KpiCard(**k) if isinstance(k, dict) else k for k in inp.kpi_cards]
@@ -414,7 +400,6 @@ class ConsolidationDashboard:
         elif tco2e > Decimal("10000"):
             return "medium"
         return "low"
-
 
 __all__ = [
     "ConsolidationDashboard",

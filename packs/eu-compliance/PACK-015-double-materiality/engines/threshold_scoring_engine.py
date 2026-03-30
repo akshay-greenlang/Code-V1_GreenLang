@@ -49,25 +49,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 engine_version: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -94,7 +88,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -111,7 +104,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal,
     denominator: Decimal,
@@ -122,11 +114,9 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* and return a float.
@@ -136,11 +126,9 @@ def _round_val(value: Decimal, places: int = 6) -> float:
     quantizer = Decimal(10) ** -places
     return float(value.quantize(quantizer, rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ScoringMethodology(str, Enum):
     """Methodology for combining sub-scores into a composite score.
@@ -157,7 +145,6 @@ class ScoringMethodology(str, Enum):
     MAX_SCORE = "max_score"
     PRODUCT = "product"
 
-
 class NormalizationMethod(str, Enum):
     """Method for normalizing scores to a common scale.
 
@@ -170,7 +157,6 @@ class NormalizationMethod(str, Enum):
     Z_SCORE = "z_score"
     PERCENTILE = "percentile"
     NONE = "none"
-
 
 class ThresholdSource(str, Enum):
     """Origin of the materiality threshold.
@@ -185,11 +171,9 @@ class ThresholdSource(str, Enum):
     PEER_BENCHMARK = "peer_benchmark"
     CUSTOM = "custom"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 METHODOLOGY_DESCRIPTIONS: Dict[str, str] = {
     "geometric_mean": (
@@ -339,11 +323,9 @@ SECTOR_ADJUSTMENT_FACTORS: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class ScoringProfile(BaseModel):
     """Configuration for a scoring methodology.
@@ -385,7 +367,6 @@ class ScoringProfile(BaseModel):
             return {k: _decimal(val) for k, val in v.items()}
         return {}
 
-
 class ThresholdSet(BaseModel):
     """A set of materiality thresholds.
 
@@ -406,7 +387,6 @@ class ThresholdSet(BaseModel):
     @classmethod
     def _coerce_threshold(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class ScoringResult(BaseModel):
     """Result of scoring a single sustainability matter.
@@ -442,7 +422,6 @@ class ScoringResult(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class SensitivityPoint(BaseModel):
     """A single point in a sensitivity analysis.
 
@@ -452,7 +431,6 @@ class SensitivityPoint(BaseModel):
     """
     threshold_value: Decimal = Field(..., description="Threshold tested")
     passes: bool = Field(default=False, description="Passes at this threshold")
-
 
 class SensitivityAnalysis(BaseModel):
     """Sensitivity analysis for a single sustainability matter.
@@ -480,11 +458,9 @@ class SensitivityAnalysis(BaseModel):
     def _coerce_score(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 # ---------------------------------------------------------------------------
 # Input Model
 # ---------------------------------------------------------------------------
-
 
 class RawScoreInput(BaseModel):
     """Raw score input for a single matter.
@@ -505,11 +481,9 @@ class RawScoreInput(BaseModel):
             return {k: _decimal(val) for k, val in v.items()}
         return {}
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ThresholdScoringEngine:
     """Configurable scoring engine for double materiality assessment.

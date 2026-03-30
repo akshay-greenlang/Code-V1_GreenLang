@@ -39,6 +39,7 @@ from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.mass_balance_calculator.api.dependencies import (
     AuthUser,
@@ -73,22 +74,14 @@ router = APIRouter(tags=["Credit Periods"])
 
 _period_store: Dict[str, Dict] = {}
 
-
 def _get_period_store() -> Dict[str, Dict]:
     """Return the period store singleton."""
     return _period_store
-
 
 def _compute_provenance_hash(data: dict) -> str:
     """Compute SHA-256 hash for provenance tracking."""
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # Standard-specific credit period durations in days
 _STANDARD_PERIOD_DAYS: Dict[str, int] = {
@@ -100,11 +93,9 @@ _STANDARD_PERIOD_DAYS: Dict[str, int] = {
     "eudr_default": 365,
 }
 
-
 # ---------------------------------------------------------------------------
 # POST /periods
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/periods",
@@ -145,7 +136,7 @@ async def create_period(
     start = time.monotonic()
     try:
         period_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         # Calculate end date if not provided
         standard_key = body.standard.value if body.standard else "eudr_default"
@@ -218,11 +209,9 @@ async def create_period(
             detail="Failed to create credit period",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /periods/{period_id}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/periods/{period_id}",
@@ -286,11 +275,9 @@ async def get_period(
             detail="Failed to retrieve credit period",
         )
 
-
 # ---------------------------------------------------------------------------
 # PUT /periods/{period_id}
 # ---------------------------------------------------------------------------
-
 
 @router.put(
     "/periods/{period_id}",
@@ -359,7 +346,7 @@ async def extend_period(
                 detail="new_end_date must be after the current end date",
             )
 
-        now = _utcnow()
+        now = utcnow()
         record["end_date"] = body.new_end_date
         record["grace_period_end"] = body.new_end_date + timedelta(days=5)
         record["updated_at"] = now
@@ -398,11 +385,9 @@ async def extend_period(
             detail="Failed to extend credit period",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /periods/rollover
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/periods/rollover",
@@ -469,7 +454,7 @@ async def rollover_period(
                 ),
             )
 
-        now = _utcnow()
+        now = utcnow()
 
         # Calculate carry-forward amount
         closing_balance = closing_period.get("closing_balance")
@@ -566,11 +551,9 @@ async def rollover_period(
             detail="Failed to rollover credit period",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /periods/active/{facility_id}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/periods/active/{facility_id}",
@@ -627,7 +610,7 @@ async def get_active_periods(
             periods=active_periods,
             total_count=len(active_periods),
             processing_time_ms=elapsed_ms,
-            timestamp=_utcnow(),
+            timestamp=utcnow(),
         )
 
     except HTTPException:
@@ -643,7 +626,6 @@ async def get_active_periods(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve active periods",
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

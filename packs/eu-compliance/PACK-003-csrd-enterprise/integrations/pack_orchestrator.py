@@ -50,27 +50,22 @@ from typing import Any, Callable, Coroutine, Dict, List, Optional, Set
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ExecutionStatus
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
 ProgressCallback = Callable[[str, float, str], Coroutine[Any, Any, None]]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash.
@@ -90,11 +85,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EnterpriseWorkflowType(str, Enum):
     """Supported enterprise workflow types."""
@@ -117,7 +110,6 @@ class EnterpriseWorkflowType(str, Enum):
     PREDICTIVE_ANALYTICS = "predictive_analytics"
     CUSTOM_WORKFLOW = "custom_workflow"
 
-
 class EnterpriseWorkflowPhase(str, Enum):
     """Execution phases within an enterprise workflow."""
 
@@ -137,20 +129,6 @@ class EnterpriseWorkflowPhase(str, Enum):
     FILING = "filing"
     FINALIZATION = "finalization"
 
-
-class ExecutionStatus(str, Enum):
-    """Execution lifecycle status."""
-
-    PENDING = "pending"
-    RUNNING = "running"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    CANCELLED = "cancelled"
-    BLOCKED = "blocked"
-    SCHEDULED = "scheduled"
-    CHECKPOINTED = "checkpointed"
-
-
 class QualityGateId(str, Enum):
     """Quality gate identifiers."""
 
@@ -158,7 +136,6 @@ class QualityGateId(str, Enum):
     QG_2 = "QG-2"  # After calculation
     QG_3 = "QG-3"  # After reporting
     QG_4 = "QG-4"  # After filing (enterprise)
-
 
 class QualityGateStatus(str, Enum):
     """Quality gate evaluation status."""
@@ -168,11 +145,9 @@ class QualityGateStatus(str, Enum):
     WAIVED = "waived"
     NOT_EVALUATED = "not_evaluated"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class EnterpriseRetryConfig(BaseModel):
     """Retry configuration with exponential backoff and jitter."""
@@ -189,7 +164,6 @@ class EnterpriseRetryConfig(BaseModel):
     )
     retry_on_timeout: bool = Field(default=True)
 
-
 class SLAConfig(BaseModel):
     """SLA enforcement configuration."""
 
@@ -205,7 +179,6 @@ class SLAConfig(BaseModel):
         default=False, description="Auto-cancel workflow on SLA breach"
     )
 
-
 class EnterpriseQualityGateConfig(BaseModel):
     """Quality gate thresholds for enterprise workflows."""
 
@@ -216,7 +189,6 @@ class EnterpriseQualityGateConfig(BaseModel):
     qg4_min_score: float = Field(default=0.9, ge=0.0, le=1.0)
     block_on_failure: bool = Field(default=True)
     allow_waiver: bool = Field(default=True)
-
 
 class ApprovalChainConfig(BaseModel):
     """Approval chain integration for tenant-scoped workflows."""
@@ -229,7 +201,6 @@ class ApprovalChainConfig(BaseModel):
             "starter": 1, "professional": 2, "enterprise": 3,
         },
     )
-
 
 class EnterpriseOrchestratorConfig(BaseModel):
     """Configuration for the Enterprise Pack Orchestrator."""
@@ -253,7 +224,6 @@ class EnterpriseOrchestratorConfig(BaseModel):
         default_factory=ApprovalChainConfig
     )
 
-
 class QualityGateResult(BaseModel):
     """Result of a quality gate evaluation."""
 
@@ -262,11 +232,10 @@ class QualityGateResult(BaseModel):
     score: float = Field(default=0.0, ge=0.0, le=1.0)
     threshold: float = Field(default=0.0, ge=0.0, le=1.0)
     details: Dict[str, Any] = Field(default_factory=dict)
-    evaluated_at: datetime = Field(default_factory=_utcnow)
+    evaluated_at: datetime = Field(default_factory=utcnow)
     waived_by: Optional[str] = Field(None)
     waiver_reason: Optional[str] = Field(None)
     provenance_hash: str = Field(default="")
-
 
 class WorkflowCheckpoint(BaseModel):
     """Checkpoint for saving and resuming execution state."""
@@ -278,9 +247,8 @@ class WorkflowCheckpoint(BaseModel):
     phase_completed: str = Field(..., description="Last completed phase")
     phase_results: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
     shared_context: Dict[str, Any] = Field(default_factory=dict)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class ScheduledWorkflow(BaseModel):
     """A scheduled recurring workflow."""
@@ -291,11 +259,10 @@ class ScheduledWorkflow(BaseModel):
     tenant_id: str = Field(...)
     config: Dict[str, Any] = Field(default_factory=dict)
     enabled: bool = Field(default=True)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     last_run_at: Optional[datetime] = Field(None)
     next_run_at: Optional[datetime] = Field(None)
     provenance_hash: str = Field(default="")
-
 
 class WorkflowResult(BaseModel):
     """Complete result of a workflow execution."""
@@ -318,7 +285,6 @@ class WorkflowResult(BaseModel):
     retry_summary: Dict[str, int] = Field(default_factory=dict)
     sla_status: str = Field(default="within_limit")
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Workflow Phase Definitions
@@ -408,11 +374,9 @@ PHASE_QUALITY_GATES: Dict[EnterpriseWorkflowPhase, QualityGateId] = {
     EnterpriseWorkflowPhase.FILING: QualityGateId.QG_4,
 }
 
-
 # ---------------------------------------------------------------------------
 # EnterprisePackOrchestrator
 # ---------------------------------------------------------------------------
-
 
 class EnterprisePackOrchestrator:
     """Multi-tenant workflow orchestrator for CSRD Enterprise Pack.
@@ -492,7 +456,7 @@ class EnterprisePackOrchestrator:
             workflow_name=workflow_name,
             tenant_id=tenant_id,
             status=ExecutionStatus.RUNNING,
-            started_at=_utcnow(),
+            started_at=utcnow(),
         )
         self._executions[result.execution_id] = result
         self._record_tenant_execution(tenant_id, result.execution_id)
@@ -571,7 +535,7 @@ class EnterprisePackOrchestrator:
             result.errors.append(str(exc))
 
         finally:
-            result.completed_at = _utcnow()
+            result.completed_at = utcnow()
             result.total_execution_time_ms = (time.monotonic() - start_time) * 1000
             result.current_phase = None
             if self.config.enable_provenance:
@@ -699,7 +663,7 @@ class EnterprisePackOrchestrator:
             "execution_id": execution_id,
             "cancelled": True,
             "reason": "Cancellation signal sent",
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     # -------------------------------------------------------------------------
@@ -816,8 +780,8 @@ class EnterprisePackOrchestrator:
                 workflow_name=workflow_name,
                 tenant_id=tenant_id,
                 status=ExecutionStatus.COMPLETED,
-                started_at=_utcnow(),
-                completed_at=_utcnow(),
+                started_at=utcnow(),
+                completed_at=utcnow(),
                 phases_completed=list(checkpoint.phase_results.keys()),
                 phase_results=dict(checkpoint.phase_results),
             )
@@ -829,7 +793,7 @@ class EnterprisePackOrchestrator:
             workflow_name=workflow_name,
             tenant_id=tenant_id,
             status=ExecutionStatus.RUNNING,
-            started_at=_utcnow(),
+            started_at=utcnow(),
             phases_completed=list(checkpoint.phase_results.keys()),
             phase_results=dict(checkpoint.phase_results),
         )
@@ -873,7 +837,7 @@ class EnterprisePackOrchestrator:
             result.errors.append(str(exc))
 
         finally:
-            result.completed_at = _utcnow()
+            result.completed_at = utcnow()
             result.total_execution_time_ms = (time.monotonic() - start_time) * 1000
             result.current_phase = None
             if self.config.enable_provenance:
@@ -907,7 +871,7 @@ class EnterprisePackOrchestrator:
         elapsed_ms = result.total_execution_time_ms
         if result.status == ExecutionStatus.RUNNING and result.started_at:
             elapsed_ms = (
-                (_utcnow() - result.started_at).total_seconds() * 1000
+                (utcnow() - result.started_at).total_seconds() * 1000
             )
 
         pct_consumed = elapsed_ms / limit_ms if limit_ms > 0 else 0.0

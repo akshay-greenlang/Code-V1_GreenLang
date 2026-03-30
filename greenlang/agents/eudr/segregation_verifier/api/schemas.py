@@ -27,28 +27,22 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import ConfigDict, Field, field_validator
 
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ReportFormat
 
 # =============================================================================
 # Helpers
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_id() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 # =============================================================================
 # Enumerations
 # =============================================================================
-
 
 class EUDRCommodity(str, Enum):
     """EUDR-regulated commodities."""
@@ -60,7 +54,6 @@ class EUDRCommodity(str, Enum):
     RUBBER = "rubber"
     SOYA = "soya"
     WOOD = "wood"
-
 
 class SCPType(str, Enum):
     """Types of segregation control points."""
@@ -74,7 +67,6 @@ class SCPType(str, Enum):
     CLEANING = "cleaning"
     INSPECTION = "inspection"
 
-
 class SCPStatus(str, Enum):
     """Status of a segregation control point."""
 
@@ -84,7 +76,6 @@ class SCPStatus(str, Enum):
     PENDING_REVIEW = "pending_review"
     DECOMMISSIONED = "decommissioned"
 
-
 class SegregationLevel(str, Enum):
     """Level of physical segregation at a control point."""
 
@@ -93,7 +84,6 @@ class SegregationLevel(str, Enum):
     TEMPORAL = "temporal"
     ADMINISTRATIVE = "administrative"
     NONE = "none"
-
 
 class StorageZoneType(str, Enum):
     """Types of storage zones."""
@@ -107,7 +97,6 @@ class StorageZoneType(str, Enum):
     CONTAINER_YARD = "container_yard"
     DEDICATED_AREA = "dedicated_area"
 
-
 class StorageZoneStatus(str, Enum):
     """Status of a storage zone."""
 
@@ -117,7 +106,6 @@ class StorageZoneStatus(str, Enum):
     MAINTENANCE = "maintenance"
     RESTRICTED = "restricted"
     DECOMMISSIONED = "decommissioned"
-
 
 class StorageEventType(str, Enum):
     """Types of storage events."""
@@ -129,7 +117,6 @@ class StorageEventType(str, Enum):
     CLEANING = "cleaning"
     SEAL_CHECK = "seal_check"
     TEMPERATURE_LOG = "temperature_log"
-
 
 class VehicleType(str, Enum):
     """Types of transport vehicles."""
@@ -143,7 +130,6 @@ class VehicleType(str, Enum):
     VAN = "van"
     BULK_CARRIER = "bulk_carrier"
 
-
 class VehicleStatus(str, Enum):
     """Status of a transport vehicle."""
 
@@ -154,7 +140,6 @@ class VehicleStatus(str, Enum):
     QUARANTINE = "quarantine"
     DECOMMISSIONED = "decommissioned"
 
-
 class CleaningVerificationStatus(str, Enum):
     """Status of cleaning verification."""
 
@@ -162,7 +147,6 @@ class CleaningVerificationStatus(str, Enum):
     FAILED = "failed"
     PENDING = "pending"
     WAIVED = "waived"
-
 
 class ProcessingLineType(str, Enum):
     """Types of processing lines."""
@@ -172,7 +156,6 @@ class ProcessingLineType(str, Enum):
     MULTI_PURPOSE = "multi_purpose"
     BATCH_LINE = "batch_line"
     CONTINUOUS_LINE = "continuous_line"
-
 
 class ProcessingLineStatus(str, Enum):
     """Status of a processing line."""
@@ -184,7 +167,6 @@ class ProcessingLineStatus(str, Enum):
     CLEANING = "cleaning"
     DECOMMISSIONED = "decommissioned"
 
-
 class ChangeoverStatus(str, Enum):
     """Status of a line changeover."""
 
@@ -192,7 +174,6 @@ class ChangeoverStatus(str, Enum):
     COMPLETED = "completed"
     VERIFIED = "verified"
     FAILED = "failed"
-
 
 class ContaminationSeverity(str, Enum):
     """Severity level of contamination events."""
@@ -202,7 +183,6 @@ class ContaminationSeverity(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     NEGLIGIBLE = "negligible"
-
 
 class ContaminationType(str, Enum):
     """Types of contamination."""
@@ -215,7 +195,6 @@ class ContaminationType(str, Enum):
     PHYSICAL = "physical"
     CHEMICAL = "chemical"
 
-
 class ContaminationStatus(str, Enum):
     """Status of a contamination event."""
 
@@ -224,7 +203,6 @@ class ContaminationStatus(str, Enum):
     CONTAINED = "contained"
     RESOLVED = "resolved"
     ESCALATED = "escalated"
-
 
 class RiskLevel(str, Enum):
     """Risk assessment levels."""
@@ -235,7 +213,6 @@ class RiskLevel(str, Enum):
     LOW = "low"
     MINIMAL = "minimal"
 
-
 class AssessmentStatus(str, Enum):
     """Status of a facility assessment."""
 
@@ -243,7 +220,6 @@ class AssessmentStatus(str, Enum):
     NON_COMPLIANT = "non_compliant"
     PARTIALLY_COMPLIANT = "partially_compliant"
     NOT_ASSESSED = "not_assessed"
-
 
 class LabelStatus(str, Enum):
     """Status of a segregation label."""
@@ -254,7 +230,6 @@ class LabelStatus(str, Enum):
     EXPIRED = "expired"
     REVOKED = "revoked"
 
-
 class ReportType(str, Enum):
     """Types of segregation reports."""
 
@@ -262,16 +237,6 @@ class ReportType(str, Enum):
     CONTAMINATION = "contamination"
     EVIDENCE_PACKAGE = "evidence_package"
     COMPLIANCE = "compliance"
-
-
-class ReportFormat(str, Enum):
-    """Output formats for reports."""
-
-    PDF = "pdf"
-    XLSX = "xlsx"
-    JSON = "json"
-    CSV = "csv"
-
 
 class BatchJobStatus(str, Enum):
     """Status of an async batch job."""
@@ -281,7 +246,6 @@ class BatchJobStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     CANCELLED = "cancelled"
-
 
 class BatchJobType(str, Enum):
     """Types of batch jobs for segregation verifier."""
@@ -294,7 +258,6 @@ class BatchJobType(str, Enum):
     FACILITY_ASSESSMENT = "facility_assessment"
     REPORT_GENERATION = "report_generation"
 
-
 class UnitOfMeasure(str, Enum):
     """Units for quantity measurements."""
 
@@ -306,13 +269,11 @@ class UnitOfMeasure(str, Enum):
     BAGS_60KG = "bags_60kg"
     BAGS_69KG = "bags_69kg"
 
-
 # =============================================================================
 # Shared / Common Models
 # =============================================================================
 
-
-class PaginatedMeta(BaseModel):
+class PaginatedMeta(GreenLangBase):
     """Pagination metadata for list responses."""
 
     total: int = Field(..., ge=0, description="Total number of results")
@@ -320,8 +281,7 @@ class PaginatedMeta(BaseModel):
     offset: int = Field(..., ge=0, description="Results skipped")
     has_more: bool = Field(..., description="Whether more results exist")
 
-
-class GeoCoordinate(BaseModel):
+class GeoCoordinate(GreenLangBase):
     """WGS84 geographic coordinate."""
 
     latitude: float = Field(..., ge=-90.0, le=90.0, description="Latitude")
@@ -331,8 +291,7 @@ class GeoCoordinate(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class QuantitySpec(BaseModel):
+class QuantitySpec(GreenLangBase):
     """Quantity with unit of measure."""
 
     amount: Decimal = Field(
@@ -342,8 +301,7 @@ class QuantitySpec(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ProvenanceInfo(BaseModel):
+class ProvenanceInfo(GreenLangBase):
     """Provenance tracking information for audit trail."""
 
     provenance_hash: str = Field(
@@ -351,7 +309,7 @@ class ProvenanceInfo(BaseModel):
     )
     created_by: str = Field(..., description="User ID who created the record")
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation timestamp (UTC)"
+        default_factory=utcnow, description="Creation timestamp (UTC)"
     )
     source: str = Field(
         default="api", description="Data source (api, import, system)"
@@ -359,8 +317,7 @@ class ProvenanceInfo(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ScoreBreakdown(BaseModel):
+class ScoreBreakdown(GreenLangBase):
     """Breakdown of a segregation compliance score."""
 
     category: str = Field(..., description="Score category")
@@ -372,13 +329,11 @@ class ScoreBreakdown(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # SCP (Segregation Control Point) Schemas
 # =============================================================================
 
-
-class RegisterSCPRequest(BaseModel):
+class RegisterSCPRequest(GreenLangBase):
     """Request to register a new Segregation Control Point."""
 
     facility_id: str = Field(
@@ -431,8 +386,7 @@ class RegisterSCPRequest(BaseModel):
         },
     )
 
-
-class UpdateSCPRequest(BaseModel):
+class UpdateSCPRequest(GreenLangBase):
     """Request to update an existing Segregation Control Point."""
 
     scp_name: Optional[str] = Field(
@@ -468,8 +422,7 @@ class UpdateSCPRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class ValidateSCPRequest(BaseModel):
+class ValidateSCPRequest(GreenLangBase):
     """Request to validate SCP compliance."""
 
     scp_id: str = Field(
@@ -490,8 +443,7 @@ class ValidateSCPRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class SCPSearchRequest(BaseModel):
+class SCPSearchRequest(GreenLangBase):
     """Request to search SCPs with filters."""
 
     facility_id: Optional[str] = Field(
@@ -543,8 +495,7 @@ class SCPSearchRequest(BaseModel):
             raise ValueError("sort_order must be 'asc' or 'desc'")
         return v
 
-
-class SCPBatchImportRequest(BaseModel):
+class SCPBatchImportRequest(GreenLangBase):
     """Request for bulk SCP import."""
 
     scps: List[RegisterSCPRequest] = Field(
@@ -559,8 +510,7 @@ class SCPBatchImportRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class SCPResponse(BaseModel):
+class SCPResponse(GreenLangBase):
     """Response for a single Segregation Control Point."""
 
     scp_id: str = Field(..., description="Unique SCP identifier")
@@ -580,8 +530,8 @@ class SCPResponse(BaseModel):
     last_inspection_at: Optional[datetime] = Field(None)
     next_inspection_due: Optional[datetime] = Field(None)
     metadata: Optional[Dict[str, Any]] = Field(None)
-    created_at: datetime = Field(default_factory=_utcnow)
-    updated_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
+    updated_at: datetime = Field(default_factory=utcnow)
     provenance: ProvenanceInfo = Field(
         ..., description="Provenance tracking data"
     )
@@ -591,8 +541,7 @@ class SCPResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class SCPListResponse(BaseModel):
+class SCPListResponse(GreenLangBase):
     """Response for SCP list/search results."""
 
     scps: List[SCPResponse] = Field(
@@ -603,8 +552,7 @@ class SCPListResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class SCPValidationFinding(BaseModel):
+class SCPValidationFinding(GreenLangBase):
     """Individual SCP validation finding."""
 
     rule_id: str = Field(..., description="Rule identifier")
@@ -623,8 +571,7 @@ class SCPValidationFinding(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class SCPValidationResponse(BaseModel):
+class SCPValidationResponse(GreenLangBase):
     """Response from SCP compliance validation."""
 
     scp_id: str = Field(..., description="SCP identifier")
@@ -638,14 +585,13 @@ class SCPValidationResponse(BaseModel):
     findings: List[SCPValidationFinding] = Field(
         default_factory=list, description="Validation findings"
     )
-    validated_at: datetime = Field(default_factory=_utcnow)
+    validated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="", description="SHA-256 hash")
     processing_time_ms: float = Field(default=0.0, ge=0.0)
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class SCPBatchImportResponse(BaseModel):
+class SCPBatchImportResponse(GreenLangBase):
     """Response for bulk SCP import."""
 
     total_submitted: int = Field(..., ge=0, description="Total SCPs submitted")
@@ -663,13 +609,11 @@ class SCPBatchImportResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Storage Zone Schemas
 # =============================================================================
 
-
-class RegisterZoneRequest(BaseModel):
+class RegisterZoneRequest(GreenLangBase):
     """Request to register a storage zone."""
 
     facility_id: str = Field(
@@ -722,8 +666,7 @@ class RegisterZoneRequest(BaseModel):
         },
     )
 
-
-class RecordStorageEventRequest(BaseModel):
+class RecordStorageEventRequest(GreenLangBase):
     """Request to record a storage event."""
 
     zone_id: str = Field(
@@ -756,8 +699,7 @@ class RecordStorageEventRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class StorageAuditRequest(BaseModel):
+class StorageAuditRequest(GreenLangBase):
     """Request to run a storage segregation audit."""
 
     facility_id: str = Field(
@@ -787,8 +729,7 @@ class StorageAuditRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class ZoneResponse(BaseModel):
+class ZoneResponse(GreenLangBase):
     """Response for a storage zone."""
 
     zone_id: str = Field(..., description="Unique zone identifier")
@@ -810,8 +751,8 @@ class ZoneResponse(BaseModel):
     last_cleaning_at: Optional[datetime] = Field(None)
     notes: Optional[str] = Field(None)
     metadata: Optional[Dict[str, Any]] = Field(None)
-    created_at: datetime = Field(default_factory=_utcnow)
-    updated_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
+    updated_at: datetime = Field(default_factory=utcnow)
     provenance: ProvenanceInfo = Field(
         ..., description="Provenance tracking data"
     )
@@ -819,8 +760,7 @@ class ZoneResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ZoneListResponse(BaseModel):
+class ZoneListResponse(GreenLangBase):
     """Response for listing storage zones at a facility."""
 
     facility_id: str = Field(..., description="Facility identifier")
@@ -832,8 +772,7 @@ class ZoneListResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class StorageEventResponse(BaseModel):
+class StorageEventResponse(GreenLangBase):
     """Response for a storage event."""
 
     event_id: str = Field(..., description="Unique event identifier")
@@ -842,7 +781,7 @@ class StorageEventResponse(BaseModel):
     batch_id: Optional[str] = Field(None)
     commodity: EUDRCommodity = Field(..., description="Commodity")
     quantity: Optional[QuantitySpec] = Field(None)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     operator_name: Optional[str] = Field(None)
     notes: Optional[str] = Field(None)
     metadata: Optional[Dict[str, Any]] = Field(None)
@@ -853,8 +792,7 @@ class StorageEventResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class StorageAuditFinding(BaseModel):
+class StorageAuditFinding(GreenLangBase):
     """Individual storage audit finding."""
 
     finding_id: str = Field(..., description="Finding identifier")
@@ -869,8 +807,7 @@ class StorageAuditFinding(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class StorageAuditResponse(BaseModel):
+class StorageAuditResponse(GreenLangBase):
     """Response from a storage segregation audit."""
 
     audit_id: str = Field(..., description="Unique audit identifier")
@@ -886,7 +823,7 @@ class StorageAuditResponse(BaseModel):
         default_factory=list, description="Audit findings"
     )
     zones_audited: int = Field(default=0, ge=0)
-    audited_at: datetime = Field(default_factory=_utcnow)
+    audited_at: datetime = Field(default_factory=utcnow)
     provenance: ProvenanceInfo = Field(
         ..., description="Provenance tracking data"
     )
@@ -894,8 +831,7 @@ class StorageAuditResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class StorageScoreResponse(BaseModel):
+class StorageScoreResponse(GreenLangBase):
     """Response for facility storage segregation score."""
 
     facility_id: str = Field(..., description="Facility identifier")
@@ -915,13 +851,11 @@ class StorageScoreResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Transport Schemas
 # =============================================================================
 
-
-class RegisterVehicleRequest(BaseModel):
+class RegisterVehicleRequest(GreenLangBase):
     """Request to register a transport vehicle."""
 
     vehicle_reference: str = Field(
@@ -968,8 +902,7 @@ class RegisterVehicleRequest(BaseModel):
         },
     )
 
-
-class VerifyTransportRequest(BaseModel):
+class VerifyTransportRequest(GreenLangBase):
     """Request to verify transport segregation."""
 
     vehicle_id: str = Field(
@@ -999,8 +932,7 @@ class VerifyTransportRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class RecordCleaningRequest(BaseModel):
+class RecordCleaningRequest(GreenLangBase):
     """Request to record a vehicle cleaning verification."""
 
     vehicle_id: str = Field(
@@ -1037,8 +969,7 @@ class RecordCleaningRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class VehicleResponse(BaseModel):
+class VehicleResponse(GreenLangBase):
     """Response for a transport vehicle."""
 
     vehicle_id: str = Field(..., description="Unique vehicle identifier")
@@ -1057,8 +988,8 @@ class VehicleResponse(BaseModel):
     last_cargo_commodity: Optional[EUDRCommodity] = Field(None)
     notes: Optional[str] = Field(None)
     metadata: Optional[Dict[str, Any]] = Field(None)
-    created_at: datetime = Field(default_factory=_utcnow)
-    updated_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
+    updated_at: datetime = Field(default_factory=utcnow)
     provenance: ProvenanceInfo = Field(
         ..., description="Provenance tracking data"
     )
@@ -1066,8 +997,7 @@ class VehicleResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class TransportVerificationFinding(BaseModel):
+class TransportVerificationFinding(GreenLangBase):
     """Individual transport verification finding."""
 
     finding_id: str = Field(..., description="Finding identifier")
@@ -1081,8 +1011,7 @@ class TransportVerificationFinding(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class TransportVerificationResponse(BaseModel):
+class TransportVerificationResponse(GreenLangBase):
     """Response from transport segregation verification."""
 
     verification_id: str = Field(..., description="Unique verification ID")
@@ -1101,7 +1030,7 @@ class TransportVerificationResponse(BaseModel):
     findings: List[TransportVerificationFinding] = Field(
         default_factory=list, description="Verification findings"
     )
-    verified_at: datetime = Field(default_factory=_utcnow)
+    verified_at: datetime = Field(default_factory=utcnow)
     provenance: ProvenanceInfo = Field(
         ..., description="Provenance tracking data"
     )
@@ -1109,8 +1038,7 @@ class TransportVerificationResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CargoHistoryEntry(BaseModel):
+class CargoHistoryEntry(GreenLangBase):
     """Single entry in vehicle cargo history."""
 
     entry_id: str = Field(..., description="Entry identifier")
@@ -1124,8 +1052,7 @@ class CargoHistoryEntry(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class VehicleHistoryResponse(BaseModel):
+class VehicleHistoryResponse(GreenLangBase):
     """Response for vehicle cargo history."""
 
     vehicle_id: str = Field(..., description="Vehicle identifier")
@@ -1140,8 +1067,7 @@ class VehicleHistoryResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class TransportScoreResponse(BaseModel):
+class TransportScoreResponse(GreenLangBase):
     """Response for transport segregation score."""
 
     vehicle_id: str = Field(..., description="Vehicle identifier")
@@ -1162,13 +1088,11 @@ class TransportScoreResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Processing Line Schemas
 # =============================================================================
 
-
-class RegisterLineRequest(BaseModel):
+class RegisterLineRequest(GreenLangBase):
     """Request to register a processing line."""
 
     facility_id: str = Field(
@@ -1218,8 +1142,7 @@ class RegisterLineRequest(BaseModel):
         },
     )
 
-
-class RecordChangeoverRequest(BaseModel):
+class RecordChangeoverRequest(GreenLangBase):
     """Request to record a processing line changeover."""
 
     line_id: str = Field(
@@ -1259,8 +1182,7 @@ class RecordChangeoverRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class VerifyProcessingRequest(BaseModel):
+class VerifyProcessingRequest(GreenLangBase):
     """Request to verify processing line segregation."""
 
     line_id: str = Field(
@@ -1284,8 +1206,7 @@ class VerifyProcessingRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class LineResponse(BaseModel):
+class LineResponse(GreenLangBase):
     """Response for a processing line."""
 
     line_id: str = Field(..., description="Unique line identifier")
@@ -1307,8 +1228,8 @@ class LineResponse(BaseModel):
     total_changeovers: int = Field(default=0, ge=0)
     notes: Optional[str] = Field(None)
     metadata: Optional[Dict[str, Any]] = Field(None)
-    created_at: datetime = Field(default_factory=_utcnow)
-    updated_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
+    updated_at: datetime = Field(default_factory=utcnow)
     provenance: ProvenanceInfo = Field(
         ..., description="Provenance tracking data"
     )
@@ -1316,8 +1237,7 @@ class LineResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ChangeoverResponse(BaseModel):
+class ChangeoverResponse(GreenLangBase):
     """Response for a line changeover record."""
 
     changeover_id: str = Field(..., description="Unique changeover identifier")
@@ -1346,8 +1266,7 @@ class ChangeoverResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ProcessingVerificationFinding(BaseModel):
+class ProcessingVerificationFinding(GreenLangBase):
     """Individual processing verification finding."""
 
     finding_id: str = Field(..., description="Finding identifier")
@@ -1361,8 +1280,7 @@ class ProcessingVerificationFinding(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ProcessingVerificationResponse(BaseModel):
+class ProcessingVerificationResponse(GreenLangBase):
     """Response from processing line segregation verification."""
 
     verification_id: str = Field(..., description="Unique verification ID")
@@ -1381,7 +1299,7 @@ class ProcessingVerificationResponse(BaseModel):
     findings: List[ProcessingVerificationFinding] = Field(
         default_factory=list, description="Verification findings"
     )
-    verified_at: datetime = Field(default_factory=_utcnow)
+    verified_at: datetime = Field(default_factory=utcnow)
     provenance: ProvenanceInfo = Field(
         ..., description="Provenance tracking data"
     )
@@ -1389,8 +1307,7 @@ class ProcessingVerificationResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ProcessingScoreResponse(BaseModel):
+class ProcessingScoreResponse(GreenLangBase):
     """Response for facility processing segregation score."""
 
     facility_id: str = Field(..., description="Facility identifier")
@@ -1413,13 +1330,11 @@ class ProcessingScoreResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Contamination Schemas
 # =============================================================================
 
-
-class DetectContaminationRequest(BaseModel):
+class DetectContaminationRequest(GreenLangBase):
     """Request to run contamination detection analysis."""
 
     facility_id: str = Field(
@@ -1462,8 +1377,7 @@ class DetectContaminationRequest(BaseModel):
             raise ValueError(f"sensitivity must be one of: {allowed}")
         return v
 
-
-class RecordContaminationRequest(BaseModel):
+class RecordContaminationRequest(GreenLangBase):
     """Request to record a contamination event."""
 
     facility_id: str = Field(
@@ -1515,8 +1429,7 @@ class RecordContaminationRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class AssessImpactRequest(BaseModel):
+class AssessImpactRequest(GreenLangBase):
     """Request to assess contamination impact."""
 
     event_id: str = Field(
@@ -1534,8 +1447,7 @@ class AssessImpactRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class ContaminationEventResponse(BaseModel):
+class ContaminationEventResponse(GreenLangBase):
     """Response for a contamination event."""
 
     event_id: str = Field(..., description="Unique event identifier")
@@ -1553,13 +1465,13 @@ class ContaminationEventResponse(BaseModel):
     location_id: Optional[str] = Field(None)
     batch_ids_affected: List[str] = Field(default_factory=list)
     quantity_affected: Optional[QuantitySpec] = Field(None)
-    detected_at: datetime = Field(default_factory=_utcnow)
+    detected_at: datetime = Field(default_factory=utcnow)
     detected_by: Optional[str] = Field(None)
     root_cause: Optional[str] = Field(None)
     corrective_actions: Optional[str] = Field(None)
     notes: Optional[str] = Field(None)
     metadata: Optional[Dict[str, Any]] = Field(None)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     provenance: ProvenanceInfo = Field(
         ..., description="Provenance tracking data"
     )
@@ -1567,8 +1479,7 @@ class ContaminationEventResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ContaminationDetectionFinding(BaseModel):
+class ContaminationDetectionFinding(GreenLangBase):
     """Individual contamination detection finding."""
 
     finding_id: str = Field(..., description="Finding identifier")
@@ -1589,8 +1500,7 @@ class ContaminationDetectionFinding(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ContaminationDetectionResponse(BaseModel):
+class ContaminationDetectionResponse(GreenLangBase):
     """Response from contamination detection analysis."""
 
     detection_id: str = Field(..., description="Unique detection run ID")
@@ -1602,7 +1512,7 @@ class ContaminationDetectionResponse(BaseModel):
     findings: List[ContaminationDetectionFinding] = Field(
         default_factory=list, description="Detection findings"
     )
-    scanned_at: datetime = Field(default_factory=_utcnow)
+    scanned_at: datetime = Field(default_factory=utcnow)
     provenance: ProvenanceInfo = Field(
         ..., description="Provenance tracking data"
     )
@@ -1610,8 +1520,7 @@ class ContaminationDetectionResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ContaminationImpactResponse(BaseModel):
+class ContaminationImpactResponse(GreenLangBase):
     """Response from contamination impact assessment."""
 
     impact_id: str = Field(..., description="Unique impact assessment ID")
@@ -1643,8 +1552,7 @@ class ContaminationImpactResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class HeatmapCell(BaseModel):
+class HeatmapCell(GreenLangBase):
     """Single cell in a risk heatmap."""
 
     zone_id: str = Field(..., description="Zone/area identifier")
@@ -1660,8 +1568,7 @@ class HeatmapCell(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class RiskHeatmapResponse(BaseModel):
+class RiskHeatmapResponse(GreenLangBase):
     """Response for facility risk heatmap."""
 
     facility_id: str = Field(..., description="Facility identifier")
@@ -1674,19 +1581,17 @@ class RiskHeatmapResponse(BaseModel):
     )
     total_zones: int = Field(default=0, ge=0)
     high_risk_zones: int = Field(default=0, ge=0)
-    generated_at: datetime = Field(default_factory=_utcnow)
+    generated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="", description="SHA-256 hash")
     processing_time_ms: float = Field(default=0.0, ge=0.0)
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Label Schemas
 # =============================================================================
 
-
-class RegisterLabelRequest(BaseModel):
+class RegisterLabelRequest(GreenLangBase):
     """Request to register a segregation label."""
 
     batch_id: str = Field(
@@ -1720,8 +1625,7 @@ class RegisterLabelRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class VerifyLabelRequest(BaseModel):
+class VerifyLabelRequest(GreenLangBase):
     """Request to verify a segregation label."""
 
     label_id: str = Field(
@@ -1739,8 +1643,7 @@ class VerifyLabelRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class LabelAuditRequest(BaseModel):
+class LabelAuditRequest(GreenLangBase):
     """Request for label audit at a facility."""
 
     facility_id: str = Field(
@@ -1764,8 +1667,7 @@ class LabelAuditRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class LabelResponse(BaseModel):
+class LabelResponse(GreenLangBase):
     """Response for a segregation label."""
 
     label_id: str = Field(..., description="Unique label identifier")
@@ -1777,11 +1679,11 @@ class LabelResponse(BaseModel):
     status: LabelStatus = Field(
         default=LabelStatus.ACTIVE, description="Label status"
     )
-    applied_at: datetime = Field(default_factory=_utcnow)
+    applied_at: datetime = Field(default_factory=utcnow)
     applied_by: Optional[str] = Field(None)
     barcode: Optional[str] = Field(None)
     metadata: Optional[Dict[str, Any]] = Field(None)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     provenance: ProvenanceInfo = Field(
         ..., description="Provenance tracking data"
     )
@@ -1789,8 +1691,7 @@ class LabelResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class LabelVerificationFinding(BaseModel):
+class LabelVerificationFinding(GreenLangBase):
     """Individual label verification finding."""
 
     finding_id: str = Field(..., description="Finding identifier")
@@ -1803,8 +1704,7 @@ class LabelVerificationFinding(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class LabelVerificationResponse(BaseModel):
+class LabelVerificationResponse(GreenLangBase):
     """Response from label verification."""
 
     verification_id: str = Field(..., description="Unique verification ID")
@@ -1819,14 +1719,13 @@ class LabelVerificationResponse(BaseModel):
     findings: List[LabelVerificationFinding] = Field(
         default_factory=list, description="Verification findings"
     )
-    verified_at: datetime = Field(default_factory=_utcnow)
+    verified_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="", description="SHA-256 hash")
     processing_time_ms: float = Field(default=0.0, ge=0.0)
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class LabelAuditFinding(BaseModel):
+class LabelAuditFinding(GreenLangBase):
     """Individual label audit finding."""
 
     finding_id: str = Field(..., description="Finding identifier")
@@ -1840,8 +1739,7 @@ class LabelAuditFinding(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class LabelAuditResponse(BaseModel):
+class LabelAuditResponse(GreenLangBase):
     """Response from label audit."""
 
     audit_id: str = Field(..., description="Unique audit identifier")
@@ -1857,7 +1755,7 @@ class LabelAuditResponse(BaseModel):
     findings: List[LabelAuditFinding] = Field(
         default_factory=list, description="Audit findings"
     )
-    audited_at: datetime = Field(default_factory=_utcnow)
+    audited_at: datetime = Field(default_factory=utcnow)
     provenance: ProvenanceInfo = Field(
         ..., description="Provenance tracking data"
     )
@@ -1865,13 +1763,11 @@ class LabelAuditResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Facility Assessment Schemas
 # =============================================================================
 
-
-class RunAssessmentRequest(BaseModel):
+class RunAssessmentRequest(GreenLangBase):
     """Request to run a facility segregation assessment."""
 
     facility_id: str = Field(
@@ -1901,8 +1797,7 @@ class RunAssessmentRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class AssessmentCategoryResult(BaseModel):
+class AssessmentCategoryResult(GreenLangBase):
     """Assessment result for a single category."""
 
     category: str = Field(..., description="Assessment category")
@@ -1914,8 +1809,7 @@ class AssessmentCategoryResult(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class AssessmentResponse(BaseModel):
+class AssessmentResponse(GreenLangBase):
     """Response for a facility segregation assessment."""
 
     assessment_id: str = Field(..., description="Unique assessment ID")
@@ -1938,7 +1832,7 @@ class AssessmentResponse(BaseModel):
     recommended_actions: List[str] = Field(
         default_factory=list, description="Recommended actions"
     )
-    assessed_at: datetime = Field(default_factory=_utcnow)
+    assessed_at: datetime = Field(default_factory=utcnow)
     valid_until: Optional[datetime] = Field(
         None, description="Assessment validity period"
     )
@@ -1949,8 +1843,7 @@ class AssessmentResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class AssessmentHistoryResponse(BaseModel):
+class AssessmentHistoryResponse(GreenLangBase):
     """Response for assessment history."""
 
     facility_id: str = Field(..., description="Facility identifier")
@@ -1966,13 +1859,11 @@ class AssessmentHistoryResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Report Schemas
 # =============================================================================
 
-
-class GenerateAuditReportRequest(BaseModel):
+class GenerateAuditReportRequest(GreenLangBase):
     """Request to generate a segregation audit report."""
 
     facility_id: str = Field(
@@ -2000,8 +1891,7 @@ class GenerateAuditReportRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class GenerateContaminationReportRequest(BaseModel):
+class GenerateContaminationReportRequest(GreenLangBase):
     """Request to generate a contamination report."""
 
     facility_id: str = Field(
@@ -2028,8 +1918,7 @@ class GenerateContaminationReportRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class GenerateEvidencePackageRequest(BaseModel):
+class GenerateEvidencePackageRequest(GreenLangBase):
     """Request to generate a regulatory evidence package."""
 
     facility_id: str = Field(
@@ -2060,8 +1949,7 @@ class GenerateEvidencePackageRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class ReportResponse(BaseModel):
+class ReportResponse(GreenLangBase):
     """Response for a generated report."""
 
     report_id: str = Field(..., description="Unique report ID")
@@ -2082,7 +1970,7 @@ class ReportResponse(BaseModel):
     file_size_bytes: Optional[int] = Field(
         None, ge=0, description="File size in bytes"
     )
-    generated_at: datetime = Field(default_factory=_utcnow)
+    generated_at: datetime = Field(default_factory=utcnow)
     expires_at: Optional[datetime] = Field(
         None, description="Download link expiry"
     )
@@ -2093,8 +1981,7 @@ class ReportResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ReportDownloadResponse(BaseModel):
+class ReportDownloadResponse(GreenLangBase):
     """Response for report download."""
 
     report_id: str = Field(..., description="Report ID")
@@ -2105,18 +1992,16 @@ class ReportDownloadResponse(BaseModel):
         default="application/pdf", description="MIME content type"
     )
     expires_at: datetime = Field(
-        default_factory=_utcnow, description="URL expiry"
+        default_factory=utcnow, description="URL expiry"
     )
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Batch Job Schemas
 # =============================================================================
 
-
-class BatchJobSubmitRequest(BaseModel):
+class BatchJobSubmitRequest(GreenLangBase):
     """Request to submit an async batch job."""
 
     job_type: BatchJobType = Field(
@@ -2137,8 +2022,7 @@ class BatchJobSubmitRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class BatchJobResponse(BaseModel):
+class BatchJobResponse(GreenLangBase):
     """Response for a batch job."""
 
     job_id: str = Field(..., description="Unique job ID")
@@ -2155,7 +2039,7 @@ class BatchJobResponse(BaseModel):
     result: Optional[Dict[str, Any]] = Field(None)
     error: Optional[str] = Field(None)
     callback_url: Optional[str] = Field(None)
-    submitted_at: datetime = Field(default_factory=_utcnow)
+    submitted_at: datetime = Field(default_factory=utcnow)
     started_at: Optional[datetime] = Field(None)
     completed_at: Optional[datetime] = Field(None)
     cancelled_at: Optional[datetime] = Field(None)
@@ -2163,26 +2047,23 @@ class BatchJobResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchJobCancelResponse(BaseModel):
+class BatchJobCancelResponse(GreenLangBase):
     """Response after cancelling a batch job."""
 
     job_id: str = Field(..., description="Cancelled job ID")
     status: BatchJobStatus = Field(
         default=BatchJobStatus.CANCELLED, description="Updated status"
     )
-    cancelled_at: datetime = Field(default_factory=_utcnow)
+    cancelled_at: datetime = Field(default_factory=utcnow)
     message: str = Field(default="Job cancelled successfully")
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Health Check Schema
 # =============================================================================
 
-
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Health check response for the Segregation Verifier API."""
 
     status: str = Field(default="healthy")
@@ -2191,7 +2072,7 @@ class HealthResponse(BaseModel):
         default="EUDR Segregation Verifier Agent"
     )
     version: str = Field(default="1.0.0")
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     components: Dict[str, str] = Field(
         default_factory=lambda: {
             "scp_manager": "healthy",
@@ -2207,7 +2088,6 @@ class HealthResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Forward reference rebuilds
 # =============================================================================
@@ -2215,7 +2095,6 @@ class HealthResponse(BaseModel):
 SCPBatchImportRequest.model_rebuild()
 RunAssessmentRequest.model_rebuild()
 GenerateEvidencePackageRequest.model_rebuild()
-
 
 # =============================================================================
 # Public API

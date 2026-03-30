@@ -46,9 +46,9 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Model imports (graceful fallback)
@@ -138,8 +138,8 @@ except ImportError:
             self.breach_severity = breach_severity
             self.escalation_policy = escalation_policy
             self.business_hours_only = business_hours_only
-            self.created_at = created_at or _utcnow()
-            self.updated_at = updated_at or _utcnow()
+            self.created_at = created_at or utcnow()
+            self.updated_at = updated_at or utcnow()
             self.provenance_hash = provenance_hash
 
         def to_dict(self) -> Dict[str, Any]:
@@ -195,7 +195,7 @@ except ImportError:
             self.critical_hours = critical_hours
             self.breach_severity = breach_severity
             self.escalation_policy = escalation_policy
-            self.created_at = created_at or _utcnow()
+            self.created_at = created_at or utcnow()
 
         def to_dict(self) -> Dict[str, Any]:
             """Serialize to dictionary."""
@@ -209,7 +209,6 @@ except ImportError:
                 "created_at": self.created_at.isoformat()
                 if self.created_at else None,
             }
-
 
 # ---------------------------------------------------------------------------
 # Metrics import (graceful fallback)
@@ -358,16 +357,9 @@ except ImportError:
             with self._lock:
                 return len(self._chain)
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _generate_id() -> str:
     """Generate a unique identifier (UUID4 hex string).
@@ -376,7 +368,6 @@ def _generate_id() -> str:
         32-character lowercase hexadecimal string.
     """
     return uuid4().hex
-
 
 def _resolve_breach_severity(value: str) -> str:
     """Resolve a breach severity string to a canonical lowercase value.
@@ -399,7 +390,6 @@ def _resolve_breach_severity(value: str) -> str:
         )
     return canonical
 
-
 def _resolve_escalation_policy(value: str) -> str:
     """Resolve an escalation policy string to a canonical lowercase value.
 
@@ -421,7 +411,6 @@ def _resolve_escalation_policy(value: str) -> str:
         )
     return canonical
 
-
 # ---------------------------------------------------------------------------
 # Business hours constants
 # ---------------------------------------------------------------------------
@@ -438,11 +427,9 @@ _BUSINESS_HOURS_PER_DAY: float = float(_BUSINESS_HOUR_END - _BUSINESS_HOUR_START
 #: Business days per week (Monday=0 through Friday=4).
 _BUSINESS_DAYS: set = {0, 1, 2, 3, 4}
 
-
 # ---------------------------------------------------------------------------
 # SLADefinitionEngine
 # ---------------------------------------------------------------------------
-
 
 class SLADefinitionEngine:
     """Pure-Python engine for managing SLA rules for monitored datasets.
@@ -591,7 +578,7 @@ class SLADefinitionEngine:
 
         # Build SLADefinition
         sla_id = _generate_id()
-        now = _utcnow()
+        now = utcnow()
 
         sla = SLADefinition(
             id=sla_id,
@@ -776,7 +763,7 @@ class SLADefinitionEngine:
 
         # Sort by created_at descending (newest first)
         slas.sort(
-            key=lambda s: s.created_at if s.created_at else _utcnow(),
+            key=lambda s: s.created_at if s.created_at else utcnow(),
             reverse=True,
         )
 
@@ -885,7 +872,7 @@ class SLADefinitionEngine:
             )
 
         # Update timestamp
-        sla.updated_at = _utcnow()
+        sla.updated_at = utcnow()
 
         # Compute provenance
         input_hash = self._provenance.hash_record({
@@ -1192,7 +1179,7 @@ class SLADefinitionEngine:
             critical_hours=critical_hours,
             breach_severity=breach_severity,
             escalation_policy=escalation_policy,
-            created_at=_utcnow(),
+            created_at=utcnow(),
         )
 
         # Provenance
@@ -1451,7 +1438,7 @@ class SLADefinitionEngine:
             False
         """
         if timestamp is None:
-            timestamp = _utcnow()
+            timestamp = utcnow()
 
         weekday = timestamp.weekday()
         hour = timestamp.hour
@@ -1517,7 +1504,7 @@ class SLADefinitionEngine:
             >>> assert abs(effective - 33.6) < 0.01
         """
         if current_time is None:
-            current_time = _utcnow()
+            current_time = utcnow()
 
         with self._lock:
             if sla_id not in self._slas:
@@ -1749,7 +1736,6 @@ class SLADefinitionEngine:
             return BreachSeverity.HIGH
 
         return BreachSeverity.CRITICAL
-
 
 # ---------------------------------------------------------------------------
 # __all__ export list

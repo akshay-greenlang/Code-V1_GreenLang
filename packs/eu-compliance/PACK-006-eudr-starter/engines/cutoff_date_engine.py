@@ -54,6 +54,8 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
@@ -62,21 +64,13 @@ _MODULE_VERSION: str = "1.0.0"
 CUTOFF_DATE = datetime(2020, 12, 31, tzinfo=timezone.utc)
 CUTOFF_DATE_DATE = date(2020, 12, 31)
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -88,7 +82,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 def _parse_date(value: Any) -> Optional[datetime]:
     """Parse a date value to a timezone-aware datetime.
@@ -115,11 +108,9 @@ def _parse_date(value: Any) -> Optional[datetime]:
             return None
     return None
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CutoffComplianceStatus(str, Enum):
     """Cutoff date compliance status categories."""
@@ -128,7 +119,6 @@ class CutoffComplianceStatus(str, Enum):
     NON_COMPLIANT = "NON_COMPLIANT"
     INSUFFICIENT_EVIDENCE = "INSUFFICIENT_EVIDENCE"
     EXEMPTED = "EXEMPTED"
-
 
 class LandUseType(str, Enum):
     """Types of land use for temporal analysis."""
@@ -141,7 +131,6 @@ class LandUseType(str, Enum):
     WETLAND = "WETLAND"
     BARREN = "BARREN"
     UNKNOWN = "UNKNOWN"
-
 
 class EvidenceSource(str, Enum):
     """Sources of temporal evidence."""
@@ -156,7 +145,6 @@ class EvidenceSource(str, Enum):
     AERIAL_PHOTOGRAPHY = "AERIAL_PHOTOGRAPHY"
     OTHER = "OTHER"
 
-
 class EvidenceStrength(str, Enum):
     """Strength/reliability classification of evidence."""
 
@@ -164,7 +152,6 @@ class EvidenceStrength(str, Enum):
     MODERATE = "MODERATE"
     WEAK = "WEAK"
     INSUFFICIENT = "INSUFFICIENT"
-
 
 class ExemptionReason(str, Enum):
     """Reasons for cutoff date exemption."""
@@ -175,11 +162,9 @@ class ExemptionReason(str, Enum):
     FORCE_MAJEURE = "FORCE_MAJEURE"
     NON_COVERED_PRODUCT = "NON_COVERED_PRODUCT"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class TemporalEvidence(BaseModel):
     """A piece of temporal evidence for cutoff date verification."""
@@ -199,7 +184,6 @@ class TemporalEvidence(BaseModel):
     confidence_score: float = Field(default=0.5, ge=0, le=1.0, description="Confidence 0-1")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class CutoffVerification(BaseModel):
     """Result of cutoff date compliance verification."""
 
@@ -216,9 +200,8 @@ class CutoffVerification(BaseModel):
     confidence_score: float = Field(default=0.0, ge=0, le=1.0, description="Confidence 0-1")
     reasoning: List[str] = Field(default_factory=list, description="Verification reasoning")
     article_reference: str = Field(default="Article 2(8), 3(a)", description="EUDR article reference")
-    verified_at: datetime = Field(default_factory=_utcnow, description="Verification timestamp")
+    verified_at: datetime = Field(default_factory=utcnow, description="Verification timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class DeforestationFreeResult(BaseModel):
     """Result of deforestation-free assessment."""
@@ -235,7 +218,6 @@ class DeforestationFreeResult(BaseModel):
     confidence_score: float = Field(default=0.0, ge=0, le=1.0, description="Confidence 0-1")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class LandUseChange(BaseModel):
     """A single land use change observation."""
 
@@ -244,7 +226,6 @@ class LandUseChange(BaseModel):
     to_type: LandUseType = Field(..., description="New land use")
     is_deforestation: bool = Field(default=False, description="Whether this constitutes deforestation")
     is_post_cutoff: bool = Field(default=False, description="Whether change occurred after cutoff")
-
 
 class LandUseHistory(BaseModel):
     """Land use history for a plot over a time period."""
@@ -259,7 +240,6 @@ class LandUseHistory(BaseModel):
     post_cutoff_deforestation: int = Field(default=0, description="Post-cutoff deforestation events")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class CutoffDeclaration(BaseModel):
     """Formal cutoff date compliance declaration."""
 
@@ -271,10 +251,9 @@ class CutoffDeclaration(BaseModel):
     evidence_summary: str = Field(default="", description="Summary of supporting evidence")
     evidence_count: int = Field(default=0, description="Number of evidence items")
     declared_by: Optional[str] = Field(None, description="Person/entity making declaration")
-    declared_at: datetime = Field(default_factory=_utcnow, description="Declaration timestamp")
+    declared_at: datetime = Field(default_factory=utcnow, description="Declaration timestamp")
     valid_until: Optional[datetime] = Field(None, description="Declaration validity period end")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class ExemptionResult(BaseModel):
     """Result of exemption check for cutoff date requirements."""
@@ -285,7 +264,6 @@ class ExemptionResult(BaseModel):
     article_reference: Optional[str] = Field(None, description="EUDR article reference")
     conditions: List[str] = Field(default_factory=list, description="Exemption conditions")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class BatchCutoffResult(BaseModel):
     """Result of batch cutoff verification across multiple plots."""
@@ -298,9 +276,8 @@ class BatchCutoffResult(BaseModel):
     exempted_count: int = Field(default=0, description="Exempted plots")
     results: List[CutoffVerification] = Field(default_factory=list, description="Per-plot results")
     overall_compliance_rate: float = Field(default=0.0, description="% of compliant plots")
-    verified_at: datetime = Field(default_factory=_utcnow, description="Batch verification timestamp")
+    verified_at: datetime = Field(default_factory=utcnow, description="Batch verification timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class CutoffSummary(BaseModel):
     """Summary of cutoff compliance status across plots."""
@@ -313,14 +290,12 @@ class CutoffSummary(BaseModel):
     compliance_rate: float = Field(default=0.0, description="Compliance rate %")
     high_risk_plots: List[str] = Field(default_factory=list, description="Plot IDs needing attention")
     summary_text: str = Field(default="", description="Human-readable summary")
-    generated_at: datetime = Field(default_factory=_utcnow, description="Summary timestamp")
+    generated_at: datetime = Field(default_factory=utcnow, description="Summary timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class CutoffDateEngine:
     """
@@ -558,7 +533,7 @@ class CutoffDateEngine:
         for source, description, strength in evidence_requirements:
             ev = TemporalEvidence(
                 source=source,
-                observation_date=_utcnow(),
+                observation_date=utcnow(),
                 land_use_observed=LandUseType.UNKNOWN,
                 description=description,
                 strength=strength,
@@ -587,7 +562,7 @@ class CutoffDateEngine:
         """
         plot_id = plot.get("plot_id", _new_uuid())
         start = _parse_date(start_date) or datetime(2015, 1, 1, tzinfo=timezone.utc)
-        end = _parse_date(end_date) or _utcnow()
+        end = _parse_date(end_date) or utcnow()
 
         changes: List[LandUseChange] = []
         deforestation_events = 0
@@ -710,7 +685,7 @@ class CutoffDateEngine:
                 f"determination can be made."
             )
 
-        valid_until = _utcnow() + timedelta(days=self._declaration_validity)
+        valid_until = utcnow() + timedelta(days=self._declaration_validity)
 
         declaration = CutoffDeclaration(
             plot_id=plot_id,

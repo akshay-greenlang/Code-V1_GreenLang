@@ -89,6 +89,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -129,20 +130,13 @@ except ImportError:
     _record_compliance_check = None  # type: ignore[assignment]
     _observe_calculation_duration = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ===========================================================================
 # Enumerations
 # ===========================================================================
-
 
 class RegulatoryFramework(str, Enum):
     """Supported regulatory frameworks for F-gas compliance.
@@ -179,7 +173,6 @@ class RegulatoryFramework(str, Enum):
     CSRD_ESRS_E1 = "CSRD_ESRS_E1"
     UK_FGAS = "UK_FGAS"
 
-
 class ComplianceStatus(str, Enum):
     """Compliance assessment status values.
 
@@ -197,7 +190,6 @@ class ComplianceStatus(str, Enum):
     NOT_APPLICABLE = "NOT_APPLICABLE"
     PENDING_REVIEW = "PENDING_REVIEW"
     WARNING = "WARNING"
-
 
 # ===========================================================================
 # Phase-Down Schedule Tables
@@ -295,7 +287,6 @@ _UK_FGAS_PHASE_DOWN: Dict[int, Decimal] = {
 }
 _UK_FGAS_TERMINAL_PCT = Decimal("15")
 
-
 # ===========================================================================
 # EU F-Gas Equipment Bans
 # ===========================================================================
@@ -388,7 +379,6 @@ _EU_FGAS_EQUIPMENT_BANS: List[Dict[str, Any]] = [
     },
 ]
 
-
 # ===========================================================================
 # EU F-Gas Leak Check Requirements
 # ===========================================================================
@@ -424,7 +414,6 @@ _EU_FGAS_LEAK_CHECK_REQUIREMENTS: List[Dict[str, Any]] = [
 # With automatic leak detection systems, check frequency is halved
 _LEAK_CHECK_ALD_REDUCTION_FACTOR = 2
 
-
 # ===========================================================================
 # EPA Reporting Thresholds
 # ===========================================================================
@@ -433,7 +422,6 @@ _EPA_SUBPART_DD_THRESHOLD_LB_CO2E = Decimal("17820")
 _EPA_SUBPART_DD_THRESHOLD_KG_CO2E = Decimal("8083")  # 17820 lb * 0.4536
 _EPA_SUBPART_OO_THRESHOLD_TCO2E = Decimal("25000")
 _EPA_SUBPART_L_THRESHOLD_TCO2E = Decimal("25000")
-
 
 # ===========================================================================
 # Framework Reporting Requirements
@@ -514,11 +502,9 @@ _FRAMEWORK_REQUIREMENTS: Dict[str, List[Dict[str, str]]] = {
     ],
 }
 
-
 # ===========================================================================
 # Dataclasses
 # ===========================================================================
-
 
 @dataclass
 class ComplianceRecord:
@@ -580,7 +566,6 @@ class ComplianceRecord:
             "metadata": self.metadata,
         }
 
-
 @dataclass
 class QuotaRecord:
     """Organization quota tracking record.
@@ -621,11 +606,9 @@ class QuotaRecord:
             "last_updated": self.last_updated,
         }
 
-
 # ===========================================================================
 # ComplianceTrackerEngine
 # ===========================================================================
-
 
 class ComplianceTrackerEngine:
     """Regulatory compliance tracking engine for refrigerant and F-gas
@@ -727,7 +710,7 @@ class ComplianceTrackerEngine:
         self._validate_framework(framework)
 
         if year is None:
-            year = _utcnow().year
+            year = utcnow().year
         if check_date is None:
             check_date = date.today()
         if gwp is not None and not isinstance(gwp, Decimal):
@@ -985,7 +968,7 @@ class ComplianceTrackerEngine:
             json.dumps(provenance_data, sort_keys=True).encode("utf-8")
         ).hexdigest()
 
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         record = ComplianceRecord(
             record_id=f"cc_{uuid4().hex[:12]}",
@@ -1349,7 +1332,7 @@ class ComplianceTrackerEngine:
         self._validate_framework(framework)
 
         quota_key = f"{organization_id}:{year}:{framework}"
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         quota = QuotaRecord(
             organization_id=organization_id,
@@ -1423,7 +1406,7 @@ class ComplianceTrackerEngine:
             raise ValueError(f"usage_co2e must be >= 0, got {usage_co2e}")
 
         if year is None:
-            year = _utcnow().year
+            year = utcnow().year
 
         quota_key = f"{organization_id}:{year}:{framework}"
 
@@ -1461,7 +1444,7 @@ class ComplianceTrackerEngine:
             else:
                 quota.status = "under_quota"
 
-            quota.last_updated = _utcnow().isoformat()
+            quota.last_updated = utcnow().isoformat()
 
         # Record provenance
         if _PROVENANCE_AVAILABLE and _get_provenance_tracker is not None:
@@ -1512,7 +1495,7 @@ class ComplianceTrackerEngine:
             ValueError: If no quota is registered.
         """
         if year is None:
-            year = _utcnow().year
+            year = utcnow().year
 
         quota_key = f"{organization_id}:{year}:{framework}"
 
@@ -1550,7 +1533,7 @@ class ComplianceTrackerEngine:
             Dictionary with compliance report data.
         """
         if year is None:
-            year = _utcnow().year
+            year = utcnow().year
 
         with self._lock:
             records = list(self._compliance_history)
@@ -1625,7 +1608,7 @@ class ComplianceTrackerEngine:
         report = {
             "report_year": year,
             "organization_id": organization_id,
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
             "summary": {
                 "total_checks": total_checks,
                 "compliant": compliant_count,

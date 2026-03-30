@@ -39,20 +39,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
-
-class Severity(str, Enum):
-    """Severity levels for validation findings.
-
-    Attributes:
-        ERROR: Validation failure that must be fixed. Causes validation to fail.
-        WARNING: Potential issue that should be reviewed. Does not fail validation
-            unless --fail-on-warnings is specified.
-        INFO: Informational message for awareness. Never fails validation.
-    """
-    ERROR = "error"
-    WARNING = "warning"
-    INFO = "info"
-
+from greenlang.schemas.enums import Severity
 
 class ErrorCategory(str, Enum):
     """Categories for organizing error codes.
@@ -78,7 +65,6 @@ class ErrorCategory(str, Enum):
     DEPRECATION = "deprecation"
     LINT = "lint"
     LIMIT = "limit"
-
 
 class ErrorCode(str, Enum):
     """All GLSCHEMA-* error codes for schema validation.
@@ -348,7 +334,6 @@ class ErrorCode(str, Enum):
     # E809: Processing timeout exceeded
     TIMEOUT_EXCEEDED = "GLSCHEMA-E809"
 
-
 @dataclass(frozen=True)
 class ErrorInfo:
     """Complete information about an error code.
@@ -382,7 +367,6 @@ class ErrorInfo:
     message_template: str
     hint_template: Optional[str] = None
     documentation_url: Optional[str] = None
-
 
 # =============================================================================
 # Error Registry - Maps ErrorCode to ErrorInfo
@@ -1026,7 +1010,6 @@ ERROR_REGISTRY: Dict[ErrorCode, ErrorInfo] = {
     ),
 }
 
-
 # =============================================================================
 # Helper Functions
 # =============================================================================
@@ -1064,7 +1047,6 @@ def get_error_info(code: Union[ErrorCode, str]) -> ErrorInfo:
 
     return ERROR_REGISTRY[code]
 
-
 def format_error_message(
     code: Union[ErrorCode, str],
     **kwargs: Any
@@ -1100,7 +1082,6 @@ def format_error_message(
         for key, value in kwargs.items():
             result = result.replace(f"{{{key}}}", str(value))
         return result
-
 
 def format_error_hint(
     code: Union[ErrorCode, str],
@@ -1139,7 +1120,6 @@ def format_error_hint(
             result = result.replace(f"{{{key}}}", str(value))
         return result
 
-
 def is_error(code: Union[ErrorCode, str]) -> bool:
     """Check if an error code represents an error (not warning/info).
 
@@ -1157,7 +1137,6 @@ def is_error(code: Union[ErrorCode, str]) -> bool:
     """
     info = get_error_info(code)
     return info.severity == Severity.ERROR
-
 
 def is_warning(code: Union[ErrorCode, str]) -> bool:
     """Check if an error code represents a warning.
@@ -1177,7 +1156,6 @@ def is_warning(code: Union[ErrorCode, str]) -> bool:
     info = get_error_info(code)
     return info.severity == Severity.WARNING
 
-
 def is_info(code: Union[ErrorCode, str]) -> bool:
     """Check if an error code represents informational message.
 
@@ -1195,7 +1173,6 @@ def is_info(code: Union[ErrorCode, str]) -> bool:
     """
     info = get_error_info(code)
     return info.severity == Severity.INFO
-
 
 def get_codes_by_category(category: ErrorCategory) -> List[ErrorCode]:
     """Get all error codes in a specific category.
@@ -1215,7 +1192,6 @@ def get_codes_by_category(category: ErrorCategory) -> List[ErrorCode]:
         code for code, info in ERROR_REGISTRY.items()
         if info.category == category
     ]
-
 
 def get_codes_by_severity(severity: Severity) -> List[ErrorCode]:
     """Get all error codes with a specific severity.
@@ -1237,7 +1213,6 @@ def get_codes_by_severity(severity: Severity) -> List[ErrorCode]:
         if info.severity == severity
     ]
 
-
 def get_all_error_codes() -> List[str]:
     """Get all registered error code strings.
 
@@ -1250,7 +1225,6 @@ def get_all_error_codes() -> List[str]:
         True
     """
     return [info.code for info in ERROR_REGISTRY.values()]
-
 
 def validate_error_code(code: str) -> bool:
     """Check if a string is a valid GLSCHEMA-* error code.
@@ -1268,7 +1242,6 @@ def validate_error_code(code: str) -> bool:
         False
     """
     return code in get_all_error_codes()
-
 
 def get_error_by_code(code: str) -> Optional[ErrorCode]:
     """Look up an ErrorCode enum by its string code.
@@ -1290,7 +1263,6 @@ def get_error_by_code(code: str) -> Optional[ErrorCode]:
         if error_code.value == code:
             return error_code
     return None
-
 
 # =============================================================================
 # Module Exports

@@ -68,18 +68,13 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -99,7 +94,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str) -> str:
     """Generate a unique identifier with a given prefix.
 
@@ -110,7 +104,6 @@ def _generate_id(prefix: str) -> str:
         ID in format ``{prefix}-{hex12}``.
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -150,11 +143,9 @@ EUDR_CUTOFF_DATE: str = "2020-12-31"
 #: Maximum alerts returned in a single query by default.
 DEFAULT_ALERT_LIMIT: int = 100
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class ChangeResult:
@@ -196,7 +187,6 @@ class ChangeResult:
             "sensor": self.sensor,
         }
 
-
 @dataclass
 class MonitoringResultInput:
     """Monitoring result used as input for alert generation.
@@ -234,7 +224,6 @@ class MonitoringResultInput:
             "executed_at": self.executed_at,
         }
 
-
 @dataclass
 class SatelliteAlert:
     """Satellite-derived deforestation alert.
@@ -265,7 +254,7 @@ class SatelliteAlert:
     alert_id: str = field(default_factory=lambda: _generate_id("ALR"))
     plot_id: str = ""
     severity: str = "info"
-    created_at: datetime = field(default_factory=_utcnow)
+    created_at: datetime = field(default_factory=utcnow)
     ndvi_drop: float = 0.0
     ndvi_baseline: float = 0.0
     ndvi_current: float = 0.0
@@ -311,7 +300,6 @@ class SatelliteAlert:
             "provenance_hash": self.provenance_hash,
         }
 
-
 @dataclass
 class AlertSummary:
     """Aggregate summary of alert statistics.
@@ -352,7 +340,6 @@ class AlertSummary:
             "provenance_hash": self.provenance_hash,
         }
 
-
 @dataclass
 class EvidencePackage:
     """Complete evidence package for DDS submission.
@@ -378,7 +365,7 @@ class EvidencePackage:
     package_id: str = field(default_factory=lambda: _generate_id("EVD"))
     plot_id: str = ""
     operator_id: str = ""
-    created_at: datetime = field(default_factory=_utcnow)
+    created_at: datetime = field(default_factory=utcnow)
     format: str = "json"
     baseline_snapshot: Dict[str, Any] = field(default_factory=dict)
     latest_analysis: Dict[str, Any] = field(default_factory=dict)
@@ -411,11 +398,9 @@ class EvidencePackage:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # AlertGenerator
 # ---------------------------------------------------------------------------
-
 
 class AlertGenerator:
     """Alert generation and evidence packaging engine for EUDR satellite monitoring.
@@ -571,7 +556,7 @@ class AlertGenerator:
         alert = self._alerts[alert_id]
         alert.acknowledged = True
         alert.acknowledged_by = user_id
-        alert.acknowledged_at = _utcnow()
+        alert.acknowledged_at = utcnow()
         alert.acknowledgement_notes = notes
 
         # Recompute provenance hash with acknowledgement data
@@ -1131,7 +1116,7 @@ class AlertGenerator:
         """
         return {
             "plot_id": plot_id,
-            "observation_date": _utcnow().strftime("%Y-%m-%d"),
+            "observation_date": utcnow().strftime("%Y-%m-%d"),
             "ndvi": 0.65,
             "ndvi_change": -0.05,
             "deforestation_score": 0.2,
@@ -1251,7 +1236,6 @@ class AlertGenerator:
     def evidence_package_count(self) -> int:
         """Return the total number of stored evidence packages."""
         return len(self._evidence_packages)
-
 
 # ---------------------------------------------------------------------------
 # Module Exports

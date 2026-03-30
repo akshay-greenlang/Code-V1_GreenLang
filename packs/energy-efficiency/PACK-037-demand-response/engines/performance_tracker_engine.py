@@ -70,25 +70,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -106,7 +100,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -115,7 +108,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -127,22 +119,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ComplianceStatus(str, Enum):
     """Event compliance status.
@@ -159,7 +147,6 @@ class ComplianceStatus(str, Enum):
     EXCUSED = "excused"
     PENDING = "pending"
 
-
 class TrendDirection(str, Enum):
     """Performance trend direction indicator.
 
@@ -174,7 +161,6 @@ class TrendDirection(str, Enum):
     DECLINING = "declining"
     DEGRADING = "degrading"
     INSUFFICIENT_DATA = "insufficient_data"
-
 
 class SeasonType(str, Enum):
     """DR programme season classification.
@@ -191,7 +177,6 @@ class SeasonType(str, Enum):
     ANNUAL = "annual"
     CUSTOM = "custom"
 
-
 class PenaltyType(str, Enum):
     """Penalty type for non-compliance.
 
@@ -207,7 +192,6 @@ class PenaltyType(str, Enum):
     AVAILABILITY_FAILURE = "availability_failure"
     NONE = "none"
 
-
 class RiskLevel(str, Enum):
     """Compliance risk level assessment.
 
@@ -220,7 +204,6 @@ class RiskLevel(str, Enum):
     MODERATE = "moderate"
     HIGH = "high"
     CRITICAL = "critical"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -253,11 +236,9 @@ DEFAULT_PENALTY_RATES: Dict[str, Decimal] = {
     PenaltyType.NONE.value: Decimal("0"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class EventRecord(BaseModel):
     """Record of a single DR event for performance tracking.
@@ -283,7 +264,7 @@ class EventRecord(BaseModel):
         default="", max_length=200, description="Programme ID"
     )
     event_date: datetime = Field(
-        default_factory=_utcnow, description="Event date/time"
+        default_factory=utcnow, description="Event date/time"
     )
     duration_hours: Decimal = Field(
         default=Decimal("1"), ge=Decimal("0.25"), le=Decimal("24"),
@@ -322,11 +303,9 @@ class EventRecord(BaseModel):
             raise ValueError("Baseline kWh must be >= 0")
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class EventPerformance(BaseModel):
     """Performance analysis for a single DR event.
@@ -379,10 +358,9 @@ class EventPerformance(BaseModel):
         default=Decimal("0"), description="Net value (USD)"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp"
+        default_factory=utcnow, description="Timestamp"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class SeasonSummary(BaseModel):
     """Seasonal performance summary.
@@ -450,10 +428,9 @@ class SeasonSummary(BaseModel):
         default=Decimal("0"), description="Worst event ratio (%)"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp"
+        default_factory=utcnow, description="Timestamp"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class PerformanceTrend(BaseModel):
     """Performance trend analysis result.
@@ -502,7 +479,6 @@ class PerformanceTrend(BaseModel):
         default=0, ge=0, description="Data points analysed"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class ComplianceReport(BaseModel):
     """Comprehensive compliance report.
@@ -578,15 +554,13 @@ class ComplianceReport(BaseModel):
         default_factory=list, description="Recommendations"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp"
+        default_factory=utcnow, description="Timestamp"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class PerformanceTrackerEngine:
     """Event performance tracking engine for demand response.

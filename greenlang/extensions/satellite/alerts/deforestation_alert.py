@@ -22,6 +22,7 @@ import json
 import logging
 
 import numpy as np
+from greenlang.schemas.enums import AlertSeverity
 
 logger = logging.getLogger(__name__)
 
@@ -32,14 +33,6 @@ class AlertSource(Enum):
     GLAD = "glad"
     RADD = "radd"
     INTERNAL = "internal"
-
-
-class AlertSeverity(Enum):
-    """Alert severity classification."""
-    LOW = "low"           # < 0.5 ha
-    MEDIUM = "medium"     # 0.5 - 5 ha
-    HIGH = "high"         # 5 - 50 ha
-    CRITICAL = "critical" # > 50 ha
 
 
 class AlertConfidence(Enum):

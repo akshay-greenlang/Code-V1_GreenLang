@@ -43,13 +43,13 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas.enums import ValidationSeverity
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -60,7 +60,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -70,7 +69,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class CampaignPhase(str, Enum):
     """Data collection campaign phases."""
 
@@ -79,7 +77,6 @@ class CampaignPhase(str, Enum):
     MONITORING = "monitoring"
     VALIDATION = "validation"
     COMPLETION = "completion"
-
 
 class RequestStatus(str, Enum):
     """Data request submission status."""
@@ -92,7 +89,6 @@ class RequestStatus(str, Enum):
     REJECTED = "rejected"
     OVERDUE = "overdue"
 
-
 class DataRequestType(str, Enum):
     """Type of data request."""
 
@@ -101,15 +97,6 @@ class DataRequestType(str, Enum):
     FILE_UPLOAD = "file_upload"
     API_INTEGRATION = "api_integration"
     MANUAL_ENTRY = "manual_entry"
-
-
-class ValidationSeverity(str, Enum):
-    """Validation issue severity."""
-
-    ERROR = "error"
-    WARNING = "warning"
-    INFO = "info"
-
 
 class EscalationLevel(str, Enum):
     """Escalation level for overdue items."""
@@ -120,11 +107,9 @@ class EscalationLevel(str, Enum):
     ESCALATION_L2 = "escalation_l2"
     CRITICAL = "critical"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -138,7 +123,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list, description="Errors encountered")
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
 
-
 class DataRequirement(BaseModel):
     """Data requirement specification for a facility."""
 
@@ -151,7 +135,6 @@ class DataRequirement(BaseModel):
     deadline: str = Field(default="", description="ISO date deadline")
     priority: str = Field(default="medium", description="high|medium|low")
     source_categories: List[str] = Field(default_factory=list)
-
 
 class DataRequest(BaseModel):
     """Distributed data request record."""
@@ -168,7 +151,6 @@ class DataRequest(BaseModel):
     reminder_count: int = Field(default=0, ge=0)
     escalation_level: EscalationLevel = Field(default=EscalationLevel.NONE)
 
-
 class SubmissionProgress(BaseModel):
     """Submission progress tracking per facility."""
 
@@ -180,7 +162,6 @@ class SubmissionProgress(BaseModel):
     rejected: int = Field(default=0, ge=0)
     overdue: int = Field(default=0, ge=0)
     completion_pct: float = Field(default=0.0, ge=0.0, le=100.0)
-
 
 class ValidationIssue(BaseModel):
     """Data validation issue record."""
@@ -194,7 +175,6 @@ class ValidationIssue(BaseModel):
     expected_range: str = Field(default="")
     actual_value: str = Field(default="")
     resolved: bool = Field(default=False)
-
 
 class CampaignSummary(BaseModel):
     """Campaign completion summary."""
@@ -211,11 +191,9 @@ class CampaignSummary(BaseModel):
     data_quality_score: float = Field(default=0.0, ge=0.0, le=100.0)
     campaign_duration_days: int = Field(default=0, ge=0)
 
-
 # =============================================================================
 # INPUT / OUTPUT
 # =============================================================================
-
 
 class DataCollectionCampaignInput(BaseModel):
     """Input data model for DataCollectionCampaignWorkflow."""
@@ -248,7 +226,6 @@ class DataCollectionCampaignInput(BaseModel):
             raise ValueError("At least one facility_id is required")
         return v
 
-
 class DataCollectionCampaignResult(BaseModel):
     """Complete result from data collection campaign workflow."""
 
@@ -266,11 +243,9 @@ class DataCollectionCampaignResult(BaseModel):
     campaign_summary: Optional[CampaignSummary] = Field(default=None)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class DataCollectionCampaignWorkflow:
     """

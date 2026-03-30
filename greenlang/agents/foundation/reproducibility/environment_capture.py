@@ -43,14 +43,9 @@ from greenlang.agents.foundation.reproducibility.models import (
     VerificationCheck,
 )
 from greenlang.agents.foundation.reproducibility.metrics import record_environment_mismatch
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 class EnvironmentCapture:
     """Environment fingerprinting engine.
@@ -131,7 +126,7 @@ class EnvironmentCapture:
             platform_release=plat_release,
             platform_machine=plat_machine,
             hostname=hostname,
-            captured_at=_utcnow(),
+            captured_at=utcnow(),
             environment_hash=env_hash,
             greenlang_version="1.0.0",
             dependency_versions=dep_versions,
@@ -327,7 +322,6 @@ class EnvironmentCapture:
             EnvironmentFingerprint or None if not found.
         """
         return self._fingerprints.get(fingerprint_id)
-
 
 __all__ = [
     "EnvironmentCapture",

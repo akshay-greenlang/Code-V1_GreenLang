@@ -56,17 +56,13 @@ from .models import (
 )
 from .provenance import get_tracker
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 #: Alert severity thresholds (risk score ranges).
 _ALERT_SEVERITY_THRESHOLDS: Dict[AlertSeverity, Tuple[float, float]] = {
@@ -119,11 +115,9 @@ _FREQUENCY_TO_DAYS: Dict[MonitoringFrequency, int] = {
     MonitoringFrequency.QUARTERLY: 90,
 }
 
-
 # ---------------------------------------------------------------------------
 # MonitoringAlertEngine
 # ---------------------------------------------------------------------------
-
 
 class MonitoringAlertEngine:
     """Continuous supplier risk monitoring and alert generation.
@@ -213,9 +207,9 @@ class MonitoringAlertEngine:
             alert_thresholds=alert_thresholds,
             enabled_alert_types=[t.value for t in enabled_alert_types],
             last_check_at=None,
-            next_check_at=_utcnow() + timedelta(days=_FREQUENCY_TO_DAYS[frequency]),
+            next_check_at=utcnow() + timedelta(days=_FREQUENCY_TO_DAYS[frequency]),
             is_active=True,
-            created_at=_utcnow(),
+            created_at=utcnow(),
         )
 
         # Store config
@@ -296,14 +290,14 @@ class MonitoringAlertEngine:
         # Check 2: Certification expiry
         if AlertType.CERTIFICATION_EXPIRY in enabled_types and certifications:
             expiry_buffer = alert_thresholds.get("CERT_EXPIRY", _CERT_EXPIRY_WARNING_DAYS)
-            expiry_date_threshold = _utcnow() + timedelta(days=expiry_buffer)
+            expiry_date_threshold = utcnow() + timedelta(days=expiry_buffer)
 
             for cert in certifications:
                 expiry_date_str = cert.get("expiry_date")
                 if expiry_date_str:
                     expiry_date = datetime.fromisoformat(expiry_date_str)
                     if expiry_date <= expiry_date_threshold:
-                        days_until_expiry = (expiry_date - _utcnow()).days
+                        days_until_expiry = (expiry_date - utcnow()).days
                         severity = (
                             AlertSeverity.CRITICAL if days_until_expiry <= 30
                             else AlertSeverity.HIGH if days_until_expiry <= 60
@@ -347,7 +341,7 @@ class MonitoringAlertEngine:
             last_assessment_str = dd_status.get("last_assessment_date")
             if last_assessment_str:
                 last_assessment = datetime.fromisoformat(last_assessment_str)
-                days_since_assessment = (_utcnow() - last_assessment).days
+                days_since_assessment = (utcnow() - last_assessment).days
                 overdue_threshold = alert_thresholds.get("DD_OVERDUE", _DD_OVERDUE_THRESHOLD_DAYS)
 
                 if days_since_assessment > overdue_threshold:
@@ -404,10 +398,10 @@ class MonitoringAlertEngine:
         # Update last check time
         with self._lock:
             if supplier_id in self._configs:
-                self._configs[supplier_id].last_check_at = _utcnow()
+                self._configs[supplier_id].last_check_at = utcnow()
                 # Schedule next check
                 frequency_days = _FREQUENCY_TO_DAYS[config.frequency]
-                self._configs[supplier_id].next_check_at = _utcnow() + timedelta(days=frequency_days)
+                self._configs[supplier_id].next_check_at = utcnow() + timedelta(days=frequency_days)
 
         duration = time.perf_counter() - start_time
         logger.info(
@@ -449,7 +443,7 @@ class MonitoringAlertEngine:
             is_resolved=False,
             acknowledged_at=None,
             resolved_at=None,
-            created_at=_utcnow(),
+            created_at=utcnow(),
         )
 
         # Store alert
@@ -594,16 +588,16 @@ class MonitoringAlertEngine:
         config = self._configs.get(supplier_id)
         if config and reassessment_date is None:
             frequency_days = _FREQUENCY_TO_DAYS[config.frequency]
-            reassessment_date = _utcnow() + timedelta(days=frequency_days)
+            reassessment_date = utcnow() + timedelta(days=frequency_days)
         elif reassessment_date is None:
             # Default: 30 days
-            reassessment_date = _utcnow() + timedelta(days=30)
+            reassessment_date = utcnow() + timedelta(days=30)
 
-        days_until = (reassessment_date - _utcnow()).days
+        days_until = (reassessment_date - utcnow()).days
 
         # Update last assessment time
         with self._lock:
-            self._last_assessment_time[supplier_id] = _utcnow()
+            self._last_assessment_time[supplier_id] = utcnow()
 
         # Record provenance
         provenance = get_tracker()
@@ -794,7 +788,7 @@ class MonitoringAlertEngine:
             alert = self._alerts.get(alert_id)
             if alert:
                 alert.is_acknowledged = True
-                alert.acknowledged_at = _utcnow()
+                alert.acknowledged_at = utcnow()
                 alert.metadata["acknowledged_by"] = acknowledged_by
 
         if alert:
@@ -822,7 +816,7 @@ class MonitoringAlertEngine:
             alert = self._alerts.get(alert_id)
             if alert:
                 alert.is_resolved = True
-                alert.resolved_at = _utcnow()
+                alert.resolved_at = utcnow()
                 alert.metadata["resolved_by"] = resolved_by
                 if resolution_notes:
                     alert.metadata["resolution_notes"] = resolution_notes

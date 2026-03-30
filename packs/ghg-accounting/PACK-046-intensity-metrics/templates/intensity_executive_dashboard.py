@@ -38,29 +38,23 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 def _compute_hash(content: str) -> str:
     """Compute SHA-256 hash of string content."""
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -73,20 +67,17 @@ class OutputFormat(str, Enum):
     PDF = "pdf"
     JSON = "json"
 
-
 class TrafficLight(str, Enum):
     """Traffic light status indicators."""
     GREEN = "green"
     AMBER = "amber"
     RED = "red"
 
-
 class ChangeDirection(str, Enum):
     """Direction of year-over-year change."""
     UP = "up"
     DOWN = "down"
     FLAT = "flat"
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Input Models
@@ -96,7 +87,6 @@ class SparklinePoint(BaseModel):
     """Single data point for sparkline visualisation."""
     year: int = Field(..., description="Reporting year")
     value: float = Field(..., description="Intensity value for the year")
-
 
 class IntensityMetricItem(BaseModel):
     """Single intensity metric for the dashboard."""
@@ -121,7 +111,6 @@ class IntensityMetricItem(BaseModel):
             return round(((current - prior) / abs(prior)) * 100.0, 2)
         return None
 
-
 class BenchmarkResult(BaseModel):
     """Benchmark position summary."""
     metric_name: str = Field(..., description="Metric being benchmarked")
@@ -130,7 +119,6 @@ class BenchmarkResult(BaseModel):
     peer_average: Optional[float] = Field(None, description="Peer group average")
     best_in_class: Optional[float] = Field(None, description="Best-in-class value")
     org_value: Optional[float] = Field(None, description="Organisation value")
-
 
 class TargetStatus(BaseModel):
     """Target progress status."""
@@ -143,7 +131,6 @@ class TargetStatus(BaseModel):
     on_track: bool = Field(True, description="Whether target is on track")
     status: TrafficLight = Field(TrafficLight.AMBER, description="Traffic light status")
 
-
 class DecompositionSummary(BaseModel):
     """Summary of LMDI decomposition effects."""
     period_start: int = Field(..., description="Start year")
@@ -154,7 +141,6 @@ class DecompositionSummary(BaseModel):
     total_change_pct: float = Field(0.0, description="Total change as % of base")
     key_driver: str = Field("", description="Primary driver of change")
 
-
 class ActionItem(BaseModel):
     """Recommended action item."""
     priority: int = Field(1, ge=1, le=5, description="Priority (1=highest)")
@@ -162,7 +148,6 @@ class ActionItem(BaseModel):
     expected_impact: str = Field("", description="Expected impact description")
     owner: str = Field("", description="Responsible party")
     timeline: str = Field("", description="Expected timeline")
-
 
 class DashboardInput(BaseModel):
     """Complete input model for IntensityExecutiveDashboard."""
@@ -185,7 +170,6 @@ class DashboardInput(BaseModel):
         default_factory=list, description="Top action items"
     )
 
-
 # ---------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------
@@ -199,7 +183,6 @@ def _arrow(direction: ChangeDirection) -> str:
     }
     return mapping.get(direction, "-")
 
-
 def _html_arrow(direction: ChangeDirection) -> str:
     """Return HTML arrow entity for change direction."""
     mapping = {
@@ -209,11 +192,9 @@ def _html_arrow(direction: ChangeDirection) -> str:
     }
     return mapping.get(direction, "&#9654;")
 
-
 def _tl_label(status: TrafficLight) -> str:
     """Return uppercase label for traffic light."""
     return status.value.upper()
-
 
 def _tl_css(status: TrafficLight) -> str:
     """Return CSS class for traffic light status."""
@@ -224,7 +205,6 @@ def _tl_css(status: TrafficLight) -> str:
     }
     return mapping.get(status, "tl-amber")
 
-
 def _tl_color(status: TrafficLight) -> str:
     """Return hex colour for traffic light status."""
     mapping = {
@@ -233,7 +213,6 @@ def _tl_color(status: TrafficLight) -> str:
         TrafficLight.RED: "#e76f51",
     }
     return mapping.get(status, "#e9c46a")
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -290,7 +269,7 @@ class IntensityExecutiveDashboard:
             Markdown string with provenance hash.
         """
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_md(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -306,7 +285,7 @@ class IntensityExecutiveDashboard:
             Self-contained HTML string.
         """
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_html(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -322,7 +301,7 @@ class IntensityExecutiveDashboard:
             JSON-serializable dict with provenance hash.
         """
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_json(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -351,7 +330,7 @@ class IntensityExecutiveDashboard:
         return (
             f"# Intensity Metrics Dashboard - {company}\n\n"
             f"**Reporting Period:** {period} | "
-            f"**Report Date:** {_utcnow().strftime('%Y-%m-%d')}\n\n"
+            f"**Report Date:** {utcnow().strftime('%Y-%m-%d')}\n\n"
             "---"
         )
 
@@ -565,7 +544,7 @@ class IntensityExecutiveDashboard:
             '<div class="section">\n'
             f"<h1>Intensity Metrics Dashboard &mdash; {company}</h1>\n"
             f"<p><strong>Reporting Period:</strong> {period} | "
-            f"<strong>Report Date:</strong> {_utcnow().strftime('%Y-%m-%d')}</p>\n"
+            f"<strong>Report Date:</strong> {utcnow().strftime('%Y-%m-%d')}</p>\n"
             "<hr>\n</div>"
         )
 

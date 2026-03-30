@@ -79,8 +79,9 @@ from .models import (
 )
 from .provenance import get_tracker
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -114,28 +115,19 @@ _FACTOR_KEYS: List[str] = [
 _TREND_IMPROVING_THRESHOLD: Decimal = Decimal("-2.0")
 _TREND_DETERIORATING_THRESHOLD: Decimal = Decimal("2.0")
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal for precise arithmetic."""
     if isinstance(value, Decimal):
         return value
     return Decimal(str(value))
 
-
 def _float(value: Decimal) -> float:
     """Convert Decimal to float for API responses."""
     return float(value)
 
-
 # ---------------------------------------------------------------------------
 # SupplierRiskScorer
 # ---------------------------------------------------------------------------
-
 
 class SupplierRiskScorer:
     """Multi-factor weighted composite supplier risk scoring per EUDR Article 10-11.
@@ -258,7 +250,7 @@ class SupplierRiskScorer:
 
             # Step 9: Create assessment
             assessment_id = str(uuid.uuid4())
-            now = _utcnow()
+            now = utcnow()
 
             assessment = SupplierRiskAssessment(
                 assessment_id=assessment_id,
@@ -585,7 +577,7 @@ class SupplierRiskScorer:
             )
 
         # Filter by time window if specified
-        now = _utcnow()
+        now = utcnow()
         window_months = request.window_months or cfg.trend_window_months
         cutoff_date = now - timedelta(days=window_months * 30)
         filtered_history = [
@@ -884,7 +876,7 @@ class SupplierRiskScorer:
         # Data freshness
         freshness = Decimal("1.0")
         if data_dates:
-            now = _utcnow()
+            now = utcnow()
             max_age = timedelta(days=365)  # 1 year threshold
             oldest_date = min(data_dates.values())
             age = now - oldest_date
@@ -925,7 +917,7 @@ class SupplierRiskScorer:
             return TrendDirection.STABLE, Decimal("0.0")
 
         # Get recent window
-        now = _utcnow()
+        now = utcnow()
         window = timedelta(days=cfg.trend_window_months * 30)
         cutoff = now - window
         recent = [(ts, score) for ts, score in history if ts >= cutoff]

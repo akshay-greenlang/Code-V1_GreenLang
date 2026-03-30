@@ -31,6 +31,7 @@ from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi.responses import JSONResponse
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.due_diligence_orchestrator.api.dependencies import (
     AuthUser,
@@ -471,6 +472,6 @@ async def validate_package(
             "coverage_pct": str(field_coverage_pct),
         },
         "integrity_hash": package.integrity_hash,
-        "validated_at": _utcnow().isoformat(),
+        "validated_at": utcnow().isoformat(),
         "validated_by": user.user_id,
     }

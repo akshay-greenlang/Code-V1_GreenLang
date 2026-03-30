@@ -27,6 +27,7 @@ from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.due_diligence_orchestrator.api.dependencies import (
     AuthUser,
@@ -321,7 +322,7 @@ async def get_phase_status(
         "status": state.status.value if hasattr(state.status, "value") else str(state.status),
         "current_phase": state.current_phase.value if hasattr(state.current_phase, "value") else str(state.current_phase),
         "phases": phases,
-        "retrieved_at": _utcnow().isoformat(),
+        "retrieved_at": utcnow().isoformat(),
     }
 
 
@@ -398,7 +399,7 @@ async def get_workflow_eta(
     # Estimate completion time if ETA is available
     if eta_seconds > 0:
         from datetime import timedelta
-        estimated_completion = (_utcnow() + timedelta(seconds=eta_seconds)).isoformat()
+        estimated_completion = (utcnow() + timedelta(seconds=eta_seconds)).isoformat()
     else:
         estimated_completion = None
 
@@ -412,5 +413,5 @@ async def get_workflow_eta(
         "agents_total": total_agents,
         "progress_pct": str(state.progress_pct),
         "current_phase": state.current_phase.value if hasattr(state.current_phase, "value") else str(state.current_phase),
-        "calculated_at": _utcnow().isoformat(),
+        "calculated_at": utcnow().isoformat(),
     }

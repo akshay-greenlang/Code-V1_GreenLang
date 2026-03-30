@@ -51,27 +51,22 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import HealthStatus
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
 PACK_BASE_DIR = Path(__file__).parent.parent
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -84,20 +79,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
-
-class HealthStatus(str, Enum):
-    """Health check status values."""
-
-    HEALTHY = "healthy"
-    DEGRADED = "degraded"
-    UNHEALTHY = "unhealthy"
-    UNKNOWN = "unknown"
-
 
 class HealthSeverity(str, Enum):
     """Severity of a health issue."""
@@ -105,7 +89,6 @@ class HealthSeverity(str, Enum):
     CRITICAL = "critical"
     WARNING = "warning"
     INFO = "info"
-
 
 class CheckCategory(str, Enum):
     """Health check category."""
@@ -129,11 +112,9 @@ class CheckCategory(str, Enum):
     CONFIG = "config"
     MANIFEST = "manifest"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class HealthCheckConfig(BaseModel):
     """Configuration for the health check system."""
@@ -142,7 +123,6 @@ class HealthCheckConfig(BaseModel):
     enable_deep_checks: bool = Field(default=False)
     timeout_seconds: int = Field(default=30, ge=5)
     check_external_deps: bool = Field(default=False)
-
 
 class ComponentHealth(BaseModel):
     """Health status of a single component."""
@@ -154,7 +134,6 @@ class ComponentHealth(BaseModel):
     duration_ms: float = Field(default=0.0)
     details: Dict[str, Any] = Field(default_factory=dict)
 
-
 class RemediationSuggestion(BaseModel):
     """Remediation suggestion for a health issue."""
 
@@ -162,7 +141,6 @@ class RemediationSuggestion(BaseModel):
     severity: HealthSeverity = Field(default=HealthSeverity.INFO)
     issue: str = Field(default="")
     suggestion: str = Field(default="")
-
 
 class HealthCheckResult(BaseModel):
     """Complete health check result."""
@@ -181,7 +159,6 @@ class HealthCheckResult(BaseModel):
     remediations: List[RemediationSuggestion] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class HealthReport(BaseModel):
     """Formatted health report for display."""
 
@@ -195,7 +172,6 @@ class HealthReport(BaseModel):
     issues: List[str] = Field(default_factory=list)
     recommendations: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # File Expectations
@@ -239,11 +215,9 @@ INTEGRATION_CLASSES: Dict[str, str] = {
     "setup_wizard": "CSDDDSetupWizard",
 }
 
-
 # ---------------------------------------------------------------------------
 # CSDDDHealthCheck
 # ---------------------------------------------------------------------------
-
 
 class CSDDDHealthCheck:
     """System health verification for PACK-019 CSDDD Readiness.
@@ -273,7 +247,7 @@ class CSDDDHealthCheck:
         """
         result = HealthCheckResult(
             pack_id=self.config.pack_id,
-            started_at=_utcnow(),
+            started_at=utcnow(),
         )
 
         # Engine checks
@@ -307,7 +281,7 @@ class CSDDDHealthCheck:
         else:
             result.status = HealthStatus.HEALTHY
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.total_duration_ms = (
                 result.completed_at - result.started_at

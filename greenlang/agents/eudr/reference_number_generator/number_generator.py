@@ -52,19 +52,13 @@ from .models import (
     ReferenceNumberStatus,
 )
 from .provenance import GENESIS_HASH, ProvenanceTracker
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute deterministic SHA-256 hash for provenance."""
@@ -72,7 +66,6 @@ def _compute_hash(data: Any) -> str:
         data, sort_keys=True, separators=(",", ":"), default=str
     )
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-
 
 class NumberGenerator:
     """Core reference number generation engine.
@@ -147,7 +140,7 @@ class NumberGenerator:
         self._validate_inputs(operator_id, member_state)
 
         # Step 3: Get current year
-        now = _utcnow()
+        now = utcnow()
         year = now.year
 
         # Step 4: Get next sequence number (atomic)
@@ -305,6 +298,7 @@ class NumberGenerator:
             )
         member_state_upper = member_state.upper()
         from .config import EU_MEMBER_STATES
+
         if member_state_upper not in EU_MEMBER_STATES:
             raise ValueError(
                 f"member_state '{member_state}' is not a valid EU member state"

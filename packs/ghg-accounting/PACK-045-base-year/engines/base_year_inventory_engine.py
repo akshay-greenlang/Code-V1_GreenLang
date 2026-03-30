@@ -81,25 +81,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -122,7 +116,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -131,7 +124,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -143,31 +135,25 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round2(value: Any) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
-
 def _round3(value: Any) -> float:
     """Round to 3 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
-
 
 def _round4(value: Any) -> float:
     """Round to 4 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ScopeType(str, Enum):
     """GHG Protocol emission scope classification.
@@ -183,7 +169,6 @@ class ScopeType(str, Enum):
     SCOPE_2_LOCATION = "scope_2_location"
     SCOPE_2_MARKET = "scope_2_market"
     SCOPE_3 = "scope_3"
-
 
 class SourceCategory(str, Enum):
     """Emission source categories covering Scope 1, 2, and 3.
@@ -249,7 +234,6 @@ class SourceCategory(str, Enum):
     SCOPE3_CAT14 = "scope3_cat14"
     SCOPE3_CAT15 = "scope3_cat15"
 
-
 class GasType(str, Enum):
     """Greenhouse gas types covered by the Kyoto Protocol and amendments.
 
@@ -269,7 +253,6 @@ class GasType(str, Enum):
     SF6 = "sf6"
     NF3 = "nf3"
 
-
 class GWPVersion(str, Enum):
     """IPCC Assessment Report version for GWP values.
 
@@ -281,7 +264,6 @@ class GWPVersion(str, Enum):
     AR5 = "ar5"
     AR6 = "ar6"
 
-
 class ConsolidationApproach(str, Enum):
     """Organisational boundary consolidation approach.
 
@@ -292,7 +274,6 @@ class ConsolidationApproach(str, Enum):
     EQUITY_SHARE = "equity_share"
     FINANCIAL_CONTROL = "financial_control"
     OPERATIONAL_CONTROL = "operational_control"
-
 
 class MethodologyTier(str, Enum):
     """Tier of emission calculation methodology.
@@ -306,7 +287,6 @@ class MethodologyTier(str, Enum):
     TIER_2 = "tier_2"
     TIER_3 = "tier_3"
     TIER_4 = "tier_4"
-
 
 class InventoryStatus(str, Enum):
     """Status of a base year inventory.
@@ -322,7 +302,6 @@ class InventoryStatus(str, Enum):
     FROZEN = "frozen"
     SUPERSEDED = "superseded"
     ARCHIVED = "archived"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -432,11 +411,9 @@ SCOPE_3_CATEGORIES = {
 MINIMUM_BASE_YEAR: int = 1990
 MAXIMUM_BASE_YEAR: int = 2035
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class SourceEmission(BaseModel):
     """A single emission source entry in the base year inventory.
@@ -542,7 +519,6 @@ class SourceEmission(BaseModel):
         """Derive the scope from the source category."""
         return CATEGORY_SCOPE_MAP.get(self.category.value, ScopeType.SCOPE_1)
 
-
 class InventoryConfig(BaseModel):
     """Configuration for establishing a base year inventory.
 
@@ -594,11 +570,9 @@ class InventoryConfig(BaseModel):
         description="Minimum data quality score for inclusion"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class ScopeTotal(BaseModel):
     """Aggregated emissions total for a single scope.
@@ -650,7 +624,6 @@ class ScopeTotal(BaseModel):
         description="Average data quality (0-100)"
     )
 
-
 class InventoryDiffItem(BaseModel):
     """A single difference between two inventories.
 
@@ -693,7 +666,6 @@ class InventoryDiffItem(BaseModel):
         default=False,
         description="Exceeds significance threshold"
     )
-
 
 class InventoryComparison(BaseModel):
     """Comparison result between two base year inventories.
@@ -759,7 +731,6 @@ class InventoryComparison(BaseModel):
         default="", description="SHA-256 provenance hash"
     )
 
-
 class CompletenessAssessment(BaseModel):
     """Assessment of inventory completeness against expected categories.
 
@@ -800,7 +771,6 @@ class CompletenessAssessment(BaseModel):
         default_factory=list,
         description="Completeness warnings"
     )
-
 
 class BaseYearInventory(BaseModel):
     """Complete base year emissions inventory.
@@ -934,11 +904,9 @@ class BaseYearInventory(BaseModel):
         """Coerce emission totals to Decimal."""
         return _decimal(v)
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class BaseYearInventoryEngine:
     """Complete base year emissions inventory preservation engine.
@@ -1060,7 +1028,7 @@ class BaseYearInventoryEngine:
         inventory = BaseYearInventory(
             organization_id=config.organization_id,
             base_year=config.base_year,
-            established_date=_utcnow().isoformat(),
+            established_date=utcnow().isoformat(),
             status=InventoryStatus.ESTABLISHED,
             sources=filtered_sources,
             scope_totals=scope_totals,
@@ -1074,7 +1042,7 @@ class BaseYearInventoryEngine:
             boundary_description=config.boundary_description,
             methodology_summary=config.methodology_summary,
             completeness=completeness,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         inventory.provenance_hash = _compute_hash(inventory)
@@ -1531,7 +1499,7 @@ class BaseYearInventoryEngine:
             any_significant=any_significant,
             significance_threshold=significance_threshold_pct,
             summary=summary,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         )
         comparison.provenance_hash = _compute_hash(comparison)
         return comparison
@@ -1677,11 +1645,9 @@ class BaseYearInventoryEngine:
         """Return engine version string."""
         return self._version
 
-
 # ---------------------------------------------------------------------------
 # Module-level convenience functions
 # ---------------------------------------------------------------------------
-
 
 def establish_base_year_inventory(
     sources: List[SourceEmission],
@@ -1698,7 +1664,6 @@ def establish_base_year_inventory(
     """
     engine = BaseYearInventoryEngine()
     return engine.establish_inventory(sources, config)
-
 
 def compare_base_year_inventories(
     inv1: BaseYearInventory,
@@ -1718,7 +1683,6 @@ def compare_base_year_inventories(
     engine = BaseYearInventoryEngine()
     return engine.compare_inventories(inv1, inv2, significance_threshold_pct)
 
-
 def get_gwp_factor(
     gas_type: GasType,
     gwp_version: GWPVersion = GWPVersion.AR5,
@@ -1735,7 +1699,6 @@ def get_gwp_factor(
     return GWP_FACTORS.get(gwp_version.value, {}).get(
         gas_type.value, Decimal("1")
     )
-
 
 # ---------------------------------------------------------------------------
 # __all__

@@ -31,6 +31,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 from pydantic import BaseModel, Field, validator
+from greenlang.schemas.enums import AlertSeverity
 
 
 # =============================================================================
@@ -161,14 +162,6 @@ class FailureMode(str, Enum):
     EXPANSION_JOINT_FAILURE = "expansion_joint_failure"
     FOULING_CRITICAL = "fouling_critical"
     VIBRATION_DAMAGE = "vibration_damage"
-
-
-class AlertSeverity(str, Enum):
-    """Alert severity levels."""
-    INFO = "info"
-    WARNING = "warning"
-    ALARM = "alarm"
-    CRITICAL = "critical"
 
 
 # =============================================================================

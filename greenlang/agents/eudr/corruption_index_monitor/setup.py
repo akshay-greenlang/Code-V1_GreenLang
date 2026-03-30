@@ -74,6 +74,7 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any, AsyncIterator, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -241,16 +242,9 @@ _ENGINE_NAMES: List[str] = [
     "ComplianceImpactEngine",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed for determinism."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _calculate_sha256(data: Any) -> str:
     """Calculate SHA-256 hash of JSON-serialized data for provenance.
@@ -269,7 +263,6 @@ def _calculate_sha256(data: Any) -> str:
         payload = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
-
 def _safe_decimal(value: Any, default: Decimal = Decimal("0.0")) -> Decimal:
     """Safely convert value to Decimal with fallback.
 
@@ -285,11 +278,9 @@ def _safe_decimal(value: Any, default: Decimal = Decimal("0.0")) -> Decimal:
     except Exception:
         return default
 
-
 # =============================================================================
 # FACADE: CorruptionIndexMonitorSetup
 # =============================================================================
-
 
 class CorruptionIndexMonitorSetup:
     """
@@ -591,7 +582,7 @@ class CorruptionIndexMonitorSetup:
 
                 # 4. Mark as started
                 self._started = True
-                self._startup_time = _utcnow()
+                self._startup_time = utcnow()
                 duration_ms = (time.monotonic() - start_time) * 1000
 
                 logger.info(
@@ -674,7 +665,7 @@ class CorruptionIndexMonitorSetup:
         init_results: Dict[str, Any] = {
             "agent_id": _AGENT_ID,
             "version": _MODULE_VERSION,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "engines": {},
             "reference_data": {},
             "connectivity": {},
@@ -1039,7 +1030,7 @@ class CorruptionIndexMonitorSetup:
                 "action": "query_cpi",
                 "country_code": country_code,
                 "year": year,
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             })
 
             logger.info(
@@ -1103,7 +1094,7 @@ class CorruptionIndexMonitorSetup:
                 "action": "analyze_wgi",
                 "country_code": country_code,
                 "year": year,
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             })
 
             logger.info(
@@ -1168,7 +1159,7 @@ class CorruptionIndexMonitorSetup:
                 "action": "assess_bribery_risk",
                 "country_code": country_code,
                 "sector": sector,
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             })
 
             logger.info(
@@ -1231,7 +1222,7 @@ class CorruptionIndexMonitorSetup:
             provenance_hash = _calculate_sha256({
                 "action": "assess_compliance_impact",
                 "country_code": country_code,
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             })
 
             logger.info(
@@ -1299,7 +1290,7 @@ class CorruptionIndexMonitorSetup:
 
             results: Dict[str, Any] = {
                 "country_code": country_code,
-                "analysis_timestamp": _utcnow().isoformat(),
+                "analysis_timestamp": utcnow().isoformat(),
                 "agent_id": _AGENT_ID,
                 "version": _MODULE_VERSION,
             }
@@ -1361,7 +1352,7 @@ class CorruptionIndexMonitorSetup:
                 "action": "run_comprehensive_analysis",
                 "country_code": country_code,
                 "engine_provenance_chain": provenance_chain,
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             })
 
             duration_sec = time.monotonic() - start_time
@@ -1478,7 +1469,7 @@ class CorruptionIndexMonitorSetup:
         uptime_seconds = 0.0
         if self._startup_time:
             uptime_seconds = (
-                _utcnow() - self._startup_time
+                utcnow() - self._startup_time
             ).total_seconds()
 
         # Determine overall status
@@ -1507,7 +1498,7 @@ class CorruptionIndexMonitorSetup:
             "engines_total": _ENGINE_COUNT,
             "engine_statuses": engine_statuses,
             "processing_time_ms": round(duration_ms, 2),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     async def get_statistics(self) -> Dict[str, Any]:
@@ -1523,7 +1514,7 @@ class CorruptionIndexMonitorSetup:
         uptime_seconds = 0.0
         if self._startup_time:
             uptime_seconds = (
-                _utcnow() - self._startup_time
+                utcnow() - self._startup_time
             ).total_seconds()
 
         cache_hit_rate = 0.0
@@ -1549,7 +1540,7 @@ class CorruptionIndexMonitorSetup:
             "cache_misses": self._stats["cache_misses"],
             "cache_hit_rate": round(cache_hit_rate, 4),
             "errors": self._stats["errors"],
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     def get_engine(self, engine_name: str) -> Optional[Any]:
@@ -1613,14 +1604,12 @@ class CorruptionIndexMonitorSetup:
             },
         }
 
-
 # =============================================================================
 # Module-level singleton management
 # =============================================================================
 
 _service_instance: Optional[CorruptionIndexMonitorSetup] = None
 _service_lock = threading.Lock()
-
 
 def get_service(
     config: Optional[CorruptionIndexMonitorConfig] = None,
@@ -1652,7 +1641,6 @@ def get_service(
 
     return _service_instance
 
-
 def set_service(service: CorruptionIndexMonitorSetup) -> None:
     """
     Override the singleton service instance (for testing).
@@ -1665,7 +1653,6 @@ def set_service(service: CorruptionIndexMonitorSetup) -> None:
         _service_instance = service
         logger.info("CorruptionIndexMonitorSetup singleton overridden")
 
-
 def reset_service() -> None:
     """
     Reset the singleton service instance (for testing).
@@ -1677,11 +1664,9 @@ def reset_service() -> None:
         _service_instance = None
         logger.info("CorruptionIndexMonitorSetup singleton reset")
 
-
 # =============================================================================
 # Convenience function
 # =============================================================================
-
 
 def setup_corruption_index_monitor(
     config_overrides: Optional[Dict[str, Any]] = None,
@@ -1713,11 +1698,9 @@ def setup_corruption_index_monitor(
 
     return get_service(config=config)
 
-
 # =============================================================================
 # FastAPI Lifespan Integration
 # =============================================================================
-
 
 @asynccontextmanager
 async def lifespan(app: Any) -> AsyncIterator[None]:
@@ -1746,7 +1729,6 @@ async def lifespan(app: Any) -> AsyncIterator[None]:
     # Shutdown
     await service.shutdown()
     logger.info("CorruptionIndexMonitorSetup shutdown (FastAPI lifespan)")
-
 
 # =============================================================================
 # Module exports

@@ -48,8 +48,9 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, List, Optional, Any, Tuple
 from datetime import datetime
 from enum import Enum
-from pydantic import BaseModel, Field, validator
-from pydantic import ConfigDict
+from pydantic import Field, validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
+
 import hashlib
 import json
 
@@ -1007,7 +1008,7 @@ COMPLIANCE_FRAMEWORK_RULES: Dict[str, Dict[str, Any]] = {
 # ==============================================================================
 
 
-class IntermediateProductInput(BaseModel):
+class IntermediateProductInput(GreenLangBase):
     """Input model for a single intermediate product sold to a downstream processor.
 
     Represents one line item of sold product with its downstream processing
@@ -1088,7 +1089,7 @@ class IntermediateProductInput(BaseModel):
         return stripped
 
 
-class SiteSpecificInput(BaseModel):
+class SiteSpecificInput(GreenLangBase):
     """Input model for site-specific calculation method.
 
     Used when the reporting company has access to customer-level processing
@@ -1143,7 +1144,7 @@ class SiteSpecificInput(BaseModel):
         return v
 
 
-class AverageDataInput(BaseModel):
+class AverageDataInput(GreenLangBase):
     """Input model for average-data calculation method.
 
     Used when site-specific data is unavailable. Applies product category
@@ -1178,7 +1179,7 @@ class AverageDataInput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class SpendBasedInput(BaseModel):
+class SpendBasedInput(GreenLangBase):
     """Input model for spend-based (EEIO) calculation method.
 
     Used as a screening-level estimate when neither site-specific nor
@@ -1231,7 +1232,7 @@ class SpendBasedInput(BaseModel):
         return v
 
 
-class ProcessingChainInput(BaseModel):
+class ProcessingChainInput(GreenLangBase):
     """Input model for multi-step processing chain calculation.
 
     Applies a pre-defined processing chain's combined emission factor
@@ -1273,7 +1274,7 @@ class ProcessingChainInput(BaseModel):
         return v
 
 
-class ProductBreakdown(BaseModel):
+class ProductBreakdown(GreenLangBase):
     """Emissions breakdown for a single product within a calculation result.
 
     Provides detailed per-product emissions including the emission factor
@@ -1308,7 +1309,7 @@ class ProductBreakdown(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class CalculationResult(BaseModel):
+class CalculationResult(GreenLangBase):
     """Complete calculation result with provenance and quality metadata.
 
     The primary output model from any calculation method, containing
@@ -1368,7 +1369,7 @@ class CalculationResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class AggregationResult(BaseModel):
+class AggregationResult(GreenLangBase):
     """Aggregated emissions across multiple dimensions.
 
     Provides rollup views by product category, calculation method,
@@ -1397,7 +1398,7 @@ class AggregationResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class ComplianceResult(BaseModel):
+class ComplianceResult(GreenLangBase):
     """Result of a compliance check against a single regulatory framework.
 
     Contains the check status, rule pass/fail counts, and specific
@@ -1427,7 +1428,7 @@ class ComplianceResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class ProvenanceRecord(BaseModel):
+class ProvenanceRecord(GreenLangBase):
     """Single record in the SHA-256 provenance chain.
 
     Each pipeline stage produces a provenance record linking the
@@ -1456,7 +1457,7 @@ class ProvenanceRecord(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class DataQualityScore(BaseModel):
+class DataQualityScore(GreenLangBase):
     """Data quality assessment result across five GHG Protocol dimensions.
 
     Each dimension is scored 1-5 (5 = best). The overall score is a
@@ -1491,7 +1492,7 @@ class DataQualityScore(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class UncertaintyResult(BaseModel):
+class UncertaintyResult(GreenLangBase):
     """Result of uncertainty quantification for an emissions estimate.
 
     Provides the mean estimate with confidence interval bounds

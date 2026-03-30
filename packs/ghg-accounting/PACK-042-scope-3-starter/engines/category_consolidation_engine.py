@@ -66,25 +66,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -102,7 +96,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serialisable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -111,7 +104,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -123,22 +115,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class GasType(str, Enum):
     """Greenhouse gas types for Scope 3 reporting.
@@ -161,7 +149,6 @@ class GasType(str, Enum):
     SF6 = "sf6"
     NF3 = "nf3"
 
-
 class MethodologyTier(str, Enum):
     """Methodology tier indicating data quality approach.
 
@@ -177,7 +164,6 @@ class MethodologyTier(str, Enum):
     SPEND_BASED = "spend_based"
     NOT_CALCULATED = "not_calculated"
 
-
 class DataQualityRating(str, Enum):
     """Data quality rating per GHG Protocol guidance.
 
@@ -191,13 +177,11 @@ class DataQualityRating(str, Enum):
     FAIR = "fair"
     POOR = "poor"
 
-
 class ConsolidationStatus(str, Enum):
     """Status of the consolidation process."""
     COMPLETE = "complete"
     PARTIAL = "partial"
     ERROR = "error"
-
 
 class BoundaryApproach(str, Enum):
     """Organisational boundary approach.
@@ -212,7 +196,6 @@ class BoundaryApproach(str, Enum):
     OPERATIONAL_CONTROL = "operational_control"
     FINANCIAL_CONTROL = "financial_control"
     EQUITY_SHARE = "equity_share"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -247,11 +230,9 @@ DQ_RATING_THRESHOLDS: Dict[DataQualityRating, Tuple[Decimal, Decimal]] = {
     DataQualityRating.POOR: (Decimal("4.0"), Decimal("5.0")),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class GasBreakdown(BaseModel):
     """Per-gas emission breakdown for a category.
@@ -264,7 +245,6 @@ class GasBreakdown(BaseModel):
     gas: GasType = Field(default=GasType.CO2, description="Gas type")
     co2e_tonnes: Decimal = Field(default=Decimal("0"), ge=0, description="tCO2e")
     mass_tonnes: Decimal = Field(default=Decimal("0"), ge=0, description="Mass tonnes")
-
 
 class CategoryResult(BaseModel):
     """Emission result for a single Scope 3 category.
@@ -320,7 +300,6 @@ class CategoryResult(BaseModel):
     )
     notes: str = Field(default="", description="Notes")
 
-
 class BoundaryConfig(BaseModel):
     """Organisational boundary configuration for Scope 3.
 
@@ -343,7 +322,6 @@ class BoundaryConfig(BaseModel):
         default_factory=list, description="Included entities"
     )
 
-
 class BaseYearData(BaseModel):
     """Base year data for year-over-year comparison.
 
@@ -364,11 +342,9 @@ class BaseYearData(BaseModel):
         default=Decimal("0"), ge=0, description="Base year Scope 1+2"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class ScopeSummary(BaseModel):
     """Summary of emissions across scopes.
@@ -398,7 +374,6 @@ class ScopeSummary(BaseModel):
     upstream_share_pct: Decimal = Field(default=Decimal("0"), description="Upstream %")
     downstream_share_pct: Decimal = Field(default=Decimal("0"), description="Downstream %")
 
-
 class GasTotal(BaseModel):
     """Total emissions by gas across all Scope 3 categories.
 
@@ -414,7 +389,6 @@ class GasTotal(BaseModel):
     contributing_categories: List[int] = Field(
         default_factory=list, description="Contributing categories"
     )
-
 
 class CategoryConsolidated(BaseModel):
     """Consolidated view of a single category in the inventory.
@@ -448,7 +422,6 @@ class CategoryConsolidated(BaseModel):
     yoy_change_pct: Optional[Decimal] = Field(default=None, description="YoY change %")
     biogenic_co2e_tonnes: Decimal = Field(default=Decimal("0"), description="Biogenic")
 
-
 class MethodologyTierSummary(BaseModel):
     """Summary of methodology tiers across categories.
 
@@ -464,7 +437,6 @@ class MethodologyTierSummary(BaseModel):
     categories: List[int] = Field(default_factory=list, description="Categories")
     total_co2e_tonnes: Decimal = Field(default=Decimal("0"), description="Total tCO2e")
     share_of_scope3_pct: Decimal = Field(default=Decimal("0"), description="Share %")
-
 
 class YoYComparison(BaseModel):
     """Year-over-year comparison result.
@@ -487,7 +459,6 @@ class YoYComparison(BaseModel):
     by_category: Dict[int, Decimal] = Field(
         default_factory=dict, description="Per-category change %"
     )
-
 
 class ConsolidatedInventory(BaseModel):
     """Complete consolidated Scope 3 inventory.
@@ -551,10 +522,9 @@ class ConsolidatedInventory(BaseModel):
     status: ConsolidationStatus = Field(
         default=ConsolidationStatus.COMPLETE, description="Status"
     )
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Timestamp")
     processing_time_ms: Decimal = Field(default=Decimal("0"), description="Processing ms")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 # ---------------------------------------------------------------------------
 # Model Rebuild
@@ -571,11 +541,9 @@ MethodologyTierSummary.model_rebuild()
 YoYComparison.model_rebuild()
 ConsolidatedInventory.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class CategoryConsolidationEngine:
     """Consolidate emissions from all 15 Scope 3 categories.

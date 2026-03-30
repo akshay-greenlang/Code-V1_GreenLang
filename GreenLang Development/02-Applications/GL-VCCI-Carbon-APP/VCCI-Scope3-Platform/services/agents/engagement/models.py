@@ -7,7 +7,8 @@ Includes consent, campaign, email, portal, and analytics models.
 from datetime import datetime
 from typing import List, Optional, Dict, Any, Literal
 from enum import Enum
-from pydantic import BaseModel, Field, EmailStr, field_validator, ConfigDict
+from pydantic import Field, EmailStr, field_validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 
 
 # Enums
@@ -63,7 +64,7 @@ class BadgeType(str, Enum):
 
 
 # Consent Models
-class ConsentRecord(BaseModel):
+class ConsentRecord(GreenLangBase):
     """GDPR/CCPA/CAN-SPAM compliant consent record."""
     model_config = ConfigDict(use_enum_values=True)
 
@@ -117,7 +118,7 @@ class ConsentRecord(BaseModel):
 
 
 # Campaign Models
-class EmailTemplate(BaseModel):
+class EmailTemplate(GreenLangBase):
     """Email template with personalization."""
     model_config = ConfigDict(use_enum_values=True)
 
@@ -140,7 +141,7 @@ class EmailTemplate(BaseModel):
         return v
 
 
-class EmailSequence(BaseModel):
+class EmailSequence(GreenLangBase):
     """Multi-touch email sequence."""
     model_config = ConfigDict(use_enum_values=True)
 
@@ -161,7 +162,7 @@ class EmailSequence(BaseModel):
         return v
 
 
-class Campaign(BaseModel):
+class Campaign(GreenLangBase):
     """Supplier engagement campaign."""
     model_config = ConfigDict(use_enum_values=True)
 
@@ -202,7 +203,7 @@ class Campaign(BaseModel):
 
 
 # Email Models
-class EmailMessage(BaseModel):
+class EmailMessage(GreenLangBase):
     """Email message to send."""
     model_config = ConfigDict(use_enum_values=True)
 
@@ -226,7 +227,7 @@ class EmailMessage(BaseModel):
     tracking_metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
-class EmailResult(BaseModel):
+class EmailResult(GreenLangBase):
     """Result of email send operation."""
     model_config = ConfigDict(use_enum_values=True)
 
@@ -239,7 +240,7 @@ class EmailResult(BaseModel):
 
 
 # Portal Models
-class SupplierPortalSession(BaseModel):
+class SupplierPortalSession(GreenLangBase):
     """Supplier portal authentication session."""
     model_config = ConfigDict(use_enum_values=True)
 
@@ -260,7 +261,7 @@ class SupplierPortalSession(BaseModel):
     ip_address: Optional[str] = Field(default=None)
 
 
-class DataUpload(BaseModel):
+class DataUpload(GreenLangBase):
     """Supplier data upload."""
     model_config = ConfigDict(use_enum_values=True)
 
@@ -286,7 +287,7 @@ class DataUpload(BaseModel):
     records_count: int = Field(default=0, ge=0)
 
 
-class ValidationResult(BaseModel):
+class ValidationResult(GreenLangBase):
     """Live validation result for portal."""
     model_config = ConfigDict(use_enum_values=True)
 
@@ -299,7 +300,7 @@ class ValidationResult(BaseModel):
 
 
 # Gamification Models
-class SupplierBadge(BaseModel):
+class SupplierBadge(GreenLangBase):
     """Gamification badge."""
     model_config = ConfigDict(use_enum_values=True)
 
@@ -308,7 +309,7 @@ class SupplierBadge(BaseModel):
     criteria_met: str = Field(..., description="Criteria description")
 
 
-class SupplierProgress(BaseModel):
+class SupplierProgress(GreenLangBase):
     """Supplier progress tracking."""
     model_config = ConfigDict(use_enum_values=True)
 
@@ -321,7 +322,7 @@ class SupplierProgress(BaseModel):
     last_updated: datetime = Field(default_factory=datetime.utcnow)
 
 
-class Leaderboard(BaseModel):
+class Leaderboard(GreenLangBase):
     """Campaign leaderboard."""
     model_config = ConfigDict(use_enum_values=True)
 
@@ -334,7 +335,7 @@ class Leaderboard(BaseModel):
 
 
 # Analytics Models
-class CampaignAnalytics(BaseModel):
+class CampaignAnalytics(GreenLangBase):
     """Campaign performance analytics."""
     model_config = ConfigDict(use_enum_values=True)
 

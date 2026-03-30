@@ -40,36 +40,28 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "27.0.0"
 _PACK_ID = "PACK-027"
 
-
 # =============================================================================
 # HELPERS
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
 
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
 
-
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a single workflow phase."""
@@ -80,7 +72,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -90,14 +81,12 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class ConsolidationApproach(str, Enum):
     """GHG Protocol organizational boundary approach."""
 
     FINANCIAL_CONTROL = "financial_control"
     OPERATIONAL_CONTROL = "operational_control"
     EQUITY_SHARE = "equity_share"
-
 
 class EntityType(str, Enum):
     """Legal entity type in corporate hierarchy."""
@@ -109,7 +98,6 @@ class EntityType(str, Enum):
     SPV = "spv"
     FRANCHISE = "franchise"
     BRANCH = "branch"
-
 
 class DataSourceType(str, Enum):
     """Source of activity data for GHG calculations."""
@@ -124,7 +112,6 @@ class DataSourceType(str, Enum):
     SUPPLIER_CDP = "supplier_cdp"
     SUPPLIER_QUESTIONNAIRE = "supplier_questionnaire"
 
-
 class DataQualityLevel(int, Enum):
     """GHG Protocol 5-level data quality hierarchy."""
 
@@ -133,7 +120,6 @@ class DataQualityLevel(int, Enum):
     AVERAGE_DATA_PHYSICAL = 3
     SPEND_BASED_EEIO = 4
     PROXY_EXTRAPOLATION = 5
-
 
 class Scope3Category(str, Enum):
     """GHG Protocol Scope 3 categories."""
@@ -154,7 +140,6 @@ class Scope3Category(str, Enum):
     CAT_14_FRANCHISES = "cat_14"
     CAT_15_INVESTMENTS = "cat_15"
 
-
 class MaterialityLevel(str, Enum):
     """Scope 3 category materiality classification."""
 
@@ -162,7 +147,6 @@ class MaterialityLevel(str, Enum):
     MATERIAL_MEDIUM = "material_medium"     # 1-5% of total emissions
     MATERIAL_LOW = "material_low"           # 0.1-1% of total emissions
     IMMATERIAL = "immaterial"               # <0.1%, may be excluded
-
 
 # =============================================================================
 # MRV AGENT MAPPING
@@ -205,11 +189,9 @@ MRV_SCOPE3_AGENTS = {
     "cat_15": "MRV-028",
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -224,7 +206,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list, description="Errors encountered")
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
     dag_node_id: str = Field(default="", description="DAG orchestration node ID")
-
 
 class EntityDefinition(BaseModel):
     """Single entity in the corporate hierarchy."""
@@ -246,7 +227,6 @@ class EntityDefinition(BaseModel):
     annual_revenue_usd: float = Field(default=0.0, ge=0.0, description="Revenue in USD")
     num_facilities: int = Field(default=0, ge=0, description="Number of operational sites")
 
-
 class EntityHierarchy(BaseModel):
     """Complete corporate entity hierarchy."""
 
@@ -260,7 +240,6 @@ class EntityHierarchy(BaseModel):
     intercompany_relationships: List[Dict[str, Any]] = Field(
         default_factory=list, description="Intercompany transaction relationships"
     )
-
 
 class EntityDataPackage(BaseModel):
     """Data package for a single entity's GHG calculation."""
@@ -281,7 +260,6 @@ class EntityDataPackage(BaseModel):
     data_completeness_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     data_quality_scores: Dict[str, int] = Field(default_factory=dict, description="DQ score per scope/cat")
 
-
 class DataQualityReport(BaseModel):
     """Data quality assessment for an entity or consolidated group."""
 
@@ -297,7 +275,6 @@ class DataQualityReport(BaseModel):
     outliers_flagged: int = Field(default=0, ge=0)
     improvement_recommendations: List[str] = Field(default_factory=list)
     meets_3pct_accuracy: bool = Field(default=False, description="Meets +/-3% target")
-
 
 class EntityEmissions(BaseModel):
     """Emissions result for a single entity."""
@@ -318,7 +295,6 @@ class EntityEmissions(BaseModel):
     mrv_agents_used: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class IntercompanyElimination(BaseModel):
     """Record of an intercompany emission elimination entry."""
 
@@ -327,7 +303,6 @@ class IntercompanyElimination(BaseModel):
     scope3_category: str = Field(default="cat_01", description="Scope 3 category of buyer")
     eliminated_tco2e: float = Field(default=0.0, ge=0.0, description="Eliminated emissions")
     justification: str = Field(default="", description="Elimination justification")
-
 
 class ConsolidatedBaseline(BaseModel):
     """Consolidated GHG baseline across all entities."""
@@ -351,7 +326,6 @@ class ConsolidatedBaseline(BaseModel):
     entities_included: int = Field(default=0, ge=0)
     entities_excluded: int = Field(default=0, ge=0)
     coverage_pct: float = Field(default=0.0, ge=0.0, le=100.0)
-
 
 class ComprehensiveBaselineConfig(BaseModel):
     """Configuration for the comprehensive baseline workflow."""
@@ -390,7 +364,6 @@ class ComprehensiveBaselineConfig(BaseModel):
             return ConsolidationApproach.FINANCIAL_CONTROL.value
         return v
 
-
 class ComprehensiveBaselineInput(BaseModel):
     """Complete input for the comprehensive baseline workflow."""
 
@@ -404,7 +377,6 @@ class ComprehensiveBaselineInput(BaseModel):
     prior_year_baseline: Optional[ConsolidatedBaseline] = Field(
         default=None, description="Prior year baseline for YoY comparison",
     )
-
 
 class ComprehensiveBaselineResult(BaseModel):
     """Complete result from the comprehensive baseline workflow."""
@@ -424,7 +396,6 @@ class ComprehensiveBaselineResult(BaseModel):
     yoy_comparison: Dict[str, Any] = Field(default_factory=dict)
     next_steps: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="", description="SHA-256 of complete output")
-
 
 # =============================================================================
 # ENTERPRISE DATA QUALITY CONSTANTS
@@ -458,11 +429,9 @@ SCOPE3_TYPICAL_WEIGHT: Dict[str, float] = {
     "cat_15": 0.08,
 }
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class ComprehensiveBaselineWorkflow:
     """
@@ -546,7 +515,7 @@ class ComprehensiveBaselineWorkflow:
         Raises:
             ValueError: If critical input data is missing.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         self.config = input_data.config
         self._hierarchy = input_data.entity_hierarchy
         self.logger.info(
@@ -605,7 +574,7 @@ class ComprehensiveBaselineWorkflow:
                 errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
 
         # YoY comparison
         yoy = self._compute_yoy(input_data.prior_year_baseline)
@@ -638,7 +607,7 @@ class ComprehensiveBaselineWorkflow:
         self, input_data: ComprehensiveBaselineInput,
     ) -> PhaseResult:
         """Map organizational boundary and entity hierarchy."""
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         errors: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -648,7 +617,7 @@ class ComprehensiveBaselineWorkflow:
 
         if not hierarchy.entities:
             errors.append("No entities defined in hierarchy; at least one entity required")
-            elapsed = (_utcnow() - started).total_seconds()
+            elapsed = (utcnow() - started).total_seconds()
             return PhaseResult(
                 phase_name="entity_mapping", phase_number=1,
                 status=PhaseStatus.FAILED, duration_seconds=round(elapsed, 4),
@@ -733,7 +702,7 @@ class ComprehensiveBaselineWorkflow:
                 "data collection phase may require extended timeline"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         status = PhaseStatus.COMPLETED if not errors else PhaseStatus.FAILED
         self.logger.info(
             "Entity mapping: %d entities (%d included, %d excluded) under %s",
@@ -761,7 +730,7 @@ class ComprehensiveBaselineWorkflow:
         self, input_data: ComprehensiveBaselineInput,
     ) -> PhaseResult:
         """Orchestrate data collection from ERP systems and manual uploads."""
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         errors: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -831,7 +800,7 @@ class ComprehensiveBaselineWorkflow:
                 "proxy estimation will be applied"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         status = PhaseStatus.COMPLETED if not errors else PhaseStatus.FAILED
         return PhaseResult(
             phase_name="data_collection",
@@ -854,7 +823,7 @@ class ComprehensiveBaselineWorkflow:
         self, input_data: ComprehensiveBaselineInput,
     ) -> PhaseResult:
         """Run data quality profiling, dedup, outlier analysis, and gap filling."""
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
 
@@ -945,7 +914,7 @@ class ComprehensiveBaselineWorkflow:
                 f"High outlier count ({total_outliers}); review flagged values before calculation"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="quality_assurance",
             phase_number=3,
@@ -966,7 +935,7 @@ class ComprehensiveBaselineWorkflow:
         self, input_data: ComprehensiveBaselineInput,
     ) -> PhaseResult:
         """Run enterprise_baseline_engine for each entity."""
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         errors: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -1010,7 +979,7 @@ class ComprehensiveBaselineWorkflow:
             set(a for e in self._entity_emissions for a in e.mrv_agents_used)
         )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         status = PhaseStatus.COMPLETED if not errors else PhaseStatus.FAILED
         return PhaseResult(
             phase_name="calculation",
@@ -1033,7 +1002,7 @@ class ComprehensiveBaselineWorkflow:
         self, input_data: ComprehensiveBaselineInput,
     ) -> PhaseResult:
         """Consolidate entity results with intercompany elimination."""
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
 
@@ -1189,7 +1158,7 @@ class ComprehensiveBaselineWorkflow:
         outputs["overall_dq_score"] = self._consolidated.overall_dq_score
         outputs["accuracy_band"] = accuracy
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="consolidation",
             phase_number=5,
@@ -1210,7 +1179,7 @@ class ComprehensiveBaselineWorkflow:
         self, input_data: ComprehensiveBaselineInput,
     ) -> PhaseResult:
         """Generate consolidated baseline report."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         cons = self._consolidated
@@ -1261,7 +1230,7 @@ class ComprehensiveBaselineWorkflow:
         outputs["base_year"] = cons.base_year
         outputs["reporting_year"] = cons.reporting_year
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="reporting",
             phase_number=6,

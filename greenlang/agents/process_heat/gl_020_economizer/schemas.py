@@ -16,6 +16,7 @@ from typing import Any, Dict, List, Optional
 import uuid
 
 from pydantic import BaseModel, Field, validator
+from greenlang.schemas.enums import AlertSeverity
 
 
 class EconomizerStatus(Enum):
@@ -44,14 +45,6 @@ class FoulingSeverity(Enum):
     LIGHT = "light"
     MODERATE = "moderate"
     SEVERE = "severe"
-    CRITICAL = "critical"
-
-
-class AlertSeverity(Enum):
-    """Alert severity levels."""
-    INFO = "info"
-    WARNING = "warning"
-    ALARM = "alarm"
     CRITICAL = "critical"
 
 

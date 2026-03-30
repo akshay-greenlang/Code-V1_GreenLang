@@ -42,19 +42,14 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -66,7 +61,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 class _AgentStub:
     """Stub for MRV agents when not available."""
     def __init__(self, agent_name: str) -> None:
@@ -77,7 +71,6 @@ class _AgentStub:
             return {"agent": self._agent_name, "status": "degraded", "emissions_tco2e": 0.0}
         return _stub
 
-
 def _try_import_mrv_agent(agent_id: str, module_path: str) -> Any:
     """Attempt to import an MRV agent."""
     try:
@@ -86,17 +79,14 @@ def _try_import_mrv_agent(agent_id: str, module_path: str) -> Any:
         logger.debug("MRV agent %s not available, using stub", agent_id)
         return _AgentStub(agent_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class MRVScope(str, Enum):
     SCOPE_1 = "scope_1"
     SCOPE_2 = "scope_2"
     SCOPE_3 = "scope_3"
-
 
 class DataQualityTier(str, Enum):
     TIER_1 = "tier_1"  # Primary measured data
@@ -105,19 +95,16 @@ class DataQualityTier(str, Enum):
     TIER_4 = "tier_4"  # Spend-based estimates
     TIER_5 = "tier_5"  # Extrapolated / modelled
 
-
 class AgentHealthStatus(str, Enum):
     HEALTHY = "healthy"
     DEGRADED = "degraded"
     FAILED = "failed"
     CIRCUIT_OPEN = "circuit_open"
 
-
 class VarianceDirection(str, Enum):
     INCREASE = "increase"
     DECREASE = "decrease"
     STABLE = "stable"
-
 
 # ---------------------------------------------------------------------------
 # MRV Agent Registry
@@ -160,11 +147,9 @@ MRV_AGENT_REGISTRY: List[Dict[str, Any]] = [
     {"id": "MRV-030", "name": "Audit Trail & Lineage", "scope": "scope_1", "category": None, "module": "greenlang.agents.mrv.audit_trail"},
 ]
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class MRVBridgeConfig(BaseModel):
     """Configuration for the MRV bridge."""
@@ -181,7 +166,6 @@ class MRVBridgeConfig(BaseModel):
     data_quality_minimum: float = Field(default=0.70, ge=0.0, le=1.0)
     include_scope3: bool = Field(default=True)
     scope3_categories: List[int] = Field(default_factory=lambda: list(range(1, 16)))
-
 
 class AgentResult(BaseModel):
     """Result from a single MRV agent calculation."""
@@ -204,7 +188,6 @@ class AgentResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class ScopeAggregate(BaseModel):
     """Aggregated emissions for a single scope."""
     scope: str = Field(default="")
@@ -216,7 +199,6 @@ class ScopeAggregate(BaseModel):
     data_quality_score: float = Field(default=0.0)
     data_quality_tier: DataQualityTier = Field(default=DataQualityTier.TIER_3)
     by_category: Dict[int, float] = Field(default_factory=dict)
-
 
 class VarianceResult(BaseModel):
     """Year-over-year emissions variance result."""
@@ -233,7 +215,6 @@ class VarianceResult(BaseModel):
     scope3_variance_tco2e: float = Field(default=0.0)
     top_drivers: List[Dict[str, Any]] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class AnnualInventoryResult(BaseModel):
     """Complete annual GHG inventory result."""
@@ -258,11 +239,9 @@ class AnnualInventoryResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # MRVBridge
 # ---------------------------------------------------------------------------
-
 
 class MRVBridge:
     """30-agent MRV integration bridge for PACK-029 Interim Targets.
@@ -597,6 +576,7 @@ class MRVBridge:
                         self.config.retry_backoff_factor ** (attempt - 1)
                     )
                     import asyncio
+
                     await asyncio.sleep(delay)
 
         # All retries failed - update circuit breaker

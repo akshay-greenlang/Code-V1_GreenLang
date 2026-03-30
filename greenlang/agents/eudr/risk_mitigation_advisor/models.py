@@ -54,28 +54,18 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import (
-    BaseModel,
-    ConfigDict,
     Field,
     field_validator,
     model_validator,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Return a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -120,11 +110,9 @@ MODULES_PER_COMMODITY: int = 22
 #: Default top-K strategy recommendations.
 DEFAULT_TOP_K: int = 5
 
-
 # ---------------------------------------------------------------------------
 # Enumerations (14)
 # ---------------------------------------------------------------------------
-
 
 class RiskCategory(str, Enum):
     """Risk categories for EUDR mitigation strategy selection.
@@ -157,7 +145,6 @@ class RiskCategory(str, Enum):
     LEGAL_COMPLIANCE = "legal_compliance"
     """Legal compliance risk from EUDR-023 Legal Compliance Verifier."""
 
-
 class ISO31000TreatmentType(str, Enum):
     """ISO 31000:2018 risk treatment option types.
 
@@ -177,7 +164,6 @@ class ISO31000TreatmentType(str, Enum):
     RETAIN = "retain"
     """Accept the risk by informed decision with monitoring."""
 
-
 class ImplementationComplexity(str, Enum):
     """Implementation complexity levels for mitigation measures.
 
@@ -196,7 +182,6 @@ class ImplementationComplexity(str, Enum):
 
     VERY_HIGH = "very_high"
     """Major investment, multi-team coordination, > 16 weeks setup."""
-
 
 class PlanStatus(str, Enum):
     """Remediation plan lifecycle status.
@@ -229,7 +214,6 @@ class PlanStatus(str, Enum):
     ABANDONED = "abandoned"
     """Plan permanently terminated before completion."""
 
-
 class PlanPhaseType(str, Enum):
     """Remediation plan phase types.
 
@@ -248,7 +232,6 @@ class PlanPhaseType(str, Enum):
 
     MONITORING = "monitoring"
     """Ongoing: Continuous monitoring and adaptive management."""
-
 
 class MilestoneStatus(str, Enum):
     """Milestone completion status within a remediation plan.
@@ -272,7 +255,6 @@ class MilestoneStatus(str, Enum):
     SKIPPED = "skipped"
     """Milestone deliberately skipped (with justification)."""
 
-
 class CapacityTier(str, Enum):
     """Supplier capacity building tier levels.
 
@@ -292,7 +274,6 @@ class CapacityTier(str, Enum):
     TIER_4_LEADERSHIP = "tier_4_leadership"
     """Peer mentoring, community engagement, certification (4 modules)."""
 
-
 class EnrollmentStatus(str, Enum):
     """Capacity building enrollment status.
 
@@ -310,7 +291,6 @@ class EnrollmentStatus(str, Enum):
 
     WITHDRAWN = "withdrawn"
     """Supplier withdrawn from program."""
-
 
 class TriggerEventType(str, Enum):
     """Types of monitoring trigger events requiring plan adjustment.
@@ -337,7 +317,6 @@ class TriggerEventType(str, Enum):
     AUDIT_NONCONFORMANCE = "audit_nonconformance"
     """Audit non-conformance finding from EUDR-024."""
 
-
 class AdjustmentType(str, Enum):
     """Types of adaptive plan adjustments.
 
@@ -359,7 +338,6 @@ class AdjustmentType(str, Enum):
 
     PLAN_DEESCALATION = "plan_deescalation"
     """Reduce mitigation intensity when risk decreases."""
-
 
 class StakeholderRole(str, Enum):
     """Stakeholder roles in the collaboration hub.
@@ -385,7 +363,6 @@ class StakeholderRole(str, Enum):
 
     COMPETENT_AUTHORITY = "competent_authority"
     """EU competent authority - read-only compliance documentation."""
-
 
 class ReportType(str, Enum):
     """Types of mitigation reports generated.
@@ -415,7 +392,6 @@ class ReportType(str, Enum):
     EFFECTIVENESS_ANALYSIS = "effectiveness_analysis"
     """Effectiveness Analysis Report with ROI metrics."""
 
-
 class EUDRCommodity(str, Enum):
     """EUDR-regulated commodities per Article 1.
 
@@ -430,7 +406,6 @@ class EUDRCommodity(str, Enum):
     RUBBER = "rubber"
     SOYA = "soya"
     WOOD = "wood"
-
 
 class EvidenceQuality(str, Enum):
     """Quality classification for mitigation evidence.
@@ -451,13 +426,11 @@ class EvidenceQuality(str, Enum):
     UNVERIFIED = "unverified"
     """Community-contributed, not yet reviewed."""
 
-
 # ---------------------------------------------------------------------------
 # Core Models (16)
 # ---------------------------------------------------------------------------
 
-
-class CostRange(BaseModel):
+class CostRange(GreenLangBase):
     """Cost range with minimum and maximum EUR values.
 
     Used for mitigation measure cost estimates and expected risk
@@ -491,8 +464,7 @@ class CostRange(BaseModel):
             )
         return self
 
-
-class CostEstimate(BaseModel):
+class CostEstimate(GreenLangBase):
     """Cost estimate for a mitigation strategy or measure.
 
     Structured cost estimate with range, complexity level,
@@ -520,8 +492,7 @@ class CostEstimate(BaseModel):
         default=None, description="Cost breakdown by category"
     )
 
-
-class MeasureApplicability(BaseModel):
+class MeasureApplicability(GreenLangBase):
     """Applicability criteria for a mitigation measure.
 
     Defines the contexts in which a mitigation measure is applicable:
@@ -563,8 +534,7 @@ class MeasureApplicability(BaseModel):
         description="Maximum risk score for applicability",
     )
 
-
-class RiskInput(BaseModel):
+class RiskInput(GreenLangBase):
     """Aggregated risk input from 9 upstream EUDR risk assessment agents.
 
     Captures the multi-dimensional risk profile for a specific supplier,
@@ -668,8 +638,7 @@ class RiskInput(BaseModel):
             )
         return v
 
-
-class MitigationStrategy(BaseModel):
+class MitigationStrategy(GreenLangBase):
     """A recommended mitigation strategy for a specific risk profile.
 
     Generated by the Strategy Selector engine using ML-powered
@@ -766,12 +735,11 @@ class MitigationStrategy(BaseModel):
         description="SHA-256 provenance hash",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Strategy creation timestamp",
     )
 
-
-class EvidenceDocument(BaseModel):
+class EvidenceDocument(GreenLangBase):
     """An evidence document uploaded for milestone verification.
 
     Attributes:
@@ -795,7 +763,7 @@ class EvidenceDocument(BaseModel):
         ..., description="Evidence type: report, photo, certificate, audit"
     )
     upload_date: datetime = Field(
-        default_factory=_utcnow, description="Upload timestamp"
+        default_factory=utcnow, description="Upload timestamp"
     )
     uploaded_by: str = Field(
         default="system", description="Uploader identifier"
@@ -810,8 +778,7 @@ class EvidenceDocument(BaseModel):
         default="", description="S3 storage URL"
     )
 
-
-class ResponsibleParty(BaseModel):
+class ResponsibleParty(GreenLangBase):
     """A party responsible for plan milestone execution.
 
     Attributes:
@@ -834,8 +801,7 @@ class ResponsibleParty(BaseModel):
     email: str = Field(default="", description="Contact email")
     organization: str = Field(default="", description="Organization name")
 
-
-class EscalationTrigger(BaseModel):
+class EscalationTrigger(GreenLangBase):
     """An escalation trigger for plan monitoring.
 
     Attributes:
@@ -864,8 +830,7 @@ class EscalationTrigger(BaseModel):
         default=24, ge=1, description="Response SLA in hours"
     )
 
-
-class KPI(BaseModel):
+class KPI(GreenLangBase):
     """Key Performance Indicator for a remediation plan.
 
     Attributes:
@@ -898,8 +863,7 @@ class KPI(BaseModel):
         default="monthly", description="Measurement frequency"
     )
 
-
-class Milestone(BaseModel):
+class Milestone(GreenLangBase):
     """A SMART milestone within a remediation plan.
 
     Specific, Measurable, Achievable, Relevant, Time-bound milestones
@@ -965,8 +929,7 @@ class Milestone(BaseModel):
         description="IDs of prerequisite milestones",
     )
 
-
-class PlanPhase(BaseModel):
+class PlanPhase(GreenLangBase):
     """A phase within a remediation plan.
 
     Attributes:
@@ -1002,13 +965,14 @@ class PlanPhase(BaseModel):
         description="Budget allocation percentage for this phase",
     )
 
-
-class RemediationPlan(BaseModel):
+class RemediationPlan(GreenLangBase):
     """A structured remediation plan for risk mitigation.
 
     Multi-phase plan with SMART milestones, responsible parties,
     KPIs, and escalation triggers linked to specific risk findings
     from upstream EUDR agents.
+
+from greenlang.schemas import GreenLangBase, utcnow
 
     Attributes:
         plan_id: Unique plan identifier.
@@ -1101,14 +1065,13 @@ class RemediationPlan(BaseModel):
         default="", description="SHA-256 provenance hash"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation timestamp"
+        default_factory=utcnow, description="Creation timestamp"
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow, description="Last update timestamp"
+        default_factory=utcnow, description="Last update timestamp"
     )
 
-
-class MitigationMeasure(BaseModel):
+class MitigationMeasure(GreenLangBase):
     """A single mitigation measure from the 500+ measure library.
 
     Each measure includes effectiveness evidence, cost estimates,
@@ -1214,8 +1177,7 @@ class MitigationMeasure(BaseModel):
         description="Last update date",
     )
 
-
-class EffectivenessRecord(BaseModel):
+class EffectivenessRecord(GreenLangBase):
     """Before-after effectiveness measurement for a mitigation plan.
 
     Captures baseline and current risk scores, calculates reduction
@@ -1252,7 +1214,7 @@ class EffectivenessRecord(BaseModel):
         ..., description="Supplier identifier"
     )
     measurement_date: datetime = Field(
-        default_factory=_utcnow, description="Measurement timestamp"
+        default_factory=utcnow, description="Measurement timestamp"
     )
     baseline_risk_scores: Dict[str, Decimal] = Field(
         default_factory=dict,
@@ -1296,8 +1258,7 @@ class EffectivenessRecord(BaseModel):
         default="", description="SHA-256 provenance hash"
     )
 
-
-class CapacityBuildingEnrollment(BaseModel):
+class CapacityBuildingEnrollment(GreenLangBase):
     """A supplier enrollment in a capacity building program.
 
     Tracks supplier progress through 4-tier capacity building
@@ -1370,8 +1331,7 @@ class CapacityBuildingEnrollment(BaseModel):
         default="", description="SHA-256 provenance hash"
     )
 
-
-class TriggerEvent(BaseModel):
+class TriggerEvent(GreenLangBase):
     """A monitoring trigger event requiring adaptive management response.
 
     Generated by the Continuous Monitoring Engine when upstream risk
@@ -1436,7 +1396,7 @@ class TriggerEvent(BaseModel):
         default=48, ge=1, description="Response SLA hours"
     )
     detected_at: datetime = Field(
-        default_factory=_utcnow, description="Detection timestamp"
+        default_factory=utcnow, description="Detection timestamp"
     )
     acknowledged_at: Optional[datetime] = Field(
         default=None, description="Acknowledgment timestamp"
@@ -1448,13 +1408,11 @@ class TriggerEvent(BaseModel):
         default="", description="SHA-256 provenance hash"
     )
 
-
 # ---------------------------------------------------------------------------
 # Request Models (9)
 # ---------------------------------------------------------------------------
 
-
-class RecommendStrategiesRequest(BaseModel):
+class RecommendStrategiesRequest(GreenLangBase):
     """Request to recommend mitigation strategies for a risk profile.
 
     Attributes:
@@ -1485,8 +1443,7 @@ class RecommendStrategiesRequest(BaseModel):
         description="Optional budget constraint",
     )
 
-
-class CreatePlanRequest(BaseModel):
+class CreatePlanRequest(GreenLangBase):
     """Request to create a remediation plan.
 
     Attributes:
@@ -1525,8 +1482,7 @@ class CreatePlanRequest(BaseModel):
         description="Target duration in weeks",
     )
 
-
-class EnrollSupplierRequest(BaseModel):
+class EnrollSupplierRequest(GreenLangBase):
     """Request to enroll a supplier in capacity building.
 
     Attributes:
@@ -1552,8 +1508,7 @@ class EnrollSupplierRequest(BaseModel):
         description="Target completion in weeks",
     )
 
-
-class SearchMeasuresRequest(BaseModel):
+class SearchMeasuresRequest(GreenLangBase):
     """Request to search the mitigation measure library.
 
     Attributes:
@@ -1595,8 +1550,7 @@ class SearchMeasuresRequest(BaseModel):
         default=0, ge=0, description="Result offset"
     )
 
-
-class MeasureEffectivenessRequest(BaseModel):
+class MeasureEffectivenessRequest(GreenLangBase):
     """Request to measure mitigation effectiveness.
 
     Attributes:
@@ -1621,8 +1575,7 @@ class MeasureEffectivenessRequest(BaseModel):
         default=True, description="Include statistical tests"
     )
 
-
-class OptimizeBudgetRequest(BaseModel):
+class OptimizeBudgetRequest(GreenLangBase):
     """Request to optimize mitigation budget allocation.
 
     Attributes:
@@ -1664,8 +1617,7 @@ class OptimizeBudgetRequest(BaseModel):
         description="Risk scores per supplier (0-100)",
     )
 
-
-class CollaborateRequest(BaseModel):
+class CollaborateRequest(GreenLangBase):
     """Request for stakeholder collaboration action.
 
     Attributes:
@@ -1700,8 +1652,7 @@ class CollaborateRequest(BaseModel):
         description="Task assignment details",
     )
 
-
-class GenerateReportRequest(BaseModel):
+class GenerateReportRequest(GreenLangBase):
     """Request to generate a mitigation report.
 
     Attributes:
@@ -1738,8 +1689,7 @@ class GenerateReportRequest(BaseModel):
         default=None, description="Period end"
     )
 
-
-class AdaptiveScanRequest(BaseModel):
+class AdaptiveScanRequest(GreenLangBase):
     """Request for adaptive management monitoring scan.
 
     Attributes:
@@ -1762,13 +1712,11 @@ class AdaptiveScanRequest(BaseModel):
         description="Generate adjustment recommendations",
     )
 
-
 # ---------------------------------------------------------------------------
 # Response Models (9)
 # ---------------------------------------------------------------------------
 
-
-class RecommendStrategiesResponse(BaseModel):
+class RecommendStrategiesResponse(GreenLangBase):
     """Response containing recommended mitigation strategies.
 
     Attributes:
@@ -1811,8 +1759,7 @@ class RecommendStrategiesResponse(BaseModel):
         default="", description="SHA-256 provenance hash"
     )
 
-
-class CreatePlanResponse(BaseModel):
+class CreatePlanResponse(GreenLangBase):
     """Response containing a created remediation plan.
 
     Attributes:
@@ -1842,8 +1789,7 @@ class CreatePlanResponse(BaseModel):
         default="", description="SHA-256 provenance hash"
     )
 
-
-class EnrollSupplierResponse(BaseModel):
+class EnrollSupplierResponse(GreenLangBase):
     """Response containing a capacity building enrollment.
 
     Attributes:
@@ -1868,8 +1814,7 @@ class EnrollSupplierResponse(BaseModel):
         default="", description="SHA-256 provenance hash"
     )
 
-
-class SearchMeasuresResponse(BaseModel):
+class SearchMeasuresResponse(GreenLangBase):
     """Response containing measure library search results.
 
     Attributes:
@@ -1898,8 +1843,7 @@ class SearchMeasuresResponse(BaseModel):
         default=Decimal("0"), description="Search duration ms"
     )
 
-
-class MeasureEffectivenessResponse(BaseModel):
+class MeasureEffectivenessResponse(GreenLangBase):
     """Response containing effectiveness measurement results.
 
     Attributes:
@@ -1928,8 +1872,7 @@ class MeasureEffectivenessResponse(BaseModel):
         default="", description="SHA-256 provenance hash"
     )
 
-
-class OptimizeBudgetResponse(BaseModel):
+class OptimizeBudgetResponse(GreenLangBase):
     """Response containing budget optimization results.
 
     Attributes:
@@ -1974,8 +1917,7 @@ class OptimizeBudgetResponse(BaseModel):
         default="", description="SHA-256 provenance hash"
     )
 
-
-class CollaborateResponse(BaseModel):
+class CollaborateResponse(GreenLangBase):
     """Response for a stakeholder collaboration action.
 
     Attributes:
@@ -2000,8 +1942,7 @@ class CollaborateResponse(BaseModel):
         default=Decimal("0"), description="Processing duration ms"
     )
 
-
-class GenerateReportResponse(BaseModel):
+class GenerateReportResponse(GreenLangBase):
     """Response containing a generated mitigation report.
 
     Attributes:
@@ -2046,8 +1987,7 @@ class GenerateReportResponse(BaseModel):
         default="", description="SHA-256 provenance hash"
     )
 
-
-class AdaptiveScanResponse(BaseModel):
+class AdaptiveScanResponse(GreenLangBase):
     """Response containing adaptive management scan results.
 
     Attributes:

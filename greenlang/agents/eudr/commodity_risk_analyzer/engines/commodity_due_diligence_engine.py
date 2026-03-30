@@ -67,6 +67,8 @@ from datetime import datetime, timedelta, timezone
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -78,12 +80,6 @@ _MODULE_VERSION: str = "1.0.0"
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -103,7 +99,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str = "dd") -> str:
     """Generate a unique identifier with a given prefix.
 
@@ -114,7 +109,6 @@ def _generate_id(prefix: str = "dd") -> str:
         ID in format ``{prefix}-{hex12}``.
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 def _to_decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
@@ -134,7 +128,6 @@ def _to_decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError) as exc:
         raise ValueError(f"Cannot convert {value!r} to Decimal") from exc
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -261,11 +254,9 @@ COMMODITY_EVIDENCE_TEMPLATES: Dict[str, List[Dict[str, Any]]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class EvidenceItem:
@@ -319,7 +310,6 @@ class EvidenceItem:
             "rejection_reason": self.rejection_reason,
             "provenance_hash": self.provenance_hash,
         }
-
 
 @dataclass
 class DDWorkflow:
@@ -384,11 +374,9 @@ class DDWorkflow:
             "provenance_hash": self.provenance_hash,
         }
 
-
 # ---------------------------------------------------------------------------
 # CommodityDueDiligenceEngine
 # ---------------------------------------------------------------------------
-
 
 class CommodityDueDiligenceEngine:
     """Production-grade commodity-specific due diligence workflow engine.
@@ -480,7 +468,7 @@ class CommodityDueDiligenceEngine:
             item.provenance_hash = _compute_hash(item)
             evidence_items.append(item)
 
-        now_str = _utcnow().isoformat()
+        now_str = utcnow().isoformat()
         workflow = DDWorkflow(
             workflow_id=_generate_id("wf"),
             commodity_type=commodity_type,
@@ -598,7 +586,7 @@ class CommodityDueDiligenceEngine:
                 )
 
             # Update evidence item
-            now_str = _utcnow().isoformat()
+            now_str = utcnow().isoformat()
             target_item.data = evidence_data
             target_item.submitted_at = now_str
             target_item.status = "PENDING"  # Will be VERIFIED after verify
@@ -687,7 +675,7 @@ class CommodityDueDiligenceEngine:
             )
             issues.extend(verification_result.get("issues", []))
 
-            now_str = _utcnow().isoformat()
+            now_str = utcnow().isoformat()
             if not issues:
                 target_item.status = "VERIFIED"
                 target_item.verified_at = now_str
@@ -785,7 +773,7 @@ class CommodityDueDiligenceEngine:
                         mandatory_missing.append(item.evidence_type)
                         mandatory_verified = False
 
-            now_str = _utcnow().isoformat()
+            now_str = utcnow().isoformat()
             if mandatory_verified:
                 workflow.status = "COMPLETED"
                 completion_result = "PASS"
@@ -1007,7 +995,7 @@ class CommodityDueDiligenceEngine:
             workflow.status = "ESCALATED"
             workflow.escalation_reason = reason
             workflow.escalated_to = escalate_to
-            workflow.updated_at = _utcnow().isoformat()
+            workflow.updated_at = utcnow().isoformat()
             workflow.provenance_hash = _compute_hash(workflow)
 
         processing_time_ms = (time.monotonic() - start_time) * 1000.0
@@ -1214,7 +1202,7 @@ class CommodityDueDiligenceEngine:
             )
             if created.tzinfo is None:
                 created = created.replace(tzinfo=timezone.utc)
-            now = _utcnow()
+            now = utcnow()
             return max(0, (now - created).days)
         except (ValueError, AttributeError):
             return 0
@@ -1294,7 +1282,7 @@ class CommodityDueDiligenceEngine:
                     )
                     if expiry_dt.tzinfo is None:
                         expiry_dt = expiry_dt.replace(tzinfo=timezone.utc)
-                    if expiry_dt < _utcnow():
+                    if expiry_dt < utcnow():
                         issues.append("Certificate has expired")
                 except ValueError:
                     issues.append("Invalid expiry date format")

@@ -37,6 +37,8 @@ from .models import (
 )
 from .provenance import ProvenanceTracker
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # Severity to penalty multiplier mapping (deterministic)
@@ -62,7 +64,6 @@ _VIOLATION_BASE_PENALTY: Dict[ViolationType, Decimal] = {
     ViolationType.REPEATED_VIOLATION: Decimal("200000"),
 }
 
-
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance."""
     canonical = json.dumps(
@@ -70,16 +71,9 @@ def _compute_hash(data: Any) -> str:
     )
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 class NonComplianceManager:
     """Manages non-compliance records, violations, and penalties.
@@ -185,7 +179,7 @@ class NonComplianceManager:
         penalty = min(self.config.penalty_max_amount, penalty)
 
         nc_id = _new_uuid()
-        now = _utcnow()
+        now = utcnow()
         corrective_deadline = now + timedelta(days=corrective_deadline_days)
 
         if not communication_id:
@@ -291,7 +285,7 @@ class NonComplianceManager:
             )
 
         record.corrective_completed = True
-        record.resolved_at = _utcnow()
+        record.resolved_at = utcnow()
 
         logger.info(
             "Non-compliance %s: corrective actions completed",

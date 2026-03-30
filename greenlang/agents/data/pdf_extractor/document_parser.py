@@ -46,7 +46,8 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase, utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -57,21 +58,13 @@ __all__ = [
     "DocumentParser",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class DocumentFormat(str, Enum):
     """Supported document formats."""
@@ -84,7 +77,6 @@ class DocumentFormat(str, Enum):
     TEXT = "text"
     CSV = "csv"
     UNKNOWN = "unknown"
-
 
 # ---------------------------------------------------------------------------
 # Magic byte signatures for format detection
@@ -111,13 +103,11 @@ _EXTENSION_MAP: Dict[str, DocumentFormat] = {
     ".csv": DocumentFormat.CSV,
 }
 
-
 # ---------------------------------------------------------------------------
 # Data models
 # ---------------------------------------------------------------------------
 
-
-class PageContent(BaseModel):
+class PageContent(GreenLangBase):
     """Extracted text content for a single page."""
 
     page_number: int = Field(..., ge=1, description="1-based page number")
@@ -134,8 +124,7 @@ class PageContent(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class DocumentRecord(BaseModel):
+class DocumentRecord(GreenLangBase):
     """Parsed document metadata record."""
 
     document_id: str = Field(
@@ -152,7 +141,7 @@ class DocumentRecord(BaseModel):
     file_size_bytes: int = Field(default=0, ge=0, description="File size")
     page_count: int = Field(default=0, ge=0, description="Total pages")
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Parse timestamp",
+        default_factory=utcnow, description="Parse timestamp",
     )
     raw_content: Optional[bytes] = Field(
         None, description="Raw file bytes (excluded from serialisation)",
@@ -160,7 +149,6 @@ class DocumentRecord(BaseModel):
     )
 
     model_config = {"extra": "forbid"}
-
 
 # ---------------------------------------------------------------------------
 # Graceful PDF library imports
@@ -181,11 +169,9 @@ try:
 except ImportError:
     pass
 
-
 # ---------------------------------------------------------------------------
 # DocumentParser
 # ---------------------------------------------------------------------------
-
 
 class DocumentParser:
     """PDF and document parser with format detection and text extraction.
@@ -525,7 +511,7 @@ class DocumentParser:
             "pdfplumber_available": _PDFPLUMBER_AVAILABLE,
             "pypdf2_available": _PYPDF2_AVAILABLE,
             "supported_formats": [f.value for f in self._supported_formats],
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     # ------------------------------------------------------------------

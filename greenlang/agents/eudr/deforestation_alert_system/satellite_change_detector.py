@@ -71,6 +71,7 @@ from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -119,16 +120,9 @@ except ImportError:
     observe_detection_latency = None  # type: ignore[misc,assignment]
     record_api_error = None  # type: ignore[misc,assignment]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance.
@@ -142,7 +136,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a unique identifier using UUID4.
 
@@ -150,7 +143,6 @@ def _generate_id() -> str:
         String representation of a new UUID4.
     """
     return str(uuid.uuid4())
-
 
 def _safe_decimal(value: Any, default: Decimal = Decimal("0")) -> Decimal:
     """Safely convert a value to Decimal.
@@ -169,7 +161,6 @@ def _safe_decimal(value: Any, default: Decimal = Decimal("0")) -> Decimal:
     except (InvalidOperation, ValueError, TypeError):
         return default
 
-
 def _elapsed_ms(start: float) -> float:
     """Calculate elapsed milliseconds since start.
 
@@ -181,11 +172,9 @@ def _elapsed_ms(start: float) -> float:
     """
     return round((time.perf_counter() - start) * 1000, 2)
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class SatelliteSource(str, Enum):
     """Satellite data source identifiers.
@@ -203,7 +192,6 @@ class SatelliteSource(str, Enum):
     PLANET = "planet"
     CUSTOM = "custom"
 
-
 class SpectralIndex(str, Enum):
     """Spectral vegetation indices for change detection.
 
@@ -216,7 +204,6 @@ class SpectralIndex(str, Enum):
     NBR = "nbr"
     NDMI = "ndmi"
     SAVI = "savi"
-
 
 class ChangeType(str, Enum):
     """Types of detected land cover change.
@@ -233,7 +220,6 @@ class ChangeType(str, Enum):
     REGROWTH = "regrowth"
     NO_CHANGE = "no_change"
 
-
 class VegetationClass(str, Enum):
     """NDVI-based vegetation density classification.
 
@@ -246,7 +232,6 @@ class VegetationClass(str, Enum):
     SPARSE_VEGETATION = "sparse_vegetation"
     BARE_CLEARED = "bare_cleared"
 
-
 class GLADConfidence(str, Enum):
     """GLAD alert confidence levels.
 
@@ -258,7 +243,6 @@ class GLADConfidence(str, Enum):
     NOMINAL = "nominal"
     HIGH = "high"
 
-
 class ScanStatus(str, Enum):
     """Status codes for satellite scan operations."""
 
@@ -267,7 +251,6 @@ class ScanStatus(str, Enum):
     NO_DATA = "no_data"
     CLOUD_OBSCURED = "cloud_obscured"
     ERROR = "error"
-
 
 # ---------------------------------------------------------------------------
 # Satellite Source Specifications
@@ -427,7 +410,6 @@ SATELLITE_SOURCE_SPECS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # NDVI Vegetation Classification Thresholds
 # ---------------------------------------------------------------------------
@@ -461,7 +443,6 @@ EVI_CONSTANTS: Dict[str, Decimal] = {
 
 #: SAVI soil brightness correction factor (default L=0.5 for intermediate cover).
 SAVI_L_FACTOR: Decimal = Decimal("0.5")
-
 
 # ---------------------------------------------------------------------------
 # Country Coverage Matrix
@@ -502,11 +483,9 @@ COUNTRY_SOURCE_COVERAGE: Dict[str, List[str]] = {
     "_DEFAULT": ["sentinel2", "landsat8", "landsat9", "hansen_gfc"],
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class ScanArea:
@@ -554,7 +533,6 @@ class ScanArea:
             "area_name": self.area_name,
         }
 
-
 @dataclass
 class SpectralBands:
     """Spectral band reflectance values from satellite imagery.
@@ -579,7 +557,6 @@ class SpectralBands:
     swir1: Decimal = Decimal("0")
     swir2: Decimal = Decimal("0")
 
-
 @dataclass
 class SpectralIndexValues:
     """Calculated spectral index values for a single observation.
@@ -602,7 +579,6 @@ class SpectralIndexValues:
     ndmi: Decimal = Decimal("0")
     savi: Decimal = Decimal("0")
     vegetation_class: str = VegetationClass.BARE_CLEARED.value
-
 
 @dataclass
 class SceneMetadata:
@@ -656,7 +632,6 @@ class SceneMetadata:
             "data_quality": str(self.data_quality),
             "footprint_wkt": self.footprint_wkt,
         }
-
 
 @dataclass
 class DetectionResult:
@@ -731,7 +706,7 @@ class DetectionResult:
         if not self.detection_id:
             self.detection_id = _generate_id()
         if not self.timestamp:
-            self.timestamp = _utcnow().isoformat()
+            self.timestamp = utcnow().isoformat()
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize detection result to dictionary.
@@ -769,7 +744,6 @@ class DetectionResult:
             "provenance_hash": self.provenance_hash,
             "metadata": self.metadata,
         }
-
 
 @dataclass
 class ScanResult:
@@ -811,7 +785,7 @@ class ScanResult:
         if not self.scan_id:
             self.scan_id = _generate_id()
         if not self.scan_date:
-            self.scan_date = _utcnow().isoformat()
+            self.scan_date = utcnow().isoformat()
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize scan result to dictionary.
@@ -834,7 +808,6 @@ class ScanResult:
             "warnings": self.warnings,
             "provenance_hash": self.provenance_hash,
         }
-
 
 @dataclass
 class DetectionListResult:
@@ -878,7 +851,7 @@ class DetectionListResult:
         if not self.request_id:
             self.request_id = _generate_id()
         if not self.calculation_timestamp:
-            self.calculation_timestamp = _utcnow().isoformat()
+            self.calculation_timestamp = utcnow().isoformat()
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary for JSON output.
@@ -901,7 +874,6 @@ class DetectionListResult:
             "provenance_hash": self.provenance_hash,
             "calculation_timestamp": self.calculation_timestamp,
         }
-
 
 @dataclass
 class SourceListResult:
@@ -933,7 +905,7 @@ class SourceListResult:
     def __post_init__(self) -> None:
         """Set calculation timestamp if unset."""
         if not self.calculation_timestamp:
-            self.calculation_timestamp = _utcnow().isoformat()
+            self.calculation_timestamp = utcnow().isoformat()
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary.
@@ -951,7 +923,6 @@ class SourceListResult:
             "provenance_hash": self.provenance_hash,
             "calculation_timestamp": self.calculation_timestamp,
         }
-
 
 @dataclass
 class ImageryResult:
@@ -985,7 +956,7 @@ class ImageryResult:
     def __post_init__(self) -> None:
         """Set calculation timestamp if unset."""
         if not self.calculation_timestamp:
-            self.calculation_timestamp = _utcnow().isoformat()
+            self.calculation_timestamp = utcnow().isoformat()
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary.
@@ -1007,11 +978,9 @@ class ImageryResult:
             "calculation_timestamp": self.calculation_timestamp,
         }
 
-
 # ---------------------------------------------------------------------------
 # SatelliteChangeDetector Engine
 # ---------------------------------------------------------------------------
-
 
 class SatelliteChangeDetector:
     """Production-grade multi-source satellite change detection engine.
@@ -2112,7 +2081,7 @@ class SatelliteChangeDetector:
 
         # Generate simulated scene metadata based on source characteristics
         scenes: List[SceneMetadata] = []
-        base_date = _utcnow().date()
+        base_date = utcnow().date()
 
         # Generate scenes covering last N revisit periods
         num_scenes = min(5, max(1, 30 // max(1, revisit_days)))
@@ -2640,7 +2609,6 @@ class SatelliteChangeDetector:
                 return code
 
         return "XX"
-
 
 # ---------------------------------------------------------------------------
 # Public API

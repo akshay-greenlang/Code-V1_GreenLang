@@ -26,20 +26,15 @@ from typing import Any, Callable, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC time with timezone info."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute SHA-256 provenance hash of arbitrary data."""
     return hashlib.sha256(
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
-
 
 class PhaseStatus(str, Enum):
     PENDING = "PENDING"
@@ -48,7 +43,6 @@ class PhaseStatus(str, Enum):
     FAILED = "FAILED"
     SKIPPED = "SKIPPED"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "PENDING"
     RUNNING = "RUNNING"
@@ -56,11 +50,10 @@ class WorkflowStatus(str, Enum):
     FAILED = "FAILED"
     PARTIAL = "PARTIAL"
 
-
 class WorkflowContext(BaseModel):
     workflow_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     organization_id: str = Field(..., description="Organization identifier")
-    execution_timestamp: datetime = Field(default_factory=_utcnow)
+    execution_timestamp: datetime = Field(default_factory=utcnow)
     config: Dict[str, Any] = Field(default_factory=dict)
     phase_states: Dict[str, PhaseStatus] = Field(default_factory=dict)
     phase_outputs: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
@@ -79,7 +72,6 @@ class WorkflowContext(BaseModel):
     def is_phase_completed(self, phase_name: str) -> bool:
         return self.phase_states.get(phase_name) == PhaseStatus.COMPLETED
 
-
 class PhaseResult(BaseModel):
     phase_name: str = Field(..., description="Phase identifier")
     status: PhaseStatus = Field(..., description="Phase completion status")
@@ -92,7 +84,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     records_processed: int = Field(default=0)
 
-
 class WorkflowResult(BaseModel):
     workflow_id: str = Field(..., description="Unique workflow execution ID")
     workflow_name: str = Field(..., description="Workflow type identifier")
@@ -103,8 +94,6 @@ class WorkflowResult(BaseModel):
     phases: List[PhaseResult] = Field(default_factory=list)
     summary: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
-
-
 
 # ---------------------------------------------------------------------------
 #  Input / Result Models
@@ -121,7 +110,6 @@ class RegulatoryRequirement(BaseModel):
     covered: bool = Field(default=False)
     data_source: str = Field(default="")
 
-
 class RegulatoryIntegrationInput(BaseModel):
     """Input for the regulatory integration workflow."""
     organization_id: str = Field(..., description="Organization identifier")
@@ -134,7 +122,6 @@ class RegulatoryIntegrationInput(BaseModel):
     existing_coverage: Dict[str, bool] = Field(default_factory=dict)
     skip_phases: List[str] = Field(default_factory=list)
 
-
 class RegulatoryIntegrationResult(WorkflowResult):
     """Result from the regulatory integration workflow."""
     total_requirements: int = Field(default=0)
@@ -144,7 +131,6 @@ class RegulatoryIntegrationResult(WorkflowResult):
     cross_references_found: int = Field(default=0)
     regulations_mapped: int = Field(default=0)
     high_priority_gaps: int = Field(default=0)
-
 
 # ---------------------------------------------------------------------------
 #  Phases
@@ -188,7 +174,7 @@ class RequirementMappingPhase:
     }
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -229,7 +215,7 @@ class RequirementMappingPhase:
             errors.append(f"Requirement mapping failed: {str(exc)}")
             status = PhaseStatus.FAILED
             records = 0
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -237,7 +223,6 @@ class RequirementMappingPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs), records_processed=records,
         )
-
 
 class CrossReferenceAlignmentPhase:
     """Identify overlaps and cross-references between regulations."""
@@ -259,7 +244,7 @@ class CrossReferenceAlignmentPhase:
     ]
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -295,7 +280,7 @@ class CrossReferenceAlignmentPhase:
             logger.error("CrossReferenceAlignment failed: %s", exc, exc_info=True)
             errors.append(f"Cross-reference alignment failed: {str(exc)}")
             status = PhaseStatus.FAILED
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -304,13 +289,12 @@ class CrossReferenceAlignmentPhase:
             provenance_hash=_hash_data(outputs),
         )
 
-
 class GapAnalysisPhase:
     """Identify coverage gaps and remediation priorities."""
     PHASE_NAME = "gap_analysis"
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -361,7 +345,7 @@ class GapAnalysisPhase:
             logger.error("GapAnalysis failed: %s", exc, exc_info=True)
             errors.append(f"Gap analysis failed: {str(exc)}")
             status = PhaseStatus.FAILED
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -369,7 +353,6 @@ class GapAnalysisPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 class RegulatoryIntegrationWorkflow:
     """Three-phase regulatory integration workflow for FI compliance mapping."""
@@ -388,7 +371,7 @@ class RegulatoryIntegrationWorkflow:
 
     async def run(self, input_data: RegulatoryIntegrationInput) -> RegulatoryIntegrationResult:
         """Execute the workflow."""
-        started_at = _utcnow()
+        started_at = utcnow()
         logger.info("Starting %s workflow %s org=%s", self.WORKFLOW_NAME,
                      self.workflow_id, input_data.organization_id)
         context = WorkflowContext(
@@ -429,7 +412,7 @@ class RegulatoryIntegrationWorkflow:
                 logger.error("Phase '%s' raised: %s", phase_name, exc, exc_info=True)
                 completed_phases.append(PhaseResult(
                     phase_name=phase_name, status=PhaseStatus.FAILED,
-                    started_at=_utcnow(), errors=[str(exc)],
+                    started_at=utcnow(), errors=[str(exc)],
                     provenance_hash=_hash_data({"error": str(exc)}),
                 ))
                 context.mark_phase(phase_name, PhaseStatus.FAILED)
@@ -441,7 +424,7 @@ class RegulatoryIntegrationWorkflow:
                          for p in completed_phases)
             overall_status = WorkflowStatus.COMPLETED if all_ok else WorkflowStatus.PARTIAL
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         duration = (completed_at - started_at).total_seconds()
         summary = self._build_summary(context)
         provenance = _hash_data({
@@ -464,7 +447,6 @@ class RegulatoryIntegrationWorkflow:
                 self._progress_callback(phase, message, min(pct, 1.0))
             except Exception:
                 logger.debug("Progress callback failed for phase=%s", phase)
-
 
     def _build_summary(self, context: WorkflowContext) -> Dict[str, Any]:
         mapping = context.get_phase_output("requirement_mapping")

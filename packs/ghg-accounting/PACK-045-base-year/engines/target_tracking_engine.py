@@ -86,25 +86,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -133,7 +127,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -142,7 +135,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -154,22 +146,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 4) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 def _abs_decimal(value: Decimal) -> Decimal:
     """Return absolute value of a Decimal."""
     return value if value >= Decimal("0") else -value
-
 
 def _pow_decimal(base: Decimal, exponent: int) -> Decimal:
     """Compute base ** exponent for non-negative integer exponents.
@@ -194,11 +182,9 @@ def _pow_decimal(base: Decimal, exponent: int) -> Decimal:
         result = result * base
     return result
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class TargetType(str, Enum):
     """Type of emission reduction target.
@@ -211,7 +197,6 @@ class TargetType(str, Enum):
     ABSOLUTE = "absolute"
     INTENSITY = "intensity"
 
-
 class ScopeType(str, Enum):
     """GHG Protocol scope classification.
 
@@ -223,7 +208,6 @@ class ScopeType(str, Enum):
     SCOPE_2 = "scope_2"
     SCOPE_3 = "scope_3"
 
-
 class SBTiAmbition(str, Enum):
     """SBTi target ambition level per Corporate Manual (2023).
 
@@ -234,7 +218,6 @@ class SBTiAmbition(str, Enum):
     WELL_BELOW_2C = "well_below_2c"
     ONE_POINT_FIVE_C = "1.5c"
     NET_ZERO = "net_zero"
-
 
 class TargetStatus(str, Enum):
     """Current status of target progress.
@@ -251,7 +234,6 @@ class TargetStatus(str, Enum):
     AT_RISK = "at_risk"
     NOT_STARTED = "not_started"
 
-
 class IntensityMetric(str, Enum):
     """Denominator metric for intensity-based targets.
 
@@ -266,7 +248,6 @@ class IntensityMetric(str, Enum):
     PER_SQMETER = "per_sqmeter"
     PER_UNIT_PRODUCED = "per_unit_produced"
     PER_MWH = "per_mwh"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -290,11 +271,9 @@ SBTI_MIN_NEAR_TERM_YEARS: int = 5
 SBTI_MAX_NEAR_TERM_YEARS: int = 10
 SBTI_NET_ZERO_TARGET_YEAR: int = 2050
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class EmissionsTarget(BaseModel):
     """Definition of an emission reduction target.
@@ -364,7 +343,6 @@ class EmissionsTarget(BaseModel):
             )
         return self
 
-
 class YearlyActual(BaseModel):
     """Actual emission data for a single year.
 
@@ -399,7 +377,6 @@ class YearlyActual(BaseModel):
         if v is None:
             return None
         return _decimal(v)
-
 
 class ProgressPoint(BaseModel):
     """Progress assessment for a single year against the target pathway.
@@ -436,7 +413,6 @@ class ProgressPoint(BaseModel):
             return None
         return _decimal(v)
 
-
 class ReductionAttribution(BaseModel):
     """Attribution of emission reductions to specific categories.
 
@@ -453,7 +429,6 @@ class ReductionAttribution(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class TargetTrackingResult(BaseModel):
     """Complete result of target progress tracking.
@@ -481,10 +456,9 @@ class TargetTrackingResult(BaseModel):
     attribution: List[ReductionAttribution] = Field(default_factory=list)
     on_track_probability: Decimal = Field(default=Decimal("0"))
     recommendations: List[str] = Field(default_factory=list)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class PathwayPoint(BaseModel):
     """A single point on the expected reduction pathway.
@@ -502,7 +476,6 @@ class PathwayPoint(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class RebaseResult(BaseModel):
     """Result of rebasing a target to a new base year.
@@ -528,11 +501,9 @@ class RebaseResult(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class TargetTrackingEngine:
     """Base year-anchored target progress tracking engine.
@@ -714,7 +685,7 @@ class TargetTrackingEngine:
             attribution=[],
             on_track_probability=_round_val(on_track_prob, 1),
             recommendations=recommendations,
-            calculated_at=_utcnow(),
+            calculated_at=utcnow(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         result.provenance_hash = _compute_hash(result)

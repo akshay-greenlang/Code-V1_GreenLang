@@ -36,35 +36,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class WorkflowPhase(str, Enum):
     """Phases of the carbon footprint assessment workflow."""
@@ -72,7 +64,6 @@ class WorkflowPhase(str, Enum):
     LCA_CALCULATION = "lca_calculation"
     PERFORMANCE_CLASS = "performance_class"
     DECLARATION_GENERATION = "declaration_generation"
-
 
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
@@ -82,7 +73,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class PhaseStatus(str, Enum):
     """Status of a single phase."""
     PENDING = "pending"
@@ -90,7 +80,6 @@ class PhaseStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class LifecycleStage(str, Enum):
     """Battery lifecycle stages per EU Battery Regulation Annex II."""
@@ -102,7 +91,6 @@ class LifecycleStage(str, Enum):
     DISTRIBUTION = "distribution"
     END_OF_LIFE_RECYCLING = "end_of_life_recycling"
 
-
 class PerformanceClassGrade(str, Enum):
     """Carbon footprint performance class grades per Art. 7(3)."""
     CLASS_A = "A"
@@ -110,7 +98,6 @@ class PerformanceClassGrade(str, Enum):
     CLASS_C = "C"
     CLASS_D = "D"
     CLASS_E = "E"
-
 
 class BatteryChemistry(str, Enum):
     """Battery chemistry types."""
@@ -126,7 +113,6 @@ class BatteryChemistry(str, Enum):
     SODIUM_ION = "SODIUM_ION"
     OTHER = "OTHER"
 
-
 class BatteryCategory(str, Enum):
     """Battery categories per EU Battery Regulation Art. 2."""
     EV_BATTERY = "ev_battery"
@@ -135,11 +121,9 @@ class BatteryCategory(str, Enum):
     SLI_BATTERY = "sli_battery"
     PORTABLE_BATTERY = "portable_battery"
 
-
 # =============================================================================
 # DEFAULT EMISSION FACTORS (kgCO2e per unit)
 # =============================================================================
-
 
 # kgCO2e per kg of material produced
 MATERIAL_EMISSION_FACTORS: Dict[str, float] = {
@@ -202,11 +186,9 @@ PERFORMANCE_CLASS_THRESHOLDS_INDUSTRIAL: Dict[str, float] = {
     "D": 110.0,
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -217,7 +199,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class MaterialRecord(BaseModel):
     """A bill-of-materials material entry."""
@@ -235,7 +216,6 @@ class MaterialRecord(BaseModel):
     recycled_content_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     emissions_kgco2e: float = Field(default=0.0, ge=0.0)
 
-
 class EnergyRecord(BaseModel):
     """Energy consumption record for manufacturing phase."""
     energy_id: str = Field(default_factory=lambda: f"ene-{_new_uuid()[:8]}")
@@ -248,7 +228,6 @@ class EnergyRecord(BaseModel):
     facility_location: str = Field(default="", description="Country code")
     emissions_kgco2e: float = Field(default=0.0, ge=0.0)
 
-
 class TransportRecord(BaseModel):
     """Transport emission record."""
     transport_id: str = Field(default_factory=lambda: f"trn-{_new_uuid()[:8]}")
@@ -258,7 +237,6 @@ class TransportRecord(BaseModel):
     emission_factor_kgco2e_per_tkm: float = Field(default=0.0, ge=0.0)
     lifecycle_stage: LifecycleStage = Field(default=LifecycleStage.DISTRIBUTION)
     emissions_kgco2e: float = Field(default=0.0, ge=0.0)
-
 
 class CarbonFootprintInput(BaseModel):
     """Input data model for CarbonFootprintWorkflow."""
@@ -286,14 +264,12 @@ class CarbonFootprintInput(BaseModel):
     entity_name: str = Field(default="")
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class LifecycleStageResult(BaseModel):
     """Emissions subtotal for a lifecycle stage."""
     stage: str = Field(..., description="Lifecycle stage name")
     emissions_kgco2e: float = Field(default=0.0, ge=0.0)
     share_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     record_count: int = Field(default=0, ge=0)
-
 
 class CarbonFootprintDeclaration(BaseModel):
     """EU Battery Regulation compliant carbon footprint declaration."""
@@ -315,7 +291,6 @@ class CarbonFootprintDeclaration(BaseModel):
     regulation_reference: str = Field(
         default="EU Regulation 2023/1542 Art. 7"
     )
-
 
 class CarbonFootprintResult(BaseModel):
     """Complete result from carbon footprint assessment workflow."""
@@ -340,11 +315,9 @@ class CarbonFootprintResult(BaseModel):
     executed_at: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class CarbonFootprintWorkflow:
     """
@@ -429,7 +402,7 @@ class CarbonFootprintWorkflow:
         if input_data is None:
             input_data = CarbonFootprintInput(config=config or {})
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting carbon footprint workflow %s", self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = WorkflowStatus.IN_PROGRESS
@@ -452,7 +425,7 @@ class CarbonFootprintWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         mat_total = sum(m.emissions_kgco2e for m in self._materials)
         ene_total = sum(e.emissions_kgco2e for e in self._energy)
         trn_total = sum(t.emissions_kgco2e for t in self._transport)
@@ -475,7 +448,7 @@ class CarbonFootprintWorkflow:
             transport_emissions_kgco2e=round(trn_total, 2),
             recycling_credit_kgco2e=round(input_data.recycling_credit_kgco2e, 2),
             reporting_year=input_data.reporting_year,
-            executed_at=_utcnow().isoformat(),
+            executed_at=utcnow().isoformat(),
         )
         result.provenance_hash = self._compute_provenance(result)
         self.logger.info(
@@ -492,7 +465,7 @@ class CarbonFootprintWorkflow:
         self, input_data: CarbonFootprintInput,
     ) -> PhaseResult:
         """Gather and validate BOM, energy, and transport data."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -554,7 +527,7 @@ class CarbonFootprintWorkflow:
         if not self._energy:
             warnings.append("No energy records provided; manufacturing emissions will be zero")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 1 DataCollection: %d materials, %d energy, %d transport",
             len(self._materials), len(self._energy), len(self._transport),
@@ -584,7 +557,7 @@ class CarbonFootprintWorkflow:
         self, input_data: CarbonFootprintInput,
     ) -> PhaseResult:
         """Apply emission factors and compute lifecycle emissions."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -675,7 +648,7 @@ class CarbonFootprintWorkflow:
                 f"{missing_ef_count} records have zero emissions (missing EF or data)"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 2 LCACalculation: %.2f kgCO2e gross, %.2f net, %.2f per kWh",
             gross_total, net_total, self._per_kwh,
@@ -695,7 +668,7 @@ class CarbonFootprintWorkflow:
         self, input_data: CarbonFootprintInput,
     ) -> PhaseResult:
         """Assign performance class (A-E) based on kgCO2e/kWh thresholds."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -747,7 +720,7 @@ class CarbonFootprintWorkflow:
                 "Carbon footprint per kWh is zero; verify input data completeness"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 3 PerformanceClass: %.2f kgCO2e/kWh -> class %s",
             per_kwh, self._performance_class,
@@ -767,7 +740,7 @@ class CarbonFootprintWorkflow:
         self, input_data: CarbonFootprintInput,
     ) -> PhaseResult:
         """Generate EU-compliant carbon footprint declaration."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -784,7 +757,7 @@ class CarbonFootprintWorkflow:
             recycling_credit_kgco2e=round(input_data.recycling_credit_kgco2e, 2),
             functional_unit=input_data.functional_unit,
             reporting_year=input_data.reporting_year,
-            issued_at=_utcnow().isoformat(),
+            issued_at=utcnow().isoformat(),
         )
 
         # Validate declaration completeness
@@ -814,7 +787,7 @@ class CarbonFootprintWorkflow:
         outputs["performance_class"] = self._declaration.performance_class
         outputs["regulation_reference"] = self._declaration.regulation_reference
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 4 DeclarationGeneration: %s issued, completeness %.1f%%",
             self._declaration.declaration_id, completeness_pct,

@@ -25,11 +25,12 @@ from datetime import datetime, date
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.agents.categories import AgentCategory, AgentMetadata
 from greenlang.utilities.determinism.clock import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +83,7 @@ PLANTING_COSTS = {
 }
 
 
-class SiteAssessment(BaseModel):
+class SiteAssessment(GreenLangBase):
     """Site assessment input."""
     site_id: str = Field(...)
     area_ha: float = Field(..., gt=0)
@@ -95,7 +96,7 @@ class SiteAssessment(BaseModel):
     longitude: Optional[float] = Field(None, ge=-180, le=180)
 
 
-class AfforestationPlan(BaseModel):
+class AfforestationPlan(GreenLangBase):
     """Afforestation plan output."""
     site_id: str = Field(...)
     recommended_species_mix: str = Field(...)
@@ -121,7 +122,7 @@ class AfforestationPlan(BaseModel):
     watershed_benefit_score: float = Field(..., ge=0, le=100)
 
 
-class AfforestationInput(BaseModel):
+class AfforestationInput(GreenLangBase):
     """Input for Afforestation Planner Agent."""
     project_id: str = Field(...)
     sites: List[SiteAssessment] = Field(..., min_length=1)
@@ -132,7 +133,7 @@ class AfforestationInput(BaseModel):
     species_preference: Optional[str] = Field(None)
 
 
-class AfforestationOutput(BaseModel):
+class AfforestationOutput(GreenLangBase):
     """Output from Afforestation Planner Agent."""
     project_id: str = Field(...)
     calculation_date: datetime = Field(default_factory=DeterministicClock.now)

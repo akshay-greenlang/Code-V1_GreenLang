@@ -46,6 +46,8 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 __all__ = [
@@ -62,21 +64,13 @@ __all__ = [
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for provenance tracking."""
@@ -89,11 +83,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EnvironmentalObjective(str, Enum):
     """EU Taxonomy six environmental objectives."""
@@ -105,7 +97,6 @@ class EnvironmentalObjective(str, Enum):
     POLLUTION_PREVENTION = "pollution_prevention"
     BIODIVERSITY = "biodiversity_and_ecosystems"
 
-
 class AlignmentStatus(str, Enum):
     """Taxonomy alignment assessment status."""
 
@@ -115,7 +106,6 @@ class AlignmentStatus(str, Enum):
     UNDER_REVIEW = "under_review"
     INSUFFICIENT_DATA = "insufficient_data"
 
-
 class DNSHStatus(str, Enum):
     """Do No Significant Harm assessment status."""
 
@@ -124,14 +114,12 @@ class DNSHStatus(str, Enum):
     NOT_ASSESSED = "not_assessed"
     PARTIALLY_COMPLIANT = "partially_compliant"
 
-
 class MinimumSafeguardStatus(str, Enum):
     """Minimum social safeguard compliance status."""
 
     COMPLIANT = "compliant"
     NON_COMPLIANT = "non_compliant"
     NOT_ASSESSED = "not_assessed"
-
 
 # ---------------------------------------------------------------------------
 # Reference Data
@@ -173,11 +161,9 @@ TSC_REFERENCE_MAP: Dict[str, Dict[str, str]] = {
     "A02.10": {"activity": "Forestry and logging", "objective": "BIO"},
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class TaxonomyBridgeConfig(BaseModel):
     """Configuration for the Taxonomy Alignment Bridge."""
@@ -196,7 +182,6 @@ class TaxonomyBridgeConfig(BaseModel):
     require_dnsh: bool = Field(default=True)
     require_minimum_safeguards: bool = Field(default=True)
 
-
 class ObjectiveAssessment(BaseModel):
     """Assessment result for a single environmental objective."""
 
@@ -207,7 +192,6 @@ class ObjectiveAssessment(BaseModel):
     tsc_met: bool = Field(default=False)
     tsc_reference: str = Field(default="")
 
-
 class AlignmentKPIs(BaseModel):
     """Taxonomy alignment KPI results."""
 
@@ -217,7 +201,6 @@ class AlignmentKPIs(BaseModel):
     capex_eligible_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     opex_eligible_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     revenue_eligible_pct: float = Field(default=0.0, ge=0.0, le=100.0)
-
 
 class TaxonomyAlignmentResult(BaseModel):
     """Result of a Taxonomy alignment check."""
@@ -234,14 +217,12 @@ class TaxonomyAlignmentResult(BaseModel):
     )
     overall_aligned: bool = Field(default=False)
     gaps: List[str] = Field(default_factory=list)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # TaxonomyBridge
 # ---------------------------------------------------------------------------
-
 
 class TaxonomyBridge:
     """EU Taxonomy alignment bridge for green claims substantiation.
@@ -288,7 +269,7 @@ class TaxonomyBridge:
             Dict with alignment status, objective assessments, KPIs,
             gaps, and provenance hash.
         """
-        start = _utcnow()
+        start = utcnow()
         result = TaxonomyAlignmentResult(
             activity_code=activity,
             claim_type=claim,
@@ -318,7 +299,7 @@ class TaxonomyBridge:
         result.gaps = self._identify_gaps(result)
         result.kpis = self._compute_kpis(result)
 
-        elapsed = (_utcnow() - start).total_seconds() * 1000
+        elapsed = (utcnow() - start).total_seconds() * 1000
 
         if self.config.enable_provenance:
             result.provenance_hash = _compute_hash(result)

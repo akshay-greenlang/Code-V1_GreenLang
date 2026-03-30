@@ -42,18 +42,13 @@ from typing import Any, Callable, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # UTILITIES
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return current UTC time with timezone info."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute SHA-256 provenance hash of arbitrary data."""
@@ -61,11 +56,9 @@ def _hash_data(data: Any) -> str:
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -75,7 +68,6 @@ class PhaseStatus(str, Enum):
     FAILED = "FAILED"
     SKIPPED = "SKIPPED"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "PENDING"
@@ -84,14 +76,12 @@ class WorkflowStatus(str, Enum):
     FAILED = "FAILED"
     PARTIAL = "PARTIAL"
 
-
 class BenchmarkType(str, Enum):
     """EU Climate Benchmark type."""
     CTB = "CTB"
     PAB = "PAB"
     CUSTOM = "CUSTOM"
     NONE = "NONE"
-
 
 class AlignmentStatus(str, Enum):
     """Portfolio alignment status relative to benchmark."""
@@ -100,7 +90,6 @@ class AlignmentStatus(str, Enum):
     MISALIGNED = "MISALIGNED"
     NOT_ASSESSED = "NOT_ASSESSED"
 
-
 class DeviationSeverity(str, Enum):
     """Severity classification for benchmark deviations."""
     LOW = "LOW"
@@ -108,17 +97,15 @@ class DeviationSeverity(str, Enum):
     HIGH = "HIGH"
     CRITICAL = "CRITICAL"
 
-
 # =============================================================================
 # DATA MODELS - SHARED
 # =============================================================================
-
 
 class WorkflowContext(BaseModel):
     """Shared state passed between workflow phases."""
     workflow_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     organization_id: str = Field(..., description="Organization identifier")
-    execution_timestamp: datetime = Field(default_factory=_utcnow)
+    execution_timestamp: datetime = Field(default_factory=utcnow)
     config: Dict[str, Any] = Field(default_factory=dict)
     phase_states: Dict[str, PhaseStatus] = Field(default_factory=dict)
     phase_outputs: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
@@ -141,7 +128,6 @@ class WorkflowContext(BaseModel):
         """Check if a phase has already completed."""
         return self.phase_states.get(phase_name) == PhaseStatus.COMPLETED
 
-
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
     phase_name: str = Field(..., description="Phase identifier")
@@ -155,7 +141,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     records_processed: int = Field(default=0)
 
-
 class WorkflowResult(BaseModel):
     """Complete result from a multi-phase workflow execution."""
     workflow_id: str = Field(..., description="Unique workflow execution ID")
@@ -168,11 +153,9 @@ class WorkflowResult(BaseModel):
     summary: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # DATA MODELS - BENCHMARK MONITORING
 # =============================================================================
-
 
 class BenchmarkMonitoringInput(BaseModel):
     """Input configuration for the benchmark monitoring workflow."""
@@ -236,7 +219,6 @@ class BenchmarkMonitoringInput(BaseModel):
             raise ValueError("reporting_date must be YYYY-MM-DD format")
         return v
 
-
 class BenchmarkMonitoringResult(WorkflowResult):
     """Complete result from the benchmark monitoring workflow."""
     product_name: str = Field(default="")
@@ -252,11 +234,9 @@ class BenchmarkMonitoringResult(WorkflowResult):
     projected_alignment_year: Optional[int] = Field(None)
     on_track: bool = Field(default=False)
 
-
 # =============================================================================
 # PHASE IMPLEMENTATIONS
 # =============================================================================
-
 
 class BenchmarkSelectionPhase:
     """
@@ -304,7 +284,7 @@ class BenchmarkSelectionPhase:
         Returns:
             PhaseResult with validated benchmark parameters.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -384,7 +364,7 @@ class BenchmarkSelectionPhase:
             status = PhaseStatus.FAILED
             records = 0
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -397,7 +377,6 @@ class BenchmarkSelectionPhase:
             provenance_hash=_hash_data(outputs),
             records_processed=records,
         )
-
 
 class AlignmentAssessmentPhase:
     """
@@ -420,7 +399,7 @@ class AlignmentAssessmentPhase:
         Returns:
             PhaseResult with alignment assessment results.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -575,7 +554,7 @@ class AlignmentAssessmentPhase:
             status = PhaseStatus.FAILED
             records = 0
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -588,7 +567,6 @@ class AlignmentAssessmentPhase:
             provenance_hash=_hash_data(outputs),
             records_processed=records,
         )
-
 
 class DeviationAnalysisPhase:
     """
@@ -611,7 +589,7 @@ class DeviationAnalysisPhase:
         Returns:
             PhaseResult with deviation analysis and remediation plans.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -756,7 +734,7 @@ class DeviationAnalysisPhase:
             status = PhaseStatus.FAILED
             records = 0
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -782,7 +760,6 @@ class DeviationAnalysisPhase:
             return DeviationSeverity.MEDIUM.value
         return DeviationSeverity.LOW.value
 
-
 class TrajectoryProjectionPhase:
     """
     Phase 4: Trajectory Projection.
@@ -804,7 +781,7 @@ class TrajectoryProjectionPhase:
         Returns:
             PhaseResult with projected trajectory and alignment forecast.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -929,7 +906,7 @@ class TrajectoryProjectionPhase:
             status = PhaseStatus.FAILED
             records = 0
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -943,11 +920,9 @@ class TrajectoryProjectionPhase:
             records_processed=records,
         )
 
-
 # =============================================================================
 # WORKFLOW ORCHESTRATOR
 # =============================================================================
-
 
 class BenchmarkMonitoringWorkflow:
     """
@@ -1016,7 +991,7 @@ class BenchmarkMonitoringWorkflow:
         Returns:
             BenchmarkMonitoringResult with per-phase details and summary.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         logger.info(
             "Starting benchmark monitoring workflow %s for org=%s product=%s",
             self.workflow_id, input_data.organization_id,
@@ -1091,7 +1066,7 @@ class BenchmarkMonitoringWorkflow:
                 error_result = PhaseResult(
                     phase_name=phase_name,
                     status=PhaseStatus.FAILED,
-                    started_at=_utcnow(),
+                    started_at=utcnow(),
                     errors=[str(exc)],
                     provenance_hash=_hash_data({"error": str(exc)}),
                 )
@@ -1110,7 +1085,7 @@ class BenchmarkMonitoringWorkflow:
                 else WorkflowStatus.PARTIAL
             )
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         total_duration = (completed_at - started_at).total_seconds()
         summary = self._build_summary(context)
         provenance = _hash_data({

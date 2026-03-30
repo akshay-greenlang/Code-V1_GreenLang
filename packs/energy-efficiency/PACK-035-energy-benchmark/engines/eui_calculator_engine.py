@@ -70,25 +70,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -115,7 +109,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -131,7 +124,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -152,7 +144,6 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100).
 
@@ -164,7 +155,6 @@ def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
         Percentage as Decimal; Decimal("0") when whole is zero.
     """
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* and return a float.
@@ -181,26 +171,21 @@ def _round_val(value: Decimal, places: int = 6) -> float:
     quantizer = Decimal(10) ** -places
     return float(value.quantize(quantizer, rounding=ROUND_HALF_UP))
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: float) -> float:
     """Round to 4 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EnergyCarrier(str, Enum):
     """Energy carrier types for EUI calculations.
@@ -216,7 +201,6 @@ class EnergyCarrier(str, Enum):
     DISTRICT_COOLING = "district_cooling"
     BIOMASS = "biomass"
     SOLAR_THERMAL = "solar_thermal"
-
 
 class FloorAreaType(str, Enum):
     """Floor area measurement types per RICS/ISO 9836.
@@ -235,7 +219,6 @@ class FloorAreaType(str, Enum):
     GLA = "gla"
     TFA = "tfa"
 
-
 class EUIAccountingBoundary(str, Enum):
     """EUI accounting boundary methods.
 
@@ -250,7 +233,6 @@ class EUIAccountingBoundary(str, Enum):
     PRIMARY_ENERGY = "primary_energy"
     COST_NORMALISED = "cost_normalised"
 
-
 class CalculationPeriod(str, Enum):
     """Time period basis for EUI calculation.
 
@@ -263,7 +245,6 @@ class CalculationPeriod(str, Enum):
     CALENDAR_YEAR = "calendar_year"
     FISCAL_YEAR = "fiscal_year"
     CUSTOM = "custom"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Source Energy Factors
@@ -309,7 +290,6 @@ SOURCE_ENERGY_FACTORS: Dict[str, Dict[str, Any]] = {
 }
 """Site-to-source energy multipliers from ENERGY STAR Technical Reference."""
 
-
 # Primary energy factors (non-renewable primary energy per kWh delivered).
 # Source: EN 15603:2008 Annex A, and CEN/TR 15615.
 # These are EU-average values; national values may differ.
@@ -349,7 +329,6 @@ PRIMARY_ENERGY_FACTORS: Dict[str, Dict[str, Any]] = {
 }
 """Non-renewable primary energy factors per EN 15603:2008."""
 
-
 # Floor area conversion factors (from measured type to GIA).
 # Source: RICS Code of Measuring Practice 6th ed, BS EN 15221-6:2011.
 # The ratio NIA/GIA depends on building type; here we use typical commercial.
@@ -373,7 +352,6 @@ FLOOR_AREA_CONVERSION: Dict[str, Dict[str, float]] = {
 }
 """Conversion multipliers from measured floor area type to GIA."""
 
-
 # Occupancy adjustment reference values (hours/week).
 # Source: ASHRAE Standard 100-2018, Table 7-1; ENERGY STAR Portfolio Manager.
 STANDARD_OCCUPANCY_HOURS: Dict[str, float] = {
@@ -390,11 +368,9 @@ STANDARD_OCCUPANCY_HOURS: Dict[str, float] = {
 }
 """Standard weekly operating hours by building type, for occupancy normalisation."""
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class FacilityProfile(BaseModel):
     """Building/facility profile for EUI calculation.
@@ -444,7 +420,6 @@ class FacilityProfile(BaseModel):
             raise ValueError("Floor area exceeds 5 million m2 sanity check")
         return v
 
-
 class EnergyMeterData(BaseModel):
     """Energy consumption data for a single carrier in a single period.
 
@@ -471,11 +446,9 @@ class EnergyMeterData(BaseModel):
             raise ValueError("Consumption exceeds 500 GWh per period sanity check")
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class EUIResult(BaseModel):
     """Energy Use Intensity result for a single accounting boundary.
@@ -501,7 +474,6 @@ class EUIResult(BaseModel):
         default_factory=dict, description="Carrier share (%)"
     )
 
-
 class NormalisedEUI(BaseModel):
     """Normalised EUI after adjusting for occupancy and/or activity.
 
@@ -524,7 +496,6 @@ class NormalisedEUI(BaseModel):
         default="", description="Normalisation method description"
     )
 
-
 class RollingEUIPoint(BaseModel):
     """Single data point in a rolling 12-month EUI time series.
 
@@ -539,7 +510,6 @@ class RollingEUIPoint(BaseModel):
     total_energy_kwh: float = Field(default=0.0, description="Total energy (kWh)")
     months_included: int = Field(default=0, description="Months with data")
 
-
 class EUICalculationResult(BaseModel):
     """Complete EUI calculation result with full provenance.
 
@@ -549,7 +519,7 @@ class EUICalculationResult(BaseModel):
     result_id: str = Field(default_factory=_new_uuid, description="Unique result ID")
     engine_version: str = Field(default=_MODULE_VERSION, description="Engine version")
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
 
@@ -585,11 +555,9 @@ class EUICalculationResult(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 # ---------------------------------------------------------------------------
 # Calculation Engine
 # ---------------------------------------------------------------------------
-
 
 class EUICalculatorEngine:
     """Energy Use Intensity calculator engine.

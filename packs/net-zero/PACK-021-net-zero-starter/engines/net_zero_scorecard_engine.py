@@ -67,21 +67,13 @@ logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -94,13 +86,11 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely."""
     if isinstance(value, Decimal):
         return value
     return Decimal(str(value))
-
 
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
@@ -110,19 +100,16 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
-
 
 def _clamp(value: Decimal, lo: Decimal = Decimal("0"), hi: Decimal = Decimal("100")) -> Decimal:
     """Clamp a Decimal value between lo and hi."""
@@ -132,11 +119,9 @@ def _clamp(value: Decimal, lo: Decimal = Decimal("0"), hi: Decimal = Decimal("10
         return hi
     return value
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class MaturityLevel(str, Enum):
     """Organizational maturity level for net-zero readiness.
@@ -150,12 +135,13 @@ class MaturityLevel(str, Enum):
     ADVANCED = "advanced"
     LEADING = "leading"
 
-
 class ScorecardDimension(str, Enum):
     """Assessment dimension for the net-zero scorecard.
 
     Eight dimensions covering the full scope of net-zero readiness
     from data quality to governance and disclosure.
+
+from greenlang.schemas import utcnow
     """
     GHG_INVENTORY = "ghg_inventory"
     TARGET_AMBITION = "target_ambition"
@@ -166,7 +152,6 @@ class ScorecardDimension(str, Enum):
     OFFSET_NEUTRALIZATION = "offset_neutralization"
     REPORTING_DISCLOSURE = "reporting_disclosure"
 
-
 class RecommendationPriority(str, Enum):
     """Priority level for scorecard recommendations."""
     CRITICAL = "critical"
@@ -174,11 +159,9 @@ class RecommendationPriority(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
 
-
 # ---------------------------------------------------------------------------
 # Reference Data Constants
 # ---------------------------------------------------------------------------
-
 
 # Maturity level thresholds and descriptions.
 MATURITY_LEVELS: Dict[str, Dict[str, Any]] = {
@@ -264,7 +247,6 @@ MATURITY_LEVELS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # Default dimension weights (must sum to 1.0).
 DEFAULT_DIMENSION_WEIGHTS: Dict[str, Decimal] = {
     ScorecardDimension.GHG_INVENTORY.value: Decimal("0.15"),
@@ -276,7 +258,6 @@ DEFAULT_DIMENSION_WEIGHTS: Dict[str, Decimal] = {
     ScorecardDimension.OFFSET_NEUTRALIZATION.value: Decimal("0.05"),
     ScorecardDimension.REPORTING_DISCLOSURE.value: Decimal("0.10"),
 }
-
 
 # Indicator definitions per dimension with scoring guidance.
 DIMENSION_INDICATORS: Dict[str, List[Dict[str, Any]]] = {
@@ -562,7 +543,6 @@ DIMENSION_INDICATORS: Dict[str, List[Dict[str, Any]]] = {
     ],
 }
 
-
 # Benchmarking context: what "good" looks like at each level.
 BENCHMARK_CONTEXT: Dict[str, Dict[str, str]] = {
     ScorecardDimension.GHG_INVENTORY.value: {
@@ -623,11 +603,9 @@ BENCHMARK_CONTEXT: Dict[str, Dict[str, str]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class DimensionInput(BaseModel):
     """Input scores for a single scorecard dimension.
@@ -645,7 +623,6 @@ class DimensionInput(BaseModel):
     notes: str = Field(
         default="", description="Assessment notes", max_length=2000
     )
-
 
 class ScorecardInput(BaseModel):
     """Input data for net-zero scorecard assessment.
@@ -677,7 +654,6 @@ class ScorecardInput(BaseModel):
         default=None,
         description="Custom dimension weights (must sum to 1.0)",
     )
-
 
 class DimensionScore(BaseModel):
     """Score result for a single scorecard dimension."""
@@ -718,7 +694,6 @@ class DimensionScore(BaseModel):
         default="", description="SHA-256 hash"
     )
 
-
 class ScorecardRecommendation(BaseModel):
     """A prioritized recommendation from the scorecard assessment."""
     recommendation_id: str = Field(
@@ -752,7 +727,6 @@ class ScorecardRecommendation(BaseModel):
         default="", description="SHA-256 hash"
     )
 
-
 class ScorecardResult(BaseModel):
     """Complete net-zero scorecard result.
 
@@ -766,7 +740,7 @@ class ScorecardResult(BaseModel):
         default=_MODULE_VERSION, description="Engine version"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     entity_name: str = Field(
         default="", description="Organization name"
@@ -816,11 +790,9 @@ class ScorecardResult(BaseModel):
         default="", description="SHA-256 provenance hash"
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class NetZeroScorecardEngine:
     """Net-zero readiness and maturity assessment engine.

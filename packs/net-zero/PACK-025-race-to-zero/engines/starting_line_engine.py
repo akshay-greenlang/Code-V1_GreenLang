@@ -74,25 +74,20 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ComplianceStatus
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -110,7 +105,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -120,7 +114,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -129,17 +122,14 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
@@ -147,11 +137,9 @@ def _round3(value: float) -> float:
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class StartingLineCategory(str, Enum):
     """The four Starting Line Criteria categories (4Ps).
@@ -166,19 +154,6 @@ class StartingLineCategory(str, Enum):
     PROCEED = "proceed"
     PUBLISH = "publish"
 
-
-class ComplianceStatus(str, Enum):
-    """Starting Line compliance status.
-
-    COMPLIANT: All criteria met.
-    PARTIALLY_COMPLIANT: Some criteria met, gaps remain.
-    NON_COMPLIANT: Critical criteria not met.
-    """
-    COMPLIANT = "compliant"
-    PARTIALLY_COMPLIANT = "partially_compliant"
-    NON_COMPLIANT = "non_compliant"
-
-
 class SubCriterionStatus(str, Enum):
     """Assessment status for a single sub-criterion.
 
@@ -191,7 +166,6 @@ class SubCriterionStatus(str, Enum):
     PARTIAL = "partial"
     FAIL = "fail"
     NOT_APPLICABLE = "not_applicable"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- 20 Sub-Criteria Definition
@@ -350,11 +324,9 @@ PRIORITY_WEIGHTS: Dict[str, int] = {
     StartingLineCategory.PUBLISH.value: 4,
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class SubCriterionInput(BaseModel):
     """Input data for a single Starting Line sub-criterion.
@@ -393,7 +365,6 @@ class SubCriterionInput(BaseModel):
         if v not in valid:
             raise ValueError(f"Unknown status '{v}'. Must be one of: {sorted(valid)}")
         return v
-
 
 class StartingLineInput(BaseModel):
     """Complete input for Starting Line assessment.
@@ -465,11 +436,9 @@ class StartingLineInput(BaseModel):
     sub_criteria: List[SubCriterionInput] = Field(default_factory=list)
     include_remediation: bool = Field(default=True)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class SubCriterionResult(BaseModel):
     """Assessment result for a single sub-criterion.
@@ -501,7 +470,6 @@ class SubCriterionResult(BaseModel):
     effort_estimate: int = Field(default=0)
     priority: int = Field(default=5)
 
-
 class CategoryResult(BaseModel):
     """Assessment result for a Starting Line category.
 
@@ -528,7 +496,6 @@ class CategoryResult(BaseModel):
     sub_criteria_total: int = Field(default=5)
     sub_criterion_results: List[SubCriterionResult] = Field(default_factory=list)
 
-
 class RemediationItem(BaseModel):
     """A single remediation action item.
 
@@ -546,7 +513,6 @@ class RemediationItem(BaseModel):
     effort_hours: int = Field(default=0)
     priority: int = Field(default=5)
     deadline_description: str = Field(default="")
-
 
 class StartingLineResult(BaseModel):
     """Complete Starting Line assessment result.
@@ -578,7 +544,7 @@ class StartingLineResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     overall_status: str = Field(default=ComplianceStatus.NON_COMPLIANT.value)
     overall_score: Decimal = Field(default=Decimal("0"))
@@ -600,11 +566,9 @@ class StartingLineResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class StartingLineEngine:
     """Race to Zero Starting Line Criteria assessment engine.

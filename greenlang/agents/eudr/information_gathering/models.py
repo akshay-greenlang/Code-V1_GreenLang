@@ -22,7 +22,8 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase
 
 
 # ---------------------------------------------------------------------------
@@ -206,7 +207,7 @@ LOW_RISK_COUNTRIES: List[str] = []  # Populated from EC benchmark publications
 # ---------------------------------------------------------------------------
 
 
-class QueryResult(BaseModel):
+class QueryResult(GreenLangBase):
     """Result of an external database query."""
 
     query_id: str
@@ -224,7 +225,7 @@ class QueryResult(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class CertificateVerificationResult(BaseModel):
+class CertificateVerificationResult(GreenLangBase):
     """Result of verifying a single certificate."""
 
     certificate_id: str
@@ -241,7 +242,7 @@ class CertificateVerificationResult(BaseModel):
     provenance_hash: str = ""
 
 
-class DataDiscrepancy(BaseModel):
+class DataDiscrepancy(GreenLangBase):
     """A discrepancy detected between two data sources for the same field."""
 
     field_name: str
@@ -253,7 +254,7 @@ class DataDiscrepancy(BaseModel):
     recommendation: str = ""
 
 
-class SupplierProfile(BaseModel):
+class SupplierProfile(GreenLangBase):
     """Unified supplier information profile aggregated from multiple sources."""
 
     supplier_id: str
@@ -275,7 +276,7 @@ class SupplierProfile(BaseModel):
     provenance_hash: str = ""
 
 
-class Article9ElementStatus(BaseModel):
+class Article9ElementStatus(GreenLangBase):
     """Status of a single Article 9 information element."""
 
     element_name: str
@@ -286,7 +287,7 @@ class Article9ElementStatus(BaseModel):
     last_updated: Optional[datetime] = None
 
 
-class NormalizationRecord(BaseModel):
+class NormalizationRecord(GreenLangBase):
     """Audit record for a single data normalization transformation."""
 
     field_name: str
@@ -296,7 +297,7 @@ class NormalizationRecord(BaseModel):
     confidence: Decimal = Decimal("1.0")
 
 
-class GapReportItem(BaseModel):
+class GapReportItem(GreenLangBase):
     """A single gap identified in the information package."""
 
     element_name: str
@@ -306,7 +307,7 @@ class GapReportItem(BaseModel):
     estimated_effort: str = ""  # e.g., "1 day", "send questionnaire"
 
 
-class GapReport(BaseModel):
+class GapReport(GreenLangBase):
     """Aggregated gap analysis report for an information package."""
 
     total_gaps: int = 0
@@ -318,7 +319,7 @@ class GapReport(BaseModel):
     generated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
-class EvidenceArtifact(BaseModel):
+class EvidenceArtifact(GreenLangBase):
     """A single evidence artifact within an information package."""
 
     artifact_id: str
@@ -330,7 +331,7 @@ class EvidenceArtifact(BaseModel):
     collected_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
-class ProvenanceEntry(BaseModel):
+class ProvenanceEntry(GreenLangBase):
     """A single step in the provenance chain."""
 
     step: str
@@ -341,7 +342,7 @@ class ProvenanceEntry(BaseModel):
     output_hash: str = ""
 
 
-class HarvestResult(BaseModel):
+class HarvestResult(GreenLangBase):
     """Result of a public data harvest operation."""
 
     source: ExternalDatabaseSource
@@ -356,7 +357,7 @@ class HarvestResult(BaseModel):
     harvested_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
-class DataFreshnessRecord(BaseModel):
+class DataFreshnessRecord(GreenLangBase):
     """Freshness status for a single data source."""
 
     source: str
@@ -367,7 +368,7 @@ class DataFreshnessRecord(BaseModel):
     max_age_hours: int = 24
 
 
-class CompletenessReport(BaseModel):
+class CompletenessReport(GreenLangBase):
     """Full Article 9 completeness validation report."""
 
     operation_id: str
@@ -383,7 +384,7 @@ class CompletenessReport(BaseModel):
     provenance_hash: str = ""
 
 
-class InformationPackage(BaseModel):
+class InformationPackage(GreenLangBase):
     """Assembled information package for DDS submission."""
 
     package_id: str
@@ -408,7 +409,7 @@ class InformationPackage(BaseModel):
     valid_until: Optional[datetime] = None
 
 
-class GatheringOperation(BaseModel):
+class GatheringOperation(GreenLangBase):
     """Top-level information gathering operation tracking."""
 
     operation_id: str
@@ -431,7 +432,7 @@ class GatheringOperation(BaseModel):
     provenance_hash: str = ""
 
 
-class PackageDiff(BaseModel):
+class PackageDiff(GreenLangBase):
     """Difference between two information package versions."""
 
     package_a_id: str

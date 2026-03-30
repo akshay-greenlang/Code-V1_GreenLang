@@ -27,20 +27,15 @@ from typing import Any, Callable, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC time with timezone info."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute SHA-256 provenance hash of arbitrary data."""
     return hashlib.sha256(
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
-
 
 class PhaseStatus(str, Enum):
     PENDING = "PENDING"
@@ -49,7 +44,6 @@ class PhaseStatus(str, Enum):
     FAILED = "FAILED"
     SKIPPED = "SKIPPED"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "PENDING"
     RUNNING = "RUNNING"
@@ -57,12 +51,11 @@ class WorkflowStatus(str, Enum):
     FAILED = "FAILED"
     PARTIAL = "PARTIAL"
 
-
 class WorkflowContext(BaseModel):
     """Shared state passed between workflow phases."""
     workflow_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     organization_id: str = Field(..., description="Organization identifier")
-    execution_timestamp: datetime = Field(default_factory=_utcnow)
+    execution_timestamp: datetime = Field(default_factory=utcnow)
     config: Dict[str, Any] = Field(default_factory=dict)
     phase_states: Dict[str, PhaseStatus] = Field(default_factory=dict)
     phase_outputs: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
@@ -81,7 +74,6 @@ class WorkflowContext(BaseModel):
     def is_phase_completed(self, phase_name: str) -> bool:
         return self.phase_states.get(phase_name) == PhaseStatus.COMPLETED
 
-
 class PhaseResult(BaseModel):
     phase_name: str = Field(..., description="Phase identifier")
     status: PhaseStatus = Field(..., description="Phase completion status")
@@ -94,7 +86,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     records_processed: int = Field(default=0)
 
-
 class WorkflowResult(BaseModel):
     workflow_id: str = Field(..., description="Unique workflow execution ID")
     workflow_name: str = Field(..., description="Workflow type identifier")
@@ -106,8 +97,6 @@ class WorkflowResult(BaseModel):
     summary: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
 
-
-
 class ClimateScenario(str, Enum):
     """NGFS climate scenarios."""
     NET_ZERO_2050 = "NET_ZERO_2050"
@@ -117,7 +106,6 @@ class ClimateScenario(str, Enum):
     NDC = "NDC"
     DIVERGENT_NET_ZERO = "DIVERGENT_NET_ZERO"
 
-
 class RiskType(str, Enum):
     """Climate risk types."""
     PHYSICAL_ACUTE = "PHYSICAL_ACUTE"
@@ -126,7 +114,6 @@ class RiskType(str, Enum):
     TRANSITION_TECHNOLOGY = "TRANSITION_TECHNOLOGY"
     TRANSITION_MARKET = "TRANSITION_MARKET"
     TRANSITION_REPUTATION = "TRANSITION_REPUTATION"
-
 
 # ---------------------------------------------------------------------------
 #  Input / Result Models
@@ -147,7 +134,6 @@ class PortfolioExposure(BaseModel):
     physical_risk_score: Optional[float] = Field(None, ge=0.0, le=10.0)
     transition_risk_score: Optional[float] = Field(None, ge=0.0, le=10.0)
 
-
 class ClimateStressTestInput(BaseModel):
     """Input for the climate stress test workflow."""
     organization_id: str = Field(..., description="Organization identifier")
@@ -166,7 +152,6 @@ class ClimateStressTestInput(BaseModel):
         datetime.strptime(v, "%Y-%m-%d")
         return v
 
-
 class ClimateStressTestResult(WorkflowResult):
     """Result from the climate stress test workflow."""
     total_exposure_eur: float = Field(default=0.0)
@@ -178,7 +163,6 @@ class ClimateStressTestResult(WorkflowResult):
     transition_risk_exposure_pct: float = Field(default=0.0)
     counterparties_assessed: int = Field(default=0)
     sectors_assessed: int = Field(default=0)
-
 
 # ---------------------------------------------------------------------------
 #  Phase 1: Exposure Mapping
@@ -195,7 +179,7 @@ class ExposureMappingPhase:
     ]
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -245,7 +229,7 @@ class ExposureMappingPhase:
             status = PhaseStatus.FAILED
             records = 0
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -253,7 +237,6 @@ class ExposureMappingPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs), records_processed=records,
         )
-
 
 # ---------------------------------------------------------------------------
 #  Phase 2: Scenario Selection
@@ -298,7 +281,7 @@ class ScenarioSelectionPhase:
     }
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -333,7 +316,7 @@ class ScenarioSelectionPhase:
             errors.append(f"Scenario selection failed: {str(exc)}")
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -341,7 +324,6 @@ class ScenarioSelectionPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 # ---------------------------------------------------------------------------
 #  Phase 3: Risk Calculation
@@ -353,7 +335,7 @@ class RiskCalculationPhase:
     PHASE_NAME = "risk_calculation"
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -416,7 +398,7 @@ class RiskCalculationPhase:
             errors.append(f"Risk calculation failed: {str(exc)}")
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -424,7 +406,6 @@ class RiskCalculationPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 # ---------------------------------------------------------------------------
 #  Phase 4: Impact Quantification
@@ -436,7 +417,7 @@ class ImpactQuantificationPhase:
     PHASE_NAME = "impact_quantification"
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -486,7 +467,7 @@ class ImpactQuantificationPhase:
             errors.append(f"Impact quantification failed: {str(exc)}")
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -494,7 +475,6 @@ class ImpactQuantificationPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 # ---------------------------------------------------------------------------
 #  Phase 5: Report Generation
@@ -506,7 +486,7 @@ class StressTestReportPhase:
     PHASE_NAME = "report_generation"
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -536,7 +516,7 @@ class StressTestReportPhase:
             errors.append(f"Report generation failed: {str(exc)}")
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -544,7 +524,6 @@ class StressTestReportPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 # ---------------------------------------------------------------------------
 #  Workflow Orchestrator
@@ -570,7 +549,7 @@ class ClimateStressTestWorkflow:
 
     async def run(self, input_data: ClimateStressTestInput) -> ClimateStressTestResult:
         """Execute the complete 5-phase climate stress test workflow."""
-        started_at = _utcnow()
+        started_at = utcnow()
         logger.info("Starting climate stress test workflow %s org=%s",
                      self.workflow_id, input_data.organization_id)
         context = WorkflowContext(
@@ -610,7 +589,7 @@ class ClimateStressTestWorkflow:
                 logger.error("Phase '%s' raised: %s", phase_name, exc, exc_info=True)
                 completed_phases.append(PhaseResult(
                     phase_name=phase_name, status=PhaseStatus.FAILED,
-                    started_at=_utcnow(), errors=[str(exc)],
+                    started_at=utcnow(), errors=[str(exc)],
                     provenance_hash=_hash_data({"error": str(exc)}),
                 ))
                 context.mark_phase(phase_name, PhaseStatus.FAILED)
@@ -622,7 +601,7 @@ class ClimateStressTestWorkflow:
                          for p in completed_phases)
             overall_status = WorkflowStatus.COMPLETED if all_ok else WorkflowStatus.PARTIAL
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         duration = (completed_at - started_at).total_seconds()
         summary = self._build_summary(context)
         provenance = _hash_data({

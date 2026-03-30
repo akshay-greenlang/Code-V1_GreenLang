@@ -50,7 +50,9 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ReportFormat
 
 # ---------------------------------------------------------------------------
 # Re-export Layer 1 models from missing_value_imputer
@@ -80,16 +82,9 @@ try:
 except ImportError:
     ConfidenceLevel_L1 = None  # type: ignore[assignment, misc]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -159,11 +154,9 @@ RESOLUTION_LEVELS: tuple = (
     "raw", "hourly", "daily", "weekly", "monthly", "quarterly", "annual",
 )
 
-
 # =============================================================================
 # Enumerations (13)
 # =============================================================================
-
 
 class FrequencyLevel(str, Enum):
     """Detected or expected time-series frequency.
@@ -189,7 +182,6 @@ class FrequencyLevel(str, Enum):
     SEMI_ANNUAL = "semi_annual"
     ANNUAL = "annual"
 
-
 class GapType(str, Enum):
     """Classification of a gap pattern in a time series.
 
@@ -206,7 +198,6 @@ class GapType(str, Enum):
     RANDOM_GAP = "random_gap"
     SYSTEMATIC_GAP = "systematic_gap"
 
-
 class GapSeverity(str, Enum):
     """Severity classification for a detected gap.
 
@@ -220,7 +211,6 @@ class GapSeverity(str, Enum):
     MEDIUM = "medium"
     HIGH = "high"
     CRITICAL = "critical"
-
 
 class FillStrategy(str, Enum):
     """Strategy for filling detected gaps in a time series.
@@ -248,7 +238,6 @@ class FillStrategy(str, Enum):
     CALENDAR = "calendar"
     AUTO = "auto"
 
-
 class FillStatus(str, Enum):
     """Lifecycle status of a gap-fill job.
 
@@ -262,7 +251,6 @@ class FillStatus(str, Enum):
     FAILED = "failed"
     CANCELLED = "cancelled"
 
-
 class ValidationResult(str, Enum):
     """Outcome of a fill validation check.
 
@@ -275,7 +263,6 @@ class ValidationResult(str, Enum):
     FAILED = "failed"
     WARNING = "warning"
 
-
 class CalendarType(str, Enum):
     """Type of calendar used for calendar-aware gap filling.
 
@@ -287,7 +274,6 @@ class CalendarType(str, Enum):
     BUSINESS_DAYS = "business_days"
     FISCAL_YEAR = "fiscal_year"
     CUSTOM = "custom"
-
 
 class SeasonalPattern(str, Enum):
     """Detected or specified seasonal pattern period.
@@ -304,7 +290,6 @@ class SeasonalPattern(str, Enum):
     MONTHLY = "monthly"
     QUARTERLY = "quarterly"
     ANNUAL = "annual"
-
 
 class TrendType(str, Enum):
     """Type of trend detected in a time series.
@@ -326,7 +311,6 @@ class TrendType(str, Enum):
     NONE = "none"
     UNKNOWN = "unknown"
 
-
 class PipelineStage(str, Enum):
     """Stage in the gap-fill pipeline.
 
@@ -341,20 +325,6 @@ class PipelineStage(str, Enum):
     FILL = "fill"
     VALIDATE = "validate"
     DOCUMENT = "document"
-
-
-class ReportFormat(str, Enum):
-    """Output format for gap-fill reports.
-
-    Defines the serialization format for generated reports
-    including detection results, fill details, and validations.
-    """
-
-    JSON = "json"
-    TEXT = "text"
-    MARKDOWN = "markdown"
-    HTML = "html"
-
 
 class ConfidenceLevel(str, Enum):
     """Confidence classification for a fill value.
@@ -372,7 +342,6 @@ class ConfidenceLevel(str, Enum):
     HIGH = "high"
     VERY_HIGH = "very_high"
 
-
 class DataResolution(str, Enum):
     """Temporal resolution of the data series.
 
@@ -388,13 +357,11 @@ class DataResolution(str, Enum):
     QUARTERLY = "quarterly"
     ANNUAL = "annual"
 
-
 # =============================================================================
 # SDK Data Models (20)
 # =============================================================================
 
-
-class GapRecord(BaseModel):
+class GapRecord(GreenLangBase):
     """A single detected gap in a time series.
 
     Represents one contiguous block of missing data, including its
@@ -477,8 +444,7 @@ class GapRecord(BaseModel):
             )
         return v
 
-
-class GapDetectionResult(BaseModel):
+class GapDetectionResult(GreenLangBase):
     """Result of gap detection for a single time series.
 
     Contains all detected gaps, summary statistics, and the
@@ -552,8 +518,7 @@ class GapDetectionResult(BaseModel):
             raise ValueError("series_id must be non-empty")
         return v
 
-
-class FrequencyResult(BaseModel):
+class FrequencyResult(GreenLangBase):
     """Result of frequency analysis for a time series.
 
     Reports the detected dominant frequency, regularity score,
@@ -626,8 +591,7 @@ class FrequencyResult(BaseModel):
             raise ValueError("series_id must be non-empty")
         return v
 
-
-class FillValue(BaseModel):
+class FillValue(GreenLangBase):
     """A single filled value for a missing data point.
 
     Represents the result of filling one gap position, including
@@ -692,8 +656,7 @@ class FillValue(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class FillResult(BaseModel):
+class FillResult(GreenLangBase):
     """Result of a fill operation for a single time series.
 
     Aggregates all filled values produced by one fill execution,
@@ -766,8 +729,7 @@ class FillResult(BaseModel):
             raise ValueError("series_id must be non-empty")
         return v
 
-
-class ValidationReport(BaseModel):
+class ValidationReport(GreenLangBase):
     """Result of fill validation for a single time series.
 
     Evaluates the quality of filled values by comparing the
@@ -857,8 +819,7 @@ class ValidationReport(BaseModel):
             raise ValueError("series_id must be non-empty")
         return v
 
-
-class CalendarDefinition(BaseModel):
+class CalendarDefinition(GreenLangBase):
     """Calendar configuration for calendar-aware gap filling.
 
     Defines business days, holidays, and fiscal period boundaries
@@ -915,7 +876,7 @@ class CalendarDefinition(BaseModel):
         description="Whether this calendar is currently active",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the calendar was created",
     )
     provenance_hash: str = Field(
@@ -944,8 +905,7 @@ class CalendarDefinition(BaseModel):
                 )
         return v
 
-
-class ReferenceSeries(BaseModel):
+class ReferenceSeries(GreenLangBase):
     """A donor time series registered for cross-series gap filling.
 
     Contains the donor series data, metadata, and pre-computed
@@ -1006,7 +966,7 @@ class ReferenceSeries(BaseModel):
         description="Whether this reference is currently active",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the reference was registered",
     )
     provenance_hash: str = Field(
@@ -1024,8 +984,7 @@ class ReferenceSeries(BaseModel):
             raise ValueError("series_id must be non-empty")
         return v
 
-
-class GapFillStrategy(BaseModel):
+class GapFillStrategy(GreenLangBase):
     """Selected fill strategy for a specific gap.
 
     Records which strategy was chosen (manually or via auto-selection),
@@ -1075,7 +1034,7 @@ class GapFillStrategy(BaseModel):
         description="Reason for auto-selection",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the strategy was selected",
     )
     provenance_hash: str = Field(
@@ -1093,8 +1052,7 @@ class GapFillStrategy(BaseModel):
             raise ValueError("gap_id must be non-empty")
         return v
 
-
-class ImpactAssessment(BaseModel):
+class ImpactAssessment(GreenLangBase):
     """Assessment of the impact of gaps on downstream analysis.
 
     Quantifies how gaps affect trend estimation, year-over-year
@@ -1160,7 +1118,7 @@ class ImpactAssessment(BaseModel):
         description="Overall risk classification",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the assessment was performed",
     )
     provenance_hash: str = Field(
@@ -1178,8 +1136,7 @@ class ImpactAssessment(BaseModel):
             raise ValueError("series_id must be non-empty")
         return v
 
-
-class GapFillReport(BaseModel):
+class GapFillReport(GreenLangBase):
     """Compliance-grade report summarising gap detection and filling.
 
     Provides a complete audit trail for regulatory submissions,
@@ -1256,7 +1213,7 @@ class GapFillReport(BaseModel):
         description="Associated impact assessment",
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the report was generated",
     )
     content: str = Field(
@@ -1278,8 +1235,7 @@ class GapFillReport(BaseModel):
             raise ValueError("series_id must be non-empty")
         return v
 
-
-class PipelineConfig(BaseModel):
+class PipelineConfig(GreenLangBase):
     """Configuration for the full gap-fill pipeline.
 
     Defines pipeline-level settings including fill strategy,
@@ -1366,8 +1322,7 @@ class PipelineConfig(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class PipelineResult(BaseModel):
+class PipelineResult(GreenLangBase):
     """Complete result of a gap-fill pipeline run.
 
     Aggregates detection, characterisation, strategy selection,
@@ -1449,7 +1404,7 @@ class PipelineResult(BaseModel):
         description="Total pipeline processing time in milliseconds",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the pipeline completed",
     )
     provenance_hash: str = Field(
@@ -1459,8 +1414,7 @@ class PipelineResult(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class GapFillerJobConfig(BaseModel):
+class GapFillerJobConfig(GreenLangBase):
     """Configuration and tracking for a gap-fill job.
 
     Represents a single end-to-end gap-fill run with progress
@@ -1577,8 +1531,7 @@ class GapFillerJobConfig(BaseModel):
             return 0.0
         return stage_progress.get(self.stage, 0.0)
 
-
-class GapFillerStatistics(BaseModel):
+class GapFillerStatistics(GreenLangBase):
     """Aggregated operational statistics for the gap-fill service.
 
     Provides high-level metrics for monitoring the overall
@@ -1644,14 +1597,13 @@ class GapFillerStatistics(BaseModel):
         description="Average fill processing time in milliseconds",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when statistics were computed",
     )
 
     model_config = {"extra": "forbid"}
 
-
-class SeriesMetadata(BaseModel):
+class SeriesMetadata(GreenLangBase):
     """Metadata for a registered time series.
 
     Contains descriptive information about a series, including
@@ -1732,7 +1684,7 @@ class SeriesMetadata(BaseModel):
         description="Key-value tags for categorisation",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the metadata was registered",
     )
     provenance_hash: str = Field(
@@ -1750,8 +1702,7 @@ class SeriesMetadata(BaseModel):
             raise ValueError("series_id must be non-empty")
         return v
 
-
-class BatchDetectionResult(BaseModel):
+class BatchDetectionResult(GreenLangBase):
     """Batch result aggregating gap detection across multiple series.
 
     Attributes:
@@ -1790,7 +1741,7 @@ class BatchDetectionResult(BaseModel):
         description="Total batch processing time in milliseconds",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the batch was processed",
     )
     provenance_hash: str = Field(
@@ -1800,8 +1751,7 @@ class BatchDetectionResult(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class CrossSeriesResult(BaseModel):
+class CrossSeriesResult(GreenLangBase):
     """Result of cross-series gap filling.
 
     Records the outcome of filling gaps in a target series
@@ -1887,8 +1837,7 @@ class CrossSeriesResult(BaseModel):
             raise ValueError("donor_id must be non-empty")
         return v
 
-
-class SeasonalDecomposition(BaseModel):
+class SeasonalDecomposition(GreenLangBase):
     """Result of seasonal decomposition of a time series.
 
     Contains the decomposed components: trend, seasonal, and
@@ -1965,8 +1914,7 @@ class SeasonalDecomposition(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class GapCharacterization(BaseModel):
+class GapCharacterization(GreenLangBase):
     """Detailed characterisation of a single gap.
 
     Classifies the gap by type, periodicity, and severity, and
@@ -2037,7 +1985,7 @@ class GapCharacterization(BaseModel):
         description="Additional characterisation features for auto-selection",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the characterisation was computed",
     )
     provenance_hash: str = Field(
@@ -2065,13 +2013,11 @@ class GapCharacterization(BaseModel):
             )
         return v
 
-
 # =============================================================================
 # Request Models (8)
 # =============================================================================
 
-
-class CreateJobRequest(BaseModel):
+class CreateJobRequest(GreenLangBase):
     """Request body for creating a new gap-fill job.
 
     Attributes:
@@ -2115,8 +2061,7 @@ class CreateJobRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class DetectGapsRequest(BaseModel):
+class DetectGapsRequest(GreenLangBase):
     """Request body for detecting gaps in a single time series.
 
     Attributes:
@@ -2150,8 +2095,7 @@ class DetectGapsRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class BatchDetectRequest(BaseModel):
+class BatchDetectRequest(GreenLangBase):
     """Request body for batch gap detection across multiple series.
 
     Attributes:
@@ -2175,8 +2119,7 @@ class BatchDetectRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class AnalyzeFrequencyRequest(BaseModel):
+class AnalyzeFrequencyRequest(GreenLangBase):
     """Request body for analyzing the frequency of a time series.
 
     Attributes:
@@ -2205,8 +2148,7 @@ class AnalyzeFrequencyRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class FillGapsRequest(BaseModel):
+class FillGapsRequest(GreenLangBase):
     """Request body for filling gaps in a time series.
 
     Attributes:
@@ -2270,8 +2212,7 @@ class FillGapsRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class ValidateFillsRequest(BaseModel):
+class ValidateFillsRequest(GreenLangBase):
     """Request body for validating filled values.
 
     Attributes:
@@ -2315,8 +2256,7 @@ class ValidateFillsRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class CreateCalendarRequest(BaseModel):
+class CreateCalendarRequest(GreenLangBase):
     """Request body for creating a calendar definition.
 
     Attributes:
@@ -2378,8 +2318,7 @@ class CreateCalendarRequest(BaseModel):
                 )
         return v
 
-
-class RunPipelineRequest(BaseModel):
+class RunPipelineRequest(GreenLangBase):
     """Request body for running the full gap-fill pipeline.
 
     Attributes:
@@ -2423,11 +2362,9 @@ class RunPipelineRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
 # =============================================================================
 # Engine-internal models (used by InterpolationEngine & TrendExtrapolatorEngine)
 # =============================================================================
-
 
 class FillMethod(str, Enum):
     """Specific algorithm used by an engine to fill gaps.
@@ -2453,8 +2390,7 @@ class FillMethod(str, Enum):
     CROSS_SERIES = "cross_series"
     CALENDAR = "calendar"
 
-
-class FillPoint(BaseModel):
+class FillPoint(GreenLangBase):
     """A single point produced during engine-level gap filling.
 
     Attributes:
@@ -2490,8 +2426,7 @@ class FillPoint(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class TrendAnalysis(BaseModel):
+class TrendAnalysis(GreenLangBase):
     """Result of full trend analysis on a time series.
 
     Returned by TrendExtrapolatorEngine.analyze_trend(), providing
@@ -2530,7 +2465,6 @@ class TrendAnalysis(BaseModel):
     )
 
     model_config = {"extra": "forbid"}
-
 
 # =============================================================================
 # __all__ export list

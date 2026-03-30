@@ -67,21 +67,13 @@ logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -101,7 +93,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _safe_divide(
     numerator: float, denominator: float, default: float = 0.0
 ) -> float:
@@ -110,13 +101,11 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.01"), rounding=ROUND_HALF_UP
     ))
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
@@ -124,11 +113,9 @@ def _round3(value: float) -> float:
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class BatteryCategory(str, Enum):
     """Battery category per EU Battery Regulation classification.
@@ -142,7 +129,6 @@ class BatteryCategory(str, Enum):
     EV = "ev"
     INDUSTRIAL = "industrial"
 
-
 class RecoveryMaterial(str, Enum):
     """Critical raw material subject to recovery targets per Art 71.
 
@@ -155,19 +141,19 @@ class RecoveryMaterial(str, Enum):
     COPPER = "copper"
     LEAD = "lead"
 
-
 class EOLPhase(str, Enum):
     """Phase in the end-of-life management process.
 
     Tracks the lifecycle stage of waste battery processing
     from collection through to final recovery or disposal.
+
+from greenlang.schemas import utcnow
     """
     COLLECTION = "collection"
     DISMANTLING = "dismantling"
     RECYCLING = "recycling"
     RECOVERY = "recovery"
     DISPOSAL = "disposal"
-
 
 class BatteryChemistry(str, Enum):
     """Battery chemistry type for recycling efficiency targets.
@@ -180,11 +166,9 @@ class BatteryChemistry(str, Enum):
     NICKEL_METAL_HYDRIDE = "nickel_metal_hydride"
     OTHER = "other"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # Collection rate targets by category and year.
 # Values are minimum collection rates as percentages.
@@ -241,7 +225,6 @@ COLLECTION_TARGETS: Dict[str, Dict[int, float]] = {
         2031: 100.0,
     },
 }
-
 
 # Material recovery targets by material and year (%).
 MATERIAL_RECOVERY_TARGETS: Dict[str, Dict[int, float]] = {
@@ -346,11 +329,9 @@ EOL_PHASE_DESCRIPTIONS: Dict[str, str] = {
     ),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class CollectionData(BaseModel):
     """Collection data for a battery category in a reporting year.
@@ -406,7 +387,6 @@ class CollectionData(BaseModel):
         description="SHA-256 provenance hash",
     )
 
-
 class RecyclingData(BaseModel):
     """Recycling efficiency data for a battery processing operation.
 
@@ -459,7 +439,6 @@ class RecyclingData(BaseModel):
         default="",
         description="SHA-256 provenance hash",
     )
-
 
 class MaterialRecoveryData(BaseModel):
     """Material recovery data for a specific critical raw material.
@@ -514,7 +493,6 @@ class MaterialRecoveryData(BaseModel):
         description="SHA-256 provenance hash",
     )
 
-
 class SecondLifeAssessment(BaseModel):
     """Assessment of second-life potential for a battery.
 
@@ -551,7 +529,6 @@ class SecondLifeAssessment(BaseModel):
         max_length=2000,
     )
 
-
 class EOLResult(BaseModel):
     """Complete end-of-life assessment result.
 
@@ -568,7 +545,7 @@ class EOLResult(BaseModel):
         description="Engine version used for this assessment",
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of assessment (UTC)",
     )
     collection_compliance: List[CollectionData] = Field(
@@ -624,11 +601,9 @@ class EOLResult(BaseModel):
         description="SHA-256 hash of the entire result",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class EndOfLifeEngine:
     """End-of-life management engine per EU Battery Regulation Art 56-71.

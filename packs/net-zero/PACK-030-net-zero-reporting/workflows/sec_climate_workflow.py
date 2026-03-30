@@ -44,28 +44,22 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "30.0.0"
 _PACK_ID = "PACK-030"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -74,7 +68,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
@@ -82,12 +75,10 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class RAGStatus(str, Enum):
     RED = "red"
     AMBER = "amber"
     GREEN = "green"
-
 
 class SECSection(str, Enum):
     ITEM_1 = "item_1"
@@ -99,11 +90,9 @@ class SECSection(str, Enum):
     REG_SK_1505 = "reg_sk_1505"
     REG_SK_1506 = "reg_sk_1506"
 
-
 class AttestationLevel(str, Enum):
     LIMITED = "limited_assurance"
     REASONABLE = "reasonable_assurance"
-
 
 # =============================================================================
 # SEC CLIMATE RULE REFERENCE DATA
@@ -135,11 +124,9 @@ SEC_REG_SK_REQUIREMENTS: Dict[str, Dict[str, Any]] = {
     ]},
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase_name: str = Field(...)
@@ -153,7 +140,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     dag_node_id: str = Field(default="")
 
-
 class SECSectionContent(BaseModel):
     section: SECSection = Field(...)
     section_title: str = Field(default="")
@@ -164,7 +150,6 @@ class SECSectionContent(BaseModel):
     completeness_pct: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class SECXBRLOutput(BaseModel):
     tag_count: int = Field(default=0)
     taxonomy_version: str = Field(default="SEC-Climate-2024")
@@ -172,7 +157,6 @@ class SECXBRLOutput(BaseModel):
     ixbrl_file: str = Field(default="")
     validation_passed: bool = Field(default=True)
     provenance_hash: str = Field(default="")
-
 
 class SECAttestationTemplate(BaseModel):
     attestation_id: str = Field(default="")
@@ -183,7 +167,6 @@ class SECAttestationTemplate(BaseModel):
     sections_covered: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class SEC10KPackage(BaseModel):
     package_id: str = Field(default="")
     filing_sections: List[SECSectionContent] = Field(default_factory=list)
@@ -193,7 +176,6 @@ class SEC10KPackage(BaseModel):
     ready_for_filing: bool = Field(default=False)
     filing_deadline: str = Field(default="")
     provenance_hash: str = Field(default="")
-
 
 # -- Config / Input / Result --
 
@@ -220,13 +202,11 @@ class SECClimateConfig(BaseModel):
     filer_category: str = Field(default="large_accelerated")
     filing_deadline_days: int = Field(default=90)
 
-
 class SECClimateInput(BaseModel):
     config: SECClimateConfig = Field(default_factory=SECClimateConfig)
     risk_factors: List[Dict[str, Any]] = Field(default_factory=list)
     financial_impacts: Dict[str, Any] = Field(default_factory=dict)
     governance_data: Dict[str, Any] = Field(default_factory=dict)
-
 
 class SECClimateResult(BaseModel):
     workflow_id: str = Field(...)
@@ -243,11 +223,9 @@ class SECClimateResult(BaseModel):
     overall_rag_status: RAGStatus = Field(default=RAGStatus.GREEN)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class SECClimateWorkflow:
     """8-phase DAG workflow for SEC 10-K climate disclosure."""
@@ -266,7 +244,7 @@ class SECClimateWorkflow:
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     async def execute(self, input_data: SECClimateInput) -> SECClimateResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         self.config = input_data.config
         self._phase_results = []
         self._sections = []
@@ -291,7 +269,7 @@ class SECClimateWorkflow:
             overall_status = WorkflowStatus.FAILED
             self._phase_results.append(PhaseResult(phase_name="error", phase_number=99, status=PhaseStatus.FAILED, errors=[str(exc)]))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         result = SECClimateResult(
             workflow_id=self.workflow_id, status=overall_status,
             phases=self._phase_results, total_duration_seconds=round(elapsed, 4),
@@ -304,7 +282,7 @@ class SECClimateWorkflow:
         return result
 
     async def _phase_item1(self, input_data: SECClimateInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         cfg = self.config
         section = SECSectionContent(
             section=SECSection.ITEM_1, section_title="Item 1 - Business Description: Climate Risks",
@@ -319,14 +297,14 @@ class SECClimateWorkflow:
         )
         section.provenance_hash = _compute_hash(section.model_dump_json(exclude={"provenance_hash"}))
         self._sections.append(section)
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(phase_name="item1_business", phase_number=1, status=PhaseStatus.COMPLETED,
                            duration_seconds=round(elapsed, 4), completion_pct=100.0,
                            outputs={"section": "Item 1"}, provenance_hash=section.provenance_hash,
                            dag_node_id=f"{self.workflow_id}_item1")
 
     async def _phase_item1a(self, input_data: SECClimateInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         cfg = self.config
         risks = input_data.risk_factors or [
             {"risk": "Carbon pricing regulation", "impact": "Increased operating costs", "likelihood": "Probable"},
@@ -346,14 +324,14 @@ class SECClimateWorkflow:
         )
         section.provenance_hash = _compute_hash(section.model_dump_json(exclude={"provenance_hash"}))
         self._sections.append(section)
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(phase_name="item1a_risks", phase_number=2, status=PhaseStatus.COMPLETED,
                            duration_seconds=round(elapsed, 4), completion_pct=100.0,
                            outputs={"risk_count": len(risks)}, provenance_hash=section.provenance_hash,
                            dag_node_id=f"{self.workflow_id}_item1a")
 
     async def _phase_item7(self, input_data: SECClimateInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         cfg = self.config
         fin = input_data.financial_impacts or {
             "carbon_cost_impact_usd": 2_000_000,
@@ -372,14 +350,14 @@ class SECClimateWorkflow:
         )
         section.provenance_hash = _compute_hash(section.model_dump_json(exclude={"provenance_hash"}))
         self._sections.append(section)
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(phase_name="item7_mda", phase_number=3, status=PhaseStatus.COMPLETED,
                            duration_seconds=round(elapsed, 4), completion_pct=100.0,
                            outputs=fin, provenance_hash=section.provenance_hash,
                            dag_node_id=f"{self.workflow_id}_item7")
 
     async def _phase_reg_sk(self, input_data: SECClimateInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         cfg = self.config
         base_e = cfg.base_year_emissions_tco2e or 100_000.0
         s1 = cfg.scope1_tco2e or base_e * 0.45
@@ -418,7 +396,7 @@ class SECClimateWorkflow:
         )
         section.provenance_hash = _compute_hash(section.model_dump_json(exclude={"provenance_hash"}))
         self._sections.append(section)
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(phase_name="reg_sk_emissions", phase_number=4, status=PhaseStatus.COMPLETED,
                            duration_seconds=round(elapsed, 4), completion_pct=100.0,
                            outputs={"scope1": round(s1, 2), "scope2_mkt": round(s2_mkt, 2), "intensity": intensity},
@@ -426,7 +404,7 @@ class SECClimateWorkflow:
                            dag_node_id=f"{self.workflow_id}_reg_sk")
 
     async def _phase_xbrl(self, input_data: SECClimateInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         cfg = self.config
         all_tags = []
         for sec in self._sections:
@@ -445,7 +423,7 @@ class SECClimateWorkflow:
             validation_passed=True,
         )
         self._xbrl.provenance_hash = _compute_hash(self._xbrl.model_dump_json(exclude={"provenance_hash"}))
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(phase_name="xbrl_tagging", phase_number=5, status=PhaseStatus.COMPLETED,
                            duration_seconds=round(elapsed, 4), completion_pct=100.0,
                            outputs={"tag_count": len(all_tags)},
@@ -453,7 +431,7 @@ class SECClimateWorkflow:
                            dag_node_id=f"{self.workflow_id}_xbrl")
 
     async def _phase_validate(self, input_data: SECClimateInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         total_items = sum(len(v["items"]) for v in SEC_REG_SK_REQUIREMENTS.values())
         addressed = sum(min(len(s.data_points), 5) for s in self._sections)
         completeness = round(min(addressed / max(total_items, 1) * 100, 100), 1)
@@ -465,7 +443,7 @@ class SECClimateWorkflow:
         if cfg.scope1_tco2e == 0 and cfg.base_year_emissions_tco2e == 0:
             errors.append({"field": "emissions", "message": "Scope 1 emissions required"})
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(phase_name="validate_sec", phase_number=6, status=PhaseStatus.COMPLETED,
                            duration_seconds=round(elapsed, 4), completion_pct=100.0,
                            outputs={"completeness_pct": completeness, "error_count": len(errors)},
@@ -473,7 +451,7 @@ class SECClimateWorkflow:
                            dag_node_id=f"{self.workflow_id}_validate")
 
     async def _phase_attestation(self, input_data: SECClimateInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         cfg = self.config
         self._attestation = SECAttestationTemplate(
             attestation_id=f"ATT-{self.workflow_id[:8]}",
@@ -484,7 +462,7 @@ class SECClimateWorkflow:
             sections_covered=["Reg S-K 1505 (GHG Emissions)", "Reg S-K 1506 (Targets)"],
         )
         self._attestation.provenance_hash = _compute_hash(self._attestation.model_dump_json(exclude={"provenance_hash"}))
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(phase_name="attestation_template", phase_number=7, status=PhaseStatus.COMPLETED,
                            duration_seconds=round(elapsed, 4), completion_pct=100.0,
                            outputs={"attestation_level": cfg.attestation_level.value},
@@ -492,7 +470,7 @@ class SECClimateWorkflow:
                            dag_node_id=f"{self.workflow_id}_attestation")
 
     async def _phase_package(self, input_data: SECClimateInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         cfg = self.config
         avg_complete = sum(s.completeness_pct for s in self._sections) / max(len(self._sections), 1)
         ready = avg_complete >= 90 and self._xbrl.validation_passed
@@ -506,7 +484,7 @@ class SECClimateWorkflow:
         )
         self._package.provenance_hash = _compute_hash(self._package.model_dump_json(exclude={"provenance_hash"}))
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(phase_name="package_10k", phase_number=8, status=PhaseStatus.COMPLETED,
                            duration_seconds=round(elapsed, 4), completion_pct=100.0,
                            outputs={"ready": ready, "completeness_pct": round(avg_complete, 1)},

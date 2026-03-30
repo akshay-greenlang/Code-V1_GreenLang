@@ -40,26 +40,19 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -72,11 +65,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Agent Stubs (graceful degradation)
 # ---------------------------------------------------------------------------
-
 
 class _AgentStub:
     """Stub for unavailable CSRD pack modules.
@@ -100,7 +91,6 @@ class _AgentStub:
             }
         return _stub_method
 
-
 def _try_import_csrd_pack(pack_id: str) -> Any:
     """Try to import a CSRD pack module with graceful fallback.
 
@@ -121,16 +111,15 @@ def _try_import_csrd_pack(pack_id: str) -> Any:
 
     try:
         import importlib
+
         return importlib.import_module(module_path)
     except ImportError:
         logger.warning("CSRD pack %s not available, using stub", pack_id)
         return _AgentStub(pack_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ESRSChapter(str, Enum):
     """ESRS chapters relevant to retail CSRD reporting."""
@@ -146,7 +135,6 @@ class ESRSChapter(str, Enum):
     S4 = "S4"    # Consumers and end-users
     G1 = "G1"    # Business conduct
 
-
 class BasePack(str, Enum):
     """Target base CSRD packs for integration."""
 
@@ -154,11 +142,9 @@ class BasePack(str, Enum):
     PROFESSIONAL = "PACK-002"
     ENTERPRISE = "PACK-003"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class CSRDPackBridgeConfig(BaseModel):
     """Configuration for the CSRD Pack Bridge."""
@@ -175,7 +161,6 @@ class CSRDPackBridgeConfig(BaseModel):
     )
     include_voluntary_disclosures: bool = Field(default=False)
 
-
 class DatapointMapping(BaseModel):
     """Mapping of a retail datapoint to an ESRS disclosure requirement."""
 
@@ -188,7 +173,6 @@ class DatapointMapping(BaseModel):
     unit: str = Field(default="", description="Unit of measure")
     source_engine: str = Field(default="", description="Source retail engine")
 
-
 class ESRSChapterData(BaseModel):
     """Assembled ESRS chapter data from retail calculations."""
 
@@ -199,9 +183,8 @@ class ESRSChapterData(BaseModel):
     narrative_sections: List[Dict[str, str]] = Field(default_factory=list)
     completeness_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     source_engines: List[str] = Field(default_factory=list)
-    assembled_at: datetime = Field(default_factory=_utcnow)
+    assembled_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class BridgeResult(BaseModel):
     """Result of a bridge operation."""
@@ -214,7 +197,6 @@ class BridgeResult(BaseModel):
     message: str = Field(default="")
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Retail ESRS Datapoint Mappings
@@ -337,11 +319,9 @@ RETAIL_ESRS_MAPPINGS: List[DatapointMapping] = [
     ),
 ]
 
-
 # ---------------------------------------------------------------------------
 # CSRDPackBridge
 # ---------------------------------------------------------------------------
-
 
 class CSRDPackBridge:
     """Bridge between PACK-014 Retail Pack and base CSRD Packs.

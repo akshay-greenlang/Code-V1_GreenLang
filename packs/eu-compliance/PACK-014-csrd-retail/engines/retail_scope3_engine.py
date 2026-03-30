@@ -55,25 +55,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 engine_version: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -101,7 +95,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -117,7 +110,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -138,7 +130,6 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100).
 
@@ -150,7 +141,6 @@ def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
         Percentage as Decimal; Decimal("0") when whole is zero.
     """
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* and return a float.
@@ -167,11 +157,9 @@ def _round_val(value: Decimal, places: int = 6) -> float:
     quantizer = Decimal(10) ** -places
     return float(value.quantize(quantizer, rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class Scope3Category(str, Enum):
     """GHG Protocol Scope 3 categories."""
@@ -191,14 +179,12 @@ class Scope3Category(str, Enum):
     CAT_14 = "cat_14_franchises"
     CAT_15 = "cat_15_investments"
 
-
 class CalculationMethod(str, Enum):
     """Emission calculation methodology."""
     SUPPLIER_SPECIFIC = "supplier_specific"
     HYBRID = "hybrid"
     AVERAGE_DATA = "average_data"
     SPEND_BASED = "spend_based"
-
 
 class DataQualityLevel(str, Enum):
     """Data quality scoring per GHG Protocol guidance."""
@@ -207,7 +193,6 @@ class DataQualityLevel(str, Enum):
     SCORE_3 = "score_3"  # Product-level average
     SCORE_4 = "score_4"  # Sector average
     SCORE_5 = "score_5"  # Spend-based proxy
-
 
 class ProductCategory(str, Enum):
     """Retail product category classification."""
@@ -227,7 +212,6 @@ class ProductCategory(str, Enum):
     PET_PRODUCTS = "pet_products"
     OTHER = "other"
 
-
 class TransportMode(str, Enum):
     """Freight transport mode."""
     ROAD = "road"
@@ -238,7 +222,6 @@ class TransportMode(str, Enum):
     LAST_MILE_VAN = "last_mile_van"
     LAST_MILE_CARGO_BIKE = "last_mile_cargo_bike"
 
-
 class WasteDisposalMethod(str, Enum):
     """Waste disposal method."""
     LANDFILL = "landfill"
@@ -246,7 +229,6 @@ class WasteDisposalMethod(str, Enum):
     RECYCLING = "recycling"
     COMPOSTING = "composting"
     ANAEROBIC_DIGESTION = "anaerobic_digestion"
-
 
 class TravelMode(str, Enum):
     """Business travel mode."""
@@ -256,7 +238,6 @@ class TravelMode(str, Enum):
     RAIL = "rail"
     CAR = "car"
     HOTEL = "hotel"
-
 
 class CommuteMode(str, Enum):
     """Employee commuting mode."""
@@ -269,7 +250,6 @@ class CommuteMode(str, Enum):
     BICYCLE = "bicycle"
     WALKING = "walking"
     REMOTE = "remote"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Emission Factors
@@ -504,11 +484,9 @@ FRANCHISE_INTENSITY: Dict[str, float] = {
     "large_format": 280.0,
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class PurchasedGoodsData(BaseModel):
     """Purchased goods and services data for Scope 3 Cat 1.
@@ -542,7 +520,6 @@ class PurchasedGoodsData(BaseModel):
         DataQualityLevel.SCORE_5, description="Data quality"
     )
 
-
 class CapitalGoodsData(BaseModel):
     """Capital goods data for Scope 3 Cat 2.
 
@@ -556,7 +533,6 @@ class CapitalGoodsData(BaseModel):
     supplier_emissions_tco2e: Optional[float] = Field(
         None, ge=0, description="Supplier-reported tCO2e"
     )
-
 
 class TransportData(BaseModel):
     """Transport and distribution data for Scope 3 Cat 4 / Cat 9.
@@ -576,7 +552,6 @@ class TransportData(BaseModel):
         None, ge=0, description="Supplier-reported tCO2e"
     )
 
-
 class WasteData(BaseModel):
     """Waste generated in operations for Scope 3 Cat 5.
 
@@ -591,7 +566,6 @@ class WasteData(BaseModel):
         WasteDisposalMethod.LANDFILL, description="Disposal method"
     )
 
-
 class BusinessTravelData(BaseModel):
     """Business travel data for Scope 3 Cat 6.
 
@@ -603,7 +577,6 @@ class BusinessTravelData(BaseModel):
     mode: TravelMode
     distance_km: float = Field(..., ge=0, description="Distance (km) or nights")
     passengers: int = Field(1, ge=1, description="Number of travellers")
-
 
 class CommuteData(BaseModel):
     """Employee commuting data for Scope 3 Cat 7.
@@ -619,7 +592,6 @@ class CommuteData(BaseModel):
     employees: int = Field(..., ge=1, description="Employee count")
     working_days_per_year: int = Field(230, ge=1, le=365, description="Working days/year")
 
-
 class UsePhaseData(BaseModel):
     """Use-of-sold-products data for Scope 3 Cat 11.
 
@@ -634,7 +606,6 @@ class UsePhaseData(BaseModel):
         0.000230, ge=0, description="Grid EF (tCO2e/kWh)"
     )
 
-
 class EndOfLifeData(BaseModel):
     """End-of-life treatment data for Scope 3 Cat 12.
 
@@ -646,7 +617,6 @@ class EndOfLifeData(BaseModel):
     material: str = Field(..., description="Material type")
     weight_tonnes: float = Field(..., ge=0, description="Weight (tonnes)")
     disposal_method: str = Field("landfill", description="Disposal method")
-
 
 class FranchiseData(BaseModel):
     """Franchise data for Scope 3 Cat 14.
@@ -661,7 +631,6 @@ class FranchiseData(BaseModel):
     reported_emissions_tco2e: Optional[float] = Field(
         None, ge=0, description="Reported tCO2e"
     )
-
 
 class RetailScope3Input(BaseModel):
     """Complete Scope 3 input data for a retail organisation.
@@ -715,11 +684,9 @@ class RetailScope3Input(BaseModel):
         0.0003, ge=0, description="Investment EF (tCO2e/EUR)"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class CategoryBreakdown(BaseModel):
     """Breakdown of emissions for a single Scope 3 category.
@@ -743,7 +710,6 @@ class CategoryBreakdown(BaseModel):
     item_count: int
     priority: str
 
-
 class HotspotResult(BaseModel):
     """Hotspot analysis identifying top emission drivers.
 
@@ -760,7 +726,6 @@ class HotspotResult(BaseModel):
     improvement_potential_tco2e: float
     pareto_categories: List[str]
 
-
 class DataQualitySummary(BaseModel):
     """Data quality summary across all Scope 3 categories.
 
@@ -774,7 +739,6 @@ class DataQualitySummary(BaseModel):
     score_distribution: Dict[str, int]
     coverage_pct: float
     recommendations: List[str]
-
 
 class RetailScope3Result(BaseModel):
     """Complete Scope 3 calculation result with provenance.
@@ -800,10 +764,9 @@ class RetailScope3Result(BaseModel):
     data_quality_summary: DataQualitySummary
     recommendations: List[str]
     engine_version: str = engine_version
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     processing_time_ms: float = 0.0
     provenance_hash: str = ""
-
 
 # ---------------------------------------------------------------------------
 # Category name mapping
@@ -827,11 +790,9 @@ CATEGORY_NAMES: Dict[str, str] = {
     Scope3Category.CAT_15: "Investments",
 }
 
-
 # ---------------------------------------------------------------------------
 # Calculation Engine
 # ---------------------------------------------------------------------------
-
 
 class RetailScope3Engine:
     """Retail-specific Scope 3 emissions calculation engine.

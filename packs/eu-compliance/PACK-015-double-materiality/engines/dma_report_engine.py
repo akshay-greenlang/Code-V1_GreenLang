@@ -52,25 +52,20 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ReportFormat
+
 logger = logging.getLogger(__name__)
 
 engine_version: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -97,7 +92,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -114,7 +108,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal,
     denominator: Decimal,
@@ -125,11 +118,9 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* and return a float.
@@ -139,25 +130,9 @@ def _round_val(value: Decimal, places: int = 6) -> float:
     quantizer = Decimal(10) ** -places
     return float(value.quantize(quantizer, rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
-
-class ReportFormat(str, Enum):
-    """Supported output formats for the DMA report.
-
-    PDF: Portable Document Format for printing and sharing.
-    HTML: Web-viewable format.
-    XBRL: Machine-readable format for regulatory filing.
-    JSON: Structured data format for API integration.
-    """
-    PDF = "pdf"
-    HTML = "html"
-    XBRL = "xbrl"
-    JSON = "json"
-
 
 class SectionType(str, Enum):
     """Types of sections in the DMA report.
@@ -175,11 +150,9 @@ class SectionType(str, Enum):
     GAP_ANALYSIS = "gap_analysis"
     APPENDIX = "appendix"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 REPORT_SECTIONS_ORDER: List[SectionType] = [
     SectionType.EXECUTIVE_SUMMARY,
@@ -194,7 +167,6 @@ REPORT_SECTIONS_ORDER: List[SectionType] = [
     SectionType.APPENDIX,
 ]
 """Standard ordering of DMA report sections."""
-
 
 SECTION_TEMPLATES: Dict[str, str] = {
     "executive_summary": (
@@ -260,7 +232,6 @@ SECTION_TEMPLATES: Dict[str, str] = {
 }
 """Template strings for each report section (no LLM generation)."""
 
-
 # ESRS 2 disclosure requirements that the DMA must address directly.
 ESRS_2_DISCLOSURE_REQUIREMENTS: List[str] = [
     "IRO-1",
@@ -269,11 +240,9 @@ ESRS_2_DISCLOSURE_REQUIREMENTS: List[str] = [
 ]
 """ESRS 2 disclosures directly served by the DMA report."""
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class DMAMethodology(BaseModel):
     """Methodology documentation for the double materiality assessment.
@@ -297,7 +266,6 @@ class DMAMethodology(BaseModel):
     review_date: str = Field(default="", description="Review date (YYYY-MM-DD)")
     reviewer_name: str = Field(default="", description="Reviewer name")
 
-
 class DMASection(BaseModel):
     """A single section of the DMA report.
 
@@ -316,7 +284,6 @@ class DMASection(BaseModel):
     narrative: str = Field(default="", description="Text narrative")
     order: int = Field(default=99, ge=0, description="Display order")
 
-
 class StakeholderSummary(BaseModel):
     """Summary of stakeholder engagement for the DMA.
 
@@ -332,7 +299,6 @@ class StakeholderSummary(BaseModel):
     engagement_methods: List[str] = Field(default_factory=list, description="Engagement methods")
     key_concerns: List[str] = Field(default_factory=list, description="Key concerns raised")
     period: str = Field(default="", description="Engagement period")
-
 
 class IROEntry(BaseModel):
     """A single Impact, Risk, or Opportunity in the IRO register.
@@ -357,7 +323,6 @@ class IROEntry(BaseModel):
     severity: Optional[Decimal] = Field(default=None, description="Severity (0-5)")
     likelihood: Optional[Decimal] = Field(default=None, description="Likelihood (0-5)")
     is_material: bool = Field(default=False, description="Material classification")
-
 
 class DMAReport(BaseModel):
     """Complete Double Materiality Assessment report.
@@ -401,7 +366,6 @@ class DMAReport(BaseModel):
     generated_at: Optional[datetime] = Field(default=None, description="Generation timestamp")
     processing_time_ms: float = Field(default=0.0, ge=0.0, description="Processing time in ms")
 
-
 class ReportScoreChange(BaseModel):
     """Score change for a matter between two report periods.
 
@@ -427,7 +391,6 @@ class ReportScoreChange(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class DMADelta(BaseModel):
     """Comparison between two DMA reports (current vs. previous period).
 
@@ -450,11 +413,9 @@ class DMADelta(BaseModel):
     methodology_changes: List[str] = Field(default_factory=list, description="Methodology changes")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 # ---------------------------------------------------------------------------
 # Input Models
 # ---------------------------------------------------------------------------
-
 
 class ReportAssemblyInput(BaseModel):
     """Input bundle for assembling a DMA report.
@@ -488,11 +449,9 @@ class ReportAssemblyInput(BaseModel):
     material_topic_ids: List[str] = Field(default_factory=list)
     non_material_topic_ids: List[str] = Field(default_factory=list)
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class DMAReportEngine:
     """Assembles complete DMA reports with methodology documentation.
@@ -657,7 +616,7 @@ class DMAReportEngine:
             gap_analysis=assembly_input.gap_analysis,
             sections=sections,
             executive_summary=exec_summary,
-            generated_at=_utcnow(),
+            generated_at=utcnow(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         report.provenance_hash = _compute_hash(report)

@@ -55,20 +55,16 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import RiskLevel
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "36.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC timestamp with zero microseconds."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -85,11 +81,9 @@ def _compute_hash(data: Any) -> str:
         json.dumps(s, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -99,7 +93,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "pending"
@@ -107,7 +100,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class ContractStructure(str, Enum):
     """Energy contract structure classification."""
@@ -119,7 +111,6 @@ class ContractStructure(str, Enum):
     FULL_REQUIREMENTS = "full_requirements"
     SHAPED = "shaped"
 
-
 class ContractTerm(str, Enum):
     """Contract duration classification."""
     SPOT = "spot"
@@ -127,7 +118,6 @@ class ContractTerm(str, Enum):
     MEDIUM_TERM = "medium_term_2_3_yr"
     LONG_TERM = "long_term_5_yr"
     VERY_LONG_TERM = "very_long_term_10_yr"
-
 
 class RenewableOption(str, Enum):
     """Renewable energy procurement option."""
@@ -138,7 +128,6 @@ class RenewableOption(str, Enum):
     PHYSICAL_PPA = "physical_ppa"
     ON_SITE = "on_site"
     COMMUNITY_SOLAR = "community_solar"
-
 
 class MarketRegion(str, Enum):
     """Wholesale market region."""
@@ -153,14 +142,6 @@ class MarketRegion(str, Enum):
     UK = "uk"
     AUSTRALIA = "australia"
     OTHER = "other"
-
-
-class RiskLevel(str, Enum):
-    """Procurement risk level."""
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
-
 
 # =============================================================================
 # REFERENCE DATA (Zero-Hallucination)
@@ -211,11 +192,9 @@ LOAD_SHAPE_THRESHOLDS: Dict[str, Tuple[float, float]] = {
     "extreme_peaking": (0.0, 0.40),
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -227,7 +206,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class CurrentContract(BaseModel):
     """Current energy supply contract details.
@@ -254,7 +232,6 @@ class CurrentContract(BaseModel):
     annual_volume_kwh: float = Field(default=0.0, ge=0.0)
     renewable_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     early_termination_fee: float = Field(default=0.0, ge=0.0)
-
 
 class ProcurementRecommendation(BaseModel):
     """A procurement strategy recommendation.
@@ -285,7 +262,6 @@ class ProcurementRecommendation(BaseModel):
     risk_level: str = Field(default="medium")
     rationale: str = Field(default="")
     key_contract_terms: List[str] = Field(default_factory=list)
-
 
 class ProcurementAnalysisInput(BaseModel):
     """Input data model for ProcurementAnalysisWorkflow.
@@ -321,7 +297,6 @@ class ProcurementAnalysisInput(BaseModel):
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
 
-
 class ProcurementAnalysisResult(BaseModel):
     """Complete result from procurement analysis workflow."""
     workflow_id: str = Field(..., description="Unique execution ID")
@@ -339,11 +314,9 @@ class ProcurementAnalysisResult(BaseModel):
     duration_seconds: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class ProcurementAnalysisWorkflow:
     """
@@ -849,7 +822,7 @@ class ProcurementAnalysisWorkflow:
         ]
 
         outputs["report_id"] = report_id
-        outputs["generated_at"] = _utcnow().isoformat()
+        outputs["generated_at"] = utcnow().isoformat()
         outputs["rfp_specifications"] = rfp_specs
         outputs["evaluation_criteria"] = eval_criteria
         outputs["procurement_timeline"] = timeline

@@ -41,26 +41,20 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -69,13 +63,11 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
-
 
 class ConsolidationPhase(str, Enum):
     SITE_DATA_GATHER = "site_data_gather"
@@ -84,19 +76,16 @@ class ConsolidationPhase(str, Enum):
     RECONCILE = "reconcile"
     CONSOLIDATED_TOTAL = "consolidated_total"
 
-
 class EmissionScope(str, Enum):
     SCOPE_1 = "scope_1"
     SCOPE_2_LOCATION = "scope_2_location"
     SCOPE_2_MARKET = "scope_2_market"
     SCOPE_3 = "scope_3"
 
-
 class ConsolidationApproach(str, Enum):
     EQUITY_SHARE = "equity_share"
     FINANCIAL_CONTROL = "financial_control"
     OPERATIONAL_CONTROL = "operational_control"
-
 
 class EliminationType(str, Enum):
     INTER_SITE_ENERGY = "inter_site_energy"
@@ -105,13 +94,11 @@ class EliminationType(str, Enum):
     INTRA_GROUP_PURCHASE = "intra_group_purchase"
     OTHER = "other"
 
-
 class ReconciliationStatus(str, Enum):
     RECONCILED = "reconciled"
     MINOR_VARIANCE = "minor_variance"
     MAJOR_VARIANCE = "major_variance"
     NOT_RECONCILED = "not_reconciled"
-
 
 # =============================================================================
 # REFERENCE DATA
@@ -122,11 +109,9 @@ RECONCILIATION_THRESHOLDS = {
     "major_variance_pct": Decimal("10.0"),
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -138,7 +123,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class SiteEmissionTotal(BaseModel):
     """Approved emission total for a single site."""
@@ -157,7 +141,6 @@ class SiteEmissionTotal(BaseModel):
     is_approved: bool = Field(True)
     reporting_period: str = Field("")
 
-
 class EliminationEntry(BaseModel):
     """An intra-group elimination entry."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -169,7 +152,6 @@ class EliminationEntry(BaseModel):
     eliminated_tco2e: Decimal = Field(Decimal("0"))
     description: str = Field("")
     evidence_ref: str = Field("")
-
 
 class EquityAdjustment(BaseModel):
     """Equity/control adjustment for a single site."""
@@ -186,7 +168,6 @@ class EquityAdjustment(BaseModel):
     adjusted_total_tco2e: Decimal = Field(Decimal("0"))
     adjustment_method: str = Field("")
 
-
 class ReconciliationRecord(BaseModel):
     """Reconciliation between bottom-up and top-down totals."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -197,7 +178,6 @@ class ReconciliationRecord(BaseModel):
     variance_pct: Decimal = Field(Decimal("0"))
     status: ReconciliationStatus = Field(ReconciliationStatus.NOT_RECONCILED)
     explanation: str = Field("")
-
 
 class ConsolidatedTotals(BaseModel):
     """Final consolidated emission totals."""
@@ -215,7 +195,6 @@ class ConsolidatedTotals(BaseModel):
     sites_count: int = Field(0)
     provenance_hash: str = Field("")
 
-
 class ConsolidationInput(BaseModel):
     """Input for the consolidation workflow."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -228,7 +207,6 @@ class ConsolidationInput(BaseModel):
     eliminations: List[Dict[str, Any]] = Field(default_factory=list)
     top_down_estimates: Optional[Dict[str, Any]] = Field(None)
     skip_phases: List[str] = Field(default_factory=list)
-
 
 class ConsolidationResult(BaseModel):
     """Output from the consolidation workflow."""
@@ -249,11 +227,9 @@ class ConsolidationResult(BaseModel):
     started_at: str = Field("")
     completed_at: str = Field("")
 
-
 # =============================================================================
 # WORKFLOW CLASS
 # =============================================================================
-
 
 class ConsolidationWorkflow:
     """
@@ -288,7 +264,7 @@ class ConsolidationWorkflow:
 
     def execute(self, input_data: ConsolidationInput) -> ConsolidationResult:
         """Execute the full consolidation workflow."""
-        start = _utcnow()
+        start = utcnow()
         result = ConsolidationResult(
             organisation_id=input_data.organisation_id,
             reporting_year=input_data.reporting_year,
@@ -310,17 +286,17 @@ class ConsolidationWorkflow:
                     phase_name=phase.value, phase_number=idx, status=PhaseStatus.SKIPPED,
                 ))
                 continue
-            phase_start = _utcnow()
+            phase_start = utcnow()
             try:
                 phase_out = phase_methods[phase](input_data, result)
-                elapsed = (_utcnow() - phase_start).total_seconds()
+                elapsed = (utcnow() - phase_start).total_seconds()
                 result.phase_results.append(PhaseResult(
                     phase_name=phase.value, phase_number=idx,
                     status=PhaseStatus.COMPLETED, duration_seconds=elapsed,
                     outputs=phase_out, provenance_hash=_compute_hash(str(phase_out)),
                 ))
             except Exception as exc:
-                elapsed = (_utcnow() - phase_start).total_seconds()
+                elapsed = (utcnow() - phase_start).total_seconds()
                 logger.error("Phase %s failed: %s", phase.value, exc, exc_info=True)
                 result.phase_results.append(PhaseResult(
                     phase_name=phase.value, phase_number=idx,
@@ -333,7 +309,7 @@ class ConsolidationWorkflow:
         if result.status != WorkflowStatus.FAILED:
             result.status = WorkflowStatus.COMPLETED
 
-        end = _utcnow()
+        end = utcnow()
         result.completed_at = end.isoformat()
         result.duration_seconds = (end - start).total_seconds()
         result.provenance_hash = _compute_hash(
@@ -623,7 +599,7 @@ class ConsolidationWorkflow:
         total_loc = (s1 + s2l + s3).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
         total_mkt = (s1 + s2m + s3).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
-        now_iso = _utcnow().isoformat()
+        now_iso = utcnow().isoformat()
         prov = _compute_hash(
             f"{input_data.organisation_id}|{input_data.reporting_year}|"
             f"{float(s1)}|{float(s2l)}|{float(s2m)}|{float(s3)}|{now_iso}"
@@ -672,7 +648,6 @@ class ConsolidationWorkflow:
             return Decimal(str(value))
         except Exception:
             return Decimal("0")
-
 
 # =============================================================================
 # MODULE EXPORTS

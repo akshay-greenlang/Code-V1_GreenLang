@@ -48,9 +48,10 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException, Query
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.eudr.improvement_plan_creator.setup import get_service
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +61,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-class CreatePlanRequest(BaseModel):
+class CreatePlanRequest(GreenLangBase):
     """Request body for creating an improvement plan."""
     operator_id: str = Field(..., description="Operator identifier")
     findings: List[Dict[str, Any]] = Field(..., description="Raw findings from agents")
@@ -69,60 +70,60 @@ class CreatePlanRequest(BaseModel):
     description: str = Field(default="", description="Plan description")
 
 
-class UpdatePlanStatusRequest(BaseModel):
+class UpdatePlanStatusRequest(GreenLangBase):
     """Request body for updating plan status."""
     new_status: str = Field(..., description="Target plan status")
 
 
-class AggregateFindingsRequest(BaseModel):
+class AggregateFindingsRequest(GreenLangBase):
     """Request body for finding aggregation."""
     operator_id: str = Field(..., description="Operator identifier")
     findings: List[Dict[str, Any]] = Field(..., description="Raw findings")
     plan_id: str = Field(default="", description="Associated plan ID")
 
 
-class AnalyzeGapsRequest(BaseModel):
+class AnalyzeGapsRequest(GreenLangBase):
     """Request body for gap analysis."""
     aggregation_id: str = Field(..., description="Aggregation to analyze")
     plan_id: str = Field(default="", description="Plan identifier")
 
 
-class GenerateActionsRequest(BaseModel):
+class GenerateActionsRequest(GreenLangBase):
     """Request body for action generation."""
     plan_id: str = Field(..., description="Plan with gaps to generate actions for")
 
 
-class UpdateActionStatusRequest(BaseModel):
+class UpdateActionStatusRequest(GreenLangBase):
     """Request body for action status update."""
     plan_id: str = Field(..., description="Plan identifier")
     action_id: str = Field(..., description="Action identifier")
     new_status: str = Field(..., description="New action status")
 
 
-class AnalyzeRootCausesRequest(BaseModel):
+class AnalyzeRootCausesRequest(GreenLangBase):
     """Request body for root cause analysis."""
     plan_id: str = Field(..., description="Plan identifier")
 
 
-class BuildFishboneRequest(BaseModel):
+class BuildFishboneRequest(GreenLangBase):
     """Request body for fishbone analysis."""
     plan_id: str = Field(..., description="Plan identifier")
     gap_id: str = Field(..., description="Gap identifier")
 
 
-class PrioritizeActionsRequest(BaseModel):
+class PrioritizeActionsRequest(GreenLangBase):
     """Request body for action prioritization."""
     plan_id: str = Field(..., description="Plan identifier")
 
 
-class AssignStakeholdersRequest(BaseModel):
+class AssignStakeholdersRequest(GreenLangBase):
     """Request body for stakeholder assignment."""
     plan_id: str = Field(..., description="Plan identifier")
     action_id: str = Field(..., description="Action identifier")
     stakeholders: List[Dict[str, Any]] = Field(..., description="Stakeholder list")
 
 
-class SendNotificationRequest(BaseModel):
+class SendNotificationRequest(GreenLangBase):
     """Request body for sending a notification."""
     action_id: str = Field(..., description="Action identifier")
     stakeholder_id: str = Field(..., description="Stakeholder identifier")
@@ -130,7 +131,7 @@ class SendNotificationRequest(BaseModel):
     body: str = Field(..., description="Notification body")
 
 
-class SendBulkNotificationsRequest(BaseModel):
+class SendBulkNotificationsRequest(GreenLangBase):
     """Request body for bulk notifications."""
     plan_id: str = Field(..., description="Plan identifier")
     action_id: str = Field(..., description="Action identifier")
@@ -138,7 +139,7 @@ class SendBulkNotificationsRequest(BaseModel):
     body: str = Field(..., description="Notification body")
 
 
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     """Standard error response."""
     detail: str = Field(..., description="Error description")
     error_code: str = Field(default="internal_error")

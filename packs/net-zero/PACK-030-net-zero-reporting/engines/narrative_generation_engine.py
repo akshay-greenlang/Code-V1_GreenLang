@@ -72,25 +72,19 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 from pydantic import BaseModel, Field, ConfigDict
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -108,7 +102,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -117,7 +110,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -129,17 +121,14 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to places using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places."""
@@ -147,11 +136,9 @@ def _round3(value: float) -> float:
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class NarrativeFramework(str, Enum):
     """Framework for narrative generation."""
@@ -162,7 +149,6 @@ class NarrativeFramework(str, Enum):
     ISSB = "ISSB"
     SEC = "SEC"
     CSRD = "CSRD"
-
 
 class NarrativeSectionType(str, Enum):
     """Type of narrative section."""
@@ -182,14 +168,12 @@ class NarrativeSectionType(str, Enum):
     ENERGY_MIX = "energy_mix"
     CARBON_CREDITS = "carbon_credits"
 
-
 class NarrativeLanguage(str, Enum):
     """Supported narrative languages."""
     ENGLISH = "en"
     GERMAN = "de"
     FRENCH = "fr"
     SPANISH = "es"
-
 
 class NarrativeQuality(str, Enum):
     """Narrative quality assessment tier."""
@@ -198,14 +182,12 @@ class NarrativeQuality(str, Enum):
     LOW = "low"
     DRAFT = "draft"
 
-
 class ConsistencyLevel(str, Enum):
     """Cross-framework consistency level."""
     CONSISTENT = "consistent"
     MINOR_INCONSISTENCY = "minor_inconsistency"
     MAJOR_INCONSISTENCY = "major_inconsistency"
     NOT_COMPARABLE = "not_comparable"
-
 
 class CitationType(str, Enum):
     """Type of citation reference."""
@@ -214,7 +196,6 @@ class CitationType(str, Enum):
     SOURCE_DATA = "source_data"
     EXTERNAL_REFERENCE = "external_reference"
     REGULATORY = "regulatory"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Narrative Templates
@@ -382,11 +363,9 @@ CLIMATE_GLOSSARY: Dict[str, Dict[str, str]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class NarrativeDataContext(BaseModel):
     """Data context for narrative generation.
@@ -460,7 +439,6 @@ class NarrativeDataContext(BaseModel):
     transition_risks: str = Field(default="")
     custom_fields: Dict[str, str] = Field(default_factory=dict)
 
-
 class NarrativeGenerationInput(BaseModel):
     """Input for the narrative generation engine.
 
@@ -499,11 +477,9 @@ class NarrativeGenerationInput(BaseModel):
         default=NarrativeQuality.HIGH,
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class Citation(BaseModel):
     """A citation reference linking narrative to source data.
@@ -526,7 +502,6 @@ class Citation(BaseModel):
     metric_unit: str = Field(default="")
     source_system: str = Field(default="")
     provenance_hash: str = Field(default="")
-
 
 class GeneratedNarrative(BaseModel):
     """A single generated narrative section.
@@ -560,7 +535,6 @@ class GeneratedNarrative(BaseModel):
     template_used: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 class ConsistencyCheckResult(BaseModel):
     """Result of cross-framework consistency check.
 
@@ -582,7 +556,6 @@ class ConsistencyCheckResult(BaseModel):
     similarity_score: Decimal = Field(default=Decimal("0"))
     discrepancies: List[str] = Field(default_factory=list)
     recommendation: str = Field(default="")
-
 
 class NarrativeGenerationResult(BaseModel):
     """Complete narrative generation result.
@@ -609,7 +582,7 @@ class NarrativeGenerationResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     organization_id: str = Field(default="")
     narratives: List[GeneratedNarrative] = Field(default_factory=list)
     citations: List[Citation] = Field(default_factory=list)
@@ -628,11 +601,9 @@ class NarrativeGenerationResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class NarrativeGenerationEngine:
     """AI-assisted narrative generation engine for PACK-030.

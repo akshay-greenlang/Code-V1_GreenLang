@@ -21,6 +21,7 @@ from typing import Any, Dict, List, Optional
 from unittest.mock import MagicMock
 
 import pytest
+from greenlang.schemas import utcnow
 
 # ---------------------------------------------------------------------------
 # Ensure the pack root is on sys.path so engines/ etc. are importable
@@ -33,6 +34,7 @@ if str(PACK_ROOT) not in sys.path:
 # Config imports
 # ---------------------------------------------------------------------------
 from config.pack_config import (
+
     PackConfig,
     MultiSitePackConfig,
     SiteRegistryConfig,
@@ -86,20 +88,13 @@ from config.pack_config import (
     _compute_hash,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc)
-
-
 def _make_hash(data: str) -> str:
     """Compute SHA-256 hash for test provenance comparisons."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Organisation / identity fixtures
@@ -110,18 +105,15 @@ def organization_id():
     """Sample organisation identifier."""
     return "ORG-MULTISITE-001"
 
-
 @pytest.fixture
 def reporting_year():
     """Standard test reporting year."""
     return 2026
 
-
 @pytest.fixture
 def base_year():
     """Standard test base year."""
     return 2020
-
 
 # ---------------------------------------------------------------------------
 # Pack config fixtures
@@ -182,18 +174,15 @@ def sample_config():
         },
     }
 
-
 @pytest.fixture
 def default_pack_config():
     """Default PackConfig with all defaults."""
     return PackConfig()
 
-
 @pytest.fixture
 def default_mgmt_config():
     """Default MultiSitePackConfig with all defaults."""
     return MultiSitePackConfig()
-
 
 # ---------------------------------------------------------------------------
 # Site record fixtures
@@ -220,7 +209,6 @@ def sample_site_record():
             "grid_region": "RFC_WEST",
         },
     }
-
 
 @pytest.fixture
 def sample_site_records():
@@ -306,7 +294,6 @@ def sample_site_records():
         },
     ]
 
-
 # ---------------------------------------------------------------------------
 # Facility characteristics fixture
 # ---------------------------------------------------------------------------
@@ -325,7 +312,6 @@ def sample_characteristics():
         "electricity_provider": "ComEd",
         "gas_provider": "Peoples Gas",
     }
-
 
 # ---------------------------------------------------------------------------
 # Data collection fixtures
@@ -346,7 +332,6 @@ def sample_collection_round():
         ],
         "status": "OPEN",
     }
-
 
 @pytest.fixture
 def sample_data_entries():
@@ -409,7 +394,6 @@ def sample_data_entries():
         },
     ]
 
-
 @pytest.fixture
 def sample_submission(sample_data_entries):
     """A site submission with 5 data entries."""
@@ -418,7 +402,7 @@ def sample_submission(sample_data_entries):
         "site_id": "site-001",
         "round_id": "ROUND-2026-ANNUAL",
         "submitted_by": "site-manager@greentest.com",
-        "submitted_at": _utcnow().isoformat(),
+        "submitted_at": utcnow().isoformat(),
         "status": "SUBMITTED",
         "data_entries": sample_data_entries,
         "total_scope1": Decimal("242.200"),
@@ -427,7 +411,6 @@ def sample_submission(sample_data_entries):
         "grand_total": Decimal("469.800"),
         "notes": "Annual data for Chicago Manufacturing 2026",
     }
-
 
 # ---------------------------------------------------------------------------
 # Boundary fixtures
@@ -452,7 +435,6 @@ def sample_boundary():
         "de_minimis_threshold": Decimal("0.01"),
         "is_locked": False,
     }
-
 
 @pytest.fixture
 def sample_entity_ownership():
@@ -481,7 +463,6 @@ def sample_entity_ownership():
             },
         ],
     }
-
 
 # ---------------------------------------------------------------------------
 # Regional factor fixtures
@@ -548,7 +529,6 @@ def sample_factor_assignments():
         },
     ]
 
-
 # ---------------------------------------------------------------------------
 # Consolidation fixtures
 # ---------------------------------------------------------------------------
@@ -604,7 +584,6 @@ def sample_site_totals():
         },
     ]
 
-
 @pytest.fixture
 def sample_consolidation_run(sample_site_totals):
     """Full consolidation run result."""
@@ -622,7 +601,6 @@ def sample_consolidation_run(sample_site_totals):
         "sites_included": 5,
         "sites_excluded": 0,
     }
-
 
 # ---------------------------------------------------------------------------
 # Allocation fixtures
@@ -646,7 +624,6 @@ def sample_allocation_config():
         },
         "source_emissions": Decimal("500.00"),
     }
-
 
 # ---------------------------------------------------------------------------
 # Comparison / benchmarking fixtures
@@ -708,7 +685,6 @@ def sample_peer_group():
         ],
     }
 
-
 @pytest.fixture
 def sample_comparison_result(sample_peer_group):
     """Comparison result with rankings."""
@@ -735,7 +711,6 @@ def sample_comparison_result(sample_peer_group):
         "worst_performer_site": "site-B",
     }
 
-
 # ---------------------------------------------------------------------------
 # Completion fixtures
 # ---------------------------------------------------------------------------
@@ -758,7 +733,6 @@ def sample_completion_result():
         "overdue_sites": ["site-008"],
         "estimated_missing_tco2e": Decimal("1500.00"),
     }
-
 
 # ---------------------------------------------------------------------------
 # Quality assessment fixtures

@@ -80,6 +80,7 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from enum import Enum
 from typing import Any, Dict, FrozenSet, List, Optional, Set, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -117,7 +118,6 @@ except ImportError:
     _observe_allocation_duration = None  # type: ignore[assignment]
     _record_validation = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # Decimal precision constants
 # ---------------------------------------------------------------------------
@@ -137,11 +137,9 @@ _ONE = Decimal("1")
 #: One hundred constant for percentage calculations.
 _HUNDRED = Decimal("100")
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class InstrumentType(str, Enum):
     """GHG Protocol Scope 2 contractual instrument types.
@@ -179,7 +177,6 @@ class InstrumentType(str, Enum):
     GREEN_TARIFF = "GREEN_TARIFF"
     RESIDUAL_MIX = "RESIDUAL_MIX"
 
-
 class CoverageStatus(str, Enum):
     """Coverage status of electricity purchases by contractual instruments.
 
@@ -193,7 +190,6 @@ class CoverageStatus(str, Enum):
     PARTIAL = "PARTIAL"
     NONE = "NONE"
     OVER_ALLOCATED = "OVER_ALLOCATED"
-
 
 class RetirementStatus(str, Enum):
     """Retirement lifecycle status for an energy attribute certificate.
@@ -213,7 +209,6 @@ class RetirementStatus(str, Enum):
     RETIRED = "RETIRED"
     EXPIRED = "EXPIRED"
     REVOKED = "REVOKED"
-
 
 class TrackingSystem(str, Enum):
     """Recognized energy attribute certificate tracking registries.
@@ -242,7 +237,6 @@ class TrackingSystem(str, Enum):
     REGO = "REGO"
     T_REC = "T_REC"
     LGC = "LGC"
-
 
 # ---------------------------------------------------------------------------
 # Internal constants
@@ -359,21 +353,13 @@ MAX_PURCHASES_PER_BATCH: int = 5_000
 #: Maximum number of trace steps per allocation.
 MAX_TRACE_STEPS: int = 500
 
-
 # ---------------------------------------------------------------------------
 # Helper: UTC now
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ---------------------------------------------------------------------------
 # Helper: safe Decimal conversion
 # ---------------------------------------------------------------------------
-
 
 def _to_decimal(value: Any) -> Decimal:
     """Convert a value to Decimal safely.
@@ -403,11 +389,9 @@ def _to_decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     raise ValueError(f"Cannot convert {type(value).__name__} to Decimal")
 
-
 # ---------------------------------------------------------------------------
 # InstrumentAllocationEngine
 # ---------------------------------------------------------------------------
-
 
 class InstrumentAllocationEngine:
     """Core instrument allocation engine for GHG Protocol Scope 2 market-based method.
@@ -478,7 +462,7 @@ class InstrumentAllocationEngine:
 
         # Reporting year
         self._default_reporting_year: int = self._config.get(
-            "default_reporting_year", _utcnow().year,
+            "default_reporting_year", utcnow().year,
         )
 
         # Validation strictness
@@ -685,7 +669,7 @@ class InstrumentAllocationEngine:
                 "provenance_hash": provenance_hash,
                 "processing_time_ms": round(elapsed_ms, 3),
                 "reporting_year": year,
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }
 
         except Exception as exc:
@@ -701,7 +685,7 @@ class InstrumentAllocationEngine:
                 "allocation_trace": trace[:MAX_TRACE_STEPS],
                 "provenance_hash": "",
                 "processing_time_ms": round(elapsed_ms, 3),
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }
 
     def allocate_batch(
@@ -854,7 +838,7 @@ class InstrumentAllocationEngine:
                 "provenance_hash": provenance_hash,
                 "processing_time_ms": round(elapsed_ms, 3),
                 "reporting_year": year,
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }
 
         except Exception as exc:
@@ -872,7 +856,7 @@ class InstrumentAllocationEngine:
                 "allocation_trace": trace[:MAX_TRACE_STEPS],
                 "provenance_hash": "",
                 "processing_time_ms": round(elapsed_ms, 3),
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }
 
     def allocate_custom(
@@ -992,7 +976,7 @@ class InstrumentAllocationEngine:
                 "provenance_hash": provenance_hash,
                 "processing_time_ms": round(elapsed_ms, 3),
                 "reporting_year": year,
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }
 
         except Exception as exc:
@@ -1010,7 +994,7 @@ class InstrumentAllocationEngine:
                 "allocation_trace": trace[:MAX_TRACE_STEPS],
                 "provenance_hash": "",
                 "processing_time_ms": round(elapsed_ms, 3),
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }
 
     # ==================================================================
@@ -1460,7 +1444,7 @@ class InstrumentAllocationEngine:
                     "provenance_hash": "",
                 }
 
-            now = _utcnow()
+            now = utcnow()
             self._retired_instruments.add(instrument_id)
             self._retirement_count += 1
 
@@ -1973,7 +1957,7 @@ class InstrumentAllocationEngine:
                         "facility_id": facility_id,
                         "allocated_mwh": entry.get("allocated_mwh", "0"),
                         "instrument_type": entry.get("instrument_type", ""),
-                        "timestamp": _utcnow().isoformat(),
+                        "timestamp": utcnow().isoformat(),
                     }
 
     # ==================================================================
@@ -2088,11 +2072,9 @@ class InstrumentAllocationEngine:
         with self._lock:
             return self._allocation_count
 
-
 # ---------------------------------------------------------------------------
 # Standalone utility functions (module-level convenience)
 # ---------------------------------------------------------------------------
-
 
 def create_instrument_allocation_engine(
     config: Optional[Dict[str, Any]] = None,
@@ -2113,7 +2095,6 @@ def create_instrument_allocation_engine(
     """
     return InstrumentAllocationEngine(config=config)
 
-
 def get_instrument_hierarchy() -> Dict[str, int]:
     """Return the GHG Protocol instrument hierarchy mapping.
 
@@ -2121,7 +2102,6 @@ def get_instrument_hierarchy() -> Dict[str, int]:
         Dict mapping InstrumentType value strings to priority integers.
     """
     return dict(INSTRUMENT_PRIORITY)
-
 
 def get_valid_tracking_systems() -> List[str]:
     """Return the list of recognized tracking system identifiers.
@@ -2131,7 +2111,6 @@ def get_valid_tracking_systems() -> List[str]:
     """
     return sorted(_VALID_TRACKING_SYSTEMS)
 
-
 def get_geographic_markets() -> Dict[str, List[str]]:
     """Return the geographic market interconnection mapping.
 
@@ -2139,7 +2118,6 @@ def get_geographic_markets() -> Dict[str, List[str]]:
         Dict mapping region codes to lists of interconnected region codes.
     """
     return {k: sorted(v) for k, v in GEOGRAPHIC_MARKETS.items()}
-
 
 def get_vintage_windows() -> Dict[str, int]:
     """Return the vintage window mapping by instrument type.

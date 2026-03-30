@@ -20,7 +20,8 @@ Date: 2025-10-30
 from typing import Dict, List, Optional, Any, Literal
 from datetime import datetime
 from decimal import Decimal
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 from enum import Enum
 from pathlib import Path
 
@@ -88,7 +89,7 @@ class ValidationStatus(str, Enum):
 # INGESTION MODELS
 # ============================================================================
 
-class IngestionMetadata(BaseModel):
+class IngestionMetadata(GreenLangBase):
     """Metadata for ingestion tracking."""
 
     source_file: Optional[str] = Field(None, description="Source file path")
@@ -113,7 +114,7 @@ class IngestionMetadata(BaseModel):
     }
 
 
-class IngestionRecord(BaseModel):
+class IngestionRecord(GreenLangBase):
     """
     Raw ingestion record from any source.
 
@@ -161,7 +162,7 @@ class IngestionRecord(BaseModel):
 # ENTITY RESOLUTION MODELS
 # ============================================================================
 
-class EntityMatchCandidate(BaseModel):
+class EntityMatchCandidate(GreenLangBase):
     """Candidate match from entity resolution."""
 
     canonical_id: str = Field(..., description="Canonical entity ID")
@@ -187,7 +188,7 @@ class EntityMatchCandidate(BaseModel):
     }
 
 
-class ResolvedEntity(BaseModel):
+class ResolvedEntity(GreenLangBase):
     """
     Entity resolution result with confidence scoring.
 
@@ -244,7 +245,7 @@ class ReviewAction(str, Enum):
     REQUEST_INFO = "request_info"
 
 
-class ReviewQueueItem(BaseModel):
+class ReviewQueueItem(GreenLangBase):
     """
     Record in human review queue.
 
@@ -307,7 +308,7 @@ class ReviewQueueItem(BaseModel):
 # DATA QUALITY MODELS
 # ============================================================================
 
-class CompletenessAssessment(BaseModel):
+class CompletenessAssessment(GreenLangBase):
     """Data completeness assessment."""
 
     total_fields: int = Field(..., ge=0, description="Total number of fields")
@@ -326,7 +327,7 @@ class CompletenessAssessment(BaseModel):
         return self
 
 
-class DataQualityAssessment(BaseModel):
+class DataQualityAssessment(GreenLangBase):
     """
     Comprehensive data quality assessment for ingested record.
 
@@ -385,7 +386,7 @@ class DataQualityAssessment(BaseModel):
 # BATCH PROCESSING MODELS
 # ============================================================================
 
-class IngestionStatistics(BaseModel):
+class IngestionStatistics(GreenLangBase):
     """Statistics for ingestion batch."""
 
     total_records: int = Field(..., ge=0, description="Total records processed")
@@ -414,7 +415,7 @@ class IngestionStatistics(BaseModel):
         return self
 
 
-class GapAnalysisReport(BaseModel):
+class GapAnalysisReport(GreenLangBase):
     """Gap analysis report for missing data."""
 
     generated_at: datetime = Field(default_factory=datetime.utcnow, description="Report generation time")
@@ -444,7 +445,7 @@ class GapAnalysisReport(BaseModel):
     )
 
 
-class IngestionResult(BaseModel):
+class IngestionResult(GreenLangBase):
     """
     Summary result of batch ingestion processing.
 

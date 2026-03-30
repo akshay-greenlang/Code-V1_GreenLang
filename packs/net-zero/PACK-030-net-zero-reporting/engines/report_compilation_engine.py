@@ -70,17 +70,15 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, ConfigDict
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
@@ -117,7 +115,6 @@ def _round_val(value: Decimal, places: int = 6) -> Decimal:
 
 def _round3(value: float) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -156,7 +153,6 @@ class CompilationStatus(str, Enum):
     PARTIAL = "partial"
     DRAFT = "draft"
     ERROR = "error"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Framework Section Orders
@@ -235,7 +231,6 @@ FRAMEWORK_SECTION_ORDER: Dict[str, List[str]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
@@ -290,7 +285,6 @@ class ReportCompilationInput(BaseModel):
     include_disclaimer: bool = Field(default=True)
     language: str = Field(default="en")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
@@ -344,7 +338,7 @@ class ReportCompilationResult(BaseModel):
     """Complete report compilation result."""
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     organization_id: str = Field(default="")
     compiled_report: Optional[CompiledReport] = Field(default=None)
     total_sections: int = Field(default=0)
@@ -356,7 +350,6 @@ class ReportCompilationResult(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine

@@ -33,14 +33,9 @@ import time
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -52,7 +47,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Data Structures
@@ -83,7 +77,6 @@ def _make_query_filter(
         "negate": negate,
     }
 
-
 def _make_query_sort(
     field: str,
     direction: str = "asc",
@@ -104,7 +97,6 @@ def _make_query_sort(
         "direction": direction,
         "null_handling": null_handling,
     }
-
 
 def _make_query_aggregation(
     function: str,
@@ -130,7 +122,6 @@ def _make_query_aggregation(
         "alias": alias or f"{function}_{field}",
         "group_by": group_by or [],
     }
-
 
 def _make_query_plan(
     query_id: str,
@@ -171,10 +162,9 @@ def _make_query_plan(
         "limit": limit,
         "offset": offset,
         "complexity": complexity,
-        "created_at": _utcnow().isoformat(),
+        "created_at": utcnow().isoformat(),
         "raw_request": raw_request or {},
     }
-
 
 # ---------------------------------------------------------------------------
 # Supported operators and functions
@@ -191,7 +181,6 @@ SUPPORTED_AGG_FUNCTIONS = frozenset({
     "sum", "avg", "min", "max", "count",
     "percentile", "group_by", "distinct_count",
 })
-
 
 class QueryParserEngine:
     """Query parsing and validation engine.
@@ -691,7 +680,6 @@ class QueryParserEngine:
             "max_complexity": max(complexities) if complexities else 0.0,
             "min_complexity": min(complexities) if complexities else 0.0,
         }
-
 
 __all__ = [
     "QueryParserEngine",

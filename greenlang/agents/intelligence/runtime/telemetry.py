@@ -20,11 +20,12 @@ import os
 import time
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Protocol, Callable
-from pydantic import BaseModel, Field
+from pydantic import Field
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 
-class TelemetryEvent(BaseModel):
+class TelemetryEvent(GreenLangBase):
     """
     Single telemetry event
 

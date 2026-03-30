@@ -63,6 +63,8 @@ from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import AlertStatus, NotificationChannel
 
 logger = logging.getLogger(__name__)
 
@@ -124,16 +126,9 @@ except ImportError:
     DetectionResult = None  # type: ignore[misc,assignment]
     ChangeType = None  # type: ignore[misc,assignment]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance.
@@ -147,7 +142,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a unique identifier using UUID4.
 
@@ -155,7 +149,6 @@ def _generate_id() -> str:
         String representation of a new UUID4.
     """
     return str(uuid.uuid4())
-
 
 def _safe_decimal(value: Any, default: Decimal = Decimal("0")) -> Decimal:
     """Safely convert a value to Decimal.
@@ -174,7 +167,6 @@ def _safe_decimal(value: Any, default: Decimal = Decimal("0")) -> Decimal:
     except (InvalidOperation, ValueError, TypeError):
         return default
 
-
 def _elapsed_ms(start: float) -> float:
     """Calculate elapsed milliseconds since start.
 
@@ -185,7 +177,6 @@ def _elapsed_ms(start: float) -> float:
         Elapsed time in milliseconds.
     """
     return round((time.perf_counter() - start) * 1000, 2)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -215,11 +206,9 @@ ALERT_RETENTION_YEARS: int = 5
 #: Deduplication spatial tolerance in degrees (~1km at equator).
 DEDUP_SPATIAL_TOLERANCE: Decimal = Decimal("0.01")
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class AlertPriority(str, Enum):
     """Alert priority levels for notification routing.
@@ -232,34 +221,6 @@ class AlertPriority(str, Enum):
     URGENT = "urgent"
     STANDARD = "standard"
     LOW = "low"
-
-
-class AlertStatus(str, Enum):
-    """Alert lifecycle status values.
-
-    Tracks the alert through its workflow from creation
-    to resolution or dismissal.
-    """
-
-    PENDING = "pending"
-    TRIAGED = "triaged"
-    INVESTIGATING = "investigating"
-    CONFIRMED = "confirmed"
-    FALSE_POSITIVE = "false_positive"
-    RESOLVED = "resolved"
-    DISMISSED = "dismissed"
-    ESCALATED = "escalated"
-
-
-class NotificationChannel(str, Enum):
-    """Notification delivery channels for alert distribution."""
-
-    EMAIL = "email"
-    WEBHOOK = "webhook"
-    SMS = "sms"
-    DASHBOARD = "dashboard"
-    SLACK = "slack"
-
 
 # ---------------------------------------------------------------------------
 # Severity-to-Priority mapping
@@ -288,11 +249,9 @@ EUDR_COMMODITIES: List[str] = [
     "cattle", "cocoa", "coffee", "palm_oil", "rubber", "soya", "wood",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class SupplyPlot:
@@ -338,7 +297,6 @@ class SupplyPlot:
             "plot_name": self.plot_name,
         }
 
-
 @dataclass
 class AffectedPlot:
     """Supply plot affected by a deforestation alert.
@@ -376,7 +334,6 @@ class AffectedPlot:
             "inside_buffer": self.inside_buffer,
             "supplier_id": self.supplier_id,
         }
-
 
 @dataclass
 class DeforestationAlert:
@@ -443,7 +400,7 @@ class DeforestationAlert:
         if not self.alert_id:
             self.alert_id = _generate_id()
         if not self.generated_at:
-            self.generated_at = _utcnow().isoformat()
+            self.generated_at = utcnow().isoformat()
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize alert to dictionary.
@@ -479,7 +436,6 @@ class DeforestationAlert:
             "metadata": self.metadata,
         }
 
-
 @dataclass
 class AlertResult:
     """Result of a single alert generation operation.
@@ -505,7 +461,7 @@ class AlertResult:
     def __post_init__(self) -> None:
         """Set calculation timestamp if unset."""
         if not self.calculation_timestamp:
-            self.calculation_timestamp = _utcnow().isoformat()
+            self.calculation_timestamp = utcnow().isoformat()
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary.
@@ -522,7 +478,6 @@ class AlertResult:
             "provenance_hash": self.provenance_hash,
             "calculation_timestamp": self.calculation_timestamp,
         }
-
 
 @dataclass
 class BatchResult:
@@ -557,7 +512,7 @@ class BatchResult:
         if not self.batch_id:
             self.batch_id = _generate_id()
         if not self.calculation_timestamp:
-            self.calculation_timestamp = _utcnow().isoformat()
+            self.calculation_timestamp = utcnow().isoformat()
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary.
@@ -577,7 +532,6 @@ class BatchResult:
             "provenance_hash": self.provenance_hash,
             "calculation_timestamp": self.calculation_timestamp,
         }
-
 
 @dataclass
 class AlertListResult:
@@ -604,7 +558,7 @@ class AlertListResult:
     def __post_init__(self) -> None:
         """Set calculation timestamp if unset."""
         if not self.calculation_timestamp:
-            self.calculation_timestamp = _utcnow().isoformat()
+            self.calculation_timestamp = utcnow().isoformat()
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary.
@@ -621,7 +575,6 @@ class AlertListResult:
             "provenance_hash": self.provenance_hash,
             "calculation_timestamp": self.calculation_timestamp,
         }
-
 
 @dataclass
 class SummaryResult:
@@ -660,7 +613,7 @@ class SummaryResult:
     def __post_init__(self) -> None:
         """Set calculation timestamp if unset."""
         if not self.calculation_timestamp:
-            self.calculation_timestamp = _utcnow().isoformat()
+            self.calculation_timestamp = utcnow().isoformat()
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary.
@@ -684,7 +637,6 @@ class SummaryResult:
             "calculation_timestamp": self.calculation_timestamp,
         }
 
-
 @dataclass
 class StatsResult:
     """Alert statistics grouped by a dimension.
@@ -706,7 +658,7 @@ class StatsResult:
     def __post_init__(self) -> None:
         """Set calculation timestamp if unset."""
         if not self.calculation_timestamp:
-            self.calculation_timestamp = _utcnow().isoformat()
+            self.calculation_timestamp = utcnow().isoformat()
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary.
@@ -722,11 +674,9 @@ class StatsResult:
             "calculation_timestamp": self.calculation_timestamp,
         }
 
-
 # ---------------------------------------------------------------------------
 # AlertGenerator Engine
 # ---------------------------------------------------------------------------
-
 
 class AlertGenerator:
     """Production-grade deforestation alert generation engine.
@@ -784,7 +734,7 @@ class AlertGenerator:
 
         self._alert_store: Dict[str, DeforestationAlert] = {}
         self._daily_count: int = 0
-        self._daily_date: date = _utcnow().date()
+        self._daily_date: date = utcnow().date()
         self._dedup_cache: Dict[str, str] = {}
 
         logger.info(
@@ -1681,7 +1631,7 @@ class AlertGenerator:
 
         # Time bucket (to dedup window hours)
         dedup_hours = self._get_dedup_window_hours()
-        now = _utcnow()
+        now = utcnow()
         time_bucket = int(now.timestamp()) // (dedup_hours * 3600)
 
         return f"{lat_bucket}:{lon_bucket}:{change_type}:{time_bucket}"
@@ -1727,7 +1677,7 @@ class AlertGenerator:
         Raises:
             RuntimeError: If daily limit is exceeded.
         """
-        today = _utcnow().date()
+        today = utcnow().date()
         if today != self._daily_date:
             self._daily_count = 0
             self._daily_date = today
@@ -1844,7 +1794,6 @@ class AlertGenerator:
             result = [a for a in result if a.generated_at[:10] <= end]
 
         return result
-
 
 # ---------------------------------------------------------------------------
 # Public API

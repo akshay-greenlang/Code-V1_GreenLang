@@ -31,6 +31,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.qr_code_generator.api.dependencies import (
     AuthUser,
@@ -63,22 +64,14 @@ router = APIRouter(tags=["Batch Codes"])
 _batch_code_store: Dict[str, Dict] = {}
 _sequence_counter: Dict[str, int] = {}
 
-
 def _get_batch_store() -> Dict[str, Dict]:
     """Return the batch code store singleton."""
     return _batch_code_store
-
 
 def _compute_provenance_hash(data: dict) -> str:
     """Compute SHA-256 hash for provenance tracking."""
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_luhn_check_digit(number_str: str) -> str:
     """Compute Luhn check digit for a numeric string.
@@ -98,7 +91,6 @@ def _compute_luhn_check_digit(number_str: str) -> str:
     check = (10 - (total % 10)) % 10
     return str(check)
 
-
 def _build_prefix(operator_id: str, commodity: str, year: int) -> str:
     """Build the operator-commodity-year prefix.
 
@@ -115,11 +107,9 @@ def _build_prefix(operator_id: str, commodity: str, year: int) -> str:
     yr = str(year)[-2:]
     return f"{op}-{comm}-{yr}"
 
-
 # ---------------------------------------------------------------------------
 # POST /batch-codes/generate
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/batch-codes/generate",
@@ -161,7 +151,7 @@ async def generate_batch_codes(
     """
     start = time.monotonic()
     try:
-        now = _utcnow()
+        now = utcnow()
         store = _get_batch_store()
         commodity_val = body.commodity.value
         algorithm = body.check_digit_algorithm.value if body.check_digit_algorithm else "luhn"
@@ -241,11 +231,9 @@ async def generate_batch_codes(
             detail="Failed to generate batch codes",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /batch-codes/reserve
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/batch-codes/reserve",
@@ -324,11 +312,9 @@ async def reserve_codes(
             detail="Failed to reserve batch codes",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /batch-codes/{code}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/batch-codes/{code}",
@@ -378,7 +364,7 @@ async def get_batch_code_detail(
                 detail=f"Batch code {code} not found",
             )
 
-        now = _utcnow()
+        now = utcnow()
         provenance_hash = _compute_provenance_hash({
             "code_value": code,
             "operator_id": record.get("operator_id", ""),
@@ -406,11 +392,9 @@ async def get_batch_code_detail(
             detail="Failed to retrieve batch code details",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /batch-codes/{code}/hierarchy
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/batch-codes/{code}/hierarchy",
@@ -481,7 +465,6 @@ async def get_batch_code_hierarchy(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve code hierarchy",
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

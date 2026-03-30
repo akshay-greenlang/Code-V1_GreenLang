@@ -31,6 +31,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.qr_code_generator.api.dependencies import (
     AuthUser,
@@ -62,27 +63,18 @@ router = APIRouter(tags=["Bulk Generation"])
 
 _bulk_job_store: Dict[str, Dict] = {}
 
-
 def _get_bulk_store() -> Dict[str, Dict]:
     """Return the bulk job store singleton."""
     return _bulk_job_store
-
 
 def _compute_provenance_hash(data: dict) -> str:
     """Compute SHA-256 hash for provenance tracking."""
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ---------------------------------------------------------------------------
 # POST /bulk/generate
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/bulk/generate",
@@ -125,7 +117,7 @@ async def submit_bulk_job(
     start = time.monotonic()
     try:
         job_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         provenance_hash = _compute_provenance_hash({
             "job_id": job_id,
@@ -191,11 +183,9 @@ async def submit_bulk_job(
             detail="Failed to submit bulk generation job",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /bulk/{job_id}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/bulk/{job_id}",
@@ -273,11 +263,9 @@ async def get_bulk_job_status(
             detail="Failed to retrieve bulk job status",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /bulk/{job_id}/download
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/bulk/{job_id}/download",
@@ -371,11 +359,9 @@ async def download_bulk_output(
             detail="Failed to generate download URL",
         )
 
-
 # ---------------------------------------------------------------------------
 # DELETE /bulk/{job_id}
 # ---------------------------------------------------------------------------
-
 
 @router.delete(
     "/bulk/{job_id}",
@@ -433,7 +419,7 @@ async def cancel_bulk_job(
                 ),
             )
 
-        now = _utcnow()
+        now = utcnow()
         record["status"] = "cancelled"
         record["completed_at"] = now
 
@@ -459,11 +445,9 @@ async def cancel_bulk_job(
             detail="Failed to cancel bulk job",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /bulk/{job_id}/manifest
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/bulk/{job_id}/manifest",
@@ -523,7 +507,7 @@ async def get_bulk_manifest(
                 ),
             )
 
-        now = _utcnow()
+        now = utcnow()
 
         return BulkManifestResponse(
             job_id=job_id,
@@ -542,7 +526,6 @@ async def get_bulk_manifest(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve bulk job manifest",
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

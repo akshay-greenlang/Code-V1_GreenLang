@@ -63,6 +63,8 @@ from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -74,12 +76,6 @@ _MODULE_VERSION: str = "1.0.0"
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -99,7 +95,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str = "wf") -> str:
     """Generate a unique identifier with a given prefix.
 
@@ -111,11 +106,9 @@ def _generate_id(prefix: str = "wf") -> str:
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class WorkflowStatus(str, Enum):
     """Alert workflow lifecycle status.
@@ -139,7 +132,6 @@ class WorkflowStatus(str, Enum):
     FALSE_POSITIVE = "FALSE_POSITIVE"
     EXPIRED = "EXPIRED"
     CLOSED = "CLOSED"
-
 
 class WorkflowAction(str, Enum):
     """Actions that trigger workflow state transitions.
@@ -168,7 +160,6 @@ class WorkflowAction(str, Enum):
     MARK_FALSE_POSITIVE = "MARK_FALSE_POSITIVE"
     EXPIRE = "EXPIRE"
 
-
 class AlertPriority(str, Enum):
     """Alert priority levels.
 
@@ -184,7 +175,6 @@ class AlertPriority(str, Enum):
     MEDIUM = "MEDIUM"
     LOW = "LOW"
 
-
 class SLAStatus(str, Enum):
     """SLA compliance status.
 
@@ -199,7 +189,6 @@ class SLAStatus(str, Enum):
     AT_RISK = "AT_RISK"
     BREACHED = "BREACHED"
     NOT_APPLICABLE = "NOT_APPLICABLE"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -281,11 +270,9 @@ MAX_NOTES_PER_ALERT: int = 500
 #: Maximum batch size for SLA audit.
 MAX_BATCH_SIZE: int = 5000
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class WorkflowTransition:
@@ -328,7 +315,6 @@ class WorkflowTransition:
             "metadata": self.metadata,
         }
 
-
 @dataclass
 class WorkflowNote:
     """A note attached to an alert workflow.
@@ -360,7 +346,6 @@ class WorkflowNote:
             "category": self.category,
         }
 
-
 @dataclass
 class SLAConfig:
     """SLA configuration for workflow deadlines.
@@ -382,7 +367,6 @@ class SLAConfig:
             "investigation_hours": self.investigation_hours,
             "resolution_hours": self.resolution_hours,
         }
-
 
 @dataclass
 class WorkflowState:
@@ -457,7 +441,6 @@ class WorkflowState:
             "provenance_hash": self.provenance_hash,
         }
 
-
 @dataclass
 class SLAReport:
     """SLA compliance report for one or more alerts.
@@ -507,11 +490,9 @@ class SLAReport:
             "provenance_hash": self.provenance_hash,
         }
 
-
 # ---------------------------------------------------------------------------
 # AlertWorkflowEngine
 # ---------------------------------------------------------------------------
-
 
 class AlertWorkflowEngine:
     """Production-grade alert lifecycle workflow management engine.
@@ -608,7 +589,7 @@ class AlertWorkflowEngine:
             if alert_id in self._workflow_states:
                 raise ValueError(f"Workflow already exists for alert: {alert_id}")
 
-        now = _utcnow()
+        now = utcnow()
         sla_deadline = self._calculate_sla_deadline(
             WorkflowStatus.PENDING.value, priority
         )
@@ -889,7 +870,7 @@ class AlertWorkflowEngine:
             alert_id=alert_id,
             author=author,
             content=content,
-            timestamp=_utcnow().isoformat(),
+            timestamp=utcnow().isoformat(),
             category=category,
         )
 
@@ -899,7 +880,7 @@ class AlertWorkflowEngine:
                     f"Maximum notes ({MAX_NOTES_PER_ALERT}) reached for alert {alert_id}"
                 )
             state.notes.append(note.to_dict())
-            state.updated_at = _utcnow().isoformat()
+            state.updated_at = utcnow().isoformat()
             state.provenance_hash = _compute_hash(state)
 
         logger.info("Note added: alert=%s author=%s", alert_id, author)
@@ -921,7 +902,7 @@ class AlertWorkflowEngine:
         Returns:
             SLA report dictionary.
         """
-        now = _utcnow()
+        now = utcnow()
 
         if alert_id:
             state = self._get_state(alert_id)
@@ -1110,7 +1091,7 @@ class AlertWorkflowEngine:
 
         # Get target status
         target = VALID_TRANSITIONS[current][action]
-        now = _utcnow()
+        now = utcnow()
 
         # Record transition
         transition = WorkflowTransition(
@@ -1237,7 +1218,7 @@ class AlertWorkflowEngine:
         Returns:
             SLA deadline as UTC datetime.
         """
-        now = _utcnow()
+        now = utcnow()
         sla_type = SLA_STATE_MAP.get(status, "resolution")
 
         # Base hours from SLA config
@@ -1375,7 +1356,7 @@ class AlertWorkflowEngine:
         if not self._auto_escalate:
             return []
 
-        now = _utcnow()
+        now = utcnow()
         escalated: List[str] = []
 
         with self._lock:
@@ -1448,7 +1429,7 @@ class AlertWorkflowEngine:
         Args:
             state: WorkflowState to update.
         """
-        now = _utcnow()
+        now = utcnow()
         try:
             created = datetime.fromisoformat(state.created_at)
             if created.tzinfo is None:

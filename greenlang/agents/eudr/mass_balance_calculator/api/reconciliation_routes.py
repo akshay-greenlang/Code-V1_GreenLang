@@ -36,6 +36,7 @@ from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.mass_balance_calculator.api.dependencies import (
     AuthUser,
@@ -80,22 +81,14 @@ _reconciliation_store: Dict[str, Dict] = {}
 _VARIANCE_ACCEPTABLE_PCT = 1.0
 _VARIANCE_WARNING_PCT = 3.0
 
-
 def _compute_provenance_hash(data: dict) -> str:
     """Compute SHA-256 hash for provenance tracking."""
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ---------------------------------------------------------------------------
 # POST /reconciliation
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/reconciliation",
@@ -137,7 +130,7 @@ async def run_reconciliation(
     start = time.monotonic()
     try:
         reconciliation_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         # Simulated balance calculation (in production, computed from DB)
         # expected = opening + inputs - outputs - losses - waste
@@ -239,11 +232,9 @@ async def run_reconciliation(
             detail="Failed to run period-end reconciliation",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /reconciliation/{reconciliation_id}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/reconciliation/{reconciliation_id}",
@@ -295,7 +286,7 @@ async def get_reconciliation(
         return ReconciliationResultSchema(
             **record,
             processing_time_ms=elapsed_ms,
-            timestamp=_utcnow(),
+            timestamp=utcnow(),
         )
 
     except HTTPException:
@@ -310,11 +301,9 @@ async def get_reconciliation(
             detail="Failed to retrieve reconciliation result",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /reconciliation/sign-off
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/reconciliation/sign-off",
@@ -375,7 +364,7 @@ async def sign_off_reconciliation(
                 ),
             )
 
-        now = _utcnow()
+        now = utcnow()
         record["status"] = ReconciliationStatusSchema.SIGNED_OFF
         record["signed_off_by"] = body.signed_off_by
         record["signed_off_at"] = now
@@ -420,11 +409,9 @@ async def sign_off_reconciliation(
             detail="Failed to sign off reconciliation",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /reconciliation/history/{facility_id}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/reconciliation/history/{facility_id}",
@@ -510,7 +497,7 @@ async def get_reconciliation_history(
             reconciliations=history_entries,
             pagination=meta,
             processing_time_ms=elapsed_ms,
-            timestamp=_utcnow(),
+            timestamp=utcnow(),
         )
 
     except HTTPException:
@@ -524,7 +511,6 @@ async def get_reconciliation_history(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve reconciliation history",
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

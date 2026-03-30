@@ -61,6 +61,7 @@ from greenlang.agents.eudr.risk_assessment_engine.models import (
     COUNTRY_BENCHMARK_MULTIPLIERS,
 )
 from greenlang.agents.eudr.risk_assessment_engine.provenance import ProvenanceTracker
+from greenlang.schemas import utcnow
 from greenlang.agents.eudr.risk_assessment_engine.metrics import (
     record_benchmark_lookup,
 )
@@ -68,7 +69,6 @@ from greenlang.agents.eudr.risk_assessment_engine.metrics import (
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Default country classification data
@@ -95,16 +95,9 @@ _HIGH_RISK_COUNTRIES = [
     "BO", "LA", "MM", "MZ", "NI", "SL", "TZ",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute deterministic SHA-256 hash of data.
@@ -118,11 +111,9 @@ def _compute_hash(data: Any) -> str:
     canonical = json.dumps(data, sort_keys=True, separators=(",", ":"), default=str)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Main Engine
 # ---------------------------------------------------------------------------
-
 
 class CountryBenchmarkEngine:
     """Engine for managing EUDR Article 29 country benchmarks.
@@ -193,7 +184,7 @@ class CountryBenchmarkEngine:
             level=CountryBenchmarkLevel.STANDARD,
             multiplier=COUNTRY_BENCHMARK_MULTIPLIERS[CountryBenchmarkLevel.STANDARD],
             source="default",
-            effective_date=_utcnow(),
+            effective_date=utcnow(),
         )
         logger.debug(
             "Country %s not in benchmark registry; defaulting to STANDARD", code
@@ -263,7 +254,7 @@ class CountryBenchmarkEngine:
                         benchmark.level, Decimal("1.00")
                     ),
                     source=benchmark.source,
-                    effective_date=benchmark.effective_date or _utcnow(),
+                    effective_date=benchmark.effective_date or utcnow(),
                 )
                 updated += 1
 
@@ -353,7 +344,7 @@ class CountryBenchmarkEngine:
         Returns:
             The populated benchmark dictionary.
         """
-        now = _utcnow()
+        now = utcnow()
 
         # LOW risk: EU-27 + EEA/EFTA + other developed nations
         for code in _EU_MEMBER_STATES + _EEA_EFTA_COUNTRIES + _OTHER_LOW_RISK:

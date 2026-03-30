@@ -77,17 +77,17 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import (
-    BaseModel,
-    ConfigDict,
     Field,
     field_validator,
     model_validator,
 )
 
-
 # ---------------------------------------------------------------------------
 # Cross-agent commodity import (graceful fallback)
 # ---------------------------------------------------------------------------
+
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import AlertSeverity, ReportFormat, RiskLevel
 
 try:
     from greenlang.agents.data.eudr_traceability.models import (
@@ -96,16 +96,9 @@ try:
 except ImportError:
     _ExternalEUDRCommodity = None  # type: ignore[assignment,misc]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -163,26 +156,9 @@ DEFAULT_FACTOR_WEIGHTS: Dict[str, float] = {
     "social_compliance": 0.05,
 }
 
-
 # =============================================================================
 # Enumerations
 # =============================================================================
-
-
-class RiskLevel(str, Enum):
-    """Supplier risk classification per composite risk scoring.
-
-    LOW: Supplier risk score 0-25. Low risk, reduced monitoring frequency.
-    MEDIUM: Supplier risk score 26-50. Standard risk, standard monitoring.
-    HIGH: Supplier risk score 51-75. High risk, enhanced monitoring.
-    CRITICAL: Supplier risk score 76-100. Critical risk, immediate action required.
-    """
-
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
-    CRITICAL = "critical"
-
 
 class SupplierType(str, Enum):
     """Supplier role classification in the EUDR supply chain.
@@ -204,7 +180,6 @@ class SupplierType(str, Enum):
     BROKER = "broker"
     COOPERATIVE = "cooperative"
 
-
 class CommodityType(str, Enum):
     """EUDR-regulated commodities per Article 1 and Annex I.
 
@@ -221,7 +196,6 @@ class CommodityType(str, Enum):
     RUBBER = "rubber"
     SOYA = "soya"
     WOOD = "wood"
-
 
 class CertificationScheme(str, Enum):
     """Supported third-party certification schemes for EUDR compliance.
@@ -245,7 +219,6 @@ class CertificationScheme(str, Enum):
     FAIR_TRADE = "FAIR_TRADE"
     ISCC = "ISCC"
 
-
 class CertificationStatus(str, Enum):
     """Certification validity status.
 
@@ -261,7 +234,6 @@ class CertificationStatus(str, Enum):
     SUSPENDED = "suspended"
     REVOKED = "revoked"
     PENDING = "pending"
-
 
 class DocumentType(str, Enum):
     """EUDR-required document types per Articles 8-9.
@@ -289,7 +261,6 @@ class DocumentType(str, Enum):
     PHYTOSANITARY = "phytosanitary"
     OTHER = "other"
 
-
 class DocumentStatus(str, Enum):
     """Document validation status.
 
@@ -306,7 +277,6 @@ class DocumentStatus(str, Enum):
     EXPIRED = "expired"
     MISSING = "missing"
 
-
 class DDLevel(str, Enum):
     """Due diligence level classification per EUDR Articles 10-13.
 
@@ -318,7 +288,6 @@ class DDLevel(str, Enum):
     SIMPLIFIED = "simplified"
     STANDARD = "standard"
     ENHANCED = "enhanced"
-
 
 class DDStatus(str, Enum):
     """Due diligence tracking status.
@@ -334,7 +303,6 @@ class DDStatus(str, Enum):
     COMPLETED = "completed"
     OVERDUE = "overdue"
 
-
 class NonConformanceType(str, Enum):
     """Non-conformance severity classification.
 
@@ -346,22 +314,6 @@ class NonConformanceType(str, Enum):
     MINOR = "minor"
     MAJOR = "major"
     CRITICAL = "critical"
-
-
-class AlertSeverity(str, Enum):
-    """Alert severity classification.
-
-    INFO: Informational alert, no action required.
-    WARNING: Warning alert, review recommended.
-    HIGH: High-priority alert, action recommended.
-    CRITICAL: Critical alert, immediate action required.
-    """
-
-    INFO = "info"
-    WARNING = "warning"
-    HIGH = "high"
-    CRITICAL = "critical"
-
 
 class AlertType(str, Enum):
     """Alert type classification.
@@ -381,7 +333,6 @@ class AlertType(str, Enum):
     SANCTION_HIT = "sanction_hit"
     BEHAVIOR_CHANGE = "behavior_change"
 
-
 class ReportType(str, Enum):
     """Risk report type classification.
 
@@ -400,24 +351,6 @@ class ReportType(str, Enum):
     AUDIT_PACKAGE = "audit_package"
     EXECUTIVE = "executive"
 
-
-class ReportFormat(str, Enum):
-    """Report output format.
-
-    JSON: JSON format for programmatic access.
-    HTML: HTML format for web display.
-    PDF: PDF format for printing and archiving.
-    EXCEL: Excel format for data analysis.
-    CSV: CSV format for data export.
-    """
-
-    JSON = "json"
-    HTML = "html"
-    PDF = "pdf"
-    EXCEL = "excel"
-    CSV = "csv"
-
-
 class MonitoringFrequency(str, Enum):
     """Monitoring frequency for continuous supplier monitoring.
 
@@ -434,7 +367,6 @@ class MonitoringFrequency(str, Enum):
     MONTHLY = "monthly"
     QUARTERLY = "quarterly"
 
-
 class TrendDirection(str, Enum):
     """Direction of risk score trend over time.
 
@@ -446,7 +378,6 @@ class TrendDirection(str, Enum):
     IMPROVING = "improving"
     STABLE = "stable"
     DETERIORATING = "deteriorating"
-
 
 class DDActivityType(str, Enum):
     """Due diligence activity type classification.
@@ -470,7 +401,6 @@ class DDActivityType(str, Enum):
     TRAINING = "training"
     INTERVIEW = "interview"
 
-
 class NonConformanceStatus(str, Enum):
     """Non-conformance status classification.
 
@@ -487,13 +417,11 @@ class NonConformanceStatus(str, Enum):
     VERIFIED = "verified"
     OVERDUE = "overdue"
 
-
 # =============================================================================
 # Core Models
 # =============================================================================
 
-
-class FactorScore(BaseModel):
+class FactorScore(GreenLangBase):
     """Individual risk factor score with weighting and normalization.
 
     Attributes:
@@ -516,10 +444,9 @@ class FactorScore(BaseModel):
     weighted_score: Decimal = Field(..., ge=0, le=100)
     data_sources: List[str] = Field(default_factory=list)
     confidence: Decimal = Field(..., ge=0, le=1)
-    last_updated: datetime = Field(default_factory=_utcnow)
+    last_updated: datetime = Field(default_factory=utcnow)
 
-
-class SupplierProfile(BaseModel):
+class SupplierProfile(GreenLangBase):
     """Supplier profile with basic information.
 
     Attributes:
@@ -552,8 +479,7 @@ class SupplierProfile(BaseModel):
     website: Optional[str] = Field(None, max_length=255)
     active: bool = True
 
-
-class SupplierRiskAssessment(BaseModel):
+class SupplierRiskAssessment(GreenLangBase):
     """Composite supplier risk assessment with 8-factor scoring.
 
     Attributes:
@@ -580,7 +506,7 @@ class SupplierRiskAssessment(BaseModel):
     factor_scores: List[FactorScore]
     confidence: Decimal = Field(..., ge=0, le=1)
     trend: Optional[str] = Field(None, max_length=50)
-    assessed_at: datetime = Field(default_factory=_utcnow)
+    assessed_at: datetime = Field(default_factory=utcnow)
     assessed_by: str = Field(..., min_length=1, max_length=100)
     version: int = Field(default=1, ge=1)
 
@@ -592,8 +518,7 @@ class SupplierRiskAssessment(BaseModel):
             raise ValueError(f"Expected 8 factor scores, got {len(v)}")
         return v
 
-
-class DueDiligenceRecord(BaseModel):
+class DueDiligenceRecord(GreenLangBase):
     """Due diligence tracking record with non-conformances and corrective actions.
 
     Attributes:
@@ -628,8 +553,7 @@ class DueDiligenceRecord(BaseModel):
     auditor: Optional[str] = Field(None, max_length=100)
     notes: Optional[str] = Field(None, max_length=2000)
 
-
-class DocumentationProfile(BaseModel):
+class DocumentationProfile(GreenLangBase):
     """Supplier documentation profile with completeness and quality scoring.
 
     Attributes:
@@ -654,10 +578,9 @@ class DocumentationProfile(BaseModel):
     gaps: List[str] = Field(default_factory=list)
     quality_score: Decimal = Field(..., ge=0, le=100)
     expiring_soon: List[str] = Field(default_factory=list)
-    last_updated: datetime = Field(default_factory=_utcnow)
+    last_updated: datetime = Field(default_factory=utcnow)
 
-
-class CertificationRecord(BaseModel):
+class CertificationRecord(GreenLangBase):
     """Third-party certification record with chain-of-custody validation.
 
     Attributes:
@@ -692,10 +615,9 @@ class CertificationRecord(BaseModel):
     multi_site: bool = False
     certification_body: str = Field(..., min_length=1, max_length=255)
     verification_url: Optional[str] = Field(None, max_length=500)
-    last_verified: datetime = Field(default_factory=_utcnow)
+    last_verified: datetime = Field(default_factory=utcnow)
 
-
-class GeographicSourcingProfile(BaseModel):
+class GeographicSourcingProfile(GreenLangBase):
     """Geographic sourcing profile with country risk integration.
 
     Attributes:
@@ -724,10 +646,9 @@ class GeographicSourcingProfile(BaseModel):
     protected_area_overlap: bool = False
     indigenous_territory_overlap: bool = False
     country_risk_scores: Dict[str, Decimal] = Field(default_factory=dict)
-    last_updated: datetime = Field(default_factory=_utcnow)
+    last_updated: datetime = Field(default_factory=utcnow)
 
-
-class SupplierNetwork(BaseModel):
+class SupplierNetwork(GreenLangBase):
     """Supplier network graph with multi-tier risk propagation.
 
     Attributes:
@@ -754,10 +675,9 @@ class SupplierNetwork(BaseModel):
     risk_propagation_score: Decimal = Field(..., ge=0, le=100)
     circular_dependencies: bool = False
     relationship_strengths: Dict[str, Decimal] = Field(default_factory=dict)
-    last_updated: datetime = Field(default_factory=_utcnow)
+    last_updated: datetime = Field(default_factory=utcnow)
 
-
-class MonitoringConfig(BaseModel):
+class MonitoringConfig(GreenLangBase):
     """Continuous monitoring configuration for supplier.
 
     Attributes:
@@ -784,8 +704,7 @@ class MonitoringConfig(BaseModel):
     last_check: Optional[datetime] = None
     next_check: Optional[datetime] = None
 
-
-class SupplierAlert(BaseModel):
+class SupplierAlert(GreenLangBase):
     """Supplier risk alert with severity classification.
 
     Attributes:
@@ -812,7 +731,7 @@ class SupplierAlert(BaseModel):
     alert_type: AlertType
     severity: AlertSeverity
     message: str = Field(..., min_length=1, max_length=1000)
-    triggered_at: datetime = Field(default_factory=_utcnow)
+    triggered_at: datetime = Field(default_factory=utcnow)
     acknowledged: bool = False
     acknowledged_at: Optional[datetime] = None
     acknowledged_by: Optional[str] = Field(None, max_length=100)
@@ -820,8 +739,7 @@ class SupplierAlert(BaseModel):
     resolved_at: Optional[datetime] = None
     resolved_by: Optional[str] = Field(None, max_length=100)
 
-
-class RiskReport(BaseModel):
+class RiskReport(GreenLangBase):
     """Risk report generation record with format and content tracking.
 
     Attributes:
@@ -849,13 +767,12 @@ class RiskReport(BaseModel):
     content_hash: str = Field(..., min_length=64, max_length=64)
     file_path: Optional[str] = Field(None, max_length=500)
     file_size_bytes: int = Field(..., ge=0)
-    generated_at: datetime = Field(default_factory=_utcnow)
+    generated_at: datetime = Field(default_factory=utcnow)
     generated_by: str = Field(..., min_length=1, max_length=100)
     language: str = Field(default="en", min_length=2, max_length=2)
     retention_until: datetime
 
-
-class AuditLogEntry(BaseModel):
+class AuditLogEntry(GreenLangBase):
     """Audit log entry for supplier risk assessment operations.
 
     Attributes:
@@ -878,12 +795,11 @@ class AuditLogEntry(BaseModel):
     entity_id: str = Field(..., min_length=1, max_length=100)
     action: str = Field(..., min_length=1, max_length=100)
     actor: str = Field(..., min_length=1, max_length=100)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(..., min_length=64, max_length=64)
     details: Optional[Dict[str, Any]] = None
 
-
-class DDActivity(BaseModel):
+class DDActivity(GreenLangBase):
     """Due diligence activity record.
 
     Attributes:
@@ -914,8 +830,7 @@ class DDActivity(BaseModel):
     cost_usd: float = Field(default=0.0, ge=0)
     duration_hours: float = Field(default=0.0, ge=0)
 
-
-class NonConformance(BaseModel):
+class NonConformance(GreenLangBase):
     """Non-conformance finding record.
 
     Attributes:
@@ -942,8 +857,7 @@ class NonConformance(BaseModel):
     status: NonConformanceStatus
     resolved_date: Optional[datetime] = None
 
-
-class CorrectiveActionPlan(BaseModel):
+class CorrectiveActionPlan(GreenLangBase):
     """Corrective action plan for non-conformance.
 
     Attributes:
@@ -970,8 +884,7 @@ class CorrectiveActionPlan(BaseModel):
     status: NonConformanceStatus
     completed_date: Optional[datetime] = None
 
-
-class SupplierDocument(BaseModel):
+class SupplierDocument(GreenLangBase):
     """Supplier document record.
 
     Attributes:
@@ -1004,13 +917,11 @@ class SupplierDocument(BaseModel):
     status: DocumentStatus
     language_code: str = Field(default="en", min_length=2, max_length=2)
 
-
 # =============================================================================
 # Request Models
 # =============================================================================
 
-
-class AssessSupplierRequest(BaseModel):
+class AssessSupplierRequest(GreenLangBase):
     """Request to assess supplier risk score."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1020,8 +931,7 @@ class AssessSupplierRequest(BaseModel):
     include_trend: bool = True
     assessed_by: str = Field(..., min_length=1, max_length=100)
 
-
-class TrackDueDiligenceRequest(BaseModel):
+class TrackDueDiligenceRequest(GreenLangBase):
     """Request to track due diligence activities."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1031,8 +941,7 @@ class TrackDueDiligenceRequest(BaseModel):
     activities: List[str] = Field(default_factory=list)
     auditor: Optional[str] = Field(None, max_length=100)
 
-
-class AnalyzeDocumentationRequest(BaseModel):
+class AnalyzeDocumentationRequest(GreenLangBase):
     """Request to analyze supplier documentation."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1041,8 +950,7 @@ class AnalyzeDocumentationRequest(BaseModel):
     include_quality_score: bool = True
     include_gap_detection: bool = True
 
-
-class ValidateCertificationRequest(BaseModel):
+class ValidateCertificationRequest(GreenLangBase):
     """Request to validate supplier certifications."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1051,8 +959,7 @@ class ValidateCertificationRequest(BaseModel):
     scheme: Optional[CertificationScheme] = None
     verify_chain_of_custody: bool = True
 
-
-class AnalyzeGeographicSourcingRequest(BaseModel):
+class AnalyzeGeographicSourcingRequest(GreenLangBase):
     """Request to analyze geographic sourcing profile."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1061,8 +968,7 @@ class AnalyzeGeographicSourcingRequest(BaseModel):
     include_country_risk: bool = True
     include_deforestation_overlay: bool = True
 
-
-class AnalyzeNetworkRequest(BaseModel):
+class AnalyzeNetworkRequest(GreenLangBase):
     """Request to analyze supplier network."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1071,8 +977,7 @@ class AnalyzeNetworkRequest(BaseModel):
     max_depth: int = Field(default=3, ge=1, le=10)
     include_risk_propagation: bool = True
 
-
-class ConfigureMonitoringRequest(BaseModel):
+class ConfigureMonitoringRequest(GreenLangBase):
     """Request to configure supplier monitoring."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1082,8 +987,7 @@ class ConfigureMonitoringRequest(BaseModel):
     alert_thresholds: Optional[Dict[str, int]] = None
     watchlist_status: bool = False
 
-
-class GenerateAlertRequest(BaseModel):
+class GenerateAlertRequest(GreenLangBase):
     """Request to generate supplier alert."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1093,8 +997,7 @@ class GenerateAlertRequest(BaseModel):
     severity: AlertSeverity
     message: str = Field(..., min_length=1, max_length=1000)
 
-
-class GenerateReportRequest(BaseModel):
+class GenerateReportRequest(GreenLangBase):
     """Request to generate risk report."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1105,16 +1008,14 @@ class GenerateReportRequest(BaseModel):
     language: str = Field(default="en", min_length=2, max_length=2)
     generated_by: str = Field(..., min_length=1, max_length=100)
 
-
-class GetSupplierProfileRequest(BaseModel):
+class GetSupplierProfileRequest(GreenLangBase):
     """Request to get supplier profile."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
 
     supplier_id: str = Field(..., min_length=1, max_length=100)
 
-
-class CompareSupplierRequest(BaseModel):
+class CompareSupplierRequest(GreenLangBase):
     """Request to compare multiple suppliers."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1122,8 +1023,7 @@ class CompareSupplierRequest(BaseModel):
     supplier_ids: List[str] = Field(..., min_items=2)
     comparison_factors: Optional[List[str]] = None
 
-
-class GetTrendRequest(BaseModel):
+class GetTrendRequest(GreenLangBase):
     """Request to get risk trend analysis."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1131,8 +1031,7 @@ class GetTrendRequest(BaseModel):
     supplier_id: str = Field(..., min_length=1, max_length=100)
     period_months: int = Field(default=12, ge=1, le=60)
 
-
-class BatchAssessmentRequest(BaseModel):
+class BatchAssessmentRequest(GreenLangBase):
     """Request to perform batch supplier assessment."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1140,8 +1039,7 @@ class BatchAssessmentRequest(BaseModel):
     supplier_ids: List[str] = Field(..., min_items=1, max_items=500)
     assessed_by: str = Field(..., min_length=1, max_length=100)
 
-
-class SearchSupplierRequest(BaseModel):
+class SearchSupplierRequest(GreenLangBase):
     """Request to search suppliers by criteria."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1153,8 +1051,7 @@ class SearchSupplierRequest(BaseModel):
     limit: int = Field(default=100, ge=1, le=1000)
     offset: int = Field(default=0, ge=0)
 
-
-class HealthRequest(BaseModel):
+class HealthRequest(GreenLangBase):
     """Request to check service health."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1162,13 +1059,11 @@ class HealthRequest(BaseModel):
     include_database: bool = True
     include_cache: bool = True
 
-
 # =============================================================================
 # Response Models
 # =============================================================================
 
-
-class SupplierRiskResponse(BaseModel):
+class SupplierRiskResponse(GreenLangBase):
     """Response for supplier risk assessment."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1177,8 +1072,7 @@ class SupplierRiskResponse(BaseModel):
     processing_time_ms: float
     provenance_hash: str = Field(..., min_length=64, max_length=64)
 
-
-class DueDiligenceResponse(BaseModel):
+class DueDiligenceResponse(GreenLangBase):
     """Response for due diligence tracking."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1187,8 +1081,7 @@ class DueDiligenceResponse(BaseModel):
     processing_time_ms: float
     provenance_hash: str = Field(..., min_length=64, max_length=64)
 
-
-class DocumentationResponse(BaseModel):
+class DocumentationResponse(GreenLangBase):
     """Response for documentation analysis."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1197,8 +1090,7 @@ class DocumentationResponse(BaseModel):
     processing_time_ms: float
     provenance_hash: str = Field(..., min_length=64, max_length=64)
 
-
-class CertificationResponse(BaseModel):
+class CertificationResponse(GreenLangBase):
     """Response for certification validation."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1207,8 +1099,7 @@ class CertificationResponse(BaseModel):
     processing_time_ms: float
     provenance_hash: str = Field(..., min_length=64, max_length=64)
 
-
-class GeographicSourcingResponse(BaseModel):
+class GeographicSourcingResponse(GreenLangBase):
     """Response for geographic sourcing analysis."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1217,8 +1108,7 @@ class GeographicSourcingResponse(BaseModel):
     processing_time_ms: float
     provenance_hash: str = Field(..., min_length=64, max_length=64)
 
-
-class NetworkResponse(BaseModel):
+class NetworkResponse(GreenLangBase):
     """Response for network analysis."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1227,8 +1117,7 @@ class NetworkResponse(BaseModel):
     processing_time_ms: float
     provenance_hash: str = Field(..., min_length=64, max_length=64)
 
-
-class MonitoringResponse(BaseModel):
+class MonitoringResponse(GreenLangBase):
     """Response for monitoring configuration."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1237,8 +1126,7 @@ class MonitoringResponse(BaseModel):
     processing_time_ms: float
     provenance_hash: str = Field(..., min_length=64, max_length=64)
 
-
-class AlertResponse(BaseModel):
+class AlertResponse(GreenLangBase):
     """Response for alert generation."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1247,8 +1135,7 @@ class AlertResponse(BaseModel):
     processing_time_ms: float
     provenance_hash: str = Field(..., min_length=64, max_length=64)
 
-
-class ReportResponse(BaseModel):
+class ReportResponse(GreenLangBase):
     """Response for report generation."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1257,8 +1144,7 @@ class ReportResponse(BaseModel):
     processing_time_ms: float
     provenance_hash: str = Field(..., min_length=64, max_length=64)
 
-
-class ProfileResponse(BaseModel):
+class ProfileResponse(GreenLangBase):
     """Response for supplier profile retrieval."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1266,8 +1152,7 @@ class ProfileResponse(BaseModel):
     profile: SupplierProfile
     processing_time_ms: float
 
-
-class ComparisonResponse(BaseModel):
+class ComparisonResponse(GreenLangBase):
     """Response for supplier comparison."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1277,8 +1162,7 @@ class ComparisonResponse(BaseModel):
     processing_time_ms: float
     provenance_hash: str = Field(..., min_length=64, max_length=64)
 
-
-class TrendResponse(BaseModel):
+class TrendResponse(GreenLangBase):
     """Response for trend analysis."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1289,8 +1173,7 @@ class TrendResponse(BaseModel):
     processing_time_ms: float
     provenance_hash: str = Field(..., min_length=64, max_length=64)
 
-
-class BatchResponse(BaseModel):
+class BatchResponse(GreenLangBase):
     """Response for batch assessment."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1302,8 +1185,7 @@ class BatchResponse(BaseModel):
     processing_time_ms: float
     provenance_hash: str = Field(..., min_length=64, max_length=64)
 
-
-class SearchResponse(BaseModel):
+class SearchResponse(GreenLangBase):
     """Response for supplier search."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1314,8 +1196,7 @@ class SearchResponse(BaseModel):
     offset: int = Field(..., ge=0)
     processing_time_ms: float
 
-
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Response for health check."""
 
     model_config = ConfigDict(frozen=False, extra="forbid")
@@ -1324,4 +1205,4 @@ class HealthResponse(BaseModel):
     database_status: Optional[str] = Field(None, max_length=50)
     cache_status: Optional[str] = Field(None, max_length=50)
     version: str = Field(default=VERSION)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)

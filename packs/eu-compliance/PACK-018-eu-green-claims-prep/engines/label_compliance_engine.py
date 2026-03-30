@@ -75,25 +75,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -113,7 +107,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely.
 
@@ -127,7 +120,6 @@ def _decimal(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
 ) -> Decimal:
@@ -135,7 +127,6 @@ def _safe_divide(
     if denominator == Decimal("0"):
         return default
     return numerator / denominator
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value to the specified number of decimal places.
@@ -152,18 +143,15 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class LabelType(str, Enum):
     """Classification of environmental label types per ISO 14020 series.
@@ -179,7 +167,6 @@ class LabelType(str, Enum):
     PUBLIC_SCHEME = "public_scheme"
     COMPANY_OWN = "company_own"
 
-
 class LabelGovernanceLevel(str, Enum):
     """Governance quality level for an environmental labelling scheme.
 
@@ -191,7 +178,6 @@ class LabelGovernanceLevel(str, Enum):
     INSUFFICIENT = "insufficient"
     NON_COMPLIANT = "non_compliant"
 
-
 class LabelComplianceStatus(str, Enum):
     """Overall compliance status for a label assessment.
 
@@ -202,11 +188,9 @@ class LabelComplianceStatus(str, Enum):
     NON_COMPLIANT = "non_compliant"
     UNDER_REVIEW = "under_review"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # Recognised environmental labels in the EU market.
 # These are well-established, third-party verified labelling schemes
@@ -406,11 +390,9 @@ GOVERNANCE_THRESHOLDS: Dict[str, Decimal] = {
 # Compliance threshold for label assessment.
 LABEL_COMPLIANCE_THRESHOLD: Decimal = Decimal("60")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class LabelData(BaseModel):
     """Input data for an environmental label assessment.
@@ -493,7 +475,6 @@ class LabelData(BaseModel):
         if not v.strip():
             raise ValueError("Label name must not be empty")
         return v
-
 
 class LabelAssessment(BaseModel):
     """Result of an environmental label compliance assessment.
@@ -586,7 +567,7 @@ class LabelAssessment(BaseModel):
         description="Engine version",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Assessment timestamp (UTC)",
     )
     processing_time_ms: float = Field(
@@ -597,7 +578,6 @@ class LabelAssessment(BaseModel):
         default="",
         description="SHA-256 hash of the assessment result",
     )
-
 
 class LabelRecognitionResult(BaseModel):
     """Result of checking whether a label is recognised.
@@ -634,7 +614,7 @@ class LabelRecognitionResult(BaseModel):
         description="Engine version",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Check timestamp (UTC)",
     )
     processing_time_ms: float = Field(
@@ -645,7 +625,6 @@ class LabelRecognitionResult(BaseModel):
         default="",
         description="SHA-256 hash of the result",
     )
-
 
 class LabelPortfolioResult(BaseModel):
     """Result of validating a portfolio of environmental labels.
@@ -702,7 +681,7 @@ class LabelPortfolioResult(BaseModel):
         description="Engine version",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Validation timestamp (UTC)",
     )
     processing_time_ms: float = Field(
@@ -714,11 +693,9 @@ class LabelPortfolioResult(BaseModel):
         description="SHA-256 hash of the result",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class LabelComplianceEngine:
     """Environmental label compliance engine per Green Claims Directive Art. 6-9.

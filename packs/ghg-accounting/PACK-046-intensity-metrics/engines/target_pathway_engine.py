@@ -83,23 +83,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -116,7 +111,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -125,7 +119,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -133,23 +126,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round4(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 def _round6(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP))
-
 
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class TemperatureAmbition(str, Enum):
     """Temperature ambition level for target-setting.
@@ -161,7 +149,6 @@ class TemperatureAmbition(str, Enum):
     T_1_5C = "1.5C"
     WB_2C = "WB2C"
     T_2C = "2C"
-
 
 class SectorPathway(str, Enum):
     """Sector classification for SDA pathways."""
@@ -177,7 +164,6 @@ class SectorPathway(str, Enum):
     FLAG_AGRICULTURE = "flag_agriculture"
     FLAG_FORESTRY = "flag_forestry"
 
-
 class TargetStatus(str, Enum):
     """Status of target progress."""
     ON_TRACK = "on_track"
@@ -186,14 +172,12 @@ class TargetStatus(str, Enum):
     NOT_STARTED = "not_started"
     AHEAD = "ahead"
 
-
 class TargetType(str, Enum):
     """Type of intensity target."""
     SDA_CONVERGENCE = "sda_convergence"
     ABSOLUTE_REDUCTION = "absolute_reduction"
     CUSTOM_PATHWAY = "custom_pathway"
     FLAG = "flag"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Sector Convergence Values
@@ -278,11 +262,9 @@ CONVERGENCE_YEAR: int = 2050
 SDA_DEFAULT_BASE_YEAR: int = 2020
 MAX_PROJECTION_YEARS: int = 50
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class TargetInput(BaseModel):
     """Input for target pathway calculation.
@@ -337,11 +319,9 @@ class TargetInput(BaseModel):
             object.__setattr__(self, "intensity_unit", unit)
         return self
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class PathwayPoint(BaseModel):
     """A single year on the target pathway.
@@ -354,7 +334,6 @@ class PathwayPoint(BaseModel):
     year: int = Field(..., description="Year")
     target_intensity: Decimal = Field(..., description="Target intensity")
     annual_reduction: Optional[Decimal] = Field(default=None, description="Annual reduction rate")
-
 
 class TargetProgress(BaseModel):
     """Progress towards intensity target.
@@ -374,7 +353,6 @@ class TargetProgress(BaseModel):
     status: TargetStatus = Field(default=TargetStatus.NOT_STARTED, description="Status")
     years_ahead_behind: Decimal = Field(default=Decimal("0"), description="Years ahead/behind")
 
-
 class PathwayComparison(BaseModel):
     """Comparison between 1.5C and WB2C pathways.
 
@@ -390,7 +368,6 @@ class PathwayComparison(BaseModel):
     ambition_1_5c_reduction: Optional[Decimal] = Field(default=None, description="1.5C reduction %")
     ambition_wb2c_reduction: Optional[Decimal] = Field(default=None, description="WB2C reduction %")
     current_aligns_with: str = Field(default="none", description="Alignment")
-
 
 class TargetResult(BaseModel):
     """Result of target pathway calculation.
@@ -436,11 +413,9 @@ class TargetResult(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class TargetPathwayEngine:
     """SBTi SDA convergence pathway and target-setting engine.
@@ -590,7 +565,7 @@ class TargetPathwayEngine:
             total_reduction_pct=total_red,
             avg_annual_reduction=avg_annual,
             warnings=warnings,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         result.provenance_hash = _compute_hash(result)
@@ -882,7 +857,7 @@ class TargetPathwayEngine:
             pathway=pathway,
             total_reduction_pct=total_red,
             warnings=warnings,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         result.provenance_hash = _compute_hash(result)
@@ -890,7 +865,6 @@ class TargetPathwayEngine:
 
     def get_version(self) -> str:
         return self._version
-
 
 # ---------------------------------------------------------------------------
 # __all__

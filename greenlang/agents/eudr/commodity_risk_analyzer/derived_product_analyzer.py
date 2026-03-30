@@ -79,7 +79,6 @@ EUDR_PRIMARY_COMMODITIES: FrozenSet[str] = frozenset({
     "cattle", "cocoa", "coffee", "oil_palm", "rubber", "soya", "wood",
 })
 
-
 # ---------------------------------------------------------------------------
 # EUDR Annex I Derived Product Mappings
 # ---------------------------------------------------------------------------
@@ -516,16 +515,9 @@ MISLABELING_INDICATORS: Dict[str, List[Dict[str, Any]]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _to_decimal(value: float | int | str | Decimal) -> Decimal:
     """Convert a numeric value to Decimal via string to avoid IEEE 754 artefacts."""
@@ -533,18 +525,15 @@ def _to_decimal(value: float | int | str | Decimal) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _clamp_risk(value: Decimal) -> Decimal:
     """Clamp a risk score to [0.00, 100.00] and apply precision."""
     clamped = max(_MIN_RISK, min(_MAX_RISK, value))
     return clamped.quantize(_PRECISION, rounding=ROUND_HALF_UP)
 
-
 def _compute_provenance_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
 
 def _validate_commodity_type(commodity_type: str) -> str:
     """Validate and normalize a commodity type string."""
@@ -557,7 +546,6 @@ def _validate_commodity_type(commodity_type: str) -> str:
             f"Must be one of: {sorted(EUDR_PRIMARY_COMMODITIES)}"
         )
     return normalized
-
 
 # ---------------------------------------------------------------------------
 # Prometheus metrics integration (graceful fallback)
@@ -619,18 +607,15 @@ except ImportError:
         "prometheus_client not installed; derived product analyzer metrics disabled"
     )
 
-
 def _record_analysis(commodity_type: str) -> None:
     """Record a derived product analysis metric."""
     if _PROMETHEUS_AVAILABLE and _DPA_ANALYSES_TOTAL is not None:
         _DPA_ANALYSES_TOTAL.labels(commodity_type=commodity_type).inc()
 
-
 def _observe_duration(operation: str, seconds: float) -> None:
     """Record a duration metric."""
     if _PROMETHEUS_AVAILABLE and _DPA_DURATION_SECONDS is not None:
         _DPA_DURATION_SECONDS.labels(operation=operation).observe(seconds)
-
 
 def _record_mislabeling(commodity_type: str, severity: str) -> None:
     """Record a mislabeling detection metric."""
@@ -639,11 +624,9 @@ def _record_mislabeling(commodity_type: str, severity: str) -> None:
             commodity_type=commodity_type, severity=severity,
         ).inc()
 
-
 # ---------------------------------------------------------------------------
 # DerivedProductAnalyzer
 # ---------------------------------------------------------------------------
-
 
 class DerivedProductAnalyzer:
     """Analyzes commodity-to-product transformation chains for EUDR compliance.
@@ -710,6 +693,8 @@ class DerivedProductAnalyzer:
                 derives from.
             processing_stages: Ordered list of processing stage names
                 from raw commodity to this product.
+
+from greenlang.schemas import utcnow
             input_quantity: Optional input commodity quantity (kg) for
                 transformation ratio calculation.
             metadata: Optional additional metadata.
@@ -801,7 +786,7 @@ class DerivedProductAnalyzer:
                 "expected_output_quantity": expected_output,
                 "provenance_hash": provenance_hash,
                 "processing_time_ms": round(elapsed_ms, 2),
-                "created_at": _utcnow().isoformat(),
+                "created_at": utcnow().isoformat(),
                 "metadata": metadata or {},
             }
 
@@ -1101,7 +1086,7 @@ class DerivedProductAnalyzer:
                         "traceability_assessment": traceability,
                         "stage_count": stage_count,
                         "provenance_hash": provenance_hash,
-                        "created_at": _utcnow().isoformat(),
+                        "created_at": utcnow().isoformat(),
                     }
 
         raise ValueError(
@@ -1325,7 +1310,7 @@ class DerivedProductAnalyzer:
             "recommendation": recommendation,
             "provenance_hash": provenance_hash,
             "processing_time_ms": round(elapsed_ms, 2),
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
         logger.info(
@@ -1630,7 +1615,6 @@ class DerivedProductAnalyzer:
             f"cached_products={self.cached_product_count}, "
             f"commodities={len(ANNEX_I_PRODUCT_MAP)})"
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

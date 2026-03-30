@@ -38,7 +38,8 @@ import logging
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, FrozenSet, List, Optional, Set
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import ConfigDict, Field
+from greenlang.schemas import GreenLangBase
 
 
 logger = logging.getLogger(__name__)
@@ -49,7 +50,7 @@ logger = logging.getLogger(__name__)
 # =============================================================================
 
 
-class UnitDefinition(BaseModel):
+class UnitDefinition(GreenLangBase):
     """
     Definition of a physical unit.
 
@@ -138,7 +139,7 @@ class UnitDefinition(BaseModel):
         return (value - self.si_offset) / self.si_factor
 
 
-class DimensionDefinition(BaseModel):
+class DimensionDefinition(GreenLangBase):
     """
     Definition of a physical dimension.
 

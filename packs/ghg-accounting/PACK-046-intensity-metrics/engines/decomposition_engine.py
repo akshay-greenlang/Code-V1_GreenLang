@@ -82,25 +82,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -118,7 +112,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -127,7 +120,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -139,21 +131,17 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round3(value: Any) -> float:
     """Round to 3 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 def _round6(value: Any) -> float:
     """Round to 6 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP))
-
 
 def _ln(value: Decimal) -> Decimal:
     """Compute natural logarithm using float then convert back to Decimal.
@@ -165,7 +153,6 @@ def _ln(value: Decimal) -> Decimal:
         return Decimal("0")
     return _decimal(math.log(fval))
 
-
 def _exp(value: Decimal) -> Decimal:
     """Compute exponential using float then convert back to Decimal."""
     fval = float(value)
@@ -173,7 +160,6 @@ def _exp(value: Decimal) -> Decimal:
         return _decimal(math.exp(fval))
     except OverflowError:
         return Decimal("0")
-
 
 def _log_mean(a: Decimal, b: Decimal) -> Decimal:
     """Compute the logarithmic mean L(a, b).
@@ -194,11 +180,9 @@ def _log_mean(a: Decimal, b: Decimal) -> Decimal:
         return a
     return (a - b) / (ln_a - ln_b)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DecompositionMethod(str, Enum):
     """Decomposition method variant.
@@ -208,7 +192,6 @@ class DecompositionMethod(str, Enum):
     """
     ADDITIVE = "additive"
     MULTIPLICATIVE = "multiplicative"
-
 
 class EffectType(str, Enum):
     """Type of decomposition effect.
@@ -220,7 +203,6 @@ class EffectType(str, Enum):
     ACTIVITY = "activity"
     STRUCTURE = "structure"
     INTENSITY = "intensity"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -236,11 +218,9 @@ MAX_SUBSECTORS: int = 500
 # Maximum number of periods in multi-period decomposition
 MAX_PERIODS: int = 100
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class SubSectorData(BaseModel):
     """Data for a single sub-sector at a single point in time.
@@ -261,7 +241,6 @@ class SubSectorData(BaseModel):
     def coerce_decimal(cls, v: Any) -> Decimal:
         """Coerce to Decimal."""
         return _decimal(v)
-
 
 class PeriodData(BaseModel):
     """Data for all sub-sectors at a single point in time.
@@ -292,7 +271,6 @@ class PeriodData(BaseModel):
             object.__setattr__(self, "total_activity", computed)
         return self
 
-
 class DecompositionInput(BaseModel):
     """Input for decomposition analysis.
 
@@ -313,7 +291,6 @@ class DecompositionInput(BaseModel):
     activity_unit: str = Field(default="unit", description="Activity unit")
     output_precision: int = Field(default=3, ge=0, le=12, description="Output precision")
 
-
 class MultiPeriodDecompositionInput(BaseModel):
     """Input for multi-period (chained) decomposition.
 
@@ -332,11 +309,9 @@ class MultiPeriodDecompositionInput(BaseModel):
     activity_unit: str = Field(default="unit", description="Activity unit")
     output_precision: int = Field(default=3, ge=0, le=12, description="Output precision")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class SubSectorContribution(BaseModel):
     """A sub-sector's contribution to each decomposition effect.
@@ -365,7 +340,6 @@ class SubSectorContribution(BaseModel):
     target_share: Decimal = Field(default=Decimal("0"), description="Target share (%)")
     base_intensity: Optional[Decimal] = Field(default=None, description="Base intensity")
     target_intensity: Optional[Decimal] = Field(default=None, description="Target intensity")
-
 
 class DecompositionResult(BaseModel):
     """Result of decomposition analysis.
@@ -419,7 +393,6 @@ class DecompositionResult(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 class MultiPeriodStep(BaseModel):
     """One step in a multi-period decomposition chain.
 
@@ -437,7 +410,6 @@ class MultiPeriodStep(BaseModel):
     structure_effect: Decimal = Field(default=Decimal("0"), description="Structure effect")
     intensity_effect: Decimal = Field(default=Decimal("0"), description="Intensity effect")
     total_change: Decimal = Field(default=Decimal("0"), description="Total change")
-
 
 class MultiPeriodDecompositionResult(BaseModel):
     """Result of multi-period chained decomposition.
@@ -475,11 +447,9 @@ class MultiPeriodDecompositionResult(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class DecompositionEngine:
     """LMDI-I decomposition engine for emissions intensity analysis.
@@ -568,7 +538,7 @@ class DecompositionEngine:
         result.base_total_emissions = V_0_total
         result.target_total_emissions = V_t_total
         result.warnings = warnings
-        result.calculated_at = _utcnow().isoformat()
+        result.calculated_at = utcnow().isoformat()
         result.processing_time_ms = round(elapsed_ms, 3)
         result.provenance_hash = _compute_hash(result)
         return result
@@ -657,7 +627,7 @@ class DecompositionEngine:
             cumulative_total=cum_total,
             overall_closure_valid=all_closure_valid,
             warnings=warnings,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         result.provenance_hash = _compute_hash(result)
@@ -934,11 +904,9 @@ class DecompositionEngine:
         """Return engine version string."""
         return self._version
 
-
 # ---------------------------------------------------------------------------
 # Helpers (module-level)
 # ---------------------------------------------------------------------------
-
 
 def _pct_of_total(part: Decimal, total: Decimal) -> Optional[Decimal]:
     """Compute percentage of total change, handling zero total."""
@@ -946,11 +914,9 @@ def _pct_of_total(part: Decimal, total: Decimal) -> Optional[Decimal]:
         return None
     return (part / total * Decimal("100")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Module-level convenience
 # ---------------------------------------------------------------------------
-
 
 def log_mean(a: Decimal, b: Decimal) -> Decimal:
     """Public interface to the logarithmic mean function.
@@ -963,7 +929,6 @@ def log_mean(a: Decimal, b: Decimal) -> Decimal:
         Logarithmic mean L(a, b).
     """
     return _log_mean(_decimal(a), _decimal(b))
-
 
 # ---------------------------------------------------------------------------
 # __all__

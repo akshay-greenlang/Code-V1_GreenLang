@@ -31,11 +31,12 @@ CBAM Note: Glass is not currently in CBAM scope but may be added in future phase
 
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, List, Optional
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 from enum import Enum
 import hashlib
 import json
 from datetime import datetime, timezone
+from greenlang.schemas import GreenLangBase
 
 
 # =============================================================================
@@ -157,7 +158,7 @@ class FuelType(str, Enum):
     HYBRID = "HYBRID"  # Oxy-fuel + electric boost
 
 
-class GlassCalculationInput(BaseModel):
+class GlassCalculationInput(GreenLangBase):
     """Input parameters for glass emission calculation."""
 
     glass_type: GlassType = Field(
@@ -233,7 +234,7 @@ class GlassCalculationInput(BaseModel):
     )
 
 
-class CalculationStep(BaseModel):
+class CalculationStep(GreenLangBase):
     """Individual calculation step with full provenance."""
     step_number: int
     description: str
@@ -244,7 +245,7 @@ class CalculationStep(BaseModel):
     source: str
 
 
-class GlassCalculationResult(BaseModel):
+class GlassCalculationResult(GreenLangBase):
     """Complete calculation result."""
 
     # Identification

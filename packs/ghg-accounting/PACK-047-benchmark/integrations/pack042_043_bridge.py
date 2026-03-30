@@ -44,25 +44,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -75,11 +69,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class Scope3Source(str, Enum):
     """Source pack for Scope 3 data."""
@@ -88,13 +80,11 @@ class Scope3Source(str, Enum):
     PACK_043 = "pack_043"
     NONE = "none"
 
-
 class ValueChainDirection(str, Enum):
     """Value chain direction for upstream/downstream split."""
 
     UPSTREAM = "upstream"
     DOWNSTREAM = "downstream"
-
 
 # GHG Protocol Scope 3 category names
 SCOPE3_CATEGORY_NAMES: Dict[int, str] = {
@@ -122,11 +112,9 @@ DOWNSTREAM_CATEGORIES: List[int] = [9, 10, 11, 12, 13, 14, 15]
 # Categories typically included in PACK-042 Starter
 PACK042_DEFAULT_CATEGORIES: List[int] = [1, 3, 4, 5, 6, 7, 9, 12]
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class Pack042043Config(BaseModel):
     """Configuration for the combined Scope 3 bridge."""
@@ -138,7 +126,6 @@ class Pack042043Config(BaseModel):
         True, description="Prefer PACK-043 when both available"
     )
     cache_ttl_s: float = Field(3600.0)
-
 
 class CategoryCoverage(BaseModel):
     """Coverage information for a single Scope 3 category."""
@@ -153,7 +140,6 @@ class CategoryCoverage(BaseModel):
     source_pack: str = Scope3Source.NONE.value
     value_chain_direction: str = ""
 
-
 class Scope3Request(BaseModel):
     """Request for Scope 3 data."""
 
@@ -166,7 +152,6 @@ class Scope3Request(BaseModel):
         default_factory=list,
         description="Specific categories (empty = all available)",
     )
-
 
 class Scope3Response(BaseModel):
     """Response with Scope 3 emission data."""
@@ -188,11 +173,9 @@ class Scope3Response(BaseModel):
     duration_ms: float = 0.0
     warnings: List[str] = Field(default_factory=list)
 
-
 # ---------------------------------------------------------------------------
 # Bridge Implementation
 # ---------------------------------------------------------------------------
-
 
 class Pack042043Bridge:
     """
@@ -255,7 +238,7 @@ class Pack042043Bridge:
                     success=False,
                     period=period,
                     warnings=["No Scope 3 pack available (042 or 043)"],
-                    retrieved_at=_utcnow().isoformat(),
+                    retrieved_at=utcnow().isoformat(),
                     duration_ms=duration,
                 )
 
@@ -276,7 +259,7 @@ class Pack042043Bridge:
                 success=False,
                 period=period,
                 warnings=[f"Retrieval failed: {str(e)}"],
-                retrieved_at=_utcnow().isoformat(),
+                retrieved_at=utcnow().isoformat(),
                 duration_ms=duration,
             )
 
@@ -421,7 +404,7 @@ class Pack042043Bridge:
                 "source": "pack_043",
                 "total": total,
             }),
-            retrieved_at=_utcnow().isoformat(),
+            retrieved_at=utcnow().isoformat(),
         )
 
     async def _fetch_from_pack042(self, period: str) -> Scope3Response:
@@ -457,7 +440,7 @@ class Pack042043Bridge:
                 "source": "pack_042",
                 "total": total,
             }),
-            retrieved_at=_utcnow().isoformat(),
+            retrieved_at=utcnow().isoformat(),
         )
 
     def _build_coverage(

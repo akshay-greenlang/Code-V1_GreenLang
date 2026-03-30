@@ -68,6 +68,7 @@ import time
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Set, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -121,7 +122,7 @@ except ImportError:
             Returns:
                 A stub object with a ``hash_value`` attribute.
             """
-            ts = _utcnow().isoformat()
+            ts = utcnow().isoformat()
             if metadata is None:
                 serialized = "null"
             else:
@@ -183,7 +184,6 @@ except ImportError:
                 self._chain.clear()
                 self._last_chain_hash = self.GENESIS_HASH
 
-
 # ---------------------------------------------------------------------------
 # Optional dependency: Prometheus metrics
 # ---------------------------------------------------------------------------
@@ -214,7 +214,6 @@ except ImportError:
         seconds: float,
     ) -> None:
         """No-op fallback when metrics module is not available."""
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -303,20 +302,9 @@ _COSMETIC_FIELDS: frozenset = frozenset({
     "description", "tags", "metadata", "severity",
 })
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed for determinism.
-
-    Returns:
-        Current UTC datetime with microseconds set to zero.
-    """
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _build_sha256(data: Any) -> str:
     """Build a deterministic SHA-256 hash from any JSON-serializable value.
@@ -331,7 +319,6 @@ def _build_sha256(data: Any) -> str:
     """
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
 
 def _normalize_tags(tags: Optional[List[str]]) -> List[str]:
     """Normalize, deduplicate, and sort a list of tags.
@@ -358,7 +345,6 @@ def _normalize_tags(tags: Optional[List[str]]) -> List[str]:
             result.append(normalized)
     return sorted(result)
 
-
 def _validate_tags_list(tags: List[str]) -> None:
     """Raise ValueError if any individual tag exceeds the maximum length.
 
@@ -374,7 +360,6 @@ def _validate_tags_list(tags: List[str]) -> None:
                 f"Tag '{tag}' exceeds maximum length of "
                 f"{MAX_TAG_LENGTH} characters."
             )
-
 
 def _validate_name(name: str) -> str:
     """Validate and clean a rule name.
@@ -398,14 +383,11 @@ def _validate_name(name: str) -> str:
         )
     return clean
 
-
 # Public alias for _validate_name.
 _validate_rule_name = _validate_name
 
-
 # Alias expected by tests
 _validate_rule_name = _validate_name
-
 
 def _parse_version(version_string: str) -> Tuple[int, int, int]:
     """Parse a SemVer string into its (major, minor, patch) integer tuple.
@@ -440,7 +422,6 @@ def _parse_version(version_string: str) -> Tuple[int, int, int]:
         )
     return (major, minor, patch)
 
-
 def _format_version(major: int, minor: int, patch: int) -> str:
     """Format a (major, minor, patch) tuple into a SemVer string.
 
@@ -453,7 +434,6 @@ def _format_version(major: int, minor: int, patch: int) -> str:
         SemVer string in the form ``X.Y.Z``.
     """
     return f"{major}.{minor}.{patch}"
-
 
 def _compute_version_bump(
     current_version: str,
@@ -486,11 +466,9 @@ def _compute_version_bump(
     else:
         return _format_version(major, minor, patch + 1)
 
-
 # ---------------------------------------------------------------------------
 # RuleRegistryEngine
 # ---------------------------------------------------------------------------
-
 
 class RuleRegistryEngine:
     """Pure-Python engine for centralized CRUD management of validation rules.
@@ -681,7 +659,7 @@ class RuleRegistryEngine:
             Deep copy of the record suitable for version storage.
         """
         snapshot = copy.deepcopy(record)
-        snapshot["snapshot_at"] = _utcnow().isoformat()
+        snapshot["snapshot_at"] = utcnow().isoformat()
         return snapshot
 
     # ------------------------------------------------------------------
@@ -810,7 +788,7 @@ class RuleRegistryEngine:
 
         # -- Build rule record --
         rule_id = str(uuid.uuid4())
-        now_str = _utcnow().isoformat()
+        now_str = utcnow().isoformat()
 
         rule_record: dict = {
             "rule_id": rule_id,
@@ -1167,7 +1145,7 @@ class RuleRegistryEngine:
             else:
                 new_version = record.get("version", "1.0.0")
 
-            record["updated_at"] = _utcnow().isoformat()
+            record["updated_at"] = utcnow().isoformat()
 
             # Re-index with updated state
             self._index_rule(record, rule_id)
@@ -1266,7 +1244,7 @@ class RuleRegistryEngine:
                 self._deindex_rule(record, rule_id)
 
                 record["status"] = "archived"
-                record["updated_at"] = _utcnow().isoformat()
+                record["updated_at"] = utcnow().isoformat()
 
                 # Re-index with new status
                 self._index_rule(record, rule_id)
@@ -1699,7 +1677,7 @@ class RuleRegistryEngine:
                     record[field] = copy.deepcopy(target_snapshot[field])
 
             record["version"] = new_version
-            record["updated_at"] = _utcnow().isoformat()
+            record["updated_at"] = utcnow().isoformat()
 
             # Re-index with restored state
             self._index_rule(record, rule_id)
@@ -2336,7 +2314,6 @@ class RuleRegistryEngine:
                     result.append({"hash_value": str(entry)})
             return result
         return []
-
 
 # ---------------------------------------------------------------------------
 # Module exports

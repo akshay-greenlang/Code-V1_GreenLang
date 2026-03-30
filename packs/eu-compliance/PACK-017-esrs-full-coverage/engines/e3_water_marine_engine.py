@@ -77,25 +77,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -115,7 +109,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely.
 
@@ -129,7 +122,6 @@ def _decimal(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
 ) -> Decimal:
@@ -137,7 +129,6 @@ def _safe_divide(
     if denominator == Decimal("0"):
         return default
     return numerator / denominator
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value to the specified number of decimal places.
@@ -154,11 +145,9 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class WaterSourceType(str, Enum):
     """Water withdrawal source types per ESRS E3-4 Para 28.
@@ -172,7 +161,6 @@ class WaterSourceType(str, Enum):
     PRODUCED = "produced"
     THIRD_PARTY = "third_party"
     RAINWATER = "rainwater"
-
 
 class WaterStressLevel(str, Enum):
     """Water stress classification per WRI Aqueduct baseline water stress.
@@ -188,7 +176,6 @@ class WaterStressLevel(str, Enum):
     HIGH = "high"
     EXTREMELY_HIGH = "extremely_high"
 
-
 class WaterUseCategory(str, Enum):
     """Water use categories for internal tracking and disclosure.
 
@@ -201,7 +188,6 @@ class WaterUseCategory(str, Enum):
     IRRIGATION = "irrigation"
     OTHER = "other"
 
-
 class DischargeDestination(str, Enum):
     """Water discharge destination types per ESRS E3-4 Para 30.
 
@@ -212,7 +198,6 @@ class DischargeDestination(str, Enum):
     GROUNDWATER = "groundwater"
     SEAWATER = "seawater"
     THIRD_PARTY_TREATMENT = "third_party_treatment"
-
 
 class WaterQualityLevel(str, Enum):
     """Water quality classification for withdrawal and discharge.
@@ -225,7 +210,6 @@ class WaterQualityLevel(str, Enum):
     BRACKISH = "brackish"
     SALINE = "saline"
 
-
 class MarineResourceType(str, Enum):
     """Marine resource categories per ESRS E3 scope.
 
@@ -237,11 +221,9 @@ class MarineResourceType(str, Enum):
     SEABED_MINING = "seabed_mining"
     COASTAL_DEVELOPMENT = "coastal_development"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # WRI Aqueduct baseline water stress thresholds.
 # Baseline water stress = ratio of total annual water withdrawals to
@@ -334,11 +316,9 @@ ALL_E3_DATAPOINTS: List[str] = (
     + E3_4_DATAPOINTS + E3_5_DATAPOINTS
 )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class WaterPolicy(BaseModel):
     """Policy related to water and marine resources per ESRS E3-1.
@@ -384,7 +364,6 @@ class WaterPolicy(BaseModel):
         max_length=5000,
     )
 
-
 class WaterAction(BaseModel):
     """Action and resources related to water and marine resources per ESRS E3-2.
 
@@ -420,7 +399,6 @@ class WaterAction(BaseModel):
         description="Current status (planned, in_progress, completed)",
         max_length=50,
     )
-
 
 class WaterTarget(BaseModel):
     """Target related to water and marine resources per ESRS E3-3.
@@ -486,7 +464,6 @@ class WaterTarget(BaseModel):
             )
         return v
 
-
 class WaterWithdrawal(BaseModel):
     """Water withdrawal entry per ESRS E3-4 Para 28.
 
@@ -524,7 +501,6 @@ class WaterWithdrawal(BaseModel):
         description="Reporting period (e.g. 2025, 2025-Q1)",
         max_length=20,
     )
-
 
 class WaterDischarge(BaseModel):
     """Water discharge entry per ESRS E3-4 Para 30.
@@ -564,7 +540,6 @@ class WaterDischarge(BaseModel):
         description="Whether the discharge destination is in a water stress area",
     )
 
-
 class WaterConsumption(BaseModel):
     """Facility-level water consumption summary per ESRS E3-4 Para 31.
 
@@ -601,7 +576,6 @@ class WaterConsumption(BaseModel):
         description="Whether this facility is located in a water stress area",
     )
 
-
 class MarineImpact(BaseModel):
     """Marine resource impact entry per ESRS E3.
 
@@ -635,7 +609,6 @@ class MarineImpact(BaseModel):
         default_factory=list,
         description="List of mitigation actions taken or planned",
     )
-
 
 class WaterFinancialEffect(BaseModel):
     """Anticipated financial effect per ESRS E3-5 Para 35-37.
@@ -672,7 +645,6 @@ class WaterFinancialEffect(BaseModel):
         max_length=50,
     )
 
-
 class E3WaterResult(BaseModel):
     """Complete ESRS E3 Water and Marine Resources disclosure result.
 
@@ -689,7 +661,7 @@ class E3WaterResult(BaseModel):
         description="Engine version used for this calculation",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of calculation (UTC)",
     )
     # E3-1: Policies
@@ -772,11 +744,9 @@ class E3WaterResult(BaseModel):
         description="SHA-256 hash of all inputs and calculation steps",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class WaterMarineEngine:
     """Water and marine resources calculation engine per ESRS E3.
@@ -1201,7 +1171,7 @@ class WaterMarineEngine:
 
         for t in targets:
             # Calculate expected linear progress based on timeline
-            current_year = _utcnow().year
+            current_year = utcnow().year
             total_years = _decimal(t.target_year - t.base_year)
             elapsed_years = _decimal(min(current_year, t.target_year) - t.base_year)
             expected_progress = _round_val(

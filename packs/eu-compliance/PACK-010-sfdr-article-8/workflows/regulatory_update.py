@@ -52,18 +52,13 @@ from typing import Any, Callable, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # UTILITIES
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return current UTC time with timezone info."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute SHA-256 provenance hash of arbitrary data."""
@@ -71,11 +66,9 @@ def _hash_data(data: Any) -> str:
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -85,7 +78,6 @@ class PhaseStatus(str, Enum):
     FAILED = "FAILED"
     SKIPPED = "SKIPPED"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "PENDING"
@@ -93,7 +85,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
     PARTIAL = "PARTIAL"
-
 
 class ChangeSource(str, Enum):
     """Source of regulatory change."""
@@ -104,7 +95,6 @@ class ChangeSource(str, Enum):
     EU_OFFICIAL_JOURNAL = "EU_OFFICIAL_JOURNAL"
     TAXONOMY_PLATFORM = "TAXONOMY_PLATFORM"
 
-
 class ChangeCategory(str, Enum):
     """Category of regulatory change."""
     LEVEL_1_AMENDMENT = "LEVEL_1_AMENDMENT"
@@ -114,7 +104,6 @@ class ChangeCategory(str, Enum):
     TAXONOMY_UPDATE = "TAXONOMY_UPDATE"
     SFDR_2_DEVELOPMENT = "SFDR_2_DEVELOPMENT"
 
-
 class ImpactLevel(str, Enum):
     """Impact level of a regulatory change."""
     CRITICAL = "CRITICAL"
@@ -123,7 +112,6 @@ class ImpactLevel(str, Enum):
     LOW = "LOW"
     INFORMATIONAL = "INFORMATIONAL"
 
-
 class MigrationStatus(str, Enum):
     """Status of a migration task."""
     NOT_STARTED = "NOT_STARTED"
@@ -131,17 +119,15 @@ class MigrationStatus(str, Enum):
     COMPLETED = "COMPLETED"
     BLOCKED = "BLOCKED"
 
-
 # =============================================================================
 # DATA MODELS - SHARED
 # =============================================================================
-
 
 class WorkflowContext(BaseModel):
     """Shared state passed between workflow phases."""
     workflow_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     organization_id: str = Field(..., description="Organization identifier")
-    execution_timestamp: datetime = Field(default_factory=_utcnow)
+    execution_timestamp: datetime = Field(default_factory=utcnow)
     config: Dict[str, Any] = Field(default_factory=dict)
     phase_states: Dict[str, PhaseStatus] = Field(default_factory=dict)
     phase_outputs: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
@@ -164,7 +150,6 @@ class WorkflowContext(BaseModel):
         """Check if a phase has already completed."""
         return self.phase_states.get(phase_name) == PhaseStatus.COMPLETED
 
-
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
     phase_name: str = Field(..., description="Phase identifier")
@@ -178,7 +163,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     records_processed: int = Field(default=0)
 
-
 class WorkflowResult(BaseModel):
     """Complete result from a multi-phase workflow execution."""
     workflow_id: str = Field(..., description="Unique workflow execution ID")
@@ -191,11 +175,9 @@ class WorkflowResult(BaseModel):
     summary: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # DATA MODELS - REGULATORY UPDATE
 # =============================================================================
-
 
 class RegulatoryChange(BaseModel):
     """A detected regulatory change."""
@@ -219,7 +201,6 @@ class RegulatoryChange(BaseModel):
         description="Affected annexes (II, III, IV)"
     )
 
-
 class CurrentDisclosureState(BaseModel):
     """Current state of disclosures for impact assessment."""
     annex_ii_version: Optional[str] = Field(None)
@@ -231,7 +212,6 @@ class CurrentDisclosureState(BaseModel):
     pai_indicators_count: int = Field(default=18)
     taxonomy_alignment_disclosed: bool = Field(default=False)
     sfdr_classification: str = Field(default="ARTICLE_8")
-
 
 class RegulatoryUpdateInput(BaseModel):
     """Input configuration for the regulatory update workflow."""
@@ -267,7 +247,6 @@ class RegulatoryUpdateInput(BaseModel):
             raise ValueError("review_date must be YYYY-MM-DD format")
         return v
 
-
 class RegulatoryUpdateResult(WorkflowResult):
     """Complete result from the regulatory update workflow."""
     product_name: str = Field(default="")
@@ -279,11 +258,9 @@ class RegulatoryUpdateResult(WorkflowResult):
     estimated_effort_days: float = Field(default=0.0)
     earliest_deadline: Optional[str] = Field(None)
 
-
 # =============================================================================
 # PHASE IMPLEMENTATIONS
 # =============================================================================
-
 
 class ChangeDetectionPhase:
     """
@@ -297,7 +274,7 @@ class ChangeDetectionPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Execute change detection phase."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -392,7 +369,7 @@ class ChangeDetectionPhase:
             status = PhaseStatus.FAILED
             records = 0
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -406,7 +383,6 @@ class ChangeDetectionPhase:
             records_processed=records,
         )
 
-
 class ImpactAssessmentPhase:
     """
     Phase 2: Impact Assessment.
@@ -419,7 +395,7 @@ class ImpactAssessmentPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Execute impact assessment phase."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -532,7 +508,7 @@ class ImpactAssessmentPhase:
             status = PhaseStatus.FAILED
             records = 0
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -631,7 +607,6 @@ class ImpactAssessmentPhase:
             f"Informational update. Monitor for future developments."
         )
 
-
 class MigrationPlanningPhase:
     """
     Phase 3: Migration Planning.
@@ -644,7 +619,7 @@ class MigrationPlanningPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Execute migration planning phase."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -814,7 +789,7 @@ class MigrationPlanningPhase:
             errors.append(f"Migration planning failed: {str(exc)}")
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -837,11 +812,9 @@ class MigrationPlanningPhase:
             return "data_team"
         return "compliance_officer"
 
-
 # =============================================================================
 # WORKFLOW ORCHESTRATOR
 # =============================================================================
-
 
 class RegulatoryUpdateWorkflow:
     """
@@ -886,7 +859,7 @@ class RegulatoryUpdateWorkflow:
         self, input_data: RegulatoryUpdateInput
     ) -> RegulatoryUpdateResult:
         """Execute the complete 3-phase regulatory update workflow."""
-        started_at = _utcnow()
+        started_at = utcnow()
         logger.info(
             "Starting regulatory update workflow %s for org=%s product=%s",
             self.workflow_id, input_data.organization_id,
@@ -942,7 +915,7 @@ class RegulatoryUpdateWorkflow:
                 error_result = PhaseResult(
                     phase_name=phase_name,
                     status=PhaseStatus.FAILED,
-                    started_at=_utcnow(),
+                    started_at=utcnow(),
                     errors=[str(exc)],
                     provenance_hash=_hash_data({"error": str(exc)}),
                 )
@@ -960,7 +933,7 @@ class RegulatoryUpdateWorkflow:
                 WorkflowStatus.COMPLETED if all_ok else WorkflowStatus.PARTIAL
             )
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         total_duration = (completed_at - started_at).total_seconds()
         summary = self._build_summary(context)
         provenance = _hash_data({

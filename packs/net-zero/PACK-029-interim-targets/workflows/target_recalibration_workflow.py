@@ -48,23 +48,18 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "29.0.0"
 _PACK_ID = "PACK-029"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 def _interpolate_linear(base_val: float, target_val: float, base_yr: int,
                          target_yr: int, current_yr: int) -> float:
@@ -73,17 +68,14 @@ def _interpolate_linear(base_val: float, target_val: float, base_yr: int,
     t = min(max((current_yr - base_yr) / (target_yr - base_yr), 0.0), 1.0)
     return base_val + t * (target_val - base_val)
 
-
 def _calc_cagr(start_val: float, end_val: float, years: int) -> float:
     if years <= 0 or start_val <= 0 or end_val <= 0:
         return 0.0
     return ((end_val / start_val) ** (1.0 / years) - 1.0) * 100.0
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -92,14 +84,12 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class RecalibrationTrigger(str, Enum):
     """SBTi/GHG Protocol recalculation triggers."""
@@ -114,7 +104,6 @@ class RecalibrationTrigger(str, Enum):
     ERROR_CORRECTION = "error_correction"
     STRUCTURAL_CHANGE = "structural_change"
 
-
 class RecalibrationScope(str, Enum):
     """Scope of recalibration."""
     BASE_YEAR_ONLY = "base_year_only"
@@ -122,24 +111,20 @@ class RecalibrationScope(str, Enum):
     TARGETS_ONLY = "targets_only"
     FULL_RECALIBRATION = "full_recalibration"
 
-
 class ValidationResult(str, Enum):
     PASS = "pass"
     FAIL = "fail"
     CONDITIONAL = "conditional"
     WARNING = "warning"
 
-
 class RAGStatus(str, Enum):
     RED = "red"
     AMBER = "amber"
     GREEN = "green"
 
-
 # =============================================================================
 # SBTI RECALCULATION RULES (Zero-Hallucination: Published Guidance)
 # =============================================================================
-
 
 RECALCULATION_RULES: Dict[str, Dict[str, Any]] = {
     "RULE-001": {
@@ -207,11 +192,9 @@ MA_IMPACT_FACTORS: Dict[str, Dict[str, float]] = {
     },
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase_name: str = Field(...)
@@ -224,7 +207,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
     dag_node_id: str = Field(default="")
-
 
 class BaselineChange(BaseModel):
     """Details of a structural change affecting the baseline."""
@@ -239,7 +221,6 @@ class BaselineChange(BaseModel):
     impact_pct: float = Field(default=0.0)
     exceeds_threshold: bool = Field(default=False)
     recalculation_required: bool = Field(default=False)
-
 
 class UpdatedBaseline(BaseModel):
     """Updated baseline after structural changes."""
@@ -257,7 +238,6 @@ class UpdatedBaseline(BaseModel):
     recalculation_required: bool = Field(default=False)
     provenance_hash: str = Field(default="")
 
-
 class RecalibratedTarget(BaseModel):
     """A single recalibrated interim target."""
     target_year: int = Field(default=2030)
@@ -270,7 +250,6 @@ class RecalibratedTarget(BaseModel):
     maintains_ambition: bool = Field(default=True)
     sbti_minimum_met: bool = Field(default=True)
 
-
 class RecalibrationValidation(BaseModel):
     """Validation of recalibrated targets."""
     total_criteria: int = Field(default=0)
@@ -282,7 +261,6 @@ class RecalibrationValidation(BaseModel):
     sbti_resubmission_required: bool = Field(default=False)
     provenance_hash: str = Field(default="")
 
-
 class UpdatedPathway(BaseModel):
     """Updated annual pathway after recalibration."""
     original_pathway_points: int = Field(default=0)
@@ -291,7 +269,6 @@ class UpdatedPathway(BaseModel):
     avg_annual_change_pct: float = Field(default=0.0)
     pathway_tightened: bool = Field(default=False)
     provenance_hash: str = Field(default="")
-
 
 class RecalibrationReport(BaseModel):
     """Complete target recalibration report."""
@@ -308,7 +285,6 @@ class RecalibrationReport(BaseModel):
     key_findings: List[str] = Field(default_factory=list)
     recommendations: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class TargetRecalibrationConfig(BaseModel):
     company_name: str = Field(default="")
@@ -329,7 +305,6 @@ class TargetRecalibrationConfig(BaseModel):
     maintain_ambition: bool = Field(default=True)
     output_formats: List[str] = Field(default_factory=lambda: ["json", "html"])
 
-
 class TargetRecalibrationInput(BaseModel):
     config: TargetRecalibrationConfig = Field(default_factory=TargetRecalibrationConfig)
     structural_changes: List[Dict[str, Any]] = Field(
@@ -344,7 +319,6 @@ class TargetRecalibrationInput(BaseModel):
         default_factory=list,
         description="Original annual pathway [{year, target_tco2e}]",
     )
-
 
 class TargetRecalibrationResult(BaseModel):
     workflow_id: str = Field(...)
@@ -362,11 +336,9 @@ class TargetRecalibrationResult(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class TargetRecalibrationWorkflow:
     """
@@ -396,7 +368,7 @@ class TargetRecalibrationWorkflow:
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     async def execute(self, input_data: TargetRecalibrationInput) -> TargetRecalibrationResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         self.config = input_data.config
         self._phase_results = []
         overall_status = WorkflowStatus.RUNNING
@@ -433,7 +405,7 @@ class TargetRecalibrationWorkflow:
                 status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
 
         result = TargetRecalibrationResult(
             workflow_id=self.workflow_id,
@@ -458,7 +430,7 @@ class TargetRecalibrationWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_load_updated_baseline(self, input_data: TargetRecalibrationInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -505,7 +477,7 @@ class TargetRecalibrationWorkflow:
                 change_id=f"BC-{_new_uuid()[:6]}",
                 trigger=trigger,
                 description=sc.get("description", "Structural change"),
-                effective_date=sc.get("effective_date", _utcnow().strftime("%Y-%m-%d")),
+                effective_date=sc.get("effective_date", utcnow().strftime("%Y-%m-%d")),
                 scope1_impact_tco2e=round(s1_impact, 2),
                 scope2_impact_tco2e=round(s2_impact, 2),
                 scope3_impact_tco2e=round(s3_impact, 2),
@@ -553,7 +525,7 @@ class TargetRecalibrationWorkflow:
         outputs["changes_count"] = len(changes)
         outputs["recalculation_required"] = any_recalc
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="load_updated_baseline", phase_number=1,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -567,7 +539,7 @@ class TargetRecalibrationWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_recalc_targets(self, input_data: TargetRecalibrationInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         cfg = self.config
@@ -637,7 +609,7 @@ class TargetRecalibrationWorkflow:
             outputs[f"target_{t.target_year}_change_tco2e"] = t.change_tco2e
             outputs[f"target_{t.target_year}_new_reduction_pct"] = t.recalibrated_reduction_pct
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="recalc_interim_targets", phase_number=2,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -651,7 +623,7 @@ class TargetRecalibrationWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_validate_targets(self, input_data: TargetRecalibrationInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         findings: List[Dict[str, Any]] = []
@@ -725,7 +697,7 @@ class TargetRecalibrationWorkflow:
         outputs["overall_result"] = overall.value
         outputs["resubmission_required"] = resubmit
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="validate_new_targets", phase_number=3,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -739,7 +711,7 @@ class TargetRecalibrationWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_update_pathway(self, input_data: TargetRecalibrationInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         cfg = self.config
@@ -779,7 +751,7 @@ class TargetRecalibrationWorkflow:
         outputs["avg_annual_reduction_pct"] = round(avg_annual, 2)
         outputs["pathway_tightened"] = tightened
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="update_pathway", phase_number=4,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -793,7 +765,7 @@ class TargetRecalibrationWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_recalibration_report(self, input_data: TargetRecalibrationInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         findings = self._generate_findings()
@@ -825,7 +797,7 @@ class TargetRecalibrationWorkflow:
 
         self._report = RecalibrationReport(
             report_id=f"RCR-{self.workflow_id[:8]}",
-            report_date=_utcnow().strftime("%Y-%m-%d"),
+            report_date=utcnow().strftime("%Y-%m-%d"),
             company_name=self.config.company_name,
             trigger_summary=trigger_summary,
             updated_baseline=self._baseline,
@@ -845,7 +817,7 @@ class TargetRecalibrationWorkflow:
         outputs["findings_count"] = len(findings)
         outputs["recommendations_count"] = len(recommendations)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="recalibration_report", phase_number=5,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),

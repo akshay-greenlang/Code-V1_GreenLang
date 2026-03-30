@@ -34,23 +34,17 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID-4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hex digest for provenance tracking."""
@@ -63,11 +57,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Execution status for a single workflow phase."""
@@ -77,14 +69,12 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class SubmissionPhase(str, Enum):
     """Regulatory submission workflow phase identifiers."""
     PACKAGE_ASSEMBLY = "PackageAssembly"
     INTERNAL_REVIEW = "InternalReview"
     CAB_PRE_SUBMISSION = "CABPreSubmission"
     SUBMISSION_TRACKING = "SubmissionTracking"
-
 
 class DocumentType(str, Enum):
     """Document types required in the submission dossier."""
@@ -99,7 +89,6 @@ class DocumentType(str, Enum):
     IMPLEMENTATION_PLAN = "implementation_plan"
     THIRD_PARTY_OPINION = "third_party_opinion"
 
-
 class ReviewOutcome(str, Enum):
     """Internal review outcome classification."""
     APPROVED = "approved"
@@ -107,14 +96,12 @@ class ReviewOutcome(str, Enum):
     REVISION_REQUIRED = "revision_required"
     REJECTED = "rejected"
 
-
 class CABCheckResult(str, Enum):
     """Conformity Assessment Body check result."""
     PASS = "pass"
     FAIL = "fail"
     NOT_APPLICABLE = "not_applicable"
     NEEDS_CLARIFICATION = "needs_clarification"
-
 
 class SubmissionStatus(str, Enum):
     """Submission lifecycle status."""
@@ -126,11 +113,9 @@ class SubmissionStatus(str, Enum):
     REJECTED = "rejected"
     WITHDRAWN = "withdrawn"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class SubmissionConfig(BaseModel):
     """Configuration for RegulatorySubmissionWorkflow."""
@@ -148,7 +133,6 @@ class SubmissionConfig(BaseModel):
         description="Minimum completeness percentage to pass internal review",
     )
 
-
 class SubmissionResult(BaseModel):
     """Final submission readiness result."""
     submission_id: str = Field(..., description="Unique submission identifier")
@@ -159,7 +143,6 @@ class SubmissionResult(BaseModel):
     cab_pre_check_passed: bool = Field(default=False)
     submission_status: str = Field(default="draft")
     provenance_hash: str = Field(default="")
-
 
 class WorkflowInput(BaseModel):
     """Input model for RegulatorySubmissionWorkflow."""
@@ -176,7 +159,6 @@ class WorkflowInput(BaseModel):
     reporting_year: int = Field(default=2025, ge=2020, le=2050)
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
     phase_name: str = Field(..., description="Phase identifier")
@@ -185,7 +167,6 @@ class PhaseResult(BaseModel):
     completed_at: Optional[datetime] = Field(default=None)
     result_data: Dict[str, Any] = Field(default_factory=dict)
     error_message: Optional[str] = Field(default=None)
-
 
 class WorkflowResult(BaseModel):
     """Complete result from RegulatorySubmissionWorkflow."""
@@ -198,11 +179,9 @@ class WorkflowResult(BaseModel):
     started_at: Optional[datetime] = Field(default=None)
     completed_at: Optional[datetime] = Field(default=None)
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class RegulatorySubmissionWorkflow:
     """
@@ -312,7 +291,7 @@ class RegulatorySubmissionWorkflow:
             config=kwargs.get("config", {}),
         )
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting %s workflow %s -- %d claims, %d documents",
                          self.WORKFLOW_NAME, self.workflow_id,
                          len(input_data.claims), len(input_data.documents))
@@ -346,12 +325,12 @@ class RegulatorySubmissionWorkflow:
             phase_results.append(PhaseResult(
                 phase_name="error_capture",
                 status=PhaseStatus.FAILED,
-                started_at=_utcnow(),
-                completed_at=_utcnow(),
+                started_at=utcnow(),
+                completed_at=utcnow(),
                 error_message=str(exc),
             ))
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
 
         completed_phases = [p for p in phase_results if p.status == PhaseStatus.COMPLETED]
         overall_result: Dict[str, Any] = {
@@ -436,7 +415,7 @@ class RegulatorySubmissionWorkflow:
 
     def _run_package_assembly(self, input_data: WorkflowInput) -> PhaseResult:
         """Compile the submission dossier from claims and documents."""
-        started = _utcnow()
+        started = utcnow()
         self.logger.info("Phase 1/4 PackageAssembly -- compiling dossier with %d claims, %d docs",
                          len(input_data.claims), len(input_data.documents))
 
@@ -494,7 +473,7 @@ class RegulatorySubmissionWorkflow:
             phase_name=SubmissionPhase.PACKAGE_ASSEMBLY.value,
             status=PhaseStatus.COMPLETED,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             result_data=result_data,
         )
 
@@ -506,7 +485,7 @@ class RegulatorySubmissionWorkflow:
         self, input_data: WorkflowInput, package_data: Dict[str, Any],
     ) -> PhaseResult:
         """Run quality checks and completeness validation."""
-        started = _utcnow()
+        started = utcnow()
         self.logger.info("Phase 2/4 InternalReview -- running quality checks")
 
         checks: List[Dict[str, Any]] = []
@@ -614,7 +593,7 @@ class RegulatorySubmissionWorkflow:
             phase_name=SubmissionPhase.INTERNAL_REVIEW.value,
             status=PhaseStatus.COMPLETED,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             result_data=result_data,
         )
 
@@ -629,7 +608,7 @@ class RegulatorySubmissionWorkflow:
         review_data: Dict[str, Any],
     ) -> PhaseResult:
         """Validate submission package against CAB criteria."""
-        started = _utcnow()
+        started = utcnow()
         cab_name = input_data.cab_name or self.sub_config.cab_name or "Default CAB"
         self.logger.info(
             "Phase 3/4 CABPreSubmission -- validating against %s criteria", cab_name,
@@ -686,7 +665,7 @@ class RegulatorySubmissionWorkflow:
             phase_name=SubmissionPhase.CAB_PRE_SUBMISSION.value,
             status=PhaseStatus.COMPLETED,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             result_data=result_data,
         )
 
@@ -701,7 +680,7 @@ class RegulatorySubmissionWorkflow:
         cab_data: Dict[str, Any],
     ) -> PhaseResult:
         """Track submission status and determine readiness."""
-        started = _utcnow()
+        started = utcnow()
         self.logger.info("Phase 4/4 SubmissionTracking -- determining submission status")
 
         review_outcome = review_data.get("review_outcome", "")
@@ -738,7 +717,7 @@ class RegulatorySubmissionWorkflow:
                 },
                 {
                     "status": submission_status.value,
-                    "timestamp": _utcnow().isoformat(),
+                    "timestamp": utcnow().isoformat(),
                     "note": self._status_note(submission_status),
                 },
             ],
@@ -759,7 +738,7 @@ class RegulatorySubmissionWorkflow:
             phase_name=SubmissionPhase.SUBMISSION_TRACKING.value,
             status=PhaseStatus.COMPLETED,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             result_data=result_data,
         )
 

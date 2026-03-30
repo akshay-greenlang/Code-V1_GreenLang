@@ -34,19 +34,13 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # =============================================================================
 # Utility Helpers
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute a SHA-256 hash of arbitrary data."""
@@ -54,11 +48,9 @@ def _hash_data(data: Any) -> str:
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # Agent Stub
 # =============================================================================
-
 
 class _AgentStub:
     """Deferred agent loader for lazy initialization."""
@@ -75,6 +67,7 @@ class _AgentStub:
             return self._instance
         try:
             import importlib
+
             mod = importlib.import_module(self.module_path)
             cls = getattr(mod, self.class_name)
             self._instance = cls()
@@ -90,11 +83,9 @@ class _AgentStub:
         """Whether the agent has been loaded."""
         return self._instance is not None
 
-
 # =============================================================================
 # Enums
 # =============================================================================
-
 
 class SFDRClassification(str, Enum):
     """SFDR product classification."""
@@ -103,7 +94,6 @@ class SFDRClassification(str, Enum):
     ARTICLE_8_PLUS = "article_8_plus"
     ARTICLE_9 = "article_9"
 
-
 class ScreeningVerdict(str, Enum):
     """Screening outcome for a holding."""
     PASS = "pass"
@@ -111,7 +101,6 @@ class ScreeningVerdict(str, Enum):
     WARNING = "warning"
     EXCLUDED = "excluded"
     PENDING_REVIEW = "pending_review"
-
 
 class ExclusionCategory(str, Enum):
     """Categories of excluded activities."""
@@ -128,11 +117,9 @@ class ExclusionCategory(str, Enum):
     NUCLEAR_WEAPONS = "nuclear_weapons"
     PALM_OIL_UNSUSTAINABLE = "palm_oil_unsustainable"
 
-
 # =============================================================================
 # Data Models
 # =============================================================================
-
 
 class InvestmentScreenerBridgeConfig(BaseModel):
     """Configuration for the Investment Screener Bridge."""
@@ -165,7 +152,6 @@ class InvestmentScreenerBridgeConfig(BaseModel):
         description="Additional custom exclusion categories",
     )
 
-
 class ScreeningResult(BaseModel):
     """Result of screening a single holding."""
     isin: str = Field(default="", description="Holding ISIN")
@@ -183,7 +169,6 @@ class ScreeningResult(BaseModel):
     esg_rating_pass: bool = Field(default=False, description="Meets minimum rating")
     controversy_level: int = Field(default=0, description="Controversy level (1-5)")
     notes: List[str] = Field(default_factory=list, description="Screening notes")
-
 
 class ClassificationResult(BaseModel):
     """Result of product classification analysis."""
@@ -210,11 +195,9 @@ class ClassificationResult(BaseModel):
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
     screened_at: str = Field(default="", description="Screening timestamp")
 
-
 # =============================================================================
 # Exclusion & Positive Criteria Definitions
 # =============================================================================
-
 
 EXCLUSION_CATEGORIES: Dict[str, Dict[str, Any]] = {
     ExclusionCategory.CONTROVERSIAL_WEAPONS.value: {
@@ -323,11 +306,9 @@ POSITIVE_CRITERIA: Dict[str, Dict[str, Any]] = {
 
 ESG_RATING_ORDER: List[str] = ["CCC", "B", "BB", "BBB", "A", "AA", "AAA"]
 
-
 # =============================================================================
 # Investment Screener Bridge
 # =============================================================================
-
 
 class InvestmentScreenerBridge:
     """Bridge connecting SFDR Article 8 to green investment screening.
@@ -432,7 +413,7 @@ class InvestmentScreenerBridge:
             exclusion_summary=exclusion_summary,
             positive_criteria_summary=positive_summary,
             screening_results=screening_results,
-            screened_at=_utcnow().isoformat(),
+            screened_at=utcnow().isoformat(),
         )
         result.provenance_hash = _hash_data({
             "screened": len(holdings),

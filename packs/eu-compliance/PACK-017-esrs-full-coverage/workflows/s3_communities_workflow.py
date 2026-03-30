@@ -28,33 +28,25 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class WorkflowPhase(str, Enum):
     """Phases of the S3 affected communities workflow."""
@@ -64,7 +56,6 @@ class WorkflowPhase(str, Enum):
     TARGET_TRACKING = "target_tracking"
     REPORT_GENERATION = "report_generation"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "pending"
@@ -72,7 +63,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class PhaseStatus(str, Enum):
     """Status of a single phase."""
@@ -82,7 +72,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class CommunityType(str, Enum):
     """Affected community type."""
     LOCAL_COMMUNITY = "local_community"
@@ -90,7 +79,6 @@ class CommunityType(str, Enum):
     RURAL_COMMUNITY = "rural_community"
     URBAN_COMMUNITY = "urban_community"
     DISPLACED_COMMUNITY = "displaced_community"
-
 
 class ImpactType(str, Enum):
     """Community impact type classification."""
@@ -101,11 +89,9 @@ class ImpactType(str, Enum):
     LAND_RIGHTS = "land_rights"
     DISPLACEMENT = "displacement"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -116,7 +102,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class CommunityRecord(BaseModel):
     """Affected community record."""
@@ -131,7 +116,6 @@ class CommunityRecord(BaseModel):
     impacts: List[ImpactType] = Field(default_factory=list)
     engagement_active: bool = Field(default=False)
 
-
 class EngagementProcess(BaseModel):
     """Community engagement process record."""
     process_id: str = Field(default_factory=lambda: f"cep-{_new_uuid()[:8]}")
@@ -142,7 +126,6 @@ class EngagementProcess(BaseModel):
     frequency: str = Field(default="annual")
     outcomes_documented: bool = Field(default=False)
 
-
 class CommunityImpactAction(BaseModel):
     """Action taken to address community impacts."""
     action_id: str = Field(default_factory=lambda: f"cia-{_new_uuid()[:8]}")
@@ -151,7 +134,6 @@ class CommunityImpactAction(BaseModel):
     communities_benefited: int = Field(default=0, ge=0)
     investment_eur: float = Field(default=0.0, ge=0.0)
     status: str = Field(default="planned", description="planned, in_progress, completed")
-
 
 class CommunityTarget(BaseModel):
     """Community-related target."""
@@ -163,7 +145,6 @@ class CommunityTarget(BaseModel):
     target_year: int = Field(default=2030)
     target_value: float = Field(default=0.0)
     current_value: float = Field(default=0.0)
-
 
 class S3CommunitiesInput(BaseModel):
     """Input data model for S3CommunitiesWorkflow."""
@@ -187,7 +168,6 @@ class S3CommunitiesInput(BaseModel):
     entity_name: str = Field(default="")
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class S3CommunitiesWorkflowResult(BaseModel):
     """Complete result from S3 affected communities workflow."""
     workflow_id: str = Field(..., description="Unique execution ID")
@@ -209,11 +189,9 @@ class S3CommunitiesWorkflowResult(BaseModel):
     reporting_year: int = Field(default=2025)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class S3CommunitiesWorkflow:
     """
@@ -281,7 +259,7 @@ class S3CommunitiesWorkflow:
         if input_data is None:
             input_data = S3CommunitiesInput(config=config or {})
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting S3 communities workflow %s", self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = WorkflowStatus.IN_PROGRESS
@@ -306,7 +284,7 @@ class S3CommunitiesWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
 
         self._communities = list(input_data.communities)
         indigenous = sum(1 for c in self._communities if c.is_indigenous)
@@ -347,7 +325,7 @@ class S3CommunitiesWorkflow:
 
     async def _phase_community_mapping(self, input_data: S3CommunitiesInput) -> PhaseResult:
         """Identify and map affected communities."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -369,7 +347,7 @@ class S3CommunitiesWorkflow:
             warnings.append(f"{len(indigenous_no_fpic)} indigenous communities without FPIC")
             self._quality_issues.append("CRITICAL: FPIC not obtained for indigenous communities")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 1 CommunityMapping: %d communities", len(communities))
         return PhaseResult(
             phase_name=WorkflowPhase.COMMUNITY_MAPPING.value,
@@ -384,7 +362,7 @@ class S3CommunitiesWorkflow:
 
     async def _phase_engagement_assessment(self, input_data: S3CommunitiesInput) -> PhaseResult:
         """Assess engagement processes and FPIC compliance."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -406,7 +384,7 @@ class S3CommunitiesWorkflow:
         if coverage_pct < 50.0 and total_communities > 0:
             warnings.append(f"Low community engagement coverage: {coverage_pct}%")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 2 EngagementAssessment: %.1f%% coverage", coverage_pct)
         return PhaseResult(
             phase_name=WorkflowPhase.ENGAGEMENT_ASSESSMENT.value,
@@ -421,7 +399,7 @@ class S3CommunitiesWorkflow:
 
     async def _phase_impact_assessment(self, input_data: S3CommunitiesInput) -> PhaseResult:
         """Assess material impact actions for affected communities."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -445,7 +423,7 @@ class S3CommunitiesWorkflow:
         if not actions:
             warnings.append("No impact actions defined (S3-4)")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 3 ImpactAssessment: %d actions, EUR %.0f invested", len(actions), total_invest)
         return PhaseResult(
             phase_name=WorkflowPhase.IMPACT_ASSESSMENT.value,
@@ -460,7 +438,7 @@ class S3CommunitiesWorkflow:
 
     async def _phase_target_tracking(self, input_data: S3CommunitiesInput) -> PhaseResult:
         """Track progress against community-related targets."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._target_progress = {}
@@ -483,7 +461,7 @@ class S3CommunitiesWorkflow:
         if not input_data.targets:
             warnings.append("No community targets defined (S3-5)")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 4 TargetTracking: %d targets", len(self._target_progress))
         return PhaseResult(
             phase_name=WorkflowPhase.TARGET_TRACKING.value,
@@ -498,7 +476,7 @@ class S3CommunitiesWorkflow:
 
     async def _phase_report_generation(self, input_data: S3CommunitiesInput) -> PhaseResult:
         """Compile S3 affected communities disclosure."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -515,7 +493,7 @@ class S3CommunitiesWorkflow:
         }
         outputs["report_ready"] = True
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 5 ReportGeneration: S3 disclosure ready")
         return PhaseResult(
             phase_name=WorkflowPhase.REPORT_GENERATION.value,

@@ -46,23 +46,18 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -74,11 +69,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Agent Stubs
 # ---------------------------------------------------------------------------
-
 
 class _AgentStub:
     """Stub for unavailable DATA agent modules."""
@@ -97,7 +90,6 @@ class _AgentStub:
             }
         return _stub_method
 
-
 def _try_import_data_agent(agent_id: str, module_path: str) -> Any:
     try:
         return importlib.import_module(module_path)
@@ -105,11 +97,9 @@ def _try_import_data_agent(agent_id: str, module_path: str) -> Any:
         logger.debug("DATA agent %s not available, using stub", agent_id)
         return _AgentStub(agent_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DataSourceType(str, Enum):
     """Supported data source types."""
@@ -122,7 +112,6 @@ class DataSourceType(str, Enum):
     QUESTIONNAIRE = "questionnaire"
     REGISTRY = "registry"
 
-
 class ERPSystem(str, Enum):
     """Supported ERP systems."""
 
@@ -130,7 +119,6 @@ class ERPSystem(str, Enum):
     ORACLE = "oracle"
     WORKDAY = "workday"
     DYNAMICS_365 = "dynamics_365"
-
 
 class DataCategory(str, Enum):
     """Carbon neutrality data categories."""
@@ -147,7 +135,6 @@ class DataCategory(str, Enum):
     RETIREMENT_RECORDS = "retirement_records"
     VERIFICATION_EVIDENCE = "verification_evidence"
 
-
 class QualityDimension(str, Enum):
     """Data quality assessment dimensions."""
 
@@ -156,7 +143,6 @@ class QualityDimension(str, Enum):
     CONSISTENCY = "consistency"
     TIMELINESS = "timeliness"
     RELEVANCE = "relevance"
-
 
 # ---------------------------------------------------------------------------
 # DATA Agent Routing Table (20 agents)
@@ -202,11 +188,9 @@ CN_DATA_ROUTING: Dict[str, List[str]] = {
 
 ERPFieldMapping = Dict[str, str]
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class DataBridgeConfig(BaseModel):
     """Configuration for the DATA Bridge."""
@@ -216,7 +200,6 @@ class DataBridgeConfig(BaseModel):
     default_erp: str = Field(default="sap")
     auto_quality_check: bool = Field(default=True)
     freshness_threshold_days: int = Field(default=90)
-
 
 class IntakeResult(BaseModel):
     """Data intake result."""
@@ -232,7 +215,6 @@ class IntakeResult(BaseModel):
     quality_score: float = Field(default=0.0, ge=0.0, le=100.0)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class QualityResult(BaseModel):
     """Data quality assessment result."""
@@ -250,7 +232,6 @@ class QualityResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class LineageResult(BaseModel):
     """Data lineage tracking result."""
 
@@ -262,7 +243,6 @@ class LineageResult(BaseModel):
     audit_trail_complete: bool = Field(default=False)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class FreshnessResult(BaseModel):
     """Data freshness assessment result."""
@@ -278,7 +258,6 @@ class FreshnessResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class ReconciliationResult(BaseModel):
     """Cross-source reconciliation result."""
 
@@ -291,11 +270,9 @@ class ReconciliationResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # CarbonNeutralDataBridge
 # ---------------------------------------------------------------------------
-
 
 class CarbonNeutralDataBridge:
     """Bridge to 20 DATA agents for carbon neutrality data intake.

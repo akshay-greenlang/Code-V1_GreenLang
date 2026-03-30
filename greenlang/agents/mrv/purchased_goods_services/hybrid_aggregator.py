@@ -77,6 +77,7 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from typing import Any, Dict, List, Optional, Set, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -248,16 +249,9 @@ _BOUNDARY_FLAG_MAP: Dict[str, str] = {
     "is_credit_return": "Credit memo / return",
 }
 
-
 # ===========================================================================
 # Helper functions
 # ===========================================================================
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _quantize(value: Decimal) -> Decimal:
     """Quantize a Decimal value to the configured decimal places.
@@ -272,7 +266,6 @@ def _quantize(value: Decimal) -> Decimal:
         return value.quantize(_QUANTIZER, rounding=ROUND_HALF_UP)
     except (InvalidOperation, OverflowError):
         return ZERO
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -292,7 +285,6 @@ def _safe_divide(
     if denominator == ZERO or denominator is None:
         return default
     return _quantize(numerator / denominator)
-
 
 def _compute_sha256(data: Any) -> str:
     """Compute SHA-256 hex digest for arbitrary data.
@@ -318,7 +310,6 @@ def _compute_sha256(data: Any) -> str:
         logger.warning("SHA-256 hashing failed: %s", exc)
         return hashlib.sha256(b"fallback").hexdigest()
 
-
 def _decimal_to_str(value: Decimal) -> str:
     """Convert Decimal to string for JSON serialisation.
 
@@ -329,7 +320,6 @@ def _decimal_to_str(value: Decimal) -> str:
         String representation of the quantized Decimal.
     """
     return str(_quantize(value))
-
 
 def _pct(part: Decimal, whole: Decimal) -> Decimal:
     """Calculate percentage of part relative to whole.
@@ -352,11 +342,9 @@ def _pct(part: Decimal, whole: Decimal) -> Decimal:
         return ONE_HUNDRED
     return result
 
-
 # ===========================================================================
 # HybridAggregatorEngine
 # ===========================================================================
-
 
 class HybridAggregatorEngine:
     """Engine 5 of 7 -- Multi-method aggregation and hot-spot analysis.
@@ -1926,7 +1914,7 @@ class HybridAggregatorEngine:
                     ),
                     "decimal_places": DECIMAL_PLACES,
                 },
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }
 
     # ==================================================================
@@ -2838,11 +2826,9 @@ class HybridAggregatorEngine:
                 "Metrics recording failed for %s: %s", calc_id, exc,
             )
 
-
 # ===========================================================================
 # Fallback result container
 # ===========================================================================
-
 
 class _FallbackResult:
     """Simple attribute container used when Pydantic models unavailable.

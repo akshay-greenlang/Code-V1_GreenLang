@@ -91,23 +91,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -124,7 +119,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -133,7 +127,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -141,26 +134,21 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     return float(
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CCPDimension(str, Enum):
     """ICVCM Core Carbon Principles dimensions.
@@ -179,7 +167,6 @@ class CCPDimension(str, Enum):
     REGISTRY = "registry"
     GOVERNANCE = "governance"
     TRANSPARENCY = "transparency"
-
 
 class QualityRating(str, Enum):
     """Overall credit quality rating.
@@ -200,7 +187,6 @@ class QualityRating(str, Enum):
     D = "D"
     F = "F"
 
-
 class DimensionRating(str, Enum):
     """Rating for a single CCP dimension.
 
@@ -216,7 +202,6 @@ class DimensionRating(str, Enum):
     POOR = "poor"
     FAILING = "failing"
 
-
 class ProjectType(str, Enum):
     """Carbon credit project type classification.
 
@@ -229,7 +214,6 @@ class ProjectType(str, Enum):
     REDUCTION = "reduction"
     REMOVAL_NATURE = "removal_nature"
     REMOVAL_TECH = "removal_tech"
-
 
 class CreditStandard(str, Enum):
     """Carbon credit certification standard.
@@ -249,7 +233,6 @@ class CreditStandard(str, Enum):
     PURO = "puro"
     CDM = "cdm"
     CORSIA = "corsia"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- ICVCM CCP Dimension Weights
@@ -306,11 +289,9 @@ CRITICAL_DIMENSIONS: List[str] = [
     CCPDimension.DOUBLE_COUNTING.value,
 ]
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class DimensionInput(BaseModel):
     """Input scoring data for a single CCP dimension.
@@ -345,7 +326,6 @@ class DimensionInput(BaseModel):
             raise ValueError(f"Unknown CCP dimension '{v}'. Must be one of: {sorted(valid)}")
         return v
 
-
 class AdditionalityInput(BaseModel):
     """Detailed additionality assessment input.
 
@@ -378,7 +358,6 @@ class AdditionalityInput(BaseModel):
         default="moderate", description="Evidence quality"
     )
 
-
 class PermanenceInput(BaseModel):
     """Detailed permanence assessment input.
 
@@ -406,7 +385,6 @@ class PermanenceInput(BaseModel):
     is_geological_storage: bool = Field(default=False)
     is_nature_based: bool = Field(default=False)
     tonne_year_accounting: bool = Field(default=False)
-
 
 class CreditQualityInput(BaseModel):
     """Complete input for carbon credit quality assessment.
@@ -488,11 +466,9 @@ class CreditQualityInput(BaseModel):
             raise ValueError(f"Unknown credit standard '{v}'.")
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class DimensionResult(BaseModel):
     """Assessment result for a single CCP dimension.
@@ -524,7 +500,6 @@ class DimensionResult(BaseModel):
     issues: List[str] = Field(default_factory=list)
     recommendations: List[str] = Field(default_factory=list)
 
-
 class AdditionalityResult(BaseModel):
     """Detailed additionality assessment result.
 
@@ -546,7 +521,6 @@ class AdditionalityResult(BaseModel):
     additionality_score: Decimal = Field(default=Decimal("0"))
     additionality_confident: bool = Field(default=False)
     key_risks: List[str] = Field(default_factory=list)
-
 
 class PermanenceResult(BaseModel):
     """Detailed permanence assessment result.
@@ -571,7 +545,6 @@ class PermanenceResult(BaseModel):
     permanence_score: Decimal = Field(default=Decimal("0"))
     adjusted_tco2e: Decimal = Field(default=Decimal("0"))
     permanence_discount_pct: Decimal = Field(default=Decimal("0"))
-
 
 class CreditQualityResult(BaseModel):
     """Complete credit quality assessment result.
@@ -606,7 +579,7 @@ class CreditQualityResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     credit_id: str = Field(default="")
     project_name: str = Field(default="")
     project_type: str = Field(default="")
@@ -631,7 +604,6 @@ class CreditQualityResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Dimension Name Lookup
 # ---------------------------------------------------------------------------
@@ -651,11 +623,9 @@ DIMENSION_NAMES: Dict[str, str] = {
     CCPDimension.TRANSPARENCY.value: "Transparency",
 }
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class CreditQualityEngine:
     """ICVCM Core Carbon Principles 12-dimension credit quality engine.

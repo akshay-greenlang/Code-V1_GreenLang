@@ -46,25 +46,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -77,7 +71,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -87,11 +80,9 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 # ---------------------------------------------------------------------------
 # Constants: EU-27 Member States with NCA Identifiers
 # ---------------------------------------------------------------------------
-
 
 EU_MEMBER_STATES: Dict[str, Dict[str, str]] = {
     "AT": {"name": "Austria", "nca": "AT-UBA", "nca_name": "Umweltbundesamt"},
@@ -123,11 +114,9 @@ EU_MEMBER_STATES: Dict[str, Dict[str, str]] = {
     "SE": {"name": "Sweden", "nca": "SE-NV", "nca_name": "Swedish Environmental Protection Agency"},
 }
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EntityType(str, Enum):
     """Type of entity in the corporate group."""
@@ -137,7 +126,6 @@ class EntityType(str, Enum):
     JOINT_VENTURE = "joint_venture"
     ASSOCIATE = "associate"
 
-
 class CostAllocationMethod(str, Enum):
     """Cost allocation method across group entities."""
     PROPORTIONAL_EMISSIONS = "proportional_emissions"
@@ -145,7 +133,6 @@ class CostAllocationMethod(str, Enum):
     HEADCOUNT = "headcount"
     REVENUE = "revenue"
     EQUAL = "equal"
-
 
 class GuaranteeStatus(str, Enum):
     """Status of financial guarantee."""
@@ -155,7 +142,6 @@ class GuaranteeStatus(str, Enum):
     INSUFFICIENT = "insufficient"
     RELEASED = "released"
 
-
 class ComplianceStatus(str, Enum):
     """Compliance status of an entity."""
     COMPLIANT = "compliant"
@@ -163,11 +149,9 @@ class ComplianceStatus(str, Enum):
     PENDING_REVIEW = "pending_review"
     EXEMPT = "exempt"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class Entity(BaseModel):
     """Entity in a corporate group."""
@@ -186,7 +170,7 @@ class Entity(BaseModel):
     compliance_status: ComplianceStatus = Field(
         default=ComplianceStatus.PENDING_REVIEW, description="Current compliance status"
     )
-    created_at: datetime = Field(default_factory=_utcnow, description="Creation timestamp")
+    created_at: datetime = Field(default_factory=utcnow, description="Creation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("ownership_pct", "annual_imports_eur", "annual_emissions_tco2e",
@@ -194,7 +178,6 @@ class Entity(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class EntityGroup(BaseModel):
     """Corporate group of entities for CBAM."""
@@ -205,10 +188,9 @@ class EntityGroup(BaseModel):
     hierarchy: Dict[str, List[str]] = Field(
         default_factory=dict, description="Parent-to-children hierarchy mapping"
     )
-    created_at: datetime = Field(default_factory=_utcnow, description="Creation timestamp")
+    created_at: datetime = Field(default_factory=utcnow, description="Creation timestamp")
     config: Dict[str, Any] = Field(default_factory=dict, description="Group configuration")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class ConsolidatedObligation(BaseModel):
     """Consolidated CBAM obligation across group entities."""
@@ -224,14 +206,13 @@ class ConsolidatedObligation(BaseModel):
     de_minimis_entities: List[str] = Field(
         default_factory=list, description="Entities below de minimis thresholds"
     )
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Calculation timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Calculation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("total_imports_eur", "total_emissions_tco2e", "total_certificates_needed", mode="before")
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class GroupDeMinimisResult(BaseModel):
     """De minimis assessment for a group of entities."""
@@ -258,7 +239,6 @@ class GroupDeMinimisResult(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class CostAllocation(BaseModel):
     """Cost allocation result across group entities."""
     allocation_id: str = Field(default_factory=_new_uuid, description="Allocation identifier")
@@ -270,14 +250,13 @@ class CostAllocation(BaseModel):
     )
     allocated_total: Decimal = Field(description="Sum of allocations (verification)")
     residual: Decimal = Field(default=Decimal("0"), description="Unallocated residual due to rounding")
-    allocated_at: datetime = Field(default_factory=_utcnow, description="Allocation timestamp")
+    allocated_at: datetime = Field(default_factory=utcnow, description="Allocation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("total_cost", "allocated_total", "residual", mode="before")
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class EntityDeclaration(BaseModel):
     """CBAM declaration for a single entity."""
@@ -293,7 +272,7 @@ class EntityDeclaration(BaseModel):
     allocated_cost: Decimal = Field(default=Decimal("0"), description="Allocated group cost")
     nca_identifier: str = Field(default="", description="NCA identifier for submission")
     de_minimis_exempt: bool = Field(default=False, description="Whether de minimis exempt")
-    created_at: datetime = Field(default_factory=_utcnow, description="Creation timestamp")
+    created_at: datetime = Field(default_factory=utcnow, description="Creation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("total_imports_eur", "total_emissions_tco2e",
@@ -301,7 +280,6 @@ class EntityDeclaration(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class FinancialGuaranteeRecord(BaseModel):
     """Financial guarantee record for an entity."""
@@ -312,7 +290,7 @@ class FinancialGuaranteeRecord(BaseModel):
     required_amount: Decimal = Field(description="Required guarantee amount in EUR")
     surplus_deficit: Decimal = Field(description="Surplus (positive) or deficit (negative)")
     status: GuaranteeStatus = Field(description="Guarantee status")
-    valid_from: datetime = Field(default_factory=_utcnow, description="Guarantee validity start")
+    valid_from: datetime = Field(default_factory=utcnow, description="Guarantee validity start")
     valid_until: Optional[datetime] = Field(default=None, description="Guarantee validity end")
     issuer: str = Field(default="", description="Guarantee issuer (bank/insurer)")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
@@ -321,7 +299,6 @@ class FinancialGuaranteeRecord(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class MemberStateCoordination(BaseModel):
     """Member state coordination status for a group."""
@@ -335,7 +312,6 @@ class MemberStateCoordination(BaseModel):
     primary_nca: str = Field(default="", description="Primary NCA for coordination")
     coordination_status: str = Field(default="active", description="Coordination status")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class DelegatedComplianceStatus(BaseModel):
     """Status of delegated compliance through a broker."""
@@ -355,7 +331,6 @@ class DelegatedComplianceStatus(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class HierarchyResult(BaseModel):
     """Result of setting entity hierarchy."""
     result_id: str = Field(default_factory=_new_uuid, description="Result identifier")
@@ -366,11 +341,9 @@ class HierarchyResult(BaseModel):
     total_entities: int = Field(default=0, description="Total entities in group")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine Configuration
 # ---------------------------------------------------------------------------
-
 
 class MultiEntityConfig(BaseModel):
     """Configuration for the MultiEntityEngine."""
@@ -388,7 +361,6 @@ class MultiEntityConfig(BaseModel):
         default=Decimal("100"), description="Required guarantee coverage percentage"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic model_rebuild for forward reference resolution
 # ---------------------------------------------------------------------------
@@ -405,11 +377,9 @@ MemberStateCoordination.model_rebuild()
 DelegatedComplianceStatus.model_rebuild()
 HierarchyResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # MultiEntityEngine
 # ---------------------------------------------------------------------------
-
 
 class MultiEntityEngine:
     """

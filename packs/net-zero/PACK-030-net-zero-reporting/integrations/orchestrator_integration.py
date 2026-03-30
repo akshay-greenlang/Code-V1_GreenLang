@@ -36,19 +36,15 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import HealthStatus
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -60,11 +56,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class PackStatus(str, Enum):
     REGISTERED = "registered"
@@ -73,21 +67,12 @@ class PackStatus(str, Enum):
     MAINTENANCE = "maintenance"
     OFFLINE = "offline"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
     CANCELLED = "cancelled"
-
-
-class HealthStatus(str, Enum):
-    HEALTHY = "healthy"
-    DEGRADED = "degraded"
-    UNHEALTHY = "unhealthy"
-    UNKNOWN = "unknown"
-
 
 # ---------------------------------------------------------------------------
 # Pack Capability Registry
@@ -132,11 +117,9 @@ PACK030_DEPENDENCIES: List[Dict[str, str]] = [
     {"app_id": "GL-GHG-APP", "name": "GHG Application", "required": False},
 ]
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class OrchestratorConfig(BaseModel):
     pack_id: str = Field(default="PACK-030")
@@ -148,7 +131,6 @@ class OrchestratorConfig(BaseModel):
     registration_ttl_seconds: int = Field(default=300)
     enable_auto_registration: bool = Field(default=True)
 
-
 class PackRegistration(BaseModel):
     """Pack registration with orchestrator."""
     registration_id: str = Field(default_factory=_new_uuid)
@@ -158,11 +140,10 @@ class PackRegistration(BaseModel):
     status: PackStatus = Field(default=PackStatus.REGISTERED)
     capabilities: Dict[str, Any] = Field(default_factory=dict)
     dependencies: List[Dict[str, str]] = Field(default_factory=list)
-    registered_at: datetime = Field(default_factory=_utcnow)
-    last_heartbeat: datetime = Field(default_factory=_utcnow)
+    registered_at: datetime = Field(default_factory=utcnow)
+    last_heartbeat: datetime = Field(default_factory=utcnow)
     health_status: HealthStatus = Field(default=HealthStatus.UNKNOWN)
     endpoint_url: str = Field(default="")
-
 
 class HealthReport(BaseModel):
     """Health report for orchestrator."""
@@ -179,8 +160,7 @@ class HealthReport(BaseModel):
     last_report_generated: Optional[datetime] = Field(default=None)
     error_count_24h: int = Field(default=0)
     warning_count_24h: int = Field(default=0)
-    checked_at: datetime = Field(default_factory=_utcnow)
-
+    checked_at: datetime = Field(default_factory=utcnow)
 
 class OrchestrationRequest(BaseModel):
     """Orchestrator workflow execution request."""
@@ -191,8 +171,7 @@ class OrchestrationRequest(BaseModel):
     priority: int = Field(default=5, ge=1, le=10)
     timeout_seconds: float = Field(default=60.0)
     callback_url: str = Field(default="")
-    requested_at: datetime = Field(default_factory=_utcnow)
-
+    requested_at: datetime = Field(default_factory=utcnow)
 
 class OrchestrationResponse(BaseModel):
     """Response to orchestration request."""
@@ -205,11 +184,9 @@ class OrchestrationResponse(BaseModel):
     error_message: str = Field(default="")
     completed_at: Optional[datetime] = Field(default=None)
 
-
 # ---------------------------------------------------------------------------
 # OrchestratorIntegration
 # ---------------------------------------------------------------------------
-
 
 class OrchestratorIntegration:
     """GreenLang Orchestrator integration for PACK-030.
@@ -226,7 +203,7 @@ class OrchestratorIntegration:
         self.config = config or OrchestratorConfig()
         self.logger = logging.getLogger(self.__class__.__name__)
         self._registration: Optional[PackRegistration] = None
-        self._start_time: datetime = _utcnow()
+        self._start_time: datetime = utcnow()
         self._error_count: int = 0
         self._warning_count: int = 0
         self._last_report_time: Optional[datetime] = None
@@ -285,7 +262,7 @@ class OrchestratorIntegration:
         engines_healthy = sum(1 for v in comp.values() if v) if comp else 10
         engines_total = len(comp) if comp else 10
 
-        uptime = (_utcnow() - self._start_time).total_seconds()
+        uptime = (utcnow() - self._start_time).total_seconds()
 
         status = HealthStatus.HEALTHY
         if engines_healthy < engines_total * 0.5:
@@ -326,6 +303,7 @@ class OrchestratorIntegration:
         and returns results.
         """
         import time as _time
+
         start = _time.monotonic()
 
         workflow_name = request.workflow_name
@@ -349,11 +327,11 @@ class OrchestratorIntegration:
                 "parameters": request.parameters,
                 "frameworks": available_workflows[workflow_name].get("frameworks", []),
                 "dispatched": True,
-                "dispatched_at": _utcnow().isoformat(),
+                "dispatched_at": utcnow().isoformat(),
             }
 
             elapsed = _time.monotonic() - start
-            self._last_report_time = _utcnow()
+            self._last_report_time = utcnow()
 
             return OrchestrationResponse(
                 request_id=request.request_id,
@@ -361,7 +339,7 @@ class OrchestratorIntegration:
                 status=WorkflowStatus.COMPLETED,
                 result=result,
                 duration_seconds=round(elapsed, 3),
-                completed_at=_utcnow(),
+                completed_at=utcnow(),
             )
 
         except Exception as exc:
@@ -380,7 +358,7 @@ class OrchestratorIntegration:
             "pack_id": self.config.pack_id,
             "registered": self._registration is not None,
             "orchestrator_url": self.config.orchestrator_url,
-            "uptime_seconds": (_utcnow() - self._start_time).total_seconds(),
+            "uptime_seconds": (utcnow() - self._start_time).total_seconds(),
             "error_count": self._error_count,
             "module_version": _MODULE_VERSION,
         }

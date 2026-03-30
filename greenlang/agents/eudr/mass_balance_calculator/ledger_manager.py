@@ -59,6 +59,7 @@ from decimal import Decimal, InvalidOperation
 from typing import Any, Dict, List, Optional, Tuple
 
 from greenlang.agents.eudr.mass_balance_calculator.config import get_config
+from greenlang.schemas import utcnow
 from greenlang.agents.eudr.mass_balance_calculator.metrics import (
     observe_entry_recording_duration,
     record_api_error,
@@ -92,12 +93,6 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance.
 
@@ -110,7 +105,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a new UUID4 string identifier.
 
@@ -118,7 +112,6 @@ def _generate_id() -> str:
         UUID4 string.
     """
     return str(uuid.uuid4())
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -159,11 +152,9 @@ DEFAULT_PAGE_SIZE = 100
 #: Maximum page size for search results.
 MAX_PAGE_SIZE = 1000
 
-
 # ---------------------------------------------------------------------------
 # LedgerManager
 # ---------------------------------------------------------------------------
-
 
 class LedgerManager:
     """Double-entry ledger management engine for EUDR mass balance accounting.
@@ -297,7 +288,7 @@ class LedgerManager:
         self._validate_standard(standard_lower)
 
         ledger_id = _generate_id()
-        now = _utcnow()
+        now = utcnow()
 
         # -- Check for duplicate ledger ----------------------------------------
         with self._lock:
@@ -466,7 +457,7 @@ class LedgerManager:
                     "closed_at": ledger.get("closed_at", ""),
                 }
 
-            now = _utcnow()
+            now = utcnow()
             ledger["closed"] = True
             ledger["closed_at"] = now.isoformat()
             ledger["closed_by"] = operator_id
@@ -591,7 +582,7 @@ class LedgerManager:
 
             # -- Create entry record -------------------------------------------
             entry_id = _generate_id()
-            now = _utcnow()
+            now = utcnow()
 
             entry_data = {
                 "entry_id": entry_id,
@@ -711,7 +702,7 @@ class LedgerManager:
             if entry["voided"]:
                 raise ValueError(f"Entry already voided: {entry_id}")
 
-            now = _utcnow()
+            now = utcnow()
             ledger_id = entry["ledger_id"]
             entry_type_str = entry["entry_type"]
             quantity = entry["quantity_kg"]
@@ -851,7 +842,7 @@ class LedgerManager:
             "provenance_hash": _compute_hash({
                 "ledger_id": ledger_id,
                 "balance": str(balance),
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }),
         }
 
@@ -1131,7 +1122,7 @@ class LedgerManager:
             "updated_at": ledger["updated_at"],
             "provenance_hash": _compute_hash({
                 "ledger_id": ledger_id,
-                "summary_timestamp": _utcnow().isoformat(),
+                "summary_timestamp": utcnow().isoformat(),
                 "balance": str(ledger["current_balance"]),
             }),
         }
@@ -1246,7 +1237,7 @@ class LedgerManager:
             "total_succeeded": succeeded,
             "total_failed": failed,
             "source_format": source_format_lower,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         })
 
         if self._config.enable_provenance:
@@ -1559,7 +1550,7 @@ class LedgerManager:
             ValueError: If timestamp string is malformed.
         """
         if timestamp is None:
-            return _utcnow()
+            return utcnow()
 
         try:
             dt = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
@@ -1639,7 +1630,7 @@ class LedgerManager:
             quantity: Quantity in kg (positive).
         """
         ledger = self._ledgers[ledger_id]
-        now = _utcnow()
+        now = utcnow()
 
         # -- Update type-specific totals and balance ---------------------------
         if entry_type == LedgerEntryType.INPUT:
@@ -2035,7 +2026,6 @@ class LedgerManager:
         """Return the total number of ledgers."""
         with self._lock:
             return len(self._ledgers)
-
 
 # ---------------------------------------------------------------------------
 # Public API

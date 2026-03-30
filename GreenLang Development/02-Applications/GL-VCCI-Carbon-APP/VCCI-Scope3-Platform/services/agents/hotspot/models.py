@@ -12,7 +12,8 @@ Date: 2025-10-30
 
 from datetime import datetime
 from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 from enum import Enum
 
 from .config import ScenarioType, InsightPriority, InsightType, AnalysisDimension
@@ -22,7 +23,7 @@ from .config import ScenarioType, InsightPriority, InsightType, AnalysisDimensio
 # INPUT MODELS
 # ============================================================================
 
-class EmissionRecord(BaseModel):
+class EmissionRecord(GreenLangBase):
     """Standard emission record for analysis."""
 
     record_id: Optional[str] = Field(None, description="Unique record identifier")
@@ -58,7 +59,7 @@ class EmissionRecord(BaseModel):
 # PARETO ANALYSIS MODELS
 # ============================================================================
 
-class ParetoItem(BaseModel):
+class ParetoItem(GreenLangBase):
     """Individual item in Pareto analysis."""
 
     rank: int = Field(..., ge=1, description="Rank by emissions")
@@ -68,7 +69,7 @@ class ParetoItem(BaseModel):
     cumulative_percent: float = Field(..., ge=0, le=100, description="Cumulative percentage")
 
 
-class ParetoAnalysis(BaseModel):
+class ParetoAnalysis(GreenLangBase):
     """Pareto analysis result (80/20 rule)."""
 
     dimension: str = Field(..., description="Analysis dimension")
@@ -95,7 +96,7 @@ class ParetoAnalysis(BaseModel):
 # SEGMENTATION MODELS
 # ============================================================================
 
-class Segment(BaseModel):
+class Segment(GreenLangBase):
     """Individual segment in multi-dimensional analysis."""
 
     segment_name: str = Field(..., description="Segment name")
@@ -114,7 +115,7 @@ class Segment(BaseModel):
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
-class SegmentationAnalysis(BaseModel):
+class SegmentationAnalysis(GreenLangBase):
     """Multi-dimensional segmentation analysis result."""
 
     dimension: AnalysisDimension = Field(..., description="Analysis dimension")
@@ -140,7 +141,7 @@ class SegmentationAnalysis(BaseModel):
 # SCENARIO MODELS
 # ============================================================================
 
-class BaseScenario(BaseModel):
+class BaseScenario(GreenLangBase):
     """Base scenario model."""
 
     scenario_id: Optional[str] = Field(None, description="Scenario identifier")
@@ -196,7 +197,7 @@ class ProductSubstitutionScenario(BaseScenario):
     new_ef_kgco2e_per_tonne: float = Field(..., ge=0)
 
 
-class ScenarioResult(BaseModel):
+class ScenarioResult(GreenLangBase):
     """Result of scenario modeling."""
 
     scenario: BaseScenario = Field(..., description="Scenario configuration")
@@ -228,7 +229,7 @@ class ScenarioResult(BaseModel):
 # ROI MODELS
 # ============================================================================
 
-class Initiative(BaseModel):
+class Initiative(GreenLangBase):
     """Emission reduction initiative for ROI analysis."""
 
     initiative_id: Optional[str] = Field(None, description="Initiative identifier")
@@ -251,7 +252,7 @@ class Initiative(BaseModel):
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
-class ROIAnalysis(BaseModel):
+class ROIAnalysis(GreenLangBase):
     """ROI analysis result for initiative."""
 
     initiative: Initiative = Field(..., description="Initiative details")
@@ -277,7 +278,7 @@ class ROIAnalysis(BaseModel):
     analyzed_at: datetime = Field(default_factory=datetime.utcnow)
 
 
-class AbatementCurvePoint(BaseModel):
+class AbatementCurvePoint(GreenLangBase):
     """Point on marginal abatement cost curve."""
 
     initiative_name: str = Field(..., description="Initiative name")
@@ -287,7 +288,7 @@ class AbatementCurvePoint(BaseModel):
     cumulative_cost: float = Field(..., description="Cumulative cost")
 
 
-class AbatementCurve(BaseModel):
+class AbatementCurve(GreenLangBase):
     """Marginal abatement cost curve (MACC)."""
 
     # Initiatives sorted by cost-effectiveness
@@ -313,7 +314,7 @@ class AbatementCurve(BaseModel):
 # HOTSPOT DETECTION MODELS
 # ============================================================================
 
-class Hotspot(BaseModel):
+class Hotspot(GreenLangBase):
     """Identified emissions hotspot."""
 
     hotspot_id: str = Field(..., description="Hotspot identifier")
@@ -340,7 +341,7 @@ class Hotspot(BaseModel):
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
-class HotspotReport(BaseModel):
+class HotspotReport(GreenLangBase):
     """Comprehensive hotspot detection report."""
 
     total_emissions_tco2e: float = Field(..., ge=0, description="Total emissions analyzed")
@@ -367,7 +368,7 @@ class HotspotReport(BaseModel):
 # INSIGHT MODELS
 # ============================================================================
 
-class Insight(BaseModel):
+class Insight(GreenLangBase):
     """Actionable insight from analysis."""
 
     insight_id: str = Field(..., description="Insight identifier")
@@ -395,7 +396,7 @@ class Insight(BaseModel):
     generated_at: datetime = Field(default_factory=datetime.utcnow)
 
 
-class InsightReport(BaseModel):
+class InsightReport(GreenLangBase):
     """Collection of insights from analysis."""
 
     total_insights: int = Field(..., ge=0, description="Total insights generated")

@@ -46,18 +46,14 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import Field, field_validator
 
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ReportingPeriod
 
 # ---------------------------------------------------------------------------
 # Helper
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -78,11 +74,9 @@ MAX_TRACE_STEPS: int = 200
 #: Maximum number of material inputs per single calculation.
 MAX_MATERIAL_INPUTS_PER_CALC: int = 50
 
-
 # =============================================================================
 # Enumerations (16)
 # =============================================================================
-
 
 class ProcessCategory(str, Enum):
     """Broad classification of industrial processes by sector.
@@ -109,7 +103,6 @@ class ProcessCategory(str, Enum):
     ELECTRONICS = "electronics"
     PULP_PAPER = "pulp_paper"
     OTHER = "other"
-
 
 class ProcessType(str, Enum):
     """Specific industrial process type identifiers for Scope 1 process emissions.
@@ -160,7 +153,6 @@ class ProcessType(str, Enum):
     CARBON_ANODE = "carbon_anode"
     FOOD_DRINK = "food_drink"
 
-
 class EmissionGas(str, Enum):
     """Greenhouse gases tracked in industrial process emission calculations.
 
@@ -189,7 +181,6 @@ class EmissionGas(str, Enum):
     NF3 = "NF3"
     HFC = "HFC"
 
-
 class CalculationMethod(str, Enum):
     """Methodology for calculating process emissions.
 
@@ -211,7 +202,6 @@ class CalculationMethod(str, Enum):
     STOICHIOMETRIC = "STOICHIOMETRIC"
     DIRECT_MEASUREMENT = "DIRECT_MEASUREMENT"
 
-
 class CalculationTier(str, Enum):
     """IPCC calculation methodology tier level for process emissions.
 
@@ -229,7 +219,6 @@ class CalculationTier(str, Enum):
     TIER_1 = "TIER_1"
     TIER_2 = "TIER_2"
     TIER_3 = "TIER_3"
-
 
 class EmissionFactorSource(str, Enum):
     """Source authority for process emission factor values.
@@ -249,7 +238,6 @@ class EmissionFactorSource(str, Enum):
     EU_ETS = "EU_ETS"
     CUSTOM = "CUSTOM"
 
-
 class GWPSource(str, Enum):
     """IPCC Assessment Report edition used for GWP conversion factors.
 
@@ -263,7 +251,6 @@ class GWPSource(str, Enum):
     AR5 = "AR5"
     AR6 = "AR6"
     AR6_20YR = "AR6_20YR"
-
 
 class MaterialType(str, Enum):
     """Raw material types used as inputs in industrial process calculations.
@@ -308,7 +295,6 @@ class MaterialType(str, Enum):
     # Catch-all
     OTHER = "other"
 
-
 class AbatementType(str, Enum):
     """Types of emission abatement measures for industrial processes.
 
@@ -328,7 +314,6 @@ class AbatementType(str, Enum):
     SCR = "scr"
     EXTENDED_ABSORPTION = "extended_absorption"
     OTHER = "other"
-
 
 class ProcessUnitType(str, Enum):
     """Classification of industrial process equipment units.
@@ -350,7 +335,6 @@ class ProcessUnitType(str, Enum):
     DRYER = "dryer"
     OTHER = "other"
 
-
 class ProcessMode(str, Enum):
     """Operating mode of an industrial process unit.
 
@@ -363,7 +347,6 @@ class ProcessMode(str, Enum):
     BATCH = "batch"
     CONTINUOUS = "continuous"
     SEMI_CONTINUOUS = "semi_continuous"
-
 
 class ComplianceStatus(str, Enum):
     """Compliance check result status for a regulatory framework.
@@ -378,20 +361,6 @@ class ComplianceStatus(str, Enum):
     NON_COMPLIANT = "non_compliant"
     PARTIAL = "partial"
     NOT_CHECKED = "not_checked"
-
-
-class ReportingPeriod(str, Enum):
-    """Temporal granularity for emission reporting aggregation.
-
-    MONTHLY: Calendar month aggregation.
-    QUARTERLY: Calendar quarter (Q1-Q4) aggregation.
-    ANNUAL: Full calendar or fiscal year aggregation.
-    """
-
-    MONTHLY = "monthly"
-    QUARTERLY = "quarterly"
-    ANNUAL = "annual"
-
 
 class UnitType(str, Enum):
     """Physical unit categories for material quantities and production output.
@@ -408,7 +377,6 @@ class UnitType(str, Enum):
     ENERGY = "energy"
     AREA = "area"
     COUNT = "count"
-
 
 class ProductionRoute(str, Enum):
     """Production route for processes with multiple manufacturing pathways.
@@ -440,7 +408,6 @@ class ProductionRoute(str, Enum):
     CWPB = "cwpb"
     SWPB = "swpb"
 
-
 class CarbonateType(str, Enum):
     """Carbonate mineral types with known stoichiometric CO2 emission factors.
 
@@ -458,7 +425,6 @@ class CarbonateType(str, Enum):
     SIDERITE = "siderite"
     ANKERITE = "ankerite"
     OTHER = "other"
-
 
 # =============================================================================
 # GWP Values Lookup Table
@@ -513,7 +479,6 @@ GWP_VALUES: Dict[str, Dict[str, float]] = {
         "HFC": 4140.0,
     },
 }
-
 
 # =============================================================================
 # Carbonate Emission Factors Lookup Table
@@ -606,13 +571,11 @@ PROCESS_DEFAULT_GASES: Dict[str, List[str]] = {
     "food_drink": ["CO2"],
 }
 
-
 # =============================================================================
 # Data Models (17)
 # =============================================================================
 
-
-class ProcessTypeInfo(BaseModel):
+class ProcessTypeInfo(GreenLangBase):
     """Metadata record describing an industrial process type.
 
     Provides reference information about a process type including its
@@ -684,8 +647,7 @@ class ProcessTypeInfo(BaseModel):
         description="Whether stoichiometric method is applicable",
     )
 
-
-class RawMaterialInfo(BaseModel):
+class RawMaterialInfo(GreenLangBase):
     """Reference data for a raw material used in process calculations.
 
     Attributes:
@@ -738,8 +700,7 @@ class RawMaterialInfo(BaseModel):
         description="Molecular weight in g/mol",
     )
 
-
-class EmissionFactorRecord(BaseModel):
+class EmissionFactorRecord(GreenLangBase):
     """A single emission factor record for a process-gas combination.
 
     Emission factors define the mass of GHG released per unit of
@@ -840,8 +801,7 @@ class EmissionFactorRecord(BaseModel):
                 )
         return v
 
-
-class ProcessUnitRecord(BaseModel):
+class ProcessUnitRecord(GreenLangBase):
     """Registration record for an industrial process equipment unit.
 
     Tracks equipment-level metadata needed for Tier 2/3 calculations
@@ -913,8 +873,7 @@ class ProcessUnitRecord(BaseModel):
         description="Notes about the unit",
     )
 
-
-class MaterialInputRecord(BaseModel):
+class MaterialInputRecord(GreenLangBase):
     """A single material input consumed in a process emission calculation.
 
     Records the quantity and composition of a raw material input to an
@@ -971,8 +930,7 @@ class MaterialInputRecord(BaseModel):
         description="Description of the material source or supplier",
     )
 
-
-class CalculationRequest(BaseModel):
+class CalculationRequest(GreenLangBase):
     """Input data for a single process emission calculation.
 
     Represents one production record for a specific time period and
@@ -1078,8 +1036,7 @@ class CalculationRequest(BaseModel):
             )
         return v
 
-
-class GasEmissionResult(BaseModel):
+class GasEmissionResult(GreenLangBase):
     """Emission result for a single greenhouse gas from a process.
 
     Captures the calculated emissions in both native mass units and
@@ -1142,8 +1099,7 @@ class GasEmissionResult(BaseModel):
         description="IPCC AR edition for the GWP value",
     )
 
-
-class CalculationResult(BaseModel):
+class CalculationResult(GreenLangBase):
     """Complete result of a single process emission calculation.
 
     Contains all calculated emissions by gas, total CO2e, the methodology
@@ -1250,7 +1206,7 @@ class CalculationResult(BaseModel):
         description="Ordered list of human-readable calculation steps",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the calculation was performed",
     )
     facility_id: Optional[str] = Field(
@@ -1278,8 +1234,7 @@ class CalculationResult(BaseModel):
         description="EF source authority used",
     )
 
-
-class CalculationDetailResult(BaseModel):
+class CalculationDetailResult(GreenLangBase):
     """Extended calculation result with detailed step-by-step breakdown.
 
     Wraps a :class:`CalculationResult` with additional detail fields
@@ -1323,8 +1278,7 @@ class CalculationDetailResult(BaseModel):
         description="Step-by-step audit records",
     )
 
-
-class AbatementRecord(BaseModel):
+class AbatementRecord(GreenLangBase):
     """Record of an emission abatement measure applied to a process.
 
     Tracks the abatement technology, its efficiency, the emissions
@@ -1422,8 +1376,7 @@ class AbatementRecord(BaseModel):
             )
         return normalised
 
-
-class ComplianceCheckResult(BaseModel):
+class ComplianceCheckResult(GreenLangBase):
     """Result of a regulatory compliance check against a specific framework.
 
     Captures the assessment of whether a process emission calculation
@@ -1481,7 +1434,7 @@ class ComplianceCheckResult(BaseModel):
         description="Corrective action recommendations",
     )
     checked_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the check was performed",
     )
     calculation_id: Optional[str] = Field(
@@ -1489,8 +1442,7 @@ class ComplianceCheckResult(BaseModel):
         description="Calculation this check applies to",
     )
 
-
-class BatchCalculationRequest(BaseModel):
+class BatchCalculationRequest(GreenLangBase):
     """Request model for batch process emission calculations.
 
     Groups multiple calculation inputs for processing as a single
@@ -1533,8 +1485,7 @@ class BatchCalculationRequest(BaseModel):
         description="Temporal granularity for the batch",
     )
 
-
-class BatchCalculationResult(BaseModel):
+class BatchCalculationResult(GreenLangBase):
     """Response model for a batch process emission calculation.
 
     Aggregates individual calculation results with batch-level totals,
@@ -1626,8 +1577,7 @@ class BatchCalculationResult(BaseModel):
         description="Compliance check results (if requested)",
     )
 
-
-class UncertaintyRequest(BaseModel):
+class UncertaintyRequest(GreenLangBase):
     """Request model for uncertainty quantification of a process emission.
 
     Attributes:
@@ -1674,8 +1624,7 @@ class UncertaintyRequest(BaseModel):
                 )
         return v
 
-
-class UncertaintyResult(BaseModel):
+class UncertaintyResult(GreenLangBase):
     """Monte Carlo uncertainty quantification result for a process emission.
 
     Provides statistical characterization of emission estimate uncertainty
@@ -1750,8 +1699,7 @@ class UncertaintyResult(BaseModel):
         description="Calculation method used",
     )
 
-
-class AggregationRequest(BaseModel):
+class AggregationRequest(GreenLangBase):
     """Request model for aggregating process emissions.
 
     Defines the scope and grouping parameters for rolling up individual
@@ -1843,8 +1791,7 @@ class AggregationRequest(BaseModel):
                 )
         return v
 
-
-class AggregationResult(BaseModel):
+class AggregationResult(GreenLangBase):
     """Result of an emission aggregation across process calculations.
 
     Rolls up individual calculation results into aggregate totals with
@@ -1952,7 +1899,6 @@ class AggregationResult(BaseModel):
                 "period_end must be after period_start"
             )
         return v
-
 
 # ---------------------------------------------------------------------------
 # Public API

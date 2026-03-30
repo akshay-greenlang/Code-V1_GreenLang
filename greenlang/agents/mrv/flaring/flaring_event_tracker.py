@@ -72,6 +72,7 @@ from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -112,15 +113,9 @@ except ImportError:
     _record_flaring_event = None  # type: ignore[assignment]
     _observe_calculation_duration = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -130,7 +125,6 @@ def _compute_hash(data: Any) -> str:
         serializable = data
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 def _to_decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
@@ -150,7 +144,6 @@ def _to_decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, ValueError, TypeError) as exc:
         raise ValueError(f"Cannot convert {value!r} to Decimal") from exc
-
 
 def _parse_datetime(value: Any) -> datetime:
     """Parse a datetime value from string or datetime object.
@@ -184,11 +177,9 @@ def _parse_datetime(value: Any) -> datetime:
 
     raise ValueError(f"Expected datetime or ISO string, got {type(value).__name__}")
 
-
 # ===========================================================================
 # Enumerations
 # ===========================================================================
-
 
 class FlaringEventCategory(str, Enum):
     """Classification categories for flaring events.
@@ -208,7 +199,6 @@ class FlaringEventCategory(str, Enum):
     PILOT_PURGE = "PILOT_PURGE"
     WELL_COMPLETION = "WELL_COMPLETION"
 
-
 class VolumeEstimationMethod(str, Enum):
     """Methods for estimating flare gas volume.
 
@@ -220,7 +210,6 @@ class VolumeEstimationMethod(str, Enum):
     MEASURED = "MEASURED"
     ESTIMATED = "ESTIMATED"
     DEFAULT = "DEFAULT"
-
 
 class FlowMeterType(str, Enum):
     """Types of flow measurement instruments for flare gas.
@@ -240,7 +229,6 @@ class FlowMeterType(str, Enum):
     VORTEX = "VORTEX"
     NONE = "NONE"
 
-
 class AggregationPeriod(str, Enum):
     """Time periods for event aggregation.
 
@@ -255,7 +243,6 @@ class AggregationPeriod(str, Enum):
     MONTH = "MONTH"
     YEAR = "YEAR"
 
-
 class ContinuityType(str, Enum):
     """Classification of flaring continuity.
 
@@ -265,7 +252,6 @@ class ContinuityType(str, Enum):
 
     CONTINUOUS = "CONTINUOUS"
     INTERMITTENT = "INTERMITTENT"
-
 
 # ===========================================================================
 # Default Constants
@@ -331,11 +317,9 @@ MAX_EVENTS_PER_QUERY: int = 50_000
 #: Maximum event duration in hours (safety limit for data validation).
 MAX_EVENT_DURATION_HOURS: Decimal = Decimal("8784")  # 366 days
 
-
 # ===========================================================================
 # Dataclasses
 # ===========================================================================
-
 
 @dataclass
 class FlaringEvent:
@@ -422,7 +406,6 @@ class FlaringEvent:
             "metadata": self.metadata,
         }
 
-
 @dataclass
 class EventAggregation:
     """Aggregated event statistics for a given grouping.
@@ -479,7 +462,6 @@ class EventAggregation:
             "provenance_hash": self.provenance_hash,
         }
 
-
 @dataclass
 class EventStatistics:
     """Overall statistics summary for a set of events.
@@ -529,7 +511,6 @@ class EventStatistics:
             "provenance_hash": self.provenance_hash,
         }
 
-
 @dataclass
 class EventEmissions:
     """Emission calculation result for a flaring event.
@@ -566,7 +547,6 @@ class EventEmissions:
             "calculation_method": self.calculation_method,
             "provenance_hash": self.provenance_hash,
         }
-
 
 # ===========================================================================
 # Classification Rules
@@ -617,11 +597,9 @@ _VOLUME_CLASSIFICATION_HINTS: Dict[str, Tuple[Decimal, Decimal]] = {
     FlaringEventCategory.EMERGENCY.value: (Decimal("10000"), Decimal("10000000")),
 }
 
-
 # ===========================================================================
 # FlaringEventTrackerEngine
 # ===========================================================================
-
 
 class FlaringEventTrackerEngine:
     """Engine for tracking, classifying, and aggregating flaring events.
@@ -857,7 +835,7 @@ class FlaringEventTrackerEngine:
             facility_id=event_data.get("facility_id"),
             tenant_id=event_data.get("tenant_id"),
             provenance_hash=provenance_hash,
-            created_at=_utcnow(),
+            created_at=utcnow(),
             metadata=event_data.get("metadata", {}),
         )
 

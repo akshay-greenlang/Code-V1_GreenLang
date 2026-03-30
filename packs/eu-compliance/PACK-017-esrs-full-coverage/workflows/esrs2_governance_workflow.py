@@ -40,33 +40,25 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class WorkflowPhase(str, Enum):
     """Phases of the ESRS 2 governance workflow."""
@@ -76,7 +68,6 @@ class WorkflowPhase(str, Enum):
     IRO_IDENTIFICATION = "iro_identification"
     REPORT_ASSEMBLY = "report_assembly"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "pending"
@@ -84,7 +75,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class PhaseStatus(str, Enum):
     """Status of a single phase."""
@@ -94,7 +84,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class DisclosureStatus(str, Enum):
     """Status of an individual ESRS 2 disclosure requirement."""
     COMPLETE = "complete"
@@ -102,11 +91,9 @@ class DisclosureStatus(str, Enum):
     MISSING = "missing"
     NOT_APPLICABLE = "not_applicable"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -118,7 +105,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class GovernanceBody(BaseModel):
     """Governance body definition per GOV-1."""
     body_id: str = Field(default_factory=lambda: f"gov-{_new_uuid()[:8]}")
@@ -129,7 +115,6 @@ class GovernanceBody(BaseModel):
     meeting_frequency: str = Field(default="quarterly")
     sustainability_oversight: bool = Field(default=False)
 
-
 class StakeholderGroup(BaseModel):
     """Stakeholder group definition per SBM-2."""
     group_id: str = Field(default_factory=lambda: f"stk-{_new_uuid()[:8]}")
@@ -138,7 +123,6 @@ class StakeholderGroup(BaseModel):
     engagement_channel: str = Field(default="", description="How engagement occurs")
     material_topics: List[str] = Field(default_factory=list)
     engagement_frequency: str = Field(default="annual")
-
 
 class IROItem(BaseModel):
     """Impact, Risk, or Opportunity item per IRO-1/IRO-2."""
@@ -151,7 +135,6 @@ class IROItem(BaseModel):
     likelihood_score: float = Field(default=0.0, ge=0.0, le=5.0)
     time_horizon: str = Field(default="medium_term", description="short/medium/long_term")
 
-
 class ESRS2DisclosureItem(BaseModel):
     """Status of an individual ESRS 2 disclosure requirement."""
     disclosure_id: str = Field(..., description="GOV-X, SBM-X, or IRO-X identifier")
@@ -161,7 +144,6 @@ class ESRS2DisclosureItem(BaseModel):
     data_points_required: int = Field(default=0, ge=0)
     data_points_completed: int = Field(default=0, ge=0)
     warnings: List[str] = Field(default_factory=list)
-
 
 class ESRS2GovernanceInput(BaseModel):
     """Input data model for ESRS2GovernanceWorkflow."""
@@ -194,7 +176,6 @@ class ESRS2GovernanceInput(BaseModel):
     )
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class ESRS2GovernanceResult(BaseModel):
     """Complete result from ESRS 2 governance workflow."""
     workflow_id: str = Field(..., description="Unique execution ID")
@@ -218,7 +199,6 @@ class ESRS2GovernanceResult(BaseModel):
     reporting_year: int = Field(default=2025)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # ESRS 2 DISCLOSURE REQUIREMENTS
 # =============================================================================
@@ -236,11 +216,9 @@ ESRS2_DISCLOSURES: List[Dict[str, Any]] = [
     {"id": "IRO-2", "name": "Disclosure requirements covered by sustainability statement", "data_points": 4},
 ]
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class ESRS2GovernanceWorkflow:
     """
@@ -309,7 +287,7 @@ class ESRS2GovernanceWorkflow:
         if input_data is None:
             input_data = ESRS2GovernanceInput(config=config or {})
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting ESRS 2 governance workflow %s", self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = WorkflowStatus.IN_PROGRESS
@@ -328,7 +306,7 @@ class ESRS2GovernanceWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         completed_count = sum(1 for p in phase_results if p.status == PhaseStatus.COMPLETED)
         complete = sum(1 for d in self._disclosures if d.status == DisclosureStatus.COMPLETE)
         partial = sum(1 for d in self._disclosures if d.status == DisclosureStatus.PARTIAL)
@@ -376,7 +354,7 @@ class ESRS2GovernanceWorkflow:
         self, input_data: ESRS2GovernanceInput,
     ) -> PhaseResult:
         """Evaluate governance bodies and sustainability oversight."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -401,7 +379,7 @@ class ESRS2GovernanceWorkflow:
 
         self._sub_results["governance"] = outputs
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 1 GovernanceAssessment: %d bodies, oversight=%s",
             len(bodies), outputs["has_sustainability_oversight"],
@@ -421,7 +399,7 @@ class ESRS2GovernanceWorkflow:
         self, input_data: ESRS2GovernanceInput,
     ) -> PhaseResult:
         """Assess strategy, business model, and value chain disclosures."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -452,7 +430,7 @@ class ESRS2GovernanceWorkflow:
 
         self._sub_results["strategy"] = outputs
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 2 StrategyReview: %d data points", completed_points)
         return PhaseResult(
             phase_name=WorkflowPhase.STRATEGY_REVIEW.value,
@@ -469,7 +447,7 @@ class ESRS2GovernanceWorkflow:
         self, input_data: ESRS2GovernanceInput,
     ) -> PhaseResult:
         """Map stakeholder groups and engagement channels."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -491,7 +469,7 @@ class ESRS2GovernanceWorkflow:
 
         self._sub_results["stakeholders"] = outputs
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 3 StakeholderMapping: %d groups, %d categories",
             len(stakeholders), len(outputs["categories"]),
@@ -511,7 +489,7 @@ class ESRS2GovernanceWorkflow:
         self, input_data: ESRS2GovernanceInput,
     ) -> PhaseResult:
         """Identify and assess material impacts, risks, and opportunities."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -540,7 +518,7 @@ class ESRS2GovernanceWorkflow:
 
         self._sub_results["iro"] = outputs
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 4 IROIdentification: %d total, %d material",
             len(iros), len(material_iros),
@@ -560,7 +538,7 @@ class ESRS2GovernanceWorkflow:
         self, input_data: ESRS2GovernanceInput,
     ) -> PhaseResult:
         """Assemble complete ESRS 2 disclosure from all phase results."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._disclosures = []
@@ -631,7 +609,7 @@ class ESRS2GovernanceWorkflow:
         if missing > 0:
             warnings.append(f"{missing} ESRS 2 disclosures have no data")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 5 ReportAssembly: %d complete, %d partial, %d missing",
             complete, partial, missing,

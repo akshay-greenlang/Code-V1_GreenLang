@@ -51,8 +51,10 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, List, Optional, Any
 from datetime import datetime
 from enum import Enum
-from pydantic import BaseModel, Field, validator
-from pydantic import ConfigDict
+from pydantic import Field, validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
+from greenlang.schemas.enums import ReportFormat
+
 import hashlib
 import json
 
@@ -270,15 +272,6 @@ class CurrencyCode(str, Enum):
     SGD = "SGD"  # Singapore Dollar
     BRL = "BRL"  # Brazilian Real
     ZAR = "ZAR"  # South African Rand
-
-
-class ExportFormat(str, Enum):
-    """Export format for results (4 formats)."""
-
-    JSON = "json"  # JSON format
-    CSV = "csv"  # CSV format
-    EXCEL = "excel"  # Excel (XLSX) format
-    PDF = "pdf"  # PDF report
 
 
 class BatchStatus(str, Enum):
@@ -928,7 +921,7 @@ SEASONAL_ADJUSTMENT_MULTIPLIERS: Dict[SeasonalAdjustment, Decimal] = {
 # ==============================================================================
 
 
-class CommuteInput(BaseModel):
+class CommuteInput(GreenLangBase):
     """
     Input for individual commute emissions calculation (distance-based).
 
@@ -989,7 +982,7 @@ class CommuteInput(BaseModel):
         return v
 
 
-class FuelBasedCommuteInput(BaseModel):
+class FuelBasedCommuteInput(GreenLangBase):
     """
     Input for fuel-based commute emissions calculation.
 
@@ -1031,7 +1024,7 @@ class FuelBasedCommuteInput(BaseModel):
         return v
 
 
-class CarpoolInput(BaseModel):
+class CarpoolInput(GreenLangBase):
     """
     Input for carpool commute emissions calculation.
 
@@ -1087,7 +1080,7 @@ class CarpoolInput(BaseModel):
         return v
 
 
-class TransitInput(BaseModel):
+class TransitInput(GreenLangBase):
     """
     Input for public transit commute emissions calculation.
 
@@ -1137,7 +1130,7 @@ class TransitInput(BaseModel):
         return v
 
 
-class TeleworkInput(BaseModel):
+class TeleworkInput(GreenLangBase):
     """
     Input for telework (remote work) emissions calculation.
 
@@ -1179,7 +1172,7 @@ class TeleworkInput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class SurveyResponseInput(BaseModel):
+class SurveyResponseInput(GreenLangBase):
     """
     Individual employee survey response for commute data collection.
 
@@ -1248,7 +1241,7 @@ class SurveyResponseInput(BaseModel):
         return v
 
 
-class SurveyInput(BaseModel):
+class SurveyInput(GreenLangBase):
     """
     Input for processing an employee commute survey.
 
@@ -1299,7 +1292,7 @@ class SurveyInput(BaseModel):
         return v
 
 
-class AverageDataInput(BaseModel):
+class AverageDataInput(GreenLangBase):
     """
     Input for average-data calculation method.
 
@@ -1354,7 +1347,7 @@ class AverageDataInput(BaseModel):
         return v
 
 
-class SpendInput(BaseModel):
+class SpendInput(GreenLangBase):
     """
     Input for spend-based emissions calculation using EEIO factors.
 
@@ -1401,7 +1394,7 @@ class SpendInput(BaseModel):
         return v
 
 
-class EmployeeInput(BaseModel):
+class EmployeeInput(GreenLangBase):
     """
     Comprehensive input for a single employee's commuting emissions.
 
@@ -1480,7 +1473,7 @@ class EmployeeInput(BaseModel):
         return v
 
 
-class BatchEmployeeInput(BaseModel):
+class BatchEmployeeInput(GreenLangBase):
     """
     Batch input for processing multiple employees in a single request.
 
@@ -1516,7 +1509,7 @@ class BatchEmployeeInput(BaseModel):
 # ==============================================================================
 
 
-class CommuteResult(BaseModel):
+class CommuteResult(GreenLangBase):
     """
     Result from an individual commute emissions calculation.
 
@@ -1564,7 +1557,7 @@ class CommuteResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class TeleworkResult(BaseModel):
+class TeleworkResult(GreenLangBase):
     """
     Result from telework home-office emissions calculation.
 
@@ -1605,7 +1598,7 @@ class TeleworkResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class EmployeeResult(BaseModel):
+class EmployeeResult(GreenLangBase):
     """
     Combined result for a single employee (commute + telework).
 
@@ -1648,7 +1641,7 @@ class EmployeeResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class SurveyResult(BaseModel):
+class SurveyResult(GreenLangBase):
     """
     Result from processing an employee commute survey.
 
@@ -1694,7 +1687,7 @@ class SurveyResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class BatchResult(BaseModel):
+class BatchResult(GreenLangBase):
     """Result from batch employee commute processing."""
 
     results: List[EmployeeResult] = Field(
@@ -1723,7 +1716,7 @@ class BatchResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class AggregationResult(BaseModel):
+class AggregationResult(GreenLangBase):
     """Aggregated commuting emissions by various dimensions."""
 
     total_co2e: Decimal = Field(
@@ -1761,7 +1754,7 @@ class AggregationResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class ModeShareResult(BaseModel):
+class ModeShareResult(GreenLangBase):
     """Mode share analysis result with emissions intensity per mode."""
 
     mode: str = Field(
@@ -1789,7 +1782,7 @@ class ModeShareResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class ComplianceCheckResult(BaseModel):
+class ComplianceCheckResult(GreenLangBase):
     """Result from compliance check against a specific framework."""
 
     framework: ComplianceFramework = Field(
@@ -1813,7 +1806,7 @@ class ComplianceCheckResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class UncertaintyResult(BaseModel):
+class UncertaintyResult(GreenLangBase):
     """Result from uncertainty quantification."""
 
     mean: Decimal = Field(
@@ -1841,7 +1834,7 @@ class UncertaintyResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class DataQualityResult(BaseModel):
+class DataQualityResult(GreenLangBase):
     """Result from data quality assessment."""
 
     overall_score: Decimal = Field(
@@ -1860,7 +1853,7 @@ class DataQualityResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class ProvenanceRecord(BaseModel):
+class ProvenanceRecord(GreenLangBase):
     """Single record in the provenance chain."""
 
     stage: str = Field(
@@ -1886,7 +1879,7 @@ class ProvenanceRecord(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class ProvenanceChainResult(BaseModel):
+class ProvenanceChainResult(GreenLangBase):
     """Complete provenance chain for an emissions calculation."""
 
     records: List[ProvenanceRecord] = Field(
@@ -1902,7 +1895,7 @@ class ProvenanceChainResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class SpendResult(BaseModel):
+class SpendResult(GreenLangBase):
     """Result from spend-based EEIO emissions calculation."""
 
     naics_code: str = Field(
@@ -1930,7 +1923,7 @@ class SpendResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class WorkingDaysResult(BaseModel):
+class WorkingDaysResult(GreenLangBase):
     """Result from working days calculation for a region."""
 
     region: RegionCode = Field(
@@ -1961,7 +1954,7 @@ class WorkingDaysResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class GridEFResult(BaseModel):
+class GridEFResult(GreenLangBase):
     """Result from grid emission factor lookup."""
 
     region: RegionCode = Field(
@@ -1977,7 +1970,7 @@ class GridEFResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class HotSpotResult(BaseModel):
+class HotSpotResult(GreenLangBase):
     """
     Hot-spot analysis result identifying top emission contributors
     and reduction opportunities for employee commuting.
@@ -2013,7 +2006,7 @@ class HotSpotResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class MetricsSummary(BaseModel):
+class MetricsSummary(GreenLangBase):
     """Summary metrics for monitoring and dashboarding."""
 
     total_calculations: int = Field(
@@ -2416,7 +2409,7 @@ __all__ = [
     "GWPVersion",
     "EmissionGas",
     "CurrencyCode",
-    "ExportFormat",
+    "ReportFormat",
     "BatchStatus",
     "RegionCode",
     "DistanceBand",

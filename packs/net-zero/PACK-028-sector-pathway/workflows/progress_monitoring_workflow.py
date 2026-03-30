@@ -45,28 +45,23 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import AlertSeverity
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "28.0.0"
 _PACK_ID = "PACK-028"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -75,7 +70,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
@@ -83,25 +77,16 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class RAGStatus(str, Enum):
     """Red-Amber-Green traffic-light status."""
     RED = "red"
     AMBER = "amber"
     GREEN = "green"
 
-
 class TrendDirection(str, Enum):
     IMPROVING = "improving"
     STABLE = "stable"
     DETERIORATING = "deteriorating"
-
-
-class AlertSeverity(str, Enum):
-    CRITICAL = "critical"
-    WARNING = "warning"
-    INFO = "info"
-
 
 class ConvergenceStatus(str, Enum):
     ON_TRACK = "on_track"
@@ -109,14 +94,12 @@ class ConvergenceStatus(str, Enum):
     SIGNIFICANT_DEVIATION = "significant_deviation"
     OFF_TRACK = "off_track"
 
-
 class BenchmarkSource(str, Enum):
     SBTI_PEER = "sbti_peer"
     SECTOR_AVERAGE = "sector_average"
     SECTOR_LEADER = "sector_leader"
     IEA_PATHWAY = "iea_pathway"
     REGULATORY = "regulatory"
-
 
 # =============================================================================
 # SECTOR BENCHMARK DATA (Zero-Hallucination: Published Values)
@@ -357,11 +340,9 @@ ALERT_RULES: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase_name: str = Field(...)
@@ -375,7 +356,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     dag_node_id: str = Field(default="")
 
-
 class IntensityDataPoint(BaseModel):
     """A single intensity measurement."""
     year: int = Field(default=2025)
@@ -386,7 +366,6 @@ class IntensityDataPoint(BaseModel):
     scope1_tco2e: float = Field(default=0.0, ge=0.0)
     scope2_tco2e: float = Field(default=0.0, ge=0.0)
     data_quality_score: float = Field(default=3.0, ge=0.0, le=5.0)
-
 
 class IntensityUpdate(BaseModel):
     """Updated intensity metrics after Phase 1."""
@@ -403,7 +382,6 @@ class IntensityUpdate(BaseModel):
     data_points_used: int = Field(default=0)
     intensity_unit: str = Field(default="")
 
-
 class ConvergenceResult(BaseModel):
     """Convergence analysis result."""
     scenario: str = Field(default="nze_15c")
@@ -419,7 +397,6 @@ class ConvergenceResult(BaseModel):
     on_track_for_2050: bool = Field(default=True)
     corrective_actions: List[str] = Field(default_factory=list)
 
-
 class BenchmarkComparison(BaseModel):
     """Comparison against a single benchmark."""
     source: BenchmarkSource = Field(default=BenchmarkSource.SECTOR_AVERAGE)
@@ -430,7 +407,6 @@ class BenchmarkComparison(BaseModel):
     percentile: float = Field(default=50.0, ge=0.0, le=100.0)
     rag_status: RAGStatus = Field(default=RAGStatus.GREEN)
 
-
 class BenchmarkSummary(BaseModel):
     """Summary of all benchmark comparisons."""
     sector: str = Field(default="")
@@ -439,7 +415,6 @@ class BenchmarkSummary(BaseModel):
     worst_comparison: str = Field(default="")
     overall_percentile: float = Field(default=50.0)
     overall_rag: RAGStatus = Field(default=RAGStatus.GREEN)
-
 
 class ProgressAlert(BaseModel):
     """A single progress alert."""
@@ -452,7 +427,6 @@ class ProgressAlert(BaseModel):
     threshold_value: str = Field(default="")
     recommended_action: str = Field(default="")
 
-
 class ProgressKPI(BaseModel):
     """A single progress KPI."""
     kpi_name: str = Field(default="")
@@ -462,7 +436,6 @@ class ProgressKPI(BaseModel):
     achievement_pct: float = Field(default=0.0)
     trend: TrendDirection = Field(default=TrendDirection.STABLE)
     rag_status: RAGStatus = Field(default=RAGStatus.GREEN)
-
 
 class ProgressReport(BaseModel):
     """Complete progress monitoring report."""
@@ -477,7 +450,6 @@ class ProgressReport(BaseModel):
     alerts: List[ProgressAlert] = Field(default_factory=list)
     executive_summary: str = Field(default="")
     provenance_hash: str = Field(default="")
-
 
 class ProgressMonitoringConfig(BaseModel):
     company_name: str = Field(default="")
@@ -497,7 +469,6 @@ class ProgressMonitoringConfig(BaseModel):
         default_factory=lambda: ["nze_15c", "wb2c"],
     )
 
-
 class ProgressMonitoringInput(BaseModel):
     config: ProgressMonitoringConfig = Field(default_factory=ProgressMonitoringConfig)
     intensity_data: List[IntensityDataPoint] = Field(default_factory=list)
@@ -506,7 +477,6 @@ class ProgressMonitoringInput(BaseModel):
         description="scenario -> {year: intensity_target}",
     )
     peer_data: List[Dict[str, Any]] = Field(default_factory=list)
-
 
 class ProgressMonitoringResult(BaseModel):
     workflow_id: str = Field(...)
@@ -524,11 +494,9 @@ class ProgressMonitoringResult(BaseModel):
     next_steps: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class ProgressMonitoringWorkflow:
     """
@@ -562,7 +530,7 @@ class ProgressMonitoringWorkflow:
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     async def execute(self, input_data: ProgressMonitoringInput) -> ProgressMonitoringResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         self.config = input_data.config
         self._phase_results = []
         overall_status = WorkflowStatus.RUNNING
@@ -596,7 +564,7 @@ class ProgressMonitoringWorkflow:
                 status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
 
         # Overall RAG
         nze_conv = next(
@@ -627,7 +595,7 @@ class ProgressMonitoringWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_intensity_update(self, input_data: ProgressMonitoringInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -720,7 +688,7 @@ class ProgressMonitoringWorkflow:
         outputs["cumulative_reduction_pct"] = self._intensity_update.cumulative_reduction_pct
         outputs["data_points"] = len(data_points)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="intensity_update", phase_number=1,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -734,7 +702,7 @@ class ProgressMonitoringWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_convergence_check(self, input_data: ProgressMonitoringInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         actual = self._intensity_update.current_intensity
@@ -861,7 +829,7 @@ class ProgressMonitoringWorkflow:
             outputs["nze_on_track_2030"] = nze.on_track_for_2030
             outputs["nze_acceleration_needed"] = nze.required_acceleration_pct
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="convergence_check", phase_number=2,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -875,7 +843,7 @@ class ProgressMonitoringWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_benchmark_update(self, input_data: ProgressMonitoringInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         actual = self._intensity_update.current_intensity
@@ -1009,7 +977,7 @@ class ProgressMonitoringWorkflow:
         outputs["overall_percentile"] = self._benchmarks.overall_percentile
         outputs["overall_rag"] = overall_rag.value
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="benchmark_update", phase_number=3,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -1023,7 +991,7 @@ class ProgressMonitoringWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_progress_report(self, input_data: ProgressMonitoringInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         # Build KPIs
@@ -1203,7 +1171,7 @@ class ProgressMonitoringWorkflow:
 
         self._report = ProgressReport(
             report_id=_new_uuid(),
-            report_date=_utcnow().isoformat(),
+            report_date=utcnow().isoformat(),
             sector=self.config.sector,
             company_name=self.config.company_name,
             intensity_update=self._intensity_update,
@@ -1223,7 +1191,7 @@ class ProgressMonitoringWorkflow:
         outputs["critical_alerts"] = sum(1 for a in alerts if a.severity == AlertSeverity.CRITICAL)
         outputs["report_formats"] = ["MD", "HTML", "JSON", "PDF"]
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="progress_report", phase_number=4,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),

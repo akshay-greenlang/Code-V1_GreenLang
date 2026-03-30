@@ -49,14 +49,9 @@ from greenlang.agents.foundation.citations.metrics import (
 
 if TYPE_CHECKING:
     from greenlang.agents.foundation.citations.registry import CitationRegistry
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Source authorities that require version field
@@ -69,7 +64,6 @@ _VERSION_REQUIRED_AUTHORITIES = frozenset({
     SourceAuthority.IPCC,
     SourceAuthority.EXIOBASE,
 })
-
 
 class VerificationEngine:
     """Performs citation verification checks.
@@ -139,7 +133,7 @@ class VerificationEngine:
 
         # Update citation verification status
         citation.verification_status = status
-        citation.verified_at = _utcnow()
+        citation.verified_at = utcnow()
         citation.verified_by = user_id
 
         # Create verification record
@@ -487,7 +481,6 @@ class VerificationEngine:
         """
         json_str = json.dumps(data, sort_keys=True, default=str)
         return hashlib.sha256(json_str.encode()).hexdigest()
-
 
 __all__ = [
     "VerificationEngine",

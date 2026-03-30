@@ -16,10 +16,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism.clock import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +41,7 @@ class LandscapeType(str, Enum):
     DRYLAND = "dryland"
 
 
-class LandscapeUnit(BaseModel):
+class LandscapeUnit(GreenLangBase):
     unit_id: str = Field(...)
     area_km2: float = Field(..., gt=0)
     landscape_type: LandscapeType = Field(...)
@@ -52,7 +53,7 @@ class LandscapeUnit(BaseModel):
     economic_value_million: float = Field(default=50, ge=0)
 
 
-class LandscapePlan(BaseModel):
+class LandscapePlan(GreenLangBase):
     unit_id: str = Field(...)
     current_resilience: ResilienceLevel = Field(...)
     target_resilience: ResilienceLevel = Field(...)
@@ -66,7 +67,7 @@ class LandscapePlan(BaseModel):
     benefit_cost_ratio: float = Field(...)
 
 
-class LandscapeInput(BaseModel):
+class LandscapeInput(GreenLangBase):
     project_id: str = Field(...)
     region_name: str = Field(...)
     units: List[LandscapeUnit] = Field(..., min_length=1)
@@ -74,7 +75,7 @@ class LandscapeInput(BaseModel):
     planning_horizon_years: int = Field(default=30, ge=10, le=100)
 
 
-class LandscapeOutput(BaseModel):
+class LandscapeOutput(GreenLangBase):
     project_id: str = Field(...)
     region_name: str = Field(...)
     calculation_date: datetime = Field(default_factory=DeterministicClock.now)

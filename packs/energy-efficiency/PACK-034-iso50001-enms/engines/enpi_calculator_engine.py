@@ -90,25 +90,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -126,7 +120,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -135,7 +128,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -147,17 +139,14 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _decimal_sqrt(value: Decimal) -> Decimal:
     """Compute the square root of a Decimal using Newton's method.
@@ -178,16 +167,13 @@ def _decimal_sqrt(value: Decimal) -> Decimal:
         guess = new_guess
     return guess
 
-
 def _decimal_abs(value: Decimal) -> Decimal:
     """Return the absolute value of a Decimal."""
     return value if value >= Decimal("0") else -value
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EnPIType(str, Enum):
     """Type of Energy Performance Indicator per ISO 50006.
@@ -204,7 +190,6 @@ class EnPIType(str, Enum):
     PROPORTION = "proportion"
     STATISTICAL = "statistical"
 
-
 class NormalizationMethod(str, Enum):
     """Normalisation method for EnPI adjustment per ISO 50006 Section 7.
 
@@ -220,7 +205,6 @@ class NormalizationMethod(str, Enum):
     OCCUPANCY = "occupancy"
     MULTI_VARIABLE = "multi_variable"
 
-
 class ImprovementDirection(str, Enum):
     """Direction indicating improvement for an EnPI.
 
@@ -231,7 +215,6 @@ class ImprovementDirection(str, Enum):
     """
     DECREASE_IS_BETTER = "decrease_is_better"
     INCREASE_IS_BETTER = "increase_is_better"
-
 
 class AggregationLevel(str, Enum):
     """Organisational level at which the EnPI is aggregated.
@@ -250,7 +233,6 @@ class AggregationLevel(str, Enum):
     ORGANIZATION = "organization"
     PORTFOLIO = "portfolio"
 
-
 class StatisticalTest(str, Enum):
     """Statistical test type for EnPI validation.
 
@@ -263,7 +245,6 @@ class StatisticalTest(str, Enum):
     F_TEST = "f_test"
     CHI_SQUARED = "chi_squared"
     ANOVA = "anova"
-
 
 # ---------------------------------------------------------------------------
 # Constants / Reference Data
@@ -393,11 +374,9 @@ _MIN_DATA_POINTS: int = 3
 _MIN_REGRESSION_POINTS: int = 6
 _MIN_STATISTICAL_POINTS: int = 12
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class EnPIMeasurement(BaseModel):
     """Single energy measurement data point for EnPI calculation.
@@ -454,7 +433,6 @@ class EnPIMeasurement(BaseModel):
                 f"period_end ({v}) must be on or after period_start ({start})"
             )
         return v
-
 
 class EnPIDefinition(BaseModel):
     """Definition of an Energy Performance Indicator.
@@ -525,11 +503,9 @@ class EnPIDefinition(BaseModel):
         """Normalise whitespace in enpi_name."""
         return v.strip() if v else ""
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class EnPIValue(BaseModel):
     """Calculated EnPI value for a single measurement period.
@@ -569,7 +545,6 @@ class EnPIValue(BaseModel):
         default=False, description="Whether value meets target"
     )
 
-
 class StatisticalValidation(BaseModel):
     """Result of a statistical validation test on EnPI data.
 
@@ -600,7 +575,6 @@ class StatisticalValidation(BaseModel):
     confidence_level: Decimal = Field(
         default=Decimal("0.95"), description="Confidence level used"
     )
-
 
 class EnPIResult(BaseModel):
     """Complete EnPI calculation result for a single indicator.
@@ -656,12 +630,11 @@ class EnPIResult(BaseModel):
         default=0, ge=0, description="Processing time (ms)"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     methodology_notes: str = Field(
         default="", description="Methodology description"
     )
-
 
 class PortfolioEnPIResult(BaseModel):
     """Aggregated EnPI result across a portfolio of facilities.
@@ -702,9 +675,8 @@ class PortfolioEnPIResult(BaseModel):
         default="", description="SHA-256 provenance hash"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
-
 
 # ---------------------------------------------------------------------------
 # Model Rebuild (required for from __future__ import annotations)
@@ -717,11 +689,9 @@ StatisticalValidation.model_rebuild()
 EnPIResult.model_rebuild()
 PortfolioEnPIResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class EnPICalculatorEngine:
     """Energy Performance Indicator calculator per ISO 50006.
@@ -926,7 +896,7 @@ class EnPICalculatorEngine:
             trend_r_squared=_round_val(trend_r_squared, 6),
             data_quality_score=_round_val(data_quality, 2),
             calculation_time_ms=elapsed_ms,
-            calculated_at=_utcnow(),
+            calculated_at=utcnow(),
             methodology_notes=methodology,
         )
         result.provenance_hash = _compute_hash(result)
@@ -1433,7 +1403,7 @@ class EnPICalculatorEngine:
             best_performer=best_id,
             worst_performer=worst_id,
             facility_count=n,
-            calculated_at=_utcnow(),
+            calculated_at=utcnow(),
         )
         result.provenance_hash = _compute_hash(result)
 

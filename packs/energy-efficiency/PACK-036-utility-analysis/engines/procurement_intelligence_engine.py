@@ -80,25 +80,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -116,7 +110,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -125,7 +118,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -137,46 +129,37 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* decimal digits and return float."""
     return float(value.quantize(Decimal(10) ** -places, rounding=ROUND_HALF_UP))
 
-
 def _round2(value: Any) -> float:
     """Round to 2 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round4(value: Any) -> float:
     """Round to 4 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 def _round6(value: Any) -> float:
     """Round to 6 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP))
-
 
 def _std_normal_pdf(x: float) -> float:
     """Standard normal probability density function phi(x)."""
     return math.exp(-0.5 * x * x) / math.sqrt(2.0 * math.pi)
 
-
 def _std_normal_cdf(x: float) -> float:
     """Approximate standard normal CDF using error function."""
     return 0.5 * (1.0 + math.erf(x / math.sqrt(2.0)))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ContractType(str, Enum):
     """Energy supply contract structure.
@@ -198,7 +181,6 @@ class ContractType(str, Enum):
     SHAPED = "shaped"
     FULL_REQUIREMENTS = "full_requirements"
     SLEEVE = "sleeve"
-
 
 class MarketIndex(str, Enum):
     """Market price indices for energy commodities.
@@ -225,7 +207,6 @@ class MarketIndex(str, Enum):
     AECO = "aeco"
     JKM = "jkm"
 
-
 class ProcurementStrategy(str, Enum):
     """Procurement hedging strategies.
 
@@ -242,7 +223,6 @@ class ProcurementStrategy(str, Enum):
     PORTFOLIO = "portfolio"
     BLOCK_AND_INDEX = "block_and_index"
     PROGRESSIVE_FIXED = "progressive_fixed"
-
 
 class RiskMetric(str, Enum):
     """Quantitative risk measures for procurement cost exposure.
@@ -263,7 +243,6 @@ class RiskMetric(str, Enum):
     MAX_DRAWDOWN = "max_drawdown"
     SHARPE_RATIO = "sharpe_ratio"
 
-
 class GreenProduct(str, Enum):
     """Green energy procurement products.
 
@@ -281,7 +260,6 @@ class GreenProduct(str, Enum):
     GREEN_TARIFF = "green_tariff"
     BUNDLED_RENEWABLE = "bundled_renewable"
 
-
 class SupplierRating(str, Enum):
     """Supplier credit / quality rating scale.
 
@@ -296,7 +274,6 @@ class SupplierRating(str, Enum):
     B = "B"
     UNRATED = "unrated"
 
-
 class MarketCondition(str, Enum):
     """Market forward curve shape classification.
 
@@ -309,7 +286,6 @@ class MarketCondition(str, Enum):
     BACKWARDATION = "backwardation"
     FLAT = "flat"
     VOLATILE = "volatile"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -350,11 +326,9 @@ _STRATEGY_CERTAINTY: Dict[str, float] = {
     ProcurementStrategy.PROGRESSIVE_FIXED.value: 55.0,
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class MarketPrice(BaseModel):
     """A single market price observation.
@@ -372,7 +346,6 @@ class MarketPrice(BaseModel):
     currency: str = Field(default="EUR", max_length=3, description="ISO currency code")
     source: str = Field(default="", description="Data source identifier")
 
-
 class ForwardCurve(BaseModel):
     """Forward price curve for a market index.
 
@@ -386,7 +359,6 @@ class ForwardCurve(BaseModel):
     prices: List[float] = Field(default_factory=list, description="Monthly prices EUR/MWh")
     as_of_date: date = Field(default_factory=lambda: date.today(), description="Curve date")
     source: str = Field(default="", description="Data source")
-
 
 class ContractTerms(BaseModel):
     """Terms of an energy supply contract.
@@ -422,7 +394,6 @@ class ContractTerms(BaseModel):
     maximum_volume: Optional[float] = Field(default=None, ge=0.0, description="Max volume MWh")
     green_percentage: float = Field(default=0.0, ge=0.0, le=100.0, description="Green %")
 
-
 class LoadInterval(BaseModel):
     """A single load interval (e.g. hourly, half-hourly, 15-min).
 
@@ -434,7 +405,6 @@ class LoadInterval(BaseModel):
     timestamp: datetime = Field(description="Interval start")
     kwh: float = Field(default=0.0, ge=0.0, description="Interval consumption kWh")
     price_per_kwh: Optional[float] = Field(default=None, ge=0.0, description="Price EUR/kWh")
-
 
 class GreenProductOffering(BaseModel):
     """A green energy product available for procurement.
@@ -461,7 +431,6 @@ class GreenProductOffering(BaseModel):
     emission_factor_tco2_per_mwh: float = Field(
         default=0.0, ge=0.0, description="Residual emissions tCO2/MWh"
     )
-
 
 class SupplierProfile(BaseModel):
     """Profile of an energy supplier for evaluation.
@@ -495,7 +464,6 @@ class SupplierProfile(BaseModel):
         default=0.0, ge=0.0, le=100.0, description="Renewable %"
     )
 
-
 class HedgeLayer(BaseModel):
     """A single layer / tranche in a layered hedging strategy.
 
@@ -516,11 +484,9 @@ class HedgeLayer(BaseModel):
         default=0.0, ge=0.0, le=100.0, description="% of total volume"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class ContractComparison(BaseModel):
     """Result of comparing multiple contract offers.
@@ -547,9 +513,8 @@ class ContractComparison(BaseModel):
     methodology_notes: List[str] = Field(default_factory=list)
     processing_time_ms: float = Field(default=0.0)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class LoadWeightedPrice(BaseModel):
     """Load-weighted price calculation result.
@@ -582,9 +547,8 @@ class LoadWeightedPrice(BaseModel):
     off_peak_price_per_kwh: float = Field(default=0.0)
     processing_time_ms: float = Field(default=0.0)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class PriceRiskAssessment(BaseModel):
     """Price risk assessment result.
@@ -619,9 +583,8 @@ class PriceRiskAssessment(BaseModel):
     methodology_notes: List[str] = Field(default_factory=list)
     processing_time_ms: float = Field(default=0.0)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class ProcurementPlan(BaseModel):
     """Recommended procurement plan.
@@ -654,9 +617,8 @@ class ProcurementPlan(BaseModel):
     methodology_notes: List[str] = Field(default_factory=list)
     processing_time_ms: float = Field(default=0.0)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class GreenProcurement(BaseModel):
     """Green procurement option evaluation result.
@@ -682,7 +644,6 @@ class GreenProcurement(BaseModel):
     cost_per_tonne_avoided: float = Field(default=0.0)
     re100_eligible: bool = Field(default=False)
 
-
 class SupplierEvaluation(BaseModel):
     """Supplier evaluation result.
 
@@ -707,7 +668,6 @@ class SupplierEvaluation(BaseModel):
     rank: int = Field(default=0, ge=0)
     recommendation: str = Field(default="")
 
-
 class MonthlyProjection(BaseModel):
     """Monthly cost projection from a procurement plan.
 
@@ -727,7 +687,6 @@ class MonthlyProjection(BaseModel):
     index_cost_eur: float = Field(default=0.0)
     total_cost_eur: float = Field(default=0.0)
     effective_price_per_mwh: float = Field(default=0.0)
-
 
 class ProcurementResult(BaseModel):
     """Complete procurement intelligence result.
@@ -762,14 +721,12 @@ class ProcurementResult(BaseModel):
     methodology_notes: List[str] = Field(default_factory=list)
     processing_time_ms: float = Field(default=0.0)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ProcurementIntelligenceEngine:
     """Zero-hallucination energy procurement intelligence engine.

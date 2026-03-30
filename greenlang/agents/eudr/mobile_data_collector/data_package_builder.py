@@ -63,6 +63,8 @@ from .config import get_config
 from .metrics import observe_package_build_duration, record_package_built
 from .provenance import get_provenance_tracker
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -105,21 +107,13 @@ COMPRESSION_RATIOS: Dict[str, float] = {
 #: Default max package size in bytes (50 MB).
 DEFAULT_MAX_PACKAGE_BYTES: int = 50 * 1024 * 1024
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _utcnow_iso() -> str:
     """Return current UTC datetime as ISO 8601 string."""
-    return _utcnow().isoformat()
-
+    return utcnow().isoformat()
 
 # ---------------------------------------------------------------------------
 # DataPackageBuilder
 # ---------------------------------------------------------------------------
-
 
 class DataPackageBuilder:
     """Self-contained data package builder with Merkle root integrity.
@@ -1369,7 +1363,6 @@ class DataPackageBuilder:
         """Return total number of packages."""
         with self._lock:
             return len(self._packages)
-
 
 # ---------------------------------------------------------------------------
 # Public API

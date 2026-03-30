@@ -45,33 +45,27 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ComplianceStatus
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "28.0.0"
 _PACK_ID = "PACK-028"
 
-
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -80,7 +74,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
@@ -88,22 +81,12 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class ValidationSeverity(str, Enum):
     """Severity of a validation finding."""
     CRITICAL = "critical"
     MAJOR = "major"
     MINOR = "minor"
     INFO = "info"
-
-
-class ComplianceStatus(str, Enum):
-    """Compliance check status."""
-    COMPLIANT = "compliant"
-    NON_COMPLIANT = "non_compliant"
-    PARTIALLY_COMPLIANT = "partially_compliant"
-    NOT_ASSESSED = "not_assessed"
-
 
 class DataQualityTier(str, Enum):
     """Data quality tier classification."""
@@ -113,7 +96,6 @@ class DataQualityTier(str, Enum):
     ESTIMATED = "estimated"
     DEFAULT = "default"
 
-
 class PathwayProperty(str, Enum):
     """Pathway mathematical properties to validate."""
     MONOTONICITY = "monotonicity"
@@ -121,7 +103,6 @@ class PathwayProperty(str, Enum):
     CONTINUITY = "continuity"
     BOUNDARY = "boundary"
     RATE = "rate"
-
 
 # =============================================================================
 # SBTI VALIDATION CRITERIA (Zero-Hallucination: Published Requirements)
@@ -384,11 +365,9 @@ DATA_QUALITY_CRITERIA: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase_name: str = Field(...)
@@ -402,7 +381,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     dag_node_id: str = Field(default="")
 
-
 class DataValidationFinding(BaseModel):
     """A single data validation finding."""
     finding_id: str = Field(default="")
@@ -414,7 +392,6 @@ class DataValidationFinding(BaseModel):
     expected_value: str = Field(default="")
     remediation: str = Field(default="")
     data_quality_tier: DataQualityTier = Field(default=DataQualityTier.DEFAULT)
-
 
 class DataValidationSummary(BaseModel):
     """Summary of all data validation findings."""
@@ -428,7 +405,6 @@ class DataValidationSummary(BaseModel):
     overall_quality_tier: DataQualityTier = Field(default=DataQualityTier.DEFAULT)
     findings: List[DataValidationFinding] = Field(default_factory=list)
 
-
 class PathwayValidationCheck(BaseModel):
     """Result of a single pathway mathematical validation check."""
     check_id: str = Field(default="")
@@ -439,7 +415,6 @@ class PathwayValidationCheck(BaseModel):
     details: str = Field(default="")
     violation_years: List[int] = Field(default_factory=list)
     severity: ValidationSeverity = Field(default=ValidationSeverity.MINOR)
-
 
 class PathwayValidationSummary(BaseModel):
     """Summary of pathway mathematical validation."""
@@ -453,7 +428,6 @@ class PathwayValidationSummary(BaseModel):
     pathway_end_intensity: float = Field(default=0.0)
     total_reduction_pct: float = Field(default=0.0)
     average_annual_reduction_pct: float = Field(default=0.0)
-
 
 class SBTiCriterionCheck(BaseModel):
     """Result of a single SBTi criterion compliance check."""
@@ -469,7 +443,6 @@ class SBTiCriterionCheck(BaseModel):
     remediation: str = Field(default="")
     severity: ValidationSeverity = Field(default=ValidationSeverity.MINOR)
 
-
 class SBTiComplianceSummary(BaseModel):
     """Summary of SBTi compliance checks."""
     total_criteria: int = Field(default=0)
@@ -483,7 +456,6 @@ class SBTiComplianceSummary(BaseModel):
     sda_specific_status: ComplianceStatus = Field(default=ComplianceStatus.NOT_ASSESSED)
     criteria: List[SBTiCriterionCheck] = Field(default_factory=list)
 
-
 class ComplianceReportSection(BaseModel):
     """A single section in the compliance report."""
     section_id: str = Field(default="")
@@ -491,7 +463,6 @@ class ComplianceReportSection(BaseModel):
     content: str = Field(default="")
     status: ComplianceStatus = Field(default=ComplianceStatus.NOT_ASSESSED)
     key_metrics: Dict[str, Any] = Field(default_factory=dict)
-
 
 class ComplianceReport(BaseModel):
     """Complete pathway compliance report."""
@@ -514,7 +485,6 @@ class ComplianceReport(BaseModel):
     improvement_roadmap: List[str] = Field(default_factory=list)
     submission_ready: bool = Field(default=False)
     provenance_hash: str = Field(default="")
-
 
 class PathwayValidationConfig(BaseModel):
     """Configuration for pathway validation workflow."""
@@ -560,7 +530,6 @@ class PathwayValidationConfig(BaseModel):
     is_flag_sector: bool = Field(default=False)
     flag_emissions_tco2e: float = Field(default=0.0, ge=0.0)
 
-
 class PathwayValidationInput(BaseModel):
     """Input data for pathway validation."""
     config: PathwayValidationConfig = Field(
@@ -582,7 +551,6 @@ class PathwayValidationInput(BaseModel):
         default_factory=list,
         description="Peer company benchmarks [{company, intensity, sbti_validated}]",
     )
-
 
 class PathwayValidationResult(BaseModel):
     """Complete result from pathway validation workflow."""
@@ -612,11 +580,9 @@ class PathwayValidationResult(BaseModel):
     next_steps: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class PathwayValidationWorkflow:
     """
@@ -648,7 +614,7 @@ class PathwayValidationWorkflow:
 
     async def execute(self, input_data: PathwayValidationInput) -> PathwayValidationResult:
         """Execute the 4-phase pathway validation workflow."""
-        started_at = _utcnow()
+        started_at = utcnow()
         self.config = input_data.config
         self._phase_results = []
         overall_status = WorkflowStatus.RUNNING
@@ -682,7 +648,7 @@ class PathwayValidationWorkflow:
                 status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
 
         critical_issues = self._collect_critical_issues()
         improvement_actions = self._collect_improvement_actions()
@@ -716,7 +682,7 @@ class PathwayValidationWorkflow:
 
     async def _phase_data_validation(self, input_data: PathwayValidationInput) -> PhaseResult:
         """Validate input data completeness, consistency, and quality."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         findings: List[DataValidationFinding] = []
         check_count = 0
@@ -990,7 +956,7 @@ class PathwayValidationWorkflow:
         outputs["completeness_pct"] = round(completeness, 1)
         outputs["quality_tier"] = quality_tier.value
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="data_validation", phase_number=1,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -1005,7 +971,7 @@ class PathwayValidationWorkflow:
 
     async def _phase_pathway_validation(self, input_data: PathwayValidationInput) -> PhaseResult:
         """Validate pathway mathematical integrity and convergence."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         checks: List[PathwayValidationCheck] = []
 
@@ -1215,7 +1181,7 @@ class PathwayValidationWorkflow:
         outputs["total_reduction_pct"] = round(tot_red, 2)
         outputs["avg_annual_reduction_pct"] = round(avg_annual, 2)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="pathway_validation", phase_number=2,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -1230,7 +1196,7 @@ class PathwayValidationWorkflow:
 
     async def _phase_sbti_criteria_check(self, input_data: PathwayValidationInput) -> PhaseResult:
         """Check pathway against SBTi Corporate Standard v2.0 criteria."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         criteria: List[SBTiCriterionCheck] = []
 
@@ -1484,7 +1450,7 @@ class PathwayValidationWorkflow:
         outputs["overall_status"] = overall.value
         outputs["compliance_score_pct"] = self._sbti_compliance.compliance_score_pct
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="sbti_criteria_check", phase_number=3,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -1499,7 +1465,7 @@ class PathwayValidationWorkflow:
 
     async def _phase_compliance_report(self, input_data: PathwayValidationInput) -> PhaseResult:
         """Generate comprehensive compliance report."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         # Build report sections
@@ -1625,7 +1591,7 @@ class PathwayValidationWorkflow:
             report_title=f"SBTi Pathway Validation Report - {self.config.company_name or 'Company'}",
             sector=self.config.sector,
             company_name=self.config.company_name,
-            assessment_date=_utcnow().isoformat(),
+            assessment_date=utcnow().isoformat(),
             overall_status=overall_report_status,
             data_validation=self._data_validation,
             pathway_validation=self._pathway_validation,
@@ -1645,7 +1611,7 @@ class PathwayValidationWorkflow:
         outputs["improvement_actions"] = len(self._compliance_report.improvement_roadmap)
         outputs["report_formats"] = ["MD", "HTML", "JSON", "PDF"]
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="compliance_report", phase_number=4,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),

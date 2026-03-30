@@ -52,6 +52,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import statistics
 
 from pydantic import BaseModel, Field, validator
+from greenlang.schemas.enums import AlertSeverity
 
 
 logger = logging.getLogger(__name__)
@@ -175,15 +176,6 @@ class AnomalyType(str, Enum):
     IMPINGEMENT = "impingement"
     ASYMMETRY = "asymmetry"
     COLOR_SHIFT = "color_shift"
-
-
-class AlertSeverity(str, Enum):
-    """Alert severity levels per IEC 62682."""
-    INFO = "info"
-    WARNING = "warning"
-    ALARM = "alarm"
-    CRITICAL = "critical"
-    TRIP = "trip"
 
 
 # =============================================================================

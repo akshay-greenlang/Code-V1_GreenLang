@@ -100,25 +100,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -143,7 +137,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -159,7 +152,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -180,7 +172,6 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100).
 
@@ -192,7 +183,6 @@ def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
         Percentage as Decimal; 0 if *whole* is zero.
     """
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP.
@@ -207,7 +197,6 @@ def _round_val(value: Decimal, places: int = 6) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP.
 
@@ -221,11 +210,9 @@ def _round3(value: float) -> float:
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class FLAGCommodity(str, Enum):
     """The 11 FLAG commodity categories per SBTi FLAG Guidance V1.1.
@@ -246,7 +233,6 @@ class FLAGCommodity(str, Enum):
     MAIZE = "maize"
     WHEAT = "wheat"
 
-
 class FLAGTargetType(str, Enum):
     """FLAG target type classification.
 
@@ -255,7 +241,6 @@ class FLAGTargetType(str, Enum):
     """
     ABSOLUTE = "absolute"
     INTENSITY = "intensity"
-
 
 class FLAGTriggerStatus(str, Enum):
     """Whether a separate FLAG target is required.
@@ -270,7 +255,6 @@ class FLAGTriggerStatus(str, Enum):
     BORDERLINE = "borderline"
     UNDETERMINED = "undetermined"
 
-
 class DeforestationCommitmentStatus(str, Enum):
     """Status of no-deforestation commitment.
 
@@ -283,7 +267,6 @@ class DeforestationCommitmentStatus(str, Enum):
     PARTIAL = "partial"
     NOT_COMMITTED = "not_committed"
     EXPIRED = "expired"
-
 
 class LandUseChangeType(str, Enum):
     """Types of land use change contributing to FLAG emissions.
@@ -302,7 +285,6 @@ class LandUseChangeType(str, Enum):
     GRASSLAND_TO_CROPLAND = "grassland_to_cropland"
     OTHER_CONVERSION = "other_conversion"
 
-
 class EmissionCategory(str, Enum):
     """FLAG emission source categories per commodity.
 
@@ -319,7 +301,6 @@ class EmissionCategory(str, Enum):
     ON_FARM_ENERGY = "on_farm_energy"
     POST_HARVEST = "post_harvest"
 
-
 class AssessmentConfidence(str, Enum):
     """Data quality / confidence level for FLAG assessment.
 
@@ -332,7 +313,6 @@ class AssessmentConfidence(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     VERY_LOW = "very_low"
-
 
 class PathwayStatus(str, Enum):
     """Status of FLAG pathway compliance.
@@ -348,7 +328,6 @@ class PathwayStatus(str, Enum):
     MAJOR_DEVIATION = "major_deviation"
     CRITICAL = "critical"
     NOT_STARTED = "not_started"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- SBTi FLAG Guidance V1.1
@@ -534,11 +513,9 @@ COMMODITY_INTENSITY_UNITS: Dict[str, str] = {
 # Valid FLAG commodities set for quick lookup.
 VALID_COMMODITIES: set = {c.value for c in FLAGCommodity}
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class LandUseChangeEntry(BaseModel):
     """A single land use change event contributing to FLAG emissions.
@@ -581,7 +558,6 @@ class LandUseChangeEntry(BaseModel):
         description="Pre-calculated emissions (tCO2e)",
     )
 
-
 class CommodityEmissionBreakdown(BaseModel):
     """Per-category emission breakdown for a single FLAG commodity.
 
@@ -623,7 +599,6 @@ class CommodityEmissionBreakdown(BaseModel):
             + self.on_farm_energy_tco2e
             + self.post_harvest_tco2e
         )
-
 
 class CommodityInput(BaseModel):
     """Input data for a single commodity in the FLAG assessment.
@@ -692,7 +667,6 @@ class CommodityInput(BaseModel):
             )
         return v_lower
 
-
 class DeforestationCommitment(BaseModel):
     """No-deforestation and no-conversion commitment details.
 
@@ -748,7 +722,6 @@ class DeforestationCommitment(BaseModel):
         default=Decimal("0"), ge=0, le=Decimal("100"),
         description="Progress toward achieving commitment (%)",
     )
-
 
 class FLAGAssessmentInput(BaseModel):
     """Complete input for FLAG emissions assessment.
@@ -855,14 +828,12 @@ class FLAGAssessmentInput(BaseModel):
     def validate_current_year(cls, v: int) -> int:
         """Auto-set current year if zero."""
         if v == 0:
-            return _utcnow().year
+            return utcnow().year
         return v
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class CommodityAssessment(BaseModel):
     """Assessment result for a single FLAG commodity.
@@ -902,7 +873,6 @@ class CommodityAssessment(BaseModel):
     pathway_milestones: List[Dict[str, Any]] = Field(default_factory=list)
     confidence: str = Field(default=AssessmentConfidence.MEDIUM.value)
 
-
 class FLAGTriggerAssessment(BaseModel):
     """Result of the FLAG 20% trigger threshold evaluation.
 
@@ -927,7 +897,6 @@ class FLAGTriggerAssessment(BaseModel):
     is_borderline: bool = Field(default=False)
     message: str = Field(default="")
 
-
 class FLAGPathwayMilestone(BaseModel):
     """Annual milestone on the FLAG reduction pathway.
 
@@ -945,7 +914,6 @@ class FLAGPathwayMilestone(BaseModel):
     annual_reduction_rate_pct: Decimal = Field(default=Decimal("0"))
     on_track_threshold_tco2e: Decimal = Field(default=Decimal("0"))
     cumulative_budget_tco2e: Decimal = Field(default=Decimal("0"))
-
 
 class FLAGTargetDefinition(BaseModel):
     """Complete FLAG target definition.
@@ -983,7 +951,6 @@ class FLAGTargetDefinition(BaseModel):
     is_near_term: bool = Field(default=True)
     is_long_term: bool = Field(default=False)
 
-
 class DeforestationValidation(BaseModel):
     """Validation result for no-deforestation commitment.
 
@@ -1016,7 +983,6 @@ class DeforestationValidation(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     score_pct: Decimal = Field(default=Decimal("0"))
 
-
 class LandUseChangeQuantification(BaseModel):
     """Quantification of land use change emissions.
 
@@ -1036,7 +1002,6 @@ class LandUseChangeQuantification(BaseModel):
     pct_of_flag_total: Decimal = Field(default=Decimal("0"))
     data_sources: List[str] = Field(default_factory=list)
     confidence: str = Field(default=AssessmentConfidence.MEDIUM.value)
-
 
 class FLAGProgressTracking(BaseModel):
     """Progress tracking for FLAG targets.
@@ -1070,7 +1035,6 @@ class FLAGProgressTracking(BaseModel):
     trajectory_target_year_tco2e: Decimal = Field(default=Decimal("0"))
     on_track_for_target: bool = Field(default=False)
 
-
 class FLAGAssessmentResult(BaseModel):
     """Complete FLAG assessment result.
 
@@ -1099,7 +1063,7 @@ class FLAGAssessmentResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     trigger_assessment: Optional[FLAGTriggerAssessment] = Field(None)
     commodity_assessments: List[CommodityAssessment] = Field(
@@ -1121,11 +1085,9 @@ class FLAGAssessmentResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class FLAGAssessmentEngine:
     """SBTi FLAG Assessment Engine.
@@ -1581,7 +1543,7 @@ class FLAGAssessmentEngine:
             overall_status = DeforestationCommitmentStatus.NOT_COMMITTED.value
 
         # Check for expired deadline
-        current_year = _utcnow().year
+        current_year = utcnow().year
         if (
             has_commitment
             and commitment.target_date
@@ -2628,7 +2590,7 @@ class FLAGAssessmentEngine:
             Tuple of (is_valid, list_of_issues).
         """
         issues: List[str] = []
-        current_year = _utcnow().year
+        current_year = utcnow().year
 
         if base_year < FLAG_BASE_YEAR_MIN:
             issues.append(

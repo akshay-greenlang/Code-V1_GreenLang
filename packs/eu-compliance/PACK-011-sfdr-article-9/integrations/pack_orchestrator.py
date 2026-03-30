@@ -54,19 +54,13 @@ from typing import Any, Callable, Dict, List, Optional, Union
 from uuid import uuid4
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # =============================================================================
 # Utility Helpers
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute a SHA-256 hash of arbitrary data.
@@ -81,11 +75,9 @@ def _hash_data(data: Any) -> str:
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # Agent Stub
 # =============================================================================
-
 
 class _AgentStub:
     """Deferred agent loader for lazy initialization.
@@ -116,6 +108,7 @@ class _AgentStub:
             return self._instance
         try:
             import importlib
+
             mod = importlib.import_module(self.module_path)
             cls = getattr(mod, self.class_name)
             self._instance = cls()
@@ -132,11 +125,9 @@ class _AgentStub:
         """Whether the agent has been loaded."""
         return self._instance is not None
 
-
 # =============================================================================
 # Enums
 # =============================================================================
-
 
 class PipelinePhase(str, Enum):
     """Execution phases in the SFDR Article 9 pipeline."""
@@ -152,7 +143,6 @@ class PipelinePhase(str, Enum):
     BENCHMARK_ALIGNMENT = "benchmark_alignment"
     DISCLOSURE_GENERATION = "disclosure_generation"
 
-
 class Article9ExecutionStatus(str, Enum):
     """Status of a pipeline or phase execution."""
     PENDING = "pending"
@@ -162,14 +152,12 @@ class Article9ExecutionStatus(str, Enum):
     SKIPPED = "skipped"
     PAUSED = "paused"
 
-
 class QualityGateStatus(str, Enum):
     """Status of a quality gate check."""
     PASSED = "passed"
     FAILED = "failed"
     WARNING = "warning"
     SKIPPED = "skipped"
-
 
 class Article9SubType(str, Enum):
     """Article 9 product sub-types."""
@@ -178,7 +166,6 @@ class Article9SubType(str, Enum):
     ENVIRONMENTAL_AND_SOCIAL = "environmental_and_social"
     CARBON_REDUCTION = "carbon_reduction"
     ARTICLE_9_3 = "article_9_3"
-
 
 class DisclosureType(str, Enum):
     """SFDR Article 9 disclosure document type."""
@@ -189,14 +176,12 @@ class DisclosureType(str, Enum):
     PERIODIC = "periodic"
     PAI_STATEMENT = "pai_statement"
 
-
 class PAICategory(str, Enum):
     """PAI indicator category."""
     CLIMATE = "climate"
     ENVIRONMENT = "environment"
     SOCIAL = "social"
     GOVERNANCE = "governance"
-
 
 class SustainableObjectiveType(str, Enum):
     """Type of sustainable investment objective."""
@@ -205,11 +190,9 @@ class SustainableObjectiveType(str, Enum):
     SOCIAL = "social"
     CARBON_EMISSIONS_REDUCTION = "carbon_emissions_reduction"
 
-
 # =============================================================================
 # Data Models
 # =============================================================================
-
 
 class Article9OrchestrationConfig(BaseModel):
     """Configuration for the Article 9 Pack Orchestrator."""
@@ -345,7 +328,6 @@ class Article9OrchestrationConfig(BaseModel):
             )
         return v
 
-
 class PhaseResult(BaseModel):
     """Result of executing a single pipeline phase."""
     phase: PipelinePhase = Field(..., description="Phase executed")
@@ -364,7 +346,6 @@ class PhaseResult(BaseModel):
     )
     retry_count: int = Field(default=0, description="Number of retries")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class PipelineResult(BaseModel):
     """Complete result of an Article 9 pipeline execution."""
@@ -421,7 +402,6 @@ class PipelineResult(BaseModel):
     warnings: List[str] = Field(default_factory=list, description="Execution warnings")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class PipelineStatus(BaseModel):
     """Current status of the running orchestration."""
     execution_id: str = Field(default="", description="Current execution ID")
@@ -435,11 +415,9 @@ class PipelineStatus(BaseModel):
     elapsed_ms: float = Field(default=0.0, description="Elapsed time in ms")
     errors: List[str] = Field(default_factory=list, description="Current errors")
 
-
 # =============================================================================
 # Phase Pipeline Definition
 # =============================================================================
-
 
 PHASE_ORDER: List[PipelinePhase] = [
     PipelinePhase.HEALTH_CHECK,
@@ -539,11 +517,9 @@ PHASE_AGENT_MAPPING: Dict[PipelinePhase, List[str]] = {
     ],
 }
 
-
 # =============================================================================
 # Article 9 Pack Orchestrator
 # =============================================================================
-
 
 class Article9Orchestrator:
     """11-phase SFDR Article 9 master orchestrator.
@@ -769,7 +745,7 @@ class Article9Orchestrator:
         """
         self._start_time = time.monotonic()
         execution_id = _hash_data(
-            f"art9:{self.config.product_name}:{_utcnow().isoformat()}"
+            f"art9:{self.config.product_name}:{utcnow().isoformat()}"
         )[:16]
         self._current_execution_id = execution_id
 
@@ -779,7 +755,7 @@ class Article9Orchestrator:
             product_isin=self.config.product_isin,
             article_9_sub_type=self.config.article_9_sub_type.value,
             status=Article9ExecutionStatus.RUNNING,
-            started_at=_utcnow().isoformat(),
+            started_at=utcnow().isoformat(),
         )
 
         context: Dict[str, Any] = {
@@ -801,8 +777,8 @@ class Article9Orchestrator:
                     result.phase_results[phase.value] = PhaseResult(
                         phase=phase,
                         status=Article9ExecutionStatus.SKIPPED,
-                        started_at=_utcnow().isoformat(),
-                        completed_at=_utcnow().isoformat(),
+                        started_at=utcnow().isoformat(),
+                        completed_at=utcnow().isoformat(),
                     )
                     continue
 
@@ -833,7 +809,7 @@ class Article9Orchestrator:
             result.errors.append(f"Unexpected error: {exc}")
             self.logger.error("Pipeline execution failed: %s", exc, exc_info=True)
 
-        result.completed_at = _utcnow().isoformat()
+        result.completed_at = utcnow().isoformat()
         result.total_execution_time_ms = (time.monotonic() - self._start_time) * 1000
         self._current_phase = ""
 
@@ -1020,8 +996,8 @@ class Article9Orchestrator:
         return PhaseResult(
             phase=PipelinePhase.HEALTH_CHECK,
             status=Article9ExecutionStatus.COMPLETED,
-            started_at=_utcnow().isoformat(),
-            completed_at=_utcnow().isoformat(),
+            started_at=utcnow().isoformat(),
+            completed_at=utcnow().isoformat(),
             records_processed=categories_checked,
             data={
                 "health_score": health_score,
@@ -1109,7 +1085,7 @@ class Article9Orchestrator:
             "is_article_9_3": is_9_3,
             "benchmark_type": benchmark_type,
             "impact_sdg_targets": config_data.get("impact_sdg_targets", []),
-            "validated_at": _utcnow().isoformat(),
+            "validated_at": utcnow().isoformat(),
         }
 
         status = (
@@ -1120,8 +1096,8 @@ class Article9Orchestrator:
         return PhaseResult(
             phase=PipelinePhase.CONFIGURATION_INIT,
             status=status,
-            started_at=_utcnow().isoformat(),
-            completed_at=_utcnow().isoformat(),
+            started_at=utcnow().isoformat(),
+            completed_at=utcnow().isoformat(),
             records_processed=1,
             data={"validated_config": validated_config},
             errors=errors,
@@ -1212,8 +1188,8 @@ class Article9Orchestrator:
         return PhaseResult(
             phase=PipelinePhase.HOLDINGS_INTAKE,
             status=Article9ExecutionStatus.COMPLETED,
-            started_at=_utcnow().isoformat(),
-            completed_at=_utcnow().isoformat(),
+            started_at=utcnow().isoformat(),
+            completed_at=utcnow().isoformat(),
             records_processed=len(valid_holdings),
             data={
                 "total_holdings": len(portfolio_data),
@@ -1299,8 +1275,8 @@ class Article9Orchestrator:
         return PhaseResult(
             phase=PipelinePhase.SUSTAINABLE_OBJECTIVE_VERIFY,
             status=Article9ExecutionStatus.COMPLETED,
-            started_at=_utcnow().isoformat(),
-            completed_at=_utcnow().isoformat(),
+            started_at=utcnow().isoformat(),
+            completed_at=utcnow().isoformat(),
             records_processed=len(holdings),
             data={
                 "sustainable_objective": sustainable_obj,
@@ -1383,8 +1359,8 @@ class Article9Orchestrator:
         return PhaseResult(
             phase=PipelinePhase.ENHANCED_DNSH,
             status=Article9ExecutionStatus.COMPLETED,
-            started_at=_utcnow().isoformat(),
-            completed_at=_utcnow().isoformat(),
+            started_at=utcnow().isoformat(),
+            completed_at=utcnow().isoformat(),
             records_processed=len(holdings),
             data={
                 "objectives_assessed": all_objectives,
@@ -1455,8 +1431,8 @@ class Article9Orchestrator:
         return PhaseResult(
             phase=PipelinePhase.GOOD_GOVERNANCE,
             status=Article9ExecutionStatus.COMPLETED,
-            started_at=_utcnow().isoformat(),
-            completed_at=_utcnow().isoformat(),
+            started_at=utcnow().isoformat(),
+            completed_at=utcnow().isoformat(),
             records_processed=len(holdings),
             data={
                 "governance_assessed": len(governance_results),
@@ -1555,8 +1531,8 @@ class Article9Orchestrator:
         return PhaseResult(
             phase=PipelinePhase.TAXONOMY_ALIGNMENT,
             status=Article9ExecutionStatus.COMPLETED,
-            started_at=_utcnow().isoformat(),
-            completed_at=_utcnow().isoformat(),
+            started_at=utcnow().isoformat(),
+            completed_at=utcnow().isoformat(),
             records_processed=len(holdings),
             data={
                 "taxonomy_eligible_pct": eligible_pct,
@@ -1661,8 +1637,8 @@ class Article9Orchestrator:
         return PhaseResult(
             phase=PipelinePhase.MANDATORY_PAI,
             status=Article9ExecutionStatus.COMPLETED,
-            started_at=_utcnow().isoformat(),
-            completed_at=_utcnow().isoformat(),
+            started_at=utcnow().isoformat(),
+            completed_at=utcnow().isoformat(),
             records_processed=len(pai_results),
             data={
                 "pai_indicators": pai_results,
@@ -1735,8 +1711,8 @@ class Article9Orchestrator:
         return PhaseResult(
             phase=PipelinePhase.IMPACT_MEASUREMENT,
             status=Article9ExecutionStatus.COMPLETED,
-            started_at=_utcnow().isoformat(),
-            completed_at=_utcnow().isoformat(),
+            started_at=utcnow().isoformat(),
+            completed_at=utcnow().isoformat(),
             records_processed=len(holdings),
             data={
                 "overall_impact_score": round(total_impact_score, 2),
@@ -1773,8 +1749,8 @@ class Article9Orchestrator:
             return PhaseResult(
                 phase=PipelinePhase.BENCHMARK_ALIGNMENT,
                 status=Article9ExecutionStatus.COMPLETED,
-                started_at=_utcnow().isoformat(),
-                completed_at=_utcnow().isoformat(),
+                started_at=utcnow().isoformat(),
+                completed_at=utcnow().isoformat(),
                 data={
                     "is_article_9_3": False,
                     "benchmark_alignment_skipped": True,
@@ -1793,8 +1769,8 @@ class Article9Orchestrator:
         return PhaseResult(
             phase=PipelinePhase.BENCHMARK_ALIGNMENT,
             status=Article9ExecutionStatus.COMPLETED,
-            started_at=_utcnow().isoformat(),
-            completed_at=_utcnow().isoformat(),
+            started_at=utcnow().isoformat(),
+            completed_at=utcnow().isoformat(),
             records_processed=1,
             data={
                 "is_article_9_3": True,
@@ -1916,8 +1892,8 @@ class Article9Orchestrator:
         return PhaseResult(
             phase=PipelinePhase.DISCLOSURE_GENERATION,
             status=Article9ExecutionStatus.COMPLETED,
-            started_at=_utcnow().isoformat(),
-            completed_at=_utcnow().isoformat(),
+            started_at=utcnow().isoformat(),
+            completed_at=utcnow().isoformat(),
             records_processed=len(disclosures),
             data={
                 "disclosures": disclosures,

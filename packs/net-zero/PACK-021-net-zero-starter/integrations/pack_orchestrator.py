@@ -56,27 +56,22 @@ from typing import Any, Callable, Coroutine, Dict, List, Optional, Set
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ExecutionStatus
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
 ProgressCallback = Callable[[str, float, str], Coroutine[Any, Any, None]]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for provenance tracking.
@@ -96,11 +91,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class NetZeroPipelinePhase(str, Enum):
     """The 8 phases of the net-zero pipeline."""
@@ -114,22 +107,9 @@ class NetZeroPipelinePhase(str, Enum):
     OFFSET_STRATEGY = "offset_strategy"
     REPORTING = "reporting"
 
-
-class ExecutionStatus(str, Enum):
-    """Pipeline execution lifecycle status."""
-
-    PENDING = "pending"
-    RUNNING = "running"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    CANCELLED = "cancelled"
-    SKIPPED = "skipped"
-
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class RetryConfig(BaseModel):
     """Retry configuration with exponential backoff and jitter."""
@@ -140,7 +120,6 @@ class RetryConfig(BaseModel):
     jitter_factor: float = Field(
         default=0.5, ge=0.0, le=1.0, description="Jitter multiplier"
     )
-
 
 class OrchestratorConfig(BaseModel):
     """Configuration for the Net Zero Pipeline Orchestrator."""
@@ -166,7 +145,6 @@ class OrchestratorConfig(BaseModel):
         default_factory=lambda: [1, 2, 3, 4, 5, 6, 7],
     )
 
-
 class PhaseProvenance(BaseModel):
     """Provenance tracking for a single phase execution."""
 
@@ -175,8 +153,7 @@ class PhaseProvenance(BaseModel):
     output_hash: str = Field(default="")
     duration_ms: float = Field(default=0.0)
     attempt: int = Field(default=1)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class PhaseResult(BaseModel):
     """Result of a single phase execution."""
@@ -192,7 +169,6 @@ class PhaseResult(BaseModel):
     outputs: Dict[str, Any] = Field(default_factory=dict)
     provenance: Optional[PhaseProvenance] = Field(None)
     retry_count: int = Field(default=0)
-
 
 class PipelineResult(BaseModel):
     """Complete result of the net-zero pipeline execution."""
@@ -211,7 +187,6 @@ class PipelineResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     quality_score: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # DAG Dependency Map
@@ -240,11 +215,9 @@ PHASE_EXECUTION_ORDER: List[NetZeroPipelinePhase] = [
     NetZeroPipelinePhase.REPORTING,
 ]
 
-
 # ---------------------------------------------------------------------------
 # NetZeroPipelineOrchestrator
 # ---------------------------------------------------------------------------
-
 
 class NetZeroPipelineOrchestrator:
     """8-phase net-zero pipeline orchestrator for PACK-021.
@@ -312,7 +285,7 @@ class NetZeroPipelineOrchestrator:
         result = PipelineResult(
             organization_name=self.config.organization_name,
             status=ExecutionStatus.RUNNING,
-            started_at=_utcnow(),
+            started_at=utcnow(),
         )
         self._results[result.execution_id] = result
 
@@ -347,8 +320,8 @@ class NetZeroPipelineOrchestrator:
                     phase_result = PhaseResult(
                         phase=phase,
                         status=ExecutionStatus.SKIPPED,
-                        started_at=_utcnow(),
-                        completed_at=_utcnow(),
+                        started_at=utcnow(),
+                        completed_at=utcnow(),
                     )
                     result.phase_results[phase.value] = phase_result
                     result.phases_skipped.append(phase.value)
@@ -404,7 +377,7 @@ class NetZeroPipelineOrchestrator:
             result.errors.append(str(exc))
 
         finally:
-            result.completed_at = _utcnow()
+            result.completed_at = utcnow()
             result.total_duration_ms = (time.monotonic() - start_time) * 1000
             result.quality_score = self._compute_quality_score(result)
             if self.config.enable_provenance:
@@ -452,7 +425,7 @@ class NetZeroPipelineOrchestrator:
             "execution_id": execution_id,
             "cancelled": True,
             "reason": "Cancellation signal sent",
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     # -------------------------------------------------------------------------
@@ -612,8 +585,8 @@ class NetZeroPipelineOrchestrator:
         return PhaseResult(
             phase=phase,
             status=ExecutionStatus.FAILED,
-            started_at=_utcnow(),
-            completed_at=_utcnow(),
+            started_at=utcnow(),
+            completed_at=utcnow(),
             errors=[last_error or "Unknown error"],
             retry_count=retry_config.max_retries,
         )
@@ -638,7 +611,7 @@ class NetZeroPipelineOrchestrator:
             PhaseResult with execution details.
         """
         start_time = time.monotonic()
-        phase_start = _utcnow()
+        phase_start = utcnow()
 
         self.logger.info("Executing phase '%s' (attempt %d)", phase.value, attempt + 1)
 
@@ -686,7 +659,7 @@ class NetZeroPipelineOrchestrator:
             phase=phase,
             status=ExecutionStatus.COMPLETED,
             started_at=phase_start,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             duration_ms=elapsed_ms,
             records_processed=records,
             outputs=outputs,

@@ -62,25 +62,18 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ReportFormat
 
 from pydantic import (
-    BaseModel,
-    ConfigDict,
     Field,
     field_validator,
     model_validator,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -156,11 +149,9 @@ FACILITY_ASSESSMENT_LEVELS: Dict[str, str] = {
     "level_5": "Maximum - separate buildings/facilities per material type",
 }
 
-
 # =============================================================================
 # Enumerations
 # =============================================================================
-
 
 class SCPType(str, Enum):
     """Type of segregation control point in the supply chain.
@@ -188,7 +179,6 @@ class SCPType(str, Enum):
     HANDLING = "handling"
     LOADING_UNLOADING = "loading_unloading"
 
-
 class SCPStatus(str, Enum):
     """Current status of a segregation control point.
 
@@ -212,7 +202,6 @@ class SCPStatus(str, Enum):
     FAILED = "failed"
     EXPIRED = "expired"
     PENDING_INSPECTION = "pending_inspection"
-
 
 class SegregationMethod(str, Enum):
     """Physical method used to segregate compliant material.
@@ -248,7 +237,6 @@ class SegregationMethod(str, Enum):
     COLOR_CODED_ZONE = "color_coded_zone"
     LOCKED_AREA = "locked_area"
     SEPARATE_BUILDING = "separate_building"
-
 
 class StorageType(str, Enum):
     """Type of storage facility or unit for commodity segregation.
@@ -296,7 +284,6 @@ class StorageType(str, Enum):
     LOCKED_CAGE = "locked_cage"
     SEGREGATED_FLOOR = "segregated_floor"
 
-
 class TransportType(str, Enum):
     """Type of transport vehicle for commodity movement.
 
@@ -336,7 +323,6 @@ class TransportType(str, Enum):
     RAIL_CONTAINER = "rail_container"
     BARGE = "barge"
     AIR_FREIGHT = "air_freight"
-
 
 class ProcessingLineType(str, Enum):
     """Type of processing line for commodity transformation.
@@ -379,7 +365,6 @@ class ProcessingLineType(str, Enum):
     PACKAGING = "packaging"
     GRADING = "grading"
 
-
 class ContaminationPathway(str, Enum):
     """Pathway through which cross-contamination can occur.
 
@@ -420,7 +405,6 @@ class ContaminationPathway(str, Enum):
     LABELING_ERROR = "labeling_error"
     DOCUMENTATION_ERROR = "documentation_error"
 
-
 class ContaminationSeverity(str, Enum):
     """Severity classification for contamination events.
 
@@ -445,7 +429,6 @@ class ContaminationSeverity(str, Enum):
     MAJOR = "major"
     MINOR = "minor"
     OBSERVATION = "observation"
-
 
 class LabelType(str, Enum):
     """Type of physical label or sign used for segregation marking.
@@ -481,7 +464,6 @@ class LabelType(str, Enum):
     SILO_SIGN = "silo_sign"
     PROCESSING_LINE_MARKER = "processing_line_marker"
 
-
 class LabelStatus(str, Enum):
     """Current status of a physical label or sign.
 
@@ -504,7 +486,6 @@ class LabelStatus(str, Enum):
     DAMAGED = "damaged"
     MISSING = "missing"
     EXPIRED = "expired"
-
 
 class FacilityCapabilityLevel(str, Enum):
     """Capability level of a facility for segregation operations.
@@ -534,22 +515,6 @@ class FacilityCapabilityLevel(str, Enum):
     LEVEL_4 = "level_4"
     LEVEL_5 = "level_5"
 
-
-class ReportFormat(str, Enum):
-    """Output format for segregation verification reports.
-
-    JSON: Machine-readable JSON format for API integration.
-    PDF: Human-readable PDF format for regulatory submission.
-    CSV: Tabular CSV format for spreadsheet analysis.
-    EUDR_XML: EU Information System XML schema for DDS submission.
-    """
-
-    JSON = "json"
-    PDF = "pdf"
-    CSV = "csv"
-    EUDR_XML = "eudr_xml"
-
-
 class RiskClassification(str, Enum):
     """Risk classification for segregation control points.
 
@@ -568,7 +533,6 @@ class RiskClassification(str, Enum):
     HIGH = "high"
     CRITICAL = "critical"
 
-
 class ComplianceStatus(str, Enum):
     """Compliance status for storage zones and facilities.
 
@@ -586,7 +550,6 @@ class ComplianceStatus(str, Enum):
     NON_COMPLIANT = "non_compliant"
     PENDING = "pending"
     UNKNOWN = "unknown"
-
 
 class CleaningMethod(str, Enum):
     """Method used to clean transport vehicles or equipment.
@@ -619,13 +582,11 @@ class CleaningMethod(str, Enum):
     COMPRESSED_AIR = "compressed_air"
     TANK_WASH = "tank_wash"
 
-
 # =============================================================================
 # Core Models
 # =============================================================================
 
-
-class SegregationControlPoint(BaseModel):
+class SegregationControlPoint(GreenLangBase):
     """A segregation control point in the supply chain.
 
     Represents a specific location or stage where physical
@@ -730,16 +691,15 @@ class SegregationControlPoint(BaseModel):
         description="SHA-256 provenance hash for audit trail",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the record was created",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the record was last updated",
     )
 
-
-class StorageZone(BaseModel):
+class StorageZone(GreenLangBase):
     """A storage zone within a facility for segregated material.
 
     Represents a physically delineated area within a storage
@@ -819,16 +779,15 @@ class StorageZone(BaseModel):
         description="SHA-256 provenance hash",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the record was created",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the record was last updated",
     )
 
-
-class StorageEvent(BaseModel):
+class StorageEvent(GreenLangBase):
     """An event recording material movement in a storage zone.
 
     Tracks inbound and outbound material movements for a
@@ -875,7 +834,7 @@ class StorageEvent(BaseModel):
         description="Quantity moved in kilograms",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the event occurred",
     )
     operator_id: str = Field(
@@ -896,8 +855,7 @@ class StorageEvent(BaseModel):
         description="SHA-256 provenance hash",
     )
 
-
-class TransportVehicle(BaseModel):
+class TransportVehicle(GreenLangBase):
     """A transport vehicle tracked for segregation verification.
 
     Represents a vehicle (truck, vessel, railcar, etc.) that
@@ -968,16 +926,15 @@ class TransportVehicle(BaseModel):
         description="SHA-256 provenance hash",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the record was created",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the record was last updated",
     )
 
-
-class TransportVerification(BaseModel):
+class TransportVerification(GreenLangBase):
     """Verification record for a transport shipment.
 
     Records the outcome of verifying that a transport vehicle
@@ -1050,12 +1007,11 @@ class TransportVerification(BaseModel):
         description="SHA-256 provenance hash",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of the verification",
     )
 
-
-class ProcessingLine(BaseModel):
+class ProcessingLine(GreenLangBase):
     """A processing line tracked for segregation verification.
 
     Represents a production or processing line within a facility
@@ -1124,16 +1080,15 @@ class ProcessingLine(BaseModel):
         description="SHA-256 provenance hash",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the record was created",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the record was last updated",
     )
 
-
-class ChangeoverRecord(BaseModel):
+class ChangeoverRecord(GreenLangBase):
     """Record of a processing line changeover operation.
 
     Captures the details of switching a processing line between
@@ -1195,7 +1150,7 @@ class ChangeoverRecord(BaseModel):
         description="Identifier of the person who verified changeover",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the changeover occurred",
     )
     notes: Optional[str] = Field(
@@ -1211,8 +1166,7 @@ class ChangeoverRecord(BaseModel):
         description="SHA-256 provenance hash",
     )
 
-
-class ContaminationEvent(BaseModel):
+class ContaminationEvent(GreenLangBase):
     """Record of a cross-contamination event.
 
     Captures the details of an event where EUDR-compliant material
@@ -1266,7 +1220,7 @@ class ContaminationEvent(BaseModel):
         description="Total quantity affected in kilograms",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the event was detected",
     )
     root_cause: Optional[str] = Field(
@@ -1294,12 +1248,11 @@ class ContaminationEvent(BaseModel):
         description="SHA-256 provenance hash",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the record was created",
     )
 
-
-class LabelRecord(BaseModel):
+class LabelRecord(GreenLangBase):
     """Record of a physical label or sign for segregation marking.
 
     Tracks the lifecycle of labeling elements used to visually
@@ -1373,8 +1326,7 @@ class LabelRecord(BaseModel):
         description="SHA-256 provenance hash",
     )
 
-
-class FacilityAssessment(BaseModel):
+class FacilityAssessment(GreenLangBase):
     """Assessment of a facility's segregation capability.
 
     Captures a comprehensive evaluation of a facility's ability
@@ -1457,7 +1409,7 @@ class FacilityAssessment(BaseModel):
         description="List of improvement recommendations",
     )
     assessment_date: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Date when the assessment was conducted",
     )
     assessor_id: Optional[str] = Field(
@@ -1477,12 +1429,11 @@ class FacilityAssessment(BaseModel):
         description="SHA-256 provenance hash",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the record was created",
     )
 
-
-class ContaminationImpact(BaseModel):
+class ContaminationImpact(GreenLangBase):
     """Impact assessment of a contamination event.
 
     Traces the downstream impact of a contamination event on
@@ -1538,12 +1489,11 @@ class ContaminationImpact(BaseModel):
         description="SHA-256 provenance hash",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of the impact assessment",
     )
 
-
-class SegregationReport(BaseModel):
+class SegregationReport(GreenLangBase):
     """A segregation verification report.
 
     Represents a generated report capturing segregation
@@ -1583,7 +1533,7 @@ class SegregationReport(BaseModel):
         description="Output format of the report",
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the report was generated",
     )
     data: Dict[str, Any] = Field(
@@ -1607,13 +1557,11 @@ class SegregationReport(BaseModel):
         description="SHA-256 provenance hash",
     )
 
-
 # =============================================================================
 # Request Models
 # =============================================================================
 
-
-class RegisterSCPRequest(BaseModel):
+class RegisterSCPRequest(GreenLangBase):
     """Request to register a new segregation control point.
 
     Attributes:
@@ -1640,8 +1588,7 @@ class RegisterSCPRequest(BaseModel):
     notes: Optional[str] = Field(None)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-
-class ValidateSCPRequest(BaseModel):
+class ValidateSCPRequest(GreenLangBase):
     """Request to validate a segregation control point.
 
     Attributes:
@@ -1662,8 +1609,7 @@ class ValidateSCPRequest(BaseModel):
     risk_classification: Optional[RiskClassification] = Field(None)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-
-class RegisterStorageZoneRequest(BaseModel):
+class RegisterStorageZoneRequest(GreenLangBase):
     """Request to register a new storage zone.
 
     Attributes:
@@ -1692,8 +1638,7 @@ class RegisterStorageZoneRequest(BaseModel):
     notes: Optional[str] = Field(None)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-
-class RecordStorageEventRequest(BaseModel):
+class RecordStorageEventRequest(GreenLangBase):
     """Request to record a storage event.
 
     Attributes:
@@ -1716,8 +1661,7 @@ class RecordStorageEventRequest(BaseModel):
     notes: Optional[str] = Field(None)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-
-class RegisterVehicleRequest(BaseModel):
+class RegisterVehicleRequest(GreenLangBase):
     """Request to register a transport vehicle.
 
     Attributes:
@@ -1736,8 +1680,7 @@ class RegisterVehicleRequest(BaseModel):
     notes: Optional[str] = Field(None)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-
-class VerifyTransportRequest(BaseModel):
+class VerifyTransportRequest(GreenLangBase):
     """Request to verify transport vehicle segregation.
 
     Attributes:
@@ -1762,8 +1705,7 @@ class VerifyTransportRequest(BaseModel):
     notes: Optional[str] = Field(None)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-
-class RegisterProcessingLineRequest(BaseModel):
+class RegisterProcessingLineRequest(GreenLangBase):
     """Request to register a processing line.
 
     Attributes:
@@ -1786,8 +1728,7 @@ class RegisterProcessingLineRequest(BaseModel):
     notes: Optional[str] = Field(None)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-
-class RecordChangeoverRequest(BaseModel):
+class RecordChangeoverRequest(GreenLangBase):
     """Request to record a processing line changeover.
 
     Attributes:
@@ -1814,8 +1755,7 @@ class RecordChangeoverRequest(BaseModel):
     notes: Optional[str] = Field(None)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-
-class DetectContaminationRequest(BaseModel):
+class DetectContaminationRequest(GreenLangBase):
     """Request to run contamination detection on a facility.
 
     Attributes:
@@ -1844,8 +1784,7 @@ class DetectContaminationRequest(BaseModel):
     include_processing: bool = Field(default=True)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-
-class RecordContaminationRequest(BaseModel):
+class RecordContaminationRequest(GreenLangBase):
     """Request to record a contamination event.
 
     Attributes:
@@ -1872,8 +1811,7 @@ class RecordContaminationRequest(BaseModel):
     notes: Optional[str] = Field(None)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-
-class VerifyLabelsRequest(BaseModel):
+class VerifyLabelsRequest(GreenLangBase):
     """Request to verify labels at a segregation control point.
 
     Attributes:
@@ -1892,8 +1830,7 @@ class VerifyLabelsRequest(BaseModel):
     notes: Optional[str] = Field(None)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-
-class RunAssessmentRequest(BaseModel):
+class RunAssessmentRequest(GreenLangBase):
     """Request to run a facility segregation assessment.
 
     Attributes:
@@ -1922,8 +1859,7 @@ class RunAssessmentRequest(BaseModel):
     notes: Optional[str] = Field(None)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-
-class GenerateReportRequest(BaseModel):
+class GenerateReportRequest(GreenLangBase):
     """Request to generate a segregation verification report.
 
     Attributes:
@@ -1950,8 +1886,7 @@ class GenerateReportRequest(BaseModel):
     include_labels: bool = Field(default=True)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-
-class SearchSCPRequest(BaseModel):
+class SearchSCPRequest(GreenLangBase):
     """Request to search for segregation control points.
 
     Attributes:
@@ -1976,8 +1911,7 @@ class SearchSCPRequest(BaseModel):
     offset: int = Field(default=0, ge=0)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-
-class BatchImportSCPRequest(BaseModel):
+class BatchImportSCPRequest(GreenLangBase):
     """Request to batch import segregation control points.
 
     Attributes:
@@ -2004,13 +1938,11 @@ class BatchImportSCPRequest(BaseModel):
             )
         return v
 
-
 # =============================================================================
 # Response Models
 # =============================================================================
 
-
-class SCPResponse(BaseModel):
+class SCPResponse(GreenLangBase):
     """Response after SCP registration or validation.
 
     Attributes:
@@ -2037,10 +1969,9 @@ class SCPResponse(BaseModel):
     )
     provenance_hash: str = Field(...)
     processing_time_ms: float = Field(...)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
-
-class StorageAuditResponse(BaseModel):
+class StorageAuditResponse(GreenLangBase):
     """Response after a storage zone audit.
 
     Attributes:
@@ -2065,10 +1996,9 @@ class StorageAuditResponse(BaseModel):
     findings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(...)
     processing_time_ms: float = Field(...)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
-
-class TransportVerificationResponse(BaseModel):
+class TransportVerificationResponse(GreenLangBase):
     """Response after transport vehicle verification.
 
     Attributes:
@@ -2095,10 +2025,9 @@ class TransportVerificationResponse(BaseModel):
     risk_factors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(...)
     processing_time_ms: float = Field(...)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
-
-class ProcessingVerificationResponse(BaseModel):
+class ProcessingVerificationResponse(GreenLangBase):
     """Response after processing line verification.
 
     Attributes:
@@ -2125,10 +2054,9 @@ class ProcessingVerificationResponse(BaseModel):
     findings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(...)
     processing_time_ms: float = Field(...)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
-
-class ContaminationDetectionResponse(BaseModel):
+class ContaminationDetectionResponse(GreenLangBase):
     """Response after contamination detection scan.
 
     Attributes:
@@ -2155,10 +2083,9 @@ class ContaminationDetectionResponse(BaseModel):
     events: List[ContaminationEvent] = Field(default_factory=list)
     provenance_hash: str = Field(...)
     processing_time_ms: float = Field(...)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
-
-class ContaminationImpactResponse(BaseModel):
+class ContaminationImpactResponse(GreenLangBase):
     """Response after contamination impact assessment.
 
     Attributes:
@@ -2183,10 +2110,9 @@ class ContaminationImpactResponse(BaseModel):
     impact: Optional[ContaminationImpact] = Field(None)
     provenance_hash: str = Field(...)
     processing_time_ms: float = Field(...)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
-
-class LabelAuditResponse(BaseModel):
+class LabelAuditResponse(GreenLangBase):
     """Response after label verification audit.
 
     Attributes:
@@ -2215,10 +2141,9 @@ class LabelAuditResponse(BaseModel):
     findings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(...)
     processing_time_ms: float = Field(...)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
-
-class AssessmentResponse(BaseModel):
+class AssessmentResponse(GreenLangBase):
     """Response after facility assessment.
 
     Attributes:
@@ -2251,10 +2176,9 @@ class AssessmentResponse(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(...)
     processing_time_ms: float = Field(...)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
-
-class ReportResponse(BaseModel):
+class ReportResponse(GreenLangBase):
     """Response after report generation.
 
     Attributes:
@@ -2285,10 +2209,9 @@ class ReportResponse(BaseModel):
     date_to: Optional[datetime] = Field(None)
     provenance_hash: str = Field(...)
     processing_time_ms: float = Field(...)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
-
-class BatchJobResponse(BaseModel):
+class BatchJobResponse(GreenLangBase):
     """Response for batch processing jobs.
 
     Attributes:
@@ -2309,7 +2232,7 @@ class BatchJobResponse(BaseModel):
     errors: List[str] = Field(default_factory=list)
     processing_time_ms: float = Field(...)
     provenance_hash: Optional[str] = Field(None)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
     @model_validator(mode="after")
     def validate_counts(self) -> BatchJobResponse:
@@ -2321,8 +2244,7 @@ class BatchJobResponse(BaseModel):
             )
         return self
 
-
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Health check response for the segregation verifier service.
 
     Attributes:
@@ -2345,8 +2267,7 @@ class HealthResponse(BaseModel):
     active_scps: int = Field(default=0, ge=0)
     database_connected: bool = Field(default=False)
     redis_connected: bool = Field(default=False)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # Public API

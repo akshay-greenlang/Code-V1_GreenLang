@@ -65,23 +65,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -98,7 +93,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -106,7 +100,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -117,26 +110,21 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     return float(
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SectorType(str, Enum):
     """Sector type for intensity calculation."""
@@ -156,7 +144,6 @@ class SectorType(str, Enum):
     FOOD_BEVERAGE = "food_beverage"
     OIL_GAS = "oil_gas"
     CROSS_SECTOR = "cross_sector"
-
 
 class IntensityMetricType(str, Enum):
     """Intensity metric identifiers.  20+ sector-specific metrics."""
@@ -198,7 +185,6 @@ class IntensityMetricType(str, Enum):
     TCO2E_PER_M_REVENUE = "tCO2e_per_M_revenue"
     TCO2E_PER_EMPLOYEE = "tCO2e_per_employee"
 
-
 class DataMeasurementMethod(str, Enum):
     """How emission/activity data was measured."""
     DIRECT_MEASUREMENT = "direct_measurement"
@@ -208,7 +194,6 @@ class DataMeasurementMethod(str, Enum):
     PROXY = "proxy"
     SPEND_BASED = "spend_based"
 
-
 class DataQualityTier(str, Enum):
     """Data quality tier (1 = best, 5 = worst)."""
     TIER_1 = "tier_1"
@@ -217,7 +202,6 @@ class DataQualityTier(str, Enum):
     TIER_4 = "tier_4"
     TIER_5 = "tier_5"
 
-
 class TrendDirection(str, Enum):
     """Direction of intensity trend."""
     DECREASING = "decreasing"
@@ -225,14 +209,12 @@ class TrendDirection(str, Enum):
     INCREASING = "increasing"
     INSUFFICIENT_DATA = "insufficient_data"
 
-
 class VerificationStatus(str, Enum):
     """Verification status of intensity data."""
     VERIFIED_LIMITED = "verified_limited"
     VERIFIED_REASONABLE = "verified_reasonable"
     UNVERIFIED = "unverified"
     SELF_DECLARED = "self_declared"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Sector Intensity Definitions
@@ -453,11 +435,9 @@ SECTOR_INTENSITY_DEFS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class ActivityDataPoint(BaseModel):
     """Activity data for a single year.
@@ -506,7 +486,6 @@ class ActivityDataPoint(BaseModel):
         description="Data completeness (%)",
     )
 
-
 class SubProcessEntry(BaseModel):
     """Sub-process intensity data (e.g. BF-BOF vs EAF for steel).
 
@@ -528,7 +507,6 @@ class SubProcessEntry(BaseModel):
     share_pct: Decimal = Field(
         default=Decimal("0"), ge=Decimal("0"), le=Decimal("100")
     )
-
 
 class IntensityInput(BaseModel):
     """Input for intensity calculation.
@@ -578,11 +556,9 @@ class IntensityInput(BaseModel):
         default=None, ge=0, description="Employee count"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class IntensityDataPoint(BaseModel):
     """Calculated intensity for a single year.
@@ -604,7 +580,6 @@ class IntensityDataPoint(BaseModel):
     activity_value: Decimal = Field(default=Decimal("0"))
     data_quality_score: Decimal = Field(default=Decimal("0"))
 
-
 class SecondaryMetricResult(BaseModel):
     """Secondary intensity metric result.
 
@@ -616,7 +591,6 @@ class SecondaryMetricResult(BaseModel):
     metric_type: str = Field(default="")
     display_unit: str = Field(default="")
     values: Dict[int, Decimal] = Field(default_factory=dict)
-
 
 class SubProcessIntensity(BaseModel):
     """Intensity breakdown by sub-process.
@@ -631,7 +605,6 @@ class SubProcessIntensity(BaseModel):
     intensity_value: Decimal = Field(default=Decimal("0"))
     share_pct: Decimal = Field(default=Decimal("0"))
     contribution_pct: Decimal = Field(default=Decimal("0"))
-
 
 class TrendAnalysis(BaseModel):
     """Intensity trend analysis results.
@@ -656,7 +629,6 @@ class TrendAnalysis(BaseModel):
     average_annual_reduction_pct: Decimal = Field(default=Decimal("0"))
     years_of_data: int = Field(default=0)
     trend_consistent: bool = Field(default=False)
-
 
 class BenchmarkComparison(BaseModel):
     """Comparison against sector benchmarks.
@@ -685,7 +657,6 @@ class BenchmarkComparison(BaseModel):
         default=Decimal("0")
     )
 
-
 class DataQualityAssessment(BaseModel):
     """Data quality assessment for intensity inputs.
 
@@ -705,7 +676,6 @@ class DataQualityAssessment(BaseModel):
     consistency_score: Decimal = Field(default=Decimal("0"))
     verification_score: Decimal = Field(default=Decimal("0"))
     recommendations: List[str] = Field(default_factory=list)
-
 
 class IntensityResult(BaseModel):
     """Complete intensity calculation result.
@@ -735,7 +705,7 @@ class IntensityResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     sector: str = Field(default="")
     primary_metric: str = Field(default="")
@@ -761,11 +731,9 @@ class IntensityResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class IntensityCalculatorEngine:
     """Sector-specific intensity metric calculation engine.

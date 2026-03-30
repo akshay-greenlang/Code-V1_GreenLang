@@ -37,14 +37,9 @@ from greenlang.agents.foundation.qa_test_harness.models import (
     SeverityLevel,
 )
 from greenlang.agents.foundation.qa_test_harness.metrics import record_regression
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 class RegressionDetector:
     """Regression detection engine for QA test harness.
@@ -230,7 +225,7 @@ class RegressionDetector:
             raise ValueError(f"Baseline not found: {baseline_id}")
 
         baseline.output_hash = new_output_hash
-        baseline.created_at = _utcnow()
+        baseline.created_at = utcnow()
 
         # Update composite key mapping
         composite_key = f"{baseline.agent_type}:{baseline.input_hash}"
@@ -368,9 +363,8 @@ class RegressionDetector:
 
         self._history[history_key].append({
             "output_hash": output_hash,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         })
-
 
 __all__ = [
     "RegressionDetector",

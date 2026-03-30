@@ -47,33 +47,26 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "28.0.0"
 _PACK_ID = "PACK-028"
 
-
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 def _scurve(t: float, k: float = 0.3) -> float:
     """S-curve (logistic) function for technology adoption modelling."""
     return 1.0 / (1.0 + math.exp(-k * t))
-
 
 def _gompertz(t: float, a: float = 1.0, b: float = 2.0, c: float = 0.3) -> float:
     """
@@ -94,11 +87,9 @@ def _gompertz(t: float, a: float = 1.0, b: float = 2.0, c: float = 0.3) -> float
     """
     return a * math.exp(-b * math.exp(-c * t))
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -107,14 +98,12 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class TRL(int, Enum):
     """Technology Readiness Level (1-9 scale)."""
@@ -127,7 +116,6 @@ class TRL(int, Enum):
     TRL7 = 7   # System prototype demonstrated
     TRL8 = 8   # System complete and qualified
     TRL9 = 9   # System proven in operational environment
-
 
 class TechCategory(str, Enum):
     """Technology category classification."""
@@ -144,13 +132,11 @@ class TechCategory(str, Enum):
     BIOENERGY = "bioenergy"
     NUCLEAR = "nuclear"
 
-
 class RiskLevel(str, Enum):
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
     VERY_HIGH = "very_high"
-
 
 class MilestoneStatus(str, Enum):
     ON_TRACK = "on_track"
@@ -159,13 +145,11 @@ class MilestoneStatus(str, Enum):
     ACHIEVED = "achieved"
     NOT_STARTED = "not_started"
 
-
 class ImplementationPriority(str, Enum):
     IMMEDIATE = "immediate"     # 2025-2027
     SHORT_TERM = "short_term"   # 2027-2030
     MEDIUM_TERM = "medium_term" # 2030-2035
     LONG_TERM = "long_term"     # 2035-2050
-
 
 # =============================================================================
 # IEA NZE TECHNOLOGY MILESTONES (Zero-Hallucination: IEA Published Data)
@@ -476,11 +460,9 @@ DEFAULT_TECHNOLOGIES: List[Dict[str, Any]] = [
      "learning_rate": 0.15, "abatement_potential_pct": 8.0},
 ]
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase_name: str = Field(...)
@@ -493,7 +475,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
     dag_node_id: str = Field(default="")
-
 
 class TechnologyItem(BaseModel):
     """A single technology in the inventory."""
@@ -513,7 +494,6 @@ class TechnologyItem(BaseModel):
     supply_chain_risk: RiskLevel = Field(default=RiskLevel.MEDIUM)
     deployment_readiness: str = Field(default="")
 
-
 class RoadmapMilestone(BaseModel):
     """A single technology deployment milestone."""
     milestone_id: str = Field(default="")
@@ -526,7 +506,6 @@ class RoadmapMilestone(BaseModel):
     status: MilestoneStatus = Field(default=MilestoneStatus.NOT_STARTED)
     dependencies: List[str] = Field(default_factory=list)
 
-
 class TechRoadmap(BaseModel):
     """Technology adoption roadmap."""
     sector: str = Field(default="")
@@ -536,7 +515,6 @@ class TechRoadmap(BaseModel):
     total_capex_usd: float = Field(default=0.0)
     deployment_phases: Dict[str, int] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
-
 
 class CapExAllocation(BaseModel):
     """CapEx allocation for a single technology and year."""
@@ -550,7 +528,6 @@ class CapExAllocation(BaseModel):
     payback_years: float = Field(default=0.0, ge=0.0)
     carbon_price_breakeven_usd: float = Field(default=0.0, ge=0.0)
 
-
 class CapExPlan(BaseModel):
     """Complete CapEx investment plan."""
     total_capex_usd: float = Field(default=0.0, ge=0.0)
@@ -561,7 +538,6 @@ class CapExPlan(BaseModel):
     total_npv_usd: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class TechDependency(BaseModel):
     """A technology dependency relationship."""
     source_tech: str = Field(default="")
@@ -570,7 +546,6 @@ class TechDependency(BaseModel):
     description: str = Field(default="")
     risk_if_delayed: RiskLevel = Field(default=RiskLevel.MEDIUM)
     lead_time_years: int = Field(default=0)
-
 
 class SupplyChainRisk(BaseModel):
     """Supply chain risk assessment for a technology."""
@@ -581,7 +556,6 @@ class SupplyChainRisk(BaseModel):
     critical_materials: List[str] = Field(default_factory=list)
     geographic_concentration: str = Field(default="")
 
-
 class DependencyAnalysis(BaseModel):
     """Complete dependency and risk analysis."""
     dependencies: List[TechDependency] = Field(default_factory=list)
@@ -590,7 +564,6 @@ class DependencyAnalysis(BaseModel):
     overall_risk_level: RiskLevel = Field(default=RiskLevel.MEDIUM)
     bottlenecks: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class ImplementationAction(BaseModel):
     """A single implementation action in the plan."""
@@ -606,7 +579,6 @@ class ImplementationAction(BaseModel):
     responsible_team: str = Field(default="")
     dependencies: List[str] = Field(default_factory=list)
 
-
 class ImplementationPlan(BaseModel):
     """Complete implementation plan."""
     sector: str = Field(default="")
@@ -617,7 +589,6 @@ class ImplementationPlan(BaseModel):
     timeline_years: int = Field(default=0)
     phase_summary: Dict[str, int] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
-
 
 class TechnologyPlanningConfig(BaseModel):
     """Configuration for technology planning workflow."""
@@ -640,12 +611,10 @@ class TechnologyPlanningConfig(BaseModel):
         description="Technology -> current adoption %",
     )
 
-
 class TechnologyPlanningInput(BaseModel):
     config: TechnologyPlanningConfig = Field(default_factory=TechnologyPlanningConfig)
     custom_technologies: List[Dict[str, Any]] = Field(default_factory=list)
     constraints: Dict[str, Any] = Field(default_factory=dict)
-
 
 class TechnologyPlanningResult(BaseModel):
     workflow_id: str = Field(...)
@@ -663,11 +632,9 @@ class TechnologyPlanningResult(BaseModel):
     next_steps: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class TechnologyPlanningWorkflow:
     """
@@ -699,7 +666,7 @@ class TechnologyPlanningWorkflow:
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     async def execute(self, input_data: TechnologyPlanningInput) -> TechnologyPlanningResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         self.config = input_data.config
         self._phase_results = []
         overall_status = WorkflowStatus.RUNNING
@@ -736,7 +703,7 @@ class TechnologyPlanningWorkflow:
                 status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
 
         result = TechnologyPlanningResult(
             workflow_id=self.workflow_id,
@@ -761,7 +728,7 @@ class TechnologyPlanningWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_tech_inventory(self, input_data: TechnologyPlanningInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -834,7 +801,7 @@ class TechnologyPlanningWorkflow:
             1 for t in self._inventory if t.maturity_risk in (RiskLevel.HIGH, RiskLevel.VERY_HIGH)
         )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="tech_inventory", phase_number=1,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -848,7 +815,7 @@ class TechnologyPlanningWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_roadmap_gen(self, input_data: TechnologyPlanningInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         milestones: List[RoadmapMilestone] = []
@@ -949,7 +916,7 @@ class TechnologyPlanningWorkflow:
         outputs["total_capex_usd"] = self._roadmap.total_capex_usd
         outputs["deployment_phases"] = phase_counts
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="roadmap_gen", phase_number=2,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -963,7 +930,7 @@ class TechnologyPlanningWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_capex_mapping(self, input_data: TechnologyPlanningInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         allocations: List[CapExAllocation] = []
@@ -1064,7 +1031,7 @@ class TechnologyPlanningWorkflow:
             total_capex / max(self.config.available_capex_usd, 1.0) * 100, 1,
         ) if self.config.available_capex_usd > 0 else 0.0
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="capex_mapping", phase_number=3,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -1078,7 +1045,7 @@ class TechnologyPlanningWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_dependency_analysis(self, input_data: TechnologyPlanningInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         dependencies: List[TechDependency] = []
@@ -1242,7 +1209,7 @@ class TechnologyPlanningWorkflow:
         outputs["overall_risk"] = overall_risk.value
         outputs["critical_path"] = critical_path[:5]
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="dependency_analysis", phase_number=4,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -1256,7 +1223,7 @@ class TechnologyPlanningWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_implementation_plan(self, input_data: TechnologyPlanningInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         actions: List[ImplementationAction] = []
@@ -1371,7 +1338,7 @@ class TechnologyPlanningWorkflow:
         outputs["phase_summary"] = phase_summary
         outputs["immediate_actions"] = phase_summary.get("immediate", 0)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="implementation_plan", phase_number=5,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),

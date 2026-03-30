@@ -38,9 +38,10 @@ import logging
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException, Query
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.eudr.eu_information_system_interface.setup import get_service
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +51,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-class CreateDDSRequest(BaseModel):
+class CreateDDSRequest(GreenLangBase):
     """Request body for creating a Due Diligence Statement."""
 
     operator_id: str = Field(..., description="GreenLang operator identifier")
@@ -72,7 +73,7 @@ class CreateDDSRequest(BaseModel):
     )
 
 
-class RegisterOperatorRequest(BaseModel):
+class RegisterOperatorRequest(GreenLangBase):
     """Request body for registering an operator."""
 
     operator_id: str = Field(..., description="GreenLang operator identifier")
@@ -88,7 +89,7 @@ class RegisterOperatorRequest(BaseModel):
     contact_email: str = Field(default="", description="Contact email")
 
 
-class FormatGeolocationRequest(BaseModel):
+class FormatGeolocationRequest(GreenLangBase):
     """Request body for formatting geolocation data."""
 
     coordinates: List[Dict[str, Any]] = Field(
@@ -103,7 +104,7 @@ class FormatGeolocationRequest(BaseModel):
     )
 
 
-class AssemblePackageRequest(BaseModel):
+class AssemblePackageRequest(GreenLangBase):
     """Request body for assembling a document package."""
 
     dds_id: str = Field(..., description="Associated DDS identifier")
@@ -112,7 +113,7 @@ class AssemblePackageRequest(BaseModel):
     )
 
 
-class CheckStatusRequest(BaseModel):
+class CheckStatusRequest(GreenLangBase):
     """Request body for checking DDS status."""
 
     eu_reference: str = Field(
@@ -120,7 +121,7 @@ class CheckStatusRequest(BaseModel):
     )
 
 
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     """Standard error response body."""
 
     detail: str = Field(..., description="Error description")

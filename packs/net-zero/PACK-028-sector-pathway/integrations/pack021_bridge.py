@@ -44,14 +44,8 @@ logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -63,7 +57,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 class _PackStub:
     """Stub for PACK-021 components when not available."""
     def __init__(self, component: str) -> None:
@@ -74,7 +67,6 @@ class _PackStub:
             return {"component": self._component, "status": "not_available", "pack": "PACK-021"}
         return _stub
 
-
 def _try_import_pack021(component: str, module_path: str) -> Any:
     """Attempt to import a PACK-021 component."""
     try:
@@ -83,11 +75,9 @@ def _try_import_pack021(component: str, module_path: str) -> Any:
         logger.debug("PACK-021 component '%s' not available, using stub", component)
         return _PackStub(component)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class BaselineStatus(str, Enum):
     NOT_STARTED = "not_started"
@@ -96,13 +86,11 @@ class BaselineStatus(str, Enum):
     VALIDATED = "validated"
     EXPIRED = "expired"
 
-
 class TargetPathway(str, Enum):
     ACA_15C = "aca_15c"
     ACA_WB2C = "aca_wb2c"
     SDA = "sda"
     HYBRID = "hybrid"
-
 
 class GapSeverity(str, Enum):
     ON_TRACK = "on_track"
@@ -110,7 +98,6 @@ class GapSeverity(str, Enum):
     MODERATE_GAP = "moderate_gap"
     SIGNIFICANT_GAP = "significant_gap"
     CRITICAL_GAP = "critical_gap"
-
 
 # ---------------------------------------------------------------------------
 # PACK-021 Component Registry
@@ -149,11 +136,9 @@ PACK021_COMPONENTS: Dict[str, Dict[str, str]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class PACK021BridgeConfig(BaseModel):
     """Configuration for the PACK-021 bridge."""
@@ -168,7 +153,6 @@ class PACK021BridgeConfig(BaseModel):
     enable_provenance: bool = Field(default=True)
     auto_import_baseline: bool = Field(default=True)
     sync_activity_data: bool = Field(default=True)
-
 
 class BaselineImport(BaseModel):
     """Imported baseline data from PACK-021."""
@@ -186,9 +170,8 @@ class BaselineImport(BaseModel):
     activity_data: Dict[str, Any] = Field(default_factory=dict)
     status: BaselineStatus = Field(default=BaselineStatus.NOT_STARTED)
     data_quality_score: float = Field(default=0.0, ge=0.0, le=1.0)
-    imported_at: datetime = Field(default_factory=_utcnow)
+    imported_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class TargetImport(BaseModel):
     """Imported target definitions from PACK-021."""
@@ -204,7 +187,6 @@ class TargetImport(BaseModel):
     annual_reduction_rate_pct: float = Field(default=4.2)
     temperature_alignment: str = Field(default="1.5C")
     provenance_hash: str = Field(default="")
-
 
 class GapImport(BaseModel):
     """Imported gap analysis from PACK-021."""
@@ -222,7 +204,6 @@ class GapImport(BaseModel):
     reduction_actions: List[Dict[str, Any]] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class SectorEnhancement(BaseModel):
     """Sector-specific enhancement applied to PACK-021 baseline."""
     enhancement_id: str = Field(default_factory=_new_uuid)
@@ -237,7 +218,6 @@ class SectorEnhancement(BaseModel):
     improvement_over_aca: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 class PACK021IntegrationResult(BaseModel):
     """Complete PACK-021 integration result."""
     result_id: str = Field(default_factory=_new_uuid)
@@ -251,17 +231,17 @@ class PACK021IntegrationResult(BaseModel):
     integration_quality_score: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # PACK021Bridge
 # ---------------------------------------------------------------------------
-
 
 class PACK021Bridge:
     """PACK-021 Net Zero Starter Pack integration bridge for PACK-028.
 
     Imports baseline GHG inventory, absolute targets, and gap analysis
     from PACK-021 and enhances them with sector-specific SDA intensity
+
+from greenlang.schemas import utcnow
     pathways from PACK-028.
 
     Example:
@@ -580,7 +560,7 @@ class PACK021Bridge:
         self.import_gap_analysis()
         return {
             "synced": True,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "baseline_total_tco2e": self._baseline_cache.total_tco2e if self._baseline_cache else 0,
             "targets_count": len(self._target_cache),
         }

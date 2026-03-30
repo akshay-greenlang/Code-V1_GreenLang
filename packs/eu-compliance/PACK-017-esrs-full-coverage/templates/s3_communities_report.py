@@ -26,18 +26,14 @@ import logging
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _SECTIONS: List[str] = [
     "policies", "engagement_processes", "fpic_processes", "remediation_channels",
     "actions_and_impacts", "community_assessments", "targets", "grievance_metrics",
 ]
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -49,7 +45,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 class S3CommunitiesReportTemplate:
     """
@@ -73,7 +68,7 @@ class S3CommunitiesReportTemplate:
 
     def render(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render full report as structured dict."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result: Dict[str, Any] = {}
         for section in _SECTIONS:
             result[section] = self.render_section(section, data)
@@ -104,7 +99,7 @@ class S3CommunitiesReportTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render S3 Affected Communities report as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [self._md_header(data), self._md_policies(data), self._md_engagement(data),
                      self._md_fpic(data), self._md_remediation(data), self._md_actions_impacts(data),
                      self._md_assessments(data), self._md_targets(data), self._md_grievance(data),
@@ -115,7 +110,7 @@ class S3CommunitiesReportTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render S3 Affected Communities report as HTML."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         body = "\n".join([self._html_header(data), self._html_assessments(data), self._html_grievance(data)])
         prov = _compute_hash(body)
@@ -126,7 +121,7 @@ class S3CommunitiesReportTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> str:
         """Render S3 Affected Communities report as JSON string."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = {"template": "s3_communities_report", "esrs_reference": "ESRS S3", "version": "17.0.0",
                   "generated_at": self.generated_at.isoformat(), "entity_name": data.get("entity_name", ""),
                   "reporting_year": data.get("reporting_year", ""),
@@ -293,7 +288,6 @@ class S3CommunitiesReportTemplate:
         return (f"<h2>{sec['title']}</h2>\n<table><tr><th>Metric</th><th>Value</th></tr>"
                 f"<tr><td>Filed</td><td>{sec['grievances_filed']}</td></tr>"
                 f"<tr><td>Resolved</td><td>{sec['grievances_resolved']}</td></tr></table>")
-
 
 # Alias for backward compatibility with templates/__init__.py
 S3CommunitiesReport = S3CommunitiesReportTemplate

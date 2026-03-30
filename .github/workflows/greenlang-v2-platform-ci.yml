@@ -48,7 +48,7 @@ jobs:
           python -c "from pathlib import Path; from greenlang.v2.agent_lifecycle import validate_agent_registry; r=validate_agent_registry(Path('greenlang/agents/v2_agent_registry.yaml')); print(r.errors); raise SystemExit(1 if not r.ok else 0)"
           python -c "from greenlang.v2.reliability_runtime import validate_connector_registry; r=validate_connector_registry(); print(r.errors); raise SystemExit(1 if not r.ok else 0)"
           python -c "from pathlib import Path; from greenlang.v2.pack_tiers import validate_tier_registry; p=Path('greenlang/ecosystem/packs/v2_tier_registry.yaml'); errs=validate_tier_registry(p); print(errs); raise SystemExit(1 if errs else 0)"
-          pytest -q tests/v2/test_contracts.py tests/v2/test_pack_tiers.py tests/v2/test_pack_tier_lifecycle.py tests/v2/test_cli_v2.py tests/v2/test_agent_lifecycle_phase3.py tests/v2/test_connector_reliability_acceptance.py
+          pytest -q tests/v2/test_contracts.py tests/v2/test_pack_tiers.py tests/v2/test_pack_tier_lifecycle.py tests/v2/test_cli_v2.py tests/v2/test_agent_lifecycle_phase3.py tests/v2/test_connector_reliability_acceptance.py tests/v2/test_phase4_security_determinism.py tests/v2/test_runtime_execution_checks.py tests/v2/test_v2_profile_backend_parity.py tests/v2/test_policy_bundle_semantics.py
 
   v2-full-gate:
     if: github.event_name == 'push' || github.event_name == 'pull_request'

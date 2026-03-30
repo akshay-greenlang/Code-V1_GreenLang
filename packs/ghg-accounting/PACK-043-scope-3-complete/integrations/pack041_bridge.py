@@ -29,21 +29,15 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "43.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -56,11 +50,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class Pack041Status(str, Enum):
     """PACK-041 availability status."""
@@ -69,11 +61,9 @@ class Pack041Status(str, Enum):
     UNAVAILABLE = "unavailable"
     VERSION_MISMATCH = "version_mismatch"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class Scope12Totals(BaseModel):
     """Scope 1 and Scope 2 emission totals from PACK-041."""
@@ -89,8 +79,7 @@ class Scope12Totals(BaseModel):
     boundary_approach: str = Field(default="operational_control")
     facilities_count: int = Field(default=0)
     provenance_hash: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class FullFootprintResult(BaseModel):
     """Combined Scope 1+2+3 emission footprint."""
@@ -108,8 +97,7 @@ class FullFootprintResult(BaseModel):
     scope2_share_pct: float = Field(default=0.0)
     scope3_share_pct: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class BoundaryAlignmentResult(BaseModel):
     """Boundary consistency check between Scope 3 and Scope 1-2."""
@@ -122,11 +110,9 @@ class BoundaryAlignmentResult(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Pack041Bridge
 # ---------------------------------------------------------------------------
-
 
 class Pack041Bridge:
     """Optional integration with PACK-041 (Scope 1-2 Complete Pack).
@@ -161,6 +147,7 @@ class Pack041Bridge:
         """Try to import PACK-041."""
         try:
             import importlib
+
             return importlib.import_module(
                 "packs.ghg_accounting.PACK_041_scope_1_2_complete"
             )

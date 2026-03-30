@@ -33,6 +33,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "29.0.0"
@@ -81,10 +83,6 @@ XBRL_TAGS: Dict[str, str] = {
     "sbti_status": "gl:CDPSBTiStatus",
 }
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 
@@ -123,7 +121,6 @@ def _dec_comma(val: Any, places: int = 2) -> str:
     except Exception:
         return str(val)
 
-
 class CDPDisclosureTemplate:
     """
     CDP Climate Change disclosure template for PACK-029.
@@ -150,7 +147,7 @@ class CDPDisclosureTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render CDP disclosure report as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [
             self._md_header(data), self._md_executive_summary(data),
             self._md_c4_1(data), self._md_c4_2(data),
@@ -165,7 +162,7 @@ class CDPDisclosureTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render CDP disclosure report as HTML."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         parts = [
             self._html_header(data), self._html_executive_summary(data),
@@ -186,7 +183,7 @@ class CDPDisclosureTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render as structured JSON."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         targets = data.get("targets", [])
         readiness_results = data.get("readiness_results", {})
         passed = sum(1 for r in readiness_results.values() if r.get("status") == "pass")

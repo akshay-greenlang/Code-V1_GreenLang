@@ -42,26 +42,21 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ReportFormat
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -70,20 +65,17 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
 
-
 class GroupReportingPhase(str, Enum):
     DATA_AGGREGATION = "data_aggregation"
     FRAMEWORK_MAPPING = "framework_mapping"
     REPORT_GENERATION = "report_generation"
     QUALITY_ASSURANCE = "quality_assurance"
-
 
 class ReportingFramework(str, Enum):
     GHG_PROTOCOL = "ghg_protocol"
@@ -94,26 +86,16 @@ class ReportingFramework(str, Enum):
     SBTI = "sbti"
     SEC_CLIMATE = "sec_climate"
 
-
-class ReportFormat(str, Enum):
-    JSON = "json"
-    MARKDOWN = "markdown"
-    HTML = "html"
-    CSV = "csv"
-
-
 class QACheckStatus(str, Enum):
     PASSED = "passed"
     FAILED = "failed"
     WARNING = "warning"
     SKIPPED = "skipped"
 
-
 class SignOffStatus(str, Enum):
     PENDING = "pending"
     SIGNED_OFF = "signed_off"
     REJECTED = "rejected"
-
 
 # =============================================================================
 # REFERENCE DATA
@@ -145,11 +127,9 @@ QA_RULES = [
     ("COMPLETENESS_CHECK", "All required scopes have non-zero values"),
 ]
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -161,7 +141,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class AggregatedData(BaseModel):
     """Aggregated consolidated data for reporting."""
@@ -187,7 +166,6 @@ class AggregatedData(BaseModel):
     intensity_metrics: Dict[str, Decimal] = Field(default_factory=dict)
     data_quality_score: Decimal = Field(Decimal("0"))
 
-
 class FrameworkOutput(BaseModel):
     """Mapped output for a reporting framework."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -199,7 +177,6 @@ class FrameworkOutput(BaseModel):
     missing_fields: List[str] = Field(default_factory=list)
     is_complete: bool = Field(False)
     notes: List[str] = Field(default_factory=list)
-
 
 class GeneratedReport(BaseModel):
     """A generated report artifact."""
@@ -214,7 +191,6 @@ class GeneratedReport(BaseModel):
     generated_at: str = Field("")
     provenance_hash: str = Field("")
 
-
 class QACheck(BaseModel):
     """A single QA check result."""
     check_id: str = Field(default_factory=_new_uuid)
@@ -223,7 +199,6 @@ class QACheck(BaseModel):
     status: QACheckStatus = Field(QACheckStatus.PASSED)
     details: str = Field("")
     severity: str = Field("info")
-
 
 class SignOffRecord(BaseModel):
     """Report sign-off record."""
@@ -237,7 +212,6 @@ class SignOffRecord(BaseModel):
     signed_at: str = Field("")
     comments: str = Field("")
     provenance_hash: str = Field("")
-
 
 class GroupReportingInput(BaseModel):
     """Input for the group reporting workflow."""
@@ -268,7 +242,6 @@ class GroupReportingInput(BaseModel):
     )
     skip_phases: List[str] = Field(default_factory=list)
 
-
 class GroupReportingResult(BaseModel):
     """Output from the group reporting workflow."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -291,11 +264,9 @@ class GroupReportingResult(BaseModel):
     started_at: str = Field("")
     completed_at: str = Field("")
 
-
 # =============================================================================
 # WORKFLOW CLASS
 # =============================================================================
-
 
 class GroupReportingWorkflow:
     """
@@ -330,7 +301,7 @@ class GroupReportingWorkflow:
 
     def execute(self, input_data: GroupReportingInput) -> GroupReportingResult:
         """Execute the full 4-phase group reporting workflow."""
-        start = _utcnow()
+        start = utcnow()
         result = GroupReportingResult(
             organisation_id=input_data.organisation_id,
             reporting_year=input_data.reporting_year,
@@ -353,10 +324,10 @@ class GroupReportingWorkflow:
                 ))
                 continue
 
-            phase_start = _utcnow()
+            phase_start = utcnow()
             try:
                 phase_out = phase_methods[phase](input_data, result)
-                elapsed = (_utcnow() - phase_start).total_seconds()
+                elapsed = (utcnow() - phase_start).total_seconds()
                 ph_hash = _compute_hash(str(phase_out))
                 result.phase_results.append(PhaseResult(
                     phase_name=phase.value, phase_number=idx,
@@ -364,7 +335,7 @@ class GroupReportingWorkflow:
                     outputs=phase_out, provenance_hash=ph_hash,
                 ))
             except Exception as exc:
-                elapsed = (_utcnow() - phase_start).total_seconds()
+                elapsed = (utcnow() - phase_start).total_seconds()
                 logger.error("Phase %s failed: %s", phase.value, exc, exc_info=True)
                 result.phase_results.append(PhaseResult(
                     phase_name=phase.value, phase_number=idx,
@@ -378,7 +349,7 @@ class GroupReportingWorkflow:
         if result.status != WorkflowStatus.FAILED:
             result.status = WorkflowStatus.COMPLETED
 
-        end = _utcnow()
+        end = utcnow()
         result.completed_at = end.isoformat()
         result.duration_seconds = (end - start).total_seconds()
         result.provenance_hash = _compute_hash(
@@ -569,7 +540,7 @@ class GroupReportingWorkflow:
     ) -> Dict[str, Any]:
         """Generate reports in required formats."""
         logger.info("Phase 3 -- Report Generation")
-        now_iso = _utcnow().isoformat()
+        now_iso = utcnow().isoformat()
         reports: List[GeneratedReport] = []
 
         for fw_output in self._framework_outputs:
@@ -651,7 +622,7 @@ class GroupReportingWorkflow:
         # Generate sign-off records
         sign_offs: List[SignOffRecord] = []
         for sig in input_data.signatories:
-            now_iso = _utcnow().isoformat()
+            now_iso = utcnow().isoformat()
             prov = _compute_hash(
                 f"{sig.get('name', '')}|{sig.get('role', '')}|{now_iso}"
             )
@@ -761,7 +732,6 @@ class GroupReportingWorkflow:
             return Decimal(str(value))
         except Exception:
             return Decimal("0")
-
 
 # =============================================================================
 # MODULE EXPORTS

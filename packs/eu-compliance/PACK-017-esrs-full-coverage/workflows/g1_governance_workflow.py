@@ -38,33 +38,25 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class WorkflowPhase(str, Enum):
     """Phases of the G1 business conduct workflow."""
@@ -75,7 +67,6 @@ class WorkflowPhase(str, Enum):
     PAYMENT_PRACTICES = "payment_practices"
     REPORT_ASSEMBLY = "report_assembly"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "pending"
@@ -83,7 +74,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class PhaseStatus(str, Enum):
     """Status of a single phase."""
@@ -93,7 +83,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class CorruptionRiskLevel(str, Enum):
     """Anti-corruption risk level."""
     LOW = "low"
@@ -101,11 +90,9 @@ class CorruptionRiskLevel(str, Enum):
     HIGH = "high"
     CRITICAL = "critical"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -116,7 +103,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class CorruptionIncident(BaseModel):
     """Corruption or bribery incident per G1-4."""
@@ -129,7 +115,6 @@ class CorruptionIncident(BaseModel):
     employees_dismissed: int = Field(default=0, ge=0)
     resolved: bool = Field(default=False)
 
-
 class PoliticalContribution(BaseModel):
     """Political contribution or lobbying record per G1-5."""
     contribution_id: str = Field(default_factory=lambda: f"pol-{_new_uuid()[:8]}")
@@ -139,7 +124,6 @@ class PoliticalContribution(BaseModel):
     topic: str = Field(default="", description="Topic of political engagement")
     registered_lobbyist: bool = Field(default=False)
 
-
 class PaymentMetrics(BaseModel):
     """Payment practices metrics per G1-6."""
     avg_payment_days: float = Field(default=0.0, ge=0.0, description="Average days to pay suppliers")
@@ -148,7 +132,6 @@ class PaymentMetrics(BaseModel):
     invoices_total: int = Field(default=0, ge=0)
     standard_payment_terms_days: int = Field(default=30, ge=0)
     sme_payment_days: float = Field(default=0.0, ge=0.0, description="Avg days for SME suppliers")
-
 
 class G1GovernanceInput(BaseModel):
     """Input data model for G1GovernanceWorkflow."""
@@ -182,7 +165,6 @@ class G1GovernanceInput(BaseModel):
     )
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class G1GovernanceWorkflowResult(BaseModel):
     """Complete result from G1 governance workflow."""
     workflow_id: str = Field(..., description="Unique execution ID")
@@ -205,11 +187,9 @@ class G1GovernanceWorkflowResult(BaseModel):
     reporting_year: int = Field(default=2025)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class G1GovernanceWorkflow:
     """
@@ -274,7 +254,7 @@ class G1GovernanceWorkflow:
         if input_data is None:
             input_data = G1GovernanceInput(config=config or {})
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting G1 governance workflow %s", self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = WorkflowStatus.IN_PROGRESS
@@ -294,7 +274,7 @@ class G1GovernanceWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         completed_count = sum(1 for p in phase_results if p.status == PhaseStatus.COMPLETED)
 
         total_fines = sum(c.fines_eur for c in input_data.corruption_incidents)
@@ -330,7 +310,7 @@ class G1GovernanceWorkflow:
 
     async def _phase_policy_review(self, input_data: G1GovernanceInput) -> PhaseResult:
         """Review business conduct policies and corporate culture (G1-1)."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {"policies_count": len(input_data.policies)}
         warnings: List[str] = []
         outputs["has_code_of_conduct"] = any(p.get("type") == "code_of_conduct" for p in input_data.policies)
@@ -341,7 +321,7 @@ class G1GovernanceWorkflow:
             warnings.append("No business conduct policies defined (G1-1)")
         if not outputs["has_whistleblower_channel"]:
             warnings.append("No whistleblower channel established")
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 1 PolicyReview: %d policies", len(input_data.policies))
         return PhaseResult(
             phase_name=WorkflowPhase.POLICY_REVIEW.value, status=PhaseStatus.COMPLETED,
@@ -351,7 +331,7 @@ class G1GovernanceWorkflow:
 
     async def _phase_supplier_management(self, input_data: G1GovernanceInput) -> PhaseResult:
         """Evaluate supplier relationship management (G1-2)."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         data = input_data.supplier_data
@@ -369,7 +349,7 @@ class G1GovernanceWorkflow:
             warnings.append("No supplier management data provided (G1-2)")
         if assessment_pct < 50:
             warnings.append(f"Supplier assessment coverage at {assessment_pct}% (below 50%)")
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 2 SupplierManagement: %d suppliers", outputs["total_suppliers"])
         return PhaseResult(
             phase_name=WorkflowPhase.SUPPLIER_MANAGEMENT.value, status=PhaseStatus.COMPLETED,
@@ -379,7 +359,7 @@ class G1GovernanceWorkflow:
 
     async def _phase_corruption_assessment(self, input_data: G1GovernanceInput) -> PhaseResult:
         """Assess anti-corruption measures and incidents (G1-3, G1-4)."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         ac_data = input_data.anti_corruption_data
@@ -399,7 +379,7 @@ class G1GovernanceWorkflow:
             warnings.append(f"{len(incidents)} corruption/bribery incidents reported")
         if not ac_data:
             warnings.append("No anti-corruption program data provided (G1-3)")
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 3 CorruptionAssessment: %d incidents", len(incidents))
         return PhaseResult(
             phase_name=WorkflowPhase.CORRUPTION_ASSESSMENT.value, status=PhaseStatus.COMPLETED,
@@ -409,7 +389,7 @@ class G1GovernanceWorkflow:
 
     async def _phase_political_influence(self, input_data: G1GovernanceInput) -> PhaseResult:
         """Evaluate political engagement and lobbying activities (G1-5)."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         contributions = input_data.political_contributions
@@ -424,7 +404,7 @@ class G1GovernanceWorkflow:
         outputs["lobbying_expenditure_eur"] = input_data.lobbying_data.get("total_expenditure_eur", 0)
         if contributions and not all(c.registered_lobbyist for c in contributions if c.contribution_type == "lobbying"):
             warnings.append("Some lobbying activities not registered")
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 4 PoliticalInfluence: %d contributions, %.0f EUR",
                          len(contributions), outputs["total_amount_eur"])
         return PhaseResult(
@@ -435,7 +415,7 @@ class G1GovernanceWorkflow:
 
     async def _phase_payment_practices(self, input_data: G1GovernanceInput) -> PhaseResult:
         """Analyse payment practices (G1-6)."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         pm = input_data.payment_metrics
@@ -458,7 +438,7 @@ class G1GovernanceWorkflow:
         else:
             outputs["avg_payment_days"] = 0
             warnings.append("No payment practices data provided (G1-6)")
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 5 PaymentPractices: avg=%s days",
                          outputs["avg_payment_days"])
         return PhaseResult(
@@ -469,7 +449,7 @@ class G1GovernanceWorkflow:
 
     async def _phase_report_assembly(self, input_data: G1GovernanceInput) -> PhaseResult:
         """Assemble complete G1 disclosure from all phase results."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         dr_available = sum([
@@ -486,7 +466,7 @@ class G1GovernanceWorkflow:
         outputs["disclosure_ready"] = dr_available >= 5
         if dr_available < 6:
             warnings.append(f"{6 - dr_available} G1 disclosure requirements missing data")
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 6 ReportAssembly: %d/6 DRs with data", dr_available)
         return PhaseResult(
             phase_name=WorkflowPhase.REPORT_ASSEMBLY.value, status=PhaseStatus.COMPLETED,

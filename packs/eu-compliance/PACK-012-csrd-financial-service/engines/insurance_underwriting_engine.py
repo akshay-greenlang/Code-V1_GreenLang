@@ -56,25 +56,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -94,7 +88,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _safe_divide(numerator: float, denominator: float, default: float = 0.0) -> float:
     """Safely divide two numbers, returning default on zero denominator.
 
@@ -110,7 +103,6 @@ def _safe_divide(numerator: float, denominator: float, default: float = 0.0) -> 
         return default
     return numerator / denominator
 
-
 def _safe_pct(numerator: float, denominator: float) -> float:
     """Calculate percentage safely.
 
@@ -125,11 +117,9 @@ def _safe_pct(numerator: float, denominator: float) -> float:
         return 0.0
     return (numerator / denominator) * 100.0
 
-
 def _round_val(value: float, places: int = 4) -> float:
     """Round a float to specified decimal places."""
     return round(value, places)
-
 
 def _round_decimal(value: float, places: int = 4) -> float:
     """Round using Decimal for regulatory precision."""
@@ -137,11 +127,9 @@ def _round_decimal(value: float, places: int = 4) -> float:
     q = Decimal("0." + "0" * places)
     return float(d.quantize(q, rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class InsuranceLine(str, Enum):
     """Lines of business for insurance underwriting emissions."""
@@ -151,7 +139,6 @@ class InsuranceLine(str, Enum):
     GENERAL_LIABILITY = "general_liability"
     PROJECT_INSURANCE = "project_insurance"
     TREATY_REINSURANCE = "treaty_reinsurance"
-
 
 class NACESector(str, Enum):
     """NACE Rev. 2 high-level sector classifications for insured entities."""
@@ -177,7 +164,6 @@ class NACESector(str, Enum):
     HOUSEHOLD = "T"
     EXTRATERRITORIAL = "U"
 
-
 class DataQualityLevel(str, Enum):
     """PCAF data quality score levels for insurance (1 = best, 5 = worst)."""
     SCORE_1 = "score_1"  # Insured entity reported & verified emissions
@@ -191,7 +177,6 @@ class DataQualityLevel(str, Enum):
         """Return integer score value."""
         return int(self.value.split("_")[1])
 
-
 class ReinsuranceType(str, Enum):
     """Types of reinsurance arrangements."""
     QUOTA_SHARE = "quota_share"
@@ -201,14 +186,12 @@ class ReinsuranceType(str, Enum):
     FACULTATIVE = "facultative"
     NONE = "none"
 
-
 class EmissionCalculationMethod(str, Enum):
     """Method used to calculate insurance-associated emissions."""
     PREMIUM_BASED = "premium_based"
     CLAIMS_BASED = "claims_based"
     HYBRID = "hybrid"
     SECTOR_AVERAGE = "sector_average"
-
 
 # ---------------------------------------------------------------------------
 # Default Sector Emission Intensity Factors
@@ -262,11 +245,9 @@ PROPERTY_EMISSION_FACTORS: Dict[str, float] = {
     "data_center": 120.0,
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Data Models
 # ---------------------------------------------------------------------------
-
 
 class ReinsuranceAdjustment(BaseModel):
     """Reinsurance cession adjustment for gross-to-net calculation.
@@ -312,7 +293,6 @@ class ReinsuranceAdjustment(BaseModel):
             self.cession_pct = (self.ceded_premium / self.written_premium) * 100.0
         return self
 
-
 class ClaimsEmissions(BaseModel):
     """Claims-linked emissions for a policy or line of business.
 
@@ -347,7 +327,6 @@ class ClaimsEmissions(BaseModel):
         default="", description="Methodology for claims emissions",
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class PolicyData(BaseModel):
     """Input data for a single insurance policy or risk.
@@ -442,7 +421,6 @@ class PolicyData(BaseModel):
         description="Preferred emission calculation method",
     )
 
-
 class PolicyEmissionsResult(BaseModel):
     """Emissions result for a single insurance policy.
 
@@ -502,7 +480,6 @@ class PolicyEmissionsResult(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class LineOfBusinessResult(BaseModel):
     """Aggregated results for a single line of business.
 
@@ -545,7 +522,6 @@ class LineOfBusinessResult(BaseModel):
         default=0.0, description="Weight of LoB in portfolio (%)",
     )
 
-
 class SectorBreakdown(BaseModel):
     """Emissions breakdown by NACE industry sector.
 
@@ -567,7 +543,6 @@ class SectorBreakdown(BaseModel):
     total_net_emissions: float = Field(default=0.0, description="Net emissions (tCO2e)")
     emission_intensity: float = Field(default=0.0, description="Intensity (tCO2e/EUR M)")
     weight_pct: float = Field(default=0.0, description="Weight in portfolio (%)")
-
 
 class UnderwritingEmissionsResult(BaseModel):
     """Complete underwriting portfolio emissions result.
@@ -635,15 +610,13 @@ class UnderwritingEmissionsResult(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     engine_version: str = Field(default=_MODULE_VERSION, description="Engine version")
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp",
+        default_factory=utcnow, description="Calculation timestamp",
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 # ---------------------------------------------------------------------------
 # Engine Configuration
 # ---------------------------------------------------------------------------
-
 
 class UnderwritingConfig(BaseModel):
     """Configuration for the InsuranceUnderwritingEngine.
@@ -706,7 +679,6 @@ class UnderwritingConfig(BaseModel):
         description="Decimal places for rounding",
     )
 
-
 # ---------------------------------------------------------------------------
 # NACE sector name lookup
 # ---------------------------------------------------------------------------
@@ -735,7 +707,6 @@ NACE_SECTOR_NAMES: Dict[str, str] = {
     "U": "Activities of extraterritorial organisations",
 }
 
-
 # ---------------------------------------------------------------------------
 # Model rebuilds for forward references
 # ---------------------------------------------------------------------------
@@ -749,11 +720,9 @@ SectorBreakdown.model_rebuild()
 UnderwritingEmissionsResult.model_rebuild()
 UnderwritingConfig.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # InsuranceUnderwritingEngine
 # ---------------------------------------------------------------------------
-
 
 class InsuranceUnderwritingEngine:
     """
@@ -835,7 +804,7 @@ class InsuranceUnderwritingEngine:
         Raises:
             ValueError: If policies list is empty.
         """
-        start = _utcnow()
+        start = utcnow()
 
         if not policies:
             raise ValueError("Policies list cannot be empty")
@@ -884,7 +853,7 @@ class InsuranceUnderwritingEngine:
         # Methodology notes
         notes = self._generate_methodology_notes(all_results, filtered, policies)
 
-        end = _utcnow()
+        end = utcnow()
         processing_ms = (end - start).total_seconds() * 1000.0
 
         result = UnderwritingEmissionsResult(

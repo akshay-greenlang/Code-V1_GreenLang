@@ -26,6 +26,7 @@ from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas.enums import HealthStatus
 
 try:
     from fastapi import APIRouter
@@ -35,14 +36,6 @@ except ImportError:
     APIRouter = object
 
 logger = logging.getLogger(__name__)
-
-
-class HealthStatus(str, Enum):
-    """Health status values."""
-    UP = "UP"
-    DOWN = "DOWN"
-    DEGRADED = "DEGRADED"
-    UNKNOWN = "UNKNOWN"
 
 
 class ProbeType(str, Enum):

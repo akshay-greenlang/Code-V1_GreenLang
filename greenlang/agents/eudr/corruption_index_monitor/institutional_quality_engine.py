@@ -91,6 +91,7 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -209,7 +210,6 @@ else:
     _inst_weak_countries = None  # type: ignore[assignment]
     _inst_errors_total = None  # type: ignore[assignment]
 
-
 def _inc_inst_assessments() -> None:
     if PROMETHEUS_AVAILABLE and _inst_assessments_total is not None:
         _inst_assessments_total.inc()
@@ -219,11 +219,9 @@ def _inc_inst_assessments() -> None:
         except Exception:
             pass
 
-
 def _inc_forest_queries() -> None:
     if PROMETHEUS_AVAILABLE and _inst_forest_queries_total is not None:
         _inst_forest_queries_total.inc()
-
 
 def _observe_inst_duration(seconds: float) -> None:
     if PROMETHEUS_AVAILABLE and _inst_query_duration is not None:
@@ -234,7 +232,6 @@ def _observe_inst_duration(seconds: float) -> None:
         except Exception:
             pass
 
-
 def _inc_inst_error(operation: str) -> None:
     if PROMETHEUS_AVAILABLE and _inst_errors_total is not None:
         _inst_errors_total.labels(operation=operation).inc()
@@ -244,16 +241,9 @@ def _inc_inst_error(operation: str) -> None:
         except Exception:
             pass
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _to_decimal(value: Any) -> Decimal:
     """Convert a numeric value to Decimal via string for determinism."""
@@ -261,17 +251,14 @@ def _to_decimal(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _compute_hash(data: Any) -> str:
     """Compute deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class InstitutionalDimension(str, Enum):
     """Institutional quality assessment dimensions."""
@@ -285,7 +272,6 @@ class InstitutionalDimension(str, Enum):
     FOREST_GOVERNANCE = "FG"
     LAND_TENURE_SECURITY = "LTS"
 
-
 class InstitutionalCapacityLevel(str, Enum):
     """Institutional capacity classification."""
 
@@ -293,7 +279,6 @@ class InstitutionalCapacityLevel(str, Enum):
     ADEQUATE = "ADEQUATE"
     WEAK = "WEAK"
     VERY_WEAK = "VERY_WEAK"
-
 
 class IllegalLoggingPrevalence(str, Enum):
     """Illegal logging prevalence classification."""
@@ -303,11 +288,9 @@ class IllegalLoggingPrevalence(str, Enum):
     HIGH = "HIGH"
     CRITICAL = "CRITICAL"
 
-
 # ---------------------------------------------------------------------------
 # Data classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class InstitutionalAssessment:
@@ -345,7 +328,6 @@ class InstitutionalAssessment:
             "enforcement_effectiveness": str(self.enforcement_effectiveness),
             "institutional_capacity_level": self.institutional_capacity_level,
         }
-
 
 @dataclass
 class ForestGovernanceProfile:
@@ -390,7 +372,6 @@ class ForestGovernanceProfile:
             "protected_area_management": str(self.protected_area_management),
         }
 
-
 @dataclass
 class InstitutionalQualityResult:
     """Result wrapper for institutional quality assessment."""
@@ -403,7 +384,6 @@ class InstitutionalQualityResult:
     calculation_timestamp: str = ""
     warnings: List[str] = field(default_factory=list)
     error: Optional[str] = None
-
 
 @dataclass
 class GovernanceProfileResult:
@@ -421,7 +401,6 @@ class GovernanceProfileResult:
     warnings: List[str] = field(default_factory=list)
     error: Optional[str] = None
 
-
 @dataclass
 class StrengthResult:
     """Result wrapper for institutional strength assessment."""
@@ -438,7 +417,6 @@ class StrengthResult:
     warnings: List[str] = field(default_factory=list)
     error: Optional[str] = None
 
-
 @dataclass
 class ForestGovernanceResult:
     """Result wrapper for forest governance assessment."""
@@ -454,7 +432,6 @@ class ForestGovernanceResult:
     warnings: List[str] = field(default_factory=list)
     error: Optional[str] = None
 
-
 @dataclass
 class ComparisonResult:
     """Result wrapper for cross-country institutional comparison."""
@@ -468,7 +445,6 @@ class ComparisonResult:
     calculation_timestamp: str = ""
     warnings: List[str] = field(default_factory=list)
     error: Optional[str] = None
-
 
 # ---------------------------------------------------------------------------
 # Default dimension weights for composite scoring
@@ -484,7 +460,6 @@ DEFAULT_DIMENSION_WEIGHTS: Dict[str, Decimal] = {
     "FG": Decimal("0.150"),   # Forest Governance (higher for EUDR)
     "LTS": Decimal("0.150"),  # Land Tenure Security (higher for EUDR)
 }
-
 
 # ---------------------------------------------------------------------------
 # Institutional Quality Reference Data
@@ -566,7 +541,6 @@ INSTITUTIONAL_DATA: Dict[str, Dict[str, int]] = {
     "SD": {"JI": 10, "RE": 12, "PR": 12, "CE": 10, "TL": 8, "ACF": 8, "FG": 5, "LTS": 8},
 }
 
-
 # ---------------------------------------------------------------------------
 # Forest Governance Reference Data
 # ---------------------------------------------------------------------------
@@ -626,11 +600,9 @@ FOREST_GOVERNANCE_DATA: Dict[str, Tuple[int, float, float, int, int, str, int, i
     "IN": (45, 0.28, 0.35, 40, 38, "HIGH", 22, 30, 32),
 }
 
-
 # ---------------------------------------------------------------------------
 # Institutional Quality Engine
 # ---------------------------------------------------------------------------
-
 
 class InstitutionalQualityEngine:
     """Institutional quality assessment engine for EUDR compliance.
@@ -708,7 +680,7 @@ class InstitutionalQualityEngine:
             composite score, capacity level, and EUDR risk factor.
         """
         start = time.perf_counter()
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         try:
             cc = country_code.upper().strip()
@@ -804,7 +776,7 @@ class InstitutionalQualityEngine:
             weaknesses, and recommendations.
         """
         start = time.perf_counter()
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         try:
             cc = country_code.upper().strip()
@@ -908,7 +880,7 @@ class InstitutionalQualityEngine:
             strength rating.
         """
         start = time.perf_counter()
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         try:
             cc = country_code.upper().strip()
@@ -998,7 +970,7 @@ class InstitutionalQualityEngine:
             profile, composite forest score, and EUDR risk factors.
         """
         start = time.perf_counter()
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         try:
             cc = country_code.upper().strip()
@@ -1124,7 +1096,7 @@ class InstitutionalQualityEngine:
             rankings, and composite rankings.
         """
         start = time.perf_counter()
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         try:
             if not country_codes:
@@ -1305,7 +1277,6 @@ class InstitutionalQualityEngine:
             )
         except Exception as exc:
             logger.debug("Provenance recording failed: %s", exc)
-
 
 # ---------------------------------------------------------------------------
 # Public API

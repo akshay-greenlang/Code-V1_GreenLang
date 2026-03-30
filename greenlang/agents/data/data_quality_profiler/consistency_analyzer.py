@@ -47,22 +47,17 @@ from collections import Counter
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Set, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 __all__ = [
     "ConsistencyAnalyzer",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _generate_id(prefix: str = "CST") -> str:
     """Generate a unique identifier with the given prefix.
@@ -75,7 +70,6 @@ def _generate_id(prefix: str = "CST") -> str:
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
 
-
 def _compute_provenance(operation: str, data_repr: str) -> str:
     """Compute SHA-256 provenance hash for a consistency operation.
 
@@ -86,9 +80,8 @@ def _compute_provenance(operation: str, data_repr: str) -> str:
     Returns:
         Hex-encoded SHA-256 digest.
     """
-    payload = f"{operation}:{data_repr}:{_utcnow().isoformat()}"
+    payload = f"{operation}:{data_repr}:{utcnow().isoformat()}"
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
-
 
 def _safe_stdev(values: List[float]) -> float:
     """Compute sample standard deviation, 0.0 for < 2 values.
@@ -103,7 +96,6 @@ def _safe_stdev(values: List[float]) -> float:
         return 0.0
     return statistics.stdev(values)
 
-
 def _safe_mean(values: List[float]) -> float:
     """Compute mean, 0.0 for empty lists.
 
@@ -116,7 +108,6 @@ def _safe_mean(values: List[float]) -> float:
     if not values:
         return 0.0
     return statistics.mean(values)
-
 
 def _classify_value_type(value: Any) -> str:
     """Classify a value into a basic type category.
@@ -137,7 +128,6 @@ def _classify_value_type(value: Any) -> str:
         return "float"
     return "str"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -154,11 +144,9 @@ DRIFT_COLUMN_REMOVED = "column_removed"
 DRIFT_TYPE_CHANGED = "type_changed"
 DRIFT_NULLABLE_CHANGED = "nullable_changed"
 
-
 # ---------------------------------------------------------------------------
 # ConsistencyAnalyzer Engine
 # ---------------------------------------------------------------------------
-
 
 class ConsistencyAnalyzer:
     """Format uniformity and cross-column/cross-dataset consistency engine.
@@ -297,7 +285,7 @@ class ConsistencyAnalyzer:
             "issue_count": len(issues),
             "provenance_hash": provenance_hash,
             "analysis_time_ms": round(elapsed_ms, 2),
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
         with self._lock:
@@ -970,7 +958,7 @@ class ConsistencyAnalyzer:
                     "details": {
                         "format_uniformity": uniformity,
                     },
-                    "created_at": _utcnow().isoformat(),
+                    "created_at": utcnow().isoformat(),
                 })
 
             # Low type consistency
@@ -989,7 +977,7 @@ class ConsistencyAnalyzer:
                     "details": {
                         "type_consistency_ratio": type_ratio,
                     },
-                    "created_at": _utcnow().isoformat(),
+                    "created_at": utcnow().isoformat(),
                 })
 
             # Case inconsistency (check for string columns)
@@ -1005,7 +993,7 @@ class ConsistencyAnalyzer:
                         f"Column '{col_name}' has a skewed value distribution"
                     ),
                     "details": value_cons,
-                    "created_at": _utcnow().isoformat(),
+                    "created_at": utcnow().isoformat(),
                 })
 
         return issues
@@ -1095,5 +1083,5 @@ class ConsistencyAnalyzer:
                 ),
                 "avg_analysis_time_ms": round(avg_time, 2),
                 "stored_analyses": len(self._analyses),
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }

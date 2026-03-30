@@ -63,37 +63,28 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> str:
-    """Return current UTC timestamp as ISO-8601 string."""
-    return datetime.utcnow().isoformat() + "Z"
-
-
 def _new_uuid() -> str:
     """Return a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash of JSON-serialisable data."""
     serialised = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialised.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -104,7 +95,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -113,7 +103,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class TransitionPhase(str, Enum):
     """Transition risk workflow phases."""
@@ -124,7 +113,6 @@ class TransitionPhase(str, Enum):
     COMPETITIVE_RISK = "competitive_risk"
     COMPOSITE_SCORING = "composite_scoring"
 
-
 class BudgetMethod(str, Enum):
     """Carbon budget allocation method."""
 
@@ -132,7 +120,6 @@ class BudgetMethod(str, Enum):
     EMISSIONS_SHARE = "emissions_share"
     GRANDFATHERING = "grandfathering"
     CONVERGENCE = "convergence"
-
 
 class RiskLevel(str, Enum):
     """Risk classification level."""
@@ -143,7 +130,6 @@ class RiskLevel(str, Enum):
     HIGH = "high"
     VERY_HIGH = "very_high"
 
-
 class Quartile(str, Enum):
     """Competitive quartile position."""
 
@@ -151,7 +137,6 @@ class Quartile(str, Enum):
     Q2_ABOVE_AVG = "q2_above_average"
     Q3_BELOW_AVG = "q3_below_average"
     Q4_LAGGARD = "q4_laggard"
-
 
 # =============================================================================
 # REFERENCE DATA (Zero-Hallucination)
@@ -200,11 +185,9 @@ RISK_SCORE_BANDS: Dict[str, Tuple[float, float]] = {
     "very_high": (80.0, 100.1),
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -217,7 +200,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
-
 
 class BudgetAllocation(BaseModel):
     """Carbon budget allocation result."""
@@ -232,7 +214,6 @@ class BudgetAllocation(BaseModel):
     years_of_budget_remaining: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class StrandingResult(BaseModel):
     """Stranding year calculation result."""
 
@@ -243,7 +224,6 @@ class StrandingResult(BaseModel):
     budget_exhaustion_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     risk_level: RiskLevel = Field(default=RiskLevel.MEDIUM)
     provenance_hash: str = Field(default="")
-
 
 class RegulatoryExposure(BaseModel):
     """Regulatory risk exposure assessment."""
@@ -256,7 +236,6 @@ class RegulatoryExposure(BaseModel):
     exposure_score: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
 
-
 class CompetitivePosition(BaseModel):
     """Competitive position assessment."""
 
@@ -266,7 +245,6 @@ class CompetitivePosition(BaseModel):
     quartile: Quartile = Field(default=Quartile.Q3_BELOW_AVG)
     competitive_score: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
-
 
 class CompositeRiskScore(BaseModel):
     """Composite transition risk score breakdown."""
@@ -280,11 +258,9 @@ class CompositeRiskScore(BaseModel):
     weights_used: Dict[str, float] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # INPUT / OUTPUT
 # =============================================================================
-
 
 class TransitionRiskInput(BaseModel):
     """Input data model for TransitionRiskWorkflow."""
@@ -334,7 +310,6 @@ class TransitionRiskInput(BaseModel):
     tenant_id: str = Field(default="")
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class TransitionRiskResult(BaseModel):
     """Complete result from transition risk workflow."""
 
@@ -353,11 +328,9 @@ class TransitionRiskResult(BaseModel):
     overall_risk_score: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class TransitionRiskWorkflow:
     """
@@ -942,6 +915,7 @@ class TransitionRiskWorkflow:
                         phase_number, attempt, self.MAX_RETRIES, exc, delay,
                     )
                     import asyncio
+
                     await asyncio.sleep(delay)
         return PhaseResult(
             phase_name=f"phase_{phase_number}_failed",

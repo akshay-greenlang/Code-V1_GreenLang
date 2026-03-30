@@ -23,6 +23,7 @@ import uuid
 from pydantic import BaseModel, Field, validator
 
 from greenlang.agents.process_heat.gl_013_predictive_maintenance.config import (
+from greenlang.schemas.enums import HealthStatus
     AlertSeverity,
     EquipmentType,
     FailureMode,
@@ -33,15 +34,6 @@ from greenlang.agents.process_heat.gl_013_predictive_maintenance.config import (
 # =============================================================================
 # ENUMS
 # =============================================================================
-
-class HealthStatus(str, Enum):
-    """Equipment health status."""
-    HEALTHY = "healthy"
-    DEGRADED = "degraded"
-    WARNING = "warning"
-    CRITICAL = "critical"
-    FAILED = "failed"
-
 
 class TrendDirection(str, Enum):
     """Parameter trend direction."""

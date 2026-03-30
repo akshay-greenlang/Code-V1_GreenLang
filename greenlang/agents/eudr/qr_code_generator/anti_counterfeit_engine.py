@@ -69,6 +69,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 from greenlang.agents.eudr.qr_code_generator.config import get_config
+from greenlang.schemas import utcnow
 from greenlang.agents.eudr.qr_code_generator.models import (
     CounterfeitRiskLevel,
     ScanEvent,
@@ -84,7 +85,6 @@ from greenlang.agents.eudr.qr_code_generator.metrics import (
 )
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -107,16 +107,9 @@ _WATERMARK_MAGIC: bytes = b"GLQR"
 #: Maximum watermark data size in bytes.
 _MAX_WATERMARK_SIZE: int = 256
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -136,7 +129,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str) -> str:
     """Generate a unique identifier with a given prefix.
 
@@ -148,41 +140,33 @@ def _generate_id(prefix: str) -> str:
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
 
-
 # ---------------------------------------------------------------------------
 # Custom Exceptions
 # ---------------------------------------------------------------------------
-
 
 class AntiCounterfeitError(Exception):
     """Base exception for anti-counterfeiting operations."""
     pass
 
-
 class SignatureError(AntiCounterfeitError):
     """Raised when HMAC signature generation or verification fails."""
     pass
-
 
 class WatermarkError(AntiCounterfeitError):
     """Raised when digital watermark operations fail."""
     pass
 
-
 class RevocationError(AntiCounterfeitError):
     """Raised when revocation list operations fail."""
     pass
-
 
 class KeyRotationError(AntiCounterfeitError):
     """Raised when HMAC key rotation fails."""
     pass
 
-
 # ---------------------------------------------------------------------------
 # AntiCounterfeitEngine
 # ---------------------------------------------------------------------------
-
 
 class AntiCounterfeitEngine:
     """Anti-counterfeiting engine for EUDR QR code authentication.
@@ -292,7 +276,7 @@ class AntiCounterfeitEngine:
             signature_value=signature_value,
             signed_data_hash=data_hash,
             valid=True,
-            verified_at=_utcnow(),
+            verified_at=utcnow(),
         )
 
         # Record provenance
@@ -803,7 +787,7 @@ class AntiCounterfeitEngine:
         )
 
         # Count scans within the last 60 seconds
-        now = _utcnow()
+        now = utcnow()
         one_minute_ago = now.timestamp() - 60.0
         recent_count = sum(
             1 for scan in recent_scans
@@ -933,7 +917,7 @@ class AntiCounterfeitEngine:
             "rotation_id": resolved_id,
             "old_key_hash_prefix": old_key_hash,
             "new_key_hash_prefix": new_key_hash,
-            "rotated_at": _utcnow().isoformat(),
+            "rotated_at": utcnow().isoformat(),
             "rotation_interval_days": self._config.key_rotation_days,
         }
 
@@ -1000,7 +984,7 @@ class AntiCounterfeitEngine:
         revocation_record: Dict[str, Any] = {
             "code_id": code_id,
             "reason": reason,
-            "revoked_at": _utcnow().isoformat(),
+            "revoked_at": utcnow().isoformat(),
         }
 
         # Record provenance
@@ -1099,7 +1083,7 @@ class AntiCounterfeitEngine:
             "signature": signature,
             "algorithm": "HMAC-SHA256",
             "integrity_hash": integrity_hash,
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
         logger.debug(
@@ -1243,7 +1227,6 @@ class AntiCounterfeitEngine:
             result[byte_idx] |= (lsb << bit_pos)
 
         return bytes(result)
-
 
 # ---------------------------------------------------------------------------
 # Public API

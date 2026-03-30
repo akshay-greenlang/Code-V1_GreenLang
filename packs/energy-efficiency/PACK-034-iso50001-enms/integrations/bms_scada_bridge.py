@@ -36,20 +36,15 @@ from typing import Any, Callable, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -62,11 +57,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ProtocolType(str, Enum):
     """Industrial communication protocol types."""
@@ -77,7 +70,6 @@ class ProtocolType(str, Enum):
     OPCUA = "opcua"
     MQTT = "mqtt"
     API = "api"
-
 
 class DataPointType(str, Enum):
     """Types of metered data points."""
@@ -93,7 +85,6 @@ class DataPointType(str, Enum):
     FLOW_RATE = "flow_rate"
     PRESSURE = "pressure"
 
-
 class ConnectionStatus(str, Enum):
     """Protocol connection status."""
 
@@ -104,11 +95,9 @@ class ConnectionStatus(str, Enum):
     NOT_CONFIGURED = "not_configured"
     RECONNECTING = "reconnecting"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class BMSConfig(BaseModel):
     """Configuration for the BMS/SCADA Bridge."""
@@ -126,7 +115,6 @@ class BMSConfig(BaseModel):
     enable_alarm_integration: bool = Field(default=True)
     reconnect_interval_seconds: float = Field(default=30.0, ge=5.0)
 
-
 class DataPoint(BaseModel):
     """A BMS/SCADA data point with value and metadata."""
 
@@ -139,13 +127,12 @@ class DataPoint(BaseModel):
     raw_value: float = Field(default=0.0)
     unit: str = Field(default="")
     quality: str = Field(default="good", description="good|uncertain|bad")
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     scale_factor: float = Field(default=1.0)
     offset: float = Field(default=0.0)
     facility_zone: str = Field(default="")
     equipment_id: str = Field(default="")
     seu_id: str = Field(default="", description="Significant Energy Use ID")
-
 
 class MeterReading(BaseModel):
     """A single meter reading from BMS/SCADA."""
@@ -153,7 +140,7 @@ class MeterReading(BaseModel):
     reading_id: str = Field(default_factory=_new_uuid)
     point_id: str = Field(default="")
     meter_id: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     raw_value: float = Field(default=0.0)
     normalized_value: float = Field(default=0.0)
     unit: str = Field(default="")
@@ -161,13 +148,12 @@ class MeterReading(BaseModel):
     source_protocol: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 class AlarmEvent(BaseModel):
     """An alarm event from BMS/SCADA."""
 
     alarm_id: str = Field(default_factory=_new_uuid)
     point_id: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     severity: str = Field(default="medium", description="critical|high|medium|low|info")
     alarm_type: str = Field(default="threshold", description="threshold|deviation|state_change|communication")
     description: str = Field(default="")
@@ -177,11 +163,9 @@ class AlarmEvent(BaseModel):
     cleared: bool = Field(default=False)
     seu_id: str = Field(default="", description="Related SEU identifier")
 
-
 # ---------------------------------------------------------------------------
 # BMSSCADABridge
 # ---------------------------------------------------------------------------
-
 
 class BMSSCADABridge:
     """BMS/SCADA data integration for ISO 50001 EnMS monitoring.
@@ -376,7 +360,7 @@ class BMSSCADABridge:
         reading = MeterReading(
             point_id=point_id,
             meter_id=point.equipment_id,
-            timestamp=timestamp or _utcnow(),
+            timestamp=timestamp or utcnow(),
             raw_value=raw_value,
             normalized_value=round(normalized, 4),
             unit=point.unit,

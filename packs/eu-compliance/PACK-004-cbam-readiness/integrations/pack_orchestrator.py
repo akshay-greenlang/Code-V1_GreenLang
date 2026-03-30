@@ -39,6 +39,7 @@ from typing import Any, Callable, Dict, List, Optional
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
+from greenlang.schemas.enums import ExecutionStatus
 
 logger = logging.getLogger(__name__)
 
@@ -58,16 +59,6 @@ class CBAMPhase(str, Enum):
     POLICY_CHECK = "policy_check"
     REPORT_GENERATION = "report_generation"
     AUDIT_TRAIL = "audit_trail"
-
-
-class ExecutionStatus(str, Enum):
-    """Status of a pipeline execution."""
-    PENDING = "pending"
-    RUNNING = "running"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    PAUSED = "paused"
-    RESUMED = "resumed"
 
 
 class QualityGateStatus(str, Enum):

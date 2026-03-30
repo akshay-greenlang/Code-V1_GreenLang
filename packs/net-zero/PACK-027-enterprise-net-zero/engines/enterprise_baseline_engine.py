@@ -87,25 +87,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -123,7 +117,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -132,7 +125,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -144,17 +136,14 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
@@ -162,11 +151,9 @@ def _round3(value: float) -> float:
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ConsolidationApproach(str, Enum):
     """GHG Protocol consolidation approaches (Chapter 3).
@@ -178,7 +165,6 @@ class ConsolidationApproach(str, Enum):
     FINANCIAL_CONTROL = "financial_control"
     OPERATIONAL_CONTROL = "operational_control"
     EQUITY_SHARE = "equity_share"
-
 
 class DataQualityLevel(int, Enum):
     """GHG Protocol 5-level data quality hierarchy.
@@ -194,7 +180,6 @@ class DataQualityLevel(int, Enum):
     LEVEL_3 = 3
     LEVEL_4 = 4
     LEVEL_5 = 5
-
 
 class Scope3Category(str, Enum):
     """All 15 GHG Protocol Scope 3 categories."""
@@ -214,7 +199,6 @@ class Scope3Category(str, Enum):
     CAT_14_FRANCHISES = "cat_14_franchises"
     CAT_15_INVESTMENTS = "cat_15_investments"
 
-
 class CalculationApproach(str, Enum):
     """Calculation methodology approach for each category."""
     SUPPLIER_SPECIFIC = "supplier_specific"
@@ -223,7 +207,6 @@ class CalculationApproach(str, Enum):
     SPEND_BASED = "spend_based"
     PROXY = "proxy"
     NOT_APPLICABLE = "not_applicable"
-
 
 class GHGGas(str, Enum):
     """Greenhouse gases covered by the GHG Protocol."""
@@ -235,14 +218,12 @@ class GHGGas(str, Enum):
     SF6 = "sf6"
     NF3 = "nf3"
 
-
 class MaterialityClassification(str, Enum):
     """Materiality classification for Scope 3 categories."""
     MATERIAL = "material"           # >1% of total
     MODERATE = "moderate"           # 0.1-1% of total
     IMMATERIAL = "immaterial"       # <0.1% of total
     EXCLUDED = "excluded"           # Excluded with justification
-
 
 class Scope1Source(str, Enum):
     """Scope 1 emission source categories."""
@@ -255,12 +236,10 @@ class Scope1Source(str, Enum):
     WASTE_TREATMENT = "waste_treatment"
     AGRICULTURAL = "agricultural"
 
-
 class Scope2Method(str, Enum):
     """Scope 2 calculation methods."""
     LOCATION_BASED = "location_based"
     MARKET_BASED = "market_based"
-
 
 class FuelType(str, Enum):
     """Fuel types for enterprise Scope 1 calculations."""
@@ -282,7 +261,6 @@ class FuelType(str, Enum):
     HYDROGEN = "hydrogen"
     CNG = "cng"
     LNG = "lng"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Reference Data
@@ -423,11 +401,9 @@ MRV_SCOPE3_AGENTS: List[str] = [
     f"MRV-{str(i).zfill(3)}" for i in range(14, 31)
 ]
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class FuelEntry(BaseModel):
     """Enterprise fuel consumption entry.
@@ -448,7 +424,6 @@ class FuelEntry(BaseModel):
     entity_id: str = Field(default="", max_length=100, description="Entity ID")
     source_reference: str = Field(default="", max_length=500, description="Source document ref")
     data_quality_level: int = Field(default=3, ge=1, le=5, description="DQ level (1-5)")
-
 
 class ElectricityEntry(BaseModel):
     """Enterprise electricity consumption entry with dual Scope 2 support.
@@ -477,7 +452,6 @@ class ElectricityEntry(BaseModel):
     entity_id: str = Field(default="", max_length=100)
     data_quality_level: int = Field(default=2, ge=1, le=5)
 
-
 class RefrigerantEntry(BaseModel):
     """Enterprise refrigerant entry with mass balance support.
 
@@ -502,7 +476,6 @@ class RefrigerantEntry(BaseModel):
     entity_id: str = Field(default="", max_length=100)
     data_quality_level: int = Field(default=3, ge=1, le=5)
 
-
 class ProcessEmissionEntry(BaseModel):
     """Process emission entry for industrial processes (MRV-004).
 
@@ -521,7 +494,6 @@ class ProcessEmissionEntry(BaseModel):
     entity_id: str = Field(default="", max_length=100)
     data_quality_level: int = Field(default=2, ge=1, le=5)
 
-
 class SteamCoolingEntry(BaseModel):
     """Steam, heat, or cooling purchase entry (MRV-011/012).
 
@@ -537,7 +509,6 @@ class SteamCoolingEntry(BaseModel):
     custom_factor: Optional[Decimal] = Field(None, ge=Decimal("0"))
     entity_id: str = Field(default="", max_length=100)
     data_quality_level: int = Field(default=3, ge=1, le=5)
-
 
 class Scope3CategoryEntry(BaseModel):
     """Enterprise Scope 3 category data entry.
@@ -571,7 +542,6 @@ class Scope3CategoryEntry(BaseModel):
     entity_id: str = Field(default="", max_length=100)
     notes: str = Field(default="", max_length=1000)
 
-
 class EntityDefinition(BaseModel):
     """Entity in the corporate hierarchy for consolidation.
 
@@ -600,7 +570,6 @@ class EntityDefinition(BaseModel):
     acquisition_date: Optional[str] = Field(None, max_length=10)
     divestiture_date: Optional[str] = Field(None, max_length=10)
 
-
 class IntercompanyTransaction(BaseModel):
     """Intercompany transaction for elimination.
 
@@ -618,7 +587,6 @@ class IntercompanyTransaction(BaseModel):
     tco2e: Decimal = Field(..., ge=Decimal("0"))
     scope_impact: str = Field(default="scope3_cat1", max_length=50)
     description: str = Field(default="", max_length=500)
-
 
 class EnterpriseBaselineInput(BaseModel):
     """Complete input for enterprise baseline assessment.
@@ -690,11 +658,9 @@ class EnterpriseBaselineInput(BaseModel):
             raise ValueError("Reporting year must be >= 2015")
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class Scope1Breakdown(BaseModel):
     """Scope 1 emission breakdown by source category.
@@ -728,7 +694,6 @@ class Scope1Breakdown(BaseModel):
     data_quality_level: Decimal = Field(default=Decimal("3"))
     methodology_notes: List[str] = Field(default_factory=list)
 
-
 class Scope2Breakdown(BaseModel):
     """Scope 2 emission breakdown with dual reporting.
 
@@ -756,7 +721,6 @@ class Scope2Breakdown(BaseModel):
     by_region: Dict[str, Decimal] = Field(default_factory=dict)
     data_quality_level: Decimal = Field(default=Decimal("2"))
     methodology_notes: List[str] = Field(default_factory=list)
-
 
 class Scope3CategoryResult(BaseModel):
     """Result for a single Scope 3 category.
@@ -790,7 +754,6 @@ class Scope3CategoryResult(BaseModel):
     by_entity: Dict[str, Decimal] = Field(default_factory=dict)
     methodology_notes: List[str] = Field(default_factory=list)
 
-
 class Scope3Breakdown(BaseModel):
     """Complete Scope 3 breakdown across all 15 categories.
 
@@ -812,7 +775,6 @@ class Scope3Breakdown(BaseModel):
     excluded_categories: List[str] = Field(default_factory=list)
     weighted_data_quality: Decimal = Field(default=Decimal("4"))
     methodology_notes: List[str] = Field(default_factory=list)
-
 
 class DataQualityMatrix(BaseModel):
     """Data quality scoring matrix per category and entity.
@@ -836,7 +798,6 @@ class DataQualityMatrix(BaseModel):
     meets_target: bool = Field(default=False)
     improvement_priorities: List[str] = Field(default_factory=list)
 
-
 class MaterialityAssessment(BaseModel):
     """Materiality assessment for Scope 3 categories.
 
@@ -854,7 +815,6 @@ class MaterialityAssessment(BaseModel):
     excluded_categories: List[str] = Field(default_factory=list)
     total_excluded_pct: Decimal = Field(default=Decimal("0"))
     sbti_coverage_pct: Decimal = Field(default=Decimal("100"))
-
 
 class ConsolidationSummary(BaseModel):
     """Consolidation summary with intercompany eliminations.
@@ -874,7 +834,6 @@ class ConsolidationSummary(BaseModel):
     consolidated_total_tco2e: Decimal = Field(default=Decimal("0"))
     elimination_entries: List[Dict[str, Any]] = Field(default_factory=list)
 
-
 class IntensityMetrics(BaseModel):
     """Enterprise emission intensity metrics.
 
@@ -893,7 +852,6 @@ class IntensityMetrics(BaseModel):
     scope12_per_revenue_million: Optional[Decimal] = Field(None)
     scope3_per_revenue_million: Optional[Decimal] = Field(None)
 
-
 class ConfidenceInterval(BaseModel):
     """Confidence interval for the total baseline.
 
@@ -907,7 +865,6 @@ class ConfidenceInterval(BaseModel):
     lower_bound_tco2e: Decimal = Field(default=Decimal("0"))
     upper_bound_tco2e: Decimal = Field(default=Decimal("0"))
     confidence_pct: Decimal = Field(default=Decimal("90"))
-
 
 class EnterpriseBaselineResult(BaseModel):
     """Complete enterprise baseline assessment result.
@@ -941,7 +898,7 @@ class EnterpriseBaselineResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     organization_name: str = Field(default="")
     reporting_year: int = Field(default=0)
     base_year: int = Field(default=2019)
@@ -976,7 +933,6 @@ class EnterpriseBaselineResult(BaseModel):
     entity_count: int = Field(default=0)
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Scope 3 category names (human-readable)
@@ -1029,11 +985,9 @@ UPSTREAM_CATEGORIES = {
     Scope3Category.CAT_08_UPSTREAM_LEASED,
 }
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class EnterpriseBaselineEngine:
     """Financial-grade enterprise GHG baseline engine.

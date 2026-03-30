@@ -56,6 +56,7 @@ import uuid
 from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -125,7 +126,6 @@ try:
 except ImportError:
     _METRICS_AVAILABLE = False
     _get_metrics = None  # type: ignore[assignment]
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -305,16 +305,9 @@ FALLBACK_CHP_EFFICIENCIES: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Helper
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _safe_decimal(value: Any, default: Decimal = _ZERO) -> Decimal:
     """Convert a value to Decimal safely.
@@ -335,7 +328,6 @@ def _safe_decimal(value: Any, default: Decimal = _ZERO) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return default
 
-
 def _quantize(value: Decimal) -> Decimal:
     """Quantize a Decimal to 6 decimal places with half-up rounding.
 
@@ -347,11 +339,9 @@ def _quantize(value: Decimal) -> Decimal:
     """
     return value.quantize(_QUANT_6, ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Pipeline Engine
 # ---------------------------------------------------------------------------
-
 
 class SteamHeatPipelineEngine:
     """Engine 7: 13-stage orchestrated Steam/Heat Purchase pipeline.
@@ -474,7 +464,7 @@ class SteamHeatPipelineEngine:
             "ComplianceCheckerEngine",
         )
 
-        self._created_at = _utcnow()
+        self._created_at = utcnow()
 
         engine_count = sum(
             1 for e in [
@@ -706,7 +696,7 @@ class SteamHeatPipelineEngine:
             )),
             "duration_ms": round(batch_duration * 1000, 3),
             "provenance_hash": self._compute_batch_hash(results),
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
         with self._lock:
@@ -946,7 +936,7 @@ class SteamHeatPipelineEngine:
             "engines": engine_health,
             "pipeline_runs": self._pipeline_runs,
             "uptime_since": self._created_at.isoformat(),
-            "checked_at": _utcnow().isoformat(),
+            "checked_at": utcnow().isoformat(),
         }
 
     def compare_energy_sources(
@@ -1008,7 +998,7 @@ class SteamHeatPipelineEngine:
             "scenarios": scenario_results,
             "best_scenario": ranked[0]["scenario_name"] if ranked else None,
             "worst_scenario": ranked[-1]["scenario_name"] if ranked else None,
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
     def export_results(
@@ -1037,7 +1027,7 @@ class SteamHeatPipelineEngine:
                 "format": format,
                 "record_count": 0,
                 "data": [],
-                "exported_at": _utcnow().isoformat(),
+                "exported_at": utcnow().isoformat(),
             }
 
         if format == "csv_summary":
@@ -2564,7 +2554,7 @@ class SteamHeatPipelineEngine:
                 "framework": "GHG_PROTOCOL",
                 "status": status,
                 "findings": findings,
-                "checked_at": _utcnow().isoformat(),
+                "checked_at": utcnow().isoformat(),
             })
 
         if "ISO_14064" in requested:
@@ -2579,7 +2569,7 @@ class SteamHeatPipelineEngine:
                 "framework": "ISO_14064",
                 "status": status_iso,
                 "findings": findings_iso,
-                "checked_at": _utcnow().isoformat(),
+                "checked_at": utcnow().isoformat(),
             })
 
         if "CSRD_ESRS_E1" in requested:
@@ -2596,7 +2586,7 @@ class SteamHeatPipelineEngine:
                 "framework": "CSRD_ESRS_E1",
                 "status": status_csrd,
                 "findings": findings_csrd,
-                "checked_at": _utcnow().isoformat(),
+                "checked_at": utcnow().isoformat(),
             })
 
         return checks
@@ -2691,7 +2681,7 @@ class SteamHeatPipelineEngine:
             # Provenance (set in stage 13)
             "provenance_hash": "",
             # Metadata
-            "calculated_at": _utcnow().isoformat(),
+            "calculated_at": utcnow().isoformat(),
             "calculation_trace": calculation_trace,
             "metadata": {
                 "pipeline_version": PIPELINE_VERSION,
@@ -2763,7 +2753,7 @@ class SteamHeatPipelineEngine:
         return {
             "stage": stage,
             "duration_ms": round(duration_s * 1000, 3),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     @staticmethod
@@ -2926,7 +2916,7 @@ class SteamHeatPipelineEngine:
             "format": "json",
             "record_count": len(calcs),
             "data": calcs,
-            "exported_at": _utcnow().isoformat(),
+            "exported_at": utcnow().isoformat(),
         }
 
     def _export_csv_summary(
@@ -2965,7 +2955,7 @@ class SteamHeatPipelineEngine:
             "record_count": len(calcs),
             "header": header,
             "rows": rows,
-            "exported_at": _utcnow().isoformat(),
+            "exported_at": utcnow().isoformat(),
         }
 
     def _export_ghg_protocol(
@@ -3013,9 +3003,8 @@ class SteamHeatPipelineEngine:
             "grand_total_co2e_kg": _quantize(grand_total),
             "grand_total_co2e_tonnes": _quantize(grand_total / _THOUSAND),
             "record_count": len(calcs),
-            "exported_at": _utcnow().isoformat(),
+            "exported_at": utcnow().isoformat(),
         }
-
 
 # ---------------------------------------------------------------------------
 # Module-level accessor
@@ -3023,7 +3012,6 @@ class SteamHeatPipelineEngine:
 
 _pipeline_instance: Optional[SteamHeatPipelineEngine] = None
 _pipeline_lock = threading.Lock()
-
 
 def get_pipeline() -> SteamHeatPipelineEngine:
     """Return the module-level singleton SteamHeatPipelineEngine.
@@ -3054,7 +3042,6 @@ def get_pipeline() -> SteamHeatPipelineEngine:
             if _pipeline_instance is None:
                 _pipeline_instance = SteamHeatPipelineEngine()
     return _pipeline_instance
-
 
 # ---------------------------------------------------------------------------
 # Public API

@@ -29,6 +29,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "26.0.0"
@@ -133,18 +135,12 @@ _DEFAULT_GL_MAPPINGS = [
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str) if isinstance(data, dict) else str(data)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 def _dec(val: Any, places: int = 2) -> str:
     try:
@@ -153,7 +149,6 @@ def _dec(val: Any, places: int = 2) -> str:
         return str(d.quantize(Decimal(q), rounding=ROUND_HALF_UP))
     except Exception:
         return str(val)
-
 
 def _dec_comma(val: Any, places: int = 0) -> str:
     try:
@@ -178,13 +173,11 @@ def _dec_comma(val: Any, places: int = 0) -> str:
     except Exception:
         return str(val)
 
-
 def _pct(val: Any) -> str:
     try:
         return _dec(val, 1) + "%"
     except Exception:
         return str(val)
-
 
 # ===========================================================================
 # Template Class
@@ -215,7 +208,7 @@ class SMEAccountingGuideTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render the accounting guide as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         software = data.get("accounting_software", "xero").lower()
         sections: List[str] = [
             self._md_header(data),
@@ -234,7 +227,7 @@ class SMEAccountingGuideTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render the accounting guide as HTML."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         software = data.get("accounting_software", "xero").lower()
         css = self._css()
         body = "\n".join([
@@ -260,7 +253,7 @@ class SMEAccountingGuideTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render the accounting guide as structured JSON."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         software = data.get("accounting_software", "xero").lower()
         sw_info = _ACCOUNTING_SOFTWARE.get(software, _ACCOUNTING_SOFTWARE["xero"])
         custom_mappings = data.get("custom_gl_mappings", [])

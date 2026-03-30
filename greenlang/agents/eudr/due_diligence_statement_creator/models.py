@@ -23,7 +23,8 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase
 
 
 # ---------------------------------------------------------------------------
@@ -237,7 +238,7 @@ EU_OFFICIAL_LANGUAGES: List[str] = [
 # ---------------------------------------------------------------------------
 
 
-class GeolocationData(BaseModel):
+class GeolocationData(GreenLangBase):
     """Geolocation data for a production plot per Article 9.
 
     Stores coordinates as latitude/longitude for plots under 4ha,
@@ -283,7 +284,7 @@ class GeolocationData(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class RiskReference(BaseModel):
+class RiskReference(GreenLangBase):
     """Reference to a risk assessment from upstream EUDR agents.
 
     Captures the outcome of risk evaluations from EUDR-016 through
@@ -320,7 +321,7 @@ class RiskReference(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class SupplyChainData(BaseModel):
+class SupplyChainData(GreenLangBase):
     """Aggregated supply chain traceability data from EUDR-001 to 015.
 
     Provides the complete supply chain picture required for
@@ -366,7 +367,7 @@ class SupplyChainData(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class ComplianceCheck(BaseModel):
+class ComplianceCheck(GreenLangBase):
     """Individual compliance check result for Article 4 validation.
 
     Each mandatory field and regulatory requirement generates a
@@ -396,7 +397,7 @@ class ComplianceCheck(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class DocumentPackage(BaseModel):
+class DocumentPackage(GreenLangBase):
     """A supporting document in the DDS evidence package.
 
     References certificates, satellite imagery, risk reports, and
@@ -431,7 +432,7 @@ class DocumentPackage(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class StatementVersion(BaseModel):
+class StatementVersion(GreenLangBase):
     """Version record for DDS amendment tracking.
 
     Maintains complete version history for regulatory auditability
@@ -466,7 +467,7 @@ class StatementVersion(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class DigitalSignature(BaseModel):
+class DigitalSignature(GreenLangBase):
     """Digital signature applied to a DDS.
 
     Supports simple, advanced, and qualified electronic signatures
@@ -515,7 +516,7 @@ class DigitalSignature(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class DDSValidationReport(BaseModel):
+class DDSValidationReport(GreenLangBase):
     """Complete validation report for a DDS.
 
     Aggregates all individual compliance checks and produces an
@@ -559,7 +560,7 @@ class DDSValidationReport(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class SubmissionPackage(BaseModel):
+class SubmissionPackage(GreenLangBase):
     """Package prepared for submission to EU Information System.
 
     Contains the finalized DDS along with all supporting documents,
@@ -602,7 +603,7 @@ class SubmissionPackage(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class AmendmentRecord(BaseModel):
+class AmendmentRecord(GreenLangBase):
     """Record of a DDS amendment operation.
 
     Tracks the before/after state and rationale for every amendment
@@ -643,7 +644,7 @@ class AmendmentRecord(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class TemplateConfig(BaseModel):
+class TemplateConfig(GreenLangBase):
     """Configuration for DDS document template rendering.
 
     Controls the structure, language, and formatting of generated
@@ -684,7 +685,7 @@ class TemplateConfig(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class LanguageTranslation(BaseModel):
+class LanguageTranslation(GreenLangBase):
     """Translation record for a DDS field or section.
 
     Supports rendering DDS in any of the 24 EU official languages.
@@ -715,7 +716,7 @@ class LanguageTranslation(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class StatementSummary(BaseModel):
+class StatementSummary(GreenLangBase):
     """Summary view of a DDS for listing and search.
 
     Lightweight representation of a DDS for dashboard display,
@@ -758,7 +759,7 @@ class StatementSummary(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class DDSStatement(BaseModel):
+class DDSStatement(GreenLangBase):
     """Complete Due Diligence Statement record.
 
     The primary data model for AGENT-EUDR-037, representing a full
@@ -896,7 +897,7 @@ class DDSStatement(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class HealthStatus(BaseModel):
+class HealthStatus(GreenLangBase):
     """Health check response for the DDS Creator."""
 
     agent_id: str = AGENT_ID

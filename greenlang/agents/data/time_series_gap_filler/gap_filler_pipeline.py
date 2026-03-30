@@ -51,9 +51,9 @@ from greenlang.agents.data.time_series_gap_filler.provenance import (
     ProvenanceTracker,
     get_provenance_tracker,
 )
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Graceful imports for sibling engines (metrics + engines)
@@ -120,16 +120,9 @@ except ImportError:
     ReferenceSeries = None  # type: ignore[misc, assignment]
     _CROSS_AVAILABLE = False
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _is_missing(value: Any) -> bool:
     """Determine whether a value represents a missing data point.
@@ -148,7 +141,6 @@ def _is_missing(value: Any) -> bool:
         return True
     return False
 
-
 def _safe_mean(values: List[float]) -> float:
     """Compute arithmetic mean, returning 0.0 for empty lists.
 
@@ -162,11 +154,9 @@ def _safe_mean(values: List[float]) -> float:
         return 0.0
     return sum(values) / len(values)
 
-
 # ---------------------------------------------------------------------------
 # Local metric helper stubs (delegate when metrics module is present)
 # ---------------------------------------------------------------------------
-
 
 def _inc_jobs_processed(status: str) -> None:
     """Increment the jobs processed counter.
@@ -176,7 +166,6 @@ def _inc_jobs_processed(status: str) -> None:
     """
     if _METRICS_AVAILABLE and _metrics_mod is not None:
         _metrics_mod.inc_jobs_processed(status)
-
 
 def _inc_gaps_filled(method: str, count: int = 1) -> None:
     """Increment the gaps-filled counter.
@@ -188,7 +177,6 @@ def _inc_gaps_filled(method: str, count: int = 1) -> None:
     if _METRICS_AVAILABLE and _metrics_mod is not None:
         _metrics_mod.inc_gaps_filled(method, count)
 
-
 def _observe_confidence(confidence: float) -> None:
     """Observe a fill confidence score.
 
@@ -197,7 +185,6 @@ def _observe_confidence(confidence: float) -> None:
     """
     if _METRICS_AVAILABLE and _metrics_mod is not None:
         _metrics_mod.observe_confidence(confidence)
-
 
 def _observe_duration(operation: str, duration: float) -> None:
     """Observe processing duration in seconds.
@@ -209,7 +196,6 @@ def _observe_duration(operation: str, duration: float) -> None:
     if _METRICS_AVAILABLE and _metrics_mod is not None:
         _metrics_mod.observe_duration(operation, duration)
 
-
 def _inc_strategies(strategy: str) -> None:
     """Increment the strategy selection counter.
 
@@ -218,7 +204,6 @@ def _inc_strategies(strategy: str) -> None:
     """
     if _METRICS_AVAILABLE and _metrics_mod is not None:
         _metrics_mod.inc_strategies(strategy)
-
 
 def _inc_errors(error_type: str) -> None:
     """Record a processing error event.
@@ -229,7 +214,6 @@ def _inc_errors(error_type: str) -> None:
     if _METRICS_AVAILABLE and _metrics_mod is not None:
         _metrics_mod.inc_errors(error_type)
 
-
 def _inc_validations(result: str) -> None:
     """Increment the validations counter.
 
@@ -238,7 +222,6 @@ def _inc_validations(result: str) -> None:
     """
     if _METRICS_AVAILABLE and _metrics_mod is not None:
         _metrics_mod.inc_validations(result)
-
 
 def _set_active_jobs(count: int) -> None:
     """Set the active jobs gauge.
@@ -249,19 +232,15 @@ def _set_active_jobs(count: int) -> None:
     if _METRICS_AVAILABLE and _metrics_mod is not None:
         _metrics_mod.set_active_jobs(count)
 
-
 # ---------------------------------------------------------------------------
 # Pipeline stage enumeration
 # ---------------------------------------------------------------------------
 
-
 _STAGES = ("detect", "analyze", "select", "fill", "validate", "report")
-
 
 # ---------------------------------------------------------------------------
 # Local data models
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class GapSegment:
@@ -285,7 +264,6 @@ class GapSegment:
     confidence: float = 0.0
     filled: bool = False
 
-
 @dataclass
 class ValidationResult:
     """Result of fill quality validation.
@@ -307,7 +285,6 @@ class ValidationResult:
     messages: List[str] = field(default_factory=list)
     mean_confidence: float = 0.0
     min_confidence: float = 0.0
-
 
 @dataclass
 class PipelineStatistics:
@@ -333,11 +310,9 @@ class PipelineStatistics:
     by_status: Dict[str, int] = field(default_factory=dict)
     by_validation: Dict[str, int] = field(default_factory=dict)
 
-
 # ============================================================================
 # GapFillerPipelineEngine
 # ============================================================================
-
 
 class GapFillerPipelineEngine:
     """Orchestrates the full gap filling pipeline across all engines.
@@ -1721,7 +1696,7 @@ class GapFillerPipelineEngine:
             "by_position": by_position,
             "impact": impact,
             "gap_details": fill_details,
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
         }
 
         logger.debug(
@@ -2014,7 +1989,6 @@ class GapFillerPipelineEngine:
             result.get("gaps_detected", 0),
             result["total_time_ms"],
         )
-
 
 __all__ = [
     "GapFillerPipelineEngine",

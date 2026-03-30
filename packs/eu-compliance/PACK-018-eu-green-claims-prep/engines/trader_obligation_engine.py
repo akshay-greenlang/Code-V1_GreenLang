@@ -76,6 +76,8 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
@@ -92,21 +94,13 @@ __all__ = [
     "RECORD_RETENTION_YEARS",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -126,7 +120,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely.
 
@@ -140,7 +133,6 @@ def _decimal(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
 ) -> Decimal:
@@ -148,7 +140,6 @@ def _safe_divide(
     if denominator == Decimal("0"):
         return default
     return numerator / denominator
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value to the specified number of decimal places.
@@ -158,18 +149,15 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ArticleReference(str, Enum):
     """Green Claims Directive article references.
@@ -184,7 +172,6 @@ class ArticleReference(str, Enum):
     ARTICLE_7 = "article_7"
     ARTICLE_8 = "article_8"
 
-
 class ComplianceStatus(str, Enum):
     """Compliance status for an individual obligation.
 
@@ -195,7 +182,6 @@ class ComplianceStatus(str, Enum):
     PARTIALLY_COMPLIANT = "partially_compliant"
     NON_COMPLIANT = "non_compliant"
     NOT_APPLICABLE = "not_applicable"
-
 
 class ClaimLifecycleStage(str, Enum):
     """Lifecycle stages of an environmental claim.
@@ -211,11 +197,9 @@ class ClaimLifecycleStage(str, Enum):
     EXPIRED = "expired"
     WITHDRAWN = "withdrawn"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # Article 3 compliance checklist per COM/2023/166.
 ARTICLE_3_CHECKLIST: List[str] = [
@@ -279,11 +263,9 @@ REMEDIATION_PRIORITY: Dict[str, int] = {
     ArticleReference.ARTICLE_8.value: 6,
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class ObligationItem(BaseModel):
     """A single compliance obligation under the Directive.
@@ -332,7 +314,6 @@ class ObligationItem(BaseModel):
             raise ValueError("Obligation description must not be empty")
         return v
 
-
 class ClaimLifecycleRecord(BaseModel):
     """Lifecycle tracking record for an environmental claim.
 
@@ -352,14 +333,13 @@ class ClaimLifecycleRecord(BaseModel):
         description="History of stage transitions with timestamps",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record creation timestamp (UTC)",
     )
     last_updated: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Last update timestamp (UTC)",
     )
-
 
 class TraderObligationResult(BaseModel):
     """Complete trader obligation compliance result.
@@ -413,7 +393,7 @@ class TraderObligationResult(BaseModel):
         description="Engine version",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Assessment timestamp (UTC)",
     )
     processing_time_ms: float = Field(
@@ -425,11 +405,9 @@ class TraderObligationResult(BaseModel):
         description="SHA-256 hash of the assessment result",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class TraderObligationEngine:
     """Trader obligation compliance engine per Articles 3-8.
@@ -1114,7 +1092,7 @@ class TraderObligationEngine:
         transition_valid = target in allowed
 
         if transition_valid:
-            timestamp = _utcnow()
+            timestamp = utcnow()
             record.transitions.append({
                 "from": current,
                 "to": target,

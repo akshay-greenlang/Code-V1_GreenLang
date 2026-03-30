@@ -82,25 +82,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "43.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -125,7 +119,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -134,7 +127,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -146,21 +138,17 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round2(value: Any) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EvidenceCategory(str, Enum):
     """Evidence categories for ISAE 3410 assurance."""
@@ -173,12 +161,10 @@ class EvidenceCategory(str, Enum):
     UNCERTAINTY = "uncertainty"
     BOUNDARY = "boundary"
 
-
 class AssuranceLevel(str, Enum):
     """Assurance engagement levels."""
     REASONABLE = "reasonable"
     LIMITED = "limited"
-
 
 class QueryStatus(str, Enum):
     """Verifier query lifecycle status."""
@@ -188,14 +174,12 @@ class QueryStatus(str, Enum):
     CLOSED = "closed"
     REOPENED = "reopened"
 
-
 class FindingSeverity(str, Enum):
     """Assurance finding severity."""
     CRITICAL = "critical"
     MAJOR = "major"
     MINOR = "minor"
     OBSERVATION = "observation"
-
 
 class FindingStatus(str, Enum):
     """Finding remediation status."""
@@ -205,14 +189,12 @@ class FindingStatus(str, Enum):
     ACCEPTED = "accepted"
     CLOSED = "closed"
 
-
 class ReadinessRating(str, Enum):
     """Assurance readiness rating."""
     READY = "ready"
     MOSTLY_READY = "mostly_ready"
     PARTIALLY_READY = "partially_ready"
     NOT_READY = "not_ready"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -272,11 +254,9 @@ SCOPE3_CATEGORY_NAMES: Dict[int, str] = {
 }
 """GHG Protocol Scope 3 category names."""
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Data Models
 # ---------------------------------------------------------------------------
-
 
 class CalculationStep(BaseModel):
     """Single step in a calculation provenance chain.
@@ -297,7 +277,6 @@ class CalculationStep(BaseModel):
     output_value: float = Field(..., description="Output value")
     output_unit: str = Field(default="tCO2e", description="Output unit")
     step_hash: str = Field(default="", description="Step hash")
-
 
 class ProvenanceChain(BaseModel):
     """Complete provenance chain for a calculation.
@@ -320,7 +299,6 @@ class ProvenanceChain(BaseModel):
     final_unit: str = Field(default="tCO2e", description="Final unit")
     chain_hash: str = Field(default="", description="Chain hash")
     calculated_at: str = ""
-
 
 class MethodologyDecision(BaseModel):
     """Methodology decision record for a Scope 3 category.
@@ -348,7 +326,6 @@ class MethodologyDecision(BaseModel):
     reviewer: str = Field(default="", description="Reviewer name")
     decision_date: str = Field(default="", description="Decision date")
 
-
 class DataSourceRecord(BaseModel):
     """Record of a data source used in the inventory.
 
@@ -374,7 +351,6 @@ class DataSourceRecord(BaseModel):
     collection_date: str = Field(default="", description="Collection date")
     responsible_person: str = Field(default="", description="Data owner")
     verification_status: str = Field(default="unverified", description="Verification status")
-
 
 class AssumptionRecord(BaseModel):
     """Record of an assumption used in the inventory.
@@ -404,7 +380,6 @@ class AssumptionRecord(BaseModel):
         default_factory=list, description="Alternative values"
     )
 
-
 class EmissionFactorRecord(BaseModel):
     """Record of an emission factor used.
 
@@ -433,7 +408,6 @@ class EmissionFactorRecord(BaseModel):
     sector_scope: str = Field(default="", description="Sector scope")
     applicability_notes: str = Field(default="", description="Applicability notes")
 
-
 class CompletenessItem(BaseModel):
     """Completeness assessment for a Scope 3 category.
 
@@ -453,7 +427,6 @@ class CompletenessItem(BaseModel):
     materiality_assessment: str = Field(default="", description="Materiality notes")
     estimated_pct_of_total: float = Field(default=0, description="Est. % of total")
     data_gaps: List[str] = Field(default_factory=list, description="Known data gaps")
-
 
 class VerifierQuery(BaseModel):
     """Verifier query record.
@@ -481,7 +454,6 @@ class VerifierQuery(BaseModel):
     evidence_refs: List[str] = Field(default_factory=list, description="Evidence refs")
     assigned_to: str = Field(default="", description="Assigned person")
 
-
 class Finding(BaseModel):
     """Assurance finding record.
 
@@ -507,7 +479,6 @@ class Finding(BaseModel):
     raised_date: str = Field(default="", description="Date raised")
     due_date: str = Field(default="", description="Due date")
     closed_date: str = Field(default="", description="Closed date")
-
 
 class EvidencePackage(BaseModel):
     """Complete evidence package for assurance.
@@ -547,7 +518,6 @@ class EvidencePackage(BaseModel):
     generated_at: str = ""
     provenance_hash: str = ""
 
-
 class AssuranceScore(BaseModel):
     """Assurance readiness score breakdown.
 
@@ -567,7 +537,6 @@ class AssuranceScore(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     provenance_hash: str = ""
     calculated_at: str = ""
-
 
 class YoYComparisonItem(BaseModel):
     """Year-on-year comparison item for verification.
@@ -590,7 +559,6 @@ class YoYComparisonItem(BaseModel):
     change_pct: float
     explanation: str = ""
     requires_explanation: bool = False
-
 
 class YoYComparisonPackage(BaseModel):
     """Year-on-year comparison package for verification.
@@ -616,11 +584,9 @@ class YoYComparisonPackage(BaseModel):
     provenance_hash: str = ""
     calculated_at: str = ""
 
-
 # ---------------------------------------------------------------------------
 # Engine Class
 # ---------------------------------------------------------------------------
-
 
 class AssuranceEngine:
     """Generates ISAE 3410 assurance evidence packages.
@@ -683,7 +649,7 @@ class AssuranceEngine:
         start_ms = time.time()
 
         cat_count = sum(1 for c in completeness if c.included)
-        yr = reporting_year or _utcnow().year
+        yr = reporting_year or utcnow().year
 
         package = EvidencePackage(
             reporting_year=yr,
@@ -697,7 +663,7 @@ class AssuranceEngine:
             completeness=completeness,
             total_tco2e=_round2(total_tco2e),
             category_count=cat_count,
-            generated_at=_utcnow().isoformat(),
+            generated_at=utcnow().isoformat(),
         )
 
         # Calculate readiness.
@@ -761,7 +727,7 @@ class AssuranceEngine:
             steps=steps,
             final_value=final_value,
             chain_hash=prev_hash,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         )
 
         elapsed_ms = (time.time() - start_ms) * 1000
@@ -799,7 +765,7 @@ class AssuranceEngine:
                 data_availability=d.get("data_availability", ""),
                 materiality=d.get("materiality", True),
                 reviewer=d.get("reviewer", ""),
-                decision_date=d.get("decision_date", _utcnow().isoformat()),
+                decision_date=d.get("decision_date", utcnow().isoformat()),
             ))
         logger.info("Methodology log: %d decisions recorded", len(records))
         return records
@@ -976,7 +942,7 @@ class AssuranceEngine:
         Returns:
             VerifierQuery record.
         """
-        now = _utcnow().isoformat()
+        now = utcnow().isoformat()
         status = QueryStatus.RESPONDED.value if response_text else QueryStatus.OPEN.value
 
         query = VerifierQuery(
@@ -1026,7 +992,7 @@ class AssuranceEngine:
             root_cause=root_cause,
             remediation=remediation,
             status=status,
-            raised_date=_utcnow().isoformat(),
+            raised_date=utcnow().isoformat(),
         )
         self._findings.append(finding)
         logger.info(
@@ -1139,7 +1105,7 @@ class AssuranceEngine:
             total_change_pct=_round2(total_change_pct),
             items=items,
             material_changes=material_changes,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         )
         result.provenance_hash = _compute_hash(result)
 
@@ -1267,7 +1233,7 @@ class AssuranceEngine:
             by_category=by_category,
             gaps=gaps,
             recommendations=recommendations,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         )
         result.provenance_hash = _compute_hash(result)
         return result
@@ -1287,7 +1253,6 @@ class AssuranceEngine:
             SHA-256 hex digest (64 characters).
         """
         return _compute_hash(data)
-
 
 # ---------------------------------------------------------------------------
 # Pydantic v2 model_rebuild for forward-reference resolution

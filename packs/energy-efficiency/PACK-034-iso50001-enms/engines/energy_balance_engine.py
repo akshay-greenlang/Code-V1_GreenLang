@@ -74,25 +74,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -110,7 +104,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -119,7 +112,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -131,22 +123,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EnergyFlowType(str, Enum):
     """Type of energy flow within the facility balance boundary.
@@ -164,7 +152,6 @@ class EnergyFlowType(str, Enum):
     CONVERSION = "conversion"
     STORAGE = "storage"
     REJECTED = "rejected"
-
 
 class EnergySource(str, Enum):
     """Primary energy source or carrier.
@@ -188,7 +175,6 @@ class EnergySource(str, Enum):
     HYDROGEN = "hydrogen"
     OTHER = "other"
 
-
 class EndUseCategory(str, Enum):
     """End-use category for energy consumption within a facility.
 
@@ -211,7 +197,6 @@ class EndUseCategory(str, Enum):
     LAUNDRY = "laundry"
     OTHER = "other"
 
-
 class MeterType(str, Enum):
     """Type of energy meter in the metering hierarchy.
 
@@ -227,7 +212,6 @@ class MeterType(str, Enum):
     VIRTUAL = "virtual"
     CALCULATED = "calculated"
 
-
 class ReconciliationStatus(str, Enum):
     """Status of meter reconciliation between parent and children.
 
@@ -240,7 +224,6 @@ class ReconciliationStatus(str, Enum):
     MINOR_DISCREPANCY = "minor_discrepancy"
     MAJOR_DISCREPANCY = "major_discrepancy"
     UNRECONCILED = "unreconciled"
-
 
 # ---------------------------------------------------------------------------
 # Constants / Reference Data
@@ -395,11 +378,9 @@ _CONVERSION_EFFICIENCIES: Dict[str, Decimal] = {
     "gas_turbine": Decimal("0.38"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class EnergyFlow(BaseModel):
     """Single energy flow within the facility balance boundary.
@@ -451,7 +432,6 @@ class EnergyFlow(BaseModel):
         if not v or not v.strip():
             return _new_uuid()
         return v
-
 
 class MeterNode(BaseModel):
     """Meter node in the facility metering hierarchy.
@@ -508,7 +488,6 @@ class MeterNode(BaseModel):
             return _new_uuid()
         return v
 
-
 class SankeyNode(BaseModel):
     """Node in a Sankey energy flow diagram.
 
@@ -535,7 +514,6 @@ class SankeyNode(BaseModel):
         default="#C0C0C0", max_length=20, description="Hex color code"
     )
 
-
 class SankeyLink(BaseModel):
     """Link connecting two nodes in a Sankey diagram.
 
@@ -557,7 +535,6 @@ class SankeyLink(BaseModel):
     label: Optional[str] = Field(
         default=None, max_length=200, description="Display label"
     )
-
 
 class SankeyDiagram(BaseModel):
     """Complete Sankey diagram data structure for energy flows.
@@ -589,7 +566,6 @@ class SankeyDiagram(BaseModel):
     unaccounted_kwh: Decimal = Field(
         default=Decimal("0"), description="Unaccounted energy (kWh)"
     )
-
 
 class MeterReconciliation(BaseModel):
     """Result of reconciling a parent meter against its sub-meters.
@@ -630,7 +606,6 @@ class MeterReconciliation(BaseModel):
         default=Decimal("0"), ge=0, description="Estimated losses (kWh)"
     )
 
-
 class LossEstimate(BaseModel):
     """Estimated energy loss for a specific category.
 
@@ -658,7 +633,6 @@ class LossEstimate(BaseModel):
     notes: str = Field(
         default="", max_length=1000, description="Additional notes"
     )
-
 
 class EnergyBalanceResult(BaseModel):
     """Complete energy balance result for a facility and period.
@@ -731,11 +705,9 @@ class EnergyBalanceResult(BaseModel):
         default=0, ge=0, description="Processing time (ms)"
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class EnergyBalanceEngine:
     """Facility energy balance analysis with Sankey diagrams and metering.
@@ -2689,7 +2661,6 @@ class EnergyBalanceEngine:
         }
         summary["provenance_hash"] = _compute_hash(summary)
         return summary
-
 
 # ---------------------------------------------------------------------------
 # Pydantic v2 model rebuilds (required with `from __future__ import annotations`)

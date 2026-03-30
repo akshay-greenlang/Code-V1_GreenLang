@@ -62,25 +62,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -100,7 +94,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely.
 
@@ -114,7 +107,6 @@ def _decimal(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
 ) -> Decimal:
@@ -122,7 +114,6 @@ def _safe_divide(
     if denominator == Decimal("0"):
         return default
     return numerator / denominator
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value to the specified number of decimal places.
@@ -139,23 +130,19 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
 
-
 def _round6(value: Decimal) -> Decimal:
     """Round Decimal to 6 decimal places using ROUND_HALF_UP."""
     return value.quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EnergySource(str, Enum):
     """Energy source types for consumption reporting.
@@ -185,7 +172,6 @@ class EnergySource(str, Enum):
     OTHER_FOSSIL = "other_fossil"
     OTHER_RENEWABLE = "other_renewable"
 
-
 class EnergyCategory(str, Enum):
     """Energy classification categories per ESRS E1-5.
 
@@ -195,7 +181,6 @@ class EnergyCategory(str, Enum):
     FOSSIL = "fossil"
     NUCLEAR = "nuclear"
     RENEWABLE = "renewable"
-
 
 class EnergyUnit(str, Enum):
     """Energy measurement units supported for conversion.
@@ -207,7 +192,6 @@ class EnergyUnit(str, Enum):
     GJ = "gj"
     KWH = "kwh"
     TJ = "tj"
-
 
 class EnergyPurpose(str, Enum):
     """Purpose of energy consumption per ESRS E1-5 Para 40.
@@ -223,11 +207,9 @@ class EnergyPurpose(str, Enum):
     LIGHTING = "lighting"
     OTHER = "other"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # Energy unit conversion factors to MWh (standard ESRS reporting unit).
 # Based on SI definitions and IEA energy statistics methodology.
@@ -314,11 +296,9 @@ FUEL_ENERGY_CONTENT: Dict[str, Decimal] = {
     "petrol_litre": Decimal("0.00903"),         # MWh per litre
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class EnergyConsumptionEntry(BaseModel):
     """A single energy consumption entry for mix calculation.
@@ -391,7 +371,6 @@ class EnergyConsumptionEntry(BaseModel):
             raise ValueError(f"Energy amount must be >= 0, got {v}")
         return v
 
-
 class RenewableBreakdown(BaseModel):
     """Disaggregation of renewable energy by source type.
 
@@ -431,7 +410,6 @@ class RenewableBreakdown(BaseModel):
         description="Purchased renewable energy (MWh)",
     )
 
-
 class EnergyIntensity(BaseModel):
     """Energy intensity metric per ESRS E1-5 Para 41.
 
@@ -455,7 +433,6 @@ class EnergyIntensity(BaseModel):
         default="", description="SHA-256 hash of the intensity calculation"
     )
 
-
 class EnergyMixResult(BaseModel):
     """Complete energy mix result per ESRS E1-5.
 
@@ -472,7 +449,7 @@ class EnergyMixResult(BaseModel):
         description="Engine version used for this calculation",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of calculation (UTC)",
     )
     reporting_year: int = Field(
@@ -540,11 +517,9 @@ class EnergyMixResult(BaseModel):
         description="SHA-256 hash of all inputs and calculation steps",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class EnergyMixEngine:
     """Energy consumption and mix calculation engine per ESRS E1-5.

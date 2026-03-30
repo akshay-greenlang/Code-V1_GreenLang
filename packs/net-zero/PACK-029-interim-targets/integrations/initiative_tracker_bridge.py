@@ -34,18 +34,14 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -57,11 +53,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class InitiativeStatus(str, Enum):
     PLANNED = "planned"
@@ -70,7 +64,6 @@ class InitiativeStatus(str, Enum):
     COMPLETED = "completed"
     DEFERRED = "deferred"
     CANCELLED = "cancelled"
-
 
 class InitiativeCategory(str, Enum):
     ENERGY_EFFICIENCY = "energy_efficiency"
@@ -84,29 +77,24 @@ class InitiativeCategory(str, Enum):
     CCS_CCUS = "ccs_ccus"
     NATURE_BASED = "nature_based"
 
-
 class RAGStatus(str, Enum):
     RED = "red"
     AMBER = "amber"
     GREEN = "green"
-
 
 class BudgetType(str, Enum):
     CAPEX = "capex"
     OPEX = "opex"
     MIXED = "mixed"
 
-
 class VarianceType(str, Enum):
     FAVORABLE = "favorable"     # Lower emissions than expected
     UNFAVORABLE = "unfavorable"  # Higher emissions than expected
     NEUTRAL = "neutral"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class InitiativeTrackerConfig(BaseModel):
     """Configuration for the initiative tracker bridge."""
@@ -122,7 +110,6 @@ class InitiativeTrackerConfig(BaseModel):
         "green_max_budget_overrun_pct": 10.0,
         "amber_max_budget_overrun_pct": 25.0,
     })
-
 
 class Initiative(BaseModel):
     """Single emission reduction initiative."""
@@ -152,7 +139,6 @@ class Initiative(BaseModel):
     linked_target_ref: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 class InitiativePortfolio(BaseModel):
     """Portfolio of all initiatives."""
     portfolio_id: str = Field(default_factory=_new_uuid)
@@ -170,7 +156,6 @@ class InitiativePortfolio(BaseModel):
     overall_rag: RAGStatus = Field(default=RAGStatus.GREEN)
     provenance_hash: str = Field(default="")
 
-
 class VarianceAttribution(BaseModel):
     """Link between initiative and emission variance."""
     attribution_id: str = Field(default_factory=_new_uuid)
@@ -184,7 +169,6 @@ class VarianceAttribution(BaseModel):
     reporting_period: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 class ForecastResult(BaseModel):
     """Forecast of future initiative impact."""
     forecast_id: str = Field(default_factory=_new_uuid)
@@ -196,7 +180,6 @@ class ForecastResult(BaseModel):
     confidence_level: str = Field(default="medium")
     provenance_hash: str = Field(default="")
 
-
 class InitiativeTrackerResult(BaseModel):
     """Complete initiative tracker result."""
     result_id: str = Field(default_factory=_new_uuid)
@@ -206,11 +189,9 @@ class InitiativeTrackerResult(BaseModel):
     budget_summary: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # InitiativeTrackerBridge
 # ---------------------------------------------------------------------------
-
 
 class InitiativeTrackerBridge:
     """Initiative deployment tracking bridge for PACK-029.

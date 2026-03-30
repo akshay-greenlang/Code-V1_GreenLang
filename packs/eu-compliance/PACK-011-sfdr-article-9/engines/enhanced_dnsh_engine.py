@@ -48,25 +48,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -86,11 +80,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _round_val(value: float, places: int = 4) -> float:
     """Round a float to specified decimal places."""
     return round(value, places)
-
 
 def _safe_pct(numerator: float, denominator: float) -> float:
     """Calculate percentage safely, returning 0.0 on zero denominator."""
@@ -98,11 +90,9 @@ def _safe_pct(numerator: float, denominator: float) -> float:
         return 0.0
     return (numerator / denominator) * 100.0
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class PAICategory(str, Enum):
     """PAI indicator category groupings per SFDR RTS Annex I."""
@@ -112,7 +102,6 @@ class PAICategory(str, Enum):
     SOVEREIGN = "sovereign"
     REAL_ESTATE = "real_estate"
 
-
 class DNSHStatus(str, Enum):
     """DNSH assessment outcome for a single check."""
     PASS = "PASS"
@@ -121,14 +110,12 @@ class DNSHStatus(str, Enum):
     NOT_APPLICABLE = "NOT_APPLICABLE"
     INSUFFICIENT_DATA = "INSUFFICIENT_DATA"
 
-
 class ThresholdDirection(str, Enum):
     """Direction of threshold comparison."""
     MAX = "MAX"
     MIN = "MIN"
     BOOLEAN_TRUE_FAILS = "BOOLEAN_TRUE_FAILS"
     BOOLEAN_FALSE_FAILS = "BOOLEAN_FALSE_FAILS"
-
 
 class SeverityLevel(str, Enum):
     """Severity classification for DNSH failures."""
@@ -137,7 +124,6 @@ class SeverityLevel(str, Enum):
     MEDIUM = "MEDIUM"
     LOW = "LOW"
     INFORMATIONAL = "INFORMATIONAL"
-
 
 class ExclusionReason(str, Enum):
     """Reason for auto-excluding a holding from the portfolio."""
@@ -150,11 +136,9 @@ class ExclusionReason(str, Enum):
     BIODIVERSITY_HARM = "biodiversity_harm"
     COUNTRY_SANCTIONS = "country_sanctions"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class PAIThreshold(BaseModel):
     """Configurable threshold for a single PAI indicator DNSH check.
@@ -211,7 +195,6 @@ class PAIThreshold(BaseModel):
         default=False,
         description="Whether failure triggers auto-exclusion",
     )
-
 
 class PAICheckResult(BaseModel):
     """Result of a single PAI indicator DNSH check for one holding.
@@ -270,7 +253,6 @@ class PAICheckResult(BaseModel):
         description="Whether this failure triggers auto-exclusion",
     )
 
-
 class HoldingPAIData(BaseModel):
     """PAI indicator data for a single holding for DNSH screening.
 
@@ -310,7 +292,6 @@ class HoldingPAIData(BaseModel):
         default_factory=dict,
         description="Boolean PAI indicator flags (e.g., PAI_4, PAI_10)",
     )
-
 
 class HoldingDNSHResult(BaseModel):
     """Complete DNSH assessment result for a single holding.
@@ -378,12 +359,11 @@ class HoldingDNSHResult(BaseModel):
         description="Percentage of checks with available data",
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow, description="Assessment timestamp",
+        default_factory=utcnow, description="Assessment timestamp",
     )
     provenance_hash: str = Field(
         default="", description="SHA-256 provenance hash",
     )
-
 
 class RemediationStep(BaseModel):
     """A single remediation step for addressing a DNSH finding.
@@ -427,7 +407,6 @@ class RemediationStep(BaseModel):
         default="", description="Estimated timeline to remediate",
     )
 
-
 class RemediationPlan(BaseModel):
     """Remediation plan for a holding with DNSH findings.
 
@@ -468,12 +447,11 @@ class RemediationPlan(BaseModel):
         default="MEDIUM", description="Overall urgency level",
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow, description="Generation timestamp",
+        default_factory=utcnow, description="Generation timestamp",
     )
     provenance_hash: str = Field(
         default="", description="SHA-256 provenance hash",
     )
-
 
 class AutoExclusionResult(BaseModel):
     """Result of auto-exclusion analysis for the portfolio.
@@ -509,12 +487,11 @@ class AutoExclusionResult(BaseModel):
         description="Exclusion details per holding",
     )
     reviewed_at: datetime = Field(
-        default_factory=_utcnow, description="Review timestamp",
+        default_factory=utcnow, description="Review timestamp",
     )
     provenance_hash: str = Field(
         default="", description="SHA-256 provenance hash",
     )
-
 
 class PortfolioDNSHResult(BaseModel):
     """Portfolio-level DNSH compliance result for Article 9.
@@ -577,15 +554,13 @@ class PortfolioDNSHResult(BaseModel):
         description="Remediation plans for failing holdings",
     )
     processing_time_ms: float = Field(default=0.0)
-    assessed_at: datetime = Field(default_factory=_utcnow)
+    assessed_at: datetime = Field(default_factory=utcnow)
     engine_version: str = Field(default=_MODULE_VERSION)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine Configuration
 # ---------------------------------------------------------------------------
-
 
 class EnhancedDNSHConfig(BaseModel):
     """Configuration for the Enhanced DNSH Engine (Article 9).
@@ -641,11 +616,9 @@ class EnhancedDNSHConfig(BaseModel):
         description="Target portfolio compliance % (100 for Article 9)",
     )
 
-
 # ---------------------------------------------------------------------------
 # Default Threshold Configuration (Stricter for Article 9)
 # ---------------------------------------------------------------------------
-
 
 def _build_article9_thresholds() -> List[PAIThreshold]:
     """Build stricter PAI indicator thresholds for Article 9 DNSH screening.
@@ -862,7 +835,6 @@ def _build_article9_thresholds() -> List[PAIThreshold]:
         ),
     ]
 
-
 # ---------------------------------------------------------------------------
 # Pydantic model_rebuild
 # ---------------------------------------------------------------------------
@@ -877,11 +849,9 @@ AutoExclusionResult.model_rebuild()
 PortfolioDNSHResult.model_rebuild()
 EnhancedDNSHConfig.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # EnhancedDNSHEngine
 # ---------------------------------------------------------------------------
-
 
 class EnhancedDNSHEngine:
     """Enhanced DNSH Engine for SFDR Article 9 products.
@@ -968,7 +938,7 @@ class EnhancedDNSHEngine:
         Raises:
             ValueError: If holding_id is empty.
         """
-        start = _utcnow()
+        start = utcnow()
         self._assessment_count += 1
 
         if not holding_data.holding_id:
@@ -1064,7 +1034,7 @@ class EnhancedDNSHEngine:
             "should_exclude": should_exclude,
         })
 
-        elapsed_ms = (_utcnow() - start).total_seconds() * 1000
+        elapsed_ms = (utcnow() - start).total_seconds() * 1000
         logger.info(
             "Enhanced DNSH for %s: status=%s, passed=%d, failed=%d, "
             "critical=%d, exclude=%s, time=%.1fms",
@@ -1099,7 +1069,7 @@ class EnhancedDNSHEngine:
         Raises:
             ValueError: If holdings list is empty.
         """
-        start = _utcnow()
+        start = utcnow()
 
         if not holdings:
             raise ValueError("Holdings list cannot be empty")
@@ -1157,7 +1127,7 @@ class EnhancedDNSHEngine:
                     plan = self._generate_remediation_plan(assessment)
                     remediation_plans.append(plan)
 
-        elapsed_ms = (_utcnow() - start).total_seconds() * 1000
+        elapsed_ms = (utcnow() - start).total_seconds() * 1000
 
         result = PortfolioDNSHResult(
             portfolio_name=portfolio_name,

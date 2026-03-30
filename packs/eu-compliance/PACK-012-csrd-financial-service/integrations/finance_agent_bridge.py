@@ -36,21 +36,15 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute a SHA-256 hash of arbitrary data."""
     return hashlib.sha256(
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
-
 
 class _AgentStub:
     """Deferred agent loader for lazy initialization."""
@@ -67,6 +61,7 @@ class _AgentStub:
             return self._instance
         try:
             import importlib
+
             mod = importlib.import_module(self.module_path)
             cls = getattr(mod, self.class_name)
             self._instance = cls()
@@ -80,7 +75,6 @@ class _AgentStub:
         """Whether the agent has been loaded."""
         return self._instance is not None
 
-
 class FinanceAgentType(str, Enum):
     """Finance agents available for bridging."""
     GREEN_SCREENER = "green_investment_screener"
@@ -89,7 +83,6 @@ class FinanceAgentType(str, Enum):
     STRANDED_ASSET = "stranded_asset_analyzer"
     CLIMATE_FINANCE = "climate_finance_tracker"
     CARBON_PRICING = "carbon_pricing"
-
 
 class FinanceAgentBridgeConfig(BaseModel):
     """Configuration for the Finance Agent Bridge."""
@@ -122,7 +115,6 @@ class FinanceAgentBridgeConfig(BaseModel):
         description="Carbon price assumption (EUR/tCO2e)",
     )
 
-
 class GreenScreeningResult(BaseModel):
     """Result of green investment screening."""
     total_assets: int = Field(default=0, description="Total assets screened")
@@ -136,7 +128,6 @@ class GreenScreeningResult(BaseModel):
         default=0.0, description="Green qualified exposure (EUR)",
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class StrandedAssetResult(BaseModel):
     """Result of stranded asset assessment."""
@@ -153,7 +144,6 @@ class StrandedAssetResult(BaseModel):
         default=0.0, description="Estimated carbon cost impact (EUR)",
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class CarbonPricingResult(BaseModel):
     """Result of carbon pricing impact analysis."""
@@ -173,7 +163,6 @@ class CarbonPricingResult(BaseModel):
         default_factory=dict, description="Carbon cost by sector",
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class FinanceAgentBridge:
     """Bridge connecting PACK-012 with greenlang.agents.finance.

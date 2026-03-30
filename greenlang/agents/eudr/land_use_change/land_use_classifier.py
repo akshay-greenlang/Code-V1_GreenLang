@@ -75,6 +75,8 @@ from datetime import date, datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -87,27 +89,18 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a unique identifier using UUID4."""
     return str(uuid.uuid4())
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class LandUseCategory(str, Enum):
     """IPCC-aligned land use categories for EUDR compliance.
@@ -162,7 +155,6 @@ class LandUseCategory(str, Enum):
     WATER = "water"
     BARE_SOIL = "bare_soil"
 
-
 class ClassificationMethod(str, Enum):
     """Available classification methods for land use determination.
 
@@ -184,7 +176,6 @@ class ClassificationMethod(str, Enum):
     TEMPORAL_PHENOLOGY = "TEMPORAL_PHENOLOGY"
     TEXTURE_ANALYSIS = "TEXTURE_ANALYSIS"
     ENSEMBLE = "ENSEMBLE"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -498,11 +489,9 @@ ARTICLE_2_4_PLANTATION_CATEGORIES: List[str] = [
     LandUseCategory.PLANTATION_FOREST.value,
 ]
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class SpectralData:
@@ -522,7 +511,6 @@ class SpectralData:
     pixel_row: int = 0
     pixel_col: int = 0
 
-
 @dataclass
 class VegetationIndices:
     """Vegetation index values for a plot.
@@ -538,7 +526,6 @@ class VegetationIndices:
     evi: float = 0.0
     ndmi: float = 0.0
     savi: float = 0.0
-
 
 @dataclass
 class TextureFeatures:
@@ -556,7 +543,6 @@ class TextureFeatures:
     correlation: float = 0.0
     window_size: int = GLCM_WINDOW_SIZE
 
-
 @dataclass
 class PhenologyTimeSeries:
     """NDVI time-series data for phenology analysis.
@@ -570,7 +556,6 @@ class PhenologyTimeSeries:
     dates: List[str] = field(default_factory=list)
     ndvi_values: List[float] = field(default_factory=list)
     interval_months: int = 1
-
 
 @dataclass
 class PlotClassificationInput:
@@ -601,7 +586,6 @@ class PlotClassificationInput:
     commodity_context: Optional[str] = None
     cloud_cover_pct: float = 0.0
     area_ha: float = 1.0
-
 
 @dataclass
 class LandUseClassification:
@@ -689,11 +673,9 @@ class LandUseClassification:
             "metadata": self.metadata,
         }
 
-
 # ---------------------------------------------------------------------------
 # LandUseClassifier
 # ---------------------------------------------------------------------------
-
 
 class LandUseClassifier:
     """Production-grade multi-class land use classification engine for EUDR.
@@ -919,7 +901,7 @@ class LandUseClassifier:
         self._validate_plot_input(plot, method)
 
         result_id = _generate_id()
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         all_method_scores: Dict[str, Dict[str, float]] = {}
 
@@ -1950,7 +1932,7 @@ class LandUseClassifier:
             longitude=plot.longitude,
             processing_time_ms=0.0,
             provenance_hash="",
-            timestamp=_utcnow().isoformat(),
+            timestamp=utcnow().isoformat(),
             metadata={
                 "error": True,
                 "error_message": error_msg,
@@ -1990,7 +1972,6 @@ class LandUseClassifier:
             "module_version": _MODULE_VERSION,
         }
         return _compute_hash(hash_data)
-
 
 # ---------------------------------------------------------------------------
 # Public API

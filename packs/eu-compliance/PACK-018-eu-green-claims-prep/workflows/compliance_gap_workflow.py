@@ -34,23 +34,18 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ComplianceStatus
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID-4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hex digest for provenance tracking."""
@@ -63,11 +58,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Execution status for a single workflow phase."""
@@ -77,14 +70,12 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class GapPhase(str, Enum):
     """Compliance gap workflow phase identifiers."""
     REGULATORY_MAPPING = "RegulatoryMapping"
     CURRENT_STATE_ASSESSMENT = "CurrentStateAssessment"
     GAP_ANALYSIS = "GapAnalysis"
     REMEDIATION_ROADMAP = "RemediationRoadmap"
-
 
 class GapSeverity(str, Enum):
     """Severity classification for identified compliance gaps."""
@@ -94,15 +85,6 @@ class GapSeverity(str, Enum):
     LOW = "low"
     ADVISORY = "advisory"
 
-
-class ComplianceStatus(str, Enum):
-    """Current compliance status for a given requirement."""
-    COMPLIANT = "compliant"
-    PARTIALLY_COMPLIANT = "partially_compliant"
-    NON_COMPLIANT = "non_compliant"
-    NOT_ASSESSED = "not_assessed"
-
-
 class RoadmapPriority(str, Enum):
     """Remediation roadmap phase priority."""
     IMMEDIATE = "immediate"
@@ -110,11 +92,9 @@ class RoadmapPriority(str, Enum):
     MEDIUM_TERM = "medium_term"
     LONG_TERM = "long_term"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class GapConfig(BaseModel):
     """Configuration for ComplianceGapWorkflow."""
@@ -130,7 +110,6 @@ class GapConfig(BaseModel):
         description="Articles treated as high-priority for severity classification",
     )
 
-
 class GapResult(BaseModel):
     """Individual gap result with severity and remediation detail."""
     gap_id: str = Field(..., description="Unique gap identifier")
@@ -141,7 +120,6 @@ class GapResult(BaseModel):
     impact: str = Field(default="", description="Impact description")
     remediation_steps: List[str] = Field(default_factory=list)
     estimated_effort_days: int = Field(default=0, ge=0)
-
 
 class WorkflowInput(BaseModel):
     """Input model for ComplianceGapWorkflow."""
@@ -160,7 +138,6 @@ class WorkflowInput(BaseModel):
     reporting_year: int = Field(default=2025, ge=2020, le=2050)
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
     phase_name: str = Field(..., description="Phase identifier")
@@ -169,7 +146,6 @@ class PhaseResult(BaseModel):
     completed_at: Optional[datetime] = Field(default=None)
     result_data: Dict[str, Any] = Field(default_factory=dict)
     error_message: Optional[str] = Field(default=None)
-
 
 class WorkflowResult(BaseModel):
     """Complete result from ComplianceGapWorkflow."""
@@ -182,11 +158,9 @@ class WorkflowResult(BaseModel):
     started_at: Optional[datetime] = Field(default=None)
     completed_at: Optional[datetime] = Field(default=None)
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class ComplianceGapWorkflow:
     """
@@ -310,7 +284,7 @@ class ComplianceGapWorkflow:
             config=kwargs.get("config", {}),
         )
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting %s workflow %s", self.WORKFLOW_NAME, self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = PhaseStatus.RUNNING
@@ -344,12 +318,12 @@ class ComplianceGapWorkflow:
             phase_results.append(PhaseResult(
                 phase_name="error_capture",
                 status=PhaseStatus.FAILED,
-                started_at=_utcnow(),
-                completed_at=_utcnow(),
+                started_at=utcnow(),
+                completed_at=utcnow(),
                 error_message=str(exc),
             ))
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
 
         completed_phases = [p for p in phase_results if p.status == PhaseStatus.COMPLETED]
         overall_result: Dict[str, Any] = {
@@ -431,7 +405,7 @@ class ComplianceGapWorkflow:
 
     def _run_regulatory_mapping(self, input_data: WorkflowInput) -> PhaseResult:
         """Map applicable Directive articles to the organisation."""
-        started = _utcnow()
+        started = utcnow()
         self.logger.info("Phase 1/4 RegulatoryMapping -- identifying applicable articles")
 
         applicable: List[Dict[str, Any]] = []
@@ -468,7 +442,7 @@ class ComplianceGapWorkflow:
             phase_name=GapPhase.REGULATORY_MAPPING.value,
             status=PhaseStatus.COMPLETED,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             result_data=result_data,
         )
 
@@ -480,7 +454,7 @@ class ComplianceGapWorkflow:
         self, input_data: WorkflowInput, mapping_data: Dict[str, Any],
     ) -> PhaseResult:
         """Evaluate existing practices against mapped requirements."""
-        started = _utcnow()
+        started = utcnow()
         self.logger.info("Phase 2/4 CurrentStateAssessment -- evaluating %d practices",
                          len(input_data.current_practices))
 
@@ -526,7 +500,7 @@ class ComplianceGapWorkflow:
             phase_name=GapPhase.CURRENT_STATE_ASSESSMENT.value,
             status=PhaseStatus.COMPLETED,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             result_data=result_data,
         )
 
@@ -538,7 +512,7 @@ class ComplianceGapWorkflow:
         self, mapping_data: Dict[str, Any], state_data: Dict[str, Any],
     ) -> PhaseResult:
         """Identify compliance gaps with severity classification."""
-        started = _utcnow()
+        started = utcnow()
         self.logger.info("Phase 3/4 GapAnalysis -- identifying gaps")
 
         gaps: List[Dict[str, Any]] = []
@@ -587,7 +561,7 @@ class ComplianceGapWorkflow:
             phase_name=GapPhase.GAP_ANALYSIS.value,
             status=PhaseStatus.COMPLETED,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             result_data=result_data,
         )
 
@@ -599,7 +573,7 @@ class ComplianceGapWorkflow:
         self, input_data: WorkflowInput, gap_data: Dict[str, Any],
     ) -> PhaseResult:
         """Generate a phased remediation roadmap from identified gaps."""
-        started = _utcnow()
+        started = utcnow()
         self.logger.info("Phase 4/4 RemediationRoadmap -- building plan")
 
         roadmap: Dict[str, List[Dict[str, Any]]] = {
@@ -640,7 +614,7 @@ class ComplianceGapWorkflow:
             phase_name=GapPhase.REMEDIATION_ROADMAP.value,
             status=PhaseStatus.COMPLETED,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             result_data=result_data,
         )
 

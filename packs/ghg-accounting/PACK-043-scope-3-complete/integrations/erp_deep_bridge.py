@@ -34,20 +34,15 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "43.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -60,11 +55,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ERPSystemType(str, Enum):
     """Supported ERP systems for deep integration."""
@@ -73,7 +66,6 @@ class ERPSystemType(str, Enum):
     ORACLE = "oracle"
     DYNAMICS = "dynamics"
 
-
 class ExtractionStatus(str, Enum):
     """Data extraction status."""
 
@@ -81,7 +73,6 @@ class ExtractionStatus(str, Enum):
     PARTIAL = "partial"
     FAILED = "failed"
     NO_DATA = "no_data"
-
 
 # ---------------------------------------------------------------------------
 # GL Account to Scope 3 Category Mapping Tables (per ERP)
@@ -136,11 +127,9 @@ GL_SCOPE3_MAP_DYNAMICS: Dict[str, Dict[str, str]] = {
     "601000": {"category": "cat_1", "desc": "R&D procurement"},
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class ProcurementRecord(BaseModel):
     """Procurement record from ERP."""
@@ -161,7 +150,6 @@ class ProcurementRecord(BaseModel):
     scope3_category: str = Field(default="")
     naics_code: str = Field(default="")
 
-
 class TravelExpenseRecord(BaseModel):
     """Travel expense record from ERP."""
 
@@ -179,7 +167,6 @@ class TravelExpenseRecord(BaseModel):
     transport_mode: str = Field(default="")
     hotel_nights: int = Field(default=0)
 
-
 class VendorMapping(BaseModel):
     """Vendor-to-Scope 3 category mapping."""
 
@@ -190,7 +177,6 @@ class VendorMapping(BaseModel):
     naics_code: str = Field(default="")
     country: str = Field(default="")
     has_emission_data: bool = Field(default=False)
-
 
 class ExtractionResult(BaseModel):
     """ERP data extraction result."""
@@ -204,13 +190,11 @@ class ExtractionResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # ERPDeepBridge
 # ---------------------------------------------------------------------------
-
 
 class ERPDeepBridge:
     """Advanced ERP integration for enterprise procurement data.

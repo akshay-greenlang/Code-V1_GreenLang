@@ -51,10 +51,11 @@ from collections import OrderedDict
 from datetime import datetime, timedelta
 from typing import Any, Callable, Dict, List, Optional, Set, TYPE_CHECKING
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import ConfigDict, Field
 
 from greenlang.agents.foundation.schema.compiler.ir import COMPILER_VERSION, SchemaIR
 from greenlang.agents.foundation.schema.constants import SCHEMA_CACHE_MAX_SIZE, SCHEMA_CACHE_TTL_SECONDS
+from greenlang.schemas import GreenLangBase
 
 if TYPE_CHECKING:
     from greenlang.agents.foundation.schema.models.schema_ref import SchemaRef
@@ -67,7 +68,7 @@ logger = logging.getLogger(__name__)
 # =============================================================================
 
 
-class CacheEntry(BaseModel):
+class CacheEntry(GreenLangBase):
     """
     Entry in the IR cache containing compiled schema and metadata.
 
@@ -136,7 +137,7 @@ class CacheEntry(BaseModel):
 # =============================================================================
 
 
-class CacheMetrics(BaseModel):
+class CacheMetrics(GreenLangBase):
     """
     Comprehensive cache metrics for monitoring and optimization.
 

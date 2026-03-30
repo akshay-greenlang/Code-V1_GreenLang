@@ -58,37 +58,28 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> str:
-    """Return current UTC timestamp as ISO-8601 string."""
-    return datetime.utcnow().isoformat() + "Z"
-
-
 def _new_uuid() -> str:
     """Return a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash of JSON-serialisable data."""
     serialised = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialised.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -99,7 +90,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -109,7 +99,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class DisclosurePhase(str, Enum):
     """Disclosure preparation workflow phases."""
 
@@ -117,7 +106,6 @@ class DisclosurePhase(str, Enum):
     FRAMEWORK_MAPPING = "framework_mapping"
     QA_CHECK = "qa_check"
     PACKAGE_ASSEMBLY = "package_assembly"
-
 
 class DisclosureFramework(str, Enum):
     """Supported disclosure frameworks."""
@@ -129,7 +117,6 @@ class DisclosureFramework(str, Enum):
     SEC_CLIMATE = "sec_climate"
     GRI_305 = "gri_305"
 
-
 class FieldStatus(str, Enum):
     """Status of a disclosure field."""
 
@@ -137,7 +124,6 @@ class FieldStatus(str, Enum):
     PARTIALLY_POPULATED = "partially_populated"
     MISSING = "missing"
     NOT_APPLICABLE = "not_applicable"
-
 
 class GapSeverity(str, Enum):
     """Severity of a disclosure gap."""
@@ -147,7 +133,6 @@ class GapSeverity(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
 
-
 class QACheckType(str, Enum):
     """Type of QA check."""
 
@@ -156,14 +141,12 @@ class QACheckType(str, Enum):
     DATA_QUALITY = "data_quality"
     METHODOLOGY = "methodology"
 
-
 class QAOutcome(str, Enum):
     """Outcome of a QA check."""
 
     PASS = "pass"
     FAIL = "fail"
     WARNING = "warning"
-
 
 class PackageFormat(str, Enum):
     """Output format for disclosure package."""
@@ -172,7 +155,6 @@ class PackageFormat(str, Enum):
     EXCEL = "excel"
     PDF = "pdf"
     XBRL = "xbrl"
-
 
 # =============================================================================
 # FRAMEWORK FIELD REQUIREMENTS (Zero-Hallucination Reference Data)
@@ -214,11 +196,9 @@ BENCHMARK_DISCLOSURE_FIELDS: Dict[str, List[Dict[str, Any]]] = {
     ],
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -232,7 +212,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
 
-
 class BenchmarkMetricInput(BaseModel):
     """A benchmark metric to include in disclosure."""
 
@@ -243,7 +222,6 @@ class BenchmarkMetricInput(BaseModel):
     period: str = Field(default="2024")
     source_workflow: str = Field(default="")
     data_quality_score: float = Field(default=0.0, ge=0.0, le=100.0)
-
 
 class AggregatedBenchmarkMetric(BaseModel):
     """Aggregated benchmark metric for disclosure."""
@@ -257,7 +235,6 @@ class AggregatedBenchmarkMetric(BaseModel):
     source_count: int = Field(default=0)
     data_quality_score: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class FrameworkField(BaseModel):
     """A mapped framework disclosure field."""
@@ -273,7 +250,6 @@ class FrameworkField(BaseModel):
     source_metric_key: str = Field(default="")
     notes: str = Field(default="")
 
-
 class QACheckResult(BaseModel):
     """Result of a QA check."""
 
@@ -282,7 +258,6 @@ class QACheckResult(BaseModel):
     framework: Optional[DisclosureFramework] = Field(default=None)
     details: str = Field(default="")
     recommendation: str = Field(default="")
-
 
 class CompletenessGap(BaseModel):
     """A gap in disclosure completeness."""
@@ -294,7 +269,6 @@ class CompletenessGap(BaseModel):
     severity: GapSeverity = Field(...)
     reason: str = Field(default="")
     remediation: str = Field(default="")
-
 
 class DisclosurePackageItem(BaseModel):
     """An item in the disclosure package."""
@@ -308,11 +282,9 @@ class DisclosurePackageItem(BaseModel):
     completeness_pct: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # INPUT / OUTPUT
 # =============================================================================
-
 
 class DisclosurePreparationInput(BaseModel):
     """Input data model for DisclosurePreparationWorkflow."""
@@ -340,7 +312,6 @@ class DisclosurePreparationInput(BaseModel):
     tenant_id: str = Field(default="")
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class DisclosurePreparationResult(BaseModel):
     """Complete result from disclosure preparation workflow."""
 
@@ -359,11 +330,9 @@ class DisclosurePreparationResult(BaseModel):
     qa_pass_rate: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class DisclosurePreparationWorkflow:
     """
@@ -804,6 +773,7 @@ class DisclosurePreparationWorkflow:
                         phase_number, attempt, self.MAX_RETRIES, exc, delay,
                     )
                     import asyncio
+
                     await asyncio.sleep(delay)
         return PhaseResult(
             phase_name=f"phase_{phase_number}_failed",

@@ -38,19 +38,14 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -62,7 +57,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 class _PackStub:
     """Stub for PACK-028 components when not available."""
     def __init__(self, component: str) -> None:
@@ -73,7 +67,6 @@ class _PackStub:
             return {"component": self._component, "status": "not_available", "pack": "PACK-028"}
         return _stub
 
-
 def _try_import(component: str, module_path: str) -> Any:
     try:
         return importlib.import_module(module_path)
@@ -81,11 +74,9 @@ def _try_import(component: str, module_path: str) -> Any:
         logger.debug("PACK-028 component '%s' not available, using stub", component)
         return _PackStub(component)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SectorType(str, Enum):
     POWER_GENERATION = "power_generation"
@@ -102,7 +93,6 @@ class SectorType(str, Enum):
     AGRICULTURE = "agriculture"
     GENERAL = "general"
 
-
 class PathwayScenario(str, Enum):
     IEA_NZE_2050 = "iea_nze_2050"
     IEA_APS = "iea_aps"
@@ -112,14 +102,12 @@ class PathwayScenario(str, Enum):
     SDA_15C = "sda_1.5c"
     SDA_WB2C = "sda_wb2c"
 
-
 class BenchmarkTier(str, Enum):
     LEADER = "leader"
     ABOVE_AVERAGE = "above_average"
     AVERAGE = "average"
     BELOW_AVERAGE = "below_average"
     LAGGARD = "laggard"
-
 
 class ConvergenceStatus(str, Enum):
     ON_TRACK = "on_track"
@@ -128,14 +116,12 @@ class ConvergenceStatus(str, Enum):
     OFF_TRACK = "off_track"
     AHEAD = "ahead"
 
-
 class ImportStatus(str, Enum):
     SUCCESS = "success"
     PARTIAL = "partial"
     FAILED = "failed"
     STALE = "stale"
     CACHED = "cached"
-
 
 # ---------------------------------------------------------------------------
 # Component Registry
@@ -164,7 +150,6 @@ PACK028_COMPONENTS: Dict[str, Dict[str, str]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Sector Intensity Metrics
 # ---------------------------------------------------------------------------
@@ -182,7 +167,6 @@ SECTOR_INTENSITY_METRICS: Dict[str, Dict[str, str]] = {
     "buildings": {"metric": "kgCO2e/m2", "denominator": "floor_area_m2"},
     "general": {"metric": "tCO2e/mln_revenue", "denominator": "revenue_mln"},
 }
-
 
 # ---------------------------------------------------------------------------
 # IEA NZE 2050 Sector Targets
@@ -204,11 +188,9 @@ SECTOR_BENCHMARKS: Dict[str, Dict[str, float]] = {
     "aluminum": {"leader": 4.50, "average": 8.20, "laggard": 14.0},
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class PACK028IntegrationConfig(BaseModel):
     """Configuration for PACK-028 to PACK-030 integration."""
@@ -227,7 +209,6 @@ class PACK028IntegrationConfig(BaseModel):
     retry_attempts: int = Field(default=3, ge=1, le=10)
     retry_delay_seconds: float = Field(default=1.0)
 
-
 class SectorPathway(BaseModel):
     """Sector-specific decarbonization pathway from PACK-028."""
     pathway_id: str = Field(default_factory=_new_uuid)
@@ -245,7 +226,6 @@ class SectorPathway(BaseModel):
     source: str = Field(default="IEA Net Zero Emissions by 2050 Scenario")
     provenance_hash: str = Field(default="")
 
-
 class ConvergenceData(BaseModel):
     """Convergence analysis data from PACK-028."""
     convergence_id: str = Field(default_factory=_new_uuid)
@@ -261,7 +241,6 @@ class ConvergenceData(BaseModel):
     trajectory_by_year: Dict[int, float] = Field(default_factory=dict)
     scenario_comparison: Dict[str, float] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
-
 
 class SectorBenchmark(BaseModel):
     """Sector benchmark comparison from PACK-028."""
@@ -279,7 +258,6 @@ class SectorBenchmark(BaseModel):
     data_source: str = Field(default="IEA / SBTi sector data")
     provenance_hash: str = Field(default="")
 
-
 class TechnologyMilestone(BaseModel):
     """Technology deployment milestone from PACK-028."""
     milestone_id: str = Field(default_factory=_new_uuid)
@@ -292,7 +270,6 @@ class TechnologyMilestone(BaseModel):
     abatement_potential_pct: float = Field(default=0.0)
     investment_required_usd: float = Field(default=0.0)
     technology_readiness_level: int = Field(default=1, ge=1, le=9)
-
 
 class PACK028IntegrationResult(BaseModel):
     """Complete PACK-028 integration result for PACK-030."""
@@ -307,14 +284,12 @@ class PACK028IntegrationResult(BaseModel):
     frameworks_serviced: List[str] = Field(default_factory=list)
     validation_errors: List[str] = Field(default_factory=list)
     validation_warnings: List[str] = Field(default_factory=list)
-    fetched_at: datetime = Field(default_factory=_utcnow)
+    fetched_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # PACK028Integration
 # ---------------------------------------------------------------------------
-
 
 class PACK028Integration:
     """PACK-028 Sector Pathway Pack integration for PACK-030.
@@ -395,6 +370,7 @@ class PACK028Integration:
                 self.logger.warning("DB query attempt %d/%d failed: %s", attempt, self.config.retry_attempts, exc)
                 if attempt < self.config.retry_attempts:
                     import asyncio
+
                     await asyncio.sleep(self.config.retry_delay_seconds * attempt)
         return []
 

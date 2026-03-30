@@ -40,20 +40,15 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -66,18 +61,15 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CRREMScenario(str, Enum):
     """CRREM decarbonization scenarios."""
 
     PARIS_1_5C = "1.5C"
     PARIS_2C = "2.0C"
-
 
 class CRREMBuildingType(str, Enum):
     """CRREM building type classifications."""
@@ -101,7 +93,6 @@ class CRREMBuildingType(str, Enum):
     PARKING = "parking"
     PUBLIC = "public"
 
-
 class TransitionRisk(str, Enum):
     """Transition risk levels for stranding assessment."""
 
@@ -111,11 +102,9 @@ class TransitionRisk(str, Enum):
     CRITICAL = "critical"
     STRANDED = "stranded"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class CRREMPathway(BaseModel):
     """CRREM decarbonization pathway for a building type and country."""
@@ -128,7 +117,6 @@ class CRREMPathway(BaseModel):
     base_year: int = Field(default=2024)
     target_year: int = Field(default=2050)
     source: str = Field(default="CRREM Tool v2")
-
 
 class StrandingAssessment(BaseModel):
     """Result of stranding year assessment."""
@@ -149,7 +137,6 @@ class StrandingAssessment(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class RetrofitAlignment(BaseModel):
     """Retrofit plan aligned to CRREM pathway."""
 
@@ -163,7 +150,6 @@ class RetrofitAlignment(BaseModel):
     retrofit_phases: List[Dict[str, Any]] = Field(default_factory=list)
     aligned_to_pathway: bool = Field(default=False)
     provenance_hash: str = Field(default="")
-
 
 class PortfolioStrandingAnalysis(BaseModel):
     """Portfolio-level stranding analysis."""
@@ -182,7 +168,6 @@ class PortfolioStrandingAnalysis(BaseModel):
     buildings: List[Dict[str, Any]] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class CRREMPathwayBridgeConfig(BaseModel):
     """Configuration for the CRREM Pathway Bridge."""
 
@@ -194,7 +179,6 @@ class CRREMPathwayBridgeConfig(BaseModel):
         default=0.85, ge=0.0, le=1.0,
         description="Annual grid improvement factor for projections",
     )
-
 
 # ---------------------------------------------------------------------------
 # CRREM Pathway Reference Data
@@ -246,11 +230,9 @@ for _country, _types in CRREM_PATHWAYS_1_5C.items():
             y: round(v * 1.2, 1) for y, v in _years.items()
         }
 
-
 # ---------------------------------------------------------------------------
 # CRREMPathwayBridge
 # ---------------------------------------------------------------------------
-
 
 class CRREMPathwayBridge:
     """CRREM decarbonization pathway compliance for buildings.

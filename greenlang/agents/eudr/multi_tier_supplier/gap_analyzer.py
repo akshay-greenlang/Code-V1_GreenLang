@@ -53,6 +53,8 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -65,17 +67,10 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 def _parse_datetime(dt_str: str) -> Optional[datetime]:
     """Parse an ISO datetime string to a timezone-aware datetime.
@@ -96,11 +91,9 @@ def _parse_datetime(dt_str: str) -> Optional[datetime]:
     except (ValueError, TypeError):
         return None
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class GapSeverity(str, Enum):
     """Gap severity classification per PRD Section 6.7.
@@ -117,14 +110,12 @@ class GapSeverity(str, Enum):
     MAJOR = "major"
     MINOR = "minor"
 
-
 class GapCategory(str, Enum):
     """Categories of gaps that can be detected."""
 
     DATA_GAP = "data_gap"
     COVERAGE_GAP = "coverage_gap"
     VERIFICATION_GAP = "verification_gap"
-
 
 class GapType(str, Enum):
     """Specific gap types within categories."""
@@ -155,7 +146,6 @@ class GapType(str, Enum):
     UNVERIFIED_LEGAL_ENTITY = "unverified_legal_entity"
     STALE_PROFILE = "stale_profile"
 
-
 class RemediationStatus(str, Enum):
     """Status of a remediation action."""
 
@@ -165,7 +155,6 @@ class RemediationStatus(str, Enum):
     OVERDUE = "overdue"
     CANCELLED = "cancelled"
 
-
 class RemediationPriority(str, Enum):
     """Priority of a remediation action."""
 
@@ -174,14 +163,12 @@ class RemediationPriority(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
 
-
 class TrendDirection(str, Enum):
     """Gap trend direction."""
 
     IMPROVING = "improving"
     STABLE = "stable"
     WORSENING = "worsening"
-
 
 # ---------------------------------------------------------------------------
 # Gap Severity Rules: Maps gap type to severity
@@ -481,11 +468,9 @@ QUESTIONNAIRE_FIELD_TEMPLATES: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Result Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class SupplierGapProfile:
@@ -539,7 +524,6 @@ class SupplierGapProfile:
     gps_verified: bool = False
     legal_entity_verified: bool = False
 
-
 @dataclass
 class SupplierChainTier:
     """Tier information within a supplier chain for coverage analysis.
@@ -557,7 +541,6 @@ class SupplierChainTier:
     known_supplier_count: int = 0
     supplier_ids: List[str] = field(default_factory=list)
     commodity: str = ""
-
 
 @dataclass
 class DetectedGap:
@@ -584,7 +567,6 @@ class DetectedGap:
     description: str = ""
     impact: str = ""
     detected_at: str = ""
-
 
 @dataclass
 class RemediationAction:
@@ -616,7 +598,6 @@ class RemediationAction:
     created_at: str = ""
     completed_at: str = ""
 
-
 @dataclass
 class RemediationPlan:
     """Prioritized remediation plan for a supplier.
@@ -645,7 +626,6 @@ class RemediationPlan:
     created_at: str = ""
     provenance_hash: str = ""
 
-
 @dataclass
 class SupplierQuestionnaire:
     """Auto-generated supplier questionnaire for gap filling.
@@ -667,7 +647,6 @@ class SupplierQuestionnaire:
     required_fields: int = 0
     generated_at: str = ""
     provenance_hash: str = ""
-
 
 @dataclass
 class GapAnalysisResult:
@@ -703,7 +682,6 @@ class GapAnalysisResult:
     provenance_hash: str = ""
     engine_version: str = _MODULE_VERSION
 
-
 @dataclass
 class GapTrendEntry:
     """A single entry in gap trend analysis.
@@ -724,7 +702,6 @@ class GapTrendEntry:
     minor_gaps: int = 0
     completeness_score: float = 0.0
 
-
 @dataclass
 class GapTrendResult:
     """Gap trend analysis result for a supplier.
@@ -742,7 +719,6 @@ class GapTrendResult:
     trend_direction: str = TrendDirection.STABLE.value
     gap_delta: int = 0
     completeness_delta: float = 0.0
-
 
 @dataclass
 class BatchGapResult:
@@ -768,11 +744,9 @@ class BatchGapResult:
     processing_time_ms: float = 0.0
     provenance_hash: str = ""
 
-
 # ===========================================================================
 # GapAnalyzer
 # ===========================================================================
-
 
 class GapAnalyzer:
     """Production-grade gap analysis engine for EUDR multi-tier suppliers.
@@ -888,7 +862,7 @@ class GapAnalyzer:
             gaps=all_gaps,
             dds_blocked=dds_blocked,
             completeness_score=round(completeness, 2),
-            analyzed_at=_utcnow().isoformat(),
+            analyzed_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
             provenance_hash=provenance_hash,
             engine_version=_MODULE_VERSION,
@@ -936,7 +910,7 @@ class GapAnalyzer:
             List of DetectedGap objects for missing data.
         """
         gaps: List[DetectedGap] = []
-        now_str = _utcnow().isoformat()
+        now_str = utcnow().isoformat()
 
         # GPS coordinates (CRITICAL)
         if profile.gps_latitude is None or profile.gps_longitude is None:
@@ -1140,7 +1114,7 @@ class GapAnalyzer:
             List of DetectedGap objects for coverage gaps.
         """
         gaps: List[DetectedGap] = []
-        now_str = _utcnow().isoformat()
+        now_str = utcnow().isoformat()
 
         for tier in chain:
             if tier.expected_supplier_count <= 0:
@@ -1219,7 +1193,7 @@ class GapAnalyzer:
             List of DetectedGap objects for verification gaps.
         """
         gaps: List[DetectedGap] = []
-        now = _utcnow()
+        now = utcnow()
         now_str = now.isoformat()
 
         # Outdated certifications
@@ -1441,7 +1415,7 @@ class GapAnalyzer:
                 ),
                 deadline_days=int(template.get("deadline_days", "30")),
                 status=RemediationStatus.PENDING.value,
-                created_at=_utcnow().isoformat(),
+                created_at=utcnow().isoformat(),
             )
             actions.append(action)
 
@@ -1473,7 +1447,7 @@ class GapAnalyzer:
             minor_gaps=minor,
             actions=actions,
             completion_pct=0.0,
-            created_at=_utcnow().isoformat(),
+            created_at=utcnow().isoformat(),
             provenance_hash=provenance_hash,
         )
 
@@ -1576,7 +1550,7 @@ class GapAnalyzer:
             sections=sections,
             total_fields=total_fields,
             required_fields=required_fields,
-            generated_at=_utcnow().isoformat(),
+            generated_at=utcnow().isoformat(),
             provenance_hash=provenance_hash,
         )
 
@@ -1665,7 +1639,7 @@ class GapAnalyzer:
             if action.action_id == action_id:
                 action.status = new_status.value
                 if new_status == RemediationStatus.COMPLETED:
-                    action.completed_at = _utcnow().isoformat()
+                    action.completed_at = utcnow().isoformat()
                 logger.info(
                     "Remediation action updated: plan=%s action=%s "
                     "status=%s",
@@ -1920,7 +1894,6 @@ class GapAnalyzer:
             f"active_plans={len(self._remediation_plans)}, "
             f"version={_MODULE_VERSION!r})"
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

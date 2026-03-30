@@ -15,10 +15,10 @@ import json
 import logging
 import time
 
-from pydantic import BaseModel
 
 from greenlang.agents.base_agents import ReasoningAgent
 from greenlang.agents.categories import AgentCategory, AgentMetadata
+from greenlang.schemas import GreenLangBase
 
 
 logger = logging.getLogger(__name__)

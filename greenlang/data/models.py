@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from pydantic import BaseModel, Field, validator
+from pydantic import Field, validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 from typing import Optional, List, Dict, Any, Literal
 from enum import Enum
 from datetime import datetime
@@ -71,7 +72,7 @@ class Country(str, Enum):
     UAE = "AE"
 
 
-class BuildingMetadata(BaseModel):
+class BuildingMetadata(GreenLangBase):
     building_type: BuildingType
     area: float = Field(
         ..., description="Building area in square feet or square meters"
@@ -101,7 +102,7 @@ class BuildingMetadata(BaseModel):
         return v
 
 
-class EnergyConsumption(BaseModel):
+class EnergyConsumption(GreenLangBase):
     electricity: Optional[Dict[str, float]] = Field(
         None, description="Electricity consumption"
     )
@@ -131,7 +132,7 @@ class EnergyConsumption(BaseModel):
     period_details: Optional[Dict[str, Any]] = None  # Year, month, date ranges
 
 
-class HVACSystem(BaseModel):
+class HVACSystem(GreenLangBase):
     hvac_type: Optional[HVACType] = None
     hvac_efficiency_cop: Optional[float] = Field(None, ge=1.0, le=10.0)
     hvac_efficiency_eer: Optional[float] = Field(None, ge=5.0, le=20.0)
@@ -145,7 +146,7 @@ class HVACSystem(BaseModel):
     age: Optional[int] = Field(None, description="System age in years")
 
 
-class BuildingEnvelope(BaseModel):
+class BuildingEnvelope(GreenLangBase):
     window_to_wall_ratio: Optional[float] = Field(None, ge=0.0, le=1.0)
     insulation_r_value: Optional[float] = Field(None, description="R-value or U-value")
     glazing_type: Optional[GlazingType] = None
@@ -154,7 +155,7 @@ class BuildingEnvelope(BaseModel):
     air_leakage_rate: Optional[float] = Field(None, description="ACH50 value")
 
 
-class ApplianceLoad(BaseModel):
+class ApplianceLoad(GreenLangBase):
     lighting_load: Optional[float] = Field(
         None, description="Annual lighting load in kWh"
     )
@@ -169,7 +170,7 @@ class ApplianceLoad(BaseModel):
     )
 
 
-class BuildingInput(BaseModel):
+class BuildingInput(GreenLangBase):
     metadata: BuildingMetadata
     energy_consumption: EnergyConsumption
     hvac_system: Optional[HVACSystem] = None
@@ -206,7 +207,7 @@ class BuildingInput(BaseModel):
         }
 
 
-class EmissionResult(BaseModel):
+class EmissionResult(GreenLangBase):
     total_emissions_kgco2e: float
     emissions_by_source: Dict[str, float]
     emissions_intensity: Optional[Dict[str, float]] = None
@@ -218,7 +219,7 @@ class EmissionResult(BaseModel):
     uncertainty_range: Optional[Dict[str, float]] = None
 
 
-class BenchmarkData(BaseModel):
+class BenchmarkData(GreenLangBase):
     building_type: BuildingType
     country: Country
     excellent_threshold: float  # kgCO2e/sqft/year

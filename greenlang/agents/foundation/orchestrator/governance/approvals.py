@@ -8,7 +8,8 @@ from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
 from uuid import uuid4
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
+from greenlang.schemas import GreenLangBase
 
 try:
     from cryptography.hazmat.primitives import serialization
@@ -45,7 +46,7 @@ except ImportError:
         COMPLIANCE = "compliance"
         COST_CENTER = "cost_center"
 
-    class ApprovalRequirement(BaseModel):
+    class ApprovalRequirement(GreenLangBase):
         approval_type: ApprovalType
         approver_id: Optional[str] = None
         approver_role: Optional[str] = None
@@ -74,7 +75,7 @@ class ApprovalDecision(str, Enum):
     REJECTED = "rejected"
 
 
-class ApprovalAttestation(BaseModel):
+class ApprovalAttestation(GreenLangBase):
     approver_id: str = Field(..., min_length=1)
     approver_name: Optional[str] = None
     approver_role: Optional[str] = None
@@ -107,7 +108,7 @@ class ApprovalAttestation(BaseModel):
         return canonical_dumps(content).encode("utf-8")
 
 
-class ApprovalRequest(BaseModel):
+class ApprovalRequest(GreenLangBase):
     request_id: str = Field(..., min_length=1)
     run_id: str = Field(..., min_length=1)
     step_id: str = Field(..., min_length=1)

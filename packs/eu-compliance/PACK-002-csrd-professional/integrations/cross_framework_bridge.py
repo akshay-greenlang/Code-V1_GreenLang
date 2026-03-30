@@ -54,25 +54,19 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash."""
@@ -85,11 +79,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class FrameworkId(str, Enum):
     """Supported compliance and reporting frameworks."""
@@ -99,7 +91,6 @@ class FrameworkId(str, Enum):
     TAXONOMY = "eu_taxonomy"
     GRI = "gri"
     SASB = "sasb"
-
 
 class CDPScore(str, Enum):
     """CDP scoring scale."""
@@ -112,14 +103,12 @@ class CDPScore(str, Enum):
     D = "D"
     D_MINUS = "D-"
 
-
 class MappingStatus(str, Enum):
     """Status of a framework mapping."""
     MAPPED = "mapped"
     PARTIALLY_MAPPED = "partially_mapped"
     NOT_MAPPED = "not_mapped"
     NOT_APPLICABLE = "not_applicable"
-
 
 class GapSeverity(str, Enum):
     """Severity level of a framework gap."""
@@ -129,11 +118,9 @@ class GapSeverity(str, Enum):
     LOW = "low"
     INFO = "info"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class CrossFrameworkBridgeConfig(BaseModel):
     """Configuration for the CrossFrameworkBridge."""
@@ -165,7 +152,6 @@ class CrossFrameworkBridgeConfig(BaseModel):
         default="2024", description="EU Taxonomy regulation version"
     )
 
-
 class FrameworkMapping(BaseModel):
     """A single mapping between ESRS data point and a framework requirement."""
 
@@ -186,7 +172,6 @@ class FrameworkMapping(BaseModel):
         description="Percentage of requirement covered by ESRS data",
     )
     notes: str = Field(default="", description="Mapping notes")
-
 
 class FrameworkMappingResult(BaseModel):
     """Result of mapping ESRS data to a target framework."""
@@ -209,7 +194,6 @@ class FrameworkMappingResult(BaseModel):
     execution_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class Gap(BaseModel):
     """A gap identified in framework coverage."""
 
@@ -231,7 +215,6 @@ class Gap(BaseModel):
     estimated_effort: str = Field(
         default="", description="Estimated effort to close (low/medium/high)"
     )
-
 
 class CDPScoringResult(BaseModel):
     """Simulated CDP scoring result."""
@@ -256,7 +239,6 @@ class CDPScoringResult(BaseModel):
     )
     provenance_hash: str = Field(default="")
 
-
 class SBTiTemperatureResult(BaseModel):
     """SBTi temperature scoring result."""
 
@@ -280,7 +262,6 @@ class SBTiTemperatureResult(BaseModel):
         default=0.0, description="Required annual reduction percentage"
     )
     provenance_hash: str = Field(default="")
-
 
 class TaxonomyAlignmentResult(BaseModel):
     """EU Taxonomy alignment result."""
@@ -319,7 +300,6 @@ class TaxonomyAlignmentResult(BaseModel):
     )
     provenance_hash: str = Field(default="")
 
-
 class ScenarioResult(BaseModel):
     """TCFD scenario analysis result."""
 
@@ -351,7 +331,6 @@ class ScenarioResult(BaseModel):
     )
     provenance_hash: str = Field(default="")
 
-
 class CrossFrameworkResult(BaseModel):
     """Unified result from running all enabled frameworks."""
 
@@ -375,7 +354,6 @@ class CrossFrameworkResult(BaseModel):
     tcfd_scenario: Optional[ScenarioResult] = Field(None)
     total_execution_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Framework Routing Table
@@ -443,11 +421,9 @@ CDP_SCORING_RUBRIC: Dict[str, Dict[str, float]] = {
     "value_chain": {"weight": 0.05, "max_points": 5.0},
 }
 
-
 # ---------------------------------------------------------------------------
 # CrossFrameworkBridge Implementation
 # ---------------------------------------------------------------------------
-
 
 class CrossFrameworkBridge:
     """Routes ESRS data to CDP, TCFD, SBTi, EU Taxonomy, GRI, and SASB engines.

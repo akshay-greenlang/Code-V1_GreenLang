@@ -94,6 +94,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import yaml
 from pydantic import BaseModel, Field, field_validator, model_validator
+from greenlang.schemas.enums import ReportFormat
 
 logger = logging.getLogger(__name__)
 
@@ -268,15 +269,6 @@ class RatingSystem(str, Enum):
     NABERS_AU = "NABERS_AU"
     CRREM = "CRREM"
     CUSTOM = "CUSTOM"
-
-
-class ReportFormat(str, Enum):
-    """Output format for benchmark reports."""
-
-    MARKDOWN = "MARKDOWN"
-    HTML = "HTML"
-    JSON = "JSON"
-    CSV = "CSV"
 
 
 class AggregationMethod(str, Enum):

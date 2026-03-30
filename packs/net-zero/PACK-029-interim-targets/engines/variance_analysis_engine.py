@@ -78,23 +78,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -111,7 +106,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -120,25 +114,20 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(n: Decimal, d: Decimal, default: Decimal = Decimal("0")) -> Decimal:
     if d == Decimal("0"):
         return default
     return n / d
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     q = "0." + "0" * places
     return value.quantize(Decimal(q), rounding=ROUND_HALF_UP)
 
-
 def _round3(value: float) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
-
 
 def _log_mean(a: Decimal, b: Decimal) -> Decimal:
     """Compute logarithmic mean L(a, b).
@@ -166,7 +155,6 @@ def _log_mean(a: Decimal, b: Decimal) -> Decimal:
     except (ValueError, OverflowError):
         return (a + b) / Decimal("2")  # Fallback to arithmetic mean
 
-
 def _safe_ln_ratio(a: Decimal, b: Decimal) -> Decimal:
     """Compute ln(a/b) safely.
 
@@ -179,11 +167,9 @@ def _safe_ln_ratio(a: Decimal, b: Decimal) -> Decimal:
     except (ValueError, OverflowError, ZeroDivisionError):
         return Decimal("0")
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class VarianceDriver(str, Enum):
     """Variance driver type in LMDI decomposition."""
@@ -191,7 +177,6 @@ class VarianceDriver(str, Enum):
     INTENSITY = "intensity"
     STRUCTURAL = "structural"
     RESIDUAL = "residual"
-
 
 class RootCauseCategory(str, Enum):
     """Root cause classification for variance."""
@@ -202,7 +187,6 @@ class RootCauseCategory(str, Enum):
     ORGANIC_GROWTH = "organic_growth"
     UNKNOWN = "unknown"
 
-
 class ScopeType(str, Enum):
     """GHG scope type."""
     SCOPE_1 = "scope_1"
@@ -211,14 +195,12 @@ class ScopeType(str, Enum):
     SCOPE_1_2 = "scope_1_2"
     ALL_SCOPES = "all_scopes"
 
-
 class VarianceSeverity(str, Enum):
     """Severity of variance from target."""
     FAVORABLE = "favorable"
     NEUTRAL = "neutral"
     UNFAVORABLE = "unfavorable"
     CRITICAL = "critical"
-
 
 class DataQuality(str, Enum):
     """Data quality tier."""
@@ -227,11 +209,9 @@ class DataQuality(str, Enum):
     LOW = "low"
     ESTIMATED = "estimated"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class SegmentData(BaseModel):
     """Emissions and activity data for a single segment.
@@ -260,7 +240,6 @@ class SegmentData(BaseModel):
     )
     scope: ScopeType = Field(default=ScopeType.ALL_SCOPES, description="Scope")
 
-
 class PeriodData(BaseModel):
     """Emissions data for a single period (year).
 
@@ -284,7 +263,6 @@ class PeriodData(BaseModel):
     segments: List[SegmentData] = Field(
         default_factory=list, description="Segment breakdown"
     )
-
 
 class VarianceAnalysisInput(BaseModel):
     """Input for variance analysis.
@@ -325,11 +303,9 @@ class VarianceAnalysisInput(BaseModel):
     )
     scope: ScopeType = Field(default=ScopeType.ALL_SCOPES, description="Scope")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class LMDIComponent(BaseModel):
     """A single LMDI decomposition component.
@@ -346,7 +322,6 @@ class LMDIComponent(BaseModel):
     contribution_pct: Decimal = Field(default=Decimal("0"))
     direction: str = Field(default=VarianceSeverity.NEUTRAL.value)
     description: str = Field(default="")
-
 
 class SegmentAttribution(BaseModel):
     """Variance attribution for a single segment.
@@ -374,7 +349,6 @@ class SegmentAttribution(BaseModel):
     structural_effect_tco2e: Decimal = Field(default=Decimal("0"))
     root_cause: str = Field(default=RootCauseCategory.UNKNOWN.value)
 
-
 class KayaDecomposition(BaseModel):
     """Kaya identity decomposition result.
 
@@ -399,7 +373,6 @@ class KayaDecomposition(BaseModel):
     carbon_intensity_change_pct: Decimal = Field(default=Decimal("0"))
     residual_tco2e: Decimal = Field(default=Decimal("0"))
 
-
 class WaterfallStep(BaseModel):
     """A single step in the waterfall chart.
 
@@ -419,7 +392,6 @@ class WaterfallStep(BaseModel):
     is_total: bool = Field(default=False)
     category: str = Field(default="")
     color_hint: str = Field(default="neutral")
-
 
 class ScopeVariance(BaseModel):
     """Variance analysis for a specific scope.
@@ -442,7 +414,6 @@ class ScopeVariance(BaseModel):
     activity_effect_tco2e: Decimal = Field(default=Decimal("0"))
     intensity_effect_tco2e: Decimal = Field(default=Decimal("0"))
     severity: str = Field(default=VarianceSeverity.NEUTRAL.value)
-
 
 class VarianceAnalysisResult(BaseModel):
     """Complete variance analysis result.
@@ -474,7 +445,7 @@ class VarianceAnalysisResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     entity_id: str = Field(default="")
     base_year: int = Field(default=0)
@@ -496,11 +467,9 @@ class VarianceAnalysisResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class VarianceAnalysisEngine:
     """Variance analysis engine for PACK-029.

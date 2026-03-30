@@ -64,25 +64,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -102,7 +96,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely.
 
@@ -116,7 +109,6 @@ def _decimal(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
 ) -> Decimal:
@@ -124,7 +116,6 @@ def _safe_divide(
     if denominator == Decimal("0"):
         return default
     return numerator / denominator
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value to the specified number of decimal places.
@@ -141,13 +132,11 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
-
 
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
@@ -155,16 +144,13 @@ def _round2(value: float) -> float:
         Decimal("0.01"), rounding=ROUND_HALF_UP
     ))
 
-
 def _round6(value: Decimal) -> Decimal:
     """Round Decimal to 6 decimal places using ROUND_HALF_UP."""
     return value.quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class GHGScope(str, Enum):
     """GHG emission scope per GHG Protocol Corporate Standard.
@@ -177,7 +163,6 @@ class GHGScope(str, Enum):
     SCOPE_2_LOCATION = "scope_2_location"
     SCOPE_2_MARKET = "scope_2_market"
     SCOPE_3 = "scope_3"
-
 
 class EmissionGas(str, Enum):
     """Individual greenhouse gases per IPCC/UNFCCC classification.
@@ -192,7 +177,6 @@ class EmissionGas(str, Enum):
     PFCS = "pfcs"
     SF6 = "sf6"
     NF3 = "nf3"
-
 
 class Scope3Category(str, Enum):
     """GHG Protocol Scope 3 categories (1-15).
@@ -216,7 +200,6 @@ class Scope3Category(str, Enum):
     FRANCHISES = "cat_14_franchises"
     INVESTMENTS = "cat_15_investments"
 
-
 class ConsolidationApproach(str, Enum):
     """Consolidation approach for multi-entity GHG reporting.
 
@@ -226,7 +209,6 @@ class ConsolidationApproach(str, Enum):
     OPERATIONAL_CONTROL = "operational_control"
     FINANCIAL_CONTROL = "financial_control"
     EQUITY_SHARE = "equity_share"
-
 
 class DataQualityLevel(str, Enum):
     """Data quality tier for emission factor sourcing.
@@ -239,11 +221,9 @@ class DataQualityLevel(str, Enum):
     SECONDARY_AVERAGE = "secondary_average"
     ESTIMATED = "estimated"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # IPCC AR6 GWP-100 values (Global Warming Potential, 100-year time horizon).
 # Source: IPCC Sixth Assessment Report, Working Group I, Table 7.15 (2021).
@@ -328,11 +308,9 @@ DATA_QUALITY_SCORES: Dict[str, Decimal] = {
     "estimated": Decimal("0.25"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class EmissionEntry(BaseModel):
     """A single emission data entry for GHG inventory calculation.
@@ -434,7 +412,6 @@ class EmissionEntry(BaseModel):
             )
         return v
 
-
 class EmissionsByGas(BaseModel):
     """Disaggregation of GHG emissions by individual gas.
 
@@ -466,7 +443,6 @@ class EmissionsByGas(BaseModel):
         default=Decimal("0"), description="Sum of all gases in tCO2e"
     )
 
-
 class Scope3Breakdown(BaseModel):
     """Breakdown of Scope 3 emissions by GHG Protocol category.
 
@@ -491,7 +467,6 @@ class Scope3Breakdown(BaseModel):
         default=Decimal("0"), description="Total downstream Scope 3 (Cat 9-15)"
     )
 
-
 class IntensityMetric(BaseModel):
     """GHG emission intensity metric per ESRS E1-6 Para 48.
 
@@ -515,7 +490,6 @@ class IntensityMetric(BaseModel):
         default="", description="SHA-256 hash of the intensity calculation"
     )
 
-
 class GHGInventoryResult(BaseModel):
     """Complete GHG inventory result per ESRS E1-6.
 
@@ -532,7 +506,7 @@ class GHGInventoryResult(BaseModel):
         description="Engine version used for this calculation",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of calculation (UTC)",
     )
     reporting_year: int = Field(
@@ -601,7 +575,6 @@ class GHGInventoryResult(BaseModel):
         description="SHA-256 hash of all inputs and calculation steps",
     )
 
-
 class BatchInventoryResult(BaseModel):
     """Consolidated inventory result for multiple entities.
 
@@ -617,7 +590,7 @@ class BatchInventoryResult(BaseModel):
         description="Engine version used",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of batch calculation (UTC)",
     )
     consolidation_approach: str = Field(
@@ -656,11 +629,9 @@ class BatchInventoryResult(BaseModel):
         description="SHA-256 hash of the consolidated result",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class GHGInventoryEngine:
     """GHG inventory calculation engine per ESRS E1-6.

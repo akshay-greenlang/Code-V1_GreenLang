@@ -70,7 +70,6 @@ from typing import Any, Dict, FrozenSet, List, Optional, Set, Tuple
 
 logger = logging.getLogger(__name__)
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -87,16 +86,9 @@ _MAX_RISK = Decimal("100.00")
 #: Minimum risk score.
 _MIN_RISK = Decimal("0.00")
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed for consistency."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _to_decimal(value: float | int | str | Decimal) -> Decimal:
     """Convert a numeric value to Decimal, ensuring deterministic string conversion.
@@ -108,12 +100,10 @@ def _to_decimal(value: float | int | str | Decimal) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _clamp_risk(value: Decimal) -> Decimal:
     """Clamp a risk score to [0.00, 100.00] and apply precision."""
     clamped = max(_MIN_RISK, min(_MAX_RISK, value))
     return clamped.quantize(_RISK_PRECISION, rounding=ROUND_HALF_UP)
-
 
 def _compute_provenance_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance.
@@ -124,11 +114,9 @@ def _compute_provenance_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class RiskLevel(str, Enum):
     """EUDR Article 29 country benchmarking risk levels."""
@@ -152,18 +140,15 @@ class RiskLevel(str, Enum):
             return cls.STANDARD
         return cls.HIGH
 
-
 class PropagationDirection(str, Enum):
     """Direction of risk propagation through the supply chain graph."""
 
     UPSTREAM_TO_DOWNSTREAM = "upstream_to_downstream"
     DOWNSTREAM_TO_UPSTREAM = "downstream_to_upstream"
 
-
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
-
 
 @dataclass(frozen=True)
 class RiskPropagationConfig:
@@ -269,11 +254,9 @@ class RiskPropagationConfig:
 
         return cls(**kwargs)
 
-
 # ---------------------------------------------------------------------------
 # Data Structures
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class NodeRiskInput:
@@ -309,7 +292,6 @@ class NodeRiskInput:
     certifications: List[str] = field(default_factory=list)
     tier_depth: int = 0
     metadata: Dict[str, Any] = field(default_factory=dict)
-
 
 @dataclass
 class NodeRiskResult:
@@ -373,7 +355,6 @@ class NodeRiskResult:
             "propagation_depth": self.propagation_depth,
         }
 
-
 @dataclass
 class RiskConcentrationEntry:
     """Identifies a node that drives disproportionate downstream risk.
@@ -407,7 +388,6 @@ class RiskConcentrationEntry:
             "downstream_node_ids": self.downstream_node_ids,
             "risk_contribution": str(self.risk_contribution),
         }
-
 
 @dataclass
 class RiskHeatmapEntry:
@@ -443,7 +423,6 @@ class RiskHeatmapEntry:
             "node_type": self.node_type,
         }
 
-
 @dataclass
 class EnhancedDueDiligenceTrigger:
     """Record of a node that triggered enhanced due diligence.
@@ -462,7 +441,7 @@ class EnhancedDueDiligenceTrigger:
     threshold: Decimal = Decimal("70.00")
     risk_drivers: List[Tuple[str, Decimal]] = field(default_factory=list)
     recommended_actions: List[str] = field(default_factory=list)
-    triggered_at: datetime = field(default_factory=_utcnow)
+    triggered_at: datetime = field(default_factory=utcnow)
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary."""
@@ -476,7 +455,6 @@ class EnhancedDueDiligenceTrigger:
             "recommended_actions": self.recommended_actions,
             "triggered_at": self.triggered_at.isoformat(),
         }
-
 
 @dataclass
 class PropagationAuditEntry:
@@ -507,7 +485,7 @@ class PropagationAuditEntry:
     new_risk_level: str = "standard"
     propagation_source: str = ""
     risk_factors: Dict[str, Any] = field(default_factory=dict)
-    calculated_at: datetime = field(default_factory=_utcnow)
+    calculated_at: datetime = field(default_factory=utcnow)
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary for database insertion."""
@@ -523,7 +501,6 @@ class PropagationAuditEntry:
             "risk_factors": self.risk_factors,
             "calculated_at": self.calculated_at.isoformat(),
         }
-
 
 @dataclass
 class PropagationResult:
@@ -573,7 +550,7 @@ class PropagationResult:
     avg_risk_score: Decimal = Decimal("0.00")
     propagation_time_ms: float = 0.0
     provenance_hash: str = ""
-    calculated_at: datetime = field(default_factory=_utcnow)
+    calculated_at: datetime = field(default_factory=utcnow)
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary for JSON export."""
@@ -624,7 +601,6 @@ class PropagationResult:
             "calculated_at": self.calculated_at.isoformat(),
         }
 
-
 # ---------------------------------------------------------------------------
 # Country Risk Database (EUDR Article 29 Benchmarking)
 # ---------------------------------------------------------------------------
@@ -667,7 +643,6 @@ for _cc, _score in COUNTRY_RISK_SCORES.items():
     else:
         COUNTRY_CLASSIFICATIONS[_cc] = RiskLevel.HIGH
 
-
 # ---------------------------------------------------------------------------
 # Commodity Risk Database
 # ---------------------------------------------------------------------------
@@ -701,11 +676,9 @@ COMMODITY_RISK_SCORES: Dict[str, float] = {
 #: Default commodity risk for unlisted commodities.
 _DEFAULT_COMMODITY_RISK = 50.0
 
-
 # ---------------------------------------------------------------------------
 # Risk Propagation Engine
 # ---------------------------------------------------------------------------
-
 
 class RiskPropagationEngine:
     """Zero-hallucination risk propagation engine for EUDR supply chain graphs.
@@ -713,6 +686,8 @@ class RiskPropagationEngine:
     Propagates risk scores through a directed supply chain graph using
     topological BFS traversal. Implements the "highest risk wins" principle
     from PRD-AGENT-EUDR-001, Feature 5.
+
+from greenlang.schemas import utcnow
 
     All calculations use ``Decimal`` arithmetic for bit-perfect reproducibility.
     No LLM, ML model, or non-deterministic operation is used in any code path.
@@ -1088,7 +1063,7 @@ class RiskPropagationEngine:
             min_risk_score=min_risk,
             avg_risk_score=avg_risk,
             propagation_time_ms=elapsed_ms,
-            calculated_at=_utcnow(),
+            calculated_at=utcnow(),
         )
 
         # 7. Compute provenance hash (deterministic)
@@ -1701,7 +1676,6 @@ class RiskPropagationEngine:
         }
         return _compute_provenance_hash(hash_data)
 
-
 # ---------------------------------------------------------------------------
 # YAML Formula Reference
 # ---------------------------------------------------------------------------
@@ -1793,7 +1767,6 @@ output:
     - weights
     - classification_thresholds
 """
-
 
 # ---------------------------------------------------------------------------
 # Module Exports

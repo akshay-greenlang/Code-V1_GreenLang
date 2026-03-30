@@ -54,25 +54,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -99,7 +93,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -115,7 +108,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -136,7 +128,6 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100).
 
@@ -148,7 +139,6 @@ def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
         Percentage as Decimal; Decimal("0") when whole is zero.
     """
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* and return a float.
@@ -165,26 +155,21 @@ def _round_val(value: Decimal, places: int = 6) -> float:
     quantizer = Decimal(10) ** -places
     return float(value.quantize(quantizer, rounding=ROUND_HALF_UP))
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: float) -> float:
     """Round to 4 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DHWSystemType(str, Enum):
     """DHW generation system types.
@@ -205,7 +190,6 @@ class DHWSystemType(str, Enum):
     CHP = "chp"
     BIOMASS = "biomass"
 
-
 class SolarCollectorType(str, Enum):
     """Solar thermal collector types per EN ISO 9806.
 
@@ -215,7 +199,6 @@ class SolarCollectorType(str, Enum):
     EVACUATED_TUBE = "evacuated_tube"
     UNGLAZED = "unglazed"
     PVT = "pvt"
-
 
 class StorageType(str, Enum):
     """DHW storage vessel types per BS 1566 / BS EN 12897.
@@ -227,7 +210,6 @@ class StorageType(str, Enum):
     THERMAL_STORE = "thermal_store"
     COMBI_STORE = "combi_store"
     NONE = "none"
-
 
 class BuildingOccupancyType(str, Enum):
     """Building type for DHW demand estimation.
@@ -245,7 +227,6 @@ class BuildingOccupancyType(str, Enum):
     RESTAURANT = "restaurant"
     RETAIL = "retail"
 
-
 class InsulationType(str, Enum):
     """Cylinder insulation type."""
     FACTORY_FOAM = "factory_foam"
@@ -253,7 +234,6 @@ class InsulationType(str, Enum):
     RETROFIT_JACKET = "retrofit_jacket"
     SPRAY_FOAM = "spray_foam"
     NONE = "none"
-
 
 class ClimateZone(str, Enum):
     """Climate zone for solar thermal performance estimation."""
@@ -264,14 +244,12 @@ class ClimateZone(str, Enum):
     OCEANIC = "oceanic"
     CONTINENTAL = "continental"
 
-
 class ComplianceStatus(str, Enum):
     """Legionella compliance status per HSG274."""
     COMPLIANT = "compliant"
     NON_COMPLIANT = "non_compliant"
     AT_RISK = "at_risk"
     NOT_ASSESSED = "not_assessed"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- DHW Demand (litres per day per occupant/unit)
@@ -354,7 +332,6 @@ DHW_DEMAND_LITRES_PER_DAY: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Constants -- System Efficiency (seasonal)
 # ---------------------------------------------------------------------------
@@ -434,7 +411,6 @@ SYSTEM_EFFICIENCY: Dict[str, Dict[str, float]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Constants -- Distribution Loss Factors
 # ---------------------------------------------------------------------------
@@ -473,7 +449,6 @@ DISTRIBUTION_LOSS_FACTORS: Dict[str, Dict[str, float]] = {
         "source": "CIBSE/ADE Heat Networks Code of Practice",
     },
 }
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Storage (Cylinder) Heat Losses
@@ -547,7 +522,6 @@ STORAGE_LOSS_WK: Dict[str, Dict[str, float]] = {
         "source": "Extrapolated from SAP / BS 1566",
     },
 }
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Solar Thermal Performance
@@ -631,7 +605,6 @@ SOLAR_COLLECTOR_PERFORMANCE: Dict[str, Dict[str, float]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Constants -- Legionella Requirements (HSG274 / HTM 04-01)
 # ---------------------------------------------------------------------------
@@ -647,7 +620,6 @@ LEGIONELLA_REQUIREMENTS: Dict[str, Any] = {
     "thermostatic_mixing_valve_max_c": 44.0,
     "source": "HSG274 Part 2, HTM 04-01:2016",
 }
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Pipe heat loss coefficients
@@ -671,7 +643,6 @@ PIPE_HEAT_LOSS_COEFFICIENTS: Dict[str, Dict[str, float]] = {
     "54mm_50mm_insulation": {"u_value_w_per_m_k": 0.14, "source": "BS 5422"},
 }
 
-
 # ---------------------------------------------------------------------------
 # Constants -- Water properties
 # ---------------------------------------------------------------------------
@@ -690,11 +661,9 @@ HOURS_PER_YEAR: Decimal = Decimal("8760")
 DAYS_PER_YEAR: Decimal = Decimal("365")
 KJ_TO_KWH: Decimal = Decimal("3600")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Input Models
 # ---------------------------------------------------------------------------
-
 
 class DHWSystemInput(BaseModel):
     """DHW generation system specification."""
@@ -713,7 +682,6 @@ class DHWSystemInput(BaseModel):
         None,
         description="Override seasonal efficiency if known from test data (0-1 or COP)",
     )
-
 
 class StorageInput(BaseModel):
     """DHW storage vessel specification."""
@@ -740,7 +708,6 @@ class StorageInput(BaseModel):
     heat_loss_wk_override: Optional[float] = Field(
         None, description="Measured heat loss rate in W/K if known"
     )
-
 
 class DistributionInput(BaseModel):
     """DHW distribution pipework specification."""
@@ -772,7 +739,6 @@ class DistributionInput(BaseModel):
     dead_leg_max_length_m: Optional[float] = Field(
         None, description="Longest dead-leg length in metres"
     )
-
 
 class SolarThermalInput(BaseModel):
     """Solar thermal system specification."""
@@ -807,7 +773,6 @@ class SolarThermalInput(BaseModel):
         None, description="Override second-order loss coefficient from test certificate"
     )
 
-
 class LegionellaInput(BaseModel):
     """Legionella risk parameters for compliance check."""
 
@@ -832,7 +797,6 @@ class LegionellaInput(BaseModel):
     risk_assessment_date: Optional[str] = Field(
         None, description="Date of last legionella risk assessment (ISO format)"
     )
-
 
 class DHWAssessmentInput(BaseModel):
     """Top-level input for DHW assessment."""
@@ -888,11 +852,9 @@ class DHWAssessmentInput(BaseModel):
         0.203, description="Natural gas carbon factor in kgCO2e/kWh"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Result Models
 # ---------------------------------------------------------------------------
-
 
 class DHWDemandResult(BaseModel):
     """DHW demand calculation result."""
@@ -919,7 +881,6 @@ class DHWDemandResult(BaseModel):
         ..., description="Temperature rise from inlet to delivery in K"
     )
 
-
 class GenerationResult(BaseModel):
     """DHW generation system assessment result."""
 
@@ -943,7 +904,6 @@ class GenerationResult(BaseModel):
         ..., description="Qualitative efficiency rating"
     )
 
-
 class StorageResult(BaseModel):
     """DHW storage assessment result."""
 
@@ -964,7 +924,6 @@ class StorageResult(BaseModel):
     thermostat_status: str = Field(
         ..., description="Cylinder thermostat compliance status"
     )
-
 
 class DistributionResult(BaseModel):
     """DHW distribution assessment result."""
@@ -987,7 +946,6 @@ class DistributionResult(BaseModel):
     pipe_insulation_rating: str = Field(
         ..., description="Pipe insulation quality rating"
     )
-
 
 class SolarThermalResult(BaseModel):
     """Solar thermal system assessment result."""
@@ -1016,7 +974,6 @@ class SolarThermalResult(BaseModel):
         ..., description="Simple payback of solar thermal system in years"
     )
 
-
 class LegionellaResult(BaseModel):
     """Legionella compliance assessment result."""
 
@@ -1044,7 +1001,6 @@ class LegionellaResult(BaseModel):
     recommendations: List[str] = Field(
         default_factory=list, description="Recommended corrective actions"
     )
-
 
 class DHWAssessmentResult(BaseModel):
     """Complete DHW system assessment result."""
@@ -1102,11 +1058,9 @@ class DHWAssessmentResult(BaseModel):
         ..., description="SHA-256 provenance hash for audit trail"
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class DomesticHotWaterEngine:
     """Domestic Hot Water system assessment engine.
@@ -1267,7 +1221,7 @@ class DomesticHotWaterEngine:
             energy_per_occupant_kwh=_round2(float(energy_per_occupant)),
             system_overall_efficiency=_round4(float(overall_eff)),
             recommendations=recommendations,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=_round3(processing_ms),
             provenance_hash="",
         )

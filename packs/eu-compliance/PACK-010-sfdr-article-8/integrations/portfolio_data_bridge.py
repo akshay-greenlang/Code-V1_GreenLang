@@ -35,19 +35,13 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # =============================================================================
 # Utility Helpers
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute a SHA-256 hash of arbitrary data."""
@@ -55,11 +49,9 @@ def _hash_data(data: Any) -> str:
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # Agent Stub
 # =============================================================================
-
 
 class _AgentStub:
     """Deferred agent loader for lazy initialization."""
@@ -76,6 +68,7 @@ class _AgentStub:
             return self._instance
         try:
             import importlib
+
             mod = importlib.import_module(self.module_path)
             cls = getattr(mod, self.class_name)
             self._instance = cls()
@@ -89,11 +82,9 @@ class _AgentStub:
         """Whether the agent has been loaded."""
         return self._instance is not None
 
-
 # =============================================================================
 # Enums
 # =============================================================================
-
 
 class SectorClassification(str, Enum):
     """Sector classification system."""
@@ -101,14 +92,12 @@ class SectorClassification(str, Enum):
     GICS = "gics"
     ICB = "icb"
 
-
 class DataFormat(str, Enum):
     """Portfolio data format."""
     CSV = "csv"
     EXCEL = "excel"
     JSON = "json"
     API = "api"
-
 
 class DataCategory(str, Enum):
     """Portfolio data category."""
@@ -118,11 +107,9 @@ class DataCategory(str, Enum):
     GEOGRAPHIC_ALLOCATION = "geographic_allocation"
     BENCHMARK_COMPOSITION = "benchmark_composition"
 
-
 # =============================================================================
 # Data Models
 # =============================================================================
-
 
 class PortfolioDataBridgeConfig(BaseModel):
     """Configuration for the Portfolio Data Bridge."""
@@ -153,7 +140,6 @@ class PortfolioDataBridgeConfig(BaseModel):
         default=5000, ge=1, description="Maximum number of holdings"
     )
 
-
 HOLDING_FIELDS: List[str] = [
     "isin", "name", "ticker", "sedol", "cusip",
     "weight", "market_value", "notional_value", "quantity", "price",
@@ -171,7 +157,6 @@ DATA_CATEGORIES: Dict[str, str] = {
     "geographic_allocation": "Geographic allocation by country/region",
     "benchmark_composition": "Reference benchmark holdings and weights",
 }
-
 
 class ValidatedHolding(BaseModel):
     """A validated portfolio holding."""
@@ -194,7 +179,6 @@ class ValidatedHolding(BaseModel):
         default_factory=list, description="Validation notes"
     )
 
-
 class ImportResult(BaseModel):
     """Result of a holdings import."""
     total_records: int = Field(default=0, description="Total records received")
@@ -213,7 +197,6 @@ class ImportResult(BaseModel):
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
     imported_at: str = Field(default="", description="Import timestamp")
 
-
 class NAVEntry(BaseModel):
     """A single NAV observation."""
     date: str = Field(default="", description="Observation date")
@@ -222,11 +205,9 @@ class NAVEntry(BaseModel):
     shares_outstanding: float = Field(default=0.0, description="Shares outstanding")
     currency: str = Field(default="EUR", description="Currency")
 
-
 # =============================================================================
 # Portfolio Data Bridge
 # =============================================================================
-
 
 class PortfolioDataBridge:
     """Bridge for ingesting portfolio data into SFDR Article 8 pipeline.
@@ -340,7 +321,7 @@ class PortfolioDataBridge:
             country_count=len(countries),
             errors=errors,
             warnings=warnings,
-            imported_at=_utcnow().isoformat(),
+            imported_at=utcnow().isoformat(),
         )
         result.provenance_hash = _hash_data({
             "total": result.total_records,

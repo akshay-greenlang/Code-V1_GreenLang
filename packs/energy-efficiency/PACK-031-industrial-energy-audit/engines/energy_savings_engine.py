@@ -78,25 +78,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -114,7 +108,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -123,7 +116,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -135,17 +127,14 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
@@ -153,11 +142,9 @@ def _round3(value: float) -> float:
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ECMCategory(str, Enum):
     """Energy Conservation Measure category.
@@ -194,7 +181,6 @@ class ECMCategory(str, Enum):
     MATERIAL_HANDLING = "material_handling"
     SCHEDULING = "scheduling"
 
-
 class IPMVPOption(str, Enum):
     """IPMVP measurement and verification options.
 
@@ -208,7 +194,6 @@ class IPMVPOption(str, Enum):
     OPTION_C = "option_c"
     OPTION_D = "option_d"
 
-
 class ImplementationComplexity(str, Enum):
     """Complexity level for ECM implementation.
 
@@ -221,7 +206,6 @@ class ImplementationComplexity(str, Enum):
     MEDIUM = "medium"
     HIGH = "high"
     VERY_HIGH = "very_high"
-
 
 class PriorityLevel(str, Enum):
     """ECM priority level based on multi-criteria analysis.
@@ -237,7 +221,6 @@ class PriorityLevel(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     DEFERRED = "deferred"
-
 
 class MeasureStatus(str, Enum):
     """ECM implementation status.
@@ -255,7 +238,6 @@ class MeasureStatus(str, Enum):
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
     VERIFIED = "verified"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -449,11 +431,9 @@ UNCERTAINTY_RANGES: Dict[str, Decimal] = {
     "benchmarked": Decimal("0.50"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class EnergySavingsMeasure(BaseModel):
     """Input data for an energy conservation measure (ECM).
@@ -542,7 +522,6 @@ class EnergySavingsMeasure(BaseModel):
             raise ValueError(f"Unknown confidence '{v}'. Must be one of: {sorted(valid)}")
         return v
 
-
 class InteractionEffect(BaseModel):
     """Interaction effect between two ECMs.
 
@@ -562,7 +541,6 @@ class InteractionEffect(BaseModel):
         description="Savings adjustment (%)"
     )
     reason: str = Field(default="", description="Interaction explanation")
-
 
 class EnergySavingsInput(BaseModel):
     """Complete input for energy savings analysis.
@@ -630,11 +608,9 @@ class EnergySavingsInput(BaseModel):
         default=Decimal("0"), ge=0, description="Available budget (EUR)"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class FinancialAnalysis(BaseModel):
     """Financial analysis for an ECM.
@@ -660,7 +636,6 @@ class FinancialAnalysis(BaseModel):
     total_lifetime_savings_eur: Decimal = Field(default=Decimal("0"))
     total_lifetime_cost_eur: Decimal = Field(default=Decimal("0"))
 
-
 class IPMVPPlan(BaseModel):
     """IPMVP measurement and verification plan for an ECM.
 
@@ -685,7 +660,6 @@ class IPMVPPlan(BaseModel):
     mv_cost_eur: Decimal = Field(default=Decimal("0"))
     rationale: str = Field(default="")
 
-
 class MACCPoint(BaseModel):
     """Single point on the Marginal Abatement Cost Curve.
 
@@ -703,7 +677,6 @@ class MACCPoint(BaseModel):
     cost_per_kwh_saved: Decimal = Field(default=Decimal("0"))
     cumulative_abatement_kwh: Decimal = Field(default=Decimal("0"))
     co2_abatement_tco2e: Decimal = Field(default=Decimal("0"))
-
 
 class MeasureResult(BaseModel):
     """Analysis result for a single ECM.
@@ -741,7 +714,6 @@ class MeasureResult(BaseModel):
     implementation_phase: int = Field(default=2)
     within_budget: bool = Field(default=True)
 
-
 class RoadmapPhase(BaseModel):
     """Implementation roadmap phase.
 
@@ -761,7 +733,6 @@ class RoadmapPhase(BaseModel):
     total_savings_kwh: Decimal = Field(default=Decimal("0"))
     total_savings_eur: Decimal = Field(default=Decimal("0"))
     cumulative_savings_kwh: Decimal = Field(default=Decimal("0"))
-
 
 class EnergySavingsResult(BaseModel):
     """Complete energy savings analysis result.
@@ -795,7 +766,7 @@ class EnergySavingsResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     facility_id: str = Field(default="")
     facility_name: str = Field(default="")
     total_measures: int = Field(default=0)
@@ -819,11 +790,9 @@ class EnergySavingsResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class EnergySavingsEngine:
     """Energy savings opportunity identification and prioritisation engine.

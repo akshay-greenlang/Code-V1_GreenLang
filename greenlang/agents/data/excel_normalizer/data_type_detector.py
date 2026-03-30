@@ -45,7 +45,9 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+
+from greenlang.schemas import GreenLangBase, utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -55,21 +57,13 @@ __all__ = [
     "DataTypeDetector",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class DataType(str, Enum):
     """Detected data type categories."""
@@ -87,13 +81,11 @@ class DataType(str, Enum):
     EMPTY = "empty"
     MIXED = "mixed"
 
-
 # ---------------------------------------------------------------------------
 # Data models
 # ---------------------------------------------------------------------------
 
-
-class ColumnTypeResult(BaseModel):
+class ColumnTypeResult(GreenLangBase):
     """Type detection result for a single column."""
 
     column_index: int = Field(default=0, ge=0, description="Zero-based column index")
@@ -111,7 +103,6 @@ class ColumnTypeResult(BaseModel):
     )
 
     model_config = {"extra": "forbid"}
-
 
 # ---------------------------------------------------------------------------
 # Date format patterns
@@ -165,7 +156,6 @@ _DATE_FORMATS: List[str] = [
     "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M",
     "%Y%m%d",
 ]
-
 
 # ---------------------------------------------------------------------------
 # Currency symbols
@@ -228,11 +218,9 @@ _BOOLEAN_VALUES = {
     "ja", "nein", "oui", "non", "si",
 }
 
-
 # ---------------------------------------------------------------------------
 # DataTypeDetector
 # ---------------------------------------------------------------------------
-
 
 class DataTypeDetector:
     """Automatic data type detection engine.
@@ -728,5 +716,5 @@ class DataTypeDetector:
                 },
                 "parse_successes": self._stats["parse_successes"],
                 "parse_failures": self._stats["parse_failures"],
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }

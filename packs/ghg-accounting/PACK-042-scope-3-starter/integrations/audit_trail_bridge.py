@@ -33,26 +33,19 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -65,26 +58,23 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Agent Import
 # ---------------------------------------------------------------------------
-
 
 def _try_import_audit_agent() -> Any:
     """Try to import the MRV-030 Audit Trail agent."""
     try:
         import importlib
+
         return importlib.import_module("greenlang.agents.mrv.audit_trail_lineage")
     except ImportError:
         logger.debug("MRV-030 Audit Trail agent not available, using built-in")
         return None
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class AuditEventType(str, Enum):
     """Types of audit events."""
@@ -103,7 +93,6 @@ class AuditEventType(str, Enum):
     REPORT_GENERATED = "report_generated"
     PIPELINE_CHECKPOINT = "pipeline_checkpoint"
 
-
 class IntegrityStatus(str, Enum):
     """Hash chain integrity verification status."""
 
@@ -112,11 +101,9 @@ class IntegrityStatus(str, Enum):
     PARTIAL = "partial"
     UNKNOWN = "unknown"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class AuditRecord(BaseModel):
     """Single audit event record."""
@@ -133,8 +120,7 @@ class AuditRecord(BaseModel):
     metadata: Dict[str, Any] = Field(default_factory=dict)
     parent_record_id: Optional[str] = Field(None)
     provenance_hash: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class LineageNode(BaseModel):
     """Single node in a lineage DAG."""
@@ -144,8 +130,7 @@ class LineageNode(BaseModel):
     label: str = Field(default="")
     data_hash: str = Field(default="")
     metadata: Dict[str, Any] = Field(default_factory=dict)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class LineageEdge(BaseModel):
     """Edge connecting two lineage nodes."""
@@ -153,7 +138,6 @@ class LineageEdge(BaseModel):
     source_id: str = Field(default="")
     target_id: str = Field(default="")
     relationship: str = Field(default="derived_from")
-
 
 class LineageDAG(BaseModel):
     """Lineage directed acyclic graph for a calculation."""
@@ -166,8 +150,7 @@ class LineageDAG(BaseModel):
     leaf_node_ids: List[str] = Field(default_factory=list)
     depth: int = Field(default=0)
     provenance_hash: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class EvidenceBundle(BaseModel):
     """Evidence bundle for assurance and verification."""
@@ -184,8 +167,7 @@ class EvidenceBundle(BaseModel):
     total_emissions_tco2e: float = Field(default=0.0)
     integrity_status: IntegrityStatus = Field(default=IntegrityStatus.UNKNOWN)
     provenance_hash: str = Field(default="")
-    generated_at: datetime = Field(default_factory=_utcnow)
-
+    generated_at: datetime = Field(default_factory=utcnow)
 
 class HashChainVerification(BaseModel):
     """Result of hash chain verification."""
@@ -197,13 +179,11 @@ class HashChainVerification(BaseModel):
     status: IntegrityStatus = Field(default=IntegrityStatus.UNKNOWN)
     message: str = Field(default="")
     provenance_hash: str = Field(default="")
-    verified_at: datetime = Field(default_factory=_utcnow)
-
+    verified_at: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # AuditTrailBridge
 # ---------------------------------------------------------------------------
-
 
 class AuditTrailBridge:
     """Bridge to MRV-030 (Audit Trail & Lineage) agent.

@@ -79,23 +79,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -112,7 +107,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -121,7 +115,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -129,21 +122,17 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
-
 
 def _sqrt_decimal(value: Decimal) -> Decimal:
     """Square root via float conversion (deterministic for same input)."""
     if value <= Decimal("0"):
         return Decimal("0")
     return _decimal(float(value) ** 0.5)
-
 
 def _median_decimal(values: List[Decimal]) -> Decimal:
     if not values:
@@ -154,7 +143,6 @@ def _median_decimal(values: List[Decimal]) -> Decimal:
     if n % 2 == 1:
         return sorted_vals[mid]
     return (sorted_vals[mid - 1] + sorted_vals[mid]) / Decimal("2")
-
 
 def _percentile_decimal(values: List[Decimal], pct: Decimal) -> Decimal:
     if not values:
@@ -169,11 +157,9 @@ def _percentile_decimal(values: List[Decimal], pct: Decimal) -> Decimal:
     frac = rank - Decimal(str(lower))
     return sorted_vals[lower] + frac * (sorted_vals[upper] - sorted_vals[lower])
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class UncertaintyTier(str, Enum):
     """IPCC uncertainty assessment tier.
@@ -184,7 +170,6 @@ class UncertaintyTier(str, Enum):
     TIER_1 = "tier_1"
     TIER_2 = "tier_2"
 
-
 class DataQualityLevel(int, Enum):
     """GHG Protocol data quality score (1-5)."""
     HIGH = 1
@@ -192,7 +177,6 @@ class DataQualityLevel(int, Enum):
     FAIR = 3
     LOW = 4
     VERY_LOW = 5
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -219,11 +203,9 @@ DEFAULT_MC_ITERATIONS: int = 10000
 MAX_MC_ITERATIONS: int = 100000
 DEFAULT_SEED: int = 42
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class EmissionComponent(BaseModel):
     """A single emission component with uncertainty.
@@ -263,7 +245,6 @@ class EmissionComponent(BaseModel):
             object.__setattr__(self, "uncertainty_pct", u)
         return self
 
-
 class DenominatorUncertainty(BaseModel):
     """Denominator with uncertainty information.
 
@@ -288,7 +269,6 @@ class DenominatorUncertainty(BaseModel):
             object.__setattr__(self, "uncertainty_pct", u)
         return self
 
-
 class DataQualityAssessment(BaseModel):
     """Data quality assessment for an intensity metric.
 
@@ -308,7 +288,6 @@ class DataQualityAssessment(BaseModel):
     )
     overall_quality_score: Decimal = Field(default=Decimal("3"), description="Overall quality")
     overall_quality_label: str = Field(default="fair", description="Quality label")
-
 
 class UncertaintyInput(BaseModel):
     """Input for uncertainty quantification.
@@ -346,11 +325,9 @@ class UncertaintyInput(BaseModel):
     def coerce_val(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class ConfidenceInterval(BaseModel):
     """Confidence interval for an intensity value.
@@ -365,7 +342,6 @@ class ConfidenceInterval(BaseModel):
     lower_bound: Decimal = Field(default=Decimal("0"), description="Lower bound")
     upper_bound: Decimal = Field(default=Decimal("0"), description="Upper bound")
     z_score: Decimal = Field(default=Decimal("0"), description="Z-score")
-
 
 class ComponentUncertainty(BaseModel):
     """Uncertainty breakdown for a single component.
@@ -385,7 +361,6 @@ class ComponentUncertainty(BaseModel):
     contribution_pct: Decimal = Field(default=Decimal("0"), description="Contribution (%)")
     data_quality: int = Field(default=3, description="Data quality")
 
-
 class MonteCarloUncertainty(BaseModel):
     """Monte Carlo uncertainty results."""
     iterations: int = Field(default=0, description="Iterations")
@@ -396,7 +371,6 @@ class MonteCarloUncertainty(BaseModel):
     ci_90_upper: Decimal = Field(default=Decimal("0"), description="90% CI upper")
     ci_95_lower: Decimal = Field(default=Decimal("0"), description="95% CI lower")
     ci_95_upper: Decimal = Field(default=Decimal("0"), description="95% CI upper")
-
 
 class UncertaintyResult(BaseModel):
     """Result of uncertainty quantification.
@@ -440,11 +414,9 @@ class UncertaintyResult(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class UncertaintyEngine:
     """Uncertainty quantification engine for intensity metrics.
@@ -559,7 +531,7 @@ class UncertaintyEngine:
             monte_carlo=mc,
             tier_used=input_data.tier,
             warnings=warnings,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         result.provenance_hash = _compute_hash(result)
@@ -754,7 +726,6 @@ class UncertaintyEngine:
 
     def get_version(self) -> str:
         return self._version
-
 
 # ---------------------------------------------------------------------------
 # __all__

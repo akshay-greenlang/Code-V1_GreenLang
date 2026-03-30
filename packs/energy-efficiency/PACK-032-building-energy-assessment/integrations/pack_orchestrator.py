@@ -63,27 +63,22 @@ from typing import Any, Callable, Coroutine, Dict, List, Optional, Set
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ExecutionStatus
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
 ProgressCallback = Callable[[str, float, str], Coroutine[Any, Any, None]]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for provenance tracking.
@@ -103,11 +98,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class BuildingPipelinePhase(str, Enum):
     """The 12 phases of the building energy assessment pipeline."""
@@ -125,18 +118,6 @@ class BuildingPipelinePhase(str, Enum):
     RETROFIT_ANALYSIS = "retrofit_analysis"
     COMPLIANCE_CHECK = "compliance_check"
 
-
-class ExecutionStatus(str, Enum):
-    """Pipeline execution lifecycle status."""
-
-    PENDING = "pending"
-    RUNNING = "running"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    CANCELLED = "cancelled"
-    SKIPPED = "skipped"
-
-
 class BuildingType(str, Enum):
     """Building type classifications for assessment context."""
 
@@ -153,7 +134,6 @@ class BuildingType(str, Enum):
     LEISURE_SPORTS = "leisure_sports"
     WORSHIP_COMMUNITY = "worship_community"
 
-
 class AssessmentType(str, Enum):
     """Types of building energy assessment."""
 
@@ -164,11 +144,9 @@ class AssessmentType(str, Enum):
     COMPLIANCE_CHECK = "compliance_check"
     RETROFIT_FOCUS = "retrofit_focus"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class RetryConfig(BaseModel):
     """Retry configuration with exponential backoff and jitter."""
@@ -179,7 +157,6 @@ class RetryConfig(BaseModel):
     jitter_factor: float = Field(
         default=0.5, ge=0.0, le=1.0, description="Jitter multiplier"
     )
-
 
 class OrchestratorConfig(BaseModel):
     """Configuration for the Building Assessment Orchestrator."""
@@ -209,7 +186,6 @@ class OrchestratorConfig(BaseModel):
     number_of_floors: int = Field(default=1, ge=1, le=200)
     occupancy_hours_per_year: float = Field(default=2500.0, ge=0.0)
 
-
 class PhaseProvenance(BaseModel):
     """Provenance tracking for a single phase execution."""
 
@@ -218,8 +194,7 @@ class PhaseProvenance(BaseModel):
     output_hash: str = Field(default="")
     duration_ms: float = Field(default=0.0)
     attempt: int = Field(default=1)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class PhaseResult(BaseModel):
     """Result of a single phase execution."""
@@ -235,7 +210,6 @@ class PhaseResult(BaseModel):
     outputs: Dict[str, Any] = Field(default_factory=dict)
     provenance: Optional[PhaseProvenance] = Field(None)
     retry_count: int = Field(default=0)
-
 
 class PipelineResult(BaseModel):
     """Complete result of the building assessment pipeline execution."""
@@ -260,7 +234,6 @@ class PipelineResult(BaseModel):
     total_energy_kwh_m2: float = Field(default=0.0, description="Annual kWh/m2")
     total_co2_kgm2: float = Field(default=0.0, description="Annual kgCO2e/m2")
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # DAG Dependency Map
@@ -312,11 +285,9 @@ PHASE_ASSESSMENT_TYPE_APPLICABILITY: Dict[BuildingPipelinePhase, List[str]] = {
     BuildingPipelinePhase.RETROFIT_ANALYSIS: ["full_assessment", "retrofit_focus", "advisory_report"],
 }
 
-
 # ---------------------------------------------------------------------------
 # Phase Handlers (deterministic building physics calculations)
 # ---------------------------------------------------------------------------
-
 
 def _phase_health_check(context: Dict[str, Any], config: "OrchestratorConfig") -> Dict[str, Any]:
     """Execute health check phase -- verify engines, agents, dependencies."""
@@ -353,7 +324,6 @@ def _phase_health_check(context: Dict[str, Any], config: "OrchestratorConfig") -
         "health_score": round((checks_passed / max(checks_total, 1)) * 100.0, 1),
     }
 
-
 def _phase_configuration(context: Dict[str, Any], config: "OrchestratorConfig") -> Dict[str, Any]:
     """Execute configuration phase -- load building profile and assessment scope."""
     return {
@@ -372,7 +342,6 @@ def _phase_configuration(context: Dict[str, Any], config: "OrchestratorConfig") 
         "workflows_configured": 8,
     }
 
-
 def _phase_data_ingestion(context: Dict[str, Any], config: "OrchestratorConfig") -> Dict[str, Any]:
     """Execute data ingestion phase -- utility bills, BMS data, geometry."""
     return {
@@ -383,7 +352,6 @@ def _phase_data_ingestion(context: Dict[str, Any], config: "OrchestratorConfig")
         "weather_data_loaded": bool(context.get("weather_station_id")),
         "data_quality_score": context.get("data_quality_score", 75.0),
     }
-
 
 def _phase_envelope_assessment(context: Dict[str, Any], config: "OrchestratorConfig") -> Dict[str, Any]:
     """Execute envelope assessment phase -- walls, roof, windows, floors.
@@ -450,7 +418,6 @@ def _phase_envelope_assessment(context: Dict[str, Any], config: "OrchestratorCon
         "air_permeability_m3_m2_h": context.get("air_permeability", 7.0),
     }
 
-
 def _phase_hvac_assessment(context: Dict[str, Any], config: "OrchestratorConfig") -> Dict[str, Any]:
     """Execute HVAC assessment -- heating, cooling, ventilation efficiency.
 
@@ -497,7 +464,6 @@ def _phase_hvac_assessment(context: Dict[str, Any], config: "OrchestratorConfig"
         "hvac_kwh_per_m2": round(total_hvac_kwh / max(gia, 1), 1),
     }
 
-
 def _phase_lighting_dhw(context: Dict[str, Any], config: "OrchestratorConfig") -> Dict[str, Any]:
     """Execute lighting and DHW assessment.
 
@@ -529,7 +495,6 @@ def _phase_lighting_dhw(context: Dict[str, Any], config: "OrchestratorConfig") -
         "dhw_kwh_per_m2": round(dhw_energy_kwh / max(gia, 1), 1),
     }
 
-
 def _phase_renewable_assessment(context: Dict[str, Any], config: "OrchestratorConfig") -> Dict[str, Any]:
     """Execute renewable energy assessment -- PV, solar thermal, heat pumps."""
     gia = config.gross_internal_area_m2 or 1000.0
@@ -559,7 +524,6 @@ def _phase_renewable_assessment(context: Dict[str, Any], config: "OrchestratorCo
         "renewable_fraction_pct": 0.0,
     }
 
-
 def _phase_indoor_environment(context: Dict[str, Any], config: "OrchestratorConfig") -> Dict[str, Any]:
     """Execute indoor environment quality assessment."""
     return {
@@ -572,7 +536,6 @@ def _phase_indoor_environment(context: Dict[str, Any], config: "OrchestratorConf
         "aq_category": context.get("aq_category", "II"),
         "iq_score": context.get("iq_score", 75.0),
     }
-
 
 def _phase_benchmarking(context: Dict[str, Any], config: "OrchestratorConfig") -> Dict[str, Any]:
     """Execute benchmarking phase -- compare against sector, EPC, CRREM."""
@@ -621,7 +584,6 @@ def _phase_benchmarking(context: Dict[str, Any], config: "OrchestratorConfig") -
         "performance_band": performance_band,
         "percentile_rank": 50.0,
     }
-
 
 def _phase_epc_generation(context: Dict[str, Any], config: "OrchestratorConfig") -> Dict[str, Any]:
     """Execute EPC generation phase.
@@ -675,7 +637,6 @@ def _phase_epc_generation(context: Dict[str, Any], config: "OrchestratorConfig")
         "valid_until_year": config.assessment_year + 10,
         "methodology": "SBEM/SAP",
     }
-
 
 def _phase_retrofit_analysis(context: Dict[str, Any], config: "OrchestratorConfig") -> Dict[str, Any]:
     """Execute retrofit analysis -- identify cost-effective upgrades."""
@@ -771,7 +732,6 @@ def _phase_retrofit_analysis(context: Dict[str, Any], config: "OrchestratorConfi
         ),
     }
 
-
 def _phase_compliance_check(context: Dict[str, Any], config: "OrchestratorConfig") -> Dict[str, Any]:
     """Execute compliance check -- EPBD, national, MEES, NZEB."""
     epc = context.get("epc_generation", {})
@@ -829,7 +789,6 @@ def _phase_compliance_check(context: Dict[str, Any], config: "OrchestratorConfig
         "compliance_score": round(passed / max(total, 1) * 100.0, 1),
     }
 
-
 # Phase handler registry
 _PHASE_HANDLERS: Dict[BuildingPipelinePhase, Any] = {
     BuildingPipelinePhase.HEALTH_CHECK: _phase_health_check,
@@ -846,11 +805,9 @@ _PHASE_HANDLERS: Dict[BuildingPipelinePhase, Any] = {
     BuildingPipelinePhase.COMPLIANCE_CHECK: _phase_compliance_check,
 }
 
-
 # ---------------------------------------------------------------------------
 # BuildingAssessmentOrchestrator
 # ---------------------------------------------------------------------------
-
 
 class BuildingAssessmentOrchestrator:
     """12-phase pipeline orchestrator for Building Energy Assessment Pack.
@@ -922,7 +879,7 @@ class BuildingAssessmentOrchestrator:
             building_name=self.config.building_name,
             assessment_type=self.config.assessment_type.value,
             status=ExecutionStatus.RUNNING,
-            started_at=_utcnow(),
+            started_at=utcnow(),
         )
         self._results[result.execution_id] = result
 
@@ -956,8 +913,8 @@ class BuildingAssessmentOrchestrator:
                     phase_result = PhaseResult(
                         phase=phase,
                         status=ExecutionStatus.SKIPPED,
-                        started_at=_utcnow(),
-                        completed_at=_utcnow(),
+                        started_at=utcnow(),
+                        completed_at=utcnow(),
                     )
                     result.phase_results[phase.value] = phase_result
                     result.phases_skipped.append(phase.value)
@@ -1038,7 +995,7 @@ class BuildingAssessmentOrchestrator:
             result.errors.append(str(exc))
 
         finally:
-            result.completed_at = _utcnow()
+            result.completed_at = utcnow()
             result.total_duration_ms = (time.monotonic() - start_time) * 1000
             result.quality_score = self._compute_quality_score(result)
 
@@ -1104,7 +1061,7 @@ class BuildingAssessmentOrchestrator:
             "execution_id": execution_id,
             "cancelled": True,
             "reason": "Cancellation signal sent",
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     # -------------------------------------------------------------------------
@@ -1304,7 +1261,7 @@ class BuildingAssessmentOrchestrator:
             phase_result = PhaseResult(
                 phase=phase,
                 status=ExecutionStatus.RUNNING,
-                started_at=_utcnow(),
+                started_at=utcnow(),
                 retry_count=attempt - 1,
             )
 
@@ -1321,7 +1278,7 @@ class BuildingAssessmentOrchestrator:
 
                 elapsed_ms = (time.monotonic() - start) * 1000
                 phase_result.status = ExecutionStatus.COMPLETED
-                phase_result.completed_at = _utcnow()
+                phase_result.completed_at = utcnow()
                 phase_result.duration_ms = elapsed_ms
                 phase_result.outputs = outputs
                 phase_result.records_processed = outputs.get(
@@ -1362,7 +1319,7 @@ class BuildingAssessmentOrchestrator:
 
         # All retries exhausted
         phase_result.status = ExecutionStatus.FAILED
-        phase_result.completed_at = _utcnow()
+        phase_result.completed_at = utcnow()
         phase_result.errors.append(f"Failed after {retry_cfg.max_retries + 1} attempts: {last_error}")
         return phase_result
 

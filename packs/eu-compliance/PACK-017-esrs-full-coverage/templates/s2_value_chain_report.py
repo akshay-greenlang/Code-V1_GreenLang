@@ -26,6 +26,8 @@ import logging
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _SECTIONS: List[str] = [
@@ -33,12 +35,6 @@ _SECTIONS: List[str] = [
     "actions_and_risks", "due_diligence_overview",
     "supplier_risk_assessment", "targets", "grievance_metrics",
 ]
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -50,7 +46,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 class S2ValueChainReportTemplate:
     """
@@ -74,7 +69,7 @@ class S2ValueChainReportTemplate:
 
     def render(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render full report as structured dict."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result: Dict[str, Any] = {}
         for section in _SECTIONS:
             result[section] = self.render_section(section, data)
@@ -107,7 +102,7 @@ class S2ValueChainReportTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render S2 Value Chain Workers report as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [self._md_header(data), self._md_policies(data), self._md_engagement(data),
                      self._md_remediation(data), self._md_actions_risks(data),
                      self._md_due_diligence(data), self._md_supplier_risk(data),
@@ -118,7 +113,7 @@ class S2ValueChainReportTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render S2 Value Chain Workers report as HTML."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         body = "\n".join([self._html_header(data), self._html_supplier_risk(data), self._html_grievance(data)])
         prov = _compute_hash(body)
@@ -129,7 +124,7 @@ class S2ValueChainReportTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> str:
         """Render S2 Value Chain Workers report as JSON string."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = {
             "template": "s2_value_chain_report", "esrs_reference": "ESRS S2",
             "version": "17.0.0", "generated_at": self.generated_at.isoformat(),
@@ -305,7 +300,6 @@ class S2ValueChainReportTemplate:
         return (f"<h2>{sec['title']}</h2>\n<table><tr><th>Metric</th><th>Value</th></tr>"
                 f"<tr><td>Filed</td><td>{sec['grievances_filed']}</td></tr>"
                 f"<tr><td>Resolved</td><td>{sec['grievances_resolved']}</td></tr></table>")
-
 
 # Alias for backward compatibility with templates/__init__.py
 S2ValueChainReport = S2ValueChainReportTemplate

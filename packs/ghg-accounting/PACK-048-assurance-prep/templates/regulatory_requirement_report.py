@@ -46,29 +46,23 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 def _compute_hash(content: str) -> str:
     """Compute SHA-256 hash of string content."""
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -81,7 +75,6 @@ class OutputFormat(str, Enum):
     PDF = "pdf"
     JSON = "json"
 
-
 class ComplianceStatus(str, Enum):
     """Compliance status per jurisdiction."""
     COMPLIANT = "compliant"
@@ -89,14 +82,12 @@ class ComplianceStatus(str, Enum):
     NOT_APPLICABLE = "not_applicable"
     IN_PROGRESS = "in_progress"
 
-
 class AssuranceLevel(str, Enum):
     """Required assurance level."""
     LIMITED = "limited"
     REASONABLE = "reasonable"
     NONE = "none"
     PHASED = "phased"
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Input Models
@@ -121,7 +112,6 @@ class JurisdictionRequirement(BaseModel):
     gap_description: str = Field("", description="Gap description (if gap)")
     action_items: List[str] = Field(default_factory=list, description="Action items to close gap")
 
-
 class TimelineEntry(BaseModel):
     """Timeline entry for requirement effective dates."""
     jurisdiction: str = Field(..., description="Jurisdiction")
@@ -130,7 +120,6 @@ class TimelineEntry(BaseModel):
     date: Optional[str] = Field(None, description="Date (ISO)")
     milestone_type: str = Field("effective", description="Type: effective/phase_in/deadline")
 
-
 class OverlapEntry(BaseModel):
     """Multi-jurisdiction overlap entry."""
     requirement_area: str = Field(..., description="Requirement area")
@@ -138,7 +127,6 @@ class OverlapEntry(BaseModel):
     common_standard: str = Field("", description="Common standard if any")
     divergences: List[str] = Field(default_factory=list, description="Key divergences")
     harmonisation_notes: str = Field("", description="Harmonisation / streamlining notes")
-
 
 class GapActionItem(BaseModel):
     """Gap analysis action item."""
@@ -151,7 +139,6 @@ class GapActionItem(BaseModel):
     owner: str = Field("", description="Responsible party")
     target_date: Optional[str] = Field(None, description="Target date (ISO)")
     status: str = Field("open", description="Status")
-
 
 class RegulatoryRequirementInput(BaseModel):
     """Complete input model for RegulatoryRequirementReport."""
@@ -171,7 +158,6 @@ class RegulatoryRequirementInput(BaseModel):
         default_factory=list, description="Gap action items"
     )
 
-
 # ---------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------
@@ -179,7 +165,6 @@ class RegulatoryRequirementInput(BaseModel):
 def _status_label(status: str) -> str:
     """Return display label for compliance status."""
     return status.replace("_", " ").upper()
-
 
 def _status_css(status: str) -> str:
     """Return CSS class for compliance status."""
@@ -190,7 +175,6 @@ def _status_css(status: str) -> str:
         "in_progress": "st-progress",
     }
     return mapping.get(status, "st-progress")
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -248,7 +232,7 @@ class RegulatoryRequirementReport:
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render regulatory requirements as Markdown."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_md(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -256,7 +240,7 @@ class RegulatoryRequirementReport:
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render regulatory requirements as HTML."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_html(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -264,7 +248,7 @@ class RegulatoryRequirementReport:
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render regulatory requirements as JSON dict."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_json(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -305,7 +289,7 @@ class RegulatoryRequirementReport:
         return (
             f"# Regulatory Requirement Report - {company}\n\n"
             f"**Reporting Period:** {period} | "
-            f"**Report Date:** {_utcnow().strftime('%Y-%m-%d')}\n\n"
+            f"**Report Date:** {utcnow().strftime('%Y-%m-%d')}\n\n"
             "---"
         )
 
@@ -490,7 +474,7 @@ class RegulatoryRequirementReport:
             '<div class="section">\n'
             f"<h1>Regulatory Requirement Report &mdash; {company}</h1>\n"
             f"<p><strong>Reporting Period:</strong> {period} | "
-            f"<strong>Report Date:</strong> {_utcnow().strftime('%Y-%m-%d')}</p>\n"
+            f"<strong>Report Date:</strong> {utcnow().strftime('%Y-%m-%d')}</p>\n"
             "<hr>\n</div>"
         )
 

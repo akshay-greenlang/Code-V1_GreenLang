@@ -33,21 +33,15 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -59,7 +53,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 class _AgentStub:
     """Stub for unavailable DATA agent modules."""
@@ -78,21 +71,19 @@ class _AgentStub:
             }
         return _stub_method
 
-
 def _try_import_data_agent(agent_id: str, module_path: str) -> Any:
     """Try to import a DATA agent with graceful fallback."""
     try:
         import importlib
+
         return importlib.import_module(module_path)
     except ImportError:
         logger.debug("DATA agent %s not available, using stub", agent_id)
         return _AgentStub(agent_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EnMSDataSource(str, Enum):
     """EnMS data source categories."""
@@ -107,11 +98,9 @@ class EnMSDataSource(str, Enum):
     WEATHER_DATA = "weather_data"
     SEU_INVENTORY = "seu_inventory"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class DataRouteConfig(BaseModel):
     """Configuration for the Data EnMS Bridge."""
@@ -123,7 +112,6 @@ class DataRouteConfig(BaseModel):
     minimum_data_quality_score: float = Field(
         default=80.0, ge=0.0, le=100.0, description="Minimum acceptable DQ score"
     )
-
 
 class DataQualityCheck(BaseModel):
     """Result of a data quality check."""
@@ -140,7 +128,6 @@ class DataQualityCheck(BaseModel):
     is_valid: bool = Field(default=False)
     provenance_hash: str = Field(default="")
 
-
 class DataAgentRoute(BaseModel):
     """Routing entry mapping a data source to a DATA agent."""
 
@@ -150,7 +137,6 @@ class DataAgentRoute(BaseModel):
     module_path: str = Field(default="")
     description: str = Field(default="")
     file_formats: List[str] = Field(default_factory=list)
-
 
 class DataRoutingResult(BaseModel):
     """Result of routing a data operation to a DATA agent."""
@@ -166,7 +152,6 @@ class DataRoutingResult(BaseModel):
     message: str = Field(default="")
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Data Agent Routing Table
@@ -231,11 +216,9 @@ DATA_AGENT_ROUTES: List[DataAgentRoute] = [
     ),
 ]
 
-
 # ---------------------------------------------------------------------------
 # DataEnMSBridge
 # ---------------------------------------------------------------------------
-
 
 class DataEnMSBridge:
     """Bridge to DATA agents for EnMS data intake and quality.

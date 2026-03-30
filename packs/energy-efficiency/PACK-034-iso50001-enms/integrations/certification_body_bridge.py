@@ -38,20 +38,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -64,11 +59,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class AuditType(str, Enum):
     """ISO 50001 certification audit types."""
@@ -77,7 +70,6 @@ class AuditType(str, Enum):
     STAGE2 = "stage2"
     SURVEILLANCE = "surveillance"
     RECERTIFICATION = "recertification"
-
 
 class CertificateStatus(str, Enum):
     """ISO 50001 certificate lifecycle status."""
@@ -88,7 +80,6 @@ class CertificateStatus(str, Enum):
     EXPIRED = "expired"
     PENDING = "pending"
 
-
 class FindingType(str, Enum):
     """Audit finding classification."""
 
@@ -98,11 +89,9 @@ class FindingType(str, Enum):
     OPPORTUNITY_FOR_IMPROVEMENT = "opportunity_for_improvement"
     POSITIVE_PRACTICE = "positive_practice"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class CertificationBody(BaseModel):
     """Certification body profile."""
@@ -116,8 +105,7 @@ class CertificationBody(BaseModel):
     contact_phone: str = Field(default="")
     auditors: List[Dict[str, Any]] = Field(default_factory=list)
     iso50001_accredited: bool = Field(default=True)
-    registered_at: datetime = Field(default_factory=_utcnow)
-
+    registered_at: datetime = Field(default_factory=utcnow)
 
 class AuditSchedule(BaseModel):
     """Scheduled audit details."""
@@ -135,7 +123,6 @@ class AuditSchedule(BaseModel):
     scope_description: str = Field(default="")
     notes: str = Field(default="")
     provenance_hash: str = Field(default="")
-
 
 class AuditReport(BaseModel):
     """Certification audit report."""
@@ -158,7 +145,6 @@ class AuditReport(BaseModel):
     energy_performance_improvement_noted: bool = Field(default=False)
     provenance_hash: str = Field(default="")
 
-
 class CertificateInfo(BaseModel):
     """ISO 50001 certificate details."""
 
@@ -177,11 +163,9 @@ class CertificateInfo(BaseModel):
     next_recertification_date: Optional[str] = Field(None)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # CertificationBodyBridge
 # ---------------------------------------------------------------------------
-
 
 class CertificationBodyBridge:
     """Certification body interface for ISO 50001 EnMS.
@@ -300,7 +284,7 @@ class CertificationBodyBridge:
 
         result = {
             "submission_id": _new_uuid(),
-            "submitted_at": _utcnow().isoformat(),
+            "submitted_at": utcnow().isoformat(),
             "documents_submitted": len(submitted),
             "documents_required": len(required_documents),
             "missing_documents": missing,
@@ -475,7 +459,7 @@ class CertificationBodyBridge:
             "audit_type": audit_type.value,
             "required_documents": required,
             "total_required": len(required),
-            "prepared_at": _utcnow().isoformat(),
+            "prepared_at": utcnow().isoformat(),
             "status": "checklist_generated",
             "provenance_hash": _compute_hash({"type": audit_type.value, "docs": required}),
         }

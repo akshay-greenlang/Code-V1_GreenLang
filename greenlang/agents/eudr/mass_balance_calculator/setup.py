@@ -170,32 +170,22 @@ _MODULE_VERSION = "1.0.0"
 _AGENT_ID = "GL-EUDR-MBC-011"
 _ENGINE_COUNT = 8
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_provenance_hash(*parts: str) -> str:
     """Compute SHA-256 hash over concatenated string parts."""
     combined = "|".join(str(p) for p in parts)
     return hashlib.sha256(combined.encode("utf-8")).hexdigest()
 
-
 def _generate_request_id() -> str:
     """Generate a unique request identifier."""
     return f"MBC-{uuid.uuid4().hex[:12]}"
 
-
 # ---------------------------------------------------------------------------
 # Result container: HealthStatus
 # ---------------------------------------------------------------------------
-
 
 class HealthStatus:
     """Health check result container.
@@ -220,7 +210,7 @@ class HealthStatus:
     ) -> None:
         self.status = status
         self.checks = checks or {}
-        self.timestamp = timestamp or _utcnow()
+        self.timestamp = timestamp or utcnow()
         self.version = version
         self.uptime_seconds = uptime_seconds
 
@@ -234,11 +224,9 @@ class HealthStatus:
             "uptime_seconds": round(self.uptime_seconds, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: LedgerResult
 # ---------------------------------------------------------------------------
-
 
 class LedgerResult:
     """Result from a ledger operation.
@@ -288,11 +276,9 @@ class LedgerResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: PeriodResult
 # ---------------------------------------------------------------------------
-
 
 class PeriodResult:
     """Result from a credit period operation.
@@ -342,11 +328,9 @@ class PeriodResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: FactorResult
 # ---------------------------------------------------------------------------
-
 
 class FactorResult:
     """Result from a conversion factor operation.
@@ -392,11 +376,9 @@ class FactorResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: OverdraftResult
 # ---------------------------------------------------------------------------
-
 
 class OverdraftResult:
     """Result from an overdraft detection operation.
@@ -442,11 +424,9 @@ class OverdraftResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: LossResult
 # ---------------------------------------------------------------------------
-
 
 class LossResult:
     """Result from a loss/waste tracking operation.
@@ -496,11 +476,9 @@ class LossResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: CarryForwardResult
 # ---------------------------------------------------------------------------
-
 
 class CarryForwardResult:
     """Result from a carry-forward operation.
@@ -546,11 +524,9 @@ class CarryForwardResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: ReconciliationResult
 # ---------------------------------------------------------------------------
-
 
 class ReconciliationResult:
     """Result from a reconciliation operation.
@@ -600,11 +576,9 @@ class ReconciliationResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: ReportResult
 # ---------------------------------------------------------------------------
-
 
 class ReportResult:
     """Result from a report generation operation.
@@ -654,11 +628,9 @@ class ReportResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: BatchJobResult
 # ---------------------------------------------------------------------------
-
 
 class BatchJobResult:
     """Result from a batch processing job.
@@ -708,11 +680,9 @@ class BatchJobResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: DashboardResult
 # ---------------------------------------------------------------------------
-
 
 class DashboardResult:
     """Result from a dashboard or overview operation.
@@ -758,11 +728,9 @@ class DashboardResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ===========================================================================
 # MassBalanceCalculatorService - Main facade
 # ===========================================================================
-
 
 class MassBalanceCalculatorService:
     """Facade for the Mass Balance Calculator Agent (AGENT-EUDR-011).
@@ -1941,7 +1909,7 @@ class MassBalanceCalculatorService:
         health = HealthStatus(
             status=overall,
             checks=checks,
-            timestamp=_utcnow(),
+            timestamp=utcnow(),
             version=_MODULE_VERSION,
             uptime_seconds=self.uptime_seconds,
         )
@@ -2429,11 +2397,9 @@ class MassBalanceCalculatorService:
             )
             return None
 
-
 # ---------------------------------------------------------------------------
 # FastAPI lifespan context manager
 # ---------------------------------------------------------------------------
-
 
 @asynccontextmanager
 async def lifespan(app: Any) -> AsyncIterator[None]:
@@ -2447,6 +2413,7 @@ async def lifespan(app: Any) -> AsyncIterator[None]:
 
         from fastapi import FastAPI
         from greenlang.agents.eudr.mass_balance_calculator.setup import lifespan
+from greenlang.schemas import utcnow
 
         app = FastAPI(lifespan=lifespan)
 
@@ -2464,14 +2431,12 @@ async def lifespan(app: Any) -> AsyncIterator[None]:
     finally:
         await service.shutdown()
 
-
 # ---------------------------------------------------------------------------
 # Thread-safe singleton accessor
 # ---------------------------------------------------------------------------
 
 _service_instance: Optional[MassBalanceCalculatorService] = None
 _service_lock = threading.Lock()
-
 
 def get_service() -> MassBalanceCalculatorService:
     """Return the singleton MassBalanceCalculatorService instance.
@@ -2493,7 +2458,6 @@ def get_service() -> MassBalanceCalculatorService:
                 _service_instance = MassBalanceCalculatorService()
     return _service_instance
 
-
 def set_service(service: MassBalanceCalculatorService) -> None:
     """Replace the singleton MassBalanceCalculatorService instance.
 
@@ -2507,7 +2471,6 @@ def set_service(service: MassBalanceCalculatorService) -> None:
         _service_instance = service
     logger.info("MassBalanceCalculatorService singleton replaced")
 
-
 def reset_service() -> None:
     """Reset the singleton MassBalanceCalculatorService to None.
 
@@ -2518,7 +2481,6 @@ def reset_service() -> None:
     with _service_lock:
         _service_instance = None
     logger.debug("MassBalanceCalculatorService singleton reset")
-
 
 # ---------------------------------------------------------------------------
 # Public API

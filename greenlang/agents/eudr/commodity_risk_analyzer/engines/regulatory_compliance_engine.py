@@ -65,6 +65,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -76,12 +78,6 @@ _MODULE_VERSION: str = "1.0.0"
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -101,7 +97,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str = "reg") -> str:
     """Generate a unique identifier with a given prefix.
 
@@ -112,7 +107,6 @@ def _generate_id(prefix: str = "reg") -> str:
         ID in format ``{prefix}-{hex12}``.
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 def _to_decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
@@ -132,7 +126,6 @@ def _to_decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError) as exc:
         raise ValueError(f"Cannot convert {value!r} to Decimal") from exc
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -519,11 +512,9 @@ REGULATORY_UPDATES: List[Dict[str, Any]] = [
     },
 ]
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class ComplianceRequirement:
@@ -575,7 +566,6 @@ class ComplianceRequirement:
             "provenance_hash": self.provenance_hash,
         }
 
-
 @dataclass
 class ComplianceGap:
     """A compliance gap identified during gap analysis.
@@ -617,11 +607,9 @@ class ComplianceGap:
             "provenance_hash": self.provenance_hash,
         }
 
-
 # ---------------------------------------------------------------------------
 # RegulatoryComplianceEngine
 # ---------------------------------------------------------------------------
-
 
 class RegulatoryComplianceEngine:
     """Production-grade EUDR regulatory compliance engine.

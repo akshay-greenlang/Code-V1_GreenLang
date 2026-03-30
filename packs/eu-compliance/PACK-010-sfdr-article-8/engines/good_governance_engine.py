@@ -50,25 +50,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -88,21 +82,17 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _round_val(value: float, places: int = 2) -> float:
     """Round a float to specified decimal places."""
     return round(value, places)
-
 
 def _clamp(value: float, min_val: float = 0.0, max_val: float = 100.0) -> float:
     """Clamp a value to the given range."""
     return max(min_val, min(max_val, value))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class GovernanceArea(str, Enum):
     """The four Article 2(17) good governance assessment areas."""
@@ -112,7 +102,6 @@ class GovernanceArea(str, Enum):
     REMUNERATION = "remuneration"
     TAX_COMPLIANCE = "tax_compliance"
 
-
 class GovernanceCheckType(str, Enum):
     """Type of governance check."""
 
@@ -120,7 +109,6 @@ class GovernanceCheckType(str, Enum):
     THRESHOLD_MIN = "THRESHOLD_MIN"  # Fail if below threshold
     THRESHOLD_MAX = "THRESHOLD_MAX"  # Fail if above threshold
     SCORE = "SCORE"                 # 0-100 score input
-
 
 class GovernanceStatus(str, Enum):
     """Governance assessment outcome."""
@@ -130,7 +118,6 @@ class GovernanceStatus(str, Enum):
     WARNING = "WARNING"
     INSUFFICIENT_DATA = "INSUFFICIENT_DATA"
     NOT_APPLICABLE = "NOT_APPLICABLE"
-
 
 class ViolationType(str, Enum):
     """Types of governance violations."""
@@ -146,7 +133,6 @@ class ViolationType(str, Enum):
     REMUNERATION_EXCESS = "remuneration_excess"
     OTHER = "other"
 
-
 AREA_NAMES: Dict[str, str] = {
     GovernanceArea.MANAGEMENT_STRUCTURES.value: "Sound Management Structures",
     GovernanceArea.EMPLOYEE_RELATIONS.value: "Employee Relations",
@@ -154,11 +140,9 @@ AREA_NAMES: Dict[str, str] = {
     GovernanceArea.TAX_COMPLIANCE.value: "Tax Compliance",
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class GovernanceCriterion(BaseModel):
     """A single governance assessment criterion.
@@ -211,7 +195,6 @@ class GovernanceCriterion(BaseModel):
     max_score: float = Field(
         default=100.0, ge=0, description="Maximum score contribution",
     )
-
 
 class GovernanceConfig(BaseModel):
     """Configuration for the Good Governance Engine.
@@ -270,7 +253,6 @@ class GovernanceConfig(BaseModel):
             )
         return self
 
-
 class ManagementStructureData(BaseModel):
     """Data for sound management structures assessment.
 
@@ -297,7 +279,6 @@ class ManagementStructureData(BaseModel):
     board_size: Optional[int] = Field(None, ge=0)
     board_meetings_per_year: Optional[int] = Field(None, ge=0)
     has_whistleblower_mechanism: Optional[bool] = Field(None)
-
 
 class EmployeeRelationsData(BaseModel):
     """Data for employee relations assessment.
@@ -326,7 +307,6 @@ class EmployeeRelationsData(BaseModel):
     living_wage_compliance: Optional[bool] = Field(None)
     has_grievance_mechanism: Optional[bool] = Field(None)
 
-
 class RemunerationData(BaseModel):
     """Data for remuneration assessment.
 
@@ -350,7 +330,6 @@ class RemunerationData(BaseModel):
     shareholder_vote_on_pay: Optional[bool] = Field(None)
     excessive_severance_provisions: Optional[bool] = Field(None)
 
-
 class TaxComplianceData(BaseModel):
     """Data for tax compliance assessment.
 
@@ -371,7 +350,6 @@ class TaxComplianceData(BaseModel):
     tax_controversies: Optional[int] = Field(None, ge=0)
     effective_tax_rate: Optional[float] = Field(None, ge=0.0, le=100.0)
     tax_transparency_score: Optional[float] = Field(None, ge=0.0, le=100.0)
-
 
 class CompanyGovernanceData(BaseModel):
     """Complete governance data for a single company.
@@ -411,7 +389,6 @@ class CompanyGovernanceData(BaseModel):
     has_anti_bribery_measures: Optional[bool] = Field(None)
     corruption_controversies: Optional[int] = Field(None, ge=0)
 
-
 class AreaResult(BaseModel):
     """Assessment result for a single governance area."""
 
@@ -441,7 +418,6 @@ class AreaResult(BaseModel):
         description="Per-criterion detail records",
     )
 
-
 class GovernanceViolation(BaseModel):
     """A specific governance violation found during assessment."""
 
@@ -454,7 +430,6 @@ class GovernanceViolation(BaseModel):
     source: str = Field(
         default="assessment", description="Source of violation data",
     )
-
 
 class GovernanceResult(BaseModel):
     """Complete good governance assessment result for a company.
@@ -501,7 +476,7 @@ class GovernanceResult(BaseModel):
         description="Percentage of criteria with available data",
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow, description="Assessment timestamp",
+        default_factory=utcnow, description="Assessment timestamp",
     )
     processing_time_ms: float = Field(
         default=0.0, description="Processing time in milliseconds",
@@ -512,7 +487,6 @@ class GovernanceResult(BaseModel):
     provenance_hash: str = Field(
         default="", description="SHA-256 provenance hash",
     )
-
 
 class PortfolioGovernanceResult(BaseModel):
     """Portfolio-level governance assessment aggregation."""
@@ -543,15 +517,13 @@ class PortfolioGovernanceResult(BaseModel):
         description="Most common violation types across portfolio",
     )
     provenance_hash: str = Field(default="")
-    assessed_at: datetime = Field(default_factory=_utcnow)
+    assessed_at: datetime = Field(default_factory=utcnow)
     processing_time_ms: float = Field(default=0.0)
     engine_version: str = Field(default=_MODULE_VERSION)
-
 
 # ---------------------------------------------------------------------------
 # Default Criteria
 # ---------------------------------------------------------------------------
-
 
 def _build_default_criteria() -> List[GovernanceCriterion]:
     """Build default governance criteria for all four assessment areas.
@@ -807,11 +779,9 @@ def _build_default_criteria() -> List[GovernanceCriterion]:
 
     return criteria
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class GoodGovernanceEngine:
     """Good Governance Assessment Engine per SFDR Article 2(17).
@@ -896,7 +866,7 @@ class GoodGovernanceEngine:
         Raises:
             ValueError: If company_id is empty.
         """
-        start = _utcnow()
+        start = utcnow()
         self._assessment_count += 1
 
         if not company_data.company_id:
@@ -943,7 +913,7 @@ class GoodGovernanceEngine:
             else 0.0
         )
 
-        elapsed_ms = (_utcnow() - start).total_seconds() * 1000
+        elapsed_ms = (utcnow() - start).total_seconds() * 1000
 
         result = GovernanceResult(
             company_id=company_data.company_id,
@@ -995,7 +965,7 @@ class GoodGovernanceEngine:
         Raises:
             ValueError: If companies list is empty.
         """
-        start = _utcnow()
+        start = utcnow()
 
         if not companies:
             raise ValueError("Companies list cannot be empty")
@@ -1043,7 +1013,7 @@ class GoodGovernanceEngine:
         area_averages = self._compute_area_averages(results)
         common_violations = self._compute_common_violations(results)
 
-        elapsed_ms = (_utcnow() - start).total_seconds() * 1000
+        elapsed_ms = (utcnow() - start).total_seconds() * 1000
 
         portfolio_result = PortfolioGovernanceResult(
             portfolio_name=portfolio_name,

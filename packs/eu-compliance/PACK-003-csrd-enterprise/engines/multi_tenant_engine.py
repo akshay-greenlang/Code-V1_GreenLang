@@ -46,25 +46,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -84,11 +78,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class TenantTier(str, Enum):
     """Subscription tier for a tenant."""
@@ -99,7 +91,6 @@ class TenantTier(str, Enum):
     ENTERPRISE = "enterprise"
     CUSTOM = "custom"
 
-
 class IsolationLevel(str, Enum):
     """Infrastructure isolation level for a tenant."""
 
@@ -107,7 +98,6 @@ class IsolationLevel(str, Enum):
     NAMESPACE = "namespace"
     CLUSTER = "cluster"
     PHYSICAL = "physical"
-
 
 class TenantLifecycleStatus(str, Enum):
     """Lifecycle status of a tenant."""
@@ -118,11 +108,9 @@ class TenantLifecycleStatus(str, Enum):
     TERMINATED = "terminated"
     ARCHIVED = "archived"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class TenantResource(BaseModel):
     """Resource quota limits for a tenant."""
@@ -134,7 +122,6 @@ class TenantResource(BaseModel):
     )
     max_users: int = Field(5, ge=1, description="Maximum user accounts")
     max_subsidiaries: int = Field(1, ge=1, description="Maximum subsidiary entities")
-
 
 class TenantProvisionRequest(BaseModel):
     """Request to provision a new tenant."""
@@ -178,7 +165,6 @@ class TenantProvisionRequest(BaseModel):
             raise ValueError(f"Region must be one of {allowed}, got '{v}'")
         return v
 
-
 class ResourceUsage(BaseModel):
     """Current resource usage for a tenant."""
 
@@ -187,7 +173,6 @@ class ResourceUsage(BaseModel):
     current_api_calls_today: int = Field(0, ge=0, description="API calls today")
     current_users: int = Field(0, ge=0, description="Active user count")
     current_subsidiaries: int = Field(0, ge=0, description="Registered subsidiaries")
-
 
 class TenantStatus(BaseModel):
     """Complete status of a tenant."""
@@ -211,10 +196,9 @@ class TenantStatus(BaseModel):
     health_score: float = Field(
         100.0, ge=0.0, le=100.0, description="Tenant health score 0-100"
     )
-    created_at: datetime = Field(default_factory=_utcnow, description="Creation time")
-    updated_at: datetime = Field(default_factory=_utcnow, description="Last update")
+    created_at: datetime = Field(default_factory=utcnow, description="Creation time")
+    updated_at: datetime = Field(default_factory=utcnow, description="Last update")
     provenance_hash: str = Field("", description="SHA-256 provenance hash")
-
 
 class QuotaViolation(BaseModel):
     """A single quota violation detected for a tenant."""
@@ -224,8 +208,7 @@ class QuotaViolation(BaseModel):
     max_allowed: float = Field(..., description="Maximum allowed value")
     overage_pct: float = Field(..., description="Percentage over quota")
     severity: str = Field("warning", description="warning or critical")
-    detected_at: datetime = Field(default_factory=_utcnow, description="Detection time")
-
+    detected_at: datetime = Field(default_factory=utcnow, description="Detection time")
 
 # ---------------------------------------------------------------------------
 # Tier Default Quotas
@@ -276,11 +259,9 @@ _TIER_FEATURES: Dict[TenantTier, List[str]] = {
     TenantTier.CUSTOM: [],
 }
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class MultiTenantEngine:
     """Multi-tenant lifecycle management engine.
@@ -328,7 +309,7 @@ class MultiTenantEngine:
         Raises:
             ValueError: If tenant name is already taken.
         """
-        start = _utcnow()
+        start = utcnow()
         logger.info(
             "Provisioning tenant '%s' at tier=%s isolation=%s",
             request.tenant_name, request.tier.value, request.isolation_level.value,
@@ -384,7 +365,7 @@ class MultiTenantEngine:
         logger.info(
             "Tenant '%s' provisioned as %s (id=%s) in %.0fms",
             request.tenant_name, request.tier.value, tenant_id,
-            ((_utcnow() - start).total_seconds() * 1000),
+            ((utcnow() - start).total_seconds() * 1000),
         )
         return status
 
@@ -456,7 +437,7 @@ class MultiTenantEngine:
             )
 
         tenant.status = TenantLifecycleStatus.SUSPENDED
-        tenant.updated_at = _utcnow()
+        tenant.updated_at = utcnow()
         tenant.provenance_hash = _compute_hash(tenant)
 
         self._record_audit("TENANT_SUSPENDED", tenant_id, {"reason": reason})
@@ -479,7 +460,7 @@ class MultiTenantEngine:
             KeyError: If tenant_id not found.
         """
         tenant = self._get_tenant(tenant_id)
-        now = _utcnow()
+        now = utcnow()
 
         archive_info: Dict[str, Any] = {}
         if archive_data:
@@ -591,7 +572,7 @@ class MultiTenantEngine:
         tenant.features_enabled = list(
             _TIER_FEATURES.get(new_tier, [])
         )
-        tenant.updated_at = _utcnow()
+        tenant.updated_at = utcnow()
         tenant.provenance_hash = _compute_hash(tenant)
 
         self._record_audit(
@@ -829,7 +810,7 @@ class MultiTenantEngine:
                 "p90": round(p90, 4),
                 "std_dev": round(self._calculate_std_dev(sorted_values, mean_val), 4),
             },
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
         }
 
         # Per-tenant position (anonymized)
@@ -1032,7 +1013,7 @@ class MultiTenantEngine:
             "event": event,
             "tenant_id": tenant_id,
             "details": details,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "provenance_hash": _compute_hash(
                 {"event": event, "tenant_id": tenant_id, "details": details}
             ),

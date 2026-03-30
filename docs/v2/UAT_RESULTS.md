@@ -7,11 +7,11 @@ Demonstrate that non-core teams can bootstrap and validate V2 profiles without t
 ## Protocol
 
 ```bash
-gl v2 status
-gl v2 validate-contracts
-gl v2 runtime-checks
-gl v2 docs-check
-gl v2 gate
+python -m greenlang.cli.main v2 status
+python -m greenlang.cli.main v2 validate-contracts
+python -m greenlang.cli.main v2 runtime-checks
+python -m greenlang.cli.main v2 docs-check
+python -m greenlang.cli.main v2 gate
 ```
 
 ## Team Runs

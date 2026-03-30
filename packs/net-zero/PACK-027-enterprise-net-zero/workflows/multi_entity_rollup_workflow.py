@@ -33,23 +33,18 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "27.0.0"
 _PACK_ID = "PACK-027"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -58,14 +53,12 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class EntityChangeType(str, Enum):
     NEW_ENTITY = "new_entity"
@@ -74,11 +67,9 @@ class EntityChangeType(str, Enum):
     RECLASSIFICATION = "reclassification"
     NO_CHANGE = "no_change"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase_name: str = Field(...)
@@ -92,7 +83,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     dag_node_id: str = Field(default="")
 
-
 class EntityChange(BaseModel):
     entity_id: str = Field(...)
     entity_name: str = Field(default="")
@@ -102,7 +92,6 @@ class EntityChange(BaseModel):
     effective_date: str = Field(default="")
     impact_tco2e: float = Field(default=0.0)
 
-
 class EntityValidation(BaseModel):
     entity_id: str = Field(...)
     entity_name: str = Field(default="")
@@ -111,7 +100,6 @@ class EntityValidation(BaseModel):
     data_quality_score: float = Field(default=5.0, ge=1.0, le=5.0)
     missing_data_points: List[str] = Field(default_factory=list)
     validation_passed: bool = Field(default=False)
-
 
 class EntityResult(BaseModel):
     entity_id: str = Field(...)
@@ -124,14 +112,12 @@ class EntityResult(BaseModel):
     ownership_factor: float = Field(default=1.0)
     adjusted_total_tco2e: float = Field(default=0.0, ge=0.0)
 
-
 class EliminationEntry(BaseModel):
     selling_entity: str = Field(default="")
     buying_entity: str = Field(default="")
     category: str = Field(default="")
     eliminated_tco2e: float = Field(default=0.0, ge=0.0)
     justification: str = Field(default="")
-
 
 class Reconciliation(BaseModel):
     sum_entity_totals: float = Field(default=0.0, ge=0.0)
@@ -140,7 +126,6 @@ class Reconciliation(BaseModel):
     reconciliation_delta: float = Field(default=0.0, description="Should be zero")
     is_reconciled: bool = Field(default=False)
 
-
 class MultiEntityRollupConfig(BaseModel):
     reporting_year: int = Field(default=2025, ge=2020, le=2035)
     consolidation_approach: str = Field(default="financial_control")
@@ -148,14 +133,12 @@ class MultiEntityRollupConfig(BaseModel):
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
 
-
 class MultiEntityRollupInput(BaseModel):
     config: MultiEntityRollupConfig = Field(default_factory=MultiEntityRollupConfig)
     entities: List[Dict[str, Any]] = Field(default_factory=list)
     entity_changes: List[EntityChange] = Field(default_factory=list)
     intercompany_transactions: List[Dict[str, Any]] = Field(default_factory=list)
     entity_emissions: List[Dict[str, Any]] = Field(default_factory=list)
-
 
 class MultiEntityRollupResult(BaseModel):
     workflow_id: str = Field(...)
@@ -177,11 +160,9 @@ class MultiEntityRollupResult(BaseModel):
     next_steps: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class MultiEntityRollupWorkflow:
     """
@@ -211,7 +192,7 @@ class MultiEntityRollupWorkflow:
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     async def execute(self, input_data: MultiEntityRollupInput) -> MultiEntityRollupResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         self.config = input_data.config
         self._phase_results = []
         overall_status = WorkflowStatus.RUNNING
@@ -243,7 +224,7 @@ class MultiEntityRollupWorkflow:
                 status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
 
         # Consolidate totals
         c_s1 = sum(r.scope1_tco2e * r.ownership_factor for r in self._entity_results)
@@ -287,7 +268,7 @@ class MultiEntityRollupWorkflow:
         return result
 
     async def _phase_entity_refresh(self, input_data: MultiEntityRollupInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         changes = input_data.entity_changes
@@ -301,7 +282,7 @@ class MultiEntityRollupWorkflow:
         outputs["ownership_changes"] = ownership
         outputs["no_change"] = len(changes) - new_count - divested - ownership
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="entity_refresh", phase_number=1,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -311,7 +292,7 @@ class MultiEntityRollupWorkflow:
         )
 
     async def _phase_data_validation(self, input_data: MultiEntityRollupInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -342,7 +323,7 @@ class MultiEntityRollupWorkflow:
         outputs["entities_passed"] = passed_count
         outputs["entities_failed"] = len(self._validations) - passed_count
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="data_validation", phase_number=2,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -352,7 +333,7 @@ class MultiEntityRollupWorkflow:
         )
 
     async def _phase_entity_calculation(self, input_data: MultiEntityRollupInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         self._entity_results = []
@@ -387,7 +368,7 @@ class MultiEntityRollupWorkflow:
             sum(r.adjusted_total_tco2e for r in self._entity_results), 2,
         )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="entity_calculation", phase_number=3,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -397,7 +378,7 @@ class MultiEntityRollupWorkflow:
         )
 
     async def _phase_elimination(self, input_data: MultiEntityRollupInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         self._eliminations = []
@@ -417,7 +398,7 @@ class MultiEntityRollupWorkflow:
             sum(e.eliminated_tco2e for e in self._eliminations), 2,
         )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="elimination", phase_number=4,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -427,7 +408,7 @@ class MultiEntityRollupWorkflow:
         )
 
     async def _phase_consolidated_report(self, input_data: MultiEntityRollupInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         outputs["report_sections"] = [
@@ -442,7 +423,7 @@ class MultiEntityRollupWorkflow:
         ]
         outputs["report_formats"] = ["MD", "HTML", "JSON", "XLSX"]
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="consolidated_report", phase_number=5,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),

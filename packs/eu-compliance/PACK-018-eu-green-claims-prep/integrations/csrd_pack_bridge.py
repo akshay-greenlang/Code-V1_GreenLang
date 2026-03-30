@@ -42,25 +42,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for provenance tracking."""
@@ -73,11 +67,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CSRDPackTier(str, Enum):
     """CSRD pack tiers available for bridging."""
@@ -85,7 +77,6 @@ class CSRDPackTier(str, Enum):
     STARTER = "PACK-001"
     PROFESSIONAL = "PACK-002"
     ENTERPRISE = "PACK-003"
-
 
 class ESRSDataCategory(str, Enum):
     """ESRS disclosure categories relevant to green claims."""
@@ -101,7 +92,6 @@ class ESRSDataCategory(str, Enum):
     S4_CONSUMERS = "s4_consumers"
     G1_GOVERNANCE = "g1_governance"
 
-
 class BridgeStatus(str, Enum):
     """Status of a bridge operation."""
 
@@ -109,7 +99,6 @@ class BridgeStatus(str, Enum):
     PARTIAL = "partial"
     FAILED = "failed"
     NOT_AVAILABLE = "not_available"
-
 
 # ---------------------------------------------------------------------------
 # ESRS-to-Claims Mapping
@@ -148,11 +137,9 @@ ESRS_DISCLOSURE_COUNTS: Dict[str, int] = {
     "S1": 17, "S2": 5, "S3": 5, "S4": 5, "G1": 6,
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class CSRDBridgeConfig(BaseModel):
     """Configuration for the CSRD Pack Bridge."""
@@ -173,7 +160,6 @@ class CSRDBridgeConfig(BaseModel):
         description="Only import data that has been verified in CSRD packs",
     )
 
-
 class CSRDEvidenceMapping(BaseModel):
     """Maps a CSRD disclosure to green claims evidence."""
 
@@ -183,7 +169,6 @@ class CSRDEvidenceMapping(BaseModel):
     evidence_strength: str = Field(default="moderate")
     data_available: bool = Field(default=False)
     last_verified: Optional[datetime] = Field(None)
-
 
 class CSRDBridgeResult(BaseModel):
     """Result of a CSRD bridge operation."""
@@ -196,14 +181,12 @@ class CSRDBridgeResult(BaseModel):
     total_disclosures: int = Field(default=0)
     verified_disclosures: int = Field(default=0)
     claim_types_supported: List[str] = Field(default_factory=list)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # CSRDPackBridge
 # ---------------------------------------------------------------------------
-
 
 class CSRDPackBridge:
     """Bridges PACK-018 to CSRD data from PACK-001/002/003.
@@ -245,7 +228,7 @@ class CSRDPackBridge:
             Dict with routing result including source pack, evidence
             mappings, and provenance hash.
         """
-        start = _utcnow()
+        start = utcnow()
         standard = data_request.get("standard", "")
         claim_type = data_request.get("claim_type", "")
         category = data_request.get("category", "")
@@ -276,7 +259,7 @@ class CSRDPackBridge:
         if self.config.enable_provenance:
             result.provenance_hash = _compute_hash(result)
 
-        elapsed = (_utcnow() - start).total_seconds() * 1000
+        elapsed = (utcnow() - start).total_seconds() * 1000
         logger.info(
             "CSRDPackBridge routed request in %.1fms (disclosures=%d, verified=%d)",
             elapsed,

@@ -31,6 +31,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "30.0.0"
 _PACK_ID = "PACK-030"
@@ -55,7 +57,6 @@ XBRL_TAGS: Dict[str, str] = {
     "attestation_level": "gl:SECAttestationLevel", "target_year": "gl:SECTargetYear",
 }
 
-def _utcnow(): return datetime.now(timezone.utc).replace(microsecond=0)
 def _new_uuid(): return str(uuid.uuid4())
 def _compute_hash(data):
     raw = json.dumps(data, sort_keys=True, default=str) if isinstance(data, dict) else str(data)
@@ -76,7 +77,6 @@ def _dec_comma(val, places=2):
         return fmt + ("." + parts[1] if len(parts) > 1 else "")
     except: return str(val)
 
-
 class SECClimateTemplate:
     """SEC 10-K climate disclosure template for PACK-030. Supports MD, HTML, JSON, PDF."""
 
@@ -85,7 +85,7 @@ class SECClimateTemplate:
         self.generated_at: Optional[datetime] = None
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [
             self._md_header(data), self._md_executive_summary(data),
             self._md_item1(data), self._md_item1a(data), self._md_item7(data),
@@ -98,7 +98,7 @@ class SECClimateTemplate:
         return content + f"\n\n<!-- Provenance: {_compute_hash(content)} -->"
 
     def render_html(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         parts = [self._html_header(data), self._html_executive_summary(data),
                  self._html_1502_emissions(data), self._html_1503_targets(data),
@@ -110,7 +110,7 @@ class SECClimateTemplate:
                 f'<body>\n<div class="report">\n{body}\n</div>\n<!-- Provenance: {_compute_hash(body)} -->\n</body>\n</html>')
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         s1 = float(data.get("scope1",0)); s2 = float(data.get("scope2",0))
         result = {
             "template": _TEMPLATE_ID, "version": _MODULE_VERSION, "pack_id": _PACK_ID,

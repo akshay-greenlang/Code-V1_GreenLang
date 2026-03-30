@@ -73,23 +73,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -106,7 +101,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -115,7 +109,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -123,26 +116,21 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     return float(
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ProgressStatus(str, Enum):
     """Progress tracking RAG status."""
@@ -151,20 +139,17 @@ class ProgressStatus(str, Enum):
     OFF_TRACK = "off_track"
     CRITICAL = "critical"
 
-
 class VerificationStatus(str, Enum):
     """Data verification status."""
     VERIFIED = "verified"
     SELF_REPORTED = "self_reported"
     PENDING = "pending"
 
-
 class TrendDirection(str, Enum):
     """Emission trend direction."""
     DECREASING = "decreasing"
     STABLE = "stable"
     INCREASING = "increasing"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -178,11 +163,9 @@ RAG_OFF_TRACK_THRESHOLD: Decimal = Decimal("20")
 VARIANCE_ON_TRACK: Decimal = Decimal("5")
 VARIANCE_AT_RISK: Decimal = Decimal("15")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class AnnualEmissionRecord(BaseModel):
     """Annual emission record for a single year.
@@ -214,7 +197,6 @@ class AnnualEmissionRecord(BaseModel):
             raise ValueError(f"Unknown verification status '{v}'.")
         return v
 
-
 class ActionPlanStatusInput(BaseModel):
     """Status of action plan implementation.
 
@@ -238,7 +220,6 @@ class ActionPlanStatusInput(BaseModel):
     abatement_planned_tco2e: Decimal = Field(default=Decimal("0"), ge=0)
     budget_spent_usd: Decimal = Field(default=Decimal("0"), ge=0)
     budget_total_usd: Decimal = Field(default=Decimal("0"), ge=0)
-
 
 class ProgressTrackingInput(BaseModel):
     """Complete input for progress tracking.
@@ -270,11 +251,9 @@ class ProgressTrackingInput(BaseModel):
     include_projections: bool = Field(default=True)
     include_corrective_actions: bool = Field(default=True)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class TrajectoryPoint(BaseModel):
     """A single point on the emission trajectory.
@@ -297,7 +276,6 @@ class TrajectoryPoint(BaseModel):
     cumulative_reduction_pct: Decimal = Field(default=Decimal("0"))
     status: str = Field(default=ProgressStatus.ON_TRACK.value)
     is_projected: bool = Field(default=False)
-
 
 class VarianceAnalysis(BaseModel):
     """Variance decomposition analysis.
@@ -323,7 +301,6 @@ class VarianceAnalysis(BaseModel):
     annual_rate_required_pct: Decimal = Field(default=Decimal("0"))
     rate_gap_pct: Decimal = Field(default=Decimal("0"))
 
-
 class CorrectiveAction(BaseModel):
     """Recommended corrective action.
 
@@ -340,7 +317,6 @@ class CorrectiveAction(BaseModel):
     timeline: str = Field(default="")
     category: str = Field(default="")
 
-
 class ActionPlanProgress(BaseModel):
     """Summary of action plan implementation progress.
 
@@ -356,7 +332,6 @@ class ActionPlanProgress(BaseModel):
     on_schedule_pct: Decimal = Field(default=Decimal("0"))
     abatement_realization_pct: Decimal = Field(default=Decimal("0"))
     budget_utilization_pct: Decimal = Field(default=Decimal("0"))
-
 
 class ProgressTrackingResult(BaseModel):
     """Complete progress tracking result.
@@ -389,7 +364,7 @@ class ProgressTrackingResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     progress_status: str = Field(default=ProgressStatus.CRITICAL.value)
     current_year: int = Field(default=0)
@@ -412,11 +387,9 @@ class ProgressTrackingResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ProgressTrackingEngine:
     """Race to Zero annual progress tracking engine.

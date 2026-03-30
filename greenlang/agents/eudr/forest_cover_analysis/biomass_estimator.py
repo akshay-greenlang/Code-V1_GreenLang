@@ -77,6 +77,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -88,12 +90,6 @@ _MODULE_VERSION = "1.0.0"
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance.
@@ -113,7 +109,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str = "bio") -> str:
     """Generate a unique identifier with a given prefix.
 
@@ -124,7 +119,6 @@ def _generate_id(prefix: str = "bio") -> str:
         ID in format ``{prefix}-{hex12}``.
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 # ---------------------------------------------------------------------------
 # Constants: IPCC Carbon Conversion
@@ -223,11 +217,9 @@ ESA_CCI_YEARS: List[int] = [2010, 2017, 2018, 2020]
 #: Default biome when none is specified.
 DEFAULT_BIOME: str = "tropical_rainforest"
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class SourceBiomassEstimate:
@@ -273,7 +265,6 @@ class SourceBiomassEstimate:
             "quality_flag": round(self.quality_flag, 3),
             "sar_saturated": self.sar_saturated,
         }
-
 
 @dataclass
 class BiomassEstimate:
@@ -337,7 +328,6 @@ class BiomassEstimate:
             "source_count": len(self.source_estimates),
         }
 
-
 @dataclass
 class BiomassChange:
     """Biomass change between two time periods.
@@ -380,7 +370,6 @@ class BiomassChange:
             "degradation_flag": self.degradation_flag,
         }
 
-
 @dataclass
 class BatchBiomassResult:
     """Result of batch biomass estimation across multiple plots.
@@ -416,11 +405,9 @@ class BatchBiomassResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # BiomassEstimator
 # ---------------------------------------------------------------------------
-
 
 class BiomassEstimator:
     """Multi-source above-ground biomass estimation engine.
@@ -1093,7 +1080,7 @@ class BiomassEstimator:
             biome_range=biome_range,
             within_biome_range=within_range,
             processing_time_ms=round(elapsed_ms, 2),
-            created_at=str(_utcnow()),
+            created_at=str(utcnow()),
         )
         result.provenance_hash = _compute_hash(result.to_dict())
 
@@ -1384,7 +1371,6 @@ class BiomassEstimator:
             raise ValueError(
                 f"Fusion weights must sum to 1.0, got {weight_sum:.4f}"
             )
-
 
 # ---------------------------------------------------------------------------
 # Module Exports

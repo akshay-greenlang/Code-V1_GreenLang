@@ -57,6 +57,7 @@ from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from typing import Any, Dict, List, Optional, Tuple
 
 from greenlang.agents.mrv.fuel_energy_activities.config import get_config
+from greenlang.schemas import utcnow
 from greenlang.agents.mrv.fuel_energy_activities.models import (
     # Enumerations
     AccountingMethod,
@@ -118,7 +119,6 @@ DEFAULT_COOLING_COP: Decimal = Decimal("3.5")
 #: Maximum records per batch to prevent memory exhaustion.
 MAX_BATCH_SIZE: int = 100_000
 
-
 # ---------------------------------------------------------------------------
 # eGRID Subregion Upstream Emission Factors (kgCO2e/kWh)
 # These represent the upstream (fuel extraction/processing/transport)
@@ -155,7 +155,6 @@ EGRID_UPSTREAM_FACTORS: Dict[str, Decimal] = {
     "SRVC": Decimal("0.03700"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Renewable Technology Upstream EFs (kgCO2e/kWh)
 # Near-zero lifecycle upstream from construction, maintenance, and
@@ -176,7 +175,6 @@ RENEWABLE_UPSTREAM_EFS: Dict[str, Decimal] = {
     "biomass": Decimal("0.01400"),
     "biogas": Decimal("0.01100"),
 }
-
 
 # ---------------------------------------------------------------------------
 # Default Grid Mix Profiles by Country (% share of generation by fuel type)
@@ -288,16 +286,9 @@ _GRID_FUEL_WTT: Dict[str, Decimal] = {
     "other": Decimal("0.02000"),
 }
 
-
 # ============================================================================
 # Helper Functions
 # ============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with zeroed microseconds."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _quantize(value: Decimal) -> Decimal:
     """Quantize a Decimal to the configured precision.
@@ -310,7 +301,6 @@ def _quantize(value: Decimal) -> Decimal:
     """
     return value.quantize(_QUANTIZE_EXP, rounding=ROUND_HALF_UP)
 
-
 def _sha256(data: str) -> str:
     """Compute SHA-256 hex digest of the given string.
 
@@ -321,7 +311,6 @@ def _sha256(data: str) -> str:
         64-character lowercase hex digest.
     """
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 def _safe_decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
@@ -342,7 +331,6 @@ def _safe_decimal(value: Any) -> Decimal:
     except (InvalidOperation, ValueError, TypeError) as exc:
         raise ValueError(f"Cannot convert {value!r} to Decimal") from exc
 
-
 def _dqi_tier(composite: Decimal) -> str:
     """Determine the qualitative DQI tier label from a composite score.
 
@@ -357,11 +345,9 @@ def _dqi_tier(composite: Decimal) -> str:
             return tier_name
     return "Very Low"
 
-
 # ============================================================================
 # UpstreamElectricityCalculatorEngine
 # ============================================================================
-
 
 class UpstreamElectricityCalculatorEngine:
     """Engine 3: Upstream Electricity Calculator for Activity 3b.
@@ -2315,14 +2301,12 @@ class UpstreamElectricityCalculatorEngine:
         with self._lock:
             self._stats[key] = self._stats.get(key, 0) + amount
 
-
 # ============================================================================
 # Module-Level Singleton
 # ============================================================================
 
 _engine_instance: Optional[UpstreamElectricityCalculatorEngine] = None
 _engine_lock = threading.Lock()
-
 
 def get_upstream_electricity_calculator() -> UpstreamElectricityCalculatorEngine:
     """Return the singleton UpstreamElectricityCalculatorEngine instance.
@@ -2343,7 +2327,6 @@ def get_upstream_electricity_calculator() -> UpstreamElectricityCalculatorEngine
                 _engine_instance = UpstreamElectricityCalculatorEngine()
     return _engine_instance
 
-
 def reset_upstream_electricity_calculator() -> None:
     """Reset the singleton engine instance.
 
@@ -2355,7 +2338,6 @@ def reset_upstream_electricity_calculator() -> None:
             _engine_instance.reset()
         _engine_instance = None
     logger.debug("UpstreamElectricityCalculatorEngine singleton reset")
-
 
 # ============================================================================
 # Public API Surface

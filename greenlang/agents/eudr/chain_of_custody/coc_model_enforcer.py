@@ -74,6 +74,8 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -86,22 +88,14 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a unique identifier using UUID4."""
     return str(uuid.uuid4())
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -156,11 +150,9 @@ REQUIRED_CERTIFICATIONS: Dict[str, List[str]] = {
 #: Maximum number of model assignments per facility.
 MAX_ASSIGNMENTS_PER_FACILITY: int = 50
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class CoCModelType(str, Enum):
     """Chain-of-custody model types per ISO 22095."""
@@ -169,7 +161,6 @@ class CoCModelType(str, Enum):
     SEGREGATED = "sg"
     MASS_BALANCE = "mb"
     CONTROLLED_BLENDING = "cb"
-
 
 class OperationKind(str, Enum):
     """Kinds of batch operations subject to model enforcement."""
@@ -183,7 +174,6 @@ class OperationKind(str, Enum):
     TRANSFER = "transfer"
     EXPORT = "export"
 
-
 class ComplianceLevel(str, Enum):
     """Compliance assessment levels."""
 
@@ -192,7 +182,6 @@ class ComplianceLevel(str, Enum):
     PARTIAL = "partial"
     UNKNOWN = "unknown"
 
-
 class TransitionDirection(str, Enum):
     """Direction of model transition."""
 
@@ -200,11 +189,9 @@ class TransitionDirection(str, Enum):
     DOWNGRADE = "downgrade"
     LATERAL = "lateral"
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class CoCModelAssignment:
@@ -265,7 +252,6 @@ class CoCModelAssignment:
             "created_at": str(self.created_at) if self.created_at else "",
             "updated_at": str(self.updated_at) if self.updated_at else "",
         }
-
 
 @dataclass
 class ModelValidationResult:
@@ -333,7 +319,6 @@ class ModelValidationResult:
             "processing_time_ms": self.processing_time_ms,
         }
 
-
 @dataclass
 class ComplianceScore:
     """Compliance score for a facility.
@@ -394,7 +379,6 @@ class ComplianceScore:
             "processing_time_ms": self.processing_time_ms,
         }
 
-
 @dataclass
 class ModelTransition:
     """Record of a model transition (upgrade/downgrade).
@@ -442,7 +426,6 @@ class ModelTransition:
             "transitioned_at": str(self.transitioned_at) if self.transitioned_at else "",
             "transitioned_by": self.transitioned_by,
         }
-
 
 @dataclass
 class CrossModelHandoff:
@@ -501,11 +484,9 @@ class CrossModelHandoff:
             "validated_at": str(self.validated_at) if self.validated_at else "",
         }
 
-
 # ---------------------------------------------------------------------------
 # CoCModelEnforcer
 # ---------------------------------------------------------------------------
-
 
 class CoCModelEnforcer:
     """Production-grade CoC model enforcement engine for EUDR compliance.
@@ -637,7 +618,7 @@ class CoCModelEnforcer:
                 certification_scheme.lower(), DEFAULT_CB_MIN_COMPLIANT_PCT
             )
 
-        now = _utcnow()
+        now = utcnow()
         key = (facility_id, commodity)
 
         # Deactivate existing assignment if present
@@ -802,7 +783,7 @@ class CoCModelEnforcer:
         """
         result = ModelValidationResult(
             validation_id=_generate_id(),
-            validated_at=_utcnow(),
+            validated_at=utcnow(),
         )
 
         origins = operation.get("origins", [])
@@ -876,7 +857,7 @@ class CoCModelEnforcer:
         """
         result = ModelValidationResult(
             validation_id=_generate_id(),
-            validated_at=_utcnow(),
+            validated_at=utcnow(),
         )
 
         origins = operation.get("origins", [])
@@ -941,7 +922,7 @@ class CoCModelEnforcer:
         """
         result = ModelValidationResult(
             validation_id=_generate_id(),
-            validated_at=_utcnow(),
+            validated_at=utcnow(),
         )
 
         facility_id = str(operation.get("facility_id", "")).strip()
@@ -1051,7 +1032,7 @@ class CoCModelEnforcer:
         """
         result = ModelValidationResult(
             validation_id=_generate_id(),
-            validated_at=_utcnow(),
+            validated_at=utcnow(),
         )
 
         facility_id = str(operation.get("facility_id", "")).strip()
@@ -1186,7 +1167,7 @@ class CoCModelEnforcer:
             certifications_valid=certs_valid,
             certifications_expired=certs_expired,
             risk_level=risk_level,
-            calculated_at=_utcnow(),
+            calculated_at=utcnow(),
             processing_time_ms=(time.monotonic() - start_time) * 1000.0,
         )
         score.provenance_hash = _compute_hash(score.to_dict())
@@ -1250,7 +1231,7 @@ class CoCModelEnforcer:
             batch_id=str(batch.get("batch_id", "")).strip(),
             commodity=str(batch.get("commodity", "")).strip().lower(),
             quantity_kg=float(batch.get("quantity_kg", 0.0)),
-            validated_at=_utcnow(),
+            validated_at=utcnow(),
         )
 
         if source_idx == dest_idx:
@@ -1412,7 +1393,7 @@ class CoCModelEnforcer:
             reason=reason.strip(),
             previous_assignment_id=prev_id,
             new_assignment_id=new_assignment.assignment_id,
-            transitioned_at=_utcnow(),
+            transitioned_at=utcnow(),
             transitioned_by=transitioned_by.strip(),
         )
         transition.provenance_hash = _compute_hash(transition.to_dict())
@@ -1577,7 +1558,7 @@ class CoCModelEnforcer:
             expiry = datetime.strptime(
                 assignment.certification_expiry, "%Y-%m-%d"
             ).replace(tzinfo=timezone.utc)
-            return _utcnow() < expiry
+            return utcnow() < expiry
         except ValueError:
             # Unparseable date treated as valid (warn logged)
             logger.warning(

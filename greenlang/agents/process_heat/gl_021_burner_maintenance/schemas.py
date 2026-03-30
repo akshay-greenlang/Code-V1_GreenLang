@@ -44,6 +44,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import uuid
 
 from pydantic import BaseModel, Field, validator, root_validator
+from greenlang.schemas.enums import AlertSeverity
 
 
 # =============================================================================
@@ -221,15 +222,6 @@ class HealthTrend(str, Enum):
     STABLE = "stable"
     DEGRADING = "degrading"
     RAPID_DEGRADATION = "rapid_degradation"
-
-
-class AlertSeverity(str, Enum):
-    """Alert severity levels."""
-    INFO = "info"
-    ADVISORY = "advisory"
-    WARNING = "warning"
-    ALARM = "alarm"
-    CRITICAL = "critical"
 
 
 # =============================================================================

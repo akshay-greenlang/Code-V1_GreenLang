@@ -35,28 +35,22 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "27.0.0"
 _PACK_ID = "PACK-027"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -65,14 +59,12 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class SBTiPathway(str, Enum):
     ACA_15C = "aca_15c"
@@ -81,20 +73,17 @@ class SBTiPathway(str, Enum):
     FLAG = "flag"
     MIXED = "mixed"
 
-
 class CriterionStatus(str, Enum):
     PASS = "pass"
     FAIL = "fail"
     WARNING = "warning"
     NOT_APPLICABLE = "not_applicable"
 
-
 class TargetType(str, Enum):
     NEAR_TERM = "near_term"
     LONG_TERM = "long_term"
     NET_ZERO = "net_zero"
     FLAG = "flag"
-
 
 class SDAIndustrySector(str, Enum):
     POWER_GENERATION = "power_generation"
@@ -109,7 +98,6 @@ class SDAIndustrySector(str, Enum):
     COMMERCIAL_BUILDINGS = "commercial_buildings"
     RESIDENTIAL_BUILDINGS = "residential_buildings"
     FOOD_BEVERAGE = "food_beverage"
-
 
 # =============================================================================
 # SBTi CONSTANTS
@@ -137,11 +125,9 @@ SDA_SECTOR_BENCHMARKS: Dict[str, Dict[str, float]] = {
     "residential_buildings": {"metric": 12.0, "unit": "kgCO2/sqm", "year_2030": 12.0, "year_2050": 1.0},
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase_name: str = Field(..., description="Phase identifier")
@@ -154,7 +140,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
     dag_node_id: str = Field(default="")
-
 
 class BaselineSnapshot(BaseModel):
     """Snapshot of baseline data for SBTi validation."""
@@ -171,7 +156,6 @@ class BaselineSnapshot(BaseModel):
     sector: str = Field(default="")
     sda_sectors: List[str] = Field(default_factory=list)
 
-
 class CriterionValidation(BaseModel):
     """Single criterion pass/fail/warning assessment."""
     criterion_id: str = Field(..., description="C1-C28 or NZ-C1 to NZ-C14")
@@ -180,7 +164,6 @@ class CriterionValidation(BaseModel):
     status: str = Field(default="pass", description="pass|fail|warning|not_applicable")
     evidence: str = Field(default="", description="Evidence or value supporting assessment")
     remediation: str = Field(default="", description="Action to fix if fail/warning")
-
 
 class TargetDefinition(BaseModel):
     """A single SBTi target definition."""
@@ -199,7 +182,6 @@ class TargetDefinition(BaseModel):
     sector: str = Field(default="")
     annual_milestones: List[Dict[str, Any]] = Field(default_factory=list)
 
-
 class SubmissionDocument(BaseModel):
     """A document in the SBTi submission package."""
     document_name: str = Field(default="")
@@ -208,7 +190,6 @@ class SubmissionDocument(BaseModel):
     content_summary: str = Field(default="")
     page_count: int = Field(default=0, ge=0)
     sha256_hash: str = Field(default="")
-
 
 class SBTiSubmissionConfig(BaseModel):
     preferred_pathway: str = Field(default="aca_15c")
@@ -221,14 +202,12 @@ class SBTiSubmissionConfig(BaseModel):
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
 
-
 class SBTiSubmissionInput(BaseModel):
     baseline: BaselineSnapshot = Field(..., description="Baseline data snapshot")
     config: SBTiSubmissionConfig = Field(default_factory=SBTiSubmissionConfig)
     prior_targets: List[TargetDefinition] = Field(
         default_factory=list, description="Prior targets if revalidating",
     )
-
 
 class SBTiSubmissionResult(BaseModel):
     workflow_id: str = Field(...)
@@ -247,7 +226,6 @@ class SBTiSubmissionResult(BaseModel):
     estimated_validation_weeks: int = Field(default=12)
     next_steps: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 # =============================================================================
 # SBTI CRITERIA DATABASE (28 near-term + 14 net-zero = 42 total)
@@ -301,11 +279,9 @@ NET_ZERO_CRITERIA = [
     {"id": "NZ-C14", "group": "governance", "title": "Five-year review and revalidation planned"},
 ]
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class SBTiSubmissionWorkflow:
     """
@@ -353,7 +329,7 @@ class SBTiSubmissionWorkflow:
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     async def execute(self, input_data: SBTiSubmissionInput) -> SBTiSubmissionResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         self.config = input_data.config
         self._phase_results = []
         overall_status = WorkflowStatus.RUNNING
@@ -387,7 +363,7 @@ class SBTiSubmissionWorkflow:
                 status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         pass_count = sum(1 for v in self._validations if v.status == "pass")
         fail_count = sum(1 for v in self._validations if v.status == "fail")
         warn_count = sum(1 for v in self._validations if v.status == "warning")
@@ -413,7 +389,7 @@ class SBTiSubmissionWorkflow:
         return result
 
     async def _phase_baseline_validation(self, input_data: SBTiSubmissionInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         errors: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -439,7 +415,7 @@ class SBTiSubmissionWorkflow:
                 f"Scope 3 coverage ({bl.scope3_coverage_pct}%) below near-term minimum ({SBTI_SCOPE3_NT_COVERAGE}%)"
             )
 
-        current_year = _utcnow().year
+        current_year = utcnow().year
         if current_year - bl.base_year > SBTI_MAX_BASE_YEAR_AGE:
             warnings.append(
                 f"Base year ({bl.base_year}) is {current_year - bl.base_year} years old; "
@@ -461,7 +437,7 @@ class SBTiSubmissionWorkflow:
         outputs["flag_target_required"] = flag_required
         outputs["base_year_valid"] = current_year - bl.base_year <= SBTI_MAX_BASE_YEAR_AGE
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         status = PhaseStatus.COMPLETED if not errors else PhaseStatus.FAILED
         return PhaseResult(
             phase_name="baseline_validation", phase_number=1,
@@ -473,7 +449,7 @@ class SBTiSubmissionWorkflow:
         )
 
     async def _phase_pathway_selection(self, input_data: SBTiSubmissionInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
         bl = input_data.baseline
@@ -528,7 +504,7 @@ class SBTiSubmissionWorkflow:
         outputs["sda_sectors"] = bl.sda_sectors
         outputs["flag_required"] = bl.flag_emissions_pct >= 20.0
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="pathway_selection", phase_number=2,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -538,7 +514,7 @@ class SBTiSubmissionWorkflow:
         )
 
     async def _phase_target_definition(self, input_data: SBTiSubmissionInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         bl = input_data.baseline
         cfg = self.config
@@ -645,7 +621,7 @@ class SBTiSubmissionWorkflow:
         outputs["near_term_s12_reduction_pct"] = nt_s12.reduction_pct
         outputs["near_term_s3_reduction_pct"] = nt_s3.reduction_pct
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="target_definition", phase_number=3,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -655,14 +631,14 @@ class SBTiSubmissionWorkflow:
         )
 
     async def _phase_criteria_validation(self, input_data: SBTiSubmissionInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         bl = input_data.baseline
         cfg = self.config
 
         self._validations = []
         total = bl.total_scope1_tco2e + bl.total_scope2_tco2e + bl.total_scope3_tco2e
-        current_year = _utcnow().year
+        current_year = utcnow().year
 
         # Validate 28 near-term criteria
         for crit in NEAR_TERM_CRITERIA:
@@ -687,7 +663,7 @@ class SBTiSubmissionWorkflow:
             pass_ct / max(pass_ct + fail_ct + warn_ct, 1) * 100, 1,
         )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="criteria_validation", phase_number=4,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -697,7 +673,7 @@ class SBTiSubmissionWorkflow:
         )
 
     async def _phase_submission_package(self, input_data: SBTiSubmissionInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         self._documents = [
@@ -753,7 +729,7 @@ class SBTiSubmissionWorkflow:
 
         for doc in self._documents:
             doc.sha256_hash = _compute_hash(
-                f"{doc.document_name}_{doc.document_type}_{_utcnow().isoformat()}"
+                f"{doc.document_name}_{doc.document_type}_{utcnow().isoformat()}"
             )
 
         outputs["documents_generated"] = len(self._documents)
@@ -761,7 +737,7 @@ class SBTiSubmissionWorkflow:
         outputs["total_pages"] = sum(d.page_count for d in self._documents)
         outputs["formats"] = list({d.format for d in self._documents})
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="submission_package", phase_number=5,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),

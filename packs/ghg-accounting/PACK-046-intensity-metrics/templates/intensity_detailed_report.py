@@ -42,29 +42,23 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 def _compute_hash(content: str) -> str:
     """Compute SHA-256 hash of string content."""
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -77,7 +71,6 @@ class OutputFormat(str, Enum):
     PDF = "pdf"
     JSON = "json"
 
-
 class ScopeType(str, Enum):
     """GHG emission scope types."""
     SCOPE_1 = "scope_1"
@@ -85,7 +78,6 @@ class ScopeType(str, Enum):
     SCOPE_2_MARKET = "scope_2_market"
     SCOPE_3 = "scope_3"
     TOTAL = "total"
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Input Models
@@ -101,7 +93,6 @@ class DenominatorDetail(BaseModel):
     data_quality: str = Field("medium", description="Data quality rating")
     notes: str = Field("", description="Additional notes")
 
-
 class IntensityByScope(BaseModel):
     """Intensity result for a single scope."""
     scope: str = Field(..., description="Scope label (e.g., Scope 1)")
@@ -110,7 +101,6 @@ class IntensityByScope(BaseModel):
     denominator_unit: str = Field("", description="Denominator unit")
     intensity_value: float = Field(..., description="Calculated intensity")
     intensity_unit: str = Field("", description="Intensity unit string")
-
 
 class IntensityByDenominator(BaseModel):
     """Intensity result for a single denominator across scopes."""
@@ -123,7 +113,6 @@ class IntensityByDenominator(BaseModel):
     total_s1_s2: Optional[float] = Field(None, description="Scope 1+2 combined intensity")
     total_all: Optional[float] = Field(None, description="All scopes combined intensity")
 
-
 class TimeSeriesRow(BaseModel):
     """Single year in multi-year time series."""
     year: int = Field(..., description="Reporting year")
@@ -134,7 +123,6 @@ class TimeSeriesRow(BaseModel):
     denominator_value: Optional[float] = Field(None, description="Denominator value")
     denominator_unit: str = Field("", description="Denominator unit")
 
-
 class EntityBreakdown(BaseModel):
     """Business unit / entity level breakdown."""
     entity_name: str = Field(..., description="Entity or business unit name")
@@ -144,7 +132,6 @@ class EntityBreakdown(BaseModel):
     intensity_value: float = Field(0.0, description="Entity intensity")
     share_of_total_pct: float = Field(0.0, description="Share of total emissions %")
 
-
 class DataSourceEntry(BaseModel):
     """Data source reference."""
     source_name: str = Field(..., description="Source system or document name")
@@ -152,7 +139,6 @@ class DataSourceEntry(BaseModel):
     coverage: str = Field("", description="Coverage description")
     last_updated: str = Field("", description="Last update date")
     quality_score: Optional[float] = Field(None, description="Data quality score 0-100")
-
 
 class DetailedReportInput(BaseModel):
     """Complete input model for IntensityDetailedReport."""
@@ -185,7 +171,6 @@ class DetailedReportInput(BaseModel):
     limitations: List[str] = Field(
         default_factory=list, description="Report limitations"
     )
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -234,7 +219,7 @@ class IntensityDetailedReport:
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render detailed report as Markdown."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_md(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -242,7 +227,7 @@ class IntensityDetailedReport:
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render detailed report as HTML."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_html(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -250,7 +235,7 @@ class IntensityDetailedReport:
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render detailed report as JSON-serializable dict."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_json(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -283,7 +268,7 @@ class IntensityDetailedReport:
         return (
             f"# Intensity Metrics Detailed Report - {company}\n\n"
             f"**Reporting Period:** {period} | "
-            f"**Report Date:** {_utcnow().strftime('%Y-%m-%d')}\n\n"
+            f"**Report Date:** {utcnow().strftime('%Y-%m-%d')}\n\n"
             "---"
         )
 

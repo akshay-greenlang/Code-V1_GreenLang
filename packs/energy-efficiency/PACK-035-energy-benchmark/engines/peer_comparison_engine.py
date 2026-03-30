@@ -64,25 +64,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -100,7 +94,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -109,7 +102,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -121,37 +113,30 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* and return a float."""
     quantizer = Decimal(10) ** -places
     return float(value.quantize(quantizer, rounding=ROUND_HALF_UP))
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: float) -> float:
     """Round to 4 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class PeerGroupType(str, Enum):
     """Peer group segmentation dimensions.
@@ -168,7 +153,6 @@ class PeerGroupType(str, Enum):
     VINTAGE = "vintage"
     OCCUPANCY = "occupancy"
 
-
 class QuartileBand(str, Enum):
     """Performance quartile classification.
 
@@ -183,7 +167,6 @@ class QuartileBand(str, Enum):
     Q3_BELOW_AVERAGE = "q3_below_average"
     Q4_WORST = "q4_worst"
 
-
 class ComparisonMethod(str, Enum):
     """Statistical comparison methods for peer benchmarking.
 
@@ -196,7 +179,6 @@ class ComparisonMethod(str, Enum):
     ENERGY_STAR_SCORE = "energy_star_score"
     QUARTILE = "quartile"
     Z_SCORE = "z_score"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- ENERGY STAR Score Regression Parameters
@@ -262,7 +244,6 @@ ENERGY_STAR_DISTRIBUTION_PARAMS: Dict[str, Dict[str, float]] = {
 }
 """Log-normal distribution parameters for ENERGY STAR score calculation."""
 
-
 # Floor area ranges for peer grouping (in m2).
 # Source: CBECS 2018 building size categories.
 FLOOR_AREA_RANGES: Dict[str, Tuple[float, float]] = {
@@ -273,7 +254,6 @@ FLOOR_AREA_RANGES: Dict[str, Tuple[float, float]] = {
     "very_large": (50_000, float("inf")),
 }
 """Floor area range definitions for peer grouping."""
-
 
 # Vintage decades for peer grouping.
 VINTAGE_DECADES: Dict[str, Tuple[int, int]] = {
@@ -287,11 +267,9 @@ VINTAGE_DECADES: Dict[str, Tuple[int, int]] = {
 }
 """Construction vintage decade ranges for peer grouping."""
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class PeerGroup(BaseModel):
     """Definition of a peer group for comparison.
@@ -328,7 +306,6 @@ class PeerGroup(BaseModel):
                 raise ValueError("EUI values must be non-negative")
         return v
 
-
 class PeerDistribution(BaseModel):
     """Statistical distribution of a peer group's EUI values.
 
@@ -361,7 +338,6 @@ class PeerDistribution(BaseModel):
     iqr: float = Field(default=0.0, description="Interquartile range")
     skewness: float = Field(default=0.0, description="Distribution skewness")
 
-
 class PercentileRanking(BaseModel):
     """Percentile ranking of a facility within its peer group.
 
@@ -380,7 +356,6 @@ class PercentileRanking(BaseModel):
     peers_above: int = Field(default=0, description="Peers with higher EUI")
     peers_below: int = Field(default=0, description="Peers with lower EUI")
 
-
 class ComparisonResult(BaseModel):
     """Complete peer comparison result with full provenance.
 
@@ -391,7 +366,7 @@ class ComparisonResult(BaseModel):
     result_id: str = Field(default_factory=_new_uuid, description="Result ID")
     engine_version: str = Field(default=_MODULE_VERSION, description="Engine version")
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
 
@@ -438,11 +413,9 @@ class ComparisonResult(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 # ---------------------------------------------------------------------------
 # Calculation Engine
 # ---------------------------------------------------------------------------
-
 
 class PeerComparisonEngine:
     """Peer comparison engine for energy benchmarking.

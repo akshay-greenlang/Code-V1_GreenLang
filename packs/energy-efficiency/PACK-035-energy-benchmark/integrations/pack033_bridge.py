@@ -29,20 +29,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -55,11 +50,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class Pack033BridgeConfig(BaseModel):
     """Configuration for importing PACK-033 quick win data."""
@@ -70,7 +63,6 @@ class Pack033BridgeConfig(BaseModel):
     include_savings_estimates: bool = Field(default=True)
     include_implementation_plan: bool = Field(default=False)
 
-
 class QuickWinRequest(BaseModel):
     """Request for quick win data from PACK-033."""
 
@@ -79,7 +71,6 @@ class QuickWinRequest(BaseModel):
     building_type: str = Field(default="")
     max_payback_months: int = Field(default=24, ge=1, le=120)
     categories: List[str] = Field(default_factory=list)
-
 
 class QuickWinResult(BaseModel):
     """Result of importing quick win data from PACK-033."""
@@ -101,7 +92,6 @@ class QuickWinResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class GapMeasureLink(BaseModel):
     """Link between a benchmark gap and a quick win measure."""
 
@@ -114,11 +104,9 @@ class GapMeasureLink(BaseModel):
     savings_kwh: float = Field(default=0.0)
     gap_closure_pct: float = Field(default=0.0)
 
-
 # ---------------------------------------------------------------------------
 # Pack033Bridge
 # ---------------------------------------------------------------------------
-
 
 class Pack033Bridge:
     """Bridge to PACK-033 Quick Wins Identifier data.

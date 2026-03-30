@@ -31,6 +31,7 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 import pytest
 import yaml
 
+from greenlang.schemas import utcnow
 
 # ---------------------------------------------------------------------------
 # Paths & sys.path setup
@@ -60,7 +61,6 @@ TEMPLATES_DIR = PACK_ROOT / "templates"
 ENGINES_DIR = PACK_ROOT / "engines"
 INTEGRATIONS_DIR = PACK_ROOT / "integrations"
 
-
 # ---------------------------------------------------------------------------
 # Utility helpers
 # ---------------------------------------------------------------------------
@@ -75,16 +75,9 @@ def _compute_hash(data: Any) -> str:
         raw = json.dumps(str(data), sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4."""
     return str(uuid.uuid4())
-
 
 # ---------------------------------------------------------------------------
 # Pack YAML fixtures
@@ -95,7 +88,6 @@ def pack_yaml_path() -> Path:
     """Return the absolute path to pack.yaml."""
     return PACK_YAML_PATH
 
-
 @pytest.fixture(scope="session")
 def pack_yaml_raw(pack_yaml_path) -> str:
     """Return the raw text content of pack.yaml."""
@@ -103,14 +95,12 @@ def pack_yaml_raw(pack_yaml_path) -> str:
         return pack_yaml_path.read_text(encoding="utf-8")
     return ""
 
-
 @pytest.fixture(scope="session")
 def pack_yaml(pack_yaml_raw) -> Dict[str, Any]:
     """Return the parsed pack.yaml as a dictionary."""
     if pack_yaml_raw:
         return yaml.safe_load(pack_yaml_raw)
     return {}
-
 
 # ---------------------------------------------------------------------------
 # Preset / Sector / Demo loading fixtures
@@ -125,7 +115,6 @@ def preset_files() -> Dict[str, Path]:
             result[f.stem] = f
     return result
 
-
 @pytest.fixture(scope="session")
 def sector_files() -> Dict[str, Path]:
     """Return mapping of sector ID to file path."""
@@ -135,12 +124,10 @@ def sector_files() -> Dict[str, Path]:
             result[f.stem] = f
     return result
 
-
 @pytest.fixture(scope="session")
 def demo_config_path() -> Path:
     """Return path to demo configuration."""
     return DEMO_DIR / "demo_config.yaml"
-
 
 @pytest.fixture(scope="session")
 def demo_config(demo_config_path) -> Dict[str, Any]:
@@ -149,18 +136,15 @@ def demo_config(demo_config_path) -> Dict[str, Any]:
         return yaml.safe_load(demo_config_path.read_text(encoding="utf-8"))
     return {}
 
-
 @pytest.fixture(scope="session")
 def demo_imports_csv_path() -> Path:
     """Return path to demo imports CSV."""
     return DEMO_DIR / "demo_imports.csv"
 
-
 @pytest.fixture(scope="session")
 def demo_supplier_json_path() -> Path:
     """Return path to demo supplier JSON."""
     return DEMO_DIR / "demo_suppliers.json"
-
 
 # ---------------------------------------------------------------------------
 # CBAM PackConfig fixture (dict-based, no external deps)
@@ -275,7 +259,6 @@ def sample_cbam_config() -> Dict[str, Any]:
         },
     }
 
-
 # ---------------------------------------------------------------------------
 # Importer Config fixture
 # ---------------------------------------------------------------------------
@@ -297,7 +280,6 @@ def sample_importer_config() -> Dict[str, Any]:
             "country": "DE",
         },
     }
-
 
 # ---------------------------------------------------------------------------
 # Emission Input/Result fixtures
@@ -440,7 +422,6 @@ def sample_emission_inputs() -> List[Dict[str, Any]]:
     ]
     return inputs
 
-
 @pytest.fixture
 def sample_emission_results(sample_emission_inputs) -> List[Dict[str, Any]]:
     """Pre-calculated EmissionResult fixtures matching emission inputs."""
@@ -458,7 +439,7 @@ def sample_emission_results(sample_emission_inputs) -> List[Dict[str, Any]]:
             "specific_emission_tco2e_per_tonne": inp["specific_emission_tco2e_per_tonne"],
             "total_emissions_tco2e": total_emissions,
             "methodology": inp["emission_methodology"],
-            "calculation_date": _utcnow().strftime("%Y-%m-%d"),
+            "calculation_date": utcnow().strftime("%Y-%m-%d"),
             "provenance_hash": _compute_hash({
                 "input_id": inp["input_id"],
                 "weight": inp["weight_tonnes"],
@@ -466,7 +447,6 @@ def sample_emission_results(sample_emission_inputs) -> List[Dict[str, Any]]:
             }),
         })
     return results
-
 
 # ---------------------------------------------------------------------------
 # Quarterly Report fixture
@@ -513,7 +493,6 @@ def sample_quarterly_report(
         }),
     }
 
-
 # ---------------------------------------------------------------------------
 # Certificate Obligation fixture
 # ---------------------------------------------------------------------------
@@ -554,7 +533,6 @@ def sample_certificate_obligation(
             "net": round(net_obligation, 6),
         }),
     }
-
 
 # ---------------------------------------------------------------------------
 # Supplier fixtures
@@ -639,7 +617,6 @@ def sample_suppliers() -> List[Dict[str, Any]]:
             "last_submission_date": "2026-02-28",
         },
     ]
-
 
 # ---------------------------------------------------------------------------
 # Emission Submission fixtures
@@ -731,7 +708,6 @@ def sample_emission_submissions() -> List[Dict[str, Any]]:
         },
     ]
 
-
 # ---------------------------------------------------------------------------
 # CN codes fixture
 # ---------------------------------------------------------------------------
@@ -805,7 +781,6 @@ def sample_cn_codes() -> Dict[str, List[Dict[str, str]]]:
         ],
     }
 
-
 # ---------------------------------------------------------------------------
 # ETS price fixtures
 # ---------------------------------------------------------------------------
@@ -828,7 +803,6 @@ def sample_ets_prices() -> List[Dict[str, Any]]:
             "volume_traded": 50000 + i * 1000,
         })
     return prices
-
 
 # ---------------------------------------------------------------------------
 # Compliance rules fixture
@@ -859,7 +833,6 @@ def sample_compliance_rules() -> List[Dict[str, Any]]:
             idx += 1
     return rules
 
-
 # ---------------------------------------------------------------------------
 # Verifier fixture
 # ---------------------------------------------------------------------------
@@ -879,7 +852,6 @@ def sample_verifier() -> Dict[str, Any]:
         "scopes": ["cement", "steel", "aluminium", "fertilizers"],
         "status": "active",
     }
-
 
 # ---------------------------------------------------------------------------
 # Import CSV data fixture
@@ -912,7 +884,6 @@ def sample_import_csv_data() -> str:
             f"CD-2026-{i:04d}"
         )
     return header + "\n".join(rows)
-
 
 # ---------------------------------------------------------------------------
 # Stub classes for external dependencies
@@ -968,9 +939,8 @@ class StubCBAMApp:
         return {
             "status": "healthy" if self._healthy else "unhealthy",
             "engines_loaded": 7,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
-
 
 class StubCertificateEngine:
     """Stub for CBAM Certificate Engine."""
@@ -1035,7 +1005,6 @@ class StubCertificateEngine:
             "compliant": compliant,
             "shortfall": max(0, required - certificates_held),
         }
-
 
 class StubQuarterlyEngine:
     """Stub for Quarterly Reporting Engine."""
@@ -1125,9 +1094,8 @@ class StubQuarterlyEngine:
             "amendment_version": version + 1,
             "reason": reason,
             "status": "amended",
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
-
 
 class StubSupplierPortal:
     """Stub for Supplier Management Portal."""
@@ -1143,7 +1111,7 @@ class StubSupplierPortal:
             "company_name": data.get("company_name", "Unknown"),
             "country": data.get("country", "XX"),
             "status": "active",
-            "registered_at": _utcnow().isoformat(),
+            "registered_at": utcnow().isoformat(),
             "quality_score": 50.0,
         }
         self.suppliers[supplier_id] = supplier
@@ -1170,7 +1138,7 @@ class StubSupplierPortal:
             "submission_id": sub_id,
             "supplier_id": supplier_id,
             "status": "submitted",
-            "submitted_at": _utcnow().isoformat(),
+            "submitted_at": utcnow().isoformat(),
             **data,
         }
         self.submissions.append(submission)
@@ -1183,7 +1151,7 @@ class StubSupplierPortal:
             "submission_id": submission_id,
             "decision": decision,
             "notes": notes,
-            "reviewed_at": _utcnow().isoformat(),
+            "reviewed_at": utcnow().isoformat(),
         }
 
     def get_quality_score(self, supplier_id: str) -> Dict[str, Any]:
@@ -1196,7 +1164,6 @@ class StubSupplierPortal:
                       else "acceptable" if supplier.get("quality_score", 0) >= 50
                       else "poor",
         }
-
 
 class StubETSFeed:
     """Stub for EU ETS price feed."""
@@ -1215,7 +1182,7 @@ class StubETSFeed:
             "price_eur": self._current_price,
             "currency": "EUR",
             "source": "EU_ETS_AUCTION",
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     def price_history(
@@ -1254,7 +1221,6 @@ class StubETSFeed:
             ("USD", "EUR"): 0.926,
         }
         return rates.get((from_currency, to_currency), 1.0)
-
 
 class StubCustoms:
     """Stub for customs/CN code lookup service."""
@@ -1303,7 +1269,6 @@ class StubCustoms:
     def all_cbam_codes(self) -> List[str]:
         return sorted(self.CN_CODES.keys())
 
-
 # ---------------------------------------------------------------------------
 # Template render helper
 # ---------------------------------------------------------------------------
@@ -1334,7 +1299,7 @@ def render_template_stub(
             "title": title,
             "data": data,
             "provenance_hash": provenance_hash,
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
         }, indent=2, default=str)
     else:
         content = f"{title}: {json.dumps(data, default=str)}"
@@ -1344,15 +1309,13 @@ def render_template_stub(
         "format": output_format,
         "content": content,
         "provenance_hash": provenance_hash,
-        "generated_at": _utcnow().isoformat(),
+        "generated_at": utcnow().isoformat(),
     }
-
 
 @pytest.fixture
 def template_renderer():
     """Return the template render stub function."""
     return render_template_stub
-
 
 # ---------------------------------------------------------------------------
 # Mock fixtures for stub classes
@@ -1363,36 +1326,30 @@ def mock_cbam_app() -> StubCBAMApp:
     """Return a StubCBAMApp instance."""
     return StubCBAMApp()
 
-
 @pytest.fixture
 def mock_certificate_engine() -> StubCertificateEngine:
     """Return a StubCertificateEngine instance."""
     return StubCertificateEngine()
-
 
 @pytest.fixture
 def mock_quarterly_engine() -> StubQuarterlyEngine:
     """Return a StubQuarterlyEngine instance."""
     return StubQuarterlyEngine()
 
-
 @pytest.fixture
 def mock_supplier_portal() -> StubSupplierPortal:
     """Return a StubSupplierPortal instance."""
     return StubSupplierPortal()
-
 
 @pytest.fixture
 def mock_ets_feed() -> StubETSFeed:
     """Return a StubETSFeed instance."""
     return StubETSFeed()
 
-
 @pytest.fixture
 def mock_customs() -> StubCustoms:
     """Return a StubCustoms instance."""
     return StubCustoms()
-
 
 # ---------------------------------------------------------------------------
 # CBAM ENGINE IDS
@@ -1408,7 +1365,6 @@ CBAM_ENGINE_IDS = [
     "policy_compliance",
 ]
 
-
 # ---------------------------------------------------------------------------
 # CBAM WORKFLOW IDS
 # ---------------------------------------------------------------------------
@@ -1422,7 +1378,6 @@ CBAM_WORKFLOW_IDS = [
     "deminimis_assessment",
     "data_collection",
 ]
-
 
 # ---------------------------------------------------------------------------
 # CBAM TEMPLATE IDS
@@ -1439,18 +1394,15 @@ CBAM_TEMPLATE_IDS = [
     "emission_calculation_detail",
 ]
 
-
 @pytest.fixture
 def cbam_engine_ids() -> List[str]:
     """Return the 7 CBAM engine IDs."""
     return list(CBAM_ENGINE_IDS)
 
-
 @pytest.fixture
 def cbam_workflow_ids() -> List[str]:
     """Return the 7 CBAM workflow IDs."""
     return list(CBAM_WORKFLOW_IDS)
-
 
 @pytest.fixture
 def cbam_template_ids() -> List[str]:

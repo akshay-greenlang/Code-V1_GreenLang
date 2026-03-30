@@ -84,25 +84,20 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import AlertSeverity
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -120,7 +115,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -129,7 +123,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -141,36 +134,29 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* decimal digits and return float."""
     return float(value.quantize(Decimal(10) ** -places, rounding=ROUND_HALF_UP))
 
-
 def _round2(value: Any) -> float:
     """Round to 2 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round3(value: Any) -> float:
     """Round to 3 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: Any) -> float:
     """Round to 4 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class TrendDirection(str, Enum):
     """Direction of energy performance trend.
@@ -182,19 +168,6 @@ class TrendDirection(str, Enum):
     IMPROVING = "improving"
     STABLE = "stable"
     DETERIORATING = "deteriorating"
-
-
-class AlertSeverity(str, Enum):
-    """Severity levels for energy performance alerts.
-
-    INFO:      Informational, no action required.
-    WARNING:   Performance deviation detected, investigation advised.
-    CRITICAL:  Significant deviation, immediate action required.
-    """
-    INFO = "info"
-    WARNING = "warning"
-    CRITICAL = "critical"
-
 
 class ControlChartType(str, Enum):
     """Types of control charts for SPC analysis.
@@ -209,7 +182,6 @@ class ControlChartType(str, Enum):
     CUSUM = "cusum"
     EWMA = "ewma"
 
-
 class ForecastMethod(str, Enum):
     """Time series forecasting methods.
 
@@ -221,12 +193,10 @@ class ForecastMethod(str, Enum):
     HOLT_WINTERS = "holt_winters"
     LINEAR_EXTRAPOLATION = "linear_extrapolation"
 
-
 class DecompositionMethod(str, Enum):
     """Time series decomposition methods."""
     ADDITIVE = "additive"
     MULTIPLICATIVE = "multiplicative"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -265,11 +235,9 @@ HW_ALPHA_DEFAULT: float = 0.3   # Level smoothing
 HW_BETA_DEFAULT: float = 0.1    # Trend smoothing
 HW_GAMMA_DEFAULT: float = 0.1   # Seasonal smoothing
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class TimeSeriesPoint(BaseModel):
     """A single time series data point.
@@ -285,11 +253,9 @@ class TimeSeriesPoint(BaseModel):
     value: float = Field(default=0.0, description="Observed value")
     is_baseline: bool = Field(default=False, description="Is baseline period")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class TrendResult(BaseModel):
     """Result of trend analysis.
@@ -313,7 +279,6 @@ class TrendResult(BaseModel):
     yoy_changes: List[float] = Field(default_factory=list)
     average_yoy_change_pct: float = Field(default=0.0)
 
-
 class CUSUMResult(BaseModel):
     """CUSUM control chart result.
 
@@ -336,7 +301,6 @@ class CUSUMResult(BaseModel):
     baseline_mean: float = Field(default=0.0)
     baseline_std: float = Field(default=0.0)
 
-
 class ControlLimit(BaseModel):
     """Control limit for an SPC chart.
 
@@ -352,7 +316,6 @@ class ControlLimit(BaseModel):
     lcl: float = Field(default=0.0)
     uwl: float = Field(default=0.0)
     lwl: float = Field(default=0.0)
-
 
 class SPCResult(BaseModel):
     """SPC (Statistical Process Control) chart result.
@@ -374,7 +337,6 @@ class SPCResult(BaseModel):
     rule_violations: List[Dict[str, Any]] = Field(default_factory=list)
     process_capability: Optional[float] = Field(default=None)
 
-
 class SPCRuleViolation(BaseModel):
     """A specific SPC rule violation.
 
@@ -386,7 +348,6 @@ class SPCRuleViolation(BaseModel):
     rule_name: str = Field(default="")
     description: str = Field(default="")
     indices: List[int] = Field(default_factory=list)
-
 
 class Alert(BaseModel):
     """Energy performance alert.
@@ -408,7 +369,6 @@ class Alert(BaseModel):
     threshold: float = Field(default=0.0)
     recommendation: str = Field(default="")
 
-
 class AlertThreshold(BaseModel):
     """Configurable alert threshold.
 
@@ -420,7 +380,6 @@ class AlertThreshold(BaseModel):
     name: str = Field(default="")
     warning_pct: float = Field(default=10.0, ge=0.0)
     critical_pct: float = Field(default=20.0, ge=0.0)
-
 
 class ForecastResult(BaseModel):
     """Time series forecast result.
@@ -442,7 +401,6 @@ class ForecastResult(BaseModel):
     rmse: float = Field(default=0.0)
     parameters: Dict[str, float] = Field(default_factory=dict)
 
-
 class SeasonalPattern(BaseModel):
     """Detected seasonal pattern.
 
@@ -454,7 +412,6 @@ class SeasonalPattern(BaseModel):
     period: int = Field(default=12, ge=1)
     seasonal_indices: List[float] = Field(default_factory=list)
     strength: float = Field(default=0.0, ge=0.0, le=1.0)
-
 
 class TrendDecomposition(BaseModel):
     """Time series decomposition result.
@@ -471,7 +428,6 @@ class TrendDecomposition(BaseModel):
     seasonal_component: List[float] = Field(default_factory=list)
     residual_component: List[float] = Field(default_factory=list)
     seasonal_pattern: Optional[SeasonalPattern] = Field(default=None)
-
 
 class TrendAnalysisResult(BaseModel):
     """Complete trend analysis result.
@@ -506,14 +462,12 @@ class TrendAnalysisResult(BaseModel):
     methodology_notes: List[str] = Field(default_factory=list)
     processing_time_ms: float = Field(default=0.0)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class TrendAnalysisEngine:
     """Zero-hallucination trend analysis engine for energy performance.
@@ -1468,7 +1422,6 @@ class TrendAnalysisEngine:
         """
         return 0.5 * (1.0 + math.erf(z / math.sqrt(2.0)))
 
-
 # ---------------------------------------------------------------------------
 # Pydantic v2 model_rebuild for forward-reference resolution
 # ---------------------------------------------------------------------------
@@ -1485,7 +1438,6 @@ ForecastResult.model_rebuild()
 SeasonalPattern.model_rebuild()
 TrendDecomposition.model_rebuild()
 TrendAnalysisResult.model_rebuild()
-
 
 # ---------------------------------------------------------------------------
 # Public Aliases -- required by PACK-035 __init__.py symbol contract

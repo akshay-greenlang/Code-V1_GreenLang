@@ -28,13 +28,14 @@ import logging
 from pathlib import Path
 import json
 
-from pydantic import BaseModel, Field, validator
+from pydantic import Field, validator
 
 from greenlang.agents.agentspec_v2_base import AgentSpecV2Base, AgentExecutionContext
 from greenlang.agents.mixins import DeterministicMixin
 from greenlang.data.emission_factors import EmissionFactors
 from greenlang.utils.unit_converter import UnitConverter
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +44,7 @@ logger = logging.getLogger(__name__)
 # Input/Output Models (Pydantic)
 # ==============================================================================
 
-class FuelInputV2(BaseModel):
+class FuelInputV2(GreenLangBase):
     """
     Input data model for FuelAgent V2.
 
@@ -105,7 +106,7 @@ class FuelInputV2(BaseModel):
         return v.strip()
 
 
-class FuelOutputV2(BaseModel):
+class FuelOutputV2(GreenLangBase):
     """
     Output data model for FuelAgent V2.
 

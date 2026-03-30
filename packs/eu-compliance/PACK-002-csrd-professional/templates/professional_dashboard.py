@@ -22,6 +22,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas.enums import AlertSeverity
 
 logger = logging.getLogger(__name__)
 
@@ -44,15 +45,6 @@ class ApprovalLevel(str, Enum):
     MANAGER = "MANAGER"
     DIRECTOR = "DIRECTOR"
     EXECUTIVE = "EXECUTIVE"
-
-
-class AlertSeverity(str, Enum):
-    """Regulatory alert severity."""
-    CRITICAL = "CRITICAL"
-    HIGH = "HIGH"
-    MEDIUM = "MEDIUM"
-    LOW = "LOW"
-    INFO = "INFO"
 
 
 class TrendDirection(str, Enum):

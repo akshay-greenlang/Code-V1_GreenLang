@@ -39,6 +39,7 @@ Status: Production Ready
 
 import logging
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +67,7 @@ except ImportError:
 
 if FASTAPI_AVAILABLE:
 
-    class RegisterSchemaBody(BaseModel):
+    class RegisterSchemaBody(GreenLangBase):
         """Request body for registering a new schema definition."""
         namespace: str = Field(
             ..., description="Dot/hyphen-separated namespace for the schema",
@@ -91,7 +92,7 @@ if FASTAPI_AVAILABLE:
             None, description="Human-readable description of the schema",
         )
 
-    class UpdateSchemaBody(BaseModel):
+    class UpdateSchemaBody(GreenLangBase):
         """Request body for updating mutable fields of a schema."""
         owner: Optional[str] = Field(
             None, description="Updated team or service owner",
@@ -106,7 +107,7 @@ if FASTAPI_AVAILABLE:
             None, description="Updated human-readable description",
         )
 
-    class CreateVersionBody(BaseModel):
+    class CreateVersionBody(GreenLangBase):
         """Request body for creating a new schema version."""
         schema_id: str = Field(
             ..., description="ID of the parent SchemaDefinition to version",
@@ -118,7 +119,7 @@ if FASTAPI_AVAILABLE:
             None, description="Human-readable description of what changed",
         )
 
-    class DetectChangesBody(BaseModel):
+    class DetectChangesBody(GreenLangBase):
         """Request body for detecting changes between two schema versions."""
         source_version_id: str = Field(
             ..., description="ID of the source (older) schema version",
@@ -127,7 +128,7 @@ if FASTAPI_AVAILABLE:
             ..., description="ID of the target (newer) schema version",
         )
 
-    class CheckCompatibilityBody(BaseModel):
+    class CheckCompatibilityBody(GreenLangBase):
         """Request body for compatibility check between two schema versions."""
         source_version_id: str = Field(
             ..., description="ID of the source (older) schema version",
@@ -140,7 +141,7 @@ if FASTAPI_AVAILABLE:
             description="Compatibility level to check (backward, forward, full)",
         )
 
-    class CreatePlanBody(BaseModel):
+    class CreatePlanBody(GreenLangBase):
         """Request body for generating a migration plan."""
         source_schema_id: str = Field(
             ..., description="ID of the source schema definition",
@@ -155,7 +156,7 @@ if FASTAPI_AVAILABLE:
             None, description="SemVer string of the target schema version",
         )
 
-    class ExecuteMigrationBody(BaseModel):
+    class ExecuteMigrationBody(GreenLangBase):
         """Request body for executing a migration plan."""
         plan_id: str = Field(
             ..., description="ID of the MigrationPlan to execute",
@@ -164,13 +165,13 @@ if FASTAPI_AVAILABLE:
             False, description="If True, validate without committing changes",
         )
 
-    class RollbackBody(BaseModel):
+    class RollbackBody(GreenLangBase):
         """Request body for rollback configuration."""
         to_checkpoint: Optional[int] = Field(
             None, description="Checkpoint step number to rollback to",
         )
 
-    class RunPipelineBody(BaseModel):
+    class RunPipelineBody(GreenLangBase):
         """Request body for running the full migration pipeline."""
         source_schema_id: str = Field(
             ..., description="ID of the source schema definition",

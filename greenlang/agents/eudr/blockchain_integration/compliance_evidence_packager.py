@@ -65,6 +65,7 @@ import time
 import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Set, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.blockchain_integration.config import (
     BlockchainIntegrationConfig,
@@ -102,12 +103,6 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance.
 
@@ -120,7 +115,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str = "PKG") -> str:
     """Generate a prefixed UUID4 string identifier.
 
@@ -131,7 +125,6 @@ def _generate_id(prefix: str = "PKG") -> str:
         Prefixed UUID4 string.
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 # ---------------------------------------------------------------------------
 # Required evidence components per EUDR
@@ -163,11 +156,9 @@ COMPLETENESS_THRESHOLDS: Dict[str, float] = {
 EUDR_XML_NAMESPACE = "urn:eu:eudr:2023:1115:evidence"
 EUDR_XML_SCHEMA_VERSION = "1.0"
 
-
 # ---------------------------------------------------------------------------
 # Anchor reference data model
 # ---------------------------------------------------------------------------
-
 
 class AnchorReference:
     """Reference to an on-chain anchor for evidence compilation.
@@ -263,11 +254,9 @@ class AnchorReference:
             "event_type": self.event_type,
         }
 
-
 # ---------------------------------------------------------------------------
 # Completeness result data model
 # ---------------------------------------------------------------------------
-
 
 class CompletenessResult:
     """Result of an evidence completeness check.
@@ -313,7 +302,7 @@ class CompletenessResult:
         self.anchor_count = 0
         self.verified_count = 0
         self.details: Dict[str, Any] = {}
-        self.checked_at = _utcnow()
+        self.checked_at = utcnow()
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary.
@@ -334,11 +323,9 @@ class CompletenessResult:
             "checked_at": self.checked_at.isoformat(),
         }
 
-
 # ---------------------------------------------------------------------------
 # Timeline event data model
 # ---------------------------------------------------------------------------
-
 
 class TimelineEvent:
     """A single event in a compliance timeline.
@@ -424,11 +411,9 @@ class TimelineEvent:
             "details": self.details,
         }
 
-
 # ---------------------------------------------------------------------------
 # Verification wrapper for evidence
 # ---------------------------------------------------------------------------
-
 
 class EvidenceVerificationResult:
     """Result of verifying an evidence package.
@@ -468,7 +453,7 @@ class EvidenceVerificationResult:
         self.proofs_valid = False
         self.anchors_confirmed = False
         self.errors: List[str] = []
-        self.verified_at = _utcnow()
+        self.verified_at = utcnow()
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary.
@@ -487,11 +472,9 @@ class EvidenceVerificationResult:
             "verified_at": self.verified_at.isoformat(),
         }
 
-
 # ==========================================================================
 # ComplianceEvidencePackager
 # ==========================================================================
-
 
 class ComplianceEvidencePackager:
     """Compliance evidence packaging engine for EUDR blockchain integration.
@@ -714,7 +697,7 @@ class ComplianceEvidencePackager:
             chain_references = self._build_chain_references(anchor_refs)
 
             # Step 5: Compute retention date (EUDR Article 14)
-            retention_until = _utcnow() + timedelta(
+            retention_until = utcnow() + timedelta(
                 days=self._config.evidence_retention_years * 365
             )
 
@@ -1467,7 +1450,7 @@ class ComplianceEvidencePackager:
             "confirmed_anchors": confirmed_anchors,
             "total_packages": len(period_packages),
             "signed_packages": sum(1 for p in period_packages if p.signed),
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
             "module_version": _MODULE_VERSION,
         }
 
@@ -2029,7 +2012,6 @@ class ComplianceEvidencePackager:
             Hex-encoded SHA-256 hash.
         """
         return hashlib.sha256(content.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Public API

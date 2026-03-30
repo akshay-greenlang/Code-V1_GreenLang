@@ -76,26 +76,20 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 _ZERO = Decimal("0")
 _ONE = Decimal("1")
@@ -107,18 +101,15 @@ _HUNDRED = Decimal("100")
 _DP6 = Decimal("0.000001")
 _DP2 = Decimal("0.01")
 
-
 def _safe_divide(numerator: Decimal, denominator: Decimal) -> Decimal:
     """Divide with zero-guard."""
     if denominator == _ZERO:
         return _ZERO
     return (numerator / denominator).quantize(_DP6, rounding=ROUND_HALF_UP)
 
-
 def _quantise(value: Decimal, precision: Decimal = _DP6) -> Decimal:
     """Quantise a Decimal value."""
     return value.quantize(precision, rounding=ROUND_HALF_UP)
-
 
 # ---------------------------------------------------------------------------
 # Default Weights
@@ -133,11 +124,9 @@ DEFAULT_QUALITY_WEIGHTS: Dict[str, Decimal] = {
     "DOCUMENTATION": Decimal("0.10"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class QualityDimension(str, Enum):
     """Quality assessment dimensions."""
@@ -148,13 +137,11 @@ class QualityDimension(str, Enum):
     METHODOLOGY = "METHODOLOGY"
     DOCUMENTATION = "DOCUMENTATION"
 
-
 class HeatmapColour(str, Enum):
     """Colour codes for quality heatmap."""
     GREEN = "GREEN"
     AMBER = "AMBER"
     RED = "RED"
-
 
 class PCAFTier(int, Enum):
     """PCAF data quality tiers (1=best, 5=worst)."""
@@ -164,7 +151,6 @@ class PCAFTier(int, Enum):
     TIER_4_EXTRAPOLATED = 4
     TIER_5_PROXY = 5
 
-
 class MethodologyTier(str, Enum):
     """Emission factor methodology tiers."""
     FACILITY_SPECIFIC = "FACILITY_SPECIFIC"
@@ -173,11 +159,9 @@ class MethodologyTier(str, Enum):
     IPCC_DEFAULT = "IPCC_DEFAULT"
     UNKNOWN = "UNKNOWN"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class DataEntry(BaseModel):
     """A single data entry for quality assessment."""
@@ -203,7 +187,6 @@ class DataEntry(BaseModel):
     field_count: int = Field(1, ge=1, description="Number of data fields in this entry")
     filled_field_count: int = Field(1, ge=0, description="Number of fields actually filled")
 
-
 class QualityConfig(BaseModel):
     """Quality assessment configuration."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -223,7 +206,6 @@ class QualityConfig(BaseModel):
         Decimal("0.5"), ge=_ZERO, le=_ONE,
         description="Minimum evidence attachment rate for acceptable documentation score",
     )
-
 
 class DimensionScore(BaseModel):
     """Score for a single quality dimension."""
@@ -245,7 +227,6 @@ class DimensionScore(BaseModel):
     recommendations: List[str] = Field(
         default_factory=list, description="Improvement recommendations"
     )
-
 
 class SiteQualityAssessment(BaseModel):
     """Quality assessment for a single site."""
@@ -275,7 +256,6 @@ class SiteQualityAssessment(BaseModel):
         default_factory=list, description="Prioritised improvement actions"
     )
 
-
 class QualityHeatmapCell(BaseModel):
     """A single cell in the quality heatmap matrix."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -290,7 +270,6 @@ class QualityHeatmapCell(BaseModel):
         HeatmapColour.RED.value,
         description="Heatmap colour (GREEN, AMBER, RED)",
     )
-
 
 class QualityResult(BaseModel):
     """Portfolio-wide quality assessment result."""
@@ -313,7 +292,7 @@ class QualityResult(BaseModel):
     improvement_priorities: List[Dict[str, Any]] = Field(
         default_factory=list, description="Prioritised portfolio improvement actions"
     )
-    created_at: datetime = Field(default_factory=_utcnow, description="Assessment timestamp")
+    created_at: datetime = Field(default_factory=utcnow, description="Assessment timestamp")
     provenance_hash: str = Field("", description="SHA-256 provenance hash")
 
     def model_post_init(self, __context: Any) -> None:
@@ -328,11 +307,9 @@ class QualityResult(BaseModel):
                 payload += f"|{a.site_id}={a.overall_score}"
             self.provenance_hash = _compute_hash(payload)
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class SiteQualityEngine:
     """
@@ -1167,7 +1144,6 @@ class SiteQualityEngine:
 
         actions.sort(key=lambda x: x[0], reverse=True)
         return [a[1] for a in actions]
-
 
 # ---------------------------------------------------------------------------
 # Pydantic v2 model rebuild (required with `from __future__ import annotations`)

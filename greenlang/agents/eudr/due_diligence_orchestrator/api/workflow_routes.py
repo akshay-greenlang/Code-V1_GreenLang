@@ -35,6 +35,7 @@ from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.due_diligence_orchestrator.api.dependencies import (
     AuthUser,
@@ -372,7 +373,7 @@ async def delete_workflow(
         return {
             "workflow_id": workflow_id,
             "status": "archived",
-            "archived_at": _utcnow().isoformat(),
+            "archived_at": utcnow().isoformat(),
             "archived_by": user.user_id,
             "reason": reason,
         }
@@ -471,7 +472,7 @@ async def validate_workflow(
         "valid": is_valid,
         "errors": validation_errors,
         "dag_metadata": dag_metadata,
-        "validated_at": _utcnow().isoformat(),
+        "validated_at": utcnow().isoformat(),
         "validated_by": user.user_id,
     }
 

@@ -70,6 +70,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -140,20 +141,13 @@ try:
 except ImportError:
     ComplianceCheckerEngine = None  # type: ignore[assignment, misc]
 
-
 # ---------------------------------------------------------------------------
 # UTC helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _utcnow_iso() -> str:
     """Return current UTC datetime as an ISO-8601 string."""
-    return _utcnow().isoformat()
-
+    return utcnow().isoformat()
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -164,7 +158,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Decimal helpers
 # ---------------------------------------------------------------------------
@@ -173,13 +166,11 @@ _PRECISION = Decimal("0.00000001")
 _ZERO = Decimal("0")
 _ONE = Decimal("1")
 
-
 def _D(value: Any) -> Decimal:
     """Convert a value to Decimal."""
     if isinstance(value, Decimal):
         return value
     return Decimal(str(value))
-
 
 def _safe_decimal(value: Any, default: Decimal = _ZERO) -> Decimal:
     """Safely convert to Decimal."""
@@ -190,11 +181,9 @@ def _safe_decimal(value: Any, default: Decimal = _ZERO) -> Decimal:
     except Exception:
         return default
 
-
 # ===========================================================================
 # Pipeline Stages
 # ===========================================================================
-
 
 class PipelineStage(str, Enum):
     """Enumeration of the 8 pipeline stages."""
@@ -208,7 +197,6 @@ class PipelineStage(str, Enum):
     CHECK_COMPLIANCE = "CHECK_COMPLIANCE"
     ASSEMBLE_RESULTS = "ASSEMBLE_RESULTS"
 
-
 #: Valid land categories.
 VALID_CATEGORIES: List[str] = [
     "FOREST_LAND", "CROPLAND", "GRASSLAND",
@@ -218,11 +206,9 @@ VALID_CATEGORIES: List[str] = [
 #: Valid calculation methods.
 VALID_METHODS: List[str] = ["STOCK_DIFFERENCE", "GAIN_LOSS"]
 
-
 # ===========================================================================
 # LandUsePipelineEngine
 # ===========================================================================
-
 
 class LandUsePipelineEngine:
     """End-to-end orchestration pipeline for LULUCF calculations.
@@ -308,7 +294,7 @@ class LandUsePipelineEngine:
         self._stage_timings: Dict[str, List[float]] = {
             stage.value: [] for stage in PipelineStage
         }
-        self._created_at = _utcnow()
+        self._created_at = utcnow()
 
         engine_status = {
             "db": self._db_engine is not None,

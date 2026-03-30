@@ -101,16 +101,9 @@ except ImportError:
     otel_trace = None  # type: ignore[assignment]
     OTEL_AVAILABLE = False
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_service_hash(config: ForestCoverConfig) -> str:
     """Compute SHA-256 hash of the service configuration for provenance.
@@ -124,11 +117,9 @@ def _compute_service_hash(config: ForestCoverConfig) -> str:
     raw = json.dumps(config.to_dict(), sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Health status model
 # ---------------------------------------------------------------------------
-
 
 class HealthStatus:
     """Health check result container.
@@ -153,7 +144,7 @@ class HealthStatus:
     ) -> None:
         self.status = status
         self.checks = checks or {}
-        self.timestamp = timestamp or _utcnow()
+        self.timestamp = timestamp or utcnow()
         self.version = version
         self.uptime_seconds = uptime_seconds
 
@@ -167,11 +158,9 @@ class HealthStatus:
             "uptime_seconds": round(self.uptime_seconds, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # PlotForestProfile
 # ---------------------------------------------------------------------------
-
 
 class PlotForestProfile:
     """Unified result from a complete forest cover analysis of a single plot.
@@ -227,7 +216,7 @@ class PlotForestProfile:
         self.biomass = biomass
         self.data_quality = data_quality or {}
         self.provenance_hash = provenance_hash
-        self.analyzed_at = analyzed_at or _utcnow()
+        self.analyzed_at = analyzed_at or utcnow()
         self.processing_time_ms = processing_time_ms
 
     def to_dict(self) -> Dict[str, Any]:
@@ -254,11 +243,9 @@ class PlotForestProfile:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # DeforestationFreeResult
 # ---------------------------------------------------------------------------
-
 
 class DeforestationFreeResult:
     """Result of a deforestation-free verification for a production plot.
@@ -304,7 +291,7 @@ class DeforestationFreeResult:
         self.canopy_change_pct = canopy_change_pct
         self.historical_summary = historical_summary or {}
         self.evidence_hash = evidence_hash
-        self.verified_at = verified_at or _utcnow()
+        self.verified_at = verified_at or utcnow()
         self.processing_time_ms = processing_time_ms
 
     def to_dict(self) -> Dict[str, Any]:
@@ -322,11 +309,9 @@ class DeforestationFreeResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # ComplianceReport
 # ---------------------------------------------------------------------------
-
 
 class ComplianceReport:
     """EUDR forest cover compliance report for a production plot.
@@ -359,7 +344,7 @@ class ComplianceReport:
         self.format = format
         self.sections = sections or {}
         self.provenance_hash = provenance_hash
-        self.generated_at = generated_at or _utcnow()
+        self.generated_at = generated_at or utcnow()
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary for JSON response."""
@@ -372,11 +357,9 @@ class ComplianceReport:
             "generated_at": self.generated_at.isoformat(),
         }
 
-
 # ---------------------------------------------------------------------------
 # AnalysisSummary
 # ---------------------------------------------------------------------------
-
 
 class AnalysisSummary:
     """Aggregated statistics across all analyzed plots.
@@ -420,7 +403,7 @@ class AnalysisSummary:
         self.avg_canopy_cover_pct = avg_canopy_cover_pct
         self.avg_confidence = avg_confidence
         self.avg_processing_time_ms = avg_processing_time_ms
-        self.generated_at = generated_at or _utcnow()
+        self.generated_at = generated_at or utcnow()
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary for JSON response."""
@@ -436,11 +419,9 @@ class AnalysisSummary:
             "generated_at": self.generated_at.isoformat(),
         }
 
-
 # ---------------------------------------------------------------------------
 # ForestCoverDashboard
 # ---------------------------------------------------------------------------
-
 
 class ForestCoverDashboard:
     """Dashboard data container for forest cover analysis UI.
@@ -470,7 +451,7 @@ class ForestCoverDashboard:
         self.recent_analyses = recent_analyses or []
         self.alerts = alerts or []
         self.coverage_stats = coverage_stats or {}
-        self.generated_at = generated_at or _utcnow()
+        self.generated_at = generated_at or utcnow()
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary for JSON response."""
@@ -482,11 +463,9 @@ class ForestCoverDashboard:
             "generated_at": self.generated_at.isoformat(),
         }
 
-
 # ---------------------------------------------------------------------------
 # BatchAnalysisResult
 # ---------------------------------------------------------------------------
-
 
 class BatchAnalysisResult:
     """Result of a batch forest cover analysis job.
@@ -537,7 +516,7 @@ class BatchAnalysisResult:
         self.results = results or []
         self.statistics = statistics or {}
         self.provenance_hash = provenance_hash
-        self.submitted_at = submitted_at or _utcnow()
+        self.submitted_at = submitted_at or utcnow()
         self.completed_at = completed_at
         self.processing_time_ms = processing_time_ms
 
@@ -560,11 +539,9 @@ class BatchAnalysisResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # ForestCoverAnalysisService
 # ---------------------------------------------------------------------------
-
 
 class ForestCoverAnalysisService:
     """Facade service for the EUDR Forest Cover Analysis Agent.
@@ -924,7 +901,7 @@ class ForestCoverAnalysisService:
         health = HealthStatus(
             status=overall,
             checks=checks,
-            timestamp=_utcnow(),
+            timestamp=utcnow(),
             version="1.0.0",
             uptime_seconds=self.uptime_seconds,
         )
@@ -1042,7 +1019,7 @@ class ForestCoverAnalysisService:
             biomass=biomass,
             data_quality=data_quality,
             provenance_hash=provenance_hash,
-            analyzed_at=_utcnow(),
+            analyzed_at=utcnow(),
             processing_time_ms=elapsed_ms,
         )
 
@@ -1157,7 +1134,7 @@ class ForestCoverAnalysisService:
                 else {}
             ),
             evidence_hash=evidence_hash,
-            verified_at=_utcnow(),
+            verified_at=utcnow(),
             processing_time_ms=elapsed_ms,
         )
 
@@ -1274,7 +1251,7 @@ class ForestCoverAnalysisService:
             results=results,
             statistics=batch_statistics,
             provenance_hash=batch_provenance,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             processing_time_ms=elapsed_ms,
         )
 
@@ -1335,7 +1312,7 @@ class ForestCoverAnalysisService:
             "plot_id": plot_id,
             "operator_id": operator_id,
             "report_type": report_type,
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
             "cutoff_date": self._config.cutoff_date,
         }
 
@@ -1377,7 +1354,7 @@ class ForestCoverAnalysisService:
             format=format,
             sections=sections,
             provenance_hash=report_hash,
-            generated_at=_utcnow(),
+            generated_at=utcnow(),
         )
 
         logger.info(
@@ -1420,7 +1397,7 @@ class ForestCoverAnalysisService:
             profiles = list(self._profile_cache.values())
 
         if not profiles:
-            return AnalysisSummary(generated_at=_utcnow())
+            return AnalysisSummary(generated_at=utcnow())
 
         total = len(profiles)
         deforestation_free = 0
@@ -1480,7 +1457,7 @@ class ForestCoverAnalysisService:
             avg_canopy_cover_pct=avg_canopy,
             avg_confidence=avg_conf,
             avg_processing_time_ms=avg_time,
-            generated_at=_utcnow(),
+            generated_at=utcnow(),
         )
 
     # ------------------------------------------------------------------
@@ -1500,7 +1477,7 @@ class ForestCoverAnalysisService:
         with self._cache_lock:
             all_profiles = sorted(
                 self._profile_cache.values(),
-                key=lambda p: p.analyzed_at or _utcnow(),
+                key=lambda p: p.analyzed_at or utcnow(),
                 reverse=True,
             )
             recent = [p.to_dict() for p in all_profiles[:20]]
@@ -1537,7 +1514,7 @@ class ForestCoverAnalysisService:
             recent_analyses=recent,
             alerts=alerts,
             coverage_stats=coverage_stats,
-            generated_at=_utcnow(),
+            generated_at=utcnow(),
         )
 
     # ------------------------------------------------------------------
@@ -2641,11 +2618,9 @@ class ForestCoverAnalysisService:
         with self._batch_lock:
             return self._batch_registry.get(batch_id)
 
-
 # ---------------------------------------------------------------------------
 # FastAPI lifespan context manager
 # ---------------------------------------------------------------------------
-
 
 @asynccontextmanager
 async def lifespan(app: Any) -> AsyncIterator[None]:
@@ -2659,6 +2634,7 @@ async def lifespan(app: Any) -> AsyncIterator[None]:
 
         from fastapi import FastAPI
         from greenlang.agents.eudr.forest_cover_analysis.setup import lifespan
+from greenlang.schemas import utcnow
 
         app = FastAPI(lifespan=lifespan)
 
@@ -2676,14 +2652,12 @@ async def lifespan(app: Any) -> AsyncIterator[None]:
     finally:
         await service.shutdown()
 
-
 # ---------------------------------------------------------------------------
 # Thread-safe singleton accessor
 # ---------------------------------------------------------------------------
 
 _service_instance: Optional[ForestCoverAnalysisService] = None
 _service_lock = threading.Lock()
-
 
 def get_service(
     config: Optional[ForestCoverConfig] = None,
@@ -2713,7 +2687,6 @@ def get_service(
                 )
     return _service_instance
 
-
 def set_service(service: ForestCoverAnalysisService) -> None:
     """Replace the singleton ForestCoverAnalysisService instance.
 
@@ -2727,7 +2700,6 @@ def set_service(service: ForestCoverAnalysisService) -> None:
         _service_instance = service
     logger.info("ForestCoverAnalysisService singleton replaced")
 
-
 def reset_service() -> None:
     """Reset the singleton ForestCoverAnalysisService to None.
 
@@ -2738,7 +2710,6 @@ def reset_service() -> None:
     with _service_lock:
         _service_instance = None
     logger.debug("ForestCoverAnalysisService singleton reset")
-
 
 # ---------------------------------------------------------------------------
 # Public API

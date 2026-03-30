@@ -56,6 +56,7 @@ from greenlang.agents.data.missing_value_imputer.metrics import (
     inc_errors,
 )
 from greenlang.agents.data.missing_value_imputer.provenance import ProvenanceTracker
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -63,16 +64,9 @@ __all__ = [
     "StatisticalImputerEngine",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _is_missing(value: Any) -> bool:
     """Determine whether a value is considered missing.
@@ -91,7 +85,6 @@ def _is_missing(value: Any) -> bool:
         return True
     return False
 
-
 def _is_numeric(value: Any) -> bool:
     """Check if a value is numeric (int or float, excluding bool).
 
@@ -104,7 +97,6 @@ def _is_numeric(value: Any) -> bool:
     if isinstance(value, bool):
         return False
     return isinstance(value, (int, float))
-
 
 def _to_float(value: Any) -> Optional[float]:
     """Safely convert a value to float.
@@ -124,7 +116,6 @@ def _to_float(value: Any) -> Optional[float]:
     except (ValueError, TypeError):
         return None
 
-
 def _compute_provenance(operation: str, data_repr: str) -> str:
     """Compute SHA-256 provenance hash.
 
@@ -135,9 +126,8 @@ def _compute_provenance(operation: str, data_repr: str) -> str:
     Returns:
         Hex-encoded SHA-256 digest.
     """
-    payload = f"{operation}:{data_repr}:{_utcnow().isoformat()}"
+    payload = f"{operation}:{data_repr}:{utcnow().isoformat()}"
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
-
 
 def _classify_confidence(score: float) -> ConfidenceLevel:
     """Classify a numeric confidence score into a level.
@@ -156,7 +146,6 @@ def _classify_confidence(score: float) -> ConfidenceLevel:
         return ConfidenceLevel.LOW
     return ConfidenceLevel.VERY_LOW
 
-
 def _safe_stdev(values: List[float]) -> float:
     """Compute sample standard deviation, returning 0.0 for < 2 values.
 
@@ -173,11 +162,9 @@ def _safe_stdev(values: List[float]) -> float:
     except (ValueError, statistics.StatisticsError):
         return 0.0
 
-
 # ===========================================================================
 # StatisticalImputerEngine
 # ===========================================================================
-
 
 class StatisticalImputerEngine:
     """Classical statistical imputation engine.

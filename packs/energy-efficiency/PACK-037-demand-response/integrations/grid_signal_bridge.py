@@ -40,25 +40,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -71,11 +65,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SignalType(str, Enum):
     """Grid signal type categories."""
@@ -90,7 +82,6 @@ class SignalType(str, Enum):
     WEATHER_TRIGGER = "weather_trigger"
     EMERGENCY_SIGNAL = "emergency_signal"
 
-
 class SignalStatus(str, Enum):
     """Grid signal lifecycle status."""
 
@@ -100,7 +91,6 @@ class SignalStatus(str, Enum):
     COMPLETED = "completed"
     EXPIRED = "expired"
 
-
 class SignalSeverity(str, Enum):
     """Signal severity / urgency levels."""
 
@@ -109,7 +99,6 @@ class SignalSeverity(str, Enum):
     HIGH = "high"
     EXTREME = "extreme"
     EMERGENCY = "emergency"
-
 
 class GridRegion(str, Enum):
     """ISO/RTO grid region identifiers."""
@@ -125,7 +114,6 @@ class GridRegion(str, Enum):
     EU_ENTSO_E = "EU_ENTSO_E"
     UK_NGESO = "UK_NGESO"
 
-
 class CarbonSource(str, Enum):
     """Carbon intensity data sources."""
 
@@ -134,11 +122,9 @@ class CarbonSource(str, Enum):
     EPA_EGRID = "epa_egrid"
     CUSTOM = "custom"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class GridSignalConfig(BaseModel):
     """Configuration for the Grid Signal Bridge."""
@@ -155,7 +141,6 @@ class GridSignalConfig(BaseModel):
     polling_interval_seconds: int = Field(default=60, ge=10, le=3600)
     signal_cache_ttl_seconds: int = Field(default=300, ge=30)
     auto_acknowledge: bool = Field(default=False)
-
 
 class GridSignal(BaseModel):
     """A grid signal received from external source."""
@@ -174,10 +159,9 @@ class GridSignal(BaseModel):
     curtailment_requested_kw: float = Field(default=0.0, ge=0.0)
     price_signal_usd_per_kwh: float = Field(default=0.0, ge=0.0)
     signal_payload: Dict[str, Any] = Field(default_factory=dict)
-    received_at: datetime = Field(default_factory=_utcnow)
+    received_at: datetime = Field(default_factory=utcnow)
     acknowledged: bool = Field(default=False)
     provenance_hash: str = Field(default="")
-
 
 class DispatchNotification(BaseModel):
     """A dispatch notification for facility action."""
@@ -196,14 +180,13 @@ class DispatchNotification(BaseModel):
     acknowledged_at: Optional[datetime] = Field(None)
     provenance_hash: str = Field(default="")
 
-
 class PriceSignal(BaseModel):
     """Real-time or day-ahead price signal."""
 
     price_id: str = Field(default_factory=_new_uuid)
     grid_region: str = Field(default="")
     signal_type: str = Field(default="rtp", description="rtp|cpp|dap|lmp")
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     price_usd_per_mwh: float = Field(default=0.0)
     price_usd_per_kwh: float = Field(default=0.0)
     is_peak: bool = Field(default=False)
@@ -212,21 +195,19 @@ class PriceSignal(BaseModel):
     threshold_usd_per_mwh: float = Field(default=100.0)
     provenance_hash: str = Field(default="")
 
-
 class CarbonIntensitySignal(BaseModel):
     """Grid carbon intensity signal."""
 
     carbon_id: str = Field(default_factory=_new_uuid)
     grid_region: str = Field(default="")
     source: CarbonSource = Field(default=CarbonSource.WATTTIME)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     marginal_intensity_gco2_per_kwh: float = Field(default=0.0, ge=0.0)
     average_intensity_gco2_per_kwh: float = Field(default=0.0, ge=0.0)
     moer_percent: float = Field(default=0.0, ge=0.0, le=100.0, description="Marginal Operating Emissions Rate percentile")
     is_clean: bool = Field(default=False, description="Below clean threshold")
     forecast_hours: int = Field(default=0, ge=0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Default LMP Reference Data
@@ -242,11 +223,9 @@ DEFAULT_LMP_USD_PER_MWH: Dict[str, float] = {
     "SPP": 30.00,
 }
 
-
 # ---------------------------------------------------------------------------
 # GridSignalBridge
 # ---------------------------------------------------------------------------
-
 
 class GridSignalBridge:
     """External grid signal integration for demand response dispatch.

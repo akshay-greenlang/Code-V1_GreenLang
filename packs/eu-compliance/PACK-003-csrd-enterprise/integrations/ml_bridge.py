@@ -50,26 +50,19 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -82,11 +75,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ModelType(str, Enum):
     """Types of ML models supported."""
@@ -100,7 +91,6 @@ class ModelType(str, Enum):
     FUEL_PRICE_PREDICTOR = "fuel_price_predictor"
     CUSTOM = "custom"
 
-
 class ModelStatus(str, Enum):
     """Model lifecycle status."""
 
@@ -111,7 +101,6 @@ class ModelStatus(str, Enum):
     RETIRED = "retired"
     FAILED = "failed"
 
-
 class DriftSeverity(str, Enum):
     """Data drift severity levels."""
 
@@ -120,7 +109,6 @@ class DriftSeverity(str, Enum):
     MODERATE = "moderate"
     HIGH = "high"
     CRITICAL = "critical"
-
 
 class AnomalyMethod(str, Enum):
     """Anomaly detection methods."""
@@ -131,11 +119,9 @@ class AnomalyMethod(str, Enum):
     DBSCAN = "dbscan"
     AUTOENCODER = "autoencoder"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class ModelRegistration(BaseModel):
     """Registered ML model metadata."""
@@ -148,11 +134,10 @@ class ModelRegistration(BaseModel):
     status: ModelStatus = Field(default=ModelStatus.REGISTERED)
     config: Dict[str, Any] = Field(default_factory=dict)
     metrics: Dict[str, float] = Field(default_factory=dict)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     last_trained_at: Optional[datetime] = Field(None)
     deployed_at: Optional[datetime] = Field(None)
     provenance_hash: str = Field(default="")
-
 
 class TrainingResult(BaseModel):
     """Result of a model training run."""
@@ -166,9 +151,8 @@ class TrainingResult(BaseModel):
     training_duration_ms: float = Field(default=0.0)
     hyperparams: Dict[str, Any] = Field(default_factory=dict)
     artifact_path: Optional[str] = Field(None)
-    trained_at: datetime = Field(default_factory=_utcnow)
+    trained_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class PredictionResult(BaseModel):
     """Result of a model prediction with confidence intervals."""
@@ -181,9 +165,8 @@ class PredictionResult(BaseModel):
     confidence_level: float = Field(default=0.95)
     prediction_count: int = Field(default=0)
     latency_ms: float = Field(default=0.0)
-    predicted_at: datetime = Field(default_factory=_utcnow)
+    predicted_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class DriftResult(BaseModel):
     """Result of data drift detection."""
@@ -195,9 +178,8 @@ class DriftResult(BaseModel):
     drift_score: float = Field(default=0.0, ge=0.0, le=1.0)
     feature_drifts: Dict[str, float] = Field(default_factory=dict)
     recommendation: str = Field(default="")
-    detected_at: datetime = Field(default_factory=_utcnow)
+    detected_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class AnomalyResult(BaseModel):
     """Result of anomaly detection."""
@@ -210,9 +192,8 @@ class AnomalyResult(BaseModel):
     anomaly_indices: List[int] = Field(default_factory=list)
     anomaly_scores: List[float] = Field(default_factory=list)
     threshold: float = Field(default=0.0)
-    detected_at: datetime = Field(default_factory=_utcnow)
+    detected_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class ExplainabilityResult(BaseModel):
     """Model prediction explainability result."""
@@ -225,14 +206,12 @@ class ExplainabilityResult(BaseModel):
     top_features: List[str] = Field(default_factory=list)
     base_value: Optional[float] = Field(None)
     explanation_text: str = Field(default="")
-    generated_at: datetime = Field(default_factory=_utcnow)
+    generated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # MLBridge
 # ---------------------------------------------------------------------------
-
 
 class MLBridge:
     """Machine learning lifecycle bridge for CSRD Enterprise Pack.
@@ -404,7 +383,7 @@ class MLBridge:
         result.provenance_hash = _compute_hash(result)
 
         model.status = ModelStatus.TRAINED
-        model.last_trained_at = _utcnow()
+        model.last_trained_at = utcnow()
         model.metrics = result.metrics
 
         if model_id not in self._training_history:
@@ -697,7 +676,7 @@ class MLBridge:
             ),
             "drift_score": latest_drift.drift_score if latest_drift else None,
             "health": "healthy" if model.status == ModelStatus.TRAINED else "degraded",
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     def retrain_model(
@@ -764,6 +743,6 @@ class MLBridge:
         return {
             "models_compared": len(comparisons),
             "comparisons": comparisons,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "provenance_hash": _compute_hash(comparisons),
         }

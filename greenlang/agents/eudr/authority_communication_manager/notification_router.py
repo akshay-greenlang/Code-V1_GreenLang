@@ -37,8 +37,9 @@ from .models import (
 )
 from .provenance import ProvenanceTracker
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance."""
@@ -47,16 +48,9 @@ def _compute_hash(data: Any) -> str:
     )
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 class NotificationRouter:
     """Multi-channel notification delivery engine.
@@ -156,7 +150,7 @@ class NotificationRouter:
             lang = LanguageCode.EN
 
         notification_id = _new_uuid()
-        now = _utcnow()
+        now = utcnow()
 
         notification = Notification(
             notification_id=notification_id,
@@ -293,7 +287,7 @@ class NotificationRouter:
         notification.retry_count += 1
         delivery_result = await self._deliver(notification)
 
-        now = _utcnow()
+        now = utcnow()
         if delivery_result["success"]:
             notification.delivery_status = "sent"
             notification.sent_at = now
@@ -333,7 +327,7 @@ class NotificationRouter:
             raise ValueError(f"Notification {notification_id} not found")
 
         notification.delivery_status = "delivered"
-        notification.delivered_at = _utcnow()
+        notification.delivered_at = utcnow()
 
         logger.info("Notification %s delivery confirmed", notification_id)
         return notification
@@ -357,7 +351,7 @@ class NotificationRouter:
         if notification is None:
             raise ValueError(f"Notification {notification_id} not found")
 
-        notification.read_at = _utcnow()
+        notification.read_at = utcnow()
 
         logger.info("Notification %s marked as read", notification_id)
         return notification

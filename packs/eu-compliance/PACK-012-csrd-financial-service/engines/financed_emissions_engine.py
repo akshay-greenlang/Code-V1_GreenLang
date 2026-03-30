@@ -57,25 +57,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -95,7 +89,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _safe_divide(numerator: float, denominator: float, default: float = 0.0) -> float:
     """Safely divide two numbers, returning default on zero denominator.
 
@@ -111,7 +104,6 @@ def _safe_divide(numerator: float, denominator: float, default: float = 0.0) -> 
         return default
     return numerator / denominator
 
-
 def _safe_pct(numerator: float, denominator: float) -> float:
     """Calculate percentage safely.
 
@@ -126,11 +118,9 @@ def _safe_pct(numerator: float, denominator: float) -> float:
         return 0.0
     return (numerator / denominator) * 100.0
 
-
 def _round_val(value: float, places: int = 4) -> float:
     """Round a float to specified decimal places."""
     return round(value, places)
-
 
 def _round_decimal(value: float, places: int = 4) -> float:
     """Round using Decimal for regulatory precision."""
@@ -138,11 +128,9 @@ def _round_decimal(value: float, places: int = 4) -> float:
     q = Decimal("0." + "0" * places)
     return float(d.quantize(q, rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class PCAFAssetClass(str, Enum):
     """PCAF asset class categories per the Global Standard."""
@@ -157,7 +145,6 @@ class PCAFAssetClass(str, Enum):
     SECURITIZATIONS = "securitizations"
     SUB_SOVEREIGN_DEBT = "sub_sovereign_debt"
 
-
 class DataQualityLevel(str, Enum):
     """PCAF data quality score levels (1 = best, 5 = worst)."""
     SCORE_1 = "score_1"  # Reported, verified emissions
@@ -170,7 +157,6 @@ class DataQualityLevel(str, Enum):
     def numeric(self) -> int:
         """Return integer score value."""
         return int(self.value.split("_")[1])
-
 
 class CurrencyCode(str, Enum):
     """Common currency codes for multi-currency normalization."""
@@ -186,7 +172,6 @@ class CurrencyCode(str, Enum):
     AUD = "AUD"
     CAD = "CAD"
 
-
 class EmissionScope(str, Enum):
     """GHG Protocol emission scopes."""
     SCOPE_1 = "scope_1"
@@ -194,7 +179,6 @@ class EmissionScope(str, Enum):
     SCOPE_3 = "scope_3"
     SCOPE_1_2 = "scope_1_2"
     SCOPE_1_2_3 = "scope_1_2_3"
-
 
 # ---------------------------------------------------------------------------
 # Attribution Factor Rules per Asset Class
@@ -262,11 +246,9 @@ DATA_QUALITY_DESCRIPTIONS: Dict[int, str] = {
     5: "Estimated using sector averages only (lowest quality)",
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Data Models
 # ---------------------------------------------------------------------------
-
 
 class CurrencyRate(BaseModel):
     """Exchange rate for currency normalization.
@@ -284,7 +266,6 @@ class CurrencyRate(BaseModel):
     target_currency: str = Field(default="EUR", description="Target currency code")
     rate: float = Field(gt=0.0, description="Exchange rate (source -> target)")
     rate_date: str = Field(default="", description="Rate observation date (YYYY-MM-DD)")
-
 
 class DataQualityScore(BaseModel):
     """PCAF data quality assessment for a single holding.
@@ -324,7 +305,6 @@ class DataQualityScore(BaseModel):
         if self.level.value != expected:
             self.level = DataQualityLevel(expected)
         return self
-
 
 class AssetClassData(BaseModel):
     """Input data for a single holding / exposure in the portfolio.
@@ -417,7 +397,6 @@ class AssetClassData(BaseModel):
         description="Percentage of proceeds allocated to green activities",
     )
 
-
 class AttributionResult(BaseModel):
     """Result of attribution factor calculation for a single holding.
 
@@ -449,7 +428,6 @@ class AttributionResult(BaseModel):
     )
     used_fallback: bool = Field(default=False, description="Whether fallback was used")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class HoldingEmissions(BaseModel):
     """Financed emissions for a single holding.
@@ -502,7 +480,6 @@ class HoldingEmissions(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class EmissionsByAssetClass(BaseModel):
     """Aggregated financed emissions for a single PCAF asset class.
 
@@ -545,7 +522,6 @@ class EmissionsByAssetClass(BaseModel):
         default=0.0, description="Weight of this class in portfolio (%)",
     )
 
-
 class YoYTrajectory(BaseModel):
     """Year-over-year emissions trajectory data point.
 
@@ -574,7 +550,6 @@ class YoYTrajectory(BaseModel):
     yoy_change_absolute: float = Field(
         default=0.0, description="Absolute change (tCO2e)",
     )
-
 
 class PortfolioEmissionsResult(BaseModel):
     """Complete portfolio-level financed emissions result.
@@ -662,15 +637,13 @@ class PortfolioEmissionsResult(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     engine_version: str = Field(default=_MODULE_VERSION, description="Engine version")
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp",
+        default_factory=utcnow, description="Calculation timestamp",
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 # ---------------------------------------------------------------------------
 # Engine Configuration
 # ---------------------------------------------------------------------------
-
 
 class FinancedEmissionsConfig(BaseModel):
     """Configuration for the FinancedEmissionsEngine.
@@ -736,7 +709,6 @@ class FinancedEmissionsConfig(BaseModel):
         description="Decimal places for rounding",
     )
 
-
 # ---------------------------------------------------------------------------
 # Model rebuilds for forward references
 # ---------------------------------------------------------------------------
@@ -751,11 +723,9 @@ YoYTrajectory.model_rebuild()
 PortfolioEmissionsResult.model_rebuild()
 FinancedEmissionsConfig.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # FinancedEmissionsEngine
 # ---------------------------------------------------------------------------
-
 
 class FinancedEmissionsEngine:
     """
@@ -841,7 +811,7 @@ class FinancedEmissionsEngine:
         Raises:
             ValueError: If holdings list is empty.
         """
-        start = _utcnow()
+        start = utcnow()
 
         if not holdings:
             raise ValueError("Holdings list cannot be empty")
@@ -903,7 +873,7 @@ class FinancedEmissionsEngine:
         # Step 10: Methodology notes
         notes = self._generate_methodology_notes(all_results, dc_adjustments)
 
-        end = _utcnow()
+        end = utcnow()
         processing_ms = (end - start).total_seconds() * 1000.0
 
         result = PortfolioEmissionsResult(

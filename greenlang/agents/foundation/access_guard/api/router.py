@@ -17,6 +17,7 @@ Status: Production Ready
 import logging
 import time
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +43,7 @@ except ImportError:
 
 if FASTAPI_AVAILABLE:
 
-    class CheckAccessRequest(BaseModel):
+    class CheckAccessRequest(GreenLangBase):
         """Request body for checking access."""
         principal: Dict[str, Any] = Field(..., description="Principal data")
         resource: Dict[str, Any] = Field(..., description="Resource data")
@@ -50,7 +51,7 @@ if FASTAPI_AVAILABLE:
         context: Optional[Dict[str, Any]] = Field(None, description="ABAC context")
         source_ip: Optional[str] = Field(None, description="Source IP")
 
-    class AddPolicyRequest(BaseModel):
+    class AddPolicyRequest(GreenLangBase):
         """Request body for adding a policy."""
         policy_id: str = Field(..., description="Unique policy ID")
         name: str = Field(..., description="Policy name")
@@ -63,7 +64,7 @@ if FASTAPI_AVAILABLE:
         applies_to: Optional[List[str]] = Field(None, description="Resource types")
         created_by: Optional[str] = Field(None, description="Creator")
 
-    class UpdatePolicyRequest(BaseModel):
+    class UpdatePolicyRequest(GreenLangBase):
         """Request body for updating a policy."""
         name: Optional[str] = Field(None, description="New name")
         description: Optional[str] = Field(None, description="New description")
@@ -71,7 +72,7 @@ if FASTAPI_AVAILABLE:
         rules: Optional[List[Dict[str, Any]]] = Field(None, description="New rules")
         applies_to: Optional[List[str]] = Field(None, description="New scope")
 
-    class ClassifyResourceRequest(BaseModel):
+    class ClassifyResourceRequest(GreenLangBase):
         """Request body for classifying a resource."""
         resource_id: str = Field(..., description="Resource ID")
         resource_type: str = Field(..., description="Resource type")
@@ -79,17 +80,17 @@ if FASTAPI_AVAILABLE:
         classification: str = Field("internal", description="Initial classification")
         attributes: Optional[Dict[str, Any]] = Field(None, description="Resource attributes")
 
-    class AddRegoRequest(BaseModel):
+    class AddRegoRequest(GreenLangBase):
         """Request body for adding a Rego policy."""
         policy_id: str = Field(..., description="Rego policy ID")
         rego_source: str = Field(..., description="Rego source code")
 
-    class SimulateRequest(BaseModel):
+    class SimulateRequest(GreenLangBase):
         """Request body for policy simulation."""
         requests: List[Dict[str, Any]] = Field(..., description="Test requests")
         policy_ids: Optional[List[str]] = Field(None, description="Specific policies")
 
-    class ComplianceReportRequest(BaseModel):
+    class ComplianceReportRequest(GreenLangBase):
         """Request body for generating a compliance report."""
         tenant_id: str = Field(..., description="Tenant ID")
         start_date: str = Field(..., description="ISO start date")

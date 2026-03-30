@@ -43,21 +43,15 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -69,7 +63,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 class _AgentStub:
     """Stub for unavailable DATA agent modules."""
@@ -88,21 +81,19 @@ class _AgentStub:
             }
         return _stub_method
 
-
 def _try_import_data_agent(agent_id: str, module_path: str) -> Any:
     """Try to import a DATA agent with graceful fallback."""
     try:
         import importlib
+
         return importlib.import_module(module_path)
     except ImportError:
         logger.debug("DATA agent %s not available, using stub", agent_id)
         return _AgentStub(agent_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class BuildingERP(str, Enum):
     """Supported ERP systems for building energy data."""
@@ -112,7 +103,6 @@ class BuildingERP(str, Enum):
     DYNAMICS_FACILITIES = "dynamics_facilities"
     YARDI = "yardi"
     MRI_SOFTWARE = "mri_software"
-
 
 class BuildingDataSource(str, Enum):
     """Types of building energy data sources."""
@@ -131,7 +121,6 @@ class BuildingDataSource(str, Enum):
     WEATHER_TMY = "weather_tmy"
     OCCUPANCY_SCHEDULE = "occupancy_schedule"
 
-
 class DataAgentRoute(str, Enum):
     """DATA agent identifiers for routing."""
 
@@ -141,11 +130,9 @@ class DataAgentRoute(str, Enum):
     TIME_SERIES_GAP = "DATA-014"
     VALIDATION_RULES = "DATA-019"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class ERPFieldMapping(BaseModel):
     """Field mapping for ERP-to-building data extraction."""
@@ -160,7 +147,6 @@ class ERPFieldMapping(BaseModel):
     cost_center_field: str = Field(default="")
     energy_carrier_field: str = Field(default="")
     unit_field: str = Field(default="")
-
 
 class DataRoutingResult(BaseModel):
     """Result of routing a data operation to a DATA agent."""
@@ -179,7 +165,6 @@ class DataRoutingResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class ERPExtractionResult(BaseModel):
     """Result of extracting building energy data from ERP."""
 
@@ -196,7 +181,6 @@ class ERPExtractionResult(BaseModel):
     quality_score: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
 
-
 class UtilityBillSchema(BaseModel):
     """Expected schema for utility bill data imports."""
 
@@ -210,7 +194,6 @@ class UtilityBillSchema(BaseModel):
     currency_column: str = Field(default="currency")
     supplier_column: str = Field(default="supplier")
     tariff_column: str = Field(default="tariff")
-
 
 class BuildingDataQualityReport(BaseModel):
     """Data quality assessment report for building energy data."""
@@ -230,7 +213,6 @@ class BuildingDataQualityReport(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class DataBuildingBridgeConfig(BaseModel):
     """Configuration for the Data Building Bridge."""
 
@@ -244,7 +226,6 @@ class DataBuildingBridgeConfig(BaseModel):
     gap_fill_method: str = Field(default="linear_interpolation")
     outlier_detection_method: str = Field(default="iqr")
     outlier_threshold_sigma: float = Field(default=3.0, ge=1.0, le=5.0)
-
 
 # ---------------------------------------------------------------------------
 # ERP Field Mapping Presets
@@ -342,11 +323,9 @@ UNIT_CONVERSION_TO_KWH: Dict[str, float] = {
     "tonnes_co2": 0.0,  # Not energy
 }
 
-
 # ---------------------------------------------------------------------------
 # DataBuildingBridge
 # ---------------------------------------------------------------------------
-
 
 class DataBuildingBridge:
     """Routes building energy data operations to DATA agents.

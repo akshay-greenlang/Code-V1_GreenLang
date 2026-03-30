@@ -44,25 +44,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -75,11 +69,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class BMSProtocol(str, Enum):
     """BMS communication protocols."""
@@ -91,7 +83,6 @@ class BMSProtocol(str, Enum):
     NIAGARA_REST = "niagara_rest"
     METASYS_API = "metasys_api"
     ECOSTRUXURE = "ecostruxure"
-
 
 class TrendCategory(str, Enum):
     """BMS trend data categories."""
@@ -107,7 +98,6 @@ class TrendCategory(str, Enum):
     OCCUPANCY = "occupancy"
     POWER_METERING = "power_metering"
 
-
 class EquipmentType(str, Enum):
     """BMS equipment types for trend extraction."""
 
@@ -121,7 +111,6 @@ class EquipmentType(str, Enum):
     VFD = "vfd"
     CT_METER = "ct_meter"
 
-
 class TrendQuality(str, Enum):
     """Trend data quality indicators."""
 
@@ -131,7 +120,6 @@ class TrendQuality(str, Enum):
     OFFLINE = "offline"
     OVERRIDDEN = "overridden"
 
-
 class ConnectionStatus(str, Enum):
     """BMS connection status."""
 
@@ -140,11 +128,9 @@ class ConnectionStatus(str, Enum):
     DEGRADED = "degraded"
     ERROR = "error"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class BMSConfig(BaseModel):
     """Configuration for the BMS Bridge."""
@@ -159,7 +145,6 @@ class BMSConfig(BaseModel):
     max_trend_records: int = Field(default=100000, ge=1000)
     equipment_filter: List[str] = Field(default_factory=list, description="Equipment IDs to monitor")
 
-
 class TrendPoint(BaseModel):
     """A BMS trend data point."""
 
@@ -171,9 +156,8 @@ class TrendPoint(BaseModel):
     value: float = Field(default=0.0)
     unit: str = Field(default="")
     quality: TrendQuality = Field(default=TrendQuality.GOOD)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class TrendExtractResult(BaseModel):
     """Result of a BMS trend data extraction."""
@@ -190,7 +174,6 @@ class TrendExtractResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class EquipmentSchedule(BaseModel):
     """Equipment operating schedule from BMS."""
 
@@ -204,7 +187,6 @@ class EquipmentSchedule(BaseModel):
     setpoint_occupied: Optional[float] = Field(None)
     setpoint_unoccupied: Optional[float] = Field(None)
     run_hours_daily: float = Field(default=12.0, ge=0.0, le=24.0)
-
 
 class RunHoursReport(BaseModel):
     """Equipment run hours summary."""
@@ -220,11 +202,9 @@ class RunHoursReport(BaseModel):
     max_continuous_hours: float = Field(default=0.0, ge=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # BMSBridge
 # ---------------------------------------------------------------------------
-
 
 class BMSBridge:
     """BMS trend data extraction for energy monitoring.

@@ -44,7 +44,9 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ReportFormat
 
 # ---------------------------------------------------------------------------
 # Re-export Layer 1 models from excel_normalizer.data_quality_scorer
@@ -61,16 +63,9 @@ QualityLevel = L1QualityLevel
 DataQualityReport = L1DataQualityReport
 DataQualityScorer = L1DataQualityScorer
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -151,11 +146,9 @@ GATE_OUTCOME_VALUES: tuple = ("pass", "warn", "fail")
 #: Issue severity levels ordered by increasing severity.
 ISSUE_SEVERITY_ORDER: tuple = ("info", "warning", "error", "critical")
 
-
 # =============================================================================
 # New Enumerations (13)
 # =============================================================================
-
 
 class QualityDimension(str, Enum):
     """Quality dimensions for data quality assessment.
@@ -170,7 +163,6 @@ class QualityDimension(str, Enum):
     TIMELINESS = "timeliness"
     UNIQUENESS = "uniqueness"
     ACCURACY = "accuracy"
-
 
 class DataType(str, Enum):
     """Detected or declared data types for column profiling.
@@ -193,7 +185,6 @@ class DataType(str, Enum):
     JSON = "json"
     UNKNOWN = "unknown"
 
-
 class ProfileStatus(str, Enum):
     """Lifecycle status of a dataset profiling operation.
 
@@ -205,7 +196,6 @@ class ProfileStatus(str, Enum):
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
-
 
 class AssessmentStatus(str, Enum):
     """Lifecycle status of a quality assessment operation.
@@ -220,7 +210,6 @@ class AssessmentStatus(str, Enum):
     WARNING = "warning"
     FAILED = "failed"
 
-
 class AnomalyMethod(str, Enum):
     """Statistical methods for outlier and anomaly detection.
 
@@ -234,7 +223,6 @@ class AnomalyMethod(str, Enum):
     GRUBBS = "grubbs"
     MODIFIED_ZSCORE = "modified_zscore"
 
-
 class AnomalySeverity(str, Enum):
     """Severity classification for detected anomalies.
 
@@ -246,7 +234,6 @@ class AnomalySeverity(str, Enum):
     MEDIUM = "medium"
     HIGH = "high"
     CRITICAL = "critical"
-
 
 class RuleType(str, Enum):
     """Types of data quality validation rules.
@@ -261,7 +248,6 @@ class RuleType(str, Enum):
     UNIQUENESS = "uniqueness"
     CUSTOM = "custom"
     FRESHNESS = "freshness"
-
 
 class RuleOperator(str, Enum):
     """Comparison operators for quality rule evaluation.
@@ -279,7 +265,6 @@ class RuleOperator(str, Enum):
     CONTAINS = "contains"
     IN_SET = "in_set"
 
-
 class GateOutcome(str, Enum):
     """Outcome of a quality gate evaluation.
 
@@ -290,7 +275,6 @@ class GateOutcome(str, Enum):
     PASS = "pass"
     WARN = "warn"
     FAIL = "fail"
-
 
 class IssueSeverity(str, Enum):
     """Severity classification for quality issues.
@@ -303,7 +287,6 @@ class IssueSeverity(str, Enum):
     WARNING = "warning"
     ERROR = "error"
     CRITICAL = "critical"
-
 
 class MissingPattern(str, Enum):
     """Classification of missing data patterns.
@@ -322,21 +305,6 @@ class MissingPattern(str, Enum):
     MNAR = "mnar"
     UNKNOWN = "unknown"
 
-
-class ReportFormat(str, Enum):
-    """Output format for quality profiler reports.
-
-    Defines the serialization format for generated reports
-    including profiling summaries and assessment outputs.
-    """
-
-    JSON = "json"
-    MARKDOWN = "markdown"
-    HTML = "html"
-    TEXT = "text"
-    CSV = "csv"
-
-
 class TrendDirection(str, Enum):
     """Direction of quality score trend over time.
 
@@ -349,13 +317,11 @@ class TrendDirection(str, Enum):
     DEGRADING = "degrading"
     UNKNOWN = "unknown"
 
-
 # =============================================================================
 # SDK Data Models (15)
 # =============================================================================
 
-
-class ColumnProfile(BaseModel):
+class ColumnProfile(GreenLangBase):
     """Statistical profile of a single column in a dataset.
 
     Contains descriptive statistics, type information, null analysis,
@@ -477,8 +443,7 @@ class ColumnProfile(BaseModel):
             raise ValueError("name must be non-empty")
         return v
 
-
-class DatasetProfile(BaseModel):
+class DatasetProfile(GreenLangBase):
     """Complete statistical profile of a dataset.
 
     Aggregates per-column profiles with dataset-level metadata
@@ -528,7 +493,7 @@ class DatasetProfile(BaseModel):
         description="Estimated memory footprint in bytes",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when profiling was initiated",
     )
     profiled_at: Optional[datetime] = Field(
@@ -558,8 +523,7 @@ class DatasetProfile(BaseModel):
             raise ValueError("dataset_name must be non-empty")
         return v
 
-
-class QualityIssue(BaseModel):
+class QualityIssue(GreenLangBase):
     """A single data quality issue detected during assessment.
 
     Represents a specific quality problem found in a dataset column
@@ -616,8 +580,7 @@ class QualityIssue(BaseModel):
             raise ValueError("description must be non-empty")
         return v
 
-
-class DimensionScore(BaseModel):
+class DimensionScore(GreenLangBase):
     """Score for a single quality dimension within an assessment.
 
     Contains the raw score, weight, weighted contribution, detail
@@ -658,8 +621,7 @@ class DimensionScore(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class QualityAssessment(BaseModel):
+class QualityAssessment(GreenLangBase):
     """Complete quality assessment result for a dataset.
 
     Aggregates dimension scores, overall score, quality level
@@ -713,7 +675,7 @@ class QualityAssessment(BaseModel):
         description="Current assessment status",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when assessment was initiated",
     )
     completed_at: Optional[datetime] = Field(
@@ -739,8 +701,7 @@ class QualityAssessment(BaseModel):
             raise ValueError("dataset_name must be non-empty")
         return v
 
-
-class AnomalyResult(BaseModel):
+class AnomalyResult(GreenLangBase):
     """Result of anomaly detection for a single column value or set.
 
     Contains the anomalous value, expected range, detection method,
@@ -806,8 +767,7 @@ class AnomalyResult(BaseModel):
             raise ValueError("column must be non-empty")
         return v
 
-
-class FreshnessResult(BaseModel):
+class FreshnessResult(GreenLangBase):
     """Result of a dataset freshness / timeliness check.
 
     Evaluates how recently a dataset was updated relative to
@@ -867,8 +827,7 @@ class FreshnessResult(BaseModel):
             raise ValueError("last_updated must be non-empty")
         return v
 
-
-class QualityRule(BaseModel):
+class QualityRule(GreenLangBase):
     """A data quality validation rule for automated checks.
 
     Defines a constraint or expectation on a dataset column
@@ -930,7 +889,7 @@ class QualityRule(BaseModel):
         description="Evaluation priority (lower = higher priority)",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the rule was created",
     )
     provenance_hash: str = Field(
@@ -948,8 +907,7 @@ class QualityRule(BaseModel):
             raise ValueError("name must be non-empty")
         return v
 
-
-class RuleEvaluation(BaseModel):
+class RuleEvaluation(GreenLangBase):
     """Result of evaluating a single quality rule against a dataset.
 
     Contains the pass/fail outcome, actual measured value,
@@ -1006,8 +964,7 @@ class RuleEvaluation(BaseModel):
             raise ValueError("rule_id must be non-empty")
         return v
 
-
-class QualityGate(BaseModel):
+class QualityGate(GreenLangBase):
     """A quality gate checkpoint for pipeline data governance.
 
     Quality gates aggregate multiple conditions (dimension thresholds)
@@ -1064,7 +1021,7 @@ class QualityGate(BaseModel):
         description="Rule evaluation results contributing to this gate",
     )
     evaluated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the gate was evaluated",
     )
     provenance_hash: str = Field(
@@ -1082,8 +1039,7 @@ class QualityGate(BaseModel):
             raise ValueError("name must be non-empty")
         return v
 
-
-class QualityTrend(BaseModel):
+class QualityTrend(GreenLangBase):
     """Quality score trend for a dataset over time.
 
     Tracks historical quality scores across multiple profiling
@@ -1152,8 +1108,7 @@ class QualityTrend(BaseModel):
             raise ValueError("dataset_name must be non-empty")
         return v
 
-
-class QualityScorecardRow(BaseModel):
+class QualityScorecardRow(GreenLangBase):
     """A single row in a quality scorecard.
 
     Represents one quality dimension with its score, weight,
@@ -1194,8 +1149,7 @@ class QualityScorecardRow(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class QualityScorecard(BaseModel):
+class QualityScorecard(GreenLangBase):
     """Complete quality scorecard for a dataset.
 
     Presents a tabular summary of all quality dimensions with
@@ -1237,7 +1191,7 @@ class QualityScorecard(BaseModel):
         description="Total issues across all dimensions",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the scorecard was generated",
     )
     provenance_hash: str = Field(
@@ -1255,8 +1209,7 @@ class QualityScorecard(BaseModel):
             raise ValueError("dataset_name must be non-empty")
         return v
 
-
-class DataQualityProfilerStatistics(BaseModel):
+class DataQualityProfilerStatistics(GreenLangBase):
     """Aggregated operational statistics for the profiler service.
 
     Provides high-level metrics for monitoring the overall
@@ -1307,14 +1260,13 @@ class DataQualityProfilerStatistics(BaseModel):
         description="Count of assessments per quality level",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when statistics were computed",
     )
 
     model_config = {"extra": "forbid"}
 
-
-class ProfileSummary(BaseModel):
+class ProfileSummary(GreenLangBase):
     """Lightweight summary of a completed dataset profile.
 
     Provides key metadata for listing and searching profiles
@@ -1353,7 +1305,7 @@ class ProfileSummary(BaseModel):
         description="Profile completion status",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when profiling was initiated",
     )
 
@@ -1375,13 +1327,11 @@ class ProfileSummary(BaseModel):
             raise ValueError("dataset_name must be non-empty")
         return v
 
-
 # =============================================================================
 # Request Models (7)
 # =============================================================================
 
-
-class ProfileDatasetRequest(BaseModel):
+class ProfileDatasetRequest(GreenLangBase):
     """Request body for profiling a dataset.
 
     Attributes:
@@ -1427,8 +1377,7 @@ class ProfileDatasetRequest(BaseModel):
             raise ValueError("dataset_name must be non-empty")
         return v
 
-
-class AssessQualityRequest(BaseModel):
+class AssessQualityRequest(GreenLangBase):
     """Request body for assessing data quality of a dataset.
 
     Attributes:
@@ -1469,8 +1418,7 @@ class AssessQualityRequest(BaseModel):
             raise ValueError("dataset_name must be non-empty")
         return v
 
-
-class ValidateDatasetRequest(BaseModel):
+class ValidateDatasetRequest(GreenLangBase):
     """Request body for validating a dataset against quality rules.
 
     Attributes:
@@ -1506,8 +1454,7 @@ class ValidateDatasetRequest(BaseModel):
             raise ValueError("dataset_name must be non-empty")
         return v
 
-
-class DetectAnomaliesRequest(BaseModel):
+class DetectAnomaliesRequest(GreenLangBase):
     """Request body for detecting anomalies in a dataset.
 
     Attributes:
@@ -1548,8 +1495,7 @@ class DetectAnomaliesRequest(BaseModel):
             raise ValueError("dataset_name must be non-empty")
         return v
 
-
-class CheckFreshnessRequest(BaseModel):
+class CheckFreshnessRequest(GreenLangBase):
     """Request body for checking dataset freshness.
 
     Attributes:
@@ -1588,8 +1534,7 @@ class CheckFreshnessRequest(BaseModel):
             raise ValueError("last_updated must be non-empty")
         return v
 
-
-class CreateRuleRequest(BaseModel):
+class CreateRuleRequest(GreenLangBase):
     """Request body for creating a new quality rule.
 
     Attributes:
@@ -1644,8 +1589,7 @@ class CreateRuleRequest(BaseModel):
             raise ValueError("name must be non-empty")
         return v
 
-
-class GenerateReportRequest(BaseModel):
+class GenerateReportRequest(GreenLangBase):
     """Request body for generating a quality profiler report.
 
     Attributes:
@@ -1706,7 +1650,6 @@ class GenerateReportRequest(BaseModel):
                 f"report_type must be one of {allowed}, got '{v}'"
             )
         return v
-
 
 # =============================================================================
 # __all__ export list

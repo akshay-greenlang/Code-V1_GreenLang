@@ -56,37 +56,28 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> str:
-    """Return current UTC timestamp as ISO-8601 string."""
-    return datetime.utcnow().isoformat() + "Z"
-
-
 def _new_uuid() -> str:
     """Return a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash of JSON-serialisable data."""
     serialised = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialised.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -97,7 +88,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -107,7 +97,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class TargetPhase(str, Enum):
     """Target setting workflow phases."""
 
@@ -116,14 +105,12 @@ class TargetPhase(str, Enum):
     TARGET_CALCULATION = "target_calculation"
     VALIDATION_REPORT = "validation_report"
 
-
 class SBTiPathway(str, Enum):
     """SBTi temperature alignment pathway."""
 
     PATHWAY_1_5C = "1.5C"
     PATHWAY_WB2C = "well_below_2C"
     PATHWAY_2C = "2C"
-
 
 class TemperatureAlignment(str, Enum):
     """Temperature alignment classification."""
@@ -134,7 +121,6 @@ class TemperatureAlignment(str, Enum):
     NOT_ALIGNED = "not_aligned"
     INSUFFICIENT_DATA = "insufficient_data"
 
-
 class AmbitionLevel(str, Enum):
     """Target ambition level classification."""
 
@@ -143,7 +129,6 @@ class AmbitionLevel(str, Enum):
     BELOW_MINIMUM = "below_minimum"
     WELL_BELOW_MINIMUM = "well_below_minimum"
 
-
 class ValidationOutcome(str, Enum):
     """Target validation outcome."""
 
@@ -151,7 +136,6 @@ class ValidationOutcome(str, Enum):
     CONDITIONALLY_APPROVED = "conditionally_approved"
     REJECTED = "rejected"
     REQUIRES_REVISION = "requires_revision"
-
 
 # =============================================================================
 # SECTOR PATHWAY DATA (Zero-Hallucination Reference)
@@ -205,11 +189,9 @@ MINIMUM_ANNUAL_REDUCTION_RATE: Dict[str, float] = {
     "2C": 1.5,             # 1.5% per year
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -223,7 +205,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
 
-
 class BaselineData(BaseModel):
     """Baseline intensity data for target setting."""
 
@@ -236,7 +217,6 @@ class BaselineData(BaseModel):
     scope_coverage: str = Field(default="scope_1_2_location")
     data_quality_score: float = Field(default=0.0, ge=0.0, le=100.0)
 
-
 class PathwayConfig(BaseModel):
     """SBTi SDA pathway configuration."""
 
@@ -246,7 +226,6 @@ class PathwayConfig(BaseModel):
     convergence_year: int = Field(default=2050, ge=2030, le=2100)
     interim_target_years: List[int] = Field(default_factory=lambda: [2030, 2035])
     include_scope3: bool = Field(default=False)
-
 
 class AnnualTarget(BaseModel):
     """Annual intensity target for a specific year."""
@@ -258,7 +237,6 @@ class AnnualTarget(BaseModel):
     is_interim_target: bool = Field(default=False)
     is_final_target: bool = Field(default=False)
     provenance_hash: str = Field(default="")
-
 
 class TargetValidation(BaseModel):
     """Validation result for the proposed target."""
@@ -273,11 +251,9 @@ class TargetValidation(BaseModel):
     findings: List[str] = Field(default_factory=list)
     recommendations: List[str] = Field(default_factory=list)
 
-
 # =============================================================================
 # INPUT / OUTPUT
 # =============================================================================
-
 
 class TargetSettingInput(BaseModel):
     """Input data model for TargetSettingWorkflow."""
@@ -294,7 +270,6 @@ class TargetSettingInput(BaseModel):
     )
     tenant_id: str = Field(default="")
     config: Dict[str, Any] = Field(default_factory=dict)
-
 
 class TargetSettingResult(BaseModel):
     """Complete result from target setting workflow."""
@@ -314,11 +289,9 @@ class TargetSettingResult(BaseModel):
     pathway: SBTiPathway = Field(default=SBTiPathway.PATHWAY_1_5C)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class TargetSettingWorkflow:
     """
@@ -803,6 +776,7 @@ class TargetSettingWorkflow:
                         phase_number, attempt, self.MAX_RETRIES, exc, delay,
                     )
                     import asyncio
+
                     await asyncio.sleep(delay)
         return PhaseResult(
             phase_name=f"phase_{phase_number}_failed",

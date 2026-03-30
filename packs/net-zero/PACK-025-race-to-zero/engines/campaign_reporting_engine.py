@@ -66,23 +66,18 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -99,7 +94,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -108,7 +102,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -116,26 +109,21 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     return float(
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums & Constants
 # ---------------------------------------------------------------------------
-
 
 class ReportSectionId(str, Enum):
     """Report section identifiers."""
@@ -150,14 +138,12 @@ class ReportSectionId(str, Enum):
     PARTNERSHIP = "partnership"
     FORWARD_COMMITMENTS = "forward_commitments"
 
-
 class VerificationBadge(str, Enum):
     """Verification badge status."""
     VERIFIED = "verified"
     PENDING = "pending"
     FAILED = "failed"
     NOT_STARTED = "not_started"
-
 
 class PartnerFormat(str, Enum):
     """Partner-specific report format."""
@@ -166,7 +152,6 @@ class PartnerFormat(str, Enum):
     C40 = "c40"
     SBTI = "sbti"
     UNIVERSAL = "universal"
-
 
 SECTION_WEIGHTS: Dict[str, Decimal] = {
     ReportSectionId.ENTITY_PROFILE.value: Decimal("0.05"),
@@ -209,11 +194,9 @@ GFANZ_MAPPING: Dict[str, str] = {
     "emissions_inventory": "Section 4: Metrics and Targets",
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class ReportSectionInput(BaseModel):
     """Input for a single report section.
@@ -238,7 +221,6 @@ class ReportSectionInput(BaseModel):
         if v not in valid:
             raise ValueError(f"Unknown section '{v}'.")
         return v
-
 
 class CampaignReportingInput(BaseModel):
     """Complete input for campaign reporting.
@@ -308,11 +290,9 @@ class CampaignReportingInput(BaseModel):
             raise ValueError(f"Unknown verification status '{v}'.")
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class ReportSectionResult(BaseModel):
     """Result for a single report section."""
@@ -324,7 +304,6 @@ class ReportSectionResult(BaseModel):
     data_available: bool = Field(default=False)
     partner_mappings: Dict[str, str] = Field(default_factory=dict)
 
-
 class PartnerFormatOutput(BaseModel):
     """Partner-specific formatted output."""
     format_id: str = Field(default="")
@@ -332,7 +311,6 @@ class PartnerFormatOutput(BaseModel):
     sections_mapped: int = Field(default=0)
     field_mappings: Dict[str, str] = Field(default_factory=dict)
     submission_ready: bool = Field(default=False)
-
 
 class ExecutiveSummary(BaseModel):
     """Executive summary for the campaign report."""
@@ -346,12 +324,11 @@ class ExecutiveSummary(BaseModel):
     key_achievements: List[str] = Field(default_factory=list)
     key_challenges: List[str] = Field(default_factory=list)
 
-
 class CampaignReportingResult(BaseModel):
     """Complete campaign reporting result."""
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     reporting_year: int = Field(default=0)
     report_completeness: Decimal = Field(default=Decimal("0"))
@@ -368,11 +345,9 @@ class CampaignReportingResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class CampaignReportingEngine:
     """Race to Zero annual campaign disclosure reporting engine.

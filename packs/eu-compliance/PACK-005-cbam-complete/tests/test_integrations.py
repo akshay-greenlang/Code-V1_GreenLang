@@ -17,9 +17,11 @@ import pytest
 
 import sys
 import os
+from greenlang.schemas import utcnow
 sys.path.insert(0, os.path.dirname(__file__))
 
 from conftest import (
+
     PACK005_INTEGRATION_IDS,
     StubETSBridge,
     StubRegistryClient,
@@ -288,7 +290,7 @@ class TestHealthCheckIntegration:
             "checks_total": 6,
             "checks_passed": 6,
             "checks_failed": 0,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
         assert health["overall_status"] == "healthy"
         assert health["checks_failed"] == 0

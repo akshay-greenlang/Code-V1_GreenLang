@@ -35,14 +35,9 @@ import time
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -54,7 +49,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Climate Zones (Koppen-Geiger simplified)
@@ -165,7 +159,6 @@ COUNTRY_BBOX: Dict[str, Dict[str, Any]] = {
     "CRI": {"name": "Costa Rica", "iso2": "CR", "bbox": [-85.9, 8.0, -82.6, 11.2]},
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Structures
 # ---------------------------------------------------------------------------
@@ -195,9 +188,8 @@ def _make_boundary_result(
         "resolution_type": resolution_type,
         "resolved": resolved,
         "confidence": confidence,
-        "created_at": _utcnow().isoformat(),
+        "created_at": utcnow().isoformat(),
     }
-
 
 # ---------------------------------------------------------------------------
 # Engine
@@ -535,7 +527,7 @@ class BoundaryResolverEngine:
             "geometry": geometry,
             "bbox": bbox,
             "designation": designation or level,
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
         # Record provenance
@@ -703,7 +695,6 @@ class BoundaryResolverEngine:
             "biomes_available": len(BIOMES),
             "custom_boundaries": len(self._custom_boundaries),
         }
-
 
 __all__ = [
     "BoundaryResolverEngine",

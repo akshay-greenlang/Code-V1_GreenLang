@@ -76,8 +76,9 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, FrozenSet, List, Optional, Set, Tuple
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -191,16 +192,9 @@ UNVERIFIED_STATUSES: FrozenSet[str] = frozenset({
     "insufficient_data",
 })
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed for consistency."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -214,7 +208,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 def _generate_id(prefix: str) -> str:
     """Generate a unique identifier with a given prefix.
 
@@ -226,11 +219,9 @@ def _generate_id(prefix: str) -> str:
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
 
-
 # ---------------------------------------------------------------------------
 # Enumerations (local references for type safety)
 # ---------------------------------------------------------------------------
-
 
 class GapType(str, Enum):
     """Gap type classification matching models.GapType."""
@@ -246,7 +237,6 @@ class GapType(str, Enum):
     ORPHAN_NODE = "orphan_node"
     MISSING_DOCUMENTATION = "missing_documentation"
 
-
 class GapSeverity(str, Enum):
     """Gap severity classification matching models.GapSeverity."""
 
@@ -254,7 +244,6 @@ class GapSeverity(str, Enum):
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 #: Maps gap types to default severity.
 GAP_SEVERITY_MAP: Dict[GapType, GapSeverity] = {
@@ -293,11 +282,9 @@ RISK_IMPACT_MULTIPLIERS: Dict[GapSeverity, float] = {
     GapSeverity.LOW: 1.0,
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class DetectedGap:
@@ -332,7 +319,7 @@ class DetectedGap:
     risk_impact_score: float = 0.0
     is_resolved: bool = False
     resolved_at: Optional[datetime] = None
-    detected_at: datetime = field(default_factory=_utcnow)
+    detected_at: datetime = field(default_factory=utcnow)
     metadata: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -357,7 +344,6 @@ class DetectedGap:
             "detected_at": self.detected_at.isoformat() if self.detected_at else None,
             "metadata": self.metadata,
         }
-
 
 @dataclass
 class RemediationAction:
@@ -412,7 +398,6 @@ class RemediationAction:
             "estimated_effort": self.estimated_effort,
         }
 
-
 @dataclass
 class GapTrendSnapshot:
     """A point-in-time snapshot of gap counts for trend tracking.
@@ -431,7 +416,7 @@ class GapTrendSnapshot:
 
     snapshot_id: str = field(default_factory=lambda: _generate_id("SNAP"))
     graph_id: str = ""
-    timestamp: datetime = field(default_factory=_utcnow)
+    timestamp: datetime = field(default_factory=utcnow)
     total_gaps: int = 0
     gaps_by_severity: Dict[str, int] = field(
         default_factory=lambda: {"critical": 0, "high": 0, "medium": 0, "low": 0}
@@ -458,7 +443,6 @@ class GapTrendSnapshot:
             "resolved_since_last": self.resolved_since_last,
             "new_since_last": self.new_since_last,
         }
-
 
 @dataclass
 class GapAnalysisResult:
@@ -498,7 +482,7 @@ class GapAnalysisResult:
     auto_remediation_triggers: List[Dict[str, Any]] = field(default_factory=list)
     provenance_hash: str = ""
     processing_time_ms: float = 0.0
-    analysis_timestamp: datetime = field(default_factory=_utcnow)
+    analysis_timestamp: datetime = field(default_factory=utcnow)
     node_count: int = 0
     edge_count: int = 0
 
@@ -530,7 +514,6 @@ class GapAnalysisResult:
             "node_count": self.node_count,
             "edge_count": self.edge_count,
         }
-
 
 @dataclass
 class GapAnalyzerConfig:
@@ -590,11 +573,9 @@ class GapAnalyzerConfig:
                 + "\n".join(f"  - {e}" for e in errors)
             )
 
-
 # ===========================================================================
 # GapAnalyzer Engine
 # ===========================================================================
-
 
 class GapAnalyzer:
     """Supply chain gap analysis engine for EUDR compliance.
@@ -701,7 +682,7 @@ class GapAnalyzer:
             and prioritized remediation actions.
         """
         start_time = time.monotonic()
-        ref_time = reference_time or _utcnow()
+        ref_time = reference_time or utcnow()
         self._analysis_count += 1
 
         logger.info(
@@ -835,7 +816,7 @@ class GapAnalyzer:
         for gap in gaps:
             if gap.gap_id == gap_id and not gap.is_resolved:
                 gap.is_resolved = True
-                gap.resolved_at = _utcnow()
+                gap.resolved_at = utcnow()
                 if resolution_notes:
                     gap.metadata["resolution_notes"] = resolution_notes
                 logger.info(
@@ -2236,7 +2217,7 @@ class GapAnalyzer:
                     "severity": gap.severity,
                     "affected_node_id": gap.affected_node_id,
                     "affected_edge_id": gap.affected_edge_id,
-                    "timestamp": _utcnow().isoformat(),
+                    "timestamp": utcnow().isoformat(),
                 })
 
         return triggers
@@ -2457,7 +2438,6 @@ class GapAnalyzer:
             for g in self._gap_store.get(graph_id, [])
             if g.is_resolved
         ]
-
 
 # ---------------------------------------------------------------------------
 # Public API

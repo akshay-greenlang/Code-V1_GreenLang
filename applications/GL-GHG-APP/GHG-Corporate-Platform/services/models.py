@@ -22,7 +22,8 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 
 from .config import (
     ConsolidationApproach,
@@ -65,7 +66,7 @@ def _sha256(payload: str) -> str:
 # Organization & Entity Models
 # ---------------------------------------------------------------------------
 
-class Entity(BaseModel):
+class Entity(GreenLangBase):
     """
     An organizational entity (subsidiary, facility, or operation).
 
@@ -94,7 +95,7 @@ class Entity(BaseModel):
     updated_at: datetime = Field(default_factory=_now)
 
 
-class Organization(BaseModel):
+class Organization(GreenLangBase):
     """
     Top-level organization performing GHG accounting.
 
@@ -115,7 +116,7 @@ class Organization(BaseModel):
 # Inventory Boundary Models
 # ---------------------------------------------------------------------------
 
-class ExclusionRecord(BaseModel):
+class ExclusionRecord(GreenLangBase):
     """Record of a scope/category exclusion with justification."""
 
     id: str = Field(default_factory=_new_id)
@@ -132,7 +133,7 @@ class ExclusionRecord(BaseModel):
     created_at: datetime = Field(default_factory=_now)
 
 
-class InventoryBoundary(BaseModel):
+class InventoryBoundary(GreenLangBase):
     """
     Organizational and operational boundary for a GHG inventory.
 
@@ -164,7 +165,7 @@ class InventoryBoundary(BaseModel):
 # Base Year Models
 # ---------------------------------------------------------------------------
 
-class Recalculation(BaseModel):
+class Recalculation(GreenLangBase):
     """A base year recalculation event per GHG Protocol Ch 6."""
 
     id: str = Field(default_factory=_new_id)
@@ -184,7 +185,7 @@ class Recalculation(BaseModel):
         return ((self.new_value - self.original_value) / self.original_value) * 100
 
 
-class BaseYear(BaseModel):
+class BaseYear(GreenLangBase):
     """
     Base year definition with emissions snapshot per GHG Protocol Ch 6.
 
@@ -222,7 +223,7 @@ class BaseYear(BaseModel):
 # Scope Emissions Models
 # ---------------------------------------------------------------------------
 
-class ScopeEmissions(BaseModel):
+class ScopeEmissions(GreenLangBase):
     """
     Aggregated emissions for a single scope.
 
@@ -272,7 +273,7 @@ class ScopeEmissions(BaseModel):
 # Intensity Metrics
 # ---------------------------------------------------------------------------
 
-class IntensityMetric(BaseModel):
+class IntensityMetric(GreenLangBase):
     """A single GHG intensity metric (GHG Protocol Ch 12)."""
 
     id: str = Field(default_factory=_new_id)
@@ -289,7 +290,7 @@ class IntensityMetric(BaseModel):
 # Uncertainty Models
 # ---------------------------------------------------------------------------
 
-class ScopeUncertainty(BaseModel):
+class ScopeUncertainty(GreenLangBase):
     """Uncertainty results for a single scope."""
 
     scope: Scope
@@ -301,7 +302,7 @@ class ScopeUncertainty(BaseModel):
     cv: Decimal = Field(default=Decimal("0"), description="Coefficient of variation (%)")
 
 
-class UncertaintyResult(BaseModel):
+class UncertaintyResult(GreenLangBase):
     """
     Combined uncertainty analysis results from Monte Carlo simulation.
 
@@ -333,7 +334,7 @@ class UncertaintyResult(BaseModel):
 # Completeness Models
 # ---------------------------------------------------------------------------
 
-class Disclosure(BaseModel):
+class Disclosure(GreenLangBase):
     """A single mandatory or optional disclosure requirement."""
 
     id: str = Field(..., description="Disclosure identifier (e.g. MD-01)")
@@ -344,7 +345,7 @@ class Disclosure(BaseModel):
     evidence: Optional[str] = Field(None, description="Evidence reference")
 
 
-class DataGap(BaseModel):
+class DataGap(GreenLangBase):
     """An identified gap in the GHG inventory."""
 
     id: str = Field(default_factory=_new_id)
@@ -359,7 +360,7 @@ class DataGap(BaseModel):
     )
 
 
-class CompletenessResult(BaseModel):
+class CompletenessResult(GreenLangBase):
     """Result of completeness analysis for an inventory."""
 
     id: str = Field(default_factory=_new_id)
@@ -381,7 +382,7 @@ class CompletenessResult(BaseModel):
 # Report Models
 # ---------------------------------------------------------------------------
 
-class ReportSection(BaseModel):
+class ReportSection(GreenLangBase):
     """A single section of a generated report."""
 
     key: str = Field(..., description="Section key (e.g. executive_summary)")
@@ -390,7 +391,7 @@ class ReportSection(BaseModel):
     order: int = Field(default=0)
 
 
-class Report(BaseModel):
+class Report(GreenLangBase):
     """A generated GHG inventory report."""
 
     id: str = Field(default_factory=_new_id)
@@ -413,7 +414,7 @@ class Report(BaseModel):
 # Verification Models
 # ---------------------------------------------------------------------------
 
-class VerificationFinding(BaseModel):
+class VerificationFinding(GreenLangBase):
     """A finding from internal review or external verification."""
 
     id: str = Field(default_factory=_new_id)
@@ -430,7 +431,7 @@ class VerificationFinding(BaseModel):
     resolved_at: Optional[datetime] = Field(None)
 
 
-class VerificationRecord(BaseModel):
+class VerificationRecord(GreenLangBase):
     """
     A verification / assurance record for a GHG inventory.
 
@@ -475,7 +476,7 @@ class VerificationRecord(BaseModel):
 # Target Tracking Models
 # ---------------------------------------------------------------------------
 
-class Target(BaseModel):
+class Target(GreenLangBase):
     """
     An emission reduction target (absolute or intensity-based).
 
@@ -528,7 +529,7 @@ class Target(BaseModel):
 # GHG Inventory -- The Central Object
 # ---------------------------------------------------------------------------
 
-class GHGInventory(BaseModel):
+class GHGInventory(GreenLangBase):
     """
     Complete GHG inventory for an organization-year.
 
@@ -596,7 +597,7 @@ class GHGInventory(BaseModel):
 # Dashboard Metrics
 # ---------------------------------------------------------------------------
 
-class DashboardMetrics(BaseModel):
+class DashboardMetrics(GreenLangBase):
     """Aggregated dashboard metrics for a single inventory year."""
 
     org_id: str = Field(...)
@@ -621,7 +622,7 @@ class DashboardMetrics(BaseModel):
 # Request / Response Models
 # ---------------------------------------------------------------------------
 
-class CreateOrganizationRequest(BaseModel):
+class CreateOrganizationRequest(GreenLangBase):
     """Request to create a new organization."""
 
     name: str = Field(..., min_length=1, max_length=500)
@@ -630,7 +631,7 @@ class CreateOrganizationRequest(BaseModel):
     description: Optional[str] = Field(None, max_length=2000)
 
 
-class AddEntityRequest(BaseModel):
+class AddEntityRequest(GreenLangBase):
     """Request to add an entity to an organization."""
 
     name: str = Field(..., min_length=1, max_length=255)
@@ -645,7 +646,7 @@ class AddEntityRequest(BaseModel):
     production_unit_name: Optional[str] = Field(None)
 
 
-class UpdateEntityRequest(BaseModel):
+class UpdateEntityRequest(GreenLangBase):
     """Request to update an existing entity."""
 
     name: Optional[str] = Field(None, min_length=1, max_length=255)
@@ -661,7 +662,7 @@ class UpdateEntityRequest(BaseModel):
     active: Optional[bool] = Field(None)
 
 
-class SetBoundaryRequest(BaseModel):
+class SetBoundaryRequest(GreenLangBase):
     """Request to set organizational/operational boundary."""
 
     consolidation_approach: ConsolidationApproach = Field(...)
@@ -672,7 +673,7 @@ class SetBoundaryRequest(BaseModel):
     entity_ids: Optional[List[str]] = Field(None)
 
 
-class CreateInventoryRequest(BaseModel):
+class CreateInventoryRequest(GreenLangBase):
     """Request to create a new GHG inventory."""
 
     year: int = Field(..., ge=1990, le=2100)
@@ -680,7 +681,7 @@ class CreateInventoryRequest(BaseModel):
     scopes: Optional[List[Scope]] = Field(None)
 
 
-class SetBaseYearRequest(BaseModel):
+class SetBaseYearRequest(GreenLangBase):
     """Request to set or update the base year."""
 
     year: int = Field(..., ge=1990, le=2100)
@@ -691,7 +692,7 @@ class SetBaseYearRequest(BaseModel):
     justification: str = Field(..., min_length=10)
 
 
-class RecalculateBaseYearRequest(BaseModel):
+class RecalculateBaseYearRequest(GreenLangBase):
     """Request to recalculate the base year."""
 
     trigger: str = Field(..., description="Structural change trigger")
@@ -702,7 +703,7 @@ class RecalculateBaseYearRequest(BaseModel):
     reason: str = Field(..., min_length=10)
 
 
-class SetTargetRequest(BaseModel):
+class SetTargetRequest(GreenLangBase):
     """Request to set an emission reduction target."""
 
     name: str = Field(default="")
@@ -716,14 +717,14 @@ class SetTargetRequest(BaseModel):
     sbti_pathway: Optional[str] = Field(None)
 
 
-class GenerateReportRequest(BaseModel):
+class GenerateReportRequest(GreenLangBase):
     """Request to generate a report."""
 
     format: ReportFormat = Field(default=ReportFormat.JSON)
     sections: Optional[List[str]] = Field(None, description="Specific sections to include")
 
 
-class StartVerificationRequest(BaseModel):
+class StartVerificationRequest(GreenLangBase):
     """Request to start verification."""
 
     level: VerificationLevel = Field(default=VerificationLevel.INTERNAL_REVIEW)
@@ -732,7 +733,7 @@ class StartVerificationRequest(BaseModel):
     verifier_organization: Optional[str] = Field(None)
 
 
-class AddFindingRequest(BaseModel):
+class AddFindingRequest(GreenLangBase):
     """Request to add a verification finding."""
 
     finding_type: FindingType = Field(...)
@@ -741,7 +742,7 @@ class AddFindingRequest(BaseModel):
     materiality: FindingSeverity = Field(default=FindingSeverity.LOW)
 
 
-class AggregateEmissionsRequest(BaseModel):
+class AggregateEmissionsRequest(GreenLangBase):
     """Request to aggregate emissions for an inventory."""
 
     inventory_id: str = Field(...)
@@ -755,7 +756,7 @@ class AggregateEmissionsRequest(BaseModel):
     )
 
 
-class ExclusionRequest(BaseModel):
+class ExclusionRequest(GreenLangBase):
     """Request to add a scope/category exclusion."""
 
     scope: Scope = Field(...)

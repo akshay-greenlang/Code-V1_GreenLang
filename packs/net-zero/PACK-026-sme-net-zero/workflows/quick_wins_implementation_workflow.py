@@ -36,33 +36,26 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "26.0.0"
 _PACK_ID = "PACK-026"
 
-
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -71,14 +64,12 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class ActionStatus(str, Enum):
     NOT_STARTED = "not_started"
@@ -88,7 +79,6 @@ class ActionStatus(str, Enum):
     VERIFIED = "verified"
     CANCELLED = "cancelled"
 
-
 class VendorStatus(str, Enum):
     IDENTIFIED = "identified"
     CONTACTED = "contacted"
@@ -96,14 +86,12 @@ class VendorStatus(str, Enum):
     SELECTED = "selected"
     CONTRACTED = "contracted"
 
-
 class VerificationResult(str, Enum):
     EXCEEDED = "exceeded"          # Savings better than expected
     MET = "met"                    # Savings as expected (+/-10%)
     PARTIAL = "partial"            # Savings below expected (>50%)
     UNDERPERFORMED = "underperformed"  # Savings significantly below (<50%)
     NOT_VERIFIED = "not_verified"  # Not yet verified
-
 
 # =============================================================================
 # COST-BENEFIT CONSTANTS
@@ -170,11 +158,9 @@ VENDOR_CATEGORIES: Dict[str, List[Dict[str, str]]] = {
     ],
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -190,7 +176,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     mobile_summary: str = Field(default="")
 
-
 class QuickWinCandidate(BaseModel):
     """A quick win candidate for selection."""
 
@@ -205,7 +190,6 @@ class QuickWinCandidate(BaseModel):
     selected: bool = Field(default=False)
     priority: int = Field(default=0, ge=0)
 
-
 class VendorOption(BaseModel):
     """A potential vendor/supplier for implementation."""
 
@@ -216,7 +200,6 @@ class VendorOption(BaseModel):
     estimated_quotes_needed: int = Field(default=3, ge=1)
     status: str = Field(default="identified")
     notes: str = Field(default="")
-
 
 class CostBenefitDetail(BaseModel):
     """Detailed cost-benefit analysis for an action."""
@@ -239,7 +222,6 @@ class CostBenefitDetail(BaseModel):
     grant_potential_gbp: float = Field(default=0.0, ge=0.0)
     net_cost_after_grants_gbp: float = Field(default=0.0)
 
-
 class ImplementationMilestone(BaseModel):
     """Implementation timeline milestone."""
 
@@ -252,7 +234,6 @@ class ImplementationMilestone(BaseModel):
     dependencies: List[str] = Field(default_factory=list)
     status: str = Field(default="not_started")
 
-
 class ImplementationPlan(BaseModel):
     """Complete implementation plan for an action."""
 
@@ -263,7 +244,6 @@ class ImplementationPlan(BaseModel):
     resources_needed: List[str] = Field(default_factory=list)
     risks: List[str] = Field(default_factory=list)
     success_criteria: List[str] = Field(default_factory=list)
-
 
 class VerificationReport(BaseModel):
     """Post-implementation verification report."""
@@ -281,7 +261,6 @@ class VerificationReport(BaseModel):
     notes: List[str] = Field(default_factory=list)
     lessons_learned: List[str] = Field(default_factory=list)
 
-
 class QuickWinsImplementationConfig(BaseModel):
     """Configuration for quick wins implementation workflow."""
 
@@ -292,7 +271,6 @@ class QuickWinsImplementationConfig(BaseModel):
     include_vendor_research: bool = Field(default=True)
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
-
 
 class QuickWinsImplementationInput(BaseModel):
     """Complete input for quick wins implementation workflow."""
@@ -306,7 +284,6 @@ class QuickWinsImplementationInput(BaseModel):
     config: QuickWinsImplementationConfig = Field(
         default_factory=QuickWinsImplementationConfig,
     )
-
 
 class QuickWinsImplementationResult(BaseModel):
     """Complete result from quick wins implementation workflow."""
@@ -329,11 +306,9 @@ class QuickWinsImplementationResult(BaseModel):
     next_steps: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class QuickWinsImplementationWorkflow:
     """
@@ -369,7 +344,7 @@ class QuickWinsImplementationWorkflow:
 
     async def execute(self, input_data: QuickWinsImplementationInput) -> QuickWinsImplementationResult:
         """Execute the 5-phase quick wins implementation workflow."""
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting quick wins implementation %s", self.workflow_id)
         self._phase_results = []
         overall_status = WorkflowStatus.RUNNING
@@ -404,7 +379,7 @@ class QuickWinsImplementationWorkflow:
                 mobile_summary="Implementation workflow failed.",
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
 
         total_savings = sum(a.estimated_savings_tco2e for a in self._selected)
         total_cost = sum(a.implementation_cost_gbp for a in self._selected)
@@ -440,7 +415,7 @@ class QuickWinsImplementationWorkflow:
 
     async def _phase_action_selection(self, inp: QuickWinsImplementationInput) -> PhaseResult:
         """Select 3-5 quick wins based on priority and budget."""
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         errors: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -499,7 +474,7 @@ class QuickWinsImplementationWorkflow:
         outputs["total_expected_savings_tco2e"] = round(total_savings, 4)
         outputs["within_budget"] = total_cost <= budget
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="action_selection", phase_number=1,
             status=PhaseStatus.COMPLETED,
@@ -516,7 +491,7 @@ class QuickWinsImplementationWorkflow:
 
     async def _phase_vendor_research(self, inp: QuickWinsImplementationInput) -> PhaseResult:
         """Research vendors and suppliers for selected actions."""
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
 
@@ -570,7 +545,7 @@ class QuickWinsImplementationWorkflow:
         outputs["actions_researched"] = len(self._vendors)
         outputs["total_vendor_types"] = total_vendors
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="vendor_research", phase_number=2,
             status=PhaseStatus.COMPLETED,
@@ -587,7 +562,7 @@ class QuickWinsImplementationWorkflow:
 
     async def _phase_cost_benefit(self, inp: QuickWinsImplementationInput) -> PhaseResult:
         """Detailed cost-benefit analysis with NPV and IRR."""
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
 
@@ -657,7 +632,7 @@ class QuickWinsImplementationWorkflow:
             / max(len(self._cost_benefits), 1), 1,
         )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="cost_benefit", phase_number=3,
             status=PhaseStatus.COMPLETED,
@@ -695,7 +670,7 @@ class QuickWinsImplementationWorkflow:
 
     async def _phase_implementation(self, inp: QuickWinsImplementationInput) -> PhaseResult:
         """Generate implementation timelines and project plans."""
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
 
@@ -714,7 +689,7 @@ class QuickWinsImplementationWorkflow:
         outputs["total_duration_weeks"] = total_weeks
         outputs["total_milestones"] = sum(len(p.milestones) for p in self._impl_plans)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="implementation", phase_number=4,
             status=PhaseStatus.COMPLETED,
@@ -804,7 +779,7 @@ class QuickWinsImplementationWorkflow:
 
     async def _phase_verification(self, inp: QuickWinsImplementationInput) -> PhaseResult:
         """Set up post-implementation verification framework."""
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
 
@@ -838,7 +813,7 @@ class QuickWinsImplementationWorkflow:
             sum(v.expected_savings_tco2e for v in self._verifications), 4,
         )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="verification", phase_number=5,
             status=PhaseStatus.COMPLETED,

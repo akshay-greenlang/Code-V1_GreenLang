@@ -75,25 +75,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -111,7 +105,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -120,7 +113,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -132,17 +124,14 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
@@ -150,11 +139,9 @@ def _round3(value: float) -> float:
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EmissionScope(str, Enum):
     """GHG Protocol emission scope classification.
@@ -167,7 +154,6 @@ class EmissionScope(str, Enum):
     SCOPE_2 = "scope_2"
     SCOPE_3 = "scope_3"
 
-
 class CalculationMethod(str, Enum):
     """Scope 2 calculation method per GHG Protocol Scope 2 Guidance.
 
@@ -176,7 +162,6 @@ class CalculationMethod(str, Enum):
     """
     LOCATION_BASED = "location_based"
     MARKET_BASED = "market_based"
-
 
 class EmissionFactorType(str, Enum):
     """Type of emission factor applied.
@@ -188,7 +173,6 @@ class EmissionFactorType(str, Enum):
     AVERAGE = "average"
     MARGINAL = "marginal"
     RESIDUAL_MIX = "residual_mix"
-
 
 class FuelType(str, Enum):
     """Common fuel types for Scope 1 combustion calculations.
@@ -203,7 +187,6 @@ class FuelType(str, Enum):
     COAL = "coal"
     BIOMASS = "biomass"
     BIOGAS = "biogas"
-
 
 class GridRegion(str, Enum):
     """Grid region for electricity emission factors.
@@ -246,7 +229,6 @@ class GridRegion(str, Enum):
     MX = "mx"
     CUSTOM = "custom"
 
-
 class SBTiAmbition(str, Enum):
     """SBTi target ambition level.
 
@@ -257,7 +239,6 @@ class SBTiAmbition(str, Enum):
     WELL_BELOW_2C = "well_below_2c"
     ONE_POINT_FIVE_C = "one_point_five_c"
     NET_ZERO = "net_zero"
-
 
 class ProjectionMethod(str, Enum):
     """Method for projecting future emission reductions.
@@ -270,11 +251,9 @@ class ProjectionMethod(str, Enum):
     COMPOUND = "compound"
     SDA_PATHWAY = "sda_pathway"
 
-
 # ---------------------------------------------------------------------------
 # Constants -- Emission Factor Database
 # ---------------------------------------------------------------------------
-
 
 # Grid electricity emission factors by region (kgCO2e per kWh).
 # Sources: EPA eGRID 2023, DEFRA 2024, IEA Emission Factors 2024.
@@ -604,11 +583,9 @@ DEFAULT_GRID_DECARBONIZATION_RATE: Decimal = Decimal("0.02")
 # Default projection horizon (years).
 DEFAULT_PROJECTION_YEARS: int = 10
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class EmissionFactor(BaseModel):
     """Emission factor with full provenance metadata.
@@ -650,7 +627,6 @@ class EmissionFactor(BaseModel):
         default="kgCO2e/kWh",
         description="Unit of measurement"
     )
-
 
 class EnergyReduction(BaseModel):
     """Energy reduction data for a single quick-win measure.
@@ -708,11 +684,9 @@ class EnergyReduction(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class AnnualProjection(BaseModel):
     """Projected CO2e reduction for a single future year.
@@ -736,7 +710,6 @@ class AnnualProjection(BaseModel):
         default=None,
         description="SBTi target for this year (tCO2e)"
     )
-
 
 class SBTiAssessment(BaseModel):
     """SBTi alignment assessment result.
@@ -785,7 +758,6 @@ class SBTiAssessment(BaseModel):
         default="",
         description="Assessment notes"
     )
-
 
 class CarbonReductionResult(BaseModel):
     """Carbon reduction result for a single measure.
@@ -839,14 +811,13 @@ class CarbonReductionResult(BaseModel):
         description="Calculation methodology"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Calculation timestamp"
     )
     provenance_hash: str = Field(
         default="",
         description="SHA-256 provenance hash"
     )
-
 
 class PortfolioReduction(BaseModel):
     """Aggregated carbon reduction for an entire quick-wins portfolio.
@@ -906,7 +877,7 @@ class PortfolioReduction(BaseModel):
         description="SBTi alignment assessment"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Calculation timestamp"
     )
     provenance_hash: str = Field(
@@ -914,11 +885,9 @@ class PortfolioReduction(BaseModel):
         description="SHA-256 provenance hash"
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class CarbonReductionEngine:
     """Carbon reduction calculation engine for quick-win measures.
@@ -1199,7 +1168,7 @@ class CarbonReductionEngine:
         # Step 5: SBTi assessment (if base year emissions provided)
         sbti = SBTiAssessment()
         if base_year_emissions is not None and base_year_emissions > Decimal("0"):
-            current_year = _utcnow().year
+            current_year = utcnow().year
             sbti = self.assess_sbti_alignment(
                 base_year_emissions=base_year_emissions,
                 current_emissions=base_year_emissions - total_annual,
@@ -1373,7 +1342,7 @@ class CarbonReductionEngine:
             float(annual_reduction), years, method.value,
         )
 
-        current_year = _utcnow().year
+        current_year = utcnow().year
         projections: List[AnnualProjection] = []
         cumulative = Decimal("0")
 

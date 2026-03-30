@@ -68,6 +68,7 @@ from decimal import Decimal
 from typing import Any, Dict, List, Optional, Tuple
 
 from greenlang.agents.eudr.mass_balance_calculator.config import get_config
+from greenlang.schemas import utcnow
 from greenlang.agents.eudr.mass_balance_calculator.metrics import (
     record_api_error,
 )
@@ -94,12 +95,6 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance.
 
@@ -112,7 +107,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a new UUID4 string identifier.
 
@@ -120,7 +114,6 @@ def _generate_id() -> str:
         UUID4 string.
     """
     return str(uuid.uuid4())
-
 
 # ---------------------------------------------------------------------------
 # Valid state transitions for period lifecycle
@@ -193,11 +186,9 @@ _CREDIT_PERIOD_RULES: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # CreditPeriodEngine
 # ---------------------------------------------------------------------------
-
 
 class CreditPeriodEngine:
     """Credit period lifecycle management engine for EUDR mass balance accounting.
@@ -386,7 +377,7 @@ class CreditPeriodEngine:
 
             # -- Build period record -------------------------------------------
             period_id = _generate_id()
-            now = _utcnow()
+            now = utcnow()
 
             period_data: Dict[str, Any] = {
                 "period_id": period_id,
@@ -608,7 +599,7 @@ class CreditPeriodEngine:
                 )
 
             # Perform transition
-            now = _utcnow()
+            now = utcnow()
             previous_status = current_status
             period["status"] = new_status_lower
             period["updated_at"] = now
@@ -902,7 +893,7 @@ class CreditPeriodEngine:
                 )
 
             extension_days = (new_end_date - current_end_date).days
-            now = _utcnow()
+            now = utcnow()
 
             # Update period
             period["end_date"] = new_end_date
@@ -1029,7 +1020,7 @@ class CreditPeriodEngine:
             ]
 
         active_period = None
-        now = _utcnow()
+        now = utcnow()
 
         for p in periods:
             if p["status"] == PeriodStatus.ACTIVE.value:
@@ -1116,7 +1107,7 @@ class CreditPeriodEngine:
                 return False
 
             # Active period - check if within period or grace period
-            now = _utcnow()
+            now = utcnow()
             end_date = period["end_date"]
             grace_end = period.get("grace_period_end", end_date)
 
@@ -1222,7 +1213,7 @@ class CreditPeriodEngine:
             }
 
         # Create new period starting now
-        now = _utcnow()
+        now = utcnow()
         result = self.create_period(
             facility_id=facility_id,
             commodity=commodity,
@@ -1422,7 +1413,7 @@ class CreditPeriodEngine:
             if entry_count is not None:
                 period["entry_count"] = entry_count
 
-            period["updated_at"] = _utcnow()
+            period["updated_at"] = utcnow()
 
             return {
                 "period_id": period_id,
@@ -1451,7 +1442,7 @@ class CreditPeriodEngine:
         Returns:
             List of expired but still-active period dictionaries.
         """
-        now = _utcnow()
+        now = utcnow()
         results: List[Dict[str, Any]] = []
 
         with self._lock:
@@ -1661,7 +1652,7 @@ class CreditPeriodEngine:
         Returns:
             Serialized period dictionary.
         """
-        now = _utcnow()
+        now = utcnow()
         end_date = period["end_date"]
         start_date = period["start_date"]
 
@@ -1761,7 +1752,6 @@ class CreditPeriodEngine:
             f"CreditPeriodEngine(total={total}, active={active}, "
             f"grace_days={self._config.grace_period_days})"
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

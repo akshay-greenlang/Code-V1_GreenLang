@@ -55,25 +55,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -86,11 +80,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SBTiWizardStep(str, Enum):
     """Names of wizard steps in execution order."""
@@ -102,7 +94,6 @@ class SBTiWizardStep(str, Enum):
     TARGET_PREFERENCES = "target_preferences"
     PRESET_SELECTION = "preset_selection"
 
-
 class StepStatus(str, Enum):
     """Status of a wizard step."""
 
@@ -112,14 +103,12 @@ class StepStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class ConsolidationApproach(str, Enum):
     """GHG Protocol consolidation approaches (per SBTi C5)."""
 
     OPERATIONAL_CONTROL = "operational_control"
     FINANCIAL_CONTROL = "financial_control"
     EQUITY_SHARE = "equity_share"
-
 
 class OrganizationSize(str, Enum):
     """Organization size classification."""
@@ -129,7 +118,6 @@ class OrganizationSize(str, Enum):
     LARGE = "large"
     ENTERPRISE = "enterprise"
 
-
 class SBTiPathwayType(str, Enum):
     """SBTi target-setting pathway."""
 
@@ -138,14 +126,12 @@ class SBTiPathwayType(str, Enum):
     FLAG = "flag"        # Forest, Land and Agriculture
     FINZ = "finz"        # Financial Institution Net-Zero
 
-
 class SBTiAmbitionLevel(str, Enum):
     """SBTi target ambition level."""
 
     AMBITIOUS_1_5C = "1.5C"
     WELL_BELOW_2C = "well_below_2C"
     TWO_DEGREES = "2C"
-
 
 class OrganizationType(str, Enum):
     """Organization type for SBTi classification."""
@@ -154,7 +140,6 @@ class OrganizationType(str, Enum):
     FINANCIAL_INSTITUTION = "financial_institution"
     SME = "sme"
 
-
 class FLAGExposure(str, Enum):
     """FLAG sector exposure level."""
 
@@ -162,7 +147,6 @@ class FLAGExposure(str, Enum):
     BELOW_THRESHOLD = "below_threshold"     # <20% FLAG revenue
     ABOVE_THRESHOLD = "above_threshold"     # >=20% FLAG revenue
     PRIMARILY_FLAG = "primarily_flag"       # >50% FLAG revenue
-
 
 class EmissionFactorSource(str, Enum):
     """Emission factor database sources."""
@@ -174,7 +158,6 @@ class EmissionFactorSource(str, Enum):
     ECOINVENT = "ecoinvent"
     GLEC = "glec"
     CUSTOM = "custom"
-
 
 # ---------------------------------------------------------------------------
 # SBTi SDA Sectors & FLAG Commodities Reference
@@ -356,11 +339,9 @@ FINZ_ASSET_CLASSES: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Step Data Models
 # ---------------------------------------------------------------------------
-
 
 class OrganizationProfile(BaseModel):
     """Organization profile from step 1 -- SBTi-specific fields."""
@@ -409,7 +390,6 @@ class OrganizationProfile(BaseModel):
         description="Parent company name if subsidiary",
     )
 
-
 class BoundarySelection(BaseModel):
     """Boundary selection from step 2 -- SBTi target boundary rules."""
 
@@ -452,7 +432,6 @@ class BoundarySelection(BaseModel):
         default=5.0, ge=0.0, le=100.0,
         description="Max % of total emissions that can be excluded (SBTi <5%)",
     )
-
 
 class ScopeConfiguration(BaseModel):
     """Scope configuration from step 3 -- SBTi materiality & coverage."""
@@ -504,7 +483,6 @@ class ScopeConfiguration(BaseModel):
         default_factory=list,
         description="FLAG commodity names included in scope",
     )
-
 
 class DataSourceSetup(BaseModel):
     """Data source setup from step 4 -- SBTi data requirements."""
@@ -566,7 +544,6 @@ class DataSourceSetup(BaseModel):
         default_factory=list,
         description="Asset classes with emissions data (FI)",
     )
-
 
 class TargetPreferences(BaseModel):
     """Target preferences from step 5 -- SBTi pathway & target config."""
@@ -681,7 +658,6 @@ class TargetPreferences(BaseModel):
         description="Planned SBTi submission date (ISO format)",
     )
 
-
 class PresetSelection(BaseModel):
     """Preset selection from step 6 -- SBTi-tailored preset."""
 
@@ -700,11 +676,9 @@ class PresetSelection(BaseModel):
         default_factory=lambda: ["C1-C28"],
     )
 
-
 # ---------------------------------------------------------------------------
 # Wizard State Models
 # ---------------------------------------------------------------------------
-
 
 class WizardStepState(BaseModel):
     """State of a single wizard step."""
@@ -722,7 +696,6 @@ class WizardStepState(BaseModel):
     completed_at: Optional[datetime] = Field(None)
     execution_time_ms: float = Field(default=0.0)
 
-
 class WizardState(BaseModel):
     """Complete state of the SBTi alignment setup wizard."""
 
@@ -739,7 +712,7 @@ class WizardState(BaseModel):
     target_prefs: Optional[TargetPreferences] = Field(None)
     preset: Optional[PresetSelection] = Field(None)
     is_complete: bool = Field(default=False)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     completed_at: Optional[datetime] = Field(None)
 
     # SBTi readiness indicators computed during wizard
@@ -751,7 +724,6 @@ class WizardState(BaseModel):
         default_factory=list,
         description="SBTi criteria with identified gaps",
     )
-
 
 class SetupResult(BaseModel):
     """Final setup result with SBTi-aligned configuration."""
@@ -810,9 +782,8 @@ class SetupResult(BaseModel):
     total_steps_completed: int = Field(default=0)
     total_steps: int = Field(default=6)
     configuration_hash: str = Field(default="")
-    generated_at: datetime = Field(default_factory=_utcnow)
+    generated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Step Definitions
@@ -835,7 +806,6 @@ STEP_DISPLAY_NAMES: Dict[SBTiWizardStep, str] = {
     SBTiWizardStep.TARGET_PREFERENCES: "SBTi Pathway & Target Preferences",
     SBTiWizardStep.PRESET_SELECTION: "SBTi Sector Preset Selection",
 }
-
 
 # ---------------------------------------------------------------------------
 # Sector Presets (10) -- SBTi-specific
@@ -1070,7 +1040,6 @@ SECTOR_PRESETS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # SBTi Criteria Reference (for readiness assessment)
 # ---------------------------------------------------------------------------
@@ -1123,11 +1092,9 @@ SBTI_NET_ZERO_CRITERIA: Dict[str, str] = {
     "NZ-C14": "Governance structure supports long-term targets",
 }
 
-
 # ---------------------------------------------------------------------------
 # SBTiAlignmentSetupWizard
 # ---------------------------------------------------------------------------
-
 
 class SBTiAlignmentSetupWizard:
     """6-step guided configuration wizard for PACK-023 SBTi Alignment.
@@ -1177,7 +1144,7 @@ class SBTiAlignmentSetupWizard:
             Initial WizardState with all steps in PENDING status.
         """
         wizard_id = _compute_hash(
-            f"sbti-wizard:{_utcnow().isoformat()}"
+            f"sbti-wizard:{utcnow().isoformat()}"
         )[:16]
         steps: Dict[str, WizardStepState] = {}
         for step_name in STEP_ORDER:
@@ -1223,7 +1190,7 @@ class SBTiAlignmentSetupWizard:
             raise ValueError(f"Step '{step_name}' not found in wizard state")
 
         step.status = StepStatus.IN_PROGRESS
-        step.started_at = _utcnow()
+        step.started_at = utcnow()
         start_time = time.monotonic()
 
         handler = self._step_handlers.get(step_enum)
@@ -1242,7 +1209,7 @@ class SBTiAlignmentSetupWizard:
                 step.sbti_warnings = warnings
             else:
                 step.status = StepStatus.COMPLETED
-                step.completed_at = _utcnow()
+                step.completed_at = utcnow()
                 step.validation_errors = []
                 step.sbti_warnings = warnings
                 self._advance_step(step_enum)
@@ -1737,7 +1704,7 @@ class SBTiAlignmentSetupWizard:
             data_setup = DataSourceSetup(**data)
 
             # SBTi C5: base year validation
-            current_year = _utcnow().year
+            current_year = utcnow().year
             if current_year - data_setup.base_year > 3:
                 warnings.append(
                     f"SBTi C5: Base year {data_setup.base_year} is "
@@ -1978,7 +1945,7 @@ class SBTiAlignmentSetupWizard:
                 self._state.current_step = STEP_ORDER[idx + 1]
             else:
                 self._state.is_complete = True
-                self._state.completed_at = _utcnow()
+                self._state.completed_at = utcnow()
                 # Compute final readiness
                 self.assess_sbti_readiness()
         except ValueError:

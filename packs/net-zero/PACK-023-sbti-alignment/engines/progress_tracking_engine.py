@@ -69,25 +69,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -100,7 +94,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -110,7 +103,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
 ) -> Decimal:
@@ -118,7 +110,6 @@ def _safe_divide(
     if denominator == Decimal("0"):
         return default
     return numerator / denominator
-
 
 def _safe_pct(
     part: Decimal, whole: Decimal, places: int = 2
@@ -130,12 +121,10 @@ def _safe_pct(
         Decimal("0." + "0" * places), rounding=ROUND_HALF_UP
     )
 
-
 def _round_val(value: Decimal, places: int = 4) -> Decimal:
     """Round a Decimal value to the specified number of decimal places."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -152,11 +141,9 @@ CRITICAL_OVERSHOOT_THRESHOLD: Decimal = Decimal("25.00")
 # Budget exhaustion warning threshold
 BUDGET_WARNING_THRESHOLD: Decimal = Decimal("80.00")  # 80% of budget consumed
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class TrackingStatus(str, Enum):
     """Progress tracking status."""
@@ -166,13 +153,11 @@ class TrackingStatus(str, Enum):
     CRITICAL = "critical"
     NOT_STARTED = "not_started"
 
-
 class RAGStatus(str, Enum):
     """Red/Amber/Green status indicator."""
     GREEN = "green"
     AMBER = "amber"
     RED = "red"
-
 
 class ActionPriority(str, Enum):
     """Priority level for corrective actions."""
@@ -181,18 +166,15 @@ class ActionPriority(str, Enum):
     MEDIUM_TERM = "medium_term"
     LONG_TERM = "long_term"
 
-
 class TargetScope(str, Enum):
     """Target scope classification."""
     S1S2 = "s1s2"
     S3 = "s3"
     S1S2S3 = "s1s2s3"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class AnnualDataPoint(BaseModel):
     """A single year's emissions data point."""
@@ -208,7 +190,6 @@ class AnnualDataPoint(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class TrajectoryPoint(BaseModel):
     """A single point on a projected trajectory."""
@@ -233,7 +214,6 @@ class TrajectoryPoint(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class CorrectiveAction(BaseModel):
     """A recommended corrective action."""
     action_id: str = Field(default_factory=_new_uuid, description="Action ID")
@@ -252,7 +232,6 @@ class CorrectiveAction(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class BudgetAnalysis(BaseModel):
     """Carbon budget analysis for remaining target period."""
@@ -280,7 +259,6 @@ class BudgetAnalysis(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class ProgressInput(BaseModel):
     """Input data for progress tracking assessment."""
     assessment_id: str = Field(default_factory=_new_uuid, description="Assessment ID")
@@ -299,7 +277,7 @@ class ProgressInput(BaseModel):
     reduction_target_pct: Decimal = Field(
         default=Decimal("0"), description="Overall reduction target (%)"
     )
-    requested_at: datetime = Field(default_factory=_utcnow, description="Request timestamp")
+    requested_at: datetime = Field(default_factory=utcnow, description="Request timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("base_year_emissions", "target_year_emissions",
@@ -308,7 +286,6 @@ class ProgressInput(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class ProgressResult(BaseModel):
     """Complete progress tracking result."""
@@ -348,7 +325,7 @@ class ProgressResult(BaseModel):
     annual_comparison: List[Dict[str, Any]] = Field(
         default_factory=list, description="Year-over-year comparison"
     )
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("actual_reduction_pct", "required_reduction_pct",
@@ -358,11 +335,9 @@ class ProgressResult(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 # ---------------------------------------------------------------------------
 # Engine Configuration
 # ---------------------------------------------------------------------------
-
 
 class ProgressTrackingConfig(BaseModel):
     """Configuration for the ProgressTrackingEngine."""
@@ -389,7 +364,6 @@ class ProgressTrackingConfig(BaseModel):
         default=0, description="Years to project (0 = project to target year)"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic model_rebuild for forward reference resolution
 # ---------------------------------------------------------------------------
@@ -402,11 +376,9 @@ ProgressInput.model_rebuild()
 ProgressResult.model_rebuild()
 ProgressTrackingConfig.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # ProgressTrackingEngine
 # ---------------------------------------------------------------------------
-
 
 class ProgressTrackingEngine:
     """

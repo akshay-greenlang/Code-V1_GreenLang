@@ -72,9 +72,9 @@ import uuid
 from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Decimal precision constant
@@ -91,7 +91,6 @@ _KG_TO_TONNES = Decimal("0.001")
 
 #: Conversion constant: tonnes to kg.
 _TONNES_TO_KG = Decimal("1000")
-
 
 # ---------------------------------------------------------------------------
 # Built-in Constants
@@ -190,13 +189,13 @@ VERSION: str = "1.0.0"
 #: Database table prefix.
 TABLE_PREFIX: str = "gl_s2m_"
 
-
 # ---------------------------------------------------------------------------
 # Prometheus metrics helpers (graceful fallback)
 # ---------------------------------------------------------------------------
 
 try:
     from prometheus_client import Counter, Histogram
+
     _PROMETHEUS_AVAILABLE = True
 except ImportError:
     _PROMETHEUS_AVAILABLE = False
@@ -219,18 +218,15 @@ else:
     _s2m_dual_reports_total = None  # type: ignore[assignment]
     _s2m_dual_report_duration = None  # type: ignore[assignment]
 
-
 def _record_dual_report_metric(report_type: str) -> None:
     """Record a dual report generation metric."""
     if _PROMETHEUS_AVAILABLE and _s2m_dual_reports_total is not None:
         _s2m_dual_reports_total.labels(report_type=report_type).inc()
 
-
 def _observe_duration(operation: str, seconds: float) -> None:
     """Record operation duration metric."""
     if _PROMETHEUS_AVAILABLE and _s2m_dual_report_duration is not None:
         _s2m_dual_report_duration.labels(operation=operation).observe(seconds)
-
 
 # ---------------------------------------------------------------------------
 # Provenance helper (lightweight inline tracker)
@@ -328,15 +324,9 @@ class _DualReportingProvenance:
             self._entries.clear()
             self._last_hash = self._genesis
 
-
 # ---------------------------------------------------------------------------
 # Utility: UTC now helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Utility: Safe Decimal conversion
@@ -361,7 +351,6 @@ def _to_decimal(value: Any) -> Decimal:
     except (InvalidOperation, ValueError, TypeError) as exc:
         raise ValueError(f"Cannot convert {value!r} to Decimal: {exc}") from exc
 
-
 def _safe_get_decimal(data: Dict[str, Any], key: str, default: Decimal = Decimal("0")) -> Decimal:
     """Safely extract a Decimal from a dictionary.
 
@@ -377,7 +366,6 @@ def _safe_get_decimal(data: Dict[str, Any], key: str, default: Decimal = Decimal
     if raw is None:
         return default
     return _to_decimal(raw)
-
 
 # ---------------------------------------------------------------------------
 # Utility: SHA-256 hash for dual reports
@@ -395,11 +383,9 @@ def _hash_dual_reporting(data: Dict[str, Any]) -> str:
     canonical = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
-
 # ===========================================================================
 # DualReportingEngine
 # ===========================================================================
-
 
 class DualReportingEngine:
     """Dual reporting engine for GHG Protocol Scope 2 Guidance compliance.
@@ -476,7 +462,7 @@ class DualReportingEngine:
         self._lock: threading.RLock = threading.RLock()
 
         # Statistics
-        self._created_at: datetime = _utcnow()
+        self._created_at: datetime = utcnow()
         self._total_reports: int = 0
         self._total_batch_reports: int = 0
         self._total_facility_reports: int = 0
@@ -664,7 +650,7 @@ class DualReportingEngine:
                 "period": period,
                 "total_mwh": total_mwh,
                 "instrument_count": instrument_count,
-                "generated_at": _utcnow().isoformat(),
+                "generated_at": utcnow().isoformat(),
                 "metadata": {
                     "engine": "DualReportingEngine",
                     "version": VERSION,
@@ -2454,7 +2440,6 @@ class DualReportingEngine:
             f"{self._total_analyses} analyses, "
             f"{self._total_formats} formats"
         )
-
 
 # ---------------------------------------------------------------------------
 # Public surface

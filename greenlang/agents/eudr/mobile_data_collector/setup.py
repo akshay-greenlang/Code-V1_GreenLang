@@ -221,6 +221,7 @@ from greenlang.agents.eudr.mobile_data_collector.reference_data import (
     get_all_labels_for_language,
     list_supported_languages,
 )
+from greenlang.schemas import utcnow
 
 # ---------------------------------------------------------------------------
 # Engine imports (graceful fallback)
@@ -282,7 +283,6 @@ except ImportError:
     DeviceFleetManager = None  # type: ignore[assignment,misc]
     _DEVICE_FLEET_MANAGER_AVAILABLE = False
 
-
 # ---------------------------------------------------------------------------
 # Module constants
 # ---------------------------------------------------------------------------
@@ -291,37 +291,26 @@ _MODULE_VERSION = "1.0.0"
 _AGENT_ID = "GL-EUDR-MDC-015"
 _ENGINE_COUNT = 8
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_provenance_hash(*parts: str) -> str:
     """Compute SHA-256 hash over concatenated string parts."""
     combined = "|".join(str(p) for p in parts)
     return hashlib.sha256(combined.encode("utf-8")).hexdigest()
 
-
 def _generate_request_id() -> str:
     """Generate a unique request identifier."""
     return f"MDC-{uuid.uuid4().hex[:12]}"
-
 
 def _elapsed_ms(start: float) -> float:
     """Return elapsed milliseconds since ``start`` (monotonic)."""
     return (time.monotonic() - start) * 1000
 
-
 # ===========================================================================
 # MobileDataCollectorService - Main facade
 # ===========================================================================
-
 
 class MobileDataCollectorService:
     """Facade for the Mobile Data Collector Agent (AGENT-EUDR-015).
@@ -846,7 +835,7 @@ class MobileDataCollectorService:
                 satellite_count=request.satellite_count,
                 fix_type=request.fix_type,
                 augmentation=request.augmentation,
-                capture_timestamp=request.capture_timestamp or _utcnow(),
+                capture_timestamp=request.capture_timestamp or utcnow(),
                 metadata=request.metadata,
             )
             accuracy_tier = self._classify_accuracy(
@@ -1029,7 +1018,7 @@ class MobileDataCollectorService:
                 latitude=request.latitude,
                 longitude=request.longitude,
                 exif_timestamp=request.exif_timestamp,
-                device_timestamp=request.device_timestamp or _utcnow(),
+                device_timestamp=request.device_timestamp or utcnow(),
                 compression_quality=request.compression_quality,
                 annotation=request.annotation,
                 sequence_number=request.sequence_number,
@@ -1770,7 +1759,7 @@ class MobileDataCollectorService:
 
             if request.seal:
                 package.status = PackageStatus.SEALED
-                package.sealed_at = _utcnow()
+                package.sealed_at = utcnow()
 
             provenance_hash = self._record_provenance(
                 "data_package", "build", package.package_id,
@@ -2261,7 +2250,7 @@ class MobileDataCollectorService:
             pending_sync_items=0,
             unresolved_conflicts=0,
             uptime_seconds=round(self.uptime_seconds, 1),
-            timestamp=_utcnow(),
+            timestamp=utcnow(),
         )
 
     # ------------------------------------------------------------------
@@ -2359,7 +2348,7 @@ class MobileDataCollectorService:
             commodity_type=request.commodity_type,
             country_code=request.country_code,
             local_timestamp=request.local_timestamp,
-            server_timestamp=_utcnow(),
+            server_timestamp=utcnow(),
             gps_capture_ids=request.gps_capture_ids,
             photo_ids=request.photo_ids,
             signature_ids=request.signature_ids,
@@ -2535,14 +2524,12 @@ class MobileDataCollectorService:
             count += 1
         return count
 
-
 # ===========================================================================
 # Singleton accessor
 # ===========================================================================
 
 _service_lock = threading.Lock()
 _service_instance: Optional[MobileDataCollectorService] = None
-
 
 def get_service() -> MobileDataCollectorService:
     """Return the process-wide singleton MobileDataCollectorService.
@@ -2566,7 +2553,6 @@ def get_service() -> MobileDataCollectorService:
                 logger.info("MobileDataCollectorService singleton created")
     return _service_instance
 
-
 def reset_service() -> None:
     """Reset the singleton service instance.
 
@@ -2577,11 +2563,9 @@ def reset_service() -> None:
         _service_instance = None
     logger.info("MobileDataCollectorService singleton reset")
 
-
 # ===========================================================================
 # FastAPI lifespan integration
 # ===========================================================================
-
 
 @asynccontextmanager
 async def lifespan(app: Any) -> AsyncIterator[None]:
@@ -2604,7 +2588,6 @@ async def lifespan(app: Any) -> AsyncIterator[None]:
         yield
     finally:
         await service.shutdown()
-
 
 # ===========================================================================
 # Public API

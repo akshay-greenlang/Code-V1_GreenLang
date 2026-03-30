@@ -29,10 +29,10 @@ import json
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel
 
 from greenlang.agents.foundation.schema.models.report import ValidationReport, BatchValidationReport
 from greenlang.agents.foundation.schema.models.finding import Finding
+from greenlang.schemas import GreenLangBase
 
 
 class JSONFormatter:

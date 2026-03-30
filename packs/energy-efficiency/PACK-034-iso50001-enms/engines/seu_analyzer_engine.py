@@ -80,27 +80,21 @@ logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
 
     Excludes volatile fields (timestamps, durations, provenance hashes)
     from the hash input to ensure reproducibility.
+
+from greenlang.schemas import utcnow
 
     Args:
         data: Model instance, dict, or other serialisable object.
@@ -125,7 +119,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -141,7 +134,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -162,7 +154,6 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100).
 
@@ -174,7 +165,6 @@ def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
         Percentage as Decimal; 0 if whole is zero.
     """
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP.
@@ -188,7 +178,6 @@ def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _sqrt_decimal(value: Decimal) -> Decimal:
     """Compute square root of a Decimal using Newton's method.
@@ -210,11 +199,9 @@ def _sqrt_decimal(value: Decimal) -> Decimal:
         guess = (guess + value / guess) / Decimal("2")
     return guess
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SEUCategory(str, Enum):
     """Significant Energy Use equipment/system category.
@@ -251,7 +238,6 @@ class SEUCategory(str, Enum):
     WATER_HEATING = "water_heating"
     OTHER = "other"
 
-
 class OperatingPattern(str, Enum):
     """Equipment operating pattern classification.
 
@@ -269,7 +255,6 @@ class OperatingPattern(str, Enum):
     SEASONAL = "seasonal"
     INTERMITTENT = "intermittent"
 
-
 class SEUStatus(str, Enum):
     """Lifecycle status of a Significant Energy Use.
 
@@ -285,7 +270,6 @@ class SEUStatus(str, Enum):
     IMPROVED = "improved"
     RETIRED = "retired"
 
-
 class DeterminationMethod(str, Enum):
     """Method used to determine SEU significance.
 
@@ -299,7 +283,6 @@ class DeterminationMethod(str, Enum):
     ENGINEERING_JUDGMENT = "engineering_judgment"
     STATISTICAL = "statistical"
 
-
 class LoadType(str, Enum):
     """Load characteristic classification.
 
@@ -312,7 +295,6 @@ class LoadType(str, Enum):
     VARIABLE = "variable"
     WEATHER_DEPENDENT = "weather_dependent"
     PRODUCTION_DEPENDENT = "production_dependent"
-
 
 # ---------------------------------------------------------------------------
 # Reference Data Constants
@@ -513,11 +495,9 @@ STANDARD_IMPROVEMENT_OPPORTUNITIES: Dict[str, List[str]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class EnergyConsumer(BaseModel):
     """Individual energy-consuming system or equipment group.
@@ -610,7 +590,6 @@ class EnergyConsumer(BaseModel):
             )
         return v
 
-
 class SEUThresholds(BaseModel):
     """Configuration thresholds for SEU determination.
 
@@ -637,7 +616,6 @@ class SEUThresholds(BaseModel):
         le=100,
         description="Minimum consumers for Pareto analysis",
     )
-
 
 class EnergyDriver(BaseModel):
     """Energy driver with correlation data for an SEU.
@@ -690,7 +668,6 @@ class EnergyDriver(BaseModel):
             )
         return v
 
-
 class FacilityEnergyProfile(BaseModel):
     """Facility-level energy profile for SEU analysis.
 
@@ -732,11 +709,9 @@ class FacilityEnergyProfile(BaseModel):
         description="Measurement period end date",
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Intermediate
 # ---------------------------------------------------------------------------
-
 
 class ParetoDataPoint(BaseModel):
     """Single data point in a Pareto chart.
@@ -767,7 +742,6 @@ class ParetoDataPoint(BaseModel):
     is_above_threshold: bool = Field(
         default=False, description="Within cumulative threshold"
     )
-
 
 class OperatingPatternAssessment(BaseModel):
     """Assessment of an energy consumer's operating pattern.
@@ -807,7 +781,6 @@ class OperatingPatternAssessment(BaseModel):
     )
     notes: str = Field(default="", max_length=1000, description="Assessment notes")
 
-
 class ImprovementOpportunity(BaseModel):
     """Ranked improvement opportunity for an SEU.
 
@@ -838,11 +811,9 @@ class ImprovementOpportunity(BaseModel):
         default="medium", description="Confidence (low, medium, high)"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class SEUResult(BaseModel):
     """Result for a single energy consumer's SEU analysis.
@@ -901,7 +872,6 @@ class SEUResult(BaseModel):
         description="Estimated savings (%)"
     )
 
-
 class SEUAnalysisResult(BaseModel):
     """Complete SEU analysis result for a facility.
 
@@ -928,7 +898,7 @@ class SEUAnalysisResult(BaseModel):
     )
     facility_id: str = Field(default="", description="Facility reference")
     analysis_date: datetime = Field(
-        default_factory=_utcnow, description="Analysis timestamp"
+        default_factory=utcnow, description="Analysis timestamp"
     )
     total_consumption_kwh: Decimal = Field(
         default=Decimal("0"), ge=0, description="Total consumption (kWh)"
@@ -956,7 +926,6 @@ class SEUAnalysisResult(BaseModel):
     calculation_time_ms: int = Field(
         default=0, ge=0, description="Processing time (ms)"
     )
-
 
 class SEUValidationResult(BaseModel):
     """Validation result for an SEU analysis.
@@ -995,11 +964,9 @@ class SEUValidationResult(BaseModel):
         default="", description="SHA-256 provenance hash"
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class SEUAnalyzerEngine:
     """Significant Energy Use (SEU) Analyzer per ISO 50001 Clause 6.3.

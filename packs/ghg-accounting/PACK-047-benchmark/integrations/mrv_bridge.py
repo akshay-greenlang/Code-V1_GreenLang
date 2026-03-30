@@ -40,25 +40,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -71,11 +65,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class MRVScope(str, Enum):
     """MRV agent scope grouping."""
@@ -84,7 +76,6 @@ class MRVScope(str, Enum):
     SCOPE_2 = "scope_2"
     SCOPE_3 = "scope_3"
     CROSS_CUTTING = "cross_cutting"
-
 
 # ---------------------------------------------------------------------------
 # Agent Maps
@@ -127,11 +118,9 @@ AGENT_DESCRIPTIONS: Dict[str, str] = {
     "MRV-029": "Category Mapper", "MRV-030": "Audit Trail Lineage",
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class MRVBridgeConfig(BaseModel):
     """Configuration for MRV bridge."""
@@ -142,7 +131,6 @@ class MRVBridgeConfig(BaseModel):
         "location_based",
         description="Scope 2 method: location_based or market_based",
     )
-
 
 class MRVAgentResult(BaseModel):
     """Result from a single MRV agent query."""
@@ -158,7 +146,6 @@ class MRVAgentResult(BaseModel):
     data_quality_score: float = 0.0
     provenance_hash: str = ""
 
-
 class EmissionsRequest(BaseModel):
     """Request for emissions data from MRV agents."""
 
@@ -170,7 +157,6 @@ class EmissionsRequest(BaseModel):
     scope2_method: str = Field("location_based")
     entity_id: Optional[str] = Field(None, description="Filter by entity")
 
-
 class ScopedEmissions(BaseModel):
     """Emissions aggregated by scope."""
 
@@ -180,7 +166,6 @@ class ScopedEmissions(BaseModel):
     agents_with_data: int = 0
     agent_results: List[MRVAgentResult] = Field(default_factory=list)
     provenance_hash: str = ""
-
 
 class EmissionsResponse(BaseModel):
     """Complete emissions response for benchmark calculation."""
@@ -196,11 +181,9 @@ class EmissionsResponse(BaseModel):
     retrieved_at: str = ""
     duration_ms: float = 0.0
 
-
 # ---------------------------------------------------------------------------
 # Bridge Implementation
 # ---------------------------------------------------------------------------
-
 
 class MRVBridge:
     """
@@ -327,7 +310,7 @@ class MRVBridge:
                 "scope3": scope3_total,
                 "total": grand_total,
             }),
-            retrieved_at=_utcnow().isoformat(),
+            retrieved_at=utcnow().isoformat(),
             duration_ms=duration,
         )
 

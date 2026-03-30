@@ -30,6 +30,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.document_authentication.api.dependencies import (
     AuthUser,
@@ -74,27 +75,18 @@ _fraud_result_store: Dict[str, Dict] = {}
 _fraud_alert_store: Dict[str, List[Dict]] = {}
 _fraud_summary_store: Dict[str, Dict] = {}
 
-
 def _get_fraud_result_store() -> Dict[str, Dict]:
     """Return the fraud detection result store singleton."""
     return _fraud_result_store
-
 
 def _get_fraud_alert_store() -> Dict[str, List[Dict]]:
     """Return the fraud alert store indexed by document_id."""
     return _fraud_alert_store
 
-
 def _compute_provenance_hash(data: dict) -> str:
     """Compute SHA-256 hash for provenance tracking."""
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _detect_fraud_logic(document_id: str) -> Dict[str, Any]:
     """Deterministic fraud detection simulation.
@@ -107,7 +99,7 @@ def _detect_fraud_logic(document_id: str) -> Dict[str, Any]:
     Returns:
         Dict with fraud detection results.
     """
-    now = _utcnow()
+    now = utcnow()
     alerts = []
 
     # Simulate checking a set of patterns
@@ -168,7 +160,6 @@ def _detect_fraud_logic(document_id: str) -> Dict[str, Any]:
         "patterns_triggered": patterns_triggered,
         "authentication_result": auth_result,
     }
-
 
 # Default fraud rules
 _DEFAULT_FRAUD_RULES: List[Dict[str, Any]] = [
@@ -324,11 +315,9 @@ _DEFAULT_FRAUD_RULES: List[Dict[str, Any]] = [
     },
 ]
 
-
 # ---------------------------------------------------------------------------
 # POST /fraud/detect
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/fraud/detect",
@@ -367,7 +356,7 @@ async def detect_fraud(
     """
     start = time.monotonic()
     try:
-        now = _utcnow()
+        now = utcnow()
 
         fraud_result = _detect_fraud_logic(body.document_id)
 
@@ -428,11 +417,9 @@ async def detect_fraud(
             detail="Failed to run fraud detection",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /fraud/detect/batch
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/fraud/detect/batch",
@@ -470,7 +457,7 @@ async def batch_detect_fraud(
     """
     start = time.monotonic()
     try:
-        now = _utcnow()
+        now = utcnow()
         results: List[FraudDetectionResultSchema] = []
         errors: List[Dict[str, Any]] = []
         total_alerts = 0
@@ -566,11 +553,9 @@ async def batch_detect_fraud(
             detail="Failed to process batch fraud detection",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /fraud/alerts/{document_id}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/fraud/alerts/{document_id}",
@@ -627,7 +612,7 @@ async def get_fraud_alerts(
             total_count=total,
             pagination=meta,
             processing_time_ms=elapsed_ms,
-            timestamp=_utcnow(),
+            timestamp=utcnow(),
         )
 
     except HTTPException:
@@ -642,11 +627,9 @@ async def get_fraud_alerts(
             detail="Failed to retrieve fraud alerts",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /fraud/alerts/summary/{operator_id}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/fraud/alerts/summary/{operator_id}",
@@ -678,7 +661,7 @@ async def get_fraud_summary(
     """
     start = time.monotonic()
     try:
-        now = _utcnow()
+        now = utcnow()
 
         # Aggregate from in-memory stores
         alert_store = _get_fraud_alert_store()
@@ -754,11 +737,9 @@ async def get_fraud_summary(
             detail="Failed to retrieve fraud summary",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /fraud/rules
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/fraud/rules",
@@ -788,7 +769,7 @@ async def list_fraud_rules(
     """
     start = time.monotonic()
     try:
-        now = _utcnow()
+        now = utcnow()
         rules = [FraudRuleSchema(**r, created_at=now) for r in _DEFAULT_FRAUD_RULES]
         enabled_count = sum(1 for r in rules if r.enabled)
 
@@ -810,7 +791,6 @@ async def list_fraud_rules(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to list fraud rules",
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

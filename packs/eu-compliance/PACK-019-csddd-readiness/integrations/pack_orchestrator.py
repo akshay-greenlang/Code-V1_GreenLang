@@ -48,25 +48,20 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ExecutionStatus
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for provenance tracking.
@@ -86,11 +81,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CSDDDPhase(str, Enum):
     """The 7 phases of the CSDDD readiness assessment pipeline."""
@@ -103,18 +96,6 @@ class CSDDDPhase(str, Enum):
     LIABILITY_ASSESSMENT = "liability_assessment"
     SCORECARD_GENERATION = "scorecard_generation"
 
-
-class ExecutionStatus(str, Enum):
-    """Pipeline execution lifecycle status."""
-
-    PENDING = "pending"
-    RUNNING = "running"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    CANCELLED = "cancelled"
-    SKIPPED = "skipped"
-
-
 class CompanySize(str, Enum):
     """CSDDD company size classification per Article 2."""
 
@@ -122,7 +103,6 @@ class CompanySize(str, Enum):
     GROUP_2 = "group_2"          # >500 employees AND >EUR 150M turnover
     FRANCHISE_LICENSEE = "franchise_licensee"  # >EUR 80M turnover with royalties
     OUT_OF_SCOPE = "out_of_scope"
-
 
 class ReadinessLevel(str, Enum):
     """CSDDD readiness maturity level."""
@@ -132,7 +112,6 @@ class ReadinessLevel(str, Enum):
     DEVELOPING = "developing"
     ADVANCED = "advanced"
     FULLY_READY = "fully_ready"
-
 
 # ---------------------------------------------------------------------------
 # CSDDD Article References
@@ -166,11 +145,9 @@ PHASE_TO_ARTICLES: Dict[CSDDDPhase, List[str]] = {
     CSDDDPhase.SCORECARD_GENERATION: ["Art_14"],
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class OrchestratorConfig(BaseModel):
     """Configuration for the CSDDD Readiness Pipeline Orchestrator."""
@@ -187,7 +164,6 @@ class OrchestratorConfig(BaseModel):
         default=2029, description="CSDDD compliance deadline for Group 2"
     )
 
-
 class PhaseProvenance(BaseModel):
     """Provenance tracking for a single phase execution."""
 
@@ -195,8 +171,7 @@ class PhaseProvenance(BaseModel):
     input_hash: str = Field(default="")
     output_hash: str = Field(default="")
     duration_ms: float = Field(default=0.0)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class PhaseResult(BaseModel):
     """Result of a single phase execution."""
@@ -213,7 +188,6 @@ class PhaseResult(BaseModel):
     provenance: Optional[PhaseProvenance] = Field(None)
     articles_covered: List[str] = Field(default_factory=list)
 
-
 class CompanyProfile(BaseModel):
     """Company profile input for scope determination."""
 
@@ -227,7 +201,6 @@ class CompanyProfile(BaseModel):
     sector: str = Field(default="")
     nace_codes: List[str] = Field(default_factory=list)
     countries_of_operation: List[str] = Field(default_factory=list)
-
 
 class AssessmentResult(BaseModel):
     """Complete result of the CSDDD readiness assessment pipeline."""
@@ -250,7 +223,6 @@ class AssessmentResult(BaseModel):
     compliance_deadline: Optional[int] = Field(None)
     provenance_hash: str = Field(default="")
 
-
 class AssessmentSummary(BaseModel):
     """Summary of a completed CSDDD readiness assessment."""
 
@@ -266,7 +238,6 @@ class AssessmentSummary(BaseModel):
     articles_covered: int = Field(default=0)
     articles_total: int = Field(default=15)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Phase Execution Order and Dependencies
@@ -298,11 +269,9 @@ PHASE_DEPENDENCIES: Dict[CSDDDPhase, List[CSDDDPhase]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # CSDDDOrchestrator
 # ---------------------------------------------------------------------------
-
 
 class CSDDDOrchestrator:
     """Master pipeline orchestrator for PACK-019 CSDDD Readiness Assessment.
@@ -362,7 +331,7 @@ class CSDDDOrchestrator:
         """
         result = AssessmentResult(
             pack_id=self.config.pack_id,
-            started_at=_utcnow(),
+            started_at=utcnow(),
             status=ExecutionStatus.RUNNING,
         )
         self._results[result.execution_id] = result
@@ -416,7 +385,7 @@ class CSDDDOrchestrator:
             result.status = ExecutionStatus.FAILED
             result.errors.append(str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.total_duration_ms = (
                 result.completed_at - result.started_at
@@ -461,7 +430,7 @@ class CSDDDOrchestrator:
         """
         result = AssessmentResult(
             pack_id=self.config.pack_id,
-            started_at=_utcnow(),
+            started_at=utcnow(),
             status=ExecutionStatus.RUNNING,
         )
         self._results[result.execution_id] = result
@@ -493,7 +462,7 @@ class CSDDDOrchestrator:
             result.status = ExecutionStatus.FAILED
             result.errors.append(str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.total_duration_ms = (
                 result.completed_at - result.started_at
@@ -594,7 +563,7 @@ class CSDDDOrchestrator:
         """
         phase_result = PhaseResult(
             phase=phase,
-            started_at=_utcnow(),
+            started_at=utcnow(),
             status=ExecutionStatus.RUNNING,
             articles_covered=PHASE_TO_ARTICLES.get(phase, []),
         )
@@ -637,7 +606,7 @@ class CSDDDOrchestrator:
             phase_result.errors.append(str(exc))
             logger.error("Phase %s failed: %s", phase.value, str(exc))
 
-        phase_result.completed_at = _utcnow()
+        phase_result.completed_at = utcnow()
         if phase_result.started_at:
             phase_result.duration_ms = (
                 phase_result.completed_at - phase_result.started_at

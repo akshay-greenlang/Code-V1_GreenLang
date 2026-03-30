@@ -66,25 +66,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -104,7 +98,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely.
 
@@ -118,7 +111,6 @@ def _decimal(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
 ) -> Decimal:
@@ -126,7 +118,6 @@ def _safe_divide(
     if denominator == Decimal("0"):
         return default
     return numerator / denominator
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value to the specified number of decimal places.
@@ -143,18 +134,15 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ClaimType(str, Enum):
     """Types of environmental claims subject to the Green Claims Directive.
@@ -181,7 +169,6 @@ class ClaimType(str, Enum):
     REDUCED_EMISSIONS = "reduced_emissions"
     ENVIRONMENTALLY_FRIENDLY = "environmentally_friendly"
 
-
 class ClaimRiskLevel(str, Enum):
     """Risk level associated with an environmental claim.
 
@@ -193,7 +180,6 @@ class ClaimRiskLevel(str, Enum):
     MEDIUM = "medium"
     HIGH = "high"
     CRITICAL = "critical"
-
 
 class SubstantiationLevel(str, Enum):
     """Substantiation quality level for an environmental claim.
@@ -207,7 +193,6 @@ class SubstantiationLevel(str, Enum):
     MODERATE = "moderate"
     WEAK = "weak"
     INSUFFICIENT = "insufficient"
-
 
 class EvidenceType(str, Enum):
     """Types of evidence that can substantiate an environmental claim.
@@ -223,7 +208,6 @@ class EvidenceType(str, Enum):
     MEASUREMENT = "measurement"
     THIRD_PARTY_VERIFICATION = "third_party_verification"
 
-
 class LifecycleStage(str, Enum):
     """Product lifecycle stages per PEF methodology.
 
@@ -237,11 +221,9 @@ class LifecycleStage(str, Enum):
     USE = "use"
     END_OF_LIFE = "end_of_life"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # Substantiation dimension weights (must sum to 100).
 # These weights reflect the relative importance of each dimension
@@ -487,7 +469,6 @@ CLAIM_REQUIREMENTS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # Human-readable descriptions for claim types.
 CLAIM_TYPE_DESCRIPTIONS: Dict[str, str] = {
     ClaimType.CARBON_NEUTRAL.value: "Product or organisation has net zero carbon emissions through reduction and offsetting",
@@ -508,11 +489,9 @@ CLAIM_TYPE_DESCRIPTIONS: Dict[str, str] = {
     ClaimType.ENVIRONMENTALLY_FRIENDLY.value: "General claim of environmental benefit across multiple dimensions",
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class EnvironmentalClaim(BaseModel):
     """An environmental claim subject to substantiation under the Directive.
@@ -559,7 +538,6 @@ class EnvironmentalClaim(BaseModel):
         if not v.strip():
             raise ValueError("Claim text must not be empty")
         return v
-
 
 class ClaimEvidence(BaseModel):
     """A piece of evidence supporting an environmental claim.
@@ -615,7 +593,6 @@ class ClaimEvidence(BaseModel):
         ge=Decimal("0"),
         le=Decimal("100"),
     )
-
 
 class SubstantiationAssessment(BaseModel):
     """Result of a substantiation assessment for an environmental claim.
@@ -679,7 +656,7 @@ class SubstantiationAssessment(BaseModel):
         description="Engine version used for this assessment",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Assessment timestamp (UTC)",
     )
     processing_time_ms: float = Field(
@@ -690,7 +667,6 @@ class SubstantiationAssessment(BaseModel):
         default="",
         description="SHA-256 hash of the assessment result",
     )
-
 
 class ClaimCompletenessResult(BaseModel):
     """Result of a completeness validation across multiple claims.
@@ -739,7 +715,7 @@ class ClaimCompletenessResult(BaseModel):
         description="Engine version",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Calculation timestamp (UTC)",
     )
     processing_time_ms: float = Field(
@@ -751,11 +727,9 @@ class ClaimCompletenessResult(BaseModel):
         description="SHA-256 hash of the result",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ClaimSubstantiationEngine:
     """Substantiation assessment engine per EU Green Claims Directive Art. 3-4.

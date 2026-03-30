@@ -72,25 +72,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -108,7 +102,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -117,7 +110,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -129,22 +121,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class AllocationMethod(str, Enum):
     """Energy cost allocation methodology.
@@ -162,7 +150,6 @@ class AllocationMethod(str, Enum):
     FIXED_SPLIT = "fixed_split"
     VIRTUAL_METER = "virtual_meter"
     RESIDUAL = "residual"
-
 
 class CostComponent(str, Enum):
     """Energy bill cost component type.
@@ -183,7 +170,6 @@ class CostComponent(str, Enum):
     COMMON_AREA = "common_area"
     ADMIN = "admin"
 
-
 class TenantType(str, Enum):
     """Tenant classification for allocation rules.
 
@@ -199,7 +185,6 @@ class TenantType(str, Enum):
     COMMON_AREA = "common_area"
     VACANT = "vacant"
 
-
 class BillingFrequency(str, Enum):
     """Billing cycle frequency.
 
@@ -210,7 +195,6 @@ class BillingFrequency(str, Enum):
     MONTHLY = "monthly"
     QUARTERLY = "quarterly"
     ANNUAL = "annual"
-
 
 class ReconciliationStatus(str, Enum):
     """Cost reconciliation status against utility bill.
@@ -224,7 +208,6 @@ class ReconciliationStatus(str, Enum):
     RECONCILED = "reconciled"
     ADJUSTED = "adjusted"
     DISPUTED = "disputed"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -259,11 +242,9 @@ DEFAULT_SURCHARGE_RATES: Dict[str, Decimal] = {
     "reliability": Decimal("0.005"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class TenantAccount(BaseModel):
     """Tenant account for cost allocation.
@@ -324,7 +305,6 @@ class TenantAccount(BaseModel):
             return "Unnamed Tenant"
         return v
 
-
 class AllocationRule(BaseModel):
     """Cost allocation rule configuration.
 
@@ -368,7 +348,6 @@ class AllocationRule(BaseModel):
     description: str = Field(
         default="", max_length=2000, description="Rule description"
     )
-
 
 class CostBreakdown(BaseModel):
     """Itemised cost breakdown for a single tenant.
@@ -432,7 +411,6 @@ class CostBreakdown(BaseModel):
         default=Decimal("0"), description="Weight percentage"
     )
 
-
 class BillingRecord(BaseModel):
     """Tenant billing record for a billing period.
 
@@ -459,10 +437,10 @@ class BillingRecord(BaseModel):
     tenant_id: str = Field(default="", description="Tenant ID")
     tenant_name: str = Field(default="", description="Tenant name")
     billing_period_start: datetime = Field(
-        default_factory=_utcnow, description="Period start"
+        default_factory=utcnow, description="Period start"
     )
     billing_period_end: datetime = Field(
-        default_factory=_utcnow, description="Period end"
+        default_factory=utcnow, description="Period end"
     )
     cost_breakdown: Optional[CostBreakdown] = Field(
         default=None, description="Cost breakdown"
@@ -489,10 +467,9 @@ class BillingRecord(BaseModel):
         default=Decimal("0"), description="Variance (%)"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class AllocationResult(BaseModel):
     """Comprehensive cost allocation result.
@@ -520,10 +497,10 @@ class AllocationResult(BaseModel):
         default_factory=_new_uuid, description="Result ID"
     )
     billing_period_start: datetime = Field(
-        default_factory=_utcnow, description="Period start"
+        default_factory=utcnow, description="Period start"
     )
     billing_period_end: datetime = Field(
-        default_factory=_utcnow, description="Period end"
+        default_factory=utcnow, description="Period end"
     )
     total_utility_cost: Decimal = Field(
         default=Decimal("0"), description="Utility bill total"
@@ -559,18 +536,16 @@ class AllocationResult(BaseModel):
         default="USD", max_length=3, description="Currency"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     processing_time_ms: float = Field(
         default=0.0, description="Processing time (ms)"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class CostAllocationEngine:
     """Interval-level tariff-aware energy cost allocation engine.
@@ -671,8 +646,8 @@ class CostAllocationEngine:
         if not tenants:
             raise ValueError("At least one tenant is required for allocation.")
 
-        period_start = billing_period_start or _utcnow()
-        period_end = billing_period_end or _utcnow()
+        period_start = billing_period_start or utcnow()
+        period_end = billing_period_end or utcnow()
         consumption = consumption_data or {}
         demands = demand_data or {}
         allocation_rules = rules or [AllocationRule()]
@@ -915,7 +890,7 @@ class CostAllocationEngine:
             "adjustment_method": adjustment_method,
             "adjusted_allocations": adjusted,
             "tenant_count": len(allocated_costs),
-            "calculated_at": _utcnow().isoformat(),
+            "calculated_at": utcnow().isoformat(),
             "processing_time_ms": round(elapsed, 2),
         }
         result["provenance_hash"] = _compute_hash(result)
@@ -1003,7 +978,7 @@ class CostAllocationEngine:
             "allocation_method": allocation_method.value,
             "tenant_count": len(eligible),
             "allocations": allocations,
-            "calculated_at": _utcnow().isoformat(),
+            "calculated_at": utcnow().isoformat(),
             "processing_time_ms": round(elapsed, 2),
         }
         result["provenance_hash"] = _compute_hash(result)
@@ -1050,8 +1025,8 @@ class CostAllocationEngine:
         )
 
         demands = demand_data or {}
-        period_start = billing_period_start or _utcnow()
-        period_end = billing_period_end or _utcnow()
+        period_start = billing_period_start or utcnow()
+        period_end = billing_period_end or utcnow()
 
         records: List[Dict[str, Any]] = []
         total_billed = Decimal("0")
@@ -1098,7 +1073,7 @@ class CostAllocationEngine:
             "demand_rate": str(demand_rate),
             "currency": self._currency,
             "billing_records": records,
-            "calculated_at": _utcnow().isoformat(),
+            "calculated_at": utcnow().isoformat(),
             "processing_time_ms": round(elapsed, 2),
         }
         result["provenance_hash"] = _compute_hash(result)

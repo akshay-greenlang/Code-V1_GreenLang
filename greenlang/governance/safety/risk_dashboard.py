@@ -34,6 +34,7 @@ import uuid
 from collections import defaultdict
 import statistics
 import asyncio
+from greenlang.schemas.enums import AlertSeverity
 
 # FastAPI imports (optional - graceful degradation if not available)
 try:
@@ -58,15 +59,6 @@ class TrendDirection(str, Enum):
     STABLE = "stable"
     WORSENING = "worsening"
     UNKNOWN = "unknown"
-
-
-class AlertSeverity(str, Enum):
-    """Dashboard alert severity levels."""
-
-    INFO = "info"
-    WARNING = "warning"
-    ERROR = "error"
-    CRITICAL = "critical"
 
 
 class MetricType(str, Enum):

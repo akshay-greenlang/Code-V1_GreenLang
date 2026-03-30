@@ -40,26 +40,20 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -68,13 +62,11 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
-
 
 class QualityPhase(str, Enum):
     QUALITY_ASSESS = "quality_assess"
@@ -82,7 +74,6 @@ class QualityPhase(str, Enum):
     REMEDIATION_PLAN = "remediation_plan"
     IMPLEMENTATION = "implementation"
     VERIFICATION = "verification"
-
 
 class QualityDimension(str, Enum):
     COMPLETENESS = "completeness"
@@ -92,7 +83,6 @@ class QualityDimension(str, Enum):
     TIMELINESS = "timeliness"
     RELEVANCE = "relevance"
 
-
 class QualityTier(str, Enum):
     """PCAF-aligned data quality tier (1=best, 5=worst)."""
     TIER_1 = "tier_1"
@@ -101,13 +91,11 @@ class QualityTier(str, Enum):
     TIER_4 = "tier_4"
     TIER_5 = "tier_5"
 
-
 class RemediationPriority(str, Enum):
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 class RemediationStatus(str, Enum):
     NOT_STARTED = "not_started"
@@ -116,12 +104,10 @@ class RemediationStatus(str, Enum):
     DEFERRED = "deferred"
     CANCELLED = "cancelled"
 
-
 class ImprovementVerdict(str, Enum):
     IMPROVED = "improved"
     UNCHANGED = "unchanged"
     DEGRADED = "degraded"
-
 
 # =============================================================================
 # REFERENCE DATA
@@ -156,11 +142,9 @@ REMEDIATION_EFFORT_MAP: Dict[str, Dict[str, Any]] = {
     "relevance": {"typical_hours": 15, "description": "Use site-specific factors, update proxies"},
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -173,7 +157,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class SiteDimensionScore(BaseModel):
     """Score for a single quality dimension at a site."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -183,7 +166,6 @@ class SiteDimensionScore(BaseModel):
     weight: Decimal = Field(Decimal("0"))
     weighted_score: Decimal = Field(Decimal("0"))
     findings: List[str] = Field(default_factory=list)
-
 
 class SiteQualityAssessment(BaseModel):
     """Quality assessment result for a single site."""
@@ -195,7 +177,6 @@ class SiteQualityAssessment(BaseModel):
     quality_tier: QualityTier = Field(QualityTier.TIER_3)
     meets_threshold: bool = Field(False)
     dimensions_below_threshold: List[str] = Field(default_factory=list)
-
 
 class QualityGap(BaseModel):
     """A quality gap identified at a site."""
@@ -209,7 +190,6 @@ class QualityGap(BaseModel):
     gap_points: Decimal = Field(Decimal("0"))
     priority: RemediationPriority = Field(RemediationPriority.MEDIUM)
     impact_description: str = Field("")
-
 
 class RemediationAction(BaseModel):
     """A remediation action for a quality gap."""
@@ -227,7 +207,6 @@ class RemediationAction(BaseModel):
     status: RemediationStatus = Field(RemediationStatus.NOT_STARTED)
     expected_score_improvement: Decimal = Field(Decimal("0"))
 
-
 class ImplementationProgress(BaseModel):
     """Progress tracking for remediation actions."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -237,7 +216,6 @@ class ImplementationProgress(BaseModel):
     in_progress: int = Field(0)
     not_started: int = Field(0)
     completion_pct: Decimal = Field(Decimal("0"))
-
 
 class VerificationResult(BaseModel):
     """Verification result after remediation."""
@@ -251,7 +229,6 @@ class VerificationResult(BaseModel):
     new_tier: QualityTier = Field(QualityTier.TIER_3)
     provenance_hash: str = Field("")
 
-
 class QualityImprovementInput(BaseModel):
     """Input for the quality improvement workflow."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -263,7 +240,6 @@ class QualityImprovementInput(BaseModel):
     quality_threshold: Decimal = Field(QUALITY_THRESHOLD)
     overall_threshold: Decimal = Field(OVERALL_THRESHOLD)
     skip_phases: List[str] = Field(default_factory=list)
-
 
 class QualityImprovementResult(BaseModel):
     """Output from the quality improvement workflow."""
@@ -288,11 +264,9 @@ class QualityImprovementResult(BaseModel):
     started_at: str = Field("")
     completed_at: str = Field("")
 
-
 # =============================================================================
 # WORKFLOW CLASS
 # =============================================================================
-
 
 class QualityImprovementWorkflow:
     """
@@ -328,7 +302,7 @@ class QualityImprovementWorkflow:
         self._actions: List[RemediationAction] = []
 
     def execute(self, input_data: QualityImprovementInput) -> QualityImprovementResult:
-        start = _utcnow()
+        start = utcnow()
         result = QualityImprovementResult(
             organisation_id=input_data.organisation_id,
             reporting_year=input_data.reporting_year,
@@ -349,17 +323,17 @@ class QualityImprovementWorkflow:
                     phase_name=phase.value, phase_number=idx, status=PhaseStatus.SKIPPED,
                 ))
                 continue
-            phase_start = _utcnow()
+            phase_start = utcnow()
             try:
                 phase_out = phase_methods[phase](input_data, result)
-                elapsed = (_utcnow() - phase_start).total_seconds()
+                elapsed = (utcnow() - phase_start).total_seconds()
                 result.phase_results.append(PhaseResult(
                     phase_name=phase.value, phase_number=idx,
                     status=PhaseStatus.COMPLETED, duration_seconds=elapsed,
                     outputs=phase_out, provenance_hash=_compute_hash(str(phase_out)),
                 ))
             except Exception as exc:
-                elapsed = (_utcnow() - phase_start).total_seconds()
+                elapsed = (utcnow() - phase_start).total_seconds()
                 logger.error("Phase %s failed: %s", phase.value, exc, exc_info=True)
                 result.phase_results.append(PhaseResult(
                     phase_name=phase.value, phase_number=idx,
@@ -371,7 +345,7 @@ class QualityImprovementWorkflow:
 
         if result.status != WorkflowStatus.FAILED:
             result.status = WorkflowStatus.COMPLETED
-        end = _utcnow()
+        end = utcnow()
         result.completed_at = end.isoformat()
         result.duration_seconds = (end - start).total_seconds()
         result.provenance_hash = _compute_hash(
@@ -692,7 +666,6 @@ class QualityImprovementWorkflow:
             return Decimal(str(value))
         except Exception:
             return Decimal("0")
-
 
 __all__ = [
     "QualityImprovementWorkflow",

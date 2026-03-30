@@ -37,21 +37,16 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -62,13 +57,11 @@ class ConsolidationApproach(str, Enum):
     FINANCIAL_CONTROL = "financial_control"
     EQUITY_SHARE = "equity_share"
 
-
 class OutputFormat(str, Enum):
     MARKDOWN = "markdown"
     HTML = "html"
     JSON = "json"
     CSV = "csv"
-
 
 # ---------------------------------------------------------------------------
 # Input Models
@@ -87,7 +80,6 @@ class EntityEntry(BaseModel):
     included: bool = Field(True)
     exclusion_reason: str = Field("")
 
-
 class AdjustmentSummaryLine(BaseModel):
     """Single line in the adjustment waterfall."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -99,7 +91,6 @@ class AdjustmentSummaryLine(BaseModel):
     total_location_tco2e: Decimal = Field(Decimal("0"))
     total_market_tco2e: Decimal = Field(Decimal("0"))
 
-
 class BoundaryDescription(BaseModel):
     """Organisational boundary metadata."""
     approach: str = Field("operational_control")
@@ -110,13 +101,11 @@ class BoundaryDescription(BaseModel):
     materiality_threshold_pct: Decimal = Field(Decimal("5"))
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-
 class ReportNote(BaseModel):
     """Disclosure note or caveat."""
     note_id: str = Field("")
     category: str = Field("")
     text: str = Field("")
-
 
 class ConsolidatedGhgReportInput(BaseModel):
     """Complete input for the consolidated GHG report."""
@@ -141,7 +130,6 @@ class ConsolidatedGhgReportInput(BaseModel):
     included_entities: int = Field(0)
     excluded_entities: int = Field(0)
     currency_code: str = Field("USD")
-
 
 # ---------------------------------------------------------------------------
 # Output Model
@@ -172,7 +160,6 @@ class ConsolidatedGhgReportOutput(BaseModel):
     notes: List[ReportNote] = Field(default_factory=list)
     provenance_hash: str = Field("")
 
-
 # =============================================================================
 # TEMPLATE CLASS
 # =============================================================================
@@ -202,7 +189,7 @@ class ConsolidatedGhgReport:
     def render(self, data: Dict[str, Any]) -> ConsolidatedGhgReportOutput:
         """Render consolidated GHG report from input data."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
 
         inp = ConsolidatedGhgReportInput(**data) if isinstance(data, dict) else data
 
@@ -390,7 +377,6 @@ class ConsolidatedGhgReport:
                 Decimal("0.01"), rounding=ROUND_HALF_UP
             )
         return None
-
 
 __all__ = [
     "ConsolidatedGhgReport",

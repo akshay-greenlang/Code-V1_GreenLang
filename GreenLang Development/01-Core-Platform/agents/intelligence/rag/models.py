@@ -11,10 +11,11 @@ Core data models:
 
 from datetime import datetime, date
 from typing import Optional, List, Dict, Any, Literal
-from pydantic import BaseModel, Field, HttpUrl, validator
+from pydantic import Field, HttpUrl, validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 
 
-class DocMeta(BaseModel):
+class DocMeta(GreenLangBase):
     """
     Document metadata for regulatory compliance and audit trails.
 
@@ -120,7 +121,7 @@ class DocMeta(BaseModel):
         }
 
 
-class Chunk(BaseModel):
+class Chunk(GreenLangBase):
     """
     Document chunk with section hierarchy and embedding metadata.
 
@@ -196,7 +197,7 @@ class Chunk(BaseModel):
         }
 
 
-class RAGCitation(BaseModel):
+class RAGCitation(GreenLangBase):
     """
     Audit-ready citation for regulatory compliance.
 
@@ -333,7 +334,7 @@ class RAGCitation(BaseModel):
         }
 
 
-class QueryResult(BaseModel):
+class QueryResult(GreenLangBase):
     """
     Result from RAG retrieval with MMR-diversified chunks and citations.
     """
@@ -401,7 +402,7 @@ class QueryResult(BaseModel):
         }
 
 
-class IngestionManifest(BaseModel):
+class IngestionManifest(GreenLangBase):
     """
     Audit trail for document ingestion (MANIFEST.json).
 

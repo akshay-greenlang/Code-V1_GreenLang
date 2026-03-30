@@ -58,25 +58,20 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ReportFormat, ValidationSeverity
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -96,7 +91,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _safe_pct(numerator: float, denominator: float) -> float:
     """Calculate percentage safely.
 
@@ -111,18 +105,15 @@ def _safe_pct(numerator: float, denominator: float) -> float:
         return 0.0
     return (numerator / denominator) * 100.0
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EETVersion(str, Enum):
     """Supported EET template versions."""
     V1_0_0 = "1.0.0"
     V1_1_0 = "1.1.0"
     V1_1_1 = "1.1.1"
-
 
 class EETSection(str, Enum):
     """EET data sections relevant to SFDR."""
@@ -132,7 +123,6 @@ class EETSection(str, Enum):
     PAI_INDICATORS = "05_pai_indicators"
     SUSTAINABILITY_INDICATORS = "06_sustainability_indicators"
     ADDITIONAL_SFDR = "09_additional_sfdr"
-
 
 class EETDataType(str, Enum):
     """Data types for EET fields."""
@@ -148,7 +138,6 @@ class EETDataType(str, Enum):
     LEI = "lei"
     CURRENCY = "currency"
 
-
 class SFDRClassification(str, Enum):
     """SFDR product classification types."""
     ARTICLE_6 = "article_6"
@@ -156,25 +145,9 @@ class SFDRClassification(str, Enum):
     ARTICLE_8_PLUS = "article_8_plus"
     ARTICLE_9 = "article_9"
 
-
-class ExportFormat(str, Enum):
-    """Supported EET export formats."""
-    CSV = "csv"
-    JSON = "json"
-    XML = "xml"
-
-
-class ValidationSeverity(str, Enum):
-    """Severity level for validation findings."""
-    ERROR = "error"
-    WARNING = "warning"
-    INFO = "info"
-
-
 # ---------------------------------------------------------------------------
 # EET Field Definitions - SFDR Related Fields
 # ---------------------------------------------------------------------------
-
 
 EET_SFDR_FIELDS: List[Dict[str, Any]] = [
     # ---- Section 01: Product Information ----
@@ -446,11 +419,9 @@ EET_SFDR_FIELDS: List[Dict[str, Any]] = [
      "allowed_values": ["none", "limited", "reasonable"]},
 ]
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class EETField(BaseModel):
     """A single EET data field with metadata and value.
@@ -473,7 +444,6 @@ class EETField(BaseModel):
     last_updated: Optional[datetime] = Field(default=None, description="Last update timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class EETDataSet(BaseModel):
     """Complete EET data set for a financial product.
 
@@ -489,10 +459,9 @@ class EETDataSet(BaseModel):
     total_fields: int = Field(default=0, description="Total fields in dataset")
     populated_fields: int = Field(default=0, description="Number of populated fields")
     completeness_pct: float = Field(default=0.0, description="Completeness percentage")
-    created_at: datetime = Field(default_factory=_utcnow, description="Creation timestamp")
-    updated_at: datetime = Field(default_factory=_utcnow, description="Last update timestamp")
+    created_at: datetime = Field(default_factory=utcnow, description="Creation timestamp")
+    updated_at: datetime = Field(default_factory=utcnow, description="Last update timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class EETValidationResult(BaseModel):
     """Result of validating an EET dataset against specification.
@@ -513,25 +482,22 @@ class EETValidationResult(BaseModel):
         default_factory=dict, description="Completeness by section (%)"
     )
     total_fields_checked: int = Field(default=0, description="Total fields checked")
-    validated_at: datetime = Field(default_factory=_utcnow, description="Validation timestamp")
+    validated_at: datetime = Field(default_factory=utcnow, description="Validation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class EETExportResult(BaseModel):
     """Result of exporting EET data to a specific format."""
     export_id: str = Field(default_factory=_new_uuid, description="Unique export identifier")
-    format: ExportFormat = Field(description="Export format used")
+    format: ReportFormat = Field(description="Export format used")
     content: str = Field(description="Exported content as string")
     field_count: int = Field(default=0, description="Number of fields exported")
     file_size_bytes: int = Field(default=0, description="Size of exported content in bytes")
-    exported_at: datetime = Field(default_factory=_utcnow, description="Export timestamp")
+    exported_at: datetime = Field(default_factory=utcnow, description="Export timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 # ---------------------------------------------------------------------------
 # Engine Configuration
 # ---------------------------------------------------------------------------
-
 
 class EETConfig(BaseModel):
     """Configuration for the EETDataEngine.
@@ -544,8 +510,8 @@ class EETConfig(BaseModel):
     field_subset: Optional[List[str]] = Field(
         default=None, description="Subset of field IDs to include (None = all)"
     )
-    export_format: ExportFormat = Field(
-        default=ExportFormat.JSON, description="Default export format"
+    export_format: ReportFormat = Field(
+        default=ReportFormat.JSON, description="Default export format"
     )
     validate_on_populate: bool = Field(
         default=True, description="Validate field values when populated"
@@ -557,7 +523,6 @@ class EETConfig(BaseModel):
         default=True, description="Include unpopulated fields in exports"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic model_rebuild for forward reference resolution
 # ---------------------------------------------------------------------------
@@ -568,11 +533,9 @@ EETDataSet.model_rebuild()
 EETValidationResult.model_rebuild()
 EETExportResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # EETDataEngine
 # ---------------------------------------------------------------------------
-
 
 class EETDataEngine:
     """
@@ -595,7 +558,7 @@ class EETDataEngine:
         ...     "EET_05_001": True,
         ... })
         >>> validation = engine.validate_eet_data()
-        >>> export = engine.export_eet(ExportFormat.JSON)
+        >>> export = engine.export_eet(ReportFormat.JSON)
     """
 
     def __init__(self, config: Optional[Dict[str, Any]] = None) -> None:
@@ -668,7 +631,7 @@ class EETDataEngine:
         Returns:
             Dictionary mapping field_id to success (True/False).
         """
-        start = _utcnow()
+        start = utcnow()
         results: Dict[str, bool] = {}
 
         for field_id, value in field_values.items():
@@ -676,7 +639,7 @@ class EETDataEngine:
             results[field_id] = success
 
         self._update_completeness()
-        self._dataset.updated_at = _utcnow()
+        self._dataset.updated_at = utcnow()
 
         populated = sum(1 for v in results.values() if v)
         logger.info(
@@ -684,7 +647,7 @@ class EETDataEngine:
             populated,
             len(field_values),
             source,
-            int((_utcnow() - start).total_seconds() * 1000),
+            int((utcnow() - start).total_seconds() * 1000),
         )
         return results
 
@@ -858,7 +821,7 @@ class EETDataEngine:
         Returns:
             EETValidationResult with errors, warnings, and completeness.
         """
-        start = _utcnow()
+        start = utcnow()
         errors: List[Dict[str, str]] = []
         warnings: List[Dict[str, str]] = []
         info: List[Dict[str, str]] = []
@@ -957,7 +920,7 @@ class EETDataEngine:
             len(errors),
             len(warnings),
             overall_completeness,
-            int((_utcnow() - start).total_seconds() * 1000),
+            int((utcnow() - start).total_seconds() * 1000),
         )
         return result
 
@@ -967,7 +930,7 @@ class EETDataEngine:
 
     def export_eet(
         self,
-        fmt: Optional[ExportFormat] = None,
+        fmt: Optional[ReportFormat] = None,
     ) -> EETExportResult:
         """Export EET data in the specified format.
 
@@ -977,14 +940,14 @@ class EETDataEngine:
         Returns:
             EETExportResult with the exported content as string.
         """
-        start = _utcnow()
+        start = utcnow()
         export_format = fmt or self.config.export_format
 
-        if export_format == ExportFormat.CSV:
+        if export_format == ReportFormat.CSV:
             content = self._export_csv()
-        elif export_format == ExportFormat.JSON:
+        elif export_format == ReportFormat.JSON:
             content = self._export_json()
-        elif export_format == ExportFormat.XML:
+        elif export_format == ReportFormat.XML:
             content = self._export_xml()
         else:
             content = self._export_json()
@@ -1008,14 +971,14 @@ class EETDataEngine:
             export_format.value,
             field_count,
             result.file_size_bytes,
-            int((_utcnow() - start).total_seconds() * 1000),
+            int((utcnow() - start).total_seconds() * 1000),
         )
         return result
 
     def import_eet(
         self,
         data: Union[str, Dict[str, Any]],
-        fmt: Optional[ExportFormat] = None,
+        fmt: Optional[ReportFormat] = None,
         source: str = "import",
     ) -> Dict[str, bool]:
         """Import EET data from external source.
@@ -1028,12 +991,12 @@ class EETDataEngine:
         Returns:
             Dictionary mapping field_id to import success.
         """
-        start = _utcnow()
+        start = utcnow()
         import_format = fmt or self.config.export_format
 
-        if import_format == ExportFormat.JSON:
+        if import_format == ReportFormat.JSON:
             field_values = self._parse_json_import(data)
-        elif import_format == ExportFormat.CSV:
+        elif import_format == ReportFormat.CSV:
             field_values = self._parse_csv_import(data)
         else:
             logger.warning("XML import not yet supported; use JSON or CSV")
@@ -1047,7 +1010,7 @@ class EETDataEngine:
             imported,
             len(field_values),
             import_format.value,
-            int((_utcnow() - start).total_seconds() * 1000),
+            int((utcnow() - start).total_seconds() * 1000),
         )
         return results
 
@@ -1171,7 +1134,7 @@ class EETDataEngine:
         field.value = value
         field.source = source
         field.populated = True
-        field.last_updated = _utcnow()
+        field.last_updated = utcnow()
         field.provenance_hash = _compute_hash(field)
         return True
 
@@ -1450,7 +1413,7 @@ class EETDataEngine:
             "product_isin": self._dataset.product_isin,
             "product_name": self._dataset.product_name,
             "reporting_date": self._dataset.reporting_date,
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
             "total_fields": self._dataset.total_fields,
             "populated_fields": self._dataset.populated_fields,
             "completeness_pct": self._dataset.completeness_pct,
@@ -1471,7 +1434,7 @@ class EETDataEngine:
             f'  <ProductISIN>{self._dataset.product_isin}</ProductISIN>',
             f'  <ProductName>{self._dataset.product_name}</ProductName>',
             f'  <ReportingDate>{self._dataset.reporting_date or ""}</ReportingDate>',
-            f'  <GeneratedAt>{_utcnow().isoformat()}</GeneratedAt>',
+            f'  <GeneratedAt>{utcnow().isoformat()}</GeneratedAt>',
         ]
 
         current_section = None

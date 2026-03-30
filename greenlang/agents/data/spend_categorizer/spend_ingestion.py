@@ -53,7 +53,9 @@ from collections import defaultdict
 from datetime import date, datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+
+from greenlang.schemas import GreenLangBase, utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -63,16 +65,9 @@ __all__ = [
     "SpendIngestionEngine",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _generate_id(prefix: str = "rec") -> str:
     """Generate a unique identifier with a prefix.
@@ -84,7 +79,6 @@ def _generate_id(prefix: str = "rec") -> str:
         String of the form ``{prefix}-{uuid4_hex[:12]}``.
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 # ---------------------------------------------------------------------------
 # Vendor normalisation patterns
@@ -102,7 +96,6 @@ _VENDOR_SUFFIX_PATTERNS: List[re.Pattern[str]] = [
     re.compile(r",?\s*\b(s\.?p\.?a\.?|s\.?a\.?s\.?|e\.?v\.?)\b", re.IGNORECASE),
     re.compile(r",?\s*\b(pte\.?|bhd\.?|sdn\.?)\b", re.IGNORECASE),
 ]
-
 
 # ---------------------------------------------------------------------------
 # Exchange rate table: 1 USD = X foreign currency (150+ currencies)
@@ -259,7 +252,6 @@ _EXCHANGE_RATES_TO_USD: Dict[str, float] = {
     "XPF": 109.50,
 }
 
-
 # ---------------------------------------------------------------------------
 # Canonical field mapping (source column -> canonical name)
 # ---------------------------------------------------------------------------
@@ -335,13 +327,11 @@ _FIELD_ALIASES: Dict[str, str] = {
     "product_group": "material_group",
 }
 
-
 # ---------------------------------------------------------------------------
 # Data models
 # ---------------------------------------------------------------------------
 
-
-class NormalizedSpendRecord(BaseModel):
+class NormalizedSpendRecord(GreenLangBase):
     """A normalised, canonical spend record.
 
     All fields have been standardised: vendor name normalised,
@@ -372,8 +362,7 @@ class NormalizedSpendRecord(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class IngestionBatch(BaseModel):
+class IngestionBatch(GreenLangBase):
     """Metadata for a batch of ingested spend records."""
 
     batch_id: str = Field(..., description="Unique batch identifier")
@@ -392,11 +381,9 @@ class IngestionBatch(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
 # ---------------------------------------------------------------------------
 # SpendIngestionEngine
 # ---------------------------------------------------------------------------
-
 
 class SpendIngestionEngine:
     """Multi-source spend data ingestion engine.
@@ -540,7 +527,7 @@ class SpendIngestionEngine:
             records=normalised,
             errors=errors,
             provenance_hash=provenance_hash,
-            created_at=_utcnow().isoformat(),
+            created_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed, 2),
         )
 
@@ -704,7 +691,7 @@ class SpendIngestionEngine:
 
         # Step 6: generate record ID and provenance
         record_id = _generate_id("rec")
-        now_iso = _utcnow().isoformat()
+        now_iso = utcnow().isoformat()
 
         provenance_hash = self._compute_record_provenance(
             record_id, vendor_name, amount_usd, currency, now_iso,
@@ -1066,11 +1053,9 @@ class SpendIngestionEngine:
         }, sort_keys=True)
         return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Module-level helper functions
 # ---------------------------------------------------------------------------
-
 
 def _parse_float(value: Any) -> float:
     """Parse a value to float, handling common formats.
@@ -1091,7 +1076,6 @@ def _parse_float(value: Any) -> float:
         return float(cleaned) if cleaned else 0.0
     except (ValueError, TypeError):
         return 0.0
-
 
 def _parse_date_str(value: Any) -> Optional[str]:
     """Parse a date value to ISO date string.
@@ -1120,7 +1104,6 @@ def _parse_date_str(value: Any) -> Optional[str]:
     # Return as-is if no format matched
     return text
 
-
 def _vendor_id_from_name(name: str) -> str:
     """Generate a deterministic vendor ID from a vendor name.
 
@@ -1134,7 +1117,6 @@ def _vendor_id_from_name(name: str) -> str:
         return "VEND-unknown"
     digest = hashlib.sha256(name.lower().encode("utf-8")).hexdigest()
     return f"VEND-{digest[:8]}"
-
 
 def _string_similarity(a: str, b: str) -> float:
     """Compute normalised string similarity (Levenshtein-based).
@@ -1179,7 +1161,6 @@ def _string_similarity(a: str, b: str) -> float:
     lcs_len = prev[n]
     return (2.0 * lcs_len) / (m + n)
 
-
 def _amount_similarity(a: float, b: float) -> float:
     """Compute similarity between two amounts.
 
@@ -1196,7 +1177,6 @@ def _amount_similarity(a: float, b: float) -> float:
     if max_val == 0:
         return 1.0
     return 1.0 - abs(a - b) / max_val
-
 
 def _date_similarity(a: Optional[str], b: Optional[str]) -> float:
     """Compute similarity between two date strings.
@@ -1225,7 +1205,6 @@ def _date_similarity(a: Optional[str], b: Optional[str]) -> float:
         return 0.0
     except (ValueError, TypeError):
         return 0.0
-
 
 def _safe_serialize(obj: Any) -> str:
     """Safely serialize an object to a JSON-like string.

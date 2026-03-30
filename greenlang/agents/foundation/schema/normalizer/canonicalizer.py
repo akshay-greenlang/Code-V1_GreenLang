@@ -47,10 +47,11 @@ import re
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import ConfigDict, Field, field_validator
 
 from greenlang.agents.foundation.schema.compiler.ir import SchemaIR, UnitSpecIR
 from greenlang.agents.foundation.schema.units.catalog import UnitCatalog
+from greenlang.schemas import GreenLangBase
 
 
 logger = logging.getLogger(__name__)
@@ -80,7 +81,7 @@ CANONICAL_UNITS: Dict[str, str] = {
 # =============================================================================
 
 
-class ConversionRecord(BaseModel):
+class ConversionRecord(GreenLangBase):
     """
     Record of a unit conversion.
 
@@ -175,7 +176,7 @@ class ConversionRecord(BaseModel):
 # =============================================================================
 
 
-class CanonicalizedValue(BaseModel):
+class CanonicalizedValue(GreenLangBase):
     """
     A canonicalized unit value.
 
@@ -243,7 +244,7 @@ class CanonicalizedValue(BaseModel):
 # =============================================================================
 
 
-class KeyRename(BaseModel):
+class KeyRename(GreenLangBase):
     """
     Record of a key rename.
 

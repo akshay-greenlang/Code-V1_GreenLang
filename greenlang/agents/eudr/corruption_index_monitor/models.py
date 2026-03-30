@@ -52,25 +52,18 @@ from datetime import date, datetime, timezone
 from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import AlertSeverity
 
 from pydantic import (
-    BaseModel,
-    ConfigDict,
     Field,
     field_validator,
     model_validator,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -121,11 +114,9 @@ WGI_DIMENSIONS_LIST: List[str] = [
     "control_of_corruption",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Enumerations (10)
 # ---------------------------------------------------------------------------
-
 
 class WGIDimension(str, Enum):
     """World Bank Worldwide Governance Indicators dimensions.
@@ -155,7 +146,6 @@ class WGIDimension(str, Enum):
     CONTROL_OF_CORRUPTION = "control_of_corruption"
     """Extent to which public power is exercised for private gain."""
 
-
 class RiskLevel(str, Enum):
     """Risk level classification for corruption and governance assessment.
 
@@ -174,7 +164,6 @@ class RiskLevel(str, Enum):
 
     CRITICAL = "critical"
     """Critical risk: CPI <= 30, severe governance deficiencies."""
-
 
 class TrendDirection(str, Enum):
     """Direction of trend in corruption or governance indices over time.
@@ -195,27 +184,6 @@ class TrendDirection(str, Enum):
     VOLATILE = "volatile"
     """Index values show high variance with no clear direction."""
 
-
-class AlertSeverity(str, Enum):
-    """Severity levels for corruption index monitoring alerts.
-
-    Aligned with GreenLang platform alerting standards for
-    consistent notification routing and escalation.
-    """
-
-    LOW = "low"
-    """Low severity: informational, no immediate action required."""
-
-    MEDIUM = "medium"
-    """Medium severity: review recommended within 7 days."""
-
-    HIGH = "high"
-    """High severity: action required within 48 hours."""
-
-    CRITICAL = "critical"
-    """Critical severity: immediate action required, possible reclassification."""
-
-
 class ComplianceLevel(str, Enum):
     """EUDR due diligence compliance level based on country risk.
 
@@ -231,7 +199,6 @@ class ComplianceLevel(str, Enum):
 
     ENHANCED = "enhanced"
     """Enhanced DD for high-risk countries per Article 11."""
-
 
 class BriberySector(str, Enum):
     """Sectors assessed for bribery and corruption risk relevant to EUDR.
@@ -258,7 +225,6 @@ class BriberySector(str, Enum):
     JUDICIARY = "judiciary"
     """Judiciary sector: legal enforcement, court system integrity."""
 
-
 class CountryClassification(str, Enum):
     """EUDR Article 29 country risk classification.
 
@@ -275,7 +241,6 @@ class CountryClassification(str, Enum):
 
     HIGH = "high"
     """High risk: weak governance, high deforestation, enhanced DD mandatory."""
-
 
 class CorrelationStrength(str, Enum):
     """Strength classification of statistical correlation.
@@ -296,7 +261,6 @@ class CorrelationStrength(str, Enum):
 
     NONE = "none"
     """No meaningful correlation: |r| < 0.2."""
-
 
 class GovernanceRating(str, Enum):
     """Composite governance quality rating derived from multiple indicators.
@@ -319,7 +283,6 @@ class GovernanceRating(str, Enum):
 
     F = "F"
     """Failed governance: severe institutional collapse, high corruption."""
-
 
 class DataSource(str, Enum):
     """Data sources for corruption and governance indices.
@@ -349,13 +312,11 @@ class DataSource(str, Enum):
     CUSTOM = "custom"
     """Custom/internal data source."""
 
-
 # ---------------------------------------------------------------------------
 # Core Models (10)
 # ---------------------------------------------------------------------------
 
-
-class CPIScore(BaseModel):
+class CPIScore(GreenLangBase):
     """Transparency International Corruption Perceptions Index score.
 
     Represents a single country's CPI score for a given year.
@@ -448,11 +409,11 @@ class CPIScore(BaseModel):
         description="SHA-256 hash for audit trail",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record creation timestamp (UTC)",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record last update timestamp (UTC)",
     )
 
@@ -462,8 +423,7 @@ class CPIScore(BaseModel):
         """Ensure country_code is uppercase."""
         return v.upper()
 
-
-class WGIIndicator(BaseModel):
+class WGIIndicator(GreenLangBase):
     """World Bank Worldwide Governance Indicator for a single dimension.
 
     Represents one of the six WGI dimensions for a country-year pair.
@@ -544,11 +504,11 @@ class WGIIndicator(BaseModel):
         description="SHA-256 hash for audit trail",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record creation timestamp (UTC)",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record last update timestamp (UTC)",
     )
 
@@ -558,8 +518,7 @@ class WGIIndicator(BaseModel):
         """Ensure country_code is uppercase."""
         return v.upper()
 
-
-class BriberyRiskAssessment(BaseModel):
+class BriberyRiskAssessment(GreenLangBase):
     """Sector-specific bribery risk assessment for a country.
 
     Evaluates the risk of bribery and corruption in specific economic
@@ -641,11 +600,11 @@ class BriberyRiskAssessment(BaseModel):
         description="SHA-256 hash for audit trail",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record creation timestamp (UTC)",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record last update timestamp (UTC)",
     )
 
@@ -655,8 +614,7 @@ class BriberyRiskAssessment(BaseModel):
         """Ensure country_code is uppercase."""
         return v.upper()
 
-
-class InstitutionalQualityScore(BaseModel):
+class InstitutionalQualityScore(GreenLangBase):
     """Composite institutional quality score for a country.
 
     Aggregates multiple dimensions of institutional quality relevant to
@@ -740,11 +698,11 @@ class InstitutionalQualityScore(BaseModel):
         description="SHA-256 hash for audit trail",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record creation timestamp (UTC)",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record last update timestamp (UTC)",
     )
 
@@ -754,8 +712,7 @@ class InstitutionalQualityScore(BaseModel):
         """Ensure country_code is uppercase."""
         return v.upper()
 
-
-class TrendAnalysis(BaseModel):
+class TrendAnalysis(GreenLangBase):
     """Trend analysis results for a corruption or governance index.
 
     Contains linear regression results, trend direction classification,
@@ -864,11 +821,11 @@ class TrendAnalysis(BaseModel):
         description="SHA-256 hash for audit trail",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record creation timestamp (UTC)",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record last update timestamp (UTC)",
     )
 
@@ -888,8 +845,7 @@ class TrendAnalysis(BaseModel):
             )
         return self
 
-
-class DeforestationCorrelation(BaseModel):
+class DeforestationCorrelation(GreenLangBase):
     """Correlation between corruption indices and deforestation rates.
 
     Captures the statistical relationship between a corruption or
@@ -989,11 +945,11 @@ class DeforestationCorrelation(BaseModel):
         description="SHA-256 hash for audit trail",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record creation timestamp (UTC)",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record last update timestamp (UTC)",
     )
 
@@ -1003,8 +959,7 @@ class DeforestationCorrelation(BaseModel):
         """Ensure country_code is uppercase."""
         return v.upper()
 
-
-class Alert(BaseModel):
+class Alert(GreenLangBase):
     """Alert for significant corruption index changes or events.
 
     Generated when corruption indices change beyond configured thresholds,
@@ -1103,11 +1058,11 @@ class Alert(BaseModel):
         description="SHA-256 hash for audit trail",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record creation timestamp (UTC)",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record last update timestamp (UTC)",
     )
 
@@ -1117,8 +1072,7 @@ class Alert(BaseModel):
         """Ensure country_code is uppercase."""
         return v.upper()
 
-
-class ComplianceImpact(BaseModel):
+class ComplianceImpact(GreenLangBase):
     """Compliance impact assessment mapping corruption to EUDR requirements.
 
     Maps CPI and WGI scores to EUDR Article 29 country classifications
@@ -1219,11 +1173,11 @@ class ComplianceImpact(BaseModel):
         description="SHA-256 hash for audit trail",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record creation timestamp (UTC)",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record last update timestamp (UTC)",
     )
 
@@ -1233,8 +1187,7 @@ class ComplianceImpact(BaseModel):
         """Ensure country_code is uppercase."""
         return v.upper()
 
-
-class CountryProfile(BaseModel):
+class CountryProfile(GreenLangBase):
     """Comprehensive country governance and corruption profile.
 
     Aggregates CPI scores, WGI indicators, bribery risk assessments,
@@ -1344,11 +1297,11 @@ class CountryProfile(BaseModel):
         description="SHA-256 hash for audit trail",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record creation timestamp (UTC)",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record last update timestamp (UTC)",
     )
 
@@ -1358,8 +1311,7 @@ class CountryProfile(BaseModel):
         """Ensure country_code is uppercase."""
         return v.upper()
 
-
-class AuditLogEntry(BaseModel):
+class AuditLogEntry(GreenLangBase):
     """Audit log entry for corruption index monitor operations.
 
     Records all significant operations for EUDR Article 31 compliance
@@ -1410,17 +1362,15 @@ class AuditLogEntry(BaseModel):
         description="SHA-256 hash for audit trail",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record creation timestamp (UTC)",
     )
-
 
 # ---------------------------------------------------------------------------
 # Request Models (10)
 # ---------------------------------------------------------------------------
 
-
-class QueryCPIRequest(BaseModel):
+class QueryCPIRequest(GreenLangBase):
     """Request model for querying CPI scores."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1431,8 +1381,7 @@ class QueryCPIRequest(BaseModel):
     end_year: Optional[int] = Field(None, ge=1995, le=2030, description="Range end")
     include_regional: bool = Field(False, description="Include regional comparison")
 
-
-class QueryWGIRequest(BaseModel):
+class QueryWGIRequest(GreenLangBase):
     """Request model for querying WGI indicators."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1444,8 +1393,7 @@ class QueryWGIRequest(BaseModel):
     end_year: Optional[int] = Field(None, ge=1996, le=2030, description="Range end")
     include_composite: bool = Field(True, description="Include composite WGI score")
 
-
-class AssessBriberyRiskRequest(BaseModel):
+class AssessBriberyRiskRequest(GreenLangBase):
     """Request model for bribery risk assessment."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1454,8 +1402,7 @@ class AssessBriberyRiskRequest(BaseModel):
     sectors: Optional[List[BriberySector]] = Field(None, description="Sectors to assess")
     include_mitigation: bool = Field(True, description="Include mitigation recommendations")
 
-
-class EvaluateInstitutionalQualityRequest(BaseModel):
+class EvaluateInstitutionalQualityRequest(GreenLangBase):
     """Request model for institutional quality evaluation."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1464,8 +1411,7 @@ class EvaluateInstitutionalQualityRequest(BaseModel):
     year: Optional[int] = Field(None, ge=2000, le=2030, description="Assessment year")
     include_breakdown: bool = Field(True, description="Include dimension breakdown")
 
-
-class AnalyzeTrendRequest(BaseModel):
+class AnalyzeTrendRequest(GreenLangBase):
     """Request model for trend analysis."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1476,8 +1422,7 @@ class AnalyzeTrendRequest(BaseModel):
     min_years: Optional[int] = Field(None, ge=2, description="Override min years")
     include_prediction: bool = Field(True, description="Include prediction")
 
-
-class AnalyzeCorrelationRequest(BaseModel):
+class AnalyzeCorrelationRequest(GreenLangBase):
     """Request model for deforestation-corruption correlation analysis."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1489,8 +1434,7 @@ class AnalyzeCorrelationRequest(BaseModel):
     )
     min_data_points: Optional[int] = Field(None, ge=3, description="Override min points")
 
-
-class GenerateAlertRequest(BaseModel):
+class GenerateAlertRequest(GreenLangBase):
     """Request model for alert generation."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1504,8 +1448,7 @@ class GenerateAlertRequest(BaseModel):
     index_type: Optional[str] = Field(None, description="Index type")
     dimension: Optional[WGIDimension] = Field(None, description="WGI dimension")
 
-
-class AssessComplianceImpactRequest(BaseModel):
+class AssessComplianceImpactRequest(GreenLangBase):
     """Request model for compliance impact assessment."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1514,8 +1457,7 @@ class AssessComplianceImpactRequest(BaseModel):
     include_cost_estimate: bool = Field(True, description="Include DD cost estimate")
     include_audit_frequency: bool = Field(True, description="Include audit frequency")
 
-
-class BuildCountryProfileRequest(BaseModel):
+class BuildCountryProfileRequest(GreenLangBase):
     """Request model for building comprehensive country profile."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1526,21 +1468,18 @@ class BuildCountryProfileRequest(BaseModel):
     include_bribery: bool = Field(True, description="Include bribery assessments")
     include_alerts: bool = Field(True, description="Include active alerts")
 
-
-class HealthCheckRequest(BaseModel):
+class HealthCheckRequest(GreenLangBase):
     """Request model for health check."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
 
     include_details: bool = Field(False, description="Include detailed diagnostics")
 
-
 # ---------------------------------------------------------------------------
 # Response Models (10)
 # ---------------------------------------------------------------------------
 
-
-class CPIScoreResponse(BaseModel):
+class CPIScoreResponse(GreenLangBase):
     """Response model for CPI score queries."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1552,8 +1491,7 @@ class CPIScoreResponse(BaseModel):
     processing_time_ms: float = Field(0.0, description="Processing time in ms")
     provenance_hash: Optional[str] = Field(None, description="Response provenance hash")
 
-
-class WGIIndicatorResponse(BaseModel):
+class WGIIndicatorResponse(GreenLangBase):
     """Response model for WGI indicator queries."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1564,8 +1502,7 @@ class WGIIndicatorResponse(BaseModel):
     processing_time_ms: float = Field(0.0, description="Processing time in ms")
     provenance_hash: Optional[str] = Field(None, description="Response provenance hash")
 
-
-class BriberyRiskResponse(BaseModel):
+class BriberyRiskResponse(GreenLangBase):
     """Response model for bribery risk assessment."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1578,8 +1515,7 @@ class BriberyRiskResponse(BaseModel):
     processing_time_ms: float = Field(0.0, description="Processing time in ms")
     provenance_hash: Optional[str] = Field(None, description="Response provenance hash")
 
-
-class InstitutionalQualityResponse(BaseModel):
+class InstitutionalQualityResponse(GreenLangBase):
     """Response model for institutional quality evaluation."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1588,8 +1524,7 @@ class InstitutionalQualityResponse(BaseModel):
     processing_time_ms: float = Field(0.0, description="Processing time in ms")
     provenance_hash: Optional[str] = Field(None, description="Response provenance hash")
 
-
-class TrendAnalysisResponse(BaseModel):
+class TrendAnalysisResponse(GreenLangBase):
     """Response model for trend analysis."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1599,8 +1534,7 @@ class TrendAnalysisResponse(BaseModel):
     processing_time_ms: float = Field(0.0, description="Processing time in ms")
     provenance_hash: Optional[str] = Field(None, description="Response provenance hash")
 
-
-class CorrelationResponse(BaseModel):
+class CorrelationResponse(GreenLangBase):
     """Response model for deforestation-corruption correlation analysis."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1612,8 +1546,7 @@ class CorrelationResponse(BaseModel):
     processing_time_ms: float = Field(0.0, description="Processing time in ms")
     provenance_hash: Optional[str] = Field(None, description="Response provenance hash")
 
-
-class AlertResponse(BaseModel):
+class AlertResponse(GreenLangBase):
     """Response model for alert operations."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1623,8 +1556,7 @@ class AlertResponse(BaseModel):
     processing_time_ms: float = Field(0.0, description="Processing time in ms")
     provenance_hash: Optional[str] = Field(None, description="Response provenance hash")
 
-
-class ComplianceImpactResponse(BaseModel):
+class ComplianceImpactResponse(GreenLangBase):
     """Response model for compliance impact assessment."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1633,8 +1565,7 @@ class ComplianceImpactResponse(BaseModel):
     processing_time_ms: float = Field(0.0, description="Processing time in ms")
     provenance_hash: Optional[str] = Field(None, description="Response provenance hash")
 
-
-class CountryProfileResponse(BaseModel):
+class CountryProfileResponse(GreenLangBase):
     """Response model for comprehensive country profile."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1643,8 +1574,7 @@ class CountryProfileResponse(BaseModel):
     processing_time_ms: float = Field(0.0, description="Processing time in ms")
     provenance_hash: Optional[str] = Field(None, description="Response provenance hash")
 
-
-class HealthCheckResponse(BaseModel):
+class HealthCheckResponse(GreenLangBase):
     """Response model for health check."""
 
     model_config = ConfigDict(str_strip_whitespace=True)

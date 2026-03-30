@@ -122,6 +122,7 @@ from greenlang.agents.mrv.purchased_goods_services.models import (
 )
 from greenlang.agents.mrv.purchased_goods_services.config import PurchasedGoodsServicesConfig
 from greenlang.agents.mrv.purchased_goods_services.metrics import PurchasedGoodsServicesMetrics
+from greenlang.schemas import utcnow
 from greenlang.agents.mrv.purchased_goods_services.provenance import (
     PurchasedGoodsProvenanceTracker,
     ProvenanceStage,
@@ -196,16 +197,9 @@ _MAX_BATCH_SIZE: int = 50_000
 #: Number of equal-allocation customers when no count is provided.
 _DEFAULT_EQUAL_CUSTOMERS: int = 10
 
-
 # ---------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _quantize(value: Decimal, precision: Optional[Decimal] = None) -> Decimal:
     """Quantize a Decimal value to the configured precision.
@@ -231,7 +225,6 @@ def _quantize(value: Decimal, precision: Optional[Decimal] = None) -> Decimal:
             value, prec,
         )
         return value
-
 
 def _compute_sha256(data: Any) -> str:
     """Compute SHA-256 hash of arbitrary data.
@@ -259,7 +252,6 @@ def _compute_sha256(data: Any) -> str:
     canonical = json.dumps(data, cls=_Encoder, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
-
 def _safe_divide(
     numerator: Decimal,
     denominator: Decimal,
@@ -279,7 +271,6 @@ def _safe_divide(
         return default
     return _quantize(numerator / denominator)
 
-
 def _get_quality_tier(composite_score: Decimal) -> str:
     """Map a composite DQI score to a quality tier label.
 
@@ -294,16 +285,13 @@ def _get_quality_tier(composite_score: Decimal) -> str:
             return tier_name
     return "Very Poor"
 
-
 def _current_reporting_year() -> int:
     """Return the current calendar year for reporting-year checks."""
-    return _utcnow().year
-
+    return utcnow().year
 
 # ===========================================================================
 # SupplierSpecificCalculatorEngine
 # ===========================================================================
-
 
 class SupplierSpecificCalculatorEngine:
     """Engine 4: Supplier-specific calculation engine for Scope 3 Category 1.
@@ -461,7 +449,7 @@ class SupplierSpecificCalculatorEngine:
             "agent_id": AGENT_ID,
             "version": VERSION,
             "engine": "supplier_specific_calculator",
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             **data,
         }
         return _compute_sha256(data_with_agent)
@@ -2536,7 +2524,7 @@ class SupplierSpecificCalculatorEngine:
             "config_loaded": config_loaded,
             "metrics_available": metrics_available,
             "provenance_available": provenance_available,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "issues": issues,
             "supported_data_sources": [
                 ds.value for ds in SupplierDataSource
@@ -2547,11 +2535,9 @@ class SupplierSpecificCalculatorEngine:
             "engagement_levels": _ENGAGEMENT_LEVEL_NAMES,
         }
 
-
 # ---------------------------------------------------------------------------
 # Module-level convenience factory
 # ---------------------------------------------------------------------------
-
 
 def get_supplier_specific_calculator() -> SupplierSpecificCalculatorEngine:
     """Return the singleton SupplierSpecificCalculatorEngine instance.

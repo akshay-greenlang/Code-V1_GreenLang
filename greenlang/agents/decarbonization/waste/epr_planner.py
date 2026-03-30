@@ -23,7 +23,7 @@ from typing import Any, Dict, List, Optional
 from enum import Enum
 import logging
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.decarbonization.waste.base import (
     BaseWasteDecarbAgent,
@@ -36,6 +36,7 @@ from greenlang.agents.decarbonization.waste.base import (
     CostCategory,
     ConfidenceLevel,
 )
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +79,7 @@ class EPRPlannerInput(WasteDecarbInput):
     apply_eco_modulation: bool = Field(True, description="Apply eco-modulation to fees")
 
 
-class EPRFeeStructure(BaseModel):
+class EPRFeeStructure(GreenLangBase):
     """EPR fee structure output."""
     base_fee_usd_per_tonne: Decimal = Field(Decimal("0"))
     eco_modulated_fee_usd_per_tonne: Decimal = Field(Decimal("0"))
@@ -87,7 +88,7 @@ class EPRFeeStructure(BaseModel):
     hazardous_penalty_pct: Decimal = Field(Decimal("0"))
 
 
-class EPRTarget(BaseModel):
+class EPRTarget(GreenLangBase):
     """EPR recycling/recovery targets."""
     year: int
     collection_target_pct: Decimal = Field(Decimal("0"))

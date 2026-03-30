@@ -46,25 +46,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -77,11 +71,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SupplierDDStatus(str, Enum):
     """Due diligence status lifecycle."""
@@ -92,7 +84,6 @@ class SupplierDDStatus(str, Enum):
     VERIFIED = "VERIFIED"
     EXPIRED = "EXPIRED"
 
-
 class SupplierTier(str, Enum):
     """Supply chain tier classification."""
 
@@ -100,7 +91,6 @@ class SupplierTier(str, Enum):
     TIER_2 = "TIER_2"
     TIER_3 = "TIER_3"
     TIER_4_PLUS = "TIER_4_PLUS"
-
 
 class EngagementType(str, Enum):
     """Types of supplier engagement events."""
@@ -116,7 +106,6 @@ class EngagementType(str, Enum):
     TRAINING = "TRAINING"
     TERMINATION = "TERMINATION"
 
-
 class PriorityLevel(str, Enum):
     """Supplier action priority levels."""
 
@@ -124,7 +113,6 @@ class PriorityLevel(str, Enum):
     HIGH = "HIGH"
     MEDIUM = "MEDIUM"
     LOW = "LOW"
-
 
 class CertificationStatus(str, Enum):
     """Certification validity status."""
@@ -134,7 +122,6 @@ class CertificationStatus(str, Enum):
     EXPIRED = "EXPIRED"
     REVOKED = "REVOKED"
     NOT_VERIFIED = "NOT_VERIFIED"
-
 
 # ---------------------------------------------------------------------------
 # Required Fields for Completeness Scoring
@@ -155,11 +142,9 @@ REQUIRED_SUPPLIER_FIELDS: List[Dict[str, Any]] = [
     {"field": "dd_declaration", "weight": 7, "description": "DD declaration signed"},
 ]
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class SupplierProfile(BaseModel):
     """Complete supplier profile for EUDR compliance."""
@@ -184,10 +169,9 @@ class SupplierProfile(BaseModel):
     geolocation_data: Optional[Dict[str, Any]] = Field(None, description="Geolocation data")
     risk_assessment: Optional[Dict[str, Any]] = Field(None, description="Risk assessment data")
     dd_declaration: Optional[Dict[str, Any]] = Field(None, description="DD declaration data")
-    registered_at: datetime = Field(default_factory=_utcnow, description="Registration timestamp")
-    updated_at: datetime = Field(default_factory=_utcnow, description="Last update timestamp")
+    registered_at: datetime = Field(default_factory=utcnow, description="Registration timestamp")
+    updated_at: datetime = Field(default_factory=utcnow, description="Last update timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class DDStatusUpdate(BaseModel):
     """Result of a DD status update operation."""
@@ -197,9 +181,8 @@ class DDStatusUpdate(BaseModel):
     new_status: SupplierDDStatus = Field(..., description="Updated DD status")
     is_valid_transition: bool = Field(default=True, description="Whether transition is valid")
     transition_reason: Optional[str] = Field(None, description="Reason for transition")
-    updated_at: datetime = Field(default_factory=_utcnow, description="Update timestamp")
+    updated_at: datetime = Field(default_factory=utcnow, description="Update timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class CompletenessScore(BaseModel):
     """Data completeness score for a supplier."""
@@ -213,9 +196,8 @@ class CompletenessScore(BaseModel):
         default_factory=list, description="Per-field scoring"
     )
     is_sufficient_for_dd: bool = Field(default=False, description="Whether data is DD-sufficient")
-    scored_at: datetime = Field(default_factory=_utcnow, description="Scoring timestamp")
+    scored_at: datetime = Field(default_factory=utcnow, description="Scoring timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class CertificationRecord(BaseModel):
     """Certification record for a supplier."""
@@ -232,9 +214,8 @@ class CertificationRecord(BaseModel):
     )
     scope: Optional[str] = Field(None, description="Certification scope")
     commodities_covered: List[str] = Field(default_factory=list, description="Commodities covered")
-    recorded_at: datetime = Field(default_factory=_utcnow, description="Record timestamp")
+    recorded_at: datetime = Field(default_factory=utcnow, description="Record timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class CertValidation(BaseModel):
     """Certification validity check result."""
@@ -245,7 +226,6 @@ class CertValidation(BaseModel):
     days_until_expiry: Optional[int] = Field(None, description="Days until expiry")
     expiry_date: Optional[datetime] = Field(None, description="Expiry date")
     issues: List[str] = Field(default_factory=list, description="Validation issues")
-
 
 class PrioritizedSupplier(BaseModel):
     """Supplier with priority ranking for DD actions."""
@@ -264,7 +244,6 @@ class PrioritizedSupplier(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class DataRequest(BaseModel):
     """Data request generated for a supplier."""
 
@@ -276,9 +255,8 @@ class DataRequest(BaseModel):
     )
     priority: PriorityLevel = Field(default=PriorityLevel.MEDIUM, description="Request priority")
     deadline: Optional[datetime] = Field(None, description="Response deadline")
-    generated_at: datetime = Field(default_factory=_utcnow, description="Generation timestamp")
+    generated_at: datetime = Field(default_factory=utcnow, description="Generation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class EngagementRecord(BaseModel):
     """Record of a supplier engagement event."""
@@ -291,9 +269,8 @@ class EngagementRecord(BaseModel):
     outcome: Optional[str] = Field(None, description="Event outcome")
     follow_up_required: bool = Field(default=False, description="Whether follow-up needed")
     follow_up_date: Optional[datetime] = Field(None, description="Follow-up due date")
-    recorded_at: datetime = Field(default_factory=_utcnow, description="Record timestamp")
+    recorded_at: datetime = Field(default_factory=utcnow, description="Record timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class ComplianceCalendarEntry(BaseModel):
     """A single compliance calendar entry."""
@@ -306,7 +283,6 @@ class ComplianceCalendarEntry(BaseModel):
     is_overdue: bool = Field(default=False, description="Whether entry is overdue")
     days_remaining: int = Field(default=0, description="Days until due")
 
-
 class ComplianceCalendar(BaseModel):
     """Compliance calendar for a supplier."""
 
@@ -316,9 +292,8 @@ class ComplianceCalendar(BaseModel):
     )
     overdue_count: int = Field(default=0, description="Number of overdue items")
     upcoming_30d_count: int = Field(default=0, description="Items due in next 30 days")
-    generated_at: datetime = Field(default_factory=_utcnow, description="Generation timestamp")
+    generated_at: datetime = Field(default_factory=utcnow, description="Generation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class SupplierDashboard(BaseModel):
     """Aggregated dashboard for a supplier."""
@@ -337,9 +312,8 @@ class SupplierDashboard(BaseModel):
     compliance_summary: Dict[str, Any] = Field(
         default_factory=dict, description="Compliance summary"
     )
-    generated_at: datetime = Field(default_factory=_utcnow, description="Generation timestamp")
+    generated_at: datetime = Field(default_factory=utcnow, description="Generation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 # ---------------------------------------------------------------------------
 # Valid Status Transitions
@@ -353,11 +327,9 @@ VALID_TRANSITIONS: Dict[SupplierDDStatus, List[SupplierDDStatus]] = {
     SupplierDDStatus.EXPIRED: [SupplierDDStatus.IN_PROGRESS],
 }
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class SupplierComplianceEngine:
     """
@@ -490,7 +462,7 @@ class SupplierComplianceEngine:
 
         if is_valid:
             supplier.dd_status = new_status
-            supplier.updated_at = _utcnow()
+            supplier.updated_at = utcnow()
             supplier.provenance_hash = _compute_hash(supplier)
             logger.info(
                 "DD status updated for %s: %s -> %s",
@@ -604,7 +576,7 @@ class SupplierComplianceEngine:
             raise ValueError("certification_name is required")
 
         # Determine status based on expiry
-        now = _utcnow()
+        now = utcnow()
         expiry = cert.get("expiry_date")
         status = CertificationStatus.NOT_VERIFIED
 
@@ -665,7 +637,7 @@ class SupplierComplianceEngine:
             List of CertValidation results for each certification.
         """
         certs = self._certifications.get(supplier_id, [])
-        now = _utcnow()
+        now = utcnow()
         results: List[CertValidation] = []
 
         for cert in certs:
@@ -815,7 +787,7 @@ class SupplierComplianceEngine:
             SupplierDDStatus.EXPIRED: 7,
         }
         days = deadline_days.get(supplier.dd_status, 30)
-        deadline = _utcnow() + timedelta(days=days)
+        deadline = utcnow() + timedelta(days=days)
 
         # Priority based on completeness
         if completeness.overall_score < 30:
@@ -908,7 +880,7 @@ class SupplierComplianceEngine:
         if not supplier:
             raise ValueError(f"Supplier not found: {supplier_id}")
 
-        now = _utcnow()
+        now = utcnow()
         entries: List[ComplianceCalendarEntry] = []
 
         # Certification renewals

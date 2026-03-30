@@ -54,6 +54,7 @@ import time
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.plot_boundary.config import (
     PlotBoundaryConfig,
@@ -81,22 +82,14 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a unique identifier using UUID4."""
     return str(uuid.uuid4())
-
 
 def _polygon_area_shoelace(exterior: Ring) -> float:
     """Compute approximate polygon area in hectares using shoelace.
@@ -125,7 +118,6 @@ def _polygon_area_shoelace(exterior: Ring) -> float:
     area_m2 = area_deg2 * m_per_deg_lat * m_per_deg_lon
     return area_m2 / 10_000.0
 
-
 def _centroid(ring: Ring) -> Coordinate:
     """Compute the centroid of a ring.
 
@@ -141,7 +133,6 @@ def _centroid(ring: Ring) -> Coordinate:
     avg_lon = sum(c.lon for c in ring) / len(ring)
     return Coordinate(lat=avg_lat, lon=avg_lon)
 
-
 def _distance_deg(a: Coordinate, b: Coordinate) -> float:
     """Euclidean distance in degree space.
 
@@ -154,7 +145,6 @@ def _distance_deg(a: Coordinate, b: Coordinate) -> float:
     dx = a.lon - b.lon
     dy = a.lat - b.lat
     return math.sqrt(dx * dx + dy * dy)
-
 
 def _point_on_segment(
     p: Coordinate,
@@ -187,7 +177,6 @@ def _point_on_segment(
     if sq_len < 1e-20:
         return _distance_deg(p, a) < tolerance
     return -tolerance <= dot <= sq_len + tolerance
-
 
 def _line_segment_intersection(
     p1: Coordinate,
@@ -225,7 +214,6 @@ def _line_segment_intersection(
 
     return None
 
-
 def _point_in_polygon(point: Coordinate, ring: Ring) -> bool:
     """Ray casting algorithm for point-in-polygon test.
 
@@ -253,7 +241,6 @@ def _point_in_polygon(point: Coordinate, ring: Ring) -> bool:
         j = i
     return inside
 
-
 def _bounding_box(ring: Ring) -> Tuple[float, float, float, float]:
     """Compute bounding box of a ring.
 
@@ -265,7 +252,6 @@ def _bounding_box(ring: Ring) -> Tuple[float, float, float, float]:
     lats = [c.lat for c in ring]
     lons = [c.lon for c in ring]
     return (min(lats), min(lons), max(lats), max(lons))
-
 
 def _bbox_overlaps(
     a: Tuple[float, float, float, float],
@@ -284,11 +270,9 @@ def _bbox_overlaps(
         or a[3] < b[1] or b[3] < a[1]
     )
 
-
 # =============================================================================
 # SplitMergeEngine
 # =============================================================================
-
 
 class SplitMergeEngine:
     """Split and merge operations engine with genealogy tracking.
@@ -455,7 +439,7 @@ class SplitMergeEngine:
             area_conserved=area_conserved,
             area_conservation_error_pct=round(conservation_error, 4),
             provenance_hash=provenance_hash,
-            created_at=_utcnow(),
+            created_at=utcnow(),
         )
 
         # Record genealogy
@@ -582,7 +566,7 @@ class SplitMergeEngine:
             area_conserved=area_conserved,
             area_conservation_error_pct=round(conservation_error, 4),
             provenance_hash=provenance_hash,
-            created_at=_utcnow(),
+            created_at=utcnow(),
         )
 
         # Record genealogy
@@ -817,14 +801,14 @@ class SplitMergeEngine:
             entry = self._genealogy.get(child.plot_id, {})
             entry["status"] = "inactive"
             entry["deactivated_reason"] = "undo_split"
-            entry["deactivated_at"] = _utcnow().isoformat()
+            entry["deactivated_at"] = utcnow().isoformat()
             self._genealogy[child.plot_id] = entry
 
         # Record undo operation
         self._genealogy.setdefault(parent.plot_id, {})
         self._genealogy[parent.plot_id]["status"] = "restored"
         self._genealogy[parent.plot_id]["restored_at"] = (
-            _utcnow().isoformat()
+            utcnow().isoformat()
         )
         self._genealogy[parent.plot_id]["restored_from_split"] = (
             split_result.split_id
@@ -860,7 +844,7 @@ class SplitMergeEngine:
         entry = self._genealogy.get(merged.plot_id, {})
         entry["status"] = "inactive"
         entry["deactivated_reason"] = "undo_merge"
-        entry["deactivated_at"] = _utcnow().isoformat()
+        entry["deactivated_at"] = utcnow().isoformat()
         self._genealogy[merged.plot_id] = entry
 
         # Restore parent boundaries
@@ -868,7 +852,7 @@ class SplitMergeEngine:
             self._genealogy.setdefault(parent.plot_id, {})
             self._genealogy[parent.plot_id]["status"] = "restored"
             self._genealogy[parent.plot_id]["restored_at"] = (
-                _utcnow().isoformat()
+                utcnow().isoformat()
             )
             self._genealogy[parent.plot_id]["restored_from_merge"] = (
                 merge_result.merge_id
@@ -1277,7 +1261,7 @@ class SplitMergeEngine:
         """
         parent_id = result.parent_boundary.plot_id
         child_ids = [c.plot_id for c in result.child_boundaries]
-        now_str = _utcnow().isoformat()
+        now_str = utcnow().isoformat()
 
         # Update parent entry
         self._genealogy.setdefault(parent_id, {
@@ -1313,7 +1297,7 @@ class SplitMergeEngine:
         """
         parent_ids = [b.plot_id for b in result.parent_boundaries]
         merged_id = result.merged_boundary.plot_id
-        now_str = _utcnow().isoformat()
+        now_str = utcnow().isoformat()
 
         # Create merged entry
         self._genealogy[merged_id] = {
@@ -1391,7 +1375,6 @@ class SplitMergeEngine:
             f"splits={self.split_count}, "
             f"merges={self.merge_count})"
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

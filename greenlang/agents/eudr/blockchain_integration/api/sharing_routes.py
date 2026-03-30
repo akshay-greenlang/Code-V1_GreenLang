@@ -31,6 +31,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.blockchain_integration.api.dependencies import (
     AuthUser,
@@ -68,32 +69,22 @@ router = APIRouter(tags=["Cross-Party Sharing"])
 _grant_store: Dict[str, Dict] = {}
 _confirmation_store: Dict[str, Dict] = {}
 
-
 def _get_grant_store() -> Dict[str, Dict]:
     """Return the access grant store singleton."""
     return _grant_store
 
-
 def _get_confirmation_store() -> Dict[str, Dict]:
     """Return the confirmation store singleton."""
     return _confirmation_store
-
 
 def _compute_provenance_hash(data: dict) -> str:
     """Compute SHA-256 hash for provenance tracking."""
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ---------------------------------------------------------------------------
 # POST /sharing/grant
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/sharing/grant",
@@ -136,7 +127,7 @@ async def grant_access(
     start = time.monotonic()
     try:
         grant_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         provenance_hash = _compute_provenance_hash({
             "grant_id": grant_id,
@@ -190,11 +181,9 @@ async def grant_access(
             detail="Failed to grant access",
         )
 
-
 # ---------------------------------------------------------------------------
 # DELETE /sharing/revoke/{grant_id}
 # ---------------------------------------------------------------------------
-
 
 @router.delete(
     "/sharing/revoke/{grant_id}",
@@ -249,7 +238,7 @@ async def revoke_access(
                 detail=f"Grant {grant_id} is already revoked",
             )
 
-        now = _utcnow()
+        now = utcnow()
         record["status"] = AccessStatusSchema.REVOKED
         record["revoked_at"] = now
 
@@ -275,11 +264,9 @@ async def revoke_access(
             detail="Failed to revoke access",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /sharing/grants/{record_id}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/sharing/grants/{record_id}",
@@ -352,11 +339,9 @@ async def list_grants(
             detail="Failed to list access grants",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /sharing/request
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/sharing/request",
@@ -399,7 +384,7 @@ async def request_access(
     start = time.monotonic()
     try:
         grant_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         provenance_hash = _compute_provenance_hash({
             "grant_id": grant_id,
@@ -454,11 +439,9 @@ async def request_access(
             detail="Failed to submit access request",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /sharing/confirm
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/sharing/confirm",
@@ -553,7 +536,7 @@ async def multi_party_confirm(
             confirmations_received=confirmations_received,
             confirmations_required=confirmations_required,
             fully_confirmed=fully_confirmed,
-            confirmed_at=_utcnow(),
+            confirmed_at=utcnow(),
         )
 
     except HTTPException:
@@ -569,7 +552,6 @@ async def multi_party_confirm(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to record confirmation",
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

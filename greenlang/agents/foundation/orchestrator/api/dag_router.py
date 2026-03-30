@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import logging
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +43,7 @@ except ImportError:
 
 if FASTAPI_AVAILABLE:
 
-    class CreateDAGRequest(BaseModel):
+    class CreateDAGRequest(GreenLangBase):
         """Request body for creating a new DAG workflow."""
         name: str = Field(..., description="Workflow name")
         description: str = Field("", description="Workflow description")
@@ -58,7 +59,7 @@ if FASTAPI_AVAILABLE:
         max_parallel_nodes: int = Field(10, ge=1, le=500)
         metadata: Dict[str, Any] = Field(default_factory=dict)
 
-    class UpdateDAGRequest(BaseModel):
+    class UpdateDAGRequest(GreenLangBase):
         """Request body for updating a DAG workflow."""
         name: Optional[str] = None
         description: Optional[str] = None
@@ -70,7 +71,7 @@ if FASTAPI_AVAILABLE:
         max_parallel_nodes: Optional[int] = Field(None, ge=1, le=500)
         metadata: Optional[Dict[str, Any]] = None
 
-    class ExecuteDAGRequest(BaseModel):
+    class ExecuteDAGRequest(GreenLangBase):
         """Request body for executing a DAG workflow."""
         input_data: Dict[str, Any] = Field(
             default_factory=dict, description="Input data",
@@ -79,11 +80,11 @@ if FASTAPI_AVAILABLE:
             default_factory=dict, description="Execution options",
         )
 
-    class ImportDAGRequest(BaseModel):
+    class ImportDAGRequest(GreenLangBase):
         """Request body for importing a DAG from YAML."""
         yaml_content: str = Field(..., description="YAML content")
 
-    class ResumeExecutionRequest(BaseModel):
+    class ResumeExecutionRequest(GreenLangBase):
         """Request body for resuming an execution."""
         agent_registry: Dict[str, Any] = Field(
             default_factory=dict,

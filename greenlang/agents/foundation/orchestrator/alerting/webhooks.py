@@ -30,7 +30,9 @@ from typing import Any, Callable, Dict, List, Optional, Set
 from uuid import uuid4
 
 import httpx
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
+from greenlang.schemas import GreenLangBase
+from greenlang.schemas.enums import AlertSeverity
 
 logger = logging.getLogger(__name__)
 
@@ -50,39 +52,6 @@ class AlertType(str, Enum):
     RUN_SUCCEEDED = "run_succeeded"
 
 
-class AlertSeverity(str, Enum):
-    """Severity levels for alerts, ordered from most to least severe."""
-
-    CRITICAL = "critical"
-    HIGH = "high"
-    MEDIUM = "medium"
-    LOW = "low"
-    INFO = "info"
-
-    @classmethod
-    def from_string(cls, value: str) -> "AlertSeverity":
-        """Parse severity from string, case-insensitive."""
-        return cls(value.lower())
-
-    def __ge__(self, other: "AlertSeverity") -> bool:
-        """Compare severity levels (CRITICAL >= HIGH >= MEDIUM >= LOW >= INFO)."""
-        order = [cls.INFO, cls.LOW, cls.MEDIUM, cls.HIGH, cls.CRITICAL]
-        return order.index(self) >= order.index(other)
-
-    def __gt__(self, other: "AlertSeverity") -> bool:
-        """Compare severity levels."""
-        order = [cls.INFO, cls.LOW, cls.MEDIUM, cls.HIGH, cls.CRITICAL]
-        return order.index(self) > order.index(other)
-
-    def __le__(self, other: "AlertSeverity") -> bool:
-        """Compare severity levels."""
-        return not self.__gt__(other)
-
-    def __lt__(self, other: "AlertSeverity") -> bool:
-        """Compare severity levels."""
-        return not self.__ge__(other)
-
-
 class WebhookDeliveryStatus(str, Enum):
     """Status of a webhook delivery attempt."""
 
@@ -97,7 +66,7 @@ class WebhookDeliveryStatus(str, Enum):
 # =============================================================================
 
 
-class AlertPayload(BaseModel):
+class AlertPayload(GreenLangBase):
     """
     Payload for an alert notification.
 
@@ -153,7 +122,7 @@ class AlertPayload(BaseModel):
         return json.dumps(self.to_dict(), sort_keys=True)
 
 
-class WebhookConfig(BaseModel):
+class WebhookConfig(GreenLangBase):
     """
     Configuration for a webhook endpoint.
 
@@ -235,7 +204,7 @@ class WebhookConfig(BaseModel):
         return severity >= self.severity_threshold
 
 
-class WebhookDeliveryResult(BaseModel):
+class WebhookDeliveryResult(GreenLangBase):
     """
     Result of a webhook delivery attempt.
 

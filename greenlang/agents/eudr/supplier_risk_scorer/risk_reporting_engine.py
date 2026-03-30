@@ -59,17 +59,13 @@ from .models import (
 )
 from .provenance import get_tracker
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 #: Supported report output formats.
 _SUPPORTED_FORMATS: Set[str] = {"json", "html", "pdf", "excel", "csv"}
@@ -101,11 +97,9 @@ _BENCHMARK_PEER_GROUPS: Dict[str, List[str]] = {
     "size": ["small", "medium", "large"],
 }
 
-
 # ---------------------------------------------------------------------------
 # RiskReportingEngine
 # ---------------------------------------------------------------------------
-
 
 class RiskReportingEngine:
     """Generate comprehensive supplier risk reports and analytics.
@@ -233,7 +227,7 @@ class RiskReportingEngine:
             language=language,
             content=content,
             content_hash=content_hash,
-            generated_at=_utcnow(),
+            generated_at=utcnow(),
             supplier_id=supplier_id,
             metadata={
                 "time_range": [t.isoformat() for t in time_range] if time_range else None,
@@ -297,8 +291,8 @@ class RiskReportingEngine:
             "risk_summary": {
                 "overall_risk_score": 65.0,
                 "risk_level": "high",
-                "last_assessment_date": _utcnow().isoformat(),
-                "next_assessment_date": (_utcnow() + timedelta(days=30)).isoformat(),
+                "last_assessment_date": utcnow().isoformat(),
+                "next_assessment_date": (utcnow() + timedelta(days=30)).isoformat(),
             },
             "factor_scores": {
                 "geographic_sourcing": 70.0,
@@ -314,21 +308,21 @@ class RiskReportingEngine:
                 {
                     "scheme": "FSC",
                     "status": "valid",
-                    "expiry_date": (_utcnow() + timedelta(days=365)).isoformat(),
+                    "expiry_date": (utcnow() + timedelta(days=365)).isoformat(),
                 },
             ],
             "due_diligence": {
                 "level": "enhanced",
                 "status": "in_progress",
                 "completion_rate": 75.0,
-                "last_audit_date": (_utcnow() - timedelta(days=90)).isoformat(),
+                "last_audit_date": (utcnow() - timedelta(days=90)).isoformat(),
             },
             "alerts": [
                 {
                     "alert_type": "RISK_THRESHOLD",
                     "severity": "high",
                     "message": "Risk score exceeds threshold",
-                    "created_at": _utcnow().isoformat(),
+                    "created_at": utcnow().isoformat(),
                 },
             ],
             "recommendations": [
@@ -583,9 +577,9 @@ class RiskReportingEngine:
             "report_type": "audit_package",
             "supplier_id": supplier_id,
             "language": language,
-            "dds_reference": f"DDS-{supplier_id}-{_utcnow().strftime('%Y%m%d')}",
+            "dds_reference": f"DDS-{supplier_id}-{utcnow().strftime('%Y%m%d')}",
             "regulatory_framework": "EU Regulation 2023/1115 (EUDR)",
-            "submission_date": _utcnow().isoformat(),
+            "submission_date": utcnow().isoformat(),
             "operator_details": {
                 "name": "Company Name",
                 "address": "Company Address",
@@ -628,7 +622,7 @@ class RiskReportingEngine:
                 "certification": "FSC-C123456",
             },
             "audit_trail": {
-                "assessment_date": _utcnow().isoformat(),
+                "assessment_date": utcnow().isoformat(),
                 "assessor": "Risk Scorer Agent",
                 "version": "1.0.0",
             },
@@ -800,7 +794,7 @@ class RiskReportingEngine:
         # KPI 7: Assessment coverage
         recent_assessment_count = sum(
             1 for s in supplier_data if s.get("assessment_date") and
-            (datetime.fromisoformat(s["assessment_date"]) >= _utcnow() - timedelta(days=90))
+            (datetime.fromisoformat(s["assessment_date"]) >= utcnow() - timedelta(days=90))
         )
         assessment_coverage = recent_assessment_count / total_suppliers * 100
 

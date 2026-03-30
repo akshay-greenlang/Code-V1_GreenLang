@@ -42,25 +42,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -73,11 +67,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class PeakEventType(str, Enum):
     """Peak shaving event types from PACK-038."""
@@ -87,7 +79,6 @@ class PeakEventType(str, Enum):
     HVAC_PRECOOL = "hvac_precool"
     EV_DEFER = "ev_defer"
     COMBINED = "combined"
-
 
 class BESSStatus(str, Enum):
     """BESS operational status indicators."""
@@ -99,7 +90,6 @@ class BESSStatus(str, Enum):
     FAULT = "fault"
     MAINTENANCE = "maintenance"
 
-
 class DemandChargeStatus(str, Enum):
     """Demand charge tracking status."""
 
@@ -107,7 +97,6 @@ class DemandChargeStatus(str, Enum):
     APPROACHING_TARGET = "approaching_target"
     EXCEEDING_TARGET = "exceeding_target"
     RATCHET_RISK = "ratchet_risk"
-
 
 class CPEventStatus(str, Enum):
     """Coincident peak event status."""
@@ -117,7 +106,6 @@ class CPEventStatus(str, Enum):
     CLEARED = "cleared"
     MISSED = "missed"
 
-
 class DispatchResult(str, Enum):
     """BESS dispatch outcome."""
 
@@ -126,11 +114,9 @@ class DispatchResult(str, Enum):
     FAILED = "failed"
     CANCELLED = "cancelled"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class Pack038Config(BaseModel):
     """Configuration for the PACK-038 Bridge."""
@@ -142,14 +128,13 @@ class Pack038Config(BaseModel):
     include_bess_data: bool = Field(default=True)
     include_cp_data: bool = Field(default=True)
 
-
 class PeakEvent(BaseModel):
     """A peak shaving event record from PACK-038."""
 
     event_id: str = Field(default_factory=_new_uuid)
     event_type: PeakEventType = Field(default=PeakEventType.COMBINED)
     facility_id: str = Field(default="")
-    event_start: datetime = Field(default_factory=_utcnow)
+    event_start: datetime = Field(default_factory=utcnow)
     event_end: Optional[datetime] = Field(None)
     duration_minutes: int = Field(default=0, ge=0)
     demand_before_kw: float = Field(default=0.0, ge=0.0)
@@ -159,7 +144,6 @@ class PeakEvent(BaseModel):
     load_shift_contribution_kw: float = Field(default=0.0, ge=0.0)
     cost_avoided_usd: float = Field(default=0.0, ge=0.0)
     provenance_hash: str = Field(default="")
-
 
 class BESSDispatchData(BaseModel):
     """BESS dispatch data from PACK-038."""
@@ -173,9 +157,8 @@ class BESSDispatchData(BaseModel):
     cycles_today: int = Field(default=0, ge=0)
     cycles_lifetime: int = Field(default=0, ge=0)
     result: DispatchResult = Field(default=DispatchResult.SUCCESS)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class DemandChargeAnalysis(BaseModel):
     """Demand charge analysis summary from PACK-038."""
@@ -192,7 +175,6 @@ class DemandChargeAnalysis(BaseModel):
     status: DemandChargeStatus = Field(default=DemandChargeStatus.WITHIN_TARGET)
     provenance_hash: str = Field(default="")
 
-
 class CPEventData(BaseModel):
     """Coincident peak event data from PACK-038."""
 
@@ -208,11 +190,9 @@ class CPEventData(BaseModel):
     transmission_savings_usd: float = Field(default=0.0, ge=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Pack038Bridge
 # ---------------------------------------------------------------------------
-
 
 class Pack038Bridge:
     """Bridge to import PACK-038 Peak Shaving data for monitoring display.
@@ -401,5 +381,5 @@ class Pack038Bridge:
             "peak_events_available": True,
             "bess_data_available": self.config.include_bess_data,
             "cp_data_available": self.config.include_cp_data,
-            "last_sync": _utcnow().isoformat(),
+            "last_sync": utcnow().isoformat(),
         }

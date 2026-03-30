@@ -19,16 +19,9 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from pydantic import BaseModel, Field, validator
+from greenlang.schemas.enums import AlertSeverity
 
 logger = logging.getLogger(__name__)
-
-
-class AlertSeverity(str, Enum):
-    """Alert severity levels."""
-    INFO = "INFO"
-    WARNING = "WARNING"
-    CRITICAL = "CRITICAL"
-    EMERGENCY = "EMERGENCY"
 
 
 class EventType(str, Enum):

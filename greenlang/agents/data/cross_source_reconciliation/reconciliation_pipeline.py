@@ -58,7 +58,6 @@ from greenlang.agents.data.cross_source_reconciliation.provenance import (
 
 logger = logging.getLogger(__name__)
 
-
 # ---------------------------------------------------------------------------
 # Graceful imports for sibling engines (metrics + engines)
 # ---------------------------------------------------------------------------
@@ -129,16 +128,9 @@ except ImportError:
     get_config = None  # type: ignore[misc, assignment]
     _CONFIG_AVAILABLE = False
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _safe_mean(values: List[float]) -> float:
     """Compute arithmetic mean, returning 0.0 for empty lists.
@@ -153,11 +145,9 @@ def _safe_mean(values: List[float]) -> float:
         return 0.0
     return sum(values) / len(values)
 
-
 # ---------------------------------------------------------------------------
 # Local metric helper stubs (delegate when metrics module is present)
 # ---------------------------------------------------------------------------
-
 
 def _inc_jobs_processed(status: str) -> None:
     """Increment the jobs processed counter.
@@ -167,7 +157,6 @@ def _inc_jobs_processed(status: str) -> None:
     """
     if _METRICS_AVAILABLE and _metrics_mod is not None:
         _metrics_mod.inc_jobs_processed(status)
-
 
 def _inc_records_matched(strategy: str, count: int = 1) -> None:
     """Increment the records matched counter.
@@ -179,7 +168,6 @@ def _inc_records_matched(strategy: str, count: int = 1) -> None:
     if _METRICS_AVAILABLE and _metrics_mod is not None:
         _metrics_mod.inc_records_matched(strategy, count)
 
-
 def _inc_comparisons(result: str, count: int = 1) -> None:
     """Increment the comparisons counter.
 
@@ -189,7 +177,6 @@ def _inc_comparisons(result: str, count: int = 1) -> None:
     """
     if _METRICS_AVAILABLE and _metrics_mod is not None:
         _metrics_mod.inc_comparisons(result, count)
-
 
 def _inc_discrepancies(
     discrepancy_type: str, severity: str, count: int = 1,
@@ -204,7 +191,6 @@ def _inc_discrepancies(
     if _METRICS_AVAILABLE and _metrics_mod is not None:
         _metrics_mod.inc_discrepancies(discrepancy_type, severity, count)
 
-
 def _inc_resolutions(strategy: str, count: int = 1) -> None:
     """Increment the resolutions counter.
 
@@ -214,7 +200,6 @@ def _inc_resolutions(strategy: str, count: int = 1) -> None:
     """
     if _METRICS_AVAILABLE and _metrics_mod is not None:
         _metrics_mod.inc_resolutions(strategy, count)
-
 
 def _inc_golden_records(status: str, count: int = 1) -> None:
     """Increment the golden records counter.
@@ -226,7 +211,6 @@ def _inc_golden_records(status: str, count: int = 1) -> None:
     if _METRICS_AVAILABLE and _metrics_mod is not None:
         _metrics_mod.inc_golden_records(status, count)
 
-
 def _observe_confidence(confidence: float) -> None:
     """Observe a match confidence score.
 
@@ -235,7 +219,6 @@ def _observe_confidence(confidence: float) -> None:
     """
     if _METRICS_AVAILABLE and _metrics_mod is not None:
         _metrics_mod.observe_confidence(confidence)
-
 
 def _observe_duration(duration: float) -> None:
     """Observe processing duration in seconds.
@@ -246,7 +229,6 @@ def _observe_duration(duration: float) -> None:
     if _METRICS_AVAILABLE and _metrics_mod is not None:
         _metrics_mod.observe_duration(duration)
 
-
 def _observe_magnitude(magnitude: float) -> None:
     """Observe discrepancy magnitude.
 
@@ -255,7 +237,6 @@ def _observe_magnitude(magnitude: float) -> None:
     """
     if _METRICS_AVAILABLE and _metrics_mod is not None:
         _metrics_mod.observe_magnitude(magnitude)
-
 
 def _set_active_jobs(count: int) -> None:
     """Set the active jobs gauge.
@@ -266,7 +247,6 @@ def _set_active_jobs(count: int) -> None:
     if _METRICS_AVAILABLE and _metrics_mod is not None:
         _metrics_mod.set_active_jobs(count)
 
-
 def _inc_errors(error_type: str) -> None:
     """Record a processing error event.
 
@@ -275,7 +255,6 @@ def _inc_errors(error_type: str) -> None:
     """
     if _METRICS_AVAILABLE and _metrics_mod is not None:
         _metrics_mod.inc_errors(error_type)
-
 
 # ---------------------------------------------------------------------------
 # Pipeline stage enumeration
@@ -286,11 +265,9 @@ _STAGES = (
     "detect", "resolve", "golden",
 )
 
-
 # ---------------------------------------------------------------------------
 # Local data models
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class PipelineStageResult:
@@ -311,7 +288,6 @@ class PipelineStageResult:
     records_processed: int = 0
     output_summary: Dict[str, Any] = field(default_factory=dict)
     error: Optional[str] = None
-
 
 @dataclass
 class ReconciliationStats:
@@ -345,11 +321,9 @@ class ReconciliationStats:
     by_discrepancy_type: Dict[str, int] = field(default_factory=dict)
     avg_match_confidence: float = 0.0
 
-
 # ============================================================================
 # ReconciliationPipelineEngine
 # ============================================================================
-
 
 class ReconciliationPipelineEngine:
     """Orchestrates the full cross-source reconciliation pipeline.
@@ -3194,6 +3168,5 @@ class ReconciliationPipelineEngine:
         if magnitude >= 0.05:
             return "low"
         return "info"
-
 
 __all__ = ["ReconciliationPipelineEngine"]

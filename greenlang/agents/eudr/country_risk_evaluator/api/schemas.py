@@ -39,7 +39,8 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import ConfigDict, Field, field_validator
+from greenlang.schemas import GreenLangBase
 
 
 # =============================================================================
@@ -47,7 +48,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 # =============================================================================
 
 
-class PaginationSchema(BaseModel):
+class PaginationSchema(GreenLangBase):
     """Standard pagination metadata for list responses."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -70,7 +71,7 @@ class PaginationSchema(BaseModel):
     )
 
 
-class ErrorSchema(BaseModel):
+class ErrorSchema(GreenLangBase):
     """Structured error response schema per GreenLang API standards."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -97,7 +98,7 @@ class ErrorSchema(BaseModel):
     )
 
 
-class HealthSchema(BaseModel):
+class HealthSchema(GreenLangBase):
     """Health check response for the Country Risk Evaluator service."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -144,7 +145,7 @@ class HealthSchema(BaseModel):
     )
 
 
-class SuccessSchema(BaseModel):
+class SuccessSchema(GreenLangBase):
     """Generic success response."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -168,7 +169,7 @@ class SuccessSchema(BaseModel):
 # =============================================================================
 
 
-class AssessCountrySchema(BaseModel):
+class AssessCountrySchema(GreenLangBase):
     """Request schema for running a country risk assessment.
 
     Accepts one or more ISO 3166-1 alpha-2 country codes and optional
@@ -222,7 +223,7 @@ class AssessCountrySchema(BaseModel):
         return [c.upper().strip() for c in v]
 
 
-class RiskFactorSchema(BaseModel):
+class RiskFactorSchema(GreenLangBase):
     """Individual risk factor within a composite score."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -253,7 +254,7 @@ class RiskFactorSchema(BaseModel):
     )
 
 
-class CountryRiskSchema(BaseModel):
+class CountryRiskSchema(GreenLangBase):
     """Response schema for a single country risk assessment.
 
     Contains the composite 6-factor risk score (0-100), classification
@@ -359,7 +360,7 @@ class CountryRiskSchema(BaseModel):
     )
 
 
-class CountryListSchema(BaseModel):
+class CountryListSchema(GreenLangBase):
     """Paginated list response for country risk assessments."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -382,7 +383,7 @@ class CountryListSchema(BaseModel):
     )
 
 
-class CountryCompareSchema(BaseModel):
+class CountryCompareSchema(GreenLangBase):
     """Request schema for comparing multiple countries side-by-side.
 
     Requires at least 2 country codes. Optionally filter by commodities
@@ -423,7 +424,7 @@ class CountryCompareSchema(BaseModel):
         return [c.upper().strip() for c in v]
 
 
-class CountryCompareResultSchema(BaseModel):
+class CountryCompareResultSchema(GreenLangBase):
     """Response schema for country comparison."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -453,7 +454,7 @@ class CountryCompareResultSchema(BaseModel):
     )
 
 
-class TrendPointSchema(BaseModel):
+class TrendPointSchema(GreenLangBase):
     """Single data point in a risk trend time series."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -480,7 +481,7 @@ class TrendPointSchema(BaseModel):
     )
 
 
-class TrendSchema(BaseModel):
+class TrendSchema(GreenLangBase):
     """Response schema for country risk trend analysis.
 
     Contains historical risk scores with trend direction over
@@ -541,7 +542,7 @@ class TrendSchema(BaseModel):
 # =============================================================================
 
 
-class AnalyzeCommoditySchema(BaseModel):
+class AnalyzeCommoditySchema(GreenLangBase):
     """Request schema for commodity-specific risk analysis.
 
     Analyzes one or more EUDR commodities for a specific country,
@@ -587,7 +588,7 @@ class AnalyzeCommoditySchema(BaseModel):
         return v.upper().strip()
 
 
-class CommodityProfileSchema(BaseModel):
+class CommodityProfileSchema(GreenLangBase):
     """Response schema for a single commodity risk profile.
 
     Contains commodity-specific risk score, deforestation correlation,
@@ -669,7 +670,7 @@ class CommodityProfileSchema(BaseModel):
     )
 
 
-class CommodityListSchema(BaseModel):
+class CommodityListSchema(GreenLangBase):
     """Paginated list response for commodity risk profiles."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -692,7 +693,7 @@ class CommodityListSchema(BaseModel):
     )
 
 
-class RiskMatrixEntrySchema(BaseModel):
+class RiskMatrixEntrySchema(GreenLangBase):
     """Single entry in the country-commodity risk matrix."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -722,7 +723,7 @@ class RiskMatrixEntrySchema(BaseModel):
     )
 
 
-class RiskMatrixSchema(BaseModel):
+class RiskMatrixSchema(GreenLangBase):
     """Response schema for the country-commodity risk matrix.
 
     A heatmap-style matrix of risk scores for multiple countries
@@ -757,7 +758,7 @@ class RiskMatrixSchema(BaseModel):
     )
 
 
-class CorrelationEntrySchema(BaseModel):
+class CorrelationEntrySchema(GreenLangBase):
     """Single correlation pair between two commodities."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -784,7 +785,7 @@ class CorrelationEntrySchema(BaseModel):
     )
 
 
-class CorrelationSchema(BaseModel):
+class CorrelationSchema(GreenLangBase):
     """Response schema for cross-commodity risk correlations.
 
     Shows how risk scores correlate across different EUDR commodities,
@@ -820,7 +821,7 @@ class CorrelationSchema(BaseModel):
 # =============================================================================
 
 
-class DetectHotspotSchema(BaseModel):
+class DetectHotspotSchema(GreenLangBase):
     """Request schema for deforestation hotspot detection.
 
     Triggers spatial analysis to detect sub-national deforestation
@@ -873,7 +874,7 @@ class DetectHotspotSchema(BaseModel):
         return v.upper().strip()
 
 
-class HotspotSchema(BaseModel):
+class HotspotSchema(GreenLangBase):
     """Response schema for a single deforestation hotspot.
 
     Contains geographic coordinates, severity, drivers, tree cover
@@ -968,7 +969,7 @@ class HotspotSchema(BaseModel):
     )
 
 
-class HotspotListSchema(BaseModel):
+class HotspotListSchema(GreenLangBase):
     """Paginated list response for deforestation hotspots."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -991,7 +992,7 @@ class HotspotListSchema(BaseModel):
     )
 
 
-class AlertSchema(BaseModel):
+class AlertSchema(GreenLangBase):
     """Active deforestation alert schema."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1042,7 +1043,7 @@ class AlertSchema(BaseModel):
     )
 
 
-class AlertListSchema(BaseModel):
+class AlertListSchema(GreenLangBase):
     """List response for active deforestation alerts."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1065,7 +1066,7 @@ class AlertListSchema(BaseModel):
     )
 
 
-class ClusteringSchema(BaseModel):
+class ClusteringSchema(GreenLangBase):
     """Request schema for spatial clustering analysis.
 
     Configures DBSCAN parameters for hotspot clustering.
@@ -1107,7 +1108,7 @@ class ClusteringSchema(BaseModel):
         return v.upper().strip()
 
 
-class ClusteringResultSchema(BaseModel):
+class ClusteringResultSchema(GreenLangBase):
     """Response schema for spatial clustering analysis."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1143,7 +1144,7 @@ class ClusteringResultSchema(BaseModel):
 # =============================================================================
 
 
-class EvaluateGovernanceSchema(BaseModel):
+class EvaluateGovernanceSchema(GreenLangBase):
     """Request schema for governance quality evaluation.
 
     Evaluates governance using World Bank WGI, Transparency International
@@ -1186,7 +1187,7 @@ class EvaluateGovernanceSchema(BaseModel):
         return [c.upper().strip() for c in v]
 
 
-class GovernanceIndexSchema(BaseModel):
+class GovernanceIndexSchema(GreenLangBase):
     """Response schema for a single governance index.
 
     Contains composite governance score (0-100, higher = better),
@@ -1265,7 +1266,7 @@ class GovernanceIndexSchema(BaseModel):
     )
 
 
-class GovernanceListSchema(BaseModel):
+class GovernanceListSchema(GreenLangBase):
     """Paginated list response for governance indices."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1288,7 +1289,7 @@ class GovernanceListSchema(BaseModel):
     )
 
 
-class GovernanceCompareSchema(BaseModel):
+class GovernanceCompareSchema(GreenLangBase):
     """Response schema for governance comparison across countries."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1319,7 +1320,7 @@ class GovernanceCompareSchema(BaseModel):
 # =============================================================================
 
 
-class ClassifySchema(BaseModel):
+class ClassifySchema(GreenLangBase):
     """Request schema for due diligence classification.
 
     Determines the required EUDR due diligence level (simplified,
@@ -1373,7 +1374,7 @@ class ClassifySchema(BaseModel):
         return v.upper().strip()
 
 
-class ClassificationSchema(BaseModel):
+class ClassificationSchema(GreenLangBase):
     """Response schema for due diligence classification result.
 
     Contains the classified level, risk score, certification credit,
@@ -1464,7 +1465,7 @@ class ClassificationSchema(BaseModel):
     )
 
 
-class ClassificationListSchema(BaseModel):
+class ClassificationListSchema(GreenLangBase):
     """Paginated list response for due diligence classifications."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1487,7 +1488,7 @@ class ClassificationListSchema(BaseModel):
     )
 
 
-class CostEstimateSchema(BaseModel):
+class CostEstimateSchema(GreenLangBase):
     """Request schema for due diligence cost estimation."""
 
     model_config = ConfigDict(
@@ -1526,7 +1527,7 @@ class CostEstimateSchema(BaseModel):
         return v.upper().strip()
 
 
-class CostEstimateResultSchema(BaseModel):
+class CostEstimateResultSchema(GreenLangBase):
     """Response schema for due diligence cost estimation."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1573,7 +1574,7 @@ class CostEstimateResultSchema(BaseModel):
     )
 
 
-class AuditFrequencySchema(BaseModel):
+class AuditFrequencySchema(GreenLangBase):
     """Response schema for audit frequency recommendation.
 
     Provides recommended audit frequency based on risk level and
@@ -1617,7 +1618,7 @@ class AuditFrequencySchema(BaseModel):
 # =============================================================================
 
 
-class AnalyzeFlowSchema(BaseModel):
+class AnalyzeFlowSchema(GreenLangBase):
     """Request schema for trade flow analysis.
 
     Analyzes bilateral commodity trade flows between countries with
@@ -1664,7 +1665,7 @@ class AnalyzeFlowSchema(BaseModel):
     )
 
 
-class TradeFlowSchema(BaseModel):
+class TradeFlowSchema(GreenLangBase):
     """Response schema for a single trade flow record."""
 
     model_config = ConfigDict(
@@ -1745,7 +1746,7 @@ class TradeFlowSchema(BaseModel):
     )
 
 
-class TradeFlowListSchema(BaseModel):
+class TradeFlowListSchema(GreenLangBase):
     """Paginated list response for trade flows."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1772,7 +1773,7 @@ class TradeFlowListSchema(BaseModel):
     )
 
 
-class RouteSchema(BaseModel):
+class RouteSchema(GreenLangBase):
     """Trade route with risk assessment."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1815,7 +1816,7 @@ class RouteSchema(BaseModel):
     )
 
 
-class RouteListSchema(BaseModel):
+class RouteListSchema(GreenLangBase):
     """List response for trade routes."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1838,7 +1839,7 @@ class RouteListSchema(BaseModel):
     )
 
 
-class ReExportRiskSchema(BaseModel):
+class ReExportRiskSchema(GreenLangBase):
     """Request schema for re-export risk detection.
 
     Detects potential commodity laundering through re-export by
@@ -1876,7 +1877,7 @@ class ReExportRiskSchema(BaseModel):
         return v.upper().strip()
 
 
-class ReExportRiskResultSchema(BaseModel):
+class ReExportRiskResultSchema(GreenLangBase):
     """Response schema for re-export risk detection."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1916,7 +1917,7 @@ class ReExportRiskResultSchema(BaseModel):
 # =============================================================================
 
 
-class GenerateReportSchema(BaseModel):
+class GenerateReportSchema(GreenLangBase):
     """Request schema for risk report generation.
 
     Generates a formatted risk report in PDF, JSON, HTML, CSV, or
@@ -1966,7 +1967,7 @@ class GenerateReportSchema(BaseModel):
     )
 
 
-class ReportSchema(BaseModel):
+class ReportSchema(GreenLangBase):
     """Response schema for a generated report."""
 
     model_config = ConfigDict(
@@ -2041,7 +2042,7 @@ class ReportSchema(BaseModel):
     )
 
 
-class ReportListSchema(BaseModel):
+class ReportListSchema(GreenLangBase):
     """Paginated list response for reports."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -2060,7 +2061,7 @@ class ReportListSchema(BaseModel):
     )
 
 
-class DownloadSchema(BaseModel):
+class DownloadSchema(GreenLangBase):
     """Response schema for report download.
 
     Provides a signed download URL or direct download metadata for
@@ -2095,7 +2096,7 @@ class DownloadSchema(BaseModel):
     )
 
 
-class ExecutiveSummarySchema(BaseModel):
+class ExecutiveSummarySchema(GreenLangBase):
     """Request schema for executive summary generation.
 
     Generates a high-level KPI summary suitable for leadership
@@ -2133,7 +2134,7 @@ class ExecutiveSummarySchema(BaseModel):
     )
 
 
-class ExecutiveSummaryResultSchema(BaseModel):
+class ExecutiveSummaryResultSchema(GreenLangBase):
     """Response schema for executive summary."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -2189,7 +2190,7 @@ class ExecutiveSummaryResultSchema(BaseModel):
 # =============================================================================
 
 
-class TrackUpdateSchema(BaseModel):
+class TrackUpdateSchema(GreenLangBase):
     """Request schema for regulatory update tracking.
 
     Tracks EC benchmarking list updates, country reclassifications,
@@ -2229,7 +2230,7 @@ class TrackUpdateSchema(BaseModel):
     )
 
 
-class UpdateSchema(BaseModel):
+class UpdateSchema(GreenLangBase):
     """Response schema for a single regulatory update."""
 
     model_config = ConfigDict(
@@ -2308,7 +2309,7 @@ class UpdateSchema(BaseModel):
     )
 
 
-class UpdateListSchema(BaseModel):
+class UpdateListSchema(GreenLangBase):
     """Paginated list response for regulatory updates."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -2331,7 +2332,7 @@ class UpdateListSchema(BaseModel):
     )
 
 
-class ImpactAssessmentSchema(BaseModel):
+class ImpactAssessmentSchema(GreenLangBase):
     """Request schema for regulatory change impact assessment.
 
     Assesses the impact of a proposed country reclassification on
@@ -2374,7 +2375,7 @@ class ImpactAssessmentSchema(BaseModel):
         return v.upper().strip()
 
 
-class ImpactAssessmentResultSchema(BaseModel):
+class ImpactAssessmentResultSchema(GreenLangBase):
     """Response schema for regulatory change impact assessment."""
 
     model_config = ConfigDict(str_strip_whitespace=True)

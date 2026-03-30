@@ -50,14 +50,9 @@ from greenlang.agents.foundation.reproducibility.models import (
     DEFAULT_RELATIVE_TOLERANCE,
 )
 from greenlang.agents.foundation.reproducibility.metrics import record_replay
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 class ReplayEngine:
     """Replay execution engine.
@@ -167,7 +162,7 @@ class ReplayEngine:
             ReplaySession with verification results.
         """
         start_time = time.time()
-        started_at = _utcnow()
+        started_at = utcnow()
 
         # Step 1: Apply seeds
         self._apply_seeds(replay_config.captured_seeds)
@@ -217,7 +212,7 @@ class ReplayEngine:
         else:
             replay_status = VerificationStatus.PASS
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         duration = time.time() - start_time
 
         session = ReplaySession(
@@ -364,7 +359,6 @@ class ReplayEngine:
 
         sessions.sort(key=lambda s: s.started_at, reverse=True)
         return sessions[:limit]
-
 
 __all__ = [
     "ReplayEngine",

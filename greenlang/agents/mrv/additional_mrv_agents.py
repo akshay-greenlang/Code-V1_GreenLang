@@ -35,11 +35,12 @@ from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base_agents import DeterministicAgent
 from greenlang.agents.categories import AgentCategory, AgentMetadata
 from greenlang.utilities.determinism.clock import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -79,19 +80,19 @@ TRAVEL_EMISSION_FACTORS = {
 }
 
 
-class BusinessTravelTrip(BaseModel):
+class BusinessTravelTrip(GreenLangBase):
     mode: TravelMode = Field(...)
     distance_km: float = Field(..., gt=0)
     travelers: int = Field(default=1, ge=1)
     cabin_class: str = Field(default="economy")
 
 
-class BusinessTravelInput(BaseModel):
+class BusinessTravelInput(GreenLangBase):
     trips: List[BusinessTravelTrip] = Field(..., min_length=1)
     organization_id: Optional[str] = Field(None)
 
 
-class BusinessTravelOutput(BaseModel):
+class BusinessTravelOutput(GreenLangBase):
     success: bool = Field(...)
     total_tco2e: float = Field(...)
     emissions_by_mode: Dict[str, float] = Field(default_factory=dict)
@@ -170,7 +171,7 @@ COMMUTE_FACTORS = {
 }
 
 
-class EmployeeCommutingInput(BaseModel):
+class EmployeeCommutingInput(GreenLangBase):
     employees_by_mode: Dict[str, int] = Field(...)
     avg_commute_km: float = Field(default=20)
     working_days_per_year: int = Field(default=235)
@@ -238,7 +239,7 @@ WASTE_FACTORS = {
 }
 
 
-class WasteRecord(BaseModel):
+class WasteRecord(GreenLangBase):
     waste_type: WasteType = Field(...)
     quantity_tonnes: float = Field(..., gt=0)
     material: Optional[str] = Field(None)

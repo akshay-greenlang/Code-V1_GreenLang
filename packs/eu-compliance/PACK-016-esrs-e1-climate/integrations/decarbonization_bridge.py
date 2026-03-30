@@ -26,20 +26,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -52,11 +47,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class DecarbBridgeConfig(BaseModel):
     """Configuration for the Decarbonization Bridge."""
@@ -65,7 +58,6 @@ class DecarbBridgeConfig(BaseModel):
     enable_provenance: bool = Field(default=True)
     scenario_provider: str = Field(default="IEA")
     sector_pathway: str = Field(default="")
-
 
 class AbatementOption(BaseModel):
     """Marginal abatement curve option."""
@@ -79,7 +71,6 @@ class AbatementOption(BaseModel):
     readiness_level: str = Field(default="")
     payback_years: float = Field(default=0.0)
 
-
 class PathwayScenario(BaseModel):
     """Decarbonization pathway scenario."""
 
@@ -89,7 +80,6 @@ class PathwayScenario(BaseModel):
     milestones: List[Dict[str, Any]] = Field(default_factory=list)
     annual_reduction_rate_pct: float = Field(default=0.0)
     sector_specific: bool = Field(default=False)
-
 
 class BridgeResult(BaseModel):
     """Result from a bridge operation."""
@@ -104,11 +94,9 @@ class BridgeResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # DecarbonizationBridge
 # ---------------------------------------------------------------------------
-
 
 class DecarbonizationBridge:
     """Decarbonization agent integration bridge for PACK-016.
@@ -147,7 +135,7 @@ class DecarbonizationBridge:
         Returns:
             BridgeResult with transition plan import status.
         """
-        result = BridgeResult(started_at=_utcnow())
+        result = BridgeResult(started_at=utcnow())
 
         try:
             plan = context.get("transition_plan", {})
@@ -178,7 +166,7 @@ class DecarbonizationBridge:
             result.errors.append(str(exc))
             logger.error("Transition plan import failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at
@@ -197,7 +185,7 @@ class DecarbonizationBridge:
         Returns:
             BridgeResult with abatement options import status.
         """
-        result = BridgeResult(started_at=_utcnow())
+        result = BridgeResult(started_at=utcnow())
 
         try:
             raw_options = context.get("abatement_options", [])
@@ -237,7 +225,7 @@ class DecarbonizationBridge:
             result.errors.append(str(exc))
             logger.error("Abatement options import failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at
@@ -256,7 +244,7 @@ class DecarbonizationBridge:
         Returns:
             BridgeResult with pathway scenario import status.
         """
-        result = BridgeResult(started_at=_utcnow())
+        result = BridgeResult(started_at=utcnow())
 
         try:
             raw_scenarios = context.get("pathway_scenarios", [])
@@ -291,7 +279,7 @@ class DecarbonizationBridge:
             result.errors.append(str(exc))
             logger.error("Pathway scenario import failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at

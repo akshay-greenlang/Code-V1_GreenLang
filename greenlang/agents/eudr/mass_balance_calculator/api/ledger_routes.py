@@ -35,6 +35,7 @@ from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.mass_balance_calculator.api.dependencies import (
     AuthUser,
@@ -81,37 +82,26 @@ _ledger_store: Dict[str, Dict] = {}
 _entry_store: Dict[str, Dict] = {}
 _ledger_entry_index: Dict[str, List[str]] = {}
 
-
 def _get_ledger_store() -> Dict[str, Dict]:
     """Return the ledger store singleton."""
     return _ledger_store
-
 
 def _get_entry_store() -> Dict[str, Dict]:
     """Return the entry store singleton."""
     return _entry_store
 
-
 def _get_ledger_entry_index() -> Dict[str, List[str]]:
     """Return the ledger-to-entries index."""
     return _ledger_entry_index
-
 
 def _compute_provenance_hash(data: dict) -> str:
     """Compute SHA-256 hash for provenance tracking."""
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ---------------------------------------------------------------------------
 # POST /ledgers
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/ledgers",
@@ -152,7 +142,7 @@ async def create_ledger(
     start = time.monotonic()
     try:
         ledger_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         provenance_data = body.model_dump(mode="json")
         provenance_data["created_by"] = user.user_id
@@ -215,11 +205,9 @@ async def create_ledger(
             detail="Failed to create ledger",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /ledgers/{ledger_id}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/ledgers/{ledger_id}",
@@ -284,11 +272,9 @@ async def get_ledger(
             detail="Failed to retrieve ledger",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /ledgers/entries
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/ledgers/entries",
@@ -342,7 +328,7 @@ async def record_entry(
             )
 
         entry_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         provenance_data = body.model_dump(mode="json")
         provenance_data["entry_id"] = entry_id
@@ -402,7 +388,6 @@ async def record_entry(
             detail="Failed to record ledger entry",
         )
 
-
 def _update_ledger_balance(
     ledger: Dict[str, Any],
     entry_type: LedgerEntryTypeSchema,
@@ -446,11 +431,9 @@ def _update_ledger_balance(
         total_out = ledger["total_outputs"]
         ledger["utilization_rate"] = float(total_out / total_in)
 
-
 # ---------------------------------------------------------------------------
 # POST /ledgers/entries/bulk
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/ledgers/entries/bulk",
@@ -489,7 +472,7 @@ async def bulk_import_entries(
     """
     start = time.monotonic()
     try:
-        now = _utcnow()
+        now = utcnow()
         accepted_entries: List[LedgerEntryDetailSchema] = []
         errors: List[Dict[str, Any]] = []
         ledger_store = _get_ledger_store()
@@ -593,11 +576,9 @@ async def bulk_import_entries(
             detail="Failed to process bulk entry import",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /ledgers/{ledger_id}/balance
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/ledgers/{ledger_id}/balance",
@@ -646,7 +627,7 @@ async def get_balance(
                 detail=f"Ledger {ledger_id} not found",
             )
 
-        now = _utcnow()
+        now = utcnow()
         provenance_hash = _compute_provenance_hash({
             "ledger_id": ledger_id,
             "balance": str(record["current_balance"]),
@@ -688,11 +669,9 @@ async def get_balance(
             detail="Failed to retrieve ledger balance",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /ledgers/{ledger_id}/history
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/ledgers/{ledger_id}/history",
@@ -788,7 +767,7 @@ async def get_history(
             entries=entries,
             pagination=meta,
             processing_time_ms=elapsed_ms,
-            timestamp=_utcnow(),
+            timestamp=utcnow(),
         )
 
     except HTTPException:
@@ -802,11 +781,9 @@ async def get_history(
             detail="Failed to retrieve entry history",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /ledgers/search
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/ledgers/search",
@@ -899,7 +876,7 @@ async def search_ledgers(
             ledgers=ledger_schemas,
             pagination=meta,
             processing_time_ms=elapsed_ms,
-            timestamp=_utcnow(),
+            timestamp=utcnow(),
         )
 
     except HTTPException:
@@ -910,7 +887,6 @@ async def search_ledgers(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to search ledgers",
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

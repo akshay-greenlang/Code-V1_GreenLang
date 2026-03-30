@@ -38,6 +38,7 @@ from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.mass_balance_calculator.api.dependencies import (
     AuthUser,
@@ -98,22 +99,14 @@ _LOSS_TYPE_TOLERANCES: Dict[str, float] = {
     "contamination_loss": 5.0,
 }
 
-
 def _compute_provenance_hash(data: dict) -> str:
     """Compute SHA-256 hash for provenance tracking."""
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ---------------------------------------------------------------------------
 # POST /losses
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/losses",
@@ -154,7 +147,7 @@ async def record_loss(
     start = time.monotonic()
     try:
         record_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         # Simulated input quantity for percentage calculation
         input_quantity = Decimal("10000.00")
@@ -228,11 +221,9 @@ async def record_loss(
             detail="Failed to record processing loss",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /losses/{facility_id}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/losses/{facility_id}",
@@ -316,7 +307,7 @@ async def get_losses(
             pagination=meta,
             total_loss_kg=total_loss_kg,
             processing_time_ms=elapsed_ms,
-            timestamp=_utcnow(),
+            timestamp=utcnow(),
         )
 
     except HTTPException:
@@ -330,11 +321,9 @@ async def get_losses(
             detail="Failed to retrieve loss records",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /losses/validate
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/losses/validate",
@@ -373,7 +362,7 @@ async def validate_loss(
     """
     start = time.monotonic()
     try:
-        now = _utcnow()
+        now = utcnow()
         commodity_lower = body.commodity.strip().lower()
 
         # Calculate loss percentage
@@ -459,11 +448,9 @@ async def validate_loss(
             detail="Failed to validate loss against tolerance",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /losses/trends/{facility_id}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/losses/trends/{facility_id}",
@@ -565,7 +552,7 @@ async def get_loss_trends(
             data_points=data_points,
             anomalies=anomalies,
             processing_time_ms=elapsed_ms,
-            timestamp=_utcnow(),
+            timestamp=utcnow(),
         )
 
     except HTTPException:
@@ -579,7 +566,6 @@ async def get_loss_trends(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve loss trends",
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

@@ -85,6 +85,8 @@ from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 __all__ = [
@@ -138,11 +140,9 @@ _MAX_BATCH_SIZE: int = 100_000
 # CPI base year
 _CPI_BASE_YEAR: int = 2024
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class NAICSSector(str, Enum):
     """NAICS sector codes for downstream processing industries.
@@ -165,7 +165,6 @@ class NAICSSector(str, Enum):
     NAICS_336 = "336"
     NAICS_335 = "335"
 
-
 class CurrencyCode(str, Enum):
     """ISO 4217 currency codes supported for conversion.
 
@@ -187,7 +186,6 @@ class CurrencyCode(str, Enum):
     MXN = "MXN"
     CHF = "CHF"
 
-
 # ---------------------------------------------------------------------------
 # EEIO Sector Factors (kgCO2e/USD) -- PRD Section 5.3
 # ---------------------------------------------------------------------------
@@ -206,7 +204,6 @@ EEIO_SECTOR_FACTORS: Dict[str, Decimal] = {
     NAICSSector.NAICS_336.value: Decimal("0.40"),
     NAICSSector.NAICS_335.value: Decimal("0.32"),
 }
-
 
 # Sector margin percentages (as decimal fractions, e.g. 0.08 = 8%)
 # PRD Section 5.3
@@ -228,7 +225,6 @@ SECTOR_MARGINS: Dict[str, Decimal] = {
 #: Default margin rate when sector is not in the table
 _DEFAULT_MARGIN: Decimal = Decimal("0.10")
 
-
 # Sector display names for reporting
 SECTOR_NAMES: Dict[str, str] = {
     NAICSSector.NAICS_331.value: "Primary Metal Manufacturing",
@@ -244,7 +240,6 @@ SECTOR_NAMES: Dict[str, str] = {
     NAICSSector.NAICS_336.value: "Transportation Equipment",
     NAICSSector.NAICS_335.value: "Electrical Equipment",
 }
-
 
 # ---------------------------------------------------------------------------
 # Currency Exchange Rates to USD -- PRD Section 5.7
@@ -265,7 +260,6 @@ CURRENCY_RATES: Dict[str, Decimal] = {
     CurrencyCode.CHF.value: Decimal("1.122"),
 }
 
-
 # ---------------------------------------------------------------------------
 # CPI Deflation Index -- PRD Section 5.7
 # Base year 2024 = 100.0
@@ -285,7 +279,6 @@ CPI_INDEX: Dict[int, Decimal] = {
     2025: Decimal("102.4"),
 }
 
-
 # Default DQI dimension scores for spend-based method (scale 1-5, lower=better)
 _DQI_SPEND: Dict[str, Decimal] = {
     "reliability": Decimal("4"),
@@ -295,11 +288,9 @@ _DQI_SPEND: Dict[str, Decimal] = {
     "technological": Decimal("4"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Data classes for results
 # ---------------------------------------------------------------------------
-
 
 class SpendDataQualityScore:
     """Data quality indicator score for a spend-based calculation.
@@ -365,7 +356,6 @@ class SpendDataQualityScore:
             "method": self.method,
         }
 
-
 class SpendUncertaintyResult:
     """Uncertainty quantification result for spend-based emissions.
 
@@ -424,7 +414,6 @@ class SpendUncertaintyResult:
             "method": self.method,
         }
 
-
 class SpendItem:
     """Input data for a single spend-based calculation item.
 
@@ -482,7 +471,6 @@ class SpendItem:
             "sector": self.sector,
             "year": self.year,
         }
-
 
 class SpendBreakdown:
     """Per-item breakdown from spend-based calculation.
@@ -547,7 +535,6 @@ class SpendBreakdown:
                 else:
                     result[slot] = val
         return result
-
 
 class SpendCalculationResult:
     """Aggregated result from spend-based calculations.
@@ -615,20 +602,9 @@ class SpendCalculationResult:
                     result[slot] = val
         return result
 
-
 # ---------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed.
-
-    Returns:
-        datetime: Current UTC time with microsecond=0.
-    """
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _quantize(value: Decimal) -> Decimal:
     """Quantize a Decimal to the configured precision.
@@ -644,7 +620,6 @@ def _quantize(value: Decimal) -> Decimal:
     except (InvalidOperation, OverflowError):
         logger.warning("Quantize failed for value=%s, returning ZERO", value)
         return ZERO
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -664,7 +639,6 @@ def _safe_divide(
     if denominator == ZERO or denominator is None:
         return default
     return _quantize(numerator / denominator)
-
 
 def _compute_sha256(data: Any) -> str:
     """Compute SHA-256 hex digest for arbitrary data.
@@ -686,7 +660,6 @@ def _compute_sha256(data: Any) -> str:
     except (TypeError, ValueError) as exc:
         logger.warning("SHA-256 hashing failed: %s", exc)
         return hashlib.sha256(b"fallback").hexdigest()
-
 
 def _validate_positive_decimal(
     value: Any,
@@ -717,7 +690,6 @@ def _validate_positive_decimal(
             f"{field_name} must be non-negative, got {dec_val}"
         )
     return dec_val
-
 
 def _resolve_sector(sector: Any) -> str:
     """Resolve a NAICS sector code to its 3-digit key.
@@ -750,7 +722,6 @@ def _resolve_sector(sector: Any) -> str:
         f"Valid sectors: {list(EEIO_SECTOR_FACTORS.keys())}"
     )
 
-
 def _resolve_currency(currency: Any) -> str:
     """Resolve a currency code to its uppercase key.
 
@@ -773,11 +744,9 @@ def _resolve_currency(currency: Any) -> str:
         f"Supported: {list(CURRENCY_RATES.keys())}"
     )
 
-
 # ===========================================================================
 # SpendBasedCalculatorEngine -- Thread-Safe Singleton
 # ===========================================================================
-
 
 class SpendBasedCalculatorEngine:
     """Engine 4: Spend-based EEIO emission calculator for Processing of Sold Products.
@@ -1013,7 +982,7 @@ class SpendBasedCalculatorEngine:
                 uncertainty=uncertainty,
                 provenance_hash=provenance_hash,
                 processing_time_ms=elapsed_ms,
-                calculated_at=_utcnow(),
+                calculated_at=utcnow(),
                 warnings=[],
                 errors=[],
             )
@@ -1169,7 +1138,7 @@ class SpendBasedCalculatorEngine:
                 uncertainty=uncertainty,
                 provenance_hash=provenance_hash,
                 processing_time_ms=elapsed_ms,
-                calculated_at=_utcnow(),
+                calculated_at=utcnow(),
                 warnings=warnings,
                 errors=errors,
             )
@@ -1512,7 +1481,7 @@ class SpendBasedCalculatorEngine:
             dqi=dqi,
             uncertainty=uncertainty,
             provenance_hash=provenance_hash,
-            calculated_at=_utcnow(),
+            calculated_at=utcnow(),
         )
 
     def _calculate_from_dict(
@@ -1574,7 +1543,7 @@ class SpendBasedCalculatorEngine:
             "method": "spend_based",
             "inputs": inputs,
             "result": result,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
         return _compute_sha256(provenance_data)
 
@@ -1631,7 +1600,7 @@ class SpendBasedCalculatorEngine:
             self._batch_count += item_count
             self._total_emissions_kgco2e += emissions_kgco2e
             self._total_revenue_usd += revenue_usd
-            self._last_calculation_time = _utcnow()
+            self._last_calculation_time = utcnow()
 
     # ------------------------------------------------------------------
     # Public API: Aggregation Helpers

@@ -88,23 +88,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -121,7 +116,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -130,7 +124,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -138,10 +131,8 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _chain_hash(previous_hash: str, step_data: str, timestamp: str) -> str:
     """Compute next hash in provenance chain.
@@ -151,14 +142,11 @@ def _chain_hash(previous_hash: str, step_data: str, timestamp: str) -> str:
     combined = f"{previous_hash}||{step_data}||{timestamp}"
     return hashlib.sha256(combined.encode("utf-8")).hexdigest()
 
-
 GENESIS_HASH: str = hashlib.sha256(b"genesis").hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ProvenanceStepType(str, Enum):
     """Type of provenance step in the calculation chain.
@@ -181,14 +169,12 @@ class ProvenanceStepType(str, Enum):
     FINAL_RESULT = "final_result"
     ADJUSTMENT = "adjustment"
 
-
 class ProvenanceScope(str, Enum):
     """Scope for provenance tracking."""
     SCOPE_1 = "scope_1"
     SCOPE_2 = "scope_2"
     SCOPE_3 = "scope_3"
     CROSS_SCOPE = "cross_scope"
-
 
 class GapType(str, Enum):
     """Type of provenance gap.
@@ -207,18 +193,15 @@ class GapType(str, Enum):
     BROKEN_CHAIN = "broken_chain"
     METHODOLOGY_CHANGE = "methodology_change"
 
-
 class TierLevel(str, Enum):
     """GHG Protocol calculation tier level."""
     TIER_1 = "tier_1"
     TIER_2 = "tier_2"
     TIER_3 = "tier_3"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class SourceDataCapture(BaseModel):
     """Source data capture for a provenance step.
@@ -242,7 +225,6 @@ class SourceDataCapture(BaseModel):
     @classmethod
     def coerce_value(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class EmissionFactorCapture(BaseModel):
     """Emission factor chain capture.
@@ -269,7 +251,6 @@ class EmissionFactorCapture(BaseModel):
     def coerce_factor(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class FormulaCapture(BaseModel):
     """Calculation formula documentation.
 
@@ -285,7 +266,6 @@ class FormulaCapture(BaseModel):
     ghg_protocol_ref: str = Field(default="", description="GHG Protocol reference")
     tier_level: str = Field(default=TierLevel.TIER_1.value, description="Tier level")
     parameters: Dict[str, str] = Field(default_factory=dict, description="Parameters")
-
 
 class ProvenanceStep(BaseModel):
     """A single step in the provenance chain.
@@ -330,7 +310,6 @@ class ProvenanceStep(BaseModel):
     def coerce_output(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class ProvenanceChainInput(BaseModel):
     """A calculation's provenance chain (input).
 
@@ -351,7 +330,6 @@ class ProvenanceChainInput(BaseModel):
     reporting_period: str = Field(default="", description="Reporting period")
     steps: List[ProvenanceStep] = Field(default_factory=list, description="Steps")
 
-
 class PriorPeriodChain(BaseModel):
     """Prior period provenance for YoY comparison.
 
@@ -370,7 +348,6 @@ class PriorPeriodChain(BaseModel):
     boundary_notes: str = Field(default="", description="Boundary notes")
     consolidation: str = Field(default="", description="Consolidation approach")
 
-
 class ProvenanceConfig(BaseModel):
     """Configuration for provenance engine.
 
@@ -387,7 +364,6 @@ class ProvenanceConfig(BaseModel):
     )
     output_precision: int = Field(default=2, ge=0, le=6, description="Output precision")
 
-
 class ProvenanceInput(BaseModel):
     """Input for calculation provenance engine.
 
@@ -402,11 +378,9 @@ class ProvenanceInput(BaseModel):
         default_factory=ProvenanceConfig, description="Configuration"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class ProvenanceChain(BaseModel):
     """Verified provenance chain output.
@@ -440,7 +414,6 @@ class ProvenanceChain(BaseModel):
     is_complete: bool = Field(default=False, description="Complete")
     steps: List[ProvenanceStep] = Field(default_factory=list, description="Steps")
 
-
 class ProvenanceGap(BaseModel):
     """An identified provenance gap.
 
@@ -457,7 +430,6 @@ class ProvenanceGap(BaseModel):
     severity: str = Field(default="medium", description="Severity")
     remediation: str = Field(default="", description="Remediation")
 
-
 class MethodologyChange(BaseModel):
     """Detected methodology change between periods.
 
@@ -473,7 +445,6 @@ class MethodologyChange(BaseModel):
     prior_value: str = Field(default="", description="Prior value")
     current_value: str = Field(default="", description="Current value")
     impact_assessment: str = Field(default="", description="Impact note")
-
 
 class ScopeProvenance(BaseModel):
     """Provenance summary for a single scope.
@@ -492,7 +463,6 @@ class ScopeProvenance(BaseModel):
     completeness_pct: Decimal = Field(default=Decimal("0"), description="Completeness %")
     total_gaps: int = Field(default=0, description="Gaps")
     chain_validity_pct: Decimal = Field(default=Decimal("0"), description="Validity %")
-
 
 class ProvenanceResult(BaseModel):
     """Complete result of provenance analysis.
@@ -538,11 +508,9 @@ class ProvenanceResult(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class CalculationProvenanceEngine:
     """Captures and verifies complete calculation provenance chains.
@@ -641,7 +609,7 @@ class CalculationProvenanceEngine:
             total_calculations=total_calcs,
             total_steps=total_steps,
             warnings=warnings,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         result.provenance_hash = _compute_hash(result)
@@ -662,7 +630,7 @@ class CalculationProvenanceEngine:
                 step.model_dump(mode="json", exclude={"step_hash", "previous_hash"}),
                 sort_keys=True, default=str,
             )
-            ts = step.timestamp or _utcnow().isoformat()
+            ts = step.timestamp or utcnow().isoformat()
             current_hash = _chain_hash(current_hash, step_data, ts)
         return current_hash
 
@@ -725,7 +693,7 @@ class CalculationProvenanceEngine:
                 step.model_dump(mode="json", exclude={"step_hash", "previous_hash"}),
                 sort_keys=True, default=str,
             )
-            ts = step.timestamp or _utcnow().isoformat()
+            ts = step.timestamp or utcnow().isoformat()
             expected_hash = _chain_hash(current_hash, step_data, ts)
 
             # Verify existing hash if present
@@ -939,7 +907,6 @@ class CalculationProvenanceEngine:
 
     def get_version(self) -> str:
         return self._version
-
 
 # ---------------------------------------------------------------------------
 # __all__

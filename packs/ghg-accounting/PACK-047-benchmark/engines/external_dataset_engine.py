@@ -67,23 +67,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ValidationSeverity
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -100,7 +96,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -109,7 +104,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -117,19 +111,15 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round4(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DataSourceType(str, Enum):
     """External data source types.
@@ -152,7 +142,6 @@ class DataSourceType(str, Enum):
     CUSTOM_JSON = "CUSTOM_JSON"
     CUSTOM_XLSX = "CUSTOM_XLSX"
 
-
 class FreshnessStatus(str, Enum):
     """Data freshness status.
 
@@ -165,14 +154,6 @@ class FreshnessStatus(str, Enum):
     STALE = "stale"
     EXPIRED = "expired"
     UNKNOWN = "unknown"
-
-
-class ValidationSeverity(str, Enum):
-    """Validation issue severity."""
-    ERROR = "error"
-    WARNING = "warning"
-    INFO = "info"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -239,11 +220,9 @@ ISS_REQUIRED_FIELDS: List[str] = [
 MAX_CUSTOM_RECORDS: int = 100000
 MAX_CACHE_SIZE: int = 10000
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class DataSourceConfig(BaseModel):
     """Configuration for an external data source.
@@ -281,7 +260,6 @@ class DataSourceConfig(BaseModel):
         if not self.source_name:
             object.__setattr__(self, "source_name", self.source_type.value)
         return self
-
 
 class ExternalDataRecord(BaseModel):
     """A single record from an external dataset.
@@ -330,7 +308,6 @@ class ExternalDataRecord(BaseModel):
     def coerce_dec(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class DatasetIngestionInput(BaseModel):
     """Input for dataset ingestion.
 
@@ -345,11 +322,9 @@ class DatasetIngestionInput(BaseModel):
     validate: bool = Field(default=True, description="Validate schema")
     deduplicate: bool = Field(default=True, description="Deduplicate")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class ValidationIssue(BaseModel):
     """A single validation issue.
@@ -364,7 +339,6 @@ class ValidationIssue(BaseModel):
     field: str = Field(default="", description="Field name")
     severity: ValidationSeverity = Field(default=ValidationSeverity.WARNING)
     message: str = Field(default="", description="Issue description")
-
 
 class DataFreshnessStatus(BaseModel):
     """Freshness status for a data source.
@@ -384,7 +358,6 @@ class DataFreshnessStatus(BaseModel):
     freshness_score: Decimal = Field(default=Decimal("0"), description="Freshness score")
     status: FreshnessStatus = Field(default=FreshnessStatus.UNKNOWN)
 
-
 class CacheEntry(BaseModel):
     """Cache entry for external data.
 
@@ -403,7 +376,6 @@ class CacheEntry(BaseModel):
     expires_at: str = Field(default="", description="Expires at")
     hit_count: int = Field(default=0, description="Hit count")
 
-
 class CacheStats(BaseModel):
     """Cache statistics.
 
@@ -421,7 +393,6 @@ class CacheStats(BaseModel):
     total_misses: int = Field(default=0)
     hit_ratio: Decimal = Field(default=Decimal("0"))
     entries: List[CacheEntry] = Field(default_factory=list)
-
 
 class IngestionResult(BaseModel):
     """Result of dataset ingestion.
@@ -459,11 +430,9 @@ class IngestionResult(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ExternalDatasetEngine:
     """Manages external benchmark dataset ingestion, validation, and caching.
@@ -524,7 +493,7 @@ class ExternalDatasetEngine:
                 records=cached,
                 freshness=self._compute_freshness(config),
                 warnings=["Served from cache."],
-                calculated_at=_utcnow().isoformat(),
+                calculated_at=utcnow().isoformat(),
                 processing_time_ms=round(elapsed_ms, 3),
             )
             result.provenance_hash = _compute_hash(result)
@@ -557,7 +526,7 @@ class ExternalDatasetEngine:
 
         # Convert to ExternalDataRecord
         ingested: List[ExternalDataRecord] = []
-        now_str = _utcnow().isoformat()
+        now_str = utcnow().isoformat()
         for record in valid_records:
             edr = self._convert_record(record, config, now_str)
             ingested.append(edr)
@@ -582,7 +551,7 @@ class ExternalDatasetEngine:
             freshness=freshness,
             records=ingested,
             warnings=warnings,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         result.provenance_hash = _compute_hash(result)
@@ -871,7 +840,7 @@ class ExternalDatasetEngine:
             self._cache_misses += 1
             return None
 
-        elapsed = (_utcnow() - cached_at).total_seconds() / 86400
+        elapsed = (utcnow() - cached_at).total_seconds() / 86400
         if elapsed > ttl:
             del self._cache[key]
             self._cache_misses += 1
@@ -890,7 +859,7 @@ class ExternalDatasetEngine:
             oldest_key = min(self._cache, key=lambda k: self._cache[k][1])
             del self._cache[oldest_key]
 
-        self._cache[key] = (records, _utcnow(), 0)
+        self._cache[key] = (records, utcnow(), 0)
 
     # ------------------------------------------------------------------
     # Internal: Freshness
@@ -903,7 +872,7 @@ class ExternalDatasetEngine:
 
         if cache_key in self._cache:
             _, cached_at, _ = self._cache[cache_key]
-            days_since = int((_utcnow() - cached_at).total_seconds() / 86400)
+            days_since = int((utcnow() - cached_at).total_seconds() / 86400)
             freshness = max(
                 Decimal("0"),
                 Decimal("1") - _safe_divide(Decimal(str(days_since)), Decimal(str(ttl))),
@@ -937,7 +906,6 @@ class ExternalDatasetEngine:
 
     def get_version(self) -> str:
         return self._version
-
 
 # ---------------------------------------------------------------------------
 # __all__

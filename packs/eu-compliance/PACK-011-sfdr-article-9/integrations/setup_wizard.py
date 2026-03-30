@@ -54,18 +54,13 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # Utility Helpers
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute a SHA-256 hash of arbitrary data."""
@@ -73,11 +68,9 @@ def _hash_data(data: Any) -> str:
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # Enums
 # =============================================================================
-
 
 class WizardStepId(str, Enum):
     """Wizard step identifiers."""
@@ -90,7 +83,6 @@ class WizardStepId(str, Enum):
     DISCLOSURE_CALENDAR = "disclosure_calendar"
     REVIEW_VALIDATE = "review_validate"
 
-
 class ProductType(str, Enum):
     """Financial product types eligible for Article 9."""
     UCITS_FUND = "ucits_fund"
@@ -101,13 +93,11 @@ class ProductType(str, Enum):
     STRUCTURED_DEPOSIT = "structured_deposit"
     OTHER = "other"
 
-
 class Article9SubType(str, Enum):
     """Article 9 product sub-types."""
     ART_9_1 = "art_9_1"
     ART_9_2 = "art_9_2"
     ART_9_3 = "art_9_3"
-
 
 class ObjectiveCategory(str, Enum):
     """Sustainable investment objective categories."""
@@ -121,7 +111,6 @@ class ObjectiveCategory(str, Enum):
     SOCIAL_OBJECTIVE = "social_objective"
     COMBINED = "combined"
 
-
 class StepStatus(str, Enum):
     """Status of a wizard step."""
     PENDING = "pending"
@@ -130,7 +119,6 @@ class StepStatus(str, Enum):
     SKIPPED = "skipped"
     FAILED = "failed"
 
-
 class DisclosureFrequency(str, Enum):
     """Disclosure publication frequency."""
     ANNUAL = "annual"
@@ -138,11 +126,9 @@ class DisclosureFrequency(str, Enum):
     QUARTERLY = "quarterly"
     ON_DEMAND = "on_demand"
 
-
 # =============================================================================
 # Data Models
 # =============================================================================
-
 
 class SetupWizardConfig(BaseModel):
     """Configuration for the Setup Wizard."""
@@ -173,7 +159,6 @@ class SetupWizardConfig(BaseModel):
     enable_provenance: bool = Field(
         default=True, description="Enable provenance hash tracking"
     )
-
 
 class WizardStep(BaseModel):
     """Definition and state of a single wizard step."""
@@ -207,7 +192,6 @@ class WizardStep(BaseModel):
         default_factory=list, description="Validation warnings"
     )
 
-
 class ProductInfo(BaseModel):
     """Product information collected in Step 1."""
     product_name: str = Field(default="", description="Product name")
@@ -228,7 +212,6 @@ class ProductInfo(BaseModel):
         default=0.0, description="Total AUM in EUR"
     )
 
-
 class SubTypeSelection(BaseModel):
     """Article 9 sub-type selection in Step 2."""
     sub_type: str = Field(
@@ -245,7 +228,6 @@ class SubTypeSelection(BaseModel):
         default=False,
         description="Whether benchmark designation is required (Art 9(3))",
     )
-
 
 class ObjectiveDefinition(BaseModel):
     """Sustainable investment objective in Step 3."""
@@ -279,7 +261,6 @@ class ObjectiveDefinition(BaseModel):
         default_factory=list, description="Linked SDG targets"
     )
 
-
 class BenchmarkDesignation(BaseModel):
     """Benchmark designation in Step 4 (Art 9(3) only)."""
     benchmark_type: str = Field(default="", description="CTB or PAB")
@@ -298,7 +279,6 @@ class BenchmarkDesignation(BaseModel):
     tracking_error_limit_bps: float = Field(
         default=200.0, ge=0.0, description="Tracking error limit (bps)"
     )
-
 
 class PAIConfiguration(BaseModel):
     """PAI indicator configuration in Step 5."""
@@ -322,7 +302,6 @@ class PAIConfiguration(BaseModel):
         default="calendar_year", description="PAI reporting period"
     )
 
-
 class ImpactKPISelection(BaseModel):
     """Impact KPI selection in Step 6."""
     selected_kpis: List[Dict[str, str]] = Field(
@@ -339,7 +318,6 @@ class ImpactKPISelection(BaseModel):
     verification_provider: str = Field(
         default="", description="Third-party verification provider"
     )
-
 
 class DisclosureCalendar(BaseModel):
     """Disclosure calendar setup in Step 7."""
@@ -367,7 +345,6 @@ class DisclosureCalendar(BaseModel):
     internal_review_dates: List[str] = Field(
         default_factory=list, description="Internal review milestone dates"
     )
-
 
 class WizardResult(BaseModel):
     """Complete result of the setup wizard execution."""
@@ -431,11 +408,9 @@ class WizardResult(BaseModel):
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
     execution_time_ms: float = Field(default=0.0, description="Total execution time")
 
-
 # =============================================================================
 # Step Definitions
 # =============================================================================
-
 
 STEP_DEFINITIONS: List[Dict[str, Any]] = [
     {
@@ -504,7 +479,6 @@ STEP_DEFINITIONS: List[Dict[str, Any]] = [
     },
 ]
 
-
 # Product type descriptions for guidance
 PRODUCT_TYPE_GUIDANCE: Dict[str, str] = {
     ProductType.UCITS_FUND.value: "UCITS fund - most common for retail Art 9 products",
@@ -538,11 +512,9 @@ SUB_TYPE_GUIDANCE: Dict[str, Dict[str, str]] = {
     },
 }
 
-
 # =============================================================================
 # Setup Wizard
 # =============================================================================
-
 
 class SetupWizard:
     """8-step guided configuration wizard for SFDR Article 9 products.
@@ -1016,7 +988,7 @@ class SetupWizard:
         step.status = StepStatus.IN_PROGRESS.value
         warnings: List[str] = []
 
-        now = _utcnow()
+        now = utcnow()
         current_year = now.year
 
         calendar = DisclosureCalendar(
@@ -1184,9 +1156,9 @@ class SetupWizard:
         )
 
         result = WizardResult(
-            wizard_id=f"WIZ-{_utcnow().strftime('%Y%m%d%H%M%S')}",
-            started_at=_utcnow().isoformat(),
-            completed_at=_utcnow().isoformat(),
+            wizard_id=f"WIZ-{utcnow().strftime('%Y%m%d%H%M%S')}",
+            started_at=utcnow().isoformat(),
+            completed_at=utcnow().isoformat(),
             is_valid=is_valid,
             config_ready=is_valid,
             total_steps=len(self._steps),

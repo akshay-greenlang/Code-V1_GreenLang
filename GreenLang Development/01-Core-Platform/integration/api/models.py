@@ -5,7 +5,8 @@ greenlang/api/models.py
 Pydantic models for REST API requests and responses.
 """
 
-from pydantic import BaseModel, Field, validator
+from pydantic import Field, validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 from typing import Optional, List, Dict
 from datetime import date, datetime
 from enum import Enum
@@ -38,7 +39,7 @@ class GWPSetEnum(str, Enum):
 
 # ==================== REQUEST MODELS ====================
 
-class CalculationRequest(BaseModel):
+class CalculationRequest(GreenLangBase):
     """Single calculation request"""
     factor_id: Optional[str] = Field(
         None,
@@ -95,7 +96,7 @@ class CalculationRequest(BaseModel):
         }
 
 
-class Scope1Request(BaseModel):
+class Scope1Request(GreenLangBase):
     """Scope 1 calculation request (direct emissions)"""
     fuel_type: str = Field(..., description="Fuel type")
     consumption: float = Field(..., gt=0, description="Fuel consumption")
@@ -113,7 +114,7 @@ class Scope1Request(BaseModel):
         }
 
 
-class Scope2Request(BaseModel):
+class Scope2Request(GreenLangBase):
     """Scope 2 calculation request (purchased electricity)"""
     electricity_kwh: float = Field(..., gt=0, description="Electricity consumption in kWh")
     geography: str = Field("US", description="Grid geography")
@@ -131,7 +132,7 @@ class Scope2Request(BaseModel):
         }
 
 
-class Scope3Request(BaseModel):
+class Scope3Request(GreenLangBase):
     """Scope 3 calculation request (indirect emissions)"""
     category: str = Field(
         ...,
@@ -156,7 +157,7 @@ class Scope3Request(BaseModel):
         }
 
 
-class BatchCalculationRequest(BaseModel):
+class BatchCalculationRequest(GreenLangBase):
     """Batch calculation request"""
     calculations: List[CalculationRequest] = Field(
         ...,
@@ -173,7 +174,7 @@ class BatchCalculationRequest(BaseModel):
 
 # ==================== RESPONSE MODELS ====================
 
-class GHGBreakdown(BaseModel):
+class GHGBreakdown(GreenLangBase):
     """Greenhouse gas breakdown"""
     CO2: float = Field(..., description="CO2 emissions in kg")
     CH4: float = Field(..., description="CH4 emissions in kg")
@@ -183,14 +184,14 @@ class GHGBreakdown(BaseModel):
     SF6: Optional[float] = Field(None, description="SF6 emissions in kg")
 
 
-class EmissionResult(BaseModel):
+class EmissionResult(GreenLangBase):
     """Emission calculation result"""
     emissions_kg_co2e: float = Field(..., description="Total CO2e emissions in kg")
     emissions_tonnes_co2e: float = Field(..., description="Total CO2e emissions in tonnes")
     gas_breakdown: GHGBreakdown = Field(..., description="Individual gas breakdown")
 
 
-class EmissionFactorSummary(BaseModel):
+class EmissionFactorSummary(GreenLangBase):
     """Summary of emission factor used"""
     factor_id: str
     fuel_type: str
@@ -205,7 +206,7 @@ class EmissionFactorSummary(BaseModel):
     uncertainty_percent: float = Field(..., description="Uncertainty as percentage")
 
 
-class CalculationResponse(BaseModel):
+class CalculationResponse(GreenLangBase):
     """Single calculation response"""
     calculation_id: str = Field(..., description="Unique calculation ID")
     emissions_kg_co2e: float = Field(..., description="Total CO2e emissions in kg")
@@ -243,7 +244,7 @@ class CalculationResponse(BaseModel):
         }
 
 
-class BatchCalculationResponse(BaseModel):
+class BatchCalculationResponse(GreenLangBase):
     """Batch calculation response"""
     batch_id: str = Field(..., description="Unique batch ID")
     total_emissions_kg_co2e: float = Field(..., description="Total emissions across all calculations")
@@ -253,7 +254,7 @@ class BatchCalculationResponse(BaseModel):
     timestamp: datetime
 
 
-class DataQuality(BaseModel):
+class DataQuality(GreenLangBase):
     """Data quality indicators"""
     temporal: int = Field(..., ge=1, le=5)
     geographical: int = Field(..., ge=1, le=5)
@@ -264,7 +265,7 @@ class DataQuality(BaseModel):
     rating: str
 
 
-class SourceInfo(BaseModel):
+class SourceInfo(GreenLangBase):
     """Source provenance information"""
     organization: str
     publication: str
@@ -274,7 +275,7 @@ class SourceInfo(BaseModel):
     version: str
 
 
-class EmissionFactorResponse(BaseModel):
+class EmissionFactorResponse(GreenLangBase):
     """Detailed emission factor response"""
     factor_id: str
     fuel_type: str
@@ -353,7 +354,7 @@ class EmissionFactorResponse(BaseModel):
         }
 
 
-class FactorListResponse(BaseModel):
+class FactorListResponse(GreenLangBase):
     """Paginated list of emission factors"""
     factors: List[EmissionFactorSummary]
     total_count: int = Field(..., description="Total number of factors matching query")
@@ -362,7 +363,7 @@ class FactorListResponse(BaseModel):
     total_pages: int = Field(..., description="Total number of pages")
 
 
-class FactorSearchResponse(BaseModel):
+class FactorSearchResponse(GreenLangBase):
     """Search results for factors"""
     query: str = Field(..., description="Search query")
     factors: List[EmissionFactorSummary]
@@ -370,7 +371,7 @@ class FactorSearchResponse(BaseModel):
     search_time_ms: float = Field(..., description="Search execution time in ms")
 
 
-class CoverageStats(BaseModel):
+class CoverageStats(GreenLangBase):
     """Coverage statistics"""
     total_factors: int
     geographies: int
@@ -381,7 +382,7 @@ class CoverageStats(BaseModel):
     by_fuel_type: Dict[str, int]
 
 
-class CacheStats(BaseModel):
+class CacheStats(GreenLangBase):
     """Cache statistics"""
     enabled: bool
     hits: int
@@ -391,7 +392,7 @@ class CacheStats(BaseModel):
     max_size: int
 
 
-class StatsResponse(BaseModel):
+class StatsResponse(GreenLangBase):
     """API statistics"""
     version: str
     total_factors: int
@@ -401,7 +402,7 @@ class StatsResponse(BaseModel):
     timestamp: datetime
 
 
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Health check response"""
     status: str = Field(..., description="healthy or unhealthy")
     version: str
@@ -423,7 +424,7 @@ class HealthResponse(BaseModel):
         }
 
 
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     """Error response"""
     error: str = Field(..., description="Error type")
     message: str = Field(..., description="Error message")

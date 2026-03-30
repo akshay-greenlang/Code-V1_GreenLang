@@ -30,6 +30,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.document_authentication.api.dependencies import (
     AuthUser,
@@ -68,32 +69,22 @@ _cache_stats: Dict[str, int] = {
     "total_misses": 0,
 }
 
-
 def _get_crossref_store() -> Dict[str, Dict]:
     """Return the cross-reference result store singleton."""
     return _crossref_store
-
 
 def _get_cache_store() -> Dict[str, Dict]:
     """Return the cross-reference cache store singleton."""
     return _cache_store
 
-
 def _get_cache_stats() -> Dict[str, int]:
     """Return the cache statistics singleton."""
     return _cache_stats
-
 
 def _compute_provenance_hash(data: dict) -> str:
     """Compute SHA-256 hash for provenance tracking."""
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _crossref_verify_logic(
     document_id: str,
@@ -114,7 +105,7 @@ def _crossref_verify_logic(
     Returns:
         Dict with cross-reference verification fields.
     """
-    now = _utcnow()
+    now = utcnow()
     stats = _get_cache_stats()
     cache = _get_cache_store()
 
@@ -163,11 +154,9 @@ def _crossref_verify_logic(
         "cached": cached,
     }
 
-
 # ---------------------------------------------------------------------------
 # POST /crossref/verify
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/crossref/verify",
@@ -207,7 +196,7 @@ async def crossref_verify(
     start = time.monotonic()
     try:
         verification_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         xref_result = _crossref_verify_logic(
             body.document_id,
@@ -265,11 +254,9 @@ async def crossref_verify(
             detail="Failed to verify against registry",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /crossref/verify/batch
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/crossref/verify/batch",
@@ -307,7 +294,7 @@ async def batch_crossref_verify(
     """
     start = time.monotonic()
     try:
-        now = _utcnow()
+        now = utcnow()
         results: List[CrossRefResultSchema] = []
         errors: List[Dict[str, Any]] = []
         total_cache_hits = 0
@@ -404,11 +391,9 @@ async def batch_crossref_verify(
             detail="Failed to process batch cross-reference",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /crossref/{verification_id}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/crossref/{verification_id}",
@@ -472,11 +457,9 @@ async def get_crossref_result(
             detail="Failed to retrieve verification",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /crossref/cache/stats
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/crossref/cache/stats",
@@ -533,7 +516,7 @@ async def get_cache_stats(
             total_hits=total_hits,
             total_misses=total_misses,
             processing_time_ms=elapsed_ms,
-            timestamp=_utcnow(),
+            timestamp=utcnow(),
         )
 
     except HTTPException:
@@ -544,7 +527,6 @@ async def get_cache_stats(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve cache statistics",
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

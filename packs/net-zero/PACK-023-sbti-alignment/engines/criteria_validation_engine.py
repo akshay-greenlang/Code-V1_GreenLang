@@ -53,25 +53,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -89,7 +83,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -98,7 +91,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -110,17 +102,14 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
@@ -128,11 +117,9 @@ def _round3(value: float) -> float:
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CriterionStatus(str, Enum):
     """Outcome status for a single criterion check.
@@ -146,7 +133,6 @@ class CriterionStatus(str, Enum):
     FAIL = "fail"
     WARNING = "warning"
     NOT_APPLICABLE = "not_applicable"
-
 
 class CriterionCategory(str, Enum):
     """Functional grouping of SBTi criteria.
@@ -174,7 +160,6 @@ class CriterionCategory(str, Enum):
     LONG_TERM = "long_term"
     RESIDUAL = "residual"
     TRANSITION = "transition"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- SBTi Thresholds
@@ -415,11 +400,9 @@ CRITERIA_DEFINITIONS: Dict[str, Dict[str, str]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class TargetData(BaseModel):
     """Target data for validation.
@@ -461,7 +444,6 @@ class TargetData(BaseModel):
         default=Decimal("0"), ge=0, le=Decimal("100")
     )
 
-
 class InventoryData(BaseModel):
     """Emissions inventory data for validation.
 
@@ -485,7 +467,6 @@ class InventoryData(BaseModel):
     biogenic_reported_separately: bool = Field(default=False)
     all_ghgs_included: bool = Field(default=False)
     third_party_verified: bool = Field(default=False)
-
 
 class GovernanceData(BaseModel):
     """Governance and reporting data for validation.
@@ -529,7 +510,6 @@ class GovernanceData(BaseModel):
     neutralisation_plan: bool = Field(default=False)
     neutralisation_permanent: bool = Field(default=False)
 
-
 class ValidationInput(BaseModel):
     """Input for full 42-criterion SBTi validation.
 
@@ -556,11 +536,9 @@ class ValidationInput(BaseModel):
         description="Whether to include net-zero criteria validation"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class CriterionCheck(BaseModel):
     """Assessment result for a single SBTi criterion.
@@ -584,7 +562,6 @@ class CriterionCheck(BaseModel):
     assessed_value: str = Field(default="")
     threshold_value: str = Field(default="")
 
-
 class GapItem(BaseModel):
     """Specific gap identified during validation.
 
@@ -602,7 +579,6 @@ class GapItem(BaseModel):
     description: str = Field(default="")
     remediation: str = Field(default="")
     estimated_effort: str = Field(default="medium")
-
 
 class ReadinessScore(BaseModel):
     """Overall readiness scoring.
@@ -630,7 +606,6 @@ class ReadinessScore(BaseModel):
     is_submission_ready: bool = Field(default=False)
     blocking_gaps_count: int = Field(default=0)
 
-
 class ValidationResult(BaseModel):
     """Complete 42-criterion validation result.
 
@@ -648,7 +623,7 @@ class ValidationResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     criteria_checks: List[CriterionCheck] = Field(default_factory=list)
     gaps: List[GapItem] = Field(default_factory=list)
@@ -657,11 +632,9 @@ class ValidationResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class CriteriaValidationEngine:
     """SBTi 42-criterion automated validation engine.
@@ -1035,7 +1008,7 @@ class CriteriaValidationEngine:
             gaps.append(self._make_gap("C21", "high"))
 
         # C22: Target start within 2 years of submission
-        current_year = _utcnow().year
+        current_year = utcnow().year
         start_gap = abs(current_year - data.target.base_year)
         c22_pass = start_gap <= 7  # lenient for older base years with recency
         c22 = self._check_boolean(

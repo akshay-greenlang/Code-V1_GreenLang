@@ -29,12 +29,13 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig
 from greenlang.agents.base_agents import DeterministicAgent
 from greenlang.agents.categories import AgentCategory, AgentMetadata
 from greenlang.utilities.determinism import DeterministicClock, content_hash, deterministic_id
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -83,7 +84,7 @@ TRL_DESCRIPTIONS = {
 # Pydantic Models
 # =============================================================================
 
-class TRLEvidence(BaseModel):
+class TRLEvidence(GreenLangBase):
     """Evidence supporting a TRL assessment."""
     evidence_type: str = Field(..., description="Type: publication, demonstration, deployment, etc.")
     description: str = Field(..., description="Evidence description")
@@ -92,7 +93,7 @@ class TRLEvidence(BaseModel):
     confidence: str = Field(default="medium", description="Confidence level")
 
 
-class TechnologyAssessment(BaseModel):
+class TechnologyAssessment(GreenLangBase):
     """Complete technology readiness assessment."""
     assessment_id: str = Field(..., description="Unique assessment ID")
     technology_name: str = Field(..., description="Technology name")
@@ -127,7 +128,7 @@ class TechnologyAssessment(BaseModel):
     provenance_hash: str = Field(default="")
 
 
-class TechnologyReadinessInput(BaseModel):
+class TechnologyReadinessInput(GreenLangBase):
     """Input model for TechnologyReadinessAssessor."""
     operation: str = Field(default="assess", description="Operation: assess, compare, roadmap")
     technology_name: str = Field(default="", description="Technology to assess")
@@ -136,7 +137,7 @@ class TechnologyReadinessInput(BaseModel):
     technologies_to_compare: List[str] = Field(default_factory=list)
 
 
-class TechnologyReadinessOutput(BaseModel):
+class TechnologyReadinessOutput(GreenLangBase):
     """Output model for TechnologyReadinessAssessor."""
     operation: str = Field(...)
     success: bool = Field(...)

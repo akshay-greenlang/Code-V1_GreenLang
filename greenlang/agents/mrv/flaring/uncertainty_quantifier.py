@@ -100,6 +100,7 @@ from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -140,15 +141,9 @@ except ImportError:
     _record_uncertainty = None  # type: ignore[assignment]
     _observe_calculation_duration = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _to_decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
@@ -168,7 +163,6 @@ def _to_decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, ValueError, TypeError) as exc:
         raise ValueError(f"Cannot convert {value!r} to Decimal") from exc
-
 
 def _decimal_sqrt(value: Decimal) -> Decimal:
     """Compute square root of a Decimal value.
@@ -191,11 +185,9 @@ def _decimal_sqrt(value: Decimal) -> Decimal:
         return Decimal("0")
     return Decimal(str(math.sqrt(float(value))))
 
-
 # ===========================================================================
 # Enumerations
 # ===========================================================================
-
 
 class DistributionType(str, Enum):
     """Probability distribution types for Monte Carlo sampling.
@@ -211,7 +203,6 @@ class DistributionType(str, Enum):
     TRIANGULAR = "TRIANGULAR"
     UNIFORM = "UNIFORM"
 
-
 class FlowRateSource(str, Enum):
     """Source classification for gas flow rate measurements.
 
@@ -223,7 +214,6 @@ class FlowRateSource(str, Enum):
     CONTINUOUS_METERING = "CONTINUOUS_METERING"
     INTERMITTENT_METERING = "INTERMITTENT_METERING"
     ESTIMATE = "ESTIMATE"
-
 
 class CompositionSource(str, Enum):
     """Source classification for gas composition data.
@@ -237,7 +227,6 @@ class CompositionSource(str, Enum):
     FIELD_MEASUREMENT = "FIELD_MEASUREMENT"
     DEFAULT = "DEFAULT"
 
-
 class EfficiencySource(str, Enum):
     """Source classification for combustion efficiency data.
 
@@ -247,7 +236,6 @@ class EfficiencySource(str, Enum):
 
     MEASURED = "MEASURED"
     DEFAULT = "DEFAULT"
-
 
 class HeatingValueSource(str, Enum):
     """Source classification for gas heating value data.
@@ -259,7 +247,6 @@ class HeatingValueSource(str, Enum):
     CALCULATED = "CALCULATED"
     DEFAULT = "DEFAULT"
 
-
 class EmissionFactorSource(str, Enum):
     """Source classification for emission factor data.
 
@@ -270,7 +257,6 @@ class EmissionFactorSource(str, Enum):
     FACILITY_SPECIFIC = "FACILITY_SPECIFIC"
     DEFAULT = "DEFAULT"
 
-
 class DurationSource(str, Enum):
     """Source classification for event duration data.
 
@@ -280,7 +266,6 @@ class DurationSource(str, Enum):
 
     METERED = "METERED"
     ESTIMATED = "ESTIMATED"
-
 
 class DQICategory(str, Enum):
     """Data Quality Indicator scoring categories (5 dimensions).
@@ -297,7 +282,6 @@ class DQICategory(str, Enum):
     TEMPORAL_CORRELATION = "TEMPORAL_CORRELATION"
     GEOGRAPHICAL_CORRELATION = "GEOGRAPHICAL_CORRELATION"
     TECHNOLOGICAL_CORRELATION = "TECHNOLOGICAL_CORRELATION"
-
 
 # ===========================================================================
 # Default Uncertainty Parameters (half-width of 95% CI as fraction)
@@ -421,11 +405,9 @@ _DEFAULT_DISTRIBUTIONS: Dict[str, str] = {
     "duration": DistributionType.NORMAL.value,
 }
 
-
 # ===========================================================================
 # Dataclasses for results
 # ===========================================================================
-
 
 @dataclass
 class UncertaintyResult:
@@ -531,11 +513,9 @@ class UncertaintyResult:
             "metadata": self.metadata,
         }
 
-
 # ===========================================================================
 # UncertaintyQuantifierEngine
 # ===========================================================================
-
 
 class UncertaintyQuantifierEngine:
     """Monte Carlo and analytical uncertainty quantification engine for
@@ -749,7 +729,7 @@ class UncertaintyQuantifierEngine:
             json.dumps(provenance_data, sort_keys=True).encode("utf-8")
         ).hexdigest()
 
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         def _q(v: Any) -> Optional[Decimal]:
             """Quantize a value to 3 decimal places."""

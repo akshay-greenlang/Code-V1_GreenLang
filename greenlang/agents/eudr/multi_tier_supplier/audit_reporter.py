@@ -51,6 +51,9 @@ from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ReportFormat
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -63,31 +66,14 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
-
-class ReportFormat(str, Enum):
-    """Supported report output formats."""
-
-    JSON = "json"
-    CSV = "csv"
-    PDF_DATA = "pdf_data"
-    EUDR_XML = "eudr_xml"
-
 
 class ReportType(str, Enum):
     """Types of reports that can be generated."""
@@ -99,7 +85,6 @@ class ReportType(str, Enum):
     DDS_READINESS = "dds_readiness"
     CHAIN_CERTIFICATE = "chain_certificate"
 
-
 class CertificateStatus(str, Enum):
     """Status of a supply chain verification certificate."""
 
@@ -108,7 +93,6 @@ class CertificateStatus(str, Enum):
     INVALID = "invalid"
     EXPIRED = "expired"
 
-
 class DdsReadinessLevel(str, Enum):
     """DDS submission readiness level."""
 
@@ -116,7 +100,6 @@ class DdsReadinessLevel(str, Enum):
     ALMOST_READY = "almost_ready"
     NOT_READY = "not_ready"
     BLOCKED = "blocked"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -142,11 +125,9 @@ MIN_DDS_COMPLIANCE_SCORE: float = 60.0
 #: GreenLang agent identifier for provenance.
 AGENT_ID: str = "GL-EUDR-MST-008"
 
-
 # ---------------------------------------------------------------------------
 # Input Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class SupplierChainEntry:
@@ -200,7 +181,6 @@ class SupplierChainEntry:
     registration_id: str = ""
     last_updated: str = ""
 
-
 @dataclass
 class SupplierChain:
     """A complete supplier chain for reporting.
@@ -225,11 +205,9 @@ class SupplierChain:
     total_suppliers: int = 0
     created_at: str = ""
 
-
 # ---------------------------------------------------------------------------
 # Output Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class TierSummaryRow:
@@ -258,7 +236,6 @@ class TierSummaryRow:
     with_certification: int = 0
     with_dds: int = 0
     critical_gaps: int = 0
-
 
 @dataclass
 class AuditReport:
@@ -304,7 +281,6 @@ class AuditReport:
     provenance_hash: str = ""
     engine_version: str = _MODULE_VERSION
 
-
 @dataclass
 class ChainCertificate:
     """Supply chain verification certificate.
@@ -347,7 +323,6 @@ class ChainCertificate:
     provenance_hash: str = ""
     engine_version: str = _MODULE_VERSION
 
-
 @dataclass
 class DdsReadinessAssessment:
     """DDS submission readiness assessment for a supply chain.
@@ -380,7 +355,6 @@ class DdsReadinessAssessment:
     assessed_at: str = ""
     provenance_hash: str = ""
 
-
 @dataclass
 class BatchReportResult:
     """Batch report generation result.
@@ -403,11 +377,9 @@ class BatchReportResult:
     processing_time_ms: float = 0.0
     provenance_hash: str = ""
 
-
 # ===========================================================================
 # AuditReporter
 # ===========================================================================
-
 
 class AuditReporter:
     """Production-grade audit reporting engine for EUDR multi-tier suppliers.
@@ -474,7 +446,7 @@ class AuditReporter:
 
         t_start = time.monotonic()
         report_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         # Generate each report section
         tier_summary = self._build_tier_summary(supplier_chain)
@@ -630,7 +602,7 @@ class AuditReporter:
                 str(k): v for k, v in tier_risk_paths.items()
             },
             "highest_risk_path": highest_risk_path,
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
             "processing_time_ms": round(elapsed_ms, 3),
             "provenance_hash": _compute_hash(provenance_data),
         }
@@ -713,7 +685,7 @@ class AuditReporter:
                 for s, c in top_gap_suppliers
             ],
             "gap_details": gaps,
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
             "processing_time_ms": round(elapsed_ms, 3),
             "provenance_hash": _compute_hash(provenance_data),
         }
@@ -867,7 +839,7 @@ class AuditReporter:
             eligible_supplier_count=eligible_count,
             total_supplier_count=total_count,
             eligible_pct=round(eligible_pct, 2),
-            assessed_at=_utcnow().isoformat(),
+            assessed_at=utcnow().isoformat(),
             provenance_hash=provenance_hash,
         )
 
@@ -1308,7 +1280,7 @@ class AuditReporter:
         """
         t_start = time.monotonic()
         certificate_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
         findings: List[str] = []
         conditions: List[str] = []
 
@@ -1907,11 +1879,9 @@ class AuditReporter:
             f"version={_MODULE_VERSION!r})"
         )
 
-
 # ---------------------------------------------------------------------------
 # Module-level helper
 # ---------------------------------------------------------------------------
-
 
 def _xml_escape(value: str) -> str:
     """Escape special XML characters in a string.
@@ -1929,7 +1899,6 @@ def _xml_escape(value: str) -> str:
         .replace('"', "&quot;")
         .replace("'", "&apos;")
     )
-
 
 # ---------------------------------------------------------------------------
 # Public API

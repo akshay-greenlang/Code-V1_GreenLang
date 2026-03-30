@@ -21,6 +21,7 @@ from typing import Any, Dict, List, Optional
 from unittest.mock import MagicMock
 
 import pytest
+from greenlang.schemas import utcnow
 
 # ---------------------------------------------------------------------------
 # Ensure the pack root is on sys.path so engines/ etc. are importable
@@ -33,6 +34,7 @@ if str(PACK_ROOT) not in sys.path:
 # Config imports
 # ---------------------------------------------------------------------------
 from config.pack_config import (
+
     PackConfig,
     ConsolidationPackConfig,
     EntityRegistryConfig,
@@ -86,20 +88,13 @@ from config.pack_config import (
     _compute_hash,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc)
-
-
 def _make_hash(data: str) -> str:
     """Compute SHA-256 hash for test provenance comparisons."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Organisation / identity fixtures
@@ -110,54 +105,45 @@ def organization_id():
     """Sample organisation identifier."""
     return "ORG-CONSOLIDATION-001"
 
-
 @pytest.fixture
 def reporting_year():
     """Standard test reporting year."""
     return 2026
-
 
 @pytest.fixture
 def base_year():
     """Standard test base year."""
     return 2020
 
-
 @pytest.fixture
 def parent_entity_id():
     """Fixed parent entity ID for consistent testing."""
     return "ENT-PARENT-001"
-
 
 @pytest.fixture
 def sub1_entity_id():
     """Fixed subsidiary 1 entity ID."""
     return "ENT-SUB-001"
 
-
 @pytest.fixture
 def sub2_entity_id():
     """Fixed subsidiary 2 entity ID."""
     return "ENT-SUB-002"
-
 
 @pytest.fixture
 def sub3_entity_id():
     """Fixed subsidiary 3 entity ID."""
     return "ENT-SUB-003"
 
-
 @pytest.fixture
 def jv_entity_id():
     """Fixed joint venture entity ID."""
     return "ENT-JV-001"
 
-
 @pytest.fixture
 def associate_entity_id():
     """Fixed associate entity ID."""
     return "ENT-ASSOC-001"
-
 
 # ---------------------------------------------------------------------------
 # Pack config fixtures
@@ -221,18 +207,15 @@ def sample_config():
         },
     }
 
-
 @pytest.fixture
 def default_pack_config():
     """Default PackConfig with all defaults."""
     return PackConfig()
 
-
 @pytest.fixture
 def default_consolidation_config():
     """Default ConsolidationPackConfig with all defaults."""
     return ConsolidationPackConfig()
-
 
 # ---------------------------------------------------------------------------
 # Entity record fixtures (parent + 3 subs + 1 JV + 1 associate)
@@ -253,7 +236,6 @@ def parent_entity_data(parent_entity_id):
         "tags": ["parent", "holding"],
     }
 
-
 @pytest.fixture
 def sub1_entity_data(sub1_entity_id, parent_entity_id):
     """Subsidiary 1: wholly owned manufacturing subsidiary."""
@@ -269,7 +251,6 @@ def sub1_entity_data(sub1_entity_id, parent_entity_id):
         "sector_name": "Manufacture of metal structures",
         "tags": ["manufacturing", "europe"],
     }
-
 
 @pytest.fixture
 def sub2_entity_data(sub2_entity_id, parent_entity_id):
@@ -287,7 +268,6 @@ def sub2_entity_data(sub2_entity_id, parent_entity_id):
         "tags": ["logistics", "europe"],
     }
 
-
 @pytest.fixture
 def sub3_entity_data(sub3_entity_id, parent_entity_id):
     """Subsidiary 3: 60% owned US subsidiary."""
@@ -303,7 +283,6 @@ def sub3_entity_data(sub3_entity_id, parent_entity_id):
         "sector_name": "Manufacture of metal structures",
         "tags": ["manufacturing", "americas"],
     }
-
 
 @pytest.fixture
 def jv_entity_data(jv_entity_id, parent_entity_id):
@@ -321,7 +300,6 @@ def jv_entity_data(jv_entity_id, parent_entity_id):
         "tags": ["joint_venture", "energy"],
     }
 
-
 @pytest.fixture
 def associate_entity_data(associate_entity_id, parent_entity_id):
     """Associate: 30% equity stake with significant influence."""
@@ -337,7 +315,6 @@ def associate_entity_data(associate_entity_id, parent_entity_id):
         "sector_name": "Research and experimental development on biotechnology",
         "tags": ["associate", "r&d"],
     }
-
 
 @pytest.fixture
 def all_entity_data(
@@ -357,7 +334,6 @@ def all_entity_data(
         jv_entity_data,
         associate_entity_data,
     ]
-
 
 # ---------------------------------------------------------------------------
 # Ownership record fixtures
@@ -426,7 +402,6 @@ def ownership_records(
         },
     ]
 
-
 # ---------------------------------------------------------------------------
 # Entity emissions data fixtures (Scope 1, 2-loc, 2-mkt, 3)
 # ---------------------------------------------------------------------------
@@ -492,7 +467,6 @@ def entity_emissions_data(
         },
     }
 
-
 @pytest.fixture
 def entity_total_emissions(
     parent_entity_id,
@@ -511,7 +485,6 @@ def entity_total_emissions(
         jv_entity_id: Decimal("22000.00"),
         associate_entity_id: Decimal("4500.00"),
     }
-
 
 # ---------------------------------------------------------------------------
 # Transfer record fixtures (intra-group energy transfers)
@@ -570,7 +543,6 @@ def transfer_records(
         },
     ]
 
-
 # ---------------------------------------------------------------------------
 # M&A event fixtures
 # ---------------------------------------------------------------------------
@@ -592,7 +564,6 @@ def mna_acquisition_event(parent_entity_id):
         "description": "Full acquisition of AcquiredCo GmbH",
     }
 
-
 @pytest.fixture
 def mna_divestiture_event(parent_entity_id, sub3_entity_id):
     """Divestiture event: parent divests sub3 on September 30."""
@@ -609,7 +580,6 @@ def mna_divestiture_event(parent_entity_id, sub3_entity_id):
         "sale_price_eur": Decimal("80000000.00"),
         "description": "Full divestiture of US subsidiary",
     }
-
 
 # ---------------------------------------------------------------------------
 # Adjustment record fixtures
@@ -657,7 +627,6 @@ def adjustment_records():
         },
     ]
 
-
 # ---------------------------------------------------------------------------
 # Boundary definition fixtures
 # ---------------------------------------------------------------------------
@@ -687,7 +656,6 @@ def equity_share_boundary(
         "materiality_threshold_pct": Decimal("5"),
     }
 
-
 @pytest.fixture
 def operational_control_boundary(
     parent_entity_id,
@@ -712,7 +680,6 @@ def operational_control_boundary(
         ],
         "materiality_threshold_pct": Decimal("5"),
     }
-
 
 # ---------------------------------------------------------------------------
 # Multi-tier ownership for chain resolution tests
@@ -746,7 +713,6 @@ def multi_tier_ownership():
         ],
         "expected_effective_a_to_c": Decimal("60.0000"),
     }
-
 
 # ---------------------------------------------------------------------------
 # Report data fixtures
@@ -828,7 +794,6 @@ def consolidated_report_data():
             },
         ],
     }
-
 
 # ---------------------------------------------------------------------------
 # Workflow input fixtures

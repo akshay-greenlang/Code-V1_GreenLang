@@ -86,6 +86,7 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -152,21 +153,13 @@ except ImportError:
         "TrendAnalysisEngine will use inline fallbacks"
     )
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ---------------------------------------------------------------------------
 # SHA-256 helper
 # ---------------------------------------------------------------------------
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -185,7 +178,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Decimal helpers
 # ---------------------------------------------------------------------------
@@ -196,7 +188,6 @@ _ONE = Decimal("1")
 _TWO = Decimal("2")
 _HUNDRED = Decimal("100")
 _NEG_ONE = Decimal("-1")
-
 
 def _D(value: Any) -> Decimal:
     """Convert a value to Decimal.
@@ -210,7 +201,6 @@ def _D(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
     return Decimal(str(value))
-
 
 def _safe_decimal(value: Any, default: Decimal = _ZERO) -> Decimal:
     """Safely convert to Decimal with a fallback default.
@@ -229,7 +219,6 @@ def _safe_decimal(value: Any, default: Decimal = _ZERO) -> Decimal:
     except (InvalidOperation, ValueError, TypeError):
         return default
 
-
 def _quantize(value: Decimal, precision: Decimal = _PRECISION) -> Decimal:
     """Quantize a Decimal to the specified precision.
 
@@ -241,7 +230,6 @@ def _quantize(value: Decimal, precision: Decimal = _PRECISION) -> Decimal:
         Quantized Decimal value.
     """
     return value.quantize(precision, rounding=ROUND_HALF_UP)
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -262,7 +250,6 @@ def _safe_divide(
         return default
     return _quantize(numerator / denominator)
 
-
 def _abs_decimal(value: Decimal) -> Decimal:
     """Return the absolute value of a Decimal.
 
@@ -273,7 +260,6 @@ def _abs_decimal(value: Decimal) -> Decimal:
         Absolute Decimal value.
     """
     return value if value >= _ZERO else value * _NEG_ONE
-
 
 # ---------------------------------------------------------------------------
 # Inline fallback constants (used when models not importable)
@@ -309,11 +295,9 @@ _INTENSITY_UNITS: Dict[str, str] = {
     "production_unit": "tCO2e/unit",
 }
 
-
 # ===========================================================================
 # TrendAnalysisEngine
 # ===========================================================================
-
 
 class TrendAnalysisEngine:
     """Multi-period trend analysis for Scope 2 dual reporting reconciliation.
@@ -389,7 +373,7 @@ class TrendAnalysisEngine:
             self._total_forecast: int = 0
             self._total_anomaly: int = 0
             self._total_errors: int = 0
-            self._created_at: datetime = _utcnow()
+            self._created_at: datetime = utcnow()
             self._stable_threshold: Decimal = _DEFAULT_STABLE_THRESHOLD
             self._min_periods: int = _DEFAULT_MIN_PERIODS
             self._max_periods: int = _DEFAULT_MAX_PERIODS
@@ -1964,7 +1948,7 @@ class TrendAnalysisEngine:
                 - config: Dict of current config values
                 - version: Agent version string
         """
-        now = _utcnow()
+        now = utcnow()
         uptime = (now - self._created_at).total_seconds()
 
         agent_id = AGENT_ID if _MODELS_AVAILABLE else _FALLBACK_AGENT_ID
@@ -3281,11 +3265,9 @@ class TrendAnalysisEngine:
         except (ValueError, KeyError):
             return None
 
-
 # ===========================================================================
 # Module-level convenience functions
 # ===========================================================================
-
 
 def get_trend_analysis_engine() -> TrendAnalysisEngine:
     """Return the singleton TrendAnalysisEngine.
@@ -3301,7 +3283,6 @@ def get_trend_analysis_engine() -> TrendAnalysisEngine:
         >>> report = engine.analyze_trends(data_points, config)
     """
     return TrendAnalysisEngine()
-
 
 def reset_trend_analysis_engine() -> None:
     """Reset the singleton for test teardown.

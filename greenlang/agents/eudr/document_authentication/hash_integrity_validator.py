@@ -63,6 +63,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 from greenlang.agents.eudr.document_authentication.config import get_config
+from greenlang.schemas import utcnow
 from greenlang.agents.eudr.document_authentication.metrics import (
     observe_verification_duration,
     record_api_error,
@@ -90,12 +91,6 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_provenance_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance.
 
@@ -108,7 +103,6 @@ def _compute_provenance_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a new UUID4 string identifier.
 
@@ -116,7 +110,6 @@ def _generate_id() -> str:
         UUID4 string.
     """
     return str(uuid.uuid4())
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -134,11 +127,9 @@ _MAX_HMAC_KEY_SIZE: int = 1024
 #: Supported hash algorithms for compute_hash.
 _SUPPORTED_ALGORITHMS = frozenset({"sha256", "sha512"})
 
-
 # ---------------------------------------------------------------------------
 # Internal: Hash Registry Entry
 # ---------------------------------------------------------------------------
-
 
 class _RegistryEntry:
     """Internal hash registry entry for tracking document hashes.
@@ -183,7 +174,7 @@ class _RegistryEntry:
             ttl_days: Registry TTL in days.
             parent_hash: Optional parent hash for chain anchoring.
         """
-        now = _utcnow()
+        now = utcnow()
         self.hash_sha256 = hash_sha256
         self.hash_sha512 = hash_sha512
         self.document_id = document_id
@@ -214,11 +205,9 @@ class _RegistryEntry:
             "expires_at": self.expires_at.isoformat(),
         }
 
-
 # ---------------------------------------------------------------------------
 # Internal: Merkle Tree Node
 # ---------------------------------------------------------------------------
-
 
 class _MerkleNode:
     """Internal Merkle tree node.
@@ -276,11 +265,9 @@ class _MerkleNode:
             result["right"] = self.right.to_dict()
         return result
 
-
 # ---------------------------------------------------------------------------
 # HashIntegrityValidator
 # ---------------------------------------------------------------------------
-
 
 class HashIntegrityValidator:
     """SHA-256/SHA-512 hash-based tamper detection and document deduplication engine.
@@ -1069,7 +1056,7 @@ class HashIntegrityValidator:
                 - active_entries: Number of active entries
                 - total_bytes_hashed: Approximate bytes hashed
         """
-        now = _utcnow()
+        now = utcnow()
 
         with self._lock:
             total_entries = len(self._registry_sha256)
@@ -1162,7 +1149,7 @@ class HashIntegrityValidator:
             entry = self._registry_sha256.get(hash_sha256)
             if entry is not None:
                 entry.seen_count += 1
-                entry.last_seen_at = _utcnow()
+                entry.last_seen_at = utcnow()
                 return True, entry.document_id
 
         return False, None
@@ -1198,7 +1185,7 @@ class HashIntegrityValidator:
             if hash_sha256 in self._registry_sha256:
                 existing = self._registry_sha256[hash_sha256]
                 existing.seen_count += 1
-                existing.last_seen_at = _utcnow()
+                existing.last_seen_at = utcnow()
                 return existing.expires_at
 
             # Determine parent hash for chain anchoring
@@ -1294,7 +1281,7 @@ class HashIntegrityValidator:
             "hash_prefix": hash_value[:16] if hash_value else "",
             "anomaly_detected": anomaly_detected,
             "processing_time_ms": round(elapsed_ms, 2),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
         with self._lock:
             self._operation_history.append(entry)
@@ -1637,7 +1624,7 @@ class HashIntegrityValidator:
         Returns:
             Dictionary with cleanup statistics.
         """
-        now = _utcnow()
+        now = utcnow()
         removed_count = 0
         retained_count = 0
 
@@ -1686,7 +1673,7 @@ class HashIntegrityValidator:
         Returns:
             List of registry entry dictionaries.
         """
-        now = _utcnow()
+        now = utcnow()
 
         with self._lock:
             entries = list(self._registry_sha256.values())
@@ -1710,7 +1697,6 @@ class HashIntegrityValidator:
             f"registry={registry_count}, "
             f"operations={operation_count})"
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

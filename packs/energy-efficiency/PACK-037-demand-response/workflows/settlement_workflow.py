@@ -41,35 +41,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.utcnow()
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hash of a string."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -80,7 +72,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -89,7 +80,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class BaselineMethod(str, Enum):
     """Customer baseline load calculation methodology."""
@@ -100,7 +90,6 @@ class BaselineMethod(str, Enum):
     REGRESSION = "regression"
     METER_BEFORE_AFTER = "meter_before_after"
 
-
 class SettlementStatus(str, Enum):
     """Settlement status for an event."""
 
@@ -109,7 +98,6 @@ class SettlementStatus(str, Enum):
     VERIFIED = "verified"
     DISPUTED = "disputed"
     SETTLED = "settled"
-
 
 # =============================================================================
 # REFERENCE DATA (Zero-Hallucination)
@@ -179,11 +167,9 @@ SETTLEMENT_RATES: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -197,7 +183,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list, description="Errors encountered")
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
 
-
 class BaselineResult(BaseModel):
     """Customer baseline load calculation result."""
 
@@ -208,7 +193,6 @@ class BaselineResult(BaseModel):
     days_used: int = Field(default=0, ge=0, description="Number of reference days used")
     confidence_pct: Decimal = Field(default=Decimal("0"), ge=0, le=100)
 
-
 class PerformanceMeasurement(BaseModel):
     """Performance measurement for a single event interval."""
 
@@ -218,7 +202,6 @@ class PerformanceMeasurement(BaseModel):
     curtailment_kw: Decimal = Field(default=Decimal("0"), ge=0)
     committed_kw: Decimal = Field(default=Decimal("0"), ge=0)
     performance_pct: Decimal = Field(default=Decimal("0"), ge=0)
-
 
 class SettlementInput(BaseModel):
     """Input data model for SettlementWorkflow."""
@@ -255,7 +238,6 @@ class SettlementInput(BaseModel):
             raise ValueError("event_start_utc must not be blank")
         return stripped
 
-
 class SettlementResult(BaseModel):
     """Complete result from settlement workflow."""
 
@@ -275,11 +257,9 @@ class SettlementResult(BaseModel):
     calculated_at: str = Field(default="", description="ISO 8601 timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 of complete result")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class SettlementWorkflow:
     """
@@ -339,7 +319,7 @@ class SettlementWorkflow:
             ValueError: If input validation fails.
         """
         t_start = time.perf_counter()
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting settlement workflow %s event=%s committed=%.0f kW",
             self.settlement_id, input_data.event_id,

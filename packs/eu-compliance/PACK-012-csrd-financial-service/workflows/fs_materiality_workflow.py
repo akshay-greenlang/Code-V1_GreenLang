@@ -27,20 +27,15 @@ from typing import Any, Callable, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC time with timezone info."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute SHA-256 provenance hash of arbitrary data."""
     return hashlib.sha256(
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
-
 
 class PhaseStatus(str, Enum):
     PENDING = "PENDING"
@@ -49,7 +44,6 @@ class PhaseStatus(str, Enum):
     FAILED = "FAILED"
     SKIPPED = "SKIPPED"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "PENDING"
     RUNNING = "RUNNING"
@@ -57,11 +51,10 @@ class WorkflowStatus(str, Enum):
     FAILED = "FAILED"
     PARTIAL = "PARTIAL"
 
-
 class WorkflowContext(BaseModel):
     workflow_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     organization_id: str = Field(..., description="Organization identifier")
-    execution_timestamp: datetime = Field(default_factory=_utcnow)
+    execution_timestamp: datetime = Field(default_factory=utcnow)
     config: Dict[str, Any] = Field(default_factory=dict)
     phase_states: Dict[str, PhaseStatus] = Field(default_factory=dict)
     phase_outputs: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
@@ -80,7 +73,6 @@ class WorkflowContext(BaseModel):
     def is_phase_completed(self, phase_name: str) -> bool:
         return self.phase_states.get(phase_name) == PhaseStatus.COMPLETED
 
-
 class PhaseResult(BaseModel):
     phase_name: str = Field(..., description="Phase identifier")
     status: PhaseStatus = Field(..., description="Phase completion status")
@@ -93,7 +85,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     records_processed: int = Field(default=0)
 
-
 class WorkflowResult(BaseModel):
     workflow_id: str = Field(..., description="Unique workflow execution ID")
     workflow_name: str = Field(..., description="Workflow type identifier")
@@ -104,8 +95,6 @@ class WorkflowResult(BaseModel):
     phases: List[PhaseResult] = Field(default_factory=list)
     summary: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
-
-
 
 # ---------------------------------------------------------------------------
 #  Input / Result Models
@@ -119,7 +108,6 @@ class StakeholderGroup(BaseModel):
     relevance_score: float = Field(default=5.0, ge=0.0, le=10.0)
     topics_raised: List[str] = Field(default_factory=list)
 
-
 class MaterialityTopic(BaseModel):
     """A sustainability topic to assess for materiality."""
     topic_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -129,7 +117,6 @@ class MaterialityTopic(BaseModel):
     impact_score: Optional[float] = Field(None, ge=0.0, le=10.0)
     financial_score: Optional[float] = Field(None, ge=0.0, le=10.0)
     stakeholder_priority: float = Field(default=5.0, ge=0.0, le=10.0)
-
 
 class FSMaterialityInput(BaseModel):
     """Input for the FS materiality workflow."""
@@ -149,7 +136,6 @@ class FSMaterialityInput(BaseModel):
         int(v)
         return v
 
-
 class FSMaterialityResult(WorkflowResult):
     """Result from the FS materiality workflow."""
     material_topics_count: int = Field(default=0)
@@ -159,7 +145,6 @@ class FSMaterialityResult(WorkflowResult):
     fi_specific_material_count: int = Field(default=0)
     stakeholder_groups_engaged: int = Field(default=0)
     topics_assessed: int = Field(default=0)
-
 
 # ---------------------------------------------------------------------------
 #  Phases
@@ -180,7 +165,7 @@ class StakeholderEngagementPhase:
     ]
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -205,7 +190,7 @@ class StakeholderEngagementPhase:
             logger.error("StakeholderEngagement failed: %s", exc, exc_info=True)
             errors.append(f"Stakeholder engagement failed: {str(exc)}")
             status = PhaseStatus.FAILED
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -213,7 +198,6 @@ class StakeholderEngagementPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 class ImpactAssessmentPhase:
     """Assess impact materiality for FI-specific sustainability topics."""
@@ -235,7 +219,7 @@ class ImpactAssessmentPhase:
     ]
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -265,7 +249,7 @@ class ImpactAssessmentPhase:
             logger.error("ImpactAssessment failed: %s", exc, exc_info=True)
             errors.append(f"Impact assessment failed: {str(exc)}")
             status = PhaseStatus.FAILED
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -274,13 +258,12 @@ class ImpactAssessmentPhase:
             provenance_hash=_hash_data(outputs),
         )
 
-
 class FinancialAssessmentPhase:
     """Assess financial materiality (risks and opportunities) for FI topics."""
     PHASE_NAME = "financial_assessment"
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -313,7 +296,7 @@ class FinancialAssessmentPhase:
             logger.error("FinancialAssessment failed: %s", exc, exc_info=True)
             errors.append(f"Financial assessment failed: {str(exc)}")
             status = PhaseStatus.FAILED
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -322,13 +305,12 @@ class FinancialAssessmentPhase:
             provenance_hash=_hash_data(outputs),
         )
 
-
 class MatrixGenerationPhase:
     """Generate double materiality matrix with material/non-material classification."""
     PHASE_NAME = "matrix_generation"
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -388,7 +370,7 @@ class MatrixGenerationPhase:
             logger.error("MatrixGeneration failed: %s", exc, exc_info=True)
             errors.append(f"Matrix generation failed: {str(exc)}")
             status = PhaseStatus.FAILED
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -396,7 +378,6 @@ class MatrixGenerationPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 # ---------------------------------------------------------------------------
 #  Workflow Orchestrator
@@ -421,7 +402,7 @@ class FSMaterialityWorkflow:
 
     async def run(self, input_data: FSMaterialityInput) -> FSMaterialityResult:
         """Execute the workflow."""
-        started_at = _utcnow()
+        started_at = utcnow()
         logger.info("Starting %s workflow %s org=%s", self.WORKFLOW_NAME,
                      self.workflow_id, input_data.organization_id)
         context = WorkflowContext(
@@ -462,7 +443,7 @@ class FSMaterialityWorkflow:
                 logger.error("Phase '%s' raised: %s", phase_name, exc, exc_info=True)
                 completed_phases.append(PhaseResult(
                     phase_name=phase_name, status=PhaseStatus.FAILED,
-                    started_at=_utcnow(), errors=[str(exc)],
+                    started_at=utcnow(), errors=[str(exc)],
                     provenance_hash=_hash_data({"error": str(exc)}),
                 ))
                 context.mark_phase(phase_name, PhaseStatus.FAILED)
@@ -474,7 +455,7 @@ class FSMaterialityWorkflow:
                          for p in completed_phases)
             overall_status = WorkflowStatus.COMPLETED if all_ok else WorkflowStatus.PARTIAL
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         duration = (completed_at - started_at).total_seconds()
         summary = self._build_summary(context)
         provenance = _hash_data({
@@ -497,7 +478,6 @@ class FSMaterialityWorkflow:
                 self._progress_callback(phase, message, min(pct, 1.0))
             except Exception:
                 logger.debug("Progress callback failed for phase=%s", phase)
-
 
     def _build_summary(self, context: WorkflowContext) -> Dict[str, Any]:
         engagement = context.get_phase_output("stakeholder_engagement")

@@ -57,6 +57,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -69,22 +71,14 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a unique identifier using UUID4."""
     return str(uuid.uuid4())
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -192,11 +186,9 @@ VALID_VEHICLE_STATUSES: Tuple[str, ...] = (
     "active", "inactive", "maintenance", "decommissioned",
 )
 
-
 # ---------------------------------------------------------------------------
 # Internal Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class VehicleRecord:
@@ -256,7 +248,6 @@ class VehicleRecord:
             "metadata": dict(self.metadata),
             "created_at": str(self.created_at) if self.created_at else "",
         }
-
 
 @dataclass
 class TransportVerificationRecord:
@@ -321,7 +312,6 @@ class TransportVerificationRecord:
             "findings": list(self.findings),
         }
 
-
 @dataclass
 class CleaningRecord:
     """Record of a vehicle cleaning event.
@@ -371,11 +361,9 @@ class CleaningRecord:
             "findings": list(self.findings),
         }
 
-
 # ---------------------------------------------------------------------------
 # TransportSegregationTracker
 # ---------------------------------------------------------------------------
-
 
 class TransportSegregationTracker:
     """Production-grade transport segregation tracking engine for EUDR compliance.
@@ -516,7 +504,7 @@ class TransportSegregationTracker:
                 f"Vehicle '{vehicle_id}' already exists"
             )
 
-        now = _utcnow()
+        now = utcnow()
         vehicle = VehicleRecord(
             vehicle_id=vehicle_id,
             vehicle_type=vehicle_type,
@@ -701,7 +689,7 @@ class TransportSegregationTracker:
 
         composite = round(composite, 2)
 
-        now = _utcnow()
+        now = utcnow()
         verification = TransportVerificationRecord(
             verification_id=_generate_id(),
             vehicle_id=vehicle_id,
@@ -807,7 +795,7 @@ class TransportSegregationTracker:
         compliant = compliance_result["compliant"]
         findings = compliance_result.get("findings", [])
 
-        now = _utcnow()
+        now = utcnow()
         record = CleaningRecord(
             cleaning_id=_generate_id(),
             vehicle_id=vehicle_id,
@@ -1421,7 +1409,7 @@ class TransportSegregationTracker:
                 ],
             }
 
-        now = _utcnow()
+        now = utcnow()
         days_since = (now - vehicle.last_cleaning_date).days
 
         # Check if cleaning is recent enough (within 30 days)
@@ -1539,7 +1527,6 @@ class TransportSegregationTracker:
             f"vehicles={self.vehicle_count}, "
             f"dedicated_bonus={self._dedicated_bonus})"
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

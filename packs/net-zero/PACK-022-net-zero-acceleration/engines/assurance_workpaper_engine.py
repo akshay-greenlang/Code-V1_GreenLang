@@ -83,27 +83,21 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
 DEFAULT_MATERIALITY_PCT: Decimal = Decimal("5")  # 5% of total emissions
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -116,7 +110,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -126,7 +119,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
 ) -> Decimal:
@@ -134,7 +126,6 @@ def _safe_divide(
     if denominator == Decimal("0"):
         return default
     return numerator / denominator
-
 
 def _safe_pct(
     part: Decimal, whole: Decimal, places: int = 2
@@ -146,12 +137,10 @@ def _safe_pct(
         Decimal("0." + "0" * places), rounding=ROUND_HALF_UP
     )
 
-
 def _round_val(value: Decimal, places: int = 4) -> Decimal:
     """Round a Decimal value to the specified number of decimal places."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _chain_hash(previous_hash: str, data: Any) -> str:
     """Create a chained SHA-256 hash by combining previous hash with new data.
@@ -170,11 +159,9 @@ def _chain_hash(previous_hash: str, data: Any) -> str:
     combined = f"{previous_hash}:{data_hash}"
     return hashlib.sha256(combined.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class WorkpaperSection(str, Enum):
     """Workpaper section identifiers per ISAE 3410 structure."""
@@ -187,19 +174,16 @@ class WorkpaperSection(str, Enum):
     COMPLETENESS_MATRIX = "completeness_matrix"
     CHANGE_REGISTER = "change_register"
 
-
 class AssuranceLevel(str, Enum):
     """Assurance engagement level."""
     LIMITED = "limited"
     REASONABLE = "reasonable"
-
 
 class MaterialityBasis(str, Enum):
     """Basis for materiality threshold calculation."""
     TOTAL_EMISSIONS = "total_emissions"
     SCOPE_LEVEL = "scope_level"
     SOURCE_LEVEL = "source_level"
-
 
 class DataSourceType(str, Enum):
     """Type of data source for an emission calculation."""
@@ -210,7 +194,6 @@ class DataSourceType(str, Enum):
     DEFAULT_FACTOR = "default_factor"
     SUPPLIER_PROVIDED = "supplier_provided"
 
-
 class ExceptionSeverity(str, Enum):
     """Severity of an exception finding."""
     LOW = "low"
@@ -218,14 +201,12 @@ class ExceptionSeverity(str, Enum):
     HIGH = "high"
     CRITICAL = "critical"
 
-
 class CrossCheckStatus(str, Enum):
     """Status of a cross-check routine."""
     PASSED = "passed"
     WARNING = "warning"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class CalculationMethod(str, Enum):
     """GHG calculation method per GHG Protocol."""
@@ -238,11 +219,9 @@ class CalculationMethod(str, Enum):
     SUPPLIER_SPECIFIC = "supplier_specific"
     HYBRID = "hybrid"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class EngagementSummary(BaseModel):
     """Section 1: Engagement summary."""
@@ -274,7 +253,7 @@ class EngagementSummary(BaseModel):
     engagement_team: List[str] = Field(
         default_factory=list, description="Engagement team members"
     )
-    engagement_date: datetime = Field(default_factory=_utcnow, description="Engagement date")
+    engagement_date: datetime = Field(default_factory=utcnow, description="Engagement date")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("materiality_threshold", "materiality_pct",
@@ -282,7 +261,6 @@ class EngagementSummary(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class MethodologyEntry(BaseModel):
     """Section 2: Methodology documentation for one emission source."""
@@ -316,7 +294,6 @@ class MethodologyEntry(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class CalculationStep(BaseModel):
     """A single step in a calculation trace."""
     step_number: int = Field(description="Step number (1-based)")
@@ -334,7 +311,6 @@ class CalculationStep(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class CalculationTrace(BaseModel):
     """Section 3: Complete calculation trace for one emission source."""
     trace_id: str = Field(default_factory=_new_uuid, description="Trace identifier")
@@ -349,7 +325,6 @@ class CalculationTrace(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class DataLineageEntry(BaseModel):
     """Section 4: Data lineage for one data point."""
@@ -373,7 +348,6 @@ class DataLineageEntry(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class ControlEvidence(BaseModel):
     """Section 5: Control evidence for one check."""
@@ -400,7 +374,6 @@ class ControlEvidence(BaseModel):
             return None
         return _decimal(v)
 
-
 class ExceptionEntry(BaseModel):
     """Section 6: Exception register entry."""
     exception_id: str = Field(default_factory=_new_uuid, description="Exception identifier")
@@ -420,7 +393,6 @@ class ExceptionEntry(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class CompletenessEntry(BaseModel):
     """Section 7: Completeness matrix entry for one source."""
     source_name: str = Field(description="Emission source name")
@@ -437,7 +409,6 @@ class CompletenessEntry(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class ChangeEntry(BaseModel):
     """Section 8: Change register entry."""
@@ -457,7 +428,6 @@ class ChangeEntry(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class CrossCheckResult(BaseModel):
     """Result of a cross-check routine."""
@@ -480,7 +450,6 @@ class CrossCheckResult(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class AssuranceResult(BaseModel):
     """Complete assurance workpaper result."""
@@ -527,7 +496,7 @@ class AssuranceResult(BaseModel):
     workpaper_sections_count: int = Field(
         default=8, description="Number of workpaper sections"
     )
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Calculation timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Calculation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("materiality_threshold", "overall_completeness_pct", mode="before")
@@ -535,11 +504,9 @@ class AssuranceResult(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 # ---------------------------------------------------------------------------
 # Engine Configuration
 # ---------------------------------------------------------------------------
-
 
 class AssuranceWorkpaperConfig(BaseModel):
     """Configuration for the AssuranceWorkpaperEngine."""
@@ -567,7 +534,6 @@ class AssuranceWorkpaperConfig(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic model_rebuild
 # ---------------------------------------------------------------------------
@@ -585,11 +551,9 @@ CrossCheckResult.model_rebuild()
 AssuranceResult.model_rebuild()
 AssuranceWorkpaperConfig.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # AssuranceWorkpaperEngine
 # ---------------------------------------------------------------------------
-
 
 class AssuranceWorkpaperEngine:
     """

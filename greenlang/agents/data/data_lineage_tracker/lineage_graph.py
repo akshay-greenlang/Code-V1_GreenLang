@@ -75,6 +75,7 @@ from greenlang.agents.data.data_lineage_tracker.metrics import (
     set_graph_node_count,
 )
 from greenlang.agents.data.data_lineage_tracker.provenance import ProvenanceTracker
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -84,21 +85,13 @@ logger = logging.getLogger(__name__)
 
 VALID_EDGE_TYPES: FrozenSet[str] = frozenset({"dataset_level", "column_level"})
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc)
-
-
 def _utcnow_iso() -> str:
     """Return current UTC datetime as ISO-8601 string."""
-    return _utcnow().replace(microsecond=0).isoformat()
-
+    return utcnow().replace(microsecond=0).isoformat()
 
 def _hash_dict(data: Dict[str, Any]) -> str:
     """Compute a deterministic SHA-256 hash for a dictionary.
@@ -112,11 +105,9 @@ def _hash_dict(data: Dict[str, Any]) -> str:
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # LineageGraphEngine
 # ---------------------------------------------------------------------------
-
 
 class LineageGraphEngine:
     """Builds and maintains the data lineage directed graph (DAG).
@@ -1774,7 +1765,6 @@ class LineageGraphEngine:
                 f"nodes={len(self._nodes)}, "
                 f"edges={len(self._edges)})"
             )
-
 
 # ---------------------------------------------------------------------------
 # Public API

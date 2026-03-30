@@ -34,7 +34,6 @@ import threading
 import time
 from dataclasses import dataclass, asdict
 from datetime import datetime, timedelta
-from enum import Enum
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Callable, Tuple, Union
 from uuid import uuid4
@@ -74,16 +73,9 @@ except ImportError:
             pass
 
 from .metrics import get_metrics
+from greenlang.schemas.enums import HealthStatus
 
 logger = logging.getLogger(__name__)
-
-
-class HealthStatus(Enum):
-    """Health check status levels"""
-    HEALTHY = "healthy"
-    DEGRADED = "degraded"
-    UNHEALTHY = "unhealthy"
-    UNKNOWN = "unknown"
 
 
 @dataclass

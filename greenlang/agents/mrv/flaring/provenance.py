@@ -73,18 +73,13 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # ProvenanceEntry dataclass
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class ProvenanceEntry:
@@ -144,7 +139,6 @@ class ProvenanceEntry:
         if self.metadata:
             result["metadata"] = self.metadata
         return result
-
 
 # ---------------------------------------------------------------------------
 # Valid entity types and actions
@@ -209,11 +203,9 @@ VALID_STEP_NAMES = frozenset({
     "provenance_generation",
 })
 
-
 # ---------------------------------------------------------------------------
 # ProvenanceChain
 # ---------------------------------------------------------------------------
-
 
 class ProvenanceChain:
     """Manages a chain of ProvenanceEntry objects with SHA-256 chain hashing.
@@ -300,7 +292,7 @@ class ProvenanceChain:
         if not entity_id:
             raise ValueError("entity_id must not be empty")
 
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
         data_hash = self._hash_data(data)
 
         entry_metadata: Dict[str, Any] = {"data_hash": data_hash}
@@ -596,11 +588,9 @@ class ProvenanceChain:
         """
         return self._hash_data(data)
 
-
 # ---------------------------------------------------------------------------
 # ProvenanceTracker (backward-compatible facade wrapping ProvenanceChain)
 # ---------------------------------------------------------------------------
-
 
 class ProvenanceTracker:
     """Tracks provenance for flaring operations with SHA-256 chain hashing.
@@ -832,14 +822,12 @@ class ProvenanceTracker:
             f"genesis_prefix={self.genesis_hash[:12]})"
         )
 
-
 # ---------------------------------------------------------------------------
 # Thread-safe singleton helpers
 # ---------------------------------------------------------------------------
 
 _singleton_lock = threading.Lock()
 _singleton_tracker: Optional[ProvenanceTracker] = None
-
 
 def get_provenance_tracker() -> ProvenanceTracker:
     """Return the process-wide singleton ProvenanceTracker.
@@ -865,7 +853,6 @@ def get_provenance_tracker() -> ProvenanceTracker:
                 )
     return _singleton_tracker
 
-
 def set_provenance_tracker(tracker: ProvenanceTracker) -> None:
     """Replace the process-wide singleton with a custom tracker.
 
@@ -887,7 +874,6 @@ def set_provenance_tracker(tracker: ProvenanceTracker) -> None:
         _singleton_tracker = tracker
     logger.info("Flaring ProvenanceTracker singleton replaced")
 
-
 def reset_provenance_tracker() -> None:
     """Destroy the current singleton and reset to None.
 
@@ -904,7 +890,6 @@ def reset_provenance_tracker() -> None:
     logger.info(
         "Flaring ProvenanceTracker singleton reset to None"
     )
-
 
 # ---------------------------------------------------------------------------
 # Public API

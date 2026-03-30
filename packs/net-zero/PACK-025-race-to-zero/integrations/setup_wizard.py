@@ -46,18 +46,14 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -69,11 +65,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class RaceToZeroWizardStep(str, Enum):
     ORGANIZATION_PROFILE = "organization_profile"
@@ -85,14 +79,12 @@ class RaceToZeroWizardStep(str, Enum):
     CREDIBILITY_PREFERENCES = "credibility_preferences"
     PRESET_SELECTION = "preset_selection"
 
-
 class StepStatus(str, Enum):
     PENDING = "pending"
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class OrganizationType(str, Enum):
     BUSINESS = "business"
@@ -103,32 +95,27 @@ class OrganizationType(str, Enum):
     HEALTHCARE = "healthcare"
     FINANCIAL_INSTITUTION = "financial_institution"
 
-
 class OrganizationSize(str, Enum):
     SMALL = "small"
     MEDIUM = "medium"
     LARGE = "large"
     ENTERPRISE = "enterprise"
 
-
 class ConsolidationApproach(str, Enum):
     OPERATIONAL_CONTROL = "operational_control"
     FINANCIAL_CONTROL = "financial_control"
     EQUITY_SHARE = "equity_share"
-
 
 class Scope2Method(str, Enum):
     LOCATION_BASED = "location_based"
     MARKET_BASED = "market_based"
     DUAL = "dual"
 
-
 class AmbitionLevel(str, Enum):
     MINIMUM_COMPLIANCE = "minimum_compliance"
     ALIGNED = "aligned"
     AMBITIOUS = "ambitious"
     LEADING = "leading"
-
 
 # ---------------------------------------------------------------------------
 # Sector Presets
@@ -249,11 +236,9 @@ SECTOR_PRESETS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class OrganizationProfile(BaseModel):
     """Step 1: Organization profile."""
@@ -270,7 +255,6 @@ class OrganizationProfile(BaseModel):
     consolidation_approach: str = Field(default="operational_control")
     reporting_year: int = Field(default=2025, ge=2020, le=2035)
 
-
 class PartnerInitiativeSelection(BaseModel):
     """Step 2: Partner initiative selection."""
 
@@ -280,7 +264,6 @@ class PartnerInitiativeSelection(BaseModel):
     leadership_signoff: bool = Field(default=False)
     unfccc_portal_registered: bool = Field(default=False)
     unfccc_api_key: str = Field(default="")
-
 
 class BaselineConfiguration(BaseModel):
     """Step 3: Baseline emissions configuration."""
@@ -294,7 +277,6 @@ class BaselineConfiguration(BaseModel):
     current_scope3_tco2e: float = Field(default=0.0, ge=0.0)
     data_quality_assessed: bool = Field(default=False)
 
-
 class TargetSetting(BaseModel):
     """Step 4: Target setting configuration."""
 
@@ -307,7 +289,6 @@ class TargetSetting(BaseModel):
     sbti_committed: bool = Field(default=False)
     ambition_level: str = Field(default="aligned")
 
-
 class ScopeConfiguration(BaseModel):
     """Step 5: Scope configuration."""
 
@@ -318,7 +299,6 @@ class ScopeConfiguration(BaseModel):
     scope3_categories_included: List[int] = Field(default_factory=list)
     scope3_exclusion_justification: str = Field(default="")
     materiality_threshold_pct: float = Field(default=5.0, ge=0.0, le=100.0)
-
 
 class DataSourceSetup(BaseModel):
     """Step 6: Data source configuration."""
@@ -332,7 +312,6 @@ class DataSourceSetup(BaseModel):
     unfccc_connected: bool = Field(default=False)
     supplier_engagement_platform: str = Field(default="")
 
-
 class CredibilityPreferences(BaseModel):
     """Step 7: Credibility criteria preferences."""
 
@@ -344,14 +323,12 @@ class CredibilityPreferences(BaseModel):
     public_disclosure_committed: bool = Field(default=True)
     verification_planned: bool = Field(default=True)
 
-
 class PresetSelection(BaseModel):
     """Step 8: Preset selection."""
 
     preset_name: str = Field(default="")
     preset_applied: bool = Field(default=False)
     customizations: Dict[str, Any] = Field(default_factory=dict)
-
 
 class WizardStepState(BaseModel):
     """State of a single wizard step."""
@@ -364,7 +341,6 @@ class WizardStepState(BaseModel):
     errors: List[str] = Field(default_factory=list)
     warnings: List[str] = Field(default_factory=list)
 
-
 class WizardState(BaseModel):
     """Complete wizard state across all steps."""
 
@@ -372,10 +348,9 @@ class WizardState(BaseModel):
     pack_id: str = Field(default="PACK-025")
     current_step: RaceToZeroWizardStep = Field(default=RaceToZeroWizardStep.ORGANIZATION_PROFILE)
     steps: Dict[str, WizardStepState] = Field(default_factory=dict)
-    started_at: datetime = Field(default_factory=_utcnow)
+    started_at: datetime = Field(default_factory=utcnow)
     completed_at: Optional[datetime] = Field(None)
     overall_progress_pct: float = Field(default=0.0, ge=0.0, le=100.0)
-
 
 class SetupResult(BaseModel):
     """Final wizard setup result."""
@@ -393,11 +368,9 @@ class SetupResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # RaceToZeroSetupWizard
 # ---------------------------------------------------------------------------
-
 
 class RaceToZeroSetupWizard:
     """8-step guided configuration wizard for PACK-025 Race to Zero.
@@ -463,7 +436,7 @@ class RaceToZeroSetupWizard:
         step = RaceToZeroWizardStep.ORGANIZATION_PROFILE
         state = self._state.steps[step.value]
         state.status = StepStatus.IN_PROGRESS
-        state.started_at = _utcnow()
+        state.started_at = utcnow()
         state.data = profile.model_dump()
 
         warnings = []
@@ -475,7 +448,7 @@ class RaceToZeroSetupWizard:
         state.warnings = warnings
         if not state.errors:
             state.status = StepStatus.COMPLETED
-            state.completed_at = _utcnow()
+            state.completed_at = utcnow()
 
         self._update_progress()
         return state
@@ -492,7 +465,7 @@ class RaceToZeroSetupWizard:
         step = RaceToZeroWizardStep.PARTNER_INITIATIVE
         state = self._state.steps[step.value]
         state.status = StepStatus.IN_PROGRESS
-        state.started_at = _utcnow()
+        state.started_at = utcnow()
         state.data = selection.model_dump()
 
         if not selection.partner_initiative:
@@ -504,7 +477,7 @@ class RaceToZeroSetupWizard:
 
         if not state.errors:
             state.status = StepStatus.COMPLETED
-            state.completed_at = _utcnow()
+            state.completed_at = utcnow()
 
         self._update_progress()
         return state
@@ -521,7 +494,7 @@ class RaceToZeroSetupWizard:
         step = RaceToZeroWizardStep.BASELINE_CONFIGURATION
         state = self._state.steps[step.value]
         state.status = StepStatus.IN_PROGRESS
-        state.started_at = _utcnow()
+        state.started_at = utcnow()
         state.data = config.model_dump()
 
         if config.base_year < 2015:
@@ -534,7 +507,7 @@ class RaceToZeroSetupWizard:
 
         if not state.errors:
             state.status = StepStatus.COMPLETED
-            state.completed_at = _utcnow()
+            state.completed_at = utcnow()
 
         self._update_progress()
         return state
@@ -551,7 +524,7 @@ class RaceToZeroSetupWizard:
         step = RaceToZeroWizardStep.TARGET_SETTING
         state = self._state.steps[step.value]
         state.status = StepStatus.IN_PROGRESS
-        state.started_at = _utcnow()
+        state.started_at = utcnow()
         state.data = targets.model_dump()
 
         if targets.near_term_reduction_pct < 50.0:
@@ -567,7 +540,7 @@ class RaceToZeroSetupWizard:
 
         if not state.errors:
             state.status = StepStatus.COMPLETED
-            state.completed_at = _utcnow()
+            state.completed_at = utcnow()
 
         self._update_progress()
         return state
@@ -584,7 +557,7 @@ class RaceToZeroSetupWizard:
         step = RaceToZeroWizardStep.SCOPE_CONFIGURATION
         state = self._state.steps[step.value]
         state.status = StepStatus.IN_PROGRESS
-        state.started_at = _utcnow()
+        state.started_at = utcnow()
         state.data = config.model_dump()
 
         if not config.include_scope1 or not config.include_scope2:
@@ -596,7 +569,7 @@ class RaceToZeroSetupWizard:
 
         if not state.errors:
             state.status = StepStatus.COMPLETED
-            state.completed_at = _utcnow()
+            state.completed_at = utcnow()
 
         self._update_progress()
         return state
@@ -613,7 +586,7 @@ class RaceToZeroSetupWizard:
         step = RaceToZeroWizardStep.DATA_SOURCE_SETUP
         state = self._state.steps[step.value]
         state.status = StepStatus.IN_PROGRESS
-        state.started_at = _utcnow()
+        state.started_at = utcnow()
         state.data = setup.model_dump()
 
         if not setup.file_formats and not setup.erp_connected:
@@ -622,7 +595,7 @@ class RaceToZeroSetupWizard:
             state.warnings.append("UNFCCC portal connection recommended for automated reporting")
 
         state.status = StepStatus.COMPLETED
-        state.completed_at = _utcnow()
+        state.completed_at = utcnow()
         self._update_progress()
         return state
 
@@ -638,7 +611,7 @@ class RaceToZeroSetupWizard:
         step = RaceToZeroWizardStep.CREDIBILITY_PREFERENCES
         state = self._state.steps[step.value]
         state.status = StepStatus.IN_PROGRESS
-        state.started_at = _utcnow()
+        state.started_at = utcnow()
         state.data = prefs.model_dump()
 
         if not prefs.no_fossil_expansion_committed:
@@ -649,7 +622,7 @@ class RaceToZeroSetupWizard:
             state.warnings.append("Just transition policy recommended for R2Z credibility")
 
         state.status = StepStatus.COMPLETED
-        state.completed_at = _utcnow()
+        state.completed_at = utcnow()
         self._update_progress()
         return state
 
@@ -665,7 +638,7 @@ class RaceToZeroSetupWizard:
         step = RaceToZeroWizardStep.PRESET_SELECTION
         state = self._state.steps[step.value]
         state.status = StepStatus.IN_PROGRESS
-        state.started_at = _utcnow()
+        state.started_at = utcnow()
 
         preset = SECTOR_PRESETS.get(preset_name)
         if not preset:
@@ -675,7 +648,7 @@ class RaceToZeroSetupWizard:
 
         state.data = {"preset_name": preset_name, "preset": preset, "applied": True}
         state.status = StepStatus.COMPLETED
-        state.completed_at = _utcnow()
+        state.completed_at = utcnow()
         self._update_progress()
         return state
 
@@ -750,7 +723,7 @@ class RaceToZeroSetupWizard:
         if True:  # enable_provenance
             result.provenance_hash = _compute_hash(result)
 
-        self._state.completed_at = _utcnow()
+        self._state.completed_at = utcnow()
         return result
 
     def _update_progress(self) -> None:

@@ -43,8 +43,9 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, List, Optional, Any
 from datetime import datetime
 from enum import Enum
-from pydantic import BaseModel, Field, validator
-from pydantic import ConfigDict
+from pydantic import Field, validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
+
 import hashlib
 import json
 
@@ -966,7 +967,7 @@ COUNTRY_CLIMATE_ZONES: Dict[str, str] = {
 # ==============================================================================
 
 
-class CookingEnergyInput(BaseModel):
+class CookingEnergyInput(GreenLangBase):
     """
     Restaurant-specific cooking energy data for franchise-specific calculations.
 
@@ -1012,7 +1013,7 @@ class CookingEnergyInput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class RefrigerationInput(BaseModel):
+class RefrigerationInput(GreenLangBase):
     """
     Refrigerant system data for a franchise unit.
 
@@ -1059,7 +1060,7 @@ class RefrigerationInput(BaseModel):
         return v.strip().lower().replace(" ", "_")
 
 
-class DeliveryFleetInput(BaseModel):
+class DeliveryFleetInput(GreenLangBase):
     """
     Delivery / service vehicle fleet data for a franchise unit.
 
@@ -1103,7 +1104,7 @@ class DeliveryFleetInput(BaseModel):
         return v.strip().lower().replace(" ", "_")
 
 
-class HotelOperationsInput(BaseModel):
+class HotelOperationsInput(GreenLangBase):
     """
     Hotel-specific operational data for hotel franchise units.
 
@@ -1164,7 +1165,7 @@ class HotelOperationsInput(BaseModel):
         return v_lower
 
 
-class FranchiseUnitInput(BaseModel):
+class FranchiseUnitInput(GreenLangBase):
     """
     Unit-level input for a single franchise location.
 
@@ -1322,7 +1323,7 @@ class FranchiseUnitInput(BaseModel):
         return v
 
 
-class FranchiseNetworkInput(BaseModel):
+class FranchiseNetworkInput(GreenLangBase):
     """
     Network-level input for an entire franchise brand/system.
 
@@ -1385,7 +1386,7 @@ class FranchiseNetworkInput(BaseModel):
 # ==============================================================================
 
 
-class DataQualityScore(BaseModel):
+class DataQualityScore(GreenLangBase):
     """
     Data quality assessment result across 5 DQI dimensions.
 
@@ -1423,7 +1424,7 @@ class DataQualityScore(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class UncertaintyResult(BaseModel):
+class UncertaintyResult(GreenLangBase):
     """Result from uncertainty quantification for an emissions estimate."""
 
     method: UncertaintyMethod = Field(
@@ -1453,7 +1454,7 @@ class UncertaintyResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class FranchiseCalculationResult(BaseModel):
+class FranchiseCalculationResult(GreenLangBase):
     """
     Emissions calculation result for a single franchise unit.
 
@@ -1544,7 +1545,7 @@ class FranchiseCalculationResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class DataCoverageReport(BaseModel):
+class DataCoverageReport(GreenLangBase):
     """
     Summary of data collection methods across the franchise network.
 
@@ -1590,7 +1591,7 @@ class DataCoverageReport(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class NetworkAggregationResult(BaseModel):
+class NetworkAggregationResult(GreenLangBase):
     """
     Network-level aggregated emissions for all franchise units.
     """
@@ -1632,7 +1633,7 @@ class NetworkAggregationResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class ComplianceResult(BaseModel):
+class ComplianceResult(GreenLangBase):
     """Compliance check result for a single framework."""
 
     framework: ComplianceFramework = Field(
@@ -1665,7 +1666,7 @@ class ComplianceResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class ProvenanceRecord(BaseModel):
+class ProvenanceRecord(GreenLangBase):
     """Single record in the SHA-256 provenance chain."""
 
     record_id: str = Field(
@@ -1697,7 +1698,7 @@ class ProvenanceRecord(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class AggregationResult(BaseModel):
+class AggregationResult(GreenLangBase):
     """
     Multi-dimensional aggregation of franchise emissions for reporting.
     """

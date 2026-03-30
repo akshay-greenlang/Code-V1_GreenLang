@@ -38,6 +38,7 @@ Status: Production Ready
 
 import logging
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +66,7 @@ except ImportError:
 
 if FASTAPI_AVAILABLE:
 
-    class ProfileDatasetBody(BaseModel):
+    class ProfileDatasetBody(GreenLangBase):
         """Request body for profiling a dataset."""
         data: List[Dict[str, Any]] = Field(
             ..., description="List of row dicts representing the dataset",
@@ -82,13 +83,13 @@ if FASTAPI_AVAILABLE:
             description="Data source identifier",
         )
 
-    class ProfileBatchBody(BaseModel):
+    class ProfileBatchBody(GreenLangBase):
         """Request body for batch profiling datasets."""
         datasets: List[Dict[str, Any]] = Field(
             ..., description="List of dicts with data, dataset_name, columns, source",
         )
 
-    class AssessQualityBody(BaseModel):
+    class AssessQualityBody(GreenLangBase):
         """Request body for assessing dataset quality."""
         data: List[Dict[str, Any]] = Field(
             ..., description="List of row dicts representing the dataset",
@@ -102,13 +103,13 @@ if FASTAPI_AVAILABLE:
             description="Dimensions to assess (completeness, validity, consistency, timeliness, uniqueness, accuracy)",
         )
 
-    class AssessBatchBody(BaseModel):
+    class AssessBatchBody(GreenLangBase):
         """Request body for batch quality assessment."""
         datasets: List[Dict[str, Any]] = Field(
             ..., description="List of dicts with data, dataset_name, dimensions",
         )
 
-    class ValidateDatasetBody(BaseModel):
+    class ValidateDatasetBody(GreenLangBase):
         """Request body for validating a dataset."""
         data: List[Dict[str, Any]] = Field(
             ..., description="List of row dicts representing the dataset",
@@ -121,7 +122,7 @@ if FASTAPI_AVAILABLE:
             None, description="Optional list of rule IDs to evaluate (all active if omitted)",
         )
 
-    class DetectAnomaliesBody(BaseModel):
+    class DetectAnomaliesBody(GreenLangBase):
         """Request body for anomaly detection."""
         data: List[Dict[str, Any]] = Field(
             ..., description="List of row dicts representing the dataset",
@@ -138,7 +139,7 @@ if FASTAPI_AVAILABLE:
             description="Detection method (iqr, zscore, percentile)",
         )
 
-    class CheckFreshnessBody(BaseModel):
+    class CheckFreshnessBody(GreenLangBase):
         """Request body for checking dataset freshness."""
         dataset_name: str = Field(
             ..., description="Name of the dataset",
@@ -150,7 +151,7 @@ if FASTAPI_AVAILABLE:
             None, description="SLA threshold in hours (uses config default if omitted)",
         )
 
-    class CreateRuleBody(BaseModel):
+    class CreateRuleBody(GreenLangBase):
         """Request body for creating a quality rule."""
         name: str = Field(
             ..., description="Rule display name",
@@ -174,7 +175,7 @@ if FASTAPI_AVAILABLE:
             default=100, description="Rule priority (lower = higher priority)",
         )
 
-    class UpdateRuleBody(BaseModel):
+    class UpdateRuleBody(GreenLangBase):
         """Request body for updating a quality rule."""
         name: Optional[str] = Field(
             None, description="New rule name",
@@ -201,7 +202,7 @@ if FASTAPI_AVAILABLE:
             None, description="New active status",
         )
 
-    class EvaluateGateBody(BaseModel):
+    class EvaluateGateBody(GreenLangBase):
         """Request body for evaluating a quality gate."""
         conditions: List[Dict[str, Any]] = Field(
             ..., description="List of condition dicts with dimension, operator, threshold",
@@ -210,7 +211,7 @@ if FASTAPI_AVAILABLE:
             None, description="Dict of dimension name to score",
         )
 
-    class GenerateReportBody(BaseModel):
+    class GenerateReportBody(GreenLangBase):
         """Request body for generating a report."""
         dataset_name: Optional[str] = Field(
             None, description="Optional dataset name filter",

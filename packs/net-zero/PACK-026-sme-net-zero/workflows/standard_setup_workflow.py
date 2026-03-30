@@ -40,33 +40,26 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "26.0.0"
 _PACK_ID = "PACK-026"
 
-
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -75,14 +68,12 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class DataSourceType(str, Enum):
     ELECTRICITY_BILL = "electricity_bill"
@@ -95,13 +86,11 @@ class DataSourceType(str, Enum):
     WATER_BILL = "water_bill"
     MANUAL_ENTRY = "manual_entry"
 
-
 class DataQualityLevel(str, Enum):
     MEASURED = "measured"
     CALCULATED = "calculated"
     ESTIMATED = "estimated"
     DEFAULT = "default"
-
 
 class MACCActionType(str, Enum):
     NEGATIVE_COST = "negative_cost"      # Saves money
@@ -109,13 +98,11 @@ class MACCActionType(str, Enum):
     MEDIUM_COST = "medium_cost"          # 100-500 GBP/tCO2e
     HIGH_COST = "high_cost"              # >500 GBP/tCO2e
 
-
 class GrantStatus(str, Enum):
     OPEN = "open"
     CLOSING_SOON = "closing_soon"
     CLOSED = "closed"
     UPCOMING = "upcoming"
-
 
 # =============================================================================
 # EMISSION FACTOR CONSTANTS
@@ -260,11 +247,9 @@ SME_GRANT_DATABASE: List[Dict[str, Any]] = [
     },
 ]
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -280,7 +265,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     mobile_summary: str = Field(default="")
 
-
 class EnergyBillRecord(BaseModel):
     """Parsed energy bill record."""
 
@@ -295,7 +279,6 @@ class EnergyBillRecord(BaseModel):
     data_quality: str = Field(default="measured")
     site_id: str = Field(default="main")
 
-
 class FuelRecord(BaseModel):
     """Fuel consumption record."""
 
@@ -304,7 +287,6 @@ class FuelRecord(BaseModel):
     cost_gbp: float = Field(default=0.0, ge=0.0)
     vehicle_type: str = Field(default="car")
     data_quality: str = Field(default="measured")
-
 
 class TravelRecord(BaseModel):
     """Business travel record."""
@@ -315,7 +297,6 @@ class TravelRecord(BaseModel):
     trips: int = Field(default=1, ge=1)
     data_quality: str = Field(default="estimated")
 
-
 class ProcurementCategory(BaseModel):
     """Procurement spend by category."""
 
@@ -324,7 +305,6 @@ class ProcurementCategory(BaseModel):
     annual_spend_gbp: float = Field(default=0.0, ge=0.0)
     supplier_ef_kgco2e_per_gbp: Optional[float] = Field(None, ge=0.0)
     data_quality: str = Field(default="estimated")
-
 
 class StandardSetupConfig(BaseModel):
     """Configuration for standard setup workflow."""
@@ -337,7 +317,6 @@ class StandardSetupConfig(BaseModel):
     currency: str = Field(default="GBP")
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
-
 
 class StandardSetupInput(BaseModel):
     """Complete input for standard setup workflow."""
@@ -356,7 +335,6 @@ class StandardSetupInput(BaseModel):
     procurement: List[ProcurementCategory] = Field(default_factory=list)
     annual_waste_spend_gbp: float = Field(default=0.0, ge=0.0)
     config: StandardSetupConfig = Field(default_factory=StandardSetupConfig)
-
 
 class SilverBaseline(BaseModel):
     """Silver-tier baseline result (+/-15% accuracy)."""
@@ -380,7 +358,6 @@ class SilverBaseline(BaseModel):
     total_electricity_kwh: float = Field(default=0.0, ge=0.0)
     total_gas_kwh: float = Field(default=0.0, ge=0.0)
 
-
 class ValidatedTarget(BaseModel):
     """Validated emission reduction target."""
 
@@ -394,7 +371,6 @@ class ValidatedTarget(BaseModel):
     pathway_points: List[Dict[str, Any]] = Field(default_factory=list)
     sbti_aligned: bool = Field(default=True)
     validation_notes: List[str] = Field(default_factory=list)
-
 
 class MACCAction(BaseModel):
     """Marginal Abatement Cost Curve action."""
@@ -414,7 +390,6 @@ class MACCAction(BaseModel):
     action_type: str = Field(default="low_cost")
     timeframe: str = Field(default="short_term")
 
-
 class GrantMatch(BaseModel):
     """Matched grant opportunity."""
 
@@ -427,7 +402,6 @@ class GrantMatch(BaseModel):
     relevance_score: float = Field(default=0.0, ge=0.0, le=1.0)
     eligible: bool = Field(default=True)
     status: str = Field(default="open")
-
 
 class StandardSetupResult(BaseModel):
     """Complete result from standard setup workflow."""
@@ -447,11 +421,9 @@ class StandardSetupResult(BaseModel):
     next_steps: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class StandardSetupWorkflow:
     """
@@ -498,7 +470,7 @@ class StandardSetupWorkflow:
 
     async def execute(self, input_data: StandardSetupInput) -> StandardSetupResult:
         """Execute the 6-phase standard setup workflow."""
-        started_at = _utcnow()
+        started_at = utcnow()
         self.config = input_data.config
         self.logger.info(
             "Starting standard setup workflow %s for %s",
@@ -542,7 +514,7 @@ class StandardSetupWorkflow:
                 mobile_summary="Setup failed. Please check your data.",
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
 
         total_abatement = sum(a.abatement_tco2e for a in self._actions)
         total_net_savings = sum(a.net_annual_gbp for a in self._actions)
@@ -576,7 +548,7 @@ class StandardSetupWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_organization_profile(self, inp: StandardSetupInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         errors: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -596,7 +568,7 @@ class StandardSetupWorkflow:
         outputs["country"] = inp.country
         outputs["sites"] = inp.num_sites
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         status = PhaseStatus.COMPLETED if not errors else PhaseStatus.FAILED
         return PhaseResult(
             phase_name="organization_profile", phase_number=1,
@@ -613,7 +585,7 @@ class StandardSetupWorkflow:
 
     async def _phase_data_collection(self, inp: StandardSetupInput) -> PhaseResult:
         """Validate and summarise collected data sources."""
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
 
@@ -660,7 +632,7 @@ class StandardSetupWorkflow:
                 "consider collecting actual bills for better accuracy"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="data_collection", phase_number=2,
             status=PhaseStatus.COMPLETED,
@@ -677,7 +649,7 @@ class StandardSetupWorkflow:
 
     async def _phase_silver_baseline(self, inp: StandardSetupInput) -> PhaseResult:
         """Calculate Silver-tier baseline from activity data."""
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         errors: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -776,7 +748,7 @@ class StandardSetupWorkflow:
         if total <= 0:
             errors.append("Total emissions are zero; verify input data")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         status = PhaseStatus.COMPLETED if not errors else PhaseStatus.FAILED
         self.logger.info(
             "Silver baseline: S1=%.1f S2=%.1f S3=%.1f Total=%.1f tCO2e (DQ %.1f/5)",
@@ -838,7 +810,7 @@ class StandardSetupWorkflow:
 
     async def _phase_target_validation(self, inp: StandardSetupInput) -> PhaseResult:
         """Validate and generate SBTi-aligned targets."""
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
 
@@ -890,7 +862,7 @@ class StandardSetupWorkflow:
         outputs["near_term_year"] = near_term_year
         outputs["annual_rate"] = annual_rate
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="target_validation", phase_number=4,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -906,7 +878,7 @@ class StandardSetupWorkflow:
 
     async def _phase_action_prioritization(self, inp: StandardSetupInput) -> PhaseResult:
         """Generate MACC-lite action prioritisation with top 10 actions."""
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
 
@@ -1015,7 +987,7 @@ class StandardSetupWorkflow:
             (total_abatement / max(baseline.total_tco2e, 0.01)) * 100, 2
         )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Action prioritisation: %d actions, %.1f tCO2e abatement (%.1f%% of baseline)",
             len(self._actions), total_abatement,
@@ -1052,7 +1024,7 @@ class StandardSetupWorkflow:
 
     async def _phase_grant_matching(self, inp: StandardSetupInput) -> PhaseResult:
         """Find matching grants based on sector, size, and location."""
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
 
@@ -1114,7 +1086,7 @@ class StandardSetupWorkflow:
         if not matches:
             warnings.append("No matching grants found for your profile; consider broadening search criteria")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Grant matching: %d grants found, total potential GBP %d", len(matches), total_potential)
         return PhaseResult(
             phase_name="grant_matching", phase_number=6,

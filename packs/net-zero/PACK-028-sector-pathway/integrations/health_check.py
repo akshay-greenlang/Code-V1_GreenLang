@@ -74,6 +74,8 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import HealthStatus
 
 logger = logging.getLogger(__name__)
 
@@ -81,14 +83,8 @@ _MODULE_VERSION: str = "1.0.0"
 
 PACK_BASE_DIR = Path(__file__).parent.parent
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -100,19 +96,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
-
-class HealthStatus(str, Enum):
-    """Health check result status."""
-    PASS = "PASS"
-    FAIL = "FAIL"
-    WARN = "WARN"
-    SKIP = "SKIP"
-
 
 class HealthSeverity(str, Enum):
     """Severity classification for health issues."""
@@ -121,7 +107,6 @@ class HealthSeverity(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     INFO = "info"
-
 
 class CheckCategory(str, Enum):
     """The 20 health check categories for Sector Pathway Pack."""
@@ -146,14 +131,12 @@ class CheckCategory(str, Enum):
     MIGRATIONS = "migrations"
     OVERALL = "overall"
 
-
 class DataFreshnessStatus(str, Enum):
     """Freshness status for reference data."""
     CURRENT = "current"
     STALE = "stale"
     EXPIRED = "expired"
     UNKNOWN = "unknown"
-
 
 QUICK_CHECK_CATEGORIES = {
     CheckCategory.ENGINES,
@@ -170,11 +153,9 @@ CRITICAL_CATEGORIES = {
     CheckCategory.IPCC_AR6_DATA,
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class RemediationSuggestion(BaseModel):
     """Remediation suggestion for a failed or warned health check."""
@@ -185,7 +166,6 @@ class RemediationSuggestion(BaseModel):
     documentation_link: str = Field(default="")
     estimated_fix_time_minutes: int = Field(default=30)
 
-
 class ComponentHealth(BaseModel):
     """Health status of a single component check."""
     check_name: str = Field(...)
@@ -195,8 +175,7 @@ class ComponentHealth(BaseModel):
     duration_ms: float = Field(default=0.0)
     details: Dict[str, Any] = Field(default_factory=dict)
     remediation: Optional[RemediationSuggestion] = Field(None)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class DataFreshnessCheck(BaseModel):
     """Freshness assessment for reference datasets."""
@@ -210,7 +189,6 @@ class DataFreshnessCheck(BaseModel):
     coverage_pct: float = Field(default=0.0)
     integrity_hash: str = Field(default="")
 
-
 class SectorCoverageCheck(BaseModel):
     """Sector coverage validation result."""
     sector_name: str = Field(...)
@@ -222,7 +200,6 @@ class SectorCoverageCheck(BaseModel):
     has_decarb_levers: bool = Field(default=False)
     has_benchmark_data: bool = Field(default=False)
     coverage_score: float = Field(default=0.0)
-
 
 class HealthCheckConfig(BaseModel):
     """Configuration for health check execution."""
@@ -238,7 +215,6 @@ class HealthCheckConfig(BaseModel):
     minimum_gwp_species: int = Field(default=20)
     minimum_iea_milestones: int = Field(default=50)
     minimum_sbti_criteria: int = Field(default=42)
-
 
 class HealthCheckResult(BaseModel):
     """Complete health check result for PACK-028."""
@@ -258,10 +234,9 @@ class HealthCheckResult(BaseModel):
     data_freshness: List[DataFreshnessCheck] = Field(default_factory=list)
     sector_coverage: List[SectorCoverageCheck] = Field(default_factory=list)
     total_duration_ms: float = Field(default=0.0)
-    executed_at: datetime = Field(default_factory=_utcnow)
+    executed_at: datetime = Field(default_factory=utcnow)
     quick_mode: bool = Field(default=False)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Component Lists - PACK-028 Sector Pathway Pack
@@ -367,11 +342,9 @@ SECTOR_INTENSITY_METRICS = {
     "cross_sector": {"metric": "tCO2e/revenue_mUSD", "source": "Derived"},
 }
 
-
 # ---------------------------------------------------------------------------
 # Freshness & Integrity Validation Helpers
 # ---------------------------------------------------------------------------
-
 
 def _check_sbti_sda_freshness() -> DataFreshnessCheck:
     """Validate SBTi SDA convergence pathway data freshness and completeness."""
@@ -426,7 +399,6 @@ def _check_sbti_sda_freshness() -> DataFreshnessCheck:
             coverage_pct=0.0,
         )
 
-
 def _check_iea_nze_freshness() -> DataFreshnessCheck:
     """Validate IEA NZE 2050 milestone data currency."""
     try:
@@ -474,7 +446,6 @@ def _check_iea_nze_freshness() -> DataFreshnessCheck:
             freshness_status=DataFreshnessStatus.UNKNOWN,
             coverage_pct=0.0,
         )
-
 
 def _check_ipcc_ar6_freshness() -> DataFreshnessCheck:
     """Validate IPCC AR6 GWP and emission factor data integrity."""
@@ -527,7 +498,6 @@ def _check_ipcc_ar6_freshness() -> DataFreshnessCheck:
             coverage_pct=0.0,
         )
 
-
 def _check_pack021_availability() -> DataFreshnessCheck:
     """Validate PACK-021 baseline integration availability."""
     try:
@@ -557,7 +527,6 @@ def _check_pack021_availability() -> DataFreshnessCheck:
             freshness_status=DataFreshnessStatus.UNKNOWN,
             coverage_pct=0.0,
         )
-
 
 def _check_decarb_data() -> DataFreshnessCheck:
     """Validate decarbonization lever registry data."""
@@ -592,7 +561,6 @@ def _check_decarb_data() -> DataFreshnessCheck:
             freshness_status=DataFreshnessStatus.UNKNOWN,
             coverage_pct=0.0,
         )
-
 
 def _check_sector_coverage() -> List[SectorCoverageCheck]:
     """Validate per-sector data coverage across all subsystems."""
@@ -663,11 +631,9 @@ def _check_sector_coverage() -> List[SectorCoverageCheck]:
 
     return coverage_results
 
-
 # ---------------------------------------------------------------------------
 # Convergence Calculator Validation
 # ---------------------------------------------------------------------------
-
 
 def _validate_convergence_calculator() -> List[ComponentHealth]:
     """Validate convergence calculation methods work correctly."""
@@ -832,11 +798,9 @@ def _validate_convergence_calculator() -> List[ComponentHealth]:
 
     return checks
 
-
 # ---------------------------------------------------------------------------
 # Scenario Modeling Validation
 # ---------------------------------------------------------------------------
-
 
 def _validate_scenario_modeling() -> List[ComponentHealth]:
     """Validate 5-scenario framework readiness."""
@@ -914,11 +878,9 @@ def _validate_scenario_modeling() -> List[ComponentHealth]:
 
     return checks
 
-
 # ---------------------------------------------------------------------------
 # Technology Database Validation
 # ---------------------------------------------------------------------------
-
 
 def _validate_technology_db() -> List[ComponentHealth]:
     """Validate technology milestone database completeness."""
@@ -1058,11 +1020,9 @@ def _validate_technology_db() -> List[ComponentHealth]:
 
     return checks
 
-
 # ---------------------------------------------------------------------------
 # Benchmark Data Validation
 # ---------------------------------------------------------------------------
-
 
 def _validate_benchmark_data() -> List[ComponentHealth]:
     """Validate sector benchmark datasets for peer comparison."""
@@ -1136,11 +1096,9 @@ def _validate_benchmark_data() -> List[ComponentHealth]:
 
     return checks
 
-
 # ---------------------------------------------------------------------------
 # SectorPathwayHealthCheck
 # ---------------------------------------------------------------------------
-
 
 class SectorPathwayHealthCheck:
     """20-category health check for Sector Pathway Pack (PACK-028).
@@ -2177,6 +2135,7 @@ class SectorPathwayHealthCheck:
 
         try:
             from .decarb_bridge import SECTOR_DECARB_LEVERS, SectorDecarbBridge
+
 
             sectors_with_levers = len(SECTOR_DECARB_LEVERS)
             total_levers = sum(len(v) for v in SECTOR_DECARB_LEVERS.values())

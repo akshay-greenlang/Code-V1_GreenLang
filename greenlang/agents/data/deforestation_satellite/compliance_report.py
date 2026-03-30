@@ -42,6 +42,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from greenlang.agents.data.deforestation_satellite.config import get_config
+from greenlang.schemas import utcnow
 from greenlang.agents.data.deforestation_satellite.models import (
     AlertAggregation,
     AlertSeverity,
@@ -52,7 +53,6 @@ from greenlang.agents.data.deforestation_satellite.models import (
 )
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -77,21 +77,13 @@ _RISK_SCORE_LEVELS = [
     (0.0, DeforestationRisk.LOW),
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # =============================================================================
 # ComplianceReportEngine
 # =============================================================================
-
 
 class ComplianceReportEngine:
     """Engine for generating EUDR compliance reports.
@@ -569,7 +561,6 @@ class ComplianceReportEngine:
             Integer count of reports.
         """
         return self._report_count
-
 
 __all__ = [
     "ComplianceReportEngine",

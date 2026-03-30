@@ -59,6 +59,7 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -105,20 +106,13 @@ try:
 except ImportError:
     ComplianceCheckerEngine = None  # type: ignore[assignment, misc]
 
-
 # ---------------------------------------------------------------------------
 # UTC helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _utcnow_iso() -> str:
     """Return current UTC datetime as an ISO-8601 string."""
-    return _utcnow().isoformat()
-
+    return utcnow().isoformat()
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -129,11 +123,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ===========================================================================
 # Pipeline Stages
 # ===========================================================================
-
 
 class PipelineStage(str, Enum):
     """Enumeration of the 8 pipeline stages."""
@@ -146,7 +138,6 @@ class PipelineStage(str, Enum):
     QUANTIFY_UNCERTAINTY = "QUANTIFY_UNCERTAINTY"
     CHECK_COMPLIANCE = "CHECK_COMPLIANCE"
     GENERATE_AUDIT = "GENERATE_AUDIT"
-
 
 # ===========================================================================
 # Built-in Reference Data (standalone mode)
@@ -230,11 +221,9 @@ SOURCE_TYPES: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ===========================================================================
 # FugitiveEmissionsPipelineEngine
 # ===========================================================================
-
 
 class FugitiveEmissionsPipelineEngine:
     """Eight-stage orchestration pipeline for fugitive emission calculations.

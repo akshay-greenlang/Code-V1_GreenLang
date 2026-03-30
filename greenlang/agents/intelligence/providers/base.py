@@ -19,16 +19,17 @@ All providers MUST implement async chat() with consistent signature.
 from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Any, Mapping, Optional
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import ConfigDict, Field
 
 from greenlang.agents.intelligence.schemas.messages import ChatMessage
 from greenlang.agents.intelligence.schemas.tools import ToolDef
 from greenlang.agents.intelligence.schemas.responses import ChatResponse, Usage
 from greenlang.agents.intelligence.runtime.budget import Budget, BudgetExceeded
 from greenlang.agents.intelligence.schemas.jsonschema import JSONSchema
+from greenlang.schemas import GreenLangBase
 
 
-class LLMCapabilities(BaseModel):
+class LLMCapabilities(GreenLangBase):
     """
     Provider capability metadata
 
@@ -83,7 +84,7 @@ class LLMCapabilities(BaseModel):
     )
 
 
-class LLMProviderConfig(BaseModel):
+class LLMProviderConfig(GreenLangBase):
     """
     Provider configuration
 

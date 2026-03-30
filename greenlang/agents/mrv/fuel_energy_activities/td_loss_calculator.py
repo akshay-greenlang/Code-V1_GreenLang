@@ -63,6 +63,7 @@ import time
 from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.mrv.fuel_energy_activities.models import (
     AccountingMethod,
@@ -147,7 +148,6 @@ Z_99: Decimal = Decimal("2.576")
 LOSS_BASIS_DELIVERED: str = "delivered"
 LOSS_BASIS_GENERATED: str = "generated"
 
-
 # ============================================================================
 # Embedded Data: Grid Generation Emission Factors (kgCO2e/kWh)
 # ============================================================================
@@ -193,7 +193,6 @@ GRID_GENERATION_EFS: Dict[str, Decimal] = {
     "AE": Decimal("0.4550"),
     "SA": Decimal("0.5240"),
 }
-
 
 # ---------------------------------------------------------------------------
 # Per-gas fractions for grid generation (CO2, CH4, N2O as fraction of total)
@@ -249,11 +248,9 @@ GRID_GAS_FRACTIONS: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ============================================================================
 # Helper functions
 # ============================================================================
-
 
 def _quantize(value: Decimal) -> Decimal:
     """Quantize a Decimal to 8 decimal places using ROUND_HALF_UP.
@@ -266,7 +263,6 @@ def _quantize(value: Decimal) -> Decimal:
     """
     return value.quantize(_QUANTIZE_8, rounding=ROUND_HALF_UP)
 
-
 def _sha256(data: str) -> str:
     """Compute SHA-256 hex digest of a string.
 
@@ -277,12 +273,6 @@ def _sha256(data: str) -> str:
         64-character lowercase hex digest.
     """
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _z_score(confidence_level: Decimal) -> Decimal:
     """Return the z-score for a given confidence level.
@@ -299,11 +289,9 @@ def _z_score(confidence_level: Decimal) -> Decimal:
         return Z_95
     return Z_90
 
-
 # ============================================================================
 # TDLossCalculatorEngine
 # ============================================================================
-
 
 class TDLossCalculatorEngine:
     """Engine 4: Transmission & Distribution Loss Calculator.
@@ -358,7 +346,7 @@ class TDLossCalculatorEngine:
         thread lock for concurrent access safety.
         """
         self._lock = threading.Lock()
-        self._created_at: datetime = _utcnow()
+        self._created_at: datetime = utcnow()
         self._stats: Dict[str, Any] = {
             "calculations": 0,
             "batch_calculations": 0,
@@ -2002,7 +1990,6 @@ class TDLossCalculatorEngine:
             confidence_level=confidence_level,
             method=UncertaintyMethod.MONTE_CARLO,
         )
-
 
 # ============================================================================
 # Module public surface

@@ -42,28 +42,22 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "30.0.0"
 _PACK_ID = "PACK-030"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -72,7 +66,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
@@ -80,12 +73,10 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class RAGStatus(str, Enum):
     RED = "red"
     AMBER = "amber"
     GREEN = "green"
-
 
 class GRIDisclosureType(str, Enum):
     GRI_305_1 = "305-1"
@@ -96,12 +87,10 @@ class GRIDisclosureType(str, Enum):
     GRI_305_6 = "305-6"
     GRI_305_7 = "305-7"
 
-
 class ConsolidationApproach(str, Enum):
     OPERATIONAL_CONTROL = "operational_control"
     FINANCIAL_CONTROL = "financial_control"
     EQUITY_SHARE = "equity_share"
-
 
 # =============================================================================
 # GRI 305 REFERENCE DATA (Zero-Hallucination: GRI 305:2016)
@@ -182,11 +171,9 @@ GRI_305_REQUIREMENTS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase_name: str = Field(...)
@@ -199,7 +186,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
     dag_node_id: str = Field(default="")
-
 
 class GRIDisclosure(BaseModel):
     """A single GRI 305 disclosure."""
@@ -216,7 +202,6 @@ class GRIDisclosure(BaseModel):
     assurance_statement: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 class GRIContentIndex(BaseModel):
     """GRI Content Index table."""
     index_id: str = Field(default="")
@@ -226,7 +211,6 @@ class GRIContentIndex(BaseModel):
     partially_reported: int = Field(default=0)
     not_reported: int = Field(default=0)
     provenance_hash: str = Field(default="")
-
 
 # -- Config / Input / Result --
 
@@ -255,14 +239,12 @@ class GRI305Config(BaseModel):
     reduction_initiatives_tco2e: float = Field(default=0.0, ge=0.0)
     output_formats: List[str] = Field(default_factory=lambda: ["pdf", "json"])
 
-
 class GRI305Input(BaseModel):
     config: GRI305Config = Field(default_factory=GRI305Config)
     scope1_by_gas: Dict[str, float] = Field(default_factory=dict)
     scope3_categories: Dict[str, float] = Field(default_factory=dict)
     reduction_initiatives: List[Dict[str, Any]] = Field(default_factory=list)
     historical_emissions: List[Dict[str, Any]] = Field(default_factory=list)
-
 
 class GRI305Result(BaseModel):
     workflow_id: str = Field(...)
@@ -277,11 +259,9 @@ class GRI305Result(BaseModel):
     overall_rag_status: RAGStatus = Field(default=RAGStatus.GREEN)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class GRI305Workflow:
     """
@@ -303,7 +283,7 @@ class GRI305Workflow:
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     async def execute(self, input_data: GRI305Input) -> GRI305Result:
-        started_at = _utcnow()
+        started_at = utcnow()
         self.config = input_data.config
         self._phase_results = []
         self._disclosures = []
@@ -331,7 +311,7 @@ class GRI305Workflow:
                 status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
 
         result = GRI305Result(
             workflow_id=self.workflow_id,
@@ -350,7 +330,7 @@ class GRI305Workflow:
 
     async def _phase_305_1(self, input_data: GRI305Input) -> PhaseResult:
         """305-1: Direct (Scope 1) GHG emissions."""
-        started = _utcnow()
+        started = utcnow()
         cfg = self.config
         base_e = cfg.base_year_emissions_tco2e or 100_000.0
         s1 = cfg.scope1_tco2e or base_e * 0.45
@@ -392,7 +372,7 @@ class GRI305Workflow:
         disclosure.provenance_hash = _compute_hash(disclosure.model_dump_json(exclude={"provenance_hash"}))
         self._disclosures.append(disclosure)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="gri_305_1", phase_number=1, status=PhaseStatus.COMPLETED,
             duration_seconds=round(elapsed, 4), completion_pct=100.0,
@@ -403,7 +383,7 @@ class GRI305Workflow:
 
     async def _phase_305_2(self, input_data: GRI305Input) -> PhaseResult:
         """305-2: Energy indirect (Scope 2) GHG emissions."""
-        started = _utcnow()
+        started = utcnow()
         cfg = self.config
         base_e = cfg.base_year_emissions_tco2e or 100_000.0
         s2_loc = cfg.scope2_location_tco2e or base_e * 0.22
@@ -436,7 +416,7 @@ class GRI305Workflow:
         disclosure.provenance_hash = _compute_hash(disclosure.model_dump_json(exclude={"provenance_hash"}))
         self._disclosures.append(disclosure)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="gri_305_2", phase_number=2, status=PhaseStatus.COMPLETED,
             duration_seconds=round(elapsed, 4), completion_pct=100.0,
@@ -447,7 +427,7 @@ class GRI305Workflow:
 
     async def _phase_305_3(self, input_data: GRI305Input) -> PhaseResult:
         """305-3: Other indirect (Scope 3) GHG emissions."""
-        started = _utcnow()
+        started = utcnow()
         cfg = self.config
         base_e = cfg.base_year_emissions_tco2e or 100_000.0
         s3 = cfg.scope3_tco2e or base_e * 0.35
@@ -484,7 +464,7 @@ class GRI305Workflow:
         disclosure.provenance_hash = _compute_hash(disclosure.model_dump_json(exclude={"provenance_hash"}))
         self._disclosures.append(disclosure)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="gri_305_3", phase_number=3, status=PhaseStatus.COMPLETED,
             duration_seconds=round(elapsed, 4), completion_pct=100.0,
@@ -495,7 +475,7 @@ class GRI305Workflow:
 
     async def _phase_305_4(self, input_data: GRI305Input) -> PhaseResult:
         """305-4: GHG emissions intensity."""
-        started = _utcnow()
+        started = utcnow()
         cfg = self.config
         base_e = cfg.base_year_emissions_tco2e or 100_000.0
         total = cfg.current_emissions_tco2e or base_e * 0.88
@@ -536,7 +516,7 @@ class GRI305Workflow:
         disclosure.provenance_hash = _compute_hash(disclosure.model_dump_json(exclude={"provenance_hash"}))
         self._disclosures.append(disclosure)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="gri_305_4", phase_number=4, status=PhaseStatus.COMPLETED,
             duration_seconds=round(elapsed, 4), completion_pct=100.0,
@@ -547,7 +527,7 @@ class GRI305Workflow:
 
     async def _phase_305_5(self, input_data: GRI305Input) -> PhaseResult:
         """305-5: Reduction of GHG emissions."""
-        started = _utcnow()
+        started = utcnow()
         cfg = self.config
         base_e = cfg.base_year_emissions_tco2e or 100_000.0
 
@@ -584,7 +564,7 @@ class GRI305Workflow:
         disclosure.provenance_hash = _compute_hash(disclosure.model_dump_json(exclude={"provenance_hash"}))
         self._disclosures.append(disclosure)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="gri_305_5", phase_number=5, status=PhaseStatus.COMPLETED,
             duration_seconds=round(elapsed, 4), completion_pct=100.0,
@@ -595,7 +575,7 @@ class GRI305Workflow:
 
     async def _phase_305_6(self, input_data: GRI305Input) -> PhaseResult:
         """305-6: Emissions of ozone-depleting substances."""
-        started = _utcnow()
+        started = utcnow()
         cfg = self.config
         ods = cfg.ods_tonnes_cfc11_eq
 
@@ -618,7 +598,7 @@ class GRI305Workflow:
         disclosure.provenance_hash = _compute_hash(disclosure.model_dump_json(exclude={"provenance_hash"}))
         self._disclosures.append(disclosure)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="gri_305_6", phase_number=6, status=PhaseStatus.COMPLETED,
             duration_seconds=round(elapsed, 4), completion_pct=100.0,
@@ -629,7 +609,7 @@ class GRI305Workflow:
 
     async def _phase_305_7(self, input_data: GRI305Input) -> PhaseResult:
         """305-7: NOx, SOx, and other significant air emissions."""
-        started = _utcnow()
+        started = utcnow()
         cfg = self.config
 
         disclosure = GRIDisclosure(
@@ -661,7 +641,7 @@ class GRI305Workflow:
         disclosure.provenance_hash = _compute_hash(disclosure.model_dump_json(exclude={"provenance_hash"}))
         self._disclosures.append(disclosure)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="gri_305_7", phase_number=7, status=PhaseStatus.COMPLETED,
             duration_seconds=round(elapsed, 4), completion_pct=100.0,
@@ -672,7 +652,7 @@ class GRI305Workflow:
 
     async def _phase_content_index(self, input_data: GRI305Input) -> PhaseResult:
         """Generate GRI Content Index table."""
-        started = _utcnow()
+        started = utcnow()
 
         entries: List[Dict[str, Any]] = []
         fully = 0
@@ -704,7 +684,7 @@ class GRI305Workflow:
             self._content_index.model_dump_json(exclude={"provenance_hash"}),
         )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="content_index", phase_number=8, status=PhaseStatus.COMPLETED,
             duration_seconds=round(elapsed, 4), completion_pct=100.0,

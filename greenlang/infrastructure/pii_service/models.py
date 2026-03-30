@@ -25,7 +25,8 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 
 
 # ---------------------------------------------------------------------------
@@ -110,7 +111,7 @@ class ConfidenceLevel(str, Enum):
 # ---------------------------------------------------------------------------
 
 
-class PIIDetection(BaseModel):
+class PIIDetection(GreenLangBase):
     """A single PII detection result.
 
     Represents one instance of detected PII in content with position,
@@ -203,7 +204,7 @@ class PIIDetection(BaseModel):
         )
 
 
-class DetectionOptions(BaseModel):
+class DetectionOptions(GreenLangBase):
     """Options for PII detection operations.
 
     Attributes:
@@ -243,7 +244,7 @@ class DetectionOptions(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class EncryptedTokenEntry(BaseModel):
+class EncryptedTokenEntry(GreenLangBase):
     """Entry in the secure token vault.
 
     Stores encrypted PII with tenant isolation and expiration.
@@ -296,7 +297,7 @@ class EncryptedTokenEntry(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class RedactionResult(BaseModel):
+class RedactionResult(GreenLangBase):
     """Result of a PII redaction operation.
 
     Attributes:
@@ -327,7 +328,7 @@ class RedactionResult(BaseModel):
         return len(self.detections) > 0
 
 
-class RedactionOptions(BaseModel):
+class RedactionOptions(GreenLangBase):
     """Options for PII redaction operations.
 
     Attributes:
@@ -362,7 +363,7 @@ class RedactionOptions(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class EnforcementContext(BaseModel):
+class EnforcementContext(GreenLangBase):
     """Context for enforcement decision.
 
     Attributes:
@@ -389,7 +390,7 @@ class EnforcementContext(BaseModel):
     metadata: Dict[str, Any] = Field(default_factory=dict, description="Metadata")
 
 
-class ActionTaken(BaseModel):
+class ActionTaken(GreenLangBase):
     """Record of an enforcement action.
 
     Attributes:
@@ -410,7 +411,7 @@ class ActionTaken(BaseModel):
     )
 
 
-class EnforcementResult(BaseModel):
+class EnforcementResult(GreenLangBase):
     """Result of enforcement engine processing.
 
     Attributes:
@@ -451,7 +452,7 @@ class EnforcementResult(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class AllowlistEntry(BaseModel):
+class AllowlistEntry(GreenLangBase):
     """Entry in the PII allowlist.
 
     Attributes:
@@ -502,14 +503,14 @@ class AllowlistEntry(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class DetectRequest(BaseModel):
+class DetectRequest(GreenLangBase):
     """API request for PII detection."""
 
     content: str = Field(..., min_length=1, max_length=10_000_000, description="Content to scan")
     options: Optional[DetectionOptions] = Field(None, description="Detection options")
 
 
-class DetectResponse(BaseModel):
+class DetectResponse(GreenLangBase):
     """API response for PII detection."""
 
     detections: List[PIIDetection] = Field(default_factory=list)
@@ -518,14 +519,14 @@ class DetectResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
 
 
-class RedactRequest(BaseModel):
+class RedactRequest(GreenLangBase):
     """API request for PII redaction."""
 
     content: str = Field(..., min_length=1, max_length=10_000_000, description="Content to redact")
     options: Optional[RedactionOptions] = Field(None, description="Redaction options")
 
 
-class RedactResponse(BaseModel):
+class RedactResponse(GreenLangBase):
     """API response for PII redaction."""
 
     redacted_content: str = Field(..., description="Redacted content")
@@ -534,7 +535,7 @@ class RedactResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
 
 
-class TokenizeRequest(BaseModel):
+class TokenizeRequest(GreenLangBase):
     """API request for PII tokenization."""
 
     value: str = Field(..., min_length=1, max_length=10000, description="Value to tokenize")
@@ -543,7 +544,7 @@ class TokenizeRequest(BaseModel):
     metadata: Optional[Dict[str, Any]] = Field(None, description="Additional metadata")
 
 
-class TokenizeResponse(BaseModel):
+class TokenizeResponse(GreenLangBase):
     """API response for PII tokenization."""
 
     token: str = Field(..., description="Generated token")
@@ -551,7 +552,7 @@ class TokenizeResponse(BaseModel):
     expires_at: datetime = Field(..., description="Expiration time")
 
 
-class DetokenizeRequest(BaseModel):
+class DetokenizeRequest(GreenLangBase):
     """API request for PII detokenization."""
 
     token: str = Field(..., description="Token to resolve")
@@ -559,7 +560,7 @@ class DetokenizeRequest(BaseModel):
     user_id: str = Field(..., description="User ID for audit")
 
 
-class DetokenizeResponse(BaseModel):
+class DetokenizeResponse(GreenLangBase):
     """API response for PII detokenization."""
 
     value: str = Field(..., description="Original value")

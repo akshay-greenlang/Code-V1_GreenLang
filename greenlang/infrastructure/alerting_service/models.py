@@ -35,6 +35,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
+from greenlang.schemas.enums import AlertSeverity, AlertStatus, NotificationChannel
 
 logger = logging.getLogger(__name__)
 
@@ -44,24 +45,6 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-class AlertSeverity(str, Enum):
-    """Alert severity levels aligned with Prometheus / PagerDuty conventions."""
-
-    CRITICAL = "critical"
-    WARNING = "warning"
-    INFO = "info"
-
-
-class AlertStatus(str, Enum):
-    """Alert lifecycle status values."""
-
-    FIRING = "firing"
-    ACKNOWLEDGED = "acknowledged"
-    INVESTIGATING = "investigating"
-    RESOLVED = "resolved"
-    SUPPRESSED = "suppressed"
-
-
 class NotificationStatus(str, Enum):
     """Outcome of a single notification delivery attempt."""
 
@@ -69,17 +52,6 @@ class NotificationStatus(str, Enum):
     FAILED = "failed"
     RATE_LIMITED = "rate_limited"
     SKIPPED = "skipped"
-
-
-class NotificationChannel(str, Enum):
-    """Supported notification delivery channels."""
-
-    PAGERDUTY = "pagerduty"
-    OPSGENIE = "opsgenie"
-    SLACK = "slack"
-    EMAIL = "email"
-    TEAMS = "teams"
-    WEBHOOK = "webhook"
 
 
 # ---------------------------------------------------------------------------

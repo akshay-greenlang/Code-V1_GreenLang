@@ -42,35 +42,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.utcnow()
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hash of a string."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -81,7 +73,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -90,7 +81,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class ReportFrequency(str, Enum):
     """Report generation frequency."""
@@ -102,7 +92,6 @@ class ReportFrequency(str, Enum):
     ANNUAL = "annual"
     AD_HOC = "ad_hoc"
 
-
 class DistributionChannel(str, Enum):
     """Report distribution channel."""
 
@@ -111,7 +100,6 @@ class DistributionChannel(str, Enum):
     API = "api"
     FILE_SHARE = "file_share"
     PRINT = "print"
-
 
 # =============================================================================
 # REFERENCE DATA (Zero-Hallucination)
@@ -188,11 +176,9 @@ REPORT_SCHEDULES: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -206,7 +192,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list, description="Errors encountered")
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
 
-
 class ReportRequest(BaseModel):
     """A single report generation request."""
 
@@ -219,7 +204,6 @@ class ReportRequest(BaseModel):
         default_factory=list,
         description="Override default sections",
     )
-
 
 class ReportingInput(BaseModel):
     """Input data model for ReportingWorkflow."""
@@ -268,7 +252,6 @@ class ReportingInput(BaseModel):
             raise ValueError("facility_name must not be blank")
         return stripped
 
-
 class ReportingResult(BaseModel):
     """Complete result from reporting workflow."""
 
@@ -285,11 +268,9 @@ class ReportingResult(BaseModel):
     calculated_at: str = Field(default="", description="ISO 8601 timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 of complete result")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class ReportingWorkflow:
     """
@@ -345,7 +326,7 @@ class ReportingWorkflow:
             ValueError: If input validation fails.
         """
         t_start = time.perf_counter()
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting reporting workflow %s for facility=%s requests=%d",
             self.reporting_id, input_data.facility_name,
@@ -448,7 +429,7 @@ class ReportingWorkflow:
             "enpi_data": input_data.enpi_data,
             "anomaly_data": input_data.anomaly_data,
             "budget_data": input_data.budget_data,
-            "gathered_at": _utcnow().isoformat() + "Z",
+            "gathered_at": utcnow().isoformat() + "Z",
         }
 
         outputs["sources_gathered"] = len(sources)
@@ -509,7 +490,7 @@ class ReportingWorkflow:
                 "sections_count": len(sections),
                 "estimated_pages": schedule["estimated_pages"],
                 "content": report_content,
-                "generated_at": _utcnow().isoformat() + "Z",
+                "generated_at": utcnow().isoformat() + "Z",
                 "provenance_hash": _compute_hash(
                     json.dumps(report_content, sort_keys=True, default=str)
                 ),
@@ -557,7 +538,7 @@ class ReportingWorkflow:
                     "channel": channel,
                     "recipients": recipients,
                     "status": "delivered",
-                    "distributed_at": _utcnow().isoformat() + "Z",
+                    "distributed_at": utcnow().isoformat() + "Z",
                     "retention_days": schedule.get("data_retention_days", 365),
                 }
                 self._distributions.append(distribution)
@@ -598,7 +579,7 @@ class ReportingWorkflow:
             "facility_id": input_data.facility_id,
             "period_start": request.period_start,
             "period_end": request.period_end,
-            "generated_at": _utcnow().isoformat() + "Z",
+            "generated_at": utcnow().isoformat() + "Z",
         }
 
         energy = input_data.energy_data

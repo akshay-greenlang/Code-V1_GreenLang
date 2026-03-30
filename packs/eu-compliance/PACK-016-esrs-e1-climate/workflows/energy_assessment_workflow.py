@@ -28,33 +28,25 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class WorkflowPhase(str, Enum):
     """Phases of the energy assessment workflow."""
@@ -64,7 +56,6 @@ class WorkflowPhase(str, Enum):
     MIX_CALCULATION = "mix_calculation"
     REPORT_GENERATION = "report_generation"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "pending"
@@ -73,7 +64,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class PhaseStatus(str, Enum):
     """Status of a single phase."""
     PENDING = "pending"
@@ -81,7 +71,6 @@ class PhaseStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class EnergyType(str, Enum):
     """Energy source type classification."""
@@ -101,7 +90,6 @@ class EnergyType(str, Enum):
     PURCHASED_COOLING = "purchased_cooling"
     SELF_GENERATED = "self_generated"
 
-
 class EnergyCategory(str, Enum):
     """High-level energy category."""
     FOSSIL = "fossil"
@@ -110,11 +98,9 @@ class EnergyCategory(str, Enum):
     PURCHASED = "purchased"
     SELF_GENERATED = "self_generated"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -125,7 +111,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class EnergySource(BaseModel):
     """Single energy consumption record."""
@@ -142,7 +127,6 @@ class EnergySource(BaseModel):
     reporting_year: int = Field(default=2025)
     data_quality_score: float = Field(default=0.0, ge=0.0, le=5.0)
 
-
 class EnergyMixResult(BaseModel):
     """Calculated energy mix breakdown."""
     total_consumption_mwh: float = Field(default=0.0)
@@ -153,7 +137,6 @@ class EnergyMixResult(BaseModel):
     renewable_share_pct: float = Field(default=0.0)
     nuclear_share_pct: float = Field(default=0.0)
     source_breakdown: Dict[str, float] = Field(default_factory=dict)
-
 
 class EnergyAssessmentInput(BaseModel):
     """Input data model for EnergyAssessmentWorkflow."""
@@ -169,7 +152,6 @@ class EnergyAssessmentInput(BaseModel):
         default=0.0, ge=0.0, le=100.0, description="Renewable energy target %"
     )
     config: Dict[str, Any] = Field(default_factory=dict)
-
 
 class EnergyAssessmentResult(BaseModel):
     """Complete result from energy assessment workflow."""
@@ -191,7 +173,6 @@ class EnergyAssessmentResult(BaseModel):
     energy_sources: List[EnergySource] = Field(default_factory=list)
     reporting_year: int = Field(default=2025)
     provenance_hash: str = Field(default="")
-
 
 # =============================================================================
 # UNIT CONVERSION FACTORS (to MWh)
@@ -231,11 +212,9 @@ FOSSIL_TYPES = {
     EnergyType.FOSSIL_GAS,
 }
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class EnergyAssessmentWorkflow:
     """
@@ -308,7 +287,7 @@ class EnergyAssessmentWorkflow:
                 config=config or {},
             )
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting energy assessment workflow %s", self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = WorkflowStatus.IN_PROGRESS
@@ -333,7 +312,7 @@ class EnergyAssessmentWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
 
         total_mwh = sum(s.consumption_mwh for s in self._sources)
         fossil_mwh = sum(s.consumption_mwh for s in self._sources if s.energy_type in FOSSIL_TYPES)
@@ -380,7 +359,7 @@ class EnergyAssessmentWorkflow:
         self, input_data: EnergyAssessmentInput,
     ) -> PhaseResult:
         """Gather energy consumption records."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -397,7 +376,7 @@ class EnergyAssessmentWorkflow:
         if not self._sources:
             warnings.append("No energy sources provided; assessment will be empty")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 1 DataCollection: %d sources collected", len(self._sources))
         return PhaseResult(
             phase_name=WorkflowPhase.DATA_COLLECTION.value,
@@ -414,7 +393,7 @@ class EnergyAssessmentWorkflow:
         self, input_data: EnergyAssessmentInput,
     ) -> PhaseResult:
         """Normalize all energy values to MWh."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         normalized_count = 0
@@ -444,7 +423,7 @@ class EnergyAssessmentWorkflow:
         outputs["total_consumption_mwh"] = round(total_mwh, 4)
         outputs["conversion_warnings"] = len(warnings)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 2 UnitNormalization: %d sources normalized, %.2f MWh total",
             normalized_count, total_mwh,
@@ -464,7 +443,7 @@ class EnergyAssessmentWorkflow:
         self, input_data: EnergyAssessmentInput,
     ) -> PhaseResult:
         """Classify energy sources as fossil, renewable, or nuclear."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -489,7 +468,7 @@ class EnergyAssessmentWorkflow:
             1 for s in self._sources if s.is_self_generated
         )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 3 SourceClassification: %d renewable, %d fossil, %d nuclear",
             renewable_count, fossil_count, nuclear_count,
@@ -509,7 +488,7 @@ class EnergyAssessmentWorkflow:
         self, input_data: EnergyAssessmentInput,
     ) -> PhaseResult:
         """Calculate energy mix percentages and intensity metrics."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -560,7 +539,7 @@ class EnergyAssessmentWorkflow:
             max(0, input_data.renewable_target_pct - renewable_pct), 2
         )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 4 MixCalculation: %.1f%% fossil, %.1f%% renewable, %.1f%% nuclear",
             fossil_pct, renewable_pct, nuclear_pct,
@@ -580,7 +559,7 @@ class EnergyAssessmentWorkflow:
         self, input_data: EnergyAssessmentInput,
     ) -> PhaseResult:
         """Generate E1-5 disclosure-ready output."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -601,7 +580,7 @@ class EnergyAssessmentWorkflow:
         outputs["report_ready"] = True
         outputs["source_count"] = len(self._sources)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 5 ReportGeneration: E1-5 disclosure ready, %d sources",
             len(self._sources),

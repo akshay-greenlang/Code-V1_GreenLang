@@ -28,6 +28,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "26.0.0"
@@ -93,18 +95,12 @@ _CERT_BODIES = {
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str) if isinstance(data, dict) else str(data)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 def _dec(val: Any, places: int = 2) -> str:
     try:
@@ -113,7 +109,6 @@ def _dec(val: Any, places: int = 2) -> str:
         return str(d.quantize(Decimal(q), rounding=ROUND_HALF_UP))
     except Exception:
         return str(val)
-
 
 def _dec_comma(val: Any, places: int = 0) -> str:
     try:
@@ -138,13 +133,11 @@ def _dec_comma(val: Any, places: int = 0) -> str:
     except Exception:
         return str(val)
 
-
 def _pct(val: Any) -> str:
     try:
         return _dec(val, 1) + "%"
     except Exception:
         return str(val)
-
 
 def _safe_div(num: Any, den: Any, default: float = 0.0) -> float:
     try:
@@ -152,7 +145,6 @@ def _safe_div(num: Any, den: Any, default: float = 0.0) -> float:
         return float(num) / d if d != 0 else default
     except Exception:
         return default
-
 
 # ===========================================================================
 # Template Class
@@ -183,7 +175,7 @@ class SMECertificationSubmissionTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render the certification submission as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections: List[str] = [
             self._md_header(data),
             self._md_sme_climate_hub(data),
@@ -200,7 +192,7 @@ class SMECertificationSubmissionTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render the certification submission as HTML."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         body = "\n".join([
             self._html_header(data),
@@ -225,7 +217,7 @@ class SMECertificationSubmissionTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render the certification submission as structured JSON."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         s1 = float(data.get("scope1_tco2e", 0))
         s2 = float(data.get("scope2_tco2e", 0))
         s3 = float(data.get("scope3_tco2e", 0))
@@ -286,7 +278,7 @@ class SMECertificationSubmissionTemplate:
 
     def render_excel(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render Excel-ready data structure for certification submissions."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         s1 = float(data.get("scope1_tco2e", 0))
         s2 = float(data.get("scope2_tco2e", 0))
         s3 = float(data.get("scope3_tco2e", 0))

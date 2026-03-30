@@ -35,7 +35,8 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import ConfigDict, Field, field_validator
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -370,7 +371,7 @@ class ErrorCode:
 # =============================================================================
 
 
-class SuggestedFix(BaseModel):
+class SuggestedFix(GreenLangBase):
     """
     A suggested fix for an orchestration error.
 
@@ -423,7 +424,7 @@ class SuggestedFix(BaseModel):
     )
 
 
-class ErrorMetadata(BaseModel):
+class ErrorMetadata(GreenLangBase):
     """
     Metadata about an error code.
 
@@ -445,7 +446,7 @@ class ErrorMetadata(BaseModel):
     category: str = Field(default="general", description="Error category for grouping")
 
 
-class OrchestrationError(BaseModel):
+class OrchestrationError(GreenLangBase):
     """
     Structured orchestration error with comprehensive context.
 

@@ -76,6 +76,7 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Callable, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -103,15 +104,9 @@ except ImportError:
     _METRICS_AVAILABLE = False
     _get_metrics = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -121,7 +116,6 @@ def _compute_hash(data: Any) -> str:
         serializable = data
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 # ===========================================================================
 # Constants
@@ -291,11 +285,9 @@ FRAMEWORK_INFO: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ===========================================================================
 # Dataclasses
 # ===========================================================================
-
 
 @dataclass
 class ComplianceFinding:
@@ -330,7 +322,6 @@ class ComplianceFinding:
             "finding": self.finding,
             "recommendation": self.recommendation,
         }
-
 
 @dataclass
 class ComplianceCheckResult:
@@ -387,11 +378,9 @@ class ComplianceCheckResult:
             "pass_rate_pct": self.pass_rate_pct,
         }
 
-
 # ===========================================================================
 # ComplianceCheckerEngine
 # ===========================================================================
-
 
 class ComplianceCheckerEngine:
     """Multi-framework regulatory compliance checker for Scope 2 location-based
@@ -443,7 +432,7 @@ class ComplianceCheckerEngine:
             "partial": 0,
             "not_assessed": 0,
         }
-        self._created_at = _utcnow()
+        self._created_at = utcnow()
         self._provenance = provenance
 
         # Load config
@@ -576,7 +565,7 @@ class ComplianceCheckerEngine:
         ]
 
         check_id = str(uuid4())
-        checked_at = _utcnow().isoformat()
+        checked_at = utcnow().isoformat()
 
         result = ComplianceCheckResult(
             check_id=check_id,
@@ -3277,7 +3266,7 @@ class ComplianceCheckerEngine:
 
         report: Dict[str, Any] = {
             "report_id": str(uuid4()),
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
             "format": format,
             "agent": "AGENT-MRV-009",
             "agent_name": "Scope 2 Location-Based Emissions Agent",
@@ -3378,7 +3367,6 @@ class ComplianceCheckerEngine:
                 "not_assessed": 0,
             }
         logger.info("ComplianceCheckerEngine counters reset")
-
 
 # ---------------------------------------------------------------------------
 # Public surface

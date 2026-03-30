@@ -35,19 +35,13 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # =============================================================================
 # Utility Helpers
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute a SHA-256 hash of arbitrary data."""
@@ -55,11 +49,9 @@ def _hash_data(data: Any) -> str:
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # Agent Stub
 # =============================================================================
-
 
 class _AgentStub:
     """Deferred agent loader for lazy initialization."""
@@ -76,6 +68,7 @@ class _AgentStub:
             return self._instance
         try:
             import importlib
+
             mod = importlib.import_module(self.module_path)
             cls = getattr(mod, self.class_name)
             self._instance = cls()
@@ -91,11 +84,9 @@ class _AgentStub:
         """Whether the agent has been loaded."""
         return self._instance is not None
 
-
 # =============================================================================
 # Enums
 # =============================================================================
-
 
 class DowngradeRiskLevel(str, Enum):
     """Risk level for downgrade assessment."""
@@ -105,14 +96,12 @@ class DowngradeRiskLevel(str, Enum):
     HIGH = "high"
     CRITICAL = "critical"
 
-
 class ClassificationType(str, Enum):
     """SFDR product classification."""
     ARTICLE_6 = "article_6"
     ARTICLE_8 = "article_8"
     ARTICLE_8_PLUS = "article_8_plus"
     ARTICLE_9 = "article_9"
-
 
 class DowngradeReason(str, Enum):
     """Reasons for potential Article 9 downgrade."""
@@ -125,11 +114,9 @@ class DowngradeReason(str, Enum):
     BENCHMARK_DEVIATION = "benchmark_deviation"
     REGULATORY_CHANGE = "regulatory_change"
 
-
 # =============================================================================
 # Data Models
 # =============================================================================
-
 
 class Article8BridgeConfig(BaseModel):
     """Configuration for the Article 8 Pack Bridge."""
@@ -162,7 +149,6 @@ class Article8BridgeConfig(BaseModel):
         description="Automatically reclassify on critical downgrade (requires approval)",
     )
 
-
 class DowngradeAssessment(BaseModel):
     """Result of a downgrade risk assessment."""
     product_name: str = Field(default="", description="Product name")
@@ -190,7 +176,6 @@ class DowngradeAssessment(BaseModel):
     assessed_at: str = Field(default="", description="Assessment timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class ClassificationComparison(BaseModel):
     """Comparison between Article 8 and Article 9 requirements."""
     product_name: str = Field(default="", description="Product name")
@@ -208,7 +193,6 @@ class ClassificationComparison(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class SharedPAIResult(BaseModel):
     """Result of shared PAI calculation between packs."""
     indicator_id: int = Field(default=0, description="PAI indicator ID")
@@ -221,11 +205,9 @@ class SharedPAIResult(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 # =============================================================================
 # Article 8 / Article 9 Requirement Definitions
 # =============================================================================
-
 
 ARTICLE_8_REQUIREMENTS: Dict[str, str] = {
     "es_characteristics": "Promotes E/S characteristics",
@@ -252,11 +234,9 @@ ARTICLE_9_REQUIREMENTS: Dict[str, str] = {
     "benchmark_9_3": "CTB/PAB benchmark (for Art 9(3))",
 }
 
-
 # =============================================================================
 # Article 8 Pack Bridge
 # =============================================================================
-
 
 class Article8PackBridge:
     """Bridge connecting PACK-011 (Art 9) with PACK-010 (Art 8).
@@ -409,7 +389,7 @@ class Article8PackBridge:
             risk_factors=risk_factors,
             remediation_actions=remediation,
             regulatory_deadline="",
-            assessed_at=_utcnow().isoformat(),
+            assessed_at=utcnow().isoformat(),
         )
         assessment.provenance_hash = _hash_data(assessment.model_dump())
 

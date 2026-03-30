@@ -33,10 +33,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -101,7 +102,7 @@ DAMAGE_FUNCTIONS = {
 # Pydantic Models
 # =============================================================================
 
-class AssetFinancials(BaseModel):
+class AssetFinancials(GreenLangBase):
     """Financial data for an asset."""
     asset_id: str = Field(...)
     asset_name: str = Field(...)
@@ -113,7 +114,7 @@ class AssetFinancials(BaseModel):
     deductible_usd: float = Field(default=0.0, ge=0)
 
 
-class HazardImpactDetail(BaseModel):
+class HazardImpactDetail(GreenLangBase):
     """Detailed impact for a specific hazard."""
     hazard_type: str = Field(...)
     probability_annual: float = Field(..., ge=0, le=1)
@@ -126,7 +127,7 @@ class HazardImpactDetail(BaseModel):
     uninsured_amount_usd: float = Field(default=0.0, ge=0)
 
 
-class FinancialImpactResult(BaseModel):
+class FinancialImpactResult(GreenLangBase):
     """Complete financial impact result for an asset."""
     asset_id: str = Field(...)
     asset_name: str = Field(...)
@@ -153,7 +154,7 @@ class FinancialImpactResult(BaseModel):
     provenance_hash: str = Field(default="")
 
 
-class AdaptationCostBenefit(BaseModel):
+class AdaptationCostBenefit(GreenLangBase):
     """Cost-benefit analysis for adaptation measure."""
     measure_name: str = Field(...)
     capital_cost_usd: float = Field(..., ge=0)
@@ -166,7 +167,7 @@ class AdaptationCostBenefit(BaseModel):
     irr_pct: Optional[float] = Field(None)
 
 
-class FinancialImpactInput(BaseModel):
+class FinancialImpactInput(GreenLangBase):
     """Input model for Financial Impact Agent."""
     analysis_id: str = Field(...)
     assets: List[AssetFinancials] = Field(..., min_length=1)
@@ -183,7 +184,7 @@ class FinancialImpactInput(BaseModel):
     )
 
 
-class FinancialImpactOutput(BaseModel):
+class FinancialImpactOutput(GreenLangBase):
     """Output model for Financial Impact Agent."""
     analysis_id: str = Field(...)
     completed_at: datetime = Field(default_factory=DeterministicClock.now)

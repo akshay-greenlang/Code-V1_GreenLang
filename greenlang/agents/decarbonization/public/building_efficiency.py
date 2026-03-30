@@ -31,10 +31,11 @@ from datetime import date, datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -101,7 +102,7 @@ class MeasureStatus(str, Enum):
 # Pydantic Models
 # =============================================================================
 
-class EnergyConsumption(BaseModel):
+class EnergyConsumption(GreenLangBase):
     """Annual energy consumption by source."""
 
     source: EnergySource = Field(..., description="Energy source")
@@ -116,7 +117,7 @@ class EnergyConsumption(BaseModel):
     unit_cost: Optional[float] = Field(None, ge=0, description="Cost per unit")
 
 
-class PublicBuilding(BaseModel):
+class PublicBuilding(GreenLangBase):
     """Public building for efficiency analysis."""
 
     building_id: str = Field(..., description="Unique building identifier")
@@ -179,7 +180,7 @@ class PublicBuilding(BaseModel):
         return total
 
 
-class EfficiencyMeasure(BaseModel):
+class EfficiencyMeasure(GreenLangBase):
     """Energy efficiency measure."""
 
     measure_id: str = Field(..., description="Unique measure identifier")
@@ -223,7 +224,7 @@ class EfficiencyMeasure(BaseModel):
     data_source: Optional[str] = Field(None)
 
 
-class BuildingEfficiencyPlan(BaseModel):
+class BuildingEfficiencyPlan(GreenLangBase):
     """Building efficiency improvement plan."""
 
     plan_id: str = Field(..., description="Plan identifier")
@@ -262,7 +263,7 @@ class BuildingEfficiencyPlan(BaseModel):
 # Agent Input/Output Models
 # =============================================================================
 
-class BuildingEfficiencyInput(BaseModel):
+class BuildingEfficiencyInput(GreenLangBase):
     """Input for Building Efficiency Agent."""
 
     action: str = Field(..., description="Action to perform")
@@ -305,7 +306,7 @@ class BuildingEfficiencyInput(BaseModel):
         return v
 
 
-class BuildingEfficiencyOutput(BaseModel):
+class BuildingEfficiencyOutput(GreenLangBase):
     """Output from Building Efficiency Agent."""
 
     success: bool = Field(...)

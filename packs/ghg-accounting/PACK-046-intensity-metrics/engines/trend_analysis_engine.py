@@ -76,23 +76,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -109,7 +104,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -118,7 +112,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -126,18 +119,14 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round4(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 def _round6(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP))
-
 
 def _median_decimal(values: List[Decimal]) -> Decimal:
     if not values:
@@ -149,7 +138,6 @@ def _median_decimal(values: List[Decimal]) -> Decimal:
         return sorted_vals[mid]
     return (sorted_vals[mid - 1] + sorted_vals[mid]) / Decimal("2")
 
-
 def _sgn(x: Decimal) -> int:
     """Sign function: returns -1, 0, or 1."""
     if x > Decimal("0"):
@@ -158,23 +146,19 @@ def _sgn(x: Decimal) -> int:
         return -1
     return 0
 
-
 def _normal_cdf(z: float) -> float:
     """Cumulative distribution function of standard normal (approximation)."""
     return 0.5 * (1.0 + math.erf(z / math.sqrt(2.0)))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class TrendDirection(str, Enum):
     """Direction of trend."""
     DECREASING = "decreasing"
     INCREASING = "increasing"
     NO_TREND = "no_trend"
-
 
 class ProjectionModel(str, Enum):
     """Regression model for projections."""
@@ -183,13 +167,11 @@ class ProjectionModel(str, Enum):
     LOGARITHMIC = "logarithmic"
     POWER = "power"
 
-
 class ConfidenceLevel(str, Enum):
     """Confidence level for statistical tests."""
     CL_90 = "90%"
     CL_95 = "95%"
     CL_99 = "99%"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -205,11 +187,9 @@ MAX_PERIODS: int = 100
 MIN_PERIODS_FOR_TREND: int = 4
 MIN_PERIODS_FOR_REGRESSION: int = 3
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class TrendDataPoint(BaseModel):
     """A single data point in the intensity time series.
@@ -227,7 +207,6 @@ class TrendDataPoint(BaseModel):
     @classmethod
     def coerce_val(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class TrendInput(BaseModel):
     """Input for trend analysis.
@@ -253,11 +232,9 @@ class TrendInput(BaseModel):
     )
     output_precision: int = Field(default=4, ge=0, le=12, description="Output precision")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class YoYChange(BaseModel):
     """Year-over-year change for a single period."""
@@ -266,13 +243,11 @@ class YoYChange(BaseModel):
     change_absolute: Optional[Decimal] = Field(default=None, description="Absolute change")
     change_pct: Optional[Decimal] = Field(default=None, description="% change")
 
-
 class RollingAverage(BaseModel):
     """Rolling average for a single period."""
     period: str = Field(..., description="Period")
     rolling_avg: Optional[Decimal] = Field(default=None, description="Rolling average")
     window_size: int = Field(default=3, description="Window size")
-
 
 class MannKendallResult(BaseModel):
     """Mann-Kendall trend test result."""
@@ -285,13 +260,11 @@ class MannKendallResult(BaseModel):
     is_significant: bool = Field(default=False, description="Statistically significant")
     confidence_level: str = Field(default="95%", description="Confidence level")
 
-
 class SensSlope(BaseModel):
     """Sen's slope estimator result."""
     slope: Decimal = Field(default=Decimal("0"), description="Slope (per year)")
     intercept: Decimal = Field(default=Decimal("0"), description="Intercept")
     slope_pct_per_year: Decimal = Field(default=Decimal("0"), description="Slope as %/year")
-
 
 class ProjectionPoint(BaseModel):
     """A single projection point."""
@@ -300,7 +273,6 @@ class ProjectionPoint(BaseModel):
     ci_lower: Optional[Decimal] = Field(default=None, description="Lower confidence bound")
     ci_upper: Optional[Decimal] = Field(default=None, description="Upper confidence bound")
 
-
 class RegressionStats(BaseModel):
     """Regression model statistics."""
     model: ProjectionModel = Field(default=ProjectionModel.LINEAR, description="Model")
@@ -308,7 +280,6 @@ class RegressionStats(BaseModel):
     slope: Decimal = Field(default=Decimal("0"), description="Slope / parameter b")
     intercept: Decimal = Field(default=Decimal("0"), description="Intercept / parameter a")
     rmse: Decimal = Field(default=Decimal("0"), description="RMSE")
-
 
 class TrendResult(BaseModel):
     """Complete trend analysis result.
@@ -356,11 +327,9 @@ class TrendResult(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class TrendAnalysisEngine:
     """Statistical trend analysis engine for intensity time series.
@@ -481,7 +450,7 @@ class TrendAnalysisEngine:
             overall_direction=direction,
             total_change_pct=total_pct,
             warnings=warnings,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         result.provenance_hash = _compute_hash(result)
@@ -805,7 +774,6 @@ class TrendAnalysisEngine:
 
     def get_version(self) -> str:
         return self._version
-
 
 # ---------------------------------------------------------------------------
 # __all__

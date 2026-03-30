@@ -53,6 +53,7 @@ import logging
 from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any, Dict, List, Optional, Set, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.due_diligence_orchestrator.config import (
     DueDiligenceOrchestratorConfig,
@@ -69,12 +70,6 @@ from greenlang.agents.eudr.due_diligence_orchestrator.models import (
 )
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Phase 1 completeness weight map
@@ -114,11 +109,9 @@ _ARTICLE_9_ELEMENTS: Dict[str, List[str]] = {
     "traceability_codes": ["EUDR-014", "EUDR-015"],
 }
 
-
 # ---------------------------------------------------------------------------
 # InformationGatheringResult
 # ---------------------------------------------------------------------------
-
 
 class InformationGatheringResult:
     """Result of the Phase 1 information gathering coordination.
@@ -182,11 +175,9 @@ class InformationGatheringResult:
             },
         }
 
-
 # ---------------------------------------------------------------------------
 # InformationGatheringCoordinator
 # ---------------------------------------------------------------------------
-
 
 class InformationGatheringCoordinator:
     """Phase 1 coordinator for EUDR Article 9 information gathering.
@@ -323,7 +314,7 @@ class InformationGatheringCoordinator:
             >>> result = coordinator.evaluate_completeness(outputs)
             >>> assert Decimal("0") <= result.completeness_score <= Decimal("1")
         """
-        start_time = _utcnow()
+        start_time = utcnow()
 
         result = InformationGatheringResult()
         result.agent_outputs = dict(agent_outputs)
@@ -380,7 +371,7 @@ class InformationGatheringCoordinator:
 
         # Compute duration
         result.total_duration_ms = Decimal(str(
-            (_utcnow() - start_time).total_seconds() * 1000
+            (utcnow() - start_time).total_seconds() * 1000
         )).quantize(Decimal("0.01"))
 
         logger.info(

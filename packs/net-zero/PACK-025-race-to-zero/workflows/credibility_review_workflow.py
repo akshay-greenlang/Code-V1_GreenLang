@@ -42,31 +42,25 @@ from typing import Any, Callable, Coroutine, Dict, List, Optional, Set
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "25.0.0"
 
 ProgressCallback = Callable[[str, float, str], Coroutine[Any, Any, None]]
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: Any) -> str:
     if isinstance(data, dict):
         data = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(str(data).encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -74,7 +68,6 @@ class PhaseStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
@@ -84,13 +77,11 @@ class WorkflowStatus(str, Enum):
     PARTIAL = "partial"
     CANCELLED = "cancelled"
 
-
 class CredibilityPhase(str, Enum):
     HLEG_CRITERIA_ASSESSMENT = "hleg_criteria_assessment"
     SCIENCE_BASED_VALIDATION = "science_based_validation"
     GOVERNANCE_REVIEW = "governance_review"
     CREDIBILITY_SCORING = "credibility_scoring"
-
 
 class RecommendationStatus(str, Enum):
     FULLY_MET = "fully_met"
@@ -98,20 +89,17 @@ class RecommendationStatus(str, Enum):
     NOT_MET = "not_met"
     NOT_APPLICABLE = "not_applicable"
 
-
 class CredibilityRating(str, Enum):
     STRONG = "strong"         # >= 80%
     ADEQUATE = "adequate"     # 60-79%
     WEAK = "weak"             # 40-59%
     INSUFFICIENT = "insufficient"  # < 40%
 
-
 class GovernanceMaturity(str, Enum):
     ADVANCED = "advanced"
     DEVELOPING = "developing"
     BASIC = "basic"
     ABSENT = "absent"
-
 
 # =============================================================================
 # REFERENCE DATA
@@ -254,11 +242,9 @@ PHASE_EXECUTION_ORDER: List[CredibilityPhase] = [
     CredibilityPhase.CREDIBILITY_SCORING,
 ]
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase: CredibilityPhase = Field(...)
@@ -272,7 +258,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class RecommendationAssessment(BaseModel):
     recommendation_id: str = Field(default="")
     name: str = Field(default="")
@@ -282,7 +267,6 @@ class RecommendationAssessment(BaseModel):
     score: float = Field(default=0.0, ge=0.0, le=100.0)
     weight: float = Field(default=0.0)
     gaps: List[str] = Field(default_factory=list)
-
 
 class CredibilityReport(BaseModel):
     report_id: str = Field(default="")
@@ -298,7 +282,6 @@ class CredibilityReport(BaseModel):
     governance_maturity: GovernanceMaturity = Field(default=GovernanceMaturity.BASIC)
     science_based_aligned: bool = Field(default=False)
     priority_actions: List[str] = Field(default_factory=list)
-
 
 class CredibilityReviewConfig(BaseModel):
     pack_id: str = Field(default="PACK-025")
@@ -329,7 +312,6 @@ class CredibilityReviewConfig(BaseModel):
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
 
-
 class CredibilityReviewResult(BaseModel):
     execution_id: str = Field(default_factory=_new_uuid)
     pack_id: str = Field(default="PACK-025")
@@ -350,11 +332,9 @@ class CredibilityReviewResult(BaseModel):
     quality_score: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class CredibilityReviewWorkflow:
     """
@@ -388,7 +368,7 @@ class CredibilityReviewWorkflow:
         input_data = input_data or {}
         result = CredibilityReviewResult(
             org_name=self.config.org_name,
-            status=WorkflowStatus.RUNNING, started_at=_utcnow(),
+            status=WorkflowStatus.RUNNING, started_at=utcnow(),
         )
         self._results[result.execution_id] = result
         start_time = time.monotonic()
@@ -431,7 +411,7 @@ class CredibilityReviewWorkflow:
             result.errors.append(str(exc))
 
         finally:
-            result.completed_at = _utcnow()
+            result.completed_at = utcnow()
             result.total_duration_ms = (time.monotonic() - start_time) * 1000
             result.recommendation_assessments = self._build_assessments(ctx)
             result.report = self._build_report(ctx)
@@ -453,7 +433,7 @@ class CredibilityReviewWorkflow:
         return {"cancelled": True}
 
     async def _run_phase(self, phase: CredibilityPhase, ctx: Dict[str, Any]) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         st = time.monotonic()
         handler = {
             CredibilityPhase.HLEG_CRITERIA_ASSESSMENT: self._ph_hleg_assessment,
@@ -468,7 +448,7 @@ class CredibilityReviewWorkflow:
             out, warn, err, rec = {}, [], [str(exc)], 0
             status = PhaseStatus.FAILED
         return PhaseResult(
-            phase=phase, status=status, started_at=started, completed_at=_utcnow(),
+            phase=phase, status=status, started_at=started, completed_at=utcnow(),
             duration_ms=round((time.monotonic() - st) * 1000, 2), records_processed=rec,
             outputs=out, warnings=warn, errors=err,
             provenance_hash=_compute_hash(out) if self.config.enable_provenance else "",
@@ -766,7 +746,7 @@ class CredibilityReviewWorkflow:
 
         outputs["report_id"] = report_id
         outputs["org_name"] = self.config.org_name
-        outputs["assessment_date"] = _utcnow().strftime("%Y-%m-%d")
+        outputs["assessment_date"] = utcnow().strftime("%Y-%m-%d")
         outputs["overall_score"] = round(overall_score, 1)
         outputs["overall_rating"] = rating
         outputs["hleg_score"] = round(hleg_score, 1)

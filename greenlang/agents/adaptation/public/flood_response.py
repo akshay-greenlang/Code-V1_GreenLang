@@ -17,10 +17,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +44,7 @@ class FloodType(str, Enum):
     GROUNDWATER = "groundwater"
 
 
-class FloodZone(BaseModel):
+class FloodZone(GreenLangBase):
     """Flood zone definition."""
     zone_id: str = Field(...)
     zone_name: str = Field(...)
@@ -55,7 +56,7 @@ class FloodZone(BaseModel):
     return_period_years: Optional[int] = Field(None)
 
 
-class EvacuationRoute(BaseModel):
+class EvacuationRoute(GreenLangBase):
     """Evacuation route definition."""
     route_id: str = Field(...)
     route_name: str = Field(...)
@@ -67,7 +68,7 @@ class EvacuationRoute(BaseModel):
     alternate_routes: List[str] = Field(default_factory=list)
 
 
-class FloodShelter(BaseModel):
+class FloodShelter(GreenLangBase):
     """Emergency flood shelter."""
     shelter_id: str = Field(...)
     name: str = Field(...)
@@ -77,7 +78,7 @@ class FloodShelter(BaseModel):
     generator_available: bool = Field(default=False)
 
 
-class FloodResponsePlan(BaseModel):
+class FloodResponsePlan(GreenLangBase):
     """Flood response plan."""
     plan_id: str = Field(...)
     municipality_name: str = Field(...)
@@ -92,7 +93,7 @@ class FloodResponsePlan(BaseModel):
     provenance_hash: Optional[str] = Field(None)
 
 
-class FloodResponseInput(BaseModel):
+class FloodResponseInput(GreenLangBase):
     """Input for Flood Response Agent."""
     action: str = Field(...)
     plan_id: Optional[str] = Field(None)
@@ -113,7 +114,7 @@ class FloodResponseInput(BaseModel):
         return v
 
 
-class FloodResponseOutput(BaseModel):
+class FloodResponseOutput(GreenLangBase):
     """Output from Flood Response Agent."""
     success: bool = Field(...)
     action: str = Field(...)

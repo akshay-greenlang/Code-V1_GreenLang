@@ -44,14 +44,9 @@ from greenlang.agents.data.eudr_traceability.models import (
     PlotRecord,
     RecordTransferRequest,
 )
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -68,7 +63,6 @@ def _compute_hash(data: Any) -> str:
         serializable = data
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 class ChainOfCustodyEngine:
     """Chain of custody tracking engine for EUDR-regulated commodities.
@@ -519,7 +513,7 @@ class ChainOfCustodyEngine:
         from greenlang.agents.data.eudr_traceability.models import ComplianceStatus
         transfer.verification_status = ComplianceStatus.COMPLIANT
         transfer.verified_by = verifier
-        transfer.verified_at = _utcnow()
+        transfer.verified_at = utcnow()
 
         # Record provenance
         if self._provenance is not None:
@@ -624,7 +618,6 @@ class ChainOfCustodyEngine:
     def batch_count(self) -> int:
         """Return the total number of batches."""
         return len(self._batches)
-
 
 __all__ = [
     "ChainOfCustodyEngine",

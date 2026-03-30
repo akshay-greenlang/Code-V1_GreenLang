@@ -73,25 +73,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -109,7 +103,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -118,7 +111,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -130,22 +122,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class PFStatus(str, Enum):
     """Power factor quality classification.
@@ -162,7 +150,6 @@ class PFStatus(str, Enum):
     POOR = "poor"
     CRITICAL = "critical"
 
-
 class CorrectionType(str, Enum):
     """Power factor correction equipment type.
 
@@ -178,7 +165,6 @@ class CorrectionType(str, Enum):
     VSD_TUNING = "vsd_tuning"
     COMBINED = "combined"
 
-
 class LoadCategory(str, Enum):
     """Electrical load harmonic category.
 
@@ -189,7 +175,6 @@ class LoadCategory(str, Enum):
     LINEAR = "linear"
     NON_LINEAR = "non_linear"
     MIXED = "mixed"
-
 
 class HarmonicOrder(str, Enum):
     """Harmonic order for THD analysis.
@@ -211,7 +196,6 @@ class HarmonicOrder(str, Enum):
     H11 = "h11"
     H13 = "h13"
 
-
 class BillingMethod(str, Enum):
     """Utility power factor billing method.
 
@@ -224,7 +208,6 @@ class BillingMethod(str, Enum):
     KVA_BILLING = "kva_billing"
     PF_PENALTY = "pf_penalty"
     KVAR_CHARGE = "kvar_charge"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -298,11 +281,9 @@ DEFAULT_MIN_PF: Decimal = Decimal("0.90")
 # Standard frequency.
 FUNDAMENTAL_FREQ_HZ: Decimal = Decimal("60")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class PowerFactorReading(BaseModel):
     """Power factor measurement reading.
@@ -325,7 +306,7 @@ class PowerFactorReading(BaseModel):
         default_factory=_new_uuid, description="Reading ID"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Measurement timestamp"
+        default_factory=utcnow, description="Measurement timestamp"
     )
     kw: Decimal = Field(
         default=Decimal("0"), ge=0, description="Real power (kW)"
@@ -364,7 +345,6 @@ class PowerFactorReading(BaseModel):
     def compute_pf_if_zero(cls, v: Any, info: Any) -> Any:
         """Allow zero PF to be computed later from kW/kVA."""
         return v
-
 
 class ReactiveAnalysis(BaseModel):
     """Reactive power analysis input for correction sizing.
@@ -422,11 +402,9 @@ class ReactiveAnalysis(BaseModel):
             raise ValueError("Target PF must be >= 0.80")
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class CorrectionSizing(BaseModel):
     """Power factor correction equipment sizing result.
@@ -500,10 +478,9 @@ class CorrectionSizing(BaseModel):
         default_factory=dict, description="Resonance check"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class HarmonicProfile(BaseModel):
     """Harmonic distortion analysis profile.
@@ -545,10 +522,9 @@ class HarmonicProfile(BaseModel):
         default=Decimal("0"), description="Derating required (%)"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class PowerFactorResult(BaseModel):
     """Comprehensive power factor analysis result.
@@ -607,18 +583,16 @@ class PowerFactorResult(BaseModel):
         default=None, description="Savings estimate"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     processing_time_ms: float = Field(
         default=0.0, description="Processing time (ms)"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class PowerFactorEngine:
     """Power factor and reactive power analysis engine.
@@ -1081,7 +1055,7 @@ class PowerFactorEngine:
             "penalty_pct_of_base": str(_round_val(penalty_pct, 2)),
             "annualised_penalty_usd": str(_round_val(annual_penalty, 2)),
             "monthly_details": monthly_details,
-            "calculated_at": _utcnow().isoformat(),
+            "calculated_at": utcnow().isoformat(),
             "processing_time_ms": round(elapsed, 2),
         }
         result["provenance_hash"] = _compute_hash(result)
@@ -1219,7 +1193,7 @@ class PowerFactorEngine:
             "kvar_installed": str(_round_val(sizing.total_installed_kvar, 2)),
             "kva_reduction": str(_round_val(sizing.kva_reduction, 2)),
             "capacity_recovered_pct": str(_round_val(sizing.capacity_recovered_pct, 2)),
-            "calculated_at": _utcnow().isoformat(),
+            "calculated_at": utcnow().isoformat(),
             "processing_time_ms": round(elapsed, 2),
         }
         result["provenance_hash"] = _compute_hash(result)

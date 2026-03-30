@@ -48,7 +48,9 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+
+from greenlang.schemas import GreenLangBase, utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -57,16 +59,9 @@ __all__ = [
     "TransformEngine",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_provenance(operation: str, input_hash: str, params: str) -> str:
     """Compute SHA-256 provenance hash for a transform operation.
@@ -82,7 +77,6 @@ def _compute_provenance(operation: str, input_hash: str, params: str) -> str:
     data = f"{operation}:{input_hash}:{params}"
     return hashlib.sha256(data.encode()).hexdigest()
 
-
 def _hash_rows(rows: List[Dict[str, Any]]) -> str:
     """Compute SHA-256 hash of a row list for provenance.
 
@@ -95,7 +89,6 @@ def _hash_rows(rows: List[Dict[str, Any]]) -> str:
     content = str([(sorted(r.items()) if isinstance(r, dict) else r) for r in rows[:100]])
     return hashlib.sha256(content.encode()).hexdigest()
 
-
 # Date formats to try for normalisation
 _DATE_FORMATS: List[str] = [
     "%Y-%m-%d", "%m/%d/%Y", "%d/%m/%Y",
@@ -107,13 +100,11 @@ _DATE_FORMATS: List[str] = [
     "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d %H:%M:%S",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Data models
 # ---------------------------------------------------------------------------
 
-
-class TransformResult(BaseModel):
+class TransformResult(GreenLangBase):
     """Result of a transformation operation."""
 
     result_id: str = Field(
@@ -136,16 +127,14 @@ class TransformResult(BaseModel):
         default=0.0, ge=0.0, description="Processing duration",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Transform timestamp",
+        default_factory=utcnow, description="Transform timestamp",
     )
 
     model_config = {"extra": "forbid"}
 
-
 # ---------------------------------------------------------------------------
 # TransformEngine
 # ---------------------------------------------------------------------------
-
 
 class TransformEngine:
     """Data transformation engine with provenance tracking.
@@ -725,7 +714,7 @@ class TransformEngine:
                 "rows_input": self._stats["rows_input"],
                 "rows_output": self._stats["rows_output"],
                 "errors": self._stats["errors"],
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }
 
     # ------------------------------------------------------------------

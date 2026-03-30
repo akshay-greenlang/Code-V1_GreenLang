@@ -46,20 +46,16 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import AlertSeverity, AlertStatus
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "43.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -72,11 +68,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class AlertType(str, Enum):
     """Enterprise Scope 3 alert types."""
@@ -89,16 +83,6 @@ class AlertType(str, Enum):
     DATA_MATURITY = "data_maturity"
     GENERAL = "general"
 
-
-class AlertSeverity(str, Enum):
-    """Alert severity levels."""
-
-    INFO = "info"
-    WARNING = "warning"
-    CRITICAL = "critical"
-    EMERGENCY = "emergency"
-
-
 class AlertChannel(str, Enum):
     """Notification delivery channels."""
 
@@ -108,17 +92,6 @@ class AlertChannel(str, Enum):
     WEBHOOK = "webhook"
     IN_APP = "in_app"
     SMS = "sms"
-
-
-class AlertStatus(str, Enum):
-    """Alert lifecycle status."""
-
-    ACTIVE = "active"
-    ACKNOWLEDGED = "acknowledged"
-    RESOLVED = "resolved"
-    ESCALATED = "escalated"
-    SUPPRESSED = "suppressed"
-
 
 # ---------------------------------------------------------------------------
 # Threshold Definitions
@@ -166,11 +139,9 @@ ASSURANCE_MILESTONES: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class AlertConfig(BaseModel):
     """Alert system configuration."""
@@ -189,7 +160,6 @@ class AlertConfig(BaseModel):
     supplier_deadline_warning_days: int = Field(default=14, ge=3)
     assurance_milestone_alerts: bool = Field(default=True)
 
-
 class Alert(BaseModel):
     """Alert message with metadata."""
 
@@ -201,11 +171,10 @@ class Alert(BaseModel):
     recipient: str = Field(default="")
     details: Dict[str, Any] = Field(default_factory=dict)
     status: AlertStatus = Field(default=AlertStatus.ACTIVE)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     acknowledged_at: Optional[datetime] = Field(None)
     resolved_at: Optional[datetime] = Field(None)
     provenance_hash: str = Field(default="")
-
 
 class ScheduledAlert(BaseModel):
     """Scheduled alert with recurrence."""
@@ -219,7 +188,6 @@ class ScheduledAlert(BaseModel):
     next_fire: Optional[str] = Field(None)
     active: bool = Field(default=True)
 
-
 class SendResult(BaseModel):
     """Result of sending an alert."""
 
@@ -229,13 +197,11 @@ class SendResult(BaseModel):
     success: bool = Field(default=True)
     recipient: str = Field(default="")
     error: Optional[str] = Field(None)
-    sent_at: datetime = Field(default_factory=_utcnow)
-
+    sent_at: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # AlertBridge
 # ---------------------------------------------------------------------------
-
 
 class AlertBridge:
     """Enterprise alert and notification integration for PACK-043.
@@ -613,7 +579,7 @@ class AlertBridge:
         if not alert:
             return {"alert_id": alert_id, "acknowledged": False, "reason": "Not found"}
         alert.status = AlertStatus.ACKNOWLEDGED
-        alert.acknowledged_at = _utcnow()
+        alert.acknowledged_at = utcnow()
         return {"alert_id": alert_id, "acknowledged": True}
 
     def resolve_alert(self, alert_id: str) -> Dict[str, Any]:
@@ -622,7 +588,7 @@ class AlertBridge:
         if not alert:
             return {"alert_id": alert_id, "resolved": False, "reason": "Not found"}
         alert.status = AlertStatus.RESOLVED
-        alert.resolved_at = _utcnow()
+        alert.resolved_at = utcnow()
         return {"alert_id": alert_id, "resolved": True}
 
     def get_active_alerts(

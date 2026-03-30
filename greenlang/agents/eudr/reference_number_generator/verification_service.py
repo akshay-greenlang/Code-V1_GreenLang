@@ -55,6 +55,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from .config import ReferenceNumberGeneratorConfig, get_config
+from greenlang.schemas import utcnow
 from .models import (
     AGENT_ID,
     ReferenceNumberStatus,
@@ -62,17 +63,12 @@ from .models import (
     ValidatorType,
 )
 from .metrics import (
+
     observe_verification_duration,
     record_verification_performed,
 )
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 class VerificationLevel:
     """Verification depth levels."""
@@ -80,7 +76,6 @@ class VerificationLevel:
     BASIC = "basic"
     STANDARD = "standard"
     FULL = "full"
-
 
 class VerificationService:
     """Reference number verification and authenticity checking engine.
@@ -223,7 +218,7 @@ class VerificationService:
                 if expires_at_str:
                     try:
                         expires_at = datetime.fromisoformat(expires_at_str)
-                        now = _utcnow()
+                        now = utcnow()
                         if now >= expires_at:
                             checks.append({
                                 "check": ValidatorType.EXPIRATION.value,
@@ -277,7 +272,7 @@ class VerificationService:
 
         # Build verification report
         elapsed = time.monotonic() - start
-        now = _utcnow()
+        now = utcnow()
 
         report = {
             "verification_id": verification_id,
@@ -357,7 +352,7 @@ class VerificationService:
             "verification_level": level,
             "results": results,
             "batch_duration_ms": round(elapsed * 1000, 3),
-            "verified_at": _utcnow().isoformat(),
+            "verified_at": utcnow().isoformat(),
         }
 
     async def check_authenticity(

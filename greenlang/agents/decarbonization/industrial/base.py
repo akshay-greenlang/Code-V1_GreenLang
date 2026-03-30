@@ -35,7 +35,8 @@ from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Any, Dict, List, Optional, TypeVar, Generic
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +83,7 @@ class TimeHorizon(str, Enum):
 # DATA MODELS
 # =============================================================================
 
-class Technology(BaseModel):
+class Technology(GreenLangBase):
     """Decarbonization technology option."""
     technology_id: str = Field(..., description="Unique technology identifier")
     name: str = Field(..., description="Technology name")
@@ -103,7 +104,7 @@ class Technology(BaseModel):
     ramp_up_years: int = Field(default=3, ge=1, le=15)
 
 
-class Milestone(BaseModel):
+class Milestone(GreenLangBase):
     """Decarbonization milestone."""
     year: int = Field(ge=2024, le=2100)
     target_reduction_pct: Decimal = Field(ge=0, le=100)
@@ -112,7 +113,7 @@ class Milestone(BaseModel):
     technologies: List[str] = Field(default_factory=list)
 
 
-class DecarbonizationPathway(BaseModel):
+class DecarbonizationPathway(GreenLangBase):
     """Complete decarbonization pathway."""
     pathway_id: str
     name: str
@@ -140,7 +141,7 @@ class DecarbonizationPathway(BaseModel):
 # INPUT/OUTPUT MODELS
 # =============================================================================
 
-class DecarbonizationInput(BaseModel):
+class DecarbonizationInput(GreenLangBase):
     """Base input for decarbonization agents."""
     facility_id: str = Field(..., description="Unique facility identifier")
     sector: str = Field(..., description="Industrial sector")
@@ -166,7 +167,7 @@ class DecarbonizationInput(BaseModel):
         json_encoders = {Decimal: str}
 
 
-class DecarbonizationOutput(BaseModel):
+class DecarbonizationOutput(GreenLangBase):
     """Base output for decarbonization agents."""
     # Identification
     calculation_id: str

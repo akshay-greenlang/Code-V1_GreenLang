@@ -69,25 +69,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -107,13 +101,11 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely."""
     if isinstance(value, Decimal):
         return value
     return Decimal(str(value))
-
 
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
@@ -123,7 +115,6 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(
     part: Decimal, whole: Decimal, default: Decimal = Decimal("0")
 ) -> Decimal:
@@ -132,12 +123,10 @@ def _safe_pct(
         return default
     return part / whole * Decimal("100")
 
-
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
@@ -145,18 +134,15 @@ def _round2(value: float) -> float:
         Decimal("0.01"), rounding=ROUND_HALF_UP
     ))
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CDRType(str, Enum):
     """Type of Carbon Dioxide Removal technology or approach.
@@ -173,7 +159,6 @@ class CDRType(str, Enum):
     OCEAN_BASED = "ocean_based"
     SOIL_CARBON = "soil_carbon"
 
-
 class PermanenceCategory(str, Enum):
     """Permanence classification for CDR storage duration.
 
@@ -187,7 +172,6 @@ class PermanenceCategory(str, Enum):
     BIOLOGICAL_SHORT = "biological_short"
     OCEAN = "ocean"
 
-
 class ResidualAllowanceLevel(str, Enum):
     """Residual emission allowance level per SBTi sector guidance.
 
@@ -197,7 +181,6 @@ class ResidualAllowanceLevel(str, Enum):
     STRICT = "strict"
     STANDARD = "standard"
     ELEVATED = "elevated"
-
 
 class CDRReadinessLevel(str, Enum):
     """Technology Readiness Level classification for CDR options.
@@ -210,11 +193,9 @@ class CDRReadinessLevel(str, Enum):
     TRL_LOW = "trl_low"
     TRL_EMERGING = "trl_emerging"
 
-
 # ---------------------------------------------------------------------------
 # Reference Data Constants
 # ---------------------------------------------------------------------------
-
 
 # Sector-specific residual allowance percentages per SBTi guidance.
 # Key: sector identifier, Value: max residual % of base-year emissions.
@@ -300,7 +281,6 @@ SECTOR_RESIDUAL_ALLOWANCES: Dict[str, Dict[str, Any]] = {
         "rationale": "Default SBTi maximum residual allowance",
     },
 }
-
 
 # CDR option reference data: cost ranges, permanence, and readiness.
 # Cost in USD per tCO2e (2024 estimates from literature and market data).
@@ -482,11 +462,9 @@ TIMELINE_DEFAULTS: Dict[str, int] = {
     "full_deployment_buffer_years": 2,
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class ResidualInput(BaseModel):
     """Input data for residual emissions calculation.
@@ -571,7 +549,6 @@ class ResidualInput(BaseModel):
             )
         return v
 
-
 class CDROptionAssessment(BaseModel):
     """Assessment of a single CDR option for neutralization.
 
@@ -644,7 +621,6 @@ class CDROptionAssessment(BaseModel):
         default="", description="SHA-256 provenance hash"
     )
 
-
 class NeutralizationTimeline(BaseModel):
     """Timeline for securing CDR capacity for neutralization.
 
@@ -688,7 +664,6 @@ class NeutralizationTimeline(BaseModel):
         default="", description="SHA-256 provenance hash"
     )
 
-
 class ResidualResult(BaseModel):
     """Result of residual emissions and neutralization calculation.
 
@@ -704,7 +679,7 @@ class ResidualResult(BaseModel):
         description="Engine version",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Calculation timestamp (UTC)",
     )
     entity_name: str = Field(
@@ -788,11 +763,9 @@ class ResidualResult(BaseModel):
         default="", description="SHA-256 provenance hash of the entire result"
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ResidualEmissionsEngine:
     """Residual emissions and neutralization engine per SBTi Net-Zero Standard.

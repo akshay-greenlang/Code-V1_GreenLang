@@ -28,6 +28,8 @@ import logging
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _SECTIONS: List[str] = [
@@ -43,12 +45,6 @@ _SECTIONS: List[str] = [
     "methodology_notes",
 ]
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
     if hasattr(data, "model_dump"):
@@ -59,7 +55,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 class E2PollutionReportTemplate:
     """
@@ -87,7 +82,7 @@ class E2PollutionReportTemplate:
 
     def render(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render full report as structured dict."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result: Dict[str, Any] = {}
         for section in _SECTIONS:
             result[section] = self.render_section(section, data)
@@ -122,7 +117,7 @@ class E2PollutionReportTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render E2 Pollution report as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [
             self._md_header(data),
             self._md_pollution_policies(data),
@@ -143,7 +138,7 @@ class E2PollutionReportTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render E2 Pollution report as HTML."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         body = "\n".join([
             self._html_header(data),
@@ -163,7 +158,7 @@ class E2PollutionReportTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> str:
         """Render E2 Pollution report as JSON string."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = {
             "template": "e2_pollution_report",
             "esrs_reference": "ESRS E2",

@@ -31,6 +31,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Callable, Coroutine, Dict, List, Optional
+from greenlang.schemas.enums import HealthStatus
 
 logger = logging.getLogger(__name__)
 
@@ -38,15 +39,6 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
-class HealthStatus(str, Enum):
-    """Aggregate health status for an agent or the system."""
-
-    HEALTHY = "healthy"
-    UNHEALTHY = "unhealthy"
-    DEGRADED = "degraded"
-    UNKNOWN = "unknown"
-
 
 class ProbeType(str, Enum):
     """Category of health probe aligned with Kubernetes probe model."""

@@ -60,25 +60,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -98,18 +92,15 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _safe_pct(numerator: float, denominator: float) -> float:
     """Calculate percentage safely, returning 0.0 on zero denominator."""
     if denominator == 0.0:
         return 0.0
     return (numerator / denominator) * 100.0
 
-
 def _round_val(value: float, places: int = 4) -> float:
     """Round a float to specified decimal places."""
     return round(value, places)
-
 
 def _safe_divide(
     numerator: float, denominator: float, default: float = 0.0,
@@ -119,11 +110,9 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CarbonPathway(str, Enum):
     """Decarbonization pathway scenario alignment."""
@@ -133,7 +122,6 @@ class CarbonPathway(str, Enum):
     ABOVE_2C = "above_2c"
     NO_PATHWAY = "no_pathway"
 
-
 class TransitionPlanQuality(str, Enum):
     """Quality assessment of a company's transition plan."""
     COMPREHENSIVE = "comprehensive"
@@ -141,7 +129,6 @@ class TransitionPlanQuality(str, Enum):
     PARTIAL = "partial"
     INSUFFICIENT = "insufficient"
     ABSENT = "absent"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -172,11 +159,9 @@ ITR_THRESHOLDS: List[Tuple[float, float]] = [
 NET_ZERO_TARGET_YEAR: int = 2050
 INTERIM_TARGET_YEAR: int = 2030
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Data Models
 # ---------------------------------------------------------------------------
-
 
 class HoldingTrajectoryData(BaseModel):
     """Carbon trajectory data for a single portfolio holding.
@@ -312,7 +297,6 @@ class HoldingTrajectoryData(BaseModel):
                 self.current_intensity = total / revenue_m
         return self
 
-
 class ITRResult(BaseModel):
     """Implied Temperature Rise (ITR) calculation result.
 
@@ -359,12 +343,11 @@ class ITRResult(BaseModel):
         description="Holdings with carbon data coverage %",
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow, description="Assessment timestamp",
+        default_factory=utcnow, description="Assessment timestamp",
     )
     provenance_hash: str = Field(
         default="", description="SHA-256 provenance hash",
     )
-
 
 class CarbonBudgetResult(BaseModel):
     """Carbon budget utilization analysis result.
@@ -404,12 +387,11 @@ class CarbonBudgetResult(BaseModel):
         description="Year-by-year projected emissions trajectory",
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow, description="Assessment timestamp",
+        default_factory=utcnow, description="Assessment timestamp",
     )
     provenance_hash: str = Field(
         default="", description="SHA-256 provenance hash",
     )
-
 
 class SBTCoverageResult(BaseModel):
     """Science-Based Target coverage analysis for the portfolio.
@@ -451,12 +433,11 @@ class SBTCoverageResult(BaseModel):
         description="Holdings with Net Zero commitment %",
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow, description="Assessment timestamp",
+        default_factory=utcnow, description="Assessment timestamp",
     )
     provenance_hash: str = Field(
         default="", description="SHA-256 provenance hash",
     )
-
 
 class NetZeroProgress(BaseModel):
     """Net Zero progress tracking for the portfolio.
@@ -508,12 +489,11 @@ class NetZeroProgress(BaseModel):
         description="Projected years to reach Net Zero at current rate",
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow, description="Assessment timestamp",
+        default_factory=utcnow, description="Assessment timestamp",
     )
     provenance_hash: str = Field(
         default="", description="SHA-256 provenance hash",
     )
-
 
 class TrajectoryResult(BaseModel):
     """Complete carbon trajectory analysis result.
@@ -528,7 +508,7 @@ class TrajectoryResult(BaseModel):
         default="", description="Financial product name",
     )
     reporting_date: datetime = Field(
-        default_factory=_utcnow, description="Reporting date",
+        default_factory=utcnow, description="Reporting date",
     )
 
     # ITR
@@ -592,17 +572,15 @@ class TrajectoryResult(BaseModel):
         default=_MODULE_VERSION, description="Engine version",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp",
+        default_factory=utcnow, description="Calculation timestamp",
     )
     provenance_hash: str = Field(
         default="", description="SHA-256 provenance hash",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine Configuration
 # ---------------------------------------------------------------------------
-
 
 class TrajectoryConfig(BaseModel):
     """Configuration for the CarbonTrajectoryEngine.
@@ -659,7 +637,6 @@ class TrajectoryConfig(BaseModel):
         description="Interim reduction target from base year %",
     )
 
-
 # ---------------------------------------------------------------------------
 # model_rebuild for forward reference resolution
 # ---------------------------------------------------------------------------
@@ -672,11 +649,9 @@ SBTCoverageResult.model_rebuild()
 NetZeroProgress.model_rebuild()
 TrajectoryResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # CarbonTrajectoryEngine
 # ---------------------------------------------------------------------------
-
 
 class CarbonTrajectoryEngine:
     """
@@ -756,7 +731,7 @@ class CarbonTrajectoryEngine:
         Raises:
             ValueError: If holdings list is empty.
         """
-        start = _utcnow()
+        start = utcnow()
 
         if not holdings:
             raise ValueError("Holdings list cannot be empty")
@@ -796,7 +771,7 @@ class CarbonTrajectoryEngine:
         )
         data_coverage = _safe_pct(holdings_with_data, len(holdings))
 
-        processing_ms = (_utcnow() - start).total_seconds() * 1000.0
+        processing_ms = (utcnow() - start).total_seconds() * 1000.0
 
         result = TrajectoryResult(
             product_name=self.config.product_name,

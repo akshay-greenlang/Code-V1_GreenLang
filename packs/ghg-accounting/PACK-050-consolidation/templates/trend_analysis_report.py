@@ -32,21 +32,16 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Input Models
@@ -65,7 +60,6 @@ class AnnualEmissions(BaseModel):
     entity_count: int = Field(0)
     yoy_change_pct: Optional[Decimal] = Field(None)
 
-
 class IntensityMetric(BaseModel):
     """Intensity metric data point."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -77,7 +71,6 @@ class IntensityMetric(BaseModel):
     denominator_unit: str = Field("")
     intensity_value: Decimal = Field(Decimal("0"))
     yoy_change_pct: Optional[Decimal] = Field(None)
-
 
 class TargetProgress(BaseModel):
     """Target tracking data."""
@@ -94,7 +87,6 @@ class TargetProgress(BaseModel):
     on_track: bool = Field(False)
     gap_pct: Decimal = Field(Decimal("0"))
 
-
 class LikeForLikeLine(BaseModel):
     """Like-for-like comparison excluding M&A."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -104,7 +96,6 @@ class LikeForLikeLine(BaseModel):
     like_for_like_tco2e: Decimal = Field(Decimal("0"))
     like_for_like_yoy_pct: Optional[Decimal] = Field(None)
 
-
 class DecompositionEffect(BaseModel):
     """Decomposition analysis effect."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -112,7 +103,6 @@ class DecompositionEffect(BaseModel):
     effect_tco2e: Decimal = Field(Decimal("0"))
     effect_pct: Decimal = Field(Decimal("0"))
     description: str = Field("")
-
 
 class TrendAnalysisReportInput(BaseModel):
     """Complete input for the trend analysis report."""
@@ -126,7 +116,6 @@ class TrendAnalysisReportInput(BaseModel):
     decomposition: List[Dict[str, Any]] = Field(default_factory=list)
     base_year: int = Field(0)
     base_year_tco2e: Decimal = Field(Decimal("0"))
-
 
 # ---------------------------------------------------------------------------
 # Output Model
@@ -154,7 +143,6 @@ class TrendAnalysisReportOutput(BaseModel):
     like_for_like: List[LikeForLikeLine] = Field(default_factory=list)
     decomposition: List[DecompositionEffect] = Field(default_factory=list)
     provenance_hash: str = Field("")
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -185,7 +173,7 @@ class TrendAnalysisReport:
     def render(self, data: Dict[str, Any]) -> TrendAnalysisReportOutput:
         """Render trend analysis from input data."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         inp = TrendAnalysisReportInput(**data) if isinstance(data, dict) else data
 
         annual = [AnnualEmissions(**a) if isinstance(a, dict) else a for a in inp.annual_emissions]
@@ -400,7 +388,6 @@ class TrendAnalysisReport:
                 f"{a.entity_count},{yoy}"
             )
         return "\n".join(lines_out)
-
 
 __all__ = [
     "TrendAnalysisReport",

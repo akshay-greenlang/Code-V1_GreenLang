@@ -35,23 +35,17 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID-4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hex digest for provenance tracking."""
@@ -64,11 +58,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Execution status for a single workflow phase."""
@@ -77,7 +69,6 @@ class PhaseStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class EvidenceType(str, Enum):
     """Recognised evidence categories under the Directive."""
@@ -92,18 +83,15 @@ class EvidenceType(str, Enum):
     MONITORING_DATA = "monitoring_data"
     OTHER = "other"
 
-
 class ValidationOutcome(str, Enum):
     """Outcome of evidence validation."""
     ACCEPTED = "accepted"
     REJECTED = "rejected"
     NEEDS_REVIEW = "needs_review"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class WorkflowInput(BaseModel):
     """Input model for EvidenceCollectionWorkflow."""
@@ -120,7 +108,6 @@ class WorkflowInput(BaseModel):
     entity_name: str = Field(default="", description="Reporting entity name")
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
     phase_name: str = Field(..., description="Phase identifier")
@@ -129,7 +116,6 @@ class PhaseResult(BaseModel):
     completed_at: Optional[datetime] = Field(default=None)
     result_data: Dict[str, Any] = Field(default_factory=dict)
     error_message: Optional[str] = Field(default=None)
-
 
 class WorkflowResult(BaseModel):
     """Complete result from EvidenceCollectionWorkflow."""
@@ -142,11 +128,9 @@ class WorkflowResult(BaseModel):
     started_at: Optional[datetime] = Field(default=None)
     completed_at: Optional[datetime] = Field(default=None)
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class EvidenceCollectionWorkflow:
     """
@@ -209,7 +193,7 @@ class EvidenceCollectionWorkflow:
             config=kwargs.get("config", {}),
         )
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting %s workflow %s for claim %s",
                          self.WORKFLOW_NAME, self.workflow_id, input_data.claim_id)
         phase_results: List[PhaseResult] = []
@@ -242,12 +226,12 @@ class EvidenceCollectionWorkflow:
             phase_results.append(PhaseResult(
                 phase_name="error_capture",
                 status=PhaseStatus.FAILED,
-                started_at=_utcnow(),
-                completed_at=_utcnow(),
+                started_at=utcnow(),
+                completed_at=utcnow(),
                 error_message=str(exc),
             ))
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
 
         completed_phases = [p for p in phase_results if p.status == PhaseStatus.COMPLETED]
         overall_result: Dict[str, Any] = {
@@ -279,7 +263,7 @@ class EvidenceCollectionWorkflow:
 
     def _phase_requirements_identification(self, input_data: WorkflowInput) -> PhaseResult:
         """Determine the evidence types required for the claim."""
-        started = _utcnow()
+        started = utcnow()
         self.logger.info("Phase 1/5 RequirementsIdentification")
 
         # If caller supplied explicit types, use them; otherwise derive defaults
@@ -306,7 +290,7 @@ class EvidenceCollectionWorkflow:
             phase_name="RequirementsIdentification",
             status=PhaseStatus.COMPLETED,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             result_data=result_data,
         )
 
@@ -318,7 +302,7 @@ class EvidenceCollectionWorkflow:
         self, input_data: WorkflowInput, requirements: Dict[str, Any],
     ) -> PhaseResult:
         """Catalogue available evidence items and tag gaps."""
-        started = _utcnow()
+        started = utcnow()
         self.logger.info("Phase 2/5 EvidenceGathering")
 
         inventory: List[Dict[str, Any]] = []
@@ -351,7 +335,7 @@ class EvidenceCollectionWorkflow:
             phase_name="EvidenceGathering",
             status=PhaseStatus.COMPLETED,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             result_data=result_data,
         )
 
@@ -363,7 +347,7 @@ class EvidenceCollectionWorkflow:
         self, input_data: WorkflowInput, gathered: Dict[str, Any],
     ) -> PhaseResult:
         """Validate each evidence item for quality, recency, and relevance."""
-        started = _utcnow()
+        started = utcnow()
         self.logger.info("Phase 3/5 Validation")
 
         validated_items: List[Dict[str, Any]] = []
@@ -397,7 +381,7 @@ class EvidenceCollectionWorkflow:
             phase_name="Validation",
             status=PhaseStatus.COMPLETED,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             result_data=result_data,
         )
 
@@ -409,7 +393,7 @@ class EvidenceCollectionWorkflow:
         self, input_data: WorkflowInput, validated: Dict[str, Any],
     ) -> PhaseResult:
         """Build chain-of-custody linking claim to validated evidence."""
-        started = _utcnow()
+        started = utcnow()
         self.logger.info("Phase 4/5 ChainBuilding")
 
         chain_entries: List[Dict[str, Any]] = []
@@ -425,7 +409,7 @@ class EvidenceCollectionWorkflow:
                 "evidence_type": item.get("type", ""),
                 "claim_id": input_data.claim_id,
                 "validation_hash": item.get("validation_hash", ""),
-                "chain_timestamp": _utcnow().isoformat(),
+                "chain_timestamp": utcnow().isoformat(),
             })
 
         chain_hash = _compute_hash(chain_entries)
@@ -444,7 +428,7 @@ class EvidenceCollectionWorkflow:
             phase_name="ChainBuilding",
             status=PhaseStatus.COMPLETED,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             result_data=result_data,
         )
 
@@ -456,7 +440,7 @@ class EvidenceCollectionWorkflow:
         self, input_data: WorkflowInput, chain_data: Dict[str, Any],
     ) -> PhaseResult:
         """Archive the evidence chain for regulatory retention compliance."""
-        started = _utcnow()
+        started = utcnow()
         self.logger.info("Phase 5/5 Archival")
 
         # Directive requires evidence retention for the lifetime of the claim
@@ -469,10 +453,10 @@ class EvidenceCollectionWorkflow:
             "entity_name": input_data.entity_name,
             "chain_hash": chain_data.get("chain_hash", ""),
             "chain_length": chain_data.get("chain_length", 0),
-            "archived_at": _utcnow().isoformat(),
+            "archived_at": utcnow().isoformat(),
             "retention_years": retention_years,
             "retention_expiry": str(
-                _utcnow().year + retention_years
+                utcnow().year + retention_years
             ),
             "storage_format": "json",
             "is_complete": chain_data.get("is_complete", False),
@@ -489,7 +473,7 @@ class EvidenceCollectionWorkflow:
             phase_name="Archival",
             status=PhaseStatus.COMPLETED,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             result_data=result_data,
         )
 

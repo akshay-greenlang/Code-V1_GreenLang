@@ -37,14 +37,9 @@ import time
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -56,7 +51,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -72,7 +66,6 @@ SPATIAL_OPERATIONS = frozenset({
     "union", "contains", "within", "point_in_polygon",
     "bounding_box", "convex_hull", "simplify", "nearest_neighbor",
 })
-
 
 # ---------------------------------------------------------------------------
 # Data Structures
@@ -106,9 +99,8 @@ def _make_spatial_result(
         "output_data": output_data,
         "unit": unit,
         "metadata": metadata or {},
-        "created_at": _utcnow().isoformat(),
+        "created_at": utcnow().isoformat(),
     }
-
 
 # ---------------------------------------------------------------------------
 # Engine
@@ -1216,7 +1208,6 @@ class SpatialAnalyzerEngine:
             "total_analyses": len(results),
             "operation_distribution": op_counts,
         }
-
 
 __all__ = [
     "SpatialAnalyzerEngine",

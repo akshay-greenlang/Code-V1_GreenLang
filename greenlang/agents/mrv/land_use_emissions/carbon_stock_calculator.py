@@ -75,6 +75,7 @@ from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -136,15 +137,9 @@ except ImportError:
     _METRICS_AVAILABLE = False
     _record_calc_operation = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -155,7 +150,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Decimal precision constant
 # ---------------------------------------------------------------------------
@@ -165,13 +159,11 @@ _ZERO = Decimal("0")
 _ONE = Decimal("1")
 _THOUSAND = Decimal("1000")
 
-
 def _D(value: Any) -> Decimal:
     """Convert a value to Decimal with controlled precision."""
     if isinstance(value, Decimal):
         return value
     return Decimal(str(value))
-
 
 def _safe_decimal(value: Any, default: Decimal = _ZERO) -> Decimal:
     """Safely convert a value to Decimal, returning default on failure."""
@@ -182,18 +174,15 @@ def _safe_decimal(value: Any, default: Decimal = _ZERO) -> Decimal:
     except (InvalidOperation, ValueError, TypeError):
         return default
 
-
 # ===========================================================================
 # Enumerations
 # ===========================================================================
-
 
 class CalculationMethod(str, Enum):
     """Carbon stock change calculation methods."""
 
     STOCK_DIFFERENCE = "STOCK_DIFFERENCE"
     GAIN_LOSS = "GAIN_LOSS"
-
 
 class CarbonPool(str, Enum):
     """Five IPCC carbon pools."""
@@ -204,11 +193,9 @@ class CarbonPool(str, Enum):
     LITTER = "LITTER"
     SOC = "SOC"
 
-
 # ===========================================================================
 # Trace Step Dataclass
 # ===========================================================================
-
 
 @dataclass
 class TraceStep:
@@ -241,11 +228,9 @@ class TraceStep:
             "unit": self.unit,
         }
 
-
 # ===========================================================================
 # CarbonStockCalculatorEngine
 # ===========================================================================
-
 
 class CarbonStockCalculatorEngine:
     """Core carbon stock change calculator implementing IPCC stock-difference
@@ -292,7 +277,7 @@ class CarbonStockCalculatorEngine:
         self._gwp_source = gwp_source.upper()
         self._lock = threading.RLock()
         self._total_calculations: int = 0
-        self._created_at = _utcnow()
+        self._created_at = utcnow()
 
         logger.info(
             "CarbonStockCalculatorEngine initialized: "

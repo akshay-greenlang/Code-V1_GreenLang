@@ -62,15 +62,13 @@ import uuid
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import GreenLangBase, utcnow
 
 from pydantic import (
-    BaseModel,
-    ConfigDict,
     Field,
     field_validator,
     model_validator,
 )
-
 
 # ---------------------------------------------------------------------------
 # Cross-agent commodity import (graceful fallback)
@@ -83,16 +81,9 @@ try:
 except ImportError:
     _ExternalEUDRCommodity = None  # type: ignore[assignment,misc]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -148,11 +139,9 @@ SUPPORTED_FIELD_TYPES: List[str] = [
     "gps", "photo", "signature", "checkbox", "textarea",
 ]
 
-
 # =============================================================================
 # Enumerations
 # =============================================================================
-
 
 class FormStatus(str, Enum):
     """Form submission lifecycle status.
@@ -174,7 +163,6 @@ class FormStatus(str, Enum):
     SYNCED = "synced"
     FAILED = "failed"
 
-
 class FormType(str, Enum):
     """EUDR form type classifications per PRD Section 2.2.
 
@@ -193,7 +181,6 @@ class FormType(str, Enum):
     QUALITY_INSPECTION = "quality_inspection"
     SMALLHOLDER_DECLARATION = "smallholder_declaration"
 
-
 class CaptureAccuracyTier(str, Enum):
     """GPS capture accuracy classification per PRD Appendix B.
 
@@ -209,7 +196,6 @@ class CaptureAccuracyTier(str, Enum):
     ACCEPTABLE = "acceptable"
     POOR = "poor"
     REJECTED = "rejected"
-
 
 class PhotoType(str, Enum):
     """Photo evidence category classifications per PRD F3.4.
@@ -229,7 +215,6 @@ class PhotoType(str, Enum):
     TRANSPORT_PHOTO = "transport_photo"
     IDENTITY_PHOTO = "identity_photo"
 
-
 class SyncStatus(str, Enum):
     """Synchronization queue item status.
 
@@ -246,7 +231,6 @@ class SyncStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PERMANENTLY_FAILED = "permanently_failed"
-
 
 class ConflictResolution(str, Enum):
     """Sync conflict resolution strategy per PRD Appendix C.
@@ -266,7 +250,6 @@ class ConflictResolution(str, Enum):
     SET_UNION = "set_union"
     STATE_MACHINE = "state_machine"
 
-
 class TemplateType(str, Enum):
     """Form template type classifications.
 
@@ -279,7 +262,6 @@ class TemplateType(str, Enum):
     CUSTOM = "custom"
     INHERITED = "inherited"
 
-
 class SignatureAlgorithm(str, Enum):
     """Digital signature algorithm options.
 
@@ -290,7 +272,6 @@ class SignatureAlgorithm(str, Enum):
 
     ECDSA_P256 = "ecdsa_p256"
     ECDSA_P384 = "ecdsa_p384"
-
 
 class PackageStatus(str, Enum):
     """Data package lifecycle status.
@@ -309,7 +290,6 @@ class PackageStatus(str, Enum):
     VERIFIED = "verified"
     EXPIRED = "expired"
 
-
 class DeviceStatus(str, Enum):
     """Mobile device status in the fleet.
 
@@ -326,7 +306,6 @@ class DeviceStatus(str, Enum):
     LOW_STORAGE = "low_storage"
     DECOMMISSIONED = "decommissioned"
 
-
 class DevicePlatform(str, Enum):
     """Mobile device operating system platform.
 
@@ -338,7 +317,6 @@ class DevicePlatform(str, Enum):
     ANDROID = "android"
     IOS = "ios"
     HARMONYOS = "harmonyos"
-
 
 class CommodityType(str, Enum):
     """EUDR-regulated commodity types per EU 2023/1115 Article 1.
@@ -355,7 +333,6 @@ class CommodityType(str, Enum):
     SOYA = "soya"
     WOOD = "wood"
 
-
 class ComplianceStatus(str, Enum):
     """EUDR compliance assessment status.
 
@@ -369,7 +346,6 @@ class ComplianceStatus(str, Enum):
     NON_COMPLIANT = "non_compliant"
     PENDING_REVIEW = "pending_review"
     UNDER_INVESTIGATION = "under_investigation"
-
 
 class FieldType(str, Enum):
     """Form template field types per PRD F5.3.
@@ -396,7 +372,6 @@ class FieldType(str, Enum):
     SIGNATURE = "signature"
     CHECKBOX = "checkbox"
     TEXTAREA = "textarea"
-
 
 class LanguageCode(str, Enum):
     """Supported language codes per PRD Appendix D.
@@ -452,13 +427,11 @@ class LanguageCode(str, Enum):
     VI = "vi"
     KM = "km"
 
-
 # =============================================================================
 # Core Models (12)
 # =============================================================================
 
-
-class FormSubmission(BaseModel):
+class FormSubmission(GreenLangBase):
     """A single collected form submission from a mobile device.
 
     Represents a completed or in-progress form (producer registration,
@@ -555,11 +528,11 @@ class FormSubmission(BaseModel):
         description="Additional form metadata",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record creation timestamp",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record last update timestamp",
     )
 
@@ -576,8 +549,7 @@ class FormSubmission(BaseModel):
                 )
         return v
 
-
-class GPSCapture(BaseModel):
+class GPSCapture(GreenLangBase):
     """A single GPS point coordinate capture with accuracy metadata.
 
     Records a GPS fix from a mobile device sensor, including accuracy
@@ -663,7 +635,7 @@ class GPSCapture(BaseModel):
         None, description="Calculated accuracy classification",
     )
     capture_timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Device timestamp at capture",
     )
     srid: int = Field(
@@ -675,12 +647,11 @@ class GPSCapture(BaseModel):
         description="Additional capture metadata",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record creation timestamp",
     )
 
-
-class PolygonTrace(BaseModel):
+class PolygonTrace(GreenLangBase):
     """A plot boundary polygon trace with vertex array and area calculation.
 
     Records the perimeter of a plot of land via walk-around GPS tracing
@@ -769,12 +740,11 @@ class PolygonTrace(BaseModel):
         description="Additional polygon metadata",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record creation timestamp",
     )
 
-
-class PhotoEvidence(BaseModel):
+class PhotoEvidence(GreenLangBase):
     """A geotagged photo evidence record with integrity hash.
 
     Records a photo captured in the field with EXIF metadata, GPS
@@ -870,7 +840,7 @@ class PhotoEvidence(BaseModel):
         None, description="EXIF timestamp from photo metadata",
     )
     device_timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Device system time at capture",
     )
     compression_quality: Optional[int] = Field(
@@ -892,12 +862,11 @@ class PhotoEvidence(BaseModel):
         description="Additional photo metadata",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record creation timestamp",
     )
 
-
-class SyncQueueItem(BaseModel):
+class SyncQueueItem(GreenLangBase):
     """An item in the offline synchronization upload queue.
 
     Attributes:
@@ -963,16 +932,15 @@ class SyncQueueItem(BaseModel):
         None, description="Last error message if failed",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record creation timestamp",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record last update timestamp",
     )
 
-
-class SyncConflict(BaseModel):
+class SyncConflict(GreenLangBase):
     """A detected sync conflict between local and server data.
 
     Attributes:
@@ -1050,12 +1018,11 @@ class SyncConflict(BaseModel):
         description="Additional conflict metadata",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record creation timestamp",
     )
 
-
-class FormTemplate(BaseModel):
+class FormTemplate(GreenLangBase):
     """A dynamic form template definition for EUDR data collection.
 
     Attributes:
@@ -1132,16 +1099,15 @@ class FormTemplate(BaseModel):
         description="Additional template metadata",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record creation timestamp",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record last update timestamp",
     )
 
-
-class DigitalSignature(BaseModel):
+class DigitalSignature(GreenLangBase):
     """A digital signature record for custody transfers and declarations.
 
     Attributes:
@@ -1227,12 +1193,11 @@ class DigitalSignature(BaseModel):
         description="Additional signature metadata",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record creation timestamp",
     )
 
-
-class DataPackage(BaseModel):
+class DataPackage(GreenLangBase):
     """A self-contained data package with Merkle root integrity.
 
     Attributes:
@@ -1355,16 +1320,15 @@ class DataPackage(BaseModel):
         description="Additional package metadata",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record creation timestamp",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record last update timestamp",
     )
 
-
-class DeviceRegistration(BaseModel):
+class DeviceRegistration(GreenLangBase):
     """A registered mobile data collection device.
 
     Attributes:
@@ -1491,7 +1455,7 @@ class DeviceRegistration(BaseModel):
         None, description="Reason for decommissioning",
     )
     registered_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Device registration timestamp",
     )
     metadata: Dict[str, Any] = Field(
@@ -1499,16 +1463,15 @@ class DeviceRegistration(BaseModel):
         description="Additional device metadata",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record creation timestamp",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Record last update timestamp",
     )
 
-
-class DeviceEvent(BaseModel):
+class DeviceEvent(GreenLangBase):
     """A device telemetry event for fleet monitoring.
 
     Attributes:
@@ -1606,16 +1569,15 @@ class DeviceEvent(BaseModel):
         description="Connectivity type (none/2g/3g/4g/5g/wifi)",
     )
     event_timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Device clock timestamp",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Server receipt timestamp",
     )
 
-
-class AuditLogEntry(BaseModel):
+class AuditLogEntry(GreenLangBase):
     """An immutable audit trail entry for agent operations.
 
     Attributes:
@@ -1671,17 +1633,15 @@ class AuditLogEntry(BaseModel):
         None, description="Source IP address if available",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Action timestamp",
     )
-
 
 # =============================================================================
 # Request Models (15)
 # =============================================================================
 
-
-class SubmitFormRequest(BaseModel):
+class SubmitFormRequest(GreenLangBase):
     """Request to submit a completed form from a device."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1700,8 +1660,7 @@ class SubmitFormRequest(BaseModel):
     signature_ids: List[str] = Field(default_factory=list, description="Linked signature IDs")
     metadata: Dict[str, Any] = Field(default_factory=dict, description="Extra metadata")
 
-
-class CaptureGPSRequest(BaseModel):
+class CaptureGPSRequest(GreenLangBase):
     """Request to submit a GPS point capture."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1720,8 +1679,7 @@ class CaptureGPSRequest(BaseModel):
     capture_timestamp: Optional[datetime] = Field(None, description="Capture time")
     metadata: Dict[str, Any] = Field(default_factory=dict, description="Extra metadata")
 
-
-class CapturePolygonRequest(BaseModel):
+class CapturePolygonRequest(GreenLangBase):
     """Request to submit a polygon boundary trace."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1735,8 +1693,7 @@ class CapturePolygonRequest(BaseModel):
     capture_end: Optional[datetime] = Field(None, description="Trace end time")
     metadata: Dict[str, Any] = Field(default_factory=dict, description="Extra metadata")
 
-
-class UploadPhotoRequest(BaseModel):
+class UploadPhotoRequest(GreenLangBase):
     """Request to upload a photo with metadata."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1762,8 +1719,7 @@ class UploadPhotoRequest(BaseModel):
     batch_group_id: Optional[str] = Field(None, description="Batch group ID")
     metadata: Dict[str, Any] = Field(default_factory=dict, description="Extra metadata")
 
-
-class TriggerSyncRequest(BaseModel):
+class TriggerSyncRequest(GreenLangBase):
     """Request to trigger sync for a device."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1773,8 +1729,7 @@ class TriggerSyncRequest(BaseModel):
     max_items: Optional[int] = Field(None, ge=1, description="Max items to sync")
     item_types: Optional[List[str]] = Field(None, description="Filter item types")
 
-
-class ResolveConflictRequest(BaseModel):
+class ResolveConflictRequest(GreenLangBase):
     """Request to resolve a sync conflict."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1785,8 +1740,7 @@ class ResolveConflictRequest(BaseModel):
     resolved_by: str = Field(..., description="Operator resolving")
     reason: Optional[str] = Field(None, description="Resolution reason")
 
-
-class CreateTemplateRequest(BaseModel):
+class CreateTemplateRequest(GreenLangBase):
     """Request to create a form template."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1802,8 +1756,7 @@ class CreateTemplateRequest(BaseModel):
     language_packs: Dict[str, Dict[str, str]] = Field(default_factory=dict, description="Translations")
     metadata: Dict[str, Any] = Field(default_factory=dict, description="Extra metadata")
 
-
-class UpdateTemplateRequest(BaseModel):
+class UpdateTemplateRequest(GreenLangBase):
     """Request to update a form template."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1818,8 +1771,7 @@ class UpdateTemplateRequest(BaseModel):
     is_active: Optional[bool] = Field(None, description="Updated active status")
     metadata: Optional[Dict[str, Any]] = Field(None, description="Updated metadata")
 
-
-class CaptureSignatureRequest(BaseModel):
+class CaptureSignatureRequest(GreenLangBase):
     """Request to submit a captured digital signature."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1836,8 +1788,7 @@ class CaptureSignatureRequest(BaseModel):
     visual_signature_svg: Optional[str] = Field(None, description="SVG touch path")
     metadata: Dict[str, Any] = Field(default_factory=dict, description="Extra metadata")
 
-
-class BuildPackageRequest(BaseModel):
+class BuildPackageRequest(GreenLangBase):
     """Request to build a data package."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1854,8 +1805,7 @@ class BuildPackageRequest(BaseModel):
     seal: bool = Field(default=True, description="Seal package after build")
     metadata: Dict[str, Any] = Field(default_factory=dict, description="Extra metadata")
 
-
-class RegisterDeviceRequest(BaseModel):
+class RegisterDeviceRequest(GreenLangBase):
     """Request to register a new device in the fleet."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1868,8 +1818,7 @@ class RegisterDeviceRequest(BaseModel):
     assigned_area: Optional[Dict[str, Any]] = Field(None, description="Collection area GeoJSON")
     metadata: Dict[str, Any] = Field(default_factory=dict, description="Extra metadata")
 
-
-class UpdateDeviceRequest(BaseModel):
+class UpdateDeviceRequest(GreenLangBase):
     """Request to update a device registration."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1880,8 +1829,7 @@ class UpdateDeviceRequest(BaseModel):
     agent_version: Optional[str] = Field(None, description="Updated agent version")
     metadata: Optional[Dict[str, Any]] = Field(None, description="Updated metadata")
 
-
-class SearchFormsRequest(BaseModel):
+class SearchFormsRequest(GreenLangBase):
     """Request to search form submissions with filters."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1897,8 +1845,7 @@ class SearchFormsRequest(BaseModel):
     page: int = Field(default=1, ge=1, description="Page number")
     page_size: int = Field(default=50, ge=1, le=500, description="Page size")
 
-
-class GetDeviceStatusRequest(BaseModel):
+class GetDeviceStatusRequest(GreenLangBase):
     """Request to get device status and telemetry."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1907,8 +1854,7 @@ class GetDeviceStatusRequest(BaseModel):
     include_telemetry: bool = Field(default=True, description="Include telemetry history")
     telemetry_limit: int = Field(default=100, ge=1, le=1000, description="Max telemetry events")
 
-
-class ValidateFormRequest(BaseModel):
+class ValidateFormRequest(GreenLangBase):
     """Request to validate a form against its template schema."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1918,13 +1864,11 @@ class ValidateFormRequest(BaseModel):
     data: Dict[str, Any] = Field(..., description="Form data to validate")
     strictness: str = Field(default="strict", description="Validation strictness")
 
-
 # =============================================================================
 # Response Models (15)
 # =============================================================================
 
-
-class FormResponse(BaseModel):
+class FormResponse(GreenLangBase):
     """Response for form submission operations."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1937,8 +1881,7 @@ class FormResponse(BaseModel):
     message: str = Field(default="", description="Status message")
     form: Optional[FormSubmission] = Field(None, description="Full form data")
 
-
-class GPSResponse(BaseModel):
+class GPSResponse(GreenLangBase):
     """Response for GPS capture operations."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1950,8 +1893,7 @@ class GPSResponse(BaseModel):
     message: str = Field(default="", description="Status message")
     capture: Optional[GPSCapture] = Field(None, description="Full capture data")
 
-
-class PolygonResponse(BaseModel):
+class PolygonResponse(GreenLangBase):
     """Response for polygon trace operations."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1965,8 +1907,7 @@ class PolygonResponse(BaseModel):
     message: str = Field(default="", description="Status message")
     polygon: Optional[PolygonTrace] = Field(None, description="Full polygon data")
 
-
-class PhotoResponse(BaseModel):
+class PhotoResponse(GreenLangBase):
     """Response for photo upload operations."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1978,8 +1919,7 @@ class PhotoResponse(BaseModel):
     message: str = Field(default="", description="Status message")
     photo: Optional[PhotoEvidence] = Field(None, description="Full photo data")
 
-
-class SyncResponse(BaseModel):
+class SyncResponse(GreenLangBase):
     """Response for sync trigger operations."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1993,8 +1933,7 @@ class SyncResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Sync duration")
     message: str = Field(default="", description="Status message")
 
-
-class ConflictResponse(BaseModel):
+class ConflictResponse(GreenLangBase):
     """Response for conflict resolution operations."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -2007,8 +1946,7 @@ class ConflictResponse(BaseModel):
     message: str = Field(default="", description="Status message")
     conflict: Optional[SyncConflict] = Field(None, description="Full conflict data")
 
-
-class TemplateResponse(BaseModel):
+class TemplateResponse(GreenLangBase):
     """Response for template management operations."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -2019,8 +1957,7 @@ class TemplateResponse(BaseModel):
     message: str = Field(default="", description="Status message")
     template: Optional[FormTemplate] = Field(None, description="Full template data")
 
-
-class SignatureResponse(BaseModel):
+class SignatureResponse(GreenLangBase):
     """Response for signature capture/verification operations."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -2032,8 +1969,7 @@ class SignatureResponse(BaseModel):
     message: str = Field(default="", description="Status message")
     signature: Optional[DigitalSignature] = Field(None, description="Full signature data")
 
-
-class PackageResponse(BaseModel):
+class PackageResponse(GreenLangBase):
     """Response for data package operations."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -2048,8 +1984,7 @@ class PackageResponse(BaseModel):
     message: str = Field(default="", description="Status message")
     package: Optional[DataPackage] = Field(None, description="Full package data")
 
-
-class DeviceResponse(BaseModel):
+class DeviceResponse(GreenLangBase):
     """Response for device registration/update operations."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -2060,8 +1995,7 @@ class DeviceResponse(BaseModel):
     message: str = Field(default="", description="Status message")
     device: Optional[DeviceRegistration] = Field(None, description="Full device data")
 
-
-class DeviceStatusResponse(BaseModel):
+class DeviceStatusResponse(GreenLangBase):
     """Response for device status query operations."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -2076,8 +2010,7 @@ class DeviceStatusResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing duration")
     message: str = Field(default="", description="Status message")
 
-
-class SearchResponse(BaseModel):
+class SearchResponse(GreenLangBase):
     """Response for form search operations."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -2089,8 +2022,7 @@ class SearchResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Query duration")
     message: str = Field(default="", description="Status message")
 
-
-class SyncStatusResponse(BaseModel):
+class SyncStatusResponse(GreenLangBase):
     """Response for sync status query operations."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -2106,8 +2038,7 @@ class SyncStatusResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Query duration")
     message: str = Field(default="", description="Status message")
 
-
-class FleetStatusResponse(BaseModel):
+class FleetStatusResponse(GreenLangBase):
     """Response for fleet dashboard queries."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -2125,8 +2056,7 @@ class FleetStatusResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Query duration")
     message: str = Field(default="", description="Status message")
 
-
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Health check response for the Mobile Data Collector Agent."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -2160,6 +2090,6 @@ class HealthResponse(BaseModel):
         default=0.0, description="Service uptime in seconds",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Health check timestamp",
     )

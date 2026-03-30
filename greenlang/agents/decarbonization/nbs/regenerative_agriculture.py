@@ -16,10 +16,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism.clock import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +75,7 @@ PRACTICE_COSTS = {
 }
 
 
-class FarmAssessment(BaseModel):
+class FarmAssessment(GreenLangBase):
     farm_id: str = Field(...)
     area_ha: float = Field(..., gt=0)
     farm_type: FarmType = Field(...)
@@ -82,7 +83,7 @@ class FarmAssessment(BaseModel):
     soil_health_score: float = Field(default=0.5, ge=0, le=1)
 
 
-class RegenerativeAgPlan(BaseModel):
+class RegenerativeAgPlan(GreenLangBase):
     farm_id: str = Field(...)
     recommended_practices: List[RegenerativePractice] = Field(...)
     annual_sequestration_co2e: float = Field(...)
@@ -94,14 +95,14 @@ class RegenerativeAgPlan(BaseModel):
     yield_impact: str = Field(...)
 
 
-class RegenerativeAgInput(BaseModel):
+class RegenerativeAgInput(GreenLangBase):
     project_id: str = Field(...)
     farms: List[FarmAssessment] = Field(..., min_length=1)
     project_duration_years: int = Field(default=20)
     max_practices_per_farm: int = Field(default=4)
 
 
-class RegenerativeAgOutput(BaseModel):
+class RegenerativeAgOutput(GreenLangBase):
     project_id: str = Field(...)
     calculation_date: datetime = Field(default_factory=DeterministicClock.now)
     total_area_ha: float = Field(...)

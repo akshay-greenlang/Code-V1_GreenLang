@@ -28,33 +28,26 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 logger: Any  # forward reference -- assigned after import
 import logging
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import GreenLangBase, utcnow
 
+logger = logging.getLogger(__name__)
 
 # ===================================================================
 # Utility helpers
 # ===================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 # ===================================================================
 # Re-exported Layer 1 enums
 # ===================================================================
-
 
 class AgentLayer(str, Enum):
     """11-layer agent taxonomy for GreenLang Climate OS."""
@@ -107,7 +100,6 @@ class AgentLayer(str, Enum):
         }
         return descriptions[self]
 
-
 class SectorClassification(str, Enum):
     """10-sector classification for agent specialisation."""
 
@@ -139,7 +131,6 @@ class SectorClassification(str, Enum):
         }
         return descriptions[self]
 
-
 class AgentHealthStatus(str, Enum):
     """Health status of an agent in the registry."""
 
@@ -149,7 +140,6 @@ class AgentHealthStatus(str, Enum):
     UNKNOWN = "unknown"
     DISABLED = "disabled"
 
-
 class ExecutionMode(str, Enum):
     """Agent execution mode for GLIP v1 compatibility."""
 
@@ -157,14 +147,12 @@ class ExecutionMode(str, Enum):
     LEGACY_HTTP = "legacy_http"
     HYBRID = "hybrid"
 
-
 class IdempotencySupport(str, Enum):
     """Level of idempotency support for an agent."""
 
     FULL = "full"
     PARTIAL = "partial"
     NONE = "none"
-
 
 class CapabilityCategory(str, Enum):
     """Categories of agent capabilities."""
@@ -180,11 +168,9 @@ class CapabilityCategory(str, Enum):
     ANALYSIS = "analysis"
     REPORTING = "reporting"
 
-
 # ===================================================================
 # SDK-level enum addition
 # ===================================================================
-
 
 class RegistryChangeType(str, Enum):
     """Types of changes that can be audited in the registry."""
@@ -196,13 +182,11 @@ class RegistryChangeType(str, Enum):
     HEALTH_UPDATE = "health_update"
     MIGRATE = "migrate"
 
-
 # ===================================================================
 # Pydantic models -- Layer 1 compatible
 # ===================================================================
 
-
-class ResourceProfile(BaseModel):
+class ResourceProfile(GreenLangBase):
     """Resource requirements for GLIP v1 K8s Job execution."""
 
     cpu_request: str = Field(default="100m", description="CPU request (e.g., '100m', '1')")
@@ -215,8 +199,7 @@ class ResourceProfile(BaseModel):
     ephemeral_storage_limit: str = Field(default="10Gi", description="Ephemeral storage limit")
     timeout_seconds: int = Field(default=3600, ge=60, le=86400, description="Max execution time (60s-24h)")
 
-
-class ContainerSpec(BaseModel):
+class ContainerSpec(GreenLangBase):
     """Container specification for GLIP v1 agent execution."""
 
     image: str = Field(..., description="Docker image (e.g., 'greenlang/gl-mrv-x-001:1.0.0')")
@@ -236,8 +219,7 @@ class ContainerSpec(BaseModel):
             raise ValueError(f"Invalid Docker image format: {v}. Expected format: registry/name:tag")
         return v
 
-
-class LegacyHttpConfig(BaseModel):
+class LegacyHttpConfig(GreenLangBase):
     """Legacy HTTP endpoint configuration for backward compatibility."""
 
     endpoint: str = Field(..., description="HTTP endpoint URL")
@@ -248,8 +230,7 @@ class LegacyHttpConfig(BaseModel):
     retry_count: int = Field(default=3, ge=0, le=10, description="Retry count on failure")
     health_check_path: Optional[str] = Field(None, description="Health check endpoint path")
 
-
-class SemanticVersion(BaseModel):
+class SemanticVersion(GreenLangBase):
     """Semantic version representation with comparison support."""
 
     major: int = Field(ge=0, description="Major version (breaking changes)")
@@ -324,8 +305,7 @@ class SemanticVersion(BaseModel):
         """Check if this version is compatible with another (same major)."""
         return self.major == other.major
 
-
-class AgentCapability(BaseModel):
+class AgentCapability(GreenLangBase):
     """Definition of a specific agent capability."""
 
     name: str = Field(..., description="Capability name (unique identifier)")
@@ -354,8 +334,7 @@ class AgentCapability(BaseModel):
                 return False
         return True
 
-
-class AgentVariant(BaseModel):
+class AgentVariant(GreenLangBase):
     """Agent variant for geographic or fuel-type specialisation."""
 
     variant_type: str = Field(..., description="Type of variant (geography, fuel_type, protocol, etc.)")
@@ -367,8 +346,7 @@ class AgentVariant(BaseModel):
         """Get unique key for this variant."""
         return f"{self.variant_type}:{self.variant_value}"
 
-
-class AgentDependency(BaseModel):
+class AgentDependency(GreenLangBase):
     """Definition of an agent dependency."""
 
     agent_id: str = Field(..., description="Dependent agent ID")
@@ -409,8 +387,7 @@ class AgentDependency(BaseModel):
             target = SemanticVersion.parse(constraint)
             return str(version) == str(target)
 
-
-class AgentMetadataEntry(BaseModel):
+class AgentMetadataEntry(GreenLangBase):
     """Complete metadata entry for a registered agent.
 
     Contains all information needed to discover, instantiate, and
@@ -454,8 +431,8 @@ class AgentMetadataEntry(BaseModel):
     tags: List[str] = Field(default_factory=list, description="Searchable tags")
 
     # Audit
-    registered_at: datetime = Field(default_factory=_utcnow, description="Registration timestamp")
-    updated_at: datetime = Field(default_factory=_utcnow, description="Last update timestamp")
+    registered_at: datetime = Field(default_factory=utcnow, description="Registration timestamp")
+    updated_at: datetime = Field(default_factory=utcnow, description="Last update timestamp")
 
     # GLIP v1 extensions
     execution_mode: ExecutionMode = Field(
@@ -551,13 +528,11 @@ class AgentMetadataEntry(BaseModel):
         """Check if agent supports GLIP v1 execution."""
         return self.execution_mode in (ExecutionMode.GLIP_V1, ExecutionMode.HYBRID)
 
-
 # ===================================================================
 # Query / resolution models
 # ===================================================================
 
-
-class RegistryQueryInput(BaseModel):
+class RegistryQueryInput(GreenLangBase):
     """Input for registry query operations."""
 
     layer: Optional[AgentLayer] = Field(None, description="Filter by layer")
@@ -571,8 +546,7 @@ class RegistryQueryInput(BaseModel):
     limit: int = Field(default=100, ge=1, le=1000, description="Maximum results to return")
     offset: int = Field(default=0, ge=0, description="Offset for pagination")
 
-
-class RegistryQueryOutput(BaseModel):
+class RegistryQueryOutput(GreenLangBase):
     """Output from registry query operations."""
 
     agents: List[AgentMetadataEntry] = Field(default_factory=list, description="Matching agents")
@@ -580,16 +554,14 @@ class RegistryQueryOutput(BaseModel):
     query_time_ms: float = Field(default=0.0, description="Query execution time")
     provenance_hash: str = Field(default="", description="Hash for audit trail")
 
-
-class DependencyResolutionInput(BaseModel):
+class DependencyResolutionInput(GreenLangBase):
     """Input for dependency resolution."""
 
     agent_ids: List[str] = Field(..., description="Agent IDs to resolve dependencies for")
     include_optional: bool = Field(default=False, description="Include optional dependencies")
     fail_on_missing: bool = Field(default=True, description="Fail if dependency is missing")
 
-
-class DependencyResolutionOutput(BaseModel):
+class DependencyResolutionOutput(GreenLangBase):
     """Output from dependency resolution."""
 
     resolved_order: List[str] = Field(default_factory=list, description="Topologically sorted agent IDs")
@@ -600,13 +572,11 @@ class DependencyResolutionOutput(BaseModel):
     success: bool = Field(default=True, description="Whether resolution succeeded")
     error: Optional[str] = Field(None, description="Error message if failed")
 
-
 # ===================================================================
 # SDK-level additions
 # ===================================================================
 
-
-class HealthCheckResult(BaseModel):
+class HealthCheckResult(GreenLangBase):
     """Structured result from a health check probe.
 
     Attributes:
@@ -623,12 +593,11 @@ class HealthCheckResult(BaseModel):
     version: str = Field(default="latest", description="Checked version")
     status: AgentHealthStatus = Field(..., description="Resulting health status")
     response_time_ms: float = Field(default=0.0, description="Probe response time in ms")
-    checked_at: datetime = Field(default_factory=_utcnow, description="Probe timestamp")
+    checked_at: datetime = Field(default_factory=utcnow, description="Probe timestamp")
     error: Optional[str] = Field(None, description="Error message if probe failed")
     details: Dict[str, Any] = Field(default_factory=dict, description="Additional probe details")
 
-
-class ServiceCatalogEntry(BaseModel):
+class ServiceCatalogEntry(GreenLangBase):
     """Rich service catalog entry combining metadata with runtime state.
 
     Extends AgentMetadataEntry with health summary and dependency info
@@ -661,7 +630,7 @@ class ServiceCatalogEntry(BaseModel):
         default=AgentHealthStatus.UNKNOWN, description="Current health",
     )
     dependency_ids: List[str] = Field(default_factory=list, description="Dependency agent IDs")
-    registered_at: datetime = Field(default_factory=_utcnow, description="Registration timestamp")
+    registered_at: datetime = Field(default_factory=utcnow, description="Registration timestamp")
     documentation_url: Optional[str] = Field(None, description="Link to docs")
 
     @classmethod
@@ -689,8 +658,7 @@ class ServiceCatalogEntry(BaseModel):
             documentation_url=metadata.documentation_url,
         )
 
-
-class RegistryAuditEntry(BaseModel):
+class RegistryAuditEntry(GreenLangBase):
     """Audit entry for a registry change.
 
     Attributes:
@@ -709,10 +677,9 @@ class RegistryAuditEntry(BaseModel):
     agent_id: str = Field(..., description="Affected agent ID")
     version: str = Field(default="", description="Affected version")
     user_id: str = Field(default="system", description="User who made the change")
-    timestamp: datetime = Field(default_factory=_utcnow, description="Change timestamp")
+    timestamp: datetime = Field(default_factory=utcnow, description="Change timestamp")
     data_hash: str = Field(default="", description="SHA-256 hash of data at this point")
     details: Dict[str, Any] = Field(default_factory=dict, description="Additional context")
-
 
 __all__ = [
     # Enums

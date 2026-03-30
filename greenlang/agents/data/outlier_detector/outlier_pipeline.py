@@ -55,21 +55,15 @@ from greenlang.agents.data.outlier_detector.provenance import ProvenanceTracker
 from greenlang.agents.data.outlier_detector.statistical_detector import StatisticalDetectorEngine
 from greenlang.agents.data.outlier_detector.temporal_detector import TemporalDetectorEngine
 from greenlang.agents.data.outlier_detector.treatment_engine import TreatmentEngine
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _safe_mean(values: List[float]) -> float:
     """Compute arithmetic mean, returning 0.0 for empty lists."""
     if not values:
         return 0.0
     return sum(values) / len(values)
-
 
 def _severity_from_score(score: float) -> SeverityLevel:
     """Map normalised score to severity level."""
@@ -82,7 +76,6 @@ def _severity_from_score(score: float) -> SeverityLevel:
     if score >= 0.40:
         return SeverityLevel.LOW
     return SeverityLevel.INFO
-
 
 class OutlierPipelineEngine:
     """End-to-end outlier detection pipeline engine.
@@ -572,7 +565,7 @@ class OutlierPipelineEngine:
                 "chain_length": self._provenance.get_chain_length(),
                 "genesis_hash": ProvenanceTracker.GENESIS_HASH,
             },
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
         }
 
         provenance_hash = self._provenance.build_hash(doc)
@@ -980,7 +973,7 @@ class OutlierPipelineEngine:
         self._checkpoints[key] = {
             "stage": stage,
             "data": data,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
         logger.debug("Checkpoint saved: %s", key)
         return key
@@ -1064,7 +1057,6 @@ class OutlierPipelineEngine:
             column_summaries=column_summaries,
             provenance_hash=provenance_hash,
         )
-
 
 __all__ = [
     "OutlierPipelineEngine",

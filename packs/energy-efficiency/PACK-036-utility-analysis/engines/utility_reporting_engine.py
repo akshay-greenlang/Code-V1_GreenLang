@@ -68,6 +68,9 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ReportFormat
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
@@ -77,21 +80,13 @@ _MODULE_VERSION: str = "1.0.0"
 # ---------------------------------------------------------------------------
 REPORT_VERSION: str = "36.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -109,7 +104,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -118,7 +112,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -130,31 +123,25 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* decimal digits and return float."""
     return float(value.quantize(Decimal(10) ** -places, rounding=ROUND_HALF_UP))
 
-
 def _round2(value: Any) -> float:
     """Round to 2 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round3(value: Any) -> float:
     """Round to 3 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: Any) -> float:
     """Round to 4 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
-
 
 def _change_pct(current: Decimal, previous: Decimal) -> Decimal:
     """Calculate percentage change from previous to current."""
@@ -162,11 +149,9 @@ def _change_pct(current: Decimal, previous: Decimal) -> Decimal:
         return Decimal("0")
     return (current - previous) / abs(previous) * Decimal("100")
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ReportType(str, Enum):
     """Types of utility reports.
@@ -197,25 +182,6 @@ class ReportType(str, Enum):
     SAVINGS_TRACKING = "savings_tracking"
     CUSTOM = "custom"
 
-
-class ReportFormat(str, Enum):
-    """Supported report export formats.
-
-    MARKDOWN:  Structured Markdown text.
-    HTML:      HTML document with inline styles.
-    PDF:       JSON data structure for PDF rendering.
-    JSON:      Machine-readable JSON.
-    CSV:       Tabular CSV data.
-    EXCEL:     JSON data structure for Excel rendering.
-    """
-    MARKDOWN = "markdown"
-    HTML = "html"
-    PDF = "pdf"
-    JSON = "json"
-    CSV = "csv"
-    EXCEL = "excel"
-
-
 class RAGStatus(str, Enum):
     """Red-Amber-Green status indicator.
 
@@ -228,7 +194,6 @@ class RAGStatus(str, Enum):
     AMBER = "amber"
     GREEN = "green"
     GREY = "grey"
-
 
 class KPICategory(str, Enum):
     """Category of key performance indicator.
@@ -249,7 +214,6 @@ class KPICategory(str, Enum):
     COMPLIANCE = "compliance"
     PROCUREMENT = "procurement"
 
-
 class TrendDirection(str, Enum):
     """Direction of a KPI trend.
 
@@ -262,7 +226,6 @@ class TrendDirection(str, Enum):
     DOWN = "down"
     FLAT = "flat"
     VOLATILE = "volatile"
-
 
 class AnomalyType(str, Enum):
     """Types of utility anomalies.
@@ -280,7 +243,6 @@ class AnomalyType(str, Enum):
     BILL_ERROR = "bill_error"
     MISSING_DATA = "missing_data"
     RATE_CHANGE = "rate_change"
-
 
 class WidgetType(str, Enum):
     """Dashboard widget types.
@@ -305,7 +267,6 @@ class WidgetType(str, Enum):
     SPARKLINE = "sparkline"
     MAP = "map"
 
-
 class CommodityType(str, Enum):
     """Utility commodity types.
 
@@ -323,11 +284,9 @@ class CommodityType(str, Enum):
     CHILLED_WATER = "chilled_water"
     ALL = "all"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Core
 # ---------------------------------------------------------------------------
-
 
 class UtilityKPI(BaseModel):
     """A single key performance indicator for utility reporting.
@@ -359,7 +318,6 @@ class UtilityKPI(BaseModel):
     sparkline_data: List[float] = Field(default_factory=list)
     commodity: CommodityType = Field(default=CommodityType.ALL)
 
-
 class MonthlyUtilitySummary(BaseModel):
     """Monthly utility summary for a single commodity.
 
@@ -390,7 +348,6 @@ class MonthlyUtilitySummary(BaseModel):
     eui: float = Field(default=0.0)
     carbon_tco2e: float = Field(default=0.0)
 
-
 class PortfolioSummary(BaseModel):
     """Portfolio-level utility summary across facilities.
 
@@ -415,7 +372,6 @@ class PortfolioSummary(BaseModel):
         default_factory=lambda: {"red": 0, "amber": 0, "green": 0},
     )
 
-
 class VarianceExplanation(BaseModel):
     """Explanation of a budget variance component.
 
@@ -429,7 +385,6 @@ class VarianceExplanation(BaseModel):
     impact_eur: float = Field(default=0.0)
     impact_pct: float = Field(default=0.0)
     description: str = Field(default="", max_length=500)
-
 
 class TrendData(BaseModel):
     """Trend data for a specific metric over time.
@@ -448,7 +403,6 @@ class TrendData(BaseModel):
     trend_direction: TrendDirection = Field(default=TrendDirection.FLAT)
     yoy_change_pct: float = Field(default=0.0)
     rolling_12m_avg: float = Field(default=0.0)
-
 
 class AnomalyFlag(BaseModel):
     """Flagged anomaly in utility data.
@@ -476,7 +430,6 @@ class AnomalyFlag(BaseModel):
     description: str = Field(default="", max_length=500)
     recommended_action: str = Field(default="", max_length=500)
 
-
 class DashboardWidget(BaseModel):
     """Dashboard widget definition with data and layout.
 
@@ -499,7 +452,6 @@ class DashboardWidget(BaseModel):
     width: int = Field(default=3, ge=1, le=12)
     height: int = Field(default=2, ge=1, le=12)
 
-
 class ExecutiveInsight(BaseModel):
     """Executive-level insight derived from utility data.
 
@@ -520,11 +472,9 @@ class ExecutiveInsight(BaseModel):
     priority: int = Field(default=3, ge=1, le=5)
     action_required: bool = Field(default=False)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Configuration
 # ---------------------------------------------------------------------------
-
 
 class ReportConfig(BaseModel):
     """Configuration for report generation.
@@ -562,11 +512,9 @@ class ReportConfig(BaseModel):
     organisation: str = Field(default="", max_length=500)
     author: str = Field(default="GreenLang Platform", max_length=200)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class ReportOutput(BaseModel):
     """Complete report output with content and metadata.
@@ -596,7 +544,7 @@ class ReportOutput(BaseModel):
     report_type: ReportType = Field(default=ReportType.MONTHLY_SUMMARY)
     format: ReportFormat = Field(default=ReportFormat.MARKDOWN)
     title: str = Field(default="")
-    generated_at: datetime = Field(default_factory=_utcnow)
+    generated_at: datetime = Field(default_factory=utcnow)
     period: str = Field(default="")
     content: str = Field(default="")
     data: Dict[str, Any] = Field(default_factory=dict)
@@ -609,14 +557,12 @@ class ReportOutput(BaseModel):
     methodology_notes: List[str] = Field(default_factory=list)
     processing_time_ms: float = Field(default=0.0)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class UtilityReportingEngine:
     """Zero-hallucination utility reporting and dashboard engine.
@@ -1695,7 +1641,7 @@ class UtilityReportingEngine:
             f"| Period | {config.period_start} to {config.period_end} |\n"
             f"| Organisation | {config.organisation} |\n"
             f"| Author | {config.author} |\n"
-            f"| Generated | {_utcnow().isoformat()} |\n"
+            f"| Generated | {utcnow().isoformat()} |\n"
             f"| Engine | PACK-036 v{_MODULE_VERSION} |\n"
         )
 
@@ -2394,7 +2340,6 @@ class UtilityReportingEngine:
             return 0
         return max(1, len(content) // 3000 + 1)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic v2 model_rebuild for forward-reference resolution
 # ---------------------------------------------------------------------------
@@ -2409,7 +2354,6 @@ DashboardWidget.model_rebuild()
 ExecutiveInsight.model_rebuild()
 ReportConfig.model_rebuild()
 ReportOutput.model_rebuild()
-
 
 # ---------------------------------------------------------------------------
 # Public Aliases -- required by PACK-036 __init__.py symbol contract

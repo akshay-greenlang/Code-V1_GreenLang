@@ -29,33 +29,25 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class WorkflowPhase(str, Enum):
     """Phases of the climate risk workflow."""
@@ -66,7 +58,6 @@ class WorkflowPhase(str, Enum):
     FINANCIAL_AGGREGATION = "financial_aggregation"
     REPORT_GENERATION = "report_generation"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "pending"
@@ -75,7 +66,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class PhaseStatus(str, Enum):
     """Status of a single phase."""
     PENDING = "pending"
@@ -83,7 +73,6 @@ class PhaseStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class RiskCategory(str, Enum):
     """Climate risk category."""
@@ -95,13 +84,11 @@ class RiskCategory(str, Enum):
     TRANSITION_REPUTATION = "transition_reputation"
     TRANSITION_LEGAL = "transition_legal"
 
-
 class TimeHorizon(str, Enum):
     """Risk time horizon."""
     SHORT_TERM = "short_term"
     MEDIUM_TERM = "medium_term"
     LONG_TERM = "long_term"
-
 
 class LikelihoodLevel(str, Enum):
     """Risk likelihood level."""
@@ -111,7 +98,6 @@ class LikelihoodLevel(str, Enum):
     HIGH = "high"
     VERY_HIGH = "very_high"
 
-
 class MagnitudeLevel(str, Enum):
     """Risk magnitude level."""
     NEGLIGIBLE = "negligible"
@@ -119,7 +105,6 @@ class MagnitudeLevel(str, Enum):
     MODERATE = "moderate"
     HIGH = "high"
     VERY_HIGH = "very_high"
-
 
 class FinancialEffectType(str, Enum):
     """Financial effect type."""
@@ -133,11 +118,9 @@ class FinancialEffectType(str, Enum):
     REVENUE_OPPORTUNITY = "revenue_opportunity"
     COST_SAVINGS = "cost_savings"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -148,7 +131,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class ClimateRisk(BaseModel):
     """A climate risk record."""
@@ -168,7 +150,6 @@ class ClimateRisk(BaseModel):
     location: str = Field(default="")
     scenario_sensitivity: Dict[str, float] = Field(default_factory=dict)
 
-
 class ClimateOpportunity(BaseModel):
     """A climate-related opportunity."""
     opportunity_id: str = Field(default_factory=lambda: f"co-{_new_uuid()[:8]}")
@@ -181,7 +162,6 @@ class ClimateOpportunity(BaseModel):
     investment_required_eur: float = Field(default=0.0, ge=0.0)
     roi_pct: float = Field(default=0.0)
 
-
 class FinancialEffect(BaseModel):
     """Aggregated financial effect from climate risks/opportunities."""
     effect_type: FinancialEffectType = Field(...)
@@ -190,7 +170,6 @@ class FinancialEffect(BaseModel):
     is_risk: bool = Field(default=True)
     source_ids: List[str] = Field(default_factory=list)
     description: str = Field(default="")
-
 
 class ClimateRiskInput(BaseModel):
     """Input data model for ClimateRiskWorkflow."""
@@ -215,7 +194,6 @@ class ClimateRiskInput(BaseModel):
     entity_name: str = Field(default="")
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class ClimateRiskResult(BaseModel):
     """Complete result from climate risk workflow."""
     workflow_id: str = Field(..., description="Unique execution ID")
@@ -239,7 +217,6 @@ class ClimateRiskResult(BaseModel):
     assets_at_risk_pct: float = Field(default=0.0)
     reporting_year: int = Field(default=2025)
     provenance_hash: str = Field(default="")
-
 
 # =============================================================================
 # SCORING MAPS
@@ -268,11 +245,9 @@ SCENARIO_MULTIPLIERS: Dict[str, Dict[str, float]] = {
     "rcp8.5": {"physical_acute": 1.8, "physical_chronic": 2.0, "transition_policy": 0.8, "transition_technology": 0.9},
 }
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class ClimateRiskWorkflow:
     """
@@ -344,7 +319,7 @@ class ClimateRiskWorkflow:
                 config=config or {},
             )
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting climate risk workflow %s", self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = WorkflowStatus.IN_PROGRESS
@@ -364,7 +339,7 @@ class ClimateRiskWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         completed_count = sum(1 for p in phase_results if p.status == PhaseStatus.COMPLETED)
         physical = sum(1 for r in self._risks if r.category.value.startswith("physical"))
         transition = sum(1 for r in self._risks if r.category.value.startswith("transition"))
@@ -413,7 +388,7 @@ class ClimateRiskWorkflow:
         self, input_data: ClimateRiskInput,
     ) -> PhaseResult:
         """Identify physical and transition climate risks."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -437,7 +412,7 @@ class ClimateRiskWorkflow:
         if not self._risks:
             warnings.append("No climate risks identified")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 1 RiskIdentification: %d risks (%d physical, %d transition)",
             len(self._risks), physical, transition,
@@ -456,7 +431,7 @@ class ClimateRiskWorkflow:
         self, input_data: ClimateRiskInput,
     ) -> PhaseResult:
         """Quantify risk likelihood and magnitude scores."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -481,7 +456,7 @@ class ClimateRiskWorkflow:
 
         outputs["risks_quantified"] = len(self._risks)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 2 RiskQuantification: %d risks scored", len(self._risks))
         return PhaseResult(
             phase_name=WorkflowPhase.RISK_QUANTIFICATION.value, status=PhaseStatus.COMPLETED,
@@ -497,7 +472,7 @@ class ClimateRiskWorkflow:
         self, input_data: ClimateRiskInput,
     ) -> PhaseResult:
         """Identify and assess climate-related opportunities."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -519,7 +494,7 @@ class ClimateRiskWorkflow:
             if self._opportunities else 0.0, 1
         )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 3 OpportunityAssessment: %d opportunities, %.0f EUR value",
             len(self._opportunities), total_value,
@@ -538,7 +513,7 @@ class ClimateRiskWorkflow:
         self, input_data: ClimateRiskInput,
     ) -> PhaseResult:
         """Run scenario-based risk analysis."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -577,7 +552,7 @@ class ClimateRiskWorkflow:
             outputs["worst_case_scenario"] = worst_scenario[0]
             outputs["worst_case_impact_eur"] = worst_scenario[1]["total_impact_eur"]
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 4 ScenarioAnalysis: %d scenarios analyzed", len(input_data.scenarios))
         return PhaseResult(
             phase_name=WorkflowPhase.SCENARIO_ANALYSIS.value, status=PhaseStatus.COMPLETED,
@@ -593,7 +568,7 @@ class ClimateRiskWorkflow:
         self, input_data: ClimateRiskInput,
     ) -> PhaseResult:
         """Aggregate financial effects from risks and opportunities."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._financial_effects = []
@@ -635,7 +610,7 @@ class ClimateRiskWorkflow:
         outputs["total_opportunity_value_eur"] = round(total_opp, 2)
         outputs["net_impact_eur"] = round(total_opp - total_risk, 2)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 5 FinancialAggregation: risk=%.0f EUR, opportunity=%.0f EUR",
             total_risk, total_opp,
@@ -654,7 +629,7 @@ class ClimateRiskWorkflow:
         self, input_data: ClimateRiskInput,
     ) -> PhaseResult:
         """Generate E1-9 disclosure-ready output."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -684,7 +659,7 @@ class ClimateRiskWorkflow:
 
         outputs["report_ready"] = True
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 6 ReportGeneration: E1-9 disclosure ready")
         return PhaseResult(
             phase_name=WorkflowPhase.REPORT_GENERATION.value, status=PhaseStatus.COMPLETED,

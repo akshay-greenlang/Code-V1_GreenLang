@@ -61,7 +61,8 @@ from typing import (
     runtime_checkable,
 )
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -151,7 +152,7 @@ class DiscoveryStatus(str, Enum):
 # =============================================================================
 
 
-class CommodityArchetype(BaseModel):
+class CommodityArchetype(GreenLangBase):
     """
     Supply chain archetype for a specific EUDR commodity.
 
@@ -331,7 +332,7 @@ COMMODITY_ARCHETYPES: Dict[EUDRCommodity, CommodityArchetype] = {
 # =============================================================================
 
 
-class SupplierRecord(BaseModel):
+class SupplierRecord(GreenLangBase):
     """A supplier record discovered from any data source."""
 
     supplier_id: str = Field(..., description="Unique supplier identifier")
@@ -393,7 +394,7 @@ class SupplierRecord(BaseModel):
         return v
 
 
-class TierMappingResult(BaseModel):
+class TierMappingResult(GreenLangBase):
     """Result of mapping a single tier level in the supply chain."""
 
     tier_depth: int = Field(..., ge=0, description="Tier depth (0 = importer)")
@@ -433,7 +434,7 @@ class TierMappingResult(BaseModel):
     )
 
 
-class OpaqueSegment(BaseModel):
+class OpaqueSegment(GreenLangBase):
     """Represents a segment of the supply chain where sub-tier visibility is missing."""
 
     segment_id: str = Field(..., description="Unique identifier for this opaque segment")
@@ -471,7 +472,7 @@ class OpaqueSegment(BaseModel):
     )
 
 
-class TierDepthDistribution(BaseModel):
+class TierDepthDistribution(GreenLangBase):
     """Distribution report showing supply chain depth across all chains."""
 
     commodity: EUDRCommodity = Field(..., description="Commodity")
@@ -505,7 +506,7 @@ class TierDepthDistribution(BaseModel):
     )
 
 
-class MultiTierMappingInput(BaseModel):
+class MultiTierMappingInput(GreenLangBase):
     """Input model for multi-tier mapping operation."""
 
     graph_id: str = Field(..., description="Target supply chain graph ID")
@@ -550,7 +551,7 @@ class MultiTierMappingInput(BaseModel):
     )
 
 
-class MultiTierMappingOutput(BaseModel):
+class MultiTierMappingOutput(GreenLangBase):
     """Output model for multi-tier mapping operation."""
 
     graph_id: str = Field(..., description="Supply chain graph ID")

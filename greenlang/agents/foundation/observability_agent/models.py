@@ -35,7 +35,9 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import LogLevel
 
 # ---------------------------------------------------------------------------
 # Re-export Layer 1 enumerations
@@ -68,20 +70,9 @@ from greenlang.agents.foundation.observability_agent import (
     ObservabilityOutput,
 )
 
-
 # ---------------------------------------------------------------------------
 # New enumerations (SDK-level)
 # ---------------------------------------------------------------------------
-
-
-class LogLevel(str, Enum):
-    """Log severity levels for structured logging."""
-    DEBUG = "debug"
-    INFO = "info"
-    WARNING = "warning"
-    ERROR = "error"
-    CRITICAL = "critical"
-
 
 class SLOType(str, Enum):
     """Types of Service Level Objectives."""
@@ -91,30 +82,21 @@ class SLOType(str, Enum):
     ERROR_RATE = "error_rate"
     SATURATION = "saturation"
 
-
 class ProbeType(str, Enum):
     """Types of health probes for Kubernetes-style health checking."""
     LIVENESS = "liveness"
     READINESS = "readiness"
     STARTUP = "startup"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # =============================================================================
 # SDK Data Models
 # =============================================================================
 
-
-class MetricRecording(BaseModel):
+class MetricRecording(GreenLangBase):
     """Record of a single metric observation for persistent storage.
 
     Captures the full context of a metric data point including labels,
@@ -144,7 +126,7 @@ class MetricRecording(BaseModel):
         default_factory=dict, description="Key-value label pairs",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Timestamp when the metric was recorded",
+        default_factory=utcnow, description="Timestamp when the metric was recorded",
     )
     tenant_id: str = Field(
         default="default", description="Tenant identifier for multi-tenant isolation",
@@ -163,8 +145,7 @@ class MetricRecording(BaseModel):
             raise ValueError("metric_name must be non-empty")
         return v
 
-
-class TraceRecord(BaseModel):
+class TraceRecord(GreenLangBase):
     """Record of a distributed trace span for persistent storage.
 
     Captures the full lifecycle of a trace span including timing,
@@ -210,7 +191,7 @@ class TraceRecord(BaseModel):
         default=TraceStatus.UNSET, description="Span completion status",
     )
     start_time: datetime = Field(
-        default_factory=_utcnow, description="Span start timestamp",
+        default_factory=utcnow, description="Span start timestamp",
     )
     end_time: Optional[datetime] = Field(
         None, description="Span end timestamp",
@@ -257,8 +238,7 @@ class TraceRecord(BaseModel):
             raise ValueError("operation_name must be non-empty")
         return v
 
-
-class LogRecord(BaseModel):
+class LogRecord(GreenLangBase):
     """Record of a structured log entry for persistent storage.
 
     Captures a complete structured log entry with correlation IDs
@@ -283,7 +263,7 @@ class LogRecord(BaseModel):
         description="Unique identifier for this log record",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Timestamp when the log entry was created",
+        default_factory=utcnow, description="Timestamp when the log entry was created",
     )
     level: LogLevel = Field(
         default=LogLevel.INFO, description="Log severity level",
@@ -323,8 +303,7 @@ class LogRecord(BaseModel):
             raise ValueError("message must be non-empty")
         return v
 
-
-class AlertInstance(BaseModel):
+class AlertInstance(GreenLangBase):
     """Record of an alert firing or resolution event.
 
     Captures the state of an alert at a point in time including the
@@ -374,7 +353,7 @@ class AlertInstance(BaseModel):
         default_factory=dict, description="Human-readable alert annotations",
     )
     started_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp when the alert started firing",
+        default_factory=utcnow, description="Timestamp when the alert started firing",
     )
     resolved_at: Optional[datetime] = Field(
         None, description="Timestamp when the alert was resolved",
@@ -393,8 +372,7 @@ class AlertInstance(BaseModel):
             raise ValueError("rule_name must be non-empty")
         return v
 
-
-class HealthProbeResult(BaseModel):
+class HealthProbeResult(GreenLangBase):
     """Result of a health probe check.
 
     Captures the outcome of a liveness, readiness, or startup probe
@@ -435,7 +413,7 @@ class HealthProbeResult(BaseModel):
         default=0.0, description="Probe execution duration in milliseconds",
     )
     checked_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp when the probe was executed",
+        default_factory=utcnow, description="Timestamp when the probe was executed",
     )
     tenant_id: str = Field(
         default="default", description="Tenant identifier for multi-tenant isolation",
@@ -451,8 +429,7 @@ class HealthProbeResult(BaseModel):
             raise ValueError("service_name must be non-empty")
         return v
 
-
-class DashboardConfig(BaseModel):
+class DashboardConfig(GreenLangBase):
     """Configuration for a Grafana dashboard.
 
     Defines the layout, panels, time range, and refresh interval
@@ -501,8 +478,7 @@ class DashboardConfig(BaseModel):
             raise ValueError("name must be non-empty")
         return v
 
-
-class SLODefinition(BaseModel):
+class SLODefinition(GreenLangBase):
     """Definition of a Service Level Objective.
 
     Defines the target, evaluation window, and burn rate thresholds
@@ -552,7 +528,7 @@ class SLODefinition(BaseModel):
         description="Burn rate thresholds by window",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp when the SLO was created",
+        default_factory=utcnow, description="Timestamp when the SLO was created",
     )
     tenant_id: str = Field(
         default="default", description="Tenant identifier for multi-tenant isolation",
@@ -568,8 +544,7 @@ class SLODefinition(BaseModel):
             raise ValueError("name must be non-empty")
         return v
 
-
-class SLOStatus(BaseModel):
+class SLOStatus(GreenLangBase):
     """Current status of an SLO including error budget calculations.
 
     Provides a point-in-time view of SLO compliance with burn rate
@@ -645,8 +620,7 @@ class SLOStatus(BaseModel):
             raise ValueError("slo_id must be non-empty")
         return v
 
-
-class ObservabilityStatistics(BaseModel):
+class ObservabilityStatistics(GreenLangBase):
     """Aggregated statistics for the observability agent.
 
     Attributes:
@@ -691,13 +665,11 @@ class ObservabilityStatistics(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
 # =============================================================================
 # Request / Response Models
 # =============================================================================
 
-
-class RecordMetricRequest(BaseModel):
+class RecordMetricRequest(GreenLangBase):
     """Request body for recording a metric observation.
 
     Attributes:
@@ -730,8 +702,7 @@ class RecordMetricRequest(BaseModel):
             raise ValueError("metric_name must be non-empty")
         return v
 
-
-class CreateSpanRequest(BaseModel):
+class CreateSpanRequest(GreenLangBase):
     """Request body for creating a new trace span.
 
     Attributes:
@@ -768,8 +739,7 @@ class CreateSpanRequest(BaseModel):
             raise ValueError("operation_name must be non-empty")
         return v
 
-
-class IngestLogRequest(BaseModel):
+class IngestLogRequest(GreenLangBase):
     """Request body for ingesting a structured log entry.
 
     Attributes:
@@ -814,8 +784,7 @@ class IngestLogRequest(BaseModel):
             raise ValueError("message must be non-empty")
         return v
 
-
-class CreateAlertRuleRequest(BaseModel):
+class CreateAlertRuleRequest(GreenLangBase):
     """Request body for creating an alert rule.
 
     Attributes:
@@ -877,8 +846,7 @@ class CreateAlertRuleRequest(BaseModel):
             raise ValueError(f"condition must be one of {allowed}")
         return v
 
-
-class CreateSLORequest(BaseModel):
+class CreateSLORequest(GreenLangBase):
     """Request body for creating a Service Level Objective.
 
     Attributes:
@@ -923,8 +891,7 @@ class CreateSLORequest(BaseModel):
             raise ValueError("name must be non-empty")
         return v
 
-
-class HealthCheckRequest(BaseModel):
+class HealthCheckRequest(GreenLangBase):
     """Request body for executing a health check probe.
 
     Attributes:
@@ -944,7 +911,6 @@ class HealthCheckRequest(BaseModel):
     )
 
     model_config = {"extra": "forbid"}
-
 
 __all__ = [
     # Re-exported enums

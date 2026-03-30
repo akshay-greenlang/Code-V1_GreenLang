@@ -44,25 +44,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -75,11 +69,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ModelType(str, Enum):
     """Forecasting model type."""
@@ -89,14 +81,12 @@ class ModelType(str, Enum):
     PROPHET = "prophet"
     ENSEMBLE = "ensemble"
 
-
 class AnomalyMethod(str, Enum):
     """Anomaly detection method."""
 
     ZSCORE = "zscore"
     ISOLATION_FOREST = "isolation_forest"
     IQR = "iqr"
-
 
 class AnomalySeverity(str, Enum):
     """Severity of a detected anomaly."""
@@ -106,18 +96,15 @@ class AnomalySeverity(str, Enum):
     HIGH = "high"
     CRITICAL = "critical"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class HistoricalDataPoint(BaseModel):
     """A single historical data point for forecasting."""
 
     year: int = Field(..., ge=1990, le=2100, description="Year of observation")
     value: float = Field(..., description="Observed value (e.g., tCO2e)")
-
 
 class PredictionPoint(BaseModel):
     """A single prediction with confidence interval."""
@@ -126,7 +113,6 @@ class PredictionPoint(BaseModel):
     value: float = Field(..., description="Predicted value")
     lower_bound: float = Field(..., description="Lower confidence bound")
     upper_bound: float = Field(..., description="Upper confidence bound")
-
 
 class ForecastRequest(BaseModel):
     """Request for emissions forecasting."""
@@ -155,7 +141,6 @@ class ForecastRequest(BaseModel):
         """Ensure historical data is sorted by year."""
         return sorted(v, key=lambda d: d.year)
 
-
 class ForecastResult(BaseModel):
     """Result of an emissions forecast."""
 
@@ -180,7 +165,6 @@ class ForecastResult(BaseModel):
     processing_time_ms: float = Field(0.0, description="Processing duration")
     provenance_hash: str = Field("", description="SHA-256 provenance hash")
 
-
 class AnomalyPoint(BaseModel):
     """A single detected anomaly."""
 
@@ -189,7 +173,6 @@ class AnomalyPoint(BaseModel):
     expected: float = Field(..., description="Expected value")
     z_score: float = Field(..., description="Z-score or anomaly score")
     severity: AnomalySeverity = Field(..., description="Anomaly severity")
-
 
 class AnomalyResult(BaseModel):
     """Result of anomaly detection."""
@@ -206,11 +189,9 @@ class AnomalyResult(BaseModel):
     anomaly_rate: float = Field(0.0, description="Percentage of anomalous points")
     provenance_hash: str = Field("", description="SHA-256 provenance hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class PredictiveAnalyticsEngine:
     """Statistical forecasting and anomaly detection engine.
@@ -266,7 +247,7 @@ class PredictiveAnalyticsEngine:
         Raises:
             ValueError: If insufficient historical data.
         """
-        start = _utcnow()
+        start = utcnow()
         logger.info(
             "Forecasting %s using %s model, horizon=%d months",
             request.emission_category, request.model_type.value,
@@ -297,7 +278,7 @@ class PredictiveAnalyticsEngine:
                 x, y, request.horizon_months, request.confidence_level
             )
 
-        elapsed = (_utcnow() - start).total_seconds() * 1000
+        elapsed = (utcnow() - start).total_seconds() * 1000
 
         result = ForecastResult(
             emission_category=request.emission_category,

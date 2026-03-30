@@ -27,33 +27,25 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class WorkflowPhase(str, Enum):
     """Phases of the carbon pricing workflow."""
@@ -61,7 +53,6 @@ class WorkflowPhase(str, Enum):
     COVERAGE_CALCULATION = "coverage_calculation"
     SCENARIO_ANALYSIS = "scenario_analysis"
     REPORT_GENERATION = "report_generation"
-
 
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
@@ -71,7 +62,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class PhaseStatus(str, Enum):
     """Status of a single phase."""
     PENDING = "pending"
@@ -79,7 +69,6 @@ class PhaseStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class MechanismType(str, Enum):
     """Carbon pricing mechanism type."""
@@ -90,7 +79,6 @@ class MechanismType(str, Enum):
     CBAM = "cbam"
     OFFSET_PURCHASE = "offset_purchase"
 
-
 class PriceScenario(str, Enum):
     """Carbon price scenario."""
     LOW = "low"
@@ -100,11 +88,9 @@ class PriceScenario(str, Enum):
     EU_ETS_CURRENT = "eu_ets_current"
     CUSTOM = "custom"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -115,7 +101,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class PricingMechanism(BaseModel):
     """A carbon pricing mechanism."""
@@ -131,7 +116,6 @@ class PricingMechanism(BaseModel):
     effective_date: str = Field(default="")
     description: str = Field(default="")
 
-
 class CoverageResult(BaseModel):
     """Coverage calculation result."""
     mechanism_id: str = Field(default="")
@@ -141,7 +125,6 @@ class CoverageResult(BaseModel):
     cost_eur: float = Field(default=0.0)
     effective_price_eur: float = Field(default=0.0)
 
-
 class ScenarioResult(BaseModel):
     """Scenario analysis result."""
     scenario: str = Field(default="")
@@ -149,7 +132,6 @@ class ScenarioResult(BaseModel):
     total_cost_eur: float = Field(default=0.0)
     cost_as_pct_revenue: float = Field(default=0.0)
     delta_vs_current_eur: float = Field(default=0.0)
-
 
 class CarbonPricingInput(BaseModel):
     """Input data model for CarbonPricingWorkflow."""
@@ -179,7 +161,6 @@ class CarbonPricingInput(BaseModel):
     entity_name: str = Field(default="")
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class CarbonPricingResult(BaseModel):
     """Complete result from carbon pricing workflow."""
     workflow_id: str = Field(..., description="Unique execution ID")
@@ -200,11 +181,9 @@ class CarbonPricingResult(BaseModel):
     reporting_year: int = Field(default=2025)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class CarbonPricingWorkflow:
     """
@@ -274,7 +253,7 @@ class CarbonPricingWorkflow:
                 config=config or {},
             )
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting carbon pricing workflow %s", self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = WorkflowStatus.IN_PROGRESS
@@ -292,7 +271,7 @@ class CarbonPricingWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         completed_count = sum(1 for p in phase_results if p.status == PhaseStatus.COMPLETED)
         total_cost = sum(m.total_cost_eur for m in self._mechanisms)
         total_covered = sum(c.covered_tco2e for c in self._coverage)
@@ -340,7 +319,7 @@ class CarbonPricingWorkflow:
         self, input_data: CarbonPricingInput,
     ) -> PhaseResult:
         """Register carbon pricing mechanisms."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -361,7 +340,7 @@ class CarbonPricingWorkflow:
         if not self._mechanisms:
             warnings.append("No carbon pricing mechanisms registered")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 1 MechanismSetup: %d mechanisms registered", len(self._mechanisms))
         return PhaseResult(
             phase_name=WorkflowPhase.MECHANISM_SETUP.value, status=PhaseStatus.COMPLETED,
@@ -377,7 +356,7 @@ class CarbonPricingWorkflow:
         self, input_data: CarbonPricingInput,
     ) -> PhaseResult:
         """Calculate emissions coverage by each mechanism."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._coverage = []
@@ -415,7 +394,7 @@ class CarbonPricingWorkflow:
                 f"Only {total_coverage_pct:.1f}% of emissions covered by pricing mechanisms"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 2 CoverageCalculation: %.1f%% of emissions covered",
             total_coverage_pct,
@@ -434,7 +413,7 @@ class CarbonPricingWorkflow:
         self, input_data: CarbonPricingInput,
     ) -> PhaseResult:
         """Analyze carbon pricing scenarios."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._scenarios = []
@@ -472,7 +451,7 @@ class CarbonPricingWorkflow:
                 f"of revenue ({high_scenario.total_cost_eur:,.0f} EUR)"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 3 ScenarioAnalysis: %d scenarios analyzed", len(self._scenarios))
         return PhaseResult(
             phase_name=WorkflowPhase.SCENARIO_ANALYSIS.value, status=PhaseStatus.COMPLETED,
@@ -488,7 +467,7 @@ class CarbonPricingWorkflow:
         self, input_data: CarbonPricingInput,
     ) -> PhaseResult:
         """Generate E1-8 disclosure-ready output."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -514,7 +493,7 @@ class CarbonPricingWorkflow:
 
         outputs["report_ready"] = True
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 4 ReportGeneration: E1-8 disclosure ready")
         return PhaseResult(
             phase_name=WorkflowPhase.REPORT_GENERATION.value, status=PhaseStatus.COMPLETED,

@@ -100,18 +100,15 @@ except ImportError:
     otel_trace = None  # type: ignore[assignment]
     OTEL_AVAILABLE = False
 
-
 # ---------------------------------------------------------------------------
 # Environment variable based configuration
 # ---------------------------------------------------------------------------
 
 _ENV_PREFIX = "GL_EUDR_MST_"
 
-
 def _env(key: str, default: str = "") -> str:
     """Read an environment variable with the GL_EUDR_MST_ prefix."""
     return os.environ.get(f"{_ENV_PREFIX}{key}", default)
-
 
 def _env_int(key: str, default: int = 0) -> int:
     """Read an integer environment variable."""
@@ -121,7 +118,6 @@ def _env_int(key: str, default: int = 0) -> int:
     except (ValueError, TypeError):
         return default
 
-
 def _env_float(key: str, default: float = 0.0) -> float:
     """Read a float environment variable."""
     raw = _env(key, str(default))
@@ -130,22 +126,14 @@ def _env_float(key: str, default: float = 0.0) -> float:
     except (ValueError, TypeError):
         return default
 
-
 def _env_bool(key: str, default: bool = False) -> bool:
     """Read a boolean environment variable."""
     raw = _env(key, str(default)).lower()
     return raw in ("true", "1", "yes", "on")
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_provenance_hash(*parts: str) -> str:
     """Compute SHA-256 hash over concatenated string parts.
@@ -159,7 +147,6 @@ def _compute_provenance_hash(*parts: str) -> str:
     combined = "|".join(str(p) for p in parts)
     return hashlib.sha256(combined.encode("utf-8")).hexdigest()
 
-
 def _generate_request_id() -> str:
     """Generate a unique request identifier.
 
@@ -168,11 +155,9 @@ def _generate_request_id() -> str:
     """
     return f"MST-{uuid.uuid4().hex[:12]}"
 
-
 # ---------------------------------------------------------------------------
 # Health status model
 # ---------------------------------------------------------------------------
-
 
 class HealthStatus:
     """Health check result container.
@@ -197,7 +182,7 @@ class HealthStatus:
     ) -> None:
         self.status = status
         self.checks = checks or {}
-        self.timestamp = timestamp or _utcnow()
+        self.timestamp = timestamp or utcnow()
         self.version = version
         self.uptime_seconds = uptime_seconds
 
@@ -211,11 +196,9 @@ class HealthStatus:
             "uptime_seconds": round(self.uptime_seconds, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: DiscoveryResult
 # ---------------------------------------------------------------------------
-
 
 class DiscoveryResult:
     """Result from a supplier discovery operation.
@@ -279,11 +262,9 @@ class DiscoveryResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: ProfileResult
 # ---------------------------------------------------------------------------
-
 
 class ProfileResult:
     """Result from a supplier profile operation (CRUD).
@@ -342,11 +323,9 @@ class ProfileResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: TierResult
 # ---------------------------------------------------------------------------
-
 
 class TierResult:
     """Result from a tier depth assessment operation.
@@ -410,11 +389,9 @@ class TierResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: RiskResult
 # ---------------------------------------------------------------------------
-
 
 class RiskResult:
     """Result from a supplier risk assessment or propagation.
@@ -484,11 +461,9 @@ class RiskResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: ComplianceResult
 # ---------------------------------------------------------------------------
-
 
 class ComplianceResult:
     """Result from a supplier compliance check.
@@ -561,11 +536,9 @@ class ComplianceResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: GapResult
 # ---------------------------------------------------------------------------
-
 
 class GapResult:
     """Result from a gap analysis operation.
@@ -633,11 +606,9 @@ class GapResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: ReportResult
 # ---------------------------------------------------------------------------
-
 
 class ReportResult:
     """Result from a report generation operation.
@@ -681,7 +652,7 @@ class ReportResult:
         self.report_id = report_id or f"RPT-{uuid.uuid4().hex[:12]}"
         self.report_type = report_type
         self.format = format
-        self.generated_at = generated_at or _utcnow()
+        self.generated_at = generated_at or utcnow()
         self.total_suppliers = total_suppliers
         self.total_tiers = total_tiers
         self.summary = summary or {}
@@ -707,11 +678,9 @@ class ReportResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Batch result container
 # ---------------------------------------------------------------------------
-
 
 class BatchResult:
     """Result container for a batch processing job.
@@ -755,7 +724,7 @@ class BatchResult:
         self.completed_items = completed_items
         self.failed_items = failed_items
         self.results = results or []
-        self.submitted_at = submitted_at or _utcnow()
+        self.submitted_at = submitted_at or utcnow()
         self.completed_at = completed_at
         self.processing_time_ms = processing_time_ms
 
@@ -778,11 +747,9 @@ class BatchResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # MultiTierSupplierService
 # ---------------------------------------------------------------------------
-
 
 class MultiTierSupplierService:
     """Facade for the Multi-Tier Supplier Tracker Agent (AGENT-EUDR-008).
@@ -2174,7 +2141,7 @@ class MultiTierSupplierService:
         health = HealthStatus(
             status=overall,
             checks=checks,
-            timestamp=_utcnow(),
+            timestamp=utcnow(),
             version="1.0.0",
             uptime_seconds=self.uptime_seconds,
         )
@@ -2194,7 +2161,7 @@ class MultiTierSupplierService:
             "batch_max_size": self._batch_max_size,
             "max_tier_depth": self._max_tier_depth,
             "cache_ttl_seconds": self._cache_ttl_seconds,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     # ==================================================================
@@ -2627,7 +2594,7 @@ class MultiTierSupplierService:
             completed_items=completed,
             failed_items=failed,
             results=results,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             processing_time_ms=elapsed_ms,
         )
 
@@ -3031,11 +2998,9 @@ class MultiTierSupplierService:
         ]
         return sum(1 for e in engines if e is not None)
 
-
 # ---------------------------------------------------------------------------
 # FastAPI lifespan context manager
 # ---------------------------------------------------------------------------
-
 
 @asynccontextmanager
 async def lifespan(app: Any) -> AsyncIterator[None]:
@@ -3049,6 +3014,7 @@ async def lifespan(app: Any) -> AsyncIterator[None]:
 
         from fastapi import FastAPI
         from greenlang.agents.eudr.multi_tier_supplier.setup import lifespan
+from greenlang.schemas import utcnow
 
         app = FastAPI(lifespan=lifespan)
 
@@ -3066,14 +3032,12 @@ async def lifespan(app: Any) -> AsyncIterator[None]:
     finally:
         await service.shutdown()
 
-
 # ---------------------------------------------------------------------------
 # Thread-safe singleton accessor
 # ---------------------------------------------------------------------------
 
 _service_instance: Optional[MultiTierSupplierService] = None
 _service_lock = threading.Lock()
-
 
 def get_service() -> MultiTierSupplierService:
     """Return the singleton MultiTierSupplierService instance.
@@ -3095,7 +3059,6 @@ def get_service() -> MultiTierSupplierService:
                 _service_instance = MultiTierSupplierService()
     return _service_instance
 
-
 def set_service(service: MultiTierSupplierService) -> None:
     """Replace the singleton MultiTierSupplierService instance.
 
@@ -3109,7 +3072,6 @@ def set_service(service: MultiTierSupplierService) -> None:
         _service_instance = service
     logger.info("MultiTierSupplierService singleton replaced")
 
-
 def reset_service() -> None:
     """Reset the singleton MultiTierSupplierService to None.
 
@@ -3120,7 +3082,6 @@ def reset_service() -> None:
     with _service_lock:
         _service_instance = None
     logger.debug("MultiTierSupplierService singleton reset")
-
 
 # ---------------------------------------------------------------------------
 # Public API

@@ -35,6 +35,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "27.0.0"
@@ -105,19 +107,12 @@ NET_ZERO_CRITERIA = [
     ], 1)
 ]
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str) if isinstance(data, dict) else str(data)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 def _dec(val: Any, places: int = 2) -> str:
     try:
@@ -126,7 +121,6 @@ def _dec(val: Any, places: int = 2) -> str:
         return str(d.quantize(Decimal(q), rounding=ROUND_HALF_UP))
     except Exception:
         return str(val)
-
 
 def _dec_comma(val: Any, places: int = 0) -> str:
     try:
@@ -151,13 +145,11 @@ def _dec_comma(val: Any, places: int = 0) -> str:
     except Exception:
         return str(val)
 
-
 def _pct(val: Any) -> str:
     try:
         return _dec(val, 1) + "%"
     except Exception:
         return str(val)
-
 
 def _safe_div(num: Any, den: Any, default: float = 0.0) -> float:
     try:
@@ -166,11 +158,9 @@ def _safe_div(num: Any, den: Any, default: float = 0.0) -> float:
     except Exception:
         return default
 
-
 def _status_icon(status: str) -> str:
     mapping = {"pass": "PASS", "fail": "FAIL", "warning": "WARN", "na": "N/A"}
     return mapping.get(status.lower(), status.upper())
-
 
 class SBTiTargetSubmissionTemplate:
     """
@@ -196,7 +186,7 @@ class SBTiTargetSubmissionTemplate:
         self.generated_at: Optional[datetime] = None
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [
             self._md_header(data),
             self._md_executive_summary(data),
@@ -217,7 +207,7 @@ class SBTiTargetSubmissionTemplate:
         return content + f"\n\n<!-- SHA-256 Provenance: {prov} -->"
 
     def render_html(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         body_parts = [
             self._html_header(data),
@@ -240,7 +230,7 @@ class SBTiTargetSubmissionTemplate:
         )
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         near_term = data.get("near_term_target", {})
         long_term = data.get("long_term_target", {})
         net_zero = data.get("net_zero_target", {})
@@ -324,7 +314,7 @@ class SBTiTargetSubmissionTemplate:
         return result
 
     def render_excel(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         json_data = self.render_json(data)
 
         criteria_sheet = {

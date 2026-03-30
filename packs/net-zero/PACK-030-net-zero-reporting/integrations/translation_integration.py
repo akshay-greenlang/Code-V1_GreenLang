@@ -38,19 +38,14 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -62,11 +57,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SupportedLanguage(str, Enum):
     EN = "en"
@@ -74,20 +67,17 @@ class SupportedLanguage(str, Enum):
     FR = "fr"
     ES = "es"
 
-
 class TranslationProvider(str, Enum):
     DEEPL = "deepl"
     GOOGLE = "google"
     AZURE = "azure"
     INTERNAL = "internal"
 
-
 class TranslationQuality(str, Enum):
     HIGH = "high"       # BLEU >= 0.8
     MEDIUM = "medium"   # BLEU >= 0.6
     LOW = "low"         # BLEU < 0.6
     UNVERIFIED = "unverified"
-
 
 # ---------------------------------------------------------------------------
 # Climate Glossary
@@ -116,11 +106,9 @@ CLIMATE_GLOSSARY: Dict[str, Dict[str, str]] = {
     "materiality": {"de": "Wesentlichkeit", "fr": "materialite", "es": "materialidad"},
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class TranslationConfig(BaseModel):
     pack_id: str = Field(default="PACK-030")
@@ -139,7 +127,6 @@ class TranslationConfig(BaseModel):
     redis_url: str = Field(default="")
     max_text_length: int = Field(default=50000)
 
-
 class TranslationResult(BaseModel):
     """Result of a single translation operation."""
     translation_id: str = Field(default_factory=_new_uuid)
@@ -155,16 +142,14 @@ class TranslationResult(BaseModel):
     word_count_source: int = Field(default=0)
     word_count_target: int = Field(default=0)
     cached: bool = Field(default=False)
-    translated_at: datetime = Field(default_factory=_utcnow)
+    translated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class LanguageDetectionResult(BaseModel):
     """Language detection result."""
     detected_language: SupportedLanguage = Field(default=SupportedLanguage.EN)
     confidence: float = Field(default=0.0)
     alternative_languages: Dict[str, float] = Field(default_factory=dict)
-
 
 class QualityValidationResult(BaseModel):
     """Translation quality validation result."""
@@ -177,11 +162,9 @@ class QualityValidationResult(BaseModel):
     overall_quality: TranslationQuality = Field(default=TranslationQuality.UNVERIFIED)
     passed: bool = Field(default=True)
 
-
 # ---------------------------------------------------------------------------
 # TranslationIntegration
 # ---------------------------------------------------------------------------
-
 
 class TranslationIntegration:
     """Multi-language translation integration for PACK-030.
@@ -376,6 +359,7 @@ class TranslationIntegration:
     async def _google_translate(self, text: str, source: str, target: str) -> str:
         """Translate using Google Cloud Translation API."""
         import httpx
+
         async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.post(
                 f"https://translation.googleapis.com/language/translate/v2?key={self.config.google_api_key}",

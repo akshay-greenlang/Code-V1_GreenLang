@@ -89,25 +89,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -130,7 +124,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -139,7 +132,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -151,26 +143,21 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round2(value: Any) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
-
 def _round3(value: Any) -> float:
     """Round to 3 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: Any) -> float:
     """Round to 4 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
-
 
 def _median_decimal(values: List[Decimal]) -> Decimal:
     """Compute the median of a list of Decimal values.
@@ -186,7 +173,6 @@ def _median_decimal(values: List[Decimal]) -> Decimal:
     if n % 2 == 1:
         return sorted_vals[mid]
     return (sorted_vals[mid - 1] + sorted_vals[mid]) / Decimal("2")
-
 
 def _std_deviation_decimal(values: List[Decimal]) -> Decimal:
     """Compute population standard deviation of Decimal values.
@@ -204,7 +190,6 @@ def _std_deviation_decimal(values: List[Decimal]) -> Decimal:
     std_float = float(variance) ** 0.5
     return _decimal(std_float)
 
-
 def _coefficient_of_variation(values: List[Decimal]) -> Decimal:
     """Compute coefficient of variation (std / mean * 100).
 
@@ -218,11 +203,9 @@ def _coefficient_of_variation(values: List[Decimal]) -> Decimal:
     std = _std_deviation_decimal(values)
     return _safe_divide(std * Decimal("100"), mean)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SelectionCriterion(str, Enum):
     """Criteria used to evaluate candidate base years.
@@ -248,7 +231,6 @@ class SelectionCriterion(str, Enum):
     VERIFICATION_STATUS = "verification_status"
     BOUNDARY_STABILITY = "boundary_stability"
 
-
 class BaseYearType(str, Enum):
     """Type of base year approach.
 
@@ -262,7 +244,6 @@ class BaseYearType(str, Enum):
     FIXED = "fixed"
     ROLLING_3YR = "rolling_3yr"
     ROLLING_5YR = "rolling_5yr"
-
 
 class SectorType(str, Enum):
     """Industry sector classification for sector-specific guidance.
@@ -288,7 +269,6 @@ class SectorType(str, Enum):
     SERVICES = "services"
     OTHER = "other"
 
-
 class RecommendationConfidence(str, Enum):
     """Confidence level of the base year recommendation.
 
@@ -299,7 +279,6 @@ class RecommendationConfidence(str, Enum):
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -442,11 +421,9 @@ SECTOR_GUIDANCE: Dict[str, str] = {
     ),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class CandidateYear(BaseModel):
     """A candidate year for base year selection.
@@ -542,7 +519,6 @@ class CandidateYear(BaseModel):
             if computed > Decimal("0"):
                 object.__setattr__(self, "total_tco2e", computed)
         return self
-
 
 class SelectionWeights(BaseModel):
     """Weights for each selection criterion.
@@ -669,7 +645,6 @@ class SelectionWeights(BaseModel):
             stability_weight=weight_map[SelectionCriterion.BOUNDARY_STABILITY.value],
         )
 
-
 class SelectionConfig(BaseModel):
     """Configuration for base year selection evaluation.
 
@@ -721,11 +696,9 @@ class SelectionConfig(BaseModel):
         description="Bonus per year of recency"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class CriterionScore(BaseModel):
     """Score for a single criterion on a single candidate year.
@@ -752,7 +725,6 @@ class CriterionScore(BaseModel):
     rationale: str = Field(
         default="", description="Scoring rationale"
     )
-
 
 class CandidateScore(BaseModel):
     """Complete scoring for a single candidate year.
@@ -794,7 +766,6 @@ class CandidateScore(BaseModel):
         description="Recency bonus applied"
     )
 
-
 class BaseYearTypeRecommendation(BaseModel):
     """Recommendation for base year type (fixed vs rolling).
 
@@ -818,7 +789,6 @@ class BaseYearTypeRecommendation(BaseModel):
         default=None, ge=3, le=5,
         description="Rolling period (years)"
     )
-
 
 class SelectionResult(BaseModel):
     """Complete result of base year selection evaluation.
@@ -888,11 +858,9 @@ class SelectionResult(BaseModel):
         description="SHA-256 provenance hash"
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class BaseYearSelectionEngine:
     """Multi-criteria base year selection engine.
@@ -1071,7 +1039,7 @@ class BaseYearSelectionEngine:
             sector_guidance=sector_guidance,
             warnings=warnings,
             config_used=config,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         result.provenance_hash = _compute_hash(result)
@@ -1687,11 +1655,9 @@ class BaseYearSelectionEngine:
         """
         return SelectionWeights().apply_sector_adjustments(sector)
 
-
 # ---------------------------------------------------------------------------
 # Module-level convenience functions
 # ---------------------------------------------------------------------------
-
 
 def evaluate_base_year_candidates(
     candidates: List[CandidateYear],
@@ -1713,7 +1679,6 @@ def evaluate_base_year_candidates(
     engine = BaseYearSelectionEngine()
     return engine.evaluate_candidates(candidates, config)
 
-
 def get_default_selection_weights() -> SelectionWeights:
     """Return the default selection weights.
 
@@ -1721,7 +1686,6 @@ def get_default_selection_weights() -> SelectionWeights:
         SelectionWeights with equal weighting across criteria.
     """
     return SelectionWeights()
-
 
 def get_sector_selection_weights(sector: SectorType) -> SelectionWeights:
     """Return sector-adjusted selection weights.
@@ -1733,7 +1697,6 @@ def get_sector_selection_weights(sector: SectorType) -> SelectionWeights:
         SelectionWeights adjusted for the given sector.
     """
     return SelectionWeights().apply_sector_adjustments(sector)
-
 
 # ---------------------------------------------------------------------------
 # __all__

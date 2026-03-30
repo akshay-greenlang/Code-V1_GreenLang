@@ -34,14 +34,15 @@ import re
 from enum import Enum
 from typing import Any, List, Literal, Optional
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
+from greenlang.schemas import GreenLangBase
 
 
 # JSON Pointer pattern (RFC 6901)
 JSON_POINTER_PATTERN = re.compile(r"^(/[^/]*)*$")
 
 
-class JSONPatchOp(BaseModel):
+class JSONPatchOp(GreenLangBase):
     """
     A single JSON Patch operation (RFC 6902).
 
@@ -320,7 +321,7 @@ class PatchSafety(str, Enum):
         return levels[self]
 
 
-class FixSuggestion(BaseModel):
+class FixSuggestion(GreenLangBase):
     """
     A complete fix suggestion for a validation finding.
 

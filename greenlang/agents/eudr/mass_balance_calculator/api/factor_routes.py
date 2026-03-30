@@ -32,6 +32,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.mass_balance_calculator.api.dependencies import (
     AuthUser,
@@ -107,22 +108,14 @@ _REJECT_DEVIATION = 0.15  # 15%
 _custom_factor_store: Dict[str, Dict] = {}
 _factor_history_store: Dict[str, List[Dict]] = {}
 
-
 def _compute_provenance_hash(data: dict) -> str:
     """Compute SHA-256 hash for provenance tracking."""
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ---------------------------------------------------------------------------
 # POST /factors/validate
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/factors/validate",
@@ -162,7 +155,7 @@ async def validate_factor(
     start = time.monotonic()
     try:
         factor_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
         commodity_lower = body.commodity.strip().lower()
 
         # Look up reference data
@@ -257,11 +250,9 @@ async def validate_factor(
             detail="Failed to validate conversion factor",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /factors/reference/{commodity}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/factors/reference/{commodity}",
@@ -326,7 +317,7 @@ async def get_reference_factors(
             factors=factors,
             source="EUDR reference data (ISO 22095:2020)",
             processing_time_ms=elapsed_ms,
-            timestamp=_utcnow(),
+            timestamp=utcnow(),
         )
 
     except HTTPException:
@@ -341,11 +332,9 @@ async def get_reference_factors(
             detail="Failed to retrieve reference factors",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /factors/custom
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/factors/custom",
@@ -386,7 +375,7 @@ async def register_custom_factor(
     start = time.monotonic()
     try:
         factor_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
         commodity_lower = body.commodity.strip().lower()
 
         # Auto-validate against reference
@@ -490,11 +479,9 @@ async def register_custom_factor(
             detail="Failed to register custom conversion factor",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /factors/history/{facility_id}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/factors/history/{facility_id}",
@@ -557,7 +544,7 @@ async def get_factor_history(
             factors=factors,
             total_count=total,
             processing_time_ms=elapsed_ms,
-            timestamp=_utcnow(),
+            timestamp=utcnow(),
         )
 
     except HTTPException:
@@ -572,11 +559,9 @@ async def get_factor_history(
             detail="Failed to retrieve factor usage history",
         )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
 
 def _record_factor_usage(
     factor_id: str,
@@ -613,7 +598,6 @@ def _record_factor_usage(
         "applied_at": timestamp,
         "facility_id": facility_id,
     })
-
 
 # ---------------------------------------------------------------------------
 # Public API

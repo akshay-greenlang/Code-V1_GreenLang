@@ -33,20 +33,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -59,11 +54,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CarbonLeakageStatus(str, Enum):
     """Carbon leakage classification."""
@@ -72,7 +65,6 @@ class CarbonLeakageStatus(str, Enum):
     NOT_ON_CLL = "not_on_carbon_leakage_list"
     UNKNOWN = "unknown"
 
-
 class AllocationMethod(str, Enum):
     """Free allocation method."""
 
@@ -80,7 +72,6 @@ class AllocationMethod(str, Enum):
     HEAT_BENCHMARK = "heat_benchmark"
     FUEL_BENCHMARK = "fuel_benchmark"
     PROCESS_EMISSIONS = "process_emissions"
-
 
 class ComplianceCycleStatus(str, Enum):
     """EU ETS compliance cycle status."""
@@ -93,18 +84,15 @@ class ComplianceCycleStatus(str, Enum):
     NON_COMPLIANT = "non_compliant"
     PENALTY = "penalty"
 
-
 class ETSPhase(str, Enum):
     """EU ETS trading phases."""
 
     PHASE_3 = "phase_3"  # 2013-2020
     PHASE_4 = "phase_4"  # 2021-2030
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class InstallationPermit(BaseModel):
     """EU ETS installation permit record."""
@@ -123,7 +111,6 @@ class InstallationPermit(BaseModel):
     permit_expiry_date: Optional[date] = Field(None)
     monitoring_plan_approved: bool = Field(default=False)
 
-
 class FreeAllocationRecord(BaseModel):
     """Free allocation record for an installation."""
 
@@ -138,7 +125,6 @@ class FreeAllocationRecord(BaseModel):
     carbon_leakage_factor: float = Field(default=1.0, ge=0, le=1)
     free_allocation_eua: float = Field(default=0.0, ge=0, description="Free EUAs allocated")
 
-
 class EmissionsRecord(BaseModel):
     """Annual emissions record for an installation."""
 
@@ -152,7 +138,6 @@ class EmissionsRecord(BaseModel):
     carbon_cost_eur: float = Field(default=0.0, description="Cost of deficit allowances")
     compliance_status: ComplianceCycleStatus = Field(default=ComplianceCycleStatus.MONITORING)
     provenance_hash: str = Field(default="")
-
 
 class CarbonPriceImpact(BaseModel):
     """Carbon price impact analysis on energy savings ROI."""
@@ -171,7 +156,6 @@ class CarbonPriceImpact(BaseModel):
     carbon_benefit_pct: float = Field(default=0.0, description="Pct of savings from carbon")
     provenance_hash: str = Field(default="")
 
-
 class ETSBenchmarkComparison(BaseModel):
     """Comparison against EU ETS product benchmarks."""
 
@@ -184,7 +168,6 @@ class ETSBenchmarkComparison(BaseModel):
     performance_vs_benchmark: str = Field(default="", description="above|at|below benchmark")
     improvement_potential_tco2: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class ComplianceCycle(BaseModel):
     """EU ETS compliance cycle tracking."""
@@ -202,7 +185,6 @@ class ComplianceCycle(BaseModel):
     surrender_date: Optional[date] = Field(None)
     status: ComplianceCycleStatus = Field(default=ComplianceCycleStatus.MONITORING)
 
-
 class EUETSBridgeConfig(BaseModel):
     """Configuration for the EU ETS Bridge."""
 
@@ -211,7 +193,6 @@ class EUETSBridgeConfig(BaseModel):
     default_eua_price_eur: float = Field(default=80.0, ge=0, description="Default EUA price")
     phase: ETSPhase = Field(default=ETSPhase.PHASE_4)
     linear_reduction_factor_pct: float = Field(default=2.2, ge=0)
-
 
 # ---------------------------------------------------------------------------
 # EU ETS Product Benchmarks (selected, tCO2 per unit)
@@ -234,11 +215,9 @@ EU_ETS_BENCHMARKS: Dict[str, Dict[str, Any]] = {
     "fuel_benchmark": {"benchmark": 0.0562, "unit": "GJ", "sector": "cross_sectoral"},
 }
 
-
 # ---------------------------------------------------------------------------
 # EUETSBridge
 # ---------------------------------------------------------------------------
-
 
 class EUETSBridge:
     """EU Emissions Trading System integration for energy-intensive industries.

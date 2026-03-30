@@ -35,7 +35,7 @@ jobs:
           pip install -e "./cbam-pack-mvp[dev,web]"
       - name: Run web e2e and visual baseline tests
         run: |
-          pytest -q cbam-pack-mvp/tests/test_web_multiapp_shell.py cbam-pack-mvp/tests/test_web_v1_contract.py cbam-pack-mvp/tests/test_web_v1_csrd_vcci_endpoints.py cbam-pack-mvp/tests/test_web_visual_regression.py
+          pytest -q cbam-pack-mvp/tests/test_web_multiapp_shell.py cbam-pack-mvp/tests/test_web_v1_contract.py cbam-pack-mvp/tests/test_web_v1_csrd_vcci_endpoints.py cbam-pack-mvp/tests/test_web_v2_eudr_ghg_iso_endpoints.py cbam-pack-mvp/tests/test_web_visual_regression.py cbam-pack-mvp/tests/test_web_ux_budgets.py
 
   v2-frontend-quality:
     runs-on: ubuntu-latest

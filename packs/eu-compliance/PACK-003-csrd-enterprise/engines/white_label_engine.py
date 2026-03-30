@@ -43,25 +43,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -74,11 +68,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class TemplateType(str, Enum):
     """Types of branded email templates."""
@@ -90,7 +82,6 @@ class TemplateType(str, Enum):
     APPROVAL_REQUEST = "approval_request"
     PASSWORD_RESET = "password_reset"
 
-
 class SSLStatus(str, Enum):
     """Status of SSL certificate for custom domain."""
 
@@ -99,7 +90,6 @@ class SSLStatus(str, Enum):
     EXPIRED = "expired"
     FAILED = "failed"
 
-
 class BrandValidationSeverity(str, Enum):
     """Severity of brand validation issues."""
 
@@ -107,11 +97,9 @@ class BrandValidationSeverity(str, Enum):
     WARNING = "warning"
     INFO = "info"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class BrandConfig(BaseModel):
     """Brand configuration for a tenant."""
@@ -180,7 +168,6 @@ class BrandConfig(BaseModel):
             raise ValueError(f"Invalid domain format: '{v}'")
         return v.lower()
 
-
 class ColorVariant(BaseModel):
     """A color with light and dark variants."""
 
@@ -190,7 +177,6 @@ class ColorVariant(BaseModel):
     contrast_text: str = Field(
         ..., description="Text color for readability on base"
     )
-
 
 class BrandTheme(BaseModel):
     """Computed theme derived from a BrandConfig."""
@@ -214,10 +200,9 @@ class BrandTheme(BaseModel):
     )
     font_family: str = Field(..., description="CSS font-family string")
     generated_at: datetime = Field(
-        default_factory=_utcnow, description="Theme generation timestamp"
+        default_factory=utcnow, description="Theme generation timestamp"
     )
     provenance_hash: str = Field("", description="SHA-256 provenance hash")
-
 
 class BrandValidationIssue(BaseModel):
     """A single brand validation issue."""
@@ -228,11 +213,9 @@ class BrandValidationIssue(BaseModel):
         ..., description="Issue severity"
     )
 
-
 # ---------------------------------------------------------------------------
 # Color Utility Functions
 # ---------------------------------------------------------------------------
-
 
 def _hex_to_rgb(hex_color: str) -> Tuple[int, int, int]:
     """Convert hex color to RGB tuple.
@@ -247,7 +230,6 @@ def _hex_to_rgb(hex_color: str) -> Tuple[int, int, int]:
     if len(h) == 3:
         h = h[0] * 2 + h[1] * 2 + h[2] * 2
     return int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
-
 
 def _rgb_to_hex(r: int, g: int, b: int) -> str:
     """Convert RGB tuple to hex color string.
@@ -264,7 +246,6 @@ def _rgb_to_hex(r: int, g: int, b: int) -> str:
     g = max(0, min(255, g))
     b = max(0, min(255, b))
     return f"#{r:02X}{g:02X}{b:02X}"
-
 
 def _relative_luminance(hex_color: str) -> float:
     """Calculate relative luminance per WCAG 2.1.
@@ -292,7 +273,6 @@ def _relative_luminance(hex_color: str) -> float:
         + 0.0722 * linearize(b)
     )
 
-
 def _contrast_ratio(color1: str, color2: str) -> float:
     """Calculate WCAG 2.1 contrast ratio between two colors.
 
@@ -308,7 +288,6 @@ def _contrast_ratio(color1: str, color2: str) -> float:
     lighter = max(l1, l2)
     darker = min(l1, l2)
     return round((lighter + 0.05) / (darker + 0.05), 2)
-
 
 def _lighten(hex_color: str, factor: float = 0.3) -> str:
     """Lighten a color by a given factor.
@@ -326,7 +305,6 @@ def _lighten(hex_color: str, factor: float = 0.3) -> str:
     b = int(b + (255 - b) * factor)
     return _rgb_to_hex(r, g, b)
 
-
 def _darken(hex_color: str, factor: float = 0.3) -> str:
     """Darken a color by a given factor.
 
@@ -343,7 +321,6 @@ def _darken(hex_color: str, factor: float = 0.3) -> str:
     b = int(b * (1 - factor))
     return _rgb_to_hex(r, g, b)
 
-
 def _optimal_text_color(bg_color: str) -> str:
     """Determine optimal text color (black or white) for a background.
 
@@ -356,11 +333,9 @@ def _optimal_text_color(bg_color: str) -> str:
     luminance = _relative_luminance(bg_color)
     return "#FFFFFF" if luminance < 0.4 else "#1A1A1A"
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class WhiteLabelEngine:
     """White-label brand customization engine.
@@ -405,7 +380,7 @@ class WhiteLabelEngine:
             BrandTheme with CSS variables, contrast ratios, and
             compliance status.
         """
-        start = _utcnow()
+        start = utcnow()
         logger.info("Applying brand for tenant %s", config.tenant_id)
 
         # Generate color variants
@@ -732,7 +707,7 @@ class WhiteLabelEngine:
                     "value": f"gl-verify={tenant_id}",
                 },
             ],
-            "configured_at": _utcnow().isoformat(),
+            "configured_at": utcnow().isoformat(),
             "provenance_hash": _compute_hash(
                 {"tenant_id": tenant_id, "domain": domain}
             ),
@@ -939,7 +914,7 @@ class WhiteLabelEngine:
         kit: Dict[str, Any] = {
             "tenant_id": tenant_id,
             "version": _MODULE_VERSION,
-            "exported_at": _utcnow().isoformat(),
+            "exported_at": utcnow().isoformat(),
             "colors": {
                 "primary": {
                     "hex": config.primary_color,

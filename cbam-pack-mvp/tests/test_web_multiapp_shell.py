@@ -14,6 +14,9 @@ def test_csrd_vcci_workspaces_render() -> None:
     client = TestClient(create_app())
     assert client.get("/apps/csrd").status_code == 200
     assert client.get("/apps/vcci").status_code == 200
+    assert client.get("/apps/eudr").status_code == 200
+    assert client.get("/apps/ghg").status_code == 200
+    assert client.get("/apps/iso14064").status_code == 200
 
 
 def test_runs_center_renders() -> None:

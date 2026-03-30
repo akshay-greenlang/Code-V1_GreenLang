@@ -29,6 +29,8 @@ import logging
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _SECTIONS: List[str] = [
@@ -36,12 +38,6 @@ _SECTIONS: List[str] = [
     "social_chapter", "governance_chapter", "cross_references",
     "appendix_methodology", "appendix_data_tables", "digital_signature",
 ]
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -53,7 +49,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 class ESRSAnnualStatementTemplate:
     """
@@ -79,7 +74,7 @@ class ESRSAnnualStatementTemplate:
 
     def render(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render full report as structured dict."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result: Dict[str, Any] = {}
         for section in _SECTIONS:
             result[section] = self.render_section(section, data)
@@ -112,7 +107,7 @@ class ESRSAnnualStatementTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render annual sustainability statement as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [self._md_header(data), self._md_basis(data), self._md_general(data),
                      self._md_environmental(data), self._md_social(data), self._md_governance(data),
                      self._md_cross_refs(data), self._md_methodology(data), self._md_data_tables(data),
@@ -123,7 +118,7 @@ class ESRSAnnualStatementTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render annual sustainability statement as HTML."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         body = "\n".join([self._html_header(data), self._html_basis(data),
                           self._html_environmental(data), self._html_social(data),
@@ -136,7 +131,7 @@ class ESRSAnnualStatementTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> str:
         """Render annual sustainability statement as JSON string."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = {"template": "esrs_annual_statement", "esrs_reference": "ESRS Full Set", "version": "17.0.0",
                   "generated_at": self.generated_at.isoformat(), "entity_name": data.get("entity_name", ""),
                   "reporting_year": data.get("reporting_year", ""),
@@ -371,7 +366,6 @@ class ESRSAnnualStatementTemplate:
                 f"<p><strong>{sec['signatory_name']}</strong>, {sec['signatory_role']}</p>\n"
                 f"<p>Date: {sec['signature_date']}</p>\n"
                 f"<p>Hash: <code>{sec['statement_hash'][:16]}...</code></p>\n</div>")
-
 
 # Alias for backward compatibility with templates/__init__.py
 ESRSAnnualStatement = ESRSAnnualStatementTemplate

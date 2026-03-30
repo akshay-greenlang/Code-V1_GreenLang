@@ -40,19 +40,14 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -64,7 +59,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 class _PackStub:
     """Stub for PACK-022 components when not available."""
     def __init__(self, component: str) -> None:
@@ -75,7 +69,6 @@ class _PackStub:
             return {"component": self._component, "status": "not_available", "pack": "PACK-022"}
         return _stub
 
-
 def _try_import(component: str, module_path: str) -> Any:
     try:
         return importlib.import_module(module_path)
@@ -83,11 +76,9 @@ def _try_import(component: str, module_path: str) -> Any:
         logger.debug("PACK-022 component '%s' not available, using stub", component)
         return _PackStub(component)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class InitiativeStatus(str, Enum):
     PLANNED = "planned"
@@ -95,7 +86,6 @@ class InitiativeStatus(str, Enum):
     COMPLETED = "completed"
     ON_HOLD = "on_hold"
     CANCELLED = "cancelled"
-
 
 class InitiativeCategory(str, Enum):
     ENERGY_EFFICIENCY = "energy_efficiency"
@@ -110,19 +100,16 @@ class InitiativeCategory(str, Enum):
     CIRCULAR_ECONOMY = "circular_economy"
     BEHAVIORAL_CHANGE = "behavioral_change"
 
-
 class RAGStatus(str, Enum):
     GREEN = "green"
     AMBER = "amber"
     RED = "red"
-
 
 class AbatementScope(str, Enum):
     SCOPE_1 = "scope_1"
     SCOPE_2 = "scope_2"
     SCOPE_3 = "scope_3"
     CROSS_SCOPE = "cross_scope"
-
 
 class MACCPriority(str, Enum):
     QUICK_WIN = "quick_win"
@@ -131,14 +118,12 @@ class MACCPriority(str, Enum):
     LONG_TERM = "long_term"
     STRATEGIC = "strategic"
 
-
 class ImportStatus(str, Enum):
     SUCCESS = "success"
     PARTIAL = "partial"
     FAILED = "failed"
     STALE = "stale"
     CACHED = "cached"
-
 
 # ---------------------------------------------------------------------------
 # Component Registry
@@ -172,11 +157,9 @@ PACK022_COMPONENTS: Dict[str, Dict[str, str]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class PACK022IntegrationConfig(BaseModel):
     """Configuration for PACK-022 to PACK-030 integration."""
@@ -195,7 +178,6 @@ class PACK022IntegrationConfig(BaseModel):
     cache_ttl_seconds: int = Field(default=3600)
     retry_attempts: int = Field(default=3, ge=1, le=10)
     retry_delay_seconds: float = Field(default=1.0)
-
 
 class Initiative(BaseModel):
     """Reduction initiative from PACK-022."""
@@ -222,7 +204,6 @@ class Initiative(BaseModel):
     technology_type: str = Field(default="")
     implementation_notes: str = Field(default="")
 
-
 class InitiativePortfolio(BaseModel):
     """Portfolio of all reduction initiatives from PACK-022."""
     portfolio_id: str = Field(default_factory=_new_uuid)
@@ -240,9 +221,8 @@ class InitiativePortfolio(BaseModel):
     red_count: int = Field(default=0)
     by_category: Dict[str, int] = Field(default_factory=dict)
     by_scope: Dict[str, float] = Field(default_factory=dict)
-    fetched_at: datetime = Field(default_factory=_utcnow)
+    fetched_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class MACCLever(BaseModel):
     """MACC curve lever from PACK-022."""
@@ -258,7 +238,6 @@ class MACCLever(BaseModel):
     technology_readiness: str = Field(default="commercial")
     co_benefits: List[str] = Field(default_factory=list)
 
-
 class MACCCurve(BaseModel):
     """MACC curve data from PACK-022."""
     curve_id: str = Field(default_factory=_new_uuid)
@@ -269,9 +248,8 @@ class MACCCurve(BaseModel):
     negative_cost_levers: int = Field(default=0)
     positive_cost_levers: int = Field(default=0)
     total_investment_required_usd: float = Field(default=0.0)
-    fetched_at: datetime = Field(default_factory=_utcnow)
+    fetched_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class AbatementAction(BaseModel):
     """Detailed abatement action from PACK-022."""
@@ -291,7 +269,6 @@ class AbatementAction(BaseModel):
     methodology: str = Field(default="")
     verification_status: str = Field(default="unverified")
 
-
 class PACK022IntegrationResult(BaseModel):
     """Complete PACK-022 integration result for PACK-030."""
     result_id: str = Field(default_factory=_new_uuid)
@@ -304,14 +281,12 @@ class PACK022IntegrationResult(BaseModel):
     frameworks_serviced: List[str] = Field(default_factory=list)
     validation_errors: List[str] = Field(default_factory=list)
     validation_warnings: List[str] = Field(default_factory=list)
-    fetched_at: datetime = Field(default_factory=_utcnow)
+    fetched_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # PACK022Integration
 # ---------------------------------------------------------------------------
-
 
 class PACK022Integration:
     """PACK-022 Net Zero Acceleration Pack integration for PACK-030.
@@ -394,6 +369,7 @@ class PACK022Integration:
                 self.logger.warning("DB query attempt %d/%d failed: %s", attempt, self.config.retry_attempts, exc)
                 if attempt < self.config.retry_attempts:
                     import asyncio
+
                     await asyncio.sleep(self.config.retry_delay_seconds * attempt)
         return []
 

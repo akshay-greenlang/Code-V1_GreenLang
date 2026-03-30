@@ -29,25 +29,20 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "25.0.0"
 _PACK_ID = "PACK-025"
 _TEMPLATE_ID = "race_to_zero_certificate"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str) if isinstance(data, dict) else str(data)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 def _dec(val: Any, places: int = 2) -> str:
     try:
@@ -56,7 +51,6 @@ def _dec(val: Any, places: int = 2) -> str:
         return str(d.quantize(Decimal(q), rounding=ROUND_HALF_UP))
     except Exception:
         return str(val)
-
 
 def _dec_comma(val: Any, places: int = 0) -> str:
     try:
@@ -81,13 +75,11 @@ def _dec_comma(val: Any, places: int = 0) -> str:
     except Exception:
         return str(val)
 
-
 def _pct(val: Any) -> str:
     try:
         return _dec(val, 1) + "%"
     except Exception:
         return str(val)
-
 
 # Verification levels
 VERIFICATION_LEVELS = {
@@ -107,7 +99,6 @@ VERIFICATION_LEVELS = {
         "badge_color": "#004d40",
     },
 }
-
 
 class RaceToZeroCertificateTemplate:
     """Race to Zero verification certificate template for PACK-025.
@@ -132,7 +123,7 @@ class RaceToZeroCertificateTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render the certificate as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections: List[str] = [
             self._md_header(data),
             self._md_organization(data),
@@ -149,7 +140,7 @@ class RaceToZeroCertificateTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render the certificate as a styled HTML document."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._certificate_css()
         body = "\n".join([
             self._html_certificate_body(data),
@@ -165,7 +156,7 @@ class RaceToZeroCertificateTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render the certificate as structured JSON."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         level = data.get("verification_level", "QUALIFIED")
         level_info = VERIFICATION_LEVELS.get(level, VERIFICATION_LEVELS["QUALIFIED"])
         cert_number = data.get("certificate_number", f"R2Z-{_new_uuid()[:8].upper()}")
@@ -198,7 +189,7 @@ class RaceToZeroCertificateTemplate:
 
     def render_excel_data(self, data: Dict[str, Any]) -> Dict[str, List[Dict[str, Any]]]:
         """Return structured data for Excel/openpyxl export."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         cert_number = data.get("certificate_number", f"R2Z-{_new_uuid()[:8].upper()}")
         level = data.get("verification_level", "QUALIFIED")
         sheets: Dict[str, List[Dict[str, Any]]] = {}

@@ -36,9 +36,10 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -106,7 +107,7 @@ class EventType(str, Enum):
 # PYDANTIC MODELS
 # =============================================================================
 
-class TelematicsConnectionConfig(BaseModel):
+class TelematicsConnectionConfig(GreenLangBase):
     """Telematics connection configuration."""
     connection_id: str = Field(..., description="Unique connection identifier")
     provider: TelematicsProvider = Field(..., description="Telematics provider")
@@ -117,7 +118,7 @@ class TelematicsConnectionConfig(BaseModel):
     timeout_seconds: int = Field(default=30)
 
 
-class VehicleConfig(BaseModel):
+class VehicleConfig(GreenLangBase):
     """Vehicle configuration."""
     vehicle_id: str = Field(..., description="Vehicle identifier")
     vin: Optional[str] = Field(None, description="Vehicle Identification Number")
@@ -133,7 +134,7 @@ class VehicleConfig(BaseModel):
     emission_factor_kgco2e_per_liter: Optional[float] = Field(None)
 
 
-class GPSPoint(BaseModel):
+class GPSPoint(GreenLangBase):
     """GPS location point."""
     timestamp: datetime = Field(...)
     latitude: float = Field(..., ge=-90, le=90)
@@ -144,7 +145,7 @@ class GPSPoint(BaseModel):
     accuracy_m: Optional[float] = Field(None)
 
 
-class FuelEvent(BaseModel):
+class FuelEvent(GreenLangBase):
     """Fuel purchase or consumption event."""
     event_id: str = Field(...)
     vehicle_id: str = Field(...)
@@ -160,7 +161,7 @@ class FuelEvent(BaseModel):
     fuel_efficiency_lper100km: Optional[float] = Field(None)
 
 
-class TripSummary(BaseModel):
+class TripSummary(GreenLangBase):
     """Trip summary."""
     trip_id: str = Field(...)
     vehicle_id: str = Field(...)
@@ -179,7 +180,7 @@ class TripSummary(BaseModel):
     emissions_kgco2e: Optional[float] = Field(None)
 
 
-class IdleEvent(BaseModel):
+class IdleEvent(GreenLangBase):
     """Idle time event."""
     event_id: str = Field(...)
     vehicle_id: str = Field(...)
@@ -191,7 +192,7 @@ class IdleEvent(BaseModel):
     emissions_kgco2e: Optional[float] = Field(None)
 
 
-class DriverMetrics(BaseModel):
+class DriverMetrics(GreenLangBase):
     """Driver behavior metrics."""
     driver_id: str = Field(...)
     driver_name: Optional[str] = Field(None)
@@ -208,7 +209,7 @@ class DriverMetrics(BaseModel):
     safety_score: Optional[float] = Field(None, ge=0, le=100)
 
 
-class FleetQueryInput(BaseModel):
+class FleetQueryInput(GreenLangBase):
     """Input for fleet data query."""
     connection_id: str = Field(...)
     query_type: str = Field(..., description="trips, fuel, idle, vehicles, drivers")
@@ -221,7 +222,7 @@ class FleetQueryInput(BaseModel):
     tenant_id: Optional[str] = Field(None)
 
 
-class FleetQueryOutput(BaseModel):
+class FleetQueryOutput(GreenLangBase):
     """Output from fleet data query."""
     connection_id: str = Field(...)
     query_type: str = Field(...)

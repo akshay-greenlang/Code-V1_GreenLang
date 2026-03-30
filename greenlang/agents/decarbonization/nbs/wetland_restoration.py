@@ -16,10 +16,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism.clock import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +41,7 @@ class RestorationAction(str, Enum):
     INVASIVE_REMOVAL = "invasive_removal"
 
 
-class WetlandSite(BaseModel):
+class WetlandSite(GreenLangBase):
     site_id: str = Field(...)
     area_ha: float = Field(..., gt=0)
     wetland_type: WetlandType = Field(...)
@@ -48,7 +49,7 @@ class WetlandSite(BaseModel):
     peat_depth_m: Optional[float] = Field(None, ge=0)
 
 
-class WetlandRestorationPlan(BaseModel):
+class WetlandRestorationPlan(GreenLangBase):
     site_id: str = Field(...)
     recommended_actions: List[RestorationAction] = Field(...)
     target_water_table_cm: float = Field(...)
@@ -58,13 +59,13 @@ class WetlandRestorationPlan(BaseModel):
     cost_per_tonne_co2e: float = Field(...)
 
 
-class WetlandRestorationInput(BaseModel):
+class WetlandRestorationInput(GreenLangBase):
     project_id: str = Field(...)
     sites: List[WetlandSite] = Field(..., min_length=1)
     project_duration_years: int = Field(default=30)
 
 
-class WetlandRestorationOutput(BaseModel):
+class WetlandRestorationOutput(GreenLangBase):
     project_id: str = Field(...)
     calculation_date: datetime = Field(default_factory=DeterministicClock.now)
     total_area_ha: float = Field(...)

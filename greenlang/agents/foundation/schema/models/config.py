@@ -31,7 +31,8 @@ from __future__ import annotations
 from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
+from greenlang.schemas import GreenLangBase
 
 
 class ValidationProfile(str, Enum):
@@ -146,7 +147,7 @@ class PatchLevel(str, Enum):
         return self == PatchLevel.UNSAFE
 
 
-class ValidationOptions(BaseModel):
+class ValidationOptions(GreenLangBase):
     """
     Configuration options for schema validation.
 

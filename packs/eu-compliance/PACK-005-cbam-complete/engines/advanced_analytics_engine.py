@@ -44,25 +44,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -75,7 +69,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -85,11 +78,9 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class OptimizationObjective(str, Enum):
     """Optimization objective for sourcing."""
@@ -98,14 +89,12 @@ class OptimizationObjective(str, Enum):
     MINIMIZE_RISK = "minimize_risk"
     BALANCED = "balanced"
 
-
 class Distribution(str, Enum):
     """Statistical distribution for Monte Carlo simulation."""
     NORMAL = "normal"
     LOGNORMAL = "lognormal"
     TRIANGULAR = "triangular"
     UNIFORM = "uniform"
-
 
 class PriceTrend(str, Enum):
     """Carbon price trend direction."""
@@ -114,11 +103,9 @@ class PriceTrend(str, Enum):
     STABLE = "stable"
     VOLATILE = "volatile"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class SupplierOption(BaseModel):
     """Supplier option for sourcing optimization."""
@@ -139,7 +126,6 @@ class SupplierOption(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class SourcingOptimization(BaseModel):
     """Result of sourcing optimization."""
     optimization_id: str = Field(default_factory=_new_uuid, description="Optimization identifier")
@@ -152,7 +138,7 @@ class SourcingOptimization(BaseModel):
     total_emissions: Decimal = Field(description="Total emissions in tCO2e")
     savings_vs_baseline: Decimal = Field(default=Decimal("0"), description="Savings vs current mix")
     emission_reduction_pct: Decimal = Field(default=Decimal("0"), description="Emission reduction %")
-    optimized_at: datetime = Field(default_factory=_utcnow, description="Optimization timestamp")
+    optimized_at: datetime = Field(default_factory=utcnow, description="Optimization timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("total_demand", "total_product_cost", "total_cbam_cost",
@@ -161,7 +147,6 @@ class SourcingOptimization(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class ScenarioResults(BaseModel):
     """Result of multi-scenario analysis."""
@@ -173,14 +158,13 @@ class ScenarioResults(BaseModel):
     range_min: Decimal = Field(description="Minimum cost across scenarios")
     range_max: Decimal = Field(description="Maximum cost across scenarios")
     range_spread: Decimal = Field(description="Cost spread (max - min)")
-    analyzed_at: datetime = Field(default_factory=_utcnow, description="Analysis timestamp")
+    analyzed_at: datetime = Field(default_factory=utcnow, description="Analysis timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("range_min", "range_max", "range_spread", mode="before")
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class MonteCarloResult(BaseModel):
     """Result of Monte Carlo simulation."""
@@ -196,7 +180,7 @@ class MonteCarloResult(BaseModel):
     var_95: Decimal = Field(description="Value at Risk (95%)")
     cvar_95: Decimal = Field(description="Conditional VaR (95%)")
     distribution_summary: Dict[str, Any] = Field(default_factory=dict, description="Distribution summary")
-    simulated_at: datetime = Field(default_factory=_utcnow, description="Simulation timestamp")
+    simulated_at: datetime = Field(default_factory=utcnow, description="Simulation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("mean", "median", "std_dev", "percentile_5", "percentile_25",
@@ -204,7 +188,6 @@ class MonteCarloResult(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class PriceForecast(BaseModel):
     """Carbon price forecast result."""
@@ -216,14 +199,13 @@ class PriceForecast(BaseModel):
     compound_growth_rate: Decimal = Field(description="Compound annual growth rate")
     confidence_level: Decimal = Field(default=Decimal("0.80"), description="Confidence level")
     methodology: str = Field(default="trend_extrapolation", description="Forecasting methodology")
-    forecasted_at: datetime = Field(default_factory=_utcnow, description="Forecast timestamp")
+    forecasted_at: datetime = Field(default_factory=utcnow, description="Forecast timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("current_price", "compound_growth_rate", "confidence_level", mode="before")
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class PhaseOutImpact(BaseModel):
     """Impact of free allocation phase-out on CBAM obligations."""
@@ -239,7 +221,6 @@ class PhaseOutImpact(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class DecarbROI(BaseModel):
     """ROI of supplier decarbonization investment."""
@@ -262,7 +243,6 @@ class DecarbROI(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class BenchmarkResult(BaseModel):
     """Peer benchmarking result."""
     benchmark_id: str = Field(default_factory=_new_uuid, description="Benchmark identifier")
@@ -283,7 +263,6 @@ class BenchmarkResult(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class TCOAnalysis(BaseModel):
     """Total cost of ownership analysis for procurement."""
     tco_id: str = Field(default_factory=_new_uuid, description="TCO identifier")
@@ -298,7 +277,6 @@ class TCOAnalysis(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class BudgetProjection(BaseModel):
     """Multi-year budget projection."""
@@ -315,7 +293,6 @@ class BudgetProjection(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class SensitivityResult(BaseModel):
     """Sensitivity analysis result."""
@@ -336,11 +313,9 @@ class SensitivityResult(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 # ---------------------------------------------------------------------------
 # Engine Configuration
 # ---------------------------------------------------------------------------
-
 
 class AdvancedAnalyticsConfig(BaseModel):
     """Configuration for the AdvancedAnalyticsEngine."""
@@ -362,7 +337,6 @@ class AdvancedAnalyticsConfig(BaseModel):
         description="EU ETS free allocation phase-out schedule",
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic model_rebuild for forward reference resolution
 # ---------------------------------------------------------------------------
@@ -380,11 +354,9 @@ TCOAnalysis.model_rebuild()
 BudgetProjection.model_rebuild()
 SensitivityResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # AdvancedAnalyticsEngine
 # ---------------------------------------------------------------------------
-
 
 class AdvancedAnalyticsEngine:
     """
@@ -1069,7 +1041,7 @@ class AdvancedAnalyticsEngine:
         base_price = _decimal(current.get("carbon_price", self.config.default_carbon_price))
         emission_growth = _decimal(current.get("emission_growth_rate", "0"))
         price_growth = _decimal(current.get("price_growth_rate", "0.05"))
-        base_year = current.get("base_year", _utcnow().year)
+        base_year = current.get("base_year", utcnow().year)
 
         annual_projections: List[Dict[str, Any]] = []
         total_central = Decimal("0")

@@ -66,21 +66,13 @@ logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -107,7 +99,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -123,7 +114,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -144,7 +134,6 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100).
 
@@ -156,7 +145,6 @@ def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
         Percentage as Decimal; Decimal("0") when whole is zero.
     """
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* and return a float.
@@ -173,32 +161,29 @@ def _round_val(value: Decimal, places: int = 6) -> float:
     quantizer = Decimal(10) ** -places
     return float(value.quantize(quantizer, rounding=ROUND_HALF_UP))
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: float) -> float:
     """Round to 4 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class WallType(str, Enum):
     """Wall construction types per BRE BR 443 and SAP 10.2.
 
     Covers major wall construction types found in European building stock
     from pre-1919 to modern construction methods.
+
+from greenlang.schemas import utcnow
     """
     SOLID_BRICK = "solid_brick"
     CAVITY_WALL = "cavity_wall"
@@ -210,7 +195,6 @@ class WallType(str, Enum):
     CONCRETE_PANEL = "concrete_panel"
     METAL_CLADDING = "metal_cladding"
     SYSTEM_BUILD = "system_build"
-
 
 class RoofType(str, Enum):
     """Roof construction types per CIBSE Guide A and BRE conventions.
@@ -227,7 +211,6 @@ class RoofType(str, Enum):
     CONCRETE_FLAT = "concrete_flat"
     MANSARD = "mansard"
 
-
 class FloorType(str, Enum):
     """Ground floor construction types per EN ISO 13370.
 
@@ -240,7 +223,6 @@ class FloorType(str, Enum):
     INSULATED_SLAB = "insulated_slab"
     RAISED_ACCESS = "raised_access"
 
-
 class WindowType(str, Enum):
     """Window unit types classified by number of panes.
 
@@ -251,7 +233,6 @@ class WindowType(str, Enum):
     DOUBLE_GLAZED = "double_glazed"
     TRIPLE_GLAZED = "triple_glazed"
     SECONDARY_GLAZED = "secondary_glazed"
-
 
 class GlazingType(str, Enum):
     """Glazing coating types per EN 673 and EN 410.
@@ -265,7 +246,6 @@ class GlazingType(str, Enum):
     SOLAR_CONTROL = "solar_control"
     ELECTROCHROMIC = "electrochromic"
 
-
 class FrameMaterial(str, Enum):
     """Window frame materials per EN ISO 10077-1.
 
@@ -278,7 +258,6 @@ class FrameMaterial(str, Enum):
     ALUMINIUM_THERMAL_BREAK = "aluminium_thermal_break"
     COMPOSITE = "composite"
     STEEL = "steel"
-
 
 class InsulationType(str, Enum):
     """Insulation material types with thermal conductivity per EN 12667.
@@ -302,7 +281,6 @@ class InsulationType(str, Enum):
     GLASS_FOAM = "glass_foam"
     CALCIUM_SILICATE = "calcium_silicate"
 
-
 class AirtightnessStandard(str, Enum):
     """Airtightness performance standard classifications.
 
@@ -313,7 +291,6 @@ class AirtightnessStandard(str, Enum):
     LOW_ENERGY = "low_energy"
     BUILDING_REGS = "building_regs"
     POOR = "poor"
-
 
 class ThermalBridgeType(str, Enum):
     """Junction types for linear thermal bridging per EN ISO 10211.
@@ -342,7 +319,6 @@ class ThermalBridgeType(str, Enum):
     WINDOW_WINDOW = "window_window"
     CURTAIN_WALL_TRANSOM = "curtain_wall_transom"
 
-
 class BuildingType(str, Enum):
     """Building use type for envelope assessment context."""
     RESIDENTIAL_HOUSE = "residential_house"
@@ -355,7 +331,6 @@ class BuildingType(str, Enum):
     WAREHOUSE = "warehouse"
     MIXED_USE = "mixed_use"
     INDUSTRIAL = "industrial"
-
 
 class AgeBand(str, Enum):
     """Construction age band per BRE / SAP conventions.
@@ -372,11 +347,9 @@ class AgeBand(str, Enum):
     BAND_2007_2013 = "2007_2013"
     BAND_2014_PRESENT = "2014_present"
 
-
 # ---------------------------------------------------------------------------
 # Constants -- U-Value Lookup Tables
 # ---------------------------------------------------------------------------
-
 
 # Default wall U-values (W/m2K) by wall type and age band.
 # Sources: BRE BR 443, SAP 10.2 Table S6, CIBSE Guide A Table 3.49.
@@ -486,7 +459,6 @@ WALL_U_VALUES: Dict[str, Dict[str, float]] = {
 """Default wall U-values (W/m2K) by wall type and age band.
 Source: BRE BR 443, SAP 10.2 Table S6, CIBSE Guide A Table 3.49."""
 
-
 # Roof U-values (W/m2K) by roof type and insulation thickness (mm).
 # Columns: 0, 50, 100, 150, 200, 250, 300, 350, 400 mm of insulation.
 # Sources: BRE BR 443, SAP 10.2 Table S9, CIBSE Guide A.
@@ -527,7 +499,6 @@ ROOF_U_VALUES: Dict[str, Dict[int, float]] = {
 """Roof U-values (W/m2K) by roof type and insulation thickness (mm).
 Source: BRE BR 443, SAP 10.2 Table S9."""
 
-
 # Floor U-values (W/m2K) by floor type and perimeter/area ratio.
 # P/A ratios: 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0.
 # Sources: EN ISO 13370:2017, BRE BR 443, SAP 10.2 Table S10.
@@ -555,7 +526,6 @@ FLOOR_U_VALUES: Dict[str, Dict[str, float]] = {
 }
 """Floor U-values (W/m2K) by floor type and P/A ratio.
 Source: EN ISO 13370:2017, BRE BR 443, SAP 10.2 Table S10."""
-
 
 # Window U-values (W/m2K) by glazing type, window type, and frame material.
 # Sources: EN 673, EN ISO 10077-1, BRE BR 443 Table 6e.
@@ -668,7 +638,6 @@ WINDOW_U_VALUES: Dict[str, Dict[str, Dict[str, float]]] = {
 """Window U-values (W/m2K) by window type, glazing type, and frame material.
 Source: EN 673, EN ISO 10077-1, BRE BR 443 Table 6e."""
 
-
 # Solar heat gain coefficient (g-value) by glazing type per EN 410.
 # g-value is the total solar energy transmittance of the glazing unit.
 WINDOW_G_VALUES: Dict[str, Dict[str, float]] = {
@@ -694,7 +663,6 @@ WINDOW_G_VALUES: Dict[str, Dict[str, float]] = {
     },
 }
 """Solar heat gain coefficient (g-value) by glazing type per EN 410."""
-
 
 # Thermal conductivity of insulation materials (W/m.K).
 # Declared lambda values per EN 13162-13171 and manufacturer data.
@@ -779,7 +747,6 @@ THERMAL_CONDUCTIVITY: Dict[str, Dict[str, Any]] = {
 """Thermal conductivity of insulation materials (W/m.K).
 Source: EN 13162-13171, BRE, CIBSE Guide A Table 3.50."""
 
-
 # Linear thermal transmittance psi values (W/m.K) for thermal bridges.
 # Sources: BRE BR 497, SAP 10.2 Table K1, EN ISO 14683 default values.
 # "default" column = Approved Document L default (no specific detail).
@@ -849,7 +816,6 @@ THERMAL_BRIDGE_PSI_VALUES: Dict[str, Dict[str, float]] = {
 """Linear thermal transmittance psi values (W/m.K) for thermal bridges.
 Source: BRE BR 497, SAP 10.2 Table K1, EN ISO 14683."""
 
-
 # Airtightness benchmarks: n50 values (air changes per hour at 50 Pa).
 # Sources: EN 13829, ISO 9972, Passivhaus Institut, CIBSE TM23.
 AIRTIGHTNESS_BENCHMARKS: Dict[str, Dict[str, float]] = {
@@ -877,7 +843,6 @@ AIRTIGHTNESS_BENCHMARKS: Dict[str, Dict[str, float]] = {
 """Airtightness benchmarks (n50 / q50) by standard classification.
 Source: EN 13829, ISO 9972, Passivhaus Institut, CIBSE TM23."""
 
-
 # Surface thermal resistances (m2K/W) per EN ISO 6946:2017 Table 1.
 # Rsi = internal surface resistance; Rse = external surface resistance.
 SURFACE_RESISTANCES: Dict[str, Dict[str, float]] = {
@@ -886,7 +851,6 @@ SURFACE_RESISTANCES: Dict[str, Dict[str, float]] = {
     "downward_heat_flow": {"Rsi": 0.17, "Rse": 0.04},
 }
 """Surface thermal resistances (m2K/W) per EN ISO 6946:2017 Table 1."""
-
 
 # Common building material thermal conductivities (W/m.K).
 # Sources: CIBSE Guide A Table 3.49, EN ISO 10456.
@@ -919,7 +883,6 @@ MATERIAL_CONDUCTIVITY: Dict[str, float] = {
 """Common building material thermal conductivities (W/m.K).
 Source: CIBSE Guide A Table 3.49, EN ISO 10456."""
 
-
 # Heating Degree Days by country (annual average for capital city).
 # Sources: CIBSE Guide A, BRE, Eurostat climate data.
 COUNTRY_HDD: Dict[str, float] = {
@@ -932,7 +895,6 @@ COUNTRY_HDD: Dict[str, float] = {
 }
 """Annual Heating Degree Days by country (base 15.5C, capital city).
 Source: CIBSE Guide A, Eurostat."""
-
 
 # Door U-values (W/m2K) by door type.
 # Sources: BRE BR 443, SAP 10.2 Table 6f.
@@ -953,11 +915,9 @@ DOOR_U_VALUES: Dict[str, float] = {
 """Door U-values (W/m2K) by door type.
 Source: BRE BR 443, SAP 10.2 Table 6f."""
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class InsulationLayer(BaseModel):
     """Single insulation or construction layer for U-value calculation.
@@ -974,7 +934,6 @@ class InsulationLayer(BaseModel):
         None, gt=0, le=500, description="Thermal conductivity (W/m.K)"
     )
     description: Optional[str] = Field(None, description="Layer description")
-
 
 class WallElement(BaseModel):
     """Wall element for envelope assessment.
@@ -1010,7 +969,6 @@ class WallElement(BaseModel):
             raise ValueError("Wall area exceeds 100,000 m2 sanity check")
         return v
 
-
 class RoofElement(BaseModel):
     """Roof element for envelope assessment.
 
@@ -1041,7 +999,6 @@ class RoofElement(BaseModel):
     )
     description: Optional[str] = Field(None, description="Description")
 
-
 class FloorElement(BaseModel):
     """Floor element for envelope assessment.
 
@@ -1069,7 +1026,6 @@ class FloorElement(BaseModel):
         None, gt=0, le=5.0, description="Known U-value (W/m2K)"
     )
     description: Optional[str] = Field(None, description="Description")
-
 
 class WindowElement(BaseModel):
     """Window element for envelope assessment.
@@ -1107,7 +1063,6 @@ class WindowElement(BaseModel):
     )
     description: Optional[str] = Field(None, description="Description")
 
-
 class DoorElement(BaseModel):
     """Door element for envelope assessment.
 
@@ -1130,7 +1085,6 @@ class DoorElement(BaseModel):
     )
     description: Optional[str] = Field(None, description="Description")
 
-
 class ThermalBridge(BaseModel):
     """Thermal bridge junction for heat loss calculation.
 
@@ -1150,7 +1104,6 @@ class ThermalBridge(BaseModel):
         default="default", description="Detail level (default/accredited/enhanced)"
     )
     description: Optional[str] = Field(None, description="Description")
-
 
 class AirtightnessData(BaseModel):
     """Blower door test results or estimated airtightness.
@@ -1173,7 +1126,6 @@ class AirtightnessData(BaseModel):
         default="EN 13829", description="Test standard"
     )
     measured: bool = Field(default=False, description="Measured vs estimated")
-
 
 class BuildingEnvelope(BaseModel):
     """Complete building envelope input for thermal performance assessment.
@@ -1235,11 +1187,9 @@ class BuildingEnvelope(BaseModel):
             raise ValueError("Floor area exceeds 1,000,000 m2 sanity check")
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class ElementUValue(BaseModel):
     """U-value result for a single building element.
@@ -1265,7 +1215,6 @@ class ElementUValue(BaseModel):
     regulatory_limit: Optional[float] = Field(None, description="Regulatory limit")
     compliant: bool = Field(default=True, description="Regulatory compliance")
 
-
 class ThermalBridgeResult(BaseModel):
     """Thermal bridge assessment result.
 
@@ -1283,7 +1232,6 @@ class ThermalBridgeResult(BaseModel):
     bridge_fraction_pct: float = Field(
         default=0.0, description="TB fraction of total fabric loss (%)"
     )
-
 
 class AirtightnessResult(BaseModel):
     """Airtightness assessment result.
@@ -1306,7 +1254,6 @@ class AirtightnessResult(BaseModel):
     )
     classification: str = Field(default="", description="Airtightness class")
     measured: bool = Field(default=False, description="Measured or estimated")
-
 
 class CondensationRiskResult(BaseModel):
     """Condensation risk assessment result (Glaser method per EN ISO 13788).
@@ -1336,7 +1283,6 @@ class CondensationRiskResult(BaseModel):
         default_factory=list, description="Remedial recommendations"
     )
 
-
 class ImprovementOpportunity(BaseModel):
     """Envelope improvement opportunity with estimated savings.
 
@@ -1365,7 +1311,6 @@ class ImprovementOpportunity(BaseModel):
     payback_years: float = Field(default=0.0, description="Simple payback (years)")
     priority: int = Field(default=0, description="Priority ranking")
 
-
 class EnvelopeResult(BaseModel):
     """Complete building envelope assessment result with provenance.
 
@@ -1376,7 +1321,7 @@ class EnvelopeResult(BaseModel):
     result_id: str = Field(default_factory=_new_uuid, description="Unique result ID")
     engine_version: str = Field(default=_MODULE_VERSION, description="Engine version")
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
 
@@ -1440,11 +1385,9 @@ class EnvelopeResult(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 # ---------------------------------------------------------------------------
 # Calculation Engine
 # ---------------------------------------------------------------------------
-
 
 class BuildingEnvelopeEngine:
     """Building envelope thermal performance assessment engine.

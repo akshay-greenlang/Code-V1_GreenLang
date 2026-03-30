@@ -32,25 +32,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -63,11 +57,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DataPointType(str, Enum):
     """ESRS datapoint value types."""
@@ -80,7 +72,6 @@ class DataPointType(str, Enum):
     TABLE = "table"
     NARRATIVE = "narrative"
 
-
 class DisclosureStatus(str, Enum):
     """Disclosure completion status."""
 
@@ -90,7 +81,6 @@ class DisclosureStatus(str, Enum):
     VALIDATED = "validated"
     SUBMITTED = "submitted"
 
-
 class MandatoryLevel(str, Enum):
     """ESRS datapoint mandatory level."""
 
@@ -99,11 +89,9 @@ class MandatoryLevel(str, Enum):
     VOLUNTARY = "voluntary"
     PHASE_IN = "phase_in"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class CSRDBridgeConfig(BaseModel):
     """Configuration for the CSRD App Bridge."""
@@ -118,7 +106,6 @@ class CSRDBridgeConfig(BaseModel):
         description="Include phase-in datapoints for first-year reporters",
     )
     include_voluntary: bool = Field(default=False)
-
 
 class ESRSDataPoint(BaseModel):
     """ESRS datapoint definition from GL-CSRD-APP."""
@@ -135,7 +122,6 @@ class ESRSDataPoint(BaseModel):
     phase_in_year: Optional[int] = Field(None)
     description: str = Field(default="")
 
-
 class ESRSFormula(BaseModel):
     """ESRS calculation formula from GL-CSRD-APP."""
 
@@ -148,7 +134,6 @@ class ESRSFormula(BaseModel):
     output_datapoint: str = Field(default="")
     unit: str = Field(default="")
     description: str = Field(default="")
-
 
 class ValidationRule(BaseModel):
     """ESRS validation rule from GL-CSRD-APP."""
@@ -163,7 +148,6 @@ class ValidationRule(BaseModel):
     message: str = Field(default="")
     related_datapoints: List[str] = Field(default_factory=list)
 
-
 class XBRLTaxonomyElement(BaseModel):
     """XBRL taxonomy element from EFRAG taxonomy."""
 
@@ -177,7 +161,6 @@ class XBRLTaxonomyElement(BaseModel):
     balance: str = Field(default="")
     abstract: bool = Field(default=False)
 
-
 class BridgeResult(BaseModel):
     """Result from a bridge operation."""
 
@@ -190,7 +173,6 @@ class BridgeResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     warnings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Datapoint Counts per Standard
@@ -238,11 +220,9 @@ STANDARD_RULE_COUNTS: Dict[str, int] = {
     "ESRS G1": 25,
 }
 
-
 # ---------------------------------------------------------------------------
 # CSRDAppBridge
 # ---------------------------------------------------------------------------
-
 
 class CSRDAppBridge:
     """GL-CSRD-APP integration bridge for PACK-017.
@@ -291,7 +271,7 @@ class CSRDAppBridge:
         Returns:
             BridgeResult with count of imported datapoints.
         """
-        result = BridgeResult(started_at=_utcnow())
+        result = BridgeResult(started_at=utcnow())
 
         try:
             if standard:
@@ -337,7 +317,7 @@ class CSRDAppBridge:
             result.errors.append(str(exc))
             logger.error("Datapoint import failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (result.completed_at - result.started_at).total_seconds() * 1000
         return result
@@ -354,7 +334,7 @@ class CSRDAppBridge:
         Returns:
             BridgeResult with count of imported formulas.
         """
-        result = BridgeResult(started_at=_utcnow())
+        result = BridgeResult(started_at=utcnow())
 
         try:
             if standard:
@@ -389,7 +369,7 @@ class CSRDAppBridge:
             result.errors.append(str(exc))
             logger.error("Formula import failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (result.completed_at - result.started_at).total_seconds() * 1000
         return result
@@ -406,7 +386,7 @@ class CSRDAppBridge:
         Returns:
             BridgeResult with count of imported rules.
         """
-        result = BridgeResult(started_at=_utcnow())
+        result = BridgeResult(started_at=utcnow())
 
         try:
             if standard:
@@ -442,7 +422,7 @@ class CSRDAppBridge:
             result.errors.append(str(exc))
             logger.error("Rule import failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (result.completed_at - result.started_at).total_seconds() * 1000
         return result
@@ -459,7 +439,7 @@ class CSRDAppBridge:
         Returns:
             BridgeResult with count of imported taxonomy elements.
         """
-        result = BridgeResult(started_at=_utcnow())
+        result = BridgeResult(started_at=utcnow())
 
         try:
             # Taxonomy element count closely mirrors datapoint count
@@ -481,7 +461,7 @@ class CSRDAppBridge:
             result.errors.append(str(exc))
             logger.error("Taxonomy import failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (result.completed_at - result.started_at).total_seconds() * 1000
         return result
@@ -498,7 +478,7 @@ class CSRDAppBridge:
         Returns:
             BridgeResult with push status.
         """
-        result = BridgeResult(started_at=_utcnow())
+        result = BridgeResult(started_at=utcnow())
 
         try:
             payload = {
@@ -507,7 +487,7 @@ class CSRDAppBridge:
                 "reporting_year": self.config.reporting_year,
                 "disclosures": disclosures,
                 "standards_count": len(disclosures),
-                "pushed_at": _utcnow().isoformat(),
+                "pushed_at": utcnow().isoformat(),
             }
 
             result.records_transferred = len(disclosures)
@@ -527,7 +507,7 @@ class CSRDAppBridge:
             result.errors.append(str(exc))
             logger.error("Disclosure push failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (result.completed_at - result.started_at).total_seconds() * 1000
         return result

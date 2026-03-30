@@ -74,6 +74,9 @@ from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import AlertSeverity, AlertStatus
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -85,12 +88,6 @@ _MODULE_VERSION: str = "1.0.0"
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -110,7 +107,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str = "alert") -> str:
     """Generate a unique identifier with a given prefix.
 
@@ -121,7 +117,6 @@ def _generate_id(prefix: str = "alert") -> str:
         ID in format ``{prefix}-{hex12}``.
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 def _to_decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
@@ -142,29 +137,9 @@ def _to_decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError) as exc:
         raise ValueError(f"Cannot convert {value!r} to Decimal") from exc
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
-
-class AlertSeverity(str, Enum):
-    """Severity level for corruption index alerts.
-
-    Values:
-        CRITICAL: Immediate action required.
-        HIGH: Urgent attention needed.
-        MEDIUM: Monitor closely.
-        LOW: Informational tracking.
-        INFORMATIONAL: FYI only.
-    """
-
-    CRITICAL = "CRITICAL"
-    HIGH = "HIGH"
-    MEDIUM = "MEDIUM"
-    LOW = "LOW"
-    INFORMATIONAL = "INFORMATIONAL"
-
 
 class AlertType(str, Enum):
     """Type of corruption index alert.
@@ -186,25 +161,6 @@ class AlertType(str, Enum):
     WATCHLIST_TRIGGER = "WATCHLIST_TRIGGER"
     COUNTRY_RECLASSIFICATION = "COUNTRY_RECLASSIFICATION"
     NEW_DATA_AVAILABLE = "NEW_DATA_AVAILABLE"
-
-
-class AlertStatus(str, Enum):
-    """Lifecycle status of an alert.
-
-    Values:
-        ACTIVE: Alert is active and unacknowledged.
-        ACKNOWLEDGED: Alert has been acknowledged by a user.
-        RESOLVED: Alert condition has been resolved.
-        SUPPRESSED: Alert has been suppressed (cooldown or manual).
-        EXPIRED: Alert has passed its expiration time.
-    """
-
-    ACTIVE = "ACTIVE"
-    ACKNOWLEDGED = "ACKNOWLEDGED"
-    RESOLVED = "RESOLVED"
-    SUPPRESSED = "SUPPRESSED"
-    EXPIRED = "EXPIRED"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -365,11 +321,9 @@ DEFAULT_ALERT_RULES: List[Dict[str, Any]] = [
     },
 ]
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class Alert:
@@ -451,7 +405,6 @@ class Alert:
             "provenance_hash": self.provenance_hash,
         }
 
-
 @dataclass
 class AlertConfiguration:
     """Configuration for an alert rule.
@@ -517,7 +470,6 @@ class AlertConfiguration:
             "provenance_hash": self.provenance_hash,
         }
 
-
 @dataclass
 class AlertSummary:
     """Summary statistics for alerts.
@@ -568,11 +520,9 @@ class AlertSummary:
             "provenance_hash": self.provenance_hash,
         }
 
-
 # ---------------------------------------------------------------------------
 # AlertEngine
 # ---------------------------------------------------------------------------
-
 
 class AlertEngine:
     """Production-grade corruption index alerting system for EUDR compliance.
@@ -672,7 +622,7 @@ class AlertEngine:
         if severity not in {e.value for e in AlertSeverity}:
             raise ValueError(f"severity must be a valid AlertSeverity value")
 
-        now_str = _utcnow().isoformat()
+        now_str = utcnow().isoformat()
 
         config = AlertConfiguration(
             config_id=_generate_id("cfg"),
@@ -774,7 +724,7 @@ class AlertEngine:
                 "country_code": country_code,
                 "reason": reason,
                 "monitoring_frequency": monitoring_frequency,
-                "added_at": _utcnow().isoformat(),
+                "added_at": utcnow().isoformat(),
                 "alert_count": 0,
             }
 
@@ -862,7 +812,7 @@ class AlertEngine:
         Returns:
             Created Alert object.
         """
-        now = _utcnow()
+        now = utcnow()
         expires_at = now + timedelta(days=DEFAULT_EXPIRATION_DAYS)
 
         alert = Alert(
@@ -923,7 +873,7 @@ class AlertEngine:
             cooldown_mins = rule.get("cooldown_minutes", DEFAULT_COOLDOWN_MINUTES)
             cooldown_end = last_alert_time + timedelta(minutes=cooldown_mins)
 
-            return _utcnow() < cooldown_end
+            return utcnow() < cooldown_end
 
     def _record_cooldown(self, rule_id: str, country_code: str) -> None:
         """Record alert time for cooldown tracking.
@@ -934,7 +884,7 @@ class AlertEngine:
         """
         key = f"{rule_id}:{country_code.upper()}"
         with self._lock:
-            self._cooldown_tracker[key] = _utcnow()
+            self._cooldown_tracker[key] = utcnow()
 
     def _evict_oldest_alerts(self) -> None:
         """Evict oldest alerts when store exceeds maximum size.
@@ -1299,7 +1249,7 @@ class AlertEngine:
                 "alerts_generated": 0,
                 "alerts": [],
                 "processing_time_ms": 0.0,
-                "calculation_timestamp": _utcnow().isoformat(),
+                "calculation_timestamp": utcnow().isoformat(),
                 "provenance_hash": _compute_hash({"no_updates": True}),
             }
 
@@ -1327,7 +1277,7 @@ class AlertEngine:
             "alerts_generated": len(all_alerts),
             "alerts": all_alerts,
             "processing_time_ms": round(processing_time_ms, 3),
-            "calculation_timestamp": _utcnow().isoformat(),
+            "calculation_timestamp": utcnow().isoformat(),
             "provenance_hash": "",
         }
         result["provenance_hash"] = _compute_hash(result)
@@ -1363,7 +1313,7 @@ class AlertEngine:
         # Check expiration
         result = alert.to_dict()
         if alert.status == AlertStatus.ACTIVE.value:
-            now = _utcnow()
+            now = utcnow()
             expires = datetime.fromisoformat(alert.expires_at)
             if now > expires:
                 alert.status = AlertStatus.EXPIRED.value
@@ -1400,7 +1350,7 @@ class AlertEngine:
                 )
 
             alert.status = AlertStatus.ACKNOWLEDGED.value
-            alert.acknowledged_at = _utcnow().isoformat()
+            alert.acknowledged_at = utcnow().isoformat()
             alert.acknowledged_by = acknowledged_by
             if notes:
                 alert.metadata["acknowledgement_notes"] = notes
@@ -1441,7 +1391,7 @@ class AlertEngine:
                 raise ValueError(f"Alert not found: {alert_id}")
 
             alert.status = AlertStatus.RESOLVED.value
-            alert.resolved_at = _utcnow().isoformat()
+            alert.resolved_at = utcnow().isoformat()
             alert.resolution_notes = resolution_notes
             alert.provenance_hash = _compute_hash(alert)
 
@@ -1563,7 +1513,7 @@ class AlertEngine:
             "status": status,
         }
         out["processing_time_ms"] = round(processing_time_ms, 3)
-        out["calculation_timestamp"] = _utcnow().isoformat()
+        out["calculation_timestamp"] = utcnow().isoformat()
 
         logger.info(
             "Alert summary: total=%d active=%d critical=%d time_ms=%.1f",
@@ -1676,7 +1626,7 @@ class AlertEngine:
         Returns:
             Dictionary with count of removed alerts.
         """
-        now = _utcnow()
+        now = utcnow()
         removed = 0
 
         with self._lock:

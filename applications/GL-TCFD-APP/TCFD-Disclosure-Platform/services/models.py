@@ -35,7 +35,8 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 
 from .config import (
     AssetType,
@@ -89,7 +90,7 @@ def _sha256(payload: str) -> str:
 # Core Models
 # ---------------------------------------------------------------------------
 
-class Organization(BaseModel):
+class Organization(GreenLangBase):
     """
     Organization registered for TCFD climate disclosure.
 
@@ -116,7 +117,7 @@ class Organization(BaseModel):
     updated_at: datetime = Field(default_factory=_now)
 
 
-class AssetLocation(BaseModel):
+class AssetLocation(GreenLangBase):
     """
     A physical asset subject to climate risk assessment.
 
@@ -154,7 +155,7 @@ class AssetLocation(BaseModel):
     updated_at: datetime = Field(default_factory=_now)
 
 
-class ReportingPeriod(BaseModel):
+class ReportingPeriod(GreenLangBase):
     """
     Reporting period definition for TCFD disclosures.
 
@@ -186,7 +187,7 @@ class ReportingPeriod(BaseModel):
 # Governance Models (Pillar 1)
 # ---------------------------------------------------------------------------
 
-class BoardOversight(BaseModel):
+class BoardOversight(GreenLangBase):
     """Board-level climate oversight details per TCFD Governance (a)."""
 
     id: str = Field(default_factory=_new_id)
@@ -207,7 +208,7 @@ class BoardOversight(BaseModel):
     updated_at: datetime = Field(default_factory=_now)
 
 
-class ManagementRole(BaseModel):
+class ManagementRole(GreenLangBase):
     """
     A climate-related management role per TCFD Governance (b).
 
@@ -238,7 +239,7 @@ class ManagementRole(BaseModel):
     updated_at: datetime = Field(default_factory=_now)
 
 
-class ClimateCompetency(BaseModel):
+class ClimateCompetency(GreenLangBase):
     """Board and management climate competency assessment."""
 
     id: str = Field(default_factory=_new_id)
@@ -253,7 +254,7 @@ class ClimateCompetency(BaseModel):
     updated_at: datetime = Field(default_factory=_now)
 
 
-class IncentiveLinkage(BaseModel):
+class IncentiveLinkage(GreenLangBase):
     """Remuneration and incentive linkage to climate targets."""
 
     id: str = Field(default_factory=_new_id)
@@ -277,7 +278,7 @@ class IncentiveLinkage(BaseModel):
     updated_at: datetime = Field(default_factory=_now)
 
 
-class GovernanceMaturity(BaseModel):
+class GovernanceMaturity(GreenLangBase):
     """Governance maturity scoring across 8 dimensions."""
 
     id: str = Field(default_factory=_new_id)
@@ -295,7 +296,7 @@ class GovernanceMaturity(BaseModel):
     updated_at: datetime = Field(default_factory=_now)
 
 
-class GovernanceAssessment(BaseModel):
+class GovernanceAssessment(GreenLangBase):
     """
     TCFD Governance pillar assessment per Governance (a) and (b) disclosures.
 
@@ -361,7 +362,7 @@ class GovernanceAssessment(BaseModel):
 # Strategy Models (Pillar 2) -- Climate Risks
 # ---------------------------------------------------------------------------
 
-class ClimateRisk(BaseModel):
+class ClimateRisk(GreenLangBase):
     """
     A climate-related risk identified per TCFD Strategy (a).
 
@@ -428,7 +429,7 @@ class ClimateRisk(BaseModel):
             self.provenance_hash = _sha256(payload)
 
 
-class ClimateOpportunity(BaseModel):
+class ClimateOpportunity(GreenLangBase):
     """
     A climate-related opportunity per TCFD Strategy (a).
 
@@ -485,7 +486,7 @@ class ClimateOpportunity(BaseModel):
             self.provenance_hash = _sha256(payload)
 
 
-class BusinessModelImpact(BaseModel):
+class BusinessModelImpact(GreenLangBase):
     """Impact of climate risks/opportunities on business model per TCFD Strategy (b)."""
 
     id: str = Field(default_factory=_new_id)
@@ -511,7 +512,7 @@ class BusinessModelImpact(BaseModel):
     updated_at: datetime = Field(default_factory=_now)
 
 
-class ValueChainImpact(BaseModel):
+class ValueChainImpact(GreenLangBase):
     """Climate impact on value chain stages per TCFD Strategy (b)."""
 
     id: str = Field(default_factory=_new_id)
@@ -533,7 +534,7 @@ class ValueChainImpact(BaseModel):
     updated_at: datetime = Field(default_factory=_now)
 
 
-class StrategicResponse(BaseModel):
+class StrategicResponse(GreenLangBase):
     """Organizational strategic response to climate risks/opportunities."""
 
     id: str = Field(default_factory=_new_id)
@@ -563,7 +564,7 @@ class StrategicResponse(BaseModel):
 # Scenario Models (Pillar 2 - Strategy (c))
 # ---------------------------------------------------------------------------
 
-class ScenarioParameters(BaseModel):
+class ScenarioParameters(GreenLangBase):
     """
     Detailed parameters for a climate scenario.
 
@@ -599,7 +600,7 @@ class ScenarioParameters(BaseModel):
     created_at: datetime = Field(default_factory=_now)
 
 
-class ScenarioDefinition(BaseModel):
+class ScenarioDefinition(GreenLangBase):
     """
     A climate scenario definition for TCFD Strategy (c) analysis.
 
@@ -631,7 +632,7 @@ class ScenarioDefinition(BaseModel):
     updated_at: datetime = Field(default_factory=_now)
 
 
-class ScenarioResult(BaseModel):
+class ScenarioResult(GreenLangBase):
     """
     Results of running a scenario analysis for an organization.
 
@@ -691,7 +692,7 @@ class ScenarioResult(BaseModel):
             self.provenance_hash = _sha256(payload)
 
 
-class ScenarioComparison(BaseModel):
+class ScenarioComparison(GreenLangBase):
     """Comparison of multiple scenario results side-by-side."""
 
     id: str = Field(default_factory=_new_id)
@@ -709,7 +710,7 @@ class ScenarioComparison(BaseModel):
     created_at: datetime = Field(default_factory=_now)
 
 
-class SensitivityResult(BaseModel):
+class SensitivityResult(GreenLangBase):
     """Result of a single sensitivity analysis run on a specific variable."""
 
     id: str = Field(default_factory=_new_id)
@@ -729,7 +730,7 @@ class SensitivityResult(BaseModel):
 # Physical Risk Models
 # ---------------------------------------------------------------------------
 
-class HazardExposure(BaseModel):
+class HazardExposure(GreenLangBase):
     """Exposure of a specific asset to a specific physical hazard."""
 
     id: str = Field(default_factory=_new_id)
@@ -750,7 +751,7 @@ class HazardExposure(BaseModel):
     created_at: datetime = Field(default_factory=_now)
 
 
-class DamageEstimate(BaseModel):
+class DamageEstimate(GreenLangBase):
     """Estimated physical damage for a specific asset-hazard combination."""
 
     id: str = Field(default_factory=_new_id)
@@ -768,7 +769,7 @@ class DamageEstimate(BaseModel):
     created_at: datetime = Field(default_factory=_now)
 
 
-class InsuranceImpact(BaseModel):
+class InsuranceImpact(GreenLangBase):
     """Insurance cost impact from physical climate risks."""
 
     id: str = Field(default_factory=_new_id)
@@ -787,7 +788,7 @@ class InsuranceImpact(BaseModel):
     created_at: datetime = Field(default_factory=_now)
 
 
-class PhysicalRiskAssessment(BaseModel):
+class PhysicalRiskAssessment(GreenLangBase):
     """
     Physical climate risk assessment for an individual asset.
 
@@ -844,7 +845,7 @@ class PhysicalRiskAssessment(BaseModel):
 # Transition Risk Models
 # ---------------------------------------------------------------------------
 
-class PolicyRisk(BaseModel):
+class PolicyRisk(GreenLangBase):
     """Policy and regulatory transition risk details."""
 
     id: str = Field(default_factory=_new_id)
@@ -860,7 +861,7 @@ class PolicyRisk(BaseModel):
     created_at: datetime = Field(default_factory=_now)
 
 
-class TechnologyRisk(BaseModel):
+class TechnologyRisk(GreenLangBase):
     """Technology-related transition risk details."""
 
     id: str = Field(default_factory=_new_id)
@@ -877,7 +878,7 @@ class TechnologyRisk(BaseModel):
     created_at: datetime = Field(default_factory=_now)
 
 
-class MarketRisk(BaseModel):
+class MarketRisk(GreenLangBase):
     """Market-related transition risk details."""
 
     id: str = Field(default_factory=_new_id)
@@ -896,7 +897,7 @@ class MarketRisk(BaseModel):
     created_at: datetime = Field(default_factory=_now)
 
 
-class ReputationRisk(BaseModel):
+class ReputationRisk(GreenLangBase):
     """Reputation-related transition risk details."""
 
     id: str = Field(default_factory=_new_id)
@@ -920,7 +921,7 @@ class ReputationRisk(BaseModel):
     created_at: datetime = Field(default_factory=_now)
 
 
-class StrandedAssetAnalysis(BaseModel):
+class StrandedAssetAnalysis(GreenLangBase):
     """Analysis of assets at risk of stranding under transition scenarios."""
 
     id: str = Field(default_factory=_new_id)
@@ -941,7 +942,7 @@ class StrandedAssetAnalysis(BaseModel):
     created_at: datetime = Field(default_factory=_now)
 
 
-class TransitionRiskAssessment(BaseModel):
+class TransitionRiskAssessment(GreenLangBase):
     """
     Transition risk assessment covering policy, technology, market, reputation.
 
@@ -999,7 +1000,7 @@ class TransitionRiskAssessment(BaseModel):
 # Opportunity Models
 # ---------------------------------------------------------------------------
 
-class RevenueSizing(BaseModel):
+class RevenueSizing(GreenLangBase):
     """Revenue sizing for a climate opportunity."""
 
     id: str = Field(default_factory=_new_id)
@@ -1018,7 +1019,7 @@ class RevenueSizing(BaseModel):
     created_at: datetime = Field(default_factory=_now)
 
 
-class CostSavingsEstimate(BaseModel):
+class CostSavingsEstimate(GreenLangBase):
     """Cost savings estimate for a climate opportunity."""
 
     id: str = Field(default_factory=_new_id)
@@ -1036,7 +1037,7 @@ class CostSavingsEstimate(BaseModel):
     created_at: datetime = Field(default_factory=_now)
 
 
-class InvestmentAnalysis(BaseModel):
+class InvestmentAnalysis(GreenLangBase):
     """Investment analysis for pursuing a climate opportunity."""
 
     id: str = Field(default_factory=_new_id)
@@ -1051,7 +1052,7 @@ class InvestmentAnalysis(BaseModel):
     created_at: datetime = Field(default_factory=_now)
 
 
-class OpportunityAssessment(BaseModel):
+class OpportunityAssessment(GreenLangBase):
     """Full opportunity assessment combining sizing, savings, and investment."""
 
     id: str = Field(default_factory=_new_id)
@@ -1068,7 +1069,7 @@ class OpportunityAssessment(BaseModel):
     created_at: datetime = Field(default_factory=_now)
 
 
-class OpportunityPipeline(BaseModel):
+class OpportunityPipeline(GreenLangBase):
     """Pipeline of all identified climate opportunities."""
 
     id: str = Field(default_factory=_new_id)
@@ -1092,7 +1093,7 @@ class OpportunityPipeline(BaseModel):
 # Financial Impact Models
 # ---------------------------------------------------------------------------
 
-class FinancialImpact(BaseModel):
+class FinancialImpact(GreenLangBase):
     """
     Climate financial impact on a specific line item in financial statements.
 
@@ -1155,7 +1156,7 @@ class FinancialImpact(BaseModel):
             self.provenance_hash = _sha256(payload)
 
 
-class IncomeStatementImpact(BaseModel):
+class IncomeStatementImpact(GreenLangBase):
     """Aggregate income statement impacts from climate risks/opportunities."""
 
     id: str = Field(default_factory=_new_id)
@@ -1172,7 +1173,7 @@ class IncomeStatementImpact(BaseModel):
     created_at: datetime = Field(default_factory=_now)
 
 
-class BalanceSheetImpact(BaseModel):
+class BalanceSheetImpact(GreenLangBase):
     """Aggregate balance sheet impacts from climate risks."""
 
     id: str = Field(default_factory=_new_id)
@@ -1188,7 +1189,7 @@ class BalanceSheetImpact(BaseModel):
     created_at: datetime = Field(default_factory=_now)
 
 
-class CashFlowImpact(BaseModel):
+class CashFlowImpact(GreenLangBase):
     """Aggregate cash flow impacts from climate risks/opportunities."""
 
     id: str = Field(default_factory=_new_id)
@@ -1203,7 +1204,7 @@ class CashFlowImpact(BaseModel):
     created_at: datetime = Field(default_factory=_now)
 
 
-class NPVAnalysis(BaseModel):
+class NPVAnalysis(GreenLangBase):
     """Net Present Value analysis for climate-related investments."""
 
     id: str = Field(default_factory=_new_id)
@@ -1221,7 +1222,7 @@ class NPVAnalysis(BaseModel):
     created_at: datetime = Field(default_factory=_now)
 
 
-class MACCEntry(BaseModel):
+class MACCEntry(GreenLangBase):
     """Marginal Abatement Cost Curve entry."""
 
     id: str = Field(default_factory=_new_id)
@@ -1239,7 +1240,7 @@ class MACCEntry(BaseModel):
     created_at: datetime = Field(default_factory=_now)
 
 
-class CarbonPriceSensitivity(BaseModel):
+class CarbonPriceSensitivity(GreenLangBase):
     """Carbon price sensitivity analysis result."""
 
     id: str = Field(default_factory=_new_id)
@@ -1258,7 +1259,7 @@ class CarbonPriceSensitivity(BaseModel):
 # Risk Management Models (Pillar 3)
 # ---------------------------------------------------------------------------
 
-class RiskAssessment(BaseModel):
+class RiskAssessment(GreenLangBase):
     """Structured risk assessment with likelihood x impact scoring."""
 
     id: str = Field(default_factory=_new_id)
@@ -1296,7 +1297,7 @@ class RiskAssessment(BaseModel):
             object.__setattr__(self, "risk_rating", "critical")
 
 
-class RiskRegisterEntry(BaseModel):
+class RiskRegisterEntry(GreenLangBase):
     """Entry in the climate risk register."""
 
     id: str = Field(default_factory=_new_id)
@@ -1318,7 +1319,7 @@ class RiskRegisterEntry(BaseModel):
     updated_at: datetime = Field(default_factory=_now)
 
 
-class RiskManagementRecord(BaseModel):
+class RiskManagementRecord(GreenLangBase):
     """
     Risk management record per TCFD Pillar 3 (RM a/b/c).
 
@@ -1356,7 +1357,7 @@ class RiskManagementRecord(BaseModel):
     updated_at: datetime = Field(default_factory=_now)
 
 
-class ERMIntegration(BaseModel):
+class ERMIntegration(GreenLangBase):
     """Enterprise Risk Management integration status."""
 
     id: str = Field(default_factory=_new_id)
@@ -1380,7 +1381,7 @@ class ERMIntegration(BaseModel):
     updated_at: datetime = Field(default_factory=_now)
 
 
-class RiskIndicator(BaseModel):
+class RiskIndicator(GreenLangBase):
     """Key Risk Indicator (KRI) for climate risk monitoring."""
 
     id: str = Field(default_factory=_new_id)
@@ -1402,7 +1403,7 @@ class RiskIndicator(BaseModel):
 # Metrics & Targets Models (Pillar 4)
 # ---------------------------------------------------------------------------
 
-class MetricValue(BaseModel):
+class MetricValue(GreenLangBase):
     """A single value for a climate metric at a point in time."""
 
     id: str = Field(default_factory=_new_id)
@@ -1416,7 +1417,7 @@ class MetricValue(BaseModel):
     created_at: datetime = Field(default_factory=_now)
 
 
-class ClimateMetric(BaseModel):
+class ClimateMetric(GreenLangBase):
     """
     A climate-related metric per TCFD MT(a) and ISSB para 29.
 
@@ -1454,7 +1455,7 @@ class ClimateMetric(BaseModel):
             self.provenance_hash = _sha256(payload)
 
 
-class EmissionsMetric(BaseModel):
+class EmissionsMetric(GreenLangBase):
     """GHG emissions metric with Scope 1/2/3 breakdown per TCFD MT(b)."""
 
     id: str = Field(default_factory=_new_id)
@@ -1500,7 +1501,7 @@ class EmissionsMetric(BaseModel):
             self.provenance_hash = _sha256(payload)
 
 
-class IntensityMetric(BaseModel):
+class IntensityMetric(GreenLangBase):
     """Emissions intensity metric (e.g. tCO2e per million USD revenue)."""
 
     id: str = Field(default_factory=_new_id)
@@ -1532,7 +1533,7 @@ class IntensityMetric(BaseModel):
             )
 
 
-class CrossIndustryMetric(BaseModel):
+class CrossIndustryMetric(GreenLangBase):
     """ISSB cross-industry metric value (one of 7 required metrics)."""
 
     id: str = Field(default_factory=_new_id)
@@ -1552,7 +1553,7 @@ class CrossIndustryMetric(BaseModel):
 # Target Models (Pillar 4 - MT(c))
 # ---------------------------------------------------------------------------
 
-class ClimateTarget(BaseModel):
+class ClimateTarget(GreenLangBase):
     """
     A climate-related target per TCFD MT(c).
 
@@ -1602,7 +1603,7 @@ class ClimateTarget(BaseModel):
         return v
 
 
-class TargetProgress(BaseModel):
+class TargetProgress(GreenLangBase):
     """Annual progress record against a climate target."""
 
     id: str = Field(default_factory=_new_id)
@@ -1636,7 +1637,7 @@ class TargetProgress(BaseModel):
             self.provenance_hash = _sha256(payload)
 
 
-class SBTiAssessment(BaseModel):
+class SBTiAssessment(GreenLangBase):
     """Science Based Targets initiative alignment assessment."""
 
     id: str = Field(default_factory=_new_id)
@@ -1666,7 +1667,7 @@ class SBTiAssessment(BaseModel):
     updated_at: datetime = Field(default_factory=_now)
 
 
-class GapToTarget(BaseModel):
+class GapToTarget(GreenLangBase):
     """Gap analysis between current performance and target."""
 
     id: str = Field(default_factory=_new_id)
@@ -1688,7 +1689,7 @@ class GapToTarget(BaseModel):
 # Disclosure Models
 # ---------------------------------------------------------------------------
 
-class DisclosureEvidence(BaseModel):
+class DisclosureEvidence(GreenLangBase):
     """Evidence document supporting a disclosure section."""
 
     id: str = Field(default_factory=_new_id)
@@ -1710,7 +1711,7 @@ class DisclosureEvidence(BaseModel):
             self.provenance_hash = _sha256(payload)
 
 
-class ComplianceScore(BaseModel):
+class ComplianceScore(GreenLangBase):
     """Compliance scoring for a TCFD disclosure pillar or section."""
 
     id: str = Field(default_factory=_new_id)
@@ -1730,7 +1731,7 @@ class ComplianceScore(BaseModel):
     created_at: datetime = Field(default_factory=_now)
 
 
-class DisclosureSection(BaseModel):
+class DisclosureSection(GreenLangBase):
     """
     A section of a TCFD disclosure document.
 
@@ -1758,7 +1759,7 @@ class DisclosureSection(BaseModel):
     updated_at: datetime = Field(default_factory=_now)
 
 
-class TCFDDisclosure(BaseModel):
+class TCFDDisclosure(GreenLangBase):
     """
     A complete TCFD disclosure document for an organization-year.
 
@@ -1808,7 +1809,7 @@ class TCFDDisclosure(BaseModel):
 # ISSB Cross-Walk Models
 # ---------------------------------------------------------------------------
 
-class ISSBMapping(BaseModel):
+class ISSBMapping(GreenLangBase):
     """
     Mapping between a TCFD disclosure reference and IFRS S2 paragraph.
 
@@ -1831,7 +1832,7 @@ class ISSBMapping(BaseModel):
     created_at: datetime = Field(default_factory=_now)
 
 
-class ISSBGap(BaseModel):
+class ISSBGap(GreenLangBase):
     """Identified gap between TCFD disclosure and IFRS S2 requirements."""
 
     id: str = Field(default_factory=_new_id)
@@ -1855,7 +1856,7 @@ class ISSBGap(BaseModel):
     updated_at: datetime = Field(default_factory=_now)
 
 
-class MigrationPathway(BaseModel):
+class MigrationPathway(GreenLangBase):
     """Migration pathway from TCFD to IFRS S2 compliance."""
 
     id: str = Field(default_factory=_new_id)
@@ -1879,7 +1880,7 @@ class MigrationPathway(BaseModel):
 # Gap Analysis Models
 # ---------------------------------------------------------------------------
 
-class MaturityScore(BaseModel):
+class MaturityScore(GreenLangBase):
     """Maturity score for a specific TCFD pillar or dimension."""
 
     pillar: TCFDPillar = Field(...)
@@ -1888,7 +1889,7 @@ class MaturityScore(BaseModel):
     description: str = Field(default="", max_length=500)
 
 
-class PeerBenchmark(BaseModel):
+class PeerBenchmark(GreenLangBase):
     """Peer benchmarking data for a TCFD pillar."""
 
     id: str = Field(default_factory=_new_id)
@@ -1906,7 +1907,7 @@ class PeerBenchmark(BaseModel):
     created_at: datetime = Field(default_factory=_now)
 
 
-class ActionItem(BaseModel):
+class ActionItem(GreenLangBase):
     """A specific action item for closing a TCFD gap."""
 
     id: str = Field(default_factory=_new_id)
@@ -1924,7 +1925,7 @@ class ActionItem(BaseModel):
     updated_at: datetime = Field(default_factory=_now)
 
 
-class ActionPlan(BaseModel):
+class ActionPlan(GreenLangBase):
     """Complete action plan for improving TCFD disclosure quality."""
 
     id: str = Field(default_factory=_new_id)
@@ -1957,7 +1958,7 @@ class ActionPlan(BaseModel):
                 object.__setattr__(self, "completion_pct", pct)
 
 
-class GapAssessment(BaseModel):
+class GapAssessment(GreenLangBase):
     """
     Comprehensive disclosure gap analysis and maturity assessment.
 
@@ -1999,7 +2000,7 @@ class GapAssessment(BaseModel):
 # Recommendation Models
 # ---------------------------------------------------------------------------
 
-class ImprovementAction(BaseModel):
+class ImprovementAction(GreenLangBase):
     """A specific step within a recommendation."""
 
     step_number: int = Field(..., ge=1)
@@ -2008,7 +2009,7 @@ class ImprovementAction(BaseModel):
     responsible_role: Optional[str] = Field(None, max_length=255)
 
 
-class Recommendation(BaseModel):
+class Recommendation(GreenLangBase):
     """
     An improvement recommendation for TCFD disclosure quality.
 
@@ -2041,7 +2042,7 @@ class Recommendation(BaseModel):
 # API Request Models
 # ---------------------------------------------------------------------------
 
-class CreateOrganizationRequest(BaseModel):
+class CreateOrganizationRequest(GreenLangBase):
     """Request to create a new organization."""
 
     name: str = Field(..., min_length=1, max_length=500)
@@ -2055,7 +2056,7 @@ class CreateOrganizationRequest(BaseModel):
     contact_email: Optional[str] = Field(None, max_length=255)
 
 
-class CreateGovernanceAssessmentRequest(BaseModel):
+class CreateGovernanceAssessmentRequest(GreenLangBase):
     """Request to create a governance assessment."""
 
     board_oversight_score: int = Field(default=1, ge=1, le=5)
@@ -2069,7 +2070,7 @@ class CreateGovernanceAssessmentRequest(BaseModel):
     notes: Optional[str] = Field(None, max_length=5000)
 
 
-class CreateClimateRiskRequest(BaseModel):
+class CreateClimateRiskRequest(GreenLangBase):
     """Request to create a climate risk."""
 
     risk_type: RiskType = Field(...)
@@ -2087,7 +2088,7 @@ class CreateClimateRiskRequest(BaseModel):
     owner: Optional[str] = Field(None, max_length=255)
 
 
-class CreateClimateOpportunityRequest(BaseModel):
+class CreateClimateOpportunityRequest(GreenLangBase):
     """Request to create a climate opportunity."""
 
     category: OpportunityCategory = Field(...)
@@ -2107,7 +2108,7 @@ class CreateClimateOpportunityRequest(BaseModel):
     priority_score: int = Field(default=3, ge=1, le=5)
 
 
-class CreateScenarioRequest(BaseModel):
+class CreateScenarioRequest(GreenLangBase):
     """Request to create or customize a scenario."""
 
     name: str = Field(..., min_length=1, max_length=255)
@@ -2123,7 +2124,7 @@ class CreateScenarioRequest(BaseModel):
     physical_assumptions: Optional[Dict[str, str]] = Field(None)
 
 
-class RunScenarioAnalysisRequest(BaseModel):
+class RunScenarioAnalysisRequest(GreenLangBase):
     """Request to run a scenario analysis."""
 
     scenario_id: str = Field(...)
@@ -2137,7 +2138,7 @@ class RunScenarioAnalysisRequest(BaseModel):
     enable_monte_carlo: bool = Field(default=True)
 
 
-class RegisterAssetRequest(BaseModel):
+class RegisterAssetRequest(GreenLangBase):
     """Request to register a physical asset."""
 
     asset_name: str = Field(..., min_length=1, max_length=255)
@@ -2154,7 +2155,7 @@ class RegisterAssetRequest(BaseModel):
     year_built: Optional[int] = Field(None, ge=1800, le=2100)
 
 
-class CreateTargetRequest(BaseModel):
+class CreateTargetRequest(GreenLangBase):
     """Request to create a climate target."""
 
     target_type: TargetType = Field(...)
@@ -2179,7 +2180,7 @@ class CreateTargetRequest(BaseModel):
         return v
 
 
-class RecordMetricRequest(BaseModel):
+class RecordMetricRequest(GreenLangBase):
     """Request to record a climate metric."""
 
     metric_category: MetricCategory = Field(
@@ -2194,7 +2195,7 @@ class RecordMetricRequest(BaseModel):
     source: str = Field(default="")
 
 
-class RecordEmissionsRequest(BaseModel):
+class RecordEmissionsRequest(GreenLangBase):
     """Request to record GHG emissions data."""
 
     reporting_year: int = Field(..., ge=1990, le=2100)
@@ -2206,14 +2207,14 @@ class RecordEmissionsRequest(BaseModel):
     methodology: str = Field(default="GHG Protocol")
 
 
-class CreateDisclosureRequest(BaseModel):
+class CreateDisclosureRequest(GreenLangBase):
     """Request to create a TCFD disclosure."""
 
     reporting_year: int = Field(..., ge=1990, le=2100)
     version: int = Field(default=1, ge=1)
 
 
-class UpdateDisclosureSectionRequest(BaseModel):
+class UpdateDisclosureSectionRequest(GreenLangBase):
     """Request to update a disclosure section."""
 
     content: str = Field(default="", max_length=50000)
@@ -2221,14 +2222,14 @@ class UpdateDisclosureSectionRequest(BaseModel):
     status: Optional[DisclosureStatus] = Field(None)
 
 
-class UpdateDisclosureStatusRequest(BaseModel):
+class UpdateDisclosureStatusRequest(GreenLangBase):
     """Request to update disclosure status."""
 
     status: DisclosureStatus = Field(...)
     approved_by: Optional[str] = Field(None, max_length=255)
 
 
-class CreateRiskManagementRecordRequest(BaseModel):
+class CreateRiskManagementRecordRequest(GreenLangBase):
     """Request to create a risk management record."""
 
     risk_id: str = Field(...)
@@ -2242,7 +2243,7 @@ class CreateRiskManagementRecordRequest(BaseModel):
     erm_integrated: bool = Field(default=False)
 
 
-class RunGapAnalysisRequest(BaseModel):
+class RunGapAnalysisRequest(GreenLangBase):
     """Request to run a TCFD gap analysis."""
 
     target_maturity: GovernanceMaturityLevel = Field(
@@ -2252,7 +2253,7 @@ class RunGapAnalysisRequest(BaseModel):
     include_peer_benchmark: bool = Field(default=True)
 
 
-class GenerateReportRequest(BaseModel):
+class GenerateReportRequest(GreenLangBase):
     """Request to generate a TCFD report."""
 
     format: ReportFormat = Field(default=ReportFormat.PDF)
@@ -2263,7 +2264,7 @@ class GenerateReportRequest(BaseModel):
     include_recommendations: bool = Field(default=True)
 
 
-class UpdateSettingsRequest(BaseModel):
+class UpdateSettingsRequest(GreenLangBase):
     """Request to update platform configuration."""
 
     default_scenario: Optional[ScenarioType] = Field(None)
@@ -2282,7 +2283,7 @@ class UpdateSettingsRequest(BaseModel):
 # Generic API Response Models
 # ---------------------------------------------------------------------------
 
-class ApiError(BaseModel):
+class ApiError(GreenLangBase):
     """Standard API error response."""
 
     code: str = Field(..., description="Error code (e.g. VALIDATION_ERROR)")
@@ -2291,7 +2292,7 @@ class ApiError(BaseModel):
     timestamp: datetime = Field(default_factory=_now)
 
 
-class ApiResponse(BaseModel):
+class ApiResponse(GreenLangBase):
     """Standard API success response wrapper."""
 
     success: bool = Field(default=True)
@@ -2302,7 +2303,7 @@ class ApiResponse(BaseModel):
     provenance_hash: Optional[str] = Field(None)
 
 
-class PaginatedResponse(BaseModel):
+class PaginatedResponse(GreenLangBase):
     """Paginated list response for collection endpoints."""
 
     items: List[Any] = Field(default_factory=list)

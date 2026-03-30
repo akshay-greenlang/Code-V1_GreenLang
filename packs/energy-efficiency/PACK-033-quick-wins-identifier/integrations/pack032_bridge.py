@@ -29,20 +29,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -55,11 +50,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class AssessmentImportConfig(BaseModel):
     """Configuration for importing PACK-032 building assessment data."""
@@ -70,7 +63,6 @@ class AssessmentImportConfig(BaseModel):
     import_zone_data: bool = Field(default=True)
     import_hvac_profiles: bool = Field(default=True)
     import_envelope_data: bool = Field(default=True)
-
 
 class BuildingDataImport(BaseModel):
     """Result of importing building assessment data from PACK-032."""
@@ -92,11 +84,9 @@ class BuildingDataImport(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Pack032Bridge
 # ---------------------------------------------------------------------------
-
 
 class Pack032Bridge:
     """Bridge to PACK-032 Building Energy Assessment data.

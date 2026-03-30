@@ -16,12 +16,13 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig
 from greenlang.agents.base_agents import DeterministicAgent
 from greenlang.agents.categories import AgentCategory, AgentMetadata
 from greenlang.utilities.determinism import DeterministicClock, content_hash, deterministic_id
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +44,7 @@ class ProcurementOption(str, Enum):
     GREEN_TARIFF = "green_tariff"
 
 
-class RenewableProject(BaseModel):
+class RenewableProject(GreenLangBase):
     project_id: str = Field(...)
     name: str = Field(...)
     renewable_type: RenewableType = Field(...)
@@ -68,7 +69,7 @@ class RenewableProject(BaseModel):
     contract_years: Optional[int] = Field(None, ge=1)
 
 
-class RenewableEnergyPlan(BaseModel):
+class RenewableEnergyPlan(GreenLangBase):
     plan_id: str = Field(...)
     target_year: int = Field(...)
     target_renewable_percent: float = Field(..., ge=0, le=100)
@@ -90,7 +91,7 @@ class RenewableEnergyPlan(BaseModel):
     provenance_hash: str = Field(default="")
 
 
-class RenewableEnergyInput(BaseModel):
+class RenewableEnergyInput(GreenLangBase):
     operation: str = Field(default="plan")
     target_year: int = Field(default=2030)
     target_renewable_percent: float = Field(default=100, ge=0, le=100)
@@ -101,7 +102,7 @@ class RenewableEnergyInput(BaseModel):
     budget_constraint_usd: Optional[float] = Field(None, ge=0)
 
 
-class RenewableEnergyOutput(BaseModel):
+class RenewableEnergyOutput(GreenLangBase):
     operation: str = Field(...)
     success: bool = Field(...)
     plan: Optional[RenewableEnergyPlan] = Field(None)

@@ -61,26 +61,19 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -98,7 +91,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -107,7 +99,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -119,17 +110,14 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round_val(value: Decimal, places: int = 2) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ProgramType(str, Enum):
     """Type of utility rebate programme."""
@@ -139,7 +127,6 @@ class ProgramType(str, Enum):
     UPSTREAM = "upstream"
     MIDSTREAM = "midstream"
     DIRECT_INSTALL = "direct_install"
-
 
 class MeasureCategory(str, Enum):
     """Measure category for rebate matching."""
@@ -156,7 +143,6 @@ class MeasureCategory(str, Enum):
     WATER_HEATING = "water_heating"
     RENEWABLE = "renewable"
 
-
 class ApplicationStatus(str, Enum):
     """Rebate application status."""
     DRAFT = "draft"
@@ -168,7 +154,6 @@ class ApplicationStatus(str, Enum):
     PAID = "paid"
     EXPIRED = "expired"
 
-
 class CustomerSegment(str, Enum):
     """Customer segment for programme eligibility."""
     RESIDENTIAL = "residential"
@@ -178,7 +163,6 @@ class CustomerSegment(str, Enum):
     INSTITUTIONAL = "institutional"
     MULTIFAMILY = "multifamily"
     AGRICULTURAL = "agricultural"
-
 
 class RebateUnit(str, Enum):
     """Unit used for rebate calculation."""
@@ -190,7 +174,6 @@ class RebateUnit(str, Enum):
     PER_HP = "per_hp"
     PERCENTAGE = "percentage"
     FLAT = "flat"
-
 
 class UtilityRegion(str, Enum):
     """Geographic region for utility programme filtering."""
@@ -209,11 +192,9 @@ class UtilityRegion(str, Enum):
     AUSTRALIA = "australia"
     OTHER = "other"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class UtilityProgram(BaseModel):
     """A utility rebate / incentive programme."""
@@ -240,7 +221,6 @@ class UtilityProgram(BaseModel):
     class Config:
         arbitrary_types_allowed = True
 
-
 class MeasureForRebate(BaseModel):
     """An energy efficiency measure seeking rebate matching."""
     measure_id: str = Field(default_factory=_new_uuid)
@@ -256,7 +236,6 @@ class MeasureForRebate(BaseModel):
     class Config:
         arbitrary_types_allowed = True
 
-
 class RebateMatch(BaseModel):
     """A matched rebate programme for a specific measure."""
     match_id: str = Field(default_factory=_new_uuid)
@@ -270,7 +249,6 @@ class RebateMatch(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
-
 
 class RebateApplication(BaseModel):
     """A compiled rebate application for submission."""
@@ -286,7 +264,6 @@ class RebateApplication(BaseModel):
     class Config:
         arbitrary_types_allowed = True
 
-
 class RebatePortfolio(BaseModel):
     """Portfolio of rebate applications across multiple measures."""
     portfolio_id: str = Field(default_factory=_new_uuid)
@@ -299,7 +276,6 @@ class RebatePortfolio(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
-
 
 # ---------------------------------------------------------------------------
 # Utility Programs Database (100+ programmes)
@@ -513,11 +489,9 @@ UTILITY_PROGRAMS_DATABASE: List[UtilityProgram] = [
     UtilityProgram(utility_name="Idaho Power", utility_region=UtilityRegion.NORTHWEST_US, program_name="Custom Efficiency", program_type=ProgramType.CUSTOM, measure_category=MeasureCategory.PROCESS, customer_segments=[CustomerSegment.INDUSTRIAL], rebate_amount=Decimal("0.07"), rebate_unit=RebateUnit.PER_KWH),
 ]
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class UtilityRebateEngine:
     """
@@ -616,7 +590,7 @@ class UtilityRebateEngine:
                 "measures_with_rebates": len(applications),
                 "processing_time_ms": int((time.perf_counter() - t0) * 1000),
             },
-            calculated_at=str(_utcnow()),
+            calculated_at=str(utcnow()),
         )
         portfolio.provenance_hash = _compute_hash(portfolio)
         return portfolio
@@ -715,6 +689,7 @@ class UtilityRebateEngine:
     def get_expiring_soon(self, days: int = 90) -> List[UtilityProgram]:
         """Get programmes expiring within the specified number of days."""
         from datetime import timedelta
+
         cutoff = date.today() + timedelta(days=days)
         return [
             p for p in self._programs

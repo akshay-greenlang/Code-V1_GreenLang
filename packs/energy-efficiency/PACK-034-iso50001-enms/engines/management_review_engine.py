@@ -80,25 +80,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -117,7 +111,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -126,7 +119,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -138,22 +130,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ReviewFrequency(str, Enum):
     """Frequency of management reviews.
@@ -167,7 +155,6 @@ class ReviewFrequency(str, Enum):
     SEMI_ANNUAL = "semi_annual"
     ANNUAL = "annual"
     AS_NEEDED = "as_needed"
-
 
 class ReviewStatus(str, Enum):
     """Management review lifecycle status.
@@ -183,7 +170,6 @@ class ReviewStatus(str, Enum):
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
     MINUTES_APPROVED = "minutes_approved"
-
 
 class DecisionType(str, Enum):
     """Types of management review decisions.
@@ -204,7 +190,6 @@ class DecisionType(str, Enum):
     INVESTMENT_APPROVAL = "investment_approval"
     NO_ACTION = "no_action"
 
-
 class KPIStatus(str, Enum):
     """Energy performance indicator status.
 
@@ -220,7 +205,6 @@ class KPIStatus(str, Enum):
     AT_RISK = "at_risk"
     NO_DATA = "no_data"
 
-
 class ActionItemPriority(str, Enum):
     """Priority level for management review action items.
 
@@ -234,7 +218,6 @@ class ActionItemPriority(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
 
-
 class ResourceAdequacy(str, Enum):
     """Assessment of resource adequacy for the EnMS.
 
@@ -247,7 +230,6 @@ class ResourceAdequacy(str, Enum):
     NEEDS_INCREASE = "needs_increase"
     NEEDS_REALLOCATION = "needs_reallocation"
     UNDER_REVIEW = "under_review"
-
 
 # ---------------------------------------------------------------------------
 # Reference Data
@@ -411,11 +393,9 @@ _PRIORITY_THRESHOLDS: Dict[str, int] = {
     "low": 0,
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class ReviewInput(BaseModel):
     """A single management review input item per ISO 50001 Clause 9.3.2.
@@ -463,7 +443,6 @@ class ReviewInput(BaseModel):
             return v.strip().lower().replace(" ", "_")
         return v
 
-
 class PolicyReview(BaseModel):
     """Energy policy review assessment per ISO 50001 Clause 5.2.
 
@@ -500,7 +479,6 @@ class PolicyReview(BaseModel):
         description="Notes on alignment assessment",
     )
 
-
 class ObjectivesReview(BaseModel):
     """Review of energy objectives and targets per ISO 50001 Clause 6.2.
 
@@ -532,7 +510,6 @@ class ObjectivesReview(BaseModel):
     def coerce_completion_rate(cls, v: Any) -> Any:
         """Coerce to Decimal."""
         return _decimal(v)
-
 
 class EnPISummary(BaseModel):
     """Energy performance indicator summary per ISO 50001 Clause 6.6.
@@ -597,7 +574,6 @@ class EnPISummary(BaseModel):
                 return KPIStatus(v)
         return v
 
-
 class ResourceReview(BaseModel):
     """Resource adequacy assessment per ISO 50001 Clause 7.1.
 
@@ -651,7 +627,6 @@ class ResourceReview(BaseModel):
                 return ResourceAdequacy(v)
         return v
 
-
 class AuditSummary(BaseModel):
     """Internal audit results summary per ISO 50001 Clause 9.2.
 
@@ -684,7 +659,6 @@ class AuditSummary(BaseModel):
     def coerce_closure_rate(cls, v: Any) -> Any:
         """Coerce to Decimal."""
         return _decimal(v)
-
 
 class ContinualImprovement(BaseModel):
     """Continual improvement item per ISO 50001 Clause 10.2.
@@ -734,7 +708,6 @@ class ContinualImprovement(BaseModel):
     def coerce_decimals(cls, v: Any) -> Any:
         """Coerce numeric fields to Decimal."""
         return _decimal(v)
-
 
 class ReviewDecision(BaseModel):
     """Management review decision and action item per ISO 50001 Clause 9.3.3.
@@ -806,7 +779,6 @@ class ReviewDecision(BaseModel):
                 return ActionItemPriority(v)
         return v
 
-
 class ManagementReviewMinutes(BaseModel):
     """Management review meeting minutes per ISO 50001 Clause 9.3.
 
@@ -858,7 +830,6 @@ class ManagementReviewMinutes(BaseModel):
         default=None, description="Approval date",
     )
 
-
 class ManagementReviewResult(BaseModel):
     """Complete management review result per ISO 50001 Clause 9.3.
 
@@ -888,7 +859,7 @@ class ManagementReviewResult(BaseModel):
     )
     enms_id: str = Field(default="", max_length=100, description="EnMS ID")
     review_date: datetime = Field(
-        default_factory=_utcnow, description="Review date/time",
+        default_factory=utcnow, description="Review date/time",
     )
     review_period_start: date = Field(
         default_factory=lambda: date.today(),
@@ -951,7 +922,6 @@ class ManagementReviewResult(BaseModel):
                 return ReviewStatus(v)
         return v
 
-
 # ---------------------------------------------------------------------------
 # Model Rebuild (required for Pydantic v2 + __future__.annotations)
 # ---------------------------------------------------------------------------
@@ -967,11 +937,9 @@ ReviewDecision.model_rebuild()
 ManagementReviewMinutes.model_rebuild()
 ManagementReviewResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ManagementReviewEngine:
     """ISO 50001 Clause 9.3 management review engine.
@@ -1135,7 +1103,7 @@ class ManagementReviewEngine:
 
         result = ManagementReviewResult(
             enms_id=enms_id,
-            review_date=_utcnow(),
+            review_date=utcnow(),
             review_period_start=period_start,
             review_period_end=period_end,
             status=ReviewStatus.COMPLETED,
@@ -1907,7 +1875,7 @@ class ManagementReviewEngine:
 
         dashboard: Dict[str, Any] = {
             "dashboard_id": _new_uuid(),
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
             "kpi_cards": kpi_cards,
             "traffic_lights": traffic_lights,
             "sparklines": sparklines,
@@ -2047,7 +2015,7 @@ class ManagementReviewEngine:
             "total_inputs": len(result.inputs),
             "total_decisions": len(result.decisions),
             "total_improvements": len(result.improvements),
-            "validated_at": _utcnow().isoformat(),
+            "validated_at": utcnow().isoformat(),
             "engine_version": self.engine_version,
         }
 

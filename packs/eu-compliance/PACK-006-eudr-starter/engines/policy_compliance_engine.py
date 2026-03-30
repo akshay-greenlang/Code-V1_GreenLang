@@ -58,25 +58,19 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -89,11 +83,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class RuleSeverity(str, Enum):
     """Compliance rule severity levels."""
@@ -102,7 +94,6 @@ class RuleSeverity(str, Enum):
     HIGH = "HIGH"
     MEDIUM = "MEDIUM"
     LOW = "LOW"
-
 
 class RuleCategory(str, Enum):
     """Compliance rule categories."""
@@ -115,7 +106,6 @@ class RuleCategory(str, Enum):
     DOCUMENTATION = "DOCUMENTATION"
     CUTOFF = "CUTOFF"
 
-
 class RuleStatus(str, Enum):
     """Rule evaluation result status."""
 
@@ -125,7 +115,6 @@ class RuleStatus(str, Enum):
     NOT_APPLICABLE = "NOT_APPLICABLE"
     ERROR = "ERROR"
 
-
 class RemediationPriority(str, Enum):
     """Remediation action priority."""
 
@@ -134,11 +123,9 @@ class RemediationPriority(str, Enum):
     MEDIUM_TERM = "MEDIUM_TERM"
     LONG_TERM = "LONG_TERM"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class ComplianceRule(BaseModel):
     """Definition of a single compliance rule."""
@@ -150,7 +137,6 @@ class ComplianceRule(BaseModel):
     severity: RuleSeverity = Field(..., description="Rule severity")
     article_reference: str = Field(default="", description="EUDR article reference")
     is_blocking: bool = Field(default=False, description="Whether failure blocks submission")
-
 
 class RuleResult(BaseModel):
     """Result of evaluating a single compliance rule."""
@@ -165,8 +151,7 @@ class RuleResult(BaseModel):
     details: Dict[str, Any] = Field(default_factory=dict, description="Additional details")
     article_reference: str = Field(default="", description="EUDR article reference")
     remediation_hint: Optional[str] = Field(None, description="Suggested remediation action")
-    evaluated_at: datetime = Field(default_factory=_utcnow, description="Evaluation timestamp")
-
+    evaluated_at: datetime = Field(default_factory=utcnow, description="Evaluation timestamp")
 
 class ComplianceResult(BaseModel):
     """Result of evaluating all compliance rules."""
@@ -188,9 +173,8 @@ class ComplianceResult(BaseModel):
     results_by_category: Dict[str, List[RuleResult]] = Field(
         default_factory=dict, description="Results grouped by category"
     )
-    evaluated_at: datetime = Field(default_factory=_utcnow, description="Evaluation timestamp")
+    evaluated_at: datetime = Field(default_factory=utcnow, description="Evaluation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class SimplifiedDDCheck(BaseModel):
     """Result of simplified due diligence eligibility check."""
@@ -206,7 +190,6 @@ class SimplifiedDDCheck(BaseModel):
     )
     article_reference: str = Field(default="Article 13", description="EUDR article reference")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class PenaltyExposure(BaseModel):
     """Estimated penalty exposure from compliance gaps."""
@@ -224,7 +207,6 @@ class PenaltyExposure(BaseModel):
     risk_narrative: str = Field(default="", description="Risk exposure narrative")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class RemediationAction(BaseModel):
     """A single remediation action item."""
 
@@ -236,7 +218,6 @@ class RemediationAction(BaseModel):
     estimated_effort_days: int = Field(default=1, description="Estimated effort in days")
     responsible_role: str = Field(default="Compliance Officer", description="Responsible role")
     deadline_days: int = Field(default=30, description="Target completion days")
-
 
 class RemediationPlan(BaseModel):
     """Complete remediation plan for compliance gaps."""
@@ -254,9 +235,8 @@ class RemediationPlan(BaseModel):
     actions_by_category: Dict[str, List[RemediationAction]] = Field(
         default_factory=dict, description="Actions grouped by category"
     )
-    generated_at: datetime = Field(default_factory=_utcnow, description="Plan generation timestamp")
+    generated_at: datetime = Field(default_factory=utcnow, description="Plan generation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class ComplianceAuditEntry(BaseModel):
     """A single audit trail entry for compliance evaluation."""
@@ -269,9 +249,8 @@ class ComplianceAuditEntry(BaseModel):
     rule_id: Optional[str] = Field(None, description="Related rule ID")
     compliance_score: Optional[float] = Field(None, description="Score at time of audit")
     performed_by: str = Field(default="SYSTEM", description="Performer")
-    performed_at: datetime = Field(default_factory=_utcnow, description="Action timestamp")
+    performed_at: datetime = Field(default_factory=utcnow, description="Action timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 # ---------------------------------------------------------------------------
 # Rule Definitions
@@ -493,11 +472,9 @@ PENALTY_RANGES: Dict[str, Tuple[float, float]] = {
 # Document retention period (years)
 DOCUMENT_RETENTION_YEARS = 5
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class PolicyComplianceEngine:
     """

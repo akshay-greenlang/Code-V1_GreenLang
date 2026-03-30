@@ -24,7 +24,7 @@ Enumerations (20):
     SupplierDataSource, AllocationMethod, CurrencyCode,
     DQIDimension, DQIScore, UncertaintyMethod,
     ComplianceFramework, ComplianceStatus, PipelineStage,
-    ExportFormat, BatchStatus, GWPSource, EmissionGas,
+    ReportFormat, BatchStatus, GWPSource, EmissionGas,
     CapitalizationPolicy
 
 Constants (13):
@@ -60,18 +60,14 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import Field, field_validator
 
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ReportFormat
 
 # ---------------------------------------------------------------------------
 # Helper
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Module-level Constants
@@ -131,11 +127,9 @@ ONE_HUNDRED: Decimal = Decimal("100")
 #: Decimal one thousand constant for unit conversions.
 ONE_THOUSAND: Decimal = Decimal("1000")
 
-
 # =============================================================================
 # Enumerations (20)
 # =============================================================================
-
 
 class CalculationMethod(str, Enum):
     """GHG Protocol Scope 3 Category 2 calculation methods.
@@ -163,7 +157,6 @@ class CalculationMethod(str, Enum):
     HYBRID = "hybrid"
     AVERAGE_DATA = "average_data"
     SPEND_BASED = "spend_based"
-
 
 class AssetCategory(str, Enum):
     """Top-level capital asset categories aligned with PP&E classes.
@@ -199,7 +192,6 @@ class AssetCategory(str, Enum):
     FURNITURE_FIXTURES = "furniture_fixtures"
     LAND_IMPROVEMENTS = "land_improvements"
     LEASEHOLD_IMPROVEMENTS = "leasehold_improvements"
-
 
 class AssetSubCategory(str, Enum):
     """Detailed sub-categories for capital assets (~40 entries).
@@ -268,7 +260,6 @@ class AssetSubCategory(str, Enum):
     BATTERY_STORAGE = "battery_storage"
     ELECTRIC_MOTOR = "electric_motor"
 
-
 class SpendClassificationSystem(str, Enum):
     """Industry classification systems for CapEx categorization.
 
@@ -283,7 +274,6 @@ class SpendClassificationSystem(str, Enum):
     ISIC = "isic"
     UNSPSC = "unspsc"
 
-
 class EEIODatabase(str, Enum):
     """Environmentally-Extended Input-Output databases for spend-based EFs.
 
@@ -297,7 +287,6 @@ class EEIODatabase(str, Enum):
     EXIOBASE = "exiobase"
     WIOD = "wiod"
     GTAP = "gtap"
-
 
 class PhysicalEFSource(str, Enum):
     """Sources of physical (quantity-based) emission factors.
@@ -317,7 +306,6 @@ class PhysicalEFSource(str, Enum):
     IAI = "iai"
     CUSTOM = "custom"
 
-
 class SupplierDataSource(str, Enum):
     """Sources of supplier-specific emission data.
 
@@ -336,7 +324,6 @@ class SupplierDataSource(str, Enum):
     DIRECT_MEASUREMENT = "direct_measurement"
     ESTIMATED = "estimated"
 
-
 class AllocationMethod(str, Enum):
     """Allocation methods for supplier facility-level data.
 
@@ -352,7 +339,6 @@ class AllocationMethod(str, Enum):
     MASS = "mass"
     ENERGY = "energy"
     HYBRID = "hybrid"
-
 
 class CurrencyCode(str, Enum):
     """ISO 4217 currency codes for CapEx spend-based calculations.
@@ -383,7 +369,6 @@ class CurrencyCode(str, Enum):
     ZAR = "ZAR"
     THB = "THB"
 
-
 class DQIDimension(str, Enum):
     """Data quality indicator dimensions per GHG Protocol Scope 3.
 
@@ -402,7 +387,6 @@ class DQIDimension(str, Enum):
     COMPLETENESS = "completeness"
     RELIABILITY = "reliability"
 
-
 class DQIScore(int, Enum):
     """Data quality score levels (1-5 scale, lower is better).
 
@@ -419,7 +403,6 @@ class DQIScore(int, Enum):
     POOR = 4
     VERY_POOR = 5
 
-
 class UncertaintyMethod(str, Enum):
     """Methods for quantifying uncertainty in emission calculations.
 
@@ -431,7 +414,6 @@ class UncertaintyMethod(str, Enum):
     MONTE_CARLO = "monte_carlo"
     ANALYTICAL = "analytical"
     TIER_DEFAULT = "tier_default"
-
 
 class ComplianceFramework(str, Enum):
     """Regulatory and voluntary reporting frameworks for Category 2.
@@ -453,7 +435,6 @@ class ComplianceFramework(str, Enum):
     GRI = "gri"
     ISO_14064 = "iso_14064"
 
-
 class ComplianceStatus(str, Enum):
     """Result of a regulatory compliance check.
 
@@ -465,7 +446,6 @@ class ComplianceStatus(str, Enum):
     COMPLIANT = "compliant"
     PARTIAL = "partial"
     NON_COMPLIANT = "non_compliant"
-
 
 class PipelineStage(str, Enum):
     """Stages in the Capital Goods calculation pipeline.
@@ -484,22 +464,6 @@ class PipelineStage(str, Enum):
     AGGREGATE = "aggregate"
     SEAL = "seal"
 
-
-class ExportFormat(str, Enum):
-    """Supported export formats for calculation outputs.
-
-    JSON: Machine-readable JSON for API consumers.
-    CSV: Comma-separated values for spreadsheet import.
-    XLSX: Excel workbook with formatted sheets.
-    PDF: PDF report with charts and tables.
-    """
-
-    JSON = "json"
-    CSV = "csv"
-    XLSX = "xlsx"
-    PDF = "pdf"
-
-
 class BatchStatus(str, Enum):
     """Status of a batch calculation job.
 
@@ -513,7 +477,6 @@ class BatchStatus(str, Enum):
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
-
 
 class GWPSource(str, Enum):
     """IPCC Assessment Report source for Global Warming Potential.
@@ -529,7 +492,6 @@ class GWPSource(str, Enum):
     AR6 = "AR6"
     AR6_20YR = "AR6_20YR"
 
-
 class EmissionGas(str, Enum):
     """Greenhouse gases tracked in Scope 3 Category 2 calculations.
 
@@ -543,7 +505,6 @@ class EmissionGas(str, Enum):
     CH4 = "CH4"
     N2O = "N2O"
     CO2E = "CO2e"
-
 
 class CapitalizationPolicy(str, Enum):
     """Accounting capitalization policy governing asset recognition.
@@ -563,11 +524,9 @@ class CapitalizationPolicy(str, Enum):
     US_GAAP = "us_gaap"
     LOCAL_GAAP = "local_gaap"
 
-
 # =============================================================================
 # Constant Tables (13) -- all Decimal for deterministic arithmetic
 # =============================================================================
-
 
 # ---------------------------------------------------------------------------
 # 1. GWP values by IPCC Assessment Report
@@ -600,7 +559,6 @@ GWP_VALUES: Dict[GWPSource, Dict[EmissionGas, Decimal]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # 2. DQI score numeric values (1=best, 5=worst)
 # ---------------------------------------------------------------------------
@@ -612,7 +570,6 @@ DQI_SCORE_VALUES: Dict[DQIScore, Decimal] = {
     DQIScore.POOR: Decimal("4.0"),
     DQIScore.VERY_POOR: Decimal("5.0"),
 }
-
 
 # ---------------------------------------------------------------------------
 # 3. DQI quality tier labels with composite score ranges
@@ -627,7 +584,6 @@ DQI_QUALITY_TIERS: Dict[str, Tuple[Decimal, Decimal]] = {
     "Very Poor": (Decimal("4.6"), Decimal("5.1")),
 }
 
-
 # ---------------------------------------------------------------------------
 # 4. Uncertainty ranges by calculation method (min%, max%)
 # ---------------------------------------------------------------------------
@@ -638,7 +594,6 @@ UNCERTAINTY_RANGES: Dict[CalculationMethod, Tuple[Decimal, Decimal]] = {
     CalculationMethod.AVERAGE_DATA: (Decimal("30"), Decimal("60")),
     CalculationMethod.SPEND_BASED: (Decimal("50"), Decimal("100")),
 }
-
 
 # ---------------------------------------------------------------------------
 # 5. Coverage thresholds by level (minimum CapEx percentage)
@@ -651,7 +606,6 @@ COVERAGE_THRESHOLDS: Dict[str, Decimal] = {
     "low": Decimal("80.0"),
     "minimal": Decimal("0.0"),
 }
-
 
 # ---------------------------------------------------------------------------
 # 6. Emission factor hierarchy priority (1=best, 8=worst)
@@ -669,7 +623,6 @@ EF_HIERARCHY_PRIORITY: Dict[str, int] = {
     "global_avg_eeio_fallback": 8,
 }
 
-
 # ---------------------------------------------------------------------------
 # 7. Pedigree matrix uncertainty factors by DQI score
 #    Per ecoinvent pedigree matrix methodology
@@ -682,7 +635,6 @@ PEDIGREE_UNCERTAINTY_FACTORS: Dict[DQIScore, Decimal] = {
     DQIScore.POOR: Decimal("1.20"),
     DQIScore.VERY_POOR: Decimal("1.50"),
 }
-
 
 # ---------------------------------------------------------------------------
 # 8. Currency exchange rates to USD (annual average 2024 estimates)
@@ -711,7 +663,6 @@ CURRENCY_EXCHANGE_RATES: Dict[CurrencyCode, Decimal] = {
     CurrencyCode.ZAR: Decimal("18.65200000"),
     CurrencyCode.THB: Decimal("35.72000000"),
 }
-
 
 # ---------------------------------------------------------------------------
 # 9. Capital-goods sector margin percentages
@@ -746,7 +697,6 @@ CAPITAL_SECTOR_MARGIN_PERCENTAGES: Dict[str, Decimal] = {
     "fluid_power": Decimal("22.0"),
     "general_industrial": Decimal("20.0"),
 }
-
 
 # ---------------------------------------------------------------------------
 # 10. Capital-goods EEIO emission factors by NAICS-6 code
@@ -820,7 +770,6 @@ CAPITAL_EEIO_EMISSION_FACTORS: Dict[str, Decimal] = {
     "332996": Decimal("0.26"),    # Fabricated Pipe & Pipe Fitting Mfg
 }
 
-
 # ---------------------------------------------------------------------------
 # 11. Capital-goods physical emission factors
 #     kgCO2e per kg (or per unit where noted) -- cradle-to-gate
@@ -885,7 +834,6 @@ CAPITAL_PHYSICAL_EMISSION_FACTORS: Dict[str, Decimal] = {
     "electric_motor_per_kw": Decimal("15.0"),
 }
 
-
 # ---------------------------------------------------------------------------
 # 12. Asset useful life ranges by category
 #     (min_years, max_years, default_years)
@@ -927,7 +875,6 @@ ASSET_USEFUL_LIFE_RANGES: Dict[str, Tuple[int, int, int]] = {
     AssetSubCategory.BATTERY_STORAGE.value: (8, 15, 10),
     AssetSubCategory.ELECTRIC_MOTOR.value: (10, 20, 15),
 }
-
 
 # ---------------------------------------------------------------------------
 # 13. Framework required disclosures for Category 2 compliance
@@ -1024,18 +971,15 @@ FRAMEWORK_REQUIRED_DISCLOSURES: Dict[
     ],
 }
 
-
 # =============================================================================
 # Data Models (25) -- Pydantic v2, frozen=True
 # =============================================================================
-
 
 # ---------------------------------------------------------------------------
 # 1. CapitalAssetRecord
 # ---------------------------------------------------------------------------
 
-
-class CapitalAssetRecord(BaseModel):
+class CapitalAssetRecord(GreenLangBase):
     """A single capital asset (PP&E) record for emission calculation.
 
     Represents one fixed asset from the asset register.  Contains
@@ -1183,13 +1127,11 @@ class CapitalAssetRecord(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # 2. CapExSpendRecord
 # ---------------------------------------------------------------------------
 
-
-class CapExSpendRecord(BaseModel):
+class CapExSpendRecord(GreenLangBase):
     """Spend-based input record for capital goods EEIO calculation.
 
     A capital asset record enriched with spend-specific fields
@@ -1292,13 +1234,11 @@ class CapExSpendRecord(BaseModel):
         description="Foreign exchange rate used for conversion",
     )
 
-
 # ---------------------------------------------------------------------------
 # 3. PhysicalRecord
 # ---------------------------------------------------------------------------
 
-
-class PhysicalRecord(BaseModel):
+class PhysicalRecord(GreenLangBase):
     """Quantity-based input record for average-data calculation.
 
     A capital asset enriched with physical quantity data and
@@ -1356,13 +1296,11 @@ class PhysicalRecord(BaseModel):
         description="Asset category for EF selection",
     )
 
-
 # ---------------------------------------------------------------------------
 # 4. SupplierRecord
 # ---------------------------------------------------------------------------
 
-
-class SupplierRecord(BaseModel):
+class SupplierRecord(GreenLangBase):
     """Supplier-specific input record for supplier-level calculation.
 
     Contains primary emission data from a specific capital goods
@@ -1447,13 +1385,11 @@ class SupplierRecord(BaseModel):
         description="System boundary (cradle_to_gate or cradle_to_grave)",
     )
 
-
 # ---------------------------------------------------------------------------
 # 5. SpendBasedResult
 # ---------------------------------------------------------------------------
 
-
-class SpendBasedResult(BaseModel):
+class SpendBasedResult(GreenLangBase):
     """Result of a spend-based emission calculation for one asset.
 
     Contains the calculated emissions using the EEIO method
@@ -1537,13 +1473,11 @@ class SpendBasedResult(BaseModel):
         description="SHA-256 hash for audit trail",
     )
 
-
 # ---------------------------------------------------------------------------
 # 6. AverageDataResult
 # ---------------------------------------------------------------------------
 
-
-class AverageDataResult(BaseModel):
+class AverageDataResult(GreenLangBase):
     """Result of an average-data emission calculation for one asset.
 
     Contains the calculated emissions using physical quantity
@@ -1643,13 +1577,11 @@ class AverageDataResult(BaseModel):
         description="SHA-256 hash for audit trail",
     )
 
-
 # ---------------------------------------------------------------------------
 # 7. SupplierSpecificResult
 # ---------------------------------------------------------------------------
 
-
-class SupplierSpecificResult(BaseModel):
+class SupplierSpecificResult(GreenLangBase):
     """Result of a supplier-specific calculation for one asset.
 
     Contains the calculated emissions using primary supplier data,
@@ -1756,13 +1688,11 @@ class SupplierSpecificResult(BaseModel):
         description="SHA-256 hash for audit trail",
     )
 
-
 # ---------------------------------------------------------------------------
 # 8. HybridResult
 # ---------------------------------------------------------------------------
 
-
-class HybridResult(BaseModel):
+class HybridResult(GreenLangBase):
     """Aggregated result combining all calculation methods.
 
     The hybrid method combines supplier-specific, average-data,
@@ -1898,7 +1828,7 @@ class HybridResult(BaseModel):
         description="SHA-256 hash of the aggregated result",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of calculation",
     )
     processing_time_ms: Decimal = Field(
@@ -1907,13 +1837,11 @@ class HybridResult(BaseModel):
         description="Processing duration in milliseconds",
     )
 
-
 # ---------------------------------------------------------------------------
 # 9. EEIOFactor
 # ---------------------------------------------------------------------------
 
-
-class EEIOFactor(BaseModel):
+class EEIOFactor(GreenLangBase):
     """An EEIO emission factor entry for capital goods sectors.
 
     Maps a NAICS sector code to an emission factor expressed in
@@ -1963,13 +1891,11 @@ class EEIOFactor(BaseModel):
         description="Geographic region",
     )
 
-
 # ---------------------------------------------------------------------------
 # 10. PhysicalEF
 # ---------------------------------------------------------------------------
 
-
-class PhysicalEF(BaseModel):
+class PhysicalEF(GreenLangBase):
     """A physical emission factor for capital goods materials.
 
     Maps a material or asset type to a cradle-to-gate emission
@@ -2011,13 +1937,11 @@ class PhysicalEF(BaseModel):
         description="Geographic region the factor applies to",
     )
 
-
 # ---------------------------------------------------------------------------
 # 11. SupplierEF
 # ---------------------------------------------------------------------------
 
-
-class SupplierEF(BaseModel):
+class SupplierEF(GreenLangBase):
     """A supplier-specific emission factor for capital goods.
 
     Represents emission data provided by a specific capital goods
@@ -2066,13 +1990,11 @@ class SupplierEF(BaseModel):
         description="Verification status",
     )
 
-
 # ---------------------------------------------------------------------------
 # 12. DQIAssessment
 # ---------------------------------------------------------------------------
 
-
-class DQIAssessment(BaseModel):
+class DQIAssessment(GreenLangBase):
     """Data quality indicator assessment for a calculation result.
 
     Scores data quality across the five GHG Protocol dimensions
@@ -2162,13 +2084,11 @@ class DQIAssessment(BaseModel):
         description="EF hierarchy level used (1=best, 8=worst)",
     )
 
-
 # ---------------------------------------------------------------------------
 # 13. AssetClassification
 # ---------------------------------------------------------------------------
 
-
-class AssetClassification(BaseModel):
+class AssetClassification(GreenLangBase):
     """Classification result for a capital asset.
 
     Determines whether an expenditure qualifies as a capital good
@@ -2232,13 +2152,11 @@ class AssetClassification(BaseModel):
         description="Explanation of classification decision",
     )
 
-
 # ---------------------------------------------------------------------------
 # 14. CapitalizationThreshold
 # ---------------------------------------------------------------------------
 
-
-class CapitalizationThreshold(BaseModel):
+class CapitalizationThreshold(GreenLangBase):
     """Capitalization threshold configuration.
 
     Defines the monetary and useful-life thresholds for
@@ -2274,13 +2192,11 @@ class CapitalizationThreshold(BaseModel):
         description="Minimum useful life in years for capitalization",
     )
 
-
 # ---------------------------------------------------------------------------
 # 15. UsefulLifeRange
 # ---------------------------------------------------------------------------
 
-
-class UsefulLifeRange(BaseModel):
+class UsefulLifeRange(GreenLangBase):
     """Useful life range for an asset category or sub-category.
 
     Used for validation and default assignment when useful life
@@ -2347,13 +2263,11 @@ class UsefulLifeRange(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # 16. DepreciationContext
 # ---------------------------------------------------------------------------
 
-
-class DepreciationContext(BaseModel):
+class DepreciationContext(GreenLangBase):
     """Year-over-year CapEx variance context.
 
     NOTE: This is NOT for depreciation of emissions.  GHG Protocol
@@ -2404,13 +2318,11 @@ class DepreciationContext(BaseModel):
         description="Explanatory note for reporting narrative",
     )
 
-
 # ---------------------------------------------------------------------------
 # 17. MaterialityItem
 # ---------------------------------------------------------------------------
 
-
-class MaterialityItem(BaseModel):
+class MaterialityItem(GreenLangBase):
     """A single item in the hot-spot materiality analysis.
 
     Represents one asset category or supplier ranked by emission
@@ -2464,13 +2376,11 @@ class MaterialityItem(BaseModel):
         ),
     )
 
-
 # ---------------------------------------------------------------------------
 # 18. CoverageReport
 # ---------------------------------------------------------------------------
 
-
-class CoverageReport(BaseModel):
+class CoverageReport(GreenLangBase):
     """Method coverage analysis for the Category 2 inventory.
 
     Summarizes the breakdown of CapEx and assets by calculation
@@ -2520,13 +2430,11 @@ class CoverageReport(BaseModel):
         description="Asset categories with no coverage",
     )
 
-
 # ---------------------------------------------------------------------------
 # 19. ComplianceRequirement
 # ---------------------------------------------------------------------------
 
-
-class ComplianceRequirement(BaseModel):
+class ComplianceRequirement(GreenLangBase):
     """A single compliance requirement for a regulatory framework.
 
     Represents one disclosure or data requirement that must be
@@ -2562,13 +2470,11 @@ class ComplianceRequirement(BaseModel):
         description="Whether this requirement is mandatory",
     )
 
-
 # ---------------------------------------------------------------------------
 # 20. ComplianceCheckResult
 # ---------------------------------------------------------------------------
 
-
-class ComplianceCheckResult(BaseModel):
+class ComplianceCheckResult(GreenLangBase):
     """Result of a compliance check against one framework.
 
     Aggregates individual requirement results into an overall
@@ -2612,13 +2518,11 @@ class ComplianceCheckResult(BaseModel):
         description="Improvement recommendations",
     )
 
-
 # ---------------------------------------------------------------------------
 # 21. CalculationRequest
 # ---------------------------------------------------------------------------
 
-
-class CalculationRequest(BaseModel):
+class CalculationRequest(GreenLangBase):
     """Main calculation request for Category 2 capital goods emissions.
 
     Primary input to the Capital Goods calculation pipeline.
@@ -2713,7 +2617,7 @@ class CalculationRequest(BaseModel):
         default=None,
         description="Capitalization threshold configuration",
     )
-    export_format: Optional[ExportFormat] = Field(
+    export_format: Optional[ReportFormat] = Field(
         default=None,
         description="Requested export format",
     )
@@ -2760,13 +2664,11 @@ class CalculationRequest(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # 22. BatchRequest
 # ---------------------------------------------------------------------------
 
-
-class BatchRequest(BaseModel):
+class BatchRequest(GreenLangBase):
     """Request to perform calculations across multiple periods.
 
     Enables batch processing of Category 2 calculations for
@@ -2814,13 +2716,11 @@ class BatchRequest(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # 23. CalculationResult
 # ---------------------------------------------------------------------------
 
-
-class CalculationResult(BaseModel):
+class CalculationResult(GreenLangBase):
     """Complete output of a Category 2 emission calculation.
 
     The primary output of the calculation pipeline, containing
@@ -2926,7 +2826,7 @@ class CalculationResult(BaseModel):
         description="SHA-256 hash over the entire result",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of calculation completion",
     )
     processing_time_ms: Decimal = Field(
@@ -2951,13 +2851,11 @@ class CalculationResult(BaseModel):
         description="Additional key-value pairs",
     )
 
-
 # ---------------------------------------------------------------------------
 # 24. AggregationResult
 # ---------------------------------------------------------------------------
 
-
-class AggregationResult(BaseModel):
+class AggregationResult(GreenLangBase):
     """Multi-dimension aggregation of Category 2 results.
 
     Provides breakdowns by asset category, by calculation method,
@@ -3030,17 +2928,15 @@ class AggregationResult(BaseModel):
         description="SHA-256 hash of the aggregation",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of aggregation",
     )
-
 
 # ---------------------------------------------------------------------------
 # 25. HotSpotAnalysis
 # ---------------------------------------------------------------------------
 
-
-class HotSpotAnalysis(BaseModel):
+class HotSpotAnalysis(GreenLangBase):
     """Pareto hot-spot analysis of Category 2 emission contributors.
 
     Identifies top asset categories and suppliers by emission
@@ -3111,7 +3007,6 @@ class HotSpotAnalysis(BaseModel):
             )
         return v
 
-
 # =============================================================================
 # Type Aliases (backward-compatible names)
 # =============================================================================
@@ -3121,7 +3016,6 @@ HotSpotItem = MaterialityItem
 
 #: Alias for ComplianceRequirement (backward compatibility).
 ComplianceRule = ComplianceRequirement
-
 
 # =============================================================================
 # __all__ -- Public API
@@ -3163,7 +3057,7 @@ __all__ = [
     "ComplianceFramework",
     "ComplianceStatus",
     "PipelineStage",
-    "ExportFormat",
+    "ReportFormat",
     "BatchStatus",
     "GWPSource",
     "EmissionGas",

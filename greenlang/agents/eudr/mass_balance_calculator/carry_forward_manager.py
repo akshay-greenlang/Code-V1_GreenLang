@@ -71,6 +71,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Tuple
 
 from greenlang.agents.eudr.mass_balance_calculator.config import get_config
+from greenlang.schemas import utcnow
 from greenlang.agents.eudr.mass_balance_calculator.metrics import (
     record_api_error,
     record_credit_expired,
@@ -97,12 +98,6 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance.
 
@@ -115,7 +110,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a new UUID4 string identifier.
 
@@ -123,7 +117,6 @@ def _generate_id() -> str:
         UUID4 string.
     """
     return str(uuid.uuid4())
-
 
 # ---------------------------------------------------------------------------
 # Standard-specific carry-forward rules
@@ -186,11 +179,9 @@ _CREDIT_PERIOD_RULES: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # CarryForwardManager
 # ---------------------------------------------------------------------------
-
 
 class CarryForwardManager:
     """Credit carry-forward management engine for EUDR mass balance accounting.
@@ -384,7 +375,7 @@ class CarryForwardManager:
 
         # Build carry-forward record
         cf_id = _generate_id()
-        now = _utcnow()
+        now = utcnow()
 
         cf_data: Dict[str, Any] = {
             "carry_forward_id": cf_id,
@@ -536,7 +527,7 @@ class CarryForwardManager:
                     f"Carry-forward not found: {carry_forward_id}"
                 )
 
-            now = _utcnow()
+            now = utcnow()
             expiry_str = cf.get("expiry_date")
             is_expired = False
             days_until_expiry = None
@@ -589,7 +580,7 @@ class CarryForwardManager:
             List of voided carry-forward dictionaries.
         """
         start_time = time.monotonic()
-        now = _utcnow()
+        now = utcnow()
         voided: List[Dict[str, Any]] = []
 
         with self._lock:
@@ -766,7 +757,7 @@ class CarryForwardManager:
             by expiry date ascending (soonest first).
         """
         self._validate_string("facility_id", facility_id)
-        now = _utcnow()
+        now = utcnow()
         cutoff = now + timedelta(days=days_ahead)
         notifications: List[Dict[str, Any]] = []
 
@@ -1305,7 +1296,7 @@ class CarryForwardManager:
             action: Action performed.
             details: Action details.
         """
-        now = _utcnow()
+        now = utcnow()
         entry = {
             "audit_id": _generate_id(),
             "action": action,
@@ -1363,7 +1354,6 @@ class CarryForwardManager:
             f"expired={expired}, "
             f"max_pct={self._config.max_carry_forward_percent}%)"
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

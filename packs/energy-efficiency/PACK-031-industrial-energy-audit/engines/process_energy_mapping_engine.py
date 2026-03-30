@@ -54,25 +54,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -99,7 +93,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -116,7 +109,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal,
     denominator: Decimal,
@@ -127,42 +119,34 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* and return a float."""
     quantizer = Decimal(10) ** -places
     return float(value.quantize(quantizer, rounding=ROUND_HALF_UP))
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 def _round1(value: float) -> float:
     """Round to 1 decimal place using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.1"), rounding=ROUND_HALF_UP))
-
 
 def _round4(value: float) -> float:
     """Round to 4 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ProcessType(str, Enum):
     """Industrial process types for energy mapping.
@@ -199,7 +183,6 @@ class ProcessType(str, Enum):
     ASSEMBLY = "assembly"
     OTHER = "other"
 
-
 class EnergyType(str, Enum):
     """Energy types flowing between process nodes.
 
@@ -218,7 +201,6 @@ class EnergyType(str, Enum):
     COOLING = "cooling"
     PRODUCT_ENTHALPY = "product_enthalpy"
     WASTE_HEAT = "waste_heat"
-
 
 class LossType(str, Enum):
     """Types of energy losses in industrial processes.
@@ -245,7 +227,6 @@ class LossType(str, Enum):
     PROCESS_WASTE = "process_waste"
     OTHER = "other"
 
-
 class TemperatureGrade(str, Enum):
     """Temperature grades for heat recovery classification.
 
@@ -256,11 +237,9 @@ class TemperatureGrade(str, Enum):
     LOW = "low"            # 40-100 C
     AMBIENT = "ambient"    # < 40 C
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # Process efficiency benchmarks by process type.
 # Values are typical, good practice, and best available technology (BAT).
@@ -407,7 +386,6 @@ PROCESS_EFFICIENCY_BENCHMARKS: Dict[str, Dict[str, float]] = {
     },
 }
 
-
 # Thermal loss factors by surface type (W per m2 per degree C temperature
 # difference above ambient).  Used for estimating radiation/convection losses.
 # Source: CIBSE Guide C, EN ISO 12241 (thermal insulation).
@@ -427,7 +405,6 @@ THERMAL_LOSS_FACTORS: Dict[str, float] = {
 }
 """Surface heat loss factors in W/m2/K.
 Multiply by surface area (m2) and temperature difference (K) to get loss in watts."""
-
 
 # Motor/drive efficiency standards by class (%).
 # Source: IEC 60034-30-1:2014, EU Regulation 2019/1781.
@@ -464,7 +441,6 @@ MOTOR_DRIVE_EFFICIENCY_STANDARDS: Dict[str, Dict[str, float]] = {
     },
 }
 
-
 # Temperature grade boundaries (Celsius).
 TEMPERATURE_GRADE_BOUNDARIES: Dict[str, Tuple[float, float]] = {
     TemperatureGrade.HIGH: (400.0, 2000.0),
@@ -472,7 +448,6 @@ TEMPERATURE_GRADE_BOUNDARIES: Dict[str, Tuple[float, float]] = {
     TemperatureGrade.LOW: (40.0, 100.0),
     TemperatureGrade.AMBIENT: (0.0, 40.0),
 }
-
 
 # Typical heat recovery potential by temperature grade (%).
 HEAT_RECOVERY_POTENTIAL: Dict[str, float] = {
@@ -482,11 +457,9 @@ HEAT_RECOVERY_POTENTIAL: Dict[str, float] = {
     TemperatureGrade.AMBIENT: 5.0,
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class ProcessNode(BaseModel):
     """A single process node (unit operation) in the energy flow map.
@@ -554,7 +527,6 @@ class ProcessNode(BaseModel):
 
         return self
 
-
 class EnergyFlow(BaseModel):
     """Energy flow between two process nodes.
 
@@ -572,7 +544,6 @@ class EnergyFlow(BaseModel):
     temperature_c: Optional[float] = Field(
         None, description="Stream temperature (C)"
     )
-
 
 class ProductionLine(BaseModel):
     """A production line composed of process nodes.
@@ -612,11 +583,9 @@ class ProductionLine(BaseModel):
         default="unit", description="Production unit label"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class SankeyNode(BaseModel):
     """Sankey diagram node for visualisation."""
@@ -625,14 +594,12 @@ class SankeyNode(BaseModel):
     value_kwh: float = Field(default=0.0, description="Energy value (kWh)")
     node_type: str = Field(default="process", description="Type: source/process/loss/output")
 
-
 class SankeyLink(BaseModel):
     """Sankey diagram link (flow) for visualisation."""
     source: str = Field(..., description="Source node ID")
     target: str = Field(..., description="Target node ID")
     value_kwh: float = Field(default=0.0, description="Flow value (kWh)")
     energy_type: str = Field(default="", description="Energy type")
-
 
 class SankeyData(BaseModel):
     """Complete Sankey diagram data for energy flow visualisation.
@@ -649,7 +616,6 @@ class SankeyData(BaseModel):
     total_input: float = Field(default=0.0, description="Total input (kWh)")
     total_output: float = Field(default=0.0, description="Total useful output (kWh)")
     total_losses: float = Field(default=0.0, description="Total losses (kWh)")
-
 
 class LossBreakdown(BaseModel):
     """Detailed loss identification and quantification.
@@ -679,7 +645,6 @@ class LossBreakdown(BaseModel):
         default=0.0, description="Recoverable energy (kWh)"
     )
 
-
 class ProcessNodeResult(BaseModel):
     """Enriched process node result with benchmark comparison."""
     node_id: str = Field(..., description="Node identifier")
@@ -706,14 +671,12 @@ class ProcessNodeResult(BaseModel):
         default=0.0, description="Improvement potential (kWh)"
     )
 
-
 class IntensityMetric(BaseModel):
     """Energy intensity metric per product or area."""
     metric_name: str = Field(..., description="Metric name")
     value: float = Field(default=0.0, description="Metric value")
     unit: str = Field(default="", description="Metric unit")
     line_id: Optional[str] = Field(None, description="Production line ID")
-
 
 class OptimisationOpportunity(BaseModel):
     """Scored optimisation opportunity from process analysis.
@@ -739,7 +702,6 @@ class OptimisationOpportunity(BaseModel):
     priority_score: float = Field(default=0.0, description="Priority (0-100)")
     category: str = Field(default="", description="Category")
 
-
 class ProcessEnergyResult(BaseModel):
     """Complete process energy mapping result with full provenance.
 
@@ -748,7 +710,7 @@ class ProcessEnergyResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid, description="Unique result ID")
     engine_version: str = Field(default=_MODULE_VERSION, description="Engine version")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Calc timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Calc timestamp")
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
 
     facility_id: str = Field(default="", description="Facility identifier")
@@ -789,11 +751,9 @@ class ProcessEnergyResult(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 # ---------------------------------------------------------------------------
 # Calculation Engine
 # ---------------------------------------------------------------------------
-
 
 class ProcessEnergyMappingEngine:
     """Process energy flow mapping and optimisation engine.

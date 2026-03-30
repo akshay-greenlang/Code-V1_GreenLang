@@ -25,23 +25,18 @@ from datetime import date, datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import ConfigDict, Field, field_validator
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ReportFormat
 
 def _request_id() -> str:
     """Generate a unique request ID."""
     return f"req-{uuid.uuid4().hex[:16]}"
 
-
 # =============================================================================
 # Enumerations
 # =============================================================================
-
 
 class DensityMethod(str, Enum):
     """Canopy density estimation method."""
@@ -52,7 +47,6 @@ class DensityMethod(str, Enum):
     FUSION = "fusion"
     HANSEN = "hansen"
 
-
 class ClassificationMethod(str, Enum):
     """Forest type classification method."""
 
@@ -61,7 +55,6 @@ class ClassificationMethod(str, Enum):
     OBJECT_BASED = "object_based"
     DEEP_LEARNING = "deep_learning"
     RULE_BASED = "rule_based"
-
 
 class EUDRCommodity(str, Enum):
     """EUDR-regulated commodity types."""
@@ -74,7 +67,6 @@ class EUDRCommodity(str, Enum):
     CATTLE = "cattle"
     WOOD = "wood"
 
-
 class HeightSource(str, Enum):
     """Canopy height data source."""
 
@@ -84,7 +76,6 @@ class HeightSource(str, Enum):
     PHOTOGRAMMETRY = "photogrammetry"
     RADAR = "radar"
 
-
 class BiomassSource(str, Enum):
     """Above-ground biomass data source."""
 
@@ -93,16 +84,6 @@ class BiomassSource(str, Enum):
     GLOBBIOMASS = "globbiomass"
     LIDAR = "lidar"
     ALLOMETRIC = "allometric"
-
-
-class ReportFormat(str, Enum):
-    """Compliance report output format."""
-
-    JSON = "json"
-    CSV = "csv"
-    PDF = "pdf"
-    XLSX = "xlsx"
-
 
 class ForestType(str, Enum):
     """Forest type classification result."""
@@ -120,7 +101,6 @@ class ForestType(str, Enum):
     NON_FOREST = "non_forest"
     UNKNOWN = "unknown"
 
-
 class DeforestationVerdict(str, Enum):
     """Deforestation-free verification verdict."""
 
@@ -130,7 +110,6 @@ class DeforestationVerdict(str, Enum):
     INCONCLUSIVE = "inconclusive"
     INSUFFICIENT_DATA = "insufficient_data"
 
-
 class AnalysisStatus(str, Enum):
     """Analysis job status."""
 
@@ -139,7 +118,6 @@ class AnalysisStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     CANCELLED = "cancelled"
-
 
 _VALID_BIOMES = frozenset({
     "tropical_moist", "tropical_dry", "subtropical",
@@ -153,17 +131,14 @@ _VALID_SORT_FIELDS = frozenset({
 
 _VALID_SORT_ORDERS = frozenset({"asc", "desc"})
 
-
 # =============================================================================
 # WKT Polygon Validator
 # =============================================================================
-
 
 _WKT_POLYGON_RE = re.compile(
     r"^POLYGON\s*\(\s*\(.*\)\s*\)$",
     re.IGNORECASE | re.DOTALL,
 )
-
 
 def _validate_polygon_wkt(v: str) -> str:
     """Validate that a WKT string is a valid POLYGON geometry.
@@ -185,7 +160,6 @@ def _validate_polygon_wkt(v: str) -> str:
         )
     return v
 
-
 def _validate_plot_id(v: str) -> str:
     """Validate plot ID format.
 
@@ -205,13 +179,11 @@ def _validate_plot_id(v: str) -> str:
         raise ValueError("plot_id must not exceed 200 characters")
     return v
 
-
 # =============================================================================
 # Pagination
 # =============================================================================
 
-
-class PaginatedMeta(BaseModel):
+class PaginatedMeta(GreenLangBase):
     """Pagination metadata for list responses."""
 
     total: int = Field(..., ge=0, description="Total number of results")
@@ -219,8 +191,7 @@ class PaginatedMeta(BaseModel):
     offset: int = Field(..., ge=0, description="Results skipped")
     has_more: bool = Field(..., description="Whether more results exist")
 
-
-class PaginatedResponse(BaseModel):
+class PaginatedResponse(GreenLangBase):
     """Generic paginated response wrapper."""
 
     items: List[Dict[str, Any]] = Field(
@@ -230,20 +201,17 @@ class PaginatedResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class PaginationParams(BaseModel):
+class PaginationParams(GreenLangBase):
     """Standard pagination query parameters."""
 
     limit: int = Field(default=50, ge=1, le=1000, description="Results per page")
     offset: int = Field(default=0, ge=0, description="Number of results to skip")
 
-
 # =============================================================================
 # Base Response Wrappers
 # =============================================================================
 
-
-class ApiResponse(BaseModel):
+class ApiResponse(GreenLangBase):
     """Standard API success response wrapper."""
 
     status: str = Field(default="success", description="Response status")
@@ -253,13 +221,12 @@ class ApiResponse(BaseModel):
         default_factory=_request_id, description="Request correlation ID"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     """Structured error response for all API endpoints."""
 
     error: str = Field(..., description="Error type identifier")
@@ -267,13 +234,11 @@ class ErrorResponse(BaseModel):
     detail: Optional[str] = Field(None, description="Additional error details")
     request_id: Optional[str] = Field(None, description="Request correlation ID")
 
-
 # =============================================================================
 # Density Schemas - Request
 # =============================================================================
 
-
-class AnalyzeDensityRequest(BaseModel):
+class AnalyzeDensityRequest(GreenLangBase):
     """Request to analyze canopy density for a single plot."""
 
     plot_id: str = Field(
@@ -340,8 +305,7 @@ class AnalyzeDensityRequest(BaseModel):
             )
         return v
 
-
-class BatchDensityRequest(BaseModel):
+class BatchDensityRequest(GreenLangBase):
     """Request for batch canopy density analysis."""
 
     plots: List[AnalyzeDensityRequest] = Field(
@@ -353,8 +317,7 @@ class BatchDensityRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class CompareDensityRequest(BaseModel):
+class CompareDensityRequest(GreenLangBase):
     """Request to compare canopy density between two dates."""
 
     plot_id: str = Field(
@@ -420,13 +383,11 @@ class CompareDensityRequest(BaseModel):
             )
         return v
 
-
 # =============================================================================
 # Density Schemas - Response
 # =============================================================================
 
-
-class CanopyDensityResponse(BaseModel):
+class CanopyDensityResponse(GreenLangBase):
     """Response from canopy density analysis."""
 
     request_id: str = Field(
@@ -462,7 +423,7 @@ class CanopyDensityResponse(BaseModel):
         default_factory=list, description="Data sources used"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Analysis timestamp"
+        default_factory=utcnow, description="Analysis timestamp"
     )
     processing_time_ms: float = Field(
         default=0.0, ge=0.0, description="Processing time in milliseconds"
@@ -471,8 +432,7 @@ class CanopyDensityResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class DensityComparisonResponse(BaseModel):
+class DensityComparisonResponse(GreenLangBase):
     """Response from density comparison between two dates."""
 
     request_id: str = Field(
@@ -504,7 +464,7 @@ class DensityComparisonResponse(BaseModel):
         default=0.0, ge=0.0, le=1.0, description="Comparison confidence"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Comparison timestamp"
+        default_factory=utcnow, description="Comparison timestamp"
     )
     processing_time_ms: float = Field(
         default=0.0, ge=0.0, description="Processing time in milliseconds"
@@ -513,8 +473,7 @@ class DensityComparisonResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class DensityHistoryEntry(BaseModel):
+class DensityHistoryEntry(GreenLangBase):
     """Single entry in density history time series."""
 
     date: date = Field(..., description="Observation date")
@@ -529,8 +488,7 @@ class DensityHistoryEntry(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class DensityHistoryResponse(BaseModel):
+class DensityHistoryResponse(GreenLangBase):
     """Response with density history over time for a plot."""
 
     request_id: str = Field(
@@ -563,7 +521,7 @@ class DensityHistoryResponse(BaseModel):
         None, description="Pagination metadata"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Query timestamp"
+        default_factory=utcnow, description="Query timestamp"
     )
     processing_time_ms: float = Field(
         default=0.0, ge=0.0, description="Processing time in milliseconds"
@@ -572,13 +530,11 @@ class DensityHistoryResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Classification Schemas - Request
 # =============================================================================
 
-
-class ClassifyForestRequest(BaseModel):
+class ClassifyForestRequest(GreenLangBase):
     """Request to classify forest type for a plot."""
 
     plot_id: str = Field(
@@ -644,8 +600,7 @@ class ClassifyForestRequest(BaseModel):
             )
         return v
 
-
-class BatchClassifyRequest(BaseModel):
+class BatchClassifyRequest(GreenLangBase):
     """Request for batch forest type classification."""
 
     plots: List[ClassifyForestRequest] = Field(
@@ -657,13 +612,11 @@ class BatchClassifyRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
 # =============================================================================
 # Classification Schemas - Response
 # =============================================================================
 
-
-class ForestClassificationResponse(BaseModel):
+class ForestClassificationResponse(GreenLangBase):
     """Response from forest type classification."""
 
     request_id: str = Field(
@@ -709,7 +662,7 @@ class ForestClassificationResponse(BaseModel):
         default=0, ge=0, description="Number of scenes analyzed"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Classification timestamp"
+        default_factory=utcnow, description="Classification timestamp"
     )
     processing_time_ms: float = Field(
         default=0.0, ge=0.0, description="Processing time in milliseconds"
@@ -718,8 +671,7 @@ class ForestClassificationResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ForestTypeInfo(BaseModel):
+class ForestTypeInfo(GreenLangBase):
     """Information about a single forest type."""
 
     type_id: str = Field(..., description="Forest type identifier")
@@ -746,8 +698,7 @@ class ForestTypeInfo(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ForestTypesListResponse(BaseModel):
+class ForestTypesListResponse(GreenLangBase):
     """Response listing all forest types with descriptions."""
 
     request_id: str = Field(
@@ -758,18 +709,16 @@ class ForestTypesListResponse(BaseModel):
     )
     total: int = Field(default=0, ge=0, description="Total types")
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Historical Reconstruction Schemas - Request
 # =============================================================================
 
-
-class ReconstructHistoryRequest(BaseModel):
+class ReconstructHistoryRequest(GreenLangBase):
     """Request to reconstruct forest cover at EUDR cutoff date."""
 
     plot_id: str = Field(
@@ -821,8 +770,7 @@ class ReconstructHistoryRequest(BaseModel):
         """Validate WKT polygon format."""
         return _validate_polygon_wkt(v)
 
-
-class BatchReconstructRequest(BaseModel):
+class BatchReconstructRequest(GreenLangBase):
     """Request for batch historical reconstruction."""
 
     plots: List[ReconstructHistoryRequest] = Field(
@@ -834,8 +782,7 @@ class BatchReconstructRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class CompareHistoricalRequest(BaseModel):
+class CompareHistoricalRequest(GreenLangBase):
     """Request to compare cutoff vs current forest cover."""
 
     plot_id: str = Field(
@@ -884,13 +831,11 @@ class CompareHistoricalRequest(BaseModel):
         """Validate WKT polygon format."""
         return _validate_polygon_wkt(v)
 
-
 # =============================================================================
 # Historical Reconstruction Schemas - Response
 # =============================================================================
 
-
-class HistoricalCoverResponse(BaseModel):
+class HistoricalCoverResponse(GreenLangBase):
     """Response from historical forest cover reconstruction."""
 
     request_id: str = Field(
@@ -938,7 +883,7 @@ class HistoricalCoverResponse(BaseModel):
         default=0.0, ge=0.0, le=1.0, description="Reconstruction confidence"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Reconstruction timestamp"
+        default_factory=utcnow, description="Reconstruction timestamp"
     )
     processing_time_ms: float = Field(
         default=0.0, ge=0.0, description="Processing time in milliseconds"
@@ -947,8 +892,7 @@ class HistoricalCoverResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class HistoricalComparisonResponse(BaseModel):
+class HistoricalComparisonResponse(GreenLangBase):
     """Response from cutoff vs current forest cover comparison."""
 
     request_id: str = Field(
@@ -993,7 +937,7 @@ class HistoricalComparisonResponse(BaseModel):
         default=0.0, ge=0.0, le=1.0, description="Comparison confidence"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Comparison timestamp"
+        default_factory=utcnow, description="Comparison timestamp"
     )
     processing_time_ms: float = Field(
         default=0.0, ge=0.0, description="Processing time in milliseconds"
@@ -1002,8 +946,7 @@ class HistoricalComparisonResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class DataSourceInfo(BaseModel):
+class DataSourceInfo(GreenLangBase):
     """Information about a data source used in reconstruction."""
 
     source_id: str = Field(..., description="Source identifier")
@@ -1029,8 +972,7 @@ class DataSourceInfo(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class DataSourcesResponse(BaseModel):
+class DataSourcesResponse(GreenLangBase):
     """Response listing data sources used for a reconstruction."""
 
     request_id: str = Field(
@@ -1045,7 +987,7 @@ class DataSourcesResponse(BaseModel):
         None, description="Primary data source"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Query timestamp"
+        default_factory=utcnow, description="Query timestamp"
     )
     processing_time_ms: float = Field(
         default=0.0, ge=0.0, description="Processing time in milliseconds"
@@ -1054,13 +996,11 @@ class DataSourcesResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Verification Schemas - Request
 # =============================================================================
 
-
-class VerifyDeforestationFreeRequest(BaseModel):
+class VerifyDeforestationFreeRequest(GreenLangBase):
     """Request to verify deforestation-free status for a plot."""
 
     plot_id: str = Field(
@@ -1110,8 +1050,7 @@ class VerifyDeforestationFreeRequest(BaseModel):
         """Validate WKT polygon format."""
         return _validate_polygon_wkt(v)
 
-
-class BatchVerifyRequest(BaseModel):
+class BatchVerifyRequest(GreenLangBase):
     """Request for batch deforestation-free verification."""
 
     plots: List[VerifyDeforestationFreeRequest] = Field(
@@ -1123,8 +1062,7 @@ class BatchVerifyRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class CompletePlotAnalysisRequest(BaseModel):
+class CompletePlotAnalysisRequest(GreenLangBase):
     """Request for complete plot analysis (all engines + verdict)."""
 
     plot_id: str = Field(
@@ -1175,13 +1113,11 @@ class CompletePlotAnalysisRequest(BaseModel):
         """Validate WKT polygon format."""
         return _validate_polygon_wkt(v)
 
-
 # =============================================================================
 # Verification Schemas - Response
 # =============================================================================
 
-
-class EvidenceItem(BaseModel):
+class EvidenceItem(GreenLangBase):
     """Single piece of evidence supporting a verification verdict."""
 
     evidence_type: str = Field(
@@ -1199,8 +1135,7 @@ class EvidenceItem(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class DeforestationFreeResponse(BaseModel):
+class DeforestationFreeResponse(GreenLangBase):
     """Response from deforestation-free verification."""
 
     request_id: str = Field(
@@ -1259,7 +1194,7 @@ class DeforestationFreeResponse(BaseModel):
         default_factory=list, description="Data sources used"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Verification timestamp"
+        default_factory=utcnow, description="Verification timestamp"
     )
     processing_time_ms: float = Field(
         default=0.0, ge=0.0, description="Processing time in milliseconds"
@@ -1268,13 +1203,11 @@ class DeforestationFreeResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Analysis Schemas - Request (Height, Fragmentation, Biomass)
 # =============================================================================
 
-
-class EstimateHeightRequest(BaseModel):
+class EstimateHeightRequest(GreenLangBase):
     """Request to estimate canopy height for a plot."""
 
     plot_id: str = Field(
@@ -1319,8 +1252,7 @@ class EstimateHeightRequest(BaseModel):
         """Validate WKT polygon format."""
         return _validate_polygon_wkt(v)
 
-
-class AnalyzeFragmentationRequest(BaseModel):
+class AnalyzeFragmentationRequest(GreenLangBase):
     """Request to analyze forest fragmentation for a plot."""
 
     plot_id: str = Field(
@@ -1367,8 +1299,7 @@ class AnalyzeFragmentationRequest(BaseModel):
         """Validate WKT polygon format."""
         return _validate_polygon_wkt(v)
 
-
-class EstimateBiomassRequest(BaseModel):
+class EstimateBiomassRequest(GreenLangBase):
     """Request to estimate above-ground biomass for a plot."""
 
     plot_id: str = Field(
@@ -1413,8 +1344,7 @@ class EstimateBiomassRequest(BaseModel):
         """Validate WKT polygon format."""
         return _validate_polygon_wkt(v)
 
-
-class CompareAnalysisRequest(BaseModel):
+class CompareAnalysisRequest(GreenLangBase):
     """Request to compare metrics between two dates."""
 
     plot_id: str = Field(
@@ -1480,13 +1410,11 @@ class CompareAnalysisRequest(BaseModel):
             )
         return v
 
-
 # =============================================================================
 # Analysis Schemas - Response (Height, Fragmentation, Biomass)
 # =============================================================================
 
-
-class CanopyHeightResponse(BaseModel):
+class CanopyHeightResponse(GreenLangBase):
     """Response from canopy height estimation."""
 
     request_id: str = Field(
@@ -1530,7 +1458,7 @@ class CanopyHeightResponse(BaseModel):
         default=0.0, ge=0.0, le=1.0, description="Estimation confidence"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Estimation timestamp"
+        default_factory=utcnow, description="Estimation timestamp"
     )
     processing_time_ms: float = Field(
         default=0.0, ge=0.0, description="Processing time in milliseconds"
@@ -1539,8 +1467,7 @@ class CanopyHeightResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class FragmentationResponse(BaseModel):
+class FragmentationResponse(GreenLangBase):
     """Response from forest fragmentation analysis."""
 
     request_id: str = Field(
@@ -1592,7 +1519,7 @@ class FragmentationResponse(BaseModel):
         default=0.0, ge=0.0, le=1.0, description="Analysis confidence"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Analysis timestamp"
+        default_factory=utcnow, description="Analysis timestamp"
     )
     processing_time_ms: float = Field(
         default=0.0, ge=0.0, description="Processing time in milliseconds"
@@ -1601,8 +1528,7 @@ class FragmentationResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BiomassResponse(BaseModel):
+class BiomassResponse(GreenLangBase):
     """Response from above-ground biomass estimation."""
 
     request_id: str = Field(
@@ -1648,7 +1574,7 @@ class BiomassResponse(BaseModel):
         default=0.0, ge=0.0, le=1.0, description="Estimation confidence"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Estimation timestamp"
+        default_factory=utcnow, description="Estimation timestamp"
     )
     processing_time_ms: float = Field(
         default=0.0, ge=0.0, description="Processing time in milliseconds"
@@ -1657,8 +1583,7 @@ class BiomassResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class PlotProfileResponse(BaseModel):
+class PlotProfileResponse(GreenLangBase):
     """Complete plot profile combining all analysis results."""
 
     request_id: str = Field(
@@ -1696,10 +1621,10 @@ class PlotProfileResponse(BaseModel):
         description="Weighted average confidence across analyses",
     )
     last_updated: datetime = Field(
-        default_factory=_utcnow, description="Last analysis update"
+        default_factory=utcnow, description="Last analysis update"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Profile generation timestamp"
+        default_factory=utcnow, description="Profile generation timestamp"
     )
     processing_time_ms: float = Field(
         default=0.0, ge=0.0, description="Processing time in milliseconds"
@@ -1708,8 +1633,7 @@ class PlotProfileResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class MetricComparison(BaseModel):
+class MetricComparison(GreenLangBase):
     """Comparison of a single metric between two dates."""
 
     metric_name: str = Field(..., description="Metric name")
@@ -1723,8 +1647,7 @@ class MetricComparison(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class AnalysisComparisonResponse(BaseModel):
+class AnalysisComparisonResponse(GreenLangBase):
     """Response comparing metrics between two dates."""
 
     request_id: str = Field(
@@ -1744,7 +1667,7 @@ class AnalysisComparisonResponse(BaseModel):
         default=0.0, ge=0.0, le=1.0, description="Comparison confidence"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Comparison timestamp"
+        default_factory=utcnow, description="Comparison timestamp"
     )
     processing_time_ms: float = Field(
         default=0.0, ge=0.0, description="Processing time in milliseconds"
@@ -1753,13 +1676,11 @@ class AnalysisComparisonResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Report Schemas - Request
 # =============================================================================
 
-
-class GenerateReportRequest(BaseModel):
+class GenerateReportRequest(GreenLangBase):
     """Request to generate a compliance report."""
 
     plot_id: str = Field(
@@ -1828,8 +1749,7 @@ class GenerateReportRequest(BaseModel):
             )
         return v
 
-
-class BatchReportRequest(BaseModel):
+class BatchReportRequest(GreenLangBase):
     """Request for batch report generation."""
 
     reports: List[GenerateReportRequest] = Field(
@@ -1841,13 +1761,11 @@ class BatchReportRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
 # =============================================================================
 # Report Schemas - Response
 # =============================================================================
 
-
-class ComplianceReportResponse(BaseModel):
+class ComplianceReportResponse(GreenLangBase):
     """Response from compliance report generation."""
 
     request_id: str = Field(
@@ -1895,7 +1813,7 @@ class ComplianceReportResponse(BaseModel):
         default_factory=list, description="Data sources referenced"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Report generation timestamp"
+        default_factory=utcnow, description="Report generation timestamp"
     )
     processing_time_ms: float = Field(
         default=0.0, ge=0.0, description="Processing time in milliseconds"
@@ -1904,13 +1822,11 @@ class ComplianceReportResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Batch Analysis Schemas
 # =============================================================================
 
-
-class BatchPlotEntry(BaseModel):
+class BatchPlotEntry(GreenLangBase):
     """Single plot entry for batch analysis."""
 
     plot_id: str = Field(
@@ -1940,8 +1856,7 @@ class BatchPlotEntry(BaseModel):
         """Validate WKT polygon format."""
         return _validate_polygon_wkt(v)
 
-
-class BatchAnalysisRequest(BaseModel):
+class BatchAnalysisRequest(GreenLangBase):
     """Request for multi-plot batch analysis."""
 
     plots: List[BatchPlotEntry] = Field(
@@ -1997,8 +1912,7 @@ class BatchAnalysisRequest(BaseModel):
             normalized.append(t)
         return normalized
 
-
-class BatchPlotResult(BaseModel):
+class BatchPlotResult(GreenLangBase):
     """Result for a single plot in a batch analysis."""
 
     plot_id: str = Field(..., description="Plot identifier")
@@ -2018,8 +1932,7 @@ class BatchPlotResult(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchAnalysisResponse(BaseModel):
+class BatchAnalysisResponse(GreenLangBase):
     """Response from batch analysis submission."""
 
     request_id: str = Field(
@@ -2049,13 +1962,13 @@ class BatchAnalysisResponse(BaseModel):
         None, description="Estimated time to complete in seconds"
     )
     submitted_at: datetime = Field(
-        default_factory=_utcnow, description="Submission timestamp"
+        default_factory=utcnow, description="Submission timestamp"
     )
     completed_at: Optional[datetime] = Field(
         None, description="Completion timestamp"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
     processing_time_ms: float = Field(
         default=0.0, ge=0.0, description="Total processing time"
@@ -2064,13 +1977,11 @@ class BatchAnalysisResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Dashboard / Summary Schemas
 # =============================================================================
 
-
-class AnalysisSummaryResponse(BaseModel):
+class AnalysisSummaryResponse(GreenLangBase):
     """Summary statistics across all analyses."""
 
     request_id: str = Field(
@@ -2110,7 +2021,7 @@ class AnalysisSummaryResponse(BaseModel):
         default_factory=dict, description="Plot counts by verdict"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Summary timestamp"
+        default_factory=utcnow, description="Summary timestamp"
     )
     processing_time_ms: float = Field(
         default=0.0, ge=0.0, description="Processing time in milliseconds"
@@ -2119,8 +2030,7 @@ class AnalysisSummaryResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class DashboardResponse(BaseModel):
+class DashboardResponse(GreenLangBase):
     """Dashboard overview with key metrics and recent activity."""
 
     request_id: str = Field(
@@ -2145,7 +2055,7 @@ class DashboardResponse(BaseModel):
         description="System health metrics",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Dashboard generation timestamp"
+        default_factory=utcnow, description="Dashboard generation timestamp"
     )
     processing_time_ms: float = Field(
         default=0.0, ge=0.0, description="Processing time in milliseconds"
@@ -2154,25 +2064,22 @@ class DashboardResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Health Check
 # =============================================================================
 
-
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Health check response."""
 
     status: str = Field(default="healthy")
     agent_id: str = Field(default="GL-EUDR-FCA-004")
     agent_name: str = Field(default="EUDR Forest Cover Analysis Agent")
     version: str = Field(default="1.0.0")
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class VersionResponse(BaseModel):
+class VersionResponse(GreenLangBase):
     """Version information response."""
 
     agent_id: str = Field(default="GL-EUDR-FCA-004")
@@ -2206,10 +2113,9 @@ class VersionResponse(BaseModel):
     eudr_cutoff_date: str = Field(
         default="2020-12-31", description="EUDR deforestation cutoff date"
     )
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Public API

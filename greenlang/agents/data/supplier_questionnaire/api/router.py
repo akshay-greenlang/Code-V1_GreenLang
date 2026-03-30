@@ -38,6 +38,7 @@ Status: Production Ready
 
 import logging
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +66,7 @@ except ImportError:
 
 if FASTAPI_AVAILABLE:
 
-    class CreateTemplateBody(BaseModel):
+    class CreateTemplateBody(GreenLangBase):
         """Request body for creating a questionnaire template."""
         name: str = Field(
             ..., description="Template display name",
@@ -91,7 +92,7 @@ if FASTAPI_AVAILABLE:
             default_factory=list, description="Classification tags",
         )
 
-    class UpdateTemplateBody(BaseModel):
+    class UpdateTemplateBody(GreenLangBase):
         """Request body for updating a questionnaire template."""
         name: Optional[str] = Field(
             None, description="New template name",
@@ -109,7 +110,7 @@ if FASTAPI_AVAILABLE:
             None, description="New tags",
         )
 
-    class CloneTemplateBody(BaseModel):
+    class CloneTemplateBody(GreenLangBase):
         """Request body for cloning a template."""
         new_name: Optional[str] = Field(
             None, description="Name for the cloned template",
@@ -118,7 +119,7 @@ if FASTAPI_AVAILABLE:
             None, description="Version for the cloned template",
         )
 
-    class DistributeBody(BaseModel):
+    class DistributeBody(GreenLangBase):
         """Request body for distributing a questionnaire."""
         template_id: str = Field(
             ..., description="Template ID to distribute",
@@ -143,7 +144,7 @@ if FASTAPI_AVAILABLE:
             None, description="Response deadline (ISO 8601)",
         )
 
-    class SubmitResponseBody(BaseModel):
+    class SubmitResponseBody(GreenLangBase):
         """Request body for submitting a questionnaire response."""
         distribution_id: str = Field(
             ..., description="Linked distribution identifier",
@@ -164,14 +165,14 @@ if FASTAPI_AVAILABLE:
             default="portal", description="Submission channel",
         )
 
-    class ValidateResponseBody(BaseModel):
+    class ValidateResponseBody(GreenLangBase):
         """Request body for validating a response."""
         level: str = Field(
             default="completeness",
             description="Validation level (completeness, consistency, evidence, cross_field)",
         )
 
-    class ScoreResponseBody(BaseModel):
+    class ScoreResponseBody(GreenLangBase):
         """Request body for scoring a response."""
         response_id: str = Field(
             ..., description="Response ID to score",
@@ -181,7 +182,7 @@ if FASTAPI_AVAILABLE:
             description="Scoring framework override (uses template framework if omitted)",
         )
 
-    class TriggerFollowUpBody(BaseModel):
+    class TriggerFollowUpBody(GreenLangBase):
         """Request body for triggering a follow-up action."""
         distribution_id: str = Field(
             ..., description="Distribution ID to follow up on",

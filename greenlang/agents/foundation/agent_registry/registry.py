@@ -35,6 +35,7 @@ from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Optional, Set
 
 from greenlang.agents.foundation.agent_registry.config import AgentRegistryConfig, get_config
+from greenlang.schemas import utcnow
 from greenlang.agents.foundation.agent_registry.models import (
     AgentCapability,
     AgentHealthStatus,
@@ -50,12 +51,6 @@ from greenlang.agents.foundation.agent_registry.models import (
 
 logger = logging.getLogger(__name__)
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(content: Any) -> str:
     """Compute SHA-256 hash of JSON-serialisable content.
 
@@ -67,7 +62,6 @@ def _compute_hash(content: Any) -> str:
     """
     serialized = json.dumps(content, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode()).hexdigest()
-
 
 class AgentRegistry:
     """Thread-safe in-memory agent registry with indexed lookups.
@@ -158,7 +152,7 @@ class AgentRegistry:
                 self._registry[agent_id] = {}
 
             # Update timestamp
-            metadata.updated_at = _utcnow()
+            metadata.updated_at = utcnow()
 
             # Store metadata
             self._registry[agent_id][version] = metadata
@@ -376,7 +370,7 @@ class AgentRegistry:
                 if hasattr(metadata, key):
                     setattr(metadata, key, value)
 
-            metadata.updated_at = _utcnow()
+            metadata.updated_at = utcnow()
             provenance_hash = metadata.provenance_hash
 
             # Rebuild indexes for this agent
@@ -443,7 +437,7 @@ class AgentRegistry:
         with self._lock:
             export_data: Dict[str, Any] = {
                 "version": "1.0",
-                "exported_at": _utcnow().isoformat(),
+                "exported_at": utcnow().isoformat(),
                 "agents": {},
             }
             for agent_id, versions in self._registry.items():
@@ -606,7 +600,6 @@ class AgentRegistry:
                 return False
 
         return True
-
 
 __all__ = [
     "AgentRegistry",

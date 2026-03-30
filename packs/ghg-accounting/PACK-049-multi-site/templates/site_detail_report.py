@@ -32,21 +32,16 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Input Models
@@ -65,7 +60,6 @@ class EmissionSourceEntry(BaseModel):
     emissions_tco2e: Decimal = Field(Decimal("0"))
     share_pct: Decimal = Field(Decimal("0"))
 
-
 class IntensityKPI(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     kpi_name: str = Field(...)
@@ -73,7 +67,6 @@ class IntensityKPI(BaseModel):
     unit: str = Field("")
     benchmark: Optional[Decimal] = Field(None)
     vs_benchmark_pct: Optional[Decimal] = Field(None)
-
 
 class YoYDataPoint(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -83,14 +76,12 @@ class YoYDataPoint(BaseModel):
     scope_3_tco2e: Decimal = Field(Decimal("0"))
     total_tco2e: Decimal = Field(Decimal("0"))
 
-
 class QualityDimensionScore(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     dimension: str = Field(...)
     score: Decimal = Field(Decimal("0"))
     tier: str = Field("")
     findings: List[str] = Field(default_factory=list)
-
 
 class FactorAssignment(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -102,7 +93,6 @@ class FactorAssignment(BaseModel):
     tier: str = Field("tier_2")
     year: int = Field(0)
     region: str = Field("")
-
 
 class SiteDetailInput(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -123,7 +113,6 @@ class SiteDetailInput(BaseModel):
     yoy_data: List[Dict[str, Any]] = Field(default_factory=list)
     quality_scores: List[Dict[str, Any]] = Field(default_factory=list)
     factor_assignments: List[Dict[str, Any]] = Field(default_factory=list)
-
 
 # ---------------------------------------------------------------------------
 # Output Model
@@ -149,7 +138,6 @@ class SiteDetailOutput(BaseModel):
     factors: List[FactorAssignment] = Field(default_factory=list)
     provenance_hash: str = Field("")
 
-
 # =============================================================================
 # TEMPLATE CLASS
 # =============================================================================
@@ -172,7 +160,7 @@ class SiteDetailReport:
     def render(self, data: Dict[str, Any]) -> SiteDetailOutput:
         """Render site detail report."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         inp = SiteDetailInput(**data) if isinstance(data, dict) else data
 
         # Parse sources
@@ -362,6 +350,5 @@ class SiteDetailReport:
         if value is None: return Decimal("0")
         try: return Decimal(str(value))
         except Exception: return Decimal("0")
-
 
 __all__ = ["SiteDetailReport", "SiteDetailInput", "SiteDetailOutput"]

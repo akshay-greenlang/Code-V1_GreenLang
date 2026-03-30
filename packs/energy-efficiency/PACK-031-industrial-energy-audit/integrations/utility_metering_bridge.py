@@ -33,20 +33,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -59,11 +54,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class MeterType(str, Enum):
     """Types of energy meters."""
@@ -73,7 +66,6 @@ class MeterType(str, Enum):
     CHECK_METER = "check_meter"
     VIRTUAL = "virtual"
     AMI_SMART = "ami_smart"
-
 
 class EnergyCarrier(str, Enum):
     """Energy carriers measured by meters."""
@@ -89,7 +81,6 @@ class EnergyCarrier(str, Enum):
     DIESEL = "diesel"
     WATER = "water"
 
-
 class IntervalResolution(str, Enum):
     """Metering interval resolutions."""
 
@@ -98,7 +89,6 @@ class IntervalResolution(str, Enum):
     HOURLY = "hourly"
     DAILY = "daily"
     MONTHLY = "monthly"
-
 
 class HierarchyLevel(str, Enum):
     """Sub-meter hierarchy levels."""
@@ -110,11 +100,9 @@ class HierarchyLevel(str, Enum):
     CIRCUIT = "circuit"
     EQUIPMENT = "equipment"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class MeterRegistration(BaseModel):
     """Registration record for a physical or virtual meter."""
@@ -135,19 +123,17 @@ class MeterRegistration(BaseModel):
     commissioned_date: Optional[str] = Field(None)
     equipment_ids: List[str] = Field(default_factory=list, description="Associated equipment")
 
-
 class IntervalReading(BaseModel):
     """A single interval meter reading."""
 
     reading_id: str = Field(default_factory=_new_uuid)
     meter_id: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     value: float = Field(default=0.0)
     unit: str = Field(default="kWh")
     interval: str = Field(default="15min")
     quality: str = Field(default="actual", description="actual|estimated|substituted")
     is_validated: bool = Field(default=False)
-
 
 class VirtualMeterDefinition(BaseModel):
     """Definition of a virtual meter computed from physical meters."""
@@ -159,7 +145,6 @@ class VirtualMeterDefinition(BaseModel):
     weights: List[float] = Field(default_factory=list, description="For weighted_sum")
     subtract_meter_ids: List[str] = Field(default_factory=list, description="For difference")
     unit: str = Field(default="kWh")
-
 
 class BillReconciliationResult(BaseModel):
     """Result of reconciling utility bills against meter data."""
@@ -178,7 +163,6 @@ class BillReconciliationResult(BaseModel):
     issues: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class DemandProfile(BaseModel):
     """Demand profile analysis result."""
 
@@ -195,7 +179,6 @@ class DemandProfile(BaseModel):
     weekend_base_load_kw: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class UtilityMeteringBridgeConfig(BaseModel):
     """Configuration for the Utility Metering Bridge."""
 
@@ -205,11 +188,9 @@ class UtilityMeteringBridgeConfig(BaseModel):
     bill_reconciliation_tolerance_pct: float = Field(default=2.0, ge=0.0, le=10.0)
     max_readings_per_import: int = Field(default=500000, ge=1000)
 
-
 # ---------------------------------------------------------------------------
 # UtilityMeteringBridge
 # ---------------------------------------------------------------------------
-
 
 class UtilityMeteringBridge:
     """Smart meter and sub-metering integration.
@@ -326,7 +307,7 @@ class UtilityMeteringBridge:
         for r in readings:
             reading = IntervalReading(
                 meter_id=meter_id,
-                timestamp=r.get("timestamp", _utcnow()),
+                timestamp=r.get("timestamp", utcnow()),
                 value=r.get("value", 0.0) * meter.multiplier * meter.ct_ratio,
                 unit=meter.unit,
                 interval=meter.interval.value,

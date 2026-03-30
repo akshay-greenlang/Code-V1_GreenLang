@@ -36,6 +36,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.qr_code_generator.api.dependencies import (
     AuthUser,
@@ -82,22 +83,14 @@ _VALID_TRANSITIONS = {
     "deactivated": {"active", "revoked"},
 }
 
-
 def _get_lifecycle_store() -> Dict[str, Dict]:
     """Return the lifecycle record store singleton."""
     return _lifecycle_store
-
 
 def _compute_provenance_hash(data: dict) -> str:
     """Compute SHA-256 hash for provenance tracking."""
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _get_code_status(code_id: str) -> str:
     """Get current lifecycle status for a code.
@@ -113,7 +106,6 @@ def _get_code_status(code_id: str) -> str:
     if record:
         return record.get("status", "created")
     return "created"
-
 
 def _set_code_status(
     code_id: str,
@@ -138,7 +130,7 @@ def _set_code_status(
         HTTPException: 409 if transition is invalid.
     """
     store = _get_lifecycle_store()
-    now = _utcnow()
+    now = utcnow()
 
     current_status = _get_code_status(code_id)
 
@@ -174,11 +166,9 @@ def _set_code_status(
 
     return current_status
 
-
 # ---------------------------------------------------------------------------
 # POST /lifecycle/{code_id}/activate
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/lifecycle/{code_id}/activate",
@@ -223,7 +213,7 @@ async def activate_code(
     """
     start = time.monotonic()
     try:
-        now = _utcnow()
+        now = utcnow()
         performed_by = body.performed_by or user.user_id
 
         previous_status = _set_code_status(
@@ -276,11 +266,9 @@ async def activate_code(
             detail="Failed to activate QR code",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /lifecycle/{code_id}/deactivate
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/lifecycle/{code_id}/deactivate",
@@ -324,7 +312,7 @@ async def deactivate_code(
     """
     start = time.monotonic()
     try:
-        now = _utcnow()
+        now = utcnow()
         performed_by = body.performed_by or user.user_id
 
         previous_status = _set_code_status(
@@ -381,11 +369,9 @@ async def deactivate_code(
             detail="Failed to deactivate QR code",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /lifecycle/{code_id}/revoke
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/lifecycle/{code_id}/revoke",
@@ -430,7 +416,7 @@ async def revoke_code(
     """
     start = time.monotonic()
     try:
-        now = _utcnow()
+        now = utcnow()
         performed_by = body.performed_by or user.user_id
 
         previous_status = _set_code_status(
@@ -487,11 +473,9 @@ async def revoke_code(
             detail="Failed to revoke QR code",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /lifecycle/scan
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/lifecycle/scan",
@@ -534,7 +518,7 @@ async def record_scan_event(
     start = time.monotonic()
     try:
         scan_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         # Check scan velocity
         velocity_window = 60.0
@@ -623,11 +607,9 @@ async def record_scan_event(
             detail="Failed to record scan event",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /lifecycle/{code_id}/history
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/lifecycle/{code_id}/history",
@@ -714,7 +696,6 @@ async def get_lifecycle_history(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve lifecycle history",
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

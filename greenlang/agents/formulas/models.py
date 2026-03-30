@@ -9,10 +9,12 @@ data integrity issues.
 """
 
 from typing import Dict, Any, List, Optional, Literal
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
 from datetime import datetime, date
 from enum import Enum
 import json
+from greenlang.schemas import GreenLangBase
+from greenlang.schemas.enums import ExecutionStatus
 
 
 class VersionStatus(str, Enum):
@@ -38,14 +40,6 @@ class CalculationType(str, Enum):
     CUSTOM_EXPRESSION = "custom_expression"
 
 
-class ExecutionStatus(str, Enum):
-    """Formula execution result status."""
-    SUCCESS = "success"
-    ERROR = "error"
-    TIMEOUT = "timeout"
-    VALIDATION_ERROR = "validation_error"
-
-
 class DependencyType(str, Enum):
     """Formula dependency type."""
     REQUIRED = "required"
@@ -65,7 +59,7 @@ class FormulaCategory(str, Enum):
     UTILITY = "utility"
 
 
-class ValidationRules(BaseModel):
+class ValidationRules(GreenLangBase):
     """Validation constraints for formula inputs and outputs."""
     min_value: Optional[float] = Field(None, description="Minimum allowed value")
     max_value: Optional[float] = Field(None, description="Maximum allowed value")
@@ -84,7 +78,7 @@ class ValidationRules(BaseModel):
         return v
 
 
-class FormulaMetadata(BaseModel):
+class FormulaMetadata(GreenLangBase):
     """Core formula metadata (table: formulas)."""
     id: Optional[int] = Field(None, description="Database ID")
     formula_code: str = Field(..., min_length=1, max_length=50, description="Unique formula code")
@@ -100,7 +94,7 @@ class FormulaMetadata(BaseModel):
         use_enum_values = True
 
 
-class FormulaVersion(BaseModel):
+class FormulaVersion(GreenLangBase):
     """
     Formula version with complete calculation specification.
 
@@ -186,7 +180,7 @@ class FormulaVersion(BaseModel):
         return data
 
 
-class FormulaDependency(BaseModel):
+class FormulaDependency(GreenLangBase):
     """Formula dependency relationship."""
     id: Optional[int] = Field(None, description="Database ID")
     formula_version_id: int = Field(..., description="Formula version that has dependency")
@@ -198,7 +192,7 @@ class FormulaDependency(BaseModel):
         use_enum_values = True
 
 
-class FormulaExecutionResult(BaseModel):
+class FormulaExecutionResult(GreenLangBase):
     """
     Result of formula execution with complete provenance.
 
@@ -241,7 +235,7 @@ class FormulaExecutionResult(BaseModel):
         return data
 
 
-class ABTest(BaseModel):
+class ABTest(GreenLangBase):
     """A/B test configuration and results."""
     id: Optional[int] = Field(None, description="Database ID")
     test_name: str = Field(..., min_length=1, max_length=100, description="Unique test name")
@@ -280,7 +274,7 @@ class ABTest(BaseModel):
         return v
 
 
-class FormulaMigration(BaseModel):
+class FormulaMigration(GreenLangBase):
     """Track formula migration from external sources."""
     id: Optional[int] = Field(None, description="Database ID")
     migration_name: str = Field(..., max_length=100)
@@ -295,7 +289,7 @@ class FormulaMigration(BaseModel):
     created_by: str = Field(default="system", max_length=100)
 
 
-class FormulaComparisonResult(BaseModel):
+class FormulaComparisonResult(GreenLangBase):
     """Result of comparing two formula versions."""
     formula_code: str
     version_a: int

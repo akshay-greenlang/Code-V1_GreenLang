@@ -7,18 +7,19 @@ metrics tracking, provenance integration, and resource loading.
 
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Optional, List, Callable
-from pydantic import BaseModel, Field
+from pydantic import Field
 import logging
 import time
 from datetime import datetime
 from pathlib import Path
 from collections import defaultdict
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
 
-class AgentConfig(BaseModel):
+class AgentConfig(GreenLangBase):
     """Enhanced configuration for GreenLang agents."""
     name: str = Field(..., description="Name of the agent")
     description: str = Field(..., description="Description of agent's purpose")
@@ -35,7 +36,7 @@ class AgentConfig(BaseModel):
     log_level: str = Field(default="INFO", description="Logging level")
 
 
-class AgentMetrics(BaseModel):
+class AgentMetrics(GreenLangBase):
     """Metrics collected during agent execution."""
     execution_time_ms: float = Field(default=0.0, description="Execution time in milliseconds")
     input_size: int = Field(default=0, description="Size of input data")
@@ -48,7 +49,7 @@ class AgentMetrics(BaseModel):
     )
 
 
-class AgentResult(BaseModel):
+class AgentResult(GreenLangBase):
     """Enhanced result from agent execution with metrics and provenance."""
     success: bool = Field(..., description="Whether the agent execution was successful")
     data: Dict[str, Any] = Field(default_factory=dict, description="Result data")

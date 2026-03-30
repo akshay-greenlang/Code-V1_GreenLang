@@ -50,6 +50,7 @@ import time
 import uuid
 from datetime import date, datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import utcnow
 
 from greenlang.agents.data.supplier_questionnaire.models import (
     Distribution,
@@ -65,21 +66,13 @@ __all__ = [
     "FollowUpEngine",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _today() -> date:
     """Return today's date in UTC."""
     return datetime.now(timezone.utc).date()
-
 
 # ---------------------------------------------------------------------------
 # Reminder type configurations
@@ -147,11 +140,9 @@ _ESCALATION_MESSAGES: Dict[EscalationLevel, str] = {
     ),
 }
 
-
 # ---------------------------------------------------------------------------
 # FollowUpEngine
 # ---------------------------------------------------------------------------
-
 
 class FollowUpEngine:
     """Follow-up action scheduling and management engine.
@@ -254,7 +245,7 @@ class FollowUpEngine:
             )
 
             # Skip reminders in the past
-            if scheduled_dt < _utcnow():
+            if scheduled_dt < utcnow():
                 # Still create them but mark as overdue
                 pass
 
@@ -303,7 +294,7 @@ class FollowUpEngine:
                 f"Action {action_id} has been cancelled"
             )
 
-        now = _utcnow()
+        now = utcnow()
         with self._lock:
             record = self._actions[action_id]
             record.status = "sent"
@@ -335,7 +326,7 @@ class FollowUpEngine:
         Returns:
             List of due FollowUpAction records.
         """
-        cutoff = as_of or _utcnow()
+        cutoff = as_of or utcnow()
 
         with self._lock:
             due: List[FollowUpAction] = []
@@ -348,7 +339,7 @@ class FollowUpEngine:
                     due.append(action)
 
         # Sort by scheduled time (earliest first)
-        due.sort(key=lambda a: a.scheduled_at or _utcnow())
+        due.sort(key=lambda a: a.scheduled_at or utcnow())
 
         logger.debug(
             "Found %d due reminders as of %s",
@@ -399,7 +390,7 @@ class FollowUpEngine:
             campaign_id=campaign_id,
             supplier_id=supplier_id,
             reminder_type=ReminderType.FINAL,
-            scheduled_at=_utcnow(),
+            scheduled_at=utcnow(),
             message=message,
             escalation_level=esc_level,
         )
@@ -439,7 +430,7 @@ class FollowUpEngine:
             ]
 
         # Sort by scheduled_at
-        actions.sort(key=lambda a: a.scheduled_at or _utcnow())
+        actions.sort(key=lambda a: a.scheduled_at or utcnow())
         return actions
 
     def cancel_reminders(self, distribution_id: str) -> int:
@@ -682,7 +673,7 @@ class FollowUpEngine:
             "overall_response_rate": overall_rate,
             "by_reminder_count": effectiveness,
             "provenance_hash": provenance_hash,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     def get_statistics(self) -> Dict[str, Any]:
@@ -697,7 +688,7 @@ class FollowUpEngine:
                 "active_actions": len(self._actions),
                 "distributions_tracked": len(self._distribution_actions),
                 "campaigns_tracked": len(self._campaign_actions),
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }
 
     # ------------------------------------------------------------------
@@ -811,7 +802,7 @@ class FollowUpEngine:
             Hex-encoded SHA-256 digest.
         """
         combined = json.dumps(
-            {"parts": list(parts), "timestamp": _utcnow().isoformat()},
+            {"parts": list(parts), "timestamp": utcnow().isoformat()},
             sort_keys=True,
         )
         return hashlib.sha256(combined.encode("utf-8")).hexdigest()

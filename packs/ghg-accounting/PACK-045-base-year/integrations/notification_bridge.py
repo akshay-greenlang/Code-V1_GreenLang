@@ -23,28 +23,16 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import NotificationChannel
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
-
-class NotificationChannel(str, Enum):
-    """Notification delivery channels."""
-    EMAIL = "email"
-    SLACK = "slack"
-    TEAMS = "teams"
-    WEBHOOK = "webhook"
-    IN_APP = "in_app"
-
 
 class NotificationType(str, Enum):
     """Types of notifications."""
@@ -57,7 +45,6 @@ class NotificationType(str, Enum):
     POLICY_CHANGE = "policy_change"
     DATA_QUALITY_ALERT = "data_quality_alert"
 
-
 class NotificationPriority(str, Enum):
     """Notification priority levels."""
     CRITICAL = "critical"
@@ -65,14 +52,12 @@ class NotificationPriority(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
 
-
 class NotificationStatus(str, Enum):
     """Notification delivery status."""
     QUEUED = "queued"
     SENT = "sent"
     DELIVERED = "delivered"
     FAILED = "failed"
-
 
 class NotificationConfig(BaseModel):
     """Configuration for notification bridge."""
@@ -84,7 +69,6 @@ class NotificationConfig(BaseModel):
     slack_webhook_url: str = Field("")
     teams_webhook_url: str = Field("")
     from_email: str = Field("noreply@greenlang.io")
-
 
 class Notification(BaseModel):
     """A notification to be sent."""
@@ -98,7 +82,6 @@ class Notification(BaseModel):
     metadata: Dict[str, Any] = Field(default_factory=dict)
     created_at: str = ""
 
-
 class SendResult(BaseModel):
     """Result of sending a notification."""
     notification_id: str = ""
@@ -107,7 +90,6 @@ class SendResult(BaseModel):
     status: str = "queued"
     sent_at: str = ""
     error_message: str = ""
-
 
 class NotificationBridge:
     """
@@ -158,7 +140,7 @@ class NotificationBridge:
             body=f"A recalculation trigger has been detected: {trigger_data.get('description', '')}",
             recipients=trigger_data.get("recipients", []),
             metadata=trigger_data,
-            created_at=_utcnow().isoformat(),
+            created_at=utcnow().isoformat(),
         )
         return await self.send_notification(notification)
 
@@ -172,7 +154,7 @@ class NotificationBridge:
             body=f"An adjustment requires your approval: {approval_data.get('description', '')}",
             recipients=approval_data.get("approvers", []),
             metadata=approval_data,
-            created_at=_utcnow().isoformat(),
+            created_at=utcnow().isoformat(),
         )
         return await self.send_notification(notification)
 
@@ -186,7 +168,7 @@ class NotificationBridge:
             body=f"The annual base year review is due: {review_data.get('due_date', '')}",
             recipients=review_data.get("reviewers", []),
             metadata=review_data,
-            created_at=_utcnow().isoformat(),
+            created_at=utcnow().isoformat(),
         )
         return await self.send_notification(notification)
 
@@ -198,7 +180,7 @@ class NotificationBridge:
             success=True,
             channel=channel,
             status=NotificationStatus.SENT.value,
-            sent_at=_utcnow().isoformat(),
+            sent_at=utcnow().isoformat(),
         )
 
     @property

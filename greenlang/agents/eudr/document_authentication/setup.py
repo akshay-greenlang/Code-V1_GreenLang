@@ -159,32 +159,22 @@ _MODULE_VERSION = "1.0.0"
 _AGENT_ID = "GL-EUDR-DAV-012"
 _ENGINE_COUNT = 8
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_provenance_hash(*parts: str) -> str:
     """Compute SHA-256 hash over concatenated string parts."""
     combined = "|".join(str(p) for p in parts)
     return hashlib.sha256(combined.encode("utf-8")).hexdigest()
 
-
 def _generate_request_id() -> str:
     """Generate a unique request identifier."""
     return f"DAV-{uuid.uuid4().hex[:12]}"
 
-
 # ---------------------------------------------------------------------------
 # Result container: HealthResult
 # ---------------------------------------------------------------------------
-
 
 class HealthResult:
     """Health check result container.
@@ -209,7 +199,7 @@ class HealthResult:
     ) -> None:
         self.status = status
         self.checks = checks or {}
-        self.timestamp = timestamp or _utcnow()
+        self.timestamp = timestamp or utcnow()
         self.version = version
         self.uptime_seconds = uptime_seconds
 
@@ -223,11 +213,9 @@ class HealthResult:
             "uptime_seconds": round(self.uptime_seconds, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: ClassificationResult
 # ---------------------------------------------------------------------------
-
 
 class ClassificationResult:
     """Result from a document classification operation.
@@ -277,11 +265,9 @@ class ClassificationResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: SignatureResult
 # ---------------------------------------------------------------------------
-
 
 class SignatureResult:
     """Result from a signature verification operation.
@@ -331,11 +317,9 @@ class SignatureResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: HashResult
 # ---------------------------------------------------------------------------
-
 
 class HashResult:
     """Result from a hash integrity operation.
@@ -381,11 +365,9 @@ class HashResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: CertificateResult
 # ---------------------------------------------------------------------------
-
 
 class CertificateResult:
     """Result from a certificate chain validation operation.
@@ -431,11 +413,9 @@ class CertificateResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: MetadataResult
 # ---------------------------------------------------------------------------
-
 
 class MetadataResult:
     """Result from a metadata extraction operation.
@@ -485,11 +465,9 @@ class MetadataResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: FraudResult
 # ---------------------------------------------------------------------------
-
 
 class FraudResult:
     """Result from a fraud detection operation.
@@ -539,11 +517,9 @@ class FraudResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: CrossRefResult
 # ---------------------------------------------------------------------------
-
 
 class CrossRefResult:
     """Result from a cross-reference verification operation.
@@ -589,11 +565,9 @@ class CrossRefResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: ReportResult
 # ---------------------------------------------------------------------------
-
 
 class ReportResult:
     """Result from a report generation operation.
@@ -643,11 +617,9 @@ class ReportResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: FullVerificationResult
 # ---------------------------------------------------------------------------
-
 
 class FullVerificationResult:
     """Result from a full document verification (all engines).
@@ -697,11 +669,9 @@ class FullVerificationResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: BatchResult
 # ---------------------------------------------------------------------------
-
 
 class BatchResult:
     """Result from a batch processing operation.
@@ -751,11 +721,9 @@ class BatchResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: DashboardResult
 # ---------------------------------------------------------------------------
-
 
 class DashboardResult:
     """Result from a dashboard or overview operation.
@@ -801,11 +769,9 @@ class DashboardResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ===========================================================================
 # DocumentAuthenticationService - Main facade
 # ===========================================================================
-
 
 class DocumentAuthenticationService:
     """Facade for the Document Authentication Agent (AGENT-EUDR-012).
@@ -1770,7 +1736,7 @@ class DocumentAuthenticationService:
             "agent_id": _AGENT_ID,
             "version": _MODULE_VERSION,
             "uptime_seconds": round(self.uptime_seconds, 2),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "metrics": dict(self._metrics),
             "engines_active": self._count_initialized_engines(),
             "engines_total": _ENGINE_COUNT,
@@ -1948,7 +1914,7 @@ class DocumentAuthenticationService:
             "agent_id": _AGENT_ID,
             "version": _MODULE_VERSION,
             "uptime_seconds": round(self.uptime_seconds, 2),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "metrics": dict(self._metrics),
             "engines_active": self._count_initialized_engines(),
             "engines_total": _ENGINE_COUNT,
@@ -1999,7 +1965,7 @@ class DocumentAuthenticationService:
         health = HealthResult(
             status=overall,
             checks=checks,
-            timestamp=_utcnow(),
+            timestamp=utcnow(),
             version=_MODULE_VERSION,
             uptime_seconds=self.uptime_seconds,
         )
@@ -2558,11 +2524,9 @@ class DocumentAuthenticationService:
             "total_checks": len(checks),
         }
 
-
 # ---------------------------------------------------------------------------
 # FastAPI lifespan context manager
 # ---------------------------------------------------------------------------
-
 
 @asynccontextmanager
 async def lifespan(app: Any) -> AsyncIterator[None]:
@@ -2576,6 +2540,7 @@ async def lifespan(app: Any) -> AsyncIterator[None]:
 
         from fastapi import FastAPI
         from greenlang.agents.eudr.document_authentication.setup import lifespan
+from greenlang.schemas import utcnow
 
         app = FastAPI(lifespan=lifespan)
 
@@ -2593,14 +2558,12 @@ async def lifespan(app: Any) -> AsyncIterator[None]:
     finally:
         await service.shutdown()
 
-
 # ---------------------------------------------------------------------------
 # Thread-safe singleton accessor
 # ---------------------------------------------------------------------------
 
 _service_instance: Optional[DocumentAuthenticationService] = None
 _service_lock = threading.Lock()
-
 
 def get_service() -> DocumentAuthenticationService:
     """Return the singleton DocumentAuthenticationService instance.
@@ -2622,7 +2585,6 @@ def get_service() -> DocumentAuthenticationService:
                 _service_instance = DocumentAuthenticationService()
     return _service_instance
 
-
 def set_service(service: DocumentAuthenticationService) -> None:
     """Replace the singleton DocumentAuthenticationService instance.
 
@@ -2636,7 +2598,6 @@ def set_service(service: DocumentAuthenticationService) -> None:
         _service_instance = service
     logger.info("DocumentAuthenticationService singleton replaced")
 
-
 def reset_service() -> None:
     """Reset the singleton DocumentAuthenticationService to None.
 
@@ -2647,7 +2608,6 @@ def reset_service() -> None:
     with _service_lock:
         _service_instance = None
     logger.debug("DocumentAuthenticationService singleton reset")
-
 
 # ---------------------------------------------------------------------------
 # Public API

@@ -35,23 +35,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "27.0.0"
 _PACK_ID = "PACK-027"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -60,7 +55,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
@@ -68,18 +62,15 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class ScenarioType(str, Enum):
     AGGRESSIVE_15C = "aggressive_15c"
     MODERATE_2C = "moderate_2c"
     CONSERVATIVE_BAU = "conservative_bau"
     CUSTOM = "custom"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase_name: str = Field(...)
@@ -93,7 +84,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     dag_node_id: str = Field(default="")
 
-
 class ScenarioParameter(BaseModel):
     """A single uncertain parameter with distribution."""
     name: str = Field(...)
@@ -103,7 +93,6 @@ class ScenarioParameter(BaseModel):
     mid: float = Field(default=0.0)
     high: float = Field(default=0.0)
     unit: str = Field(default="")
-
 
 class ScenarioDefinition(BaseModel):
     """Definition of a single scenario."""
@@ -119,7 +108,6 @@ class ScenarioDefinition(BaseModel):
     energy_efficiency_pct_yr: float = Field(default=2.0)
     parameters: List[ScenarioParameter] = Field(default_factory=list)
 
-
 class SimulationRun(BaseModel):
     """Result of a single Monte Carlo run."""
     run_id: int = Field(default=0)
@@ -129,7 +117,6 @@ class SimulationRun(BaseModel):
     total_2050_tco2e: float = Field(default=0.0)
     carbon_budget_consumed_pct: float = Field(default=0.0)
     investment_required_usd: float = Field(default=0.0)
-
 
 class ScenarioResult(BaseModel):
     """Aggregate result for a single scenario."""
@@ -146,7 +133,6 @@ class ScenarioResult(BaseModel):
     investment_p90_usd: float = Field(default=0.0, ge=0.0)
     carbon_budget_p50_pct: float = Field(default=0.0)
 
-
 class SensitivityDriver(BaseModel):
     """A single sensitivity driver from Sobol analysis."""
     parameter_name: str = Field(default="")
@@ -155,7 +141,6 @@ class SensitivityDriver(BaseModel):
     tornado_low: float = Field(default=0.0)
     tornado_high: float = Field(default=0.0)
     rank: int = Field(default=0, ge=0)
-
 
 class ScenarioAnalysisConfig(BaseModel):
     base_year: int = Field(default=2025, ge=2020, le=2035)
@@ -170,12 +155,10 @@ class ScenarioAnalysisConfig(BaseModel):
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
 
-
 class ScenarioAnalysisInput(BaseModel):
     config: ScenarioAnalysisConfig = Field(default_factory=ScenarioAnalysisConfig)
     current_portfolio: Dict[str, Any] = Field(default_factory=dict)
     planned_actions: List[Dict[str, Any]] = Field(default_factory=list)
-
 
 class ScenarioAnalysisResult(BaseModel):
     workflow_id: str = Field(...)
@@ -190,7 +173,6 @@ class ScenarioAnalysisResult(BaseModel):
     strategic_recommendations: List[str] = Field(default_factory=list)
     next_steps: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 # =============================================================================
 # DEFAULT SCENARIO PARAMETERS
@@ -235,11 +217,9 @@ DEFAULT_PARAMETERS: Dict[str, List[ScenarioParameter]] = {
     ],
 }
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class ScenarioAnalysisWorkflow:
     """
@@ -268,7 +248,7 @@ class ScenarioAnalysisWorkflow:
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     async def execute(self, input_data: ScenarioAnalysisInput) -> ScenarioAnalysisResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         self.config = input_data.config
         self._phase_results = []
         overall_status = WorkflowStatus.RUNNING
@@ -329,7 +309,7 @@ class ScenarioAnalysisWorkflow:
                 status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
 
         comparison = self._build_comparison()
 
@@ -350,7 +330,7 @@ class ScenarioAnalysisWorkflow:
         return result
 
     async def _phase_parameter_setup(self, input_data: ScenarioAnalysisInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         outputs["scenarios_defined"] = len(self.config.scenarios)
@@ -362,7 +342,7 @@ class ScenarioAnalysisWorkflow:
             len(s.parameters) for s in self.config.scenarios
         )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="parameter_setup", phase_number=1,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -372,7 +352,7 @@ class ScenarioAnalysisWorkflow:
         )
 
     async def _phase_simulation(self, input_data: ScenarioAnalysisInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         self._scenario_results = []
@@ -465,7 +445,7 @@ class ScenarioAnalysisWorkflow:
         outputs["total_runs"] = n_runs * len(self.config.scenarios)
         outputs["years_modeled"] = target_yr - base_yr
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="simulation", phase_number=2,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -475,7 +455,7 @@ class ScenarioAnalysisWorkflow:
         )
 
     async def _phase_sensitivity(self, input_data: ScenarioAnalysisInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         # Simulate Sobol sensitivity indices
@@ -536,7 +516,7 @@ class ScenarioAnalysisWorkflow:
         outputs["top_3_drivers"] = [d.parameter_name for d in self._sensitivity[:3]]
         outputs["method"] = "Sobol indices (first-order + total)"
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="sensitivity", phase_number=3,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -546,14 +526,14 @@ class ScenarioAnalysisWorkflow:
         )
 
     async def _phase_comparison(self, input_data: ScenarioAnalysisInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         comparison = self._build_comparison()
         outputs["scenarios_compared"] = len(self._scenario_results)
         outputs["comparison_summary"] = comparison
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="comparison", phase_number=4,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -563,7 +543,7 @@ class ScenarioAnalysisWorkflow:
         )
 
     async def _phase_strategy_report(self, input_data: ScenarioAnalysisInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         outputs["report_sections"] = [
@@ -584,7 +564,7 @@ class ScenarioAnalysisWorkflow:
         outputs["report_formats"] = ["MD", "HTML", "JSON", "PDF"]
         outputs["board_ready"] = True
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="strategy_report", phase_number=5,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),

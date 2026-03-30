@@ -71,6 +71,7 @@ import time
 from datetime import date, datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -189,13 +190,11 @@ except ImportError:
     PurchasedGoodsProvenanceTracker = None  # type: ignore[assignment,misc]
     ProvenanceStage = None  # type: ignore[assignment,misc]
 
-
 # ---------------------------------------------------------------------------
 # Quantize helper
 # ---------------------------------------------------------------------------
 
 _QUANTIZE_EXP = Decimal(10) ** -8  # 8 decimal places default
-
 
 def _q(value: Decimal, places: int = 8) -> Decimal:
     """Quantize a Decimal to the given number of decimal places.
@@ -210,12 +209,6 @@ def _q(value: Decimal, places: int = 8) -> Decimal:
     exp = Decimal(10) ** -places
     return value.quantize(exp, rounding=ROUND_HALF_UP)
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _sha256(data: Dict[str, Any]) -> str:
     """Compute SHA-256 hex digest from a JSON-serializable dict.
 
@@ -227,7 +220,6 @@ def _sha256(data: Dict[str, Any]) -> str:
     """
     json_str = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(json_str.encode("utf-8")).hexdigest()
-
 
 # ============================================================================
 # NAICS Sector Name Lookup Table (55 sectors)
@@ -333,7 +325,6 @@ NAICS_SECTOR_NAMES: Dict[str, str] = {
     "722511": "Full-Service Restaurants",
 }
 
-
 # ============================================================================
 # NAICS-to-ISIC Cross-Mapping Table (55+ mappings)
 # Format: NAICS-6 -> (ISIC Rev 4.1 code, confidence 0-1)
@@ -431,7 +422,6 @@ NAICS_TO_ISIC: Dict[str, List[Tuple[str, Decimal]]] = {
     "722511": [("5610", Decimal("0.90"))],
 }
 
-
 # ============================================================================
 # NACE-to-ISIC Cross-Mapping Table (55+ mappings)
 # Format: NACE Rev 2.1 code -> (ISIC Rev 4.1 code, confidence 0-1)
@@ -527,7 +517,6 @@ NACE_TO_ISIC: Dict[str, List[Tuple[str, Decimal]]] = {
     "I56.10": [("5610", Decimal("0.90"))],
 }
 
-
 # ============================================================================
 # ISIC-to-NAICS Reverse Mapping Table (auto-generated from NAICS_TO_ISIC)
 # ============================================================================
@@ -549,9 +538,7 @@ def _build_isic_to_naics() -> Dict[str, List[Tuple[str, Decimal]]]:
         result[isic_code].sort(key=lambda x: x[1], reverse=True)
     return result
 
-
 ISIC_TO_NAICS: Dict[str, List[Tuple[str, Decimal]]] = _build_isic_to_naics()
-
 
 # ============================================================================
 # UNSPSC Segment-to-NAICS 2-Digit Mapping (55 segments)
@@ -617,7 +604,6 @@ UNSPSC_TO_NAICS: Dict[str, List[Tuple[str, Decimal]]] = {
     "95": [("23", Decimal("0.75"))],   # Land, Buildings, and Structures
 }
 
-
 # ============================================================================
 # Physical EF Material-to-Category Mapping
 # ============================================================================
@@ -678,7 +664,6 @@ MATERIAL_KEY_TO_CATEGORY: Dict[str, str] = {
     "synthetic_rubber_sbr": "RUBBER",
 }
 
-
 # ============================================================================
 # Physical EF Human-Readable Material Names
 # ============================================================================
@@ -730,7 +715,6 @@ MATERIAL_KEY_TO_NAME: Dict[str, str] = {
     "natural_rubber": "Natural Rubber",
     "synthetic_rubber_sbr": "Synthetic Rubber (SBR)",
 }
-
 
 # ============================================================================
 # Physical EF Source Mapping (material_key -> PhysicalEFSource)
@@ -784,11 +768,9 @@ MATERIAL_KEY_TO_SOURCE: Dict[str, str] = {
     "synthetic_rubber_sbr": "DEFRA",
 }
 
-
 # ============================================================================
 # ProcurementDatabaseEngine
 # ============================================================================
-
 
 class ProcurementDatabaseEngine:
     """Thread-safe singleton providing EEIO/physical EF lookup, classification
@@ -2435,7 +2417,7 @@ class ProcurementDatabaseEngine:
             "component": "AGENT-MRV-014",
             "version": VERSION if _MODELS_AVAILABLE else "1.0.0",
             "status": "healthy" if healthy else "degraded",
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "duration_ms": round(elapsed_ms, 2),
             "models_available": _MODELS_AVAILABLE,
             "config_available": _CONFIG_AVAILABLE,
@@ -2488,7 +2470,7 @@ class ProcurementDatabaseEngine:
             "factor_value": str(factor_value),
             "source": source,
             "lookup_method": lookup_method,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "engine": "ProcurementDatabaseEngine",
             "agent": "GL-MRV-S3-001",
         }
@@ -2521,7 +2503,7 @@ class ProcurementDatabaseEngine:
             "to_currency": to_currency,
             "fx_rate": str(fx_rate),
             "result": str(result),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "engine": "ProcurementDatabaseEngine",
         }
         return _sha256(data)
@@ -2550,7 +2532,7 @@ class ProcurementDatabaseEngine:
             "margin_rate": str(margin_rate),
             "producer_price": str(producer_price),
             "naics_code": naics_code,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "engine": "ProcurementDatabaseEngine",
         }
         return _sha256(data)

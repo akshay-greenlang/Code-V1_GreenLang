@@ -66,25 +66,19 @@ from typing import Any, Dict, List, Optional, Set
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -104,7 +98,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely.
 
@@ -118,7 +111,6 @@ def _decimal(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
 ) -> Decimal:
@@ -126,7 +118,6 @@ def _safe_divide(
     if denominator == Decimal("0"):
         return default
     return numerator / denominator
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value to the specified number of decimal places.
@@ -143,11 +134,9 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ValueChainTier(str, Enum):
     """Supply chain tier classification per ESRS S2 AR S2-4.
@@ -159,7 +148,6 @@ class ValueChainTier(str, Enum):
     TIER_1 = "tier_1"
     TIER_2 = "tier_2"
     TIER_3_PLUS = "tier_3_plus"
-
 
 class WorkerType(str, Enum):
     """Worker category classification per ESRS S2 Para 14.
@@ -173,7 +161,6 @@ class WorkerType(str, Enum):
     MINING = "mining"
     SERVICES = "services"
     CONSTRUCTION = "construction"
-
 
 class RiskCategory(str, Enum):
     """Human rights and labour risk categories per ESRS S2 AR S2-14.
@@ -189,7 +176,6 @@ class RiskCategory(str, Enum):
     DISCRIMINATION = "discrimination"
     FREEDOM_OF_ASSOCIATION = "freedom_of_association"
 
-
 class EngagementMechanism(str, Enum):
     """Engagement mechanism types per ESRS S2 Para 18 and AR S2-6.
 
@@ -203,7 +189,6 @@ class EngagementMechanism(str, Enum):
     SURVEYS = "surveys"
     NGO_PARTNERSHIP = "ngo_partnership"
 
-
 class RemediationStatus(str, Enum):
     """Status of remediation actions per ESRS S2 Para 23-26.
 
@@ -215,7 +200,6 @@ class RemediationStatus(str, Enum):
     RESOLVED = "resolved"
     CLOSED = "closed"
     ESCALATED = "escalated"
-
 
 class DueDiligencePhase(str, Enum):
     """Due diligence phase per OECD Guidance and ESRS S2 AR S2-14.
@@ -229,11 +213,9 @@ class DueDiligencePhase(str, Enum):
     REMEDIATION = "remediation"
     MONITORING = "monitoring"
 
-
 # ---------------------------------------------------------------------------
 # Constants - ESRS S2 Disclosure Data Points (XBRL identifiers)
 # ---------------------------------------------------------------------------
-
 
 S2_1_DATAPOINTS: List[str] = [
     "s2_1_01_policies_addressing_value_chain_workers",
@@ -292,11 +274,9 @@ ALL_S2_DATAPOINTS: List[str] = (
     + S2_4_DATAPOINTS + S2_5_DATAPOINTS
 )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class ValueChainWorkerPolicy(BaseModel):
     """Policy related to value chain workers per ESRS S2-1 (Para 14-16).
@@ -336,7 +316,6 @@ class ValueChainWorkerPolicy(BaseModel):
         max_length=10,
     )
 
-
 class EngagementProcess(BaseModel):
     """Engagement process with value chain workers per ESRS S2-2 (Para 18-21).
 
@@ -374,7 +353,6 @@ class EngagementProcess(BaseModel):
         description="Summary of key outcomes from the engagement process",
         max_length=2000,
     )
-
 
 class GrievanceChannel(BaseModel):
     """Grievance and remediation channel per ESRS S2-3 (Para 23-26).
@@ -428,7 +406,6 @@ class GrievanceChannel(BaseModel):
             )
         return v
 
-
 class ValueChainWorkerAction(BaseModel):
     """Action taken on material impacts per ESRS S2-4 (Para 28-33).
 
@@ -471,7 +448,6 @@ class ValueChainWorkerAction(BaseModel):
         default=RemediationStatus.IDENTIFIED,
         description="Current status of the action",
     )
-
 
 class ValueChainRiskAssessment(BaseModel):
     """Risk assessment for a value chain segment per ESRS S2-4 AR S2-14.
@@ -527,7 +503,6 @@ class ValueChainRiskAssessment(BaseModel):
         description="Current phase of due diligence for this risk",
     )
 
-
 class ValueChainWorkerTarget(BaseModel):
     """Target related to value chain workers per ESRS S2-5 (Para 35-37).
 
@@ -573,7 +548,6 @@ class ValueChainWorkerTarget(BaseModel):
         ge=Decimal("0"),
         le=Decimal("100"),
     )
-
 
 class S2ValueChainResult(BaseModel):
     """Complete ESRS S2 disclosure result.
@@ -645,18 +619,16 @@ class S2ValueChainResult(BaseModel):
         description="SHA-256 hash of all inputs and calculation steps",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of calculation (UTC)",
     )
     processing_time_ms: float = Field(
         default=0.0, description="Processing time in milliseconds"
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ValueChainWorkersEngine:
     """ESRS S2 Workers in the Value Chain assessment engine.

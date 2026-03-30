@@ -42,18 +42,14 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -65,7 +61,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 class _AgentStub:
     def __init__(self, agent_name: str) -> None:
         self._agent_name = agent_name
@@ -75,7 +70,6 @@ class _AgentStub:
             return {"agent": self._agent_name, "status": "degraded", "emissions_tco2e": 0.0}
         return _stub
 
-
 def _try_import_mrv_agent(agent_id: str, module_path: str) -> Any:
     try:
         return importlib.import_module(module_path)
@@ -83,17 +77,14 @@ def _try_import_mrv_agent(agent_id: str, module_path: str) -> Any:
         logger.debug("MRV agent %s not available, using stub", agent_id)
         return _AgentStub(agent_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class MRVScope(str, Enum):
     SCOPE_1 = "scope_1"
     SCOPE_2 = "scope_2"
     SCOPE_3 = "scope_3"
-
 
 class SectorPriority(str, Enum):
     CRITICAL = "critical"
@@ -102,11 +93,9 @@ class SectorPriority(str, Enum):
     LOW = "low"
     NOT_APPLICABLE = "not_applicable"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class SectorMRVAgentRoute(BaseModel):
     """MRV agent routing definition with sector priority."""
@@ -118,7 +107,6 @@ class SectorMRVAgentRoute(BaseModel):
     description: str = Field(default="")
     sector_priorities: Dict[str, str] = Field(default_factory=dict)
 
-
 class SectorMRVBridgeConfig(BaseModel):
     pack_id: str = Field(default="PACK-028")
     primary_sector: str = Field(default="steel")
@@ -127,7 +115,6 @@ class SectorMRVBridgeConfig(BaseModel):
     connection_pool_size: int = Field(default=10, ge=1, le=30)
     intensity_calculation: bool = Field(default=True)
     data_quality_minimum: float = Field(default=0.80, ge=0.5, le=1.0)
-
 
 class RoutingResult(BaseModel):
     routing_id: str = Field(default_factory=_new_uuid)
@@ -143,7 +130,6 @@ class RoutingResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class IntensityResult(BaseModel):
     """Result of intensity metric calculation from MRV outputs."""
     sector: str = Field(default="")
@@ -153,7 +139,6 @@ class IntensityResult(BaseModel):
     intensity_value: float = Field(default=0.0)
     data_quality_score: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class BatchRoutingResult(BaseModel):
     batch_id: str = Field(default_factory=_new_uuid)
@@ -172,7 +157,6 @@ class BatchRoutingResult(BaseModel):
     priority_agents_used: List[str] = Field(default_factory=list)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Sector MRV Priority Mapping
@@ -211,7 +195,6 @@ SECTOR_AGENT_PRIORITIES: Dict[str, Dict[str, str]] = {
     "MRV-029": {"heavy_industry": "critical", "light_industry": "critical", "power": "critical", "transport": "critical", "buildings": "critical", "agriculture": "critical"},
     "MRV-030": {"heavy_industry": "critical", "light_industry": "critical", "power": "critical", "transport": "critical", "buildings": "critical", "agriculture": "critical"},
 }
-
 
 # Full 30-agent routing table
 SECTOR_MRV_ROUTING_TABLE: List[SectorMRVAgentRoute] = [
@@ -274,11 +257,9 @@ SECTOR_INTENSITY_METRICS: Dict[str, Dict[str, str]] = {
     "buildings_commercial": {"metric": "kgCO2/m2/year", "scope": "scope_1_2"},
 }
 
-
 # ---------------------------------------------------------------------------
 # SectorMRVBridge
 # ---------------------------------------------------------------------------
-
 
 class SectorMRVBridge:
     """Sector-specific 30-agent MRV bridge for PACK-028.

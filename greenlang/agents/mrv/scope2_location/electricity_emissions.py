@@ -52,7 +52,6 @@ from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
-
 # ---------------------------------------------------------------------------
 # Decimal precision constant
 # ---------------------------------------------------------------------------
@@ -86,7 +85,6 @@ _KG_TO_TONNES = Decimal("0.001")
 #: tonnes to kg
 _TONNES_TO_KG = Decimal("1000")
 
-
 # ---------------------------------------------------------------------------
 # GWP Values by IPCC Assessment Report
 # ---------------------------------------------------------------------------
@@ -108,7 +106,6 @@ GWP_VALUES: Dict[str, Dict[str, Decimal]] = {
         "N2O": Decimal("273"),
     },
 }
-
 
 # ---------------------------------------------------------------------------
 # Default Country-Level Grid Emission Factors (IPCC Tier 1 defaults)
@@ -239,7 +236,6 @@ _DEFAULT_COUNTRY_GRID_EF: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Default US EPA eGRID Subregion Emission Factors (Tier 2)
 # ---------------------------------------------------------------------------
@@ -271,7 +267,6 @@ _DEFAULT_EGRID_SUBREGION_EF: Dict[str, Dict[str, Decimal]] = {
     "SRTV": {"co2_ef": Decimal("365.0"), "ch4_ef": Decimal("0.014"), "n2o_ef": Decimal("0.005"), "source": "eGRID2022"},
     "SRVC": {"co2_ef": Decimal("286.0"), "ch4_ef": Decimal("0.012"), "n2o_ef": Decimal("0.004"), "source": "eGRID2022"},
 }
-
 
 # ---------------------------------------------------------------------------
 # Prometheus metrics helpers (graceful fallback)
@@ -316,30 +311,25 @@ else:
     _s2l_calculation_duration = None        # type: ignore[assignment]
     _s2l_active_calculations = None         # type: ignore[assignment]
 
-
 def _record_calc(country: str, tier: str, status: str) -> None:
     """Record a Scope 2 location-based calculation metric."""
     if _PROMETHEUS_AVAILABLE and _s2l_calculations_total is not None:
         _s2l_calculations_total.labels(country=country, tier=tier, status=status).inc()
-
 
 def _record_emissions_metric(country: str, gas: str, kg: float) -> None:
     """Record cumulative emissions metric."""
     if _PROMETHEUS_AVAILABLE and _s2l_emissions_kg_co2e_total is not None:
         _s2l_emissions_kg_co2e_total.labels(country=country, gas=gas).inc(kg)
 
-
 def _record_batch_metric(status: str) -> None:
     """Record batch job metric."""
     if _PROMETHEUS_AVAILABLE and _s2l_batch_jobs_total is not None:
         _s2l_batch_jobs_total.labels(status=status).inc()
 
-
 def _observe_duration(operation: str, seconds: float) -> None:
     """Record calculation duration metric."""
     if _PROMETHEUS_AVAILABLE and _s2l_calculation_duration is not None:
         _s2l_calculation_duration.labels(operation=operation).observe(seconds)
-
 
 # ---------------------------------------------------------------------------
 # Provenance helper (lightweight inline tracker for this engine)
@@ -409,15 +399,9 @@ class _ProvenanceTracker:
         with self._lock:
             return len(self._entries)
 
-
 # ---------------------------------------------------------------------------
 # Utility: UTC now helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Utility: Safe Decimal conversion
@@ -442,11 +426,9 @@ def _to_decimal(value: Any) -> Decimal:
     except (InvalidOperation, ValueError, TypeError) as exc:
         raise ValueError(f"Cannot convert {value!r} to Decimal: {exc}") from exc
 
-
 # ===========================================================================
 # ElectricityEmissionsEngine
 # ===========================================================================
-
 
 class ElectricityEmissionsEngine:
     """Core Scope 2 location-based electricity emission calculation engine.
@@ -896,7 +878,7 @@ class ElectricityEmissionsEngine:
                 "provenance_hash": provenance_hash,
                 "calculation_trace": trace,
                 "processing_time_ms": round(elapsed * 1000, 3),
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
                 "error_message": None,
             }
 
@@ -922,7 +904,7 @@ class ElectricityEmissionsEngine:
                 "provenance_hash": "",
                 "calculation_trace": trace,
                 "processing_time_ms": round(elapsed * 1000, 3),
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
                 "error_message": str(exc),
             }
 
@@ -1534,6 +1516,8 @@ class ElectricityEmissionsEngine:
         tracks fossil and biogenic CO2 separately per GHG Protocol
         guidance. Biogenic CO2 is reported as a memo item and excluded
         from Scope 2 totals.
+
+from greenlang.schemas import utcnow
 
         Args:
             consumption_mwh: Electricity consumption in MWh.
@@ -2723,7 +2707,6 @@ class ElectricityEmissionsEngine:
             f"gwp={self._default_gwp})"
         )
 
-
 # ===========================================================================
 # Additional Default Data: Extended Country Grid Emission Factors
 # ===========================================================================
@@ -2982,7 +2965,6 @@ _EXTENDED_COUNTRY_GRID_EF: Dict[str, Dict[str, Decimal]] = {
 # via the engine's lookup methods without code changes.
 _DEFAULT_COUNTRY_GRID_EF.update(_EXTENDED_COUNTRY_GRID_EF)
 
-
 # ===========================================================================
 # Default T&D Loss Factors by Region
 # ===========================================================================
@@ -3005,7 +2987,6 @@ _DEFAULT_TD_LOSS_BY_REGION: Dict[str, Decimal] = {
     "EASTERN_EUROPE": Decimal("0.10"),
     "GLOBAL_AVERAGE": Decimal("0.08"),
 }
-
 
 # ===========================================================================
 # Emission Factor Uncertainty Ranges
@@ -3033,7 +3014,6 @@ _EF_UNCERTAINTY_RANGES: Dict[str, Dict[str, Decimal]] = {
         "description": "Plant-specific measured factors",
     },
 }
-
 
 # ===========================================================================
 # Regulatory Framework Mapping
@@ -3102,7 +3082,6 @@ _REGULATORY_FRAMEWORK_REQUIREMENTS: Dict[str, Dict[str, Any]] = {
         "provenance": "required",
     },
 }
-
 
 # ---------------------------------------------------------------------------
 # Public API

@@ -27,20 +27,15 @@ from typing import Any, Callable, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC time with timezone info."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute SHA-256 provenance hash of arbitrary data."""
     return hashlib.sha256(
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
-
 
 class PhaseStatus(str, Enum):
     PENDING = "PENDING"
@@ -49,7 +44,6 @@ class PhaseStatus(str, Enum):
     FAILED = "FAILED"
     SKIPPED = "SKIPPED"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "PENDING"
     RUNNING = "RUNNING"
@@ -57,12 +51,11 @@ class WorkflowStatus(str, Enum):
     FAILED = "FAILED"
     PARTIAL = "PARTIAL"
 
-
 class WorkflowContext(BaseModel):
     """Shared state passed between workflow phases."""
     workflow_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     organization_id: str = Field(..., description="Organization identifier")
-    execution_timestamp: datetime = Field(default_factory=_utcnow)
+    execution_timestamp: datetime = Field(default_factory=utcnow)
     config: Dict[str, Any] = Field(default_factory=dict)
     phase_states: Dict[str, PhaseStatus] = Field(default_factory=dict)
     phase_outputs: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
@@ -78,7 +71,6 @@ class WorkflowContext(BaseModel):
     def mark_phase(self, phase_name: str, status: PhaseStatus) -> None:
         self.phase_states[phase_name] = status
 
-
 class PhaseResult(BaseModel):
     phase_name: str = Field(...)
     status: PhaseStatus = Field(...)
@@ -91,7 +83,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     records_processed: int = Field(default=0)
 
-
 class WorkflowResult(BaseModel):
     workflow_id: str = Field(...)
     workflow_name: str = Field(...)
@@ -102,7 +93,6 @@ class WorkflowResult(BaseModel):
     phases: List[PhaseResult] = Field(default_factory=list)
     summary: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 #  Input / Result
@@ -121,7 +111,6 @@ class SupplierRecord(BaseModel):
     data_quality: str = Field(default="estimated", description="primary, secondary, estimated")
     tier: int = Field(default=1, ge=1, description="Supply chain tier")
 
-
 class TransportRecord(BaseModel):
     """Transport data for upstream logistics."""
     transport_id: str = Field(...)
@@ -130,7 +119,6 @@ class TransportRecord(BaseModel):
     weight_tonnes: float = Field(default=0.0, ge=0.0)
     emission_factor: float = Field(default=0.0, ge=0.0, description="kgCO2e per tonne-km")
     supplier_id: str = Field(default="")
-
 
 class SupplyChainInput(BaseModel):
     """Input for supply chain assessment workflow."""
@@ -145,7 +133,6 @@ class SupplyChainInput(BaseModel):
     )
     skip_phases: List[str] = Field(default_factory=list)
 
-
 class SupplyChainResult(WorkflowResult):
     """Result from the supply chain assessment workflow."""
     total_scope3: float = Field(default=0.0, description="Total Scope 3 tCO2e")
@@ -153,7 +140,6 @@ class SupplyChainResult(WorkflowResult):
     hotspots: List[Dict[str, Any]] = Field(default_factory=list)
     engagement_plan: List[Dict[str, Any]] = Field(default_factory=list)
     data_quality: Dict[str, Any] = Field(default_factory=dict)
-
 
 # ---------------------------------------------------------------------------
 #  Phase 1: Supplier Inventory
@@ -166,7 +152,7 @@ class SupplierInventoryPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Build supplier inventory with category mapping."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -211,7 +197,7 @@ class SupplierInventoryPhase:
             errors.append(str(exc))
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -219,7 +205,6 @@ class SupplierInventoryPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 # ---------------------------------------------------------------------------
 #  Phase 2: Data Collection
@@ -232,7 +217,7 @@ class SupplyChainDataCollectionPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Validate and consolidate supply chain data sources."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -269,7 +254,7 @@ class SupplyChainDataCollectionPhase:
             errors.append(str(exc))
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -277,7 +262,6 @@ class SupplyChainDataCollectionPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 # ---------------------------------------------------------------------------
 #  Phase 3: Emission Calculation
@@ -290,7 +274,7 @@ class EmissionCalculationPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Compute emissions per supplier and aggregate by category."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -344,7 +328,7 @@ class EmissionCalculationPhase:
             errors.append(str(exc))
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -352,7 +336,6 @@ class EmissionCalculationPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 # ---------------------------------------------------------------------------
 #  Phase 4: Hotspot Analysis
@@ -365,7 +348,7 @@ class HotspotAnalysisPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Rank suppliers and categories by emission contribution."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -416,7 +399,7 @@ class HotspotAnalysisPhase:
             errors.append(str(exc))
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -424,7 +407,6 @@ class HotspotAnalysisPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 # ---------------------------------------------------------------------------
 #  Phase 5: Engagement Planning
@@ -437,7 +419,7 @@ class EngagementPlanningPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Generate targeted engagement plan for top emitting suppliers."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -498,7 +480,7 @@ class EngagementPlanningPhase:
             errors.append(str(exc))
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -506,7 +488,6 @@ class EngagementPlanningPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 # ---------------------------------------------------------------------------
 #  Workflow Orchestrator
@@ -544,7 +525,7 @@ class SupplyChainAssessmentWorkflow:
 
     async def run(self, input_data: SupplyChainInput) -> SupplyChainResult:
         """Execute the complete 5-phase supply chain assessment workflow."""
-        started_at = _utcnow()
+        started_at = utcnow()
         logger.info("Starting supply chain assessment workflow %s", self.workflow_id)
         context = WorkflowContext(
             workflow_id=self.workflow_id,
@@ -583,7 +564,7 @@ class SupplyChainAssessmentWorkflow:
                 logger.error("Phase '%s' raised: %s", phase_name, exc, exc_info=True)
                 completed_phases.append(PhaseResult(
                     phase_name=phase_name, status=PhaseStatus.FAILED,
-                    started_at=_utcnow(), errors=[str(exc)],
+                    started_at=utcnow(), errors=[str(exc)],
                     provenance_hash=_hash_data({"error": str(exc)}),
                 ))
                 context.mark_phase(phase_name, PhaseStatus.FAILED)
@@ -597,7 +578,7 @@ class SupplyChainAssessmentWorkflow:
             )
             overall_status = WorkflowStatus.COMPLETED if all_ok else WorkflowStatus.PARTIAL
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         duration = (completed_at - started_at).total_seconds()
         summary = self._build_summary(context)
         provenance = _hash_data({

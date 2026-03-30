@@ -15,6 +15,7 @@ Status: Production Ready
 
 import logging
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +41,7 @@ except ImportError:
 
 if FASTAPI_AVAILABLE:
 
-    class CreateCitationRequest(BaseModel):
+    class CreateCitationRequest(GreenLangBase):
         """Request body for creating a citation."""
         citation_type: str = Field(..., description="Citation type")
         source_authority: str = Field(..., description="Source authority")
@@ -56,7 +57,7 @@ if FASTAPI_AVAILABLE:
         key_values: Optional[Dict[str, Any]] = Field(None, description="Key values")
         notes: Optional[str] = Field(None, description="Notes")
 
-    class UpdateCitationRequest(BaseModel):
+    class UpdateCitationRequest(GreenLangBase):
         """Request body for updating a citation."""
         user_id: str = Field("system", description="User making the change")
         reason: str = Field("Citation update", description="Reason for change")
@@ -67,7 +68,7 @@ if FASTAPI_AVAILABLE:
         notes: Optional[str] = Field(None, description="New notes")
         regulatory_frameworks: Optional[List[str]] = Field(None, description="New frameworks")
 
-    class CreatePackageRequest(BaseModel):
+    class CreatePackageRequest(GreenLangBase):
         """Request body for creating an evidence package."""
         name: str = Field(..., description="Package name")
         description: str = Field("", description="Package description")
@@ -77,7 +78,7 @@ if FASTAPI_AVAILABLE:
         regulatory_frameworks: Optional[List[str]] = Field(None, description="Frameworks")
         compliance_notes: Optional[str] = Field(None, description="Compliance notes")
 
-    class AddEvidenceItemRequest(BaseModel):
+    class AddEvidenceItemRequest(GreenLangBase):
         """Request body for adding an evidence item to a package."""
         evidence_type: str = Field(..., description="Evidence type")
         description: str = Field(..., description="Evidence description")
@@ -86,26 +87,26 @@ if FASTAPI_AVAILABLE:
         source_system: Optional[str] = Field(None, description="Source system")
         source_agent: Optional[str] = Field(None, description="Source agent")
 
-    class AddCitationToPackageRequest(BaseModel):
+    class AddCitationToPackageRequest(GreenLangBase):
         """Request body for adding a citation to a package."""
         citation_id: str = Field(..., description="Citation ID to add")
 
-    class VerifyBatchRequest(BaseModel):
+    class VerifyBatchRequest(GreenLangBase):
         """Request body for batch verification."""
         citation_ids: List[str] = Field(..., description="Citation IDs to verify")
         user_id: str = Field("system", description="User performing verification")
 
-    class ExportRequest(BaseModel):
+    class ExportRequest(GreenLangBase):
         """Request body for export."""
         citation_ids: Optional[List[str]] = Field(None, description="IDs to export")
         format: str = Field("json", description="Export format: bibtex, json, csl")
 
-    class ImportBibtexRequest(BaseModel):
+    class ImportBibtexRequest(GreenLangBase):
         """Request body for BibTeX import."""
         content: str = Field(..., description="BibTeX content string")
         user_id: str = Field("system", description="User performing import")
 
-    class ImportJsonRequest(BaseModel):
+    class ImportJsonRequest(GreenLangBase):
         """Request body for JSON import."""
         content: str = Field(..., description="JSON content string")
         user_id: str = Field("system", description="User performing import")

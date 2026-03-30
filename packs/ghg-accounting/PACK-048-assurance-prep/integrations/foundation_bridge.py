@@ -51,25 +51,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -82,11 +76,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class AssumptionStatus(str, Enum):
     """Assumption approval status from FOUND-004."""
@@ -97,14 +89,12 @@ class AssumptionStatus(str, Enum):
     CHALLENGED = "challenged"
     SUPERSEDED = "superseded"
 
-
 class AssumptionImpact(str, Enum):
     """Assumption impact level."""
 
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 class CitationType(str, Enum):
     """Citation types from FOUND-005."""
@@ -116,7 +106,6 @@ class CitationType(str, Enum):
     CALCULATION = "calculation"
     EXTERNAL_REPORT = "external_report"
 
-
 class ReproducibilityStatus(str, Enum):
     """Reproducibility verification status from FOUND-008."""
 
@@ -125,11 +114,9 @@ class ReproducibilityStatus(str, Enum):
     FAILED = "failed"
     NOT_TESTED = "not_tested"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class FoundationBridgeConfig(BaseModel):
     """Configuration for foundation bridge."""
@@ -145,7 +132,6 @@ class FoundationBridgeConfig(BaseModel):
     )
     timeout_s: float = Field(60.0, ge=5.0)
     cache_ttl_s: float = Field(1800.0)
-
 
 class AssumptionRecord(BaseModel):
     """Assumption record from FOUND-004."""
@@ -166,7 +152,6 @@ class AssumptionRecord(BaseModel):
     alternatives_considered: List[str] = Field(default_factory=list)
     provenance_hash: str = ""
 
-
 class CitationRecord(BaseModel):
     """Citation record from FOUND-005."""
 
@@ -185,7 +170,6 @@ class CitationRecord(BaseModel):
     verification_date: str = ""
     verification_notes: str = ""
     provenance_hash: str = ""
-
 
 class ReproducibilityResult(BaseModel):
     """Reproducibility verification result from FOUND-008."""
@@ -206,7 +190,6 @@ class ReproducibilityResult(BaseModel):
     test_date: str = ""
     provenance_hash: str = ""
 
-
 class FoundationEvidenceRequest(BaseModel):
     """Request for foundation evidence."""
 
@@ -217,7 +200,6 @@ class FoundationEvidenceRequest(BaseModel):
     include_assumptions: bool = Field(True)
     include_citations: bool = Field(True)
     include_reproducibility: bool = Field(True)
-
 
 class FoundationEvidenceResponse(BaseModel):
     """Complete foundation evidence response."""
@@ -241,11 +223,9 @@ class FoundationEvidenceResponse(BaseModel):
     duration_ms: float = 0.0
     warnings: List[str] = Field(default_factory=list)
 
-
 # ---------------------------------------------------------------------------
 # Bridge Implementation
 # ---------------------------------------------------------------------------
-
 
 class FoundationBridge:
     """
@@ -359,7 +339,7 @@ class FoundationBridge:
                     "citations": len(citations),
                     "repro": repro_tested,
                 }),
-                retrieved_at=_utcnow().isoformat(),
+                retrieved_at=utcnow().isoformat(),
                 duration_ms=duration,
             )
 
@@ -370,7 +350,7 @@ class FoundationBridge:
                 success=False,
                 period=request.period,
                 warnings=[f"Retrieval failed: {str(e)}"],
-                retrieved_at=_utcnow().isoformat(),
+                retrieved_at=utcnow().isoformat(),
                 duration_ms=duration,
             )
 

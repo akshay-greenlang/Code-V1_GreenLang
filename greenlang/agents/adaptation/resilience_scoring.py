@@ -33,10 +33,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -97,7 +98,7 @@ SECTOR_BENCHMARKS = {
 # Pydantic Models
 # =============================================================================
 
-class DimensionScore(BaseModel):
+class DimensionScore(GreenLangBase):
     """Score for a single resilience dimension."""
     dimension: ResilienceDimension = Field(...)
     score: float = Field(..., ge=0, le=1)
@@ -106,7 +107,7 @@ class DimensionScore(BaseModel):
     gaps: List[str] = Field(default_factory=list)
 
 
-class CapacityScore(BaseModel):
+class CapacityScore(GreenLangBase):
     """Score for a resilience capacity type."""
     capacity: ResilienceCapacity = Field(...)
     score: float = Field(..., ge=0, le=1)
@@ -114,7 +115,7 @@ class CapacityScore(BaseModel):
     improvement_actions: List[str] = Field(default_factory=list)
 
 
-class ResilienceProfile(BaseModel):
+class ResilienceProfile(GreenLangBase):
     """Complete resilience profile for an asset."""
     asset_id: str = Field(...)
     asset_name: str = Field(...)
@@ -147,7 +148,7 @@ class ResilienceProfile(BaseModel):
     provenance_hash: str = Field(default="")
 
 
-class ResilienceInput(BaseModel):
+class ResilienceInput(GreenLangBase):
     """Input for resilience assessment of a single asset."""
     asset_id: str = Field(...)
     asset_name: str = Field(...)
@@ -180,7 +181,7 @@ class ResilienceInput(BaseModel):
     data_backup: float = Field(default=0.5, ge=0, le=1)
 
 
-class ResilienceScoringInput(BaseModel):
+class ResilienceScoringInput(GreenLangBase):
     """Input model for Resilience Scoring Agent."""
     assessment_id: str = Field(...)
     assets: List[ResilienceInput] = Field(..., min_length=1)
@@ -188,7 +189,7 @@ class ResilienceScoringInput(BaseModel):
     include_recommendations: bool = Field(default=True)
 
 
-class ResilienceScoringOutput(BaseModel):
+class ResilienceScoringOutput(GreenLangBase):
     """Output model for Resilience Scoring Agent."""
     assessment_id: str = Field(...)
     completed_at: datetime = Field(default_factory=DeterministicClock.now)

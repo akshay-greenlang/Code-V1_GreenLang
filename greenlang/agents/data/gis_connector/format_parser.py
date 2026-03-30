@@ -36,14 +36,9 @@ import time
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -55,7 +50,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -90,7 +84,6 @@ _LON_CANDIDATES = frozenset({
     "lon", "lng", "long", "longitude", "x", "lon_dd", "longitude_dd",
     "lon_deg", "x_coord", "xcoord", "easting",
 })
-
 
 # ---------------------------------------------------------------------------
 # Data Structures
@@ -136,9 +129,8 @@ def _make_parse_result(
         "is_valid": is_valid,
         "errors": errors or [],
         "raw_size_bytes": raw_size_bytes,
-        "created_at": _utcnow().isoformat(),
+        "created_at": utcnow().isoformat(),
     }
-
 
 def _make_feature(
     geometry_type: str,
@@ -166,7 +158,6 @@ def _make_feature(
         },
         "properties": properties or {},
     }
-
 
 # ---------------------------------------------------------------------------
 # Engine
@@ -1306,7 +1297,6 @@ class FormatParserEngine:
             "valid_count": sum(1 for r in results if r.get("is_valid")),
             "invalid_count": sum(1 for r in results if not r.get("is_valid")),
         }
-
 
 __all__ = [
     "FormatParserEngine",

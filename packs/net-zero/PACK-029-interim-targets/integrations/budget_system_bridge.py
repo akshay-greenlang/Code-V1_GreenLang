@@ -34,18 +34,14 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -57,11 +53,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class BudgetScope(str, Enum):
     SCOPE_1 = "scope_1"
@@ -70,14 +64,12 @@ class BudgetScope(str, Enum):
     SCOPE_1_2 = "scope_1_2"
     ALL_SCOPES = "all_scopes"
 
-
 class CarbonPriceType(str, Enum):
     SHADOW = "shadow"           # Internal shadow price
     FEE = "fee"                 # Internal carbon fee
     LEVY = "levy"               # Budget-based levy
     MARKET = "market"           # External market price (EU ETS, etc.)
     BLENDED = "blended"         # Blend of internal + external
-
 
 class BudgetStatus(str, Enum):
     UNDER_BUDGET = "under_budget"
@@ -86,7 +78,6 @@ class BudgetStatus(str, Enum):
     OVER_BUDGET = "over_budget"
     CRITICAL = "critical"
 
-
 class RebalanceTrigger(str, Enum):
     QUARTERLY_OVERRUN = "quarterly_overrun"
     ANNUAL_TRAJECTORY = "annual_trajectory"
@@ -94,7 +85,6 @@ class RebalanceTrigger(str, Enum):
     SCOPE_SHIFT = "scope_shift"
     STRUCTURAL_CHANGE = "structural_change"
     POLICY_CHANGE = "policy_change"
-
 
 # ---------------------------------------------------------------------------
 # Carbon Price Schedules
@@ -110,11 +100,9 @@ EU_ETS_PRICE_ASSUMPTIONS: Dict[int, float] = {
     2028: 110, 2029: 120, 2030: 140, 2035: 200, 2040: 250, 2050: 200,
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class BudgetSystemConfig(BaseModel):
     """Configuration for the budget system bridge."""
@@ -129,7 +117,6 @@ class BudgetSystemConfig(BaseModel):
     discount_rate_pct: float = Field(default=8.0, ge=0.0, le=20.0)
     rebalance_threshold_pct: float = Field(default=10.0, ge=1.0, le=50.0)
     enable_provenance: bool = Field(default=True)
-
 
 class AnnualCarbonBudget(BaseModel):
     """Carbon budget allocation for a single year."""
@@ -151,7 +138,6 @@ class AnnualCarbonBudget(BaseModel):
     scope3_by_category: Dict[int, float] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
 
-
 class CarbonPriceResult(BaseModel):
     """Carbon price application result."""
     price_id: str = Field(default_factory=_new_uuid)
@@ -163,7 +149,6 @@ class CarbonPriceResult(BaseModel):
     by_scope: Dict[str, Dict[str, float]] = Field(default_factory=dict)
     revenue_impact_pct: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class FinancialImpact(BaseModel):
     """Financial impact analysis result."""
@@ -181,7 +166,6 @@ class FinancialImpact(BaseModel):
     carbon_price_trajectory: Dict[int, float] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
 
-
 class RebalanceRecommendation(BaseModel):
     """Budget rebalance recommendation."""
     recommendation_id: str = Field(default_factory=_new_uuid)
@@ -195,7 +179,6 @@ class RebalanceRecommendation(BaseModel):
     rationale: str = Field(default="")
     financial_impact_usd: float = Field(default=0.0)
 
-
 class BudgetSystemResult(BaseModel):
     """Complete budget system result."""
     result_id: str = Field(default_factory=_new_uuid)
@@ -208,11 +191,9 @@ class BudgetSystemResult(BaseModel):
     overall_status: BudgetStatus = Field(default=BudgetStatus.ON_TRACK)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # BudgetSystemBridge
 # ---------------------------------------------------------------------------
-
 
 class BudgetSystemBridge:
     """Internal carbon budget system bridge for PACK-029.

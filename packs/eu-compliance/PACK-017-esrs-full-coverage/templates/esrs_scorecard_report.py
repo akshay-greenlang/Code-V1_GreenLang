@@ -25,6 +25,8 @@ import logging
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _SECTIONS: List[str] = [
@@ -36,12 +38,6 @@ _SECTIONS: List[str] = [
     "improvement_priorities",
 ]
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
     if hasattr(data, "model_dump"):
@@ -52,7 +48,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 class ESRSScorecard:
     """
@@ -93,7 +88,7 @@ class ESRSScorecard:
 
     def render_markdown(self, data: Dict[str, Any], config: Optional[Dict[str, Any]] = None) -> str:
         """Render ESRS compliance scorecard as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [
             self._md_header(data),
             self._md_executive_summary(data),
@@ -110,7 +105,7 @@ class ESRSScorecard:
 
     def render_html(self, data: Dict[str, Any], config: Optional[Dict[str, Any]] = None) -> str:
         """Render ESRS compliance scorecard as HTML."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         body = "\n".join([
             self._html_header(data),
@@ -130,7 +125,7 @@ class ESRSScorecard:
 
     def render_json(self, data: Dict[str, Any], config: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Render ESRS compliance scorecard as JSON."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result: Dict[str, Any] = {
             "template": "esrs_scorecard_report",
             "esrs_reference": "ESRS 2, E1-E5, S1-S4, G1",
@@ -182,7 +177,7 @@ class ESRSScorecard:
             "standards_fully_compliant": sum(1 for s in all_scores if s >= 95.0),
             "standards_partially_compliant": sum(1 for s in all_scores if 50.0 <= s < 95.0),
             "standards_non_compliant": sum(1 for s in all_scores if s < 50.0),
-            "assessment_date": data.get("assessment_date", _utcnow().isoformat()),
+            "assessment_date": data.get("assessment_date", utcnow().isoformat()),
             "readiness_status": self._get_readiness_status(overall_score),
         }
 

@@ -72,9 +72,9 @@ from greenlang.agents.data.deforestation_satellite.models import (
     StartMonitoringRequest,
     VegetationIndex,
 )
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -83,16 +83,9 @@ logger = logging.getLogger(__name__)
 # Default dates for pipeline execution when not specified
 _DEFAULT_LOOKBACK_DAYS = 365
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _polygon_to_wkt(polygon_coords: List[List[float]]) -> str:
     """Convert polygon coordinate list to WKT string."""
@@ -101,11 +94,9 @@ def _polygon_to_wkt(polygon_coords: List[List[float]]) -> str:
     pairs = " ".join(f"{c[0]} {c[1]}" for c in polygon_coords)
     return f"POLYGON(({pairs}))"
 
-
 # =============================================================================
 # MonitoringPipelineEngine
 # =============================================================================
-
 
 class MonitoringPipelineEngine:
     """Engine for orchestrating the 7-stage deforestation monitoring pipeline.
@@ -310,7 +301,7 @@ class MonitoringPipelineEngine:
         try:
             report = self.run_pipeline(job, request)
             job.is_running = False
-            job.completed_at = _utcnow().isoformat()
+            job.completed_at = utcnow().isoformat()
             if report:
                 job.last_result = report.model_dump(mode="json")
             self._stats.active_jobs = max(0, self._stats.active_jobs - 1)
@@ -384,7 +375,7 @@ class MonitoringPipelineEngine:
             "report": None,
         }
 
-        now = _utcnow()
+        now = utcnow()
         end_date = now.strftime("%Y-%m-%d")
         start_date = (now - timedelta(days=_DEFAULT_LOOKBACK_DAYS)).strftime("%Y-%m-%d")
         pre_start = (now - timedelta(days=_DEFAULT_LOOKBACK_DAYS * 2)).strftime("%Y-%m-%d")
@@ -717,7 +708,7 @@ class MonitoringPipelineEngine:
             return False
 
         job.is_running = False
-        job.completed_at = _utcnow().isoformat()
+        job.completed_at = utcnow().isoformat()
         job.error_message = "Stopped by user"
         self._stats.active_jobs = max(0, self._stats.active_jobs - 1)
 
@@ -808,7 +799,6 @@ class MonitoringPipelineEngine:
             Integer count of monitoring jobs.
         """
         return self._job_count
-
 
 __all__ = [
     "MonitoringPipelineEngine",

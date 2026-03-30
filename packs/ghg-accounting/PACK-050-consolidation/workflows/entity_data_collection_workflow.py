@@ -41,26 +41,21 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ValidationSeverity
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -69,13 +64,11 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
-
 
 class DataCollectionPhase(str, Enum):
     ENTITY_ASSIGNMENT = "entity_assignment"
@@ -83,7 +76,6 @@ class DataCollectionPhase(str, Enum):
     SUBMISSION_COLLECTION = "submission_collection"
     VALIDATION_REVIEW = "validation_review"
     GAP_RESOLUTION = "gap_resolution"
-
 
 class SubmissionStatus(str, Enum):
     NOT_STARTED = "not_started"
@@ -93,13 +85,6 @@ class SubmissionStatus(str, Enum):
     REJECTED = "rejected"
     APPROVED = "approved"
 
-
-class ValidationSeverity(str, Enum):
-    ERROR = "error"
-    WARNING = "warning"
-    INFO = "info"
-
-
 class GapResolutionMethod(str, Enum):
     FOLLOW_UP = "follow_up"
     ESTIMATION = "estimation"
@@ -107,13 +92,11 @@ class GapResolutionMethod(str, Enum):
     PRIOR_YEAR = "prior_year"
     EXCLUSION = "exclusion"
 
-
 class EmissionScope(str, Enum):
     SCOPE_1 = "scope_1"
     SCOPE_2_LOCATION = "scope_2_location"
     SCOPE_2_MARKET = "scope_2_market"
     SCOPE_3 = "scope_3"
-
 
 # =============================================================================
 # REFERENCE DATA
@@ -137,11 +120,9 @@ SCOPE_3_CATEGORIES = [
     "cat_7_employee_commuting",
 ]
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -154,7 +135,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class StewardAssignment(BaseModel):
     """Data steward assignment for an entity."""
     entity_id: str = Field(...)
@@ -164,9 +144,8 @@ class StewardAssignment(BaseModel):
     steward_role: str = Field("data_steward")
     backup_steward_name: str = Field("")
     backup_steward_email: str = Field("")
-    assigned_at: str = Field(default_factory=lambda: _utcnow().isoformat())
+    assigned_at: str = Field(default_factory=lambda: utcnow().isoformat())
     deadline: str = Field("")
-
 
 class DataRequest(BaseModel):
     """Data request template distributed to an entity."""
@@ -179,9 +158,8 @@ class DataRequest(BaseModel):
     reporting_period_end: str = Field("")
     submission_deadline: str = Field("")
     template_version: str = Field("1.0")
-    distributed_at: str = Field(default_factory=lambda: _utcnow().isoformat())
+    distributed_at: str = Field(default_factory=lambda: utcnow().isoformat())
     status: SubmissionStatus = Field(SubmissionStatus.NOT_STARTED)
-
 
 class EntitySubmission(BaseModel):
     """Submitted GHG data from an entity."""
@@ -202,7 +180,6 @@ class EntitySubmission(BaseModel):
     status: SubmissionStatus = Field(SubmissionStatus.SUBMITTED)
     provenance_hash: str = Field("")
 
-
 class ValidationFinding(BaseModel):
     """A validation finding for an entity submission."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -215,7 +192,6 @@ class ValidationFinding(BaseModel):
     message: str = Field("")
     current_value: str = Field("")
     expected_range: str = Field("")
-
 
 class DataGap(BaseModel):
     """An identified data gap for an entity."""
@@ -231,7 +207,6 @@ class DataGap(BaseModel):
     estimated_value_tco2e: Decimal = Field(Decimal("0"))
     is_resolved: bool = Field(False)
     resolution_notes: str = Field("")
-
 
 class EntityDataCollectionInput(BaseModel):
     """Input for the entity data collection workflow."""
@@ -254,7 +229,6 @@ class EntityDataCollectionInput(BaseModel):
     require_scope_3: bool = Field(False)
     minimum_completeness_pct: Decimal = Field(MINIMUM_COMPLETENESS_PCT)
     skip_phases: List[str] = Field(default_factory=list)
-
 
 class EntityDataCollectionResult(BaseModel):
     """Output from the entity data collection workflow."""
@@ -281,11 +255,9 @@ class EntityDataCollectionResult(BaseModel):
     started_at: str = Field("")
     completed_at: str = Field("")
 
-
 # =============================================================================
 # WORKFLOW CLASS
 # =============================================================================
-
 
 class EntityDataCollectionWorkflow:
     """
@@ -322,7 +294,7 @@ class EntityDataCollectionWorkflow:
 
     def execute(self, input_data: EntityDataCollectionInput) -> EntityDataCollectionResult:
         """Execute the full 5-phase entity data collection workflow."""
-        start = _utcnow()
+        start = utcnow()
         result = EntityDataCollectionResult(
             organisation_id=input_data.organisation_id,
             reporting_year=input_data.reporting_year,
@@ -346,10 +318,10 @@ class EntityDataCollectionWorkflow:
                 ))
                 continue
 
-            phase_start = _utcnow()
+            phase_start = utcnow()
             try:
                 phase_out = phase_methods[phase](input_data, result)
-                elapsed = (_utcnow() - phase_start).total_seconds()
+                elapsed = (utcnow() - phase_start).total_seconds()
                 ph_hash = _compute_hash(str(phase_out))
                 result.phase_results.append(PhaseResult(
                     phase_name=phase.value, phase_number=idx,
@@ -357,7 +329,7 @@ class EntityDataCollectionWorkflow:
                     outputs=phase_out, provenance_hash=ph_hash,
                 ))
             except Exception as exc:
-                elapsed = (_utcnow() - phase_start).total_seconds()
+                elapsed = (utcnow() - phase_start).total_seconds()
                 logger.error("Phase %s failed: %s", phase.value, exc, exc_info=True)
                 result.phase_results.append(PhaseResult(
                     phase_name=phase.value, phase_number=idx,
@@ -371,7 +343,7 @@ class EntityDataCollectionWorkflow:
         if result.status != WorkflowStatus.FAILED:
             result.status = WorkflowStatus.COMPLETED
 
-        end = _utcnow()
+        end = utcnow()
         result.completed_at = end.isoformat()
         result.duration_seconds = (end - start).total_seconds()
         result.provenance_hash = _compute_hash(
@@ -519,7 +491,7 @@ class EntityDataCollectionWorkflow:
             # Data quality based on completeness and source
             quality = self._calculate_data_quality(completeness, raw)
 
-            prov_input = f"{eid}|{float(s1)}|{float(s2l)}|{float(s2m)}|{float(s3)}|{_utcnow().isoformat()}"
+            prov_input = f"{eid}|{float(s1)}|{float(s2l)}|{float(s2m)}|{float(s3)}|{utcnow().isoformat()}"
             prov_hash = _compute_hash(prov_input)
 
             submission = EntitySubmission(
@@ -533,7 +505,7 @@ class EntityDataCollectionWorkflow:
                 data_quality_score=quality,
                 completeness_pct=completeness,
                 submitted_by=raw.get("submitted_by", ""),
-                submitted_at=raw.get("submitted_at", _utcnow().isoformat()),
+                submitted_at=raw.get("submitted_at", utcnow().isoformat()),
                 status=SubmissionStatus.SUBMITTED,
                 provenance_hash=prov_hash,
             )
@@ -790,7 +762,6 @@ class EntityDataCollectionWorkflow:
             return Decimal(str(value))
         except Exception:
             return Decimal("0")
-
 
 # =============================================================================
 # MODULE EXPORTS

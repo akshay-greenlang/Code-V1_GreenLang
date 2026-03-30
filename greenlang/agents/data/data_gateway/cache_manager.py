@@ -33,14 +33,9 @@ import time
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -52,7 +47,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Data Structures
@@ -77,7 +71,7 @@ def _make_cache_entry(
     Returns:
         CacheEntry dictionary.
     """
-    now = _utcnow()
+    now = utcnow()
     return {
         "cache_key": cache_key,
         "query_hash": query_hash,
@@ -97,7 +91,6 @@ def _make_cache_entry(
         "last_accessed_at": now.isoformat(),
         "access_count": 0,
     }
-
 
 class CacheManagerEngine:
     """Query result caching engine with TTL and LRU eviction.
@@ -196,7 +189,7 @@ class CacheManagerEngine:
             return None
 
         # Update access time and count
-        entry["last_accessed_at"] = _utcnow().isoformat()
+        entry["last_accessed_at"] = utcnow().isoformat()
         entry["access_count"] = entry.get("access_count", 0) + 1
 
         self._hits += 1
@@ -417,7 +410,7 @@ class CacheManagerEngine:
             expires_at = datetime.fromisoformat(expires_at_str)
             if expires_at.tzinfo is None:
                 expires_at = expires_at.replace(tzinfo=timezone.utc)
-            return _utcnow() >= expires_at
+            return utcnow() >= expires_at
         except (ValueError, TypeError):
             return False
 
@@ -486,7 +479,6 @@ class CacheManagerEngine:
             Dictionary with cache statistics.
         """
         return self.get_stats()
-
 
 __all__ = [
     "CacheManagerEngine",

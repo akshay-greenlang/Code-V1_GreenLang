@@ -64,6 +64,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -102,15 +103,9 @@ except ImportError:
     _METRICS_AVAILABLE = False
     _record_tracker_operation = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -121,7 +116,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Decimal helpers
 # ---------------------------------------------------------------------------
@@ -130,13 +124,11 @@ _PRECISION = Decimal("0.00000001")
 _ZERO = Decimal("0")
 _ONE = Decimal("1")
 
-
 def _D(value: Any) -> Decimal:
     """Convert a value to Decimal."""
     if isinstance(value, Decimal):
         return value
     return Decimal(str(value))
-
 
 # ===========================================================================
 # Constants
@@ -159,11 +151,9 @@ DEFAULT_TRANSITION_PERIOD: int = 20
 TRANSITION_REMAINING = "REMAINING"
 TRANSITION_CONVERSION = "CONVERSION"
 
-
 # ===========================================================================
 # Dataclasses
 # ===========================================================================
-
 
 @dataclass
 class TransitionRecord:
@@ -226,11 +216,9 @@ class TransitionRecord:
             "recorded_at": self.recorded_at,
         }
 
-
 # ===========================================================================
 # LandUseChangeTrackerEngine
 # ===========================================================================
-
 
 class LandUseChangeTrackerEngine:
     """Tracks land-use transitions between IPCC land categories.
@@ -273,7 +261,7 @@ class LandUseChangeTrackerEngine:
         self._parcel_current_category: Dict[str, str] = {}
         self._parcel_total_area: Dict[str, Decimal] = {}
         self._total_transitions: int = 0
-        self._created_at = _utcnow()
+        self._created_at = utcnow()
 
         logger.info(
             "LandUseChangeTrackerEngine initialized: categories=%d, "
@@ -475,7 +463,7 @@ class LandUseChangeTrackerEngine:
             is_peatland_conversion=is_peatland_conversion,
             notes=notes,
             provenance_hash=provenance_hash,
-            recorded_at=_utcnow().isoformat(),
+            recorded_at=utcnow().isoformat(),
         )
 
         # -- Update state --------------------------------------------------

@@ -80,23 +80,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ReportFormat
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -113,7 +109,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -122,7 +117,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -130,31 +124,17 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _chain_hashes(hashes: List[str]) -> str:
     """Chain multiple hashes into a single provenance hash."""
     combined = "||".join(h for h in hashes if h)
     return hashlib.sha256(combined.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
-
-class ExportFormat(str, Enum):
-    """Export format for reports."""
-    MARKDOWN = "markdown"
-    HTML = "html"
-    PDF = "pdf"
-    JSON = "json"
-    CSV = "csv"
-    XBRL = "xbrl"
-
 
 class ReportType(str, Enum):
     """Types of assurance reports."""
@@ -164,7 +144,6 @@ class ReportType(str, Enum):
     ENGAGEMENT_LETTER = "engagement_letter"
     GAP_ANALYSIS = "gap_analysis"
     REGULATORY_COMPLIANCE = "regulatory_compliance"
-
 
 class ReportSectionType(str, Enum):
     """Types of report sections."""
@@ -182,14 +161,12 @@ class ReportSectionType(str, Enum):
     OPINION_SCOPE = "opinion_scope"
     APPENDICES = "appendices"
 
-
 class AssuranceOpinionType(str, Enum):
     """Types of assurance opinion."""
     UNMODIFIED = "unmodified"
     MODIFIED_QUALIFIED = "modified_qualified"
     MODIFIED_ADVERSE = "modified_adverse"
     DISCLAIMER = "disclaimer"
-
 
 class AssuranceStandard(str, Enum):
     """Assurance standard for report formatting."""
@@ -199,7 +176,6 @@ class AssuranceStandard(str, Enum):
     AA1000AS = "aa1000as"
     SSAE_18 = "ssae_18"
     ISSA_5000 = "issa_5000"
-
 
 # ---------------------------------------------------------------------------
 # Section Weights for completeness calculation
@@ -230,11 +206,9 @@ REQUIRED_ENGINE_SECTIONS: List[ReportSectionType] = [
     ReportSectionType.COST_TIMELINE,
 ]
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class ReportSection(BaseModel):
     """A section of source data for the report.
@@ -257,7 +231,6 @@ class ReportSection(BaseModel):
     def coerce_pct(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class ManagementRepresentation(BaseModel):
     """Management representation for the assurance engagement.
 
@@ -275,7 +248,6 @@ class ManagementRepresentation(BaseModel):
     is_confirmed: bool = Field(default=False, description="Confirmed")
     confirmed_by: str = Field(default="", description="Confirmed by")
     confirmed_date: str = Field(default="", description="Confirmed date")
-
 
 class OpinionScope(BaseModel):
     """Scope of the assurance opinion.
@@ -307,7 +279,6 @@ class OpinionScope(BaseModel):
     exclusions: List[str] = Field(default_factory=list, description="Exclusions")
     limitations: List[str] = Field(default_factory=list, description="Limitations")
 
-
 class ReportConfig(BaseModel):
     """Configuration for report generation.
 
@@ -328,8 +299,8 @@ class ReportConfig(BaseModel):
     report_type: ReportType = Field(
         default=ReportType.READINESS_REPORT, description="Report type"
     )
-    export_formats: List[ExportFormat] = Field(
-        default_factory=lambda: [ExportFormat.JSON, ExportFormat.MARKDOWN]
+    export_formats: List[ReportFormat] = Field(
+        default_factory=lambda: [ReportFormat.JSON, ReportFormat.MARKDOWN]
     )
     assurance_standard: AssuranceStandard = Field(
         default=AssuranceStandard.ISAE_3410, description="Standard"
@@ -337,7 +308,6 @@ class ReportConfig(BaseModel):
     verifier_name: str = Field(default="", description="Verifier name")
     verifier_firm: str = Field(default="", description="Verifier firm")
     output_precision: int = Field(default=2, ge=0, le=6, description="Precision")
-
 
 class ReportInput(BaseModel):
     """Input for assurance report generation.
@@ -359,11 +329,9 @@ class ReportInput(BaseModel):
         default_factory=OpinionScope, description="Opinion scope"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class ExecutiveSummary(BaseModel):
     """Executive summary content.
@@ -387,7 +355,6 @@ class ExecutiveSummary(BaseModel):
     )
     opinion_type: str = Field(default="", description="Opinion type")
 
-
 class SectionSummary(BaseModel):
     """Summary of a report section.
 
@@ -407,7 +374,6 @@ class SectionSummary(BaseModel):
     key_metrics: Dict[str, str] = Field(default_factory=dict, description="Metrics")
     findings: List[str] = Field(default_factory=list, description="Findings")
     provenance_hash: str = Field(default="", description="Hash")
-
 
 class ManagementLetterContent(BaseModel):
     """Management representation letter content.
@@ -431,7 +397,6 @@ class ManagementLetterContent(BaseModel):
     unconfirmed_count: int = Field(default=0, description="Unconfirmed")
     signatory: str = Field(default="", description="Signatory")
 
-
 class ExportResult(BaseModel):
     """Result of report export.
 
@@ -445,7 +410,6 @@ class ExportResult(BaseModel):
     content: str = Field(default="", description="Content")
     size_bytes: int = Field(default=0, description="Size")
     success: bool = Field(default=True, description="Success")
-
 
 class ReportPackage(BaseModel):
     """Complete assurance report package.
@@ -499,11 +463,9 @@ class ReportPackage(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time")
     provenance_hash: str = Field(default="", description="SHA-256 chain hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class AssuranceReportingEngine:
     """Aggregates assurance engine outputs into structured reports.
@@ -596,7 +558,7 @@ class AssuranceReportingEngine:
             section_hashes=section_hashes,
             exports=exports,
             warnings=warnings,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         result.provenance_hash = (
@@ -631,7 +593,7 @@ class AssuranceReportingEngine:
         return self.calculate(input_data)
 
     def export_to_format(
-        self, format_type: ExportFormat, report: ReportPackage,
+        self, format_type: ReportFormat, report: ReportPackage,
     ) -> ExportResult:
         """Export a report package to a specific format.
 
@@ -642,7 +604,7 @@ class AssuranceReportingEngine:
         Returns:
             ExportResult.
         """
-        if format_type == ExportFormat.JSON:
+        if format_type == ReportFormat.JSON:
             content = json.dumps(
                 report.model_dump(mode="json"), default=str, indent=2
             )
@@ -920,7 +882,7 @@ class AssuranceReportingEngine:
         )
 
         return ManagementLetterContent(
-            letter_date=_utcnow().date().isoformat(),
+            letter_date=utcnow().date().isoformat(),
             addressee=addressee,
             representations=representations,
             total_representations=len(representations),
@@ -967,14 +929,14 @@ class AssuranceReportingEngine:
 
     def _export_report(
         self,
-        fmt: ExportFormat,
+        fmt: ReportFormat,
         config: ReportConfig,
         exec_summary: ExecutiveSummary,
         sections: List[SectionSummary],
         opinion_scope: Optional[OpinionScope],
     ) -> ExportResult:
         """Export report to specified format."""
-        if fmt == ExportFormat.JSON:
+        if fmt == ReportFormat.JSON:
             content = json.dumps({
                 "report_type": config.report_type.value,
                 "organisation": config.organisation_name,
@@ -992,7 +954,7 @@ class AssuranceReportingEngine:
                 size_bytes=len(content.encode("utf-8")), success=True,
             )
 
-        if fmt == ExportFormat.MARKDOWN:
+        if fmt == ReportFormat.MARKDOWN:
             content = self._to_markdown(
                 config, exec_summary, sections, opinion_scope
             )
@@ -1001,7 +963,7 @@ class AssuranceReportingEngine:
                 size_bytes=len(content.encode("utf-8")), success=True,
             )
 
-        if fmt == ExportFormat.HTML:
+        if fmt == ReportFormat.HTML:
             content = self._to_html(
                 config, exec_summary, sections, opinion_scope
             )
@@ -1010,7 +972,7 @@ class AssuranceReportingEngine:
                 size_bytes=len(content.encode("utf-8")), success=True,
             )
 
-        if fmt == ExportFormat.CSV:
+        if fmt == ReportFormat.CSV:
             content = self._to_csv(sections)
             return ExportResult(
                 format=fmt.value, content=content,
@@ -1207,14 +1169,13 @@ class AssuranceReportingEngine:
     def get_version(self) -> str:
         return self._version
 
-
 # ---------------------------------------------------------------------------
 # __all__
 # ---------------------------------------------------------------------------
 
 __all__ = [
     # Enums
-    "ExportFormat",
+    "ReportFormat",
     "ReportType",
     "ReportSectionType",
     "AssuranceOpinionType",

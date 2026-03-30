@@ -65,37 +65,28 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> str:
-    """Return current UTC timestamp as ISO-8601 string."""
-    return datetime.utcnow().isoformat() + "Z"
-
-
 def _new_uuid() -> str:
     """Return a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash of JSON-serialisable data."""
     serialised = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialised.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -106,7 +97,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -115,7 +105,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class EvidenceCollectionPhase(str, Enum):
     """Evidence collection workflow phases."""
@@ -126,14 +115,12 @@ class EvidenceCollectionPhase(str, Enum):
     QUALITY_GRADING = "quality_grading"
     PACKAGE_BUILD = "package_build"
 
-
 class EmissionScope(str, Enum):
     """GHG emission scope classification."""
 
     SCOPE_1 = "scope_1"
     SCOPE_2 = "scope_2"
     SCOPE_3 = "scope_3"
-
 
 class SourceType(str, Enum):
     """Emission source type."""
@@ -153,7 +140,6 @@ class SourceType(str, Enum):
     EMPLOYEE_COMMUTING = "employee_commuting"
     OTHER = "other"
 
-
 class EvidenceType(str, Enum):
     """Type of evidence document."""
 
@@ -170,7 +156,6 @@ class EvidenceType(str, Enum):
     METHODOLOGY_DOCUMENT = "methodology_document"
     AUDIT_TRAIL = "audit_trail"
 
-
 class EvidenceQualityGrade(str, Enum):
     """Evidence quality grading scale."""
 
@@ -180,7 +165,6 @@ class EvidenceQualityGrade(str, Enum):
     MARGINAL = "marginal"
     INSUFFICIENT = "insufficient"
 
-
 class DocumentStatus(str, Enum):
     """Status of a document in collection process."""
 
@@ -188,7 +172,6 @@ class DocumentStatus(str, Enum):
     LINKED = "linked"
     PENDING = "pending"
     UNAVAILABLE = "unavailable"
-
 
 # =============================================================================
 # EVIDENCE REQUIREMENTS REFERENCE DATA (Zero-Hallucination)
@@ -268,11 +251,9 @@ QUALITY_CRITERIA_WEIGHTS: Dict[str, Decimal] = {
     "corroboration": Decimal("0.20"),
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -285,7 +266,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
-
 
 class EmissionSourceRecord(BaseModel):
     """Record of an emission source in the inventory."""
@@ -302,7 +282,6 @@ class EmissionSourceRecord(BaseModel):
     scope_3_category: int = Field(default=0, ge=0, le=15)
     required_evidence_types: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class EvidenceItem(BaseModel):
     """A single evidence document item."""
@@ -324,7 +303,6 @@ class EvidenceItem(BaseModel):
     document_hash: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 class PackageIndex(BaseModel):
     """Index entry in the evidence package."""
 
@@ -335,7 +313,6 @@ class PackageIndex(BaseModel):
     quality_grade: str = Field(default="")
     document_hash: str = Field(default="")
     checklist_reference: str = Field(default="")
-
 
 class PackageSummary(BaseModel):
     """Summary of the evidence package."""
@@ -350,11 +327,9 @@ class PackageSummary(BaseModel):
     package_hash: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # INPUT / OUTPUT
 # =============================================================================
-
 
 class EvidenceCollectionInput(BaseModel):
     """Input data model for EvidenceCollectionWorkflow."""
@@ -381,7 +356,6 @@ class EvidenceCollectionInput(BaseModel):
     tenant_id: str = Field(default="")
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class EvidenceCollectionResult(BaseModel):
     """Complete result from evidence collection workflow."""
 
@@ -400,11 +374,9 @@ class EvidenceCollectionResult(BaseModel):
     completeness_pct: str = Field(default="0.00")
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class EvidenceCollectionWorkflow:
     """
@@ -972,6 +944,7 @@ class EvidenceCollectionWorkflow:
                         phase_number, attempt, self.MAX_RETRIES, exc, delay,
                     )
                     import asyncio
+
                     await asyncio.sleep(delay)
         return PhaseResult(
             phase_name=f"phase_{phase_number}_failed",

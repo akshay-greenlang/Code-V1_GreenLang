@@ -72,25 +72,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -108,7 +102,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -117,7 +110,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -129,22 +121,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class AnalysisPeriod(str, Enum):
     """Time horizon for financial analysis.
@@ -160,7 +148,6 @@ class AnalysisPeriod(str, Enum):
     LONG_TERM_10Y = "long_term_10y"
     EXTENDED_15Y = "extended_15y"
     CUSTOM = "custom"
-
 
 class FinancialMetric(str, Enum):
     """Supported financial metrics.
@@ -183,7 +170,6 @@ class FinancialMetric(str, Enum):
     SIR = "sir"
     ANNUAL_CASH_FLOW = "annual_cash_flow"
 
-
 class TaxTreatment(str, Enum):
     """Tax depreciation treatment for capital expenditure.
 
@@ -203,7 +189,6 @@ class TaxTreatment(str, Enum):
     BONUS_DEPRECIATION = "bonus_depreciation"
     CUSTOM = "custom"
 
-
 class IncentiveType(str, Enum):
     """Types of financial incentives.
 
@@ -221,7 +206,6 @@ class IncentiveType(str, Enum):
     LOAN_SUBSIDY = "loan_subsidy"
     PERFORMANCE_INCENTIVE = "performance_incentive"
 
-
 class SensitivityParameter(str, Enum):
     """Parameters available for sensitivity analysis.
 
@@ -236,7 +220,6 @@ class SensitivityParameter(str, Enum):
     IMPLEMENTATION_COST = "implementation_cost"
     SAVINGS_ESTIMATE = "savings_estimate"
     INCENTIVE_AMOUNT = "incentive_amount"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -280,11 +263,9 @@ PERIOD_YEARS: Dict[str, int] = {
     AnalysisPeriod.EXTENDED_15Y.value: 15,
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class MeasureFinancials(BaseModel):
     """Financial data for an energy efficiency measure.
@@ -335,7 +316,6 @@ class MeasureFinancials(BaseModel):
         if v < Decimal("0"):
             raise ValueError("Cost values must be >= 0")
         return v
-
 
 class FinancialParameters(BaseModel):
     """Parameters governing the financial analysis.
@@ -389,7 +369,6 @@ class FinancialParameters(BaseModel):
                 )
         return v
 
-
 class Incentive(BaseModel):
     """Financial incentive that reduces effective project cost.
 
@@ -428,11 +407,9 @@ class Incentive(BaseModel):
                 )
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class CashFlow(BaseModel):
     """Year-by-year cash-flow projection for a measure.
@@ -459,7 +436,6 @@ class CashFlow(BaseModel):
     cumulative_discounted: Decimal = Field(default=Decimal("0"))
     depreciation_benefit: Decimal = Field(default=Decimal("0"))
     tax_benefit: Decimal = Field(default=Decimal("0"))
-
 
 class PaybackResult(BaseModel):
     """Complete payback analysis result for a single measure.
@@ -494,9 +470,8 @@ class PaybackResult(BaseModel):
     total_discounted_savings: Decimal = Field(default=Decimal("0"))
     cash_flows: List[CashFlow] = Field(default_factory=list)
     is_cost_effective: bool = Field(default=False)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class BatchPaybackResult(BaseModel):
     """Aggregated payback analysis for a portfolio of measures.
@@ -515,9 +490,8 @@ class BatchPaybackResult(BaseModel):
     total_npv: Decimal = Field(default=Decimal("0"))
     portfolio_irr: Decimal = Field(default=Decimal("0"))
     portfolio_simple_payback: Decimal = Field(default=Decimal("0"))
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class SensitivityResult(BaseModel):
     """Sensitivity analysis result for a single parameter.
@@ -539,11 +513,9 @@ class SensitivityResult(BaseModel):
     breakeven_value: Optional[Decimal] = Field(default=None)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class PaybackCalculatorEngine:
     """Financial analysis engine for quick-win energy efficiency measures.

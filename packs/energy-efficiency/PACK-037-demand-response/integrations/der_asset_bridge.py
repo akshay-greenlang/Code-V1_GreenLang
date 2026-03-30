@@ -46,25 +46,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -77,11 +71,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DERAssetType(str, Enum):
     """DER asset type categories."""
@@ -93,7 +85,6 @@ class DERAssetType(str, Enum):
     THERMAL_STORAGE = "thermal_storage"
     WIND_TURBINE = "wind_turbine"
     FUEL_CELL = "fuel_cell"
-
 
 class DERProtocol(str, Enum):
     """DER communication protocols."""
@@ -108,7 +99,6 @@ class DERProtocol(str, Enum):
     SMA_API = "sma_api"
     ENPHASE_API = "enphase_api"
 
-
 class DEROperatingMode(str, Enum):
     """DER operating modes."""
 
@@ -121,7 +111,6 @@ class DEROperatingMode(str, Enum):
     FAULT = "fault"
     MAINTENANCE = "maintenance"
 
-
 class DERConnectionStatus(str, Enum):
     """DER asset connection status."""
 
@@ -131,11 +120,9 @@ class DERConnectionStatus(str, Enum):
     TIMEOUT = "timeout"
     NOT_CONFIGURED = "not_configured"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class DERBridgeConfig(BaseModel):
     """Configuration for the DER Asset Bridge."""
@@ -148,7 +135,6 @@ class DERBridgeConfig(BaseModel):
     max_battery_discharge_pct: float = Field(default=80.0, ge=10.0, le=100.0)
     min_battery_reserve_pct: float = Field(default=20.0, ge=0.0, le=50.0)
     ev_min_charge_pct: float = Field(default=30.0, ge=0.0, le=100.0, description="Min EV SOC after DR")
-
 
 class DERAssetConnection(BaseModel):
     """A DER asset connection profile."""
@@ -171,7 +157,6 @@ class DERAssetConnection(BaseModel):
     facility_id: str = Field(default="")
     commissioned_date: str = Field(default="")
 
-
 class DERCommand(BaseModel):
     """A command to dispatch a DER asset."""
 
@@ -184,10 +169,9 @@ class DERCommand(BaseModel):
     ramp_rate_kw_per_min: float = Field(default=0.0, ge=0.0, description="Ramp rate limit")
     min_soc_pct: float = Field(default=20.0, ge=0.0, le=100.0)
     priority: int = Field(default=5, ge=1, le=10)
-    issued_at: datetime = Field(default_factory=_utcnow)
+    issued_at: datetime = Field(default_factory=utcnow)
     acknowledged: bool = Field(default=False)
     provenance_hash: str = Field(default="")
-
 
 class DERStatus(BaseModel):
     """Current status of a DER asset."""
@@ -208,11 +192,9 @@ class DERStatus(BaseModel):
     last_telemetry_at: Optional[datetime] = Field(None)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # DERAssetBridge
 # ---------------------------------------------------------------------------
-
 
 class DERAssetBridge:
     """DER asset communication and coordination for demand response.
@@ -378,8 +360,8 @@ class DERAssetBridge:
             available_kw=available_kw,
             is_dispatched=True,
             dispatch_event_id=command.event_id,
-            last_command_at=_utcnow(),
-            last_telemetry_at=_utcnow(),
+            last_command_at=utcnow(),
+            last_telemetry_at=utcnow(),
         )
 
         if self.config.enable_provenance:
@@ -454,7 +436,7 @@ class DERAssetBridge:
             available_kw=asset.rated_kw,
             is_dispatched=bool(dispatched_by),
             dispatch_event_id=dispatched_by,
-            last_telemetry_at=_utcnow(),
+            last_telemetry_at=utcnow(),
         )
 
     def check_health(self) -> Dict[str, Any]:

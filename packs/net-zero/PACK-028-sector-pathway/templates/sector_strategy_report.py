@@ -37,6 +37,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "28.0.0"
@@ -69,10 +71,6 @@ XBRL_STRATEGY_TAGS: Dict[str, str] = {
     "risk_level": "gl:OverallClimateRiskLevel",
     "implementation_phase": "gl:CurrentImplementationPhase",
 }
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
@@ -111,7 +109,6 @@ def _dec_comma(val: Any, places: int = 0) -> str:
 def _rag(status: str) -> str:
     return {"green": "GREEN", "amber": "AMBER", "red": "RED"}.get(status.lower(), status.upper())
 
-
 class SectorStrategyReportTemplate:
     """
     Executive sector transition strategy report template.
@@ -131,7 +128,7 @@ class SectorStrategyReportTemplate:
         self.generated_at: Optional[datetime] = None
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [
             self._md_header(data), self._md_exec_summary(data),
             self._md_strategic_context(data), self._md_pathway_summary(data),
@@ -147,7 +144,7 @@ class SectorStrategyReportTemplate:
         return content + f"\n\n<!-- Provenance: {prov} -->"
 
     def render_html(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         parts = [
             self._html_header(data), self._html_exec_summary(data),
@@ -169,7 +166,7 @@ class SectorStrategyReportTemplate:
         )
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = {
             "template": _TEMPLATE_ID, "version": _MODULE_VERSION,
             "pack_id": _PACK_ID, "generated_at": self.generated_at.isoformat(),

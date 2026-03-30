@@ -36,33 +36,25 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class WorkflowPhase(str, Enum):
     """Phases of the E2 pollution workflow."""
@@ -72,7 +64,6 @@ class WorkflowPhase(str, Enum):
     TARGET_EVALUATION = "target_evaluation"
     FINANCIAL_EFFECTS = "financial_effects"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "pending"
@@ -80,7 +71,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class PhaseStatus(str, Enum):
     """Status of a single phase."""
@@ -90,13 +80,11 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class PollutantMedium(str, Enum):
     """Pollution medium categories."""
     AIR = "air"
     WATER = "water"
     SOIL = "soil"
-
 
 class SubstanceConcernLevel(str, Enum):
     """Substance concern classification."""
@@ -104,11 +92,9 @@ class SubstanceConcernLevel(str, Enum):
     CONCERN = "substance_of_concern"
     SVHC = "substance_of_very_high_concern"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -119,7 +105,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class PollutantRecord(BaseModel):
     """Individual pollutant emission record per E2-4."""
@@ -132,7 +117,6 @@ class PollutantRecord(BaseModel):
     source_facility: str = Field(default="")
     measurement_method: str = Field(default="calculated", description="measured, calculated, estimated")
 
-
 class SubstanceRecord(BaseModel):
     """Substance of concern record per E2-5."""
     substance_id: str = Field(default_factory=lambda: f"sub-{_new_uuid()[:8]}")
@@ -142,7 +126,6 @@ class SubstanceRecord(BaseModel):
     quantity_tonnes: float = Field(default=0.0, ge=0.0)
     product_category: str = Field(default="")
     phase_out_plan: bool = Field(default=False)
-
 
 class PollutionTarget(BaseModel):
     """Pollution reduction target per E2-3."""
@@ -155,7 +138,6 @@ class PollutionTarget(BaseModel):
     reduction_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     current_progress_pct: float = Field(default=0.0, ge=0.0, le=200.0)
     on_track: bool = Field(default=False)
-
 
 class E2PollutionInput(BaseModel):
     """Input data model for E2PollutionWorkflow."""
@@ -183,7 +165,6 @@ class E2PollutionInput(BaseModel):
     )
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class E2PollutionWorkflowResult(BaseModel):
     """Complete result from E2 pollution workflow."""
     workflow_id: str = Field(..., description="Unique execution ID")
@@ -207,11 +188,9 @@ class E2PollutionWorkflowResult(BaseModel):
     reporting_year: int = Field(default=2025)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class E2PollutionWorkflow:
     """
@@ -278,7 +257,7 @@ class E2PollutionWorkflow:
         if input_data is None:
             input_data = E2PollutionInput(config=config or {})
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting E2 pollution workflow %s", self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = WorkflowStatus.IN_PROGRESS
@@ -297,7 +276,7 @@ class E2PollutionWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         completed_count = sum(1 for p in phase_results if p.status == PhaseStatus.COMPLETED)
 
         air_total = sum(r.quantity_tonnes for r in input_data.pollutant_records if r.medium == PollutantMedium.AIR)
@@ -344,7 +323,7 @@ class E2PollutionWorkflow:
         self, input_data: E2PollutionInput,
     ) -> PhaseResult:
         """Review pollution policies and actions."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -362,7 +341,7 @@ class E2PollutionWorkflow:
         if not input_data.actions:
             warnings.append("No pollution actions defined (E2-2)")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 1 PolicyReview: %d policies, %d actions",
                          len(input_data.policies), len(input_data.actions))
         return PhaseResult(
@@ -380,7 +359,7 @@ class E2PollutionWorkflow:
         self, input_data: E2PollutionInput,
     ) -> PhaseResult:
         """Calculate pollutant emissions to air, water, and soil."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -404,7 +383,7 @@ class E2PollutionWorkflow:
         if zero_records:
             warnings.append(f"{len(zero_records)} records with zero emissions")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 2 EmissionsCalculation: %d records, %.2f tonnes total",
                          len(records), outputs["total_emissions_tonnes"])
         return PhaseResult(
@@ -422,7 +401,7 @@ class E2PollutionWorkflow:
         self, input_data: E2PollutionInput,
     ) -> PhaseResult:
         """Assess substances of concern and SVHCs."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -442,7 +421,7 @@ class E2PollutionWorkflow:
         if not substances:
             warnings.append("No substance records provided (E2-5)")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 3 SubstancesAssessment: %d total, %d SVHC",
                          len(substances), len(svhc))
         return PhaseResult(
@@ -460,7 +439,7 @@ class E2PollutionWorkflow:
         self, input_data: E2PollutionInput,
     ) -> PhaseResult:
         """Evaluate pollution reduction targets and progress."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -485,7 +464,7 @@ class E2PollutionWorkflow:
         if off_track:
             warnings.append(f"{len(off_track)} targets are off track")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 4 TargetEvaluation: %d targets, %d on track",
                          len(targets), len(on_track))
         return PhaseResult(
@@ -503,7 +482,7 @@ class E2PollutionWorkflow:
         self, input_data: E2PollutionInput,
     ) -> PhaseResult:
         """Assess anticipated financial effects from pollution."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -525,7 +504,7 @@ class E2PollutionWorkflow:
         if total_exposure > 0 and not data.get("insurance_coverage_eur"):
             warnings.append("Financial exposure exists but no insurance coverage reported")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 5 FinancialEffects: exposure=%d EUR", total_exposure)
         return PhaseResult(
             phase_name=WorkflowPhase.FINANCIAL_EFFECTS.value,

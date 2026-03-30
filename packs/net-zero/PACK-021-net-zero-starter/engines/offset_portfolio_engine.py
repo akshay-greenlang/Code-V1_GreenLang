@@ -70,21 +70,13 @@ logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -97,13 +89,11 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely."""
     if isinstance(value, Decimal):
         return value
     return Decimal(str(value))
-
 
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
@@ -113,7 +103,6 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(
     part: Decimal, whole: Decimal, default: Decimal = Decimal("0")
 ) -> Decimal:
@@ -122,12 +111,10 @@ def _safe_pct(
         return default
     return part / whole * Decimal("100")
 
-
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
@@ -135,18 +122,15 @@ def _round2(value: float) -> float:
         Decimal("0.01"), rounding=ROUND_HALF_UP
     ))
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CreditStandard(str, Enum):
     """Carbon credit standard or registry.
@@ -164,18 +148,18 @@ class CreditStandard(str, Enum):
     CDM = "cdm"
     CUSTOM = "custom"
 
-
 class CreditType(str, Enum):
     """Type of carbon credit by mechanism.
 
     Categorizes credits by their underlying mechanism: avoidance
     (preventing emissions), reduction, or removal (extracting CO2
     from the atmosphere).
+
+from greenlang.schemas import utcnow
     """
     AVOIDANCE = "avoidance"
     REDUCTION = "reduction"
     REMOVAL = "removal"
-
 
 class CreditCategory(str, Enum):
     """Project category for the carbon credit.
@@ -195,7 +179,6 @@ class CreditCategory(str, Enum):
     BLUE_CARBON = "blue_carbon"
     OTHER = "other"
 
-
 class QualityDimension(str, Enum):
     """Quality scoring dimension for carbon credits.
 
@@ -208,7 +191,6 @@ class QualityDimension(str, Enum):
     LEAKAGE_RISK = "leakage_risk"
     MRV_QUALITY = "mrv_quality"
 
-
 class VCMIClaim(str, Enum):
     """VCMI Claims Code tier classification.
 
@@ -220,7 +202,6 @@ class VCMIClaim(str, Enum):
     SILVER = "silver"
     NOT_ELIGIBLE = "not_eligible"
 
-
 class RetirementStatus(str, Enum):
     """Retirement status of a carbon credit."""
     ACTIVE = "active"
@@ -228,7 +209,6 @@ class RetirementStatus(str, Enum):
     CANCELLED = "cancelled"
     PENDING = "pending"
     EXPIRED = "expired"
-
 
 class SBTiCreditUse(str, Enum):
     """SBTi classification of credit use purpose.
@@ -240,11 +220,9 @@ class SBTiCreditUse(str, Enum):
     NEUTRALIZATION = "neutralization"
     UNCLASSIFIED = "unclassified"
 
-
 # ---------------------------------------------------------------------------
 # Reference Data Constants
 # ---------------------------------------------------------------------------
-
 
 # Credit standard quality benchmarks.
 STANDARD_BENCHMARKS: Dict[str, Dict[str, Any]] = {
@@ -330,7 +308,6 @@ STANDARD_BENCHMARKS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # Quality dimension weights for overall scoring.
 QUALITY_WEIGHTS: Dict[str, Decimal] = {
     QualityDimension.ADDITIONALITY.value: Decimal("0.25"),
@@ -339,7 +316,6 @@ QUALITY_WEIGHTS: Dict[str, Decimal] = {
     QualityDimension.LEAKAGE_RISK.value: Decimal("0.15"),
     QualityDimension.MRV_QUALITY.value: Decimal("0.20"),
 }
-
 
 # Credit category cost ranges (USD/tCO2e, 2024 market data).
 CATEGORY_COST_RANGES: Dict[str, Dict[str, Decimal]] = {
@@ -381,7 +357,6 @@ CATEGORY_COST_RANGES: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # VCMI Claims Code thresholds.
 VCMI_THRESHOLDS: Dict[str, Dict[str, Any]] = {
     VCMIClaim.PLATINUM.value: {
@@ -404,7 +379,6 @@ VCMI_THRESHOLDS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # Oxford Principles shift targets by decade.
 OXFORD_PRINCIPLES_TARGETS: Dict[str, Dict[str, Decimal]] = {
     "2025": {
@@ -425,11 +399,9 @@ OXFORD_PRINCIPLES_TARGETS: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class CreditEntry(BaseModel):
     """A single carbon credit entry in the portfolio.
@@ -508,7 +480,6 @@ class CreditEntry(BaseModel):
         default="", description="SHA-256 provenance hash"
     )
 
-
 class CreditQualityScore(BaseModel):
     """Quality assessment result for a single credit entry.
 
@@ -540,7 +511,6 @@ class CreditQualityScore(BaseModel):
     provenance_hash: str = Field(
         default="", description="SHA-256 provenance hash"
     )
-
 
 class PortfolioSummary(BaseModel):
     """Aggregate summary of the carbon credit portfolio."""
@@ -593,7 +563,6 @@ class PortfolioSummary(BaseModel):
         default="", description="SHA-256 hash"
     )
 
-
 class SBTiComplianceResult(BaseModel):
     """SBTi compliance assessment for the credit portfolio."""
     bvcm_credits_tco2e: Decimal = Field(
@@ -618,7 +587,6 @@ class SBTiComplianceResult(BaseModel):
         default="", description="SHA-256 hash"
     )
 
-
 class VCMIAlignmentResult(BaseModel):
     """VCMI Claims Code alignment assessment."""
     eligible_claim: VCMIClaim = Field(
@@ -639,7 +607,6 @@ class VCMIAlignmentResult(BaseModel):
     provenance_hash: str = Field(
         default="", description="SHA-256 hash"
     )
-
 
 class OxfordAlignmentResult(BaseModel):
     """Oxford Principles alignment assessment."""
@@ -674,7 +641,6 @@ class OxfordAlignmentResult(BaseModel):
         default="", description="SHA-256 hash"
     )
 
-
 class PortfolioResult(BaseModel):
     """Complete result of portfolio analysis.
 
@@ -688,7 +654,7 @@ class PortfolioResult(BaseModel):
         default=_MODULE_VERSION, description="Engine version"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     credits: List[CreditEntry] = Field(
         default_factory=list, description="All credit entries"
@@ -724,11 +690,9 @@ class PortfolioResult(BaseModel):
         default="", description="SHA-256 provenance hash"
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class OffsetPortfolioEngine:
     """Carbon credit portfolio management and quality scoring engine.
@@ -1483,7 +1447,7 @@ class OffsetPortfolioEngine:
             )
 
         # Vintage freshness
-        current_year = _utcnow().year
+        current_year = utcnow().year
         avg_vintage_float = float(summary.average_vintage_year)
         if avg_vintage_float > 0 and current_year - avg_vintage_float > 3:
             recs.append(
@@ -1540,7 +1504,7 @@ class OffsetPortfolioEngine:
             )
 
         # Old vintages (>5 years)
-        current_year = _utcnow().year
+        current_year = utcnow().year
         old_vintage_qty = sum(
             c.quantity_tco2e for c in credits
             if current_year - c.vintage_year > 5

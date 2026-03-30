@@ -67,23 +67,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -100,7 +95,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -108,7 +102,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal, denominator: Decimal,
@@ -118,17 +111,14 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     return float(
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
-
 
 def _lcg_random(seed: int) -> Tuple[float, int]:
     """Linear congruential generator for deterministic pseudo-random numbers.
@@ -140,18 +130,15 @@ def _lcg_random(seed: int) -> Tuple[float, int]:
     seed = (a * seed + c) % m
     return seed / m, seed
 
-
 def _normal_from_uniform(u1: float, u2: float) -> float:
     """Box-Muller transform for normal distribution from two uniform samples."""
     if u1 <= 0.0:
         u1 = 1e-10
     return math.sqrt(-2.0 * math.log(u1)) * math.cos(2.0 * math.pi * u2)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ScenarioType(str, Enum):
     """Scenario types for pathway analysis."""
@@ -159,7 +146,6 @@ class ScenarioType(str, Enum):
     MODERATE_2C = "moderate_2c"
     CONSERVATIVE_BAU = "conservative_bau"
     CUSTOM = "custom"
-
 
 class RiskCategory(str, Enum):
     """Climate risk categories (TCFD)."""
@@ -170,7 +156,6 @@ class RiskCategory(str, Enum):
     TRANSITION_MARKET = "transition_market"
     TRANSITION_REPUTATION = "transition_reputation"
 
-
 class DistributionType(str, Enum):
     """Probability distribution types for Monte Carlo parameters."""
     NORMAL = "normal"
@@ -179,7 +164,6 @@ class DistributionType(str, Enum):
     TRIANGULAR = "triangular"
     BETA = "beta"
     DISCRETE = "discrete"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -226,11 +210,9 @@ DEFAULT_MC_RUNS: int = 10000
 GLOBAL_CARBON_BUDGET_1_5C_GT: Decimal = Decimal("400")
 GLOBAL_CARBON_BUDGET_2C_GT: Decimal = Decimal("1150")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class ParameterDistribution(BaseModel):
     """Distribution definition for a Monte Carlo parameter.
@@ -252,7 +234,6 @@ class ParameterDistribution(BaseModel):
     max_val: Decimal = Field(default=Decimal("100"))
     mode: Decimal = Field(default=Decimal("50"))
 
-
 class MACCAction(BaseModel):
     """Marginal abatement cost curve action.
 
@@ -270,7 +251,6 @@ class MACCAction(BaseModel):
     capex_usd: Decimal = Field(default=Decimal("0"), ge=Decimal("0"))
     implementation_year: int = Field(default=2025, ge=2024, le=2050)
     scope_impact: str = Field(default="scope_1", max_length=50)
-
 
 class ScenarioModelingInput(BaseModel):
     """Complete input for scenario modeling.
@@ -314,11 +294,9 @@ class ScenarioModelingInput(BaseModel):
     macc_actions: List[MACCAction] = Field(default_factory=list)
     revenue_usd: Optional[Decimal] = Field(None, ge=Decimal("0"))
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class AnnualTrajectoryPoint(BaseModel):
     """A single year in the emission trajectory with percentile bands."""
@@ -330,7 +308,6 @@ class AnnualTrajectoryPoint(BaseModel):
     p90_tco2e: Decimal = Field(default=Decimal("0"))
     mean_tco2e: Decimal = Field(default=Decimal("0"))
 
-
 class ScenarioTrajectory(BaseModel):
     """Trajectory for a single scenario."""
     scenario: str = Field(default="")
@@ -341,7 +318,6 @@ class ScenarioTrajectory(BaseModel):
     carbon_budget_consumed_pct: Decimal = Field(default=Decimal("0"))
     final_year_emissions_p50: Decimal = Field(default=Decimal("0"))
 
-
 class SensitivityDriver(BaseModel):
     """Sensitivity analysis result for a single parameter."""
     parameter: str = Field(default="")
@@ -351,7 +327,6 @@ class SensitivityDriver(BaseModel):
     impact_magnitude_tco2e: Decimal = Field(default=Decimal("0"))
     rank: int = Field(default=0)
 
-
 class MACCResult(BaseModel):
     """MACC curve result."""
     actions: List[Dict[str, Any]] = Field(default_factory=list)
@@ -359,7 +334,6 @@ class MACCResult(BaseModel):
     total_cost_usd: Decimal = Field(default=Decimal("0"))
     negative_cost_abatement_tco2e: Decimal = Field(default=Decimal("0"))
     breakeven_carbon_price: Decimal = Field(default=Decimal("0"))
-
 
 class ClimateRiskScore(BaseModel):
     """Climate risk assessment score."""
@@ -369,7 +343,6 @@ class ClimateRiskScore(BaseModel):
     financial_impact_usd: Decimal = Field(default=Decimal("0"))
     time_horizon: str = Field(default="medium_term")
     description: str = Field(default="")
-
 
 class ScenarioModelingResult(BaseModel):
     """Complete scenario modeling result.
@@ -391,7 +364,7 @@ class ScenarioModelingResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     organization_name: str = Field(default="")
 
     scenario_trajectories: List[ScenarioTrajectory] = Field(default_factory=list)
@@ -410,11 +383,9 @@ class ScenarioModelingResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ScenarioModelingEngine:
     """Monte Carlo scenario modeling engine for enterprise climate strategy.

@@ -38,9 +38,9 @@ from greenlang.agents.data.cross_source_reconciliation.provenance import (
     ProvenanceTracker,
     get_provenance_tracker,
 )
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Optional FastAPI import
@@ -52,7 +52,6 @@ try:
 except ImportError:
     FastAPI = None  # type: ignore[assignment, misc]
     FASTAPI_AVAILABLE = False
-
 
 # ---------------------------------------------------------------------------
 # Optional engine imports (graceful fallback)
@@ -112,27 +111,18 @@ try:
 except ImportError:
     PROMETHEUS_AVAILABLE = False  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Build a SHA-256 hash for arbitrary data."""
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
-
 # ===================================================================
 # CrossSourceReconciliationService facade
 # ===================================================================
-
 
 class CrossSourceReconciliationService:
     """Facade service for the Cross-Source Reconciliation SDK.
@@ -264,7 +254,7 @@ class CrossSourceReconciliationService:
                 "discrepancies": len(self._discrepancies),
                 "golden_records": len(self._golden_records),
             },
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     def get_stats(self) -> Dict[str, Any]:
@@ -284,7 +274,7 @@ class CrossSourceReconciliationService:
             "golden_records_stored": len(self._golden_records),
             "pipeline_results_stored": len(self._pipeline_results),
             "provenance_entries": self._provenance.entry_count,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     def get_statistics(self) -> Dict[str, Any]:
@@ -325,7 +315,7 @@ class CrossSourceReconciliationService:
             "match_count": 0,
             "discrepancy_count": 0,
             "golden_record_count": 0,
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
             "started_at": None,
             "completed_at": None,
             "provenance_hash": _compute_hash({
@@ -446,8 +436,8 @@ class CrossSourceReconciliationService:
             "metadata": metadata or {},
             "record_count": 0,
             "status": "active",
-            "created_at": _utcnow().isoformat(),
-            "updated_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
+            "updated_at": utcnow().isoformat(),
             "provenance_hash": _compute_hash({
                 "source_id": source_id,
                 "name": name,
@@ -558,7 +548,7 @@ class CrossSourceReconciliationService:
         if metadata is not None:
             source["metadata"].update(metadata)
 
-        source["updated_at"] = _utcnow().isoformat()
+        source["updated_at"] = utcnow().isoformat()
         source["provenance_hash"] = _compute_hash({
             "source_id": source_id,
             "updated_at": source["updated_at"],
@@ -1257,7 +1247,7 @@ class CrossSourceReconciliationService:
                 "justification": (
                     f"Resolved using {strategy} strategy"
                 ),
-                "resolved_at": _utcnow().isoformat(),
+                "resolved_at": utcnow().isoformat(),
             }
             resolutions.append(res)
             self._resolutions[res["resolution_id"]] = res
@@ -1370,7 +1360,7 @@ class CrossSourceReconciliationService:
             "field_confidence": field_confidence,
             "overall_confidence": round(overall_confidence, 4),
             "status": "active",
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
             "provenance_hash": _compute_hash({
                 "record_id": record_id,
                 "entity_id": entity_id,
@@ -1539,14 +1529,12 @@ class CrossSourceReconciliationService:
         """
         return self.health_check()
 
-
 # ---------------------------------------------------------------------------
 # Thread-safe singleton
 # ---------------------------------------------------------------------------
 
 _service_instance: Optional[CrossSourceReconciliationService] = None
 _service_lock = threading.Lock()
-
 
 def get_service() -> CrossSourceReconciliationService:
     """Return the singleton CrossSourceReconciliationService.
@@ -1565,7 +1553,6 @@ def get_service() -> CrossSourceReconciliationService:
                 _service_instance.startup()
     return _service_instance
 
-
 def reset_service() -> CrossSourceReconciliationService:
     """Reset and return a new singleton instance.
 
@@ -1578,11 +1565,9 @@ def reset_service() -> CrossSourceReconciliationService:
         _service_instance.startup()
     return _service_instance
 
-
 # ---------------------------------------------------------------------------
 # FastAPI integration
 # ---------------------------------------------------------------------------
-
 
 def configure_reconciliation(app: Any) -> CrossSourceReconciliationService:
     """Configure the reconciliation service on a FastAPI app.
@@ -1612,7 +1597,6 @@ def configure_reconciliation(app: Any) -> CrossSourceReconciliationService:
     logger.info("Cross-source reconciliation service configured on app")
     return service
 
-
 def get_reconciliation(app: Any) -> Optional[CrossSourceReconciliationService]:
     """Retrieve the reconciliation service from a FastAPI app.
 
@@ -1626,7 +1610,6 @@ def get_reconciliation(app: Any) -> Optional[CrossSourceReconciliationService]:
         app.state, "cross_source_reconciliation_service", None,
     )
 
-
 def get_router() -> Any:
     """Return the FastAPI APIRouter for the reconciliation service.
 
@@ -1638,7 +1621,6 @@ def get_router() -> Any:
         return router
     except ImportError:
         return None
-
 
 __all__ = [
     "CrossSourceReconciliationService",

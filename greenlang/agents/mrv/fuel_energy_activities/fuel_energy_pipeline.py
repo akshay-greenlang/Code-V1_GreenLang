@@ -68,6 +68,7 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -186,7 +187,6 @@ try:
 except ImportError:
     ProvenanceTracker = None  # type: ignore[assignment, misc]
 
-
 # ---------------------------------------------------------------------------
 # Optional upstream-engine imports (graceful degradation)
 # ---------------------------------------------------------------------------
@@ -204,7 +204,6 @@ class StubEngine:
     def execute(self, *args: Any, **kwargs: Any) -> Any:
         """Stub execute method."""
         return {}
-
 
 # Database Engine (Engine 1)
 try:
@@ -254,20 +253,13 @@ try:
 except ImportError:
     DQIAssessorEngine = StubEngine  # type: ignore[assignment, misc]
 
-
 # ---------------------------------------------------------------------------
 # UTC helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _utcnow_iso() -> str:
     """Return current UTC datetime as an ISO-8601 string."""
-    return _utcnow().isoformat()
-
+    return utcnow().isoformat()
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -285,13 +277,11 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Decimal helpers
 # ---------------------------------------------------------------------------
 
 _PRECISION = Decimal("0.00000001")
-
 
 def _D(value: Any) -> Decimal:
     """Convert a value to Decimal.
@@ -305,7 +295,6 @@ def _D(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
     return Decimal(str(value))
-
 
 def _safe_decimal(value: Any, default: Decimal = ZERO) -> Decimal:
     """Safely convert to Decimal with fallback.
@@ -324,7 +313,6 @@ def _safe_decimal(value: Any, default: Decimal = ZERO) -> Decimal:
     except Exception:
         return default
 
-
 def _quantize(value: Decimal, places: int = DECIMAL_PLACES) -> Decimal:
     """Quantize a Decimal value to a specific number of places.
 
@@ -338,11 +326,9 @@ def _quantize(value: Decimal, places: int = DECIMAL_PLACES) -> Decimal:
     quantum = Decimal(10) ** -places
     return value.quantize(quantum, rounding=ROUND_HALF_UP)
 
-
 # ===========================================================================
 # FuelEnergyPipelineEngine
 # ===========================================================================
-
 
 class FuelEnergyPipelineEngine:
     """End-to-end orchestration pipeline for Scope 3 Category 3 calculations.
@@ -455,7 +441,7 @@ class FuelEnergyPipelineEngine:
         self._stage_timings: Dict[str, List[float]] = {
             stage.value: [] for stage in PipelineStage
         }
-        self._created_at = _utcnow()
+        self._created_at = utcnow()
 
         # Log engine initialization status
         engine_status = {
@@ -1076,7 +1062,7 @@ class FuelEnergyPipelineEngine:
             gas_breakdown=context.get("gas_breakdown"),
             compliance_results=context.get("compliance_results", []),
             provenance_hash=context.get("provenance_hash", ""),
-            timestamp=_utcnow(),
+            timestamp=utcnow(),
             processing_time_ms=processing_time_ms,
             warnings=context.get("warnings", []),
             errors=context.get("errors", []),
@@ -1167,7 +1153,7 @@ class FuelEnergyPipelineEngine:
             records_processed=total_records - failed_records,
             records_failed=failed_records,
             status=status,
-            timestamp=_utcnow(),
+            timestamp=utcnow(),
             processing_time_ms=processing_time_ms,
         )
 
@@ -1506,7 +1492,7 @@ class FuelEnergyPipelineEngine:
                 "total_batches": self._total_batches,
                 "created_at": self._created_at.isoformat(),
                 "uptime_seconds": (
-                    _utcnow() - self._created_at
+                    utcnow() - self._created_at
                 ).total_seconds(),
             }
 
@@ -1543,7 +1529,7 @@ class FuelEnergyPipelineEngine:
             self._stage_timings = {
                 stage.value: [] for stage in PipelineStage
             }
-            self._created_at = _utcnow()
+            self._created_at = utcnow()
 
         logger.info("Pipeline statistics reset")
 

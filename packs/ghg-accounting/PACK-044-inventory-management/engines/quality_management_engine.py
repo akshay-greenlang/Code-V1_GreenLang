@@ -83,30 +83,23 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _today() -> date:
     """Return current UTC date."""
     return datetime.now(timezone.utc).date()
 
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -124,7 +117,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -133,7 +125,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -145,22 +136,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class QualityDimension(str, Enum):
     """GHG Protocol Chapter 7 data quality dimensions.
@@ -175,7 +162,6 @@ class QualityDimension(str, Enum):
     ACCURACY = "accuracy"
     TRANSPARENCY = "transparency"
 
-
 class CheckSeverity(str, Enum):
     """Severity level of a QA/QC check finding.
 
@@ -188,7 +174,6 @@ class CheckSeverity(str, Enum):
     MAJOR = "major"
     MINOR = "minor"
     OBSERVATION = "observation"
-
 
 class CheckResult(str, Enum):
     """Result of a single QA/QC check.
@@ -205,7 +190,6 @@ class CheckResult(str, Enum):
     SKIPPED = "skipped"
     ERROR = "error"
 
-
 class IssueStatus(str, Enum):
     """Quality issue lifecycle status.
 
@@ -221,7 +205,6 @@ class IssueStatus(str, Enum):
     ACCEPTED = "accepted"
     DEFERRED = "deferred"
 
-
 class ActionPriority(str, Enum):
     """Priority level for improvement actions.
 
@@ -235,7 +218,6 @@ class ActionPriority(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
 
-
 class ActionStatus(str, Enum):
     """Improvement action lifecycle status.
 
@@ -248,7 +230,6 @@ class ActionStatus(str, Enum):
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
     CANCELLED = "cancelled"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -469,11 +450,9 @@ DEFAULT_CHECKS: List[Dict[str, Any]] = [
     },
 ]
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Check Results
 # ---------------------------------------------------------------------------
-
 
 class QAQCCheck(BaseModel):
     """Definition of a single QA/QC check.
@@ -494,7 +473,6 @@ class QAQCCheck(BaseModel):
     severity: CheckSeverity = Field(
         default=CheckSeverity.MINOR, description="Severity if failed"
     )
-
 
 class QAQCResult(BaseModel):
     """Result of executing a single QA/QC check.
@@ -526,13 +504,11 @@ class QAQCResult(BaseModel):
     details: Dict[str, Any] = Field(default_factory=dict, description="Details")
     entity_id: str = Field(default="", description="Entity ID")
     facility_id: str = Field(default="", description="Facility ID")
-    executed_at: datetime = Field(default_factory=_utcnow, description="Executed at")
-
+    executed_at: datetime = Field(default_factory=utcnow, description="Executed at")
 
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Quality Score
 # ---------------------------------------------------------------------------
-
 
 class DimensionScore(BaseModel):
     """Score for a single quality dimension.
@@ -561,7 +537,6 @@ class DimensionScore(BaseModel):
     weighted_score: Decimal = Field(default=Decimal("0"), description="Weighted score")
     critical_failures: int = Field(default=0, description="Critical failures")
     major_failures: int = Field(default=0, description="Major failures")
-
 
 class QualityScore(BaseModel):
     """Composite quality score for an inventory period.
@@ -599,13 +574,11 @@ class QualityScore(BaseModel):
     verification_ready: bool = Field(
         default=False, description="Verification readiness"
     )
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Timestamp")
-
+    calculated_at: datetime = Field(default_factory=utcnow, description="Timestamp")
 
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Issue Tracking
 # ---------------------------------------------------------------------------
-
 
 class QualityIssue(BaseModel):
     """A quality issue identified during QA/QC checks.
@@ -653,12 +626,11 @@ class QualityIssue(BaseModel):
     resolution_notes: str = Field(
         default="", max_length=5000, description="Resolution notes"
     )
-    created_at: datetime = Field(default_factory=_utcnow, description="Created at")
+    created_at: datetime = Field(default_factory=utcnow, description="Created at")
     resolved_at: Optional[datetime] = Field(
         default=None, description="Resolved at"
     )
     due_date: Optional[date] = Field(default=None, description="Due date")
-
 
 class ImprovementAction(BaseModel):
     """An improvement action to address one or more quality issues.
@@ -704,11 +676,9 @@ class ImprovementAction(BaseModel):
     )
     notes: str = Field(default="", max_length=5000, description="Notes")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Result
 # ---------------------------------------------------------------------------
-
 
 class QualityManagementResult(BaseModel):
     """Complete result from a quality management engine operation.
@@ -744,12 +714,11 @@ class QualityManagementResult(BaseModel):
     total_issues_open: int = Field(default=0, description="Open issues")
     total_issues_resolved: int = Field(default=0, description="Resolved issues")
     warnings: List[str] = Field(default_factory=list, description="Warnings")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Timestamp")
     processing_time_ms: Decimal = Field(
         default=Decimal("0"), description="Processing time (ms)"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 # ---------------------------------------------------------------------------
 # Model Rebuild (resolve forward references from __future__ annotations)
@@ -763,11 +732,9 @@ QualityIssue.model_rebuild()
 ImprovementAction.model_rebuild()
 QualityManagementResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class QualityManagementEngine:
     """GHG Protocol Chapter 7 quality assurance / quality control engine.
@@ -1106,7 +1073,7 @@ class QualityManagementEngine:
             issue.root_cause = root_cause
 
         if new_status in (IssueStatus.RESOLVED, IssueStatus.ACCEPTED):
-            issue.resolved_at = _utcnow()
+            issue.resolved_at = utcnow()
 
         logger.info(
             "Issue '%s' status: %s -> %s",
@@ -1227,7 +1194,7 @@ class QualityManagementEngine:
         if notes:
             action.notes = notes
         if new_status == ActionStatus.COMPLETED:
-            action.completed_at = _utcnow()
+            action.completed_at = utcnow()
 
         logger.info(
             "Action '%s' status updated to %s",

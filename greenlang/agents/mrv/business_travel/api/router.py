@@ -27,12 +27,13 @@ Example:
 """
 
 from fastapi import APIRouter, HTTPException, Query, Path, Depends, status
-from pydantic import BaseModel, Field
+from pydantic import Field
 from typing import List, Optional, Dict, Any
 from decimal import Decimal
 import logging
 import uuid
 from datetime import datetime
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -84,7 +85,7 @@ def get_service():
 # ============================================================================
 
 
-class CalculateRequest(BaseModel):
+class CalculateRequest(GreenLangBase):
     """
     Request model for full pipeline business travel emissions calculation.
 
@@ -121,7 +122,7 @@ class CalculateRequest(BaseModel):
     )
 
 
-class BatchCalculateRequest(BaseModel):
+class BatchCalculateRequest(GreenLangBase):
     """
     Request model for batch business travel emissions calculations.
 
@@ -145,7 +146,7 @@ class BatchCalculateRequest(BaseModel):
     )
 
 
-class FlightCalculateRequest(BaseModel):
+class FlightCalculateRequest(GreenLangBase):
     """
     Request model for air travel emissions calculation.
 
@@ -194,7 +195,7 @@ class FlightCalculateRequest(BaseModel):
     )
 
 
-class RailCalculateRequest(BaseModel):
+class RailCalculateRequest(GreenLangBase):
     """
     Request model for rail travel emissions calculation.
 
@@ -227,7 +228,7 @@ class RailCalculateRequest(BaseModel):
     )
 
 
-class RoadCalculateRequest(BaseModel):
+class RoadCalculateRequest(GreenLangBase):
     """
     Request model for road transport emissions calculation.
 
@@ -261,7 +262,7 @@ class RoadCalculateRequest(BaseModel):
     )
 
 
-class HotelCalculateRequest(BaseModel):
+class HotelCalculateRequest(GreenLangBase):
     """
     Request model for hotel accommodation emissions calculation.
 
@@ -292,7 +293,7 @@ class HotelCalculateRequest(BaseModel):
     )
 
 
-class SpendCalculateRequest(BaseModel):
+class SpendCalculateRequest(GreenLangBase):
     """
     Request model for spend-based emissions calculation.
 
@@ -329,7 +330,7 @@ class SpendCalculateRequest(BaseModel):
     )
 
 
-class ComplianceCheckRequest(BaseModel):
+class ComplianceCheckRequest(GreenLangBase):
     """
     Request model for multi-framework compliance checking.
 
@@ -366,7 +367,7 @@ class ComplianceCheckRequest(BaseModel):
     )
 
 
-class UncertaintyRequest(BaseModel):
+class UncertaintyRequest(GreenLangBase):
     """
     Request model for uncertainty analysis.
 
@@ -403,7 +404,7 @@ class UncertaintyRequest(BaseModel):
     )
 
 
-class HotSpotRequest(BaseModel):
+class HotSpotRequest(GreenLangBase):
     """
     Request model for hot-spot analysis.
 
@@ -433,7 +434,7 @@ class HotSpotRequest(BaseModel):
 # ============================================================================
 
 
-class CalculateResponse(BaseModel):
+class CalculateResponse(GreenLangBase):
     """Response model for single pipeline calculation."""
 
     calculation_id: str = Field(..., description="Unique calculation UUID")
@@ -460,7 +461,7 @@ class CalculateResponse(BaseModel):
     )
 
 
-class BatchCalculateResponse(BaseModel):
+class BatchCalculateResponse(GreenLangBase):
     """Response model for batch calculation."""
 
     batch_id: str = Field(..., description="Unique batch UUID")
@@ -479,7 +480,7 @@ class BatchCalculateResponse(BaseModel):
     )
 
 
-class FlightCalculateResponse(BaseModel):
+class FlightCalculateResponse(GreenLangBase):
     """Response model for flight-specific calculation."""
 
     calculation_id: str = Field(..., description="Unique calculation UUID")
@@ -517,7 +518,7 @@ class FlightCalculateResponse(BaseModel):
     )
 
 
-class EmissionFactorResponse(BaseModel):
+class EmissionFactorResponse(GreenLangBase):
     """Response model for a single emission factor."""
 
     mode: str = Field(..., description="Transport mode")
@@ -538,7 +539,7 @@ class EmissionFactorResponse(BaseModel):
     )
 
 
-class EmissionFactorListResponse(BaseModel):
+class EmissionFactorListResponse(GreenLangBase):
     """Response model for emission factor listing."""
 
     factors: List[EmissionFactorResponse] = Field(
@@ -547,7 +548,7 @@ class EmissionFactorListResponse(BaseModel):
     count: int = Field(..., description="Total factor count returned")
 
 
-class AirportResponse(BaseModel):
+class AirportResponse(GreenLangBase):
     """Response model for a single airport."""
 
     iata_code: str = Field(..., description="IATA 3-letter airport code")
@@ -560,7 +561,7 @@ class AirportResponse(BaseModel):
     longitude: float = Field(..., description="Longitude in decimal degrees")
 
 
-class AirportListResponse(BaseModel):
+class AirportListResponse(GreenLangBase):
     """Response model for airport search results."""
 
     airports: List[AirportResponse] = Field(
@@ -569,7 +570,7 @@ class AirportListResponse(BaseModel):
     count: int = Field(..., description="Number of airports returned")
 
 
-class TransportModeResponse(BaseModel):
+class TransportModeResponse(GreenLangBase):
     """Response model for supported transport modes."""
 
     modes: List[Dict[str, Any]] = Field(
@@ -577,7 +578,7 @@ class TransportModeResponse(BaseModel):
     )
 
 
-class CabinClassResponse(BaseModel):
+class CabinClassResponse(GreenLangBase):
     """Response model for cabin class multipliers."""
 
     classes: List[Dict[str, Any]] = Field(
@@ -585,7 +586,7 @@ class CabinClassResponse(BaseModel):
     )
 
 
-class ComplianceCheckResponse(BaseModel):
+class ComplianceCheckResponse(GreenLangBase):
     """Response model for compliance check."""
 
     results: List[Dict[str, Any]] = Field(
@@ -599,7 +600,7 @@ class ComplianceCheckResponse(BaseModel):
     )
 
 
-class UncertaintyResponse(BaseModel):
+class UncertaintyResponse(GreenLangBase):
     """Response model for uncertainty analysis."""
 
     mean: float = Field(..., description="Mean CO2e (kg)")
@@ -616,7 +617,7 @@ class UncertaintyResponse(BaseModel):
     )
 
 
-class AggregationResponse(BaseModel):
+class AggregationResponse(GreenLangBase):
     """Response model for aggregated emissions."""
 
     period: str = Field(..., description="Aggregation period identifier")
@@ -632,7 +633,7 @@ class AggregationResponse(BaseModel):
     trip_count: int = Field(..., description="Total number of trips")
 
 
-class CalculationListResponse(BaseModel):
+class CalculationListResponse(GreenLangBase):
     """Response model for paginated calculation listing."""
 
     calculations: List[Dict[str, Any]] = Field(
@@ -643,7 +644,7 @@ class CalculationListResponse(BaseModel):
     page_size: int = Field(..., description="Page size")
 
 
-class CalculationDetailResponse(BaseModel):
+class CalculationDetailResponse(GreenLangBase):
     """Response model for single calculation detail."""
 
     calculation_id: str = Field(..., description="Unique calculation UUID")
@@ -661,7 +662,7 @@ class CalculationDetailResponse(BaseModel):
     )
 
 
-class DeleteResponse(BaseModel):
+class DeleteResponse(GreenLangBase):
     """Response model for soft deletion."""
 
     calculation_id: str = Field(..., description="Deleted calculation UUID")
@@ -669,7 +670,7 @@ class DeleteResponse(BaseModel):
     message: str = Field(..., description="Human-readable status message")
 
 
-class ProvenanceResponse(BaseModel):
+class ProvenanceResponse(GreenLangBase):
     """Response model for provenance chain verification."""
 
     calculation_id: str = Field(..., description="Calculation UUID")
@@ -684,7 +685,7 @@ class ProvenanceResponse(BaseModel):
     )
 
 
-class HotSpotResponse(BaseModel):
+class HotSpotResponse(GreenLangBase):
     """Response model for hot-spot analysis."""
 
     top_routes: List[Dict[str, Any]] = Field(
@@ -699,7 +700,7 @@ class HotSpotResponse(BaseModel):
     )
 
 
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Response model for health check."""
 
     status: str = Field(..., description="Service health status")
@@ -710,7 +711,7 @@ class HealthResponse(BaseModel):
     )
 
 
-class StatsResponse(BaseModel):
+class StatsResponse(GreenLangBase):
     """Response model for agent statistics."""
 
     total_calculations: int = Field(

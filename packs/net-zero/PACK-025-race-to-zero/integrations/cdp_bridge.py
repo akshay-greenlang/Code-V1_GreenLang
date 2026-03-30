@@ -49,18 +49,14 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -72,7 +68,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 class _AgentStub:
     def __init__(self, component_name: str) -> None:
         self._component_name = component_name
@@ -83,7 +78,6 @@ class _AgentStub:
             return {"component": self._component_name, "method": name, "status": "degraded"}
         return _stub_method
 
-
 def _try_import_cdp_component(component_id: str, module_path: str) -> Any:
     try:
         return importlib.import_module(module_path)
@@ -91,11 +85,9 @@ def _try_import_cdp_component(component_id: str, module_path: str) -> Any:
         logger.debug("CDP component %s not available, using stub", component_id)
         return _AgentStub(component_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CDPScore(str, Enum):
     A = "A"
@@ -107,7 +99,6 @@ class CDPScore(str, Enum):
     D = "D"
     D_MINUS = "D-"
     F = "F"
-
 
 class CDPSection(str, Enum):
     C0_INTRODUCTION = "C0"
@@ -124,19 +115,16 @@ class CDPSection(str, Enum):
     C11_CARBON_PRICING = "C11"
     C12_ENGAGEMENT = "C12"
 
-
 class ResponseStatus(str, Enum):
     COMPLETE = "complete"
     PARTIAL = "partial"
     NOT_STARTED = "not_started"
     NEEDS_REVIEW = "needs_review"
 
-
 class MappingConfidence(str, Enum):
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 # ---------------------------------------------------------------------------
 # R2Z to CDP Mapping Table
@@ -193,11 +181,9 @@ R2Z_TO_CDP_MAPPING: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class CDPBridgeConfig(BaseModel):
     pack_id: str = Field(default="PACK-025")
@@ -209,7 +195,6 @@ class CDPBridgeConfig(BaseModel):
     include_financial_services: bool = Field(default=False)
     timeout_seconds: int = Field(default=300, ge=30)
 
-
 class QuestionnaireMapping(BaseModel):
     """Mapping of R2Z output to CDP question."""
 
@@ -220,7 +205,6 @@ class QuestionnaireMapping(BaseModel):
     r2z_data_field: str = Field(default="")
     cdp_response_type: str = Field(default="text")
     auto_populate: bool = Field(default=False)
-
 
 class SectionResponse(BaseModel):
     """Response for a CDP questionnaire section."""
@@ -234,7 +218,6 @@ class SectionResponse(BaseModel):
     responses: Dict[str, Any] = Field(default_factory=dict)
     needs_review: List[str] = Field(default_factory=list)
 
-
 class CDPMappingResult(BaseModel):
     """Result of mapping R2Z outputs to CDP."""
 
@@ -246,7 +229,6 @@ class CDPMappingResult(BaseModel):
     mappings: List[QuestionnaireMapping] = Field(default_factory=list)
     coverage_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
-
 
 class CDPResponseResult(BaseModel):
     """Result of automated CDP response generation."""
@@ -262,7 +244,6 @@ class CDPResponseResult(BaseModel):
     estimated_score: Optional[CDPScore] = Field(None)
     provenance_hash: str = Field(default="")
 
-
 class CDPScoreEstimate(BaseModel):
     """Estimated CDP climate change score."""
 
@@ -273,7 +254,6 @@ class CDPScoreEstimate(BaseModel):
     r2z_bonus_factors: List[str] = Field(default_factory=list)
     confidence: MappingConfidence = Field(default=MappingConfidence.MEDIUM)
     provenance_hash: str = Field(default="")
-
 
 class AlignmentCheckResult(BaseModel):
     """R2Z/CDP alignment check result."""
@@ -286,11 +266,9 @@ class AlignmentCheckResult(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # CDPBridge
 # ---------------------------------------------------------------------------
-
 
 class CDPBridge:
     """Bridge to CDP climate change disclosure platform.

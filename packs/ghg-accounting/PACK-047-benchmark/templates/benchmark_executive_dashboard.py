@@ -48,29 +48,23 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 def _compute_hash(content: str) -> str:
     """Compute SHA-256 hash of string content."""
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -83,20 +77,17 @@ class OutputFormat(str, Enum):
     PDF = "pdf"
     JSON = "json"
 
-
 class TrafficLight(str, Enum):
     """Traffic light status indicators."""
     GREEN = "green"
     AMBER = "amber"
     RED = "red"
 
-
 class ChangeDirection(str, Enum):
     """Direction of year-over-year change."""
     UP = "up"
     DOWN = "down"
     FLAT = "flat"
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Input Models
@@ -106,7 +97,6 @@ class SparklinePoint(BaseModel):
     """Single data point for sparkline visualisation."""
     year: int = Field(..., description="Reporting year")
     value: float = Field(..., description="Emissions or intensity value for the year")
-
 
 class KPICard(BaseModel):
     """Single KPI card for the executive dashboard."""
@@ -119,7 +109,6 @@ class KPICard(BaseModel):
     threshold_amber: Optional[float] = Field(None, description="Amber threshold")
     threshold_red: Optional[float] = Field(None, description="Red threshold")
 
-
 class PercentileRankKPI(BaseModel):
     """Overall percentile rank KPI."""
     percentile: float = Field(50.0, ge=0, le=100, description="Percentile rank (0=worst, 100=best)")
@@ -128,14 +117,12 @@ class PercentileRankKPI(BaseModel):
     total_peers: int = Field(0, ge=0, description="Total peers in ranking")
     status: TrafficLight = Field(TrafficLight.AMBER, description="Traffic light status")
 
-
 class ITRKPI(BaseModel):
     """Implied Temperature Rise KPI."""
     itr_value: float = Field(2.0, description="ITR in degrees Celsius")
     target_pathway: str = Field("1.5C", description="Target pathway for comparison")
     methodology: str = Field("", description="ITR methodology (e.g., SBTi, MSCI)")
     status: TrafficLight = Field(TrafficLight.AMBER, description="Traffic light status")
-
 
 class CARRKPI(BaseModel):
     """Compound Annual Reduction Rate KPI."""
@@ -145,7 +132,6 @@ class CARRKPI(BaseModel):
     period_end: int = Field(0, description="End year of CARR calculation")
     status: TrafficLight = Field(TrafficLight.AMBER, description="Traffic light status")
 
-
 class PathwayAlignmentKPI(BaseModel):
     """Pathway alignment score KPI."""
     alignment_score: float = Field(0.0, ge=0, le=100, description="Alignment score (0-100)")
@@ -154,14 +140,12 @@ class PathwayAlignmentKPI(BaseModel):
     convergence_year: Optional[int] = Field(None, description="Estimated convergence year")
     status: TrafficLight = Field(TrafficLight.AMBER, description="Traffic light status")
 
-
 class TransitionRiskKPI(BaseModel):
     """Transition risk score KPI."""
     risk_score: float = Field(50.0, ge=0, le=100, description="Composite risk score (0-100)")
     risk_category: str = Field("Medium", description="Risk category label")
     carbon_price_exposure: Optional[float] = Field(None, description="Carbon price exposure (EUR)")
     status: TrafficLight = Field(TrafficLight.AMBER, description="Traffic light status")
-
 
 class PeerGroupSummary(BaseModel):
     """Summary of the peer group used."""
@@ -173,7 +157,6 @@ class PeerGroupSummary(BaseModel):
     best_in_class_emissions: Optional[float] = Field(None, description="Best-in-class emissions")
     data_year: Optional[int] = Field(None, description="Year of peer data")
 
-
 class StrengthItem(BaseModel):
     """Single strength or improvement area."""
     rank: int = Field(1, ge=1, le=10, description="Rank (1=top)")
@@ -181,7 +164,6 @@ class StrengthItem(BaseModel):
     detail: str = Field("", description="Detail description")
     metric_value: Optional[float] = Field(None, description="Associated metric value")
     peer_comparison: str = Field("", description="Comparison to peers")
-
 
 class DashboardInput(BaseModel):
     """Complete input model for BenchmarkExecutiveDashboard."""
@@ -215,7 +197,6 @@ class DashboardInput(BaseModel):
         default_factory=list, description="Additional KPI cards"
     )
 
-
 # ---------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------
@@ -223,7 +204,6 @@ class DashboardInput(BaseModel):
 def _tl_label(status: TrafficLight) -> str:
     """Return uppercase label for traffic light."""
     return status.value.upper()
-
 
 def _tl_css(status: TrafficLight) -> str:
     """Return CSS class for traffic light status."""
@@ -234,7 +214,6 @@ def _tl_css(status: TrafficLight) -> str:
     }
     return mapping.get(status, "tl-amber")
 
-
 def _tl_color(status: TrafficLight) -> str:
     """Return hex colour for traffic light status."""
     mapping = {
@@ -244,13 +223,11 @@ def _tl_color(status: TrafficLight) -> str:
     }
     return mapping.get(status, "#e9c46a")
 
-
 def _format_decimal(value: Optional[float], places: int = 2) -> str:
     """Format a float with specified decimal places, or return N/A."""
     if value is None:
         return "N/A"
     return f"{value:,.{places}f}"
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -327,7 +304,7 @@ class BenchmarkExecutiveDashboard:
             Markdown string with provenance hash.
         """
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_md(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -343,7 +320,7 @@ class BenchmarkExecutiveDashboard:
             Self-contained HTML string.
         """
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_html(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -359,7 +336,7 @@ class BenchmarkExecutiveDashboard:
             JSON-serializable dict with provenance hash.
         """
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_json(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -400,7 +377,7 @@ class BenchmarkExecutiveDashboard:
         return (
             f"# GHG Benchmark Executive Dashboard - {company}\n\n"
             f"**Reporting Period:** {period} | "
-            f"**Report Date:** {_utcnow().strftime('%Y-%m-%d')}\n\n"
+            f"**Report Date:** {utcnow().strftime('%Y-%m-%d')}\n\n"
             "---"
         )
 
@@ -622,7 +599,7 @@ class BenchmarkExecutiveDashboard:
             '<div class="section">\n'
             f"<h1>GHG Benchmark Executive Dashboard &mdash; {company}</h1>\n"
             f"<p><strong>Reporting Period:</strong> {period} | "
-            f"<strong>Report Date:</strong> {_utcnow().strftime('%Y-%m-%d')}</p>\n"
+            f"<strong>Report Date:</strong> {utcnow().strftime('%Y-%m-%d')}</p>\n"
             "<hr>\n</div>"
         )
 

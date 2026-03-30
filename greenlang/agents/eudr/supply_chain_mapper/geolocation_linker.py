@@ -60,19 +60,13 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Sequence, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -92,7 +86,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 def _generate_id(prefix: str) -> str:
     """Generate a unique identifier with a given prefix.
 
@@ -103,7 +96,6 @@ def _generate_id(prefix: str) -> str:
         ID in format "{prefix}-{hex12}".
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -136,11 +128,9 @@ SUPPORTED_IMPORT_FORMATS = frozenset({"csv", "geojson", "shapefile"})
 # Maximum distance in metres for logistics proximity validation (500km)
 MAX_LOGISTICS_DISTANCE_M: float = 500_000.0
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class LinkageStatus(str, Enum):
     """Status of a producer-to-plot geolocation linkage.
@@ -154,7 +144,6 @@ class LinkageStatus(str, Enum):
     PENDING_VALIDATION = "pending_validation"
     VALIDATED = "validated"
     REJECTED = "rejected"
-
 
 class GeolocationGapType(str, Enum):
     """Types of geolocation gaps identified during compliance analysis.
@@ -171,7 +160,6 @@ class GeolocationGapType(str, Enum):
     PROTECTED_AREA_OVERLAP = "protected_area_overlap"
     DEFORESTATION_ALERT = "deforestation_alert"
 
-
 class GeolocationGapSeverity(str, Enum):
     """Severity levels for geolocation compliance gaps."""
 
@@ -179,7 +167,6 @@ class GeolocationGapSeverity(str, Enum):
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 class ProtectedAreaType(str, Enum):
     """Categories of protected areas for cross-referencing.
@@ -200,11 +187,9 @@ class ProtectedAreaType(str, Enum):
     UNESCO_HERITAGE = "unesco_heritage"
     KEY_BIODIVERSITY_AREA = "key_biodiversity_area"
 
-
 # ---------------------------------------------------------------------------
 # Data Structures
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class CoordinateValidation:
@@ -232,7 +217,6 @@ class CoordinateValidation:
     errors: list = field(default_factory=list)
     warnings: list = field(default_factory=list)
 
-
 @dataclass
 class PolygonValidation:
     """Result of polygon geometry validation for EUDR Article 9 compliance.
@@ -257,7 +241,6 @@ class PolygonValidation:
     compliant: bool
     errors: list = field(default_factory=list)
 
-
 @dataclass
 class DistanceMetric:
     """Distance calculation result between two geographic points.
@@ -278,11 +261,9 @@ class DistanceMetric:
     bearing_degrees: float
     within_logistics_range: bool
 
-
 # ---------------------------------------------------------------------------
 # Spatial Index (R-tree approximation using grid cells)
 # ---------------------------------------------------------------------------
-
 
 class _SpatialGridIndex:
     """Grid-based spatial index for fast bounding box lookups.
@@ -422,11 +403,9 @@ class _SpatialGridIndex:
             int(math.floor(lat / self._cell_size)),
         )
 
-
 # ---------------------------------------------------------------------------
 # Core Spatial Functions
 # ---------------------------------------------------------------------------
-
 
 def _haversine_distance(
     lon1: float, lat1: float, lon2: float, lat2: float,
@@ -454,7 +433,6 @@ def _haversine_distance(
     c = 2 * math.asin(math.sqrt(a))
     return EARTH_RADIUS_M * c
 
-
 def _initial_bearing(
     lon1: float, lat1: float, lon2: float, lat2: float,
 ) -> float:
@@ -481,7 +459,6 @@ def _initial_bearing(
     bearing = math.degrees(math.atan2(x, y))
     return (bearing + 360) % 360
 
-
 def _count_decimal_places(value: float) -> int:
     """Count the number of decimal places in a float value.
 
@@ -497,7 +474,6 @@ def _count_decimal_places(value: float) -> int:
     # Strip trailing zeros for meaningful precision
     decimal_part = s.split(".")[1].rstrip("0")
     return len(decimal_part) if decimal_part else 0
-
 
 def _geodesic_polygon_area(ring: List[List[float]]) -> float:
     """Compute geodesic area of a ring using the spherical excess formula.
@@ -526,7 +502,6 @@ def _geodesic_polygon_area(ring: List[List[float]]) -> float:
 
     return abs(area * EARTH_RADIUS_M ** 2 / 2.0)
 
-
 def _point_in_polygon_ray(
     point: List[float], ring: List[List[float]],
 ) -> bool:
@@ -553,11 +528,9 @@ def _point_in_polygon_ray(
         j = i
     return inside
 
-
 # ---------------------------------------------------------------------------
 # PostGIS Query Builder
 # ---------------------------------------------------------------------------
-
 
 class PostGISQueryBuilder:
     """Generates PostGIS-compatible SQL queries for spatial operations.
@@ -700,11 +673,9 @@ class PostGISQueryBuilder:
             f"ON {self._table} USING GIST ({self._geom_column});"
         )
 
-
 # ---------------------------------------------------------------------------
 # GeolocationLinker Engine
 # ---------------------------------------------------------------------------
-
 
 class GeolocationLinker:
     """Links supply chain producer nodes to registered plots with geolocation data.
@@ -1052,7 +1023,7 @@ class GeolocationLinker:
             "validation_errors": validation_errors,
             "validation_warnings": validation_warnings,
             "metadata": metadata or {},
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
         # Store link
@@ -1257,7 +1228,7 @@ class GeolocationLinker:
             "postgis_query": postgis_sql,
             "postgis_params": postgis_params,
             "elapsed_ms": round(elapsed_ms, 2),
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
         logger.debug(
@@ -1310,7 +1281,7 @@ class GeolocationLinker:
             "postgis_query": postgis_sql,
             "postgis_params": postgis_params,
             "elapsed_ms": round(elapsed_ms, 2),
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
         logger.debug(
@@ -1428,7 +1399,7 @@ class GeolocationLinker:
                 ) if min_distance < float("inf") else 0.0,
             },
             "elapsed_ms": round(elapsed_ms, 2),
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
     # ------------------------------------------------------------------
@@ -1484,7 +1455,7 @@ class GeolocationLinker:
                         "are required per Article 9(1)(d)."
                     ),
                     "eudr_article": "Article 9",
-                    "created_at": _utcnow().isoformat(),
+                    "created_at": utcnow().isoformat(),
                 }
                 self._gaps[gap_id] = gap_record
 
@@ -1526,7 +1497,7 @@ class GeolocationLinker:
                             "(approximately 0.11m accuracy)."
                         ),
                         "eudr_article": "Article 9",
-                        "created_at": _utcnow().isoformat(),
+                        "created_at": utcnow().isoformat(),
                     }
                     self._gaps[gap_id] = gap_record
                     precision_gaps.append(gap_record)
@@ -1550,7 +1521,7 @@ class GeolocationLinker:
                             "per EUDR Article 9(1)(d)."
                         ),
                         "eudr_article": "Article 9(1)(d)",
-                        "created_at": _utcnow().isoformat(),
+                        "created_at": utcnow().isoformat(),
                     }
                     self._gaps[gap_id] = gap_record
                     polygon_gaps.append(gap_record)
@@ -1574,7 +1545,7 @@ class GeolocationLinker:
             "precision_gaps_detail": precision_gaps,
             "polygon_gaps_detail": polygon_gaps,
             "elapsed_ms": round(elapsed_ms, 2),
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
         logger.info(
@@ -1641,7 +1612,7 @@ class GeolocationLinker:
                 "status": "plot_not_found",
                 "overlaps": [],
                 "overlap_count": 0,
-                "created_at": _utcnow().isoformat(),
+                "created_at": utcnow().isoformat(),
             }
 
         point = [plot["longitude"], plot["latitude"]]
@@ -1700,7 +1671,7 @@ class GeolocationLinker:
                     "due diligence per EUDR Article 10."
                 ),
                 "eudr_article": "Article 3, Article 10",
-                "created_at": _utcnow().isoformat(),
+                "created_at": utcnow().isoformat(),
             }
             self._gaps[gap_id] = gap_record
 
@@ -1718,7 +1689,7 @@ class GeolocationLinker:
             "postgis_query": postgis_sql,
             "postgis_params": postgis_params,
             "elapsed_ms": round(elapsed_ms, 2),
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
     # ------------------------------------------------------------------
@@ -1759,11 +1730,11 @@ class GeolocationLinker:
                 "status": "plot_not_found",
                 "alerts_found": 0,
                 "post_cutoff_alerts": 0,
-                "created_at": _utcnow().isoformat(),
+                "created_at": utcnow().isoformat(),
             }
 
         if end_date is None:
-            end_date = _utcnow().strftime("%Y-%m-%d")
+            end_date = utcnow().strftime("%Y-%m-%d")
 
         point = [plot["longitude"], plot["latitude"]]
         matched_alerts: List[Dict[str, Any]] = []
@@ -1854,7 +1825,7 @@ class GeolocationLinker:
                 "eudr_article": "Article 3, Article 10",
                 "alert_count": len(matched_alerts),
                 "post_cutoff_count": post_cutoff_count,
-                "created_at": _utcnow().isoformat(),
+                "created_at": utcnow().isoformat(),
             }
             self._gaps[gap_id] = gap_record
         elif matched_alerts:
@@ -1877,7 +1848,7 @@ class GeolocationLinker:
                 else "clear" if not matched_alerts else "pre_cutoff_alerts_only"
             ),
             "elapsed_ms": round(elapsed_ms, 2),
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
     # ------------------------------------------------------------------
@@ -2012,7 +1983,7 @@ class GeolocationLinker:
             "failed": failure_count,
             "results": results,
             "elapsed_ms": round(elapsed_ms, 2),
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
         logger.info(
@@ -2296,7 +2267,7 @@ class GeolocationLinker:
                     "country": country_filter,
                 },
                 "elapsed_ms": round(elapsed_ms, 2),
-                "created_at": _utcnow().isoformat(),
+                "created_at": utcnow().isoformat(),
             },
         }
 
@@ -2352,7 +2323,7 @@ class GeolocationLinker:
                 "km": distance.distance_km,
                 "bearing_degrees": distance.bearing_degrees,
             },
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
         # Use SpatialAnalyzerEngine if available
@@ -2442,7 +2413,6 @@ class GeolocationLinker:
             "unique_plots_linked": len(self._plot_links),
             "spatial_index_cells": len(self._spatial_index._grid),
         }
-
 
 # ---------------------------------------------------------------------------
 # Module exports

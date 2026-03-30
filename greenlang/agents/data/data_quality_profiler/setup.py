@@ -36,7 +36,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.data.data_quality_profiler.config import (
     DataQualityProfilerConfig,
@@ -57,6 +57,7 @@ from greenlang.agents.data.data_quality_profiler.metrics import (
     record_processing_error,
     record_freshness_check,
 )
+from greenlang.schemas import GreenLangBase, utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -71,13 +72,11 @@ except ImportError:
     FastAPI = None  # type: ignore[assignment, misc]
     FASTAPI_AVAILABLE = False
 
-
 # ===================================================================
 # Lightweight Pydantic models used by the facade
 # ===================================================================
 
-
-class ColumnProfileResponse(BaseModel):
+class ColumnProfileResponse(GreenLangBase):
     """Column profile result.
 
     Attributes:
@@ -111,8 +110,7 @@ class ColumnProfileResponse(BaseModel):
     top_values: List[Dict[str, Any]] = Field(default_factory=list)
     pattern_summary: str = Field(default="")
 
-
-class DatasetProfileResponse(BaseModel):
+class DatasetProfileResponse(GreenLangBase):
     """Dataset profiling result.
 
     Attributes:
@@ -140,8 +138,7 @@ class DatasetProfileResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
-class QualityAssessmentResponse(BaseModel):
+class QualityAssessmentResponse(GreenLangBase):
     """Quality assessment result for a dataset.
 
     Attributes:
@@ -181,8 +178,7 @@ class QualityAssessmentResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
-class AnomalyDetectionResponse(BaseModel):
+class AnomalyDetectionResponse(GreenLangBase):
     """Anomaly detection result for a dataset.
 
     Attributes:
@@ -212,8 +208,7 @@ class AnomalyDetectionResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
-class FreshnessCheckResponse(BaseModel):
+class FreshnessCheckResponse(GreenLangBase):
     """Freshness check result for a dataset.
 
     Attributes:
@@ -239,8 +234,7 @@ class FreshnessCheckResponse(BaseModel):
     )
     provenance_hash: str = Field(default="")
 
-
-class QualityRuleResponse(BaseModel):
+class QualityRuleResponse(GreenLangBase):
     """Quality rule definition and evaluation result.
 
     Attributes:
@@ -280,8 +274,7 @@ class QualityRuleResponse(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc).isoformat(),
     )
 
-
-class QualityGateResponse(BaseModel):
+class QualityGateResponse(GreenLangBase):
     """Quality gate evaluation result.
 
     Attributes:
@@ -309,8 +302,7 @@ class QualityGateResponse(BaseModel):
     )
     provenance_hash: str = Field(default="")
 
-
-class DataQualityProfilerStatisticsResponse(BaseModel):
+class DataQualityProfilerStatisticsResponse(GreenLangBase):
     """Aggregate statistics for the data quality profiler service.
 
     Attributes:
@@ -338,11 +330,9 @@ class DataQualityProfilerStatisticsResponse(BaseModel):
     active_profiles: int = Field(default=0)
     total_reports: int = Field(default=0)
 
-
 # ===================================================================
 # Provenance helper
 # ===================================================================
-
 
 class _ProvenanceTracker:
     """Minimal provenance tracker recording SHA-256 audit entries.
@@ -392,7 +382,6 @@ class _ProvenanceTracker:
         self.entry_count += 1
         return entry_hash
 
-
 # ===================================================================
 # Quality dimension reference data
 # ===================================================================
@@ -404,7 +393,6 @@ _QUALITY_LEVELS: Dict[str, float] = {
     "POOR": 0.50,
     "CRITICAL": 0.0,
 }
-
 
 def _classify_quality(score: float) -> str:
     """Classify a quality score into a quality level.
@@ -425,7 +413,6 @@ def _classify_quality(score: float) -> str:
         return "POOR"
     return "CRITICAL"
 
-
 # ===================================================================
 # DataQualityProfilerService facade
 # ===================================================================
@@ -433,12 +420,6 @@ def _classify_quality(score: float) -> str:
 # Thread-safe singleton lock
 _singleton_lock = threading.Lock()
 _singleton_instance: Optional["DataQualityProfilerService"] = None
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -455,7 +436,6 @@ def _compute_hash(data: Any) -> str:
         serializable = data
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 class DataQualityProfilerService:
     """Unified facade over the Data Quality Profiler SDK.
@@ -1236,9 +1216,9 @@ class DataQualityProfilerService:
         try:
             last_dt = datetime.fromisoformat(last_updated.replace("Z", "+00:00"))
         except (ValueError, AttributeError):
-            last_dt = _utcnow()
+            last_dt = utcnow()
 
-        now = _utcnow()
+        now = utcnow()
         age_hours = (now - last_dt).total_seconds() / 3600.0
 
         # Determine freshness status
@@ -2929,11 +2909,9 @@ class DataQualityProfilerService:
         self._started = False
         logger.info("DataQualityProfilerService shut down")
 
-
 # ===================================================================
 # Thread-safe singleton access
 # ===================================================================
-
 
 def _get_singleton() -> DataQualityProfilerService:
     """Get or create the singleton DataQualityProfilerService instance.
@@ -2948,11 +2926,9 @@ def _get_singleton() -> DataQualityProfilerService:
                 _singleton_instance = DataQualityProfilerService()
     return _singleton_instance
 
-
 # ===================================================================
 # FastAPI integration
 # ===================================================================
-
 
 async def configure_data_quality_profiler(
     app: Any,
@@ -2998,7 +2974,6 @@ async def configure_data_quality_profiler(
     logger.info("Data quality profiler service configured on app")
     return service
 
-
 def get_data_quality_profiler(app: Any) -> DataQualityProfilerService:
     """Get the DataQualityProfilerService instance from app state.
 
@@ -3019,7 +2994,6 @@ def get_data_quality_profiler(app: Any) -> DataQualityProfilerService:
         )
     return service
 
-
 def get_router(service: Optional[DataQualityProfilerService] = None) -> Any:
     """Get the data quality profiler API router.
 
@@ -3034,7 +3008,6 @@ def get_router(service: Optional[DataQualityProfilerService] = None) -> Any:
         return router
     except ImportError:
         return None
-
 
 __all__ = [
     "DataQualityProfilerService",

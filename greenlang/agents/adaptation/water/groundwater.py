@@ -17,10 +17,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +39,7 @@ class AquiferCondition(str, Enum):
     CRITICAL = "critical"
 
 
-class AquiferStatus(BaseModel):
+class AquiferStatus(GreenLangBase):
     """Aquifer status assessment."""
     aquifer_id: str
     aquifer_name: str
@@ -51,7 +52,7 @@ class AquiferStatus(BaseModel):
     years_to_depletion: Optional[float] = None
 
 
-class Well(BaseModel):
+class Well(GreenLangBase):
     """Groundwater well."""
     well_id: str
     aquifer_id: str
@@ -61,7 +62,7 @@ class Well(BaseModel):
     water_level_trend: str  # rising, stable, declining
 
 
-class RechargeAssessment(BaseModel):
+class RechargeAssessment(GreenLangBase):
     """Natural and artificial recharge assessment."""
     aquifer_id: str
     natural_recharge_m3_year: float
@@ -71,7 +72,7 @@ class RechargeAssessment(BaseModel):
     recommended_mar_capacity_m3_year: float
 
 
-class GroundwaterInput(BaseModel):
+class GroundwaterInput(GreenLangBase):
     """Input for groundwater management analysis."""
     region_id: str
     aquifers: List[AquiferStatus]
@@ -80,7 +81,7 @@ class GroundwaterInput(BaseModel):
     climate_change_precipitation_factor: float = Field(default=0.95)
 
 
-class ManagementAction(BaseModel):
+class ManagementAction(GreenLangBase):
     """Groundwater management action."""
     action_id: str
     aquifer_id: str
@@ -91,7 +92,7 @@ class ManagementAction(BaseModel):
     priority: str
 
 
-class GroundwaterOutput(BaseModel):
+class GroundwaterOutput(GreenLangBase):
     """Output from groundwater management analysis."""
     region_id: str
     total_recharge_m3_year: float

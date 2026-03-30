@@ -16,6 +16,7 @@ from typing import Any, Dict, List
 import pytest
 
 import sys, os
+from greenlang.schemas import utcnow
 sys.path.insert(0, os.path.dirname(__file__))
 
 from conftest import (
@@ -542,7 +543,7 @@ class TestFilingAutomationEngine:
             "target": sample_filing_package["filing_target"],
             "status": "submitted",
             "receipt_id": f"ESAP-REC-{_new_uuid()[:8]}",
-            "submitted_at": _utcnow().isoformat(),
+            "submitted_at": utcnow().isoformat(),
             "provenance_hash": _compute_hash(sample_filing_package),
         }
         assert submission["status"] == "submitted"
@@ -554,6 +555,7 @@ class TestFilingAutomationEngine:
         buffer_days = 14
         assert deadline == "2026-04-30"
         from datetime import datetime as dt
+
         deadline_dt = dt.strptime(deadline, "%Y-%m-%d")
         buffer_date = deadline_dt - timedelta(days=buffer_days)
         assert buffer_date < deadline_dt
@@ -605,7 +607,7 @@ class TestAPIManagementEngine:
             "new_key_id": f"ak-{_new_uuid()[:8]}",
             "status": "rotated",
             "old_key_status": "revoked",
-            "rotated_at": _utcnow().isoformat(),
+            "rotated_at": utcnow().isoformat(),
             "scopes": old_key["scopes"],
         }
         assert rotated["status"] == "rotated"

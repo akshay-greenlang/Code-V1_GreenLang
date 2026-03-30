@@ -14,7 +14,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, List, Optional, Any
 from enum import Enum
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.mrv.agriculture.base import (
     BaseAgricultureMRVAgent,
@@ -27,6 +27,7 @@ from greenlang.agents.mrv.agriculture.base import (
     EmissionFactorSource,
     CalculationStep,
 )
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +68,7 @@ FRAC_VOLATILIZATION = Decimal("0.10")  # fraction N volatilized
 FRAC_LEACHING = Decimal("0.30")  # fraction N leached
 
 
-class FertilizerRecord(BaseModel):
+class FertilizerRecord(GreenLangBase):
     """Fertilizer application record."""
 
     record_id: Optional[str] = Field(None, description="Record ID")

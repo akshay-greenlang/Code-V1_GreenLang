@@ -30,6 +30,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Request, status
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.document_authentication.api.dependencies import (
     AuthUser,
@@ -63,32 +64,22 @@ _hash_store: Dict[str, Dict] = {}
 _registry_store: Dict[str, Dict] = {}
 _merkle_store: Dict[str, Dict] = {}
 
-
 def _get_hash_store() -> Dict[str, Dict]:
     """Return the hash record store singleton."""
     return _hash_store
-
 
 def _get_registry_store() -> Dict[str, Dict]:
     """Return the hash registry store singleton."""
     return _registry_store
 
-
 def _get_merkle_store() -> Dict[str, Dict]:
     """Return the Merkle tree store singleton."""
     return _merkle_store
-
 
 def _compute_provenance_hash(data: dict) -> str:
     """Compute SHA-256 hash for provenance tracking."""
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_document_hash(reference: str, algorithm: str) -> str:
     """Compute deterministic hash of a document reference.
@@ -105,7 +96,6 @@ def _compute_document_hash(reference: str, algorithm: str) -> str:
     if algorithm == "sha512":
         return hashlib.sha512(reference.encode("utf-8")).hexdigest()
     return hashlib.sha256(reference.encode("utf-8")).hexdigest()
-
 
 def _compute_merkle_root(hashes: List[str]) -> str:
     """Compute Merkle root from a list of leaf hashes.
@@ -135,11 +125,9 @@ def _compute_merkle_root(hashes: List[str]) -> str:
 
     return current_level[0]
 
-
 # ---------------------------------------------------------------------------
 # POST /hashes/compute
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/hashes/compute",
@@ -179,7 +167,7 @@ async def compute_hash(
     start = time.monotonic()
     try:
         hash_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         primary_hash = _compute_document_hash(
             body.document_reference, body.algorithm.value,
@@ -264,11 +252,9 @@ async def compute_hash(
             detail="Failed to compute document hash",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /hashes/verify
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/hashes/verify",
@@ -306,7 +292,7 @@ async def verify_hash(
     start = time.monotonic()
     try:
         hash_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         computed_hash = _compute_document_hash(
             body.document_reference, body.algorithm.value,
@@ -367,11 +353,9 @@ async def verify_hash(
             detail="Failed to verify document hash",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /hashes/registry/{hash}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/hashes/registry/{hash}",
@@ -437,11 +421,9 @@ async def lookup_hash_registry(
             detail="Failed to look up hash in registry",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /hashes/merkle/{dds_id}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/hashes/merkle/{dds_id}",
@@ -502,7 +484,7 @@ async def get_merkle_tree(
         import math
         tree_depth = math.ceil(math.log2(max(len(document_hashes), 1))) + 1
 
-        now = _utcnow()
+        now = utcnow()
         provenance_hash = _compute_provenance_hash({
             "dds_id": dds_id,
             "merkle_root": merkle_root,
@@ -548,7 +530,6 @@ async def get_merkle_tree(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to compute Merkle tree",
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

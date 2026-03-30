@@ -87,25 +87,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -123,7 +117,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -132,7 +125,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -144,17 +136,14 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
@@ -162,11 +151,9 @@ def _round3(value: float) -> float:
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class Scope3Category(str, Enum):
     """GHG Protocol Scope 3 categories (1-15).
@@ -190,7 +177,6 @@ class Scope3Category(str, Enum):
     CAT_14 = "cat_14_franchises"
     CAT_15 = "cat_15_investments"
 
-
 class MaterialityLevel(str, Enum):
     """Materiality classification for a Scope 3 category.
 
@@ -205,7 +191,6 @@ class MaterialityLevel(str, Enum):
     LOW = "low"
     NEGLIGIBLE = "negligible"
     NOT_ASSESSED = "not_assessed"
-
 
 class DataQualityTier(str, Enum):
     """Data quality classification per SBTi and GHG Protocol guidance.
@@ -222,7 +207,6 @@ class DataQualityTier(str, Enum):
     SPEND = "spend"
     NONE = "none"
 
-
 class TargetApproach(str, Enum):
     """Scope 3 target-setting approach per SBTi guidance.
 
@@ -238,7 +222,6 @@ class TargetApproach(str, Enum):
     COMBINED = "combined"
     NOT_SET = "not_set"
 
-
 class ScreeningStatus(str, Enum):
     """Status of category screening.
 
@@ -251,7 +234,6 @@ class ScreeningStatus(str, Enum):
     PARTIAL = "partial"
     NOT_STARTED = "not_started"
     NOT_RELEVANT = "not_relevant"
-
 
 class ReductionPotential(str, Enum):
     """Estimated reduction potential for a category.
@@ -266,7 +248,6 @@ class ReductionPotential(str, Enum):
     LOW = "low"
     UNKNOWN = "unknown"
 
-
 class InfluenceLevel(str, Enum):
     """Degree of organisational influence over the category.
 
@@ -279,7 +260,6 @@ class InfluenceLevel(str, Enum):
     SIGNIFICANT = "significant"
     LIMITED = "limited"
     MINIMAL = "minimal"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- SBTi Scope 3 Thresholds (Corporate Manual V5.3)
@@ -337,7 +317,6 @@ SCOPE3_MIN_ANNUAL_RATE: Decimal = Decimal("0.025")
 
 # Minimum annual reduction rate for 1.5C-aligned Scope 3.
 SCOPE3_15C_ANNUAL_RATE: Decimal = Decimal("0.042")
-
 
 # ---------------------------------------------------------------------------
 # Scope 3 Category Reference Data
@@ -466,11 +445,9 @@ CATEGORY_DEFINITIONS: Dict[str, Dict[str, str]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class CategoryInput(BaseModel):
     """Input data for a single Scope 3 category.
@@ -561,7 +538,6 @@ class CategoryInput(BaseModel):
             )
         return v
 
-
 class SupplierEngagementInput(BaseModel):
     """Input data for supplier engagement target assessment.
 
@@ -617,7 +593,6 @@ class SupplierEngagementInput(BaseModel):
         default=False,
         description="Whether annual progress review is conducted"
     )
-
 
 class Scope3ScreeningInput(BaseModel):
     """Input data for complete Scope 3 screening.
@@ -694,11 +669,9 @@ class Scope3ScreeningInput(BaseModel):
             return base + 7
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class CategoryScreeningResult(BaseModel):
     """Screening result for a single Scope 3 category.
@@ -748,7 +721,6 @@ class CategoryScreeningResult(BaseModel):
     data_improvement_needed: bool = Field(default=False)
     recommendations: List[str] = Field(default_factory=list)
 
-
 class TriggerAssessment(BaseModel):
     """Scope 3 materiality trigger assessment result.
 
@@ -774,7 +746,6 @@ class TriggerAssessment(BaseModel):
     scope3_target_required: bool = Field(default=False)
     margin_to_trigger_pct: Decimal = Field(default=Decimal("0"))
     message: str = Field(default="")
-
 
 class CoverageAssessment(BaseModel):
     """Coverage assessment against SBTi thresholds.
@@ -810,7 +781,6 @@ class CoverageAssessment(BaseModel):
     categories_needed_for_long_term: int = Field(default=0)
     message: str = Field(default="")
 
-
 class SupplierEngagementAssessment(BaseModel):
     """Supplier engagement target assessment result.
 
@@ -845,7 +815,6 @@ class SupplierEngagementAssessment(BaseModel):
     engagement_score: Decimal = Field(default=Decimal("0"))
     recommendations: List[str] = Field(default_factory=list)
 
-
 class DataQualityAssessment(BaseModel):
     """Overall data quality assessment across all categories.
 
@@ -875,7 +844,6 @@ class DataQualityAssessment(BaseModel):
     lowest_quality_material_cats: List[str] = Field(default_factory=list)
     improvement_priorities: List[str] = Field(default_factory=list)
     message: str = Field(default="")
-
 
 class MaterialitySummary(BaseModel):
     """Summary of materiality distribution across categories.
@@ -907,7 +875,6 @@ class MaterialitySummary(BaseModel):
     top_3_categories: List[str] = Field(default_factory=list)
     concentration_index: Decimal = Field(default=Decimal("0"))
 
-
 class PrioritisationResult(BaseModel):
     """Category prioritisation result.
 
@@ -923,7 +890,6 @@ class PrioritisationResult(BaseModel):
     strategic_priorities: List[str] = Field(default_factory=list)
     data_gaps: List[str] = Field(default_factory=list)
     engagement_priorities: List[str] = Field(default_factory=list)
-
 
 class ActionRecommendation(BaseModel):
     """A single action recommendation.
@@ -946,7 +912,6 @@ class ActionRecommendation(BaseModel):
     estimated_impact: str = Field(default="")
     estimated_effort: str = Field(default="medium")
     timeline_months: int = Field(default=12)
-
 
 class Scope3ScreeningResult(BaseModel):
     """Complete Scope 3 screening result.
@@ -974,7 +939,7 @@ class Scope3ScreeningResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     base_year: int = Field(default=0)
     category_results: List[CategoryScreeningResult] = Field(
@@ -994,11 +959,9 @@ class Scope3ScreeningResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class Scope3ScreeningEngine:
     """SBTi Scope 3 materiality screening engine.

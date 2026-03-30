@@ -68,6 +68,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, FrozenSet, List, Optional, Tuple
 
 from greenlang.agents.eudr.document_authentication.config import get_config
+from greenlang.schemas import utcnow
 from greenlang.agents.eudr.document_authentication.metrics import (
     observe_verification_duration,
     record_api_error,
@@ -95,12 +96,6 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance.
 
@@ -113,7 +108,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a new UUID4 string identifier.
 
@@ -121,7 +115,6 @@ def _generate_id() -> str:
         UUID4 string.
     """
     return str(uuid.uuid4())
-
 
 # ---------------------------------------------------------------------------
 # Constants: Signature magic bytes / detection patterns
@@ -203,7 +196,6 @@ _STATUS_ENUM_MAP: Dict[str, SignatureStatus] = {
 # Internal: SignerInfo data holder
 # ---------------------------------------------------------------------------
 
-
 class _SignerInfo:
     """Internal data holder for extracted signer identity.
 
@@ -269,11 +261,9 @@ class _SignerInfo:
             "hash_algorithm": self.hash_algorithm,
         }
 
-
 # ---------------------------------------------------------------------------
 # Internal: Signature detection result
 # ---------------------------------------------------------------------------
-
 
 class _SignatureDetection:
     """Internal result of signature presence detection.
@@ -299,11 +289,9 @@ class _SignatureDetection:
         self.signature_count: int = 0
         self.signature_offsets: List[int] = []
 
-
 # ---------------------------------------------------------------------------
 # SignatureVerifierEngine
 # ---------------------------------------------------------------------------
-
 
 class SignatureVerifierEngine:
     """Digital signature verification engine for EUDR document authentication.
@@ -703,7 +691,7 @@ class SignatureVerifierEngine:
                 "common_name": common_name.strip(),
                 "organization": organization,
                 "country": country,
-                "added_at": _utcnow().isoformat(),
+                "added_at": utcnow().isoformat(),
             }
 
         logger.info(
@@ -714,7 +702,7 @@ class SignatureVerifierEngine:
         return {
             "common_name": common_name.strip(),
             "status": "added",
-            "added_at": _utcnow().isoformat(),
+            "added_at": utcnow().isoformat(),
         }
 
     def remove_trusted_signer(self, common_name: str) -> Dict[str, Any]:
@@ -1550,7 +1538,7 @@ class SignatureVerifierEngine:
             if not timestamp_info["verified"]:
                 # signingTime alone is not a TSA timestamp but indicates
                 # the signer recorded a time
-                timestamp_info["timestamp"] = _utcnow()
+                timestamp_info["timestamp"] = utcnow()
 
         # -- Check for XAdES SignatureTimeStamp --------------------------
         if standard == "xades":
@@ -1581,7 +1569,7 @@ class SignatureVerifierEngine:
         if current_status != "valid":
             return current_status
 
-        now = _utcnow()
+        now = utcnow()
 
         if signer_info.valid_from and now < signer_info.valid_from:
             logger.warning(
@@ -1909,7 +1897,7 @@ class SignatureVerifierEngine:
             "signer_cn": signer_info.common_name,
             "signer_org": signer_info.organization,
             "processing_time_ms": round(elapsed_ms, 2),
-            "verified_at": _utcnow().isoformat(),
+            "verified_at": utcnow().isoformat(),
         }
         with self._lock:
             self._verification_history.append(entry)
@@ -1928,7 +1916,6 @@ class SignatureVerifierEngine:
             f"verifications={history_count}, "
             f"trusted_signers={trusted_count})"
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

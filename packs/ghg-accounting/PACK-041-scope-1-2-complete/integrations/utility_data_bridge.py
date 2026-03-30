@@ -37,25 +37,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -68,11 +62,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class UtilityType(str, Enum):
     """Utility service types."""
@@ -84,7 +76,6 @@ class UtilityType(str, Enum):
     WATER = "water"
     FUEL_OIL = "fuel_oil"
 
-
 class BillStatus(str, Enum):
     """Utility bill reading status."""
 
@@ -93,7 +84,6 @@ class BillStatus(str, Enum):
     CORRECTED = "corrected"
     PRORATED = "prorated"
 
-
 class MeterInterval(str, Enum):
     """Meter reading interval types."""
 
@@ -101,7 +91,6 @@ class MeterInterval(str, Enum):
     HOURLY = "hourly"
     DAILY = "daily"
     MONTHLY = "monthly"
-
 
 class BillFormat(str, Enum):
     """Utility bill import formats."""
@@ -113,11 +102,9 @@ class BillFormat(str, Enum):
     GREEN_BUTTON_XML = "green_button_xml"
     API = "api"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class UtilityBill(BaseModel):
     """Utility bill record."""
@@ -139,7 +126,6 @@ class UtilityBill(BaseModel):
     invoice_number: str = Field(default="")
     grid_region: str = Field(default="US_AVERAGE")
 
-
 class MeterReading(BaseModel):
     """Meter interval reading."""
 
@@ -152,7 +138,6 @@ class MeterReading(BaseModel):
     unit: str = Field(default="kWh")
     interval: MeterInterval = Field(default=MeterInterval.HOURLY)
     quality: str = Field(default="actual")
-
 
 class ConsumptionSummary(BaseModel):
     """Aggregated consumption summary for a facility."""
@@ -170,7 +155,6 @@ class ConsumptionSummary(BaseModel):
     period_end: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 class ImportResult(BaseModel):
     """Result of a utility data import operation."""
 
@@ -183,8 +167,7 @@ class ImportResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
     processing_time_ms: float = Field(default=0.0)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # Unit Normalization Tables
@@ -201,11 +184,9 @@ UNIT_CONVERSIONS: Dict[str, Dict[str, float]] = {
     "gallons_to_liters": {"factor": 3.78541, "from": "gallons", "to": "liters"},
 }
 
-
 # ---------------------------------------------------------------------------
 # UtilityDataBridge
 # ---------------------------------------------------------------------------
-
 
 class UtilityDataBridge:
     """Utility bill and meter data integration for GHG inventory.

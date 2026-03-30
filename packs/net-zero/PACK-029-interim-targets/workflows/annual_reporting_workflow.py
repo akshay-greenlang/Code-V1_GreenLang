@@ -43,28 +43,22 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "29.0.0"
 _PACK_ID = "PACK-029"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -73,7 +67,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
@@ -81,30 +74,25 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class DisclosureStatus(str, Enum):
     DRAFT = "draft"
     REVIEW = "review"
     APPROVED = "approved"
     SUBMITTED = "submitted"
 
-
 class AssuranceLevel(str, Enum):
     LIMITED = "limited"
     REASONABLE = "reasonable"
     NO_ASSURANCE = "no_assurance"
-
 
 class RAGStatus(str, Enum):
     RED = "red"
     AMBER = "amber"
     GREEN = "green"
 
-
 # =============================================================================
 # CDP QUESTION MAPPINGS (Zero-Hallucination: CDP 2025 Questionnaire)
 # =============================================================================
-
 
 CDP_TARGET_QUESTIONS: Dict[str, Dict[str, Any]] = {
     "C4.1": {
@@ -205,11 +193,9 @@ SBTI_DISCLOSURE_FIELDS: List[Dict[str, str]] = [
     {"field": "Third-party verification", "section": "assurance"},
 ]
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase_name: str = Field(...)
@@ -222,7 +208,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
     dag_node_id: str = Field(default="")
-
 
 class SBTiDisclosureReport(BaseModel):
     """SBTi annual progress disclosure."""
@@ -241,7 +226,6 @@ class SBTiDisclosureReport(BaseModel):
     disclosure_status: DisclosureStatus = Field(default=DisclosureStatus.DRAFT)
     provenance_hash: str = Field(default="")
 
-
 class CDPResponse(BaseModel):
     """CDP C4.1 and C4.2 response data."""
     response_id: str = Field(default="")
@@ -254,7 +238,6 @@ class CDPResponse(BaseModel):
     submission_ready: bool = Field(default=False)
     disclosure_status: DisclosureStatus = Field(default=DisclosureStatus.DRAFT)
     provenance_hash: str = Field(default="")
-
 
 class TCFDDisclosure(BaseModel):
     """TCFD metrics and targets disclosure."""
@@ -272,7 +255,6 @@ class TCFDDisclosure(BaseModel):
     disclosure_status: DisclosureStatus = Field(default=DisclosureStatus.DRAFT)
     provenance_hash: str = Field(default="")
 
-
 class AssurancePackage(BaseModel):
     """Assurance evidence package for third-party verification."""
     package_id: str = Field(default="")
@@ -288,7 +270,6 @@ class AssurancePackage(BaseModel):
     reconciliation_summary: Dict[str, Any] = Field(default_factory=dict)
     readiness_score_pct: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class AnnualReportingConfig(BaseModel):
     company_name: str = Field(default="")
@@ -313,7 +294,6 @@ class AnnualReportingConfig(BaseModel):
     assurance_level: AssuranceLevel = Field(default=AssuranceLevel.LIMITED)
     output_formats: List[str] = Field(default_factory=lambda: ["json", "html", "pdf"])
 
-
 class AnnualReportingInput(BaseModel):
     config: AnnualReportingConfig = Field(default_factory=AnnualReportingConfig)
     progress_data: Dict[str, Any] = Field(
@@ -324,7 +304,6 @@ class AnnualReportingInput(BaseModel):
     scope3_categories: Dict[str, float] = Field(default_factory=dict)
     methodology_changes: List[str] = Field(default_factory=list)
     assurance_documents: List[Dict[str, str]] = Field(default_factory=list)
-
 
 class AnnualReportingResult(BaseModel):
     workflow_id: str = Field(...)
@@ -340,11 +319,9 @@ class AnnualReportingResult(BaseModel):
     key_findings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class AnnualReportingWorkflow:
     """
@@ -372,7 +349,7 @@ class AnnualReportingWorkflow:
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     async def execute(self, input_data: AnnualReportingInput) -> AnnualReportingResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         self.config = input_data.config
         self._phase_results = []
         overall_status = WorkflowStatus.RUNNING
@@ -406,7 +383,7 @@ class AnnualReportingWorkflow:
                 status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
 
         result = AnnualReportingResult(
             workflow_id=self.workflow_id,
@@ -429,7 +406,7 @@ class AnnualReportingWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_sbti_disclosure(self, input_data: AnnualReportingInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         cfg = self.config
@@ -484,7 +461,7 @@ class AnnualReportingWorkflow:
         outputs["annual_rate_pct"] = annual_rate
         outputs["on_track"] = on_track
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="sbti_disclosure", phase_number=1,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -498,7 +475,7 @@ class AnnualReportingWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_cdp_response(self, input_data: AnnualReportingInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         cfg = self.config
@@ -555,7 +532,7 @@ class AnnualReportingWorkflow:
         outputs["c4_1a_targets_count"] = len(self._cdp.c4_1a_targets)
         outputs["submission_ready"] = self._cdp.submission_ready
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="cdp_response", phase_number=2,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -569,7 +546,7 @@ class AnnualReportingWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_tcfd_disclosure(self, input_data: AnnualReportingInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         cfg = self.config
@@ -644,7 +621,7 @@ class AnnualReportingWorkflow:
         outputs["compliance_score_pct"] = compliance_score
         outputs["targets_disclosed"] = 2
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="tcfd_disclosure", phase_number=3,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -658,7 +635,7 @@ class AnnualReportingWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_assurance_package(self, input_data: AnnualReportingInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         cfg = self.config
@@ -735,7 +712,7 @@ class AnnualReportingWorkflow:
         outputs["readiness_score_pct"] = readiness_score
         outputs["assurance_level"] = cfg.assurance_level.value
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="assurance_package", phase_number=4,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),

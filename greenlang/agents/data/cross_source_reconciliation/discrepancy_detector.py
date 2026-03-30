@@ -52,9 +52,9 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 from uuid import uuid4
 
 from greenlang.agents.data.cross_source_reconciliation.provenance import ProvenanceTracker
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Metrics import (graceful fallback)
@@ -81,11 +81,9 @@ except ImportError:
         "discrepancy detector metrics disabled"
     )
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class ComparisonResult(str, Enum):
     """Outcome of a single field-level comparison.
@@ -105,7 +103,6 @@ class ComparisonResult(str, Enum):
     MISSING_RIGHT = "missing_right"
     NOT_COMPARABLE = "not_comparable"
 
-
 class FieldType(str, Enum):
     """Data type classification for a comparison field.
 
@@ -120,7 +117,6 @@ class FieldType(str, Enum):
     CURRENCY = "currency"
     UNIT = "unit"
     IDENTIFIER = "identifier"
-
 
 class DiscrepancyType(str, Enum):
     """Classification of a discrepancy by its root-cause category.
@@ -144,7 +140,6 @@ class DiscrepancyType(str, Enum):
     ROUNDING_DIFFERENCE = "rounding_difference"
     CLASSIFICATION_MISMATCH = "classification_mismatch"
 
-
 class DiscrepancySeverity(str, Enum):
     """Severity grade for a detected discrepancy.
 
@@ -160,7 +155,6 @@ class DiscrepancySeverity(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     INFO = "info"
-
 
 # ---------------------------------------------------------------------------
 # Severity ordering for comparison and sorting
@@ -182,11 +176,9 @@ _SEVERITY_WEIGHT: Dict[DiscrepancySeverity, float] = {
     DiscrepancySeverity.INFO: 0.1,
 }
 
-
 # ---------------------------------------------------------------------------
 # Data models (dataclasses -- pure Python, no Pydantic dependency)
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class FieldComparison:
@@ -218,7 +210,6 @@ class FieldComparison:
     unit_b: Optional[str] = None
     confidence: float = 1.0
     metadata: Dict[str, Any] = field(default_factory=dict)
-
 
 @dataclass
 class Discrepancy:
@@ -272,7 +263,6 @@ class Discrepancy:
     detected_at: str = ""
     metadata: Dict[str, Any] = field(default_factory=dict)
 
-
 @dataclass
 class DiscrepancySummary:
     """Aggregated summary of discrepancies for a reconciliation run.
@@ -309,16 +299,9 @@ class DiscrepancySummary:
     provenance_hash: str = ""
     generated_at: str = ""
 
-
 # ---------------------------------------------------------------------------
 # Helper: safe UTC now
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _safe_abs(value: float) -> float:
     """Return absolute value, handling NaN/Inf gracefully.
@@ -332,7 +315,6 @@ def _safe_abs(value: float) -> float:
     if math.isnan(value) or math.isinf(value):
         return 0.0
     return abs(value)
-
 
 def _safe_divide(numerator: float, denominator: float) -> float:
     """Safely divide, returning 0.0 on zero-denominator or NaN.
@@ -351,11 +333,9 @@ def _safe_divide(numerator: float, denominator: float) -> float:
         return 0.0
     return result
 
-
 # ---------------------------------------------------------------------------
 # DiscrepancyDetectorEngine
 # ---------------------------------------------------------------------------
-
 
 class DiscrepancyDetectorEngine:
     """Detects, classifies, scores, and prioritises discrepancies.
@@ -475,7 +455,7 @@ class DiscrepancyDetectorEngine:
             >>> assert discs[0].severity == DiscrepancySeverity.CRITICAL
         """
         start = time.time()
-        detected_at = _utcnow().isoformat()
+        detected_at = utcnow().isoformat()
         discrepancies: List[Discrepancy] = []
 
         for comp in comparisons:
@@ -1091,7 +1071,7 @@ class DiscrepancyDetectorEngine:
 
         if not discrepancies:
             return DiscrepancySummary(
-                generated_at=_utcnow().isoformat(),
+                generated_at=utcnow().isoformat(),
                 provenance_hash=self._compute_provenance(
                     "summarize", {"count": 0}, {"total": 0},
                 ),
@@ -1161,7 +1141,7 @@ class DiscrepancyDetectorEngine:
             mean_impact_score=mean_impact,
             top_fields=top_fields,
             provenance_hash=prov_hash,
-            generated_at=_utcnow().isoformat(),
+            generated_at=utcnow().isoformat(),
         )
 
         logger.info(
@@ -1899,7 +1879,6 @@ class DiscrepancyDetectorEngine:
         """Reset the provenance tracker to genesis state."""
         self._provenance.reset()
         logger.info("DiscrepancyDetectorEngine provenance reset")
-
 
 # ---------------------------------------------------------------------------
 # Module exports

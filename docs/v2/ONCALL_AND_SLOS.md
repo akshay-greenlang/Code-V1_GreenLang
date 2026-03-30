@@ -7,6 +7,14 @@
 - Security policy on-call
 - Frontend shell on-call
 
+## Regulated App Ownership
+
+| App ID | Owner Team | On-call Channel | Escalation Board |
+| --- | --- | --- | --- |
+| `GL-EUDR-APP` | app-reliability | #gl-eudr-oncall | SRE On-call Board |
+| `GL-GHG-APP` | app-reliability | #gl-ghg-oncall | SRE On-call Board |
+| `GL-ISO14064-APP` | app-reliability | #gl-iso14064-oncall | SRE On-call Board |
+
 ## Prioritized Connector Ownership
 
 | Connector ID | Owner Team | On-call Channel | Escalation Board |

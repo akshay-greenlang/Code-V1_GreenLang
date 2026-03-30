@@ -43,18 +43,11 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field, field_validator
-
+from pydantic import Field, field_validator
 
 # ---------------------------------------------------------------------------
 # Helper
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -97,11 +90,9 @@ BIOFUEL_FRACTIONS: Dict[str, float] = {
     "SUSTAINABLE_AVIATION_FUEL": 0.50,
 }
 
-
 # =============================================================================
 # Enumerations (16)
 # =============================================================================
-
 
 class VehicleCategory(str, Enum):
     """Broad classification of mobile combustion sources by transport mode.
@@ -123,7 +114,6 @@ class VehicleCategory(str, Enum):
     MARINE = "MARINE"
     AVIATION = "AVIATION"
     RAIL = "RAIL"
-
 
 class VehicleType(str, Enum):
     """Specific vehicle type identifiers for mobile combustion sources.
@@ -173,7 +163,6 @@ class VehicleType(str, Enum):
     # Rail
     DIESEL_LOCOMOTIVE = "DIESEL_LOCOMOTIVE"
 
-
 class FuelType(str, Enum):
     """Fuel type identifiers for mobile combustion sources.
 
@@ -202,7 +191,6 @@ class FuelType(str, Enum):
     HEAVY_FUEL_OIL = "HEAVY_FUEL_OIL"
     SUSTAINABLE_AVIATION_FUEL = "SUSTAINABLE_AVIATION_FUEL"
 
-
 class EmissionGas(str, Enum):
     """Greenhouse gases tracked in mobile combustion calculations.
 
@@ -216,7 +204,6 @@ class EmissionGas(str, Enum):
     CO2 = "CO2"
     CH4 = "CH4"
     N2O = "N2O"
-
 
 class CalculationMethod(str, Enum):
     """Calculation methodology for mobile combustion emissions.
@@ -235,7 +222,6 @@ class CalculationMethod(str, Enum):
     DISTANCE_BASED = "DISTANCE_BASED"
     SPEND_BASED = "SPEND_BASED"
 
-
 class CalculationTier(str, Enum):
     """GHG Protocol / IPCC calculation methodology tier level.
 
@@ -252,7 +238,6 @@ class CalculationTier(str, Enum):
     TIER_1 = "TIER_1"
     TIER_2 = "TIER_2"
     TIER_3 = "TIER_3"
-
 
 class EmissionFactorSource(str, Enum):
     """Source authority for emission factor values.
@@ -271,7 +256,6 @@ class EmissionFactorSource(str, Enum):
     EU_ETS = "EU_ETS"
     CUSTOM = "CUSTOM"
 
-
 class GWPSource(str, Enum):
     """IPCC Assessment Report edition used for GWP conversion factors.
 
@@ -286,7 +270,6 @@ class GWPSource(str, Enum):
     AR6 = "AR6"
     AR6_20YR = "AR6_20YR"
 
-
 class DistanceUnit(str, Enum):
     """Distance measurement units for mobile combustion calculations.
 
@@ -298,7 +281,6 @@ class DistanceUnit(str, Enum):
     KM = "KM"
     MILES = "MILES"
     NAUTICAL_MILES = "NAUTICAL_MILES"
-
 
 class FuelEconomyUnit(str, Enum):
     """Fuel economy measurement units for distance-based calculations.
@@ -313,7 +295,6 @@ class FuelEconomyUnit(str, Enum):
     MPG_US = "MPG_US"
     MPG_UK = "MPG_UK"
     KM_PER_L = "KM_PER_L"
-
 
 class EmissionControlTechnology(str, Enum):
     """Vehicle emission control technology classifications.
@@ -345,7 +326,6 @@ class EmissionControlTechnology(str, Enum):
     TIER_3_EPA = "TIER_3_EPA"
     TIER_4_EPA = "TIER_4_EPA"
 
-
 class VehicleStatus(str, Enum):
     """Operational status of a registered fleet vehicle.
 
@@ -359,7 +339,6 @@ class VehicleStatus(str, Enum):
     INACTIVE = "INACTIVE"
     DISPOSED = "DISPOSED"
     MAINTENANCE = "MAINTENANCE"
-
 
 class TripStatus(str, Enum):
     """Status of a vehicle trip record.
@@ -375,7 +354,6 @@ class TripStatus(str, Enum):
     COMPLETED = "COMPLETED"
     CANCELLED = "CANCELLED"
 
-
 class ComplianceStatus(str, Enum):
     """Compliance status for regulatory framework checks.
 
@@ -390,7 +368,6 @@ class ComplianceStatus(str, Enum):
     NEEDS_REVIEW = "NEEDS_REVIEW"
     EXEMPT = "EXEMPT"
 
-
 class ReportingPeriod(str, Enum):
     """Temporal granularity for emission reporting aggregation.
 
@@ -402,7 +379,6 @@ class ReportingPeriod(str, Enum):
     MONTHLY = "MONTHLY"
     QUARTERLY = "QUARTERLY"
     ANNUAL = "ANNUAL"
-
 
 class UnitType(str, Enum):
     """Physical units for fuel quantity, distance, and energy measurement.
@@ -424,13 +400,11 @@ class UnitType(str, Enum):
     KWH = "KWH"
     GJ = "GJ"
 
-
 # =============================================================================
 # Data Models (14)
 # =============================================================================
 
-
-class VehicleTypeInfo(BaseModel):
+class VehicleTypeInfo(GreenLangBase):
     """Reference data for a specific vehicle type.
 
     Provides default values for emission factor source, fuel type, and
@@ -480,8 +454,7 @@ class VehicleTypeInfo(BaseModel):
         description="Unit for the typical fuel economy value",
     )
 
-
-class FuelTypeInfo(BaseModel):
+class FuelTypeInfo(GreenLangBase):
     """Physical and chemical properties of a mobile combustion fuel type.
 
     Defines the density, heating value, biofuel fraction, and default
@@ -555,8 +528,7 @@ class FuelTypeInfo(BaseModel):
             return True  # Auto-correct: fraction > 0 means it is a blend
         return v
 
-
-class EmissionFactorRecord(BaseModel):
+class EmissionFactorRecord(GreenLangBase):
     """A single emission factor record for a vehicle-fuel-gas combination.
 
     Emission factors define the mass of GHG released per unit of fuel
@@ -681,8 +653,7 @@ class EmissionFactorRecord(BaseModel):
                 )
         return v
 
-
-class VehicleRegistration(BaseModel):
+class VehicleRegistration(GreenLangBase):
     """Registration record for a fleet vehicle.
 
     Captures vehicle identification, type classification, fuel type,
@@ -767,7 +738,7 @@ class VehicleRegistration(BaseModel):
         description="Current odometer reading in kilometres",
     )
     registration_date: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Date when the vehicle was registered in the fleet",
     )
     disposal_date: Optional[datetime] = Field(
@@ -793,8 +764,7 @@ class VehicleRegistration(BaseModel):
                 )
         return v
 
-
-class TripRecord(BaseModel):
+class TripRecord(GreenLangBase):
     """Record of a single vehicle trip for emission tracking.
 
     Captures trip details including vehicle identification, distance
@@ -904,8 +874,7 @@ class TripRecord(BaseModel):
             raise ValueError("end_time must be after start_time")
         return v
 
-
-class CalculationInput(BaseModel):
+class CalculationInput(GreenLangBase):
     """Input data for a single mobile combustion emission calculation.
 
     Represents one fuel consumption or distance record for a vehicle,
@@ -1033,8 +1002,7 @@ class CalculationInput(BaseModel):
             raise ValueError("period_end must be after period_start")
         return v
 
-
-class GasEmission(BaseModel):
+class GasEmission(GreenLangBase):
     """Emission result for a single greenhouse gas from a mobile combustion event.
 
     Captures the calculated emissions in both native mass units and
@@ -1087,8 +1055,7 @@ class GasEmission(BaseModel):
         description="GWP multiplier applied for CO2e conversion",
     )
 
-
-class CalculationResult(BaseModel):
+class CalculationResult(GreenLangBase):
     """Complete result of a single mobile combustion emission calculation.
 
     Contains all calculated emissions by gas, total CO2e, biogenic CO2
@@ -1206,7 +1173,7 @@ class CalculationResult(BaseModel):
         description="Ordered list of human-readable calculation steps",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the calculation was performed",
     )
     vehicle_id: Optional[str] = Field(
@@ -1230,8 +1197,7 @@ class CalculationResult(BaseModel):
         description="End of the reporting period",
     )
 
-
-class BatchCalculationInput(BaseModel):
+class BatchCalculationInput(GreenLangBase):
     """Request model for batch mobile combustion calculations.
 
     Groups multiple calculation inputs for processing as a single
@@ -1269,8 +1235,7 @@ class BatchCalculationInput(BaseModel):
         description="Temporal granularity for the batch",
     )
 
-
-class BatchCalculationResponse(BaseModel):
+class BatchCalculationResponse(GreenLangBase):
     """Response model for a batch mobile combustion calculation.
 
     Aggregates individual calculation results with batch-level totals,
@@ -1359,8 +1324,7 @@ class BatchCalculationResponse(BaseModel):
         description="GWP source used for this batch",
     )
 
-
-class FleetAggregation(BaseModel):
+class FleetAggregation(GreenLangBase):
     """Fleet-level emission aggregation across all vehicles and trips.
 
     Rolls up individual calculation results into a fleet total broken
@@ -1495,8 +1459,7 @@ class FleetAggregation(BaseModel):
             raise ValueError("period_end must be after period_start")
         return v
 
-
-class UncertaintyResult(BaseModel):
+class UncertaintyResult(GreenLangBase):
     """Monte Carlo uncertainty quantification result for a mobile combustion calculation.
 
     Provides statistical characterization of emission estimate uncertainty
@@ -1569,12 +1532,13 @@ class UncertaintyResult(BaseModel):
         description="Uncertainty quantification method used",
     )
 
-
-class ComplianceCheckResult(BaseModel):
+class ComplianceCheckResult(GreenLangBase):
     """Result of a regulatory compliance check for mobile combustion emissions.
 
     Tracks how the Mobile Combustion Agent meets specific requirements
     from each supported regulatory framework, providing auditable
+
+from greenlang.schemas import GreenLangBase, utcnow
     evidence of compliance status.
 
     Attributes:
@@ -1622,7 +1586,7 @@ class ComplianceCheckResult(BaseModel):
         description="List of evidence references",
     )
     checked_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the check was performed",
     )
     checked_by: str = Field(
@@ -1630,8 +1594,7 @@ class ComplianceCheckResult(BaseModel):
         description="Agent or user that performed the check",
     )
 
-
-class MobileCombustionInput(BaseModel):
+class MobileCombustionInput(GreenLangBase):
     """Overall input model for the Mobile Combustion Agent pipeline.
 
     Wraps one or more calculation inputs with shared configuration
@@ -1694,8 +1657,7 @@ class MobileCombustionInput(BaseModel):
         description="Temporal granularity for reporting",
     )
 
-
-class MobileCombustionOutput(BaseModel):
+class MobileCombustionOutput(GreenLangBase):
     """Overall output model for the Mobile Combustion Agent pipeline.
 
     Contains the complete results of a mobile combustion emission
@@ -1760,7 +1722,7 @@ class MobileCombustionOutput(BaseModel):
         description="Agent version string",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the output was generated",
     )
     errors: List[str] = Field(
@@ -1768,8 +1730,7 @@ class MobileCombustionOutput(BaseModel):
         description="List of error messages for any failed calculations",
     )
 
-
-class AuditEntry(BaseModel):
+class AuditEntry(GreenLangBase):
     """A single step in the mobile combustion calculation audit trail.
 
     Records the input, output, and methodology reference for one
@@ -1836,14 +1797,13 @@ class AuditEntry(BaseModel):
         description="Regulatory or methodological citation for this step",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when this step was executed",
     )
     provenance_hash: str = Field(
         default="",
         description="SHA-256 hash for this audit entry",
     )
-
 
 # ---------------------------------------------------------------------------
 # Public API

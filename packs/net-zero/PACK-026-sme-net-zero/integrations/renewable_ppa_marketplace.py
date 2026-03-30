@@ -37,23 +37,18 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -65,17 +60,14 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class PPAProvider(str, Enum):
     ARCANO = "arcano_energy"
     ENEL = "enel_green_power"
     NEXTENERGY = "nextenergy"
-
 
 class EnergySource(str, Enum):
     SOLAR = "solar"
@@ -84,13 +76,11 @@ class EnergySource(str, Enum):
     HYDRO = "hydro"
     MIXED_RENEWABLE = "mixed_renewable"
 
-
 class PPAType(str, Enum):
     PHYSICAL = "physical"
     VIRTUAL = "virtual"
     SLEEVED = "sleeved"
     AGGREGATED = "aggregated"
-
 
 class ContractStatus(str, Enum):
     AVAILABLE = "available"
@@ -98,7 +88,6 @@ class ContractStatus(str, Enum):
     UNDER_NEGOTIATION = "under_negotiation"
     CONTRACTED = "contracted"
     CLOSED = "closed"
-
 
 # ---------------------------------------------------------------------------
 # PPA Contract Database
@@ -258,11 +247,9 @@ GRID_EMISSION_FACTORS: Dict[str, float] = {
     "NL": 320.0,
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class PPAMarketplaceConfig(BaseModel):
     """Configuration for the PPA Marketplace Bridge."""
@@ -270,7 +257,6 @@ class PPAMarketplaceConfig(BaseModel):
     pack_id: str = Field(default="PACK-026")
     default_location: str = Field(default="UK")
     enable_provenance: bool = Field(default=True)
-
 
 class PPAContract(BaseModel):
     """A PPA contract offer."""
@@ -291,7 +277,6 @@ class PPAContract(BaseModel):
     rego_backed: bool = Field(default=False)
     start_date: str = Field(default="")
 
-
 class PPASearchResult(BaseModel):
     """Result of a PPA contract search."""
 
@@ -302,9 +287,8 @@ class PPASearchResult(BaseModel):
     duration_years: int = Field(default=0)
     contracts_found: int = Field(default=0)
     contracts: List[PPAContract] = Field(default_factory=list)
-    searched_at: datetime = Field(default_factory=_utcnow)
+    searched_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class CostComparison(BaseModel):
     """Cost and emission comparison between PPA and grid."""
@@ -325,7 +309,6 @@ class CostComparison(BaseModel):
     total_savings_gbp: float = Field(default=0.0)
     total_scope2_reduction_tco2e: float = Field(default=0.0)
 
-
 class ComparisonTable(BaseModel):
     """Comparison table across multiple PPA options."""
 
@@ -338,9 +321,8 @@ class ComparisonTable(BaseModel):
     best_price_contract: str = Field(default="")
     best_savings_contract: str = Field(default="")
     best_emission_reduction_contract: str = Field(default="")
-    generated_at: datetime = Field(default_factory=_utcnow)
+    generated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class PPAInterest(BaseModel):
     """Expression of interest in a PPA contract."""
@@ -352,13 +334,11 @@ class PPAInterest(BaseModel):
     preferred_duration_years: int = Field(default=5)
     contact_email: str = Field(default="")
     status: str = Field(default="submitted")
-    submitted_at: datetime = Field(default_factory=_utcnow)
-
+    submitted_at: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # RenewablePPAMarketplace
 # ---------------------------------------------------------------------------
-
 
 class RenewablePPAMarketplace:
     """PPA aggregator integration for SME renewable energy procurement.

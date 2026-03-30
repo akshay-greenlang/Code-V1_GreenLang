@@ -51,6 +51,7 @@ import time
 import uuid
 from datetime import date, datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import utcnow
 
 from greenlang.agents.data.supplier_questionnaire.models import (
     Distribution,
@@ -64,26 +65,17 @@ __all__ = [
     "DistributionEngine",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _today() -> date:
     """Return today's date in UTC."""
     return datetime.now(timezone.utc).date()
 
-
 # ---------------------------------------------------------------------------
 # DistributionEngine
 # ---------------------------------------------------------------------------
-
 
 class DistributionEngine:
     """Questionnaire distribution lifecycle engine.
@@ -190,7 +182,7 @@ class DistributionEngine:
             "deadline": deadline.isoformat(),
             "deadline_days": deadline_days,
             "supplier_count": len(supplier_ids),
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
             "status": "active",
             "provenance_hash": self._compute_provenance(
                 "create_campaign", campaign_id, template_id,
@@ -363,7 +355,7 @@ class DistributionEngine:
         """
         dist = self._get_distribution_or_raise(distribution_id)
         status = self._resolve_status(new_status)
-        now = _utcnow()
+        now = utcnow()
 
         with self._lock:
             record = self._distributions[distribution_id]
@@ -416,7 +408,7 @@ class DistributionEngine:
         dist = self._get_distribution_or_raise(distribution_id)
 
         token_seed = (
-            f"{distribution_id}:{dist.supplier_id}:{_utcnow().isoformat()}"
+            f"{distribution_id}:{dist.supplier_id}:{utcnow().isoformat()}"
         )
         token = hashlib.sha256(token_seed.encode("utf-8")).hexdigest()
 
@@ -629,7 +621,7 @@ class DistributionEngine:
             "deadline": campaign.get("deadline", ""),
             "created_at": campaign.get("created_at", ""),
             "provenance_hash": provenance_hash,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     def get_statistics(self) -> Dict[str, Any]:
@@ -643,7 +635,7 @@ class DistributionEngine:
                 **self._stats,
                 "active_distributions": len(self._distributions),
                 "active_campaigns": len(self._campaigns),
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }
 
     # ------------------------------------------------------------------
@@ -675,7 +667,7 @@ class DistributionEngine:
             Created Distribution record.
         """
         dist_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         # Generate access token
         token_seed = f"{dist_id}:{supplier_id}:{now.isoformat()}"
@@ -779,7 +771,7 @@ class DistributionEngine:
             Hex-encoded SHA-256 digest.
         """
         combined = json.dumps(
-            {"parts": list(parts), "timestamp": _utcnow().isoformat()},
+            {"parts": list(parts), "timestamp": utcnow().isoformat()},
             sort_keys=True,
         )
         return hashlib.sha256(combined.encode("utf-8")).hexdigest()

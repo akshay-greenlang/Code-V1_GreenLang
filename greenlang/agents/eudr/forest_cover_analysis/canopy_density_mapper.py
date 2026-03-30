@@ -73,6 +73,8 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -85,27 +87,18 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a unique identifier using UUID4."""
     return str(uuid.uuid4())
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class CanopyDensityClass(str, Enum):
     """Canopy density classification following EUDR/FAO tiers.
@@ -122,7 +115,6 @@ class CanopyDensityClass(str, Enum):
     SPARSE = "SPARSE"          # 10-20%
     OPEN = "OPEN"              # < 10%
 
-
 class DensityMappingMethod(str, Enum):
     """Available canopy density mapping methods."""
 
@@ -130,7 +122,6 @@ class DensityMappingMethod(str, Enum):
     NDVI_CANOPY_REGRESSION = "NDVI_CANOPY_REGRESSION"
     DIMIDIATION_MODEL = "DIMIDIATION_MODEL"
     SUB_PIXEL_DETECTION = "SUB_PIXEL_DETECTION"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -243,11 +234,9 @@ METHOD_RELIABILITY: Dict[str, float] = {
     DensityMappingMethod.SUB_PIXEL_DETECTION.value: 0.70,
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class CanopyDensityResult:
@@ -322,7 +311,6 @@ class CanopyDensityResult:
             "metadata": self.metadata,
         }
 
-
 @dataclass
 class PlotInput:
     """Input data for a single plot to be analyzed.
@@ -350,11 +338,9 @@ class PlotInput:
     area_ha: float = 1.0
     canopy_height_m: Optional[float] = None
 
-
 # ---------------------------------------------------------------------------
 # CanopyDensityMapper
 # ---------------------------------------------------------------------------
-
 
 class CanopyDensityMapper:
     """Production-grade canopy density mapping engine for EUDR compliance.
@@ -440,7 +426,7 @@ class CanopyDensityMapper:
         self._validate_plot_input(plot, selected_method)
 
         result_id = _generate_id()
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         # Dispatch to the appropriate mapping method
         density_pct, pixel_densities, method_meta = self._dispatch_method(
@@ -1444,7 +1430,7 @@ class CanopyDensityMapper:
             confidence=0.0,
             biome=plot.biome,
             area_ha=plot.area_ha,
-            timestamp=_utcnow().isoformat(),
+            timestamp=utcnow().isoformat(),
             metadata={"error": error_msg},
         )
         result.provenance_hash = self._compute_result_hash(result)
@@ -1483,7 +1469,6 @@ class CanopyDensityMapper:
             "timestamp": result.timestamp,
         }
         return _compute_hash(hash_data)
-
 
 # ---------------------------------------------------------------------------
 # Module Exports

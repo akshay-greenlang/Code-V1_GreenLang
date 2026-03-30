@@ -35,18 +35,13 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # Utility Helpers
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute a SHA-256 hash of arbitrary data."""
@@ -54,11 +49,9 @@ def _hash_data(data: Any) -> str:
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # Enums
 # =============================================================================
-
 
 class QualityLevel(str, Enum):
     """Data quality level."""
@@ -66,7 +59,6 @@ class QualityLevel(str, Enum):
     ACCEPTABLE = "acceptable"
     LOW = "low"
     INSUFFICIENT = "insufficient"
-
 
 class CheckCategory(str, Enum):
     """Data quality check category."""
@@ -78,7 +70,6 @@ class CheckCategory(str, Enum):
     ESTIMATION = "estimation"
     PROVENANCE = "provenance"
 
-
 class DataSourceType(str, Enum):
     """Type of data source."""
     REPORTED = "reported"
@@ -87,11 +78,9 @@ class DataSourceType(str, Enum):
     MODELED = "modeled"
     UNAVAILABLE = "unavailable"
 
-
 # =============================================================================
 # Data Models
 # =============================================================================
-
 
 class DataQualityBridgeConfig(BaseModel):
     """Configuration for the Data Quality Bridge."""
@@ -124,7 +113,6 @@ class DataQualityBridgeConfig(BaseModel):
         description="Minimum field completeness percentage",
     )
 
-
 class QualityCheckResult(BaseModel):
     """Result of a single quality check."""
     category: CheckCategory = Field(
@@ -138,7 +126,6 @@ class QualityCheckResult(BaseModel):
     threshold: float = Field(default=0.0, description="Threshold value")
     passed: bool = Field(default=True, description="Whether check passed")
     detail: str = Field(default="", description="Check detail")
-
 
 class CoverageReport(BaseModel):
     """Data coverage report for PAI indicators."""
@@ -158,7 +145,6 @@ class CoverageReport(BaseModel):
         default_factory=dict, description="Count by data source type"
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class QualityAssessment(BaseModel):
     """Overall data quality assessment."""
@@ -185,11 +171,9 @@ class QualityAssessment(BaseModel):
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
     assessed_at: str = Field(default="", description="Assessment timestamp")
 
-
 # =============================================================================
 # Quality Check Definitions
 # =============================================================================
-
 
 QUALITY_CHECKS: Dict[str, Dict[str, Any]] = {
     "pai_data_coverage": {
@@ -269,11 +253,9 @@ QUALITY_CHECKS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # Data Quality Bridge
 # =============================================================================
-
 
 class DataQualityBridge:
     """Data quality enforcement for SFDR Article 8 data.
@@ -417,7 +399,7 @@ class DataQualityBridge:
             coverage_report=coverage_report,
             estimation_flags=estimation_flags,
             recommendations=recommendations,
-            assessed_at=_utcnow().isoformat(),
+            assessed_at=utcnow().isoformat(),
         )
         assessment.provenance_hash = _hash_data({
             "score": overall_score, "passed": passed, "failed": failed,
@@ -543,7 +525,7 @@ class DataQualityBridge:
         Returns:
             Data age validation report.
         """
-        now = _utcnow()
+        now = utcnow()
         stale_count = 0
         fresh_count = 0
         ages: List[int] = []
@@ -661,7 +643,7 @@ class DataQualityBridge:
         self, holdings: List[Dict[str, Any]], data_type: str
     ) -> QualityCheckResult:
         """Check data freshness for a specific data type."""
-        now = _utcnow()
+        now = utcnow()
         date_field = f"{data_type}_date" if data_type != "emissions" else "data_date"
         fresh = 0
         total = len(holdings) or 1

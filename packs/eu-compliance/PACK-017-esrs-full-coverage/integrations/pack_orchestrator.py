@@ -63,27 +63,22 @@ from typing import Any, Callable, Coroutine, Dict, List, Optional, Set
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ExecutionStatus
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
 ProgressCallback = Callable[[str, float, str], Coroutine[Any, Any, None]]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for provenance tracking.
@@ -103,11 +98,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ESRSPipelinePhase(str, Enum):
     """The 14 phases of the ESRS Full Coverage disclosure pipeline
@@ -128,18 +121,6 @@ class ESRSPipelinePhase(str, Enum):
     G1_GOVERNANCE = "g1_governance"
     COMPLIANCE_SCORING = "compliance_scoring"
     REPORT_ASSEMBLY = "report_assembly"
-
-
-class ExecutionStatus(str, Enum):
-    """Pipeline execution lifecycle status."""
-
-    PENDING = "pending"
-    RUNNING = "running"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    CANCELLED = "cancelled"
-    SKIPPED = "skipped"
-
 
 # ---------------------------------------------------------------------------
 # ESRS Standard Identifiers
@@ -179,11 +160,9 @@ DR_COUNTS: Dict[str, int] = {
     "S1": 17, "S2": 5, "S3": 5, "S4": 5, "G1": 6,
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class RetryConfig(BaseModel):
     """Retry configuration with exponential backoff and jitter."""
@@ -194,7 +173,6 @@ class RetryConfig(BaseModel):
     jitter_factor: float = Field(
         default=0.5, ge=0.0, le=1.0, description="Jitter multiplier"
     )
-
 
 class OrchestratorConfig(BaseModel):
     """Configuration for the ESRS Full Coverage Pipeline Orchestrator."""
@@ -220,7 +198,6 @@ class OrchestratorConfig(BaseModel):
     e1_pack_id: str = Field(default="PACK-016", description="PACK-016 bridge for E1 Climate")
     dma_pack_id: str = Field(default="PACK-015", description="PACK-015 bridge for DMA")
 
-
 class PhaseProvenance(BaseModel):
     """Provenance tracking for a single phase execution."""
 
@@ -229,8 +206,7 @@ class PhaseProvenance(BaseModel):
     output_hash: str = Field(default="")
     duration_ms: float = Field(default=0.0)
     attempt: int = Field(default=1)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class PhaseResult(BaseModel):
     """Result of a single phase execution."""
@@ -247,7 +223,6 @@ class PhaseResult(BaseModel):
     provenance: Optional[PhaseProvenance] = Field(None)
     retry_count: int = Field(default=0)
     esrs_standard: str = Field(default="", description="ESRS standard ID if applicable")
-
 
 class PipelineResult(BaseModel):
     """Complete result of the ESRS Full Coverage pipeline execution."""
@@ -269,7 +244,6 @@ class PipelineResult(BaseModel):
     compliance_score: float = Field(default=0.0, ge=0.0, le=100.0)
     datapoints_populated: int = Field(default=0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # DAG Dependency Map
@@ -342,11 +316,9 @@ PHASE_EXECUTION_ORDER: List[ESRSPipelinePhase] = [
     ESRSPipelinePhase.REPORT_ASSEMBLY,
 ]
 
-
 # ---------------------------------------------------------------------------
 # ESRSFullOrchestrator
 # ---------------------------------------------------------------------------
-
 
 class ESRSFullOrchestrator:
     """14-phase ESRS Full Coverage disclosure pipeline orchestrator for PACK-017.
@@ -408,7 +380,7 @@ class ESRSFullOrchestrator:
         """
         result = PipelineResult(
             pack_id=self.config.pack_id,
-            started_at=_utcnow(),
+            started_at=utcnow(),
             status=ExecutionStatus.RUNNING,
         )
         self._results[result.execution_id] = result
@@ -520,7 +492,7 @@ class ESRSFullOrchestrator:
             result.status = ExecutionStatus.FAILED
             result.errors.append(str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.total_duration_ms = (
                 result.completed_at - result.started_at
@@ -681,7 +653,7 @@ class ESRSFullOrchestrator:
 
         while attempt <= retry_config.max_retries:
             attempt += 1
-            phase_result.started_at = _utcnow()
+            phase_result.started_at = utcnow()
             phase_result.status = ExecutionStatus.RUNNING
 
             try:
@@ -690,7 +662,7 @@ class ESRSFullOrchestrator:
 
                 phase_result.outputs = outputs
                 phase_result.status = ExecutionStatus.COMPLETED
-                phase_result.completed_at = _utcnow()
+                phase_result.completed_at = utcnow()
 
                 if phase_result.started_at:
                     phase_result.duration_ms = (
@@ -738,7 +710,7 @@ class ESRSFullOrchestrator:
                     await asyncio.sleep(delay + jitter)
 
         phase_result.status = ExecutionStatus.FAILED
-        phase_result.completed_at = _utcnow()
+        phase_result.completed_at = utcnow()
         return phase_result
 
     async def _execute_parallel_phases(

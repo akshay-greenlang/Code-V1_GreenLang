@@ -31,18 +31,12 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
+from pydantic import ConfigDict, Field, field_validator, model_validator
+from greenlang.schemas import GreenLangBase, utcnow
 
 # =============================================================================
 # Enums (API-layer mirrors)
 # =============================================================================
-
 
 class GeometryTypeSchema(str, enum.Enum):
     """Supported geometry types for boundary input."""
@@ -50,7 +44,6 @@ class GeometryTypeSchema(str, enum.Enum):
     POINT = "Point"
     POLYGON = "Polygon"
     MULTI_POLYGON = "MultiPolygon"
-
 
 class ValidationErrorTypeSchema(str, enum.Enum):
     """Types of geometry validation errors."""
@@ -72,7 +65,6 @@ class ValidationErrorTypeSchema(str, enum.Enum):
     NON_PLANAR = "non_planar"
     COORDINATE_OUT_OF_RANGE = "coordinate_out_of_range"
 
-
 class OverlapSeveritySchema(str, enum.Enum):
     """Overlap severity classification based on area fraction."""
 
@@ -80,7 +72,6 @@ class OverlapSeveritySchema(str, enum.Enum):
     MODERATE = "moderate"
     MAJOR = "major"
     CRITICAL = "critical"
-
 
 class VersionChangeReasonSchema(str, enum.Enum):
     """Reasons for boundary version changes."""
@@ -95,14 +86,12 @@ class VersionChangeReasonSchema(str, enum.Enum):
     CERTIFICATION_CHANGE = "certification_change"
     ERROR_CORRECTION = "error_correction"
 
-
 class SimplificationMethodSchema(str, enum.Enum):
     """Supported polygon simplification algorithms."""
 
     DOUGLAS_PEUCKER = "douglas_peucker"
     VISVALINGAM_WHYATT = "visvalingam_whyatt"
     TOPOLOGY_PRESERVING = "topology_preserving"
-
 
 class ExportFormatSchema(str, enum.Enum):
     """Supported export formats for boundary data."""
@@ -116,14 +105,12 @@ class ExportFormatSchema(str, enum.Enum):
     GPX = "gpx"
     GML = "gml"
 
-
 class ThresholdClassificationSchema(str, enum.Enum):
     """EUDR Article 9 area threshold classification."""
 
     BELOW_THRESHOLD = "below_threshold"
     ABOVE_THRESHOLD = "above_threshold"
     AT_THRESHOLD = "at_threshold"
-
 
 class BatchStatusSchema(str, enum.Enum):
     """Status of a batch processing job."""
@@ -135,13 +122,11 @@ class BatchStatusSchema(str, enum.Enum):
     CANCELLED = "cancelled"
     PARTIALLY_COMPLETED = "partially_completed"
 
-
 # =============================================================================
 # Coordinate and Geometry Schemas
 # =============================================================================
 
-
-class CoordinateSchema(BaseModel):
+class CoordinateSchema(GreenLangBase):
     """A single coordinate point in WGS84."""
 
     lat: float = Field(
@@ -170,8 +155,7 @@ class CoordinateSchema(BaseModel):
         },
     )
 
-
-class BoundingBoxSchema(BaseModel):
+class BoundingBoxSchema(GreenLangBase):
     """Axis-aligned bounding box in WGS84 coordinates."""
 
     min_lat: float = Field(
@@ -223,8 +207,7 @@ class BoundingBoxSchema(BaseModel):
             )
         return v
 
-
-class RingSchema(BaseModel):
+class RingSchema(GreenLangBase):
     """A closed ring of coordinates forming part of a polygon."""
 
     coordinates: List[CoordinateSchema] = Field(
@@ -239,8 +222,7 @@ class RingSchema(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class GeoJSONGeometrySchema(BaseModel):
+class GeoJSONGeometrySchema(GreenLangBase):
     """Standard GeoJSON geometry input.
 
     Supports Point, Polygon, and MultiPolygon types per RFC 7946.
@@ -287,13 +269,11 @@ class GeoJSONGeometrySchema(BaseModel):
             )
         return v
 
-
 # =============================================================================
 # Boundary Schemas
 # =============================================================================
 
-
-class CreateBoundaryRequestSchema(BaseModel):
+class CreateBoundaryRequestSchema(GreenLangBase):
     """Request to create a new plot boundary.
 
     At least one geometry input (geometry, wkt, or kml) must be provided.
@@ -407,8 +387,7 @@ class CreateBoundaryRequestSchema(BaseModel):
             )
         return self
 
-
-class UpdateBoundaryRequestSchema(BaseModel):
+class UpdateBoundaryRequestSchema(GreenLangBase):
     """Request to update an existing plot boundary.
 
     All fields are optional. Only provided fields are updated.
@@ -492,8 +471,7 @@ class UpdateBoundaryRequestSchema(BaseModel):
             )
         return v
 
-
-class CentroidSchema(BaseModel):
+class CentroidSchema(GreenLangBase):
     """Computed centroid of a polygon boundary."""
 
     lat: float = Field(..., description="Centroid latitude")
@@ -501,8 +479,7 @@ class CentroidSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CompactnessMetricsSchema(BaseModel):
+class CompactnessMetricsSchema(GreenLangBase):
     """Compactness metrics for polygon shape analysis."""
 
     isoperimetric_quotient: float = Field(
@@ -526,8 +503,7 @@ class CompactnessMetricsSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BoundaryResponseSchema(BaseModel):
+class BoundaryResponseSchema(GreenLangBase):
     """Full boundary response with computed fields."""
 
     plot_id: str = Field(..., description="Unique plot identifier")
@@ -571,8 +547,7 @@ class BoundaryResponseSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BoundaryListResponseSchema(BaseModel):
+class BoundaryListResponseSchema(GreenLangBase):
     """Paginated list of plot boundaries."""
 
     items: List[BoundaryResponseSchema] = Field(
@@ -586,8 +561,7 @@ class BoundaryListResponseSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchCreateRequestSchema(BaseModel):
+class BatchCreateRequestSchema(GreenLangBase):
     """Request to create multiple plot boundaries in a single batch."""
 
     boundaries: List[CreateBoundaryRequestSchema] = Field(
@@ -599,8 +573,7 @@ class BatchCreateRequestSchema(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class BatchCreateResultSchema(BaseModel):
+class BatchCreateResultSchema(GreenLangBase):
     """Result for a single boundary in a batch create operation."""
 
     plot_id: str = Field(..., description="Plot identifier")
@@ -613,8 +586,7 @@ class BatchCreateResultSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchCreateResponseSchema(BaseModel):
+class BatchCreateResponseSchema(GreenLangBase):
     """Response for a batch boundary creation."""
 
     created: int = Field(..., ge=0, description="Number of boundaries created")
@@ -636,8 +608,7 @@ class BatchCreateResponseSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class SearchRequestSchema(BaseModel):
+class SearchRequestSchema(GreenLangBase):
     """Request to search boundaries by spatial and attribute filters."""
 
     bbox: Optional[BoundingBoxSchema] = Field(
@@ -715,13 +686,11 @@ class SearchRequestSchema(BaseModel):
             )
         return v
 
-
 # =============================================================================
 # Validation Schemas
 # =============================================================================
 
-
-class ValidateRequestSchema(BaseModel):
+class ValidateRequestSchema(GreenLangBase):
     """Request to validate polygon topology.
 
     Provide geometry (GeoJSON), wkt, or plot_id to validate an
@@ -754,8 +723,7 @@ class ValidateRequestSchema(BaseModel):
             )
         return self
 
-
-class RepairRequestSchema(BaseModel):
+class RepairRequestSchema(GreenLangBase):
     """Request to validate and optionally auto-repair a polygon.
 
     Provide geometry (GeoJSON), wkt, or plot_id to validate and repair.
@@ -811,8 +779,7 @@ class RepairRequestSchema(BaseModel):
             )
         return self
 
-
-class ValidationErrorSchema(BaseModel):
+class ValidationErrorSchema(GreenLangBase):
     """A single geometry validation error or warning."""
 
     error_type: ValidationErrorTypeSchema = Field(
@@ -838,8 +805,7 @@ class ValidationErrorSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class RepairActionSchema(BaseModel):
+class RepairActionSchema(GreenLangBase):
     """A repair action taken during auto-repair."""
 
     action: str = Field(..., description="Repair action identifier")
@@ -856,8 +822,7 @@ class RepairActionSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ValidationResponseSchema(BaseModel):
+class ValidationResponseSchema(GreenLangBase):
     """Response for geometry validation or repair."""
 
     is_valid: bool = Field(..., description="Overall geometry validity")
@@ -909,8 +874,7 @@ class ValidationResponseSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchValidateRequestSchema(BaseModel):
+class BatchValidateRequestSchema(GreenLangBase):
     """Request to validate multiple geometries in batch."""
 
     plot_ids: Optional[List[str]] = Field(
@@ -935,8 +899,7 @@ class BatchValidateRequestSchema(BaseModel):
             )
         return self
 
-
-class BatchValidateResultSchema(BaseModel):
+class BatchValidateResultSchema(GreenLangBase):
     """Result for a single item in batch validation."""
 
     index: int = Field(..., ge=0, description="Index in the batch")
@@ -952,8 +915,7 @@ class BatchValidateResultSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchValidateResponseSchema(BaseModel):
+class BatchValidateResponseSchema(GreenLangBase):
     """Response for batch validation."""
 
     total: int = Field(..., ge=0, description="Total items validated")
@@ -972,13 +934,11 @@ class BatchValidateResponseSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Area Schemas
 # =============================================================================
 
-
-class AreaCalculationRequestSchema(BaseModel):
+class AreaCalculationRequestSchema(GreenLangBase):
     """Request to calculate geodetic area of a geometry.
 
     Provide geometry (GeoJSON), wkt, or plot_id.
@@ -1010,8 +970,7 @@ class AreaCalculationRequestSchema(BaseModel):
             )
         return self
 
-
-class AreaResponseSchema(BaseModel):
+class AreaResponseSchema(GreenLangBase):
     """Geodetic area calculation response with multiple unit conversions."""
 
     area_m2: float = Field(..., ge=0.0, description="Area in square metres")
@@ -1047,8 +1006,7 @@ class AreaResponseSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ThresholdResponseSchema(BaseModel):
+class ThresholdResponseSchema(GreenLangBase):
     """EUDR Article 9 area threshold classification response."""
 
     area_hectares: float = Field(
@@ -1075,8 +1033,7 @@ class ThresholdResponseSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchAreaRequestSchema(BaseModel):
+class BatchAreaRequestSchema(GreenLangBase):
     """Request for batch area calculation."""
 
     plot_ids: Optional[List[str]] = Field(
@@ -1101,8 +1058,7 @@ class BatchAreaRequestSchema(BaseModel):
             )
         return self
 
-
-class BatchAreaResultSchema(BaseModel):
+class BatchAreaResultSchema(GreenLangBase):
     """Result for a single item in batch area calculation."""
 
     index: int = Field(..., ge=0, description="Index in the batch")
@@ -1119,8 +1075,7 @@ class BatchAreaResultSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchAreaResponseSchema(BaseModel):
+class BatchAreaResponseSchema(GreenLangBase):
     """Response for batch area calculation."""
 
     total: int = Field(..., ge=0, description="Total items processed")
@@ -1136,13 +1091,11 @@ class BatchAreaResponseSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Overlap Schemas
 # =============================================================================
 
-
-class OverlapDetectRequestSchema(BaseModel):
+class OverlapDetectRequestSchema(GreenLangBase):
     """Request to detect overlaps for a specific plot boundary."""
 
     plot_id: str = Field(
@@ -1164,8 +1117,7 @@ class OverlapDetectRequestSchema(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class OverlapScanRequestSchema(BaseModel):
+class OverlapScanRequestSchema(GreenLangBase):
     """Request for a full registry overlap scan."""
 
     region_bbox: Optional[BoundingBoxSchema] = Field(
@@ -1219,8 +1171,7 @@ class OverlapScanRequestSchema(BaseModel):
             )
         return v
 
-
-class OverlapRecordSchema(BaseModel):
+class OverlapRecordSchema(GreenLangBase):
     """Record of a detected overlap between two plot boundaries."""
 
     overlap_id: str = Field(
@@ -1260,14 +1211,13 @@ class OverlapRecordSchema(BaseModel):
         description="GeoJSON geometry of the overlap region",
     )
     detected_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Detection timestamp (UTC)",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class OverlapResponseSchema(BaseModel):
+class OverlapResponseSchema(GreenLangBase):
     """Response for overlap detection."""
 
     plot_id: str = Field(..., description="Subject plot identifier")
@@ -1297,8 +1247,7 @@ class OverlapResponseSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class OverlapScanResponseSchema(BaseModel):
+class OverlapScanResponseSchema(GreenLangBase):
     """Response for a full registry overlap scan."""
 
     total_overlaps: int = Field(
@@ -1327,8 +1276,7 @@ class OverlapScanResponseSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class OverlapResolutionSchema(BaseModel):
+class OverlapResolutionSchema(GreenLangBase):
     """Suggested resolution for a detected overlap."""
 
     overlap_id: str = Field(..., description="Overlap record identifier")
@@ -1353,8 +1301,7 @@ class OverlapResolutionSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class OverlapResolutionRequestSchema(BaseModel):
+class OverlapResolutionRequestSchema(GreenLangBase):
     """Request to resolve an overlap between plot boundaries."""
 
     overlap_id: str = Field(
@@ -1371,13 +1318,11 @@ class OverlapResolutionRequestSchema(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
 # =============================================================================
 # Version Schemas
 # =============================================================================
 
-
-class VersionSchema(BaseModel):
+class VersionSchema(GreenLangBase):
     """A single boundary version record."""
 
     plot_id: str = Field(..., description="Plot identifier")
@@ -1424,8 +1369,7 @@ class VersionSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class VersionHistoryResponseSchema(BaseModel):
+class VersionHistoryResponseSchema(GreenLangBase):
     """Version history for a plot boundary."""
 
     plot_id: str = Field(..., description="Plot identifier")
@@ -1446,8 +1390,7 @@ class VersionHistoryResponseSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class VersionAtDateRequestSchema(BaseModel):
+class VersionAtDateRequestSchema(GreenLangBase):
     """Request to retrieve boundary version at a specific date."""
 
     date: str = Field(
@@ -1467,6 +1410,7 @@ class VersionAtDateRequestSchema(BaseModel):
         # Accept both date-only and datetime formats
         from datetime import date as date_cls
 
+
         for fmt in ("%Y-%m-%d", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%dT%H:%M:%SZ",
                      "%Y-%m-%dT%H:%M:%S%z"):
             try:
@@ -1483,8 +1427,7 @@ class VersionAtDateRequestSchema(BaseModel):
                 f"date must be a valid ISO 8601 string, got '{v}'"
             )
 
-
-class VersionDiffRequestSchema(BaseModel):
+class VersionDiffRequestSchema(GreenLangBase):
     """Request to compute diff between two boundary versions."""
 
     version_a: int = Field(
@@ -1509,8 +1452,7 @@ class VersionDiffRequestSchema(BaseModel):
             )
         return self
 
-
-class VersionDiffResponseSchema(BaseModel):
+class VersionDiffResponseSchema(GreenLangBase):
     """Response for a version diff between two boundary versions."""
 
     plot_id: str = Field(..., description="Plot identifier")
@@ -1554,8 +1496,7 @@ class VersionDiffResponseSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class VersionLineageResponseSchema(BaseModel):
+class VersionLineageResponseSchema(GreenLangBase):
     """Complete version lineage for a plot boundary."""
 
     plot_id: str = Field(..., description="Plot identifier")
@@ -1575,13 +1516,11 @@ class VersionLineageResponseSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Export Schemas
 # =============================================================================
 
-
-class ExportRequestSchema(BaseModel):
+class ExportRequestSchema(GreenLangBase):
     """Request to export plot boundaries in a specific format."""
 
     plot_ids: List[str] = Field(
@@ -1624,8 +1563,7 @@ class ExportRequestSchema(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class ExportResponseSchema(BaseModel):
+class ExportResponseSchema(GreenLangBase):
     """Response for a boundary export operation."""
 
     export_id: str = Field(
@@ -1652,7 +1590,7 @@ class ExportResponseSchema(BaseModel):
         description="Inline export data (for small exports)",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Export timestamp (UTC)",
     )
     expires_at: Optional[datetime] = Field(
@@ -1662,8 +1600,7 @@ class ExportResponseSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchExportRequestSchema(BaseModel):
+class BatchExportRequestSchema(GreenLangBase):
     """Request to export boundaries in multiple formats."""
 
     plot_ids: List[str] = Field(
@@ -1693,8 +1630,7 @@ class BatchExportRequestSchema(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class BatchExportResponseSchema(BaseModel):
+class BatchExportResponseSchema(GreenLangBase):
     """Response for a multi-format batch export."""
 
     batch_export_id: str = Field(
@@ -1723,8 +1659,7 @@ class BatchExportResponseSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ComplianceReportSchema(BaseModel):
+class ComplianceReportSchema(GreenLangBase):
     """EUDR compliance report for boundary data quality."""
 
     report_id: str = Field(
@@ -1770,7 +1705,7 @@ class ComplianceReportSchema(BaseModel):
         description="Compliance improvement recommendations",
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Report generation timestamp",
     )
     provenance_hash: str = Field(
@@ -1780,13 +1715,11 @@ class ComplianceReportSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Split/Merge Schemas
 # =============================================================================
 
-
-class SplitRequestSchema(BaseModel):
+class SplitRequestSchema(GreenLangBase):
     """Request to split a plot boundary along a cutting line."""
 
     plot_id: str = Field(
@@ -1806,8 +1739,7 @@ class SplitRequestSchema(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class MergeRequestSchema(BaseModel):
+class MergeRequestSchema(GreenLangBase):
     """Request to merge multiple plot boundaries into one."""
 
     plot_ids: List[str] = Field(
@@ -1828,8 +1760,7 @@ class MergeRequestSchema(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class AreaConservationSchema(BaseModel):
+class AreaConservationSchema(GreenLangBase):
     """Area conservation check for split/merge operations."""
 
     original_area_m2: float = Field(
@@ -1857,8 +1788,7 @@ class AreaConservationSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class SplitResponseSchema(BaseModel):
+class SplitResponseSchema(GreenLangBase):
     """Response for a boundary split operation."""
 
     parent_plot_id: str = Field(
@@ -1889,8 +1819,7 @@ class SplitResponseSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class MergeResponseSchema(BaseModel):
+class MergeResponseSchema(GreenLangBase):
     """Response for a boundary merge operation."""
 
     parent_plot_ids: List[str] = Field(
@@ -1921,8 +1850,7 @@ class MergeResponseSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class GenealogyOperationSchema(BaseModel):
+class GenealogyOperationSchema(GreenLangBase):
     """A single operation in the split/merge genealogy."""
 
     operation_id: str = Field(
@@ -1956,8 +1884,7 @@ class GenealogyOperationSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class GenealogyResponseSchema(BaseModel):
+class GenealogyResponseSchema(GreenLangBase):
     """Split/merge genealogy for a plot boundary."""
 
     plot_id: str = Field(..., description="Subject plot identifier")
@@ -1981,13 +1908,11 @@ class GenealogyResponseSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Batch/Health Schemas
 # =============================================================================
 
-
-class BatchJobRequestSchema(BaseModel):
+class BatchJobRequestSchema(GreenLangBase):
     """Request to submit a batch processing job."""
 
     operation: str = Field(
@@ -2023,8 +1948,7 @@ class BatchJobRequestSchema(BaseModel):
             )
         return v_lower
 
-
-class BatchJobResponseSchema(BaseModel):
+class BatchJobResponseSchema(GreenLangBase):
     """Response for a batch job submission or status query."""
 
     batch_id: str = Field(
@@ -2050,7 +1974,7 @@ class BatchJobResponseSchema(BaseModel):
         description="URL to download results when completed",
     )
     submitted_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Job submission timestamp",
     )
     completed_at: Optional[datetime] = Field(
@@ -2064,8 +1988,7 @@ class BatchJobResponseSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class EngineHealthSchema(BaseModel):
+class EngineHealthSchema(GreenLangBase):
     """Health status of a single engine component."""
 
     name: str = Field(..., description="Engine name")
@@ -2078,8 +2001,7 @@ class EngineHealthSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class HealthResponseSchema(BaseModel):
+class HealthResponseSchema(GreenLangBase):
     """Service health response for load balancers and monitoring."""
 
     status: str = Field(..., description="Overall service status")
@@ -2106,19 +2028,17 @@ class HealthResponseSchema(BaseModel):
         description="Total boundaries in the registry",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Health check timestamp (UTC)",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # API Response Wrappers
 # =============================================================================
 
-
-class ApiResponse(BaseModel):
+class ApiResponse(GreenLangBase):
     """Standard API success response wrapper."""
 
     status: str = Field(default="success", description="Response status")
@@ -2126,14 +2046,13 @@ class ApiResponse(BaseModel):
     data: Optional[Any] = Field(None, description="Response payload")
     request_id: Optional[str] = Field(None, description="Request correlation ID")
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Response timestamp",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     """Structured error response for all API endpoints."""
 
     error: str = Field(..., description="Error type identifier")
@@ -2143,20 +2062,17 @@ class ErrorResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Pagination
 # =============================================================================
 
-
-class PaginatedMeta(BaseModel):
+class PaginatedMeta(GreenLangBase):
     """Pagination metadata for list responses."""
 
     total: int = Field(..., ge=0, description="Total number of results")
     limit: int = Field(..., ge=1, description="Maximum results returned")
     offset: int = Field(..., ge=0, description="Results skipped")
     has_more: bool = Field(..., description="Whether more results exist")
-
 
 # =============================================================================
 # Public API

@@ -63,25 +63,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -106,7 +100,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -123,7 +116,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal,
     denominator: Decimal,
@@ -134,11 +126,9 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP.
@@ -153,18 +143,15 @@ def _round_val(value: Decimal, places: int = 6) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class BoundaryMethod(str, Enum):
     """Organizational boundary method per GHG Protocol Ch 3.
@@ -175,7 +162,6 @@ class BoundaryMethod(str, Enum):
     EQUITY_SHARE = "equity_share"
     FINANCIAL_CONTROL = "financial_control"
     OPERATIONAL_CONTROL = "operational_control"
-
 
 class DataQualityScore(str, Enum):
     """Data quality scoring on a 1-5 scale per GHG Protocol guidance.
@@ -189,14 +175,12 @@ class DataQualityScore(str, Enum):
     SCORE_4 = "4"
     SCORE_5 = "5"
 
-
 class Scope(str, Enum):
     """GHG emission scope per GHG Protocol Corporate Standard."""
     SCOPE_1 = "scope_1"
     SCOPE_2_LOCATION = "scope_2_location"
     SCOPE_2_MARKET = "scope_2_market"
     SCOPE_3 = "scope_3"
-
 
 class GasType(str, Enum):
     """Greenhouse gas type per IPCC / UNFCCC classification."""
@@ -207,7 +191,6 @@ class GasType(str, Enum):
     PFCS = "pfcs"
     SF6 = "sf6"
     NF3 = "nf3"
-
 
 class FuelType(str, Enum):
     """Fuel types with associated emission factors."""
@@ -227,7 +210,6 @@ class FuelType(str, Enum):
     ETHANOL = "ethanol"
     BIODIESEL = "biodiesel"
 
-
 class Scope3Category(str, Enum):
     """GHG Protocol Scope 3 categories (1-15)."""
     CAT_01_PURCHASED_GOODS = "cat_01_purchased_goods"
@@ -246,7 +228,6 @@ class Scope3Category(str, Enum):
     CAT_14_FRANCHISES = "cat_14_franchises"
     CAT_15_INVESTMENTS = "cat_15_investments"
 
-
 class Scope1SourceType(str, Enum):
     """Scope 1 emission source sub-categories."""
     STATIONARY_COMBUSTION = "stationary_combustion"
@@ -255,11 +236,9 @@ class Scope1SourceType(str, Enum):
     FUGITIVE_EMISSIONS = "fugitive_emissions"
     REFRIGERANTS = "refrigerants"
 
-
 # ---------------------------------------------------------------------------
 # Constants -- Reference Data
 # ---------------------------------------------------------------------------
-
 
 # IPCC AR6 GWP-100 values (100-year time horizon).
 # Source: IPCC Sixth Assessment Report, Working Group I, Table 7.15 (2021).
@@ -445,11 +424,9 @@ SCOPE_3_NAMES: Dict[str, str] = {
     "cat_15_investments": "Cat 15: Investments",
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class FuelConsumptionEntry(BaseModel):
     """A single fuel consumption record for Scope 1 calculation.
@@ -475,7 +452,6 @@ class FuelConsumptionEntry(BaseModel):
         default=DataQualityScore.SCORE_3, description="Data quality (1-5)"
     )
     notes: str = Field(default="", max_length=500)
-
 
 class RefrigerantEntry(BaseModel):
     """Refrigerant leakage data for Scope 1 calculation.
@@ -505,7 +481,6 @@ class RefrigerantEntry(BaseModel):
     data_quality: DataQualityScore = Field(
         default=DataQualityScore.SCORE_3,
     )
-
 
 class ElectricityEntry(BaseModel):
     """Electricity consumption record for Scope 2 calculation.
@@ -539,7 +514,6 @@ class ElectricityEntry(BaseModel):
         default=DataQualityScore.SCORE_3,
     )
 
-
 class Scope3SpendEntry(BaseModel):
     """Spend-based Scope 3 data for a single category.
 
@@ -564,7 +538,6 @@ class Scope3SpendEntry(BaseModel):
         default=DataQualityScore.SCORE_4,
     )
     notes: str = Field(default="", max_length=500)
-
 
 class BaselineInput(BaseModel):
     """Complete input data for baseline GHG assessment.
@@ -624,11 +597,9 @@ class BaselineInput(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class Scope1Detail(BaseModel):
     """Scope 1 emission breakdown by source type.
@@ -648,7 +619,6 @@ class Scope1Detail(BaseModel):
     refrigerants_tco2e: Decimal = Field(default=Decimal("0"))
     total_tco2e: Decimal = Field(default=Decimal("0"))
 
-
 class Scope2Detail(BaseModel):
     """Scope 2 emission breakdown.
 
@@ -660,7 +630,6 @@ class Scope2Detail(BaseModel):
     location_based_tco2e: Decimal = Field(default=Decimal("0"))
     market_based_tco2e: Decimal = Field(default=Decimal("0"))
     total_electricity_mwh: Decimal = Field(default=Decimal("0"))
-
 
 class Scope3Detail(BaseModel):
     """Scope 3 emission breakdown by category.
@@ -682,7 +651,6 @@ class Scope3Detail(BaseModel):
         default="spend_based",
         description="Calculation methodology (spend_based for starter tier)",
     )
-
 
 class EmissionsByGas(BaseModel):
     """Disaggregation of emissions by greenhouse gas.
@@ -706,7 +674,6 @@ class EmissionsByGas(BaseModel):
     nf3_tco2e: Decimal = Field(default=Decimal("0"))
     total_tco2e: Decimal = Field(default=Decimal("0"))
 
-
 class IntensityMetrics(BaseModel):
     """Emission intensity metrics.
 
@@ -720,7 +687,6 @@ class IntensityMetrics(BaseModel):
     per_headcount: Optional[Decimal] = Field(
         None, description="tCO2e per employee"
     )
-
 
 class BaseYearAssessment(BaseModel):
     """Base year selection and validation result.
@@ -738,7 +704,6 @@ class BaseYearAssessment(BaseModel):
     validation_notes: List[str] = Field(default_factory=list)
     years_since_base: int = Field(default=0)
 
-
 class DataQualityAssessment(BaseModel):
     """Data quality assessment across all inputs.
 
@@ -754,7 +719,6 @@ class DataQualityAssessment(BaseModel):
     entry_count: int = Field(default=0)
     primary_data_pct: Decimal = Field(default=Decimal("0"))
     recommendations: List[str] = Field(default_factory=list)
-
 
 class BaselineResult(BaseModel):
     """Complete GHG baseline assessment result.
@@ -783,7 +747,7 @@ class BaselineResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     reporting_year: int = Field(default=0)
     boundary_method: str = Field(default="operational_control")
@@ -806,11 +770,9 @@ class BaselineResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class NetZeroBaselineEngine:
     """Unified GHG baseline assessment engine for Net Zero Starter Pack.

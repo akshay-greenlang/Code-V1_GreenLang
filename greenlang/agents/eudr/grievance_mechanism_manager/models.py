@@ -22,7 +22,8 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase
 
 
 # ---------------------------------------------------------------------------
@@ -188,7 +189,7 @@ SEVERITY_SCORES: Dict[str, int] = {
 # ---------------------------------------------------------------------------
 
 
-class CausalChainStep(BaseModel):
+class CausalChainStep(GreenLangBase):
     """A step in a root cause causal chain."""
     step: int = Field(..., ge=1, description="Step number in causal chain")
     description: str = Field(..., description="Description of causal step")
@@ -197,7 +198,7 @@ class CausalChainStep(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class MediationSession(BaseModel):
+class MediationSession(GreenLangBase):
     """A single mediation session record."""
     session_number: int = Field(..., ge=1, description="Session number")
     date: Optional[datetime] = None
@@ -209,7 +210,7 @@ class MediationSession(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class RemediationAction(BaseModel):
+class RemediationAction(GreenLangBase):
     """An individual remediation action with deadline."""
     action: str = Field(..., description="Action description")
     deadline: Optional[datetime] = None
@@ -219,7 +220,7 @@ class RemediationAction(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class CollectiveDemand(BaseModel):
+class CollectiveDemand(GreenLangBase):
     """A demand in a collective grievance."""
     demand: str = Field(..., description="Demand description")
     priority: str = Field(default="medium", description="Priority (low/medium/high/critical)")
@@ -228,7 +229,7 @@ class CollectiveDemand(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class ScoreFactor(BaseModel):
+class ScoreFactor(GreenLangBase):
     """A factor contributing to a risk score."""
     factor_name: str = Field(..., description="Factor name")
     weight: Decimal = Field(default=Decimal("0"), ge=0, le=1, description="Factor weight")
@@ -238,7 +239,7 @@ class ScoreFactor(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class ReportSection(BaseModel):
+class ReportSection(GreenLangBase):
     """A section of a regulatory compliance report."""
     title: str = Field(..., description="Section title")
     content: Dict[str, Any] = Field(default_factory=dict, description="Section content")
@@ -252,7 +253,7 @@ class ReportSection(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class GrievanceAnalyticsRecord(BaseModel):
+class GrievanceAnalyticsRecord(GreenLangBase):
     """Grievance pattern analysis record.
 
     Represents a detected pattern across multiple grievances including
@@ -279,7 +280,7 @@ class GrievanceAnalyticsRecord(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class RootCauseRecord(BaseModel):
+class RootCauseRecord(GreenLangBase):
     """Root cause analysis record for a specific grievance.
 
     Supports five-whys, fishbone, fault-tree, and correlation
@@ -303,7 +304,7 @@ class RootCauseRecord(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class MediationRecord(BaseModel):
+class MediationRecord(GreenLangBase):
     """Multi-party mediation workflow record.
 
     Tracks the full mediation lifecycle from initiation through
@@ -331,7 +332,7 @@ class MediationRecord(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class RemediationRecord(BaseModel):
+class RemediationRecord(GreenLangBase):
     """Remediation effectiveness tracking record.
 
     Tracks the full lifecycle of remediation actions from planning
@@ -359,7 +360,7 @@ class RemediationRecord(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class RiskScoreRecord(BaseModel):
+class RiskScoreRecord(GreenLangBase):
     """Grievance risk scoring record.
 
     Predictive risk analytics across operator, supplier, commodity,
@@ -385,7 +386,7 @@ class RiskScoreRecord(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class CollectiveGrievanceRecord(BaseModel):
+class CollectiveGrievanceRecord(GreenLangBase):
     """Collective/class-action grievance record.
 
     Manages group complaints from multiple stakeholders with demand
@@ -413,7 +414,7 @@ class CollectiveGrievanceRecord(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class RegulatoryReport(BaseModel):
+class RegulatoryReport(GreenLangBase):
     """Generated regulatory compliance report.
 
     Audit-ready documentation for EUDR Article 16, CSDDD Article 8,
@@ -441,7 +442,7 @@ class RegulatoryReport(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class AuditEntry(BaseModel):
+class AuditEntry(GreenLangBase):
     """An audit trail entry for grievance mechanism manager events."""
     entry_id: str = Field(..., description="Unique audit entry identifier")
     entity_type: str = Field(..., description="Entity type being audited")
@@ -455,7 +456,7 @@ class AuditEntry(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class HealthStatus(BaseModel):
+class HealthStatus(GreenLangBase):
     """Health check response for the Grievance Mechanism Manager."""
     agent_id: str = AGENT_ID
     status: str = "healthy"

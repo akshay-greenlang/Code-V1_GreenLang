@@ -921,7 +921,7 @@ class ComplianceCheckerEngine:
                 severity="minor",
                 message="YoY change explained"
                 if has_yoy_explanation
-                else="YoY explanation not available (may be first year)",
+                else "YoY explanation not available (may be first year)",
                 recommendation="Explain drivers of year-over-year change",
             )
         )

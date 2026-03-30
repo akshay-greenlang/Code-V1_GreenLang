@@ -46,6 +46,7 @@ import math
 from datetime import date, datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.third_party_audit_manager.config import (
     ThirdPartyAuditManagerConfig,
@@ -133,12 +134,6 @@ AQL_LEVELS: Dict[str, float] = {
     "reduced": 0.10,
 }
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_provenance_hash(data: Dict[str, Any]) -> str:
     """Compute SHA-256 hash for provenance tracking.
 
@@ -150,7 +145,6 @@ def _compute_provenance_hash(data: Dict[str, Any]) -> str:
     """
     canonical = json.dumps(data, sort_keys=True, default=str, separators=(",", ":"))
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-
 
 class AuditExecutionEngine:
     """Audit execution management engine.
@@ -209,7 +203,7 @@ class AuditExecutionEngine:
             )
 
         audit.status = new_status
-        audit.updated_at = _utcnow()
+        audit.updated_at = utcnow()
 
         # Set actual dates based on status
         if new_status == AuditStatus.IN_PROGRESS:
@@ -324,7 +318,7 @@ class AuditExecutionEngine:
             criterion["evidence_ids"] = evidence_ids
         if notes:
             criterion["notes"] = notes
-        criterion["assessed_at"] = _utcnow().isoformat()
+        criterion["assessed_at"] = utcnow().isoformat()
 
         # Recalculate progress
         checklist = self._recalculate_progress(checklist)
@@ -495,7 +489,7 @@ class AuditExecutionEngine:
             ),
             "methodology": "ISO 19011:2018 Annex A (Cochran formula "
             "with finite population correction)",
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
         }
 
     def get_audit_progress(
@@ -598,7 +592,7 @@ class AuditExecutionEngine:
                 "by_type": evidence_by_type,
             },
             "findings_count": audit.findings_count,
-            "calculated_at": _utcnow().isoformat(),
+            "calculated_at": utcnow().isoformat(),
         }
 
     def validate_evidence_package(
@@ -655,7 +649,7 @@ class AuditExecutionEngine:
             "items_without_hash": items_without_hash,
             "is_valid": is_valid,
             "warnings": warnings,
-            "validated_at": _utcnow().isoformat(),
+            "validated_at": utcnow().isoformat(),
         }
 
     def _recalculate_progress(
@@ -697,7 +691,7 @@ class AuditExecutionEngine:
                 Decimal("100") if checklist.total_criteria > 0 else Decimal("0")
             )
 
-        checklist.updated_at = _utcnow()
+        checklist.updated_at = utcnow()
 
         # Update provenance hash
         checklist.provenance_hash = _compute_provenance_hash({

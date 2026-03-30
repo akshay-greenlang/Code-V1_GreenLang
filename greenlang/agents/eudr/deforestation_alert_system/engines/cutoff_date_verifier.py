@@ -86,6 +86,8 @@ from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -97,12 +99,6 @@ _MODULE_VERSION: str = "1.0.0"
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -122,7 +118,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str = "cv") -> str:
     """Generate a unique identifier with a given prefix.
 
@@ -133,7 +128,6 @@ def _generate_id(prefix: str = "cv") -> str:
         ID in format ``{prefix}-{hex12}``.
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 def _to_decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
@@ -154,7 +148,6 @@ def _to_decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError) as exc:
         raise ValueError(f"Cannot convert {value!r} to Decimal") from exc
 
-
 def _clamp_decimal(value: Decimal, lo: Decimal, hi: Decimal) -> Decimal:
     """Clamp a Decimal value to [lo, hi] range.
 
@@ -172,7 +165,6 @@ def _clamp_decimal(value: Decimal, lo: Decimal, hi: Decimal) -> Decimal:
         return hi
     return value
 
-
 def _date_from_str(date_str: str) -> date:
     """Parse an ISO date string to a date object.
 
@@ -187,11 +179,9 @@ def _date_from_str(date_str: str) -> date:
     """
     return date.fromisoformat(date_str)
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class CutoffResult(str, Enum):
     """EUDR cutoff date verification result.
@@ -211,7 +201,6 @@ class CutoffResult(str, Enum):
     ONGOING = "ONGOING"
     UNCERTAIN = "UNCERTAIN"
 
-
 class ForestState(str, Enum):
     """Observed forest cover state at a specific point in time.
 
@@ -228,7 +217,6 @@ class ForestState(str, Enum):
     TRANSITIONING = "TRANSITIONING"
     DEGRADED = "DEGRADED"
     UNKNOWN = "UNKNOWN"
-
 
 class EvidenceSource(str, Enum):
     """Satellite data source providing temporal evidence.
@@ -253,7 +241,6 @@ class EvidenceSource(str, Enum):
     AERIAL = "AERIAL"
     HISTORICAL_MAP = "HISTORICAL_MAP"
 
-
 class ConfidenceLevel(str, Enum):
     """Confidence level classification for cutoff verification.
 
@@ -269,7 +256,6 @@ class ConfidenceLevel(str, Enum):
     LOW = "LOW"
     INSUFFICIENT = "INSUFFICIENT"
 
-
 class VerificationStatus(str, Enum):
     """Verification processing status.
 
@@ -284,7 +270,6 @@ class VerificationStatus(str, Enum):
     PARTIAL = "PARTIAL"
     FAILED = "FAILED"
     PENDING = "PENDING"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -461,7 +446,6 @@ TROPICAL_LATITUDE_BAND: Tuple[Decimal, Decimal] = (
     Decimal("23.5"),
 )
 
-
 # ---------------------------------------------------------------------------
 # Reference Data: Simulated Satellite Observations
 # ---------------------------------------------------------------------------
@@ -519,11 +503,9 @@ HANSEN_LOSS_YEARS: Dict[str, int] = {
     "sample_uncertain": 0,
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class TemporalEvidence:
@@ -579,7 +561,6 @@ class TemporalEvidence:
             "metadata": self.metadata,
         }
 
-
 @dataclass
 class TemporalTransition:
     """A detected forest state transition between two observations.
@@ -626,7 +607,6 @@ class TemporalTransition:
             "confidence": str(self.confidence),
             "confirmed": self.confirmed,
         }
-
 
 @dataclass
 class CutoffVerification:
@@ -733,7 +713,6 @@ class CutoffVerification:
             "provenance_hash": self.provenance_hash,
         }
 
-
 @dataclass
 class EvidenceChain:
     """Complete temporal evidence chain for a detection.
@@ -783,7 +762,6 @@ class EvidenceChain:
             "max_observation_gap_days": self.max_observation_gap_days,
             "provenance_hash": self.provenance_hash,
         }
-
 
 @dataclass
 class ForestTimeline:
@@ -841,7 +819,6 @@ class ForestTimeline:
             "provenance_hash": self.provenance_hash,
         }
 
-
 @dataclass
 class BatchVerificationResult:
     """Result of a batch cutoff date verification.
@@ -895,11 +872,9 @@ class BatchVerificationResult:
             "provenance_hash": self.provenance_hash,
         }
 
-
 # ---------------------------------------------------------------------------
 # CutoffDateVerifier
 # ---------------------------------------------------------------------------
-
 
 class CutoffDateVerifier:
     """Production-grade EUDR cutoff date verification engine.
@@ -1132,7 +1107,7 @@ class CutoffDateVerifier:
             risk_level=risk_level,
             verification_status=verification_status.value if isinstance(verification_status, VerificationStatus) else verification_status,
             warnings=warnings,
-            calculation_timestamp=_utcnow().isoformat(),
+            calculation_timestamp=utcnow().isoformat(),
             processing_time_ms=round(processing_time_ms, 3),
         )
         verification.provenance_hash = _compute_hash(verification)

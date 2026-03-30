@@ -72,30 +72,23 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _today() -> date:
     """Return current UTC date."""
     return datetime.now(timezone.utc).date()
 
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -113,7 +106,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -122,7 +114,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -134,22 +125,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class PeriodStatus(str, Enum):
     """Inventory period lifecycle status.
@@ -172,7 +159,6 @@ class PeriodStatus(str, Enum):
     ARCHIVED = "archived"
     AMENDED = "amended"
 
-
 class PeriodType(str, Enum):
     """Type of inventory period boundary.
 
@@ -183,7 +169,6 @@ class PeriodType(str, Enum):
     CALENDAR_YEAR = "calendar_year"
     FISCAL_YEAR = "fiscal_year"
     CUSTOM = "custom"
-
 
 class MilestoneStatus(str, Enum):
     """Milestone completion status.
@@ -199,7 +184,6 @@ class MilestoneStatus(str, Enum):
     COMPLETED = "completed"
     OVERDUE = "overdue"
     SKIPPED = "skipped"
-
 
 class ComparisonMetric(str, Enum):
     """Metric types for period-over-period comparison.
@@ -221,7 +205,6 @@ class ComparisonMetric(str, Enum):
     INTENSITY = "intensity"
     DATA_COVERAGE = "data_coverage"
     DATA_QUALITY_SCORE = "data_quality_score"
-
 
 # ---------------------------------------------------------------------------
 # Transition Matrix
@@ -257,11 +240,9 @@ DEFAULT_MILESTONES: List[Dict[str, str]] = [
     {"phase": "final", "name": "Report Published/Submitted", "order": 10},
 ]
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Core
 # ---------------------------------------------------------------------------
-
 
 class PeriodMilestone(BaseModel):
     """A milestone within an inventory period lifecycle.
@@ -291,7 +272,6 @@ class PeriodMilestone(BaseModel):
     assigned_to: str = Field(default="", max_length=300, description="Assignee")
     notes: str = Field(default="", max_length=2000, description="Notes")
 
-
 class PeriodTransition(BaseModel):
     """Record of a state transition in the period lifecycle.
 
@@ -310,14 +290,13 @@ class PeriodTransition(BaseModel):
     from_status: PeriodStatus = Field(..., description="Previous status")
     to_status: PeriodStatus = Field(..., description="New status")
     transitioned_at: datetime = Field(
-        default_factory=_utcnow, description="Transition timestamp"
+        default_factory=utcnow, description="Transition timestamp"
     )
     transitioned_by: str = Field(default="", max_length=300, description="User")
     reason: str = Field(default="", max_length=2000, description="Reason")
     guard_checks_passed: List[str] = Field(
         default_factory=list, description="Guard checks"
     )
-
 
 class InventoryPeriod(BaseModel):
     """A single GHG inventory reporting period.
@@ -371,7 +350,7 @@ class InventoryPeriod(BaseModel):
     locked: bool = Field(default=False, description="Is locked?")
     locked_at: Optional[datetime] = Field(default=None, description="Lock timestamp")
     locked_by: str = Field(default="", description="Locked by user")
-    created_at: datetime = Field(default_factory=_utcnow, description="Created at")
+    created_at: datetime = Field(default_factory=utcnow, description="Created at")
     created_by: str = Field(default="", max_length=300, description="Created by")
     amended_from: str = Field(default="", description="Amended from period ID")
     amendment_reason: str = Field(
@@ -390,11 +369,9 @@ class InventoryPeriod(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Comparison
 # ---------------------------------------------------------------------------
-
 
 class MetricComparison(BaseModel):
     """Comparison of a single metric between two periods.
@@ -413,7 +390,6 @@ class MetricComparison(BaseModel):
     absolute_change: Decimal = Field(default=Decimal("0"), description="Abs change")
     percentage_change: Decimal = Field(default=Decimal("0"), description="% change")
     direction: str = Field(default="no_change", description="Direction")
-
 
 class PeriodComparison(BaseModel):
     """Year-over-year comparison between two inventory periods.
@@ -437,13 +413,11 @@ class PeriodComparison(BaseModel):
         default_factory=list, description="Metric comparisons"
     )
     summary: str = Field(default="", description="Summary text")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Timestamp")
-
+    calculated_at: datetime = Field(default_factory=utcnow, description="Timestamp")
 
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Result
 # ---------------------------------------------------------------------------
-
 
 class PeriodManagementResult(BaseModel):
     """Complete result from an inventory period management operation.
@@ -473,12 +447,11 @@ class PeriodManagementResult(BaseModel):
     periods_managed: int = Field(default=0, description="Total periods managed")
     active_periods: int = Field(default=0, description="Active periods")
     warnings: List[str] = Field(default_factory=list, description="Warnings")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Timestamp")
     processing_time_ms: Decimal = Field(
         default=Decimal("0"), description="Processing time (ms)"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 # ---------------------------------------------------------------------------
 # Model Rebuild (resolve forward references from __future__ annotations)
@@ -491,11 +464,9 @@ MetricComparison.model_rebuild()
 PeriodComparison.model_rebuild()
 PeriodManagementResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class InventoryPeriodEngine:
     """Multi-year GHG inventory period lifecycle management engine.
@@ -694,7 +665,7 @@ class InventoryPeriodEngine:
         # Auto-lock on APPROVED.
         if to_status == PeriodStatus.APPROVED:
             period.locked = True
-            period.locked_at = _utcnow()
+            period.locked_at = utcnow()
             period.locked_by = transitioned_by
             logger.info("Period '%s' auto-locked on approval", period.period_name)
 
@@ -868,7 +839,7 @@ class InventoryPeriodEngine:
             )
 
         period.locked = True
-        period.locked_at = _utcnow()
+        period.locked_at = utcnow()
         period.locked_by = locked_by
 
         logger.info("Period '%s' locked by %s", period.period_name, locked_by)

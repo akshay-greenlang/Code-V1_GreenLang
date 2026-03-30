@@ -59,25 +59,20 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import AlertSeverity, AlertStatus
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -90,11 +85,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class AlertType(str, Enum):
     """Types of multi-site management alerts."""
@@ -106,15 +99,6 @@ class AlertType(str, Enum):
     ALLOCATION_VARIANCE = "allocation_variance"
     COMPLETENESS = "completeness"
 
-
-class AlertSeverity(str, Enum):
-    """Alert severity levels."""
-
-    INFO = "info"
-    WARNING = "warning"
-    CRITICAL = "critical"
-
-
 class AlertChannel(str, Enum):
     """Alert delivery channels."""
 
@@ -124,18 +108,6 @@ class AlertChannel(str, Enum):
     TEAMS = "teams"
     IN_APP = "in_app"
     LOG = "log"
-
-
-class AlertStatus(str, Enum):
-    """Alert delivery status."""
-
-    QUEUED = "queued"
-    SENT = "sent"
-    DELIVERED = "delivered"
-    FAILED = "failed"
-    SUPPRESSED = "suppressed"
-    ACKNOWLEDGED = "acknowledged"
-
 
 # ---------------------------------------------------------------------------
 # Alert Defaults
@@ -159,11 +131,9 @@ DEFAULT_THRESHOLDS: Dict[str, float] = {
     "cooldown_period_s": 3600.0,
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class AlertConfig(BaseModel):
     """Configuration for alert bridge."""
@@ -187,7 +157,6 @@ class AlertConfig(BaseModel):
     enable_suppression: bool = Field(True)
     cooldown_period_s: float = Field(3600.0, ge=0.0)
 
-
 class Alert(BaseModel):
     """An alert to be sent."""
 
@@ -203,7 +172,6 @@ class Alert(BaseModel):
     context_hash: str = ""
     provenance_hash: str = ""
 
-
 class ChannelResult(BaseModel):
     """Result of sending through a single channel."""
 
@@ -212,7 +180,6 @@ class ChannelResult(BaseModel):
     sent_at: str = ""
     error_message: str = ""
     retry_count: int = 0
-
 
 class AlertResult(BaseModel):
     """Result of sending an alert."""
@@ -228,7 +195,6 @@ class AlertResult(BaseModel):
     provenance_hash: str = ""
     duration_ms: float = 0.0
 
-
 class ThresholdCheckResult(BaseModel):
     """Result of checking multi-site thresholds."""
 
@@ -238,11 +204,9 @@ class ThresholdCheckResult(BaseModel):
     checked_at: str = ""
     provenance_hash: str = ""
 
-
 # ---------------------------------------------------------------------------
 # Suppression Tracker
 # ---------------------------------------------------------------------------
-
 
 class _SuppressionTracker:
     """Tracks recently sent alerts for deduplication."""
@@ -273,11 +237,9 @@ class _SuppressionTracker:
         """Number of active suppression entries."""
         return len(self._sent)
 
-
 # ---------------------------------------------------------------------------
 # Bridge Implementation
 # ---------------------------------------------------------------------------
-
 
 class AlertBridge:
     """
@@ -510,7 +472,7 @@ class AlertBridge:
             recipients=recipients or self.config.recipients,
             channels=[c.value for c in (channels or self.config.default_channels)],
             metadata=context,
-            created_at=_utcnow().isoformat(),
+            created_at=utcnow().isoformat(),
             context_hash=context_hash,
             provenance_hash=_compute_hash(context),
         )
@@ -564,7 +526,7 @@ class AlertBridge:
         return ChannelResult(
             channel=channel,
             status=AlertStatus.SENT.value,
-            sent_at=_utcnow().isoformat(),
+            sent_at=utcnow().isoformat(),
         )
 
     def _build_subject(self, alert_type: AlertType, context: Dict[str, Any]) -> str:
@@ -617,7 +579,7 @@ class AlertBridge:
             recipients=self.config.recipients,
             channels=[c.value for c in self.config.default_channels],
             metadata=context,
-            created_at=_utcnow().isoformat(),
+            created_at=utcnow().isoformat(),
             context_hash=_compute_hash(context),
             provenance_hash=_compute_hash(context),
         )
@@ -627,7 +589,7 @@ class AlertBridge:
         return ThresholdCheckResult(
             alerts_triggered=len(alerts),
             alerts=alerts,
-            checked_at=_utcnow().isoformat(),
+            checked_at=utcnow().isoformat(),
             provenance_hash=_compute_hash({"alerts": len(alerts)}),
         )
 

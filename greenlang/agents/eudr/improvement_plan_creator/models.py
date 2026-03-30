@@ -23,7 +23,8 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase
 
 
 # ---------------------------------------------------------------------------
@@ -192,7 +193,7 @@ SUPPORTED_COMMODITIES: List[str] = [c.value for c in EUDRCommodity]
 # ---------------------------------------------------------------------------
 
 
-class Finding(BaseModel):
+class Finding(GreenLangBase):
     """A finding from an upstream EUDR agent.
 
     Represents a discrete compliance observation, risk signal, or
@@ -240,7 +241,7 @@ class Finding(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class AggregatedFindings(BaseModel):
+class AggregatedFindings(GreenLangBase):
     """Consolidated findings from multiple agents.
 
     Groups, deduplicates, and categorizes findings to provide a unified
@@ -273,7 +274,7 @@ class AggregatedFindings(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class ComplianceGap(BaseModel):
+class ComplianceGap(GreenLangBase):
     """A compliance gap identified through gap analysis.
 
     Represents the delta between current compliance state and EUDR
@@ -319,7 +320,7 @@ class ComplianceGap(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class RootCause(BaseModel):
+class RootCause(GreenLangBase):
     """Root cause identified via 5-Whys or fishbone analysis.
 
     Captures the underlying systemic cause of a compliance gap with
@@ -365,7 +366,7 @@ class RootCause(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class FishboneAnalysis(BaseModel):
+class FishboneAnalysis(GreenLangBase):
     """Complete fishbone (Ishikawa) diagram analysis for a gap.
 
     Organizes root causes by category to identify systemic patterns
@@ -394,7 +395,7 @@ class FishboneAnalysis(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class ImprovementAction(BaseModel):
+class ImprovementAction(GreenLangBase):
     """A SMART improvement action within an improvement plan.
 
     Specific, Measurable, Achievable, Relevant, Time-bound action
@@ -492,7 +493,7 @@ class ImprovementAction(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class StakeholderAssignment(BaseModel):
+class StakeholderAssignment(GreenLangBase):
     """RACI assignment for a stakeholder on an improvement action.
 
     Maps stakeholders to their responsibility roles for each action
@@ -533,7 +534,7 @@ class StakeholderAssignment(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class ProgressMilestone(BaseModel):
+class ProgressMilestone(GreenLangBase):
     """Progress milestone for tracking action completion."""
 
     milestone_id: str = Field(
@@ -555,7 +556,7 @@ class ProgressMilestone(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class ProgressSnapshot(BaseModel):
+class ProgressSnapshot(GreenLangBase):
     """Point-in-time progress snapshot for an improvement plan.
 
     Captures completion percentages, on-track metrics, and
@@ -595,7 +596,7 @@ class ProgressSnapshot(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class NotificationRecord(BaseModel):
+class NotificationRecord(GreenLangBase):
     """Record of a notification sent to a stakeholder."""
 
     notification_id: str = Field(
@@ -617,7 +618,7 @@ class NotificationRecord(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class ImprovementPlan(BaseModel):
+class ImprovementPlan(GreenLangBase):
     """Top-level improvement plan aggregating all components.
 
     The central model that ties together findings, gaps, root causes,
@@ -678,7 +679,7 @@ class ImprovementPlan(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class PlanSummary(BaseModel):
+class PlanSummary(GreenLangBase):
     """Summary view of an improvement plan for listings."""
 
     plan_id: str
@@ -697,7 +698,7 @@ class PlanSummary(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class PlanReport(BaseModel):
+class PlanReport(GreenLangBase):
     """Comprehensive improvement plan report for audit and DDS.
 
     Combines plan details, gap analysis results, action summaries,
@@ -732,7 +733,7 @@ class PlanReport(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class HealthStatus(BaseModel):
+class HealthStatus(GreenLangBase):
     """Health check response for the Improvement Plan Creator."""
 
     agent_id: str = AGENT_ID

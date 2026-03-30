@@ -34,7 +34,7 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.agents.base_agents import DeterministicAgent, AuditEntry
@@ -44,6 +44,7 @@ from greenlang.utilities.determinism import (
     content_hash,
     deterministic_id,
 )
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -84,7 +85,7 @@ class MilestoneStatus(str, Enum):
 # Pydantic Models
 # =============================================================================
 
-class ScenarioConstraint(BaseModel):
+class ScenarioConstraint(GreenLangBase):
     """Constraint on scenario execution."""
     constraint_type: ConstraintType = Field(..., description="Type of constraint")
     value: float = Field(..., description="Constraint value")
@@ -93,7 +94,7 @@ class ScenarioConstraint(BaseModel):
     flexibility_percent: float = Field(default=0, ge=0, le=50, description="Flexibility in constraint")
 
 
-class ScheduledOption(BaseModel):
+class ScheduledOption(GreenLangBase):
     """Abatement option scheduled within a scenario."""
     option_id: str = Field(..., description="Abatement option ID")
     option_name: str = Field(..., description="Option name")
@@ -122,7 +123,7 @@ class ScheduledOption(BaseModel):
     technology_readiness: int = Field(default=7, ge=1, le=9, description="TRL at start")
 
 
-class ScenarioMilestone(BaseModel):
+class ScenarioMilestone(GreenLangBase):
     """Milestone within a scenario."""
     year: int = Field(..., description="Milestone year")
     name: str = Field(..., description="Milestone name")
@@ -145,7 +146,7 @@ class ScenarioMilestone(BaseModel):
     status: MilestoneStatus = Field(default=MilestoneStatus.PLANNED)
 
 
-class DecarbonizationScenario(BaseModel):
+class DecarbonizationScenario(GreenLangBase):
     """Complete decarbonization scenario."""
     scenario_id: str = Field(..., description="Unique scenario identifier")
     name: str = Field(..., description="Scenario name")
@@ -196,7 +197,7 @@ class DecarbonizationScenario(BaseModel):
     provenance_hash: str = Field(default="", description="Hash for audit trail")
 
 
-class PathwayScenarioBuilderInput(BaseModel):
+class PathwayScenarioBuilderInput(GreenLangBase):
     """Input model for PathwayScenarioBuilderAgent."""
     operation: str = Field(
         default="build_scenario",
@@ -237,7 +238,7 @@ class PathwayScenarioBuilderInput(BaseModel):
     discount_rate: float = Field(default=0.08, ge=0, le=0.3, description="Discount rate for NPV")
 
 
-class PathwayScenarioBuilderOutput(BaseModel):
+class PathwayScenarioBuilderOutput(GreenLangBase):
     """Output model for PathwayScenarioBuilderAgent."""
     operation: str = Field(..., description="Operation performed")
     success: bool = Field(..., description="Whether operation succeeded")

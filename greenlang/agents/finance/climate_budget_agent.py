@@ -31,10 +31,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.agents.categories import AgentCategory
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -93,7 +94,7 @@ SBTI_PATHWAYS = {
 # =============================================================================
 
 
-class BudgetAllocation(BaseModel):
+class BudgetAllocation(GreenLangBase):
     """Carbon budget allocation for an entity."""
     allocation_id: str = Field(..., description="Unique identifier")
     entity_name: str = Field(..., description="Entity name")
@@ -124,7 +125,7 @@ class BudgetAllocation(BaseModel):
     includes_scope3: bool = Field(default=False)
 
 
-class BudgetVariance(BaseModel):
+class BudgetVariance(GreenLangBase):
     """Budget variance analysis."""
     allocation_id: str
     entity_name: str
@@ -157,7 +158,7 @@ class BudgetVariance(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
 
 
-class CarbonBudgetStatus(BaseModel):
+class CarbonBudgetStatus(GreenLangBase):
     """Overall carbon budget status."""
     status_date: datetime = Field(default_factory=datetime.utcnow)
     reporting_period: str
@@ -191,7 +192,7 @@ class CarbonBudgetStatus(BaseModel):
     target_annual_emissions: float
 
 
-class ClimateBudgetInput(BaseModel):
+class ClimateBudgetInput(GreenLangBase):
     """Input for climate budget operations."""
     operation: str = Field(
         default="allocate_budget",
@@ -219,7 +220,7 @@ class ClimateBudgetInput(BaseModel):
     )
 
 
-class ClimateBudgetOutput(BaseModel):
+class ClimateBudgetOutput(GreenLangBase):
     """Output from climate budget operations."""
     success: bool
     operation: str

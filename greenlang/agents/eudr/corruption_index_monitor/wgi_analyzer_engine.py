@@ -70,6 +70,7 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -191,7 +192,6 @@ else:
     _wgi_weak_governance = None  # type: ignore[assignment]
     _wgi_errors_total = None  # type: ignore[assignment]
 
-
 def _inc_wgi_queries() -> None:
     if PROMETHEUS_AVAILABLE and _wgi_queries_total is not None:
         _wgi_queries_total.inc()
@@ -201,11 +201,9 @@ def _inc_wgi_queries() -> None:
         except Exception:
             pass
 
-
 def _inc_wgi_comparisons() -> None:
     if PROMETHEUS_AVAILABLE and _wgi_comparisons_total is not None:
         _wgi_comparisons_total.inc()
-
 
 def _observe_wgi_duration(seconds: float) -> None:
     if PROMETHEUS_AVAILABLE and _wgi_query_duration is not None:
@@ -216,7 +214,6 @@ def _observe_wgi_duration(seconds: float) -> None:
         except Exception:
             pass
 
-
 def _inc_wgi_error(operation: str) -> None:
     if PROMETHEUS_AVAILABLE and _wgi_errors_total is not None:
         _wgi_errors_total.labels(operation=operation).inc()
@@ -226,16 +223,9 @@ def _inc_wgi_error(operation: str) -> None:
         except Exception:
             pass
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _to_decimal(value: Any) -> Decimal:
     """Convert a numeric value to Decimal via string for determinism."""
@@ -243,17 +233,14 @@ def _to_decimal(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _compute_hash(data: Any) -> str:
     """Compute deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class WGIDimension(str, Enum):
     """World Bank Worldwide Governance Indicator dimensions.
@@ -270,7 +257,6 @@ class WGIDimension(str, Enum):
     RULE_OF_LAW = "RL"
     CONTROL_OF_CORRUPTION = "CC"
 
-
 class GovernanceQuality(str, Enum):
     """Governance quality classification based on composite score.
 
@@ -283,11 +269,9 @@ class GovernanceQuality(str, Enum):
     WEAK = "WEAK"
     VERY_WEAK = "VERY_WEAK"
 
-
 # ---------------------------------------------------------------------------
 # Data classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class WGIIndicator:
@@ -326,7 +310,6 @@ class WGIIndicator:
             "num_sources": self.num_sources,
         }
 
-
 @dataclass
 class WGICountryResult:
     """Result wrapper for all 6 WGI dimensions of a country.
@@ -358,7 +341,6 @@ class WGICountryResult:
     calculation_timestamp: str = ""
     warnings: List[str] = field(default_factory=list)
     error: Optional[str] = None
-
 
 @dataclass
 class WGIHistoryResult:
@@ -395,7 +377,6 @@ class WGIHistoryResult:
     calculation_timestamp: str = ""
     warnings: List[str] = field(default_factory=list)
     error: Optional[str] = None
-
 
 @dataclass
 class WGIDimensionResult:
@@ -435,7 +416,6 @@ class WGIDimensionResult:
     warnings: List[str] = field(default_factory=list)
     error: Optional[str] = None
 
-
 @dataclass
 class WGIComparisonResult:
     """Result wrapper for side-by-side country comparison.
@@ -464,7 +444,6 @@ class WGIComparisonResult:
     warnings: List[str] = field(default_factory=list)
     error: Optional[str] = None
 
-
 @dataclass
 class WGIRankingsResult:
     """Result wrapper for WGI rankings on a single dimension.
@@ -492,7 +471,6 @@ class WGIRankingsResult:
     calculation_timestamp: str = ""
     warnings: List[str] = field(default_factory=list)
     error: Optional[str] = None
-
 
 # ---------------------------------------------------------------------------
 # WGI Reference Data (World Bank, 2022 latest complete year)
@@ -842,11 +820,9 @@ DEFAULT_WGI_WEIGHTS: Dict[str, Decimal] = {
     "CC": Decimal("0.1665"),
 }
 
-
 # ---------------------------------------------------------------------------
 # WGI Analyzer Engine
 # ---------------------------------------------------------------------------
-
 
 class WGIAnalyzerEngine:
     """World Bank WGI analysis engine for EUDR compliance.
@@ -932,7 +908,7 @@ class WGIAnalyzerEngine:
             governance quality classification, and EUDR risk factor.
         """
         start = time.perf_counter()
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         try:
             cc = country_code.upper().strip()
@@ -1050,7 +1026,7 @@ class WGIAnalyzerEngine:
             WGIHistoryResult with chronological indicators and trend.
         """
         start = time.perf_counter()
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         try:
             cc = country_code.upper().strip()
@@ -1166,7 +1142,7 @@ class WGIAnalyzerEngine:
             statistics (average, median, min, max, std dev).
         """
         start = time.perf_counter()
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         try:
             dim = dimension.upper().strip()
@@ -1265,7 +1241,7 @@ class WGIAnalyzerEngine:
             rankings, and composite score rankings.
         """
         start = time.perf_counter()
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         try:
             if not country_codes:
@@ -1354,7 +1330,7 @@ class WGIAnalyzerEngine:
             (highest first).
         """
         start = time.perf_counter()
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         try:
             dim = dimension.upper().strip()
@@ -1594,7 +1570,6 @@ class WGIAnalyzerEngine:
             )
         except Exception as exc:
             logger.debug("Provenance recording failed: %s", exc)
-
 
 # ---------------------------------------------------------------------------
 # Public API

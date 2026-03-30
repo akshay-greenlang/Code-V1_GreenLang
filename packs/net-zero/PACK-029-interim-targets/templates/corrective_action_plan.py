@@ -32,6 +32,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "29.0.0"
@@ -69,10 +71,6 @@ XBRL_TAGS: Dict[str, str] = {
     "initiatives_count": "gl:CorrectiveInitiativesCount",
     "gap_closure_pct": "gl:GapClosurePercentage",
 }
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
@@ -112,7 +110,6 @@ def _dec_comma(val: Any, places: int = 2) -> str:
     except Exception:
         return str(val)
 
-
 class CorrectiveActionPlanTemplate:
     """
     Corrective action plan template for PACK-029 Interim Targets Pack.
@@ -141,7 +138,7 @@ class CorrectiveActionPlanTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render full corrective action plan as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [
             self._md_header(data), self._md_executive_summary(data),
             self._md_gap_quantification(data), self._md_macc(data),
@@ -156,7 +153,7 @@ class CorrectiveActionPlanTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render full corrective action plan as HTML."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         parts = [
             self._html_header(data), self._html_executive_summary(data),
@@ -177,7 +174,7 @@ class CorrectiveActionPlanTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render full report as structured JSON."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         current = float(data.get("current_emissions", 0))
         target = float(data.get("target_emissions", 0))
         gap = current - target

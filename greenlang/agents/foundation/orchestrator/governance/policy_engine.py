@@ -49,7 +49,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
 import yaml
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.foundation.orchestrator.pipeline_schema import (
     DataClassification,
@@ -59,6 +59,7 @@ from greenlang.agents.foundation.orchestrator.pipeline_schema import (
     StepDefinition,
     StepResult,
 )
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -126,7 +127,7 @@ YAML_OPERATORS: Dict[str, Callable[[Any, Any], bool]] = {
 # =============================================================================
 
 
-class PolicyReason(BaseModel):
+class PolicyReason(GreenLangBase):
     """Reason for a policy decision."""
 
     rule_name: str = Field(..., description="Name of the rule that triggered")
@@ -136,7 +137,7 @@ class PolicyReason(BaseModel):
     details: Dict[str, Any] = Field(default_factory=dict, description="Additional details")
 
 
-class ApprovalRequirement(BaseModel):
+class ApprovalRequirement(GreenLangBase):
     """Approval required by a policy."""
 
     approval_type: ApprovalType = Field(..., description="Type of approval")
@@ -149,7 +150,7 @@ class ApprovalRequirement(BaseModel):
     )
 
 
-class PolicyDecision(BaseModel):
+class PolicyDecision(GreenLangBase):
     """Result of policy evaluation."""
 
     allowed: bool = Field(..., description="Whether the action is allowed")
@@ -189,7 +190,7 @@ class PolicyDecision(BaseModel):
         ).hexdigest()
 
 
-class YAMLRule(BaseModel):
+class YAMLRule(GreenLangBase):
     """A single declarative YAML rule."""
 
     name: str = Field(..., description="Rule name")
@@ -226,7 +227,7 @@ class YAMLRule(BaseModel):
         return v.strip()
 
 
-class YAMLRuleSet(BaseModel):
+class YAMLRuleSet(GreenLangBase):
     """Collection of YAML rules."""
 
     rules: List[YAMLRule] = Field(default_factory=list, description="Rules")
@@ -235,7 +236,7 @@ class YAMLRuleSet(BaseModel):
     description: Optional[str] = Field(None, description="Rule set description")
 
 
-class CostBudget(BaseModel):
+class CostBudget(GreenLangBase):
     """Cost budget configuration."""
 
     max_cost_usd: float = Field(..., ge=0, description="Maximum cost in USD")
@@ -253,7 +254,7 @@ class CostBudget(BaseModel):
     )
 
 
-class DataResidencyRule(BaseModel):
+class DataResidencyRule(GreenLangBase):
     """Data residency constraint."""
 
     name: str = Field(..., description="Rule name")
@@ -270,7 +271,7 @@ class DataResidencyRule(BaseModel):
     )
 
 
-class PolicyBundle(BaseModel):
+class PolicyBundle(GreenLangBase):
     """A versioned collection of policies."""
 
     bundle_id: str = Field(..., description="Bundle identifier")
@@ -321,7 +322,7 @@ class PolicyBundle(BaseModel):
         ).hexdigest()
 
 
-class PolicyEngineConfig(BaseModel):
+class PolicyEngineConfig(GreenLangBase):
     """Configuration for the policy engine."""
 
     # OPA configuration

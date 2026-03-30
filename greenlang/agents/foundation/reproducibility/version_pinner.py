@@ -43,14 +43,9 @@ from greenlang.agents.foundation.reproducibility.models import (
     VerificationCheck,
 )
 from greenlang.agents.foundation.reproducibility.metrics import record_non_determinism
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 class VersionPinner:
     """Version pinning and manifest management engine.
@@ -379,7 +374,6 @@ class VersionPinner:
             factor_versions=factor_versions,
             data_versions=data_versions,
         )
-
 
 __all__ = [
     "VersionPinner",

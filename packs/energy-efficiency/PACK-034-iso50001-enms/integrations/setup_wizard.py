@@ -37,20 +37,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -63,11 +58,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SetupStep(str, Enum):
     """Names of setup wizard steps in execution order."""
@@ -81,7 +74,6 @@ class SetupStep(str, Enum):
     ENPI_DEFINITION = "enpi_definition"
     REVIEW_FINALIZE = "review_finalize"
 
-
 class StepStatus(str, Enum):
     """Status of a wizard step."""
 
@@ -90,11 +82,9 @@ class StepStatus(str, Enum):
     COMPLETED = "completed"
     SKIPPED = "skipped"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class FacilitySetup(BaseModel):
     """Facility and organization profile data from the wizard."""
@@ -124,7 +114,6 @@ class FacilitySetup(BaseModel):
     energy_team_size: int = Field(default=3, ge=1, le=50)
     management_representative: str = Field(default="")
 
-
 class SetupWizardStep(BaseModel):
     """Definition of a wizard step."""
 
@@ -133,7 +122,6 @@ class SetupWizardStep(BaseModel):
     description: str = Field(default="")
     iso50001_clause: str = Field(default="")
     required: bool = Field(default=True)
-
 
 class WizardStepState(BaseModel):
     """State of a single wizard step."""
@@ -147,7 +135,6 @@ class WizardStepState(BaseModel):
     completed_at: Optional[datetime] = Field(None)
     execution_time_ms: float = Field(default=0.0)
 
-
 class WizardState(BaseModel):
     """Complete state of the setup wizard."""
 
@@ -156,9 +143,8 @@ class WizardState(BaseModel):
     steps: Dict[str, WizardStepState] = Field(default_factory=dict)
     facility_setup: Optional[FacilitySetup] = Field(None)
     is_complete: bool = Field(default=False)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     completed_at: Optional[datetime] = Field(None)
-
 
 class PresetConfig(BaseModel):
     """Facility type preset configuration."""
@@ -173,7 +159,6 @@ class PresetConfig(BaseModel):
     benchmark_kwh_per_m2: float = Field(default=0.0)
     typical_savings_pct: float = Field(default=0.0)
     baseline_relevant_variables: List[str] = Field(default_factory=list)
-
 
 class SetupResult(BaseModel):
     """Final setup result."""
@@ -195,9 +180,8 @@ class SetupResult(BaseModel):
     total_steps_completed: int = Field(default=0)
     total_steps: int = Field(default=8)
     configuration_hash: str = Field(default="")
-    generated_at: datetime = Field(default_factory=_utcnow)
+    generated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Step Definitions
@@ -312,11 +296,9 @@ FACILITY_PRESETS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # SetupWizard
 # ---------------------------------------------------------------------------
-
 
 class SetupWizard:
     """8-step guided EnMS configuration wizard for PACK-034.
@@ -357,7 +339,7 @@ class SetupWizard:
         Returns:
             Initial WizardState with all steps in PENDING status.
         """
-        wizard_id = _compute_hash(f"enms-wizard:{_utcnow().isoformat()}")[:16]
+        wizard_id = _compute_hash(f"enms-wizard:{utcnow().isoformat()}")[:16]
         steps: Dict[str, WizardStepState] = {}
         for step_name in STEP_ORDER:
             steps[step_name.value] = WizardStepState(
@@ -395,7 +377,7 @@ class SetupWizard:
             raise ValueError(f"Step '{current.value}' not found")
 
         step.status = StepStatus.IN_PROGRESS
-        step.started_at = _utcnow()
+        step.started_at = utcnow()
         start_time = time.monotonic()
 
         handler = self._step_handlers.get(current)
@@ -413,7 +395,7 @@ class SetupWizard:
                 step.validation_errors = errors
             else:
                 step.status = StepStatus.COMPLETED
-                step.completed_at = _utcnow()
+                step.completed_at = utcnow()
                 step.validation_errors = []
                 self._advance_to_next(current)
         except Exception as exc:
@@ -615,7 +597,7 @@ class SetupWizard:
                 self._state.current_step = STEP_ORDER[idx + 1]
             else:
                 self._state.is_complete = True
-                self._state.completed_at = _utcnow()
+                self._state.completed_at = utcnow()
         except ValueError:
             pass
 

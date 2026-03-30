@@ -41,6 +41,7 @@ from collections import defaultdict, deque
 from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any, Dict, FrozenSet, List, Optional, Set, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.due_diligence_orchestrator.config import (
     DueDiligenceOrchestratorConfig,
@@ -62,12 +63,6 @@ from greenlang.agents.eudr.due_diligence_orchestrator.models import (
 )
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 class WorkflowDefinitionEngine:
     """DAG-based workflow definition and validation engine.
@@ -127,7 +122,7 @@ class WorkflowDefinitionEngine:
             >>> wf = engine.create_standard_workflow(EUDRCommodity.COCOA)
             >>> assert len(wf.nodes) == 25
         """
-        start_time = _utcnow()
+        start_time = utcnow()
 
         # Build nodes for all 25 agents
         nodes = self._build_standard_nodes()
@@ -154,7 +149,7 @@ class WorkflowDefinitionEngine:
         )
 
         duration_ms = (
-            _utcnow() - start_time
+            utcnow() - start_time
         ).total_seconds() * 1000
         logger.info(
             f"Created standard workflow definition with {len(nodes)} nodes "

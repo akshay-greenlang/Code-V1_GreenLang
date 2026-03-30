@@ -77,25 +77,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -122,7 +116,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -139,7 +132,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal,
     denominator: Decimal,
@@ -150,31 +142,25 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round2(value: Any) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: Any) -> float:
     """Round to 4 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
-
 
 def _round6(value: Any) -> float:
     """Round to 6 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class IntensityMetricType(str, Enum):
     """Types of emission intensity metrics.
@@ -190,7 +176,6 @@ class IntensityMetricType(str, Enum):
     PRODUCTION = "production"
     FLOOR_AREA = "floor_area"
     CUSTOM = "custom"
-
 
 class SectorClassification(str, Enum):
     """Industry sector classifications for peer grouping.
@@ -222,7 +207,6 @@ class SectorClassification(str, Enum):
     UTILITIES = "utilities"
     REAL_ESTATE = "real_estate"
 
-
 class CDPScoreBand(str, Enum):
     """CDP Climate Change scoring bands.
 
@@ -238,7 +222,6 @@ class CDPScoreBand(str, Enum):
     D = "D"
     F = "F"
 
-
 class BenchmarkStatus(str, Enum):
     """Performance status relative to benchmark.
 
@@ -253,7 +236,6 @@ class BenchmarkStatus(str, Enum):
     AVERAGE = "average"
     BELOW_AVG = "below_average"
     LAGGARD = "laggard"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -318,11 +300,9 @@ BENCHMARK_THRESHOLDS: Dict[str, float] = {
 }
 """Benchmark status thresholds."""
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class EntityProfile(BaseModel):
     """An entity's profile for benchmarking.
@@ -396,7 +376,6 @@ class EntityProfile(BaseModel):
         """Coerce numeric fields to Decimal."""
         return _decimal(v)
 
-
 class FacilityProfile(BaseModel):
     """A facility profile for internal ranking.
 
@@ -441,7 +420,6 @@ class FacilityProfile(BaseModel):
         """Coerce numeric fields to Decimal."""
         return _decimal(v)
 
-
 class PeerDataPoint(BaseModel):
     """A single peer data point for benchmarking.
 
@@ -481,7 +459,6 @@ class PeerDataPoint(BaseModel):
         """Coerce numeric fields to Decimal."""
         return _decimal(v)
 
-
 class HistoricalDataPoint(BaseModel):
     """Historical emission data point for trend benchmarking.
 
@@ -519,11 +496,9 @@ class HistoricalDataPoint(BaseModel):
         """Coerce numeric fields to Decimal."""
         return _decimal(v)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class IntensityResult(BaseModel):
     """Calculated intensity metric result.
@@ -546,7 +521,6 @@ class IntensityResult(BaseModel):
     sector_average: float = Field(default=0.0, description="Sector average")
     vs_sector_pct: float = Field(default=0.0, description="% vs sector average")
     z_score: float = Field(default=0.0, description="Z-score")
-
 
 class BenchmarkResult(BaseModel):
     """Result of a single benchmark comparison.
@@ -578,7 +552,6 @@ class BenchmarkResult(BaseModel):
     status: str = Field(default="average", description="Benchmark status")
     peer_count: int = Field(default=0, description="Peer count")
 
-
 class PeerComparison(BaseModel):
     """Detailed peer-by-peer comparison.
 
@@ -598,7 +571,6 @@ class PeerComparison(BaseModel):
     difference: float = Field(default=0.0, description="Difference")
     difference_pct: float = Field(default=0.0, description="Difference %")
     entity_is_better: bool = Field(default=False, description="Entity is better")
-
 
 class FacilityRanking(BaseModel):
     """Internal facility ranking result.
@@ -621,7 +593,6 @@ class FacilityRanking(BaseModel):
     total_tco2e: float = Field(default=0.0, description="Total tCO2e")
     vs_org_average_pct: float = Field(default=0.0, description="% vs org average")
     performance_category: str = Field(default="average", description="Performance")
-
 
 class BenchmarkTrend(BaseModel):
     """Historical benchmarking trend.
@@ -653,7 +624,6 @@ class BenchmarkTrend(BaseModel):
         default_factory=list, description="YoY changes"
     )
 
-
 class BenchmarkingResult(BaseModel):
     """Complete benchmarking result.
 
@@ -678,7 +648,7 @@ class BenchmarkingResult(BaseModel):
     result_id: str = Field(default_factory=_new_uuid, description="Result ID")
     engine_version: str = Field(default=_MODULE_VERSION, description="Version")
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp"
+        default_factory=utcnow, description="Timestamp"
     )
     processing_time_ms: float = Field(default=0.0, description="Processing time")
     entity_name: str = Field(default="", description="Entity name")
@@ -706,7 +676,6 @@ class BenchmarkingResult(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Model Rebuild
 # ---------------------------------------------------------------------------
@@ -722,11 +691,9 @@ FacilityRanking.model_rebuild()
 BenchmarkTrend.model_rebuild()
 BenchmarkingResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class BenchmarkingEngine:
     """GHG emission peer comparison and facility ranking engine.

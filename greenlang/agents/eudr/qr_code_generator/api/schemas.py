@@ -29,28 +29,21 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import ConfigDict, Field, field_validator
 
+from greenlang.schemas import GreenLangBase, utcnow
 
 # =============================================================================
 # Helpers
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_id() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 # =============================================================================
 # Enumerations (API-layer mirrors of domain enums)
 # =============================================================================
-
 
 class ErrorCorrectionSchema(str, Enum):
     """Error correction level per ISO/IEC 18004."""
@@ -59,7 +52,6 @@ class ErrorCorrectionSchema(str, Enum):
     M = "M"
     Q = "Q"
     H = "H"
-
 
 class OutputFormatSchema(str, Enum):
     """Output image format for generated QR codes."""
@@ -70,7 +62,6 @@ class OutputFormatSchema(str, Enum):
     ZPL = "zpl"
     EPS = "eps"
 
-
 class ContentTypeSchema(str, Enum):
     """Payload content type for QR code data."""
 
@@ -80,7 +71,6 @@ class ContentTypeSchema(str, Enum):
     BATCH_IDENTIFIER = "batch_identifier"
     BLOCKCHAIN_ANCHOR = "blockchain_anchor"
 
-
 class SymbologyTypeSchema(str, Enum):
     """Barcode symbology type."""
 
@@ -88,7 +78,6 @@ class SymbologyTypeSchema(str, Enum):
     MICRO_QR = "micro_qr"
     DATA_MATRIX = "data_matrix"
     GS1_DIGITAL_LINK = "gs1_digital_link"
-
 
 class LabelTemplateSchema(str, Enum):
     """Label template types."""
@@ -99,14 +88,12 @@ class LabelTemplateSchema(str, Enum):
     CONTAINER_LABEL = "container_label"
     CONSUMER_LABEL = "consumer_label"
 
-
 class CheckDigitAlgorithmSchema(str, Enum):
     """Check digit algorithm for batch codes."""
 
     LUHN = "luhn"
     ISO7064_MOD11_10 = "iso7064_mod11_10"
     CRC8 = "crc8"
-
 
 class CodeStatusSchema(str, Enum):
     """Lifecycle status of a generated QR code."""
@@ -117,7 +104,6 @@ class CodeStatusSchema(str, Enum):
     REVOKED = "revoked"
     EXPIRED = "expired"
 
-
 class ScanOutcomeSchema(str, Enum):
     """Outcome of a QR code scan verification event."""
 
@@ -127,7 +113,6 @@ class ScanOutcomeSchema(str, Enum):
     REVOKED_CODE = "revoked_code"
     ERROR = "error"
 
-
 class CounterfeitRiskSchema(str, Enum):
     """Risk level for counterfeit detection."""
 
@@ -135,7 +120,6 @@ class CounterfeitRiskSchema(str, Enum):
     MEDIUM = "medium"
     HIGH = "high"
     CRITICAL = "critical"
-
 
 class BulkJobStatusSchema(str, Enum):
     """Status of a bulk QR code generation job."""
@@ -146,7 +130,6 @@ class BulkJobStatusSchema(str, Enum):
     FAILED = "failed"
     CANCELLED = "cancelled"
 
-
 class ComplianceStatusSchema(str, Enum):
     """EUDR compliance status."""
 
@@ -155,14 +138,12 @@ class ComplianceStatusSchema(str, Enum):
     NON_COMPLIANT = "non_compliant"
     UNDER_REVIEW = "under_review"
 
-
 class PayloadEncodingSchema(str, Enum):
     """Encoding format for QR code payload data."""
 
     UTF8 = "utf8"
     BASE64 = "base64"
     ZLIB_BASE64 = "zlib_base64"
-
 
 class EUDRCommoditySchema(str, Enum):
     """EUDR-regulated commodity types per EU 2023/1115 Article 1."""
@@ -175,13 +156,11 @@ class EUDRCommoditySchema(str, Enum):
     SOYA = "soya"
     WOOD = "wood"
 
-
 # =============================================================================
 # Shared Models
 # =============================================================================
 
-
-class ProvenanceInfo(BaseModel):
+class ProvenanceInfo(GreenLangBase):
     """Provenance tracking metadata for audit trails.
 
     Attributes:
@@ -199,11 +178,10 @@ class ProvenanceInfo(BaseModel):
         default="sha256", description="Hash algorithm used"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Provenance timestamp"
+        default_factory=utcnow, description="Provenance timestamp"
     )
 
-
-class PaginatedMeta(BaseModel):
+class PaginatedMeta(GreenLangBase):
     """Pagination metadata for list responses.
 
     Attributes:
@@ -220,13 +198,11 @@ class PaginatedMeta(BaseModel):
     offset: int = Field(..., ge=0, description="Records skipped")
     has_more: bool = Field(..., description="More records exist")
 
-
 # =============================================================================
 # QR Code Generation Schemas
 # =============================================================================
 
-
-class GenerateQRRequest(BaseModel):
+class GenerateQRRequest(GreenLangBase):
     """Request to generate a single QR code.
 
     Attributes:
@@ -292,8 +268,7 @@ class GenerateQRRequest(BaseModel):
         None, description="EUDR compliance status"
     )
 
-
-class GenerateDataMatrixRequest(BaseModel):
+class GenerateDataMatrixRequest(GreenLangBase):
     """Request to generate a Data Matrix code.
 
     Attributes:
@@ -339,8 +314,7 @@ class GenerateDataMatrixRequest(BaseModel):
         None, max_length=255, description="DDS reference number"
     )
 
-
-class QRCodeDetailResponse(BaseModel):
+class QRCodeDetailResponse(GreenLangBase):
     """Detailed QR code record response.
 
     Attributes:
@@ -411,7 +385,7 @@ class QRCodeDetailResponse(BaseModel):
     reprint_count: int = Field(default=0, description="Reprint count")
     scan_count: int = Field(default=0, description="Scan count")
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Generation timestamp"
+        default_factory=utcnow, description="Generation timestamp"
     )
     activated_at: Optional[datetime] = Field(
         None, description="Activation timestamp"
@@ -421,8 +395,7 @@ class QRCodeDetailResponse(BaseModel):
         None, description="Provenance tracking"
     )
 
-
-class GenerateQRResponse(BaseModel):
+class GenerateQRResponse(GreenLangBase):
     """Response after generating a QR code.
 
     Attributes:
@@ -453,8 +426,7 @@ class GenerateQRResponse(BaseModel):
         None, description="Provenance tracking"
     )
 
-
-class GenerateDataMatrixResponse(BaseModel):
+class GenerateDataMatrixResponse(GreenLangBase):
     """Response after generating a Data Matrix code.
 
     Attributes:
@@ -485,8 +457,7 @@ class GenerateDataMatrixResponse(BaseModel):
         None, description="Provenance tracking"
     )
 
-
-class QRImageResponse(BaseModel):
+class QRImageResponse(GreenLangBase):
     """Response for QR code image download.
 
     Attributes:
@@ -515,13 +486,11 @@ class QRImageResponse(BaseModel):
         None, description="SHA-256 hash of image data"
     )
 
-
 # =============================================================================
 # Payload Schemas
 # =============================================================================
 
-
-class ComposePayloadRequest(BaseModel):
+class ComposePayloadRequest(GreenLangBase):
     """Request to compose a data payload for QR encoding.
 
     Attributes:
@@ -564,8 +533,7 @@ class ComposePayloadRequest(BaseModel):
         description="Origin country (ISO 3166-1 alpha-2)",
     )
 
-
-class ValidatePayloadRequest(BaseModel):
+class ValidatePayloadRequest(GreenLangBase):
     """Request to validate a payload against its schema.
 
     Attributes:
@@ -586,8 +554,7 @@ class ValidatePayloadRequest(BaseModel):
         default=True, description="Enable strict validation"
     )
 
-
-class ComposePayloadResponse(BaseModel):
+class ComposePayloadResponse(GreenLangBase):
     """Response after composing a data payload.
 
     Attributes:
@@ -634,8 +601,7 @@ class ComposePayloadResponse(BaseModel):
         None, description="Provenance tracking"
     )
 
-
-class ValidatePayloadResponse(BaseModel):
+class ValidatePayloadResponse(GreenLangBase):
     """Response after validating a payload.
 
     Attributes:
@@ -660,8 +626,7 @@ class ValidatePayloadResponse(BaseModel):
         default=0.0, ge=0.0, description="Processing time"
     )
 
-
-class PayloadDetailResponse(BaseModel):
+class PayloadDetailResponse(GreenLangBase):
     """Detailed payload record response.
 
     Attributes:
@@ -704,14 +669,13 @@ class PayloadDetailResponse(BaseModel):
     )
     origin_country: Optional[str] = Field(None, description="Origin country")
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation timestamp"
+        default_factory=utcnow, description="Creation timestamp"
     )
     provenance: Optional[ProvenanceInfo] = Field(
         None, description="Provenance tracking"
     )
 
-
-class PayloadSchemaItem(BaseModel):
+class PayloadSchemaItem(GreenLangBase):
     """A single payload schema definition.
 
     Attributes:
@@ -734,8 +698,7 @@ class PayloadSchemaItem(BaseModel):
     )
     version: str = Field(default="1.0", description="Schema version")
 
-
-class PayloadSchemasResponse(BaseModel):
+class PayloadSchemasResponse(GreenLangBase):
     """Response listing all available payload schemas.
 
     Attributes:
@@ -750,13 +713,11 @@ class PayloadSchemasResponse(BaseModel):
     )
     total: int = Field(default=0, ge=0, description="Total schemas")
 
-
 # =============================================================================
 # Label Schemas
 # =============================================================================
 
-
-class GenerateLabelRequest(BaseModel):
+class GenerateLabelRequest(GreenLangBase):
     """Request to generate a single label with QR code.
 
     Attributes:
@@ -807,8 +768,7 @@ class GenerateLabelRequest(BaseModel):
         None, ge=4, le=72, description="Font size in points"
     )
 
-
-class BatchLabelRequest(BaseModel):
+class BatchLabelRequest(GreenLangBase):
     """Request to generate labels in batch.
 
     Attributes:
@@ -834,8 +794,7 @@ class BatchLabelRequest(BaseModel):
         None, ge=72, le=1200, description="Shared DPI"
     )
 
-
-class LabelDetailResponse(BaseModel):
+class LabelDetailResponse(GreenLangBase):
     """Detailed label record response.
 
     Attributes:
@@ -888,14 +847,13 @@ class LabelDetailResponse(BaseModel):
     product_name: Optional[str] = Field(None, description="Product name")
     batch_code: Optional[str] = Field(None, description="Batch code")
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation timestamp"
+        default_factory=utcnow, description="Creation timestamp"
     )
     provenance: Optional[ProvenanceInfo] = Field(
         None, description="Provenance tracking"
     )
 
-
-class GenerateLabelResponse(BaseModel):
+class GenerateLabelResponse(GreenLangBase):
     """Response after generating a label.
 
     Attributes:
@@ -926,8 +884,7 @@ class GenerateLabelResponse(BaseModel):
         None, description="Provenance tracking"
     )
 
-
-class BatchLabelResponse(BaseModel):
+class BatchLabelResponse(GreenLangBase):
     """Response after batch label generation.
 
     Attributes:
@@ -952,8 +909,7 @@ class BatchLabelResponse(BaseModel):
         default=0.0, ge=0.0, description="Total processing time"
     )
 
-
-class TemplateDetailResponse(BaseModel):
+class TemplateDetailResponse(GreenLangBase):
     """Detailed template definition response.
 
     Attributes:
@@ -983,11 +939,10 @@ class TemplateDetailResponse(BaseModel):
     version: str = Field(default="1.0", description="Template version")
     is_active: bool = Field(default=True, description="Is active")
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation timestamp"
+        default_factory=utcnow, description="Creation timestamp"
     )
 
-
-class TemplateListResponse(BaseModel):
+class TemplateListResponse(GreenLangBase):
     """Response listing all label templates.
 
     Attributes:
@@ -1002,13 +957,11 @@ class TemplateListResponse(BaseModel):
     )
     total: int = Field(default=0, ge=0, description="Total templates")
 
-
 # =============================================================================
 # Batch Code Schemas
 # =============================================================================
 
-
-class GenerateBatchCodesRequest(BaseModel):
+class GenerateBatchCodesRequest(GreenLangBase):
     """Request to generate batch codes.
 
     Attributes:
@@ -1046,8 +999,7 @@ class GenerateBatchCodesRequest(BaseModel):
         None, description="Check digit algorithm"
     )
 
-
-class ReserveCodesRequest(BaseModel):
+class ReserveCodesRequest(GreenLangBase):
     """Request to reserve a range of batch codes.
 
     Attributes:
@@ -1077,8 +1029,7 @@ class ReserveCodesRequest(BaseModel):
         None, max_length=255, description="Facility ID"
     )
 
-
-class BatchCodeItem(BaseModel):
+class BatchCodeItem(GreenLangBase):
     """A single batch code record.
 
     Attributes:
@@ -1114,11 +1065,10 @@ class BatchCodeItem(BaseModel):
     facility_id: Optional[str] = Field(None, description="Facility ID")
     status: str = Field(default="created", description="Status")
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation timestamp"
+        default_factory=utcnow, description="Creation timestamp"
     )
 
-
-class GenerateBatchCodesResponse(BaseModel):
+class GenerateBatchCodesResponse(GreenLangBase):
     """Response after generating batch codes.
 
     Attributes:
@@ -1143,8 +1093,7 @@ class GenerateBatchCodesResponse(BaseModel):
         None, description="Provenance tracking"
     )
 
-
-class ReserveCodesResponse(BaseModel):
+class ReserveCodesResponse(GreenLangBase):
     """Response after reserving batch codes.
 
     Attributes:
@@ -1173,8 +1122,7 @@ class ReserveCodesResponse(BaseModel):
         default=0.0, ge=0.0, description="Processing time"
     )
 
-
-class BatchCodeDetailResponse(BaseModel):
+class BatchCodeDetailResponse(GreenLangBase):
     """Detailed batch code response.
 
     Attributes:
@@ -1193,8 +1141,7 @@ class BatchCodeDetailResponse(BaseModel):
         None, description="Provenance tracking"
     )
 
-
-class CodeHierarchyResponse(BaseModel):
+class CodeHierarchyResponse(GreenLangBase):
     """Response showing batch code hierarchy.
 
     Attributes:
@@ -1227,13 +1174,11 @@ class CodeHierarchyResponse(BaseModel):
         default=0, ge=0, description="Total associations"
     )
 
-
 # =============================================================================
 # Verification Schemas
 # =============================================================================
 
-
-class BuildURLRequest(BaseModel):
+class BuildURLRequest(GreenLangBase):
     """Request to build a verification URL.
 
     Attributes:
@@ -1264,8 +1209,7 @@ class BuildURLRequest(BaseModel):
         None, ge=1, le=25, description="Token TTL years"
     )
 
-
-class VerifySignatureRequest(BaseModel):
+class VerifySignatureRequest(GreenLangBase):
     """Request to verify a QR code signature.
 
     Attributes:
@@ -1297,8 +1241,7 @@ class VerifySignatureRequest(BaseModel):
             raise ValueError("data_hash must be a valid hexadecimal string")
         return v
 
-
-class OfflineVerifyRequest(BaseModel):
+class OfflineVerifyRequest(GreenLangBase):
     """Request for offline verification check.
 
     Attributes:
@@ -1321,8 +1264,7 @@ class OfflineVerifyRequest(BaseModel):
         description="SHA-256 hash of scanned payload",
     )
 
-
-class BuildURLResponse(BaseModel):
+class BuildURLResponse(GreenLangBase):
     """Response after building a verification URL.
 
     Attributes:
@@ -1355,8 +1297,7 @@ class BuildURLResponse(BaseModel):
         None, description="Provenance tracking"
     )
 
-
-class VerifySignatureResponse(BaseModel):
+class VerifySignatureResponse(GreenLangBase):
     """Response after verifying a signature.
 
     Attributes:
@@ -1377,14 +1318,13 @@ class VerifySignatureResponse(BaseModel):
     )
     key_id: Optional[str] = Field(None, description="Key identifier")
     verified_at: datetime = Field(
-        default_factory=_utcnow, description="Verification timestamp"
+        default_factory=utcnow, description="Verification timestamp"
     )
     processing_time_ms: float = Field(
         default=0.0, ge=0.0, description="Processing time"
     )
 
-
-class VerificationStatusResponse(BaseModel):
+class VerificationStatusResponse(GreenLangBase):
     """Response for verification status lookup.
 
     Attributes:
@@ -1419,8 +1359,7 @@ class VerificationStatusResponse(BaseModel):
         None, description="Provenance tracking"
     )
 
-
-class OfflineVerifyResponse(BaseModel):
+class OfflineVerifyResponse(GreenLangBase):
     """Response for offline verification.
 
     Attributes:
@@ -1442,16 +1381,14 @@ class OfflineVerifyResponse(BaseModel):
         default="pending", description="Compliance status"
     )
     verified_at: datetime = Field(
-        default_factory=_utcnow, description="Verification timestamp"
+        default_factory=utcnow, description="Verification timestamp"
     )
-
 
 # =============================================================================
 # Counterfeit Schemas
 # =============================================================================
 
-
-class CounterfeitCheckRequest(BaseModel):
+class CounterfeitCheckRequest(GreenLangBase):
     """Request to check for counterfeiting indicators.
 
     Attributes:
@@ -1481,8 +1418,7 @@ class CounterfeitCheckRequest(BaseModel):
         None, description="HMAC token from URL"
     )
 
-
-class CounterfeitCheckResponse(BaseModel):
+class CounterfeitCheckResponse(GreenLangBase):
     """Response for a counterfeit check.
 
     Attributes:
@@ -1514,11 +1450,10 @@ class CounterfeitCheckResponse(BaseModel):
         default_factory=list, description="Triggered alerts"
     )
     checked_at: datetime = Field(
-        default_factory=_utcnow, description="Check timestamp"
+        default_factory=utcnow, description="Check timestamp"
     )
 
-
-class RevokeCodeResponse(BaseModel):
+class RevokeCodeResponse(GreenLangBase):
     """Response after revoking a counterfeit code.
 
     Attributes:
@@ -1537,14 +1472,13 @@ class RevokeCodeResponse(BaseModel):
     previous_status: str = Field(..., description="Previous status")
     reason: str = Field(..., description="Revocation reason")
     revoked_at: datetime = Field(
-        default_factory=_utcnow, description="Revocation timestamp"
+        default_factory=utcnow, description="Revocation timestamp"
     )
     provenance: Optional[ProvenanceInfo] = Field(
         None, description="Provenance tracking"
     )
 
-
-class RevocationListItem(BaseModel):
+class RevocationListItem(GreenLangBase):
     """A single entry in the revocation list.
 
     Attributes:
@@ -1559,12 +1493,11 @@ class RevocationListItem(BaseModel):
     code_id: str = Field(..., description="Revoked code ID")
     reason: str = Field(..., description="Revocation reason")
     revoked_at: datetime = Field(
-        default_factory=_utcnow, description="Revocation timestamp"
+        default_factory=utcnow, description="Revocation timestamp"
     )
     operator_id: Optional[str] = Field(None, description="Revoking operator")
 
-
-class RevocationListResponse(BaseModel):
+class RevocationListResponse(GreenLangBase):
     """Response listing all revoked codes.
 
     Attributes:
@@ -1583,8 +1516,7 @@ class RevocationListResponse(BaseModel):
         None, description="Pagination metadata"
     )
 
-
-class CounterfeitAnalyticsResponse(BaseModel):
+class CounterfeitAnalyticsResponse(GreenLangBase):
     """Response for counterfeit analytics.
 
     Attributes:
@@ -1627,13 +1559,11 @@ class CounterfeitAnalyticsResponse(BaseModel):
         None, description="Analytics period end"
     )
 
-
 # =============================================================================
 # Bulk Generation Schemas
 # =============================================================================
 
-
-class SubmitBulkRequest(BaseModel):
+class SubmitBulkRequest(GreenLangBase):
     """Request to submit a bulk QR code generation job.
 
     Attributes:
@@ -1675,8 +1605,7 @@ class SubmitBulkRequest(BaseModel):
         None, ge=1, le=64, description="Worker count"
     )
 
-
-class SubmitBulkResponse(BaseModel):
+class SubmitBulkResponse(GreenLangBase):
     """Response after submitting a bulk generation job.
 
     Attributes:
@@ -1697,14 +1626,13 @@ class SubmitBulkResponse(BaseModel):
     total_codes: int = Field(..., ge=1, description="Total codes")
     operator_id: str = Field(..., description="Operator ID")
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Submission timestamp"
+        default_factory=utcnow, description="Submission timestamp"
     )
     provenance: Optional[ProvenanceInfo] = Field(
         None, description="Provenance tracking"
     )
 
-
-class BulkStatusResponse(BaseModel):
+class BulkStatusResponse(GreenLangBase):
     """Response for bulk job status query.
 
     Attributes:
@@ -1745,14 +1673,13 @@ class BulkStatusResponse(BaseModel):
         None, description="Completion timestamp"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Submission timestamp"
+        default_factory=utcnow, description="Submission timestamp"
     )
     provenance: Optional[ProvenanceInfo] = Field(
         None, description="Provenance tracking"
     )
 
-
-class BulkDownloadResponse(BaseModel):
+class BulkDownloadResponse(GreenLangBase):
     """Response for bulk job output download.
 
     Attributes:
@@ -1781,8 +1708,7 @@ class BulkDownloadResponse(BaseModel):
         default="application/zip", description="MIME type"
     )
 
-
-class BulkManifestResponse(BaseModel):
+class BulkManifestResponse(GreenLangBase):
     """Response for bulk job manifest download.
 
     Attributes:
@@ -1800,11 +1726,10 @@ class BulkManifestResponse(BaseModel):
     )
     total_codes: int = Field(default=0, ge=0, description="Total codes")
     generated_at: datetime = Field(
-        default_factory=_utcnow, description="Manifest generation timestamp"
+        default_factory=utcnow, description="Manifest generation timestamp"
     )
 
-
-class BulkCancelResponse(BaseModel):
+class BulkCancelResponse(GreenLangBase):
     """Response for bulk job cancellation.
 
     Attributes:
@@ -1819,20 +1744,18 @@ class BulkCancelResponse(BaseModel):
     job_id: str = Field(..., description="Bulk job ID")
     status: str = Field(default="cancelled", description="Job status")
     cancelled_at: datetime = Field(
-        default_factory=_utcnow, description="Cancellation timestamp"
+        default_factory=utcnow, description="Cancellation timestamp"
     )
     message: str = Field(
         default="Bulk job cancelled successfully",
         description="Cancellation message",
     )
 
-
 # =============================================================================
 # Lifecycle Schemas
 # =============================================================================
 
-
-class ActivateRequest(BaseModel):
+class ActivateRequest(GreenLangBase):
     """Request to activate a QR code.
 
     Attributes:
@@ -1849,8 +1772,7 @@ class ActivateRequest(BaseModel):
         None, max_length=2000, description="Activation reason"
     )
 
-
-class DeactivateRequest(BaseModel):
+class DeactivateRequest(GreenLangBase):
     """Request to temporarily deactivate a QR code.
 
     Attributes:
@@ -1868,8 +1790,7 @@ class DeactivateRequest(BaseModel):
         None, max_length=255, description="User performing deactivation"
     )
 
-
-class RevokeRequest(BaseModel):
+class RevokeRequest(GreenLangBase):
     """Request to permanently revoke a QR code.
 
     Attributes:
@@ -1887,8 +1808,7 @@ class RevokeRequest(BaseModel):
         None, max_length=255, description="User performing revocation"
     )
 
-
-class ScanEventRequest(BaseModel):
+class ScanEventRequest(GreenLangBase):
     """Request to record a scan event.
 
     Attributes:
@@ -1922,8 +1842,7 @@ class ScanEventRequest(BaseModel):
         None, description="HMAC token from URL"
     )
 
-
-class ActivateResponse(BaseModel):
+class ActivateResponse(GreenLangBase):
     """Response after activating a QR code.
 
     Attributes:
@@ -1945,7 +1864,7 @@ class ActivateResponse(BaseModel):
     )
     new_status: str = Field(default="active", description="New status")
     activated_at: datetime = Field(
-        default_factory=_utcnow, description="Activation timestamp"
+        default_factory=utcnow, description="Activation timestamp"
     )
     processing_time_ms: float = Field(
         default=0.0, ge=0.0, description="Processing time"
@@ -1954,8 +1873,7 @@ class ActivateResponse(BaseModel):
         None, description="Provenance tracking"
     )
 
-
-class DeactivateResponse(BaseModel):
+class DeactivateResponse(GreenLangBase):
     """Response after deactivating a QR code.
 
     Attributes:
@@ -1980,7 +1898,7 @@ class DeactivateResponse(BaseModel):
         default="deactivated", description="New status"
     )
     deactivated_at: datetime = Field(
-        default_factory=_utcnow, description="Deactivation timestamp"
+        default_factory=utcnow, description="Deactivation timestamp"
     )
     reason: str = Field(..., description="Deactivation reason")
     processing_time_ms: float = Field(
@@ -1990,8 +1908,7 @@ class DeactivateResponse(BaseModel):
         None, description="Provenance tracking"
     )
 
-
-class RevokeResponse(BaseModel):
+class RevokeResponse(GreenLangBase):
     """Response after revoking a QR code.
 
     Attributes:
@@ -2012,7 +1929,7 @@ class RevokeResponse(BaseModel):
     previous_status: str = Field(..., description="Previous status")
     new_status: str = Field(default="revoked", description="New status")
     revoked_at: datetime = Field(
-        default_factory=_utcnow, description="Revocation timestamp"
+        default_factory=utcnow, description="Revocation timestamp"
     )
     reason: str = Field(..., description="Revocation reason")
     processing_time_ms: float = Field(
@@ -2022,8 +1939,7 @@ class RevokeResponse(BaseModel):
         None, description="Provenance tracking"
     )
 
-
-class ScanEventResponse(BaseModel):
+class ScanEventResponse(GreenLangBase):
     """Response after recording a scan event.
 
     Attributes:
@@ -2060,14 +1976,13 @@ class ScanEventResponse(BaseModel):
         default=0.0, ge=0.0, description="Processing time"
     )
     scanned_at: datetime = Field(
-        default_factory=_utcnow, description="Scan timestamp"
+        default_factory=utcnow, description="Scan timestamp"
     )
     provenance: Optional[ProvenanceInfo] = Field(
         None, description="Provenance tracking"
     )
 
-
-class LifecycleEventItem(BaseModel):
+class LifecycleEventItem(GreenLangBase):
     """A single lifecycle event record.
 
     Attributes:
@@ -2095,11 +2010,10 @@ class LifecycleEventItem(BaseModel):
         None, description="User who performed the change"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Event timestamp"
+        default_factory=utcnow, description="Event timestamp"
     )
 
-
-class LifecycleHistoryResponse(BaseModel):
+class LifecycleHistoryResponse(GreenLangBase):
     """Response for lifecycle history query.
 
     Attributes:
@@ -2124,13 +2038,11 @@ class LifecycleHistoryResponse(BaseModel):
         None, description="Pagination metadata"
     )
 
-
 # =============================================================================
 # Health Schema
 # =============================================================================
 
-
-class HealthComponentSchema(BaseModel):
+class HealthComponentSchema(GreenLangBase):
     """Health status for a single service component.
 
     Attributes:
@@ -2151,8 +2063,7 @@ class HealthComponentSchema(BaseModel):
         None, description="Health details"
     )
 
-
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Health check response for the QR Code Generator API.
 
     Attributes:
@@ -2199,16 +2110,14 @@ class HealthResponse(BaseModel):
         description="Component health details",
     )
     checked_at: datetime = Field(
-        default_factory=_utcnow, description="Health check timestamp"
+        default_factory=utcnow, description="Health check timestamp"
     )
-
 
 # =============================================================================
 # Error Response
 # =============================================================================
 
-
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     """Standard error response.
 
     Attributes:
@@ -2226,7 +2135,6 @@ class ErrorResponse(BaseModel):
     request_id: Optional[str] = Field(
         None, description="Request correlation ID"
     )
-
 
 # =============================================================================
 # Public API

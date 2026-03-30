@@ -33,12 +33,10 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION: str = "1.0.0"
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
@@ -52,7 +50,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 class _AgentStub:
     def __init__(self, component_name: str) -> None:
@@ -69,7 +66,6 @@ def _try_import_sbti_component(component_id: str, module_path: str) -> Any:
     except ImportError:
         logger.debug("SBTi component %s not available, using stub", component_id)
         return _AgentStub(component_id)
-
 
 class PathwayType(str, Enum):
     PATHWAY_1_5C = "1.5C"
@@ -91,7 +87,6 @@ class ValidationStatus(str, Enum):
     PENDING_REVIEW = "pending_review"
     NEEDS_ADJUSTMENT = "needs_adjustment"
 
-
 class SBTiAppBridgeConfig(BaseModel):
     pack_id: str = Field(default="PACK-022")
     enable_provenance: bool = Field(default=True)
@@ -102,7 +97,6 @@ class SBTiAppBridgeConfig(BaseModel):
     sector: str = Field(default="general")
     sda_sector: str = Field(default="", description="SDA sector code if applicable")
     is_sda_sector: bool = Field(default=False)
-
 
 class TargetResult(BaseModel):
     operation_id: str = Field(default_factory=_new_uuid)
@@ -192,7 +186,6 @@ class SectorBenchmarkResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 SBTI_COMPONENTS: Dict[str, str] = {
     "target_setting_engine": "greenlang.apps.sbti.target_setting_engine",
     "pathway_calculator_engine": "greenlang.apps.sbti.pathway_calculator_engine",
@@ -214,7 +207,6 @@ SDA_ACTIVITY_METRICS: Dict[str, str] = {
     "transport_passenger": "passenger_km", "transport_freight": "tonne_km",
     "aviation": "revenue_passenger_km", "shipping": "tonne_nautical_mile",
 }
-
 
 class SBTiAppBridge:
     """Bridge to GL-SBTi-APP with SDA pathway and temperature scoring.

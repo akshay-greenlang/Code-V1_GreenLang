@@ -66,6 +66,7 @@ import uuid
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from typing import Any, AsyncIterator, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -207,37 +208,26 @@ _MODULE_VERSION = "1.0.0"
 _AGENT_ID = "GL-EUDR-QRG-014"
 _ENGINE_COUNT = 8
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_provenance_hash(*parts: str) -> str:
     """Compute SHA-256 hash over concatenated string parts."""
     combined = "|".join(str(p) for p in parts)
     return hashlib.sha256(combined.encode("utf-8")).hexdigest()
 
-
 def _generate_request_id() -> str:
     """Generate a unique request identifier."""
     return f"QRG-{uuid.uuid4().hex[:12]}"
-
 
 def _elapsed_ms(start: float) -> float:
     """Return elapsed milliseconds since ``start`` (monotonic)."""
     return (time.monotonic() - start) * 1000
 
-
 # ---------------------------------------------------------------------------
 # Result containers
 # ---------------------------------------------------------------------------
-
 
 class QRResult:
     """Result from a QR code generation or query operation.
@@ -287,7 +277,6 @@ class QRResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 class LabelResult:
     """Result from a label rendering operation.
 
@@ -336,7 +325,6 @@ class LabelResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 class BatchResult:
     """Result from a batch code generation operation.
 
@@ -380,7 +368,6 @@ class BatchResult:
             "provenance_hash": self.provenance_hash,
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
-
 
 class ScanResult:
     """Result from a scan processing operation.
@@ -439,7 +426,6 @@ class ScanResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 class BulkJobResult:
     """Result from a bulk job operation.
 
@@ -487,7 +473,6 @@ class BulkJobResult:
             "provenance_hash": self.provenance_hash,
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
-
 
 class LifecycleResult:
     """Result from a lifecycle management operation.
@@ -546,11 +531,9 @@ class LifecycleResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ===========================================================================
 # QRCodeGeneratorService - Main facade
 # ===========================================================================
-
 
 class QRCodeGeneratorService:
     """Facade for the QR Code Generator Agent (AGENT-EUDR-014).
@@ -2488,7 +2471,7 @@ class QRCodeGeneratorService:
             "uptime_seconds": round(self.uptime_seconds, 2),
             "metrics": dict(self._metrics),
             "config_hash": self._config_hash[:12],
-            "checked_at": _utcnow().isoformat(),
+            "checked_at": utcnow().isoformat(),
         }
 
     # ------------------------------------------------------------------
@@ -2748,11 +2731,9 @@ class QRCodeGeneratorService:
             json.dumps(self._metrics, indent=2),
         )
 
-
 # ---------------------------------------------------------------------------
 # Engine stub for pre-engine development
 # ---------------------------------------------------------------------------
-
 
 class _EngineStub:
     """Placeholder engine stub that returns empty dicts for any method call.
@@ -2782,14 +2763,12 @@ class _EngineStub:
         """No-op close for stub."""
         pass
 
-
 # ---------------------------------------------------------------------------
 # Thread-safe singleton
 # ---------------------------------------------------------------------------
 
 _service_instance: Optional[QRCodeGeneratorService] = None
 _service_lock = threading.Lock()
-
 
 def get_service() -> QRCodeGeneratorService:
     """Return the process-wide singleton QRCodeGeneratorService.
@@ -2815,7 +2794,6 @@ def get_service() -> QRCodeGeneratorService:
                 )
     return _service_instance
 
-
 def set_service(service: QRCodeGeneratorService) -> None:
     """Replace the process-wide singleton with a custom service.
 
@@ -2837,7 +2815,6 @@ def set_service(service: QRCodeGeneratorService) -> None:
         _service_instance = service
     logger.info("QRCodeGeneratorService singleton replaced")
 
-
 def reset_service() -> None:
     """Destroy the current singleton and reset to None.
 
@@ -2849,11 +2826,9 @@ def reset_service() -> None:
         _service_instance = None
     logger.info("QRCodeGeneratorService singleton reset to None")
 
-
 # ---------------------------------------------------------------------------
 # FastAPI lifespan integration
 # ---------------------------------------------------------------------------
-
 
 @asynccontextmanager
 async def lifespan(app: Any) -> AsyncIterator[None]:
@@ -2877,7 +2852,6 @@ async def lifespan(app: Any) -> AsyncIterator[None]:
         yield
     finally:
         await service.shutdown()
-
 
 # ---------------------------------------------------------------------------
 # Public surface

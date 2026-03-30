@@ -48,29 +48,23 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 def _compute_hash(content: str) -> str:
     """Compute SHA-256 hash of string content."""
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -83,13 +77,11 @@ class OutputFormat(str, Enum):
     PDF = "pdf"
     JSON = "json"
 
-
 class TrafficLight(str, Enum):
     """Traffic light status indicators."""
     GREEN = "green"
     AMBER = "amber"
     RED = "red"
-
 
 class FundClassification(str, Enum):
     """SFDR fund classification."""
@@ -97,7 +89,6 @@ class FundClassification(str, Enum):
     ARTICLE_8 = "article_8"
     ARTICLE_8_PLUS = "article_8_plus"
     ARTICLE_9 = "article_9"
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Input Models
@@ -113,7 +104,6 @@ class PAIIndicator1Row(BaseModel):
     prior_year_portfolio: Optional[float] = Field(None, description="Prior year portfolio")
     yoy_change_pct: Optional[float] = Field(None, description="Year-over-year change (%)")
 
-
 class PAIIndicator2(BaseModel):
     """PAI Indicator 2: Carbon footprint."""
     portfolio_carbon_footprint: float = Field(
@@ -127,7 +117,6 @@ class PAIIndicator2(BaseModel):
     yoy_change_pct: Optional[float] = Field(None, description="YoY change (%)")
     currency: str = Field("EUR", description="Currency")
     status: TrafficLight = Field(TrafficLight.AMBER, description="Status")
-
 
 class PAIIndicator3(BaseModel):
     """PAI Indicator 3: GHG intensity of investee companies."""
@@ -143,7 +132,6 @@ class PAIIndicator3(BaseModel):
     currency: str = Field("EUR", description="Revenue currency")
     status: TrafficLight = Field(TrafficLight.AMBER, description="Status")
 
-
 class IndexComparisonEntry(BaseModel):
     """Portfolio vs benchmark index comparison for a single PAI."""
     pai_indicator: str = Field(..., description="PAI indicator label")
@@ -153,7 +141,6 @@ class IndexComparisonEntry(BaseModel):
     difference_pct: Optional[float] = Field(None, description="Difference (%)")
     unit: str = Field("", description="Unit")
     status: TrafficLight = Field(TrafficLight.AMBER, description="Status")
-
 
 class ArticleCompliance(BaseModel):
     """Article 8/9 fund benchmark compliance."""
@@ -168,7 +155,6 @@ class ArticleCompliance(BaseModel):
     benchmark_index: str = Field("", description="Benchmark index used")
     notes: str = Field("", description="Compliance notes")
 
-
 class TaxonomyBenchmarkEntry(BaseModel):
     """EU Taxonomy eligibility/alignment benchmark."""
     metric_name: str = Field(..., description="Metric (eligibility or alignment)")
@@ -180,7 +166,6 @@ class TaxonomyBenchmarkEntry(BaseModel):
         "climate_mitigation", description="Environmental objective"
     )
     status: TrafficLight = Field(TrafficLight.AMBER, description="Status")
-
 
 class SFDRPAIBenchmarkInput(BaseModel):
     """Complete input model for SFDRPAIBenchmarkReport."""
@@ -209,7 +194,6 @@ class SFDRPAIBenchmarkInput(BaseModel):
     index_name: str = Field("", description="Primary benchmark index name")
     currency: str = Field("EUR", description="Currency")
 
-
 # ---------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------
@@ -217,7 +201,6 @@ class SFDRPAIBenchmarkInput(BaseModel):
 def _tl_label(status: TrafficLight) -> str:
     """Return uppercase label for traffic light."""
     return status.value.upper()
-
 
 def _tl_color(status: TrafficLight) -> str:
     """Return hex colour for traffic light."""
@@ -228,7 +211,6 @@ def _tl_color(status: TrafficLight) -> str:
     }
     return mapping.get(status, "#e9c46a")
 
-
 def _classification_label(cls: FundClassification) -> str:
     """Return human-readable SFDR classification label."""
     mapping = {
@@ -238,7 +220,6 @@ def _classification_label(cls: FundClassification) -> str:
         FundClassification.ARTICLE_9: "Article 9",
     }
     return mapping.get(cls, "Unknown")
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -297,7 +278,7 @@ class SFDRPAIBenchmarkReport:
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render SFDR PAI benchmark as Markdown."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_md(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -305,7 +286,7 @@ class SFDRPAIBenchmarkReport:
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render SFDR PAI benchmark as HTML."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_html(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -313,7 +294,7 @@ class SFDRPAIBenchmarkReport:
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render SFDR PAI benchmark as JSON dict."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_json(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -359,7 +340,7 @@ class SFDRPAIBenchmarkReport:
         return (
             f"{title}\n\n"
             f"**Reporting Period:** {period} | "
-            f"**Report Date:** {_utcnow().strftime('%Y-%m-%d')}\n\n"
+            f"**Report Date:** {utcnow().strftime('%Y-%m-%d')}\n\n"
             "---"
         )
 
@@ -591,7 +572,7 @@ class SFDRPAIBenchmarkReport:
             '<div class="section">\n'
             f"<h1>{title}</h1>\n"
             f"<p><strong>Reporting Period:</strong> {period} | "
-            f"<strong>Report Date:</strong> {_utcnow().strftime('%Y-%m-%d')}</p>\n"
+            f"<strong>Report Date:</strong> {utcnow().strftime('%Y-%m-%d')}</p>\n"
             "<hr>\n</div>"
         )
 

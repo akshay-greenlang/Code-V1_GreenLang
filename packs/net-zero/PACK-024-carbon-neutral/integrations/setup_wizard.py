@@ -53,23 +53,18 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -81,11 +76,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CarbonNeutralWizardStep(str, Enum):
     """Names of wizard steps in execution order."""
@@ -97,7 +90,6 @@ class CarbonNeutralWizardStep(str, Enum):
     CREDIT_PREFERENCES = "credit_preferences"
     PRESET_SELECTION = "preset_selection"
 
-
 class StepStatus(str, Enum):
     """Status of a wizard step."""
 
@@ -107,14 +99,12 @@ class StepStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class ConsolidationApproach(str, Enum):
     """GHG Protocol consolidation approaches."""
 
     OPERATIONAL_CONTROL = "operational_control"
     FINANCIAL_CONTROL = "financial_control"
     EQUITY_SHARE = "equity_share"
-
 
 class OrganizationSize(str, Enum):
     """Organization size classification."""
@@ -123,7 +113,6 @@ class OrganizationSize(str, Enum):
     MEDIUM = "medium"
     LARGE = "large"
     ENTERPRISE = "enterprise"
-
 
 class BoundaryType(str, Enum):
     """PAS 2060 subject boundary types."""
@@ -135,14 +124,12 @@ class BoundaryType(str, Enum):
     PROJECT = "project"
     EVENT = "event"
 
-
 class Scope2Method(str, Enum):
     """Scope 2 reporting method."""
 
     LOCATION_BASED = "location_based"
     MARKET_BASED = "market_based"
     DUAL = "dual"
-
 
 class CreditQualityPreference(str, Enum):
     """Credit quality preference level."""
@@ -151,7 +138,6 @@ class CreditQualityPreference(str, Enum):
     HIGH_QUALITY = "high_quality"
     STANDARD = "standard"
     ANY = "any"
-
 
 class EmissionFactorSource(str, Enum):
     """Emission factor database sources."""
@@ -162,7 +148,6 @@ class EmissionFactorSource(str, Enum):
     EPA = "epa"
     ECOINVENT = "ecoinvent"
     CUSTOM = "custom"
-
 
 # ---------------------------------------------------------------------------
 # Sector Presets
@@ -243,11 +228,9 @@ SECTOR_PRESETS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class OrganizationProfile(BaseModel):
     """Step 1: Organization profile."""
@@ -264,7 +247,6 @@ class OrganizationProfile(BaseModel):
     reporting_year: int = Field(default=2025, ge=2020, le=2035)
     base_year: int = Field(default=2019, ge=2015, le=2025)
 
-
 class BoundarySelection(BaseModel):
     """Step 2: PAS 2060 subject boundary."""
 
@@ -274,7 +256,6 @@ class BoundarySelection(BaseModel):
     entities_excluded: List[str] = Field(default_factory=list)
     exclusion_justification: str = Field(default="")
     pas_2060_clause_7: bool = Field(default=True)
-
 
 class ScopeConfiguration(BaseModel):
     """Step 3: Scope inclusion configuration."""
@@ -287,7 +268,6 @@ class ScopeConfiguration(BaseModel):
     scope3_exclusion_justification: str = Field(default="")
     materiality_threshold_pct: float = Field(default=5.0, ge=0.0, le=100.0)
 
-
 class DataSourceSetup(BaseModel):
     """Step 4: Data source configuration."""
 
@@ -298,7 +278,6 @@ class DataSourceSetup(BaseModel):
     ef_source: str = Field(default="ghg_protocol")
     registry_api_keys: Dict[str, bool] = Field(default_factory=dict)
     base_year_data_available: bool = Field(default=False)
-
 
 class CreditPreferences(BaseModel):
     """Step 5: Credit procurement preferences."""
@@ -313,7 +292,6 @@ class CreditPreferences(BaseModel):
     icvcm_ccp_required: bool = Field(default=False)
     sdg_preferences: List[int] = Field(default_factory=list)
 
-
 class PresetSelection(BaseModel):
     """Step 6: Preset selection."""
 
@@ -321,7 +299,6 @@ class PresetSelection(BaseModel):
     preset_name: str = Field(default="")
     auto_recommended: bool = Field(default=False)
     customizations: Dict[str, Any] = Field(default_factory=dict)
-
 
 class WizardStepState(BaseModel):
     """State of a single wizard step."""
@@ -332,7 +309,6 @@ class WizardStepState(BaseModel):
     validation_errors: List[str] = Field(default_factory=list)
     completed_at: Optional[datetime] = Field(default=None)
 
-
 class WizardState(BaseModel):
     """Complete wizard state across all steps."""
 
@@ -341,9 +317,8 @@ class WizardState(BaseModel):
     steps: Dict[str, WizardStepState] = Field(default_factory=dict)
     current_step: str = Field(default="organization_profile")
     completed: bool = Field(default=False)
-    created_at: datetime = Field(default_factory=_utcnow)
-    updated_at: datetime = Field(default_factory=_utcnow)
-
+    created_at: datetime = Field(default_factory=utcnow)
+    updated_at: datetime = Field(default_factory=utcnow)
 
 class SetupResult(BaseModel):
     """Final wizard setup result."""
@@ -363,11 +338,9 @@ class SetupResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # CarbonNeutralSetupWizard
 # ---------------------------------------------------------------------------
-
 
 class CarbonNeutralSetupWizard:
     """6-step guided configuration wizard for PACK-024.
@@ -443,7 +416,7 @@ class CarbonNeutralSetupWizard:
         else:
             step_state.status = StepStatus.COMPLETED.value
             step_state.data = data
-            step_state.completed_at = _utcnow()
+            step_state.completed_at = utcnow()
 
             # Advance to next step
             current_idx = next(
@@ -454,7 +427,7 @@ class CarbonNeutralSetupWizard:
             else:
                 self._state.completed = True
 
-        self._state.updated_at = _utcnow()
+        self._state.updated_at = utcnow()
         return self._state
 
     def skip_step(self, step_name: str) -> WizardState:
@@ -473,7 +446,7 @@ class CarbonNeutralSetupWizard:
         if current_idx < len(self.STEP_ORDER) - 1:
             self._state.current_step = self.STEP_ORDER[current_idx + 1].value
 
-        self._state.updated_at = _utcnow()
+        self._state.updated_at = utcnow()
         return self._state
 
     def recommend_preset(

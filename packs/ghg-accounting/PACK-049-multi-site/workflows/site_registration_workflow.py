@@ -54,26 +54,20 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -83,14 +77,12 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
-
 
 class RegistrationPhase(str, Enum):
     """Site registration workflow phases."""
@@ -99,7 +91,6 @@ class RegistrationPhase(str, Enum):
     CHARACTERISTICS_CAPTURE = "characteristics_capture"
     BOUNDARY_ASSIGNMENT = "boundary_assignment"
     ACTIVATION = "activation"
-
 
 class FacilityType(str, Enum):
     """GHG inventory facility type classification."""
@@ -115,7 +106,6 @@ class FacilityType(str, Enum):
     MIXED_USE = "mixed_use"
     OTHER = "other"
 
-
 class SectorClassification(str, Enum):
     """Industry sector classification scheme."""
     ENERGY = "energy"
@@ -130,13 +120,11 @@ class SectorClassification(str, Enum):
     UTILITIES = "utilities"
     REAL_ESTATE = "real_estate"
 
-
 class ConsolidationApproach(str, Enum):
     """GHG Protocol organisational boundary consolidation approach."""
     EQUITY_SHARE = "equity_share"
     FINANCIAL_CONTROL = "financial_control"
     OPERATIONAL_CONTROL = "operational_control"
-
 
 class SiteStatus(str, Enum):
     """Site lifecycle status."""
@@ -148,7 +136,6 @@ class SiteStatus(str, Enum):
     INACTIVE = "inactive"
     DECOMMISSIONED = "decommissioned"
 
-
 class GeographicRegion(str, Enum):
     """High-level geographic region."""
     NORTH_AMERICA = "north_america"
@@ -157,7 +144,6 @@ class GeographicRegion(str, Enum):
     MIDDLE_EAST_AFRICA = "middle_east_africa"
     ASIA_PACIFIC = "asia_pacific"
     OCEANIA = "oceania"
-
 
 # =============================================================================
 # REFERENCE DATA
@@ -193,11 +179,9 @@ REGION_MAPPING: Dict[str, str] = {
 
 MINIMUM_COMPLETENESS_THRESHOLD = Decimal("0.80")
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -212,7 +196,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
 
-
 class CandidateSite(BaseModel):
     """A discovered candidate site before classification."""
     site_id: str = Field(default_factory=_new_uuid, description="Unique site ID")
@@ -226,8 +209,7 @@ class CandidateSite(BaseModel):
     latitude: Optional[Decimal] = Field(None, description="Latitude")
     longitude: Optional[Decimal] = Field(None, description="Longitude")
     source: str = Field("manual", description="Discovery source")
-    discovered_at: str = Field(default_factory=lambda: _utcnow().isoformat())
-
+    discovered_at: str = Field(default_factory=lambda: utcnow().isoformat())
 
 class ClassifiedSite(BaseModel):
     """A site with classification attributes assigned."""
@@ -247,7 +229,6 @@ class ClassifiedSite(BaseModel):
         Decimal("1.00"), description="Classification confidence 0-1"
     )
 
-
 class SiteCharacteristics(BaseModel):
     """Operational characteristics for a site."""
     site_id: str = Field(..., description="Site ID")
@@ -264,7 +245,6 @@ class SiteCharacteristics(BaseModel):
     has_onsite_generation: bool = Field(False, description="On-site generation present")
     has_fleet_vehicles: bool = Field(False, description="Fleet vehicles present")
     data_completeness_pct: Decimal = Field(Decimal("0"), description="Data completeness 0-100")
-
 
 class BoundaryAssignment(BaseModel):
     """Organisational boundary assignment for a site."""
@@ -283,7 +263,6 @@ class BoundaryAssignment(BaseModel):
     exclusion_reason: str = Field("", description="Reason if excluded")
     is_included: bool = Field(True, description="Included in boundary")
     effective_date: str = Field("", description="Effective date ISO")
-
 
 class RegisteredSite(BaseModel):
     """A fully registered and activated site."""
@@ -311,7 +290,6 @@ class RegisteredSite(BaseModel):
     activated_at: str = Field("")
     provenance_hash: str = Field("")
 
-
 class SiteRegistrationInput(BaseModel):
     """Input for the site registration workflow."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -338,7 +316,6 @@ class SiteRegistrationInput(BaseModel):
         default_factory=list, description="Phase names to skip"
     )
 
-
 class SiteRegistrationResult(BaseModel):
     """Output from the site registration workflow."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -359,11 +336,9 @@ class SiteRegistrationResult(BaseModel):
     started_at: str = Field("")
     completed_at: str = Field("")
 
-
 # =============================================================================
 # WORKFLOW CLASS
 # =============================================================================
-
 
 class SiteRegistrationWorkflow:
     """
@@ -422,7 +397,7 @@ class SiteRegistrationWorkflow:
         Returns:
             SiteRegistrationResult with registered sites and provenance.
         """
-        start = _utcnow()
+        start = utcnow()
         result = SiteRegistrationResult(
             organisation_id=input_data.organisation_id,
             reporting_year=input_data.reporting_year,
@@ -447,10 +422,10 @@ class SiteRegistrationWorkflow:
                 ))
                 continue
 
-            phase_start = _utcnow()
+            phase_start = utcnow()
             try:
                 phase_out = phase_methods[phase](input_data, result)
-                elapsed = (_utcnow() - phase_start).total_seconds()
+                elapsed = (utcnow() - phase_start).total_seconds()
                 ph_hash = _compute_hash(str(phase_out))
                 result.phase_results.append(PhaseResult(
                     phase_name=phase.value,
@@ -461,7 +436,7 @@ class SiteRegistrationWorkflow:
                     provenance_hash=ph_hash,
                 ))
             except Exception as exc:
-                elapsed = (_utcnow() - phase_start).total_seconds()
+                elapsed = (utcnow() - phase_start).total_seconds()
                 logger.error("Phase %s failed: %s", phase.value, exc, exc_info=True)
                 result.phase_results.append(PhaseResult(
                     phase_name=phase.value,
@@ -477,7 +452,7 @@ class SiteRegistrationWorkflow:
         if result.status != WorkflowStatus.FAILED:
             result.status = WorkflowStatus.COMPLETED
 
-        end = _utcnow()
+        end = utcnow()
         result.completed_at = end.isoformat()
         result.duration_seconds = (end - start).total_seconds()
         result.provenance_hash = _compute_hash(
@@ -892,7 +867,7 @@ class SiteRegistrationWorkflow:
                 inclusion_rationale=inclusion_rationale,
                 exclusion_reason=exclusion_reason,
                 is_included=is_included,
-                effective_date=raw.get("effective_date", _utcnow().date().isoformat()),
+                effective_date=raw.get("effective_date", utcnow().date().isoformat()),
             )
             assignments[cs.site_id] = assignment
 
@@ -958,7 +933,7 @@ class SiteRegistrationWorkflow:
         activated_count = 0
         below_threshold_count = 0
         excluded_count = 0
-        now_iso = _utcnow().isoformat()
+        now_iso = utcnow().isoformat()
 
         threshold = input_data.completeness_threshold * Decimal("100")
 
@@ -1035,7 +1010,6 @@ class SiteRegistrationWorkflow:
             "excluded_count": excluded_count,
             "total_registered": len(registered),
         }
-
 
 # =============================================================================
 # MODULE EXPORTS

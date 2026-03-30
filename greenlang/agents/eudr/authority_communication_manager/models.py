@@ -23,7 +23,8 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase
 
 
 # ---------------------------------------------------------------------------
@@ -244,7 +245,7 @@ DEADLINE_HOURS_MAP: Dict[str, int] = {
 # ---------------------------------------------------------------------------
 
 
-class Authority(BaseModel):
+class Authority(GreenLangBase):
     """Competent authority within an EU member state.
 
     Represents a specific regulatory authority responsible for
@@ -266,7 +267,7 @@ class Authority(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class Communication(BaseModel):
+class Communication(GreenLangBase):
     """A communication thread between operator and authority.
 
     Represents the top-level container for all messages exchanged
@@ -316,7 +317,7 @@ class Communication(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class InformationRequest(BaseModel):
+class InformationRequest(GreenLangBase):
     """Information request from competent authority per Article 17.
 
     Captures the specific information items requested, deadline,
@@ -345,7 +346,7 @@ class InformationRequest(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class Inspection(BaseModel):
+class Inspection(GreenLangBase):
     """On-the-spot check or inspection per EUDR Article 15.
 
     Tracks scheduled, ongoing, and completed inspections including
@@ -381,7 +382,7 @@ class Inspection(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class NonCompliance(BaseModel):
+class NonCompliance(GreenLangBase):
     """Non-compliance record per EUDR Article 16.
 
     Tracks violations, severity, penalties, and corrective action
@@ -423,7 +424,7 @@ class NonCompliance(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class Appeal(BaseModel):
+class Appeal(GreenLangBase):
     """Administrative appeal per EUDR Article 19.
 
     Tracks the full lifecycle of an appeal from filing through
@@ -457,7 +458,7 @@ class Appeal(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class Document(BaseModel):
+class Document(GreenLangBase):
     """Document exchanged between operator and authority.
 
     Includes encryption metadata for sensitive documents and
@@ -489,7 +490,7 @@ class Document(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class Notification(BaseModel):
+class Notification(GreenLangBase):
     """Multi-channel notification record.
 
     Tracks delivery attempts and confirmations across email,
@@ -523,7 +524,7 @@ class Notification(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class Template(BaseModel):
+class Template(GreenLangBase):
     """Multi-language communication template.
 
     Supports placeholders for dynamic content injection and
@@ -552,7 +553,7 @@ class Template(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class CommunicationThread(BaseModel):
+class CommunicationThread(GreenLangBase):
     """Thread grouping related communications.
 
     Provides chronological ordering and summary for a conversation
@@ -578,7 +579,7 @@ class CommunicationThread(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class ResponseData(BaseModel):
+class ResponseData(GreenLangBase):
     """Response data for a communication or information request.
 
     Captures the response content, attached documents, and
@@ -605,7 +606,7 @@ class ResponseData(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class DeadlineReminder(BaseModel):
+class DeadlineReminder(GreenLangBase):
     """Automated deadline reminder record.
 
     Generated 48 hours before a communication deadline to ensure
@@ -633,7 +634,7 @@ class DeadlineReminder(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class ApprovalWorkflow(BaseModel):
+class ApprovalWorkflow(GreenLangBase):
     """Internal approval workflow for outgoing communications.
 
     Ensures that responses to authorities go through proper review
@@ -658,7 +659,7 @@ class ApprovalWorkflow(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class HealthStatus(BaseModel):
+class HealthStatus(GreenLangBase):
     """Health check response for the Authority Communication Manager."""
 
     agent_id: str = AGENT_ID

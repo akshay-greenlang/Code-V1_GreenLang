@@ -43,25 +43,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -74,11 +68,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class IntensityMetricType(str, Enum):
     """Types of intensity metrics from PACK-046."""
@@ -90,7 +82,6 @@ class IntensityMetricType(str, Enum):
     ENERGY = "tco2e_per_mwh"
     CUSTOM = "custom"
 
-
 class BenchmarkSource(str, Enum):
     """Benchmark data source from PACK-047."""
 
@@ -100,11 +91,9 @@ class BenchmarkSource(str, Enum):
     SECTOR_AVERAGE = "sector_average"
     CUSTOM = "custom"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class Pack046047Config(BaseModel):
     """Configuration for combined PACK-046/047 bridge."""
@@ -117,7 +106,6 @@ class Pack046047Config(BaseModel):
     )
     timeout_s: float = Field(60.0, ge=5.0)
     cache_ttl_s: float = Field(3600.0)
-
 
 class IntensityMetric(BaseModel):
     """Intensity metric from PACK-046 for materiality context."""
@@ -134,7 +122,6 @@ class IntensityMetric(BaseModel):
     data_quality_score: float = 0.0
     provenance_hash: str = ""
 
-
 class IntensityContextRequest(BaseModel):
     """Request for intensity context from PACK-046."""
 
@@ -148,7 +135,6 @@ class IntensityContextRequest(BaseModel):
         description="Emission scopes to include",
     )
 
-
 class IntensityContextResponse(BaseModel):
     """Response with intensity context from PACK-046."""
 
@@ -161,7 +147,6 @@ class IntensityContextResponse(BaseModel):
     retrieved_at: str = ""
     duration_ms: float = 0.0
     warnings: List[str] = Field(default_factory=list)
-
 
 class PeerBenchmarkPosition(BaseModel):
     """Peer benchmark position from PACK-047."""
@@ -177,7 +162,6 @@ class PeerBenchmarkPosition(BaseModel):
     source: str = BenchmarkSource.CDP.value
     provenance_hash: str = ""
 
-
 class SectorAverage(BaseModel):
     """Sector average from PACK-047 for materiality context."""
 
@@ -190,7 +174,6 @@ class SectorAverage(BaseModel):
     source: str = ""
     provenance_hash: str = ""
 
-
 class BenchmarkContextRequest(BaseModel):
     """Request for benchmark context from PACK-047."""
 
@@ -200,7 +183,6 @@ class BenchmarkContextRequest(BaseModel):
         default_factory=lambda: [BenchmarkSource.CDP.value],
         description="Benchmark data sources",
     )
-
 
 class BenchmarkContextResponse(BaseModel):
     """Response with benchmark context from PACK-047."""
@@ -216,11 +198,9 @@ class BenchmarkContextResponse(BaseModel):
     duration_ms: float = 0.0
     warnings: List[str] = Field(default_factory=list)
 
-
 # ---------------------------------------------------------------------------
 # Bridge Implementation
 # ---------------------------------------------------------------------------
-
 
 class Pack046047Bridge:
     """
@@ -292,7 +272,7 @@ class Pack046047Bridge:
                     "period": request.period,
                     "metrics_count": len(metrics),
                 }),
-                retrieved_at=_utcnow().isoformat(),
+                retrieved_at=utcnow().isoformat(),
                 duration_ms=duration,
             )
 
@@ -303,7 +283,7 @@ class Pack046047Bridge:
                 success=False,
                 period=request.period,
                 warnings=[f"Retrieval failed: {str(e)}"],
-                retrieved_at=_utcnow().isoformat(),
+                retrieved_at=utcnow().isoformat(),
                 duration_ms=duration,
             )
 
@@ -355,7 +335,7 @@ class Pack046047Bridge:
                     "sector": request.sector,
                     "positions": len(positions),
                 }),
-                retrieved_at=_utcnow().isoformat(),
+                retrieved_at=utcnow().isoformat(),
                 duration_ms=duration,
             )
 
@@ -366,7 +346,7 @@ class Pack046047Bridge:
                 success=False,
                 period=request.period,
                 warnings=[f"Retrieval failed: {str(e)}"],
-                retrieved_at=_utcnow().isoformat(),
+                retrieved_at=utcnow().isoformat(),
                 duration_ms=duration,
             )
 

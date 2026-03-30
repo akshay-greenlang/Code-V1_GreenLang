@@ -74,25 +74,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -119,7 +113,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -135,7 +128,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -156,7 +148,6 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100).
 
@@ -168,7 +159,6 @@ def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
         Percentage as Decimal; Decimal("0") when whole is zero.
     """
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* and return a float.
@@ -185,26 +175,21 @@ def _round_val(value: Decimal, places: int = 6) -> float:
     quantizer = Decimal(10) ** -places
     return float(value.quantize(quantizer, rounding=ROUND_HALF_UP))
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: float) -> float:
     """Round to 4 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EnergyCarrier(str, Enum):
     """Energy carrier types supported for industrial facilities.
@@ -224,7 +209,6 @@ class EnergyCarrier(str, Enum):
     COAL = "coal"
     HYDROGEN = "hydrogen"
 
-
 class RegressionType(str, Enum):
     """Regression model types for baseline establishment.
 
@@ -239,7 +223,6 @@ class RegressionType(str, Enum):
     ENERGY_VS_OCCUPANCY = "energy_vs_occupancy"
     FIXED_BASELINE = "fixed_baseline"
 
-
 class EnPIType(str, Enum):
     """Energy Performance Indicator types per ISO 50006.
 
@@ -253,7 +236,6 @@ class EnPIType(str, Enum):
     ENERGY_INTENSITY_EMPLOYEE = "energy_intensity_employee"
     REGRESSION_MODEL = "regression_model"
     ENERGY_COST_INTENSITY = "energy_cost_intensity"
-
 
 class FacilitySector(str, Enum):
     """Industrial facility sector classification.
@@ -278,7 +260,6 @@ class FacilitySector(str, Enum):
     COMMERCIAL_BUILDING = "commercial_building"
     OTHER = "other"
 
-
 class BaselineStatus(str, Enum):
     """Baseline model validation status."""
     VALID = "valid"
@@ -287,11 +268,9 @@ class BaselineStatus(str, Enum):
     INSUFFICIENT_DATA = "insufficient_data"
     NOT_EVALUATED = "not_evaluated"
 
-
 # ---------------------------------------------------------------------------
 # Constants -- Energy Conversion Factors
 # ---------------------------------------------------------------------------
-
 
 # Energy conversion factors to kWh.
 # Sources: ISO 3977, EN 15603, CIBSE Guide F, BEIS/DEFRA 2024.
@@ -355,7 +334,6 @@ ENERGY_CONVERSION_FACTORS: Dict[str, Dict[str, float]] = {
 """Energy conversion factors from native units to kWh.
 Electricity, district heating, and district cooling are already in kWh."""
 
-
 # Degree-day base temperatures by country (Celsius).
 # Heating base and cooling base.
 # Sources: ASHRAE Fundamentals, CIBSE Guide A, EN 15603.
@@ -384,7 +362,6 @@ DEGREE_DAY_BASE_TEMPS: Dict[str, Dict[str, float]] = {
     "AU": {"heating_base_c": 15.0, "cooling_base_c": 22.0},
     "DEFAULT": {"heating_base_c": 15.5, "cooling_base_c": 18.0},
 }
-
 
 # Standard EnPI benchmarks by industrial sector (kWh per m2 per year).
 # Sources: CIBSE TM46, IEA Industrial Energy, EU BAT Reference Documents.
@@ -487,7 +464,6 @@ STANDARD_ENPI_BY_SECTOR: Dict[str, Dict[str, float]] = {
     },
 }
 
-
 # ASHRAE Guideline 14 thresholds for baseline model validation.
 ASHRAE_14_THRESHOLDS: Dict[str, float] = {
     "r_squared_minimum": 0.75,
@@ -501,11 +477,9 @@ ASHRAE_14_THRESHOLDS: Dict[str, float] = {
 """ASHRAE Guideline 14-2014 statistical thresholds for M&V.
 R-squared >= 0.75, CV(RMSE) <= 15% for monthly data."""
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class FacilityData(BaseModel):
     """Industrial facility data for energy baseline establishment.
@@ -541,7 +515,6 @@ class FacilityData(BaseModel):
             raise ValueError("Facility area exceeds 10 million m2 sanity check")
         return v
 
-
 class EnergyMeterReading(BaseModel):
     """Energy meter reading for a single carrier over a period.
 
@@ -574,7 +547,6 @@ class EnergyMeterReading(BaseModel):
             raise ValueError("Energy exceeds 1 TWh per period sanity check")
         return v
 
-
 class ProductionData(BaseModel):
     """Production output data for a time period.
 
@@ -588,7 +560,6 @@ class ProductionData(BaseModel):
     product_type: str = Field(
         default="primary", min_length=1, description="Product type"
     )
-
 
 class WeatherData(BaseModel):
     """Weather data for a time period used in degree-day normalisation.
@@ -606,11 +577,9 @@ class WeatherData(BaseModel):
         None, description="Average temperature (C)"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class BaselineModel(BaseModel):
     """Statistical baseline model result.
@@ -645,7 +614,6 @@ class BaselineModel(BaseModel):
     status: str = Field(
         default=BaselineStatus.NOT_EVALUATED, description="Validation status"
     )
-
 
 class EnPIResult(BaseModel):
     """Energy Performance Indicator calculation result per ISO 50006.
@@ -687,7 +655,6 @@ class EnPIResult(BaseModel):
         default="", description="Performance classification"
     )
 
-
 class NormalizedConsumption(BaseModel):
     """Weather-normalised energy consumption result.
 
@@ -718,7 +685,6 @@ class NormalizedConsumption(BaseModel):
     actual_hdd: float = Field(default=0.0, description="Actual HDD")
     actual_cdd: float = Field(default=0.0, description="Actual CDD")
 
-
 class CUSUMPoint(BaseModel):
     """Single CUSUM data point."""
     period: str = Field(..., description="Time period")
@@ -726,7 +692,6 @@ class CUSUMPoint(BaseModel):
     predicted_kwh: float = Field(default=0.0, description="Baseline predicted")
     deviation_kwh: float = Field(default=0.0, description="Deviation from baseline")
     cumulative_sum_kwh: float = Field(default=0.0, description="Cumulative sum")
-
 
 class CUSUMResult(BaseModel):
     """CUSUM analysis result for baseline deviation detection.
@@ -748,7 +713,6 @@ class CUSUMResult(BaseModel):
     exceedances: int = Field(default=0)
     significant_change_detected: bool = Field(default=False)
 
-
 class BaselineValidation(BaseModel):
     """Baseline model validation result per ASHRAE Guideline 14.
 
@@ -769,7 +733,6 @@ class BaselineValidation(BaseModel):
     issues: List[str] = Field(default_factory=list)
     recommendations: List[str] = Field(default_factory=list)
 
-
 class EnergyBalance(BaseModel):
     """Energy balance for a facility (inputs = outputs + losses).
 
@@ -788,7 +751,6 @@ class EnergyBalance(BaseModel):
     balance_error_pct: float = Field(default=0.0)
     carrier_shares: Dict[str, float] = Field(default_factory=dict)
 
-
 class EnergyBaselineResult(BaseModel):
     """Complete energy baseline result with full provenance.
 
@@ -797,7 +759,7 @@ class EnergyBaselineResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid, description="Unique result ID")
     engine_version: str = Field(default=_MODULE_VERSION, description="Engine version")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Calc timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Calc timestamp")
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
 
     facility_id: str = Field(default="", description="Facility identifier")
@@ -828,11 +790,9 @@ class EnergyBaselineResult(BaseModel):
     recommendations: List[str] = Field(default_factory=list, description="Recommendations")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 # ---------------------------------------------------------------------------
 # Calculation Engine
 # ---------------------------------------------------------------------------
-
 
 class EnergyBaselineEngine:
     """Energy baseline establishment engine per ISO 50006.

@@ -50,8 +50,9 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, FrozenSet, List, Optional, Tuple
 from datetime import datetime
 from enum import Enum
-from pydantic import BaseModel, Field, field_validator
-from pydantic import ConfigDict
+from pydantic import Field, field_validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
+
 import hashlib
 import json
 
@@ -1598,7 +1599,7 @@ def compute_provenance_hash(data: str) -> str:
 # ==============================================================================
 
 
-class ShipmentInput(BaseModel):
+class ShipmentInput(GreenLangBase):
     """Input for a single outbound shipment (distance-based method).
 
     Represents one leg of downstream transport from the reporting company's
@@ -1682,7 +1683,7 @@ class ShipmentInput(BaseModel):
         return v
 
 
-class SpendInput(BaseModel):
+class SpendInput(GreenLangBase):
     """Input for spend-based (EEIO) emissions calculation.
 
     Used when detailed shipment data is unavailable.  The agent converts
@@ -1730,7 +1731,7 @@ class SpendInput(BaseModel):
         return v.upper()
 
 
-class WarehouseInput(BaseModel):
+class WarehouseInput(GreenLangBase):
     """Input for warehouse / distribution center storage emissions.
 
     Emissions are calculated as:
@@ -1780,7 +1781,7 @@ class WarehouseInput(BaseModel):
     )
 
 
-class LastMileInput(BaseModel):
+class LastMileInput(GreenLangBase):
     """Input for last-mile delivery emissions.
 
     Emissions are calculated per delivery using area-specific factors:
@@ -1826,7 +1827,7 @@ class LastMileInput(BaseModel):
         return v_lower
 
 
-class AverageDataInput(BaseModel):
+class AverageDataInput(GreenLangBase):
     """Input for average-data (screening) method.
 
     Uses distribution channel defaults to estimate transport distance,
@@ -1861,7 +1862,7 @@ class AverageDataInput(BaseModel):
     )
 
 
-class CalculationInput(BaseModel):
+class CalculationInput(GreenLangBase):
     """Top-level input for a downstream transportation emissions calculation.
 
     Combines one or more input types (shipments, spend, warehouse,
@@ -1914,7 +1915,7 @@ class CalculationInput(BaseModel):
     )
 
 
-class CalculationResult(BaseModel):
+class CalculationResult(GreenLangBase):
     """Output from a downstream transportation emissions calculation.
 
     Contains total and component-level emissions with data quality
@@ -1998,7 +1999,7 @@ class CalculationResult(BaseModel):
     )
 
 
-class ShipmentResult(BaseModel):
+class ShipmentResult(GreenLangBase):
     """Emission result for a single shipment leg.
 
     Produced by the DistanceBasedCalculatorEngine for each ShipmentInput.
@@ -2050,7 +2051,7 @@ class ShipmentResult(BaseModel):
     )
 
 
-class WarehouseResult(BaseModel):
+class WarehouseResult(GreenLangBase):
     """Emission result for a warehouse / storage facility.
 
     Produced by the WarehouseDistributionEngine for each WarehouseInput.
@@ -2082,7 +2083,7 @@ class WarehouseResult(BaseModel):
     )
 
 
-class ComplianceResult(BaseModel):
+class ComplianceResult(GreenLangBase):
     """Result from a single-framework compliance check.
 
     Produced by the ComplianceCheckerEngine for each enabled framework.
@@ -2110,7 +2111,7 @@ class ComplianceResult(BaseModel):
     )
 
 
-class AggregationResult(BaseModel):
+class AggregationResult(GreenLangBase):
     """Aggregated emissions broken down by various dimensions.
 
     Produced by the pipeline's AGGREGATE stage after all component
@@ -2147,7 +2148,7 @@ class AggregationResult(BaseModel):
     )
 
 
-class ProvenanceEntry(BaseModel):
+class ProvenanceEntry(GreenLangBase):
     """Single entry in the 10-stage provenance chain.
 
     Each pipeline stage produces an input hash, output hash, and chain hash

@@ -70,7 +70,9 @@ from typing import (
     Union,
 )
 
-from pydantic import BaseModel, Field, validator
+from pydantic import Field, validator
+from greenlang.schemas import GreenLangBase
+from greenlang.schemas.enums import HealthStatus
 
 logger = logging.getLogger(__name__)
 
@@ -158,17 +160,6 @@ class ProtocolType(str, Enum):
     OPCUA = "opc-ua"  # OPC-UA for industrial automation
     KAFKA = "kafka"  # Apache Kafka for event streaming
     AMQP = "amqp"  # AMQP for message queuing
-
-
-class HealthStatus(str, Enum):
-    """
-    Health check status values.
-    """
-
-    HEALTHY = "healthy"  # All systems nominal
-    DEGRADED = "degraded"  # Operating with reduced capability
-    UNHEALTHY = "unhealthy"  # Critical systems failing
-    UNKNOWN = "unknown"  # Cannot determine health
 
 
 class UncertaintyType(str, Enum):
@@ -539,7 +530,7 @@ class HealthCheckResult:
 # =============================================================================
 
 
-class AgentExecutionContext(BaseModel):
+class AgentExecutionContext(GreenLangBase):
     """
     Execution context passed to agent processing.
 
@@ -570,7 +561,7 @@ class AgentExecutionContext(BaseModel):
         arbitrary_types_allowed = True
 
 
-class AgentExecutionResult(BaseModel):
+class AgentExecutionResult(GreenLangBase):
     """
     Standard result format for agent execution.
 

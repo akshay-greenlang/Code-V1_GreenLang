@@ -10,7 +10,8 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase
 
 
 class ClimateHazard(str, Enum):
@@ -56,7 +57,7 @@ class VulnerabilityLevel(str, Enum):
     CRITICAL = "critical"
 
 
-class AdaptationBaseInput(BaseModel):
+class AdaptationBaseInput(GreenLangBase):
     """Base input for adaptation planning agents."""
 
     organization_id: str = Field(...)
@@ -68,7 +69,7 @@ class AdaptationBaseInput(BaseModel):
     budget_million_usd: Optional[float] = Field(None, ge=0)
 
 
-class AdaptationBaseOutput(BaseModel):
+class AdaptationBaseOutput(GreenLangBase):
     """Base output for adaptation planning agents."""
 
     organization_id: str = Field(...)

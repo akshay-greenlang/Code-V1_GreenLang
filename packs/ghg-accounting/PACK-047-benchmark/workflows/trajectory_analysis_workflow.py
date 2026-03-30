@@ -58,37 +58,28 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> str:
-    """Return current UTC timestamp as ISO-8601 string."""
-    return datetime.utcnow().isoformat() + "Z"
-
-
 def _new_uuid() -> str:
     """Return a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash of JSON-serialisable data."""
     serialised = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialised.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -99,7 +90,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -109,7 +99,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class TrajectoryPhase(str, Enum):
     """Trajectory analysis workflow phases."""
 
@@ -117,7 +106,6 @@ class TrajectoryPhase(str, Enum):
     CARR_COMPUTATION = "carr_computation"
     CONVERGENCE_ANALYSIS = "convergence_analysis"
     TRAJECTORY_RANKING = "trajectory_ranking"
-
 
 class TrajectoryBand(str, Enum):
     """Trajectory performance band based on CARR."""
@@ -128,13 +116,11 @@ class TrajectoryBand(str, Enum):
     FLAT = "flat"
     INCREASING = "increasing"
 
-
 class ConvergenceType(str, Enum):
     """Type of convergence analysis."""
 
     BETA_CONVERGENCE = "beta_convergence"
     SIGMA_CONVERGENCE = "sigma_convergence"
-
 
 class ConvergenceStatus(str, Enum):
     """Convergence status relative to peer median."""
@@ -144,11 +130,9 @@ class ConvergenceStatus(str, Enum):
     STABLE = "stable"
     OVERTAKING = "overtaking"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -161,7 +145,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
-
 
 class EntityTimeSeries(BaseModel):
     """Multi-year emissions time series for an entity."""
@@ -178,7 +161,6 @@ class EntityTimeSeries(BaseModel):
         description="Year -> intensity metric",
     )
     data_quality_score: float = Field(default=0.0, ge=0.0, le=100.0)
-
 
 class CARRResult(BaseModel):
     """Compound Annual Reduction Rate result for an entity."""
@@ -201,7 +183,6 @@ class CARRResult(BaseModel):
     trajectory_band: TrajectoryBand = Field(default=TrajectoryBand.FLAT)
     provenance_hash: str = Field(default="")
 
-
 class ConvergenceResult(BaseModel):
     """Convergence analysis result."""
 
@@ -219,7 +200,6 @@ class ConvergenceResult(BaseModel):
     spread_change_pct: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class TrajectoryRank(BaseModel):
     """Trajectory ranking for an entity."""
 
@@ -234,11 +214,9 @@ class TrajectoryRank(BaseModel):
     momentum_score: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # INPUT / OUTPUT
 # =============================================================================
-
 
 class TrajectoryAnalysisInput(BaseModel):
     """Input data model for TrajectoryAnalysisWorkflow."""
@@ -264,7 +242,6 @@ class TrajectoryAnalysisInput(BaseModel):
     tenant_id: str = Field(default="")
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class TrajectoryAnalysisResult(BaseModel):
     """Complete result from trajectory analysis workflow."""
 
@@ -283,11 +260,9 @@ class TrajectoryAnalysisResult(BaseModel):
     org_momentum_score: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class TrajectoryAnalysisWorkflow:
     """
@@ -776,6 +751,7 @@ class TrajectoryAnalysisWorkflow:
                         phase_number, attempt, self.MAX_RETRIES, exc, delay,
                     )
                     import asyncio
+
                     await asyncio.sleep(delay)
         return PhaseResult(
             phase_name=f"phase_{phase_number}_failed",

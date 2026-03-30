@@ -48,7 +48,8 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 
 
 # ---------------------------------------------------------------------------
@@ -124,7 +125,7 @@ class FlagStatus(str, Enum):
 # ---------------------------------------------------------------------------
 
 
-class FeatureFlag(BaseModel):
+class FeatureFlag(GreenLangBase):
     """Core feature flag definition.
 
     Represents a single feature flag with its configuration, targeting,
@@ -334,7 +335,7 @@ class FeatureFlag(BaseModel):
         return self
 
 
-class FlagRule(BaseModel):
+class FlagRule(GreenLangBase):
     """Conditional targeting rule attached to a feature flag.
 
     Rules are evaluated in priority order (lower number = higher priority).
@@ -392,7 +393,7 @@ class FlagRule(BaseModel):
         return v
 
 
-class FlagVariant(BaseModel):
+class FlagVariant(GreenLangBase):
     """Multivariate flag variant with weighted distribution.
 
     Used with MULTIVARIATE flags to return different values to different
@@ -457,7 +458,7 @@ class FlagVariant(BaseModel):
         return v_stripped
 
 
-class FlagOverride(BaseModel):
+class FlagOverride(GreenLangBase):
     """Scoped override for a feature flag.
 
     Overrides take precedence over all rules and rollout logic.
@@ -548,7 +549,7 @@ class FlagOverride(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class EvaluationContext(BaseModel):
+class EvaluationContext(GreenLangBase):
     """Runtime context provided during flag evaluation.
 
     Contains all the information the flag engine needs to resolve a flag
@@ -618,7 +619,7 @@ class EvaluationContext(BaseModel):
         return self.user_id or self.tenant_id or self.request_id or ""
 
 
-class FlagEvaluationResult(BaseModel):
+class FlagEvaluationResult(GreenLangBase):
     """Outcome of evaluating a feature flag for a given context.
 
     Contains the resolved enabled state, the reason for the decision,
@@ -634,9 +635,6 @@ class FlagEvaluationResult(BaseModel):
         cache_layer: Which cache layer served the result (l1, l2, db, default).
         duration_us: Evaluation duration in microseconds.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     flag_key: str = Field(
         ...,
         description="The flag key that was evaluated.",
@@ -679,7 +677,7 @@ class FlagEvaluationResult(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class AuditLogEntry(BaseModel):
+class AuditLogEntry(GreenLangBase):
     """Immutable audit record of a feature flag change.
 
     Every modification to a flag definition, rule, variant, or override

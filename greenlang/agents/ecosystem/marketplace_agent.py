@@ -32,10 +32,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +76,7 @@ class InstallationStatus(str, Enum):
 # Pydantic Models
 # =============================================================================
 
-class Review(BaseModel):
+class Review(GreenLangBase):
     """A review for a listing."""
     review_id: str = Field(default_factory=lambda: str(uuid.uuid4())[:8])
     listing_id: str = Field(..., description="Listing being reviewed")
@@ -87,7 +88,7 @@ class Review(BaseModel):
     verified_purchase: bool = Field(default=False)
 
 
-class MarketplaceListing(BaseModel):
+class MarketplaceListing(GreenLangBase):
     """A marketplace listing."""
     listing_id: str = Field(default_factory=lambda: str(uuid.uuid4())[:8])
     name: str = Field(..., description="Listing name")
@@ -124,7 +125,7 @@ class MarketplaceListing(BaseModel):
     updated_at: datetime = Field(default_factory=DeterministicClock.now)
 
 
-class MarketplaceInput(BaseModel):
+class MarketplaceInput(GreenLangBase):
     """Input for the Marketplace Agent."""
     operation: str = Field(..., description="Operation to perform")
     listing: Optional[MarketplaceListing] = Field(None)
@@ -149,7 +150,7 @@ class MarketplaceInput(BaseModel):
         return v
 
 
-class MarketplaceOutput(BaseModel):
+class MarketplaceOutput(GreenLangBase):
     """Output from the Marketplace Agent."""
     success: bool = Field(..., description="Whether operation succeeded")
     operation: str = Field(..., description="Operation performed")

@@ -40,6 +40,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas.enums import HealthStatus
 
 logger = logging.getLogger(__name__)
 
@@ -54,14 +55,6 @@ class HealthSeverity(str, Enum):
     CRITICAL = "critical"
     WARNING = "warning"
     INFO = "info"
-
-
-class HealthStatus(str, Enum):
-    """Overall health status."""
-    HEALTHY = "healthy"
-    DEGRADED = "degraded"
-    UNHEALTHY = "unhealthy"
-    UNKNOWN = "unknown"
 
 
 class CheckCategory(str, Enum):

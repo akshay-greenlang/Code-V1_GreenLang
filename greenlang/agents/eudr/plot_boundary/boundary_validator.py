@@ -85,6 +85,8 @@ from .models import (
 )
 from .provenance import ProvenanceTracker
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -97,17 +99,10 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -135,11 +130,9 @@ MIN_CLOSED_POLYGON_VERTICES: int = 4
 #: Floating-point epsilon for zero-area detection.
 ZERO_AREA_EPSILON: float = 1.0e-12
 
-
 # ===========================================================================
 # BoundaryValidator
 # ===========================================================================
-
 
 class BoundaryValidator:
     """Topological validation and repair engine for EUDR plot boundaries.
@@ -442,7 +435,7 @@ class BoundaryValidator:
                 for h in rings[1:]
             ]
             boundary.vertex_count = sum(len(r) for r in rings)
-        boundary.updated_at = _utcnow()
+        boundary.updated_at = utcnow()
 
     def validate_and_repair(
         self, boundary: PlotBoundary,
@@ -1704,7 +1697,6 @@ class BoundaryValidator:
         if a[3] < b[1] or a[1] > b[3]:
             return False
         return True
-
 
 # ---------------------------------------------------------------------------
 # Public API

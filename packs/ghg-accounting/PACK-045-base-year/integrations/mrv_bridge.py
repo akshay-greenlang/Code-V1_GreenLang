@@ -31,19 +31,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 class MRVScope(str, Enum):
     """MRV agent scope grouping."""
@@ -51,7 +47,6 @@ class MRVScope(str, Enum):
     SCOPE_2 = "scope_2"
     SCOPE_3 = "scope_3"
     CROSS_CUTTING = "cross_cutting"
-
 
 AGENT_SCOPE_MAP: Dict[str, MRVScope] = {
     "MRV-001": MRVScope.SCOPE_1, "MRV-002": MRVScope.SCOPE_1,
@@ -90,12 +85,10 @@ AGENT_DESCRIPTIONS: Dict[str, str] = {
     "MRV-029": "Category Mapper", "MRV-030": "Audit Trail Lineage",
 }
 
-
 class MRVBridgeConfig(BaseModel):
     """Configuration for MRV bridge."""
     timeout_s: float = Field(30.0, ge=5.0)
     batch_size: int = Field(10, ge=1, le=30)
-
 
 class MRVAgentResult(BaseModel):
     """Result from a single MRV agent query."""
@@ -107,14 +100,12 @@ class MRVAgentResult(BaseModel):
     data_quality_score: float = 0.0
     provenance_hash: str = ""
 
-
 class MRVScopeSummary(BaseModel):
     """Summary of MRV results grouped by scope."""
     scope: str
     total_tco2e: float = 0.0
     agents_queried: int = 0
     agents_with_data: int = 0
-
 
 class MRVBridge:
     """

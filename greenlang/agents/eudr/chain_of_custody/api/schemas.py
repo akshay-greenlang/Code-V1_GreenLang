@@ -27,28 +27,22 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import ConfigDict, Field, field_validator
 
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ReportFormat
 
 # =============================================================================
 # Helpers
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_id() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 # =============================================================================
 # Enumerations
 # =============================================================================
-
 
 class CustodyEventType(str, Enum):
     """Types of chain-of-custody events."""
@@ -64,7 +58,6 @@ class CustodyEventType(str, Enum):
     QUALITY_CHECK = "quality_check"
     REJECTION = "rejection"
 
-
 class CustodyModelType(str, Enum):
     """ISO 22095 chain-of-custody models."""
 
@@ -72,7 +65,6 @@ class CustodyModelType(str, Enum):
     SEGREGATED = "segregated"
     MASS_BALANCE = "mass_balance"
     CONTROLLED_BLENDING = "controlled_blending"
-
 
 class BatchStatus(str, Enum):
     """Lifecycle status of a batch."""
@@ -89,7 +81,6 @@ class BatchStatus(str, Enum):
     EXPIRED = "expired"
     REJECTED = "rejected"
 
-
 class BatchOriginType(str, Enum):
     """How a batch was originated."""
 
@@ -100,7 +91,6 @@ class BatchOriginType(str, Enum):
     BLEND = "blend"
     TRANSFORMATION = "transformation"
     IMPORT = "import"
-
 
 class EUDRCommodity(str, Enum):
     """EUDR-regulated commodities."""
@@ -113,7 +103,6 @@ class EUDRCommodity(str, Enum):
     SOYA = "soya"
     WOOD = "wood"
 
-
 class BalanceEntryType(str, Enum):
     """Type of mass balance ledger entry."""
 
@@ -123,7 +112,6 @@ class BalanceEntryType(str, Enum):
     LOSS = "loss"
     WASTE = "waste"
 
-
 class ReconciliationStatus(str, Enum):
     """Outcome of a balance reconciliation."""
 
@@ -132,7 +120,6 @@ class ReconciliationStatus(str, Enum):
     DEFICIT = "deficit"
     PENDING = "pending"
     FAILED = "failed"
-
 
 class TransformationType(str, Enum):
     """Types of product transformations."""
@@ -147,7 +134,6 @@ class TransformationType(str, Enum):
     BLENDING = "blending"
     PACKAGING = "packaging"
     CUTTING = "cutting"
-
 
 class DocumentType(str, Enum):
     """Types of supporting documents."""
@@ -165,7 +151,6 @@ class DocumentType(str, Enum):
     GPS_LOG = "gps_log"
     PHOTO_EVIDENCE = "photo_evidence"
 
-
 class VerificationStatus(str, Enum):
     """Outcome of a custody chain verification."""
 
@@ -174,7 +159,6 @@ class VerificationStatus(str, Enum):
     PARTIAL = "partial"
     PENDING = "pending"
     EXPIRED = "expired"
-
 
 class VerificationSeverity(str, Enum):
     """Severity of verification findings."""
@@ -185,7 +169,6 @@ class VerificationSeverity(str, Enum):
     LOW = "low"
     INFO = "info"
 
-
 class ReportType(str, Enum):
     """Types of chain-of-custody reports."""
 
@@ -193,16 +176,6 @@ class ReportType(str, Enum):
     MASS_BALANCE = "mass_balance"
     COMPLIANCE = "compliance"
     AUDIT = "audit"
-
-
-class ReportFormat(str, Enum):
-    """Output formats for reports."""
-
-    PDF = "pdf"
-    XLSX = "xlsx"
-    JSON = "json"
-    CSV = "csv"
-
 
 class BatchJobStatus(str, Enum):
     """Status of an async batch job."""
@@ -213,7 +186,6 @@ class BatchJobStatus(str, Enum):
     FAILED = "failed"
     CANCELLED = "cancelled"
 
-
 class BatchJobType(str, Enum):
     """Types of batch jobs."""
 
@@ -223,7 +195,6 @@ class BatchJobType(str, Enum):
     REPORT_GENERATION = "report_generation"
     DOCUMENT_VALIDATION = "document_validation"
 
-
 class ComplianceLevel(str, Enum):
     """Compliance level assessment."""
 
@@ -231,7 +202,6 @@ class ComplianceLevel(str, Enum):
     NON_COMPLIANT = "non_compliant"
     PARTIALLY_COMPLIANT = "partially_compliant"
     NOT_ASSESSED = "not_assessed"
-
 
 class UnitOfMeasure(str, Enum):
     """Units for quantity measurements."""
@@ -244,13 +214,11 @@ class UnitOfMeasure(str, Enum):
     BAGS_60KG = "bags_60kg"
     BAGS_69KG = "bags_69kg"
 
-
 # =============================================================================
 # Shared / Common Models
 # =============================================================================
 
-
-class PaginatedMeta(BaseModel):
+class PaginatedMeta(GreenLangBase):
     """Pagination metadata for list responses."""
 
     total: int = Field(..., ge=0, description="Total number of results")
@@ -258,8 +226,7 @@ class PaginatedMeta(BaseModel):
     offset: int = Field(..., ge=0, description="Results skipped")
     has_more: bool = Field(..., description="Whether more results exist")
 
-
-class GeoCoordinate(BaseModel):
+class GeoCoordinate(GreenLangBase):
     """WGS84 geographic coordinate."""
 
     latitude: float = Field(..., ge=-90.0, le=90.0, description="Latitude")
@@ -269,8 +236,7 @@ class GeoCoordinate(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class QuantitySpec(BaseModel):
+class QuantitySpec(GreenLangBase):
     """Quantity with unit of measure."""
 
     amount: Decimal = Field(
@@ -280,8 +246,7 @@ class QuantitySpec(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ProvenanceInfo(BaseModel):
+class ProvenanceInfo(GreenLangBase):
     """Provenance tracking information for audit trail."""
 
     provenance_hash: str = Field(
@@ -289,7 +254,7 @@ class ProvenanceInfo(BaseModel):
     )
     created_by: str = Field(..., description="User ID who created the record")
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation timestamp (UTC)"
+        default_factory=utcnow, description="Creation timestamp (UTC)"
     )
     source: str = Field(
         default="api", description="Data source (api, import, system)"
@@ -297,13 +262,11 @@ class ProvenanceInfo(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Event Schemas
 # =============================================================================
 
-
-class CustodyEventCreateRequest(BaseModel):
+class CustodyEventCreateRequest(GreenLangBase):
     """Request to record a custody event."""
 
     event_type: CustodyEventType = Field(
@@ -366,8 +329,7 @@ class CustodyEventCreateRequest(BaseModel):
         },
     )
 
-
-class CustodyEventBatchRequest(BaseModel):
+class CustodyEventBatchRequest(GreenLangBase):
     """Request for bulk custody event import."""
 
     events: List[CustodyEventCreateRequest] = Field(
@@ -383,8 +345,7 @@ class CustodyEventBatchRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class CustodyEventAmendRequest(BaseModel):
+class CustodyEventAmendRequest(GreenLangBase):
     """Request to amend an existing custody event (immutable append)."""
 
     reason: str = Field(
@@ -429,8 +390,7 @@ class CustodyEventAmendRequest(BaseModel):
             raise ValueError("reason must be non-empty")
         return v
 
-
-class CustodyEventResponse(BaseModel):
+class CustodyEventResponse(GreenLangBase):
     """Response for a single custody event."""
 
     event_id: str = Field(..., description="Unique event identifier")
@@ -466,8 +426,7 @@ class CustodyEventResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CustodyEventBatchResponse(BaseModel):
+class CustodyEventBatchResponse(GreenLangBase):
     """Response for bulk custody event import."""
 
     total_submitted: int = Field(..., ge=0, description="Total events submitted")
@@ -491,8 +450,7 @@ class CustodyEventBatchResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CustodyEventChainResponse(BaseModel):
+class CustodyEventChainResponse(GreenLangBase):
     """Response for event chain query on a batch."""
 
     batch_id: str = Field(..., description="Batch ID queried")
@@ -524,8 +482,7 @@ class CustodyEventChainResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CustodyEventAmendResponse(BaseModel):
+class CustodyEventAmendResponse(GreenLangBase):
     """Response after amending a custody event."""
 
     amendment_event_id: str = Field(
@@ -537,7 +494,7 @@ class CustodyEventAmendResponse(BaseModel):
     reason: str = Field(..., description="Amendment reason")
     status: str = Field(default="amended", description="Amendment status")
     amended_at: datetime = Field(
-        default_factory=_utcnow, description="Amendment timestamp"
+        default_factory=utcnow, description="Amendment timestamp"
     )
     provenance: ProvenanceInfo = Field(
         ..., description="Provenance tracking data"
@@ -548,13 +505,11 @@ class CustodyEventAmendResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Batch Schemas
 # =============================================================================
 
-
-class BatchCreateRequest(BaseModel):
+class BatchCreateRequest(GreenLangBase):
     """Request to create a new batch/lot."""
 
     batch_reference: Optional[str] = Field(
@@ -629,8 +584,7 @@ class BatchCreateRequest(BaseModel):
             )
         return v
 
-
-class BatchResponse(BaseModel):
+class BatchResponse(GreenLangBase):
     """Response for a single batch."""
 
     batch_id: str = Field(..., description="Unique batch identifier")
@@ -659,8 +613,8 @@ class BatchResponse(BaseModel):
     event_count: int = Field(default=0, ge=0, description="Number of events")
     notes: Optional[str] = Field(None)
     metadata: Optional[Dict[str, Any]] = Field(None)
-    created_at: datetime = Field(default_factory=_utcnow)
-    updated_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
+    updated_at: datetime = Field(default_factory=utcnow)
     provenance: ProvenanceInfo = Field(
         ..., description="Provenance tracking data"
     )
@@ -670,8 +624,7 @@ class BatchResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchSplitPart(BaseModel):
+class BatchSplitPart(GreenLangBase):
     """One part of a batch split allocation."""
 
     quantity: QuantitySpec = Field(
@@ -687,8 +640,7 @@ class BatchSplitPart(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchSplitRequest(BaseModel):
+class BatchSplitRequest(GreenLangBase):
     """Request to split a batch into multiple child batches."""
 
     source_batch_id: str = Field(
@@ -706,8 +658,7 @@ class BatchSplitRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class BatchSplitResponse(BaseModel):
+class BatchSplitResponse(GreenLangBase):
     """Response after splitting a batch."""
 
     source_batch_id: str = Field(..., description="Source batch that was split")
@@ -723,8 +674,7 @@ class BatchSplitResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchMergeRequest(BaseModel):
+class BatchMergeRequest(GreenLangBase):
     """Request to merge multiple batches into one."""
 
     source_batch_ids: List[str] = Field(
@@ -746,8 +696,7 @@ class BatchMergeRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class BatchMergeResponse(BaseModel):
+class BatchMergeResponse(GreenLangBase):
     """Response after merging batches."""
 
     merged_batch: BatchResponse = Field(
@@ -764,8 +713,7 @@ class BatchMergeResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchBlendRequest(BaseModel):
+class BatchBlendRequest(GreenLangBase):
     """Request to blend batches (controlled blending model)."""
 
     source_batch_ids: List[str] = Field(
@@ -809,8 +757,7 @@ class BatchBlendRequest(BaseModel):
                 raise ValueError("All blend ratios must be positive")
         return v
 
-
-class BatchBlendResponse(BaseModel):
+class BatchBlendResponse(GreenLangBase):
     """Response after blending batches."""
 
     blended_batch: BatchResponse = Field(
@@ -826,8 +773,7 @@ class BatchBlendResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class GenealogyNode(BaseModel):
+class GenealogyNode(GreenLangBase):
     """Node in a batch genealogy tree."""
 
     batch_id: str = Field(..., description="Batch identifier")
@@ -842,12 +788,11 @@ class GenealogyNode(BaseModel):
     depth: int = Field(default=0, ge=0, description="Tree depth")
     parent_batch_ids: List[str] = Field(default_factory=list)
     child_batch_ids: List[str] = Field(default_factory=list)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchGenealogyResponse(BaseModel):
+class BatchGenealogyResponse(GreenLangBase):
     """Response for batch genealogy tree."""
 
     batch_id: str = Field(..., description="Root batch ID")
@@ -870,8 +815,7 @@ class BatchGenealogyResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchSearchRequest(BaseModel):
+class BatchSearchRequest(GreenLangBase):
     """Request to search batches with filters."""
 
     commodity: Optional[EUDRCommodity] = Field(
@@ -936,8 +880,7 @@ class BatchSearchRequest(BaseModel):
             raise ValueError("sort_order must be 'asc' or 'desc'")
         return v
 
-
-class BatchSearchResponse(BaseModel):
+class BatchSearchResponse(GreenLangBase):
     """Response for batch search results."""
 
     batches: List[BatchResponse] = Field(
@@ -948,13 +891,11 @@ class BatchSearchResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # CoC Model Schemas
 # =============================================================================
 
-
-class ModelAssignRequest(BaseModel):
+class ModelAssignRequest(GreenLangBase):
     """Request to assign a CoC model to a facility."""
 
     facility_id: str = Field(
@@ -996,8 +937,7 @@ class ModelAssignRequest(BaseModel):
         },
     )
 
-
-class ModelAssignResponse(BaseModel):
+class ModelAssignResponse(GreenLangBase):
     """Response after assigning a CoC model."""
 
     assignment_id: str = Field(..., description="Unique assignment ID")
@@ -1015,8 +955,7 @@ class ModelAssignResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class FacilityModelResponse(BaseModel):
+class FacilityModelResponse(GreenLangBase):
     """Response for facility CoC model details."""
 
     facility_id: str = Field(..., description="Facility ID")
@@ -1033,8 +972,7 @@ class FacilityModelResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ModelValidateRequest(BaseModel):
+class ModelValidateRequest(GreenLangBase):
     """Request to validate an operation against CoC model rules."""
 
     facility_id: str = Field(
@@ -1054,8 +992,7 @@ class ModelValidateRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class ModelValidationFinding(BaseModel):
+class ModelValidationFinding(GreenLangBase):
     """Individual validation finding."""
 
     rule_id: str = Field(..., description="Rule identifier")
@@ -1069,8 +1006,7 @@ class ModelValidationFinding(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ModelValidateResponse(BaseModel):
+class ModelValidateResponse(GreenLangBase):
     """Response from CoC model validation."""
 
     facility_id: str = Field(..., description="Facility ID")
@@ -1096,8 +1032,7 @@ class ModelValidateResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ModelComplianceResponse(BaseModel):
+class ModelComplianceResponse(GreenLangBase):
     """Response for facility CoC model compliance score."""
 
     facility_id: str = Field(..., description="Facility ID")
@@ -1118,7 +1053,7 @@ class ModelComplianceResponse(BaseModel):
         default_factory=list, description="Critical non-compliance findings"
     )
     last_assessment_at: datetime = Field(
-        default_factory=_utcnow, description="Last assessment timestamp"
+        default_factory=utcnow, description="Last assessment timestamp"
     )
     next_assessment_due: Optional[datetime] = Field(
         None, description="Next assessment due date"
@@ -1128,13 +1063,11 @@ class ModelComplianceResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Mass Balance Schemas
 # =============================================================================
 
-
-class BalanceInputRequest(BaseModel):
+class BalanceInputRequest(GreenLangBase):
     """Request to record a mass balance input."""
 
     facility_id: str = Field(
@@ -1171,8 +1104,7 @@ class BalanceInputRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class BalanceOutputRequest(BaseModel):
+class BalanceOutputRequest(GreenLangBase):
     """Request to record a mass balance output."""
 
     facility_id: str = Field(
@@ -1214,8 +1146,7 @@ class BalanceOutputRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class BalanceEntryResponse(BaseModel):
+class BalanceEntryResponse(GreenLangBase):
     """Response for a single balance entry."""
 
     entry_id: str = Field(..., description="Unique entry ID")
@@ -1236,13 +1167,12 @@ class BalanceEntryResponse(BaseModel):
     provenance: ProvenanceInfo = Field(
         ..., description="Provenance tracking data"
     )
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     processing_time_ms: float = Field(default=0.0, ge=0.0)
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class FacilityBalanceResponse(BaseModel):
+class FacilityBalanceResponse(GreenLangBase):
     """Response for current facility mass balance."""
 
     facility_id: str = Field(..., description="Facility ID")
@@ -1276,14 +1206,13 @@ class FacilityBalanceResponse(BaseModel):
     period_end: Optional[datetime] = Field(
         None, description="Accounting period end"
     )
-    last_updated: datetime = Field(default_factory=_utcnow)
+    last_updated: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="", description="SHA-256 hash")
     processing_time_ms: float = Field(default=0.0, ge=0.0)
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BalanceReconcileRequest(BaseModel):
+class BalanceReconcileRequest(GreenLangBase):
     """Request to reconcile mass balance for a period."""
 
     facility_id: str = Field(
@@ -1310,8 +1239,7 @@ class BalanceReconcileRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class BalanceReconcileResponse(BaseModel):
+class BalanceReconcileResponse(GreenLangBase):
     """Response from balance reconciliation."""
 
     reconciliation_id: str = Field(
@@ -1355,8 +1283,7 @@ class BalanceReconcileResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BalanceHistoryEntry(BaseModel):
+class BalanceHistoryEntry(GreenLangBase):
     """Single entry in balance history."""
 
     entry_id: str = Field(..., description="Entry ID")
@@ -1369,12 +1296,11 @@ class BalanceHistoryEntry(BaseModel):
     is_certified: bool = Field(default=False)
     source: Optional[str] = Field(None, description="Source facility")
     destination: Optional[str] = Field(None, description="Destination facility")
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BalanceHistoryResponse(BaseModel):
+class BalanceHistoryResponse(GreenLangBase):
     """Response for balance history."""
 
     facility_id: str = Field(..., description="Facility ID")
@@ -1390,13 +1316,11 @@ class BalanceHistoryResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Transformation Schemas
 # =============================================================================
 
-
-class TransformInputSpec(BaseModel):
+class TransformInputSpec(GreenLangBase):
     """Input batch specification for transformation."""
 
     batch_id: str = Field(..., min_length=1, max_length=100)
@@ -1405,8 +1329,7 @@ class TransformInputSpec(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class TransformOutputSpec(BaseModel):
+class TransformOutputSpec(GreenLangBase):
     """Output batch specification for transformation."""
 
     batch_reference: Optional[str] = Field(
@@ -1417,8 +1340,7 @@ class TransformOutputSpec(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class TransformCreateRequest(BaseModel):
+class TransformCreateRequest(GreenLangBase):
     """Request to record a product transformation."""
 
     facility_id: str = Field(
@@ -1451,8 +1373,7 @@ class TransformCreateRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class TransformResponse(BaseModel):
+class TransformResponse(GreenLangBase):
     """Response for a recorded transformation."""
 
     transform_id: str = Field(
@@ -1479,7 +1400,7 @@ class TransformResponse(BaseModel):
     total_loss_quantity: Optional[QuantitySpec] = Field(
         None, description="Total loss quantity"
     )
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     status: str = Field(default="completed")
     notes: Optional[str] = Field(None)
     provenance: ProvenanceInfo = Field(
@@ -1489,8 +1410,7 @@ class TransformResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class TransformInputDetail(BaseModel):
+class TransformInputDetail(GreenLangBase):
     """Detailed input batch information for transformation response."""
 
     batch_id: str = Field(..., description="Input batch ID")
@@ -1501,8 +1421,7 @@ class TransformInputDetail(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class TransformOutputDetail(BaseModel):
+class TransformOutputDetail(GreenLangBase):
     """Detailed output batch information for transformation response."""
 
     batch_id: str = Field(..., description="Output batch ID")
@@ -1512,8 +1431,7 @@ class TransformOutputDetail(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class TransformBatchRequest(BaseModel):
+class TransformBatchRequest(GreenLangBase):
     """Request for batch transformation import."""
 
     transformations: List[TransformCreateRequest] = Field(
@@ -1528,8 +1446,7 @@ class TransformBatchRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class TransformBatchResponse(BaseModel):
+class TransformBatchResponse(GreenLangBase):
     """Response for batch transformation import."""
 
     total_submitted: int = Field(..., ge=0)
@@ -1545,13 +1462,11 @@ class TransformBatchResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Document Schemas
 # =============================================================================
 
-
-class DocumentLinkRequest(BaseModel):
+class DocumentLinkRequest(GreenLangBase):
     """Request to link a document to a custody event or batch."""
 
     event_id: Optional[str] = Field(
@@ -1597,8 +1512,7 @@ class DocumentLinkRequest(BaseModel):
             raise ValueError("document_reference must be non-empty")
         return v
 
-
-class DocumentResponse(BaseModel):
+class DocumentResponse(GreenLangBase):
     """Response for a linked document."""
 
     document_id: str = Field(..., description="Unique document ID")
@@ -1618,13 +1532,12 @@ class DocumentResponse(BaseModel):
     provenance: ProvenanceInfo = Field(
         ..., description="Provenance tracking data"
     )
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     processing_time_ms: float = Field(default=0.0, ge=0.0)
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class DocumentListResponse(BaseModel):
+class DocumentListResponse(GreenLangBase):
     """Response for listing documents for a batch."""
 
     batch_id: str = Field(..., description="Batch ID queried")
@@ -1645,8 +1558,7 @@ class DocumentListResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class DocumentValidateRequest(BaseModel):
+class DocumentValidateRequest(GreenLangBase):
     """Request to validate document chain for a batch."""
 
     batch_id: str = Field(
@@ -1665,8 +1577,7 @@ class DocumentValidateRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class DocumentValidationFinding(BaseModel):
+class DocumentValidationFinding(GreenLangBase):
     """Individual document validation finding."""
 
     document_id: Optional[str] = Field(None)
@@ -1679,8 +1590,7 @@ class DocumentValidationFinding(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class DocumentValidateResponse(BaseModel):
+class DocumentValidateResponse(GreenLangBase):
     """Response from document chain validation."""
 
     batch_id: str = Field(..., description="Batch ID")
@@ -1698,13 +1608,11 @@ class DocumentValidateResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Verification Schemas
 # =============================================================================
 
-
-class ChainVerifyRequest(BaseModel):
+class ChainVerifyRequest(GreenLangBase):
     """Request to verify a complete custody chain."""
 
     batch_id: str = Field(
@@ -1732,8 +1640,7 @@ class ChainVerifyRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class VerificationFinding(BaseModel):
+class VerificationFinding(GreenLangBase):
     """Individual verification finding."""
 
     finding_id: str = Field(..., description="Unique finding ID")
@@ -1758,8 +1665,7 @@ class VerificationFinding(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ChainVerifyResponse(BaseModel):
+class ChainVerifyResponse(GreenLangBase):
     """Response from chain verification."""
 
     verification_id: str = Field(
@@ -1789,7 +1695,7 @@ class ChainVerifyResponse(BaseModel):
     custody_models_used: List[CustodyModelType] = Field(
         default_factory=list
     )
-    verified_at: datetime = Field(default_factory=_utcnow)
+    verified_at: datetime = Field(default_factory=utcnow)
     expires_at: Optional[datetime] = Field(
         None, description="Verification validity expiry"
     )
@@ -1800,8 +1706,7 @@ class ChainVerifyResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchVerifyRequest(BaseModel):
+class BatchVerifyRequest(GreenLangBase):
     """Request for batch verification of multiple chains."""
 
     batch_ids: List[str] = Field(
@@ -1816,8 +1721,7 @@ class BatchVerifyRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class BatchVerifyResponse(BaseModel):
+class BatchVerifyResponse(GreenLangBase):
     """Response from batch verification."""
 
     total_submitted: int = Field(..., ge=0)
@@ -1835,13 +1739,11 @@ class BatchVerifyResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Report Schemas
 # =============================================================================
 
-
-class TraceabilityReportRequest(BaseModel):
+class TraceabilityReportRequest(GreenLangBase):
     """Request for Article 9 traceability report."""
 
     batch_ids: List[str] = Field(
@@ -1876,8 +1778,7 @@ class TraceabilityReportRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class MassBalanceReportRequest(BaseModel):
+class MassBalanceReportRequest(GreenLangBase):
     """Request for mass balance period report."""
 
     facility_id: str = Field(
@@ -1898,8 +1799,7 @@ class MassBalanceReportRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class ReportResponse(BaseModel):
+class ReportResponse(GreenLangBase):
     """Response for generated report."""
 
     report_id: str = Field(..., description="Unique report ID")
@@ -1928,7 +1828,7 @@ class ReportResponse(BaseModel):
     file_size_bytes: Optional[int] = Field(
         None, ge=0, description="File size in bytes"
     )
-    generated_at: datetime = Field(default_factory=_utcnow)
+    generated_at: datetime = Field(default_factory=utcnow)
     expires_at: Optional[datetime] = Field(
         None, description="Download link expiry"
     )
@@ -1939,8 +1839,7 @@ class ReportResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ReportDownloadResponse(BaseModel):
+class ReportDownloadResponse(GreenLangBase):
     """Response for report download."""
 
     report_id: str = Field(..., description="Report ID")
@@ -1951,18 +1850,16 @@ class ReportDownloadResponse(BaseModel):
         default="application/pdf", description="MIME content type"
     )
     expires_at: datetime = Field(
-        default_factory=_utcnow, description="URL expiry"
+        default_factory=utcnow, description="URL expiry"
     )
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Batch Job Schemas
 # =============================================================================
 
-
-class BatchJobSubmitRequest(BaseModel):
+class BatchJobSubmitRequest(GreenLangBase):
     """Request to submit an async batch job."""
 
     job_type: BatchJobType = Field(
@@ -1983,8 +1880,7 @@ class BatchJobSubmitRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class BatchJobResponse(BaseModel):
+class BatchJobResponse(GreenLangBase):
     """Response for a batch job."""
 
     job_id: str = Field(..., description="Unique job ID")
@@ -2011,7 +1907,7 @@ class BatchJobResponse(BaseModel):
         None, description="Error message if failed"
     )
     callback_url: Optional[str] = Field(None)
-    submitted_at: datetime = Field(default_factory=_utcnow)
+    submitted_at: datetime = Field(default_factory=utcnow)
     started_at: Optional[datetime] = Field(None)
     completed_at: Optional[datetime] = Field(None)
     cancelled_at: Optional[datetime] = Field(None)
@@ -2019,26 +1915,23 @@ class BatchJobResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchJobCancelResponse(BaseModel):
+class BatchJobCancelResponse(GreenLangBase):
     """Response after cancelling a batch job."""
 
     job_id: str = Field(..., description="Cancelled job ID")
     status: BatchJobStatus = Field(
         default=BatchJobStatus.CANCELLED, description="Updated status"
     )
-    cancelled_at: datetime = Field(default_factory=_utcnow)
+    cancelled_at: datetime = Field(default_factory=utcnow)
     message: str = Field(default="Job cancelled successfully")
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Health Check Schema
 # =============================================================================
 
-
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Health check response for the Chain of Custody API."""
 
     status: str = Field(default="healthy")
@@ -2047,7 +1940,7 @@ class HealthResponse(BaseModel):
         default="EUDR Chain of Custody Agent"
     )
     version: str = Field(default="1.0.0")
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     components: Dict[str, str] = Field(
         default_factory=lambda: {
             "event_tracker": "healthy",
@@ -2060,7 +1953,6 @@ class HealthResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Forward reference rebuilds
 # =============================================================================
@@ -2069,7 +1961,6 @@ class HealthResponse(BaseModel):
 BatchSplitRequest.model_rebuild()
 BatchGenealogyResponse.model_rebuild()
 TransformCreateRequest.model_rebuild()
-
 
 # =============================================================================
 # Public API

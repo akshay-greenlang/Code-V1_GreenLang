@@ -70,23 +70,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -103,7 +98,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -112,30 +106,24 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(n: Decimal, d: Decimal, default: Decimal = Decimal("0")) -> Decimal:
     if d == Decimal("0"):
         return default
     return n / d
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     q = "0." + "0" * places
     return value.quantize(Decimal(q), rounding=ROUND_HALF_UP)
 
-
 def _round3(value: float) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
-
 
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class RAGStatus(str, Enum):
     """Red/Amber/Green performance status."""
@@ -143,7 +131,6 @@ class RAGStatus(str, Enum):
     AMBER = "amber"
     RED = "red"
     NOT_ASSESSED = "not_assessed"
-
 
 class ProgressDirection(str, Enum):
     """Progress direction relative to target."""
@@ -154,7 +141,6 @@ class ProgressDirection(str, Enum):
     SIGNIFICANTLY_BEHIND = "significantly_behind"
     NOT_STARTED = "not_started"
 
-
 class MilestoneStatus(str, Enum):
     """Achievement status for a milestone."""
     ACHIEVED = "achieved"
@@ -164,7 +150,6 @@ class MilestoneStatus(str, Enum):
     UPCOMING = "upcoming"
     NOT_DUE = "not_due"
 
-
 class ScopeType(str, Enum):
     """GHG scope type."""
     SCOPE_1 = "scope_1"
@@ -173,14 +158,12 @@ class ScopeType(str, Enum):
     SCOPE_1_2 = "scope_1_2"
     ALL_SCOPES = "all_scopes"
 
-
 class DataQuality(str, Enum):
     """Data quality tier."""
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
     ESTIMATED = "estimated"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- RAG Thresholds
@@ -203,11 +186,9 @@ RAG_THRESHOLDS: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class ActualEmissionsPoint(BaseModel):
     """Actual emissions data for a period.
@@ -229,7 +210,6 @@ class ActualEmissionsPoint(BaseModel):
     is_verified: bool = Field(default=False, description="Verified")
     data_source: str = Field(default="", max_length=200, description="Data source")
 
-
 class TargetPoint(BaseModel):
     """Target emissions for a period.
 
@@ -249,7 +229,6 @@ class TargetPoint(BaseModel):
     scope: ScopeType = Field(default=ScopeType.ALL_SCOPES, description="Scope")
     milestone_name: str = Field(default="", max_length=200, description="Milestone name")
     is_sbti_target: bool = Field(default=False, description="SBTi target")
-
 
 class ProgressTrackerInput(BaseModel):
     """Input for progress tracking.
@@ -287,11 +266,9 @@ class ProgressTrackerInput(BaseModel):
     scope: ScopeType = Field(default=ScopeType.ALL_SCOPES, description="Scope")
     reporting_year: int = Field(default=2024, ge=2020, le=2030, description="Reporting year")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class VariancePoint(BaseModel):
     """Variance analysis for a single period.
@@ -323,7 +300,6 @@ class VariancePoint(BaseModel):
     progress_direction: str = Field(default=ProgressDirection.NOT_STARTED.value)
     trajectory_deviation_pct: Decimal = Field(default=Decimal("0"))
 
-
 class MilestoneAssessment(BaseModel):
     """Assessment of a specific milestone.
 
@@ -346,7 +322,6 @@ class MilestoneAssessment(BaseModel):
     projected_achievement_year: int = Field(default=0)
     notes: List[str] = Field(default_factory=list)
 
-
 class ProgressRateAnalysis(BaseModel):
     """Analysis of progress rate vs required rate.
 
@@ -368,7 +343,6 @@ class ProgressRateAnalysis(BaseModel):
     years_to_catch_up: int = Field(default=0)
     projected_target_miss_tco2e: Decimal = Field(default=Decimal("0"))
     projected_target_miss_pct: Decimal = Field(default=Decimal("0"))
-
 
 class OverallAssessment(BaseModel):
     """Overall progress assessment.
@@ -398,7 +372,6 @@ class OverallAssessment(BaseModel):
     on_track_for_2030: bool = Field(default=False)
     on_track_for_net_zero: bool = Field(default=False)
 
-
 class ProgressTrackerResult(BaseModel):
     """Complete progress tracking result.
 
@@ -424,7 +397,7 @@ class ProgressTrackerResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     entity_id: str = Field(default="")
     baseline_year: int = Field(default=0)
@@ -441,11 +414,9 @@ class ProgressTrackerResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ProgressTrackerEngine:
     """Progress tracking engine for PACK-029.

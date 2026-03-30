@@ -41,19 +41,12 @@ logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -65,18 +58,15 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CertificationType(str, Enum):
     B_CORP = "b_corp"
     CARBON_TRUST = "carbon_trust"
     ISO_14001 = "iso_14001"
     CLIMATE_ACTIVE = "climate_active"
-
 
 class CertificationStatus(str, Enum):
     NOT_STARTED = "not_started"
@@ -88,7 +78,6 @@ class CertificationStatus(str, Enum):
     EXPIRED = "expired"
     REJECTED = "rejected"
 
-
 class DocumentType(str, Enum):
     CARBON_FOOTPRINT_REPORT = "carbon_footprint_report"
     ENVIRONMENTAL_POLICY = "environmental_policy"
@@ -98,7 +87,6 @@ class DocumentType(str, Enum):
     MANAGEMENT_REVIEW = "management_review"
     AUDIT_REPORT = "audit_report"
     OTHER = "other"
-
 
 # ---------------------------------------------------------------------------
 # Certification Requirements
@@ -167,11 +155,9 @@ CERTIFICATION_REQUIREMENTS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class CertificationBodyConfig(BaseModel):
     """Configuration for the Certification Body Bridge."""
@@ -179,7 +165,6 @@ class CertificationBodyConfig(BaseModel):
     pack_id: str = Field(default="PACK-026")
     enable_provenance: bool = Field(default=True)
     renewal_reminder_days: int = Field(default=90, ge=30, le=365)
-
 
 class CertificationSubmission(BaseModel):
     """Certification submission record."""
@@ -199,7 +184,6 @@ class CertificationSubmission(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class DocumentUploadResult(BaseModel):
     """Result of a document upload."""
 
@@ -209,9 +193,8 @@ class DocumentUploadResult(BaseModel):
     filename: str = Field(default="")
     size_bytes: int = Field(default=0)
     status: str = Field(default="uploaded")
-    uploaded_at: datetime = Field(default_factory=_utcnow)
+    uploaded_at: datetime = Field(default_factory=utcnow)
     message: str = Field(default="")
-
 
 class CertificationReadiness(BaseModel):
     """Readiness assessment for a certification type."""
@@ -226,17 +209,17 @@ class CertificationReadiness(BaseModel):
     estimated_duration_months: int = Field(default=0)
     next_steps: List[str] = Field(default_factory=list)
 
-
 # ---------------------------------------------------------------------------
 # CertificationBodyBridge
 # ---------------------------------------------------------------------------
-
 
 class CertificationBodyBridge:
     """Multi-certification integration for SME environmental certifications.
 
     Manages the lifecycle of multiple environmental certifications,
     from readiness assessment through submission and renewal.
+
+from greenlang.schemas import utcnow
 
     Attributes:
         config: Bridge configuration.
@@ -381,7 +364,7 @@ class CertificationBodyBridge:
             certification_type=cert_type,
             organization_name=organization_name,
             status=CertificationStatus.IN_PROGRESS,
-            started_at=_utcnow(),
+            started_at=utcnow(),
             documents_required=required_docs,
         )
 
@@ -423,7 +406,7 @@ class CertificationBodyBridge:
             return submission
 
         submission.status = CertificationStatus.SUBMITTED
-        submission.submitted_at = _utcnow()
+        submission.submitted_at = utcnow()
 
         if self.config.enable_provenance:
             submission.provenance_hash = _compute_hash(submission)
@@ -593,7 +576,7 @@ class CertificationBodyBridge:
             "standard": "ISO 14001:2015",
             "documents": documents,
             "total_documents": len(documents),
-            "export_timestamp": _utcnow().isoformat(),
+            "export_timestamp": utcnow().isoformat(),
             "message": (
                 f"ISO 14001 documentation package generated with "
                 f"{len(documents)} document templates. These templates "

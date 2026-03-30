@@ -64,7 +64,7 @@ from typing import (
     TYPE_CHECKING,
 )
 
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import Field, ConfigDict
 
 from greenlang.agents.foundation.schema.constants import (
     MAX_REGEX_LENGTH,
@@ -72,6 +72,7 @@ from greenlang.agents.foundation.schema.constants import (
     SUPPORTED_DIALECTS,
 )
 from greenlang.agents.foundation.schema.errors import ErrorCode, Severity
+from greenlang.schemas import GreenLangBase
 
 if TYPE_CHECKING:
     from greenlang.agents.foundation.schema.units.catalog import UnitCatalog
@@ -85,7 +86,7 @@ logger = logging.getLogger(__name__)
 # ============================================================================
 
 
-class SchemaValidationFinding(BaseModel):
+class SchemaValidationFinding(GreenLangBase):
     """
     Finding from schema validation.
 
@@ -134,7 +135,7 @@ class SchemaValidationFinding(BaseModel):
     )
 
 
-class SchemaValidationResult(BaseModel):
+class SchemaValidationResult(GreenLangBase):
     """
     Result of schema self-validation.
 

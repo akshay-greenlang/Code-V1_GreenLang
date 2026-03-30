@@ -36,20 +36,15 @@ from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "36.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash excluding volatile fields."""
@@ -68,7 +63,6 @@ def _compute_hash(data: Any) -> str:
         json.dumps(s, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # ── Error category constants ────────────────────────────────────────
 
 class ErrorCategory(str, Enum):
@@ -81,7 +75,6 @@ class ErrorCategory(str, Enum):
     TARIFF_MISAPPLY = "Tariff Misapplication"
     ESTIMATED_READ = "Estimated Read Override"
     OTHER = "Other"
-
 
 class BillAuditReportTemplate:
     """
@@ -127,7 +120,7 @@ class BillAuditReportTemplate:
         Returns:
             Complete Markdown string with provenance hash.
         """
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections: List[str] = [
             self._md_header(data),
             self._md_audit_scope(data),
@@ -151,7 +144,7 @@ class BillAuditReportTemplate:
         Returns:
             Complete HTML string with inline CSS and provenance hash.
         """
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         body = "\n".join([
             self._html_header(data),
@@ -180,7 +173,7 @@ class BillAuditReportTemplate:
         Returns:
             Dict with structured report sections and provenance hash.
         """
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result: Dict[str, Any] = {
             "template": "bill_audit_report",
             "version": _MODULE_VERSION,
@@ -207,7 +200,7 @@ class BillAuditReportTemplate:
         Returns:
             CSV string with one row per bill finding.
         """
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         output = io.StringIO()
         writer = csv.writer(output)
         writer.writerow([

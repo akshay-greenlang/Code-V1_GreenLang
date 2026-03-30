@@ -89,25 +89,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -125,7 +119,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -134,7 +127,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -146,22 +138,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class InvestmentType(str, Enum):
     """Peak shaving investment type.
@@ -180,7 +168,6 @@ class InvestmentType(str, Enum):
     THERMAL_STORAGE = "thermal_storage"
     COMBINED = "combined"
 
-
 class IncentiveProgram(str, Enum):
     """Incentive programme type.
 
@@ -195,7 +182,6 @@ class IncentiveProgram(str, Enum):
     STATE_REBATE = "state_rebate"
     UTILITY_REBATE = "utility_rebate"
     MACRS_DEPRECIATION = "macrs_depreciation"
-
 
 class FinancialMetric(str, Enum):
     """Financial evaluation metric.
@@ -216,7 +202,6 @@ class FinancialMetric(str, Enum):
     LCOS = "lcos"
     LCOE = "lcoe"
 
-
 class RiskLevel(str, Enum):
     """Financial risk / scenario assumption level.
 
@@ -227,7 +212,6 @@ class RiskLevel(str, Enum):
     CONSERVATIVE = "conservative"
     MODERATE = "moderate"
     AGGRESSIVE = "aggressive"
-
 
 class ScenarioType(str, Enum):
     """Financial analysis scenario type.
@@ -241,7 +225,6 @@ class ScenarioType(str, Enum):
     OPTIMISTIC = "optimistic"
     PESSIMISTIC = "pessimistic"
     MONTE_CARLO = "monte_carlo"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Financial Reference Data
@@ -342,11 +325,9 @@ DEFAULT_ENERGY_ESCALATION: Decimal = Decimal("0.025")
 IRR_MAX_ITERATIONS: int = 100
 IRR_TOLERANCE: Decimal = Decimal("0.0001")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class InvestmentCase(BaseModel):
     """Investment case for financial analysis.
@@ -457,11 +438,9 @@ class InvestmentCase(BaseModel):
                 raise ValueError(f"Unknown type '{v}'. Must be: {sorted(valid)}")
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class IncentiveCapture(BaseModel):
     """Incentive capture calculation.
@@ -511,10 +490,9 @@ class IncentiveCapture(BaseModel):
         default=Decimal("0"), description="Incentive % of cost"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class RevenueStack(BaseModel):
     """Revenue stacking analysis.
@@ -556,10 +534,9 @@ class RevenueStack(BaseModel):
         default_factory=dict, description="Revenue % breakdown"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class CashFlowProjection(BaseModel):
     """Year-by-year cash flow projection.
@@ -598,7 +575,6 @@ class CashFlowProjection(BaseModel):
     cumulative_pv_usd: Decimal = Field(
         default=Decimal("0"), description="Cumulative PV"
     )
-
 
 class FinancialResult(BaseModel):
     """Comprehensive financial analysis result.
@@ -677,18 +653,16 @@ class FinancialResult(BaseModel):
         default="", max_length=2000, description="Recommendation"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     processing_time_ms: float = Field(
         default=0.0, description="Processing time (ms)"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class FinancialEngine:
     """Financial modelling engine for peak shaving investments.
@@ -729,7 +703,7 @@ class FinancialEngine:
         self._tax_rate = _decimal(
             self.config.get("tax_rate", DEFAULT_TAX_RATE)
         )
-        self._base_year = int(self.config.get("base_year", _utcnow().year))
+        self._base_year = int(self.config.get("base_year", utcnow().year))
         logger.info(
             "FinancialEngine v%s initialised (discount=%.2f, tax=%.2f, base_year=%d)",
             self.engine_version,
@@ -1045,7 +1019,7 @@ class FinancialEngine:
             "range_pct": str(_round_val(range_pct, 0)),
             "steps": steps,
             "results": results,
-            "calculated_at": _utcnow().isoformat(),
+            "calculated_at": utcnow().isoformat(),
             "processing_time_ms": round(elapsed, 2),
         }
         result["provenance_hash"] = _compute_hash(result)
@@ -1110,7 +1084,7 @@ class FinancialEngine:
             "best_alternative": best["case_id"] if best else "",
             "best_npv_usd": best["npv_usd"] if best else "0",
             "best_irr_pct": best["irr_pct"] if best else "0",
-            "calculated_at": _utcnow().isoformat(),
+            "calculated_at": utcnow().isoformat(),
             "processing_time_ms": round(elapsed, 2),
         }
         result["provenance_hash"] = _compute_hash(result)

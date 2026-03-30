@@ -47,7 +47,9 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+
+from greenlang.schemas import GreenLangBase, utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -57,21 +59,13 @@ __all__ = [
     "DataQualityScorer",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class QualityLevel(str, Enum):
     """Quality level classification."""
@@ -82,13 +76,11 @@ class QualityLevel(str, Enum):
     POOR = "poor"
     CRITICAL = "critical"
 
-
 # ---------------------------------------------------------------------------
 # Data models
 # ---------------------------------------------------------------------------
 
-
-class DataQualityReport(BaseModel):
+class DataQualityReport(GreenLangBase):
     """Quality assessment report for a dataset."""
 
     report_id: str = Field(
@@ -123,16 +115,14 @@ class DataQualityReport(BaseModel):
         default_factory=dict, description="Per-column quality breakdown",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Report timestamp",
+        default_factory=utcnow, description="Report timestamp",
     )
 
     model_config = {"extra": "forbid"}
 
-
 # ---------------------------------------------------------------------------
 # DataQualityScorer
 # ---------------------------------------------------------------------------
-
 
 class DataQualityScorer:
     """Data quality scoring engine with weighted multi-dimensional assessment.
@@ -593,7 +583,7 @@ class DataQualityScorer:
                 "files_scored": self._stats["files_scored"],
                 "avg_score": round(avg_score, 4),
                 "total_issues": self._stats["total_issues"],
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }
 
     # ------------------------------------------------------------------

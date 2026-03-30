@@ -40,18 +40,13 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -61,11 +56,9 @@ VALID_CONDITIONS: Tuple[str, ...] = ("gt", "lt", "eq", "gte", "lte", "ne")
 VALID_SEVERITIES: Tuple[str, ...] = ("info", "warning", "critical", "page")
 VALID_ALERT_STATES: Tuple[str, ...] = ("pending", "firing", "resolved", "acknowledged", "silenced")
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class AlertRule:
@@ -98,14 +91,13 @@ class AlertRule:
     annotations: Dict[str, str] = field(default_factory=dict)
     enabled: bool = True
     silenced_until: Optional[datetime] = None
-    created_at: datetime = field(default_factory=_utcnow)
-    updated_at: datetime = field(default_factory=_utcnow)
+    created_at: datetime = field(default_factory=utcnow)
+    updated_at: datetime = field(default_factory=utcnow)
 
     def __post_init__(self) -> None:
         """Generate rule_id if not provided."""
         if not self.rule_id:
             self.rule_id = str(uuid.uuid4())
-
 
 @dataclass
 class AlertInstance:
@@ -142,7 +134,7 @@ class AlertInstance:
     condition: str = "gt"
     labels: Dict[str, str] = field(default_factory=dict)
     annotations: Dict[str, str] = field(default_factory=dict)
-    started_at: datetime = field(default_factory=_utcnow)
+    started_at: datetime = field(default_factory=utcnow)
     fired_at: Optional[datetime] = None
     resolved_at: Optional[datetime] = None
     acknowledged_at: Optional[datetime] = None
@@ -154,11 +146,9 @@ class AlertInstance:
         if not self.alert_id:
             self.alert_id = str(uuid.uuid4())
 
-
 # =============================================================================
 # AlertEvaluator
 # =============================================================================
-
 
 class AlertEvaluator:
     """Alert rule evaluation engine.
@@ -333,7 +323,7 @@ class AlertEvaluator:
             if enabled is not None:
                 rule.enabled = enabled
 
-            rule.updated_at = _utcnow()
+            rule.updated_at = utcnow()
 
         logger.info("Updated alert rule: name=%s", name)
         return rule
@@ -358,7 +348,7 @@ class AlertEvaluator:
             active = self._active_alerts.pop(name, None)
             if active is not None:
                 active.state = "resolved"
-                active.resolved_at = _utcnow()
+                active.resolved_at = utcnow()
                 self._append_history(active)
                 self._total_alerts_resolved += 1
 
@@ -402,7 +392,7 @@ class AlertEvaluator:
             Dictionary with new_alerts, resolved_alerts, still_firing, and
             evaluation_count.
         """
-        now = _utcnow()
+        now = utcnow()
         new_alerts: List[AlertInstance] = []
         resolved_alerts: List[AlertInstance] = []
         still_firing: List[AlertInstance] = []
@@ -479,7 +469,7 @@ class AlertEvaluator:
             if metric_value is None:
                 return None
 
-            now = _utcnow()
+            now = utcnow()
             is_true = self._evaluate_condition(metric_value, rule.condition, rule.threshold)
 
             if is_true:
@@ -545,7 +535,7 @@ class AlertEvaluator:
                             "cannot acknowledge"
                         )
                     alert.state = "acknowledged"
-                    alert.acknowledged_at = _utcnow()
+                    alert.acknowledged_at = utcnow()
                     alert.acknowledged_by = acknowledged_by
                     alert.provenance_hash = self._compute_alert_hash(alert)
 
@@ -582,7 +572,7 @@ class AlertEvaluator:
             if rule is None:
                 raise ValueError(f"Alert rule '{name}' not found")
 
-            now = _utcnow()
+            now = utcnow()
             silenced_until = datetime.fromtimestamp(
                 now.timestamp() + duration_seconds, tz=timezone.utc,
             ).replace(microsecond=0)
@@ -614,7 +604,7 @@ class AlertEvaluator:
                 raise ValueError(f"Alert rule '{name}' not found")
 
             rule.silenced_until = None
-            rule.updated_at = _utcnow()
+            rule.updated_at = utcnow()
 
         logger.info("Unsilenced rule '%s'", name)
         return rule
@@ -865,7 +855,6 @@ class AlertEvaluator:
             ensure_ascii=True,
         )
         return hashlib.sha256(payload.encode("utf-8")).hexdigest()
-
 
 __all__ = [
     "AlertEvaluator",

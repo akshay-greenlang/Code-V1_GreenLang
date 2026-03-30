@@ -82,21 +82,13 @@ logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -123,7 +115,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -140,7 +131,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal,
     denominator: Decimal,
@@ -151,21 +141,17 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round2(value: Any) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: Any) -> float:
     """Round to 4 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
-
 
 def _hash_content(content: str) -> str:
     """Compute SHA-256 hash of string content for integrity.
@@ -178,11 +164,9 @@ def _hash_content(content: str) -> str:
     """
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DocumentType(str, Enum):
     """Types of methodology documentation.
@@ -209,7 +193,6 @@ class DocumentType(str, Enum):
     BOUNDARY = "boundary"
     VERIFICATION = "verification"
 
-
 class EvidenceType(str, Enum):
     """Types of supporting evidence.
 
@@ -235,7 +218,6 @@ class EvidenceType(str, Enum):
     AUDIT_TRAIL = "audit_trail"
     CALCULATION_SHEET = "calculation_sheet"
 
-
 class ApprovalStatus(str, Enum):
     """Approval status for assumptions and documents.
 
@@ -251,7 +233,6 @@ class ApprovalStatus(str, Enum):
     EXPIRED = "expired"
     SUPERSEDED = "superseded"
 
-
 class SensitivityLevel(str, Enum):
     """Sensitivity level of an assumption.
 
@@ -262,7 +243,6 @@ class SensitivityLevel(str, Enum):
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 class AssuranceReadiness(str, Enum):
     """Readiness level for external assurance.
@@ -276,7 +256,6 @@ class AssuranceReadiness(str, Enum):
     MOSTLY_READY = "mostly_ready"
     PARTIALLY_READY = "partially_ready"
     NOT_READY = "not_ready"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -320,11 +299,9 @@ RETENTION_PERIODS: Dict[str, int] = {
 }
 """Required retention periods in years per document type."""
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class MethodologyDocument(BaseModel):
     """A methodology documentation record.
@@ -359,7 +336,7 @@ class MethodologyDocument(BaseModel):
     version: str = Field(default="1.0", description="Version")
     author: str = Field(default="", description="Author")
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Created timestamp"
+        default_factory=utcnow, description="Created timestamp"
     )
     updated_at: Optional[datetime] = Field(
         default=None, description="Updated timestamp"
@@ -375,7 +352,6 @@ class MethodologyDocument(BaseModel):
         default=None, description="Review due date"
     )
     tags: List[str] = Field(default_factory=list, description="Tags")
-
 
 class Assumption(BaseModel):
     """An inventory assumption tracked for transparency.
@@ -431,7 +407,6 @@ class Assumption(BaseModel):
         default=12, ge=1, le=60, description="Review frequency (months)"
     )
 
-
 class EvidenceRecord(BaseModel):
     """A piece of supporting evidence for the inventory.
 
@@ -469,7 +444,7 @@ class EvidenceRecord(BaseModel):
     mime_type: str = Field(default="", description="MIME type")
     uploaded_by: str = Field(default="", description="Uploader")
     uploaded_at: datetime = Field(
-        default_factory=_utcnow, description="Upload timestamp"
+        default_factory=utcnow, description="Upload timestamp"
     )
     source_system: str = Field(default="", description="Source system")
     chain_of_custody: List[str] = Field(
@@ -484,11 +459,9 @@ class EvidenceRecord(BaseModel):
         default=None, description="Verification timestamp"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class CategoryDocumentation(BaseModel):
     """Documentation completeness for a single source category.
@@ -521,7 +494,6 @@ class CategoryDocumentation(BaseModel):
     approved_docs_count: int = Field(default=0, description="Approved docs")
     unapproved_docs_count: int = Field(default=0, description="Unapproved docs")
     expired_docs_count: int = Field(default=0, description="Expired docs")
-
 
 class DocumentationCompleteness(BaseModel):
     """Overall documentation completeness assessment.
@@ -567,7 +539,6 @@ class DocumentationCompleteness(BaseModel):
         default_factory=list, description="Recommendations"
     )
 
-
 class DocumentationResult(BaseModel):
     """Complete documentation assessment result.
 
@@ -588,7 +559,7 @@ class DocumentationResult(BaseModel):
     result_id: str = Field(default_factory=_new_uuid, description="Result ID")
     engine_version: str = Field(default=_MODULE_VERSION, description="Engine version")
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp"
+        default_factory=utcnow, description="Timestamp"
     )
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     completeness: Optional[DocumentationCompleteness] = Field(
@@ -614,7 +585,6 @@ class DocumentationResult(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Model Rebuild
 # ---------------------------------------------------------------------------
@@ -626,11 +596,9 @@ CategoryDocumentation.model_rebuild()
 DocumentationCompleteness.model_rebuild()
 DocumentationResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class DocumentationEngine:
     """GHG inventory documentation and evidence management engine.
@@ -713,6 +681,8 @@ class DocumentationEngine:
             evidence: Optional evidence records.
             category_ids: Source category IDs to assess. If None, derived
                 from documents.
+
+from greenlang.schemas import utcnow
             category_emissions: Optional category_id to emissions mapping
                 for weighted scoring.
 
@@ -874,7 +844,7 @@ class DocumentationEngine:
         Returns:
             List of assumptions due or overdue for review.
         """
-        reference = as_of or _utcnow()
+        reference = as_of or utcnow()
         due: List[Assumption] = []
 
         for asn in assumptions:
@@ -944,7 +914,7 @@ class DocumentationEngine:
             List of CategoryDocumentation assessments.
         """
         assessments: List[CategoryDocumentation] = []
-        now = _utcnow()
+        now = utcnow()
 
         for cat_id in category_ids:
             cat_docs = [d for d in documents if d.category_id == cat_id]
@@ -1064,7 +1034,7 @@ class DocumentationEngine:
         approved_pct = float(_safe_pct(_decimal(approved), _decimal(total_docs)))
 
         # Expired documents
-        now = _utcnow()
+        now = utcnow()
         expired = sum(
             1 for d in documents
             if d.expiry_date is not None and d.expiry_date < now
@@ -1175,7 +1145,7 @@ class DocumentationEngine:
             List of retention alert messages.
         """
         alerts: List[str] = []
-        now = _utcnow()
+        now = utcnow()
 
         for doc in documents:
             if doc.expiry_date is not None:

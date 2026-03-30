@@ -16,10 +16,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism.clock import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +41,7 @@ class ForestType(str, Enum):
     MONTANE = "montane"
 
 
-class ForestSite(BaseModel):
+class ForestSite(GreenLangBase):
     site_id: str = Field(...)
     area_ha: float = Field(..., gt=0)
     forest_type: ForestType = Field(...)
@@ -50,7 +51,7 @@ class ForestSite(BaseModel):
     avg_tree_age_years: int = Field(default=50, ge=1)
 
 
-class DroughtImpactAssessment(BaseModel):
+class DroughtImpactAssessment(GreenLangBase):
     site_id: str = Field(...)
     drought_vulnerability_score: float = Field(..., ge=0, le=100)
     mortality_risk_pct: float = Field(..., ge=0, le=100)
@@ -60,14 +61,14 @@ class DroughtImpactAssessment(BaseModel):
     priority: str = Field(...)
 
 
-class DroughtImpactInput(BaseModel):
+class DroughtImpactInput(GreenLangBase):
     project_id: str = Field(...)
     sites: List[ForestSite] = Field(..., min_length=1)
     climate_scenario: str = Field(default="RCP4.5")
     projection_year: int = Field(default=2050, ge=2024, le=2100)
 
 
-class DroughtImpactOutput(BaseModel):
+class DroughtImpactOutput(GreenLangBase):
     project_id: str = Field(...)
     calculation_date: datetime = Field(default_factory=DeterministicClock.now)
     total_area_ha: float = Field(...)

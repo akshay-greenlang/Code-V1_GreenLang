@@ -49,7 +49,9 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ReportFormat
 
 # ---------------------------------------------------------------------------
 # Re-export Layer 1 models from data_quality_profiler
@@ -74,16 +76,9 @@ except ImportError:
     AnomalyDetector = None  # type: ignore[assignment, misc]
     AnomalyResult = None  # type: ignore[assignment, misc]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -146,11 +141,9 @@ TEMPORAL_METHODS: tuple = (
     "moving_window", "ewma",
 )
 
-
 # =============================================================================
 # Enumerations (13)
 # =============================================================================
-
 
 class DetectionMethod(str, Enum):
     """Statistical or algorithmic method for outlier detection.
@@ -184,7 +177,6 @@ class DetectionMethod(str, Enum):
     CONTEXTUAL = "contextual"
     TEMPORAL = "temporal"
 
-
 class OutlierClass(str, Enum):
     """Classification of an outlier's root cause.
 
@@ -200,7 +192,6 @@ class OutlierClass(str, Enum):
     DATA_ENTRY = "data_entry"
     REGIME_CHANGE = "regime_change"
     SENSOR_FAULT = "sensor_fault"
-
 
 class TreatmentStrategy(str, Enum):
     """Strategy for treating detected outliers.
@@ -220,7 +211,6 @@ class TreatmentStrategy(str, Enum):
     REPLACE = "replace"
     INVESTIGATE = "investigate"
 
-
 class OutlierStatus(str, Enum):
     """Lifecycle status of an outlier detection job.
 
@@ -235,7 +225,6 @@ class OutlierStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
 
-
 class EnsembleMethod(str, Enum):
     """Method for combining scores from multiple detectors.
 
@@ -249,7 +238,6 @@ class EnsembleMethod(str, Enum):
     MAJORITY_VOTE = "majority_vote"
     MAX_SCORE = "max_score"
     MEAN_SCORE = "mean_score"
-
 
 class ContextType(str, Enum):
     """Type of context for contextual outlier detection.
@@ -269,7 +257,6 @@ class ContextType(str, Enum):
     PEER_GROUP = "peer_group"
     CUSTOM = "custom"
 
-
 class TemporalMethod(str, Enum):
     """Temporal anomaly detection method.
 
@@ -285,7 +272,6 @@ class TemporalMethod(str, Enum):
     SEASONAL_RESIDUAL = "seasonal_residual"
     MOVING_WINDOW = "moving_window"
     EWMA = "ewma"
-
 
 class SeverityLevel(str, Enum):
     """Severity classification for a detected outlier.
@@ -303,20 +289,6 @@ class SeverityLevel(str, Enum):
     LOW = "low"
     INFO = "info"
 
-
-class ReportFormat(str, Enum):
-    """Output format for outlier detection reports.
-
-    Defines the serialization format for generated reports
-    including detection results, classifications, and treatments.
-    """
-
-    JSON = "json"
-    CSV = "csv"
-    MARKDOWN = "markdown"
-    HTML = "html"
-
-
 class PipelineStage(str, Enum):
     """Stage in the outlier detection pipeline.
 
@@ -330,7 +302,6 @@ class PipelineStage(str, Enum):
     TREAT = "treat"
     VALIDATE = "validate"
     DOCUMENT = "document"
-
 
 class ThresholdSource(str, Enum):
     """Source of a detection threshold value.
@@ -348,7 +319,6 @@ class ThresholdSource(str, Enum):
     CUSTOM = "custom"
     LEARNED = "learned"
 
-
 class FeedbackType(str, Enum):
     """Type of human feedback on an outlier classification.
 
@@ -363,7 +333,6 @@ class FeedbackType(str, Enum):
     RECLASSIFIED = "reclassified"
     UNKNOWN = "unknown"
 
-
 class DataColumnType(str, Enum):
     """Data type classification for dataset columns.
 
@@ -377,13 +346,11 @@ class DataColumnType(str, Enum):
     BOOLEAN = "boolean"
     TEXT = "text"
 
-
 # =============================================================================
 # SDK Data Models (20)
 # =============================================================================
 
-
-class OutlierScore(BaseModel):
+class OutlierScore(GreenLangBase):
     """Score for a single data point from one detection method.
 
     Represents the outlier score assigned to a specific value by
@@ -449,8 +416,7 @@ class OutlierScore(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class DetectionResult(BaseModel):
+class DetectionResult(GreenLangBase):
     """Result of outlier detection for a single column.
 
     Contains outlier scores for all data points in one column,
@@ -521,8 +487,7 @@ class DetectionResult(BaseModel):
             raise ValueError("column_name must be non-empty")
         return v
 
-
-class ContextualResult(BaseModel):
+class ContextualResult(GreenLangBase):
     """Result of contextual (group-based) outlier detection.
 
     Contains detection results within a specific context group,
@@ -589,8 +554,7 @@ class ContextualResult(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class TemporalResult(BaseModel):
+class TemporalResult(GreenLangBase):
     """Result of temporal (time-series) outlier detection.
 
     Contains detection results from a time-series method, including
@@ -656,8 +620,7 @@ class TemporalResult(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class MultivariateResult(BaseModel):
+class MultivariateResult(GreenLangBase):
     """Result of multivariate outlier detection.
 
     Contains detection results from multivariate methods operating
@@ -723,8 +686,7 @@ class MultivariateResult(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class EnsembleResult(BaseModel):
+class EnsembleResult(GreenLangBase):
     """Combined outlier score from multiple detection methods.
 
     Aggregates scores from multiple detectors into a single
@@ -795,8 +757,7 @@ class EnsembleResult(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class OutlierClassification(BaseModel):
+class OutlierClassification(GreenLangBase):
     """Classification of a detected outlier by root cause.
 
     Assigns a classification (error, genuine extreme, data entry,
@@ -861,8 +822,7 @@ class OutlierClassification(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class TreatmentResult(BaseModel):
+class TreatmentResult(GreenLangBase):
     """Result of applying a treatment to an outlier.
 
     Tracks original and treated values with full provenance.
@@ -920,8 +880,7 @@ class TreatmentResult(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class TreatmentRecord(BaseModel):
+class TreatmentRecord(GreenLangBase):
     """Persistent record of a treatment for undo/audit.
 
     Attributes:
@@ -970,7 +929,7 @@ class TreatmentRecord(BaseModel):
         description="Treatment strategy used",
     )
     applied_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of treatment application",
     )
     undone: bool = Field(
@@ -987,8 +946,7 @@ class TreatmentRecord(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class DomainThreshold(BaseModel):
+class DomainThreshold(GreenLangBase):
     """Domain-specific threshold for outlier detection.
 
     Provides domain knowledge bounds for a specific column,
@@ -1032,7 +990,7 @@ class DomainThreshold(BaseModel):
         description="Whether this threshold is currently active",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the threshold was created",
     )
     provenance_hash: str = Field(
@@ -1050,8 +1008,7 @@ class DomainThreshold(BaseModel):
             raise ValueError("column_name must be non-empty")
         return v
 
-
-class FeedbackEntry(BaseModel):
+class FeedbackEntry(GreenLangBase):
     """Human feedback on an outlier detection result.
 
     Attributes:
@@ -1097,7 +1054,7 @@ class FeedbackEntry(BaseModel):
         description="User who provided the feedback",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the feedback was submitted",
     )
     provenance_hash: str = Field(
@@ -1107,8 +1064,7 @@ class FeedbackEntry(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class ImpactAnalysis(BaseModel):
+class ImpactAnalysis(GreenLangBase):
     """Impact analysis comparing original and treated datasets.
 
     Quantifies the statistical effect of outlier treatment on the
@@ -1180,8 +1136,7 @@ class ImpactAnalysis(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class OutlierReport(BaseModel):
+class OutlierReport(GreenLangBase):
     """Complete outlier detection report for a dataset.
 
     Aggregates detection, classification, and treatment results into
@@ -1251,7 +1206,7 @@ class OutlierReport(BaseModel):
         None, description="Impact analysis of treatments",
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the report was generated",
     )
     provenance_hash: str = Field(
@@ -1261,8 +1216,7 @@ class OutlierReport(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class PipelineConfig(BaseModel):
+class PipelineConfig(GreenLangBase):
     """Configuration for the full outlier detection pipeline.
 
     Defines pipeline-level settings including detection methods,
@@ -1342,8 +1296,7 @@ class PipelineConfig(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class PipelineResult(BaseModel):
+class PipelineResult(GreenLangBase):
     """Complete result of an outlier detection pipeline run.
 
     Aggregates detection, classification, treatment, and validation
@@ -1408,7 +1361,7 @@ class PipelineResult(BaseModel):
         description="Total pipeline processing time in milliseconds",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the pipeline completed",
     )
     provenance_hash: str = Field(
@@ -1418,8 +1371,7 @@ class PipelineResult(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class DetectionJobConfig(BaseModel):
+class DetectionJobConfig(GreenLangBase):
     """Configuration and tracking for an outlier detection job.
 
     Represents a single end-to-end detection run with progress
@@ -1526,8 +1478,7 @@ class DetectionJobConfig(BaseModel):
             return 0.0
         return stage_progress.get(self.stage, 0.0)
 
-
-class OutlierStatistics(BaseModel):
+class OutlierStatistics(GreenLangBase):
     """Aggregated operational statistics for the detection service.
 
     Provides high-level metrics for monitoring the overall
@@ -1584,14 +1535,13 @@ class OutlierStatistics(BaseModel):
         description="Count of treatments per strategy",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when statistics were computed",
     )
 
     model_config = {"extra": "forbid"}
 
-
-class ThresholdConfig(BaseModel):
+class ThresholdConfig(GreenLangBase):
     """Configuration for a detection threshold.
 
     Attributes:
@@ -1630,8 +1580,7 @@ class ThresholdConfig(BaseModel):
             raise ValueError("column_name must be non-empty")
         return v
 
-
-class ColumnOutlierSummary(BaseModel):
+class ColumnOutlierSummary(GreenLangBase):
     """Summary of outlier detection results for a single column.
 
     Attributes:
@@ -1695,8 +1644,7 @@ class ColumnOutlierSummary(BaseModel):
             raise ValueError("column_name must be non-empty")
         return v
 
-
-class BatchDetectionResult(BaseModel):
+class BatchDetectionResult(GreenLangBase):
     """Batch result aggregating detection across multiple columns.
 
     Attributes:
@@ -1740,7 +1688,7 @@ class BatchDetectionResult(BaseModel):
         description="Total processing time in milliseconds",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the batch was processed",
     )
     provenance_hash: str = Field(
@@ -1750,13 +1698,11 @@ class BatchDetectionResult(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
 # =============================================================================
 # Request Models (8)
 # =============================================================================
 
-
-class CreateDetectionJobRequest(BaseModel):
+class CreateDetectionJobRequest(GreenLangBase):
     """Request body for creating a new outlier detection job.
 
     Attributes:
@@ -1778,8 +1724,7 @@ class CreateDetectionJobRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class DetectOutliersRequest(BaseModel):
+class DetectOutliersRequest(GreenLangBase):
     """Request body for detecting outliers in a dataset.
 
     Attributes:
@@ -1808,8 +1753,7 @@ class DetectOutliersRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class ClassifyOutliersRequest(BaseModel):
+class ClassifyOutliersRequest(GreenLangBase):
     """Request body for classifying detected outliers.
 
     Attributes:
@@ -1833,8 +1777,7 @@ class ClassifyOutliersRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class TreatOutliersRequest(BaseModel):
+class TreatOutliersRequest(GreenLangBase):
     """Request body for treating detected outliers.
 
     Attributes:
@@ -1863,8 +1806,7 @@ class TreatOutliersRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class SubmitFeedbackRequest(BaseModel):
+class SubmitFeedbackRequest(GreenLangBase):
     """Request body for submitting feedback on an outlier.
 
     Attributes:
@@ -1896,8 +1838,7 @@ class SubmitFeedbackRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class RunPipelineRequest(BaseModel):
+class RunPipelineRequest(GreenLangBase):
     """Request body for running the full outlier detection pipeline.
 
     Attributes:
@@ -1924,8 +1865,7 @@ class RunPipelineRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class BatchDetectRequest(BaseModel):
+class BatchDetectRequest(GreenLangBase):
     """Request body for batch detection across multiple datasets.
 
     Attributes:
@@ -1948,8 +1888,7 @@ class BatchDetectRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class ConfigureThresholdsRequest(BaseModel):
+class ConfigureThresholdsRequest(GreenLangBase):
     """Request body for configuring detection thresholds.
 
     Attributes:
@@ -1967,7 +1906,6 @@ class ConfigureThresholdsRequest(BaseModel):
     )
 
     model_config = {"extra": "forbid"}
-
 
 # =============================================================================
 # __all__ export list

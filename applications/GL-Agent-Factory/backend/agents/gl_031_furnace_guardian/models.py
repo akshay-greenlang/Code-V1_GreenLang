@@ -13,7 +13,8 @@ Standards Reference:
 from enum import Enum
 from typing import List, Optional, Dict, Any
 from datetime import datetime
-from pydantic import BaseModel, Field, validator
+from pydantic import Field, validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 
 
 class RiskLevel(str, Enum):

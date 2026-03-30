@@ -33,21 +33,15 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -59,7 +53,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 class _AgentStub:
     """Stub for unavailable DATA agent modules."""
@@ -78,21 +71,19 @@ class _AgentStub:
             }
         return _stub_method
 
-
 def _try_import_data_agent(agent_id: str, module_path: str) -> Any:
     """Try to import a DATA agent with graceful fallback."""
     try:
         import importlib
+
         return importlib.import_module(module_path)
     except ImportError:
         logger.debug("DATA agent %s not available, using stub", agent_id)
         return _AgentStub(agent_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class BenchmarkDataSource(str, Enum):
     """Benchmark data source categories."""
@@ -106,7 +97,6 @@ class BenchmarkDataSource(str, Enum):
     BMS_EXPORT = "bms_export"
     ERP_ENERGY = "erp_energy"
 
-
 class DataQualityDimension(str, Enum):
     """Data quality dimensions for benchmarking."""
 
@@ -116,11 +106,9 @@ class DataQualityDimension(str, Enum):
     TIMELINESS = "timeliness"
     COVERAGE = "coverage"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class DataBenchmarkBridgeConfig(BaseModel):
     """Configuration for the Data Benchmark Bridge."""
@@ -133,7 +121,6 @@ class DataBenchmarkBridgeConfig(BaseModel):
     max_records_per_batch: int = Field(default=100000, ge=100)
     min_data_coverage_pct: float = Field(default=90.0, ge=0.0, le=100.0)
 
-
 class DataIngestionRequest(BaseModel):
     """Request for data ingestion through DATA agents."""
 
@@ -145,7 +132,6 @@ class DataIngestionRequest(BaseModel):
     date_range_start: str = Field(default="")
     date_range_end: str = Field(default="")
     meter_ids: List[str] = Field(default_factory=list)
-
 
 class DataIngestionResult(BaseModel):
     """Result of data ingestion through a DATA agent."""
@@ -167,7 +153,6 @@ class DataIngestionResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class DataAgentRoute(BaseModel):
     """Routing entry mapping a data source to a DATA agent."""
 
@@ -177,7 +162,6 @@ class DataAgentRoute(BaseModel):
     module_path: str = Field(default="")
     description: str = Field(default="")
     file_formats: List[str] = Field(default_factory=list)
-
 
 # ---------------------------------------------------------------------------
 # Data Agent Routing Table
@@ -235,11 +219,9 @@ DATA_AGENT_ROUTES: List[DataAgentRoute] = [
     ),
 ]
 
-
 # ---------------------------------------------------------------------------
 # DataBenchmarkBridge
 # ---------------------------------------------------------------------------
-
 
 class DataBenchmarkBridge:
     """Bridge to DATA agents for benchmark data intake and quality.

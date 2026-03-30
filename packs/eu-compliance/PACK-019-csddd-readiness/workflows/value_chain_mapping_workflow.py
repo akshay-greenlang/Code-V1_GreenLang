@@ -36,35 +36,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class WorkflowPhase(str, Enum):
     """Phases of the value chain mapping workflow."""
@@ -72,7 +64,6 @@ class WorkflowPhase(str, Enum):
     TIER_IDENTIFICATION = "tier_identification"
     ACTIVITY_CLASSIFICATION = "activity_classification"
     RISK_OVERLAY = "risk_overlay"
-
 
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
@@ -82,7 +73,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class PhaseStatus(str, Enum):
     """Status of a single phase."""
     PENDING = "pending"
@@ -91,7 +81,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class SupplierTier(str, Enum):
     """Supplier relationship tier classification."""
     TIER_1 = "tier_1"       # Direct suppliers / business partners
@@ -99,7 +88,6 @@ class SupplierTier(str, Enum):
     TIER_3 = "tier_3"       # Further upstream
     DOWNSTREAM = "downstream"
     UNKNOWN = "unknown"
-
 
 class ActivityCategory(str, Enum):
     """CSDDD activity classification categories."""
@@ -115,7 +103,6 @@ class ActivityCategory(str, Enum):
     SERVICE = "service"
     OTHER = "other"
 
-
 class RiskLevel(str, Enum):
     """Risk level classification for geographic/sector risk overlay."""
     VERY_HIGH = "very_high"
@@ -124,11 +111,9 @@ class RiskLevel(str, Enum):
     LOW = "low"
     VERY_LOW = "very_low"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -139,7 +124,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class SupplierRecord(BaseModel):
     """Individual supplier record for value chain mapping."""
@@ -157,7 +141,6 @@ class SupplierRecord(BaseModel):
     has_code_of_conduct: bool = Field(default=False)
     contractual_assurances: bool = Field(default=False)
 
-
 class CountryRiskData(BaseModel):
     """Country-level risk data for risk overlay."""
     country_code: str = Field(..., description="ISO 3166-1 alpha-2")
@@ -167,7 +150,6 @@ class CountryRiskData(BaseModel):
     governance_risk: RiskLevel = Field(default=RiskLevel.MEDIUM)
     conflict_affected: bool = Field(default=False)
     rule_of_law_score: float = Field(default=50.0, ge=0.0, le=100.0)
-
 
 class ValueChainMappingInput(BaseModel):
     """Input data model for ValueChainMappingWorkflow."""
@@ -189,7 +171,6 @@ class ValueChainMappingInput(BaseModel):
     )
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class SupplierRiskProfile(BaseModel):
     """Computed risk profile for a single supplier."""
     supplier_id: str = Field(...)
@@ -201,7 +182,6 @@ class SupplierRiskProfile(BaseModel):
     risk_level: RiskLevel = Field(default=RiskLevel.MEDIUM)
     risk_factors: List[str] = Field(default_factory=list)
     recommended_actions: List[str] = Field(default_factory=list)
-
 
 class ValueChainMappingResult(BaseModel):
     """Complete result from value chain mapping workflow."""
@@ -233,11 +213,9 @@ class ValueChainMappingResult(BaseModel):
     executed_at: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # DEFAULT COUNTRY RISK SCORES
 # =============================================================================
-
 
 DEFAULT_COUNTRY_RISK: Dict[str, Dict[str, Any]] = {
     "DE": {"hr": "low", "env": "low", "gov": "low"},
@@ -257,11 +235,9 @@ DEFAULT_COUNTRY_RISK: Dict[str, Dict[str, Any]] = {
     "RO": {"hr": "low", "env": "medium", "gov": "medium"},
 }
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class ValueChainMappingWorkflow:
     """
@@ -327,7 +303,7 @@ class ValueChainMappingWorkflow:
         if input_data is None:
             input_data = ValueChainMappingInput(config=config or {})
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting value chain mapping workflow %s", self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = WorkflowStatus.IN_PROGRESS
@@ -345,7 +321,7 @@ class ValueChainMappingWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         completed_count = sum(1 for p in phase_results if p.status == PhaseStatus.COMPLETED)
 
         # Tier counts
@@ -386,7 +362,7 @@ class ValueChainMappingWorkflow:
             activity_categories=self._activity_counts,
             total_annual_spend_eur=round(sum(s.annual_spend_eur for s in suppliers), 2),
             reporting_year=input_data.reporting_year,
-            executed_at=_utcnow().isoformat(),
+            executed_at=utcnow().isoformat(),
         )
         result.provenance_hash = self._compute_provenance(result)
         self.logger.info(
@@ -403,7 +379,7 @@ class ValueChainMappingWorkflow:
         self, input_data: ValueChainMappingInput,
     ) -> PhaseResult:
         """Catalogue and validate supplier relationships."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -435,7 +411,7 @@ class ValueChainMappingWorkflow:
         if not suppliers:
             warnings.append("No supplier records provided")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 1 SupplierMapping: %d suppliers across %d countries",
             len(suppliers), len(countries),
@@ -455,7 +431,7 @@ class ValueChainMappingWorkflow:
         self, input_data: ValueChainMappingInput,
     ) -> PhaseResult:
         """Classify suppliers into tier levels based on relationship data."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -499,7 +475,7 @@ class ValueChainMappingWorkflow:
                 f"{tier_counts['unknown']} suppliers still unclassified after auto-tier"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 2 TierIdentification: %s",
             ", ".join(f"{k}={v}" for k, v in tier_counts.items()),
@@ -519,7 +495,7 @@ class ValueChainMappingWorkflow:
         self, input_data: ValueChainMappingInput,
     ) -> PhaseResult:
         """Classify supplier activities by CSDDD-relevant categories."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -600,7 +576,7 @@ class ValueChainMappingWorkflow:
         if sum(1 for s in suppliers if not s.activities) > len(suppliers) * 0.3:
             warnings.append("Over 30% of suppliers have no activity data -- classification may be incomplete")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 3 ActivityClassification: %d activities classified across %d categories",
             classified, len(self._activity_counts),
@@ -620,7 +596,7 @@ class ValueChainMappingWorkflow:
         self, input_data: ValueChainMappingInput,
     ) -> PhaseResult:
         """Overlay geographic and sector risk indicators onto supplier map."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._risk_profiles = []
@@ -748,7 +724,7 @@ class ValueChainMappingWorkflow:
                 f"{level_counts['very_high']} suppliers at very high risk -- immediate action required"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 4 RiskOverlay: avg risk=%.1f, %d very high, %d high",
             outputs["avg_composite_risk"],

@@ -28,33 +28,25 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class WorkflowPhase(str, Enum):
     """Phases of the GHG inventory workflow."""
@@ -64,7 +56,6 @@ class WorkflowPhase(str, Enum):
     QUALITY_CHECK = "quality_check"
     REPORT_GENERATION = "report_generation"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "pending"
@@ -72,7 +63,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class PhaseStatus(str, Enum):
     """Status of a single phase."""
@@ -82,14 +72,12 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class GHGScope(str, Enum):
     """GHG Protocol emission scope."""
     SCOPE_1 = "scope_1"
     SCOPE_2_LOCATION = "scope_2_location"
     SCOPE_2_MARKET = "scope_2_market"
     SCOPE_3 = "scope_3"
-
 
 class GasType(str, Enum):
     """Greenhouse gas types per GHG Protocol."""
@@ -101,7 +89,6 @@ class GasType(str, Enum):
     SF6 = "SF6"
     NF3 = "NF3"
     CO2E = "CO2e"
-
 
 class Scope3Category(str, Enum):
     """GHG Protocol Scope 3 categories."""
@@ -121,11 +108,9 @@ class Scope3Category(str, Enum):
     CAT_14 = "franchises"
     CAT_15 = "investments"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -136,7 +121,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class EmissionRecord(BaseModel):
     """Single emission record with activity data and calculated emissions."""
@@ -157,7 +141,6 @@ class EmissionRecord(BaseModel):
     data_quality_score: float = Field(default=0.0, ge=0.0, le=5.0)
     reporting_year: int = Field(default=2025)
 
-
 class ScopeAggregation(BaseModel):
     """Aggregated emissions by scope."""
     scope: str = Field(..., description="Scope identifier")
@@ -166,7 +149,6 @@ class ScopeAggregation(BaseModel):
     category_breakdown: Dict[str, float] = Field(default_factory=dict)
     gas_breakdown: Dict[str, float] = Field(default_factory=dict)
     avg_data_quality: float = Field(default=0.0)
-
 
 class GHGInventoryInput(BaseModel):
     """Input data model for GHGInventoryWorkflow."""
@@ -186,7 +168,6 @@ class GHGInventoryInput(BaseModel):
         default=2.0, ge=0.0, le=5.0, description="Minimum data quality score"
     )
     config: Dict[str, Any] = Field(default_factory=dict)
-
 
 class GHGInventoryResult(BaseModel):
     """Complete result from GHG inventory workflow."""
@@ -212,7 +193,6 @@ class GHGInventoryResult(BaseModel):
     consolidation_approach: str = Field(default="operational_control")
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # DEFAULT EMISSION FACTORS (tCO2e per unit)
 # =============================================================================
@@ -229,11 +209,9 @@ DEFAULT_EMISSION_FACTORS: Dict[str, float] = {
     "biomass_kg": 0.000000,
 }
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class GHGInventoryWorkflow:
     """
@@ -314,7 +292,7 @@ class GHGInventoryWorkflow:
                 config=config or {},
             )
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting GHG inventory workflow %s", self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = WorkflowStatus.IN_PROGRESS
@@ -339,7 +317,7 @@ class GHGInventoryWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
 
         # Calculate scope totals
         scope_1 = sum(r.emissions_tco2e for r in self._records if r.scope == GHGScope.SCOPE_1)
@@ -388,7 +366,7 @@ class GHGInventoryWorkflow:
         self, input_data: GHGInventoryInput,
     ) -> PhaseResult:
         """Gather emission records from input sources."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -414,7 +392,7 @@ class GHGInventoryWorkflow:
         if missing:
             warnings.append(f"Missing scope coverage: {', '.join(sorted(missing))}")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 1 DataCollection: %d records from %d sources",
             len(self._records), outputs["unique_sources"],
@@ -434,7 +412,7 @@ class GHGInventoryWorkflow:
         self, input_data: GHGInventoryInput,
     ) -> PhaseResult:
         """Apply emission factors and calculate tCO2e for each record."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         calculated_count = 0
@@ -472,7 +450,7 @@ class GHGInventoryWorkflow:
         outputs["records_missing_ef"] = len(self._records) - calculated_count
         outputs["total_emissions_tco2e"] = round(total_emissions, 4)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 2 EmissionCalculation: %d calculated, %.2f tCO2e total",
             calculated_count, total_emissions,
@@ -503,7 +481,7 @@ class GHGInventoryWorkflow:
         self, input_data: GHGInventoryInput,
     ) -> PhaseResult:
         """Aggregate emissions by scope, category, and gas type."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._aggregations = []
@@ -546,7 +524,7 @@ class GHGInventoryWorkflow:
             agg.scope: agg.total_tco2e for agg in self._aggregations
         }
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 3 ScopeAggregation: %d scopes aggregated",
             len(self._aggregations),
@@ -566,7 +544,7 @@ class GHGInventoryWorkflow:
         self, input_data: GHGInventoryInput,
     ) -> PhaseResult:
         """Validate completeness and data quality of the inventory."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._quality_issues = []
@@ -625,7 +603,7 @@ class GHGInventoryWorkflow:
             not issue.startswith("CRITICAL") for issue in self._quality_issues
         )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 4 QualityCheck: %d issues found",
             len(self._quality_issues),
@@ -645,7 +623,7 @@ class GHGInventoryWorkflow:
         self, input_data: GHGInventoryInput,
     ) -> PhaseResult:
         """Generate E1-6 disclosure-ready output."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -678,7 +656,7 @@ class GHGInventoryWorkflow:
         outputs["report_ready"] = True
         outputs["record_count"] = len(self._records)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 5 ReportGeneration: E1-6 disclosure ready, %d records",
             len(self._records),

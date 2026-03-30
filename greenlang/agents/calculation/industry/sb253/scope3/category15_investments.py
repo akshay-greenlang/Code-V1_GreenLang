@@ -36,7 +36,7 @@ from datetime import datetime
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, List, Optional
 
-from pydantic import BaseModel, Field, validator
+from pydantic import Field, validator
 
 from .base import (
     Scope3CategoryCalculator,
@@ -48,11 +48,12 @@ from .base import (
     EmissionFactorSource,
     DataQualityTier,
 )
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
 
-class EquityInvestment(BaseModel):
+class EquityInvestment(GreenLangBase):
     """Equity investment data."""
 
     investee_name: str = Field(..., description="Investee company name")
@@ -81,7 +82,7 @@ class EquityInvestment(BaseModel):
     sector_naics: Optional[str] = Field(None, description="NAICS code")
 
 
-class DebtInvestment(BaseModel):
+class DebtInvestment(GreenLangBase):
     """Debt/loan investment data."""
 
     borrower_name: str = Field(..., description="Borrower name")
@@ -103,7 +104,7 @@ class DebtInvestment(BaseModel):
     asset_class: Optional[str] = Field(None, description="Asset class")
 
 
-class ProjectFinance(BaseModel):
+class ProjectFinance(GreenLangBase):
     """Project finance investment."""
 
     project_name: str = Field(..., description="Project name")

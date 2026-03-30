@@ -84,25 +84,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -120,7 +114,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -129,7 +122,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -141,22 +133,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class BatteryChemistry(str, Enum):
     """Battery chemistry type.
@@ -175,7 +163,6 @@ class BatteryChemistry(str, Enum):
     FLOW_ZINC = "flow_zinc"
     SODIUM_ION = "sodium_ion"
 
-
 class DispatchStrategy(str, Enum):
     """BESS dispatch strategy for peak shaving.
 
@@ -191,7 +178,6 @@ class DispatchStrategy(str, Enum):
     PREDICTIVE = "predictive"
     HYBRID = "hybrid"
 
-
 class DegradationModel(str, Enum):
     """Battery degradation modelling approach.
 
@@ -204,7 +190,6 @@ class DegradationModel(str, Enum):
     RAINFLOW = "rainflow"
     AH_THROUGHPUT = "ah_throughput"
     CALENDAR_PLUS_CYCLE = "calendar_plus_cycle"
-
 
 class SizingObjective(str, Enum):
     """Sizing optimisation objective.
@@ -219,7 +204,6 @@ class SizingObjective(str, Enum):
     TARGET_PEAK = "target_peak"
     MAX_ROI = "max_roi"
 
-
 class SystemConfig(str, Enum):
     """BESS system configuration.
 
@@ -230,7 +214,6 @@ class SystemConfig(str, Enum):
     AC_COUPLED = "ac_coupled"
     DC_COUPLED = "dc_coupled"
     HYBRID = "hybrid"
-
 
 class SizingGrade(str, Enum):
     """Grade assigned to a sizing candidate.
@@ -246,7 +229,6 @@ class SizingGrade(str, Enum):
     ACCEPTABLE = "acceptable"
     MARGINAL = "marginal"
     UNECONOMIC = "uneconomic"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -362,11 +344,9 @@ DEFAULT_SOC_MAX: Decimal = Decimal("0.90")
 # Efficiency slope per C-rate deviation.
 EFFICIENCY_SLOPE: Decimal = Decimal("0.02")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input / Output
 # ---------------------------------------------------------------------------
-
 
 class BatterySpecs(BaseModel):
     """Battery system specification.
@@ -401,7 +381,6 @@ class BatterySpecs(BaseModel):
     calendar_life_years: int = Field(default=15, ge=0)
     system_config: SystemConfig = Field(default=SystemConfig.AC_COUPLED)
     ambient_temp_c: Decimal = Field(default=Decimal("25"), description="Ambient temp")
-
 
 class DispatchResult(BaseModel):
     """Result of a dispatch simulation.
@@ -438,9 +417,8 @@ class DispatchResult(BaseModel):
     avg_soc: Decimal = Field(default=Decimal("0"))
     dispatch_hours: Decimal = Field(default=Decimal("0"))
     unmet_shaving_kwh: Decimal = Field(default=Decimal("0"))
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class DegradationState(BaseModel):
     """Battery degradation state over project lifetime.
@@ -465,7 +443,6 @@ class DegradationState(BaseModel):
     cumulative_throughput_kwh: Decimal = Field(default=Decimal("0"))
     cumulative_cycles: Decimal = Field(default=Decimal("0"))
     eol_reached: bool = Field(default=False)
-
 
 class SizingCandidate(BaseModel):
     """A BESS sizing candidate with evaluation metrics.
@@ -502,9 +479,8 @@ class SizingCandidate(BaseModel):
     lcos: Decimal = Field(default=Decimal("0"))
     peak_reduction_kw: Decimal = Field(default=Decimal("0"))
     grade: SizingGrade = Field(default=SizingGrade.UNECONOMIC)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class BESSSizingResult(BaseModel):
     """Complete BESS sizing analysis result.
@@ -545,14 +521,12 @@ class BESSSizingResult(BaseModel):
     lifetime_savings: Decimal = Field(default=Decimal("0"))
     recommendations: List[str] = Field(default_factory=list)
     processing_time_ms: Decimal = Field(default=Decimal("0"))
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class BESSSizingEngine:
     """BESS sizing optimisation engine for peak shaving.

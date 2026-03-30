@@ -42,35 +42,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.utcnow()
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hash of a string."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -81,7 +73,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -90,7 +81,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class MeterType(str, Enum):
     """Meter hardware type classification."""
@@ -103,7 +93,6 @@ class MeterType(str, Enum):
     COMPRESSED_AIR = "compressed_air"
     VIRTUAL = "virtual"
 
-
 class CommissionStatus(str, Enum):
     """Meter commissioning status."""
 
@@ -112,7 +101,6 @@ class CommissionStatus(str, Enum):
     VALIDATED = "validated"
     FAILED = "failed"
     BYPASSED = "bypassed"
-
 
 # =============================================================================
 # REFERENCE DATA (Zero-Hallucination)
@@ -209,11 +197,9 @@ METER_PROTOCOL_SPECS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -226,7 +212,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list, description="Warnings raised")
     errors: List[str] = Field(default_factory=list, description="Errors encountered")
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
-
 
 class MeterDefinition(BaseModel):
     """Definition of a meter to register."""
@@ -248,7 +233,6 @@ class MeterDefinition(BaseModel):
     parent_meter_id: str = Field(default="", description="Parent meter ID in hierarchy")
     location: str = Field(default="", description="Physical location description")
     tags: List[str] = Field(default_factory=list, description="Classification tags")
-
 
 class MeterSetupInput(BaseModel):
     """Input data model for MeterSetupWorkflow."""
@@ -287,7 +271,6 @@ class MeterSetupInput(BaseModel):
             raise ValueError("facility_name must not be blank")
         return stripped
 
-
 class MeterSetupResult(BaseModel):
     """Complete result from meter setup workflow."""
 
@@ -308,11 +291,9 @@ class MeterSetupResult(BaseModel):
     calculated_at: str = Field(default="", description="ISO 8601 timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 of complete result")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class MeterSetupWorkflow:
     """
@@ -371,7 +352,7 @@ class MeterSetupWorkflow:
             ValueError: If input validation fails.
         """
         t_start = time.perf_counter()
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting meter setup workflow %s for facility=%s meters=%d",
             self.setup_id, input_data.facility_name, len(input_data.meters),
@@ -513,7 +494,7 @@ class MeterSetupWorkflow:
                 "tags": meter_def.tags,
                 "poll_interval_s": spec["typical_poll_interval_s"],
                 "max_registers_per_read": spec["max_registers_per_read"],
-                "registered_at": _utcnow().isoformat() + "Z",
+                "registered_at": utcnow().isoformat() + "Z",
                 "sequence": idx + 1,
             }
             self._registry.append(record)
@@ -730,7 +711,7 @@ class MeterSetupWorkflow:
                 meter_checks.append({
                     "check": check,
                     "passed": check_passed,
-                    "timestamp": _utcnow().isoformat() + "Z",
+                    "timestamp": utcnow().isoformat() + "Z",
                 })
                 if not check_passed:
                     meter_passed = False

@@ -74,25 +74,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -110,7 +104,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -119,7 +112,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -131,22 +123,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class BudgetMethod(str, Enum):
     """Energy budget creation methodology.
@@ -160,7 +148,6 @@ class BudgetMethod(str, Enum):
     ZERO_BASED = "zero_based"
     INCREMENTAL = "incremental"
     REGRESSION_BASED = "regression_based"
-
 
 class VarianceComponent(str, Enum):
     """Variance decomposition component type.
@@ -179,7 +166,6 @@ class VarianceComponent(str, Enum):
     PRODUCTION = "production"
     OTHER = "other"
 
-
 class BudgetStatus(str, Enum):
     """Budget lifecycle status.
 
@@ -192,7 +178,6 @@ class BudgetStatus(str, Enum):
     APPROVED = "approved"
     ACTIVE = "active"
     CLOSED = "closed"
-
 
 class AlertThreshold(str, Enum):
     """Budget variance alert level.
@@ -207,7 +192,6 @@ class AlertThreshold(str, Enum):
     CRITICAL = "critical"
     EXCEEDED = "exceeded"
 
-
 class ForecastMethod(str, Enum):
     """Rolling forecast methodology.
 
@@ -220,7 +204,6 @@ class ForecastMethod(str, Enum):
     SEASONAL = "seasonal"
     REGRESSION = "regression"
     WEIGHTED_AVERAGE = "weighted_average"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -249,11 +232,9 @@ MONTHS_PER_YEAR: int = 12
 # Maximum forecast horizon (months).
 MAX_FORECAST_MONTHS: int = 60
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class BudgetDefinition(BaseModel):
     """Energy budget definition.
@@ -340,7 +321,6 @@ class BudgetDefinition(BaseModel):
             return "Unnamed Budget"
         return v
 
-
 class BudgetPeriod(BaseModel):
     """Monthly or periodic budget values with actuals.
 
@@ -403,7 +383,6 @@ class BudgetPeriod(BaseModel):
         default=Decimal("0"), description="Variance (%)"
     )
 
-
 class VarianceAnalysis(BaseModel):
     """Decomposed variance analysis for a budget period.
 
@@ -462,10 +441,9 @@ class VarianceAnalysis(BaseModel):
         default=AlertThreshold.ON_TRACK, description="Alert level"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp"
+        default_factory=utcnow, description="Timestamp"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class RollingForecast(BaseModel):
     """Rolling forecast of remaining budget period.
@@ -547,10 +525,9 @@ class RollingForecast(BaseModel):
         default=12, ge=0, description="Months remaining"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp"
+        default_factory=utcnow, description="Timestamp"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class BudgetResult(BaseModel):
     """Comprehensive energy budget result.
@@ -607,18 +584,16 @@ class BudgetResult(BaseModel):
         default=BudgetStatus.DRAFT, description="Budget status"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp"
+        default_factory=utcnow, description="Timestamp"
     )
     processing_time_ms: float = Field(
         default=0.0, description="Processing time (ms)"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class BudgetEngine:
     """Energy budget creation, tracking, and variance analysis engine.
@@ -812,7 +787,7 @@ class BudgetEngine:
             "ytd_variance_pct": str(_round_val(ytd_var_pct, 2)),
             "alert_level": overall_alert.value,
             "period_details": period_results,
-            "calculated_at": _utcnow().isoformat(),
+            "calculated_at": utcnow().isoformat(),
             "processing_time_ms": round(elapsed, 2),
         }
         result["provenance_hash"] = _compute_hash(result)
@@ -1112,7 +1087,7 @@ class BudgetEngine:
             "alert_counts": alert_counts,
             "thresholds": {k: str(v) for k, v in thresholds.items()},
             "period_alerts": alerts,
-            "calculated_at": _utcnow().isoformat(),
+            "calculated_at": utcnow().isoformat(),
             "processing_time_ms": round(elapsed, 2),
         }
         result["provenance_hash"] = _compute_hash(result)

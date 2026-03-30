@@ -31,20 +31,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -57,11 +52,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ApplicationStatus(str, Enum):
     """Rebate application lifecycle status."""
@@ -75,7 +68,6 @@ class ApplicationStatus(str, Enum):
     PAID = "paid"
     EXPIRED = "expired"
 
-
 class ProgramType(str, Enum):
     """Utility program types."""
 
@@ -85,11 +77,9 @@ class ProgramType(str, Enum):
     PERFORMANCE = "performance"
     DIRECT_INSTALL = "direct_install"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class UtilityAPIConfig(BaseModel):
     """Configuration for the Utility Rebate Bridge."""
@@ -100,7 +90,6 @@ class UtilityAPIConfig(BaseModel):
     api_key: str = Field(default="", description="API key (from vault)")
     default_region: str = Field(default="DE")
     timeout_seconds: float = Field(default=30.0, ge=1.0)
-
 
 class ProgramSearchResult(BaseModel):
     """A single utility rebate program search result."""
@@ -119,7 +108,6 @@ class ProgramSearchResult(BaseModel):
     website_url: str = Field(default="")
     is_active: bool = Field(default=True)
 
-
 class ApplicationTracker(BaseModel):
     """Rebate application tracking record."""
 
@@ -134,11 +122,9 @@ class ApplicationTracker(BaseModel):
     notes: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # UtilityRebateBridge
 # ---------------------------------------------------------------------------
-
 
 class UtilityRebateBridge:
     """External utility incentive API integration.
@@ -239,7 +225,7 @@ class UtilityRebateBridge:
             program_id=app_data.get("program_id", ""),
             measure_id=app_data.get("measure_id", ""),
             status=ApplicationStatus.SUBMITTED,
-            submitted_at=_utcnow(),
+            submitted_at=utcnow(),
             estimated_rebate_eur=app_data.get("estimated_rebate_eur", 0.0),
             notes=app_data.get("notes", ""),
         )

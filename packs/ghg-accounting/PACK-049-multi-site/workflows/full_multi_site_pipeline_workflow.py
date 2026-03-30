@@ -35,27 +35,21 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ReportFormat
 
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -64,14 +58,12 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class PipelinePhase(str, Enum):
     REGISTRATION = "registration"
@@ -83,24 +75,14 @@ class PipelinePhase(str, Enum):
     QUALITY = "quality"
     REPORTING = "reporting"
 
-
-class ReportFormat(str, Enum):
-    MARKDOWN = "markdown"
-    HTML = "html"
-    JSON = "json"
-    CSV = "csv"
-
-
 class CheckpointStatus(str, Enum):
     SAVED = "saved"
     LOADED = "loaded"
     NOT_FOUND = "not_found"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -114,17 +96,15 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     sub_workflow_id: str = Field(default="", description="Sub-workflow run ID")
 
-
 class PipelineCheckpoint(BaseModel):
     """Checkpoint state for pipeline resumption."""
     checkpoint_id: str = Field(default_factory=_new_uuid)
     pipeline_id: str = Field("")
     phase: PipelinePhase = Field(...)
     status: CheckpointStatus = Field(CheckpointStatus.SAVED)
-    saved_at: str = Field(default_factory=lambda: _utcnow().isoformat())
+    saved_at: str = Field(default_factory=lambda: utcnow().isoformat())
     data: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field("")
-
 
 class PipelineMilestone(BaseModel):
     """Milestone marker within the pipeline."""
@@ -134,7 +114,6 @@ class PipelineMilestone(BaseModel):
     achieved_at: str = Field("")
     metric_name: str = Field("")
     metric_value: str = Field("")
-
 
 class PipelineReport(BaseModel):
     """Summary report generated at pipeline completion."""
@@ -158,7 +137,6 @@ class PipelineReport(BaseModel):
     phases_failed: int = Field(0)
     provenance_chain: List[str] = Field(default_factory=list)
     provenance_hash: str = Field("")
-
 
 class FullPipelineInput(BaseModel):
     """Input for the full multi-site pipeline."""
@@ -194,7 +172,6 @@ class FullPipelineInput(BaseModel):
     site_drivers: List[Dict[str, Any]] = Field(default_factory=list)
     site_quality_data: List[Dict[str, Any]] = Field(default_factory=list)
 
-
 class FullPipelineResult(BaseModel):
     """Output from the full multi-site pipeline."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -214,11 +191,9 @@ class FullPipelineResult(BaseModel):
     started_at: str = Field("")
     completed_at: str = Field("")
 
-
 # =============================================================================
 # WORKFLOW CLASS
 # =============================================================================
-
 
 class FullMultiSitePipelineWorkflow:
     """
@@ -256,7 +231,7 @@ class FullMultiSitePipelineWorkflow:
 
     def execute(self, input_data: FullPipelineInput) -> FullPipelineResult:
         """Execute the full 8-phase multi-site pipeline."""
-        start = _utcnow()
+        start = utcnow()
         result = FullPipelineResult(
             organisation_id=input_data.organisation_id,
             reporting_year=input_data.reporting_year,
@@ -302,12 +277,12 @@ class FullMultiSitePipelineWorkflow:
                 ))
                 continue
 
-            phase_start = _utcnow()
+            phase_start = utcnow()
             logger.info("Pipeline Phase %d/%d: %s", phase_num, len(self.PHASE_ORDER), phase.value)
 
             try:
                 phase_out = phase_methods[phase](input_data, result)
-                elapsed = (_utcnow() - phase_start).total_seconds()
+                elapsed = (utcnow() - phase_start).total_seconds()
                 ph_hash = _compute_hash(str(phase_out))
                 self._provenance_chain.append(ph_hash)
 
@@ -322,7 +297,7 @@ class FullMultiSitePipelineWorkflow:
                 result.milestones.append(PipelineMilestone(
                     milestone_name=f"{phase.value}_completed",
                     phase=phase,
-                    achieved_at=_utcnow().isoformat(),
+                    achieved_at=utcnow().isoformat(),
                     metric_name="duration_s",
                     metric_value=f"{elapsed:.2f}",
                 ))
@@ -338,7 +313,7 @@ class FullMultiSitePipelineWorkflow:
                     result.checkpoints.append(cp)
 
             except Exception as exc:
-                elapsed = (_utcnow() - phase_start).total_seconds()
+                elapsed = (utcnow() - phase_start).total_seconds()
                 logger.error("Pipeline phase %s failed: %s", phase.value, exc, exc_info=True)
                 result.phase_results.append(PhaseResult(
                     phase_name=phase.value, phase_number=phase_num,
@@ -365,7 +340,7 @@ class FullMultiSitePipelineWorkflow:
             else:
                 result.status = WorkflowStatus.FAILED
 
-        end = _utcnow()
+        end = utcnow()
         result.completed_at = end.isoformat()
         result.duration_seconds = (end - start).total_seconds()
 
@@ -659,6 +634,7 @@ class FullMultiSitePipelineWorkflow:
         logger.info("Pipeline: Quality phase")
         from .quality_improvement_workflow import QualityImprovementWorkflow, QualityImprovementInput
 
+
         qual_config = input_data.quality_config
         qual_input = QualityImprovementInput(
             organisation_id=input_data.organisation_id,
@@ -697,7 +673,7 @@ class FullMultiSitePipelineWorkflow:
     ) -> Dict[str, Any]:
         """Generate final pipeline report."""
         logger.info("Pipeline: Reporting phase")
-        now_iso = _utcnow().isoformat()
+        now_iso = utcnow().isoformat()
 
         reg_state = self._state.get("registration", {})
         cons_state = self._state.get("consolidation", {})
@@ -750,7 +726,6 @@ class FullMultiSitePipelineWorkflow:
             "quality_score": float(report.data_quality_score),
             "provenance_hash": report.provenance_hash,
         }
-
 
 # =============================================================================
 # MODULE EXPORTS

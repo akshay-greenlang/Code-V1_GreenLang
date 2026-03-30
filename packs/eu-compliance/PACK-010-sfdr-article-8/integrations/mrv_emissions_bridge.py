@@ -35,19 +35,13 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # =============================================================================
 # Utility Helpers
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute a SHA-256 hash of arbitrary data."""
@@ -55,11 +49,9 @@ def _hash_data(data: Any) -> str:
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # Agent Stub
 # =============================================================================
-
 
 class _AgentStub:
     """Deferred agent loader for lazy initialization."""
@@ -76,6 +68,7 @@ class _AgentStub:
             return self._instance
         try:
             import importlib
+
             mod = importlib.import_module(self.module_path)
             cls = getattr(mod, self.class_name)
             self._instance = cls()
@@ -91,11 +84,9 @@ class _AgentStub:
         """Whether the agent has been loaded."""
         return self._instance is not None
 
-
 # =============================================================================
 # Enums
 # =============================================================================
-
 
 class EmissionScope(str, Enum):
     """GHG Protocol emission scope."""
@@ -103,7 +94,6 @@ class EmissionScope(str, Enum):
     SCOPE_2 = "scope_2"
     SCOPE_3 = "scope_3"
     TOTAL = "total"
-
 
 class PAIIndicator(str, Enum):
     """Climate-related PAI indicators (1-6)."""
@@ -114,11 +104,9 @@ class PAIIndicator(str, Enum):
     NON_RENEWABLE_ENERGY = "pai_5"
     ENERGY_INTENSITY = "pai_6"
 
-
 # =============================================================================
 # Data Models
 # =============================================================================
-
 
 class MRVEmissionsBridgeConfig(BaseModel):
     """Configuration for the MRV Emissions Bridge."""
@@ -146,7 +134,6 @@ class MRVEmissionsBridgeConfig(BaseModel):
         default=True,
         description="Enable NACE sector mapping for PAI 6",
     )
-
 
 class InvesteeEmissions(BaseModel):
     """Emissions data for a single investee company."""
@@ -177,7 +164,6 @@ class InvesteeEmissions(BaseModel):
         default=0.0, ge=0.0, le=1.0, description="Data quality score"
     )
 
-
 class PAIResult(BaseModel):
     """Result for a single PAI indicator."""
     indicator_id: str = Field(default="", description="PAI indicator ID")
@@ -195,7 +181,6 @@ class PAIResult(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
     calculated_at: str = Field(default="", description="Calculation timestamp")
-
 
 class PortfolioEmissions(BaseModel):
     """Aggregated portfolio-level emissions."""
@@ -225,11 +210,9 @@ class PortfolioEmissions(BaseModel):
     holdings_total: int = Field(default=0, description="Total holdings")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 # =============================================================================
 # PAI to MRV Mapping
 # =============================================================================
-
 
 PAI_TO_MRV_MAP: Dict[str, Dict[str, Any]] = {
     "pai_1": {
@@ -290,11 +273,9 @@ PAI_TO_MRV_MAP: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # MRV Emissions Bridge
 # =============================================================================
-
 
 class MRVEmissionsBridge:
     """Bridge routing MRV agent emissions data to SFDR PAI indicators.
@@ -384,7 +365,7 @@ class MRVEmissionsBridge:
             return PAIResult(
                 indicator_id=pai_indicator,
                 indicator_name="Unknown",
-                calculated_at=_utcnow().isoformat(),
+                calculated_at=utcnow().isoformat(),
             )
 
         self.logger.info(
@@ -408,7 +389,7 @@ class MRVEmissionsBridge:
             return PAIResult(
                 indicator_id=pai_indicator,
                 indicator_name=pai_def["name"],
-                calculated_at=_utcnow().isoformat(),
+                calculated_at=utcnow().isoformat(),
             )
 
     def route_to_mrv_agent(
@@ -613,7 +594,7 @@ class MRVEmissionsBridge:
             },
             data_sources=["mrv_agents", "estimated"],
             provenance_hash=portfolio.provenance_hash,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         )
 
     def _calculate_pai_2(
@@ -657,7 +638,7 @@ class MRVEmissionsBridge:
                 "pai": "pai_2",
                 "footprint": portfolio.carbon_footprint,
             }),
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         )
 
     def _calculate_pai_3(
@@ -690,7 +671,7 @@ class MRVEmissionsBridge:
             provenance_hash=_hash_data({
                 "pai": "pai_3", "intensity": portfolio.ghg_intensity,
             }),
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         )
 
     def _calculate_pai_4(
@@ -736,7 +717,7 @@ class MRVEmissionsBridge:
             provenance_hash=_hash_data({
                 "pai": "pai_4", "exposure": exposure_pct,
             }),
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         )
 
     def _calculate_pai_5(
@@ -783,7 +764,7 @@ class MRVEmissionsBridge:
             provenance_hash=_hash_data({
                 "pai": "pai_5", "nre_pct": nre_pct,
             }),
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         )
 
     def _calculate_pai_6(
@@ -843,5 +824,5 @@ class MRVEmissionsBridge:
             provenance_hash=_hash_data({
                 "pai": "pai_6", "sectors": intensity_by_sector,
             }),
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         )

@@ -38,20 +38,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -69,11 +64,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class WeatherSource(str, Enum):
     """Weather data source providers."""
@@ -83,18 +76,15 @@ class WeatherSource(str, Enum):
     OPEN_METEO = "open_meteo"
     MANUAL = "manual"
 
-
 class DDType(str, Enum):
     """Degree day type."""
 
     HDD = "hdd"
     CDD = "cdd"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class WeatherConfig(BaseModel):
     """Configuration for the Weather Bridge."""
@@ -112,7 +102,6 @@ class WeatherConfig(BaseModel):
         default=50.0, ge=1.0, description="Max distance to weather station"
     )
 
-
 class WeatherStation(BaseModel):
     """Weather station metadata."""
 
@@ -124,7 +113,6 @@ class WeatherStation(BaseModel):
     elevation_m: float = Field(default=0.0)
     distance_km: float = Field(default=0.0)
     country: str = Field(default="")
-
 
 class DegreeDayData(BaseModel):
     """Degree-day calculation result for a location and period."""
@@ -144,7 +132,6 @@ class DegreeDayData(BaseModel):
     source: WeatherSource = Field(default=WeatherSource.OPEN_METEO)
     provenance_hash: str = Field(default="")
 
-
 class ClimateNormalization(BaseModel):
     """Result of weather-normalizing energy consumption."""
 
@@ -157,7 +144,6 @@ class ClimateNormalization(BaseModel):
     dd_type: str = Field(default="hdd", description="hdd or cdd")
     provenance_hash: str = Field(default="")
 
-
 class MonthlyWeather(BaseModel):
     """Monthly weather summary for a location."""
 
@@ -169,7 +155,6 @@ class MonthlyWeather(BaseModel):
     cdd: float = Field(default=0.0, ge=0)
     humidity_pct: float = Field(default=0.0)
     solar_radiation_kwh_m2: float = Field(default=0.0)
-
 
 # ---------------------------------------------------------------------------
 # Reference Data
@@ -221,11 +206,9 @@ CLIMATE_ZONES: Dict[str, str] = {
     "US": "varies",
 }
 
-
 # ---------------------------------------------------------------------------
 # WeatherBridge
 # ---------------------------------------------------------------------------
-
 
 class WeatherBridge:
     """Weather data integration for utility consumption normalization.

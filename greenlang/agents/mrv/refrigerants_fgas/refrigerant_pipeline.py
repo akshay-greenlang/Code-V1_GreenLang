@@ -51,9 +51,9 @@ import uuid
 from collections import defaultdict
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Optional config import
@@ -70,7 +70,6 @@ except ImportError:
     def get_config() -> Any:  # type: ignore[misc]
         """No-op fallback when config module is unavailable."""
         return None
-
 
 # ---------------------------------------------------------------------------
 # Optional model imports (graceful degradation)
@@ -110,7 +109,6 @@ except ImportError:
     RegulatoryFramework = None  # type: ignore[assignment, misc]
     ServiceEvent = None  # type: ignore[assignment, misc]
     UncertaintyResult = None  # type: ignore[assignment, misc]
-
 
 # ---------------------------------------------------------------------------
 # Optional engine imports (graceful degradation)
@@ -166,7 +164,6 @@ except ImportError:
     def record_calculation(method: str, refrigerant_type: str, status: str) -> None:  # type: ignore[misc]
         """No-op fallback when metrics module is unavailable."""
 
-
 # ---------------------------------------------------------------------------
 # Pipeline stage constants
 # ---------------------------------------------------------------------------
@@ -191,25 +188,17 @@ SUPPORTED_METHODS: List[str] = [
     "top_down",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Utility helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _utcnow_iso() -> str:
     """Return current UTC datetime as an ISO-8601 string."""
-    return _utcnow().isoformat()
-
+    return utcnow().isoformat()
 
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -227,11 +216,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ===================================================================
 # RefrigerantPipelineEngine
 # ===================================================================
-
 
 class RefrigerantPipelineEngine:
     """End-to-end orchestration pipeline for refrigerant emissions calculations.
@@ -2372,7 +2359,6 @@ class RefrigerantPipelineEngine:
                 if k not in internal_keys
             })
         return cleaned
-
 
 # ===================================================================
 # Public API

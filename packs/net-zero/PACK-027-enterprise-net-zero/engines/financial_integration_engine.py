@@ -60,17 +60,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
@@ -113,7 +111,6 @@ def _round_val(value, places: int = 6) -> Decimal:
 def _round3(value: float) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
@@ -139,7 +136,6 @@ class CarbonLiabilityType(str, Enum):
     CARBON_TAX = "carbon_tax"
     LITIGATION_RISK = "litigation_risk"
     STRANDED_ASSETS = "stranded_assets"
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
@@ -198,7 +194,6 @@ class FinancialIntegrationInput(BaseModel):
     carbon_assets: List[CarbonAsset] = Field(default_factory=list)
     carbon_liabilities: List[CarbonLiabilityEntry] = Field(default_factory=list)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
@@ -246,7 +241,7 @@ class FinancialIntegrationResult(BaseModel):
     """Complete financial integration result."""
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     organization_name: str = Field(default="")
 
     carbon_pnl: CarbonPnLAllocation = Field(default_factory=CarbonPnLAllocation)
@@ -262,7 +257,6 @@ class FinancialIntegrationResult(BaseModel):
     ])
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine

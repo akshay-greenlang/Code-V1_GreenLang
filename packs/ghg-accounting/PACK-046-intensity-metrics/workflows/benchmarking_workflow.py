@@ -55,37 +55,28 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> str:
-    """Return current UTC timestamp as ISO-8601 string."""
-    return datetime.utcnow().isoformat() + "Z"
-
-
 def _new_uuid() -> str:
     """Return a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash of JSON-serialisable data."""
     serialised = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialised.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -96,7 +87,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -106,7 +96,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class BenchmarkPhase(str, Enum):
     """Benchmarking workflow phases."""
 
@@ -114,7 +103,6 @@ class BenchmarkPhase(str, Enum):
     DATA_NORMALISATION = "data_normalisation"
     BENCHMARK_COMPARISON = "benchmark_comparison"
     RANKING_REPORT = "ranking_report"
-
 
 class PeerSelectionCriteria(str, Enum):
     """Criteria for peer group selection."""
@@ -126,7 +114,6 @@ class PeerSelectionCriteria(str, Enum):
     SCOPE_COVERAGE = "scope_coverage"
     CUSTOM = "custom"
 
-
 class NormalisationMethod(str, Enum):
     """Method for normalising peer data."""
 
@@ -135,7 +122,6 @@ class NormalisationMethod(str, Enum):
     PERIOD_ALIGNMENT = "period_alignment"
     DENOMINATOR_CONVERSION = "denominator_conversion"
     NONE = "none"
-
 
 class BenchmarkSource(str, Enum):
     """Source of benchmark data."""
@@ -148,7 +134,6 @@ class BenchmarkSource(str, Enum):
     CUSTOM = "custom"
     INTERNAL = "internal"
 
-
 class PerformanceBand(str, Enum):
     """Performance band classification."""
 
@@ -158,11 +143,9 @@ class PerformanceBand(str, Enum):
     BELOW_AVERAGE = "below_average"
     LAGGARD = "laggard"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -175,7 +158,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
-
 
 class PeerEntity(BaseModel):
     """A peer entity for benchmarking comparison."""
@@ -196,7 +178,6 @@ class PeerEntity(BaseModel):
     data_source: BenchmarkSource = Field(default=BenchmarkSource.CUSTOM)
     data_quality_score: float = Field(default=0.0, ge=0.0, le=100.0)
 
-
 class NormalisedPeer(BaseModel):
     """A peer entity after data normalisation."""
 
@@ -207,7 +188,6 @@ class NormalisedPeer(BaseModel):
     normalisation_applied: List[NormalisationMethod] = Field(default_factory=list)
     adjustment_factor: float = Field(default=1.0)
     notes: str = Field(default="")
-
 
 class BenchmarkComparison(BaseModel):
     """Benchmark comparison result for the reporting entity."""
@@ -228,7 +208,6 @@ class BenchmarkComparison(BaseModel):
     improvement_potential_tco2e: float = Field(default=0.0, ge=0.0)
     provenance_hash: str = Field(default="")
 
-
 class RankingEntry(BaseModel):
     """A single entry in the peer ranking table."""
 
@@ -239,11 +218,9 @@ class RankingEntry(BaseModel):
     is_reporting_entity: bool = Field(default=False)
     performance_band: PerformanceBand = Field(default=PerformanceBand.AVERAGE)
 
-
 # =============================================================================
 # INPUT / OUTPUT
 # =============================================================================
-
 
 class BenchmarkWorkflowInput(BaseModel):
     """Input data model for BenchmarkingWorkflow."""
@@ -281,7 +258,6 @@ class BenchmarkWorkflowInput(BaseModel):
     tenant_id: str = Field(default="")
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class BenchmarkWorkflowResult(BaseModel):
     """Complete result from benchmarking workflow."""
 
@@ -298,11 +274,9 @@ class BenchmarkWorkflowResult(BaseModel):
     report_summary: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class BenchmarkingWorkflow:
     """
@@ -813,6 +787,7 @@ class BenchmarkingWorkflow:
                         phase_number, attempt, self.MAX_RETRIES, exc, delay,
                     )
                     import asyncio
+
                     await asyncio.sleep(delay)
         return PhaseResult(
             phase_name=f"phase_{phase_number}_failed",

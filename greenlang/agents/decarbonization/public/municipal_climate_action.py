@@ -33,10 +33,11 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -88,7 +89,7 @@ class EmissionScope(str, Enum):
 # Pydantic Models
 # =============================================================================
 
-class SectorEmissions(BaseModel):
+class SectorEmissions(GreenLangBase):
     """Emissions data for a specific sector."""
 
     sector: str = Field(..., description="Sector name")
@@ -125,7 +126,7 @@ class SectorEmissions(BaseModel):
         return self.scope_1_tco2e + self.scope_2_tco2e + self.scope_3_tco2e
 
 
-class ClimateTarget(BaseModel):
+class ClimateTarget(GreenLangBase):
     """Climate target definition."""
 
     target_id: str = Field(..., description="Unique target identifier")
@@ -156,7 +157,7 @@ class ClimateTarget(BaseModel):
         return v
 
 
-class ClimateAction(BaseModel):
+class ClimateAction(GreenLangBase):
     """Individual climate action within a plan."""
 
     action_id: str = Field(..., description="Unique action identifier")
@@ -246,7 +247,7 @@ class ClimateAction(BaseModel):
         return None
 
 
-class ClimateActionPlan(BaseModel):
+class ClimateActionPlan(GreenLangBase):
     """Complete municipal climate action plan."""
 
     plan_id: str = Field(..., description="Unique plan identifier")
@@ -321,7 +322,7 @@ class ClimateActionPlan(BaseModel):
 # Agent Input/Output Models
 # =============================================================================
 
-class MunicipalClimateActionInput(BaseModel):
+class MunicipalClimateActionInput(GreenLangBase):
     """Input for Municipal Climate Action Agent."""
 
     action: str = Field(
@@ -385,7 +386,7 @@ class MunicipalClimateActionInput(BaseModel):
         return v
 
 
-class MunicipalClimateActionOutput(BaseModel):
+class MunicipalClimateActionOutput(GreenLangBase):
     """Output from Municipal Climate Action Agent."""
 
     success: bool = Field(..., description="Whether operation succeeded")

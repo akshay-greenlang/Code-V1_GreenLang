@@ -76,25 +76,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -114,7 +108,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _safe_divide(numerator: float, denominator: float, default: float = 0.0) -> float:
     """Safely divide two numbers, returning default on zero denominator.
 
@@ -130,7 +123,6 @@ def _safe_divide(numerator: float, denominator: float, default: float = 0.0) -> 
         return default
     return numerator / denominator
 
-
 def _safe_pct(numerator: float, denominator: float) -> float:
     """Calculate percentage safely.
 
@@ -145,23 +137,19 @@ def _safe_pct(numerator: float, denominator: float) -> float:
         return 0.0
     return (numerator / denominator) * 100.0
 
-
 def _round_val(value: float, places: int = 4) -> float:
     """Round a float to specified decimal places."""
     return round(value, places)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class GARScope(str, Enum):
     """Scope of GAR calculation."""
     STOCK = "stock"              # All outstanding assets
     FLOW = "flow"                # New originations only
     OFF_BALANCE_SHEET = "off_balance_sheet"  # Guarantees and commitments
-
 
 class EnvironmentalObjective(str, Enum):
     """EU Taxonomy six environmental objectives."""
@@ -171,7 +159,6 @@ class EnvironmentalObjective(str, Enum):
     CIRCULAR_ECONOMY = "circular_economy"
     POLLUTION_PREVENTION = "pollution_prevention"
     BIODIVERSITY = "biodiversity"
-
 
 class CounterpartyType(str, Enum):
     """Counterparty types for GAR breakdown."""
@@ -184,7 +171,6 @@ class CounterpartyType(str, Enum):
     LOCAL_GOVERNMENT = "local_government"         # Local govt / public utilities
     OTHER = "other"
 
-
 class AssetType(str, Enum):
     """Asset types on the balance sheet."""
     LOANS_ADVANCES = "loans_advances"
@@ -193,7 +179,6 @@ class AssetType(str, Enum):
     REPOSSESSED_COLLATERAL = "repossessed_collateral"
     GUARANTEE = "guarantee"
     COMMITMENT = "commitment"
-
 
 class ExclusionReason(str, Enum):
     """Reasons an asset is excluded from the GAR numerator."""
@@ -204,7 +189,6 @@ class ExclusionReason(str, Enum):
     DERIVATIVE = "derivative"
     NOT_COVERED = "not_covered"
 
-
 class AlignmentType(str, Enum):
     """Type of Taxonomy alignment."""
     ALIGNED = "aligned"
@@ -213,11 +197,9 @@ class AlignmentType(str, Enum):
     ELIGIBLE_NOT_ALIGNED = "eligible_not_aligned"
     NOT_ELIGIBLE = "not_eligible"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Data Models
 # ---------------------------------------------------------------------------
-
 
 class CoveredAssetData(BaseModel):
     """Input data for a single on-balance-sheet covered asset.
@@ -317,7 +299,6 @@ class CoveredAssetData(BaseModel):
         default="", description="Vehicle CO2 emission class",
     )
 
-
 class GARBreakdown(BaseModel):
     """GAR calculation breakdown for a specific dimension.
 
@@ -381,7 +362,6 @@ class GARBreakdown(BaseModel):
     )
     asset_count: int = Field(default=0, ge=0, description="Number of assets")
 
-
 class CounterpartyBreakdown(BaseModel):
     """GAR breakdown by counterparty type.
 
@@ -411,7 +391,6 @@ class CounterpartyBreakdown(BaseModel):
     opex_gar_pct: float = Field(default=0.0, description="OpEx GAR (%)")
     asset_count: int = Field(default=0, ge=0, description="Number of assets")
     weight_pct: float = Field(default=0.0, description="Weight in total (%)")
-
 
 class FlowGAR(BaseModel):
     """Flow GAR for new originations in the reporting period.
@@ -456,7 +435,6 @@ class FlowGAR(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class OffBalanceSheetKPI(BaseModel):
     """Off-balance-sheet GAR KPI.
 
@@ -480,7 +458,6 @@ class OffBalanceSheetKPI(BaseModel):
     commitment_gar_pct: float = Field(default=0.0, description="Commitment GAR (%)")
     obs_count: int = Field(default=0, ge=0, description="Number of OBS items")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class GARResult(BaseModel):
     """Complete Green Asset Ratio result.
@@ -584,15 +561,13 @@ class GARResult(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     engine_version: str = Field(default=_MODULE_VERSION, description="Engine version")
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp",
+        default_factory=utcnow, description="Calculation timestamp",
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 # ---------------------------------------------------------------------------
 # Engine Configuration
 # ---------------------------------------------------------------------------
-
 
 class GARConfig(BaseModel):
     """Configuration for the GreenAssetRatioEngine.
@@ -645,7 +620,6 @@ class GARConfig(BaseModel):
         description="Decimal places for rounding",
     )
 
-
 # ---------------------------------------------------------------------------
 # Model rebuilds for forward references
 # ---------------------------------------------------------------------------
@@ -658,11 +632,9 @@ OffBalanceSheetKPI.model_rebuild()
 GARResult.model_rebuild()
 GARConfig.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # GreenAssetRatioEngine
 # ---------------------------------------------------------------------------
-
 
 class GreenAssetRatioEngine:
     """
@@ -743,7 +715,7 @@ class GreenAssetRatioEngine:
         Raises:
             ValueError: If assets list is empty.
         """
-        start = _utcnow()
+        start = utcnow()
 
         if not assets:
             raise ValueError("Assets list cannot be empty")
@@ -829,7 +801,7 @@ class GreenAssetRatioEngine:
             assets, covered, excluded, off_balance,
         )
 
-        end = _utcnow()
+        end = utcnow()
         processing_ms = (end - start).total_seconds() * 1000.0
 
         result = GARResult(

@@ -26,24 +26,19 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "23.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -53,7 +48,6 @@ def _compute_hash(data: Any) -> str:
         raw = str(data)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _dec(val: Any, places: int = 2) -> str:
     """Format a value as a Decimal string with fixed decimal places."""
     try:
@@ -62,7 +56,6 @@ def _dec(val: Any, places: int = 2) -> str:
         return str(d.quantize(Decimal(q), rounding=ROUND_HALF_UP))
     except Exception:
         return str(val)
-
 
 def _dec_comma(val: Any, places: int = 2) -> str:
     """Format a Decimal value with thousands separator."""
@@ -88,14 +81,12 @@ def _dec_comma(val: Any, places: int = 2) -> str:
     except Exception:
         return str(val)
 
-
 def _pct(val: Any) -> str:
     """Format a value as percentage string."""
     try:
         return _dec(val, 1) + "%"
     except Exception:
         return str(val)
-
 
 def _materiality_label(level: str) -> str:
     """Normalize materiality level to display label."""
@@ -107,7 +98,6 @@ def _materiality_label(level: str) -> str:
         "NEGLIGIBLE": "Negligible",
     }
     return mapping.get(s, level)
-
 
 class Scope3ScreeningReportTemplate:
     """
@@ -133,7 +123,7 @@ class Scope3ScreeningReportTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render Scope 3 screening report as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections: List[str] = [
             self._md_header(data),
             self._md_scope3_overview(data),
@@ -150,7 +140,7 @@ class Scope3ScreeningReportTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render Scope 3 screening report as self-contained HTML."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         body = "\n".join([
             self._html_header(data),
@@ -173,7 +163,7 @@ class Scope3ScreeningReportTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render Scope 3 screening report as structured JSON."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         categories = data.get("categories", [])
         overview = data.get("overview", {})
         coverage = data.get("coverage", {})

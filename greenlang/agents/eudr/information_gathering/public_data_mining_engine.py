@@ -59,6 +59,7 @@ from greenlang.agents.eudr.information_gathering.models import (
     HarvestResult,
 )
 from greenlang.agents.eudr.information_gathering.provenance import ProvenanceTracker
+from greenlang.schemas import utcnow
 from greenlang.agents.eudr.information_gathering.metrics import (
     record_public_data_harvest,
     observe_harvest_duration,
@@ -70,16 +71,9 @@ logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute deterministic SHA-256 hash of data.
@@ -93,11 +87,9 @@ def _compute_hash(data: Any) -> str:
     canonical = json.dumps(data, sort_keys=True, separators=(",", ":"), default=str)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Abstract Harvester
 # ---------------------------------------------------------------------------
-
 
 class DataHarvester(abc.ABC):
     """Abstract base class for public data source harvesters.
@@ -156,7 +148,7 @@ class DataHarvester(abc.ABC):
         Returns:
             Populated HarvestResult with provenance hash.
         """
-        self._last_harvest = _utcnow()
+        self._last_harvest = utcnow()
         self._last_record_count = records_harvested
         provenance_hash = _compute_hash({
             "source": self.source.value,
@@ -172,11 +164,11 @@ class DataHarvester(abc.ABC):
             country_code=country_code,
             commodity=commodity,
             records_harvested=records_harvested,
-            data_timestamp=data_timestamp or _utcnow(),
+            data_timestamp=data_timestamp or utcnow(),
             is_incremental=is_incremental,
             freshness_status=FreshnessStatus.FRESH,
             provenance_hash=provenance_hash,
-            harvested_at=_utcnow(),
+            harvested_at=utcnow(),
         )
 
     def get_freshness(self) -> DataFreshnessRecord:
@@ -185,7 +177,7 @@ class DataHarvester(abc.ABC):
         Returns:
             DataFreshnessRecord with computed freshness status.
         """
-        now = _utcnow()
+        now = utcnow()
         last = self._last_harvest or (now - timedelta(hours=self.max_age_hours + 1))
         age_hours = (now - last).total_seconds() / 3600.0
 
@@ -206,11 +198,9 @@ class DataHarvester(abc.ABC):
             max_age_hours=self.max_age_hours,
         )
 
-
 # ---------------------------------------------------------------------------
 # Concrete Harvesters
 # ---------------------------------------------------------------------------
-
 
 class FAOHarvester(DataHarvester):
     """FAO STAT agricultural production and forestry data harvester.
@@ -256,9 +246,8 @@ class FAOHarvester(DataHarvester):
             country_code=country_code,
             commodity=commodity,
             is_incremental=incremental and self._last_harvest is not None,
-            data_timestamp=_utcnow() - timedelta(days=15),
+            data_timestamp=utcnow() - timedelta(days=15),
         )
-
 
 class COMTRADEHarvester(DataHarvester):
     """UN COMTRADE international trade statistics harvester.
@@ -302,9 +291,8 @@ class COMTRADEHarvester(DataHarvester):
             country_code=country_code,
             commodity=commodity,
             is_incremental=incremental and self._last_harvest is not None,
-            data_timestamp=_utcnow() - timedelta(days=30),
+            data_timestamp=utcnow() - timedelta(days=30),
         )
-
 
 class GFWHarvester(DataHarvester):
     """Global Forest Watch deforestation and tree cover loss harvester.
@@ -343,9 +331,8 @@ class GFWHarvester(DataHarvester):
             country_code=country_code,
             commodity=None,
             is_incremental=incremental and self._last_harvest is not None,
-            data_timestamp=_utcnow() - timedelta(days=3),
+            data_timestamp=utcnow() - timedelta(days=3),
         )
-
 
 class WGIHarvester(DataHarvester):
     """World Bank Worldwide Governance Indicators harvester.
@@ -385,9 +372,8 @@ class WGIHarvester(DataHarvester):
             country_code=country_code,
             commodity=None,
             is_incremental=incremental and self._last_harvest is not None,
-            data_timestamp=_utcnow() - timedelta(days=180),
+            data_timestamp=utcnow() - timedelta(days=180),
         )
-
 
 class CPIHarvester(DataHarvester):
     """Transparency International Corruption Perceptions Index harvester.
@@ -426,9 +412,8 @@ class CPIHarvester(DataHarvester):
             country_code=country_code,
             commodity=None,
             is_incremental=incremental and self._last_harvest is not None,
-            data_timestamp=_utcnow() - timedelta(days=90),
+            data_timestamp=utcnow() - timedelta(days=90),
         )
-
 
 class CountryBenchmarkHarvester(DataHarvester):
     """EC country benchmarking data harvester.
@@ -468,9 +453,8 @@ class CountryBenchmarkHarvester(DataHarvester):
             country_code=country_code,
             commodity=commodity,
             is_incremental=incremental and self._last_harvest is not None,
-            data_timestamp=_utcnow() - timedelta(days=60),
+            data_timestamp=utcnow() - timedelta(days=60),
         )
-
 
 class SanctionsHarvester(DataHarvester):
     """EU sanctions and restrictive measures list harvester.
@@ -509,9 +493,8 @@ class SanctionsHarvester(DataHarvester):
             country_code=country_code,
             commodity=None,
             is_incremental=incremental and self._last_harvest is not None,
-            data_timestamp=_utcnow() - timedelta(hours=12),
+            data_timestamp=utcnow() - timedelta(hours=12),
         )
-
 
 class LandRegistryHarvester(DataHarvester):
     """National land registry data harvester.
@@ -554,9 +537,8 @@ class LandRegistryHarvester(DataHarvester):
             country_code=country_code,
             commodity=commodity,
             is_incremental=incremental and self._last_harvest is not None,
-            data_timestamp=_utcnow() - timedelta(days=7),
+            data_timestamp=utcnow() - timedelta(days=7),
         )
-
 
 # ---------------------------------------------------------------------------
 # Harvester Registry
@@ -573,11 +555,9 @@ _HARVESTER_CLASSES: List[type] = [
     LandRegistryHarvester,
 ]
 
-
 # ---------------------------------------------------------------------------
 # Main Engine
 # ---------------------------------------------------------------------------
-
 
 class PublicDataMiningEngine:
     """Engine for harvesting and managing publicly available EUDR datasets.
@@ -718,7 +698,7 @@ class PublicDataMiningEngine:
                 provenance_hash=_compute_hash({
                     "source": source.value, "error": str(exc),
                 }),
-                harvested_at=_utcnow(),
+                harvested_at=utcnow(),
             )
 
     async def harvest_all(

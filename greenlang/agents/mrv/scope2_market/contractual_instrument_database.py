@@ -35,18 +35,13 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Tuple
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Utility helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _canonical_json(data: Dict[str, Any]) -> str:
     """Serialize dictionary to canonical JSON for hashing.
@@ -62,7 +57,6 @@ def _canonical_json(data: Dict[str, Any]) -> str:
     """
     return json.dumps(data, sort_keys=True, default=str)
 
-
 def _sha256(payload: str) -> str:
     """Compute SHA-256 hex digest of a string payload.
 
@@ -73,7 +67,6 @@ def _sha256(payload: str) -> str:
         64-character lowercase hex digest.
     """
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Contractual Instrument Types (10 types)
@@ -230,7 +223,6 @@ INSTRUMENT_TYPES: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Residual Mix Factors by Country/Region (kgCO2e/kWh)
 # ---------------------------------------------------------------------------
@@ -336,7 +328,6 @@ RESIDUAL_MIX_FACTORS: Dict[str, Decimal] = {
     "WORLD": Decimal("0.436"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Energy Source Emission Factors (kgCO2e/kWh)
 # ---------------------------------------------------------------------------
@@ -363,7 +354,6 @@ ENERGY_SOURCE_EF: Dict[str, Decimal] = {
 _ZERO_EMISSION_SOURCES: frozenset = frozenset({
     "solar", "wind", "hydro", "nuclear", "biomass", "geothermal",
 })
-
 
 # ---------------------------------------------------------------------------
 # Supplier Default Emission Factors by Country (kgCO2e/kWh)
@@ -410,7 +400,6 @@ SUPPLIER_DEFAULT_EF: Dict[str, Decimal] = {
     "TR": Decimal("0.400"),
     "RU": Decimal("0.350"),
 }
-
 
 # ---------------------------------------------------------------------------
 # Instrument Quality Criteria (7 criteria)
@@ -493,7 +482,6 @@ QUALITY_CRITERIA: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Tracking Systems (8 registries)
 # ---------------------------------------------------------------------------
@@ -571,11 +559,9 @@ TRACKING_SYSTEMS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ===========================================================================
 # ContractualInstrumentDatabaseEngine
 # ===========================================================================
-
 
 class ContractualInstrumentDatabaseEngine:
     """Engine 1: Contractual instrument database for Scope 2 market-based
@@ -715,7 +701,7 @@ class ContractualInstrumentDatabaseEngine:
         payload = {
             "engine": self.ENGINE_ID,
             "operation": operation,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "data": data,
         }
         hash_value = _sha256(_canonical_json(payload))
@@ -1123,7 +1109,7 @@ class ContractualInstrumentDatabaseEngine:
             "factor": factor.quantize(Decimal("0.001"), ROUND_HALF_UP),
             "source": source,
             "year": year,
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
         with self._state_lock:
@@ -1377,7 +1363,7 @@ class ContractualInstrumentDatabaseEngine:
             "country": country.upper().strip(),
             "fuel_mix": {k: str(v) for k, v in fuel_mix.items()} if fuel_mix else {},
             "year": year,
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
         with self._state_lock:
@@ -1509,7 +1495,7 @@ class ContractualInstrumentDatabaseEngine:
         tracking_system = instrument.get("tracking_system", "")
         region = instrument.get("region", "").upper()
         vintage_year = instrument.get("vintage_year", 0)
-        reporting_year = instrument.get("reporting_year", _utcnow().year)
+        reporting_year = instrument.get("reporting_year", utcnow().year)
         retirement_id = instrument.get("retirement_id", "")
         is_additional = instrument.get("is_additional", False)
 
@@ -2184,14 +2170,12 @@ class ContractualInstrumentDatabaseEngine:
             cls._instance = None
         logger.info("ContractualInstrumentDatabaseEngine singleton reset")
 
-
 # ===========================================================================
 # Module-level convenience functions
 # ===========================================================================
 
 _module_engine: Optional[ContractualInstrumentDatabaseEngine] = None
 _module_lock = threading.Lock()
-
 
 def get_engine(
     config: Any = None,
@@ -2219,7 +2203,6 @@ def get_engine(
                 )
     return _module_engine
 
-
 def get_instrument_info(instrument_type: str) -> Dict[str, Any]:
     """Module-level convenience: get instrument type metadata.
 
@@ -2230,7 +2213,6 @@ def get_instrument_info(instrument_type: str) -> Dict[str, Any]:
         Instrument metadata dictionary.
     """
     return get_engine().get_instrument_info(instrument_type)
-
 
 def get_residual_mix_factor(region: str) -> Decimal:
     """Module-level convenience: get residual mix factor.
@@ -2243,7 +2225,6 @@ def get_residual_mix_factor(region: str) -> Decimal:
     """
     return get_engine().get_residual_mix_factor(region)
 
-
 def get_energy_source_ef(source: str) -> Decimal:
     """Module-level convenience: get energy source emission factor.
 
@@ -2254,7 +2235,6 @@ def get_energy_source_ef(source: str) -> Decimal:
         Emission factor in kgCO2e/kWh.
     """
     return get_engine().get_energy_source_ef(source)
-
 
 def get_supplier_ef(country_or_supplier: str) -> Decimal:
     """Module-level convenience: get supplier default emission factor.
@@ -2267,7 +2247,6 @@ def get_supplier_ef(country_or_supplier: str) -> Decimal:
     """
     return get_engine().get_supplier_ef(country_or_supplier)
 
-
 def resolve_emission_factor(instrument: Dict[str, Any]) -> Decimal:
     """Module-level convenience: resolve emission factor for an instrument.
 
@@ -2278,7 +2257,6 @@ def resolve_emission_factor(instrument: Dict[str, Any]) -> Decimal:
         Resolved emission factor in kgCO2e/kWh.
     """
     return get_engine().resolve_emission_factor(instrument)
-
 
 def validate_instrument_quality(instrument: Dict[str, Any]) -> Dict[str, Any]:
     """Module-level convenience: validate instrument quality.
@@ -2291,7 +2269,6 @@ def validate_instrument_quality(instrument: Dict[str, Any]) -> Dict[str, Any]:
     """
     return get_engine().validate_instrument_quality(instrument)
 
-
 def search_factors(query: str) -> List[Dict[str, Any]]:
     """Module-level convenience: search all factor databases.
 
@@ -2302,7 +2279,6 @@ def search_factors(query: str) -> List[Dict[str, Any]]:
         List of matching factor entries.
     """
     return get_engine().search_factors(query)
-
 
 def get_statistics() -> Dict[str, Any]:
     """Module-level convenience: get database statistics.

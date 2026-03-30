@@ -78,16 +78,15 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Module-level exports
 # ---------------------------------------------------------------------------
 
 __all__ = ["ExposureAssessorEngine"]
-
 
 # ---------------------------------------------------------------------------
 # Graceful provenance import
@@ -100,7 +99,6 @@ try:
 except Exception:  # pragma: no cover  # noqa: BLE001
     _PROVENANCE_MODULE_AVAILABLE = False
     ProvenanceTracker = None  # type: ignore[assignment,misc]
-
 
 # ---------------------------------------------------------------------------
 # Graceful metrics import
@@ -116,7 +114,6 @@ except Exception:  # pragma: no cover  # noqa: BLE001
     _METRICS_AVAILABLE = False
     _record_exposure_raw = None  # type: ignore[assignment]
 
-
 def _safe_record_exposure(hazard_type: str, exposure_level: str) -> None:
     """Safely record an exposure assessment metric.
 
@@ -130,7 +127,6 @@ def _safe_record_exposure(hazard_type: str, exposure_level: str) -> None:
         except Exception:
             pass
 
-
 # ---------------------------------------------------------------------------
 # Graceful config import
 # ---------------------------------------------------------------------------
@@ -143,11 +139,9 @@ except Exception:  # pragma: no cover  # noqa: BLE001
     _CONFIG_AVAILABLE = False
     _get_config = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class AssetType(str, Enum):
     """Supported physical and financial asset types."""
@@ -160,7 +154,6 @@ class AssetType(str, Enum):
     NATURAL_ASSET = "NATURAL_ASSET"
     WATER_SOURCE = "WATER_SOURCE"
     COASTAL_ASSET = "COASTAL_ASSET"
-
 
 class HazardType(str, Enum):
     """Climate hazard types with proximity decay radii."""
@@ -178,7 +171,6 @@ class HazardType(str, Enum):
     LANDSLIDE = "LANDSLIDE"
     COASTAL_EROSION = "COASTAL_EROSION"
 
-
 class ExposureLevel(str, Enum):
     """Exposure severity classification (5 levels)."""
 
@@ -187,7 +179,6 @@ class ExposureLevel(str, Enum):
     MODERATE = "MODERATE"
     HIGH = "HIGH"
     CRITICAL = "CRITICAL"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -251,11 +242,9 @@ DEFAULT_ELEVATION_HIGH_M: float = 2000.0
 DEFAULT_POP_LOW: float = 0.0
 DEFAULT_POP_HIGH: float = 10000.0
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class AssetRecord:
@@ -303,7 +292,6 @@ class AssetRecord:
             "updated_at": self.updated_at,
             "provenance_hash": self.provenance_hash,
         }
-
 
 @dataclass
 class ExposureAssessment:
@@ -364,16 +352,9 @@ class ExposureAssessment:
             "provenance_hash": self.provenance_hash,
         }
 
-
 # ---------------------------------------------------------------------------
 # Utility helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _build_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -389,7 +370,6 @@ def _build_hash(data: Any) -> str:
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
-
 def _generate_assessment_id() -> str:
     """Generate a unique exposure assessment ID.
 
@@ -398,7 +378,6 @@ def _generate_assessment_id() -> str:
     """
     return f"EA-{uuid4().hex[:12]}"
 
-
 def _generate_asset_id() -> str:
     """Generate a unique asset ID (used when callers supply empty IDs).
 
@@ -406,7 +385,6 @@ def _generate_asset_id() -> str:
         Asset ID with AST- prefix and 12-character hex suffix.
     """
     return f"AST-{uuid4().hex[:12]}"
-
 
 def _clamp(value: float, lo: float, hi: float) -> float:
     """Clamp a value to the range [lo, hi].
@@ -420,7 +398,6 @@ def _clamp(value: float, lo: float, hi: float) -> float:
         Clamped value.
     """
     return max(lo, min(hi, value))
-
 
 def _haversine_km(
     lat1: float,
@@ -453,11 +430,9 @@ def _haversine_km(
     c = 2.0 * math.atan2(math.sqrt(a), math.sqrt(1.0 - a))
     return EARTH_RADIUS_KM * c
 
-
 # ===========================================================================
 # ExposureAssessorEngine
 # ===========================================================================
-
 
 class ExposureAssessorEngine:
     """Asset and supply-chain exposure assessment engine.
@@ -611,7 +586,7 @@ class ExposureAssessorEngine:
                 f"value_usd must be non-negative, got {value_usd}"
             )
 
-        now_iso = _utcnow().isoformat()
+        now_iso = utcnow().isoformat()
         safe_metadata = dict(metadata) if metadata else {}
 
         record = AssetRecord(
@@ -808,7 +783,7 @@ class ExposureAssessorEngine:
                 record.metadata = dict(value) if value else {}
                 applied[key] = record.metadata
 
-        now_iso = _utcnow().isoformat()
+        now_iso = utcnow().isoformat()
         record.updated_at = now_iso
 
         # --- Provenance -------------------------------------------------------
@@ -1007,7 +982,7 @@ class ExposureAssessorEngine:
         exposure_level = self._classify_exposure_level(composite)
 
         # --- Build assessment record ------------------------------------------
-        now_iso = _utcnow().isoformat()
+        now_iso = utcnow().isoformat()
         assessment_id = _generate_assessment_id()
 
         assessment = ExposureAssessment(
@@ -1203,7 +1178,7 @@ class ExposureAssessorEngine:
             "exposure_distribution": dict(exposure_dist),
         }
 
-        now_iso = _utcnow().isoformat()
+        now_iso = utcnow().isoformat()
 
         provenance_hash = self._compute_provenance(
             operation="assess_portfolio_exposure",
@@ -1408,7 +1383,7 @@ class ExposureAssessorEngine:
                 "critical_count": tier_critical.get(t, 0),
             }
 
-        now_iso = _utcnow().isoformat()
+        now_iso = utcnow().isoformat()
 
         provenance_hash = self._compute_provenance(
             operation="assess_supply_chain_exposure",
@@ -1703,7 +1678,7 @@ class ExposureAssessorEngine:
             )
             grid_cells = grid_cells[:max_cells]
 
-        now_iso = _utcnow().isoformat()
+        now_iso = utcnow().isoformat()
 
         provenance_hash = self._compute_provenance(
             operation="get_exposure_map",
@@ -2599,7 +2574,7 @@ class ExposureAssessorEngine:
         Returns:
             Hex-encoded SHA-256 hash string.
         """
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
         payload = {
             "operation": operation,
             "input": input_data,

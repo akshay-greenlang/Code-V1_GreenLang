@@ -66,6 +66,8 @@ from datetime import datetime, timedelta, timezone
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -77,12 +79,6 @@ _MODULE_VERSION: str = "1.0.0"
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -102,7 +98,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str = "sub") -> str:
     """Generate a unique identifier with a given prefix.
 
@@ -113,7 +108,6 @@ def _generate_id(prefix: str = "sub") -> str:
         ID in format ``{prefix}-{hex12}``.
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 def _to_decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
@@ -133,7 +127,6 @@ def _to_decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError) as exc:
         raise ValueError(f"Cannot convert {value!r} to Decimal") from exc
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -335,11 +328,9 @@ SEASONAL_RISK_FACTORS: Dict[str, Dict[int, Decimal]] = {
     "wood": {1: Decimal("1.0"), 2: Decimal("1.0"), 3: Decimal("0.9"), 4: Decimal("1.1")},
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class SubstitutionAlert:
@@ -397,7 +388,6 @@ class SubstitutionAlert:
             "provenance_hash": self.provenance_hash,
         }
 
-
 @dataclass
 class SwitchingPattern:
     """Detected commodity switching pattern for a supplier.
@@ -444,7 +434,6 @@ class SwitchingPattern:
             "risk_assessment": self.risk_assessment,
             "provenance_hash": self.provenance_hash,
         }
-
 
 @dataclass
 class GreenwashingResult:
@@ -496,11 +485,9 @@ class GreenwashingResult:
             "provenance_hash": self.provenance_hash,
         }
 
-
 # ---------------------------------------------------------------------------
 # SubstitutionRiskAnalyzer
 # ---------------------------------------------------------------------------
-
 
 class SubstitutionRiskAnalyzer:
     """Production-grade commodity substitution risk detection for EUDR compliance.
@@ -757,7 +744,7 @@ class SubstitutionRiskAnalyzer:
             history = list(self._supplier_history.get(supplier_id, []))
 
         # Filter by time window
-        cutoff = _utcnow() - timedelta(days=time_window_days)
+        cutoff = utcnow() - timedelta(days=time_window_days)
         cutoff_str = cutoff.isoformat()
         filtered = [
             r for r in history
@@ -1600,7 +1587,7 @@ class SubstitutionRiskAnalyzer:
         except (ValueError, AttributeError):
             return Decimal("30")
 
-        now = _utcnow()
+        now = utcnow()
         if last_switch_dt.tzinfo is None:
             last_switch_dt = last_switch_dt.replace(tzinfo=timezone.utc)
 
@@ -1668,7 +1655,7 @@ class SubstitutionRiskAnalyzer:
             description=description,
             evidence_summary=evidence_summary,
             detection_method=detection_method,
-            created_at=_utcnow().isoformat(),
+            created_at=utcnow().isoformat(),
         )
         alert.provenance_hash = _compute_hash(alert)
 

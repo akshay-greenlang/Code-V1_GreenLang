@@ -30,7 +30,8 @@ from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 
 logger = logging.getLogger(__name__)
 
@@ -269,7 +270,7 @@ ECB_EXCHANGE_RATES: Dict[str, Decimal] = {
 # PYDANTIC MODELS
 # ============================================================================
 
-class ETSPrice(BaseModel):
+class ETSPrice(GreenLangBase):
     """
     EU ETS allowance price record.
 
@@ -331,7 +332,7 @@ class ETSPrice(BaseModel):
         }
 
 
-class FreeAllocationFactor(BaseModel):
+class FreeAllocationFactor(GreenLangBase):
     """
     Free allocation benchmark for a CBAM product.
 
@@ -401,7 +402,7 @@ class FreeAllocationFactor(BaseModel):
         }
 
 
-class CarbonPriceDeduction(BaseModel):
+class CarbonPriceDeduction(GreenLangBase):
     """
     Carbon price paid in country of origin, eligible for CBAM deduction.
 
@@ -574,7 +575,7 @@ class CarbonPriceDeduction(BaseModel):
         }
 
 
-class CertificateObligation(BaseModel):
+class CertificateObligation(GreenLangBase):
     """
     Complete CBAM certificate obligation for an importer-product-year combination.
 
@@ -753,7 +754,7 @@ class CertificateObligation(BaseModel):
         }
 
 
-class QuarterlyHolding(BaseModel):
+class QuarterlyHolding(GreenLangBase):
     """
     Quarterly certificate holding compliance check.
 
@@ -830,7 +831,7 @@ class QuarterlyHolding(BaseModel):
         }
 
 
-class CertificateSummary(BaseModel):
+class CertificateSummary(GreenLangBase):
     """
     Annual certificate obligation summary for an importer.
 

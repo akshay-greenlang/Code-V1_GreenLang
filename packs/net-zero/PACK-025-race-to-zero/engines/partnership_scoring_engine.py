@@ -61,23 +61,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -94,7 +89,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -103,7 +97,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -111,26 +104,21 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     return float(
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums & Constants
 # ---------------------------------------------------------------------------
-
 
 class DimensionId(str, Enum):
     """Partnership scoring dimensions."""
@@ -141,14 +129,12 @@ class DimensionId(str, Enum):
     COVERAGE_COMPLETENESS = "coverage_completeness"
     TIMELINE_ALIGNMENT = "timeline_alignment"
 
-
 class GovernanceMaturity(str, Enum):
     """Partnership governance maturity level."""
     EXEMPLARY = "exemplary"
     MATURE = "mature"
     DEVELOPING = "developing"
     NASCENT = "nascent"
-
 
 DIMENSION_WEIGHTS: Dict[str, Decimal] = {
     DimensionId.REQUIREMENT_ALIGNMENT.value: Decimal("0.25"),
@@ -193,11 +179,9 @@ PARTNER_DB: Dict[str, Dict[str, Any]] = {
     "global_covenant": {"name": "Global Covenant of Mayors", "criteria_covered": ["net_zero_pledge", "interim_target", "action_plan", "annual_reporting", "scope_coverage", "governance"], "credibility_score": Decimal("85"), "actor_types": ["city"]},
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class PartnerMembershipInput(BaseModel):
     """Input for a single partner initiative membership.
@@ -237,7 +221,6 @@ class PartnerMembershipInput(BaseModel):
             raise ValueError(f"Unknown engagement level '{v}'.")
         return v
 
-
 class PartnershipInput(BaseModel):
     """Complete input for partnership scoring.
 
@@ -260,11 +243,9 @@ class PartnershipInput(BaseModel):
     joint_accountability_mechanisms: int = Field(default=0, ge=0)
     include_synergy: bool = Field(default=True)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class DimensionResult(BaseModel):
     """Result for a single scoring dimension."""
@@ -274,7 +255,6 @@ class DimensionResult(BaseModel):
     weight: Decimal = Field(default=Decimal("0"))
     weighted_score: Decimal = Field(default=Decimal("0"))
     assessment: str = Field(default="")
-
 
 class PartnerAssessment(BaseModel):
     """Assessment result for a single partner initiative."""
@@ -288,7 +268,6 @@ class PartnerAssessment(BaseModel):
     credibility_score: Decimal = Field(default=Decimal("0"))
     recommended_for_actor: bool = Field(default=False)
 
-
 class SynergyAnalysis(BaseModel):
     """Cross-partner synergy analysis."""
     total_r2z_criteria: int = Field(default=8)
@@ -299,12 +278,11 @@ class SynergyAnalysis(BaseModel):
     reporting_channels: int = Field(default=0)
     optimization_suggestions: List[str] = Field(default_factory=list)
 
-
 class PartnershipResult(BaseModel):
     """Complete partnership scoring result."""
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     partnership_quality_score: Decimal = Field(default=Decimal("0"))
     governance_maturity: str = Field(default=GovernanceMaturity.NASCENT.value)
@@ -320,11 +298,9 @@ class PartnershipResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class PartnershipScoringEngine:
     """Race to Zero partnership quality scoring engine.

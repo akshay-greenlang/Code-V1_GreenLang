@@ -28,33 +28,25 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class WorkflowPhase(str, Enum):
     """Phases of the climate actions workflow."""
@@ -64,7 +56,6 @@ class WorkflowPhase(str, Enum):
     TAXONOMY_CHECK = "taxonomy_check"
     REPORT_GENERATION = "report_generation"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "pending"
@@ -72,7 +63,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class PhaseStatus(str, Enum):
     """Status of a single phase."""
@@ -82,13 +72,11 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class ActionType(str, Enum):
     """Climate action type."""
     MITIGATION = "mitigation"
     ADAPTATION = "adaptation"
     MITIGATION_AND_ADAPTATION = "mitigation_and_adaptation"
-
 
 class ActionPhase(str, Enum):
     """Action implementation phase."""
@@ -98,7 +86,6 @@ class ActionPhase(str, Enum):
     COMPLETED = "completed"
     DEFERRED = "deferred"
 
-
 class ResourceType(str, Enum):
     """Resource allocation type."""
     CAPEX = "capex"
@@ -106,11 +93,9 @@ class ResourceType(str, Enum):
     R_AND_D = "r_and_d"
     HUMAN_RESOURCES = "human_resources"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -122,7 +107,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class ClimatePolicy(BaseModel):
     """A climate-related policy."""
     policy_id: str = Field(default_factory=lambda: f"cp-{_new_uuid()[:8]}")
@@ -133,7 +117,6 @@ class ClimatePolicy(BaseModel):
     review_date: str = Field(default="")
     description: str = Field(default="")
     is_active: bool = Field(default=True)
-
 
 class ClimateAction(BaseModel):
     """A climate action with tracking details."""
@@ -151,7 +134,6 @@ class ClimateAction(BaseModel):
     taxonomy_activity_code: str = Field(default="")
     co_benefits: List[str] = Field(default_factory=list)
 
-
 class ResourceAllocation(BaseModel):
     """Resource allocation for a climate action."""
     allocation_id: str = Field(default_factory=lambda: f"ra-{_new_uuid()[:8]}")
@@ -162,7 +144,6 @@ class ResourceAllocation(BaseModel):
     description: str = Field(default="")
     is_committed: bool = Field(default=False)
 
-
 class ClimateActionsInput(BaseModel):
     """Input data model for ClimateActionsWorkflow."""
     policies: List[ClimatePolicy] = Field(default_factory=list)
@@ -172,7 +153,6 @@ class ClimateActionsInput(BaseModel):
     entity_id: str = Field(default="")
     entity_name: str = Field(default="")
     config: Dict[str, Any] = Field(default_factory=dict)
-
 
 class ClimateActionsResult(BaseModel):
     """Complete result from climate actions workflow."""
@@ -196,11 +176,9 @@ class ClimateActionsResult(BaseModel):
     reporting_year: int = Field(default=2025)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class ClimateActionsWorkflow:
     """
@@ -271,7 +249,7 @@ class ClimateActionsWorkflow:
                 config=config or {},
             )
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting climate actions workflow %s", self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = WorkflowStatus.IN_PROGRESS
@@ -290,7 +268,7 @@ class ClimateActionsWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         completed_count = sum(1 for p in phase_results if p.status == PhaseStatus.COMPLETED)
         mitigation = sum(1 for a in self._actions if a.action_type in (ActionType.MITIGATION, ActionType.MITIGATION_AND_ADAPTATION))
         adaptation = sum(1 for a in self._actions if a.action_type in (ActionType.ADAPTATION, ActionType.MITIGATION_AND_ADAPTATION))
@@ -334,7 +312,7 @@ class ClimateActionsWorkflow:
         self, input_data: ClimateActionsInput,
     ) -> PhaseResult:
         """Review climate-related policies."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -348,7 +326,7 @@ class ClimateActionsWorkflow:
         if not self._policies:
             warnings.append("No climate policies provided; E1-2 disclosure may be incomplete")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 1 PolicyReview: %d policies, %d active", len(self._policies), active)
         return PhaseResult(
             phase_name=WorkflowPhase.POLICY_REVIEW.value, status=PhaseStatus.COMPLETED,
@@ -364,7 +342,7 @@ class ClimateActionsWorkflow:
         self, input_data: ClimateActionsInput,
     ) -> PhaseResult:
         """Register all climate actions."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -386,7 +364,7 @@ class ClimateActionsWorkflow:
         if not self._actions:
             warnings.append("No climate actions registered")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 2 ActionRegistration: %d actions registered", len(self._actions))
         return PhaseResult(
             phase_name=WorkflowPhase.ACTION_REGISTRATION.value, status=PhaseStatus.COMPLETED,
@@ -402,7 +380,7 @@ class ClimateActionsWorkflow:
         self, input_data: ClimateActionsInput,
     ) -> PhaseResult:
         """Track resource allocation for climate actions."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -427,7 +405,7 @@ class ClimateActionsWorkflow:
         if unlinked:
             warnings.append(f"{len(unlinked)} resource allocations reference unknown actions")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 3 ResourceAllocation: %.0f EUR total allocated", total)
         return PhaseResult(
             phase_name=WorkflowPhase.RESOURCE_ALLOCATION.value, status=PhaseStatus.COMPLETED,
@@ -443,7 +421,7 @@ class ClimateActionsWorkflow:
         self, input_data: ClimateActionsInput,
     ) -> PhaseResult:
         """Check EU Taxonomy alignment of climate actions."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -470,7 +448,7 @@ class ClimateActionsWorkflow:
         if aligned_count == 0 and self._actions:
             warnings.append("No actions are EU Taxonomy aligned")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 4 TaxonomyCheck: %d aligned of %d actions",
             aligned_count, len(self._actions),
@@ -489,7 +467,7 @@ class ClimateActionsWorkflow:
         self, input_data: ClimateActionsInput,
     ) -> PhaseResult:
         """Generate E1-3 disclosure-ready output."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -523,7 +501,7 @@ class ClimateActionsWorkflow:
 
         outputs["report_ready"] = True
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 5 ReportGeneration: E1-3 disclosure ready")
         return PhaseResult(
             phase_name=WorkflowPhase.REPORT_GENERATION.value, status=PhaseStatus.COMPLETED,

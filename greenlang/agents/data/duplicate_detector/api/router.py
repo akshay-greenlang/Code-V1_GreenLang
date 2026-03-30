@@ -39,6 +39,7 @@ Status: Production Ready
 
 import logging
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +67,7 @@ except ImportError:
 
 if FASTAPI_AVAILABLE:
 
-    class CreateJobBody(BaseModel):
+    class CreateJobBody(GreenLangBase):
         """Request body for creating a dedup job."""
         dataset_ids: List[str] = Field(
             ..., description="List of dataset identifiers to deduplicate",
@@ -75,7 +76,7 @@ if FASTAPI_AVAILABLE:
             None, description="Optional dedup rule ID to apply",
         )
 
-    class FingerprintBody(BaseModel):
+    class FingerprintBody(GreenLangBase):
         """Request body for fingerprinting records."""
         records: List[Dict[str, Any]] = Field(
             ..., description="List of record dicts to fingerprint",
@@ -87,7 +88,7 @@ if FASTAPI_AVAILABLE:
             None, description="Algorithm (sha256, simhash, minhash)",
         )
 
-    class BlockBody(BaseModel):
+    class BlockBody(GreenLangBase):
         """Request body for creating blocks."""
         records: List[Dict[str, Any]] = Field(
             ..., description="List of record dicts",
@@ -100,7 +101,7 @@ if FASTAPI_AVAILABLE:
             None, description="Fields to use for blocking key generation",
         )
 
-    class CompareBody(BaseModel):
+    class CompareBody(GreenLangBase):
         """Request body for comparing pairs."""
         block_results: Dict[str, Any] = Field(
             ..., description="Block results dict containing candidate pairs under 'pairs' key",
@@ -109,7 +110,7 @@ if FASTAPI_AVAILABLE:
             None, description="Per-field comparison config with algorithm and weight",
         )
 
-    class ClassifyBody(BaseModel):
+    class ClassifyBody(GreenLangBase):
         """Request body for classifying matches."""
         comparisons: List[Dict[str, Any]] = Field(
             ..., description="List of comparison result dicts with 'overall_score'",
@@ -118,7 +119,7 @@ if FASTAPI_AVAILABLE:
             None, description="Override thresholds dict with 'match' and 'possible' keys",
         )
 
-    class ClusterBody(BaseModel):
+    class ClusterBody(GreenLangBase):
         """Request body for forming clusters."""
         matches: List[Dict[str, Any]] = Field(
             ..., description="List of match dicts with record_a_id, record_b_id",
@@ -127,7 +128,7 @@ if FASTAPI_AVAILABLE:
             None, description="Clustering algorithm (union_find, connected_components)",
         )
 
-    class MergeBody(BaseModel):
+    class MergeBody(GreenLangBase):
         """Request body for executing merge."""
         clusters: List[Dict[str, Any]] = Field(
             ..., description="List of cluster dicts with 'members'",
@@ -140,7 +141,7 @@ if FASTAPI_AVAILABLE:
             description="Merge strategy (keep_first, keep_latest, keep_most_complete, merge_fields, golden_record)",
         )
 
-    class PipelineBody(BaseModel):
+    class PipelineBody(GreenLangBase):
         """Request body for running the full dedup pipeline."""
         records: List[Dict[str, Any]] = Field(
             ..., description="List of record dicts to deduplicate",
@@ -152,7 +153,7 @@ if FASTAPI_AVAILABLE:
             None, description="Optional pipeline options overriding config defaults",
         )
 
-    class CreateRuleBody(BaseModel):
+    class CreateRuleBody(GreenLangBase):
         """Request body for creating a dedup rule."""
         name: str = Field(
             ..., description="Rule display name",
@@ -182,7 +183,7 @@ if FASTAPI_AVAILABLE:
             default=True, description="Whether the rule is active",
         )
 
-    class ReportBody(BaseModel):
+    class ReportBody(GreenLangBase):
         """Request body for generating a report."""
         job_id: str = Field(
             ..., description="Job identifier to generate report for",

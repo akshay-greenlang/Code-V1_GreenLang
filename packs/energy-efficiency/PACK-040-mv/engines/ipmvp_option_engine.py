@@ -78,25 +78,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -114,7 +108,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -123,7 +116,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -135,22 +127,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class IPMVPOption(str, Enum):
     """IPMVP Option designator.
@@ -164,7 +152,6 @@ class IPMVPOption(str, Enum):
     OPTION_B = "option_b"
     OPTION_C = "option_c"
     OPTION_D = "option_d"
-
 
 class ECMType(str, Enum):
     """Energy Conservation Measure type.
@@ -197,7 +184,6 @@ class ECMType(str, Enum):
     BEHAVIOURAL = "behavioural"
     NEW_CONSTRUCTION = "new_construction"
 
-
 class MeasurementBoundary(str, Enum):
     """Measurement boundary for M&V.
 
@@ -210,7 +196,6 @@ class MeasurementBoundary(str, Enum):
     WHOLE_FACILITY = "whole_facility"
     SUB_SYSTEM = "sub_system"
     EQUIPMENT = "equipment"
-
 
 class MeteringApproach(str, Enum):
     """Metering approach for the selected option.
@@ -229,7 +214,6 @@ class MeteringApproach(str, Enum):
     SPOT_MEASURE = "spot_measure"
     CONTINUOUS = "continuous"
 
-
 class CostLevel(str, Enum):
     """Relative cost level for M&V implementation.
 
@@ -245,7 +229,6 @@ class CostLevel(str, Enum):
     HIGH = "high"
     VERY_HIGH = "very_high"
 
-
 class AccuracyLevel(str, Enum):
     """Relative accuracy level of the M&V option.
 
@@ -259,7 +242,6 @@ class AccuracyLevel(str, Enum):
     HIGH = "high"
     VERY_HIGH = "very_high"
 
-
 class SelectionConfidence(str, Enum):
     """Confidence level in the automated option recommendation.
 
@@ -272,7 +254,6 @@ class SelectionConfidence(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     MANUAL = "manual"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -444,11 +425,9 @@ MV_COST_RANGES: Dict[str, Tuple[Decimal, Decimal]] = {
 CONFIDENCE_HIGH_THRESHOLD: Decimal = Decimal("0.15")
 CONFIDENCE_MEDIUM_THRESHOLD: Decimal = Decimal("0.08")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class ECMDescription(BaseModel):
     """Description of an Energy Conservation Measure for option selection.
@@ -531,7 +510,6 @@ class ECMDescription(BaseModel):
         default=None, description="Min accuracy level"
     )
 
-
 class StipulatedValue(BaseModel):
     """A stipulated (non-measured) value for Option A.
 
@@ -562,7 +540,6 @@ class StipulatedValue(BaseModel):
     review_frequency: str = Field(
         default="annual", description="Review frequency"
     )
-
 
 class SimulationCalibrationData(BaseModel):
     """Calibration data for Option D simulation verification.
@@ -598,7 +575,6 @@ class SimulationCalibrationData(BaseModel):
         default=False, description="Meets calibration criteria"
     )
 
-
 class OptionSelectionConfig(BaseModel):
     """Configuration for automated option selection.
 
@@ -631,11 +607,9 @@ class OptionSelectionConfig(BaseModel):
         description="Max M&V cost %"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class OptionScoreCard(BaseModel):
     """Score card for a single IPMVP option.
@@ -684,9 +658,8 @@ class OptionScoreCard(BaseModel):
     ineligibility_reasons: List[str] = Field(default_factory=list)
     strengths: List[str] = Field(default_factory=list)
     weaknesses: List[str] = Field(default_factory=list)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class OptionADetail(BaseModel):
     """Detailed Option A implementation specification.
@@ -707,9 +680,8 @@ class OptionADetail(BaseModel):
     spot_vs_continuous: str = Field(default="spot")
     estimated_uncertainty_pct: Decimal = Field(default=Decimal("20"))
     verification_protocol: List[str] = Field(default_factory=list)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class OptionBDetail(BaseModel):
     """Detailed Option B implementation specification.
@@ -732,9 +704,8 @@ class OptionBDetail(BaseModel):
     data_collection_frequency: str = Field(default="15-minute")
     estimated_uncertainty_pct: Decimal = Field(default=Decimal("10"))
     verification_protocol: List[str] = Field(default_factory=list)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class OptionCDetail(BaseModel):
     """Detailed Option C implementation specification.
@@ -759,9 +730,8 @@ class OptionCDetail(BaseModel):
     min_savings_fraction: Decimal = Field(default=Decimal("0.10"))
     estimated_uncertainty_pct: Decimal = Field(default=Decimal("15"))
     verification_protocol: List[str] = Field(default_factory=list)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class OptionDDetail(BaseModel):
     """Detailed Option D implementation specification.
@@ -793,9 +763,8 @@ class OptionDDetail(BaseModel):
     weather_file_source: str = Field(default="TMY3")
     estimated_uncertainty_pct: Decimal = Field(default=Decimal("8"))
     verification_protocol: List[str] = Field(default_factory=list)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class OptionSelectionResult(BaseModel):
     """Complete IPMVP option selection result.
@@ -848,14 +817,12 @@ class OptionSelectionResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     recommendations: List[str] = Field(default_factory=list)
     processing_time_ms: Decimal = Field(default=Decimal("0"))
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class IPMVPOptionEngine:
     """IPMVP Options A/B/C/D implementation and selection engine.

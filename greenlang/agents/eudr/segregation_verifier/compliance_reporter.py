@@ -51,6 +51,8 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape as xml_escape
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -63,22 +65,14 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str = "rpt") -> str:
     """Generate a unique identifier with the given prefix."""
     return f"{prefix}-{uuid.uuid4().hex[:16]}"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -143,11 +137,9 @@ CSV_COLUMNS: Dict[str, List[str]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # Internal Dataclass Result Types
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class SegregationAuditReport:
@@ -187,7 +179,6 @@ class SegregationAuditReport:
     format: str
     provenance_hash: str = ""
 
-
 @dataclass
 class ContaminationReport:
     """Detailed contamination event report.
@@ -215,7 +206,6 @@ class ContaminationReport:
     generated_at: str
     format: str
     provenance_hash: str = ""
-
 
 @dataclass
 class EvidencePackage:
@@ -245,7 +235,6 @@ class EvidencePackage:
     format: str
     provenance_hash: str = ""
 
-
 @dataclass
 class TrendReport:
     """Score trend report over a period for a facility.
@@ -272,11 +261,9 @@ class TrendReport:
     format: str
     provenance_hash: str = ""
 
-
 # ---------------------------------------------------------------------------
 # ComplianceReporter Engine
 # ---------------------------------------------------------------------------
-
 
 class ComplianceReporter:
     """Generates segregation compliance reports for EUDR regulatory needs.
@@ -365,7 +352,7 @@ class ComplianceReporter:
             )
 
         report_id = _generate_id("rpt-audit")
-        now = _utcnow()
+        now = utcnow()
 
         # Compute overall score from assessment data
         overall_score = float(assessment_data.get("overall_score", 0.0))
@@ -445,7 +432,7 @@ class ComplianceReporter:
             )
 
         report_id = _generate_id("rpt-contam")
-        now = _utcnow()
+        now = utcnow()
         facility_id = event_data.get("facility_id", "unknown")
 
         # Build affected batches list
@@ -560,7 +547,7 @@ class ComplianceReporter:
             )
 
         report_id = _generate_id("rpt-evid")
-        now = _utcnow()
+        now = utcnow()
 
         # Build evidence items from assessment history
         evidence_items = self._compile_evidence_items(
@@ -634,7 +621,7 @@ class ComplianceReporter:
             )
 
         report_id = _generate_id("rpt-trend")
-        now = _utcnow()
+        now = utcnow()
 
         # Build score trend from stored reports
         score_trend = self._build_score_trend(facility_id, period_months)
@@ -709,7 +696,7 @@ class ComplianceReporter:
             )
 
         report_id = _generate_id("rpt-sc")
-        now = _utcnow()
+        now = utcnow()
 
         # Aggregate scores
         scores = [
@@ -852,7 +839,7 @@ class ComplianceReporter:
             data = {"data": str(report)}
 
         report_type = data.get("report_type", "audit")
-        now = _utcnow()
+        now = utcnow()
 
         pdf_data = {
             "title": f"EUDR Segregation Verification Report - {report_type.title()}",
@@ -900,7 +887,7 @@ class ComplianceReporter:
         report_type = data.get("report_type", "audit")
         facility_id = data.get("facility_id", "unknown")
         report_id = data.get("report_id", "unknown")
-        generated_at = data.get("generated_at", _utcnow().isoformat())
+        generated_at = data.get("generated_at", utcnow().isoformat())
         overall_score = data.get("overall_score", 0.0)
         provenance_hash = data.get("provenance_hash", "")
 
@@ -1542,7 +1529,7 @@ class ComplianceReporter:
         Returns:
             List of score data points.
         """
-        now = _utcnow()
+        now = utcnow()
         cutoff = now - timedelta(days=period_months * 30)
         cutoff_str = cutoff.isoformat()
 
@@ -1581,7 +1568,7 @@ class ComplianceReporter:
         Returns:
             List of contamination event count data points.
         """
-        now = _utcnow()
+        now = utcnow()
         cutoff = now - timedelta(days=period_months * 30)
         cutoff_str = cutoff.isoformat()
 
@@ -1898,7 +1885,6 @@ class ComplianceReporter:
             })
 
         return sections
-
 
 # ---------------------------------------------------------------------------
 # Public API

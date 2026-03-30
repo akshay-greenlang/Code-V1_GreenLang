@@ -84,23 +84,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -117,7 +112,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -126,7 +120,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -134,19 +127,15 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round4(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
-
 
 def _round6(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class PathwaySource(str, Enum):
     """Decarbonisation pathway source.
@@ -171,7 +160,6 @@ class PathwaySource(str, Enum):
     CRREM = "CRREM"
     CUSTOM = "CUSTOM"
 
-
 class PathwaySector(str, Enum):
     """Sector for pathway selection."""
     POWER = "power"
@@ -189,7 +177,6 @@ class PathwaySector(str, Enum):
     REAL_ESTATE = "real_estate"
     CROSS_SECTOR = "cross_sector"
 
-
 class AlignmentStatus(str, Enum):
     """Alignment status relative to pathway."""
     ALIGNED = "aligned"
@@ -197,12 +184,10 @@ class AlignmentStatus(str, Enum):
     MISALIGNED = "misaligned"
     SEVERELY_MISALIGNED = "severely_misaligned"
 
-
 class MetricType(str, Enum):
     """Metric type for pathway comparison."""
     ABSOLUTE = "absolute"
     INTENSITY = "intensity"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Pathway Waypoints
@@ -279,11 +264,9 @@ ALIGNMENT_THRESHOLDS: Dict[str, Decimal] = {
 CONVERGENCE_YEAR: int = 2050
 MAX_PROJECTION_YEARS: int = 50
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class PathwayWaypoint(BaseModel):
     """A waypoint on a decarbonisation pathway.
@@ -299,7 +282,6 @@ class PathwayWaypoint(BaseModel):
     @classmethod
     def coerce_val(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class Pathway(BaseModel):
     """A decarbonisation pathway definition.
@@ -327,7 +309,6 @@ class Pathway(BaseModel):
     waypoints: List[PathwayWaypoint] = Field(default_factory=list, description="Waypoints")
     temperature: Optional[Decimal] = Field(default=None, description="Temperature target (C)")
 
-
 class OrganisationTrajectory(BaseModel):
     """Organisation's emissions trajectory for alignment assessment.
 
@@ -352,7 +333,6 @@ class OrganisationTrajectory(BaseModel):
     @classmethod
     def coerce_val(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class AlignmentInput(BaseModel):
     """Input for pathway alignment analysis.
@@ -399,11 +379,9 @@ class AlignmentInput(BaseModel):
             object.__setattr__(self, "pathways", loaded)
         return self
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class GapAnalysis(BaseModel):
     """Gap analysis between organisation and a pathway at a point in time.
@@ -423,7 +401,6 @@ class GapAnalysis(BaseModel):
     gap_pct: Decimal = Field(default=Decimal("0"), description="Gap %")
     status: AlignmentStatus = Field(default=AlignmentStatus.MISALIGNED)
 
-
 class OvershootResult(BaseModel):
     """Overshoot year analysis.
 
@@ -437,7 +414,6 @@ class OvershootResult(BaseModel):
     years_until: Optional[int] = Field(default=None, description="Years until overshoot")
     org_value_at_overshoot: Optional[Decimal] = Field(default=None)
     pathway_value_at_overshoot: Optional[Decimal] = Field(default=None)
-
 
 class ConvergenceResult(BaseModel):
     """Years-to-convergence analysis.
@@ -456,7 +432,6 @@ class ConvergenceResult(BaseModel):
     required_annual_rate: Decimal = Field(default=Decimal("0"))
     current_annual_rate: Decimal = Field(default=Decimal("0"))
     rate_gap: Decimal = Field(default=Decimal("0"))
-
 
 class PathwayAlignmentDetail(BaseModel):
     """Alignment detail for a single pathway.
@@ -479,7 +454,6 @@ class PathwayAlignmentDetail(BaseModel):
     overshoot: OvershootResult = Field(default_factory=OvershootResult)
     convergence: ConvergenceResult = Field(default_factory=ConvergenceResult)
     overall_status: AlignmentStatus = Field(default=AlignmentStatus.MISALIGNED)
-
 
 class AlignmentResult(BaseModel):
     """Complete pathway alignment result.
@@ -507,11 +481,9 @@ class AlignmentResult(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class PathwayAlignmentEngine:
     """Evaluates organisational trajectories against decarbonisation pathways.
@@ -589,7 +561,7 @@ class PathwayAlignmentEngine:
             worst_alignment=worst_name,
             aligned_pathway_count=aligned_count,
             warnings=warnings,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         result.provenance_hash = _compute_hash(result)
@@ -914,7 +886,6 @@ class PathwayAlignmentEngine:
 
     def get_version(self) -> str:
         return self._version
-
 
 # ---------------------------------------------------------------------------
 # __all__

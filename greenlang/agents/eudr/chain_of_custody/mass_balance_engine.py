@@ -71,6 +71,8 @@ from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -83,22 +85,14 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a unique identifier using UUID4."""
     return str(uuid.uuid4())
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -138,7 +132,6 @@ BALANCE_PRECISION: int = 4
 
 #: Variance tolerance for reconciliation (kg).
 RECONCILIATION_TOLERANCE_KG: float = 0.01
-
 
 # ---------------------------------------------------------------------------
 # Conversion Factors Reference Data (PRD Appendix A)
@@ -206,11 +199,9 @@ VALID_LOSS_REASONS: Tuple[str, ...] = (
     "other",
 )
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class EntryType(str, Enum):
     """Type of ledger entry."""
@@ -222,7 +213,6 @@ class EntryType(str, Enum):
     CARRY_FORWARD = "carry_forward"
     EXPIRED = "expired"
 
-
 class EntryStatus(str, Enum):
     """Status of a ledger entry."""
 
@@ -230,7 +220,6 @@ class EntryStatus(str, Enum):
     CONSUMED = "consumed"
     EXPIRED = "expired"
     VOIDED = "voided"
-
 
 class ReconciliationStatus(str, Enum):
     """Status of a period reconciliation."""
@@ -240,11 +229,9 @@ class ReconciliationStatus(str, Enum):
     DEFICIT = "deficit"
     OVERDRAFT = "overdraft"
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class LedgerEntry:
@@ -315,7 +302,6 @@ class LedgerEntry:
             "period": self.period,
         }
 
-
 @dataclass
 class BalanceSnapshot:
     """A point-in-time snapshot of the mass balance for a facility-commodity.
@@ -382,7 +368,6 @@ class BalanceSnapshot:
             "processing_time_ms": self.processing_time_ms,
         }
 
-
 @dataclass
 class ConversionResult:
     """Result of applying a conversion factor.
@@ -421,7 +406,6 @@ class ConversionResult:
             "loss_quantity_kg": self.loss_quantity_kg,
             "is_standard_factor": self.is_standard_factor,
         }
-
 
 @dataclass
 class LossRecord:
@@ -470,7 +454,6 @@ class LossRecord:
             "process_type": self.process_type,
             "recorded_at": str(self.recorded_at) if self.recorded_at else "",
         }
-
 
 @dataclass
 class ReconciliationReport:
@@ -556,7 +539,6 @@ class ReconciliationReport:
             "processing_time_ms": self.processing_time_ms,
         }
 
-
 @dataclass
 class OverdraftAlert:
     """Alert raised when output exceeds available compliant input.
@@ -599,7 +581,6 @@ class OverdraftAlert:
             "detected_at": str(self.detected_at) if self.detected_at else "",
         }
 
-
 @dataclass
 class PeriodBalance:
     """Balance state for a specific period.
@@ -639,11 +620,9 @@ class PeriodBalance:
             "carry_forward_expiry": str(self.carry_forward_expiry) if self.carry_forward_expiry else "",
         }
 
-
 # ---------------------------------------------------------------------------
 # MassBalanceEngine
 # ---------------------------------------------------------------------------
-
 
 class MassBalanceEngine:
     """Production-grade mass balance ledger engine for EUDR compliance.
@@ -801,7 +780,7 @@ class MassBalanceEngine:
             cert_scheme, self.default_credit_period
         )
 
-        now = _utcnow()
+        now = utcnow()
         credit_expiry = now + timedelta(days=credit_period_months * 30)
 
         entry = LedgerEntry(
@@ -892,7 +871,7 @@ class MassBalanceEngine:
                 f"total output ({quantity_kg})."
             )
 
-        now = _utcnow()
+        now = utcnow()
         entry = LedgerEntry(
             entry_id=_generate_id(),
             facility_id=facility_id,
@@ -971,7 +950,7 @@ class MassBalanceEngine:
         if period:
             entries = [e for e in entries if e.period == period]
 
-        now = _utcnow()
+        now = utcnow()
         total_input = 0.0
         total_output = 0.0
         total_loss = 0.0
@@ -1219,7 +1198,7 @@ class MassBalanceEngine:
 
         within_tolerance = loss_pct <= tolerance_pct if reference_input_kg > 0 else True
 
-        now = _utcnow()
+        now = utcnow()
 
         # Create ledger entry
         entry = LedgerEntry(
@@ -1320,7 +1299,7 @@ class MassBalanceEngine:
                 available_balance_kg=round(available, BALANCE_PRECISION),
                 overdraft_kg=round(abs(balance), BALANCE_PRECISION),
                 severity=self._classify_overdraft_severity(abs(balance)),
-                detected_at=_utcnow(),
+                detected_at=utcnow(),
             )
             alert.provenance_hash = _compute_hash(alert.to_dict())
 
@@ -1396,7 +1375,7 @@ class MassBalanceEngine:
         compliant_out = 0.0
         expired_credits = 0.0
 
-        now = _utcnow()
+        now = utcnow()
 
         for entry in period_entries:
             if entry.status == EntryStatus.VOIDED:
@@ -1548,7 +1527,7 @@ class MassBalanceEngine:
         if expiry_months is None:
             expiry_months = self.default_credit_period
 
-        now = _utcnow()
+        now = utcnow()
         expiry = now + timedelta(days=expiry_months * 30)
 
         entry = LedgerEntry(
@@ -1611,7 +1590,7 @@ class MassBalanceEngine:
         key = (facility_id, commodity)
 
         entries = self._ledger.get(key, [])
-        entries = sorted(entries, key=lambda e: e.recorded_at or _utcnow())
+        entries = sorted(entries, key=lambda e: e.recorded_at or utcnow())
         return entries[:limit]
 
     # ------------------------------------------------------------------
@@ -1815,7 +1794,7 @@ class MassBalanceEngine:
         """
         key = (facility_id, commodity)
         entries = self._ledger.get(key, [])
-        now = _utcnow()
+        now = utcnow()
 
         balance = 0.0
         for entry in entries:
@@ -1869,7 +1848,7 @@ class MassBalanceEngine:
             overdraft_kg=round(overdraft, BALANCE_PRECISION),
             batch_id=batch_id,
             severity=severity,
-            detected_at=_utcnow(),
+            detected_at=utcnow(),
         )
         alert.provenance_hash = _compute_hash(alert.to_dict())
         self._overdraft_alerts.append(alert)

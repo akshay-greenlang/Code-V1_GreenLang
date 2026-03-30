@@ -82,25 +82,20 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import RiskLevel
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -118,7 +113,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -127,7 +121,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -139,17 +132,14 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _mean_decimal(values: List[Decimal]) -> Decimal:
     """Compute arithmetic mean of a list of Decimals."""
@@ -158,7 +148,6 @@ def _mean_decimal(values: List[Decimal]) -> Decimal:
     return _safe_divide(
         sum(values, Decimal("0")), _decimal(len(values))
     )
-
 
 def _std_decimal(values: List[Decimal], mean_val: Optional[Decimal] = None) -> Decimal:
     """Compute standard deviation of a list of Decimals."""
@@ -175,11 +164,9 @@ def _std_decimal(values: List[Decimal], mean_val: Optional[Decimal] = None) -> D
     except (ValueError, OverflowError):
         return Decimal("0")
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class BaselineMethodology(str, Enum):
     """Supported baseline calculation methodologies.
@@ -202,7 +189,6 @@ class BaselineMethodology(str, Enum):
     EU_STANDARD = "eu_standard"
     CUSTOM_REGRESSION = "custom_regression"
 
-
 class AdjustmentType(str, Enum):
     """Same-day baseline adjustment type.
 
@@ -218,7 +204,6 @@ class AdjustmentType(str, Enum):
     WEATHER = "weather"
     CUSTOM = "custom"
 
-
 class BaselineQuality(str, Enum):
     """Quality grade for a calculated baseline.
 
@@ -232,7 +217,6 @@ class BaselineQuality(str, Enum):
     FAIR = "fair"
     POOR = "poor"
 
-
 class DayType(str, Enum):
     """Day type classification for baseline day selection.
 
@@ -245,19 +229,6 @@ class DayType(str, Enum):
     WEEKEND = "weekend"
     HOLIDAY = "holiday"
     EVENT_DAY = "event_day"
-
-
-class RiskLevel(str, Enum):
-    """Risk level for baseline under/over-estimation.
-
-    LOW:    Baseline consistently accurate (< 5% error).
-    MEDIUM: Moderate variability (5-15% error).
-    HIGH:   Significant variability (> 15% error).
-    """
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -291,11 +262,9 @@ MIN_REFERENCE_DAYS: Dict[str, int] = {
     BaselineMethodology.CUSTOM_REGRESSION.value: 30,
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class IntervalData(BaseModel):
     """Single 15-minute interval consumption data point.
@@ -314,7 +283,6 @@ class IntervalData(BaseModel):
     temperature_c: Optional[Decimal] = Field(
         default=None, description="Outdoor temperature (C)"
     )
-
 
 class DayData(BaseModel):
     """One day of 15-minute interval data for baseline calculation.
@@ -349,7 +317,6 @@ class DayData(BaseModel):
         if not v or not v.strip():
             return "1970-01-01"
         return v
-
 
 class BaselineInput(BaseModel):
     """Input data for baseline calculation.
@@ -390,11 +357,9 @@ class BaselineInput(BaseModel):
         default=None, description="Fixed profile (96 values) for deemed"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class BaselineResult(BaseModel):
     """Result of a baseline calculation.
@@ -437,9 +402,8 @@ class BaselineResult(BaseModel):
     event_date: str = Field(default="")
     event_intervals: Tuple[int, int] = Field(default=(48, 64))
     methodology_notes: str = Field(default="")
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class BaselineComparison(BaseModel):
     """Side-by-side comparison of multiple baseline methodologies.
@@ -464,9 +428,8 @@ class BaselineComparison(BaseModel):
     )
     spread_kwh: Decimal = Field(default=Decimal("0"))
     spread_pct: Decimal = Field(default=Decimal("0"))
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class BaselineRisk(BaseModel):
     """Risk assessment for a baseline methodology.
@@ -493,14 +456,12 @@ class BaselineRisk(BaseModel):
     weather_sensitivity: Decimal = Field(default=Decimal("0"))
     data_quality_score: Decimal = Field(default=Decimal("0"))
     recommendations: List[str] = Field(default_factory=list)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class BaselineEngine:
     """Demand response baseline calculation engine.

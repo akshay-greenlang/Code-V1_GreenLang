@@ -36,20 +36,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "43.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -62,18 +57,15 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SBTiScenario(str, Enum):
     """SBTi temperature scenarios."""
 
     SCENARIO_1_5C = "1.5C"
     SCENARIO_WB2C = "well_below_2C"
-
 
 class SBTiStatus(str, Enum):
     """SBTi target status."""
@@ -83,7 +75,6 @@ class SBTiStatus(str, Enum):
     AT_RISK = "at_risk"
     NOT_SET = "not_set"
     ACHIEVED = "achieved"
-
 
 # ---------------------------------------------------------------------------
 # SDA Sector Pathways (annual reduction rates, % per year)
@@ -216,11 +207,9 @@ FLAG_SECTOR_TARGETS: Dict[str, Dict[str, Any]] = {
              "deforestation_free_by": 2025},
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class SectorPathway(BaseModel):
     """SDA sector decarbonization pathway."""
@@ -234,7 +223,6 @@ class SectorPathway(BaseModel):
     target_2030_intensity: float = Field(default=0.0)
     target_2050_intensity: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class TargetValidation(BaseModel):
     """SBTi target validation result."""
@@ -251,7 +239,6 @@ class TargetValidation(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class FLAGPathway(BaseModel):
     """FLAG sector target pathway."""
 
@@ -260,7 +247,6 @@ class FLAGPathway(BaseModel):
     target_2050: str = Field(default="")
     deforestation_free_by: int = Field(default=2025)
     provenance_hash: str = Field(default="")
-
 
 class SubmissionData(BaseModel):
     """SBTi target submission data package."""
@@ -279,13 +265,11 @@ class SubmissionData(BaseModel):
     methodology: str = Field(default="")
     flag_applicable: bool = Field(default=False)
     provenance_hash: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # SBTiBridge
 # ---------------------------------------------------------------------------
-
 
 class SBTiBridge:
     """SBTi validation and pathway data for Scope 3 Complete Pack.

@@ -74,6 +74,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -112,15 +113,9 @@ except ImportError:
     _METRICS_AVAILABLE = False
     _record_db_operation = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -138,13 +133,11 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Decimal precision constant
 # ---------------------------------------------------------------------------
 
 _PRECISION = Decimal("0.00000001")  # 8 decimal places
-
 
 def _D(value: Any) -> Decimal:
     """Convert a value to Decimal with controlled precision.
@@ -159,11 +152,9 @@ def _D(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 # ===========================================================================
 # Enumerations
 # ===========================================================================
-
 
 class WasteCategory(str, Enum):
     """IPCC waste categories per 2006 Guidelines Vol 5.
@@ -193,7 +184,6 @@ class WasteCategory(str, Enum):
     CLINICAL_WASTE = "CLINICAL_WASTE"
     INDUSTRIAL_WASTE = "INDUSTRIAL_WASTE"
 
-
 class TreatmentMethod(str, Enum):
     """Waste treatment methods covered by this agent.
 
@@ -217,7 +207,6 @@ class TreatmentMethod(str, Enum):
     RECYCLING = "RECYCLING"
     AUTOCLAVE = "AUTOCLAVE"
 
-
 class IncineratorType(str, Enum):
     """Incineration technology types per IPCC Vol 5 Ch 5 Table 5.3.
 
@@ -233,7 +222,6 @@ class IncineratorType(str, Enum):
     ROTARY_KILN = "ROTARY_KILN"
     SEMI_CONTINUOUS = "SEMI_CONTINUOUS"
     BATCH_TYPE = "BATCH_TYPE"
-
 
 class CompostingType(str, Enum):
     """Biological treatment types per IPCC 2019 Refinement Table 5.1.
@@ -253,7 +241,6 @@ class CompostingType(str, Enum):
     MBT_AEROBIC = "MBT_AEROBIC"
     MBT_ANAEROBIC = "MBT_ANAEROBIC"
 
-
 class LandfillType(str, Enum):
     """Landfill/disposal site types for MCF selection.
 
@@ -268,7 +255,6 @@ class LandfillType(str, Enum):
     OPEN_DUMP_COVERED = "OPEN_DUMP_COVERED"
     OPEN_DUMP_UNCOVERED = "OPEN_DUMP_UNCOVERED"
     INDUSTRIAL_LANDFILL = "INDUSTRIAL_LANDFILL"
-
 
 class WastewaterSystemType(str, Enum):
     """Wastewater treatment system types for MCF selection.
@@ -287,7 +273,6 @@ class WastewaterSystemType(str, Enum):
     LATRINE_WET = "LATRINE_WET"
     UNTREATED_DISCHARGE = "UNTREATED_DISCHARGE"
 
-
 class ClimateZoneWaste(str, Enum):
     """Climate zone classification for waste decay half-life selection.
 
@@ -301,7 +286,6 @@ class ClimateZoneWaste(str, Enum):
     BOREAL_WET = "BOREAL_WET"
     BOREAL_DRY = "BOREAL_DRY"
 
-
 class DecayCategory(str, Enum):
     """Waste decay rate categories for first-order decay half-life.
 
@@ -314,7 +298,6 @@ class DecayCategory(str, Enum):
     SLOWLY_DEGRADING = "SLOWLY_DEGRADING"
     VERY_SLOWLY_DEGRADING = "VERY_SLOWLY_DEGRADING"
     NON_DEGRADING = "NON_DEGRADING"
-
 
 class GWPSource(str, Enum):
     """IPCC Assessment Report editions for GWP values.
@@ -330,7 +313,6 @@ class GWPSource(str, Enum):
     AR6 = "AR6"
     AR6_20YR = "AR6_20YR"
 
-
 class WastewaterType(str, Enum):
     """Wastewater types for Bo (max CH4 producing capacity) lookup.
 
@@ -345,7 +327,6 @@ class WastewaterType(str, Enum):
     INDUSTRIAL_ALCOHOL_STARCH = "INDUSTRIAL_ALCOHOL_STARCH"
     INDUSTRIAL_ORGANIC_CHEMICALS = "INDUSTRIAL_ORGANIC_CHEMICALS"
     INDUSTRIAL_VEGETABLE_OIL = "INDUSTRIAL_VEGETABLE_OIL"
-
 
 class EmissionFactorSource(str, Enum):
     """Sources for emission factor data.
@@ -367,11 +348,9 @@ class EmissionFactorSource(str, Enum):
     SITE_MEASURED = "SITE_MEASURED"
     CUSTOM = "CUSTOM"
 
-
 # ===========================================================================
 # Dataclasses for structured lookups
 # ===========================================================================
-
 
 @dataclass(frozen=True)
 class TreatmentMethodInfo:
@@ -395,7 +374,6 @@ class TreatmentMethodInfo:
     regulatory_refs: Tuple[str, ...]
     ipcc_chapter: str
 
-
 @dataclass(frozen=True)
 class CarbonContentRecord:
     """Carbon content and fossil fraction for a waste type.
@@ -413,7 +391,6 @@ class CarbonContentRecord:
     carbon_pct: Decimal
     fossil_fraction: Decimal
     source: str
-
 
 @dataclass(frozen=True)
 class IncinerationEF:
@@ -434,7 +411,6 @@ class IncinerationEF:
     ch4_kg_per_gg: Decimal
     source: str
 
-
 @dataclass(frozen=True)
 class CompostingEF:
     """Composting/biological treatment emission factors.
@@ -453,7 +429,6 @@ class CompostingEF:
     ch4_g_per_kg: Decimal
     n2o_g_per_kg: Decimal
     source: str
-
 
 @dataclass(frozen=True)
 class OpenBurningEF:
@@ -475,7 +450,6 @@ class OpenBurningEF:
     ch4_g_per_kg: Decimal
     n2o_g_per_kg: Decimal
     source: str
-
 
 # ===========================================================================
 # GWP Values (IPCC AR4/AR5/AR6/AR6_20YR)
@@ -519,7 +493,6 @@ GWP_VALUES: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ===========================================================================
 # DOC Values - Degradable Organic Carbon (fraction of wet weight)
 # IPCC 2006 Vol 5, Table 2.4
@@ -550,7 +523,6 @@ DOC_VALUES: Dict[str, Decimal] = {
     "INDUSTRIAL_WASTE": _D("0.15"),
 }
 
-
 # ===========================================================================
 # MCF - Methane Correction Factor by landfill/disposal site type
 # IPCC 2006 Vol 5, Table 3.1
@@ -569,7 +541,6 @@ MCF_VALUES: Dict[str, Decimal] = {
     "OPEN_DUMP_UNCOVERED": _D("0.4"),
     "INDUSTRIAL_LANDFILL": _D("1.0"),
 }
-
 
 # ===========================================================================
 # Carbon Content and Fossil Carbon Fraction
@@ -677,7 +648,6 @@ CARBON_CONTENT: Dict[str, CarbonContentRecord] = {
     ),
 }
 
-
 # ===========================================================================
 # Incineration Emission Factors by Technology
 # IPCC 2006 Vol 5 Ch 5 Table 5.3
@@ -719,7 +689,6 @@ INCINERATION_EF: Dict[str, IncinerationEF] = {
         source="IPCC 2006 Vol5 Ch5 Table 5.3",
     ),
 }
-
 
 # ===========================================================================
 # Composting / Biological Treatment Emission Factors
@@ -769,7 +738,6 @@ COMPOSTING_EF: Dict[str, CompostingEF] = {
     ),
 }
 
-
 # ===========================================================================
 # Wastewater MCF Values
 # IPCC 2006 Vol 5 Ch 6 Table 6.3
@@ -790,7 +758,6 @@ WASTEWATER_MCF: Dict[str, Decimal] = {
     "LATRINE_WET": _D("0.7"),
     "UNTREATED_DISCHARGE": _D("0.1"),
 }
-
 
 # ===========================================================================
 # Bo Values - Maximum CH4 Producing Capacity (kg CH4/kg COD)
@@ -824,7 +791,6 @@ BO_VALUES_BOD: Dict[str, Decimal] = {
     "INDUSTRIAL_VEGETABLE_OIL": _D("0.58"),
 }
 
-
 # ===========================================================================
 # NCV - Net Calorific Values by Waste Type
 # Units: GJ per tonne of wet waste
@@ -854,7 +820,6 @@ NCV_VALUES: Dict[str, Decimal] = {
     "GLASS": _D("0"),
     "OTHER_INERT": _D("0"),
 }
-
 
 # ===========================================================================
 # Half-Life Values for First-Order Decay (years)
@@ -933,7 +898,6 @@ WASTE_TO_DECAY_CATEGORY: Dict[str, str] = {
     "OTHER_INERT": "NON_DEGRADING",
 }
 
-
 # ===========================================================================
 # DOCf - Fraction of DOC that Decomposes
 # IPCC 2006 Vol 5 Ch 3 Section 3.2.3
@@ -966,7 +930,6 @@ DOCF_VALUES: Dict[str, Decimal] = {
     "OTHER_INERT": _D("0"),
 }
 
-
 # ===========================================================================
 # Oxidation Factor (OX)
 # IPCC 2006 Vol 5 Ch 3 Table 3.2
@@ -984,7 +947,6 @@ OXIDATION_FACTOR: Dict[str, Decimal] = {
     "OPEN_DUMP_UNCOVERED": _D("0"),
     "INDUSTRIAL_LANDFILL": _D("0.10"),
 }
-
 
 # ===========================================================================
 # Open Burning Emission Factors
@@ -1060,7 +1022,6 @@ OPEN_BURNING_EF: Dict[str, OpenBurningEF] = {
     ),
 }
 
-
 # ===========================================================================
 # Methane Fraction in Landfill Gas
 # IPCC 2006 Vol 5 Ch 3 Section 3.2.3
@@ -1093,7 +1054,6 @@ C_TO_CO2_RATIO: Decimal = _D("3.66667")
 
 #: Molecular weight of CH4 / C (16/12).
 CH4_C_RATIO: Decimal = _D("1.33333")
-
 
 # ===========================================================================
 # Treatment Method Metadata (15 methods)
@@ -1309,7 +1269,6 @@ TREATMENT_METHODS: Dict[str, TreatmentMethodInfo] = {
     ),
 }
 
-
 # ===========================================================================
 # Wastewater N2O Emission Factors
 # IPCC 2006 Vol 5 Ch 6 Section 6.3
@@ -1343,7 +1302,6 @@ NON_CONSUMED_PROTEIN_FACTOR: Decimal = _D("1.0")
 
 #: Factor for industrial/commercial co-discharged protein.
 INDUSTRIAL_PROTEIN_FACTOR: Decimal = _D("1.25")
-
 
 # ===========================================================================
 # DEFRA Emission Factors (UK-specific, commonly used)
@@ -1406,7 +1364,6 @@ DEFRA_FACTORS: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ===========================================================================
 # EPA Emission Factors (US-specific)
 # Units: MTCO2E per short ton
@@ -1453,7 +1410,6 @@ EPA_WARM_FACTORS: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ===========================================================================
 # Landfill Gas Collection Efficiency Defaults
 # ===========================================================================
@@ -1474,11 +1430,9 @@ FLARE_DESTRUCTION_EFFICIENCY: Decimal = _D("0.98")
 #: Default engine destruction efficiency (landfill gas to energy).
 ENGINE_DESTRUCTION_EFFICIENCY: Decimal = _D("0.995")
 
-
 # ===========================================================================
 # WasteTreatmentDatabaseEngine
 # ===========================================================================
-
 
 class WasteTreatmentDatabaseEngine:
     """Reference data repository for IPCC/EPA/DEFRA waste treatment emission factors.
@@ -1510,7 +1464,7 @@ class WasteTreatmentDatabaseEngine:
         self._lock = threading.RLock()
         self._total_lookups: int = 0
         self._cache: Dict[str, Any] = {}
-        self._created_at = _utcnow()
+        self._created_at = utcnow()
 
         logger.info(
             "WasteTreatmentDatabaseEngine initialized: "
@@ -2625,7 +2579,7 @@ class WasteTreatmentDatabaseEngine:
                 "value": str(value),
                 "source": source,
                 "description": description,
-                "registered_at": _utcnow().isoformat(),
+                "registered_at": utcnow().isoformat(),
             }
             self._custom_factors[factor_type][key] = record
 

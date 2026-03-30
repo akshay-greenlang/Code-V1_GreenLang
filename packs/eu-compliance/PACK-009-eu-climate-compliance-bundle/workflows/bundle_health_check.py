@@ -24,6 +24,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 from pydantic import BaseModel, Field
+from greenlang.schemas.enums import HealthStatus
 
 logger = logging.getLogger(__name__)
 
@@ -57,14 +58,6 @@ class RegulationPack(str, Enum):
     CBAM = "CBAM"
     EU_TAXONOMY = "EU_TAXONOMY"
     EUDR = "EUDR"
-
-
-class HealthStatus(str, Enum):
-    """Health status for a check."""
-    HEALTHY = "HEALTHY"
-    DEGRADED = "DEGRADED"
-    UNHEALTHY = "UNHEALTHY"
-    UNKNOWN = "UNKNOWN"
 
 
 class CheckCategory(str, Enum):

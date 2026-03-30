@@ -49,31 +49,25 @@ from typing import Any, Callable, Coroutine, Dict, List, Optional, Set
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "25.0.0"
 
 ProgressCallback = Callable[[str, float, str], Coroutine[Any, Any, None]]
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: Any) -> str:
     if isinstance(data, dict):
         data = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(str(data).encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -82,7 +76,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class CycleStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
@@ -90,7 +83,6 @@ class CycleStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
     CANCELLED = "cancelled"
-
 
 class R2ZPhase(str, Enum):
     ONBOARDING = "onboarding"
@@ -104,14 +96,12 @@ class R2ZPhase(str, Enum):
     VERIFICATION = "verification"
     CONTINUOUS_IMPROVEMENT = "continuous_improvement"
 
-
 class ReadinessLevel(str, Enum):
     CAMPAIGN_READY = "campaign_ready"           # >= 85%
     MOSTLY_READY = "mostly_ready"               # 70-84%
     PARTIALLY_READY = "partially_ready"          # 50-69%
     SIGNIFICANT_GAPS = "significant_gaps"         # 30-49%
     NOT_READY = "not_ready"                      # < 30%
-
 
 # =============================================================================
 # REFERENCE DATA
@@ -170,11 +160,9 @@ READINESS_DIMENSIONS: List[Dict[str, Any]] = [
     {"id": "D8", "name": "Sector Alignment", "weight": 10.0, "phase": "sector_pathway"},
 ]
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase: R2ZPhase = Field(...)
@@ -188,7 +176,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class PhaseGate(BaseModel):
     gate_id: str = Field(default="")
     phase: R2ZPhase = Field(...)
@@ -197,7 +184,6 @@ class PhaseGate(BaseModel):
     value: Any = Field(default=None)
     threshold: Any = Field(default=None)
 
-
 class ReadinessScore(BaseModel):
     overall_score: float = Field(default=0.0, ge=0.0, le=100.0)
     readiness_level: ReadinessLevel = Field(default=ReadinessLevel.NOT_READY)
@@ -205,7 +191,6 @@ class ReadinessScore(BaseModel):
     strengths: List[str] = Field(default_factory=list)
     gaps: List[str] = Field(default_factory=list)
     priority_actions: List[str] = Field(default_factory=list)
-
 
 class CycleMetrics(BaseModel):
     total_emissions_tco2e: float = Field(default=0.0, ge=0.0)
@@ -219,7 +204,6 @@ class CycleMetrics(BaseModel):
     sector_aligned: bool = Field(default=False)
     verification_status: str = Field(default="not_started")
 
-
 class CycleSummary(BaseModel):
     cycle_year: int = Field(default=2025)
     cycle_number: int = Field(default=1)
@@ -230,7 +214,6 @@ class CycleSummary(BaseModel):
     key_achievements: List[str] = Field(default_factory=list)
     improvement_areas: List[str] = Field(default_factory=list)
     next_cycle_priorities: List[str] = Field(default_factory=list)
-
 
 class FullR2ZConfig(BaseModel):
     pack_id: str = Field(default="PACK-025")
@@ -265,7 +248,6 @@ class FullR2ZConfig(BaseModel):
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
 
-
 class FullR2ZResult(BaseModel):
     execution_id: str = Field(default_factory=_new_uuid)
     pack_id: str = Field(default="PACK-025")
@@ -287,11 +269,9 @@ class FullR2ZResult(BaseModel):
     quality_score: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class FullRaceToZeroWorkflow:
     """
@@ -343,7 +323,7 @@ class FullRaceToZeroWorkflow:
         result = FullR2ZResult(
             org_name=self.config.org_name,
             status=CycleStatus.RUNNING,
-            started_at=_utcnow(),
+            started_at=utcnow(),
         )
         self._results[result.execution_id] = result
 
@@ -385,7 +365,7 @@ class FullRaceToZeroWorkflow:
                 if phase == R2ZPhase.VERIFICATION and not self.config.enable_verification:
                     phase_result = PhaseResult(
                         phase=phase, status=PhaseStatus.SKIPPED,
-                        started_at=_utcnow(), completed_at=_utcnow(),
+                        started_at=utcnow(), completed_at=utcnow(),
                     )
                     result.phase_results[phase.value] = phase_result
                     result.phases_skipped.append(phase.value)
@@ -436,7 +416,7 @@ class FullRaceToZeroWorkflow:
             result.errors.append(str(exc))
 
         finally:
-            result.completed_at = _utcnow()
+            result.completed_at = utcnow()
             result.total_duration_ms = (time.monotonic() - start_time) * 1000
             result.quality_score = self._compute_quality_score(result)
             result.metrics = self._compile_metrics(shared_context)
@@ -474,7 +454,7 @@ class FullRaceToZeroWorkflow:
     async def _execute_phase(
         self, phase: R2ZPhase, context: Dict[str, Any]
     ) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         start_time = time.monotonic()
         handler = self._get_phase_handler(phase)
         try:
@@ -485,7 +465,7 @@ class FullRaceToZeroWorkflow:
             status = PhaseStatus.FAILED
         elapsed_ms = (time.monotonic() - start_time) * 1000
         return PhaseResult(
-            phase=phase, status=status, started_at=started, completed_at=_utcnow(),
+            phase=phase, status=status, started_at=started, completed_at=utcnow(),
             duration_ms=round(elapsed_ms, 2), outputs=outputs,
             warnings=warnings, errors=errors,
             provenance_hash=_compute_hash(outputs) if self.config.enable_provenance else "",

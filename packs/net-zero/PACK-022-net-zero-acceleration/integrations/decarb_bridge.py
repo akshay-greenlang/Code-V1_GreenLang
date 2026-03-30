@@ -31,13 +31,10 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 _MODULE_VERSION: str = "1.0.0"
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
@@ -51,7 +48,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 class _AgentStub:
     def __init__(self, agent_name: str) -> None:
@@ -68,7 +64,6 @@ def _try_import_decarb_agent(agent_id: str, module_path: str) -> Any:
     except ImportError:
         logger.debug("DECARB agent %s not available, using stub", agent_id)
         return _AgentStub(agent_id)
-
 
 class DecarbLever(str, Enum):
     RENEWABLE_ENERGY = "renewable_energy"
@@ -98,7 +93,6 @@ class ScenarioFilter(str, Enum):
     AGGRESSIVE = "aggressive"
     ALL = "all"
 
-
 class DecarbBridgeConfig(BaseModel):
     pack_id: str = Field(default="PACK-022")
     enable_provenance: bool = Field(default=True)
@@ -108,7 +102,6 @@ class DecarbBridgeConfig(BaseModel):
     discount_rate: float = Field(default=0.08, ge=0.0, le=0.25)
     carbon_price_eur_per_tco2e: float = Field(default=80.0, ge=0.0)
     monte_carlo_iterations: int = Field(default=1000, ge=100, le=100000)
-
 
 class AbatementOption(BaseModel):
     option_id: str = Field(default_factory=_new_uuid)
@@ -123,7 +116,6 @@ class AbatementOption(BaseModel):
     technology_readiness: str = Field(default="mature")
     implementation_years: int = Field(default=1, ge=1)
     scenario_applicability: List[str] = Field(default_factory=lambda: ["ambitious", "aggressive"])
-
 
 class AbatementResult(BaseModel):
     operation_id: str = Field(default_factory=_new_uuid)
@@ -195,7 +187,6 @@ class TechnologyResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 DECARB_AGENT_ROUTING: Dict[str, Dict[str, str]] = {
     f"DECARB-X-{i:03d}": {"name": name, "module": f"greenlang.agents.decarb.{module}"}
     for i, (name, module) in enumerate([
@@ -212,7 +203,6 @@ DECARB_AGENT_ROUTING: Dict[str, Dict[str, str]] = {
         ("Business Case Generator", "business_case"),
     ], start=1)
 }
-
 
 class DecarbBridge:
     """Bridge to 21 DECARB-X agents with scenario filtering and Monte Carlo.
@@ -353,6 +343,7 @@ class DecarbBridge:
         result = MonteCarloResult(iterations=iterations)
         try:
             import random as rng
+
             total_potential = sum(o.abatement_potential_tco2e for o in options)
             simulated_abatements: List[float] = []
             for _ in range(iterations):

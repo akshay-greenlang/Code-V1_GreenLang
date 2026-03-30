@@ -23,23 +23,17 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import ConfigDict, Field, field_validator
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
+from greenlang.schemas import GreenLangBase, utcnow
 
 def _new_id() -> str:
     """Generate a new UUID4 string identifier."""
     return str(uuid.uuid4())
 
-
 # =============================================================================
 # Enumerations (API-level mirrors for OpenAPI documentation)
 # =============================================================================
-
 
 class CommodityTypeEnum(str, Enum):
     """EUDR-regulated commodity types per EU 2023/1115 Article 1."""
@@ -52,7 +46,6 @@ class CommodityTypeEnum(str, Enum):
     SOYA = "soya"
     WOOD = "wood"
 
-
 class RiskLevelEnum(str, Enum):
     """Risk classification levels for EUDR commodity assessment."""
 
@@ -60,7 +53,6 @@ class RiskLevelEnum(str, Enum):
     MEDIUM = "medium"
     HIGH = "high"
     CRITICAL = "critical"
-
 
 class MarketConditionEnum(str, Enum):
     """Market condition classifications for price volatility."""
@@ -70,7 +62,6 @@ class MarketConditionEnum(str, Enum):
     DISRUPTED = "disrupted"
     CRISIS = "crisis"
 
-
 class VolatilityLevelEnum(str, Enum):
     """Volatility classification for price analysis."""
 
@@ -78,7 +69,6 @@ class VolatilityLevelEnum(str, Enum):
     MODERATE = "moderate"
     HIGH = "high"
     EXTREME = "extreme"
-
 
 class ComplianceStatusEnum(str, Enum):
     """Regulatory compliance status values."""
@@ -89,7 +79,6 @@ class ComplianceStatusEnum(str, Enum):
     UNDER_REVIEW = "under_review"
     PENDING = "pending"
 
-
 class DDWorkflowStatusEnum(str, Enum):
     """Due diligence workflow status values."""
 
@@ -99,7 +88,6 @@ class DDWorkflowStatusEnum(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     CANCELLED = "cancelled"
-
 
 class EvidenceTypeEnum(str, Enum):
     """Types of evidence for due diligence workflows."""
@@ -115,14 +103,12 @@ class EvidenceTypeEnum(str, Enum):
     TRADE_DOCUMENT = "trade_document"
     OTHER = "other"
 
-
 class VolatilityTrendEnum(str, Enum):
     """Trend direction for volatility analysis."""
 
     INCREASING = "increasing"
     DECREASING = "decreasing"
     STABLE = "stable"
-
 
 class PenaltyCategoryEnum(str, Enum):
     """EUDR penalty categories per Article 25."""
@@ -131,7 +117,6 @@ class PenaltyCategoryEnum(str, Enum):
     SIGNIFICANT = "significant"
     SEVERE = "severe"
     CRITICAL = "critical"
-
 
 class DDTriggerEnum(str, Enum):
     """Triggers for initiating a due diligence workflow."""
@@ -144,7 +129,6 @@ class DDTriggerEnum(str, Enum):
     SUPPLIER_CHANGE = "supplier_change"
     MANUAL = "manual"
 
-
 class SeveritySummaryEnum(str, Enum):
     """Severity classification for substitution alerts."""
 
@@ -153,13 +137,11 @@ class SeveritySummaryEnum(str, Enum):
     HIGH = "high"
     CRITICAL = "critical"
 
-
 # =============================================================================
 # Common / Shared Schemas
 # =============================================================================
 
-
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Health check response for the Commodity Risk Analyzer API."""
 
     status: str = Field(
@@ -180,14 +162,13 @@ class HealthResponse(BaseModel):
         description="API version",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Current server time in UTC",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     """Structured error response for all API endpoints."""
 
     error: str = Field(
@@ -211,8 +192,7 @@ class ErrorResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class PaginationParams(BaseModel):
+class PaginationParams(GreenLangBase):
     """Standard pagination query parameters."""
 
     limit: int = Field(
@@ -224,8 +204,7 @@ class PaginationParams(BaseModel):
         description="Number of results to skip",
     )
 
-
-class PaginatedMeta(BaseModel):
+class PaginatedMeta(GreenLangBase):
     """Pagination metadata included in list responses."""
 
     total: int = Field(..., ge=0, description="Total number of results")
@@ -233,8 +212,7 @@ class PaginatedMeta(BaseModel):
     offset: int = Field(..., ge=0, description="Results skipped")
     has_more: bool = Field(..., description="Whether more results exist")
 
-
-class ProvenanceInfo(BaseModel):
+class ProvenanceInfo(GreenLangBase):
     """Provenance tracking metadata for audit trails."""
 
     provenance_hash: str = Field(
@@ -243,7 +221,7 @@ class ProvenanceInfo(BaseModel):
         examples=["a1b2c3d4e5f6..."],
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when provenance was recorded",
     )
     source_agent: str = Field(
@@ -258,8 +236,7 @@ class ProvenanceInfo(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CountryData(BaseModel):
+class CountryData(GreenLangBase):
     """Country-level data for commodity analysis."""
 
     country_code: str = Field(
@@ -301,8 +278,7 @@ class CountryData(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class SupplyChainData(BaseModel):
+class SupplyChainData(GreenLangBase):
     """Supply chain metadata for commodity profiling."""
 
     depth: int = Field(
@@ -334,8 +310,7 @@ class SupplyChainData(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ProfileOptions(BaseModel):
+class ProfileOptions(GreenLangBase):
     """Options for commodity profiling requests."""
 
     include_price_data: bool = Field(
@@ -372,13 +347,11 @@ class ProfileOptions(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Commodity Profile Schemas
 # =============================================================================
 
-
-class CommodityProfileRequest(BaseModel):
+class CommodityProfileRequest(GreenLangBase):
     """Request to profile a single EUDR commodity."""
 
     commodity_type: CommodityTypeEnum = Field(
@@ -432,8 +405,7 @@ class CommodityProfileRequest(BaseModel):
         },
     )
 
-
-class CommodityProfileBatchRequest(BaseModel):
+class CommodityProfileBatchRequest(GreenLangBase):
     """Request to profile multiple EUDR commodities in a single batch."""
 
     commodities: List[CommodityProfileRequest] = Field(
@@ -468,8 +440,7 @@ class CommodityProfileBatchRequest(BaseModel):
         },
     )
 
-
-class CommodityProfileResponse(BaseModel):
+class CommodityProfileResponse(GreenLangBase):
     """Response containing a complete commodity risk profile."""
 
     profile_id: str = Field(
@@ -533,14 +504,13 @@ class CommodityProfileResponse(BaseModel):
         description="Audit trail provenance metadata",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Profile creation timestamp",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CommodityProfileBatchResponse(BaseModel):
+class CommodityProfileBatchResponse(GreenLangBase):
     """Response for batch commodity profiling."""
 
     profiles: List[CommodityProfileResponse] = Field(
@@ -565,8 +535,7 @@ class CommodityProfileBatchResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CommodityRiskHistoryEntry(BaseModel):
+class CommodityRiskHistoryEntry(GreenLangBase):
     """Single point in a commodity risk history time series."""
 
     date: date = Field(..., description="Assessment date")
@@ -584,8 +553,7 @@ class CommodityRiskHistoryEntry(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CommodityRiskHistoryResponse(BaseModel):
+class CommodityRiskHistoryResponse(GreenLangBase):
     """Risk history time series for a commodity."""
 
     commodity_id: str = Field(..., description="Commodity identifier")
@@ -603,8 +571,7 @@ class CommodityRiskHistoryResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CommodityComparisonEntry(BaseModel):
+class CommodityComparisonEntry(GreenLangBase):
     """Risk comparison data for a single commodity."""
 
     commodity_type: CommodityTypeEnum = Field(..., description="Commodity type")
@@ -636,8 +603,7 @@ class CommodityComparisonEntry(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CommodityComparisonResponse(BaseModel):
+class CommodityComparisonResponse(GreenLangBase):
     """Response for comparing multiple commodities side by side."""
 
     commodities: List[CommodityComparisonEntry] = Field(
@@ -653,14 +619,13 @@ class CommodityComparisonResponse(BaseModel):
         description="Risk mitigation recommendations based on comparison",
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Comparison generation timestamp",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CommoditySummaryEntry(BaseModel):
+class CommoditySummaryEntry(GreenLangBase):
     """Summary data for a single commodity in the overview."""
 
     commodity_type: CommodityTypeEnum = Field(..., description="Commodity type")
@@ -681,8 +646,7 @@ class CommoditySummaryEntry(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CommoditySummaryResponse(BaseModel):
+class CommoditySummaryResponse(GreenLangBase):
     """Summary overview of all monitored commodities."""
 
     commodities: List[CommoditySummaryEntry] = Field(
@@ -701,19 +665,17 @@ class CommoditySummaryResponse(BaseModel):
         description="Commodity with highest risk score",
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Summary generation timestamp",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Derived Product Schemas
 # =============================================================================
 
-
-class ProcessingStageItem(BaseModel):
+class ProcessingStageItem(GreenLangBase):
     """A single stage in a derived product processing chain."""
 
     stage_name: str = Field(
@@ -743,8 +705,7 @@ class ProcessingStageItem(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class DerivedProductAnalyzeRequest(BaseModel):
+class DerivedProductAnalyzeRequest(GreenLangBase):
     """Request to analyze a derived product for EUDR Annex I compliance."""
 
     product_id: str = Field(
@@ -790,8 +751,7 @@ class DerivedProductAnalyzeRequest(BaseModel):
         },
     )
 
-
-class DerivedProductTraceRequest(BaseModel):
+class DerivedProductTraceRequest(GreenLangBase):
     """Request to trace a derived product back to its raw commodity origin."""
 
     product_id: str = Field(
@@ -803,8 +763,7 @@ class DerivedProductTraceRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class DerivedProductResponse(BaseModel):
+class DerivedProductResponse(GreenLangBase):
     """Response containing derived product analysis results."""
 
     product_id: str = Field(..., description="Product identifier")
@@ -845,14 +804,13 @@ class DerivedProductResponse(BaseModel):
         description="Audit trail provenance metadata",
     )
     analyzed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Analysis timestamp",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ProcessingChainResponse(BaseModel):
+class ProcessingChainResponse(GreenLangBase):
     """Response containing a complete processing chain analysis."""
 
     chain_id: str = Field(
@@ -890,8 +848,7 @@ class ProcessingChainResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class AnnexIMappingEntry(BaseModel):
+class AnnexIMappingEntry(GreenLangBase):
     """Mapping entry between EUDR Annex I product codes and commodity types."""
 
     hs_code: str = Field(
@@ -915,8 +872,7 @@ class AnnexIMappingEntry(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class AnnexIMappingResponse(BaseModel):
+class AnnexIMappingResponse(GreenLangBase):
     """Response containing EUDR Annex I product-to-commodity mappings."""
 
     mappings: List[AnnexIMappingEntry] = Field(
@@ -931,13 +887,11 @@ class AnnexIMappingResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Price Schemas
 # =============================================================================
 
-
-class PriceResponse(BaseModel):
+class PriceResponse(GreenLangBase):
     """Current price data for a commodity."""
 
     commodity_type: CommodityTypeEnum = Field(
@@ -983,8 +937,7 @@ class PriceResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class PriceHistoryEntry(BaseModel):
+class PriceHistoryEntry(GreenLangBase):
     """Single price data point in a historical series."""
 
     price_date: date = Field(..., description="Observation date")
@@ -1002,8 +955,7 @@ class PriceHistoryEntry(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class PriceHistoryResponse(BaseModel):
+class PriceHistoryResponse(GreenLangBase):
     """Historical price data for a commodity."""
 
     commodity_type: CommodityTypeEnum = Field(
@@ -1021,8 +973,7 @@ class PriceHistoryResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class VolatilityResponse(BaseModel):
+class VolatilityResponse(GreenLangBase):
     """Volatility analysis results for a commodity."""
 
     commodity_type: CommodityTypeEnum = Field(
@@ -1055,14 +1006,13 @@ class VolatilityResponse(BaseModel):
         description="Historical percentile rank of current volatility",
     )
     analyzed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Analysis timestamp",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class MarketDisruptionEntry(BaseModel):
+class MarketDisruptionEntry(GreenLangBase):
     """Single market disruption event."""
 
     disruption_id: str = Field(
@@ -1095,8 +1045,7 @@ class MarketDisruptionEntry(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class MarketDisruptionResponse(BaseModel):
+class MarketDisruptionResponse(GreenLangBase):
     """Market disruption analysis for a commodity."""
 
     commodity_type: CommodityTypeEnum = Field(
@@ -1119,8 +1068,7 @@ class MarketDisruptionResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class PriceForecastRequest(BaseModel):
+class PriceForecastRequest(GreenLangBase):
     """Request for commodity price forecasting."""
 
     commodity_type: CommodityTypeEnum = Field(
@@ -1153,8 +1101,7 @@ class PriceForecastRequest(BaseModel):
         },
     )
 
-
-class ForecastPoint(BaseModel):
+class ForecastPoint(GreenLangBase):
     """Single forecast data point."""
 
     forecast_date: date = Field(..., description="Forecast target date")
@@ -1182,8 +1129,7 @@ class ForecastPoint(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class PriceForecastResponse(BaseModel):
+class PriceForecastResponse(GreenLangBase):
     """Price forecast results for a commodity."""
 
     commodity_type: CommodityTypeEnum = Field(
@@ -1205,19 +1151,17 @@ class PriceForecastResponse(BaseModel):
         description="Forecasting model version",
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Forecast generation timestamp",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Production Schemas
 # =============================================================================
 
-
-class ProductionForecastRequest(BaseModel):
+class ProductionForecastRequest(GreenLangBase):
     """Request for production volume forecasting."""
 
     commodity_type: CommodityTypeEnum = Field(
@@ -1257,8 +1201,7 @@ class ProductionForecastRequest(BaseModel):
         },
     )
 
-
-class ProductionForecastEntry(BaseModel):
+class ProductionForecastEntry(GreenLangBase):
     """Single month production forecast data point."""
 
     month: str = Field(
@@ -1284,8 +1227,7 @@ class ProductionForecastEntry(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ClimateImpactData(BaseModel):
+class ClimateImpactData(GreenLangBase):
     """Climate impact data affecting production forecasts."""
 
     impact_factor: Decimal = Field(
@@ -1313,8 +1255,7 @@ class ClimateImpactData(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class SeasonalFactorEntry(BaseModel):
+class SeasonalFactorEntry(GreenLangBase):
     """Monthly seasonal coefficient for production analysis."""
 
     month: int = Field(..., ge=1, le=12, description="Month number (1-12)")
@@ -1332,8 +1273,7 @@ class SeasonalFactorEntry(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ProductionForecastResponse(BaseModel):
+class ProductionForecastResponse(GreenLangBase):
     """Production forecast results for a commodity and region."""
 
     commodity_type: CommodityTypeEnum = Field(
@@ -1359,14 +1299,13 @@ class ProductionForecastResponse(BaseModel):
         description="Sum of forecasted production over the horizon",
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Forecast generation timestamp",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class YieldResponse(BaseModel):
+class YieldResponse(GreenLangBase):
     """Yield estimation for a commodity in a specific country and year."""
 
     commodity_type: CommodityTypeEnum = Field(
@@ -1402,8 +1341,7 @@ class YieldResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class SeasonalPatternResponse(BaseModel):
+class SeasonalPatternResponse(GreenLangBase):
     """Seasonal production patterns for a commodity in a region."""
 
     commodity_type: CommodityTypeEnum = Field(
@@ -1426,8 +1364,7 @@ class SeasonalPatternResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ProductionSummaryEntry(BaseModel):
+class ProductionSummaryEntry(GreenLangBase):
     """Production summary for a single commodity."""
 
     commodity_type: CommodityTypeEnum = Field(..., description="Commodity type")
@@ -1447,8 +1384,7 @@ class ProductionSummaryEntry(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ProductionSummaryResponse(BaseModel):
+class ProductionSummaryResponse(GreenLangBase):
     """Production summary across all tracked commodities."""
 
     commodities: List[ProductionSummaryEntry] = Field(
@@ -1456,17 +1392,15 @@ class ProductionSummaryResponse(BaseModel):
         description="Production summaries per commodity",
     )
     total_commodities: int = Field(default=0, ge=0)
-    generated_at: datetime = Field(default_factory=_utcnow)
+    generated_at: datetime = Field(default_factory=utcnow)
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Substitution Schemas
 # =============================================================================
 
-
-class CommodityHistoryEntry(BaseModel):
+class CommodityHistoryEntry(GreenLangBase):
     """Historical commodity declaration for substitution detection."""
 
     commodity_type: CommodityTypeEnum = Field(
@@ -1491,8 +1425,7 @@ class CommodityHistoryEntry(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CurrentDeclaration(BaseModel):
+class CurrentDeclaration(GreenLangBase):
     """Current commodity declaration for substitution verification."""
 
     commodity_type: CommodityTypeEnum = Field(
@@ -1517,8 +1450,7 @@ class CurrentDeclaration(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class SubstitutionDetectRequest(BaseModel):
+class SubstitutionDetectRequest(GreenLangBase):
     """Request to detect commodity substitution for a supplier."""
 
     supplier_id: str = Field(
@@ -1569,8 +1501,7 @@ class SubstitutionDetectRequest(BaseModel):
         },
     )
 
-
-class SubstitutionVerifyRequest(BaseModel):
+class SubstitutionVerifyRequest(GreenLangBase):
     """Request to verify a specific commodity declaration against evidence."""
 
     declaration: CurrentDeclaration = Field(
@@ -1589,8 +1520,7 @@ class SubstitutionVerifyRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class DetectedSwitch(BaseModel):
+class DetectedSwitch(GreenLangBase):
     """A detected commodity substitution event."""
 
     switch_id: str = Field(
@@ -1614,7 +1544,7 @@ class DetectedSwitch(BaseModel):
         description="Detection confidence score (0-1)",
     )
     detected_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Detection timestamp",
     )
     risk_impact: RiskLevelEnum = Field(
@@ -1624,8 +1554,7 @@ class DetectedSwitch(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class SubstitutionResponse(BaseModel):
+class SubstitutionResponse(GreenLangBase):
     """Response from substitution risk detection."""
 
     supplier_id: str = Field(..., description="Supplier identifier")
@@ -1659,8 +1588,7 @@ class SubstitutionResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class SubstitutionAlertEntry(BaseModel):
+class SubstitutionAlertEntry(GreenLangBase):
     """Single substitution alert."""
 
     alert_id: str = Field(
@@ -1678,7 +1606,7 @@ class SubstitutionAlertEntry(BaseModel):
     )
     message: str = Field(..., description="Alert message")
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Alert creation timestamp",
     )
     acknowledged: bool = Field(
@@ -1688,8 +1616,7 @@ class SubstitutionAlertEntry(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class SubstitutionAlertResponse(BaseModel):
+class SubstitutionAlertResponse(GreenLangBase):
     """Response listing active substitution alerts."""
 
     alerts: List[SubstitutionAlertEntry] = Field(
@@ -1710,8 +1637,7 @@ class SubstitutionAlertResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class SubstitutionHistoryEntry(BaseModel):
+class SubstitutionHistoryEntry(GreenLangBase):
     """Historical substitution event for a supplier."""
 
     event_date: date = Field(..., description="Event date")
@@ -1730,8 +1656,7 @@ class SubstitutionHistoryEntry(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class SubstitutionHistoryResponse(BaseModel):
+class SubstitutionHistoryResponse(GreenLangBase):
     """Substitution switching history for a supplier."""
 
     supplier_id: str = Field(..., description="Supplier identifier")
@@ -1748,8 +1673,7 @@ class SubstitutionHistoryResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class SubstitutionPatternEntry(BaseModel):
+class SubstitutionPatternEntry(GreenLangBase):
     """Detected substitution pattern across suppliers."""
 
     pattern_id: str = Field(
@@ -1778,8 +1702,7 @@ class SubstitutionPatternEntry(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class SubstitutionPatternResponse(BaseModel):
+class SubstitutionPatternResponse(GreenLangBase):
     """Response containing detected substitution patterns."""
 
     patterns: List[SubstitutionPatternEntry] = Field(
@@ -1792,8 +1715,7 @@ class SubstitutionPatternResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class SubstitutionVerifyResponse(BaseModel):
+class SubstitutionVerifyResponse(GreenLangBase):
     """Response from declaration verification against evidence."""
 
     verified: bool = Field(
@@ -1818,13 +1740,11 @@ class SubstitutionVerifyResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Regulatory Schemas
 # =============================================================================
 
-
-class ComplianceCheckRequest(BaseModel):
+class ComplianceCheckRequest(GreenLangBase):
     """Request to check regulatory compliance for a commodity."""
 
     commodity_type: CommodityTypeEnum = Field(
@@ -1858,8 +1778,7 @@ class ComplianceCheckRequest(BaseModel):
         },
     )
 
-
-class ComplianceGap(BaseModel):
+class ComplianceGap(GreenLangBase):
     """A single compliance gap identified during assessment."""
 
     gap_id: str = Field(
@@ -1886,8 +1805,7 @@ class ComplianceGap(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class RemediationStep(BaseModel):
+class RemediationStep(GreenLangBase):
     """A recommended remediation step for a compliance gap."""
 
     step_number: int = Field(..., ge=1, description="Step order")
@@ -1900,8 +1818,7 @@ class RemediationStep(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ComplianceCheckResponse(BaseModel):
+class ComplianceCheckResponse(GreenLangBase):
     """Response from a regulatory compliance check."""
 
     commodity_type: CommodityTypeEnum = Field(
@@ -1935,14 +1852,13 @@ class ComplianceCheckResponse(BaseModel):
         description="Audit trail provenance metadata",
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Assessment timestamp",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ArticleRequirement(BaseModel):
+class ArticleRequirement(GreenLangBase):
     """EUDR article requirement for a specific commodity."""
 
     article_id: str = Field(
@@ -1969,8 +1885,7 @@ class ArticleRequirement(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class RegulatoryRequirementsResponse(BaseModel):
+class RegulatoryRequirementsResponse(GreenLangBase):
     """EUDR regulatory requirements for a specific commodity."""
 
     commodity_type: CommodityTypeEnum = Field(
@@ -1993,8 +1908,7 @@ class RegulatoryRequirementsResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class PenaltyRiskFactor(BaseModel):
+class PenaltyRiskFactor(GreenLangBase):
     """A factor contributing to penalty risk."""
 
     factor_name: str = Field(..., description="Risk factor name")
@@ -2008,8 +1922,7 @@ class PenaltyRiskFactor(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class PenaltyRiskResponse(BaseModel):
+class PenaltyRiskResponse(GreenLangBase):
     """Penalty risk assessment per EUDR Article 25."""
 
     commodity_type: CommodityTypeEnum = Field(
@@ -2035,14 +1948,13 @@ class PenaltyRiskResponse(BaseModel):
         description="Overall penalty risk score (0-100)",
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Assessment timestamp",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class RegulatoryUpdateEntry(BaseModel):
+class RegulatoryUpdateEntry(GreenLangBase):
     """A single regulatory update or change."""
 
     update_id: str = Field(
@@ -2063,8 +1975,7 @@ class RegulatoryUpdateEntry(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class RegulatoryUpdatesResponse(BaseModel):
+class RegulatoryUpdatesResponse(GreenLangBase):
     """Response listing recent regulatory updates."""
 
     updates: List[RegulatoryUpdateEntry] = Field(
@@ -2075,8 +1986,7 @@ class RegulatoryUpdatesResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class DocumentationRequirementEntry(BaseModel):
+class DocumentationRequirementEntry(GreenLangBase):
     """Documentation requirement for EUDR compliance."""
 
     document_type: str = Field(
@@ -2103,8 +2013,7 @@ class DocumentationRequirementEntry(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class DocumentationRequirementsResponse(BaseModel):
+class DocumentationRequirementsResponse(GreenLangBase):
     """Response listing documentation requirements for EUDR compliance."""
 
     commodity_type: Optional[CommodityTypeEnum] = Field(
@@ -2128,13 +2037,11 @@ class DocumentationRequirementsResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Due Diligence Schemas
 # =============================================================================
 
-
-class DDInitiateRequest(BaseModel):
+class DDInitiateRequest(GreenLangBase):
     """Request to initiate a commodity-specific due diligence workflow."""
 
     commodity_type: CommodityTypeEnum = Field(
@@ -2173,8 +2080,7 @@ class DDInitiateRequest(BaseModel):
         },
     )
 
-
-class DDEvidenceSubmitRequest(BaseModel):
+class DDEvidenceSubmitRequest(GreenLangBase):
     """Request to submit evidence to a due diligence workflow."""
 
     evidence_type: EvidenceTypeEnum = Field(
@@ -2214,8 +2120,7 @@ class DDEvidenceSubmitRequest(BaseModel):
         },
     )
 
-
-class DDEvidenceItem(BaseModel):
+class DDEvidenceItem(GreenLangBase):
     """An evidence item within a due diligence workflow."""
 
     evidence_id: str = Field(
@@ -2231,7 +2136,7 @@ class DDEvidenceItem(BaseModel):
         description="Evidence review status",
     )
     submitted_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Submission timestamp",
     )
     reviewed_at: Optional[datetime] = Field(
@@ -2241,8 +2146,7 @@ class DDEvidenceItem(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class DDNextStep(BaseModel):
+class DDNextStep(GreenLangBase):
     """A next step in the due diligence workflow."""
 
     step_id: str = Field(
@@ -2256,8 +2160,7 @@ class DDNextStep(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class DDWorkflowResponse(BaseModel):
+class DDWorkflowResponse(GreenLangBase):
     """Response containing due diligence workflow status and details."""
 
     workflow_id: str = Field(
@@ -2292,7 +2195,7 @@ class DDWorkflowResponse(BaseModel):
         description="Trigger that initiated this workflow",
     )
     initiated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Workflow initiation timestamp",
     )
     completed_at: Optional[datetime] = Field(
@@ -2302,8 +2205,7 @@ class DDWorkflowResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class DDPendingWorkflowEntry(BaseModel):
+class DDPendingWorkflowEntry(GreenLangBase):
     """Summary of a pending due diligence workflow."""
 
     workflow_id: str = Field(..., description="Workflow identifier")
@@ -2320,8 +2222,7 @@ class DDPendingWorkflowEntry(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class DDPendingResponse(BaseModel):
+class DDPendingResponse(GreenLangBase):
     """Response listing pending due diligence workflows."""
 
     workflows: List[DDPendingWorkflowEntry] = Field(
@@ -2337,8 +2238,7 @@ class DDPendingResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class DDCompleteResponse(BaseModel):
+class DDCompleteResponse(GreenLangBase):
     """Response after completing a due diligence workflow."""
 
     workflow_id: str = Field(..., description="Completed workflow identifier")
@@ -2356,19 +2256,17 @@ class DDCompleteResponse(BaseModel):
         description="Total evidence items collected",
     )
     completed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Completion timestamp",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Portfolio Schemas
 # =============================================================================
 
-
-class CommodityPosition(BaseModel):
+class CommodityPosition(GreenLangBase):
     """A single commodity position within a portfolio."""
 
     commodity_type: CommodityTypeEnum = Field(
@@ -2401,8 +2299,7 @@ class CommodityPosition(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class PortfolioAnalyzeRequest(BaseModel):
+class PortfolioAnalyzeRequest(GreenLangBase):
     """Request to analyze a multi-commodity portfolio."""
 
     commodity_positions: List[CommodityPosition] = Field(
@@ -2449,8 +2346,7 @@ class PortfolioAnalyzeRequest(BaseModel):
         },
     )
 
-
-class CommodityBreakdownEntry(BaseModel):
+class CommodityBreakdownEntry(GreenLangBase):
     """Portfolio breakdown for a single commodity."""
 
     commodity_type: CommodityTypeEnum = Field(
@@ -2483,8 +2379,7 @@ class CommodityBreakdownEntry(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class PortfolioResponse(BaseModel):
+class PortfolioResponse(GreenLangBase):
     """Response from portfolio risk analysis."""
 
     portfolio_id: str = Field(
@@ -2523,14 +2418,13 @@ class PortfolioResponse(BaseModel):
         description="Audit trail provenance metadata",
     )
     analyzed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Analysis timestamp",
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CommodityShareEntry(BaseModel):
+class CommodityShareEntry(GreenLangBase):
     """Commodity share within concentration analysis."""
 
     commodity_type: CommodityTypeEnum = Field(
@@ -2551,8 +2445,7 @@ class CommodityShareEntry(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ConcentrationResponse(BaseModel):
+class ConcentrationResponse(GreenLangBase):
     """Portfolio concentration analysis using Herfindahl-Hirschman Index."""
 
     hhi_index: Decimal = Field(
@@ -2577,8 +2470,7 @@ class ConcentrationResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class DiversificationSuggestion(BaseModel):
+class DiversificationSuggestion(GreenLangBase):
     """Suggestion for improving portfolio diversification."""
 
     suggestion_id: str = Field(
@@ -2597,8 +2489,7 @@ class DiversificationSuggestion(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class DiversificationResponse(BaseModel):
+class DiversificationResponse(GreenLangBase):
     """Portfolio diversification analysis results."""
 
     score: Decimal = Field(
@@ -2624,8 +2515,7 @@ class DiversificationResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class PortfolioSummaryResponse(BaseModel):
+class PortfolioSummaryResponse(GreenLangBase):
     """High-level portfolio summary."""
 
     portfolio_name: Optional[str] = Field(None, description="Portfolio name")
@@ -2667,12 +2557,11 @@ class PortfolioSummaryResponse(BaseModel):
         description="Commodity with highest risk score",
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Summary generation timestamp",
     )
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Public API

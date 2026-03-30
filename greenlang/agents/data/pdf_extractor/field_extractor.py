@@ -49,7 +49,9 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+
+from greenlang.schemas import GreenLangBase, utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -59,23 +61,15 @@ __all__ = [
     "FieldExtractor",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Data models
 # ---------------------------------------------------------------------------
 
-
-class ExtractedField(BaseModel):
+class ExtractedField(GreenLangBase):
     """A single extracted field with value and confidence."""
 
     field_name: str = Field(..., description="Canonical field name")
@@ -91,8 +85,7 @@ class ExtractedField(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class LineItem(BaseModel):
+class LineItem(GreenLangBase):
     """A single line item from a tabular section."""
 
     line_number: int = Field(default=0, ge=0, description="1-based line number")
@@ -104,7 +97,6 @@ class LineItem(BaseModel):
     raw_text: str = Field(default="", description="Original line text")
 
     model_config = {"extra": "forbid"}
-
 
 # ---------------------------------------------------------------------------
 # Built-in pattern dictionaries
@@ -347,11 +339,9 @@ _LINE_ITEM_PATTERN = re.compile(
     re.MULTILINE,
 )
 
-
 # ---------------------------------------------------------------------------
 # FieldExtractor
 # ---------------------------------------------------------------------------
-
 
 class FieldExtractor:
     """Pattern-based field extraction with confidence scoring.
@@ -632,7 +622,7 @@ class FieldExtractor:
                 "by_type": dict(self._stats["by_type"]),
                 "errors": self._stats["errors"],
                 "custom_patterns_registered": len(self._custom_patterns),
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }
 
     # ------------------------------------------------------------------

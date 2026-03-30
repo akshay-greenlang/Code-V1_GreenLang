@@ -53,25 +53,20 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ExecutionStatus
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for provenance tracking.
@@ -91,11 +86,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ClaimsPipelinePhase(str, Enum):
     """The 10 phases of the EU Green Claims compliance pipeline."""
@@ -110,18 +103,6 @@ class ClaimsPipelinePhase(str, Enum):
     COMPLIANCE_GAP = "compliance_gap"
     REMEDIATION = "remediation"
     REPORTING = "reporting"
-
-
-class ExecutionStatus(str, Enum):
-    """Pipeline execution lifecycle status."""
-
-    PENDING = "pending"
-    RUNNING = "running"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    CANCELLED = "cancelled"
-    SKIPPED = "skipped"
-
 
 # ---------------------------------------------------------------------------
 # Phase Dependency Graph
@@ -163,11 +144,9 @@ PARALLEL_PHASE_GROUPS: List[List[ClaimsPipelinePhase]] = [
     [ClaimsPipelinePhase.SUBSTANTIATION, ClaimsPipelinePhase.EVIDENCE_CHAIN],
 ]
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class OrchestratorConfig(BaseModel):
     """Configuration for the Green Claims Pipeline Orchestrator."""
@@ -206,7 +185,6 @@ class OrchestratorConfig(BaseModel):
         }
         return flag_map.get(phase, True)
 
-
 class PhaseResult(BaseModel):
     """Result of a single phase execution."""
 
@@ -220,7 +198,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     outputs: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
-
 
 class PipelineResult(BaseModel):
     """Complete result of the Green Claims pipeline execution."""
@@ -240,11 +217,9 @@ class PipelineResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # GreenClaimsOrchestrator
 # ---------------------------------------------------------------------------
-
 
 class GreenClaimsOrchestrator:
     """10-phase EU Green Claims compliance pipeline orchestrator for PACK-018.
@@ -296,7 +271,7 @@ class GreenClaimsOrchestrator:
         context = dict(claims_data or {})
         result = PipelineResult(
             pack_id=active_config.pack_id,
-            started_at=_utcnow(),
+            started_at=utcnow(),
             status=ExecutionStatus.RUNNING,
         )
 
@@ -324,7 +299,7 @@ class GreenClaimsOrchestrator:
         if result.status == ExecutionStatus.RUNNING:
             result.status = ExecutionStatus.COMPLETED
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.total_duration_ms = (
                 result.completed_at - result.started_at
@@ -402,7 +377,7 @@ class GreenClaimsOrchestrator:
         """Execute a single pipeline phase."""
         phase_result = PhaseResult(
             phase=phase.value,
-            started_at=_utcnow(),
+            started_at=utcnow(),
             status=ExecutionStatus.RUNNING,
         )
 
@@ -421,7 +396,7 @@ class GreenClaimsOrchestrator:
             phase_result.status = ExecutionStatus.FAILED
             phase_result.errors.append(str(exc))
 
-        phase_result.completed_at = _utcnow()
+        phase_result.completed_at = utcnow()
         if phase_result.started_at:
             phase_result.duration_ms = (
                 phase_result.completed_at - phase_result.started_at
@@ -458,7 +433,7 @@ class GreenClaimsOrchestrator:
                 "index": idx,
                 "text": claim.get("text", "") if isinstance(claim, dict) else str(claim),
                 "source": claim.get("source", "manual") if isinstance(claim, dict) else "manual",
-                "ingested_at": str(_utcnow()),
+                "ingested_at": str(utcnow()),
             })
         return {"normalized_claims": normalized, "records_processed": len(normalized)}
 
@@ -588,7 +563,7 @@ class GreenClaimsOrchestrator:
             "total_gaps": gap_result.get("total_gaps", 0),
             "remediation_plans_count": len(remediation_result.get("remediation_plans", [])),
             "compliance_framework": "EU Green Claims Directive",
-            "generated_at": str(_utcnow()),
+            "generated_at": str(utcnow()),
             "records_processed": 1,
         }
 

@@ -50,6 +50,7 @@ from greenlang.agents.foundation.observability_agent.metrics import (
     update_error_budget,
     record_dashboard_query,
 )
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +65,6 @@ except ImportError:
     FastAPI = None  # type: ignore[assignment, misc]
     FASTAPI_AVAILABLE = False
 
-
 # ---------------------------------------------------------------------------
 # Lightweight in-memory model stubs
 # ---------------------------------------------------------------------------
@@ -72,7 +72,6 @@ except ImportError:
 # without requiring all engine modules to be present. When the full SDK
 # engines are implemented they provide richer Pydantic models.
 # ---------------------------------------------------------------------------
-
 
 class _SimpleModel:
     """Minimal dict-backed model for standalone facade operation."""
@@ -96,11 +95,9 @@ class _SimpleModel:
             raise AttributeError(name)
         return self._data.get(name)
 
-
 # ---------------------------------------------------------------------------
 # Lightweight in-memory engine stubs
 # ---------------------------------------------------------------------------
-
 
 class _MetricsCollector:
     """In-memory metrics collector engine stub.
@@ -226,7 +223,6 @@ class _MetricsCollector:
             "total_recordings": len(self._metrics),
             "total_series": len(self._metrics),
         }
-
 
 class _TraceManager:
     """In-memory trace manager engine stub.
@@ -364,7 +360,6 @@ class _TraceManager:
             "total_traces": len(self._traces),
         }
 
-
 class _LogAggregator:
     """In-memory log aggregator engine stub.
 
@@ -471,7 +466,6 @@ class _LogAggregator:
             "total_ingested": len(self._buffer),
             "buffer_size": self._max_size,
         }
-
 
 class _AlertEvaluator:
     """In-memory alert evaluator engine stub.
@@ -646,7 +640,6 @@ class _AlertEvaluator:
             "total_fired": len(self._active_alerts),
         }
 
-
 class _HealthChecker:
     """In-memory health checker engine stub.
 
@@ -715,7 +708,6 @@ class _HealthChecker:
             ),
         }
 
-
 class _DashboardProvider:
     """In-memory dashboard provider engine stub.
 
@@ -757,7 +749,6 @@ class _DashboardProvider:
         return {
             "total_dashboards": len(self._dashboards),
         }
-
 
 class _SLOTracker:
     """In-memory SLO tracker engine stub.
@@ -920,7 +911,6 @@ class _SLOTracker:
             "total_slos": len(self._slos),
         }
 
-
 class _ProvenanceTracker:
     """SHA-256 chain-hashed provenance tracker for audit trails.
 
@@ -959,7 +949,7 @@ class _ProvenanceTracker:
         Returns:
             Chain hash of the new entry.
         """
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
         chain_hash = self._compute_chain_hash(
             self._last_chain_hash, data_hash, action, timestamp,
         )
@@ -1027,11 +1017,9 @@ class _ProvenanceTracker:
         """Return the number of unique entities tracked."""
         return len(self._chain_store)
 
-
 # ---------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------
-
 
 def _evaluate_condition(
     value: float, condition: str, threshold: float,
@@ -1059,12 +1047,6 @@ def _evaluate_condition(
         return False
     return op(value, threshold)
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ===================================================================
 # ObservabilityAgentService facade
 # ===================================================================
@@ -1072,7 +1054,6 @@ def _utcnow() -> datetime:
 # Thread-safe singleton lock
 _singleton_lock = threading.Lock()
 _singleton_instance: Optional["ObservabilityAgentService"] = None
-
 
 class ObservabilityAgentService:
     """Unified facade over the Observability & Telemetry Agent SDK.
@@ -1633,7 +1614,7 @@ class ObservabilityAgentService:
         """
         uptime = 0.0
         if self._start_time:
-            uptime = (_utcnow() - self._start_time).total_seconds()
+            uptime = (utcnow() - self._start_time).total_seconds()
 
         return _SimpleModel(
             total_operations=self._total_operations,
@@ -1762,7 +1743,7 @@ class ObservabilityAgentService:
 
         logger.info("ObservabilityAgentService starting up...")
         self._started = True
-        self._start_time = _utcnow()
+        self._start_time = utcnow()
         logger.info("ObservabilityAgentService startup complete")
 
     def shutdown(self) -> None:
@@ -1773,11 +1754,9 @@ class ObservabilityAgentService:
         self._started = False
         logger.info("ObservabilityAgentService shut down")
 
-
 # ===================================================================
 # Thread-safe singleton access
 # ===================================================================
-
 
 def _get_singleton() -> ObservabilityAgentService:
     """Get or create the singleton ObservabilityAgentService instance.
@@ -1792,11 +1771,9 @@ def _get_singleton() -> ObservabilityAgentService:
                 _singleton_instance = ObservabilityAgentService()
     return _singleton_instance
 
-
 # ===================================================================
 # FastAPI integration
 # ===================================================================
-
 
 async def configure_observability_agent(
     app: Any,
@@ -1844,7 +1821,6 @@ async def configure_observability_agent(
     logger.info("Observability agent service configured on app")
     return service
 
-
 def get_observability_agent(app: Any) -> ObservabilityAgentService:
     """Get the ObservabilityAgentService instance from app state.
 
@@ -1865,7 +1841,6 @@ def get_observability_agent(app: Any) -> ObservabilityAgentService:
         )
     return service
 
-
 def get_router() -> Any:
     """Get the observability agent API router.
 
@@ -1877,7 +1852,6 @@ def get_router() -> Any:
         return router
     except ImportError:
         return None
-
 
 __all__ = [
     "ObservabilityAgentService",

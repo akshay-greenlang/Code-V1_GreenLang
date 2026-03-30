@@ -37,21 +37,15 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "43.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -64,11 +58,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class Pack042Status(str, Enum):
     """PACK-042 availability status."""
@@ -78,11 +70,9 @@ class Pack042Status(str, Enum):
     VERSION_MISMATCH = "version_mismatch"
     ERROR = "error"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class ScreeningData(BaseModel):
     """Scope 3 screening results from PACK-042."""
@@ -96,8 +86,7 @@ class ScreeningData(BaseModel):
     screening_method: str = Field(default="spend_and_activity_assessment")
     by_category: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class CategoryResults(BaseModel):
     """Per-category emission results from PACK-042."""
@@ -110,8 +99,7 @@ class CategoryResults(BaseModel):
     methodology_per_category: Dict[str, str] = Field(default_factory=dict)
     mrv_agents_used: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class ConsolidatedInventory(BaseModel):
     """Full consolidated Scope 3 inventory from PACK-042."""
@@ -126,8 +114,7 @@ class ConsolidatedInventory(BaseModel):
     double_counting_check: str = Field(default="PASS")
     methodology_mix: Dict[str, float] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class HotspotAnalysis(BaseModel):
     """Hotspot analysis results from PACK-042."""
@@ -140,8 +127,7 @@ class HotspotAnalysis(BaseModel):
     top_3_share_pct: float = Field(default=0.0)
     reduction_opportunities: List[Dict[str, Any]] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class SupplierEngagement(BaseModel):
     """Supplier engagement status from PACK-042."""
@@ -154,8 +140,7 @@ class SupplierEngagement(BaseModel):
     tier3_suppliers: int = Field(default=0)
     engagement_plan: Dict[str, str] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class DataQualityResult(BaseModel):
     """Data quality DQR scores from PACK-042."""
@@ -168,8 +153,7 @@ class DataQualityResult(BaseModel):
     dqr_dimensions: Dict[str, float] = Field(default_factory=dict)
     improvement_recommendations: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class UncertaintyResult(BaseModel):
     """Monte Carlo uncertainty results from PACK-042."""
@@ -184,8 +168,7 @@ class UncertaintyResult(BaseModel):
     range_tco2e: Dict[str, float] = Field(default_factory=dict)
     by_category_uncertainty_pct: Dict[str, float] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class ComplianceAssessment(BaseModel):
     """Compliance assessment from PACK-042."""
@@ -198,13 +181,11 @@ class ComplianceAssessment(BaseModel):
     sbti_flag3_compliant: bool = Field(default=False)
     frameworks_assessed: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # Pack042Bridge
 # ---------------------------------------------------------------------------
-
 
 class Pack042Bridge:
     """REQUIRED dependency bridge to PACK-042 Scope 3 Starter Pack.
@@ -242,6 +223,7 @@ class Pack042Bridge:
         """Try to import PACK-042."""
         try:
             import importlib
+
             return importlib.import_module(
                 "packs.ghg_accounting.PACK_042_scope_3_starter"
             )

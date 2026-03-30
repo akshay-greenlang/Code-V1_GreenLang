@@ -32,23 +32,18 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "27.0.0"
 _PACK_ID = "PACK-027"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -57,7 +52,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
@@ -65,13 +59,11 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class CarbonPricingApproach(str, Enum):
     SHADOW_PRICE = "shadow_price"
     INTERNAL_FEE = "internal_fee"
     IMPLICIT_PRICE = "implicit_price"
     REGULATORY_PRICE = "regulatory_price"
-
 
 # =============================================================================
 # CARBON PRICE TRAJECTORY BENCHMARKS
@@ -83,11 +75,9 @@ PRICE_TRAJECTORY_BENCHMARKS: Dict[str, Dict[int, float]] = {
     "high": {2025: 100, 2030: 200, 2035: 300, 2040: 400, 2050: 500},
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase_name: str = Field(...)
@@ -101,7 +91,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     dag_node_id: str = Field(default="")
 
-
 class BusinessUnit(BaseModel):
     bu_id: str = Field(...)
     bu_name: str = Field(default="")
@@ -111,7 +100,6 @@ class BusinessUnit(BaseModel):
     revenue_usd: float = Field(default=0.0, ge=0.0)
     ebitda_usd: float = Field(default=0.0)
     employee_count: int = Field(default=0, ge=0)
-
 
 class InvestmentProposal(BaseModel):
     project_id: str = Field(...)
@@ -124,7 +112,6 @@ class InvestmentProposal(BaseModel):
     standard_irr_pct: float = Field(default=0.0)
     discount_rate_pct: float = Field(default=8.0)
 
-
 class CarbonAdjustedInvestment(BaseModel):
     project_id: str = Field(...)
     project_name: str = Field(default="")
@@ -136,7 +123,6 @@ class CarbonAdjustedInvestment(BaseModel):
     payback_change_months: int = Field(default=0)
     ranking_change: int = Field(default=0, description="Positive=moved up, negative=moved down")
 
-
 class BUCarbonAllocation(BaseModel):
     bu_id: str = Field(...)
     bu_name: str = Field(default="")
@@ -147,14 +133,12 @@ class BUCarbonAllocation(BaseModel):
     ebitda_after_carbon: float = Field(default=0.0)
     ebitda_impact_pct: float = Field(default=0.0)
 
-
 class CBAMExposure(BaseModel):
     product_category: str = Field(default="")
     import_origin: str = Field(default="")
     embedded_emissions_tco2e: float = Field(default=0.0, ge=0.0)
     cbam_certificate_price_eur: float = Field(default=0.0, ge=0.0)
     annual_cbam_cost_eur: float = Field(default=0.0, ge=0.0)
-
 
 class InternalCarbonPricingConfig(BaseModel):
     pricing_approach: str = Field(default="shadow_price")
@@ -167,7 +151,6 @@ class InternalCarbonPricingConfig(BaseModel):
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
 
-
 class InternalCarbonPricingInput(BaseModel):
     config: InternalCarbonPricingConfig = Field(default_factory=InternalCarbonPricingConfig)
     business_units: List[BusinessUnit] = Field(default_factory=list)
@@ -176,7 +159,6 @@ class InternalCarbonPricingInput(BaseModel):
     total_scope1_tco2e: float = Field(default=0.0, ge=0.0)
     total_scope2_tco2e: float = Field(default=0.0, ge=0.0)
     total_scope3_tco2e: float = Field(default=0.0, ge=0.0)
-
 
 class InternalCarbonPricingResult(BaseModel):
     workflow_id: str = Field(...)
@@ -196,11 +178,9 @@ class InternalCarbonPricingResult(BaseModel):
     next_steps: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class InternalCarbonPricingWorkflow:
     """
@@ -229,7 +209,7 @@ class InternalCarbonPricingWorkflow:
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     async def execute(self, input_data: InternalCarbonPricingInput) -> InternalCarbonPricingResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         self.config = input_data.config
         self._phase_results = []
         overall_status = WorkflowStatus.RUNNING
@@ -258,7 +238,7 @@ class InternalCarbonPricingWorkflow:
                 status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
 
         trajectory = PRICE_TRAJECTORY_BENCHMARKS.get(
             self.config.price_trajectory, PRICE_TRAJECTORY_BENCHMARKS["medium"],
@@ -290,7 +270,7 @@ class InternalCarbonPricingWorkflow:
         return result
 
     async def _phase_price_design(self, input_data: InternalCarbonPricingInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -317,7 +297,7 @@ class InternalCarbonPricingWorkflow:
             "iea_nze_2050": "$250/tCO2e",
         }
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="price_design", phase_number=1,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -327,7 +307,7 @@ class InternalCarbonPricingWorkflow:
         )
 
     async def _phase_allocation_setup(self, input_data: InternalCarbonPricingInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         price = self.config.carbon_price_usd_per_tco2e
@@ -364,7 +344,7 @@ class InternalCarbonPricingWorkflow:
             sum(a.carbon_charge_usd for a in self._bu_allocations), 2,
         )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="allocation_setup", phase_number=2,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -374,7 +354,7 @@ class InternalCarbonPricingWorkflow:
         )
 
     async def _phase_impact_analysis(self, input_data: InternalCarbonPricingInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         price = self.config.carbon_price_usd_per_tco2e
@@ -431,7 +411,7 @@ class InternalCarbonPricingWorkflow:
         outputs["cbam_products_assessed"] = len(self._cbam)
         outputs["total_cbam_cost_eur"] = round(sum(c.annual_cbam_cost_eur for c in self._cbam), 2)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="impact_analysis", phase_number=3,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -441,7 +421,7 @@ class InternalCarbonPricingWorkflow:
         )
 
     async def _phase_reporting(self, input_data: InternalCarbonPricingInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         outputs["report_sections"] = [
@@ -457,7 +437,7 @@ class InternalCarbonPricingWorkflow:
         outputs["report_formats"] = ["MD", "HTML", "JSON", "PDF"]
         outputs["esrs_e1_8_included"] = True
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="reporting", phase_number=4,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),

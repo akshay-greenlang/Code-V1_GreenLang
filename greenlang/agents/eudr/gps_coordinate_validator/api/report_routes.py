@@ -29,6 +29,7 @@ from typing import Any, Dict, List
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Request, status
 from fastapi.responses import JSONResponse
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.gps_coordinate_validator.api.dependencies import (
     AuthUser,
@@ -53,18 +54,15 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Compliance Reporting"])
 
-
 # ---------------------------------------------------------------------------
 # In-memory report store (replaced by database in production)
 # ---------------------------------------------------------------------------
 
 _report_store: Dict[str, Dict[str, Any]] = {}
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
 
 def _compute_provenance(data: str) -> str:
     """Compute SHA-256 provenance hash.
@@ -77,16 +75,9 @@ def _compute_provenance(data: str) -> str:
     """
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ---------------------------------------------------------------------------
 # POST /report/compliance
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/report/compliance",
@@ -158,7 +149,7 @@ async def generate_compliance_cert(
             source_type=body.source_type,
         )
 
-        now = _utcnow()
+        now = utcnow()
         valid_until = now + timedelta(days=365)
 
         coordinate = CoordinatePairSchema(
@@ -237,11 +228,9 @@ async def generate_compliance_cert(
             detail="Compliance certificate generation failed",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /report/summary
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/report/summary",
@@ -334,7 +323,7 @@ async def generate_batch_summary(
             "data": response.model_dump(mode="json"),
             "format": "json",
             "user_id": user.user_id,
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
         }
 
         elapsed = time.monotonic() - start
@@ -366,11 +355,9 @@ async def generate_batch_summary(
             detail="Batch summary generation failed",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /report/remediation
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/report/remediation",
@@ -490,11 +477,9 @@ async def generate_remediation(
             detail="Remediation plan generation failed",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /report/{report_id}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/report/{report_id}",
@@ -559,11 +544,9 @@ async def get_report(
         provenance_hash=stored.get("provenance_hash", ""),
     )
 
-
 # ---------------------------------------------------------------------------
 # GET /report/{report_id}/download
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/report/{report_id}/download",

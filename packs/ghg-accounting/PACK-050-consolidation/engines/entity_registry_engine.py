@@ -55,24 +55,18 @@ from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC timestamp with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 provenance hash, excluding volatile fields."""
@@ -90,7 +84,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert any value to Decimal."""
     if isinstance(value, Decimal):
@@ -99,7 +92,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -111,16 +103,13 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> Decimal:
     """Round a value to two decimal places using ROUND_HALF_UP."""
     return Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EntityType(str, Enum):
     """Types of corporate entities in a GHG reporting structure."""
@@ -135,7 +124,6 @@ class EntityType(str, Enum):
     PARENT = "PARENT"
     OTHER = "OTHER"
 
-
 class EntityStatus(str, Enum):
     """Entity lifecycle statuses."""
     ACTIVE = "ACTIVE"
@@ -147,11 +135,9 @@ class EntityStatus(str, Enum):
     UNDER_FORMATION = "UNDER_FORMATION"
     SUSPENDED = "SUSPENDED"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class EntityRecord(BaseModel):
     """Represents a single corporate entity in the registry.
@@ -238,11 +224,11 @@ class EntityRecord(BaseModel):
         description="Arbitrary key-value metadata.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the entity record was created.",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the entity record was last updated.",
     )
 
@@ -269,7 +255,6 @@ class EntityRecord(BaseModel):
                 f"Invalid entity status '{v}'. Must be one of {sorted(valid)}."
             )
         return v.upper()
-
 
 class EntityHierarchy(BaseModel):
     """Represents the full hierarchical tree of corporate entities.
@@ -311,14 +296,13 @@ class EntityHierarchy(BaseModel):
         description="Count of entities by status.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of this snapshot.",
     )
     provenance_hash: str = Field(
         default="",
         description="SHA-256 provenance hash.",
     )
-
 
 class EntitySearchResult(BaseModel):
     """Result of an entity search operation."""
@@ -340,7 +324,6 @@ class EntitySearchResult(BaseModel):
         default="",
         description="SHA-256 provenance hash.",
     )
-
 
 class EntityRegistryStats(BaseModel):
     """Aggregate statistics for the entity registry."""
@@ -382,7 +365,7 @@ class EntityRegistryStats(BaseModel):
         description="Entities with no parent.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of this snapshot.",
     )
     provenance_hash: str = Field(
@@ -390,11 +373,9 @@ class EntityRegistryStats(BaseModel):
         description="SHA-256 provenance hash.",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class EntityRegistryEngine:
     """Manages the authoritative corporate entity registry.
@@ -460,7 +441,7 @@ class EntityRegistryEngine:
                 f"Parent entity '{parent_id}' not found in registry."
             )
 
-        now = _utcnow()
+        now = utcnow()
         entity_data["created_at"] = now
         entity_data["updated_at"] = now
 
@@ -523,7 +504,7 @@ class EntityRegistryEngine:
             else:
                 logger.warning("Unknown field '%s' ignored in update.", key)
 
-        current_data["updated_at"] = _utcnow()
+        current_data["updated_at"] = utcnow()
         updated_entity = EntityRecord(**current_data)
         self._entities[entity_id] = updated_entity
 
@@ -531,7 +512,7 @@ class EntityRegistryEngine:
             "event": "ENTITY_UPDATED",
             "entity_id": entity_id,
             "changes": changes_applied,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         })
 
         logger.info(
@@ -589,7 +570,7 @@ class EntityRegistryEngine:
             "entity_id": entity_id,
             "new_status": new_status_upper,
             "reason": reason,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         })
 
         return updated
@@ -1165,7 +1146,7 @@ class EntityRegistryEngine:
 
         export = {
             "version": _MODULE_VERSION,
-            "exported_at": _utcnow().isoformat(),
+            "exported_at": utcnow().isoformat(),
             "total_entities": len(self._entities),
             "entities": entities_data,
         }

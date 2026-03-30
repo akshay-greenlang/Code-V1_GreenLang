@@ -65,6 +65,7 @@ import time
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 from greenlang.agents.data.cross_source_reconciliation.metrics import (
     inc_discrepancies,
@@ -81,7 +82,6 @@ from greenlang.agents.data.cross_source_reconciliation.provenance import (
 )
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Model imports (graceful fallback for standalone usage / early bootstrapping)
@@ -110,7 +110,6 @@ except ImportError:
         "cross_source_reconciliation.models not yet available; "
         "using inline dataclass stubs"
     )
-
 
 # ---------------------------------------------------------------------------
 # Inline stubs for when models.py is not yet available
@@ -273,16 +272,9 @@ if not _MODELS_AVAILABLE:
         errors: list = dc_field(default_factory=list)
         provenance_hash: str = ""
 
-
 # ---------------------------------------------------------------------------
 # Module-level helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _safe_str(value: Any) -> str:
     """Convert any value to a safe string representation.
@@ -302,7 +294,6 @@ def _safe_str(value: Any) -> str:
         return json.dumps(value, sort_keys=True, default=str)
     return str(value)
 
-
 def _safe_float(value: Any, default: float = 0.0) -> float:
     """Safely convert a value to float.
 
@@ -317,7 +308,6 @@ def _safe_float(value: Any, default: float = 0.0) -> float:
         return float(value) if value is not None else default
     except (TypeError, ValueError):
         return default
-
 
 def _extract_source_id(match_key: Any) -> str:
     """Extract source_id from a MatchKey or return string representation.
@@ -334,11 +324,9 @@ def _extract_source_id(match_key: Any) -> str:
         return str(match_key.source_id)
     return str(match_key)
 
-
 # ---------------------------------------------------------------------------
 # AuditTrailEngine
 # ---------------------------------------------------------------------------
-
 
 class AuditTrailEngine:
     """Complete audit trail engine for cross-source reconciliation.
@@ -461,7 +449,7 @@ class AuditTrailEngine:
 
         event_details = details or {}
         event_id = str(uuid4())
-        timestamp = _utcnow()
+        timestamp = utcnow()
 
         # Compute provenance hash for this event
         provenance_hash = self._compute_provenance(
@@ -973,7 +961,7 @@ class AuditTrailEngine:
         )
 
         report_id = str(uuid4())
-        created_at = _utcnow()
+        created_at = utcnow()
 
         # Aggregate event counts for this job
         event_summary = self._aggregate_event_counts(job_id)
@@ -1268,7 +1256,7 @@ class AuditTrailEngine:
             input_data={"job_id": job_id, "framework": framework},
             output_data=report,
         )
-        report["generated_at"] = _utcnow().isoformat()
+        report["generated_at"] = utcnow().isoformat()
 
         duration = time.time() - start
         observe_duration(duration)
@@ -2254,7 +2242,7 @@ class AuditTrailEngine:
         """
         export_data = {
             "job_id": job_id,
-            "exported_at": _utcnow().isoformat(),
+            "exported_at": utcnow().isoformat(),
             "event_count": len(events),
             "provenance_chain_hash": self._provenance.get_current_hash(),
             "events": [
@@ -2536,6 +2524,5 @@ class AuditTrailEngine:
     def provenance_chain_length(self) -> int:
         """Return the length of the provenance chain."""
         return self._provenance.get_chain_length()
-
 
 __all__ = ["AuditTrailEngine"]

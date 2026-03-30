@@ -28,6 +28,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "30.0.0"
 _PACK_ID = "PACK-030"
@@ -38,7 +40,6 @@ _ACCENT = "#f4a261"
 _LIGHT = "#e3f0f7"
 _LIGHTER = "#f4f9fc"
 
-def _utcnow(): return datetime.now(timezone.utc).replace(microsecond=0)
 def _new_uuid(): return str(uuid.uuid4())
 def _compute_hash(data):
     raw = json.dumps(data, sort_keys=True, default=str) if isinstance(data, dict) else str(data)
@@ -73,7 +74,7 @@ class InvestorDashboardTemplate:
         self.generated_at: Optional[datetime] = None
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [
             self._md_header(data), self._md_executive_summary(data),
             self._md_tcfd_status(data), self._md_emissions(data),
@@ -85,7 +86,7 @@ class InvestorDashboardTemplate:
         return content + f"\n\n<!-- Provenance: {_compute_hash(content)} -->"
 
     def render_html(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         parts = [self._html_header(data), self._html_executive_summary(data),
                  self._html_tcfd_status(data), self._html_emissions(data),
@@ -96,7 +97,7 @@ class InvestorDashboardTemplate:
                 f'<body>\n<div class="report">\n{body}\n</div>\n<!-- Provenance: {_compute_hash(body)} -->\n</body>\n</html>')
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = {
             "template": _TEMPLATE_ID, "version": _MODULE_VERSION, "pack_id": _PACK_ID,
             "generated_at": self.generated_at.isoformat(), "report_id": _new_uuid(),

@@ -39,7 +39,8 @@ import re
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -590,7 +591,7 @@ class PatchOp(str, Enum):
     TEST = "test"
 
 
-class JSONPatchOperation(BaseModel):
+class JSONPatchOperation(GreenLangBase):
     """
     A single JSON Patch operation per RFC 6902.
 
@@ -757,7 +758,7 @@ class JSONPatchOperation(BaseModel):
             return f"{self.op.value} {self.path} = {value_repr}"
 
 
-class PatchSequence(BaseModel):
+class PatchSequence(GreenLangBase):
     """
     A sequence of JSON Patch operations.
 

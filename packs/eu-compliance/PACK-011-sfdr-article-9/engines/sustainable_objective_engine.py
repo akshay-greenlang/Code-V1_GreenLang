@@ -49,25 +49,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -87,7 +81,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _safe_pct(numerator: float, denominator: float) -> float:
     """Calculate percentage safely, returning 0.0 on zero denominator.
 
@@ -102,23 +95,19 @@ def _safe_pct(numerator: float, denominator: float) -> float:
         return 0.0
     return (numerator / denominator) * 100.0
 
-
 def _round_val(value: float, places: int = 4) -> float:
     """Round a float to specified decimal places."""
     return round(value, places)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ObjectiveType(str, Enum):
     """Top-level objective classification."""
     ENVIRONMENTAL = "environmental"
     SOCIAL = "social"
     NONE = "none"
-
 
 class EnvironmentalObjective(str, Enum):
     """EU Taxonomy six environmental objectives plus OTHER for non-Taxonomy."""
@@ -130,7 +119,6 @@ class EnvironmentalObjective(str, Enum):
     BIODIVERSITY = "biodiversity"
     OTHER = "other"
 
-
 class SocialObjective(str, Enum):
     """Social objectives per SFDR Article 2(17)."""
     INEQUALITY = "inequality"
@@ -140,14 +128,12 @@ class SocialObjective(str, Enum):
     HEALTH_WELLBEING = "health_wellbeing"
     AFFORDABLE_HOUSING = "affordable_housing"
 
-
 class ComplianceStatus(str, Enum):
     """Overall compliance status for the portfolio."""
     COMPLIANT = "COMPLIANT"
     NON_COMPLIANT = "NON_COMPLIANT"
     MARGINAL = "MARGINAL"
     INSUFFICIENT_DATA = "INSUFFICIENT_DATA"
-
 
 class HoldingClassificationType(str, Enum):
     """Classification of a holding under Article 2(17) for Article 9."""
@@ -158,11 +144,9 @@ class HoldingClassificationType(str, Enum):
     CASH_EQUIVALENT = "cash_equivalent"
     HEDGING = "hedging"
 
-
 # ---------------------------------------------------------------------------
 # DNSH PAI Mapping & Governance Criteria
 # ---------------------------------------------------------------------------
-
 
 ENVIRONMENTAL_DNSH_INDICATORS: Dict[str, List[str]] = {
     EnvironmentalObjective.CLIMATE_MITIGATION.value: [
@@ -217,11 +201,9 @@ GOVERNANCE_CRITERIA: List[str] = [
     "tax_compliance",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Data Models
 # ---------------------------------------------------------------------------
-
 
 class HoldingData(BaseModel):
     """Input data for a single portfolio holding.
@@ -315,7 +297,6 @@ class HoldingData(BaseModel):
         description="Evidence supporting the contribution claim",
     )
 
-
 class HoldingClassification(BaseModel):
     """Classification result for a single holding under Article 2(17).
 
@@ -370,14 +351,13 @@ class HoldingClassification(BaseModel):
         description="Portfolio weight for proportion calculation",
     )
     classified_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Classification timestamp",
     )
     provenance_hash: str = Field(
         default="",
         description="SHA-256 provenance hash",
     )
-
 
 class ObjectiveBreakdownEntry(BaseModel):
     """Breakdown of sustainable holdings by a specific objective.
@@ -410,7 +390,6 @@ class ObjectiveBreakdownEntry(BaseModel):
         default=0.0, ge=0.0, le=1.0,
         description="Average classification confidence",
     )
-
 
 class NonSustainableBreakdown(BaseModel):
     """Breakdown of non-sustainable holdings in the portfolio.
@@ -455,7 +434,6 @@ class NonSustainableBreakdown(BaseModel):
         description="List of non-sustainable holding IDs",
     )
 
-
 class CommitmentStatus(BaseModel):
     """Status of the Article 9 sustainable investment commitment.
 
@@ -499,14 +477,13 @@ class CommitmentStatus(BaseModel):
         description="Overall compliance status",
     )
     checked_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Check timestamp",
     )
     provenance_hash: str = Field(
         default="",
         description="SHA-256 provenance hash",
     )
-
 
 class ComplianceReport(BaseModel):
     """Full Article 9 compliance report.
@@ -523,7 +500,7 @@ class ComplianceReport(BaseModel):
         description="Financial product name",
     )
     reporting_date: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Reporting reference date",
     )
     total_holdings: int = Field(
@@ -599,14 +576,13 @@ class ComplianceReport(BaseModel):
         description="Engine version",
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Report generation timestamp",
     )
     provenance_hash: str = Field(
         default="",
         description="SHA-256 provenance hash",
     )
-
 
 class SustainableObjectiveResult(BaseModel):
     """Result of the sustainable objective assessment for the full portfolio.
@@ -679,7 +655,7 @@ class SustainableObjectiveResult(BaseModel):
         description="All holding classifications",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Calculation timestamp",
     )
     processing_time_ms: float = Field(
@@ -695,11 +671,9 @@ class SustainableObjectiveResult(BaseModel):
         description="SHA-256 provenance hash",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine Configuration
 # ---------------------------------------------------------------------------
-
 
 class SustainableObjectiveConfig(BaseModel):
     """Configuration for the SustainableObjectiveEngine.
@@ -780,7 +754,6 @@ class SustainableObjectiveConfig(BaseModel):
         description="PAI indicators where higher values are better",
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic model_rebuild for forward reference resolution
 # ---------------------------------------------------------------------------
@@ -794,11 +767,9 @@ CommitmentStatus.model_rebuild()
 ComplianceReport.model_rebuild()
 SustainableObjectiveResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # SustainableObjectiveEngine
 # ---------------------------------------------------------------------------
-
 
 class SustainableObjectiveEngine:
     """
@@ -877,7 +848,7 @@ class SustainableObjectiveEngine:
         Raises:
             ValueError: If holdings list is empty.
         """
-        start = _utcnow()
+        start = utcnow()
 
         if not holdings:
             raise ValueError("Holdings list cannot be empty")
@@ -941,7 +912,7 @@ class SustainableObjectiveEngine:
             sustainable_pct, cash_nav + hedging_nav, total_nav,
         )
 
-        elapsed_ms = (_utcnow() - start).total_seconds() * 1000
+        elapsed_ms = (utcnow() - start).total_seconds() * 1000
 
         result = SustainableObjectiveResult(
             total_nav=_round_val(total_nav, 2),
@@ -1018,7 +989,7 @@ class SustainableObjectiveEngine:
         Returns:
             ComplianceReport with all disclosures.
         """
-        start = _utcnow()
+        start = utcnow()
 
         # Classify portfolio
         result = self.classify_portfolio(holdings)
@@ -1055,7 +1026,7 @@ class SustainableObjectiveEngine:
             if result.classifications else 0.0
         )
 
-        elapsed_ms = (_utcnow() - start).total_seconds() * 1000
+        elapsed_ms = (utcnow() - start).total_seconds() * 1000
 
         report = ComplianceReport(
             product_name=product_name,

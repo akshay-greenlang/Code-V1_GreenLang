@@ -51,19 +51,13 @@ from typing import Any, Callable, Dict, List, Optional
 from uuid import uuid4
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # =============================================================================
 # Utility Helpers
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute a SHA-256 hash of arbitrary data.
@@ -78,11 +72,9 @@ def _hash_data(data: Any) -> str:
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # Agent Stub
 # =============================================================================
-
 
 class _AgentStub:
     """Deferred agent loader for lazy initialization.
@@ -113,6 +105,7 @@ class _AgentStub:
             return self._instance
         try:
             import importlib
+
             mod = importlib.import_module(self.module_path)
             cls = getattr(mod, self.class_name)
             self._instance = cls()
@@ -129,11 +122,9 @@ class _AgentStub:
         """Whether the agent has been loaded."""
         return self._instance is not None
 
-
 # =============================================================================
 # Enums
 # =============================================================================
-
 
 class PipelinePhase(str, Enum):
     """Execution phases in the CSRD Financial Service pipeline."""
@@ -149,7 +140,6 @@ class PipelinePhase(str, Enum):
     DISCLOSURE = "disclosure"
     AUDIT_TRAIL = "audit_trail"
 
-
 class FSExecutionStatus(str, Enum):
     """Status of a pipeline or phase execution."""
     PENDING = "pending"
@@ -159,14 +149,12 @@ class FSExecutionStatus(str, Enum):
     SKIPPED = "skipped"
     PAUSED = "paused"
 
-
 class QualityGateStatus(str, Enum):
     """Status of a quality gate check."""
     PASSED = "passed"
     FAILED = "failed"
     WARNING = "warning"
     SKIPPED = "skipped"
-
 
 class InstitutionType(str, Enum):
     """Financial institution types supported by PACK-012."""
@@ -177,7 +165,6 @@ class InstitutionType(str, Enum):
     PENSION_FUND = "pension_fund"
     DEVELOPMENT_BANK = "development_bank"
     CENTRAL_COUNTERPARTY = "central_counterparty"
-
 
 class AssetClass(str, Enum):
     """PCAF asset classes for financed emissions."""
@@ -190,11 +177,9 @@ class AssetClass(str, Enum):
     MOTOR_VEHICLE_LOANS = "motor_vehicle_loans"
     SOVEREIGN_BONDS = "sovereign_bonds"
 
-
 # =============================================================================
 # Data Models
 # =============================================================================
-
 
 class FSOrchestrationConfig(BaseModel):
     """Configuration for the CSRD Financial Service Orchestrator."""
@@ -270,7 +255,6 @@ class FSOrchestrationConfig(BaseModel):
         """Validate institution type is a known value."""
         return v
 
-
 class PhaseResult(BaseModel):
     """Result of executing a single pipeline phase."""
     phase: PipelinePhase = Field(..., description="Phase executed")
@@ -289,7 +273,6 @@ class PhaseResult(BaseModel):
     )
     retry_count: int = Field(default=0, description="Number of retries")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class PipelineResult(BaseModel):
     """Complete result of a CSRD Financial Service pipeline execution."""
@@ -343,7 +326,6 @@ class PipelineResult(BaseModel):
     warnings: List[str] = Field(default_factory=list, description="Execution warnings")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class PipelineStatus(BaseModel):
     """Current status of the running orchestration."""
     execution_id: str = Field(default="", description="Current execution ID")
@@ -357,11 +339,9 @@ class PipelineStatus(BaseModel):
     elapsed_ms: float = Field(default=0.0, description="Elapsed time in ms")
     errors: List[str] = Field(default_factory=list, description="Current errors")
 
-
 # =============================================================================
 # Phase Pipeline Definition
 # =============================================================================
-
 
 PHASE_ORDER: List[PipelinePhase] = [
     PipelinePhase.HEALTH_CHECK,
@@ -441,11 +421,9 @@ PHASE_AGENT_MAPPING: Dict[PipelinePhase, List[str]] = {
     PipelinePhase.AUDIT_TRAIL: ["GL-MRV-X-030", "GL-FOUND-X-005"],
 }
 
-
 # =============================================================================
 # CSRD Financial Service Orchestrator
 # =============================================================================
-
 
 class FSCSRDOrchestrator:
     """11-phase CSRD Financial Service master orchestrator.
@@ -593,7 +571,7 @@ class FSCSRDOrchestrator:
         """
         self._start_time = time.monotonic()
         execution_id = _hash_data(
-            f"fs-csrd:{self.config.institution_name}:{_utcnow().isoformat()}"
+            f"fs-csrd:{self.config.institution_name}:{utcnow().isoformat()}"
         )[:16]
         self._current_execution_id = execution_id
 
@@ -602,7 +580,7 @@ class FSCSRDOrchestrator:
             institution_name=self.config.institution_name,
             institution_type=self.config.institution_type.value,
             status=FSExecutionStatus.RUNNING,
-            started_at=_utcnow().isoformat(),
+            started_at=utcnow().isoformat(),
         )
 
         context: Dict[str, Any] = {
@@ -624,8 +602,8 @@ class FSCSRDOrchestrator:
                     result.phase_results[phase.value] = PhaseResult(
                         phase=phase,
                         status=FSExecutionStatus.SKIPPED,
-                        started_at=_utcnow().isoformat(),
-                        completed_at=_utcnow().isoformat(),
+                        started_at=utcnow().isoformat(),
+                        completed_at=utcnow().isoformat(),
                     )
                     continue
 
@@ -633,8 +611,8 @@ class FSCSRDOrchestrator:
                     result.phase_results[phase.value] = PhaseResult(
                         phase=phase,
                         status=FSExecutionStatus.SKIPPED,
-                        started_at=_utcnow().isoformat(),
-                        completed_at=_utcnow().isoformat(),
+                        started_at=utcnow().isoformat(),
+                        completed_at=utcnow().isoformat(),
                     )
                     continue
 
@@ -665,7 +643,7 @@ class FSCSRDOrchestrator:
             result.errors.append(f"Unexpected error: {exc}")
             self.logger.error("Pipeline execution failed: %s", exc, exc_info=True)
 
-        result.completed_at = _utcnow().isoformat()
+        result.completed_at = utcnow().isoformat()
         result.total_execution_time_ms = (time.monotonic() - self._start_time) * 1000
         self._current_phase = ""
 
@@ -829,8 +807,8 @@ class FSCSRDOrchestrator:
         return PhaseResult(
             phase=PipelinePhase.HEALTH_CHECK,
             status=FSExecutionStatus.COMPLETED,
-            started_at=_utcnow().isoformat(),
-            completed_at=_utcnow().isoformat(),
+            started_at=utcnow().isoformat(),
+            completed_at=utcnow().isoformat(),
             records_processed=categories_checked,
             data={
                 "health_score": health_score,
@@ -880,7 +858,7 @@ class FSCSRDOrchestrator:
             "btar_applicable": config_data.get("btar_applicable", True),
             "pillar3_applicable": config_data.get("pillar3_applicable", True),
             "climate_risk_scenarios": config_data.get("climate_risk_scenarios", []),
-            "validated_at": _utcnow().isoformat(),
+            "validated_at": utcnow().isoformat(),
         }
 
         status = FSExecutionStatus.FAILED if errors else FSExecutionStatus.COMPLETED
@@ -888,8 +866,8 @@ class FSCSRDOrchestrator:
         return PhaseResult(
             phase=PipelinePhase.CONFIG_INIT,
             status=status,
-            started_at=_utcnow().isoformat(),
-            completed_at=_utcnow().isoformat(),
+            started_at=utcnow().isoformat(),
+            completed_at=utcnow().isoformat(),
             records_processed=1,
             data={"validated_config": validated_config},
             errors=errors,
@@ -930,8 +908,8 @@ class FSCSRDOrchestrator:
         return PhaseResult(
             phase=PipelinePhase.DATA_LOADING,
             status=FSExecutionStatus.COMPLETED,
-            started_at=_utcnow().isoformat(),
-            completed_at=_utcnow().isoformat(),
+            started_at=utcnow().isoformat(),
+            completed_at=utcnow().isoformat(),
             records_processed=len(valid_records),
             data={
                 "total_records": len(counterparty_data),
@@ -988,8 +966,8 @@ class FSCSRDOrchestrator:
         return PhaseResult(
             phase=PipelinePhase.FINANCED_EMISSIONS,
             status=FSExecutionStatus.COMPLETED,
-            started_at=_utcnow().isoformat(),
-            completed_at=_utcnow().isoformat(),
+            started_at=utcnow().isoformat(),
+            completed_at=utcnow().isoformat(),
             records_processed=len(counterparties),
             data={
                 "total_financed_emissions_tco2e": round(total_financed, 2),
@@ -1015,8 +993,8 @@ class FSCSRDOrchestrator:
             return PhaseResult(
                 phase=PipelinePhase.GAR_BTAR,
                 status=FSExecutionStatus.COMPLETED,
-                started_at=_utcnow().isoformat(),
-                completed_at=_utcnow().isoformat(),
+                started_at=utcnow().isoformat(),
+                completed_at=utcnow().isoformat(),
                 data={"skipped": True, "reason": "GAR/BTAR not applicable"},
             )
 
@@ -1047,8 +1025,8 @@ class FSCSRDOrchestrator:
         return PhaseResult(
             phase=PipelinePhase.GAR_BTAR,
             status=FSExecutionStatus.COMPLETED,
-            started_at=_utcnow().isoformat(),
-            completed_at=_utcnow().isoformat(),
+            started_at=utcnow().isoformat(),
+            completed_at=utcnow().isoformat(),
             records_processed=len(counterparties),
             data={
                 "gar_pct": gar_pct if gar_applicable else 0.0,
@@ -1105,8 +1083,8 @@ class FSCSRDOrchestrator:
         return PhaseResult(
             phase=PipelinePhase.CLIMATE_RISK,
             status=FSExecutionStatus.COMPLETED,
-            started_at=_utcnow().isoformat(),
-            completed_at=_utcnow().isoformat(),
+            started_at=utcnow().isoformat(),
+            completed_at=utcnow().isoformat(),
             records_processed=len(counterparties),
             data={
                 "transition_risk_score": round(transition_risk_score, 2),
@@ -1167,8 +1145,8 @@ class FSCSRDOrchestrator:
         return PhaseResult(
             phase=PipelinePhase.MATERIALITY,
             status=FSExecutionStatus.COMPLETED,
-            started_at=_utcnow().isoformat(),
-            completed_at=_utcnow().isoformat(),
+            started_at=utcnow().isoformat(),
+            completed_at=utcnow().isoformat(),
             records_processed=len(fi_topics),
             data={
                 "topics_assessed": len(fi_topics),
@@ -1225,8 +1203,8 @@ class FSCSRDOrchestrator:
         return PhaseResult(
             phase=PipelinePhase.TRANSITION_PLAN,
             status=FSExecutionStatus.COMPLETED,
-            started_at=_utcnow().isoformat(),
-            completed_at=_utcnow().isoformat(),
+            started_at=utcnow().isoformat(),
+            completed_at=utcnow().isoformat(),
             records_processed=len(targets),
             data={
                 "targets": targets,
@@ -1247,8 +1225,8 @@ class FSCSRDOrchestrator:
             return PhaseResult(
                 phase=PipelinePhase.PILLAR3,
                 status=FSExecutionStatus.COMPLETED,
-                started_at=_utcnow().isoformat(),
-                completed_at=_utcnow().isoformat(),
+                started_at=utcnow().isoformat(),
+                completed_at=utcnow().isoformat(),
                 data={
                     "skipped": True,
                     "reason": "Pillar 3 ESG not applicable",
@@ -1291,8 +1269,8 @@ class FSCSRDOrchestrator:
         return PhaseResult(
             phase=PipelinePhase.PILLAR3,
             status=FSExecutionStatus.COMPLETED,
-            started_at=_utcnow().isoformat(),
-            completed_at=_utcnow().isoformat(),
+            started_at=utcnow().isoformat(),
+            completed_at=utcnow().isoformat(),
             records_processed=len(templates),
             data={
                 "templates": templates,
@@ -1348,8 +1326,8 @@ class FSCSRDOrchestrator:
         return PhaseResult(
             phase=PipelinePhase.DISCLOSURE,
             status=FSExecutionStatus.COMPLETED,
-            started_at=_utcnow().isoformat(),
-            completed_at=_utcnow().isoformat(),
+            started_at=utcnow().isoformat(),
+            completed_at=utcnow().isoformat(),
             records_processed=len(disclosures),
             data={
                 "disclosures": disclosures,
@@ -1375,7 +1353,7 @@ class FSCSRDOrchestrator:
                     list(phase_data.keys())
                     if isinstance(phase_data, dict) else []
                 ),
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             })
 
         provenance_chain = _hash_data({
@@ -1386,8 +1364,8 @@ class FSCSRDOrchestrator:
         return PhaseResult(
             phase=PipelinePhase.AUDIT_TRAIL,
             status=FSExecutionStatus.COMPLETED,
-            started_at=_utcnow().isoformat(),
-            completed_at=_utcnow().isoformat(),
+            started_at=utcnow().isoformat(),
+            completed_at=utcnow().isoformat(),
             records_processed=len(audit_entries),
             data={
                 "audit_entries": audit_entries,

@@ -23,21 +23,16 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Input Models
@@ -56,7 +51,6 @@ class EntityEmissions(BaseModel):
     total_tco2e: Decimal = Field(Decimal("0"))
     site_count: int = Field(0)
 
-
 class EliminationItem(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     elimination_type: str = Field("")
@@ -64,7 +58,6 @@ class EliminationItem(BaseModel):
     to_entity: str = Field("")
     eliminated_tco2e: Decimal = Field(Decimal("0"))
     description: str = Field("")
-
 
 class AdjustmentItem(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -74,7 +67,6 @@ class AdjustmentItem(BaseModel):
     adjusted_tco2e: Decimal = Field(Decimal("0"))
     method: str = Field("")
 
-
 class ReconciliationItem(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     scope: str = Field("")
@@ -83,7 +75,6 @@ class ReconciliationItem(BaseModel):
     variance_tco2e: Decimal = Field(Decimal("0"))
     variance_pct: Decimal = Field(Decimal("0"))
     status: str = Field("")
-
 
 class ConsolidationReportInput(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -102,7 +93,6 @@ class ConsolidationReportInput(BaseModel):
     reconciliation: List[Dict[str, Any]] = Field(default_factory=list)
     sites_count: int = Field(0)
     prior_year_total: Optional[Decimal] = Field(None)
-
 
 # ---------------------------------------------------------------------------
 # Output Model
@@ -130,7 +120,6 @@ class ConsolidationReportOutput(BaseModel):
     sites_count: int = Field(0)
     provenance_hash: str = Field("")
 
-
 # =============================================================================
 # TEMPLATE CLASS
 # =============================================================================
@@ -145,7 +134,7 @@ class ConsolidationReport:
 
     def render(self, data: Dict[str, Any]) -> ConsolidationReportOutput:
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         inp = ConsolidationReportInput(**data) if isinstance(data, dict) else data
 
         entities = [EntityEmissions(**e) if isinstance(e, dict) else e for e in inp.entities]
@@ -263,6 +252,5 @@ class ConsolidationReport:
         for e in r.entities:
             lines.append(f"{e.entity_name},{e.entity_type},{e.ownership_pct},{e.total_tco2e}")
         return "\n".join(lines)
-
 
 __all__ = ["ConsolidationReport", "ConsolidationReportInput", "ConsolidationReportOutput"]

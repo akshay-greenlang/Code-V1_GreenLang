@@ -15,12 +15,13 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig
 from greenlang.agents.base_agents import DeterministicAgent
 from greenlang.agents.categories import AgentCategory, AgentMetadata
 from greenlang.utilities.determinism import DeterministicClock, content_hash, deterministic_id
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +34,7 @@ class ProgressStatus(str, Enum):
     OFF_TRACK = "off_track"
 
 
-class ProgressDataPoint(BaseModel):
+class ProgressDataPoint(GreenLangBase):
     period: str = Field(...)
     year: int = Field(...)
     actual_emissions_tco2e: float = Field(..., ge=0)
@@ -43,7 +44,7 @@ class ProgressDataPoint(BaseModel):
     status: ProgressStatus = Field(...)
 
 
-class ProgressReport(BaseModel):
+class ProgressReport(GreenLangBase):
     report_id: str = Field(...)
     report_date: datetime = Field(default_factory=DeterministicClock.now)
 
@@ -74,7 +75,7 @@ class ProgressReport(BaseModel):
     provenance_hash: str = Field(default="")
 
 
-class ProgressMonitoringInput(BaseModel):
+class ProgressMonitoringInput(GreenLangBase):
     operation: str = Field(default="monitor")
     base_year: int = Field(default=2020)
     base_year_emissions_tco2e: float = Field(default=100000, ge=0)
@@ -83,7 +84,7 @@ class ProgressMonitoringInput(BaseModel):
     emission_history: List[Dict[str, Any]] = Field(default_factory=list)
 
 
-class ProgressMonitoringOutput(BaseModel):
+class ProgressMonitoringOutput(GreenLangBase):
     operation: str = Field(...)
     success: bool = Field(...)
     report: Optional[ProgressReport] = Field(None)

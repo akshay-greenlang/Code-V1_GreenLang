@@ -45,8 +45,9 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, List, Optional, Any
 from datetime import datetime
 from enum import Enum
-from pydantic import BaseModel, Field, validator
-from pydantic import ConfigDict
+from pydantic import Field, validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
+
 import hashlib
 import json
 
@@ -1048,7 +1049,7 @@ DEFAULT_USAGE_HOURS: Dict[str, Decimal] = {
 # ==============================================================================
 
 
-class ProductInput(BaseModel):
+class ProductInput(GreenLangBase):
     """
     Input for a single product's use-phase emissions calculation.
 
@@ -1150,7 +1151,7 @@ class ProductInput(BaseModel):
         return v
 
 
-class FuelSalesInput(BaseModel):
+class FuelSalesInput(GreenLangBase):
     """
     Input for fuels or feedstocks sold for end-user combustion/oxidation.
 
@@ -1192,7 +1193,7 @@ class FuelSalesInput(BaseModel):
         return v
 
 
-class DirectEmissionsInput(BaseModel):
+class DirectEmissionsInput(GreenLangBase):
     """
     Input for direct use-phase emissions calculation.
 
@@ -1223,7 +1224,7 @@ class DirectEmissionsInput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class IndirectEmissionsInput(BaseModel):
+class IndirectEmissionsInput(GreenLangBase):
     """
     Input for indirect use-phase emissions calculation.
 
@@ -1254,7 +1255,7 @@ class IndirectEmissionsInput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class FuelsAndFeedstocksInput(BaseModel):
+class FuelsAndFeedstocksInput(GreenLangBase):
     """
     Input for fuels and feedstocks sold calculation.
 
@@ -1285,7 +1286,7 @@ class FuelsAndFeedstocksInput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class DirectEmissionDetail(BaseModel):
+class DirectEmissionDetail(GreenLangBase):
     """
     Detailed breakdown of a single direct emission calculation.
 
@@ -1334,7 +1335,7 @@ class DirectEmissionDetail(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class IndirectEmissionDetail(BaseModel):
+class IndirectEmissionDetail(GreenLangBase):
     """
     Detailed breakdown of a single indirect emission calculation.
 
@@ -1388,7 +1389,7 @@ class IndirectEmissionDetail(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class DataQualityScore(BaseModel):
+class DataQualityScore(GreenLangBase):
     """
     Data quality indicator score across 5 dimensions plus overall.
 
@@ -1434,7 +1435,7 @@ class DataQualityScore(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class ProductBreakdown(BaseModel):
+class ProductBreakdown(GreenLangBase):
     """
     Per-product emissions breakdown within a calculation result.
 
@@ -1487,7 +1488,7 @@ class ProductBreakdown(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class UncertaintyResult(BaseModel):
+class UncertaintyResult(GreenLangBase):
     """
     Uncertainty quantification result for an emissions estimate.
 
@@ -1523,7 +1524,7 @@ class UncertaintyResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class ProvenanceRecord(BaseModel):
+class ProvenanceRecord(GreenLangBase):
     """
     Single record in the SHA-256 provenance chain.
 
@@ -1562,7 +1563,7 @@ class ProvenanceRecord(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class CalculationResult(BaseModel):
+class CalculationResult(GreenLangBase):
     """
     Complete result from a use-of-sold-products emissions calculation.
 
@@ -1631,7 +1632,7 @@ class CalculationResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class AggregationResult(BaseModel):
+class AggregationResult(GreenLangBase):
     """
     Aggregated emissions result by various dimensions.
 
@@ -1677,7 +1678,7 @@ class AggregationResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class ComplianceResult(BaseModel):
+class ComplianceResult(GreenLangBase):
     """
     Result from compliance checking against a specific framework.
 

@@ -168,32 +168,22 @@ _MODULE_VERSION = "1.0.0"
 _AGENT_ID = "GL-EUDR-BCI-013"
 _ENGINE_COUNT = 8
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_provenance_hash(*parts: str) -> str:
     """Compute SHA-256 hash over concatenated string parts."""
     combined = "|".join(str(p) for p in parts)
     return hashlib.sha256(combined.encode("utf-8")).hexdigest()
 
-
 def _generate_request_id() -> str:
     """Generate a unique request identifier."""
     return f"BCI-{uuid.uuid4().hex[:12]}"
 
-
 # ---------------------------------------------------------------------------
 # Result container: HealthResult
 # ---------------------------------------------------------------------------
-
 
 class HealthResult:
     """Health check result container.
@@ -218,7 +208,7 @@ class HealthResult:
     ) -> None:
         self.status = status
         self.checks = checks or {}
-        self.timestamp = timestamp or _utcnow()
+        self.timestamp = timestamp or utcnow()
         self.version = version
         self.uptime_seconds = uptime_seconds
 
@@ -232,11 +222,9 @@ class HealthResult:
             "uptime_seconds": round(self.uptime_seconds, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: AnchorResult
 # ---------------------------------------------------------------------------
-
 
 class AnchorResult:
     """Result from an anchoring operation.
@@ -286,11 +274,9 @@ class AnchorResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: ContractResult
 # ---------------------------------------------------------------------------
-
 
 class ContractResult:
     """Result from a smart contract operation.
@@ -340,11 +326,9 @@ class ContractResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: ChainResult
 # ---------------------------------------------------------------------------
-
 
 class ChainResult:
     """Result from a chain connection operation.
@@ -394,11 +378,9 @@ class ChainResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: VerifyResult
 # ---------------------------------------------------------------------------
-
 
 class VerifyResult:
     """Result from a verification operation.
@@ -444,11 +426,9 @@ class VerifyResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: EventResult
 # ---------------------------------------------------------------------------
-
 
 class EventResult:
     """Result from an event listener operation.
@@ -494,11 +474,9 @@ class EventResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: MerkleResult
 # ---------------------------------------------------------------------------
-
 
 class MerkleResult:
     """Result from a Merkle tree or proof operation.
@@ -548,11 +526,9 @@ class MerkleResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: SharingResult
 # ---------------------------------------------------------------------------
-
 
 class SharingResult:
     """Result from a cross-party sharing operation.
@@ -602,11 +578,9 @@ class SharingResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: EvidenceResult
 # ---------------------------------------------------------------------------
-
 
 class EvidenceResult:
     """Result from an evidence package operation.
@@ -656,11 +630,9 @@ class EvidenceResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: BatchResult
 # ---------------------------------------------------------------------------
-
 
 class BatchResult:
     """Result from a batch processing operation.
@@ -710,11 +682,9 @@ class BatchResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: DashboardResult
 # ---------------------------------------------------------------------------
-
 
 class DashboardResult:
     """Result from a dashboard or overview operation.
@@ -760,11 +730,9 @@ class DashboardResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ===========================================================================
 # BlockchainIntegrationService - Main facade
 # ===========================================================================
-
 
 class BlockchainIntegrationService:
     """Facade for the Blockchain Integration Agent (AGENT-EUDR-013).
@@ -2149,7 +2117,7 @@ class BlockchainIntegrationService:
             "agent_id": _AGENT_ID,
             "version": _MODULE_VERSION,
             "uptime_seconds": round(self.uptime_seconds, 2),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "metrics": dict(self._metrics),
             "engines_active": self._count_initialized_engines(),
             "engines_total": _ENGINE_COUNT,
@@ -2168,7 +2136,7 @@ class BlockchainIntegrationService:
             "agent_id": _AGENT_ID,
             "version": _MODULE_VERSION,
             "uptime_seconds": round(self.uptime_seconds, 2),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "metrics": dict(self._metrics),
             "engines_active": self._count_initialized_engines(),
             "engines_total": _ENGINE_COUNT,
@@ -2219,7 +2187,7 @@ class BlockchainIntegrationService:
         health = HealthResult(
             status=overall,
             checks=checks,
-            timestamp=_utcnow(),
+            timestamp=utcnow(),
             version=_MODULE_VERSION,
             uptime_seconds=self.uptime_seconds,
         )
@@ -2723,11 +2691,9 @@ class BlockchainIntegrationService:
             )
             return None
 
-
 # ---------------------------------------------------------------------------
 # FastAPI lifespan context manager
 # ---------------------------------------------------------------------------
-
 
 @asynccontextmanager
 async def lifespan(app: Any) -> AsyncIterator[None]:
@@ -2741,6 +2707,7 @@ async def lifespan(app: Any) -> AsyncIterator[None]:
 
         from fastapi import FastAPI
         from greenlang.agents.eudr.blockchain_integration.setup import lifespan
+from greenlang.schemas import utcnow
 
         app = FastAPI(lifespan=lifespan)
 
@@ -2758,14 +2725,12 @@ async def lifespan(app: Any) -> AsyncIterator[None]:
     finally:
         await service.shutdown()
 
-
 # ---------------------------------------------------------------------------
 # Thread-safe singleton accessor
 # ---------------------------------------------------------------------------
 
 _service_instance: Optional[BlockchainIntegrationService] = None
 _service_lock = threading.Lock()
-
 
 def get_service() -> BlockchainIntegrationService:
     """Return the singleton BlockchainIntegrationService instance.
@@ -2787,7 +2752,6 @@ def get_service() -> BlockchainIntegrationService:
                 _service_instance = BlockchainIntegrationService()
     return _service_instance
 
-
 def set_service(service: BlockchainIntegrationService) -> None:
     """Replace the singleton BlockchainIntegrationService instance.
 
@@ -2801,7 +2765,6 @@ def set_service(service: BlockchainIntegrationService) -> None:
         _service_instance = service
     logger.info("BlockchainIntegrationService singleton replaced")
 
-
 def reset_service() -> None:
     """Reset the singleton BlockchainIntegrationService to None.
 
@@ -2812,7 +2775,6 @@ def reset_service() -> None:
     with _service_lock:
         _service_instance = None
     logger.debug("BlockchainIntegrationService singleton reset")
-
 
 # ---------------------------------------------------------------------------
 # Public API

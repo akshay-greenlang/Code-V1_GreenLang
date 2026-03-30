@@ -89,25 +89,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "43.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -132,7 +126,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -141,7 +134,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -153,26 +145,21 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round2(value: Any) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: Any) -> float:
     """Round to 4 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class PCAFAssetClass(str, Enum):
     """PCAF asset classes for financed emissions."""
@@ -182,7 +169,6 @@ class PCAFAssetClass(str, Enum):
     PROJECT_FINANCE = "project_finance"
     COMMERCIAL_REAL_ESTATE = "commercial_real_estate"
     MORTGAGES = "mortgages"
-
 
 class PCAFDataQuality(int, Enum):
     """PCAF data quality scores.
@@ -199,13 +185,11 @@ class PCAFDataQuality(int, Enum):
     SCORE_4 = 4
     SCORE_5 = 5
 
-
 class AttributionMethod(str, Enum):
     """PCAF attribution method."""
     EVIC = "evic"
     REVENUE = "revenue"
     BALANCE_SHEET = "balance_sheet"
-
 
 class CarrierType(str, Enum):
     """Delivery carrier types for retail last-mile."""
@@ -215,7 +199,6 @@ class CarrierType(str, Enum):
     DRONE = "drone"
     ELECTRIC_VAN = "electric_van"
 
-
 class CloudProvider(str, Enum):
     """Cloud service providers."""
     AWS = "aws"
@@ -223,14 +206,12 @@ class CloudProvider(str, Enum):
     GCP = "gcp"
     OTHER = "other"
 
-
 class SectorType(str, Enum):
     """Supported sector types."""
     FINANCIAL_SERVICES = "financial_services"
     RETAIL = "retail"
     MANUFACTURING = "manufacturing"
     TECHNOLOGY = "technology"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -345,11 +326,9 @@ HARDWARE_EMBODIED_CARBON: Dict[str, float] = {
 }
 """Hardware component embodied carbon (kgCO2e per unit)."""
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Data Models - PCAF
 # ---------------------------------------------------------------------------
-
 
 class PCAFInvestment(BaseModel):
     """Investment position for PCAF financed emissions.
@@ -381,7 +360,6 @@ class PCAFInvestment(BaseModel):
     data_quality_score: int = Field(default=5, ge=1, le=5, description="PCAF DQ 1-5")
     attribution_method: str = Field(default="evic", description="Attribution method")
 
-
 class PCAFResult(BaseModel):
     """PCAF financed emission calculation result.
 
@@ -408,7 +386,6 @@ class PCAFResult(BaseModel):
     provenance_hash: str = ""
     calculated_at: str = ""
 
-
 class WACIResult(BaseModel):
     """Weighted Average Carbon Intensity result.
 
@@ -429,11 +406,9 @@ class WACIResult(BaseModel):
     provenance_hash: str = ""
     calculated_at: str = ""
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Data Models - Retail
 # ---------------------------------------------------------------------------
-
 
 class DeliveryData(BaseModel):
     """Delivery data for last-mile calculation.
@@ -450,7 +425,6 @@ class DeliveryData(BaseModel):
     distance_km: float = Field(..., ge=0, description="Distance in km")
     weight_kg: float = Field(default=5.0, ge=0, description="Weight in kg")
     deliveries_count: int = Field(default=1, ge=1, description="Number of deliveries")
-
 
 class PackagingSpec(BaseModel):
     """Packaging specification for lifecycle calculation.
@@ -470,7 +444,6 @@ class PackagingSpec(BaseModel):
     is_recyclable: bool = Field(default=False, description="Is recyclable")
     recycled_content_pct: float = Field(default=0, ge=0, le=100, description="Recycled content %")
 
-
 class RetailResult(BaseModel):
     """Retail sector calculation result.
 
@@ -487,11 +460,9 @@ class RetailResult(BaseModel):
     provenance_hash: str = ""
     calculated_at: str = ""
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Data Models - Manufacturing
 # ---------------------------------------------------------------------------
-
 
 class MaterialInput(BaseModel):
     """Material input for circular economy calculations.
@@ -509,7 +480,6 @@ class MaterialInput(BaseModel):
     recycled_content_pct: float = Field(default=0, ge=0, le=100, description="Recycled %")
     is_recyclable: bool = Field(default=False, description="End-of-life recyclable")
 
-
 class ByproductExchange(BaseModel):
     """Byproduct exchange for industrial symbiosis.
 
@@ -523,7 +493,6 @@ class ByproductExchange(BaseModel):
     quantity_kg: float = Field(..., ge=0, description="Quantity in kg")
     displaced_virgin_material: str = Field(..., description="Displaced virgin material")
     receiving_facility: str = Field(default="", description="Receiving facility")
-
 
 class ProcessAlternative(BaseModel):
     """Process substitution alternative.
@@ -543,7 +512,6 @@ class ProcessAlternative(BaseModel):
     unit: str = Field(default="tonne", description="Production unit")
     investment_required: float = Field(default=0, ge=0, description="Investment required")
 
-
 class ManufacturingResult(BaseModel):
     """Manufacturing sector calculation result.
 
@@ -560,11 +528,9 @@ class ManufacturingResult(BaseModel):
     provenance_hash: str = ""
     calculated_at: str = ""
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Data Models - Technology
 # ---------------------------------------------------------------------------
-
 
 class CloudUsage(BaseModel):
     """Cloud usage data for carbon calculation.
@@ -584,7 +550,6 @@ class CloudUsage(BaseModel):
     instance_type: str = Field(default="general", description="Instance type")
     use_market_based: bool = Field(default=False, description="Use market-based EFs")
 
-
 class HardwareComponent(BaseModel):
     """Hardware component for embodied carbon.
 
@@ -598,7 +563,6 @@ class HardwareComponent(BaseModel):
     quantity: int = Field(default=1, ge=1, description="Quantity")
     useful_life_years: int = Field(default=4, ge=1, description="Useful life years")
     allocation_pct: float = Field(default=100.0, ge=0, le=100, description="Allocation %")
-
 
 class SaaSUsageData(BaseModel):
     """SaaS use-phase data for Category 11.
@@ -620,7 +584,6 @@ class SaaSUsageData(BaseModel):
         default=400.0, ge=0, description="Grid EF gCO2e/kWh"
     )
 
-
 class TechResult(BaseModel):
     """Technology sector calculation result.
 
@@ -637,11 +600,9 @@ class TechResult(BaseModel):
     provenance_hash: str = ""
     calculated_at: str = ""
 
-
 # ---------------------------------------------------------------------------
 # Engine Class
 # ---------------------------------------------------------------------------
-
 
 class SectorSpecificEngine:
     """Sector-specific deep calculation engine.
@@ -699,7 +660,7 @@ class SectorSpecificEngine:
                 financed_emissions_tco2e=_round2(financed),
                 data_quality_score=inv.data_quality_score,
                 outstanding_amount=_round2(inv.outstanding_amount),
-                calculated_at=_utcnow().isoformat(),
+                calculated_at=utcnow().isoformat(),
             )
             result.provenance_hash = _compute_hash(result)
             results.append(result)
@@ -773,7 +734,7 @@ class SectorSpecificEngine:
             number_of_positions=len(portfolio),
             by_sector={k: _round2(v) for k, v in by_sector.items()},
             data_quality_weighted=_round2(dq_weighted_sum),
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         )
         result.provenance_hash = _compute_hash(result)
 
@@ -824,7 +785,7 @@ class SectorSpecificEngine:
                 "by_carrier": {k: _round2(v) for k, v in by_carrier.items()},
                 "total_distance_km": _round2(sum(_decimal(d.distance_km * d.deliveries_count) for d in deliveries)),
             },
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         )
         result.provenance_hash = _compute_hash(result)
 
@@ -880,7 +841,7 @@ class SectorSpecificEngine:
                 "by_material": {k: _round2(v) for k, v in by_material.items()},
                 "transport_factor": transport_factor,
             },
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         )
         result.provenance_hash = _compute_hash(result)
 
@@ -920,7 +881,7 @@ class SectorSpecificEngine:
                 "return_rate": _round4(rate),
                 "reverse_logistics_factor": _round2(factor),
             },
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         )
         result.provenance_hash = _compute_hash(result)
 
@@ -973,7 +934,7 @@ class SectorSpecificEngine:
                 "by_material": {k: _round2(v) for k, v in by_material.items()},
                 "materials_count": len(materials),
             },
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         )
         result.provenance_hash = _compute_hash(result)
 
@@ -1016,7 +977,7 @@ class SectorSpecificEngine:
                 "by_exchange": {k: _round2(v) for k, v in by_exchange.items()},
                 "exchanges_count": len(byproducts),
             },
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         )
         result.provenance_hash = _compute_hash(result)
 
@@ -1068,7 +1029,7 @@ class SectorSpecificEngine:
                     sum(_decimal(a.investment_required) for a in alternatives)
                 ),
             },
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         )
         result.provenance_hash = _compute_hash(result)
 
@@ -1130,7 +1091,7 @@ class SectorSpecificEngine:
                 "total_compute_hours": _round2(sum(_decimal(u.compute_hours) for u in usage)),
                 "by_provider": {k: _round2(v) for k, v in by_provider.items()},
             },
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         )
         result.provenance_hash = _compute_hash(result)
 
@@ -1179,7 +1140,7 @@ class SectorSpecificEngine:
                 "by_type": {k: _round2(v) for k, v in by_type.items()},
                 "annualised": True,
             },
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         )
         result.provenance_hash = _compute_hash(result)
 
@@ -1220,7 +1181,7 @@ class SectorSpecificEngine:
                 "grid_ef_gco2_kwh": _round2(grid_ef),
                 "scope3_category": 11,
             },
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         )
         result.provenance_hash = _compute_hash(result)
 
@@ -1287,7 +1248,6 @@ class SectorSpecificEngine:
             SHA-256 hex digest (64 characters).
         """
         return _compute_hash(data)
-
 
 # ---------------------------------------------------------------------------
 # Pydantic v2 model_rebuild for forward-reference resolution

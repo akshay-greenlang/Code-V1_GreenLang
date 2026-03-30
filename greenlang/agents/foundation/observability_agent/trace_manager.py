@@ -37,23 +37,17 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class SpanEvent:
@@ -68,14 +62,13 @@ class SpanEvent:
 
     event_id: str = ""
     name: str = ""
-    timestamp: datetime = field(default_factory=_utcnow)
+    timestamp: datetime = field(default_factory=utcnow)
     attributes: Dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         """Generate event_id if not provided."""
         if not self.event_id:
             self.event_id = str(uuid.uuid4())
-
 
 @dataclass
 class TraceRecord:
@@ -105,7 +98,7 @@ class TraceRecord:
     status: str = "UNSET"
     attributes: Dict[str, Any] = field(default_factory=dict)
     events: List[SpanEvent] = field(default_factory=list)
-    start_time: datetime = field(default_factory=_utcnow)
+    start_time: datetime = field(default_factory=utcnow)
     end_time: Optional[datetime] = None
     duration_ms: float = 0.0
     is_active: bool = True
@@ -115,7 +108,6 @@ class TraceRecord:
         """Generate span_id if not provided."""
         if not self.span_id:
             self.span_id = str(uuid.uuid4())
-
 
 @dataclass
 class TraceContext:
@@ -133,8 +125,7 @@ class TraceContext:
     span_id: str = ""
     trace_flags: str = "01"
     trace_state: Dict[str, str] = field(default_factory=dict)
-    created_at: datetime = field(default_factory=_utcnow)
-
+    created_at: datetime = field(default_factory=utcnow)
 
 # Valid span kinds matching OTel specification
 VALID_SPAN_KINDS: Tuple[str, ...] = (
@@ -143,11 +134,9 @@ VALID_SPAN_KINDS: Tuple[str, ...] = (
 
 VALID_STATUSES: Tuple[str, ...] = ("UNSET", "OK", "ERROR")
 
-
 # =============================================================================
 # TraceManager
 # =============================================================================
-
 
 class TraceManager:
     """OTel-compatible distributed tracing engine.
@@ -261,7 +250,7 @@ class TraceManager:
             )
 
         resolved_trace_id = trace_id or str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         provenance_hash = self._compute_span_hash(
             resolved_trace_id, name, now, attributes or {},
@@ -342,7 +331,7 @@ class TraceManager:
                     f"Span already ended: trace_id={trace_id[:8]}, span_id={span_id[:8]}"
                 )
 
-            now = _utcnow()
+            now = utcnow()
             delta = now - span.start_time
             duration_ms = delta.total_seconds() * 1000.0
 
@@ -408,7 +397,7 @@ class TraceManager:
 
             event = SpanEvent(
                 name=event_name,
-                timestamp=_utcnow(),
+                timestamp=utcnow(),
                 attributes=dict(attributes or {}),
             )
             span.events.append(event)
@@ -575,7 +564,7 @@ class TraceManager:
         Returns:
             Number of spans removed.
         """
-        cutoff = _utcnow().timestamp() - self._span_ttl_seconds
+        cutoff = utcnow().timestamp() - self._span_ttl_seconds
         removed = 0
 
         stale_keys: List[Tuple[str, str]] = []
@@ -610,7 +599,7 @@ class TraceManager:
             Number of traces removed.
         """
         age_limit = max_age_seconds or self._span_ttl_seconds
-        cutoff = _utcnow().timestamp() - age_limit
+        cutoff = utcnow().timestamp() - age_limit
         removed = 0
 
         with self._lock:
@@ -708,7 +697,6 @@ class TraceManager:
             default=str,
         )
         return hashlib.sha256(payload.encode("utf-8")).hexdigest()
-
 
 __all__ = [
     "TraceManager",

@@ -71,23 +71,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -104,7 +99,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -113,7 +107,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -121,18 +114,14 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round4(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 def _round6(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP))
-
 
 def _median_decimal(values: List[Decimal]) -> Decimal:
     if not values:
@@ -143,7 +132,6 @@ def _median_decimal(values: List[Decimal]) -> Decimal:
     if n % 2 == 1:
         return sorted_vals[mid]
     return (sorted_vals[mid - 1] + sorted_vals[mid]) / Decimal("2")
-
 
 def _percentile_decimal(values: List[Decimal], pct: Decimal) -> Decimal:
     if not values:
@@ -158,11 +146,9 @@ def _percentile_decimal(values: List[Decimal], pct: Decimal) -> Decimal:
     frac = rank - Decimal(str(lower))
     return sorted_vals[lower] + frac * (sorted_vals[upper] - sorted_vals[lower])
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ScenarioType(str, Enum):
     """Type of scenario being modelled."""
@@ -172,7 +158,6 @@ class ScenarioType(str, Enum):
     METHODOLOGY = "methodology"
     COMBINED = "combined"
 
-
 class DistributionType(str, Enum):
     """Probability distribution for input parameters."""
     NORMAL = "normal"
@@ -180,7 +165,6 @@ class DistributionType(str, Enum):
     TRIANGULAR = "triangular"
     UNIFORM = "uniform"
     FIXED = "fixed"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -192,11 +176,9 @@ DEFAULT_SEED: int = 42
 MAX_SCENARIOS: int = 50
 MAX_SEGMENTS: int = 100
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class DistributionParams(BaseModel):
     """Parameters for a probability distribution.
@@ -228,7 +210,6 @@ class DistributionParams(BaseModel):
     def coerce_dec(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class SegmentInput(BaseModel):
     """A segment for structural scenario modelling.
 
@@ -249,7 +230,6 @@ class SegmentInput(BaseModel):
     @classmethod
     def coerce_dec(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class ScenarioDefinition(BaseModel):
     """Definition of a single scenario.
@@ -295,7 +275,6 @@ class ScenarioDefinition(BaseModel):
     def coerce_dec(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class ScenarioInput(BaseModel):
     """Input for scenario analysis.
 
@@ -335,11 +314,9 @@ class ScenarioInput(BaseModel):
             object.__setattr__(self, "current_intensity", intensity)
         return self
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class MonteCarloDistribution(BaseModel):
     """Distribution of Monte Carlo simulation results.
@@ -371,7 +348,6 @@ class MonteCarloDistribution(BaseModel):
     min_val: Decimal = Field(default=Decimal("0"), description="Min")
     max_val: Decimal = Field(default=Decimal("0"), description="Max")
 
-
 class ScenarioOutcome(BaseModel):
     """Outcome of a single scenario.
 
@@ -395,7 +371,6 @@ class ScenarioOutcome(BaseModel):
     resulting_denominator: Decimal = Field(default=Decimal("0"), description="Resulting denominator")
     monte_carlo: Optional[MonteCarloDistribution] = Field(default=None, description="Monte Carlo")
     target_probability: Optional[Decimal] = Field(default=None, description="Target probability (%)")
-
 
 class ScenarioResult(BaseModel):
     """Result of scenario analysis.
@@ -425,11 +400,9 @@ class ScenarioResult(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ScenarioEngine:
     """Scenario modelling engine for intensity metrics.
@@ -538,7 +511,7 @@ class ScenarioEngine:
             best_scenario=best_id,
             worst_scenario=worst_id,
             warnings=warnings,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         result.provenance_hash = _compute_hash(result)
@@ -736,7 +709,6 @@ class ScenarioEngine:
 
     def get_version(self) -> str:
         return self._version
-
 
 # ---------------------------------------------------------------------------
 # __all__

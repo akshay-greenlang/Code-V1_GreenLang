@@ -35,18 +35,14 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -58,23 +54,19 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
 
-
 class AssuranceLevel(str, Enum):
     LIMITED = "limited"
     REASONABLE = "reasonable"
-
 
 class AssuranceStandard(str, Enum):
     ISO_14064_3 = "iso_14064_3"
     ISAE_3410 = "isae_3410"
     ISAE_3000 = "isae_3000"
     AA1000AS = "aa1000as"
-
 
 class AssuranceProvider(str, Enum):
     DELOITTE = "deloitte"
@@ -89,7 +81,6 @@ class AssuranceProvider(str, Enum):
     LRQA = "lrqa"
     OTHER = "other"
 
-
 class WorkpaperType(str, Enum):
     SCOPE1_DETAIL = "scope1_detail"
     SCOPE2_DETAIL = "scope2_detail"
@@ -103,7 +94,6 @@ class WorkpaperType(str, Enum):
     CONTROL_DOCUMENTATION = "control_documentation"
     PROVENANCE_CHAIN = "provenance_chain"
 
-
 class EngagementStatus(str, Enum):
     PLANNING = "planning"
     FIELDWORK = "fieldwork"
@@ -111,11 +101,9 @@ class EngagementStatus(str, Enum):
     REPORTING = "reporting"
     COMPLETED = "completed"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class AssuranceBridgeConfig(BaseModel):
     pack_id: str = Field(default="PACK-027")
@@ -127,7 +115,6 @@ class AssuranceBridgeConfig(BaseModel):
     sample_size_pct: float = Field(default=15.0, ge=5.0, le=100.0)
     enable_provenance: bool = Field(default=True)
 
-
 class Workpaper(BaseModel):
     workpaper_id: str = Field(default_factory=_new_uuid)
     workpaper_type: WorkpaperType = Field(...)
@@ -138,8 +125,7 @@ class Workpaper(BaseModel):
     data_quality_score: float = Field(default=0.0)
     content_summary: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
-    generated_at: datetime = Field(default_factory=_utcnow)
-
+    generated_at: datetime = Field(default_factory=utcnow)
 
 class AssurancePackage(BaseModel):
     package_id: str = Field(default_factory=_new_uuid)
@@ -155,14 +141,12 @@ class AssurancePackage(BaseModel):
     management_assertion_ready: bool = Field(default=False)
     estimated_auditor_hours: int = Field(default=80)
     status: EngagementStatus = Field(default=EngagementStatus.PLANNING)
-    generated_at: datetime = Field(default_factory=_utcnow)
+    generated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # AssuranceProviderBridge
 # ---------------------------------------------------------------------------
-
 
 class AssuranceProviderBridge:
     """Big 4 assurance provider integration for PACK-027.
@@ -251,7 +235,7 @@ class AssuranceProviderBridge:
             "consistency_assertion": True,
             "transparency_assertion": True,
             "materiality_threshold_pct": self.config.materiality_threshold_pct,
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
             "provenance_hash": _compute_hash(baseline_data),
         }
 

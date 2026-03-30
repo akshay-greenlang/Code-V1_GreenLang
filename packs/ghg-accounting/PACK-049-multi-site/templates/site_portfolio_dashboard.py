@@ -35,21 +35,16 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -59,7 +54,6 @@ class OutputFormat(str, Enum):
     MARKDOWN = "markdown"
     HTML = "html"
     JSON = "json"
-
 
 # ---------------------------------------------------------------------------
 # Input Models
@@ -83,7 +77,6 @@ class SiteSummary(BaseModel):
     quality_score: Decimal = Field(Decimal("0"))
     data_completeness_pct: Decimal = Field(Decimal("0"))
 
-
 class PortfolioDashboardInput(BaseModel):
     """Complete input for the portfolio dashboard."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -94,7 +87,6 @@ class PortfolioDashboardInput(BaseModel):
     top_n_emitters: int = Field(10, ge=1, le=50)
     consolidation_approach: str = Field("operational_control")
     currency_code: str = Field("USD")
-
 
 # ---------------------------------------------------------------------------
 # Output Models
@@ -107,14 +99,12 @@ class RegionData(BaseModel):
     total_tco2e: Decimal = Field(Decimal("0"))
     share_pct: Decimal = Field(Decimal("0"))
 
-
 class FacilityTypeData(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     facility_type: str = Field(...)
     site_count: int = Field(0)
     total_tco2e: Decimal = Field(Decimal("0"))
     share_pct: Decimal = Field(Decimal("0"))
-
 
 class ScopeBreakdown(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -125,7 +115,6 @@ class ScopeBreakdown(BaseModel):
     scope_2_pct: Decimal = Field(Decimal("0"))
     scope_3_pct: Decimal = Field(Decimal("0"))
 
-
 class TopEmitter(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     rank: int = Field(0)
@@ -135,13 +124,11 @@ class TopEmitter(BaseModel):
     share_pct: Decimal = Field(Decimal("0"))
     facility_type: str = Field("")
 
-
 class StatusOverview(BaseModel):
     active: int = Field(0)
     inactive: int = Field(0)
     pending: int = Field(0)
     total: int = Field(0)
-
 
 class PortfolioDashboardReport(BaseModel):
     """Rendered portfolio dashboard report."""
@@ -161,7 +148,6 @@ class PortfolioDashboardReport(BaseModel):
     top_emitters: List[TopEmitter] = Field(default_factory=list)
     status_overview: Optional[StatusOverview] = Field(None)
     provenance_hash: str = Field("")
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -193,7 +179,7 @@ class SitePortfolioDashboard:
     def render(self, data: Dict[str, Any]) -> PortfolioDashboardReport:
         """Render the portfolio dashboard from input data."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
 
         inp = PortfolioDashboardInput(**data) if not isinstance(data, PortfolioDashboardInput) else data
         sites = inp.sites
@@ -401,7 +387,6 @@ class SitePortfolioDashboard:
         for t in report.top_emitters:
             lines.append(f"{t.rank},{t.site_id},{t.site_name},{t.facility_type},{t.total_tco2e},{t.share_pct}")
         return "\n".join(lines)
-
 
 __all__ = [
     "SitePortfolioDashboard",

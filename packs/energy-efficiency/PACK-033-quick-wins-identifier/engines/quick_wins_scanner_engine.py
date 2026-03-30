@@ -66,25 +66,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -102,7 +96,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -111,7 +104,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -123,22 +115,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class BuildingType(str, Enum):
     """Building / facility type.
@@ -175,7 +163,6 @@ class BuildingType(str, Enum):
     FITNESS = "fitness"
     MIXED_USE = "mixed_use"
 
-
 class ActionCategory(str, Enum):
     """Quick-win action category.
 
@@ -211,7 +198,6 @@ class ActionCategory(str, Enum):
     RENEWABLE = "renewable"
     PROCESS = "process"
 
-
 class ActionComplexity(str, Enum):
     """Implementation complexity / cost tier.
 
@@ -224,7 +210,6 @@ class ActionComplexity(str, Enum):
     LOW_COST = "low_cost"
     MEDIUM_COST = "medium_cost"
     CAPITAL = "capital"
-
 
 class ActionPriority(str, Enum):
     """Quick-win action priority.
@@ -239,7 +224,6 @@ class ActionPriority(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
 
-
 class ScanStatus(str, Enum):
     """Facility scan status.
 
@@ -253,7 +237,6 @@ class ScanStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
 
-
 class DisruptionLevel(str, Enum):
     """Operational disruption level during implementation.
 
@@ -266,7 +249,6 @@ class DisruptionLevel(str, Enum):
     MINIMAL = "minimal"
     MODERATE = "moderate"
     SIGNIFICANT = "significant"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -462,11 +444,9 @@ DISRUPTION_WEIGHT: Dict[str, Decimal] = {
     DisruptionLevel.SIGNIFICANT.value: Decimal("0.4"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class FacilityProfile(BaseModel):
     """Facility profile for quick-win scanning.
@@ -522,7 +502,6 @@ class FacilityProfile(BaseModel):
                 f"Unknown building type '{v}'. Must be one of: {sorted(valid)}"
             )
         return v
-
 
 class EquipmentSurvey(BaseModel):
     """Equipment survey answers for applicability scoring.
@@ -588,11 +567,9 @@ class EquipmentSurvey(BaseModel):
         default=Decimal("5.0"), ge=0, description="Window U-value (W/m2K)"
     )
 
-
 # ---------------------------------------------------------------------------
 # Quick-Win Action Model
 # ---------------------------------------------------------------------------
-
 
 class QuickWinAction(BaseModel):
     """Pre-defined quick-win action from the library.
@@ -672,11 +649,9 @@ class QuickWinAction(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class ScanResult(BaseModel):
     """Result for a single quick-win action evaluated against a facility.
@@ -722,7 +697,6 @@ class ScanResult(BaseModel):
     )
     notes: str = Field(default="", max_length=2000, description="Notes")
 
-
 class QuickWinsScanResult(BaseModel):
     """Complete scan result for a facility.
 
@@ -761,10 +735,9 @@ class QuickWinsScanResult(BaseModel):
     )
     scan_duration_ms: float = Field(default=0.0, description="Duration (ms)")
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 # ---------------------------------------------------------------------------
 # Quick Wins Library -- 84 pre-defined actions
@@ -1948,11 +1921,9 @@ assert len(QUICK_WINS_LIBRARY) >= 80, (
     f"QUICK_WINS_LIBRARY must have >= 80 entries, found {len(QUICK_WINS_LIBRARY)}"
 )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class QuickWinsScannerEngine:
     """Automated facility scanner for quick-win energy efficiency opportunities.

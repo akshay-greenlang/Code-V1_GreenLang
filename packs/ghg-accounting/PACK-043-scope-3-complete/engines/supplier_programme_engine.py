@@ -81,25 +81,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "43.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -124,7 +118,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -141,7 +134,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal,
     denominator: Decimal,
@@ -152,26 +144,21 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round2(value: Any) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: Any) -> float:
     """Round to 4 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SupplierClassification(str, Enum):
     """Supplier tier classification based on composite score ranking.
@@ -184,7 +171,6 @@ class SupplierClassification(str, Enum):
     KEY = "key"
     MANAGED = "managed"
 
-
 class CommitmentType(str, Enum):
     """Types of supplier climate commitments."""
     SBTI_COMMITTED = "sbti_committed"
@@ -195,7 +181,6 @@ class CommitmentType(str, Enum):
     CARBON_NEUTRAL = "carbon_neutral"
     INTERNAL_TARGET = "internal_target"
     NO_COMMITMENT = "no_commitment"
-
 
 class IncentiveType(str, Enum):
     """Types of procurement incentives for emission reduction.
@@ -210,13 +195,11 @@ class IncentiveType(str, Enum):
     CONTRACT_EXTENSION = "contract_extension"
     RECOGNITION = "recognition"
 
-
 class TransitionRiskRating(str, Enum):
     """Supplier transition risk rating."""
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 class ProgressStatus(str, Enum):
     """Year-on-year progress status."""
@@ -226,7 +209,6 @@ class ProgressStatus(str, Enum):
     NO_DATA = "no_data"
     BASELINE_YEAR = "baseline_year"
 
-
 class EngagementLevel(str, Enum):
     """Supplier engagement level for scoring."""
     NONE = "none"
@@ -234,7 +216,6 @@ class EngagementLevel(str, Enum):
     ACTIVE = "active"
     ADVANCED = "advanced"
     LEADER = "leader"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -328,11 +309,9 @@ INCENTIVE_DEFAULTS: Dict[str, Dict[str, float]] = {
 }
 """Default incentive impact parameters by type."""
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Data Models
 # ---------------------------------------------------------------------------
-
 
 class SupplierTarget(BaseModel):
     """Per-supplier emission reduction target.
@@ -371,7 +350,6 @@ class SupplierTarget(BaseModel):
                 raise ValueError(f"Scope 3 category must be 1-15, got {cat}")
         return v
 
-
 class SupplierCommitment(BaseModel):
     """Supplier climate commitment record.
 
@@ -403,7 +381,6 @@ class SupplierCommitment(BaseModel):
             if v not in allowed:
                 raise ValueError(f"CDP score must be one of {allowed}, got {v}")
         return v
-
 
 class SupplierProgress(BaseModel):
     """Year-on-year progress for a supplier.
@@ -443,7 +420,6 @@ class SupplierProgress(BaseModel):
     provenance_hash: str = ""
     calculated_at: str = ""
 
-
 class SupplierScorecard(BaseModel):
     """Composite supplier scorecard.
 
@@ -473,7 +449,6 @@ class SupplierScorecard(BaseModel):
     dimension_details: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = ""
     calculated_at: str = ""
-
 
 class ProgrammeImpact(BaseModel):
     """Aggregate programme impact on reporter's Scope 3 inventory.
@@ -507,7 +482,6 @@ class ProgrammeImpact(BaseModel):
     provenance_hash: str = ""
     calculated_at: str = ""
 
-
 class TransitionRisk(BaseModel):
     """Supplier transition risk assessment.
 
@@ -540,7 +514,6 @@ class TransitionRisk(BaseModel):
     provenance_hash: str = ""
     calculated_at: str = ""
 
-
 class ProgrammeROI(BaseModel):
     """Programme return on investment.
 
@@ -571,7 +544,6 @@ class ProgrammeROI(BaseModel):
     provenance_hash: str = ""
     calculated_at: str = ""
 
-
 class IncentiveImpact(BaseModel):
     """Modelled impact of an incentive on a supplier.
 
@@ -601,7 +573,6 @@ class IncentiveImpact(BaseModel):
     expected_reduction_tco2e: float
     provenance_hash: str = ""
     calculated_at: str = ""
-
 
 class SupplierInput(BaseModel):
     """Input data for a single supplier in the programme.
@@ -639,11 +610,9 @@ class SupplierInput(BaseModel):
         default_factory=list, description="Regulatory jurisdictions"
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine Class
 # ---------------------------------------------------------------------------
-
 
 class SupplierProgrammeEngine:
     """Manages supplier-level emission reduction programmes.
@@ -788,7 +757,7 @@ class SupplierProgrammeEngine:
                     supplier_id=supplier.supplier_id,
                     commitment_type=CommitmentType.NO_COMMITMENT,
                     status="none",
-                    last_updated=_utcnow().isoformat(),
+                    last_updated=utcnow().isoformat(),
                 ))
                 continue
 
@@ -799,7 +768,7 @@ class SupplierProgrammeEngine:
                     status="active",
                     cdp_score=supplier.cdp_score,
                     verified=supplier.has_sbti if "sbti" in commitment_str.lower() else False,
-                    last_updated=_utcnow().isoformat(),
+                    last_updated=utcnow().isoformat(),
                 ))
 
         elapsed_ms = (time.time() - start_ms) * 1000
@@ -838,7 +807,7 @@ class SupplierProgrammeEngine:
         reduction_pct = _safe_pct(reduction, baseline)
 
         # Determine current year from context.
-        current_year = _utcnow().year
+        current_year = utcnow().year
         years_elapsed = max(current_year - target.baseline_year, 0)
         years_remaining = max(target.target_year - current_year, 0)
 
@@ -892,7 +861,7 @@ class SupplierProgrammeEngine:
             years_elapsed=years_elapsed,
             years_remaining=years_remaining,
             required_annual_rate_pct=_round2(required_annual),
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         )
         result.provenance_hash = _compute_hash(result)
 
@@ -976,7 +945,7 @@ class SupplierProgrammeEngine:
             impact_on_scope3_pct=_round2(impact_pct),
             by_category={k: _round2(v) for k, v in by_category.items()},
             by_classification={k: _round2(v) for k, v in by_classification.items()},
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         )
         result.provenance_hash = _compute_hash(result)
 
@@ -1062,7 +1031,7 @@ class SupplierProgrammeEngine:
                 "strongest_commitment": max(supplier.commitments, default="none"),
                 "weights": dict(w),
             },
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         )
         result.provenance_hash = _compute_hash(result)
 
@@ -1202,7 +1171,7 @@ class SupplierProgrammeEngine:
             cost_per_tonne=_round2(cost_per_tonne),
             adoption_probability_pct=_round2(adoption_pct),
             expected_reduction_tco2e=_round2(expected_reduction),
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         )
         result.provenance_hash = _compute_hash(result)
 
@@ -1330,7 +1299,7 @@ class SupplierProgrammeEngine:
             risk_rating=rating.value,
             key_risk_factors=risk_factors,
             mitigation_recommendations=mitigations,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         )
         result.provenance_hash = _compute_hash(result)
 
@@ -1401,7 +1370,7 @@ class SupplierProgrammeEngine:
             cost_per_tonne=_round2(cost_per_tonne),
             annual_reduction_tco2e=_round2(annual_reduction),
             net_present_value=_round2(npv),
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         )
         result.provenance_hash = _compute_hash(result)
 
@@ -1427,7 +1396,6 @@ class SupplierProgrammeEngine:
             SHA-256 hex digest (64 characters).
         """
         return _compute_hash(data)
-
 
 # ---------------------------------------------------------------------------
 # Pydantic v2 model_rebuild for forward-reference resolution

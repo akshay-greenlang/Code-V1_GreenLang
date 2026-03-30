@@ -36,18 +36,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ValidationSeverity
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -59,18 +56,15 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class TaxonomyFramework(str, Enum):
     SEC = "sec"
     CSRD = "csrd"
     ISSB = "issb"
     GRI = "gri"
-
 
 class TagDataType(str, Enum):
     MONETARY = "monetary"
@@ -82,19 +76,11 @@ class TagDataType(str, Enum):
     DATE = "date"
     INTEGER = "integer"
 
-
-class ValidationSeverity(str, Enum):
-    ERROR = "error"
-    WARNING = "warning"
-    INFO = "info"
-
-
 class ImportStatus(str, Enum):
     SUCCESS = "success"
     PARTIAL = "partial"
     FAILED = "failed"
     CACHED = "cached"
-
 
 # ---------------------------------------------------------------------------
 # SEC XBRL Taxonomy Elements
@@ -250,11 +236,9 @@ CSRD_TAXONOMY_ELEMENTS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class XBRLIntegrationConfig(BaseModel):
     pack_id: str = Field(default="PACK-030")
@@ -263,7 +247,6 @@ class XBRLIntegrationConfig(BaseModel):
     csrd_taxonomy_version: str = Field(default="2024")
     cache_ttl_seconds: int = Field(default=86400)
     validate_on_fetch: bool = Field(default=True)
-
 
 class TaxonomyElement(BaseModel):
     """XBRL taxonomy element."""
@@ -277,7 +260,6 @@ class TaxonomyElement(BaseModel):
     regulatory_reference: str = Field(default="")
     framework: TaxonomyFramework = Field(default=TaxonomyFramework.SEC)
 
-
 class Taxonomy(BaseModel):
     """Complete XBRL taxonomy."""
     taxonomy_id: str = Field(default_factory=_new_uuid)
@@ -290,8 +272,7 @@ class Taxonomy(BaseModel):
     schema_url: str = Field(default="")
     effective_date: str = Field(default="2024-01-01")
     provenance_hash: str = Field(default="")
-    fetched_at: datetime = Field(default_factory=_utcnow)
-
+    fetched_at: datetime = Field(default_factory=utcnow)
 
 class TagValidationResult(BaseModel):
     """XBRL tag validation result."""
@@ -306,7 +287,6 @@ class TagValidationResult(BaseModel):
     compliance_score: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class XBRLIntegrationResult(BaseModel):
     result_id: str = Field(default_factory=_new_uuid)
     sec_taxonomy: Optional[Taxonomy] = Field(None)
@@ -314,14 +294,12 @@ class XBRLIntegrationResult(BaseModel):
     validation: Optional[TagValidationResult] = Field(None)
     import_status: ImportStatus = Field(default=ImportStatus.FAILED)
     integration_quality_score: float = Field(default=0.0)
-    fetched_at: datetime = Field(default_factory=_utcnow)
+    fetched_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # XBRLTaxonomyIntegration
 # ---------------------------------------------------------------------------
-
 
 class XBRLTaxonomyIntegration:
     """XBRL taxonomy integration for PACK-030.

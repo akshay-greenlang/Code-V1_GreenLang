@@ -41,29 +41,23 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 def _compute_hash(content: str) -> str:
     """Compute SHA-256 hash of string content."""
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -76,7 +70,6 @@ class OutputFormat(str, Enum):
     PDF = "pdf"
     JSON = "json"
 
-
 class ScenarioType(str, Enum):
     """Scenario classification types."""
     BASE_CASE = "base_case"
@@ -85,7 +78,6 @@ class ScenarioType(str, Enum):
     BEST_CASE = "best_case"
     WORST_CASE = "worst_case"
     CUSTOM = "custom"
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Input Models
@@ -102,7 +94,6 @@ class ScenarioDefinition(BaseModel):
         default_factory=dict, description="Scenario parameter overrides"
     )
 
-
 class ScenarioResult(BaseModel):
     """Results for a single scenario."""
     scenario_id: str = Field(..., description="Scenario identifier")
@@ -113,7 +104,6 @@ class ScenarioResult(BaseModel):
     meets_target: bool = Field(False, description="Whether scenario meets target")
     target_year: int = Field(0, description="Target year for projection")
     intensity_unit: str = Field("", description="Intensity unit")
-
 
 class MonteCarloDistribution(BaseModel):
     """Monte Carlo simulation distribution summary."""
@@ -131,7 +121,6 @@ class MonteCarloDistribution(BaseModel):
     histogram_bins: List[float] = Field(default_factory=list, description="Histogram bin edges")
     histogram_counts: List[int] = Field(default_factory=list, description="Histogram bin counts")
 
-
 class SensitivityItem(BaseModel):
     """Single variable in sensitivity (tornado) analysis."""
     variable_name: str = Field(..., description="Input variable name")
@@ -142,7 +131,6 @@ class SensitivityItem(BaseModel):
     impact_high: float = Field(0.0, description="Intensity at high value")
     swing: float = Field(0.0, description="Absolute swing (high - low impact)")
 
-
 class KeyDriver(BaseModel):
     """Key driver identified from scenario analysis."""
     driver_name: str = Field(..., description="Driver name")
@@ -150,14 +138,12 @@ class KeyDriver(BaseModel):
     controllability: str = Field("", description="High / Medium / Low controllability")
     priority: int = Field(1, ge=1, le=5, description="Priority ranking")
 
-
 class ScenarioRecommendation(BaseModel):
     """Recommendation from scenario analysis."""
     priority: int = Field(1, ge=1, le=5, description="Priority")
     recommendation: str = Field(..., description="Recommendation text")
     scenario_basis: str = Field("", description="Which scenario(s) inform this recommendation")
     expected_benefit: str = Field("", description="Expected benefit description")
-
 
 class ScenarioReportInput(BaseModel):
     """Complete input model for ScenarioAnalysisReport."""
@@ -185,7 +171,6 @@ class ScenarioReportInput(BaseModel):
     recommendations: List[ScenarioRecommendation] = Field(
         default_factory=list, description="Recommendations"
     )
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -234,7 +219,7 @@ class ScenarioAnalysisReport:
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render scenario analysis as Markdown."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_md(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -242,7 +227,7 @@ class ScenarioAnalysisReport:
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render scenario analysis as HTML."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_html(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -250,7 +235,7 @@ class ScenarioAnalysisReport:
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render scenario analysis as JSON dict."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_json(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -282,7 +267,7 @@ class ScenarioAnalysisReport:
         return (
             f"# Scenario Analysis Report - {company}\n\n"
             f"**Reporting Period:** {period} | "
-            f"**Report Date:** {_utcnow().strftime('%Y-%m-%d')}\n\n"
+            f"**Report Date:** {utcnow().strftime('%Y-%m-%d')}\n\n"
             "---"
         )
 

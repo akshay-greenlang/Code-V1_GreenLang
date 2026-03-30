@@ -68,25 +68,19 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -104,7 +98,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serialisable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -113,7 +106,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -125,17 +117,14 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class Scope3Category(str, Enum):
     """All 15 Scope 3 categories per GHG Protocol."""
@@ -155,7 +144,6 @@ class Scope3Category(str, Enum):
     CAT_14 = "cat_14_franchises"
     CAT_15 = "cat_15_investments"
 
-
 class ClassificationConfidence(str, Enum):
     """Confidence level of classification.
 
@@ -168,7 +156,6 @@ class ClassificationConfidence(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     UNCLASSIFIED = "unclassified"
-
 
 class ClassificationMethod(str, Enum):
     """Method used for classification.
@@ -189,13 +176,11 @@ class ClassificationMethod(str, Enum):
     MANUAL = "manual"
     SPLIT = "split"
 
-
 class ClassificationStatus(str, Enum):
     """Status of the classification run."""
     COMPLETE = "complete"
     PARTIAL = "partial"
     ERROR = "error"
-
 
 # ---------------------------------------------------------------------------
 # NAICS-to-Scope 3 Category Mapping (Top 100+ entries)
@@ -641,7 +626,6 @@ KEYWORD_TO_SCOPE3: List[Tuple[List[str], str, str]] = [
     (["real estate investment", "reit", "property fund"], "cat_15_investments", "Real estate investment"),
 ]
 
-
 # ---------------------------------------------------------------------------
 # Currency Exchange Rates (to EUR, approximate mid-2025)
 # ---------------------------------------------------------------------------
@@ -716,11 +700,9 @@ CPI_INDICES: Dict[int, Decimal] = {
     2026: Decimal("125.5"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class SpendTransaction(BaseModel):
     """A single spend/procurement transaction.
@@ -756,7 +738,6 @@ class SpendTransaction(BaseModel):
     supplier_country: str = Field(default="", max_length=2, description="Supplier country")
     manual_category: Optional[str] = Field(default=None, description="Manual category override")
 
-
 class SplitAllocation(BaseModel):
     """Allocation of a split transaction across multiple categories.
 
@@ -771,11 +752,9 @@ class SplitAllocation(BaseModel):
     amount_eur: Decimal = Field(default=Decimal("0"), description="Amount EUR")
     reason: str = Field(default="", description="Allocation reason")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class ClassifiedTransaction(BaseModel):
     """A spend transaction with classification result.
@@ -823,7 +802,6 @@ class ClassifiedTransaction(BaseModel):
     fiscal_year: int = Field(default=2025, description="Fiscal year")
     supplier_country: str = Field(default="", description="Supplier country")
 
-
 class CategorySpendSummary(BaseModel):
     """Summary of classified spend for a single Scope 3 category.
 
@@ -851,7 +829,6 @@ class CategorySpendSummary(BaseModel):
         default_factory=dict, description="Top EEIO sectors by spend"
     )
     share_of_total_pct: Decimal = Field(default=Decimal("0"), description="Share of total %")
-
 
 class ClassificationResult(BaseModel):
     """Complete spend classification result.
@@ -903,10 +880,9 @@ class ClassificationResult(BaseModel):
     status: ClassificationStatus = Field(
         default=ClassificationStatus.COMPLETE, description="Status"
     )
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Timestamp")
     processing_time_ms: Decimal = Field(default=Decimal("0"), description="Processing time ms")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 # ---------------------------------------------------------------------------
 # Model Rebuild
@@ -918,11 +894,9 @@ ClassifiedTransaction.model_rebuild()
 CategorySpendSummary.model_rebuild()
 ClassificationResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class SpendClassificationEngine:
     """Deterministic spend data classification into Scope 3 categories.

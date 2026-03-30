@@ -33,8 +33,9 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
-from pydantic import BaseModel, Field
+from pydantic import Field
 import logging
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +57,7 @@ class IntelligenceLevel(str, Enum):
     FULL = "full"
 
 
-class IntelligenceCapabilities(BaseModel):
+class IntelligenceCapabilities(GreenLangBase):
     """Capabilities an intelligent agent provides."""
     can_explain: bool = Field(True, description="Can generate explanations")
     can_recommend: bool = Field(False, description="Can generate recommendations")
@@ -180,7 +181,7 @@ class ValidatingAgent(Protocol):
 # VALIDATION
 # =============================================================================
 
-class ValidationResult(BaseModel):
+class ValidationResult(GreenLangBase):
     """Result of agent intelligence validation."""
     is_valid: bool = Field(..., description="Whether agent passes validation")
     agent_name: str = Field(..., description="Name of validated agent")

@@ -75,16 +75,15 @@ import uuid
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Module-level exports
 # ---------------------------------------------------------------------------
 
 __all__ = ["RuleEvaluatorEngine"]
-
 
 # ---------------------------------------------------------------------------
 # Provenance helper (safe when provenance module is absent)
@@ -95,7 +94,6 @@ try:
     _PROVENANCE_MODULE_AVAILABLE = True
 except ImportError:
     _PROVENANCE_MODULE_AVAILABLE = False
-
 
 # ---------------------------------------------------------------------------
 # Metrics helpers (safe when prometheus_client is absent)
@@ -112,7 +110,6 @@ except ImportError:
     _record_evaluation_raw = None  # type: ignore[assignment]
     _observe_evaluation_duration_raw = None  # type: ignore[assignment]
 
-
 def _safe_record_evaluation(result: str, count: int = 1) -> None:
     """Safely record an evaluation result metric.
 
@@ -126,7 +123,6 @@ def _safe_record_evaluation(result: str, count: int = 1) -> None:
         except Exception:
             pass
 
-
 def _safe_observe_evaluation_duration(seconds: float) -> None:
     """Safely observe an evaluation duration metric.
 
@@ -138,7 +134,6 @@ def _safe_observe_evaluation_duration(seconds: float) -> None:
             _observe_evaluation_duration_raw(seconds)
         except Exception:
             pass
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -207,11 +202,9 @@ _BLOCKED_TOKENS: Set[str] = {
     "os", "sys", "subprocess", "shutil", "pathlib",
 }
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class EvaluationResult(str, Enum):
     """Evaluation result classification for a rule or rule set."""
@@ -220,7 +213,6 @@ class EvaluationResult(str, Enum):
     WARN = "warn"
     FAIL = "fail"
 
-
 class CompoundOperator(str, Enum):
     """Compound rule logical operators."""
 
@@ -228,16 +220,9 @@ class CompoundOperator(str, Enum):
     OR = "OR"
     NOT = "NOT"
 
-
 # ---------------------------------------------------------------------------
 # Private helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _build_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -253,7 +238,6 @@ def _build_hash(data: Any) -> str:
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
-
 def _generate_eval_id() -> str:
     """Generate a unique evaluation ID.
 
@@ -262,7 +246,6 @@ def _generate_eval_id() -> str:
     """
     return f"EVL-{uuid.uuid4().hex[:12]}"
 
-
 def _generate_batch_id() -> str:
     """Generate a unique batch evaluation ID.
 
@@ -270,7 +253,6 @@ def _generate_batch_id() -> str:
         Batch ID with BATCH- prefix and 12-character hex suffix.
     """
     return f"BATCH-{uuid.uuid4().hex[:12]}"
-
 
 def _is_null_or_empty(value: Any) -> bool:
     """Check if a value is None, empty string, or NaN.
@@ -288,7 +270,6 @@ def _is_null_or_empty(value: Any) -> bool:
     if isinstance(value, float) and math.isnan(value):
         return True
     return False
-
 
 def _safe_float(value: Any) -> Optional[float]:
     """Safely convert a value to float.
@@ -309,7 +290,6 @@ def _safe_float(value: Any) -> Optional[float]:
     except (ValueError, TypeError):
         return None
 
-
 def _safe_mean(values: List[float]) -> float:
     """Compute arithmetic mean, returning 0.0 for empty lists.
 
@@ -322,7 +302,6 @@ def _safe_mean(values: List[float]) -> float:
     if not values:
         return 0.0
     return sum(values) / len(values)
-
 
 def _safe_median(values: List[float]) -> float:
     """Compute median value, returning 0.0 for empty lists.
@@ -344,7 +323,6 @@ def _safe_median(values: List[float]) -> float:
         return (sorted_vals[mid - 1] + sorted_vals[mid]) / 2.0
     return sorted_vals[mid]
 
-
 def _safe_stddev(values: List[float], ddof: int = 0) -> float:
     """Compute standard deviation, returning 0.0 for insufficient data.
 
@@ -361,7 +339,6 @@ def _safe_stddev(values: List[float], ddof: int = 0) -> float:
     mean = sum(values) / n
     variance = sum((x - mean) ** 2 for x in values) / (n - ddof)
     return math.sqrt(variance)
-
 
 def _safe_percentile(values: List[float], percentile: float) -> float:
     """Compute the p-th percentile using linear interpolation.
@@ -392,7 +369,6 @@ def _safe_percentile(values: List[float], percentile: float) -> float:
 
     fraction = rank - lower
     return sorted_vals[lower] + fraction * (sorted_vals[upper] - sorted_vals[lower])
-
 
 def _compare_values(actual: Any, operator: str, threshold: Any) -> bool:
     """Compare a value against a threshold using the specified operator.
@@ -504,7 +480,6 @@ def _compare_values(actual: Any, operator: str, threshold: Any) -> bool:
     logger.warning("Unknown operator '%s', defaulting to fail", operator)
     return False
 
-
 def _is_expression_safe(expression: str) -> bool:
     """Check if a custom expression is safe for restricted evaluation.
 
@@ -526,7 +501,6 @@ def _is_expression_safe(expression: str) -> bool:
             )
             return False
     return True
-
 
 def _evaluate_safe_expression(
     expression: str,
@@ -591,11 +565,9 @@ def _evaluate_safe_expression(
         )
         return False
 
-
 # ===========================================================================
 # RuleEvaluatorEngine
 # ===========================================================================
-
 
 class RuleEvaluatorEngine:
     """Validation rule evaluation engine with deterministic execution.
@@ -2045,9 +2017,9 @@ class RuleEvaluatorEngine:
                 if reference_time.tzinfo is None:
                     reference_time = reference_time.replace(tzinfo=timezone.utc)
             except (ValueError, TypeError):
-                reference_time = _utcnow()
+                reference_time = utcnow()
         else:
-            reference_time = _utcnow()
+            reference_time = utcnow()
 
         if reference_time.tzinfo is None:
             reference_time = reference_time.replace(tzinfo=timezone.utc)
@@ -2771,7 +2743,7 @@ class RuleEvaluatorEngine:
                 "eval_id": eval_id,
                 "rule_id": rule_id,
                 "rule_set_id": rule_set_id,
-                "stored_at": _utcnow().isoformat(),
+                "stored_at": utcnow().isoformat(),
             }
             self._evaluations[eval_id] = stored
             self._evaluation_count += 1
@@ -2805,7 +2777,7 @@ class RuleEvaluatorEngine:
         Returns:
             Hex-encoded SHA-256 hash string.
         """
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
         payload = {
             "operation": operation,
             "input": input_data,

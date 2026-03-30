@@ -74,6 +74,7 @@ import uuid
 from collections import defaultdict, deque
 from datetime import datetime, timezone
 from typing import Any, Dict, FrozenSet, List, Optional, Set, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +83,6 @@ __all__ = [
     "MAX_COMPOUND_DEPTH",
     "VALID_COMPOUND_OPERATORS",
 ]
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -124,7 +124,6 @@ _PREFIX_RULE_SET = "RS"
 _PREFIX_TEMPLATE = "TPL"
 _PREFIX_DEPENDENCY = "DEP"
 
-
 # ---------------------------------------------------------------------------
 # Graceful import: ProvenanceTracker
 # ---------------------------------------------------------------------------
@@ -154,7 +153,7 @@ except ImportError:
             metadata: Any = None,
         ) -> Any:
             """Record a provenance entry and return a stub object."""
-            ts = _utcnow().isoformat()
+            ts = utcnow().isoformat()
             data_str = json.dumps(metadata, sort_keys=True, default=str) if metadata else "null"
             chain_hash = hashlib.sha256(
                 f"{entity_type}:{entity_id}:{action}:{data_str}:{ts}".encode()
@@ -174,7 +173,6 @@ except ImportError:
             return hashlib.sha256(
                 json.dumps(data, sort_keys=True, default=str).encode()
             ).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Graceful import: Prometheus metrics
@@ -269,20 +267,9 @@ except (ImportError, ValueError):
     vre_active_rule_sets_gauge = _NoOpGauge()  # type: ignore
     vre_composer_operation_duration = _NoOpHistogram()  # type: ignore
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed for determinism.
-
-    Returns:
-        Timezone-aware datetime at second precision in UTC.
-    """
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _generate_id(prefix: str) -> str:
     """Generate a unique identifier with the given prefix.
@@ -299,7 +286,6 @@ def _generate_id(prefix: str) -> str:
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
 
-
 def _build_sha256(data: Any) -> str:
     """Build a deterministic SHA-256 hash from any JSON-serialisable value.
 
@@ -311,7 +297,6 @@ def _build_sha256(data: Any) -> str:
     """
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
 
 def _parse_version(version_string: str) -> Tuple[int, int, int]:
     """Parse a SemVer string into its (major, minor, patch) integer tuple.
@@ -342,7 +327,6 @@ def _parse_version(version_string: str) -> Tuple[int, int, int]:
         )
     return major, minor, patch
 
-
 def _bump_version(current_version: str, bump_type: str) -> str:
     """Increment a SemVer string according to the specified bump type.
 
@@ -372,7 +356,6 @@ def _bump_version(current_version: str, bump_type: str) -> str:
         f"Unknown bump_type '{bump_type}'. Must be one of: major, minor, patch."
     )
 
-
 def _normalize_tags(tags: Optional[List[str]]) -> List[str]:
     """Normalize, deduplicate, and sort a list of tags.
 
@@ -393,11 +376,9 @@ def _normalize_tags(tags: Optional[List[str]]) -> List[str]:
             result.append(normalized)
     return sorted(result)
 
-
 # ---------------------------------------------------------------------------
 # RuleComposerEngine
 # ---------------------------------------------------------------------------
-
 
 class RuleComposerEngine:
     """Compound rule composition, rule set management, and dependency graphing.
@@ -554,7 +535,7 @@ class RuleComposerEngine:
 
             # Build the compound rule record
             compound_id = _generate_id(_PREFIX_COMPOUND)
-            now = _utcnow().isoformat()
+            now = utcnow().isoformat()
 
             compound_rule: Dict[str, Any] = {
                 "compound_id": compound_id,
@@ -814,7 +795,7 @@ class RuleComposerEngine:
 
             # Build the rule set record
             set_id = _generate_id(_PREFIX_RULE_SET)
-            now = _utcnow().isoformat()
+            now = utcnow().isoformat()
             version = "1.0.0"
 
             rule_set: Dict[str, Any] = {
@@ -976,7 +957,7 @@ class RuleComposerEngine:
 
             # Bump version
             rule_set["version"] = _bump_version(rule_set["version"], bump_type)
-            rule_set["updated_at"] = _utcnow().isoformat()
+            rule_set["updated_at"] = utcnow().isoformat()
             rule_set["provenance_hash"] = _build_sha256(rule_set)
 
             # Store version snapshot
@@ -1122,7 +1103,7 @@ class RuleComposerEngine:
                 len(rule_set["rule_ids"]) + len(rule_set["compound_rule_ids"])
             )
             rule_set["version"] = _bump_version(rule_set["version"], BUMP_MINOR)
-            rule_set["updated_at"] = _utcnow().isoformat()
+            rule_set["updated_at"] = utcnow().isoformat()
             rule_set["provenance_hash"] = _build_sha256(rule_set)
 
             # Store version snapshot
@@ -1212,7 +1193,7 @@ class RuleComposerEngine:
                 len(rule_set["rule_ids"]) + len(rule_set["compound_rule_ids"])
             )
             rule_set["version"] = _bump_version(rule_set["version"], BUMP_MINOR)
-            rule_set["updated_at"] = _utcnow().isoformat()
+            rule_set["updated_at"] = utcnow().isoformat()
             rule_set["provenance_hash"] = _build_sha256(rule_set)
 
             # Store version snapshot
@@ -1339,7 +1320,7 @@ class RuleComposerEngine:
             raise ValueError("Template must contain at least one rule definition.")
 
         template_id = _generate_id(_PREFIX_TEMPLATE)
-        now = _utcnow().isoformat()
+        now = utcnow().isoformat()
 
         with self._lock:
             template: Dict[str, Any] = {
@@ -1442,12 +1423,12 @@ class RuleComposerEngine:
 
             # Increment instantiation count
             template["instantiation_count"] += 1
-            template["updated_at"] = _utcnow().isoformat()
+            template["updated_at"] = utcnow().isoformat()
 
         # Build the rule set record directly (rules are definition-based,
         # not registry-based, so we store definitions in the set)
         set_id = _generate_id(_PREFIX_RULE_SET)
-        now = _utcnow().isoformat()
+        now = utcnow().isoformat()
         resolved_sla = self._resolve_sla_thresholds(set_sla)
         resolved_tags = _normalize_tags(set_tags)
 
@@ -1599,7 +1580,7 @@ class RuleComposerEngine:
 
             # Build child rule set
             set_id = _generate_id(_PREFIX_RULE_SET)
-            now = _utcnow().isoformat()
+            now = utcnow().isoformat()
 
             child_set: Dict[str, Any] = {
                 "set_id": set_id,
@@ -1760,7 +1741,7 @@ class RuleComposerEngine:
                     "rule_id": rule_id,
                     "depends_on": depends_on_rule_id,
                     "dependency_id": f"{_PREFIX_DEPENDENCY}-existing",
-                    "created_at": _utcnow().isoformat(),
+                    "created_at": utcnow().isoformat(),
                     "provenance_hash": _build_sha256(
                         {"rule_id": rule_id, "depends_on": depends_on_rule_id}
                     ),
@@ -1791,7 +1772,7 @@ class RuleComposerEngine:
 
         # Build result
         dep_id = _generate_id(_PREFIX_DEPENDENCY)
-        now = _utcnow().isoformat()
+        now = utcnow().isoformat()
         result = {
             "rule_id": rule_id,
             "depends_on": depends_on_rule_id,
@@ -2458,6 +2439,6 @@ class RuleComposerEngine:
         return {
             "version": rule_set["version"],
             "snapshot": copy.deepcopy(rule_set),
-            "timestamp": rule_set.get("updated_at", _utcnow().isoformat()),
+            "timestamp": rule_set.get("updated_at", utcnow().isoformat()),
             "provenance_hash": rule_set.get("provenance_hash", ""),
         }

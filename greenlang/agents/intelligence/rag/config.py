@@ -8,10 +8,11 @@ in replay mode, and other security policies.
 
 import os
 from typing import List, Dict, Optional, Literal
-from pydantic import BaseModel, Field, validator
+from pydantic import Field, validator
+from greenlang.schemas import GreenLangBase
 
 
-class RAGConfig(BaseModel):
+class RAGConfig(GreenLangBase):
     """
     RAG system configuration.
 

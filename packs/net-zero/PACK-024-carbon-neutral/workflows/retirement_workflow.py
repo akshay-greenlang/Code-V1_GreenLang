@@ -34,29 +34,23 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "24.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: Any) -> str:
     if isinstance(data, dict):
         data = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(str(data).encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -65,7 +59,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
@@ -73,12 +66,10 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class RetirementPhase(str, Enum):
     PRE_RETIREMENT_VALIDATION = "pre_retirement_validation"
     REGISTRY_EXECUTION = "registry_execution"
     CONFIRMATION = "confirmation"
-
 
 class RegistryType(str, Enum):
     VERRA = "verra"
@@ -87,7 +78,6 @@ class RegistryType(str, Enum):
     CAR = "car"
     CDM = "cdm"
     PURO = "puro"
-
 
 class RetirementStatus(str, Enum):
     PENDING = "pending"
@@ -98,14 +88,12 @@ class RetirementStatus(str, Enum):
     FAILED = "failed"
     REVERSED = "reversed"
 
-
 class RetirementPurpose(str, Enum):
     CARBON_NEUTRALITY = "carbon_neutrality"
     NET_ZERO = "net_zero"
     VOLUNTARY_CANCELLATION = "voluntary_cancellation"
     COMPLIANCE = "compliance"
     CORPORATE_SOCIAL_RESPONSIBILITY = "csr"
-
 
 # =============================================================================
 # REFERENCE DATA
@@ -156,11 +144,9 @@ PAS2060_RETIREMENT_WINDOW_MONTHS = 12
 PAS2060_BENEFICIARY_MUST_BE_NAMED = True
 PAS2060_PURPOSE_MUST_STATE_NEUTRALITY = True
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase_name: str = Field(...)
@@ -170,7 +156,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class RetirementRecord(BaseModel):
     record_id: str = Field(default="")
@@ -191,18 +176,16 @@ class RetirementRecord(BaseModel):
     certificate_url: str = Field(default="")
     registry_transaction_id: str = Field(default="")
 
-
 class RegistryConfirmation(BaseModel):
     confirmation_id: str = Field(default="")
     registry: RegistryType = Field(...)
     transaction_id: str = Field(default="")
-    retirement_date: datetime = Field(default_factory=_utcnow)
+    retirement_date: datetime = Field(default_factory=utcnow)
     volume_tco2e: float = Field(default=0.0, ge=0.0)
     certificate_url: str = Field(default="")
     certificate_hash: str = Field(default="")
     is_final: bool = Field(default=False)
-    confirmation_timestamp: datetime = Field(default_factory=_utcnow)
-
+    confirmation_timestamp: datetime = Field(default_factory=utcnow)
 
 class RetirementBatch(BaseModel):
     batch_id: str = Field(default="")
@@ -212,7 +195,6 @@ class RetirementBatch(BaseModel):
     total_records: int = Field(default=0)
     successful_records: int = Field(default=0)
     failed_records: int = Field(default=0)
-
 
 class RetirementConfig(BaseModel):
     org_name: str = Field(default="")
@@ -224,7 +206,6 @@ class RetirementConfig(BaseModel):
     pas2060_compliance: bool = Field(default=True)
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
-
 
 class RetirementResult(BaseModel):
     workflow_id: str = Field(...)
@@ -239,11 +220,9 @@ class RetirementResult(BaseModel):
     pas2060_compliant: bool = Field(default=False)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class RetirementWorkflow:
     """
@@ -268,7 +247,7 @@ class RetirementWorkflow:
 
     async def execute(self, config: RetirementConfig) -> RetirementResult:
         """Execute the 3-phase retirement workflow."""
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting retirement workflow %s, credits=%d",
             self.workflow_id, len(config.credits),
@@ -298,7 +277,7 @@ class RetirementWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         total_retired = sum(r.volume_tco2e for r in self._records if r.status == RetirementStatus.CONFIRMED)
         registries_used = list(set(r.registry.value for r in self._records))
 
@@ -330,7 +309,7 @@ class RetirementWorkflow:
 
     async def _phase_pre_retirement_validation(self, config: RetirementConfig) -> PhaseResult:
         """Validate credit eligibility and ownership before retirement."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         errors: List[str] = []
@@ -392,7 +371,7 @@ class RetirementWorkflow:
         outputs["registries_involved"] = list(set(r.registry.value for r in records))
 
         status = PhaseStatus.FAILED if errors else PhaseStatus.COMPLETED
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name=RetirementPhase.PRE_RETIREMENT_VALIDATION.value,
             status=status, duration_seconds=round(elapsed, 4),
@@ -402,7 +381,7 @@ class RetirementWorkflow:
 
     async def _phase_registry_execution(self, config: RetirementConfig) -> PhaseResult:
         """Execute retirement on registry platforms."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         errors: List[str] = []
@@ -415,7 +394,7 @@ class RetirementWorkflow:
             # Simulate registry submission
             registry_info = REGISTRY_ENDPOINTS.get(record.registry.value, {})
             record.status = RetirementStatus.RETIRED
-            record.retirement_date = _utcnow()
+            record.retirement_date = utcnow()
             record.registry_transaction_id = f"TX-{_new_uuid()[:12]}"
             submitted += 1
 
@@ -431,7 +410,7 @@ class RetirementWorkflow:
         )
 
         status = PhaseStatus.COMPLETED
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name=RetirementPhase.REGISTRY_EXECUTION.value,
             status=status, duration_seconds=round(elapsed, 4),
@@ -441,7 +420,7 @@ class RetirementWorkflow:
 
     async def _phase_confirmation(self, config: RetirementConfig) -> PhaseResult:
         """Confirm retirement and capture certificates."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         errors: List[str] = []
@@ -458,12 +437,12 @@ class RetirementWorkflow:
                 confirmation_id=_new_uuid(),
                 registry=record.registry,
                 transaction_id=record.registry_transaction_id,
-                retirement_date=record.retirement_date or _utcnow(),
+                retirement_date=record.retirement_date or utcnow(),
                 volume_tco2e=record.volume_tco2e,
                 certificate_url=cert_url,
                 certificate_hash=_compute_hash(cert_url),
                 is_final=True,
-                confirmation_timestamp=_utcnow(),
+                confirmation_timestamp=utcnow(),
             )
             confirmations.append(confirmation)
 
@@ -479,7 +458,7 @@ class RetirementWorkflow:
         )
 
         status = PhaseStatus.COMPLETED
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name=RetirementPhase.CONFIRMATION.value,
             status=status, duration_seconds=round(elapsed, 4),

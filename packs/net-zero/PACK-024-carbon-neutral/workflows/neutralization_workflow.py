@@ -35,29 +35,23 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "24.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: Any) -> str:
     if isinstance(data, dict):
         data = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(str(data).encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -66,7 +60,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
@@ -74,14 +67,12 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class NeutralizationPhase(str, Enum):
     EMISSIONS_COMPILATION = "emissions_compilation"
     REDUCTION_ACCOUNTING = "reduction_accounting"
     CREDIT_MATCHING = "credit_matching"
     BALANCE_VALIDATION = "balance_validation"
     EVIDENCE_PACKAGING = "evidence_packaging"
-
 
 class NeutralizationStatus(str, Enum):
     NOT_STARTED = "not_started"
@@ -92,13 +83,11 @@ class NeutralizationStatus(str, Enum):
     VALIDATED = "validated"
     FAILED = "failed"
 
-
 class BalanceItemType(str, Enum):
     EMISSION = "emission"
     REDUCTION = "reduction"
     CREDIT_RETIREMENT = "credit_retirement"
     BIOGENIC_REMOVAL = "biogenic_removal"
-
 
 # =============================================================================
 # REFERENCE DATA
@@ -120,11 +109,9 @@ VCMI_SILVER_THRESHOLD_PCT = 100.0
 VCMI_GOLD_THRESHOLD_PCT = 100.0
 VCMI_PLATINUM_THRESHOLD_PCT = 100.0
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase_name: str = Field(...)
@@ -134,7 +121,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class BalanceSheet(BaseModel):
     """Carbon neutralization balance sheet."""
@@ -152,7 +138,6 @@ class BalanceSheet(BaseModel):
     surplus_tco2e: float = Field(default=0.0, ge=0.0)
     deficit_tco2e: float = Field(default=0.0, ge=0.0)
 
-
 class EmissionsCoverage(BaseModel):
     """Coverage analysis for neutralization."""
     scope: str = Field(default="")
@@ -163,7 +148,6 @@ class EmissionsCoverage(BaseModel):
     is_covered: bool = Field(default=False)
     gap_tco2e: float = Field(default=0.0, ge=0.0)
 
-
 class GapAnalysis(BaseModel):
     """Gap analysis between emissions and offsets."""
     total_gap_tco2e: float = Field(default=0.0)
@@ -172,7 +156,6 @@ class GapAnalysis(BaseModel):
     additional_credits_needed: float = Field(default=0.0, ge=0.0)
     estimated_cost_to_close_usd: float = Field(default=0.0, ge=0.0)
     recommendations: List[str] = Field(default_factory=list)
-
 
 class NeutralizationEvidence(BaseModel):
     """Evidence package for PAS 2060 declaration."""
@@ -184,7 +167,6 @@ class NeutralizationEvidence(BaseModel):
     is_required: bool = Field(default=True)
     is_available: bool = Field(default=False)
     hash: str = Field(default="")
-
 
 class NeutralizationConfig(BaseModel):
     org_name: str = Field(default="")
@@ -199,7 +181,6 @@ class NeutralizationConfig(BaseModel):
     pas2060_compliance: bool = Field(default=True)
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
-
 
 class NeutralizationResult(BaseModel):
     workflow_id: str = Field(...)
@@ -216,11 +197,9 @@ class NeutralizationResult(BaseModel):
     pas2060_compliant: bool = Field(default=False)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class NeutralizationWorkflow:
     """
@@ -245,7 +224,7 @@ class NeutralizationWorkflow:
 
     async def execute(self, config: NeutralizationConfig) -> NeutralizationResult:
         """Execute the 5-phase neutralization workflow."""
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting neutralization workflow %s", self.workflow_id)
         self._phase_results = []
         overall_status = WorkflowStatus.RUNNING
@@ -278,7 +257,7 @@ class NeutralizationWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         is_neutral = self._balance.is_neutral if self._balance else False
         neut_status = NeutralizationStatus.VALIDATED if is_neutral else NeutralizationStatus.DEFICIT
         pas2060_ok = is_neutral and all(e.is_available for e in self._evidence if e.is_required)
@@ -303,7 +282,7 @@ class NeutralizationWorkflow:
 
     async def _phase_emissions_compilation(self, config: NeutralizationConfig) -> PhaseResult:
         """Compile verified emissions for the reporting period."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         errors: List[str] = []
@@ -319,7 +298,7 @@ class NeutralizationWorkflow:
         outputs["reporting_year"] = config.reporting_year
 
         status = PhaseStatus.FAILED if errors else PhaseStatus.COMPLETED
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name=NeutralizationPhase.EMISSIONS_COMPILATION.value,
             status=status, duration_seconds=round(elapsed, 4),
@@ -329,7 +308,7 @@ class NeutralizationWorkflow:
 
     async def _phase_reduction_accounting(self, config: NeutralizationConfig) -> PhaseResult:
         """Account for emission reductions achieved in the period."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         errors: List[str] = []
@@ -346,7 +325,7 @@ class NeutralizationWorkflow:
             warnings.append("PAS 2060 expects documented reduction efforts")
 
         status = PhaseStatus.COMPLETED
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name=NeutralizationPhase.REDUCTION_ACCOUNTING.value,
             status=status, duration_seconds=round(elapsed, 4),
@@ -356,7 +335,7 @@ class NeutralizationWorkflow:
 
     async def _phase_credit_matching(self, config: NeutralizationConfig) -> PhaseResult:
         """Match retired credits to residual emissions."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         errors: List[str] = []
@@ -398,7 +377,7 @@ class NeutralizationWorkflow:
         )
 
         status = PhaseStatus.COMPLETED
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name=NeutralizationPhase.CREDIT_MATCHING.value,
             status=status, duration_seconds=round(elapsed, 4),
@@ -408,7 +387,7 @@ class NeutralizationWorkflow:
 
     async def _phase_balance_validation(self, config: NeutralizationConfig) -> PhaseResult:
         """Validate the neutralization balance."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         errors: List[str] = []
@@ -465,7 +444,7 @@ class NeutralizationWorkflow:
             )
 
         status = PhaseStatus.COMPLETED
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name=NeutralizationPhase.BALANCE_VALIDATION.value,
             status=status, duration_seconds=round(elapsed, 4),
@@ -475,7 +454,7 @@ class NeutralizationWorkflow:
 
     async def _phase_evidence_packaging(self, config: NeutralizationConfig) -> PhaseResult:
         """Package evidence for PAS 2060 carbon neutrality declaration."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         errors: List[str] = []
@@ -529,7 +508,7 @@ class NeutralizationWorkflow:
         outputs["pas2060_evidence_complete"] = required_available == required_total
 
         status = PhaseStatus.COMPLETED
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name=NeutralizationPhase.EVIDENCE_PACKAGING.value,
             status=status, duration_seconds=round(elapsed, 4),

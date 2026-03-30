@@ -19,10 +19,11 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +43,7 @@ class DataQuality(str, Enum):
     LOW = "low"
 
 
-class SyntheticDataConfig(BaseModel):
+class SyntheticDataConfig(GreenLangBase):
     config_id: str = Field(default_factory=lambda: str(uuid.uuid4())[:8])
     dataset_type: DatasetType = Field(..., description="Type of dataset")
     record_count: int = Field(default=1000, ge=1, le=1000000)
@@ -55,7 +56,7 @@ class SyntheticDataConfig(BaseModel):
     schema: Dict[str, Any] = Field(default_factory=dict)
 
 
-class TrainingDataset(BaseModel):
+class TrainingDataset(GreenLangBase):
     dataset_id: str = Field(default_factory=lambda: str(uuid.uuid4())[:8])
     name: str = Field(..., description="Dataset name")
     dataset_type: DatasetType = Field(...)
@@ -67,7 +68,7 @@ class TrainingDataset(BaseModel):
     provenance_hash: str = Field(default="")
 
 
-class TrainingDataInput(BaseModel):
+class TrainingDataInput(GreenLangBase):
     operation: str = Field(..., description="Operation to perform")
     config: Optional[SyntheticDataConfig] = Field(None)
     dataset_id: Optional[str] = Field(None)
@@ -87,7 +88,7 @@ class TrainingDataInput(BaseModel):
         return v
 
 
-class TrainingDataOutput(BaseModel):
+class TrainingDataOutput(GreenLangBase):
     success: bool = Field(...)
     operation: str = Field(...)
     data: Dict[str, Any] = Field(default_factory=dict)

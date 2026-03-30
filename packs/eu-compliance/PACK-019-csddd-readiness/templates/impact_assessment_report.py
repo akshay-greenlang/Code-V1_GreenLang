@@ -32,6 +32,8 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
@@ -80,16 +82,9 @@ _ENV_CATEGORIES: List[str] = [
 _SEVERITY_LEVELS: List[str] = ["negligible", "minor", "moderate", "major", "critical"]
 _LIKELIHOOD_LEVELS: List[str] = ["rare", "unlikely", "possible", "likely", "almost_certain"]
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -102,23 +97,19 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _severity_score(level: str) -> int:
     """Convert severity level to numeric score (1-5)."""
     mapping = {v: i + 1 for i, v in enumerate(_SEVERITY_LEVELS)}
     return mapping.get(level, 0)
-
 
 def _likelihood_score(level: str) -> int:
     """Convert likelihood level to numeric score (1-5)."""
     mapping = {v: i + 1 for i, v in enumerate(_LIKELIHOOD_LEVELS)}
     return mapping.get(level, 0)
 
-
 def _compute_risk_score(severity: str, likelihood: str) -> float:
     """Compute risk score as product of severity and likelihood (1-25)."""
     return float(_severity_score(severity) * _likelihood_score(likelihood))
-
 
 def _risk_rating(score: float) -> str:
     """Map numeric risk score to a risk rating label."""
@@ -132,7 +123,6 @@ def _risk_rating(score: float) -> str:
         return "low"
     else:
         return "negligible"
-
 
 class ImpactAssessmentReportTemplate:
     """
@@ -161,7 +151,7 @@ class ImpactAssessmentReportTemplate:
 
     def render(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render full report as structured dict."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         report_id = _new_uuid()
         result: Dict[str, Any] = {"report_id": report_id}
         for section in _SECTIONS:
@@ -197,7 +187,7 @@ class ImpactAssessmentReportTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render impact assessment report as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [
             self._md_header(data),
             self._md_impact_summary(data),
@@ -214,7 +204,7 @@ class ImpactAssessmentReportTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render impact assessment report as HTML."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         body = "\n".join([
             self._html_header(data),
@@ -235,7 +225,7 @@ class ImpactAssessmentReportTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render impact assessment report as JSON."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result: Dict[str, Any] = {
             "template": "impact_assessment_report",
             "directive_reference": "Directive (EU) 2024/1760, Art 6-7",
@@ -283,7 +273,7 @@ class ImpactAssessmentReportTemplate:
             "average_risk_score": avg_risk,
             "critical_impacts": sum(1 for s in risk_scores if s >= 20),
             "high_risk_impacts": sum(1 for s in risk_scores if 12 <= s < 20),
-            "assessment_date": data.get("assessment_date", _utcnow().isoformat()),
+            "assessment_date": data.get("assessment_date", utcnow().isoformat()),
         }
 
     def _section_human_rights_impacts(self, data: Dict[str, Any]) -> Dict[str, Any]:

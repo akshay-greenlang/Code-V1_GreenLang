@@ -22,7 +22,8 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase
 
 
 # ---------------------------------------------------------------------------
@@ -310,7 +311,7 @@ STAKEHOLDER_TYPES_WITH_FPIC_RIGHTS: List[StakeholderType] = [
 # ---------------------------------------------------------------------------
 
 
-class ContactInfo(BaseModel):
+class ContactInfo(GreenLangBase):
     """Contact information for a stakeholder."""
 
     primary_contact_name: str = Field(
@@ -330,7 +331,7 @@ class ContactInfo(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class RightsClassification(BaseModel):
+class RightsClassification(GreenLangBase):
     """Rights classification for a stakeholder under applicable law.
 
     Identifies which legal frameworks and protections apply to the
@@ -365,7 +366,7 @@ class RightsClassification(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class FPICStageConfig(BaseModel):
+class FPICStageConfig(GreenLangBase):
     """Configuration for a single FPIC workflow stage."""
 
     stage: FPICStage
@@ -383,7 +384,7 @@ class FPICStageConfig(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class StakeholderRecord(BaseModel):
+class StakeholderRecord(GreenLangBase):
     """A stakeholder in the EUDR supply chain engagement registry.
 
     Represents an individual or organization with whom the operator
@@ -444,7 +445,7 @@ class StakeholderRecord(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class FPICWorkflow(BaseModel):
+class FPICWorkflow(GreenLangBase):
     """Free, Prior and Informed Consent workflow record.
 
     Tracks the multi-stage FPIC process for engagement with
@@ -501,7 +502,7 @@ class FPICWorkflow(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class InvestigationNotes(BaseModel):
+class InvestigationNotes(GreenLangBase):
     """Investigation notes for a grievance."""
 
     investigator: str = Field(
@@ -526,7 +527,7 @@ class InvestigationNotes(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class ResolutionActions(BaseModel):
+class ResolutionActions(GreenLangBase):
     """Resolution actions taken for a grievance."""
 
     resolution_type: str = Field(
@@ -553,7 +554,7 @@ class ResolutionActions(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class GrievanceRecord(BaseModel):
+class GrievanceRecord(GreenLangBase):
     """A grievance/complaint record in the mechanism.
 
     Tracks the lifecycle of a complaint from submission through
@@ -628,7 +629,7 @@ class GrievanceRecord(BaseModel):
     model_config = {"frozen": False, "extra": "allow"}
 
 
-class FollowUpAction(BaseModel):
+class FollowUpAction(GreenLangBase):
     """A follow-up action from a consultation."""
 
     action_id: str = Field(..., description="Unique action identifier")
@@ -642,7 +643,7 @@ class FollowUpAction(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class ConsultationRecord(BaseModel):
+class ConsultationRecord(GreenLangBase):
     """A consultation record per EUDR Article 10(2)(e).
 
     Documents the objectives, participants, methodology, discussions,
@@ -704,7 +705,7 @@ class ConsultationRecord(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class CommunicationRecord(BaseModel):
+class CommunicationRecord(GreenLangBase):
     """A communication record for stakeholder outreach."""
 
     communication_id: str = Field(
@@ -746,7 +747,7 @@ class CommunicationRecord(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class CommunicationTemplate(BaseModel):
+class CommunicationTemplate(GreenLangBase):
     """A reusable template for stakeholder communications.
 
     Supports variable substitution for personalized messaging across
@@ -784,7 +785,7 @@ class CommunicationTemplate(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class EngagementAssessment(BaseModel):
+class EngagementAssessment(GreenLangBase):
     """Engagement quality assessment per ILO 169 and UNDRIP criteria.
 
     Evaluates engagement quality across 6 dimensions with a composite
@@ -823,7 +824,7 @@ class EngagementAssessment(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class ComplianceReport(BaseModel):
+class ComplianceReport(GreenLangBase):
     """A compliance report for stakeholder engagement.
 
     Audit-ready documentation for DDS submission, competent authority
@@ -859,7 +860,7 @@ class ComplianceReport(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class AuditEntry(BaseModel):
+class AuditEntry(GreenLangBase):
     """An audit trail entry for stakeholder engagement events."""
 
     entry_id: str = Field(..., description="Unique audit entry identifier")
@@ -887,7 +888,7 @@ class AuditEntry(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class HealthStatus(BaseModel):
+class HealthStatus(GreenLangBase):
     """Health check response for the Stakeholder Engagement Tool."""
 
     agent_id: str = AGENT_ID

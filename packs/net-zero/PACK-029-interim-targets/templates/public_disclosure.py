@@ -34,6 +34,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "29.0.0"
@@ -70,10 +72,6 @@ XBRL_TAGS: Dict[str, str] = {
     "public_target_year": "gl:PublicDisclosureTargetYear",
     "greenwash_score": "gl:GreenwashingComplianceScore",
 }
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
@@ -113,7 +111,6 @@ def _dec_comma(val: Any, places: int = 2) -> str:
     except Exception:
         return str(val)
 
-
 class PublicDisclosureTemplate:
     """
     Public-facing climate disclosure template for PACK-029 Interim Targets Pack.
@@ -141,7 +138,7 @@ class PublicDisclosureTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render public disclosure report as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [
             self._md_header(data), self._md_executive_message(data),
             self._md_commitments(data), self._md_performance(data),
@@ -157,7 +154,7 @@ class PublicDisclosureTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render public disclosure report as HTML."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         parts = [
             self._html_header(data), self._html_executive_message(data),
@@ -179,7 +176,7 @@ class PublicDisclosureTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render as structured JSON."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         total = float(data.get("total_emissions", 0))
         baseline = float(data.get("baseline_emissions", 0))
         reduction = ((baseline - total) / baseline * 100) if baseline else 0

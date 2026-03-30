@@ -51,9 +51,9 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Graceful imports for optional sibling modules (metrics, models, config,
@@ -114,15 +114,9 @@ except ImportError:
     _ExtSchemaMapping = None  # type: ignore[assignment, misc]
     _MODELS_AVAILABLE = False
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Local metric helper stubs (delegate when metrics module is present)
@@ -144,7 +138,6 @@ def _inc_records_matched(strategy: str, count: int = 1) -> None:
         except AttributeError:
             pass
 
-
 def _observe_match_confidence(confidence: float) -> None:
     """Observe a match confidence score.
 
@@ -159,7 +152,6 @@ def _observe_match_confidence(confidence: float) -> None:
             _metrics_mod.observe_confidence(confidence)
         except AttributeError:
             pass
-
 
 def _observe_duration(operation: str, duration: float) -> None:
     """Observe processing duration in seconds.
@@ -177,7 +169,6 @@ def _observe_duration(operation: str, duration: float) -> None:
             _metrics_mod.observe_duration(duration)
         except AttributeError:
             pass
-
 
 # ---------------------------------------------------------------------------
 # Lightweight provenance wrapper
@@ -234,12 +225,11 @@ class _InternalProvenanceTracker:
             "input": input_hash,
             "output": output_hash,
             "operation": operation,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }, sort_keys=True)
         chain_hash = hashlib.sha256(combined.encode("utf-8")).hexdigest()
         self._last_hash = chain_hash
         return chain_hash
-
 
 def _get_provenance_tracker() -> Any:
     """Return the best available provenance tracker instance.
@@ -256,11 +246,9 @@ def _get_provenance_tracker() -> Any:
             pass
     return _InternalProvenanceTracker()
 
-
 # ---------------------------------------------------------------------------
 # Local enumerations (used when models.py is absent)
 # ---------------------------------------------------------------------------
-
 
 class MatchStrategy(str, Enum):
     """Strategy for cross-source record matching.
@@ -278,7 +266,6 @@ class MatchStrategy(str, Enum):
     TEMPORAL = "temporal"
     BLOCKING = "blocking"
 
-
 class MatchStatus(str, Enum):
     """Status of a match result.
 
@@ -294,7 +281,6 @@ class MatchStatus(str, Enum):
     UNMATCHED_B = "unmatched_b"
     AMBIGUOUS = "ambiguous"
     BELOW_THRESHOLD = "below_threshold"
-
 
 class TemporalGranularity(str, Enum):
     """Temporal reporting granularity for period alignment.
@@ -312,7 +298,6 @@ class TemporalGranularity(str, Enum):
     QUARTERLY = "quarterly"
     ANNUAL = "annual"
 
-
 class FieldType(str, Enum):
     """Field data type for match-key computation.
 
@@ -327,11 +312,9 @@ class FieldType(str, Enum):
     DATE = "date"
     CATEGORICAL = "categorical"
 
-
 # ---------------------------------------------------------------------------
 # Local data models (used when models.py is absent)
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class MatchKey:
@@ -346,7 +329,6 @@ class MatchKey:
     fields: Dict[str, Any] = field(default_factory=dict)
     composite_key: str = ""
     provenance_hash: str = ""
-
 
 @dataclass
 class MatchResult:
@@ -384,7 +366,6 @@ class MatchResult:
     created_at: str = ""
     metadata: Dict[str, Any] = field(default_factory=dict)
 
-
 @dataclass
 class BatchMatchResult:
     """Aggregate result of matching across multiple source pairs.
@@ -421,7 +402,6 @@ class BatchMatchResult:
     provenance_hash: str = ""
     created_at: str = ""
 
-
 @dataclass
 class SourceDefinition:
     """Metadata about a registered data source.
@@ -440,7 +420,6 @@ class SourceDefinition:
     priority: int = 0
     credibility_score: float = 1.0
 
-
 @dataclass
 class SchemaMapping:
     """Mapping between a source column and a canonical column.
@@ -456,7 +435,6 @@ class SchemaMapping:
     canonical_column: str = ""
     transform: str = ""
     field_type: str = "string"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -501,11 +479,9 @@ _MONTHS_PER_GRANULARITY: Dict[str, int] = {
     "annual": 12,
 }
 
-
 # ============================================================================
 # MatchingEngine
 # ============================================================================
-
 
 class MatchingEngine:
     """Cross-source record matching engine.
@@ -911,7 +887,7 @@ class MatchingEngine:
                     match_key=mk_a.composite_key,
                     processing_time_ms=round(elapsed, 3),
                     provenance_hash=prov,
-                    created_at=_utcnow().isoformat(),
+                    created_at=utcnow().isoformat(),
                 ))
 
                 _observe_match_confidence(1.0)
@@ -934,7 +910,7 @@ class MatchingEngine:
                     match_key=mk_a.composite_key,
                     processing_time_ms=round(elapsed, 3),
                     provenance_hash=prov,
-                    created_at=_utcnow().isoformat(),
+                    created_at=utcnow().isoformat(),
                 ))
 
         # Unmatched records from source B
@@ -961,7 +937,7 @@ class MatchingEngine:
                             (time.time() - start_t) * 1000.0, 3,
                         ),
                         provenance_hash=prov,
-                        created_at=_utcnow().isoformat(),
+                        created_at=utcnow().isoformat(),
                     ))
 
         logger.debug(
@@ -1056,7 +1032,7 @@ class MatchingEngine:
                     ).composite_key,
                     processing_time_ms=round(elapsed, 3),
                     provenance_hash=prov,
-                    created_at=_utcnow().isoformat(),
+                    created_at=utcnow().isoformat(),
                 ))
                 _observe_match_confidence(best_score)
             else:
@@ -1085,7 +1061,7 @@ class MatchingEngine:
                     ).composite_key,
                     processing_time_ms=round(elapsed, 3),
                     provenance_hash=prov,
-                    created_at=_utcnow().isoformat(),
+                    created_at=utcnow().isoformat(),
                 ))
 
         # Unmatched B records
@@ -1111,7 +1087,7 @@ class MatchingEngine:
                         (time.time() - start_t) * 1000.0, 3,
                     ),
                     provenance_hash=prov,
-                    created_at=_utcnow().isoformat(),
+                    created_at=utcnow().isoformat(),
                 ))
 
         logger.debug("match_fuzzy complete: %d results", len(results))
@@ -1216,7 +1192,7 @@ class MatchingEngine:
                     ).composite_key,
                     processing_time_ms=round(elapsed, 3),
                     provenance_hash=prov,
-                    created_at=_utcnow().isoformat(),
+                    created_at=utcnow().isoformat(),
                     metadata={"field_weights": field_weights},
                 ))
                 _observe_match_confidence(best_score)
@@ -1246,7 +1222,7 @@ class MatchingEngine:
                     ).composite_key,
                     processing_time_ms=round(elapsed, 3),
                     provenance_hash=prov,
-                    created_at=_utcnow().isoformat(),
+                    created_at=utcnow().isoformat(),
                     metadata={"field_weights": field_weights},
                 ))
 
@@ -1273,7 +1249,7 @@ class MatchingEngine:
                         (time.time() - start_t) * 1000.0, 3,
                     ),
                     provenance_hash=prov,
-                    created_at=_utcnow().isoformat(),
+                    created_at=utcnow().isoformat(),
                 ))
 
         logger.debug("match_composite complete: %d results", len(results))
@@ -1395,7 +1371,7 @@ class MatchingEngine:
                     match_key=key,
                     processing_time_ms=round(elapsed, 3),
                     provenance_hash=prov,
-                    created_at=_utcnow().isoformat(),
+                    created_at=utcnow().isoformat(),
                     metadata={
                         "granularity_a": granularity_a,
                         "granularity_b": granularity_b,
@@ -1422,7 +1398,7 @@ class MatchingEngine:
                     match_key=key,
                     processing_time_ms=round(elapsed, 3),
                     provenance_hash=prov,
-                    created_at=_utcnow().isoformat(),
+                    created_at=utcnow().isoformat(),
                 ))
 
         # Unmatched B records
@@ -1446,7 +1422,7 @@ class MatchingEngine:
                         (time.time() - start_t) * 1000.0, 3,
                     ),
                     provenance_hash=prov,
-                    created_at=_utcnow().isoformat(),
+                    created_at=utcnow().isoformat(),
                 ))
 
         logger.debug("match_temporal complete: %d results", len(results))
@@ -1536,7 +1512,7 @@ class MatchingEngine:
                                 (time.time() - start_t) * 1000.0, 3,
                             ),
                             provenance_hash=prov,
-                            created_at=_utcnow().isoformat(),
+                            created_at=utcnow().isoformat(),
                             metadata={"block_key": block_key},
                         ))
                 for rec_b in block_recs_b:
@@ -1561,7 +1537,7 @@ class MatchingEngine:
                                 (time.time() - start_t) * 1000.0, 3,
                             ),
                             provenance_hash=prov,
-                            created_at=_utcnow().isoformat(),
+                            created_at=utcnow().isoformat(),
                             metadata={"block_key": block_key},
                         ))
                 continue
@@ -1768,7 +1744,7 @@ class MatchingEngine:
             min_confidence=min_conf,
             processing_time_ms=round(elapsed_ms, 3),
             provenance_hash=batch_prov,
-            created_at=_utcnow().isoformat(),
+            created_at=utcnow().isoformat(),
         )
 
         logger.info(
@@ -2557,7 +2533,6 @@ class MatchingEngine:
                 "mean_confidence": mean_conf,
             },
         )
-
 
 # ============================================================================
 # Module exports

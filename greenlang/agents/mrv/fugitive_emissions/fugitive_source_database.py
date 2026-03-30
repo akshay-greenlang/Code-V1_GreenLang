@@ -65,6 +65,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -103,15 +104,9 @@ except ImportError:
     _METRICS_AVAILABLE = False
     _record_db_operation = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -129,13 +124,11 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Decimal precision constant
 # ---------------------------------------------------------------------------
 
 _PRECISION = Decimal("0.00000001")  # 8 decimal places
-
 
 def _D(value: Any) -> Decimal:
     """Convert a value to Decimal with controlled precision.
@@ -150,11 +143,9 @@ def _D(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 # ===========================================================================
 # Enumerations
 # ===========================================================================
-
 
 class SourceCategory(str, Enum):
     """Top-level fugitive emission source categories.
@@ -174,7 +165,6 @@ class SourceCategory(str, Enum):
     TANK_STORAGE = "TANK_STORAGE"
     DIRECT_MEASUREMENT = "DIRECT_MEASUREMENT"
 
-
 class CalculationMethod(str, Enum):
     """Fugitive emission calculation methods.
 
@@ -191,7 +181,6 @@ class CalculationMethod(str, Enum):
     ENGINEERING_ESTIMATE = "ENGINEERING_ESTIMATE"
     DIRECT_MEASUREMENT = "DIRECT_MEASUREMENT"
 
-
 class GWPSource(str, Enum):
     """IPCC Assessment Report editions for GWP values.
 
@@ -206,7 +195,6 @@ class GWPSource(str, Enum):
     AR6 = "AR6"
     AR6_20YR = "AR6_20YR"
 
-
 class CoalRank(str, Enum):
     """Coal rank classifications for methane emission factors.
 
@@ -220,7 +208,6 @@ class CoalRank(str, Enum):
     BITUMINOUS = "BITUMINOUS"
     SUBBITUMINOUS = "SUBBITUMINOUS"
     LIGNITE = "LIGNITE"
-
 
 class WastewaterTreatmentType(str, Enum):
     """Wastewater treatment system types for MCF selection.
@@ -247,7 +234,6 @@ class WastewaterTreatmentType(str, Enum):
     SEPTIC_SYSTEM = "SEPTIC_SYSTEM"
     LATRINE_DRY = "LATRINE_DRY"
     LATRINE_WET = "LATRINE_WET"
-
 
 # ===========================================================================
 # Reference Data: 25 Source Types
@@ -552,7 +538,6 @@ SOURCE_TYPES: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ===========================================================================
 # Reference Data: EPA Component Emission Factors
 # ===========================================================================
@@ -593,7 +578,6 @@ COMPONENT_EMISSION_FACTORS: Dict[Tuple[str, str], Decimal] = {
     ("flange", "light_liquid"): Decimal("0.00083"),
     ("flange", "heavy_liquid"): Decimal("0.00083"),
 }
-
 
 # ===========================================================================
 # Reference Data: Screening Range Emission Factors
@@ -670,7 +654,6 @@ SCREENING_RANGE_FACTORS: Dict[Tuple[str, str], Dict[str, Decimal]] = {
         "no_leak_ef": Decimal("0.00005"),
     },
 }
-
 
 # ===========================================================================
 # Reference Data: Correlation Equation Coefficients
@@ -751,7 +734,6 @@ CORRELATION_COEFFICIENTS: Dict[Tuple[str, str], Dict[str, Decimal]] = {
     },
 }
 
-
 # ===========================================================================
 # Reference Data: Coal Mine Methane Emission Factors
 # ===========================================================================
@@ -798,7 +780,6 @@ CH4_DENSITY_KG_PER_M3 = Decimal("0.6682")
 #: Post-mining emission factor as fraction of mining factor.
 #: Source: IPCC 2006 Guidelines default for Tier 1.
 POST_MINING_FRACTION = Decimal("0.33")
-
 
 # ===========================================================================
 # Reference Data: Wastewater Treatment Factors
@@ -875,7 +856,6 @@ WASTEWATER_N2O_EF_KG_PER_KG_N = Decimal("0.005")
 #: N2O MW = 44.013, N MW = 14.007, ratio = 44.013/28.014 = 1.5714.
 N2O_N_RATIO = Decimal("1.5714")
 
-
 # ===========================================================================
 # Reference Data: Pneumatic Device Emission Rates
 # ===========================================================================
@@ -916,7 +896,6 @@ PNEUMATIC_RATES: Dict[str, Dict[str, Decimal]] = {
         "source": "N/A - no process gas emissions",
     },
 }
-
 
 # ===========================================================================
 # Reference Data: Natural Gas Composition
@@ -982,12 +961,10 @@ def _compute_weight_fractions(
         for species, contrib in species_mw.items()
     }
 
-
 #: Pre-computed default weight fractions.
 DEFAULT_WEIGHT_FRACTIONS: Dict[str, Decimal] = _compute_weight_fractions(
     DEFAULT_GAS_COMPOSITION
 )
-
 
 # ===========================================================================
 # Reference Data: Global Warming Potentials
@@ -1023,11 +1000,9 @@ GWP_VALUES: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ===========================================================================
 # Data classes
 # ===========================================================================
-
 
 @dataclass
 class CustomEmissionFactor:
@@ -1057,11 +1032,9 @@ class CustomEmissionFactor:
     created_at: str = ""
     provenance_hash: str = ""
 
-
 # ===========================================================================
 # FugitiveSourceDatabaseEngine
 # ===========================================================================
-
 
 class FugitiveSourceDatabaseEngine:
     """Authoritative reference data repository for all fugitive emission
@@ -1810,7 +1783,7 @@ class FugitiveSourceDatabaseEngine:
             )
 
         factor_id = f"cef_{uuid4().hex[:12]}"
-        now_iso = _utcnow().isoformat()
+        now_iso = utcnow().isoformat()
 
         record = CustomEmissionFactor(
             factor_id=factor_id,

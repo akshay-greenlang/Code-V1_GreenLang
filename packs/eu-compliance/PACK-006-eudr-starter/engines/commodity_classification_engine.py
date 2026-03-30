@@ -51,25 +51,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -82,11 +76,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EUDRCommodity(str, Enum):
     """EUDR-regulated commodity categories per Annex I."""
@@ -99,7 +91,6 @@ class EUDRCommodity(str, Enum):
     SOYA = "SOYA"
     WOOD = "WOOD"
 
-
 class ProductType(str, Enum):
     """Type of product in relation to the raw commodity."""
 
@@ -108,11 +99,9 @@ class ProductType(str, Enum):
     PROCESSED = "PROCESSED"
     DERIVED = "DERIVED"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class CommodityClassification(BaseModel):
     """Result of classifying a product by CN code."""
@@ -124,9 +113,8 @@ class CommodityClassification(BaseModel):
     description: str = Field(default="", description="Product description")
     product_type: Optional[ProductType] = Field(None, description="Raw, processed, or derived")
     annex_i_reference: Optional[str] = Field(None, description="Annex I entry reference")
-    classified_at: datetime = Field(default_factory=_utcnow, description="Classification timestamp")
+    classified_at: datetime = Field(default_factory=utcnow, description="Classification timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class CNCode(BaseModel):
     """CN code entry with description and commodity mapping."""
@@ -138,7 +126,6 @@ class CNCode(BaseModel):
     product_type: ProductType = Field(default=ProductType.RAW, description="Product type")
     annex_i_reference: str = Field(default="", description="Annex I entry reference")
 
-
 class CNCodeValidation(BaseModel):
     """Result of CN code format validation."""
 
@@ -149,7 +136,6 @@ class CNCodeValidation(BaseModel):
     warnings: List[str] = Field(default_factory=list, description="Validation warnings")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class DerivedProduct(BaseModel):
     """A derived product of an EUDR commodity."""
 
@@ -159,7 +145,6 @@ class DerivedProduct(BaseModel):
     product_type: ProductType = Field(..., description="Product type classification")
     processing_level: int = Field(default=1, ge=1, le=5, description="Processing level 1-5")
 
-
 class CNCodeMatch(BaseModel):
     """Result of a CN code keyword search."""
 
@@ -167,7 +152,6 @@ class CNCodeMatch(BaseModel):
     description: str = Field(default="", description="Product description")
     commodity: EUDRCommodity = Field(..., description="EUDR commodity category")
     relevance_score: float = Field(default=0.0, ge=0, le=1.0, description="Search relevance 0-1")
-
 
 # ---------------------------------------------------------------------------
 # CN Code Database
@@ -479,11 +463,9 @@ CN_CODE_DATABASE: Dict[str, Tuple[str, str, str, str]] = {
     "49019900": ("Other printed books and brochures", "WOOD", "DERIVED", "Annex I, 7(r)"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class CommodityClassificationEngine:
     """

@@ -50,20 +50,17 @@ from typing import Any, Callable, Coroutine, Dict, List, Optional, Set
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ExecutionStatus
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
 ProgressCallback = Callable[[str, float, str], Coroutine[Any, Any, None]]
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -75,11 +72,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EnterprisePipelinePhase(str, Enum):
     ENTERPRISE_ONBOARDING = "enterprise_onboarding"
@@ -93,33 +88,20 @@ class EnterprisePipelinePhase(str, Enum):
     SUPPLY_CHAIN_ENGAGEMENT = "supply_chain_engagement"
     REPORTING_ASSURANCE = "reporting_assurance"
 
-
-class ExecutionStatus(str, Enum):
-    PENDING = "pending"
-    RUNNING = "running"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    CANCELLED = "cancelled"
-    SKIPPED = "skipped"
-
-
 class EnterprisePathType(str, Enum):
     FULL = "full"
     PHASED_ROLLOUT = "phased_rollout"
     SCOPE1_2_FIRST = "scope1_2_first"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class RetryConfig(BaseModel):
     max_retries: int = Field(default=3, ge=0, le=10)
     backoff_base: float = Field(default=1.0, ge=0.5)
     backoff_max: float = Field(default=30.0, ge=1.0)
     jitter_factor: float = Field(default=0.5, ge=0.0, le=1.0)
-
 
 class EnterpriseOrchestratorConfig(BaseModel):
     pack_id: str = Field(default="PACK-027")
@@ -148,15 +130,13 @@ class EnterpriseOrchestratorConfig(BaseModel):
         default_factory=lambda: list(range(1, 16)),
     )
 
-
 class PhaseProvenance(BaseModel):
     phase: str = Field(default="")
     input_hash: str = Field(default="")
     output_hash: str = Field(default="")
     duration_ms: float = Field(default=0.0)
     attempt: int = Field(default=1)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class PhaseResult(BaseModel):
     phase: EnterprisePipelinePhase = Field(...)
@@ -170,7 +150,6 @@ class PhaseResult(BaseModel):
     outputs: Dict[str, Any] = Field(default_factory=dict)
     provenance: Optional[PhaseProvenance] = Field(None)
     retry_count: int = Field(default=0)
-
 
 class PipelineResult(BaseModel):
     execution_id: str = Field(default_factory=_new_uuid)
@@ -194,7 +173,6 @@ class PipelineResult(BaseModel):
     scope3_categories_covered: int = Field(default=0)
     provenance_hash: str = Field(default="")
 
-
 class PhaseProgress(BaseModel):
     execution_id: str = Field(default="")
     current_phase: str = Field(default="")
@@ -203,8 +181,7 @@ class PhaseProgress(BaseModel):
     progress_pct: float = Field(default=0.0)
     message: str = Field(default="")
     estimated_remaining_seconds: float = Field(default=0.0)
-    updated_at: datetime = Field(default_factory=_utcnow)
-
+    updated_at: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # DAG Dependencies
@@ -265,11 +242,9 @@ PHASE_ESTIMATED_DURATIONS_MS: Dict[EnterprisePipelinePhase, float] = {
     EnterprisePipelinePhase.REPORTING_ASSURANCE: 60000.0,
 }
 
-
 # ---------------------------------------------------------------------------
 # EnterpriseNetZeroPipelineOrchestrator
 # ---------------------------------------------------------------------------
-
 
 class EnterpriseNetZeroPipelineOrchestrator:
     """10-phase enterprise net-zero pipeline orchestrator for PACK-027.
@@ -319,7 +294,7 @@ class EnterpriseNetZeroPipelineOrchestrator:
             organization_name=self.config.organization_name,
             path_type=self.config.path_type,
             status=ExecutionStatus.RUNNING,
-            started_at=_utcnow(),
+            started_at=utcnow(),
         )
         self._results[result.execution_id] = result
         self._progress_state[result.execution_id] = PhaseProgress(
@@ -384,7 +359,7 @@ class EnterpriseNetZeroPipelineOrchestrator:
             result.errors.append(str(exc))
 
         finally:
-            result.completed_at = _utcnow()
+            result.completed_at = utcnow()
             result.total_duration_ms = (time.monotonic() - start_time) * 1000
             result.quality_score = self._compute_quality_score(result)
             result.entities_consolidated = self.config.entity_count
@@ -526,7 +501,7 @@ class EnterpriseNetZeroPipelineOrchestrator:
 
         return PhaseResult(
             phase=phase, status=ExecutionStatus.COMPLETED,
-            started_at=_utcnow(), completed_at=_utcnow(),
+            started_at=utcnow(), completed_at=utcnow(),
             duration_ms=elapsed, records_processed=records,
             outputs=outputs,
             provenance=PhaseProvenance(

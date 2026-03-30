@@ -65,25 +65,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -96,7 +90,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -106,7 +99,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
 ) -> Decimal:
@@ -114,7 +106,6 @@ def _safe_divide(
     if denominator == Decimal("0"):
         return default
     return numerator / denominator
-
 
 def _safe_pct(
     part: Decimal, whole: Decimal, places: int = 2
@@ -126,12 +117,10 @@ def _safe_pct(
         Decimal("0." + "0" * places), rounding=ROUND_HALF_UP
     )
 
-
 def _round_val(value: Decimal, places: int = 4) -> Decimal:
     """Round a Decimal value to the specified number of decimal places."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -153,11 +142,9 @@ METHODOLOGY_TRIGGERS: List[str] = [
     "data_quality_improvement",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class RecalculationTrigger(str, Enum):
     """Type of change that may trigger a base year recalculation."""
@@ -168,13 +155,11 @@ class RecalculationTrigger(str, Enum):
     STRUCTURAL_CHANGE = "structural_change"
     ORGANIC_GROWTH = "organic_growth"
 
-
 class RecalculationStatus(str, Enum):
     """Whether recalculation is required."""
     REQUIRED = "required"
     NOT_REQUIRED = "not_required"
     PENDING_REVIEW = "pending_review"
-
 
 class SignificanceLevel(str, Enum):
     """Significance of the change relative to threshold."""
@@ -182,18 +167,15 @@ class SignificanceLevel(str, Enum):
     BELOW_THRESHOLD = "below_threshold"
     BORDERLINE = "borderline"
 
-
 class TargetScope(str, Enum):
     """Target scope classification."""
     S1S2 = "s1s2"
     S3 = "s3"
     S1S2S3 = "s1s2s3"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class TargetDefinition(BaseModel):
     """An existing SBTi target that may need adjustment."""
@@ -213,7 +195,6 @@ class TargetDefinition(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class TargetAdjustment(BaseModel):
     """Adjustment made to a target after base year recalculation."""
@@ -251,11 +232,10 @@ class TargetAdjustment(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class AuditEntry(BaseModel):
     """An entry in the recalculation audit trail."""
     entry_id: str = Field(default_factory=_new_uuid, description="Entry ID")
-    timestamp: datetime = Field(default_factory=_utcnow, description="Timestamp")
+    timestamp: datetime = Field(default_factory=utcnow, description="Timestamp")
     action: str = Field(description="Action performed")
     trigger: RecalculationTrigger = Field(description="Trigger type")
     details: str = Field(default="", description="Detailed description")
@@ -263,7 +243,6 @@ class AuditEntry(BaseModel):
     new_value: str = Field(default="", description="Value after change")
     performed_by: str = Field(default="system", description="Actor")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class RecalculationInput(BaseModel):
     """Input data for base year recalculation assessment."""
@@ -277,7 +256,7 @@ class RecalculationInput(BaseModel):
         default="", description="Description of the structural change"
     )
     change_date: datetime = Field(
-        default_factory=_utcnow, description="Date of the structural change"
+        default_factory=utcnow, description="Date of the structural change"
     )
     pre_change_emissions: Decimal = Field(
         description="Emissions before the change (tCO2e)"
@@ -297,7 +276,7 @@ class RecalculationInput(BaseModel):
     additional_context: str = Field(
         default="", description="Additional context or justification"
     )
-    requested_at: datetime = Field(default_factory=_utcnow, description="Request timestamp")
+    requested_at: datetime = Field(default_factory=utcnow, description="Request timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("pre_change_emissions", "post_change_emissions",
@@ -305,7 +284,6 @@ class RecalculationInput(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class RecalculationResult(BaseModel):
     """Complete result of a recalculation assessment."""
@@ -344,7 +322,7 @@ class RecalculationResult(BaseModel):
     recommendations: List[str] = Field(
         default_factory=list, description="Recommendations"
     )
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("emissions_change_tco2e", "significance_pct",
@@ -354,11 +332,9 @@ class RecalculationResult(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 # ---------------------------------------------------------------------------
 # Engine Configuration
 # ---------------------------------------------------------------------------
-
 
 class RecalculationConfig(BaseModel):
     """Configuration for the RecalculationEngine."""
@@ -386,7 +362,6 @@ class RecalculationConfig(BaseModel):
         description="Automatically flag mergers for recalculation",
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic model_rebuild
 # ---------------------------------------------------------------------------
@@ -398,11 +373,9 @@ RecalculationInput.model_rebuild()
 RecalculationResult.model_rebuild()
 RecalculationConfig.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # RecalculationEngine
 # ---------------------------------------------------------------------------
-
 
 class RecalculationEngine:
     """

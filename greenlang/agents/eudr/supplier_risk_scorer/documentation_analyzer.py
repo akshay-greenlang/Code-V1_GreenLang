@@ -72,8 +72,9 @@ from .models import (
 )
 from .provenance import get_tracker
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -140,28 +141,19 @@ _SUPPORTED_LANGUAGES: Set[str] = {
     "en", "fr", "de", "es", "pt", "it", "nl", "pl", "ro", "bg",
 }
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal for precise arithmetic."""
     if isinstance(value, Decimal):
         return value
     return Decimal(str(value))
 
-
 def _float(value: Decimal) -> float:
     """Convert Decimal to float for API responses."""
     return float(value)
 
-
 # ---------------------------------------------------------------------------
 # DocumentationAnalyzer
 # ---------------------------------------------------------------------------
-
 
 class DocumentationAnalyzer:
     """Analyze and score supplier documentation completeness per EUDR Articles 4, 9, 31.
@@ -288,7 +280,7 @@ class DocumentationAnalyzer:
             profile.authenticity_indicators = authenticity_indicators
             profile.detected_languages = languages
             profile.deadline_status = deadline_status
-            profile.last_analysis_date = _utcnow()
+            profile.last_analysis_date = utcnow()
 
             # Step 15: Store updated profile
             with self._lock:
@@ -412,7 +404,7 @@ class DocumentationAnalyzer:
             ValueError: If supplier_id not found.
         """
         profile = self._get_profile(supplier_id)
-        now = _utcnow()
+        now = utcnow()
         cutoff = now + timedelta(days=days_ahead)
 
         expiring = []
@@ -531,7 +523,7 @@ class DocumentationAnalyzer:
 
         # Generate request
         request_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
         deadline = now + timedelta(days=cfg.expiry_warning_days)
 
         request_data = {
@@ -716,7 +708,7 @@ class DocumentationAnalyzer:
 
             # Create new profile
             profile_id = str(uuid.uuid4())
-            now = _utcnow()
+            now = utcnow()
 
             profile = DocumentationProfile(
                 profile_id=profile_id,
@@ -787,7 +779,7 @@ class DocumentationAnalyzer:
             SupplierDocument object.
         """
         document_id = doc_data.get("document_id") or str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         # Calculate content hash for version control
         content_hash = self._calculate_content_hash(doc_data)
@@ -911,7 +903,7 @@ class DocumentationAnalyzer:
         if not profile.documents:
             return Decimal("0.0")
 
-        now = _utcnow()
+        now = utcnow()
         expired_count = len([
             doc for doc in profile.documents
             if doc.expiry_date and doc.expiry_date < now
@@ -980,7 +972,7 @@ class DocumentationAnalyzer:
                 gaps.append(f"Missing required document: {doc_type.replace('_', ' ')}")
 
         # Check for expired documents
-        now = _utcnow()
+        now = utcnow()
         for doc in profile.documents:
             if doc.expiry_date and doc.expiry_date < now:
                 gaps.append(
@@ -1034,7 +1026,7 @@ class DocumentationAnalyzer:
             List of expiring document descriptions.
         """
         cfg = get_config()
-        now = _utcnow()
+        now = utcnow()
         cutoff = now + timedelta(days=cfg.expiry_warning_days)
 
         expiring = []
@@ -1158,7 +1150,7 @@ class DocumentationAnalyzer:
             Dictionary with deadline status.
         """
         cfg = get_config()
-        now = _utcnow()
+        now = utcnow()
         deadline = now + timedelta(days=cfg.expiry_warning_days)
 
         status = {

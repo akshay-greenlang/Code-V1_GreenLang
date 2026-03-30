@@ -49,22 +49,17 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Set, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 __all__ = [
     "CompletenessAnalyzer",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _generate_id(prefix: str = "CMP") -> str:
     """Generate a unique identifier with the given prefix.
@@ -77,7 +72,6 @@ def _generate_id(prefix: str = "CMP") -> str:
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
 
-
 def _compute_provenance(operation: str, data_repr: str) -> str:
     """Compute SHA-256 provenance hash for a completeness operation.
 
@@ -88,9 +82,8 @@ def _compute_provenance(operation: str, data_repr: str) -> str:
     Returns:
         Hex-encoded SHA-256 digest.
     """
-    payload = f"{operation}:{data_repr}:{_utcnow().isoformat()}"
+    payload = f"{operation}:{data_repr}:{utcnow().isoformat()}"
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
-
 
 def _is_missing(value: Any) -> bool:
     """Determine whether a value is considered missing/null/empty.
@@ -107,7 +100,6 @@ def _is_missing(value: Any) -> bool:
         return True
     return False
 
-
 def _safe_stdev(values: List[float]) -> float:
     """Compute sample standard deviation, returning 0.0 for < 2 values.
 
@@ -120,7 +112,6 @@ def _safe_stdev(values: List[float]) -> float:
     if len(values) < 2:
         return 0.0
     return statistics.stdev(values)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -147,11 +138,9 @@ _CRITICAL_MISSING_THRESHOLD = 0.5
 _HIGH_MISSING_THRESHOLD = 0.3
 _MEDIUM_MISSING_THRESHOLD = 0.1
 
-
 # ---------------------------------------------------------------------------
 # CompletenessAnalyzer Engine
 # ---------------------------------------------------------------------------
-
 
 class CompletenessAnalyzer:
     """Null/empty analysis and completeness scoring engine.
@@ -324,7 +313,7 @@ class CompletenessAnalyzer:
             "issue_count": len(issues),
             "provenance_hash": provenance_hash,
             "analysis_time_ms": round(elapsed_ms, 2),
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
         # Store and update stats
@@ -736,7 +725,7 @@ class CompletenessAnalyzer:
                     "null_rate": round(null_rate, 4),
                     "is_required": is_required,
                 },
-                "created_at": _utcnow().isoformat(),
+                "created_at": utcnow().isoformat(),
             }
 
             # Escalate severity for required fields
@@ -780,7 +769,7 @@ class CompletenessAnalyzer:
                     "total_cells": total_cells,
                     "overall_missing_rate": round(overall_rate, 4),
                 },
-                "created_at": _utcnow().isoformat(),
+                "created_at": utcnow().isoformat(),
             })
 
         return issues
@@ -893,5 +882,5 @@ class CompletenessAnalyzer:
                 ),
                 "avg_analysis_time_ms": round(avg_time, 2),
                 "stored_analyses": len(self._analyses),
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }

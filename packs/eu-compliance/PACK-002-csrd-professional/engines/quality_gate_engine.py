@@ -53,25 +53,19 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash."""
@@ -84,7 +78,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -94,11 +87,9 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class QualityGateId(IntEnum):
     """Quality gate identifiers."""
@@ -106,7 +97,6 @@ class QualityGateId(IntEnum):
     DATA_COMPLETENESS = 1
     CALCULATION_INTEGRITY = 2
     COMPLIANCE_READINESS = 3
-
 
 class RemediationPriority(str, Enum):
     """Priority level for remediation suggestions."""
@@ -116,11 +106,9 @@ class RemediationPriority(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class GateCheckDefinition(BaseModel):
     """Definition of a single check within a quality gate."""
@@ -137,7 +125,6 @@ class GateCheckDefinition(BaseModel):
     evaluate_fn_name: str = Field(
         ..., description="Name of the evaluation function to call"
     )
-
 
 class GateCheckResult(BaseModel):
     """Result of a single gate check evaluation."""
@@ -157,7 +144,6 @@ class GateCheckResult(BaseModel):
     )
     weight: Decimal = Field(Decimal("0"), description="Weight applied to this check")
 
-
 class GateOverride(BaseModel):
     """Manual override of a quality gate result."""
 
@@ -166,10 +152,9 @@ class GateOverride(BaseModel):
     justification: str = Field(
         ..., min_length=10, description="Justification for override"
     )
-    timestamp: datetime = Field(default_factory=_utcnow, description="When overridden")
+    timestamp: datetime = Field(default_factory=utcnow, description="When overridden")
     original_score: Decimal = Field(..., description="Score before override")
     provenance_hash: str = Field("", description="SHA-256 hash")
-
 
 class QualityGateResult(BaseModel):
     """Result of evaluating a single quality gate."""
@@ -193,9 +178,8 @@ class QualityGateResult(BaseModel):
     override: Optional[GateOverride] = Field(
         None, description="Manual override if applied"
     )
-    evaluated_at: datetime = Field(default_factory=_utcnow, description="Evaluation time")
+    evaluated_at: datetime = Field(default_factory=utcnow, description="Evaluation time")
     provenance_hash: str = Field("", description="SHA-256 hash")
-
 
 class RemediationSuggestion(BaseModel):
     """Suggested remediation for a failed check."""
@@ -209,11 +193,9 @@ class RemediationSuggestion(BaseModel):
         0.0, ge=0.0, description="Estimated hours to remediate"
     )
 
-
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
-
 
 class QualityGateConfig(BaseModel):
     """Configuration for the quality gate engine."""
@@ -233,7 +215,6 @@ class QualityGateConfig(BaseModel):
     allow_overrides: bool = Field(
         True, description="Allow manual overrides of gate results"
     )
-
 
 # ---------------------------------------------------------------------------
 # Gate Check Definitions
@@ -453,11 +434,9 @@ _REMEDIATION_TEMPLATES: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class QualityGateEngine:
     """Three-gate quality assurance engine for CSRD reporting.

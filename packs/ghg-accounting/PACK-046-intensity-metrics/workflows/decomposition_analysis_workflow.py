@@ -51,32 +51,24 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # =============================================================================
 # HELPERS
 # =============================================================================
-
-
-def _utcnow() -> str:
-    """Return current UTC timestamp as ISO-8601 string."""
-    return datetime.utcnow().isoformat() + "Z"
-
 
 def _new_uuid() -> str:
     """Return a new UUID4 hex string."""
     return uuid.uuid4().hex
 
-
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash of JSON-serialisable data."""
     serialised = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialised.encode("utf-8")).hexdigest()
-
 
 def _logarithmic_mean(a: float, b: float) -> float:
     """
@@ -91,11 +83,9 @@ def _logarithmic_mean(a: float, b: float) -> float:
         return a
     return (a - b) / (math.log(a) - math.log(b))
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -106,7 +96,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -116,14 +105,12 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class DecompPhase(str, Enum):
     """Decomposition analysis workflow phases."""
 
     PERIOD_SELECTION = "period_selection"
     LMDI_DECOMPOSITION = "lmdi_decomposition"
     EFFECT_INTERPRETATION = "effect_interpretation"
-
 
 class DecompositionMethod(str, Enum):
     """LMDI decomposition method variant."""
@@ -133,7 +120,6 @@ class DecompositionMethod(str, Enum):
     ADDITIVE_LMDI_II = "additive_lmdi_ii"
     MULTIPLICATIVE_LMDI_II = "multiplicative_lmdi_ii"
 
-
 class EffectType(str, Enum):
     """Type of decomposition effect."""
 
@@ -141,7 +127,6 @@ class EffectType(str, Enum):
     STRUCTURE = "structure"
     INTENSITY = "intensity"
     RESIDUAL = "residual"
-
 
 class ChangeClassification(str, Enum):
     """Classification of an effect's nature."""
@@ -153,11 +138,9 @@ class ChangeClassification(str, Enum):
     MIXED = "mixed"
     NEGLIGIBLE = "negligible"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -171,7 +154,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
 
-
 class SubSectorData(BaseModel):
     """Emissions and activity data for one sub-sector in a single period."""
 
@@ -180,7 +162,6 @@ class SubSectorData(BaseModel):
     emissions_tco2e: float = Field(default=0.0, ge=0.0)
     activity_value: float = Field(default=0.0, ge=0.0, description="Denominator value")
     intensity: float = Field(default=0.0, ge=0.0, description="tCO2e / activity unit")
-
 
 class PeriodData(BaseModel):
     """Complete data for a single period across all sub-sectors."""
@@ -191,7 +172,6 @@ class PeriodData(BaseModel):
     aggregate_intensity: float = Field(default=0.0, ge=0.0)
     sub_sectors: List[SubSectorData] = Field(default_factory=list)
     data_quality_score: float = Field(default=0.0, ge=0.0, le=100.0)
-
 
 class DecompositionEffect(BaseModel):
     """A single decomposition effect from LMDI analysis."""
@@ -204,7 +184,6 @@ class DecompositionEffect(BaseModel):
     direction: str = Field(default="neutral", description="increase|decrease|neutral")
     provenance_hash: str = Field(default="")
 
-
 class EffectInterpretation(BaseModel):
     """Interpretation of a decomposition effect."""
 
@@ -216,11 +195,9 @@ class EffectInterpretation(BaseModel):
     confidence: float = Field(default=0.0, ge=0.0, le=100.0)
     recommendations: List[str] = Field(default_factory=list)
 
-
 # =============================================================================
 # INPUT / OUTPUT
 # =============================================================================
-
 
 class DecompositionWorkflowInput(BaseModel):
     """Input data model for DecompositionAnalysisWorkflow."""
@@ -247,7 +224,6 @@ class DecompositionWorkflowInput(BaseModel):
     tenant_id: str = Field(default="")
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class DecompositionWorkflowResult(BaseModel):
     """Complete result from decomposition analysis workflow."""
 
@@ -267,11 +243,9 @@ class DecompositionWorkflowResult(BaseModel):
     residual_tco2e: float = Field(default=0.0, description="Unexplained residual")
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class DecompositionAnalysisWorkflow:
     """
@@ -803,6 +777,7 @@ class DecompositionAnalysisWorkflow:
                         phase_number, attempt, self.MAX_RETRIES, exc, delay,
                     )
                     import asyncio
+
                     await asyncio.sleep(delay)
         return PhaseResult(
             phase_name=f"phase_{phase_number}_failed",

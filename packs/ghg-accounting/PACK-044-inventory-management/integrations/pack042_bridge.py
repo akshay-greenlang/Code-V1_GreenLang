@@ -36,20 +36,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -61,7 +56,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 class Scope3StarterCategory(str, Enum):
     """Scope 3 starter categories from PACK-042."""
@@ -75,7 +69,6 @@ class Scope3StarterCategory(str, Enum):
     CAT7_EMPLOYEE_COMMUTING = "cat7_employee_commuting"
     CAT8_UPSTREAM_LEASED = "cat8_upstream_leased"
 
-
 class ImportStatus(str, Enum):
     """Import operation status."""
 
@@ -83,7 +76,6 @@ class ImportStatus(str, Enum):
     PARTIAL = "partial"
     FAILED = "failed"
     NO_DATA = "no_data"
-
 
 class Scope3CategoryResult(BaseModel):
     """Scope 3 category emission result from PACK-042."""
@@ -94,7 +86,6 @@ class Scope3CategoryResult(BaseModel):
     data_quality_score: float = Field(default=0.0)
     supplier_count: int = Field(default=0)
     provenance_hash: str = Field(default="")
-
 
 class Scope3ImportResult(BaseModel):
     """Result of a PACK-042 data import operation."""
@@ -109,8 +100,7 @@ class Scope3ImportResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
     processing_time_ms: float = Field(default=0.0)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class Pack042Bridge:
     """Bridge to PACK-042 Scope 3 Starter Pack.

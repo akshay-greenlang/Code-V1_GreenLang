@@ -46,25 +46,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 engine_version: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -92,7 +86,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -108,7 +101,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -129,7 +121,6 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100).
 
@@ -141,7 +132,6 @@ def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
         Percentage as Decimal; Decimal("0") when whole is zero.
     """
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* and return a float.
@@ -158,11 +148,9 @@ def _round_val(value: Decimal, places: int = 6) -> float:
     quantizer = Decimal(10) ** -places
     return float(value.quantize(quantizer, rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DPPCategory(str, Enum):
     """ESPR Digital Product Passport categories."""
@@ -171,7 +159,6 @@ class DPPCategory(str, Enum):
     FURNITURE = "furniture"
     BATTERIES = "batteries"
     TYRES = "tyres"
-
 
 class PEFImpactCategory(str, Enum):
     """PEF 3.0 environmental impact categories."""
@@ -192,7 +179,6 @@ class PEFImpactCategory(str, Enum):
     HUMAN_TOXICITY_NON_CANCER = "human_toxicity_non_cancer"
     ECOTOXICITY_FRESHWATER = "ecotoxicity_freshwater"
 
-
 class GreenClaimType(str, Enum):
     """Types of environmental marketing claims."""
     CARBON_NEUTRAL = "carbon_neutral"
@@ -206,14 +192,12 @@ class GreenClaimType(str, Enum):
     VEGAN = "vegan"
     FAIR_TRADE = "fair_trade"
 
-
 class ClaimVerificationStatus(str, Enum):
     """Verification status of a green claim."""
     VERIFIED = "verified"
     UNVERIFIED = "unverified"
     PROHIBITED = "prohibited"
     REQUIRES_SUBSTANTIATION = "requires_substantiation"
-
 
 class RepairabilityGrade(str, Enum):
     """Repairability grade (French model, extended to EU ESPR)."""
@@ -222,7 +206,6 @@ class RepairabilityGrade(str, Enum):
     C = "C"
     D = "D"
     E = "E"
-
 
 class FiberType(str, Enum):
     """Textile fiber types for microplastic assessment."""
@@ -238,7 +221,6 @@ class FiberType(str, Enum):
     LYOCELL = "lyocell"
     RECYCLED_POLYESTER = "recycled_polyester"
     RECYCLED_NYLON = "recycled_nylon"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -583,11 +565,9 @@ CLAIM_TYPE_MAP: Dict[str, str] = {
     GreenClaimType.FAIR_TRADE: "fair_trade",
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class FiberComposition(BaseModel):
     """Fiber composition entry for textile products.
@@ -598,7 +578,6 @@ class FiberComposition(BaseModel):
     """
     fiber_type: FiberType
     percentage: float = Field(..., ge=0, le=100, description="Weight percentage")
-
 
 class DPPData(BaseModel):
     """Digital Product Passport data for a product.
@@ -662,7 +641,6 @@ class DPPData(BaseModel):
         default_factory=dict, description="DPP fields provided"
     )
 
-
 class GreenClaim(BaseModel):
     """Environmental marketing claim for ECGT assessment.
 
@@ -693,7 +671,6 @@ class GreenClaim(BaseModel):
         "ECGT", description="Applicable regulation"
     )
 
-
 class PEFImpactData(BaseModel):
     """PEF impact characterization result for a single category.
 
@@ -707,7 +684,6 @@ class PEFImpactData(BaseModel):
         ..., description="Characterization result"
     )
     unit: Optional[str] = Field(None, description="Unit")
-
 
 class RepairabilityInput(BaseModel):
     """Repairability assessment input data.
@@ -732,7 +708,6 @@ class RepairabilityInput(BaseModel):
     product_specific_score: float = Field(
         0.0, ge=0, le=10, description="Product-specific (0-10)"
     )
-
 
 class ProductData(BaseModel):
     """Complete product data for sustainability assessment.
@@ -762,7 +737,6 @@ class ProductData(BaseModel):
     price_eur: Optional[float] = Field(None, ge=0, description="Price (EUR)")
     units_sold: int = Field(0, ge=0, description="Annual units sold")
 
-
 class ProductSustainabilityInput(BaseModel):
     """Complete input for product sustainability assessment.
 
@@ -785,11 +759,9 @@ class ProductSustainabilityInput(BaseModel):
     )
     repairability_data: List[RepairabilityInput] = Field(default_factory=list)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class DPPCompletenessResult(BaseModel):
     """DPP completeness assessment for a single product.
@@ -810,7 +782,6 @@ class DPPCompletenessResult(BaseModel):
     missing_fields: List[str]
     completeness_pct: float
     compliant: bool
-
 
 class GreenClaimAuditResult(BaseModel):
     """Audit result for a single green claim.
@@ -836,7 +807,6 @@ class GreenClaimAuditResult(BaseModel):
     is_third_party_verified: bool
     compliance_status: str
 
-
 class PEFNormalizedResult(BaseModel):
     """PEF normalized and weighted impact result.
 
@@ -850,7 +820,6 @@ class PEFNormalizedResult(BaseModel):
     impact_scores: Dict[str, Dict[str, float]]
     total_weighted_score: float
     dominant_categories: List[Dict[str, Any]]
-
 
 class MicroplasticAssessmentResult(BaseModel):
     """Textile microplastic release assessment.
@@ -870,7 +839,6 @@ class MicroplasticAssessmentResult(BaseModel):
     exceeds_threshold: bool
     recommendation: str
 
-
 class RepairabilityResult(BaseModel):
     """Repairability scoring result.
 
@@ -884,7 +852,6 @@ class RepairabilityResult(BaseModel):
     criteria_scores: Dict[str, Dict[str, float]]
     weighted_score: float
     grade: str
-
 
 class ProductSustainabilityResult(BaseModel):
     """Complete product sustainability assessment result.
@@ -920,15 +887,13 @@ class ProductSustainabilityResult(BaseModel):
     repairability_results: List[RepairabilityResult]
     recommendations: List[str]
     engine_version: str = engine_version
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     processing_time_ms: float = 0.0
     provenance_hash: str = ""
-
 
 # ---------------------------------------------------------------------------
 # Calculation Engine
 # ---------------------------------------------------------------------------
-
 
 class ProductSustainabilityEngine:
     """Product sustainability compliance engine.

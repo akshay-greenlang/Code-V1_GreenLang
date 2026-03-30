@@ -57,25 +57,18 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import (
-    BaseModel,
-    ConfigDict,
     Field,
     field_validator,
     model_validator,
 )
 
 from greenlang.agents.data.eudr_traceability.models import EUDRCommodity
-
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import AlertSeverity
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -140,11 +133,9 @@ GFW_ALERT_SOURCES: Dict[str, str] = {
     "integrated": "Integrated deforestation alerts",
 }
 
-
 # =============================================================================
 # Enumerations
 # =============================================================================
-
 
 class SatelliteSource(str, Enum):
     """Satellite data source for imagery acquisition.
@@ -169,7 +160,6 @@ class SatelliteSource(str, Enum):
     LANDSAT_9 = "landsat_9"
     SENTINEL_1_SAR = "sentinel_1_sar"
     GFW_ALERTS = "gfw_alerts"
-
 
 class SpectralIndex(str, Enum):
     """Vegetation spectral index type for change detection analysis.
@@ -199,7 +189,6 @@ class SpectralIndex(str, Enum):
     NDMI = "ndmi"
     SAVI = "savi"
 
-
 class ForestClassification(str, Enum):
     """Forest cover classification based on spectral analysis.
 
@@ -224,7 +213,6 @@ class ForestClassification(str, Enum):
     SHRUBLAND = "shrubland"
     SPARSE_VEGETATION = "sparse_vegetation"
     NON_VEGETATION = "non_vegetation"
-
 
 class ChangeClassification(str, Enum):
     """Classification of detected land cover change between two dates.
@@ -253,7 +241,6 @@ class ChangeClassification(str, Enum):
     REFORESTATION = "reforestation"
     REGROWTH = "regrowth"
 
-
 class DetectionMethod(str, Enum):
     """Method used for change detection analysis.
 
@@ -278,23 +265,6 @@ class DetectionMethod(str, Enum):
     MULTI_SOURCE_FUSION = "multi_source_fusion"
     SAR_BACKSCATTER = "sar_backscatter"
 
-
-class AlertSeverity(str, Enum):
-    """Severity classification for satellite monitoring alerts.
-
-    CRITICAL: Confirmed deforestation detected post-cutoff.
-        Immediate action required. Automatic EUDR compliance failure.
-    WARNING: Degradation or suspicious activity detected. Review
-        required. May indicate early-stage deforestation.
-    INFO: Informational change detected (seasonal variation,
-        regrowth, data quality note). No action required.
-    """
-
-    CRITICAL = "critical"
-    WARNING = "warning"
-    INFO = "info"
-
-
 class MonitoringInterval(str, Enum):
     """Scheduling interval for continuous monitoring of a plot.
 
@@ -312,7 +282,6 @@ class MonitoringInterval(str, Enum):
     BIWEEKLY = "biweekly"
     MONTHLY = "monthly"
     QUARTERLY = "quarterly"
-
 
 class EvidenceFormat(str, Enum):
     """Output format for EUDR evidence packages.
@@ -332,7 +301,6 @@ class EvidenceFormat(str, Enum):
     CSV = "csv"
     EUDR_XML = "eudr_xml"
 
-
 class CloudFillMethod(str, Enum):
     """Method used to fill cloud-covered gaps in optical imagery.
 
@@ -350,7 +318,6 @@ class CloudFillMethod(str, Enum):
     SAR_FUSION = "sar_fusion"
     INTERPOLATION = "interpolation"
     NEAREST_CLEAR = "nearest_clear"
-
 
 class AnalysisLevel(str, Enum):
     """Depth level for satellite analysis operations.
@@ -371,13 +338,11 @@ class AnalysisLevel(str, Enum):
     STANDARD = "standard"
     DEEP = "deep"
 
-
 # =============================================================================
 # Core Data Models
 # =============================================================================
 
-
-class SceneBand(BaseModel):
+class SceneBand(GreenLangBase):
     """Metadata for a single spectral band within a satellite scene.
 
     Attributes:
@@ -418,8 +383,7 @@ class SceneBand(BaseModel):
         description="Value representing no-data pixels",
     )
 
-
-class SceneMetadata(BaseModel):
+class SceneMetadata(GreenLangBase):
     """Metadata for a single satellite scene (image acquisition).
 
     Contains identification, temporal, spatial, and quality metadata
@@ -519,8 +483,7 @@ class SceneMetadata(BaseModel):
         description="URL for the full scene metadata document",
     )
 
-
-class SpectralIndexResult(BaseModel):
+class SpectralIndexResult(GreenLangBase):
     """Result of computing a spectral vegetation index for a plot.
 
     Contains the computed index statistics across all pixels within
@@ -611,8 +574,7 @@ class SpectralIndexResult(BaseModel):
         description="Data quality score for this calculation (0-100)",
     )
 
-
-class BaselineSnapshot(BaseModel):
+class BaselineSnapshot(GreenLangBase):
     """Spectral baseline snapshot for a plot at the EUDR cutoff date.
 
     Captures the vegetation state of a plot around December 31, 2020
@@ -724,12 +686,11 @@ class BaselineSnapshot(BaseModel):
         description="SHA-256 hash for audit trail",
     )
     established_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when baseline was established",
     )
 
-
-class ChangePixel(BaseModel):
+class ChangePixel(GreenLangBase):
     """A single pixel or pixel cluster where land cover change is detected.
 
     Represents a spatially-located change event with spectral change
@@ -794,8 +755,7 @@ class ChangePixel(BaseModel):
         description="Confidence score for change detection (0-1)",
     )
 
-
-class ChangeDetectionResult(BaseModel):
+class ChangeDetectionResult(GreenLangBase):
     """Result of change detection analysis for a single plot.
 
     Contains the outcome of comparing the baseline spectral snapshot
@@ -939,7 +899,7 @@ class ChangeDetectionResult(BaseModel):
         description="SHA-256 hash for audit trail",
     )
     detected_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of detection",
     )
     processing_time_ms: float = Field(
@@ -948,8 +908,7 @@ class ChangeDetectionResult(BaseModel):
         description="Processing time in milliseconds",
     )
 
-
-class DataQualityAssessment(BaseModel):
+class DataQualityAssessment(GreenLangBase):
     """Data quality assessment for satellite analysis inputs.
 
     Evaluates the quality and reliability of the satellite data
@@ -1026,8 +985,7 @@ class DataQualityAssessment(BaseModel):
         description="Data quality issues identified",
     )
 
-
-class CloudCoverAnalysis(BaseModel):
+class CloudCoverAnalysis(GreenLangBase):
     """Cloud cover analysis for a plot across a time window.
 
     Assesses the impact of cloud cover on data availability and
@@ -1110,13 +1068,11 @@ class CloudCoverAnalysis(BaseModel):
         description="Number of SAR scenes for gap filling",
     )
 
-
 # =============================================================================
 # Result Models
 # =============================================================================
 
-
-class FusionResult(BaseModel):
+class FusionResult(GreenLangBase):
     """Result of multi-source satellite data fusion analysis.
 
     Combines results from multiple satellite sources (Sentinel-2,
@@ -1203,12 +1159,11 @@ class FusionResult(BaseModel):
         description="SHA-256 hash for audit trail",
     )
     fused_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of fusion completion",
     )
 
-
-class MonitoringResult(BaseModel):
+class MonitoringResult(GreenLangBase):
     """Result of a scheduled monitoring execution for a plot.
 
     Contains the complete outcome of a single monitoring cycle,
@@ -1301,7 +1256,7 @@ class MonitoringResult(BaseModel):
         description="SHA-256 hash for audit trail",
     )
     executed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of monitoring execution",
     )
     processing_time_ms: float = Field(
@@ -1338,8 +1293,7 @@ class MonitoringResult(BaseModel):
             )
         return v
 
-
-class SatelliteAlert(BaseModel):
+class SatelliteAlert(GreenLangBase):
     """A deforestation or degradation alert generated by monitoring.
 
     Represents a single alert raised when satellite analysis detects
@@ -1454,12 +1408,11 @@ class SatelliteAlert(BaseModel):
         description="SHA-256 hash for audit trail",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of alert creation",
     )
 
-
-class EvidencePackage(BaseModel):
+class EvidencePackage(GreenLangBase):
     """EUDR evidence package for regulatory submission.
 
     Assembles all satellite monitoring evidence for a plot into a
@@ -1583,7 +1536,7 @@ class EvidencePackage(BaseModel):
         description="SHA-256 hash of the complete package",
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of package generation",
     )
     valid_until: Optional[date] = Field(
@@ -1617,13 +1570,11 @@ class EvidencePackage(BaseModel):
             )
         return v
 
-
 # =============================================================================
 # Request Models
 # =============================================================================
 
-
-class SearchScenesRequest(BaseModel):
+class SearchScenesRequest(GreenLangBase):
     """Request body for searching satellite scenes covering a plot.
 
     Attributes:
@@ -1637,9 +1588,6 @@ class SearchScenesRequest(BaseModel):
         max_cloud_cover_pct: Maximum acceptable cloud cover percentage.
         max_results: Maximum number of scenes to return.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     plot_id: str = Field(
         ...,
         description="Unique identifier of the plot",
@@ -1703,8 +1651,7 @@ class SearchScenesRequest(BaseModel):
             )
         return self
 
-
-class EstablishBaselineRequest(BaseModel):
+class EstablishBaselineRequest(GreenLangBase):
     """Request body for establishing a spectral baseline snapshot.
 
     Attributes:
@@ -1719,9 +1666,6 @@ class EstablishBaselineRequest(BaseModel):
         country_code: ISO 3166-1 alpha-2 country code.
         operator_id: Operator ID for provenance tracking.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     plot_id: str = Field(
         ...,
         description="Unique identifier of the plot",
@@ -1796,8 +1740,7 @@ class EstablishBaselineRequest(BaseModel):
             )
         return v
 
-
-class DetectChangeRequest(BaseModel):
+class DetectChangeRequest(GreenLangBase):
     """Request body for running change detection on a plot.
 
     Attributes:
@@ -1814,9 +1757,6 @@ class DetectChangeRequest(BaseModel):
         country_code: ISO 3166-1 alpha-2 country code.
         operator_id: Operator ID for provenance tracking.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     plot_id: str = Field(
         ...,
         description="Unique identifier of the plot",
@@ -1905,8 +1845,7 @@ class DetectChangeRequest(BaseModel):
             )
         return v
 
-
-class CreateMonitoringRequest(BaseModel):
+class CreateMonitoringRequest(GreenLangBase):
     """Request body for creating a continuous monitoring schedule.
 
     Attributes:
@@ -1924,9 +1863,6 @@ class CreateMonitoringRequest(BaseModel):
         start_date: Date to begin monitoring.
         end_date: Optional end date for monitoring schedule.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     plot_id: str = Field(
         ...,
         description="Unique identifier of the plot",
@@ -2042,8 +1978,7 @@ class CreateMonitoringRequest(BaseModel):
             )
         return self
 
-
-class GenerateEvidenceRequest(BaseModel):
+class GenerateEvidenceRequest(GreenLangBase):
     """Request body for generating an EUDR evidence package.
 
     Attributes:
@@ -2057,9 +1992,6 @@ class GenerateEvidenceRequest(BaseModel):
         include_monitoring_history: Whether to include all monitoring
             execution history.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     plot_id: str = Field(
         ...,
         description="Unique identifier of the plot",
@@ -2121,8 +2053,7 @@ class GenerateEvidenceRequest(BaseModel):
             )
         return v
 
-
-class BatchAnalysisRequest(BaseModel):
+class BatchAnalysisRequest(GreenLangBase):
     """Request body for submitting a batch satellite analysis job.
 
     Attributes:
@@ -2132,9 +2063,6 @@ class BatchAnalysisRequest(BaseModel):
             prioritize (analyzed first in the batch).
         operator_id: Operator ID for the batch job.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     plots: List[DetectChangeRequest] = Field(
         ...,
         min_length=1,
@@ -2162,13 +2090,11 @@ class BatchAnalysisRequest(BaseModel):
             raise ValueError("operator_id must be non-empty")
         return v
 
-
 # =============================================================================
 # Response Models
 # =============================================================================
 
-
-class BatchProgress(BaseModel):
+class BatchProgress(GreenLangBase):
     """Real-time progress snapshot for a running batch analysis job.
 
     Provides current processing status for UI integration via
@@ -2233,8 +2159,7 @@ class BatchProgress(BaseModel):
         description="ID of the plot currently being analyzed",
     )
 
-
-class BatchAnalysisResult(BaseModel):
+class BatchAnalysisResult(GreenLangBase):
     """Complete result of a batch satellite analysis job.
 
     Provides aggregate statistics and individual plot results for
@@ -2330,7 +2255,7 @@ class BatchAnalysisResult(BaseModel):
         description="All alerts generated",
     )
     started_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when batch started",
     )
     completed_at: Optional[datetime] = Field(
@@ -2347,8 +2272,7 @@ class BatchAnalysisResult(BaseModel):
         description="SHA-256 hash of the complete batch result",
     )
 
-
-class AlertSummary(BaseModel):
+class AlertSummary(GreenLangBase):
     """Summary statistics for satellite monitoring alerts.
 
     Provides aggregated alert counts and classifications for
@@ -2417,8 +2341,7 @@ class AlertSummary(BaseModel):
         description="Date of the most recent alert",
     )
 
-
-class MonitoringSummary(BaseModel):
+class MonitoringSummary(GreenLangBase):
     """Summary statistics for active monitoring schedules.
 
     Provides aggregated monitoring statistics for dashboard
@@ -2484,7 +2407,6 @@ class MonitoringSummary(BaseModel):
         ge=0.0,
         description="Total area under monitoring (hectares)",
     )
-
 
 # =============================================================================
 # Public API

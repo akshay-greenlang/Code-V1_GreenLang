@@ -33,10 +33,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -98,7 +99,7 @@ TCFD_DISCLOSURES = {
 # Pydantic Models
 # =============================================================================
 
-class DisclosureItem(BaseModel):
+class DisclosureItem(GreenLangBase):
     """Single TCFD disclosure item assessment."""
     disclosure_id: str = Field(...)
     pillar: TCFDPillar = Field(...)
@@ -111,7 +112,7 @@ class DisclosureItem(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
 
 
-class PillarAssessment(BaseModel):
+class PillarAssessment(GreenLangBase):
     """Assessment of a TCFD pillar."""
     pillar: TCFDPillar = Field(...)
     alignment_level: AlignmentLevel = Field(...)
@@ -122,7 +123,7 @@ class PillarAssessment(BaseModel):
     priority_actions: List[str] = Field(default_factory=list)
 
 
-class ScenarioAnalysisAssessment(BaseModel):
+class ScenarioAnalysisAssessment(GreenLangBase):
     """Assessment of scenario analysis practices."""
     scenarios_used: List[str] = Field(default_factory=list)
     time_horizons_covered: List[str] = Field(default_factory=list)
@@ -133,7 +134,7 @@ class ScenarioAnalysisAssessment(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
 
 
-class TCFDAlignmentInput(BaseModel):
+class TCFDAlignmentInput(GreenLangBase):
     """Input model for TCFD Alignment Agent."""
     assessment_id: str = Field(...)
     organization_name: str = Field(...)
@@ -168,7 +169,7 @@ class TCFDAlignmentInput(BaseModel):
     existing_disclosures: Dict[str, str] = Field(default_factory=dict)
 
 
-class TCFDAlignmentOutput(BaseModel):
+class TCFDAlignmentOutput(GreenLangBase):
     """Output model for TCFD Alignment Agent."""
     assessment_id: str = Field(...)
     organization_name: str = Field(...)

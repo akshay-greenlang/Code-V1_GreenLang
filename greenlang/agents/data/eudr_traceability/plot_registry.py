@@ -44,14 +44,9 @@ from greenlang.agents.data.eudr_traceability.models import (
     RegisterPlotRequest,
     RiskLevel,
 )
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -68,7 +63,6 @@ def _compute_hash(data: Any) -> str:
         serializable = data
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 class PlotRegistryEngine:
     """Production plot registration and management engine.
@@ -278,7 +272,7 @@ class PlotRegistryEngine:
         if supporting_docs:
             plot.supporting_documents.extend(supporting_docs)
 
-        plot.updated_at = _utcnow()
+        plot.updated_at = utcnow()
 
         # Record provenance
         if self._provenance is not None:
@@ -567,7 +561,6 @@ class PlotRegistryEngine:
     def plot_count(self) -> int:
         """Return the total number of registered plots."""
         return len(self._plots)
-
 
 __all__ = [
     "PlotRegistryEngine",

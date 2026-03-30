@@ -58,6 +58,7 @@ from greenlang.agents.data.missing_value_imputer.metrics import (
     inc_errors,
 )
 from greenlang.agents.data.missing_value_imputer.provenance import ProvenanceTracker
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -65,16 +66,9 @@ __all__ = [
     "ValidationEngine",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _is_missing(value: Any) -> bool:
     """Determine whether a value is considered missing."""
@@ -86,19 +80,16 @@ def _is_missing(value: Any) -> bool:
         return True
     return False
 
-
 def _is_numeric(value: Any) -> bool:
     """Check if a value is numeric (excluding bool)."""
     if isinstance(value, bool):
         return False
     return isinstance(value, (int, float))
 
-
 def _compute_provenance(operation: str, data_repr: str) -> str:
     """Compute SHA-256 provenance hash."""
-    payload = f"{operation}:{data_repr}:{_utcnow().isoformat()}"
+    payload = f"{operation}:{data_repr}:{utcnow().isoformat()}"
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
-
 
 def _safe_stdev(values: List[float]) -> float:
     """Compute sample standard deviation, returning 0.0 for < 2 values."""
@@ -109,11 +100,9 @@ def _safe_stdev(values: List[float]) -> float:
     except (ValueError, TypeError, AttributeError, statistics.StatisticsError):
         return 0.0
 
-
 # ===========================================================================
 # ValidationEngine
 # ===========================================================================
-
 
 class ValidationEngine:
     """Validates imputation quality using statistical tests.

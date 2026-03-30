@@ -47,25 +47,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -78,11 +72,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DDArticle(str, Enum):
     """CSDDD due diligence process articles."""
@@ -98,7 +90,6 @@ class DDArticle(str, Enum):
     ART_13_MONITORING = "art_13"
     ART_14_REPORTING = "art_14"
 
-
 class ImpactType(str, Enum):
     """Types of adverse impacts identified under CSDDD."""
 
@@ -112,7 +103,6 @@ class ImpactType(str, Enum):
     LAND_RIGHTS = "land_rights"
     WATER_POLLUTION = "water_pollution"
 
-
 class ImpactSeverity(str, Enum):
     """Severity classification for adverse impacts."""
 
@@ -121,7 +111,6 @@ class ImpactSeverity(str, Enum):
     MODERATE = "moderate"
     MINOR = "minor"
     NOT_ASSESSED = "not_assessed"
-
 
 class DDComplianceLevel(str, Enum):
     """CSDDD due diligence compliance level."""
@@ -133,7 +122,6 @@ class DDComplianceLevel(str, Enum):
     NON_COMPLIANT = "non_compliant"
     NOT_ASSESSED = "not_assessed"
 
-
 class BatteryMineral(str, Enum):
     """Critical minerals for battery manufacturing."""
 
@@ -143,11 +131,9 @@ class BatteryMineral(str, Enum):
     NATURAL_GRAPHITE = "natural_graphite"
     MANGANESE = "manganese"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class CSDDDBridgeConfig(BaseModel):
     """Configuration for the CSDDD Bridge."""
@@ -165,7 +151,6 @@ class CSDDDBridgeConfig(BaseModel):
     )
     include_downstream: bool = Field(default=False)
 
-
 class AdverseImpact(BaseModel):
     """Individual adverse impact identified under CSDDD."""
 
@@ -181,7 +166,6 @@ class AdverseImpact(BaseModel):
     mitigation_action: str = Field(default="")
     is_actual: bool = Field(default=False, description="True=actual, False=potential")
     remediation_provided: bool = Field(default=False)
-
 
 class DDStatusResult(BaseModel):
     """Overall due diligence compliance status."""
@@ -204,7 +188,6 @@ class DDStatusResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class AdverseImpactResult(BaseModel):
     """Result of adverse impact mapping."""
 
@@ -220,7 +203,6 @@ class AdverseImpactResult(BaseModel):
     mitigation_actions_count: int = Field(default=0)
     provenance_hash: str = Field(default="")
 
-
 class MineralDDResult(BaseModel):
     """DD findings specific to battery minerals."""
 
@@ -232,7 +214,6 @@ class MineralDDResult(BaseModel):
     oecd_alignment_pct: float = Field(default=0.0)
     battery_reg_articles_satisfied: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # CSDDD-Battery Regulation Overlap Mapping
@@ -325,11 +306,9 @@ MINERAL_RISK_PROFILES: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # CSDDDBridge
 # ---------------------------------------------------------------------------
-
 
 class CSDDDBridge:
     """CSDDD due diligence to Battery Regulation bridge for PACK-020.
@@ -369,7 +348,7 @@ class CSDDDBridge:
         Returns:
             DDStatusResult with per-article compliance and Battery Reg overlap.
         """
-        result = DDStatusResult(started_at=_utcnow())
+        result = DDStatusResult(started_at=utcnow())
 
         try:
             dd_data = context.get("csddd_dd_data", {})
@@ -440,7 +419,7 @@ class CSDDDBridge:
             result.errors.append(str(exc))
             logger.error("DD status check failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at

@@ -45,6 +45,7 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.geolocation_verification.models import (
     CoordinateValidationResult,
@@ -69,7 +70,6 @@ _DEFAULT_AVG_FIX_TIME_HOURS: float = 2.0
 
 _REPORT_VERSION: str = "1.0.0"
 """Report schema version for forward compatibility."""
-
 
 # ---------------------------------------------------------------------------
 # EUDR-relevant country name mapping (ISO 3166-1 alpha-2 -> name)
@@ -151,26 +151,17 @@ COUNTRY_NAMES: Dict[str, str] = {
     "JP": "Japan",
 }
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _generate_id(prefix: str) -> str:
     """Generate a unique identifier with a given prefix."""
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
 
-
 # ---------------------------------------------------------------------------
 # Data classes for Article 9 compliance reporting
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class Article9Check:
@@ -196,7 +187,6 @@ class Article9Check:
             "status": self.status,
             "details": self.details,
         }
-
 
 @dataclass
 class PlotComplianceStatus:
@@ -228,7 +218,6 @@ class PlotComplianceStatus:
             "critical_issues": self.critical_issues,
             "remediation_needed": self.remediation_needed,
         }
-
 
 @dataclass
 class CommoditySummary:
@@ -267,7 +256,6 @@ class CommoditySummary:
             "top_issues": self.top_issues,
         }
 
-
 @dataclass
 class CountrySummary:
     """Per-country compliance summary across all plots.
@@ -302,7 +290,6 @@ class CountrySummary:
             "risk_level": self.risk_level,
         }
 
-
 @dataclass
 class RemediationPriority:
     """A prioritized remediation item for a non-compliant plot.
@@ -331,7 +318,6 @@ class RemediationPriority:
             "impact_description": self.impact_description,
         }
 
-
 @dataclass
 class TrendPoint:
     """A single data point in a compliance trend time-series.
@@ -356,7 +342,6 @@ class TrendPoint:
             "total_plots": self.total_plots,
             "compliant_plots": self.compliant_plots,
         }
-
 
 @dataclass
 class ComplianceReport:
@@ -389,7 +374,7 @@ class ComplianceReport:
 
     report_id: str = field(default_factory=lambda: _generate_id("RPT"))
     operator_id: str = ""
-    generated_at: datetime = field(default_factory=_utcnow)
+    generated_at: datetime = field(default_factory=utcnow)
     report_version: str = _REPORT_VERSION
     total_plots: int = 0
     compliant_plots: int = 0
@@ -433,11 +418,9 @@ class ComplianceReport:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Verification result bundle (passed per-plot to the reporter)
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class PlotVerificationBundle:
@@ -475,11 +458,9 @@ class PlotVerificationBundle:
     deforestation_result: Optional[DeforestationVerificationResult] = None
     accuracy_score: Optional[GeolocationAccuracyScore] = None
 
-
 # ---------------------------------------------------------------------------
 # Article9ComplianceReporter
 # ---------------------------------------------------------------------------
-
 
 class Article9ComplianceReporter:
     """Generates Article 9-specific compliance reports for EUDR geolocation data.
@@ -640,7 +621,7 @@ class Article9ComplianceReporter:
         elapsed_ms = (time.monotonic() - start_time) * 1000.0
         report = ComplianceReport(
             operator_id=operator_id,
-            generated_at=_utcnow(),
+            generated_at=utcnow(),
             total_plots=total_count,
             compliant_plots=compliant_count,
             non_compliant_plots=non_compliant_count,
@@ -1618,7 +1599,6 @@ class Article9ComplianceReporter:
 
         hash_input = "|".join(hash_parts)
         return hashlib.sha256(hash_input.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Public API

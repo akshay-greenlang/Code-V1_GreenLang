@@ -92,23 +92,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -125,7 +120,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -134,7 +128,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -142,15 +135,12 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EngagementSize(str, Enum):
     """Company size for cost estimation."""
@@ -160,12 +150,10 @@ class EngagementSize(str, Enum):
     LARGE = "large"
     ENTERPRISE = "enterprise"
 
-
 class EngagementLevel(str, Enum):
     """Assurance engagement level."""
     LIMITED = "limited"
     REASONABLE = "reasonable"
-
 
 class EngagementPhase(str, Enum):
     """Engagement phase for timeline."""
@@ -173,14 +161,12 @@ class EngagementPhase(str, Enum):
     FIELDWORK = "fieldwork"
     REPORTING = "reporting"
 
-
 class ResourceRole(str, Enum):
     """Internal resource role."""
     PROJECT_LEAD = "project_lead"
     DATA_ANALYST = "data_analyst"
     SUBJECT_EXPERT = "subject_expert"
     MANAGEMENT_REVIEW = "management_review"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -235,11 +221,9 @@ SIZE_SCALING: Dict[str, Decimal] = {
     EngagementSize.ENTERPRISE.value: Decimal("2.0"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class ComplexityFactor(BaseModel):
     """A complexity factor affecting cost/timeline.
@@ -259,7 +243,6 @@ class ComplexityFactor(BaseModel):
     @classmethod
     def coerce_dec(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class EngagementScope(BaseModel):
     """Engagement scope definition.
@@ -296,7 +279,6 @@ class EngagementScope(BaseModel):
     )
     currency: str = Field(default="USD", description="Currency")
 
-
 class CostTimelineConfig(BaseModel):
     """Configuration for cost/timeline engine.
 
@@ -310,7 +292,6 @@ class CostTimelineConfig(BaseModel):
     multi_year_horizon: int = Field(default=3, ge=1, le=10, description="Horizon years")
     transition_year: int = Field(default=0, ge=0, le=10, description="Transition year")
     output_precision: int = Field(default=2, ge=0, le=6, description="Output precision")
-
 
 class CostTimelineInput(BaseModel):
     """Input for cost/timeline engine.
@@ -326,11 +307,9 @@ class CostTimelineInput(BaseModel):
         default_factory=CostTimelineConfig, description="Configuration"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class CostBreakdown(BaseModel):
     """Cost breakdown detail.
@@ -345,7 +324,6 @@ class CostBreakdown(BaseModel):
     base_amount: Decimal = Field(default=Decimal("0"), description="Base")
     multiplier: Decimal = Field(default=Decimal("1"), description="Multiplier")
     final_amount: Decimal = Field(default=Decimal("0"), description="Final")
-
 
 class CostEstimate(BaseModel):
     """Cost estimate for the engagement.
@@ -373,7 +351,6 @@ class CostEstimate(BaseModel):
     s3_adjustment: Decimal = Field(default=Decimal("0"), description="S3 adj")
     complexity_adj: Decimal = Field(default=Decimal("0"), description="Complexity adj")
 
-
 class PhaseTimeline(BaseModel):
     """Timeline for a single engagement phase.
 
@@ -387,7 +364,6 @@ class PhaseTimeline(BaseModel):
     min_weeks: Decimal = Field(default=Decimal("0"), description="Min weeks")
     max_weeks: Decimal = Field(default=Decimal("0"), description="Max weeks")
     mid_weeks: Decimal = Field(default=Decimal("0"), description="Mid weeks")
-
 
 class TimelineEstimate(BaseModel):
     """Timeline estimate for the engagement.
@@ -403,7 +379,6 @@ class TimelineEstimate(BaseModel):
     total_max_weeks: Decimal = Field(default=Decimal("0"), description="Total max")
     total_mid_weeks: Decimal = Field(default=Decimal("0"), description="Total mid")
 
-
 class RoleResource(BaseModel):
     """Resource estimate for a single role.
 
@@ -417,7 +392,6 @@ class RoleResource(BaseModel):
     min_hours: Decimal = Field(default=Decimal("0"), description="Min hours")
     max_hours: Decimal = Field(default=Decimal("0"), description="Max hours")
     mid_hours: Decimal = Field(default=Decimal("0"), description="Mid hours")
-
 
 class ResourcePlan(BaseModel):
     """Internal resource plan.
@@ -433,7 +407,6 @@ class ResourcePlan(BaseModel):
     total_max_hours: Decimal = Field(default=Decimal("0"), description="Total max")
     total_mid_hours: Decimal = Field(default=Decimal("0"), description="Total mid")
 
-
 class YearPlan(BaseModel):
     """Multi-year plan entry.
 
@@ -447,7 +420,6 @@ class YearPlan(BaseModel):
     assurance_level: str = Field(default="", description="Level")
     estimated_cost: Decimal = Field(default=Decimal("0"), description="Cost")
     efficiency_discount: Decimal = Field(default=Decimal("0"), description="Discount")
-
 
 class CostTimelineResult(BaseModel):
     """Complete result of cost/timeline estimation.
@@ -483,11 +455,9 @@ class CostTimelineResult(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class CostTimelineEngine:
     """Estimates cost, timeline, and resources for GHG assurance engagements.
@@ -550,7 +520,7 @@ class CostTimelineEngine:
             resource_plan=resource_plan,
             multi_year_plan=multi_year,
             warnings=warnings,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         result.provenance_hash = _compute_hash(result)
@@ -829,7 +799,6 @@ class CostTimelineEngine:
 
     def get_version(self) -> str:
         return self._version
-
 
 # ---------------------------------------------------------------------------
 # __all__

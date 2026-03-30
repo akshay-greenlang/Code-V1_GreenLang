@@ -82,13 +82,9 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Valid entity types and actions (module-level constants for import)
@@ -124,11 +120,9 @@ VALID_ACTIONS: frozenset = frozenset({
     "export",
 })
 
-
 # ---------------------------------------------------------------------------
 # ProvenanceRecord dataclass
 # ---------------------------------------------------------------------------
-
 
 @dataclass(frozen=True)
 class ProvenanceRecord:
@@ -160,11 +154,9 @@ class ProvenanceRecord:
     previous_hash: str
     hash_value: str
 
-
 # ---------------------------------------------------------------------------
 # ProvenanceTracker class
 # ---------------------------------------------------------------------------
-
 
 class ProvenanceTracker:
     """Thread-safe provenance tracker for deforestation alert system operations.
@@ -270,7 +262,7 @@ class ProvenanceTracker:
                 previous_hash = self._chain[-1].hash_value
 
             # Create timestamp
-            timestamp = _utcnow().isoformat()
+            timestamp = utcnow().isoformat()
 
             # Prepare metadata
             meta = metadata or {}
@@ -616,14 +608,12 @@ class ProvenanceTracker:
             self._chain.clear()
             logger.warning("Provenance chain cleared (testing only)")
 
-
 # ---------------------------------------------------------------------------
 # Thread-safe singleton pattern (double-checked locking)
 # ---------------------------------------------------------------------------
 
 _tracker_lock = threading.Lock()
 _global_tracker: Optional[ProvenanceTracker] = None
-
 
 def get_tracker() -> ProvenanceTracker:
     """Get the global ProvenanceTracker singleton instance.
@@ -645,7 +635,6 @@ def get_tracker() -> ProvenanceTracker:
             if _global_tracker is None:
                 _global_tracker = ProvenanceTracker()
     return _global_tracker
-
 
 def reset_tracker() -> None:
     """Reset the global ProvenanceTracker singleton (for testing only).

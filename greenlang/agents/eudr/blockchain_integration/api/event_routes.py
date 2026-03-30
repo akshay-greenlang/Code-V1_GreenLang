@@ -31,6 +31,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.blockchain_integration.api.dependencies import (
     AuthUser,
@@ -70,26 +71,17 @@ router = APIRouter(tags=["Events"])
 _subscription_store: Dict[str, Dict] = {}
 _event_store: Dict[str, Dict] = {}
 
-
 def _get_subscription_store() -> Dict[str, Dict]:
     """Return the subscription store singleton."""
     return _subscription_store
-
 
 def _get_event_store() -> Dict[str, Dict]:
     """Return the event store singleton."""
     return _event_store
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ---------------------------------------------------------------------------
 # POST /events/subscribe
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/events/subscribe",
@@ -132,7 +124,7 @@ async def subscribe_events(
     start = time.monotonic()
     try:
         subscription_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         record = {
             "subscription_id": subscription_id,
@@ -173,11 +165,9 @@ async def subscribe_events(
             detail="Failed to create event subscription",
         )
 
-
 # ---------------------------------------------------------------------------
 # DELETE /events/subscribe/{subscription_id}
 # ---------------------------------------------------------------------------
-
 
 @router.delete(
     "/events/subscribe/{subscription_id}",
@@ -248,11 +238,9 @@ async def unsubscribe_events(
             detail="Failed to cancel subscription",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /events
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/events",
@@ -377,11 +365,9 @@ async def query_events(
             detail="Failed to query events",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /events/{event_id}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/events/{event_id}",
@@ -441,11 +427,9 @@ async def get_event(
             detail="Failed to retrieve event",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /events/replay
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/events/replay",
@@ -487,7 +471,7 @@ async def replay_events(
     start = time.monotonic()
     try:
         store = _get_event_store()
-        now = _utcnow()
+        now = utcnow()
 
         # Simulate event replay (deterministic)
         to_block = body.to_block or (body.from_block + 100)
@@ -554,7 +538,6 @@ async def replay_events(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to replay events",
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

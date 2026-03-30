@@ -41,26 +41,19 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -73,11 +66,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Agent Stubs
 # ---------------------------------------------------------------------------
-
 
 class _AgentStub:
     """Stub for unavailable MRV agent modules."""
@@ -97,7 +88,6 @@ class _AgentStub:
             }
         return _stub_method
 
-
 def _try_import_agent(agent_id: str, module_path: str) -> Any:
     """Try to import an MRV agent with graceful fallback.
 
@@ -110,16 +100,15 @@ def _try_import_agent(agent_id: str, module_path: str) -> Any:
     """
     try:
         import importlib
+
         return importlib.import_module(module_path)
     except ImportError:
         logger.debug("MRV agent %s not available, using stub", agent_id)
         return _AgentStub(agent_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class Scope1Category(str, Enum):
     """Scope 1 emission categories mapped to MRV agents."""
@@ -133,14 +122,12 @@ class Scope1Category(str, Enum):
     WASTE_TREATMENT = "waste_treatment"
     AGRICULTURAL = "agricultural"
 
-
 class AgentStatus(str, Enum):
     """MRV agent availability status."""
 
     AVAILABLE = "available"
     DEGRADED = "degraded"
     UNAVAILABLE = "unavailable"
-
 
 class FuelType(str, Enum):
     """Common Scope 1 fuel types."""
@@ -158,7 +145,6 @@ class FuelType(str, Enum):
     JET_FUEL = "jet_fuel"
     KEROSENE = "kerosene"
 
-
 class RefrigerantType(str, Enum):
     """Common refrigerant types with GWP values."""
 
@@ -172,7 +158,6 @@ class RefrigerantType(str, Enum):
     R_1234ZE = "R-1234ze"
     CO2_R744 = "R-744"
     SF6 = "SF6"
-
 
 # ---------------------------------------------------------------------------
 # Agent-to-Category Mapping
@@ -253,11 +238,9 @@ GWP_AR5: Dict[str, int] = {
     "SF6": 23500,
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class Scope1AgentConfig(BaseModel):
     """Configuration for Scope 1 agent routing."""
@@ -269,7 +252,6 @@ class Scope1AgentConfig(BaseModel):
     gwp_source: str = Field(default="AR5", description="GWP table source: AR4, AR5, AR6")
     emission_factor_source: str = Field(default="EPA", description="EF source: EPA, DEFRA, IPCC")
     include_biogenic: bool = Field(default=False)
-
 
 class AgentResult(BaseModel):
     """Result from an MRV agent execution."""
@@ -292,13 +274,11 @@ class AgentResult(BaseModel):
     details: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
     processing_time_ms: float = Field(default=0.0)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # MRVScope1Bridge
 # ---------------------------------------------------------------------------
-
 
 class MRVScope1Bridge:
     """Bridge to all 8 Scope 1 MRV agents (MRV-001 through MRV-008).

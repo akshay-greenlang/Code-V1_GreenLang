@@ -94,6 +94,7 @@ from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -134,15 +135,9 @@ except ImportError:
     _record_uncertainty = None  # type: ignore[assignment]
     _observe_calculation_duration = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _to_decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
@@ -163,11 +158,9 @@ def _to_decimal(value: Any) -> Decimal:
     except (InvalidOperation, ValueError, TypeError) as exc:
         raise ValueError(f"Cannot convert {value!r} to Decimal") from exc
 
-
 # ===========================================================================
 # Enumerations
 # ===========================================================================
-
 
 class CalculationMethod(str, Enum):
     """Mobile combustion calculation method types.
@@ -188,7 +181,6 @@ class CalculationMethod(str, Enum):
     DISTANCE_BASED = "DISTANCE_BASED"
     SPEND_BASED = "SPEND_BASED"
 
-
 class CalculationTier(str, Enum):
     """Calculation tier for emission factor specificity.
 
@@ -203,7 +195,6 @@ class CalculationTier(str, Enum):
     TIER_3 = "TIER_3"
     TIER_2 = "TIER_2"
     TIER_1 = "TIER_1"
-
 
 class ActivityDataSource(str, Enum):
     """Activity data source classification.
@@ -220,7 +211,6 @@ class ActivityDataSource(str, Enum):
     ESTIMATED = "ESTIMATED"
     SCREENING = "SCREENING"
 
-
 class DQICategory(str, Enum):
     """Data Quality Indicator scoring categories.
 
@@ -236,7 +226,6 @@ class DQICategory(str, Enum):
     TEMPORAL_CORRELATION = "TEMPORAL_CORRELATION"
     GEOGRAPHICAL_CORRELATION = "GEOGRAPHICAL_CORRELATION"
     TECHNOLOGICAL_CORRELATION = "TECHNOLOGICAL_CORRELATION"
-
 
 # ===========================================================================
 # Default Uncertainty Parameters
@@ -374,11 +363,9 @@ _DEFAULT_ITERATIONS: int = 5000
 _MIN_ITERATIONS: int = 100
 _MAX_ITERATIONS: int = 100000
 
-
 # ===========================================================================
 # Dataclasses for results
 # ===========================================================================
-
 
 @dataclass
 class UncertaintyResult:
@@ -477,7 +464,6 @@ class UncertaintyResult:
             "metadata": self.metadata,
         }
 
-
 @dataclass
 class SensitivityResult:
     """Result of sensitivity analysis for a single parameter.
@@ -516,11 +502,9 @@ class SensitivityResult:
             "sensitivity_coefficient": str(self.sensitivity_coefficient),
         }
 
-
 # ===========================================================================
 # UncertaintyQuantifierEngine
 # ===========================================================================
-
 
 class UncertaintyQuantifierEngine:
     """Monte Carlo and analytical uncertainty quantification engine for
@@ -734,7 +718,7 @@ class UncertaintyQuantifierEngine:
             json.dumps(provenance_data, sort_keys=True).encode("utf-8")
         ).hexdigest()
 
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         result = UncertaintyResult(
             result_id=f"uq_{uuid4().hex[:12]}",
@@ -956,7 +940,7 @@ class UncertaintyQuantifierEngine:
             data_quality_score=Decimal("3.00"),
             dqi_multiplier=Decimal("1.00"),
             provenance_hash=provenance_hash,
-            timestamp=_utcnow().isoformat(),
+            timestamp=utcnow().isoformat(),
         )
 
         with self._lock:
@@ -1976,11 +1960,9 @@ class UncertaintyQuantifierEngine:
             except Exception:
                 logger.debug("Metrics recording skipped", exc_info=True)
 
-
 # ===========================================================================
 # Helper: Decimal Square Root
 # ===========================================================================
-
 
 def _decimal_sqrt(value: Decimal) -> Decimal:
     """Compute square root of a Decimal value.

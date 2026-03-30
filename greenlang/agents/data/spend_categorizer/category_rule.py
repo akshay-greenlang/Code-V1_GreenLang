@@ -54,7 +54,9 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+
+from greenlang.schemas import GreenLangBase, utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -64,26 +66,17 @@ __all__ = [
     "CategoryRuleEngine",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _generate_id(prefix: str = "rule") -> str:
     """Generate a unique identifier with a prefix."""
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
 
-
 # ---------------------------------------------------------------------------
 # Match types
 # ---------------------------------------------------------------------------
-
 
 class MatchType:
     """Supported match types for category rules.
@@ -106,13 +99,11 @@ class MatchType:
 
     ALL = [EXACT, CONTAINS, REGEX, FUZZY, STARTS_WITH, ENDS_WITH]
 
-
 # ---------------------------------------------------------------------------
 # Data models
 # ---------------------------------------------------------------------------
 
-
-class CategoryRule(BaseModel):
+class CategoryRule(GreenLangBase):
     """A custom categorisation rule."""
 
     rule_id: str = Field(..., description="Unique rule identifier")
@@ -134,11 +125,9 @@ class CategoryRule(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
 # ---------------------------------------------------------------------------
 # CategoryRuleEngine
 # ---------------------------------------------------------------------------
-
 
 class CategoryRuleEngine:
     """Custom categorisation rule engine.
@@ -254,7 +243,7 @@ class CategoryRuleEngine:
                 ) from exc
 
         rid = _generate_id("rule")
-        now_iso = _utcnow().isoformat()
+        now_iso = utcnow().isoformat()
 
         provenance_hash = self._compute_provenance(
             rid, name, match_type_upper, pattern, target_category, now_iso,
@@ -350,7 +339,7 @@ class CategoryRuleEngine:
         if rule is None:
             raise ValueError(f"Rule not found: {rule_id}")
 
-        now_iso = _utcnow().isoformat()
+        now_iso = utcnow().isoformat()
         update_data = rule.model_dump()
 
         # Apply updates
@@ -708,11 +697,9 @@ class CategoryRuleEngine:
         }, sort_keys=True)
         return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Module-level helpers
 # ---------------------------------------------------------------------------
-
 
 def _string_similarity(a: str, b: str) -> float:
     """Compute normalised LCS-based string similarity.

@@ -40,20 +40,16 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import AlertSeverity
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -66,19 +62,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
-
-class AlertSeverity(str, Enum):
-    """Alert severity levels."""
-
-    INFO = "info"
-    WARNING = "warning"
-    CRITICAL = "critical"
-
 
 class AlertChannel(str, Enum):
     """Notification delivery channels."""
@@ -90,7 +76,6 @@ class AlertChannel(str, Enum):
     SMS = "sms"
     DASHBOARD = "dashboard"
 
-
 class AlertType(str, Enum):
     """Types of quick win alerts."""
 
@@ -100,11 +85,9 @@ class AlertType(str, Enum):
     VERIFICATION_DUE = "verification_due"
     BUDGET_EXCEEDED = "budget_exceeded"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class AlertConfig(BaseModel):
     """Configuration for the Alert Bridge."""
@@ -124,7 +107,6 @@ class AlertConfig(BaseModel):
     teams_webhook_url: str = Field(default="")
     webhook_url: str = Field(default="")
 
-
 class Alert(BaseModel):
     """An alert instance."""
 
@@ -135,14 +117,13 @@ class Alert(BaseModel):
     message: str = Field(default="")
     facility_id: str = Field(default="")
     measure_id: str = Field(default="")
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     acknowledged: bool = Field(default=False)
     acknowledged_at: Optional[datetime] = Field(None)
     dismissed: bool = Field(default=False)
     dismissed_at: Optional[datetime] = Field(None)
     metadata: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
-
 
 class AlertRule(BaseModel):
     """An alert rule that triggers notifications."""
@@ -158,7 +139,6 @@ class AlertRule(BaseModel):
     cooldown_minutes: int = Field(default=60, ge=0)
     description: str = Field(default="")
 
-
 class NotificationResult(BaseModel):
     """Result of sending an alert notification."""
 
@@ -171,11 +151,9 @@ class NotificationResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # AlertBridge
 # ---------------------------------------------------------------------------
-
 
 class AlertBridge:
     """Notification and alert management for Quick Wins Identifier.
@@ -259,7 +237,7 @@ class AlertBridge:
             channel=channels[0] if channels else AlertChannel.DASHBOARD,
             success=all_success,
             message=f"Alert sent to {len(channels)} channel(s)",
-            delivered_at=_utcnow() if all_success else None,
+            delivered_at=utcnow() if all_success else None,
             duration_ms=elapsed,
         )
 
@@ -318,7 +296,7 @@ class AlertBridge:
             return False
 
         alert.dismissed = True
-        alert.dismissed_at = _utcnow()
+        alert.dismissed_at = utcnow()
         self.logger.info("Alert dismissed: %s", alert_id)
         return True
 
@@ -336,7 +314,7 @@ class AlertBridge:
             return False
 
         alert.acknowledged = True
-        alert.acknowledged_at = _utcnow()
+        alert.acknowledged_at = utcnow()
         self.logger.info("Alert acknowledged: %s", alert_id)
         return True
 

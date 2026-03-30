@@ -78,25 +78,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -114,7 +108,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -123,7 +116,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -135,36 +127,29 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* decimal digits and return float."""
     return float(value.quantize(Decimal(10) ** -places, rounding=ROUND_HALF_UP))
 
-
 def _round2(value: Any) -> float:
     """Round to 2 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round3(value: Any) -> float:
     """Round to 3 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: Any) -> float:
     """Round to 4 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class RatingSystem(str, Enum):
     """Supported energy performance rating systems.
@@ -183,7 +168,6 @@ class RatingSystem(str, Enum):
     CRREM = "crrem"
     CUSTOM = "custom"
 
-
 class EPCClass(str, Enum):
     """EU EPC energy performance classes.
 
@@ -198,7 +182,6 @@ class EPCClass(str, Enum):
     E = "E"
     F = "F"
     G = "G"
-
 
 class NABERSStars(str, Enum):
     """NABERS star rating levels.
@@ -217,7 +200,6 @@ class NABERSStars(str, Enum):
     FIVE_HALF = "5.5"
     SIX = "6.0"
 
-
 class CRREMStatus(str, Enum):
     """CRREM stranding risk status.
 
@@ -229,14 +211,12 @@ class CRREMStatus(str, Enum):
     AT_RISK = "at_risk"
     STRANDED = "stranded"
 
-
 class RatingScheme(str, Enum):
     """Broader rating scheme categories."""
     ABSOLUTE = "absolute"
     RELATIVE = "relative"
     OPERATIONAL = "operational"
     ASSET = "asset"
-
 
 class CRREMScenario(str, Enum):
     """CRREM climate scenario pathways.
@@ -246,7 +226,6 @@ class CRREMScenario(str, Enum):
     """
     PARIS_1_5C = "paris_1_5c"
     PARIS_2_0C = "paris_2_0c"
-
 
 class MEPSCompliance(str, Enum):
     """Minimum Energy Performance Standards compliance status.
@@ -261,7 +240,6 @@ class MEPSCompliance(str, Enum):
     NON_COMPLIANT = "non_compliant"
     AT_RISK = "at_risk"
     EXEMPT = "exempt"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -475,11 +453,9 @@ CRREM_EMISSION_FACTORS: Dict[str, float] = {
     "default": 0.300,
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class RatingInput(BaseModel):
     """Input data for performance rating calculation.
@@ -515,11 +491,9 @@ class RatingInput(BaseModel):
     carbon_emissions_kgco2: float = Field(default=0.0, ge=0.0, description="Carbon emissions kgCO2")
     reporting_year: int = Field(default=2025, ge=2015, le=2035, description="Reporting year")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class EnergyStarScore(BaseModel):
     """ENERGY STAR rating result.
@@ -539,7 +513,6 @@ class EnergyStarScore(BaseModel):
     percentile: int = Field(default=50, ge=1, le=100)
     building_type_used: str = Field(default="")
 
-
 class EPCRating(BaseModel):
     """EU EPC rating result.
 
@@ -558,7 +531,6 @@ class EPCRating(BaseModel):
     gap_to_next_class_pct: float = Field(default=0.0)
     meps_status: MEPSCompliance = Field(default=MEPSCompliance.COMPLIANT)
 
-
 class DECRating(BaseModel):
     """UK DEC (Display Energy Certificate) rating result.
 
@@ -575,7 +547,6 @@ class DECRating(BaseModel):
     benchmark_kwh_per_m2: float = Field(default=0.0)
     building_type_used: str = Field(default="")
 
-
 class NABERSRating(BaseModel):
     """NABERS Australia rating result.
 
@@ -589,7 +560,6 @@ class NABERSRating(BaseModel):
     normalised_eui_kwh_per_m2: float = Field(default=0.0)
     benchmark_eui_kwh_per_m2: float = Field(default=0.0)
     building_type_used: str = Field(default="")
-
 
 class CRREMPathway(BaseModel):
     """CRREM stranding assessment result.
@@ -610,7 +580,6 @@ class CRREMPathway(BaseModel):
     gap_to_pathway_pct: float = Field(default=0.0)
     scenario: CRREMScenario = Field(default=CRREMScenario.PARIS_1_5C)
     pathway_values: Dict[int, float] = Field(default_factory=dict)
-
 
 class PerformanceRatingResult(BaseModel):
     """Complete performance rating result across all systems.
@@ -647,14 +616,12 @@ class PerformanceRatingResult(BaseModel):
     methodology_notes: List[str] = Field(default_factory=list)
     processing_time_ms: float = Field(default=0.0)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class PerformanceRatingEngine:
     """Zero-hallucination performance rating engine.
@@ -1242,7 +1209,6 @@ class PerformanceRatingEngine:
                 return year
 
         return None
-
 
 # ---------------------------------------------------------------------------
 # Pydantic v2 model_rebuild for forward-reference resolution

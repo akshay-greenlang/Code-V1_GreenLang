@@ -35,7 +35,8 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 
 from .config import (
     ActivityType,
@@ -85,7 +86,7 @@ def _sha256(payload: str) -> str:
 # Core Models
 # ---------------------------------------------------------------------------
 
-class Organization(BaseModel):
+class Organization(GreenLangBase):
     """
     Organization registered for EU Taxonomy alignment reporting.
 
@@ -118,7 +119,7 @@ class Organization(BaseModel):
     updated_at: datetime = Field(default_factory=_now)
 
 
-class EconomicActivity(BaseModel):
+class EconomicActivity(GreenLangBase):
     """
     An economic activity assessed under the EU Taxonomy.
 
@@ -154,7 +155,7 @@ class EconomicActivity(BaseModel):
     updated_at: datetime = Field(default_factory=_now)
 
 
-class NACEMapping(BaseModel):
+class NACEMapping(GreenLangBase):
     """NACE code mapping to EU Taxonomy activities."""
 
     id: str = Field(default_factory=_new_id)
@@ -172,7 +173,7 @@ class NACEMapping(BaseModel):
 # Screening Models
 # ---------------------------------------------------------------------------
 
-class ActivityEligibility(BaseModel):
+class ActivityEligibility(GreenLangBase):
     """Eligibility assessment result for a single activity."""
 
     id: str = Field(default_factory=_new_id)
@@ -191,7 +192,7 @@ class ActivityEligibility(BaseModel):
     created_at: datetime = Field(default_factory=_now)
 
 
-class EligibilityScreening(BaseModel):
+class EligibilityScreening(GreenLangBase):
     """
     Batch eligibility screening results for an organization.
 
@@ -225,7 +226,7 @@ class EligibilityScreening(BaseModel):
 # Substantial Contribution Models
 # ---------------------------------------------------------------------------
 
-class ThresholdCheck(BaseModel):
+class ThresholdCheck(GreenLangBase):
     """A single quantitative threshold check for substantial contribution."""
 
     check_id: str = Field(default_factory=_new_id)
@@ -236,7 +237,7 @@ class ThresholdCheck(BaseModel):
     pass_result: bool = Field(default=False)
 
 
-class EvidenceItem(BaseModel):
+class EvidenceItem(GreenLangBase):
     """Evidence document supporting an assessment."""
 
     evidence_id: str = Field(default_factory=_new_id)
@@ -249,7 +250,7 @@ class EvidenceItem(BaseModel):
     verified: bool = Field(default=False)
 
 
-class TSCEvaluation(BaseModel):
+class TSCEvaluation(GreenLangBase):
     """Individual Technical Screening Criteria evaluation item."""
 
     criterion_id: str = Field(default_factory=_new_id)
@@ -261,7 +262,7 @@ class TSCEvaluation(BaseModel):
     evidence_ref: Optional[str] = Field(None, max_length=500)
 
 
-class SCAssessment(BaseModel):
+class SCAssessment(GreenLangBase):
     """
     Substantial Contribution assessment for an activity-objective pair.
 
@@ -302,7 +303,7 @@ class SCAssessment(BaseModel):
 # DNSH Models
 # ---------------------------------------------------------------------------
 
-class ObjectiveDNSH(BaseModel):
+class ObjectiveDNSH(GreenLangBase):
     """DNSH assessment result for a single environmental objective."""
 
     objective: EnvironmentalObjective = Field(...)
@@ -314,7 +315,7 @@ class ObjectiveDNSH(BaseModel):
     notes: Optional[str] = Field(None, max_length=2000)
 
 
-class ClimateRiskAssessment(BaseModel):
+class ClimateRiskAssessment(GreenLangBase):
     """Climate risk assessment for DNSH to climate adaptation (Appendix A)."""
 
     assessment_id: str = Field(default_factory=_new_id)
@@ -332,7 +333,7 @@ class ClimateRiskAssessment(BaseModel):
     created_at: datetime = Field(default_factory=_now)
 
 
-class DNSHAssessment(BaseModel):
+class DNSHAssessment(GreenLangBase):
     """
     Do No Significant Harm assessment across all five non-SC objectives.
 
@@ -369,7 +370,7 @@ class DNSHAssessment(BaseModel):
 # Minimum Safeguards Models
 # ---------------------------------------------------------------------------
 
-class ProceduralCheck(BaseModel):
+class ProceduralCheck(GreenLangBase):
     """A single procedural safeguard check."""
 
     check_id: str = Field(default_factory=_new_id)
@@ -378,7 +379,7 @@ class ProceduralCheck(BaseModel):
     evidence_ref: Optional[str] = Field(None, max_length=500)
 
 
-class OutcomeCheck(BaseModel):
+class OutcomeCheck(GreenLangBase):
     """A single outcome-based safeguard check."""
 
     check_id: str = Field(default_factory=_new_id)
@@ -387,7 +388,7 @@ class OutcomeCheck(BaseModel):
     details: Optional[str] = Field(None, max_length=2000)
 
 
-class TopicAssessment(BaseModel):
+class TopicAssessment(GreenLangBase):
     """Assessment result for a single safeguard topic."""
 
     topic: SafeguardTopic = Field(...)
@@ -400,7 +401,7 @@ class TopicAssessment(BaseModel):
     notes: Optional[str] = Field(None, max_length=2000)
 
 
-class SafeguardAssessment(BaseModel):
+class SafeguardAssessment(GreenLangBase):
     """
     Minimum safeguards assessment across all four topics.
 
@@ -429,7 +430,7 @@ class SafeguardAssessment(BaseModel):
 # KPI Models
 # ---------------------------------------------------------------------------
 
-class ActivityFinancials(BaseModel):
+class ActivityFinancials(GreenLangBase):
     """Financial data for a single economic activity within a KPI calculation."""
 
     activity_code: str = Field(..., description="Taxonomy activity code")
@@ -442,7 +443,7 @@ class ActivityFinancials(BaseModel):
     activity_type: Optional[ActivityType] = Field(None)
 
 
-class CapExPlan(BaseModel):
+class CapExPlan(GreenLangBase):
     """CapEx plan for an activity that is eligible but not yet aligned."""
 
     plan_id: str = Field(default_factory=_new_id)
@@ -470,7 +471,7 @@ class CapExPlan(BaseModel):
         return v
 
 
-class KPICalculation(BaseModel):
+class KPICalculation(GreenLangBase):
     """
     KPI calculation result for a single KPI type (turnover/CapEx/OpEx).
 
@@ -523,7 +524,7 @@ class KPICalculation(BaseModel):
             self.provenance_hash = _sha256(payload)
 
 
-class KPISummary(BaseModel):
+class KPISummary(GreenLangBase):
     """Summary of all three KPIs for an organization in a period."""
 
     id: str = Field(default_factory=_new_id)
@@ -546,7 +547,7 @@ class KPISummary(BaseModel):
 # GAR Models
 # ---------------------------------------------------------------------------
 
-class CoveredAssets(BaseModel):
+class CoveredAssets(GreenLangBase):
     """Covered assets denominator computation for GAR."""
 
     total_assets_eur: Decimal = Field(default=Decimal("0"), ge=Decimal("0"))
@@ -569,7 +570,7 @@ class CoveredAssets(BaseModel):
             object.__setattr__(self, "covered_total_eur", max(computed, Decimal("0")))
 
 
-class ExposureBreakdown(BaseModel):
+class ExposureBreakdown(GreenLangBase):
     """Breakdown of GAR by exposure type."""
 
     exposure_type: ExposureType = Field(...)
@@ -579,7 +580,7 @@ class ExposureBreakdown(BaseModel):
     counterparty_count: int = Field(default=0, ge=0)
 
 
-class GARCalculation(BaseModel):
+class GARCalculation(GreenLangBase):
     """
     Green Asset Ratio calculation for a financial institution.
 
@@ -622,7 +623,7 @@ class GARCalculation(BaseModel):
             self.provenance_hash = _sha256(payload)
 
 
-class BTARCalculation(BaseModel):
+class BTARCalculation(GreenLangBase):
     """
     Banking-Book Taxonomy Alignment Ratio (BTAR) calculation.
 
@@ -666,7 +667,7 @@ class BTARCalculation(BaseModel):
 # Alignment Models
 # ---------------------------------------------------------------------------
 
-class AlignmentResult(BaseModel):
+class AlignmentResult(GreenLangBase):
     """
     Full alignment result for a single activity in a period.
 
@@ -712,7 +713,7 @@ class AlignmentResult(BaseModel):
             self.provenance_hash = _sha256(payload)
 
 
-class PortfolioAlignment(BaseModel):
+class PortfolioAlignment(GreenLangBase):
     """Portfolio-level alignment summary for an organization."""
 
     id: str = Field(default_factory=_new_id, description="Portfolio alignment ID")
@@ -735,7 +736,7 @@ class PortfolioAlignment(BaseModel):
 # Reporting Models
 # ---------------------------------------------------------------------------
 
-class DisclosureReport(BaseModel):
+class DisclosureReport(GreenLangBase):
     """Generated taxonomy disclosure report (Article 8 or EBA)."""
 
     id: str = Field(default_factory=_new_id, description="Report ID")
@@ -751,7 +752,7 @@ class DisclosureReport(BaseModel):
     created_at: datetime = Field(default_factory=_now)
 
 
-class Article8Data(BaseModel):
+class Article8Data(GreenLangBase):
     """Article 8 disclosure data for non-financial undertakings."""
 
     id: str = Field(default_factory=_new_id)
@@ -774,7 +775,7 @@ class Article8Data(BaseModel):
     created_at: datetime = Field(default_factory=_now)
 
 
-class EBATemplateData(BaseModel):
+class EBATemplateData(GreenLangBase):
     """EBA Pillar 3 template data for credit institutions."""
 
     id: str = Field(default_factory=_new_id)
@@ -791,7 +792,7 @@ class EBATemplateData(BaseModel):
 # Data Quality Models
 # ---------------------------------------------------------------------------
 
-class DimensionScore(BaseModel):
+class DimensionScore(GreenLangBase):
     """Score for a single data quality dimension."""
 
     dimension: DataQualityDimension = Field(...)
@@ -803,7 +804,7 @@ class DimensionScore(BaseModel):
     target_score: Decimal = Field(default=Decimal("0.80"))
 
 
-class DataQualityScore(BaseModel):
+class DataQualityScore(GreenLangBase):
     """
     Overall data quality assessment for an organization's taxonomy data.
 
@@ -835,7 +836,7 @@ class DataQualityScore(BaseModel):
 # Gap Analysis Models
 # ---------------------------------------------------------------------------
 
-class GapItem(BaseModel):
+class GapItem(GreenLangBase):
     """A single taxonomy alignment gap identified during assessment."""
 
     gap_id: str = Field(default_factory=_new_id)
@@ -850,7 +851,7 @@ class GapItem(BaseModel):
     due_date: Optional[date] = Field(None)
 
 
-class GapAssessment(BaseModel):
+class GapAssessment(GreenLangBase):
     """Gap analysis result for an organization's taxonomy readiness."""
 
     id: str = Field(default_factory=_new_id, description="Assessment ID")
@@ -870,7 +871,7 @@ class GapAssessment(BaseModel):
 # Request Models
 # ---------------------------------------------------------------------------
 
-class ScreenActivityRequest(BaseModel):
+class ScreenActivityRequest(GreenLangBase):
     """Request to screen activities for taxonomy eligibility."""
 
     org_id: str = Field(..., description="Organization ID")
@@ -882,7 +883,7 @@ class ScreenActivityRequest(BaseModel):
     include_de_minimis: bool = Field(default=True)
 
 
-class SCAssessmentRequest(BaseModel):
+class SCAssessmentRequest(GreenLangBase):
     """Request to assess substantial contribution for an activity."""
 
     org_id: str = Field(..., description="Organization ID")
@@ -896,7 +897,7 @@ class SCAssessmentRequest(BaseModel):
     )
 
 
-class DNSHAssessmentRequest(BaseModel):
+class DNSHAssessmentRequest(GreenLangBase):
     """Request to assess DNSH for an activity."""
 
     org_id: str = Field(..., description="Organization ID")
@@ -913,7 +914,7 @@ class DNSHAssessmentRequest(BaseModel):
     )
 
 
-class SafeguardAssessmentRequest(BaseModel):
+class SafeguardAssessmentRequest(GreenLangBase):
     """Request to assess minimum safeguards for an organization."""
 
     org_id: str = Field(..., description="Organization ID")
@@ -923,7 +924,7 @@ class SafeguardAssessmentRequest(BaseModel):
     )
 
 
-class CalculateKPIRequest(BaseModel):
+class CalculateKPIRequest(GreenLangBase):
     """Request to calculate Article 8 KPIs."""
 
     org_id: str = Field(..., description="Organization ID")
@@ -934,7 +935,7 @@ class CalculateKPIRequest(BaseModel):
     include_capex_plans: bool = Field(default=True)
 
 
-class CalculateGARRequest(BaseModel):
+class CalculateGARRequest(GreenLangBase):
     """Request to calculate GAR/BTAR for a financial institution."""
 
     institution_id: str = Field(..., description="Financial institution org ID")
@@ -947,7 +948,7 @@ class CalculateGARRequest(BaseModel):
     )
 
 
-class GenerateReportRequest(BaseModel):
+class GenerateReportRequest(GreenLangBase):
     """Request to generate a taxonomy disclosure report."""
 
     org_id: str = Field(..., description="Organization ID")
@@ -957,7 +958,7 @@ class GenerateReportRequest(BaseModel):
     include_qualitative: bool = Field(default=True)
 
 
-class AlignmentWorkflowRequest(BaseModel):
+class AlignmentWorkflowRequest(GreenLangBase):
     """Request to run the full alignment workflow for an organization."""
 
     org_id: str = Field(..., description="Organization ID")
@@ -969,7 +970,7 @@ class AlignmentWorkflowRequest(BaseModel):
     run_gap_analysis: bool = Field(default=True)
 
 
-class GapAnalysisRequest(BaseModel):
+class GapAnalysisRequest(GreenLangBase):
     """Request to run gap analysis for taxonomy readiness."""
 
     org_id: str = Field(..., description="Organization ID")

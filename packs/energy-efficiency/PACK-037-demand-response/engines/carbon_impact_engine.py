@@ -77,25 +77,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -113,7 +107,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -122,7 +115,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -134,22 +126,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class GridRegion(str, Enum):
     """Grid region for marginal emission factors.
@@ -175,7 +163,6 @@ class GridRegion(str, Enum):
     JP = "jp"
     CUSTOM = "custom"
 
-
 class TimeOfDay(str, Enum):
     """Time-of-day period for marginal EF selection.
 
@@ -187,7 +174,6 @@ class TimeOfDay(str, Enum):
     SHOULDER = "shoulder"
     OVERNIGHT = "overnight"
 
-
 class Scope2Method(str, Enum):
     """GHG Protocol Scope 2 calculation method.
 
@@ -196,7 +182,6 @@ class Scope2Method(str, Enum):
     """
     LOCATION_BASED = "location_based"
     MARKET_BASED = "market_based"
-
 
 class SBTiAmbition(str, Enum):
     """SBTi target ambition level.
@@ -208,7 +193,6 @@ class SBTiAmbition(str, Enum):
     WELL_BELOW_2C = "well_below_2c"
     ONE_POINT_FIVE_C = "one_point_five_c"
     NET_ZERO = "net_zero"
-
 
 class CarbonReportType(str, Enum):
     """Carbon report type.
@@ -223,11 +207,9 @@ class CarbonReportType(str, Enum):
     SBTI_TRACKER = "sbti_tracker"
     MAC_ANALYSIS = "mac_analysis"
 
-
 # ---------------------------------------------------------------------------
 # Constants -- Marginal Emission Factor Database
 # ---------------------------------------------------------------------------
-
 
 # Marginal emission factors by region and time-of-day (kgCO2e per MWh).
 # Sources: EPA AVERT 2024, NREL Cambium 2024, IEA 2024.
@@ -389,11 +371,9 @@ SBTI_RATES: Dict[str, Decimal] = {
 # Default grid decarbonization rate.
 DEFAULT_GRID_DECARB_RATE: Decimal = Decimal("0.02")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class MarginalEmissionFactor(BaseModel):
     """Marginal emission factor with provenance.
@@ -419,7 +399,6 @@ class MarginalEmissionFactor(BaseModel):
     year: int = Field(default=2024, ge=2000, le=2030, description="Year")
     unit: str = Field(default="kgCO2e/MWh", description="Unit")
 
-
 class DREventCarbon(BaseModel):
     """DR event data for carbon impact calculation.
 
@@ -438,7 +417,7 @@ class DREventCarbon(BaseModel):
         default_factory=_new_uuid, description="Event ID"
     )
     event_date: datetime = Field(
-        default_factory=_utcnow, description="Event date"
+        default_factory=utcnow, description="Event date"
     )
     region: GridRegion = Field(
         default=GridRegion.US_NATIONAL, description="Grid region"
@@ -469,11 +448,9 @@ class DREventCarbon(BaseModel):
         """Auto-populate MWh from kWh if MWh is zero."""
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class EventCarbonImpact(BaseModel):
     """Carbon impact result for a single DR event.
@@ -514,9 +491,8 @@ class EventCarbonImpact(BaseModel):
         default=Decimal("0"), description="MAC (USD/tCO2e)"
     )
     methodology_notes: str = Field(default="", description="Methodology")
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class AnnualCarbonSummary(BaseModel):
     """Annual carbon impact summary.
@@ -551,9 +527,8 @@ class AnnualCarbonSummary(BaseModel):
     region_breakdown: Dict[str, Decimal] = Field(default_factory=dict)
     tod_breakdown: Dict[str, Decimal] = Field(default_factory=dict)
     sbti_contribution_pct: Decimal = Field(default=Decimal("0"))
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class CarbonReport(BaseModel):
     """Comprehensive carbon impact report.
@@ -576,14 +551,12 @@ class CarbonReport(BaseModel):
     annual_summary: Optional[AnnualCarbonSummary] = Field(default=None)
     sbti_assessment: Optional[Dict[str, Any]] = Field(default=None)
     mac_analysis: Optional[Dict[str, Any]] = Field(default=None)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class CarbonImpactEngine:
     """Carbon impact assessment engine for demand response.
@@ -913,7 +886,7 @@ class CarbonImpactEngine:
                 "us_social_cost_of_carbon": "51 USD/tCO2e (IWG 2021)",
                 "uk_carbon_price": "50 GBP/tCO2e (2024)",
             },
-            "calculated_at": _utcnow().isoformat(),
+            "calculated_at": utcnow().isoformat(),
             "processing_time_ms": round(elapsed, 2),
         }
         result["provenance_hash"] = _compute_hash(result)
@@ -946,7 +919,7 @@ class CarbonImpactEngine:
             Dictionary with contribution assessment.
         """
         t0 = time.perf_counter()
-        year = current_year or _utcnow().year
+        year = current_year or utcnow().year
         amb = ambition or SBTiAmbition(self._sbti_ambition)
 
         rate = SBTI_RATES.get(amb.value, Decimal("0.042"))
@@ -976,7 +949,7 @@ class CarbonImpactEngine:
                 if contribution_pct >= Decimal("5")
                 else "DR programme provides supplementary contribution to SBTi targets"
             ),
-            "calculated_at": _utcnow().isoformat(),
+            "calculated_at": utcnow().isoformat(),
             "processing_time_ms": round(elapsed, 2),
         }
         result["provenance_hash"] = _compute_hash(result)

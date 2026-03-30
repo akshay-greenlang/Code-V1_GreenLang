@@ -39,35 +39,28 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ReportFormat
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.utcnow()
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hash of a string."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -78,7 +71,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -87,7 +79,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class DRReportType(str, Enum):
     """Available demand response report types."""
@@ -101,20 +92,9 @@ class DRReportType(str, Enum):
     FLEXIBILITY_ASSESSMENT = "flexibility_assessment"
     SETTLEMENT_DETAIL = "settlement_detail"
 
-
-class ReportFormat(str, Enum):
-    """Output format for reports."""
-
-    JSON = "json"
-    PDF = "pdf"
-    HTML = "html"
-    CSV = "csv"
-
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -128,7 +108,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list, description="Errors encountered")
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
 
-
 class GeneratedReport(BaseModel):
     """A single generated report."""
 
@@ -138,7 +117,6 @@ class GeneratedReport(BaseModel):
     generated_at: str = Field(default="", description="ISO 8601 timestamp")
     page_count: int = Field(default=0, ge=0, description="Estimated page count")
     provenance_hash: str = Field(default="", description="SHA-256 of report content")
-
 
 class DRReportingInput(BaseModel):
     """Input data model for DRReportingWorkflow."""
@@ -176,7 +154,6 @@ class DRReportingInput(BaseModel):
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
 
-
 class DRReportingResult(BaseModel):
     """Complete result from DR reporting workflow."""
 
@@ -188,11 +165,9 @@ class DRReportingResult(BaseModel):
     calculated_at: str = Field(default="", description="ISO 8601 timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 of complete result")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class DRReportingWorkflow:
     """
@@ -245,7 +220,7 @@ class DRReportingWorkflow:
             DRReportingResult with generated reports and executive summary.
         """
         t_start = time.perf_counter()
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting DR reporting workflow %s types=%s period=%s",
             self.report_id, input_data.report_types, input_data.period,
@@ -393,7 +368,7 @@ class DRReportingWorkflow:
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
 
-        now_iso = _utcnow().isoformat() + "Z"
+        now_iso = utcnow().isoformat() + "Z"
 
         for report_type_str in input_data.report_types:
             content = self._generate_report_content(report_type_str)

@@ -39,6 +39,7 @@ Status: Production Ready
 
 import logging
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +65,7 @@ except ImportError:
 
 if FASTAPI_AVAILABLE:
 
-    class UploadFileBody(BaseModel):
+    class UploadFileBody(GreenLangBase):
         """Request body for uploading a single file."""
         file_name: str = Field(
             ..., description="Original filename including extension",
@@ -82,7 +83,7 @@ if FASTAPI_AVAILABLE:
             default="default", description="Tenant identifier",
         )
 
-    class BatchFileItem(BaseModel):
+    class BatchFileItem(GreenLangBase):
         """Single item within a batch upload request."""
         file_name: str = Field(..., description="Original filename")
         file_content_base64: str = Field(
@@ -95,7 +96,7 @@ if FASTAPI_AVAILABLE:
             None, description="Mapping template ID",
         )
 
-    class BatchUploadBody(BaseModel):
+    class BatchUploadBody(GreenLangBase):
         """Request body for batch file upload."""
         files: List[BatchFileItem] = Field(
             ..., description="List of files to upload and normalize",
@@ -107,7 +108,7 @@ if FASTAPI_AVAILABLE:
             default="default", description="Tenant identifier",
         )
 
-    class ReprocessBody(BaseModel):
+    class ReprocessBody(GreenLangBase):
         """Request body for reprocessing a file."""
         template_id: Optional[str] = Field(
             None, description="New mapping template ID to apply",
@@ -116,7 +117,7 @@ if FASTAPI_AVAILABLE:
             None, description="Override configuration for reprocessing",
         )
 
-    class NormalizeBody(BaseModel):
+    class NormalizeBody(GreenLangBase):
         """Request body for inline data normalization."""
         data: List[Dict[str, Any]] = Field(
             ..., description="List of row dictionaries to normalize",
@@ -128,7 +129,7 @@ if FASTAPI_AVAILABLE:
             default="default", description="Tenant identifier",
         )
 
-    class MapColumnsBody(BaseModel):
+    class MapColumnsBody(GreenLangBase):
         """Request body for column mapping."""
         headers: List[str] = Field(
             ..., description="Source column headers to map",
@@ -140,7 +141,7 @@ if FASTAPI_AVAILABLE:
             None, description="Template ID for pre-defined mappings",
         )
 
-    class DetectTypesBody(BaseModel):
+    class DetectTypesBody(GreenLangBase):
         """Request body for column data type detection."""
         values: List[List[Any]] = Field(
             ..., description="Column-oriented sample values for type detection",
@@ -149,7 +150,7 @@ if FASTAPI_AVAILABLE:
             None, description="Column headers for labeling results",
         )
 
-    class ValidateBody(BaseModel):
+    class ValidateBody(GreenLangBase):
         """Request body for data validation."""
         data: List[Dict[str, Any]] = Field(
             ..., description="Row dictionaries to validate",
@@ -158,7 +159,7 @@ if FASTAPI_AVAILABLE:
             ..., description="Schema name to validate against",
         )
 
-    class TransformBody(BaseModel):
+    class TransformBody(GreenLangBase):
         """Request body for applying transform operations."""
         file_id: str = Field(
             ..., description="File ID whose data will be transformed",
@@ -167,7 +168,7 @@ if FASTAPI_AVAILABLE:
             ..., description="Ordered list of transform operations to apply",
         )
 
-    class CreateTemplateBody(BaseModel):
+    class CreateTemplateBody(GreenLangBase):
         """Request body for creating a mapping template."""
         template_name: str = Field(
             ..., description="Human-readable template name",

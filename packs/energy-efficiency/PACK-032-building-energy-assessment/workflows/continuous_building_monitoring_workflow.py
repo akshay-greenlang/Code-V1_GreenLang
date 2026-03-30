@@ -33,6 +33,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas.enums import AlertSeverity
 
 logger = logging.getLogger(__name__)
 
@@ -71,16 +72,6 @@ class DataSourceType(str, Enum):
     IOT_SENSOR = "iot_sensor"
     WEATHER_API = "weather_api"
     OCCUPANCY_SENSOR = "occupancy_sensor"
-
-
-class AlertSeverity(str, Enum):
-    """Alert severity classification."""
-
-    CRITICAL = "critical"
-    HIGH = "high"
-    MEDIUM = "medium"
-    LOW = "low"
-    INFO = "info"
 
 
 class AlertCategory(str, Enum):

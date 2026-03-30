@@ -11,6 +11,7 @@ import os
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Optional
+from greenlang.schemas.enums import Environment
 
 
 class DistanceMetric(str, Enum):
@@ -22,12 +23,6 @@ class DistanceMetric(str, Enum):
 class IndexType(str, Enum):
     HNSW = "hnsw"
     IVFFLAT = "ivfflat"
-
-
-class Environment(str, Enum):
-    DEVELOPMENT = "development"
-    STAGING = "staging"
-    PRODUCTION = "production"
 
 
 # Operator class mapping for pgvector

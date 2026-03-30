@@ -44,25 +44,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -75,7 +69,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -84,7 +77,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 # ---------------------------------------------------------------------------
 # Carbon Pricing Database (50+ countries)
@@ -144,11 +136,9 @@ CARBON_PRICING_DB: List[Dict[str, Any]] = [
     {"country": "US", "scheme_type": "state_level", "price_per_tco2e": "30.00", "currency": "USD", "qualifying_for_deduction": False, "scheme_name": "US state-level only (RGGI, CA cap-and-trade)"},
 ]
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class CSRDMapping(BaseModel):
     """CBAM data mapped to CSRD ESRS E1 disclosures."""
@@ -169,7 +159,6 @@ class CSRDMapping(BaseModel):
     data_completeness_pct: Decimal = Field(default=Decimal("0"), description="Data completeness %")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class CDPMapping(BaseModel):
     """CBAM data mapped to CDP Climate questionnaire."""
     mapping_id: str = Field(default_factory=_new_uuid, description="Mapping identifier")
@@ -183,7 +172,6 @@ class CDPMapping(BaseModel):
     data_quality_score: Decimal = Field(default=Decimal("0"), description="Data quality (0-100)")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class SBTiMapping(BaseModel):
     """CBAM data mapped to SBTi framework."""
     mapping_id: str = Field(default_factory=_new_uuid, description="Mapping identifier")
@@ -196,7 +184,6 @@ class SBTiMapping(BaseModel):
     )
     cbam_data_coverage_pct: Decimal = Field(default=Decimal("0"), description="CBAM data coverage %")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class TaxonomyMapping(BaseModel):
     """CBAM data mapped to EU Taxonomy."""
@@ -212,7 +199,6 @@ class TaxonomyMapping(BaseModel):
     )
     cbam_alignment_score: Decimal = Field(default=Decimal("0"), description="Alignment score (0-100)")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class ETSMapping(BaseModel):
     """CBAM data mapped to EU ETS."""
@@ -231,7 +217,6 @@ class ETSMapping(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class EUDRMapping(BaseModel):
     """CBAM data mapped to EUDR for fertilizer supply chains."""
     mapping_id: str = Field(default_factory=_new_uuid, description="Mapping identifier")
@@ -247,7 +232,6 @@ class EUDRMapping(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class DataReuseReport(BaseModel):
     """Data reuse optimization report across regulations."""
     report_id: str = Field(default_factory=_new_uuid, description="Report identifier")
@@ -262,7 +246,6 @@ class DataReuseReport(BaseModel):
     recommendations: List[str] = Field(default_factory=list, description="Optimization recommendations")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class ConsistencyCheckResult(BaseModel):
     """Cross-regulation data consistency check."""
     check_id: str = Field(default_factory=_new_uuid, description="Check identifier")
@@ -274,7 +257,6 @@ class ConsistencyCheckResult(BaseModel):
     consistent_pct: Decimal = Field(default=Decimal("100"), description="Consistency percentage")
     recommendations: List[str] = Field(default_factory=list, description="Remediation recommendations")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class ChangeTracker(BaseModel):
     """Regulatory change tracking result."""
@@ -288,7 +270,6 @@ class ChangeTracker(BaseModel):
     )
     impact_assessment: str = Field(default="", description="Impact assessment summary")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class CarbonPricingEquivalence(BaseModel):
     """Carbon pricing equivalence for CBAM deduction."""
@@ -311,11 +292,9 @@ class CarbonPricingEquivalence(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 # ---------------------------------------------------------------------------
 # Engine Configuration
 # ---------------------------------------------------------------------------
-
 
 class CrossRegulationConfig(BaseModel):
     """Configuration for the CrossRegulationEngine."""
@@ -331,7 +310,6 @@ class CrossRegulationConfig(BaseModel):
         },
         description="FX rates to EUR",
     )
-
 
 # ---------------------------------------------------------------------------
 # Pydantic model_rebuild for forward reference resolution
@@ -349,11 +327,9 @@ ConsistencyCheckResult.model_rebuild()
 ChangeTracker.model_rebuild()
 CarbonPricingEquivalence.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # CrossRegulationEngine
 # ---------------------------------------------------------------------------
-
 
 class CrossRegulationEngine:
     """

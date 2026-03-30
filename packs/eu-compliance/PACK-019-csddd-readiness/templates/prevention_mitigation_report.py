@@ -31,6 +31,8 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
@@ -60,16 +62,9 @@ _EFFECTIVENESS_RATINGS: List[str] = [
     "highly_effective",
 ]
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -82,7 +77,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _effectiveness_score(rating: str) -> float:
     """Convert effectiveness rating to numeric score (0.0-1.0)."""
     mapping = {
@@ -93,7 +87,6 @@ def _effectiveness_score(rating: str) -> float:
         "highly_effective": 1.0,
     }
     return mapping.get(rating, 0.0)
-
 
 class PreventionMitigationReportTemplate:
     """
@@ -122,7 +115,7 @@ class PreventionMitigationReportTemplate:
 
     def render(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render full report as structured dict."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         report_id = _new_uuid()
         result: Dict[str, Any] = {"report_id": report_id}
         for section in _SECTIONS:
@@ -160,7 +153,7 @@ class PreventionMitigationReportTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render prevention/mitigation report as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [
             self._md_header(data),
             self._md_measure_overview(data),
@@ -177,7 +170,7 @@ class PreventionMitigationReportTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render prevention/mitigation report as HTML."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         body = "\n".join([
             self._html_header(data),
@@ -198,7 +191,7 @@ class PreventionMitigationReportTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render prevention/mitigation report as JSON."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result: Dict[str, Any] = {
             "template": "prevention_mitigation_report",
             "directive_reference": "Directive (EU) 2024/1760, Art 8-9",

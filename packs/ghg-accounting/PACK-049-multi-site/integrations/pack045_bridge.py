@@ -44,25 +44,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -75,11 +69,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class RecalculationTrigger(str, Enum):
     """Types of base year recalculation triggers."""
@@ -93,7 +85,6 @@ class RecalculationTrigger(str, Enum):
     ERROR_CORRECTION = "error_correction"
     OUTSOURCING = "outsourcing"
 
-
 class SignificanceResult(str, Enum):
     """Significance test outcomes."""
 
@@ -101,11 +92,9 @@ class SignificanceResult(str, Enum):
     NOT_SIGNIFICANT = "not_significant"
     BORDERLINE = "borderline"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class Pack045Config(BaseModel):
     """Configuration for PACK-045 bridge."""
@@ -115,7 +104,6 @@ class Pack045Config(BaseModel):
         5.0, ge=0.1,
         description="Significance threshold percentage for recalculation",
     )
-
 
 class Pack045BaseYear(BaseModel):
     """Base year data for a site from PACK-045."""
@@ -133,7 +121,6 @@ class Pack045BaseYear(BaseModel):
     original_total_tco2e: float = 0.0
     adjustment_reason: str = ""
     provenance_hash: str = ""
-
 
 class Pack045Adjustment(BaseModel):
     """Base year adjustment record from PACK-045."""
@@ -153,7 +140,6 @@ class Pack045Adjustment(BaseModel):
     approved_at: str = ""
     provenance_hash: str = ""
 
-
 class RecalculationTriggerRecord(BaseModel):
     """Recalculation trigger record from PACK-045."""
 
@@ -168,11 +154,9 @@ class RecalculationTriggerRecord(BaseModel):
     status: str = "pending"
     provenance_hash: str = ""
 
-
 # ---------------------------------------------------------------------------
 # Bridge Implementation
 # ---------------------------------------------------------------------------
-
 
 class Pack045Bridge:
     """

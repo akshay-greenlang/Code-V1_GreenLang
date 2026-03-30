@@ -40,35 +40,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.utcnow()
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hash of a string."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -79,7 +71,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -89,7 +80,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class LoadProfile(str, Enum):
     """Equipment load profile type."""
 
@@ -98,7 +88,6 @@ class LoadProfile(str, Enum):
     SCHEDULE_DRIVEN = "schedule_driven"
     WEATHER_DRIVEN = "weather_driven"
     PROCESS_DRIVEN = "process_driven"
-
 
 # =============================================================================
 # REFERENCE DATA (Zero-Hallucination)
@@ -178,11 +167,9 @@ LOAD_PROFILE_MODIFIERS: Dict[str, Dict[str, float]] = {
     "process_driven": {"A": 0.5, "B": 1.2, "C": 0.8, "D": 1.0},
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -195,7 +182,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list, description="Warnings raised")
     errors: List[str] = Field(default_factory=list, description="Errors encountered")
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
-
 
 class ECMCharacteristics(BaseModel):
     """Detailed ECM characteristics for option selection."""
@@ -216,7 +202,6 @@ class ECMCharacteristics(BaseModel):
     operating_hours_per_year: float = Field(
         default=8760.0, ge=0, le=8760, description="Annual operating hours",
     )
-
 
 class OptionSelectionInput(BaseModel):
     """Input data model for OptionSelectionWorkflow."""
@@ -247,7 +232,6 @@ class OptionSelectionInput(BaseModel):
             raise ValueError("project_name must not be blank")
         return stripped
 
-
 class OptionScore(BaseModel):
     """Score for a single IPMVP option for a single ECM."""
 
@@ -261,7 +245,6 @@ class OptionScore(BaseModel):
     weighted_total: float = Field(default=0.0, description="Final weighted score")
     rank: int = Field(default=0, description="Rank (1=best)")
     recommended: bool = Field(default=False, description="Is recommended option")
-
 
 class OptionSelectionResult(BaseModel):
     """Complete result from option selection workflow."""
@@ -283,11 +266,9 @@ class OptionSelectionResult(BaseModel):
     calculated_at: str = Field(default="", description="ISO 8601 timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 of complete result")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class OptionSelectionWorkflow:
     """
@@ -340,7 +321,7 @@ class OptionSelectionWorkflow:
             ValueError: If input validation fails.
         """
         t_start = time.perf_counter()
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting option selection workflow %s for project=%s ecms=%d",
             self.selection_id, input_data.project_name, len(input_data.ecm_list),
@@ -446,7 +427,7 @@ class OptionSelectionWorkflow:
                     ecm.operating_hours_per_year / 8760.0, 3,
                 ),
                 "option_eligibility": self._determine_eligibility(ecm),
-                "characterized_at": _utcnow().isoformat() + "Z",
+                "characterized_at": utcnow().isoformat() + "Z",
             }
             characterizations.append(char)
 
@@ -576,7 +557,7 @@ class OptionSelectionWorkflow:
                 "ecm_name": char["ecm_name"],
                 "recommended_option": recommended,
                 "option_scores": [s.model_dump() for s in option_scores],
-                "evaluated_at": _utcnow().isoformat() + "Z",
+                "evaluated_at": utcnow().isoformat() + "Z",
             })
 
         self._evaluations = evaluations

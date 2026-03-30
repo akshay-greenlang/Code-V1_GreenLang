@@ -31,10 +31,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +80,7 @@ class LightingZoneType(str, Enum):
 # Pydantic Models
 # =============================================================================
 
-class StreetLight(BaseModel):
+class StreetLight(GreenLangBase):
     """Individual street light fixture."""
 
     light_id: str = Field(..., description="Unique light identifier")
@@ -131,7 +132,7 @@ class StreetLight(BaseModel):
         return 0.0
 
 
-class LightingZone(BaseModel):
+class LightingZone(GreenLangBase):
     """Lighting zone grouping."""
 
     zone_id: str = Field(..., description="Zone identifier")
@@ -150,7 +151,7 @@ class LightingZone(BaseModel):
     )
 
 
-class LEDConversionProject(BaseModel):
+class LEDConversionProject(GreenLangBase):
     """LED conversion project details."""
 
     project_id: str = Field(..., description="Project identifier")
@@ -187,7 +188,7 @@ class LEDConversionProject(BaseModel):
     estimated_months_to_complete: int = Field(default=12, ge=1)
 
 
-class LightingOptimizationPlan(BaseModel):
+class LightingOptimizationPlan(GreenLangBase):
     """Complete lighting optimization plan."""
 
     plan_id: str = Field(..., description="Plan identifier")
@@ -231,7 +232,7 @@ class LightingOptimizationPlan(BaseModel):
 # Agent Input/Output Models
 # =============================================================================
 
-class StreetLightingInput(BaseModel):
+class StreetLightingInput(GreenLangBase):
     """Input for Street Lighting Agent."""
 
     action: str = Field(..., description="Action to perform")
@@ -276,7 +277,7 @@ class StreetLightingInput(BaseModel):
         return v
 
 
-class StreetLightingOutput(BaseModel):
+class StreetLightingOutput(GreenLangBase):
     """Output from Street Lighting Agent."""
 
     success: bool = Field(...)

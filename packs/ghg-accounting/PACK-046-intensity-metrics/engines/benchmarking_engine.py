@@ -65,23 +65,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -98,7 +93,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -107,7 +101,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -115,14 +108,11 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
-
 
 def _median_decimal(values: List[Decimal]) -> Decimal:
     if not values:
@@ -133,7 +123,6 @@ def _median_decimal(values: List[Decimal]) -> Decimal:
     if n % 2 == 1:
         return sorted_vals[mid]
     return (sorted_vals[mid - 1] + sorted_vals[mid]) / Decimal("2")
-
 
 def _percentile_decimal(values: List[Decimal], pct: Decimal) -> Decimal:
     """Compute the p-th percentile using linear interpolation."""
@@ -151,7 +140,6 @@ def _percentile_decimal(values: List[Decimal], pct: Decimal) -> Decimal:
     frac = rank - Decimal(str(lower))
     return sorted_vals[lower] + frac * (sorted_vals[upper] - sorted_vals[lower])
 
-
 def _std_deviation_decimal(values: List[Decimal]) -> Decimal:
     if len(values) < 2:
         return Decimal("0")
@@ -162,11 +150,9 @@ def _std_deviation_decimal(values: List[Decimal]) -> Decimal:
     std_float = float(variance) ** 0.5
     return _decimal(std_float)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class BenchmarkSource(str, Enum):
     """Source of benchmark data.
@@ -183,7 +169,6 @@ class BenchmarkSource(str, Enum):
     CRREM = "CRREM"
     CUSTOM = "CUSTOM"
 
-
 class NormalisationType(str, Enum):
     """Types of normalisation applied."""
     SCOPE_ADJUSTMENT = "scope_adjustment"
@@ -191,7 +176,6 @@ class NormalisationType(str, Enum):
     PERIOD_ALIGNMENT = "period_alignment"
     CURRENCY_CONVERSION = "currency_conversion"
     CLIMATE_ADJUSTMENT = "climate_adjustment"
-
 
 class PerformanceRating(str, Enum):
     """Performance rating relative to peers.
@@ -208,7 +192,6 @@ class PerformanceRating(str, Enum):
     BELOW_AVG = "below_average"
     LAGGARD = "laggard"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -216,11 +199,9 @@ class PerformanceRating(str, Enum):
 MAX_PEERS: int = 10000
 MIN_PEERS_FOR_STATS: int = 3
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class PeerEntry(BaseModel):
     """A single peer data point for benchmarking.
@@ -255,7 +236,6 @@ class PeerEntry(BaseModel):
     def coerce_intensity(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class PeerGroup(BaseModel):
     """Definition of a peer group for benchmarking.
 
@@ -275,7 +255,6 @@ class PeerGroup(BaseModel):
     source: Optional[BenchmarkSource] = Field(default=None, description="Source filter")
     peers: List[PeerEntry] = Field(default_factory=list, description="Peer entries")
     min_quality: int = Field(default=1, ge=1, le=5, description="Minimum data quality")
-
 
 class NormalisationConfig(BaseModel):
     """Configuration for normalisation steps.
@@ -304,7 +283,6 @@ class NormalisationConfig(BaseModel):
     target_currency: str = Field(default="USD_million", description="Target currency")
     hdd_adjustment_factor: Decimal = Field(default=Decimal("1"), ge=0, description="HDD factor")
     cdd_adjustment_factor: Decimal = Field(default=Decimal("1"), ge=0, description="CDD factor")
-
 
 class BenchmarkInput(BaseModel):
     """Input for benchmarking analysis.
@@ -343,11 +321,9 @@ class BenchmarkInput(BaseModel):
     def coerce_intensity(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class DistributionStats(BaseModel):
     """Distribution statistics for a peer group.
@@ -375,7 +351,6 @@ class DistributionStats(BaseModel):
     p75: Decimal = Field(default=Decimal("0"), description="75th percentile")
     p90: Decimal = Field(default=Decimal("0"), description="90th percentile")
 
-
 class GapAnalysis(BaseModel):
     """Gap analysis between organisation and peer benchmarks.
 
@@ -402,7 +377,6 @@ class GapAnalysis(BaseModel):
     gap_to_p25: Decimal = Field(default=Decimal("0"), description="Gap to p25")
     gap_to_p25_pct: Decimal = Field(default=Decimal("0"), description="Gap to p25 (%)")
 
-
 class NormalisedComparison(BaseModel):
     """Normalised comparison result for a single peer.
 
@@ -418,7 +392,6 @@ class NormalisedComparison(BaseModel):
     original_intensity: Decimal = Field(default=Decimal("0"), description="Original intensity")
     normalised_intensity: Decimal = Field(default=Decimal("0"), description="Normalised intensity")
     normalisations_applied: List[str] = Field(default_factory=list, description="Applied normalisations")
-
 
 class BenchmarkResult(BaseModel):
     """Result of benchmarking analysis.
@@ -462,11 +435,9 @@ class BenchmarkResult(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class BenchmarkingEngine:
     """Peer benchmarking engine for emissions intensity comparison.
@@ -558,7 +529,7 @@ class BenchmarkingEngine:
             peer_count=len(normalised),
             normalisations_applied=applied_norms,
             warnings=warnings,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         result.provenance_hash = _compute_hash(result)
@@ -794,7 +765,6 @@ class BenchmarkingEngine:
 
     def get_version(self) -> str:
         return self._version
-
 
 # ---------------------------------------------------------------------------
 # __all__

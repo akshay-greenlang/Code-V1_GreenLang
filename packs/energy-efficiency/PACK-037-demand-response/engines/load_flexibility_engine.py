@@ -73,25 +73,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -109,7 +103,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -118,7 +111,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -130,22 +122,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class LoadCategory(int, Enum):
     """Load curtailment priority category.
@@ -161,7 +149,6 @@ class LoadCategory(int, Enum):
     DEFERRABLE = 2
     SHEDDABLE = 3
     FLEXIBLE = 4
-
 
 class LoadType(str, Enum):
     """Type of electrical load within a facility.
@@ -186,7 +173,6 @@ class LoadType(str, Enum):
     WATER_HEATING = "water_heating"
     DER = "der"
 
-
 class NotificationTime(str, Enum):
     """Lead time before a DR event begins.
 
@@ -202,7 +188,6 @@ class NotificationTime(str, Enum):
     TWO_HOUR = "2_hour"
     DAY_AHEAD = "day_ahead"
 
-
 class AutomationLevel(str, Enum):
     """Automation readiness for demand response.
 
@@ -215,7 +200,6 @@ class AutomationLevel(str, Enum):
     SEMI_AUTO = "semi_auto"
     FULLY_AUTO = "fully_auto"
     AUTONOMOUS = "autonomous"
-
 
 class FlexibilityGrade(str, Enum):
     """Overall flexibility grade assigned to a load or facility.
@@ -231,7 +215,6 @@ class FlexibilityGrade(str, Enum):
     C_MODERATE = "c_moderate"
     D_LOW = "d_low"
     F_MINIMAL = "f_minimal"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -326,11 +309,9 @@ GRADE_THRESHOLDS: List[Tuple[Decimal, FlexibilityGrade]] = [
     (Decimal("0"), FlexibilityGrade.F_MINIMAL),
 ]
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class LoadProfile(BaseModel):
     """Profile of a single controllable load within a facility.
@@ -420,11 +401,9 @@ class LoadProfile(BaseModel):
                 )
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class FlexibilityAssessment(BaseModel):
     """Flexibility assessment result for a single load.
@@ -471,9 +450,8 @@ class FlexibilityAssessment(BaseModel):
     recommended_actions: List[str] = Field(
         default_factory=list, description="Improvement recommendations"
     )
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class CurtailmentCapacity(BaseModel):
     """Curtailment capacity matrix for a facility.
@@ -499,9 +477,8 @@ class CurtailmentCapacity(BaseModel):
     max_curtailment_pct: Decimal = Field(default=Decimal("0"))
     fastest_response_minutes: int = Field(default=0)
     longest_duration_hours: int = Field(default=0)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class FlexibilityRegister(BaseModel):
     """Complete flexibility register for a facility.
@@ -538,14 +515,12 @@ class FlexibilityRegister(BaseModel):
     dr_ready_count: int = Field(default=0)
     category_summary: Dict[str, int] = Field(default_factory=dict)
     type_summary: Dict[str, int] = Field(default_factory=dict)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class LoadFlexibilityEngine:
     """Load flexibility assessment engine for demand response programs.

@@ -141,16 +141,11 @@ from greenlang.agents.mrv.refrigerants_fgas.models import (
     RefrigerantType,
     RefrigerantCategory,
 )
+from greenlang.schemas import utcnow
 
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -306,11 +301,9 @@ _DEFAULT_EQUIPMENT_LEAK_RATES: Dict[EquipmentType, Decimal] = {
     EquipmentType.SOLVENTS: Decimal("0.70"),
 }
 
-
 # ===========================================================================
 # EmissionCalculatorEngine
 # ===========================================================================
-
 
 class EmissionCalculatorEngine:
     """Core F-gas emission calculation engine implementing five GHG Protocol
@@ -478,7 +471,7 @@ class EmissionCalculatorEngine:
                 total_emissions_tco2e=float(total_emissions_tco2e),
                 blend_decomposition=False,
                 provenance_hash=provenance_hash,
-                timestamp=_utcnow(),
+                timestamp=utcnow(),
                 calculation_trace=trace,
             )
 
@@ -1086,7 +1079,7 @@ class EmissionCalculatorEngine:
                     total_loss_kg=0.0,
                     total_emissions_tco2e=0.0,
                     provenance_hash="",
-                    timestamp=_utcnow(),
+                    timestamp=utcnow(),
                     calculation_trace=[f"FAILED: {str(exc)}"],
                 )
                 batch_results.append(failed_result)

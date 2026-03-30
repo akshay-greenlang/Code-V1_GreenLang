@@ -53,17 +53,13 @@ from .models import (
 )
 from .provenance import get_tracker
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 #: Risk propagation decay factor per tier.
 #: Risk from tier N sub-supplier is multiplied by (decay_factor ^ N).
@@ -90,11 +86,9 @@ _INTERMEDIARY_RISK_AMPLIFICATION_PER_HOP: float = 1.10
 #: If supplier count > threshold and consolidation score high, recommend.
 _CONSOLIDATION_RECOMMENDATION_THRESHOLD: int = 10
 
-
 # ---------------------------------------------------------------------------
 # NetworkAnalyzer
 # ---------------------------------------------------------------------------
-
 
 class NetworkAnalyzer:
     """Map and analyze supplier-to-supplier relationships and risk propagation.
@@ -251,7 +245,7 @@ class NetworkAnalyzer:
             consolidation_recommendation=consolidation_recommendation,
             overall_network_risk=Decimal(str(overall_network_risk)),
             risk_level=risk_level,
-            analyzed_at=_utcnow(),
+            analyzed_at=utcnow(),
         )
 
         # Store network

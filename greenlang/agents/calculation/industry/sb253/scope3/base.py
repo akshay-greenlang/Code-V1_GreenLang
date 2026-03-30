@@ -24,7 +24,8 @@ from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Dict, List, Optional, Any, Union
 
-from pydantic import BaseModel, Field, validator
+from pydantic import Field, validator
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +79,7 @@ class DataQualityTier(str, Enum):
     TIER_3 = "tier_3"  # Spend-based or highly aggregated data
 
 
-class EmissionFactorRecord(BaseModel):
+class EmissionFactorRecord(GreenLangBase):
     """
     Emission factor with complete provenance.
 
@@ -106,7 +107,7 @@ class EmissionFactorRecord(BaseModel):
         use_enum_values = True
 
 
-class Scope3CalculationInput(BaseModel):
+class Scope3CalculationInput(GreenLangBase):
     """
     Base input model for Scope 3 calculations.
 
@@ -143,7 +144,7 @@ class Scope3CalculationInput(BaseModel):
         return v
 
 
-class CalculationStep(BaseModel):
+class CalculationStep(GreenLangBase):
     """Single step in the calculation audit trail."""
 
     step_number: int = Field(..., ge=1, description="Step sequence number")
@@ -154,7 +155,7 @@ class CalculationStep(BaseModel):
     timestamp: datetime = Field(default_factory=datetime.utcnow, description="Step timestamp")
 
 
-class Scope3CalculationResult(BaseModel):
+class Scope3CalculationResult(GreenLangBase):
     """
     Complete result from a Scope 3 calculation with full audit trail.
 

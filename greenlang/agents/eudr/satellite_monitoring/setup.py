@@ -101,16 +101,9 @@ except ImportError:
     otel_trace = None  # type: ignore[assignment]
     OTEL_AVAILABLE = False
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_service_hash(config: SatelliteMonitoringConfig) -> str:
     """Compute SHA-256 hash of the service configuration for provenance.
@@ -124,11 +117,9 @@ def _compute_service_hash(config: SatelliteMonitoringConfig) -> str:
     raw = json.dumps(config.to_dict(), sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Health status model
 # ---------------------------------------------------------------------------
-
 
 class HealthStatus:
     """Health check result container.
@@ -153,7 +144,7 @@ class HealthStatus:
     ) -> None:
         self.status = status
         self.checks = checks or {}
-        self.timestamp = timestamp or _utcnow()
+        self.timestamp = timestamp or utcnow()
         self.version = version
         self.uptime_seconds = uptime_seconds
 
@@ -167,11 +158,9 @@ class HealthStatus:
             "uptime_seconds": round(self.uptime_seconds, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # AnalysisRequest
 # ---------------------------------------------------------------------------
-
 
 class AnalysisRequest:
     """Request object for full satellite monitoring analysis.
@@ -210,11 +199,9 @@ class AnalysisRequest:
         self.analysis_level = analysis_level
         self.biome = biome
 
-
 # ---------------------------------------------------------------------------
 # FullAnalysisResult
 # ---------------------------------------------------------------------------
-
 
 class FullAnalysisResult:
     """Unified result from a full satellite monitoring analysis.
@@ -263,7 +250,7 @@ class FullAnalysisResult:
         self.evidence = evidence
         self.data_quality = data_quality or {}
         self.provenance_hash = provenance_hash
-        self.analyzed_at = analyzed_at or _utcnow()
+        self.analyzed_at = analyzed_at or utcnow()
         self.processing_time_ms = processing_time_ms
 
     def to_dict(self) -> Dict[str, Any]:
@@ -288,11 +275,9 @@ class FullAnalysisResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # BatchAnalysisResult
 # ---------------------------------------------------------------------------
-
 
 class BatchAnalysisResult:
     """Result of a batch satellite monitoring analysis job.
@@ -343,7 +328,7 @@ class BatchAnalysisResult:
         self.results = results or []
         self.statistics = statistics or {}
         self.provenance_hash = provenance_hash
-        self.submitted_at = submitted_at or _utcnow()
+        self.submitted_at = submitted_at or utcnow()
         self.completed_at = completed_at
         self.processing_time_ms = processing_time_ms
 
@@ -366,11 +351,9 @@ class BatchAnalysisResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # SatelliteMonitoringService
 # ---------------------------------------------------------------------------
-
 
 class SatelliteMonitoringService:
     """Facade service for the EUDR Satellite Monitoring Agent.
@@ -721,7 +704,7 @@ class SatelliteMonitoringService:
         health = HealthStatus(
             status=overall,
             checks=checks,
-            timestamp=_utcnow(),
+            timestamp=utcnow(),
             version="1.0.0",
             uptime_seconds=self.uptime_seconds,
         )
@@ -1058,7 +1041,7 @@ class SatelliteMonitoringService:
             evidence=None,
             data_quality=data_quality,
             provenance_hash=provenance_hash,
-            analyzed_at=_utcnow(),
+            analyzed_at=utcnow(),
             processing_time_ms=elapsed_ms,
         )
 
@@ -1159,7 +1142,7 @@ class SatelliteMonitoringService:
             batch_result.results = results
             batch_result.statistics = statistics
             batch_result.provenance_hash = batch_provenance
-            batch_result.completed_at = _utcnow()
+            batch_result.completed_at = utcnow()
             batch_result.processing_time_ms = elapsed_ms
 
         logger.info(
@@ -1279,7 +1262,7 @@ class SatelliteMonitoringService:
             "plot_id": plot_id,
             "operator_id": operator_id,
             "format": format,
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
         }
 
         # Baseline evidence
@@ -2376,11 +2359,9 @@ class SatelliteMonitoringService:
         ]
         return sum(1 for e in engines if e is not None)
 
-
 # ---------------------------------------------------------------------------
 # FastAPI lifespan context manager
 # ---------------------------------------------------------------------------
-
 
 @asynccontextmanager
 async def lifespan(app: Any) -> AsyncIterator[None]:
@@ -2394,6 +2375,7 @@ async def lifespan(app: Any) -> AsyncIterator[None]:
 
         from fastapi import FastAPI
         from greenlang.agents.eudr.satellite_monitoring.setup import lifespan
+from greenlang.schemas import utcnow
 
         app = FastAPI(lifespan=lifespan)
 
@@ -2411,14 +2393,12 @@ async def lifespan(app: Any) -> AsyncIterator[None]:
     finally:
         await service.shutdown()
 
-
 # ---------------------------------------------------------------------------
 # Thread-safe singleton accessor
 # ---------------------------------------------------------------------------
 
 _service_instance: Optional[SatelliteMonitoringService] = None
 _service_lock = threading.Lock()
-
 
 def get_service(
     config: Optional[SatelliteMonitoringConfig] = None,
@@ -2448,7 +2428,6 @@ def get_service(
                 )
     return _service_instance
 
-
 def set_service(service: SatelliteMonitoringService) -> None:
     """Replace the singleton SatelliteMonitoringService instance.
 
@@ -2462,7 +2441,6 @@ def set_service(service: SatelliteMonitoringService) -> None:
         _service_instance = service
     logger.info("SatelliteMonitoringService singleton replaced")
 
-
 def reset_service() -> None:
     """Reset the singleton SatelliteMonitoringService to None.
 
@@ -2473,7 +2451,6 @@ def reset_service() -> None:
     with _service_lock:
         _service_instance = None
     logger.debug("SatelliteMonitoringService singleton reset")
-
 
 # ---------------------------------------------------------------------------
 # Public API

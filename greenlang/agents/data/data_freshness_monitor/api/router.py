@@ -39,6 +39,7 @@ Status: Production Ready
 
 import logging
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +69,7 @@ if FASTAPI_AVAILABLE:
 
     # === Request Bodies ===
 
-    class RegisterDatasetRequest(BaseModel):
+    class RegisterDatasetRequest(GreenLangBase):
         """Request body for registering a dataset."""
         name: str = Field(
             ..., description="Human-readable dataset name",
@@ -96,7 +97,7 @@ if FASTAPI_AVAILABLE:
             None, description="Additional dataset metadata",
         )
 
-    class UpdateDatasetRequest(BaseModel):
+    class UpdateDatasetRequest(GreenLangBase):
         """Request body for updating a dataset."""
         name: Optional[str] = Field(
             None, description="New dataset name",
@@ -125,7 +126,7 @@ if FASTAPI_AVAILABLE:
             description="New status (active, inactive, archived)",
         )
 
-    class CreateSLARequest(BaseModel):
+    class CreateSLARequest(GreenLangBase):
         """Request body for creating an SLA definition."""
         dataset_id: str = Field(
             default="",
@@ -154,7 +155,7 @@ if FASTAPI_AVAILABLE:
             None, description="Additional SLA metadata",
         )
 
-    class UpdateSLARequest(BaseModel):
+    class UpdateSLARequest(GreenLangBase):
         """Request body for updating an SLA definition."""
         name: Optional[str] = Field(
             None, description="New SLA name",
@@ -180,7 +181,7 @@ if FASTAPI_AVAILABLE:
             None, description="New status (active, inactive)",
         )
 
-    class RunCheckRequest(BaseModel):
+    class RunCheckRequest(GreenLangBase):
         """Request body for running a freshness check."""
         dataset_id: str = Field(
             ..., description="Dataset to check",
@@ -191,14 +192,14 @@ if FASTAPI_AVAILABLE:
             "metadata if not provided)",
         )
 
-    class RunBatchCheckRequest(BaseModel):
+    class RunBatchCheckRequest(GreenLangBase):
         """Request body for running a batch freshness check."""
         dataset_ids: Optional[List[str]] = Field(
             None,
             description="Dataset IDs to check (all if not provided)",
         )
 
-    class UpdateBreachRequest(BaseModel):
+    class UpdateBreachRequest(GreenLangBase):
         """Request body for updating a breach status."""
         status: Optional[str] = Field(
             None,
@@ -212,7 +213,7 @@ if FASTAPI_AVAILABLE:
             None, description="Additional metadata to merge",
         )
 
-    class RunPipelineRequest(BaseModel):
+    class RunPipelineRequest(GreenLangBase):
         """Request body for running the full monitoring pipeline."""
         dataset_ids: Optional[List[str]] = Field(
             None,
@@ -229,7 +230,7 @@ if FASTAPI_AVAILABLE:
 
     # === Response Models ===
 
-    class DatasetResponse(BaseModel):
+    class DatasetResponse(GreenLangBase):
         """Response model for a registered dataset."""
         dataset_id: str = Field(default="")
         name: str = Field(default="")
@@ -248,7 +249,7 @@ if FASTAPI_AVAILABLE:
         updated_at: str = Field(default="")
         provenance_hash: str = Field(default="")
 
-    class SLAResponse(BaseModel):
+    class SLAResponse(GreenLangBase):
         """Response model for an SLA definition."""
         sla_id: str = Field(default="")
         dataset_id: str = Field(default="")
@@ -261,7 +262,7 @@ if FASTAPI_AVAILABLE:
         updated_at: str = Field(default="")
         provenance_hash: str = Field(default="")
 
-    class CheckResponse(BaseModel):
+    class CheckResponse(GreenLangBase):
         """Response model for a freshness check result."""
         check_id: str = Field(default="")
         dataset_id: str = Field(default="")
@@ -273,7 +274,7 @@ if FASTAPI_AVAILABLE:
         processing_time_ms: float = Field(default=0.0)
         provenance_hash: str = Field(default="")
 
-    class BreachResponse(BaseModel):
+    class BreachResponse(GreenLangBase):
         """Response model for an SLA breach."""
         breach_id: str = Field(default="")
         dataset_id: str = Field(default="")
@@ -286,7 +287,7 @@ if FASTAPI_AVAILABLE:
         resolved_at: Optional[str] = Field(default=None)
         provenance_hash: str = Field(default="")
 
-    class AlertResponse(BaseModel):
+    class AlertResponse(GreenLangBase):
         """Response model for a generated alert."""
         alert_id: str = Field(default="")
         breach_id: str = Field(default="")
@@ -299,7 +300,7 @@ if FASTAPI_AVAILABLE:
         resolved_at: Optional[str] = Field(default=None)
         provenance_hash: str = Field(default="")
 
-    class PredictionResponse(BaseModel):
+    class PredictionResponse(GreenLangBase):
         """Response model for a refresh prediction."""
         prediction_id: str = Field(default="")
         dataset_id: str = Field(default="")
@@ -307,7 +308,7 @@ if FASTAPI_AVAILABLE:
         confidence: float = Field(default=0.0)
         provenance_hash: str = Field(default="")
 
-    class HealthResponse(BaseModel):
+    class HealthResponse(GreenLangBase):
         """Response model for health check."""
         status: str = Field(default="healthy")
         service: str = Field(default="data_freshness_monitor")
@@ -315,7 +316,7 @@ if FASTAPI_AVAILABLE:
         stores: Dict[str, int] = Field(default_factory=dict)
         timestamp: str = Field(default="")
 
-    class StatsResponse(BaseModel):
+    class StatsResponse(GreenLangBase):
         """Response model for aggregate statistics."""
         total_datasets: int = Field(default=0)
         total_sla_definitions: int = Field(default=0)
@@ -327,7 +328,7 @@ if FASTAPI_AVAILABLE:
         provenance_entries: int = Field(default=0)
         timestamp: str = Field(default="")
 
-    class ErrorResponse(BaseModel):
+    class ErrorResponse(GreenLangBase):
         """Error response model."""
         error: str = Field(default="")
         detail: str = Field(default="")

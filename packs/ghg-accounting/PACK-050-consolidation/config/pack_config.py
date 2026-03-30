@@ -46,36 +46,29 @@ from typing import Any, Dict, List, Optional, Union
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ReportFormat
+
 logger = logging.getLogger(__name__)
 
 PACK_BASE_DIR = Path(__file__).parent.parent
 CONFIG_DIR = Path(__file__).parent
 
-
 # =============================================================================
 # Helper Functions
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime (mockable for testing)."""
-    return datetime.now(timezone.utc)
-
 
 def _new_uuid() -> str:
     """Return new UUID4 string (mockable for testing)."""
     return str(uuid.uuid4())
 
-
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hash of a string for provenance tracking."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # Enums (18 total)
 # =============================================================================
-
 
 class EntityType(str, Enum):
     """Classification of legal entity type within the corporate group."""
@@ -88,7 +81,6 @@ class EntityType(str, Enum):
     FRANCHISE = "FRANCHISE"
     PARTNERSHIP = "PARTNERSHIP"
 
-
 class EntityLifecycle(str, Enum):
     """Lifecycle stage of a legal entity within the group structure."""
     ACTIVE = "ACTIVE"
@@ -98,20 +90,17 @@ class EntityLifecycle(str, Enum):
     MERGED = "MERGED"
     LIQUIDATED = "LIQUIDATED"
 
-
 class ConsolidationApproach(str, Enum):
     """GHG Protocol organisational boundary consolidation approach (Chapter 3)."""
     EQUITY_SHARE = "EQUITY_SHARE"
     OPERATIONAL_CONTROL = "OPERATIONAL_CONTROL"
     FINANCIAL_CONTROL = "FINANCIAL_CONTROL"
 
-
 class ControlType(str, Enum):
     """Type of control the parent has over an entity."""
     OPERATIONAL = "OPERATIONAL"
     FINANCIAL = "FINANCIAL"
     NO_CONTROL = "NO_CONTROL"
-
 
 class OwnershipType(str, Enum):
     """Ownership relationship between parent and entity."""
@@ -121,14 +110,12 @@ class OwnershipType(str, Enum):
     EQUAL_JV = "EQUAL_JV"
     ASSOCIATE = "ASSOCIATE"
 
-
 class EliminationType(str, Enum):
     """Type of inter-company emission transfer to eliminate."""
     ENERGY_TRANSFER = "ENERGY_TRANSFER"
     WASTE_TRANSFER = "WASTE_TRANSFER"
     PRODUCT_TRANSFER = "PRODUCT_TRANSFER"
     SERVICE_TRANSFER = "SERVICE_TRANSFER"
-
 
 class AdjustmentType(str, Enum):
     """Type of adjustment or restatement applied to consolidated inventory."""
@@ -138,7 +125,6 @@ class AdjustmentType(str, Enum):
     TIMING = "TIMING"
     LATE_SUBMISSION = "LATE_SUBMISSION"
 
-
 class MnAEventType(str, Enum):
     """Type of merger, acquisition, or structural change event."""
     ACQUISITION = "ACQUISITION"
@@ -147,7 +133,6 @@ class MnAEventType(str, Enum):
     DEMERGER = "DEMERGER"
     JV_FORMATION = "JV_FORMATION"
     JV_DISSOLUTION = "JV_DISSOLUTION"
-
 
 class ReportingFramework(str, Enum):
     """Target regulatory or voluntary reporting framework."""
@@ -161,7 +146,6 @@ class ReportingFramework(str, Enum):
     UK_SECR = "UK_SECR"
     NGER = "NGER"
 
-
 class DataQualityTier(str, Enum):
     """Data quality tier for entity-level emission data."""
     VERIFIED = "VERIFIED"
@@ -170,14 +154,12 @@ class DataQualityTier(str, Enum):
     ESTIMATED = "ESTIMATED"
     EXTRAPOLATED = "EXTRAPOLATED"
 
-
 class CompletionStatus(str, Enum):
     """Completion status of entity-level data submission."""
     COMPLETE = "COMPLETE"
     PARTIAL = "PARTIAL"
     MISSING = "MISSING"
     OVERDUE = "OVERDUE"
-
 
 class ApprovalStatus(str, Enum):
     """Approval status for consolidated results."""
@@ -186,7 +168,6 @@ class ApprovalStatus(str, Enum):
     UNDER_REVIEW = "UNDER_REVIEW"
     APPROVED = "APPROVED"
     REJECTED = "REJECTED"
-
 
 class ReportType(str, Enum):
     """Type of consolidation report output."""
@@ -201,17 +182,6 @@ class ReportType(str, Enum):
     REGULATORY = "REGULATORY"
     DASHBOARD = "DASHBOARD"
 
-
-class ExportFormat(str, Enum):
-    """Supported report output formats."""
-    MARKDOWN = "MARKDOWN"
-    HTML = "HTML"
-    JSON = "JSON"
-    CSV = "CSV"
-    PDF = "PDF"
-    XLSX = "XLSX"
-
-
 class AlertType(str, Enum):
     """Type of consolidation management alert."""
     DEADLINE = "DEADLINE"
@@ -221,14 +191,12 @@ class AlertType(str, Enum):
     MNA_EVENT = "MNA_EVENT"
     APPROVAL = "APPROVAL"
 
-
 class ScopeCategory(str, Enum):
     """GHG emission scope category for consolidation."""
     SCOPE_1 = "SCOPE_1"
     SCOPE_2_LOCATION = "SCOPE_2_LOCATION"
     SCOPE_2_MARKET = "SCOPE_2_MARKET"
     SCOPE_3 = "SCOPE_3"
-
 
 class MaterialityThreshold(str, Enum):
     """Materiality threshold for boundary inclusion."""
@@ -237,18 +205,15 @@ class MaterialityThreshold(str, Enum):
     FIVE_PCT = "FIVE_PCT"
     TEN_PCT = "TEN_PCT"
 
-
 class ProRataMethod(str, Enum):
     """Method for pro-rata apportionment in M&A events."""
     CALENDAR_DAYS = "CALENDAR_DAYS"
     REPORTING_MONTHS = "REPORTING_MONTHS"
     FINANCIAL_QUARTERS = "FINANCIAL_QUARTERS"
 
-
 # =============================================================================
 # Reference Data Constants
 # =============================================================================
-
 
 DEFAULT_ENTITY_TYPES: Dict[str, Dict[str, Any]] = {
     "SUBSIDIARY": {
@@ -301,7 +266,6 @@ DEFAULT_ENTITY_TYPES: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 DEFAULT_OWNERSHIP_THRESHOLDS: Dict[str, Dict[str, Any]] = {
     "WHOLLY_OWNED": {
         "min_pct": Decimal("100.0"),
@@ -339,7 +303,6 @@ DEFAULT_OWNERSHIP_THRESHOLDS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 DEFAULT_ELIMINATION_RULES: Dict[str, Dict[str, Any]] = {
     "ENERGY_TRANSFER": {
         "description": "Intra-group electricity, steam, heat, or cooling transfers",
@@ -366,7 +329,6 @@ DEFAULT_ELIMINATION_RULES: Dict[str, Dict[str, Any]] = {
         "documentation_required": "Service level agreements, cost allocations",
     },
 }
-
 
 DEFAULT_MNA_RULES: Dict[str, Dict[str, Any]] = {
     "ACQUISITION": {
@@ -406,7 +368,6 @@ DEFAULT_MNA_RULES: Dict[str, Dict[str, Any]] = {
         "ghg_protocol_ref": "Chapter 3: Setting Organisational Boundaries",
     },
 }
-
 
 DEFAULT_FRAMEWORK_REQUIREMENTS: Dict[str, Dict[str, Any]] = {
     "CSRD_ESRS_E1": {
@@ -475,7 +436,6 @@ DEFAULT_FRAMEWORK_REQUIREMENTS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 AVAILABLE_PRESETS: Dict[str, str] = {
     "corporate_conglomerate": (
         "Large diversified conglomerate with 100+ entities, multi-tier ownership, "
@@ -511,11 +471,9 @@ AVAILABLE_PRESETS: Dict[str, str] = {
     ),
 }
 
-
 # =============================================================================
 # Sub-Config Models (16 Pydantic v2 models)
 # =============================================================================
-
 
 class EntityRegistryConfig(BaseModel):
     """Configuration for the entity registry and corporate structure management."""
@@ -568,7 +526,6 @@ class EntityRegistryConfig(BaseModel):
             raise ValueError("max_entities must be at least 1")
         return v
 
-
 class OwnershipConfig(BaseModel):
     """Configuration for ownership chain management and resolution."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -618,7 +575,6 @@ class OwnershipConfig(BaseModel):
                 f"effective_equity_method must be one of {allowed}, got '{v}'"
             )
         return v.upper()
-
 
 class BoundaryConfig(BaseModel):
     """Configuration for organisational boundary determination."""
@@ -671,7 +627,6 @@ class BoundaryConfig(BaseModel):
         description="Emission scopes included in the consolidation boundary",
     )
 
-
 class EquityShareConfig(BaseModel):
     """Configuration for equity share consolidation approach."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -701,7 +656,6 @@ class EquityShareConfig(BaseModel):
         False,
         description="Apply equity share proportionality to Scope 3 as well",
     )
-
 
 class ControlApproachConfig(BaseModel):
     """Configuration for operational and financial control consolidation."""
@@ -752,7 +706,6 @@ class ControlApproachConfig(BaseModel):
             )
         return v.upper()
 
-
 class EliminationConfig(BaseModel):
     """Configuration for inter-company emission elimination."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -791,7 +744,6 @@ class EliminationConfig(BaseModel):
         True,
         description="Validate that eliminations net to zero within consolidated boundary",
     )
-
 
 class MnAConfig(BaseModel):
     """Configuration for merger, acquisition, and structural change handling."""
@@ -838,7 +790,6 @@ class MnAConfig(BaseModel):
         description="Number of years to look back for historical M&A impact analysis",
     )
 
-
 class AdjustmentConfig(BaseModel):
     """Configuration for adjustment and restatement processing."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -879,7 +830,6 @@ class AdjustmentConfig(BaseModel):
         description="Maintain full history of all adjustments and restatements",
     )
 
-
 class GroupReportingConfig(BaseModel):
     """Configuration for consolidated group reporting."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -892,8 +842,8 @@ class GroupReportingConfig(BaseModel):
         ],
         description="Target reporting frameworks for consolidated output",
     )
-    default_format: ExportFormat = Field(
-        ExportFormat.HTML,
+    default_format: ReportFormat = Field(
+        ReportFormat.HTML,
         description="Default output format for consolidated reports",
     )
     include_entity_breakdown: bool = Field(
@@ -934,7 +884,6 @@ class GroupReportingConfig(BaseModel):
         description="Report branding configuration",
     )
 
-
 class AuditConfig(BaseModel):
     """Configuration for consolidation audit trail and assurance support."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -973,7 +922,6 @@ class AuditConfig(BaseModel):
         description="Score data quality per entity for consolidated assessment",
     )
 
-
 class SecurityConfig(BaseModel):
     """Configuration for access control and data protection."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -1003,7 +951,6 @@ class SecurityConfig(BaseModel):
         description="Allow data visibility across entity boundaries (for group admins only)",
     )
 
-
 class PerformanceConfig(BaseModel):
     """Configuration for computational performance tuning."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -1032,7 +979,6 @@ class PerformanceConfig(BaseModel):
         True,
         description="Cache resolved ownership chains to avoid recomputation",
     )
-
 
 class IntegrationConfig(BaseModel):
     """Configuration for integration with other GreenLang components."""
@@ -1073,7 +1019,6 @@ class IntegrationConfig(BaseModel):
         description="Enable direct ERP connector for entity financial data",
     )
 
-
 class AlertConfig(BaseModel):
     """Configuration for consolidation management alerting."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -1110,7 +1055,6 @@ class AlertConfig(BaseModel):
         description="Send immediate alert for M&A events regardless of quiet hours",
     )
 
-
 class MigrationConfig(BaseModel):
     """Configuration for database schema migration."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -1132,11 +1076,9 @@ class MigrationConfig(BaseModel):
         description="Last migration version for PACK-050",
     )
 
-
 # =============================================================================
 # Main Configuration Model
 # =============================================================================
-
 
 class ConsolidationPackConfig(BaseModel):
     """
@@ -1258,11 +1200,9 @@ class ConsolidationPackConfig(BaseModel):
                 )
         return self
 
-
 # =============================================================================
 # Pack Configuration Wrapper
 # =============================================================================
-
 
 class PackConfig(BaseModel):
     """
@@ -1445,11 +1385,9 @@ class PackConfig(BaseModel):
         """
         return [f.value for f in self.pack.reporting.reporting_frameworks]
 
-
 # =============================================================================
 # Utility Functions
 # =============================================================================
-
 
 def load_preset(preset_name: str, overrides: Optional[Dict[str, Any]] = None) -> PackConfig:
     """
@@ -1463,7 +1401,6 @@ def load_preset(preset_name: str, overrides: Optional[Dict[str, Any]] = None) ->
         Initialised PackConfig from the named preset.
     """
     return PackConfig.from_preset(preset_name, overrides)
-
 
 def validate_config(config: ConsolidationPackConfig) -> List[str]:
     """
@@ -1596,7 +1533,6 @@ def validate_config(config: ConsolidationPackConfig) -> List[str]:
 
     return warnings
 
-
 def get_default_config(
     approach: ConsolidationApproach = ConsolidationApproach.OPERATIONAL_CONTROL,
 ) -> ConsolidationPackConfig:
@@ -1611,7 +1547,6 @@ def get_default_config(
     """
     return ConsolidationPackConfig(consolidation_approach=approach)
 
-
 def list_available_presets() -> Dict[str, str]:
     """
     Return a copy of all available preset names and descriptions.
@@ -1620,7 +1555,6 @@ def list_available_presets() -> Dict[str, str]:
         Dict mapping preset name to human-readable description.
     """
     return AVAILABLE_PRESETS.copy()
-
 
 def get_entity_type_defaults(entity_type: str) -> Optional[Dict[str, Any]]:
     """
@@ -1634,7 +1568,6 @@ def get_entity_type_defaults(entity_type: str) -> Optional[Dict[str, Any]]:
     """
     return DEFAULT_ENTITY_TYPES.get(entity_type)
 
-
 def get_ownership_threshold(ownership_type: str) -> Optional[Dict[str, Any]]:
     """
     Return ownership classification thresholds.
@@ -1646,7 +1579,6 @@ def get_ownership_threshold(ownership_type: str) -> Optional[Dict[str, Any]]:
         Dict of threshold data, or None if not found.
     """
     return DEFAULT_OWNERSHIP_THRESHOLDS.get(ownership_type)
-
 
 def get_elimination_rules(elimination_type: str) -> Optional[Dict[str, Any]]:
     """
@@ -1660,7 +1592,6 @@ def get_elimination_rules(elimination_type: str) -> Optional[Dict[str, Any]]:
     """
     return DEFAULT_ELIMINATION_RULES.get(elimination_type)
 
-
 def get_mna_rules(event_type: str) -> Optional[Dict[str, Any]]:
     """
     Return M&A processing rules for an event type.
@@ -1672,7 +1603,6 @@ def get_mna_rules(event_type: str) -> Optional[Dict[str, Any]]:
         Dict of M&A rules, or None if not found.
     """
     return DEFAULT_MNA_RULES.get(event_type)
-
 
 def get_framework_requirements(framework: str) -> Optional[Dict[str, Any]]:
     """

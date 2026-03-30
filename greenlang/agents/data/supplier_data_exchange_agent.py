@@ -34,9 +34,10 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -84,7 +85,7 @@ class ValidationResult(str, Enum):
 # PYDANTIC MODELS
 # =============================================================================
 
-class SupplierInfo(BaseModel):
+class SupplierInfo(GreenLangBase):
     """Supplier information."""
     supplier_id: str = Field(...)
     supplier_name: str = Field(...)
@@ -96,7 +97,7 @@ class SupplierInfo(BaseModel):
     verified: bool = Field(default=False)
 
 
-class ProductInfo(BaseModel):
+class ProductInfo(GreenLangBase):
     """Product information."""
     product_id: str = Field(...)
     product_name: str = Field(...)
@@ -106,7 +107,7 @@ class ProductInfo(BaseModel):
     hs_code: Optional[str] = Field(None)  # Harmonized System code
 
 
-class PCFDataPoint(BaseModel):
+class PCFDataPoint(GreenLangBase):
     """Product Carbon Footprint data point."""
     pcf_id: str = Field(...)
     product_id: str = Field(...)
@@ -132,7 +133,7 @@ class PCFDataPoint(BaseModel):
     standard_used: PCFStandard = Field(...)
 
 
-class PCFSubmission(BaseModel):
+class PCFSubmission(GreenLangBase):
     """PCF submission from supplier."""
     submission_id: str = Field(...)
     supplier: SupplierInfo = Field(...)
@@ -145,7 +146,7 @@ class PCFSubmission(BaseModel):
     supersedes: Optional[str] = Field(None)
 
 
-class ValidationCheck(BaseModel):
+class ValidationCheck(GreenLangBase):
     """Validation check result."""
     check_name: str = Field(...)
     result: ValidationResult = Field(...)
@@ -153,7 +154,7 @@ class ValidationCheck(BaseModel):
     severity: str = Field(default="error")
 
 
-class SupplierMapping(BaseModel):
+class SupplierMapping(GreenLangBase):
     """Mapping from internal product to supplier PCF."""
     mapping_id: str = Field(...)
     internal_product_id: str = Field(...)
@@ -166,7 +167,7 @@ class SupplierMapping(BaseModel):
     quantity_factor: float = Field(default=1.0)
 
 
-class SupplierEmissions(BaseModel):
+class SupplierEmissions(GreenLangBase):
     """Calculated supplier emissions."""
     calculation_id: str = Field(...)
     supplier_id: str = Field(...)
@@ -182,7 +183,7 @@ class SupplierEmissions(BaseModel):
     provenance_hash: str = Field(...)
 
 
-class SupplierQueryInput(BaseModel):
+class SupplierQueryInput(GreenLangBase):
     """Input for supplier data operations."""
     operation: str = Field(...)  # submit, validate, query, map, calculate
     submission: Optional[PCFSubmission] = Field(None)
@@ -196,7 +197,7 @@ class SupplierQueryInput(BaseModel):
     tenant_id: Optional[str] = Field(None)
 
 
-class SupplierQueryOutput(BaseModel):
+class SupplierQueryOutput(GreenLangBase):
     """Output from supplier data operations."""
     operation: str = Field(...)
     submissions: List[PCFSubmission] = Field(default_factory=list)

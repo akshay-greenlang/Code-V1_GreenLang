@@ -90,7 +90,6 @@ EUDR_COMMODITIES: FrozenSet[str] = frozenset({
     "cattle", "cocoa", "coffee", "oil_palm", "rubber", "soya", "wood",
 })
 
-
 # ---------------------------------------------------------------------------
 # Reference price data (illustrative baselines per commodity as of Q1 2026)
 # ---------------------------------------------------------------------------
@@ -183,16 +182,9 @@ REFERENCE_PRICES: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _to_decimal(value: float | int | str | Decimal) -> Decimal:
     """Convert a numeric value to Decimal via string to avoid IEEE 754 artefacts."""
@@ -200,18 +192,15 @@ def _to_decimal(value: float | int | str | Decimal) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _clamp_risk(value: Decimal) -> Decimal:
     """Clamp a risk score to [0.00, 100.00] and apply precision."""
     clamped = max(_MIN_RISK, min(_MAX_RISK, value))
     return clamped.quantize(_PRECISION, rounding=ROUND_HALF_UP)
 
-
 def _compute_provenance_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
 
 def _validate_commodity_type(commodity_type: str) -> str:
     """Validate and normalize a commodity type string."""
@@ -224,7 +213,6 @@ def _validate_commodity_type(commodity_type: str) -> str:
             f"Must be one of: {sorted(EUDR_COMMODITIES)}"
         )
     return normalized
-
 
 def _decimal_sqrt(value: Decimal) -> Decimal:
     """Compute square root of a Decimal using Newton's method.
@@ -249,7 +237,6 @@ def _decimal_sqrt(value: Decimal) -> Decimal:
         float_seed = (float_seed + value / float_seed) / Decimal("2")
     return float_seed
 
-
 def _decimal_ln(value: Decimal) -> Decimal:
     """Compute natural logarithm of a Decimal.
 
@@ -265,7 +252,6 @@ def _decimal_ln(value: Decimal) -> Decimal:
     if value <= Decimal("0"):
         raise ValueError(f"Cannot compute ln of non-positive value: {value}")
     return _to_decimal(math.log(float(value)))
-
 
 # ---------------------------------------------------------------------------
 # Prometheus metrics (graceful fallback)
@@ -327,7 +313,6 @@ except ImportError:
         "prometheus_client not installed; price volatility engine metrics disabled"
     )
 
-
 def _record_analysis(commodity_type: str, operation: str) -> None:
     """Record a price analysis metric."""
     if _PROMETHEUS_AVAILABLE and _PVE_ANALYSES_TOTAL is not None:
@@ -335,12 +320,10 @@ def _record_analysis(commodity_type: str, operation: str) -> None:
             commodity_type=commodity_type, operation=operation,
         ).inc()
 
-
 def _observe_duration(operation: str, seconds: float) -> None:
     """Record an operation duration metric."""
     if _PROMETHEUS_AVAILABLE and _PVE_DURATION_SECONDS is not None:
         _PVE_DURATION_SECONDS.labels(operation=operation).observe(seconds)
-
 
 def _record_disruption(commodity_type: str, severity: str) -> None:
     """Record a market disruption detection metric."""
@@ -349,11 +332,9 @@ def _record_disruption(commodity_type: str, severity: str) -> None:
             commodity_type=commodity_type, severity=severity,
         ).inc()
 
-
 # ---------------------------------------------------------------------------
 # PriceVolatilityEngine
 # ---------------------------------------------------------------------------
-
 
 class PriceVolatilityEngine:
     """Commodity price tracking and volatility analysis engine.
@@ -442,7 +423,7 @@ class PriceVolatilityEngine:
             raise ValueError(f"No reference price data for commodity '{commodity}'")
 
         # Apply seasonal adjustment
-        current_month = _utcnow().month  # 1-12
+        current_month = utcnow().month  # 1-12
         seasonal_pattern = ref_data.get("seasonal_pattern", [Decimal("1.00")] * 12)
         seasonal_adj = seasonal_pattern[current_month - 1]
 
@@ -478,7 +459,7 @@ class PriceVolatilityEngine:
             },
             "seasonal_adjustment": seasonal_adj,
             "source": "greenlang_reference_data",
-            "as_of": _utcnow().isoformat(),
+            "as_of": utcnow().isoformat(),
             "provenance_hash": provenance_hash,
         }
 
@@ -588,7 +569,7 @@ class PriceVolatilityEngine:
         ref_vol = ref_data.get("annual_volatility_pct", Decimal("20.00"))
 
         # Get price history for window
-        end_dt = _utcnow().date()
+        end_dt = utcnow().date()
         start_dt = end_dt - timedelta(days=window_days)
         history = self.get_price_history(
             commodity, start_dt.isoformat(), end_dt.isoformat(),
@@ -614,7 +595,7 @@ class PriceVolatilityEngine:
                     ref_vol, ref_vol,
                 ),
                 "provenance_hash": _compute_provenance_hash(payload),
-                "as_of": _utcnow().isoformat(),
+                "as_of": utcnow().isoformat(),
             }
 
         # Calculate log returns
@@ -662,7 +643,7 @@ class PriceVolatilityEngine:
             "reference_volatility": ref_vol,
             "volatility_regime": regime,
             "provenance_hash": provenance_hash,
-            "as_of": _utcnow().isoformat(),
+            "as_of": utcnow().isoformat(),
         }
 
     # ------------------------------------------------------------------
@@ -677,6 +658,8 @@ class PriceVolatilityEngine:
 
         In absence of options market data, estimates implied volatility
         from recent price behavior with a forward-looking adjustment
+
+from greenlang.schemas import utcnow
         based on seasonal patterns.
 
         Args:
@@ -697,7 +680,7 @@ class PriceVolatilityEngine:
         # Implied vol = weighted blend of short + medium + seasonal adjustment
         ref_data = REFERENCE_PRICES.get(commodity, {})
         seasonal = ref_data.get("seasonal_pattern", [Decimal("1.00")] * 12)
-        current_month = _utcnow().month - 1
+        current_month = utcnow().month - 1
         next_month = (current_month + 1) % 12
 
         # Seasonal volatility adjustment
@@ -757,7 +740,7 @@ class PriceVolatilityEngine:
         z_threshold = threshold if threshold is not None else _DISRUPTION_Z_THRESHOLD
 
         # Get recent history
-        end_dt = _utcnow().date()
+        end_dt = utcnow().date()
         start_dt = end_dt - timedelta(days=90)
         history = self.get_price_history(
             commodity, start_dt.isoformat(), end_dt.isoformat(),
@@ -842,7 +825,7 @@ class PriceVolatilityEngine:
             "std_change": (std_return * Decimal("100")).quantize(_PRECISION, rounding=ROUND_HALF_UP),
             "description": description,
             "provenance_hash": provenance_hash,
-            "as_of": _utcnow().isoformat(),
+            "as_of": utcnow().isoformat(),
         }
 
     # ------------------------------------------------------------------
@@ -971,7 +954,7 @@ class PriceVolatilityEngine:
             )
 
         # Get historical data
-        end_dt = _utcnow().date()
+        end_dt = utcnow().date()
         start_dt = end_dt - timedelta(days=365)
         history = self.get_price_history(
             commodity, start_dt.isoformat(), end_dt.isoformat(),
@@ -1051,7 +1034,7 @@ class PriceVolatilityEngine:
             "alpha": Decimal("0.30"),
             "data_points": len(history) if history else 0,
             "provenance_hash": provenance_hash,
-            "as_of": _utcnow().isoformat(),
+            "as_of": utcnow().isoformat(),
         }
 
     # ------------------------------------------------------------------
@@ -1086,7 +1069,7 @@ class PriceVolatilityEngine:
         if a == b:
             return Decimal("1.00")
 
-        end_dt = _utcnow().date()
+        end_dt = utcnow().date()
         start_dt = end_dt - timedelta(days=window_days)
 
         history_a = self.get_price_history(a, start_dt.isoformat(), end_dt.isoformat())
@@ -1170,7 +1153,7 @@ class PriceVolatilityEngine:
             "disruption_severity": disruption.get("severity", "NONE"),
             "price_risk_score": price_risk,
             "seasonal_adjustment": current.get("seasonal_adjustment", Decimal("1.00")),
-            "as_of": _utcnow().isoformat(),
+            "as_of": utcnow().isoformat(),
         }
 
     # ------------------------------------------------------------------
@@ -1218,7 +1201,7 @@ class PriceVolatilityEngine:
         range_high = ref_data.get("typical_range_high", ref_price * Decimal("1.30"))
 
         # Get historical prices for MAD calculation
-        end_dt = _utcnow().date()
+        end_dt = utcnow().date()
         start_dt = end_dt - timedelta(days=180)
         history = self.get_price_history(
             commodity, start_dt.isoformat(), end_dt.isoformat(),
@@ -1285,7 +1268,7 @@ class PriceVolatilityEngine:
         return {
             "commodity_type": commodity,
             "tested_price": price,
-            "price_date": price_date or _utcnow().date().isoformat(),
+            "price_date": price_date or utcnow().date().isoformat(),
             "is_anomaly": is_anomaly,
             "z_score": modified_z,
             "deviation_pct": deviation_pct,
@@ -1294,7 +1277,7 @@ class PriceVolatilityEngine:
             "typical_range": {"low": range_low, "high": range_high},
             "severity": severity,
             "provenance_hash": provenance_hash,
-            "as_of": _utcnow().isoformat(),
+            "as_of": utcnow().isoformat(),
         }
 
     # ------------------------------------------------------------------
@@ -1478,7 +1461,7 @@ class PriceVolatilityEngine:
             "std_change": Decimal("0.00"),
             "description": f"Insufficient price data for {commodity} disruption analysis.",
             "provenance_hash": _compute_provenance_hash(payload),
-            "as_of": _utcnow().isoformat(),
+            "as_of": utcnow().isoformat(),
         }
 
     def _empty_volatility_result(
@@ -1503,7 +1486,7 @@ class PriceVolatilityEngine:
             "reference_volatility": ref_vol,
             "volatility_regime": "NORMAL",
             "provenance_hash": _compute_provenance_hash(payload),
-            "as_of": _utcnow().isoformat(),
+            "as_of": utcnow().isoformat(),
         }
 
     # ------------------------------------------------------------------
@@ -1557,7 +1540,6 @@ class PriceVolatilityEngine:
             f"commodities_with_history={commodities}, "
             f"version={_MODULE_VERSION})"
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

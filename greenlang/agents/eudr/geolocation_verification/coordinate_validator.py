@@ -42,8 +42,10 @@ import time
 from dataclasses import field
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from .models import (
+
     CoordinateValidationResult,
     CoordinateIssue,
     CoordinateIssueType,
@@ -62,17 +64,10 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -92,7 +87,6 @@ DEFAULT_CLUSTER_ANOMALY_THRESHOLD_M: float = 1_000.0
 
 #: Minimum number of points to detect cluster anomaly.
 MIN_CLUSTER_SIZE: int = 3
-
 
 # ---------------------------------------------------------------------------
 # Country Bounding Box Database
@@ -200,7 +194,6 @@ COUNTRY_BOUNDING_BOXES: Dict[str, Tuple[float, float, float, float]] = {
     "NZ": (-47.29, -34.39, 166.43, 178.57),     # New Zealand
 }
 
-
 # ---------------------------------------------------------------------------
 # Commodity Elevation Ranges (metres above sea level)
 # ---------------------------------------------------------------------------
@@ -228,7 +221,6 @@ COMMODITY_ELEVATION_RANGES: Dict[str, Tuple[float, float]] = {
     "soybean_meal": (0.0, 2_000.0),
     "tyres": (0.0, 1_200.0),
 }
-
 
 # ---------------------------------------------------------------------------
 # Simplified Elevation Lookup
@@ -268,7 +260,6 @@ _ELEVATION_GRID: Dict[Tuple[int, int], float] = {
     (-5, 140): 100.0,
 }
 
-
 # ---------------------------------------------------------------------------
 # Simplified Ocean Polygons (bounding boxes of major ocean areas)
 # ---------------------------------------------------------------------------
@@ -288,11 +279,9 @@ _MAJOR_OCEAN_REGIONS: List[Tuple[float, float, float, float]] = [
     (80.0, 90.0, -180.0, 180.0),
 ]
 
-
 # ---------------------------------------------------------------------------
 # CoordinateValidator
 # ---------------------------------------------------------------------------
-
 
 class CoordinateValidator:
     """Production-grade coordinate validation engine for EUDR compliance.
@@ -1010,7 +999,6 @@ class CoordinateValidator:
             "issue_codes": sorted([i.code for i in result.issues]),
         }
         return _compute_hash(hash_data)
-
 
 # ---------------------------------------------------------------------------
 # Module Exports

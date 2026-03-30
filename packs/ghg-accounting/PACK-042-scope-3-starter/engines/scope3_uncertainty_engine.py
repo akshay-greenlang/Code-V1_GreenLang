@@ -80,6 +80,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -94,21 +95,13 @@ except ImportError:
     _HAS_NUMPY = False
     logger.warning("numpy not available; Monte Carlo simulation will be disabled.")
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -133,7 +126,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -142,7 +134,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -154,31 +145,25 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round2(value: Any) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
-
 def _round3(value: Any) -> float:
     """Round to 3 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
-
 
 def _round4(value: Any) -> float:
     """Round to 4 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class Scope3Category(str, Enum):
     """GHG Protocol Scope 3 categories (1-15)."""
@@ -198,7 +183,6 @@ class Scope3Category(str, Enum):
     CAT_14 = "cat_14_franchises"
     CAT_15 = "cat_15_investments"
 
-
 class MethodologyTier(str, Enum):
     """Methodology tier affecting uncertainty profile.
 
@@ -209,7 +193,6 @@ class MethodologyTier(str, Enum):
     SPEND_BASED = "spend_based"
     AVERAGE_DATA = "average_data"
     SUPPLIER_SPECIFIC = "supplier_specific"
-
 
 class DistributionType(str, Enum):
     """Statistical distribution for uncertainty sampling.
@@ -224,11 +207,9 @@ class DistributionType(str, Enum):
     UNIFORM = "uniform"
     TRIANGULAR = "triangular"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # Default uncertainty ranges (half-width of 95% CI as %) by methodology tier.
 # Source: GHG Protocol Scope 3 Calculation Guidance, Table 7.4.
@@ -293,11 +274,9 @@ CATEGORY_NAMES: Dict[str, str] = {
 }
 """Human-readable names for each Scope 3 category."""
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class CategoryUncertaintyInput(BaseModel):
     """Uncertainty input for a single Scope 3 category.
@@ -345,7 +324,6 @@ class CategoryUncertaintyInput(BaseModel):
             return None
         return _decimal(v)
 
-
 class CorrelationInput(BaseModel):
     """Custom inter-category correlation coefficient.
 
@@ -357,7 +335,6 @@ class CorrelationInput(BaseModel):
     category_a: str = Field(..., min_length=1, description="Category A")
     category_b: str = Field(..., min_length=1, description="Category B")
     rho: float = Field(..., ge=-1.0, le=1.0, description="Correlation coefficient")
-
 
 class MonteCarloConfig(BaseModel):
     """Configuration for Monte Carlo simulation.
@@ -383,11 +360,9 @@ class MonteCarloConfig(BaseModel):
         default=1000, ge=100, description="Check every N iterations"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class AnalyticalResult(BaseModel):
     """Analytical (IPCC Approach 1) uncertainty result.
@@ -411,7 +386,6 @@ class AnalyticalResult(BaseModel):
         default="IPCC Approach 1 (error propagation via quadrature)",
         description="Method"
     )
-
 
 class MonteCarloResult(BaseModel):
     """Monte Carlo simulation (IPCC Approach 2) uncertainty result.
@@ -455,7 +429,6 @@ class MonteCarloResult(BaseModel):
     )
     seed_used: int = Field(default=42, description="Random seed")
 
-
 class SensitivityItem(BaseModel):
     """Single item in a sensitivity analysis (tornado chart data).
 
@@ -481,7 +454,6 @@ class SensitivityItem(BaseModel):
     low_scenario_tco2e: float = Field(default=0.0, description="Low scenario total")
     high_scenario_tco2e: float = Field(default=0.0, description="High scenario total")
     swing_tco2e: float = Field(default=0.0, description="Swing (high - low)")
-
 
 class TierUpgradeImpact(BaseModel):
     """Impact of upgrading methodology tier for a category.
@@ -515,7 +487,6 @@ class TierUpgradeImpact(BaseModel):
     )
     effort_estimate: str = Field(default="", description="Effort estimate")
 
-
 class UncertaintyResult(BaseModel):
     """Complete Scope 3 uncertainty analysis result with provenance.
 
@@ -536,7 +507,7 @@ class UncertaintyResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid, description="Result ID")
     engine_version: str = Field(default=_MODULE_VERSION, description="Version")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Timestamp")
     processing_time_ms: float = Field(default=0.0, description="Processing time")
     total_emissions_tco2e: float = Field(default=0.0, description="Total emissions")
     category_count: int = Field(default=0, description="Categories analysed")
@@ -560,11 +531,9 @@ class UncertaintyResult(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class Scope3UncertaintyEngine:
     """Scope 3 uncertainty quantification engine.
@@ -902,6 +871,7 @@ class Scope3UncertaintyEngine:
                     high = e_j * (1 + u_j)
                     # Map normal to uniform via CDF.
                     from scipy.stats import norm as _norm_dist
+
                     u_vals = _norm_dist.cdf(z_correlated[:, j])
                     sampled = low + (high - low) * u_vals
                 else:
@@ -1350,7 +1320,6 @@ class Scope3UncertaintyEngine:
                 matrix[cat_b][cat_a] = rho_val
 
         return matrix
-
 
 # ---------------------------------------------------------------------------
 # Pydantic v2 model_rebuild for forward-reference resolution

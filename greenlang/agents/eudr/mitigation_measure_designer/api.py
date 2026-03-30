@@ -39,9 +39,10 @@ from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException, Query
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.eudr.mitigation_measure_designer.setup import get_service
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +52,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-class DesignStrategyRequest(BaseModel):
+class DesignStrategyRequest(GreenLangBase):
     """Request body for designing a mitigation strategy."""
 
     operator_id: str = Field(
@@ -87,7 +88,7 @@ class DesignStrategyRequest(BaseModel):
     )
 
 
-class CompleteMeasureRequest(BaseModel):
+class CompleteMeasureRequest(GreenLangBase):
     """Request body for completing a measure."""
 
     actual_reduction: Optional[str] = Field(
@@ -99,7 +100,7 @@ class CompleteMeasureRequest(BaseModel):
     )
 
 
-class CancelMeasureRequest(BaseModel):
+class CancelMeasureRequest(GreenLangBase):
     """Request body for cancelling a measure."""
 
     reason: str = Field(
@@ -109,7 +110,7 @@ class CancelMeasureRequest(BaseModel):
     )
 
 
-class ApproveMeasureRequest(BaseModel):
+class ApproveMeasureRequest(GreenLangBase):
     """Request body for approving a measure."""
 
     approved_by: str = Field(
@@ -117,7 +118,7 @@ class ApproveMeasureRequest(BaseModel):
     )
 
 
-class AddEvidenceRequest(BaseModel):
+class AddEvidenceRequest(GreenLangBase):
     """Request body for adding evidence to a measure."""
 
     evidence_type: str = Field(
@@ -134,7 +135,7 @@ class AddEvidenceRequest(BaseModel):
     )
 
 
-class InitiateWorkflowRequest(BaseModel):
+class InitiateWorkflowRequest(GreenLangBase):
     """Request body for initiating a mitigation workflow."""
 
     operator_id: str = Field(
@@ -158,7 +159,7 @@ class InitiateWorkflowRequest(BaseModel):
     )
 
 
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     """Standard error response body."""
 
     detail: str = Field(..., description="Error description")

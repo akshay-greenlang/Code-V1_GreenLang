@@ -39,6 +39,7 @@ from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas.enums import ReportFormat
 
 logger = logging.getLogger(__name__)
 
@@ -85,14 +86,6 @@ class DataSourceType(str, Enum):
     MANUAL_UPLOAD = "manual_upload"
     SUPPLIER_PORTAL = "supplier_portal"
     API_INTEGRATION = "api_integration"
-
-
-class ReportFormat(str, Enum):
-    """Supported report output formats."""
-    PDF = "pdf"
-    EXCEL = "excel"
-    XML = "xml"
-    JSON = "json"
 
 
 class ReportLanguage(str, Enum):

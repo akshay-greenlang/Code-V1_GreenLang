@@ -41,35 +41,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.utcnow()
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hash of a string."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -80,7 +72,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -90,7 +81,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class IPMVPOption(str, Enum):
     """IPMVP measurement and verification options."""
 
@@ -98,7 +88,6 @@ class IPMVPOption(str, Enum):
     OPTION_B = "B"
     OPTION_C = "C"
     OPTION_D = "D"
-
 
 class BoundaryType(str, Enum):
     """Measurement boundary types."""
@@ -108,14 +97,12 @@ class BoundaryType(str, Enum):
     SUB_METERED = "sub_metered"
     CALIBRATED_SIMULATION = "calibrated_simulation"
 
-
 class ECMComplexity(str, Enum):
     """Energy conservation measure complexity."""
 
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
-
 
 # =============================================================================
 # REFERENCE DATA (Zero-Hallucination)
@@ -298,11 +285,9 @@ METERING_REQUIREMENTS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -315,7 +300,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list, description="Warnings raised")
     errors: List[str] = Field(default_factory=list, description="Errors encountered")
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
-
 
 class ECMDefinition(BaseModel):
     """Energy Conservation Measure definition."""
@@ -343,7 +327,6 @@ class ECMDefinition(BaseModel):
     )
     complexity: str = Field(default="low", description="ECM complexity: low/medium/high")
     preferred_option: str = Field(default="", description="Preferred IPMVP option if any")
-
 
 class MVPlanInput(BaseModel):
     """Input data model for MVPlanWorkflow."""
@@ -387,7 +370,6 @@ class MVPlanInput(BaseModel):
             raise ValueError("project_name must not be blank")
         return stripped
 
-
 class MVPlanResult(BaseModel):
     """Complete result from M&V plan workflow."""
 
@@ -415,11 +397,9 @@ class MVPlanResult(BaseModel):
     calculated_at: str = Field(default="", description="ISO 8601 timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 of complete result")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class MVPlanWorkflow:
     """
@@ -476,7 +456,7 @@ class MVPlanWorkflow:
             ValueError: If input validation fails.
         """
         t_start = time.perf_counter()
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting M&V plan workflow %s for project=%s ecms=%d",
             self.plan_id, input_data.project_name, len(input_data.ecm_list),
@@ -587,7 +567,7 @@ class MVPlanWorkflow:
                 "energy_streams": ecm.energy_streams,
                 "interactive_effects": ecm.interactive_effects,
                 "review_status": "reviewed",
-                "reviewed_at": _utcnow().isoformat() + "Z",
+                "reviewed_at": utcnow().isoformat() + "Z",
             }
 
             # Validate savings estimates
@@ -651,7 +631,7 @@ class MVPlanWorkflow:
                 "metering_scope": option_spec["metering_scope"],
                 "metering_duration": option_spec["metering_duration"],
                 "data_requirements": option_spec["data_requirements"],
-                "assigned_at": _utcnow().isoformat() + "Z",
+                "assigned_at": utcnow().isoformat() + "Z",
             }
             assignments.append(assignment)
             option_counts[selected_option] = option_counts.get(selected_option, 0) + 1
@@ -715,7 +695,7 @@ class MVPlanWorkflow:
                 "measurement_points": self._determine_measurement_points(
                     energy_streams, boundary_key,
                 ),
-                "defined_at": _utcnow().isoformat() + "Z",
+                "defined_at": utcnow().isoformat() + "Z",
             }
             boundaries.append(boundary)
 

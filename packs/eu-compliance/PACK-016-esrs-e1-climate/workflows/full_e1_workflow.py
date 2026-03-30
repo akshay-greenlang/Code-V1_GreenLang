@@ -33,33 +33,25 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class WorkflowPhase(str, Enum):
     """Phases of the full E1 workflow."""
@@ -74,7 +66,6 @@ class WorkflowPhase(str, Enum):
     RISK_ASSESSMENT = "risk_assessment"
     REPORT_ASSEMBLY = "report_assembly"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "pending"
@@ -82,7 +73,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class PhaseStatus(str, Enum):
     """Status of a single phase."""
@@ -92,7 +82,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class E1DisclosureStatus(str, Enum):
     """Status of individual E1 disclosure requirement."""
     COMPLETE = "complete"
@@ -101,11 +90,9 @@ class E1DisclosureStatus(str, Enum):
     NOT_MATERIAL = "not_material"
     SKIPPED = "skipped"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -117,7 +104,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class DisclosureItem(BaseModel):
     """Status of an individual E1 disclosure requirement."""
     disclosure_id: str = Field(..., description="E1-X identifier")
@@ -127,7 +113,6 @@ class DisclosureItem(BaseModel):
     data_points_required: int = Field(default=0, ge=0)
     data_points_completed: int = Field(default=0, ge=0)
     warnings: List[str] = Field(default_factory=list)
-
 
 class FullE1Input(BaseModel):
     """Input data model for FullE1Workflow."""
@@ -144,7 +129,6 @@ class FullE1Input(BaseModel):
     pricing_data: Dict[str, Any] = Field(default_factory=dict)
     risk_data: Dict[str, Any] = Field(default_factory=dict)
     config: Dict[str, Any] = Field(default_factory=dict)
-
 
 class FullE1Result(BaseModel):
     """Complete result from full E1 workflow."""
@@ -168,7 +152,6 @@ class FullE1Result(BaseModel):
     e1_is_material: bool = Field(default=True)
     reporting_year: int = Field(default=2025)
     provenance_hash: str = Field(default="")
-
 
 # =============================================================================
 # E1 DISCLOSURE REQUIREMENTS
@@ -213,11 +196,9 @@ E1_DISCLOSURES: List[Dict[str, Any]] = [
     },
 ]
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class FullE1Workflow:
     """
@@ -294,7 +275,7 @@ class FullE1Workflow:
         if input_data is None:
             input_data = FullE1Input(config=config or {})
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting full E1 workflow %s", self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = WorkflowStatus.IN_PROGRESS
@@ -327,7 +308,7 @@ class FullE1Workflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         completed_count = sum(1 for p in phase_results if p.status == PhaseStatus.COMPLETED)
         complete = sum(1 for d in self._disclosures if d.status == E1DisclosureStatus.COMPLETE)
         partial = sum(1 for d in self._disclosures if d.status == E1DisclosureStatus.PARTIAL)
@@ -372,7 +353,7 @@ class FullE1Workflow:
         self, input_data: FullE1Input,
     ) -> PhaseResult:
         """Verify E1 Climate Change is material for this entity."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -394,7 +375,7 @@ class FullE1Workflow:
                     data_points_completed=0,
                 ))
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 1 MaterialityCheck: E1 material=%s", input_data.e1_is_material)
         return PhaseResult(
             phase_name=WorkflowPhase.MATERIALITY_CHECK.value, status=PhaseStatus.COMPLETED,
@@ -410,7 +391,7 @@ class FullE1Workflow:
         self, input_data: FullE1Input,
     ) -> PhaseResult:
         """Process GHG inventory data for E1-6."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -450,7 +431,7 @@ class FullE1Workflow:
         if not has_scope_2:
             warnings.append("Scope 2 emissions data missing")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 2 GHGInventory: %.0f tCO2e, %.1f%% complete", total_tco2e, completeness)
         return PhaseResult(
             phase_name=WorkflowPhase.GHG_INVENTORY.value, status=PhaseStatus.COMPLETED,
@@ -466,7 +447,7 @@ class FullE1Workflow:
         self, input_data: FullE1Input,
     ) -> PhaseResult:
         """Process energy data for E1-5."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -487,7 +468,7 @@ class FullE1Workflow:
         outputs["energy_total_mwh"] = total_mwh
         outputs["energy_completeness_pct"] = completeness
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 3 EnergyAssessment: %.0f MWh, %.1f%% complete", total_mwh, completeness)
         return PhaseResult(
             phase_name=WorkflowPhase.ENERGY_ASSESSMENT.value, status=PhaseStatus.COMPLETED,
@@ -503,7 +484,7 @@ class FullE1Workflow:
         self, input_data: FullE1Input,
     ) -> PhaseResult:
         """Process transition plan data for E1-1."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -527,7 +508,7 @@ class FullE1Workflow:
         if not has_plan:
             warnings.append("No transition plan data provided")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 4 TransitionPlan: has_plan=%s, %.1f%% complete", has_plan, completeness)
         return PhaseResult(
             phase_name=WorkflowPhase.TRANSITION_PLAN.value, status=PhaseStatus.COMPLETED,
@@ -543,7 +524,7 @@ class FullE1Workflow:
         self, input_data: FullE1Input,
     ) -> PhaseResult:
         """Process target data for E1-4."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -568,7 +549,7 @@ class FullE1Workflow:
         if not targets:
             warnings.append("No climate targets defined")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 5 TargetReview: %d targets, %d on track", len(targets), on_track)
         return PhaseResult(
             phase_name=WorkflowPhase.TARGET_REVIEW.value, status=PhaseStatus.COMPLETED,
@@ -584,7 +565,7 @@ class FullE1Workflow:
         self, input_data: FullE1Input,
     ) -> PhaseResult:
         """Process actions/policies data for E1-2 and E1-3."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -603,7 +584,7 @@ class FullE1Workflow:
         outputs["actions_count"] = len(actions)
         outputs["action_completeness_pct"] = round((completed_points / 10 * 100), 1)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 6 ActionTracking: %d policies, %d actions", len(policies), len(actions))
         return PhaseResult(
             phase_name=WorkflowPhase.ACTION_TRACKING.value, status=PhaseStatus.COMPLETED,
@@ -619,7 +600,7 @@ class FullE1Workflow:
         self, input_data: FullE1Input,
     ) -> PhaseResult:
         """Process carbon credit data for E1-7."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -635,7 +616,7 @@ class FullE1Workflow:
         outputs["credits_count"] = len(credits)
         outputs["credit_completeness_pct"] = round((completed_points / 6 * 100), 1)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 7 CreditReview: %d credits", len(credits))
         return PhaseResult(
             phase_name=WorkflowPhase.CREDIT_REVIEW.value, status=PhaseStatus.COMPLETED,
@@ -651,7 +632,7 @@ class FullE1Workflow:
         self, input_data: FullE1Input,
     ) -> PhaseResult:
         """Process carbon pricing data for E1-8."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -667,7 +648,7 @@ class FullE1Workflow:
         outputs["mechanisms_count"] = len(mechanisms)
         outputs["pricing_completeness_pct"] = round((completed_points / 6 * 100), 1)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 8 PricingDisclosure: %d mechanisms", len(mechanisms))
         return PhaseResult(
             phase_name=WorkflowPhase.PRICING_DISCLOSURE.value, status=PhaseStatus.COMPLETED,
@@ -683,7 +664,7 @@ class FullE1Workflow:
         self, input_data: FullE1Input,
     ) -> PhaseResult:
         """Process climate risk data for E1-9."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -703,7 +684,7 @@ class FullE1Workflow:
         outputs["high_risk_count"] = high_count
         outputs["risk_completeness_pct"] = round((completed_points / 12 * 100), 1)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 9 RiskAssessment: %d risks, %d high", len(risks), high_count)
         return PhaseResult(
             phase_name=WorkflowPhase.RISK_ASSESSMENT.value, status=PhaseStatus.COMPLETED,
@@ -719,7 +700,7 @@ class FullE1Workflow:
         self, input_data: FullE1Input,
     ) -> PhaseResult:
         """Assemble complete E1 disclosure from all sub-workflow results."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._disclosures = []
@@ -777,7 +758,7 @@ class FullE1Workflow:
                 f"{partial} partial, {missing} missing"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 10 ReportAssembly: %d complete, %d partial, %d missing",
             complete, partial, missing,

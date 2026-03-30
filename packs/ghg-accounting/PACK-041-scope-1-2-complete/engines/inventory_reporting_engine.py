@@ -70,25 +70,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -106,7 +100,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -115,7 +108,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -127,21 +119,17 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round2(value: Any) -> float:
     """Round to 2 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
-
 def _round3(value: Any) -> float:
     """Round to 3 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
-
 
 def _fmt(value: Any) -> str:
     """Format a number with comma separators and 2dp."""
@@ -150,7 +138,6 @@ def _fmt(value: Any) -> str:
     except (ValueError, TypeError):
         return str(value)
 
-
 def _fmt_pct(value: Any) -> str:
     """Format a percentage value."""
     try:
@@ -158,11 +145,9 @@ def _fmt_pct(value: Any) -> str:
     except (ValueError, TypeError):
         return str(value)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ReportType(str, Enum):
     """Types of GHG inventory reports that can be generated.
@@ -189,7 +174,6 @@ class ReportType(str, Enum):
     COMPLIANCE_DASHBOARD = "compliance_dashboard"
     ESRS_E1_DISCLOSURE = "esrs_e1_disclosure"
 
-
 class OutputFormat(str, Enum):
     """Output format for generated reports.
 
@@ -203,11 +187,9 @@ class OutputFormat(str, Enum):
     JSON = "json"
     CSV = "csv"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class OrganizationInfo(BaseModel):
     """Organisation metadata for report headers.
@@ -235,7 +217,6 @@ class OrganizationInfo(BaseModel):
     )
     report_date: str = Field(default="", description="Report date")
 
-
 class ReportSection(BaseModel):
     """A single section of a generated report.
 
@@ -257,7 +238,6 @@ class ReportSection(BaseModel):
         default_factory=list, description="Chart data"
     )
     order: int = Field(default=0, description="Display order")
-
 
 class InventoryReportInput(BaseModel):
     """Input data for report generation.
@@ -319,7 +299,6 @@ class InventoryReportInput(BaseModel):
     )
     notes: List[str] = Field(default_factory=list, description="Notes")
 
-
 class ReportMetadata(BaseModel):
     """Metadata for a generated report.
 
@@ -336,14 +315,13 @@ class ReportMetadata(BaseModel):
     report_id: str = Field(default_factory=_new_uuid, description="Report ID")
     report_type: str = Field(default="", description="Report type")
     generated_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp"
+        default_factory=utcnow, description="Timestamp"
     )
     reporting_year: int = Field(default=0, description="Reporting year")
     organization_name: str = Field(default="", description="Org name")
     version: str = Field(default="1.0", description="Report version")
     engine_version: str = Field(default=_MODULE_VERSION, description="Engine version")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class InventoryReportOutput(BaseModel):
     """Complete report output.
@@ -369,11 +347,9 @@ class InventoryReportOutput(BaseModel):
     file_content: str = Field(default="", description="Rendered content")
     processing_time_ms: float = Field(default=0.0, description="Processing time")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class InventoryReportingEngine:
     """GHG inventory report generation engine.
@@ -522,7 +498,7 @@ class InventoryReportingEngine:
             f"**Reporting Year:** {org.reporting_year}",
             f"**Base Year:** {org.base_year}",
             f"**Consolidation Approach:** {org.consolidation_approach}",
-            f"**Report Date:** {org.report_date or _utcnow().strftime('%Y-%m-%d')}",
+            f"**Report Date:** {org.report_date or utcnow().strftime('%Y-%m-%d')}",
             f"**Prepared By:** {org.report_preparer}",
             f"",
             f"---",
@@ -711,7 +687,7 @@ class InventoryReportingEngine:
             f"---",
             f"",
             f"*Generated by GreenLang PACK-041 InventoryReportingEngine "
-            f"v{_MODULE_VERSION} on {_utcnow().strftime('%Y-%m-%d %H:%M UTC')}.*",
+            f"v{_MODULE_VERSION} on {utcnow().strftime('%Y-%m-%d %H:%M UTC')}.*",
         ])
 
         return "\n".join(lines)
@@ -856,7 +832,7 @@ class InventoryReportingEngine:
             f"**Organisation:** {org.name}",
             f"**Prepared for:** Third-Party Verification Body",
             f"**Standard:** ISAE 3410 / ISO 14064-3",
-            f"**Date:** {_utcnow().strftime('%Y-%m-%d')}",
+            f"**Date:** {utcnow().strftime('%Y-%m-%d')}",
             f"",
             f"---",
             f"",
@@ -919,7 +895,7 @@ class InventoryReportingEngine:
             f"## 8. Provenance Hashes",
             f"",
             f"Engine version: {_MODULE_VERSION}",
-            f"Report generated: {_utcnow().strftime('%Y-%m-%d %H:%M UTC')}",
+            f"Report generated: {utcnow().strftime('%Y-%m-%d %H:%M UTC')}",
             f"",
             f"---",
             f"*Verification package generated by GreenLang PACK-041 v{_MODULE_VERSION}.*",
@@ -1512,7 +1488,6 @@ class InventoryReportingEngine:
             lines.append(f"Facility,{fac},{val},tCO2e")
 
         return "\n".join(lines)
-
 
 # ---------------------------------------------------------------------------
 # Pydantic v2 model_rebuild for forward-reference resolution

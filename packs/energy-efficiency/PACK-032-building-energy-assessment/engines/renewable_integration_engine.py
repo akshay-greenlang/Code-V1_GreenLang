@@ -52,25 +52,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -97,7 +91,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -113,7 +106,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -134,7 +126,6 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100).
 
@@ -146,7 +137,6 @@ def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
         Percentage as Decimal; Decimal("0") when whole is zero.
     """
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* and return a float.
@@ -163,26 +153,21 @@ def _round_val(value: Decimal, places: int = 6) -> float:
     quantizer = Decimal(10) ** -places
     return float(value.quantize(quantizer, rounding=ROUND_HALF_UP))
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: float) -> float:
     """Round to 4 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class RenewableType(str, Enum):
     """Renewable energy technology types for building integration."""
@@ -196,7 +181,6 @@ class RenewableType(str, Enum):
     AIR_SOURCE_HEAT_PUMP = "air_source_heat_pump"
     BIOGAS = "biogas"
 
-
 class PVMountType(str, Enum):
     """Solar PV mounting configurations."""
     ROOFTOP_FLAT = "rooftop_flat"
@@ -207,7 +191,6 @@ class PVMountType(str, Enum):
     GROUND_MOUNT = "ground_mount"
     CARPORT = "carport"
 
-
 class PVModuleType(str, Enum):
     """Solar PV module technology types."""
     MONOCRYSTALLINE = "monocrystalline"
@@ -217,7 +200,6 @@ class PVModuleType(str, Enum):
     BIFACIAL = "bifacial"
     HJT = "hjt"
 
-
 class ClimateZone(str, Enum):
     """Climate zones for irradiance and heat pump performance."""
     NORTHERN_EUROPE = "northern_europe"
@@ -226,7 +208,6 @@ class ClimateZone(str, Enum):
     MEDITERRANEAN = "mediterranean"
     OCEANIC = "oceanic"
     CONTINENTAL = "continental"
-
 
 class HeatDistributionType(str, Enum):
     """Heat distribution system type (affects heat pump COP)."""
@@ -238,7 +219,6 @@ class HeatDistributionType(str, Enum):
     RADIATOR_75C = "radiator_75c"
     FAN_COIL_45C = "fan_coil_45c"
 
-
 class BuildingLoadProfile(str, Enum):
     """Building load profile type for self-consumption estimation."""
     OFFICE_WEEKDAY = "office_weekday"
@@ -249,7 +229,6 @@ class BuildingLoadProfile(str, Enum):
     SCHOOL = "school"
     WAREHOUSE = "warehouse"
     DATA_CENTER = "data_center"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Solar Irradiance by Location
@@ -305,7 +284,6 @@ SOLAR_IRRADIANCE_BY_CLIMATE: Dict[str, Dict[str, float]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Constants -- PV Module Efficiency
 # ---------------------------------------------------------------------------
@@ -338,7 +316,6 @@ PV_MODULE_EFFICIENCY: Dict[str, Dict[str, float]] = {
         "source": "Heterojunction, low temperature coefficient"
     },
 }
-
 
 # ---------------------------------------------------------------------------
 # Constants -- PV System Losses (derating factors)
@@ -386,7 +363,6 @@ PV_TEMPERATURE_COEFFICIENT: Dict[str, float] = {
     PVModuleType.HJT: -0.0026,
 }
 
-
 # ---------------------------------------------------------------------------
 # Constants -- PV Cost (EUR per kWp)
 # ---------------------------------------------------------------------------
@@ -410,7 +386,6 @@ PV_COST_EUR_PER_KWP: Dict[str, Dict[str, float]] = {
         "cost_eur_per_kwp": 600, "source": "Utility-scale, IRENA 2025"
     },
 }
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Heat Pump Seasonal COP
@@ -533,7 +508,6 @@ HEAT_PUMP_SEASONAL_COP: Dict[str, Dict[str, Dict[str, float]]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Constants -- Self Consumption Profiles
 # ---------------------------------------------------------------------------
@@ -592,7 +566,6 @@ SELF_CONSUMPTION_PROFILES: Dict[str, Dict[str, float]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Constants -- Electricity Export Prices
 # ---------------------------------------------------------------------------
@@ -616,7 +589,6 @@ ELECTRICITY_EXPORT_PRICE: Dict[str, Dict[str, float]] = {
     "DEFAULT": {"export_price": 0.070, "source": "EU average estimate"},
 }
 
-
 # ---------------------------------------------------------------------------
 # Constants -- Biomass Boiler Data
 # ---------------------------------------------------------------------------
@@ -636,11 +608,9 @@ BIOMASS_EFFICIENCY: Dict[str, Dict[str, float]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Input Models
 # ---------------------------------------------------------------------------
-
 
 class SolarPVInput(BaseModel):
     """Solar PV system specification."""
@@ -673,7 +643,6 @@ class SolarPVInput(BaseModel):
     efficiency_override: Optional[float] = Field(
         None, description="Override module efficiency if known"
     )
-
 
 class HeatPumpInput(BaseModel):
     """Heat pump specification."""
@@ -708,7 +677,6 @@ class HeatPumpInput(BaseModel):
         0.203, description="Carbon factor of displaced fuel in kgCO2e/kWh"
     )
 
-
 class BiomassInput(BaseModel):
     """Biomass boiler specification."""
 
@@ -730,7 +698,6 @@ class BiomassInput(BaseModel):
     displaced_fuel_carbon_kg_per_kwh: float = Field(
         0.203, description="Carbon factor of displaced fuel"
     )
-
 
 class RenewableAssessmentInput(BaseModel):
     """Top-level renewable energy assessment input."""
@@ -780,11 +747,9 @@ class RenewableAssessmentInput(BaseModel):
         25, gt=0, le=40, description="Financial analysis period in years"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Result Models
 # ---------------------------------------------------------------------------
-
 
 class SolarPVResult(BaseModel):
     """Solar PV assessment result."""
@@ -831,7 +796,6 @@ class SolarPVResult(BaseModel):
         ..., description="Net Present Value over analysis period"
     )
 
-
 class HeatPumpResult(BaseModel):
     """Heat pump assessment result."""
 
@@ -862,7 +826,6 @@ class HeatPumpResult(BaseModel):
         ..., description="Simple payback in years"
     )
 
-
 class BiomassResult(BaseModel):
     """Biomass system assessment result."""
 
@@ -888,7 +851,6 @@ class BiomassResult(BaseModel):
     simple_payback_years: float = Field(
         ..., description="Simple payback in years"
     )
-
 
 class RenewableAssessmentResult(BaseModel):
     """Complete renewable energy assessment result."""
@@ -924,11 +886,9 @@ class RenewableAssessmentResult(BaseModel):
     processing_time_ms: float = Field(..., description="Processing time ms")
     provenance_hash: str = Field(..., description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class RenewableIntegrationEngine:
     """Building-integrated renewable energy assessment engine.
@@ -1048,7 +1008,7 @@ class RenewableIntegrationEngine:
             total_capex_eur=_round2(float(total_capex)),
             overall_simple_payback_years=_round2(float(overall_payback)),
             recommendations=recommendations,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=_round3(processing_ms),
             provenance_hash="",
         )

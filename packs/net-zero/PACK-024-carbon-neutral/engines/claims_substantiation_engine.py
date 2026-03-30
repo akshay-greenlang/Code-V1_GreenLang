@@ -78,23 +78,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -111,7 +106,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -120,7 +114,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -128,26 +121,21 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     return float(
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CriterionResult(str, Enum):
     """Result for a single criterion.
@@ -161,7 +149,6 @@ class CriterionResult(str, Enum):
     PARTIAL = "partial"
     FAIL = "fail"
     NOT_APPLICABLE = "not_applicable"
-
 
 class ClaimType(str, Enum):
     """Type of environmental claim.
@@ -178,7 +165,6 @@ class ClaimType(str, Enum):
     CARBON_NEGATIVE = "carbon_negative"
     CARBON_FREE = "carbon_free"
 
-
 class ClaimScope(str, Enum):
     """Scope of the environmental claim.
 
@@ -194,7 +180,6 @@ class ClaimScope(str, Enum):
     EVENT = "event"
     FACILITY = "facility"
 
-
 class JurisdictionCode(str, Enum):
     """Regulatory jurisdiction.
 
@@ -209,7 +194,6 @@ class JurisdictionCode(str, Enum):
     UK = "uk"
     AU = "au"
     GLOBAL = "global"
-
 
 class ChecklistCategory(str, Enum):
     """Checklist category (7 categories, 5 criteria each = 35 total).
@@ -229,7 +213,6 @@ class ChecklistCategory(str, Enum):
     TRANSPARENCY_DISCLOSURE = "transparency_disclosure"
     CLAIM_WORDING = "claim_wording"
     ONGOING_COMMITMENT = "ongoing_commitment"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- 35 Criteria Definition
@@ -517,11 +500,9 @@ CRITERION_SCORES: Dict[str, Decimal] = {
     CriterionResult.NOT_APPLICABLE.value: Decimal("1.0"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class CriterionInput(BaseModel):
     """Input for a single criterion assessment.
@@ -546,7 +527,6 @@ class CriterionInput(BaseModel):
         if v not in valid:
             raise ValueError(f"Unknown result '{v}'.")
         return v
-
 
 class ClaimWordingInput(BaseModel):
     """Input for claim wording validation.
@@ -594,7 +574,6 @@ class ClaimWordingInput(BaseModel):
             raise ValueError(f"Unknown claim scope '{v}'.")
         return v
 
-
 class ClaimsSubstantiationInput(BaseModel):
     """Complete input for claims substantiation assessment.
 
@@ -627,11 +606,9 @@ class ClaimsSubstantiationInput(BaseModel):
     include_jurisdiction_analysis: bool = Field(default=True)
     include_recommendations: bool = Field(default=True)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class CriterionAssessment(BaseModel):
     """Assessment result for a single criterion.
@@ -661,7 +638,6 @@ class CriterionAssessment(BaseModel):
     issues: List[str] = Field(default_factory=list)
     recommendations: List[str] = Field(default_factory=list)
 
-
 class CategoryScore(BaseModel):
     """Score for a checklist category.
 
@@ -685,7 +661,6 @@ class CategoryScore(BaseModel):
     score_pct: Decimal = Field(default=Decimal("0"))
     all_mandatory_met: bool = Field(default=False)
     message: str = Field(default="")
-
 
 class WordingAnalysis(BaseModel):
     """Claim wording analysis result.
@@ -711,7 +686,6 @@ class WordingAnalysis(BaseModel):
     suggested_wording: str = Field(default="")
     issues: List[str] = Field(default_factory=list)
 
-
 class JurisdictionCompliance(BaseModel):
     """Jurisdiction-specific compliance assessment.
 
@@ -729,7 +703,6 @@ class JurisdictionCompliance(BaseModel):
     key_requirements: List[str] = Field(default_factory=list)
     issues: List[str] = Field(default_factory=list)
     risk_level: str = Field(default="medium")
-
 
 class ClaimsSubstantiationResult(BaseModel):
     """Complete claims substantiation result.
@@ -760,7 +733,7 @@ class ClaimsSubstantiationResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     assessment_year: int = Field(default=0)
     criterion_assessments: List[CriterionAssessment] = Field(default_factory=list)
@@ -781,7 +754,6 @@ class ClaimsSubstantiationResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Category Name Lookup
 # ---------------------------------------------------------------------------
@@ -796,11 +768,9 @@ CATEGORY_NAMES: Dict[str, str] = {
     ChecklistCategory.ONGOING_COMMITMENT.value: "Ongoing Commitment",
 }
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ClaimsSubstantiationEngine:
     """35-criterion claims substantiation engine.

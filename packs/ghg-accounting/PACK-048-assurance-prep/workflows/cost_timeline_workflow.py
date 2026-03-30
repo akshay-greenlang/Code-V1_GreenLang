@@ -65,37 +65,28 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> str:
-    """Return current UTC timestamp as ISO-8601 string."""
-    return datetime.utcnow().isoformat() + "Z"
-
-
 def _new_uuid() -> str:
     """Return a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash of JSON-serialisable data."""
     serialised = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialised.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -106,7 +97,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -115,7 +105,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class CostTimelinePhase(str, Enum):
     """Cost and timeline workflow phases."""
@@ -126,13 +115,11 @@ class CostTimelinePhase(str, Enum):
     RESOURCE_ALLOCATION = "resource_allocation"
     BUDGET_APPROVAL = "budget_approval"
 
-
 class AssuranceLevel(str, Enum):
     """Assurance engagement level."""
 
     LIMITED = "limited"
     REASONABLE = "reasonable"
-
 
 class ComplexityLevel(str, Enum):
     """Engagement complexity level."""
@@ -141,7 +128,6 @@ class ComplexityLevel(str, Enum):
     MEDIUM = "medium"
     HIGH = "high"
     VERY_HIGH = "very_high"
-
 
 class CostCategory(str, Enum):
     """Cost breakdown category."""
@@ -153,7 +139,6 @@ class CostCategory(str, Enum):
     TRAVEL_LOGISTICS = "travel_logistics"
     CONTINGENCY = "contingency"
 
-
 class EngagementMilestone(str, Enum):
     """Engagement timeline milestone."""
 
@@ -164,7 +149,6 @@ class EngagementMilestone(str, Enum):
     REVIEW_APPROVAL = "review_approval"
     CLOSEOUT = "closeout"
 
-
 class InternalRole(str, Enum):
     """Internal resource role."""
 
@@ -174,7 +158,6 @@ class InternalRole(str, Enum):
     FINANCE_CONTROLLER = "finance_controller"
     IT_SUPPORT = "it_support"
     EXECUTIVE_SPONSOR = "executive_sponsor"
-
 
 # =============================================================================
 # COST REFERENCE DATA (Zero-Hallucination)
@@ -239,11 +222,9 @@ ROLE_HOURLY_RATES_USD: Dict[str, int] = {
     "executive_sponsor": 200,
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -257,7 +238,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
 
-
 class ScopeParameters(BaseModel):
     """Engagement scope parameters for cost estimation."""
 
@@ -269,7 +249,6 @@ class ScopeParameters(BaseModel):
     first_year_engagement: bool = Field(default=True)
     provenance_hash: str = Field(default="")
 
-
 class CostLineItem(BaseModel):
     """A single cost line item."""
 
@@ -278,7 +257,6 @@ class CostLineItem(BaseModel):
     amount_usd: str = Field(default="0.00")
     notes: str = Field(default="")
     provenance_hash: str = Field(default="")
-
 
 class MilestoneRecord(BaseModel):
     """A milestone in the engagement timeline."""
@@ -291,7 +269,6 @@ class MilestoneRecord(BaseModel):
     deliverables: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class ResourceAllocationRecord(BaseModel):
     """Resource allocation for an internal role."""
 
@@ -301,7 +278,6 @@ class ResourceAllocationRecord(BaseModel):
     hourly_rate_usd: int = Field(default=0, ge=0)
     total_cost_usd: str = Field(default="0.00")
     provenance_hash: str = Field(default="")
-
 
 class BudgetPackage(BaseModel):
     """Budget approval package."""
@@ -315,11 +291,9 @@ class BudgetPackage(BaseModel):
     approval_status: str = Field(default="pending")
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # INPUT / OUTPUT
 # =============================================================================
-
 
 class CostTimelineInput(BaseModel):
     """Input data model for CostTimelineWorkflow."""
@@ -340,7 +314,6 @@ class CostTimelineInput(BaseModel):
     tenant_id: str = Field(default="")
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class CostTimelineResult(BaseModel):
     """Complete result from cost and timeline workflow."""
 
@@ -359,11 +332,9 @@ class CostTimelineResult(BaseModel):
     total_duration_weeks: int = Field(default=0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class CostTimelineWorkflow:
     """
@@ -922,6 +893,7 @@ class CostTimelineWorkflow:
                         phase_number, attempt, self.MAX_RETRIES, exc, delay,
                     )
                     import asyncio
+
                     await asyncio.sleep(delay)
         return PhaseResult(
             phase_name=f"phase_{phase_number}_failed",

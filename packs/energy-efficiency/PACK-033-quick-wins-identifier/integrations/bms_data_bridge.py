@@ -32,20 +32,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -58,11 +53,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ProtocolType(str, Enum):
     """Industrial communication protocol types."""
@@ -74,7 +67,6 @@ class ProtocolType(str, Enum):
     MQTT = "mqtt"
     REST_API = "rest_api"
     CSV_EXPORT = "csv_export"
-
 
 class DataPointType(str, Enum):
     """Types of metered data points."""
@@ -90,7 +82,6 @@ class DataPointType(str, Enum):
     PRESSURE_BAR = "pressure_bar"
     STATUS_BOOL = "status_bool"
 
-
 class ConnectionStatus(str, Enum):
     """Protocol connection status."""
 
@@ -100,11 +91,9 @@ class ConnectionStatus(str, Enum):
     TIMEOUT = "timeout"
     NOT_CONFIGURED = "not_configured"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class BMSConfig(BaseModel):
     """Configuration for the BMS Data Bridge."""
@@ -120,7 +109,6 @@ class BMSConfig(BaseModel):
     port: int = Field(default=47808, ge=1, le=65535)
     timeout_seconds: float = Field(default=5.0, ge=0.5)
 
-
 class DataPoint(BaseModel):
     """A BMS/SCADA data point with value and metadata."""
 
@@ -133,32 +121,30 @@ class DataPoint(BaseModel):
     normalized_value: float = Field(default=0.0)
     unit: str = Field(default="")
     quality: str = Field(default="good", description="good|uncertain|bad")
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     scale_factor: float = Field(default=1.0)
     offset: float = Field(default=0.0)
     facility_zone: str = Field(default="")
     equipment_id: str = Field(default="")
-
 
 class MeterReading(BaseModel):
     """A single meter reading from BMS/SCADA."""
 
     reading_id: str = Field(default_factory=_new_uuid)
     point_id: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     raw_value: float = Field(default=0.0)
     normalized_value: float = Field(default=0.0)
     unit: str = Field(default="")
     quality: str = Field(default="good")
     source_protocol: str = Field(default="")
 
-
 class AlarmEvent(BaseModel):
     """An alarm event from BMS/SCADA."""
 
     alarm_id: str = Field(default_factory=_new_uuid)
     point_id: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     severity: str = Field(default="medium", description="critical|high|medium|low|info")
     description: str = Field(default="")
     value: float = Field(default=0.0)
@@ -166,11 +152,9 @@ class AlarmEvent(BaseModel):
     acknowledged: bool = Field(default=False)
     cleared: bool = Field(default=False)
 
-
 # ---------------------------------------------------------------------------
 # BMSDataBridge
 # ---------------------------------------------------------------------------
-
 
 class BMSDataBridge:
     """BMS/SCADA data integration for real-time monitoring.
@@ -316,7 +300,7 @@ class BMSDataBridge:
 
         reading = MeterReading(
             point_id=point_id,
-            timestamp=timestamp or _utcnow(),
+            timestamp=timestamp or utcnow(),
             raw_value=raw_value,
             normalized_value=round(normalized, 4),
             unit=point.unit,

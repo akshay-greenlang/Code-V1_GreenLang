@@ -31,21 +31,16 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Input Models
@@ -62,7 +57,6 @@ class EntityEquityLine(BaseModel):
     adjusted_tco2e: Decimal = Field(Decimal("0"))
     delta_tco2e: Decimal = Field(Decimal("0"))
 
-
 class OwnershipChainStep(BaseModel):
     """One step in a multi-tier ownership chain."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -71,14 +65,12 @@ class OwnershipChainStep(BaseModel):
     ownership_pct: Decimal = Field(Decimal("100"))
     cumulative_pct: Decimal = Field(Decimal("100"))
 
-
 class OwnershipChain(BaseModel):
     """Complete multi-tier ownership chain for one entity."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
     target_entity: str = Field("")
     effective_equity_pct: Decimal = Field(Decimal("100"))
     chain: List[OwnershipChainStep] = Field(default_factory=list)
-
 
 class JvSplit(BaseModel):
     """JV allocation split details."""
@@ -89,7 +81,6 @@ class JvSplit(BaseModel):
     partner_equity_pct: Decimal = Field(Decimal("0"))
     partner_allocated_tco2e: Decimal = Field(Decimal("0"))
 
-
 class PartnerReconciliation(BaseModel):
     """Reconciliation that partner shares sum to 100%."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -98,7 +89,6 @@ class PartnerReconciliation(BaseModel):
     is_reconciled: bool = Field(True)
     partner_count: int = Field(0)
     variance_pct: Decimal = Field(Decimal("0"))
-
 
 class EquityShareReportInput(BaseModel):
     """Complete input for the equity share report."""
@@ -112,7 +102,6 @@ class EquityShareReportInput(BaseModel):
     jv_splits: List[Dict[str, Any]] = Field(default_factory=list)
     reconciliations: List[Dict[str, Any]] = Field(default_factory=list)
     associate_threshold_pct: Decimal = Field(Decimal("20"))
-
 
 # ---------------------------------------------------------------------------
 # Output Model
@@ -138,7 +127,6 @@ class EquityShareReportOutput(BaseModel):
     all_reconciled: bool = Field(True)
     associate_threshold_pct: Decimal = Field(Decimal("20"))
     provenance_hash: str = Field("")
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -169,7 +157,7 @@ class EquityShareReport:
     def render(self, data: Dict[str, Any]) -> EquityShareReportOutput:
         """Render equity share report from input data."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         inp = EquityShareReportInput(**data) if isinstance(data, dict) else data
 
         entities = [EntityEquityLine(**e) if isinstance(e, dict) else e for e in inp.entities]
@@ -372,7 +360,6 @@ class EquityShareReport:
                 f"{e.raw_tco2e},{e.adjusted_tco2e},{e.delta_tco2e}"
             )
         return "\n".join(lines_out)
-
 
 __all__ = [
     "EquityShareReport",

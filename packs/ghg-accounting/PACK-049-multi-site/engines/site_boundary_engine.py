@@ -67,24 +67,18 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC timestamp with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 provenance hash, excluding volatile fields."""
@@ -103,7 +97,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert any value to Decimal."""
     if isinstance(value, Decimal):
@@ -112,7 +105,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -124,16 +116,13 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> Decimal:
     """Round a value to two decimal places using ROUND_HALF_UP."""
     return Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
-
 def _round4(value: Any) -> Decimal:
     """Round a value to four decimal places using ROUND_HALF_UP."""
     return Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP)
-
 
 def _days_in_year(year: int) -> int:
     """Return the number of days in the given year."""
@@ -141,11 +130,9 @@ def _days_in_year(year: int) -> int:
     end = date(year, 12, 31)
     return (end - start).days + 1
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ConsolidationApproach(str, Enum):
     """GHG Protocol consolidation approaches.
@@ -161,7 +148,6 @@ class ConsolidationApproach(str, Enum):
     OPERATIONAL_CONTROL = "OPERATIONAL_CONTROL"
     FINANCIAL_CONTROL = "FINANCIAL_CONTROL"
 
-
 class OwnershipType(str, Enum):
     """Types of ownership relationships."""
     SUBSIDIARY = "SUBSIDIARY"
@@ -171,7 +157,6 @@ class OwnershipType(str, Enum):
     LEASED = "LEASED"
     JOINT_OPERATION = "JOINT_OPERATION"
     WHOLLY_OWNED = "WHOLLY_OWNED"
-
 
 class ChangeType(str, Enum):
     """Types of boundary changes."""
@@ -184,7 +169,6 @@ class ChangeType(str, Enum):
     CLOSURE = "CLOSURE"
     EQUITY_CHANGE = "EQUITY_CHANGE"
 
-
 class ScopeInclusion(str, Enum):
     """GHG scopes that can be included in the boundary."""
     SCOPE_1 = "SCOPE_1"
@@ -192,18 +176,15 @@ class ScopeInclusion(str, Enum):
     SCOPE_2_MARKET = "SCOPE_2_MARKET"
     SCOPE_3 = "SCOPE_3"
 
-
 # ---------------------------------------------------------------------------
 # Default Materiality Threshold
 # ---------------------------------------------------------------------------
 
 DEFAULT_MATERIALITY_THRESHOLD_PCT = Decimal("5")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class EntityOwnership(BaseModel):
     """Describes the ownership structure of a legal entity.
@@ -259,7 +240,6 @@ class EntityOwnership(BaseModel):
         if v.upper() not in valid:
             logger.warning("Ownership type '%s' not standard; accepted.", v)
         return v.upper()
-
 
 class BoundaryInclusion(BaseModel):
     """Defines how a specific site is included in the boundary.
@@ -339,7 +319,6 @@ class BoundaryInclusion(BaseModel):
             )
         return v.upper()
 
-
 class BoundaryChange(BaseModel):
     """Records a structural change to the organisational boundary.
 
@@ -389,7 +368,7 @@ class BoundaryChange(BaseModel):
         description="Significance of the change as % of corporate emissions.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When this change was recorded.",
     )
 
@@ -407,7 +386,6 @@ class BoundaryChange(BaseModel):
         if v is not None:
             return Decimal(str(v))
         return v
-
 
 class BoundaryDefinition(BaseModel):
     """Complete organisational boundary definition for a reporting year.
@@ -475,7 +453,7 @@ class BoundaryDefinition(BaseModel):
         description="Additional notes.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the boundary was created.",
     )
     provenance_hash: str = Field(
@@ -493,7 +471,6 @@ class BoundaryDefinition(BaseModel):
                 f"Must be one of {sorted(valid)}."
             )
         return v.upper()
-
 
 class MaterialityResult(BaseModel):
     """Result of a materiality assessment for a site."""
@@ -524,7 +501,6 @@ class MaterialityResult(BaseModel):
     provenance_hash: str = Field(
         default="", description="SHA-256 hash."
     )
-
 
 class BoundaryComparison(BaseModel):
     """Comparison between two boundary definitions."""
@@ -574,11 +550,9 @@ class BoundaryComparison(BaseModel):
         default="", description="SHA-256 hash."
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class SiteBoundaryEngine:
     """Manages organisational boundaries for multi-site GHG reporting.
@@ -715,7 +689,7 @@ class SiteBoundaryEngine:
             "year": year,
             "approach": approach_upper,
             "sites_included": boundary.total_sites_included,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         })
 
         logger.info(
@@ -873,7 +847,7 @@ class SiteBoundaryEngine:
             "boundary_id": boundary.boundary_id,
             "site_id": site_id,
             "inclusion_pct": str(inclusion_pct),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         })
 
         return updated
@@ -950,7 +924,7 @@ class SiteBoundaryEngine:
             "boundary_id": boundary.boundary_id,
             "site_id": site_id,
             "reason": reason,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         })
 
         return updated
@@ -1081,7 +1055,7 @@ class SiteBoundaryEngine:
             "change_id": change.change_id,
             "change_type": change_type,
             "affected_sites": change.affected_site_ids,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         })
 
         return updated
@@ -1344,7 +1318,7 @@ class SiteBoundaryEngine:
             boundary.reporting_year,
         )
 
-        now = _utcnow()
+        now = utcnow()
         updated = boundary.model_copy(update={
             "is_locked": True,
             "locked_at": now,

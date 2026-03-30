@@ -73,17 +73,15 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
@@ -125,7 +123,6 @@ def _round_val(value: Decimal, places: int = 6) -> Decimal:
 
 def _round3(value: float) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -191,7 +188,6 @@ VALIDATION_THRESHOLDS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
@@ -232,7 +228,6 @@ class MilestoneValidationInput(BaseModel):
     flag_reduction_pct: Decimal = Field(default=Decimal("0"))
     milestones: List[MilestonePoint] = Field(default_factory=list)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
@@ -252,7 +247,7 @@ class MilestoneValidationResult(BaseModel):
     """Complete milestone validation result."""
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     entity_id: str = Field(default="")
     ambition_level: str = Field(default="")
@@ -270,7 +265,6 @@ class MilestoneValidationResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine

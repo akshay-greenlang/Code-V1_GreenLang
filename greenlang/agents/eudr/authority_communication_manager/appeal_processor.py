@@ -35,8 +35,9 @@ from .models import (
 )
 from .provenance import ProvenanceTracker
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance."""
@@ -45,16 +46,9 @@ def _compute_hash(data: Any) -> str:
     )
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 class AppealProcessor:
     """Manages administrative appeals per EUDR Article 19.
@@ -129,7 +123,7 @@ class AppealProcessor:
             )
 
         appeal_id = _new_uuid()
-        now = _utcnow()
+        now = utcnow()
         deadline = now + timedelta(days=self.config.appeal_window_days)
 
         if not communication_id:
@@ -218,7 +212,7 @@ class AppealProcessor:
                 f"Appeal {appeal_id} already has decision: {appeal.decision.value}"
             )
 
-        now = _utcnow()
+        now = utcnow()
         appeal.decision = appeal_decision
         appeal.decision_reason = reason
         appeal.decision_date = now
@@ -306,7 +300,7 @@ class AppealProcessor:
             )
 
         appeal.decision = AppealDecision.WITHDRAWN
-        appeal.decision_date = _utcnow()
+        appeal.decision_date = utcnow()
         appeal.penalty_suspended = False
 
         logger.info("Appeal %s withdrawn", appeal_id)

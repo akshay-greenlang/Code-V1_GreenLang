@@ -79,6 +79,7 @@ from datetime import date, datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -127,16 +128,9 @@ except ImportError:
     observe_severity_scoring_duration = None  # type: ignore[misc,assignment]
     record_api_error = None  # type: ignore[misc,assignment]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance.
@@ -150,7 +144,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a unique identifier using UUID4.
 
@@ -158,7 +151,6 @@ def _generate_id() -> str:
         String representation of a new UUID4.
     """
     return str(uuid.uuid4())
-
 
 def _safe_decimal(value: Any, default: Decimal = Decimal("0")) -> Decimal:
     """Safely convert a value to Decimal.
@@ -177,7 +169,6 @@ def _safe_decimal(value: Any, default: Decimal = Decimal("0")) -> Decimal:
     except (InvalidOperation, ValueError, TypeError):
         return default
 
-
 def _elapsed_ms(start: float) -> float:
     """Calculate elapsed milliseconds since start.
 
@@ -188,7 +179,6 @@ def _elapsed_ms(start: float) -> float:
         Elapsed time in milliseconds.
     """
     return round((time.perf_counter() - start) * 1000, 2)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -300,11 +290,9 @@ AGGRAVATING_RULES: List[Dict[str, Any]] = [
     },
 ]
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class SeverityLevel(str, Enum):
     """Alert severity classification levels.
@@ -319,11 +307,9 @@ class SeverityLevel(str, Enum):
     LOW = "LOW"
     INFORMATIONAL = "INFORMATIONAL"
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class SeverityComponent:
@@ -364,7 +350,6 @@ class SeverityComponent:
             "explanation": self.explanation,
         }
 
-
 @dataclass
 class AggravatingFactor:
     """Identified aggravating factor that boosts severity.
@@ -396,7 +381,6 @@ class AggravatingFactor:
             "severity_boost": str(self.severity_boost),
             "evidence": self.evidence,
         }
-
 
 @dataclass
 class SeverityScore:
@@ -445,7 +429,7 @@ class SeverityScore:
         if not self.classification_id:
             self.classification_id = _generate_id()
         if not self.calculation_timestamp:
-            self.calculation_timestamp = _utcnow().isoformat()
+            self.calculation_timestamp = utcnow().isoformat()
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary.
@@ -473,7 +457,6 @@ class SeverityScore:
             "metadata": self.metadata,
         }
 
-
 @dataclass
 class SeverityResult:
     """Result wrapper for severity classification operations.
@@ -499,7 +482,7 @@ class SeverityResult:
     def __post_init__(self) -> None:
         """Set calculation timestamp if unset."""
         if not self.calculation_timestamp:
-            self.calculation_timestamp = _utcnow().isoformat()
+            self.calculation_timestamp = utcnow().isoformat()
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary.
@@ -516,7 +499,6 @@ class SeverityResult:
             "provenance_hash": self.provenance_hash,
             "calculation_timestamp": self.calculation_timestamp,
         }
-
 
 @dataclass
 class ThresholdsResult:
@@ -547,7 +529,7 @@ class ThresholdsResult:
     def __post_init__(self) -> None:
         """Set calculation timestamp if unset."""
         if not self.calculation_timestamp:
-            self.calculation_timestamp = _utcnow().isoformat()
+            self.calculation_timestamp = utcnow().isoformat()
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary.
@@ -566,7 +548,6 @@ class ThresholdsResult:
             "provenance_hash": self.provenance_hash,
             "calculation_timestamp": self.calculation_timestamp,
         }
-
 
 @dataclass
 class DistributionResult:
@@ -597,7 +578,7 @@ class DistributionResult:
     def __post_init__(self) -> None:
         """Set calculation timestamp if unset."""
         if not self.calculation_timestamp:
-            self.calculation_timestamp = _utcnow().isoformat()
+            self.calculation_timestamp = utcnow().isoformat()
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary.
@@ -617,11 +598,9 @@ class DistributionResult:
             "calculation_timestamp": self.calculation_timestamp,
         }
 
-
 # ---------------------------------------------------------------------------
 # SeverityClassifier Engine
 # ---------------------------------------------------------------------------
-
 
 class SeverityClassifier:
     """Production-grade multi-factor severity classification engine.
@@ -1516,7 +1495,6 @@ class SeverityClassifier:
                 except (ValueError, TypeError):
                     continue
         return None
-
 
 # ---------------------------------------------------------------------------
 # Public API

@@ -93,6 +93,7 @@ from greenlang.agents.data.missing_value_imputer.ml_imputer import MLImputerEngi
 from greenlang.agents.data.missing_value_imputer.rule_based_imputer import RuleBasedImputerEngine
 from greenlang.agents.data.missing_value_imputer.time_series_imputer import TimeSeriesImputerEngine
 from greenlang.agents.data.missing_value_imputer.validation_engine import ValidationEngine
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -100,16 +101,9 @@ __all__ = [
     "ImputationPipelineEngine",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _is_missing(value: Any) -> bool:
     """Determine whether a value is considered missing."""
@@ -121,19 +115,16 @@ def _is_missing(value: Any) -> bool:
         return True
     return False
 
-
 def _is_numeric(value: Any) -> bool:
     """Check if a value is numeric (excluding bool)."""
     if isinstance(value, bool):
         return False
     return isinstance(value, (int, float))
 
-
 def _compute_provenance(operation: str, data_repr: str) -> str:
     """Compute SHA-256 provenance hash."""
-    payload = f"{operation}:{data_repr}:{_utcnow().isoformat()}"
+    payload = f"{operation}:{data_repr}:{utcnow().isoformat()}"
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
-
 
 def _classify_confidence(score: float) -> ConfidenceLevel:
     """Classify a numeric confidence score into a level."""
@@ -144,7 +135,6 @@ def _classify_confidence(score: float) -> ConfidenceLevel:
     if score >= 0.50:
         return ConfidenceLevel.LOW
     return ConfidenceLevel.VERY_LOW
-
 
 # Strategy -> method name mapping for dispatch
 _STATISTICAL_STRATEGIES = {
@@ -206,11 +196,9 @@ _FALLBACK_CHAINS: Dict[DataColumnType, List[ImputationStrategy]] = {
     ],
 }
 
-
 # ===========================================================================
 # ImputationPipelineEngine
 # ===========================================================================
-
 
 class ImputationPipelineEngine:
     """End-to-end imputation pipeline orchestrator.
@@ -687,7 +675,7 @@ class ImputationPipelineEngine:
             Dict with documentation fields.
         """
         doc: Dict[str, Any] = {
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
             "summary": {
                 "total_values_imputed": result.total_values_imputed,
                 "avg_confidence": result.avg_confidence,
@@ -958,7 +946,7 @@ class ImputationPipelineEngine:
             "pipeline_id": pipeline_id,
             "stage": stage,
             "data": data,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "provenance_hash": _compute_provenance(
                 "checkpoint", f"{pipeline_id}:{stage}"
             ),
@@ -1011,7 +999,7 @@ class ImputationPipelineEngine:
             "checkpoints_stored": len(self._checkpoints),
             "provenance_entries": self.provenance.entry_count,
             "provenance_entities": self.provenance.entity_count,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     # ------------------------------------------------------------------

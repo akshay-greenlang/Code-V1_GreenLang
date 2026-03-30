@@ -38,6 +38,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas.enums import AlertSeverity
 
 logger = logging.getLogger(__name__)
 
@@ -73,15 +74,6 @@ class ControlPhase(str, Enum):
     CRITERIA_DEFINITION = "criteria_definition"
     MONITORING_SETUP = "monitoring_setup"
     DEVIATION_RESPONSE = "deviation_response"
-
-
-class AlertSeverity(str, Enum):
-    """Alert severity levels."""
-
-    INFO = "info"
-    WARNING = "warning"
-    CRITICAL = "critical"
-    EMERGENCY = "emergency"
 
 
 class EscalationLevel(str, Enum):

@@ -62,17 +62,15 @@ from xml.sax.saxutils import escape as html_escape
 
 from pydantic import BaseModel, Field, ConfigDict
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
@@ -109,7 +107,6 @@ def _round_val(value: Decimal, places: int = 6) -> Decimal:
 
 def _round3(value: float) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -148,7 +145,6 @@ class BrandingStyle(str, Enum):
     INVESTOR = "investor"
     MINIMAL = "minimal"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -173,7 +169,6 @@ DEFAULT_BRANDING = {
     "text_color": "#1E293B",
     "font_family": "Inter, system-ui, sans-serif",
 }
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
@@ -242,7 +237,6 @@ class DashboardGenerationInput(BaseModel):
     include_drill_down: bool = Field(default=True)
     responsive_design: bool = Field(default=True)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
@@ -275,7 +269,7 @@ class DashboardGenerationResult(BaseModel):
     """Complete dashboard generation result."""
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     organization_id: str = Field(default="")
     dashboard: Optional[DashboardDocument] = Field(default=None)
     widgets: List[DashboardWidget] = Field(default_factory=list)
@@ -286,7 +280,6 @@ class DashboardGenerationResult(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine
@@ -643,7 +636,7 @@ class DashboardGenerationEngine:
             f'<body>\n'
             f'  <header>\n'
             f'    <h1>{html_escape(title)}</h1>\n'
-            f'    <p class="subtitle">Generated: {_utcnow().isoformat()}</p>\n'
+            f'    <p class="subtitle">Generated: {utcnow().isoformat()}</p>\n'
             f'  </header>\n'
             f'  <main class="dashboard-grid">\n'
             f'{widget_html}\n'

@@ -44,25 +44,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -75,11 +69,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class IntensityMetricType(str, Enum):
     """Types of intensity metrics from PACK-046."""
@@ -92,7 +84,6 @@ class IntensityMetricType(str, Enum):
     OPERATING_HOURS = "tco2e_per_operating_hour"
     CUSTOM = "custom"
 
-
 class BenchmarkSource(str, Enum):
     """Benchmark data source from PACK-047."""
 
@@ -102,7 +93,6 @@ class BenchmarkSource(str, Enum):
     SECTOR_AVERAGE = "sector_average"
     INTERNAL_PEER = "internal_peer"
     CUSTOM = "custom"
-
 
 class PathwayAlignment(str, Enum):
     """Pathway alignment classification."""
@@ -114,11 +104,9 @@ class PathwayAlignment(str, Enum):
     NOT_ALIGNED = "not_aligned"
     INSUFFICIENT_DATA = "insufficient_data"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class Pack046047Config(BaseModel):
     """Configuration for PACK-046/047 bridge."""
@@ -132,7 +120,6 @@ class Pack046047Config(BaseModel):
         ],
     )
     benchmark_source: str = Field(BenchmarkSource.SECTOR_AVERAGE.value)
-
 
 class Pack046IntensityMetrics(BaseModel):
     """Intensity metrics for a site from PACK-046."""
@@ -152,7 +139,6 @@ class Pack046IntensityMetrics(BaseModel):
     year_on_year_change_pct: Dict[str, float] = Field(default_factory=dict)
     provenance_hash: str = ""
     retrieved_at: str = ""
-
 
 class Pack047BenchmarkPosition(BaseModel):
     """Benchmark position for a site from PACK-047."""
@@ -175,7 +161,6 @@ class Pack047BenchmarkPosition(BaseModel):
     provenance_hash: str = ""
     retrieved_at: str = ""
 
-
 class SiteKPISummary(BaseModel):
     """Combined KPI and benchmark summary for a site."""
 
@@ -189,11 +174,9 @@ class SiteKPISummary(BaseModel):
     pathway_alignment: str = PathwayAlignment.INSUFFICIENT_DATA.value
     provenance_hash: str = ""
 
-
 # ---------------------------------------------------------------------------
 # Bridge Implementation
 # ---------------------------------------------------------------------------
-
 
 class Pack046047Bridge:
     """
@@ -239,7 +222,7 @@ class Pack046047Bridge:
             provenance_hash=_compute_hash({
                 "site_id": site_id, "period": period, "action": "intensity",
             }),
-            retrieved_at=_utcnow().isoformat(),
+            retrieved_at=utcnow().isoformat(),
         )
 
     async def get_benchmark_position(
@@ -267,7 +250,7 @@ class Pack046047Bridge:
             provenance_hash=_compute_hash({
                 "site_id": site_id, "period": period, "kpi": kpi_type,
             }),
-            retrieved_at=_utcnow().isoformat(),
+            retrieved_at=utcnow().isoformat(),
         )
 
     async def get_pathway_alignment(

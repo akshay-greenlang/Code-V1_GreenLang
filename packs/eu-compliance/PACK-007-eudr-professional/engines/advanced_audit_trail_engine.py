@@ -20,16 +20,9 @@ from datetime import datetime, timedelta
 from enum import Enum
 import json
 import base64
+from greenlang.schemas.enums import ReportFormat
 
 logger = logging.getLogger(__name__)
-
-
-class ExportFormat(str, Enum):
-    """Supported export formats for audit trails."""
-    JSON = "JSON"
-    XML = "XML"
-    PDF = "PDF"
-    CSV = "CSV"
 
 
 class ActionType(str, Enum):
@@ -63,8 +56,8 @@ class AuditConfig(BaseModel):
 
     retention_years: int = Field(5, ge=1, le=10, description="Audit record retention period in years")
     hash_algorithm: str = Field("SHA-256", description="Cryptographic hash algorithm for chain integrity")
-    export_formats: List[ExportFormat] = Field(
-        default=[ExportFormat.JSON, ExportFormat.XML, ExportFormat.PDF],
+    export_formats: List[ReportFormat] = Field(
+        default=[ReportFormat.JSON, ReportFormat.XML, ReportFormat.PDF],
         description="Supported export formats"
     )
     enable_blockchain: bool = Field(False, description="Enable blockchain anchoring for immutability")
@@ -628,7 +621,7 @@ class AdvancedAuditTrailEngine:
             ValueError: If format is not supported
         """
         try:
-            if format not in [f.value for f in ExportFormat]:
+            if format not in [f.value for f in ReportFormat]:
                 raise ValueError(f"Unsupported format: {format}")
 
             entries = self.get_audit_chain(entity_id)

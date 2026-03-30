@@ -47,18 +47,14 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -70,11 +66,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CreditRegistry(str, Enum):
     VERRA_VCS = "verra_vcs"
@@ -84,13 +78,11 @@ class CreditRegistry(str, Enum):
     PURO_EARTH = "puro_earth"
     CDR_FYI = "cdr_fyi"
 
-
 class CreditType(str, Enum):
     PERMANENT_REMOVAL = "permanent_removal"
     NATURE_BASED_REMOVAL = "nature_based_removal"
     EMISSION_REDUCTION = "emission_reduction"
     AVOIDED_EMISSION = "avoided_emission"
-
 
 class CreditStatus(str, Enum):
     AVAILABLE = "available"
@@ -98,18 +90,15 @@ class CreditStatus(str, Enum):
     RETIRED = "retired"
     CANCELLED = "cancelled"
 
-
 class VCMITier(str, Enum):
     PLATINUM = "platinum"
     GOLD = "gold"
     SILVER = "silver"
     NOT_ELIGIBLE = "not_eligible"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class CarbonMarketplaceConfig(BaseModel):
     pack_id: str = Field(default="PACK-027")
@@ -125,7 +114,6 @@ class CarbonMarketplaceConfig(BaseModel):
     )
     rate_limit_per_minute: int = Field(default=30, ge=1, le=100)
     enable_provenance: bool = Field(default=True)
-
 
 class CarbonCredit(BaseModel):
     credit_id: str = Field(default_factory=_new_uuid)
@@ -145,7 +133,6 @@ class CarbonCredit(BaseModel):
     serial_numbers: List[str] = Field(default_factory=list)
     status: CreditStatus = Field(default=CreditStatus.AVAILABLE)
 
-
 class CreditSearchResult(BaseModel):
     search_id: str = Field(default_factory=_new_uuid)
     total_results: int = Field(default=0)
@@ -155,7 +142,6 @@ class CreditSearchResult(BaseModel):
     registries_searched: List[str] = Field(default_factory=list)
     search_criteria: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
-
 
 class CreditPurchaseResult(BaseModel):
     purchase_id: str = Field(default_factory=_new_uuid)
@@ -168,7 +154,6 @@ class CreditPurchaseResult(BaseModel):
     status: str = Field(default="pending")
     provenance_hash: str = Field(default="")
 
-
 class CreditRetirementResult(BaseModel):
     retirement_id: str = Field(default_factory=_new_uuid)
     credits_retired: int = Field(default=0)
@@ -177,7 +162,6 @@ class CreditRetirementResult(BaseModel):
     retirement_year: int = Field(default=2025)
     registry_confirmation: str = Field(default="")
     provenance_hash: str = Field(default="")
-
 
 class PortfolioSummary(BaseModel):
     total_credits: int = Field(default=0)
@@ -191,11 +175,9 @@ class PortfolioSummary(BaseModel):
     vcmi_tier: VCMITier = Field(default=VCMITier.NOT_ELIGIBLE)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # CarbonMarketplaceBridge
 # ---------------------------------------------------------------------------
-
 
 class CarbonMarketplaceBridge:
     """Voluntary carbon credit procurement and management for PACK-027.

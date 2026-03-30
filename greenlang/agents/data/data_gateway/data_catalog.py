@@ -34,13 +34,9 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Set
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -52,7 +48,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Data Structures
@@ -89,7 +84,7 @@ def _make_catalog_entry(
     Returns:
         DataCatalogEntry dictionary.
     """
-    now = _utcnow().isoformat()
+    now = utcnow().isoformat()
     return {
         "catalog_id": catalog_id,
         "name": name,
@@ -105,7 +100,6 @@ def _make_catalog_entry(
         "created_at": now,
         "updated_at": now,
     }
-
 
 class DataCatalogEngine:
     """Unified data catalog engine.
@@ -370,7 +364,7 @@ class DataCatalogEngine:
                     value = value.lower().strip()
                 entry[key] = value
 
-        entry["updated_at"] = _utcnow().isoformat()
+        entry["updated_at"] = utcnow().isoformat()
 
         # Update domain index
         new_domain = entry.get("domain", "")
@@ -495,7 +489,6 @@ class DataCatalogEngine:
             "by_domain": by_domain,
             "by_source_type": by_source_type,
         }
-
 
 __all__ = [
     "DataCatalogEngine",

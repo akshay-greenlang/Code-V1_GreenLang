@@ -38,6 +38,7 @@ Status: Production Ready
 
 import logging
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +64,7 @@ except ImportError:
 
 if FASTAPI_AVAILABLE:
 
-    class VerifyFullRequest(BaseModel):
+    class VerifyFullRequest(GreenLangBase):
         """Request body for full reproducibility verification."""
         execution_id: str = Field(..., description="Unique execution identifier")
         input_data: Dict[str, Any] = Field(..., description="Input data to verify")
@@ -73,24 +74,24 @@ if FASTAPI_AVAILABLE:
         absolute_tolerance: float = Field(default=1e-9, description="Absolute tolerance")
         relative_tolerance: float = Field(default=1e-6, description="Relative tolerance")
 
-    class VerifyInputRequest(BaseModel):
+    class VerifyInputRequest(GreenLangBase):
         """Request body for input-only verification."""
         input_data: Dict[str, Any] = Field(..., description="Input data to verify")
         expected_hash: Optional[str] = Field(None, description="Expected input hash")
 
-    class VerifyOutputRequest(BaseModel):
+    class VerifyOutputRequest(GreenLangBase):
         """Request body for output-only verification."""
         output_data: Dict[str, Any] = Field(..., description="Output data to verify")
         expected_hash: Optional[str] = Field(None, description="Expected output hash")
         absolute_tolerance: float = Field(default=1e-9, description="Absolute tolerance")
         relative_tolerance: float = Field(default=1e-6, description="Relative tolerance")
 
-    class HashComputeRequest(BaseModel):
+    class HashComputeRequest(GreenLangBase):
         """Request body for hash computation."""
         data: Any = Field(..., description="Data to hash")
         algorithm: str = Field(default="sha256", description="Hash algorithm")
 
-    class DriftDetectRequest(BaseModel):
+    class DriftDetectRequest(GreenLangBase):
         """Request body for drift detection."""
         baseline_id: Optional[str] = Field(None, description="Baseline ID")
         baseline_data: Optional[Dict[str, Any]] = Field(None, description="Inline baseline")
@@ -99,13 +100,13 @@ if FASTAPI_AVAILABLE:
         hard_threshold: float = Field(default=0.05, description="Hard threshold")
         tolerance: float = Field(default=1e-9, description="Absolute tolerance")
 
-    class CreateBaselineRequest(BaseModel):
+    class CreateBaselineRequest(GreenLangBase):
         """Request body for creating a drift baseline."""
         name: str = Field(..., description="Baseline name")
         description: str = Field(default="", description="Description")
         baseline_data: Dict[str, Any] = Field(..., description="Baseline data")
 
-    class ReplayExecuteRequest(BaseModel):
+    class ReplayExecuteRequest(GreenLangBase):
         """Request body for replay execution."""
         original_execution_id: str = Field(..., description="Original execution ID")
         captured_inputs: Dict[str, Any] = Field(..., description="Captured inputs")
@@ -114,11 +115,11 @@ if FASTAPI_AVAILABLE:
         captured_versions: Dict[str, Any] = Field(..., description="Captured versions")
         strict_mode: bool = Field(default=False, description="Strict mode")
 
-    class PinVersionsRequest(BaseModel):
+    class PinVersionsRequest(GreenLangBase):
         """Request body for version pinning."""
         auto_detect: bool = Field(default=True, description="Auto-detect current versions")
 
-    class GenerateReportRequest(BaseModel):
+    class GenerateReportRequest(GreenLangBase):
         """Request body for report generation."""
         execution_id: str = Field(..., description="Execution ID")
         verification_id: str = Field(..., description="Verification run ID")

@@ -15,7 +15,8 @@ Enables:
 
 from __future__ import annotations
 from typing import Optional
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import ConfigDict, Field
+from greenlang.schemas import GreenLangBase
 
 
 class BudgetExceeded(Exception):
@@ -55,7 +56,7 @@ class BudgetExceeded(Exception):
         return " | ".join(parts)
 
 
-class Budget(BaseModel):
+class Budget(GreenLangBase):
     """
     Budget tracker with dollar and token caps
 

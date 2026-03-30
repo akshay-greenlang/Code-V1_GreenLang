@@ -74,30 +74,24 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ValidationSeverity
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _today() -> date:
     """Return current UTC date."""
     return datetime.now(timezone.utc).date()
 
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -115,7 +109,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -124,7 +117,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -136,22 +128,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class RequestStatus(str, Enum):
     """Data request lifecycle status.
@@ -178,7 +166,6 @@ class RequestStatus(str, Enum):
     OVERDUE = "overdue"
     CANCELLED = "cancelled"
 
-
 class CampaignStatus(str, Enum):
     """Campaign lifecycle status.
 
@@ -194,7 +181,6 @@ class CampaignStatus(str, Enum):
     COMPLETED = "completed"
     CLOSED = "closed"
 
-
 class DataScope(str, Enum):
     """GHG scope for which data is requested.
 
@@ -207,7 +193,6 @@ class DataScope(str, Enum):
     SCOPE_2 = "scope_2"
     SCOPE_3 = "scope_3"
     ALL = "all"
-
 
 class EscalationLevel(str, Enum):
     """Reminder escalation level.
@@ -222,23 +207,9 @@ class EscalationLevel(str, Enum):
     LEVEL_2 = "level_2"
     LEVEL_3 = "level_3"
 
-
-class ValidationSeverity(str, Enum):
-    """Severity level for data validation findings.
-
-    ERROR:   Data cannot be accepted; must be corrected.
-    WARNING: Data may be accepted but should be reviewed.
-    INFO:    Informational finding; no action required.
-    """
-    ERROR = "error"
-    WARNING = "warning"
-    INFO = "info"
-
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Data Request
 # ---------------------------------------------------------------------------
-
 
 class ValidationFinding(BaseModel):
     """A single finding from data validation.
@@ -259,7 +230,6 @@ class ValidationFinding(BaseModel):
     message: str = Field(default="", max_length=1000, description="Message")
     expected_range: str = Field(default="", description="Expected range")
     actual_value: str = Field(default="", description="Actual value")
-
 
 class DataSubmission(BaseModel):
     """A data submission against a data request.
@@ -282,7 +252,7 @@ class DataSubmission(BaseModel):
     request_id: str = Field(default="", description="Parent request ID")
     submitted_by: str = Field(default="", max_length=300, description="Submitted by")
     submitted_at: datetime = Field(
-        default_factory=_utcnow, description="Submission time"
+        default_factory=utcnow, description="Submission time"
     )
     data_payload: Dict[str, Any] = Field(
         default_factory=dict, description="Submitted data"
@@ -299,7 +269,6 @@ class DataSubmission(BaseModel):
     accepted_at: Optional[datetime] = Field(default=None, description="Accepted at")
     accepted_by: str = Field(default="", description="Accepted by")
 
-
 class ReminderRecord(BaseModel):
     """Record of a reminder sent for a data request.
 
@@ -313,13 +282,12 @@ class ReminderRecord(BaseModel):
     """
     reminder_id: str = Field(default_factory=_new_uuid, description="Reminder ID")
     request_id: str = Field(default="", description="Request ID")
-    sent_at: datetime = Field(default_factory=_utcnow, description="Sent at")
+    sent_at: datetime = Field(default_factory=utcnow, description="Sent at")
     escalation_level: EscalationLevel = Field(
         default=EscalationLevel.NONE, description="Escalation level"
     )
     recipient: str = Field(default="", max_length=300, description="Recipient")
     message: str = Field(default="", max_length=2000, description="Message")
-
 
 class DataRequest(BaseModel):
     """A single data collection request within a campaign.
@@ -370,14 +338,12 @@ class DataRequest(BaseModel):
     escalation_level: EscalationLevel = Field(
         default=EscalationLevel.NONE, description="Escalation level"
     )
-    created_at: datetime = Field(default_factory=_utcnow, description="Created at")
+    created_at: datetime = Field(default_factory=utcnow, description="Created at")
     created_by: str = Field(default="", max_length=300, description="Created by")
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Campaign
 # ---------------------------------------------------------------------------
-
 
 class CollectionProgress(BaseModel):
     """Progress metrics for a data collection campaign.
@@ -413,7 +379,6 @@ class CollectionProgress(BaseModel):
     expected_data_points: int = Field(default=0, description="Expected data points")
     collected_data_points: int = Field(default=0, description="Collected data points")
 
-
 class CollectionCampaign(BaseModel):
     """A data collection campaign for one inventory period.
 
@@ -446,15 +411,13 @@ class CollectionCampaign(BaseModel):
     progress: CollectionProgress = Field(
         default_factory=CollectionProgress, description="Progress metrics"
     )
-    created_at: datetime = Field(default_factory=_utcnow, description="Created at")
+    created_at: datetime = Field(default_factory=utcnow, description="Created at")
     created_by: str = Field(default="", max_length=300, description="Created by")
     notes: str = Field(default="", max_length=5000, description="Notes")
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Result
 # ---------------------------------------------------------------------------
-
 
 class DataCollectionResult(BaseModel):
     """Complete result from a data collection engine operation.
@@ -488,12 +451,11 @@ class DataCollectionResult(BaseModel):
         default=None, description="Progress metrics"
     )
     warnings: List[str] = Field(default_factory=list, description="Warnings")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Timestamp")
     processing_time_ms: Decimal = Field(
         default=Decimal("0"), description="Processing time (ms)"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 # ---------------------------------------------------------------------------
 # Model Rebuild (resolve forward references from __future__ annotations)
@@ -506,7 +468,6 @@ DataRequest.model_rebuild()
 CollectionProgress.model_rebuild()
 CollectionCampaign.model_rebuild()
 DataCollectionResult.model_rebuild()
-
 
 # ---------------------------------------------------------------------------
 # Validation Rules
@@ -529,11 +490,9 @@ DEFAULT_VALIDATION_RANGES: Dict[str, Tuple[float, float, str]] = {
     "production_tonnes": (0, 500_000_000, "tonnes"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class DataCollectionEngine:
     """Data collection campaign management engine.
@@ -798,7 +757,7 @@ class DataCollectionEngine:
             facility_name=facility_name,
             entity_id=entity_id,
             assigned_to=assigned_to,
-            assigned_at=_utcnow() if assigned_to else None,
+            assigned_at=utcnow() if assigned_to else None,
             due_date=effective_due,
             data_fields_requested=data_fields_requested or [],
             instructions=instructions,
@@ -859,7 +818,7 @@ class DataCollectionEngine:
 
         old_assignee = request.assigned_to
         request.assigned_to = assigned_to
-        request.assigned_at = _utcnow()
+        request.assigned_at = utcnow()
         if due_date:
             request.due_date = due_date
 
@@ -1007,7 +966,7 @@ class DataCollectionEngine:
         submission = self._find_submission(request, submission_id)
 
         submission.accepted = True
-        submission.accepted_at = _utcnow()
+        submission.accepted_at = utcnow()
         submission.accepted_by = accepted_by
         submission.reviewer_notes = reviewer_notes
 

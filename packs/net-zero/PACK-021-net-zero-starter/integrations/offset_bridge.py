@@ -41,26 +41,19 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -73,11 +66,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Agent Stubs
 # ---------------------------------------------------------------------------
-
 
 class _AgentStub:
     """Stub for unavailable offset agent modules."""
@@ -96,7 +87,6 @@ class _AgentStub:
             }
         return _stub_method
 
-
 def _try_import_agent(agent_id: str, module_path: str) -> Any:
     """Try to import an agent with graceful fallback.
 
@@ -109,16 +99,15 @@ def _try_import_agent(agent_id: str, module_path: str) -> Any:
     """
     try:
         import importlib
+
         return importlib.import_module(module_path)
     except ImportError:
         logger.debug("Agent %s not available, using stub", agent_id)
         return _AgentStub(agent_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CreditType(str, Enum):
     """Carbon credit types."""
@@ -133,7 +122,6 @@ class CreditType(str, Enum):
     BIOCHAR = "biochar"
     ENHANCED_WEATHERING = "enhanced_weathering"
 
-
 class CreditStandard(str, Enum):
     """Carbon credit verification standards."""
 
@@ -144,7 +132,6 @@ class CreditStandard(str, Enum):
     PURO_EARTH = "puro_earth"
     ISOMETRIC = "isometric"
 
-
 class QualityTier(str, Enum):
     """Credit quality tier."""
 
@@ -154,7 +141,6 @@ class QualityTier(str, Enum):
     BRONZE = "bronze"
     UNRATED = "unrated"
 
-
 class SBTiOffsetRole(str, Enum):
     """SBTi-defined roles for carbon credits."""
 
@@ -162,11 +148,9 @@ class SBTiOffsetRole(str, Enum):
     NEUTRALIZATION = "neutralization"
     NOT_APPLICABLE = "not_applicable"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class OffsetBridgeConfig(BaseModel):
     """Configuration for the Offset Bridge."""
@@ -181,7 +165,6 @@ class OffsetBridgeConfig(BaseModel):
     )
     prefer_removals: bool = Field(default=True)
     quality_minimum: QualityTier = Field(default=QualityTier.SILVER)
-
 
 class OffsetStrategyResult(BaseModel):
     """Result of offset strategy planning."""
@@ -200,7 +183,6 @@ class OffsetStrategyResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class CreditValuationResult(BaseModel):
     """Result of credit valuation."""
 
@@ -214,7 +196,6 @@ class CreditValuationResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class CreditTrackingResult(BaseModel):
     """Result of credit tracking."""
 
@@ -226,7 +207,6 @@ class CreditTrackingResult(BaseModel):
     credits: List[Dict[str, Any]] = Field(default_factory=list)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class QualityVerificationResult(BaseModel):
     """Result of credit quality verification."""
@@ -244,7 +224,6 @@ class QualityVerificationResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class SBTiComplianceResult(BaseModel):
     """Result of SBTi offset compliance check."""
 
@@ -259,7 +238,6 @@ class SBTiComplianceResult(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Agent Routing
@@ -284,11 +262,9 @@ CREDIT_PRICING: Dict[str, Dict[str, float]] = {
     CreditType.ENHANCED_WEATHERING.value: {"min": 50.0, "avg": 120.0, "max": 200.0},
 }
 
-
 # ---------------------------------------------------------------------------
 # OffsetBridge
 # ---------------------------------------------------------------------------
-
 
 class OffsetBridge:
     """Bridge to carbon credit and offset management agents.

@@ -92,25 +92,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -130,7 +124,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely.
 
@@ -144,7 +137,6 @@ def _decimal(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
 ) -> Decimal:
@@ -152,7 +144,6 @@ def _safe_divide(
     if denominator == Decimal("0"):
         return default
     return numerator / denominator
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value to the specified number of decimal places.
@@ -169,21 +160,17 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 def _round2(value: Decimal) -> Decimal:
     """Round Decimal to 2 decimal places using ROUND_HALF_UP."""
     return value.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-
 
 def _round4(value: Decimal) -> Decimal:
     """Round Decimal to 4 decimal places using ROUND_HALF_UP."""
     return value.quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP)
 
-
 def _round6(value: Decimal) -> Decimal:
     """Round Decimal to 6 decimal places using ROUND_HALF_UP."""
     return value.quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP)
-
 
 def _pct(numerator: Decimal, denominator: Decimal) -> Decimal:
     """Calculate percentage safely, rounded to 2 decimal places.
@@ -199,11 +186,9 @@ def _pct(numerator: Decimal, denominator: Decimal) -> Decimal:
         return Decimal("0")
     return _round2(numerator / denominator * Decimal("100"))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EmploymentType(str, Enum):
     """Employment contract type per ESRS S1-6 Para 50.
@@ -215,7 +200,6 @@ class EmploymentType(str, Enum):
     TEMPORARY = "temporary"
     NON_GUARANTEED = "non_guaranteed"
 
-
 class WorkingTime(str, Enum):
     """Working time arrangement per ESRS S1-6 Para 50.
 
@@ -224,7 +208,6 @@ class WorkingTime(str, Enum):
     """
     FULL_TIME = "full_time"
     PART_TIME = "part_time"
-
 
 class Gender(str, Enum):
     """Gender classification per ESRS S1-6 Para 50.
@@ -236,7 +219,6 @@ class Gender(str, Enum):
     OTHER = "other"
     NOT_DISCLOSED = "not_disclosed"
 
-
 class AgeGroup(str, Enum):
     """Age group classification per ESRS S1-9 Para 65.
 
@@ -246,7 +228,6 @@ class AgeGroup(str, Enum):
     BETWEEN_30_50 = "between_30_50"
     OVER_50 = "over_50"
 
-
 class Region(str, Enum):
     """Geographic region classification per ESRS S1-6 Para 52.
 
@@ -255,7 +236,6 @@ class Region(str, Enum):
     """
     EU = "eu"
     NON_EU = "non_eu"
-
 
 class ManagementLevel(str, Enum):
     """Management level classification per ESRS S1-9 Para 65.
@@ -270,7 +250,6 @@ class ManagementLevel(str, Enum):
     ADMINISTRATIVE = "administrative"
     OPERATIONAL = "operational"
 
-
 class InjurySeverity(str, Enum):
     """Injury severity classification per ESRS S1-14 Para 85-91.
 
@@ -282,7 +261,6 @@ class InjurySeverity(str, Enum):
     FIRST_AID = "first_aid"
     NEAR_MISS = "near_miss"
 
-
 class LeaveType(str, Enum):
     """Family-related leave type per ESRS S1-15 Para 93-95.
 
@@ -293,7 +271,6 @@ class LeaveType(str, Enum):
     PATERNITY = "paternity"
     PARENTAL = "parental"
     CARERS = "carers"
-
 
 class IncidentType(str, Enum):
     """Human rights incident type per ESRS S1-17 Para 101-103.
@@ -308,7 +285,6 @@ class IncidentType(str, Enum):
     FREEDOM_OF_ASSOCIATION = "freedom_of_association"
     OTHER_HUMAN_RIGHTS = "other_human_rights"
 
-
 class NonEmployeeType(str, Enum):
     """Non-employee worker type per ESRS S1-7 Para 56-58.
 
@@ -322,7 +298,6 @@ class NonEmployeeType(str, Enum):
     APPRENTICE = "apprentice"
     OTHER = "other"
 
-
 class SocialDialogueType(str, Enum):
     """Social dialogue arrangement type per ESRS S1-8 Para 60-63.
 
@@ -335,7 +310,6 @@ class SocialDialogueType(str, Enum):
     OTHER = "other"
     NONE = "none"
 
-
 class RemediationStatus(str, Enum):
     """Remediation status for human rights incidents per S1-17."""
     OPEN = "open"
@@ -344,11 +318,9 @@ class RemediationStatus(str, Enum):
     RESOLVED = "resolved"
     CLOSED = "closed"
 
-
 # ---------------------------------------------------------------------------
 # Constants - ESRS S1 XBRL-Tagged Datapoints
 # ---------------------------------------------------------------------------
-
 
 S1_1_DATAPOINTS: List[str] = [
     "s1_1_01_policies_own_workforce_described",
@@ -491,11 +463,9 @@ ALL_S1_DATAPOINTS: List[str] = (
 TRIR_NORMALISATION_FACTOR: Decimal = Decimal("200000")
 LTIFR_NORMALISATION_FACTOR: Decimal = Decimal("1000000")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models - Qualitative Disclosures (S1-1 through S1-5)
 # ---------------------------------------------------------------------------
-
 
 class WorkforcePolicy(BaseModel):
     """Workforce policy description per ESRS S1-1 Para 19-21.
@@ -536,7 +506,6 @@ class WorkforcePolicy(BaseModel):
         default=False, description="Whether the policy is publicly available",
     )
 
-
 class EngagementProcess(BaseModel):
     """Engagement process description per ESRS S1-2 Para 23-25.
 
@@ -572,7 +541,6 @@ class EngagementProcess(BaseModel):
         default=False,
         description="Whether outcomes of engagement are disclosed",
     )
-
 
 class RemediationChannel(BaseModel):
     """Remediation and grievance channel per ESRS S1-3 Para 27-30.
@@ -614,11 +582,9 @@ class RemediationChannel(BaseModel):
         ge=0,
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models - Quantitative Disclosures (S1-6 through S1-17)
 # ---------------------------------------------------------------------------
-
 
 class EmployeeData(BaseModel):
     """Individual employee record per ESRS S1-6 Para 50-54.
@@ -684,7 +650,6 @@ class EmployeeData(BaseModel):
         ge=Decimal("0"),
     )
 
-
 class NonEmployeeWorker(BaseModel):
     """Non-employee worker record per ESRS S1-7 Para 56-58.
 
@@ -707,7 +672,6 @@ class NonEmployeeWorker(BaseModel):
         description="Number of workers in this category",
         ge=0,
     )
-
 
 class CollectiveBargainingData(BaseModel):
     """Collective bargaining data per ESRS S1-8 Para 60-63.
@@ -740,7 +704,6 @@ class CollectiveBargainingData(BaseModel):
         description="Whether this region is within the EEA",
     )
 
-
 class HealthSafetyIncident(BaseModel):
     """Individual health and safety incident per ESRS S1-14 Para 85-91.
 
@@ -765,7 +728,6 @@ class HealthSafetyIncident(BaseModel):
         default=True,
         description="Whether the affected person is an employee",
     )
-
 
 class HealthSafetyMetrics(BaseModel):
     """Aggregated health and safety metrics per ESRS S1-14 Para 85-91.
@@ -808,7 +770,6 @@ class HealthSafetyMetrics(BaseModel):
         description="Pre-calculated LTIFR (if provided, overrides calculation)",
     )
 
-
 class FamilyLeaveData(BaseModel):
     """Family leave data per ESRS S1-15 Para 93-95.
 
@@ -836,7 +797,6 @@ class FamilyLeaveData(BaseModel):
         description="Average number of days taken per employee",
         ge=Decimal("0"),
     )
-
 
 class HumanRightsIncident(BaseModel):
     """Human rights incident record per ESRS S1-17 Para 101-103.
@@ -884,11 +844,9 @@ class HumanRightsIncident(BaseModel):
             )
         return v.lower()
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models - Result
 # ---------------------------------------------------------------------------
-
 
 class S1WorkforceResult(BaseModel):
     """Complete ESRS S1 Own Workforce disclosure result.
@@ -905,7 +863,7 @@ class S1WorkforceResult(BaseModel):
         description="Engine version used for this calculation",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of calculation (UTC)",
     )
     reporting_year: int = Field(
@@ -1022,11 +980,9 @@ class S1WorkforceResult(BaseModel):
         description="SHA-256 hash of all inputs and calculation steps",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class OwnWorkforceEngine:
     """ESRS S1 Own Workforce calculation engine.

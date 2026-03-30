@@ -52,6 +52,8 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 __all__ = [
@@ -66,21 +68,13 @@ __all__ = [
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for provenance tracking."""
@@ -93,11 +87,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class PEFImpactCategory(str, Enum):
     """PEF impact assessment categories (EF 3.1 method)."""
@@ -118,7 +110,6 @@ class PEFImpactCategory(str, Enum):
     WATER_USE = "water_use"
     RESOURCE_MINERALS = "resource_use_minerals_metals"
     RESOURCE_FOSSILS = "resource_use_fossils"
-
 
 class LifecycleStage(str, Enum):
     """Product lifecycle stages per EN 15804."""
@@ -141,7 +132,6 @@ class LifecycleStage(str, Enum):
     DISPOSAL = "C4"
     REUSE_RECOVERY = "D"
 
-
 class PEFStudyStatus(str, Enum):
     """Status of a PEF study import."""
 
@@ -150,7 +140,6 @@ class PEFStudyStatus(str, Enum):
     NOT_FOUND = "not_found"
     EXPIRED = "expired"
     INVALID = "invalid"
-
 
 # ---------------------------------------------------------------------------
 # Reference Data
@@ -193,11 +182,9 @@ PEFCR_REGISTRY: Dict[str, Dict[str, str]] = {
     "PEFCR-WINE": {"name": "Still and Sparkling Wine", "status": "published"},
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class PEFBridgeConfig(BaseModel):
     """Configuration for the PEF Data Bridge."""
@@ -220,7 +207,6 @@ class PEFBridgeConfig(BaseModel):
         default_factory=lambda: list(PEFImpactCategory),
     )
 
-
 class ImpactResult(BaseModel):
     """Impact assessment result for a single category."""
 
@@ -230,7 +216,6 @@ class ImpactResult(BaseModel):
     normalized: float = Field(default=0.0)
     weighted_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     lifecycle_stage_breakdown: Dict[str, float] = Field(default_factory=dict)
-
 
 class PEFDataResult(BaseModel):
     """Result of a PEF data import operation."""
@@ -248,14 +233,12 @@ class PEFDataResult(BaseModel):
     data_quality_rating: str = Field(default="not_assessed")
     claim_substantiation_level: str = Field(default="insufficient")
     gaps: List[str] = Field(default_factory=list)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # PEFBridge
 # ---------------------------------------------------------------------------
-
 
 class PEFBridge:
     """Product Environmental Footprint data exchange bridge for PACK-018.
@@ -298,7 +281,7 @@ class PEFBridge:
             Dict with study data, impact results, lifecycle stages,
             substantiation level, and provenance hash.
         """
-        start = _utcnow()
+        start = utcnow()
         result = PEFDataResult(
             study_reference=study_reference,
             pefcr_reference=self.config.pefcr_reference,
@@ -320,7 +303,7 @@ class PEFBridge:
 
         result.gaps.extend(self._identify_gaps(result))
 
-        elapsed = (_utcnow() - start).total_seconds() * 1000
+        elapsed = (utcnow() - start).total_seconds() * 1000
 
         if self.config.enable_provenance:
             result.provenance_hash = _compute_hash(result)

@@ -48,25 +48,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 engine_version: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -94,7 +88,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -110,7 +103,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -131,7 +123,6 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100).
 
@@ -143,7 +134,6 @@ def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
         Percentage as Decimal; Decimal("0") when whole is zero.
     """
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* and return a float.
@@ -160,11 +150,9 @@ def _round_val(value: Decimal, places: int = 6) -> float:
     quantizer = Decimal(10) ** -places
     return float(value.quantize(quantizer, rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class PackagingMaterial(str, Enum):
     """Packaging material types."""
@@ -181,7 +169,6 @@ class PackagingMaterial(str, Enum):
     COMPOSITE = "composite"
     BIOPLASTIC = "bioplastic"
 
-
 class PackagingType(str, Enum):
     """Packaging function/level classification per PPWR."""
     PRIMARY = "primary"
@@ -189,7 +176,6 @@ class PackagingType(str, Enum):
     TERTIARY = "tertiary"
     TRANSPORT = "transport"
     E_COMMERCE = "e_commerce"
-
 
 class EPRGrade(str, Enum):
     """Eco-modulation recyclability grade (A = best, E = worst)."""
@@ -199,14 +185,12 @@ class EPRGrade(str, Enum):
     D = "D"
     E = "E"
 
-
 class LabelingStatus(str, Enum):
     """Labeling compliance status."""
     COMPLIANT = "compliant"
     PENDING = "pending"
     NON_COMPLIANT = "non_compliant"
     EXEMPT = "exempt"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- PPWR Targets and Factors
@@ -368,11 +352,9 @@ RECYCLED_CARBON_REDUCTION: Dict[str, float] = {
     PackagingMaterial.BIOPLASTIC: 0.25,
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class PackagingItem(BaseModel):
     """Individual packaging item with material and compliance data.
@@ -426,7 +408,6 @@ class PackagingItem(BaseModel):
     pfas_ppm: Optional[float] = Field(None, ge=0, description="PFAS (ppm)")
     contains_bpa: bool = Field(False, description="Contains BPA")
 
-
 class PackagingPortfolio(BaseModel):
     """Complete packaging portfolio for compliance assessment.
 
@@ -441,11 +422,9 @@ class PackagingPortfolio(BaseModel):
     items: List[PackagingItem] = Field(..., min_length=1, description="Packaging items")
     country: str = Field("EU", description="Primary market country")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class RecycledContentAssessment(BaseModel):
     """Recycled content assessment per material.
@@ -473,7 +452,6 @@ class RecycledContentAssessment(BaseModel):
     compliant_2040: bool
     item_count: int
 
-
 class EPRFeeDetail(BaseModel):
     """EPR fee calculation detail per material.
 
@@ -498,7 +476,6 @@ class EPRFeeDetail(BaseModel):
     gross_fee_eur: float
     net_fee_eur: float
 
-
 class LabelingComplianceDetail(BaseModel):
     """Labeling compliance assessment per requirement.
 
@@ -520,7 +497,6 @@ class LabelingComplianceDetail(BaseModel):
     compliant_items: int
     compliance_pct: float
     status: str
-
 
 class ReuseProgressDetail(BaseModel):
     """Reuse target progress assessment.
@@ -544,7 +520,6 @@ class ReuseProgressDetail(BaseModel):
     gap_to_2030_pct: float
     on_track: bool
 
-
 class SubstanceComplianceDetail(BaseModel):
     """Substance restriction compliance assessment.
 
@@ -565,7 +540,6 @@ class SubstanceComplianceDetail(BaseModel):
     items_unknown: int
     compliant: bool
 
-
 class CarbonFootprintSummary(BaseModel):
     """Packaging carbon footprint summary.
 
@@ -579,7 +553,6 @@ class CarbonFootprintSummary(BaseModel):
     total_actual_footprint_tco2e: float
     avoided_emissions_tco2e: float
     reduction_pct: float
-
 
 class PPWRComplianceResult(BaseModel):
     """Complete PPWR compliance assessment result.
@@ -623,15 +596,13 @@ class PPWRComplianceResult(BaseModel):
     overall_compliance_score: float
     recommendations: List[str]
     engine_version: str = engine_version
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     processing_time_ms: float = 0.0
     provenance_hash: str = ""
-
 
 # ---------------------------------------------------------------------------
 # Calculation Engine
 # ---------------------------------------------------------------------------
-
 
 class PackagingComplianceEngine:
     """PPWR packaging compliance calculation engine.

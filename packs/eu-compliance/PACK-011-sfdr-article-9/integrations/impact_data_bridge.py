@@ -45,19 +45,13 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # =============================================================================
 # Utility Helpers
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute a SHA-256 hash of arbitrary data."""
@@ -65,11 +59,9 @@ def _hash_data(data: Any) -> str:
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # Agent Stub
 # =============================================================================
-
 
 class _AgentStub:
     """Deferred agent loader for lazy initialization."""
@@ -86,6 +78,7 @@ class _AgentStub:
             return self._instance
         try:
             import importlib
+
             mod = importlib.import_module(self.module_path)
             cls = getattr(mod, self.class_name)
             self._instance = cls()
@@ -102,11 +95,9 @@ class _AgentStub:
         """Whether the agent has been loaded."""
         return self._instance is not None
 
-
 # =============================================================================
 # Enums
 # =============================================================================
-
 
 class SDGGoal(str, Enum):
     """UN Sustainable Development Goals (1-17)."""
@@ -128,7 +119,6 @@ class SDGGoal(str, Enum):
     PEACE_JUSTICE = "sdg_16"
     PARTNERSHIPS = "sdg_17"
 
-
 class ImpactCategory(str, Enum):
     """Impact measurement category."""
     ENVIRONMENTAL = "environmental"
@@ -140,7 +130,6 @@ class ImpactCategory(str, Enum):
     EDUCATION = "education"
     FINANCIAL_INCLUSION = "financial_inclusion"
 
-
 class VerificationStatus(str, Enum):
     """Impact data verification status."""
     VERIFIED = "verified"
@@ -149,14 +138,12 @@ class VerificationStatus(str, Enum):
     UNVERIFIED = "unverified"
     PENDING = "pending"
 
-
 class ImpactDirection(str, Enum):
     """Direction of impact contribution."""
     POSITIVE = "positive"
     NEGATIVE = "negative"
     NEUTRAL = "neutral"
     MIXED = "mixed"
-
 
 class ContributionLevel(str, Enum):
     """Level of contribution to sustainable objective."""
@@ -166,11 +153,9 @@ class ContributionLevel(str, Enum):
     NONE = "none"
     NEGATIVE = "negative"
 
-
 # =============================================================================
 # Data Models
 # =============================================================================
-
 
 class ImpactDataConfig(BaseModel):
     """Configuration for the Impact Data Bridge."""
@@ -214,7 +199,6 @@ class ImpactDataConfig(BaseModel):
         default=True, description="Enable provenance hash tracking"
     )
 
-
 class ImpactKPI(BaseModel):
     """A single impact Key Performance Indicator."""
     kpi_id: str = Field(default="", description="KPI identifier")
@@ -230,7 +214,6 @@ class ImpactKPI(BaseModel):
     verification_status: str = Field(
         default="unverified", description="Verification status"
     )
-
 
 class SDGContribution(BaseModel):
     """SDG contribution assessment for a holding."""
@@ -250,7 +233,6 @@ class SDGContribution(BaseModel):
     data_quality: str = Field(
         default="estimated", description="Data quality assessment"
     )
-
 
 class InvesteeImpactData(BaseModel):
     """Impact data for a single investee company."""
@@ -281,7 +263,6 @@ class InvesteeImpactData(BaseModel):
     data_date: str = Field(default="", description="Data collection date")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class SDGAlignmentData(BaseModel):
     """Aggregated SDG alignment data for the portfolio."""
     sdg_goal: int = Field(default=0, description="SDG goal number")
@@ -300,7 +281,6 @@ class SDGAlignmentData(BaseModel):
         default="none", description="Average contribution level"
     )
     direction: str = Field(default="positive", description="Impact direction")
-
 
 class ImpactVerification(BaseModel):
     """Result of impact data verification."""
@@ -332,7 +312,6 @@ class ImpactVerification(BaseModel):
         default="pending", description="Overall verification status"
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class PortfolioImpactResult(BaseModel):
     """Aggregated portfolio-level impact assessment."""
@@ -384,11 +363,9 @@ class PortfolioImpactResult(BaseModel):
     calculated_at: str = Field(default="", description="Calculation timestamp")
     execution_time_ms: float = Field(default=0.0, description="Execution time")
 
-
 # =============================================================================
 # SDG Reference Data
 # =============================================================================
-
 
 SDG_NAMES: Dict[int, str] = {
     1: "No Poverty",
@@ -410,11 +387,9 @@ SDG_NAMES: Dict[int, str] = {
     17: "Partnerships for the Goals",
 }
 
-
 # =============================================================================
 # Impact Data Bridge
 # =============================================================================
-
 
 class ImpactDataBridge:
     """Bridge for impact data intake, SDG alignment, and verification.
@@ -525,7 +500,7 @@ class ImpactDataBridge:
 
         result = PortfolioImpactResult(
             portfolio_name="Article 9 Portfolio",
-            reference_date=_utcnow().strftime("%Y-%m-%d"),
+            reference_date=utcnow().strftime("%Y-%m-%d"),
             total_holdings=len(holdings),
             assessed_holdings=len(assessed),
             coverage_pct=coverage_pct,
@@ -538,7 +513,7 @@ class ImpactDataBridge:
             verification=verification,
             errors=errors,
             warnings=warnings,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             execution_time_ms=elapsed_ms,
         )
 
@@ -613,7 +588,7 @@ class ImpactDataBridge:
             "overall_coverage_pct": overall_coverage,
             "field_coverage": field_coverage,
             "total_holdings": total,
-            "validated_at": _utcnow().isoformat(),
+            "validated_at": utcnow().isoformat(),
         }
 
     # -------------------------------------------------------------------------
@@ -694,7 +669,7 @@ class ImpactDataBridge:
             overall_impact_score=impact_score,
             contribution_to_objective=contribution,
             verification_status=str(holding.get("verification_status", "unverified")),
-            data_date=str(holding.get("data_date", _utcnow().strftime("%Y-%m-%d"))),
+            data_date=str(holding.get("data_date", utcnow().strftime("%Y-%m-%d"))),
         )
 
         if self.config.enable_provenance:
@@ -899,9 +874,9 @@ class ImpactDataBridge:
             )
 
         verification = ImpactVerification(
-            verification_id=f"VER-{_utcnow().strftime('%Y%m%d%H%M%S')}",
+            verification_id=f"VER-{utcnow().strftime('%Y%m%d%H%M%S')}",
             provider=self.config.verification_provider or "internal",
-            verified_at=_utcnow().isoformat(),
+            verified_at=utcnow().isoformat(),
             total_holdings_verified=verified,
             total_holdings=total,
             verification_rate_pct=(verified / total * 100.0) if total > 0 else 0.0,

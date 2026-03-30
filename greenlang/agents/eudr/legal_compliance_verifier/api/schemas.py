@@ -44,23 +44,17 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import ConfigDict, Field, field_validator
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
+from greenlang.schemas import GreenLangBase, utcnow
 
 def _new_id() -> str:
     """Generate a new UUID4 string identifier."""
     return str(uuid.uuid4())
 
-
 # =============================================================================
 # Enumerations (API-level mirrors for OpenAPI documentation)
 # =============================================================================
-
 
 class JurisdictionTypeEnum(str, Enum):
     """Legal jurisdiction types."""
@@ -71,7 +65,6 @@ class JurisdictionTypeEnum(str, Enum):
     BILATERAL = "bilateral"
     INTERNATIONAL = "international"
 
-
 class FrameworkStatusEnum(str, Enum):
     """Legal framework status."""
 
@@ -80,7 +73,6 @@ class FrameworkStatusEnum(str, Enum):
     REPEALED = "repealed"
     AMENDED = "amended"
     PENDING = "pending"
-
 
 class DocumentTypeEnum(str, Enum):
     """Document types for legal verification."""
@@ -97,7 +89,6 @@ class DocumentTypeEnum(str, Enum):
     CORRECTIVE_ACTION_PLAN = "corrective_action_plan"
     OTHER = "other"
 
-
 class DocumentStatusEnum(str, Enum):
     """Document verification status."""
 
@@ -107,7 +98,6 @@ class DocumentStatusEnum(str, Enum):
     EXPIRED = "expired"
     REVOKED = "revoked"
     UNDER_REVIEW = "under_review"
-
 
 class CertificationTypeEnum(str, Enum):
     """Certification types for EUDR equivalence."""
@@ -125,7 +115,6 @@ class CertificationTypeEnum(str, Enum):
     NATIONAL_SCHEME = "national_scheme"
     OTHER = "other"
 
-
 class CertStatusEnum(str, Enum):
     """Certification validation status."""
 
@@ -136,7 +125,6 @@ class CertStatusEnum(str, Enum):
     PENDING_RENEWAL = "pending_renewal"
     NOT_RECOGNIZED = "not_recognized"
 
-
 class EquivalenceResultEnum(str, Enum):
     """EUDR equivalence assessment outcome."""
 
@@ -144,7 +132,6 @@ class EquivalenceResultEnum(str, Enum):
     PARTIALLY_EQUIVALENT = "partially_equivalent"
     NOT_EQUIVALENT = "not_equivalent"
     UNDER_REVIEW = "under_review"
-
 
 class RedFlagSeverityEnum(str, Enum):
     """Red flag severity levels."""
@@ -154,7 +141,6 @@ class RedFlagSeverityEnum(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     INFORMATIONAL = "informational"
-
 
 class RedFlagCategoryEnum(str, Enum):
     """Red flag categories."""
@@ -172,7 +158,6 @@ class RedFlagCategoryEnum(str, Enum):
     CUSTOMS_DISCREPANCY = "customs_discrepancy"
     OTHER = "other"
 
-
 class RedFlagStatusEnum(str, Enum):
     """Red flag lifecycle status."""
 
@@ -183,7 +168,6 @@ class RedFlagStatusEnum(str, Enum):
     RESOLVED = "resolved"
     FALSE_POSITIVE = "false_positive"
 
-
 class ComplianceOutcomeEnum(str, Enum):
     """Compliance assessment outcomes."""
 
@@ -193,7 +177,6 @@ class ComplianceOutcomeEnum(str, Enum):
     AT_RISK = "at_risk"
     REQUIRES_INVESTIGATION = "requires_investigation"
     PENDING = "pending"
-
 
 class ComplianceCategoryEnum(str, Enum):
     """Compliance assessment categories per EUDR structure."""
@@ -208,7 +191,6 @@ class ComplianceCategoryEnum(str, Enum):
     MONITORING = "monitoring"
     REPORTING = "reporting"
 
-
 class AuditTypeEnum(str, Enum):
     """Audit report types."""
 
@@ -217,7 +199,6 @@ class AuditTypeEnum(str, Enum):
     REGULATORY = "regulatory"
     THIRD_PARTY = "third_party"
     SELF_ASSESSMENT = "self_assessment"
-
 
 class AuditStatusEnum(str, Enum):
     """Audit lifecycle status."""
@@ -229,7 +210,6 @@ class AuditStatusEnum(str, Enum):
     CORRECTIVE_ACTIONS_PENDING = "corrective_actions_pending"
     CLOSED = "closed"
 
-
 class FindingSeverityEnum(str, Enum):
     """Audit finding severity."""
 
@@ -237,7 +217,6 @@ class FindingSeverityEnum(str, Enum):
     MINOR_NON_CONFORMITY = "minor_non_conformity"
     OBSERVATION = "observation"
     OPPORTUNITY_FOR_IMPROVEMENT = "opportunity_for_improvement"
-
 
 class CorrectiveActionStatusEnum(str, Enum):
     """Corrective action status."""
@@ -247,7 +226,6 @@ class CorrectiveActionStatusEnum(str, Enum):
     COMPLETED = "completed"
     VERIFIED = "verified"
     OVERDUE = "overdue"
-
 
 class ReportTypeEnum(str, Enum):
     """Report types."""
@@ -260,7 +238,6 @@ class ReportTypeEnum(str, Enum):
     REGULATORY_FILING = "regulatory_filing"
     RISK_ASSESSMENT = "risk_assessment"
 
-
 class ReportFormatEnum(str, Enum):
     """Report output formats."""
 
@@ -270,7 +247,6 @@ class ReportFormatEnum(str, Enum):
     JSON = "json"
     HTML = "html"
 
-
 class ReportStatusEnum(str, Enum):
     """Report generation status."""
 
@@ -278,7 +254,6 @@ class ReportStatusEnum(str, Enum):
     GENERATING = "generating"
     COMPLETED = "completed"
     FAILED = "failed"
-
 
 class ScheduleFrequencyEnum(str, Enum):
     """Report schedule frequency."""
@@ -289,7 +264,6 @@ class ScheduleFrequencyEnum(str, Enum):
     MONTHLY = "monthly"
     QUARTERLY = "quarterly"
 
-
 class BatchStatusEnum(str, Enum):
     """Batch processing status."""
 
@@ -298,7 +272,6 @@ class BatchStatusEnum(str, Enum):
     COMPLETED = "completed"
     PARTIALLY_COMPLETED = "partially_completed"
     FAILED = "failed"
-
 
 class EUDRCommodityEnum(str, Enum):
     """EUDR-regulated commodity types per Article 1."""
@@ -311,13 +284,11 @@ class EUDRCommodityEnum(str, Enum):
     SOYA = "soya"
     WOOD = "wood"
 
-
 # =============================================================================
 # Common / Shared Schemas
 # =============================================================================
 
-
-class ProvenanceInfo(BaseModel):
+class ProvenanceInfo(GreenLangBase):
     """Provenance tracking information for audit trail."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -333,12 +304,11 @@ class ProvenanceInfo(BaseModel):
         description="Agent identifier",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of operation",
     )
 
-
-class MetadataSchema(BaseModel):
+class MetadataSchema(GreenLangBase):
     """Response metadata for traceability."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -362,8 +332,7 @@ class MetadataSchema(BaseModel):
         default="1.0.0", description="API version"
     )
 
-
-class PaginatedMeta(BaseModel):
+class PaginatedMeta(GreenLangBase):
     """Pagination metadata for list responses."""
 
     total: int = Field(..., ge=0, description="Total number of records")
@@ -371,8 +340,7 @@ class PaginatedMeta(BaseModel):
     offset: int = Field(..., ge=0, description="Number of records skipped")
     has_more: bool = Field(..., description="Whether more pages exist")
 
-
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     """Structured error response for all API endpoints."""
 
     error: str = Field(..., description="Error type identifier")
@@ -380,8 +348,7 @@ class ErrorResponse(BaseModel):
     detail: Optional[str] = Field(None, description="Additional error details")
     request_id: Optional[str] = Field(None, description="Request correlation ID")
 
-
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Health check response schema."""
 
     status: str = Field(default="healthy", description="Service health status")
@@ -393,13 +360,11 @@ class HealthResponse(BaseModel):
     )
     version: str = Field(default="1.0.0", description="API version")
 
-
 # =============================================================================
 # 1. Legal Framework Schemas
 # =============================================================================
 
-
-class FrameworkRegisterRequest(BaseModel):
+class FrameworkRegisterRequest(GreenLangBase):
     """Request to register a new legal framework."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -446,8 +411,7 @@ class FrameworkRegisterRequest(BaseModel):
                 raise ValueError(f"Invalid country code: {code}")
         return [c.upper() for c in v]
 
-
-class FrameworkEntry(BaseModel):
+class FrameworkEntry(GreenLangBase):
     """Summary of a single legal framework."""
 
     framework_id: str = Field(..., description="Unique framework identifier")
@@ -467,12 +431,11 @@ class FrameworkEntry(BaseModel):
         default_factory=list, description="Covered commodities"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation timestamp"
+        default_factory=utcnow, description="Creation timestamp"
     )
     updated_at: Optional[datetime] = Field(None, description="Last update")
 
-
-class FrameworkRegisterResponse(BaseModel):
+class FrameworkRegisterResponse(GreenLangBase):
     """Response for framework registration."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -487,8 +450,7 @@ class FrameworkRegisterResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class FrameworkDetailResponse(BaseModel):
+class FrameworkDetailResponse(GreenLangBase):
     """Detailed response for a single legal framework."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -518,8 +480,7 @@ class FrameworkDetailResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class FrameworkUpdateRequest(BaseModel):
+class FrameworkUpdateRequest(GreenLangBase):
     """Request to update an existing legal framework."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -552,8 +513,7 @@ class FrameworkUpdateRequest(BaseModel):
         None, description="Updated commodities"
     )
 
-
-class FrameworkListResponse(BaseModel):
+class FrameworkListResponse(GreenLangBase):
     """Paginated list of legal frameworks."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -574,8 +534,7 @@ class FrameworkListResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class FrameworkSearchRequest(BaseModel):
+class FrameworkSearchRequest(GreenLangBase):
     """Request for advanced framework search."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -602,8 +561,7 @@ class FrameworkSearchRequest(BaseModel):
         None, description="Frameworks effective before this date"
     )
 
-
-class FrameworkSearchResponse(BaseModel):
+class FrameworkSearchResponse(GreenLangBase):
     """Response for advanced framework search."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -624,13 +582,11 @@ class FrameworkSearchResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
 # =============================================================================
 # 2. Document Verification Schemas
 # =============================================================================
 
-
-class DocumentVerifyRequest(BaseModel):
+class DocumentVerifyRequest(GreenLangBase):
     """Request to verify a legal document."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -673,8 +629,7 @@ class DocumentVerifyRequest(BaseModel):
         None, description="Additional document-specific data"
     )
 
-
-class DocumentEntry(BaseModel):
+class DocumentEntry(GreenLangBase):
     """Summary of a verified document."""
 
     document_id: str = Field(..., description="Unique document identifier")
@@ -708,11 +663,10 @@ class DocumentEntry(BaseModel):
         None, description="Verification timestamp"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Record creation timestamp"
+        default_factory=utcnow, description="Record creation timestamp"
     )
 
-
-class DocumentVerifyResponse(BaseModel):
+class DocumentVerifyResponse(GreenLangBase):
     """Response for document verification."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -734,8 +688,7 @@ class DocumentVerifyResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class DocumentListResponse(BaseModel):
+class DocumentListResponse(GreenLangBase):
     """Paginated list of documents."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -756,8 +709,7 @@ class DocumentListResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class DocumentDetailResponse(BaseModel):
+class DocumentDetailResponse(GreenLangBase):
     """Detailed response for a single document."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -790,8 +742,7 @@ class DocumentDetailResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class ValidityCheckRequest(BaseModel):
+class ValidityCheckRequest(GreenLangBase):
     """Request to check document validity status."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -808,8 +759,7 @@ class ValidityCheckRequest(BaseModel):
         description="Include warnings for documents expiring within 30 days",
     )
 
-
-class DocumentValidityEntry(BaseModel):
+class DocumentValidityEntry(GreenLangBase):
     """Validity status for a single document."""
 
     document_id: str = Field(..., description="Document ID")
@@ -831,8 +781,7 @@ class DocumentValidityEntry(BaseModel):
         default_factory=list, description="Validity issues found"
     )
 
-
-class ValidityCheckResponse(BaseModel):
+class ValidityCheckResponse(GreenLangBase):
     """Response for document validity check."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -859,8 +808,7 @@ class ValidityCheckResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class ExpiringDocumentEntry(BaseModel):
+class ExpiringDocumentEntry(GreenLangBase):
     """An expiring document entry."""
 
     document_id: str = Field(..., description="Document ID")
@@ -883,8 +831,7 @@ class ExpiringDocumentEntry(BaseModel):
         ..., description="Current status"
     )
 
-
-class ExpiringDocumentsResponse(BaseModel):
+class ExpiringDocumentsResponse(GreenLangBase):
     """Response for expiring documents query."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -914,13 +861,11 @@ class ExpiringDocumentsResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
 # =============================================================================
 # 3. Certification Schemas
 # =============================================================================
 
-
-class CertValidateRequest(BaseModel):
+class CertValidateRequest(GreenLangBase):
     """Request to validate a certification."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -958,8 +903,7 @@ class CertValidateRequest(BaseModel):
         description="URL for online certificate verification",
     )
 
-
-class CertificationEntry(BaseModel):
+class CertificationEntry(GreenLangBase):
     """Summary of a validated certification."""
 
     cert_id: str = Field(..., description="Unique certification record ID")
@@ -995,11 +939,10 @@ class CertificationEntry(BaseModel):
         None, description="Validation timestamp"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Record creation timestamp"
+        default_factory=utcnow, description="Record creation timestamp"
     )
 
-
-class CertValidateResponse(BaseModel):
+class CertValidateResponse(GreenLangBase):
     """Response for certification validation."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1017,8 +960,7 @@ class CertValidateResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class CertListResponse(BaseModel):
+class CertListResponse(GreenLangBase):
     """Paginated list of certifications."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1039,8 +981,7 @@ class CertListResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class CertDetailResponse(BaseModel):
+class CertDetailResponse(GreenLangBase):
     """Detailed response for a single certification."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1070,8 +1011,7 @@ class CertDetailResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class EUDREquivalenceRequest(BaseModel):
+class EUDREquivalenceRequest(GreenLangBase):
     """Request to check EUDR equivalence of a certification."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1094,8 +1034,7 @@ class EUDREquivalenceRequest(BaseModel):
         description="Include detailed gap analysis against EUDR requirements",
     )
 
-
-class EquivalenceGapEntry(BaseModel):
+class EquivalenceGapEntry(GreenLangBase):
     """A gap identified in EUDR equivalence analysis."""
 
     requirement: str = Field(
@@ -1114,8 +1053,7 @@ class EquivalenceGapEntry(BaseModel):
         None, description="Suggested remediation"
     )
 
-
-class EUDREquivalenceResponse(BaseModel):
+class EUDREquivalenceResponse(GreenLangBase):
     """Response for EUDR equivalence check."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1153,13 +1091,11 @@ class EUDREquivalenceResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
 # =============================================================================
 # 4. Red Flag Schemas
 # =============================================================================
 
-
-class RedFlagDetectRequest(BaseModel):
+class RedFlagDetectRequest(GreenLangBase):
     """Request to detect red flags for an entity."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1190,8 +1126,7 @@ class RedFlagDetectRequest(BaseModel):
         description="Cross-reference with external databases (sanctions, etc.)",
     )
 
-
-class RedFlagEntry(BaseModel):
+class RedFlagEntry(GreenLangBase):
     """Summary of a detected red flag."""
 
     flag_id: str = Field(..., description="Unique red flag identifier")
@@ -1220,14 +1155,13 @@ class RedFlagEntry(BaseModel):
         None, description="Applicable regulation article"
     )
     detected_at: datetime = Field(
-        default_factory=_utcnow, description="Detection timestamp"
+        default_factory=utcnow, description="Detection timestamp"
     )
     suppressed: bool = Field(
         default=False, description="Whether suppressed as false positive"
     )
 
-
-class RedFlagDetectResponse(BaseModel):
+class RedFlagDetectResponse(GreenLangBase):
     """Response for red flag detection."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1255,8 +1189,7 @@ class RedFlagDetectResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class RedFlagListResponse(BaseModel):
+class RedFlagListResponse(GreenLangBase):
     """Paginated list of red flags."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1277,8 +1210,7 @@ class RedFlagListResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class RedFlagDetailResponse(BaseModel):
+class RedFlagDetailResponse(GreenLangBase):
     """Detailed response for a single red flag."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1305,8 +1237,7 @@ class RedFlagDetailResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class RedFlagSuppressRequest(BaseModel):
+class RedFlagSuppressRequest(GreenLangBase):
     """Request to suppress a red flag as false positive."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1322,8 +1253,7 @@ class RedFlagSuppressRequest(BaseModel):
         None, description="Reviewer identifier"
     )
 
-
-class RedFlagSuppressResponse(BaseModel):
+class RedFlagSuppressResponse(GreenLangBase):
     """Response for red flag suppression."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1339,7 +1269,7 @@ class RedFlagSuppressResponse(BaseModel):
         ..., description="User who suppressed the flag"
     )
     suppressed_at: datetime = Field(
-        default_factory=_utcnow, description="Suppression timestamp"
+        default_factory=utcnow, description="Suppression timestamp"
     )
     reason: str = Field(..., description="Suppression reason")
     provenance: ProvenanceInfo = Field(
@@ -1349,13 +1279,11 @@ class RedFlagSuppressResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
 # =============================================================================
 # 5. Compliance Assessment Schemas
 # =============================================================================
 
-
-class ComplianceAssessRequest(BaseModel):
+class ComplianceAssessRequest(GreenLangBase):
     """Request to perform a full compliance assessment."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1391,8 +1319,7 @@ class ComplianceAssessRequest(BaseModel):
         None, description="Specific frameworks to assess against"
     )
 
-
-class CategoryAssessmentEntry(BaseModel):
+class CategoryAssessmentEntry(GreenLangBase):
     """Assessment result for a single compliance category."""
 
     category: ComplianceCategoryEnum = Field(
@@ -1418,8 +1345,7 @@ class CategoryAssessmentEntry(BaseModel):
         None, description="Applicable article"
     )
 
-
-class ComplianceRecommendationEntry(BaseModel):
+class ComplianceRecommendationEntry(GreenLangBase):
     """A compliance recommendation."""
 
     recommendation_id: str = Field(
@@ -1441,8 +1367,7 @@ class ComplianceRecommendationEntry(BaseModel):
         None, description="Estimated implementation effort in days"
     )
 
-
-class ComplianceAssessResponse(BaseModel):
+class ComplianceAssessResponse(GreenLangBase):
     """Response for full compliance assessment."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1488,7 +1413,7 @@ class ComplianceAssessResponse(BaseModel):
         default_factory=list, description="Framework IDs assessed against"
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow, description="Assessment timestamp"
+        default_factory=utcnow, description="Assessment timestamp"
     )
     provenance: ProvenanceInfo = Field(
         ..., description="Provenance tracking information"
@@ -1497,8 +1422,7 @@ class ComplianceAssessResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class CategoryCheckRequest(BaseModel):
+class CategoryCheckRequest(GreenLangBase):
     """Request to check a single compliance category."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1519,8 +1443,7 @@ class CategoryCheckRequest(BaseModel):
         None, description="Country context"
     )
 
-
-class CategoryCheckResponse(BaseModel):
+class CategoryCheckResponse(GreenLangBase):
     """Response for single-category compliance check."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1538,8 +1461,7 @@ class CategoryCheckResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class ComplianceListEntry(BaseModel):
+class ComplianceListEntry(GreenLangBase):
     """Summary entry in compliance assessment list."""
 
     assessment_id: str = Field(..., description="Assessment ID")
@@ -1558,8 +1480,7 @@ class ComplianceListEntry(BaseModel):
         ..., description="Assessment timestamp"
     )
 
-
-class ComplianceListResponse(BaseModel):
+class ComplianceListResponse(GreenLangBase):
     """Paginated list of compliance assessments."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1580,8 +1501,7 @@ class ComplianceListResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class ComplianceDetailResponse(BaseModel):
+class ComplianceDetailResponse(GreenLangBase):
     """Detailed response for a single compliance assessment."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1619,8 +1539,7 @@ class ComplianceDetailResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class ComplianceHistoryEntry(BaseModel):
+class ComplianceHistoryEntry(GreenLangBase):
     """A single entry in compliance assessment history."""
 
     assessment_id: str = Field(..., description="Assessment ID")
@@ -1637,8 +1556,7 @@ class ComplianceHistoryEntry(BaseModel):
         None, description="Score change from previous assessment"
     )
 
-
-class ComplianceHistoryResponse(BaseModel):
+class ComplianceHistoryResponse(GreenLangBase):
     """Response for compliance assessment history."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1665,13 +1583,11 @@ class ComplianceHistoryResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
 # =============================================================================
 # 6. Audit Integration Schemas
 # =============================================================================
 
-
-class AuditIngestRequest(BaseModel):
+class AuditIngestRequest(GreenLangBase):
     """Request to ingest an audit report."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1718,8 +1634,7 @@ class AuditIngestRequest(BaseModel):
         None, description="SHA-256 hash of audit report file"
     )
 
-
-class AuditEntry(BaseModel):
+class AuditEntry(GreenLangBase):
     """Summary of an ingested audit report."""
 
     audit_id: str = Field(..., description="Unique audit record ID")
@@ -1751,11 +1666,10 @@ class AuditEntry(BaseModel):
         default=0, ge=0, description="Pending corrective actions"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Ingestion timestamp"
+        default_factory=utcnow, description="Ingestion timestamp"
     )
 
-
-class AuditIngestResponse(BaseModel):
+class AuditIngestResponse(GreenLangBase):
     """Response for audit report ingestion."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1770,8 +1684,7 @@ class AuditIngestResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class AuditListResponse(BaseModel):
+class AuditListResponse(GreenLangBase):
     """Paginated list of audit reports."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1792,8 +1705,7 @@ class AuditListResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class FindingEntry(BaseModel):
+class FindingEntry(GreenLangBase):
     """A single audit finding."""
 
     finding_id: str = Field(
@@ -1822,8 +1734,7 @@ class FindingEntry(BaseModel):
         None, description="Corrective action status"
     )
 
-
-class AuditFindingsResponse(BaseModel):
+class AuditFindingsResponse(GreenLangBase):
     """Response for audit findings."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1854,8 +1765,7 @@ class AuditFindingsResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class CorrectiveActionEntry(BaseModel):
+class CorrectiveActionEntry(GreenLangBase):
     """A corrective action for an audit finding."""
 
     action_id: str = Field(
@@ -1882,8 +1792,7 @@ class CorrectiveActionEntry(BaseModel):
         None, max_length=5000, description="Action notes"
     )
 
-
-class CorrectiveActionsRequest(BaseModel):
+class CorrectiveActionsRequest(GreenLangBase):
     """Request to update corrective actions for an audit."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1893,8 +1802,7 @@ class CorrectiveActionsRequest(BaseModel):
         description="Corrective actions to create/update (max 50)",
     )
 
-
-class CorrectiveActionsResponse(BaseModel):
+class CorrectiveActionsResponse(GreenLangBase):
     """Response for corrective actions update."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1925,13 +1833,11 @@ class CorrectiveActionsResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
 # =============================================================================
 # 7. Reporting Schemas
 # =============================================================================
 
-
-class ReportGenerateRequest(BaseModel):
+class ReportGenerateRequest(GreenLangBase):
     """Request to generate a compliance report."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1977,8 +1883,7 @@ class ReportGenerateRequest(BaseModel):
                 raise ValueError("date_to must be >= date_from")
         return v
 
-
-class ReportEntry(BaseModel):
+class ReportEntry(GreenLangBase):
     """Summary of a generated report."""
 
     report_id: str = Field(..., description="Unique report identifier")
@@ -1998,14 +1903,13 @@ class ReportEntry(BaseModel):
         None, ge=0, description="Generated file size"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation timestamp"
+        default_factory=utcnow, description="Creation timestamp"
     )
     completed_at: Optional[datetime] = Field(
         None, description="Completion timestamp"
     )
 
-
-class ReportGenerateResponse(BaseModel):
+class ReportGenerateResponse(GreenLangBase):
     """Response for report generation."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -2020,8 +1924,7 @@ class ReportGenerateResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class ReportListResponse(BaseModel):
+class ReportListResponse(GreenLangBase):
     """Paginated list of reports."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -2042,8 +1945,7 @@ class ReportListResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class ReportDownloadResponse(BaseModel):
+class ReportDownloadResponse(GreenLangBase):
     """Response for report download."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -2068,8 +1970,7 @@ class ReportDownloadResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class ReportScheduleRequest(BaseModel):
+class ReportScheduleRequest(GreenLangBase):
     """Request to schedule a recurring report."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -2106,8 +2007,7 @@ class ReportScheduleRequest(BaseModel):
         None, description="Schedule end date (default: indefinite)"
     )
 
-
-class ScheduleEntry(BaseModel):
+class ScheduleEntry(GreenLangBase):
     """Summary of a report schedule."""
 
     schedule_id: str = Field(..., description="Schedule identifier")
@@ -2128,11 +2028,10 @@ class ScheduleEntry(BaseModel):
     )
     active: bool = Field(default=True, description="Whether schedule is active")
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation timestamp"
+        default_factory=utcnow, description="Creation timestamp"
     )
 
-
-class ReportScheduleResponse(BaseModel):
+class ReportScheduleResponse(GreenLangBase):
     """Response for report schedule creation."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -2147,13 +2046,11 @@ class ReportScheduleResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
 # =============================================================================
 # 8. Batch Processing Schemas
 # =============================================================================
 
-
-class BatchAssessRequest(BaseModel):
+class BatchAssessRequest(GreenLangBase):
     """Request for batch compliance assessment."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -2173,8 +2070,7 @@ class BatchAssessRequest(BaseModel):
         None, description="Categories to assess (default: all)"
     )
 
-
-class BatchAssessResultEntry(BaseModel):
+class BatchAssessResultEntry(GreenLangBase):
     """Result for a single entity in batch assessment."""
 
     entity_id: str = Field(..., description="Entity ID")
@@ -2191,8 +2087,7 @@ class BatchAssessResultEntry(BaseModel):
         None, description="Error message if assessment failed"
     )
 
-
-class BatchAssessResponse(BaseModel):
+class BatchAssessResponse(GreenLangBase):
     """Response for batch compliance assessment."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -2222,8 +2117,7 @@ class BatchAssessResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class BatchVerifyRequest(BaseModel):
+class BatchVerifyRequest(GreenLangBase):
     """Request for batch document verification."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -2233,8 +2127,7 @@ class BatchVerifyRequest(BaseModel):
         description="Documents to verify (max 200)",
     )
 
-
-class BatchVerifyResultEntry(BaseModel):
+class BatchVerifyResultEntry(GreenLangBase):
     """Result for a single document in batch verification."""
 
     document_reference: str = Field(
@@ -2256,8 +2149,7 @@ class BatchVerifyResultEntry(BaseModel):
         None, description="Error message if verification failed"
     )
 
-
-class BatchVerifyResponse(BaseModel):
+class BatchVerifyResponse(GreenLangBase):
     """Response for batch document verification."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -2290,8 +2182,7 @@ class BatchVerifyResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class BatchStatusResponse(BaseModel):
+class BatchStatusResponse(GreenLangBase):
     """Response for batch processing status."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -2332,7 +2223,6 @@ class BatchStatusResponse(BaseModel):
     metadata: MetadataSchema = Field(
         default_factory=MetadataSchema, description="Response metadata"
     )
-
 
 # =============================================================================
 # Public API

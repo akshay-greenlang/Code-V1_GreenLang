@@ -80,20 +80,15 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import ConfigDict, Field, field_validator
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ReportFormat
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed for determinism."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -116,7 +111,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str) -> str:
     """Generate a unique identifier with the given prefix.
 
@@ -127,7 +121,6 @@ def _generate_id(prefix: str) -> str:
         Formatted ID string.
     """
     return f"{prefix}-{uuid.uuid4().hex[:12].upper()}"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -209,18 +202,9 @@ REQUIRED_TRACEABILITY_FIELDS = {
     "production_plots",
 }
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
-
-class ExportFormat(str, Enum):
-    """Supported DDS export formats."""
-
-    JSON = "json"
-    XML = "xml"
-
 
 class ExportStatus(str, Enum):
     """Status of a DDS export operation."""
@@ -229,7 +213,6 @@ class ExportStatus(str, Enum):
     VALIDATION_FAILED = "validation_failed"
     PARTIAL = "partial"
     ERROR = "error"
-
 
 class SubmissionStatus(str, Enum):
     """Status of EU Information System submission."""
@@ -240,13 +223,11 @@ class SubmissionStatus(str, Enum):
     REJECTED = "rejected"
     ERROR = "error"
 
-
 # ---------------------------------------------------------------------------
 # Input Models
 # ---------------------------------------------------------------------------
 
-
-class OperatorInfo(BaseModel):
+class OperatorInfo(GreenLangBase):
     """Operator information for DDS Article 4(2)(a).
 
     Contains the identifying information for the EU operator or trader
@@ -323,8 +304,7 @@ class OperatorInfo(BaseModel):
             raise ValueError("operator_name must be non-empty")
         return v.strip()
 
-
-class ProductInfo(BaseModel):
+class ProductInfo(GreenLangBase):
     """Product information for DDS Article 4(2)(b)-(d).
 
     Contains the product details including commodity classification,
@@ -395,8 +375,7 @@ class ProductInfo(BaseModel):
             raise ValueError("product_description must be non-empty")
         return v.strip()
 
-
-class DeclarationInfo(BaseModel):
+class DeclarationInfo(GreenLangBase):
     """Compliance declarations for DDS Article 4(2)(g)-(h).
 
     Contains the boolean declarations required for the DDS, including
@@ -442,8 +421,7 @@ class DeclarationInfo(BaseModel):
         description="Date of signature",
     )
 
-
-class RiskAssessmentInfo(BaseModel):
+class RiskAssessmentInfo(GreenLangBase):
     """Risk assessment information for DDS Article 10.
 
     Contains the risk assessment results including overall risk level,
@@ -498,13 +476,11 @@ class RiskAssessmentInfo(BaseModel):
         description="Whether enhanced DD was applied",
     )
 
-
 # ---------------------------------------------------------------------------
 # Export Result Models
 # ---------------------------------------------------------------------------
 
-
-class DDSValidationResult(BaseModel):
+class DDSValidationResult(GreenLangBase):
     """Result of DDS schema validation.
 
     Attributes:
@@ -539,8 +515,7 @@ class DDSValidationResult(BaseModel):
         description="Missing required fields",
     )
 
-
-class DDSExportResult(BaseModel):
+class DDSExportResult(GreenLangBase):
     """Result of a single DDS export operation.
 
     Contains the exported DDS payload, validation result, provenance
@@ -573,8 +548,8 @@ class DDSExportResult(BaseModel):
         default_factory=lambda: _generate_id("DDS"),
         description="Generated DDS identifier",
     )
-    export_format: ExportFormat = Field(
-        default=ExportFormat.JSON,
+    export_format: ReportFormat = Field(
+        default=ReportFormat.JSON,
         description="Export format used",
     )
     dds_payload: Dict[str, Any] = Field(
@@ -614,7 +589,7 @@ class DDSExportResult(BaseModel):
         description="EU system reference number",
     )
     export_timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the export was generated",
     )
     processing_time_ms: float = Field(
@@ -623,8 +598,7 @@ class DDSExportResult(BaseModel):
         description="Processing time in milliseconds",
     )
 
-
-class BatchExportResult(BaseModel):
+class BatchExportResult(GreenLangBase):
     """Result of a batch DDS export operation.
 
     Attributes:
@@ -677,8 +651,7 @@ class BatchExportResult(BaseModel):
         description="Total processing time in ms",
     )
 
-
-class PDFReportResult(BaseModel):
+class PDFReportResult(GreenLangBase):
     """Result of PDF report generation.
 
     Attributes:
@@ -724,8 +697,7 @@ class PDFReportResult(BaseModel):
         description="Time to generate in ms",
     )
 
-
-class IncrementalExportResult(BaseModel):
+class IncrementalExportResult(GreenLangBase):
     """Result of an incremental export operation.
 
     Attributes:
@@ -770,7 +742,6 @@ class IncrementalExportResult(BaseModel):
         default=False,
         description="Whether this fell back to full export",
     )
-
 
 # ---------------------------------------------------------------------------
 # DDS JSON Schema (embedded for validation)
@@ -1017,11 +988,9 @@ DDS_JSON_SCHEMA: Dict[str, Any] = {
     },
 }
 
-
 # ===================================================================
 # DDS Schema Validator
 # ===================================================================
-
 
 class DDSSchemaValidator:
     """Validates DDS export data against the EU Information System schema.
@@ -1385,11 +1354,9 @@ class DDSSchemaValidator:
 
         return warnings
 
-
 # ===================================================================
 # XML Serializer
 # ===================================================================
-
 
 class DDSXMLSerializer:
     """Serializes DDS payload to XML format per EU Information System spec.
@@ -1620,11 +1587,9 @@ class DDSXMLSerializer:
         elem.text = text
         return elem
 
-
 # ===================================================================
 # PDF Report Generator
 # ===================================================================
-
 
 class PDFReportGenerator:
     """Generates audit-ready PDF reports for DDS supply chain data.
@@ -1883,11 +1848,9 @@ class PDFReportGenerator:
             generation_time_ms=round(elapsed_ms, 2),
         )
 
-
 # ===================================================================
 # RegulatoryExporter (Main Engine)
 # ===================================================================
-
 
 class RegulatoryExporter:
     """Regulatory export engine for EUDR Due Diligence Statement generation.
@@ -2045,7 +2008,7 @@ class RegulatoryExporter:
 
             result = DDSExportResult(
                 dds_id=dds_id,
-                export_format=ExportFormat.JSON,
+                export_format=ReportFormat.JSON,
                 dds_payload=dds_payload,
                 dds_raw=dds_raw,
                 validation_result=validation_result,
@@ -2155,7 +2118,7 @@ class RegulatoryExporter:
             return DDSExportResult(
                 export_id=_generate_id("DDS-EXP"),
                 dds_id=json_result.dds_id,
-                export_format=ExportFormat.XML,
+                export_format=ReportFormat.XML,
                 dds_payload=json_result.dds_payload,
                 dds_raw=xml_raw,
                 validation_result=json_result.validation_result,
@@ -2169,7 +2132,7 @@ class RegulatoryExporter:
             logger.error("DDS XML serialization failed: %s", e)
             return DDSExportResult(
                 dds_id=json_result.dds_id,
-                export_format=ExportFormat.XML,
+                export_format=ReportFormat.XML,
                 export_status=ExportStatus.ERROR,
                 dds_raw=str(e),
             )
@@ -2181,7 +2144,7 @@ class RegulatoryExporter:
     def batch_export(
         self,
         exports: List[Dict[str, Any]],
-        export_format: ExportFormat = ExportFormat.JSON,
+        export_format: ReportFormat = ReportFormat.JSON,
         validate: bool = True,
     ) -> BatchExportResult:
         """Export multiple DDS for different products/shipments.
@@ -2230,7 +2193,7 @@ class RegulatoryExporter:
                 )
                 continue
 
-            if export_format == ExportFormat.XML:
+            if export_format == ReportFormat.XML:
                 result = self.export_dds_xml(
                     graph=graph,
                     operator_info=operator_info,
@@ -2266,7 +2229,7 @@ class RegulatoryExporter:
 
         batch_hash = _compute_hash({
             "exports": [r.dds_id for r in results],
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         })
 
         return BatchExportResult(
@@ -2530,7 +2493,7 @@ class RegulatoryExporter:
         delta_payload = {
             "base_export_id": base_export_id,
             "delta_type": "incremental",
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "nodes_added": delta_nodes_added,
             "nodes_updated": delta_nodes_updated,
             "nodes_removed": list(removed_nodes),
@@ -2845,7 +2808,7 @@ class RegulatoryExporter:
         }
 
         # Provenance (hash computed after assembly)
-        now = _utcnow()
+        now = utcnow()
         provenance_section = {
             "content_hash": "",  # Filled after full payload assembly
             "export_timestamp": now.isoformat(),
@@ -2996,11 +2959,9 @@ class RegulatoryExporter:
             return obj.get(attr, default)
         return getattr(obj, attr, default)
 
-
 # ---------------------------------------------------------------------------
 # Module-level convenience functions
 # ---------------------------------------------------------------------------
-
 
 def create_exporter(
     eu_connector: Optional[Any] = None,
@@ -3022,7 +2983,6 @@ def create_exporter(
         provenance_tracker=provenance_tracker,
     )
 
-
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
@@ -3037,7 +2997,7 @@ __all__ = [
     "ARTICLE_4_2_FIELDS",
     "DDS_JSON_SCHEMA",
     # Enumerations
-    "ExportFormat",
+    "ReportFormat",
     "ExportStatus",
     "SubmissionStatus",
     # Input Models

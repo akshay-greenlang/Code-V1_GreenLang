@@ -47,6 +47,8 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -59,27 +61,18 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _clamp(value: float, lo: float = 0.0, hi: float = 100.0) -> float:
     """Clamp a numeric value to [lo, hi]."""
     return max(lo, min(hi, value))
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class RiskCategory(str, Enum):
     """Six risk categories per PRD Appendix B."""
@@ -91,7 +84,6 @@ class RiskCategory(str, Enum):
     DATA_QUALITY = "data_quality"
     CONCENTRATION_RISK = "concentration_risk"
 
-
 class RiskLevel(str, Enum):
     """Qualitative risk level classification."""
 
@@ -101,7 +93,6 @@ class RiskLevel(str, Enum):
     VERY_HIGH = "very_high"
     CRITICAL = "critical"
 
-
 class PropagationMethod(str, Enum):
     """Risk propagation methods per PRD F5.4."""
 
@@ -109,14 +100,12 @@ class PropagationMethod(str, Enum):
     WEIGHTED_AVERAGE = "weighted_average"
     VOLUME_WEIGHTED = "volume_weighted"
 
-
 class TrendDirection(str, Enum):
     """Risk trend over time."""
 
     IMPROVING = "improving"
     STABLE = "stable"
     DEGRADING = "degrading"
-
 
 # ---------------------------------------------------------------------------
 # Risk Category Weights (PRD Appendix B)
@@ -256,11 +245,9 @@ PROFILE_FIELD_WEIGHTS: Dict[str, Dict[str, float]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Result Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class RiskCategoryScore:
@@ -279,7 +266,6 @@ class RiskCategoryScore:
     weight: float = 0.0
     weighted_score: float = 0.0
     details: Dict[str, Any] = field(default_factory=dict)
-
 
 @dataclass
 class RiskAssessmentResult:
@@ -306,7 +292,6 @@ class RiskAssessmentResult:
     processing_time_ms: float = 0.0
     provenance_hash: str = ""
     engine_version: str = _MODULE_VERSION
-
 
 @dataclass
 class RiskPropagationResult:
@@ -340,7 +325,6 @@ class RiskPropagationResult:
     processing_time_ms: float = 0.0
     provenance_hash: str = ""
 
-
 @dataclass
 class RiskChangeAlert:
     """Alert generated when a supplier's risk crosses a threshold.
@@ -369,7 +353,6 @@ class RiskChangeAlert:
     triggered_at: str = ""
     categories_changed: List[str] = field(default_factory=list)
 
-
 @dataclass
 class BatchRiskResult:
     """Batch risk assessment result.
@@ -393,7 +376,6 @@ class BatchRiskResult:
     summary: Dict[str, Any] = field(default_factory=dict)
     processing_time_ms: float = 0.0
     provenance_hash: str = ""
-
 
 @dataclass
 class SupplierProfile:
@@ -460,7 +442,6 @@ class SupplierProfile:
     volume_from_suppliers: Dict[str, float] = field(default_factory=dict)
     total_sourcing_volume: float = 0.0
 
-
 @dataclass
 class SupplierChainNode:
     """A node in the supplier hierarchy tree used for propagation.
@@ -483,11 +464,9 @@ class SupplierChainNode:
     children: List[SupplierChainNode] = field(default_factory=list)
     profile: Optional[SupplierProfile] = None
 
-
 # ===========================================================================
 # RiskPropagationEngine
 # ===========================================================================
-
 
 class RiskPropagationEngine:
     """Production-grade risk propagation engine for EUDR multi-tier suppliers.
@@ -632,7 +611,7 @@ class RiskPropagationEngine:
             composite_score=round(composite, 2),
             risk_level=risk_level.value,
             category_scores=category_scores,
-            assessed_at=_utcnow().isoformat(),
+            assessed_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
             provenance_hash=provenance_hash,
             engine_version=_MODULE_VERSION,
@@ -839,7 +818,7 @@ class RiskPropagationEngine:
         weight = self._risk_weights.get(
             RiskCategory.CERTIFICATION_GAP.value, 0.15
         )
-        now = _utcnow()
+        now = utcnow()
         details: Dict[str, Any] = {
             "total_certifications": len(certifications),
             "valid_certifications": 0,
@@ -995,7 +974,7 @@ class RiskPropagationEngine:
                     last_violation = last_violation.replace(
                         tzinfo=timezone.utc
                     )
-                days_since = (_utcnow() - last_violation).days
+                days_since = (utcnow() - last_violation).days
                 if days_since < 365:
                     recency_adjustment = 10.0
                     details["recency_factor"] = "within_1_year"
@@ -1267,7 +1246,7 @@ class RiskPropagationEngine:
             max_risk_path=max_risk_path,
             total_suppliers=total_suppliers,
             deepest_tier=deepest_tier,
-            assessed_at=_utcnow().isoformat(),
+            assessed_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
             provenance_hash=provenance_hash,
         )
@@ -1411,7 +1390,7 @@ class RiskPropagationEngine:
             current_level=current.risk_level,
             change_delta=round(change_delta, 2),
             direction=direction,
-            triggered_at=_utcnow().isoformat(),
+            triggered_at=utcnow().isoformat(),
             categories_changed=categories_changed,
         )
         alerts.append(alert)
@@ -1959,7 +1938,6 @@ class RiskPropagationEngine:
             f"tracked_suppliers={len(self._risk_history)}, "
             f"version={_MODULE_VERSION!r})"
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

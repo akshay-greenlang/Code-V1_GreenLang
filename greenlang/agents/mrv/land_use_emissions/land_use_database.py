@@ -71,6 +71,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -109,15 +110,9 @@ except ImportError:
     _METRICS_AVAILABLE = False
     _record_db_operation = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -135,13 +130,11 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Decimal precision constant
 # ---------------------------------------------------------------------------
 
 _PRECISION = Decimal("0.00000001")  # 8 decimal places
-
 
 def _D(value: Any) -> Decimal:
     """Convert a value to Decimal with controlled precision.
@@ -156,11 +149,9 @@ def _D(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 # ===========================================================================
 # Enumerations
 # ===========================================================================
-
 
 class LandCategory(str, Enum):
     """Six IPCC land categories per 2006 Guidelines Vol 4 Ch 2.
@@ -179,7 +170,6 @@ class LandCategory(str, Enum):
     WETLANDS = "WETLANDS"
     SETTLEMENTS = "SETTLEMENTS"
     OTHER_LAND = "OTHER_LAND"
-
 
 class ClimateZone(str, Enum):
     """IPCC climate zones for carbon stock factor stratification.
@@ -200,7 +190,6 @@ class ClimateZone(str, Enum):
     BOREAL_MOIST = "BOREAL_MOIST"
     POLAR = "POLAR"
 
-
 class SoilType(str, Enum):
     """IPCC soil types for SOC reference stock stratification.
 
@@ -214,7 +203,6 @@ class SoilType(str, Enum):
     VOLCANIC = "VOLCANIC"
     WETLAND = "WETLAND"
     ORGANIC = "ORGANIC"
-
 
 class CarbonPool(str, Enum):
     """Five IPCC carbon pools reported under LULUCF.
@@ -232,7 +220,6 @@ class CarbonPool(str, Enum):
     LITTER = "LITTER"
     SOC = "SOC"
 
-
 class GWPSource(str, Enum):
     """IPCC Assessment Report editions for GWP values.
 
@@ -246,7 +233,6 @@ class GWPSource(str, Enum):
     AR5 = "AR5"
     AR6 = "AR6"
     AR6_20YR = "AR6_20YR"
-
 
 class EmissionFactorSource(str, Enum):
     """Sources for emission factor data.
@@ -265,7 +251,6 @@ class EmissionFactorSource(str, Enum):
     COUNTRY_SPECIFIC = "COUNTRY_SPECIFIC"
     SITE_MEASURED = "SITE_MEASURED"
     CUSTOM = "CUSTOM"
-
 
 class DisturbanceType(str, Enum):
     """Types of disturbance affecting carbon pools.
@@ -289,11 +274,9 @@ class DisturbanceType(str, Enum):
     DROUGHT = "DROUGHT"
     FLOOD = "FLOOD"
 
-
 # ===========================================================================
 # Dataclasses for structured lookups
 # ===========================================================================
-
 
 @dataclass(frozen=True)
 class LandSubcategory:
@@ -312,7 +295,6 @@ class LandSubcategory:
     parent_category: LandCategory
     description: str
     typical_agb_tc_ha: Decimal
-
 
 @dataclass(frozen=True)
 class CarbonStockFactors:
@@ -336,7 +318,6 @@ class CarbonStockFactors:
     soc: Decimal
     source: str
 
-
 @dataclass(frozen=True)
 class FireEmissionFactor:
     """Fire emission factors for a land category and fire type.
@@ -354,7 +335,6 @@ class FireEmissionFactor:
     ef_ch4_g_per_kg: Decimal
     ef_n2o_g_per_kg: Decimal
     source: str
-
 
 @dataclass(frozen=True)
 class PeatlandEmissionFactor:
@@ -374,7 +354,6 @@ class PeatlandEmissionFactor:
     description: str
     source: str
 
-
 @dataclass(frozen=True)
 class BiomassGrowthRate:
     """Biomass growth rate for gain-loss method calculations.
@@ -388,7 +367,6 @@ class BiomassGrowthRate:
     growth_rate_tc_ha_yr: Decimal
     age_class: str
     source: str
-
 
 # ===========================================================================
 # GWP Values (IPCC AR4/AR5/AR6/AR6_20YR)
@@ -431,7 +409,6 @@ CONVERSION_FACTOR_CO2_C: Decimal = _D("3.66667")
 
 #: Nitrogen-to-N2O conversion factor (44/28).
 N2O_N_RATIO: Decimal = _D("1.571429")
-
 
 # ===========================================================================
 # AGB Defaults per IPCC 2006 Vol 4, Tables 4.7/4.8
@@ -527,7 +504,6 @@ IPCC_AGB_DEFAULTS: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ===========================================================================
 # Root-to-Shoot Ratios per IPCC 2006 Vol 4, Table 4.4
 # Keyed by (climate_zone, AGB_threshold) -- AGB in tC/ha.
@@ -550,7 +526,6 @@ ROOT_SHOOT_RATIOS: Dict[str, Dict[str, Decimal]] = {
     "BOREAL_MOIST": {"low": _D("0.39"), "high": _D("0.24")},
     "POLAR": {"low": _D("0.40"), "high": _D("0.30")},
 }
-
 
 # ===========================================================================
 # Dead Wood Default Fractions per IPCC 2006 Vol 4, Table 4.6
@@ -617,7 +592,6 @@ DEAD_WOOD_TURNOVER: Dict[str, Decimal] = {
     "POLAR": _D("0.01"),
 }
 
-
 # ===========================================================================
 # Litter Stock Defaults per IPCC 2006 Vol 4, Table 2.2
 # tC/ha by (category, climate_zone).
@@ -677,7 +651,6 @@ LITTER_STOCKS: Dict[str, Dict[str, Decimal]] = {
         zone: _D("0") for zone in [z.value for z in ClimateZone]
     },
 }
-
 
 # ===========================================================================
 # SOC Reference Stocks per IPCC 2006 Vol 4, Table 2.3
@@ -796,7 +769,6 @@ SOC_REFERENCE_STOCKS: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ===========================================================================
 # Biomass Growth Rates (tC/ha/yr) per IPCC 2006 Vol 4
 # For gain-loss method.
@@ -867,7 +839,6 @@ BIOMASS_GROWTH_RATES: Dict[str, Dict[str, Decimal]] = {
         zone: _D("0") for zone in [z.value for z in ClimateZone]
     },
 }
-
 
 # ===========================================================================
 # Fire Emission Factors per IPCC 2006 Vol 4, Tables 2.4 / 2.5
@@ -973,7 +944,6 @@ FIRE_EMISSION_FACTORS: Dict[str, Dict[str, FireEmissionFactor]] = {
     },
 }
 
-
 # ===========================================================================
 # Peatland Emission Factors per IPCC 2013 Wetlands Supplement
 # ===========================================================================
@@ -1066,7 +1036,6 @@ PEATLAND_EF: Dict[str, PeatlandEmissionFactor] = {
     ),
 }
 
-
 # ===========================================================================
 # N2O Soil Emission Factors per IPCC 2006 Vol 4, Chapter 11
 # ===========================================================================
@@ -1090,7 +1059,6 @@ N2O_SOIL_EF: Dict[str, Decimal] = {
     # Nitrogen mineralisation from SOC loss
     "N_MINERALIZATION_RATIO": _D("0.01"),
 }
-
 
 # ===========================================================================
 # SOC Land Use, Management, and Input Factors (IPCC 2006 Vol 4, Table 5.5)
@@ -1133,7 +1101,6 @@ SOC_INPUT_FACTORS: Dict[str, Decimal] = {
     "HIGH_WITH_MANURE": _D("1.44"),
 }
 
-
 # ===========================================================================
 # Combustion Factors (fraction of biomass consumed by fire)
 # ===========================================================================
@@ -1148,7 +1115,6 @@ COMBUSTION_FACTORS: Dict[str, Decimal] = {
     "CROPLAND_RESIDUE": _D("0.80"),
     "WETLANDS_PEAT": _D("0.50"),
 }
-
 
 # ===========================================================================
 # Land Subcategories
@@ -1238,11 +1204,9 @@ LAND_SUBCATEGORIES: Dict[str, List[LandSubcategory]] = {
     ],
 }
 
-
 # ===========================================================================
 # LandUseDatabaseEngine
 # ===========================================================================
-
 
 class LandUseDatabaseEngine:
     """Reference data repository for IPCC land-use emission factors and carbon stock defaults.
@@ -1274,7 +1238,7 @@ class LandUseDatabaseEngine:
         self._lock = threading.RLock()
         self._total_lookups: int = 0
         self._cache: Dict[str, Any] = {}
-        self._created_at = _utcnow()
+        self._created_at = utcnow()
 
         logger.info(
             "LandUseDatabaseEngine initialized: "
@@ -2169,7 +2133,7 @@ class LandUseDatabaseEngine:
                 "value": str(value),
                 "source": source,
                 "description": description,
-                "registered_at": _utcnow().isoformat(),
+                "registered_at": utcnow().isoformat(),
             }
             self._custom_factors[factor_type][key] = record
 

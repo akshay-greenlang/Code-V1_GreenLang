@@ -52,28 +52,21 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import AlertSeverity, ReportFormat
 
 from pydantic import (
-    BaseModel,
-    ConfigDict,
     Field,
     field_validator,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Return a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -92,7 +85,6 @@ SUPPORTED_COMMODITIES: List[str] = [
 ]
 
 SUPPORTED_BUFFER_RADII: List[int] = [1, 5, 10, 25, 50]
-
 
 # ---------------------------------------------------------------------------
 # Enumerations (18)
@@ -122,7 +114,6 @@ class IUCNCategory(str, Enum):
     NOT_REPORTED = "NR"
     """Not Reported: IUCN category not assigned, treated as HIGH default."""
 
-
 class PAOverlapType(str, Enum):
     """Classification of overlap between a production plot and a protected area."""
     INSIDE = "inside"
@@ -135,7 +126,6 @@ class PAOverlapType(str, Enum):
     """Plot within buffer zone only, not overlapping."""
     CLEAR = "clear"
     """Plot outside all buffer zones."""
-
 
 class DesignationLevel(str, Enum):
     """Protected area designation level tier."""
@@ -150,7 +140,6 @@ class DesignationLevel(str, Enum):
     PROPOSED = "proposed"
     """Under consideration, not yet gazetted."""
 
-
 class PALegalStatus(str, Enum):
     """Protected area legal status from WDPA."""
     DESIGNATED = "designated"
@@ -164,7 +153,6 @@ class PALegalStatus(str, Enum):
     ESTABLISHED = "established"
     """Established without formal gazettement."""
 
-
 class GovernanceType(str, Enum):
     """Protected area governance type from WDPA."""
     FEDERAL = "federal"
@@ -173,7 +161,6 @@ class GovernanceType(str, Enum):
     PRIVATE = "private"
     INDIGENOUS = "indigenous"
     NOT_REPORTED = "not_reported"
-
 
 class BufferProximityTier(str, Enum):
     """Buffer zone proximity tier classification."""
@@ -188,7 +175,6 @@ class BufferProximityTier(str, Enum):
     PERIPHERAL = "peripheral"
     """25-50 km from protected area boundary."""
 
-
 class PAComplianceStatus(str, Enum):
     """Compliance status lifecycle for plot-protected area pairs."""
     DETECTED = "detected"
@@ -199,21 +185,6 @@ class PAComplianceStatus(str, Enum):
     REMEDIATED = "remediated"
     EXEMPTION_GRANTED = "exemption_granted"
     FALSE_POSITIVE = "false_positive"
-
-
-class AlertSeverity(str, Enum):
-    """Severity levels for proximity alerts."""
-    CRITICAL = "critical"
-    """Inside or < 1 km from high-risk protected area."""
-    SEVERE = "severe"
-    """1-5 km from high-risk protected area."""
-    HIGH = "high"
-    """5-10 km from high-risk protected area."""
-    ELEVATED = "elevated"
-    """10-25 km from high-risk protected area."""
-    STANDARD = "standard"
-    """> 25 km or low-risk protected area."""
-
 
 class RiskLevel(str, Enum):
     """Protected area risk level classification."""
@@ -228,14 +199,12 @@ class RiskLevel(str, Enum):
     CLEAR = "clear"
     """Risk score < 20."""
 
-
 class ViolationType(str, Enum):
     """Type of protected area violation."""
     ENCROACHMENT = "encroachment"
     ILLEGAL_CLEARING = "illegal_clearing"
     UNAUTHORIZED_CONSTRUCTION = "unauthorized_construction"
     RESOURCE_EXTRACTION = "resource_extraction"
-
 
 class DetectionMethod(str, Enum):
     """Method by which violation was detected."""
@@ -244,13 +213,11 @@ class DetectionMethod(str, Enum):
     FIELD_INSPECTION = "field_inspection"
     THIRD_PARTY_REPORT = "third_party_report"
 
-
 class EncroachmentTrend(str, Enum):
     """Encroachment trend direction."""
     APPROACHING = "approaching"
     STABLE = "stable"
     RETREATING = "retreating"
-
 
 class ReportType(str, Enum):
     """Protected area compliance report types."""
@@ -263,16 +230,6 @@ class ReportType(str, Enum):
     TREND_ANALYSIS = "trend_analysis"
     BI_EXPORT = "bi_export"
 
-
-class ReportFormat(str, Enum):
-    """Output formats for compliance reports."""
-    PDF = "pdf"
-    JSON = "json"
-    HTML = "html"
-    CSV = "csv"
-    XLSX = "xlsx"
-
-
 class ReportLanguage(str, Enum):
     """Supported languages for report generation."""
     EN = "en"
@@ -280,7 +237,6 @@ class ReportLanguage(str, Enum):
     DE = "de"
     ES = "es"
     PT = "pt"
-
 
 class DataSource(str, Enum):
     """Data source for protected area records."""
@@ -291,13 +247,11 @@ class DataSource(str, Enum):
     UNESCO = "unesco"
     RAMSAR = "ramsar"
 
-
 class GISQuality(str, Enum):
     """GIS boundary quality level."""
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 class EUDRCommodity(str, Enum):
     """EUDR-regulated commodities per Article 1."""
@@ -309,12 +263,11 @@ class EUDRCommodity(str, Enum):
     SOYA = "soya"
     WOOD = "wood"
 
-
 # ---------------------------------------------------------------------------
 # Core Models (14)
 # ---------------------------------------------------------------------------
 
-class ProtectedArea(BaseModel):
+class ProtectedArea(GreenLangBase):
     """Protected area record from WDPA and supplementary data sources.
 
     Represents a single protected area with spatial boundary, IUCN
@@ -389,8 +342,8 @@ class ProtectedArea(BaseModel):
     gis_quality: GISQuality = Field(GISQuality.MEDIUM, description="Boundary accuracy")
     confidence: GISQuality = Field(GISQuality.MEDIUM, description="Data confidence")
     provenance_hash: Optional[str] = Field(None, description="SHA-256 hash")
-    last_verified: datetime = Field(default_factory=_utcnow, description="Last verified")
-    created_at: datetime = Field(default_factory=_utcnow, description="Created timestamp")
+    last_verified: datetime = Field(default_factory=utcnow, description="Last verified")
+    created_at: datetime = Field(default_factory=utcnow, description="Created timestamp")
 
     @field_validator("country_code", "iso3")
     @classmethod
@@ -398,8 +351,7 @@ class ProtectedArea(BaseModel):
         """Ensure country codes are uppercase."""
         return v.upper()
 
-
-class ProtectedAreaOverlap(BaseModel):
+class ProtectedAreaOverlap(GreenLangBase):
     """Overlap analysis result between a production plot and a protected area.
 
     Records the spatial relationship, overlap metrics, risk scoring, and
@@ -440,10 +392,9 @@ class ProtectedAreaOverlap(BaseModel):
     deforestation_correlation: bool = Field(False, description="Cross-ref with EUDR-020")
     indigenous_rights_correlation: bool = Field(False, description="Cross-ref with EUDR-021")
     provenance_hash: Optional[str] = Field(None, description="SHA-256 hash")
-    detected_at: datetime = Field(default_factory=_utcnow, description="Detection timestamp")
+    detected_at: datetime = Field(default_factory=utcnow, description="Detection timestamp")
 
-
-class BufferZoneResult(BaseModel):
+class BufferZoneResult(GreenLangBase):
     """Buffer zone analysis result for a plot near a protected area."""
 
     model_config = ConfigDict(str_strip_whitespace=True, validate_default=True)
@@ -463,10 +414,9 @@ class BufferZoneResult(BaseModel):
     compliant_with_national: bool = Field(True, description="Complies with national buffer")
     plots_in_buffer_count: int = Field(0, ge=0, description="Plot count in this buffer tier")
     provenance_hash: Optional[str] = Field(None, description="SHA-256 hash")
-    detected_at: datetime = Field(default_factory=_utcnow, description="Detection timestamp")
+    detected_at: datetime = Field(default_factory=utcnow, description="Detection timestamp")
 
-
-class ProximityAlert(BaseModel):
+class ProximityAlert(GreenLangBase):
     """High-risk proximity alert for a plot near a significant protected area."""
 
     model_config = ConfigDict(str_strip_whitespace=True, validate_default=True)
@@ -490,10 +440,9 @@ class ProximityAlert(BaseModel):
     compound_risk_indigenous: bool = Field(False, description="Also near indigenous territory")
     deforestation_trend: Optional[str] = Field(None, description="Deforestation trend")
     provenance_hash: Optional[str] = Field(None, description="SHA-256 hash")
-    created_at: datetime = Field(default_factory=_utcnow, description="Creation timestamp")
+    created_at: datetime = Field(default_factory=utcnow, description="Creation timestamp")
 
-
-class PAComplianceRecord(BaseModel):
+class PAComplianceRecord(GreenLangBase):
     """Compliance tracking record for a plot-protected area violation."""
 
     model_config = ConfigDict(str_strip_whitespace=True, validate_default=True)
@@ -515,11 +464,10 @@ class PAComplianceRecord(BaseModel):
         None, ge=Decimal("0"), le=Decimal("100"), description="Compliance score 0-100"
     )
     provenance_hash: Optional[str] = Field(None, description="SHA-256 hash")
-    created_at: datetime = Field(default_factory=_utcnow)
-    updated_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
+    updated_at: datetime = Field(default_factory=utcnow)
 
-
-class ConservationAssessment(BaseModel):
+class ConservationAssessment(GreenLangBase):
     """Conservation status assessment for a protected area."""
 
     model_config = ConfigDict(str_strip_whitespace=True, validate_default=True)
@@ -541,10 +489,9 @@ class ConservationAssessment(BaseModel):
     fragmentation_index: Optional[Decimal] = Field(None, ge=Decimal("0"), le=Decimal("100"))
     carbon_storage_tco2e: Optional[Decimal] = Field(None, ge=Decimal("0"))
     provenance_hash: Optional[str] = Field(None, description="SHA-256 hash")
-    assessed_at: datetime = Field(default_factory=_utcnow)
+    assessed_at: datetime = Field(default_factory=utcnow)
 
-
-class DesignationValidation(BaseModel):
+class DesignationValidation(GreenLangBase):
     """Validation result for a protected area's legal designation."""
 
     model_config = ConfigDict(str_strip_whitespace=True, validate_default=True)
@@ -571,10 +518,9 @@ class DesignationValidation(BaseModel):
     )
     high_designation_alert: bool = Field(False, description="UNESCO/Ramsar/AZE trigger")
     provenance_hash: Optional[str] = Field(None, description="SHA-256 hash")
-    validated_at: datetime = Field(default_factory=_utcnow)
+    validated_at: datetime = Field(default_factory=utcnow)
 
-
-class RiskScoreBreakdown(BaseModel):
+class RiskScoreBreakdown(GreenLangBase):
     """Detailed breakdown of protected area risk score calculation."""
 
     model_config = ConfigDict(str_strip_whitespace=True, validate_default=True)
@@ -594,10 +540,9 @@ class RiskScoreBreakdown(BaseModel):
     total_risk_score: Decimal = Field(..., ge=Decimal("0"), le=Decimal("100"))
     risk_level: RiskLevel = Field(..., description="Classified risk level")
     provenance_hash: Optional[str] = Field(None, description="SHA-256 hash")
-    computed_at: datetime = Field(default_factory=_utcnow)
+    computed_at: datetime = Field(default_factory=utcnow)
 
-
-class BatchScreeningJob(BaseModel):
+class BatchScreeningJob(GreenLangBase):
     """Batch overlap screening job status."""
 
     model_config = ConfigDict(str_strip_whitespace=True, validate_default=True)
@@ -611,10 +556,9 @@ class BatchScreeningJob(BaseModel):
     completed_at: Optional[datetime] = Field(None)
     processing_time_ms: Optional[Decimal] = Field(None, ge=Decimal("0"))
     provenance_hash: Optional[str] = Field(None, description="SHA-256 hash")
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
 
-
-class ComplianceReport(BaseModel):
+class ComplianceReport(GreenLangBase):
     """Generated compliance report metadata."""
 
     model_config = ConfigDict(str_strip_whitespace=True, validate_default=True)
@@ -633,10 +577,9 @@ class ComplianceReport(BaseModel):
     file_size_bytes: Optional[int] = Field(None, ge=0)
     file_path: Optional[str] = Field(None)
     provenance_hash: Optional[str] = Field(None, description="SHA-256 hash")
-    generated_at: datetime = Field(default_factory=_utcnow)
+    generated_at: datetime = Field(default_factory=utcnow)
 
-
-class IntegrationEvent(BaseModel):
+class IntegrationEvent(GreenLangBase):
     """Event published to the GreenLang event bus for cross-agent integration."""
 
     model_config = ConfigDict(str_strip_whitespace=True, validate_default=True)
@@ -647,10 +590,9 @@ class IntegrationEvent(BaseModel):
     target_agents: List[str] = Field(default_factory=list, description="Target agent IDs")
     payload: Dict[str, Any] = Field(default_factory=dict, description="Event payload")
     provenance_hash: Optional[str] = Field(None, description="SHA-256 hash")
-    published_at: datetime = Field(default_factory=_utcnow)
+    published_at: datetime = Field(default_factory=utcnow)
 
-
-class AuditLogEntry(BaseModel):
+class AuditLogEntry(GreenLangBase):
     """Audit log entry for EUDR Article 31 compliance."""
 
     model_config = ConfigDict(str_strip_whitespace=True, validate_default=True)
@@ -662,10 +604,9 @@ class AuditLogEntry(BaseModel):
     actor: str = Field("system", description="Actor identifier")
     details: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: Optional[str] = Field(None, description="SHA-256 hash")
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
 
-
-class ProtectedAreaVersion(BaseModel):
+class ProtectedAreaVersion(GreenLangBase):
     """WDPA data version tracking record."""
 
     model_config = ConfigDict(str_strip_whitespace=True, validate_default=True)
@@ -678,10 +619,9 @@ class ProtectedAreaVersion(BaseModel):
     records_modified: int = Field(0, ge=0)
     records_removed: int = Field(0, ge=0)
     provenance_hash: Optional[str] = Field(None, description="SHA-256 hash")
-    ingested_at: datetime = Field(default_factory=_utcnow)
+    ingested_at: datetime = Field(default_factory=utcnow)
 
-
-class BufferZoneExemption(BaseModel):
+class BufferZoneExemption(GreenLangBase):
     """Buffer zone exemption for plots with valid legal permits."""
 
     model_config = ConfigDict(str_strip_whitespace=True, validate_default=True)
@@ -697,14 +637,13 @@ class BufferZoneExemption(BaseModel):
     conditions: Optional[str] = Field(None, max_length=5000)
     document_hash: Optional[str] = Field(None, description="Document SHA-256")
     provenance_hash: Optional[str] = Field(None, description="SHA-256 hash")
-    created_at: datetime = Field(default_factory=_utcnow)
-
+    created_at: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # Request Models (7)
 # ---------------------------------------------------------------------------
 
-class CheckOverlapRequest(BaseModel):
+class CheckOverlapRequest(GreenLangBase):
     """Request to check overlap between a single plot and protected areas."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -717,8 +656,7 @@ class CheckOverlapRequest(BaseModel):
     include_conservation: bool = Field(False, description="Include conservation assessment")
     request_id: Optional[str] = Field(None)
 
-
-class BatchOverlapRequest(BaseModel):
+class BatchOverlapRequest(GreenLangBase):
     """Request for batch overlap screening of multiple plots."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -730,8 +668,7 @@ class BatchOverlapRequest(BaseModel):
     buffer_radii_km: Optional[List[Decimal]] = Field(None)
     request_id: Optional[str] = Field(None)
 
-
-class BufferAnalysisRequest(BaseModel):
+class BufferAnalysisRequest(GreenLangBase):
     """Request for buffer zone analysis around a protected area."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -743,8 +680,7 @@ class BufferAnalysisRequest(BaseModel):
     include_plot_density: bool = Field(True)
     request_id: Optional[str] = Field(None)
 
-
-class ValidateDesignationRequest(BaseModel):
+class ValidateDesignationRequest(GreenLangBase):
     """Request to validate a protected area's legal designation."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -755,8 +691,7 @@ class ValidateDesignationRequest(BaseModel):
     )
     request_id: Optional[str] = Field(None)
 
-
-class ProximityAlertRequest(BaseModel):
+class ProximityAlertRequest(GreenLangBase):
     """Request to check for high-risk proximity alerts."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -768,8 +703,7 @@ class ProximityAlertRequest(BaseModel):
     commodities: Optional[List[EUDRCommodity]] = Field(None)
     request_id: Optional[str] = Field(None)
 
-
-class ComplianceReportRequest(BaseModel):
+class ComplianceReportRequest(GreenLangBase):
     """Request to generate a compliance report."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -783,8 +717,7 @@ class ComplianceReportRequest(BaseModel):
     commodity_filter: Optional[List[EUDRCommodity]] = Field(None)
     request_id: Optional[str] = Field(None)
 
-
-class ConservationAssessmentRequest(BaseModel):
+class ConservationAssessmentRequest(GreenLangBase):
     """Request to assess conservation status of a protected area."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -794,12 +727,11 @@ class ConservationAssessmentRequest(BaseModel):
     include_fragmentation: bool = Field(True)
     request_id: Optional[str] = Field(None)
 
-
 # ---------------------------------------------------------------------------
 # Response Models (7)
 # ---------------------------------------------------------------------------
 
-class CheckOverlapResponse(BaseModel):
+class CheckOverlapResponse(GreenLangBase):
     """Response from single-plot overlap check."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -812,8 +744,7 @@ class CheckOverlapResponse(BaseModel):
     provenance_hash: Optional[str] = Field(None)
     request_id: Optional[str] = Field(None)
 
-
-class BatchOverlapResponse(BaseModel):
+class BatchOverlapResponse(GreenLangBase):
     """Response from batch overlap screening."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -826,8 +757,7 @@ class BatchOverlapResponse(BaseModel):
     provenance_hash: Optional[str] = Field(None)
     request_id: Optional[str] = Field(None)
 
-
-class BufferAnalysisResponse(BaseModel):
+class BufferAnalysisResponse(GreenLangBase):
     """Response from buffer zone analysis."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -839,8 +769,7 @@ class BufferAnalysisResponse(BaseModel):
     provenance_hash: Optional[str] = Field(None)
     request_id: Optional[str] = Field(None)
 
-
-class ValidateDesignationResponse(BaseModel):
+class ValidateDesignationResponse(GreenLangBase):
     """Response from designation validation."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -850,8 +779,7 @@ class ValidateDesignationResponse(BaseModel):
     provenance_hash: Optional[str] = Field(None)
     request_id: Optional[str] = Field(None)
 
-
-class ProximityAlertResponse(BaseModel):
+class ProximityAlertResponse(GreenLangBase):
     """Response from proximity alert check."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -863,8 +791,7 @@ class ProximityAlertResponse(BaseModel):
     provenance_hash: Optional[str] = Field(None)
     request_id: Optional[str] = Field(None)
 
-
-class ComplianceReportResponse(BaseModel):
+class ComplianceReportResponse(GreenLangBase):
     """Response from compliance report generation."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -874,8 +801,7 @@ class ComplianceReportResponse(BaseModel):
     provenance_hash: Optional[str] = Field(None)
     request_id: Optional[str] = Field(None)
 
-
-class ConservationAssessmentResponse(BaseModel):
+class ConservationAssessmentResponse(GreenLangBase):
     """Response from conservation status assessment."""
 
     model_config = ConfigDict(str_strip_whitespace=True)

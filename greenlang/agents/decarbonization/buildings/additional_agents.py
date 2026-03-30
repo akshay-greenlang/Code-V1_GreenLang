@@ -25,7 +25,7 @@ import logging
 from decimal import Decimal
 from typing import Dict, List, Optional, Any
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.decarbonization.buildings.base import (
     BuildingDecarbonizationBaseAgent,
@@ -42,6 +42,7 @@ from greenlang.agents.decarbonization.buildings.base import (
     DecarbonizationTarget,
     SOLAR_CAPACITY_FACTOR,
 )
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -563,7 +564,7 @@ class TenantEngagementAgent(BuildingDecarbonizationBaseAgent[TenantEngagementInp
 # GL-DECARB-BLD-011: Portfolio Decarbonization Agent
 # =============================================================================
 
-class PortfolioBuilding(BaseModel):
+class PortfolioBuilding(GreenLangBase):
     """Individual building in portfolio."""
     building_id: str
     building_type: str

@@ -53,7 +53,8 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
+from greenlang.schemas import GreenLangBase, utcnow
 
 # ---------------------------------------------------------------------------
 # Re-export Layer 1 models from data_quality_profiler
@@ -107,16 +108,9 @@ try:
 except ImportError:
     ConflictResolutionStrategy = None  # type: ignore[assignment, misc]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -175,11 +169,9 @@ SUPPORTED_CURRENCIES: List[str] = [
     "SAR", "THB", "MYR", "IDR", "PHP", "TWD", "PLN", "CZK", "HUF", "TRY",
 ]
 
-
 # =============================================================================
 # Enumerations (13)
 # =============================================================================
-
 
 class SourceType(str, Enum):
     """Classification of the external data source providing records.
@@ -207,7 +199,6 @@ class SourceType(str, Enum):
     MANUAL = "manual"
     OTHER = "other"
 
-
 class SourceStatus(str, Enum):
     """Operational status of a registered data source.
 
@@ -221,7 +212,6 @@ class SourceStatus(str, Enum):
     INACTIVE = "inactive"
     ERROR = "error"
     PENDING_VALIDATION = "pending_validation"
-
 
 class MatchStrategy(str, Enum):
     """Algorithm used to identify matching records across sources.
@@ -239,7 +229,6 @@ class MatchStrategy(str, Enum):
     TEMPORAL = "temporal"
     BLOCKING = "blocking"
 
-
 class MatchStatus(str, Enum):
     """Outcome status of a record-matching attempt.
 
@@ -253,7 +242,6 @@ class MatchStatus(str, Enum):
     UNMATCHED = "unmatched"
     AMBIGUOUS = "ambiguous"
     PENDING_REVIEW = "pending_review"
-
 
 class ComparisonResult(str, Enum):
     """Outcome of comparing a single field across two source records.
@@ -272,7 +260,6 @@ class ComparisonResult(str, Enum):
     MISSING_LEFT = "missing_left"
     MISSING_RIGHT = "missing_right"
     INCOMPARABLE = "incomparable"
-
 
 class DiscrepancyType(str, Enum):
     """Classification of a detected discrepancy between sources.
@@ -294,7 +281,6 @@ class DiscrepancyType(str, Enum):
     AGGREGATION_MISMATCH = "aggregation_mismatch"
     FORMAT_DIFFERENCE = "format_difference"
 
-
 class DiscrepancySeverity(str, Enum):
     """Severity level of a detected discrepancy.
 
@@ -310,7 +296,6 @@ class DiscrepancySeverity(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     INFO = "info"
-
 
 class ResolutionStrategy(str, Enum):
     """Strategy for resolving a detected discrepancy.
@@ -332,7 +317,6 @@ class ResolutionStrategy(str, Enum):
     MANUAL_REVIEW = "manual_review"
     CUSTOM = "custom"
 
-
 class ResolutionStatus(str, Enum):
     """Lifecycle status of a discrepancy resolution decision.
 
@@ -348,7 +332,6 @@ class ResolutionStatus(str, Enum):
     ESCALATED = "escalated"
     DEFERRED = "deferred"
     REJECTED = "rejected"
-
 
 class FieldType(str, Enum):
     """Data type classification for a compared field.
@@ -370,7 +353,6 @@ class FieldType(str, Enum):
     CURRENCY = "currency"
     UNIT_VALUE = "unit_value"
 
-
 class ReconciliationStatus(str, Enum):
     """Lifecycle status of a reconciliation job.
 
@@ -388,7 +370,6 @@ class ReconciliationStatus(str, Enum):
     FAILED = "failed"
     CANCELLED = "cancelled"
     PARTIAL = "partial"
-
 
 class TemporalGranularity(str, Enum):
     """Time granularity for temporal alignment of source records.
@@ -408,7 +389,6 @@ class TemporalGranularity(str, Enum):
     QUARTERLY = "quarterly"
     ANNUAL = "annual"
 
-
 class CredibilityFactor(str, Enum):
     """Dimension contributing to a source's overall credibility score.
 
@@ -425,13 +405,11 @@ class CredibilityFactor(str, Enum):
     ACCURACY = "accuracy"
     CERTIFICATION = "certification"
 
-
 # =============================================================================
 # SDK Data Models (22)
 # =============================================================================
 
-
-class SourceDefinition(BaseModel):
+class SourceDefinition(GreenLangBase):
     """A registered data source participating in cross-source reconciliation.
 
     Contains metadata, priority, credibility scoring, and operational
@@ -491,7 +469,7 @@ class SourceDefinition(BaseModel):
         description="Current operational status of the source",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the source was registered",
     )
 
@@ -505,8 +483,7 @@ class SourceDefinition(BaseModel):
             raise ValueError("name must be non-empty")
         return v
 
-
-class SchemaMapping(BaseModel):
+class SchemaMapping(GreenLangBase):
     """Column-level mapping from a source schema to the canonical schema.
 
     Defines how a single column in a source dataset maps to the
@@ -563,8 +540,7 @@ class SchemaMapping(BaseModel):
             raise ValueError("canonical_column must be non-empty")
         return v
 
-
-class MatchKey(BaseModel):
+class MatchKey(GreenLangBase):
     """Composite key used to identify a record for cross-source matching.
 
     Combines entity, period, metric, and source identifiers into a
@@ -613,8 +589,7 @@ class MatchKey(BaseModel):
             self.composite_key = hashlib.sha256(raw.encode()).hexdigest()[:16]
         return self
 
-
-class MatchResult(BaseModel):
+class MatchResult(GreenLangBase):
     """Result of matching a pair of records across two sources.
 
     Contains the match identifiers, confidence score, strategy used,
@@ -664,8 +639,7 @@ class MatchResult(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class FieldComparison(BaseModel):
+class FieldComparison(GreenLangBase):
     """Result of comparing a single field across two matched records.
 
     Reports absolute and relative differences, tolerance checks,
@@ -734,8 +708,7 @@ class FieldComparison(BaseModel):
             raise ValueError("field_name must be non-empty")
         return v
 
-
-class Discrepancy(BaseModel):
+class Discrepancy(GreenLangBase):
     """A detected discrepancy between two matched source records.
 
     Records the type, severity, affected values, and deviation
@@ -811,8 +784,7 @@ class Discrepancy(BaseModel):
             raise ValueError("field_name must be non-empty")
         return v
 
-
-class ResolutionDecision(BaseModel):
+class ResolutionDecision(GreenLangBase):
     """A resolution decision for a detected discrepancy.
 
     Records which strategy was applied, the winning source, resolved
@@ -876,8 +848,7 @@ class ResolutionDecision(BaseModel):
             raise ValueError("discrepancy_id must be non-empty")
         return v
 
-
-class GoldenRecord(BaseModel):
+class GoldenRecord(GreenLangBase):
     """A single authoritative golden record assembled from multiple sources.
 
     Contains the best-available value for every field, along with
@@ -943,8 +914,7 @@ class GoldenRecord(BaseModel):
             raise ValueError("period must be non-empty")
         return v
 
-
-class SourceCredibility(BaseModel):
+class SourceCredibility(GreenLangBase):
     """Multi-dimensional credibility assessment for a data source.
 
     Scores the source across five dimensions (completeness, timeliness,
@@ -994,7 +964,7 @@ class SourceCredibility(BaseModel):
         description="Number of records used for assessment",
     )
     last_assessed: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of the most recent assessment",
     )
 
@@ -1008,8 +978,7 @@ class SourceCredibility(BaseModel):
             raise ValueError("source_id must be non-empty")
         return v
 
-
-class ToleranceRule(BaseModel):
+class ToleranceRule(GreenLangBase):
     """Tolerance configuration for a single field comparison.
 
     Defines absolute and percentage thresholds, rounding precision,
@@ -1063,8 +1032,7 @@ class ToleranceRule(BaseModel):
             raise ValueError("field_name must be non-empty")
         return v
 
-
-class ReconciliationReport(BaseModel):
+class ReconciliationReport(GreenLangBase):
     """Compliance-grade report summarizing a reconciliation job.
 
     Provides aggregate counts, resolution statistics, and a complete
@@ -1120,7 +1088,7 @@ class ReconciliationReport(BaseModel):
         description="Human-readable summary of the reconciliation results",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the report was generated",
     )
     provenance_hash: str = Field(
@@ -1138,8 +1106,7 @@ class ReconciliationReport(BaseModel):
             raise ValueError("job_id must be non-empty")
         return v
 
-
-class ReconciliationJobConfig(BaseModel):
+class ReconciliationJobConfig(GreenLangBase):
     """Configuration for a reconciliation job run.
 
     Specifies which sources to reconcile, the matching and resolution
@@ -1204,8 +1171,7 @@ class ReconciliationJobConfig(BaseModel):
                 raise ValueError("source_ids must contain non-empty strings")
         return v
 
-
-class BatchMatchResult(BaseModel):
+class BatchMatchResult(GreenLangBase):
     """Aggregated result of matching records across all source pairs.
 
     Provides counts, match rate, and the full list of individual
@@ -1247,8 +1213,7 @@ class BatchMatchResult(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class DiscrepancySummary(BaseModel):
+class DiscrepancySummary(GreenLangBase):
     """Aggregated summary of all discrepancies detected in a job.
 
     Breaks down discrepancies by type, severity, and source to
@@ -1290,8 +1255,7 @@ class DiscrepancySummary(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class ResolutionSummary(BaseModel):
+class ResolutionSummary(GreenLangBase):
     """Aggregated summary of all resolution decisions in a job.
 
     Provides breakdown by strategy, auto vs manual, and average
@@ -1333,8 +1297,7 @@ class ResolutionSummary(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class TemporalAlignment(BaseModel):
+class TemporalAlignment(GreenLangBase):
     """Result of aligning source records to a common temporal granularity.
 
     Reports the source and target granularities, aggregation method,
@@ -1369,8 +1332,7 @@ class TemporalAlignment(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class FieldLineage(BaseModel):
+class FieldLineage(GreenLangBase):
     """Lineage record for a single field in a golden record.
 
     Tracks the origin, original value, resolved value, and
@@ -1431,8 +1393,7 @@ class FieldLineage(BaseModel):
             raise ValueError("source_id must be non-empty")
         return v
 
-
-class ReconciliationStats(BaseModel):
+class ReconciliationStats(GreenLangBase):
     """Aggregated operational statistics for the reconciliation service.
 
     Provides high-level metrics for monitoring overall health,
@@ -1479,8 +1440,7 @@ class ReconciliationStats(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class SourceHealthMetrics(BaseModel):
+class SourceHealthMetrics(GreenLangBase):
     """Operational health metrics for a single data source.
 
     Tracks contribution volume, discrepancy rate, missing rate,
@@ -1529,8 +1489,7 @@ class SourceHealthMetrics(BaseModel):
             raise ValueError("source_id must be non-empty")
         return v
 
-
-class ComparisonSummary(BaseModel):
+class ComparisonSummary(GreenLangBase):
     """Aggregated summary of all field comparisons in a match batch.
 
     Provides counts of matches, mismatches, within-tolerance,
@@ -1577,8 +1536,7 @@ class ComparisonSummary(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class PipelineStageResult(BaseModel):
+class PipelineStageResult(GreenLangBase):
     """Result of executing a single stage in the reconciliation pipeline.
 
     Records the stage name, status, record count, duration,
@@ -1627,8 +1585,7 @@ class PipelineStageResult(BaseModel):
             raise ValueError("stage_name must be non-empty")
         return v
 
-
-class ReconciliationEvent(BaseModel):
+class ReconciliationEvent(GreenLangBase):
     """An audit event emitted during reconciliation pipeline execution.
 
     Records a timestamped event with type, job context, and
@@ -1654,7 +1611,7 @@ class ReconciliationEvent(BaseModel):
         ..., description="Type of the event (e.g. 'match_started', 'discrepancy_found')",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the event occurred",
     )
     details: Dict[str, Any] = Field(
@@ -1684,13 +1641,11 @@ class ReconciliationEvent(BaseModel):
             raise ValueError("event_type must be non-empty")
         return v
 
-
 # =============================================================================
 # Request Models (8)
 # =============================================================================
 
-
-class CreateJobRequest(BaseModel):
+class CreateJobRequest(GreenLangBase):
     """Request body for creating a new reconciliation job.
 
     Attributes:
@@ -1752,8 +1707,7 @@ class CreateJobRequest(BaseModel):
                 raise ValueError("source_ids must contain non-empty strings")
         return v
 
-
-class RegisterSourceRequest(BaseModel):
+class RegisterSourceRequest(GreenLangBase):
     """Request body for registering a new data source.
 
     Attributes:
@@ -1804,8 +1758,7 @@ class RegisterSourceRequest(BaseModel):
             raise ValueError("name must be non-empty")
         return v
 
-
-class UpdateSourceRequest(BaseModel):
+class UpdateSourceRequest(GreenLangBase):
     """Request body for updating an existing data source.
 
     All fields are optional; only provided fields will be updated.
@@ -1849,8 +1802,7 @@ class UpdateSourceRequest(BaseModel):
             raise ValueError("name must be non-empty when provided")
         return v
 
-
-class MatchRequest(BaseModel):
+class MatchRequest(GreenLangBase):
     """Request body for executing a record matching operation.
 
     Attributes:
@@ -1893,8 +1845,7 @@ class MatchRequest(BaseModel):
                 raise ValueError("source_ids must contain non-empty strings")
         return v
 
-
-class CompareRequest(BaseModel):
+class CompareRequest(GreenLangBase):
     """Request body for comparing fields across matched record pairs.
 
     Attributes:
@@ -1927,8 +1878,7 @@ class CompareRequest(BaseModel):
                 raise ValueError("match_ids must contain non-empty strings")
         return v
 
-
-class ResolveRequest(BaseModel):
+class ResolveRequest(GreenLangBase):
     """Request body for resolving detected discrepancies.
 
     Attributes:
@@ -1961,8 +1911,7 @@ class ResolveRequest(BaseModel):
                 raise ValueError("discrepancy_ids must contain non-empty strings")
         return v
 
-
-class PipelineRequest(BaseModel):
+class PipelineRequest(GreenLangBase):
     """Request body for running the full reconciliation pipeline.
 
     Triggers end-to-end matching, comparison, discrepancy detection,
@@ -2012,8 +1961,7 @@ class PipelineRequest(BaseModel):
                 raise ValueError("source_ids must contain non-empty strings")
         return v
 
-
-class GoldenRecordRequest(BaseModel):
+class GoldenRecordRequest(GreenLangBase):
     """Request body for assembling a golden record for a specific entity.
 
     Attributes:
@@ -2050,7 +1998,6 @@ class GoldenRecordRequest(BaseModel):
         if not v or not v.strip():
             raise ValueError("period must be non-empty")
         return v
-
 
 # =============================================================================
 # __all__ export list

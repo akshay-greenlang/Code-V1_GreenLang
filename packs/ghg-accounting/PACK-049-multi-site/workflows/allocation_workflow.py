@@ -40,26 +40,20 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -68,20 +62,17 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
 
-
 class AllocationPhase(str, Enum):
     SHARED_SERVICE_ID = "shared_service_id"
     ALLOCATION_METHOD_SELECT = "allocation_method_select"
     CALCULATE = "calculate"
     VERIFY = "verify"
-
 
 class SharedServiceType(str, Enum):
     LANDLORD_TENANT = "landlord_tenant"
@@ -93,7 +84,6 @@ class SharedServiceType(str, Enum):
     CORPORATE_OVERHEAD = "corporate_overhead"
     OTHER = "other"
 
-
 class AllocationMethod(str, Enum):
     FLOOR_AREA = "floor_area"
     HEADCOUNT = "headcount"
@@ -103,12 +93,10 @@ class AllocationMethod(str, Enum):
     EQUAL_SPLIT = "equal_split"
     CUSTOM = "custom"
 
-
 class VerificationStatus(str, Enum):
     PASSED = "passed"
     FAILED = "failed"
     WARNING = "warning"
-
 
 # =============================================================================
 # REFERENCE DATA
@@ -127,11 +115,9 @@ DEFAULT_METHOD_MAP: Dict[str, str] = {
 
 ALLOCATION_TOLERANCE_PCT = Decimal("0.01")  # 0.01% tolerance for 100% check
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -143,7 +129,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class SharedService(BaseModel):
     """A shared service or common facility to be allocated."""
@@ -157,7 +142,6 @@ class SharedService(BaseModel):
     description: str = Field("")
     scope: str = Field("scope_2")
 
-
 class SiteAllocationDriver(BaseModel):
     """Allocation driver values for a site."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -169,7 +153,6 @@ class SiteAllocationDriver(BaseModel):
     energy_kwh: Decimal = Field(Decimal("0"))
     production_output: Decimal = Field(Decimal("0"))
     custom_driver: Decimal = Field(Decimal("0"))
-
 
 class AllocationLineItem(BaseModel):
     """Result of allocating a shared service to one site."""
@@ -186,7 +169,6 @@ class AllocationLineItem(BaseModel):
     allocated_tco2e: Decimal = Field(Decimal("0"))
     provenance_hash: str = Field("")
 
-
 class VerificationCheck(BaseModel):
     """Single verification check result."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -195,7 +177,6 @@ class VerificationCheck(BaseModel):
     message: str = Field("")
     expected_value: str = Field("")
     actual_value: str = Field("")
-
 
 class AllocationInput(BaseModel):
     """Input for the allocation workflow."""
@@ -209,7 +190,6 @@ class AllocationInput(BaseModel):
         description="service_id -> method override"
     )
     skip_phases: List[str] = Field(default_factory=list)
-
 
 class AllocationResult(BaseModel):
     """Output from the allocation workflow."""
@@ -231,11 +211,9 @@ class AllocationResult(BaseModel):
     started_at: str = Field("")
     completed_at: str = Field("")
 
-
 # =============================================================================
 # WORKFLOW CLASS
 # =============================================================================
-
 
 class AllocationWorkflow:
     """
@@ -278,7 +256,7 @@ class AllocationWorkflow:
 
     def execute(self, input_data: AllocationInput) -> AllocationResult:
         """Execute the allocation workflow."""
-        start = _utcnow()
+        start = utcnow()
         result = AllocationResult(
             organisation_id=input_data.organisation_id,
             reporting_year=input_data.reporting_year,
@@ -299,17 +277,17 @@ class AllocationWorkflow:
                     phase_name=phase.value, phase_number=idx, status=PhaseStatus.SKIPPED,
                 ))
                 continue
-            phase_start = _utcnow()
+            phase_start = utcnow()
             try:
                 phase_out = phase_methods[phase](input_data, result)
-                elapsed = (_utcnow() - phase_start).total_seconds()
+                elapsed = (utcnow() - phase_start).total_seconds()
                 result.phase_results.append(PhaseResult(
                     phase_name=phase.value, phase_number=idx,
                     status=PhaseStatus.COMPLETED, duration_seconds=elapsed,
                     outputs=phase_out, provenance_hash=_compute_hash(str(phase_out)),
                 ))
             except Exception as exc:
-                elapsed = (_utcnow() - phase_start).total_seconds()
+                elapsed = (utcnow() - phase_start).total_seconds()
                 logger.error("Phase %s failed: %s", phase.value, exc, exc_info=True)
                 result.phase_results.append(PhaseResult(
                     phase_name=phase.value, phase_number=idx,
@@ -322,7 +300,7 @@ class AllocationWorkflow:
         if result.status != WorkflowStatus.FAILED:
             result.status = WorkflowStatus.COMPLETED
 
-        end = _utcnow()
+        end = utcnow()
         result.completed_at = end.isoformat()
         result.duration_seconds = (end - start).total_seconds()
         result.provenance_hash = _compute_hash(
@@ -635,7 +613,6 @@ class AllocationWorkflow:
             return Decimal(str(value))
         except Exception:
             return Decimal("0")
-
 
 # =============================================================================
 # MODULE EXPORTS

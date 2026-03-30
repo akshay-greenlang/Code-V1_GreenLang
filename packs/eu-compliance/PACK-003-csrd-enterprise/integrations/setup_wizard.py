@@ -43,25 +43,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash."""
@@ -75,11 +69,9 @@ def _compute_hash(data: Any) -> str:
         raw = str(data)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EnterpriseWizardStep(str, Enum):
     """Names of enterprise wizard steps in execution order."""
@@ -95,7 +87,6 @@ class EnterpriseWizardStep(str, Enum):
     API_KEY_GENERATION = "api_key_generation"
     HEALTH_VERIFICATION = "health_verification"
 
-
 class StepStatus(str, Enum):
     """Status of a wizard step."""
 
@@ -105,11 +96,9 @@ class StepStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class OrganizationProfile(BaseModel):
     """Organization profile data from step 1."""
@@ -126,7 +115,6 @@ class OrganizationProfile(BaseModel):
     is_listed: bool = Field(default=False)
     stock_exchange: Optional[str] = Field(None)
 
-
 class TierSelection(BaseModel):
     """Tenant tier selection data from step 2."""
 
@@ -134,7 +122,6 @@ class TierSelection(BaseModel):
     features_reviewed: bool = Field(default=False)
     estimated_users: int = Field(default=50, ge=1)
     estimated_entities: int = Field(default=5, ge=1)
-
 
 class SSOSetup(BaseModel):
     """SSO configuration data from step 3."""
@@ -144,7 +131,6 @@ class SSOSetup(BaseModel):
     idp_metadata_url: Optional[str] = Field(None)
     client_id: Optional[str] = Field(None)
     test_passed: bool = Field(default=False)
-
 
 class WhiteLabelConfig(BaseModel):
     """White-label branding configuration from step 4."""
@@ -158,7 +144,6 @@ class WhiteLabelConfig(BaseModel):
     email_from_name: Optional[str] = Field(None)
     email_from_address: Optional[str] = Field(None)
 
-
 class DataResidencyConfig(BaseModel):
     """Data residency configuration from step 5."""
 
@@ -169,14 +154,12 @@ class DataResidencyConfig(BaseModel):
     cross_border_transfers: bool = Field(default=False)
     encryption_at_rest: bool = Field(default=True)
 
-
 class EntityConfig(BaseModel):
     """Entity hierarchy configuration from step 6."""
 
     entities: List[Dict[str, Any]] = Field(default_factory=list)
     consolidation_approach: str = Field(default="operational_control")
     ownership_threshold_pct: float = Field(default=50.0, ge=0.0, le=100.0)
-
 
 class FrameworkConfig(BaseModel):
     """Framework selection configuration from step 7."""
@@ -189,13 +172,11 @@ class FrameworkConfig(BaseModel):
         default_factory=lambda: list(range(1, 16)),
     )
 
-
 class IoTDeviceConfig(BaseModel):
     """IoT device registration data from step 8."""
 
     devices: List[Dict[str, Any]] = Field(default_factory=list)
     protocols: List[str] = Field(default_factory=lambda: ["MQTT", "HTTP"])
-
 
 class APIKeyConfig(BaseModel):
     """API key generation data from step 9."""
@@ -204,7 +185,6 @@ class APIKeyConfig(BaseModel):
     scopes: List[str] = Field(
         default_factory=lambda: ["read", "write", "admin"],
     )
-
 
 class WizardStepState(BaseModel):
     """State of a single wizard step."""
@@ -217,7 +197,6 @@ class WizardStepState(BaseModel):
     started_at: Optional[datetime] = Field(None)
     completed_at: Optional[datetime] = Field(None)
     execution_time_ms: float = Field(default=0.0)
-
 
 class WizardState(BaseModel):
     """Complete state of the enterprise setup wizard."""
@@ -237,9 +216,8 @@ class WizardState(BaseModel):
     iot_config: Optional[IoTDeviceConfig] = Field(None)
     api_key_config: Optional[APIKeyConfig] = Field(None)
     is_complete: bool = Field(default=False)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     completed_at: Optional[datetime] = Field(None)
-
 
 class SetupResult(BaseModel):
     """Final setup result generated upon wizard completion."""
@@ -258,9 +236,8 @@ class SetupResult(BaseModel):
     total_steps_completed: int = Field(default=0)
     total_steps: int = Field(default=10)
     configuration_hash: str = Field(default="")
-    generated_at: datetime = Field(default_factory=_utcnow)
+    generated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Step Definitions
@@ -299,11 +276,9 @@ VALID_RESIDENCY_REGIONS = {
     "ap-southeast-1", "ap-northeast-1",
 }
 
-
 # ---------------------------------------------------------------------------
 # EnterpriseSetupWizard
 # ---------------------------------------------------------------------------
-
 
 class EnterpriseSetupWizard:
     """10-step enterprise setup wizard for CSRD Enterprise Pack.
@@ -357,7 +332,7 @@ class EnterpriseSetupWizard:
         Returns:
             Initial WizardState.
         """
-        wizard_id = _compute_hash(f"ent-wizard:{_utcnow().isoformat()}")[:16]
+        wizard_id = _compute_hash(f"ent-wizard:{utcnow().isoformat()}")[:16]
 
         steps: Dict[str, WizardStepState] = {}
         for step_name in STEP_ORDER:
@@ -405,7 +380,7 @@ class EnterpriseSetupWizard:
             raise ValueError(f"Step '{step_name}' not found in state")
 
         step.status = StepStatus.IN_PROGRESS
-        step.started_at = _utcnow()
+        step.started_at = utcnow()
         start_time = time.monotonic()
 
         handler = self._step_handlers.get(step_enum)
@@ -423,7 +398,7 @@ class EnterpriseSetupWizard:
                 step.validation_errors = errors
             else:
                 step.status = StepStatus.COMPLETED
-                step.completed_at = _utcnow()
+                step.completed_at = utcnow()
                 step.validation_errors = []
                 self._advance_step(step_enum)
                 self.logger.info("Step '%s' completed in %.1fms", step_name, elapsed)
@@ -743,7 +718,7 @@ class EnterpriseSetupWizard:
             keys_generated.append({
                 "scope": scope,
                 "key_prefix": api_key[:8] + "...",
-                "created_at": _utcnow().isoformat(),
+                "created_at": utcnow().isoformat(),
             })
 
         api_cfg = APIKeyConfig(
@@ -820,7 +795,7 @@ class EnterpriseSetupWizard:
                 self._state.current_step = STEP_ORDER[idx + 1]
             else:
                 self._state.is_complete = True
-                self._state.completed_at = _utcnow()
+                self._state.completed_at = utcnow()
         except ValueError:
             pass
 

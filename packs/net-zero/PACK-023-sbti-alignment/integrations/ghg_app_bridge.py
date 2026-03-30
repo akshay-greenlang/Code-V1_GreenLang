@@ -43,25 +43,20 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ReportFormat
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -74,11 +69,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Agent Stubs
 # ---------------------------------------------------------------------------
-
 
 class _AgentStub:
     """Stub for unavailable GL-GHG-APP engine modules."""
@@ -97,7 +90,6 @@ class _AgentStub:
             }
         return _stub_method
 
-
 def _try_import_ghg_engine(engine_id: str, module_path: str) -> Any:
     """Try to import a GHG-APP engine with graceful fallback.
 
@@ -114,11 +106,9 @@ def _try_import_ghg_engine(engine_id: str, module_path: str) -> Any:
         logger.debug("GHG-APP engine %s not available, using stub", engine_id)
         return _AgentStub(engine_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class GHGScope(str, Enum):
     """GHG Protocol scope identifiers."""
@@ -128,16 +118,6 @@ class GHGScope(str, Enum):
     SCOPE_2_MARKET = "scope_2_market"
     SCOPE_3 = "scope_3"
     TOTAL = "total"
-
-
-class ReportFormat(str, Enum):
-    """GHG report output formats."""
-
-    JSON = "json"
-    CSV = "csv"
-    PDF = "pdf"
-    EXCEL = "excel"
-
 
 class RecalculationTrigger(str, Enum):
     """SBTi base year recalculation trigger types."""
@@ -149,7 +129,6 @@ class RecalculationTrigger(str, Enum):
     ERROR_CORRECTION = "error_correction"
     OUTSOURCING_INSOURCING = "outsourcing_insourcing"
 
-
 class InventoryStatus(str, Enum):
     """Inventory completeness status."""
 
@@ -158,11 +137,9 @@ class InventoryStatus(str, Enum):
     ESTIMATED = "estimated"
     MISSING = "missing"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class GHGAppBridgeConfig(BaseModel):
     """Configuration for the GHG App Bridge."""
@@ -178,7 +155,6 @@ class GHGAppBridgeConfig(BaseModel):
         default=5.0, ge=0.0, le=50.0,
         description="SBTi 5% significance threshold for recalculation",
     )
-
 
 class InventoryResult(BaseModel):
     """GHG inventory result formatted for SBTi."""
@@ -200,7 +176,6 @@ class InventoryResult(BaseModel):
     sources: List[str] = Field(default_factory=list)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class BaseYearResult(BaseModel):
     """Base year inventory result for SBTi target setting."""
@@ -226,7 +201,6 @@ class BaseYearResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class AggregationResult(BaseModel):
     """Scope aggregation result."""
 
@@ -240,7 +214,6 @@ class AggregationResult(BaseModel):
     pct_of_total: float = Field(default=0.0, ge=0.0, le=100.0)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class MultiYearResult(BaseModel):
     """Multi-year trend analysis result for SBTi progress tracking."""
@@ -265,7 +238,6 @@ class MultiYearResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class RecalculationResult(BaseModel):
     """Base year recalculation trigger assessment."""
 
@@ -283,7 +255,6 @@ class RecalculationResult(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class DataQualityResult(BaseModel):
     """GHG inventory data quality assessment for SBTi submission."""
@@ -304,7 +275,6 @@ class DataQualityResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class ReportResult(BaseModel):
     """GHG report generation result."""
 
@@ -318,7 +288,6 @@ class ReportResult(BaseModel):
     sbti_aligned: bool = Field(default=False)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # GHG-APP Engine Mapping
@@ -341,11 +310,9 @@ SBTI_ANNUAL_RATES: Dict[str, float] = {
     "2C": 2.5,
 }
 
-
 # ---------------------------------------------------------------------------
 # SBTiGHGAppBridge
 # ---------------------------------------------------------------------------
-
 
 class SBTiGHGAppBridge:
     """Bridge to GL-GHG-APP for SBTi inventory management.

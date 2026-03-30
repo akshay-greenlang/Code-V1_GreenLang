@@ -16,10 +16,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism.clock import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -60,14 +61,14 @@ UNIT_COSTS = {
 }
 
 
-class UrbanGreenProject(BaseModel):
+class UrbanGreenProject(GreenLangBase):
     project_id: str = Field(...)
     infrastructure_type: GreenInfrastructureType = Field(...)
     quantity: float = Field(..., gt=0)  # hectares, trees, or m2 depending on type
     unit: str = Field(default="units")
 
 
-class UrbanGreenPlan(BaseModel):
+class UrbanGreenPlan(GreenLangBase):
     project_id: str = Field(...)
     infrastructure_type: GreenInfrastructureType = Field(...)
     annual_sequestration_kg_co2e: float = Field(...)
@@ -79,13 +80,13 @@ class UrbanGreenPlan(BaseModel):
     stormwater_benefit_score: float = Field(..., ge=0, le=100)
 
 
-class UrbanGreenInput(BaseModel):
+class UrbanGreenInput(GreenLangBase):
     city_name: str = Field(...)
     projects: List[UrbanGreenProject] = Field(..., min_length=1)
     project_duration_years: int = Field(default=30)
 
 
-class UrbanGreenOutput(BaseModel):
+class UrbanGreenOutput(GreenLangBase):
     city_name: str = Field(...)
     calculation_date: datetime = Field(default_factory=DeterministicClock.now)
     total_sequestration_30yr_co2e: float = Field(...)

@@ -79,7 +79,6 @@ EUDR_COMMODITIES: FrozenSet[str] = frozenset({
     "cattle", "cocoa", "coffee", "oil_palm", "rubber", "soya", "wood",
 })
 
-
 # ---------------------------------------------------------------------------
 # Reference production data (FAOSTAT-style, approximate 2024/2025)
 # ---------------------------------------------------------------------------
@@ -298,16 +297,9 @@ CLIMATE_IMPACT_COEFFICIENTS: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _to_decimal(value: float | int | str | Decimal) -> Decimal:
     """Convert a numeric value to Decimal via string."""
@@ -315,18 +307,15 @@ def _to_decimal(value: float | int | str | Decimal) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _clamp_risk(value: Decimal) -> Decimal:
     """Clamp a risk score to [0.00, 100.00] and apply precision."""
     clamped = max(_MIN_RISK, min(_MAX_RISK, value))
     return clamped.quantize(_PRECISION, rounding=ROUND_HALF_UP)
 
-
 def _compute_provenance_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
 
 def _validate_commodity_type(commodity_type: str) -> str:
     """Validate and normalize a commodity type string."""
@@ -340,7 +329,6 @@ def _validate_commodity_type(commodity_type: str) -> str:
         )
     return normalized
 
-
 def _decimal_sqrt(value: Decimal) -> Decimal:
     """Compute square root of a Decimal using Newton's method."""
     if value < Decimal("0"):
@@ -353,7 +341,6 @@ def _decimal_sqrt(value: Decimal) -> Decimal:
             break
         seed = (seed + value / seed) / Decimal("2")
     return seed
-
 
 # ---------------------------------------------------------------------------
 # Prometheus metrics (graceful fallback)
@@ -415,18 +402,15 @@ except ImportError:
         "prometheus_client not installed; production forecast engine metrics disabled"
     )
 
-
 def _record_forecast(commodity_type: str) -> None:
     """Record a production forecast metric."""
     if _PROMETHEUS_AVAILABLE and _PFE_FORECASTS_TOTAL is not None:
         _PFE_FORECASTS_TOTAL.labels(commodity_type=commodity_type).inc()
 
-
 def _observe_duration(operation: str, seconds: float) -> None:
     """Record an operation duration metric."""
     if _PROMETHEUS_AVAILABLE and _PFE_DURATION_SECONDS is not None:
         _PFE_DURATION_SECONDS.labels(operation=operation).observe(seconds)
-
 
 def _record_anomaly(commodity_type: str, severity: str) -> None:
     """Record a production anomaly detection metric."""
@@ -435,11 +419,9 @@ def _record_anomaly(commodity_type: str, severity: str) -> None:
             commodity_type=commodity_type, severity=severity,
         ).inc()
 
-
 # ---------------------------------------------------------------------------
 # ProductionForecastEngine
 # ---------------------------------------------------------------------------
-
 
 class ProductionForecastEngine:
     """Yield modeling and production forecasting for EUDR commodities.
@@ -640,7 +622,7 @@ class ProductionForecastEngine:
             "unit": stats.get("unit", "thousand_mt"),
             "provenance_hash": provenance_hash,
             "processing_time_ms": round(elapsed_ms, 2),
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
         logger.info(
@@ -764,7 +746,7 @@ class ProductionForecastEngine:
                 _PRECISION, rounding=ROUND_HALF_UP,
             ),
             "provenance_hash": provenance_hash,
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
     # ------------------------------------------------------------------
@@ -790,6 +772,8 @@ class ProductionForecastEngine:
                   optimal in Celsius (positive = warmer).
                 - "rainfall_deviation_pct" (float): Rainfall deviation
                   from normal as percentage (positive = wetter).
+
+from greenlang.schemas import utcnow
                 - "drought_severity" (float, optional): 0-1 scale.
                 - "flood_risk" (float, optional): 0-1 scale.
 
@@ -918,7 +902,7 @@ class ProductionForecastEngine:
             "adaptation_recommendations": recommendations,
             "provenance_hash": provenance_hash,
             "processing_time_ms": round(elapsed_ms, 2),
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
     # ------------------------------------------------------------------
@@ -988,7 +972,7 @@ class ProductionForecastEngine:
             "peak_months": peak_months,
             "monthly_weights": monthly_weights,
             "provenance_hash": provenance_hash,
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
     # ------------------------------------------------------------------
@@ -1115,7 +1099,7 @@ class ProductionForecastEngine:
             "deviation_pct": deviation_pct,
             "assessment": assessment,
             "provenance_hash": provenance_hash,
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
     # ------------------------------------------------------------------
@@ -1234,7 +1218,7 @@ class ProductionForecastEngine:
                     "global_production_kt": stats.get("global_production_kt", Decimal("0")),
                     "unit": stats.get("unit", "thousand_mt"),
                     "is_top_producer": True,
-                    "created_at": _utcnow().isoformat(),
+                    "created_at": utcnow().isoformat(),
                 }
             else:
                 return {
@@ -1246,7 +1230,7 @@ class ProductionForecastEngine:
                     "global_production_kt": stats.get("global_production_kt", Decimal("0")),
                     "unit": stats.get("unit", "thousand_mt"),
                     "is_top_producer": False,
-                    "created_at": _utcnow().isoformat(),
+                    "created_at": utcnow().isoformat(),
                 }
 
         # Global statistics
@@ -1272,7 +1256,7 @@ class ProductionForecastEngine:
             "top_producers": producer_list,
             "producer_count": len(producer_list),
             "climate_sensitivity": stats.get("climate_sensitivity", Decimal("0")),
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
     # ------------------------------------------------------------------
@@ -1352,7 +1336,7 @@ class ProductionForecastEngine:
             "estimated_recovery_months": recovery_months,
             "risk_level": impact.get("risk_level", "LOW"),
             "provenance_hash": impact.get("provenance_hash", ""),
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
     # ------------------------------------------------------------------
@@ -1401,7 +1385,7 @@ class ProductionForecastEngine:
                 "producer_count": 0,
                 "producers": [],
                 "provenance_hash": _compute_provenance_hash({"commodity": commodity}),
-                "created_at": _utcnow().isoformat(),
+                "created_at": utcnow().isoformat(),
             }
 
         # Calculate HHI
@@ -1470,7 +1454,7 @@ class ProductionForecastEngine:
             "producer_count": len(shares),
             "producers": producer_list,
             "provenance_hash": provenance_hash,
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
     # ------------------------------------------------------------------
@@ -1552,7 +1536,6 @@ class ProductionForecastEngine:
             f"commodities={len(PRODUCTION_STATISTICS)}, "
             f"version={_MODULE_VERSION})"
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

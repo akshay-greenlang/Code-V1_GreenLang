@@ -30,6 +30,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "29.0.0"
@@ -52,10 +54,6 @@ XBRL_TAGS: Dict[str, str] = {
     "performance_status": "gl:ExecutivePerformanceStatus",
     "reduction_from_baseline": "gl:ExecutiveReductionFromBaseline",
 }
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
@@ -105,7 +103,6 @@ def _performance_status(actual: float, target: float) -> str:
         return "On Track"
     return "Behind"
 
-
 class ExecutiveSummaryTemplate:
     """
     1-page executive summary template for PACK-029 Interim Targets Pack.
@@ -132,7 +129,7 @@ class ExecutiveSummaryTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render 1-page executive summary as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [
             self._md_header(data), self._md_headline_metrics(data),
             self._md_performance(data), self._md_achievements(data),
@@ -146,7 +143,7 @@ class ExecutiveSummaryTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render executive summary as HTML."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         parts = [
             self._html_header(data), self._html_headline_metrics(data),
@@ -166,7 +163,7 @@ class ExecutiveSummaryTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render as structured JSON."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         total = float(data.get("total_emissions", 0))
         target = float(data.get("target_emissions", 0))
         baseline = float(data.get("baseline_emissions", 0))

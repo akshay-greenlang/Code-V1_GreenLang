@@ -40,35 +40,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "22.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a single workflow phase."""
@@ -79,7 +71,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -89,7 +80,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class TargetScope(str, Enum):
     """Target scope coverage."""
 
@@ -97,13 +87,11 @@ class TargetScope(str, Enum):
     S3 = "scope_3"
     S1S2S3 = "scope_1_2_3"
 
-
 class TargetTimeframe(str, Enum):
     """Target time horizon."""
 
     NEAR_TERM = "near_term"
     LONG_TERM = "long_term"
-
 
 class AggregationMethod(str, Enum):
     """Portfolio aggregation methods."""
@@ -112,7 +100,6 @@ class AggregationMethod(str, Enum):
     TETS = "tets"   # Total Emissions Weighted Temperature Score
     MOTS = "mots"   # Market Owned Temperature Score
     EOTS = "eots"   # Enterprise Owned Temperature Score
-
 
 # =============================================================================
 # TEMPERATURE RATING REFERENCE DATA (Zero-Hallucination, from SBTi)
@@ -146,11 +133,9 @@ DEFAULT_TEMP_SCORE = 3.20  # deg C (current policies scenario)
 # Paris-aligned threshold
 PARIS_ALIGNED_THRESHOLD = 1.75  # deg C
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -162,7 +147,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class EntityTarget(BaseModel):
     """A single entity's emission reduction target."""
@@ -177,7 +161,6 @@ class EntityTarget(BaseModel):
     is_sbti_validated: bool = Field(default=False)
     base_year_emissions_tco2e: float = Field(default=0.0, ge=0.0)
 
-
 class EntityWeight(BaseModel):
     """Entity weighting for portfolio aggregation."""
 
@@ -188,7 +171,6 @@ class EntityWeight(BaseModel):
     market_cap_usd: float = Field(default=0.0, ge=0.0)
     enterprise_value_usd: float = Field(default=0.0, ge=0.0)
     revenue_usd: float = Field(default=0.0, ge=0.0)
-
 
 class TemperatureScore(BaseModel):
     """Temperature score for a single entity target."""
@@ -203,7 +185,6 @@ class TemperatureScore(BaseModel):
     has_target: bool = Field(default=False)
     score_basis: str = Field(default="", description="Basis for the score assignment")
 
-
 class PortfolioTemperature(BaseModel):
     """Portfolio-level temperature score for one aggregation method."""
 
@@ -215,7 +196,6 @@ class PortfolioTemperature(BaseModel):
     entities_with_targets_pct: float = Field(default=0.0)
     contribution_breakdown: Dict[str, float] = Field(default_factory=dict)
 
-
 class ContributionAnalysis(BaseModel):
     """Entity contribution to portfolio temperature score."""
 
@@ -226,7 +206,6 @@ class ContributionAnalysis(BaseModel):
     weighted_contribution_c: float = Field(default=0.0)
     contribution_pct: float = Field(default=0.0)
     paris_aligned: bool = Field(default=False)
-
 
 class TemperatureAlignmentConfig(BaseModel):
     """Configuration for the temperature alignment workflow."""
@@ -247,7 +226,6 @@ class TemperatureAlignmentConfig(BaseModel):
             raise ValueError(f"aggregation_method must be one of {allowed}")
         return v
 
-
 class TemperatureAlignmentResult(BaseModel):
     """Complete result from the temperature alignment workflow."""
 
@@ -263,11 +241,9 @@ class TemperatureAlignmentResult(BaseModel):
     paris_aligned_pct: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class TemperatureAlignmentWorkflow:
     """
@@ -318,7 +294,7 @@ class TemperatureAlignmentWorkflow:
             TemperatureAlignmentResult with entity scores, portfolio
             scores, and contribution analysis.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting temperature alignment workflow %s, entities=%d",
             self.workflow_id, len(config.entities),
@@ -349,7 +325,7 @@ class TemperatureAlignmentWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         result = TemperatureAlignmentResult(
             workflow_id=self.workflow_id,
             status=overall_status,
@@ -376,7 +352,7 @@ class TemperatureAlignmentWorkflow:
 
     async def _phase_target_collection(self, config: TemperatureAlignmentConfig) -> PhaseResult:
         """Collect and validate all entity targets."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -418,7 +394,7 @@ class TemperatureAlignmentWorkflow:
         # Store validated entities back for later phases
         config.entities = valid_entities
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Target collection: %d targets from %d entities",
                          len(valid_entities), len(unique_entities))
         return PhaseResult(
@@ -500,7 +476,7 @@ class TemperatureAlignmentWorkflow:
 
     async def _phase_score_calculation(self, config: TemperatureAlignmentConfig) -> PhaseResult:
         """Calculate temperature score per target using SBTi mapping."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -525,7 +501,7 @@ class TemperatureAlignmentWorkflow:
         outputs["min_score_c"] = round(min((s.temperature_score_c for s in self._entity_scores), default=0.0), 2)
         outputs["max_score_c"] = round(max((s.temperature_score_c for s in self._entity_scores), default=0.0), 2)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Score calculation: %d scores, %.1f%% Paris-aligned",
                          total_count, self._paris_pct)
         return PhaseResult(
@@ -618,7 +594,7 @@ class TemperatureAlignmentWorkflow:
 
     async def _phase_portfolio_aggregation(self, config: TemperatureAlignmentConfig) -> PhaseResult:
         """Aggregate entity scores to portfolio level using multiple methods."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -661,7 +637,7 @@ class TemperatureAlignmentWorkflow:
             outputs[f"{ps.method.value}_score_c"] = round(ps.temperature_score_c, 2)
             outputs[f"{ps.method.value}_paris_aligned"] = ps.is_paris_aligned
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Portfolio aggregation: WATS=%.2f, TETS=%.2f",
                          wats.temperature_score_c, tets.temperature_score_c)
         return PhaseResult(
@@ -835,7 +811,7 @@ class TemperatureAlignmentWorkflow:
 
     async def _phase_reporting(self, config: TemperatureAlignmentConfig) -> PhaseResult:
         """Generate temperature alignment report with contribution analysis."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -879,7 +855,7 @@ class TemperatureAlignmentWorkflow:
             self._contributions[0].entity_name if self._contributions else "none"
         )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Reporting: portfolio=%.2f deg C, Paris=%s",
                          portfolio_score, portfolio_score <= PARIS_ALIGNED_THRESHOLD)
         return PhaseResult(

@@ -89,25 +89,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -125,7 +119,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -134,7 +127,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -146,36 +138,29 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* decimal digits and return float."""
     return float(value.quantize(Decimal(10) ** -places, rounding=ROUND_HALF_UP))
 
-
 def _round2(value: Any) -> float:
     """Round to 2 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round3(value: Any) -> float:
     """Round to 3 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: Any) -> float:
     """Round to 4 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ModelType(str, Enum):
     """Regression model types for energy-temperature relationships.
@@ -196,7 +181,6 @@ class ModelType(str, Enum):
     FIVE_PARAMETER = "five_parameter"
     MULTIVARIATE = "multivariate"
 
-
 class ModelQuality(str, Enum):
     """Model quality classification per ASHRAE 14-2014 criteria.
 
@@ -212,7 +196,6 @@ class ModelQuality(str, Enum):
     MARGINAL = "marginal"
     POOR = "poor"
 
-
 class ResidualTest(str, Enum):
     """Statistical tests for residual analysis.
 
@@ -223,7 +206,6 @@ class ResidualTest(str, Enum):
     DURBIN_WATSON = "durbin_watson"
     SHAPIRO_WILK = "shapiro_wilk"
     BREUSCH_PAGAN = "breusch_pagan"
-
 
 class VariableType(str, Enum):
     """Types of independent variables for regression.
@@ -244,7 +226,6 @@ class VariableType(str, Enum):
     OPERATING_HOURS = "operating_hours"
     CUSTOM = "custom"
 
-
 class GoodnessOfFit(str, Enum):
     """Goodness-of-fit metric identifiers.
 
@@ -263,7 +244,6 @@ class GoodnessOfFit(str, Enum):
     F_STATISTIC = "f_statistic"
     BIC = "bic"
     AIC = "aic"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -301,11 +281,9 @@ T_CRITICAL_95: Dict[int, float] = {
     100: 1.984, 200: 1.972, 500: 1.965, 1000: 1.962,
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class RegressionInput(BaseModel):
     """Input data for regression analysis.
@@ -329,11 +307,9 @@ class RegressionInput(BaseModel):
     hdd: Optional[float] = Field(default=None, ge=0.0, description="Heating degree-days")
     cdd: Optional[float] = Field(default=None, ge=0.0, description="Cooling degree-days")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class RegressionCoefficients(BaseModel):
     """Regression model coefficients.
@@ -354,7 +330,6 @@ class RegressionCoefficients(BaseModel):
     std_errors: Dict[str, float] = Field(default_factory=dict)
     t_ratios: Dict[str, float] = Field(default_factory=dict)
     p_values: Dict[str, float] = Field(default_factory=dict)
-
 
 class ModelStatistics(BaseModel):
     """Statistical measures of model quality.
@@ -396,7 +371,6 @@ class ModelStatistics(BaseModel):
     model_quality: ModelQuality = Field(default=ModelQuality.POOR)
     ashrae_14_compliant: bool = Field(default=False)
 
-
 class ModelSelection(BaseModel):
     """Model selection comparison result.
 
@@ -414,7 +388,6 @@ class ModelSelection(BaseModel):
     cv_rmse_pct: float = Field(default=0.0)
     is_selected: bool = Field(default=False)
     rank: int = Field(default=0, ge=0)
-
 
 class PredictionInterval(BaseModel):
     """Prediction with confidence interval.
@@ -434,7 +407,6 @@ class PredictionInterval(BaseModel):
     confidence_level: float = Field(default=0.95)
     residual: Optional[float] = Field(default=None)
 
-
 class ChangePointResult(BaseModel):
     """Change-point detection result.
 
@@ -450,7 +422,6 @@ class ChangePointResult(BaseModel):
     r_squared_at_cp: float = Field(default=0.0)
     bic_at_cp: float = Field(default=0.0)
     base_load_kwh: float = Field(default=0.0)
-
 
 class ResidualAnalysis(BaseModel):
     """Results of residual diagnostic tests.
@@ -470,7 +441,6 @@ class ResidualAnalysis(BaseModel):
     max_residual: float = Field(default=0.0)
     normality_test_passed: bool = Field(default=False)
 
-
 class VariableImportance(BaseModel):
     """Importance ranking of an independent variable.
 
@@ -486,7 +456,6 @@ class VariableImportance(BaseModel):
     t_ratio: float = Field(default=0.0)
     partial_r_squared: float = Field(default=0.0)
     is_significant: bool = Field(default=False)
-
 
 class RegressionOutput(BaseModel):
     """Complete output for a single regression model fit.
@@ -505,7 +474,6 @@ class RegressionOutput(BaseModel):
     predictions: List[PredictionInterval] = Field(default_factory=list)
     residual_analysis: Optional[ResidualAnalysis] = Field(default=None)
     variable_importance: List[VariableImportance] = Field(default_factory=list)
-
 
 class RegressionAnalysisResult(BaseModel):
     """Complete regression analysis result.
@@ -532,14 +500,12 @@ class RegressionAnalysisResult(BaseModel):
     methodology_notes: List[str] = Field(default_factory=list)
     processing_time_ms: float = Field(default=0.0)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class RegressionAnalysisEngine:
     """Zero-hallucination regression analysis engine for energy modelling.
@@ -1704,7 +1670,6 @@ class RegressionAnalysisEngine:
             normality_test_passed=True,
         )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic v2 model_rebuild for forward-reference resolution
 # ---------------------------------------------------------------------------
@@ -1719,7 +1684,6 @@ ResidualAnalysis.model_rebuild()
 VariableImportance.model_rebuild()
 RegressionOutput.model_rebuild()
 RegressionAnalysisResult.model_rebuild()
-
 
 # ---------------------------------------------------------------------------
 # Public Aliases -- required by PACK-035 __init__.py symbol contract

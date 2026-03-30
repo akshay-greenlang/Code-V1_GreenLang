@@ -33,21 +33,16 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Input Models
@@ -68,7 +63,6 @@ class MnaEvent(BaseModel):
     pro_rata_emissions_tco2e: Decimal = Field(Decimal("0"))
     description: str = Field("")
 
-
 class BoundaryComparison(BaseModel):
     """Before/after boundary comparison for a single event."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -79,7 +73,6 @@ class BoundaryComparison(BaseModel):
     emissions_before_tco2e: Decimal = Field(Decimal("0"))
     emissions_after_tco2e: Decimal = Field(Decimal("0"))
     delta_tco2e: Decimal = Field(Decimal("0"))
-
 
 class BaseYearRestatement(BaseModel):
     """Base year restatement entry."""
@@ -92,7 +85,6 @@ class BaseYearRestatement(BaseModel):
     methodology: str = Field("")
     trigger_event: str = Field("")
 
-
 class GrowthDecomposition(BaseModel):
     """Organic vs structural growth decomposition."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -102,13 +94,11 @@ class GrowthDecomposition(BaseModel):
     organic_pct: Decimal = Field(Decimal("0"))
     structural_pct: Decimal = Field(Decimal("0"))
 
-
 class DisclosureNote(BaseModel):
     """M&A-related disclosure note."""
     note_id: str = Field("")
     framework: str = Field("")
     text: str = Field("")
-
 
 class MnaImpactReportInput(BaseModel):
     """Complete input for the M&A impact report."""
@@ -120,7 +110,6 @@ class MnaImpactReportInput(BaseModel):
     base_year_restatements: List[Dict[str, Any]] = Field(default_factory=list)
     growth_decomposition: Optional[Dict[str, Any]] = Field(None)
     disclosure_notes: List[Dict[str, Any]] = Field(default_factory=list)
-
 
 # ---------------------------------------------------------------------------
 # Output Model
@@ -143,7 +132,6 @@ class MnaImpactReportOutput(BaseModel):
     growth_decomposition: Optional[GrowthDecomposition] = Field(None)
     disclosure_notes: List[DisclosureNote] = Field(default_factory=list)
     provenance_hash: str = Field("")
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -175,7 +163,7 @@ class MnaImpactReport:
     def render(self, data: Dict[str, Any]) -> MnaImpactReportOutput:
         """Render M&A impact report from input data."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         inp = MnaImpactReportInput(**data) if isinstance(data, dict) else data
 
         events = [MnaEvent(**e) if isinstance(e, dict) else e for e in inp.events]
@@ -366,7 +354,6 @@ class MnaImpactReport:
                 f"{ev.pro_rata_days},{ev.pro_rata_factor},{ev.pro_rata_emissions_tco2e}"
             )
         return "\n".join(lines_out)
-
 
 __all__ = [
     "MnaImpactReport",

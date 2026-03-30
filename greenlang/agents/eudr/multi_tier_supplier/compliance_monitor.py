@@ -60,22 +60,14 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _clamp(value: float, lo: float = 0.0, hi: float = 100.0) -> float:
     """Clamp a numeric value to [lo, hi]."""
     return max(lo, min(hi, value))
-
 
 def _parse_datetime(dt_str: str) -> Optional[datetime]:
     """Parse an ISO datetime string to a timezone-aware datetime.
@@ -96,11 +88,9 @@ def _parse_datetime(dt_str: str) -> Optional[datetime]:
     except (ValueError, TypeError):
         return None
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class ComplianceStatus(str, Enum):
     """Compliance status per PRD Appendix C.
@@ -123,7 +113,6 @@ class ComplianceStatus(str, Enum):
     UNVERIFIED = "unverified"
     EXPIRED = "expired"
 
-
 class ComplianceDimension(str, Enum):
     """Four compliance dimensions per PRD F6.1."""
 
@@ -132,24 +121,12 @@ class ComplianceDimension(str, Enum):
     GEOLOCATION_COVERAGE = "geolocation_coverage"
     DEFORESTATION_FREE = "deforestation_free"
 
-
-class AlertSeverity(str, Enum):
-    """Alert severity levels."""
-
-    CRITICAL = "critical"
-    HIGH = "high"
-    MEDIUM = "medium"
-    LOW = "low"
-    INFO = "info"
-
-
 class TrendDirection(str, Enum):
     """Compliance trend direction."""
 
     IMPROVING = "improving"
     STABLE = "stable"
     DEGRADING = "degrading"
-
 
 # ---------------------------------------------------------------------------
 # Compliance Score Thresholds (PRD Appendix C)
@@ -191,11 +168,9 @@ RECOGNIZED_CERTIFICATIONS: Dict[str, Dict[str, Any]] = {
     "globalg.a.p.": {"name": "GLOBALG.A.P.", "commodities": ["cattle", "soya"]},
 }
 
-
 # ---------------------------------------------------------------------------
 # Result Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class SupplierComplianceProfile:
@@ -203,6 +178,9 @@ class SupplierComplianceProfile:
 
     This is a local model used within the compliance monitor to decouple
     from external model dependencies.
+
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import AlertSeverity
 
     Attributes:
         supplier_id: Unique supplier identifier.
@@ -238,7 +216,6 @@ class SupplierComplianceProfile:
     last_compliance_check: str = ""
     registration_id: str = ""
 
-
 @dataclass
 class DimensionCheckResult:
     """Result of a single compliance dimension check.
@@ -260,7 +237,6 @@ class DimensionCheckResult:
     status: str = ComplianceStatus.UNVERIFIED.value
     details: Dict[str, Any] = field(default_factory=dict)
     issues: List[str] = field(default_factory=list)
-
 
 @dataclass
 class ComplianceCheckResult:
@@ -294,7 +270,6 @@ class ComplianceCheckResult:
     provenance_hash: str = ""
     engine_version: str = _MODULE_VERSION
 
-
 @dataclass
 class ComplianceAlert:
     """Alert generated on compliance status change or expiry warning.
@@ -325,7 +300,6 @@ class ComplianceAlert:
     triggered_at: str = ""
     provenance_hash: str = ""
 
-
 @dataclass
 class ExpiryWarning:
     """Warning for upcoming DDS or certification expiry.
@@ -352,7 +326,6 @@ class ExpiryWarning:
     severity: str = AlertSeverity.LOW.value
     action_required: str = ""
 
-
 @dataclass
 class ComplianceHistoryEntry:
     """A single entry in a supplier's compliance history timeline.
@@ -370,7 +343,6 @@ class ComplianceHistoryEntry:
     status: str = ComplianceStatus.UNVERIFIED.value
     dimension_scores: Dict[str, float] = field(default_factory=dict)
     change_reason: str = ""
-
 
 @dataclass
 class BatchComplianceResult:
@@ -396,11 +368,9 @@ class BatchComplianceResult:
     processing_time_ms: float = 0.0
     provenance_hash: str = ""
 
-
 # ===========================================================================
 # ComplianceMonitor
 # ===========================================================================
-
 
 class ComplianceMonitor:
     """Production-grade compliance monitoring engine for EUDR multi-tier suppliers.
@@ -567,7 +537,7 @@ class ComplianceMonitor:
             dimension_results=dimension_results,
             dds_can_include=dds_can_include,
             issues=all_issues,
-            checked_at=_utcnow().isoformat(),
+            checked_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
             provenance_hash=provenance_hash,
             engine_version=_MODULE_VERSION,
@@ -624,7 +594,7 @@ class ComplianceMonitor:
         weight = self._dimension_weights.get(
             ComplianceDimension.DDS_VALIDITY.value, 0.30
         )
-        now = _utcnow()
+        now = utcnow()
         issues: List[str] = []
         details: Dict[str, Any] = {
             "total_dds": len(dds_refs),
@@ -751,7 +721,7 @@ class ComplianceMonitor:
         weight = self._dimension_weights.get(
             ComplianceDimension.CERTIFICATION_STATUS.value, 0.25
         )
-        now = _utcnow()
+        now = utcnow()
         issues: List[str] = []
         details: Dict[str, Any] = {
             "total_certifications": len(certifications),
@@ -1015,7 +985,7 @@ class ComplianceMonitor:
         weight = self._dimension_weights.get(
             ComplianceDimension.DEFORESTATION_FREE.value, 0.20
         )
-        now = _utcnow()
+        now = utcnow()
         issues: List[str] = []
         status_str = (
             supplier.deforestation_free_status.lower().strip()
@@ -1217,7 +1187,7 @@ class ComplianceMonitor:
             current_status=new_status,
             message=message,
             dimension="composite",
-            triggered_at=_utcnow().isoformat(),
+            triggered_at=utcnow().isoformat(),
             provenance_hash=provenance_hash,
         )
         alerts.append(alert)
@@ -1250,7 +1220,7 @@ class ComplianceMonitor:
             List of ExpiryWarning objects sorted by urgency.
         """
         warnings: List[ExpiryWarning] = []
-        now = _utcnow()
+        now = utcnow()
 
         # Check DDS expiry
         for dds in supplier.dds_references:
@@ -1609,7 +1579,7 @@ class ComplianceMonitor:
         Returns:
             True if any item is expired and no valid items remain.
         """
-        now = _utcnow()
+        now = utcnow()
         has_valid_dds = False
         has_expired_dds = False
 
@@ -1761,7 +1731,6 @@ class ComplianceMonitor:
             f"tracked_suppliers={len(self._compliance_history)}, "
             f"version={_MODULE_VERSION!r})"
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

@@ -13,6 +13,8 @@ on:
 jobs:
   v2-train-gates:
     runs-on: ubuntu-latest
+    env:
+      TRAIN_TYPE: ${{ github.event.inputs.train_type || 'nightly' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,16 +29,29 @@ jobs:
           pip install pytest
       - name: Execute V2 release gates
         run: |
+          echo "Running train type: ${TRAIN_TYPE}"
           python -m greenlang.cli.main v2 validate-contracts
           python -m greenlang.cli.main v2 runtime-checks
+          python -m greenlang.cli.main v2 agent-checks
+          python -m greenlang.cli.main v2 connector-checks
           python -m greenlang.cli.main v2 docs-check
-          pytest -q tests/v2
+          python -c "from pathlib import Path; from greenlang.v2.pack_tiers import validate_tier_registry; p=Path('greenlang/ecosystem/packs/v2_tier_registry.yaml'); errs=validate_tier_registry(p); print(errs); raise SystemExit(1 if errs else 0)"
+          if [ "${TRAIN_TYPE}" = "nightly" ]; then
+            pytest -q tests/v2/test_contracts.py tests/v2/test_pack_tiers.py tests/v2/test_phase4_security_determinism.py tests/v2/test_cli_v2.py tests/v2/test_runtime_execution_checks.py tests/v2/test_v2_profile_backend_parity.py tests/v2/test_policy_bundle_semantics.py
+          else
+            pytest -q tests/v2
+          fi
           python -m greenlang.cli.main v2 gate
+
+      - name: RC soak note
+        if: ${{ env.TRAIN_TYPE == 'rc' || env.TRAIN_TYPE == 'stable' }}
+        run: |
+          echo "RC/Stable lane includes soak-grade full matrix."
 
       - name: Upload V2 train evidence
         uses: actions/upload-artifact@v4
         with:
-          name: v2-train-evidence
+          name: v2-train-evidence-${{ env.TRAIN_TYPE }}
           path: |
             docs/v2
             tests/v2

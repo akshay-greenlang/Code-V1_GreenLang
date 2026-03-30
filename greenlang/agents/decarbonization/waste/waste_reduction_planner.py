@@ -23,7 +23,7 @@ from typing import Any, Dict, List, Optional
 from enum import Enum
 import logging
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.decarbonization.waste.base import (
     BaseWasteDecarbAgent,
@@ -36,6 +36,7 @@ from greenlang.agents.decarbonization.waste.base import (
     CostCategory,
     ConfidenceLevel,
 )
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 

@@ -40,21 +40,15 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -66,7 +60,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 class _AgentStub:
     """Stub for unavailable agent modules."""
@@ -80,11 +73,9 @@ class _AgentStub:
             return {"agent": self._agent_name, "method": name, "status": "degraded"}
         return _stub_method
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class RiskCategory(str, Enum):
     """Supply chain risk categories for retail."""
@@ -98,7 +89,6 @@ class RiskCategory(str, Enum):
     WATER_POLLUTION = "water_pollution"
     CORRUPTION = "corruption"
 
-
 class SupplierTier(str, Enum):
     """Supplier tier classification."""
 
@@ -106,7 +96,6 @@ class SupplierTier(str, Enum):
     TIER_2 = "tier_2"
     TIER_3 = "tier_3"
     RAW_MATERIAL = "raw_material"
-
 
 class RemediationStatus(str, Enum):
     """Status of a remediation action."""
@@ -118,11 +107,9 @@ class RemediationStatus(str, Enum):
     VERIFIED = "verified"
     ESCALATED = "escalated"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class SupplierRiskResult(BaseModel):
     """Result of a supplier risk screening."""
@@ -140,7 +127,6 @@ class SupplierRiskResult(BaseModel):
     degraded: bool = Field(default=False)
     provenance_hash: str = Field(default="")
 
-
 class RemediationAction(BaseModel):
     """A remediation action for an identified risk."""
 
@@ -152,9 +138,8 @@ class RemediationAction(BaseModel):
     assigned_to: str = Field(default="")
     deadline: Optional[str] = Field(None)
     verification_method: str = Field(default="")
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class DueDiligenceResult(BaseModel):
     """Result of a due diligence assessment."""
@@ -172,7 +157,6 @@ class DueDiligenceResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class SupplyChainBridgeConfig(BaseModel):
     """Configuration for the Supply Chain Bridge."""
 
@@ -184,7 +168,6 @@ class SupplyChainBridgeConfig(BaseModel):
         default_factory=lambda: [SupplierTier.TIER_1, SupplierTier.TIER_2],
     )
 
-
 # Country risk factors for forced labour screening
 FORCED_LABOUR_RISK_COUNTRIES: Dict[str, float] = {
     "CN": 75.0, "MM": 85.0, "BD": 70.0, "VN": 55.0, "TH": 50.0,
@@ -192,11 +175,9 @@ FORCED_LABOUR_RISK_COUNTRIES: Dict[str, float] = {
     "BR": 40.0, "MY": 55.0, "KH": 65.0, "LA": 60.0, "PH": 45.0,
 }
 
-
 # ---------------------------------------------------------------------------
 # SupplyChainBridge
 # ---------------------------------------------------------------------------
-
 
 class SupplyChainBridge:
     """Bridge to CSDDD agents and forced labour screening for retail.
@@ -231,6 +212,7 @@ class SupplyChainBridge:
         self._questionnaire_agent = _AgentStub("DATA-008")
         try:
             import importlib
+
             self._questionnaire_agent = importlib.import_module(
                 "greenlang.agents.data.questionnaire_processor"
             )

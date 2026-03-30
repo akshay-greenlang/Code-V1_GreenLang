@@ -33,10 +33,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -88,7 +89,7 @@ EXPOSURE_THRESHOLDS = {
 # Pydantic Models
 # =============================================================================
 
-class GeographicExposure(BaseModel):
+class GeographicExposure(GreenLangBase):
     """Geographic exposure metrics."""
     location_id: str = Field(..., description="Location identifier")
     latitude: float = Field(..., ge=-90, le=90)
@@ -103,7 +104,7 @@ class GeographicExposure(BaseModel):
     flood_zone: Optional[str] = Field(None, description="Flood zone designation")
 
 
-class ValueChainExposure(BaseModel):
+class ValueChainExposure(GreenLangBase):
     """Value chain exposure metrics."""
     chain_segment: str = Field(..., description="Value chain segment")
     exposure_score: float = Field(..., ge=0, le=1)
@@ -113,7 +114,7 @@ class ValueChainExposure(BaseModel):
     critical_dependencies: List[str] = Field(default_factory=list)
 
 
-class RevenueExposure(BaseModel):
+class RevenueExposure(GreenLangBase):
     """Revenue exposure to climate events."""
     revenue_segment: str = Field(..., description="Revenue segment")
     annual_revenue_usd: float = Field(..., ge=0, description="Annual revenue")
@@ -123,7 +124,7 @@ class RevenueExposure(BaseModel):
     climate_sensitivity: float = Field(default=0.5, ge=0, le=1)
 
 
-class WorkforceExposure(BaseModel):
+class WorkforceExposure(GreenLangBase):
     """Workforce exposure to climate events."""
     location: str = Field(..., description="Location")
     employee_count: int = Field(..., ge=0)
@@ -133,7 +134,7 @@ class WorkforceExposure(BaseModel):
     facility_risk: float = Field(default=0.0, ge=0, le=1)
 
 
-class AssetExposureInput(BaseModel):
+class AssetExposureInput(GreenLangBase):
     """Input for asset exposure analysis."""
     asset_id: str = Field(..., description="Asset identifier")
     asset_name: str = Field(..., description="Asset name")
@@ -161,7 +162,7 @@ class AssetExposureInput(BaseModel):
     hazard_exposure_overrides: Dict[str, float] = Field(default_factory=dict)
 
 
-class ExposureAnalysisInput(BaseModel):
+class ExposureAnalysisInput(GreenLangBase):
     """Input model for Exposure Analysis Agent."""
     analysis_id: str = Field(..., description="Unique analysis identifier")
     assets: List[AssetExposureInput] = Field(..., min_length=1)
@@ -175,7 +176,7 @@ class ExposureAnalysisInput(BaseModel):
     include_revenue: bool = Field(default=True)
 
 
-class ExposureResult(BaseModel):
+class ExposureResult(GreenLangBase):
     """Complete exposure result for an asset."""
     asset_id: str = Field(..., description="Asset identifier")
     asset_name: str = Field(..., description="Asset name")
@@ -208,7 +209,7 @@ class ExposureResult(BaseModel):
     provenance_hash: str = Field(default="")
 
 
-class ExposureAnalysisOutput(BaseModel):
+class ExposureAnalysisOutput(GreenLangBase):
     """Output model for Exposure Analysis Agent."""
     analysis_id: str = Field(..., description="Analysis identifier")
     completed_at: datetime = Field(default_factory=DeterministicClock.now)

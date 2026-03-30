@@ -86,6 +86,7 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -117,15 +118,9 @@ except ImportError:
     _PROVENANCE_AVAILABLE = False
     _get_provenance_tracker = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -143,7 +138,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Decimal helpers
 # ---------------------------------------------------------------------------
@@ -152,7 +146,6 @@ _PRECISION = Decimal("0.00000001")
 _ZERO = Decimal("0")
 _ONE = Decimal("1")
 _HUNDRED = Decimal("100")
-
 
 def _D(value: Any) -> Decimal:
     """Convert a value to Decimal safely.
@@ -166,7 +159,6 @@ def _D(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
     return Decimal(str(value))
-
 
 def _safe_decimal(value: Any, default: Decimal = _ZERO) -> Decimal:
     """Safely convert to Decimal with a fallback default.
@@ -184,7 +176,6 @@ def _safe_decimal(value: Any, default: Decimal = _ZERO) -> Decimal:
         return _D(value)
     except (InvalidOperation, ValueError, TypeError):
         return default
-
 
 # ===========================================================================
 # Waste Treatment Parameter Distributions
@@ -258,7 +249,6 @@ PARAMETER_DISTRIBUTIONS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 #: Default coefficient of variation (CV%) by parameter type and tier.
 #: Tier 1 uses IPCC defaults, Tier 2 uses country-specific data,
 #: Tier 3 uses site-specific measurements.
@@ -290,11 +280,9 @@ Z_SCORES: Dict[float, float] = {
     99.0: 2.576,
 }
 
-
 # ===========================================================================
 # UncertaintyQuantifierEngine
 # ===========================================================================
-
 
 class UncertaintyQuantifierEngine:
     """Monte Carlo uncertainty quantification for waste treatment calculations.
@@ -343,7 +331,7 @@ class UncertaintyQuantifierEngine:
         self._default_seed = default_seed
         self._lock = threading.RLock()
         self._total_analyses: int = 0
-        self._created_at = _utcnow()
+        self._created_at = utcnow()
 
         logger.info(
             "UncertaintyQuantifierEngine initialized: "

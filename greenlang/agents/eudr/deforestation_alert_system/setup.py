@@ -78,6 +78,7 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any, AsyncIterator, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -327,16 +328,9 @@ _ENGINE_NAMES: List[str] = [
     "ComplianceImpactAssessor",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed for determinism."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _calculate_sha256(data: Any) -> str:
     """Calculate SHA-256 hash of JSON-serialized data for provenance.
@@ -355,7 +349,6 @@ def _calculate_sha256(data: Any) -> str:
         payload = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
-
 def _safe_decimal(value: Any, default: Decimal = Decimal("0.0")) -> Decimal:
     """Safely convert value to Decimal with fallback.
 
@@ -371,11 +364,9 @@ def _safe_decimal(value: Any, default: Decimal = Decimal("0.0")) -> Decimal:
     except Exception:
         return default
 
-
 # =============================================================================
 # FACADE: DeforestationAlertSystemSetup
 # =============================================================================
-
 
 class DeforestationAlertSystemSetup:
     """
@@ -701,7 +692,7 @@ class DeforestationAlertSystemSetup:
 
                 # 6. Mark as started
                 self._started = True
-                self._startup_time = _utcnow()
+                self._startup_time = utcnow()
                 duration_ms = (time.monotonic() - start_time) * 1000
 
                 logger.info(
@@ -784,7 +775,7 @@ class DeforestationAlertSystemSetup:
         init_results: Dict[str, Any] = {
             "agent_id": _AGENT_ID,
             "version": _MODULE_VERSION,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "engines": {},
             "reference_data": {},
             "connectivity": {},
@@ -1293,7 +1284,7 @@ class DeforestationAlertSystemSetup:
                 "latitude": latitude,
                 "longitude": longitude,
                 "radius_km": radius_km,
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             })
 
             logger.info(
@@ -1355,7 +1346,7 @@ class DeforestationAlertSystemSetup:
             provenance_hash = _calculate_sha256({
                 "action": "generate_alerts",
                 "detection_count": detection_count,
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             })
 
             logger.info(
@@ -1416,7 +1407,7 @@ class DeforestationAlertSystemSetup:
             provenance_hash = _calculate_sha256({
                 "action": "classify_severity",
                 "alert_id": alert_id,
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             })
 
             logger.info(
@@ -1495,7 +1486,7 @@ class DeforestationAlertSystemSetup:
                 "plot_longitude": plot_longitude,
                 "detection_latitude": detection_latitude,
                 "detection_longitude": detection_longitude,
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             })
 
             logger.info(
@@ -1555,7 +1546,7 @@ class DeforestationAlertSystemSetup:
             provenance_hash = _calculate_sha256({
                 "action": "verify_cutoff_date",
                 "detection_date": detection_date,
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             })
 
             logger.info(
@@ -1623,7 +1614,7 @@ class DeforestationAlertSystemSetup:
                 "action": "compare_baseline",
                 "plot_id": plot_id,
                 "current_canopy_cover_pct": current_canopy_cover_pct,
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             })
 
             logger.info(
@@ -1686,7 +1677,7 @@ class DeforestationAlertSystemSetup:
                 "action": "transition_workflow",
                 "alert_id": alert_id,
                 "workflow_action": action,
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             })
 
             logger.info(
@@ -1750,7 +1741,7 @@ class DeforestationAlertSystemSetup:
             provenance_hash = _calculate_sha256({
                 "action": "assess_compliance_impact",
                 "alert_id": alert_id,
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             })
 
             logger.info(
@@ -1825,7 +1816,7 @@ class DeforestationAlertSystemSetup:
                 "plot_id": plot_id,
                 "latitude": latitude,
                 "longitude": longitude,
-                "analysis_timestamp": _utcnow().isoformat(),
+                "analysis_timestamp": utcnow().isoformat(),
                 "agent_id": _AGENT_ID,
                 "version": _MODULE_VERSION,
             }
@@ -1867,7 +1858,7 @@ class DeforestationAlertSystemSetup:
                 cutoff = await self.verify_cutoff_date(
                     detection_date=kwargs.get(
                         "detection_date",
-                        _utcnow().strftime("%Y-%m-%d"),
+                        utcnow().strftime("%Y-%m-%d"),
                     ),
                 )
                 results["cutoff_verification"] = cutoff
@@ -1896,7 +1887,7 @@ class DeforestationAlertSystemSetup:
                 "latitude": latitude,
                 "longitude": longitude,
                 "engine_provenance_chain": provenance_chain,
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             })
 
             duration_sec = time.monotonic() - start_time
@@ -2013,7 +2004,7 @@ class DeforestationAlertSystemSetup:
         uptime_seconds = 0.0
         if self._startup_time:
             uptime_seconds = (
-                _utcnow() - self._startup_time
+                utcnow() - self._startup_time
             ).total_seconds()
 
         # Determine overall status
@@ -2043,7 +2034,7 @@ class DeforestationAlertSystemSetup:
             "engines_total": _ENGINE_COUNT,
             "engine_statuses": engine_statuses,
             "processing_time_ms": round(duration_ms, 2),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     async def get_statistics(self) -> Dict[str, Any]:
@@ -2059,7 +2050,7 @@ class DeforestationAlertSystemSetup:
         uptime_seconds = 0.0
         if self._startup_time:
             uptime_seconds = (
-                _utcnow() - self._startup_time
+                utcnow() - self._startup_time
             ).total_seconds()
 
         cache_hit_rate = 0.0
@@ -2085,7 +2076,7 @@ class DeforestationAlertSystemSetup:
             "cache_misses": self._stats["cache_misses"],
             "cache_hit_rate": round(cache_hit_rate, 4),
             "errors": self._stats["errors"],
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     def get_engine(self, engine_name: str) -> Optional[Any]:
@@ -2162,14 +2153,12 @@ class DeforestationAlertSystemSetup:
             },
         }
 
-
 # =============================================================================
 # Module-level singleton management
 # =============================================================================
 
 _service_instance: Optional[DeforestationAlertSystemSetup] = None
 _service_lock = threading.Lock()
-
 
 def get_service(
     config: Optional[DeforestationAlertSystemConfig] = None,
@@ -2201,7 +2190,6 @@ def get_service(
 
     return _service_instance
 
-
 def set_service(service: DeforestationAlertSystemSetup) -> None:
     """
     Override the singleton service instance (for testing).
@@ -2214,7 +2202,6 @@ def set_service(service: DeforestationAlertSystemSetup) -> None:
         _service_instance = service
         logger.info("DeforestationAlertSystemSetup singleton overridden")
 
-
 def reset_service() -> None:
     """
     Reset the singleton service instance (for testing).
@@ -2226,11 +2213,9 @@ def reset_service() -> None:
         _service_instance = None
         logger.info("DeforestationAlertSystemSetup singleton reset")
 
-
 # =============================================================================
 # Convenience function
 # =============================================================================
-
 
 def setup_deforestation_alert_system(
     config_overrides: Optional[Dict[str, Any]] = None,
@@ -2262,11 +2247,9 @@ def setup_deforestation_alert_system(
 
     return get_service(config=config)
 
-
 # =============================================================================
 # FastAPI Lifespan Integration
 # =============================================================================
-
 
 @asynccontextmanager
 async def lifespan(app: Any) -> AsyncIterator[None]:
@@ -2295,7 +2278,6 @@ async def lifespan(app: Any) -> AsyncIterator[None]:
     # Shutdown
     await service.shutdown()
     logger.info("DeforestationAlertSystemSetup shutdown (FastAPI lifespan)")
-
 
 # =============================================================================
 # Module exports

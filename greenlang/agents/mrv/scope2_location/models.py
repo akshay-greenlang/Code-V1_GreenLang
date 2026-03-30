@@ -63,18 +63,13 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import Field, field_validator
 
+from greenlang.schemas import GreenLangBase, utcnow
 
 # ---------------------------------------------------------------------------
 # Helper
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -107,11 +102,9 @@ DEFAULT_CONFIDENCE_LEVEL: Decimal = Decimal("0.95")
 #: Prefix for all database table names in this module.
 TABLE_PREFIX: str = "gl_s2l_"
 
-
 # =============================================================================
 # Enumerations (18)
 # =============================================================================
-
 
 class EnergyType(str, Enum):
     """Classification of purchased energy types for Scope 2 reporting.
@@ -141,7 +134,6 @@ class EnergyType(str, Enum):
     HEATING = "heating"
     COOLING = "cooling"
 
-
 class EnergyUnit(str, Enum):
     """Units of measurement for energy consumption quantities.
 
@@ -165,7 +157,6 @@ class EnergyUnit(str, Enum):
     GJ = "gj"
     MMBTU = "mmbtu"
     THERMS = "therms"
-
 
 class GridRegionSource(str, Enum):
     """Source authority for grid region definitions and boundaries.
@@ -197,7 +188,6 @@ class GridRegionSource(str, Enum):
     DEFRA = "defra"
     NATIONAL = "national"
     CUSTOM = "custom"
-
 
 class CalculationMethod(str, Enum):
     """Methodology for calculating Scope 2 location-based emissions.
@@ -231,7 +221,6 @@ class CalculationMethod(str, Enum):
     DIRECT_MEASUREMENT = "direct_measurement"
     SPEND_BASED = "spend_based"
 
-
 class EmissionGas(str, Enum):
     """Greenhouse gases tracked in Scope 2 location-based calculations.
 
@@ -249,7 +238,6 @@ class EmissionGas(str, Enum):
     CO2 = "CO2"
     CH4 = "CH4"
     N2O = "N2O"
-
 
 class GWPSource(str, Enum):
     """IPCC Assessment Report edition used for Global Warming Potential values.
@@ -273,7 +261,6 @@ class GWPSource(str, Enum):
     AR5 = "AR5"
     AR6 = "AR6"
     AR6_20YR = "AR6_20YR"
-
 
 class EmissionFactorSource(str, Enum):
     """Authoritative source for Scope 2 grid emission factors.
@@ -303,7 +290,6 @@ class EmissionFactorSource(str, Enum):
     CUSTOM = "custom"
     IPCC = "ipcc"
 
-
 class DataQualityTier(str, Enum):
     """Data quality classification for emission factor inputs.
 
@@ -323,7 +309,6 @@ class DataQualityTier(str, Enum):
     TIER_1 = "tier_1"
     TIER_2 = "tier_2"
     TIER_3 = "tier_3"
-
 
 class FacilityType(str, Enum):
     """Classification of reporting facilities by primary function.
@@ -354,7 +339,6 @@ class FacilityType(str, Enum):
     SCHOOL = "school"
     OTHER = "other"
 
-
 class GridRegionType(str, Enum):
     """Geographic granularity of grid region definitions.
 
@@ -378,7 +362,6 @@ class GridRegionType(str, Enum):
     STATE = "state"
     CUSTOM = "custom"
 
-
 class TDLossMethod(str, Enum):
     """Method for estimating transmission and distribution (T&D) losses.
 
@@ -398,7 +381,6 @@ class TDLossMethod(str, Enum):
     COUNTRY_AVERAGE = "country_average"
     REGIONAL = "regional"
     CUSTOM = "custom"
-
 
 class TimeGranularity(str, Enum):
     """Temporal resolution for energy consumption data and calculations.
@@ -420,7 +402,6 @@ class TimeGranularity(str, Enum):
     MONTHLY = "monthly"
     HOURLY = "hourly"
 
-
 class ComplianceStatus(str, Enum):
     """Result of a regulatory compliance check for a calculation.
 
@@ -437,7 +418,6 @@ class ComplianceStatus(str, Enum):
     NON_COMPLIANT = "non_compliant"
     PARTIAL = "partial"
     NOT_ASSESSED = "not_assessed"
-
 
 class ReportingPeriod(str, Enum):
     """Time period for emission aggregation and reporting outputs.
@@ -456,7 +436,6 @@ class ReportingPeriod(str, Enum):
     QUARTERLY = "quarterly"
     MONTHLY = "monthly"
     CUSTOM = "custom"
-
 
 class ConsumptionDataSource(str, Enum):
     """Origin of energy consumption data for data quality assessment.
@@ -483,7 +462,6 @@ class ConsumptionDataSource(str, Enum):
     ESTIMATE = "estimate"
     BENCHMARK = "benchmark"
 
-
 class SteamType(str, Enum):
     """Classification of steam generation fuel source.
 
@@ -502,7 +480,6 @@ class SteamType(str, Enum):
     NATURAL_GAS = "natural_gas"
     COAL = "coal"
     BIOMASS = "biomass"
-
 
 class CoolingType(str, Enum):
     """Classification of cooling system technology.
@@ -523,7 +500,6 @@ class CoolingType(str, Enum):
     ELECTRIC_CHILLER = "electric_chiller"
     ABSORPTION = "absorption"
     DISTRICT = "district"
-
 
 class HeatingType(str, Enum):
     """Classification of heating system technology.
@@ -546,11 +522,9 @@ class HeatingType(str, Enum):
     GAS_BOILER = "gas_boiler"
     ELECTRIC = "electric"
 
-
 # =============================================================================
 # Constant Tables (all Decimal for deterministic arithmetic)
 # =============================================================================
-
 
 # ---------------------------------------------------------------------------
 # GWP values by IPCC Assessment Report
@@ -586,7 +560,6 @@ GWP_VALUES: Dict[str, Dict[str, Decimal]] = {
         "N2O": Decimal("273"),
     },
 }
-
 
 # ---------------------------------------------------------------------------
 # US EPA eGRID Subregion Emission Factors
@@ -747,7 +720,6 @@ EGRID_FACTORS: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # IEA Country-Level Electricity Emission Factors
 # ---------------------------------------------------------------------------
@@ -907,7 +879,6 @@ IEA_COUNTRY_FACTORS: Dict[str, Decimal] = {
     "AM": Decimal("0.147"),
 }
 
-
 # ---------------------------------------------------------------------------
 # EU Member-State Electricity Emission Factors
 # ---------------------------------------------------------------------------
@@ -950,7 +921,6 @@ EU_COUNTRY_FACTORS: Dict[str, Decimal] = {
     "SE": Decimal("0.008"),
 }
 
-
 # ---------------------------------------------------------------------------
 # UK DEFRA Conversion Factors
 # ---------------------------------------------------------------------------
@@ -974,7 +944,6 @@ DEFRA_FACTORS: Dict[str, Decimal] = {
     "heating": Decimal("0.04350"),
     "cooling": Decimal("0.03210"),
 }
-
 
 # ---------------------------------------------------------------------------
 # Transmission & Distribution Loss Factors
@@ -1075,7 +1044,6 @@ TD_LOSS_FACTORS: Dict[str, Decimal] = {
     "UZ": Decimal("0.098"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Steam Default Emission Factors
 # ---------------------------------------------------------------------------
@@ -1095,7 +1063,6 @@ STEAM_DEFAULT_EF: Dict[str, Decimal] = {
     "oil": Decimal("73.30"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Heat Default Emission Factors
 # ---------------------------------------------------------------------------
@@ -1114,7 +1081,6 @@ HEAT_DEFAULT_EF: Dict[str, Decimal] = {
     "electric": Decimal("0.00"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Cooling Default Emission Factors
 # ---------------------------------------------------------------------------
@@ -1132,7 +1098,6 @@ COOLING_DEFAULT_EF: Dict[str, Decimal] = {
     "absorption": Decimal("32.10"),
     "district": Decimal("28.50"),
 }
-
 
 # ---------------------------------------------------------------------------
 # Energy Unit Conversion Factors
@@ -1161,13 +1126,11 @@ UNIT_CONVERSIONS: Dict[str, Decimal] = {
     "MWH_TO_KWH": Decimal("1000"),
 }
 
-
 # =============================================================================
 # Data Models (18)
 # =============================================================================
 
-
-class FacilityInfo(BaseModel):
+class FacilityInfo(GreenLangBase):
     """Metadata record for a reporting facility in the Scope 2 inventory.
 
     Represents a single physical facility (building, campus, or site)
@@ -1261,8 +1224,7 @@ class FacilityInfo(BaseModel):
             return v.upper()
         return v
 
-
-class GridRegion(BaseModel):
+class GridRegion(GreenLangBase):
     """Definition of a geographic grid region for emission factor mapping.
 
     Represents a named geographic area (country, subregion, state, or
@@ -1320,8 +1282,7 @@ class GridRegion(BaseModel):
         description="Detailed description of region boundaries",
     )
 
-
-class GridEmissionFactor(BaseModel):
+class GridEmissionFactor(GreenLangBase):
     """Grid emission factor record for a specific region, source, and year.
 
     Stores CO2, CH4, and N2O emission rates with calculated total
@@ -1397,8 +1358,7 @@ class GridEmissionFactor(BaseModel):
         description="Optional notes about the factor source",
     )
 
-
-class EnergyConsumption(BaseModel):
+class EnergyConsumption(GreenLangBase):
     """Raw energy consumption record for a facility and reporting period.
 
     Represents a single consumption measurement from a meter, invoice,
@@ -1472,8 +1432,7 @@ class EnergyConsumption(BaseModel):
             raise ValueError("period_end must be after period_start")
         return v
 
-
-class ElectricityConsumptionRequest(BaseModel):
+class ElectricityConsumptionRequest(GreenLangBase):
     """Request parameters for a location-based electricity emission calculation.
 
     Specifies the facility, consumption quantity, grid region mapping,
@@ -1574,8 +1533,7 @@ class ElectricityConsumptionRequest(BaseModel):
             return v.upper()
         return v
 
-
-class SteamHeatCoolingRequest(BaseModel):
+class SteamHeatCoolingRequest(GreenLangBase):
     """Request parameters for a steam, heating, or cooling emission calculation.
 
     Specifies the facility, consumption quantity, energy sub-type,
@@ -1677,8 +1635,7 @@ class SteamHeatCoolingRequest(BaseModel):
         """Normalise country code to uppercase."""
         return v.upper()
 
-
-class TransmissionLossInput(BaseModel):
+class TransmissionLossInput(GreenLangBase):
     """Input parameters for transmission and distribution loss calculation.
 
     Specifies the country, loss method, and optional custom loss
@@ -1726,8 +1683,7 @@ class TransmissionLossInput(BaseModel):
         """Normalise country code to uppercase."""
         return v.upper()
 
-
-class CalculationRequest(BaseModel):
+class CalculationRequest(GreenLangBase):
     """Complete request for a Scope 2 location-based emission calculation.
 
     Aggregates one or more electricity consumption requests and
@@ -1790,8 +1746,7 @@ class CalculationRequest(BaseModel):
         description="Regulatory frameworks for compliance checks",
     )
 
-
-class GasEmissionDetail(BaseModel):
+class GasEmissionDetail(GreenLangBase):
     """Breakdown of emissions for a single greenhouse gas species.
 
     Provides the individual gas emission quantity, the GWP multiplier
@@ -1829,8 +1784,7 @@ class GasEmissionDetail(BaseModel):
         description="CO2-equivalent emission in kg",
     )
 
-
-class CalculationResult(BaseModel):
+class CalculationResult(GreenLangBase):
     """Result of a single Scope 2 location-based emission calculation.
 
     Contains the calculated emission quantities, emission factor
@@ -1926,7 +1880,7 @@ class CalculationResult(BaseModel):
         description="SHA-256 provenance hash for audit trail",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of the calculation",
     )
     metadata: Dict[str, Any] = Field(
@@ -1934,8 +1888,7 @@ class CalculationResult(BaseModel):
         description="Optional additional metadata",
     )
 
-
-class BatchCalculationRequest(BaseModel):
+class BatchCalculationRequest(GreenLangBase):
     """Batch request for multiple Scope 2 location-based calculations.
 
     Aggregates multiple CalculationRequest instances for parallel
@@ -1981,8 +1934,7 @@ class BatchCalculationRequest(BaseModel):
             )
         return v
 
-
-class BatchCalculationResult(BaseModel):
+class BatchCalculationResult(GreenLangBase):
     """Result of a batch Scope 2 location-based calculation.
 
     Aggregates results from all individual calculations in a batch
@@ -2035,8 +1987,7 @@ class BatchCalculationResult(BaseModel):
         description="SHA-256 provenance hash for batch audit trail",
     )
 
-
-class ComplianceCheckResult(BaseModel):
+class ComplianceCheckResult(GreenLangBase):
     """Result of a regulatory compliance check for a calculation.
 
     Evaluates a completed calculation against a specific regulatory
@@ -2089,12 +2040,11 @@ class ComplianceCheckResult(BaseModel):
         description="Recommended actions for compliance",
     )
     checked_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of the compliance check",
     )
 
-
-class UncertaintyRequest(BaseModel):
+class UncertaintyRequest(GreenLangBase):
     """Request for uncertainty quantification on a calculation result.
 
     Specifies the calculation to analyse and the uncertainty method
@@ -2149,8 +2099,7 @@ class UncertaintyRequest(BaseModel):
             )
         return v
 
-
-class UncertaintyResult(BaseModel):
+class UncertaintyResult(GreenLangBase):
     """Result of uncertainty quantification for a calculation.
 
     Provides the mean, standard deviation, and confidence interval
@@ -2220,8 +2169,7 @@ class UncertaintyResult(BaseModel):
         description="Optional distribution parameters",
     )
 
-
-class AggregationResult(BaseModel):
+class AggregationResult(GreenLangBase):
     """Aggregated emission result across multiple calculations.
 
     Provides portfolio-level or group-level totals for Scope 2
@@ -2277,8 +2225,7 @@ class AggregationResult(BaseModel):
         description="Per-group detail records",
     )
 
-
-class GridFactorLookupResult(BaseModel):
+class GridFactorLookupResult(GreenLangBase):
     """Result of a grid emission factor lookup operation.
 
     Returned by the grid factor database engine when resolving a
@@ -2347,8 +2294,7 @@ class GridFactorLookupResult(BaseModel):
         description="Data quality tier of the resolved factor",
     )
 
-
-class TDLossResult(BaseModel):
+class TDLossResult(GreenLangBase):
     """Result of a transmission and distribution loss calculation.
 
     Provides the resolved T&D loss percentage, gross and net

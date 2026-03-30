@@ -44,25 +44,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -75,11 +69,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class NarrativeTone(str, Enum):
     """Target audience tone for narrative generation."""
@@ -89,7 +81,6 @@ class NarrativeTone(str, Enum):
     REGULATORY = "regulatory"
     PUBLIC = "public"
 
-
 class FactCheckStatus(str, Enum):
     """Status of a single fact-check."""
 
@@ -97,7 +88,6 @@ class FactCheckStatus(str, Enum):
     UNVERIFIED = "unverified"
     MISMATCH = "mismatch"
     NOT_APPLICABLE = "not_applicable"
-
 
 class ESRSSection(str, Enum):
     """ESRS standard section identifiers."""
@@ -116,11 +106,9 @@ class ESRSSection(str, Enum):
     ESRS_S4 = "ESRS_S4"
     ESRS_G1 = "ESRS_G1"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class Citation(BaseModel):
     """A citation linking narrative text to source data."""
@@ -131,7 +119,6 @@ class Citation(BaseModel):
     page_or_section: Optional[str] = Field(
         None, description="Page or section reference"
     )
-
 
 class FactCheckResult(BaseModel):
     """Result of a single fact-check verification."""
@@ -147,7 +134,6 @@ class FactCheckResult(BaseModel):
     source_ref: Optional[str] = Field(
         None, description="Source data reference"
     )
-
 
 class NarrativeRequest(BaseModel):
     """Request for narrative section generation."""
@@ -168,7 +154,6 @@ class NarrativeRequest(BaseModel):
     fact_checking: bool = Field(
         True, description="Enable automatic fact-checking"
     )
-
 
 class NarrativeResult(BaseModel):
     """Result of narrative generation."""
@@ -196,9 +181,8 @@ class NarrativeResult(BaseModel):
     language: str = Field("en", description="Language")
     provenance_hash: str = Field("", description="SHA-256 provenance hash")
     generated_at: datetime = Field(
-        default_factory=_utcnow, description="Generation timestamp"
+        default_factory=utcnow, description="Generation timestamp"
     )
-
 
 class RevisionDiff(BaseModel):
     """A single difference between narrative revisions."""
@@ -207,7 +191,6 @@ class RevisionDiff(BaseModel):
     type: str = Field(..., description="addition, deletion, or modification")
     original: str = Field("", description="Original text")
     revised: str = Field("", description="Revised text")
-
 
 # ---------------------------------------------------------------------------
 # ESRS Disclosure Requirements
@@ -301,11 +284,9 @@ _TONE_STYLE: Dict[NarrativeTone, Dict[str, str]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class NarrativeGenerationEngine:
     """AI-assisted narrative composition engine with fact-checking guardrails.
@@ -352,7 +333,7 @@ class NarrativeGenerationEngine:
         Returns:
             NarrativeResult with text, citations, and fact-check results.
         """
-        start = _utcnow()
+        start = utcnow()
         logger.info(
             "Generating %s section in %s tone (lang=%s)",
             request.section_type, request.tone.value, request.language,
@@ -792,7 +773,7 @@ class NarrativeGenerationEngine:
             ),
             "original_readability": self._flesch_kincaid_score(original),
             "revised_readability": self._flesch_kincaid_score(revised),
-            "tracked_at": _utcnow().isoformat(),
+            "tracked_at": utcnow().isoformat(),
             "provenance_hash": _compute_hash(
                 {"original_hash": _compute_hash(original),
                  "revised_hash": _compute_hash(revised)}

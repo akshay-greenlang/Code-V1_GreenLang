@@ -60,6 +60,8 @@ from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Any, Dict, FrozenSet, List, Optional, Set, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -71,12 +73,6 @@ _MODULE_VERSION = "1.0.0"
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed for determinism."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -96,7 +92,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str) -> str:
     """Generate a unique identifier with the given prefix.
 
@@ -107,7 +102,6 @@ def _generate_id(prefix: str) -> str:
         Prefixed UUID string.
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -141,7 +135,6 @@ MAX_CHAIN_DEPTH: int = 1000
 #: Maximum batch verification size
 MAX_BATCH_VERIFY_SIZE: int = 500
 
-
 class VerificationStatus(str, Enum):
     """Chain verification status."""
 
@@ -150,14 +143,12 @@ class VerificationStatus(str, Enum):
     WARNING = "warning"
     INCOMPLETE = "incomplete"
 
-
 class ContinuityType(str, Enum):
     """Types of continuity checks."""
 
     TEMPORAL = "temporal"
     ACTOR = "actor"
     LOCATION = "location"
-
 
 class CheckSeverity(str, Enum):
     """Severity of a check failure."""
@@ -168,11 +159,9 @@ class CheckSeverity(str, Enum):
     LOW = "low"
     INFO = "info"
 
-
 # ---------------------------------------------------------------------------
 # Data Models (local dataclasses)
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class ContinuityCheck:
@@ -220,7 +209,6 @@ class ContinuityCheck:
             "metadata": dict(self.metadata),
         }
 
-
 @dataclass
 class MassConservationResult:
     """Result of mass conservation check for a chain.
@@ -264,7 +252,6 @@ class MassConservationResult:
             "details": self.details,
         }
 
-
 @dataclass
 class OrphanBatch:
     """A batch detected as orphaned (no upstream or no downstream).
@@ -287,7 +274,7 @@ class OrphanBatch:
     has_downstream: bool = False
     severity: str = "high"
     recommendation: str = ""
-    detected_at: datetime = field(default_factory=_utcnow)
+    detected_at: datetime = field(default_factory=utcnow)
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary for JSON export."""
@@ -303,7 +290,6 @@ class OrphanBatch:
                 self.detected_at.isoformat() if self.detected_at else None
             ),
         }
-
 
 @dataclass
 class CircularDependency:
@@ -325,7 +311,7 @@ class CircularDependency:
     cycle_length: int = 0
     severity: str = "critical"
     details: str = ""
-    detected_at: datetime = field(default_factory=_utcnow)
+    detected_at: datetime = field(default_factory=utcnow)
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary for JSON export."""
@@ -340,7 +326,6 @@ class CircularDependency:
                 self.detected_at.isoformat() if self.detected_at else None
             ),
         }
-
 
 @dataclass
 class CompletenessScore:
@@ -374,7 +359,7 @@ class CompletenessScore:
     failed_checks: int = 0
     level: str = "poor"
     provenance_hash: str = ""
-    scored_at: datetime = field(default_factory=_utcnow)
+    scored_at: datetime = field(default_factory=utcnow)
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary for JSON export."""
@@ -394,7 +379,6 @@ class CompletenessScore:
                 self.scored_at.isoformat() if self.scored_at else None
             ),
         }
-
 
 @dataclass
 class ChainVerification:
@@ -448,7 +432,7 @@ class ChainVerification:
     errors: List[str] = field(default_factory=list)
     provenance_hash: str = ""
     processing_time_ms: float = 0.0
-    verified_at: datetime = field(default_factory=_utcnow)
+    verified_at: datetime = field(default_factory=utcnow)
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary for JSON export."""
@@ -485,7 +469,6 @@ class ChainVerification:
             ),
         }
 
-
 @dataclass
 class VerificationCertificate:
     """Verification certificate with evidence compilation.
@@ -515,7 +498,7 @@ class VerificationCertificate:
     batch_id: str = ""
     status: str = "incomplete"
     overall_score: float = 0.0
-    issued_at: datetime = field(default_factory=_utcnow)
+    issued_at: datetime = field(default_factory=utcnow)
     valid_until: Optional[datetime] = None
     issuer: str = "GreenLang EUDR CoC Verification Engine v1.0"
     summary: str = ""
@@ -550,7 +533,6 @@ class VerificationCertificate:
             "provenance_hash": self.provenance_hash,
         }
 
-
 @dataclass
 class BatchVerifyResult:
     """Result of batch verification of multiple chains.
@@ -579,7 +561,7 @@ class BatchVerifyResult:
     errors: List[Dict[str, Any]] = field(default_factory=list)
     processing_time_ms: float = 0.0
     provenance_hash: str = ""
-    completed_at: datetime = field(default_factory=_utcnow)
+    completed_at: datetime = field(default_factory=utcnow)
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary for JSON export."""
@@ -598,7 +580,6 @@ class BatchVerifyResult:
                 self.completed_at.isoformat() if self.completed_at else None
             ),
         }
-
 
 @dataclass
 class ChainIntegrityVerifierConfig:
@@ -664,11 +645,9 @@ class ChainIntegrityVerifierConfig:
                 + "\n".join(f"  - {e}" for e in errors)
             )
 
-
 # ===========================================================================
 # ChainIntegrityVerifier Engine
 # ===========================================================================
-
 
 class ChainIntegrityVerifier:
     """Chain integrity verification engine for EUDR chain of custody.
@@ -1717,7 +1696,7 @@ class ChainIntegrityVerifier:
         )
 
         # Compute validity
-        valid_until = _utcnow() + timedelta(
+        valid_until = utcnow() + timedelta(
             days=self.config.certificate_validity_days
         )
 
@@ -1838,7 +1817,7 @@ class ChainIntegrityVerifier:
 
         elapsed_ms = (time.monotonic() - start_time) * 1000
         result.processing_time_ms = round(elapsed_ms, 2)
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
 
         if self.config.enable_provenance:
             result.provenance_hash = _compute_hash(result)
@@ -1908,7 +1887,7 @@ class ChainIntegrityVerifier:
         """
         def sort_key(e: Dict[str, Any]) -> datetime:
             ts = self._parse_timestamp(e.get("timestamp"))
-            return ts if ts else _utcnow()
+            return ts if ts else utcnow()
 
         return sorted(events, key=sort_key)
 

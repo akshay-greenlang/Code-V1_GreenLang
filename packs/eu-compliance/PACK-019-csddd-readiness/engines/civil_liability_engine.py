@@ -72,25 +72,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -110,13 +104,11 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely."""
     if isinstance(value, Decimal):
         return value
     return Decimal(str(value))
-
 
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
@@ -125,7 +117,6 @@ def _safe_divide(
     if denominator == Decimal("0"):
         return default
     return numerator / denominator
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value using ROUND_HALF_UP.
@@ -140,20 +131,17 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.01"), rounding=ROUND_HALF_UP
     ))
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
-
 
 def _pct(part: int, total: int) -> Decimal:
     """Calculate percentage as Decimal, rounded to 1 decimal place."""
@@ -163,18 +151,15 @@ def _pct(part: int, total: int) -> Decimal:
         _decimal(part) / _decimal(total) * Decimal("100"), 1
     )
 
-
 def _pct_dec(part: Decimal, total: Decimal) -> Decimal:
     """Calculate percentage from Decimal values, rounded to 1 dp."""
     if total == Decimal("0"):
         return Decimal("0.0")
     return _round_val(part / total * Decimal("100"), 1)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class LiabilityTrigger(str, Enum):
     """Events that may trigger civil liability under Art 29 CSDDD.
@@ -188,7 +173,6 @@ class LiabilityTrigger(str, Enum):
     INADEQUATE_DUE_DILIGENCE = "inadequate_due_diligence"
     CONTRACTUAL_BREACH = "contractual_breach"
 
-
 class DefencePosition(str, Enum):
     """Available defence positions under Art 29 CSDDD.
 
@@ -200,7 +184,6 @@ class DefencePosition(str, Enum):
     REASONABLE_EFFORTS = "reasonable_efforts"
     FORCE_MAJEURE = "force_majeure"
     LIMITATION_EXPIRED = "limitation_expired"
-
 
 class ExposureLevel(str, Enum):
     """Civil liability exposure level classification.
@@ -214,7 +197,6 @@ class ExposureLevel(str, Enum):
     LOW = "low"
     NEGLIGIBLE = "negligible"
 
-
 class ImpactSeverity(str, Enum):
     """Severity of the adverse impact in a liability scenario.
 
@@ -227,7 +209,6 @@ class ImpactSeverity(str, Enum):
     MODERATE = "moderate"
     MINOR = "minor"
 
-
 class ImpactDomain(str, Enum):
     """Domain of the adverse impact.
 
@@ -239,7 +220,6 @@ class ImpactDomain(str, Enum):
     LABOUR_RIGHTS = "labour_rights"
     HEALTH_AND_SAFETY = "health_and_safety"
     COMMUNITY_RIGHTS = "community_rights"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -285,11 +265,9 @@ EXPOSURE_THRESHOLDS: Dict[str, Decimal] = {
     ExposureLevel.NEGLIGIBLE.value: Decimal("0"),            # <= 10K EUR
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class LiabilityScenario(BaseModel):
     """A single civil liability scenario for assessment under Art 29.
@@ -421,7 +399,6 @@ class LiabilityScenario(BaseModel):
         description="Whether regulatory enforcement is active for this issue",
     )
 
-
 class LiabilityAssessment(BaseModel):
     """Assessment result for a single liability scenario."""
     scenario_id: str = Field(
@@ -472,7 +449,6 @@ class LiabilityAssessment(BaseModel):
         description="Recommendations for this scenario",
     )
 
-
 class InsuranceAdequacy(BaseModel):
     """Insurance adequacy assessment result."""
     total_exposure_eur: Decimal = Field(
@@ -494,7 +470,6 @@ class InsuranceAdequacy(BaseModel):
         default="", description="Assessment summary"
     )
 
-
 class CivilLiabilityResult(BaseModel):
     """Complete civil liability assessment result per Art 29 CSDDD.
 
@@ -509,7 +484,7 @@ class CivilLiabilityResult(BaseModel):
         default=_MODULE_VERSION, description="Engine version used"
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp of assessment (UTC)"
+        default_factory=utcnow, description="Timestamp of assessment (UTC)"
     )
     entity_name: str = Field(
         default="", description="Entity or undertaking name"
@@ -580,11 +555,9 @@ class CivilLiabilityResult(BaseModel):
         description="SHA-256 hash of all inputs and assessment steps",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class CivilLiabilityEngine:
     """CSDDD Article 29 civil liability assessment engine.

@@ -80,6 +80,7 @@ from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -126,15 +127,9 @@ except ImportError:
     _record_enteric_calculation = None  # type: ignore[assignment]
     _record_calculation_error = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -151,7 +146,6 @@ def _compute_hash(data: Any) -> str:
         serializable = data
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Decimal precision constants
@@ -172,7 +166,6 @@ _CH4_ENERGY_MJ_PER_KG = Decimal("55.65")
 #: Days per year for annualization
 _DAYS_PER_YEAR = Decimal("365")
 
-
 def _D(value: Any) -> Decimal:
     """Convert a value to Decimal with controlled precision.
 
@@ -192,7 +185,6 @@ def _D(value: Any) -> Decimal:
     except (InvalidOperation, ValueError) as exc:
         raise ValueError(f"Cannot convert {value!r} to Decimal") from exc
 
-
 def _safe_decimal(value: Any, default: Decimal = _ZERO) -> Decimal:
     """Safely convert a value to Decimal, returning default on failure.
 
@@ -210,7 +202,6 @@ def _safe_decimal(value: Any, default: Decimal = _ZERO) -> Decimal:
     except (InvalidOperation, ValueError, TypeError):
         return default
 
-
 def _quantize(value: Decimal) -> Decimal:
     """Quantize a Decimal to the standard 8-decimal-place precision.
 
@@ -226,11 +217,9 @@ def _quantize(value: Decimal) -> Decimal:
         logger.warning("Failed to quantize value: %s", value)
         return value
 
-
 # ===========================================================================
 # Enumerations
 # ===========================================================================
-
 
 class AnimalType(str, Enum):
     """IPCC Table 10.11 livestock categories for enteric fermentation."""
@@ -256,7 +245,6 @@ class AnimalType(str, Enum):
     BEEF_FEEDLOT = "BEEF_FEEDLOT"
     BEEF_PASTURE = "BEEF_PASTURE"
 
-
 class Region(str, Enum):
     """Regional classification for default emission factor selection."""
 
@@ -270,14 +258,12 @@ class Region(str, Enum):
     ASIA = "ASIA"
     OCEANIA = "OCEANIA"
 
-
 class FeedQuality(str, Enum):
     """Feed quality levels for default Ym and DE selection."""
 
     LOW = "LOW"
     MEDIUM = "MEDIUM"
     HIGH = "HIGH"
-
 
 class ActivityLevel(str, Enum):
     """Livestock activity levels for Ca coefficient."""
@@ -287,7 +273,6 @@ class ActivityLevel(str, Enum):
     PASTURE = "PASTURE"
     GRAZING_LARGE = "GRAZING_LARGE"
 
-
 class CalculationStatus(str, Enum):
     """Result status codes."""
 
@@ -295,11 +280,9 @@ class CalculationStatus(str, Enum):
     PARTIAL = "PARTIAL"
     ERROR = "ERROR"
 
-
 # ===========================================================================
 # Trace Step Dataclass
 # ===========================================================================
-
 
 @dataclass
 class TraceStep:
@@ -332,7 +315,6 @@ class TraceStep:
             "unit": self.unit,
         }
 
-
 # ===========================================================================
 # GWP Lookup Tables (built-in fallback)
 # ===========================================================================
@@ -359,7 +341,6 @@ _GWP_TABLE: Dict[str, Dict[str, Decimal]] = {
         "N2O": Decimal("273"),
     },
 }
-
 
 # ===========================================================================
 # IPCC Table 10.11 - Enteric Fermentation Emission Factors
@@ -591,7 +572,6 @@ _ENTERIC_EF_TIER1: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ===========================================================================
 # Maintenance Coefficients (Cfi) - IPCC 2006 Vol 4, Table 10.4
 # (MJ/day/kg BW^0.75)
@@ -615,7 +595,6 @@ _MAINTENANCE_COEFFICIENTS: Dict[str, Decimal] = {
     "BEEF_FEEDLOT": Decimal("0.322"),
     "BEEF_PASTURE": Decimal("0.322"),
 }
-
 
 # ===========================================================================
 # Default Body Weights by Animal Type (kg)
@@ -645,7 +624,6 @@ _DEFAULT_BODY_WEIGHTS: Dict[str, Decimal] = {
     "BEEF_PASTURE": Decimal("400"),
 }
 
-
 # ===========================================================================
 # Default Mature Body Weights by Animal Type (kg)
 # Used for NE_g calculation (growth energy)
@@ -669,7 +647,6 @@ _DEFAULT_MATURE_WEIGHTS: Dict[str, Decimal] = {
     "BEEF_FEEDLOT": Decimal("550"),
     "BEEF_PASTURE": Decimal("550"),
 }
-
 
 # ===========================================================================
 # Mature Body Weight Fraction C Values (dimensionless)
@@ -695,7 +672,6 @@ _DEFAULT_C_VALUES: Dict[str, Decimal] = {
     "BEEF_FEEDLOT": Decimal("1.2"),
     "BEEF_PASTURE": Decimal("0.8"),
 }
-
 
 # ===========================================================================
 # Default Ym Values (methane conversion factor) by Animal Type & Feed Quality
@@ -786,7 +762,6 @@ _DEFAULT_YM: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ===========================================================================
 # Activity Coefficients (Ca) - IPCC 2006 Vol 4, Table 10.5
 # Fraction of NE_m additional energy for activity
@@ -798,7 +773,6 @@ _ACTIVITY_COEFFICIENTS: Dict[str, Decimal] = {
     "PASTURE": Decimal("0.17"),
     "GRAZING_LARGE": Decimal("0.36"),
 }
-
 
 # ===========================================================================
 # Default Feed Digestibility (DE%) by Animal Type and Feed Quality
@@ -888,7 +862,6 @@ _DEFAULT_FEED_DIGESTIBILITY: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ===========================================================================
 # Default Milk Fat Content by Region (%)
 # ===========================================================================
@@ -904,7 +877,6 @@ _DEFAULT_MILK_FAT: Dict[str, Decimal] = {
     "ASIA": Decimal("4.5"),
     "OCEANIA": Decimal("4.5"),
 }
-
 
 # ===========================================================================
 # Default Milk Yields by Region (kg/day)
@@ -922,11 +894,9 @@ _DEFAULT_MILK_YIELD: Dict[str, Decimal] = {
     "OCEANIA": Decimal("18"),
 }
 
-
 # ===========================================================================
 # EntericFermentationEngine
 # ===========================================================================
-
 
 class EntericFermentationEngine:
     """Core calculation engine for CH4 emissions from livestock enteric
@@ -999,7 +969,7 @@ class EntericFermentationEngine:
         self._total_calculations: int = 0
         self._total_batches: int = 0
         self._total_errors: int = 0
-        self._created_at: datetime = _utcnow()
+        self._created_at: datetime = utcnow()
 
         logger.info(
             "EntericFermentationEngine initialized: default_gwp=%s, "
@@ -1223,7 +1193,7 @@ class EntericFermentationEngine:
                 "gwp_ch4": str(gwp_ch4),
                 "calculation_trace": [ts.to_dict() for ts in trace_steps],
                 "processing_time_ms": round(elapsed_ms, 3),
-                "calculated_at": _utcnow().isoformat(),
+                "calculated_at": utcnow().isoformat(),
             }
             result["provenance_hash"] = _compute_hash(result)
 
@@ -1266,7 +1236,7 @@ class EntericFermentationEngine:
                 "error": str(exc),
                 "error_type": type(exc).__name__,
                 "processing_time_ms": round(elapsed_ms, 3),
-                "calculated_at": _utcnow().isoformat(),
+                "calculated_at": utcnow().isoformat(),
             }
             error_result["provenance_hash"] = _compute_hash(error_result)
 
@@ -1724,7 +1694,7 @@ class EntericFermentationEngine:
                 "gwp_ch4": str(gwp_ch4),
                 "calculation_trace": [ts.to_dict() for ts in trace_steps],
                 "processing_time_ms": round(elapsed_ms, 3),
-                "calculated_at": _utcnow().isoformat(),
+                "calculated_at": utcnow().isoformat(),
             }
             result["provenance_hash"] = _compute_hash(result)
 
@@ -1768,7 +1738,7 @@ class EntericFermentationEngine:
                 "error": str(exc),
                 "error_type": type(exc).__name__,
                 "processing_time_ms": round(elapsed_ms, 3),
-                "calculated_at": _utcnow().isoformat(),
+                "calculated_at": utcnow().isoformat(),
             }
             error_result["provenance_hash"] = _compute_hash(error_result)
 
@@ -1875,7 +1845,7 @@ class EntericFermentationEngine:
                     ),
                     "error_type": "ValueError",
                     "processing_time_ms": 0.0,
-                    "calculated_at": _utcnow().isoformat(),
+                    "calculated_at": utcnow().isoformat(),
                 }
                 result["provenance_hash"] = _compute_hash(result)
 
@@ -2050,7 +2020,7 @@ class EntericFermentationEngine:
                         ),
                         "error_type": "ValueError",
                         "processing_time_ms": 0.0,
-                        "calculated_at": _utcnow().isoformat(),
+                        "calculated_at": utcnow().isoformat(),
                     }
                     result["provenance_hash"] = _compute_hash(result)
 
@@ -2518,7 +2488,7 @@ class EntericFermentationEngine:
             lists of available animal types, regions, and GWP sources.
         """
         with self._lock:
-            now = _utcnow()
+            now = utcnow()
             uptime = (now - self._created_at).total_seconds()
             return {
                 "total_calculations": self._total_calculations,

@@ -16,12 +16,13 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig
 from greenlang.agents.base_agents import DeterministicAgent
 from greenlang.agents.categories import AgentCategory, AgentMetadata
 from greenlang.utilities.determinism import DeterministicClock, content_hash, deterministic_id
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +39,7 @@ class EfficiencyCategory(str, Enum):
     WASTE_HEAT_RECOVERY = "waste_heat_recovery"
 
 
-class EfficiencyOpportunity(BaseModel):
+class EfficiencyOpportunity(GreenLangBase):
     opportunity_id: str = Field(...)
     name: str = Field(...)
     category: EfficiencyCategory = Field(...)
@@ -60,7 +61,7 @@ class EfficiencyOpportunity(BaseModel):
     maintenance_impact: str = Field(default="neutral")
 
 
-class EfficiencyAssessment(BaseModel):
+class EfficiencyAssessment(GreenLangBase):
     assessment_id: str = Field(...)
     facility_name: str = Field(...)
     assessment_date: datetime = Field(default_factory=DeterministicClock.now)
@@ -84,7 +85,7 @@ class EfficiencyAssessment(BaseModel):
     provenance_hash: str = Field(default="")
 
 
-class EnergyEfficiencyInput(BaseModel):
+class EnergyEfficiencyInput(GreenLangBase):
     operation: str = Field(default="identify")
     facility_name: str = Field(default="Main Facility")
     baseline_consumption_mwh: float = Field(default=10000, ge=0)
@@ -93,7 +94,7 @@ class EnergyEfficiencyInput(BaseModel):
     categories_to_assess: List[str] = Field(default_factory=list)
 
 
-class EnergyEfficiencyOutput(BaseModel):
+class EnergyEfficiencyOutput(GreenLangBase):
     operation: str = Field(...)
     success: bool = Field(...)
     assessment: Optional[EfficiencyAssessment] = Field(None)

@@ -49,27 +49,22 @@ from typing import Any, Callable, Coroutine, Dict, List, Optional, Set
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ExecutionStatus
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
 ProgressCallback = Callable[[str, float, str], Coroutine[Any, Any, None]]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for provenance tracking.
@@ -89,11 +84,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class E1PipelinePhase(str, Enum):
     """The 10 phases of the ESRS E1 Climate disclosure pipeline."""
@@ -109,22 +102,9 @@ class E1PipelinePhase(str, Enum):
     CLIMATE_RISK = "climate_risk"
     REPORT_ASSEMBLY = "report_assembly"
 
-
-class ExecutionStatus(str, Enum):
-    """Pipeline execution lifecycle status."""
-
-    PENDING = "pending"
-    RUNNING = "running"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    CANCELLED = "cancelled"
-    SKIPPED = "skipped"
-
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class RetryConfig(BaseModel):
     """Retry configuration with exponential backoff and jitter."""
@@ -135,7 +115,6 @@ class RetryConfig(BaseModel):
     jitter_factor: float = Field(
         default=0.5, ge=0.0, le=1.0, description="Jitter multiplier"
     )
-
 
 class OrchestratorConfig(BaseModel):
     """Configuration for the E1 Pipeline Orchestrator."""
@@ -156,7 +135,6 @@ class OrchestratorConfig(BaseModel):
     gwp_source: str = Field(default="IPCC AR6")
     consolidation_approach: str = Field(default="operational_control")
 
-
 class PhaseProvenance(BaseModel):
     """Provenance tracking for a single phase execution."""
 
@@ -165,8 +143,7 @@ class PhaseProvenance(BaseModel):
     output_hash: str = Field(default="")
     duration_ms: float = Field(default=0.0)
     attempt: int = Field(default=1)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class PhaseResult(BaseModel):
     """Result of a single phase execution."""
@@ -182,7 +159,6 @@ class PhaseResult(BaseModel):
     outputs: Dict[str, Any] = Field(default_factory=dict)
     provenance: Optional[PhaseProvenance] = Field(None)
     retry_count: int = Field(default=0)
-
 
 class PipelineResult(BaseModel):
     """Complete result of the E1 pipeline execution."""
@@ -200,7 +176,6 @@ class PipelineResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     quality_score: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # DAG Dependency Map
@@ -239,11 +214,9 @@ PHASE_EXECUTION_ORDER: List[E1PipelinePhase] = [
     E1PipelinePhase.REPORT_ASSEMBLY,
 ]
 
-
 # ---------------------------------------------------------------------------
 # E1PackOrchestrator
 # ---------------------------------------------------------------------------
-
 
 class E1PackOrchestrator:
     """10-phase ESRS E1 Climate disclosure pipeline orchestrator for PACK-016.
@@ -303,7 +276,7 @@ class E1PackOrchestrator:
         """
         result = PipelineResult(
             pack_id=self.config.pack_id,
-            started_at=_utcnow(),
+            started_at=utcnow(),
             status=ExecutionStatus.RUNNING,
         )
         self._results[result.execution_id] = result
@@ -375,7 +348,7 @@ class E1PackOrchestrator:
             result.status = ExecutionStatus.FAILED
             result.errors.append(str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.total_duration_ms = (
                 result.completed_at - result.started_at
@@ -474,7 +447,7 @@ class E1PackOrchestrator:
 
         while attempt <= retry_config.max_retries:
             attempt += 1
-            phase_result.started_at = _utcnow()
+            phase_result.started_at = utcnow()
             phase_result.status = ExecutionStatus.RUNNING
 
             try:
@@ -484,7 +457,7 @@ class E1PackOrchestrator:
 
                 phase_result.outputs = outputs
                 phase_result.status = ExecutionStatus.COMPLETED
-                phase_result.completed_at = _utcnow()
+                phase_result.completed_at = utcnow()
 
                 if phase_result.started_at:
                     phase_result.duration_ms = (
@@ -533,7 +506,7 @@ class E1PackOrchestrator:
                     await asyncio.sleep(delay + jitter)
 
         phase_result.status = ExecutionStatus.FAILED
-        phase_result.completed_at = _utcnow()
+        phase_result.completed_at = utcnow()
         return phase_result
 
     async def _execute_parallel_phases(

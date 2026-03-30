@@ -17,10 +17,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +34,7 @@ class ScarcityRiskLevel(str, Enum):
     CRITICAL = "critical"
 
 
-class DroughtIndicator(BaseModel):
+class DroughtIndicator(GreenLangBase):
     """Drought indicator measurement."""
     indicator_name: str
     value: float
@@ -43,7 +44,7 @@ class DroughtIndicator(BaseModel):
     assessment_date: datetime
 
 
-class WaterBalance(BaseModel):
+class WaterBalance(GreenLangBase):
     """Water balance for region."""
     region_id: str
     available_supply_m3_year: float
@@ -53,7 +54,7 @@ class WaterBalance(BaseModel):
     current_storage_m3: float
 
 
-class ClimateProjection(BaseModel):
+class ClimateProjection(GreenLangBase):
     """Climate projection data."""
     scenario: str  # e.g., RCP4.5, RCP8.5, SSP2
     time_horizon: str  # e.g., 2030, 2050
@@ -62,7 +63,7 @@ class ClimateProjection(BaseModel):
     drought_frequency_change: float
 
 
-class WaterScarcityInput(BaseModel):
+class WaterScarcityInput(GreenLangBase):
     """Input for water scarcity analysis."""
     region_id: str
     water_balance: WaterBalance
@@ -73,7 +74,7 @@ class WaterScarcityInput(BaseModel):
     economic_activity_index: float = Field(default=1.0)
 
 
-class ScarcityProjection(BaseModel):
+class ScarcityProjection(GreenLangBase):
     """Scarcity projection for time horizon."""
     time_horizon: str
     scenario: str
@@ -84,7 +85,7 @@ class ScarcityProjection(BaseModel):
     confidence_percent: float
 
 
-class AdaptationRecommendation(BaseModel):
+class AdaptationRecommendation(GreenLangBase):
     """Adaptation recommendation."""
     recommendation_id: str
     category: str
@@ -95,7 +96,7 @@ class AdaptationRecommendation(BaseModel):
     priority: str
 
 
-class WaterScarcityOutput(BaseModel):
+class WaterScarcityOutput(GreenLangBase):
     """Output from water scarcity analysis."""
     region_id: str
     current_risk_level: ScarcityRiskLevel

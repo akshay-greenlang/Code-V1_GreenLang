@@ -67,6 +67,7 @@ from greenlang.agents.eudr.document_authentication.provenance import (
     ProvenanceTracker,
     get_provenance_tracker,
 )
+from greenlang.schemas import utcnow
 from greenlang.agents.eudr.document_authentication.metrics import (
     observe_crossref_duration,
     record_api_error,
@@ -85,12 +86,6 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance.
 
@@ -103,7 +98,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str = "XREF") -> str:
     """Generate a prefixed UUID4 string identifier.
 
@@ -114,7 +108,6 @@ def _generate_id(prefix: str = "XREF") -> str:
         Prefixed UUID4 string.
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 # ---------------------------------------------------------------------------
 # Simulated registry data for v1.0
@@ -244,11 +237,9 @@ _ACCREDITED_LABS: Dict[str, List[str]] = {
     "DEFAULT": ["ISO 17025", "ILAC"],
 }
 
-
 # ---------------------------------------------------------------------------
 # CacheEntry
 # ---------------------------------------------------------------------------
-
 
 class _CacheEntry:
     """Internal cache entry for cross-reference results.
@@ -267,7 +258,7 @@ class _CacheEntry:
         result: Dict[str, Any],
         ttl_hours: int,
     ) -> None:
-        now = _utcnow()
+        now = utcnow()
         self.result = result
         self.created_at = now
         self.expires_at = now + timedelta(hours=ttl_hours)
@@ -275,13 +266,11 @@ class _CacheEntry:
 
     def is_expired(self) -> bool:
         """Check if this cache entry has expired."""
-        return _utcnow() > self.expires_at
-
+        return utcnow() > self.expires_at
 
 # ---------------------------------------------------------------------------
 # CrossReferenceVerifier
 # ---------------------------------------------------------------------------
-
 
 class CrossReferenceVerifier:
     """Cross-reference verification engine for EUDR document authentication.
@@ -691,7 +680,7 @@ class CrossReferenceVerifier:
             results.append(result)
 
         found_count = sum(
-            1 for r in results if r.get("registry_found"),
+            1 for r in results if r.get("registry_found")
         )
         logger.info(
             "Batch verification completed: %d/%d found",
@@ -1300,7 +1289,7 @@ class CrossReferenceVerifier:
             True if within rate limit, False if exceeded.
         """
         limit = self._config.get_registry_rate_limit(registry_type)
-        now = _utcnow()
+        now = utcnow()
         minute_key = now.strftime("%Y-%m-%dT%H:%M")
 
         with self._lock:
@@ -1474,7 +1463,7 @@ class CrossReferenceVerifier:
         parsed = CrossReferenceVerifier._parse_date(value)
         if parsed:
             return parsed
-        return _utcnow()
+        return utcnow()
 
     # ------------------------------------------------------------------
     # Dunder methods
@@ -1495,7 +1484,6 @@ class CrossReferenceVerifier:
         """Return the number of stored verification results."""
         with self._lock:
             return len(self._results)
-
 
 # ---------------------------------------------------------------------------
 # Public API

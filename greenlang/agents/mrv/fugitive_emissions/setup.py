@@ -49,6 +49,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -112,26 +113,17 @@ try:
 except ImportError:
     ProvenanceTracker = None  # type: ignore[assignment, misc]
 
-
 # ===================================================================
 # Utility helpers
 # ===================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _utcnow_iso() -> str:
     """Return current UTC datetime as an ISO-8601 string."""
-    return _utcnow().isoformat()
-
+    return utcnow().isoformat()
 
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -142,11 +134,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ===================================================================
 # Lightweight Pydantic response models (14 models)
 # ===================================================================
-
 
 class CalculateResponse(BaseModel):
     """Single fugitive emission calculation response."""
@@ -166,7 +156,6 @@ class CalculateResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
 class BatchCalculateResponse(BaseModel):
     """Batch fugitive emission calculation response."""
 
@@ -180,7 +169,6 @@ class BatchCalculateResponse(BaseModel):
     results: List[Dict[str, Any]] = Field(default_factory=list)
     processing_time_ms: float = Field(default=0.0)
 
-
 class SourceListResponse(BaseModel):
     """Response listing fugitive emission source types."""
 
@@ -190,7 +178,6 @@ class SourceListResponse(BaseModel):
     total: int = Field(default=0)
     page: int = Field(default=1)
     page_size: int = Field(default=20)
-
 
 class SourceDetailResponse(BaseModel):
     """Detailed response for a single source type."""
@@ -203,7 +190,6 @@ class SourceDetailResponse(BaseModel):
     gases: List[str] = Field(default_factory=list)
     methods: List[str] = Field(default_factory=list)
 
-
 class ComponentListResponse(BaseModel):
     """Response listing equipment components."""
 
@@ -213,7 +199,6 @@ class ComponentListResponse(BaseModel):
     total: int = Field(default=0)
     page: int = Field(default=1)
     page_size: int = Field(default=20)
-
 
 class ComponentDetailResponse(BaseModel):
     """Detailed response for a single equipment component."""
@@ -226,7 +211,6 @@ class ComponentDetailResponse(BaseModel):
     service_type: str = Field(default="")
     facility_id: str = Field(default="")
 
-
 class SurveyListResponse(BaseModel):
     """Response listing LDAR surveys."""
 
@@ -235,7 +219,6 @@ class SurveyListResponse(BaseModel):
     surveys: List[Dict[str, Any]] = Field(default_factory=list)
     total: int = Field(default=0)
 
-
 class FactorListResponse(BaseModel):
     """Response listing emission factors."""
 
@@ -243,7 +226,6 @@ class FactorListResponse(BaseModel):
 
     factors: List[Dict[str, Any]] = Field(default_factory=list)
     total: int = Field(default=0)
-
 
 class FactorDetailResponse(BaseModel):
     """Detailed response for a single emission factor."""
@@ -257,7 +239,6 @@ class FactorDetailResponse(BaseModel):
     value: float = Field(default=0.0)
     source: str = Field(default="")
 
-
 class RepairListResponse(BaseModel):
     """Response listing component repairs."""
 
@@ -265,7 +246,6 @@ class RepairListResponse(BaseModel):
 
     repairs: List[Dict[str, Any]] = Field(default_factory=list)
     total: int = Field(default=0)
-
 
 class UncertaintyResponse(BaseModel):
     """Monte Carlo uncertainty analysis response."""
@@ -282,7 +262,6 @@ class UncertaintyResponse(BaseModel):
     )
     dqi_score: Optional[float] = Field(default=None)
 
-
 class ComplianceCheckResponse(BaseModel):
     """Regulatory compliance check response."""
 
@@ -295,7 +274,6 @@ class ComplianceCheckResponse(BaseModel):
     partial: int = Field(default=0)
     results: List[Dict[str, Any]] = Field(default_factory=list)
 
-
 class HealthResponse(BaseModel):
     """Service health check response."""
 
@@ -305,7 +283,6 @@ class HealthResponse(BaseModel):
     service: str = Field(default="fugitive-emissions")
     version: str = Field(default="1.0.0")
     engines: Dict[str, str] = Field(default_factory=dict)
-
 
 class StatsResponse(BaseModel):
     """Service aggregate statistics response."""
@@ -319,14 +296,12 @@ class StatsResponse(BaseModel):
     total_repairs: int = Field(default=0)
     uptime_seconds: float = Field(default=0.0)
 
-
 # ===================================================================
 # FugitiveEmissionsService facade
 # ===================================================================
 
 _singleton_lock = threading.Lock()
 _singleton_instance: Optional["FugitiveEmissionsService"] = None
-
 
 class FugitiveEmissionsService:
     """Unified facade over the Fugitive Emissions Agent SDK.
@@ -1024,14 +999,12 @@ class FugitiveEmissionsService:
             uptime_seconds=round(uptime, 3),
         )
 
-
 # ===================================================================
 # Thread-safe singleton access
 # ===================================================================
 
 _service_instance: Optional[FugitiveEmissionsService] = None
 _service_lock = threading.Lock()
-
 
 def get_service() -> FugitiveEmissionsService:
     """Get or create the singleton FugitiveEmissionsService instance.
@@ -1045,7 +1018,6 @@ def get_service() -> FugitiveEmissionsService:
             if _service_instance is None:
                 _service_instance = FugitiveEmissionsService()
     return _service_instance
-
 
 def get_router() -> Any:
     """Get the FastAPI router for fugitive emissions.
@@ -1064,7 +1036,6 @@ def get_router() -> Any:
             "Fugitive emissions API router module not available"
         )
         return None
-
 
 def configure_fugitive_emissions(
     app: Any,
@@ -1103,7 +1074,6 @@ def configure_fugitive_emissions(
 
     logger.info("Fugitive Emissions service configured")
     return service
-
 
 # ===================================================================
 # Public API

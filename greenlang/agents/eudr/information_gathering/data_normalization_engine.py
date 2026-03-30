@@ -59,6 +59,7 @@ from greenlang.agents.eudr.information_gathering.models import (
     NormalizationType,
 )
 from greenlang.agents.eudr.information_gathering.provenance import ProvenanceTracker
+from greenlang.schemas import utcnow
 from greenlang.agents.eudr.information_gathering.metrics import (
     record_normalization_error,
 )
@@ -66,7 +67,6 @@ from greenlang.agents.eudr.information_gathering.metrics import (
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # ISO 3166-1 Alpha-2 Country Code Lookup
@@ -135,7 +135,6 @@ _ALPHA3_TO_ALPHA2: Dict[str, str] = {
     "VEN": "VE", "VNM": "VN", "ZMB": "ZM", "ZWE": "ZW",
 }
 
-
 # ---------------------------------------------------------------------------
 # Date Format Patterns
 # ---------------------------------------------------------------------------
@@ -176,16 +175,9 @@ _UNIT_ALIASES: Dict[str, str] = {
     "km2": "km2", "km\u00b2": "km2", "sq km": "km2",
 }
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute deterministic SHA-256 hash of data.
@@ -199,11 +191,9 @@ def _compute_hash(data: Any) -> str:
     canonical = json.dumps(data, sort_keys=True, separators=(",", ":"), default=str)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Main Engine
 # ---------------------------------------------------------------------------
-
 
 class DataNormalizationEngine:
     """Engine for normalizing heterogeneous data into EUDR-standard formats.

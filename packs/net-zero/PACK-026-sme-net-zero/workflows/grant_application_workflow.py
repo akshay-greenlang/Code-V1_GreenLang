@@ -35,33 +35,26 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "26.0.0"
 _PACK_ID = "PACK-026"
 
-
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -70,14 +63,12 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class GrantType(str, Enum):
     CAPITAL_GRANT = "capital_grant"
@@ -87,13 +78,11 @@ class GrantType(str, Enum):
     VOUCHER = "voucher"
     MIXED = "mixed"
 
-
 class EligibilityStatus(str, Enum):
     ELIGIBLE = "eligible"
     LIKELY_ELIGIBLE = "likely_eligible"
     NEEDS_VERIFICATION = "needs_verification"
     INELIGIBLE = "ineligible"
-
 
 class ApplicationStatus(str, Enum):
     DRAFT = "draft"
@@ -104,7 +93,6 @@ class ApplicationStatus(str, Enum):
     APPROVED = "approved"
     REJECTED = "rejected"
 
-
 class DocumentType(str, Enum):
     APPLICATION_FORM = "application_form"
     PROJECT_DESCRIPTION = "project_description"
@@ -114,7 +102,6 @@ class DocumentType(str, Enum):
     FINANCIAL_PROJECTION = "financial_projection"
     COMPANY_PROFILE = "company_profile"
     SUPPORTING_EVIDENCE = "supporting_evidence"
-
 
 # =============================================================================
 # GRANT DATABASE
@@ -317,11 +304,9 @@ GRANT_REGISTRY: List[Dict[str, Any]] = [
     },
 ]
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -337,7 +322,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     mobile_summary: str = Field(default="")
 
-
 class GrantSearchCriteria(BaseModel):
     """Criteria for grant search."""
 
@@ -350,7 +334,6 @@ class GrantSearchCriteria(BaseModel):
     min_amount_gbp: float = Field(default=0.0, ge=0.0)
     max_amount_needed_gbp: float = Field(default=100_000, ge=0.0)
     employee_count: int = Field(default=1, ge=1)
-
 
 class GrantSearchResult(BaseModel):
     """Result of grant search."""
@@ -368,7 +351,6 @@ class GrantSearchResult(BaseModel):
     relevance_score: float = Field(default=0.0, ge=0.0, le=1.0)
     match_reasons: List[str] = Field(default_factory=list)
 
-
 class EligibilityCheckResult(BaseModel):
     """Eligibility check for a specific grant."""
 
@@ -380,7 +362,6 @@ class EligibilityCheckResult(BaseModel):
     criteria_uncertain: List[str] = Field(default_factory=list)
     score: float = Field(default=0.0, ge=0.0, le=1.0)
     recommendation: str = Field(default="")
-
 
 class ProjectDescription(BaseModel):
     """Pre-filled project description for grant application."""
@@ -398,7 +379,6 @@ class ProjectDescription(BaseModel):
     payback_years: float = Field(default=0.0, ge=0.0)
     additional_benefits: List[str] = Field(default_factory=list)
 
-
 class ApplicationTemplate(BaseModel):
     """Pre-filled grant application template."""
 
@@ -414,7 +394,6 @@ class ApplicationTemplate(BaseModel):
     completeness_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     next_actions: List[str] = Field(default_factory=list)
 
-
 class SubmissionPackage(BaseModel):
     """Final submission package for export."""
 
@@ -424,7 +403,6 @@ class SubmissionPackage(BaseModel):
     export_format: str = Field(default="pdf")
     export_ready: bool = Field(default=False)
     export_notes: List[str] = Field(default_factory=list)
-
 
 class GrantApplicationConfig(BaseModel):
     """Configuration for grant application workflow."""
@@ -438,7 +416,6 @@ class GrantApplicationConfig(BaseModel):
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
 
-
 class GrantApplicationInput(BaseModel):
     """Complete input for grant application workflow."""
 
@@ -451,7 +428,6 @@ class GrantApplicationInput(BaseModel):
     postcode: str = Field(default="")
     search_criteria: GrantSearchCriteria = Field(default_factory=GrantSearchCriteria)
     config: GrantApplicationConfig = Field(default_factory=GrantApplicationConfig)
-
 
 class GrantApplicationResult(BaseModel):
     """Complete result from grant application workflow."""
@@ -470,11 +446,9 @@ class GrantApplicationResult(BaseModel):
     next_steps: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class GrantApplicationWorkflow:
     """
@@ -515,7 +489,7 @@ class GrantApplicationWorkflow:
 
     async def execute(self, input_data: GrantApplicationInput) -> GrantApplicationResult:
         """Execute the 5-phase grant application workflow."""
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting grant application workflow %s for %s",
             self.workflow_id, input_data.organization_name,
@@ -551,7 +525,7 @@ class GrantApplicationWorkflow:
                 mobile_summary="Grant search failed.",
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         total_funding = sum(g.max_amount_gbp for g in self._grants_found)
         next_steps = self._generate_next_steps()
 
@@ -578,7 +552,7 @@ class GrantApplicationWorkflow:
 
     async def _phase_grant_search(self, inp: GrantApplicationInput) -> PhaseResult:
         """Search for matching grants based on SME profile."""
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
 
@@ -659,7 +633,7 @@ class GrantApplicationWorkflow:
         if not results:
             warnings.append("No matching grants found. Consider broadening search criteria.")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="grant_search", phase_number=1,
             status=PhaseStatus.COMPLETED,
@@ -676,7 +650,7 @@ class GrantApplicationWorkflow:
 
     async def _phase_eligibility_check(self, inp: GrantApplicationInput) -> PhaseResult:
         """Check eligibility for each found grant."""
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
 
@@ -757,7 +731,7 @@ class GrantApplicationWorkflow:
         outputs["eligibility_checks"] = len(self._eligibility)
         outputs["eligible_count"] = eligible_count
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="eligibility_check", phase_number=2,
             status=PhaseStatus.COMPLETED,
@@ -774,7 +748,7 @@ class GrantApplicationWorkflow:
 
     async def _phase_data_preparation(self, inp: GrantApplicationInput) -> PhaseResult:
         """Prepare supporting data for grant applications."""
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
 
@@ -851,7 +825,7 @@ class GrantApplicationWorkflow:
         if baseline <= 0:
             warnings.append("No baseline provided; project descriptions will use placeholder data")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="data_preparation", phase_number=3,
             status=PhaseStatus.COMPLETED,
@@ -868,7 +842,7 @@ class GrantApplicationWorkflow:
 
     async def _phase_application_support(self, inp: GrantApplicationInput) -> PhaseResult:
         """Generate pre-filled application templates."""
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
 
@@ -939,7 +913,7 @@ class GrantApplicationWorkflow:
         )
         outputs["avg_completeness_pct"] = round(avg_completeness, 1)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="application_support", phase_number=4,
             status=PhaseStatus.COMPLETED,
@@ -956,7 +930,7 @@ class GrantApplicationWorkflow:
 
     async def _phase_submission_export(self, inp: GrantApplicationInput) -> PhaseResult:
         """Prepare submission packages for export."""
-        started = _utcnow()
+        started = utcnow()
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
 
@@ -991,7 +965,7 @@ class GrantApplicationWorkflow:
         outputs["ready_for_export"] = ready_count
         outputs["needs_additional_work"] = len(self._submissions) - ready_count
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="submission_export", phase_number=5,
             status=PhaseStatus.COMPLETED,

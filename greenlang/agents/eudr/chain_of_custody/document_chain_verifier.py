@@ -60,6 +60,8 @@ from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Any, Dict, FrozenSet, List, Optional, Set, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -71,12 +73,6 @@ _MODULE_VERSION = "1.0.0"
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed for determinism."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -96,7 +92,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str) -> str:
     """Generate a unique identifier with the given prefix.
 
@@ -108,14 +103,12 @@ def _generate_id(prefix: str) -> str:
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
 
 #: EUDR regulation reference
 EUDR_REGULATION_REF = "Regulation (EU) 2023/1115"
-
 
 class DocumentType(str, Enum):
     """Supported document types per EUDR compliance requirements (15 types)."""
@@ -136,7 +129,6 @@ class DocumentType(str, Enum):
     DELIVERY_NOTE = "delivery_note"
     PURCHASE_ORDER = "purchase_order"
 
-
 class EventType(str, Enum):
     """Custody event types that documents may be linked to."""
 
@@ -151,7 +143,6 @@ class EventType(str, Enum):
     INSPECTION = "inspection"
     SAMPLING = "sampling"
 
-
 class CompletenessLevel(str, Enum):
     """Document completeness level classification."""
 
@@ -160,7 +151,6 @@ class CompletenessLevel(str, Enum):
     INSUFFICIENT = "insufficient"
     NONE = "none"
 
-
 class ExpiryAlertLevel(str, Enum):
     """Document expiry alert levels."""
 
@@ -168,7 +158,6 @@ class ExpiryAlertLevel(str, Enum):
     CRITICAL = "critical"
     WARNING = "warning"
     OK = "ok"
-
 
 # ---------------------------------------------------------------------------
 # Required Documents per Event Type (Appendix B)
@@ -255,11 +244,9 @@ MAX_BATCH_LINK_SIZE: int = 5000
 #: DDS XML namespace.
 DDS_XML_NAMESPACE = "urn:eu:eudr:dds:1.0"
 
-
 # ---------------------------------------------------------------------------
 # Data Models (local dataclasses)
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class CustodyDocument:
@@ -299,7 +286,7 @@ class CustodyDocument:
     file_reference: str = ""
     notes: str = ""
     metadata: Dict[str, Any] = field(default_factory=dict)
-    created_at: datetime = field(default_factory=_utcnow)
+    created_at: datetime = field(default_factory=utcnow)
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary for JSON export."""
@@ -332,7 +319,6 @@ class CustodyDocument:
             ),
         }
 
-
 @dataclass
 class DocumentLink:
     """A link between a document and a custody event.
@@ -353,7 +339,7 @@ class DocumentLink:
     event_id: str = ""
     batch_id: str = ""
     link_type: str = "required"
-    linked_at: datetime = field(default_factory=_utcnow)
+    linked_at: datetime = field(default_factory=utcnow)
     linked_by: str = ""
     provenance_hash: str = ""
 
@@ -371,7 +357,6 @@ class DocumentLink:
             "linked_by": self.linked_by,
             "provenance_hash": self.provenance_hash,
         }
-
 
 @dataclass
 class CompletenessScore:
@@ -407,7 +392,7 @@ class CompletenessScore:
     optional_doc_count: int = 0
     event_scores: List[Dict[str, Any]] = field(default_factory=list)
     provenance_hash: str = ""
-    scored_at: datetime = field(default_factory=_utcnow)
+    scored_at: datetime = field(default_factory=utcnow)
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary for JSON export."""
@@ -429,7 +414,6 @@ class CompletenessScore:
                 self.scored_at.isoformat() if self.scored_at else None
             ),
         }
-
 
 @dataclass
 class DocumentGap:
@@ -455,7 +439,7 @@ class DocumentGap:
     severity: str = "medium"
     eudr_article: str = "Article 4(2)"
     remediation: str = ""
-    detected_at: datetime = field(default_factory=_utcnow)
+    detected_at: datetime = field(default_factory=utcnow)
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary for JSON export."""
@@ -472,7 +456,6 @@ class DocumentGap:
                 self.detected_at.isoformat() if self.detected_at else None
             ),
         }
-
 
 @dataclass
 class QuantityMismatch:
@@ -500,7 +483,7 @@ class QuantityMismatch:
     difference_pct: float = 0.0
     tolerance_pct: float = DEFAULT_QUANTITY_TOLERANCE_PCT
     is_within_tolerance: bool = True
-    detected_at: datetime = field(default_factory=_utcnow)
+    detected_at: datetime = field(default_factory=utcnow)
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary for JSON export."""
@@ -518,7 +501,6 @@ class QuantityMismatch:
                 self.detected_at.isoformat() if self.detected_at else None
             ),
         }
-
 
 @dataclass
 class ExpiryAlert:
@@ -546,7 +528,7 @@ class ExpiryAlert:
     alert_level: str = "ok"
     batch_ids: List[str] = field(default_factory=list)
     message: str = ""
-    detected_at: datetime = field(default_factory=_utcnow)
+    detected_at: datetime = field(default_factory=utcnow)
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary for JSON export."""
@@ -567,7 +549,6 @@ class ExpiryAlert:
             ),
         }
 
-
 @dataclass
 class DocumentHash:
     """SHA-256 hash registration for a document.
@@ -586,7 +567,7 @@ class DocumentHash:
     document_id: str = ""
     content_hash: str = ""
     algorithm: str = "sha256"
-    registered_at: datetime = field(default_factory=_utcnow)
+    registered_at: datetime = field(default_factory=utcnow)
     verified: bool = False
     verified_at: Optional[datetime] = None
 
@@ -605,7 +586,6 @@ class DocumentHash:
                 self.verified_at.isoformat() if self.verified_at else None
             ),
         }
-
 
 @dataclass
 class DDSPackage:
@@ -637,7 +617,7 @@ class DDSPackage:
     warnings: List[str] = field(default_factory=list)
     is_submission_ready: bool = False
     provenance_hash: str = ""
-    assembled_at: datetime = field(default_factory=_utcnow)
+    assembled_at: datetime = field(default_factory=utcnow)
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize to dictionary for JSON export."""
@@ -657,7 +637,6 @@ class DDSPackage:
                 self.assembled_at.isoformat() if self.assembled_at else None
             ),
         }
-
 
 @dataclass
 class DocumentChainVerifierConfig:
@@ -715,11 +694,9 @@ class DocumentChainVerifierConfig:
                 + "\n".join(f"  - {e}" for e in errors)
             )
 
-
 # ===========================================================================
 # DocumentChainVerifier Engine
 # ===========================================================================
-
 
 class DocumentChainVerifier:
     """Document chain verification engine for EUDR chain of custody.
@@ -1256,7 +1233,7 @@ class DocumentChainVerifier:
         """
         start_time = time.monotonic()
 
-        ref_date = reference_date or _utcnow()
+        ref_date = reference_date or utcnow()
         alerts: List[ExpiryAlert] = []
 
         doc_ids = self._batch_doc_index.get(batch_id, [])
@@ -1408,7 +1385,7 @@ class DocumentChainVerifier:
         # Check for expired documents
         warnings: List[str] = []
         for doc in documents:
-            if doc.expiry_date and doc.expiry_date < _utcnow():
+            if doc.expiry_date and doc.expiry_date < utcnow():
                 warnings.append(
                     f"Document {doc.document_id} ({doc.document_type}) "
                     f"expired on {doc.expiry_date.isoformat()}"

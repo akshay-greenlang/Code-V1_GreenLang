@@ -47,20 +47,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hash of a string.
@@ -73,11 +68,9 @@ def _compute_hash(data: str) -> str:
     """
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class WizardStepName(str, Enum):
     """Names of wizard steps in execution order."""
@@ -89,7 +82,6 @@ class WizardStepName(str, Enum):
     VALIDATION = "validation"
     DEMO_RUN = "demo_run"
 
-
 class StepStatus(str, Enum):
     """Status of a wizard step."""
     PENDING = "pending"
@@ -97,7 +89,6 @@ class StepStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class SectorCode(str, Enum):
     """NACE sector codes for preset matching."""
@@ -117,13 +108,11 @@ class SectorCode(str, Enum):
     INSURANCE = "insurance"
     OTHER = "other"
 
-
 class ConsolidationApproach(str, Enum):
     """GHG Protocol consolidation approaches."""
     OPERATIONAL_CONTROL = "operational_control"
     FINANCIAL_CONTROL = "financial_control"
     EQUITY_SHARE = "equity_share"
-
 
 class AssuranceLevel(str, Enum):
     """CSRD assurance levels."""
@@ -131,11 +120,9 @@ class AssuranceLevel(str, Enum):
     REASONABLE = "reasonable"
     NONE = "none"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class SubsidiaryEntity(BaseModel):
     """Configuration for a single subsidiary entity."""
@@ -160,7 +147,6 @@ class SubsidiaryEntity(BaseModel):
         description="Data source IDs mapped to this entity",
     )
     erp_system: Optional[str] = Field(None, description="ERP system for this entity")
-
 
 class CompanyProfile(BaseModel):
     """Enhanced company profile with entity hierarchy."""
@@ -199,7 +185,6 @@ class CompanyProfile(BaseModel):
             raise ValueError("LEI code must be exactly 20 characters")
         return v
 
-
 class ReportingScope(BaseModel):
     """Enhanced reporting scope with cross-framework selection."""
 
@@ -233,7 +218,6 @@ class ReportingScope(BaseModel):
         description="Whether double materiality assessment is required",
     )
 
-
 class DataSourceConfig(BaseModel):
     """Enhanced data source configuration with per-entity mapping."""
 
@@ -252,7 +236,6 @@ class DataSourceConfig(BaseModel):
         default_factory=dict,
         description="Map of entity_id to ERP system name",
     )
-
 
 class ProfessionalFeaturesConfig(BaseModel):
     """Professional feature configuration (step 4)."""
@@ -287,7 +270,6 @@ class ProfessionalFeaturesConfig(BaseModel):
     enable_scenario_analysis: bool = Field(default=True)
     enable_transition_planning: bool = Field(default=True)
 
-
 class PresetRecommendation(BaseModel):
     """Professional preset recommendation."""
 
@@ -300,7 +282,6 @@ class PresetRecommendation(BaseModel):
     suggested_scope3_categories: List[int] = Field(default_factory=list)
     suggested_cross_frameworks: List[str] = Field(default_factory=list)
 
-
 class WizardStep(BaseModel):
     """State of a single wizard step."""
 
@@ -312,7 +293,6 @@ class WizardStep(BaseModel):
     started_at: Optional[datetime] = Field(None)
     completed_at: Optional[datetime] = Field(None)
     execution_time_ms: float = Field(default=0.0)
-
 
 class WizardState(BaseModel):
     """Complete state of the professional setup wizard."""
@@ -330,9 +310,8 @@ class WizardState(BaseModel):
     validation_passed: bool = Field(default=False)
     demo_run_passed: bool = Field(default=False)
     is_complete: bool = Field(default=False)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     completed_at: Optional[datetime] = Field(None)
-
 
 class SetupReport(BaseModel):
     """Final setup report generated upon wizard completion."""
@@ -353,8 +332,7 @@ class SetupReport(BaseModel):
     professional_features_enabled: List[str] = Field(default_factory=list)
     recommendations: List[str] = Field(default_factory=list)
     configuration_hash: str = Field(default="")
-    generated_at: datetime = Field(default_factory=_utcnow)
-
+    generated_at: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # Step Definitions
@@ -394,11 +372,9 @@ FINANCIAL_NACE_CODES = {
     "banking", "insurance",
 }
 
-
 # ---------------------------------------------------------------------------
 # ProfessionalSetupWizard
 # ---------------------------------------------------------------------------
-
 
 class ProfessionalSetupWizard:
     """Professional setup wizard extending PACK-001's CSRDSetupWizard.
@@ -442,7 +418,7 @@ class ProfessionalSetupWizard:
         Returns:
             Initial WizardState.
         """
-        wizard_id = _compute_hash(f"pro-wizard:{_utcnow().isoformat()}")[:16]
+        wizard_id = _compute_hash(f"pro-wizard:{utcnow().isoformat()}")[:16]
 
         steps: Dict[str, WizardStep] = {}
         for step_name in STEP_DEFINITIONS:
@@ -492,7 +468,7 @@ class ProfessionalSetupWizard:
             raise ValueError(f"Step '{step_name}' not found")
 
         step.status = StepStatus.IN_PROGRESS
-        step.started_at = _utcnow()
+        step.started_at = utcnow()
         start_time = time.monotonic()
 
         handler = self._step_handlers.get(step_enum)
@@ -510,7 +486,7 @@ class ProfessionalSetupWizard:
                 step.validation_errors = errors
             else:
                 step.status = StepStatus.COMPLETED
-                step.completed_at = _utcnow()
+                step.completed_at = utcnow()
                 step.validation_errors = []
                 self._advance_to_next_step(step_enum)
                 logger.info("Step '%s' completed in %.1fms", step_name, elapsed)
@@ -544,7 +520,7 @@ class ProfessionalSetupWizard:
 
         report = self._generate_setup_report()
         self._state.is_complete = True
-        self._state.completed_at = _utcnow()
+        self._state.completed_at = utcnow()
         logger.info("Professional wizard finalized: %s", report.report_id)
         return report
 

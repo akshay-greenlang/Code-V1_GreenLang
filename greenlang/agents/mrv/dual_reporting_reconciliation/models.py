@@ -37,7 +37,7 @@ Enumerations (22):
       DiscrepancyDirection, MaterialityLevel, QualityDimension,
       QualityGrade, EFHierarchyPriority, ReportingFramework,
       FlagType, FlagSeverity, ReconciliationStatus, IntensityMetric,
-      TrendDirection, PipelineStage, ExportFormat, ComplianceStatus,
+      TrendDirection, PipelineStage, ReportFormat, ComplianceStatus,
       DataQualityTier, GWPSource, EmissionGas, BatchStatus
 
 Constants:
@@ -75,18 +75,11 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
-
+from pydantic import Field, field_validator
 
 # ---------------------------------------------------------------------------
 # Helper
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Module-level Constants
@@ -140,11 +133,9 @@ ZERO: Decimal = Decimal("0")
 #: Decimal one hundred constant for percentage calculations.
 ONE_HUNDRED: Decimal = Decimal("100")
 
-
 # =============================================================================
 # Enumerations (22)
 # =============================================================================
-
 
 class EnergyType(str, Enum):
     """Types of energy purchased for Scope 2 emissions reporting.
@@ -168,7 +159,6 @@ class EnergyType(str, Enum):
     DISTRICT_HEATING = "district_heating"
     DISTRICT_COOLING = "district_cooling"
 
-
 class Scope2Method(str, Enum):
     """GHG Protocol Scope 2 accounting methods.
 
@@ -189,7 +179,6 @@ class Scope2Method(str, Enum):
 
     LOCATION_BASED = "location_based"
     MARKET_BASED = "market_based"
-
 
 class UpstreamAgent(str, Enum):
     """Upstream MRV agents that provide Scope 2 calculation results.
@@ -213,7 +202,6 @@ class UpstreamAgent(str, Enum):
     MRV_010 = "mrv_010"
     MRV_011 = "mrv_011"
     MRV_012 = "mrv_012"
-
 
 class DiscrepancyType(str, Enum):
     """Types of discrepancies between location-based and market-based totals.
@@ -264,7 +252,6 @@ class DiscrepancyType(str, Enum):
     STEAM_HEAT_METHOD = "steam_heat_method"
     GRID_UPDATE_TIMING = "grid_update_timing"
 
-
 class DiscrepancyDirection(str, Enum):
     """Direction of the market-based total relative to location-based.
 
@@ -283,7 +270,6 @@ class DiscrepancyDirection(str, Enum):
     MARKET_LOWER = "market_lower"
     MARKET_HIGHER = "market_higher"
     EQUAL = "equal"
-
 
 class MaterialityLevel(str, Enum):
     """Materiality classification for discrepancies.
@@ -307,7 +293,6 @@ class MaterialityLevel(str, Enum):
     MATERIAL = "material"
     SIGNIFICANT = "significant"
     EXTREME = "extreme"
-
 
 class QualityDimension(str, Enum):
     """Data quality dimensions assessed during reconciliation.
@@ -333,7 +318,6 @@ class QualityDimension(str, Enum):
     ACCURACY = "accuracy"
     TRANSPARENCY = "transparency"
 
-
 class QualityGrade(str, Enum):
     """Letter grade for quality assessment results.
 
@@ -352,7 +336,6 @@ class QualityGrade(str, Enum):
     C = "C"
     D = "D"
     F = "F"
-
 
 class EFHierarchyPriority(str, Enum):
     """Emission factor hierarchy per GHG Protocol Scope 2 Guidance.
@@ -382,7 +365,6 @@ class EFHierarchyPriority(str, Enum):
     UNBUNDLED_CERT = "unbundled_cert"
     RESIDUAL_MIX = "residual_mix"
     GRID_AVERAGE = "grid_average"
-
 
 class ReportingFramework(str, Enum):
     """Regulatory and voluntary reporting frameworks supported.
@@ -417,7 +399,6 @@ class ReportingFramework(str, Enum):
     ISO_14064 = "iso_14064"
     RE100 = "re100"
 
-
 class FlagType(str, Enum):
     """Classification of flags raised during reconciliation.
 
@@ -434,7 +415,6 @@ class FlagType(str, Enum):
     ERROR = "error"
     INFO = "info"
     RECOMMENDATION = "recommendation"
-
 
 class FlagSeverity(str, Enum):
     """Severity level for flags raised during reconciliation.
@@ -453,7 +433,6 @@ class FlagSeverity(str, Enum):
     HIGH = "high"
     CRITICAL = "critical"
 
-
 class ReconciliationStatus(str, Enum):
     """Status of a reconciliation run through the pipeline.
 
@@ -471,7 +450,6 @@ class ReconciliationStatus(str, Enum):
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
     FAILED = "failed"
-
 
 class IntensityMetric(str, Enum):
     """Denominator metrics for emission intensity calculations.
@@ -492,7 +470,6 @@ class IntensityMetric(str, Enum):
     FLOOR_AREA = "floor_area"
     PRODUCTION_UNIT = "production_unit"
 
-
 class TrendDirection(str, Enum):
     """Direction of a trend across reporting periods.
 
@@ -505,7 +482,6 @@ class TrendDirection(str, Enum):
     DECREASING = "decreasing"
     STABLE = "stable"
 
-
 class PipelineStage(str, Enum):
     """Stages in the dual reporting reconciliation pipeline.
 
@@ -515,6 +491,9 @@ class PipelineStage(str, Enum):
 
     COLLECT_RESULTS: Gather location-based and market-based results
         from upstream agents (MRV-009 through MRV-012).
+
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ReportFormat
     ALIGN_BOUNDARIES: Verify that organisational, operational, and
         temporal boundaries match between the two methods.
     MAP_ENERGY_TYPES: Map and align energy types across upstream
@@ -547,23 +526,6 @@ class PipelineStage(str, Enum):
     ASSEMBLE_REPORT = "assemble_report"
     SEAL_PROVENANCE = "seal_provenance"
 
-
-class ExportFormat(str, Enum):
-    """Supported export formats for reconciliation outputs.
-
-    JSON: Machine-readable JSON export for API consumers and
-        downstream integrations.
-    CSV: Comma-separated values for spreadsheet import and
-        tabular analysis.
-    EXCEL: Microsoft Excel workbook (.xlsx) with formatted sheets,
-        charts, and conditional formatting.
-    """
-
-    JSON = "json"
-    CSV = "csv"
-    EXCEL = "excel"
-
-
 class ComplianceStatus(str, Enum):
     """Result of a regulatory compliance check.
 
@@ -580,7 +542,6 @@ class ComplianceStatus(str, Enum):
     PARTIAL = "partial"
     NOT_APPLICABLE = "not_applicable"
 
-
 class DataQualityTier(str, Enum):
     """Data quality tier per IPCC methodology hierarchy.
 
@@ -596,7 +557,6 @@ class DataQualityTier(str, Enum):
     TIER_1 = "tier_1"
     TIER_2 = "tier_2"
     TIER_3 = "tier_3"
-
 
 class GWPSource(str, Enum):
     """IPCC Assessment Report source for Global Warming Potential values.
@@ -616,7 +576,6 @@ class GWPSource(str, Enum):
     AR6 = "AR6"
     AR6_20YR = "AR6_20YR"
 
-
 class EmissionGas(str, Enum):
     """Greenhouse gases tracked in Scope 2 emission calculations.
 
@@ -635,7 +594,6 @@ class EmissionGas(str, Enum):
     N2O = "N2O"
     CO2E = "CO2e"
 
-
 class BatchStatus(str, Enum):
     """Status of a batch reconciliation job.
 
@@ -652,11 +610,9 @@ class BatchStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 # =============================================================================
 # Constant Tables (all Decimal for deterministic arithmetic)
 # =============================================================================
-
 
 # ---------------------------------------------------------------------------
 # GWP values by IPCC Assessment Report
@@ -689,7 +645,6 @@ GWP_VALUES: Dict[GWPSource, Dict[EmissionGas, Decimal]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Materiality thresholds: (min_pct inclusive, max_pct exclusive)
 # ---------------------------------------------------------------------------
@@ -701,7 +656,6 @@ MATERIALITY_THRESHOLDS: Dict[MaterialityLevel, Tuple[Decimal, Decimal]] = {
     MaterialityLevel.SIGNIFICANT: (Decimal("50"), Decimal("100")),
     MaterialityLevel.EXTREME: (Decimal("100"), DECIMAL_INF),
 }
-
 
 # ---------------------------------------------------------------------------
 # Quality dimension weights for composite score calculation
@@ -715,7 +669,6 @@ QUALITY_WEIGHTS: Dict[QualityDimension, Decimal] = {
     QualityDimension.TRANSPARENCY: Decimal("0.20"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Quality grade thresholds (minimum composite score for each grade)
 # ---------------------------------------------------------------------------
@@ -727,7 +680,6 @@ QUALITY_GRADE_THRESHOLDS: Dict[QualityGrade, Decimal] = {
     QualityGrade.D: Decimal("0.50"),
     QualityGrade.F: Decimal("0.0"),
 }
-
 
 # ---------------------------------------------------------------------------
 # Emission factor hierarchy quality scores per GHG Protocol Scope 2
@@ -742,7 +694,6 @@ EF_HIERARCHY_QUALITY_SCORES: Dict[EFHierarchyPriority, Decimal] = {
     EFHierarchyPriority.GRID_AVERAGE: Decimal("0.20"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Upstream agent mapping: energy type -> (location agent, market agent)
 # Each energy type has a primary upstream agent for both methods.
@@ -756,7 +707,6 @@ UPSTREAM_AGENT_MAPPING: Dict[
     EnergyType.DISTRICT_HEATING: (UpstreamAgent.MRV_011, UpstreamAgent.MRV_011),
     EnergyType.DISTRICT_COOLING: (UpstreamAgent.MRV_012, UpstreamAgent.MRV_012),
 }
-
 
 # ---------------------------------------------------------------------------
 # Framework required disclosures
@@ -867,7 +817,6 @@ FRAMEWORK_REQUIRED_DISCLOSURES: Dict[ReportingFramework, List[str]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # Residual mix factors by region
 #
@@ -880,18 +829,15 @@ FRAMEWORK_REQUIRED_DISCLOSURES: Dict[ReportingFramework, List[str]] = {
 # Forward declaration -- the ResidualMixFactor model is defined below
 # so we build the constant table after the model definition.
 
-
 # =============================================================================
 # Data Models (25) -- Pydantic v2, frozen=True
 # =============================================================================
-
 
 # ---------------------------------------------------------------------------
 # 1. ResidualMixFactor
 # ---------------------------------------------------------------------------
 
-
-class ResidualMixFactor(BaseModel):
+class ResidualMixFactor(GreenLangBase):
     """Regional residual mix emission factor data.
 
     Contains the grid average emission factor, the residual mix emission
@@ -948,7 +894,6 @@ class ResidualMixFactor(BaseModel):
         le=2100,
         description="Reference year for the emission factor data",
     )
-
 
 # ---------------------------------------------------------------------------
 # Now build the RESIDUAL_MIX_FACTORS constant using the model above
@@ -1114,13 +1059,11 @@ RESIDUAL_MIX_FACTORS: Dict[str, ResidualMixFactor] = {
     ),
 }
 
-
 # ---------------------------------------------------------------------------
 # 2. UpstreamResult
 # ---------------------------------------------------------------------------
 
-
-class UpstreamResult(BaseModel):
+class UpstreamResult(GreenLangBase):
     """A single emission result from an upstream Scope 2 agent.
 
     Represents one row of output from MRV-009 through MRV-012, carrying
@@ -1287,13 +1230,11 @@ class UpstreamResult(BaseModel):
                 )
         return v
 
-
 # ---------------------------------------------------------------------------
 # 3. EnergyTypeBreakdown
 # ---------------------------------------------------------------------------
 
-
-class EnergyTypeBreakdown(BaseModel):
+class EnergyTypeBreakdown(GreenLangBase):
     """Reconciliation breakdown for a single energy type.
 
     Compares location-based and market-based totals for one energy
@@ -1352,13 +1293,11 @@ class EnergyTypeBreakdown(BaseModel):
         description="Total energy consumed in MWh for this type",
     )
 
-
 # ---------------------------------------------------------------------------
 # 4. FacilityBreakdown
 # ---------------------------------------------------------------------------
 
-
-class FacilityBreakdown(BaseModel):
+class FacilityBreakdown(GreenLangBase):
     """Reconciliation breakdown for a single facility.
 
     Compares location-based and market-based totals for one facility
@@ -1415,13 +1354,11 @@ class FacilityBreakdown(BaseModel):
         ),
     )
 
-
 # ---------------------------------------------------------------------------
 # 5. ReconciliationWorkspace
 # ---------------------------------------------------------------------------
 
-
-class ReconciliationWorkspace(BaseModel):
+class ReconciliationWorkspace(GreenLangBase):
     """Working data structure for a reconciliation run.
 
     Holds the intermediate state as the pipeline progresses through
@@ -1522,13 +1459,11 @@ class ReconciliationWorkspace(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # 6. Discrepancy
 # ---------------------------------------------------------------------------
 
-
-class Discrepancy(BaseModel):
+class Discrepancy(GreenLangBase):
     """A single identified discrepancy between location and market totals.
 
     Represents one root cause contributing to the overall difference
@@ -1611,13 +1546,11 @@ class Discrepancy(BaseModel):
         description="Suggested action to address the discrepancy",
     )
 
-
 # ---------------------------------------------------------------------------
 # 7. WaterfallItem
 # ---------------------------------------------------------------------------
 
-
-class WaterfallItem(BaseModel):
+class WaterfallItem(GreenLangBase):
     """A single step in the waterfall decomposition of the total discrepancy.
 
     The waterfall decomposes the total difference between location-based
@@ -1666,13 +1599,11 @@ class WaterfallItem(BaseModel):
         description="Human-readable explanation of this driver step",
     )
 
-
 # ---------------------------------------------------------------------------
 # 8. WaterfallDecomposition
 # ---------------------------------------------------------------------------
 
-
-class WaterfallDecomposition(BaseModel):
+class WaterfallDecomposition(GreenLangBase):
     """Complete waterfall decomposition from location to market totals.
 
     Decomposes the total discrepancy between location-based and
@@ -1702,13 +1633,11 @@ class WaterfallDecomposition(BaseModel):
         ),
     )
 
-
 # ---------------------------------------------------------------------------
 # 9. Flag (defined before DiscrepancyReport to allow forward reference)
 # ---------------------------------------------------------------------------
 
-
-class Flag(BaseModel):
+class Flag(GreenLangBase):
     """A flag raised during reconciliation processing.
 
     Flags communicate warnings, errors, informational notes, and
@@ -1755,13 +1684,11 @@ class Flag(BaseModel):
         description="Suggested action to resolve the condition",
     )
 
-
 # ---------------------------------------------------------------------------
 # 10. DiscrepancyReport (model 9 in the specification numbering)
 # ---------------------------------------------------------------------------
 
-
-class DiscrepancyReport(BaseModel):
+class DiscrepancyReport(GreenLangBase):
     """Complete discrepancy analysis report for a reconciliation run.
 
     Contains all identified discrepancies, the waterfall decomposition,
@@ -1817,13 +1744,11 @@ class DiscrepancyReport(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # 11. QualityScore
 # ---------------------------------------------------------------------------
 
-
-class QualityScore(BaseModel):
+class QualityScore(GreenLangBase):
     """Score for a single quality dimension.
 
     Each of the four quality dimensions (completeness, consistency,
@@ -1870,13 +1795,11 @@ class QualityScore(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # 12. QualityAssessment
 # ---------------------------------------------------------------------------
 
-
-class QualityAssessment(BaseModel):
+class QualityAssessment(GreenLangBase):
     """Complete quality assessment for a reconciliation run.
 
     Combines individual dimension scores into a weighted composite
@@ -1926,13 +1849,11 @@ class QualityAssessment(BaseModel):
         description="Aggregate findings across all dimensions",
     )
 
-
 # ---------------------------------------------------------------------------
 # 13. FrameworkTable
 # ---------------------------------------------------------------------------
 
-
-class FrameworkTable(BaseModel):
+class FrameworkTable(GreenLangBase):
     """A reporting table generated for a specific framework.
 
     Each framework (GHG Protocol, CSRD, CDP, etc.) has its own
@@ -1972,17 +1893,15 @@ class FrameworkTable(BaseModel):
         description="Footnotes for the table",
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of table generation",
     )
-
 
 # ---------------------------------------------------------------------------
 # 14. ReportingTableSet
 # ---------------------------------------------------------------------------
 
-
-class ReportingTableSet(BaseModel):
+class ReportingTableSet(GreenLangBase):
     """Collection of framework-specific reporting tables.
 
     Groups all tables generated for a single reconciliation run,
@@ -2005,13 +1924,11 @@ class ReportingTableSet(BaseModel):
         description="Framework-specific reporting tables",
     )
 
-
 # ---------------------------------------------------------------------------
 # 15. TrendDataPoint
 # ---------------------------------------------------------------------------
 
-
-class TrendDataPoint(BaseModel):
+class TrendDataPoint(GreenLangBase):
     """A single data point in a multi-period trend analysis.
 
     Captures location-based and market-based emissions for one
@@ -2064,13 +1981,11 @@ class TrendDataPoint(BaseModel):
         description="RE100 renewable electricity percentage",
     )
 
-
 # ---------------------------------------------------------------------------
 # 16. TrendReport
 # ---------------------------------------------------------------------------
 
-
-class TrendReport(BaseModel):
+class TrendReport(GreenLangBase):
     """Multi-period trend analysis report.
 
     Analyses location-based and market-based emissions across multiple
@@ -2175,13 +2090,11 @@ class TrendReport(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # 17. IntensityResult
 # ---------------------------------------------------------------------------
 
-
-class IntensityResult(BaseModel):
+class IntensityResult(GreenLangBase):
     """Emission intensity result for a single metric type and period.
 
     Normalises both location-based and market-based emissions by a
@@ -2229,13 +2142,11 @@ class IntensityResult(BaseModel):
         description="Reporting period label",
     )
 
-
 # ---------------------------------------------------------------------------
 # 18. ComplianceRequirement
 # ---------------------------------------------------------------------------
 
-
-class ComplianceRequirement(BaseModel):
+class ComplianceRequirement(GreenLangBase):
     """A single compliance requirement within a framework check.
 
     Represents one specific requirement that the reconciliation output
@@ -2281,13 +2192,11 @@ class ComplianceRequirement(BaseModel):
         description="Additional notes or context",
     )
 
-
 # ---------------------------------------------------------------------------
 # 19. ComplianceCheckResult
 # ---------------------------------------------------------------------------
 
-
-class ComplianceCheckResult(BaseModel):
+class ComplianceCheckResult(GreenLangBase):
     """Result of a compliance check against a single reporting framework.
 
     Evaluates the reconciliation output against all requirements of a
@@ -2352,13 +2261,11 @@ class ComplianceCheckResult(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # 20. ReconciliationRequest
 # ---------------------------------------------------------------------------
 
-
-class ReconciliationRequest(BaseModel):
+class ReconciliationRequest(GreenLangBase):
     """Request to perform a dual-reporting reconciliation.
 
     The primary input to the reconciliation pipeline. Provides
@@ -2507,13 +2414,11 @@ class ReconciliationRequest(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # 21. ReconciliationReport
 # ---------------------------------------------------------------------------
 
-
-class ReconciliationReport(BaseModel):
+class ReconciliationReport(GreenLangBase):
     """Complete output of a dual-reporting reconciliation run.
 
     The primary output of the reconciliation pipeline, containing
@@ -2646,7 +2551,7 @@ class ReconciliationReport(BaseModel):
         description="SHA-256 hash over the entire report",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of report generation",
     )
     processing_time_ms: Decimal = Field(
@@ -2663,13 +2568,11 @@ class ReconciliationReport(BaseModel):
         description="Additional key-value pairs for extensibility",
     )
 
-
 # ---------------------------------------------------------------------------
 # 22. BatchReconciliationRequest
 # ---------------------------------------------------------------------------
 
-
-class BatchReconciliationRequest(BaseModel):
+class BatchReconciliationRequest(GreenLangBase):
     """Request to perform reconciliation across multiple periods.
 
     Enables batch processing of reconciliations for multiple reporting
@@ -2748,13 +2651,11 @@ class BatchReconciliationRequest(BaseModel):
                 )
         return v
 
-
 # ---------------------------------------------------------------------------
 # 23. BatchReconciliationResult
 # ---------------------------------------------------------------------------
 
-
-class BatchReconciliationResult(BaseModel):
+class BatchReconciliationResult(GreenLangBase):
     """Result of a batch reconciliation across multiple periods.
 
     Attributes:
@@ -2815,17 +2716,15 @@ class BatchReconciliationResult(BaseModel):
         description="Total processing duration in milliseconds",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of batch completion",
     )
-
 
 # ---------------------------------------------------------------------------
 # 24. ExportRequest
 # ---------------------------------------------------------------------------
 
-
-class ExportRequest(BaseModel):
+class ExportRequest(GreenLangBase):
     """Request to export reconciliation results in a specific format.
 
     Attributes:
@@ -2849,7 +2748,7 @@ class ExportRequest(BaseModel):
         min_length=1,
         description="Reference to the reconciliation run to export",
     )
-    format: ExportFormat = Field(
+    format: ReportFormat = Field(
         ...,
         description="Desired export format",
     )
@@ -2877,13 +2776,11 @@ class ExportRequest(BaseModel):
         description="Whether to include compliance results",
     )
 
-
 # ---------------------------------------------------------------------------
 # 25. AggregationResult
 # ---------------------------------------------------------------------------
 
-
-class AggregationResult(BaseModel):
+class AggregationResult(GreenLangBase):
     """Result of aggregating multiple reconciliation outputs.
 
     Used for portfolio-level or multi-entity aggregation of Scope 2
@@ -2964,10 +2861,9 @@ class AggregationResult(BaseModel):
         ),
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of aggregation completion",
     )
-
 
 # =============================================================================
 # Type Aliases (backward-compatible names used by pipeline engine)
@@ -2978,7 +2874,6 @@ DiscrepancyItem = Discrepancy
 
 #: Alias for ComplianceRequirement used by the pipeline engine.
 ComplianceIssue = ComplianceRequirement
-
 
 # =============================================================================
 # Public API
@@ -3016,7 +2911,7 @@ __all__ = [
     "IntensityMetric",
     "TrendDirection",
     "PipelineStage",
-    "ExportFormat",
+    "ReportFormat",
     "ComplianceStatus",
     "DataQualityTier",
     "GWPSource",

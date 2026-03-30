@@ -18,9 +18,11 @@ import pytest
 
 import sys
 import os
+from greenlang.schemas import utcnow
 sys.path.insert(0, os.path.dirname(__file__))
 
 from conftest import (
+
     StubRegistryClient,
     _compute_hash,
     _new_uuid,
@@ -235,7 +237,7 @@ class TestErrorsAndAudit:
             "action": "check_status",
             "declaration_id": "DECL-AUDIT-001",
             "result_status": result["status"],
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "provenance_hash": _compute_hash(result),
         }
         assert len(audit_entry["provenance_hash"]) == 64

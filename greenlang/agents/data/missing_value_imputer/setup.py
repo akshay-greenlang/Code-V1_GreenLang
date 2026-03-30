@@ -34,7 +34,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.data.missing_value_imputer.config import (
     MissingValueImputerConfig,
@@ -55,6 +55,7 @@ from greenlang.agents.data.missing_value_imputer.metrics import (
     set_active_jobs,
     set_total_missing_detected,
 )
+from greenlang.schemas import GreenLangBase, utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -69,13 +70,11 @@ except ImportError:
     FastAPI = None  # type: ignore[assignment, misc]
     FASTAPI_AVAILABLE = False
 
-
 # ===================================================================
 # Lightweight Pydantic response models used by the facade
 # ===================================================================
 
-
-class AnalysisResponse(BaseModel):
+class AnalysisResponse(GreenLangBase):
     """Missingness analysis result.
 
     Attributes:
@@ -109,8 +108,7 @@ class AnalysisResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
-class ImputationResponse(BaseModel):
+class ImputationResponse(GreenLangBase):
     """Single-column imputation result.
 
     Attributes:
@@ -138,8 +136,7 @@ class ImputationResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
-class BatchImputationResponse(BaseModel):
+class BatchImputationResponse(GreenLangBase):
     """Batch imputation result across multiple columns.
 
     Attributes:
@@ -161,8 +158,7 @@ class BatchImputationResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
-class ValidationResponse(BaseModel):
+class ValidationResponse(GreenLangBase):
     """Imputation validation result.
 
     Attributes:
@@ -184,8 +180,7 @@ class ValidationResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
-class RuleResponse(BaseModel):
+class RuleResponse(GreenLangBase):
     """Imputation rule management result.
 
     Attributes:
@@ -213,8 +208,7 @@ class RuleResponse(BaseModel):
     updated_at: Optional[str] = Field(default=None)
     provenance_hash: str = Field(default="")
 
-
-class TemplateResponse(BaseModel):
+class TemplateResponse(GreenLangBase):
     """Imputation template management result.
 
     Attributes:
@@ -238,8 +232,7 @@ class TemplateResponse(BaseModel):
     created_at: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
-class PipelineResponse(BaseModel):
+class PipelineResponse(GreenLangBase):
     """Full imputation pipeline result.
 
     Attributes:
@@ -266,8 +259,7 @@ class PipelineResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
-class StatsResponse(BaseModel):
+class StatsResponse(GreenLangBase):
     """Aggregate statistics for the missing value imputer service.
 
     Attributes:
@@ -303,11 +295,9 @@ class StatsResponse(BaseModel):
     by_status: Dict[str, int] = Field(default_factory=dict)
     provenance_entries: int = Field(default=0)
 
-
 # ===================================================================
 # Provenance helper
 # ===================================================================
-
 
 class _ProvenanceTracker:
     """Minimal provenance tracker recording SHA-256 audit entries.
@@ -359,21 +349,13 @@ class _ProvenanceTracker:
         self.entry_count += 1
         return entry_hash
 
-
 # ===================================================================
 # Helper utilities
 # ===================================================================
 
-
 # Thread-safe singleton lock
 _singleton_lock = threading.Lock()
 _singleton_instance: Optional["MissingValueImputerService"] = None
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -391,11 +373,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ===================================================================
 # MissingValueImputerService facade
 # ===================================================================
-
 
 class MissingValueImputerService:
     """Unified facade over the Missing Value Imputer SDK.
@@ -678,7 +658,7 @@ class MissingValueImputerService:
             "pipeline_config": request.get("pipeline_config"),
             "template_id": request.get("template_id"),
             "error_message": None,
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
             "started_at": None,
             "completed_at": None,
             "provenance_hash": "",
@@ -753,7 +733,7 @@ class MissingValueImputerService:
             return False
 
         job["status"] = "cancelled"
-        job["completed_at"] = _utcnow().isoformat()
+        job["completed_at"] = utcnow().isoformat()
 
         self.provenance.record(
             entity_type="imputation_job",
@@ -1781,7 +1761,7 @@ class MissingValueImputerService:
             RuleResponse with created rule details.
         """
         rule_id = str(uuid.uuid4())
-        now = _utcnow().isoformat()
+        now = utcnow().isoformat()
 
         rule = {
             "rule_id": rule_id,
@@ -1871,7 +1851,7 @@ class MissingValueImputerService:
             if key in allowed_fields:
                 rule[key] = value
 
-        rule["updated_at"] = _utcnow().isoformat()
+        rule["updated_at"] = utcnow().isoformat()
         rule["provenance_hash"] = _compute_hash(rule)
 
         self.provenance.record(
@@ -1915,7 +1895,7 @@ class MissingValueImputerService:
             return False
 
         rule["is_active"] = False
-        rule["updated_at"] = _utcnow().isoformat()
+        rule["updated_at"] = utcnow().isoformat()
 
         self.provenance.record(
             entity_type="rule",
@@ -1948,7 +1928,7 @@ class MissingValueImputerService:
             TemplateResponse with created template details.
         """
         template_id = str(uuid.uuid4())
-        now = _utcnow().isoformat()
+        now = utcnow().isoformat()
         column_strategies = strategies or {}
 
         template = {
@@ -2104,7 +2084,7 @@ class MissingValueImputerService:
                 # Stage 5: Document
                 stages["document"] = {
                     "pipeline_id": pipeline_id,
-                    "generated_at": _utcnow().isoformat(),
+                    "generated_at": utcnow().isoformat(),
                 }
 
         except Exception as exc:
@@ -2239,11 +2219,9 @@ class MissingValueImputerService:
             "provenance_entries": stats.provenance_entries,
         }
 
-
 # ===================================================================
 # Module-level configuration functions
 # ===================================================================
-
 
 async def configure_missing_value_imputer(
     app: Any,
@@ -2285,7 +2263,6 @@ async def configure_missing_value_imputer(
     logger.info("Missing value imputer service configured and started")
     return service
 
-
 def get_missing_value_imputer(app: Any) -> MissingValueImputerService:
     """Get the MissingValueImputerService instance from app state.
 
@@ -2306,7 +2283,6 @@ def get_missing_value_imputer(app: Any) -> MissingValueImputerService:
         )
     return service
 
-
 def get_router(service: Optional[MissingValueImputerService] = None) -> Any:
     """Get the missing value imputer API router.
 
@@ -2321,7 +2297,6 @@ def get_router(service: Optional[MissingValueImputerService] = None) -> Any:
         return router
     except ImportError:
         return None
-
 
 __all__ = [
     "MissingValueImputerService",

@@ -42,31 +42,25 @@ from typing import Any, Callable, Coroutine, Dict, List, Optional, Set
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "25.0.0"
 
 ProgressCallback = Callable[[str, float, str], Coroutine[Any, Any, None]]
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: Any) -> str:
     if isinstance(data, dict):
         data = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(str(data).encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -74,7 +68,6 @@ class PhaseStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
@@ -84,14 +77,12 @@ class WorkflowStatus(str, Enum):
     PARTIAL = "partial"
     CANCELLED = "cancelled"
 
-
 class SectorPathwayPhase(str, Enum):
     SECTOR_IDENTIFICATION = "sector_identification"
     PATHWAY_RETRIEVAL = "pathway_retrieval"
     CUSTOMIZATION = "customization"
     MILESTONE_MAPPING = "milestone_mapping"
     BENCHMARK_COMPARISON = "benchmark_comparison"
-
 
 class SectorCategory(str, Enum):
     POWER = "power_generation"
@@ -120,7 +111,6 @@ class SectorCategory(str, Enum):
     TELECOMMUNICATIONS = "telecommunications"
     GENERAL_SERVICES = "general_services"
 
-
 class PathwaySource(str, Enum):
     IEA_NZE = "iea_nze"
     IPCC_AR6 = "ipcc_ar6"
@@ -130,13 +120,11 @@ class PathwaySource(str, Enum):
     ACT = "act"
     SBTI_SDA = "sbti_sda"
 
-
 class AlignmentStatus(str, Enum):
     ALIGNED = "aligned"
     PARTIALLY_ALIGNED = "partially_aligned"
     MISALIGNED = "misaligned"
     NOT_ASSESSED = "not_assessed"
-
 
 # =============================================================================
 # REFERENCE DATA
@@ -273,11 +261,9 @@ PHASE_EXECUTION_ORDER: List[SectorPathwayPhase] = [
     SectorPathwayPhase.BENCHMARK_COMPARISON,
 ]
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase: SectorPathwayPhase = Field(...)
@@ -291,7 +277,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class SectorProfile(BaseModel):
     sector: str = Field(default="")
     sector_name: str = Field(default="")
@@ -299,7 +284,6 @@ class SectorProfile(BaseModel):
     pathway_sources: List[str] = Field(default_factory=list)
     pathway_type: str = Field(default="absolute")
     intensity_unit: str = Field(default="tCO2e")
-
 
 class PathwayBenchmark(BaseModel):
     year: int = Field(default=2030)
@@ -309,7 +293,6 @@ class PathwayBenchmark(BaseModel):
     gap_pct: float = Field(default=0.0)
     alignment: AlignmentStatus = Field(default=AlignmentStatus.NOT_ASSESSED)
 
-
 class MilestoneMap(BaseModel):
     milestone_id: str = Field(default="")
     year: int = Field(default=2030)
@@ -317,7 +300,6 @@ class MilestoneMap(BaseModel):
     entity_action: str = Field(default="")
     achievable: bool = Field(default=False)
     effort_level: str = Field(default="medium")
-
 
 class SectorPathwayConfig(BaseModel):
     pack_id: str = Field(default="PACK-025")
@@ -337,7 +319,6 @@ class SectorPathwayConfig(BaseModel):
     enable_provenance: bool = Field(default=True)
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
-
 
 class SectorPathwayResult(BaseModel):
     execution_id: str = Field(default_factory=_new_uuid)
@@ -360,11 +341,9 @@ class SectorPathwayResult(BaseModel):
     quality_score: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class SectorPathwayWorkflow:
     """
@@ -397,7 +376,7 @@ class SectorPathwayWorkflow:
         input_data = input_data or {}
         result = SectorPathwayResult(
             org_name=self.config.org_name,
-            status=WorkflowStatus.RUNNING, started_at=_utcnow(),
+            status=WorkflowStatus.RUNNING, started_at=utcnow(),
         )
         self._results[result.execution_id] = result
         start_time = time.monotonic()
@@ -440,7 +419,7 @@ class SectorPathwayWorkflow:
             result.errors.append(str(exc))
 
         finally:
-            result.completed_at = _utcnow()
+            result.completed_at = utcnow()
             result.total_duration_ms = (time.monotonic() - start_time) * 1000
             result.sector_profile = self._build_profile(ctx)
             result.benchmarks = self._build_benchmarks(ctx)
@@ -464,7 +443,7 @@ class SectorPathwayWorkflow:
         return {"cancelled": True}
 
     async def _run_phase(self, phase: SectorPathwayPhase, ctx: Dict[str, Any]) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         st = time.monotonic()
         handler = {
             SectorPathwayPhase.SECTOR_IDENTIFICATION: self._ph_sector_id,
@@ -480,7 +459,7 @@ class SectorPathwayWorkflow:
             out, warn, err, rec = {}, [], [str(exc)], 0
             status = PhaseStatus.FAILED
         return PhaseResult(
-            phase=phase, status=status, started_at=started, completed_at=_utcnow(),
+            phase=phase, status=status, started_at=started, completed_at=utcnow(),
             duration_ms=round((time.monotonic() - st) * 1000, 2), records_processed=rec,
             outputs=out, warnings=warn, errors=err,
             provenance_hash=_compute_hash(out) if self.config.enable_provenance else "",

@@ -34,20 +34,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -60,11 +55,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EnergyStarPropertyType(str, Enum):
     """ENERGY STAR Portfolio Manager property types (50+ types)."""
@@ -139,7 +132,6 @@ class EnergyStarPropertyType(str, Enum):
     WORSHIP_FACILITY = "worship_facility"
     ZOO = "zoo"
 
-
 class EnergyStarMetric(str, Enum):
     """ENERGY STAR benchmark metrics."""
 
@@ -148,7 +140,6 @@ class EnergyStarMetric(str, Enum):
     SITE_EUI_KBTU_PER_SQFT = "site_eui_kbtu_per_sqft"
     NATIONAL_MEDIAN_SOURCE_EUI = "national_median_source_eui"
     WEATHER_NORMALIZED_SOURCE_EUI = "weather_normalized_source_eui"
-
 
 # ---------------------------------------------------------------------------
 # Source EUI Lookup Tables (kBtu/sqft by property type and climate)
@@ -171,11 +162,9 @@ SOURCE_EUI_BENCHMARKS: Dict[str, Dict[str, float]] = {
     "convenience_store": {"national_median": 536.0, "75th_percentile": 400.0, "best_in_class": 290.0, "worst_quartile": 730.0},
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class EnergyStarBridgeConfig(BaseModel):
     """Configuration for the ENERGY STAR Bridge."""
@@ -190,7 +179,6 @@ class EnergyStarBridgeConfig(BaseModel):
     default_climate_zone: str = Field(default="4A", description="ASHRAE climate zone")
     site_to_source_ratio_electricity: float = Field(default=2.80, ge=1.0)
     site_to_source_ratio_gas: float = Field(default=1.05, ge=1.0)
-
 
 class PropertyInput(BaseModel):
     """Property input data for ENERGY STAR score calculation."""
@@ -207,7 +195,6 @@ class PropertyInput(BaseModel):
     climate_zone: str = Field(default="4A")
     hdd: float = Field(default=0.0, ge=0.0)
     cdd: float = Field(default=0.0, ge=0.0)
-
 
 class EnergyStarScoreResult(BaseModel):
     """Result of an ENERGY STAR score calculation."""
@@ -227,11 +214,9 @@ class EnergyStarScoreResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # EnergyStarBridge
 # ---------------------------------------------------------------------------
-
 
 class EnergyStarBridge:
     """Bridge to ENERGY STAR Portfolio Manager for scores and benchmarks.

@@ -33,10 +33,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +92,7 @@ PREMIUM_RATE_FACTORS = {
 # Pydantic Models
 # =============================================================================
 
-class ExistingCoverage(BaseModel):
+class ExistingCoverage(GreenLangBase):
     """Existing insurance coverage details."""
     coverage_type: CoverageType = Field(...)
     limit_usd: float = Field(..., ge=0)
@@ -102,7 +103,7 @@ class ExistingCoverage(BaseModel):
     covered_perils: List[str] = Field(default_factory=list)
 
 
-class CoverageGap(BaseModel):
+class CoverageGap(GreenLangBase):
     """Identified coverage gap."""
     gap_type: str = Field(...)
     hazard: str = Field(...)
@@ -113,7 +114,7 @@ class CoverageGap(BaseModel):
     recommendation: str = Field(default="")
 
 
-class TransferOption(BaseModel):
+class TransferOption(GreenLangBase):
     """Risk transfer option recommendation."""
     transfer_type: TransferType = Field(...)
     name: str = Field(...)
@@ -129,7 +130,7 @@ class TransferOption(BaseModel):
     suitability_score: float = Field(default=0.5, ge=0, le=1)
 
 
-class RiskRetentionAnalysis(BaseModel):
+class RiskRetentionAnalysis(GreenLangBase):
     """Analysis of optimal risk retention."""
     optimal_retention_usd: float = Field(..., ge=0)
     current_retention_usd: float = Field(default=0.0, ge=0)
@@ -139,7 +140,7 @@ class RiskRetentionAnalysis(BaseModel):
     premium_savings_with_retention_usd: float = Field(default=0.0, ge=0)
 
 
-class InsuranceAnalysisInput(BaseModel):
+class InsuranceAnalysisInput(GreenLangBase):
     """Input model for Insurance & Transfer Agent."""
     analysis_id: str = Field(...)
     asset_value_usd: float = Field(..., ge=0)
@@ -152,7 +153,7 @@ class InsuranceAnalysisInput(BaseModel):
     include_alternative_risk_transfer: bool = Field(default=True)
 
 
-class InsuranceAnalysisOutput(BaseModel):
+class InsuranceAnalysisOutput(GreenLangBase):
     """Output model for Insurance & Transfer Agent."""
     analysis_id: str = Field(...)
     completed_at: datetime = Field(default_factory=DeterministicClock.now)

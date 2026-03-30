@@ -84,6 +84,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -113,15 +114,9 @@ except ImportError:
     _PROVENANCE_AVAILABLE = False
     _get_provenance_tracker = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -131,7 +126,6 @@ def _compute_hash(data: Any) -> str:
         serializable = data
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 # ===========================================================================
 # Constants
@@ -257,11 +251,9 @@ VALID_FERTILIZER_TYPES: List[str] = [
     "CROP_RESIDUE", "OTHER",
 ]
 
-
 # ===========================================================================
 # Dataclasses
 # ===========================================================================
-
 
 @dataclass
 class ComplianceFinding:
@@ -309,11 +301,9 @@ class ComplianceFinding:
             "recommendation": self.recommendation,
         }
 
-
 # ===========================================================================
 # ComplianceCheckerEngine
 # ===========================================================================
-
 
 class ComplianceCheckerEngine:
     """Multi-framework regulatory compliance checker for agricultural emissions.
@@ -350,7 +340,7 @@ class ComplianceCheckerEngine:
         self._total_findings: int = 0
         self._total_passed: int = 0
         self._total_failed: int = 0
-        self._created_at = _utcnow()
+        self._created_at = utcnow()
 
         # Map framework names to checker methods.
         self._framework_checkers: Dict[str, Callable] = {

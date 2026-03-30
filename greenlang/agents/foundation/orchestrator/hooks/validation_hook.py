@@ -70,7 +70,7 @@ import time
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 # Schema validator imports
 from greenlang.agents.foundation.schema.validator.core import SchemaValidator
@@ -82,6 +82,7 @@ from greenlang.agents.foundation.schema.models.config import (
     UnknownFieldPolicy,
 )
 from greenlang.agents.foundation.schema.models.report import ValidationReport
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +92,7 @@ logger = logging.getLogger(__name__)
 # =============================================================================
 
 
-class InputSchemaSpec(BaseModel):
+class InputSchemaSpec(GreenLangBase):
     """
     Schema specification for a pipeline input.
 
@@ -188,7 +189,7 @@ class InputSchemaSpec(BaseModel):
         return SchemaRef.from_uri(self.schema)
 
 
-class PipelineValidationConfig(BaseModel):
+class PipelineValidationConfig(GreenLangBase):
     """
     Validation configuration for a pipeline.
 
@@ -275,7 +276,7 @@ class PipelineValidationConfig(BaseModel):
         )
 
 
-class InputValidationResult(BaseModel):
+class InputValidationResult(GreenLangBase):
     """
     Result of validating a single input.
 
@@ -356,7 +357,7 @@ class InputValidationResult(BaseModel):
         return self.report.summary.total_findings() > 0
 
 
-class PreRunValidationResult(BaseModel):
+class PreRunValidationResult(GreenLangBase):
     """
     Result of pre-run validation for all pipeline inputs.
 

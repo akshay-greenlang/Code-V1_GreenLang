@@ -42,12 +42,6 @@ from greenlang.agents.data.eudr_traceability.models import (
 
 logger = logging.getLogger(__name__)
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 class ComplianceVerifier:
     """EUDR article compliance verification engine.
 
@@ -642,7 +636,6 @@ class ComplianceVerifier:
     def check_count(self) -> int:
         """Return the total number of compliance checks performed."""
         return len(self._check_results)
-
 
 __all__ = [
     "ComplianceVerifier",

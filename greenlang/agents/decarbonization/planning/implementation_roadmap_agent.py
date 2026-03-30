@@ -16,12 +16,13 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig
 from greenlang.agents.base_agents import DeterministicAgent
 from greenlang.agents.categories import AgentCategory, AgentMetadata
 from greenlang.utilities.determinism import DeterministicClock, content_hash, deterministic_id
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +43,7 @@ class MilestoneStatus(str, Enum):
     AT_RISK = "at_risk"
 
 
-class RoadmapMilestone(BaseModel):
+class RoadmapMilestone(GreenLangBase):
     milestone_id: str = Field(...)
     name: str = Field(...)
     phase: PhaseType = Field(...)
@@ -56,7 +57,7 @@ class RoadmapMilestone(BaseModel):
     emission_reduction_tco2e: float = Field(default=0, ge=0)
 
 
-class RoadmapPhase(BaseModel):
+class RoadmapPhase(GreenLangBase):
     phase_id: str = Field(...)
     phase_type: PhaseType = Field(...)
     name: str = Field(...)
@@ -68,7 +69,7 @@ class RoadmapPhase(BaseModel):
     expected_reduction_tco2e: float = Field(default=0, ge=0)
 
 
-class ImplementationRoadmap(BaseModel):
+class ImplementationRoadmap(GreenLangBase):
     roadmap_id: str = Field(...)
     name: str = Field(...)
     description: str = Field(default="")
@@ -84,7 +85,7 @@ class ImplementationRoadmap(BaseModel):
     created_at: datetime = Field(default_factory=DeterministicClock.now)
 
 
-class ImplementationRoadmapInput(BaseModel):
+class ImplementationRoadmapInput(GreenLangBase):
     operation: str = Field(default="generate")
     scenario_data: Optional[Dict[str, Any]] = Field(None)
     target_year: int = Field(default=2030)
@@ -92,7 +93,7 @@ class ImplementationRoadmapInput(BaseModel):
     abatement_options: List[Dict[str, Any]] = Field(default_factory=list)
 
 
-class ImplementationRoadmapOutput(BaseModel):
+class ImplementationRoadmapOutput(GreenLangBase):
     operation: str = Field(...)
     success: bool = Field(...)
     roadmap: Optional[ImplementationRoadmap] = Field(None)

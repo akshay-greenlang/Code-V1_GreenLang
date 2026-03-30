@@ -75,25 +75,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -113,7 +107,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely.
 
@@ -127,7 +120,6 @@ def _decimal(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _safe_divide(
     numerator: float, denominator: float, default: float = 0.0
 ) -> float:
@@ -136,20 +128,17 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.01"), rounding=ROUND_HALF_UP
     ))
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value to the specified number of decimal places.
@@ -166,11 +155,9 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class PhysicalRiskType(str, Enum):
     """Type of physical climate risk per AR E1-74.
@@ -187,7 +174,6 @@ class PhysicalRiskType(str, Enum):
     CHRONIC_PRECIPITATION = "chronic_precipitation"
     CHRONIC_WATER_STRESS = "chronic_water_stress"
 
-
 class TransitionRiskType(str, Enum):
     """Type of transition climate risk per AR E1-75.
 
@@ -200,7 +186,6 @@ class TransitionRiskType(str, Enum):
     MARKET_SHIFT = "market_shift"
     REPUTATION = "reputation"
     LEGAL_LIABILITY = "legal_liability"
-
 
 class ClimateOpportunityType(str, Enum):
     """Type of climate-related opportunity per AR E1-76.
@@ -215,7 +200,6 @@ class ClimateOpportunityType(str, Enum):
     MARKETS = "markets"
     RESILIENCE = "resilience"
 
-
 class RiskTimeHorizon(str, Enum):
     """Time horizon for risk assessment per AR E1-77.
 
@@ -225,7 +209,6 @@ class RiskTimeHorizon(str, Enum):
     SHORT_TERM_0_3Y = "short_term_0_3y"
     MEDIUM_TERM_3_10Y = "medium_term_3_10y"
     LONG_TERM_10_PLUS = "long_term_10_plus"
-
 
 class ClimateScenario(str, Enum):
     """Climate scenario for risk and opportunity assessment per AR E1-78.
@@ -242,7 +225,6 @@ class ClimateScenario(str, Enum):
     NGFS_DISORDERLY = "ngfs_disorderly"
     NGFS_HOT_HOUSE = "ngfs_hot_house"
 
-
 class LikelihoodLevel(str, Enum):
     """Likelihood level for risk assessment.
 
@@ -255,11 +237,9 @@ class LikelihoodLevel(str, Enum):
     HIGH = "high"
     VERY_HIGH = "very_high"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # Required ESRS E1-9 data points.
 E1_9_DATAPOINTS: Dict[str, str] = {
@@ -283,7 +263,6 @@ E1_9_DATAPOINTS: Dict[str, str] = {
     "e1_9_dp18": "Net climate financial impact (risks minus opportunities)",
 }
 
-
 # Descriptions of physical risk types for reporting.
 PHYSICAL_RISK_DESCRIPTIONS: Dict[str, str] = {
     "acute_flooding": "Increased frequency and severity of flooding events due to "
@@ -304,7 +283,6 @@ PHYSICAL_RISK_DESCRIPTIONS: Dict[str, str] = {
                             "operations, cooling, and supply chain inputs",
 }
 
-
 # Descriptions of transition risk types for reporting.
 TRANSITION_RISK_DESCRIPTIONS: Dict[str, str] = {
     "policy_carbon_pricing": "Introduction or increase of carbon pricing (ETS, carbon "
@@ -320,7 +298,6 @@ TRANSITION_RISK_DESCRIPTIONS: Dict[str, str] = {
     "legal_liability": "Climate-related litigation risk including failure-to-mitigate "
                        "claims, greenwashing allegations, and fiduciary duty challenges",
 }
-
 
 # Likelihood level to probability mapping for quantitative assessment.
 LIKELIHOOD_PROBABILITIES: Dict[str, Dict[str, Any]] = {
@@ -355,7 +332,6 @@ LIKELIHOOD_PROBABILITIES: Dict[str, Dict[str, Any]] = {
         "weight": Decimal("0.90"),
     },
 }
-
 
 # Climate scenario descriptions.
 SCENARIO_DESCRIPTIONS: Dict[str, Dict[str, str]] = {
@@ -409,7 +385,6 @@ SCENARIO_DESCRIPTIONS: Dict[str, Dict[str, str]] = {
     },
 }
 
-
 # Damage function parameters for financial impact estimation.
 # Maps physical risk types to expected annual loss factors
 # (as fraction of affected asset value) by warming scenario.
@@ -456,7 +431,6 @@ DAMAGE_FUNCTION_PARAMS: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # Opportunity type descriptions.
 OPPORTUNITY_DESCRIPTIONS: Dict[str, str] = {
     "resource_efficiency": "Cost savings from improved resource efficiency (energy, water, "
@@ -471,11 +445,9 @@ OPPORTUNITY_DESCRIPTIONS: Dict[str, str] = {
                   "vulnerability to physical and transition risks",
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class PhysicalRisk(BaseModel):
     """A physical climate risk per ESRS E1-9 and AR E1-74.
@@ -566,7 +538,6 @@ class PhysicalRisk(BaseModel):
         description="SHA-256 provenance hash",
     )
 
-
 class TransitionRisk(BaseModel):
     """A transition climate risk per ESRS E1-9 and AR E1-75.
 
@@ -646,7 +617,6 @@ class TransitionRisk(BaseModel):
         description="SHA-256 provenance hash",
     )
 
-
 class ClimateOpportunity(BaseModel):
     """A climate-related opportunity per ESRS E1-9 and AR E1-76.
 
@@ -700,7 +670,6 @@ class ClimateOpportunity(BaseModel):
         description="SHA-256 provenance hash",
     )
 
-
 class ClimateRiskResult(BaseModel):
     """Result of climate risk and opportunity assessment per ESRS E1-9.
 
@@ -717,7 +686,7 @@ class ClimateRiskResult(BaseModel):
         description="Engine version used for this assessment",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of assessment (UTC)",
     )
     physical_risks: List[PhysicalRisk] = Field(
@@ -805,11 +774,9 @@ class ClimateRiskResult(BaseModel):
         description="SHA-256 hash of the entire result",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ClimateRiskEngine:
     """Climate risk and opportunity engine per ESRS E1-9.

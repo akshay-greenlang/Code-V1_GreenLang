@@ -42,35 +42,28 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import AlertSeverity
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.utcnow()
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hash of a string."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -81,7 +74,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -91,15 +83,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
-class AlertSeverity(str, Enum):
-    """Alert severity levels."""
-
-    INFO = "info"
-    WARNING = "warning"
-    CRITICAL = "critical"
-
-
 class DegradationPattern(str, Enum):
     """Savings degradation pattern type."""
 
@@ -108,7 +91,6 @@ class DegradationPattern(str, Enum):
     STEP = "step"
     NONE = "none"
     IMPROVING = "improving"
-
 
 # =============================================================================
 # REFERENCE DATA (Zero-Hallucination)
@@ -221,11 +203,9 @@ PERSISTENCE_BENCHMARKS: Dict[str, Dict[str, float]] = {
     "general": {"year_1": 100.0, "year_3": 90.0, "year_5": 82.0, "year_10": 70.0},
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -238,7 +218,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list, description="Warnings raised")
     errors: List[str] = Field(default_factory=list, description="Errors encountered")
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
-
 
 class PersistenceDataPoint(BaseModel):
     """Savings data point for persistence tracking."""
@@ -255,7 +234,6 @@ class PersistenceDataPoint(BaseModel):
     data_quality_score: float = Field(
         default=100.0, ge=0, le=100, description="Data quality score",
     )
-
 
 class PersistenceTrackingInput(BaseModel):
     """Input data model for PersistenceTrackingWorkflow."""
@@ -292,7 +270,6 @@ class PersistenceTrackingInput(BaseModel):
             raise ValueError("project_name must not be blank")
         return stripped
 
-
 class PersistenceTrackingResult(BaseModel):
     """Complete result from persistence tracking workflow."""
 
@@ -318,11 +295,9 @@ class PersistenceTrackingResult(BaseModel):
     calculated_at: str = Field(default="", description="ISO 8601 timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 of complete result")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class PersistenceTrackingWorkflow:
     """
@@ -381,7 +356,7 @@ class PersistenceTrackingWorkflow:
             ValueError: If input validation fails.
         """
         t_start = time.perf_counter()
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting persistence tracking workflow %s for project=%s ecm=%s year=%d",
             self.tracking_id, input_data.project_name,
@@ -665,7 +640,7 @@ class PersistenceTrackingWorkflow:
                     "current_value_pct": round(current_pct, 1),
                     "threshold_pct": threshold_spec["threshold_pct"],
                     "recommended_action": threshold_spec["recommended_action"],
-                    "triggered_at": _utcnow().isoformat() + "Z",
+                    "triggered_at": utcnow().isoformat() + "Z",
                 })
 
         self._alerts = alerts

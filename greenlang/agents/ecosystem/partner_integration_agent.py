@@ -19,10 +19,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -43,14 +44,14 @@ class ConnectionStatus(str, Enum):
     PENDING = "pending"
 
 
-class DataMapping(BaseModel):
+class DataMapping(GreenLangBase):
     mapping_id: str = Field(default_factory=lambda: str(uuid.uuid4())[:8])
     source_field: str = Field(..., description="Source field name")
     target_field: str = Field(..., description="Target field name")
     transformation: Optional[str] = Field(None, description="Transformation rule")
 
 
-class SyncConfiguration(BaseModel):
+class SyncConfiguration(GreenLangBase):
     sync_id: str = Field(default_factory=lambda: str(uuid.uuid4())[:8])
     connection_id: str = Field(..., description="Connection to sync")
     direction: str = Field(default="bidirectional", description="inbound/outbound/bidirectional")
@@ -59,7 +60,7 @@ class SyncConfiguration(BaseModel):
     enabled: bool = Field(default=True)
 
 
-class PartnerConnection(BaseModel):
+class PartnerConnection(GreenLangBase):
     connection_id: str = Field(default_factory=lambda: str(uuid.uuid4())[:8])
     name: str = Field(..., description="Connection name")
     partner_name: str = Field(..., description="Partner organization")
@@ -73,7 +74,7 @@ class PartnerConnection(BaseModel):
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
-class PartnerIntegrationInput(BaseModel):
+class PartnerIntegrationInput(GreenLangBase):
     operation: str = Field(..., description="Operation to perform")
     connection: Optional[PartnerConnection] = Field(None)
     connection_id: Optional[str] = Field(None)
@@ -93,7 +94,7 @@ class PartnerIntegrationInput(BaseModel):
         return v
 
 
-class PartnerIntegrationOutput(BaseModel):
+class PartnerIntegrationOutput(GreenLangBase):
     success: bool = Field(...)
     operation: str = Field(...)
     data: Dict[str, Any] = Field(default_factory=dict)

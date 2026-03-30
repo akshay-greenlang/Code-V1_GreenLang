@@ -73,25 +73,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -109,7 +103,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -118,7 +111,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -130,37 +122,30 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* and return a float."""
     quantizer = Decimal(10) ** -places
     return float(value.quantize(quantizer, rounding=ROUND_HALF_UP))
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: float) -> float:
     """Round to 4 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EndUseCategory(str, Enum):
     """Building energy end-use categories per CIBSE Guide F.
@@ -187,7 +172,6 @@ class EndUseCategory(str, Enum):
     VERTICAL_TRANSPORT = "vertical_transport"
     OTHER = "other"
 
-
 class DisaggregationMethod(str, Enum):
     """End-use disaggregation methods.
 
@@ -201,7 +185,6 @@ class DisaggregationMethod(str, Enum):
     ASHRAE_BALANCE = "ashrae_balance"
     STATISTICAL_ESTIMATION = "statistical_estimation"
 
-
 class GapSeverity(str, Enum):
     """Performance gap severity classification.
 
@@ -214,7 +197,6 @@ class GapSeverity(str, Enum):
     MODERATE = "moderate"
     SIGNIFICANT = "significant"
     CRITICAL = "critical"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Typical End-Use Splits
@@ -348,7 +330,6 @@ TYPICAL_END_USE_SPLITS: Dict[str, Dict[str, float]] = {
 }
 """Typical end-use percentage splits by building type from CIBSE Guide F."""
 
-
 # End-use improvement potential (% reduction achievable per end-use).
 # Source: Carbon Trust CTG004, CTV003, CTV009, field measurement data.
 # These represent typical achievable savings with proven technology.
@@ -426,7 +407,6 @@ END_USE_IMPROVEMENT_POTENTIAL: Dict[str, Dict[str, Any]] = {
 }
 """Achievable improvement potential by end-use category from Carbon Trust."""
 
-
 # Gap severity thresholds (actual / benchmark ratio).
 _GAP_THRESHOLDS = {
     GapSeverity.MINOR: 1.10,
@@ -435,11 +415,9 @@ _GAP_THRESHOLDS = {
     # CRITICAL: >= 1.60
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class EndUseBreakdown(BaseModel):
     """End-use energy breakdown (from sub-metering or estimation).
@@ -461,11 +439,9 @@ class EndUseBreakdown(BaseModel):
         None, ge=0, description="Benchmark intensity"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class EndUseGap(BaseModel):
     """Performance gap analysis for a single end-use category.
@@ -495,7 +471,6 @@ class EndUseGap(BaseModel):
         default=0.0, description="High-cost savings"
     )
 
-
 class ImprovementPriority(BaseModel):
     """Ranked improvement priority for an end-use category.
 
@@ -522,7 +497,6 @@ class ImprovementPriority(BaseModel):
         default_factory=list, description="Recommended measures"
     )
 
-
 class GapAnalysisResult(BaseModel):
     """Complete energy performance gap analysis result.
 
@@ -532,7 +506,7 @@ class GapAnalysisResult(BaseModel):
     result_id: str = Field(default_factory=_new_uuid, description="Result ID")
     engine_version: str = Field(default=_MODULE_VERSION, description="Engine version")
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
 
@@ -575,11 +549,9 @@ class GapAnalysisResult(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 # ---------------------------------------------------------------------------
 # Calculation Engine
 # ---------------------------------------------------------------------------
-
 
 class EnergyPerformanceGapEngine:
     """Energy performance gap analysis engine.

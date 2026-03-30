@@ -40,23 +40,18 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -68,11 +63,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class Marketplace(str, Enum):
     """Supported carbon credit marketplaces."""
@@ -83,14 +76,12 @@ class Marketplace(str, Enum):
     ACX = "acx"
     DIRECT_BROKER = "direct_broker"
 
-
 class CreditType(str, Enum):
     """Carbon credit types."""
 
     AVOIDANCE = "avoidance"
     REMOVAL = "removal"
     HYBRID = "hybrid"
-
 
 class ProjectCategory(str, Enum):
     """Credit project categories."""
@@ -108,7 +99,6 @@ class ProjectCategory(str, Enum):
     COOKSTOVES = "cookstoves"
     WASTE_MANAGEMENT = "waste_management"
 
-
 class QualityTier(str, Enum):
     """Credit quality tiers per ICVCM."""
 
@@ -116,7 +106,6 @@ class QualityTier(str, Enum):
     HIGH_QUALITY = "high_quality"
     STANDARD = "standard"
     BELOW_STANDARD = "below_standard"
-
 
 # ---------------------------------------------------------------------------
 # ICVCM CCP Quality Criteria
@@ -145,11 +134,9 @@ CREDIT_PRICE_RANGES: Dict[str, Dict[str, float]] = {
     "soil_carbon": {"low": 10.0, "mid": 25.0, "high": 45.0},
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class MarketplaceBridgeConfig(BaseModel):
     """Configuration for the Credit Marketplace Bridge."""
@@ -162,7 +149,6 @@ class MarketplaceBridgeConfig(BaseModel):
     min_vintage_year: int = Field(default=2020)
     max_price_usd: float = Field(default=1000.0, ge=0.0)
     target_removal_pct: float = Field(default=10.0, ge=0.0, le=100.0)
-
 
 class CreditListing(BaseModel):
     """Individual credit listing from marketplace."""
@@ -184,7 +170,6 @@ class CreditListing(BaseModel):
     methodology: str = Field(default="")
     pas_2060_eligible: bool = Field(default=True)
 
-
 class MarketSearchResult(BaseModel):
     """Marketplace search result."""
 
@@ -200,7 +185,6 @@ class MarketSearchResult(BaseModel):
     ccp_share_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class ProcurementRecommendation(BaseModel):
     """Credit procurement recommendation."""
@@ -219,7 +203,6 @@ class ProcurementRecommendation(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class PricingAnalysisResult(BaseModel):
     """Credit pricing analysis result."""
 
@@ -233,11 +216,9 @@ class PricingAnalysisResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # CarbonNeutralCreditMarketplaceBridge
 # ---------------------------------------------------------------------------
-
 
 class CarbonNeutralCreditMarketplaceBridge:
     """Bridge to carbon credit marketplaces for PAS 2060 procurement.

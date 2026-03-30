@@ -46,25 +46,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -77,11 +71,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DataSourceType(str, Enum):
     """Supported data source types for battery passport."""
@@ -94,7 +86,6 @@ class DataSourceType(str, Enum):
     QUESTIONNAIRE = "questionnaire"
     TEST_EQUIPMENT = "test_equipment"
 
-
 class PassportDataCategory(str, Enum):
     """Battery passport data categories (Art 77)."""
 
@@ -106,7 +97,6 @@ class PassportDataCategory(str, Enum):
     COLLECTION_RECYCLING = "collection_recycling"
     COMPLIANCE_CONFORMITY = "compliance_conformity"
 
-
 class QualityLevel(str, Enum):
     """Data quality assessment level."""
 
@@ -115,18 +105,15 @@ class QualityLevel(str, Enum):
     LOW = "low"
     UNASSESSED = "unassessed"
 
-
 class AgentCategory(str, Enum):
     """DATA agent category."""
 
     INTAKE = "intake"
     QUALITY = "quality"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class DataBridgeConfig(BaseModel):
     """Configuration for the Data Bridge."""
@@ -140,7 +127,6 @@ class DataBridgeConfig(BaseModel):
         description="Minimum data quality score for battery passport fields",
     )
 
-
 class DataAgentMapping(BaseModel):
     """Mapping of a DATA agent to battery passport function."""
 
@@ -149,7 +135,6 @@ class DataAgentMapping(BaseModel):
     category: AgentCategory = Field(default=AgentCategory.INTAKE)
     supported_types: List[DataSourceType] = Field(default_factory=list)
     passport_categories: List[PassportDataCategory] = Field(default_factory=list)
-
 
 class IntakeResult(BaseModel):
     """Result of a data intake operation."""
@@ -170,7 +155,6 @@ class IntakeResult(BaseModel):
     data: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
 
-
 class QualityReport(BaseModel):
     """Data quality assessment report for battery passport fields."""
 
@@ -185,7 +169,6 @@ class QualityReport(BaseModel):
     passport_completeness: Dict[str, float] = Field(default_factory=dict)
     field_issues: List[Dict[str, Any]] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # DATA Agent Routing Table for Battery Passport
@@ -301,11 +284,9 @@ PASSPORT_FIELD_REQUIREMENTS: Dict[str, List[str]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # DataBridge
 # ---------------------------------------------------------------------------
-
 
 class DataBridge:
     """AGENT-DATA integration bridge for PACK-020 Battery Passport Prep.
@@ -347,7 +328,7 @@ class DataBridge:
             IntakeResult with imported BOM records.
         """
         result = IntakeResult(
-            started_at=_utcnow(), source_type="bom"
+            started_at=utcnow(), source_type="bom"
         )
 
         try:
@@ -411,7 +392,7 @@ class DataBridge:
             IntakeResult with imported test records.
         """
         result = IntakeResult(
-            started_at=_utcnow(), source_type="test_results"
+            started_at=utcnow(), source_type="test_results"
         )
 
         try:
@@ -481,7 +462,7 @@ class DataBridge:
             IntakeResult with processed questionnaire responses.
         """
         result = IntakeResult(
-            started_at=_utcnow(), source_type="questionnaire"
+            started_at=utcnow(), source_type="questionnaire"
         )
 
         try:
@@ -695,7 +676,7 @@ class DataBridge:
 
     def _finalize_result(self, result: IntakeResult) -> None:
         """Set completed_at and duration_ms on a result."""
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at

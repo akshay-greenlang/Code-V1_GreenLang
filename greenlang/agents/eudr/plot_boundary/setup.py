@@ -104,16 +104,9 @@ except ImportError:
     otel_trace = None  # type: ignore[assignment]
     OTEL_AVAILABLE = False
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_provenance_hash(*parts: str) -> str:
     """Compute SHA-256 hash over concatenated string parts.
@@ -127,7 +120,6 @@ def _compute_provenance_hash(*parts: str) -> str:
     combined = "|".join(str(p) for p in parts)
     return hashlib.sha256(combined.encode("utf-8")).hexdigest()
 
-
 def _generate_request_id() -> str:
     """Generate a unique request identifier.
 
@@ -135,7 +127,6 @@ def _generate_request_id() -> str:
         UUID-based request identifier string.
     """
     return f"PBM-{uuid.uuid4().hex[:12]}"
-
 
 def _compute_service_hash(config: PlotBoundaryConfig) -> str:
     """Compute SHA-256 hash of the service configuration for provenance.
@@ -149,11 +140,9 @@ def _compute_service_hash(config: PlotBoundaryConfig) -> str:
     raw = json.dumps(config.to_dict(), sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Health status model
 # ---------------------------------------------------------------------------
-
 
 class HealthStatus:
     """Health check result container.
@@ -178,7 +167,7 @@ class HealthStatus:
     ) -> None:
         self.status = status
         self.checks = checks or {}
-        self.timestamp = timestamp or _utcnow()
+        self.timestamp = timestamp or utcnow()
         self.version = version
         self.uptime_seconds = uptime_seconds
 
@@ -192,11 +181,9 @@ class HealthStatus:
             "uptime_seconds": round(self.uptime_seconds, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: BoundaryResult
 # ---------------------------------------------------------------------------
-
 
 class BoundaryResult:
     """Result from a boundary create/update/retrieve operation.
@@ -248,7 +235,7 @@ class BoundaryResult:
         self.validation_errors = validation_errors or []
         self.version = version
         self.provenance_hash = provenance_hash
-        self.created_at = created_at or _utcnow()
+        self.created_at = created_at or utcnow()
         self.processing_time_ms = processing_time_ms
 
     def to_dict(self) -> Dict[str, Any]:
@@ -268,11 +255,9 @@ class BoundaryResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: ValidationResult
 # ---------------------------------------------------------------------------
-
 
 class ValidationResult:
     """Result from a boundary validation operation.
@@ -340,11 +325,9 @@ class ValidationResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: AreaResult
 # ---------------------------------------------------------------------------
-
 
 class AreaResult:
     """Result from an area calculation operation.
@@ -416,11 +399,9 @@ class AreaResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: OverlapResult
 # ---------------------------------------------------------------------------
-
 
 class OverlapResult:
     """Result from an overlap detection operation.
@@ -466,11 +447,9 @@ class OverlapResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: VersionResult
 # ---------------------------------------------------------------------------
-
 
 class VersionResult:
     """Result from a boundary versioning operation.
@@ -516,11 +495,9 @@ class VersionResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: SimplificationResult
 # ---------------------------------------------------------------------------
-
 
 class SimplificationResult:
     """Result from a boundary simplification operation.
@@ -588,11 +565,9 @@ class SimplificationResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: SplitMergeResult
 # ---------------------------------------------------------------------------
-
 
 class SplitMergeResult:
     """Result from a split or merge operation.
@@ -643,11 +618,9 @@ class SplitMergeResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: ExportResult
 # ---------------------------------------------------------------------------
-
 
 class ExportResult:
     """Result from a boundary export operation.
@@ -696,11 +669,9 @@ class ExportResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: ComplianceReportResult
 # ---------------------------------------------------------------------------
-
 
 class ComplianceReportResult:
     """Result from a compliance report generation.
@@ -749,7 +720,7 @@ class ComplianceReportResult:
         self.compliant_plots = compliant_plots
         self.non_compliant_plots = non_compliant_plots
         self.provenance_hash = provenance_hash
-        self.generated_at = generated_at or _utcnow()
+        self.generated_at = generated_at or utcnow()
         self.processing_time_ms = processing_time_ms
 
     def to_dict(self) -> Dict[str, Any]:
@@ -768,11 +739,9 @@ class ComplianceReportResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: BatchJobResult
 # ---------------------------------------------------------------------------
-
 
 class BatchJobResult:
     """Result container for a batch processing job.
@@ -816,7 +785,7 @@ class BatchJobResult:
         self.completed_items = completed_items
         self.failed_items = failed_items
         self.results = results or []
-        self.submitted_at = submitted_at or _utcnow()
+        self.submitted_at = submitted_at or utcnow()
         self.completed_at = completed_at
         self.processing_time_ms = processing_time_ms
 
@@ -835,11 +804,9 @@ class BatchJobResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # PlotBoundaryService
 # ---------------------------------------------------------------------------
-
 
 class PlotBoundaryService:
     """Facade for the Plot Boundary Manager Agent (AGENT-EUDR-006).
@@ -1178,7 +1145,7 @@ class PlotBoundaryService:
         health = HealthStatus(
             status=overall,
             checks=checks,
-            timestamp=_utcnow(),
+            timestamp=utcnow(),
             version="1.0.0",
             uptime_seconds=self.uptime_seconds,
         )
@@ -1201,7 +1168,7 @@ class PlotBoundaryService:
             "config_hash": self._config_hash[:12],
             "canonical_crs": self._config.canonical_crs,
             "area_threshold_hectares": self._config.area_threshold_hectares,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     # ------------------------------------------------------------------
@@ -1279,7 +1246,7 @@ class PlotBoundaryService:
                 ),
                 version=1,
                 provenance_hash=provenance_hash,
-                created_at=_utcnow(),
+                created_at=utcnow(),
                 processing_time_ms=elapsed_ms,
             )
 
@@ -1287,7 +1254,7 @@ class PlotBoundaryService:
                 self._boundaries[request_id] = {
                     "result": result.to_dict(),
                     "request": request,
-                    "created_at": _utcnow().isoformat(),
+                    "created_at": utcnow().isoformat(),
                     "version": 1,
                 }
 
@@ -1375,7 +1342,7 @@ class PlotBoundaryService:
                 ),
                 version=new_version,
                 provenance_hash=provenance_hash,
-                created_at=_utcnow(),
+                created_at=utcnow(),
                 processing_time_ms=elapsed_ms,
             )
 
@@ -1384,7 +1351,7 @@ class PlotBoundaryService:
                     "result": result.to_dict(),
                     "request": request,
                     "created_at": current.get("created_at"),
-                    "updated_at": _utcnow().isoformat(),
+                    "updated_at": utcnow().isoformat(),
                     "version": new_version,
                 }
 
@@ -1460,7 +1427,7 @@ class PlotBoundaryService:
 
         elapsed_ms = (time.monotonic() - start) * 1000
         provenance_hash = _compute_provenance_hash(
-            plot_id, "DELETE", _utcnow().isoformat(),
+            plot_id, "DELETE", utcnow().isoformat(),
         )
 
         self._metrics_counters["boundaries_deleted"] += 1
@@ -1474,7 +1441,7 @@ class PlotBoundaryService:
             "plot_id": plot_id,
             "status": "deleted",
             "provenance_hash": provenance_hash,
-            "deleted_at": _utcnow().isoformat(),
+            "deleted_at": utcnow().isoformat(),
             "processing_time_ms": round(elapsed_ms, 2),
         }
 
@@ -1588,7 +1555,7 @@ class PlotBoundaryService:
             completed_items=completed,
             failed_items=failed,
             results=results,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             processing_time_ms=elapsed_ms,
         )
 
@@ -3508,11 +3475,9 @@ class PlotBoundaryService:
         ]
         return sum(1 for e in engines if e is not None)
 
-
 # ---------------------------------------------------------------------------
 # FastAPI lifespan context manager
 # ---------------------------------------------------------------------------
-
 
 @asynccontextmanager
 async def lifespan(app: Any) -> AsyncIterator[None]:
@@ -3526,6 +3491,7 @@ async def lifespan(app: Any) -> AsyncIterator[None]:
 
         from fastapi import FastAPI
         from greenlang.agents.eudr.plot_boundary.setup import lifespan
+from greenlang.schemas import utcnow
 
         app = FastAPI(lifespan=lifespan)
 
@@ -3543,14 +3509,12 @@ async def lifespan(app: Any) -> AsyncIterator[None]:
     finally:
         await service.shutdown()
 
-
 # ---------------------------------------------------------------------------
 # Thread-safe singleton accessor
 # ---------------------------------------------------------------------------
 
 _service_instance: Optional[PlotBoundaryService] = None
 _service_lock = threading.Lock()
-
 
 def get_service(
     config: Optional[PlotBoundaryConfig] = None,
@@ -3578,7 +3542,6 @@ def get_service(
                 _service_instance = PlotBoundaryService(config=config)
     return _service_instance
 
-
 def set_service(service: PlotBoundaryService) -> None:
     """Replace the singleton PlotBoundaryService instance.
 
@@ -3592,7 +3555,6 @@ def set_service(service: PlotBoundaryService) -> None:
         _service_instance = service
     logger.info("PlotBoundaryService singleton replaced")
 
-
 def reset_service() -> None:
     """Reset the singleton PlotBoundaryService to None.
 
@@ -3603,7 +3565,6 @@ def reset_service() -> None:
     with _service_lock:
         _service_instance = None
     logger.debug("PlotBoundaryService singleton reset")
-
 
 # ---------------------------------------------------------------------------
 # Public API

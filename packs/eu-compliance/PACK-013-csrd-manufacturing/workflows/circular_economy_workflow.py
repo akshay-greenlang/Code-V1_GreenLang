@@ -27,20 +27,15 @@ from typing import Any, Callable, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC time with timezone info."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute SHA-256 provenance hash of arbitrary data."""
     return hashlib.sha256(
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
-
 
 class PhaseStatus(str, Enum):
     PENDING = "PENDING"
@@ -49,7 +44,6 @@ class PhaseStatus(str, Enum):
     FAILED = "FAILED"
     SKIPPED = "SKIPPED"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "PENDING"
     RUNNING = "RUNNING"
@@ -57,12 +51,11 @@ class WorkflowStatus(str, Enum):
     FAILED = "FAILED"
     PARTIAL = "PARTIAL"
 
-
 class WorkflowContext(BaseModel):
     """Shared state passed between workflow phases."""
     workflow_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     organization_id: str = Field(..., description="Organization identifier")
-    execution_timestamp: datetime = Field(default_factory=_utcnow)
+    execution_timestamp: datetime = Field(default_factory=utcnow)
     config: Dict[str, Any] = Field(default_factory=dict)
     phase_states: Dict[str, PhaseStatus] = Field(default_factory=dict)
     phase_outputs: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
@@ -78,7 +71,6 @@ class WorkflowContext(BaseModel):
     def mark_phase(self, phase_name: str, status: PhaseStatus) -> None:
         self.phase_states[phase_name] = status
 
-
 class PhaseResult(BaseModel):
     phase_name: str = Field(...)
     status: PhaseStatus = Field(...)
@@ -91,7 +83,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     records_processed: int = Field(default=0)
 
-
 class WorkflowResult(BaseModel):
     workflow_id: str = Field(...)
     workflow_name: str = Field(...)
@@ -102,7 +93,6 @@ class WorkflowResult(BaseModel):
     phases: List[PhaseResult] = Field(default_factory=list)
     summary: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 #  Input / Result
@@ -118,7 +108,6 @@ class MaterialFlow(BaseModel):
     recycled_content_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     is_critical_raw_material: bool = Field(default=False)
 
-
 class WasteStream(BaseModel):
     """Single waste stream record."""
     waste_id: str = Field(...)
@@ -127,7 +116,6 @@ class WasteStream(BaseModel):
     treatment_method: str = Field(default="landfill", description="recycle, reuse, recovery, landfill, incineration")
     hazardous: bool = Field(default=False)
     ewc_code: str = Field(default="", description="European Waste Catalogue code")
-
 
 class EPRScheme(BaseModel):
     """Extended Producer Responsibility scheme."""
@@ -139,7 +127,6 @@ class EPRScheme(BaseModel):
     fees_paid: bool = Field(default=False)
     reporting_complete: bool = Field(default=False)
 
-
 class CircularEconomyInput(BaseModel):
     """Input for circular economy workflow."""
     organization_id: str = Field(...)
@@ -150,14 +137,12 @@ class CircularEconomyInput(BaseModel):
     epr_schemes: List[EPRScheme] = Field(default_factory=list)
     skip_phases: List[str] = Field(default_factory=list)
 
-
 class CircularEconomyResult(WorkflowResult):
     """Result from the circular economy workflow."""
     mci_score: float = Field(default=0.0, description="Material Circularity Indicator 0-1")
     recycled_content: float = Field(default=0.0, description="Weighted recycled content %")
     waste_diversion: float = Field(default=0.0, description="Waste diversion rate %")
     epr_status: Dict[str, Any] = Field(default_factory=dict)
-
 
 # ---------------------------------------------------------------------------
 #  Phases
@@ -170,7 +155,7 @@ class MaterialFlowMappingPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Analyze material flows and classify by type."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -225,7 +210,7 @@ class MaterialFlowMappingPhase:
             errors.append(str(exc))
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -234,7 +219,6 @@ class MaterialFlowMappingPhase:
             provenance_hash=_hash_data(outputs),
         )
 
-
 class WasteAnalysisPhase:
     """Classify waste streams and compute diversion rates."""
 
@@ -242,7 +226,7 @@ class WasteAnalysisPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Analyze waste treatment methods and diversion metrics."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -290,7 +274,7 @@ class WasteAnalysisPhase:
             errors.append(str(exc))
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -310,7 +294,6 @@ class WasteAnalysisPhase:
         )
         return round(score * 100, 2)
 
-
 class CircularityMetricsPhase:
     """Compute Material Circularity Indicator (MCI) and related metrics."""
 
@@ -318,7 +301,7 @@ class CircularityMetricsPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Calculate MCI score per Ellen MacArthur Foundation methodology."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -366,7 +349,7 @@ class CircularityMetricsPhase:
             errors.append(str(exc))
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -375,7 +358,6 @@ class CircularityMetricsPhase:
             provenance_hash=_hash_data(outputs),
         )
 
-
 class EPRCompliancePhase:
     """Assess Extended Producer Responsibility scheme compliance."""
 
@@ -383,7 +365,7 @@ class EPRCompliancePhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Evaluate EPR registration, fees, and reporting status."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -443,7 +425,7 @@ class EPRCompliancePhase:
             errors.append(str(exc))
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -451,7 +433,6 @@ class EPRCompliancePhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 # ---------------------------------------------------------------------------
 #  Workflow Orchestrator
@@ -488,7 +469,7 @@ class CircularEconomyWorkflow:
 
     async def run(self, input_data: CircularEconomyInput) -> CircularEconomyResult:
         """Execute the complete 4-phase circular economy workflow."""
-        started_at = _utcnow()
+        started_at = utcnow()
         logger.info("Starting circular economy workflow %s", self.workflow_id)
         context = WorkflowContext(
             workflow_id=self.workflow_id,
@@ -524,7 +505,7 @@ class CircularEconomyWorkflow:
                 logger.error("Phase '%s' raised: %s", phase_name, exc, exc_info=True)
                 completed_phases.append(PhaseResult(
                     phase_name=phase_name, status=PhaseStatus.FAILED,
-                    started_at=_utcnow(), errors=[str(exc)],
+                    started_at=utcnow(), errors=[str(exc)],
                     provenance_hash=_hash_data({"error": str(exc)}),
                 ))
                 context.mark_phase(phase_name, PhaseStatus.FAILED)
@@ -538,7 +519,7 @@ class CircularEconomyWorkflow:
             )
             overall_status = WorkflowStatus.COMPLETED if all_ok else WorkflowStatus.PARTIAL
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         duration = (completed_at - started_at).total_seconds()
         summary = self._build_summary(context)
         provenance = _hash_data({

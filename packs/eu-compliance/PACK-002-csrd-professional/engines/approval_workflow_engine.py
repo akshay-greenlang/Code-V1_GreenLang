@@ -53,25 +53,19 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash."""
@@ -84,11 +78,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ApprovalLevel(IntEnum):
     """Hierarchical approval levels."""
@@ -97,7 +89,6 @@ class ApprovalLevel(IntEnum):
     REVIEWER = 2
     APPROVER = 3
     BOARD = 4
-
 
 class ApprovalStatus(str, Enum):
     """Status of an approval request."""
@@ -110,14 +101,12 @@ class ApprovalStatus(str, Enum):
     RETURNED = "returned"
     ESCALATED = "escalated"
 
-
 class DecisionType(str, Enum):
     """Type of approval decision."""
 
     APPROVE = "approve"
     REJECT = "reject"
     RETURN = "return"
-
 
 # Allowed status transitions
 _ALLOWED_TRANSITIONS: Dict[ApprovalStatus, Set[ApprovalStatus]] = {
@@ -135,11 +124,9 @@ _ALLOWED_TRANSITIONS: Dict[ApprovalStatus, Set[ApprovalStatus]] = {
     ApprovalStatus.APPROVED: set(),  # Terminal state (per level)
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class ApprovalLevelConfig(BaseModel):
     """Configuration for a single approval level."""
@@ -164,16 +151,14 @@ class ApprovalLevelConfig(BaseModel):
         True, description="Whether this level supports delegation"
     )
 
-
 class ApprovalComment(BaseModel):
     """A comment attached to an approval request."""
 
     comment_id: str = Field(default_factory=_new_uuid, description="Comment ID")
     author: str = Field(..., description="Comment author username")
-    timestamp: datetime = Field(default_factory=_utcnow, description="When posted")
+    timestamp: datetime = Field(default_factory=utcnow, description="When posted")
     text: str = Field(..., min_length=1, description="Comment text")
     level: ApprovalLevel = Field(..., description="Level at which comment was made")
-
 
 class ApprovalDecision(BaseModel):
     """A decision made by an approver."""
@@ -181,7 +166,7 @@ class ApprovalDecision(BaseModel):
     decision_id: str = Field(default_factory=_new_uuid, description="Decision ID")
     decision: DecisionType = Field(..., description="Decision type")
     approver: str = Field(..., description="Approver username")
-    timestamp: datetime = Field(default_factory=_utcnow, description="When decided")
+    timestamp: datetime = Field(default_factory=utcnow, description="When decided")
     comments: str = Field("", description="Decision comments")
     conditions: List[str] = Field(
         default_factory=list, description="Conditions for conditional approval"
@@ -190,7 +175,6 @@ class ApprovalDecision(BaseModel):
         ApprovalLevel.PREPARER, description="Level at which decision was made"
     )
     provenance_hash: str = Field("", description="SHA-256 hash of decision")
-
 
 class DelegationEntry(BaseModel):
     """Authority delegation from one user to another."""
@@ -202,7 +186,7 @@ class DelegationEntry(BaseModel):
         "all", description="Scope of delegation (workflow_id or 'all')"
     )
     valid_from: datetime = Field(
-        default_factory=_utcnow, description="Delegation start"
+        default_factory=utcnow, description="Delegation start"
     )
     valid_until: datetime = Field(
         ..., description="Delegation expiry"
@@ -216,7 +200,6 @@ class DelegationEntry(BaseModel):
     def validate_expiry(cls, v: datetime, info: Any) -> datetime:
         """Ensure delegation has a valid timeframe."""
         return v
-
 
 class ApprovalRequest(BaseModel):
     """An approval request moving through the workflow."""
@@ -242,11 +225,10 @@ class ApprovalRequest(BaseModel):
     quality_gate_results: Optional[Dict[str, Any]] = Field(
         None, description="Quality gate evaluation results"
     )
-    created_at: datetime = Field(default_factory=_utcnow, description="Creation time")
-    updated_at: datetime = Field(default_factory=_utcnow, description="Last update")
+    created_at: datetime = Field(default_factory=utcnow, description="Creation time")
+    updated_at: datetime = Field(default_factory=utcnow, description="Last update")
     escalation_count: int = Field(0, ge=0, description="Number of escalations")
     provenance_hash: str = Field("", description="SHA-256 provenance hash")
-
 
 class ApprovalChainResult(BaseModel):
     """Result of a complete approval chain execution."""
@@ -268,11 +250,9 @@ class ApprovalChainResult(BaseModel):
     total_elapsed_hours: float = Field(0.0, description="Total hours from start")
     provenance_hash: str = Field("", description="SHA-256 provenance hash")
 
-
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
-
 
 class ApprovalConfig(BaseModel):
     """Configuration for the approval workflow engine."""
@@ -290,11 +270,9 @@ class ApprovalConfig(BaseModel):
         48, ge=1, description="Default hours before escalation"
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ApprovalWorkflowEngine:
     """Four-level approval chain engine for CSRD reporting workflows.
@@ -366,7 +344,7 @@ class ApprovalWorkflowEngine:
             "chain_id": chain_id,
             "workflow_id": workflow_id,
             "levels": [lc.model_dump() for lc in sorted_levels],
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
         self._level_configs[workflow_id] = sorted_levels
 
@@ -402,11 +380,11 @@ class ApprovalWorkflowEngine:
         self._validate_transition(request.status, ApprovalStatus.SUBMITTED)
 
         request.status = ApprovalStatus.SUBMITTED
-        request.updated_at = _utcnow()
+        request.updated_at = utcnow()
 
         # Move to IN_REVIEW automatically
         request.status = ApprovalStatus.IN_REVIEW
-        request.updated_at = _utcnow()
+        request.updated_at = utcnow()
 
         request.provenance_hash = _compute_hash(request)
         self.requests[request.request_id] = request
@@ -487,7 +465,7 @@ class ApprovalWorkflowEngine:
                 request.current_level.name,
             )
 
-        request.updated_at = _utcnow()
+        request.updated_at = utcnow()
         request.provenance_hash = _compute_hash(request)
         self.requests[request_id] = request
         return request
@@ -521,7 +499,7 @@ class ApprovalWorkflowEngine:
         request.decisions.append(decision)
 
         request.status = ApprovalStatus.REJECTED
-        request.updated_at = _utcnow()
+        request.updated_at = utcnow()
         request.provenance_hash = _compute_hash(request)
         self.requests[request_id] = request
 
@@ -575,7 +553,7 @@ class ApprovalWorkflowEngine:
             request.current_level = prev_level
 
         request.status = ApprovalStatus.RETURNED
-        request.updated_at = _utcnow()
+        request.updated_at = utcnow()
         request.provenance_hash = _compute_hash(request)
         self.requests[request_id] = request
 
@@ -610,7 +588,7 @@ class ApprovalWorkflowEngine:
 
         request.escalation_count += 1
         request.status = ApprovalStatus.ESCALATED
-        request.updated_at = _utcnow()
+        request.updated_at = utcnow()
 
         request.comments.append(
             ApprovalComment(
@@ -702,7 +680,7 @@ class ApprovalWorkflowEngine:
                 request.current_level = next_level
                 request.status = ApprovalStatus.IN_REVIEW
 
-            request.updated_at = _utcnow()
+            request.updated_at = utcnow()
             request.provenance_hash = _compute_hash(request)
             self.requests[request_id] = request
 
@@ -743,7 +721,7 @@ class ApprovalWorkflowEngine:
         Returns:
             List of currently valid delegation entries.
         """
-        now = _utcnow()
+        now = utcnow()
         return [
             d
             for d in self.delegations
@@ -760,7 +738,7 @@ class ApprovalWorkflowEngine:
             List of requests assigned to or delegated to the user.
         """
         pending: List[ApprovalRequest] = []
-        now = _utcnow()
+        now = utcnow()
 
         # Build delegation map for this user
         delegated_from: Set[str] = set()
@@ -789,7 +767,7 @@ class ApprovalWorkflowEngine:
         Returns:
             List of overdue approval requests.
         """
-        now = _utcnow()
+        now = utcnow()
         overdue: List[ApprovalRequest] = []
 
         for request in self.requests.values():
@@ -839,7 +817,7 @@ class ApprovalWorkflowEngine:
 
         elapsed_hours = 0.0
         if latest_request:
-            elapsed = _utcnow() - latest_request.created_at
+            elapsed = utcnow() - latest_request.created_at
             elapsed_hours = elapsed.total_seconds() / 3600
 
         result = ApprovalChainResult(
@@ -956,7 +934,7 @@ class ApprovalWorkflowEngine:
             return True
 
         # Check delegations
-        now = _utcnow()
+        now = utcnow()
         for d in self.delegations:
             if d.delegate != user:
                 continue

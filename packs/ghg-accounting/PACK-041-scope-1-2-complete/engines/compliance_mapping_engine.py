@@ -73,25 +73,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -109,7 +103,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -118,7 +111,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -130,21 +122,17 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> float:
     """Round to 2 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round3(value: Any) -> float:
     """Round to 3 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class FrameworkType(str, Enum):
     """Supported disclosure frameworks.
@@ -165,7 +153,6 @@ class FrameworkType(str, Enum):
     SEC = "sec"
     SB_253 = "sb_253"
 
-
 class RequirementStatus(str, Enum):
     """Compliance status for an individual requirement.
 
@@ -178,7 +165,6 @@ class RequirementStatus(str, Enum):
     PARTIALLY_MET = "partially_met"
     NOT_MET = "not_met"
     NOT_APPLICABLE = "not_applicable"
-
 
 class ComplianceClassification(str, Enum):
     """Overall compliance classification.
@@ -193,7 +179,6 @@ class ComplianceClassification(str, Enum):
     PARTIALLY_COMPLIANT = "partially_compliant"
     NON_COMPLIANT = "non_compliant"
 
-
 class GapPriority(str, Enum):
     """Priority level for compliance gaps.
 
@@ -206,7 +191,6 @@ class GapPriority(str, Enum):
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Requirement Database
@@ -443,11 +427,9 @@ REQUIREMENT_DATABASE: List[Dict[str, Any]] = [
 ]
 """Master requirement database for compliance mapping."""
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class InventoryData(BaseModel):
     """GHG inventory data for compliance mapping.
@@ -513,11 +495,9 @@ class InventoryData(BaseModel):
     ghg_report: Optional[str] = Field(default=None)
     additional_fields: Dict[str, Any] = Field(default_factory=dict)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class ComplianceRequirement(BaseModel):
     """A single compliance requirement definition.
@@ -536,7 +516,6 @@ class ComplianceRequirement(BaseModel):
     data_field: str = Field(default="", description="Data field")
     mandatory: bool = Field(default=True, description="Mandatory")
     validation_rule: str = Field(default="", description="Validation rule")
-
 
 class RequirementResult(BaseModel):
     """Result of evaluating a single requirement.
@@ -559,7 +538,6 @@ class RequirementResult(BaseModel):
     gap_description: str = Field(default="", description="Gap description")
     remediation_action: str = Field(default="", description="Remediation action")
     priority: str = Field(default="medium", description="Priority")
-
 
 class FrameworkComplianceResult(BaseModel):
     """Compliance result for a single framework.
@@ -593,7 +571,6 @@ class FrameworkComplianceResult(BaseModel):
         default_factory=list, description="All results"
     )
 
-
 class CriticalGap(BaseModel):
     """A critical compliance gap requiring immediate attention.
 
@@ -609,7 +586,6 @@ class CriticalGap(BaseModel):
     description: str = Field(default="", description="Description")
     remediation_action: str = Field(default="", description="Remediation")
     estimated_effort: str = Field(default="", description="Effort estimate")
-
 
 class ComplianceMappingResult(BaseModel):
     """Complete compliance mapping result with full provenance.
@@ -633,7 +609,7 @@ class ComplianceMappingResult(BaseModel):
     result_id: str = Field(default_factory=_new_uuid, description="Result ID")
     engine_version: str = Field(default=_MODULE_VERSION, description="Version")
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp"
+        default_factory=utcnow, description="Timestamp"
     )
     processing_time_ms: float = Field(default=0.0, description="Processing time")
     frameworks: List[FrameworkComplianceResult] = Field(
@@ -657,7 +633,6 @@ class ComplianceMappingResult(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
@@ -672,7 +647,6 @@ _FRAMEWORK_NAMES: Dict[str, str] = {
     FrameworkType.SEC: "SEC Climate Disclosure Rule",
     FrameworkType.SB_253: "California SB 253",
 }
-
 
 class ComplianceMappingEngine:
     """Multi-framework GHG compliance mapping engine.
@@ -1206,7 +1180,6 @@ class ComplianceMappingEngine:
             return "Medium (days to weeks)"
         else:
             return "Low (hours to days)"
-
 
 # ---------------------------------------------------------------------------
 # Pydantic v2 model_rebuild for forward-reference resolution

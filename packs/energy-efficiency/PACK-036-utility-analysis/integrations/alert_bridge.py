@@ -42,20 +42,16 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import AlertSeverity, AlertStatus
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -73,19 +69,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
-
-class AlertSeverity(str, Enum):
-    """Alert severity levels."""
-
-    INFO = "info"
-    WARNING = "warning"
-    CRITICAL = "critical"
-
 
 class AlertChannel(str, Enum):
     """Notification delivery channels."""
@@ -94,7 +80,6 @@ class AlertChannel(str, Enum):
     SMS = "sms"
     WEBHOOK = "webhook"
     IN_APP = "in_app"
-
 
 class AlertType(str, Enum):
     """Types of utility analysis alerts."""
@@ -108,21 +93,9 @@ class AlertType(str, Enum):
     DATA_QUALITY = "data_quality"
     REGULATORY_CHANGE = "regulatory_change"
 
-
-class AlertStatus(str, Enum):
-    """Alert lifecycle status."""
-
-    ACTIVE = "active"
-    ACKNOWLEDGED = "acknowledged"
-    RESOLVED = "resolved"
-    DISMISSED = "dismissed"
-    EXPIRED = "expired"
-
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class AlertConfig(BaseModel):
     """Configuration for the Alert Bridge."""
@@ -143,7 +116,6 @@ class AlertConfig(BaseModel):
     data_quality_threshold: float = Field(default=80.0, ge=0, le=100)
     cooldown_minutes: int = Field(default=60, ge=0)
 
-
 class Alert(BaseModel):
     """An alert instance."""
 
@@ -158,13 +130,12 @@ class Alert(BaseModel):
     commodity: str = Field(default="")
     metric_value: Optional[float] = Field(None)
     threshold_value: Optional[float] = Field(None)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     acknowledged_at: Optional[datetime] = Field(None)
     resolved_at: Optional[datetime] = Field(None)
     dismissed_at: Optional[datetime] = Field(None)
     metadata: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
-
 
 class AlertRule(BaseModel):
     """An alert rule that triggers notifications."""
@@ -181,7 +152,6 @@ class AlertRule(BaseModel):
     description: str = Field(default="")
     commodity_filter: Optional[str] = Field(None)
 
-
 class NotificationResult(BaseModel):
     """Result of sending an alert notification."""
 
@@ -193,7 +163,6 @@ class NotificationResult(BaseModel):
     delivered_at: Optional[datetime] = Field(None)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class AlertSummary(BaseModel):
     """Summary of alert activity for a period."""
@@ -207,7 +176,6 @@ class AlertSummary(BaseModel):
     by_type: Dict[str, int] = Field(default_factory=dict)
     by_severity: Dict[str, int] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Default Alert Rules
@@ -288,11 +256,9 @@ DEFAULT_ALERT_RULES: List[AlertRule] = [
     ),
 ]
 
-
 # ---------------------------------------------------------------------------
 # AlertBridge
 # ---------------------------------------------------------------------------
-
 
 class AlertBridge:
     """Multi-channel notification and alert management for Utility Analysis.
@@ -382,7 +348,7 @@ class AlertBridge:
             channel=channels[0] if channels else AlertChannel.IN_APP,
             success=all_success,
             message=f"Alert sent to {len(channels)} channel(s)",
-            delivered_at=_utcnow() if all_success else None,
+            delivered_at=utcnow() if all_success else None,
             duration_ms=elapsed,
         )
 
@@ -471,7 +437,7 @@ class AlertBridge:
             return False
 
         alert.status = AlertStatus.ACKNOWLEDGED
-        alert.acknowledged_at = _utcnow()
+        alert.acknowledged_at = utcnow()
         self.logger.info("Alert acknowledged: %s", alert_id)
         return True
 
@@ -489,7 +455,7 @@ class AlertBridge:
             return False
 
         alert.status = AlertStatus.RESOLVED
-        alert.resolved_at = _utcnow()
+        alert.resolved_at = utcnow()
         self.logger.info("Alert resolved: %s", alert_id)
         return True
 
@@ -510,7 +476,7 @@ class AlertBridge:
             return False
 
         alert.status = AlertStatus.DISMISSED
-        alert.dismissed_at = _utcnow()
+        alert.dismissed_at = utcnow()
         self.logger.info("Alert dismissed: %s", alert_id)
         return True
 

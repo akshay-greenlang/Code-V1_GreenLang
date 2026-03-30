@@ -46,18 +46,13 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # Utility Helpers
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute a SHA-256 hash of arbitrary data."""
@@ -65,11 +60,9 @@ def _hash_data(data: Any) -> str:
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # Enums
 # =============================================================================
-
 
 class RegulatoryFramework(str, Enum):
     """Regulatory frameworks relevant to Article 9."""
@@ -85,7 +78,6 @@ class RegulatoryFramework(str, Enum):
     EBA_GUIDANCE = "eba_guidance"
     EIOPA_GUIDANCE = "eiopa_guidance"
 
-
 class UpdateSeverity(str, Enum):
     """Severity of a regulatory update."""
     CRITICAL = "critical"
@@ -93,7 +85,6 @@ class UpdateSeverity(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     INFORMATIONAL = "informational"
-
 
 class EventType(str, Enum):
     """Type of regulatory event."""
@@ -108,7 +99,6 @@ class EventType(str, Enum):
     EFFECTIVE_DATE = "effective_date"
     TRANSITION_PERIOD_END = "transition_period_end"
 
-
 class ComplianceStatus(str, Enum):
     """Compliance status for a regulatory requirement."""
     COMPLIANT = "compliant"
@@ -116,7 +106,6 @@ class ComplianceStatus(str, Enum):
     NON_COMPLIANT = "non_compliant"
     NOT_YET_APPLICABLE = "not_yet_applicable"
     UNDER_REVIEW = "under_review"
-
 
 class ImpactArea(str, Enum):
     """Area impacted by a regulatory change."""
@@ -134,11 +123,9 @@ class ImpactArea(str, Enum):
     NAMING_CONVENTIONS = "naming_conventions"
     TRANSITION_PLANS = "transition_plans"
 
-
 # =============================================================================
 # Data Models
 # =============================================================================
-
 
 class RegulatoryBridgeConfig(BaseModel):
     """Configuration for the Regulatory Bridge."""
@@ -169,7 +156,6 @@ class RegulatoryBridgeConfig(BaseModel):
     enable_provenance: bool = Field(
         default=True, description="Enable provenance hash tracking"
     )
-
 
 class RegulatoryEvent(BaseModel):
     """A single regulatory event or update."""
@@ -207,7 +193,6 @@ class RegulatoryEvent(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class ComplianceDeadline(BaseModel):
     """A compliance deadline for Article 9."""
     deadline_id: str = Field(default="", description="Deadline identifier")
@@ -233,7 +218,6 @@ class ComplianceDeadline(BaseModel):
         default=False, description="Whether deadline is overdue"
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class SFDR2TrackingStatus(BaseModel):
     """SFDR 2.0 development tracking status."""
@@ -263,7 +247,6 @@ class SFDR2TrackingStatus(BaseModel):
         default="", description="Last tracking update"
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class UpdateCheckResult(BaseModel):
     """Result of checking for regulatory updates."""
@@ -297,11 +280,9 @@ class UpdateCheckResult(BaseModel):
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
     execution_time_ms: float = Field(default=0.0, description="Execution time")
 
-
 # =============================================================================
 # Known Regulatory Events Database
 # =============================================================================
-
 
 KNOWN_REGULATORY_EVENTS: List[Dict[str, Any]] = [
     {
@@ -408,7 +389,6 @@ KNOWN_REGULATORY_EVENTS: List[Dict[str, Any]] = [
     },
 ]
 
-
 KNOWN_DEADLINES: List[Dict[str, Any]] = [
     {
         "deadline_id": "DL-SFDR-001",
@@ -462,11 +442,9 @@ KNOWN_DEADLINES: List[Dict[str, Any]] = [
     },
 ]
 
-
 # =============================================================================
 # Regulatory Bridge
 # =============================================================================
-
 
 class RegulatoryBridge:
     """Bridge for regulatory update tracking and compliance monitoring.
@@ -565,8 +543,8 @@ class RegulatoryBridge:
         elapsed_ms = (time.time() - start_time) * 1000
 
         result = UpdateCheckResult(
-            check_id=f"CHK-{_utcnow().strftime('%Y%m%d%H%M%S')}",
-            checked_at=_utcnow().isoformat(),
+            check_id=f"CHK-{utcnow().strftime('%Y%m%d%H%M%S')}",
+            checked_at=utcnow().isoformat(),
             frameworks_checked=self.config.monitored_frameworks,
             total_updates=len(events),
             critical_count=severity_counts.get("critical", 0),
@@ -663,7 +641,7 @@ class RegulatoryBridge:
             "areas_requiring_action": sum(
                 1 for a in impact_areas.values() if a["actions_required"] > 0
             ),
-            "assessed_at": _utcnow().isoformat(),
+            "assessed_at": utcnow().isoformat(),
         }
 
     def add_custom_event(
@@ -737,7 +715,7 @@ class RegulatoryBridge:
 
     def _get_upcoming_deadlines(self) -> List[ComplianceDeadline]:
         """Get upcoming compliance deadlines."""
-        now = _utcnow()
+        now = utcnow()
         deadlines = self._parse_deadlines(self._deadlines_db)
 
         for deadline in deadlines:
@@ -804,7 +782,7 @@ class RegulatoryBridge:
                 "Prepare data infrastructure for enhanced PAI thresholds",
                 "Review product naming against expected new guidelines",
             ],
-            last_updated=_utcnow().isoformat(),
+            last_updated=utcnow().isoformat(),
         )
 
         if self.config.enable_provenance:

@@ -31,6 +31,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "30.0.0"
 _PACK_ID = "PACK-030"
@@ -49,7 +51,6 @@ XBRL_TAGS: Dict[str, str] = {
     "targets_count": "gl:TCFDMetricsTargetsCount",
 }
 
-def _utcnow(): return datetime.now(timezone.utc).replace(microsecond=0)
 def _new_uuid(): return str(uuid.uuid4())
 def _compute_hash(data):
     raw = json.dumps(data, sort_keys=True, default=str) if isinstance(data, dict) else str(data)
@@ -78,7 +79,6 @@ def _pct_change(current, baseline):
     if b == 0: return Decimal("0.00")
     return ((c - b) / b * Decimal("100")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
-
 class TCFDMetricsTemplate:
     """TCFD Metrics & Targets template for PACK-030. Supports MD, HTML, JSON, PDF."""
 
@@ -87,7 +87,7 @@ class TCFDMetricsTemplate:
         self.generated_at: Optional[datetime] = None
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [
             self._md_header(data), self._md_executive_summary(data),
             self._md_emissions(data), self._md_intensity(data),
@@ -100,7 +100,7 @@ class TCFDMetricsTemplate:
         return content + f"\n\n<!-- Provenance: {_compute_hash(content)} -->"
 
     def render_html(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         parts = [
             self._html_header(data), self._html_executive_summary(data),
@@ -117,7 +117,7 @@ class TCFDMetricsTemplate:
         )
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         s1 = float(data.get("scope1", 0)); s2l = float(data.get("scope2_location", 0))
         s2m = float(data.get("scope2_market", 0)); s3 = float(data.get("scope3", 0))
         result = {

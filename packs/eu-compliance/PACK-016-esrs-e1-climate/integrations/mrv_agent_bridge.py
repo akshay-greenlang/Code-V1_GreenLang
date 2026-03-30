@@ -28,20 +28,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -54,11 +49,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class MRVScope(str, Enum):
     """GHG Protocol emission scopes."""
@@ -67,7 +60,6 @@ class MRVScope(str, Enum):
     SCOPE_2 = "scope_2"
     SCOPE_3 = "scope_3"
 
-
 class AgentStatus(str, Enum):
     """MRV agent availability status."""
 
@@ -75,11 +67,9 @@ class AgentStatus(str, Enum):
     UNAVAILABLE = "unavailable"
     DEGRADED = "degraded"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class MRVBridgeConfig(BaseModel):
     """Configuration for the MRV Agent Bridge."""
@@ -89,7 +79,6 @@ class MRVBridgeConfig(BaseModel):
     timeout_per_agent_seconds: int = Field(default=60, ge=10)
     parallel_imports: bool = Field(default=True)
 
-
 class MRVAgentMapping(BaseModel):
     """Mapping of MRV agent IDs to scope categories."""
 
@@ -98,7 +87,6 @@ class MRVAgentMapping(BaseModel):
     scope: MRVScope = Field(default=MRVScope.SCOPE_1)
     category: str = Field(default="")
     ghg_protocol_category: str = Field(default="")
-
 
 class ScopeImportResult(BaseModel):
     """Result of a scope import operation."""
@@ -117,7 +105,6 @@ class ScopeImportResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class AggregationResult(BaseModel):
     """Result of full emissions aggregation."""
 
@@ -134,7 +121,6 @@ class AggregationResult(BaseModel):
     gas_disaggregation: Dict[str, float] = Field(default_factory=dict)
     agents_queried: int = Field(default=0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # MRV Agent Mappings
@@ -169,11 +155,9 @@ CROSS_CUTTING_AGENTS: List[MRVAgentMapping] = [
     MRVAgentMapping(agent_id="MRV-030", agent_name="Audit Trail & Lineage", scope=MRVScope.SCOPE_3, category="audit_trail"),
 ]
 
-
 # ---------------------------------------------------------------------------
 # MRVAgentBridge
 # ---------------------------------------------------------------------------
-
 
 class MRVAgentBridge:
     """AGENT-MRV integration bridge for PACK-016.
@@ -211,7 +195,7 @@ class MRVAgentBridge:
         """
         result = ScopeImportResult(
             scope=MRVScope.SCOPE_1,
-            started_at=_utcnow(),
+            started_at=utcnow(),
         )
 
         try:
@@ -238,7 +222,7 @@ class MRVAgentBridge:
             result.errors.append(str(exc))
             logger.error("Scope 1 import failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at
@@ -256,7 +240,7 @@ class MRVAgentBridge:
         """
         result = ScopeImportResult(
             scope=MRVScope.SCOPE_2,
-            started_at=_utcnow(),
+            started_at=utcnow(),
         )
 
         try:
@@ -288,7 +272,7 @@ class MRVAgentBridge:
             result.errors.append(str(exc))
             logger.error("Scope 2 import failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at
@@ -306,7 +290,7 @@ class MRVAgentBridge:
         """
         result = ScopeImportResult(
             scope=MRVScope.SCOPE_3,
-            started_at=_utcnow(),
+            started_at=utcnow(),
         )
 
         try:
@@ -333,7 +317,7 @@ class MRVAgentBridge:
             result.errors.append(str(exc))
             logger.error("Scope 3 import failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at
@@ -349,7 +333,7 @@ class MRVAgentBridge:
         Returns:
             AggregationResult with total emissions and gas disaggregation.
         """
-        result = AggregationResult(started_at=_utcnow())
+        result = AggregationResult(started_at=utcnow())
 
         try:
             scope1 = self.import_scope1(context)
@@ -381,7 +365,7 @@ class MRVAgentBridge:
             result.status = "failed"
             logger.error("Emissions aggregation failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at

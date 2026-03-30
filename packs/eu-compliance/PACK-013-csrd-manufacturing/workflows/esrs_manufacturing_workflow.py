@@ -27,20 +27,15 @@ from typing import Any, Callable, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC time with timezone info."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute SHA-256 provenance hash of arbitrary data."""
     return hashlib.sha256(
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
-
 
 class PhaseStatus(str, Enum):
     PENDING = "PENDING"
@@ -49,7 +44,6 @@ class PhaseStatus(str, Enum):
     FAILED = "FAILED"
     SKIPPED = "SKIPPED"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "PENDING"
     RUNNING = "RUNNING"
@@ -57,12 +51,11 @@ class WorkflowStatus(str, Enum):
     FAILED = "FAILED"
     PARTIAL = "PARTIAL"
 
-
 class WorkflowContext(BaseModel):
     """Shared state passed between workflow phases."""
     workflow_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     organization_id: str = Field(..., description="Organization identifier")
-    execution_timestamp: datetime = Field(default_factory=_utcnow)
+    execution_timestamp: datetime = Field(default_factory=utcnow)
     config: Dict[str, Any] = Field(default_factory=dict)
     phase_states: Dict[str, PhaseStatus] = Field(default_factory=dict)
     phase_outputs: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
@@ -78,7 +71,6 @@ class WorkflowContext(BaseModel):
     def mark_phase(self, phase_name: str, status: PhaseStatus) -> None:
         self.phase_states[phase_name] = status
 
-
 class PhaseResult(BaseModel):
     phase_name: str = Field(...)
     status: PhaseStatus = Field(...)
@@ -91,7 +83,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     records_processed: int = Field(default=0)
 
-
 class WorkflowResult(BaseModel):
     workflow_id: str = Field(...)
     workflow_name: str = Field(...)
@@ -102,7 +93,6 @@ class WorkflowResult(BaseModel):
     phases: List[PhaseResult] = Field(default_factory=list)
     summary: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 #  Input / Result
@@ -133,7 +123,6 @@ class ESRSManufacturingInput(BaseModel):
     )
     skip_phases: List[str] = Field(default_factory=list)
 
-
 class ESRSManufacturingResult(WorkflowResult):
     """Result from the ESRS manufacturing workflow."""
     e1_metrics: Dict[str, Any] = Field(default_factory=dict)
@@ -144,7 +133,6 @@ class ESRSManufacturingResult(WorkflowResult):
     s1_metrics: Dict[str, Any] = Field(default_factory=dict)
     g1_metrics: Dict[str, Any] = Field(default_factory=dict)
     materiality_assessment: Dict[str, Any] = Field(default_factory=dict)
-
 
 # ---------------------------------------------------------------------------
 #  Phase 1: Materiality Assessment
@@ -168,7 +156,7 @@ class MaterialityAssessmentPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Assess double materiality for each ESRS topical standard."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -213,7 +201,7 @@ class MaterialityAssessmentPhase:
             errors.append(str(exc))
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -221,7 +209,6 @@ class MaterialityAssessmentPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 # ---------------------------------------------------------------------------
 #  Phase 2: Data Point Collection
@@ -234,7 +221,7 @@ class DataPointCollectionPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Collect data points for all material ESRS topics."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -283,7 +270,7 @@ class DataPointCollectionPhase:
             errors.append(str(exc))
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -291,7 +278,6 @@ class DataPointCollectionPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 # ---------------------------------------------------------------------------
 #  Phase 3: Disclosure Generation
@@ -304,7 +290,7 @@ class DisclosureGenerationPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Compute ESRS disclosure metrics for each material topic."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -396,7 +382,7 @@ class DisclosureGenerationPhase:
             errors.append(str(exc))
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -404,7 +390,6 @@ class DisclosureGenerationPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 # ---------------------------------------------------------------------------
 #  Phase 4: Audit Preparation
@@ -417,7 +402,7 @@ class AuditPreparationPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Assess audit readiness and generate evidence checklist."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -481,7 +466,7 @@ class AuditPreparationPhase:
             errors.append(str(exc))
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -489,7 +474,6 @@ class AuditPreparationPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 # ---------------------------------------------------------------------------
 #  Workflow Orchestrator
@@ -527,7 +511,7 @@ class ESRSManufacturingWorkflow:
 
     async def run(self, input_data: ESRSManufacturingInput) -> ESRSManufacturingResult:
         """Execute the complete 4-phase ESRS manufacturing workflow."""
-        started_at = _utcnow()
+        started_at = utcnow()
         logger.info("Starting ESRS manufacturing workflow %s", self.workflow_id)
         context = WorkflowContext(
             workflow_id=self.workflow_id,
@@ -563,7 +547,7 @@ class ESRSManufacturingWorkflow:
                 logger.error("Phase '%s' raised: %s", phase_name, exc, exc_info=True)
                 completed_phases.append(PhaseResult(
                     phase_name=phase_name, status=PhaseStatus.FAILED,
-                    started_at=_utcnow(), errors=[str(exc)],
+                    started_at=utcnow(), errors=[str(exc)],
                     provenance_hash=_hash_data({"error": str(exc)}),
                 ))
                 context.mark_phase(phase_name, PhaseStatus.FAILED)
@@ -577,7 +561,7 @@ class ESRSManufacturingWorkflow:
             )
             overall_status = WorkflowStatus.COMPLETED if all_ok else WorkflowStatus.PARTIAL
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         duration = (completed_at - started_at).total_seconds()
         summary = self._build_summary(context)
         provenance = _hash_data({

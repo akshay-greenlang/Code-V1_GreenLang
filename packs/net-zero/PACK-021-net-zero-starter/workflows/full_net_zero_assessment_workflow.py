@@ -66,31 +66,21 @@ logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "21.0.0"
 
-
 # =============================================================================
 # HELPERS
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
 
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
 
-
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a single workflow phase."""
@@ -101,7 +91,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -111,7 +100,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class MaturityLevel(str, Enum):
     """Net-zero maturity levels."""
 
@@ -120,7 +108,6 @@ class MaturityLevel(str, Enum):
     ESTABLISHED = "established"   # Score 41-60
     ADVANCED = "advanced"         # Score 61-80
     LEADING = "leading"           # Score 81-100
-
 
 # =============================================================================
 # MATURITY SCORING CRITERIA (Zero-Hallucination)
@@ -201,11 +188,9 @@ MATURITY_DIMENSIONS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -218,7 +203,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class ScorecardDimension(BaseModel):
     """Single dimension of the maturity scorecard."""
 
@@ -229,7 +213,6 @@ class ScorecardDimension(BaseModel):
     assessment: str = Field(default="")
     recommendations: List[str] = Field(default_factory=list)
 
-
 class NetZeroScorecard(BaseModel):
     """Net-zero maturity scorecard."""
 
@@ -238,7 +221,6 @@ class NetZeroScorecard(BaseModel):
     dimensions: List[ScorecardDimension] = Field(default_factory=list)
     strengths: List[str] = Field(default_factory=list)
     improvement_areas: List[str] = Field(default_factory=list)
-
 
 class StrategySummary(BaseModel):
     """Unified net-zero strategy document summary."""
@@ -268,7 +250,6 @@ class StrategySummary(BaseModel):
     vcmi_claim: Optional[str] = Field(None)
     key_actions: List[str] = Field(default_factory=list)
     key_risks: List[str] = Field(default_factory=list)
-
 
 class FullAssessmentConfig(BaseModel):
     """Configuration combining all sub-workflow configs."""
@@ -304,7 +285,6 @@ class FullAssessmentConfig(BaseModel):
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
 
-
 class FullAssessmentResult(BaseModel):
     """Complete result from the full net-zero assessment workflow."""
 
@@ -321,11 +301,9 @@ class FullAssessmentResult(BaseModel):
     strategy_summary: StrategySummary = Field(default_factory=StrategySummary)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class FullNetZeroAssessmentWorkflow:
     """
@@ -338,6 +316,8 @@ class FullNetZeroAssessmentWorkflow:
     This orchestrator delegates to sub-workflow classes and aggregates
     their outputs.  Zero-hallucination: all numeric values propagate
     from deterministic sub-workflow calculations.
+
+from greenlang.schemas import utcnow
 
     Attributes:
         workflow_id: Unique execution identifier.
@@ -378,7 +358,7 @@ class FullNetZeroAssessmentWorkflow:
         Returns:
             FullAssessmentResult with all sub-results and unified strategy.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting full net-zero assessment workflow %s", self.workflow_id,
         )
@@ -422,7 +402,7 @@ class FullNetZeroAssessmentWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         result = FullAssessmentResult(
             workflow_id=self.workflow_id,
             status=overall_status,
@@ -452,7 +432,7 @@ class FullNetZeroAssessmentWorkflow:
 
     async def _phase_baseline(self, config: FullAssessmentConfig) -> PhaseResult:
         """Run onboarding workflow to establish GHG baseline."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -477,7 +457,7 @@ class FullNetZeroAssessmentWorkflow:
             warnings.append(str(exc))
             status = PhaseStatus.FAILED
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="baseline",
             status=status,
@@ -493,7 +473,7 @@ class FullNetZeroAssessmentWorkflow:
 
     async def _phase_targets(self, config: FullAssessmentConfig) -> PhaseResult:
         """Run target setting workflow to define SBTi-aligned targets."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -544,7 +524,7 @@ class FullNetZeroAssessmentWorkflow:
             warnings.append(str(exc))
             status = PhaseStatus.FAILED
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="targets",
             status=status,
@@ -560,7 +540,7 @@ class FullNetZeroAssessmentWorkflow:
 
     async def _phase_reduction(self, config: FullAssessmentConfig) -> PhaseResult:
         """Run reduction planning workflow to build MACC and roadmap."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -605,7 +585,7 @@ class FullNetZeroAssessmentWorkflow:
             warnings.append(str(exc))
             status = PhaseStatus.FAILED
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="reduction",
             status=status,
@@ -621,7 +601,7 @@ class FullNetZeroAssessmentWorkflow:
 
     async def _phase_offsets(self, config: FullAssessmentConfig) -> PhaseResult:
         """Run offset strategy workflow for residual emissions."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -659,7 +639,7 @@ class FullNetZeroAssessmentWorkflow:
             warnings.append(str(exc))
             status = PhaseStatus.FAILED
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="offsets",
             status=status,
@@ -675,7 +655,7 @@ class FullNetZeroAssessmentWorkflow:
 
     async def _phase_scorecard(self, config: FullAssessmentConfig) -> PhaseResult:
         """Calculate net-zero maturity scorecard."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         dimensions: List[ScorecardDimension] = []
@@ -727,7 +707,7 @@ class FullNetZeroAssessmentWorkflow:
         outputs["strengths"] = len(strengths)
         outputs["improvements"] = len(improvements)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Scorecard: %.1f/100 (%s)", total_score, maturity.value)
         return PhaseResult(
             phase_name="scorecard",
@@ -998,7 +978,7 @@ class FullNetZeroAssessmentWorkflow:
 
     async def _phase_strategy(self, config: FullAssessmentConfig) -> PhaseResult:
         """Compile all outputs into a unified net-zero strategy document."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -1059,7 +1039,7 @@ class FullNetZeroAssessmentWorkflow:
         key_risks = self._identify_key_risks(config)
 
         self._strategy = StrategySummary(
-            assessment_date=_utcnow().strftime("%Y-%m-%d"),
+            assessment_date=utcnow().strftime("%Y-%m-%d"),
             base_year=base_year,
             baseline_total_tco2e=round(baseline.total_tco2e, 4),
             scope1_tco2e=round(baseline.scope1_total_tco2e, 4),
@@ -1093,7 +1073,7 @@ class FullNetZeroAssessmentWorkflow:
         outputs["key_action_count"] = len(key_actions)
         outputs["key_risk_count"] = len(key_risks)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Strategy document compiled")
         return PhaseResult(
             phase_name="strategy",

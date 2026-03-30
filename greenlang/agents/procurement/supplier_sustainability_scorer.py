@@ -36,14 +36,13 @@ from pydantic import BaseModel, Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.agents.categories import AgentCategory
+from greenlang.schemas.enums import RiskLevel
 
 logger = logging.getLogger(__name__)
-
 
 # =============================================================================
 # ENUMS AND CONSTANTS
 # =============================================================================
-
 
 class ScoreCategory(str, Enum):
     """Scoring categories."""
@@ -53,22 +52,12 @@ class ScoreCategory(str, Enum):
     CLIMATE = "climate"
     OVERALL = "overall"
 
-
 class DataQuality(str, Enum):
     """Data quality levels."""
     HIGH = "high"  # Verified, audited data
     MEDIUM = "medium"  # Self-reported with some verification
     LOW = "low"  # Self-reported only
     ESTIMATED = "estimated"  # No supplier data
-
-
-class RiskLevel(str, Enum):
-    """Supplier risk levels."""
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
-    CRITICAL = "critical"
-
 
 class PerformanceTier(str, Enum):
     """Supplier performance tiers."""
@@ -77,7 +66,6 @@ class PerformanceTier(str, Enum):
     DEVELOPING = "developing"
     LAGGING = "lagging"
     NON_COMPLIANT = "non_compliant"
-
 
 # Scoring weights
 DEFAULT_WEIGHTS = {
@@ -95,11 +83,9 @@ DATA_QUALITY_MULTIPLIERS = {
     DataQuality.ESTIMATED.value: 0.5,
 }
 
-
 # =============================================================================
 # PYDANTIC MODELS
 # =============================================================================
-
 
 class SupplierProfile(BaseModel):
     """Supplier profile for sustainability assessment."""
@@ -147,7 +133,6 @@ class SupplierProfile(BaseModel):
     data_quality: DataQuality = Field(default=DataQuality.MEDIUM)
     last_assessment_date: Optional[datetime] = Field(None)
 
-
 class SustainabilityScore(BaseModel):
     """Detailed sustainability score breakdown."""
     overall_score: float = Field(..., ge=0, le=100)
@@ -163,7 +148,6 @@ class SustainabilityScore(BaseModel):
     # Data quality adjusted
     data_quality_factor: float = Field(..., ge=0, le=1)
     confidence_level: float = Field(..., ge=0, le=100)
-
 
 class SupplierAssessment(BaseModel):
     """Complete supplier sustainability assessment."""
@@ -192,7 +176,6 @@ class SupplierAssessment(BaseModel):
     industry_percentile: Optional[float] = Field(None, ge=0, le=100)
     peer_comparison: Optional[Dict[str, Any]] = Field(None)
 
-
 class SupplierScorerInput(BaseModel):
     """Input for supplier scoring."""
     operation: str = Field(
@@ -209,7 +192,6 @@ class SupplierScorerInput(BaseModel):
     industry_benchmark: Optional[str] = Field(None)
     minimum_score_threshold: float = Field(default=0, ge=0, le=100)
 
-
 class SupplierScorerOutput(BaseModel):
     """Output from supplier scoring."""
     success: bool
@@ -225,11 +207,9 @@ class SupplierScorerOutput(BaseModel):
     calculation_trace: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # SUPPLIER SUSTAINABILITY SCORER AGENT
 # =============================================================================
-
 
 class SupplierSustainabilityScorerAgent(BaseAgent):
     """
@@ -774,7 +754,6 @@ class SupplierSustainabilityScorerAgent(BaseAgent):
         result.operation = "compare_suppliers"
 
         return result
-
 
 # =============================================================================
 # MODULE EXPORTS

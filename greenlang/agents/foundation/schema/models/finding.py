@@ -31,11 +31,12 @@ GL-FOUND-X-002: Schema Compiler & Validator
 from __future__ import annotations
 
 import re
-from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
+from greenlang.schemas.enums import Severity
+from greenlang.schemas import GreenLangBase
 
 # JSON Pointer pattern (RFC 6901)
 JSON_POINTER_PATTERN = re.compile(r"^(/[^/]*)*$")
@@ -43,54 +44,7 @@ JSON_POINTER_PATTERN = re.compile(r"^(/[^/]*)*$")
 # GreenLang error code pattern
 ERROR_CODE_PATTERN = re.compile(r"^GLSCHEMA-[EWI]\d{3}$")
 
-
-class Severity(str, Enum):
-    """
-    Severity level for validation findings.
-
-    Defines how severe a finding is:
-    - ERROR: Validation failure, payload is invalid
-    - WARNING: Potential issue, but payload may still be usable
-    - INFO: Informational note, no action required
-
-    Example:
-        >>> severity = Severity.ERROR
-        >>> print(severity.value)
-        error
-    """
-
-    ERROR = "error"
-    WARNING = "warning"
-    INFO = "info"
-
-    def is_error(self) -> bool:
-        """Check if this is an error severity."""
-        return self == Severity.ERROR
-
-    def is_warning(self) -> bool:
-        """Check if this is a warning severity."""
-        return self == Severity.WARNING
-
-    def is_info(self) -> bool:
-        """Check if this is an info severity."""
-        return self == Severity.INFO
-
-    def numeric_level(self) -> int:
-        """
-        Get numeric severity level (higher = more severe).
-
-        Returns:
-            Integer severity level: ERROR=3, WARNING=2, INFO=1
-        """
-        levels = {
-            Severity.ERROR: 3,
-            Severity.WARNING: 2,
-            Severity.INFO: 1,
-        }
-        return levels[self]
-
-
-class FindingHint(BaseModel):
+class FindingHint(GreenLangBase):
     """
     Hint for resolving a validation finding.
 
@@ -159,8 +113,7 @@ class FindingHint(BaseModel):
 
         return v
 
-
-class Finding(BaseModel):
+class Finding(GreenLangBase):
     """
     A single validation finding (error, warning, or info).
 

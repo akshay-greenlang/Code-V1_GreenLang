@@ -74,6 +74,7 @@ from typing import Any, Dict, List, Optional, Union
 
 import yaml
 from pydantic import BaseModel, Field, field_validator, model_validator
+from greenlang.schemas.enums import ReportFormat
 
 logger = logging.getLogger(__name__)
 
@@ -181,13 +182,6 @@ class Scope3Method(str, Enum):
     SPEND_BASED = "SPEND_BASED"
     ACTIVITY_BASED = "ACTIVITY_BASED"
     HYBRID = "HYBRID"
-
-
-class ReportFormat(str, Enum):
-    """Output format for SME reports (PDF and Excel only)."""
-
-    PDF = "PDF"
-    EXCEL = "EXCEL"
 
 
 class OffsetStrategy(str, Enum):

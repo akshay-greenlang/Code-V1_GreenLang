@@ -51,6 +51,7 @@ from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 from uuid import uuid4
 
 from pydantic import BaseModel, Field, validator
+from greenlang.schemas.enums import HealthStatus
 
 logger = logging.getLogger(__name__)
 
@@ -85,14 +86,6 @@ class ProtocolState(str, Enum):
     RECONNECTING = "reconnecting"
     ERROR = "error"
     STOPPED = "stopped"
-
-
-class HealthStatus(str, Enum):
-    """Health status enumeration."""
-    HEALTHY = "healthy"
-    DEGRADED = "degraded"
-    UNHEALTHY = "unhealthy"
-    UNKNOWN = "unknown"
 
 
 # =============================================================================

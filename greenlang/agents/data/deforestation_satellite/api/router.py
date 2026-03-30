@@ -39,6 +39,7 @@ Status: Production Ready
 
 import logging
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +66,7 @@ except ImportError:
 
 if FASTAPI_AVAILABLE:
 
-    class AcquireImageryBody(BaseModel):
+    class AcquireImageryBody(GreenLangBase):
         """Request body for acquiring satellite imagery."""
         polygon_coordinates: List[List[float]] = Field(
             ..., description="List of [lon, lat] coordinate pairs defining the polygon",
@@ -83,7 +84,7 @@ if FASTAPI_AVAILABLE:
             None, ge=0, le=100, description="Max cloud cover percentage",
         )
 
-    class TimeSeriesBody(BaseModel):
+    class TimeSeriesBody(GreenLangBase):
         """Request body for acquiring a time series of imagery."""
         polygon_coordinates: List[List[float]] = Field(
             ..., description="Polygon coordinate pairs",
@@ -94,14 +95,14 @@ if FASTAPI_AVAILABLE:
         max_cloud_cover: Optional[int] = Field(None, ge=0, le=100)
         interval_days: int = Field(default=30, ge=1, description="Days between acquisitions")
 
-    class CalculateIndicesBody(BaseModel):
+    class CalculateIndicesBody(GreenLangBase):
         """Request body for calculating vegetation indices."""
         scene_id: str = Field(..., description="Scene ID to compute indices for")
         indices: List[str] = Field(
             ..., description="List of index names (ndvi, evi, ndwi, nbr, savi, msavi, ndmi)",
         )
 
-    class DetectChangeBody(BaseModel):
+    class DetectChangeBody(GreenLangBase):
         """Request body for forest change detection."""
         polygon_coordinates: List[List[float]] = Field(
             ..., description="Polygon coordinate pairs",
@@ -112,12 +113,12 @@ if FASTAPI_AVAILABLE:
         post_end_date: str = Field(..., description="Post-change end date")
         satellite: Optional[str] = Field(None, description="Satellite source")
 
-    class TrendAnalysisBody(BaseModel):
+    class TrendAnalysisBody(GreenLangBase):
         """Request body for NDVI trend analysis."""
         ndvi_series: List[float] = Field(..., description="NDVI values over time")
         dates: List[str] = Field(..., description="ISO date strings for each value")
 
-    class QueryAlertsBody(BaseModel):
+    class QueryAlertsBody(GreenLangBase):
         """Request body for querying deforestation alerts."""
         polygon_coordinates: List[List[float]] = Field(
             ..., description="Polygon coordinate pairs",
@@ -131,7 +132,7 @@ if FASTAPI_AVAILABLE:
             None, description="Minimum confidence level (low, nominal, high)",
         )
 
-    class FilterCutoffBody(BaseModel):
+    class FilterCutoffBody(GreenLangBase):
         """Request body for filtering alerts by EUDR cutoff."""
         alerts: List[Dict[str, Any]] = Field(
             ..., description="List of alert dictionaries to filter",
@@ -140,7 +141,7 @@ if FASTAPI_AVAILABLE:
             default="2020-12-31", description="EUDR cutoff date",
         )
 
-    class CheckBaselineBody(BaseModel):
+    class CheckBaselineBody(GreenLangBase):
         """Request body for baseline check at a point."""
         latitude: float = Field(..., description="Latitude of the point")
         longitude: float = Field(..., description="Longitude of the point")
@@ -149,7 +150,7 @@ if FASTAPI_AVAILABLE:
             None, description="Observation date override",
         )
 
-    class CheckBaselinePolygonBody(BaseModel):
+    class CheckBaselinePolygonBody(GreenLangBase):
         """Request body for baseline check over a polygon."""
         polygon_coordinates: List[List[float]] = Field(
             ..., description="Polygon coordinate pairs",
@@ -158,20 +159,20 @@ if FASTAPI_AVAILABLE:
         observation_date: Optional[str] = Field(None, description="Observation date override")
         sample_points: int = Field(default=9, ge=1, description="Sample points for grid")
 
-    class ClassifyBody(BaseModel):
+    class ClassifyBody(GreenLangBase):
         """Request body for land cover classification."""
         ndvi: float = Field(..., description="NDVI value (-1 to 1)")
         evi: Optional[float] = Field(None, description="EVI value")
         ndwi: Optional[float] = Field(None, description="NDWI value")
         savi: Optional[float] = Field(None, description="SAVI value")
 
-    class ClassifyBatchBody(BaseModel):
+    class ClassifyBatchBody(GreenLangBase):
         """Request body for batch land cover classification."""
         ndvi_values: List[float] = Field(..., description="List of NDVI values")
         evi_values: Optional[List[float]] = Field(None, description="List of EVI values")
         ndwi_values: Optional[List[float]] = Field(None, description="List of NDWI values")
 
-    class GenerateReportBody(BaseModel):
+    class GenerateReportBody(GreenLangBase):
         """Request body for generating a compliance report."""
         baseline_assessment_id: Optional[str] = Field(
             None, description="Existing baseline assessment ID",
@@ -184,7 +185,7 @@ if FASTAPI_AVAILABLE:
         alert_start_date: str = Field(default="2020-01-01", description="Alert query start")
         alert_end_date: str = Field(default="2025-12-31", description="Alert query end")
 
-    class StartMonitoringBody(BaseModel):
+    class StartMonitoringBody(GreenLangBase):
         """Request body for starting a monitoring job."""
         polygon_coordinates: List[List[float]] = Field(
             ..., description="Polygon coordinate pairs",

@@ -41,26 +41,21 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ValidationSeverity
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -69,13 +64,11 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
-
 
 class CollectionPhase(str, Enum):
     PERIOD_SETUP = "period_setup"
@@ -84,12 +77,10 @@ class CollectionPhase(str, Enum):
     VALIDATION_REVIEW = "validation_review"
     APPROVAL = "approval"
 
-
 class EmissionScope(str, Enum):
     SCOPE_1 = "scope_1"
     SCOPE_2 = "scope_2"
     SCOPE_3 = "scope_3"
-
 
 class SubmissionStatus(str, Enum):
     NOT_STARTED = "not_started"
@@ -99,18 +90,10 @@ class SubmissionStatus(str, Enum):
     APPROVED = "approved"
     REJECTED = "rejected"
 
-
-class ValidationSeverity(str, Enum):
-    ERROR = "error"
-    WARNING = "warning"
-    INFO = "info"
-
-
 class ApprovalDecision(str, Enum):
     APPROVED = "approved"
     REJECTED = "rejected"
     CONDITIONAL = "conditional"
-
 
 class TemplateType(str, Enum):
     STATIONARY_COMBUSTION = "stationary_combustion"
@@ -121,7 +104,6 @@ class TemplateType(str, Enum):
     STEAM_HEATING = "steam_heating"
     SCOPE_3_CATEGORIES = "scope_3_categories"
     GENERAL = "general"
-
 
 # =============================================================================
 # REFERENCE DATA
@@ -140,11 +122,9 @@ YOY_THRESHOLD_PCT = Decimal("30")  # Flag if >30% change year-over-year
 MINIMUM_COMPLETENESS_PCT = Decimal("90")
 RANGE_CHECK_SIGMA = Decimal("3.0")  # 3-sigma range check
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -156,7 +136,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class CollectionRoundConfig(BaseModel):
     """Configuration for a data collection round."""
@@ -170,7 +149,6 @@ class CollectionRoundConfig(BaseModel):
     reminder_interval_days: int = Field(7, ge=1, description="Reminder interval")
     escalation_after_days: int = Field(14, ge=1, description="Escalation after N days")
 
-
 class SiteTemplate(BaseModel):
     """Data collection template assigned to a site."""
     template_id: str = Field(default_factory=_new_uuid)
@@ -181,7 +159,6 @@ class SiteTemplate(BaseModel):
     fields: List[Dict[str, Any]] = Field(default_factory=list)
     instructions: str = Field("")
     due_date: str = Field("")
-
 
 class DataEntry(BaseModel):
     """A single data entry submitted by a site."""
@@ -203,7 +180,6 @@ class DataEntry(BaseModel):
     submitted_at: str = Field("")
     notes: str = Field("")
 
-
 class ValidationFinding(BaseModel):
     """A validation finding against a data entry."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -218,7 +194,6 @@ class ValidationFinding(BaseModel):
     expected_range: Optional[str] = Field(None)
     prior_year_value: Optional[str] = Field(None)
     auto_resolved: bool = Field(False)
-
 
 class SiteSubmissionRecord(BaseModel):
     """Submission record for a single site."""
@@ -235,7 +210,6 @@ class SiteSubmissionRecord(BaseModel):
     reviewed_at: str = Field("")
     rejection_reason: str = Field("")
     provenance_hash: str = Field("")
-
 
 class DataCollectionInput(BaseModel):
     """Input for the data collection workflow."""
@@ -255,7 +229,6 @@ class DataCollectionInput(BaseModel):
         Decimal("95"), description="Auto-approve above this completeness %"
     )
     skip_phases: List[str] = Field(default_factory=list)
-
 
 class DataCollectionResult(BaseModel):
     """Output from the data collection workflow."""
@@ -280,11 +253,9 @@ class DataCollectionResult(BaseModel):
     started_at: str = Field("")
     completed_at: str = Field("")
 
-
 # =============================================================================
 # WORKFLOW CLASS
 # =============================================================================
-
 
 class DataCollectionWorkflow:
     """
@@ -324,7 +295,7 @@ class DataCollectionWorkflow:
 
     def execute(self, input_data: DataCollectionInput) -> DataCollectionResult:
         """Execute the full 5-phase data collection workflow."""
-        start = _utcnow()
+        start = utcnow()
         result = DataCollectionResult(
             organisation_id=input_data.organisation_id,
             round_id=input_data.round_config.round_id,
@@ -347,17 +318,17 @@ class DataCollectionWorkflow:
                 ))
                 continue
 
-            phase_start = _utcnow()
+            phase_start = utcnow()
             try:
                 phase_out = phase_methods[phase](input_data, result)
-                elapsed = (_utcnow() - phase_start).total_seconds()
+                elapsed = (utcnow() - phase_start).total_seconds()
                 result.phase_results.append(PhaseResult(
                     phase_name=phase.value, phase_number=idx,
                     status=PhaseStatus.COMPLETED, duration_seconds=elapsed,
                     outputs=phase_out, provenance_hash=_compute_hash(str(phase_out)),
                 ))
             except Exception as exc:
-                elapsed = (_utcnow() - phase_start).total_seconds()
+                elapsed = (utcnow() - phase_start).total_seconds()
                 logger.error("Phase %s failed: %s", phase.value, exc, exc_info=True)
                 result.phase_results.append(PhaseResult(
                     phase_name=phase.value, phase_number=idx,
@@ -371,7 +342,7 @@ class DataCollectionWorkflow:
         if result.status != WorkflowStatus.FAILED:
             result.status = WorkflowStatus.COMPLETED
 
-        end = _utcnow()
+        end = utcnow()
         result.completed_at = end.isoformat()
         result.duration_seconds = (end - start).total_seconds()
         result.provenance_hash = _compute_hash(
@@ -600,7 +571,7 @@ class DataCollectionWorkflow:
                 reporting_period=raw.get("reporting_period", ""),
                 evidence_reference=raw.get("evidence_reference", ""),
                 submitted_by=raw.get("submitted_by", ""),
-                submitted_at=raw.get("submitted_at", _utcnow().isoformat()),
+                submitted_at=raw.get("submitted_at", utcnow().isoformat()),
                 notes=raw.get("notes", ""),
             )
             entries_by_site.setdefault(site_id, []).append(entry)
@@ -823,7 +794,7 @@ class DataCollectionWorkflow:
                 warning_count=warning_count,
                 approval_decision=decision,
                 reviewer="system_auto" if decision != ApprovalDecision.CONDITIONAL else "",
-                reviewed_at=_utcnow().isoformat(),
+                reviewed_at=utcnow().isoformat(),
                 rejection_reason=rejection_reason,
                 provenance_hash=prov,
             )
@@ -847,7 +818,6 @@ class DataCollectionWorkflow:
             ),
             "overall_completeness_pct": float(result.overall_completeness_pct),
         }
-
 
 # =============================================================================
 # MODULE EXPORTS

@@ -44,25 +44,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -74,7 +68,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -127,11 +120,9 @@ NAMESPACE_ELEMENT_COUNTS: Dict[str, int] = {
     "esrs-g1": 118,
 }
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class XBRLDataType(str, Enum):
     """XBRL data types for ESRS elements."""
@@ -146,18 +137,15 @@ class XBRLDataType(str, Enum):
     TEXT_BLOCK = "nonnum:textBlockItemType"
     ENUMERATION = "enum2:enumerationItemType"
 
-
 class PeriodType(str, Enum):
     """XBRL period types."""
 
     DURATION = "duration"
     INSTANT = "instant"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class XBRLBridgeConfig(BaseModel):
     """Configuration for the XBRL Tagging Bridge."""
@@ -175,7 +163,6 @@ class XBRLBridgeConfig(BaseModel):
     language: str = Field(default="en")
     currency: str = Field(default="EUR")
 
-
 class XBRLElement(BaseModel):
     """XBRL taxonomy element definition."""
 
@@ -188,7 +175,6 @@ class XBRLElement(BaseModel):
     period_type: PeriodType = Field(default=PeriodType.DURATION)
     is_abstract: bool = Field(default=False)
     is_mandatory: bool = Field(default=False)
-
 
 class XBRLTag(BaseModel):
     """An XBRL/iXBRL tag applied to a disclosure value."""
@@ -204,7 +190,6 @@ class XBRLTag(BaseModel):
     period_end: str = Field(default="")
     decimals: Optional[int] = Field(None)
     ixbrl_tag: str = Field(default="", description="Rendered iXBRL inline tag")
-
 
 class TaggingResult(BaseModel):
     """Result of a tagging operation."""
@@ -222,7 +207,6 @@ class TaggingResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class ValidationResult(BaseModel):
     """Result of a taxonomy validation operation."""
 
@@ -237,11 +221,9 @@ class ValidationResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # XBRLTaggingBridge
 # ---------------------------------------------------------------------------
-
 
 class XBRLTaggingBridge:
     """XBRL/iXBRL tagging bridge for PACK-017.
@@ -382,7 +364,7 @@ class XBRLTaggingBridge:
         Returns:
             TaggingResult with all generated tags.
         """
-        result = TaggingResult(started_at=_utcnow())
+        result = TaggingResult(started_at=utcnow())
 
         try:
             if standard:
@@ -430,7 +412,7 @@ class XBRLTaggingBridge:
             result.errors.append(str(exc))
             logger.error("iXBRL generation failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (result.completed_at - result.started_at).total_seconds() * 1000
         return result

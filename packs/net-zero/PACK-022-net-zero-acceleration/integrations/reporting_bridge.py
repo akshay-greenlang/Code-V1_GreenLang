@@ -39,26 +39,19 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -71,11 +64,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Agent Stubs
 # ---------------------------------------------------------------------------
-
 
 class _AgentStub:
     """Stub for unavailable reporting app modules."""
@@ -94,7 +85,6 @@ class _AgentStub:
             }
         return _stub_method
 
-
 def _try_import_app(app_id: str, module_path: str) -> Any:
     """Try to import a reporting app with graceful fallback.
 
@@ -107,16 +97,15 @@ def _try_import_app(app_id: str, module_path: str) -> Any:
     """
     try:
         import importlib
+
         return importlib.import_module(module_path)
     except ImportError:
         logger.debug("App %s not available, using stub", app_id)
         return _AgentStub(app_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ReportingFramework(str, Enum):
     """Supported reporting frameworks."""
@@ -127,7 +116,6 @@ class ReportingFramework(str, Enum):
     GHG_PROTOCOL = "ghg_protocol"
     ISAE_3410 = "isae_3410"
 
-
 class MappingStatus(str, Enum):
     """Framework mapping status."""
 
@@ -136,7 +124,6 @@ class MappingStatus(str, Enum):
     NOT_STARTED = "not_started"
     FAILED = "failed"
 
-
 class AssuranceLevel(str, Enum):
     """ISAE 3410 assurance levels."""
 
@@ -144,11 +131,9 @@ class AssuranceLevel(str, Enum):
     REASONABLE = "reasonable"
     NONE = "none"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class ReportingBridgeConfig(BaseModel):
     """Configuration for the Reporting Bridge."""
@@ -165,7 +150,6 @@ class ReportingBridgeConfig(BaseModel):
     assurance_level: AssuranceLevel = Field(default=AssuranceLevel.LIMITED)
     multi_entity: bool = Field(default=False)
 
-
 class FrameworkMappingResult(BaseModel):
     """Result of mapping net-zero data to a single framework."""
 
@@ -179,7 +163,6 @@ class FrameworkMappingResult(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class AssuranceReportResult(BaseModel):
     """Result of ISAE 3410 assurance mapping."""
@@ -197,7 +180,6 @@ class AssuranceReportResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class MultiFrameworkReportResult(BaseModel):
     """Result of multi-framework report generation."""
 
@@ -211,7 +193,6 @@ class MultiFrameworkReportResult(BaseModel):
     total_data_gaps: int = Field(default=0)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # App Routing
@@ -350,11 +331,9 @@ ISAE_3410_SECTIONS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # ReportingBridge
 # ---------------------------------------------------------------------------
-
 
 class ReportingBridge:
     """Cross-framework reporting bridge for PACK-022 Net Zero Acceleration.

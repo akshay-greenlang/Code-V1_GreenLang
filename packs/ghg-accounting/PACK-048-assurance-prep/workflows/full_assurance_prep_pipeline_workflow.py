@@ -67,37 +67,28 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> str:
-    """Return current UTC timestamp as ISO-8601 string."""
-    return datetime.utcnow().isoformat() + "Z"
-
-
 def _new_uuid() -> str:
     """Return a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash of JSON-serialisable data."""
     serialised = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialised.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -108,7 +99,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -117,7 +107,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class PipelinePhase(str, Enum):
     """Full assurance prep pipeline phases."""
@@ -131,7 +120,6 @@ class PipelinePhase(str, Enum):
     COST_AND_TIMELINE = "cost_and_timeline"
     REPORTING_AND_EXPORT = "reporting_and_export"
 
-
 class PipelineMilestoneType(str, Enum):
     """Major milestones in the assurance prep pipeline."""
 
@@ -143,7 +131,6 @@ class PipelineMilestoneType(str, Enum):
     SAMPLING_PLANNED = "sampling_planned"
     BUDGET_ESTIMATED = "budget_estimated"
     PACKAGE_PRODUCED = "package_produced"
-
 
 class ReportType(str, Enum):
     """Type of generated report."""
@@ -157,11 +144,9 @@ class ReportType(str, Enum):
     REGULATORY_MAP = "regulatory_map"
     DASHBOARD_DATA = "dashboard_data"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -174,7 +159,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
-
 
 class PipelinePhaseStatus(BaseModel):
     """Status of a pipeline phase with metadata."""
@@ -190,7 +174,6 @@ class PipelinePhaseStatus(BaseModel):
     is_critical: bool = Field(default=True)
     provenance_hash: str = Field(default="")
 
-
 class PipelineCheckpoint(BaseModel):
     """Checkpoint for pipeline resumption."""
 
@@ -202,7 +185,6 @@ class PipelineCheckpoint(BaseModel):
     state_hash: str = Field(default="")
     resumable: bool = Field(default=True)
 
-
 class PipelineMilestone(BaseModel):
     """Record of a pipeline milestone achievement."""
 
@@ -211,7 +193,6 @@ class PipelineMilestone(BaseModel):
     achieved_at: str = Field(default="")
     phase_number: int = Field(default=0)
     details: Dict[str, Any] = Field(default_factory=dict)
-
 
 class PipelineReport(BaseModel):
     """Generated pipeline report."""
@@ -223,11 +204,9 @@ class PipelineReport(BaseModel):
     page_count: int = Field(default=0, ge=0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # INPUT / OUTPUT
 # =============================================================================
-
 
 class FullPipelineInput(BaseModel):
     """Input data model for FullAssurancePrepPipelineWorkflow."""
@@ -257,7 +236,6 @@ class FullPipelineInput(BaseModel):
     tenant_id: str = Field(default="")
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class FullPipelineResult(BaseModel):
     """Complete result from full assurance prep pipeline workflow."""
 
@@ -286,11 +264,9 @@ class FullPipelineResult(BaseModel):
     overall_readiness_verdict: str = Field(default="not_ready")
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class FullAssurancePrepPipelineWorkflow:
     """
@@ -861,7 +837,7 @@ class FullAssurancePrepPipelineWorkflow:
         started = time.monotonic()
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
-        now_iso = _utcnow()
+        now_iso = utcnow()
 
         self._reports = []
         verdict = self._determine_verdict()
@@ -1048,7 +1024,7 @@ class FullAssurancePrepPipelineWorkflow:
         self._milestones.append(PipelineMilestone(
             milestone=milestone,
             achieved=True,
-            achieved_at=_utcnow(),
+            achieved_at=utcnow(),
             phase_number=phase_number,
             details=details,
         ))
@@ -1065,7 +1041,7 @@ class FullAssurancePrepPipelineWorkflow:
             workflow_id=self.workflow_id,
             last_completed_phase=phase_number,
             phase_name=phase_name,
-            created_at=_utcnow(),
+            created_at=utcnow(),
             state_hash=_compute_hash(state_data),
             resumable=True,
         ))
@@ -1080,7 +1056,7 @@ class FullAssurancePrepPipelineWorkflow:
         self._phase_statuses.append(PipelinePhaseStatus(
             phase=phase,
             status=status,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             outputs_summary=outputs_summary,
             is_conditional=is_conditional,
             skip_reason=skip_reason,
@@ -1108,6 +1084,7 @@ class FullAssurancePrepPipelineWorkflow:
                         phase_number, attempt, self.MAX_RETRIES, exc, delay,
                     )
                     import asyncio
+
                     await asyncio.sleep(delay)
         return PhaseResult(
             phase_name=f"phase_{phase_number}_failed",

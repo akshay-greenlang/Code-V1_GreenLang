@@ -35,6 +35,7 @@ from typing import Optional, List, Dict, Any, Tuple, BinaryIO, TextIO, Union
 import io
 
 from greenlang.supply_chain.models.entity import (
+from greenlang.schemas.enums import ReportFormat
     Supplier,
     Facility,
     Material,
@@ -49,13 +50,6 @@ from greenlang.supply_chain.models.entity import (
 )
 
 logger = logging.getLogger(__name__)
-
-
-class ExportFormat(Enum):
-    """Supported export formats."""
-    CSV = "csv"
-    EXCEL = "xlsx"
-    JSON = "json"
 
 
 class ImportStatus(Enum):
@@ -818,7 +812,7 @@ class FileConnector:
     def generate_supplier_template(
         self,
         file_path: Union[str, Path],
-        format: ExportFormat = ExportFormat.CSV,
+        format: ReportFormat = ReportFormat.CSV,
         include_sample_data: bool = True,
     ) -> None:
         """

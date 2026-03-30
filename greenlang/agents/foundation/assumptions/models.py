@@ -29,13 +29,14 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ValidationSeverity
 
 # =============================================================================
 # Enumerations
 # =============================================================================
-
 
 class AssumptionDataType(str, Enum):
     """Supported data types for assumption values."""
@@ -49,7 +50,6 @@ class AssumptionDataType(str, Enum):
     LIST_FLOAT = "list_float"
     LIST_STRING = "list_string"
     DICT = "dict"
-
 
 class AssumptionCategory(str, Enum):
     """Categories of assumptions for organization."""
@@ -65,7 +65,6 @@ class AssumptionCategory(str, Enum):
     WATER = "water"
     CUSTOM = "custom"
 
-
 class ScenarioType(str, Enum):
     """Pre-defined scenario types."""
     BASELINE = "baseline"
@@ -76,7 +75,6 @@ class ScenarioType(str, Enum):
     REGULATORY = "regulatory"
     CUSTOM = "custom"
 
-
 class ChangeType(str, Enum):
     """Types of changes to assumptions."""
     CREATE = "create"
@@ -86,25 +84,11 @@ class ChangeType(str, Enum):
     INHERIT = "inherit"
     REVERT = "revert"
 
-
-class ValidationSeverity(str, Enum):
-    """Severity levels for validation issues."""
-    ERROR = "error"
-    WARNING = "warning"
-    INFO = "info"
-
-
 # =============================================================================
 # Core Data Models
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
-class ValidationRule(BaseModel):
+class ValidationRule(GreenLangBase):
     """Validation rule for an assumption value."""
     rule_id: str = Field(..., description="Unique rule identifier")
     description: str = Field(..., description="Human-readable rule description")
@@ -120,8 +104,7 @@ class ValidationRule(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class ValidationResult(BaseModel):
+class ValidationResult(GreenLangBase):
     """Result of validating an assumption value."""
     is_valid: bool = Field(..., description="Overall validation status")
     errors: List[str] = Field(default_factory=list, description="Validation errors")
@@ -131,8 +114,7 @@ class ValidationResult(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class AssumptionMetadata(BaseModel):
+class AssumptionMetadata(GreenLangBase):
     """Metadata for an assumption."""
     source: str = Field(..., description="Source of the assumption (e.g., EPA, IPCC)")
     source_url: Optional[str] = Field(None, description="URL to source document")
@@ -154,8 +136,7 @@ class AssumptionMetadata(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class AssumptionVersion(BaseModel):
+class AssumptionVersion(GreenLangBase):
     """A single version of an assumption value."""
     version_id: str = Field(
         default_factory=lambda: str(uuid.uuid4()),
@@ -165,7 +146,7 @@ class AssumptionVersion(BaseModel):
     value: Any = Field(..., description="The assumption value")
     effective_from: datetime = Field(..., description="When this version becomes effective")
     effective_until: Optional[datetime] = Field(None, description="When this version expires")
-    created_at: datetime = Field(default_factory=_utcnow, description="Creation timestamp")
+    created_at: datetime = Field(default_factory=utcnow, description="Creation timestamp")
     created_by: str = Field(..., description="User who created this version")
     change_reason: str = Field(..., description="Reason for the change")
     change_type: ChangeType = Field(..., description="Type of change")
@@ -175,8 +156,7 @@ class AssumptionVersion(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class Assumption(BaseModel):
+class Assumption(GreenLangBase):
     """Complete assumption definition with all versions and metadata."""
     assumption_id: str = Field(..., description="Unique assumption identifier")
     name: str = Field(..., description="Human-readable name")
@@ -216,8 +196,8 @@ class Assumption(BaseModel):
     )
 
     # Timestamps
-    created_at: datetime = Field(default_factory=_utcnow, description="Creation timestamp")
-    updated_at: datetime = Field(default_factory=_utcnow, description="Last update timestamp")
+    created_at: datetime = Field(default_factory=utcnow, description="Creation timestamp")
+    updated_at: datetime = Field(default_factory=utcnow, description="Last update timestamp")
 
     # Provenance
     provenance_hash: str = Field(default="", description="SHA-256 hash of current state")
@@ -236,8 +216,7 @@ class Assumption(BaseModel):
             )
         return v
 
-
-class Scenario(BaseModel):
+class Scenario(GreenLangBase):
     """A scenario containing assumption overrides."""
     scenario_id: str = Field(
         default_factory=lambda: str(uuid.uuid4()),
@@ -253,7 +232,7 @@ class Scenario(BaseModel):
     )
 
     # Metadata
-    created_at: datetime = Field(default_factory=_utcnow, description="Creation timestamp")
+    created_at: datetime = Field(default_factory=utcnow, description="Creation timestamp")
     created_by: str = Field(..., description="User who created the scenario")
     is_active: bool = Field(default=True, description="Whether scenario is active")
     parent_scenario_id: Optional[str] = Field(
@@ -265,14 +244,13 @@ class Scenario(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class ChangeLogEntry(BaseModel):
+class ChangeLogEntry(GreenLangBase):
     """Audit log entry for assumption changes."""
     log_id: str = Field(
         default_factory=lambda: str(uuid.uuid4()),
         description="Unique log ID",
     )
-    timestamp: datetime = Field(default_factory=_utcnow, description="Change timestamp")
+    timestamp: datetime = Field(default_factory=utcnow, description="Change timestamp")
     user_id: str = Field(..., description="User who made the change")
     change_type: ChangeType = Field(..., description="Type of change")
     assumption_id: str = Field(..., description="Affected assumption ID")
@@ -288,8 +266,7 @@ class ChangeLogEntry(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class DependencyNode(BaseModel):
+class DependencyNode(GreenLangBase):
     """Node in the dependency graph."""
     assumption_id: str = Field(..., description="Assumption identifier")
     calculation_ids: List[str] = Field(
@@ -304,8 +281,7 @@ class DependencyNode(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class SensitivityResult(BaseModel):
+class SensitivityResult(GreenLangBase):
     """Result of sensitivity analysis for an assumption."""
     assumption_id: str = Field(..., description="Assumption identifier")
     baseline_value: Any = Field(..., description="Current baseline value")
@@ -323,8 +299,7 @@ class SensitivityResult(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class AssumptionValue(BaseModel):
+class AssumptionValue(GreenLangBase):
     """Resolved value for an assumption, possibly with scenario override."""
     assumption_id: str = Field(..., description="Assumption identifier")
     value: Any = Field(..., description="The resolved value")
@@ -335,7 +310,6 @@ class AssumptionValue(BaseModel):
     data_type: str = Field(default="float", description="Data type of the value")
 
     model_config = {"extra": "forbid"}
-
 
 __all__ = [
     # Enumerations

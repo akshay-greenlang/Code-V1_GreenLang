@@ -34,7 +34,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.data.duplicate_detector.config import (
     DuplicateDetectorConfig,
@@ -55,6 +55,7 @@ from greenlang.agents.data.duplicate_detector.metrics import (
     set_active_jobs,
     inc_errors,
 )
+from greenlang.schemas import GreenLangBase, utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -69,13 +70,11 @@ except ImportError:
     FastAPI = None  # type: ignore[assignment, misc]
     FASTAPI_AVAILABLE = False
 
-
 # ===================================================================
 # Lightweight Pydantic response models used by the facade
 # ===================================================================
 
-
-class FingerprintResponse(BaseModel):
+class FingerprintResponse(GreenLangBase):
     """Record fingerprinting result.
 
     Attributes:
@@ -97,8 +96,7 @@ class FingerprintResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
-class BlockResponse(BaseModel):
+class BlockResponse(GreenLangBase):
     """Blocking partition result.
 
     Attributes:
@@ -124,8 +122,7 @@ class BlockResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
-class CompareResponse(BaseModel):
+class CompareResponse(GreenLangBase):
     """Similarity comparison result.
 
     Attributes:
@@ -145,8 +142,7 @@ class CompareResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
-class ClassifyResponse(BaseModel):
+class ClassifyResponse(GreenLangBase):
     """Match classification result.
 
     Attributes:
@@ -172,8 +168,7 @@ class ClassifyResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
-class ClusterResponse(BaseModel):
+class ClusterResponse(GreenLangBase):
     """Cluster resolution result.
 
     Attributes:
@@ -197,8 +192,7 @@ class ClusterResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
-class MergeResponse(BaseModel):
+class MergeResponse(GreenLangBase):
     """Merge execution result.
 
     Attributes:
@@ -224,8 +218,7 @@ class MergeResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
-class PipelineResponse(BaseModel):
+class PipelineResponse(GreenLangBase):
     """Full deduplication pipeline result.
 
     Attributes:
@@ -252,8 +245,7 @@ class PipelineResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
-class StatsResponse(BaseModel):
+class StatsResponse(GreenLangBase):
     """Aggregate statistics for the duplicate detection service.
 
     Attributes:
@@ -283,11 +275,9 @@ class StatsResponse(BaseModel):
     avg_similarity: float = Field(default=0.0)
     provenance_entries: int = Field(default=0)
 
-
 # ===================================================================
 # Provenance helper
 # ===================================================================
-
 
 class _ProvenanceTracker:
     """Minimal provenance tracker recording SHA-256 audit entries.
@@ -338,21 +328,13 @@ class _ProvenanceTracker:
         self.entry_count += 1
         return entry_hash
 
-
 # ===================================================================
 # Helper utilities
 # ===================================================================
 
-
 # Thread-safe singleton lock
 _singleton_lock = threading.Lock()
 _singleton_instance: Optional["DuplicateDetectorService"] = None
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -370,11 +352,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ===================================================================
 # DuplicateDetectorService facade
 # ===================================================================
-
 
 class DuplicateDetectorService:
     """Unified facade over the Duplicate Detection SDK.
@@ -1820,8 +1800,8 @@ class DuplicateDetectorService:
             "dataset_ids": dataset_ids,
             "rule_id": rule_id,
             "status": "created",
-            "created_at": _utcnow().isoformat(),
-            "updated_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
+            "updated_at": utcnow().isoformat(),
             "total_records": 0,
             "total_duplicates": 0,
             "total_clusters": 0,
@@ -1892,7 +1872,7 @@ class DuplicateDetectorService:
             return None
 
         job["status"] = "cancelled"
-        job["updated_at"] = _utcnow().isoformat()
+        job["updated_at"] = utcnow().isoformat()
 
         self.provenance.record(
             entity_type="dedup_job",
@@ -1942,8 +1922,8 @@ class DuplicateDetectorService:
                 "merge_strategy", self.config.default_merge_strategy,
             ),
             "is_active": rule_config.get("is_active", True),
-            "created_at": _utcnow().isoformat(),
-            "updated_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
+            "updated_at": utcnow().isoformat(),
             "provenance_hash": "",
         }
         rule["provenance_hash"] = _compute_hash(rule)
@@ -2059,7 +2039,7 @@ class DuplicateDetectorService:
             "job": job,
             "pipeline": pipeline.model_dump(mode="json") if pipeline else None,
             "statistics": self.get_statistics().model_dump(mode="json"),
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
             "provenance_hash": "",
         }
         report["provenance_hash"] = _compute_hash(report)
@@ -2159,11 +2139,9 @@ class DuplicateDetectorService:
             "provenance_entries": stats.provenance_entries,
         }
 
-
 # ===================================================================
 # Module-level configuration functions
 # ===================================================================
-
 
 async def configure_duplicate_detector(
     app: Any,
@@ -2205,7 +2183,6 @@ async def configure_duplicate_detector(
     logger.info("Duplicate detector service configured and started")
     return service
 
-
 def get_duplicate_detector(app: Any) -> DuplicateDetectorService:
     """Get the DuplicateDetectorService instance from app state.
 
@@ -2226,7 +2203,6 @@ def get_duplicate_detector(app: Any) -> DuplicateDetectorService:
         )
     return service
 
-
 def get_router(service: Optional[DuplicateDetectorService] = None) -> Any:
     """Get the duplicate detector API router.
 
@@ -2241,7 +2217,6 @@ def get_router(service: Optional[DuplicateDetectorService] = None) -> Any:
         return router
     except ImportError:
         return None
-
 
 __all__ = [
     "DuplicateDetectorService",

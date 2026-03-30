@@ -14,7 +14,8 @@ Version: 1.0.0
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 from enum import Enum
-from pydantic import BaseModel, Field, validator
+from pydantic import Field, validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 
 
 class DataQualityRating(str, Enum):
@@ -40,14 +41,14 @@ class BiogenicAccountingMethodology(str, Enum):
     QUANTIS = "Quantis"
 
 
-class ProductOrSectorSpecificRule(BaseModel):
+class ProductOrSectorSpecificRule(GreenLangBase):
     """Product or sector-specific rule."""
     operator: str = Field(description="Operator of the PCR")
     rule_names: List[str] = Field(description="Names of the rules")
     other_operator_name: Optional[str] = Field(default=None)
 
 
-class CarbonFootprint(BaseModel):
+class CarbonFootprint(GreenLangBase):
     """
     Carbon Footprint per PACT Pathfinder v2.0.
 
@@ -216,7 +217,7 @@ class CarbonFootprint(BaseModel):
     )
 
 
-class PCFDataModel(BaseModel):
+class PCFDataModel(GreenLangBase):
     """
     Product Carbon Footprint Data Model.
 
@@ -296,7 +297,7 @@ class PCFDataModel(BaseModel):
     )
 
 
-class PCFExchangeRequest(BaseModel):
+class PCFExchangeRequest(GreenLangBase):
     """Request for PCF exchange."""
 
     pcf_id: Optional[str] = Field(
@@ -323,7 +324,7 @@ class PCFExchangeRequest(BaseModel):
     )
 
 
-class PCFExchangeResponse(BaseModel):
+class PCFExchangeResponse(GreenLangBase):
     """Response from PCF exchange."""
 
     success: bool = Field(

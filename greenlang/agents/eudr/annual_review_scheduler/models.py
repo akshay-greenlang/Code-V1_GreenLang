@@ -22,7 +22,8 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase
 
 
 # ---------------------------------------------------------------------------
@@ -301,7 +302,7 @@ class ComparisonDimension(str, enum.Enum):
 # ---------------------------------------------------------------------------
 
 
-class CommodityScope(BaseModel):
+class CommodityScope(GreenLangBase):
     """Commodity scope within a review cycle."""
     commodity: EUDRCommodity = Field(..., description="EUDR commodity")
     supplier_count: int = Field(default=0, ge=0)
@@ -310,7 +311,7 @@ class CommodityScope(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class ReviewPhaseConfig(BaseModel):
+class ReviewPhaseConfig(GreenLangBase):
     """Configuration for a single review phase."""
     phase: ReviewPhase = Field(..., description="Review phase")
     duration_days: int = Field(default=30, ge=1)
@@ -320,7 +321,7 @@ class ReviewPhaseConfig(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class ReviewCycle(BaseModel):
+class ReviewCycle(GreenLangBase):
     """Full review cycle model used by the ReviewCycleManager engine."""
     cycle_id: str = Field(..., description="Unique cycle identifier")
     operator_id: str = Field(..., description="Operator identifier")
@@ -341,7 +342,7 @@ class ReviewCycle(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class DeadlineTrack(BaseModel):
+class DeadlineTrack(GreenLangBase):
     """Deadline tracking model used by the DeadlineTracker engine."""
     deadline_id: str = Field(..., description="Unique deadline identifier")
     cycle_id: str = Field(..., description="Associated review cycle ID")
@@ -358,7 +359,7 @@ class DeadlineTrack(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class DeadlineAlert(BaseModel):
+class DeadlineAlert(GreenLangBase):
     """Alert raised for an approaching or overdue deadline."""
     alert_id: str = Field(..., description="Unique alert identifier")
     deadline_id: str = Field(..., description="Associated deadline ID")
@@ -371,7 +372,7 @@ class DeadlineAlert(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class ChecklistTemplate(BaseModel):
+class ChecklistTemplate(GreenLangBase):
     """Template for generating checklist items."""
     template_id: str = Field(..., description="Unique template identifier")
     name: str = Field(..., description="Template name")
@@ -384,7 +385,7 @@ class ChecklistTemplate(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class EntityCoordination(BaseModel):
+class EntityCoordination(GreenLangBase):
     """Entity coordination record used by the EntityCoordinator engine."""
     entity_id: str = Field(..., description="Unique entity identifier")
     cycle_id: str = Field(..., description="Associated review cycle ID")
@@ -398,7 +399,7 @@ class EntityCoordination(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class EntityDependency(BaseModel):
+class EntityDependency(GreenLangBase):
     """Dependency between two entities in a review cycle."""
     dependency_id: str = Field(..., description="Unique dependency identifier")
     source_entity_id: str = Field(..., description="Source entity ID")
@@ -411,7 +412,7 @@ class EntityDependency(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class YearMetricSnapshot(BaseModel):
+class YearMetricSnapshot(GreenLangBase):
     """Snapshot of key metrics for a single year and commodity."""
     snapshot_id: str = Field(..., description="Unique snapshot identifier")
     operator_id: str = Field(..., description="Operator identifier")
@@ -432,7 +433,7 @@ class YearMetricSnapshot(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class ComparisonMetric(BaseModel):
+class ComparisonMetric(GreenLangBase):
     """A single metric comparison between two years."""
     dimension: ComparisonDimension = Field(..., description="Comparison dimension")
     base_value: Decimal = Field(default=Decimal("0"))
@@ -443,7 +444,7 @@ class ComparisonMetric(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class ComparisonResult(BaseModel):
+class ComparisonResult(GreenLangBase):
     """Result of a year-over-year comparison."""
     comparison_id: str = Field(..., description="Unique comparison identifier")
     overall_trend: str = Field(default="", description="Overall trend direction")
@@ -452,7 +453,7 @@ class ComparisonResult(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class CalendarEntry(BaseModel):
+class CalendarEntry(GreenLangBase):
     """Calendar entry used by the CalendarManager engine."""
     entry_id: str = Field(..., description="Unique entry identifier")
     cycle_id: str = Field(..., description="Associated review cycle ID")
@@ -469,7 +470,7 @@ class CalendarEntry(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class NotificationTemplate(BaseModel):
+class NotificationTemplate(GreenLangBase):
     """Template for generating notifications."""
     template_id: str = Field(..., description="Unique template identifier")
     name: str = Field(..., description="Template name")
@@ -488,7 +489,7 @@ class NotificationTemplate(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class ReviewTask(BaseModel):
+class ReviewTask(GreenLangBase):
     """A task within a review cycle."""
     task_id: str = Field(..., description="Unique task identifier")
     title: str = Field(default="", description="Task title")
@@ -503,7 +504,7 @@ class ReviewTask(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class ChecklistItem(BaseModel):
+class ChecklistItem(GreenLangBase):
     """A single item in a review checklist."""
     item_id: str = Field(..., description="Unique item identifier")
     cycle_id: str = Field(default="", description="Associated review cycle ID")
@@ -525,7 +526,7 @@ class ChecklistItem(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class DeadlineEntry(BaseModel):
+class DeadlineEntry(GreenLangBase):
     """A tracked deadline within the review system."""
     deadline_id: str = Field(..., description="Unique deadline identifier")
     deadline_type: DeadlineType = DeadlineType.REGULATORY_SUBMISSION
@@ -539,7 +540,7 @@ class DeadlineEntry(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class EntityReviewInfo(BaseModel):
+class EntityReviewInfo(GreenLangBase):
     """Review information for a coordinated entity."""
     entity_id: str = Field(..., description="Entity identifier")
     entity_type: EntityType = EntityType.OPERATOR
@@ -553,7 +554,7 @@ class EntityReviewInfo(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class YearDataPoint(BaseModel):
+class YearDataPoint(GreenLangBase):
     """Data point for a single year in a comparison."""
     year: int = Field(..., description="Calendar year")
     supplier_count: int = Field(default=0, ge=0)
@@ -567,7 +568,7 @@ class YearDataPoint(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class YearComparison(BaseModel):
+class YearComparison(GreenLangBase):
     """Full year-over-year comparison result used by engine tests."""
     comparison_id: str = Field(default="", description="Unique comparison identifier")
     operator_id: str = Field(default="", description="Operator identifier")
@@ -584,7 +585,7 @@ class YearComparison(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class YearDimensionComparison(BaseModel):
+class YearDimensionComparison(GreenLangBase):
     """Comparison between two years for a single dimension (original model)."""
     dimension: str = Field(..., description="Comparison dimension name")
     year_a: int = Field(..., description="Earlier year")
@@ -599,7 +600,7 @@ class YearDimensionComparison(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class CalendarEvent(BaseModel):
+class CalendarEvent(GreenLangBase):
     """An event on the compliance calendar."""
     event_id: str = Field(..., description="Unique event identifier")
     event_type: CalendarEventType = CalendarEventType.REMINDER
@@ -615,7 +616,7 @@ class CalendarEvent(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class NotificationRecord(BaseModel):
+class NotificationRecord(GreenLangBase):
     """Record of a sent notification."""
     notification_id: str = Field(..., description="Unique notification identifier")
     cycle_id: str = Field(default="", description="Associated review cycle ID")
@@ -635,7 +636,7 @@ class NotificationRecord(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class ActionRecommendation(BaseModel):
+class ActionRecommendation(GreenLangBase):
     """Recommended action from review analysis."""
     action: str = Field(..., description="Action description")
     priority: str = Field(default="medium", description="Priority (low/medium/high/critical)")
@@ -650,7 +651,7 @@ class ActionRecommendation(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class ReviewCycleRecord(BaseModel):
+class ReviewCycleRecord(GreenLangBase):
     """Annual review cycle record.
 
     Represents a complete annual review cycle for an operator,
@@ -676,7 +677,7 @@ class ReviewCycleRecord(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class DeadlineTrackingRecord(BaseModel):
+class DeadlineTrackingRecord(GreenLangBase):
     """Regulatory and internal deadline tracking record.
 
     Tracks approaching deadlines, submission status, and
@@ -698,7 +699,7 @@ class DeadlineTrackingRecord(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class ChecklistRecord(BaseModel):
+class ChecklistRecord(GreenLangBase):
     """Generated review checklist record.
 
     Contains commodity-specific checklist items derived from
@@ -722,7 +723,7 @@ class ChecklistRecord(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class EntityCoordinationRecord(BaseModel):
+class EntityCoordinationRecord(GreenLangBase):
     """Entity coordination record for multi-entity reviews.
 
     Tracks review progress across organizational entities,
@@ -744,7 +745,7 @@ class EntityCoordinationRecord(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class YearComparisonRecord(BaseModel):
+class YearComparisonRecord(GreenLangBase):
     """Year-over-year comparison record.
 
     Compares key EUDR compliance metrics across multiple years
@@ -766,7 +767,7 @@ class YearComparisonRecord(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class CalendarRecord(BaseModel):
+class CalendarRecord(GreenLangBase):
     """Compliance calendar record.
 
     Manages calendar events for review deadlines, milestones,
@@ -786,7 +787,7 @@ class CalendarRecord(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class NotificationBatchRecord(BaseModel):
+class NotificationBatchRecord(GreenLangBase):
     """Notification batch dispatch record.
 
     Tracks batch notification sends, acknowledgments,
@@ -808,7 +809,7 @@ class NotificationBatchRecord(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class ReviewSummary(BaseModel):
+class ReviewSummary(GreenLangBase):
     """Annual review summary across all engines."""
     summary_id: str = Field(..., description="Unique summary identifier")
     operator_id: str = Field(..., description="Operator identifier")
@@ -830,7 +831,7 @@ class ReviewSummary(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class AuditEntry(BaseModel):
+class AuditEntry(GreenLangBase):
     """An audit trail entry for annual review events."""
     entry_id: str = Field(..., description="Unique audit entry identifier")
     entity_type: str = Field(..., description="Entity type being audited")
@@ -844,7 +845,7 @@ class AuditEntry(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class HealthStatus(BaseModel):
+class HealthStatus(GreenLangBase):
     """Health check response for the Annual Review Scheduler Agent."""
     agent_id: str = AGENT_ID
     status: str = "healthy"

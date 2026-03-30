@@ -66,6 +66,8 @@ from .models import (
 )
 from .provenance import ProvenanceTracker
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -78,17 +80,10 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -103,11 +98,9 @@ RTREE_NODE_CAPACITY: int = 16
 #: Maximum number of boundaries for brute-force scan (above this use R-tree).
 BRUTE_FORCE_THRESHOLD: int = 100
 
-
 # ===========================================================================
 # R-tree Data Structures
 # ===========================================================================
-
 
 class _RTreeEntry:
     """A single entry in an R-tree leaf node.
@@ -124,7 +117,6 @@ class _RTreeEntry:
     ) -> None:
         self.plot_id = plot_id
         self.bbox = bbox
-
 
 class _RTreeNode:
     """An internal or leaf node in the R-tree.
@@ -146,11 +138,9 @@ class _RTreeNode:
         self.children: List[_RTreeNode] = []
         self.is_leaf = is_leaf
 
-
 # ===========================================================================
 # OverlapDetector
 # ===========================================================================
-
 
 class OverlapDetector:
     """Spatial overlap detection engine for EUDR plot boundaries.
@@ -322,7 +312,7 @@ class OverlapDetector:
                 overlap_percentage_b=overlap_pct_b,
                 severity=severity,
                 intersection_geometry=ix_wkt,
-                detected_at=_utcnow(),
+                detected_at=utcnow(),
             )
             overlaps.append(overlap)
             record_overlap_detected(severity.value)
@@ -476,7 +466,7 @@ class OverlapDetector:
                     overlap_percentage_b=overlap_pct_b,
                     severity=severity,
                     intersection_geometry=ix_wkt,
-                    detected_at=_utcnow(),
+                    detected_at=utcnow(),
                 )
                 overlaps.append(overlap)
                 record_overlap_detected(severity.value)
@@ -1066,7 +1056,6 @@ class OverlapDetector:
             j = (i + 1) % n
             area += coords[i].lon * coords[j].lat - coords[j].lon * coords[i].lat
         return area * 0.5
-
 
 # ---------------------------------------------------------------------------
 # Public API

@@ -30,6 +30,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.blockchain_integration.api.dependencies import (
     AuthUser,
@@ -64,22 +65,14 @@ router = APIRouter(tags=["Verification"])
 
 _verification_store: Dict[str, Dict] = {}
 
-
 def _get_verification_store() -> Dict[str, Dict]:
     """Return the verification result store singleton."""
     return _verification_store
-
 
 def _compute_provenance_hash(data: dict) -> str:
     """Compute SHA-256 hash for provenance tracking."""
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _verify_single_record(
     req: VerifyRecordRequest,
@@ -97,7 +90,7 @@ def _verify_single_record(
         Dict representing the verification result.
     """
     verification_id = str(uuid.uuid4())
-    now = _utcnow()
+    now = utcnow()
 
     # Simulate on-chain lookup (deterministic)
     # In production, this queries the blockchain via RPC
@@ -140,11 +133,9 @@ def _verify_single_record(
         ),
     }
 
-
 # ---------------------------------------------------------------------------
 # POST /verify
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/verify",
@@ -212,11 +203,9 @@ async def verify_record(
             detail="Failed to verify record",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /verify/batch
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/verify/batch",
@@ -300,11 +289,9 @@ async def verify_batch(
             detail="Failed to batch verify records",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /verify/merkle-proof
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/verify/merkle-proof",
@@ -349,7 +336,7 @@ async def verify_merkle_proof(
     start = time.monotonic()
     try:
         verification_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         # Deterministic Merkle proof verification
         current_hash = body.leaf_hash
@@ -421,11 +408,9 @@ async def verify_merkle_proof(
             detail="Failed to verify Merkle proof",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /verify/{verification_id}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/verify/{verification_id}",
@@ -487,7 +472,6 @@ async def get_verification(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve verification result",
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

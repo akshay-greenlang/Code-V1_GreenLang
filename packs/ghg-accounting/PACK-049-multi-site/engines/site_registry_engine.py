@@ -52,24 +52,18 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC timestamp with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 provenance hash, excluding volatile fields."""
@@ -87,7 +81,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert any value to Decimal."""
     if isinstance(value, Decimal):
@@ -96,7 +89,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -108,16 +100,13 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> Decimal:
     """Round a value to two decimal places using ROUND_HALF_UP."""
     return Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class FacilityType(str, Enum):
     """Standard facility type taxonomy for GHG reporting."""
@@ -136,7 +125,6 @@ class FacilityType(str, Enum):
     MIXED_USE = "MIXED_USE"
     OTHER = "OTHER"
 
-
 class LifecycleStatus(str, Enum):
     """Site lifecycle stages."""
     PLANNED = "PLANNED"
@@ -148,7 +136,6 @@ class LifecycleStatus(str, Enum):
     DECOMMISSIONED = "DECOMMISSIONED"
     DIVESTED = "DIVESTED"
 
-
 class GroupType(str, Enum):
     """Standard site grouping types."""
     REGION = "REGION"
@@ -159,7 +146,6 @@ class GroupType(str, Enum):
     LEGAL_ENTITY = "LEGAL_ENTITY"
     CUSTOM = "CUSTOM"
 
-
 class CompletenessLevel(str, Enum):
     """Site data completeness levels."""
     COMPLETE = "COMPLETE"
@@ -168,11 +154,9 @@ class CompletenessLevel(str, Enum):
     MINIMAL = "MINIMAL"
     INSUFFICIENT = "INSUFFICIENT"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class FacilityCharacteristics(BaseModel):
     """Physical and operational characteristics of a facility.
@@ -233,7 +217,6 @@ class FacilityCharacteristics(BaseModel):
         if v is not None:
             return Decimal(str(v))
         return v
-
 
 class SiteRecord(BaseModel):
     """Represents a single site in the GHG site registry.
@@ -337,11 +320,11 @@ class SiteRecord(BaseModel):
         description="Arbitrary key-value metadata.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the site record was created.",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the site record was last updated.",
     )
 
@@ -375,7 +358,6 @@ class SiteRecord(BaseModel):
             )
         return v.upper()
 
-
 class SiteGroup(BaseModel):
     """A logical grouping of sites for aggregated reporting.
 
@@ -407,7 +389,7 @@ class SiteGroup(BaseModel):
         description="Optional description of the group purpose.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of group creation.",
     )
 
@@ -419,7 +401,6 @@ class SiteGroup(BaseModel):
             logger.warning("Group type '%s' not in standard types; accepted as CUSTOM.", v)
             return "CUSTOM"
         return v.upper()
-
 
 class SiteRegistryResult(BaseModel):
     """Portfolio-level summary of the entire site registry.
@@ -485,14 +466,13 @@ class SiteRegistryResult(BaseModel):
         description="Average headcount per active site.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of this summary.",
     )
     provenance_hash: str = Field(
         default="",
         description="SHA-256 provenance hash of the registry snapshot.",
     )
-
 
 class SiteClassification(BaseModel):
     """Result of classifying a site against a taxonomy."""
@@ -522,14 +502,13 @@ class SiteClassification(BaseModel):
         description="Rationale for each classification decision.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of classification.",
     )
     provenance_hash: str = Field(
         default="",
         description="SHA-256 hash.",
     )
-
 
 class SiteCompletenessResult(BaseModel):
     """Completeness assessment for a single site record."""
@@ -570,11 +549,9 @@ class SiteCompletenessResult(BaseModel):
         default="", description="SHA-256 hash."
     )
 
-
 # ---------------------------------------------------------------------------
 # Reference Data
 # ---------------------------------------------------------------------------
-
 
 # Default size-class thresholds based on floor area (m2)
 SIZE_CLASS_THRESHOLDS: Dict[str, Tuple[Decimal, Decimal]] = {
@@ -648,11 +625,9 @@ PRIORITY_THRESHOLDS: Dict[str, Decimal] = {
     # Below 1000 -> LOW
 }
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class SiteRegistryEngine:
     """Manages the authoritative GHG site registry.
@@ -713,7 +688,7 @@ class SiteRegistryEngine:
             ValueError: If required fields are missing or invalid.
         """
         logger.info("Registering new site with code '%s'.", site_data.get("site_code", "N/A"))
-        start = _utcnow()
+        start = utcnow()
 
         # Ensure site_id
         if "site_id" not in site_data or not site_data["site_id"]:
@@ -736,7 +711,7 @@ class SiteRegistryEngine:
             )
 
         # Set timestamps
-        now = _utcnow()
+        now = utcnow()
         site_data["created_at"] = now
         site_data["updated_at"] = now
 
@@ -754,7 +729,7 @@ class SiteRegistryEngine:
             "Site '%s' registered successfully (id=%s) in %s.",
             site.site_name,
             site.site_id,
-            _utcnow() - start,
+            utcnow() - start,
         )
         return site
 
@@ -811,7 +786,7 @@ class SiteRegistryEngine:
                 else:
                     logger.warning("Unknown field '%s' ignored in update.", key)
 
-        current_data["updated_at"] = _utcnow()
+        current_data["updated_at"] = utcnow()
 
         # Handle characteristics that may be dict or model
         if isinstance(current_data.get("characteristics"), dict):
@@ -826,7 +801,7 @@ class SiteRegistryEngine:
             "event": "SITE_UPDATED",
             "site_id": site_id,
             "changes": changes_applied,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         })
 
         logger.info("Site '%s' updated with %d field(s).", site_id, len(changes_applied))
@@ -885,7 +860,7 @@ class SiteRegistryEngine:
             "site_id": site_id,
             "decommission_date": decommission_date.isoformat(),
             "reason": reason,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         })
 
         return updated
@@ -1070,7 +1045,7 @@ class SiteRegistryEngine:
             "group_id": group.group_id,
             "group_name": group_name,
             "member_count": len(site_ids),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         })
 
         logger.info("Group '%s' created (id=%s).", group_name, group.group_id)
@@ -1740,7 +1715,7 @@ class SiteRegistryEngine:
 
         export = {
             "version": _MODULE_VERSION,
-            "exported_at": _utcnow().isoformat(),
+            "exported_at": utcnow().isoformat(),
             "total_sites": len(self._sites),
             "total_groups": len(self._groups),
             "sites": sites_data,

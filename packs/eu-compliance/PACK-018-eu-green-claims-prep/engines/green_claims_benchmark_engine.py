@@ -64,25 +64,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -102,7 +96,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely.
 
@@ -116,7 +109,6 @@ def _decimal(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
 ) -> Decimal:
@@ -124,7 +116,6 @@ def _safe_divide(
     if denominator == Decimal("0"):
         return default
     return numerator / denominator
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value to the specified number of decimal places.
@@ -141,11 +132,9 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class MaturityLevel(str, Enum):
     """Green Claims readiness maturity level.
@@ -158,7 +147,6 @@ class MaturityLevel(str, Enum):
     DEFINED = "defined"
     MANAGED = "managed"
     OPTIMIZING = "optimizing"
-
 
 class BenchmarkDimension(str, Enum):
     """Dimensions of the Green Claims readiness benchmark.
@@ -173,7 +161,6 @@ class BenchmarkDimension(str, Enum):
     VERIFICATION_READINESS = "verification_readiness"
     REGULATORY_ALIGNMENT = "regulatory_alignment"
 
-
 class ImprovementTimeframe(str, Enum):
     """Timeframe for improvement actions in the roadmap.
 
@@ -184,7 +171,6 @@ class ImprovementTimeframe(str, Enum):
     SHORT_TERM = "short_term"
     MEDIUM_TERM = "medium_term"
     LONG_TERM = "long_term"
-
 
 class PeerComparisonOutcome(str, Enum):
     """Outcome of peer benchmarking comparison.
@@ -197,11 +183,9 @@ class PeerComparisonOutcome(str, Enum):
     BELOW_AVERAGE = "below_average"
     LAGGING = "lagging"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # Maturity level thresholds (lower bound inclusive).
 MATURITY_THRESHOLDS: Dict[str, Dict[str, Any]] = {
@@ -473,11 +457,9 @@ IMPROVEMENT_ACTIONS: Dict[str, List[Dict[str, Any]]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class PortfolioMetrics(BaseModel):
     """Aggregate metrics for a portfolio of environmental claims.
@@ -548,7 +530,6 @@ class PortfolioMetrics(BaseModel):
             )
         return v
 
-
 class BenchmarkResult(BaseModel):
     """Result of a benchmark assessment for an entity.
 
@@ -586,7 +567,6 @@ class BenchmarkResult(BaseModel):
         description="Prioritized list of improvement areas",
     )
 
-
 class PeerDataPoint(BaseModel):
     """A single peer entity's benchmark data for comparison.
 
@@ -611,11 +591,9 @@ class PeerDataPoint(BaseModel):
         description="Industry sector of the peer entity",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class GreenClaimsBenchmarkEngine:
     """Engine for cross-portfolio scoring and maturity assessment.
@@ -684,7 +662,7 @@ class GreenClaimsBenchmarkEngine:
             "Calculating portfolio metrics | claims_count=%d",
             len(claims_results),
         )
-        timestamp = _utcnow()
+        timestamp = utcnow()
         calc_id = _new_uuid()
 
         total = len(claims_results)
@@ -827,7 +805,7 @@ class GreenClaimsBenchmarkEngine:
             next level targets, and provenance_hash.
         """
         logger.info("Determining maturity level | score=%s", str(score))
-        timestamp = _utcnow()
+        timestamp = utcnow()
         assessment_id = _new_uuid()
 
         score_d = _decimal(score)
@@ -930,7 +908,7 @@ class GreenClaimsBenchmarkEngine:
             entity_name,
             len(peer_data),
         )
-        timestamp = _utcnow()
+        timestamp = utcnow()
         benchmark_id = _new_uuid()
 
         # Calculate entity overall score from metrics
@@ -1061,7 +1039,7 @@ class GreenClaimsBenchmarkEngine:
         logger.info(
             "Generating improvement roadmap | entity=%s", entity_name,
         )
-        timestamp = _utcnow()
+        timestamp = utcnow()
         roadmap_id = _new_uuid()
 
         # Calculate dimension scores
@@ -1191,7 +1169,7 @@ class GreenClaimsBenchmarkEngine:
             "Calculating overall score | dimensions=%d",
             len(dimension_scores),
         )
-        timestamp = _utcnow()
+        timestamp = utcnow()
         calc_id = _new_uuid()
 
         weighted_sum = Decimal("0")

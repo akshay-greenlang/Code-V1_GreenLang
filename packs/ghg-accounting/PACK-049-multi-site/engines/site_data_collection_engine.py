@@ -56,21 +56,13 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC timestamp with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 provenance hash, excluding volatile fields."""
@@ -88,7 +80,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert any value to Decimal."""
     if isinstance(value, Decimal):
@@ -97,7 +88,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -109,21 +99,17 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> Decimal:
     """Round a value to two decimal places using ROUND_HALF_UP."""
     return Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-
 
 def _round4(value: Any) -> Decimal:
     """Round a value to four decimal places using ROUND_HALF_UP."""
     return Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DataSource(str, Enum):
     """Source of the data entry."""
@@ -135,7 +121,6 @@ class DataSource(str, Enum):
     ESTIMATED = "ESTIMATED"
     THIRD_PARTY = "THIRD_PARTY"
 
-
 class SubmissionStatus(str, Enum):
     """Status of a site data submission."""
     DRAFT = "DRAFT"
@@ -144,7 +129,6 @@ class SubmissionStatus(str, Enum):
     APPROVED = "APPROVED"
     REJECTED = "REJECTED"
     REVISION_REQUIRED = "REVISION_REQUIRED"
-
 
 class RoundStatus(str, Enum):
     """Status of a collection round."""
@@ -155,14 +139,12 @@ class RoundStatus(str, Enum):
     CLOSED = "CLOSED"
     FINALISED = "FINALISED"
 
-
 class PeriodType(str, Enum):
     """Reporting period granularity."""
     MONTHLY = "MONTHLY"
     QUARTERLY = "QUARTERLY"
     SEMI_ANNUAL = "SEMI_ANNUAL"
     ANNUAL = "ANNUAL"
-
 
 class EstimationMethod(str, Enum):
     """Methods for estimating missing data."""
@@ -173,13 +155,11 @@ class EstimationMethod(str, Enum):
     LINEAR_INTERPOLATION = "LINEAR_INTERPOLATION"
     INTENSITY_BASED = "INTENSITY_BASED"
 
-
 class ValidationSeverity(str, Enum):
     """Severity of a validation finding."""
     ERROR = "ERROR"
     WARNING = "WARNING"
     INFO = "INFO"
-
 
 class RuleType(str, Enum):
     """Type of validation rule."""
@@ -190,11 +170,9 @@ class RuleType(str, Enum):
     CROSS_FIELD = "CROSS_FIELD"
     CUSTOM = "CUSTOM"
 
-
 # ---------------------------------------------------------------------------
 # Standard Data Categories & Units
 # ---------------------------------------------------------------------------
-
 
 STANDARD_CATEGORIES: Dict[str, List[str]] = {
     "SCOPE_1": [
@@ -263,11 +241,9 @@ DEFAULT_RANGE_CHECKS: Dict[str, Tuple[Decimal, Decimal]] = {
 # Default YoY variance threshold (percentage)
 DEFAULT_YOY_THRESHOLD: Decimal = Decimal("30")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class DataEntry(BaseModel):
     """A single data entry within a site submission.
@@ -341,7 +317,6 @@ class DataEntry(BaseModel):
             logger.warning("Non-standard data source '%s'; accepted.", v)
         return upper
 
-
 class ValidationRule(BaseModel):
     """A validation rule to apply to data entries."""
     model_config = ConfigDict(validate_default=True)
@@ -375,7 +350,6 @@ class ValidationRule(BaseModel):
             logger.warning("Non-standard rule type '%s'.", v)
         return v.upper()
 
-
 class ValidationResult(BaseModel):
     """Result of a single validation check."""
     model_config = ConfigDict(validate_default=True)
@@ -401,7 +375,6 @@ class ValidationResult(BaseModel):
         None,
         description="The data category this finding applies to.",
     )
-
 
 class CollectionTemplate(BaseModel):
     """A data collection template for a specific site.
@@ -444,14 +417,13 @@ class CollectionTemplate(BaseModel):
         description="Instructions for the data collector.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the template was generated.",
     )
     provenance_hash: str = Field(
         default="",
         description="SHA-256 hash.",
     )
-
 
 class SiteSubmission(BaseModel):
     """A data submission from a specific site for a collection round.
@@ -525,7 +497,7 @@ class SiteSubmission(BaseModel):
         description="Revision number of the submission.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the submission was created.",
     )
     provenance_hash: str = Field(
@@ -542,7 +514,6 @@ class SiteSubmission(BaseModel):
                 f"Invalid submission status '{v}'. Must be one of {sorted(valid)}."
             )
         return v.upper()
-
 
 class CollectionRound(BaseModel):
     """A time-bounded data collection round.
@@ -593,7 +564,7 @@ class CollectionRound(BaseModel):
         description="Current round status.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the round was created.",
     )
     notes: Optional[str] = Field(
@@ -620,7 +591,6 @@ class CollectionRound(BaseModel):
                 f"Invalid round status '{v}'. Must be one of {sorted(valid)}."
             )
         return v.upper()
-
 
 class CollectionResult(BaseModel):
     """Summary result for a collection round.
@@ -686,7 +656,7 @@ class CollectionResult(BaseModel):
         description="Distinct data categories with entries.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When this result was computed.",
     )
     provenance_hash: str = Field(
@@ -694,11 +664,9 @@ class CollectionResult(BaseModel):
         description="SHA-256 hash.",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class SiteDataCollectionEngine:
     """Manages GHG activity data collection across multiple sites.
@@ -967,7 +935,7 @@ class SiteDataCollectionEngine:
             if sub.site_id == site_id and sub.round_id == round_id:
                 revision = max(revision, sub.revision_number + 1)
 
-        now = _utcnow()
+        now = utcnow()
         submission = SiteSubmission(
             site_id=site_id,
             round_id=round_id,
@@ -1385,7 +1353,7 @@ class SiteDataCollectionEngine:
             reviewer,
         )
 
-        now = _utcnow()
+        now = utcnow()
         updated = submission.model_copy(update={
             "status": SubmissionStatus.APPROVED.value,
             "reviewed_by": reviewer,
@@ -1441,7 +1409,7 @@ class SiteDataCollectionEngine:
             len(reasons),
         )
 
-        now = _utcnow()
+        now = utcnow()
         updated = submission.model_copy(update={
             "status": SubmissionStatus.REJECTED.value,
             "reviewed_by": reviewer,
@@ -1472,6 +1440,8 @@ class SiteDataCollectionEngine:
             round_: The collection round.
             submissions: Submissions for the round. If None, fetches
                 from internal storage.
+
+from greenlang.schemas import utcnow
 
         Returns:
             CollectionResult with comprehensive metrics.

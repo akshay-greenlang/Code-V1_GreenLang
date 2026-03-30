@@ -18,6 +18,7 @@ from __future__ import annotations
 import logging
 import time
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -43,20 +44,20 @@ except ImportError:
 
 if FASTAPI_AVAILABLE:
 
-    class ConvertRequest(BaseModel):
+    class ConvertRequest(GreenLangBase):
         """Request body for a single unit conversion."""
         value: float = Field(..., description="Numeric value to convert")
         from_unit: str = Field(..., description="Source unit")
         to_unit: str = Field(..., description="Target unit")
         precision: Optional[int] = Field(None, ge=0, le=30, description="Decimal precision")
 
-    class BatchConvertRequest(BaseModel):
+    class BatchConvertRequest(GreenLangBase):
         """Request body for batch unit conversion."""
         items: List[Dict[str, Any]] = Field(
             ..., description="List of {value, from_unit, to_unit} dicts",
         )
 
-    class GHGConvertRequest(BaseModel):
+    class GHGConvertRequest(GreenLangBase):
         """Request body for GHG conversion."""
         value: float = Field(..., description="Mass value")
         from_gas: str = Field(..., description="Source gas (CO2, CH4, N2O, etc.)")
@@ -64,22 +65,22 @@ if FASTAPI_AVAILABLE:
         gwp_version: Optional[str] = Field(None, description="AR5 or AR6")
         gwp_timeframe: Optional[int] = Field(None, description="20 or 100 years")
 
-    class ResolveEntityRequest(BaseModel):
+    class ResolveEntityRequest(GreenLangBase):
         """Request body for entity resolution."""
         name: str = Field(..., description="Entity name to resolve")
 
-    class BatchResolveRequest(BaseModel):
+    class BatchResolveRequest(GreenLangBase):
         """Request body for batch entity resolution."""
         items: List[str] = Field(..., description="Entity names to resolve")
         entity_type: str = Field(..., description="Entity type (fuel/material/process)")
 
-    class SearchVocabularyRequest(BaseModel):
+    class SearchVocabularyRequest(GreenLangBase):
         """Request body for vocabulary search."""
         query: str = Field(..., description="Search query")
         entity_type: str = Field(..., description="Entity type (fuel/material/process)")
         limit: int = Field(10, ge=1, le=100, description="Max results")
 
-    class CompatibilityCheckRequest(BaseModel):
+    class CompatibilityCheckRequest(GreenLangBase):
         """Request body for compatibility check."""
         from_unit: str = Field(..., description="Source unit")
         to_unit: str = Field(..., description="Target unit")

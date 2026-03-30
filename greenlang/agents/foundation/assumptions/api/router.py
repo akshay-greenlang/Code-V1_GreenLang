@@ -16,6 +16,7 @@ Status: Production Ready
 import logging
 import time
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +42,7 @@ except ImportError:
 
 if FASTAPI_AVAILABLE:
 
-    class CreateAssumptionRequest(BaseModel):
+    class CreateAssumptionRequest(GreenLangBase):
         """Request body for creating an assumption."""
         assumption_id: str = Field(..., description="Unique assumption identifier")
         name: str = Field(..., description="Human-readable name")
@@ -59,24 +60,24 @@ if FASTAPI_AVAILABLE:
             None, description="Validation rules",
         )
 
-    class UpdateAssumptionRequest(BaseModel):
+    class UpdateAssumptionRequest(GreenLangBase):
         """Request body for updating an assumption value."""
         value: Any = Field(..., description="New value")
         user_id: str = Field("system", description="User making the change")
         reason: str = Field("Value update", description="Reason for change")
 
-    class SetValueRequest(BaseModel):
+    class SetValueRequest(GreenLangBase):
         """Request body for setting an assumption value."""
         value: Any = Field(..., description="New value")
         user_id: str = Field("system", description="User making the change")
         reason: str = Field("Value update", description="Reason for change")
 
-    class ValidateRequest(BaseModel):
+    class ValidateRequest(GreenLangBase):
         """Request body for validating a value."""
         assumption_id: str = Field(..., description="Assumption to validate against")
         value: Any = Field(..., description="Value to validate")
 
-    class CreateScenarioRequest(BaseModel):
+    class CreateScenarioRequest(GreenLangBase):
         """Request body for creating a scenario."""
         name: str = Field(..., description="Scenario name")
         description: str = Field("", description="Scenario description")
@@ -85,7 +86,7 @@ if FASTAPI_AVAILABLE:
         user_id: str = Field("system", description="User creating the scenario")
         tags: Optional[List[str]] = Field(None, description="Tags")
 
-    class UpdateScenarioRequest(BaseModel):
+    class UpdateScenarioRequest(GreenLangBase):
         """Request body for updating a scenario."""
         name: Optional[str] = Field(None, description="New name")
         description: Optional[str] = Field(None, description="New description")
@@ -93,11 +94,11 @@ if FASTAPI_AVAILABLE:
         is_active: Optional[bool] = Field(None, description="Active flag")
         tags: Optional[List[str]] = Field(None, description="New tags")
 
-    class ExportRequest(BaseModel):
+    class ExportRequest(GreenLangBase):
         """Request body for export."""
         user_id: str = Field("system", description="User performing export")
 
-    class ImportRequest(BaseModel):
+    class ImportRequest(GreenLangBase):
         """Request body for import."""
         data: Dict[str, Any] = Field(..., description="Import data")
         user_id: str = Field("system", description="User performing import")

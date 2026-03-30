@@ -45,25 +45,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -76,11 +70,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DMAWizardStep(str, Enum):
     """Names of DMA wizard steps in execution order."""
@@ -92,7 +84,6 @@ class DMAWizardStep(str, Enum):
     THRESHOLD_CONFIG = "threshold_config"
     REPORTING_PREFERENCES = "reporting_preferences"
 
-
 class StepStatus(str, Enum):
     """Status of a wizard step."""
 
@@ -102,7 +93,6 @@ class StepStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class ScoringMethod(str, Enum):
     """Available scoring methodologies."""
 
@@ -110,7 +100,6 @@ class ScoringMethod(str, Enum):
     WEIGHTED_SUM = "weighted_sum"
     MAXIMUM = "maximum"
     ARITHMETIC_MEAN = "arithmetic_mean"
-
 
 class EngagementMethod(str, Enum):
     """Stakeholder engagement methods."""
@@ -122,7 +111,6 @@ class EngagementMethod(str, Enum):
     WRITTEN_CONSULTATION = "written_consultation"
     ADVISORY_PANEL = "advisory_panel"
 
-
 class ValueChainBoundary(str, Enum):
     """Value chain boundary options for DMA scope."""
 
@@ -131,11 +119,9 @@ class ValueChainBoundary(str, Enum):
     DOWNSTREAM = "downstream"
     FULL_VALUE_CHAIN = "full_value_chain"
 
-
 # ---------------------------------------------------------------------------
 # Data Models - Step Inputs
 # ---------------------------------------------------------------------------
-
 
 class CompanyProfile(BaseModel):
     """Company profile from step 1."""
@@ -152,7 +138,6 @@ class CompanyProfile(BaseModel):
     balance_sheet_total_eur: Optional[float] = Field(None, ge=0)
     subsidiary_count: int = Field(default=0, ge=0)
     reporting_year: int = Field(default=2025, ge=2024, le=2030)
-
 
 class ScopeDefinition(BaseModel):
     """Scope definition from step 2."""
@@ -178,7 +163,6 @@ class ScopeDefinition(BaseModel):
         },
     )
 
-
 class StakeholderConfig(BaseModel):
     """Stakeholder configuration from step 3."""
 
@@ -202,7 +186,6 @@ class StakeholderConfig(BaseModel):
     min_stakeholders_per_category: int = Field(default=5, ge=1, le=100)
     target_response_rate_pct: float = Field(default=60.0, ge=10.0, le=100.0)
 
-
 class ScoringMethodologyConfig(BaseModel):
     """Scoring methodology from step 4."""
 
@@ -218,7 +201,6 @@ class ScoringMethodologyConfig(BaseModel):
     scale_min: float = Field(default=1.0, ge=1.0)
     scale_max: float = Field(default=5.0, le=10.0)
     use_likelihood_for_impact: bool = Field(default=True)
-
 
 class ThresholdConfig(BaseModel):
     """Threshold configuration from step 5."""
@@ -241,7 +223,6 @@ class ThresholdConfig(BaseModel):
         description="Topics presumed material regardless of score",
     )
 
-
 class ReportingPreferences(BaseModel):
     """Reporting preferences from step 6."""
 
@@ -257,11 +238,9 @@ class ReportingPreferences(BaseModel):
     assurance_level: str = Field(default="limited", description="limited or reasonable")
     first_reporting_year: int = Field(default=2025, ge=2024, le=2030)
 
-
 # ---------------------------------------------------------------------------
 # Wizard State Models
 # ---------------------------------------------------------------------------
-
 
 class WizardStepState(BaseModel):
     """State of a single wizard step."""
@@ -274,7 +253,6 @@ class WizardStepState(BaseModel):
     started_at: Optional[datetime] = Field(None)
     completed_at: Optional[datetime] = Field(None)
     execution_time_ms: float = Field(default=0.0)
-
 
 class WizardState(BaseModel):
     """Complete state of the DMA setup wizard."""
@@ -289,9 +267,8 @@ class WizardState(BaseModel):
     threshold_config: Optional[ThresholdConfig] = Field(None)
     reporting_preferences: Optional[ReportingPreferences] = Field(None)
     is_complete: bool = Field(default=False)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     completed_at: Optional[datetime] = Field(None)
-
 
 class SetupResult(BaseModel):
     """Final setup result with generated DMAConfig."""
@@ -309,9 +286,8 @@ class SetupResult(BaseModel):
     total_steps_completed: int = Field(default=0)
     total_steps: int = Field(default=6)
     configuration_hash: str = Field(default="")
-    generated_at: datetime = Field(default_factory=_utcnow)
+    generated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Step Definitions
@@ -351,11 +327,9 @@ INDUSTRY_DEFAULT_THRESHOLDS: Dict[str, Dict[str, float]] = {
     "Q": {"impact": 2.5, "financial": 3.0},
 }
 
-
 # ---------------------------------------------------------------------------
 # DMASetupWizard
 # ---------------------------------------------------------------------------
-
 
 class DMASetupWizard:
     """6-step guided configuration wizard for DMA PACK-015.
@@ -391,7 +365,7 @@ class DMASetupWizard:
         Returns:
             Initialized WizardState with all steps in PENDING status.
         """
-        wizard_id = _compute_hash(f"dma-wizard:{_utcnow().isoformat()}")[:16]
+        wizard_id = _compute_hash(f"dma-wizard:{utcnow().isoformat()}")[:16]
         steps: Dict[str, WizardStepState] = {}
         for step_name in STEP_ORDER:
             steps[step_name.value] = WizardStepState(
@@ -434,7 +408,7 @@ class DMASetupWizard:
             raise ValueError(f"Step '{step_name}' not found")
 
         step.status = StepStatus.IN_PROGRESS
-        step.started_at = _utcnow()
+        step.started_at = utcnow()
         start_time = time.monotonic()
 
         handler = self._step_handlers.get(step_enum)
@@ -452,7 +426,7 @@ class DMASetupWizard:
                 step.validation_errors = errors
             else:
                 step.status = StepStatus.COMPLETED
-                step.completed_at = _utcnow()
+                step.completed_at = utcnow()
                 step.validation_errors = []
                 self._advance_step(step_enum)
         except Exception as exc:
@@ -660,7 +634,7 @@ class DMASetupWizard:
                 self._state.current_step = STEP_ORDER[idx + 1]
             else:
                 self._state.is_complete = True
-                self._state.completed_at = _utcnow()
+                self._state.completed_at = utcnow()
         except ValueError:
             pass
 

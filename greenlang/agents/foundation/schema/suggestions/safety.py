@@ -50,10 +50,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from ..compiler.ir import SchemaIR, PropertyIR
 from ..models.finding import Finding
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -189,7 +190,7 @@ class PatchOp(str, Enum):
 # =============================================================================
 
 
-class JSONPatchOperation(BaseModel):
+class JSONPatchOperation(GreenLangBase):
     """
     JSON Patch operation (RFC 6902).
 
@@ -270,7 +271,7 @@ class JSONPatchOperation(BaseModel):
         return result
 
 
-class PatchContext(BaseModel):
+class PatchContext(GreenLangBase):
     """
     Context for safety classification of a patch operation.
 
@@ -355,7 +356,7 @@ class PatchContext(BaseModel):
     }
 
 
-class SafetyClassification(BaseModel):
+class SafetyClassification(GreenLangBase):
     """
     Classification result for a patch operation.
 

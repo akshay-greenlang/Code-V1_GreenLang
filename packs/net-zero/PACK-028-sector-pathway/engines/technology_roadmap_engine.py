@@ -62,17 +62,15 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
@@ -116,7 +114,6 @@ def _round_val(value: Any, places: int = 6) -> Decimal:
 
 def _round3(value: float) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -163,7 +160,6 @@ class AdoptionPhase(str, Enum):
     MAINSTREAM = "mainstream"
     MATURE = "mature"
     DECLINE = "decline"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- IEA Technology Milestones by Sector
@@ -288,7 +284,6 @@ IEA_MILESTONES: Dict[str, List[Dict[str, Any]]] = {
 # Total milestone count
 TOTAL_MILESTONE_COUNT = sum(len(v) for v in IEA_MILESTONES.values())
 
-
 # ---------------------------------------------------------------------------
 # Constants -- Technology S-curve Parameters
 # ---------------------------------------------------------------------------
@@ -334,7 +329,6 @@ TECHNOLOGY_SCURVES: Dict[str, List[Dict[str, Any]]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
@@ -360,7 +354,6 @@ class CurrentTechnologyStatus(BaseModel):
         default=Decimal("0"), ge=Decimal("0")
     )
     trl: Optional[TechnologyReadinessLevel] = Field(default=None)
-
 
 class TechnologyRoadmapInput(BaseModel):
     """Input for technology roadmap generation.
@@ -418,7 +411,6 @@ class TechnologyRoadmapInput(BaseModel):
         default="global", max_length=50, description="Regional variant"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
@@ -445,7 +437,6 @@ class TechnologyAdoptionCurve(BaseModel):
     adoption_by_year: Dict[int, Decimal] = Field(default_factory=dict)
     phase: str = Field(default="")
 
-
 class CapExPhase(BaseModel):
     """CapEx phasing for a technology.
 
@@ -461,7 +452,6 @@ class CapExPhase(BaseModel):
     annual_capex: Dict[int, Decimal] = Field(default_factory=dict)
     cost_per_unit: Decimal = Field(default=Decimal("0"))
     cost_unit: str = Field(default="")
-
 
 class CostProjection(BaseModel):
     """Technology cost projection over time.
@@ -479,7 +469,6 @@ class CostProjection(BaseModel):
     learning_rate: Decimal = Field(default=Decimal("0"))
     cost_unit: str = Field(default="")
 
-
 class MilestoneTrackingResult(BaseModel):
     """IEA milestone tracking result.
 
@@ -496,7 +485,6 @@ class MilestoneTrackingResult(BaseModel):
     milestones_behind: int = Field(default=0)
     milestone_details: List[Dict[str, Any]] = Field(default_factory=list)
 
-
 class TechnologyDependency(BaseModel):
     """Technology dependency mapping.
 
@@ -510,7 +498,6 @@ class TechnologyDependency(BaseModel):
     depends_on: List[str] = Field(default_factory=list)
     enables: List[str] = Field(default_factory=list)
     critical_path: bool = Field(default=False)
-
 
 class TechnologyRoadmapResult(BaseModel):
     """Complete technology roadmap result.
@@ -537,7 +524,7 @@ class TechnologyRoadmapResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     sector: str = Field(default="")
     base_year: int = Field(default=0)
@@ -554,11 +541,9 @@ class TechnologyRoadmapResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class TechnologyRoadmapEngine:
     """Technology transition roadmap engine with IEA milestone mapping.

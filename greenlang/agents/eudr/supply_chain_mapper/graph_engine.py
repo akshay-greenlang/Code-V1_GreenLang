@@ -80,7 +80,8 @@ from typing import (
 )
 from uuid import uuid4
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -204,7 +205,7 @@ class MutationType(str, Enum):
 # ===================================================================
 
 
-class SupplyChainNode(BaseModel):
+class SupplyChainNode(GreenLangBase):
     """A typed node in the EUDR supply chain graph.
 
     Represents a single actor (producer, collector, processor, etc.)
@@ -332,7 +333,7 @@ class SupplyChainNode(BaseModel):
         }
 
 
-class SupplyChainEdge(BaseModel):
+class SupplyChainEdge(GreenLangBase):
     """A directed edge representing a custody transfer.
 
     Models the transfer of an EUDR commodity from one supply chain
@@ -450,7 +451,7 @@ class SupplyChainEdge(BaseModel):
         }
 
 
-class GraphMutationRecord(BaseModel):
+class GraphMutationRecord(GreenLangBase):
     """Audit trail record for a single graph mutation.
 
     Every add, remove, or update operation on the graph is recorded
@@ -520,7 +521,7 @@ class GraphMutationRecord(BaseModel):
         return hashlib.sha256(hash_data.encode()).hexdigest()
 
 
-class GraphSnapshot(BaseModel):
+class GraphSnapshot(GreenLangBase):
     """Immutable point-in-time snapshot of a supply chain graph.
 
     Captures the complete graph state for audit trail and versioning
@@ -587,7 +588,7 @@ class GraphSnapshot(BaseModel):
 # ===================================================================
 
 
-class GraphEngineConfig(BaseModel):
+class GraphEngineConfig(GreenLangBase):
     """Configuration for SupplyChainGraphEngine.
 
     Attributes:

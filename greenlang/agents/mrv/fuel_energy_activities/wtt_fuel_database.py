@@ -82,6 +82,7 @@ from greenlang.agents.mrv.fuel_energy_activities.models import (
 )
 from greenlang.agents.mrv.fuel_energy_activities.metrics import get_metrics
 from greenlang.agents.mrv.fuel_energy_activities.provenance import get_provenance
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -475,7 +476,6 @@ _MASS_UNIT_MAP: Dict[str, str] = {
     "t": "tonne",
 }
 
-
 def _normalize_unit(unit: str) -> Tuple[str, str]:
     """Normalize a unit string and classify it as energy, volume, or mass.
 
@@ -504,7 +504,6 @@ def _normalize_unit(unit: str) -> Tuple[str, str]:
         f"mass: {sorted(_MASS_UNIT_MAP)}"
     )
 
-
 def _energy_to_kwh(value: Decimal, unit: str) -> Decimal:
     """Convert an energy value in the given unit to kWh.
 
@@ -530,7 +529,6 @@ def _energy_to_kwh(value: Decimal, unit: str) -> Decimal:
     if unit == "mmbtu":
         return value * _MMBTU_TO_KWH
     raise ValueError(f"Unknown energy unit: {unit}")
-
 
 def _kwh_to_energy(value: Decimal, unit: str) -> Decimal:
     """Convert kWh to the target energy unit.
@@ -558,7 +556,6 @@ def _kwh_to_energy(value: Decimal, unit: str) -> Decimal:
         return value / _MMBTU_TO_KWH
     raise ValueError(f"Unknown energy unit: {unit}")
 
-
 def _volume_to_litre(value: Decimal, unit: str) -> Decimal:
     """Convert a volume to litres.
 
@@ -582,7 +579,6 @@ def _volume_to_litre(value: Decimal, unit: str) -> Decimal:
         return value * _BARREL_TO_LITRE
     raise ValueError(f"Unknown volume unit: {unit}")
 
-
 def _litre_to_volume(value: Decimal, unit: str) -> Decimal:
     """Convert litres to the target volume unit.
 
@@ -605,7 +601,6 @@ def _litre_to_volume(value: Decimal, unit: str) -> Decimal:
         return value / _BARREL_TO_LITRE
     raise ValueError(f"Unknown volume unit: {unit}")
 
-
 def _mass_to_kg(value: Decimal, unit: str) -> Decimal:
     """Convert a mass to kilograms.
 
@@ -621,7 +616,6 @@ def _mass_to_kg(value: Decimal, unit: str) -> Decimal:
     if unit == "tonne":
         return value * _TONNE_TO_KG
     raise ValueError(f"Unknown mass unit: {unit}")
-
 
 def _kg_to_mass(value: Decimal, unit: str) -> Decimal:
     """Convert kilograms to the target mass unit.
@@ -639,16 +633,9 @@ def _kg_to_mass(value: Decimal, unit: str) -> Decimal:
         return value / _TONNE_TO_KG
     raise ValueError(f"Unknown mass unit: {unit}")
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with zeroed microseconds."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ============================================================================
 # WTTFuelDatabaseEngine
 # ============================================================================
-
 
 class WTTFuelDatabaseEngine:
     """Well-to-Tank fuel emission factor database and lookup engine.
@@ -745,7 +732,7 @@ class WTTFuelDatabaseEngine:
         self._custom_factors: Dict[str, WTTEmissionFactor] = {}
         self._lookup_count: int = 0
         self._conversion_count: int = 0
-        self._start_time: datetime = _utcnow()
+        self._start_time: datetime = utcnow()
 
         # Feature toggles
         self._enable_provenance: bool = self._config.get(
@@ -1893,7 +1880,7 @@ class WTTFuelDatabaseEngine:
             self._custom_factors.clear()
             self._lookup_count = 0
             self._conversion_count = 0
-            self._start_time = _utcnow()
+            self._start_time = utcnow()
 
         # Rebuild the index to remove any custom entries
         self._factor_index.clear()
@@ -1925,7 +1912,7 @@ class WTTFuelDatabaseEngine:
             conversions = self._conversion_count
             custom_count = len(self._custom_factors)
 
-        uptime = (_utcnow() - self._start_time).total_seconds()
+        uptime = (utcnow() - self._start_time).total_seconds()
 
         return {
             "total_lookups": lookups,
@@ -2014,7 +2001,7 @@ class WTTFuelDatabaseEngine:
             "checks_passed": sum(1 for v in checks.values() if v),
             "checks_total": len(checks),
             "duration_ms": round(duration * 1000, 2),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "engine_version": ENGINE_VERSION,
             "agent_id": AGENT_ID,
         }
@@ -2495,11 +2482,9 @@ class WTTFuelDatabaseEngine:
         }
         return notes.get(source, "Unknown source.")
 
-
 # ---------------------------------------------------------------------------
 # Module-level convenience functions
 # ---------------------------------------------------------------------------
-
 
 def get_wtt_fuel_database(
     config: Optional[Dict[str, Any]] = None,
@@ -2524,7 +2509,6 @@ def get_wtt_fuel_database(
     """
     return WTTFuelDatabaseEngine.get_instance(config)
 
-
 def reset_wtt_fuel_database() -> None:
     """Reset the singleton WTTFuelDatabaseEngine instance.
 
@@ -2534,7 +2518,6 @@ def reset_wtt_fuel_database() -> None:
         >>> reset_wtt_fuel_database()
     """
     WTTFuelDatabaseEngine.reset_instance()
-
 
 # ---------------------------------------------------------------------------
 # Public surface

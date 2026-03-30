@@ -43,23 +43,17 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import ConfigDict, Field, field_validator
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
+from greenlang.schemas import GreenLangBase, utcnow
 
 def _new_id() -> str:
     """Generate a new UUID4 string identifier."""
     return str(uuid.uuid4())
 
-
 # =============================================================================
 # Enumerations (API-level mirrors for OpenAPI documentation)
 # =============================================================================
-
 
 class TerritoryStatusEnum(str, Enum):
     """Territory registration lifecycle status."""
@@ -69,7 +63,6 @@ class TerritoryStatusEnum(str, Enum):
     VERIFIED = "verified"
     DISPUTED = "disputed"
     ARCHIVED = "archived"
-
 
 class TerritoryTypeEnum(str, Enum):
     """Types of indigenous/traditional territories."""
@@ -82,7 +75,6 @@ class TerritoryTypeEnum(str, Enum):
     COLLECTIVE_TITLE = "collective_title"
     CUSTOMARY_LAND = "customary_land"
 
-
 class RecognitionLevelEnum(str, Enum):
     """Legal recognition level for a territory."""
 
@@ -92,7 +84,6 @@ class RecognitionLevelEnum(str, Enum):
     CUSTOMARY_ONLY = "customary_only"
     DISPUTED = "disputed"
     UNRECOGNIZED = "unrecognized"
-
 
 class FPICStatusEnum(str, Enum):
     """FPIC (Free, Prior and Informed Consent) verification status."""
@@ -104,7 +95,6 @@ class FPICStatusEnum(str, Enum):
     CONDITIONAL = "conditional"
     NOT_REQUIRED = "not_required"
     INSUFFICIENT = "insufficient"
-
 
 class FPICDocumentTypeEnum(str, Enum):
     """Types of FPIC documentation."""
@@ -119,7 +109,6 @@ class FPICDocumentTypeEnum(str, Enum):
     GOVERNMENT_APPROVAL = "government_approval"
     LEGAL_OPINION = "legal_opinion"
 
-
 class OverlapTypeEnum(str, Enum):
     """Types of plot-territory spatial overlap."""
 
@@ -129,7 +118,6 @@ class OverlapTypeEnum(str, Enum):
     BUFFER_ZONE_OVERLAP = "buffer_zone_overlap"
     NO_OVERLAP = "no_overlap"
 
-
 class OverlapSeverityEnum(str, Enum):
     """Severity level of a detected overlap."""
 
@@ -138,7 +126,6 @@ class OverlapSeverityEnum(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     INFORMATIONAL = "informational"
-
 
 class ConsultationTypeEnum(str, Enum):
     """Types of community consultation activities."""
@@ -152,7 +139,6 @@ class ConsultationTypeEnum(str, Enum):
     TRADITIONAL_ASSEMBLY = "traditional_assembly"
     FOCUS_GROUP = "focus_group"
 
-
 class ConsultationStatusEnum(str, Enum):
     """Consultation activity status."""
 
@@ -161,7 +147,6 @@ class ConsultationStatusEnum(str, Enum):
     COMPLETED = "completed"
     CANCELLED = "cancelled"
     FOLLOW_UP_REQUIRED = "follow_up_required"
-
 
 class ViolationTypeEnum(str, Enum):
     """Types of indigenous rights violations."""
@@ -177,7 +162,6 @@ class ViolationTypeEnum(str, Enum):
     CONSULTATION_FAILURE = "consultation_failure"
     BENEFIT_SHARING_BREACH = "benefit_sharing_breach"
 
-
 class ViolationSeverityEnum(str, Enum):
     """Severity level of a rights violation."""
 
@@ -185,7 +169,6 @@ class ViolationSeverityEnum(str, Enum):
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 class ViolationStatusEnum(str, Enum):
     """Violation lifecycle status."""
@@ -198,7 +181,6 @@ class ViolationStatusEnum(str, Enum):
     ESCALATED = "escalated"
     DISMISSED = "dismissed"
 
-
 class CommunityStatusEnum(str, Enum):
     """Indigenous community registry status."""
 
@@ -206,7 +188,6 @@ class CommunityStatusEnum(str, Enum):
     PENDING_VERIFICATION = "pending_verification"
     VERIFIED = "verified"
     INACTIVE = "inactive"
-
 
 class ComplianceStatusEnum(str, Enum):
     """Overall compliance status for a plot or supplier."""
@@ -217,7 +198,6 @@ class ComplianceStatusEnum(str, Enum):
     REQUIRES_ASSESSMENT = "requires_assessment"
     REMEDIATION_REQUIRED = "remediation_required"
     EXEMPT = "exempt"
-
 
 class EUDRCommodityEnum(str, Enum):
     """EUDR-regulated commodity types per Article 1."""
@@ -230,20 +210,17 @@ class EUDRCommodityEnum(str, Enum):
     SOYA = "soya"
     WOOD = "wood"
 
-
 class SortOrderEnum(str, Enum):
     """Sort order for list endpoints."""
 
     ASC = "asc"
     DESC = "desc"
 
-
 # =============================================================================
 # Common / Shared Schemas
 # =============================================================================
 
-
-class ProvenanceInfo(BaseModel):
+class ProvenanceInfo(GreenLangBase):
     """Provenance tracking information for audit trail."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -259,12 +236,11 @@ class ProvenanceInfo(BaseModel):
         description="Agent identifier",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of operation",
     )
 
-
-class MetadataSchema(BaseModel):
+class MetadataSchema(GreenLangBase):
     """Response metadata for traceability."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -287,8 +263,7 @@ class MetadataSchema(BaseModel):
         default="1.0.0", description="API version"
     )
 
-
-class PaginatedMeta(BaseModel):
+class PaginatedMeta(GreenLangBase):
     """Pagination metadata for list responses."""
 
     total: int = Field(..., ge=0, description="Total number of records")
@@ -296,8 +271,7 @@ class PaginatedMeta(BaseModel):
     offset: int = Field(..., ge=0, description="Number of records skipped")
     has_more: bool = Field(..., description="Whether more pages exist")
 
-
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     """Structured error response for all API endpoints."""
 
     error: str = Field(..., description="Error type identifier")
@@ -305,8 +279,7 @@ class ErrorResponse(BaseModel):
     detail: Optional[str] = Field(None, description="Additional error details")
     request_id: Optional[str] = Field(None, description="Request correlation ID")
 
-
-class GeoPointSchema(BaseModel):
+class GeoPointSchema(GreenLangBase):
     """Geographic coordinate point with regulatory-grade precision."""
 
     latitude: Decimal = Field(
@@ -322,8 +295,7 @@ class GeoPointSchema(BaseModel):
         description="WGS84 longitude in decimal degrees",
     )
 
-
-class GeoPolygonSchema(BaseModel):
+class GeoPolygonSchema(GreenLangBase):
     """Geographic polygon defined by ordered coordinate points."""
 
     coordinates: List[GeoPointSchema] = Field(
@@ -344,8 +316,7 @@ class GeoPolygonSchema(BaseModel):
             raise ValueError("Polygon must have at least 3 coordinate points")
         return v
 
-
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Health check response."""
 
     status: str = Field(default="healthy", description="Service health status")
@@ -356,13 +327,11 @@ class HealthResponse(BaseModel):
     )
     version: str = Field(default="1.0.0", description="API version")
 
-
 # =============================================================================
 # 1. Territory Schemas
 # =============================================================================
 
-
-class TerritoryCreateRequest(BaseModel):
+class TerritoryCreateRequest(GreenLangBase):
     """Request to register an indigenous territory."""
 
     model_config = ConfigDict(
@@ -437,8 +406,7 @@ class TerritoryCreateRequest(BaseModel):
             raise ValueError("Country code must be 2-letter ISO 3166-1 alpha-2")
         return normalized
 
-
-class TerritoryUpdateRequest(BaseModel):
+class TerritoryUpdateRequest(GreenLangBase):
     """Request to update an existing territory."""
 
     model_config = ConfigDict(
@@ -487,8 +455,7 @@ class TerritoryUpdateRequest(BaseModel):
         None, description="Updated classification tags",
     )
 
-
-class TerritoryEntry(BaseModel):
+class TerritoryEntry(GreenLangBase):
     """Single territory record in responses."""
 
     territory_id: str = Field(..., description="Unique territory identifier")
@@ -509,8 +476,7 @@ class TerritoryEntry(BaseModel):
     created_at: Optional[datetime] = Field(None, description="Creation timestamp")
     updated_at: Optional[datetime] = Field(None, description="Last update timestamp")
 
-
-class TerritoryResponse(BaseModel):
+class TerritoryResponse(GreenLangBase):
     """Single territory detail response."""
 
     territory: TerritoryEntry = Field(..., description="Territory details")
@@ -519,8 +485,7 @@ class TerritoryResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class TerritoryListResponse(BaseModel):
+class TerritoryListResponse(GreenLangBase):
     """Paginated territory list response."""
 
     territories: List[TerritoryEntry] = Field(
@@ -533,13 +498,11 @@ class TerritoryListResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
 # =============================================================================
 # 2. FPIC Schemas
 # =============================================================================
 
-
-class FPICVerifyRequest(BaseModel):
+class FPICVerifyRequest(GreenLangBase):
     """Request to verify FPIC documentation for a plot/territory pair."""
 
     model_config = ConfigDict(
@@ -568,8 +531,7 @@ class FPICVerifyRequest(BaseModel):
         None, description="Target verification date"
     )
 
-
-class FPICVerifyResponse(BaseModel):
+class FPICVerifyResponse(GreenLangBase):
     """FPIC verification result."""
 
     verification_id: str = Field(
@@ -594,15 +556,14 @@ class FPICVerifyResponse(BaseModel):
         None, description="FPIC consent expiry date"
     )
     verified_at: datetime = Field(
-        default_factory=_utcnow, description="Verification timestamp"
+        default_factory=utcnow, description="Verification timestamp"
     )
     provenance: ProvenanceInfo = Field(..., description="Audit trail provenance")
     metadata: MetadataSchema = Field(
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class FPICDocumentEntry(BaseModel):
+class FPICDocumentEntry(GreenLangBase):
     """Single FPIC document record."""
 
     document_id: str = Field(..., description="Unique document identifier")
@@ -625,8 +586,7 @@ class FPICDocumentEntry(BaseModel):
     )
     created_at: Optional[datetime] = Field(None, description="Creation timestamp")
 
-
-class FPICDocumentResponse(BaseModel):
+class FPICDocumentResponse(GreenLangBase):
     """Single FPIC document detail response."""
 
     document: FPICDocumentEntry = Field(..., description="Document details")
@@ -635,8 +595,7 @@ class FPICDocumentResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class FPICDocumentListResponse(BaseModel):
+class FPICDocumentListResponse(GreenLangBase):
     """Paginated FPIC document list response."""
 
     documents: List[FPICDocumentEntry] = Field(
@@ -649,8 +608,7 @@ class FPICDocumentListResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class FPICScoreRequest(BaseModel):
+class FPICScoreRequest(GreenLangBase):
     """Request to calculate FPIC compliance score for a territory."""
 
     model_config = ConfigDict(
@@ -672,8 +630,7 @@ class FPICScoreRequest(BaseModel):
         True, description="Apply quality weighting to documents"
     )
 
-
-class FPICScoreResponse(BaseModel):
+class FPICScoreResponse(GreenLangBase):
     """FPIC compliance score response."""
 
     territory_id: str = Field(..., description="Scored territory ID")
@@ -699,20 +656,18 @@ class FPICScoreResponse(BaseModel):
         default_factory=list, description="Recommended improvements"
     )
     scored_at: datetime = Field(
-        default_factory=_utcnow, description="Scoring timestamp"
+        default_factory=utcnow, description="Scoring timestamp"
     )
     provenance: ProvenanceInfo = Field(..., description="Audit trail provenance")
     metadata: MetadataSchema = Field(
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
 # =============================================================================
 # 3. Overlap Schemas
 # =============================================================================
 
-
-class OverlapAnalyzeRequest(BaseModel):
+class OverlapAnalyzeRequest(GreenLangBase):
     """Request to analyze overlap between a plot and indigenous territories."""
 
     model_config = ConfigDict(
@@ -752,8 +707,7 @@ class OverlapAnalyzeRequest(BaseModel):
         None, description="Commodity for risk context"
     )
 
-
-class OverlapEntry(BaseModel):
+class OverlapEntry(GreenLangBase):
     """Single overlap analysis result."""
 
     overlap_id: str = Field(
@@ -790,11 +744,10 @@ class OverlapEntry(BaseModel):
         True, description="Whether FPIC is required for this overlap"
     )
     detected_at: datetime = Field(
-        default_factory=_utcnow, description="Detection timestamp"
+        default_factory=utcnow, description="Detection timestamp"
     )
 
-
-class OverlapAnalyzeResponse(BaseModel):
+class OverlapAnalyzeResponse(GreenLangBase):
     """Overlap analysis result for a single plot."""
 
     plot_id: str = Field(..., description="Analyzed plot ID")
@@ -817,8 +770,7 @@ class OverlapAnalyzeResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class OverlapListResponse(BaseModel):
+class OverlapListResponse(GreenLangBase):
     """Paginated overlap list response."""
 
     overlaps: List[OverlapEntry] = Field(
@@ -831,8 +783,7 @@ class OverlapListResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class OverlapBulkRequest(BaseModel):
+class OverlapBulkRequest(GreenLangBase):
     """Request for bulk overlap analysis of multiple plots."""
 
     model_config = ConfigDict(
@@ -860,8 +811,7 @@ class OverlapBulkRequest(BaseModel):
         None, description="Commodity for risk context"
     )
 
-
-class OverlapBulkResultEntry(BaseModel):
+class OverlapBulkResultEntry(GreenLangBase):
     """Single plot result within a bulk overlap analysis."""
 
     plot_id: str = Field(..., description="Plot identifier")
@@ -876,8 +826,7 @@ class OverlapBulkResultEntry(BaseModel):
         default_factory=list, description="Overlap details"
     )
 
-
-class OverlapBulkResponse(BaseModel):
+class OverlapBulkResponse(GreenLangBase):
     """Bulk overlap analysis response."""
 
     total_plots: int = Field(..., ge=0, description="Total plots analyzed")
@@ -895,13 +844,11 @@ class OverlapBulkResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
 # =============================================================================
 # 4. Consultation Schemas
 # =============================================================================
 
-
-class ConsultationCreateRequest(BaseModel):
+class ConsultationCreateRequest(GreenLangBase):
     """Request to record a community consultation activity."""
 
     model_config = ConfigDict(
@@ -960,8 +907,7 @@ class ConsultationCreateRequest(BaseModel):
         None, description="Related document IDs"
     )
 
-
-class ConsultationEntry(BaseModel):
+class ConsultationEntry(GreenLangBase):
     """Single consultation record."""
 
     consultation_id: str = Field(..., description="Unique consultation identifier")
@@ -985,8 +931,7 @@ class ConsultationEntry(BaseModel):
     created_at: Optional[datetime] = Field(None, description="Creation timestamp")
     updated_at: Optional[datetime] = Field(None, description="Last update timestamp")
 
-
-class ConsultationResponse(BaseModel):
+class ConsultationResponse(GreenLangBase):
     """Single consultation detail response."""
 
     consultation: ConsultationEntry = Field(..., description="Consultation details")
@@ -995,8 +940,7 @@ class ConsultationResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class ConsultationListResponse(BaseModel):
+class ConsultationListResponse(GreenLangBase):
     """Paginated consultation list response."""
 
     consultations: List[ConsultationEntry] = Field(
@@ -1009,13 +953,11 @@ class ConsultationListResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
 # =============================================================================
 # 5. Violation Schemas
 # =============================================================================
 
-
-class ViolationDetectRequest(BaseModel):
+class ViolationDetectRequest(GreenLangBase):
     """Request to detect rights violations for a plot or territory."""
 
     model_config = ConfigDict(
@@ -1047,8 +989,7 @@ class ViolationDetectRequest(BaseModel):
         False, description="Include previously resolved violations"
     )
 
-
-class ViolationEntry(BaseModel):
+class ViolationEntry(GreenLangBase):
     """Single violation record."""
 
     violation_id: str = Field(..., description="Unique violation identifier")
@@ -1065,13 +1006,12 @@ class ViolationEntry(BaseModel):
         None, description="Required remediation actions"
     )
     detected_at: datetime = Field(
-        default_factory=_utcnow, description="Detection timestamp"
+        default_factory=utcnow, description="Detection timestamp"
     )
     resolved_at: Optional[datetime] = Field(None, description="Resolution timestamp")
     resolution_notes: Optional[str] = Field(None, description="Resolution notes")
 
-
-class ViolationDetectResponse(BaseModel):
+class ViolationDetectResponse(GreenLangBase):
     """Violation detection result."""
 
     violations: List[ViolationEntry] = Field(
@@ -1088,8 +1028,7 @@ class ViolationDetectResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class ViolationResponse(BaseModel):
+class ViolationResponse(GreenLangBase):
     """Single violation detail response."""
 
     violation: ViolationEntry = Field(..., description="Violation details")
@@ -1098,8 +1037,7 @@ class ViolationResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class ViolationListResponse(BaseModel):
+class ViolationListResponse(GreenLangBase):
     """Paginated violation list response."""
 
     violations: List[ViolationEntry] = Field(
@@ -1112,8 +1050,7 @@ class ViolationListResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class ViolationResolveRequest(BaseModel):
+class ViolationResolveRequest(GreenLangBase):
     """Request to resolve a violation."""
 
     model_config = ConfigDict(
@@ -1141,8 +1078,7 @@ class ViolationResolveRequest(BaseModel):
         None, description="Evidence document IDs supporting resolution"
     )
 
-
-class ViolationResolveResponse(BaseModel):
+class ViolationResolveResponse(GreenLangBase):
     """Violation resolution result."""
 
     violation: ViolationEntry = Field(..., description="Updated violation record")
@@ -1157,13 +1093,11 @@ class ViolationResolveResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
 # =============================================================================
 # 6. Community Registry Schemas
 # =============================================================================
 
-
-class CommunityRegisterRequest(BaseModel):
+class CommunityRegisterRequest(GreenLangBase):
     """Request to register an indigenous community."""
 
     model_config = ConfigDict(
@@ -1230,8 +1164,7 @@ class CommunityRegisterRequest(BaseModel):
             raise ValueError("Country code must be 2-letter ISO 3166-1 alpha-2")
         return normalized
 
-
-class CommunityEntry(BaseModel):
+class CommunityEntry(GreenLangBase):
     """Single community record."""
 
     community_id: str = Field(..., description="Unique community identifier")
@@ -1259,8 +1192,7 @@ class CommunityEntry(BaseModel):
     created_at: Optional[datetime] = Field(None, description="Creation timestamp")
     updated_at: Optional[datetime] = Field(None, description="Last update timestamp")
 
-
-class CommunityResponse(BaseModel):
+class CommunityResponse(GreenLangBase):
     """Single community detail response."""
 
     community: CommunityEntry = Field(..., description="Community details")
@@ -1269,8 +1201,7 @@ class CommunityResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class CommunityListResponse(BaseModel):
+class CommunityListResponse(GreenLangBase):
     """Paginated community list response."""
 
     communities: List[CommunityEntry] = Field(
@@ -1283,13 +1214,11 @@ class CommunityListResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
 # =============================================================================
 # 7. Compliance Schemas
 # =============================================================================
 
-
-class ComplianceReportResponse(BaseModel):
+class ComplianceReportResponse(GreenLangBase):
     """Compliance report for a specific plot."""
 
     report_id: str = Field(
@@ -1325,15 +1254,14 @@ class ComplianceReportResponse(BaseModel):
         default_factory=list, description="Affected community names"
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow, description="Report generation timestamp"
+        default_factory=utcnow, description="Report generation timestamp"
     )
     provenance: ProvenanceInfo = Field(..., description="Audit trail provenance")
     metadata: MetadataSchema = Field(
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class ComplianceAssessRequest(BaseModel):
+class ComplianceAssessRequest(GreenLangBase):
     """Request for a full compliance assessment."""
 
     model_config = ConfigDict(
@@ -1373,8 +1301,7 @@ class ComplianceAssessRequest(BaseModel):
         True, description="Include consultation status review"
     )
 
-
-class CompliancePlotSummary(BaseModel):
+class CompliancePlotSummary(GreenLangBase):
     """Per-plot compliance summary within an assessment."""
 
     plot_id: str = Field(..., description="Plot identifier")
@@ -1392,8 +1319,7 @@ class CompliancePlotSummary(BaseModel):
         default_factory=list, description="Identified issues"
     )
 
-
-class ComplianceAssessResponse(BaseModel):
+class ComplianceAssessResponse(GreenLangBase):
     """Full compliance assessment response."""
 
     assessment_id: str = Field(
@@ -1422,13 +1348,12 @@ class ComplianceAssessResponse(BaseModel):
         default_factory=list, description="Aggregate recommendations"
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow, description="Assessment timestamp"
+        default_factory=utcnow, description="Assessment timestamp"
     )
     provenance: ProvenanceInfo = Field(..., description="Audit trail provenance")
     metadata: MetadataSchema = Field(
         default_factory=MetadataSchema, description="Response metadata"
     )
-
 
 # =============================================================================
 # Public API

@@ -53,7 +53,10 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import ConfigDict, Field
+
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ReportFormat
 
 # ---------------------------------------------------------------------------
 # Module constants
@@ -68,16 +71,9 @@ EUDR_RETENTION_YEARS = 5
 # Helper
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ===========================================================================
 # Enumerations (12)
 # ===========================================================================
-
 
 class LegislationCategory(str, Enum):
     """EUDR Article 2(40) legislation categories."""
@@ -90,14 +86,12 @@ class LegislationCategory(str, Enum):
     TRADE_AND_CUSTOMS = "trade_and_customs"
     ANTI_CORRUPTION = "anti_corruption"
 
-
 class ComplianceStatus(str, Enum):
     """Compliance determination states."""
     COMPLIANT = "compliant"
     PARTIALLY_COMPLIANT = "partially_compliant"
     NON_COMPLIANT = "non_compliant"
     INSUFFICIENT_DATA = "insufficient_data"
-
 
 class DocumentValidityStatus(str, Enum):
     """Document validity states."""
@@ -107,7 +101,6 @@ class DocumentValidityStatus(str, Enum):
     SUSPENDED = "suspended"
     REVOKED = "revoked"
     UNVERIFIABLE = "unverifiable"
-
 
 class CertificationScheme(str, Enum):
     """Supported certification schemes."""
@@ -124,14 +117,12 @@ class CertificationScheme(str, Enum):
     ISCC_EU = "iscc_eu"
     ISCC_PLUS = "iscc_plus"
 
-
 class RedFlagSeverity(str, Enum):
     """Red flag severity classification."""
     LOW = "low"
     MODERATE = "moderate"
     HIGH = "high"
     CRITICAL = "critical"
-
 
 class RedFlagCategory(str, Enum):
     """Red flag indicator categories."""
@@ -142,7 +133,6 @@ class RedFlagCategory(str, Enum):
     TAX_EVASION = "tax_evasion"
     DOCUMENT_FRAUD = "document_fraud"
 
-
 class AuditFindingCategory(str, Enum):
     """Audit finding classification."""
     MAJOR_NON_CONFORMITY = "major_non_conformity"
@@ -151,14 +141,12 @@ class AuditFindingCategory(str, Enum):
     POSITIVE_PRACTICE = "positive_practice"
     NOT_APPLICABLE = "not_applicable"
 
-
 class AuditFindingStatus(str, Enum):
     """Corrective action follow-up status."""
     OPEN = "open"
     IN_PROGRESS = "in_progress"
     CLOSED = "closed"
     OVERDUE = "overdue"
-
 
 class ReportType(str, Enum):
     """Compliance report types."""
@@ -171,23 +159,12 @@ class ReportType(str, Enum):
     COUNTRY_FRAMEWORK = "country_framework"
     DDS_ANNEX = "dds_annex"
 
-
-class ReportFormat(str, Enum):
-    """Report output formats."""
-    PDF = "pdf"
-    JSON = "json"
-    HTML = "html"
-    XBRL = "xbrl"
-    XML = "xml"
-
-
 class RiskLevel(str, Enum):
     """General risk level classification."""
     LOW = "low"
     MODERATE = "moderate"
     HIGH = "high"
     CRITICAL = "critical"
-
 
 class CommodityType(str, Enum):
     """EUDR Article 1 regulated commodities."""
@@ -199,13 +176,11 @@ class CommodityType(str, Enum):
     SOYA = "soya"
     WOOD = "wood"
 
-
 # ===========================================================================
 # Core Models (10)
 # ===========================================================================
 
-
-class LegalFramework(BaseModel):
+class LegalFramework(GreenLangBase):
     """Country-specific legal framework record for one legislation category.
 
     Represents a single piece of legislation applicable to EUDR-regulated
@@ -245,11 +220,10 @@ class LegalFramework(BaseModel):
     provenance_hash: Optional[str] = Field(None, max_length=64)
     metadata: Optional[Dict[str, Any]] = None
     tenant_id: uuid.UUID
-    created_at: datetime = Field(default_factory=_utcnow)
-    updated_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
+    updated_at: datetime = Field(default_factory=utcnow)
 
-
-class ComplianceDocument(BaseModel):
+class ComplianceDocument(GreenLangBase):
     """A permit, license, certificate, or legal document for verification.
 
     Example:
@@ -284,11 +258,10 @@ class ComplianceDocument(BaseModel):
     linked_framework_id: Optional[uuid.UUID] = None
     provenance_hash: Optional[str] = Field(None, max_length=64)
     tenant_id: uuid.UUID
-    created_at: datetime = Field(default_factory=_utcnow)
-    updated_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
+    updated_at: datetime = Field(default_factory=utcnow)
 
-
-class CertificationRecord(BaseModel):
+class CertificationRecord(GreenLangBase):
     """Certification scheme record for a supplier or site.
 
     Example:
@@ -327,11 +300,10 @@ class CertificationRecord(BaseModel):
     provenance_hash: Optional[str] = Field(None, max_length=64)
     metadata: Optional[Dict[str, Any]] = None
     tenant_id: uuid.UUID
-    created_at: datetime = Field(default_factory=_utcnow)
-    updated_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
+    updated_at: datetime = Field(default_factory=utcnow)
 
-
-class RedFlagAlert(BaseModel):
+class RedFlagAlert(GreenLangBase):
     """A triggered red flag indicator for a supplier.
 
     Example:
@@ -370,10 +342,9 @@ class RedFlagAlert(BaseModel):
     acknowledged_at: Optional[datetime] = None
     provenance_hash: Optional[str] = Field(None, max_length=64)
     tenant_id: uuid.UUID
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
 
-
-class AuditFinding(BaseModel):
+class AuditFinding(GreenLangBase):
     """Individual finding extracted from an audit report.
 
     Example:
@@ -401,11 +372,10 @@ class AuditFinding(BaseModel):
     closed_date: Optional[date] = None
     provenance_hash: Optional[str] = Field(None, max_length=64)
     tenant_id: uuid.UUID
-    created_at: datetime = Field(default_factory=_utcnow)
-    updated_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
+    updated_at: datetime = Field(default_factory=utcnow)
 
-
-class AuditReport(BaseModel):
+class AuditReport(GreenLangBase):
     """Third-party audit report with extracted findings.
 
     Example:
@@ -440,11 +410,10 @@ class AuditReport(BaseModel):
     provenance_hash: Optional[str] = Field(None, max_length=64)
     metadata: Optional[Dict[str, Any]] = None
     tenant_id: uuid.UUID
-    created_at: datetime = Field(default_factory=_utcnow)
-    updated_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
+    updated_at: datetime = Field(default_factory=utcnow)
 
-
-class ComplianceAssessment(BaseModel):
+class ComplianceAssessment(GreenLangBase):
     """Full 8-category compliance assessment for a supplier-commodity pair.
 
     Example:
@@ -463,7 +432,7 @@ class ComplianceAssessment(BaseModel):
     supplier_id: uuid.UUID
     country_code: str = Field(..., min_length=2, max_length=3)
     commodity: CommodityType
-    assessment_date: datetime = Field(default_factory=_utcnow)
+    assessment_date: datetime = Field(default_factory=utcnow)
     overall_status: ComplianceStatus
     overall_score: Decimal = Field(..., ge=Decimal("0"), le=Decimal("100"))
     category_scores: Dict[str, Decimal] = Field(default_factory=dict)
@@ -483,10 +452,9 @@ class ComplianceAssessment(BaseModel):
     chain_hash: Optional[str] = Field(None, max_length=64)
     metadata: Optional[Dict[str, Any]] = None
     tenant_id: uuid.UUID
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
 
-
-class LegalRequirement(BaseModel):
+class LegalRequirement(GreenLangBase):
     """A specific legal requirement derived from a legal framework.
 
     Example:
@@ -516,8 +484,7 @@ class LegalRequirement(BaseModel):
     provenance_hash: Optional[str] = Field(None, max_length=64)
     tenant_id: uuid.UUID
 
-
-class ComplianceReport(BaseModel):
+class ComplianceReport(GreenLangBase):
     """Generated compliance report metadata.
 
     Example:
@@ -538,13 +505,12 @@ class ComplianceReport(BaseModel):
     language: str = Field(default="en", pattern=r"^(en|fr|de|es|pt)$")
     s3_report_key: str = Field(..., max_length=500)
     file_size_bytes: int = Field(default=0, ge=0)
-    generated_at: datetime = Field(default_factory=_utcnow)
+    generated_at: datetime = Field(default_factory=utcnow)
     digital_signature: Optional[str] = Field(None, max_length=512)
     provenance_hash: Optional[str] = Field(None, max_length=64)
     tenant_id: uuid.UUID
 
-
-class AuditLogEntry(BaseModel):
+class AuditLogEntry(GreenLangBase):
     """Audit trail entry for all LCV operations.
 
     Example:
@@ -567,23 +533,20 @@ class AuditLogEntry(BaseModel):
     provenance_hash: Optional[str] = Field(None, max_length=64)
     chain_hash: Optional[str] = Field(None, max_length=64)
     tenant_id: uuid.UUID
-    created_at: datetime = Field(default_factory=_utcnow)
-
+    created_at: datetime = Field(default_factory=utcnow)
 
 # ===========================================================================
 # Request Models (12)
 # ===========================================================================
 
-
-class QueryLegalFrameworkRequest(BaseModel):
+class QueryLegalFrameworkRequest(GreenLangBase):
     """Request to query legal frameworks for a country."""
     country_code: str = Field(..., min_length=2, max_length=3)
     category: Optional[LegislationCategory] = None
     commodity: Optional[CommodityType] = None
     include_repealed: bool = False
 
-
-class VerifyDocumentRequest(BaseModel):
+class VerifyDocumentRequest(GreenLangBase):
     """Request to verify a compliance document."""
     supplier_id: uuid.UUID
     document_type: str = Field(..., max_length=100)
@@ -595,24 +558,21 @@ class VerifyDocumentRequest(BaseModel):
     legislation_category: LegislationCategory
     s3_document_key: Optional[str] = None
 
-
-class ValidateCertificationRequest(BaseModel):
+class ValidateCertificationRequest(GreenLangBase):
     """Request to validate a certification."""
     supplier_id: uuid.UUID
     scheme: CertificationScheme
     certificate_number: str = Field(..., max_length=100)
     certification_body: Optional[str] = None
 
-
-class ScanRedFlagsRequest(BaseModel):
+class ScanRedFlagsRequest(GreenLangBase):
     """Request to scan a supplier for red flags."""
     supplier_id: uuid.UUID
     country_code: str = Field(..., min_length=2, max_length=3)
     commodity: CommodityType
     include_categories: Optional[List[RedFlagCategory]] = None
 
-
-class AssessComplianceRequest(BaseModel):
+class AssessComplianceRequest(GreenLangBase):
     """Request to run full compliance assessment."""
     supplier_id: uuid.UUID
     country_code: str = Field(..., min_length=2, max_length=3)
@@ -621,8 +581,7 @@ class AssessComplianceRequest(BaseModel):
     include_red_flags: bool = True
     include_certifications: bool = True
 
-
-class SubmitAuditReportRequest(BaseModel):
+class SubmitAuditReportRequest(GreenLangBase):
     """Request to submit an audit report for processing."""
     supplier_id: uuid.UUID
     audit_type: str = Field(..., max_length=100)
@@ -631,31 +590,27 @@ class SubmitAuditReportRequest(BaseModel):
     report_date: date
     s3_report_key: str = Field(..., max_length=500)
 
-
-class GenerateReportRequest(BaseModel):
+class GenerateReportRequest(GreenLangBase):
     """Request to generate a compliance report."""
     assessment_id: uuid.UUID
     report_type: ReportType
     report_format: ReportFormat = ReportFormat.PDF
     language: str = Field(default="en", pattern=r"^(en|fr|de|es|pt)$")
 
-
-class BatchAssessmentRequest(BaseModel):
+class BatchAssessmentRequest(GreenLangBase):
     """Request for batch compliance assessment."""
     supplier_ids: List[uuid.UUID] = Field(..., max_length=1000)
     commodity: CommodityType
     categories: Optional[List[LegislationCategory]] = None
     include_red_flags: bool = True
 
-
-class AcknowledgeRedFlagRequest(BaseModel):
+class AcknowledgeRedFlagRequest(GreenLangBase):
     """Request to acknowledge a red flag."""
     flag_id: uuid.UUID
     acknowledged_by: str = Field(..., max_length=200)
     justification: Optional[str] = Field(None, max_length=1000)
 
-
-class UpdateFrameworkRequest(BaseModel):
+class UpdateFrameworkRequest(GreenLangBase):
     """Request to create/update a legal framework record."""
     country_code: str = Field(..., min_length=2, max_length=3)
     category: LegislationCategory
@@ -665,27 +620,23 @@ class UpdateFrameworkRequest(BaseModel):
     source_database: str
     requirements: List[str] = Field(default_factory=list)
 
-
-class ExpiringDocumentsRequest(BaseModel):
+class ExpiringDocumentsRequest(GreenLangBase):
     """Request to list expiring documents."""
     days_ahead: int = Field(default=30, ge=1, le=365)
     country_code: Optional[str] = None
     document_type: Optional[str] = None
 
-
-class CountryComplianceRequest(BaseModel):
+class CountryComplianceRequest(GreenLangBase):
     """Request for country compliance summary."""
     country_code: str = Field(..., min_length=2, max_length=3)
     commodity: CommodityType
     supplier_ids: Optional[List[uuid.UUID]] = None
 
-
 # ===========================================================================
 # Response Models (12)
 # ===========================================================================
 
-
-class LegalFrameworkResponse(BaseModel):
+class LegalFrameworkResponse(GreenLangBase):
     """Response for legal framework queries."""
     frameworks: List[LegalFramework]
     total_count: int
@@ -693,8 +644,7 @@ class LegalFrameworkResponse(BaseModel):
     categories_covered: List[str]
     provenance_hash: str
 
-
-class DocumentVerificationResponse(BaseModel):
+class DocumentVerificationResponse(GreenLangBase):
     """Response for document verification."""
     document: ComplianceDocument
     verification_passed: bool
@@ -702,8 +652,7 @@ class DocumentVerificationResponse(BaseModel):
     warnings: List[str]
     provenance_hash: str
 
-
-class CertificationValidationResponse(BaseModel):
+class CertificationValidationResponse(GreenLangBase):
     """Response for certification validation."""
     certification: CertificationRecord
     validation_passed: bool
@@ -711,8 +660,7 @@ class CertificationValidationResponse(BaseModel):
     eudr_coverage_summary: Dict[str, bool]
     provenance_hash: str
 
-
-class RedFlagScanResponse(BaseModel):
+class RedFlagScanResponse(GreenLangBase):
     """Response for red flag scan."""
     supplier_id: uuid.UUID
     flags_triggered: List[RedFlagAlert]
@@ -722,8 +670,7 @@ class RedFlagScanResponse(BaseModel):
     category_breakdown: Dict[str, int]
     provenance_hash: str
 
-
-class ComplianceAssessmentResponse(BaseModel):
+class ComplianceAssessmentResponse(GreenLangBase):
     """Response for compliance assessment."""
     assessment: ComplianceAssessment
     frameworks_checked: int
@@ -734,23 +681,20 @@ class ComplianceAssessmentResponse(BaseModel):
     recommendations: List[str]
     provenance_hash: str
 
-
-class AuditReportResponse(BaseModel):
+class AuditReportResponse(GreenLangBase):
     """Response for audit report processing."""
     report: AuditReport
     findings_extracted: int
     compliance_impact: Dict[str, Any]
     provenance_hash: str
 
-
-class ComplianceReportResponse(BaseModel):
+class ComplianceReportResponse(GreenLangBase):
     """Response for compliance report generation."""
     report: ComplianceReport
     download_url: str
     provenance_hash: str
 
-
-class BatchAssessmentResponse(BaseModel):
+class BatchAssessmentResponse(GreenLangBase):
     """Response for batch compliance assessment."""
     job_id: uuid.UUID
     total_suppliers: int
@@ -759,16 +703,14 @@ class BatchAssessmentResponse(BaseModel):
     results: List[ComplianceAssessmentResponse]
     provenance_hash: str
 
-
-class ExpiringDocumentsResponse(BaseModel):
+class ExpiringDocumentsResponse(GreenLangBase):
     """Response for expiring documents query."""
     documents: List[ComplianceDocument]
     total_expiring: int
     by_category: Dict[str, int]
     by_country: Dict[str, int]
 
-
-class CountryComplianceSummaryResponse(BaseModel):
+class CountryComplianceSummaryResponse(GreenLangBase):
     """Response for country compliance summary."""
     country_code: str
     commodity: CommodityType
@@ -779,8 +721,7 @@ class CountryComplianceSummaryResponse(BaseModel):
     total_assessed: int
     provenance_hash: str
 
-
-class HealthCheckResponse(BaseModel):
+class HealthCheckResponse(GreenLangBase):
     """Health check response."""
     status: str
     version: str
@@ -790,8 +731,7 @@ class HealthCheckResponse(BaseModel):
     uptime_seconds: float
     provenance_chain_valid: bool
 
-
-class AdminStatsResponse(BaseModel):
+class AdminStatsResponse(GreenLangBase):
     """Admin statistics response."""
     total_frameworks: int
     total_documents: int

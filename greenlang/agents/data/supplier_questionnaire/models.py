@@ -32,23 +32,18 @@ from datetime import date, datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ReportFormat, ValidationSeverity
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # =============================================================================
 # Enumerations
 # =============================================================================
-
 
 class Framework(str, Enum):
     """Supported sustainability reporting frameworks."""
@@ -65,7 +60,6 @@ class Framework(str, Enum):
     SBT = "sbt"
     CUSTOM = "custom"
 
-
 class QuestionType(str, Enum):
     """Question input types for questionnaire templates."""
 
@@ -80,7 +74,6 @@ class QuestionType(str, Enum):
     PERCENTAGE = "percentage"
     CURRENCY = "currency"
 
-
 class QuestionnaireStatus(str, Enum):
     """Lifecycle status of a questionnaire template."""
 
@@ -88,7 +81,6 @@ class QuestionnaireStatus(str, Enum):
     ACTIVE = "active"
     ARCHIVED = "archived"
     DEPRECATED = "deprecated"
-
 
 class DistributionStatus(str, Enum):
     """Delivery status of a distributed questionnaire."""
@@ -103,7 +95,6 @@ class DistributionStatus(str, Enum):
     EXPIRED = "expired"
     CANCELLED = "cancelled"
 
-
 class DistributionChannel(str, Enum):
     """Delivery channels for questionnaire distribution."""
 
@@ -111,7 +102,6 @@ class DistributionChannel(str, Enum):
     PORTAL = "portal"
     API = "api"
     BULK_UPLOAD = "bulk_upload"
-
 
 class ResponseStatus(str, Enum):
     """Status of a supplier's questionnaire response."""
@@ -124,15 +114,6 @@ class ResponseStatus(str, Enum):
     REOPENED = "reopened"
     REJECTED = "rejected"
 
-
-class ValidationSeverity(str, Enum):
-    """Severity levels for validation checks."""
-
-    ERROR = "error"
-    WARNING = "warning"
-    INFO = "info"
-
-
 class ReminderType(str, Enum):
     """Types of follow-up reminders."""
 
@@ -140,7 +121,6 @@ class ReminderType(str, Enum):
     FIRM = "firm"
     URGENT = "urgent"
     FINAL = "final"
-
 
 class EscalationLevel(str, Enum):
     """Escalation levels for non-responsive suppliers."""
@@ -150,7 +130,6 @@ class EscalationLevel(str, Enum):
     LEVEL_3 = "level_3"
     LEVEL_4 = "level_4"
     LEVEL_5 = "level_5"
-
 
 class CDPGrade(str, Enum):
     """CDP scoring grades (A to D-minus, plus F)."""
@@ -165,7 +144,6 @@ class CDPGrade(str, Enum):
     D_MINUS = "D-"
     F = "F"
 
-
 class PerformanceTier(str, Enum):
     """Supplier performance tiers based on questionnaire scores."""
 
@@ -175,22 +153,11 @@ class PerformanceTier(str, Enum):
     BEGINNER = "beginner"
     LAGGARD = "laggard"
 
-
-class ReportFormat(str, Enum):
-    """Supported report output formats."""
-
-    TEXT = "text"
-    JSON = "json"
-    MARKDOWN = "markdown"
-    HTML = "html"
-
-
 # =============================================================================
 # Core Data Models
 # =============================================================================
 
-
-class TemplateQuestion(BaseModel):
+class TemplateQuestion(GreenLangBase):
     """A single question within a questionnaire template section.
 
     Attributes:
@@ -253,8 +220,7 @@ class TemplateQuestion(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class TemplateSection(BaseModel):
+class TemplateSection(GreenLangBase):
     """A section within a questionnaire template.
 
     Attributes:
@@ -299,8 +265,7 @@ class TemplateSection(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class QuestionnaireTemplate(BaseModel):
+class QuestionnaireTemplate(GreenLangBase):
     """A complete questionnaire template definition.
 
     Attributes:
@@ -352,11 +317,11 @@ class QuestionnaireTemplate(BaseModel):
         default="", description="Template description",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Creation timestamp",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Last update timestamp",
     )
     created_by: str = Field(
@@ -379,8 +344,7 @@ class QuestionnaireTemplate(BaseModel):
             raise ValueError("name must be non-empty")
         return v
 
-
-class Answer(BaseModel):
+class Answer(GreenLangBase):
     """A single answer to a questionnaire question.
 
     Attributes:
@@ -423,8 +387,7 @@ class Answer(BaseModel):
             raise ValueError("question_id must be non-empty")
         return v
 
-
-class Distribution(BaseModel):
+class Distribution(GreenLangBase):
     """Record of a questionnaire distributed to a supplier.
 
     Attributes:
@@ -493,7 +456,7 @@ class Distribution(BaseModel):
         None, description="Timestamp when response submitted",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Creation timestamp",
     )
     reminder_count: int = Field(
@@ -522,8 +485,7 @@ class Distribution(BaseModel):
             raise ValueError("supplier_id must be non-empty")
         return v
 
-
-class QuestionnaireResponse(BaseModel):
+class QuestionnaireResponse(GreenLangBase):
     """A supplier's response to a distributed questionnaire.
 
     Attributes:
@@ -574,11 +536,11 @@ class QuestionnaireResponse(BaseModel):
         None, description="Timestamp when submitted",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Creation timestamp",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Last update timestamp",
     )
     confirmation_token: str = Field(
@@ -606,8 +568,7 @@ class QuestionnaireResponse(BaseModel):
             raise ValueError("supplier_id must be non-empty")
         return v
 
-
-class ValidationCheck(BaseModel):
+class ValidationCheck(GreenLangBase):
     """A single validation check result.
 
     Attributes:
@@ -654,8 +615,7 @@ class ValidationCheck(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class ValidationSummary(BaseModel):
+class ValidationSummary(GreenLangBase):
     """Aggregated validation summary for a questionnaire response.
 
     Attributes:
@@ -711,7 +671,7 @@ class ValidationSummary(BaseModel):
         description="Data quality score (0-100)",
     )
     validated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Validation timestamp",
     )
     provenance_hash: str = Field(
@@ -720,8 +680,7 @@ class ValidationSummary(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class QuestionnaireScore(BaseModel):
+class QuestionnaireScore(GreenLangBase):
     """Scoring result for a questionnaire response.
 
     Attributes:
@@ -776,7 +735,7 @@ class QuestionnaireScore(BaseModel):
         description="Per-section score breakdown",
     )
     scored_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Scoring timestamp",
     )
     methodology: str = Field(
@@ -788,8 +747,7 @@ class QuestionnaireScore(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class FollowUpAction(BaseModel):
+class FollowUpAction(GreenLangBase):
     """A scheduled or executed follow-up action.
 
     Attributes:
@@ -852,8 +810,7 @@ class FollowUpAction(BaseModel):
             raise ValueError("distribution_id must be non-empty")
         return v
 
-
-class CampaignAnalytics(BaseModel):
+class CampaignAnalytics(GreenLangBase):
     """Aggregated analytics for a questionnaire campaign.
 
     Attributes:
@@ -911,7 +868,7 @@ class CampaignAnalytics(BaseModel):
         description="Average score per section",
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Analytics generation timestamp",
     )
     provenance_hash: str = Field(
@@ -920,13 +877,11 @@ class CampaignAnalytics(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
 # =============================================================================
 # Request Models
 # =============================================================================
 
-
-class CreateTemplateRequest(BaseModel):
+class CreateTemplateRequest(GreenLangBase):
     """Request body for creating a new questionnaire template.
 
     Attributes:
@@ -968,8 +923,7 @@ class CreateTemplateRequest(BaseModel):
             raise ValueError("name must be non-empty")
         return v
 
-
-class DistributeRequest(BaseModel):
+class DistributeRequest(GreenLangBase):
     """Request body for distributing a questionnaire to suppliers.
 
     Attributes:
@@ -1008,8 +962,7 @@ class DistributeRequest(BaseModel):
             raise ValueError("template_id must be non-empty")
         return v
 
-
-class SubmitResponseRequest(BaseModel):
+class SubmitResponseRequest(GreenLangBase):
     """Request body for submitting a questionnaire response.
 
     Attributes:
@@ -1037,7 +990,6 @@ class SubmitResponseRequest(BaseModel):
         if not v or not v.strip():
             raise ValueError("distribution_id must be non-empty")
         return v
-
 
 __all__ = [
     # Enumerations

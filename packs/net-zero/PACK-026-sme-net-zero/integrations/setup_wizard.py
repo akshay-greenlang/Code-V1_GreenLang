@@ -35,23 +35,18 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -63,11 +58,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SMEWizardStep(str, Enum):
     ORGANIZATION_PROFILE = "organization_profile"
@@ -76,7 +69,6 @@ class SMEWizardStep(str, Enum):
     GRANT_PREFERENCES = "grant_preferences"
     CERTIFICATION_PATHWAY = "certification_pathway"
 
-
 class StepStatus(str, Enum):
     PENDING = "pending"
     IN_PROGRESS = "in_progress"
@@ -84,18 +76,15 @@ class StepStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class SMESize(str, Enum):
     MICRO = "micro"       # 1-9 employees
     SMALL = "small"       # 10-49 employees
     MEDIUM = "medium"     # 50-249 employees
 
-
 class DataQualityTier(str, Enum):
     BRONZE = "bronze"
     SILVER = "silver"
     GOLD = "gold"
-
 
 class AccountingSoftware(str, Enum):
     XERO = "xero"
@@ -103,7 +92,6 @@ class AccountingSoftware(str, Enum):
     SAGE = "sage"
     MANUAL = "manual"
     NONE = "none"
-
 
 class CertificationPathway(str, Enum):
     SME_CLIMATE_HUB = "sme_climate_hub"
@@ -113,11 +101,9 @@ class CertificationPathway(str, Enum):
     CLIMATE_ACTIVE = "climate_active"
     NONE = "none"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class SMEOrganizationProfile(BaseModel):
     """Organization profile from step 1."""
@@ -133,7 +119,6 @@ class SMEOrganizationProfile(BaseModel):
     fiscal_year_end: str = Field(default="03-31")
     website: str = Field(default="")
 
-
 class DataQualitySelection(BaseModel):
     """Data quality tier selection from step 2."""
 
@@ -141,7 +126,6 @@ class DataQualitySelection(BaseModel):
     scope3_approach: str = Field(default="spend_based")
     use_industry_defaults: bool = Field(default=True)
     estimated_accuracy_pct: float = Field(default=70.0)
-
 
 class AccountingConnectionSetup(BaseModel):
     """Accounting software connection from step 3."""
@@ -151,7 +135,6 @@ class AccountingConnectionSetup(BaseModel):
     auto_import: bool = Field(default=False)
     reporting_year: int = Field(default=2025, ge=2020, le=2035)
     base_currency: str = Field(default="GBP")
-
 
 class GrantPreferences(BaseModel):
     """Grant preferences from step 4."""
@@ -164,14 +147,12 @@ class GrantPreferences(BaseModel):
     max_application_effort: str = Field(default="low")
     enable_deadline_alerts: bool = Field(default=True)
 
-
 class CertificationSelection(BaseModel):
     """Certification pathway from step 5."""
 
     pathway: CertificationPathway = Field(default=CertificationPathway.SME_CLIMATE_HUB)
     target_year: int = Field(default=2026, ge=2026, le=2030)
     auto_submit_progress: bool = Field(default=True)
-
 
 class WizardStepState(BaseModel):
     """State of a single wizard step."""
@@ -186,7 +167,6 @@ class WizardStepState(BaseModel):
     completed_at: Optional[datetime] = Field(None)
     execution_time_ms: float = Field(default=0.0)
 
-
 class WizardState(BaseModel):
     """Complete state of the SME setup wizard."""
 
@@ -199,9 +179,8 @@ class WizardState(BaseModel):
     grants: Optional[GrantPreferences] = Field(None)
     certification: Optional[CertificationSelection] = Field(None)
     is_complete: bool = Field(default=False)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     completed_at: Optional[datetime] = Field(None)
-
 
 class SetupResult(BaseModel):
     """Final setup result with generated configuration."""
@@ -226,9 +205,8 @@ class SetupResult(BaseModel):
     total_steps_completed: int = Field(default=0)
     total_steps: int = Field(default=5)
     configuration_hash: str = Field(default="")
-    generated_at: datetime = Field(default_factory=_utcnow)
+    generated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Step Definitions
@@ -271,7 +249,6 @@ STEP_DESCRIPTIONS: Dict[SMEWizardStep, str] = {
     ),
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Quality Tier Info
 # ---------------------------------------------------------------------------
@@ -309,11 +286,9 @@ TIER_INFO: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # SMESetupWizard
 # ---------------------------------------------------------------------------
-
 
 class SMESetupWizard:
     """5-step guided configuration wizard for PACK-026 SME Net Zero.
@@ -343,7 +318,7 @@ class SMESetupWizard:
 
     def start(self) -> WizardState:
         """Start a new wizard session."""
-        wizard_id = _compute_hash(f"sme-wizard:{_utcnow().isoformat()}")[:16]
+        wizard_id = _compute_hash(f"sme-wizard:{utcnow().isoformat()}")[:16]
         steps: Dict[str, WizardStepState] = {}
         for step_name in STEP_ORDER:
             steps[step_name.value] = WizardStepState(
@@ -379,7 +354,7 @@ class SMESetupWizard:
             raise ValueError(f"Step '{step_name}' not found")
 
         step.status = StepStatus.IN_PROGRESS
-        step.started_at = _utcnow()
+        step.started_at = utcnow()
         start_time = time.monotonic()
 
         handler = self._step_handlers.get(step_enum)
@@ -397,7 +372,7 @@ class SMESetupWizard:
                 step.validation_errors = errors
             else:
                 step.status = StepStatus.COMPLETED
-                step.completed_at = _utcnow()
+                step.completed_at = utcnow()
                 step.validation_errors = []
                 self._advance_step(step_enum)
         except Exception as exc:
@@ -563,7 +538,7 @@ class SMESetupWizard:
                 self._state.current_step = STEP_ORDER[idx + 1]
             else:
                 self._state.is_complete = True
-                self._state.completed_at = _utcnow()
+                self._state.completed_at = utcnow()
         except ValueError:
             pass
 

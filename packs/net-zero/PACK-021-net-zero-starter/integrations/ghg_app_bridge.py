@@ -37,26 +37,20 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ReportFormat
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -69,11 +63,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Agent Stubs
 # ---------------------------------------------------------------------------
-
 
 class _AgentStub:
     """Stub for unavailable GL-GHG-APP modules."""
@@ -92,7 +84,6 @@ class _AgentStub:
             }
         return _stub_method
 
-
 def _try_import_ghg_component(component_id: str, module_path: str) -> Any:
     """Try to import a GL-GHG-APP component with graceful fallback.
 
@@ -105,16 +96,15 @@ def _try_import_ghg_component(component_id: str, module_path: str) -> Any:
     """
     try:
         import importlib
+
         return importlib.import_module(module_path)
     except ImportError:
         logger.debug("GHG component %s not available, using stub", component_id)
         return _AgentStub(component_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class GHGScope(str, Enum):
     """GHG Protocol scopes."""
@@ -124,16 +114,6 @@ class GHGScope(str, Enum):
     SCOPE_2_MARKET = "scope_2_market"
     SCOPE_3 = "scope_3"
 
-
-class ReportFormat(str, Enum):
-    """Supported GHG report formats."""
-
-    PDF = "pdf"
-    EXCEL = "excel"
-    JSON = "json"
-    XHTML = "xhtml"
-
-
 class CompletenessLevel(str, Enum):
     """GHG Protocol completeness assessment level."""
 
@@ -142,11 +122,9 @@ class CompletenessLevel(str, Enum):
     PARTIAL = "partial"
     INSUFFICIENT = "insufficient"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class GHGAppBridgeConfig(BaseModel):
     """Configuration for the GHG App Bridge."""
@@ -160,7 +138,6 @@ class GHGAppBridgeConfig(BaseModel):
         default="operational_control",
         description="operational_control | financial_control | equity_share",
     )
-
 
 class InventoryResult(BaseModel):
     """Result of GHG inventory retrieval."""
@@ -179,7 +156,6 @@ class InventoryResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class BaseYearResult(BaseModel):
     """Result of base year calculation or retrieval."""
 
@@ -196,7 +172,6 @@ class BaseYearResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class AggregationResult(BaseModel):
     """Result of scope aggregation."""
 
@@ -212,7 +187,6 @@ class AggregationResult(BaseModel):
     yoy_change_pct: Optional[float] = Field(None)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class CompletenessResult(BaseModel):
     """Result of GHG Protocol completeness validation."""
@@ -232,7 +206,6 @@ class CompletenessResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class ReportResult(BaseModel):
     """Result of GHG inventory report generation."""
 
@@ -247,7 +220,6 @@ class ReportResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # GHG APP Component Mapping
 # ---------------------------------------------------------------------------
@@ -260,11 +232,9 @@ GHG_COMPONENTS: Dict[str, str] = {
     "report_generator": "greenlang.apps.ghg.report_generator",
 }
 
-
 # ---------------------------------------------------------------------------
 # GHGAppBridge
 # ---------------------------------------------------------------------------
-
 
 class GHGAppBridge:
     """Bridge to GL-GHG-APP for GHG inventory management.

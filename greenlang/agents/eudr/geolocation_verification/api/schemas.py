@@ -19,24 +19,18 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import ConfigDict, Field, field_validator
+from greenlang.schemas import GreenLangBase, utcnow
 
 from greenlang.agents.eudr.geolocation_verification.models import (
     QualityTier,
 )
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # =============================================================================
 # Pagination
 # =============================================================================
 
-
-class PaginatedMeta(BaseModel):
+class PaginatedMeta(GreenLangBase):
     """Pagination metadata for list responses."""
 
     total: int = Field(..., ge=0, description="Total number of results")
@@ -44,8 +38,7 @@ class PaginatedMeta(BaseModel):
     offset: int = Field(..., ge=0, description="Results skipped")
     has_more: bool = Field(..., description="Whether more results exist")
 
-
-class PaginatedResponse(BaseModel):
+class PaginatedResponse(GreenLangBase):
     """Generic paginated response wrapper."""
 
     items: List[Dict[str, Any]] = Field(
@@ -55,32 +48,28 @@ class PaginatedResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class PaginationParams(BaseModel):
+class PaginationParams(GreenLangBase):
     """Standard pagination query parameters."""
 
     limit: int = Field(default=50, ge=1, le=1000, description="Results per page")
     offset: int = Field(default=0, ge=0, description="Number of results to skip")
 
-
 # =============================================================================
 # Response Wrappers
 # =============================================================================
 
-
-class ApiResponse(BaseModel):
+class ApiResponse(GreenLangBase):
     """Standard API success response wrapper."""
 
     status: str = Field(default="success", description="Response status")
     message: str = Field(default="", description="Response message")
     data: Optional[Any] = Field(None, description="Response payload")
     request_id: Optional[str] = Field(None, description="Request correlation ID")
-    timestamp: datetime = Field(default_factory=_utcnow, description="Response timestamp")
+    timestamp: datetime = Field(default_factory=utcnow, description="Response timestamp")
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     """Structured error response for all API endpoints."""
 
     error: str = Field(..., description="Error type identifier")
@@ -88,13 +77,11 @@ class ErrorResponse(BaseModel):
     detail: Optional[str] = Field(None, description="Additional error details")
     request_id: Optional[str] = Field(None, description="Request correlation ID")
 
-
 # =============================================================================
 # Coordinate Validation Schemas
 # =============================================================================
 
-
-class CoordinateValidationRequest(BaseModel):
+class CoordinateValidationRequest(GreenLangBase):
     """Request to validate a single coordinate pair."""
 
     lat: float = Field(
@@ -148,8 +135,7 @@ class CoordinateValidationRequest(BaseModel):
             )
         return v
 
-
-class BatchCoordinateRequest(BaseModel):
+class BatchCoordinateRequest(GreenLangBase):
     """Request to validate multiple coordinate pairs in a batch."""
 
     coordinates: List[CoordinateValidationRequest] = Field(
@@ -183,8 +169,7 @@ class BatchCoordinateRequest(BaseModel):
         },
     )
 
-
-class CoordinateValidationResponse(BaseModel):
+class CoordinateValidationResponse(GreenLangBase):
     """Response for a single coordinate validation."""
 
     validation_id: str = Field(..., description="Unique validation identifier")
@@ -206,12 +191,11 @@ class CoordinateValidationResponse(BaseModel):
         default_factory=list, description="List of validation issues"
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-    validated_at: datetime = Field(default_factory=_utcnow, description="Validation timestamp")
+    validated_at: datetime = Field(default_factory=utcnow, description="Validation timestamp")
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchCoordinateResponse(BaseModel):
+class BatchCoordinateResponse(GreenLangBase):
     """Response for batch coordinate validation."""
 
     batch_id: str = Field(..., description="Unique batch identifier")
@@ -222,17 +206,15 @@ class BatchCoordinateResponse(BaseModel):
         default_factory=list, description="Per-coordinate validation results"
     )
     processing_time_ms: float = Field(0.0, ge=0.0, description="Total processing time in ms")
-    validated_at: datetime = Field(default_factory=_utcnow, description="Batch validation timestamp")
+    validated_at: datetime = Field(default_factory=utcnow, description="Batch validation timestamp")
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Polygon Verification Schemas
 # =============================================================================
 
-
-class PolygonVerificationRequest(BaseModel):
+class PolygonVerificationRequest(GreenLangBase):
     """Request to verify a polygon's topology and geometry."""
 
     vertices: List[Tuple[float, float]] = Field(
@@ -264,8 +246,7 @@ class PolygonVerificationRequest(BaseModel):
         },
     )
 
-
-class PolygonRepairRequest(BaseModel):
+class PolygonRepairRequest(GreenLangBase):
     """Request to attempt auto-repair of polygon topology issues."""
 
     vertices: List[Tuple[float, float]] = Field(
@@ -298,8 +279,7 @@ class PolygonRepairRequest(BaseModel):
         },
     )
 
-
-class PolygonVerificationResponse(BaseModel):
+class PolygonVerificationResponse(GreenLangBase):
     """Response from polygon topology verification."""
 
     verification_id: str = Field(..., description="Unique verification identifier")
@@ -326,12 +306,11 @@ class PolygonVerificationResponse(BaseModel):
         default_factory=list, description="Suggested repair actions"
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-    verified_at: datetime = Field(default_factory=_utcnow, description="Verification timestamp")
+    verified_at: datetime = Field(default_factory=utcnow, description="Verification timestamp")
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class PolygonRepairResponse(BaseModel):
+class PolygonRepairResponse(GreenLangBase):
     """Response from polygon auto-repair attempt."""
 
     verification_id: str = Field(..., description="Unique verification identifier")
@@ -353,17 +332,15 @@ class PolygonRepairResponse(BaseModel):
     verification_result: Optional[PolygonVerificationResponse] = Field(
         None, description="Full verification result after repair"
     )
-    repaired_at: datetime = Field(default_factory=_utcnow, description="Repair timestamp")
+    repaired_at: datetime = Field(default_factory=utcnow, description="Repair timestamp")
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Protected Area Screening Schemas
 # =============================================================================
 
-
-class ProtectedAreaScreenRequest(BaseModel):
+class ProtectedAreaScreenRequest(GreenLangBase):
     """Request to screen a plot against protected areas."""
 
     lat: float = Field(
@@ -402,8 +379,7 @@ class ProtectedAreaScreenRequest(BaseModel):
         },
     )
 
-
-class NearbyProtectedAreasRequest(BaseModel):
+class NearbyProtectedAreasRequest(GreenLangBase):
     """Request parameters for listing nearby protected areas."""
 
     lat: float = Field(
@@ -438,8 +414,7 @@ class NearbyProtectedAreasRequest(BaseModel):
         },
     )
 
-
-class ProtectedAreaScreenResponse(BaseModel):
+class ProtectedAreaScreenResponse(GreenLangBase):
     """Response from protected area screening."""
 
     overlaps_protected: bool = Field(
@@ -459,12 +434,11 @@ class ProtectedAreaScreenResponse(BaseModel):
         default_factory=list,
         description="Protected areas within buffer zone",
     )
-    screened_at: datetime = Field(default_factory=_utcnow, description="Screening timestamp")
+    screened_at: datetime = Field(default_factory=utcnow, description="Screening timestamp")
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class NearbyProtectedAreasResponse(BaseModel):
+class NearbyProtectedAreasResponse(GreenLangBase):
     """Response listing nearby protected areas."""
 
     lat: float = Field(..., description="Query latitude")
@@ -478,17 +452,15 @@ class NearbyProtectedAreasResponse(BaseModel):
             "area_ha, and IUCN category"
         ),
     )
-    queried_at: datetime = Field(default_factory=_utcnow, description="Query timestamp")
+    queried_at: datetime = Field(default_factory=utcnow, description="Query timestamp")
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Deforestation Verification Schemas
 # =============================================================================
 
-
-class DeforestationVerifyRequest(BaseModel):
+class DeforestationVerifyRequest(GreenLangBase):
     """Request to verify deforestation status for a plot."""
 
     plot_id: str = Field(
@@ -533,8 +505,7 @@ class DeforestationVerifyRequest(BaseModel):
         },
     )
 
-
-class DeforestationVerifyResponse(BaseModel):
+class DeforestationVerifyResponse(GreenLangBase):
     """Response from deforestation status verification."""
 
     plot_id: str = Field(..., description="Plot identifier")
@@ -551,12 +522,11 @@ class DeforestationVerifyResponse(BaseModel):
         default_factory=list,
         description="Satellite data sources consulted (GFW, JRC, GLAD)",
     )
-    verified_at: datetime = Field(default_factory=_utcnow, description="Verification timestamp")
+    verified_at: datetime = Field(default_factory=utcnow, description="Verification timestamp")
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class DeforestationEvidenceResponse(BaseModel):
+class DeforestationEvidenceResponse(GreenLangBase):
     """Response with deforestation evidence package for a plot."""
 
     plot_id: str = Field(..., description="Plot identifier")
@@ -574,17 +544,15 @@ class DeforestationEvidenceResponse(BaseModel):
         description="Historical forest cover percentages by year",
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-    generated_at: datetime = Field(default_factory=_utcnow, description="Evidence generation timestamp")
+    generated_at: datetime = Field(default_factory=utcnow, description="Evidence generation timestamp")
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Full Plot Verification Schemas
 # =============================================================================
 
-
-class PlotVerificationRequest(BaseModel):
+class PlotVerificationRequest(GreenLangBase):
     """Request for full verification of a single production plot."""
 
     plot_id: str = Field(
@@ -677,8 +645,7 @@ class PlotVerificationRequest(BaseModel):
             )
         return v
 
-
-class PlotVerificationResponse(BaseModel):
+class PlotVerificationResponse(GreenLangBase):
     """Response from full plot verification."""
 
     verification_id: str = Field(..., description="Unique verification identifier")
@@ -710,12 +677,11 @@ class PlotVerificationResponse(BaseModel):
     )
     processing_time_ms: float = Field(0.0, ge=0.0, description="Total processing time in ms")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-    verified_at: datetime = Field(default_factory=_utcnow, description="Verification timestamp")
+    verified_at: datetime = Field(default_factory=utcnow, description="Verification timestamp")
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class PlotVerificationHistoryResponse(BaseModel):
+class PlotVerificationHistoryResponse(GreenLangBase):
     """Response listing verification history for a plot."""
 
     plot_id: str = Field(..., description="Plot identifier")
@@ -728,13 +694,11 @@ class PlotVerificationHistoryResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Batch Verification Schemas
 # =============================================================================
 
-
-class BatchVerificationSubmitRequest(BaseModel):
+class BatchVerificationSubmitRequest(GreenLangBase):
     """Request to submit a batch of plots for verification."""
 
     plots: List[PlotVerificationRequest] = Field(
@@ -795,8 +759,7 @@ class BatchVerificationSubmitRequest(BaseModel):
             )
         return v
 
-
-class BatchVerificationResponse(BaseModel):
+class BatchVerificationResponse(GreenLangBase):
     """Response after submitting a batch verification job."""
 
     batch_id: str = Field(..., description="Unique batch job identifier")
@@ -807,15 +770,14 @@ class BatchVerificationResponse(BaseModel):
     total_plots: int = Field(..., ge=0, description="Total plots submitted")
     verification_level: str = Field("standard", description="Verification depth")
     priority_sort: bool = Field(True, description="Whether priority sorting is enabled")
-    submitted_at: datetime = Field(default_factory=_utcnow, description="Submission timestamp")
+    submitted_at: datetime = Field(default_factory=utcnow, description="Submission timestamp")
     estimated_completion_seconds: Optional[float] = Field(
         None, description="Estimated time to complete in seconds"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchStatusResponse(BaseModel):
+class BatchStatusResponse(GreenLangBase):
     """Response with batch job status and results."""
 
     batch_id: str = Field(..., description="Batch job identifier")
@@ -845,8 +807,7 @@ class BatchStatusResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchProgressResponse(BaseModel):
+class BatchProgressResponse(GreenLangBase):
     """Real-time progress of a batch verification job."""
 
     batch_id: str = Field(..., description="Batch job identifier")
@@ -866,25 +827,22 @@ class BatchProgressResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchCancelResponse(BaseModel):
+class BatchCancelResponse(GreenLangBase):
     """Response after cancelling a batch verification job."""
 
     batch_id: str = Field(..., description="Cancelled batch job identifier")
     status: str = Field(default="cancelled", description="Job status after cancellation")
     completed_plots: int = Field(0, ge=0, description="Plots completed before cancellation")
     total_plots: int = Field(0, ge=0, description="Total plots that were in the batch")
-    cancelled_at: datetime = Field(default_factory=_utcnow, description="Cancellation timestamp")
+    cancelled_at: datetime = Field(default_factory=utcnow, description="Cancellation timestamp")
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Accuracy Scoring Schemas
 # =============================================================================
 
-
-class ScoreWeightsUpdateRequest(BaseModel):
+class ScoreWeightsUpdateRequest(GreenLangBase):
     """Request to update accuracy score component weights (admin only)."""
 
     weights: Dict[str, float] = Field(
@@ -938,8 +896,7 @@ class ScoreWeightsUpdateRequest(BaseModel):
             )
         return v
 
-
-class AccuracyScoreResponse(BaseModel):
+class AccuracyScoreResponse(GreenLangBase):
     """Response with a plot's accuracy score breakdown."""
 
     score_id: str = Field(..., description="Unique score identifier")
@@ -972,12 +929,11 @@ class AccuracyScoreResponse(BaseModel):
         default_factory=dict, description="Weight configuration used"
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-    scored_at: datetime = Field(default_factory=_utcnow, description="Scoring timestamp")
+    scored_at: datetime = Field(default_factory=utcnow, description="Scoring timestamp")
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ScoreHistoryResponse(BaseModel):
+class ScoreHistoryResponse(GreenLangBase):
     """Response listing score history for a plot."""
 
     plot_id: str = Field(..., description="Plot identifier")
@@ -989,8 +945,7 @@ class ScoreHistoryResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ScoreSummaryResponse(BaseModel):
+class ScoreSummaryResponse(GreenLangBase):
     """Response with aggregate score statistics."""
 
     total_plots_scored: int = Field(0, ge=0, description="Total plots scored")
@@ -1009,12 +964,11 @@ class ScoreSummaryResponse(BaseModel):
     current_weights: Dict[str, float] = Field(
         default_factory=dict, description="Current score weights"
     )
-    generated_at: datetime = Field(default_factory=_utcnow, description="Summary generation timestamp")
+    generated_at: datetime = Field(default_factory=utcnow, description="Summary generation timestamp")
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ScoreWeightsResponse(BaseModel):
+class ScoreWeightsResponse(GreenLangBase):
     """Response after updating score weights."""
 
     status: str = Field(default="updated", description="Update status")
@@ -1024,17 +978,15 @@ class ScoreWeightsResponse(BaseModel):
     new_weights: Dict[str, float] = Field(
         default_factory=dict, description="Updated weight values"
     )
-    updated_at: datetime = Field(default_factory=_utcnow, description="Update timestamp")
+    updated_at: datetime = Field(default_factory=utcnow, description="Update timestamp")
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Compliance Reporting Schemas
 # =============================================================================
 
-
-class ComplianceReportRequest(BaseModel):
+class ComplianceReportRequest(GreenLangBase):
     """Request to generate an Article 9 compliance report."""
 
     operator_id: str = Field(
@@ -1078,8 +1030,7 @@ class ComplianceReportRequest(BaseModel):
             )
         return v
 
-
-class ComplianceReportResponse(BaseModel):
+class ComplianceReportResponse(GreenLangBase):
     """Response with generated Article 9 compliance report."""
 
     report_id: str = Field(..., description="Unique report identifier")
@@ -1113,12 +1064,11 @@ class ComplianceReportResponse(BaseModel):
     download_url: Optional[str] = Field(
         None, description="Download URL (for PDF/CSV format)"
     )
-    generated_at: datetime = Field(default_factory=_utcnow, description="Report generation timestamp")
+    generated_at: datetime = Field(default_factory=utcnow, description="Report generation timestamp")
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ComplianceSummaryResponse(BaseModel):
+class ComplianceSummaryResponse(GreenLangBase):
     """Response with compliance dashboard summary data."""
 
     operator_id: Optional[str] = Field(None, description="Operator filter applied")
@@ -1148,27 +1098,24 @@ class ComplianceSummaryResponse(BaseModel):
         default_factory=dict,
         description="Compliance breakdown by country",
     )
-    generated_at: datetime = Field(default_factory=_utcnow, description="Summary generation timestamp")
+    generated_at: datetime = Field(default_factory=utcnow, description="Summary generation timestamp")
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Health Check
 # =============================================================================
 
-
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Health check response."""
 
     status: str = Field(default="healthy")
     agent_id: str = Field(default="GL-EUDR-GEO-002")
     agent_name: str = Field(default="EUDR Geolocation Verification Agent")
     version: str = Field(default="1.0.0")
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Public API

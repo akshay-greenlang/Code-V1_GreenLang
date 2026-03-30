@@ -52,25 +52,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -83,11 +77,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class BESSProtocol(str, Enum):
     """BESS communication protocols."""
@@ -100,7 +92,6 @@ class BESSProtocol(str, Enum):
     REST_API = "rest_api"
     OCPP = "ocpp"
 
-
 class BatteryChemistry(str, Enum):
     """Battery chemistry types."""
 
@@ -109,7 +100,6 @@ class BatteryChemistry(str, Enum):
     NCA = "nca"
     FLOW_VANADIUM = "flow_vanadium"
     LEAD_ACID = "lead_acid"
-
 
 class BESSOperatingMode(str, Enum):
     """BESS operating modes."""
@@ -122,7 +112,6 @@ class BESSOperatingMode(str, Enum):
     IDLE = "idle"
     STANDBY = "standby"
 
-
 class DispatchCommand(str, Enum):
     """BESS dispatch command types."""
 
@@ -131,7 +120,6 @@ class DispatchCommand(str, Enum):
     STANDBY = "standby"
     IDLE = "idle"
     EMERGENCY_STOP = "emergency_stop"
-
 
 class BESSConnectionStatus(str, Enum):
     """BESS connection status."""
@@ -142,11 +130,9 @@ class BESSConnectionStatus(str, Enum):
     ERROR = "error"
     MAINTENANCE = "maintenance"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class BESSConfig(BaseModel):
     """Configuration for the BESS Control Bridge."""
@@ -166,13 +152,12 @@ class BESSConfig(BaseModel):
     max_c_rate: float = Field(default=0.5, ge=0.1, le=4.0)
     operating_mode: BESSOperatingMode = Field(default=BESSOperatingMode.PEAK_SHAVING)
 
-
 class BESSStatus(BaseModel):
     """Current BESS operating status."""
 
     status_id: str = Field(default_factory=_new_uuid)
     bess_id: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     connection_status: BESSConnectionStatus = Field(default=BESSConnectionStatus.CONNECTED)
     operating_mode: BESSOperatingMode = Field(default=BESSOperatingMode.IDLE)
     soc_pct: float = Field(default=50.0, ge=0.0, le=100.0)
@@ -184,7 +169,6 @@ class BESSStatus(BaseModel):
     total_cycles: int = Field(default=0, ge=0)
     capacity_remaining_pct: float = Field(default=100.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
-
 
 class DispatchResult(BaseModel):
     """Result of a BESS dispatch command."""
@@ -200,9 +184,8 @@ class DispatchResult(BaseModel):
     soc_after_pct: float = Field(default=0.0)
     success: bool = Field(default=False)
     message: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class DegradationReport(BaseModel):
     """BESS degradation and health report."""
@@ -218,11 +201,9 @@ class DegradationReport(BaseModel):
     warranty_cycles_remaining: int = Field(default=0, ge=0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # BESSControlBridge
 # ---------------------------------------------------------------------------
-
 
 class BESSControlBridge:
     """Battery Energy Storage System control bridge for peak shaving.
@@ -352,7 +333,7 @@ class BESSControlBridge:
         Returns:
             BESSStatus with SOC, power, temperature, and health.
         """
-        self._status.timestamp = _utcnow()
+        self._status.timestamp = utcnow()
         if self.config.enable_provenance:
             self._status.provenance_hash = _compute_hash(self._status)
         return self._status

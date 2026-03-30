@@ -10,24 +10,14 @@ import traceback
 from typing import Dict, Any, Optional, List, Callable
 from dataclasses import dataclass, field, asdict
 from datetime import datetime
-from enum import Enum
 import threading
 from collections import deque, defaultdict
 import re
 from contextlib import contextmanager
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas.enums import LogLevel
 
 logger = logging.getLogger(__name__)
-
-
-class LogLevel(Enum):
-    """Log levels"""
-
-    DEBUG = "DEBUG"
-    INFO = "INFO"
-    WARNING = "WARNING"
-    ERROR = "ERROR"
-    CRITICAL = "CRITICAL"
 
 
 @dataclass

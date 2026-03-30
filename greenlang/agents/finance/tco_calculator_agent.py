@@ -33,11 +33,12 @@ from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field, validator
+from pydantic import Field, validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.agents.base_agents import AuditEntry
 from greenlang.agents.categories import AgentCategory
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -104,7 +105,7 @@ DEFAULT_USEFUL_LIFE: Dict[str, int] = {
 # =============================================================================
 
 
-class CostComponent(BaseModel):
+class CostComponent(GreenLangBase):
     """A single cost component in TCO calculation."""
     category: CostCategory = Field(..., description="Cost category")
     name: str = Field(..., description="Cost component name")
@@ -123,7 +124,7 @@ class CostComponent(BaseModel):
     notes: str = Field(default="", description="Additional notes")
 
 
-class AssetSpecification(BaseModel):
+class AssetSpecification(GreenLangBase):
     """Specification for an asset being evaluated."""
     asset_id: str = Field(..., description="Unique asset identifier")
     name: str = Field(..., description="Asset name")
@@ -158,7 +159,7 @@ class AssetSpecification(BaseModel):
     )
 
 
-class TCOResult(BaseModel):
+class TCOResult(GreenLangBase):
     """Result of TCO calculation for a single asset."""
     asset_id: str = Field(..., description="Asset identifier")
     asset_name: str = Field(..., description="Asset name")
@@ -196,7 +197,7 @@ class TCOResult(BaseModel):
     )
 
 
-class AssetComparison(BaseModel):
+class AssetComparison(GreenLangBase):
     """Comparison of multiple assets."""
     baseline_asset_id: str = Field(..., description="ID of baseline asset")
     comparison_results: List[TCOResult] = Field(..., description="TCO results for each asset")
@@ -226,7 +227,7 @@ class AssetComparison(BaseModel):
     )
 
 
-class TCOCalculatorInput(BaseModel):
+class TCOCalculatorInput(GreenLangBase):
     """Input for TCO calculations."""
     operation: str = Field(
         default="calculate_tco",
@@ -272,7 +273,7 @@ class TCOCalculatorInput(BaseModel):
     )
 
 
-class TCOCalculatorOutput(BaseModel):
+class TCOCalculatorOutput(GreenLangBase):
     """Output from TCO calculations."""
     success: bool = Field(..., description="Whether operation succeeded")
     operation: str = Field(..., description="Operation performed")

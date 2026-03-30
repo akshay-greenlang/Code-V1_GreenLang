@@ -30,28 +30,21 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import ConfigDict, Field, field_validator, model_validator
 
+from greenlang.schemas import GreenLangBase, utcnow
 
 # =============================================================================
 # Helpers
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_id() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 # =============================================================================
 # Enumerations (API-layer mirrors of domain enums)
 # =============================================================================
-
 
 class DocumentTypeSchema(str, Enum):
     """Type of EUDR supply chain document."""
@@ -77,7 +70,6 @@ class DocumentTypeSchema(str, Enum):
     TC = "tc"
     WR = "wr"
 
-
 class ClassificationConfidenceSchema(str, Enum):
     """Confidence level of document classification."""
 
@@ -85,7 +77,6 @@ class ClassificationConfidenceSchema(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     UNKNOWN = "unknown"
-
 
 class SignatureStandardSchema(str, Enum):
     """Digital signature standard."""
@@ -98,7 +89,6 @@ class SignatureStandardSchema(str, Enum):
     PGP = "pgp"
     PKCS7 = "pkcs7"
 
-
 class SignatureStatusSchema(str, Enum):
     """Verification status of a digital signature."""
 
@@ -110,14 +100,12 @@ class SignatureStatusSchema(str, Enum):
     UNKNOWN_SIGNER = "unknown_signer"
     STRIPPED = "stripped"
 
-
 class HashAlgorithmSchema(str, Enum):
     """Cryptographic hash algorithm for document integrity."""
 
     SHA256 = "sha256"
     SHA512 = "sha512"
     HMAC_SHA256 = "hmac_sha256"
-
 
 class CertificateStatusSchema(str, Enum):
     """Validation status of a signing certificate."""
@@ -129,7 +117,6 @@ class CertificateStatusSchema(str, Enum):
     WEAK_KEY = "weak_key"
     UNKNOWN = "unknown"
 
-
 class FraudSeveritySchema(str, Enum):
     """Severity level of a detected fraud pattern."""
 
@@ -137,7 +124,6 @@ class FraudSeveritySchema(str, Enum):
     MEDIUM = "medium"
     HIGH = "high"
     CRITICAL = "critical"
-
 
 class FraudPatternTypeSchema(str, Enum):
     """Type of fraud pattern detected in document analysis."""
@@ -158,7 +144,6 @@ class FraudPatternTypeSchema(str, Enum):
     MISSING_REQUIRED = "missing_required"
     SCOPE_MISMATCH = "scope_mismatch"
 
-
 class VerificationStatusSchema(str, Enum):
     """Overall status of a document verification process."""
 
@@ -166,7 +151,6 @@ class VerificationStatusSchema(str, Enum):
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
     FAILED = "failed"
-
 
 class RegistryTypeSchema(str, Enum):
     """Type of external registry for cross-reference verification."""
@@ -179,7 +163,6 @@ class RegistryTypeSchema(str, Enum):
     IPPC = "ippc"
     NATIONAL_CUSTOMS = "national_customs"
 
-
 class ReportFormatSchema(str, Enum):
     """Output format for generated reports."""
 
@@ -188,7 +171,6 @@ class ReportFormatSchema(str, Enum):
     PDF = "pdf"
     EUDR_XML = "eudr_xml"
 
-
 class AuthenticationResultSchema(str, Enum):
     """Overall authentication result for a document."""
 
@@ -196,7 +178,6 @@ class AuthenticationResultSchema(str, Enum):
     SUSPICIOUS = "suspicious"
     FRAUDULENT = "fraudulent"
     INCONCLUSIVE = "inconclusive"
-
 
 class BatchJobStatusSchema(str, Enum):
     """Status of an async batch job."""
@@ -207,7 +188,6 @@ class BatchJobStatusSchema(str, Enum):
     FAILED = "failed"
     CANCELLED = "cancelled"
 
-
 class BatchJobTypeSchema(str, Enum):
     """Types of batch jobs supported by document authentication."""
 
@@ -217,20 +197,17 @@ class BatchJobTypeSchema(str, Enum):
     CROSSREF_BATCH = "crossref_batch"
     REPORT_GENERATION = "report_generation"
 
-
 class SortOrderSchema(str, Enum):
     """Sort order for list endpoints."""
 
     ASC = "asc"
     DESC = "desc"
 
-
 # =============================================================================
 # Shared / Common Models
 # =============================================================================
 
-
-class ProvenanceInfo(BaseModel):
+class ProvenanceInfo(GreenLangBase):
     """Provenance tracking information for audit trail."""
 
     provenance_hash: str = Field(
@@ -238,7 +215,7 @@ class ProvenanceInfo(BaseModel):
     )
     created_by: str = Field(..., description="User ID who created the record")
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation timestamp (UTC)"
+        default_factory=utcnow, description="Creation timestamp (UTC)"
     )
     source: str = Field(
         default="api", description="Data source (api, import, system)"
@@ -246,8 +223,7 @@ class ProvenanceInfo(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class PaginatedMeta(BaseModel):
+class PaginatedMeta(GreenLangBase):
     """Pagination metadata for list responses."""
 
     total: int = Field(..., ge=0, description="Total number of results")
@@ -257,8 +233,7 @@ class PaginatedMeta(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ErrorDetail(BaseModel):
+class ErrorDetail(GreenLangBase):
     """Individual error detail within an error response."""
 
     field: Optional[str] = Field(None, description="Field that caused the error")
@@ -267,8 +242,7 @@ class ErrorDetail(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     """Structured error response for all API endpoints."""
 
     error: str = Field(..., description="Error type identifier")
@@ -281,13 +255,11 @@ class ErrorResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Classification Schemas
 # =============================================================================
 
-
-class ClassifyDocumentSchema(BaseModel):
+class ClassifyDocumentSchema(GreenLangBase):
     """Request to classify a single EUDR document by type."""
 
     document_reference: str = Field(
@@ -322,8 +294,7 @@ class ClassifyDocumentSchema(BaseModel):
         },
     )
 
-
-class BatchClassifySchema(BaseModel):
+class BatchClassifySchema(GreenLangBase):
     """Request to classify multiple documents in batch."""
 
     documents: List[ClassifyDocumentSchema] = Field(
@@ -349,8 +320,7 @@ class BatchClassifySchema(BaseModel):
             raise ValueError(f"Maximum 500 documents per batch, got {len(v)}")
         return v
 
-
-class ClassificationResultSchema(BaseModel):
+class ClassificationResultSchema(GreenLangBase):
     """Response with document classification result."""
 
     document_id: str = Field(..., description="Unique document identifier")
@@ -376,13 +346,12 @@ class ClassificationResultSchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Classification timestamp"
+        default_factory=utcnow, description="Classification timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchClassificationResultSchema(BaseModel):
+class BatchClassificationResultSchema(GreenLangBase):
     """Response for batch document classification."""
 
     total_submitted: int = Field(..., ge=0, description="Total documents submitted")
@@ -402,8 +371,7 @@ class BatchClassificationResultSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class TemplateSchema(BaseModel):
+class TemplateSchema(GreenLangBase):
     """Document classification template for known document layouts."""
 
     template_id: str = Field(..., description="Unique template identifier")
@@ -414,12 +382,11 @@ class TemplateSchema(BaseModel):
     version: str = Field(default="1.0", description="Template version")
     active: bool = Field(default=True, description="Whether template is active")
     metadata: Dict[str, Any] = Field(default_factory=dict, description="Template metadata")
-    created_at: datetime = Field(default_factory=_utcnow, description="Creation timestamp")
+    created_at: datetime = Field(default_factory=utcnow, description="Creation timestamp")
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class RegisterTemplateSchema(BaseModel):
+class RegisterTemplateSchema(GreenLangBase):
     """Request to register a new classification template."""
 
     name: str = Field(
@@ -444,8 +411,7 @@ class RegisterTemplateSchema(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class TemplateListSchema(BaseModel):
+class TemplateListSchema(GreenLangBase):
     """Response listing available classification templates."""
 
     templates: List[TemplateSchema] = Field(
@@ -455,17 +421,15 @@ class TemplateListSchema(BaseModel):
     processing_time_ms: float = Field(
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
-    timestamp: datetime = Field(default_factory=_utcnow, description="Response timestamp")
+    timestamp: datetime = Field(default_factory=utcnow, description="Response timestamp")
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Signature Schemas
 # =============================================================================
 
-
-class VerifySignatureSchema(BaseModel):
+class VerifySignatureSchema(GreenLangBase):
     """Request to verify a document's digital signature."""
 
     document_reference: str = Field(
@@ -503,8 +467,7 @@ class VerifySignatureSchema(BaseModel):
         },
     )
 
-
-class BatchVerifySignatureSchema(BaseModel):
+class BatchVerifySignatureSchema(GreenLangBase):
     """Request to verify signatures for multiple documents."""
 
     documents: List[VerifySignatureSchema] = Field(
@@ -517,8 +480,7 @@ class BatchVerifySignatureSchema(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class SignatureResultSchema(BaseModel):
+class SignatureResultSchema(GreenLangBase):
     """Response with signature verification result."""
 
     verification_id: str = Field(..., description="Unique verification identifier")
@@ -548,13 +510,12 @@ class SignatureResultSchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Verification timestamp"
+        default_factory=utcnow, description="Verification timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchSignatureResultSchema(BaseModel):
+class BatchSignatureResultSchema(GreenLangBase):
     """Response for batch signature verification."""
 
     total_submitted: int = Field(..., ge=0, description="Total documents submitted")
@@ -573,8 +534,7 @@ class BatchSignatureResultSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class SignatureHistorySchema(BaseModel):
+class SignatureHistorySchema(GreenLangBase):
     """Response with signature verification history for a document."""
 
     document_id: str = Field(..., description="Document identifier")
@@ -585,17 +545,15 @@ class SignatureHistorySchema(BaseModel):
     processing_time_ms: float = Field(
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
-    timestamp: datetime = Field(default_factory=_utcnow, description="Response timestamp")
+    timestamp: datetime = Field(default_factory=utcnow, description="Response timestamp")
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Hash Integrity Schemas
 # =============================================================================
 
-
-class ComputeHashSchema(BaseModel):
+class ComputeHashSchema(GreenLangBase):
     """Request to compute a cryptographic hash for a document."""
 
     document_reference: str = Field(
@@ -636,8 +594,7 @@ class ComputeHashSchema(BaseModel):
         },
     )
 
-
-class VerifyHashSchema(BaseModel):
+class VerifyHashSchema(GreenLangBase):
     """Request to verify a document against a stored hash."""
 
     document_reference: str = Field(
@@ -658,8 +615,7 @@ class VerifyHashSchema(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class HashResultSchema(BaseModel):
+class HashResultSchema(GreenLangBase):
     """Response with hash computation or verification result."""
 
     hash_id: str = Field(..., description="Unique hash record identifier")
@@ -694,13 +650,12 @@ class HashResultSchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Computation timestamp"
+        default_factory=utcnow, description="Computation timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class RegistryLookupSchema(BaseModel):
+class RegistryLookupSchema(GreenLangBase):
     """Response for hash registry lookup."""
 
     hash_value: str = Field(..., description="Queried hash value")
@@ -727,8 +682,7 @@ class RegistryLookupSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class MerkleNodeSchema(BaseModel):
+class MerkleNodeSchema(GreenLangBase):
     """Single node in a Merkle tree."""
 
     hash_value: str = Field(..., description="Node hash value")
@@ -737,8 +691,7 @@ class MerkleNodeSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class MerkleTreeSchema(BaseModel):
+class MerkleTreeSchema(GreenLangBase):
     """Response with Merkle tree for a DDS package."""
 
     dds_id: str = Field(..., description="DDS package identifier")
@@ -756,18 +709,16 @@ class MerkleTreeSchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Computation timestamp"
+        default_factory=utcnow, description="Computation timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Certificate Schemas
 # =============================================================================
 
-
-class ValidateCertificateSchema(BaseModel):
+class ValidateCertificateSchema(GreenLangBase):
     """Request to validate a certificate chain."""
 
     document_reference: str = Field(
@@ -804,8 +755,7 @@ class ValidateCertificateSchema(BaseModel):
         },
     )
 
-
-class CertificateDetailSchema(BaseModel):
+class CertificateDetailSchema(GreenLangBase):
     """Details of a certificate in the chain."""
 
     subject: str = Field(..., description="Certificate subject")
@@ -822,8 +772,7 @@ class CertificateDetailSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CertificateResultSchema(BaseModel):
+class CertificateResultSchema(GreenLangBase):
     """Response with certificate chain validation result."""
 
     validation_id: str = Field(..., description="Unique validation identifier")
@@ -849,13 +798,12 @@ class CertificateResultSchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Validation timestamp"
+        default_factory=utcnow, description="Validation timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class TrustedCASchema(BaseModel):
+class TrustedCASchema(GreenLangBase):
     """Trusted Certificate Authority entry."""
 
     ca_id: str = Field(..., description="Unique CA identifier")
@@ -868,13 +816,12 @@ class TrustedCASchema(BaseModel):
     active: bool = Field(default=True, description="Whether CA is active")
     added_by: Optional[str] = Field(None, description="User who added the CA")
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation timestamp"
+        default_factory=utcnow, description="Creation timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class AddTrustedCASchema(BaseModel):
+class AddTrustedCASchema(GreenLangBase):
     """Request to add a trusted CA."""
 
     name: str = Field(
@@ -891,8 +838,7 @@ class AddTrustedCASchema(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class TrustedCAListSchema(BaseModel):
+class TrustedCAListSchema(GreenLangBase):
     """Response listing trusted certificate authorities."""
 
     cas: List[TrustedCASchema] = Field(
@@ -903,18 +849,16 @@ class TrustedCAListSchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Metadata Schemas
 # =============================================================================
 
-
-class ExtractMetadataSchema(BaseModel):
+class ExtractMetadataSchema(GreenLangBase):
     """Request to extract metadata from a document."""
 
     document_reference: str = Field(
@@ -948,8 +892,7 @@ class ExtractMetadataSchema(BaseModel):
         },
     )
 
-
-class MetadataFieldSchema(BaseModel):
+class MetadataFieldSchema(GreenLangBase):
     """Single metadata field extraction result."""
 
     field_name: str = Field(..., description="Metadata field name")
@@ -962,8 +905,7 @@ class MetadataFieldSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class MetadataResultSchema(BaseModel):
+class MetadataResultSchema(GreenLangBase):
     """Response with metadata extraction result."""
 
     document_id: str = Field(..., description="Document identifier")
@@ -997,13 +939,12 @@ class MetadataResultSchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Extraction timestamp"
+        default_factory=utcnow, description="Extraction timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ValidateMetadataSchema(BaseModel):
+class ValidateMetadataSchema(GreenLangBase):
     """Request to validate metadata consistency for a document."""
 
     document_id: str = Field(
@@ -1021,8 +962,7 @@ class ValidateMetadataSchema(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class MetadataValidationResultSchema(BaseModel):
+class MetadataValidationResultSchema(GreenLangBase):
     """Response with metadata validation result."""
 
     document_id: str = Field(..., description="Document identifier")
@@ -1040,13 +980,11 @@ class MetadataValidationResultSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Fraud Detection Schemas
 # =============================================================================
 
-
-class DetectFraudSchema(BaseModel):
+class DetectFraudSchema(GreenLangBase):
     """Request to run fraud detection on a document."""
 
     document_id: str = Field(
@@ -1086,8 +1024,7 @@ class DetectFraudSchema(BaseModel):
         },
     )
 
-
-class BatchDetectFraudSchema(BaseModel):
+class BatchDetectFraudSchema(GreenLangBase):
     """Request for batch fraud detection."""
 
     documents: List[DetectFraudSchema] = Field(
@@ -1100,8 +1037,7 @@ class BatchDetectFraudSchema(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class FraudAlertSchema(BaseModel):
+class FraudAlertSchema(GreenLangBase):
     """Single fraud alert detected in a document."""
 
     alert_id: str = Field(..., description="Unique alert identifier")
@@ -1125,13 +1061,12 @@ class FraudAlertSchema(BaseModel):
     resolved_at: Optional[datetime] = Field(None, description="Resolution timestamp")
     resolved_by: Optional[str] = Field(None, description="Resolved by user")
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Detection timestamp"
+        default_factory=utcnow, description="Detection timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class FraudDetectionResultSchema(BaseModel):
+class FraudDetectionResultSchema(GreenLangBase):
     """Response with fraud detection results for a document."""
 
     document_id: str = Field(..., description="Document identifier")
@@ -1158,13 +1093,12 @@ class FraudDetectionResultSchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Detection timestamp"
+        default_factory=utcnow, description="Detection timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchFraudResultSchema(BaseModel):
+class BatchFraudResultSchema(GreenLangBase):
     """Response for batch fraud detection."""
 
     total_submitted: int = Field(..., ge=0, description="Total documents submitted")
@@ -1184,8 +1118,7 @@ class BatchFraudResultSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class FraudRuleSchema(BaseModel):
+class FraudRuleSchema(GreenLangBase):
     """Fraud detection rule definition."""
 
     rule_id: str = Field(..., description="Unique rule identifier")
@@ -1199,13 +1132,12 @@ class FraudRuleSchema(BaseModel):
         default_factory=dict, description="Rule-specific parameters"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Rule creation timestamp"
+        default_factory=utcnow, description="Rule creation timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class FraudRuleListSchema(BaseModel):
+class FraudRuleListSchema(GreenLangBase):
     """Response listing active fraud detection rules."""
 
     rules: List[FraudRuleSchema] = Field(
@@ -1217,13 +1149,12 @@ class FraudRuleListSchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class FraudSummarySchema(BaseModel):
+class FraudSummarySchema(GreenLangBase):
     """Fraud alert summary for an operator."""
 
     operator_id: str = Field(..., description="Operator identifier")
@@ -1244,13 +1175,12 @@ class FraudSummarySchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class FraudAlertListSchema(BaseModel):
+class FraudAlertListSchema(GreenLangBase):
     """Response listing fraud alerts for a document."""
 
     document_id: str = Field(..., description="Document identifier")
@@ -1263,18 +1193,16 @@ class FraudAlertListSchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Cross-Reference Schemas
 # =============================================================================
 
-
-class CrossRefVerifySchema(BaseModel):
+class CrossRefVerifySchema(GreenLangBase):
     """Request to verify a document against an external registry."""
 
     document_id: str = Field(
@@ -1314,8 +1242,7 @@ class CrossRefVerifySchema(BaseModel):
         },
     )
 
-
-class BatchCrossRefSchema(BaseModel):
+class BatchCrossRefSchema(GreenLangBase):
     """Request for batch cross-reference verification."""
 
     verifications: List[CrossRefVerifySchema] = Field(
@@ -1328,8 +1255,7 @@ class BatchCrossRefSchema(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class CrossRefResultSchema(BaseModel):
+class CrossRefResultSchema(GreenLangBase):
     """Response with cross-reference verification result."""
 
     verification_id: str = Field(..., description="Unique verification identifier")
@@ -1372,13 +1298,12 @@ class CrossRefResultSchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Verification timestamp"
+        default_factory=utcnow, description="Verification timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchCrossRefResultSchema(BaseModel):
+class BatchCrossRefResultSchema(GreenLangBase):
     """Response for batch cross-reference verification."""
 
     total_submitted: int = Field(..., ge=0, description="Total verifications submitted")
@@ -1398,8 +1323,7 @@ class BatchCrossRefResultSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CacheStatsSchema(BaseModel):
+class CacheStatsSchema(GreenLangBase):
     """Cross-reference cache statistics."""
 
     total_entries: int = Field(..., ge=0, description="Total cached entries")
@@ -1420,18 +1344,16 @@ class CacheStatsSchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Stats collection timestamp"
+        default_factory=utcnow, description="Stats collection timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Report Schemas
 # =============================================================================
 
-
-class GenerateReportSchema(BaseModel):
+class GenerateReportSchema(GreenLangBase):
     """Request to generate an authentication report."""
 
     document_ids: List[str] = Field(
@@ -1483,8 +1405,7 @@ class GenerateReportSchema(BaseModel):
         },
     )
 
-
-class EvidencePackageSchema(BaseModel):
+class EvidencePackageSchema(GreenLangBase):
     """Request to generate an evidence package for DDS submission."""
 
     dds_id: str = Field(
@@ -1517,8 +1438,7 @@ class EvidencePackageSchema(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class ReportResultSchema(BaseModel):
+class ReportResultSchema(GreenLangBase):
     """Response after generating an authentication report."""
 
     report_id: str = Field(..., description="Unique report identifier")
@@ -1543,7 +1463,7 @@ class ReportResultSchema(BaseModel):
         None, ge=0, description="File size in bytes"
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow, description="Generation timestamp"
+        default_factory=utcnow, description="Generation timestamp"
     )
     expires_at: Optional[datetime] = Field(
         None, description="Report expiration date"
@@ -1555,8 +1475,7 @@ class ReportResultSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ReportDownloadSchema(BaseModel):
+class ReportDownloadSchema(GreenLangBase):
     """Response with report download information."""
 
     report_id: str = Field(..., description="Report identifier")
@@ -1574,8 +1493,7 @@ class ReportDownloadSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class DashboardSchema(BaseModel):
+class DashboardSchema(GreenLangBase):
     """Authentication dashboard data for an operator."""
 
     operator_id: str = Field(..., description="Operator identifier")
@@ -1613,18 +1531,16 @@ class DashboardSchema(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Dashboard generation timestamp"
+        default_factory=utcnow, description="Dashboard generation timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Batch Job Schemas
 # =============================================================================
 
-
-class SubmitBatchSchema(BaseModel):
+class SubmitBatchSchema(GreenLangBase):
     """Request to submit a batch processing job."""
 
     job_type: BatchJobTypeSchema = Field(
@@ -1645,8 +1561,7 @@ class SubmitBatchSchema(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-
-class BatchJobSchema(BaseModel):
+class BatchJobSchema(GreenLangBase):
     """Response for a batch processing job."""
 
     job_id: str = Field(..., description="Unique job identifier")
@@ -1687,8 +1602,7 @@ class BatchJobSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchJobCancelSchema(BaseModel):
+class BatchJobCancelSchema(GreenLangBase):
     """Response after cancelling a batch job."""
 
     job_id: str = Field(..., description="Job identifier")
@@ -1698,13 +1612,11 @@ class BatchJobCancelSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Health Schema
 # =============================================================================
 
-
-class HealthSchema(BaseModel):
+class HealthSchema(GreenLangBase):
     """Health check response for the document authentication service."""
 
     service: str = Field(
@@ -1741,18 +1653,16 @@ class HealthSchema(BaseModel):
         default=0.0, ge=0.0, description="Service uptime in seconds"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Health check timestamp"
+        default_factory=utcnow, description="Health check timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Paginated Response Wrapper
 # =============================================================================
 
-
-class PaginatedResponse(BaseModel):
+class PaginatedResponse(GreenLangBase):
     """Generic paginated response wrapper."""
 
     data: List[Any] = Field(default_factory=list, description="Result items")
@@ -1761,11 +1671,10 @@ class PaginatedResponse(BaseModel):
         default=0.0, ge=0.0, description="Processing duration in ms"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Public API

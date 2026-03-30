@@ -22,6 +22,7 @@ import aiohttp
 from pydantic import BaseModel, Field, validator
 import redis.asyncio as aioredis
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas.enums import AlertSeverity, NotificationChannel
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -35,27 +36,12 @@ class AlertState(str, Enum):
     RESOLVED = "resolved"
 
 
-class AlertSeverity(str, Enum):
-    """Alert severities."""
-    INFO = "info"
-    WARNING = "warning"
-    CRITICAL = "critical"
-
-
 class RuleType(str, Enum):
     """Alert rule types."""
     THRESHOLD = "threshold"
     RATE_OF_CHANGE = "rate_of_change"
     ABSENCE = "absence"
     ANOMALY = "anomaly"
-
-
-class NotificationChannel(str, Enum):
-    """Notification delivery channels."""
-    EMAIL = "email"
-    SLACK = "slack"
-    PAGERDUTY = "pagerduty"
-    WEBHOOK = "webhook"
 
 
 @dataclass

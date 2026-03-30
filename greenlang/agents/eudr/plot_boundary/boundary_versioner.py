@@ -54,6 +54,7 @@ import time
 import uuid
 from datetime import date, datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.plot_boundary.config import (
     PlotBoundaryConfig,
@@ -81,22 +82,14 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a unique identifier using UUID4."""
     return str(uuid.uuid4())
-
 
 def _polygon_area_shoelace(exterior: Ring) -> float:
     """Compute approximate polygon area using the shoelace formula.
@@ -140,7 +133,6 @@ def _polygon_area_shoelace(exterior: Ring) -> float:
     area_m2 = area_deg2 * meters_per_deg_lat * meters_per_deg_lon
     return area_m2 / 10_000.0  # m2 to hectares
 
-
 def _count_vertices(boundary: PlotBoundary) -> int:
     """Count total vertices in a boundary including holes.
 
@@ -155,11 +147,9 @@ def _count_vertices(boundary: PlotBoundary) -> int:
         total += len(hole)
     return total
 
-
 # =============================================================================
 # BoundaryVersioner
 # =============================================================================
-
 
 class BoundaryVersioner:
     """Immutable boundary version management engine.
@@ -264,7 +254,7 @@ class BoundaryVersioner:
             boundary, next_version,
         )
 
-        now = _utcnow()
+        now = utcnow()
 
         # Mark previous version as superseded
         if previous is not None:
@@ -629,7 +619,7 @@ class BoundaryVersioner:
                 - provenance_hash: str
         """
         start_time = time.monotonic()
-        now = _utcnow()
+        now = utcnow()
         retention_years = self._config.version_retention_years
 
         versions = self.get_history(plot_id)
@@ -1094,7 +1084,6 @@ class BoundaryVersioner:
             f"BoundaryVersioner(plots={self.plot_count}, "
             f"total_versions={self.total_version_count})"
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

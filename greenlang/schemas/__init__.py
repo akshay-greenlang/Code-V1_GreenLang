@@ -31,8 +31,12 @@ Quick Start::
     # Utilities (replace 91+ _utcnow() definitions)
     from greenlang.schemas import utcnow, new_uuid, prefixed_uuid, compute_provenance_hash
 
-    # Shared enums (replace 50+ duplicated enum classes)
-    from greenlang.schemas.enums import CalculationStatus, JobStatus, Severity
+    # Shared enums (replace 1,200+ duplicated enum definitions)
+    from greenlang.schemas.enums import (
+        CalculationStatus, JobStatus, Severity,
+        Environment, LogLevel, HealthStatus, ReportFormat,
+        AlertSeverity, AlertStatus, NotificationChannel,
+    )
 
     # Field factories (replace 200+ duplicated field definitions)
     from greenlang.schemas.fields import id_field, tenant_field, provenance_field

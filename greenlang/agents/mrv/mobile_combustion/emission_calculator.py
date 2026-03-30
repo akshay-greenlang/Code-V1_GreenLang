@@ -70,6 +70,7 @@ from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from typing import Any, Dict, List, Optional, Tuple
 
 from greenlang.agents.mrv.mobile_combustion.vehicle_database import VehicleDatabaseEngine
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -83,12 +84,6 @@ _PRECISION = Decimal("0.00000001")  # 8 decimal places
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Unit Conversion Constants (all Decimal for zero-hallucination precision)
@@ -122,7 +117,6 @@ _DEFAULT_OXIDATION_FACTOR = Decimal("1.0")
 
 # TJ to MJ
 _TJ_TO_MJ = Decimal("1000000")
-
 
 # ---------------------------------------------------------------------------
 # GWP Values (Decimal)
@@ -179,11 +173,9 @@ _LOAD_FACTOR_SENSITIVITY: Dict[str, Decimal] = {
     "FORKLIFT": Decimal("0.5"),
 }
 
-
 # ===========================================================================
 # EmissionCalculatorEngine
 # ===========================================================================
-
 
 class EmissionCalculatorEngine:
     """Core calculation engine for GHG Protocol mobile combustion emissions.
@@ -1574,7 +1566,7 @@ class EmissionCalculatorEngine:
             Hexadecimal SHA-256 hash string.
         """
         hash_input = json.dumps(
-            {"data": data, "timestamp": _utcnow().isoformat()},
+            {"data": data, "timestamp": utcnow().isoformat()},
             sort_keys=True,
             default=str,
         )

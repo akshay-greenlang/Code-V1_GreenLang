@@ -60,18 +60,14 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -83,11 +79,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SectorWizardStep(str, Enum):
     """The 7 steps of the sector pathway setup wizard."""
@@ -99,7 +93,6 @@ class SectorWizardStep(str, Enum):
     ABATEMENT_PLANNING = "abatement_planning"
     REVIEW_AND_DEPLOY = "review_and_deploy"
 
-
 class StepStatus(str, Enum):
     """Status of a wizard step."""
     PENDING = "pending"
@@ -108,13 +101,11 @@ class StepStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class SDAEligibility(str, Enum):
     """SDA eligibility classification."""
     SDA_ELIGIBLE = "sda_eligible"
     IEA_ONLY = "iea_only"
     CUSTOM_PATHWAY = "custom_pathway"
-
 
 class ConvergencePreference(str, Enum):
     """User convergence model preference."""
@@ -124,7 +115,6 @@ class ConvergencePreference(str, Enum):
     STEPPED = "stepped"
     AUTO = "auto"
 
-
 class ScenarioPreference(str, Enum):
     """Climate scenario preference."""
     NZE_15C = "nze_1.5c"
@@ -133,7 +123,6 @@ class ScenarioPreference(str, Enum):
     APS = "aps"
     STEPS = "steps"
 
-
 class TechnologyMaturity(str, Enum):
     """Current technology maturity assessment."""
     LEGACY = "legacy"
@@ -141,7 +130,6 @@ class TechnologyMaturity(str, Enum):
     BEST_AVAILABLE = "best_available"
     EMERGING = "emerging"
     FRONTIER = "frontier"
-
 
 class SectorRoutingGroup(str, Enum):
     """Sector routing group for pipeline configuration."""
@@ -153,11 +141,9 @@ class SectorRoutingGroup(str, Enum):
     AGRICULTURE = "agriculture"
     CROSS_SECTOR = "cross_sector"
 
-
 # ---------------------------------------------------------------------------
 # Sector Selection Data
 # ---------------------------------------------------------------------------
-
 
 SDA_SECTOR_OPTIONS: Dict[str, Dict[str, Any]] = {
     "power_generation": {
@@ -346,11 +332,9 @@ ALL_SECTOR_OPTIONS: Dict[str, Dict[str, Any]] = {
     **EXTENDED_SECTOR_OPTIONS,
 }
 
-
 # ---------------------------------------------------------------------------
 # Technology Profiles by Sector
 # ---------------------------------------------------------------------------
-
 
 SECTOR_TECHNOLOGY_PROFILES: Dict[str, List[Dict[str, Any]]] = {
     "power_generation": [
@@ -438,11 +422,9 @@ SECTOR_TECHNOLOGY_PROFILES: Dict[str, List[Dict[str, Any]]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # Abatement Lever Priorities by Sector
 # ---------------------------------------------------------------------------
-
 
 SECTOR_LEVER_PRIORITIES: Dict[str, List[Dict[str, Any]]] = {
     "power_generation": [
@@ -511,11 +493,9 @@ SECTOR_LEVER_PRIORITIES: Dict[str, List[Dict[str, Any]]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class SectorSelectionData(BaseModel):
     """Step 1: Sector selection data."""
@@ -531,7 +511,6 @@ class SectorSelectionData(BaseModel):
     routing_group: str = Field(default="cross_sector")
     intensity_metric: str = Field(default="tCO2e/revenue_mUSD")
 
-
 class ActivityDataSetup(BaseModel):
     """Step 2: Activity data configuration."""
     primary_activity_field: str = Field(default="")
@@ -542,7 +521,6 @@ class ActivityDataSetup(BaseModel):
     preferred_data_agents: List[str] = Field(default_factory=list)
     data_collection_frequency: str = Field(default="monthly")
     data_quality_level: str = Field(default="measured")
-
 
 class BaselineConfig(BaseModel):
     """Step 3: Baseline configuration."""
@@ -559,7 +537,6 @@ class BaselineConfig(BaseModel):
     coverage_scope2_pct: float = Field(default=100.0, ge=0.0, le=100.0)
     use_pack021_baseline: bool = Field(default=True)
 
-
 class PathwayPreferences(BaseModel):
     """Step 4: Pathway preferences."""
     primary_scenario: ScenarioPreference = Field(default=ScenarioPreference.NZE_15C)
@@ -575,7 +552,6 @@ class PathwayPreferences(BaseModel):
     enable_flag_pathway: bool = Field(default=False)
     regional_context: str = Field(default="global")
 
-
 class TechnologyInventoryData(BaseModel):
     """Step 5: Technology inventory."""
     current_technologies: List[Dict[str, Any]] = Field(default_factory=list)
@@ -584,7 +560,6 @@ class TechnologyInventoryData(BaseModel):
     technology_barriers: List[str] = Field(default_factory=list)
     capex_budget_eur: float = Field(default=0.0, ge=0.0)
     technology_readiness_score: float = Field(default=0.0, ge=0.0, le=100.0)
-
 
 class AbatementPlanData(BaseModel):
     """Step 6: Abatement planning."""
@@ -596,7 +571,6 @@ class AbatementPlanData(BaseModel):
     implementation_phases: int = Field(default=3)
     max_cost_per_tco2e_eur: float = Field(default=200.0)
 
-
 class WizardStepState(BaseModel):
     """State of a single wizard step."""
     name: SectorWizardStep = Field(...)
@@ -606,7 +580,6 @@ class WizardStepState(BaseModel):
     validation_errors: List[str] = Field(default_factory=list)
     execution_time_ms: float = Field(default=0.0)
 
-
 class WizardState(BaseModel):
     """Complete wizard state."""
     wizard_id: str = Field(default="")
@@ -615,9 +588,8 @@ class WizardState(BaseModel):
     )
     steps: Dict[str, WizardStepState] = Field(default_factory=dict)
     is_complete: bool = Field(default=False)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     completed_at: Optional[datetime] = Field(None)
-
 
 class SectorPathwaySetupResult(BaseModel):
     """Complete setup configuration result."""
@@ -656,11 +628,9 @@ class SectorPathwaySetupResult(BaseModel):
     configuration_hash: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Step Definitions
 # ---------------------------------------------------------------------------
-
 
 STEP_ORDER: List[SectorWizardStep] = [
     SectorWizardStep.SECTOR_SELECTION,
@@ -707,11 +677,9 @@ STEP_DESCRIPTIONS: Dict[SectorWizardStep, str] = {
         "Review complete configuration and deploy the sector pathway analysis pipeline.",
 }
 
-
 # ---------------------------------------------------------------------------
 # MRV/DATA Agent Priority by Routing Group
 # ---------------------------------------------------------------------------
-
 
 ROUTING_GROUP_MRV_PRIORITIES: Dict[str, List[str]] = {
     "heavy_industry": [
@@ -766,11 +734,9 @@ ROUTING_GROUP_DATA_PRIORITIES: Dict[str, List[str]] = {
     "cross_sector": ["DATA-001", "DATA-002", "DATA-003", "DATA-008", "DATA-010"],
 }
 
-
 # ---------------------------------------------------------------------------
 # SectorPathwaySetupWizard
 # ---------------------------------------------------------------------------
-
 
 class SectorPathwaySetupWizard:
     """7-step sector pathway configuration wizard for PACK-028.
@@ -812,7 +778,7 @@ class SectorPathwaySetupWizard:
 
     def start(self) -> WizardState:
         """Start a new wizard session."""
-        wizard_id = _compute_hash(f"sector-wizard:{_utcnow().isoformat()}")[:16]
+        wizard_id = _compute_hash(f"sector-wizard:{utcnow().isoformat()}")[:16]
         steps: Dict[str, WizardStepState] = {}
         for step in STEP_ORDER:
             steps[step.value] = WizardStepState(
@@ -1350,6 +1316,6 @@ class SectorPathwaySetupWizard:
                 self._state.current_step = STEP_ORDER[idx + 1]
             else:
                 self._state.is_complete = True
-                self._state.completed_at = _utcnow()
+                self._state.completed_at = utcnow()
         except ValueError:
             pass

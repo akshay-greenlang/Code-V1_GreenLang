@@ -51,7 +51,9 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+
+from greenlang.schemas import GreenLangBase, utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -61,21 +63,13 @@ __all__ = [
     "Scope3MapperEngine",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _generate_id(prefix: str = "s3m") -> str:
     """Generate a unique identifier with a prefix."""
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 # ---------------------------------------------------------------------------
 # Scope 3 Category definitions
@@ -173,7 +167,6 @@ _SCOPE3_CATEGORIES: Dict[int, Dict[str, Any]] = {
         "methodology": "investment-specific, average-data",
     },
 }
-
 
 # ---------------------------------------------------------------------------
 # NAICS 2-digit to Scope 3 mapping (50+ entries)
@@ -299,7 +292,6 @@ _NAICS_TO_SCOPE3: Dict[str, Tuple[int, float]] = {
     "92": (1, 0.60),
 }
 
-
 # ---------------------------------------------------------------------------
 # UNSPSC segment to Scope 3 mapping (58 segments)
 # ---------------------------------------------------------------------------
@@ -365,7 +357,6 @@ _UNSPSC_TO_SCOPE3: Dict[str, Tuple[int, float]] = {
     "A1": (1, 0.80),   # Stationery
     "A2": (1, 0.80),   # Consumer Electronics
 }
-
 
 # ---------------------------------------------------------------------------
 # Keyword to Scope 3 mapping (60+ keywords)
@@ -462,7 +453,6 @@ _KEYWORD_TO_SCOPE3: Dict[str, Tuple[int, float]] = {
     "insurance": (15, 0.75),
 }
 
-
 # ---------------------------------------------------------------------------
 # CapEx detection keywords
 # ---------------------------------------------------------------------------
@@ -475,13 +465,11 @@ _CAPEX_KEYWORDS: List[str] = [
     "long-term", "acquisition",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Data models
 # ---------------------------------------------------------------------------
 
-
-class Scope3Category(BaseModel):
+class Scope3Category(GreenLangBase):
     """Scope 3 category metadata."""
 
     category_number: int = Field(..., ge=1, le=15, description="Category number (1-15)")
@@ -492,8 +480,7 @@ class Scope3Category(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class Scope3Assignment(BaseModel):
+class Scope3Assignment(GreenLangBase):
     """Scope 3 assignment result for a spend record."""
 
     assignment_id: str = Field(..., description="Unique assignment identifier")
@@ -514,11 +501,9 @@ class Scope3Assignment(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
 # ---------------------------------------------------------------------------
 # Scope3MapperEngine
 # ---------------------------------------------------------------------------
-
 
 class Scope3MapperEngine:
     """GHG Protocol Scope 3 category mapper.
@@ -661,7 +646,7 @@ class Scope3MapperEngine:
 
         # Build assignment
         aid = _generate_id("s3m")
-        now_iso = _utcnow().isoformat()
+        now_iso = utcnow().isoformat()
 
         provenance_hash = self._compute_provenance(
             aid, category_num, confidence, match_source, now_iso,
@@ -898,7 +883,7 @@ class Scope3MapperEngine:
             provenance_hash = self._compute_provenance(
                 f"alloc-{cat_num}",
                 cat_num, weight, "allocation",
-                _utcnow().isoformat(),
+                utcnow().isoformat(),
             )
 
             allocations.append({

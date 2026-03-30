@@ -61,23 +61,18 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -94,7 +89,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -102,7 +96,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal, denominator: Decimal,
@@ -112,22 +105,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     return float(
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class GrantRegion(str, Enum):
     """Geographic region for grant eligibility."""
@@ -138,14 +127,12 @@ class GrantRegion(str, Enum):
     CANADA = "canada"
     GLOBAL = "global"
 
-
 class CompanySize(str, Enum):
     """Company size classification."""
     MICRO = "micro"
     SMALL = "small"
     MEDIUM = "medium"
     ANY = "any"
-
 
 class ProjectType(str, Enum):
     """Type of decarbonization project."""
@@ -162,7 +149,6 @@ class ProjectType(str, Enum):
     HYDROGEN = "hydrogen"
     GENERAL_DECARBONIZATION = "general_decarbonization"
 
-
 class IndustryCode(str, Enum):
     """Simplified NACE/NAICS industry code."""
     AGRICULTURE = "agriculture"
@@ -178,7 +164,6 @@ class IndustryCode(str, Enum):
     EDUCATION = "education"
     ANY = "any"
 
-
 class GrantStatus(str, Enum):
     """Current status of the grant program."""
     OPEN = "open"
@@ -187,11 +172,9 @@ class GrantStatus(str, Enum):
     CLOSED = "closed"
     ROLLING = "rolling"
 
-
 # ---------------------------------------------------------------------------
 # Grant Database (50+ programs)
 # ---------------------------------------------------------------------------
-
 
 class GrantProgram:
     """Internal definition of a grant program."""
@@ -229,7 +212,6 @@ class GrantProgram:
         self.application_url = application_url
         self.requirements = requirements
         self.notes = notes
-
 
 # Source: Government program websites, Green Finance Institute, DOE, EC.
 GRANTS_DB: List[GrantProgram] = [
@@ -891,11 +873,9 @@ GRANTS_DB: List[GrantProgram] = [
     ),
 ]
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class GrantFinderInput(BaseModel):
     """Input for grant matching.
@@ -938,11 +918,9 @@ class GrantFinderInput(BaseModel):
     def validate_country(cls, v: str) -> str:
         return v.upper() if len(v) <= 3 else v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class GrantMatch(BaseModel):
     """A single matched grant program.
@@ -976,7 +954,6 @@ class GrantMatch(BaseModel):
     application_url: str = Field(default="")
     relevance_notes: List[str] = Field(default_factory=list)
 
-
 class GrantFinderResult(BaseModel):
     """Complete grant finder result.
 
@@ -994,7 +971,7 @@ class GrantFinderResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
 
     matches: List[GrantMatch] = Field(default_factory=list)
@@ -1005,11 +982,9 @@ class GrantFinderResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class GrantFinderEngine:
     """Grant and incentive matching engine for SME decarbonization.

@@ -44,20 +44,16 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import NotificationChannel
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -70,16 +66,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
-class NotificationChannel(str, Enum):
-    """Notification delivery channels."""
-
-    EMAIL = "email"
-    SLACK = "slack"
-    TEAMS = "teams"
-    WEBHOOK = "webhook"
-
-
 class NotificationType(str, Enum):
     """Types of inventory management notifications."""
 
@@ -91,7 +77,6 @@ class NotificationType(str, Enum):
     QUALITY_ALERT = "quality_alert"
     VERSION_PUBLISHED = "version_published"
 
-
 class NotificationPriority(str, Enum):
     """Notification priority levels."""
 
@@ -99,7 +84,6 @@ class NotificationPriority(str, Enum):
     NORMAL = "normal"
     HIGH = "high"
     URGENT = "urgent"
-
 
 class NotificationStatus(str, Enum):
     """Notification delivery status."""
@@ -109,7 +93,6 @@ class NotificationStatus(str, Enum):
     DELIVERED = "delivered"
     FAILED = "failed"
     SUPPRESSED = "suppressed"
-
 
 class NotificationConfig(BaseModel):
     """Notification system configuration."""
@@ -125,7 +108,6 @@ class NotificationConfig(BaseModel):
     batch_notifications: bool = Field(default=True)
     digest_frequency: str = Field(default="daily")
 
-
 class Notification(BaseModel):
     """Notification message."""
 
@@ -138,10 +120,9 @@ class Notification(BaseModel):
     recipient: str = Field(default="")
     metadata: Dict[str, Any] = Field(default_factory=dict)
     status: NotificationStatus = Field(default=NotificationStatus.QUEUED)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     sent_at: Optional[datetime] = Field(None)
     provenance_hash: str = Field(default="")
-
 
 class SendResult(BaseModel):
     """Result of sending a notification."""
@@ -152,8 +133,7 @@ class SendResult(BaseModel):
     success: bool = Field(default=True)
     recipient: str = Field(default="")
     error: Optional[str] = Field(None)
-    sent_at: datetime = Field(default_factory=_utcnow)
-
+    sent_at: datetime = Field(default_factory=utcnow)
 
 class NotificationBridge:
     """Multi-channel notification system for inventory management.
@@ -226,7 +206,7 @@ class NotificationBridge:
             result = self._deliver(notif)
             self._history.append(result)
             notif.status = NotificationStatus.SENT if result.success else NotificationStatus.FAILED
-            notif.sent_at = _utcnow()
+            notif.sent_at = utcnow()
         else:
             notif.status = NotificationStatus.SUPPRESSED
 

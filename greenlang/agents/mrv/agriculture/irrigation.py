@@ -14,7 +14,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, List, Optional, Any
 from enum import Enum
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.mrv.agriculture.base import (
     BaseAgricultureMRVAgent,
@@ -24,6 +24,7 @@ from greenlang.agents.mrv.agriculture.base import (
     EmissionScope,
     CalculationStep,
 )
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +71,7 @@ GRID_EF = Decimal("0.207")
 DIESEL_EF = Decimal("2.68787")
 
 
-class IrrigationRecord(BaseModel):
+class IrrigationRecord(GreenLangBase):
     """Irrigation record."""
 
     field_id: Optional[str] = Field(None, description="Field ID")

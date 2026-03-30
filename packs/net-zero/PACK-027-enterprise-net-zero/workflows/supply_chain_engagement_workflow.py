@@ -33,23 +33,18 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "27.0.0"
 _PACK_ID = "PACK-027"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -58,7 +53,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
@@ -66,20 +60,17 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class SupplierTier(str, Enum):
     CRITICAL = "critical"       # Top 50 by Scope 3 contribution
     STRATEGIC = "strategic"     # Next 200
     MANAGED = "managed"         # Next 1,000
     MONITORED = "monitored"     # Long tail
 
-
 class EngagementLevel(str, Enum):
     INFORM = "inform"
     ENGAGE = "engage"
     REQUIRE = "require"
     COLLABORATE = "collaborate"
-
 
 class CDPScore(str, Enum):
     A_LIST = "A"
@@ -88,11 +79,9 @@ class CDPScore(str, Enum):
     DISCLOSURE = "D"
     NOT_DISCLOSED = "F"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase_name: str = Field(...)
@@ -105,7 +94,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
     dag_node_id: str = Field(default="")
-
 
 class SupplierRecord(BaseModel):
     supplier_id: str = Field(...)
@@ -121,7 +109,6 @@ class SupplierRecord(BaseModel):
     engagement_tier: str = Field(default="monitored")
     engagement_level: str = Field(default="inform")
 
-
 class SupplierScorecard(BaseModel):
     supplier_id: str = Field(...)
     supplier_name: str = Field(default="")
@@ -135,7 +122,6 @@ class SupplierScorecard(BaseModel):
     engagement_actions_completed: int = Field(default=0, ge=0)
     engagement_score: float = Field(default=0.0, ge=0.0, le=100.0)
 
-
 class EngagementProgram(BaseModel):
     tier: str = Field(default="")
     engagement_level: str = Field(default="")
@@ -143,7 +129,6 @@ class EngagementProgram(BaseModel):
     activities: List[str] = Field(default_factory=list)
     kpis: Dict[str, Any] = Field(default_factory=dict)
     timeline_months: int = Field(default=12)
-
 
 class EngagementProgress(BaseModel):
     letters_sent: int = Field(default=0, ge=0)
@@ -157,7 +142,6 @@ class EngagementProgress(BaseModel):
     scope3_reduction_tco2e: float = Field(default=0.0, ge=0.0)
     response_rate_pct: float = Field(default=0.0, ge=0.0, le=100.0)
 
-
 class SupplyChainEngagementConfig(BaseModel):
     reporting_year: int = Field(default=2025, ge=2020, le=2035)
     tier1_threshold_pct: float = Field(default=50.0, description="Top suppliers covering this % of S3")
@@ -168,13 +152,11 @@ class SupplyChainEngagementConfig(BaseModel):
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
 
-
 class SupplyChainEngagementInput(BaseModel):
     config: SupplyChainEngagementConfig = Field(default_factory=SupplyChainEngagementConfig)
     suppliers: List[SupplierRecord] = Field(default_factory=list)
     total_scope3_tco2e: float = Field(default=0.0, ge=0.0)
     prior_year_engagement: Optional[EngagementProgress] = Field(default=None)
-
 
 class SupplyChainEngagementResult(BaseModel):
     workflow_id: str = Field(...)
@@ -191,11 +173,9 @@ class SupplyChainEngagementResult(BaseModel):
     next_steps: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class SupplyChainEngagementWorkflow:
     """
@@ -226,7 +206,7 @@ class SupplyChainEngagementWorkflow:
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     async def execute(self, input_data: SupplyChainEngagementInput) -> SupplyChainEngagementResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         self.config = input_data.config
         self._phase_results = []
         overall_status = WorkflowStatus.RUNNING
@@ -258,7 +238,7 @@ class SupplyChainEngagementWorkflow:
                 status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         tier_summary = {}
         for sc in self._scorecards:
             tier_summary[sc.tier] = tier_summary.get(sc.tier, 0) + 1
@@ -288,7 +268,7 @@ class SupplyChainEngagementWorkflow:
         return result
 
     async def _phase_supplier_mapping(self, input_data: SupplyChainEngagementInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -312,7 +292,7 @@ class SupplyChainEngagementWorkflow:
             (sum(s.estimated_tco2e for s in suppliers) / max(input_data.total_scope3_tco2e, 1)) * 100, 1,
         )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="supplier_mapping", phase_number=1,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -322,7 +302,7 @@ class SupplyChainEngagementWorkflow:
         )
 
     async def _phase_tiering(self, input_data: SupplyChainEngagementInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         suppliers = sorted(input_data.suppliers, key=lambda s: s.estimated_tco2e, reverse=True)
@@ -371,7 +351,7 @@ class SupplyChainEngagementWorkflow:
         outputs["strategic_suppliers"] = tier_counts.get("strategic", 0)
         outputs["suppliers_with_sbti"] = sum(1 for sc in self._scorecards if sc.sbti_status == "committed")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="tiering", phase_number=2,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -381,7 +361,7 @@ class SupplyChainEngagementWorkflow:
         )
 
     async def _phase_program_design(self, input_data: SupplyChainEngagementInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         self._programs = [
@@ -450,7 +430,7 @@ class SupplyChainEngagementWorkflow:
         outputs["programs_designed"] = len(self._programs)
         outputs["total_target_suppliers"] = sum(p.target_suppliers for p in self._programs)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="program_design", phase_number=3,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -460,7 +440,7 @@ class SupplyChainEngagementWorkflow:
         )
 
     async def _phase_execution(self, input_data: SupplyChainEngagementInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         total_suppliers = len(self._scorecards)
@@ -489,7 +469,7 @@ class SupplyChainEngagementWorkflow:
         outputs["sbti_commitments"] = self._progress.sbti_commitments
         outputs["cdp_disclosures"] = self._progress.cdp_disclosures
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="execution", phase_number=4,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -499,7 +479,7 @@ class SupplyChainEngagementWorkflow:
         )
 
     async def _phase_impact_measurement(self, input_data: SupplyChainEngagementInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         # Estimate Scope 3 reduction from engagement
@@ -524,7 +504,7 @@ class SupplyChainEngagementWorkflow:
         )
         outputs["dq_improvement_achieved"] = self._progress.data_quality_upgrades
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="impact_measurement", phase_number=5,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),

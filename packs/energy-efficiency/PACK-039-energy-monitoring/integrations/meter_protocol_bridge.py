@@ -45,25 +45,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -76,11 +70,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class MeterProtocol(str, Enum):
     """Supported meter communication protocols."""
@@ -92,7 +84,6 @@ class MeterProtocol(str, Enum):
     MQTT = "mqtt"
     OPC_UA = "opc_ua"
 
-
 class ConnectionState(str, Enum):
     """Connection lifecycle states."""
 
@@ -101,7 +92,6 @@ class ConnectionState(str, Enum):
     CONNECTED = "connected"
     ERROR = "error"
     TIMEOUT = "timeout"
-
 
 class RegisterType(str, Enum):
     """Modbus register types and BACnet object types."""
@@ -114,7 +104,6 @@ class RegisterType(str, Enum):
     BINARY_INPUT = "binary_input"
     ACCUMULATOR = "accumulator"
 
-
 class DataType(str, Enum):
     """Data type for register interpretation."""
 
@@ -126,7 +115,6 @@ class DataType(str, Enum):
     FLOAT64 = "float64"
     BOOLEAN = "boolean"
 
-
 class ReadQuality(str, Enum):
     """Quality indicator for a meter reading."""
 
@@ -136,11 +124,9 @@ class ReadQuality(str, Enum):
     STALE = "stale"
     SUBSTITUTED = "substituted"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class ProtocolConfig(BaseModel):
     """Configuration for a specific meter protocol connection."""
@@ -160,7 +146,6 @@ class ProtocolConfig(BaseModel):
     opc_namespace: str = Field(default="", description="OPC-UA namespace URI")
     enable_provenance: bool = Field(default=True)
 
-
 class RegisterMapping(BaseModel):
     """Mapping of a meter register/point to a data channel."""
 
@@ -174,7 +159,6 @@ class RegisterMapping(BaseModel):
     unit: str = Field(default="kWh", description="Engineering unit")
     description: str = Field(default="")
 
-
 class MeterReading(BaseModel):
     """A single meter reading from a protocol register."""
 
@@ -186,10 +170,9 @@ class MeterReading(BaseModel):
     scaled_value: float = Field(default=0.0)
     unit: str = Field(default="kWh")
     quality: ReadQuality = Field(default=ReadQuality.GOOD)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     latency_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class ConnectionPool(BaseModel):
     """Connection pool status for a protocol endpoint."""
@@ -206,11 +189,9 @@ class ConnectionPool(BaseModel):
     total_errors: int = Field(default=0)
     avg_latency_ms: float = Field(default=0.0)
 
-
 # ---------------------------------------------------------------------------
 # MeterProtocolBridge
 # ---------------------------------------------------------------------------
-
 
 class MeterProtocolBridge:
     """Unified meter communication protocol abstraction.

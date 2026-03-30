@@ -46,31 +46,21 @@ logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
 
-
 # =============================================================================
 # HELPERS
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.utcnow()
-
 
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
 
-
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hash of a string."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -81,7 +71,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -91,7 +80,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class PerformanceTrend(str, Enum):
     """EnPI performance trend direction."""
 
@@ -99,7 +87,6 @@ class PerformanceTrend(str, Enum):
     STABLE = "stable"
     DEGRADING = "degrading"
     INSUFFICIENT_DATA = "insufficient_data"
-
 
 class BenchmarkRating(str, Enum):
     """Rating against industry benchmarks."""
@@ -109,7 +96,6 @@ class BenchmarkRating(str, Enum):
     AVERAGE = "average"
     BELOW_AVERAGE = "below_average"
     POOR = "poor"
-
 
 # =============================================================================
 # REFERENCE DATA (Zero-Hallucination)
@@ -228,11 +214,9 @@ ENPI_BENCHMARKS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -246,7 +230,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list, description="Errors encountered")
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
 
-
 class PeriodData(BaseModel):
     """Energy and activity data for a reporting period."""
 
@@ -258,7 +241,6 @@ class PeriodData(BaseModel):
     hdd: Decimal = Field(default=Decimal("0"), ge=0, description="Heating degree days")
     cdd: Decimal = Field(default=Decimal("0"), ge=0, description="Cooling degree days")
     operating_hours: Decimal = Field(default=Decimal("0"), ge=0, description="Operating hours in period")
-
 
 class EnPITrackingInput(BaseModel):
     """Input data model for EnPITrackingWorkflow."""
@@ -294,7 +276,6 @@ class EnPITrackingInput(BaseModel):
             raise ValueError("facility_name must not be blank")
         return stripped
 
-
 class EnPITrackingResult(BaseModel):
     """Complete result from EnPI tracking workflow."""
 
@@ -316,11 +297,9 @@ class EnPITrackingResult(BaseModel):
     calculated_at: str = Field(default="", description="ISO 8601 timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 of complete result")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class EnPITrackingWorkflow:
     """
@@ -331,6 +310,8 @@ class EnPITrackingWorkflow:
 
     Zero-hallucination: all EnPI calculations use deterministic formulas
     from ISO 50006. Benchmarks are sourced from validated reference data.
+
+from greenlang.schemas import utcnow
     No LLM calls in the numeric computation path.
 
     Attributes:
@@ -382,7 +363,7 @@ class EnPITrackingWorkflow:
             ValueError: If input validation fails.
         """
         t_start = time.perf_counter()
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting EnPI tracking workflow %s for facility=%s type=%s periods=%d",
             self.tracking_id, input_data.facility_name,

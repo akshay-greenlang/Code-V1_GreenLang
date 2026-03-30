@@ -39,9 +39,10 @@ import logging
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException, Query
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.eudr.documentation_generator.setup import get_service
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +52,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-class ProductEntryRequest(BaseModel):
+class ProductEntryRequest(GreenLangBase):
     """Product entry for DDS generation."""
 
     description: str = Field(
@@ -71,7 +72,7 @@ class ProductEntryRequest(BaseModel):
     )
 
 
-class GeolocationRequest(BaseModel):
+class GeolocationRequest(GreenLangBase):
     """Geolocation reference for DDS generation."""
 
     latitude: Optional[float] = Field(
@@ -95,7 +96,7 @@ class GeolocationRequest(BaseModel):
     )
 
 
-class SupplierRequest(BaseModel):
+class SupplierRequest(GreenLangBase):
     """Supplier reference for DDS generation."""
 
     supplier_id: str = Field(
@@ -115,7 +116,7 @@ class SupplierRequest(BaseModel):
     )
 
 
-class GenerateDDSRequest(BaseModel):
+class GenerateDDSRequest(GreenLangBase):
     """Request body for generating a DDS."""
 
     operator_id: str = Field(
@@ -144,7 +145,7 @@ class GenerateDDSRequest(BaseModel):
     )
 
 
-class AssembleArticle9Request(BaseModel):
+class AssembleArticle9Request(GreenLangBase):
     """Request body for assembling Article 9 data."""
 
     commodity: str = Field(
@@ -164,7 +165,7 @@ class AssembleArticle9Request(BaseModel):
     )
 
 
-class DocumentRiskRequest(BaseModel):
+class DocumentRiskRequest(GreenLangBase):
     """Request body for documenting a risk assessment."""
 
     operator_id: str = Field(
@@ -191,7 +192,7 @@ class DocumentRiskRequest(BaseModel):
     )
 
 
-class DocumentMitigationRequest(BaseModel):
+class DocumentMitigationRequest(GreenLangBase):
     """Request body for documenting mitigation measures."""
 
     operator_id: str = Field(
@@ -215,7 +216,7 @@ class DocumentMitigationRequest(BaseModel):
     )
 
 
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     """Standard error response body."""
 
     detail: str = Field(..., description="Error description")

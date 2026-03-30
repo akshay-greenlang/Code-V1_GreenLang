@@ -63,18 +63,13 @@ from datetime import datetime, timedelta, timezone
 from threading import Lock
 from typing import Any, Dict, List, Optional, Tuple
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -94,7 +89,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str) -> str:
     """Generate a unique identifier with a given prefix.
 
@@ -105,7 +99,6 @@ def _generate_id(prefix: str) -> str:
         ID in format ``{prefix}-{hex12}``.
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -174,11 +167,9 @@ EUDR_COMMODITIES: List[str] = [
     "soya", "cattle", "palm_oil", "wood", "cocoa", "coffee", "rubber",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class MonitoringSchedule:
@@ -208,10 +199,10 @@ class MonitoringSchedule:
     interval: str = DEFAULT_INTERVAL
     priority: str = DEFAULT_PRIORITY
     active: bool = True
-    created_at: datetime = field(default_factory=_utcnow)
-    updated_at: datetime = field(default_factory=_utcnow)
+    created_at: datetime = field(default_factory=utcnow)
+    updated_at: datetime = field(default_factory=utcnow)
     last_executed: Optional[datetime] = None
-    next_due: datetime = field(default_factory=_utcnow)
+    next_due: datetime = field(default_factory=utcnow)
     execution_count: int = 0
 
     def to_dict(self) -> Dict[str, Any]:
@@ -235,7 +226,6 @@ class MonitoringSchedule:
             "next_due": self.next_due.isoformat(),
             "execution_count": self.execution_count,
         }
-
 
 @dataclass
 class ChangeDetection:
@@ -271,7 +261,6 @@ class ChangeDetection:
             "significant": self.significant,
         }
 
-
 @dataclass
 class MonitoringResult:
     """Result of a single monitoring execution for a plot.
@@ -294,7 +283,7 @@ class MonitoringResult:
     result_id: str = field(default_factory=lambda: _generate_id("MRS"))
     schedule_id: str = ""
     plot_id: str = ""
-    executed_at: datetime = field(default_factory=_utcnow)
+    executed_at: datetime = field(default_factory=utcnow)
     status: str = "completed"
     change_detection: Optional[ChangeDetection] = None
     alert_generated: bool = False
@@ -324,11 +313,9 @@ class MonitoringResult:
             "error_message": self.error_message,
         }
 
-
 # ---------------------------------------------------------------------------
 # ContinuousMonitor
 # ---------------------------------------------------------------------------
-
 
 class ContinuousMonitor:
     """Scheduled satellite monitoring engine for EUDR compliance.
@@ -442,7 +429,7 @@ class ContinuousMonitor:
             if priority not in PRIORITY_ORDER:
                 priority = DEFAULT_PRIORITY
 
-        now = _utcnow()
+        now = utcnow()
         interval_delta = timedelta(days=INTERVAL_DAYS[interval_lower])
 
         schedule = MonitoringSchedule(
@@ -529,7 +516,7 @@ class ContinuousMonitor:
                 )
             schedule.interval = interval_lower
             # Recalculate next_due from last execution or now
-            base = schedule.last_executed or _utcnow()
+            base = schedule.last_executed or utcnow()
             schedule.next_due = base + timedelta(
                 days=INTERVAL_DAYS[interval_lower]
             )
@@ -542,7 +529,7 @@ class ContinuousMonitor:
         if active is not None:
             schedule.active = active
 
-        schedule.updated_at = _utcnow()
+        schedule.updated_at = utcnow()
 
         logger.info(
             "Schedule %s updated: interval=%s, priority=%s, active=%s",
@@ -825,7 +812,7 @@ class ContinuousMonitor:
             List of due MonitoringSchedule objects, sorted by priority
             (critical first) then by next_due (earliest first).
         """
-        check_date = as_of_date or _utcnow()
+        check_date = as_of_date or utcnow()
 
         with self._lock:
             due_schedules = [
@@ -865,7 +852,7 @@ class ContinuousMonitor:
                 - by_country: Count of schedules per country code.
                 - by_commodity: Count of schedules per commodity.
         """
-        now = _utcnow()
+        now = utcnow()
 
         with self._lock:
             all_schedules = list(self._schedules.values())
@@ -1023,7 +1010,7 @@ class ContinuousMonitor:
         base_quality = 0.8 if is_high_risk else 0.7
 
         return {
-            "acquired_at": _utcnow().isoformat(),
+            "acquired_at": utcnow().isoformat(),
             "sensor": "sentinel2",
             "cloud_cover_pct": 15.0 if is_high_risk else 20.0,
             "data_quality": base_quality,
@@ -1173,7 +1160,7 @@ class ContinuousMonitor:
         Args:
             schedule: MonitoringSchedule to update.
         """
-        now = _utcnow()
+        now = utcnow()
         interval_delta = timedelta(
             days=INTERVAL_DAYS.get(schedule.interval, 30)
         )
@@ -1212,7 +1199,6 @@ class ContinuousMonitor:
     def result_count(self) -> int:
         """Return the total number of stored monitoring results."""
         return len(self._results)
-
 
 # ---------------------------------------------------------------------------
 # Module Exports

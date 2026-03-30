@@ -8,23 +8,12 @@ import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
-from enum import Enum
 from typing import Dict, List, Any, Optional
 import uuid
 from greenlang.utilities.determinism import deterministic_uuid, DeterministicClock
+from greenlang.schemas.enums import ExecutionStatus
 
 logger = logging.getLogger(__name__)
-
-
-class ExecutionStatus(Enum):
-    """Pipeline execution status"""
-
-    PENDING = "pending"
-    RUNNING = "running"
-    SUCCEEDED = "succeeded"
-    FAILED = "failed"
-    CANCELLED = "cancelled"
-    UNKNOWN = "unknown"
 
 
 class ResourceRequirements:

@@ -47,23 +47,17 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import ConfigDict, Field, field_validator
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
+from greenlang.schemas import GreenLangBase, utcnow
 
 def _new_id() -> str:
     """Generate a new UUID4 string identifier."""
     return str(uuid.uuid4())
 
-
 # =============================================================================
 # Enumerations (API-level mirrors for OpenAPI documentation)
 # =============================================================================
-
 
 class AuditTypeEnum(str, Enum):
     """Audit type classification."""
@@ -72,14 +66,12 @@ class AuditTypeEnum(str, Enum):
     SURVEILLANCE = "surveillance"
     UNSCHEDULED = "unscheduled"
 
-
 class AuditModalityEnum(str, Enum):
     """Audit modality."""
     ON_SITE = "on_site"
     REMOTE = "remote"
     HYBRID = "hybrid"
     UNANNOUNCED = "unannounced"
-
 
 class AuditStatusEnum(str, Enum):
     """Audit lifecycle status."""
@@ -94,14 +86,12 @@ class AuditStatusEnum(str, Enum):
     CLOSED = "closed"
     CANCELLED = "cancelled"
 
-
 class NCSeverityEnum(str, Enum):
     """Non-conformance severity levels."""
     CRITICAL = "critical"
     MAJOR = "major"
     MINOR = "minor"
     OBSERVATION = "observation"
-
 
 class NCStatusEnum(str, Enum):
     """NC lifecycle status."""
@@ -114,7 +104,6 @@ class NCStatusEnum(str, Enum):
     CLOSED = "closed"
     ESCALATED = "escalated"
     DISPUTED = "disputed"
-
 
 class CARStatusEnum(str, Enum):
     """CAR lifecycle status."""
@@ -131,14 +120,12 @@ class CARStatusEnum(str, Enum):
     OVERDUE = "overdue"
     ESCALATED = "escalated"
 
-
 class CARSLAStatusEnum(str, Enum):
     """CAR SLA tracking status."""
     ON_TRACK = "on_track"
     WARNING = "warning"
     CRITICAL = "critical"
     OVERDUE = "overdue"
-
 
 class CertSchemeEnum(str, Enum):
     """Supported certification schemes."""
@@ -148,14 +135,12 @@ class CertSchemeEnum(str, Enum):
     RAINFOREST_ALLIANCE = "rainforest_alliance"
     ISCC = "iscc"
 
-
 class CertStatusEnum(str, Enum):
     """Certificate status."""
     ACTIVE = "active"
     SUSPENDED = "suspended"
     TERMINATED = "terminated"
     EXPIRED = "expired"
-
 
 class AccreditationStatusEnum(str, Enum):
     """Auditor accreditation status."""
@@ -164,7 +149,6 @@ class AccreditationStatusEnum(str, Enum):
     WITHDRAWN = "withdrawn"
     EXPIRED = "expired"
 
-
 class AuditorRoleEnum(str, Enum):
     """Audit team member roles."""
     LEAD_AUDITOR = "lead_auditor"
@@ -172,7 +156,6 @@ class AuditorRoleEnum(str, Enum):
     TECHNICAL_EXPERT = "technical_expert"
     OBSERVER = "observer"
     TRAINEE = "trainee"
-
 
 class EvidenceTypeEnum(str, Enum):
     """Audit evidence types."""
@@ -185,13 +168,11 @@ class EvidenceTypeEnum(str, Enum):
     DOCUMENT_SCAN = "document_scan"
     OTHER = "other"
 
-
 class CriterionResultEnum(str, Enum):
     """Checklist criterion assessment result."""
     PASS = "pass"
     FAIL = "fail"
     NA = "na"
-
 
 class RootCauseMethodEnum(str, Enum):
     """Root cause analysis methods."""
@@ -199,12 +180,10 @@ class RootCauseMethodEnum(str, Enum):
     ISHIKAWA = "ishikawa"
     DIRECT = "direct"
 
-
 class VerificationOutcomeEnum(str, Enum):
     """CAR verification outcome."""
     EFFECTIVE = "effective"
     NOT_EFFECTIVE = "not_effective"
-
 
 class InteractionTypeEnum(str, Enum):
     """Competent authority interaction types."""
@@ -216,7 +195,6 @@ class InteractionTypeEnum(str, Enum):
     DEFINITIVE_MEASURE = "definitive_measure"
     INFORMATION_REQUEST = "information_request"
 
-
 class InteractionStatusEnum(str, Enum):
     """Authority interaction status."""
     OPEN = "open"
@@ -224,14 +202,12 @@ class InteractionStatusEnum(str, Enum):
     RESPONDED = "responded"
     CLOSED = "closed"
 
-
 class ResponseSLAStatusEnum(str, Enum):
     """Authority response SLA status."""
     ON_TRACK = "on_track"
     WARNING = "warning"
     CRITICAL = "critical"
     OVERDUE = "overdue"
-
 
 class ReportFormatEnum(str, Enum):
     """Report output formats."""
@@ -241,7 +217,6 @@ class ReportFormatEnum(str, Enum):
     XLSX = "xlsx"
     XML = "xml"
 
-
 class ReportLanguageEnum(str, Enum):
     """Report language options."""
     EN = "en"
@@ -249,7 +224,6 @@ class ReportLanguageEnum(str, Enum):
     DE = "de"
     ES = "es"
     PT = "pt"
-
 
 class ScheduleStatusEnum(str, Enum):
     """Audit schedule entry status."""
@@ -259,7 +233,6 @@ class ScheduleStatusEnum(str, Enum):
     COMPLETED = "completed"
     CANCELLED = "cancelled"
     RESCHEDULED = "rescheduled"
-
 
 class EUDRCommodityEnum(str, Enum):
     """EUDR regulated commodities."""
@@ -271,7 +244,6 @@ class EUDRCommodityEnum(str, Enum):
     SOYA = "soya"
     WOOD = "wood"
 
-
 class InterviewTypeEnum(str, Enum):
     """Stakeholder interview types."""
     COMMUNITY = "community"
@@ -280,13 +252,11 @@ class InterviewTypeEnum(str, Enum):
     GOVERNMENT = "government"
     OTHER = "other"
 
-
 class FrequencyTierEnum(str, Enum):
     """Audit frequency tiers."""
     HIGH = "high"
     STANDARD = "standard"
     LOW = "low"
-
 
 class AuditScopeEnum(str, Enum):
     """Audit scope types."""
@@ -295,13 +265,11 @@ class AuditScopeEnum(str, Enum):
     SURVEILLANCE = "surveillance"
     UNSCHEDULED = "unscheduled"
 
-
 # =============================================================================
 # Common Schemas
 # =============================================================================
 
-
-class ProvenanceInfo(BaseModel):
+class ProvenanceInfo(GreenLangBase):
     """SHA-256 provenance tracking for zero-hallucination guarantee."""
     model_config = ConfigDict(frozen=True)
 
@@ -314,8 +282,7 @@ class ProvenanceInfo(BaseModel):
         default=None, description="Previous hash in provenance chain"
     )
 
-
-class MetadataSchema(BaseModel):
+class MetadataSchema(GreenLangBase):
     """Standard response metadata."""
     model_config = ConfigDict(frozen=True)
 
@@ -330,11 +297,10 @@ class MetadataSchema(BaseModel):
         default="1.0.0", description="Agent version"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp (UTC)"
+        default_factory=utcnow, description="Response timestamp (UTC)"
     )
 
-
-class PaginatedMeta(BaseModel):
+class PaginatedMeta(GreenLangBase):
     """Pagination metadata for list responses."""
     model_config = ConfigDict(frozen=True)
 
@@ -343,8 +309,7 @@ class PaginatedMeta(BaseModel):
     offset: int = Field(..., description="Current offset")
     has_more: bool = Field(..., description="Whether more pages exist")
 
-
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     """Standard error response."""
     model_config = ConfigDict(frozen=True)
 
@@ -356,8 +321,7 @@ class ErrorResponse(BaseModel):
         default=None, description="Request trace ID"
     )
 
-
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Health check response."""
     model_config = ConfigDict(frozen=True)
 
@@ -371,13 +335,11 @@ class HealthResponse(BaseModel):
     )
     version: str = Field(default="1.0.0", description="Agent version")
 
-
 # =============================================================================
 # 1. Planning Schemas
 # =============================================================================
 
-
-class ScheduleGenerateRequest(BaseModel):
+class ScheduleGenerateRequest(GreenLangBase):
     """Request to generate risk-based audit schedule."""
     operator_id: str = Field(..., description="Operator UUID")
     planning_quarter: Optional[str] = Field(
@@ -390,8 +352,7 @@ class ScheduleGenerateRequest(BaseModel):
         default=None, description="Specific suppliers to schedule (optional)"
     )
 
-
-class ScheduleEntry(BaseModel):
+class ScheduleEntry(GreenLangBase):
     """Single audit schedule entry."""
     schedule_id: str = Field(default_factory=_new_id)
     operator_id: str = Field(...)
@@ -404,10 +365,9 @@ class ScheduleEntry(BaseModel):
     certification_scheme: Optional[str] = Field(default=None)
     status: ScheduleStatusEnum = Field(default=ScheduleStatusEnum.PLANNED)
     risk_factors: Dict[str, Any] = Field(default_factory=dict)
-    scheduled_at: datetime = Field(default_factory=_utcnow)
+    scheduled_at: datetime = Field(default_factory=utcnow)
 
-
-class ScheduleGenerateResponse(BaseModel):
+class ScheduleGenerateResponse(GreenLangBase):
     """Response from schedule generation."""
     schedule_entries: List[ScheduleEntry] = Field(default_factory=list)
     total_scheduled: int = Field(default=0)
@@ -417,16 +377,14 @@ class ScheduleGenerateResponse(BaseModel):
     provenance: ProvenanceInfo
     metadata: MetadataSchema = Field(default_factory=MetadataSchema)
 
-
-class ScheduleListResponse(BaseModel):
+class ScheduleListResponse(GreenLangBase):
     """Paginated schedule list."""
     schedules: List[ScheduleEntry] = Field(default_factory=list)
     pagination: PaginatedMeta
     provenance: ProvenanceInfo
     metadata: MetadataSchema = Field(default_factory=MetadataSchema)
 
-
-class ScheduleUpdateRequest(BaseModel):
+class ScheduleUpdateRequest(GreenLangBase):
     """Request to update a schedule entry."""
     planned_quarter: Optional[str] = Field(default=None)
     audit_type: Optional[AuditTypeEnum] = Field(default=None)
@@ -434,8 +392,7 @@ class ScheduleUpdateRequest(BaseModel):
     assigned_auditor_id: Optional[str] = Field(default=None)
     status: Optional[ScheduleStatusEnum] = Field(default=None)
 
-
-class TriggerAuditRequest(BaseModel):
+class TriggerAuditRequest(GreenLangBase):
     """Request to trigger an unscheduled audit."""
     operator_id: str = Field(..., description="Operator UUID")
     supplier_id: str = Field(..., description="Supplier UUID")
@@ -446,8 +403,7 @@ class TriggerAuditRequest(BaseModel):
     country_code: str = Field(..., min_length=2, max_length=2)
     commodity: EUDRCommodityEnum = Field(...)
 
-
-class TriggerAuditResponse(BaseModel):
+class TriggerAuditResponse(GreenLangBase):
     """Response from audit trigger."""
     audit_id: str = Field(default_factory=_new_id)
     schedule_id: Optional[str] = Field(default=None)
@@ -456,8 +412,7 @@ class TriggerAuditResponse(BaseModel):
     provenance: ProvenanceInfo
     metadata: MetadataSchema = Field(default_factory=MetadataSchema)
 
-
-class AuditCreateRequest(BaseModel):
+class AuditCreateRequest(GreenLangBase):
     """Request to create a new audit."""
     operator_id: str = Field(..., description="Operator UUID")
     supplier_id: str = Field(..., description="Supplier UUID")
@@ -471,8 +426,7 @@ class AuditCreateRequest(BaseModel):
     site_ids: List[str] = Field(default_factory=list)
     trigger_reason: Optional[str] = Field(default=None)
 
-
-class AuditEntry(BaseModel):
+class AuditEntry(GreenLangBase):
     """Single audit record."""
     audit_id: str = Field(default_factory=_new_id)
     operator_id: str = Field(...)
@@ -496,26 +450,23 @@ class AuditEntry(BaseModel):
     )
     evidence_count: int = Field(default=0)
     provenance_hash: str = Field(default="")
-    created_at: datetime = Field(default_factory=_utcnow)
-    updated_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
+    updated_at: datetime = Field(default_factory=utcnow)
 
-
-class AuditCreateResponse(BaseModel):
+class AuditCreateResponse(GreenLangBase):
     """Response from audit creation."""
     audit: AuditEntry
     provenance: ProvenanceInfo
     metadata: MetadataSchema = Field(default_factory=MetadataSchema)
 
-
-class AuditListResponse(BaseModel):
+class AuditListResponse(GreenLangBase):
     """Paginated audit list."""
     audits: List[AuditEntry] = Field(default_factory=list)
     pagination: PaginatedMeta
     provenance: ProvenanceInfo
     metadata: MetadataSchema = Field(default_factory=MetadataSchema)
 
-
-class AuditDetailResponse(BaseModel):
+class AuditDetailResponse(GreenLangBase):
     """Detailed audit response."""
     audit: AuditEntry
     team_assignments: List[Dict[str, Any]] = Field(default_factory=list)
@@ -524,8 +475,7 @@ class AuditDetailResponse(BaseModel):
     provenance: ProvenanceInfo
     metadata: MetadataSchema = Field(default_factory=MetadataSchema)
 
-
-class AuditUpdateRequest(BaseModel):
+class AuditUpdateRequest(GreenLangBase):
     """Request to update an audit."""
     status: Optional[AuditStatusEnum] = Field(default=None)
     actual_start_date: Optional[date] = Field(default=None)
@@ -534,13 +484,11 @@ class AuditUpdateRequest(BaseModel):
     audit_team: Optional[List[Dict[str, str]]] = Field(default=None)
     modality: Optional[AuditModalityEnum] = Field(default=None)
 
-
 # =============================================================================
 # 2. Auditor Schemas
 # =============================================================================
 
-
-class AuditorRegisterRequest(BaseModel):
+class AuditorRegisterRequest(GreenLangBase):
     """Request to register a new auditor."""
     full_name: str = Field(..., min_length=1, max_length=500)
     organization: str = Field(..., min_length=1, max_length=500)
@@ -556,8 +504,7 @@ class AuditorRegisterRequest(BaseModel):
     languages: List[str] = Field(default_factory=list)
     contact_email: Optional[str] = Field(default=None)
 
-
-class AuditorEntry(BaseModel):
+class AuditorEntry(GreenLangBase):
     """Single auditor record."""
     auditor_id: str = Field(default_factory=_new_id)
     full_name: str = Field(...)
@@ -575,25 +522,22 @@ class AuditorEntry(BaseModel):
     performance_rating: Decimal = Field(default=Decimal("0.00"))
     cpd_hours: int = Field(default=0)
     cpd_compliant: bool = Field(default=True)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
 
-
-class AuditorRegisterResponse(BaseModel):
+class AuditorRegisterResponse(GreenLangBase):
     """Response from auditor registration."""
     auditor: AuditorEntry
     provenance: ProvenanceInfo
     metadata: MetadataSchema = Field(default_factory=MetadataSchema)
 
-
-class AuditorListResponse(BaseModel):
+class AuditorListResponse(GreenLangBase):
     """Paginated auditor list."""
     auditors: List[AuditorEntry] = Field(default_factory=list)
     pagination: PaginatedMeta
     provenance: ProvenanceInfo
     metadata: MetadataSchema = Field(default_factory=MetadataSchema)
 
-
-class AuditorDetailResponse(BaseModel):
+class AuditorDetailResponse(GreenLangBase):
     """Detailed auditor profile."""
     auditor: AuditorEntry
     recent_audits: List[Dict[str, Any]] = Field(default_factory=list)
@@ -601,8 +545,7 @@ class AuditorDetailResponse(BaseModel):
     provenance: ProvenanceInfo
     metadata: MetadataSchema = Field(default_factory=MetadataSchema)
 
-
-class AuditorUpdateRequest(BaseModel):
+class AuditorUpdateRequest(GreenLangBase):
     """Request to update auditor profile."""
     full_name: Optional[str] = Field(default=None)
     organization: Optional[str] = Field(default=None)
@@ -615,8 +558,7 @@ class AuditorUpdateRequest(BaseModel):
     cpd_hours: Optional[int] = Field(default=None)
     contact_email: Optional[str] = Field(default=None)
 
-
-class AuditorMatchRequest(BaseModel):
+class AuditorMatchRequest(GreenLangBase):
     """Request to match auditors to audit requirements."""
     audit_id: Optional[str] = Field(default=None)
     commodity: EUDRCommodityEnum = Field(...)
@@ -626,8 +568,7 @@ class AuditorMatchRequest(BaseModel):
     audit_date: date = Field(...)
     max_results: int = Field(default=10, ge=1, le=50)
 
-
-class AuditorMatchEntry(BaseModel):
+class AuditorMatchEntry(GreenLangBase):
     """Single auditor match result."""
     auditor: AuditorEntry
     match_score: Decimal = Field(...)
@@ -635,21 +576,18 @@ class AuditorMatchEntry(BaseModel):
     availability: bool = Field(default=True)
     conflict_of_interest: bool = Field(default=False)
 
-
-class AuditorMatchResponse(BaseModel):
+class AuditorMatchResponse(GreenLangBase):
     """Response from auditor matching."""
     matches: List[AuditorMatchEntry] = Field(default_factory=list)
     total_candidates: int = Field(default=0)
     provenance: ProvenanceInfo
     metadata: MetadataSchema = Field(default_factory=MetadataSchema)
 
-
 # =============================================================================
 # 3. Execution Schemas
 # =============================================================================
 
-
-class CriterionEntry(BaseModel):
+class CriterionEntry(GreenLangBase):
     """Single audit checklist criterion."""
     criterion_id: str = Field(...)
     category: str = Field(...)
@@ -662,8 +600,7 @@ class CriterionEntry(BaseModel):
     assessed_at: Optional[datetime] = Field(default=None)
     assessed_by: Optional[str] = Field(default=None)
 
-
-class ChecklistEntry(BaseModel):
+class ChecklistEntry(GreenLangBase):
     """Audit checklist record."""
     checklist_id: str = Field(default_factory=_new_id)
     audit_id: str = Field(...)
@@ -676,31 +613,27 @@ class ChecklistEntry(BaseModel):
     failed_criteria: int = Field(default=0)
     na_criteria: int = Field(default=0)
 
-
-class ChecklistResponse(BaseModel):
+class ChecklistResponse(GreenLangBase):
     """Audit checklist response."""
     checklists: List[ChecklistEntry] = Field(default_factory=list)
     overall_completion: Decimal = Field(default=Decimal("0.00"))
     provenance: ProvenanceInfo
     metadata: MetadataSchema = Field(default_factory=MetadataSchema)
 
-
-class CriterionUpdateRequest(BaseModel):
+class CriterionUpdateRequest(GreenLangBase):
     """Request to update a checklist criterion."""
     result: CriterionResultEnum = Field(...)
     evidence_ids: Optional[List[str]] = Field(default=None)
     auditor_notes: Optional[str] = Field(default=None)
 
-
-class CriterionUpdateResponse(BaseModel):
+class CriterionUpdateResponse(GreenLangBase):
     """Response from criterion update."""
     criterion: CriterionEntry
     checklist_completion: Decimal = Field(default=Decimal("0.00"))
     provenance: ProvenanceInfo
     metadata: MetadataSchema = Field(default_factory=MetadataSchema)
 
-
-class EvidenceUploadRequest(BaseModel):
+class EvidenceUploadRequest(GreenLangBase):
     """Request to register audit evidence."""
     evidence_type: EvidenceTypeEnum = Field(...)
     file_name: str = Field(...)
@@ -714,8 +647,7 @@ class EvidenceUploadRequest(BaseModel):
     captured_date: Optional[datetime] = Field(default=None)
     sha256_hash: str = Field(..., min_length=64, max_length=64)
 
-
-class EvidenceEntry(BaseModel):
+class EvidenceEntry(GreenLangBase):
     """Single evidence item."""
     evidence_id: str = Field(default_factory=_new_id)
     audit_id: str = Field(...)
@@ -728,25 +660,22 @@ class EvidenceEntry(BaseModel):
     tags: List[str] = Field(default_factory=list)
     sha256_hash: str = Field(...)
     uploaded_by: Optional[str] = Field(default=None)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
 
-
-class EvidenceUploadResponse(BaseModel):
+class EvidenceUploadResponse(GreenLangBase):
     """Response from evidence upload."""
     evidence: EvidenceEntry
     provenance: ProvenanceInfo
     metadata: MetadataSchema = Field(default_factory=MetadataSchema)
 
-
-class EvidenceListResponse(BaseModel):
+class EvidenceListResponse(GreenLangBase):
     """Paginated evidence list."""
     evidence_items: List[EvidenceEntry] = Field(default_factory=list)
     pagination: PaginatedMeta
     provenance: ProvenanceInfo
     metadata: MetadataSchema = Field(default_factory=MetadataSchema)
 
-
-class ProgressResponse(BaseModel):
+class ProgressResponse(GreenLangBase):
     """Real-time audit progress."""
     audit_id: str = Field(...)
     status: AuditStatusEnum = Field(...)
@@ -759,13 +688,11 @@ class ProgressResponse(BaseModel):
     provenance: ProvenanceInfo
     metadata: MetadataSchema = Field(default_factory=MetadataSchema)
 
-
 # =============================================================================
 # 4. Non-Conformance Schemas
 # =============================================================================
 
-
-class NCCreateRequest(BaseModel):
+class NCCreateRequest(GreenLangBase):
     """Request to create a non-conformance finding."""
     finding_statement: str = Field(..., min_length=10)
     objective_evidence: str = Field(..., min_length=10)
@@ -775,8 +702,7 @@ class NCCreateRequest(BaseModel):
     article_2_40_category: Optional[str] = Field(default=None)
     evidence_ids: List[str] = Field(default_factory=list)
 
-
-class NCEntry(BaseModel):
+class NCEntry(GreenLangBase):
     """Single non-conformance record."""
     nc_id: str = Field(default_factory=_new_id)
     audit_id: str = Field(...)
@@ -794,11 +720,10 @@ class NCEntry(BaseModel):
     classification_rules_applied: List[str] = Field(default_factory=list)
     disputed: bool = Field(default=False)
     provenance_hash: str = Field(default="")
-    detected_at: datetime = Field(default_factory=_utcnow)
+    detected_at: datetime = Field(default_factory=utcnow)
     resolved_at: Optional[datetime] = Field(default=None)
 
-
-class NCCreateResponse(BaseModel):
+class NCCreateResponse(GreenLangBase):
     """Response from NC creation."""
     nc: NCEntry
     auto_classified: bool = Field(default=True)
@@ -806,8 +731,7 @@ class NCCreateResponse(BaseModel):
     provenance: ProvenanceInfo
     metadata: MetadataSchema = Field(default_factory=MetadataSchema)
 
-
-class NCListResponse(BaseModel):
+class NCListResponse(GreenLangBase):
     """Paginated NC list."""
     non_conformances: List[NCEntry] = Field(default_factory=list)
     pagination: PaginatedMeta
@@ -815,8 +739,7 @@ class NCListResponse(BaseModel):
     provenance: ProvenanceInfo
     metadata: MetadataSchema = Field(default_factory=MetadataSchema)
 
-
-class NCDetailResponse(BaseModel):
+class NCDetailResponse(GreenLangBase):
     """Detailed NC response."""
     nc: NCEntry
     related_evidence: List[EvidenceEntry] = Field(default_factory=list)
@@ -824,24 +747,21 @@ class NCDetailResponse(BaseModel):
     provenance: ProvenanceInfo
     metadata: MetadataSchema = Field(default_factory=MetadataSchema)
 
-
-class NCUpdateRequest(BaseModel):
+class NCUpdateRequest(GreenLangBase):
     """Request to update an NC."""
     status: Optional[NCStatusEnum] = Field(default=None)
     severity: Optional[NCSeverityEnum] = Field(default=None)
     disputed: Optional[bool] = Field(default=None)
     dispute_rationale: Optional[str] = Field(default=None)
 
-
-class RCASubmitRequest(BaseModel):
+class RCASubmitRequest(GreenLangBase):
     """Request to submit root cause analysis."""
     method: RootCauseMethodEnum = Field(...)
     analysis: Dict[str, Any] = Field(...)
     contributing_factors: List[str] = Field(default_factory=list)
     recommended_actions: List[str] = Field(default_factory=list)
 
-
-class RCASubmitResponse(BaseModel):
+class RCASubmitResponse(GreenLangBase):
     """Response from RCA submission."""
     nc_id: str = Field(...)
     root_cause_analysis: Dict[str, Any] = Field(...)
@@ -849,13 +769,11 @@ class RCASubmitResponse(BaseModel):
     provenance: ProvenanceInfo
     metadata: MetadataSchema = Field(default_factory=MetadataSchema)
 
-
 # =============================================================================
 # 5. CAR Schemas
 # =============================================================================
 
-
-class CARIssueRequest(BaseModel):
+class CARIssueRequest(GreenLangBase):
     """Request to issue a corrective action request."""
     nc_ids: List[str] = Field(..., min_length=1)
     audit_id: str = Field(...)
@@ -863,8 +781,7 @@ class CARIssueRequest(BaseModel):
     severity: NCSeverityEnum = Field(...)
     corrective_action_plan: Optional[Dict[str, Any]] = Field(default=None)
 
-
-class CAREntry(BaseModel):
+class CAREntry(GreenLangBase):
     """Single CAR record."""
     car_id: str = Field(default_factory=_new_id)
     nc_ids: List[str] = Field(default_factory=list)
@@ -875,7 +792,7 @@ class CAREntry(BaseModel):
     sla_status: CARSLAStatusEnum = Field(default=CARSLAStatusEnum.ON_TRACK)
     status: CARStatusEnum = Field(default=CARStatusEnum.ISSUED)
     issued_by: str = Field(...)
-    issued_at: datetime = Field(default_factory=_utcnow)
+    issued_at: datetime = Field(default_factory=utcnow)
     acknowledged_at: Optional[datetime] = Field(default=None)
     cap_submitted_at: Optional[datetime] = Field(default=None)
     verified_at: Optional[datetime] = Field(default=None)
@@ -885,19 +802,17 @@ class CAREntry(BaseModel):
     escalation_level: int = Field(default=0, ge=0, le=4)
     escalation_history: List[Dict[str, Any]] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-    created_at: datetime = Field(default_factory=_utcnow)
-    updated_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
+    updated_at: datetime = Field(default_factory=utcnow)
 
-
-class CARIssueResponse(BaseModel):
+class CARIssueResponse(GreenLangBase):
     """Response from CAR issuance."""
     car: CAREntry
     sla_days: int = Field(...)
     provenance: ProvenanceInfo
     metadata: MetadataSchema = Field(default_factory=MetadataSchema)
 
-
-class CARListResponse(BaseModel):
+class CARListResponse(GreenLangBase):
     """Paginated CAR list."""
     cars: List[CAREntry] = Field(default_factory=list)
     pagination: PaginatedMeta
@@ -905,8 +820,7 @@ class CARListResponse(BaseModel):
     provenance: ProvenanceInfo
     metadata: MetadataSchema = Field(default_factory=MetadataSchema)
 
-
-class CARDetailResponse(BaseModel):
+class CARDetailResponse(GreenLangBase):
     """Detailed CAR response."""
     car: CAREntry
     related_ncs: List[NCEntry] = Field(default_factory=list)
@@ -914,34 +828,29 @@ class CARDetailResponse(BaseModel):
     provenance: ProvenanceInfo
     metadata: MetadataSchema = Field(default_factory=MetadataSchema)
 
-
-class CARUpdateRequest(BaseModel):
+class CARUpdateRequest(GreenLangBase):
     """Request to update CAR status."""
     status: Optional[CARStatusEnum] = Field(default=None)
     corrective_action_plan: Optional[Dict[str, Any]] = Field(default=None)
     evidence_ids: Optional[List[str]] = Field(default=None)
 
-
-class CARVerifyRequest(BaseModel):
+class CARVerifyRequest(GreenLangBase):
     """Request to submit CAR verification."""
     verification_outcome: VerificationOutcomeEnum = Field(...)
     verification_evidence_ids: List[str] = Field(default_factory=list)
     verification_notes: Optional[str] = Field(default=None)
 
-
-class CARVerifyResponse(BaseModel):
+class CARVerifyResponse(GreenLangBase):
     """Response from CAR verification."""
     car: CAREntry
     provenance: ProvenanceInfo
     metadata: MetadataSchema = Field(default_factory=MetadataSchema)
 
-
 # =============================================================================
 # 6. Certification Scheme Schemas
 # =============================================================================
 
-
-class CertificateEntry(BaseModel):
+class CertificateEntry(GreenLangBase):
     """Single certificate record."""
     certificate_id: str = Field(default_factory=_new_id)
     supplier_id: str = Field(...)
@@ -958,23 +867,20 @@ class CertificateEntry(BaseModel):
     eudr_coverage_matrix: Dict[str, Any] = Field(default_factory=dict)
     synced_at: Optional[datetime] = Field(default=None)
 
-
-class CertificateListResponse(BaseModel):
+class CertificateListResponse(GreenLangBase):
     """Paginated certificate list."""
     certificates: List[CertificateEntry] = Field(default_factory=list)
     pagination: PaginatedMeta
     provenance: ProvenanceInfo
     metadata: MetadataSchema = Field(default_factory=MetadataSchema)
 
-
-class CertSyncRequest(BaseModel):
+class CertSyncRequest(GreenLangBase):
     """Request to trigger certification sync."""
     scheme: CertSchemeEnum = Field(...)
     supplier_ids: Optional[List[str]] = Field(default=None)
     force: bool = Field(default=False)
 
-
-class CertSyncResponse(BaseModel):
+class CertSyncResponse(GreenLangBase):
     """Response from certification sync."""
     synced_count: int = Field(default=0)
     updated_count: int = Field(default=0)
@@ -983,8 +889,7 @@ class CertSyncResponse(BaseModel):
     provenance: ProvenanceInfo
     metadata: MetadataSchema = Field(default_factory=MetadataSchema)
 
-
-class CoverageMatrixEntry(BaseModel):
+class CoverageMatrixEntry(GreenLangBase):
     """EUDR coverage analysis for a certification scheme."""
     scheme: CertSchemeEnum = Field(...)
     certificate_number: Optional[str] = Field(default=None)
@@ -993,8 +898,7 @@ class CoverageMatrixEntry(BaseModel):
     coverage_percentage: Decimal = Field(default=Decimal("0.00"))
     gaps: List[str] = Field(default_factory=list)
 
-
-class CoverageMatrixResponse(BaseModel):
+class CoverageMatrixResponse(GreenLangBase):
     """EUDR coverage matrix for a supplier."""
     supplier_id: str = Field(...)
     schemes: List[CoverageMatrixEntry] = Field(default_factory=list)
@@ -1003,13 +907,11 @@ class CoverageMatrixResponse(BaseModel):
     provenance: ProvenanceInfo
     metadata: MetadataSchema = Field(default_factory=MetadataSchema)
 
-
 # =============================================================================
 # 7. Report Schemas
 # =============================================================================
 
-
-class ReportGenerateRequest(BaseModel):
+class ReportGenerateRequest(GreenLangBase):
     """Request to generate an audit report."""
     report_type: str = Field(default="iso_19011")
     format: ReportFormatEnum = Field(default=ReportFormatEnum.PDF)
@@ -1017,8 +919,7 @@ class ReportGenerateRequest(BaseModel):
     include_evidence_package: bool = Field(default=False)
     sections: Optional[List[str]] = Field(default=None)
 
-
-class ReportEntry(BaseModel):
+class ReportEntry(GreenLangBase):
     """Single report record."""
     report_id: str = Field(default_factory=_new_id)
     audit_id: str = Field(...)
@@ -1032,17 +933,15 @@ class ReportEntry(BaseModel):
     finding_count: Dict[str, int] = Field(default_factory=dict)
     evidence_package_path: Optional[str] = Field(default=None)
     generated_by: Optional[str] = Field(default=None)
-    generated_at: datetime = Field(default_factory=_utcnow)
+    generated_at: datetime = Field(default_factory=utcnow)
 
-
-class ReportGenerateResponse(BaseModel):
+class ReportGenerateResponse(GreenLangBase):
     """Response from report generation."""
     report: ReportEntry
     provenance: ProvenanceInfo
     metadata: MetadataSchema = Field(default_factory=MetadataSchema)
 
-
-class ReportDownloadResponse(BaseModel):
+class ReportDownloadResponse(GreenLangBase):
     """Report download information."""
     report: ReportEntry
     download_url: Optional[str] = Field(default=None)
@@ -1050,13 +949,11 @@ class ReportDownloadResponse(BaseModel):
     provenance: ProvenanceInfo
     metadata: MetadataSchema = Field(default_factory=MetadataSchema)
 
-
 # =============================================================================
 # 8. Authority Schemas
 # =============================================================================
 
-
-class InteractionCreateRequest(BaseModel):
+class InteractionCreateRequest(GreenLangBase):
     """Request to log a new authority interaction."""
     operator_id: str = Field(..., description="Operator UUID")
     authority_name: str = Field(..., min_length=1)
@@ -1066,8 +963,7 @@ class InteractionCreateRequest(BaseModel):
     response_deadline: datetime = Field(...)
     internal_tasks: List[Dict[str, Any]] = Field(default_factory=list)
 
-
-class InteractionEntry(BaseModel):
+class InteractionEntry(GreenLangBase):
     """Single authority interaction record."""
     interaction_id: str = Field(default_factory=_new_id)
     operator_id: str = Field(...)
@@ -1085,26 +981,23 @@ class InteractionEntry(BaseModel):
     enforcement_measures: List[Dict[str, Any]] = Field(default_factory=list)
     status: InteractionStatusEnum = Field(default=InteractionStatusEnum.OPEN)
     provenance_hash: str = Field(default="")
-    created_at: datetime = Field(default_factory=_utcnow)
-    updated_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
+    updated_at: datetime = Field(default_factory=utcnow)
 
-
-class InteractionCreateResponse(BaseModel):
+class InteractionCreateResponse(GreenLangBase):
     """Response from interaction creation."""
     interaction: InteractionEntry
     provenance: ProvenanceInfo
     metadata: MetadataSchema = Field(default_factory=MetadataSchema)
 
-
-class InteractionListResponse(BaseModel):
+class InteractionListResponse(GreenLangBase):
     """Paginated interaction list."""
     interactions: List[InteractionEntry] = Field(default_factory=list)
     pagination: PaginatedMeta
     provenance: ProvenanceInfo
     metadata: MetadataSchema = Field(default_factory=MetadataSchema)
 
-
-class InteractionUpdateRequest(BaseModel):
+class InteractionUpdateRequest(GreenLangBase):
     """Request to update an authority interaction."""
     status: Optional[InteractionStatusEnum] = Field(default=None)
     response_submitted_at: Optional[datetime] = Field(default=None)
@@ -1112,13 +1005,11 @@ class InteractionUpdateRequest(BaseModel):
     enforcement_measures: Optional[List[Dict[str, Any]]] = Field(default=None)
     evidence_package_id: Optional[str] = Field(default=None)
 
-
 # =============================================================================
 # 9. Analytics Schemas
 # =============================================================================
 
-
-class FindingTrendEntry(BaseModel):
+class FindingTrendEntry(GreenLangBase):
     """Finding trend data point."""
     period: str = Field(...)
     severity: NCSeverityEnum = Field(...)
@@ -1126,8 +1017,7 @@ class FindingTrendEntry(BaseModel):
     country_code: Optional[str] = Field(default=None)
     commodity: Optional[str] = Field(default=None)
 
-
-class FindingTrendsResponse(BaseModel):
+class FindingTrendsResponse(GreenLangBase):
     """Finding trend analytics."""
     trends: List[FindingTrendEntry] = Field(default_factory=list)
     total_findings: int = Field(default=0)
@@ -1135,8 +1025,7 @@ class FindingTrendsResponse(BaseModel):
     provenance: ProvenanceInfo
     metadata: MetadataSchema = Field(default_factory=MetadataSchema)
 
-
-class AuditorPerformanceEntry(BaseModel):
+class AuditorPerformanceEntry(GreenLangBase):
     """Auditor performance data."""
     auditor_id: str = Field(...)
     auditor_name: str = Field(...)
@@ -1146,16 +1035,14 @@ class AuditorPerformanceEntry(BaseModel):
     average_audit_duration_days: Decimal = Field(default=Decimal("0.00"))
     performance_rating: Decimal = Field(default=Decimal("0.00"))
 
-
-class AuditorPerformanceResponse(BaseModel):
+class AuditorPerformanceResponse(GreenLangBase):
     """Auditor performance analytics."""
     auditors: List[AuditorPerformanceEntry] = Field(default_factory=list)
     total_auditors: int = Field(default=0)
     provenance: ProvenanceInfo
     metadata: MetadataSchema = Field(default_factory=MetadataSchema)
 
-
-class ComplianceRateEntry(BaseModel):
+class ComplianceRateEntry(GreenLangBase):
     """Compliance rate data point."""
     period: str = Field(...)
     total_audits: int = Field(default=0)
@@ -1163,16 +1050,14 @@ class ComplianceRateEntry(BaseModel):
     compliance_rate: Decimal = Field(default=Decimal("0.00"))
     critical_nc_rate: Decimal = Field(default=Decimal("0.00"))
 
-
-class ComplianceRatesResponse(BaseModel):
+class ComplianceRatesResponse(GreenLangBase):
     """Compliance rate trend analytics."""
     rates: List[ComplianceRateEntry] = Field(default_factory=list)
     overall_compliance_rate: Decimal = Field(default=Decimal("0.00"))
     provenance: ProvenanceInfo
     metadata: MetadataSchema = Field(default_factory=MetadataSchema)
 
-
-class CARPerformanceEntry(BaseModel):
+class CARPerformanceEntry(GreenLangBase):
     """CAR performance data point."""
     period: str = Field(...)
     issued: int = Field(default=0)
@@ -1181,16 +1066,14 @@ class CARPerformanceEntry(BaseModel):
     average_closure_days: Decimal = Field(default=Decimal("0.00"))
     sla_compliance_rate: Decimal = Field(default=Decimal("0.00"))
 
-
-class CARPerformanceResponse(BaseModel):
+class CARPerformanceResponse(GreenLangBase):
     """CAR lifecycle performance analytics."""
     performance: List[CARPerformanceEntry] = Field(default_factory=list)
     overall_sla_compliance: Decimal = Field(default=Decimal("0.00"))
     provenance: ProvenanceInfo
     metadata: MetadataSchema = Field(default_factory=MetadataSchema)
 
-
-class DashboardResponse(BaseModel):
+class DashboardResponse(GreenLangBase):
     """Executive dashboard aggregate data."""
     active_audits: int = Field(default=0)
     open_cars: int = Field(default=0)
@@ -1205,13 +1088,11 @@ class DashboardResponse(BaseModel):
     provenance: ProvenanceInfo
     metadata: MetadataSchema = Field(default_factory=MetadataSchema)
 
-
 # =============================================================================
 # 10. Admin Schemas
 # =============================================================================
 
-
-class StatsResponse(BaseModel):
+class StatsResponse(GreenLangBase):
     """Service statistics response."""
     total_audits: int = Field(default=0)
     total_auditors: int = Field(default=0)
@@ -1224,7 +1105,6 @@ class StatsResponse(BaseModel):
     api_endpoints: int = Field(default=39)
     provenance: ProvenanceInfo
     metadata: MetadataSchema = Field(default_factory=MetadataSchema)
-
 
 # =============================================================================
 # Public API

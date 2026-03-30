@@ -31,11 +31,12 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, validator
+from pydantic import Field, validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.agents.base_agents import AuditEntry
 from greenlang.agents.categories import AgentCategory
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -146,7 +147,7 @@ VINTAGE_ADJUSTMENTS: Dict[str, float] = {
 # =============================================================================
 
 
-class CarbonCredit(BaseModel):
+class CarbonCredit(GreenLangBase):
     """Specification of a carbon credit or credit batch."""
     credit_id: str = Field(..., description="Unique identifier")
     project_name: str = Field(..., description="Project name")
@@ -190,7 +191,7 @@ class CarbonCredit(BaseModel):
     )
 
 
-class CreditValuation(BaseModel):
+class CreditValuation(GreenLangBase):
     """Valuation result for a carbon credit."""
     credit_id: str
     project_name: str
@@ -218,7 +219,7 @@ class CreditValuation(BaseModel):
     price_vs_market_pct: float = Field(..., description="% vs market reference")
 
 
-class CreditRiskAssessment(BaseModel):
+class CreditRiskAssessment(GreenLangBase):
     """Risk assessment for carbon credits."""
     credit_id: str
 
@@ -245,7 +246,7 @@ class CreditRiskAssessment(BaseModel):
     recommended_haircut_pct: float = Field(..., ge=0, le=100)
 
 
-class CreditValuationInput(BaseModel):
+class CreditValuationInput(GreenLangBase):
     """Input for credit valuation."""
     operation: str = Field(
         default="value_credit",
@@ -268,7 +269,7 @@ class CreditValuationInput(BaseModel):
     )
 
 
-class CreditValuationOutput(BaseModel):
+class CreditValuationOutput(GreenLangBase):
     """Output from credit valuation."""
     success: bool
     operation: str

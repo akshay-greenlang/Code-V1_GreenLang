@@ -30,21 +30,16 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Input Models
@@ -57,7 +52,6 @@ class JvPartner(BaseModel):
     partner_id: str = Field("")
     ownership_pct: Decimal = Field(Decimal("0"))
     is_operator: bool = Field(False)
-
 
 class HierarchyNode(BaseModel):
     """Single entity in the corporate hierarchy."""
@@ -77,7 +71,6 @@ class HierarchyNode(BaseModel):
     sector: str = Field("")
     incorporation_date: str = Field("")
 
-
 class OwnershipStructureReportInput(BaseModel):
     """Complete input for the ownership structure report."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -86,7 +79,6 @@ class OwnershipStructureReportInput(BaseModel):
     consolidation_approach: str = Field("operational_control")
     root_entity_name: str = Field("")
     hierarchy: List[Dict[str, Any]] = Field(default_factory=list)
-
 
 # ---------------------------------------------------------------------------
 # Output Model
@@ -111,7 +103,6 @@ class OwnershipStructureReportOutput(BaseModel):
     hierarchy: List[HierarchyNode] = Field(default_factory=list)
     jv_details: List[Dict[str, Any]] = Field(default_factory=list)
     provenance_hash: str = Field("")
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -142,7 +133,7 @@ class OwnershipStructureReport:
     def render(self, data: Dict[str, Any]) -> OwnershipStructureReportOutput:
         """Render ownership structure from input data."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         inp = OwnershipStructureReportInput(**data) if isinstance(data, dict) else data
 
         nodes = [HierarchyNode(**h) if isinstance(h, dict) else h for h in inp.hierarchy]
@@ -312,7 +303,6 @@ class OwnershipStructureReport:
                 f"{n.control_type},{n.in_boundary}"
             )
         return "\n".join(lines_out)
-
 
 __all__ = [
     "OwnershipStructureReport",

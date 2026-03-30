@@ -33,7 +33,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.schemas import (
     GreenLangBase,
@@ -59,6 +59,7 @@ from greenlang.agents.data.document_ingestion_agent import (
 # Re-export Layer 1 models
 # ---------------------------------------------------------------------------
 
+from greenlang.schemas.enums import JobStatus, ValidationSeverity
 from greenlang.agents.data.document_ingestion_agent import (
     BoundingBox,
     ExtractedField,
@@ -70,20 +71,16 @@ from greenlang.agents.data.document_ingestion_agent import (
     DocumentIngestionOutput,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
 # _utcnow retained as local alias for backward compatibility
 _utcnow = utcnow
-
 
 # =============================================================================
 # New Enumerations
 # =============================================================================
-
 
 class DocumentFormat(str, Enum):
     """Supported document file formats for ingestion."""
@@ -93,7 +90,6 @@ class DocumentFormat(str, Enum):
     JPG = "jpg"
     TIFF = "tiff"
     BMP = "bmp"
-
 
 class TemplateType(str, Enum):
     """Types of extraction templates for field pattern matching."""
@@ -106,29 +102,9 @@ class TemplateType(str, Enum):
     WEIGHT_TICKET = "weight_ticket"
     CUSTOM = "custom"
 
-
-class JobStatus(str, Enum):
-    """Lifecycle status of an extraction or batch job."""
-
-    PENDING = "pending"
-    PROCESSING = "processing"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    CANCELLED = "cancelled"
-
-
-class ValidationSeverity(str, Enum):
-    """Severity level for validation results."""
-
-    ERROR = "error"
-    WARNING = "warning"
-    INFO = "info"
-
-
 # =============================================================================
 # SDK Data Models
 # =============================================================================
-
 
 class DocumentRecord(GreenLangRecord):
     """Persistent record of an ingested document.
@@ -188,7 +164,6 @@ class DocumentRecord(GreenLangRecord):
             raise ValueError("file_name must be non-empty")
         return v
 
-
 class PageContent(GreenLangBase, ProvenanceMixin):
     """OCR-extracted content for a single page of a document.
 
@@ -242,7 +217,6 @@ class PageContent(GreenLangBase, ProvenanceMixin):
         if not v or not v.strip():
             raise ValueError("document_id must be non-empty")
         return v
-
 
 class ExtractionJob(GreenLangBase, TenantMixin):
     """Record of a document extraction job execution.
@@ -319,7 +293,6 @@ class ExtractionJob(GreenLangBase, TenantMixin):
             raise ValueError("document_id must be non-empty")
         return v
 
-
 class InvoiceExtraction(GreenLangRecord):
     """Structured extraction result for an invoice document.
 
@@ -372,7 +345,6 @@ class InvoiceExtraction(GreenLangRecord):
             raise ValueError("document_id must be non-empty")
         return v
 
-
 class ManifestExtraction(GreenLangRecord):
     """Structured extraction result for a shipping manifest document.
 
@@ -420,7 +392,6 @@ class ManifestExtraction(GreenLangRecord):
             raise ValueError("document_id must be non-empty")
         return v
 
-
 class UtilityBillExtraction(GreenLangRecord):
     """Structured extraction result for a utility bill document.
 
@@ -462,7 +433,6 @@ class UtilityBillExtraction(GreenLangRecord):
         if not v or not v.strip():
             raise ValueError("document_id must be non-empty")
         return v
-
 
 class ExtractionTemplate(GreenLangBase, TenantMixin):
     """Reusable template defining field extraction patterns and rules.
@@ -515,7 +485,6 @@ class ExtractionTemplate(GreenLangBase, TenantMixin):
         if not v or not v.strip():
             raise ValueError("name must be non-empty")
         return v
-
 
 class ValidationResult(GreenLangBase):
     """Result of a single validation check on an extracted field.
@@ -576,7 +545,6 @@ class ValidationResult(GreenLangBase):
             raise ValueError("field_name must be non-empty")
         return v
 
-
 class BatchJob(GreenLangBase, TenantMixin):
     """Record of a batch document processing job.
 
@@ -621,7 +589,6 @@ class BatchJob(GreenLangBase, TenantMixin):
         default_factory=utcnow,
         description="Timestamp when the batch job started",
     )
-
 
 class PDFStatistics(GreenLangBase):
     """Aggregated statistics for the PDF extractor service.
@@ -672,11 +639,9 @@ class PDFStatistics(GreenLangBase):
         description="Percentage of documents passing validation",
     )
 
-
 # =============================================================================
 # Request Models
 # =============================================================================
-
 
 class IngestDocumentRequest(GreenLangRequest, TenantMixin):
     """Request body for ingesting a single document.
@@ -724,7 +689,6 @@ class IngestDocumentRequest(GreenLangRequest, TenantMixin):
             raise ValueError("file_name must be non-empty")
         return v
 
-
 class BatchIngestRequest(GreenLangRequest, TenantMixin):
     """Request body for ingesting a batch of documents.
 
@@ -757,7 +721,6 @@ class BatchIngestRequest(GreenLangRequest, TenantMixin):
             raise ValueError("documents list must be non-empty")
         return v
 
-
 class ClassifyDocumentRequest(GreenLangRequest):
     """Request body for classifying a document type.
 
@@ -786,7 +749,6 @@ class ClassifyDocumentRequest(GreenLangRequest):
         if not v or not v.strip():
             raise ValueError("document_id must be non-empty")
         return v
-
 
 class ExtractInvoiceRequest(GreenLangRequest):
     """Request body for extracting invoice data from a document.
@@ -832,7 +794,6 @@ class ExtractInvoiceRequest(GreenLangRequest):
             raise ValueError("document_id must be non-empty")
         return v
 
-
 class CreateTemplateRequest(GreenLangRequest, TenantMixin):
     """Request body for creating a new extraction template.
 
@@ -874,7 +835,6 @@ class CreateTemplateRequest(GreenLangRequest, TenantMixin):
         if not v or not v.strip():
             raise ValueError("name must be non-empty")
         return v
-
 
 __all__ = [
     # Re-exported enums

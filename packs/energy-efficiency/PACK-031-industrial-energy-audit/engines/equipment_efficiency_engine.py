@@ -81,25 +81,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -117,7 +111,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -126,7 +119,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -138,17 +130,14 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
@@ -156,11 +145,9 @@ def _round3(value: float) -> float:
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EquipmentType(str, Enum):
     """Industrial equipment types for energy audit.
@@ -187,7 +174,6 @@ class EquipmentType(str, Enum):
     COOLING_TOWER = "cooling_tower"
     TRANSFORMER = "transformer"
 
-
 class MotorEfficiencyClass(str, Enum):
     """Motor efficiency classes per IEC 60034-30-1:2014.
 
@@ -202,7 +188,6 @@ class MotorEfficiencyClass(str, Enum):
     IE3 = "IE3"
     IE4 = "IE4"
     IE5 = "IE5"
-
 
 class CompressorType(str, Enum):
     """Compressor technology types.
@@ -219,7 +204,6 @@ class CompressorType(str, Enum):
     CENTRIFUGAL = "centrifugal"
     SCROLL = "scroll"
 
-
 class BoilerType(str, Enum):
     """Boiler technology types.
 
@@ -234,7 +218,6 @@ class BoilerType(str, Enum):
     CONDENSING = "condensing"
     ELECTRIC = "electric"
     BIOMASS = "biomass"
-
 
 class FuelType(str, Enum):
     """Fuel types for combustion equipment.
@@ -257,7 +240,6 @@ class FuelType(str, Enum):
     BIOMASS_WASTE = "biomass_waste"
     ELECTRICITY = "electricity"
 
-
 class HVACType(str, Enum):
     """HVAC system types.
 
@@ -278,7 +260,6 @@ class HVACType(str, Enum):
     HEAT_PUMP_GROUND = "heat_pump_ground"
     ROOFTOP = "rooftop"
     AHU = "ahu"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Motor Efficiency Standards (IEC 60034-30-1, 50Hz, 4-pole)
@@ -501,11 +482,9 @@ MIN_DEGRADATION_FLOOR: Decimal = Decimal("0.70")
 FURNACE_WALL_LOSS_COEFFICIENT: Decimal = Decimal("0.003")  # per degree C above ambient
 FURNACE_OPENING_LOSS_PER_M2: Decimal = Decimal("15.0")  # kW per m2 opening area
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class Equipment(BaseModel):
     """Base equipment data for any industrial equipment asset.
@@ -550,7 +529,6 @@ class Equipment(BaseModel):
         if v not in valid:
             raise ValueError(f"Unknown equipment type '{v}'. Must be one of: {sorted(valid)}")
         return v
-
 
 class MotorData(BaseModel):
     """Motor-specific data for efficiency analysis.
@@ -598,7 +576,6 @@ class MotorData(BaseModel):
             raise ValueError(f"Unknown motor class '{v}'. Must be one of: {sorted(valid)}")
         return v
 
-
 class PumpData(BaseModel):
     """Pump-specific data for efficiency analysis.
 
@@ -635,7 +612,6 @@ class PumpData(BaseModel):
     design_impeller_mm: Decimal = Field(
         default=Decimal("0"), ge=0, description="Design impeller diameter (mm)"
     )
-
 
 class CompressorData(BaseModel):
     """Compressor-specific data for efficiency analysis.
@@ -680,7 +656,6 @@ class CompressorData(BaseModel):
         if v not in valid:
             raise ValueError(f"Unknown compressor type '{v}'. Must be one of: {sorted(valid)}")
         return v
-
 
 class BoilerData(BaseModel):
     """Boiler-specific data for efficiency analysis.
@@ -757,7 +732,6 @@ class BoilerData(BaseModel):
             raise ValueError(f"Unknown fuel type '{v}'. Must be one of: {sorted(valid)}")
         return v
 
-
 class HVACData(BaseModel):
     """HVAC-specific data for efficiency analysis.
 
@@ -807,7 +781,6 @@ class HVACData(BaseModel):
             raise ValueError(f"Unknown HVAC type '{v}'. Must be one of: {sorted(valid)}")
         return v
 
-
 class EquipmentEfficiencyInput(BaseModel):
     """Complete input for equipment efficiency analysis.
 
@@ -839,11 +812,9 @@ class EquipmentEfficiencyInput(BaseModel):
         default=True, description="Include upgrade ROI analysis"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class UpgradeOption(BaseModel):
     """An equipment upgrade recommendation.
@@ -866,7 +837,6 @@ class UpgradeOption(BaseModel):
     simple_payback_years: Decimal = Field(default=Decimal("0"))
     new_efficiency_pct: Decimal = Field(default=Decimal("0"))
     co2_reduction_tco2e: Decimal = Field(default=Decimal("0"))
-
 
 class EquipmentEfficiencyResult(BaseModel):
     """Complete equipment efficiency analysis result.
@@ -900,7 +870,7 @@ class EquipmentEfficiencyResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     equipment_id: str = Field(default="")
     equipment_name: str = Field(default="")
     equipment_type: str = Field(default="")
@@ -924,11 +894,9 @@ class EquipmentEfficiencyResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class EquipmentEfficiencyEngine:
     """Industrial equipment efficiency analysis engine.
@@ -1048,7 +1016,7 @@ class EquipmentEfficiencyEngine:
         gap = best_eff - current_eff
 
         # Apply degradation
-        current_year = _utcnow().year
+        current_year = utcnow().year
         age = max(0, current_year - eq.year_installed)
         degraded = self._apply_degradation(current_eff, age)
 
@@ -1680,7 +1648,7 @@ class EquipmentEfficiencyEngine:
             best_isentropic = Decimal("70")
 
         # Estimate current from age degradation
-        current_year = _utcnow().year
+        current_year = utcnow().year
         age = max(0, current_year - eq.year_installed)
         degradation = min(
             _decimal(age) * Decimal("0.003"),  # 0.3% per year

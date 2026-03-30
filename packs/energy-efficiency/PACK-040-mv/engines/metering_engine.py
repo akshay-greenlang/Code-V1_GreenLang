@@ -73,25 +73,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -109,7 +103,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -118,7 +111,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -130,22 +122,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class IPMVPOption(str, Enum):
     """IPMVP option designation.
@@ -159,7 +147,6 @@ class IPMVPOption(str, Enum):
     OPTION_B = "option_b"
     OPTION_C = "option_c"
     OPTION_D = "option_d"
-
 
 class MeterType(str, Enum):
     """Type of energy meter.
@@ -190,7 +177,6 @@ class MeterType(str, Enum):
     CT_CLAMP = "ct_clamp"
     DATA_LOGGER = "data_logger"
 
-
 class AccuracyClass(str, Enum):
     """Meter accuracy classification per ANSI C12.20 / IEC 62053.
 
@@ -205,7 +191,6 @@ class AccuracyClass(str, Enum):
     CLASS_10 = "class_10"
     CLASS_20 = "class_20"
     CLASS_50 = "class_50"
-
 
 class CalibrationStatus(str, Enum):
     """Meter calibration status.
@@ -222,7 +207,6 @@ class CalibrationStatus(str, Enum):
     NOT_CALIBRATED = "not_calibrated"
     FAILED = "failed"
 
-
 class GapSeverity(str, Enum):
     """Severity of a data gap.
 
@@ -235,7 +219,6 @@ class GapSeverity(str, Enum):
     MODERATE = "moderate"
     MAJOR = "major"
     CRITICAL = "critical"
-
 
 class GapFillMethod(str, Enum):
     """Acceptable gap-fill method per IPMVP.
@@ -253,7 +236,6 @@ class GapFillMethod(str, Enum):
     REGRESSION = "regression"
     ENGINEERING = "engineering"
     NONE = "none"
-
 
 class MeasurementPoint(str, Enum):
     """Measurement point location in facility.
@@ -273,7 +255,6 @@ class MeasurementPoint(str, Enum):
     EQUIPMENT_LEVEL = "equipment_level"
     CIRCUIT_LEVEL = "circuit_level"
     VIRTUAL = "virtual"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -340,7 +321,6 @@ T_CRITICAL_90: Dict[int, Decimal] = {
     1000: Decimal("1.646"),
 }
 
-
 def _lookup_t_critical(df: int, table: Dict[int, Decimal]) -> Decimal:
     """Look up t-critical value from table with interpolation."""
     if df in table:
@@ -357,11 +337,9 @@ def _lookup_t_critical(df: int, table: Dict[int, Decimal]) -> Decimal:
             return table[keys[i]] + frac * (table[keys[i + 1]] - table[keys[i]])
     return Decimal("1.645")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class MeterSpec(BaseModel):
     """Specification of a single meter in the M&V plan."""
@@ -392,7 +370,6 @@ class MeterSpec(BaseModel):
     )
     notes: str = Field(default="", description="Additional notes")
 
-
 class CalibrationRecord(BaseModel):
     """Calibration record for a meter."""
 
@@ -411,7 +388,6 @@ class CalibrationRecord(BaseModel):
     reference_standard: str = Field(default="", description="Reference standard used")
     certificate_number: str = Field(default="", description="Calibration certificate #")
     notes: str = Field(default="", description="Notes")
-
 
 class SamplingProtocol(BaseModel):
     """Sampling protocol design for IPMVP Option A."""
@@ -439,7 +415,6 @@ class SamplingProtocol(BaseModel):
     )
     notes: str = Field(default="", description="Notes")
 
-
 class DataGap(BaseModel):
     """A detected gap in metered data."""
 
@@ -454,7 +429,6 @@ class DataGap(BaseModel):
         default=GapFillMethod.LINEAR, description="Recommended fill method"
     )
     filled: bool = Field(default=False, description="Whether gap has been filled")
-
 
 class MeteringPlan(BaseModel):
     """Complete metering plan for an M&V project."""
@@ -482,10 +456,9 @@ class MeteringPlan(BaseModel):
         description="Data quality requirements",
     )
     notes: List[str] = Field(default_factory=list, description="Plan notes")
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     processing_time_ms: Decimal = Field(default=Decimal("0"))
     provenance_hash: str = Field(default="")
-
 
 class DataQualityResult(BaseModel):
     """Data quality assessment result for metered data."""
@@ -507,10 +480,9 @@ class DataQualityResult(BaseModel):
         default=False, description="Passes IPMVP data quality requirements"
     )
     issues: List[str] = Field(default_factory=list, description="Identified issues")
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     processing_time_ms: Decimal = Field(default=Decimal("0"))
     provenance_hash: str = Field(default="")
-
 
 class MeterSelectionResult(BaseModel):
     """Result of meter selection based on IPMVP option."""
@@ -527,10 +499,9 @@ class MeterSelectionResult(BaseModel):
     estimated_cost: Decimal = Field(default=Decimal("0"), description="Estimated metering cost")
     accuracy_summary: str = Field(default="", description="Summary of accuracy")
     notes: List[str] = Field(default_factory=list, description="Selection notes")
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     processing_time_ms: Decimal = Field(default=Decimal("0"))
     provenance_hash: str = Field(default="")
-
 
 class MeterUncertaintyResult(BaseModel):
     """Meter measurement uncertainty propagation result."""
@@ -558,15 +529,13 @@ class MeterUncertaintyResult(BaseModel):
     calculation_method: str = Field(
         default="root_sum_square", description="Combination method"
     )
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     processing_time_ms: Decimal = Field(default=Decimal("0"))
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine Class
 # ---------------------------------------------------------------------------
-
 
 class MeteringEngine:
     """M&V metering plan, calibration, sampling, and data quality engine.
@@ -1080,7 +1049,7 @@ class MeteringEngine:
         """
         t0 = time.perf_counter()
         if reference_date is None:
-            reference_date = _utcnow().strftime("%Y-%m-%d")
+            reference_date = utcnow().strftime("%Y-%m-%d")
 
         updated: List[MeterSpec] = []
         for meter in meters:

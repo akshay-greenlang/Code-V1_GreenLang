@@ -37,19 +37,14 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -61,11 +56,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CDPScore(str, Enum):
     A = "A"
@@ -78,7 +71,6 @@ class CDPScore(str, Enum):
     D_MINUS = "D-"
     F = "F"
     NOT_SCORED = "not_scored"
-
 
 class CDPModule(str, Enum):
     C0_INTRODUCTION = "C0"
@@ -95,13 +87,11 @@ class CDPModule(str, Enum):
     C11_CARBON_PRICING = "C11"
     C12_ENGAGEMENT = "C12"
 
-
 class CDPScoringCategory(str, Enum):
     DISCLOSURE = "disclosure"
     AWARENESS = "awareness"
     MANAGEMENT = "management"
     LEADERSHIP = "leadership"
-
 
 class ImportStatus(str, Enum):
     SUCCESS = "success"
@@ -109,7 +99,6 @@ class ImportStatus(str, Enum):
     FAILED = "failed"
     STALE = "stale"
     CACHED = "cached"
-
 
 # ---------------------------------------------------------------------------
 # CDP Module Descriptions
@@ -131,11 +120,9 @@ CDP_MODULE_INFO: Dict[str, Dict[str, str]] = {
     "C12": {"name": "Engagement", "questions": "6", "weight": "3%"},
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class GLCDPAppConfig(BaseModel):
     pack_id: str = Field(default="PACK-030")
@@ -152,7 +139,6 @@ class GLCDPAppConfig(BaseModel):
     retry_attempts: int = Field(default=3, ge=1, le=10)
     retry_delay_seconds: float = Field(default=1.0)
 
-
 class CDPModuleResponse(BaseModel):
     """CDP module response data."""
     module: CDPModule = Field(default=CDPModule.C0_INTRODUCTION)
@@ -163,7 +149,6 @@ class CDPModuleResponse(BaseModel):
     score_category: CDPScoringCategory = Field(default=CDPScoringCategory.DISCLOSURE)
     module_score: str = Field(default="")
     key_responses: Dict[str, Any] = Field(default_factory=dict)
-
 
 class CDPHistoryYear(BaseModel):
     """CDP historical response for a single year."""
@@ -177,7 +162,6 @@ class CDPHistoryYear(BaseModel):
     submission_date: Optional[str] = Field(default=None)
     a_list: bool = Field(default=False)
 
-
 class CDPHistory(BaseModel):
     """Complete CDP response history."""
     history_id: str = Field(default_factory=_new_uuid)
@@ -189,8 +173,7 @@ class CDPHistory(BaseModel):
     a_list_count: int = Field(default=0)
     score_trend: str = Field(default="stable")
     provenance_hash: str = Field(default="")
-    fetched_at: datetime = Field(default_factory=_utcnow)
-
+    fetched_at: datetime = Field(default_factory=utcnow)
 
 class CDPScoreDetail(BaseModel):
     """Detailed CDP scoring analysis."""
@@ -203,7 +186,6 @@ class CDPScoreDetail(BaseModel):
     improvements: List[str] = Field(default_factory=list)
     a_list_gap: str = Field(default="")
     provenance_hash: str = Field(default="")
-
 
 class CDPPeerBenchmark(BaseModel):
     """CDP peer benchmark data."""
@@ -218,7 +200,6 @@ class CDPPeerBenchmark(BaseModel):
     a_list_pct_sector: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class GLCDPAppResult(BaseModel):
     result_id: str = Field(default_factory=_new_uuid)
     history: Optional[CDPHistory] = Field(None)
@@ -230,14 +211,12 @@ class GLCDPAppResult(BaseModel):
     frameworks_serviced: List[str] = Field(default_factory=list)
     validation_errors: List[str] = Field(default_factory=list)
     validation_warnings: List[str] = Field(default_factory=list)
-    fetched_at: datetime = Field(default_factory=_utcnow)
+    fetched_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # GLCDPAppIntegration
 # ---------------------------------------------------------------------------
-
 
 class GLCDPAppIntegration:
     """GL-CDP-APP integration for PACK-030.
@@ -295,6 +274,7 @@ class GLCDPAppIntegration:
                 attempt += 1
                 if attempt < self.config.retry_attempts:
                     import asyncio
+
                     await asyncio.sleep(self.config.retry_delay_seconds * attempt)
         return []
 

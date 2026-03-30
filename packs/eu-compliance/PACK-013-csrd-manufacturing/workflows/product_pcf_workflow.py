@@ -28,24 +28,19 @@ from typing import Any, Callable, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 #  Utilities
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return current UTC time with timezone info."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute SHA-256 provenance hash of arbitrary data."""
     return hashlib.sha256(
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 #  Enums
@@ -59,7 +54,6 @@ class PhaseStatus(str, Enum):
     FAILED = "FAILED"
     SKIPPED = "SKIPPED"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "PENDING"
@@ -67,7 +61,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
     PARTIAL = "PARTIAL"
-
 
 # ---------------------------------------------------------------------------
 #  Shared models
@@ -77,7 +70,7 @@ class WorkflowContext(BaseModel):
     """Shared state passed between workflow phases."""
     workflow_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     organization_id: str = Field(..., description="Organization identifier")
-    execution_timestamp: datetime = Field(default_factory=_utcnow)
+    execution_timestamp: datetime = Field(default_factory=utcnow)
     config: Dict[str, Any] = Field(default_factory=dict)
     phase_states: Dict[str, PhaseStatus] = Field(default_factory=dict)
     phase_outputs: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
@@ -100,7 +93,6 @@ class WorkflowContext(BaseModel):
         """Check whether a phase has completed successfully."""
         return self.phase_states.get(phase_name) == PhaseStatus.COMPLETED
 
-
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
     phase_name: str = Field(..., description="Phase identifier")
@@ -114,7 +106,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     records_processed: int = Field(default=0)
 
-
 class WorkflowResult(BaseModel):
     """Complete result from a multi-phase workflow execution."""
     workflow_id: str = Field(..., description="Unique workflow execution ID")
@@ -126,7 +117,6 @@ class WorkflowResult(BaseModel):
     phases: List[PhaseResult] = Field(default_factory=list)
     summary: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 #  Input / Result
@@ -142,7 +132,6 @@ class BOMComponent(BaseModel):
     recycled_content_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     supplier_country: str = Field(default="")
 
-
 class ManufacturingProcess(BaseModel):
     """Manufacturing process step with energy and waste data."""
     process_id: str = Field(...)
@@ -152,7 +141,6 @@ class ManufacturingProcess(BaseModel):
     waste_kg: float = Field(default=0.0, ge=0.0)
     waste_ef: float = Field(default=0.0, ge=0.0, description="kgCO2e per kg waste")
     yield_rate: float = Field(default=1.0, gt=0.0, le=1.0)
-
 
 class ProductPCFInput(BaseModel):
     """Input for product carbon footprint workflow."""
@@ -175,7 +163,6 @@ class ProductPCFInput(BaseModel):
     allocation_factor: float = Field(default=1.0, gt=0.0, le=1.0)
     skip_phases: List[str] = Field(default_factory=list)
 
-
 class LifecycleBreakdown(BaseModel):
     """Emissions breakdown by lifecycle stage."""
     raw_materials: float = Field(default=0.0)
@@ -184,7 +171,6 @@ class LifecycleBreakdown(BaseModel):
     use_phase: float = Field(default=0.0)
     end_of_life: float = Field(default=0.0)
 
-
 class ProductPCFResult(WorkflowResult):
     """Result from the product PCF workflow."""
     total_pcf: float = Field(default=0.0, description="Total PCF in kgCO2e")
@@ -192,7 +178,6 @@ class ProductPCFResult(WorkflowResult):
     hotspots: List[Dict[str, Any]] = Field(default_factory=list)
     dpp_data: Dict[str, Any] = Field(default_factory=dict)
     data_quality: Dict[str, Any] = Field(default_factory=dict)
-
 
 # ---------------------------------------------------------------------------
 #  Phase 1: Product Selection
@@ -205,7 +190,7 @@ class ProductSelectionPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Validate product data and BOM completeness."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -243,7 +228,7 @@ class ProductSelectionPhase:
             errors.append(f"Product selection failed: {str(exc)}")
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -251,7 +236,6 @@ class ProductSelectionPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 # ---------------------------------------------------------------------------
 #  Phase 2: BOM Mapping
@@ -264,7 +248,7 @@ class BOMMappingPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Calculate raw material emissions from BOM components."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -314,7 +298,7 @@ class BOMMappingPhase:
             errors.append(f"BOM mapping failed: {str(exc)}")
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -322,7 +306,6 @@ class BOMMappingPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 # ---------------------------------------------------------------------------
 #  Phase 3: Lifecycle Assessment
@@ -335,7 +318,7 @@ class LifecycleAssessmentPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Compute manufacturing, distribution, use, and EoL emissions."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -389,7 +372,7 @@ class LifecycleAssessmentPhase:
             errors.append(f"Lifecycle assessment failed: {str(exc)}")
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -397,7 +380,6 @@ class LifecycleAssessmentPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 # ---------------------------------------------------------------------------
 #  Phase 4: Allocation
@@ -410,7 +392,7 @@ class AllocationPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Apply allocation factor to lifecycle emissions."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -450,7 +432,7 @@ class AllocationPhase:
             errors.append(f"Allocation failed: {str(exc)}")
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -458,7 +440,6 @@ class AllocationPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 # ---------------------------------------------------------------------------
 #  Phase 5: PCF Generation
@@ -471,7 +452,7 @@ class PCFGenerationPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Generate PCF label, DPP data, and identify emission hotspots."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -521,7 +502,7 @@ class PCFGenerationPhase:
                 "methodology": "ISO 14067:2018",
                 "allocation_method": alloc.get("allocation_method", "mass"),
                 "data_quality_rating": self._assess_quality(config, bom_out),
-                "generated_at": _utcnow().isoformat(),
+                "generated_at": utcnow().isoformat(),
             }
 
             # Data quality assessment
@@ -541,7 +522,7 @@ class PCFGenerationPhase:
             errors.append(f"PCF generation failed: {str(exc)}")
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -575,7 +556,6 @@ class PCFGenerationPhase:
             "secondary_data_pct": round((len(bom) - with_ef) / max(len(bom), 1) * 100, 1),
             "overall_rating": self._assess_quality(config, bom_out),
         }
-
 
 # ---------------------------------------------------------------------------
 #  Workflow Orchestrator
@@ -614,7 +594,7 @@ class ProductPCFWorkflow:
 
     async def run(self, input_data: ProductPCFInput) -> ProductPCFResult:
         """Execute the complete 5-phase product PCF workflow."""
-        started_at = _utcnow()
+        started_at = utcnow()
         logger.info(
             "Starting product PCF workflow %s org=%s product=%s",
             self.workflow_id, input_data.organization_id, input_data.product_id,
@@ -659,7 +639,7 @@ class ProductPCFWorkflow:
                 logger.error("Phase '%s' raised: %s", phase_name, exc, exc_info=True)
                 completed_phases.append(PhaseResult(
                     phase_name=phase_name, status=PhaseStatus.FAILED,
-                    started_at=_utcnow(), errors=[str(exc)],
+                    started_at=utcnow(), errors=[str(exc)],
                     provenance_hash=_hash_data({"error": str(exc)}),
                 ))
                 context.mark_phase(phase_name, PhaseStatus.FAILED)
@@ -673,7 +653,7 @@ class ProductPCFWorkflow:
             )
             overall_status = WorkflowStatus.COMPLETED if all_ok else WorkflowStatus.PARTIAL
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         duration = (completed_at - started_at).total_seconds()
         summary = self._build_summary(context)
         provenance = _hash_data({

@@ -28,7 +28,8 @@ import uuid
 from datetime import date, datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 
 from services.config import (
     ComplianceStatus,
@@ -64,7 +65,7 @@ def _new_id() -> str:
 # ===========================================================================
 
 
-class Supplier(BaseModel):
+class Supplier(GreenLangBase):
     """Supplier entity for EUDR compliance tracking.
 
     Represents a supplier or operator placing relevant commodities on the
@@ -130,7 +131,7 @@ class Supplier(BaseModel):
     model_config = {"arbitrary_types_allowed": True}
 
 
-class GeoJSONPolygon(BaseModel):
+class GeoJSONPolygon(GreenLangBase):
     """GeoJSON Polygon geometry for plot boundaries.
 
     Coordinates follow the GeoJSON specification: an array of linear ring
@@ -172,7 +173,7 @@ class GeoJSONPolygon(BaseModel):
         return v
 
 
-class Plot(BaseModel):
+class Plot(GreenLangBase):
     """Production plot for EUDR geolocation tracking.
 
     Represents a geographic area of land used for commodity production.
@@ -259,7 +260,7 @@ class Plot(BaseModel):
     model_config = {"arbitrary_types_allowed": True}
 
 
-class Procurement(BaseModel):
+class Procurement(GreenLangBase):
     """Procurement record tracking commodity purchases from suppliers.
 
     Links a purchase order to its origin plots for EUDR traceability.
@@ -307,7 +308,7 @@ class Procurement(BaseModel):
     model_config = {"arbitrary_types_allowed": True}
 
 
-class Document(BaseModel):
+class Document(GreenLangBase):
     """Compliance document for EUDR verification.
 
     Represents an uploaded document (certificate, permit, land title,
@@ -375,7 +376,7 @@ class Document(BaseModel):
 # ===========================================================================
 
 
-class DDSRiskAssessment(BaseModel):
+class DDSRiskAssessment(GreenLangBase):
     """Risk assessment section within a Due Diligence Statement.
 
     Captures the four-dimension risk analysis required by EUDR Article 10.
@@ -403,7 +404,7 @@ class DDSRiskAssessment(BaseModel):
     assessment_date: Optional[datetime] = Field(None, description="Assessment date")
 
 
-class DDSMitigationMeasure(BaseModel):
+class DDSMitigationMeasure(GreenLangBase):
     """Risk mitigation measure within a DDS per EUDR Article 11.
 
     Attributes:
@@ -425,7 +426,7 @@ class DDSMitigationMeasure(BaseModel):
     evidence: List[str] = Field(default_factory=list, description="Evidence references")
 
 
-class DueDiligenceStatement(BaseModel):
+class DueDiligenceStatement(GreenLangBase):
     """Due Diligence Statement per EU Regulation 2023/1115 Articles 4, 9-12.
 
     The DDS is the core compliance artifact operators must submit to the
@@ -533,7 +534,7 @@ class DueDiligenceStatement(BaseModel):
 # ===========================================================================
 
 
-class StageResult(BaseModel):
+class StageResult(GreenLangBase):
     """Result of a single pipeline stage execution.
 
     Attributes:
@@ -559,7 +560,7 @@ class StageResult(BaseModel):
     retry_count: int = Field(default=0, ge=0, description="Retry count")
 
 
-class PipelineRun(BaseModel):
+class PipelineRun(GreenLangBase):
     """A single execution of the 5-stage EUDR compliance pipeline.
 
     Attributes:
@@ -610,7 +611,7 @@ class PipelineRun(BaseModel):
 # ===========================================================================
 
 
-class RiskAssessment(BaseModel):
+class RiskAssessment(GreenLangBase):
     """Unified risk assessment combining multiple risk dimensions.
 
     Attributes:
@@ -658,7 +659,7 @@ class RiskAssessment(BaseModel):
     model_config = {"arbitrary_types_allowed": True}
 
 
-class RiskAlert(BaseModel):
+class RiskAlert(GreenLangBase):
     """Risk alert raised when a threshold is exceeded.
 
     Attributes:
@@ -692,7 +693,7 @@ class RiskAlert(BaseModel):
     created_at: datetime = Field(default_factory=_utcnow)
 
 
-class RiskTrendPoint(BaseModel):
+class RiskTrendPoint(GreenLangBase):
     """Single data point in a risk trend time series.
 
     Attributes:
@@ -721,7 +722,7 @@ class RiskTrendPoint(BaseModel):
 # ===========================================================================
 
 
-class DashboardMetrics(BaseModel):
+class DashboardMetrics(GreenLangBase):
     """Aggregated metrics for the EUDR compliance dashboard.
 
     Attributes:
@@ -776,7 +777,7 @@ class DashboardMetrics(BaseModel):
 # ===========================================================================
 
 
-class SupplierCreateRequest(BaseModel):
+class SupplierCreateRequest(GreenLangBase):
     """Request to create a new supplier."""
 
     name: str = Field(..., min_length=1, max_length=500)
@@ -796,7 +797,7 @@ class SupplierCreateRequest(BaseModel):
         return v.upper()
 
 
-class SupplierUpdateRequest(BaseModel):
+class SupplierUpdateRequest(GreenLangBase):
     """Request to update an existing supplier."""
 
     name: Optional[str] = Field(None, min_length=1, max_length=500)
@@ -817,7 +818,7 @@ class SupplierUpdateRequest(BaseModel):
         return v.upper() if v else v
 
 
-class PlotCreateRequest(BaseModel):
+class PlotCreateRequest(GreenLangBase):
     """Request to create a new plot."""
 
     supplier_id: str = Field(...)
@@ -837,7 +838,7 @@ class PlotCreateRequest(BaseModel):
         return v.upper()
 
 
-class ProcurementCreateRequest(BaseModel):
+class ProcurementCreateRequest(GreenLangBase):
     """Request to create a new procurement record."""
 
     po_number: str = Field(..., min_length=1, max_length=100)
@@ -851,7 +852,7 @@ class ProcurementCreateRequest(BaseModel):
     notes: Optional[str] = Field(None, max_length=5000)
 
 
-class DocumentUploadRequest(BaseModel):
+class DocumentUploadRequest(GreenLangBase):
     """Request to upload a compliance document."""
 
     name: str = Field(..., min_length=1, max_length=500)
@@ -868,7 +869,7 @@ class DocumentUploadRequest(BaseModel):
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
-class DDSGenerateRequest(BaseModel):
+class DDSGenerateRequest(GreenLangBase):
     """Request to generate a Due Diligence Statement."""
 
     supplier_id: str = Field(...)
@@ -887,7 +888,7 @@ class DDSGenerateRequest(BaseModel):
         return v.upper() if v else v
 
 
-class PipelineStartRequest(BaseModel):
+class PipelineStartRequest(GreenLangBase):
     """Request to start a compliance pipeline run."""
 
     supplier_id: str = Field(...)
@@ -896,7 +897,7 @@ class PipelineStartRequest(BaseModel):
     triggered_by: str = Field(default="user")
 
 
-class SupplierFilterRequest(BaseModel):
+class SupplierFilterRequest(GreenLangBase):
     """Filters for listing suppliers."""
 
     country: Optional[str] = None
@@ -908,7 +909,7 @@ class SupplierFilterRequest(BaseModel):
     offset: int = Field(default=0, ge=0)
 
 
-class DocumentFilterRequest(BaseModel):
+class DocumentFilterRequest(GreenLangBase):
     """Filters for listing documents."""
 
     doc_type: Optional[DocumentType] = None
@@ -920,7 +921,7 @@ class DocumentFilterRequest(BaseModel):
     offset: int = Field(default=0, ge=0)
 
 
-class DDSFilterRequest(BaseModel):
+class DDSFilterRequest(GreenLangBase):
     """Filters for listing DDS records."""
 
     supplier_id: Optional[str] = None
@@ -931,7 +932,7 @@ class DDSFilterRequest(BaseModel):
     offset: int = Field(default=0, ge=0)
 
 
-class PipelineFilterRequest(BaseModel):
+class PipelineFilterRequest(GreenLangBase):
     """Filters for listing pipeline runs."""
 
     supplier_id: Optional[str] = None
@@ -945,7 +946,7 @@ class PipelineFilterRequest(BaseModel):
 # ===========================================================================
 
 
-class BulkImportResult(BaseModel):
+class BulkImportResult(GreenLangBase):
     """Result of a bulk supplier import operation.
 
     Attributes:
@@ -963,7 +964,7 @@ class BulkImportResult(BaseModel):
     suppliers: List[str] = Field(default_factory=list)
 
 
-class SupplierComplianceStatus(BaseModel):
+class SupplierComplianceStatus(GreenLangBase):
     """Comprehensive compliance status for a supplier.
 
     Attributes:
@@ -995,7 +996,7 @@ class SupplierComplianceStatus(BaseModel):
     issues: List[str] = Field(default_factory=list)
 
 
-class SupplierRiskSummary(BaseModel):
+class SupplierRiskSummary(GreenLangBase):
     """Risk summary for a supplier.
 
     Attributes:
@@ -1023,7 +1024,7 @@ class SupplierRiskSummary(BaseModel):
     last_assessed: Optional[datetime] = None
 
 
-class DocumentVerificationResult(BaseModel):
+class DocumentVerificationResult(GreenLangBase):
     """Result of verifying a compliance document.
 
     Attributes:
@@ -1051,7 +1052,7 @@ class DocumentVerificationResult(BaseModel):
     verified_at: datetime = Field(default_factory=_utcnow)
 
 
-class ComplianceCheckResult(BaseModel):
+class ComplianceCheckResult(GreenLangBase):
     """Result of a single EUDR compliance check.
 
     Attributes:
@@ -1073,7 +1074,7 @@ class ComplianceCheckResult(BaseModel):
     remediation: Optional[str] = Field(None, description="Remediation guidance")
 
 
-class DocumentGapAnalysis(BaseModel):
+class DocumentGapAnalysis(GreenLangBase):
     """Analysis of document gaps for a supplier's EUDR compliance.
 
     Attributes:
@@ -1097,7 +1098,7 @@ class DocumentGapAnalysis(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
 
 
-class DDSValidationResult(BaseModel):
+class DDSValidationResult(GreenLangBase):
     """Result of validating a Due Diligence Statement.
 
     Attributes:
@@ -1119,7 +1120,7 @@ class DDSValidationResult(BaseModel):
     checked_at: datetime = Field(default_factory=_utcnow)
 
 
-class DDSSubmissionResult(BaseModel):
+class DDSSubmissionResult(GreenLangBase):
     """Result of submitting a DDS to the EU Information System.
 
     Attributes:
@@ -1143,7 +1144,7 @@ class DDSSubmissionResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
 
 
-class DDSAnnualSummary(BaseModel):
+class DDSAnnualSummary(GreenLangBase):
     """Annual summary of DDS activity.
 
     Attributes:

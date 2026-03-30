@@ -75,23 +75,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -108,7 +103,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -117,7 +111,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -125,26 +118,21 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     return float(
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class PathwayAlignment(str, Enum):
     """Temperature pathway alignment classification.
@@ -158,7 +146,6 @@ class PathwayAlignment(str, Enum):
     WELL_BELOW_2C = "well_below_2c"
     ALIGNED_2C = "2c_aligned"
     MISALIGNED = "misaligned"
-
 
 class TargetMethodology(str, Enum):
     """Science-based target methodology.
@@ -179,7 +166,6 @@ class TargetMethodology(str, Enum):
     CUSTOM = "custom"
     NONE = "none"
 
-
 class TargetType(str, Enum):
     """Target type classification.
 
@@ -190,7 +176,6 @@ class TargetType(str, Enum):
     ABSOLUTE = "absolute"
     INTENSITY = "intensity"
     BOTH = "both"
-
 
 class ComplianceLevel(str, Enum):
     """Interim target compliance level.
@@ -204,7 +189,6 @@ class ComplianceLevel(str, Enum):
     SUBSTANTIALLY_COMPLIANT = "substantially_compliant"
     PARTIALLY_COMPLIANT = "partially_compliant"
     NON_COMPLIANT = "non_compliant"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -249,11 +233,9 @@ RECOGNIZED_METHODOLOGIES = {
     TargetMethodology.IPCC_AR6.value,
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class ScopeTargetInput(BaseModel):
     """Target data for a single scope.
@@ -283,7 +265,6 @@ class ScopeTargetInput(BaseModel):
     )
     includes_all_gases: bool = Field(default=True, description="All GHGs included")
     notes: str = Field(default="", description="Notes")
-
 
 class InterimTargetInput(BaseModel):
     """Complete input for interim target validation.
@@ -378,11 +359,9 @@ class InterimTargetInput(BaseModel):
             raise ValueError(f"Unknown methodology '{v}'.")
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class ScopeTargetResult(BaseModel):
     """Validation result for a single scope target.
@@ -408,7 +387,6 @@ class ScopeTargetResult(BaseModel):
     pathway_alignment: str = Field(default=PathwayAlignment.MISALIGNED.value)
     issues: List[str] = Field(default_factory=list)
 
-
 class PathwayComparison(BaseModel):
     """Comparison of entity target vs global/sector pathway.
 
@@ -429,7 +407,6 @@ class PathwayComparison(BaseModel):
     entity_exceeds: bool = Field(default=False)
     notes: str = Field(default="")
 
-
 class FairShareResult(BaseModel):
     """Fair share assessment result.
 
@@ -445,7 +422,6 @@ class FairShareResult(BaseModel):
     historical_factor: Decimal = Field(default=Decimal("1.0"))
     equity_adjusted_target_pct: Decimal = Field(default=Decimal("0"))
     assessment: str = Field(default="")
-
 
 class InterimTargetResult(BaseModel):
     """Complete interim target validation result.
@@ -482,7 +458,7 @@ class InterimTargetResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     baseline_year: int = Field(default=0)
     target_year: int = Field(default=2030)
@@ -509,11 +485,9 @@ class InterimTargetResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class InterimTargetEngine:
     """Race to Zero interim target validation engine.

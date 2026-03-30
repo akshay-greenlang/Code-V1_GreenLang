@@ -72,25 +72,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -108,7 +102,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -117,7 +110,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -129,27 +121,22 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 def _today() -> date:
     """Return current UTC date."""
     return datetime.now(timezone.utc).date()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ObjectiveType(str, Enum):
     """Type of energy objective per ISO 50001 Clause 6.2.
@@ -168,7 +155,6 @@ class ObjectiveType(str, Enum):
     PROCUREMENT = "procurement"
     MONITORING_ENHANCEMENT = "monitoring_enhancement"
 
-
 class TargetScope(str, Enum):
     """Scope boundary for an energy target.
 
@@ -185,7 +171,6 @@ class TargetScope(str, Enum):
     ALL_SCOPES = "all_scopes"
     SPECIFIC_SEU = "specific_seu"
     FACILITY_WIDE = "facility_wide"
-
 
 class ActionStatus(str, Enum):
     """Lifecycle status of an action item or plan.
@@ -206,7 +191,6 @@ class ActionStatus(str, Enum):
     CANCELLED = "cancelled"
     OVERDUE = "overdue"
 
-
 class ActionPriority(str, Enum):
     """Priority level for action items.
 
@@ -219,7 +203,6 @@ class ActionPriority(str, Enum):
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 class ResourceType(str, Enum):
     """Type of resource required for an action plan.
@@ -236,7 +219,6 @@ class ResourceType(str, Enum):
     TECHNICAL = "technical"
     EXTERNAL = "external"
 
-
 class VerificationMethod(str, Enum):
     """IPMVP measurement and verification options.
 
@@ -249,7 +231,6 @@ class VerificationMethod(str, Enum):
     CALCULATED_SAVINGS = "calculated_savings"
     STIPULATED_SAVINGS = "stipulated_savings"
     CALIBRATED_SIMULATION = "calibrated_simulation"
-
 
 # ---------------------------------------------------------------------------
 # Constants / Reference Data
@@ -444,11 +425,9 @@ PRIORITY_URGENCY_SCORES: Dict[str, Decimal] = {
     ActionPriority.LOW.value: Decimal("0.25"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class SMARTObjective(BaseModel):
     """SMART criteria validation result for an energy objective.
@@ -495,7 +474,6 @@ class SMARTObjective(BaseModel):
     validation_notes: List[str] = Field(
         default_factory=list, description="Per-criterion notes"
     )
-
 
 class EnergyObjective(BaseModel):
     """An energy objective per ISO 50001 Clause 6.2.
@@ -587,7 +565,6 @@ class EnergyObjective(BaseModel):
                 )
         return v
 
-
 class EnergyTarget(BaseModel):
     """An energy target linked to an objective per ISO 50001 Clause 6.2.
 
@@ -644,7 +621,6 @@ class EnergyTarget(BaseModel):
                 )
         return v
 
-
 class ResourceRequirement(BaseModel):
     """A resource needed for an action plan.
 
@@ -686,7 +662,6 @@ class ResourceRequirement(BaseModel):
                     f"Unknown resource type '{v}'. Must be one of: {sorted(valid)}"
                 )
         return v
-
 
 class ActionItem(BaseModel):
     """An individual action item within an action plan.
@@ -765,7 +740,6 @@ class ActionItem(BaseModel):
                     f"Unknown priority '{v}'. Must be one of: {sorted(valid)}"
                 )
         return v
-
 
 class ActionPlan(BaseModel):
     """An action plan linked to an energy target per ISO 50001 Clause 6.2.
@@ -870,7 +844,6 @@ class ActionPlan(BaseModel):
                 )
         return v
 
-
 class ActionPlanPortfolio(BaseModel):
     """Aggregated portfolio of objectives, targets, and action plans.
 
@@ -921,7 +894,7 @@ class ActionPlanPortfolio(BaseModel):
         description="Overall progress percentage"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     provenance_hash: str = Field(
         default="", description="SHA-256 provenance hash"
@@ -929,7 +902,6 @@ class ActionPlanPortfolio(BaseModel):
     calculation_time_ms: int = Field(
         default=0, ge=0, description="Processing time (ms)"
     )
-
 
 # ---------------------------------------------------------------------------
 # Model Rebuild (required for `from __future__ import annotations`)
@@ -942,11 +914,9 @@ ActionItem.model_rebuild()
 ActionPlan.model_rebuild()
 ActionPlanPortfolio.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ActionPlanEngine:
     """ISO 50001 Clause 6.2 action plan engine.
@@ -2012,7 +1982,7 @@ class ActionPlanEngine:
             "cancelled_items": cancelled_items,
             "plan_progress": plan_progress,
             "milestone_status": milestone_status,
-            "tracked_at": _utcnow().isoformat(),
+            "tracked_at": utcnow().isoformat(),
         }
         result["provenance_hash"] = _compute_hash(result)
 
@@ -2827,7 +2797,7 @@ class ActionPlanEngine:
             },
             "objective_summary": objective_summary,
             "risk_summary": risk_summary,
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
         }
         result["provenance_hash"] = _compute_hash(result)
 

@@ -71,23 +71,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -104,7 +99,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -112,7 +106,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal, denominator: Decimal,
@@ -122,26 +115,21 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     return float(
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class TargetPathwayType(str, Enum):
     """SBTi target pathway types."""
@@ -150,14 +138,12 @@ class TargetPathwayType(str, Enum):
     SDA = "sda"
     FLAG = "flag"
 
-
 class TargetScope(str, Enum):
     """Target scope types."""
     SCOPE_12 = "scope_1_2"
     SCOPE_3 = "scope_3"
     SCOPE_123 = "scope_1_2_3"
     FLAG_ONLY = "flag_only"
-
 
 class TargetType(str, Enum):
     """Target type classification."""
@@ -166,14 +152,12 @@ class TargetType(str, Enum):
     NET_ZERO = "net_zero"
     FLAG = "flag"
 
-
 class CriterionStatus(str, Enum):
     """Validation status for each criterion."""
     PASS = "pass"
     FAIL = "fail"
     WARNING = "warning"
     NOT_APPLICABLE = "not_applicable"
-
 
 class SDASector(str, Enum):
     """SBTi SDA eligible sectors."""
@@ -190,7 +174,6 @@ class SDASector(str, Enum):
     RESIDENTIAL_BUILDINGS = "residential_buildings"
     FOOD_BEVERAGE = "food_beverage"
 
-
 class MilestoneStatus(str, Enum):
     """Status of a target milestone."""
     NOT_STARTED = "not_started"
@@ -198,7 +181,6 @@ class MilestoneStatus(str, Enum):
     AT_RISK = "at_risk"
     OFF_TRACK = "off_track"
     ACHIEVED = "achieved"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -326,11 +308,9 @@ NET_ZERO_CRITERIA: List[Dict[str, str]] = [
     {"id": "NZ-C14", "group": "governance", "desc": "Five-year review and revalidation cycle"},
 ]
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class BaselineData(BaseModel):
     """Baseline emission data for target setting.
@@ -351,7 +331,6 @@ class BaselineData(BaseModel):
     scope3_by_category: Dict[str, Decimal] = Field(default_factory=dict)
     flag_emissions_tco2e: Decimal = Field(default=Decimal("0"), ge=Decimal("0"))
     total_tco2e: Decimal = Field(default=Decimal("0"), ge=Decimal("0"))
-
 
 class SBTiTargetInput(BaseModel):
     """Complete input for SBTi target setting.
@@ -404,11 +383,9 @@ class SBTiTargetInput(BaseModel):
     def validate_target_year(cls, v: int, info: Any) -> int:
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class CriterionValidation(BaseModel):
     """Validation result for a single SBTi criterion.
@@ -427,7 +404,6 @@ class CriterionValidation(BaseModel):
     status: CriterionStatus = Field(default=CriterionStatus.PASS)
     evidence: str = Field(default="")
     remediation: str = Field(default="")
-
 
 class TargetDefinition(BaseModel):
     """A single target definition with pathway.
@@ -457,7 +433,6 @@ class TargetDefinition(BaseModel):
     coverage_pct: Decimal = Field(default=Decimal("95"))
     target_statement: str = Field(default="")
 
-
 class MilestoneEntry(BaseModel):
     """Annual milestone in the target pathway.
 
@@ -474,7 +449,6 @@ class MilestoneEntry(BaseModel):
     cumulative_budget_tco2e: Decimal = Field(default=Decimal("0"))
     status: MilestoneStatus = Field(default=MilestoneStatus.NOT_STARTED)
 
-
 class FairShareAssessment(BaseModel):
     """Fair share equity assessment for the target.
 
@@ -490,7 +464,6 @@ class FairShareAssessment(BaseModel):
     company_share_pct: Decimal = Field(default=Decimal("0"))
     company_budget_tco2e: Decimal = Field(default=Decimal("0"))
     target_within_budget: bool = Field(default=True)
-
 
 class ProgressAssessment(BaseModel):
     """Progress against target pathway.
@@ -511,7 +484,6 @@ class ProgressAssessment(BaseModel):
     variance_pct: Decimal = Field(default=Decimal("0"))
     on_track: bool = Field(default=True)
     years_ahead_behind: Decimal = Field(default=Decimal("0"))
-
 
 class SBTiTargetResult(BaseModel):
     """Complete SBTi target setting result.
@@ -540,7 +512,7 @@ class SBTiTargetResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     organization_name: str = Field(default="")
 
     near_term_target: TargetDefinition = Field(default_factory=TargetDefinition)
@@ -571,11 +543,9 @@ class SBTiTargetResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class SBTiTargetEngine:
     """Full SBTi Corporate Standard target setting engine.

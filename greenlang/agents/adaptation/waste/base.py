@@ -33,7 +33,8 @@ from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Any, Dict, List, Optional, TypeVar, Generic
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +97,7 @@ class UrgencyLevel(str, Enum):
 # DATA MODELS
 # =============================================================================
 
-class ClimateHazard(BaseModel):
+class ClimateHazard(GreenLangBase):
     """Climate hazard definition."""
     hazard_type: str = Field(..., description="Type of hazard")
     current_frequency: str = Field(..., description="Current return period")
@@ -105,7 +106,7 @@ class ClimateHazard(BaseModel):
     confidence: str = Field("medium", description="Projection confidence")
 
 
-class VulnerabilityAssessment(BaseModel):
+class VulnerabilityAssessment(GreenLangBase):
     """Vulnerability assessment results."""
     exposure_score: Decimal = Field(Decimal("0"), ge=0, le=5)
     sensitivity_score: Decimal = Field(Decimal("0"), ge=0, le=5)
@@ -113,7 +114,7 @@ class VulnerabilityAssessment(BaseModel):
     overall_vulnerability: RiskLevel = Field(RiskLevel.MODERATE)
 
 
-class AdaptationMeasure(BaseModel):
+class AdaptationMeasure(GreenLangBase):
     """Individual adaptation measure."""
     measure_id: str = Field(..., description="Unique measure identifier")
     measure_type: AdaptationMeasureType = Field(..., description="Type of measure")
@@ -137,7 +138,7 @@ class AdaptationMeasure(BaseModel):
         use_enum_values = True
 
 
-class AdaptationPlan(BaseModel):
+class AdaptationPlan(GreenLangBase):
     """Complete adaptation plan."""
     plan_id: str = Field(..., description="Plan identifier")
     name: str = Field(..., description="Plan name")
@@ -163,7 +164,7 @@ class AdaptationPlan(BaseModel):
 # BASE INPUT/OUTPUT MODELS
 # =============================================================================
 
-class WasteAdaptInput(BaseModel):
+class WasteAdaptInput(GreenLangBase):
     """Base input model for waste adaptation agents."""
 
     # Identification
@@ -193,7 +194,7 @@ class WasteAdaptInput(BaseModel):
         use_enum_values = True
 
 
-class WasteAdaptOutput(BaseModel):
+class WasteAdaptOutput(GreenLangBase):
     """Base output model for waste adaptation agents."""
 
     # Agent identification

@@ -59,6 +59,8 @@ from enum import Enum
 from typing import Any, Callable, Coroutine, Dict, List, Optional, Set, Tuple
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ExecutionStatus
 
 logger = logging.getLogger(__name__)
 
@@ -66,21 +68,13 @@ _MODULE_VERSION: str = "1.0.0"
 
 ProgressCallback = Callable[[str, float, str], Coroutine[Any, Any, None]]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -93,11 +87,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class RaceToZeroPipelinePhase(str, Enum):
     """The 10 phases of the Race to Zero pipeline."""
@@ -113,18 +105,6 @@ class RaceToZeroPipelinePhase(str, Enum):
     VERIFICATION = "verification"
     CONTINUOUS_IMPROVEMENT = "continuous_improvement"
 
-
-class ExecutionStatus(str, Enum):
-    """Execution status for phases and pipelines."""
-
-    PENDING = "pending"
-    RUNNING = "running"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    CANCELLED = "cancelled"
-    SKIPPED = "skipped"
-
-
 class CredibilityCriteria(str, Enum):
     """Race to Zero credibility criteria categories."""
 
@@ -137,7 +117,6 @@ class CredibilityCriteria(str, Enum):
     JUST_TRANSITION = "just_transition"
     LOBBYING_ALIGNMENT = "lobbying_alignment"
 
-
 class StartingLineCriteria(str, Enum):
     """Race to Zero starting line criteria (4 Ps)."""
 
@@ -145,7 +124,6 @@ class StartingLineCriteria(str, Enum):
     PLAN = "plan"
     PROCEED = "proceed"
     PUBLISH = "publish"
-
 
 class PartnerType(str, Enum):
     """Race to Zero partner types."""
@@ -159,7 +137,6 @@ class PartnerType(str, Enum):
     FINANCIAL_INSTITUTION = "financial_institution"
     OTHER = "other"
 
-
 class SectorPathwayStatus(str, Enum):
     """Sector pathway alignment status."""
 
@@ -169,11 +146,9 @@ class SectorPathwayStatus(str, Enum):
     FULLY_ALIGNED = "fully_aligned"
     EXCEEDING = "exceeding"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class RetryConfig(BaseModel):
     """Configuration for retry logic with exponential backoff and jitter."""
@@ -182,7 +157,6 @@ class RetryConfig(BaseModel):
     base_delay: float = Field(default=1.0, ge=0.1)
     max_delay: float = Field(default=30.0, ge=1.0)
     jitter: float = Field(default=0.5, ge=0.0, le=1.0)
-
 
 class RaceToZeroOrchestratorConfig(BaseModel):
     """Configuration for the Race to Zero pipeline orchestrator."""
@@ -215,7 +189,6 @@ class RaceToZeroOrchestratorConfig(BaseModel):
     enable_credibility_scoring: bool = Field(default=True)
     retry_config: RetryConfig = Field(default_factory=RetryConfig)
 
-
 class PhaseProvenance(BaseModel):
     """Provenance record for a pipeline phase execution."""
 
@@ -224,9 +197,8 @@ class PhaseProvenance(BaseModel):
     output_hash: str = Field(default="")
     duration_ms: float = Field(default=0.0)
     attempt: int = Field(default=1)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     algorithm: str = Field(default="sha256")
-
 
 class PhaseResult(BaseModel):
     """Result of executing a single pipeline phase."""
@@ -244,7 +216,6 @@ class PhaseResult(BaseModel):
     retry_count: int = Field(default=0)
     quality_score: float = Field(default=0.0, ge=0.0, le=100.0)
 
-
 class CredibilityResult(BaseModel):
     """Result of credibility criteria assessment."""
 
@@ -255,7 +226,6 @@ class CredibilityResult(BaseModel):
     recommendation: str = Field(default="")
     gap_description: str = Field(default="")
 
-
 class StartingLineResult(BaseModel):
     """Result of starting line criteria verification."""
 
@@ -264,7 +234,6 @@ class StartingLineResult(BaseModel):
     evidence: str = Field(default="")
     deadline: Optional[datetime] = Field(None)
     notes: str = Field(default="")
-
 
 class PipelineResult(BaseModel):
     """Complete result of a pipeline execution."""
@@ -288,7 +257,6 @@ class PipelineResult(BaseModel):
     starting_line_met: bool = Field(default=False)
     credibility_results: List[CredibilityResult] = Field(default_factory=list)
     starting_line_results: List[StartingLineResult] = Field(default_factory=list)
-
 
 # ---------------------------------------------------------------------------
 # DAG Dependency Map
@@ -634,11 +602,9 @@ SECTOR_PATHWAYS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # RaceToZeroOrchestrator
 # ---------------------------------------------------------------------------
-
 
 class RaceToZeroOrchestrator:
     """10-phase Race to Zero pipeline orchestrator for PACK-025.
@@ -699,7 +665,7 @@ class RaceToZeroOrchestrator:
         result = PipelineResult(
             organization_name=self.config.organization_name,
             status=ExecutionStatus.RUNNING,
-            started_at=_utcnow(),
+            started_at=utcnow(),
         )
         self._results[result.execution_id] = result
         start_time = time.monotonic()
@@ -753,8 +719,8 @@ class RaceToZeroOrchestrator:
                     pr = PhaseResult(
                         phase=phase,
                         status=ExecutionStatus.SKIPPED,
-                        started_at=_utcnow(),
-                        completed_at=_utcnow(),
+                        started_at=utcnow(),
+                        completed_at=utcnow(),
                     )
                     result.phase_results[phase.value] = pr
                     result.phases_skipped.append(phase.value)
@@ -816,7 +782,7 @@ class RaceToZeroOrchestrator:
             self._log_audit_event("pipeline_error", {"error": str(exc)})
 
         finally:
-            result.completed_at = _utcnow()
+            result.completed_at = utcnow()
             result.total_duration_ms = (time.monotonic() - start_time) * 1000
             result.quality_score = self._compute_quality_score(result)
 
@@ -1014,6 +980,7 @@ class RaceToZeroOrchestrator:
         plan_deadline = None
         if pledge_date:
             from datetime import timedelta
+
             plan_deadline = pledge_date + timedelta(days=365)
         results.append(StartingLineResult(
             criteria=StartingLineCriteria.PLAN.value,
@@ -1313,7 +1280,7 @@ class RaceToZeroOrchestrator:
         self, phase: RaceToZeroPipelinePhase, context: Dict[str, Any],
     ) -> PhaseResult:
         """Execute a single pipeline phase."""
-        started = _utcnow()
+        started = utcnow()
         start_time = time.monotonic()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
@@ -1397,7 +1364,7 @@ class RaceToZeroOrchestrator:
             phase=phase,
             status=status,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             duration_ms=round(elapsed_ms, 2),
             records_processed=records,
             outputs=outputs,
@@ -1727,7 +1694,7 @@ class RaceToZeroOrchestrator:
         """Save a checkpoint for pipeline recovery."""
         self._checkpoints[execution_id] = {
             "last_phase": phase,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "context": phase_result.outputs,
         }
 
@@ -1735,7 +1702,7 @@ class RaceToZeroOrchestrator:
         """Log an audit trail event."""
         self._audit_trail.append({
             "event_type": event_type,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "pack_id": self.config.pack_id,
             "organization": self.config.organization_name,
             "details": details,

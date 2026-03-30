@@ -51,33 +51,25 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class WorkflowPhase(str, Enum):
     """Phases of the S1 own workforce workflow."""
@@ -90,7 +82,6 @@ class WorkflowPhase(str, Enum):
     HUMAN_RIGHTS = "human_rights"
     REPORT_ASSEMBLY = "report_assembly"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "pending"
@@ -98,7 +89,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class PhaseStatus(str, Enum):
     """Status of a single phase."""
@@ -108,13 +98,11 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class ContractType(str, Enum):
     """Employment contract type."""
     PERMANENT = "permanent"
     TEMPORARY = "temporary"
     NON_GUARANTEED_HOURS = "non_guaranteed_hours"
-
 
 class GenderCategory(str, Enum):
     """Gender category for diversity reporting."""
@@ -123,11 +111,9 @@ class GenderCategory(str, Enum):
     OTHER = "other"
     NOT_DISCLOSED = "not_disclosed"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -138,7 +124,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class WorkforceDemographics(BaseModel):
     """Workforce demographics data per S1-6/S1-7."""
@@ -151,7 +136,6 @@ class WorkforceDemographics(BaseModel):
     turnover_rate_pct: float = Field(default=0.0, ge=0.0)
     collective_bargaining_pct: float = Field(default=0.0, ge=0.0, le=100.0)
 
-
 class HealthSafetyData(BaseModel):
     """Health and safety metrics per S1-14."""
     fatalities: int = Field(default=0, ge=0)
@@ -163,7 +147,6 @@ class HealthSafetyData(BaseModel):
     near_misses: int = Field(default=0, ge=0)
     occupational_diseases: int = Field(default=0, ge=0)
 
-
 class TrainingData(BaseModel):
     """Training and development metrics per S1-13."""
     total_training_hours: float = Field(default=0.0, ge=0.0)
@@ -171,7 +154,6 @@ class TrainingData(BaseModel):
     by_gender: Dict[str, float] = Field(default_factory=dict, description="Avg hours by gender")
     by_category: Dict[str, float] = Field(default_factory=dict, description="Avg hours by job category")
     skills_development_programs: int = Field(default=0, ge=0)
-
 
 class DiversityPayData(BaseModel):
     """Diversity and pay equity metrics per S1-9, S1-16, S1-17."""
@@ -183,7 +165,6 @@ class DiversityPayData(BaseModel):
     disability_inclusion_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     incidents_reported: int = Field(default=0, ge=0)
     incidents_resolved: int = Field(default=0, ge=0)
-
 
 class S1WorkforceInput(BaseModel):
     """Input data model for S1WorkforceWorkflow."""
@@ -226,7 +207,6 @@ class S1WorkforceInput(BaseModel):
     )
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class S1WorkforceWorkflowResult(BaseModel):
     """Complete result from S1 workforce workflow."""
     workflow_id: str = Field(..., description="Unique execution ID")
@@ -253,11 +233,9 @@ class S1WorkforceWorkflowResult(BaseModel):
     reporting_year: int = Field(default=2025)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class S1WorkforceWorkflow:
     """
@@ -326,7 +304,7 @@ class S1WorkforceWorkflow:
         if input_data is None:
             input_data = S1WorkforceInput(config=config or {})
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting S1 workforce workflow %s", self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = WorkflowStatus.IN_PROGRESS
@@ -348,7 +326,7 @@ class S1WorkforceWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         completed_count = sum(1 for p in phase_results if p.status == PhaseStatus.COMPLETED)
 
         demo = input_data.demographics
@@ -393,7 +371,7 @@ class S1WorkforceWorkflow:
 
     async def _phase_policy_review(self, input_data: S1WorkforceInput) -> PhaseResult:
         """Review workforce policies, engagement, remediation, and actions."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -410,7 +388,7 @@ class S1WorkforceWorkflow:
         if not input_data.remediation_processes:
             warnings.append("No remediation channels defined (S1-3)")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 1 PolicyReview: %d policies, %d actions",
                          len(input_data.policies), len(input_data.actions))
         return PhaseResult(
@@ -425,7 +403,7 @@ class S1WorkforceWorkflow:
 
     async def _phase_demographics(self, input_data: S1WorkforceInput) -> PhaseResult:
         """Analyse workforce demographics and composition."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -448,7 +426,7 @@ class S1WorkforceWorkflow:
             outputs["total_employees"] = 0
             warnings.append("No demographics data provided (S1-6)")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 2 Demographics: %d employees", outputs["total_employees"])
         return PhaseResult(
             phase_name=WorkflowPhase.DEMOGRAPHICS.value, status=PhaseStatus.COMPLETED,
@@ -462,7 +440,7 @@ class S1WorkforceWorkflow:
 
     async def _phase_health_safety(self, input_data: S1WorkforceInput) -> PhaseResult:
         """Assess health and safety metrics."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -485,7 +463,7 @@ class S1WorkforceWorkflow:
             outputs["fatalities"] = 0
             warnings.append("No health and safety data provided (S1-14)")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 3 HealthSafety: fatalities=%d, LTIR=%.2f",
                          outputs["fatalities"], outputs.get("ltir", 0))
         return PhaseResult(
@@ -500,7 +478,7 @@ class S1WorkforceWorkflow:
 
     async def _phase_training(self, input_data: S1WorkforceInput) -> PhaseResult:
         """Evaluate training and development metrics."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -518,7 +496,7 @@ class S1WorkforceWorkflow:
             outputs["total_training_hours"] = 0
             warnings.append("No training data provided (S1-13)")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 4 Training: %.0f total hours",
                          outputs["total_training_hours"])
         return PhaseResult(
@@ -533,7 +511,7 @@ class S1WorkforceWorkflow:
 
     async def _phase_diversity_pay(self, input_data: S1WorkforceInput) -> PhaseResult:
         """Analyse diversity metrics and pay equity."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -556,7 +534,7 @@ class S1WorkforceWorkflow:
             outputs["gender_pay_gap_pct"] = 0
             warnings.append("No diversity/pay data provided (S1-9/S1-16)")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 5 DiversityPay: pay_gap=%.1f%%",
                          outputs["gender_pay_gap_pct"])
         return PhaseResult(
@@ -571,7 +549,7 @@ class S1WorkforceWorkflow:
 
     async def _phase_work_life_balance(self, input_data: S1WorkforceInput) -> PhaseResult:
         """Assess work-life balance and leave metrics."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -585,7 +563,7 @@ class S1WorkforceWorkflow:
         if not data:
             warnings.append("No work-life balance data provided (S1-15)")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 6 WorkLifeBalance: has_data=%s", bool(data))
         return PhaseResult(
             phase_name=WorkflowPhase.WORK_LIFE_BALANCE.value, status=PhaseStatus.COMPLETED,
@@ -599,7 +577,7 @@ class S1WorkforceWorkflow:
 
     async def _phase_human_rights(self, input_data: S1WorkforceInput) -> PhaseResult:
         """Evaluate human rights due diligence."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -624,7 +602,7 @@ class S1WorkforceWorkflow:
         if not input_data.social_protection_data:
             warnings.append("No social protection data provided (S1-11)")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 7 HumanRights: incidents=%d", outputs["severe_incidents"])
         return PhaseResult(
             phase_name=WorkflowPhase.HUMAN_RIGHTS.value, status=PhaseStatus.COMPLETED,
@@ -638,7 +616,7 @@ class S1WorkforceWorkflow:
 
     async def _phase_report_assembly(self, input_data: S1WorkforceInput) -> PhaseResult:
         """Assemble complete S1 disclosure from all phase results."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -671,7 +649,7 @@ class S1WorkforceWorkflow:
         if dr_available < 17:
             warnings.append(f"{17 - dr_available} S1 disclosure requirements missing data")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 8 ReportAssembly: %d/17 DRs with data (%.1f%%)",
                          dr_available, outputs["completeness_pct"])
         return PhaseResult(

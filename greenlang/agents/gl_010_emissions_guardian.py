@@ -38,7 +38,7 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from pydantic import BaseModel, Field, validator, root_validator
+from pydantic import Field, validator, root_validator
 
 from greenlang.agents.base import BaseAgent, AgentConfig, AgentResult, AgentMetrics
 from greenlang.agents.citations import (
@@ -63,6 +63,7 @@ from greenlang.utilities.determinism import (
     round_for_reporting,
     FinancialDecimal,
 )
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -297,7 +298,7 @@ GWP_AR6: Dict[str, int] = {
 # PYDANTIC DATA MODELS
 # =============================================================================
 
-class CEMSReading(BaseModel):
+class CEMSReading(GreenLangBase):
     """Single CEMS instrument reading."""
 
     timestamp: datetime = Field(..., description="Reading timestamp")
@@ -316,7 +317,7 @@ class CEMSReading(BaseModel):
         return v
 
 
-class CEMSDataPacket(BaseModel):
+class CEMSDataPacket(GreenLangBase):
     """Collection of CEMS readings for a time period."""
 
     facility_id: str = Field(..., description="Facility identifier")
@@ -336,7 +337,7 @@ class CEMSDataPacket(BaseModel):
         return v
 
 
-class FuelComposition(BaseModel):
+class FuelComposition(GreenLangBase):
     """Fuel composition for emission calculations."""
 
     fuel_type: FuelType = Field(..., description="Fuel type")
@@ -357,7 +358,7 @@ class FuelComposition(BaseModel):
         )
 
 
-class ControlEquipment(BaseModel):
+class ControlEquipment(GreenLangBase):
     """Emission control equipment specification."""
 
     equipment_type: ControlEquipmentType = Field(..., description="Control equipment type")
@@ -374,7 +375,7 @@ class ControlEquipment(BaseModel):
             self.current_efficiency = self.design_efficiency
 
 
-class PermitLimit(BaseModel):
+class PermitLimit(GreenLangBase):
     """Regulatory permit emission limit."""
 
     pollutant: PollutantType = Field(..., description="Regulated pollutant")
@@ -394,7 +395,7 @@ class PermitLimit(BaseModel):
         return v
 
 
-class CarbonCaptureSystem(BaseModel):
+class CarbonCaptureSystem(GreenLangBase):
     """Carbon capture system specification."""
 
     system_id: str = Field(..., description="System identifier")
@@ -412,7 +413,7 @@ class CarbonCaptureSystem(BaseModel):
             self.current_capture_rate = self.design_capture_rate
 
 
-class QATestResult(BaseModel):
+class QATestResult(GreenLangBase):
     """CEMS QA/QC test result."""
 
     test_type: QATestType = Field(..., description="QA test type")
@@ -431,7 +432,7 @@ class QATestResult(BaseModel):
 # INPUT/OUTPUT MODELS
 # =============================================================================
 
-class EmissionsGuardianInput(BaseModel):
+class EmissionsGuardianInput(GreenLangBase):
     """Input data model for EmissionsGuardian agent."""
 
     facility_id: str = Field(..., description="Facility identifier")
@@ -502,7 +503,7 @@ class EmissionsGuardianInput(BaseModel):
         return values
 
 
-class PollutantEmission(BaseModel):
+class PollutantEmission(GreenLangBase):
     """Emission calculation result for a single pollutant."""
 
     pollutant: PollutantType = Field(..., description="Pollutant type")
@@ -534,7 +535,7 @@ class PollutantEmission(BaseModel):
     co2e_tons: Optional[float] = Field(None, description="CO2-equivalent tons (for GHGs)")
 
 
-class CEMSValidationResult(BaseModel):
+class CEMSValidationResult(GreenLangBase):
     """CEMS data validation result."""
 
     is_valid: bool = Field(..., description="Overall validation result")
@@ -547,7 +548,7 @@ class CEMSValidationResult(BaseModel):
     cga_due_date: Optional[datetime] = Field(None, description="Next CGA due date")
 
 
-class OptimizationRecommendation(BaseModel):
+class OptimizationRecommendation(GreenLangBase):
     """Emission optimization recommendation."""
 
     recommendation_id: str = Field(..., description="Recommendation identifier")
@@ -561,7 +562,7 @@ class OptimizationRecommendation(BaseModel):
     regulatory_driver: Optional[str] = Field(None, description="Regulatory driver if applicable")
 
 
-class Part75Report(BaseModel):
+class Part75Report(GreenLangBase):
     """EPA 40 CFR Part 75 quarterly report data."""
 
     facility_id: str = Field(..., description="ORIS code")
@@ -592,7 +593,7 @@ class Part75Report(BaseModel):
     certification_date: Optional[datetime] = Field(None, description="Certification date")
 
 
-class CapAndTradePosition(BaseModel):
+class CapAndTradePosition(GreenLangBase):
     """Cap-and-trade allowance tracking."""
 
     program: str = Field(..., description="Trading program (CSAPR, RGGI, etc.)")
@@ -605,7 +606,7 @@ class CapAndTradePosition(BaseModel):
     compliance_deadline: Optional[datetime] = Field(None, description="Compliance deadline")
 
 
-class EmissionsGuardianOutput(BaseModel):
+class EmissionsGuardianOutput(GreenLangBase):
     """Output data model for EmissionsGuardian agent."""
 
     # Identification

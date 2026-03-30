@@ -28,6 +28,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "26.0.0"
@@ -45,18 +47,12 @@ _CARD_BG = "#c8e6c9"
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str) if isinstance(data, dict) else str(data)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 def _dec(val: Any, places: int = 2) -> str:
     try:
@@ -65,7 +61,6 @@ def _dec(val: Any, places: int = 2) -> str:
         return str(d.quantize(Decimal(q), rounding=ROUND_HALF_UP))
     except Exception:
         return str(val)
-
 
 def _dec_comma(val: Any, places: int = 0) -> str:
     try:
@@ -90,13 +85,11 @@ def _dec_comma(val: Any, places: int = 0) -> str:
     except Exception:
         return str(val)
 
-
 def _pct(val: Any) -> str:
     try:
         return _dec(val, 1) + "%"
     except Exception:
         return str(val)
-
 
 def _safe_div(num: Any, den: Any, default: float = 0.0) -> float:
     try:
@@ -105,14 +98,12 @@ def _safe_div(num: Any, den: Any, default: float = 0.0) -> float:
     except Exception:
         return default
 
-
 def _ascii_bar(value: float, max_value: float, width: int = 30, char: str = "#") -> str:
     if max_value <= 0:
         return ""
     filled = int(round(value / max_value * width))
     filled = max(0, min(width, filled))
     return char * filled + "." * (width - filled)
-
 
 # ===========================================================================
 # Template Class
@@ -142,7 +133,7 @@ class SMERoadmapReportTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render the roadmap report as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections: List[str] = [
             self._md_header(data),
             self._md_overview(data),
@@ -161,7 +152,7 @@ class SMERoadmapReportTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render the roadmap report as HTML."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         body = "\n".join([
             self._html_header(data),
@@ -188,7 +179,7 @@ class SMERoadmapReportTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render the roadmap report as structured JSON."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         baseline = float(data.get("baseline_tco2e", 0))
         currency = data.get("currency", "GBP")
 
@@ -260,7 +251,7 @@ class SMERoadmapReportTemplate:
 
     def render_excel(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render Excel-ready data structure."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         baseline = float(data.get("baseline_tco2e", 0))
         currency = data.get("currency", "GBP")
 

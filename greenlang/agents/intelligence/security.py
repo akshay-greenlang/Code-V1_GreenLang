@@ -23,9 +23,10 @@ Compliance:
 from __future__ import annotations
 import re
 from typing import List, Optional, Dict, Any
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.intelligence.runtime.telemetry import IntelligenceTelemetry
+from greenlang.schemas import GreenLangBase
 
 
 class PromptInjectionDetected(Exception):

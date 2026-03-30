@@ -56,23 +56,18 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -84,18 +79,15 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ITRMethod(str, Enum):
     """ITR calculation methods."""
     BUDGET_BASED = "budget_based"
     SECTOR_RELATIVE = "sector_relative"
     RATE_OF_REDUCTION = "rate_of_reduction"
-
 
 class TemperatureScenario(str, Enum):
     """Temperature alignment scenarios."""
@@ -104,18 +96,15 @@ class TemperatureScenario(str, Enum):
     BELOW_2C = "below_2c"
     ABOVE_2C = "above_2c"
 
-
 class ConfidenceLevel(str, Enum):
     """Confidence level for ITR estimates."""
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class ITRScoreData(BaseModel):
     """ITR score data for a single method."""
@@ -128,7 +117,6 @@ class ITRScoreData(BaseModel):
     scenario_alignment: str = Field(default="", description="Scenario alignment")
     provenance_hash: str = Field(default="", description="Provenance hash")
 
-
 class PeerITRComparison(BaseModel):
     """Peer comparison data for ITR scores."""
 
@@ -139,7 +127,6 @@ class PeerITRComparison(BaseModel):
     peer_best_itr_c: float = Field(default=0.0, description="Best peer ITR (C)")
     percentile_rank: float = Field(default=0.0, description="Percentile rank")
     peer_count: int = Field(default=0, description="Peer count")
-
 
 class OvershootAnalysis(BaseModel):
     """Temperature overshoot analysis data."""
@@ -152,7 +139,6 @@ class OvershootAnalysis(BaseModel):
     )
     requires_negative_emissions: bool = Field(default=False, description="Needs CDR")
 
-
 class SensitivityFactor(BaseModel):
     """ITR sensitivity to an assumption change."""
 
@@ -161,7 +147,6 @@ class SensitivityFactor(BaseModel):
     adjusted_itr_c: float = Field(default=0.0, description="Adjusted ITR (C)")
     delta_c: float = Field(default=0.0, description="Delta (C)")
     assumption_change: str = Field(default="", description="Assumption change description")
-
 
 class ITRReportData(BaseModel):
     """Complete data for ITR report rendering."""
@@ -183,7 +168,6 @@ class ITRReportData(BaseModel):
     data_quality_notes: List[str] = Field(default_factory=list, description="Quality notes")
     provenance_hash: str = Field(default="", description="Provenance hash")
 
-
 class RenderedOutput(BaseModel):
     """Rendered report output."""
 
@@ -193,11 +177,9 @@ class RenderedOutput(BaseModel):
     rendered_at: str = Field(default="", description="Render timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Template Implementation
 # ---------------------------------------------------------------------------
-
 
 class ImpliedTemperatureRiseReport:
     """
@@ -242,7 +224,7 @@ class ImpliedTemperatureRiseReport:
         lines.append("")
         lines.append(f"**Organisation:** {report_data.organisation_name}")
         lines.append(f"**Period:** {report_data.reporting_period}")
-        lines.append(f"**Generated:** {_utcnow().isoformat()}")
+        lines.append(f"**Generated:** {utcnow().isoformat()}")
         lines.append("")
 
         # Section 1: ITR Overview
@@ -453,7 +435,7 @@ class ImpliedTemperatureRiseReport:
         """
         report_data = self._parse_data(data)
         output = report_data.model_dump(mode="json")
-        output["rendered_at"] = _utcnow().isoformat()
+        output["rendered_at"] = utcnow().isoformat()
         output["template"] = "implied_temperature_rise_report"
         output["template_version"] = _MODULE_VERSION
         output["provenance_hash"] = _compute_hash(output)

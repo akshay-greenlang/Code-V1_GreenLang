@@ -27,20 +27,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -53,11 +48,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class MaterialityStatus(str, Enum):
     """E1 materiality assessment status."""
@@ -67,7 +60,6 @@ class MaterialityStatus(str, Enum):
     PENDING = "pending"
     UNDER_REVIEW = "under_review"
 
-
 class IROType(str, Enum):
     """IRO classification type."""
 
@@ -75,11 +67,9 @@ class IROType(str, Enum):
     RISK = "risk"
     OPPORTUNITY = "opportunity"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class DMABridgeConfig(BaseModel):
     """Configuration for the DMA Pack Bridge."""
@@ -89,7 +79,6 @@ class DMABridgeConfig(BaseModel):
     reporting_year: int = Field(default=2025, ge=2020, le=2030)
     enable_provenance: bool = Field(default=True)
     auto_import: bool = Field(default=True)
-
 
 class E1MaterialityResult(BaseModel):
     """E1 climate materiality assessment result from DMA."""
@@ -102,7 +91,6 @@ class E1MaterialityResult(BaseModel):
     assessment_date: str = Field(default="")
     rationale: str = Field(default="")
     sub_topics: List[Dict[str, Any]] = Field(default_factory=list)
-
 
 class IROEntry(BaseModel):
     """Impact, Risk, or Opportunity register entry."""
@@ -118,7 +106,6 @@ class IROEntry(BaseModel):
     value_chain_stage: str = Field(default="")
     time_horizon: str = Field(default="")
 
-
 class BridgeResult(BaseModel):
     """Result from a bridge operation."""
 
@@ -132,11 +119,9 @@ class BridgeResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # DMAPackBridge
 # ---------------------------------------------------------------------------
-
 
 class DMAPackBridge:
     """PACK-015 Double Materiality integration bridge for PACK-016.
@@ -175,7 +160,7 @@ class DMAPackBridge:
         Returns:
             BridgeResult with materiality assessment data.
         """
-        result = BridgeResult(started_at=_utcnow())
+        result = BridgeResult(started_at=utcnow())
 
         try:
             dma_data = context.get("dma_results", {})
@@ -213,7 +198,7 @@ class DMAPackBridge:
             result.errors.append(str(exc))
             logger.error("E1 materiality import failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at
@@ -232,7 +217,7 @@ class DMAPackBridge:
         Returns:
             BridgeResult with IRO entries for E1 topic.
         """
-        result = BridgeResult(started_at=_utcnow())
+        result = BridgeResult(started_at=utcnow())
 
         try:
             all_iros = context.get("iro_register", [])
@@ -277,7 +262,7 @@ class DMAPackBridge:
             result.errors.append(str(exc))
             logger.error("IRO register import failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at
@@ -296,7 +281,7 @@ class DMAPackBridge:
         Returns:
             BridgeResult with export status.
         """
-        result = BridgeResult(started_at=_utcnow())
+        result = BridgeResult(started_at=utcnow())
 
         try:
             export_payload = {
@@ -305,7 +290,7 @@ class DMAPackBridge:
                 "reporting_year": self.config.reporting_year,
                 "esrs_topic": "E1",
                 "disclosures": e1_disclosures,
-                "exported_at": _utcnow().isoformat(),
+                "exported_at": utcnow().isoformat(),
             }
 
             result.records_transferred = len(
@@ -326,7 +311,7 @@ class DMAPackBridge:
             result.errors.append(str(exc))
             logger.error("Climate disclosure export failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at

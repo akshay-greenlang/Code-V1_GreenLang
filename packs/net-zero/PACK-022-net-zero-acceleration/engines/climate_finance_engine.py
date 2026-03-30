@@ -86,25 +86,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -122,7 +116,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -131,7 +124,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -143,17 +135,14 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
@@ -161,11 +150,9 @@ def _round3(value: float) -> float:
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CapExCategory(str, Enum):
     """Climate CapEx category classification."""
@@ -179,7 +166,6 @@ class CapExCategory(str, Enum):
     NATURE_BASED = "nature_based"
     CIRCULAR_ECONOMY = "circular_economy"
     NON_CLIMATE = "non_climate"
-
 
 class TaxonomyActivity(str, Enum):
     """EU Taxonomy eligible activity classification.
@@ -198,7 +184,6 @@ class TaxonomyActivity(str, Enum):
     ENERGY_EFFICIENCY_EQUIPMENT = "3.5_ee_equipment"
     NOT_ELIGIBLE = "not_eligible"
 
-
 class BondCategory(str, Enum):
     """ICMA Green Bond Principles eligible project categories."""
     RENEWABLE_ENERGY = "renewable_energy"
@@ -212,14 +197,12 @@ class BondCategory(str, Enum):
     CIRCULAR_ECONOMY = "circular_economy"
     NOT_ELIGIBLE = "not_eligible"
 
-
 class CarbonPriceScenario(str, Enum):
     """Carbon price trajectory scenario."""
     CURRENT_POLICIES = "current_policies"
     ANNOUNCED_PLEDGES = "announced_pledges"
     NET_ZERO_2050 = "net_zero_2050"
     CUSTOM = "custom"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -310,11 +293,9 @@ CAPEX_TO_BOND: Dict[str, str] = {
 # Default discount rate for NPV/IRR calculations.
 DEFAULT_DISCOUNT_RATE: Decimal = Decimal("0.08")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class CapExItem(BaseModel):
     """A single CapEx investment item.
@@ -350,7 +331,6 @@ class CapExItem(BaseModel):
     meets_minimum_safeguards: bool = Field(default=True)
     description: str = Field(default="", max_length=1000)
 
-
 class ClimateOpExEntry(BaseModel):
     """Recurring climate-related operating expenditure.
 
@@ -362,7 +342,6 @@ class ClimateOpExEntry(BaseModel):
     name: str = Field(..., max_length=300)
     annual_amount_usd: Decimal = Field(..., ge=Decimal("0"))
     category: str = Field(default="general")
-
 
 class ClimateFinanceInput(BaseModel):
     """Complete input for climate finance analysis.
@@ -434,11 +413,9 @@ class ClimateFinanceInput(BaseModel):
             raise ValueError(f"target_year ({v}) must be after base_year ({base})")
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class CapExClassification(BaseModel):
     """CapEx classification summary.
@@ -455,7 +432,6 @@ class CapExClassification(BaseModel):
     non_climate_capex_usd: Decimal = Field(default=Decimal("0"))
     climate_capex_pct: Decimal = Field(default=Decimal("0"))
     by_category: Dict[str, Decimal] = Field(default_factory=dict)
-
 
 class TaxonomyAlignment(BaseModel):
     """EU Taxonomy alignment assessment.
@@ -477,7 +453,6 @@ class TaxonomyAlignment(BaseModel):
     items_assessed: int = Field(default=0)
     items_aligned: int = Field(default=0)
 
-
 class GreenBondEligibility(BaseModel):
     """ICMA Green Bond Principles eligibility.
 
@@ -491,7 +466,6 @@ class GreenBondEligibility(BaseModel):
     eligible_pct: Decimal = Field(default=Decimal("0"))
     by_category: Dict[str, Decimal] = Field(default_factory=dict)
     items_eligible: int = Field(default=0)
-
 
 class InvestmentCase(BaseModel):
     """Investment case for a single CapEx item.
@@ -517,7 +491,6 @@ class InvestmentCase(BaseModel):
     carbon_benefit_usd: Decimal = Field(default=Decimal("0"))
     total_npv_with_carbon_usd: Decimal = Field(default=Decimal("0"))
 
-
 class CarbonPriceImpact(BaseModel):
     """Carbon price impact analysis.
 
@@ -538,7 +511,6 @@ class CarbonPriceImpact(BaseModel):
     shadow_price_annual_cost_usd: Decimal = Field(default=Decimal("0"))
     price_trajectory: Dict[int, Decimal] = Field(default_factory=dict)
 
-
 class CostOfInaction(BaseModel):
     """Cost of inaction analysis.
 
@@ -554,7 +526,6 @@ class CostOfInaction(BaseModel):
     savings_from_action_usd: Decimal = Field(default=Decimal("0"))
     action_premium_usd: Decimal = Field(default=Decimal("0"))
     net_benefit_usd: Decimal = Field(default=Decimal("0"))
-
 
 class ROISummary(BaseModel):
     """Climate investment ROI summary.
@@ -573,7 +544,6 @@ class ROISummary(BaseModel):
     total_benefit_usd: Decimal = Field(default=Decimal("0"))
     roi_pct: Decimal = Field(default=Decimal("0"))
     roi_including_carbon_pct: Decimal = Field(default=Decimal("0"))
-
 
 class ClimateFinanceResult(BaseModel):
     """Complete climate finance analysis result.
@@ -599,7 +569,7 @@ class ClimateFinanceResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     capex_classification: CapExClassification = Field(
         default_factory=CapExClassification
@@ -623,11 +593,9 @@ class ClimateFinanceResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ClimateFinanceEngine:
     """Climate transition finance integration engine.

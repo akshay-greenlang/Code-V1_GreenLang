@@ -59,25 +59,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -97,13 +91,11 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _safe_divide(numerator: float, denominator: float, default: float = 0.0) -> float:
     """Safely divide two numbers, returning *default* on zero denominator."""
     if denominator == 0.0:
         return default
     return numerator / denominator
-
 
 def _safe_pct(numerator: float, denominator: float) -> float:
     """Calculate percentage safely, returning 0.0 on zero denominator."""
@@ -111,16 +103,13 @@ def _safe_pct(numerator: float, denominator: float) -> float:
         return 0.0
     return (numerator / denominator) * 100.0
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP for regulatory precision."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ManufacturingSubSector(str, Enum):
     """Manufacturing sub-sectors for process emission calculations."""
@@ -137,7 +126,6 @@ class ManufacturingSubSector(str, Enum):
     ELECTRONICS = "electronics"
     AUTOMOTIVE = "automotive"
 
-
 class ProcessType(str, Enum):
     """Types of industrial processes that generate emissions."""
     CALCINATION = "calcination"
@@ -147,7 +135,6 @@ class ProcessType(str, Enum):
     DECOMPOSITION = "decomposition"
     FERMENTATION = "fermentation"
     COMBUSTION = "combustion"
-
 
 class FuelType(str, Enum):
     """Fuel types used in manufacturing processes."""
@@ -159,7 +146,6 @@ class FuelType(str, Enum):
     WASTE_FUEL = "waste_fuel"
     HYDROGEN = "hydrogen"
     ELECTRICITY = "electricity"
-
 
 # ---------------------------------------------------------------------------
 # Constants: Process Emission Factors (tCO2 per tonne of product/material)
@@ -424,11 +410,9 @@ CBAM_GOODS_CATEGORIES: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class ProcessEmissionsConfig(BaseModel):
     """Configuration for process emissions calculation.
@@ -462,7 +446,6 @@ class ProcessEmissionsConfig(BaseModel):
         default=False,
         description="Track CO2 abatement / CCS.",
     )
-
 
 class RawMaterial(BaseModel):
     """A raw material input that generates process emissions.
@@ -501,7 +484,6 @@ class RawMaterial(BaseModel):
             raise ValueError("Value must be non-negative.")
         return v
 
-
 class FuelConsumption(BaseModel):
     """Fuel consumption record for combustion emissions.
 
@@ -535,7 +517,6 @@ class FuelConsumption(BaseModel):
         ge=0.0,
         description="Override NCV (TJ/unit).",
     )
-
 
 class ProcessLine(BaseModel):
     """A single production / process line within a facility.
@@ -579,7 +560,6 @@ class ProcessLine(BaseModel):
         default="IPCC 2006 Guidelines",
         description="Source of emission factors.",
     )
-
 
 class FacilityData(BaseModel):
     """A manufacturing facility with one or more production lines.
@@ -626,7 +606,6 @@ class FacilityData(BaseModel):
         """Normalise country code to uppercase."""
         return v.upper()
 
-
 class CBAMEmbeddedEmissions(BaseModel):
     """CBAM embedded emissions per Regulation (EU) 2023/956 Annex IV.
 
@@ -647,7 +626,6 @@ class CBAMEmbeddedEmissions(BaseModel):
     specific_embedded: float = Field(default=0.0, ge=0.0)
     production_tonnes: float = Field(default=0.0, ge=0.0)
 
-
 class AbatementRecord(BaseModel):
     """Record of CO2 abatement / capture at a facility.
 
@@ -663,7 +641,6 @@ class AbatementRecord(BaseModel):
     storage_type: str = Field(default="geological_storage")
     verified: bool = Field(default=False)
     net_reduction_tonnes: float = Field(default=0.0, ge=0.0)
-
 
 class ETSBenchmarkComparison(BaseModel):
     """Comparison of facility intensity against EU ETS benchmark.
@@ -682,7 +659,6 @@ class ETSBenchmarkComparison(BaseModel):
     ratio_to_benchmark: float = Field(default=0.0)
     free_allocation_eligible: bool = Field(default=False)
     shortfall_tco2: float = Field(default=0.0)
-
 
 class ProcessEmissionsResult(BaseModel):
     """Complete result of process emissions calculation with provenance.
@@ -719,14 +695,12 @@ class ProcessEmissionsResult(BaseModel):
     methodology_notes: List[str] = Field(default_factory=list)
     processing_time_ms: float = Field(default=0.0)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ProcessEmissionsEngine:
     """Zero-hallucination industrial process emissions calculation engine.
@@ -913,7 +887,7 @@ class ProcessEmissionsEngine:
             methodology_notes=methodology_notes,
             processing_time_ms=round(elapsed_ms, 2),
             engine_version=self.engine_version,
-            calculated_at=_utcnow(),
+            calculated_at=utcnow(),
         )
 
         # Provenance hash -- covers all inputs and outputs

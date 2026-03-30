@@ -83,25 +83,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -121,7 +115,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely.
 
@@ -135,7 +128,6 @@ def _decimal(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
 ) -> Decimal:
@@ -143,7 +135,6 @@ def _safe_divide(
     if denominator == Decimal("0"):
         return default
     return numerator / denominator
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value using ROUND_HALF_UP.
@@ -158,20 +149,17 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.01"), rounding=ROUND_HALF_UP
     ))
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
-
 
 def _pct(part: int, total: int) -> Decimal:
     """Calculate percentage as Decimal, rounded to 1 decimal place."""
@@ -181,18 +169,15 @@ def _pct(part: int, total: int) -> Decimal:
         _decimal(part) / _decimal(total) * Decimal("100"), 1
     )
 
-
 def _pct_dec(part: Decimal, total: Decimal) -> Decimal:
     """Calculate percentage from Decimal values, rounded to 1 dp."""
     if total == Decimal("0"):
         return Decimal("0.0")
     return _round_val(part / total * Decimal("100"), 1)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CompanyScope(str, Enum):
     """Phased applicability scope under CSDDD Art 2.
@@ -213,7 +198,6 @@ class CompanyScope(str, Enum):
     NOT_IN_SCOPE = "not_in_scope"
     VOLUNTARY = "voluntary"
 
-
 class ComplianceStatus(str, Enum):
     """Compliance status of a company against a CSDDD requirement.
 
@@ -223,7 +207,6 @@ class ComplianceStatus(str, Enum):
     PARTIALLY_COMPLIANT = "partially_compliant"
     NON_COMPLIANT = "non_compliant"
     NOT_APPLICABLE = "not_applicable"
-
 
 class ArticleReference(str, Enum):
     """CSDDD article references for assessment tracking.
@@ -245,7 +228,6 @@ class ArticleReference(str, Enum):
     ART_22 = "art_22"
     ART_29 = "art_29"
 
-
 class PolicyArea(str, Enum):
     """Policy areas that must be addressed under CSDDD Art 5.
 
@@ -259,11 +241,9 @@ class PolicyArea(str, Enum):
     REPORTING = "reporting"
     STAKEHOLDER_ENGAGEMENT = "stakeholder_engagement"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # CSDDD scope thresholds by phase (employee_count, turnover_eur)
 SCOPE_THRESHOLDS: Dict[str, Dict[str, Decimal]] = {
@@ -358,11 +338,9 @@ ART_5_CRITERIA: List[str] = [
     "dd_policy_approved_by_board",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class CompanyProfile(BaseModel):
     """Company profile for CSDDD scope determination and assessment.
@@ -687,7 +665,6 @@ class CompanyProfile(BaseModel):
             raise ValueError("Country code must be alphabetic")
         return v.upper()
 
-
 class PolicyAssessment(BaseModel):
     """Assessment result for a single policy area under CSDDD Art 5.
 
@@ -726,7 +703,6 @@ class PolicyAssessment(BaseModel):
         default_factory=list,
         description="Recommendations to close gaps",
     )
-
 
 class ArticleAssessment(BaseModel):
     """Assessment result for a single CSDDD article.
@@ -777,7 +753,6 @@ class ArticleAssessment(BaseModel):
         description="Recommendations for this article",
     )
 
-
 class ScopeAssessment(BaseModel):
     """Scope determination result under CSDDD Art 2.
 
@@ -818,7 +793,6 @@ class ScopeAssessment(BaseModel):
         default=False,
         description="Whether turnover threshold is met",
     )
-
 
 class DueDiligencePolicyResult(BaseModel):
     """Complete due diligence policy assessment result.
@@ -888,7 +862,7 @@ class DueDiligencePolicyResult(BaseModel):
         description="Processing time in milliseconds",
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Assessment timestamp (UTC)",
     )
     provenance_hash: str = Field(
@@ -896,11 +870,9 @@ class DueDiligencePolicyResult(BaseModel):
         description="SHA-256 hash for audit trail provenance",
     )
 
-
 # ---------------------------------------------------------------------------
 # Article metadata
 # ---------------------------------------------------------------------------
-
 
 ARTICLE_TITLES: Dict[str, str] = {
     ArticleReference.ART_5.value: "Due diligence policy (Art 5)",
@@ -918,11 +890,9 @@ ARTICLE_TITLES: Dict[str, str] = {
     ArticleReference.ART_29.value: "Civil liability (Art 29)",
 }
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class DueDiligencePolicyEngine:
     """CSDDD Due Diligence Policy assessment engine.
@@ -2221,7 +2191,7 @@ class DueDiligencePolicyEngine:
             recommendations=all_recommendations,
             gaps_summary=gaps_summary,
             processing_time_ms=_round2(processing_time_ms),
-            assessed_at=_utcnow(),
+            assessed_at=utcnow(),
         )
 
         # Step 9: Compute provenance hash

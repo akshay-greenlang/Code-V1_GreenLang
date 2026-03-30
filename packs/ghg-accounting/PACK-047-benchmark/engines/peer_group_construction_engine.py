@@ -84,23 +84,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -117,7 +112,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -126,7 +120,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -134,18 +127,14 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round4(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 def _round6(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP))
-
 
 def _median_decimal(values: List[Decimal]) -> Decimal:
     if not values:
@@ -156,7 +145,6 @@ def _median_decimal(values: List[Decimal]) -> Decimal:
     if n % 2 == 1:
         return sorted_vals[mid]
     return (sorted_vals[mid - 1] + sorted_vals[mid]) / Decimal("2")
-
 
 def _percentile_decimal(values: List[Decimal], pct: Decimal) -> Decimal:
     """Compute the p-th percentile using linear interpolation."""
@@ -174,7 +162,6 @@ def _percentile_decimal(values: List[Decimal], pct: Decimal) -> Decimal:
     frac = rank - Decimal(str(lower))
     return sorted_vals[lower] + frac * (sorted_vals[upper] - sorted_vals[lower])
 
-
 def _std_deviation_decimal(values: List[Decimal]) -> Decimal:
     if len(values) < 2:
         return Decimal("0")
@@ -185,11 +172,9 @@ def _std_deviation_decimal(values: List[Decimal]) -> Decimal:
     std_float = float(variance) ** 0.5
     return _decimal(std_float)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ClassificationSystem(str, Enum):
     """Sector classification system.
@@ -203,7 +188,6 @@ class ClassificationSystem(str, Enum):
     NACE = "NACE"
     ISIC = "ISIC"
     SIC = "SIC"
-
 
 class RevenueBand(str, Enum):
     """Revenue-band sizing for peer grouping.
@@ -222,7 +206,6 @@ class RevenueBand(str, Enum):
     ENTERPRISE = "enterprise"
     MEGA = "mega"
 
-
 class ValueChainPosition(str, Enum):
     """Value chain position for filtering.
 
@@ -235,7 +218,6 @@ class ValueChainPosition(str, Enum):
     MIDSTREAM = "midstream"
     DOWNSTREAM = "downstream"
     INTEGRATED = "integrated"
-
 
 class VerificationStatus(str, Enum):
     """Verification status of reported data.
@@ -250,7 +232,6 @@ class VerificationStatus(str, Enum):
     ESTIMATED = "estimated"
     MODELLED = "modelled"
 
-
 class ScopeCompleteness(str, Enum):
     """Scope boundary completeness.
 
@@ -263,7 +244,6 @@ class ScopeCompleteness(str, Enum):
     S1_S2 = "s1_s2"
     S1_S2_S3_PARTIAL = "s1_s2_s3_partial"
     S1_S2_S3_FULL = "s1_s2_s3_full"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -320,11 +300,9 @@ MAX_PEER_CANDIDATES: int = 50000
 DEFAULT_IQR_MULTIPLIER: Decimal = Decimal("1.5")
 MAX_DATA_AGE_YEARS: int = 5
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class SectorMapping(BaseModel):
     """Sector classification mapping for an entity.
@@ -337,7 +315,6 @@ class SectorMapping(BaseModel):
     system: ClassificationSystem = Field(..., description="Classification system")
     codes: List[str] = Field(default_factory=list, description="Hierarchical sector codes")
     descriptions: List[str] = Field(default_factory=list, description="Level descriptions")
-
 
 class PeerCandidate(BaseModel):
     """A candidate entity for peer group inclusion.
@@ -400,7 +377,6 @@ class PeerCandidate(BaseModel):
     def coerce_emissions(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class SimilarityWeights(BaseModel):
     """Weights for composite similarity calculation.
 
@@ -429,7 +405,6 @@ class SimilarityWeights(BaseModel):
             )
         return self
 
-
 class QualityWeights(BaseModel):
     """Weights for peer data quality scoring.
 
@@ -441,7 +416,6 @@ class QualityWeights(BaseModel):
     recency_weight: Decimal = Field(default=DEFAULT_RECENCY_WEIGHT, ge=0, le=1)
     scope_weight: Decimal = Field(default=DEFAULT_SCOPE_WEIGHT, ge=0, le=1)
     verification_weight: Decimal = Field(default=DEFAULT_VERIFICATION_WEIGHT, ge=0, le=1)
-
 
 class PeerGroupConfig(BaseModel):
     """Configuration for peer group construction.
@@ -483,7 +457,6 @@ class PeerGroupConfig(BaseModel):
     )
     output_precision: int = Field(default=4, ge=0, le=12, description="Output precision")
 
-
 class PeerGroupInput(BaseModel):
     """Input for peer group construction.
 
@@ -500,11 +473,9 @@ class PeerGroupInput(BaseModel):
         default_factory=PeerGroupConfig, description="Configuration"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class PeerQualityScore(BaseModel):
     """Data quality score for a peer.
@@ -521,7 +492,6 @@ class PeerQualityScore(BaseModel):
     scope_score: Decimal = Field(default=Decimal("0"), description="Scope score")
     verification_score: Decimal = Field(default=Decimal("0"), description="Verification score")
     composite_score: Decimal = Field(default=Decimal("0"), description="Composite quality")
-
 
 class PeerSimilarityDetail(BaseModel):
     """Detailed similarity breakdown for a peer.
@@ -551,7 +521,6 @@ class PeerSimilarityDetail(BaseModel):
     revenue_band: str = Field(default="", description="Revenue band")
     intensity_value: Decimal = Field(default=Decimal("0"), description="Intensity")
 
-
 class OutlierSummary(BaseModel):
     """Summary of outlier detection.
 
@@ -575,7 +544,6 @@ class OutlierSummary(BaseModel):
     iqr: Decimal = Field(default=Decimal("0"), description="IQR")
     outliers_removed: int = Field(default=0, description="Outliers removed")
     outlier_entity_ids: List[str] = Field(default_factory=list, description="Outlier IDs")
-
 
 class PeerGroupStats(BaseModel):
     """Distribution statistics for the constructed peer group.
@@ -602,7 +570,6 @@ class PeerGroupStats(BaseModel):
     p25: Decimal = Field(default=Decimal("0"), description="25th percentile")
     p75: Decimal = Field(default=Decimal("0"), description="75th percentile")
     p90: Decimal = Field(default=Decimal("0"), description="90th percentile")
-
 
 class PeerGroup(BaseModel):
     """Constructed peer group result.
@@ -636,7 +603,6 @@ class PeerGroup(BaseModel):
         default_factory=dict, description="Region distribution"
     )
 
-
 class PeerGroupResult(BaseModel):
     """Complete result of peer group construction.
 
@@ -669,11 +635,9 @@ class PeerGroupResult(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class PeerGroupConstructionEngine:
     """Constructs statistically robust peer groups for GHG emissions benchmarking.
@@ -847,7 +811,7 @@ class PeerGroupConstructionEngine:
             min_peers_met=min_peers_met,
             classification_used=config.classification_system.value,
             warnings=warnings,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         result.provenance_hash = _compute_hash(result)
@@ -1173,7 +1137,6 @@ class PeerGroupConstructionEngine:
 
     def get_version(self) -> str:
         return self._version
-
 
 # ---------------------------------------------------------------------------
 # __all__

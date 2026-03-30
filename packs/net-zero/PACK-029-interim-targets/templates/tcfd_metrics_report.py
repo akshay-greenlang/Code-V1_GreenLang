@@ -33,6 +33,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "29.0.0"
@@ -69,10 +71,6 @@ XBRL_TAGS: Dict[str, str] = {
     "scenario_used": "gl:TCFDScenarioUsed",
     "tcfd_alignment_score": "gl:TCFDAlignmentScore",
 }
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
@@ -112,7 +110,6 @@ def _dec_comma(val: Any, places: int = 2) -> str:
     except Exception:
         return str(val)
 
-
 class TCFDMetricsReportTemplate:
     """
     TCFD Metrics and Targets pillar report template for PACK-029.
@@ -137,7 +134,7 @@ class TCFDMetricsReportTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render TCFD metrics report as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [
             self._md_header(data), self._md_executive_summary(data),
             self._md_ghg_emissions(data), self._md_transition_risks(data),
@@ -152,7 +149,7 @@ class TCFDMetricsReportTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render TCFD metrics report as HTML."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         parts = [
             self._html_header(data), self._html_executive_summary(data),
@@ -173,7 +170,7 @@ class TCFDMetricsReportTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render as structured JSON."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         emissions = data.get("emissions", {})
         alignment_results = data.get("tcfd_alignment", {})
         passed = sum(1 for v in alignment_results.values() if v.get("status") == "pass")

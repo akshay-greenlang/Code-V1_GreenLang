@@ -38,25 +38,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -69,11 +63,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class AccelerationWizardStep(str, Enum):
     """Names of wizard steps in execution order."""
@@ -87,7 +79,6 @@ class AccelerationWizardStep(str, Enum):
     ASSURANCE_LEVEL = "assurance_level"
     PRESET_SELECTION = "preset_selection"
 
-
 class StepStatus(str, Enum):
     """Status of a wizard step."""
 
@@ -97,14 +88,12 @@ class StepStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class AssuranceLevelChoice(str, Enum):
     """Target assurance levels."""
 
     LIMITED = "limited"
     REASONABLE = "reasonable"
     NONE = "none"
-
 
 class OrganizationSize(str, Enum):
     """Organization size classification."""
@@ -114,7 +103,6 @@ class OrganizationSize(str, Enum):
     LARGE = "large"
     ENTERPRISE = "enterprise"
 
-
 class SupplierEngagementScope(str, Enum):
     """Scope of supplier engagement programme."""
 
@@ -123,11 +111,9 @@ class SupplierEngagementScope(str, Enum):
     TOP_100 = "top_100"
     ALL_STRATEGIC = "all_strategic"
 
-
 # ---------------------------------------------------------------------------
 # Step Data Models
 # ---------------------------------------------------------------------------
-
 
 class OrganizationProfile(BaseModel):
     """Organization profile from step 1."""
@@ -145,7 +131,6 @@ class OrganizationProfile(BaseModel):
     multi_entity: bool = Field(default=False)
     entity_count: int = Field(default=1, ge=1)
 
-
 class Pack021Status(BaseModel):
     """PACK-021 status from step 2."""
 
@@ -158,7 +143,6 @@ class Pack021Status(BaseModel):
     pathway: str = Field(default="1.5C")
     sbti_validated: bool = Field(default=False)
     gap_analysis_available: bool = Field(default=False)
-
 
 class Scope3Strategy(BaseModel):
     """Scope 3 deep-dive strategy from step 3."""
@@ -178,7 +162,6 @@ class Scope3Strategy(BaseModel):
     supplier_specific_data: bool = Field(default=False)
     screening_complete: bool = Field(default=True)
 
-
 class SDASectorSelection(BaseModel):
     """SDA sector selection from step 4."""
 
@@ -188,7 +171,6 @@ class SDASectorSelection(BaseModel):
     intensity_metric: str = Field(default="")
     current_intensity: float = Field(default=0.0, ge=0.0)
     benchmark_intensity: float = Field(default=0.0, ge=0.0)
-
 
 class SupplierProgramme(BaseModel):
     """Supplier engagement programme from step 5."""
@@ -202,7 +184,6 @@ class SupplierProgramme(BaseModel):
     data_collection_method: str = Field(default="questionnaire")
     engagement_timeline_months: int = Field(default=12, ge=3, le=36)
 
-
 class FinanceIntegration(BaseModel):
     """Climate finance integration from step 6."""
 
@@ -211,7 +192,6 @@ class FinanceIntegration(BaseModel):
     taxonomy_reporting_required: bool = Field(default=True)
     green_bond_eligible: bool = Field(default=False)
     transition_plan_required: bool = Field(default=True)
-
 
 class AssuranceLevelConfig(BaseModel):
     """Assurance level configuration from step 7."""
@@ -223,7 +203,6 @@ class AssuranceLevelConfig(BaseModel):
     scope1_scope2_assurance: bool = Field(default=True)
     scope3_assurance: bool = Field(default=False)
     target_assurance_year: int = Field(default=2026, ge=2025, le=2030)
-
 
 class PresetSelection(BaseModel):
     """Preset selection from step 8."""
@@ -237,11 +216,9 @@ class PresetSelection(BaseModel):
     supplier_engagement_enabled: bool = Field(default=True)
     assurance_preparation_enabled: bool = Field(default=True)
 
-
 # ---------------------------------------------------------------------------
 # Wizard State Models
 # ---------------------------------------------------------------------------
-
 
 class WizardStepState(BaseModel):
     """State of a single wizard step."""
@@ -254,7 +231,6 @@ class WizardStepState(BaseModel):
     started_at: Optional[datetime] = Field(None)
     completed_at: Optional[datetime] = Field(None)
     execution_time_ms: float = Field(default=0.0)
-
 
 class WizardState(BaseModel):
     """Complete state of the setup wizard."""
@@ -273,9 +249,8 @@ class WizardState(BaseModel):
     assurance_config: Optional[AssuranceLevelConfig] = Field(None)
     preset: Optional[PresetSelection] = Field(None)
     is_complete: bool = Field(default=False)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     completed_at: Optional[datetime] = Field(None)
-
 
 class SetupResult(BaseModel):
     """Final setup result with generated configuration."""
@@ -299,9 +274,8 @@ class SetupResult(BaseModel):
     total_steps_completed: int = Field(default=0)
     total_steps: int = Field(default=8)
     configuration_hash: str = Field(default="")
-    generated_at: datetime = Field(default_factory=_utcnow)
+    generated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Step Definitions
@@ -328,7 +302,6 @@ STEP_DISPLAY_NAMES: Dict[AccelerationWizardStep, str] = {
     AccelerationWizardStep.ASSURANCE_LEVEL: "Assurance Level",
     AccelerationWizardStep.PRESET_SELECTION: "Preset Selection",
 }
-
 
 # ---------------------------------------------------------------------------
 # Sector Presets (8)
@@ -475,11 +448,9 @@ SECTOR_PRESETS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # NetZeroAccelerationSetupWizard
 # ---------------------------------------------------------------------------
-
 
 class NetZeroAccelerationSetupWizard:
     """8-step guided configuration wizard for PACK-022.
@@ -520,7 +491,7 @@ class NetZeroAccelerationSetupWizard:
             Initial WizardState.
         """
         wizard_id = _compute_hash(
-            f"nz-accel-wizard:{_utcnow().isoformat()}"
+            f"nz-accel-wizard:{utcnow().isoformat()}"
         )[:16]
         steps: Dict[str, WizardStepState] = {}
         for step_name in STEP_ORDER:
@@ -566,7 +537,7 @@ class NetZeroAccelerationSetupWizard:
             raise ValueError(f"Step '{step_name}' not found")
 
         step.status = StepStatus.IN_PROGRESS
-        step.started_at = _utcnow()
+        step.started_at = utcnow()
         start_time = time.monotonic()
 
         handler = self._step_handlers.get(step_enum)
@@ -584,7 +555,7 @@ class NetZeroAccelerationSetupWizard:
                 step.validation_errors = errors
             else:
                 step.status = StepStatus.COMPLETED
-                step.completed_at = _utcnow()
+                step.completed_at = utcnow()
                 step.validation_errors = []
                 self._advance_step(step_enum)
         except Exception as exc:
@@ -913,7 +884,7 @@ class NetZeroAccelerationSetupWizard:
                 self._state.current_step = STEP_ORDER[idx + 1]
             else:
                 self._state.is_complete = True
-                self._state.completed_at = _utcnow()
+                self._state.completed_at = utcnow()
         except ValueError:
             pass
 

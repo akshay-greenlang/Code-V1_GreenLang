@@ -36,23 +36,15 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
-
+from pydantic import ConfigDict, Field, field_validator
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # =============================================================================
 # Enumerations
 # =============================================================================
-
 
 class DataSourceType(str, Enum):
     """Types of data sources that can be registered with the gateway.
@@ -77,7 +69,6 @@ class DataSourceType(str, Enum):
     EMISSION_FACTOR = "emission_factor"
     CUSTOM = "custom"
 
-
 class QueryOperation(str, Enum):
     """Supported query operations that can be applied to data sources.
 
@@ -94,7 +85,6 @@ class QueryOperation(str, Enum):
     DISTINCT = "distinct"
     SEARCH = "search"
 
-
 class AggregationType(str, Enum):
     """Supported aggregation functions for query results.
 
@@ -110,14 +100,6 @@ class AggregationType(str, Enum):
     GROUP_BY = "group_by"
     PERCENTILE = "percentile"
 
-
-class SortOrder(str, Enum):
-    """Sort direction for query result ordering."""
-
-    ASC = "asc"
-    DESC = "desc"
-
-
 class SourceStatus(str, Enum):
     """Health status of a registered data source.
 
@@ -131,7 +113,6 @@ class SourceStatus(str, Enum):
     UNKNOWN = "unknown"
     MAINTENANCE = "maintenance"
 
-
 class CacheStrategy(str, Enum):
     """Caching strategies for query results.
 
@@ -143,7 +124,6 @@ class CacheStrategy(str, Enum):
     NEVER = "never"
     TTL_BASED = "ttl_based"
     EVENT_DRIVEN = "event_driven"
-
 
 class QueryStatus(str, Enum):
     """Lifecycle status of a query execution.
@@ -159,7 +139,6 @@ class QueryStatus(str, Enum):
     TIMEOUT = "timeout"
     CANCELLED = "cancelled"
 
-
 class ConflictResolution(str, Enum):
     """Strategies for resolving data conflicts from multiple sources.
 
@@ -173,13 +152,11 @@ class ConflictResolution(str, Enum):
     MERGE = "merge"
     ERROR = "error"
 
-
 # =============================================================================
 # Core Data Models
 # =============================================================================
 
-
-class DataSource(BaseModel):
+class DataSource(GreenLangBase):
     """Registered backend data source for the gateway.
 
     Represents a backend GreenLang data agent or external data endpoint
@@ -265,8 +242,7 @@ class DataSource(BaseModel):
             raise ValueError("endpoint_url must be non-empty")
         return v
 
-
-class SchemaField(BaseModel):
+class SchemaField(GreenLangBase):
     """Definition of a single field within a schema.
 
     Describes the name, type, constraints, and source mapping for
@@ -322,8 +298,7 @@ class SchemaField(BaseModel):
             raise ValueError("field_type must be non-empty")
         return v
 
-
-class SchemaDefinition(BaseModel):
+class SchemaDefinition(GreenLangBase):
     """Schema definition for a data source.
 
     Describes the structure and versioning of data produced by a
@@ -357,7 +332,7 @@ class SchemaDefinition(BaseModel):
         description="List of field definitions in this schema",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the schema was created",
     )
     updated_at: Optional[datetime] = Field(
@@ -383,12 +358,14 @@ class SchemaDefinition(BaseModel):
             raise ValueError("version must be non-empty")
         return v
 
-
-class QueryFilter(BaseModel):
+class QueryFilter(GreenLangBase):
     """Filter condition for a query.
 
     Defines a single predicate that is applied to filter query results
     from one or more data sources.
+
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import SortOrder
 
     Attributes:
         field: Field name to filter on.
@@ -434,8 +411,7 @@ class QueryFilter(BaseModel):
             )
         return v
 
-
-class QuerySort(BaseModel):
+class QuerySort(GreenLangBase):
     """Sort specification for query results.
 
     Defines how query results should be ordered by a given field.
@@ -463,8 +439,7 @@ class QuerySort(BaseModel):
             raise ValueError("field must be non-empty")
         return v
 
-
-class QueryAggregation(BaseModel):
+class QueryAggregation(GreenLangBase):
     """Aggregation specification for query results.
 
     Defines an aggregation function to compute over query results,
@@ -502,8 +477,7 @@ class QueryAggregation(BaseModel):
             raise ValueError("field must be non-empty")
         return v
 
-
-class QueryPlan(BaseModel):
+class QueryPlan(GreenLangBase):
     """Execution plan for a gateway query.
 
     Represents the fully resolved query plan that the gateway will
@@ -571,8 +545,7 @@ class QueryPlan(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class QueryResult(BaseModel):
+class QueryResult(GreenLangBase):
     """Result of a gateway query execution.
 
     Contains the data rows, metadata, performance metrics, and
@@ -639,8 +612,7 @@ class QueryResult(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class CacheEntry(BaseModel):
+class CacheEntry(GreenLangBase):
     """Cached query result entry.
 
     Represents a single cached query result with metadata for
@@ -676,7 +648,7 @@ class CacheEntry(BaseModel):
         description="Approximate size of the cached data in bytes",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the cache entry was created",
     )
     expires_at: datetime = Field(
@@ -717,8 +689,7 @@ class CacheEntry(BaseModel):
             raise ValueError("source_id must be non-empty")
         return v
 
-
-class SourceHealthCheck(BaseModel):
+class SourceHealthCheck(GreenLangBase):
     """Health check result for a registered data source.
 
     Records the outcome of a single health probe against a
@@ -744,7 +715,7 @@ class SourceHealthCheck(BaseModel):
         description="Response time of the health check in milliseconds",
     )
     checked_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the health check was performed",
     )
     error_message: str = Field(
@@ -766,8 +737,7 @@ class SourceHealthCheck(BaseModel):
             raise ValueError("source_id must be non-empty")
         return v
 
-
-class SchemaMapping(BaseModel):
+class SchemaMapping(GreenLangBase):
     """Field-level mapping between source and target schemas.
 
     Defines how a single field is translated from one data source
@@ -837,8 +807,7 @@ class SchemaMapping(BaseModel):
             raise ValueError("target_type must be non-empty")
         return v
 
-
-class QueryTemplate(BaseModel):
+class QueryTemplate(GreenLangBase):
     """Reusable query template with parameterization.
 
     Allows users to save and reuse common query patterns with
@@ -879,7 +848,7 @@ class QueryTemplate(BaseModel):
         description="User or agent that created the template",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the template was created",
     )
     usage_count: int = Field(
@@ -897,8 +866,7 @@ class QueryTemplate(BaseModel):
             raise ValueError("name must be non-empty")
         return v
 
-
-class DataCatalogEntry(BaseModel):
+class DataCatalogEntry(GreenLangBase):
     """Catalog entry for a data source in the data catalog.
 
     Provides discovery metadata for a data source including domain,
@@ -980,8 +948,7 @@ class DataCatalogEntry(BaseModel):
             raise ValueError("name must be non-empty")
         return v
 
-
-class GatewayStatistics(BaseModel):
+class GatewayStatistics(GreenLangBase):
     """Aggregated statistics for the API Gateway service.
 
     Provides high-level operational metrics for monitoring the
@@ -1048,13 +1015,11 @@ class GatewayStatistics(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Request Models
 # =============================================================================
 
-
-class ExecuteQueryRequest(BaseModel):
+class ExecuteQueryRequest(GreenLangBase):
     """Request body for executing a query through the gateway.
 
     Attributes:
@@ -1120,8 +1085,7 @@ class ExecuteQueryRequest(BaseModel):
             raise ValueError("sources must contain at least one source ID")
         return v
 
-
-class BatchQueryRequest(BaseModel):
+class BatchQueryRequest(GreenLangBase):
     """Request body for executing multiple queries in a batch.
 
     Attributes:
@@ -1147,8 +1111,7 @@ class BatchQueryRequest(BaseModel):
             raise ValueError("queries must contain at least one query")
         return v
 
-
-class RegisterSourceRequest(BaseModel):
+class RegisterSourceRequest(GreenLangBase):
     """Request body for registering a new data source with the gateway.
 
     Attributes:
@@ -1213,8 +1176,7 @@ class RegisterSourceRequest(BaseModel):
             raise ValueError("endpoint_url must be non-empty")
         return v
 
-
-class CreateTemplateRequest(BaseModel):
+class CreateTemplateRequest(GreenLangBase):
     """Request body for creating a reusable query template.
 
     Attributes:
@@ -1249,8 +1211,7 @@ class CreateTemplateRequest(BaseModel):
             raise ValueError("name must be non-empty")
         return v
 
-
-class TranslateSchemaRequest(BaseModel):
+class TranslateSchemaRequest(GreenLangBase):
     """Request body for translating fields between source schemas.
 
     Attributes:
@@ -1287,8 +1248,7 @@ class TranslateSchemaRequest(BaseModel):
             raise ValueError("target_type must be non-empty")
         return v
 
-
-class CacheInvalidateRequest(BaseModel):
+class CacheInvalidateRequest(GreenLangBase):
     """Request body for invalidating cached query results.
 
     Attributes:
@@ -1311,7 +1271,6 @@ class CacheInvalidateRequest(BaseModel):
     )
 
     model_config = ConfigDict(extra="forbid")
-
 
 __all__ = [
     # Enumerations

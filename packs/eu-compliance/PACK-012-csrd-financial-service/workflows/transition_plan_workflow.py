@@ -26,20 +26,15 @@ from typing import Any, Callable, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC time with timezone info."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute SHA-256 provenance hash of arbitrary data."""
     return hashlib.sha256(
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
-
 
 class PhaseStatus(str, Enum):
     PENDING = "PENDING"
@@ -48,7 +43,6 @@ class PhaseStatus(str, Enum):
     FAILED = "FAILED"
     SKIPPED = "SKIPPED"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "PENDING"
     RUNNING = "RUNNING"
@@ -56,11 +50,10 @@ class WorkflowStatus(str, Enum):
     FAILED = "FAILED"
     PARTIAL = "PARTIAL"
 
-
 class WorkflowContext(BaseModel):
     workflow_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     organization_id: str = Field(..., description="Organization identifier")
-    execution_timestamp: datetime = Field(default_factory=_utcnow)
+    execution_timestamp: datetime = Field(default_factory=utcnow)
     config: Dict[str, Any] = Field(default_factory=dict)
     phase_states: Dict[str, PhaseStatus] = Field(default_factory=dict)
     phase_outputs: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
@@ -79,7 +72,6 @@ class WorkflowContext(BaseModel):
     def is_phase_completed(self, phase_name: str) -> bool:
         return self.phase_states.get(phase_name) == PhaseStatus.COMPLETED
 
-
 class PhaseResult(BaseModel):
     phase_name: str = Field(..., description="Phase identifier")
     status: PhaseStatus = Field(..., description="Phase completion status")
@@ -92,7 +84,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     records_processed: int = Field(default=0)
 
-
 class WorkflowResult(BaseModel):
     workflow_id: str = Field(..., description="Unique workflow execution ID")
     workflow_name: str = Field(..., description="Workflow type identifier")
@@ -103,8 +94,6 @@ class WorkflowResult(BaseModel):
     phases: List[PhaseResult] = Field(default_factory=list)
     summary: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
-
-
 
 # ---------------------------------------------------------------------------
 #  Input / Result Models
@@ -120,7 +109,6 @@ class SectorTarget(BaseModel):
     target_year_2050: Optional[float] = Field(None, ge=0.0)
     pathway_reference: str = Field(default="IEA_NZE", description="Scenario reference")
     current_intensity: Optional[float] = Field(None, ge=0.0)
-
 
 class TransitionPlanInput(BaseModel):
     """Input for the transition plan workflow."""
@@ -143,7 +131,6 @@ class TransitionPlanInput(BaseModel):
         int(v)
         return v
 
-
 class TransitionPlanResult(WorkflowResult):
     """Result from the transition plan workflow."""
     baseline_emissions_tco2e: float = Field(default=0.0)
@@ -156,7 +143,6 @@ class TransitionPlanResult(WorkflowResult):
     on_track_sectors: int = Field(default=0)
     off_track_sectors: int = Field(default=0)
 
-
 # ---------------------------------------------------------------------------
 #  Phases
 # ---------------------------------------------------------------------------
@@ -166,7 +152,7 @@ class BaselineAssessmentPhase:
     PHASE_NAME = "baseline_assessment"
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -211,7 +197,7 @@ class BaselineAssessmentPhase:
             logger.error("BaselineAssessment failed: %s", exc, exc_info=True)
             errors.append(f"Baseline assessment failed: {str(exc)}")
             status = PhaseStatus.FAILED
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -220,13 +206,12 @@ class BaselineAssessmentPhase:
             provenance_hash=_hash_data(outputs),
         )
 
-
 class TargetSettingPhase:
     """Set sector and portfolio targets aligned with NZBA/SBTi-FI."""
     PHASE_NAME = "target_setting"
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -276,7 +261,7 @@ class TargetSettingPhase:
             logger.error("TargetSetting failed: %s", exc, exc_info=True)
             errors.append(f"Target setting failed: {str(exc)}")
             status = PhaseStatus.FAILED
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -285,13 +270,12 @@ class TargetSettingPhase:
             provenance_hash=_hash_data(outputs),
         )
 
-
 class PathwayModelingPhase:
     """Model decarbonization pathways to 2030/2050."""
     PHASE_NAME = "pathway_modeling"
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -345,7 +329,7 @@ class PathwayModelingPhase:
             logger.error("PathwayModeling failed: %s", exc, exc_info=True)
             errors.append(f"Pathway modeling failed: {str(exc)}")
             status = PhaseStatus.FAILED
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -354,13 +338,12 @@ class PathwayModelingPhase:
             provenance_hash=_hash_data(outputs),
         )
 
-
 class CredibilityScoringPhase:
     """Score transition plan credibility and identify gaps."""
     PHASE_NAME = "credibility_scoring"
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -443,7 +426,7 @@ class CredibilityScoringPhase:
             logger.error("CredibilityScoring failed: %s", exc, exc_info=True)
             errors.append(f"Credibility scoring failed: {str(exc)}")
             status = PhaseStatus.FAILED
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -451,7 +434,6 @@ class CredibilityScoringPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 class TransitionPlanWorkflow:
     """Four-phase transition plan workflow for CSRD FI decarbonization planning."""
@@ -472,7 +454,7 @@ class TransitionPlanWorkflow:
 
     async def run(self, input_data: TransitionPlanInput) -> TransitionPlanResult:
         """Execute the workflow."""
-        started_at = _utcnow()
+        started_at = utcnow()
         logger.info("Starting %s workflow %s org=%s", self.WORKFLOW_NAME,
                      self.workflow_id, input_data.organization_id)
         context = WorkflowContext(
@@ -513,7 +495,7 @@ class TransitionPlanWorkflow:
                 logger.error("Phase '%s' raised: %s", phase_name, exc, exc_info=True)
                 completed_phases.append(PhaseResult(
                     phase_name=phase_name, status=PhaseStatus.FAILED,
-                    started_at=_utcnow(), errors=[str(exc)],
+                    started_at=utcnow(), errors=[str(exc)],
                     provenance_hash=_hash_data({"error": str(exc)}),
                 ))
                 context.mark_phase(phase_name, PhaseStatus.FAILED)
@@ -525,7 +507,7 @@ class TransitionPlanWorkflow:
                          for p in completed_phases)
             overall_status = WorkflowStatus.COMPLETED if all_ok else WorkflowStatus.PARTIAL
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         duration = (completed_at - started_at).total_seconds()
         summary = self._build_summary(context)
         provenance = _hash_data({
@@ -548,7 +530,6 @@ class TransitionPlanWorkflow:
                 self._progress_callback(phase, message, min(pct, 1.0))
             except Exception:
                 logger.debug("Progress callback failed for phase=%s", phase)
-
 
     def _build_summary(self, context: WorkflowContext) -> Dict[str, Any]:
         baseline = context.get_phase_output("baseline_assessment")

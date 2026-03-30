@@ -39,35 +39,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class WorkflowPhase(str, Enum):
     """Phases of the prevention planning workflow."""
@@ -75,7 +67,6 @@ class WorkflowPhase(str, Enum):
     RESOURCE_ALLOCATION = "resource_allocation"
     IMPLEMENTATION_TIMELINE = "implementation_timeline"
     EFFECTIVENESS_METRICS = "effectiveness_metrics"
-
 
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
@@ -85,7 +76,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class PhaseStatus(str, Enum):
     """Status of a single phase."""
     PENDING = "pending"
@@ -93,7 +83,6 @@ class PhaseStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class MeasureType(str, Enum):
     """Type of prevention/mitigation measure per Art. 7-8."""
@@ -104,7 +93,6 @@ class MeasureType(str, Enum):
     CAPACITY_BUILDING = "capacity_building"
     DISENGAGEMENT = "disengagement"
 
-
 class MeasureStatus(str, Enum):
     """Implementation status of a measure."""
     PLANNED = "planned"
@@ -113,14 +101,12 @@ class MeasureStatus(str, Enum):
     VERIFIED = "verified"
     DELAYED = "delayed"
 
-
 class TimelinePhase(str, Enum):
     """Implementation timeline phases."""
     IMMEDIATE = "immediate"       # 0-3 months
     SHORT_TERM = "short_term"     # 3-12 months
     MEDIUM_TERM = "medium_term"   # 1-3 years
     LONG_TERM = "long_term"       # 3+ years
-
 
 class ResourceCategory(str, Enum):
     """Resource allocation categories."""
@@ -130,11 +116,9 @@ class ResourceCategory(str, Enum):
     TRAINING = "training"
     EXTERNAL_CONSULTING = "external_consulting"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -146,7 +130,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class PrioritizedImpact(BaseModel):
     """Impact from upstream assessment that needs prevention measures."""
     impact_id: str = Field(..., description="Impact ID from assessment")
@@ -157,7 +140,6 @@ class PrioritizedImpact(BaseModel):
     value_chain_stage: str = Field(default="")
     country_code: str = Field(default="")
 
-
 class ExistingMeasure(BaseModel):
     """Existing prevention/mitigation measure already in place."""
     measure_id: str = Field(default_factory=lambda: f"em-{_new_uuid()[:8]}")
@@ -167,7 +149,6 @@ class ExistingMeasure(BaseModel):
     status: MeasureStatus = Field(default=MeasureStatus.IMPLEMENTED)
     effectiveness_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     annual_cost_eur: float = Field(default=0.0, ge=0.0)
-
 
 class PreventionMeasure(BaseModel):
     """Designed prevention or mitigation measure."""
@@ -183,7 +164,6 @@ class PreventionMeasure(BaseModel):
     kpi_name: str = Field(default="")
     kpi_target: str = Field(default="")
     status: MeasureStatus = Field(default=MeasureStatus.PLANNED)
-
 
 class PreventionPlanningInput(BaseModel):
     """Input data model for PreventionPlanningWorkflow."""
@@ -204,7 +184,6 @@ class PreventionPlanningInput(BaseModel):
     )
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class ResourcePlan(BaseModel):
     """Allocated resources for the prevention plan."""
     total_budget_eur: float = Field(default=0.0, ge=0.0)
@@ -214,7 +193,6 @@ class ResourcePlan(BaseModel):
     allocated_fte: float = Field(default=0.0, ge=0.0)
     by_category: Dict[str, float] = Field(default_factory=dict)
     by_timeline: Dict[str, float] = Field(default_factory=dict)
-
 
 class PreventionPlanningResult(BaseModel):
     """Complete result from prevention planning workflow."""
@@ -249,11 +227,9 @@ class PreventionPlanningResult(BaseModel):
     executed_at: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class PreventionPlanningWorkflow:
     """
@@ -316,7 +292,7 @@ class PreventionPlanningWorkflow:
         if input_data is None:
             input_data = PreventionPlanningInput(config=config or {})
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting prevention planning workflow %s", self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = WorkflowStatus.IN_PROGRESS
@@ -334,7 +310,7 @@ class PreventionPlanningWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         completed_count = sum(1 for p in phase_results if p.status == PhaseStatus.COMPLETED)
 
         # Count measure types
@@ -383,7 +359,7 @@ class PreventionPlanningWorkflow:
             impacts_covered=len(covered_impact_ids & all_impact_ids),
             impacts_uncovered=len(all_impact_ids - covered_impact_ids),
             reporting_year=input_data.reporting_year,
-            executed_at=_utcnow().isoformat(),
+            executed_at=utcnow().isoformat(),
         )
         result.provenance_hash = self._compute_provenance(result)
         self.logger.info(
@@ -401,7 +377,7 @@ class PreventionPlanningWorkflow:
         self, input_data: PreventionPlanningInput,
     ) -> PhaseResult:
         """Design prevention/mitigation measures for each prioritized impact."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._measures = []
@@ -491,7 +467,7 @@ class PreventionPlanningWorkflow:
         if not self._measures:
             warnings.append("No new measures designed -- all impacts may be covered by existing measures")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 1 MeasureDesign: %d measures for %d impacts",
             len(self._measures), outputs["impacts_addressed"],
@@ -511,7 +487,7 @@ class PreventionPlanningWorkflow:
         self, input_data: PreventionPlanningInput,
     ) -> PhaseResult:
         """Allocate budget and personnel to prevention measures."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -565,7 +541,7 @@ class PreventionPlanningWorkflow:
         if total_fte < len(self._measures) * 0.1:
             warnings.append("Insufficient FTE capacity for planned measures")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 2 ResourceAllocation: %.0f EUR allocated, %.1f FTE",
             self._resource_plan.allocated_budget_eur, allocated_fte,
@@ -585,7 +561,7 @@ class PreventionPlanningWorkflow:
         self, input_data: PreventionPlanningInput,
     ) -> PhaseResult:
         """Build phased implementation plan with milestones."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -634,7 +610,7 @@ class PreventionPlanningWorkflow:
         ):
             warnings.append("No immediate actions planned despite critical/high severity impacts")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 3 ImplementationTimeline: %d phases, %d milestones",
             outputs["timeline_phases"], outputs["total_milestones"],
@@ -654,7 +630,7 @@ class PreventionPlanningWorkflow:
         self, input_data: PreventionPlanningInput,
     ) -> PhaseResult:
         """Define KPIs to measure prevention plan effectiveness."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -713,7 +689,7 @@ class PreventionPlanningWorkflow:
                 f"{len(self._measures) - kpis_defined} measures without KPIs -- effectiveness tracking at risk"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 4 EffectivenessMetrics: %d KPIs defined across %d categories",
             kpis_defined, len(kpi_categories),

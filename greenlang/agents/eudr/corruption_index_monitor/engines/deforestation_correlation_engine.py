@@ -90,12 +90,6 @@ _MODULE_VERSION: str = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
 
@@ -114,7 +108,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str = "corr") -> str:
     """Generate a unique identifier with a given prefix.
 
@@ -125,7 +118,6 @@ def _generate_id(prefix: str = "corr") -> str:
         ID in format ``{prefix}-{hex12}``.
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 def _to_decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
@@ -146,11 +138,9 @@ def _to_decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError) as exc:
         raise ValueError(f"Cannot convert {value!r} to Decimal") from exc
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class CorrelationType(str, Enum):
     """Type of correlation coefficient computed.
@@ -164,7 +154,6 @@ class CorrelationType(str, Enum):
     PEARSON = "PEARSON"
     SPEARMAN = "SPEARMAN"
     KENDALL = "KENDALL"
-
 
 class EvidenceStrength(str, Enum):
     """Strength of evidence for a causal pathway.
@@ -180,7 +169,6 @@ class EvidenceStrength(str, Enum):
     MODERATE = "MODERATE"
     WEAK = "WEAK"
     THEORETICAL = "THEORETICAL"
-
 
 class SignificanceLevel(str, Enum):
     """Statistical significance level for correlation tests.
@@ -199,7 +187,6 @@ class SignificanceLevel(str, Enum):
     P10 = "p<0.10"
     NS = "not_significant"
 
-
 class DeforestationMetric(str, Enum):
     """Deforestation metric type.
 
@@ -214,7 +201,6 @@ class DeforestationMetric(str, Enum):
     LOSS_RATE_PCT = "loss_rate_pct"
     TREE_COVER_LOSS_HA = "tree_cover_loss_ha"
     NET_DEFORESTATION_HA = "net_deforestation_ha"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -602,11 +588,9 @@ CAUSAL_PATHWAYS: List[Dict[str, Any]] = [
     },
 ]
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class CorrelationResult:
@@ -670,7 +654,6 @@ class CorrelationResult:
             "provenance_hash": self.provenance_hash,
         }
 
-
 @dataclass
 class RegressionModel:
     """Result of a regression model fit.
@@ -730,7 +713,6 @@ class RegressionModel:
             "provenance_hash": self.provenance_hash,
         }
 
-
 @dataclass
 class CausalPathway:
     """A known causal pathway linking corruption to deforestation.
@@ -781,7 +763,6 @@ class CausalPathway:
             "provenance_hash": self.provenance_hash,
         }
 
-
 @dataclass
 class CountryDeforestationLink:
     """Country-specific corruption-deforestation link assessment.
@@ -829,7 +810,6 @@ class CountryDeforestationLink:
             "provenance_hash": self.provenance_hash,
         }
 
-
 @dataclass
 class HeatmapCell:
     """A single cell in the corruption-deforestation heatmap.
@@ -858,11 +838,9 @@ class HeatmapCell:
             "risk_category": self.risk_category,
         }
 
-
 # ---------------------------------------------------------------------------
 # DeforestationCorrelationEngine
 # ---------------------------------------------------------------------------
-
 
 class DeforestationCorrelationEngine:
     """Production-grade corruption-deforestation correlation analysis for EUDR.
@@ -880,6 +858,8 @@ class DeforestationCorrelationEngine:
         All statistical calculations use Decimal arithmetic with
         deterministic formulas. Causal pathways are static reference data
         from peer-reviewed literature. No ML/LLM in any calculation path.
+
+from greenlang.schemas import utcnow
 
     Attributes:
         _custom_cpi_data: User-supplied CPI data.
@@ -1621,7 +1601,7 @@ class DeforestationCorrelationEngine:
             processing_time_ms = (time.monotonic() - start_time) * 1000.0
             out = result.to_dict()
             out["processing_time_ms"] = round(processing_time_ms, 3)
-            out["calculation_timestamp"] = _utcnow().isoformat()
+            out["calculation_timestamp"] = utcnow().isoformat()
             return out
 
         # Compute correlation
@@ -1651,7 +1631,7 @@ class DeforestationCorrelationEngine:
 
         out = result.to_dict()
         out["processing_time_ms"] = round(processing_time_ms, 3)
-        out["calculation_timestamp"] = _utcnow().isoformat()
+        out["calculation_timestamp"] = utcnow().isoformat()
 
         logger.info(
             "Correlation analysis %s vs %s: r=%s p=%s significant=%s n=%d "
@@ -1777,7 +1757,7 @@ class DeforestationCorrelationEngine:
 
         out = link.to_dict()
         out["processing_time_ms"] = round(processing_time_ms, 3)
-        out["calculation_timestamp"] = _utcnow().isoformat()
+        out["calculation_timestamp"] = utcnow().isoformat()
 
         logger.info(
             "Deforestation link for %s: CPI=%s rate=%s strength=%s "
@@ -1834,7 +1814,7 @@ class DeforestationCorrelationEngine:
             processing_time_ms = (time.monotonic() - start_time) * 1000.0
             out = model.to_dict()
             out["processing_time_ms"] = round(processing_time_ms, 3)
-            out["calculation_timestamp"] = _utcnow().isoformat()
+            out["calculation_timestamp"] = utcnow().isoformat()
             return out
 
         # Build regression
@@ -1853,7 +1833,7 @@ class DeforestationCorrelationEngine:
 
         out = model.to_dict()
         out["processing_time_ms"] = round(processing_time_ms, 3)
-        out["calculation_timestamp"] = _utcnow().isoformat()
+        out["calculation_timestamp"] = utcnow().isoformat()
 
         logger.info(
             "Regression model built: R2=%s predictors=%s n=%d time_ms=%.1f",
@@ -1930,7 +1910,7 @@ class DeforestationCorrelationEngine:
             "x_axis": {"label": corruption_index, "min": "0", "max": "100"},
             "y_axis": {"label": "deforestation_rate_pct", "min": "0", "max": "3.0"},
             "processing_time_ms": round(processing_time_ms, 3),
-            "calculation_timestamp": _utcnow().isoformat(),
+            "calculation_timestamp": utcnow().isoformat(),
             "provenance_hash": "",
         }
         result["provenance_hash"] = _compute_hash(result)
@@ -2009,7 +1989,7 @@ class DeforestationCorrelationEngine:
             "pathway_count": len(pathways),
             "pathways": pathways,
             "processing_time_ms": round(processing_time_ms, 3),
-            "calculation_timestamp": _utcnow().isoformat(),
+            "calculation_timestamp": utcnow().isoformat(),
             "provenance_hash": "",
         }
         result["provenance_hash"] = _compute_hash(result)

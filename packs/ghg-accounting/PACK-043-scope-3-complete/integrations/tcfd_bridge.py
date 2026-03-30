@@ -35,20 +35,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "43.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -61,11 +56,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class TCFDScenario(str, Enum):
     """TCFD climate scenario types."""
@@ -77,7 +70,6 @@ class TCFDScenario(str, Enum):
     NGFS_DISORDERLY = "ngfs_disorderly"
     NGFS_HOT_HOUSE = "ngfs_hot_house"
     EU_ETS = "eu_ets"
-
 
 # ---------------------------------------------------------------------------
 # Carbon Price Projections (USD/tCO2e)
@@ -116,11 +108,9 @@ IEA_NZE_PATHWAYS: Dict[str, Dict[int, float]] = {
     "agriculture": {2025: 3.0, 2030: 15.0, 2035: 25.0, 2040: 38.0, 2050: 60.0},
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class CarbonPriceForecast(BaseModel):
     """Carbon price forecast for a scenario and year."""
@@ -131,7 +121,6 @@ class CarbonPriceForecast(BaseModel):
     source: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 class IEANZEPathway(BaseModel):
     """IEA Net Zero sector pathway data."""
 
@@ -139,7 +128,6 @@ class IEANZEPathway(BaseModel):
     pathway_reductions: Dict[int, float] = Field(default_factory=dict)
     source: str = Field(default="IEA World Energy Outlook 2023 NZE")
     provenance_hash: str = Field(default="")
-
 
 class NGFSScenarioData(BaseModel):
     """NGFS climate scenario data."""
@@ -154,7 +142,6 @@ class NGFSScenarioData(BaseModel):
     policy_ambition: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 class PhysicalHazardData(BaseModel):
     """Physical climate hazard exposure data."""
 
@@ -165,11 +152,9 @@ class PhysicalHazardData(BaseModel):
     source: str = Field(default="representative_assessment")
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # TCFDBridge
 # ---------------------------------------------------------------------------
-
 
 class TCFDBridge:
     """TCFD scenario data and climate risk reference for PACK-043.

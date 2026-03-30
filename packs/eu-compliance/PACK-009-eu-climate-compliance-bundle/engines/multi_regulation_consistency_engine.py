@@ -45,25 +45,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -81,18 +75,15 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _safe_div(numerator: float, denominator: float, default: float = 0.0) -> float:
     """Divide safely, returning *default* when denominator is zero."""
     if denominator == 0.0:
         return default
     return numerator / denominator
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ComparisonMode(str, Enum):
     """How strictly values are compared."""
@@ -100,14 +91,12 @@ class ComparisonMode(str, Enum):
     TOLERANT = "TOLERANT"
     FUZZY = "FUZZY"
 
-
 class ConsistencyLevel(str, Enum):
     """Status of a consistency check."""
     CONSISTENT = "CONSISTENT"
     MINOR_DEVIATION = "MINOR_DEVIATION"
     MAJOR_DEVIATION = "MAJOR_DEVIATION"
     CONFLICT = "CONFLICT"
-
 
 class FieldType(str, Enum):
     """Data type of a shared field."""
@@ -117,14 +106,12 @@ class FieldType(str, Enum):
     TEXT = "TEXT"
     BOOLEAN = "BOOLEAN"
 
-
 class ResolutionStrategy(str, Enum):
     """Strategy for auto-resolving conflicts."""
     HIGHEST_CONFIDENCE = "HIGHEST_CONFIDENCE"
     MOST_RECENT = "MOST_RECENT"
     AVERAGE = "AVERAGE"
     MANUAL = "MANUAL"
-
 
 class FieldCategory(str, Enum):
     """Category grouping for shared fields."""
@@ -135,11 +122,9 @@ class FieldCategory(str, Enum):
     ENVIRONMENTAL = "ENVIRONMENTAL"
     GOVERNANCE = "GOVERNANCE"
 
-
 # ---------------------------------------------------------------------------
 # Reference Data - Shared Fields Across Regulations
 # ---------------------------------------------------------------------------
-
 
 SHARED_DATA_FIELDS: Dict[str, Dict[str, Any]] = {
     # --- EMISSIONS (13 fields) ---
@@ -215,7 +200,6 @@ SHARED_DATA_FIELDS: Dict[str, Dict[str, Any]] = {
     "stakeholder_engagement_process": {"type": "BOOLEAN", "unit": "bool", "category": "GOVERNANCE", "regulations": ["CSRD", "EU_TAXONOMY", "EUDR"]},
 }
 
-
 # Tolerance defaults per comparison mode
 _TOLERANCE_DEFAULTS: Dict[str, float] = {
     "STRICT": 0.01,
@@ -223,11 +207,9 @@ _TOLERANCE_DEFAULTS: Dict[str, float] = {
     "FUZZY": 15.0,
 }
 
-
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
-
 
 class ConsistencyConfig(BaseModel):
     """Configuration for the MultiRegulationConsistencyEngine."""
@@ -257,11 +239,9 @@ class ConsistencyConfig(BaseModel):
         description="Tolerance window in days for temporal comparisons",
     )
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class DataPoint(BaseModel):
     """A single data value reported for a given field under a specific regulation."""
@@ -274,7 +254,6 @@ class DataPoint(BaseModel):
     source: str = Field(default="", description="Data source identifier")
     confidence: float = Field(default=1.0, ge=0.0, le=1.0, description="Confidence score 0-1")
 
-
 class ConflictResolution(BaseModel):
     """Details of how a conflict was or should be resolved."""
 
@@ -283,7 +262,6 @@ class ConflictResolution(BaseModel):
     resolved_value: Any = Field(default=None, description="The value chosen after resolution")
     auto_resolved: bool = Field(default=False, description="Whether resolution was automatic")
     rationale: str = Field(default="", description="Explanation of the resolution")
-
 
 class ConsistencyCheck(BaseModel):
     """Result of a consistency check for a single shared field."""
@@ -299,7 +277,6 @@ class ConsistencyCheck(BaseModel):
     resolution: Optional[ConflictResolution] = Field(default=None, description="Conflict resolution details")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class ReconciliationItem(BaseModel):
     """A single row in a reconciliation report."""
 
@@ -309,7 +286,6 @@ class ReconciliationItem(BaseModel):
     values_reported: Dict[str, Any] = Field(default_factory=dict, description="Regulation -> value mapping")
     status: str = Field(default="CONSISTENT", description="Consistency status")
     action_required: str = Field(default="NONE", description="Required action (NONE, REVIEW, CORRECT)")
-
 
 class ConsistencyResult(BaseModel):
     """Complete result from the MultiRegulationConsistencyEngine."""
@@ -329,11 +305,9 @@ class ConsistencyResult(BaseModel):
     engine_version: str = Field(default=_MODULE_VERSION, description="Engine version")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class MultiRegulationConsistencyEngine:
     """
@@ -385,7 +359,7 @@ class MultiRegulationConsistencyEngine:
         Returns:
             ConsistencyResult with checks, conflicts, and consistency score.
         """
-        start = _utcnow()
+        start = utcnow()
 
         # Group by field_name
         groups: Dict[str, List[DataPoint]] = {}
@@ -426,7 +400,7 @@ class MultiRegulationConsistencyEngine:
 
         reconciliation = self.generate_reconciliation_report(checks)
 
-        elapsed_ms = (_utcnow() - start).total_seconds() * 1000
+        elapsed_ms = (utcnow() - start).total_seconds() * 1000
 
         result = ConsistencyResult(
             checks=checks,
@@ -528,7 +502,7 @@ class MultiRegulationConsistencyEngine:
             List of updated DataPoint objects.
         """
         updated: List[DataPoint] = []
-        now_str = _utcnow().isoformat()
+        now_str = utcnow().isoformat()
         for dp in data_points:
             if dp.field_name == field_name:
                 updated.append(DataPoint(

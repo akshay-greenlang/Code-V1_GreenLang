@@ -52,10 +52,11 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import yaml
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.foundation.schema.constants import SCHEMA_CACHE_TTL_SECONDS
 from greenlang.agents.foundation.schema.registry.resolver import SchemaRegistry, SchemaSource
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -195,7 +196,7 @@ class SchemaParseError(Exception):
 # =============================================================================
 
 
-class SchemaSourceModel(BaseModel):
+class SchemaSourceModel(GreenLangBase):
     """
     Schema source from registry (Pydantic model version).
 

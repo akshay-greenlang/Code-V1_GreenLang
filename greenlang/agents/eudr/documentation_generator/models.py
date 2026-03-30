@@ -23,7 +23,8 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase
 
 
 # ---------------------------------------------------------------------------
@@ -200,7 +201,7 @@ SUPPORTED_COMMODITIES: List[str] = [c.value for c in EUDRCommodity]
 # ---------------------------------------------------------------------------
 
 
-class ProductEntry(BaseModel):
+class ProductEntry(GreenLangBase):
     """A single product entry within a DDS.
 
     Represents one commodity product with its trade classification,
@@ -219,7 +220,7 @@ class ProductEntry(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class GeolocationReference(BaseModel):
+class GeolocationReference(GreenLangBase):
     """Geolocation data for a production plot per Article 9.
 
     For plots over 4 hectares, polygon coordinates are required.
@@ -247,7 +248,7 @@ class GeolocationReference(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class SupplierReference(BaseModel):
+class SupplierReference(GreenLangBase):
     """Reference to a supplier within the supply chain."""
 
     supplier_id: str = Field(..., description="Unique supplier identifier")
@@ -262,7 +263,7 @@ class SupplierReference(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class MeasureSummary(BaseModel):
+class MeasureSummary(GreenLangBase):
     """Summary of a single mitigation measure for documentation."""
 
     measure_id: str = Field(..., description="Unique measure identifier")
@@ -279,7 +280,7 @@ class MeasureSummary(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class ValidationIssue(BaseModel):
+class ValidationIssue(GreenLangBase):
     """A single validation issue found during document validation."""
 
     field: str = Field(..., description="Field path where the issue was found")
@@ -292,7 +293,7 @@ class ValidationIssue(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class DDSContent(BaseModel):
+class DDSContent(GreenLangBase):
     """Structured content payload for a Due Diligence Statement.
 
     Combines operator information, product data, Article 9 elements,
@@ -327,7 +328,7 @@ class DDSContent(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class DDSDocument(BaseModel):
+class DDSDocument(GreenLangBase):
     """Due Diligence Statement document per EUDR Article 4.
 
     The primary regulatory document that operators must submit
@@ -368,7 +369,7 @@ class DDSDocument(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class Article9Package(BaseModel):
+class Article9Package(GreenLangBase):
     """Article 9 information package assembly.
 
     Collects and validates all mandatory information elements
@@ -399,7 +400,7 @@ class Article9Package(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class RiskAssessmentDoc(BaseModel):
+class RiskAssessmentDoc(GreenLangBase):
     """Risk assessment documentation for inclusion in DDS.
 
     Captures the structured risk assessment output from upstream
@@ -433,7 +434,7 @@ class RiskAssessmentDoc(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class MitigationDoc(BaseModel):
+class MitigationDoc(GreenLangBase):
     """Mitigation documentation for inclusion in DDS.
 
     Summarizes the risk mitigation strategy outcome from
@@ -465,7 +466,7 @@ class MitigationDoc(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class CompliancePackage(BaseModel):
+class CompliancePackage(GreenLangBase):
     """Complete compliance package assembling all DDS components.
 
     Bundles the DDS, Article 9 data, risk assessment, mitigation
@@ -497,7 +498,7 @@ class CompliancePackage(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class DocumentVersion(BaseModel):
+class DocumentVersion(GreenLangBase):
     """Version record for a managed document.
 
     Tracks document revisions with content hashes for integrity
@@ -527,7 +528,7 @@ class DocumentVersion(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class SubmissionRecord(BaseModel):
+class SubmissionRecord(GreenLangBase):
     """Record of a DDS submission to the EU Information System.
 
     Tracks the submission lifecycle including acknowledgement,
@@ -557,7 +558,7 @@ class SubmissionRecord(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class ValidationResult(BaseModel):
+class ValidationResult(GreenLangBase):
     """Result of validating a document prior to submission.
 
     Contains a list of errors and warnings discovered during
@@ -585,7 +586,7 @@ class ValidationResult(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class HealthStatus(BaseModel):
+class HealthStatus(GreenLangBase):
     """Health check response for the Documentation Generator."""
 
     agent_id: str = AGENT_ID

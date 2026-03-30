@@ -27,21 +27,15 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base_agents import DeterministicAgent
 from greenlang.agents.categories import AgentCategory, AgentMetadata
 from greenlang.utilities.determinism.clock import DeterministicClock
+from greenlang.schemas.enums import ValidationSeverity
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
-
-
-class ValidationSeverity(str, Enum):
-    """Severity levels for validation issues."""
-    ERROR = "error"
-    WARNING = "warning"
-    INFO = "info"
-
 
 class ValidationCategory(str, Enum):
     """Categories of validation checks."""
@@ -52,8 +46,7 @@ class ValidationCategory(str, Enum):
     CONSISTENCY = "consistency"
     FORMAT = "format"
 
-
-class ActivityDataRecord(BaseModel):
+class ActivityDataRecord(GreenLangBase):
     """An activity data record for validation."""
     record_id: str = Field(...)
     data_type: str = Field(..., description="e.g., fuel_consumption, electricity")
@@ -64,8 +57,7 @@ class ActivityDataRecord(BaseModel):
     source: Optional[str] = Field(None)
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
-
-class ValidationRule(BaseModel):
+class ValidationRule(GreenLangBase):
     """A validation rule specification."""
     rule_id: str = Field(...)
     category: ValidationCategory = Field(...)
@@ -75,8 +67,7 @@ class ValidationRule(BaseModel):
     allowed_units: List[str] = Field(default_factory=list)
     required_fields: List[str] = Field(default_factory=list)
 
-
-class ValidationIssue(BaseModel):
+class ValidationIssue(GreenLangBase):
     """A validation issue found."""
     issue_id: str = Field(...)
     record_id: str = Field(...)
@@ -88,8 +79,7 @@ class ValidationIssue(BaseModel):
     expected_range: Optional[str] = Field(None)
     suggested_action: Optional[str] = Field(None)
 
-
-class ValidationResult(BaseModel):
+class ValidationResult(GreenLangBase):
     """Result of validating a record."""
     record_id: str = Field(...)
     is_valid: bool = Field(...)
@@ -97,16 +87,14 @@ class ValidationResult(BaseModel):
     error_count: int = Field(default=0)
     warning_count: int = Field(default=0)
 
-
-class ActivityDataValidationInput(BaseModel):
+class ActivityDataValidationInput(GreenLangBase):
     """Input model for ActivityDataValidationAgent."""
     records: List[ActivityDataRecord] = Field(..., min_length=1)
     custom_rules: Optional[List[ValidationRule]] = Field(None)
     strict_mode: bool = Field(default=False)
     organization_id: Optional[str] = Field(None)
 
-
-class ActivityDataValidationOutput(BaseModel):
+class ActivityDataValidationOutput(GreenLangBase):
     """Output model for ActivityDataValidationAgent."""
     success: bool = Field(...)
     validation_results: List[ValidationResult] = Field(default_factory=list)
@@ -121,7 +109,6 @@ class ActivityDataValidationOutput(BaseModel):
     provenance_hash: str = Field(...)
     validation_status: str = Field(...)
     timestamp: datetime = Field(default_factory=DeterministicClock.now)
-
 
 # Default validation rules
 DEFAULT_RULES: List[Dict[str, Any]] = [
@@ -150,7 +137,6 @@ DEFAULT_RULES: List[Dict[str, Any]] = [
         "allowed_units": ["tco2e", "kgco2e", "mtco2e"]
     },
 ]
-
 
 class ActivityDataValidationAgent(DeterministicAgent):
     """

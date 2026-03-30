@@ -31,6 +31,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.blockchain_integration.api.dependencies import (
     AuthUser,
@@ -64,22 +65,14 @@ router = APIRouter(tags=["Merkle Proofs"])
 
 _tree_store: Dict[str, Dict] = {}
 
-
 def _get_tree_store() -> Dict[str, Dict]:
     """Return the Merkle tree store singleton."""
     return _tree_store
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_provenance_hash(data: dict) -> str:
     """Compute SHA-256 hash for provenance tracking."""
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
 
 def _hash_pair(
     left: str,
@@ -106,7 +99,6 @@ def _hash_pair(
         return hashlib.sha3_256(combined.encode("utf-8")).hexdigest()
     else:
         return hashlib.sha256(combined.encode("utf-8")).hexdigest()
-
 
 def _build_merkle_tree(
     leaves: List[str],
@@ -151,7 +143,6 @@ def _build_merkle_tree(
         "leaf_count": len(leaves),
         "leaves": leaves,
     }
-
 
 def _generate_proof(
     leaves: List[str],
@@ -211,11 +202,9 @@ def _generate_proof(
         "root_hash": root_hash,
     }
 
-
 # ---------------------------------------------------------------------------
 # POST /merkle/build
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/merkle/build",
@@ -258,7 +247,7 @@ async def build_merkle_tree(
     start = time.monotonic()
     try:
         tree_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         # Deterministic tree construction (zero hallucination)
         tree_data = _build_merkle_tree(
@@ -326,11 +315,9 @@ async def build_merkle_tree(
             detail="Failed to build Merkle tree",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /merkle/{tree_id}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/merkle/{tree_id}",
@@ -394,11 +381,9 @@ async def get_merkle_tree(
             detail="Failed to retrieve Merkle tree",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /merkle/{tree_id}/proof
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/merkle/{tree_id}/proof",
@@ -493,7 +478,7 @@ async def generate_proof(
             root_hash=proof_data["root_hash"],
             algorithm=algorithm,
             format=body.format,
-            generated_at=_utcnow(),
+            generated_at=utcnow(),
         )
 
     except HTTPException:
@@ -510,11 +495,9 @@ async def generate_proof(
             detail="Failed to generate Merkle proof",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /merkle/verify
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/merkle/verify",
@@ -586,7 +569,7 @@ async def verify_merkle_proof(
             root_hash=body.root_hash,
             computed_root=current_hash,
             algorithm=body.algorithm,
-            verified_at=_utcnow(),
+            verified_at=utcnow(),
         )
 
     except HTTPException:
@@ -599,7 +582,6 @@ async def verify_merkle_proof(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to verify Merkle proof",
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

@@ -82,25 +82,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -120,13 +114,11 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely."""
     if isinstance(value, Decimal):
         return value
     return Decimal(str(value))
-
 
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
@@ -135,7 +127,6 @@ def _safe_divide(
     if denominator == Decimal("0"):
         return default
     return numerator / denominator
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value using ROUND_HALF_UP.
@@ -150,20 +141,17 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.01"), rounding=ROUND_HALF_UP
     ))
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
-
 
 def _pct(part: int, total: int) -> Decimal:
     """Calculate percentage as Decimal, rounded to 1 decimal place."""
@@ -173,18 +161,15 @@ def _pct(part: int, total: int) -> Decimal:
         _decimal(part) / _decimal(total) * Decimal("100"), 1
     )
 
-
 def _pct_dec(part: Decimal, total: Decimal) -> Decimal:
     """Calculate percentage from Decimal values, rounded to 1 dp."""
     if total == Decimal("0"):
         return Decimal("0.0")
     return _round_val(part / total * Decimal("100"), 1)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class AdverseImpactType(str, Enum):
     """Type of adverse impact under CSDDD.
@@ -194,7 +179,6 @@ class AdverseImpactType(str, Enum):
     """
     HUMAN_RIGHTS = "human_rights"
     ENVIRONMENTAL = "environmental"
-
 
 class ImpactSeverity(str, Enum):
     """Severity classification for an adverse impact.
@@ -212,7 +196,6 @@ class ImpactSeverity(str, Enum):
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 class ImpactLikelihood(str, Enum):
     """Likelihood classification for a potential adverse impact.
@@ -232,7 +215,6 @@ class ImpactLikelihood(str, Enum):
     UNLIKELY = "unlikely"
     RARE = "rare"
 
-
 class ImpactStatus(str, Enum):
     """Status of the adverse impact: actual or potential.
 
@@ -241,7 +223,6 @@ class ImpactStatus(str, Enum):
     """
     ACTUAL = "actual"
     POTENTIAL = "potential"
-
 
 class ValueChainPosition(str, Enum):
     """Position in the value chain where the impact occurs.
@@ -255,7 +236,6 @@ class ValueChainPosition(str, Enum):
     UPSTREAM_INDIRECT = "upstream_indirect"
     DOWNSTREAM_DIRECT = "downstream_direct"
     DOWNSTREAM_INDIRECT = "downstream_indirect"
-
 
 class HumanRightsCategory(str, Enum):
     """Human rights impact categories from CSDDD Annex Part I.
@@ -277,7 +257,6 @@ class HumanRightsCategory(str, Enum):
     RIGHT_TO_PRIVACY = "right_to_privacy"
     SECURITY_FORCES = "security_forces"
 
-
 class EnvironmentalCategory(str, Enum):
     """Environmental impact categories from CSDDD Annex Part II.
 
@@ -296,7 +275,6 @@ class EnvironmentalCategory(str, Enum):
     WATER_POLLUTION = "water_pollution"
     SOIL_CONTAMINATION = "soil_contamination"
 
-
 class RiskLevel(str, Enum):
     """Qualitative risk level derived from the risk matrix.
 
@@ -309,11 +287,9 @@ class RiskLevel(str, Enum):
     LOW = "low"
     VERY_LOW = "very_low"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # Severity numeric scores
 SEVERITY_SCORES: Dict[str, int] = {
@@ -371,11 +347,9 @@ ENV_CATEGORY_LABELS: Dict[str, str] = {
     EnvironmentalCategory.SOIL_CONTAMINATION.value: "Soil contamination",
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class AdverseImpact(BaseModel):
     """A single identified adverse impact per CSDDD Art 6.
@@ -506,7 +480,6 @@ class AdverseImpact(BaseModel):
             raise ValueError("Country code must be alphabetic")
         return v.upper()
 
-
 class RiskMatrix(BaseModel):
     """Risk matrix result for a single adverse impact.
 
@@ -545,7 +518,6 @@ class RiskMatrix(BaseModel):
         description="Priority rank (1 = highest priority)",
         ge=0,
     )
-
 
 class SummaryStatistics(BaseModel):
     """Summary statistics for a collection of adverse impacts.
@@ -635,7 +607,6 @@ class SummaryStatistics(BaseModel):
         description="Percentage of impacts in value chain",
     )
 
-
 class ImpactAssessmentResult(BaseModel):
     """Complete adverse impact assessment result.
 
@@ -684,7 +655,7 @@ class ImpactAssessmentResult(BaseModel):
         description="Processing time in milliseconds",
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Assessment timestamp (UTC)",
     )
     provenance_hash: str = Field(
@@ -692,11 +663,9 @@ class ImpactAssessmentResult(BaseModel):
         description="SHA-256 hash for audit trail provenance",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class AdverseImpactEngine:
     """CSDDD Adverse Impact assessment engine.
@@ -1221,7 +1190,7 @@ class AdverseImpactEngine:
                 category_risk_summary=[],
                 value_chain_risk_summary=[],
                 processing_time_ms=0.0,
-                assessed_at=_utcnow(),
+                assessed_at=utcnow(),
             )
             empty_result.provenance_hash = _compute_hash(empty_result)
             return empty_result
@@ -1269,7 +1238,7 @@ class AdverseImpactEngine:
             category_risk_summary=category_summary,
             value_chain_risk_summary=vc_summary,
             processing_time_ms=_round2(processing_time_ms),
-            assessed_at=_utcnow(),
+            assessed_at=utcnow(),
         )
 
         # Step 8: Compute provenance hash

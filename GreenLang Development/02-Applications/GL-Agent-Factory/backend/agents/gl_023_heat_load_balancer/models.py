@@ -1,10 +1,11 @@
 """Input/Output models for GL-023 Heat Load Balancer Agent."""
 from datetime import datetime
 from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 
 
-class EquipmentUnit(BaseModel):
+class EquipmentUnit(GreenLangBase):
     """Individual heat generating equipment unit."""
 
     unit_id: str = Field(..., description="Unique equipment identifier")
@@ -35,7 +36,7 @@ class EquipmentUnit(BaseModel):
     emissions_factor_kg_co2_mwh: float = Field(200, description="CO2 emissions (kg/MWh)")
 
 
-class LoadBalancerInput(BaseModel):
+class LoadBalancerInput(GreenLangBase):
     """Input parameters for heat load balancing."""
 
     # Equipment fleet
@@ -65,7 +66,7 @@ class LoadBalancerInput(BaseModel):
     timestamp: datetime = Field(default_factory=datetime.utcnow)
 
 
-class LoadAllocation(BaseModel):
+class LoadAllocation(GreenLangBase):
     """Load allocation for a single unit."""
 
     unit_id: str
@@ -78,7 +79,7 @@ class LoadAllocation(BaseModel):
     hourly_emissions_kg_co2: float
 
 
-class LoadBalancerOutput(BaseModel):
+class LoadBalancerOutput(GreenLangBase):
     """Output from heat load balancer agent."""
 
     # Allocation results

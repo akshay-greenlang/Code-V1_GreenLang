@@ -34,6 +34,7 @@ from typing import Any, Dict, List, Optional, Union
 
 import yaml
 from pydantic import BaseModel, Field, field_validator, model_validator
+from greenlang.schemas.enums import NotificationChannel
 
 logger = logging.getLogger(__name__)
 
@@ -140,14 +141,6 @@ class OutputFormat(str, Enum):
     JSON = "JSON"
     CSV = "CSV"
     PDF = "PDF"
-
-
-class NotificationChannel(str, Enum):
-    """Available notification delivery channels."""
-    EMAIL = "EMAIL"
-    SLACK = "SLACK"
-    TEAMS = "TEAMS"
-    WEBHOOK = "WEBHOOK"
 
 
 class SectorType(str, Enum):

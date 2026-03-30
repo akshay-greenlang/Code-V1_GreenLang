@@ -58,26 +58,19 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -97,13 +90,11 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely."""
     if isinstance(value, Decimal):
         return value
     return Decimal(str(value))
-
 
 def _safe_divide(
     numerator: float, denominator: float, default: float = 0.0
@@ -113,13 +104,11 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(numerator: float, denominator: float) -> float:
     """Calculate percentage safely, returning 0.0 on zero denominator."""
     if denominator == 0.0:
         return 0.0
     return (numerator / denominator) * 100.0
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value to the specified number of decimal places.
@@ -129,13 +118,11 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
-
 
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
@@ -143,11 +130,9 @@ def _round2(value: float) -> float:
         Decimal("0.01"), rounding=ROUND_HALF_UP
     ))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class StakeholderCategory(str, Enum):
     """Stakeholder category per ESRS 1 AR 6 and AR 7.
@@ -167,7 +152,6 @@ class StakeholderCategory(str, Enum):
     ACADEMIC_EXPERTS = "academic_experts"
     TRADE_UNIONS = "trade_unions"
 
-
 class EngagementMethod(str, Enum):
     """Method of stakeholder engagement.
 
@@ -184,7 +168,6 @@ class EngagementMethod(str, Enum):
     ONGOING_DIALOGUE = "ongoing_dialogue"
     ADVISORY_PANEL = "advisory_panel"
 
-
 class ConsultationStatus(str, Enum):
     """Status of stakeholder consultation process."""
     NOT_STARTED = "not_started"
@@ -193,11 +176,9 @@ class ConsultationStatus(str, Enum):
     COMPLETED = "completed"
     VALIDATED = "validated"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # Engagement method quality scores (0-1 scale).
 # Higher scores indicate deeper, more meaningful engagement.
@@ -301,11 +282,9 @@ PRIORITY_MATRIX_LABELS: Dict[str, str] = {
 # Influence and impact threshold for high/low classification.
 PRIORITY_THRESHOLD: int = 3
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class Stakeholder(BaseModel):
     """A stakeholder identified for the materiality assessment process.
@@ -374,7 +353,6 @@ class Stakeholder(BaseModel):
             raise ValueError(f"Level must be between 1 and 5, got {v}")
         return v
 
-
 class ConsultationRecord(BaseModel):
     """Record of a stakeholder consultation event.
 
@@ -432,7 +410,6 @@ class ConsultationRecord(BaseModel):
         max_length=5000,
     )
 
-
 class StakeholderEngagementResult(BaseModel):
     """Result of stakeholder engagement analysis.
 
@@ -449,7 +426,7 @@ class StakeholderEngagementResult(BaseModel):
         description="Engine version used for this calculation",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of calculation (UTC)",
     )
 
@@ -562,11 +539,9 @@ class StakeholderEngagementResult(BaseModel):
         description="SHA-256 hash of all inputs and calculation steps",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class StakeholderEngagementEngine:
     """Stakeholder engagement management engine per ESRS 1 Para 22-23.
@@ -868,6 +843,7 @@ class StakeholderEngagementEngine:
             float(total_attendance), float(len(records))
         )
         import math
+
         attendance_normalised = min(
             1.0, math.log(avg_attendance + 1) / math.log(51)
         )

@@ -64,9 +64,9 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Graceful import of ProvenanceTracker
@@ -104,11 +104,9 @@ except ImportError:  # pragma: no cover -- fallback when provenance not yet buil
             def entry_count(self) -> int:
                 return len(self._entries)
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class ConflictType(str, Enum):
     """Classification of detected rule conflict.
@@ -126,7 +124,6 @@ class ConflictType(str, Enum):
     SEVERITY_INCONSISTENCY = "severity_inconsistency"
     REDUNDANCY = "redundancy"
 
-
 class ConflictSeverity(str, Enum):
     """Severity grade for a detected conflict.
 
@@ -138,7 +135,6 @@ class ConflictSeverity(str, Enum):
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 class ResolutionType(str, Enum):
     """Available conflict resolution strategies.
@@ -153,7 +149,6 @@ class ResolutionType(str, Enum):
     KEEP_B = "keep_b"
     MERGE = "merge"
     IGNORE = "ignore"
-
 
 # ---------------------------------------------------------------------------
 # Severity ordering constants
@@ -182,21 +177,13 @@ MAX_STORED_CONFLICTS: int = 50_000
 #: Default limit for list_conflicts pagination.
 DEFAULT_LIST_LIMIT: int = 100
 
-
 # ---------------------------------------------------------------------------
 # Helper: UTC timestamp
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ---------------------------------------------------------------------------
 # ConflictDetectorEngine
 # ---------------------------------------------------------------------------
-
 
 class ConflictDetectorEngine:
     """Engine 4 of 7: Rule Conflict Detector for AGENT-DATA-019.
@@ -362,7 +349,7 @@ class ConflictDetectorEngine:
             "duration_ms": round(elapsed_ms, 3),
             "analyzed_rules": len(rules),
             "analyzed_columns": len(column_groups),
-            "detected_at": _utcnow().isoformat(),
+            "detected_at": utcnow().isoformat(),
         }
 
         provenance_hash = self._compute_report_hash(report_data)
@@ -855,7 +842,7 @@ class ConflictDetectorEngine:
             if conflict is None:
                 raise ValueError(f"conflict_id '{conflict_id}' not found")
 
-            resolved_at = _utcnow().isoformat()
+            resolved_at = utcnow().isoformat()
 
             resolution_record = {
                 "conflict_id": conflict_id,
@@ -2402,7 +2389,7 @@ class ConflictDetectorEngine:
             Complete conflict record dict with provenance hash.
         """
         conflict_id = str(uuid.uuid4())
-        detected_at = _utcnow().isoformat()
+        detected_at = utcnow().isoformat()
 
         conflict: Dict[str, Any] = {
             "conflict_id": conflict_id,
@@ -2865,7 +2852,6 @@ class ConflictDetectorEngine:
             "conflicts_medium": 0,
             "conflicts_low": 0,
         }
-
 
 # ---------------------------------------------------------------------------
 # Public surface

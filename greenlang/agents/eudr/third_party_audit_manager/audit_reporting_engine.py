@@ -65,6 +65,7 @@ import logging
 from datetime import date, datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.third_party_audit_manager.config import (
     ThirdPartyAuditManagerConfig,
@@ -157,12 +158,6 @@ CONCLUSION_TEMPLATES: Dict[str, Dict[str, str]] = {
     },
 }
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_provenance_hash(data: Dict[str, Any]) -> str:
     """Compute SHA-256 hash for provenance tracking.
 
@@ -174,7 +169,6 @@ def _compute_provenance_hash(data: Dict[str, Any]) -> str:
     """
     canonical = json.dumps(data, sort_keys=True, default=str, separators=(",", ":"))
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-
 
 class AuditReportingEngine:
     """ISO 19011:2018 compliant audit report generation engine.
@@ -227,7 +221,7 @@ class AuditReportingEngine:
         Returns:
             GenerateReportResponse with generated report.
         """
-        start_time = _utcnow()
+        start_time = utcnow()
 
         try:
             # Validate format and language
@@ -344,7 +338,7 @@ class AuditReportingEngine:
                 "language": request.language,
             })
 
-            gen_time = _utcnow()
+            gen_time = utcnow()
             generation_time_ms = Decimal(str(
                 (gen_time - start_time).total_seconds() * 1000
             )).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
@@ -400,7 +394,7 @@ class AuditReportingEngine:
         Returns:
             Amended AuditReport with incremented version.
         """
-        now = _utcnow()
+        now = utcnow()
 
         # Record amendment
         amendment = {
@@ -666,7 +660,7 @@ class AuditReportingEngine:
 
         package_id = _compute_provenance_hash({
             "evidence_count": len(evidence_items),
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
         })[:16]
 
         items = []

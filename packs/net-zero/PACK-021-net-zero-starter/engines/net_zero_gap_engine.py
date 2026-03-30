@@ -66,25 +66,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -102,7 +96,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -111,7 +104,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -123,17 +115,14 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
@@ -141,11 +130,9 @@ def _round3(value: float) -> float:
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class TrajectoryStatus(str, Enum):
     """RAG status for trajectory assessment.
@@ -162,7 +149,6 @@ class TrajectoryStatus(str, Enum):
     ACHIEVED = "achieved"
     EXPIRED = "expired"
 
-
 class GapSeverity(str, Enum):
     """Severity classification for the emissions gap.
 
@@ -178,7 +164,6 @@ class GapSeverity(str, Enum):
     SIGNIFICANT = "significant"
     CRITICAL = "critical"
 
-
 class ProjectionMethod(str, Enum):
     """Method used for future emissions projection.
 
@@ -190,11 +175,9 @@ class ProjectionMethod(str, Enum):
     FLAT = "flat"
     COMPOUND = "compound"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class ScopeEmissions(BaseModel):
     """Emissions data for a single scope.
@@ -223,7 +206,6 @@ class ScopeEmissions(BaseModel):
         description="Required annual rate (%)",
     )
 
-
 class HistoricalDataPoint(BaseModel):
     """A single year's emissions for trend analysis.
 
@@ -233,7 +215,6 @@ class HistoricalDataPoint(BaseModel):
     """
     year: int = Field(..., ge=1990, le=2100)
     total_tco2e: Decimal = Field(..., ge=Decimal("0"))
-
 
 class GapInput(BaseModel):
     """Input data for gap-to-net-zero analysis.
@@ -302,11 +283,9 @@ class GapInput(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class YearlyGap(BaseModel):
     """Gap analysis for a single year.
@@ -325,7 +304,6 @@ class YearlyGap(BaseModel):
     gap_tco2e: Decimal = Field(default=Decimal("0"))
     gap_pct: Decimal = Field(default=Decimal("0"))
     status: str = Field(default="")
-
 
 class ScopeGap(BaseModel):
     """Gap analysis for a single scope.
@@ -351,7 +329,6 @@ class ScopeGap(BaseModel):
     status: str = Field(default="")
     required_acceleration: Decimal = Field(default=Decimal("1.0"))
 
-
 class BudgetAnalysis(BaseModel):
     """Cumulative emissions budget analysis.
 
@@ -371,7 +348,6 @@ class BudgetAnalysis(BaseModel):
     budget_gap_tco2e: Decimal = Field(default=Decimal("0"))
     budget_remaining_tco2e: Decimal = Field(default=Decimal("0"))
     years_remaining: int = Field(default=0)
-
 
 class RiskAssessment(BaseModel):
     """Overall risk assessment for net-zero trajectory.
@@ -394,7 +370,6 @@ class RiskAssessment(BaseModel):
     acceleration_factor: Decimal = Field(default=Decimal("1.0"))
     confidence: str = Field(default="medium")
     risk_factors: List[str] = Field(default_factory=list)
-
 
 class GapResult(BaseModel):
     """Complete gap-to-net-zero analysis result.
@@ -420,7 +395,7 @@ class GapResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     current_year: int = Field(default=0)
     base_year: int = Field(default=0)
@@ -440,11 +415,9 @@ class GapResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class NetZeroGapEngine:
     """Gap-to-net-zero analysis engine.

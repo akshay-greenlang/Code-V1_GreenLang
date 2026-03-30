@@ -42,25 +42,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -73,11 +67,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Agent Stubs
 # ---------------------------------------------------------------------------
-
 
 class _AgentStub:
     """Stub for unavailable taxonomy app modules."""
@@ -96,7 +88,6 @@ class _AgentStub:
             }
         return _stub_method
 
-
 def _try_import_taxonomy_component(component_id: str, module_path: str) -> Any:
     """Try to import a taxonomy component with graceful fallback.
 
@@ -113,11 +104,9 @@ def _try_import_taxonomy_component(component_id: str, module_path: str) -> Any:
         logger.debug("Taxonomy component %s not available, using stub", component_id)
         return _AgentStub(component_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class TaxonomyObjective(str, Enum):
     """EU Taxonomy environmental objectives."""
@@ -129,7 +118,6 @@ class TaxonomyObjective(str, Enum):
     POLLUTION_PREVENTION = "pollution_prevention"
     BIODIVERSITY = "biodiversity"
 
-
 class AlignmentStatus(str, Enum):
     """Taxonomy alignment assessment status."""
 
@@ -137,7 +125,6 @@ class AlignmentStatus(str, Enum):
     PARTIALLY_ALIGNED = "partially_aligned"
     NOT_ALIGNED = "not_aligned"
     INSUFFICIENT_DATA = "insufficient_data"
-
 
 class DNSHStatus(str, Enum):
     """DNSH assessment status per objective."""
@@ -147,7 +134,6 @@ class DNSHStatus(str, Enum):
     NOT_APPLICABLE = "not_applicable"
     INSUFFICIENT_DATA = "insufficient_data"
 
-
 class SubstantialContributionLevel(str, Enum):
     """Substantial contribution level."""
 
@@ -156,11 +142,9 @@ class SubstantialContributionLevel(str, Enum):
     LOW = "low"
     NONE = "none"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class TaxonomyBridgeConfig(BaseModel):
     """Configuration for the Taxonomy Bridge."""
@@ -175,7 +159,6 @@ class TaxonomyBridgeConfig(BaseModel):
     include_adaptation: bool = Field(default=True)
     minimum_social_safeguards: bool = Field(default=True)
 
-
 class TSCCriteria(BaseModel):
     """Technical Screening Criteria for an activity."""
 
@@ -186,7 +169,6 @@ class TSCCriteria(BaseModel):
     thresholds: Dict[str, Any] = Field(default_factory=dict)
     metrics: List[str] = Field(default_factory=list)
     delegated_act_reference: str = Field(default="")
-
 
 class AlignmentResult(BaseModel):
     """Result of taxonomy alignment assessment."""
@@ -205,7 +187,6 @@ class AlignmentResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class SubstantialContributionResult(BaseModel):
     """Result of substantial contribution evaluation."""
 
@@ -223,7 +204,6 @@ class SubstantialContributionResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class DNSHResult(BaseModel):
     """Result of DNSH (Do No Significant Harm) evaluation."""
 
@@ -235,7 +215,6 @@ class DNSHResult(BaseModel):
     issues: List[str] = Field(default_factory=list)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class TaxonomyKPIResult(BaseModel):
     """Result of taxonomy-aligned KPI calculation."""
@@ -254,7 +233,6 @@ class TaxonomyKPIResult(BaseModel):
     by_activity: List[Dict[str, Any]] = Field(default_factory=list)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # TSC Reference Data
@@ -331,11 +309,9 @@ TAXONOMY_COMPONENTS: Dict[str, str] = {
     "social_safeguards": "greenlang.apps.taxonomy.social_safeguards",
 }
 
-
 # ---------------------------------------------------------------------------
 # TaxonomyBridge
 # ---------------------------------------------------------------------------
-
 
 class TaxonomyBridge:
     """Bridge to GL-Taxonomy-APP for EU Taxonomy alignment assessment.

@@ -40,25 +40,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -71,11 +65,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EnvironmentalObjective(str, Enum):
     """EU Taxonomy six environmental objectives."""
@@ -87,7 +79,6 @@ class EnvironmentalObjective(str, Enum):
     POLLUTION_PREVENTION = "pollution_prevention"
     BIODIVERSITY = "biodiversity_and_ecosystems"
 
-
 class AlignmentStatus(str, Enum):
     """Taxonomy alignment assessment status."""
 
@@ -95,7 +86,6 @@ class AlignmentStatus(str, Enum):
     ALIGNED = "aligned"
     NOT_ELIGIBLE = "not_eligible"
     UNDER_REVIEW = "under_review"
-
 
 class DNSHStatus(str, Enum):
     """Do No Significant Harm assessment status."""
@@ -105,11 +95,9 @@ class DNSHStatus(str, Enum):
     NOT_ASSESSED = "not_assessed"
     PARTIALLY_MET = "partially_met"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class TaxonomyBridgeConfig(BaseModel):
     """Configuration for the Taxonomy Bridge."""
@@ -122,7 +110,6 @@ class TaxonomyBridgeConfig(BaseModel):
         default=True, description="Include Complementary Delegated Act for nuclear/gas"
     )
     nace_codes: List[str] = Field(default_factory=list)
-
 
 class TaxonomyActivity(BaseModel):
     """EU Taxonomy economic activity."""
@@ -140,7 +127,6 @@ class TaxonomyActivity(BaseModel):
     is_aligned: bool = Field(default=False)
     dnsh_status: Dict[str, DNSHStatus] = Field(default_factory=dict)
     minimum_safeguards_met: bool = Field(default=False)
-
 
 class AlignmentKPIs(BaseModel):
     """Taxonomy alignment KPI results."""
@@ -161,7 +147,6 @@ class AlignmentKPIs(BaseModel):
     revenue_eligible_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     revenue_aligned_pct: float = Field(default=0.0, ge=0.0, le=100.0)
 
-
 class BridgeResult(BaseModel):
     """Result from a bridge operation."""
 
@@ -174,7 +159,6 @@ class BridgeResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     warnings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # ESRS to Taxonomy Objective Mapping
@@ -216,11 +200,9 @@ TSC_REFERENCE_MAP: Dict[str, List[str]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # TaxonomyBridge
 # ---------------------------------------------------------------------------
-
 
 class TaxonomyBridge:
     """EU Taxonomy alignment bridge for PACK-017.
@@ -260,7 +242,7 @@ class TaxonomyBridge:
         Returns:
             BridgeResult with mapping status.
         """
-        result = BridgeResult(started_at=_utcnow())
+        result = BridgeResult(started_at=utcnow())
 
         try:
             activities = context.get("taxonomy_activities", [])
@@ -307,7 +289,7 @@ class TaxonomyBridge:
             result.errors.append(str(exc))
             logger.error("Taxonomy mapping failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (result.completed_at - result.started_at).total_seconds() * 1000
         return result

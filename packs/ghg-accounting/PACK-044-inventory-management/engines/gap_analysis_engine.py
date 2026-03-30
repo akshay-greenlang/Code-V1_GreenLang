@@ -74,25 +74,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -119,7 +113,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -136,7 +129,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal,
     denominator: Decimal,
@@ -147,26 +139,21 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round2(value: Any) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: Any) -> float:
     """Round to 4 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class MethodologyTier(str, Enum):
     """IPCC methodology tier classification.
@@ -183,7 +170,6 @@ class MethodologyTier(str, Enum):
     ESTIMATED = "estimated"
     MISSING = "missing"
 
-
 class GapSeverity(str, Enum):
     """Severity classification for identified data gaps.
 
@@ -198,7 +184,6 @@ class GapSeverity(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     INFO = "info"
-
 
 class GapCategory(str, Enum):
     """Category of the identified gap.
@@ -221,7 +206,6 @@ class GapCategory(str, Enum):
     BOUNDARY = "boundary"
     DOCUMENTATION = "documentation"
 
-
 class ImprovementEffort(str, Enum):
     """Effort level required for an improvement action.
 
@@ -234,7 +218,6 @@ class ImprovementEffort(str, Enum):
     MEDIUM = "medium"
     HIGH = "high"
     VERY_HIGH = "very_high"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -334,11 +317,9 @@ IMPROVEMENT_TEMPLATES: Dict[str, str] = {
 }
 """Improvement action templates."""
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class SourceCategoryAssessment(BaseModel):
     """Assessment of a single source category's data quality.
@@ -395,7 +376,6 @@ class SourceCategoryAssessment(BaseModel):
         """Coerce numeric fields to Decimal."""
         return _decimal(v)
 
-
 class GapAnalysisConfig(BaseModel):
     """Configuration for gap analysis.
 
@@ -424,11 +404,9 @@ class GapAnalysisConfig(BaseModel):
         default=20, ge=1, le=100, description="Max recommendations"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class DataGap(BaseModel):
     """An identified data quality gap.
@@ -462,7 +440,6 @@ class DataGap(BaseModel):
     quality_score_target: int = Field(default=0, description="Target score")
     improvement_potential: int = Field(default=0, description="Potential improvement")
 
-
 class MethodologyGap(BaseModel):
     """A methodology-specific gap with tier details.
 
@@ -486,7 +463,6 @@ class MethodologyGap(BaseModel):
     expected_uncertainty_reduction_pct: float = Field(
         default=0.0, description="Expected uncertainty reduction %"
     )
-
 
 class ImprovementRecommendation(BaseModel):
     """A prioritised improvement recommendation.
@@ -524,7 +500,6 @@ class ImprovementRecommendation(BaseModel):
         default_factory=list, description="Dependencies"
     )
 
-
 class ImprovementRoadmap(BaseModel):
     """Phased improvement roadmap.
 
@@ -559,7 +534,6 @@ class ImprovementRoadmap(BaseModel):
         default=0.0, description="Projected score after improvements"
     )
 
-
 class GapAnalysisResult(BaseModel):
     """Complete gap analysis result.
 
@@ -585,7 +559,7 @@ class GapAnalysisResult(BaseModel):
     result_id: str = Field(default_factory=_new_uuid, description="Result ID")
     engine_version: str = Field(default=_MODULE_VERSION, description="Engine version")
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp"
+        default_factory=utcnow, description="Timestamp"
     )
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     total_emissions_tco2e: float = Field(
@@ -616,7 +590,6 @@ class GapAnalysisResult(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Model Rebuild
 # ---------------------------------------------------------------------------
@@ -629,11 +602,9 @@ ImprovementRecommendation.model_rebuild()
 ImprovementRoadmap.model_rebuild()
 GapAnalysisResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class GapAnalysisEngine:
     """GHG inventory data quality gap identification engine.

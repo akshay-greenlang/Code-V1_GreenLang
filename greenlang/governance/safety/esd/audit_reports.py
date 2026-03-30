@@ -31,6 +31,7 @@ from datetime import datetime, timedelta
 import uuid
 import json
 import io
+from greenlang.schemas.enums import ReportFormat
 
 logger = logging.getLogger(__name__)
 
@@ -46,16 +47,6 @@ class ReportType(str, Enum):
     MAINTENANCE_SUMMARY = "maintenance_summary"
     SIF_STATUS = "sif_status"
     FUNCTIONAL_SAFETY = "functional_safety"
-
-
-class ReportFormat(str, Enum):
-    """Export formats."""
-
-    JSON = "json"
-    CSV = "csv"
-    PDF = "pdf"
-    EXCEL = "excel"
-    HTML = "html"
 
 
 class ComplianceStatus(str, Enum):

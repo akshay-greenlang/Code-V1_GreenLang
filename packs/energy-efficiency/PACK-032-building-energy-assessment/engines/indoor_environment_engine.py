@@ -71,25 +71,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -107,7 +101,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -116,7 +109,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -128,42 +120,34 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* and return a float."""
     quantizer = Decimal(10) ** -places
     return float(value.quantize(quantizer, rounding=ROUND_HALF_UP))
 
-
 def _round1(value: float) -> float:
     """Round to 1 decimal place using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.1"), rounding=ROUND_HALF_UP))
-
 
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
-
 
 def _round4(value: float) -> float:
     """Round to 4 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class IEQCategory(str, Enum):
     """Indoor Environmental Quality categories per EN 16798-1.
@@ -178,13 +162,11 @@ class IEQCategory(str, Enum):
     III = "III"
     IV = "IV"
 
-
 class ThermalComfortMethod(str, Enum):
     """Thermal comfort assessment method."""
     PMV_PPD = "pmv_ppd"
     ADAPTIVE = "adaptive"
     BOTH = "both"
-
 
 class IAQParameter(str, Enum):
     """Indoor air quality parameters monitored."""
@@ -196,13 +178,11 @@ class IAQParameter(str, Enum):
     RADON = "radon"
     HUMIDITY = "humidity"
 
-
 class VentilationStandard(str, Enum):
     """Ventilation design standard."""
     EN_16798 = "EN_16798"
     ASHRAE_62_1 = "ASHRAE_62_1"
     LOCAL_BUILDING_CODE = "local_building_code"
-
 
 class SpaceType(str, Enum):
     """Space typology for ventilation rate lookup."""
@@ -225,7 +205,6 @@ class SpaceType(str, Enum):
     TOILET = "toilet"
     WAREHOUSE = "warehouse"
 
-
 # ---------------------------------------------------------------------------
 # Constants -- PMV/PPD Lookup Table (ISO 7730 Table A.1)
 # ---------------------------------------------------------------------------
@@ -237,7 +216,6 @@ PMV_PPD_LOOKUP: Dict[str, str] = {
     "1.0": "26.1", "1.5": "52.6", "2.0": "76.8", "2.5": "87.5",
     "3.0": "99.1",
 }
-
 
 # ---------------------------------------------------------------------------
 # Thermal Comfort Categories (EN 16798-1 Table NA.2)
@@ -282,7 +260,6 @@ THERMAL_COMFORT_CATEGORIES: Dict[str, Dict[str, str]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Adaptive Comfort Limits (EN 16798-1 Table B.2)
 # ---------------------------------------------------------------------------
@@ -303,7 +280,6 @@ ADAPTIVE_COMFORT_TABLE: List[Dict[str, str]] = [
     {"t_rm": "30", "upper_I": "31.7", "upper_II": "32.7", "upper_III": "33.7", "lower_I": "27.7", "lower_II": "26.7", "lower_III": "25.7"},
     {"t_rm": "33", "upper_I": "32.7", "upper_II": "33.7", "upper_III": "34.7", "lower_I": "28.7", "lower_II": "27.7", "lower_III": "26.7"},
 ]
-
 
 # ---------------------------------------------------------------------------
 # IAQ Limits by Parameter and Category (EN 16798-1 / WHO 2021)
@@ -371,7 +347,6 @@ IAQ_LIMITS: Dict[str, Dict[str, Dict[str, str]]] = {
         "unit": {"value": "%RH"},
     },
 }
-
 
 # ---------------------------------------------------------------------------
 # Ventilation Rates (EN 16798-1 Table B.2) -- l/s per person + l/s per m2
@@ -488,7 +463,6 @@ VENTILATION_RATES: Dict[str, Dict[str, Dict[str, str]]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Overheating Criteria (CIBSE TM59)
 # ---------------------------------------------------------------------------
@@ -517,7 +491,6 @@ OVERHEATING_CRITERIA: Dict[str, Dict[str, str]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Metabolic Rates (ISO 7730 Table B.1) -- met (1 met = 58.2 W/m2)
 # ---------------------------------------------------------------------------
@@ -537,7 +510,6 @@ METABOLIC_RATES: Dict[str, str] = {
     "teaching": "1.4",
 }
 
-
 # ---------------------------------------------------------------------------
 # Clothing Insulation (ISO 7730 Table C.1) -- clo (1 clo = 0.155 m2K/W)
 # ---------------------------------------------------------------------------
@@ -553,7 +525,6 @@ CLOTHING_INSULATION: Dict[str, str] = {
     "hospital_gown": "0.3",
     "athletic": "0.2",
 }
-
 
 # ---------------------------------------------------------------------------
 # Daylighting Requirements (EN 17037)
@@ -588,11 +559,9 @@ STEFAN_BOLTZMANN: str = "0.0000000567"
 # Boltzmann factor for clothing radiation (linearised)
 CLOTHING_AREA_FACTOR_CONST: str = "0.028"  # f_cl adjustment
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class ThermalComfortInput(BaseModel):
     """Input for PMV/PPD thermal comfort calculation."""
@@ -602,7 +571,6 @@ class ThermalComfortInput(BaseModel):
     air_speed_m_s: float = Field(default=0.1, ge=0, le=2.0, description="Air speed m/s")
     metabolic_rate_met: float = Field(default=1.2, ge=0.8, le=4.0, description="Metabolic rate met")
     clothing_insulation_clo: float = Field(default=0.7, ge=0.0, le=2.0, description="Clothing insulation clo")
-
 
 class IAQMeasurement(BaseModel):
     """A single IAQ parameter measurement."""
@@ -617,7 +585,6 @@ class IAQMeasurement(BaseModel):
         if v not in valid:
             raise ValueError(f"parameter must be one of {valid}")
         return v
-
 
 class SpaceVentilationInput(BaseModel):
     """Input for ventilation adequacy assessment of a single space."""
@@ -636,7 +603,6 @@ class SpaceVentilationInput(BaseModel):
             raise ValueError(f"space_type must be one of {valid}")
         return v
 
-
 class OverheatingInput(BaseModel):
     """Hourly operative temperature data for overheating assessment."""
     space_type: str = Field(default="living_areas", description="living_areas, bedrooms, non_residential")
@@ -644,14 +610,12 @@ class OverheatingInput(BaseModel):
     hourly_outdoor_temps_degC: Optional[List[float]] = Field(None, description="Hourly outdoor temp for adaptive method")
     occupied_hours_mask: Optional[List[bool]] = Field(None, description="True if occupied")
 
-
 class DaylightInput(BaseModel):
     """Input for daylighting assessment of a space."""
     space_type: str = Field(...)
     measured_daylight_factor_pct: float = Field(..., ge=0, le=20)
     measured_illuminance_lux: Optional[float] = Field(None, ge=0)
     window_to_floor_ratio: Optional[float] = Field(None, ge=0, le=1.0)
-
 
 class IndoorEnvironmentInput(BaseModel):
     """Full input for the IndoorEnvironmentEngine."""
@@ -684,11 +648,9 @@ class IndoorEnvironmentInput(BaseModel):
             raise ValueError("target_category must be I, II, III, or IV")
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class PMVPPDResult(BaseModel):
     """PMV and PPD calculation result."""
@@ -704,7 +666,6 @@ class PMVPPDResult(BaseModel):
     metabolic_rate_met: float
     clothing_insulation_clo: float
 
-
 class AdaptiveComfortResult(BaseModel):
     """Adaptive thermal comfort result per EN 16798-1."""
     running_mean_outdoor_degC: float
@@ -714,7 +675,6 @@ class AdaptiveComfortResult(BaseModel):
     operative_temperature_degC: float
     category_achieved: str
     compliant: bool
-
 
 class IAQAssessmentResult(BaseModel):
     """IAQ assessment result for a single parameter."""
@@ -727,7 +687,6 @@ class IAQAssessmentResult(BaseModel):
     compliant: bool
     who_guideline_value: Optional[float] = None
     who_compliant: Optional[bool] = None
-
 
 class VentilationResult(BaseModel):
     """Ventilation adequacy assessment for a single space."""
@@ -744,7 +703,6 @@ class VentilationResult(BaseModel):
     compliant: bool
     category_target: str
 
-
 class OverheatingResult(BaseModel):
     """Overheating risk assessment result."""
     space_type: str
@@ -757,7 +715,6 @@ class OverheatingResult(BaseModel):
     pass_criterion: bool
     criterion_description: str
 
-
 class DaylightResult(BaseModel):
     """Daylighting assessment result."""
     space_type: str
@@ -767,7 +724,6 @@ class DaylightResult(BaseModel):
     minimum_illuminance_lux: float
     compliant: bool
     category: str
-
 
 class IEQScoreBreakdown(BaseModel):
     """Composite IEQ score breakdown."""
@@ -781,7 +737,6 @@ class IEQScoreBreakdown(BaseModel):
     weight_iaq: float = 0.30
     weight_ventilation: float = 0.20
     weight_visual: float = 0.15
-
 
 class IndoorEnvironmentResult(BaseModel):
     """Complete output of the IndoorEnvironmentEngine."""
@@ -821,11 +776,9 @@ class IndoorEnvironmentResult(BaseModel):
     processing_time_ms: float
     provenance_hash: str
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class IndoorEnvironmentEngine:
     """
@@ -1633,7 +1586,7 @@ class IndoorEnvironmentEngine:
             compliance_rate_pct=_round1(compliance_rate),
             recommendations=recs,
             engine_version=_MODULE_VERSION,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 2),
             provenance_hash="",
         )

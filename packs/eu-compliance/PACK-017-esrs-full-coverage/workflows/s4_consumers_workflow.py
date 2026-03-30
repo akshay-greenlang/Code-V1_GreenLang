@@ -35,33 +35,25 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class WorkflowPhase(str, Enum):
     """Phases of the S4 consumers workflow."""
@@ -71,7 +63,6 @@ class WorkflowPhase(str, Enum):
     ACTION_EVALUATION = "action_evaluation"
     TARGET_TRACKING = "target_tracking"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "pending"
@@ -79,7 +70,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class PhaseStatus(str, Enum):
     """Status of a single phase."""
@@ -89,14 +79,12 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class SafetyRiskLevel(str, Enum):
     """Product/service safety risk level."""
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
     CRITICAL = "critical"
-
 
 class PrivacyRiskLevel(str, Enum):
     """Data privacy risk level."""
@@ -105,11 +93,9 @@ class PrivacyRiskLevel(str, Enum):
     HIGH = "high"
     CRITICAL = "critical"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -120,7 +106,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class SafetyIncident(BaseModel):
     """Product/service safety incident record."""
@@ -133,7 +118,6 @@ class SafetyIncident(BaseModel):
     injuries_count: int = Field(default=0, ge=0)
     resolved: bool = Field(default=False)
 
-
 class PrivacyIssue(BaseModel):
     """Data privacy issue record."""
     issue_id: str = Field(default_factory=lambda: f"pi-{_new_uuid()[:8]}")
@@ -143,7 +127,6 @@ class PrivacyIssue(BaseModel):
     breach_reported: bool = Field(default=False)
     gdpr_compliant: bool = Field(default=True)
     resolved: bool = Field(default=False)
-
 
 class S4ConsumersInput(BaseModel):
     """Input data model for S4ConsumersWorkflow."""
@@ -177,7 +160,6 @@ class S4ConsumersInput(BaseModel):
     )
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class S4ConsumersWorkflowResult(BaseModel):
     """Complete result from S4 consumers workflow."""
     workflow_id: str = Field(..., description="Unique execution ID")
@@ -200,11 +182,9 @@ class S4ConsumersWorkflowResult(BaseModel):
     reporting_year: int = Field(default=2025)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class S4ConsumersWorkflow:
     """
@@ -268,7 +248,7 @@ class S4ConsumersWorkflow:
         if input_data is None:
             input_data = S4ConsumersInput(config=config or {})
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting S4 consumers workflow %s", self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = WorkflowStatus.IN_PROGRESS
@@ -287,7 +267,7 @@ class S4ConsumersWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         completed_count = sum(1 for p in phase_results if p.status == PhaseStatus.COMPLETED)
 
         high_safety = sum(
@@ -327,7 +307,7 @@ class S4ConsumersWorkflow:
 
     async def _phase_policy_review(self, input_data: S4ConsumersInput) -> PhaseResult:
         """Review consumer and end-user policies (S4-1)."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {"policies_count": len(input_data.policies)}
         warnings: List[str] = []
         outputs["has_product_safety_policy"] = any(p.get("scope") == "product_safety" for p in input_data.policies)
@@ -335,7 +315,7 @@ class S4ConsumersWorkflow:
         outputs["has_accessibility_policy"] = any(p.get("scope") == "accessibility" for p in input_data.policies)
         if not input_data.policies:
             warnings.append("No consumer policies defined (S4-1)")
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 1 PolicyReview: %d policies", len(input_data.policies))
         return PhaseResult(
             phase_name=WorkflowPhase.POLICY_REVIEW.value, status=PhaseStatus.COMPLETED,
@@ -345,7 +325,7 @@ class S4ConsumersWorkflow:
 
     async def _phase_safety_assessment(self, input_data: S4ConsumersInput) -> PhaseResult:
         """Assess product and service safety (S4-2)."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -366,7 +346,7 @@ class S4ConsumersWorkflow:
         if unresolved:
             warnings.append(f"{len(unresolved)} unresolved safety incidents")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 2 SafetyAssessment: %d incidents, %d recalls",
                          len(incidents), outputs["total_recalls"])
         return PhaseResult(
@@ -377,7 +357,7 @@ class S4ConsumersWorkflow:
 
     async def _phase_privacy_assessment(self, input_data: S4ConsumersInput) -> PhaseResult:
         """Assess data privacy and security (S4-3)."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -398,7 +378,7 @@ class S4ConsumersWorkflow:
         if non_compliant:
             warnings.append(f"CRITICAL: {len(non_compliant)} GDPR non-compliant issues")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 3 PrivacyAssessment: %d issues, %d breaches",
                          len(issues), outputs["data_breaches"])
         return PhaseResult(
@@ -409,7 +389,7 @@ class S4ConsumersWorkflow:
 
     async def _phase_action_evaluation(self, input_data: S4ConsumersInput) -> PhaseResult:
         """Evaluate actions and remediation for consumers (S4-4)."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         outputs["actions_count"] = len(input_data.actions)
@@ -420,7 +400,7 @@ class S4ConsumersWorkflow:
             warnings.append("No actions on consumer impacts (S4-4)")
         if not input_data.remediation_channels:
             warnings.append("No remediation channels for consumers (S4-3)")
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 4 ActionEvaluation: %d actions", len(input_data.actions))
         return PhaseResult(
             phase_name=WorkflowPhase.ACTION_EVALUATION.value, status=PhaseStatus.COMPLETED,
@@ -430,7 +410,7 @@ class S4ConsumersWorkflow:
 
     async def _phase_target_tracking(self, input_data: S4ConsumersInput) -> PhaseResult:
         """Track targets and progress for consumers (S4-5)."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         targets = input_data.targets
@@ -438,7 +418,7 @@ class S4ConsumersWorkflow:
         outputs["on_track"] = sum(1 for t in targets if t.get("on_track"))
         if not targets:
             warnings.append("No consumer targets defined (S4-5)")
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 5 TargetTracking: %d targets", len(targets))
         return PhaseResult(
             phase_name=WorkflowPhase.TARGET_TRACKING.value, status=PhaseStatus.COMPLETED,

@@ -32,21 +32,15 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -59,11 +53,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class BoundaryApproach(str, Enum):
     """GHG Protocol consolidation approaches."""
@@ -71,7 +63,6 @@ class BoundaryApproach(str, Enum):
     EQUITY_SHARE = "equity_share"
     FINANCIAL_CONTROL = "financial_control"
     OPERATIONAL_CONTROL = "operational_control"
-
 
 class AlignmentStatus(str, Enum):
     """Boundary alignment status."""
@@ -81,11 +72,9 @@ class AlignmentStatus(str, Enum):
     MISALIGNED = "misaligned"
     NOT_CHECKED = "not_checked"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class Scope12Totals(BaseModel):
     """Scope 1 and Scope 2 emission totals from PACK-041."""
@@ -101,8 +90,7 @@ class Scope12Totals(BaseModel):
     boundary_approach: str = Field(default="operational_control")
     facilities_count: int = Field(default=0)
     provenance_hash: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class FullFootprint(BaseModel):
     """Combined Scope 1+2+3 emission footprint."""
@@ -120,8 +108,7 @@ class FullFootprint(BaseModel):
     scope2_share_pct: float = Field(default=0.0)
     scope3_share_pct: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class BoundaryAlignment(BaseModel):
     """Boundary consistency check between Scope 3 and Scope 1-2."""
@@ -133,7 +120,6 @@ class BoundaryAlignment(BaseModel):
     mismatches: List[str] = Field(default_factory=list)
     recommendations: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class Cat3Alignment(BaseModel):
     """Category 3 fuel & energy alignment with Scope 2."""
@@ -147,11 +133,9 @@ class Cat3Alignment(BaseModel):
     consistency_check: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Scope12Bridge
 # ---------------------------------------------------------------------------
-
 
 class Scope12Bridge:
     """Integration with PACK-041 (Scope 1-2 Complete Pack).
@@ -187,6 +171,7 @@ class Scope12Bridge:
         """Try to import PACK-041."""
         try:
             import importlib
+
             return importlib.import_module(
                 "packs.ghg_accounting.PACK_041_scope_1_2_complete"
             )

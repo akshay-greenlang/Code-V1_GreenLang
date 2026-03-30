@@ -35,32 +35,19 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import HealthStatus
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
-
-class HealthStatus(str, Enum):
-    HEALTHY = "healthy"
-    DEGRADED = "degraded"
-    UNHEALTHY = "unhealthy"
-    UNKNOWN = "unknown"
-    MAINTENANCE = "maintenance"
-
 
 class ComponentType(str, Enum):
     PACK = "pack"
@@ -70,7 +57,6 @@ class ComponentType(str, Enum):
     DATABASE = "database"
     CACHE = "cache"
     EXTERNAL_SERVICE = "external_service"
-
 
 # ---------------------------------------------------------------------------
 # Component Registry
@@ -96,11 +82,9 @@ MONITORED_COMPONENTS: List[Dict[str, str]] = [
     {"id": "redis", "name": "Redis Cache", "type": "cache", "required": "false"},
 ]
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class HealthCheckConfig(BaseModel):
     pack_id: str = Field(default="PACK-030")
@@ -111,7 +95,6 @@ class HealthCheckConfig(BaseModel):
     alert_on_unhealthy: bool = Field(default=True)
     include_latency: bool = Field(default=True)
 
-
 class ComponentHealth(BaseModel):
     """Health status of a single component."""
     component_id: str = Field(default="")
@@ -120,10 +103,9 @@ class ComponentHealth(BaseModel):
     status: HealthStatus = Field(default=HealthStatus.UNKNOWN)
     required: bool = Field(default=False)
     latency_ms: float = Field(default=0.0)
-    last_checked: datetime = Field(default_factory=_utcnow)
+    last_checked: datetime = Field(default_factory=utcnow)
     error_message: str = Field(default="")
     metadata: Dict[str, Any] = Field(default_factory=dict)
-
 
 class PackHealthResult(BaseModel):
     """Health check result for prerequisite packs."""
@@ -135,7 +117,6 @@ class PackHealthResult(BaseModel):
     components_total: int = Field(default=0)
     latency_ms: float = Field(default=0.0)
 
-
 class AppHealthResult(BaseModel):
     """Health check result for GL applications."""
     app_id: str = Field(default="")
@@ -145,7 +126,6 @@ class AppHealthResult(BaseModel):
     db_available: bool = Field(default=False)
     latency_ms: float = Field(default=0.0)
 
-
 class ExternalServiceResult(BaseModel):
     """Health check result for external services."""
     service_id: str = Field(default="")
@@ -154,7 +134,6 @@ class ExternalServiceResult(BaseModel):
     reachable: bool = Field(default=False)
     latency_ms: float = Field(default=0.0)
     version: str = Field(default="")
-
 
 class OverallHealthReport(BaseModel):
     """Overall PACK-030 health report."""
@@ -172,13 +151,11 @@ class OverallHealthReport(BaseModel):
     unhealthy_components: int = Field(default=0)
     required_healthy: bool = Field(default=False)
     uptime_seconds: float = Field(default=0.0)
-    checked_at: datetime = Field(default_factory=_utcnow)
-
+    checked_at: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # HealthCheckIntegration
 # ---------------------------------------------------------------------------
-
 
 class HealthCheckIntegration:
     """Health monitoring integration for PACK-030.
@@ -195,7 +172,7 @@ class HealthCheckIntegration:
     def __init__(self, config: Optional[HealthCheckConfig] = None) -> None:
         self.config = config or HealthCheckConfig()
         self.logger = logging.getLogger(self.__class__.__name__)
-        self._start_time = _utcnow()
+        self._start_time = utcnow()
         self._last_report: Optional[OverallHealthReport] = None
         self.logger.info("HealthCheckIntegration initialized: pack=%s", self.config.pack_id)
 
@@ -343,6 +320,7 @@ class HealthCheckIntegration:
         start = time.monotonic()
         try:
             import redis.asyncio as aioredis
+
             r = aioredis.from_url(self.config.redis_url)
             await r.ping()
             await r.close()
@@ -430,7 +408,7 @@ class HealthCheckIntegration:
         else:
             overall = HealthStatus.HEALTHY
 
-        uptime = (_utcnow() - self._start_time).total_seconds()
+        uptime = (utcnow() - self._start_time).total_seconds()
 
         report = OverallHealthReport(
             pack_id=self.config.pack_id,
@@ -457,7 +435,7 @@ class HealthCheckIntegration:
     def get_integration_status(self) -> Dict[str, Any]:
         return {
             "pack_id": self.config.pack_id,
-            "uptime_seconds": (_utcnow() - self._start_time).total_seconds(),
+            "uptime_seconds": (utcnow() - self._start_time).total_seconds(),
             "last_report": self._last_report.overall_status.value if self._last_report else "none",
             "monitored_components": len(MONITORED_COMPONENTS),
             "module_version": _MODULE_VERSION,

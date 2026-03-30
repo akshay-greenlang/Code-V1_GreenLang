@@ -40,20 +40,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "43.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -66,18 +61,15 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class LCADatabase(str, Enum):
     """Supported LCA databases."""
 
     ECOINVENT_3_10 = "ecoinvent_3.10"
     GABI = "gabi"
-
 
 # ---------------------------------------------------------------------------
 # Inline Reference Data: ecoinvent 3.10 Common Processes
@@ -305,11 +297,9 @@ MATERIAL_EMISSION_FACTORS: Dict[str, Dict[str, Any]] = {
     "sulfuric_acid": {"kgco2e_per_kg": 0.09, "category": "chemicals", "source": "ecoinvent"},
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class LCAProcess(BaseModel):
     """LCA process emission factor result."""
@@ -323,8 +313,7 @@ class LCAProcess(BaseModel):
     category: str = Field(default="")
     confidence: float = Field(default=0.0, ge=0.0, le=1.0)
     provenance_hash: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class MaterialFactor(BaseModel):
     """Material emission factor result."""
@@ -335,7 +324,6 @@ class MaterialFactor(BaseModel):
     source: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 class ProcessSearchResult(BaseModel):
     """Process search result."""
 
@@ -344,7 +332,6 @@ class ProcessSearchResult(BaseModel):
     results_count: int = Field(default=0)
     processes: List[Dict[str, Any]] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class BOMLookupResult(BaseModel):
     """Batch BOM factor lookup result."""
@@ -357,11 +344,9 @@ class BOMLookupResult(BaseModel):
     total_kgco2e: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # LCADatabaseBridge
 # ---------------------------------------------------------------------------
-
 
 class LCADatabaseBridge:
     """LCA database connectors for ecoinvent 3.10 and GaBi.

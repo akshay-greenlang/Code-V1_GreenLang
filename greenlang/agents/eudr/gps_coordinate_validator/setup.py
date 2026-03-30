@@ -101,18 +101,15 @@ except ImportError:
     otel_trace = None  # type: ignore[assignment]
     OTEL_AVAILABLE = False
 
-
 # ---------------------------------------------------------------------------
 # Environment variable based configuration
 # ---------------------------------------------------------------------------
 
 _ENV_PREFIX = "GL_EUDR_GPS_"
 
-
 def _env(key: str, default: str = "") -> str:
     """Read an environment variable with the GL_EUDR_GPS_ prefix."""
     return os.environ.get(f"{_ENV_PREFIX}{key}", default)
-
 
 def _env_int(key: str, default: int = 0) -> int:
     """Read an integer environment variable."""
@@ -122,7 +119,6 @@ def _env_int(key: str, default: int = 0) -> int:
     except (ValueError, TypeError):
         return default
 
-
 def _env_float(key: str, default: float = 0.0) -> float:
     """Read a float environment variable."""
     raw = _env(key, str(default))
@@ -131,22 +127,14 @@ def _env_float(key: str, default: float = 0.0) -> float:
     except (ValueError, TypeError):
         return default
 
-
 def _env_bool(key: str, default: bool = False) -> bool:
     """Read a boolean environment variable."""
     raw = _env(key, str(default)).lower()
     return raw in ("true", "1", "yes", "on")
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_provenance_hash(*parts: str) -> str:
     """Compute SHA-256 hash over concatenated string parts.
@@ -160,7 +148,6 @@ def _compute_provenance_hash(*parts: str) -> str:
     combined = "|".join(str(p) for p in parts)
     return hashlib.sha256(combined.encode("utf-8")).hexdigest()
 
-
 def _generate_request_id() -> str:
     """Generate a unique request identifier.
 
@@ -168,7 +155,6 @@ def _generate_request_id() -> str:
         UUID-based request identifier string.
     """
     return f"GPS-{uuid.uuid4().hex[:12]}"
-
 
 def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     """Compute great-circle distance in km using the Haversine formula.
@@ -191,11 +177,9 @@ def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     c = 2.0 * math.atan2(math.sqrt(a), math.sqrt(1.0 - a))
     return 6371.0 * c
 
-
 # ---------------------------------------------------------------------------
 # Health status model
 # ---------------------------------------------------------------------------
-
 
 class HealthStatus:
     """Health check result container.
@@ -220,7 +204,7 @@ class HealthStatus:
     ) -> None:
         self.status = status
         self.checks = checks or {}
-        self.timestamp = timestamp or _utcnow()
+        self.timestamp = timestamp or utcnow()
         self.version = version
         self.uptime_seconds = uptime_seconds
 
@@ -234,11 +218,9 @@ class HealthStatus:
             "uptime_seconds": round(self.uptime_seconds, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: CoordinateResult
 # ---------------------------------------------------------------------------
-
 
 class CoordinateResult:
     """Result from a coordinate parsing or transformation operation.
@@ -314,11 +296,9 @@ class CoordinateResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: ValidationResult
 # ---------------------------------------------------------------------------
-
 
 class ValidationResult:
     """Result from a coordinate validation operation.
@@ -386,11 +366,9 @@ class ValidationResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: PlausibilityResult
 # ---------------------------------------------------------------------------
-
 
 class PlausibilityResult:
     """Result from a spatial plausibility check.
@@ -458,11 +436,9 @@ class PlausibilityResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: AccuracyResult
 # ---------------------------------------------------------------------------
-
 
 class AccuracyResult:
     """Result from an accuracy assessment operation.
@@ -530,11 +506,9 @@ class AccuracyResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: GeocodeResult
 # ---------------------------------------------------------------------------
-
 
 class GeocodeResult:
     """Result from a reverse geocoding operation.
@@ -584,11 +558,9 @@ class GeocodeResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: ComplianceCertResult
 # ---------------------------------------------------------------------------
-
 
 class ComplianceCertResult:
     """Result from a compliance certification generation.
@@ -653,7 +625,7 @@ class ComplianceCertResult:
         self.plausibility_passed = plausibility_passed
         self.precision_adequate = precision_adequate
         self.findings = findings or []
-        self.generated_at = generated_at or _utcnow()
+        self.generated_at = generated_at or utcnow()
         self.provenance_hash = provenance_hash
         self.processing_time_ms = processing_time_ms
 
@@ -678,11 +650,9 @@ class ComplianceCertResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # Result container: BatchResult
 # ---------------------------------------------------------------------------
-
 
 class BatchResult:
     """Result container for a batch processing job.
@@ -726,7 +696,7 @@ class BatchResult:
         self.completed_items = completed_items
         self.failed_items = failed_items
         self.results = results or []
-        self.submitted_at = submitted_at or _utcnow()
+        self.submitted_at = submitted_at or utcnow()
         self.completed_at = completed_at
         self.processing_time_ms = processing_time_ms
 
@@ -745,11 +715,9 @@ class BatchResult:
             "processing_time_ms": round(self.processing_time_ms, 2),
         }
 
-
 # ---------------------------------------------------------------------------
 # GPSCoordinateValidatorService
 # ---------------------------------------------------------------------------
-
 
 class GPSCoordinateValidatorService:
     """Facade for the GPS Coordinate Validator Agent (AGENT-EUDR-007).
@@ -2151,7 +2119,7 @@ class GPSCoordinateValidatorService:
         health = HealthStatus(
             status=overall,
             checks=checks,
-            timestamp=_utcnow(),
+            timestamp=utcnow(),
             version="1.0.0",
             uptime_seconds=self.uptime_seconds,
         )
@@ -2170,7 +2138,7 @@ class GPSCoordinateValidatorService:
             "config_hash": self._config_hash[:12],
             "batch_max_size": self._batch_max_size,
             "cache_ttl_seconds": self._cache_ttl_seconds,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     # ==================================================================
@@ -2656,7 +2624,7 @@ class GPSCoordinateValidatorService:
             completed_items=completed,
             failed_items=failed,
             results=results,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             processing_time_ms=elapsed_ms,
         )
 
@@ -3056,11 +3024,9 @@ class GPSCoordinateValidatorService:
         ]
         return sum(1 for e in engines if e is not None)
 
-
 # ---------------------------------------------------------------------------
 # FastAPI lifespan context manager
 # ---------------------------------------------------------------------------
-
 
 @asynccontextmanager
 async def lifespan(app: Any) -> AsyncIterator[None]:
@@ -3074,6 +3040,7 @@ async def lifespan(app: Any) -> AsyncIterator[None]:
 
         from fastapi import FastAPI
         from greenlang.agents.eudr.gps_coordinate_validator.setup import lifespan
+from greenlang.schemas import utcnow
 
         app = FastAPI(lifespan=lifespan)
 
@@ -3091,14 +3058,12 @@ async def lifespan(app: Any) -> AsyncIterator[None]:
     finally:
         await service.shutdown()
 
-
 # ---------------------------------------------------------------------------
 # Thread-safe singleton accessor
 # ---------------------------------------------------------------------------
 
 _service_instance: Optional[GPSCoordinateValidatorService] = None
 _service_lock = threading.Lock()
-
 
 def get_service() -> GPSCoordinateValidatorService:
     """Return the singleton GPSCoordinateValidatorService instance.
@@ -3120,7 +3085,6 @@ def get_service() -> GPSCoordinateValidatorService:
                 _service_instance = GPSCoordinateValidatorService()
     return _service_instance
 
-
 def set_service(service: GPSCoordinateValidatorService) -> None:
     """Replace the singleton GPSCoordinateValidatorService instance.
 
@@ -3134,7 +3098,6 @@ def set_service(service: GPSCoordinateValidatorService) -> None:
         _service_instance = service
     logger.info("GPSCoordinateValidatorService singleton replaced")
 
-
 def reset_service() -> None:
     """Reset the singleton GPSCoordinateValidatorService to None.
 
@@ -3145,7 +3108,6 @@ def reset_service() -> None:
     with _service_lock:
         _service_instance = None
     logger.debug("GPSCoordinateValidatorService singleton reset")
-
 
 # ---------------------------------------------------------------------------
 # Public API

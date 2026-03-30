@@ -33,6 +33,7 @@ import threading
 import time
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.foundation.access_guard.models import (
     AccessDecision,
@@ -41,12 +42,6 @@ from greenlang.agents.foundation.access_guard.models import (
 )
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 class OPAClient:
     """Open Policy Agent Rego policy management client.
@@ -104,7 +99,7 @@ class OPAClient:
             SHA-256 hash of the Rego source.
         """
         policy_hash = hashlib.sha256(rego_source.encode()).hexdigest()
-        now = _utcnow()
+        now = utcnow()
 
         with self._lock:
             is_update = policy_id in self._policies
@@ -146,8 +141,8 @@ class OPAClient:
                 "policy_id": policy_id,
                 "hash": self._hashes.get(policy_id, ""),
                 "version": self._versions.get(policy_id, 0),
-                "created_at": self._created_at.get(policy_id, _utcnow()).isoformat(),
-                "updated_at": self._updated_at.get(policy_id, _utcnow()).isoformat(),
+                "created_at": self._created_at.get(policy_id, utcnow()).isoformat(),
+                "updated_at": self._updated_at.get(policy_id, utcnow()).isoformat(),
             })
         return results
 
@@ -374,7 +369,6 @@ class OPAClient:
             return True
 
         return False
-
 
 __all__ = [
     "OPAClient",

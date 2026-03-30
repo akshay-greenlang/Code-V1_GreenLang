@@ -23,18 +23,13 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import ConfigDict, Field, field_validator
 
+from greenlang.schemas import GreenLangBase, utcnow
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -106,11 +101,9 @@ GAP_SEVERITIES: List[str] = [
     "minor",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ComplianceStatusEnum(str, Enum):
     """EUDR supplier compliance status values."""
@@ -120,7 +113,6 @@ class ComplianceStatusEnum(str, Enum):
     NON_COMPLIANT = "non_compliant"
     UNVERIFIED = "unverified"
     EXPIRED = "expired"
-
 
 class DiscoverySourceEnum(str, Enum):
     """Source type for supplier discovery."""
@@ -132,7 +124,6 @@ class DiscoverySourceEnum(str, Enum):
     ERP = "erp"
     MANUAL = "manual"
 
-
 class BatchJobStatusEnum(str, Enum):
     """Batch job processing status."""
 
@@ -141,7 +132,6 @@ class BatchJobStatusEnum(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     CANCELLED = "cancelled"
-
 
 class ReportTypeEnum(str, Enum):
     """Report type identifiers."""
@@ -152,13 +142,11 @@ class ReportTypeEnum(str, Enum):
     RISK_PROPAGATION = "risk_propagation"
     COMPLIANCE = "compliance"
 
-
 # =============================================================================
 # Pagination
 # =============================================================================
 
-
-class PaginatedMeta(BaseModel):
+class PaginatedMeta(GreenLangBase):
     """Pagination metadata for list responses."""
 
     total: int = Field(..., ge=0, description="Total number of results")
@@ -166,8 +154,7 @@ class PaginatedMeta(BaseModel):
     offset: int = Field(..., ge=0, description="Results skipped")
     has_more: bool = Field(..., description="Whether more results exist")
 
-
-class PaginatedResponse(BaseModel):
+class PaginatedResponse(GreenLangBase):
     """Generic paginated response wrapper."""
 
     items: List[Dict[str, Any]] = Field(
@@ -177,20 +164,17 @@ class PaginatedResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class PaginationParams(BaseModel):
+class PaginationParams(GreenLangBase):
     """Standard pagination query parameters."""
 
     limit: int = Field(default=50, ge=1, le=1000, description="Results per page")
     offset: int = Field(default=0, ge=0, description="Number of results to skip")
 
-
 # =============================================================================
 # Response Wrappers
 # =============================================================================
 
-
-class ApiResponse(BaseModel):
+class ApiResponse(GreenLangBase):
     """Standard API success response wrapper."""
 
     status: str = Field(default="success", description="Response status")
@@ -198,13 +182,12 @@ class ApiResponse(BaseModel):
     data: Optional[Any] = Field(None, description="Response payload")
     request_id: Optional[str] = Field(None, description="Request correlation ID")
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     """Structured error response for all API endpoints."""
 
     error: str = Field(..., description="Error type identifier")
@@ -212,13 +195,11 @@ class ErrorResponse(BaseModel):
     detail: Optional[str] = Field(None, description="Additional error details")
     request_id: Optional[str] = Field(None, description="Request correlation ID")
 
-
 # =============================================================================
 # Health Check
 # =============================================================================
 
-
-class HealthResponseSchema(BaseModel):
+class HealthResponseSchema(GreenLangBase):
     """Health check response schema."""
 
     status: str = Field(..., description="Service health status")
@@ -226,18 +207,16 @@ class HealthResponseSchema(BaseModel):
     agent_name: str = Field(..., description="Agent display name")
     version: str = Field(..., description="API version")
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Current server timestamp"
+        default_factory=utcnow, description="Current server timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Supplier Location Schema
 # =============================================================================
 
-
-class SupplierLocationSchema(BaseModel):
+class SupplierLocationSchema(GreenLangBase):
     """Supplier location data."""
 
     country_iso: str = Field(
@@ -272,13 +251,11 @@ class SupplierLocationSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Certification Schema
 # =============================================================================
 
-
-class CertificationSchema(BaseModel):
+class CertificationSchema(GreenLangBase):
     """Supplier certification record."""
 
     certification_type: str = Field(
@@ -318,13 +295,11 @@ class CertificationSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Contact Schema
 # =============================================================================
 
-
-class ContactSchema(BaseModel):
+class ContactSchema(GreenLangBase):
     """Supplier contact information."""
 
     name: str = Field(..., max_length=200, description="Contact name")
@@ -340,13 +315,11 @@ class ContactSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Discovery Schemas
 # =============================================================================
 
-
-class DiscoverRequestSchema(BaseModel):
+class DiscoverRequestSchema(GreenLangBase):
     """Request to discover sub-tier suppliers from a Tier 1 supplier."""
 
     supplier_id: str = Field(
@@ -416,8 +389,7 @@ class DiscoverRequestSchema(BaseModel):
         },
     )
 
-
-class DiscoveredSupplierSchema(BaseModel):
+class DiscoveredSupplierSchema(GreenLangBase):
     """A single discovered sub-tier supplier."""
 
     supplier_id: str = Field(..., description="Generated or existing supplier ID")
@@ -448,8 +420,7 @@ class DiscoveredSupplierSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class DiscoverResponseSchema(BaseModel):
+class DiscoverResponseSchema(GreenLangBase):
     """Response from supplier discovery operation."""
 
     request_id: str = Field(
@@ -477,13 +448,12 @@ class DiscoverResponseSchema(BaseModel):
         ..., description="SHA-256 hash for audit trail"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchDiscoverRequestSchema(BaseModel):
+class BatchDiscoverRequestSchema(GreenLangBase):
     """Batch supplier discovery request."""
 
     discoveries: List[DiscoverRequestSchema] = Field(
@@ -495,8 +465,7 @@ class BatchDiscoverRequestSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchDiscoverResponseSchema(BaseModel):
+class BatchDiscoverResponseSchema(GreenLangBase):
     """Batch supplier discovery response."""
 
     request_id: str = Field(
@@ -522,13 +491,12 @@ class BatchDiscoverResponseSchema(BaseModel):
         ..., description="SHA-256 hash for audit trail"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class DeclarationDiscoverRequestSchema(BaseModel):
+class DeclarationDiscoverRequestSchema(GreenLangBase):
     """Discover suppliers from a supplier declaration document."""
 
     declaration_text: str = Field(
@@ -560,8 +528,7 @@ class DeclarationDiscoverRequestSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class QuestionnaireDiscoverRequestSchema(BaseModel):
+class QuestionnaireDiscoverRequestSchema(GreenLangBase):
     """Discover suppliers from questionnaire responses."""
 
     questionnaire_data: Dict[str, Any] = Field(
@@ -590,13 +557,11 @@ class QuestionnaireDiscoverRequestSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Supplier Profile Schemas
 # =============================================================================
 
-
-class CreateSupplierSchema(BaseModel):
+class CreateSupplierSchema(GreenLangBase):
     """Request to create a new supplier profile."""
 
     name: str = Field(
@@ -688,8 +653,7 @@ class CreateSupplierSchema(BaseModel):
         },
     )
 
-
-class SupplierProfileSchema(BaseModel):
+class SupplierProfileSchema(GreenLangBase):
     """Complete supplier profile response."""
 
     supplier_id: str = Field(..., description="Unique supplier identifier")
@@ -741,10 +705,10 @@ class SupplierProfileSchema(BaseModel):
     )
     is_active: bool = Field(default=True, description="Whether supplier is active")
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Profile creation timestamp"
+        default_factory=utcnow, description="Profile creation timestamp"
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow, description="Profile last update timestamp"
+        default_factory=utcnow, description="Profile last update timestamp"
     )
     version: int = Field(default=1, ge=1, description="Profile version number")
     metadata: Dict[str, Any] = Field(
@@ -756,8 +720,7 @@ class SupplierProfileSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class UpdateSupplierSchema(BaseModel):
+class UpdateSupplierSchema(GreenLangBase):
     """Request to update an existing supplier profile (partial update)."""
 
     name: Optional[str] = Field(
@@ -823,8 +786,7 @@ class UpdateSupplierSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class SearchCriteriaSchema(BaseModel):
+class SearchCriteriaSchema(GreenLangBase):
     """Search criteria for supplier profiles."""
 
     query: Optional[str] = Field(
@@ -922,8 +884,7 @@ class SearchCriteriaSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class SupplierSearchResponseSchema(BaseModel):
+class SupplierSearchResponseSchema(GreenLangBase):
     """Supplier search results."""
 
     request_id: str = Field(
@@ -944,13 +905,12 @@ class SupplierSearchResponseSchema(BaseModel):
         ..., description="SHA-256 hash for audit trail"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchSupplierRequestSchema(BaseModel):
+class BatchSupplierRequestSchema(GreenLangBase):
     """Batch create/update supplier profiles."""
 
     suppliers: List[CreateSupplierSchema] = Field(
@@ -966,8 +926,7 @@ class BatchSupplierRequestSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchSupplierResponseSchema(BaseModel):
+class BatchSupplierResponseSchema(GreenLangBase):
     """Batch supplier operation response."""
 
     request_id: str = Field(
@@ -988,18 +947,16 @@ class BatchSupplierResponseSchema(BaseModel):
         ..., description="SHA-256 hash for audit trail"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Tier Depth Schemas
 # =============================================================================
 
-
-class TierDepthRequestSchema(BaseModel):
+class TierDepthRequestSchema(GreenLangBase):
     """Request to assess tier depth for a supply chain."""
 
     root_supplier_id: str = Field(
@@ -1026,8 +983,7 @@ class TierDepthRequestSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class TierLevelSummarySchema(BaseModel):
+class TierLevelSummarySchema(GreenLangBase):
     """Summary statistics for a single tier level."""
 
     tier: int = Field(..., ge=1, description="Tier level number")
@@ -1058,8 +1014,7 @@ class TierLevelSummarySchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class TierDepthResponseSchema(BaseModel):
+class TierDepthResponseSchema(GreenLangBase):
     """Response for tier depth assessment."""
 
     request_id: str = Field(
@@ -1101,13 +1056,12 @@ class TierDepthResponseSchema(BaseModel):
         ..., description="SHA-256 hash for audit trail"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class VisibilityScoreSchema(BaseModel):
+class VisibilityScoreSchema(GreenLangBase):
     """Visibility score response across multiple chains."""
 
     request_id: str = Field(
@@ -1125,7 +1079,7 @@ class VisibilityScoreSchema(BaseModel):
         description="Overall visibility score across all chains",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
     provenance_hash: str = Field(
         ..., description="SHA-256 hash for audit trail"
@@ -1133,8 +1087,7 @@ class VisibilityScoreSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class TierGapSchema(BaseModel):
+class TierGapSchema(GreenLangBase):
     """Tier coverage gap details."""
 
     tier: int = Field(..., ge=1, description="Tier level with gap")
@@ -1159,8 +1112,7 @@ class TierGapSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class TierGapsResponseSchema(BaseModel):
+class TierGapsResponseSchema(GreenLangBase):
     """Response for tier coverage gap analysis."""
 
     request_id: str = Field(
@@ -1181,18 +1133,16 @@ class TierGapsResponseSchema(BaseModel):
         ..., description="SHA-256 hash for audit trail"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Relationship Schemas
 # =============================================================================
 
-
-class CreateRelationshipSchema(BaseModel):
+class CreateRelationshipSchema(GreenLangBase):
     """Request to create a supplier relationship."""
 
     parent_supplier_id: str = Field(
@@ -1266,8 +1216,7 @@ class CreateRelationshipSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class RelationshipSchema(BaseModel):
+class RelationshipSchema(GreenLangBase):
     """Supplier relationship record."""
 
     relationship_id: str = Field(
@@ -1306,10 +1255,10 @@ class RelationshipSchema(BaseModel):
         description="Relationship strength score (0-100)",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation timestamp"
+        default_factory=utcnow, description="Creation timestamp"
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow, description="Last update timestamp"
+        default_factory=utcnow, description="Last update timestamp"
     )
     metadata: Dict[str, Any] = Field(
         default_factory=dict, description="Additional metadata"
@@ -1320,8 +1269,7 @@ class RelationshipSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class UpdateRelationshipSchema(BaseModel):
+class UpdateRelationshipSchema(GreenLangBase):
     """Request to update a supplier relationship."""
 
     relationship_state: Optional[str] = Field(
@@ -1377,8 +1325,7 @@ class UpdateRelationshipSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class RelationshipHistoryRequestSchema(BaseModel):
+class RelationshipHistoryRequestSchema(GreenLangBase):
     """Request for relationship change history."""
 
     supplier_id: str = Field(
@@ -1398,8 +1345,7 @@ class RelationshipHistoryRequestSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class RelationshipChangeSchema(BaseModel):
+class RelationshipChangeSchema(GreenLangBase):
     """A single relationship change history entry."""
 
     change_id: str = Field(..., description="Change event identifier")
@@ -1415,8 +1361,7 @@ class RelationshipChangeSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class RelationshipHistoryResponseSchema(BaseModel):
+class RelationshipHistoryResponseSchema(GreenLangBase):
     """Response for relationship history query."""
 
     request_id: str = Field(
@@ -1440,13 +1385,12 @@ class RelationshipHistoryResponseSchema(BaseModel):
         ..., description="SHA-256 hash for audit trail"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class SupplierRelationshipsResponseSchema(BaseModel):
+class SupplierRelationshipsResponseSchema(GreenLangBase):
     """Response listing all relationships for a supplier."""
 
     request_id: str = Field(
@@ -1470,18 +1414,16 @@ class SupplierRelationshipsResponseSchema(BaseModel):
         ..., description="SHA-256 hash for audit trail"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Risk Assessment Schemas
 # =============================================================================
 
-
-class RiskAssessmentRequestSchema(BaseModel):
+class RiskAssessmentRequestSchema(GreenLangBase):
     """Request to assess risk for a supplier."""
 
     supplier_id: str = Field(
@@ -1528,8 +1470,7 @@ class RiskAssessmentRequestSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class RiskCategoryScoreSchema(BaseModel):
+class RiskCategoryScoreSchema(GreenLangBase):
     """Score for a single risk category."""
 
     category: str = Field(..., description="Risk category name")
@@ -1552,8 +1493,7 @@ class RiskCategoryScoreSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class RiskScoreSchema(BaseModel):
+class RiskScoreSchema(GreenLangBase):
     """Complete risk assessment response for a supplier."""
 
     request_id: str = Field(
@@ -1578,7 +1518,7 @@ class RiskScoreSchema(BaseModel):
         description="Overall risk trend: improving, stable, degrading",
     )
     assessment_date: datetime = Field(
-        default_factory=_utcnow, description="Assessment timestamp"
+        default_factory=utcnow, description="Assessment timestamp"
     )
     next_assessment_due: Optional[datetime] = Field(
         None, description="Next scheduled assessment date"
@@ -1592,8 +1532,7 @@ class RiskScoreSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class RiskPropagationRequestSchema(BaseModel):
+class RiskPropagationRequestSchema(GreenLangBase):
     """Request to propagate risk through a supply chain."""
 
     root_supplier_id: str = Field(
@@ -1634,8 +1573,7 @@ class RiskPropagationRequestSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class RiskPathNodeSchema(BaseModel):
+class RiskPathNodeSchema(GreenLangBase):
     """A node in the risk propagation path."""
 
     supplier_id: str = Field(..., description="Supplier ID")
@@ -1653,8 +1591,7 @@ class RiskPathNodeSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class RiskPropagationResponseSchema(BaseModel):
+class RiskPropagationResponseSchema(GreenLangBase):
     """Risk propagation through supply chain response."""
 
     request_id: str = Field(
@@ -1693,13 +1630,12 @@ class RiskPropagationResponseSchema(BaseModel):
         ..., description="SHA-256 hash for audit trail"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchRiskRequestSchema(BaseModel):
+class BatchRiskRequestSchema(GreenLangBase):
     """Batch risk assessment request."""
 
     assessments: List[RiskAssessmentRequestSchema] = Field(
@@ -1711,8 +1647,7 @@ class BatchRiskRequestSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchRiskResponseSchema(BaseModel):
+class BatchRiskResponseSchema(GreenLangBase):
     """Batch risk assessment response."""
 
     request_id: str = Field(
@@ -1735,18 +1670,16 @@ class BatchRiskResponseSchema(BaseModel):
         ..., description="SHA-256 hash for audit trail"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Compliance Schemas
 # =============================================================================
 
-
-class ComplianceCheckRequestSchema(BaseModel):
+class ComplianceCheckRequestSchema(GreenLangBase):
     """Request to check supplier compliance."""
 
     supplier_id: str = Field(
@@ -1780,8 +1713,7 @@ class ComplianceCheckRequestSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ComplianceDimensionSchema(BaseModel):
+class ComplianceDimensionSchema(GreenLangBase):
     """Score for a single compliance dimension."""
 
     dimension: str = Field(..., description="Compliance dimension name")
@@ -1803,8 +1735,7 @@ class ComplianceDimensionSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ComplianceCheckResponseSchema(BaseModel):
+class ComplianceCheckResponseSchema(GreenLangBase):
     """Compliance check result for a supplier."""
 
     request_id: str = Field(
@@ -1837,7 +1768,7 @@ class ComplianceCheckResponseSchema(BaseModel):
         description="Recommended remediation actions",
     )
     assessment_date: datetime = Field(
-        default_factory=_utcnow, description="Assessment timestamp"
+        default_factory=utcnow, description="Assessment timestamp"
     )
     elapsed_ms: float = Field(
         ..., ge=0, description="Processing time in milliseconds"
@@ -1848,8 +1779,7 @@ class ComplianceCheckResponseSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ComplianceStatusSchema(BaseModel):
+class ComplianceStatusSchema(GreenLangBase):
     """Current compliance status for a supplier."""
 
     supplier_id: str = Field(..., description="Supplier ID")
@@ -1882,8 +1812,7 @@ class ComplianceStatusSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ComplianceAlertSchema(BaseModel):
+class ComplianceAlertSchema(GreenLangBase):
     """Compliance alert for status changes or approaching expirations."""
 
     alert_id: str = Field(
@@ -1915,7 +1844,7 @@ class ComplianceAlertSchema(BaseModel):
         None, description="Days until relevant expiry"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Alert creation timestamp"
+        default_factory=utcnow, description="Alert creation timestamp"
     )
     acknowledged: bool = Field(
         default=False, description="Whether alert has been acknowledged"
@@ -1923,8 +1852,7 @@ class ComplianceAlertSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ComplianceAlertsResponseSchema(BaseModel):
+class ComplianceAlertsResponseSchema(GreenLangBase):
     """Response listing compliance alerts."""
 
     request_id: str = Field(
@@ -1949,13 +1877,12 @@ class ComplianceAlertsResponseSchema(BaseModel):
         ..., description="SHA-256 hash for audit trail"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchComplianceRequestSchema(BaseModel):
+class BatchComplianceRequestSchema(GreenLangBase):
     """Batch compliance check request."""
 
     checks: List[ComplianceCheckRequestSchema] = Field(
@@ -1967,8 +1894,7 @@ class BatchComplianceRequestSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchComplianceResponseSchema(BaseModel):
+class BatchComplianceResponseSchema(GreenLangBase):
     """Batch compliance check response."""
 
     request_id: str = Field(
@@ -1995,18 +1921,16 @@ class BatchComplianceResponseSchema(BaseModel):
         ..., description="SHA-256 hash for audit trail"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Response timestamp"
+        default_factory=utcnow, description="Response timestamp"
     )
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # =============================================================================
 # Report Schemas
 # =============================================================================
 
-
-class AuditReportRequestSchema(BaseModel):
+class AuditReportRequestSchema(GreenLangBase):
     """Request to generate an EUDR Article 14 audit report."""
 
     root_supplier_id: str = Field(
@@ -2059,8 +1983,7 @@ class AuditReportRequestSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class AuditReportSchema(BaseModel):
+class AuditReportSchema(GreenLangBase):
     """Generated audit report response."""
 
     report_id: str = Field(
@@ -2076,7 +1999,7 @@ class AuditReportSchema(BaseModel):
     commodity: str = Field(..., description="EUDR commodity")
     report_format: str = Field(..., description="Report format")
     generated_at: datetime = Field(
-        default_factory=_utcnow, description="Report generation timestamp"
+        default_factory=utcnow, description="Report generation timestamp"
     )
     total_suppliers: int = Field(
         ..., ge=0, description="Total suppliers in the chain"
@@ -2110,8 +2033,7 @@ class AuditReportSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class TierSummaryRequestSchema(BaseModel):
+class TierSummaryRequestSchema(GreenLangBase):
     """Request to generate a tier depth summary report."""
 
     commodity: Optional[str] = Field(
@@ -2155,8 +2077,7 @@ class TierSummaryRequestSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class TierSummarySchema(BaseModel):
+class TierSummarySchema(GreenLangBase):
     """Tier depth summary report."""
 
     report_id: str = Field(
@@ -2167,7 +2088,7 @@ class TierSummarySchema(BaseModel):
         default="tier_summary", description="Report type"
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow, description="Generation timestamp"
+        default_factory=utcnow, description="Generation timestamp"
     )
     total_supply_chains: int = Field(
         ..., ge=0, description="Total supply chains analyzed"
@@ -2209,8 +2130,7 @@ class TierSummarySchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class GapReportRequestSchema(BaseModel):
+class GapReportRequestSchema(GreenLangBase):
     """Request to generate a gap analysis report."""
 
     root_supplier_id: Optional[str] = Field(
@@ -2257,8 +2177,7 @@ class GapReportRequestSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class DataGapSchema(BaseModel):
+class DataGapSchema(GreenLangBase):
     """A single data gap identified for a supplier."""
 
     gap_id: str = Field(
@@ -2292,8 +2211,7 @@ class DataGapSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class GapReportSchema(BaseModel):
+class GapReportSchema(GreenLangBase):
     """Gap analysis report response."""
 
     report_id: str = Field(
@@ -2304,7 +2222,7 @@ class GapReportSchema(BaseModel):
         default="gap_analysis", description="Report type"
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow, description="Generation timestamp"
+        default_factory=utcnow, description="Generation timestamp"
     )
     total_gaps: int = Field(..., ge=0, description="Total gaps identified")
     critical_gaps: int = Field(..., ge=0, description="Critical gaps")
@@ -2339,8 +2257,7 @@ class GapReportSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ReportDownloadSchema(BaseModel):
+class ReportDownloadSchema(GreenLangBase):
     """Report download response with pre-signed URL."""
 
     report_id: str = Field(..., description="Report identifier")
@@ -2364,8 +2281,7 @@ class ReportDownloadSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class ReportMetadataSchema(BaseModel):
+class ReportMetadataSchema(GreenLangBase):
     """Report metadata for retrieval."""
 
     report_id: str = Field(..., description="Report identifier")
@@ -2389,13 +2305,11 @@ class ReportMetadataSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Batch Job Schemas
 # =============================================================================
 
-
-class BatchJobRequestSchema(BaseModel):
+class BatchJobRequestSchema(GreenLangBase):
     """Request to submit a batch processing job."""
 
     job_type: str = Field(
@@ -2446,8 +2360,7 @@ class BatchJobRequestSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-class BatchJobResponseSchema(BaseModel):
+class BatchJobResponseSchema(GreenLangBase):
     """Batch job submission response."""
 
     batch_id: str = Field(
@@ -2462,7 +2375,7 @@ class BatchJobResponseSchema(BaseModel):
         default="normal", description="Job priority"
     )
     submitted_at: datetime = Field(
-        default_factory=_utcnow, description="Submission timestamp"
+        default_factory=utcnow, description="Submission timestamp"
     )
     estimated_duration_seconds: Optional[int] = Field(
         None, ge=0, description="Estimated processing duration"
@@ -2503,13 +2416,11 @@ class BatchJobResponseSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 # =============================================================================
 # Delete / Deactivate Response
 # =============================================================================
 
-
-class DeactivateResponseSchema(BaseModel):
+class DeactivateResponseSchema(GreenLangBase):
     """Response for supplier deactivation."""
 
     supplier_id: str = Field(..., description="Deactivated supplier ID")
@@ -2520,14 +2431,13 @@ class DeactivateResponseSchema(BaseModel):
         ..., description="Deactivation confirmation message"
     )
     deactivated_at: datetime = Field(
-        default_factory=_utcnow, description="Deactivation timestamp"
+        default_factory=utcnow, description="Deactivation timestamp"
     )
     provenance_hash: str = Field(
         ..., description="SHA-256 hash for audit trail"
     )
 
     model_config = ConfigDict(from_attributes=True)
-
 
 # ---------------------------------------------------------------------------
 # Public API

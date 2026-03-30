@@ -31,7 +31,8 @@ from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -138,7 +139,7 @@ class SignatureBundle:
         return cls.from_dict(json.loads(json_str))
 
 
-class PublicKeyInfo(BaseModel):
+class PublicKeyInfo(GreenLangBase):
     """Public key information for signature verification."""
     key_id: str = Field(..., description="Unique key identifier")
     algorithm: SignatureAlgorithm = Field(..., description="Key algorithm")

@@ -49,6 +49,7 @@ import threading
 from collections import defaultdict
 from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Optional, Set
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.due_diligence_orchestrator.config import (
     DueDiligenceOrchestratorConfig,
@@ -181,7 +182,7 @@ class WorkflowEvent:
         self.event_id = event_id or _new_uuid()
         self.event_type = event_type
         self.workflow_id = workflow_id
-        self.timestamp = timestamp or _utcnow()
+        self.timestamp = timestamp or utcnow()
         self.data = data or {}
         self.provenance_hash = self._compute_hash()
 

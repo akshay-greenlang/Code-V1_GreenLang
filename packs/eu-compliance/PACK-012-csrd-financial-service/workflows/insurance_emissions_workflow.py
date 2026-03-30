@@ -27,20 +27,15 @@ from typing import Any, Callable, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC time with timezone info."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute SHA-256 provenance hash of arbitrary data."""
     return hashlib.sha256(
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
-
 
 class PhaseStatus(str, Enum):
     PENDING = "PENDING"
@@ -49,7 +44,6 @@ class PhaseStatus(str, Enum):
     FAILED = "FAILED"
     SKIPPED = "SKIPPED"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "PENDING"
     RUNNING = "RUNNING"
@@ -57,12 +51,11 @@ class WorkflowStatus(str, Enum):
     FAILED = "FAILED"
     PARTIAL = "PARTIAL"
 
-
 class WorkflowContext(BaseModel):
     """Shared state passed between workflow phases."""
     workflow_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     organization_id: str = Field(..., description="Organization identifier")
-    execution_timestamp: datetime = Field(default_factory=_utcnow)
+    execution_timestamp: datetime = Field(default_factory=utcnow)
     config: Dict[str, Any] = Field(default_factory=dict)
     phase_states: Dict[str, PhaseStatus] = Field(default_factory=dict)
     phase_outputs: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
@@ -81,7 +74,6 @@ class WorkflowContext(BaseModel):
     def is_phase_completed(self, phase_name: str) -> bool:
         return self.phase_states.get(phase_name) == PhaseStatus.COMPLETED
 
-
 class PhaseResult(BaseModel):
     phase_name: str = Field(..., description="Phase identifier")
     status: PhaseStatus = Field(..., description="Phase completion status")
@@ -94,7 +86,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     records_processed: int = Field(default=0)
 
-
 class WorkflowResult(BaseModel):
     workflow_id: str = Field(..., description="Unique workflow execution ID")
     workflow_name: str = Field(..., description="Workflow type identifier")
@@ -105,8 +96,6 @@ class WorkflowResult(BaseModel):
     phases: List[PhaseResult] = Field(default_factory=list)
     summary: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
-
-
 
 class InsuranceLineOfBusiness(str, Enum):
     """Insurance lines of business."""
@@ -119,7 +108,6 @@ class InsuranceLineOfBusiness(str, Enum):
     LIFE = "LIFE"
     HEALTH = "HEALTH"
     OTHER = "OTHER"
-
 
 # ---------------------------------------------------------------------------
 #  Input / Result Models
@@ -141,7 +129,6 @@ class InsurancePolicy(BaseModel):
     data_quality_score: int = Field(default=5, ge=1, le=5)
     ceded_pct: float = Field(default=0.0, ge=0.0, le=100.0, description="Reinsurance ceded %")
 
-
 class InsuranceEmissionsInput(BaseModel):
     """Input for the insurance emissions workflow."""
     organization_id: str = Field(..., description="Organization identifier")
@@ -158,7 +145,6 @@ class InsuranceEmissionsInput(BaseModel):
             int(v)
         return v
 
-
 class InsuranceEmissionsResult(WorkflowResult):
     """Result from the insurance emissions workflow."""
     gross_attributed_emissions_tco2e: float = Field(default=0.0)
@@ -170,7 +156,6 @@ class InsuranceEmissionsResult(WorkflowResult):
     weighted_data_quality_score: float = Field(default=5.0)
     lines_of_business_covered: int = Field(default=0)
 
-
 # ---------------------------------------------------------------------------
 #  Phase 1: Policy Data Ingestion
 # ---------------------------------------------------------------------------
@@ -181,7 +166,7 @@ class PolicyDataIngestionPhase:
     PHASE_NAME = "policy_data_ingestion"
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -219,7 +204,7 @@ class PolicyDataIngestionPhase:
             status = PhaseStatus.FAILED
             records = 0
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -227,7 +212,6 @@ class PolicyDataIngestionPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs), records_processed=records,
         )
-
 
 # ---------------------------------------------------------------------------
 #  Phase 2: Emission Attribution
@@ -239,7 +223,7 @@ class EmissionAttributionPhase:
     PHASE_NAME = "emission_attribution"
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -303,7 +287,7 @@ class EmissionAttributionPhase:
             errors.append(f"Emission attribution failed: {str(exc)}")
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -311,7 +295,6 @@ class EmissionAttributionPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 # ---------------------------------------------------------------------------
 #  Phase 3: Reinsurance Adjustment
@@ -323,7 +306,7 @@ class ReinsuranceAdjustmentPhase:
     PHASE_NAME = "reinsurance_adjustment"
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -376,7 +359,7 @@ class ReinsuranceAdjustmentPhase:
             errors.append(f"Reinsurance adjustment failed: {str(exc)}")
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -384,7 +367,6 @@ class ReinsuranceAdjustmentPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 # ---------------------------------------------------------------------------
 #  Phase 4: Report Generation
@@ -396,7 +378,7 @@ class ReportGenerationPhase:
     PHASE_NAME = "report_generation"
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -434,7 +416,7 @@ class ReportGenerationPhase:
             errors.append(f"Report generation failed: {str(exc)}")
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME, status=status,
             started_at=started_at, completed_at=completed_at,
@@ -442,7 +424,6 @@ class ReportGenerationPhase:
             outputs=outputs, errors=errors, warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 # ---------------------------------------------------------------------------
 #  Workflow Orchestrator
@@ -467,7 +448,7 @@ class InsuranceEmissionsWorkflow:
 
     async def run(self, input_data: InsuranceEmissionsInput) -> InsuranceEmissionsResult:
         """Execute the complete 4-phase insurance emissions workflow."""
-        started_at = _utcnow()
+        started_at = utcnow()
         logger.info("Starting insurance emissions workflow %s org=%s",
                      self.workflow_id, input_data.organization_id)
         context = WorkflowContext(
@@ -507,7 +488,7 @@ class InsuranceEmissionsWorkflow:
                 logger.error("Phase '%s' raised: %s", phase_name, exc, exc_info=True)
                 completed_phases.append(PhaseResult(
                     phase_name=phase_name, status=PhaseStatus.FAILED,
-                    started_at=_utcnow(), errors=[str(exc)],
+                    started_at=utcnow(), errors=[str(exc)],
                     provenance_hash=_hash_data({"error": str(exc)}),
                 ))
                 context.mark_phase(phase_name, PhaseStatus.FAILED)
@@ -519,7 +500,7 @@ class InsuranceEmissionsWorkflow:
                          for p in completed_phases)
             overall_status = WorkflowStatus.COMPLETED if all_ok else WorkflowStatus.PARTIAL
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         duration = (completed_at - started_at).total_seconds()
         summary = self._build_summary(context)
         provenance = _hash_data({

@@ -44,25 +44,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -75,7 +69,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -85,11 +78,9 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EvidenceType(str, Enum):
     """Type of audit evidence."""
@@ -104,7 +95,6 @@ class EvidenceType(str, Enum):
     INTERNAL_AUDIT = "internal_audit"
     EXTERNAL_AUDIT = "external_audit"
 
-
 class RemediationStatus(str, Enum):
     """Remediation plan status."""
     OPEN = "open"
@@ -114,7 +104,6 @@ class RemediationStatus(str, Enum):
     ESCALATED = "escalated"
     CLOSED = "closed"
 
-
 class RemediationPriority(str, Enum):
     """Remediation priority."""
     CRITICAL = "critical"
@@ -122,14 +111,12 @@ class RemediationPriority(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
 
-
 class AnomalySeverity(str, Enum):
     """Anomaly detection severity."""
     INFO = "info"
     WARNING = "warning"
     ALERT = "alert"
     CRITICAL = "critical"
-
 
 class AccreditationStatus(str, Enum):
     """Verifier accreditation status."""
@@ -139,7 +126,6 @@ class AccreditationStatus(str, Enum):
     SUSPENDED = "suspended"
     NOT_FOUND = "not_found"
 
-
 class DataRoomAccess(str, Enum):
     """Data room access level."""
     READ_ONLY = "read_only"
@@ -147,18 +133,16 @@ class DataRoomAccess(str, Enum):
     ADMIN = "admin"
     AUDITOR = "auditor"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class AuditRepository(BaseModel):
     """Audit evidence repository for an entity."""
     repository_id: str = Field(default_factory=_new_uuid, description="Repository identifier")
     entity_id: str = Field(description="Entity identifier")
     retention_years: int = Field(default=7, description="Evidence retention period in years")
-    created_at: datetime = Field(default_factory=_utcnow, description="Creation timestamp")
+    created_at: datetime = Field(default_factory=utcnow, description="Creation timestamp")
     evidence_count: int = Field(default=0, description="Total evidence items")
     total_size_mb: Decimal = Field(default=Decimal("0"), description="Total repository size in MB")
     evidence_by_type: Dict[str, int] = Field(
@@ -166,7 +150,6 @@ class AuditRepository(BaseModel):
     )
     retention_policy_applied: bool = Field(default=True, description="Whether retention policy is active")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class EvidenceRecord(BaseModel):
     """Individual audit evidence record."""
@@ -179,13 +162,12 @@ class EvidenceRecord(BaseModel):
     file_reference: str = Field(default="", description="File storage reference")
     file_size_bytes: int = Field(default=0, description="File size in bytes")
     created_by: str = Field(default="", description="Evidence creator")
-    created_at: datetime = Field(default_factory=_utcnow, description="Creation timestamp")
+    created_at: datetime = Field(default_factory=utcnow, description="Creation timestamp")
     accessed_by: List[str] = Field(default_factory=list, description="Access log")
     tags: List[str] = Field(default_factory=list, description="Classification tags")
     retention_until: Optional[datetime] = Field(default=None, description="Retention end date")
     is_locked: bool = Field(default=False, description="Whether evidence is locked (immutable)")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class ChainOfCustody(BaseModel):
     """Chain of custody for an evidence item."""
@@ -201,7 +183,6 @@ class ChainOfCustody(BaseModel):
     tampered: bool = Field(default=False, description="Whether tampering detected")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class DataRoom(BaseModel):
     """Virtual data room for NCA examinations."""
     room_id: str = Field(default_factory=_new_uuid, description="Data room identifier")
@@ -212,12 +193,11 @@ class DataRoom(BaseModel):
     )
     evidence_ids: List[str] = Field(default_factory=list, description="Evidence items in room")
     evidence_count: int = Field(default=0, description="Number of evidence items")
-    created_at: datetime = Field(default_factory=_utcnow, description="Creation timestamp")
+    created_at: datetime = Field(default_factory=utcnow, description="Creation timestamp")
     expires_at: Optional[datetime] = Field(default=None, description="Room expiry date")
     watermarked: bool = Field(default=True, description="Whether documents are watermarked")
     access_log: List[Dict[str, Any]] = Field(default_factory=list, description="Access audit log")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class RemediationPlan(BaseModel):
     """Remediation plan for an audit finding."""
@@ -229,7 +209,7 @@ class RemediationPlan(BaseModel):
     deadline: datetime = Field(description="Remediation deadline")
     actions: List[Dict[str, Any]] = Field(default_factory=list, description="Planned remediation actions")
     progress_pct: Decimal = Field(default=Decimal("0"), description="Progress percentage")
-    created_at: datetime = Field(default_factory=_utcnow, description="Creation timestamp")
+    created_at: datetime = Field(default_factory=utcnow, description="Creation timestamp")
     completed_at: Optional[datetime] = Field(default=None, description="Completion timestamp")
     evidence_ids: List[str] = Field(default_factory=list, description="Supporting evidence")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
@@ -238,7 +218,6 @@ class RemediationPlan(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class ExaminationPackage(BaseModel):
     """NCA examination preparation package."""
@@ -250,14 +229,13 @@ class ExaminationPackage(BaseModel):
     completeness_pct: Decimal = Field(default=Decimal("0"), description="Package completeness")
     missing_items: List[str] = Field(default_factory=list, description="Missing required items")
     readiness_score: str = Field(default="", description="Overall readiness (ready/partial/not_ready)")
-    prepared_at: datetime = Field(default_factory=_utcnow, description="Preparation timestamp")
+    prepared_at: datetime = Field(default_factory=utcnow, description="Preparation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("completeness_pct", mode="before")
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class AnomalyAlert(BaseModel):
     """Anomaly detection alert for emission data."""
@@ -277,7 +255,6 @@ class AnomalyAlert(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class PenaltyExposure(BaseModel):
     """Penalty exposure calculation for compliance gaps."""
     exposure_id: str = Field(default_factory=_new_uuid, description="Exposure identifier")
@@ -296,7 +273,7 @@ class PenaltyExposure(BaseModel):
     )
     risk_level: str = Field(default="", description="Overall risk level")
     mitigation_options: List[str] = Field(default_factory=list, description="Penalty mitigation options")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Calculation timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Calculation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("total_exposure_eur", "excess_emission_penalty_rate",
@@ -304,7 +281,6 @@ class PenaltyExposure(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class AuditCommitteeReport(BaseModel):
     """Report for the audit committee."""
@@ -318,14 +294,13 @@ class AuditCommitteeReport(BaseModel):
     penalty_exposure_eur: Decimal = Field(default=Decimal("0"), description="Current penalty exposure")
     nca_examination_readiness: str = Field(default="", description="NCA readiness assessment")
     recommendations: List[str] = Field(default_factory=list, description="Committee recommendations")
-    generated_at: datetime = Field(default_factory=_utcnow, description="Generation timestamp")
+    generated_at: datetime = Field(default_factory=utcnow, description="Generation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("penalty_exposure_eur", mode="before")
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class AccreditationStatusResult(BaseModel):
     """Verifier accreditation status check result."""
@@ -340,7 +315,6 @@ class AccreditationStatusResult(BaseModel):
     scope: List[str] = Field(default_factory=list, description="Accreditation scope")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class CorrespondenceRecord(BaseModel):
     """NCA correspondence record."""
     record_id: str = Field(default_factory=_new_uuid, description="Record identifier")
@@ -350,17 +324,15 @@ class CorrespondenceRecord(BaseModel):
     subject: str = Field(default="", description="Correspondence subject")
     content_summary: str = Field(default="", description="Content summary")
     reference_number: str = Field(default="", description="Reference number")
-    date: datetime = Field(default_factory=_utcnow, description="Correspondence date")
+    date: datetime = Field(default_factory=utcnow, description="Correspondence date")
     response_deadline: Optional[datetime] = Field(default=None, description="Response deadline")
     responded: bool = Field(default=False, description="Whether responded")
     attachments: List[str] = Field(default_factory=list, description="Attachment references")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine Configuration
 # ---------------------------------------------------------------------------
-
 
 class AuditManagementConfig(BaseModel):
     """Configuration for the AuditManagementEngine."""
@@ -391,7 +363,6 @@ class AuditManagementConfig(BaseModel):
         description="Required NCA examination package sections",
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic model_rebuild for forward reference resolution
 # ---------------------------------------------------------------------------
@@ -409,11 +380,9 @@ AuditCommitteeReport.model_rebuild()
 AccreditationStatusResult.model_rebuild()
 CorrespondenceRecord.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # AuditManagementEngine
 # ---------------------------------------------------------------------------
-
 
 class AuditManagementEngine:
     """
@@ -531,7 +500,7 @@ class AuditManagementEngine:
         ).hexdigest() if content else ""
 
         repo = self._repositories[repository_id]
-        retention_date = _utcnow() + timedelta(days=repo.retention_years * 365)
+        retention_date = utcnow() + timedelta(days=repo.retention_years * 365)
 
         record = EvidenceRecord(
             repository_id=repository_id,
@@ -596,7 +565,7 @@ class AuditManagementEngine:
             custody_entries.append({
                 "action": "accessed",
                 "custodian": accessor,
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
                 "hash": evidence.content_hash,
             })
 
@@ -653,7 +622,7 @@ class AuditManagementEngine:
             access_list=access_list,
             evidence_ids=evidence_ids,
             evidence_count=len(evidence_ids),
-            expires_at=_utcnow() + timedelta(days=90),
+            expires_at=utcnow() + timedelta(days=90),
         )
         room.provenance_hash = _compute_hash(room)
 
@@ -683,7 +652,7 @@ class AuditManagementEngine:
         if not finding or not finding.strip():
             raise ValueError("Finding description is required")
 
-        now = _utcnow()
+        now = utcnow()
         days_until = (deadline - now).days
 
         if days_until <= 7:
@@ -991,7 +960,7 @@ class AuditManagementEngine:
         overdue = sum(
             1 for r in self._remediations.values()
             if r.status == RemediationStatus.OVERDUE
-            or (r.deadline < _utcnow() and r.status != RemediationStatus.COMPLETED)
+            or (r.deadline < utcnow() and r.status != RemediationStatus.COMPLETED)
         )
 
         total_evidence = sum(
@@ -1063,7 +1032,7 @@ class AuditManagementEngine:
         if not verifier_id or not verifier_id.strip():
             raise ValueError("verifier_id must not be empty")
 
-        now = _utcnow()
+        now = utcnow()
         status = AccreditationStatus.ACCREDITED
         valid_from = now - timedelta(days=365)
         valid_until = now + timedelta(days=365)
@@ -1109,7 +1078,7 @@ class AuditManagementEngine:
         response_deadline = None
         if correspondence.get("response_required"):
             deadline_days = correspondence.get("response_deadline_days", 30)
-            response_deadline = _utcnow() + timedelta(days=deadline_days)
+            response_deadline = utcnow() + timedelta(days=deadline_days)
 
         record = CorrespondenceRecord(
             entity_id=entity_id.strip(),

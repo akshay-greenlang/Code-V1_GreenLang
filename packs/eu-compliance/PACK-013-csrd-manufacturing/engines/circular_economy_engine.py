@@ -61,25 +61,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -99,13 +93,11 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _safe_divide(numerator: float, denominator: float, default: float = 0.0) -> float:
     """Safely divide two numbers, returning *default* on zero denominator."""
     if denominator == 0.0:
         return default
     return numerator / denominator
-
 
 def _safe_pct(numerator: float, denominator: float) -> float:
     """Calculate percentage safely, returning 0.0 on zero denominator."""
@@ -113,27 +105,22 @@ def _safe_pct(numerator: float, denominator: float) -> float:
         return 0.0
     return (numerator / denominator) * 100.0
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
-
 
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class WasteCategory(str, Enum):
     """Waste hazard classification per Waste Framework Directive."""
     HAZARDOUS = "hazardous"
     NON_HAZARDOUS = "non_hazardous"
-
 
 class WasteType(str, Enum):
     """Waste material types in manufacturing."""
@@ -149,7 +136,6 @@ class WasteType(str, Enum):
     TEXTILE = "textile"
     OTHER = "other"
 
-
 class WasteDestination(str, Enum):
     """Waste treatment / disposal destination."""
     RECYCLING = "recycling"
@@ -160,7 +146,6 @@ class WasteDestination(str, Enum):
     LANDFILL = "landfill"
     OTHER_DISPOSAL = "other_disposal"
 
-
 class EPRScheme(str, Enum):
     """Extended Producer Responsibility scheme types in the EU."""
     PACKAGING = "packaging"
@@ -168,7 +153,6 @@ class EPRScheme(str, Enum):
     BATTERIES = "batteries"
     TEXTILES = "textiles"
     VEHICLES = "vehicles"
-
 
 # ---------------------------------------------------------------------------
 # Constants: Waste Hierarchy Weights
@@ -340,11 +324,9 @@ CRM_RECYCLING_TARGETS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class CircularEconomyConfig(BaseModel):
     """Configuration for circular economy calculations.
@@ -376,7 +358,6 @@ class CircularEconomyConfig(BaseModel):
         default=True,
         description="Assess waste hierarchy compliance.",
     )
-
 
 class MaterialFlowData(BaseModel):
     """Material inflow data for circularity assessment (ESRS E5-4).
@@ -423,7 +404,6 @@ class MaterialFlowData(BaseModel):
             )
         return self
 
-
 class WasteStreamData(BaseModel):
     """Waste stream data for a specific waste output (ESRS E5-5).
 
@@ -465,7 +445,6 @@ class WasteStreamData(BaseModel):
         description="Treatment cost in EUR.",
     )
 
-
 class ProductRecyclability(BaseModel):
     """Product-level recyclability assessment.
 
@@ -502,7 +481,6 @@ class ProductRecyclability(BaseModel):
         description="Count of substances of concern.",
     )
 
-
 class MCIResult(BaseModel):
     """Material Circularity Index result (Ellen MacArthur Foundation).
 
@@ -527,7 +505,6 @@ class MCIResult(BaseModel):
     utility_factor: float = Field(default=1.0, ge=0.0)
     mci_score: float = Field(default=0.0, ge=0.0, le=1.0)
     interpretation: str = Field(default="")
-
 
 class CircularEconomyResult(BaseModel):
     """Complete result of circular economy metrics calculation.
@@ -568,14 +545,12 @@ class CircularEconomyResult(BaseModel):
     methodology_notes: List[str] = Field(default_factory=list)
     processing_time_ms: float = Field(default=0.0)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class CircularEconomyEngine:
     """Zero-hallucination circular economy metrics calculation engine.
@@ -767,7 +742,7 @@ class CircularEconomyEngine:
             methodology_notes=methodology_notes,
             processing_time_ms=round(elapsed_ms, 2),
             engine_version=self.engine_version,
-            calculated_at=_utcnow(),
+            calculated_at=utcnow(),
         )
 
         result.provenance_hash = _compute_hash(result)

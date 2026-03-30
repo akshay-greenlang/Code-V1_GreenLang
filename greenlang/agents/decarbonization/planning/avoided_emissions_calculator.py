@@ -27,12 +27,13 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig
 from greenlang.agents.base_agents import DeterministicAgent
 from greenlang.agents.categories import AgentCategory, AgentMetadata
 from greenlang.utilities.determinism import DeterministicClock, content_hash, deterministic_id
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +54,7 @@ class InterventionType(str, Enum):
     CARBON_CAPTURE = "carbon_capture"
 
 
-class AvoidedEmissionsResult(BaseModel):
+class AvoidedEmissionsResult(GreenLangBase):
     result_id: str = Field(...)
     intervention_name: str = Field(...)
     intervention_type: InterventionType = Field(...)
@@ -81,7 +82,7 @@ class AvoidedEmissionsResult(BaseModel):
     calculated_at: datetime = Field(default_factory=DeterministicClock.now)
 
 
-class AvoidedEmissionsInput(BaseModel):
+class AvoidedEmissionsInput(GreenLangBase):
     operation: str = Field(default="calculate")
     intervention_name: str = Field(default="")
     intervention_type: InterventionType = Field(default=InterventionType.ENERGY_EFFICIENCY)
@@ -97,7 +98,7 @@ class AvoidedEmissionsInput(BaseModel):
     attribution_factor: float = Field(default=1.0, ge=0, le=1, description="Attribution factor")
 
 
-class AvoidedEmissionsOutput(BaseModel):
+class AvoidedEmissionsOutput(GreenLangBase):
     operation: str = Field(...)
     success: bool = Field(...)
     result: Optional[AvoidedEmissionsResult] = Field(None)

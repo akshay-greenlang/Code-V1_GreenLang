@@ -67,6 +67,7 @@ from greenlang.agents.eudr.risk_assessment_engine.models import (
     RISK_THRESHOLDS,
 )
 from greenlang.agents.eudr.risk_assessment_engine.provenance import ProvenanceTracker
+from greenlang.schemas import utcnow
 from greenlang.agents.eudr.risk_assessment_engine.metrics import (
     record_composite_calculation,
     observe_calculation_duration,
@@ -89,16 +90,9 @@ _CONFIDENCE_MIN = Decimal("0")
 _CONFIDENCE_MAX = Decimal("1")
 _WEIGHT_SUM_TOLERANCE = Decimal("0.01")
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute deterministic SHA-256 hash of data.
@@ -111,7 +105,6 @@ def _compute_hash(data: Any) -> str:
     """
     canonical = json.dumps(data, sort_keys=True, separators=(",", ":"), default=str)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-
 
 def _clamp(value: Decimal, lo: Decimal, hi: Decimal) -> Decimal:
     """Clamp a Decimal value between lo and hi inclusive.
@@ -126,11 +119,9 @@ def _clamp(value: Decimal, lo: Decimal, hi: Decimal) -> Decimal:
     """
     return max(lo, min(value, hi))
 
-
 # ---------------------------------------------------------------------------
 # Main Engine
 # ---------------------------------------------------------------------------
-
 
 class CompositeRiskCalculator:
     """Engine for computing weighted composite risk scores.

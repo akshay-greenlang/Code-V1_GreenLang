@@ -38,6 +38,7 @@ Status: Production Ready
 
 import logging
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +66,7 @@ except ImportError:
 
 if FASTAPI_AVAILABLE:
 
-    class IngestRecordsBody(BaseModel):
+    class IngestRecordsBody(GreenLangBase):
         """Request body for ingesting spend records."""
         records: List[Dict[str, Any]] = Field(
             ..., description="List of spend record dicts with vendor_name, amount, description, etc.",
@@ -75,7 +76,7 @@ if FASTAPI_AVAILABLE:
             description="Data source identifier (csv, excel, api, erp, manual)",
         )
 
-    class IngestFileBody(BaseModel):
+    class IngestFileBody(GreenLangBase):
         """Request body for ingesting from a file path."""
         file_path: str = Field(
             ..., description="Path to CSV or Excel file",
@@ -92,7 +93,7 @@ if FASTAPI_AVAILABLE:
             description="Data source label",
         )
 
-    class ClassifyRecordBody(BaseModel):
+    class ClassifyRecordBody(GreenLangBase):
         """Request body for classifying a spend record."""
         record_id: str = Field(
             ..., description="Spend record identifier to classify",
@@ -102,7 +103,7 @@ if FASTAPI_AVAILABLE:
             description="Taxonomy system override (unspsc, naics, nace, custom)",
         )
 
-    class ClassifyBatchBody(BaseModel):
+    class ClassifyBatchBody(GreenLangBase):
         """Request body for batch classification."""
         record_ids: List[str] = Field(
             ..., description="List of record identifiers to classify",
@@ -112,19 +113,19 @@ if FASTAPI_AVAILABLE:
             description="Taxonomy system override",
         )
 
-    class MapScope3Body(BaseModel):
+    class MapScope3Body(GreenLangBase):
         """Request body for mapping a record to Scope 3."""
         record_id: str = Field(
             ..., description="Spend record identifier to map",
         )
 
-    class MapScope3BatchBody(BaseModel):
+    class MapScope3BatchBody(GreenLangBase):
         """Request body for batch Scope 3 mapping."""
         record_ids: List[str] = Field(
             ..., description="List of record identifiers to map",
         )
 
-    class CalculateEmissionsBody(BaseModel):
+    class CalculateEmissionsBody(GreenLangBase):
         """Request body for calculating emissions."""
         record_id: str = Field(
             ..., description="Spend record identifier",
@@ -134,7 +135,7 @@ if FASTAPI_AVAILABLE:
             description="Emission factor source override (eeio, exiobase, defra)",
         )
 
-    class CalculateEmissionsBatchBody(BaseModel):
+    class CalculateEmissionsBatchBody(GreenLangBase):
         """Request body for batch emission calculation."""
         record_ids: List[str] = Field(
             ..., description="List of record identifiers",
@@ -144,7 +145,7 @@ if FASTAPI_AVAILABLE:
             description="Emission factor source override",
         )
 
-    class CreateRuleBody(BaseModel):
+    class CreateRuleBody(GreenLangBase):
         """Request body for creating a classification rule."""
         name: str = Field(
             ..., description="Rule display name",
@@ -169,7 +170,7 @@ if FASTAPI_AVAILABLE:
             default=100, description="Rule priority (lower = higher priority)",
         )
 
-    class UpdateRuleBody(BaseModel):
+    class UpdateRuleBody(GreenLangBase):
         """Request body for updating a classification rule."""
         name: Optional[str] = Field(
             None, description="New rule name",
@@ -190,7 +191,7 @@ if FASTAPI_AVAILABLE:
             None, description="New active status",
         )
 
-    class GenerateReportBody(BaseModel):
+    class GenerateReportBody(GreenLangBase):
         """Request body for generating a report."""
         report_type: str = Field(
             default="summary",

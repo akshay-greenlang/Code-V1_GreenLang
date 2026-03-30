@@ -52,25 +52,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -90,13 +84,11 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _safe_divide(numerator: float, denominator: float, default: float = 0.0) -> float:
     """Safely divide two numbers, returning *default* on zero denominator."""
     if denominator == 0.0:
         return default
     return numerator / denominator
-
 
 def _safe_pct(numerator: float, denominator: float) -> float:
     """Calculate percentage safely, returning 0.0 on zero denominator."""
@@ -104,31 +96,25 @@ def _safe_pct(numerator: float, denominator: float) -> float:
         return 0.0
     return (numerator / denominator) * 100.0
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
-
 
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
-
 def _mwh_to_tj(mwh: float) -> float:
     """Convert MWh to TJ.  1 MWh = 0.0036 TJ."""
     return mwh * 0.0036
-
 
 def _mwh_to_mj(mwh: float) -> float:
     """Convert MWh to MJ.  1 MWh = 3600 MJ."""
     return mwh * 3600.0
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EnergySource(str, Enum):
     """Energy sources tracked in manufacturing facilities."""
@@ -143,7 +129,6 @@ class EnergySource(str, Enum):
     SOLAR = "solar"
     WIND = "wind"
 
-
 class ProductionUnit(str, Enum):
     """Units of production output."""
     TONNES = "tonnes"
@@ -151,7 +136,6 @@ class ProductionUnit(str, Enum):
     LITRES = "litres"
     SQM = "sqm"
     KWH = "kwh"
-
 
 class EEDTier(str, Enum):
     """Energy Efficiency Directive tier classification.
@@ -164,7 +148,6 @@ class EEDTier(str, Enum):
     BELOW_10TJ = "below_10tj"
     AUDIT_REQUIRED_10_85TJ = "audit_required_10_85tj"
     ISO50001_REQUIRED_ABOVE_85TJ = "iso50001_required_above_85tj"
-
 
 # ---------------------------------------------------------------------------
 # Constants: BAT Energy Benchmarks (MJ/tonne product)
@@ -377,11 +360,9 @@ DECARBONIZATION_TECHNOLOGIES: List[Dict[str, Any]] = [
     },
 ]
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class EnergyIntensityConfig(BaseModel):
     """Configuration for energy intensity calculations.
@@ -416,7 +397,6 @@ class EnergyIntensityConfig(BaseModel):
         description="Whether ISO 50001 certification is held.",
     )
 
-
 class EnergyConsumptionData(BaseModel):
     """Energy consumption from a single source.
 
@@ -439,7 +419,6 @@ class EnergyConsumptionData(BaseModel):
         description="tCO2 per MWh for this source.",
     )
 
-
 class ProductionVolumeData(BaseModel):
     """Production volume for a product line.
 
@@ -459,7 +438,6 @@ class ProductionVolumeData(BaseModel):
         default="annual",
         description="Reporting period identifier.",
     )
-
 
 class FacilityEnergyData(BaseModel):
     """Complete energy data for a manufacturing facility.
@@ -512,7 +490,6 @@ class FacilityEnergyData(BaseModel):
         description="Baseline SEC (MJ/unit) for improvement calculation.",
     )
 
-
 class BenchmarkComparison(BaseModel):
     """Comparison of facility SEC against BAT benchmark.
 
@@ -528,7 +505,6 @@ class BenchmarkComparison(BaseModel):
     sector_average: float = Field(default=0.0)
     percentile_rank: float = Field(default=0.0, ge=0.0, le=100.0)
     status: str = Field(default="unknown")
-
 
 class EEDCompliance(BaseModel):
     """Energy Efficiency Directive compliance assessment.
@@ -547,7 +523,6 @@ class EEDCompliance(BaseModel):
     iso50001_required: bool = Field(default=False)
     last_audit_date: Optional[str] = Field(default=None)
     compliant: bool = Field(default=True)
-
 
 class DecarbonizationOpportunity(BaseModel):
     """A potential decarbonization technology opportunity.
@@ -568,7 +543,6 @@ class DecarbonizationOpportunity(BaseModel):
     payback_years: float = Field(default=0.0, ge=0.0)
     trl: int = Field(default=1, ge=1, le=9)
     co2_reduction_tonnes: float = Field(default=0.0, ge=0.0)
-
 
 class EnergyIntensityResult(BaseModel):
     """Complete result of energy intensity calculation with provenance.
@@ -611,14 +585,12 @@ class EnergyIntensityResult(BaseModel):
     methodology_notes: List[str] = Field(default_factory=list)
     processing_time_ms: float = Field(default=0.0)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class EnergyIntensityEngine:
     """Zero-hallucination manufacturing energy intensity calculation engine.
@@ -819,7 +791,7 @@ class EnergyIntensityEngine:
             methodology_notes=methodology_notes,
             processing_time_ms=round(elapsed_ms, 2),
             engine_version=self.engine_version,
-            calculated_at=_utcnow(),
+            calculated_at=utcnow(),
         )
 
         result.provenance_hash = _compute_hash(result)

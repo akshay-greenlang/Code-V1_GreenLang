@@ -36,18 +36,13 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # ProvenanceEntry dataclass
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class ProvenanceEntry:
@@ -89,11 +84,9 @@ class ProvenanceEntry:
             "metadata": self.metadata,
         }
 
-
 # ---------------------------------------------------------------------------
 # ProvenanceTracker
 # ---------------------------------------------------------------------------
-
 
 class ProvenanceTracker:
     """Tracks provenance for schema migration operations with SHA-256 chain hashing.
@@ -180,7 +173,7 @@ class ProvenanceTracker:
         if not action:
             raise ValueError("action must not be empty")
 
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
         data_hash = self._hash_data(data)
         store_key = f"{entity_type}:{entity_id}"
 
@@ -449,14 +442,12 @@ class ProvenanceTracker:
         """
         return self._hash_data(data)
 
-
 # ---------------------------------------------------------------------------
 # Thread-safe singleton helpers
 # ---------------------------------------------------------------------------
 
 _singleton_lock = threading.Lock()
 _singleton_tracker: Optional[ProvenanceTracker] = None
-
 
 def get_provenance_tracker() -> ProvenanceTracker:
     """Return the process-wide singleton :class:`ProvenanceTracker`.
@@ -480,7 +471,6 @@ def get_provenance_tracker() -> ProvenanceTracker:
                 logger.info("Schema migration singleton ProvenanceTracker created")
     return _singleton_tracker
 
-
 def set_provenance_tracker(tracker: ProvenanceTracker) -> None:
     """Replace the process-wide singleton with a custom tracker.
 
@@ -501,7 +491,6 @@ def set_provenance_tracker(tracker: ProvenanceTracker) -> None:
         _singleton_tracker = tracker
     logger.info("Schema migration ProvenanceTracker singleton replaced")
 
-
 def reset_provenance_tracker() -> None:
     """Destroy the current singleton and reset to ``None``.
 
@@ -516,7 +505,6 @@ def reset_provenance_tracker() -> None:
     with _singleton_lock:
         _singleton_tracker = None
     logger.info("Schema migration ProvenanceTracker singleton reset to None")
-
 
 # ---------------------------------------------------------------------------
 # Public API

@@ -50,23 +50,18 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -78,11 +73,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class OracleModule(str, Enum):
     """Oracle ERP Cloud modules."""
@@ -97,7 +90,6 @@ class OracleModule(str, Enum):
     PA = "pa"                   # Project Accounting
     SCM = "scm"                 # Supply Chain Management
 
-
 class OracleAuthMethod(str, Enum):
     """Oracle authentication methods."""
 
@@ -106,7 +98,6 @@ class OracleAuthMethod(str, Enum):
     JWT_ASSERTION = "jwt_assertion"
     API_KEY = "api_key"
 
-
 class OracleExtractionMode(str, Enum):
     """Data extraction modes."""
 
@@ -114,11 +105,9 @@ class OracleExtractionMode(str, Enum):
     INCREMENTAL = "incremental"
     SNAPSHOT = "snapshot"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class OracleConfig(BaseModel):
     """Configuration for Oracle ERP Cloud connector."""
@@ -147,7 +136,6 @@ class OracleConfig(BaseModel):
         ],
     )
 
-
 class OracleConnectionStatus(BaseModel):
     """Oracle connection status."""
 
@@ -160,7 +148,6 @@ class OracleConnectionStatus(BaseModel):
     last_connected_at: Optional[datetime] = Field(None)
     latency_ms: float = Field(default=0.0)
     message: str = Field(default="")
-
 
 class OracleExtractionResult(BaseModel):
     """Result of Oracle data extraction."""
@@ -182,7 +169,6 @@ class OracleExtractionResult(BaseModel):
     data: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
 
-
 class OracleWriteBackResult(BaseModel):
     """Result of writing carbon data back to Oracle GL."""
 
@@ -193,7 +179,6 @@ class OracleWriteBackResult(BaseModel):
     posted: bool = Field(default=False)
     message: str = Field(default="")
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Commodity-to-Scope3 Mapping for Oracle Procurement
@@ -212,11 +197,9 @@ COMMODITY_SCOPE3_MAP: Dict[str, Dict[str, Any]] = {
     "OUTBOUND_LOGISTICS": {"scope3_cat": 9, "ef_kgco2e_per_usd": 0.68},
 }
 
-
 # ---------------------------------------------------------------------------
 # OracleConnector
 # ---------------------------------------------------------------------------
-
 
 class OracleConnector:
     """Oracle ERP Cloud integration connector for PACK-027.
@@ -269,7 +252,7 @@ class OracleConnector:
                 business_units_accessible=list(self.config.business_units),
                 modules_available=[m.value for m in self.config.modules_enabled],
                 oracle_version="Oracle ERP Cloud 24B",
-                last_connected_at=_utcnow(),
+                last_connected_at=utcnow(),
                 latency_ms=(time.monotonic() - start) * 1000,
                 message="Connected successfully",
             )
@@ -422,7 +405,7 @@ class OracleConnector:
         result = OracleExtractionResult(
             module=module.value,
             business_unit=business_unit,
-            started_at=_utcnow(),
+            started_at=utcnow(),
         )
 
         try:
@@ -451,7 +434,7 @@ class OracleConnector:
         finally:
             self._connection_pool_active = max(0, self._connection_pool_active - 1)
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         result.duration_ms = (time.monotonic() - start) * 1000
         if self.config.enable_provenance:
             result.provenance_hash = _compute_hash(result.data)

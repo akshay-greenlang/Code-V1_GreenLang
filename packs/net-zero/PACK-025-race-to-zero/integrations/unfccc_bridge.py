@@ -47,19 +47,14 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -71,11 +66,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CommitmentStatus(str, Enum):
     DRAFT = "draft"
@@ -87,7 +80,6 @@ class CommitmentStatus(str, Enum):
     SUSPENDED = "suspended"
     WITHDRAWN = "withdrawn"
 
-
 class VerificationOutcome(str, Enum):
     PASSED = "passed"
     CONDITIONAL_PASS = "conditional_pass"
@@ -95,13 +87,11 @@ class VerificationOutcome(str, Enum):
     FAILED = "failed"
     PENDING = "pending"
 
-
 class BadgeLevel(str, Enum):
     PARTICIPANT = "participant"
     COMMITTED = "committed"
     ACCELERATING = "accelerating"
     LEADING = "leading"
-
 
 class ReportType(str, Enum):
     ANNUAL_PROGRESS = "annual_progress"
@@ -109,17 +99,14 @@ class ReportType(str, Enum):
     TARGET_UPDATE = "target_update"
     VERIFICATION_REPORT = "verification_report"
 
-
 class RateLimitStatus(str, Enum):
     OK = "ok"
     APPROACHING_LIMIT = "approaching_limit"
     RATE_LIMITED = "rate_limited"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class UNFCCCBridgeConfig(BaseModel):
     """Configuration for UNFCCC Race to Zero bridge."""
@@ -138,7 +125,6 @@ class UNFCCCBridgeConfig(BaseModel):
     max_retries: int = Field(default=3, ge=0)
     retry_delay_seconds: float = Field(default=1.0, ge=0.1)
 
-
 class OAuthToken(BaseModel):
     """OAuth2 access token."""
 
@@ -147,8 +133,7 @@ class OAuthToken(BaseModel):
     expires_in: int = Field(default=3600)
     refresh_token: str = Field(default="")
     scope: str = Field(default="r2z:read r2z:write")
-    obtained_at: datetime = Field(default_factory=_utcnow)
-
+    obtained_at: datetime = Field(default_factory=utcnow)
 
 class CommitmentSubmission(BaseModel):
     """Race to Zero commitment submission."""
@@ -167,8 +152,7 @@ class CommitmentSubmission(BaseModel):
     base_year_emissions_tco2e: float = Field(default=0.0)
     scope_coverage: List[str] = Field(default_factory=lambda: ["scope_1", "scope_2", "scope_3"])
     leadership_signoff: bool = Field(default=False)
-    commitment_date: datetime = Field(default_factory=_utcnow)
-
+    commitment_date: datetime = Field(default_factory=utcnow)
 
 class CommitmentResult(BaseModel):
     """Result of commitment submission."""
@@ -182,7 +166,6 @@ class CommitmentResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     warnings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class VerificationStatusResult(BaseModel):
     """Verification status from UNFCCC portal."""
@@ -198,7 +181,6 @@ class VerificationStatusResult(BaseModel):
     criteria_failed: List[str] = Field(default_factory=list)
     reviewer_notes: str = Field(default="")
     provenance_hash: str = Field(default="")
-
 
 class AnnualReportSubmission(BaseModel):
     """Annual progress report submission."""
@@ -217,18 +199,16 @@ class AnnualReportSubmission(BaseModel):
     on_track_2030: bool = Field(default=False)
     verification_attached: bool = Field(default=False)
 
-
 class AnnualReportResult(BaseModel):
     """Result of annual report submission."""
 
     report_id: str = Field(default_factory=_new_uuid)
     status: str = Field(default="submitted")
-    submitted_at: datetime = Field(default_factory=_utcnow)
+    submitted_at: datetime = Field(default_factory=utcnow)
     confirmation_number: str = Field(default="")
     compliance_score: float = Field(default=0.0, ge=0.0, le=100.0)
     warnings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class VerificationBadge(BaseModel):
     """Race to Zero verification badge."""
@@ -236,14 +216,13 @@ class VerificationBadge(BaseModel):
     badge_id: str = Field(default_factory=_new_uuid)
     organization_name: str = Field(default="")
     badge_level: BadgeLevel = Field(default=BadgeLevel.PARTICIPANT)
-    issued_date: datetime = Field(default_factory=_utcnow)
+    issued_date: datetime = Field(default_factory=utcnow)
     expiry_date: Optional[datetime] = Field(None)
     badge_url: str = Field(default="")
     embed_code: str = Field(default="")
     campaign_year: int = Field(default=2025)
     partner_initiative: str = Field(default="")
     provenance_hash: str = Field(default="")
-
 
 class ComplianceCheckResult(BaseModel):
     """R2Z compliance check result."""
@@ -258,11 +237,9 @@ class ComplianceCheckResult(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # UNFCCCBridge
 # ---------------------------------------------------------------------------
-
 
 class UNFCCCBridge:
     """Bridge to UNFCCC Race to Zero verification portal.
@@ -384,15 +361,15 @@ class UNFCCCBridge:
 
         status = CommitmentStatus.SUBMITTED if not errors else CommitmentStatus.DRAFT
         from datetime import timedelta
-        review_deadline = _utcnow() + timedelta(days=30) if status == CommitmentStatus.SUBMITTED else None
+        review_deadline = utcnow() + timedelta(days=30) if status == CommitmentStatus.SUBMITTED else None
 
         result = CommitmentResult(
             commitment_id=submission.commitment_id,
             status=status,
-            submitted_at=_utcnow() if status == CommitmentStatus.SUBMITTED else None,
+            submitted_at=utcnow() if status == CommitmentStatus.SUBMITTED else None,
             review_deadline=review_deadline,
             partner_initiative=submission.partner_initiative,
-            confirmation_number=f"R2Z-{_utcnow().year}-{submission.commitment_id[:8].upper()}" if not errors else "",
+            confirmation_number=f"R2Z-{utcnow().year}-{submission.commitment_id[:8].upper()}" if not errors else "",
             errors=errors,
             warnings=warnings,
         )
@@ -443,7 +420,7 @@ class UNFCCCBridge:
             commitment_id=commitment_id,
             status=existing.status,
             outcome=outcome,
-            last_verified=_utcnow(),
+            last_verified=utcnow(),
             criteria_met=criteria_met,
             criteria_pending=criteria_pending,
             criteria_failed=criteria_failed,
@@ -530,13 +507,14 @@ class UNFCCCBridge:
             level = BadgeLevel.ACCELERATING
 
         org_name = self.config.organization_name or "Organization"
-        year = _utcnow().year
+        year = utcnow().year
 
         from datetime import timedelta
+
         badge = VerificationBadge(
             organization_name=org_name,
             badge_level=level,
-            expiry_date=_utcnow() + timedelta(days=365),
+            expiry_date=utcnow() + timedelta(days=365),
             badge_url=f"{self.config.api_base_url}/badges/{commitment_id}",
             embed_code=(
                 f'<a href="{self.config.api_base_url}/badges/{commitment_id}" '
@@ -582,7 +560,7 @@ class UNFCCCBridge:
                 {"organization": "Example Corp B", "country": "US", "status": "active"},
             ],
             "api_url": f"{self.config.api_base_url}/partners",
-            "last_updated": _utcnow().isoformat(),
+            "last_updated": utcnow().isoformat(),
         }
 
     def check_compliance(

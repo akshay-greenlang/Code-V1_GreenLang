@@ -49,25 +49,20 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import AlertSeverity
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -80,7 +75,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -90,11 +84,9 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CBAMApplicability(str, Enum):
     """CBAM applicability determination."""
@@ -103,15 +95,6 @@ class CBAMApplicability(str, Enum):
     REQUIRES_REVIEW = "requires_review"
     EXEMPT = "exempt"
 
-
-class AlertSeverity(str, Enum):
-    """Circumvention alert severity."""
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
-    CRITICAL = "critical"
-
-
 class CircumventionType(str, Enum):
     """Type of circumvention pattern detected."""
     ORIGIN_CHANGE = "origin_change"
@@ -119,7 +102,6 @@ class CircumventionType(str, Enum):
     SCRAP_RATIO = "scrap_ratio"
     RESTRUCTURING = "restructuring"
     MINOR_PROCESSING = "minor_processing"
-
 
 class AEOStatusType(str, Enum):
     """AEO authorization status."""
@@ -130,14 +112,12 @@ class AEOStatusType(str, Enum):
     SUSPENDED = "suspended"
     UNKNOWN = "unknown"
 
-
 class ImportProcedureStatus(str, Enum):
     """Import procedure CBAM relevance."""
     CBAM_APPLICABLE = "cbam_applicable"
     CBAM_EXEMPT = "cbam_exempt"
     SPECIAL_PROCEDURE = "special_procedure"
     UNKNOWN = "unknown"
-
 
 # ---------------------------------------------------------------------------
 # CN Code Reference Data
@@ -247,11 +227,9 @@ _HIGH_DEFAULT_COUNTRIES: Set[str] = {
     "CN", "IN", "RU", "TR", "UA", "EG", "SA", "ZA", "BR", "MX", "KZ", "VN",
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class CNValidationResult(BaseModel):
     """Result of CN code validation."""
@@ -265,7 +243,6 @@ class CNValidationResult(BaseModel):
     warnings: List[str] = Field(default_factory=list, description="Validation warnings")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class ParsedDeclaration(BaseModel):
     """Parsed customs declaration from SAD data."""
     declaration_id: str = Field(default_factory=_new_uuid, description="Declaration identifier")
@@ -278,14 +255,13 @@ class ParsedDeclaration(BaseModel):
     procedure_code: str = Field(default="", description="Import procedure code")
     items: List[Dict[str, Any]] = Field(default_factory=list, description="Parsed line items")
     cbam_relevant_items: int = Field(default=0, description="Count of CBAM-relevant items")
-    parsed_at: datetime = Field(default_factory=_utcnow, description="Parse timestamp")
+    parsed_at: datetime = Field(default_factory=utcnow, description="Parse timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("total_value_eur", "total_weight_kg", mode="before")
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class AEOStatus(BaseModel):
     """AEO status check result."""
@@ -297,7 +273,6 @@ class AEOStatus(BaseModel):
     valid_until: Optional[datetime] = Field(default=None, description="Authorization end date")
     simplified_procedures_eligible: bool = Field(default=False, description="Eligible for simplified procedures")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class ApplicabilityResult(BaseModel):
     """CBAM applicability determination result."""
@@ -317,7 +292,6 @@ class ApplicabilityResult(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class ProcedureCheck(BaseModel):
     """Import procedure CBAM relevance check."""
     result_id: str = Field(default_factory=_new_uuid, description="Result identifier")
@@ -326,7 +300,6 @@ class ProcedureCheck(BaseModel):
     cbam_status: ImportProcedureStatus = Field(description="CBAM relevance status")
     rationale: str = Field(default="", description="Determination rationale")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class CircumventionAlert(BaseModel):
     """Anti-circumvention detection alert."""
@@ -337,9 +310,8 @@ class CircumventionAlert(BaseModel):
     evidence: List[Dict[str, Any]] = Field(default_factory=list, description="Supporting evidence")
     recommended_action: str = Field(default="", description="Recommended action")
     affected_imports: List[str] = Field(default_factory=list, description="Affected import references")
-    detected_at: datetime = Field(default_factory=_utcnow, description="Detection timestamp")
+    detected_at: datetime = Field(default_factory=utcnow, description="Detection timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class DownstreamMonitorResult(BaseModel):
     """Downstream product monitoring result."""
@@ -350,7 +322,6 @@ class DownstreamMonitorResult(BaseModel):
     )
     scope_expansion_risk: str = Field(default="low", description="Risk of CBAM scope expansion")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class CombinedCostResult(BaseModel):
     """Combined customs duty and CBAM cost calculation."""
@@ -372,7 +343,6 @@ class CombinedCostResult(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class EORIValidation(BaseModel):
     """EORI number validation result."""
     result_id: str = Field(default_factory=_new_uuid, description="Result identifier")
@@ -381,7 +351,6 @@ class EORIValidation(BaseModel):
     country_code: str = Field(default="", description="Country code from EORI")
     format_check: str = Field(default="", description="Format validation details")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class VersionChanges(BaseModel):
     """CN nomenclature version change tracking."""
@@ -395,11 +364,9 @@ class VersionChanges(BaseModel):
     cbam_impact: str = Field(default="none", description="Impact on CBAM scope")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine Configuration
 # ---------------------------------------------------------------------------
-
 
 class CustomsAutomationConfig(BaseModel):
     """Configuration for the CustomsAutomationEngine."""
@@ -411,7 +378,6 @@ class CustomsAutomationConfig(BaseModel):
     default_cbam_price: Decimal = Field(
         default=Decimal("75.00"), description="Default CBAM certificate price"
     )
-
 
 # ---------------------------------------------------------------------------
 # Pydantic model_rebuild for forward reference resolution
@@ -429,11 +395,9 @@ CombinedCostResult.model_rebuild()
 EORIValidation.model_rebuild()
 VersionChanges.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # CustomsAutomationEngine
 # ---------------------------------------------------------------------------
-
 
 class CustomsAutomationEngine:
     """
@@ -616,7 +580,7 @@ class CustomsAutomationEngine:
             eori=eori,
             aeo_status=aeo_type,
             authorization_number=f"AEO-{country_code}-{eori[-6:]}" if aeo_type != AEOStatusType.NOT_AUTHORIZED else "",
-            valid_from=_utcnow() if aeo_type != AEOStatusType.NOT_AUTHORIZED else None,
+            valid_from=utcnow() if aeo_type != AEOStatusType.NOT_AUTHORIZED else None,
             simplified_procedures_eligible=simplified,
         )
         result.provenance_hash = _compute_hash(result)

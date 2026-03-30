@@ -38,20 +38,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -69,11 +64,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class AuditImportConfig(BaseModel):
     """Configuration for importing PACK-031 audit data."""
@@ -86,7 +79,6 @@ class AuditImportConfig(BaseModel):
     import_meter_hierarchy: bool = Field(default=True)
     import_process_maps: bool = Field(default=False)
     sync_consumption_back: bool = Field(default=True)
-
 
 class AuditDataImport(BaseModel):
     """Result of importing energy audit data from PACK-031."""
@@ -109,7 +101,6 @@ class AuditDataImport(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class MeterHierarchy(BaseModel):
     """Meter hierarchy imported from PACK-031 audit."""
 
@@ -122,7 +113,6 @@ class MeterHierarchy(BaseModel):
     coverage_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
 
-
 class ConsumptionExport(BaseModel):
     """Consumption data exported back to PACK-031."""
 
@@ -133,14 +123,12 @@ class ConsumptionExport(BaseModel):
     total_electricity_kwh: float = Field(default=0.0)
     total_gas_kwh: float = Field(default=0.0)
     monthly_profiles: List[Dict[str, Any]] = Field(default_factory=list)
-    exported_at: datetime = Field(default_factory=_utcnow)
+    exported_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Pack031Bridge
 # ---------------------------------------------------------------------------
-
 
 class Pack031Bridge:
     """Bridge to PACK-031 Industrial Energy Audit data.

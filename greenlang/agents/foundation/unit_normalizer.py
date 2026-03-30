@@ -39,10 +39,11 @@ from enum import Enum
 from functools import lru_cache
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism.clock import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -124,7 +125,7 @@ GWP_AR4_100 = {
 # PYDANTIC MODELS
 # =============================================================================
 
-class UnitDefinition(BaseModel):
+class UnitDefinition(GreenLangBase):
     """Definition of a unit with its properties."""
     symbol: str = Field(..., description="Unit symbol (e.g., 'kg', 'MWh')")
     name: str = Field(..., description="Full unit name")
@@ -135,7 +136,7 @@ class UnitDefinition(BaseModel):
     source: str = Field(default="SI", description="Source standard (SI, US, etc.)")
 
 
-class ConversionRequest(BaseModel):
+class ConversionRequest(GreenLangBase):
     """Request for a unit conversion operation."""
     value: float = Field(..., description="Value to convert")
     from_unit: str = Field(..., description="Source unit")
@@ -152,7 +153,7 @@ class ConversionRequest(BaseModel):
         return v
 
 
-class ConversionResult(BaseModel):
+class ConversionResult(GreenLangBase):
     """Result of a unit conversion operation."""
     original_value: float = Field(..., description="Original input value")
     original_unit: str = Field(..., description="Original unit")
@@ -165,7 +166,7 @@ class ConversionResult(BaseModel):
     timestamp: datetime = Field(default_factory=DeterministicClock.now)
 
 
-class GHGConversionRequest(BaseModel):
+class GHGConversionRequest(GreenLangBase):
     """Request for GHG unit conversion with GWP."""
     value: float = Field(..., description="Value to convert")
     from_unit: str = Field(..., description="Source unit (e.g., kgCO2, tCH4)")
@@ -173,7 +174,7 @@ class GHGConversionRequest(BaseModel):
     gwp_source: str = Field(default="AR6", description="GWP source (AR4, AR5, AR6)")
 
 
-class GHGConversionResult(BaseModel):
+class GHGConversionResult(GreenLangBase):
     """Result of a GHG conversion operation."""
     original_value: float = Field(..., description="Original value")
     original_unit: str = Field(..., description="Original unit")
@@ -187,13 +188,13 @@ class GHGConversionResult(BaseModel):
     provenance_hash: str = Field(..., description="SHA-256 hash for audit trail")
 
 
-class FuelStandardizationRequest(BaseModel):
+class FuelStandardizationRequest(GreenLangBase):
     """Request to standardize a fuel name."""
     fuel_name: str = Field(..., description="Input fuel name to standardize")
     tenant_id: Optional[str] = Field(None, description="Tenant ID for custom mappings")
 
 
-class FuelStandardizationResult(BaseModel):
+class FuelStandardizationResult(GreenLangBase):
     """Result of fuel name standardization."""
     original_name: str = Field(..., description="Original fuel name")
     standardized_name: str = Field(..., description="Standardized fuel name")
@@ -204,13 +205,13 @@ class FuelStandardizationResult(BaseModel):
     provenance_hash: str = Field(..., description="SHA-256 hash")
 
 
-class MaterialStandardizationRequest(BaseModel):
+class MaterialStandardizationRequest(GreenLangBase):
     """Request to standardize a material name."""
     material_name: str = Field(..., description="Input material name")
     tenant_id: Optional[str] = Field(None, description="Tenant ID for custom mappings")
 
 
-class MaterialStandardizationResult(BaseModel):
+class MaterialStandardizationResult(GreenLangBase):
     """Result of material name standardization."""
     original_name: str = Field(..., description="Original material name")
     standardized_name: str = Field(..., description="Standardized name")
@@ -221,14 +222,14 @@ class MaterialStandardizationResult(BaseModel):
     provenance_hash: str = Field(..., description="SHA-256 hash")
 
 
-class ReferenceIDRequest(BaseModel):
+class ReferenceIDRequest(GreenLangBase):
     """Request to manage cross-system reference IDs."""
     source_system: str = Field(..., description="Source system identifier")
     source_id: str = Field(..., description="ID in source system")
     target_system: Optional[str] = Field(None, description="Target system (if resolving)")
 
 
-class ReferenceIDResult(BaseModel):
+class ReferenceIDResult(GreenLangBase):
     """Result of reference ID resolution."""
     source_system: str = Field(..., description="Source system")
     source_id: str = Field(..., description="Source ID")
@@ -237,7 +238,7 @@ class ReferenceIDResult(BaseModel):
     provenance_hash: str = Field(..., description="SHA-256 hash")
 
 
-class CurrencyConversionRequest(BaseModel):
+class CurrencyConversionRequest(GreenLangBase):
     """Request for currency conversion."""
     value: float = Field(..., description="Amount to convert")
     from_currency: str = Field(..., description="Source currency (ISO 4217)")
@@ -245,7 +246,7 @@ class CurrencyConversionRequest(BaseModel):
     conversion_date: Optional[date] = Field(None, description="Date for exchange rate")
 
 
-class CurrencyConversionResult(BaseModel):
+class CurrencyConversionResult(GreenLangBase):
     """Result of currency conversion."""
     original_value: float = Field(..., description="Original amount")
     original_currency: str = Field(..., description="Source currency")
@@ -257,14 +258,14 @@ class CurrencyConversionResult(BaseModel):
     provenance_hash: str = Field(..., description="SHA-256 hash")
 
 
-class NormalizerInput(BaseModel):
+class NormalizerInput(GreenLangBase):
     """Input data model for UnitNormalizerAgent."""
     operation: str = Field(..., description="Operation type: convert, ghg_convert, standardize_fuel, standardize_material, resolve_reference, convert_currency")
     data: Dict[str, Any] = Field(..., description="Operation-specific data")
     tenant_id: Optional[str] = Field(None, description="Tenant ID for custom configs")
 
 
-class NormalizerOutput(BaseModel):
+class NormalizerOutput(GreenLangBase):
     """Output data model for UnitNormalizerAgent."""
     success: bool = Field(..., description="Operation success status")
     operation: str = Field(..., description="Operation performed")

@@ -40,20 +40,15 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -66,11 +61,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ERPSystemType(str, Enum):
     """Supported ERP system types."""
@@ -81,7 +74,6 @@ class ERPSystemType(str, Enum):
     NETSUITE = "netsuite"
     GENERIC = "generic"
 
-
 class ConnectionStatus(str, Enum):
     """ERP connection status."""
 
@@ -90,7 +82,6 @@ class ConnectionStatus(str, Enum):
     ERROR = "error"
     AUTHENTICATING = "authenticating"
 
-
 class ExtractionStatus(str, Enum):
     """Data extraction status."""
 
@@ -98,7 +89,6 @@ class ExtractionStatus(str, Enum):
     PARTIAL = "partial"
     FAILED = "failed"
     NO_DATA = "no_data"
-
 
 # ---------------------------------------------------------------------------
 # GL Account to Scope 3 Category Mapping
@@ -122,11 +112,9 @@ GL_TO_SCOPE3_MAP: Dict[str, Dict[str, str]] = {
     "73": {"category": "cat_6", "description": "Business travel meals"},
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class ERPConnectorConfig(BaseModel):
     """ERP connector configuration."""
@@ -144,13 +132,11 @@ class ERPConnectorConfig(BaseModel):
     company_code: str = Field(default="")
     cost_center_filter: List[str] = Field(default_factory=list)
 
-
 class DateRange(BaseModel):
     """Date range for data extraction."""
 
     start_date: str = Field(default="2025-01-01")
     end_date: str = Field(default="2025-12-31")
-
 
 class ProcurementTransaction(BaseModel):
     """AP/Procurement transaction from ERP."""
@@ -170,7 +156,6 @@ class ProcurementTransaction(BaseModel):
     naics_code: str = Field(default="")
     scope3_category: str = Field(default="")
 
-
 class TravelExpense(BaseModel):
     """Business travel expense record from ERP."""
 
@@ -188,7 +173,6 @@ class TravelExpense(BaseModel):
     hotel_nights: int = Field(default=0)
     department: str = Field(default="")
 
-
 class VendorRecord(BaseModel):
     """Vendor master record from ERP."""
 
@@ -200,7 +184,6 @@ class VendorRecord(BaseModel):
     payment_terms: str = Field(default="")
     sustainability_rating: str = Field(default="")
     has_emission_data: bool = Field(default=False)
-
 
 class ExtractionResult(BaseModel):
     """Result of an ERP data extraction operation."""
@@ -215,13 +198,11 @@ class ExtractionResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
     processing_time_ms: float = Field(default=0.0)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # ERPConnector
 # ---------------------------------------------------------------------------
-
 
 class ERPConnector:
     """ERP system integration for Scope 3 data extraction.
@@ -281,7 +262,7 @@ class ERPConnector:
         )
 
         self._connected = True
-        self._connection_time = _utcnow()
+        self._connection_time = utcnow()
         self._status = ConnectionStatus.CONNECTED
         elapsed_ms = (time.monotonic() - start_time) * 1000
 
@@ -297,7 +278,7 @@ class ERPConnector:
         """Disconnect from ERP system."""
         self._connected = False
         self._status = ConnectionStatus.DISCONNECTED
-        return {"status": "disconnected", "timestamp": _utcnow().isoformat()}
+        return {"status": "disconnected", "timestamp": utcnow().isoformat()}
 
     def get_connection_status(self) -> Dict[str, Any]:
         """Get current connection status."""

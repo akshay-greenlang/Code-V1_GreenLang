@@ -68,6 +68,7 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -150,7 +151,6 @@ except ImportError:
     DualReportingProvenanceTracker = None  # type: ignore[misc,assignment]
     ProvenanceStage = None  # type: ignore[misc,assignment]
 
-
 # ---------------------------------------------------------------------------
 # Engine constants
 # ---------------------------------------------------------------------------
@@ -185,21 +185,13 @@ _FLAG_CODE_RESIDUAL_UPLIFT = f"{_FLAG_PREFIX}-I-004"
 _FLAG_CODE_STEAM_HEAT_DIVERGENCE = f"{_FLAG_PREFIX}-W-007"
 _FLAG_CODE_GRID_TIMING = f"{_FLAG_PREFIX}-W-008"
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ---------------------------------------------------------------------------
 # Decimal helpers
 # ---------------------------------------------------------------------------
-
 
 def _D(value: Any) -> Decimal:
     """Convert a value to Decimal with controlled precision.
@@ -213,7 +205,6 @@ def _D(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
     return Decimal(str(value))
-
 
 def _safe_decimal(value: Any, default: Decimal = _ZERO) -> Decimal:
     """Safely convert a value to Decimal, returning default on failure.
@@ -232,7 +223,6 @@ def _safe_decimal(value: Any, default: Decimal = _ZERO) -> Decimal:
     except (InvalidOperation, ValueError, TypeError):
         return default
 
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
 
@@ -249,7 +239,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 def _round_decimal(value: Decimal, places: int = 8) -> Decimal:
     """Round a Decimal to the specified number of places.
 
@@ -265,7 +254,6 @@ def _round_decimal(value: Decimal, places: int = 8) -> Decimal:
         return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
     except InvalidOperation:
         return value
-
 
 # ===========================================================================
 # Discrepancy description templates
@@ -365,11 +353,9 @@ _DISCREPANCY_RECOMMENDATIONS: Dict[str, str] = {
     ),
 }
 
-
 # ===========================================================================
 # DiscrepancyAnalyzerEngine
 # ===========================================================================
-
 
 class DiscrepancyAnalyzerEngine:
     """Engine 2: Analyzes discrepancies between location/market Scope 2 totals.
@@ -498,7 +484,7 @@ class DiscrepancyAnalyzerEngine:
         self._total_discrepancies_found: int = 0
         self._total_waterfall_builds: int = 0
         self._total_flags_generated: int = 0
-        self._created_at: datetime = _utcnow()
+        self._created_at: datetime = utcnow()
 
     # ==================================================================
     # Public API: Primary analysis method
@@ -2168,7 +2154,7 @@ class DiscrepancyAnalyzerEngine:
                 "initialized": self.__class__._initialized,
                 "created_at": self._created_at.isoformat(),
                 "uptime_seconds": (
-                    _utcnow() - self._created_at
+                    utcnow() - self._created_at
                 ).total_seconds(),
                 "total_analyses": self._total_analyses,
                 "total_discrepancies_found": (

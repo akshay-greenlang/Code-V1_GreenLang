@@ -27,20 +27,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -53,11 +48,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class HazardCategory(str, Enum):
     """Climate hazard categories per ESRS."""
@@ -71,7 +64,6 @@ class HazardCategory(str, Enum):
     CHRONIC_WIND = "chronic_wind"
     CHRONIC_SOLID_MASS = "chronic_solid_mass"
 
-
 class ScenarioFramework(str, Enum):
     """Climate scenario frameworks."""
 
@@ -82,11 +74,9 @@ class ScenarioFramework(str, Enum):
     SSP2_4_5 = "SSP2-4.5"
     SSP5_8_5 = "SSP5-8.5"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class AdaptBridgeConfig(BaseModel):
     """Configuration for the Adaptation Bridge."""
@@ -97,7 +87,6 @@ class AdaptBridgeConfig(BaseModel):
     time_horizons: List[str] = Field(
         default_factory=lambda: ["2030", "2050", "2100"]
     )
-
 
 class PhysicalRisk(BaseModel):
     """Physical climate risk assessment entry."""
@@ -112,7 +101,6 @@ class PhysicalRisk(BaseModel):
     time_horizon: str = Field(default="")
     adaptation_measures: List[str] = Field(default_factory=list)
 
-
 class ClimateScenario(BaseModel):
     """Climate scenario data."""
 
@@ -123,7 +111,6 @@ class ClimateScenario(BaseModel):
     physical_risk_factors: Dict[str, float] = Field(default_factory=dict)
     transition_risk_factors: Dict[str, float] = Field(default_factory=dict)
 
-
 class ResilienceScore(BaseModel):
     """Climate resilience assessment score."""
 
@@ -133,7 +120,6 @@ class ResilienceScore(BaseModel):
     adaptive_capacity: float = Field(default=0.0, ge=0.0, le=100.0)
     vulnerability_index: float = Field(default=0.0, ge=0.0, le=100.0)
     adaptation_gap: float = Field(default=0.0, ge=0.0, le=100.0)
-
 
 class BridgeResult(BaseModel):
     """Result from a bridge operation."""
@@ -148,11 +134,9 @@ class BridgeResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # AdaptationBridge
 # ---------------------------------------------------------------------------
-
 
 class AdaptationBridge:
     """Climate adaptation agent integration bridge for PACK-016.
@@ -191,7 +175,7 @@ class AdaptationBridge:
         Returns:
             BridgeResult with physical risk import status.
         """
-        result = BridgeResult(started_at=_utcnow())
+        result = BridgeResult(started_at=utcnow())
 
         try:
             raw_risks = context.get("physical_risks", [])
@@ -234,7 +218,7 @@ class AdaptationBridge:
             result.errors.append(str(exc))
             logger.error("Physical risk import failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at
@@ -253,7 +237,7 @@ class AdaptationBridge:
         Returns:
             BridgeResult with scenario import status.
         """
-        result = BridgeResult(started_at=_utcnow())
+        result = BridgeResult(started_at=utcnow())
 
         try:
             raw_scenarios = context.get("climate_scenarios", [])
@@ -288,7 +272,7 @@ class AdaptationBridge:
             result.errors.append(str(exc))
             logger.error("Scenario import failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at
@@ -307,7 +291,7 @@ class AdaptationBridge:
         Returns:
             BridgeResult with resilience score import status.
         """
-        result = BridgeResult(started_at=_utcnow())
+        result = BridgeResult(started_at=utcnow())
 
         try:
             raw_scores = context.get("resilience_scores", [])
@@ -351,7 +335,7 @@ class AdaptationBridge:
             result.errors.append(str(exc))
             logger.error("Resilience score import failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at

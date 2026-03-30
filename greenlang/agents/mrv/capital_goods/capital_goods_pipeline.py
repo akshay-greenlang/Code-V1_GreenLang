@@ -64,6 +64,7 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -133,7 +134,6 @@ except ImportError:
         """Stub returning None when config module is unavailable."""
         return None
 
-
 try:
     from greenlang.agents.mrv.capital_goods.capital_goods_database import (
         CapitalGoodsDatabaseEngine,
@@ -194,21 +194,13 @@ except ImportError:
     CapitalGoodsMetrics = None  # type: ignore[assignment, misc]
     get_metrics = None  # type: ignore[assignment, misc]
 
-
 # ---------------------------------------------------------------------------
 # UTC helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _utcnow_iso() -> str:
     """Return current UTC datetime as an ISO-8601 string."""
-    return _utcnow().isoformat()
-
+    return utcnow().isoformat()
 
 def _compute_hash(data: Any) -> str:
     """
@@ -227,7 +219,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 def _decimal_to_float(value: Any) -> Any:
     """Recursively convert Decimal to float for JSON serialization."""
     if isinstance(value, Decimal):
@@ -237,7 +228,6 @@ def _decimal_to_float(value: Any) -> Any:
     elif isinstance(value, list):
         return [_decimal_to_float(v) for v in value]
     return value
-
 
 # ===========================================================================
 # Built-in Reference Data (standalone mode)
@@ -295,11 +285,9 @@ ASSET_CATEGORY_METADATA: Dict[AssetCategory, Dict[str, Any]] = {
     },
 }
 
-
 # ===========================================================================
 # Pipeline Context Dataclass
 # ===========================================================================
-
 
 class PipelineContext:
     """
@@ -344,11 +332,9 @@ class PipelineContext:
         self.errors.append(message)
         logger.error(message)
 
-
 # ===========================================================================
 # CapitalGoodsPipelineEngine - Thread-Safe Singleton
 # ===========================================================================
-
 
 class CapitalGoodsPipelineEngine:
     """
@@ -528,7 +514,7 @@ class CapitalGoodsPipelineEngine:
                 coverage_report=ctx.coverage_report,
                 asset_classifications=ctx.asset_classifications,
                 provenance_hash=ctx.stage_results.get("seal_hash", ""),
-                timestamp=_utcnow(),
+                timestamp=utcnow(),
                 processing_time_ms=total_time,
                 pipeline_stages_completed=[
                     stage.value for stage in PipelineStage
@@ -575,7 +561,7 @@ class CapitalGoodsPipelineEngine:
                 request_id=request.request_id,
                 tenant_id=request.tenant_id,
                 status=BatchStatus.FAILED,
-                timestamp=_utcnow(),
+                timestamp=utcnow(),
                 processing_time_ms=total_time,
                 pipeline_stages_completed=[],
                 warnings=ctx.warnings,
@@ -621,7 +607,7 @@ class CapitalGoodsPipelineEngine:
                         request_id=request.request_id,
                         tenant_id=request.tenant_id,
                         status=BatchStatus.FAILED,
-                        timestamp=_utcnow(),
+                        timestamp=utcnow(),
                         processing_time_ms=ZERO,
                         errors=[f"Batch request failed: {str(e)}"],
                     )
@@ -1159,7 +1145,7 @@ class CapitalGoodsPipelineEngine:
             by_supplier={},  # Placeholder
             by_period={},  # Placeholder
             by_facility={},  # Placeholder
-            timestamp=_utcnow(),
+            timestamp=utcnow(),
         )
 
         logger.info(
@@ -1492,15 +1478,12 @@ class CapitalGoodsPipelineEngine:
         """
         return _compute_hash(result)
 
-
 # ===========================================================================
 # Module-level Singleton Accessor
 # ===========================================================================
 
-
 _pipeline_instance: Optional[CapitalGoodsPipelineEngine] = None
 _pipeline_lock: threading.Lock = threading.Lock()
-
 
 def get_pipeline() -> CapitalGoodsPipelineEngine:
     """

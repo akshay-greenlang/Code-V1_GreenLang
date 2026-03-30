@@ -41,25 +41,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -72,11 +66,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class IntensityMetricType(str, Enum):
     """Types of intensity metrics from PACK-046."""
@@ -88,7 +80,6 @@ class IntensityMetricType(str, Enum):
     ENERGY = "tco2e_per_mwh"
     CUSTOM = "custom"
 
-
 class DecompositionFactor(str, Enum):
     """LMDI decomposition factor types."""
 
@@ -97,11 +88,9 @@ class DecompositionFactor(str, Enum):
     INTENSITY_EFFECT = "intensity_effect"
     TOTAL_CHANGE = "total_change"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class Pack046Config(BaseModel):
     """Configuration for PACK-046 bridge."""
@@ -111,7 +100,6 @@ class Pack046Config(BaseModel):
     )
     timeout_s: float = Field(60.0, ge=5.0)
     cache_ttl_s: float = Field(3600.0)
-
 
 class IntensityMetric(BaseModel):
     """A single intensity metric from PACK-046."""
@@ -127,7 +115,6 @@ class IntensityMetric(BaseModel):
     data_quality_score: float = 0.0
     provenance_hash: str = ""
 
-
 class DenominatorData(BaseModel):
     """Denominator data from PACK-046."""
 
@@ -138,7 +125,6 @@ class DenominatorData(BaseModel):
     period: str = ""
     quality_score: float = 0.0
     provenance_hash: str = ""
-
 
 class DecompositionResult(BaseModel):
     """LMDI decomposition result from PACK-046."""
@@ -152,7 +138,6 @@ class DecompositionResult(BaseModel):
     decomposition_method: str = "LMDI"
     provenance_hash: str = ""
 
-
 class PeerBenchmarkResult(BaseModel):
     """Existing peer benchmark result from PACK-046."""
 
@@ -165,7 +150,6 @@ class PeerBenchmarkResult(BaseModel):
     peer_count: int = 0
     source: str = ""
     provenance_hash: str = ""
-
 
 class IntensityRequest(BaseModel):
     """Request for intensity data from PACK-046."""
@@ -182,7 +166,6 @@ class IntensityRequest(BaseModel):
     include_decomposition: bool = Field(True)
     include_peer_benchmarks: bool = Field(True)
 
-
 class IntensityResponse(BaseModel):
     """Response with intensity data from PACK-046."""
 
@@ -198,11 +181,9 @@ class IntensityResponse(BaseModel):
     duration_ms: float = 0.0
     warnings: List[str] = Field(default_factory=list)
 
-
 # ---------------------------------------------------------------------------
 # Bridge Implementation
 # ---------------------------------------------------------------------------
-
 
 class Pack046Bridge:
     """
@@ -273,7 +254,7 @@ class Pack046Bridge:
                 decomposition=decomposition,
                 peer_benchmarks=peer_benchmarks,
                 provenance_hash=provenance,
-                retrieved_at=_utcnow().isoformat(),
+                retrieved_at=utcnow().isoformat(),
                 duration_ms=duration,
             )
 
@@ -290,7 +271,7 @@ class Pack046Bridge:
                 success=False,
                 period=period,
                 warnings=[f"Retrieval failed: {str(e)}"],
-                retrieved_at=_utcnow().isoformat(),
+                retrieved_at=utcnow().isoformat(),
                 duration_ms=duration,
             )
 

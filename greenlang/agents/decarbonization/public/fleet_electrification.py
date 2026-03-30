@@ -33,10 +33,11 @@ from datetime import date, datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +92,7 @@ class ElectrificationPriority(str, Enum):
 # Pydantic Models
 # =============================================================================
 
-class FleetVehicle(BaseModel):
+class FleetVehicle(GreenLangBase):
     """Individual fleet vehicle."""
 
     vehicle_id: str = Field(..., description="Unique vehicle identifier")
@@ -128,7 +129,7 @@ class FleetVehicle(BaseModel):
         return 0.0
 
 
-class EVSpecification(BaseModel):
+class EVSpecification(GreenLangBase):
     """Electric vehicle specification."""
 
     ev_model_id: str = Field(..., description="EV model identifier")
@@ -152,7 +153,7 @@ class EVSpecification(BaseModel):
     )
 
 
-class ChargingInfrastructure(BaseModel):
+class ChargingInfrastructure(GreenLangBase):
     """Charging infrastructure requirements."""
 
     location_id: str = Field(..., description="Location identifier")
@@ -167,7 +168,7 @@ class ChargingInfrastructure(BaseModel):
     electrical_upgrade_cost_usd: float = Field(default=0.0, ge=0)
 
 
-class ElectrificationScenario(BaseModel):
+class ElectrificationScenario(GreenLangBase):
     """Fleet electrification scenario."""
 
     scenario_id: str = Field(..., description="Scenario identifier")
@@ -205,7 +206,7 @@ class ElectrificationScenario(BaseModel):
     simple_payback_years: float = Field(default=0.0, ge=0)
 
 
-class ElectrificationPlan(BaseModel):
+class ElectrificationPlan(GreenLangBase):
     """Complete fleet electrification plan."""
 
     plan_id: str = Field(..., description="Plan identifier")
@@ -266,7 +267,7 @@ class ElectrificationPlan(BaseModel):
 # Agent Input/Output Models
 # =============================================================================
 
-class FleetElectrificationInput(BaseModel):
+class FleetElectrificationInput(GreenLangBase):
     """Input for Fleet Electrification Agent."""
 
     action: str = Field(
@@ -320,7 +321,7 @@ class FleetElectrificationInput(BaseModel):
         return v
 
 
-class FleetElectrificationOutput(BaseModel):
+class FleetElectrificationOutput(GreenLangBase):
     """Output from Fleet Electrification Agent."""
 
     success: bool = Field(...)

@@ -51,25 +51,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -81,7 +75,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -203,11 +196,9 @@ COUNTRY_BOUNDING_BOXES: Dict[str, Tuple[float, float, float, float]] = {
     "ZW": (-22.42, -15.61, 25.24, 33.07),
 }
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CoordinateFormat(str, Enum):
     """Supported coordinate input formats."""
@@ -216,7 +207,6 @@ class CoordinateFormat(str, Enum):
     DEGREES_MINUTES_SECONDS = "DMS"
     UTM = "UTM"
 
-
 class ValidationSeverity(str, Enum):
     """Severity level for validation issues."""
 
@@ -224,18 +214,15 @@ class ValidationSeverity(str, Enum):
     WARNING = "WARNING"
     INFO = "INFO"
 
-
 class PlotSizeCategory(str, Enum):
     """Plot size category per Article 9."""
 
     SMALL = "SMALL"      # < 4 hectares - point allowed
     LARGE = "LARGE"      # >= 4 hectares - polygon required
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class ValidationIssue(BaseModel):
     """A single validation issue found during geolocation checks."""
@@ -244,7 +231,6 @@ class ValidationIssue(BaseModel):
     code: str = Field(..., description="Machine-readable issue code")
     message: str = Field(..., description="Human-readable issue description")
     field: Optional[str] = Field(None, description="Field that caused the issue")
-
 
 class CoordinateValidation(BaseModel):
     """Result of coordinate validation."""
@@ -258,9 +244,8 @@ class CoordinateValidation(BaseModel):
     precision_decimals: int = Field(default=6, description="Decimal precision achieved")
     issues: List[ValidationIssue] = Field(default_factory=list, description="Validation issues")
     country_code: Optional[str] = Field(None, description="Detected country ISO code")
-    validated_at: datetime = Field(default_factory=_utcnow, description="Validation timestamp")
+    validated_at: datetime = Field(default_factory=utcnow, description="Validation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class PolygonValidation(BaseModel):
     """Result of polygon validation."""
@@ -275,9 +260,8 @@ class PolygonValidation(BaseModel):
     centroid_lat: Optional[float] = Field(None, description="Centroid latitude")
     centroid_lon: Optional[float] = Field(None, description="Centroid longitude")
     issues: List[ValidationIssue] = Field(default_factory=list, description="Validation issues")
-    validated_at: datetime = Field(default_factory=_utcnow, description="Validation timestamp")
+    validated_at: datetime = Field(default_factory=utcnow, description="Validation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class NormalizedCoordinate(BaseModel):
     """A coordinate normalized to decimal degrees WGS84."""
@@ -290,7 +274,6 @@ class NormalizedCoordinate(BaseModel):
     precision_decimals: int = Field(default=6, description="Decimal precision")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class AreaResult(BaseModel):
     """Result of area calculation."""
 
@@ -302,7 +285,6 @@ class AreaResult(BaseModel):
     vertex_count: int = Field(default=0, description="Number of polygon vertices")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class OverlapResult(BaseModel):
     """Result of polygon overlap detection."""
 
@@ -312,7 +294,6 @@ class OverlapResult(BaseModel):
     overlap_type: str = Field(default="NONE", description="Type of overlap")
     overlap_area_hectares: Optional[float] = Field(None, description="Overlap area in hectares")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class CountryResult(BaseModel):
     """Result of country determination."""
@@ -325,7 +306,6 @@ class CountryResult(BaseModel):
     method: str = Field(default="bounding_box", description="Detection method used")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class PlotSizeRule(BaseModel):
     """Article 9 plot size rule check result."""
 
@@ -337,7 +317,6 @@ class PlotSizeRule(BaseModel):
     threshold_hectares: float = Field(default=4.0, description="Threshold in hectares")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class BatchValidationResult(BaseModel):
     """Result of batch coordinate validation."""
 
@@ -347,9 +326,8 @@ class BatchValidationResult(BaseModel):
     invalid_count: int = Field(default=0, description="Number of invalid coordinates")
     results: List[CoordinateValidation] = Field(default_factory=list, description="Per-coordinate results")
     processing_time_ms: float = Field(default=0.0, description="Total processing time")
-    validated_at: datetime = Field(default_factory=_utcnow, description="Batch validation timestamp")
+    validated_at: datetime = Field(default_factory=utcnow, description="Batch validation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class ParsedGeoJSON(BaseModel):
     """Parsed GeoJSON structure."""
@@ -360,7 +338,6 @@ class ParsedGeoJSON(BaseModel):
     is_valid: bool = Field(default=False, description="Whether GeoJSON is valid")
     issues: List[ValidationIssue] = Field(default_factory=list, description="Parsing issues")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class Article9Geolocation(BaseModel):
     """Formatted geolocation data per Article 9 requirements."""
@@ -375,9 +352,8 @@ class Article9Geolocation(BaseModel):
     plots: List[Dict[str, Any]] = Field(default_factory=list, description="Formatted plot data")
     is_compliant: bool = Field(default=False, description="Whether all plots meet Article 9")
     issues: List[ValidationIssue] = Field(default_factory=list, description="Compliance issues")
-    formatted_at: datetime = Field(default_factory=_utcnow, description="Formatting timestamp")
+    formatted_at: datetime = Field(default_factory=utcnow, description="Formatting timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 # ---------------------------------------------------------------------------
 # Country name mapping (subset for display purposes)
@@ -421,11 +397,9 @@ OCEAN_REGIONS: List[Tuple[float, float, float, float]] = [
     (30.0, 60.0, -60.0, -10.0),      # North Atlantic
 ]
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class GeolocationEngine:
     """
@@ -483,7 +457,7 @@ class GeolocationEngine:
         Returns:
             CoordinateValidation with validity status and any issues.
         """
-        start = _utcnow()
+        start = utcnow()
         issues: List[ValidationIssue] = []
         is_valid = True
 
@@ -922,7 +896,7 @@ class GeolocationEngine:
         Returns:
             BatchValidationResult with individual and aggregate results.
         """
-        start = _utcnow()
+        start = utcnow()
         logger.info("Batch validating %d coordinates", len(coordinates_list))
 
         results: List[CoordinateValidation] = []
@@ -936,7 +910,7 @@ class GeolocationEngine:
             if validation.is_valid:
                 valid_count += 1
 
-        end = _utcnow()
+        end = utcnow()
         processing_ms = (end - start).total_seconds() * 1000
 
         batch_result = BatchValidationResult(

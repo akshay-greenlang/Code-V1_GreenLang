@@ -72,6 +72,8 @@ from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -83,12 +85,6 @@ _MODULE_VERSION: str = "1.0.0"
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -108,7 +104,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str = "bl") -> str:
     """Generate a unique identifier with a given prefix.
 
@@ -119,7 +114,6 @@ def _generate_id(prefix: str = "bl") -> str:
         ID in format ``{prefix}-{hex12}``.
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 def _to_decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
@@ -140,7 +134,6 @@ def _to_decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError) as exc:
         raise ValueError(f"Cannot convert {value!r} to Decimal") from exc
 
-
 def _clamp_decimal(value: Decimal, lo: Decimal, hi: Decimal) -> Decimal:
     """Clamp a Decimal value to [lo, hi] range.
 
@@ -158,7 +151,6 @@ def _clamp_decimal(value: Decimal, lo: Decimal, hi: Decimal) -> Decimal:
         return hi
     return value
 
-
 def _date_from_str(date_str: str) -> date:
     """Parse an ISO date string to a date object.
 
@@ -173,11 +165,9 @@ def _date_from_str(date_str: str) -> date:
     """
     return date.fromisoformat(date_str)
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class BaselineStatus(str, Enum):
     """Baseline establishment and lifecycle status.
@@ -196,7 +186,6 @@ class BaselineStatus(str, Enum):
     FAILED = "FAILED"
     ARCHIVED = "ARCHIVED"
 
-
 class ChangeDirection(str, Enum):
     """Direction of change relative to baseline.
 
@@ -209,7 +198,6 @@ class ChangeDirection(str, Enum):
     LOSS = "LOSS"
     GAIN = "GAIN"
     STABLE = "STABLE"
-
 
 class ForestClassification(str, Enum):
     """Forest classification based on canopy cover.
@@ -228,7 +216,6 @@ class ForestClassification(str, Enum):
     NON_FOREST = "NON_FOREST"
     UNKNOWN = "UNKNOWN"
 
-
 class TrendDirection(str, Enum):
     """Trend direction from linear regression analysis.
 
@@ -241,7 +228,6 @@ class TrendDirection(str, Enum):
     INCREASING = "INCREASING"
     DECREASING = "DECREASING"
     STABLE = "STABLE"
-
 
 class AnomalyType(str, Enum):
     """Type of anomaly detected in baseline data.
@@ -259,7 +245,6 @@ class AnomalyType(str, Enum):
     SEASONAL_ANOMALY = "SEASONAL_ANOMALY"
     OUTLIER = "OUTLIER"
     DATA_GAP = "DATA_GAP"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -368,7 +353,6 @@ SEASONAL_ADJUSTMENTS: Dict[str, Dict[int, Decimal]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Reference Data: Baseline Observations
 # ---------------------------------------------------------------------------
@@ -407,11 +391,9 @@ REFERENCE_BASELINE_OBSERVATIONS: Dict[str, List[Dict[str, Any]]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class HistoricalBaseline:
@@ -514,7 +496,6 @@ class HistoricalBaseline:
             "provenance_hash": self.provenance_hash,
         }
 
-
 @dataclass
 class BaselineComparison:
     """Comparison of current state against historical baseline.
@@ -598,7 +579,6 @@ class BaselineComparison:
             "provenance_hash": self.provenance_hash,
         }
 
-
 @dataclass
 class CoverageStatistics:
     """Baseline coverage statistics summary.
@@ -652,11 +632,9 @@ class CoverageStatistics:
             "provenance_hash": self.provenance_hash,
         }
 
-
 # ---------------------------------------------------------------------------
 # HistoricalBaselineEngine
 # ---------------------------------------------------------------------------
-
 
 class HistoricalBaselineEngine:
     """Production-grade historical forest cover baseline engine for EUDR.
@@ -826,7 +804,7 @@ class HistoricalBaselineEngine:
                 biome=biome,
                 country_code=country_code or "",
                 status=BaselineStatus.FAILED.value,
-                established_at=_utcnow().isoformat(),
+                established_at=utcnow().isoformat(),
                 warnings=[
                     f"Insufficient observations: {len(period_obs)} available, "
                     f"minimum {self._min_samples} required."
@@ -901,7 +879,7 @@ class HistoricalBaselineEngine:
             biome=biome,
             country_code=country_code or "",
             status=BaselineStatus.ESTABLISHED.value,
-            established_at=_utcnow().isoformat(),
+            established_at=utcnow().isoformat(),
             warnings=warnings,
         )
         baseline.provenance_hash = _compute_hash(baseline)
@@ -951,7 +929,7 @@ class HistoricalBaselineEngine:
                 f"Baseline not found for identifier: {baseline_id_or_plot_id}"
             )
 
-        comp_date = comparison_date or _utcnow().date().isoformat()
+        comp_date = comparison_date or utcnow().date().isoformat()
         baseline_ndvi = _to_decimal(baseline_data.get("ndvi_mean", "0"))
         baseline_canopy = _to_decimal(baseline_data.get("canopy_cover_pct", "0"))
         baseline_area = _to_decimal(baseline_data.get("forest_area_ha", "0"))

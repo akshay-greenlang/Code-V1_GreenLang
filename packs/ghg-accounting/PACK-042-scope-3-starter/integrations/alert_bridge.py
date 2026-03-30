@@ -48,25 +48,20 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import AlertSeverity, AlertStatus
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -79,11 +74,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class AlertType(str, Enum):
     """Types of Scope 3 inventory alerts."""
@@ -96,16 +89,6 @@ class AlertType(str, Enum):
     HOTSPOT_ALERT = "hotspot_alert"
     SCOPE3_ANOMALY = "scope3_anomaly"
 
-
-class AlertSeverity(str, Enum):
-    """Alert severity levels."""
-
-    INFO = "info"
-    WARNING = "warning"
-    CRITICAL = "critical"
-    EMERGENCY = "emergency"
-
-
 class AlertChannel(str, Enum):
     """Notification delivery channels."""
 
@@ -115,17 +98,6 @@ class AlertChannel(str, Enum):
     WEBHOOK = "webhook"
     IN_APP = "in_app"
     SMS = "sms"
-
-
-class AlertStatus(str, Enum):
-    """Alert lifecycle status."""
-
-    ACTIVE = "active"
-    ACKNOWLEDGED = "acknowledged"
-    RESOLVED = "resolved"
-    ESCALATED = "escalated"
-    SUPPRESSED = "suppressed"
-
 
 # ---------------------------------------------------------------------------
 # Compliance Deadline Definitions
@@ -170,11 +142,9 @@ DQR_THRESHOLDS: Dict[str, float] = {
     "supplier_specific": 1.5,    # DQR 1.5 minimum for supplier-specific
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class AlertConfig(BaseModel):
     """Alert system configuration."""
@@ -193,7 +163,6 @@ class AlertConfig(BaseModel):
     deadline_warning_days: int = Field(default=30, ge=7)
     supplier_response_reminder_days: int = Field(default=14, ge=3)
 
-
 class Alert(BaseModel):
     """Alert message with metadata."""
 
@@ -207,11 +176,10 @@ class Alert(BaseModel):
     scope3_category: Optional[int] = Field(None, ge=1, le=15)
     details: Dict[str, Any] = Field(default_factory=dict)
     status: AlertStatus = Field(default=AlertStatus.ACTIVE)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     acknowledged_at: Optional[datetime] = Field(None)
     resolved_at: Optional[datetime] = Field(None)
     provenance_hash: str = Field(default="")
-
 
 class ScheduledAlert(BaseModel):
     """Scheduled alert with recurrence."""
@@ -226,7 +194,6 @@ class ScheduledAlert(BaseModel):
     next_fire: Optional[str] = Field(None)
     active: bool = Field(default=True)
 
-
 class SendResult(BaseModel):
     """Result of sending an alert."""
 
@@ -236,13 +203,11 @@ class SendResult(BaseModel):
     success: bool = Field(default=True)
     recipient: str = Field(default="")
     error: Optional[str] = Field(None)
-    sent_at: datetime = Field(default_factory=_utcnow)
-
+    sent_at: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # AlertBridge
 # ---------------------------------------------------------------------------
-
 
 class AlertBridge:
     """Alert and notification integration for Scope 3 Starter Pack.
@@ -682,7 +647,7 @@ class AlertBridge:
             return {"alert_id": alert_id, "acknowledged": False, "reason": "Not found"}
 
         alert.status = AlertStatus.ACKNOWLEDGED
-        alert.acknowledged_at = _utcnow()
+        alert.acknowledged_at = utcnow()
         return {"alert_id": alert_id, "acknowledged": True}
 
     def resolve_alert(self, alert_id: str) -> Dict[str, Any]:
@@ -699,7 +664,7 @@ class AlertBridge:
             return {"alert_id": alert_id, "resolved": False, "reason": "Not found"}
 
         alert.status = AlertStatus.RESOLVED
-        alert.resolved_at = _utcnow()
+        alert.resolved_at = utcnow()
         return {"alert_id": alert_id, "resolved": True}
 
     def get_active_alerts(

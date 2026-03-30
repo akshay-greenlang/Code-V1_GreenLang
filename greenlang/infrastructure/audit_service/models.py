@@ -16,7 +16,8 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 
 
 class EventCategory(str, enum.Enum):
@@ -55,7 +56,7 @@ class EventOutcome(str, enum.Enum):
     ERROR = "error"
 
 
-class AuditEvent(BaseModel):
+class AuditEvent(GreenLangBase):
     """Core audit event model (mirrors audit.audit_log schema)."""
 
     model_config = ConfigDict(from_attributes=True)
@@ -118,7 +119,7 @@ class AuditEvent(BaseModel):
     gdpr_relevant: bool = False
 
 
-class AuditEventSummary(BaseModel):
+class AuditEventSummary(GreenLangBase):
     """Compact audit event summary for list responses."""
 
     model_config = ConfigDict(from_attributes=True)
@@ -134,14 +135,14 @@ class AuditEventSummary(BaseModel):
     outcome: EventOutcome
 
 
-class TimeRange(BaseModel):
+class TimeRange(GreenLangBase):
     """Time range for queries."""
 
     start: datetime = Field(..., description="Start of time range (inclusive)")
     end: datetime = Field(..., description="End of time range (exclusive)")
 
 
-class SearchQuery(BaseModel):
+class SearchQuery(GreenLangBase):
     """Structured search query for audit events."""
 
     # Text search
@@ -172,7 +173,7 @@ class SearchQuery(BaseModel):
     )
 
 
-class AggregationBucket(BaseModel):
+class AggregationBucket(GreenLangBase):
     """Single aggregation bucket."""
 
     key: str
@@ -180,7 +181,7 @@ class AggregationBucket(BaseModel):
     percentage: float = 0.0
 
 
-class SearchAggregation(BaseModel):
+class SearchAggregation(GreenLangBase):
     """Aggregation result for a single field."""
 
     field: str
@@ -188,7 +189,7 @@ class SearchAggregation(BaseModel):
     total: int
 
 
-class EventStatistics(BaseModel):
+class EventStatistics(GreenLangBase):
     """Audit event statistics."""
 
     total_events: int
@@ -200,7 +201,7 @@ class EventStatistics(BaseModel):
     time_range: TimeRange
 
 
-class ActivityTimelineEntry(BaseModel):
+class ActivityTimelineEntry(GreenLangBase):
     """Single entry in activity timeline."""
 
     timestamp: datetime
@@ -212,7 +213,7 @@ class ActivityTimelineEntry(BaseModel):
     outcome: EventOutcome
 
 
-class HotspotEntry(BaseModel):
+class HotspotEntry(GreenLangBase):
     """Single hotspot entry (top user/resource/IP)."""
 
     identifier: str
@@ -222,7 +223,7 @@ class HotspotEntry(BaseModel):
     severity_breakdown: Dict[str, int] = Field(default_factory=dict)
 
 
-class ReportJob(BaseModel):
+class ReportJob(GreenLangBase):
     """Report generation job status."""
 
     job_id: str
@@ -237,7 +238,7 @@ class ReportJob(BaseModel):
     file_size_bytes: Optional[int] = None
 
 
-class ExportJob(BaseModel):
+class ExportJob(GreenLangBase):
     """Export job status."""
 
     job_id: str
@@ -254,7 +255,7 @@ class ExportJob(BaseModel):
     file_size_bytes: Optional[int] = None
 
 
-class StreamFilter(BaseModel):
+class StreamFilter(GreenLangBase):
     """Filter configuration for event streaming."""
 
     event_types: Optional[List[str]] = None

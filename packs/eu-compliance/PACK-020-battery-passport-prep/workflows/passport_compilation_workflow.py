@@ -35,35 +35,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class WorkflowPhase(str, Enum):
     """Phases of the passport compilation workflow."""
@@ -73,7 +65,6 @@ class WorkflowPhase(str, Enum):
     QR_GENERATION = "qr_generation"
     REGISTRY_SUBMISSION = "registry_submission"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "pending"
@@ -82,7 +73,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class PhaseStatus(str, Enum):
     """Status of a single phase."""
     PENDING = "pending"
@@ -90,7 +80,6 @@ class PhaseStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class PassportStatus(str, Enum):
     """Battery passport lifecycle status."""
@@ -101,7 +90,6 @@ class PassportStatus(str, Enum):
     SUBMITTED = "submitted"
     ACTIVE = "active"
     REVOKED = "revoked"
-
 
 class DataCategory(str, Enum):
     """Mandatory data categories per Annex XIII."""
@@ -116,7 +104,6 @@ class DataCategory(str, Enum):
     STATE_OF_HEALTH = "state_of_health"
     STATE_OF_CHARGE = "state_of_charge"
 
-
 class AccessLevel(str, Enum):
     """Data access levels within the passport."""
     PUBLIC = "public"
@@ -124,11 +111,9 @@ class AccessLevel(str, Enum):
     NOTIFIED_BODY = "notified_body"
     MANUFACTURER_ONLY = "manufacturer_only"
 
-
 # =============================================================================
 # MANDATORY PASSPORT FIELDS (Annex XIII)
 # =============================================================================
-
 
 MANDATORY_FIELDS: Dict[str, List[str]] = {
     DataCategory.GENERAL_INFORMATION.value: [
@@ -173,11 +158,9 @@ MANDATORY_FIELDS: Dict[str, List[str]] = {
     ],
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -189,7 +172,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class PassportDataSection(BaseModel):
     """A data section within the passport."""
     category: str = Field(..., description="Data category name")
@@ -199,7 +181,6 @@ class PassportDataSection(BaseModel):
     validated: bool = Field(default=False)
     validation_errors: List[str] = Field(default_factory=list)
 
-
 class QRCodeInfo(BaseModel):
     """QR code metadata."""
     qr_code_id: str = Field(default_factory=lambda: f"qr-{_new_uuid()[:8]}")
@@ -207,7 +188,6 @@ class QRCodeInfo(BaseModel):
     encoded_data: str = Field(default="")
     format: str = Field(default="URL")
     generated_at: str = Field(default="")
-
 
 class RegistrySubmission(BaseModel):
     """Registry submission record."""
@@ -217,7 +197,6 @@ class RegistrySubmission(BaseModel):
     passport_id: str = Field(default="")
     submitted_at: str = Field(default="")
     acknowledgement_id: str = Field(default="")
-
 
 class PassportCompilationInput(BaseModel):
     """Input data model for PassportCompilationWorkflow."""
@@ -246,7 +225,6 @@ class PassportCompilationInput(BaseModel):
     entity_name: str = Field(default="")
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class PassportCompilationResult(BaseModel):
     """Complete result from passport compilation workflow."""
     workflow_id: str = Field(..., description="Unique execution ID")
@@ -269,11 +247,9 @@ class PassportCompilationResult(BaseModel):
     executed_at: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class PassportCompilationWorkflow:
     """
@@ -349,7 +325,7 @@ class PassportCompilationWorkflow:
         if input_data is None:
             input_data = PassportCompilationInput(config=config or {})
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting passport compilation workflow %s", self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = WorkflowStatus.IN_PROGRESS
@@ -376,7 +352,7 @@ class PassportCompilationWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         total_completeness = self._compute_overall_completeness()
         total_errors = sum(
             len(s.validation_errors) for s in self._sections
@@ -399,7 +375,7 @@ class PassportCompilationWorkflow:
             qr_code=self._qr_code,
             registry_submission=self._registry_sub,
             reporting_year=input_data.reporting_year,
-            executed_at=_utcnow().isoformat(),
+            executed_at=utcnow().isoformat(),
         )
         result.provenance_hash = self._compute_provenance(result)
         self.logger.info(
@@ -416,7 +392,7 @@ class PassportCompilationWorkflow:
         self, input_data: PassportCompilationInput,
     ) -> PhaseResult:
         """Collect data from upstream workflows and external sources."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -481,7 +457,7 @@ class PassportCompilationWorkflow:
                 f"{empty} data sections have no data: {', '.join(empty_cats)}"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 1 DataGathering: %d sections, %d populated",
             len(self._sections), populated,
@@ -501,7 +477,7 @@ class PassportCompilationWorkflow:
         self, input_data: PassportCompilationInput,
     ) -> PhaseResult:
         """Validate passport data against mandatory schema."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         total_errors = 0
@@ -552,7 +528,7 @@ class PassportCompilationWorkflow:
                 f"Validation failed with {total_errors} errors across sections"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 2 Validation: passed=%s, errors=%d",
             self._validation_passed, total_errors,
@@ -572,7 +548,7 @@ class PassportCompilationWorkflow:
         self, input_data: PassportCompilationInput,
     ) -> PhaseResult:
         """Assemble the digital battery passport document."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -580,7 +556,7 @@ class PassportCompilationWorkflow:
             "passport_id": self._passport_id,
             "schema_version": _MODULE_VERSION,
             "regulation": "EU Regulation 2023/1542",
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
             "battery_id": input_data.battery_id,
             "sections": {},
         }
@@ -618,7 +594,7 @@ class PassportCompilationWorkflow:
                 "Passport assembled in DRAFT status due to validation errors"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 3 PassportAssembly: %s assembled, status=%s",
             self._passport_id, self._passport_status,
@@ -638,7 +614,7 @@ class PassportCompilationWorkflow:
         self, input_data: PassportCompilationInput,
     ) -> PhaseResult:
         """Generate QR code linking to the battery passport."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -659,7 +635,7 @@ class PassportCompilationWorkflow:
             passport_url=passport_url,
             encoded_data=encoded_data,
             format="URL",
-            generated_at=_utcnow().isoformat(),
+            generated_at=utcnow().isoformat(),
         )
 
         outputs["qr_code_id"] = self._qr_code.qr_code_id
@@ -671,7 +647,7 @@ class PassportCompilationWorkflow:
         if not input_data.manufacturer_name:
             warnings.append("QR payload missing manufacturer name")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 4 QRGeneration: %s generated for %s",
             self._qr_code.qr_code_id, passport_url,
@@ -691,7 +667,7 @@ class PassportCompilationWorkflow:
         self, input_data: PassportCompilationInput,
     ) -> PhaseResult:
         """Prepare and record registry submission."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -705,7 +681,7 @@ class PassportCompilationWorkflow:
         self._registry_sub = RegistrySubmission(
             passport_id=self._passport_id,
             submission_status=submission_status,
-            submitted_at=_utcnow().isoformat() if can_submit else "",
+            submitted_at=utcnow().isoformat() if can_submit else "",
             acknowledgement_id=f"ACK-{_new_uuid()[:8]}" if can_submit else "",
         )
 
@@ -734,7 +710,7 @@ class PassportCompilationWorkflow:
         outputs["readiness_checks"] = readiness_checks
         outputs["passport_final_status"] = self._passport_status
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 5 RegistrySubmission: %s, status=%s",
             self._registry_sub.submission_id, submission_status,

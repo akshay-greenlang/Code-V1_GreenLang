@@ -44,29 +44,23 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 def _compute_hash(content: str) -> str:
     """Compute SHA-256 hash of string content."""
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -79,13 +73,11 @@ class OutputFormat(str, Enum):
     PDF = "pdf"
     JSON = "json"
 
-
 class TrafficLight(str, Enum):
     """Traffic light status indicators."""
     GREEN = "green"
     AMBER = "amber"
     RED = "red"
-
 
 class MomentumIndicator(str, Enum):
     """Acceleration / deceleration indicator."""
@@ -93,7 +85,6 @@ class MomentumIndicator(str, Enum):
     STEADY = "steady"
     DECELERATING = "decelerating"
     REVERSING = "reversing"
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Input Models
@@ -112,7 +103,6 @@ class CARRRankEntry(BaseModel):
     total_reduction_pct: Optional[float] = Field(None, description="Total reduction %")
     status: TrafficLight = Field(TrafficLight.AMBER, description="Traffic light status")
 
-
 class ConvergenceTrendPoint(BaseModel):
     """Gap to median at a point in time."""
     year: int = Field(..., description="Year")
@@ -120,7 +110,6 @@ class ConvergenceTrendPoint(BaseModel):
     median_value: float = Field(0.0, description="Peer median value")
     gap_absolute: float = Field(0.0, description="Absolute gap (org - median)")
     gap_pct: float = Field(0.0, description="Relative gap (%)")
-
 
 class MomentumEntry(BaseModel):
     """Acceleration / deceleration entry for an entity."""
@@ -134,7 +123,6 @@ class MomentumEntry(BaseModel):
     change_in_carr: float = Field(0.0, description="Change in CARR (pp)")
     period_description: str = Field("", description="Period description")
 
-
 class StructuralBreak(BaseModel):
     """Structural break annotation."""
     year: int = Field(..., description="Year of structural break")
@@ -142,7 +130,6 @@ class StructuralBreak(BaseModel):
     break_type: str = Field("", description="Type (e.g., M&A, methodology, restatement)")
     description: str = Field("", description="Description of the break")
     magnitude_pct: Optional[float] = Field(None, description="Magnitude as % change")
-
 
 class FanChartBand(BaseModel):
     """Single year in the fan chart distribution envelope."""
@@ -153,7 +140,6 @@ class FanChartBand(BaseModel):
     p75: float = Field(0.0, description="75th percentile value")
     p90: float = Field(0.0, description="90th percentile value")
     org_value: Optional[float] = Field(None, description="Organisation value")
-
 
 class TrajectoryAnalysisInput(BaseModel):
     """Complete input model for TrajectoryAnalysisReport."""
@@ -176,7 +162,6 @@ class TrajectoryAnalysisInput(BaseModel):
         default_factory=list, description="Fan chart distribution bands"
     )
 
-
 # ---------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------
@@ -184,7 +169,6 @@ class TrajectoryAnalysisInput(BaseModel):
 def _tl_label(status: TrafficLight) -> str:
     """Return uppercase label for traffic light."""
     return status.value.upper()
-
 
 def _tl_color(status: TrafficLight) -> str:
     """Return hex colour for traffic light status."""
@@ -195,11 +179,9 @@ def _tl_color(status: TrafficLight) -> str:
     }
     return mapping.get(status, "#e9c46a")
 
-
 def _momentum_label(ind: MomentumIndicator) -> str:
     """Return human-readable momentum label."""
     return ind.value.replace("_", " ").title()
-
 
 def _momentum_arrow(ind: MomentumIndicator) -> str:
     """Return text arrow for momentum."""
@@ -210,7 +192,6 @@ def _momentum_arrow(ind: MomentumIndicator) -> str:
         MomentumIndicator.REVERSING: "<<",
     }
     return mapping.get(ind, "->")
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -268,7 +249,7 @@ class TrajectoryAnalysisReport:
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render trajectory analysis as Markdown."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_md(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -276,7 +257,7 @@ class TrajectoryAnalysisReport:
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render trajectory analysis as HTML."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_html(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -284,7 +265,7 @@ class TrajectoryAnalysisReport:
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render trajectory analysis as JSON dict."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_json(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -325,7 +306,7 @@ class TrajectoryAnalysisReport:
         return (
             f"# Trajectory Analysis Report - {company}\n\n"
             f"**Reporting Period:** {period} | "
-            f"**Report Date:** {_utcnow().strftime('%Y-%m-%d')}\n\n"
+            f"**Report Date:** {utcnow().strftime('%Y-%m-%d')}\n\n"
             "---"
         )
 
@@ -514,7 +495,7 @@ class TrajectoryAnalysisReport:
             '<div class="section">\n'
             f"<h1>Trajectory Analysis Report &mdash; {company}</h1>\n"
             f"<p><strong>Reporting Period:</strong> {period} | "
-            f"<strong>Report Date:</strong> {_utcnow().strftime('%Y-%m-%d')}</p>\n"
+            f"<strong>Report Date:</strong> {utcnow().strftime('%Y-%m-%d')}</p>\n"
             "<hr>\n</div>"
         )
 

@@ -27,6 +27,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Union
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "26.0.0"
@@ -56,18 +58,12 @@ _DQ_TIERS = {
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str) if isinstance(data, dict) else str(data)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 def _dec(val: Any, places: int = 2) -> str:
     try:
@@ -76,7 +72,6 @@ def _dec(val: Any, places: int = 2) -> str:
         return str(d.quantize(Decimal(q), rounding=ROUND_HALF_UP))
     except Exception:
         return str(val)
-
 
 def _dec_comma(val: Any, places: int = 0) -> str:
     try:
@@ -101,13 +96,11 @@ def _dec_comma(val: Any, places: int = 0) -> str:
     except Exception:
         return str(val)
 
-
 def _pct(val: Any) -> str:
     try:
         return _dec(val, 1) + "%"
     except Exception:
         return str(val)
-
 
 def _safe_div(num: Any, den: Any, default: float = 0.0) -> float:
     try:
@@ -115,7 +108,6 @@ def _safe_div(num: Any, den: Any, default: float = 0.0) -> float:
         return float(num) / d if d != 0 else default
     except Exception:
         return default
-
 
 def _dq_tier(score: float) -> Dict[str, Any]:
     """Return data quality tier for a numeric score 0-100."""
@@ -125,7 +117,6 @@ def _dq_tier(score: float) -> Dict[str, Any]:
         return _DQ_TIERS["silver"]
     return _DQ_TIERS["bronze"]
 
-
 def _ascii_bar(value: float, max_value: float, width: int = 30, char: str = "#") -> str:
     """Render a simple ASCII bar for markdown output."""
     if max_value <= 0:
@@ -134,12 +125,10 @@ def _ascii_bar(value: float, max_value: float, width: int = 30, char: str = "#")
     filled = max(0, min(width, filled))
     return char * filled + "." * (width - filled)
 
-
 def _scope_color(scope: str) -> str:
     """Return CSS colour for scope."""
     mapping = {"scope1": _ACCENT, "scope2": "#66bb6a", "scope3": "#a5d6a7"}
     return mapping.get(scope.lower().replace(" ", ""), _ACCENT)
-
 
 # ---------------------------------------------------------------------------
 # Scope 3 simplified categories (SME-relevant)
@@ -151,7 +140,6 @@ _SME_SCOPE3 = [
     {"num": "6", "name": "Business Travel"},
     {"num": "7", "name": "Employee Commuting"},
 ]
-
 
 # ===========================================================================
 # Template Class
@@ -186,7 +174,7 @@ class SMEBaselineReportTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render the SME baseline report as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections: List[str] = [
             self._md_header(data),
             self._md_executive_summary(data),
@@ -204,7 +192,7 @@ class SMEBaselineReportTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render the SME baseline report as HTML with inline CSS."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         body = "\n".join([
             self._html_header(data),
@@ -229,7 +217,7 @@ class SMEBaselineReportTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render the SME baseline report as structured JSON."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         s1 = float(data.get("scope1_tco2e", 0))
         s2 = float(data.get("scope2_tco2e", 0))
         s3 = float(data.get("scope3_tco2e", 0))
@@ -287,7 +275,7 @@ class SMEBaselineReportTemplate:
 
     def render_excel(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render Excel-ready data structure with worksheet definitions."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         s1 = float(data.get("scope1_tco2e", 0))
         s2 = float(data.get("scope2_tco2e", 0))
         s3 = float(data.get("scope3_tco2e", 0))

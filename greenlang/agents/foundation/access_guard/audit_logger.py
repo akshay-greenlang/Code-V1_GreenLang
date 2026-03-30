@@ -38,6 +38,7 @@ import threading
 from collections import defaultdict
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import utcnow
 
 from greenlang.agents.foundation.access_guard.models import (
     AccessDecision,
@@ -47,12 +48,6 @@ from greenlang.agents.foundation.access_guard.models import (
 )
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _to_naive(dt: datetime) -> datetime:
     """Convert datetime to naive (remove timezone info) for comparison.
@@ -66,7 +61,6 @@ def _to_naive(dt: datetime) -> datetime:
     if dt.tzinfo is not None:
         return dt.replace(tzinfo=None)
     return dt
-
 
 class AuditLogger:
     """In-memory audit logger with retention and compliance reporting.
@@ -438,7 +432,6 @@ class AuditLogger:
             logger.warning(
                 "Audit log rotated: trimmed to %d events", keep,
             )
-
 
 __all__ = [
     "AuditLogger",

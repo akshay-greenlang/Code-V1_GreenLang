@@ -95,23 +95,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -128,7 +123,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -137,15 +131,12 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _round2(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class Framework(str, Enum):
     """Regulatory framework identifier."""
@@ -159,13 +150,11 @@ class Framework(str, Enum):
     GRI_305_4 = "GRI_305_4"
     IFRS_S2 = "IFRS_S2"
 
-
 class RequirementLevel(str, Enum):
     """Level of requirement."""
     MANDATORY = "mandatory"
     RECOMMENDED = "recommended"
     OPTIONAL = "optional"
-
 
 class FieldStatus(str, Enum):
     """Status of a disclosure field."""
@@ -173,7 +162,6 @@ class FieldStatus(str, Enum):
     MISSING = "missing"
     PARTIAL = "partial"
     NOT_APPLICABLE = "not_applicable"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Disclosure Requirements
@@ -430,11 +418,9 @@ REMEDIATION_GUIDANCE: Dict[str, str] = {
     "metric": "Calculate the required metric using the appropriate engine.",
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class AvailableMetric(BaseModel):
     """An intensity metric available for disclosure.
@@ -464,7 +450,6 @@ class AvailableMetric(BaseModel):
     has_time_series: bool = Field(default=False, description="Has time series")
     has_narrative: bool = Field(default=False, description="Has narrative")
 
-
 class DisclosureInput(BaseModel):
     """Input for disclosure mapping analysis.
 
@@ -483,11 +468,9 @@ class DisclosureInput(BaseModel):
     sector: str = Field(default="", description="Sector")
     output_precision: int = Field(default=2, ge=0, le=12, description="Precision")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class FieldAssessment(BaseModel):
     """Assessment of a single disclosure field.
@@ -510,7 +493,6 @@ class FieldAssessment(BaseModel):
     matched_metric_id: str = Field(default="", description="Matched metric ID")
     remediation: str = Field(default="", description="Remediation")
     reference: str = Field(default="", description="Reference")
-
 
 class FrameworkCompleteness(BaseModel):
     """Completeness assessment for a single framework.
@@ -540,7 +522,6 @@ class FrameworkCompleteness(BaseModel):
         default_factory=list, description="Field assessments"
     )
 
-
 class FrameworkMapping(BaseModel):
     """Cross-framework mapping for a single metric.
 
@@ -550,7 +531,6 @@ class FrameworkMapping(BaseModel):
     """
     metric_id: str = Field(..., description="Metric ID")
     satisfies: List[str] = Field(default_factory=list, description="Satisfied requirements")
-
 
 class CompletenessReport(BaseModel):
     """Summary completeness report across all frameworks.
@@ -565,7 +545,6 @@ class CompletenessReport(BaseModel):
     compliant_frameworks: int = Field(default=0, description="Compliant count")
     total_gaps: int = Field(default=0, description="Total gaps")
     critical_gaps: int = Field(default=0, description="Critical gaps")
-
 
 class DisclosureResult(BaseModel):
     """Result of disclosure mapping analysis.
@@ -599,11 +578,9 @@ class DisclosureResult(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class DisclosureMappingEngine:
     """Maps intensity metrics to regulatory disclosure requirements.
@@ -697,7 +674,7 @@ class DisclosureMappingEngine:
             completeness_report=report,
             gap_list=all_gaps,
             warnings=warnings,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         result.provenance_hash = _compute_hash(result)
@@ -899,7 +876,6 @@ class DisclosureMappingEngine:
 
     def get_version(self) -> str:
         return self._version
-
 
 # ---------------------------------------------------------------------------
 # __all__

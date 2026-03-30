@@ -50,6 +50,7 @@ from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -165,26 +166,17 @@ except ImportError:
     _record_batch = None  # type: ignore[assignment]
     _observe_calculation_duration = None  # type: ignore[assignment]
 
-
 # ===================================================================
 # Utility helpers
 # ===================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _utcnow_iso() -> str:
     """Return current UTC datetime as an ISO-8601 string."""
-    return _utcnow().isoformat()
-
+    return utcnow().isoformat()
 
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -202,11 +194,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ===================================================================
 # Lightweight Pydantic response models used by the facade / API layer
 # ===================================================================
-
 
 class CalculateResponse(BaseModel):
     """Single flaring emission calculation response.
@@ -252,7 +242,6 @@ class CalculateResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
 class BatchCalculateResponse(BaseModel):
     """Batch flaring emission calculation response.
 
@@ -275,7 +264,6 @@ class BatchCalculateResponse(BaseModel):
     total_co2e_kg: float = Field(default=0.0)
     results: List[Dict[str, Any]] = Field(default_factory=list)
     processing_time_ms: float = Field(default=0.0)
-
 
 class FlareSystemResponse(BaseModel):
     """Response for a single flare system.
@@ -300,7 +288,6 @@ class FlareSystemResponse(BaseModel):
     min_hhv_btu_scf: float = Field(default=200.0)
     status: str = Field(default="active")
 
-
 class FlareSystemListResponse(BaseModel):
     """Response listing registered flare systems.
 
@@ -313,7 +300,6 @@ class FlareSystemListResponse(BaseModel):
 
     flare_systems: List[Dict[str, Any]] = Field(default_factory=list)
     total: int = Field(default=0)
-
 
 class FlaringEventResponse(BaseModel):
     """Response for a single flaring event.
@@ -338,7 +324,6 @@ class FlaringEventResponse(BaseModel):
     is_routine: bool = Field(default=True)
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
 class FlaringEventListResponse(BaseModel):
     """Response listing flaring events.
 
@@ -351,7 +336,6 @@ class FlaringEventListResponse(BaseModel):
 
     events: List[Dict[str, Any]] = Field(default_factory=list)
     total: int = Field(default=0)
-
 
 class GasCompositionResponse(BaseModel):
     """Response for a registered gas composition.
@@ -371,7 +355,6 @@ class GasCompositionResponse(BaseModel):
     hhv_btu_scf: float = Field(default=0.0)
     source: str = Field(default="")
 
-
 class GasCompositionListResponse(BaseModel):
     """Response listing registered gas compositions.
 
@@ -384,7 +367,6 @@ class GasCompositionListResponse(BaseModel):
 
     compositions: List[Dict[str, Any]] = Field(default_factory=list)
     total: int = Field(default=0)
-
 
 class EmissionFactorResponse(BaseModel):
     """Response for a registered emission factor.
@@ -405,7 +387,6 @@ class EmissionFactorResponse(BaseModel):
     ch4_kg_per_mscf: float = Field(default=0.0)
     n2o_kg_per_mscf: float = Field(default=0.0)
 
-
 class EmissionFactorListResponse(BaseModel):
     """Response listing registered emission factors.
 
@@ -418,7 +399,6 @@ class EmissionFactorListResponse(BaseModel):
 
     factors: List[Dict[str, Any]] = Field(default_factory=list)
     total: int = Field(default=0)
-
 
 class EfficiencyTestResponse(BaseModel):
     """Response for a combustion efficiency test record.
@@ -440,7 +420,6 @@ class EfficiencyTestResponse(BaseModel):
     test_date: str = Field(default_factory=_utcnow_iso)
     notes: str = Field(default="")
 
-
 class EfficiencyTestListResponse(BaseModel):
     """Response listing combustion efficiency test records.
 
@@ -453,7 +432,6 @@ class EfficiencyTestListResponse(BaseModel):
 
     records: List[Dict[str, Any]] = Field(default_factory=list)
     total: int = Field(default=0)
-
 
 class UncertaintyResponse(BaseModel):
     """Monte Carlo uncertainty analysis response.
@@ -481,7 +459,6 @@ class UncertaintyResponse(BaseModel):
     )
     dqi_score: Optional[float] = Field(default=None)
 
-
 class ComplianceCheckResponse(BaseModel):
     """Regulatory compliance check response.
 
@@ -503,7 +480,6 @@ class ComplianceCheckResponse(BaseModel):
     partial: int = Field(default=0)
     results: List[Dict[str, Any]] = Field(default_factory=list)
 
-
 class HealthResponse(BaseModel):
     """Service health check response.
 
@@ -520,7 +496,6 @@ class HealthResponse(BaseModel):
     service: str = Field(default="flaring")
     version: str = Field(default="1.0.0")
     engines: Dict[str, str] = Field(default_factory=dict)
-
 
 class StatsResponse(BaseModel):
     """Service aggregate statistics response.
@@ -545,7 +520,6 @@ class StatsResponse(BaseModel):
     total_efficiency_tests: int = Field(default=0)
     uptime_seconds: float = Field(default=0.0)
 
-
 # ===================================================================
 # FlaringService facade
 # ===================================================================
@@ -553,7 +527,6 @@ class StatsResponse(BaseModel):
 # Thread-safe singleton lock
 _singleton_lock = threading.Lock()
 _singleton_instance: Optional["FlaringService"] = None
-
 
 class FlaringService:
     """Unified facade over the Flaring Agent SDK.
@@ -1728,15 +1701,12 @@ class FlaringService:
             "requirements": requirements,
         }
 
-
 # ===================================================================
 # Thread-safe singleton access
 # ===================================================================
 
-
 _service_instance: Optional[FlaringService] = None
 _service_lock = threading.Lock()
-
 
 def get_service() -> FlaringService:
     """Get or create the singleton FlaringService instance.
@@ -1753,7 +1723,6 @@ def get_service() -> FlaringService:
             if _service_instance is None:
                 _service_instance = FlaringService()
     return _service_instance
-
 
 def get_router() -> Any:
     """Get the FastAPI router for flaring.
@@ -1774,7 +1743,6 @@ def get_router() -> Any:
             "Flaring API router module not available"
         )
         return None
-
 
 def configure_flaring(
     app: Any,
@@ -1816,7 +1784,6 @@ def configure_flaring(
 
     logger.info("Flaring service configured")
     return service
-
 
 # ===================================================================
 # Public API

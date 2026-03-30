@@ -26,6 +26,8 @@ import logging
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _SECTIONS: List[Dict[str, Any]] = [
@@ -37,12 +39,6 @@ _SECTIONS: List[Dict[str, Any]] = [
     {"id": "provenance", "title": "Provenance", "order": 6},
 ]
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
     if hasattr(data, "model_dump"):
@@ -53,7 +49,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 class EvidenceDossierReportTemplate:
     """
@@ -82,7 +77,7 @@ class EvidenceDossierReportTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render evidence dossier report as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [
             self._md_header(data),
             self._md_dossier_overview(data),
@@ -99,7 +94,7 @@ class EvidenceDossierReportTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render evidence dossier report as HTML."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         body = "\n".join([
             self._html_header(data),
@@ -119,7 +114,7 @@ class EvidenceDossierReportTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render evidence dossier report as structured JSON."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result: Dict[str, Any] = {
             "template": "evidence_dossier_report",
             "directive_reference": "EU Green Claims Directive 2023/0085",
@@ -173,7 +168,7 @@ class EvidenceDossierReportTemplate:
             ) if documents else 0.0,
             "dossier_status": self._get_dossier_status(valid_docs, len(documents)),
             "prepared_by": data.get("prepared_by", ""),
-            "preparation_date": data.get("preparation_date", _utcnow().isoformat()),
+            "preparation_date": data.get("preparation_date", utcnow().isoformat()),
         }
 
     def _section_document_inventory(self, data: Dict[str, Any]) -> Dict[str, Any]:

@@ -16,10 +16,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism.clock import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +53,7 @@ CARBON_STOCKS = {
 }
 
 
-class BlueCarbonSite(BaseModel):
+class BlueCarbonSite(GreenLangBase):
     site_id: str = Field(...)
     area_ha: float = Field(..., gt=0)
     ecosystem_type: BlueEcosystem = Field(...)
@@ -60,7 +61,7 @@ class BlueCarbonSite(BaseModel):
     degradation_percent: float = Field(default=0, ge=0, le=100)
 
 
-class BlueCarbonProjectPlan(BaseModel):
+class BlueCarbonProjectPlan(GreenLangBase):
     site_id: str = Field(...)
     ecosystem_type: BlueEcosystem = Field(...)
     avoided_emissions_co2e: float = Field(...)
@@ -70,13 +71,13 @@ class BlueCarbonProjectPlan(BaseModel):
     cost_per_tonne_co2e: float = Field(...)
 
 
-class BlueCarbonProjectInput(BaseModel):
+class BlueCarbonProjectInput(GreenLangBase):
     project_id: str = Field(...)
     sites: List[BlueCarbonSite] = Field(..., min_length=1)
     project_duration_years: int = Field(default=30)
 
 
-class BlueCarbonProjectOutput(BaseModel):
+class BlueCarbonProjectOutput(GreenLangBase):
     project_id: str = Field(...)
     calculation_date: datetime = Field(default_factory=DeterministicClock.now)
     total_area_ha: float = Field(...)

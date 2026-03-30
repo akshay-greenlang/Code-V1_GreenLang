@@ -33,14 +33,9 @@ import time
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -52,7 +47,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Data Structures
@@ -72,7 +66,6 @@ VALID_SOURCE_STATUSES = frozenset({
 VALID_HEALTH_STATUSES = frozenset({
     "healthy", "degraded", "unhealthy", "unknown",
 })
-
 
 def _make_data_source(
     source_id: str,
@@ -99,7 +92,7 @@ def _make_data_source(
     Returns:
         DataSource dictionary.
     """
-    now = _utcnow().isoformat()
+    now = utcnow().isoformat()
     return {
         "source_id": source_id,
         "name": name,
@@ -112,7 +105,6 @@ def _make_data_source(
         "created_at": now,
         "updated_at": now,
     }
-
 
 def _make_health_check(
     source_id: str,
@@ -139,9 +131,8 @@ def _make_health_check(
         "latency_ms": round(latency_ms, 2),
         "message": message,
         "details": details or {},
-        "checked_at": _utcnow().isoformat(),
+        "checked_at": utcnow().isoformat(),
     }
-
 
 class ConnectionManagerEngine:
     """Data source connection management engine.
@@ -493,7 +484,7 @@ class ConnectionManagerEngine:
                 if is_connected
                 else f"Connection failed (status: {source_status})"
             ),
-            "tested_at": _utcnow().isoformat(),
+            "tested_at": utcnow().isoformat(),
         }
 
         logger.info(
@@ -556,7 +547,7 @@ class ConnectionManagerEngine:
             status = "inactive"
 
         source["status"] = status
-        source["updated_at"] = _utcnow().isoformat()
+        source["updated_at"] = utcnow().isoformat()
 
         logger.info(
             "Updated source %s status to %s", source_id, status,
@@ -606,7 +597,6 @@ class ConnectionManagerEngine:
             "by_status": by_status,
             "healthy_sources": len(self.get_healthy_sources()),
         }
-
 
 __all__ = [
     "ConnectionManagerEngine",

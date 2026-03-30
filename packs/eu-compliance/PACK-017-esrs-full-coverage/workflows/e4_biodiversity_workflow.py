@@ -38,33 +38,25 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class WorkflowPhase(str, Enum):
     """Phases of the E4 biodiversity workflow."""
@@ -75,7 +67,6 @@ class WorkflowPhase(str, Enum):
     TARGET_EVALUATION = "target_evaluation"
     FINANCIAL_EFFECTS = "financial_effects"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "pending"
@@ -83,7 +74,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class PhaseStatus(str, Enum):
     """Status of a single phase."""
@@ -93,14 +83,12 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class SensitivityLevel(str, Enum):
     """Biodiversity sensitivity classification."""
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
     CRITICAL = "critical"
-
 
 class ProtectedAreaType(str, Enum):
     """Protected area classification."""
@@ -112,11 +100,9 @@ class ProtectedAreaType(str, Enum):
     OTHER_PROTECTED = "other_protected"
     NONE = "none"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -127,7 +113,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class SiteRecord(BaseModel):
     """Operational site biodiversity assessment record per E4-4/E4-5."""
@@ -142,7 +127,6 @@ class SiteRecord(BaseModel):
     land_degradation_hectares: float = Field(default=0.0, description="Degraded land in hectares")
     restoration_hectares: float = Field(default=0.0, ge=0.0, description="Restored land in hectares")
 
-
 class SpeciesImpactRecord(BaseModel):
     """Species impact assessment record per E4-5."""
     record_id: str = Field(default_factory=lambda: f"sp-{_new_uuid()[:8]}")
@@ -152,7 +136,6 @@ class SpeciesImpactRecord(BaseModel):
     affected_population_estimate: int = Field(default=0, ge=0)
     mitigation_in_place: bool = Field(default=False)
     site_id: str = Field(default="")
-
 
 class BiodiversityTarget(BaseModel):
     """Biodiversity target per E4-4."""
@@ -164,7 +147,6 @@ class BiodiversityTarget(BaseModel):
     current_progress_pct: float = Field(default=0.0, ge=0.0, le=200.0)
     on_track: bool = Field(default=False)
     aligned_with_gbf: bool = Field(default=False, description="Aligned with Global Biodiversity Framework")
-
 
 class E4BiodiversityInput(BaseModel):
     """Input data model for E4BiodiversityWorkflow."""
@@ -195,7 +177,6 @@ class E4BiodiversityInput(BaseModel):
     )
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class E4BiodiversityWorkflowResult(BaseModel):
     """Complete result from E4 biodiversity workflow."""
     workflow_id: str = Field(..., description="Unique execution ID")
@@ -220,11 +201,9 @@ class E4BiodiversityWorkflowResult(BaseModel):
     reporting_year: int = Field(default=2025)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class E4BiodiversityWorkflow:
     """
@@ -289,7 +268,7 @@ class E4BiodiversityWorkflow:
         if input_data is None:
             input_data = E4BiodiversityInput(config=config or {})
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting E4 biodiversity workflow %s", self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = WorkflowStatus.IN_PROGRESS
@@ -309,7 +288,7 @@ class E4BiodiversityWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         completed_count = sum(1 for p in phase_results if p.status == PhaseStatus.COMPLETED)
 
         protected = sum(1 for s in input_data.site_records if s.protected_area_type != ProtectedAreaType.NONE)
@@ -357,7 +336,7 @@ class E4BiodiversityWorkflow:
 
     async def _phase_transition_plan(self, input_data: E4BiodiversityInput) -> PhaseResult:
         """Review biodiversity transition plan and strategy alignment."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -371,7 +350,7 @@ class E4BiodiversityWorkflow:
         if not data:
             warnings.append("No biodiversity transition plan data provided (E4-1)")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 1 TransitionPlan: has_plan=%s", bool(data))
         return PhaseResult(
             phase_name=WorkflowPhase.TRANSITION_PLAN.value, status=PhaseStatus.COMPLETED,
@@ -385,7 +364,7 @@ class E4BiodiversityWorkflow:
 
     async def _phase_policy_review(self, input_data: E4BiodiversityInput) -> PhaseResult:
         """Review biodiversity policies and actions."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -400,7 +379,7 @@ class E4BiodiversityWorkflow:
         if not input_data.actions:
             warnings.append("No biodiversity actions defined (E4-3)")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 2 PolicyReview: %d policies, %d actions",
                          len(input_data.policies), len(input_data.actions))
         return PhaseResult(
@@ -415,7 +394,7 @@ class E4BiodiversityWorkflow:
 
     async def _phase_site_assessment(self, input_data: E4BiodiversityInput) -> PhaseResult:
         """Assess biodiversity at operational sites."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -444,7 +423,7 @@ class E4BiodiversityWorkflow:
         if critical:
             warnings.append(f"{len(critical)} sites at critical biodiversity sensitivity")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 3 SiteAssessment: %d sites, %d in protected areas",
                          len(sites), len(protected))
         return PhaseResult(
@@ -459,7 +438,7 @@ class E4BiodiversityWorkflow:
 
     async def _phase_species_impact(self, input_data: E4BiodiversityInput) -> PhaseResult:
         """Evaluate impact on species and habitats."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -481,7 +460,7 @@ class E4BiodiversityWorkflow:
         if not species:
             warnings.append("No species impact records provided (E4-5)")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 4 SpeciesImpact: %d species, %d threatened",
                          len(species), len(threatened))
         return PhaseResult(
@@ -496,7 +475,7 @@ class E4BiodiversityWorkflow:
 
     async def _phase_target_evaluation(self, input_data: E4BiodiversityInput) -> PhaseResult:
         """Evaluate biodiversity targets and progress."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -517,7 +496,7 @@ class E4BiodiversityWorkflow:
         if targets and not gbf_aligned:
             warnings.append("No targets aligned with Global Biodiversity Framework")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 5 TargetEvaluation: %d targets, %d on track",
                          len(targets), len(on_track))
         return PhaseResult(
@@ -532,7 +511,7 @@ class E4BiodiversityWorkflow:
 
     async def _phase_financial_effects(self, input_data: E4BiodiversityInput) -> PhaseResult:
         """Assess anticipated financial effects from biodiversity risks."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -550,7 +529,7 @@ class E4BiodiversityWorkflow:
         if not data:
             warnings.append("No financial effects data provided (E4-6)")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 6 FinancialEffects: exposure=%d EUR", outputs["total_exposure_eur"])
         return PhaseResult(
             phase_name=WorkflowPhase.FINANCIAL_EFFECTS.value, status=PhaseStatus.COMPLETED,

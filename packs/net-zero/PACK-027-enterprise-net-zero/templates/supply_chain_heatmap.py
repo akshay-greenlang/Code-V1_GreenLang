@@ -35,6 +35,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "27.0.0"
@@ -55,19 +57,12 @@ SUPPLIER_TIERS = [
     {"tier": 4, "label": "Monitored", "criteria": "Remaining suppliers (long tail)", "engagement": "Inform"},
 ]
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str) if isinstance(data, dict) else str(data)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 def _dec_comma(val: Any, places: int = 0) -> str:
     try:
@@ -92,13 +87,11 @@ def _dec_comma(val: Any, places: int = 0) -> str:
     except Exception:
         return str(val)
 
-
 def _pct(val: Any) -> str:
     try:
         return str(round(float(val), 1)) + "%"
     except Exception:
         return str(val)
-
 
 def _safe_div(num: Any, den: Any, default: float = 0.0) -> float:
     try:
@@ -106,7 +99,6 @@ def _safe_div(num: Any, den: Any, default: float = 0.0) -> float:
         return float(num) / d if d != 0 else default
     except Exception:
         return default
-
 
 def _heat_level(pct: float) -> str:
     if pct >= 15:
@@ -116,7 +108,6 @@ def _heat_level(pct: float) -> str:
     elif pct > 0:
         return "LOW"
     return "NONE"
-
 
 class SupplyChainHeatmapTemplate:
     """
@@ -137,7 +128,7 @@ class SupplyChainHeatmapTemplate:
         self.generated_at: Optional[datetime] = None
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [
             self._md_header(data),
             self._md_overview(data),
@@ -158,7 +149,7 @@ class SupplyChainHeatmapTemplate:
         return content + f"\n\n<!-- SHA-256 Provenance: {prov} -->"
 
     def render_html(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = (
             f"body{{font-family:'Segoe UI',system-ui,sans-serif;margin:0;padding:24px;"
             f"background:#f5f7f5;color:#1a1a2e;line-height:1.6;}}"
@@ -196,7 +187,7 @@ class SupplyChainHeatmapTemplate:
         )
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result: Dict[str, Any] = {
             "template": _TEMPLATE_ID,
             "version": _MODULE_VERSION,

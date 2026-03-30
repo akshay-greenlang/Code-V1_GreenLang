@@ -52,6 +52,8 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 __all__ = [
@@ -67,21 +69,13 @@ __all__ = [
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for provenance tracking."""
@@ -94,11 +88,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ProhibitedPractice(str, Enum):
     """ECGT Annex I prohibited commercial practices."""
@@ -116,7 +108,6 @@ class ProhibitedPractice(str, Enum):
     LEGAL_AS_DISTINCTIVE = "23h_legal_as_distinctive"
     PERFORMANCE_DETERIORATION = "23i_performance_deterioration_omission"
 
-
 class ECGTCheckStatus(str, Enum):
     """Status of an ECGT compliance check."""
 
@@ -124,7 +115,6 @@ class ECGTCheckStatus(str, Enum):
     NON_COMPLIANT = "non_compliant"
     NEEDS_REVIEW = "needs_review"
     NOT_APPLICABLE = "not_applicable"
-
 
 class LabelVerificationStatus(str, Enum):
     """Status of a sustainability label verification."""
@@ -134,7 +124,6 @@ class LabelVerificationStatus(str, Enum):
     REJECTED = "rejected"
     EXPIRED = "expired"
     NOT_APPLICABLE = "not_applicable"
-
 
 # ---------------------------------------------------------------------------
 # Prohibited Practice Detection Patterns
@@ -169,11 +158,9 @@ KNOWN_EU_LABELS: Dict[str, Dict[str, str]] = {
     "NF_ENVIRONNEMENT": {"authority": "AFNOR", "type": "official", "status": "active"},
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class ECGTBridgeConfig(BaseModel):
     """Configuration for the ECGT Compliance Bridge."""
@@ -197,7 +184,6 @@ class ECGTBridgeConfig(BaseModel):
         description="List of recognized official sustainability labels",
     )
 
-
 class ProhibitedPracticeDetection(BaseModel):
     """Detection result for a single prohibited practice."""
 
@@ -208,7 +194,6 @@ class ProhibitedPracticeDetection(BaseModel):
     explanation: str = Field(default="")
     remediation: str = Field(default="")
 
-
 class LabelCheckResult(BaseModel):
     """Result of a sustainability label verification."""
 
@@ -218,7 +203,6 @@ class LabelCheckResult(BaseModel):
     issuing_authority: str = Field(default="")
     scope_match: bool = Field(default=True)
     issues: List[str] = Field(default_factory=list)
-
 
 class ECGTComplianceResult(BaseModel):
     """Result of an ECGT compliance check."""
@@ -234,14 +218,12 @@ class ECGTComplianceResult(BaseModel):
     labels_verified: int = Field(default=0)
     labels_rejected: int = Field(default=0)
     recommendations: List[str] = Field(default_factory=list)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # ECGTBridge
 # ---------------------------------------------------------------------------
-
 
 class ECGTBridge:
     """ECGT Directive compliance bridge for PACK-018.
@@ -289,7 +271,7 @@ class ECGTBridge:
             Dict with compliance status, detected prohibited practices,
             label check results, recommendations, and provenance hash.
         """
-        start = _utcnow()
+        start = utcnow()
         result = ECGTComplianceResult(claim_text=claim_text)
 
         if self.config.prohibited_practices_check:
@@ -306,7 +288,7 @@ class ECGTBridge:
         result.overall_status = self._determine_overall_status(result)
         result.recommendations = self._generate_recommendations(result)
 
-        elapsed = (_utcnow() - start).total_seconds() * 1000
+        elapsed = (utcnow() - start).total_seconds() * 1000
 
         if self.config.enable_provenance:
             result.provenance_hash = _compute_hash(result)

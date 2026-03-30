@@ -47,6 +47,7 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -60,22 +61,14 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str = "asmt") -> str:
     """Generate a unique identifier with the given prefix."""
     return f"{prefix}-{uuid.uuid4().hex[:16]}"
-
 
 # ---------------------------------------------------------------------------
 # Constants: Assessment Configuration
@@ -403,11 +396,9 @@ IMPROVEMENT_ACTION_TEMPLATES: Dict[str, Dict[str, List[Dict[str, Any]]]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Internal Dataclass Result Types
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class FacilityProfile:
@@ -436,7 +427,6 @@ class FacilityProfile:
     lines: int
     metadata: Dict[str, Any] = field(default_factory=dict)
     provenance_hash: str = ""
-
 
 @dataclass
 class AssessmentResult:
@@ -478,7 +468,6 @@ class AssessmentResult:
     assessment_date: str
     provenance_hash: str = ""
 
-
 @dataclass
 class ImprovementAction:
     """A structured improvement action for a facility.
@@ -501,7 +490,6 @@ class ImprovementAction:
     estimated_effort: str
     target_date: str
 
-
 @dataclass
 class CertificationReadiness:
     """Readiness assessment for a specific certification standard.
@@ -520,11 +508,9 @@ class CertificationReadiness:
     gaps: List[str]
     estimated_readiness_date: str
 
-
 # ---------------------------------------------------------------------------
 # FacilityAssessmentEngine
 # ---------------------------------------------------------------------------
-
 
 class FacilityAssessmentEngine:
     """Conducts facility segregation capability assessments.
@@ -617,7 +603,7 @@ class FacilityAssessmentEngine:
             lines=0,
             metadata={
                 "module_version": _MODULE_VERSION,
-                "registered_at": _utcnow().isoformat(),
+                "registered_at": utcnow().isoformat(),
             },
         )
         profile.provenance_hash = _compute_hash({
@@ -691,7 +677,7 @@ class FacilityAssessmentEngine:
         if "lines" in updates:
             profile.lines = int(updates["lines"])
 
-        profile.metadata["updated_at"] = _utcnow().isoformat()
+        profile.metadata["updated_at"] = utcnow().isoformat()
         profile.provenance_hash = _compute_hash({
             "facility_id": facility_id,
             "facility_type": profile.facility_type,
@@ -747,7 +733,7 @@ class FacilityAssessmentEngine:
             raise ValueError("facility_id must not be empty")
 
         assessment_id = _generate_id("asmt")
-        now = _utcnow()
+        now = utcnow()
 
         # Score each dimension
         layout_score = self.assess_layout(
@@ -1298,7 +1284,7 @@ class FacilityAssessmentEngine:
             for tmpl in dimension_actions:
                 action_id = _generate_id("ia")
                 target_date = (
-                    _utcnow() + timedelta(weeks=12)
+                    utcnow() + timedelta(weeks=12)
                 ).isoformat()
 
                 actions.append({
@@ -1413,10 +1399,10 @@ class FacilityAssessmentEngine:
         if max_gap > 0:
             months = max(1, int(max_gap / 5.0) + 1)
             est_date = (
-                _utcnow() + timedelta(days=months * 30)
+                utcnow() + timedelta(days=months * 30)
             ).strftime("%Y-%m-%d")
         else:
-            est_date = _utcnow().strftime("%Y-%m-%d")
+            est_date = utcnow().strftime("%Y-%m-%d")
 
         return CertificationReadiness(
             standard=standard,
@@ -1557,7 +1543,7 @@ class FacilityAssessmentEngine:
         }
         days = delay_days.get(trigger_reason, 90)
         scheduled_date = (
-            _utcnow() + timedelta(days=days)
+            utcnow() + timedelta(days=days)
         ).isoformat()
 
         self._reassessment_schedule[facility_id] = scheduled_date
@@ -1698,13 +1684,13 @@ class FacilityAssessmentEngine:
         # Using logistic approximation: P(Z <= z) ~ 1 / (1 + exp(-1.7*z))
         try:
             import math
+
             prob = 1.0 / (1.0 + math.exp(-1.7 * z_score))
             percentile = int(round(prob * 100.0))
         except (OverflowError, ValueError):
             percentile = 99 if z_score > 0 else 1
 
         return max(1, min(99, percentile))
-
 
 # ---------------------------------------------------------------------------
 # Public API

@@ -42,8 +42,10 @@ from collections import defaultdict
 from dataclasses import field as dataclass_field
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from .models import (
+
     BoundaryChange,
     ChangeType,
     TemporalChangeResult,
@@ -61,17 +63,10 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -108,11 +103,9 @@ FOREST_ENCROACHMENT_SHIFT_THRESHOLD_M: float = 100.0
 STABLE_AREA_TOLERANCE_PCT: float = 1.0
 STABLE_SHIFT_TOLERANCE_M: float = 5.0
 
-
 # ---------------------------------------------------------------------------
 # TemporalConsistencyAnalyzer
 # ---------------------------------------------------------------------------
-
 
 class TemporalConsistencyAnalyzer:
     """Production-grade temporal boundary consistency analyzer for EUDR.
@@ -768,7 +761,6 @@ class TemporalConsistencyAnalyzer:
             "issue_codes": sorted([i.code for i in result.issues]),
         }
         return _compute_hash(hash_data)
-
 
 # ---------------------------------------------------------------------------
 # Module Exports

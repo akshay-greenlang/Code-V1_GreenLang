@@ -35,29 +35,23 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "24.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: Any) -> str:
     if isinstance(data, dict):
         data = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(str(data).encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -66,7 +60,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
@@ -74,25 +67,21 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class VerificationPhase(str, Enum):
     PACKAGE_PREPARATION = "package_preparation"
     BODY_ENGAGEMENT = "body_engagement"
     FINDINGS_RESOLUTION = "findings_resolution"
     OPINION_ISSUANCE = "opinion_issuance"
 
-
 class AssuranceLevel(str, Enum):
     LIMITED = "limited"
     REASONABLE = "reasonable"
-
 
 class VerificationStandard(str, Enum):
     ISO_14064_3 = "iso_14064_3"
     ISAE_3410 = "isae_3410"
     AA1000AS = "aa1000as"
     PAS_2060 = "pas_2060"
-
 
 class FindingCategory(str, Enum):
     MATERIAL_MISSTATEMENT = "material_misstatement"
@@ -101,20 +90,17 @@ class FindingCategory(str, Enum):
     OPPORTUNITY_FOR_IMPROVEMENT = "opportunity_for_improvement"
     GOOD_PRACTICE = "good_practice"
 
-
 class FindingSeverity(str, Enum):
     CRITICAL = "critical"
     MAJOR = "major"
     MINOR = "minor"
     INFORMATIONAL = "informational"
 
-
 class OpinionType(str, Enum):
     UNMODIFIED = "unmodified"
     QUALIFIED = "qualified"
     ADVERSE = "adverse"
     DISCLAIMER = "disclaimer"
-
 
 # =============================================================================
 # REFERENCE DATA
@@ -151,11 +137,9 @@ VERIFICATION_BODIES: List[Dict[str, Any]] = [
     {"name": "KPMG Climate", "accreditations": ["ISAE 3410"], "tier": "tier_2"},
 ]
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase_name: str = Field(...)
@@ -165,7 +149,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class VerificationFinding(BaseModel):
     finding_id: str = Field(default="")
@@ -180,7 +163,6 @@ class VerificationFinding(BaseModel):
     resolution_status: str = Field(default="open")
     resolution_date: Optional[datetime] = Field(None)
     evidence_reference: str = Field(default="")
-
 
 class VerificationOpinion(BaseModel):
     opinion_id: str = Field(default="")
@@ -199,7 +181,6 @@ class VerificationOpinion(BaseModel):
     certificate_number: str = Field(default="")
     valid_until: Optional[datetime] = Field(None)
 
-
 class VerificationConfig(BaseModel):
     org_name: str = Field(default="")
     reporting_year: int = Field(default=2025, ge=2015, le=2050)
@@ -211,7 +192,6 @@ class VerificationConfig(BaseModel):
     pas2060_compliance: bool = Field(default=True)
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
-
 
 class VerificationResult(BaseModel):
     workflow_id: str = Field(...)
@@ -226,11 +206,9 @@ class VerificationResult(BaseModel):
     assurance_level: AssuranceLevel = Field(default=AssuranceLevel.LIMITED)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class VerificationWorkflow:
     """
@@ -254,7 +232,7 @@ class VerificationWorkflow:
 
     async def execute(self, config: VerificationConfig) -> VerificationResult:
         """Execute the 4-phase verification workflow."""
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting verification workflow %s", self.workflow_id)
         self._phase_results = []
         overall_status = WorkflowStatus.RUNNING
@@ -282,7 +260,7 @@ class VerificationWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         is_verified = (
             self._opinion is not None
             and self._opinion.opinion_type in (OpinionType.UNMODIFIED, OpinionType.QUALIFIED)
@@ -307,7 +285,7 @@ class VerificationWorkflow:
 
     async def _phase_package_preparation(self, config: VerificationConfig) -> PhaseResult:
         """Compile verification package documentation."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         errors: List[str] = []
@@ -333,7 +311,7 @@ class VerificationWorkflow:
             warnings.append(f"Package completeness {completeness:.0f}% -- some items missing")
 
         status = PhaseStatus.COMPLETED
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name=VerificationPhase.PACKAGE_PREPARATION.value,
             status=status, duration_seconds=round(elapsed, 4),
@@ -343,7 +321,7 @@ class VerificationWorkflow:
 
     async def _phase_body_engagement(self, config: VerificationConfig) -> PhaseResult:
         """Select and engage verification body."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         errors: List[str] = []
@@ -363,7 +341,7 @@ class VerificationWorkflow:
         outputs["standard"] = config.standard.value
 
         status = PhaseStatus.COMPLETED
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name=VerificationPhase.BODY_ENGAGEMENT.value,
             status=status, duration_seconds=round(elapsed, 4),
@@ -373,7 +351,7 @@ class VerificationWorkflow:
 
     async def _phase_findings_resolution(self, config: VerificationConfig) -> PhaseResult:
         """Track and resolve verification findings."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         errors: List[str] = []
@@ -411,7 +389,7 @@ class VerificationWorkflow:
         outputs["resolved_findings"] = resolved
 
         status = PhaseStatus.COMPLETED
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name=VerificationPhase.FINDINGS_RESOLUTION.value,
             status=status, duration_seconds=round(elapsed, 4),
@@ -421,7 +399,7 @@ class VerificationWorkflow:
 
     async def _phase_opinion_issuance(self, config: VerificationConfig) -> PhaseResult:
         """Issue verification opinion and statement."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         errors: List[str] = []
@@ -442,7 +420,7 @@ class VerificationWorkflow:
             assurance_level=config.assurance_level,
             standard=config.standard,
             verification_body=VERIFICATION_BODIES[0]["name"],
-            opinion_date=_utcnow(),
+            opinion_date=utcnow(),
             opinion_text=(
                 f"Based on our {config.assurance_level.value} assurance engagement "
                 f"conducted in accordance with {config.standard.value}, "
@@ -464,7 +442,7 @@ class VerificationWorkflow:
         outputs["is_positive_opinion"] = opinion_type in (OpinionType.UNMODIFIED, OpinionType.QUALIFIED)
 
         status = PhaseStatus.COMPLETED
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name=VerificationPhase.OPINION_ISSUANCE.value,
             status=status, duration_seconds=round(elapsed, 4),

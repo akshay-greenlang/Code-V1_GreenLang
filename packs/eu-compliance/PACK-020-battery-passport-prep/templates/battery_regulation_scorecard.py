@@ -27,6 +27,8 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
@@ -98,16 +100,9 @@ _MILESTONES: List[Dict[str, Any]] = [
      "article": "Art 8(4)(b)", "status_key": "rc_phase2"},
 ]
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -119,7 +114,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 class BatteryRegulationScorecardTemplate:
     """
@@ -152,7 +146,7 @@ class BatteryRegulationScorecardTemplate:
 
     def render(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render full report as structured dict."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result: Dict[str, Any] = {
             "report_id": _new_uuid(),
             "generated_at": self.generated_at.isoformat(),
@@ -192,7 +186,7 @@ class BatteryRegulationScorecardTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render scorecard as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [
             self._md_header(data),
             self._md_overall_score(data),
@@ -208,7 +202,7 @@ class BatteryRegulationScorecardTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render scorecard as HTML."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         body = "\n".join([
             self._html_header(data),
@@ -229,7 +223,7 @@ class BatteryRegulationScorecardTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render scorecard as JSON."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result: Dict[str, Any] = {
             "template": "battery_regulation_scorecard",
             "regulation_reference": "EU Battery Regulation 2023/1542",
@@ -286,7 +280,7 @@ class BatteryRegulationScorecardTemplate:
             "red_count": red_count,
             "article_scores": article_scores,
             "assessment_date": data.get(
-                "assessment_date", _utcnow().strftime("%Y-%m-%d")
+                "assessment_date", utcnow().strftime("%Y-%m-%d")
             ),
         }
 
@@ -420,8 +414,8 @@ class BatteryRegulationScorecardTemplate:
     def _section_timeline(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Build regulatory milestone timeline section."""
         milestone_status = data.get("milestone_status", {})
-        reporting_year = data.get("reporting_year", _utcnow().year)
-        now_str = _utcnow().strftime("%Y-%m-%d")
+        reporting_year = data.get("reporting_year", utcnow().year)
+        now_str = utcnow().strftime("%Y-%m-%d")
 
         timeline_items: List[Dict[str, Any]] = []
         upcoming: List[Dict[str, Any]] = []

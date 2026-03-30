@@ -16,7 +16,7 @@ Example:
 """
 
 from typing import Dict, List, Optional, Any, Union, Tuple
-from pydantic import BaseModel, Field, validator
+from pydantic import Field, validator
 from datetime import datetime, timedelta
 import hashlib
 import logging
@@ -30,6 +30,7 @@ from difflib import SequenceMatcher
 import time
 from collections import defaultdict
 from urllib.parse import quote
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +54,7 @@ class EntityType(Enum):
     BRANCH = "branch"
 
 
-class EntityMatch(BaseModel):
+class EntityMatch(GreenLangBase):
     """Represents a matched entity from any source."""
 
     # Core identifiers
@@ -105,7 +106,7 @@ class EntityMatch(BaseModel):
         return v
 
 
-class ResolutionRequest(BaseModel):
+class ResolutionRequest(GreenLangBase):
     """Request for entity resolution."""
 
     query: str = Field(..., description="Company name or identifier to search")
@@ -129,7 +130,7 @@ class ResolutionRequest(BaseModel):
     timeout_seconds: int = Field(30, description="Timeout for external API calls")
 
 
-class ResolutionResult(BaseModel):
+class ResolutionResult(GreenLangBase):
     """Complete result of entity resolution across all sources."""
 
     request: ResolutionRequest = Field(..., description="Original request")

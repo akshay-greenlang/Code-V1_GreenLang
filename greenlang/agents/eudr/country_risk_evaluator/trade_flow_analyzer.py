@@ -62,17 +62,13 @@ from .models import (
 )
 from .provenance import get_provenance_tracker
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 #: HS code prefix mapping to EUDR commodities.
 #: Key: HS 4-digit prefix, Value: (commodity, product description).
@@ -168,11 +164,9 @@ _PORT_RISK_PROFILES: Dict[str, Tuple[str, float, str]] = {
     "PLGDN": ("PL", 24.0, "Gdansk - Baltic Sea port"),
 }
 
-
 # ---------------------------------------------------------------------------
 # TradeFlowAnalyzer
 # ---------------------------------------------------------------------------
-
 
 class TradeFlowAnalyzer:
     """Import/export trade flow analysis for EUDR commodities.

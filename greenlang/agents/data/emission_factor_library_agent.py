@@ -34,9 +34,10 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -110,7 +111,7 @@ class QualityTier(str, Enum):
 # PYDANTIC MODELS
 # =============================================================================
 
-class EmissionFactorCitation(BaseModel):
+class EmissionFactorCitation(GreenLangBase):
     """Citation for emission factor."""
     source: FactorSource = Field(...)
     document_name: str = Field(...)
@@ -121,7 +122,7 @@ class EmissionFactorCitation(BaseModel):
     access_date: date = Field(default_factory=date.today)
 
 
-class EmissionFactor(BaseModel):
+class EmissionFactor(GreenLangBase):
     """Emission factor with full metadata."""
     factor_id: str = Field(...)
     name: str = Field(...)
@@ -147,7 +148,7 @@ class EmissionFactor(BaseModel):
     tags: List[str] = Field(default_factory=list)
 
 
-class FactorLookupRequest(BaseModel):
+class FactorLookupRequest(GreenLangBase):
     """Request for emission factor lookup."""
     scope: Optional[EmissionScope] = Field(None)
     category: Optional[ActivityCategory] = Field(None)
@@ -159,7 +160,7 @@ class FactorLookupRequest(BaseModel):
     tags: Optional[List[str]] = Field(None)
 
 
-class FactorApplication(BaseModel):
+class FactorApplication(GreenLangBase):
     """Result of applying an emission factor."""
     application_id: str = Field(...)
     factor_id: str = Field(...)
@@ -177,7 +178,7 @@ class FactorApplication(BaseModel):
     provenance_hash: str = Field(...)
 
 
-class FactorLibraryInput(BaseModel):
+class FactorLibraryInput(GreenLangBase):
     """Input for factor library operations."""
     operation: str = Field(...)  # lookup, apply, register, list
     lookup: Optional[FactorLookupRequest] = Field(None)
@@ -188,7 +189,7 @@ class FactorLibraryInput(BaseModel):
     tenant_id: Optional[str] = Field(None)
 
 
-class FactorLibraryOutput(BaseModel):
+class FactorLibraryOutput(GreenLangBase):
     """Output from factor library operations."""
     operation: str = Field(...)
     factors: List[EmissionFactor] = Field(default_factory=list)

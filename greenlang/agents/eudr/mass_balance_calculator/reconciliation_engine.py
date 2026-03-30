@@ -71,6 +71,7 @@ import uuid
 from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.mass_balance_calculator.config import (
     MassBalanceCalculatorConfig,
@@ -105,12 +106,6 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance.
 
@@ -123,7 +118,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id(prefix: str = "RECON") -> str:
     """Generate a prefixed UUID4 string identifier.
 
@@ -134,7 +128,6 @@ def _generate_id(prefix: str = "RECON") -> str:
         Prefixed UUID4 string.
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 def _safe_decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
@@ -157,7 +150,6 @@ def _safe_decimal(value: Any) -> Decimal:
             f"Cannot convert {value!r} to Decimal: {exc}"
         ) from exc
 
-
 def _safe_float(value: Any) -> float:
     """Safely convert a value to float.
 
@@ -173,7 +165,6 @@ def _safe_float(value: Any) -> float:
         return float(str(value))
     except (ValueError, TypeError):
         return 0.0
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -300,11 +291,9 @@ COMPLIANCE_CHECKS: Dict[str, List[Dict[str, str]]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # ReconciliationEngine
 # ---------------------------------------------------------------------------
-
 
 class ReconciliationEngine:
     """Period-end reconciliation engine for EUDR mass balance accounting.
@@ -454,7 +443,7 @@ class ReconciliationEngine:
 
         # Step 5: Build reconciliation record
         recon_id = _generate_id("RECON")
-        now = _utcnow()
+        now = utcnow()
 
         recon_record: Dict[str, Any] = {
             "reconciliation_id": recon_id,
@@ -896,7 +885,7 @@ class ReconciliationEngine:
                     f"'{current_status}'. Must be in 'completed' status."
                 )
 
-            now = _utcnow()
+            now = utcnow()
             rec["signed_off_by"] = signed_off_by
             rec["signed_off_at"] = now.isoformat()
             rec["status"] = ReconciliationStatus.SIGNED_OFF.value
@@ -1020,7 +1009,7 @@ class ReconciliationEngine:
                 )
 
         report_id = _generate_id("RPT-RECON")
-        now = _utcnow()
+        now = utcnow()
 
         # Build report content
         report_content = self._build_report_content(rec)
@@ -1157,7 +1146,7 @@ class ReconciliationEngine:
             "check_results": check_results,
             "requirements": requirements,
             "recommendations": recommendations,
-            "assessed_at": _utcnow().isoformat(),
+            "assessed_at": utcnow().isoformat(),
             "provenance_hash": "",
         }
         compliance_result["provenance_hash"] = _compute_hash(
@@ -1244,7 +1233,7 @@ class ReconciliationEngine:
                 ] = True
                 self._reconciliations[orig_id]["metadata"][
                     "superseded_at"
-                ] = _utcnow().isoformat()
+                ] = utcnow().isoformat()
 
         # Run new reconciliation
         result = self.run_reconciliation(
@@ -1410,7 +1399,7 @@ class ReconciliationEngine:
                 "historical_mean": round(mean_val, 2),
                 "historical_std": round(std_val, 2),
                 "period_id": period_id,
-                "detected_at": _utcnow().isoformat(),
+                "detected_at": utcnow().isoformat(),
             })
 
         return anomalies
@@ -1462,7 +1451,7 @@ class ReconciliationEngine:
                 "consecutive_violations": consecutive,
                 "facility_id": facility_id,
                 "period_id": period_id,
-                "detected_at": _utcnow().isoformat(),
+                "detected_at": utcnow().isoformat(),
             })
 
         return anomalies
@@ -1537,7 +1526,7 @@ class ReconciliationEngine:
                 "z_score": round(z_score, 2),
                 "facility_id": facility_id,
                 "period_id": period_id,
-                "detected_at": _utcnow().isoformat(),
+                "detected_at": utcnow().isoformat(),
             })
 
         return anomalies
@@ -2030,7 +2019,7 @@ class ReconciliationEngine:
                 "report_type": "Mass Balance Reconciliation Report",
                 "agent_id": "GL-EUDR-MBC-011",
                 "module_version": _MODULE_VERSION,
-                "generated_at": _utcnow().isoformat(),
+                "generated_at": utcnow().isoformat(),
                 "regulation": "EU 2023/1115 (EUDR)",
                 "standard": "ISO 22095:2020",
             },
@@ -2183,7 +2172,7 @@ class ReconciliationEngine:
             'xmlns="urn:eu:eudr:mass-balance:1.0">',
             '  <Header>',
             f'    <AgentId>GL-EUDR-MBC-011</AgentId>',
-            f'    <GeneratedAt>{_utcnow().isoformat()}</GeneratedAt>',
+            f'    <GeneratedAt>{utcnow().isoformat()}</GeneratedAt>',
             f'    <Regulation>EU 2023/1115</Regulation>',
             '  </Header>',
             '  <Reconciliation>',
@@ -2269,7 +2258,6 @@ class ReconciliationEngine:
         """Return the total number of reconciliation records."""
         with self._lock:
             return len(self._reconciliations)
-
 
 # ---------------------------------------------------------------------------
 # Public API

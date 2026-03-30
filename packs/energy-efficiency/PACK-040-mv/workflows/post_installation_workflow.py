@@ -42,35 +42,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.utcnow()
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hash of a string."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -81,7 +73,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -90,7 +81,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class VerificationStatus(str, Enum):
     """ECM installation verification status."""
@@ -101,7 +91,6 @@ class VerificationStatus(str, Enum):
     DEFICIENCY_FOUND = "deficiency_found"
     FAILED = "failed"
 
-
 class CommissioningStatus(str, Enum):
     """Meter commissioning status."""
 
@@ -110,7 +99,6 @@ class CommissioningStatus(str, Enum):
     CALIBRATED = "calibrated"
     VALIDATED = "validated"
     FAILED = "failed"
-
 
 # =============================================================================
 # REFERENCE DATA (Zero-Hallucination)
@@ -274,11 +262,9 @@ SHORT_TERM_TEST_PROTOCOLS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -291,7 +277,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list, description="Warnings raised")
     errors: List[str] = Field(default_factory=list, description="Errors encountered")
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
-
 
 class ECMInstallation(BaseModel):
     """ECM installation record for verification."""
@@ -309,7 +294,6 @@ class ECMInstallation(BaseModel):
     ipmvp_option: str = Field(default="B", description="Selected IPMVP option")
     baseline_model_id: str = Field(default="", description="Associated baseline model ID")
 
-
 class MeterInstallation(BaseModel):
     """Meter installation record for commissioning."""
 
@@ -321,7 +305,6 @@ class MeterInstallation(BaseModel):
     accuracy_class: str = Field(default="1.0", description="Accuracy class (%)")
     ct_ratio: float = Field(default=1.0, gt=0, description="CT ratio")
     pt_ratio: float = Field(default=1.0, gt=0, description="PT ratio")
-
 
 class PostInstallationInput(BaseModel):
     """Input data model for PostInstallationWorkflow."""
@@ -361,7 +344,6 @@ class PostInstallationInput(BaseModel):
             raise ValueError("facility_name must not be blank")
         return stripped
 
-
 class PostInstallationResult(BaseModel):
     """Complete result from post-installation workflow."""
 
@@ -384,11 +366,9 @@ class PostInstallationResult(BaseModel):
     calculated_at: str = Field(default="", description="ISO 8601 timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 of complete result")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class PostInstallationWorkflow:
     """
@@ -446,7 +426,7 @@ class PostInstallationWorkflow:
             ValueError: If input validation fails.
         """
         t_start = time.perf_counter()
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting post-installation workflow %s for facility=%s ecms=%d meters=%d",
             self.verification_id, input_data.facility_name,
@@ -584,7 +564,7 @@ class PostInstallationWorkflow:
                     "severity": check_spec["severity"],
                     "required": check_spec["required"],
                     "evidence_required": check_spec["evidence_required"],
-                    "checked_at": _utcnow().isoformat() + "Z",
+                    "checked_at": utcnow().isoformat() + "Z",
                 })
 
                 if not passed:
@@ -611,7 +591,7 @@ class PostInstallationWorkflow:
                 "checks_passed": sum(1 for c in check_results if c["passed"]),
                 "checks_total": len(check_results),
                 "check_results": check_results,
-                "verified_at": _utcnow().isoformat() + "Z",
+                "verified_at": utcnow().isoformat() + "Z",
             })
 
         self._verifications = verifications
@@ -683,7 +663,7 @@ class PostInstallationWorkflow:
                     "required": step_spec["required"],
                     "pass_criteria": step_spec["pass_criteria"],
                     "duration_minutes": step_spec["duration_minutes"],
-                    "completed_at": _utcnow().isoformat() + "Z",
+                    "completed_at": utcnow().isoformat() + "Z",
                 })
 
                 if not passed and step_spec["required"]:
@@ -706,7 +686,7 @@ class PostInstallationWorkflow:
                 "steps_passed": sum(1 for s in step_results if s["passed"]),
                 "steps_total": len(step_results),
                 "step_results": step_results,
-                "commissioned_at": _utcnow().isoformat() + "Z",
+                "commissioned_at": utcnow().isoformat() + "Z",
             })
 
         self._commissions = commissions
@@ -796,7 +776,7 @@ class PostInstallationWorkflow:
                 "parameters_tested": len(parameter_results),
                 "parameter_results": parameter_results,
                 "passed": test_passed,
-                "tested_at": _utcnow().isoformat() + "Z",
+                "tested_at": utcnow().isoformat() + "Z",
             })
 
             if not test_passed:

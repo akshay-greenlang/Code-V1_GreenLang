@@ -63,25 +63,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -106,7 +100,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -123,7 +116,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal,
     denominator: Decimal,
@@ -134,37 +126,30 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* and return a float."""
     quantizer = Decimal(10) ** -places
     return float(value.quantize(quantizer, rounding=ROUND_HALF_UP))
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 def _round1(value: float) -> float:
     """Round to 1 decimal place using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.1"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class AuditType(str, Enum):
     """Energy audit types per EN 16247.
@@ -176,7 +161,6 @@ class AuditType(str, Enum):
     TYPE_2_DETAILED = "type_2_detailed"
     TYPE_3_INVESTMENT_GRADE = "type_3_investment_grade"
 
-
 class AuditPriority(str, Enum):
     """Priority ranking for audit findings."""
     CRITICAL = "critical"
@@ -185,7 +169,6 @@ class AuditPriority(str, Enum):
     LOW = "low"
     INFORMATIONAL = "informational"
 
-
 class AuditComplexity(str, Enum):
     """Implementation complexity for audit findings."""
     NO_COST = "no_cost"
@@ -193,7 +176,6 @@ class AuditComplexity(str, Enum):
     MEDIUM_COST = "medium_cost"
     HIGH_COST = "high_cost"
     CAPITAL_PROJECT = "capital_project"
-
 
 class EndUseCategory(str, Enum):
     """Energy end-use categories for industrial facilities.
@@ -213,7 +195,6 @@ class EndUseCategory(str, Enum):
     IT_EQUIPMENT = "it_equipment"
     OTHER = "other"
 
-
 class EN16247Part(str, Enum):
     """EN 16247 standard parts."""
     PART_1_GENERAL = "EN_16247_1"
@@ -221,7 +202,6 @@ class EN16247Part(str, Enum):
     PART_3_PROCESSES = "EN_16247_3"
     PART_4_TRANSPORT = "EN_16247_4"
     PART_5_COMPETENCE = "EN_16247_5"
-
 
 class ComplianceStatus(str, Enum):
     """Compliance status for individual checklist items."""
@@ -231,17 +211,14 @@ class ComplianceStatus(str, Enum):
     NOT_APPLICABLE = "not_applicable"
     NOT_ASSESSED = "not_assessed"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # EED Article 8 audit cycle (years between mandatory audits).
 EED_AUDIT_CYCLE_YEARS: int = 4
 """Energy Efficiency Directive mandates audits every 4 years for non-SMEs.
 Source: Directive (EU) 2023/1791 Article 8."""
-
 
 # EN 16247-1:2022 checklist items (clause, requirement, applicable audit types).
 # Source: EN 16247-1:2022 Energy audits - Part 1: General requirements.
@@ -392,7 +369,6 @@ EN16247_CHECKLIST_ITEMS: List[Dict[str, Any]] = [
     },
 ]
 
-
 # End-use benchmarks by sector (percentage of total energy).
 # Sources: CIBSE TM46, IEA Industrial Energy, EU BREF documents.
 END_USE_BENCHMARKS: Dict[str, Dict[str, float]] = {
@@ -461,7 +437,6 @@ END_USE_BENCHMARKS: Dict[str, Dict[str, float]] = {
     },
 }
 
-
 # Typical savings potential by end-use category (% of end-use consumption).
 # Sources: Carbon Trust, IEA, EU BAT reference documents.
 TYPICAL_SAVINGS_POTENTIAL: Dict[str, Dict[str, float]] = {
@@ -523,7 +498,6 @@ TYPICAL_SAVINGS_POTENTIAL: Dict[str, Dict[str, float]] = {
     },
 }
 
-
 # Audit quality criteria weights (for overall quality score 0-100).
 AUDIT_QUALITY_CRITERIA: Dict[str, float] = {
     "data_completeness": 0.20,
@@ -533,7 +507,6 @@ AUDIT_QUALITY_CRITERIA: Dict[str, float] = {
     "implementation_planning": 0.10,
     "report_quality": 0.10,
 }
-
 
 # Average energy costs by carrier (EUR per kWh) for financial calculations.
 # Source: Eurostat 2024 industrial energy prices (EU average).
@@ -552,11 +525,9 @@ ENERGY_COST_EUR_PER_KWH: Dict[str, float] = {
     "default": 0.10,
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class AuditScope(BaseModel):
     """Scope definition for an energy audit.
@@ -592,7 +563,6 @@ class AuditScope(BaseModel):
             )
         return v
 
-
 class EnergyEndUse(BaseModel):
     """Energy end-use category data for a facility.
 
@@ -614,7 +584,6 @@ class EnergyEndUse(BaseModel):
         default_factory=list, description="Major equipment items"
     )
     carrier: str = Field(default="electricity", description="Primary energy carrier")
-
 
 class AuditFinding(BaseModel):
     """Individual audit finding / energy conservation measure (ECM).
@@ -656,7 +625,6 @@ class AuditFinding(BaseModel):
         default=AuditComplexity.MEDIUM_COST, description="Complexity"
     )
 
-
 class EN16247Checklist(BaseModel):
     """EN 16247 compliance checklist item assessment.
 
@@ -674,7 +642,6 @@ class EN16247Checklist(BaseModel):
     )
     evidence: str = Field(default="", description="Evidence reference")
     notes: str = Field(default="", description="Notes")
-
 
 class EEDComplianceStatus(BaseModel):
     """EED Article 8 audit obligation assessment.
@@ -698,11 +665,9 @@ class EEDComplianceStatus(BaseModel):
     overdue: bool = Field(default=False, description="Audit overdue")
     months_until_due: Optional[int] = Field(None, description="Months until due")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class EndUseBreakdownResult(BaseModel):
     """End-use breakdown with benchmark comparison."""
@@ -718,7 +683,6 @@ class EndUseBreakdownResult(BaseModel):
     savings_potential_cost: float = Field(
         default=0.0, description="Estimated savings potential (EUR)"
     )
-
 
 class AuditSummaryFindings(BaseModel):
     """Summary of all audit findings by category."""
@@ -739,7 +703,6 @@ class AuditSummaryFindings(BaseModel):
         default_factory=dict, description="Savings by system"
     )
 
-
 class EnergyAuditResult(BaseModel):
     """Complete energy audit result with full provenance.
 
@@ -748,7 +711,7 @@ class EnergyAuditResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid, description="Unique result ID")
     engine_version: str = Field(default=_MODULE_VERSION, description="Engine version")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Calc timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Calc timestamp")
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
 
     audit_id: str = Field(default_factory=_new_uuid, description="Audit identifier")
@@ -790,11 +753,9 @@ class EnergyAuditResult(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 # ---------------------------------------------------------------------------
 # Calculation Engine
 # ---------------------------------------------------------------------------
-
 
 class EnergyAuditEngine:
     """EN 16247 compliant energy audit engine.

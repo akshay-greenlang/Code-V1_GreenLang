@@ -85,23 +85,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -118,7 +113,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -127,7 +121,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -135,15 +128,12 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class Jurisdiction(str, Enum):
     """Regulatory jurisdiction."""
@@ -160,7 +150,6 @@ class Jurisdiction(str, Enum):
     INDIA_BRSR = "india_brsr"
     CANADA_CSSB = "canada_cssb"
 
-
 class CompanySize(str, Enum):
     """Company size classification."""
     MICRO = "micro"
@@ -169,14 +158,12 @@ class CompanySize(str, Enum):
     LARGE = "large"
     LISTED = "listed"
 
-
 class AssuranceRequirementLevel(str, Enum):
     """Required assurance level."""
     NONE = "none"
     LIMITED = "limited"
     REASONABLE = "reasonable"
     PHASED = "phased"       # Transitioning from limited to reasonable
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Jurisdiction Requirements Database
@@ -360,11 +347,9 @@ JURISDICTION_DB: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class CompanyProfile(BaseModel):
     """Company profile for applicability assessment.
@@ -395,7 +380,6 @@ class CompanyProfile(BaseModel):
     def coerce_money(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class CurrentAssurance(BaseModel):
     """Current assurance status.
 
@@ -412,7 +396,6 @@ class CurrentAssurance(BaseModel):
     scope_coverage: List[str] = Field(default_factory=list, description="Scopes")
     verifier_name: str = Field(default="", description="Verifier")
 
-
 class RegulatoryConfig(BaseModel):
     """Configuration for regulatory requirement engine.
 
@@ -426,7 +409,6 @@ class RegulatoryConfig(BaseModel):
     assessment_date: str = Field(default="", description="Assessment date")
     alert_horizon_months: int = Field(default=24, ge=6, le=60, description="Alert horizon")
     output_precision: int = Field(default=2, ge=0, le=6, description="Output precision")
-
 
 class RegulatoryInput(BaseModel):
     """Input for regulatory requirement engine.
@@ -446,11 +428,9 @@ class RegulatoryInput(BaseModel):
         default_factory=RegulatoryConfig, description="Configuration"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class JurisdictionRequirement(BaseModel):
     """Requirement for a specific jurisdiction.
@@ -476,7 +456,6 @@ class JurisdictionRequirement(BaseModel):
     effective_date: str = Field(default="", description="Effective date")
     deadline: str = Field(default="", description="Deadline")
 
-
 class ApplicableRequirement(BaseModel):
     """An applicable requirement with compliance status.
 
@@ -494,7 +473,6 @@ class ApplicableRequirement(BaseModel):
     current_level: str = Field(default="", description="Current")
     is_compliant: bool = Field(default=False, description="Compliant")
     gap_description: str = Field(default="", description="Gap")
-
 
 class ComplianceGap(BaseModel):
     """Compliance gap requiring remediation.
@@ -516,7 +494,6 @@ class ComplianceGap(BaseModel):
     estimated_months: int = Field(default=0, description="Months")
     priority: int = Field(default=0, description="Priority")
 
-
 class RegulatoryAlert(BaseModel):
     """Upcoming regulatory requirement alert.
 
@@ -534,7 +511,6 @@ class RegulatoryAlert(BaseModel):
     effective_date: str = Field(default="", description="Effective date")
     months_until: int = Field(default=0, description="Months until")
     preparation_needed: str = Field(default="", description="Preparation")
-
 
 class RegulatoryResult(BaseModel):
     """Complete result of regulatory requirement analysis.
@@ -580,11 +556,9 @@ class RegulatoryResult(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class RegulatoryRequirementEngine:
     """Maps regulatory assurance requirements across 12 jurisdictions.
@@ -622,7 +596,7 @@ class RegulatoryRequirementEngine:
         profile = input_data.company_profile
         current = input_data.current_assurance
 
-        now = _utcnow()
+        now = utcnow()
         if config.assessment_date:
             try:
                 now = datetime.fromisoformat(
@@ -712,7 +686,7 @@ class RegulatoryRequirementEngine:
             gap_count=len(gaps),
             alert_count=len(alerts),
             warnings=warnings,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         result.provenance_hash = _compute_hash(result)
@@ -881,7 +855,6 @@ class RegulatoryRequirementEngine:
 
     def get_version(self) -> str:
         return self._version
-
 
 # ---------------------------------------------------------------------------
 # __all__

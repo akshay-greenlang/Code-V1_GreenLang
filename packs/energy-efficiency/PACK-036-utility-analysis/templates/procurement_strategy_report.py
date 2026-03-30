@@ -36,20 +36,15 @@ from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "36.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash excluding volatile fields."""
@@ -67,7 +62,6 @@ def _compute_hash(data: Any) -> str:
     return hashlib.sha256(
         json.dumps(s, sort_keys=True, default=str).encode()
     ).hexdigest()
-
 
 class ProcurementStrategyReportTemplate:
     """
@@ -112,7 +106,7 @@ class ProcurementStrategyReportTemplate:
         Returns:
             Complete Markdown string with provenance hash.
         """
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections: List[str] = [
             self._md_header(data),
             self._md_market_overview(data),
@@ -136,7 +130,7 @@ class ProcurementStrategyReportTemplate:
         Returns:
             Complete HTML string with inline CSS and provenance hash.
         """
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         body = "\n".join([
             self._html_header(data),
@@ -165,7 +159,7 @@ class ProcurementStrategyReportTemplate:
         Returns:
             Dict with structured report sections and provenance hash.
         """
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result: Dict[str, Any] = {
             "template": "procurement_strategy_report",
             "version": _MODULE_VERSION,
@@ -193,7 +187,7 @@ class ProcurementStrategyReportTemplate:
         Returns:
             CSV string with one row per contract option.
         """
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         output = io.StringIO()
         writer = csv.writer(output)
         writer.writerow([

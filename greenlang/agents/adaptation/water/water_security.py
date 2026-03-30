@@ -17,10 +17,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +41,7 @@ class SecurityLevel(str, Enum):
     HIGHLY_INSECURE = "highly_insecure"
 
 
-class DimensionScore(BaseModel):
+class DimensionScore(GreenLangBase):
     """Score for a security dimension."""
     dimension: SecurityDimension
     score: float  # 0-100
@@ -49,7 +50,7 @@ class DimensionScore(BaseModel):
     gaps_identified: List[str]
 
 
-class SecurityScorecard(BaseModel):
+class SecurityScorecard(GreenLangBase):
     """Overall security scorecard."""
     overall_score: float
     overall_level: SecurityLevel
@@ -58,7 +59,7 @@ class SecurityScorecard(BaseModel):
     weaknesses: List[str]
 
 
-class WaterSecurityInput(BaseModel):
+class WaterSecurityInput(GreenLangBase):
     """Input for water security analysis."""
     region_id: str
     # Availability indicators
@@ -78,7 +79,7 @@ class WaterSecurityInput(BaseModel):
     stakeholder_participation_score: float  # 0-10
 
 
-class StrategicAction(BaseModel):
+class StrategicAction(GreenLangBase):
     """Strategic action for water security."""
     action_id: str
     dimension: SecurityDimension
@@ -89,7 +90,7 @@ class StrategicAction(BaseModel):
     timeframe: str
 
 
-class WaterSecurityOutput(BaseModel):
+class WaterSecurityOutput(GreenLangBase):
     """Output from water security analysis."""
     region_id: str
     scorecard: SecurityScorecard

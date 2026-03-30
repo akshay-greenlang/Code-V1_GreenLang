@@ -57,25 +57,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -95,7 +89,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -105,17 +98,14 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _round_value(value: Decimal, places: int = 3) -> float:
     """Round a Decimal to specified places and return float."""
     rounded = value.quantize(Decimal(10) ** -places, rounding=ROUND_HALF_UP)
     return float(rounded)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class BenchmarkKPI(str, Enum):
     """Key performance indicator for benchmarking."""
@@ -128,7 +118,6 @@ class BenchmarkKPI(str, Enum):
     SCOPE3_RATIO = "scope3_ratio"
     SAFETY_LTIR = "safety_ltir"
 
-
 class PercentileRank(str, Enum):
     """Quartile classification for benchmark ranking."""
     TOP_QUARTILE = "top_quartile"
@@ -136,13 +125,11 @@ class PercentileRank(str, Enum):
     THIRD_QUARTILE = "third_quartile"
     BOTTOM_QUARTILE = "bottom_quartile"
 
-
 class SBTiPathway(str, Enum):
     """SBTi target-setting pathway."""
     WELL_BELOW_2C = "well_below_2c"
     ONE_POINT_FIVE_C = "one_point_five_c"
     NET_ZERO_2050 = "net_zero_2050"
-
 
 class SubSector(str, Enum):
     """Manufacturing sub-sector classification."""
@@ -161,7 +148,6 @@ class SubSector(str, Enum):
     ELECTRONICS = "electronics"
     MACHINERY = "machinery"
     PHARMACEUTICALS = "pharmaceuticals"
-
 
 # ---------------------------------------------------------------------------
 # Constants - Sector Benchmarks
@@ -543,11 +529,9 @@ SUBSECTOR_ETS_MAP: Dict[str, str] = {
     SubSector.CHEMICALS: "ammonia",
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class BenchmarkConfig(BaseModel):
     """Configuration for benchmark assessment."""
@@ -578,7 +562,6 @@ class BenchmarkConfig(BaseModel):
         if year < 2010 or year > 2060:
             raise ValueError(f"Year {year} outside valid range 2010-2060")
         return year
-
 
 class FacilityKPIs(BaseModel):
     """Facility key performance indicators for benchmarking."""
@@ -647,7 +630,6 @@ class FacilityKPIs(BaseModel):
             return None
         return _decimal(v)
 
-
 class SectorBenchmark(BaseModel):
     """Sector benchmark data for a specific KPI."""
     sub_sector: str = Field(description="Manufacturing sub-sector")
@@ -658,7 +640,6 @@ class SectorBenchmark(BaseModel):
     unit: str = Field(description="Unit of measurement")
     source: str = Field(default="", description="Data source")
     year: int = Field(default=2024, description="Data year")
-
 
 class KPIRanking(BaseModel):
     """Ranking result for a single KPI."""
@@ -673,7 +654,6 @@ class KPIRanking(BaseModel):
         default=0.0,
         description="Gap to top quartile (%, positive = above threshold)",
     )
-
 
 class SBTiAlignment(BaseModel):
     """SBTi pathway alignment assessment."""
@@ -695,7 +675,6 @@ class SBTiAlignment(BaseModel):
         description="Annual reduction needed to meet target (%/year)",
     )
     pathway_description: str = Field(default="", description="Pathway description")
-
 
 class TrajectoryAnalysis(BaseModel):
     """Multi-year trajectory analysis for emission reduction."""
@@ -722,7 +701,6 @@ class TrajectoryAnalysis(BaseModel):
         default=0, description="Years remaining to target"
     )
 
-
 class ETSBenchmarkResult(BaseModel):
     """EU ETS benchmark gap analysis result."""
     product_benchmark: str = Field(description="ETS product benchmark name")
@@ -742,7 +720,6 @@ class ETSBenchmarkResult(BaseModel):
         default=0.015,
         description="Annual reduction factor for benchmark tightening",
     )
-
 
 class BenchmarkResult(BaseModel):
     """Complete benchmark assessment result with provenance."""
@@ -794,14 +771,12 @@ class BenchmarkResult(BaseModel):
     )
     processing_time_ms: float = Field(default=0.0, description="Processing time in ms")
     engine_version: str = Field(default=_MODULE_VERSION, description="Engine version")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Calculation timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Calculation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ManufacturingBenchmarkEngine:
     """Manufacturing sustainability benchmarking engine.

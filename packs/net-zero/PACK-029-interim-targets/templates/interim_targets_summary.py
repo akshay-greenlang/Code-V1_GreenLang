@@ -35,6 +35,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "29.0.0"
@@ -80,22 +82,16 @@ XBRL_TAGS: Dict[str, str] = {
     "annual_reduction_rate": "gl:AnnualLinearReductionRate",
 }
 
-
 # ---------------------------------------------------------------------------
 # Utility Functions
 # ---------------------------------------------------------------------------
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 
-
 def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str) if isinstance(data, dict) else str(data)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 def _dec(val: Any, places: int = 2) -> str:
     try:
@@ -104,7 +100,6 @@ def _dec(val: Any, places: int = 2) -> str:
         return str(d.quantize(Decimal(q), rounding=ROUND_HALF_UP))
     except Exception:
         return str(val)
-
 
 def _dec_comma(val: Any, places: int = 2) -> str:
     try:
@@ -129,14 +124,12 @@ def _dec_comma(val: Any, places: int = 2) -> str:
     except Exception:
         return str(val)
 
-
 def _pct_change(current: Any, baseline: Any) -> Decimal:
     c = Decimal(str(current))
     b = Decimal(str(baseline))
     if b == 0:
         return Decimal("0.00")
     return ((c - b) / b * Decimal("100")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-
 
 def _pct_reduction(current: Any, baseline: Any) -> Decimal:
     c = Decimal(str(current))
@@ -145,18 +138,15 @@ def _pct_reduction(current: Any, baseline: Any) -> Decimal:
         return Decimal("0.00")
     return ((b - c) / b * Decimal("100")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
-
 def _linear_target(baseline: float, reduction_pct: float) -> float:
     """Calculate target emissions given baseline and reduction percentage."""
     return baseline * (1.0 - reduction_pct / 100.0)
-
 
 def _annual_linear_rate(total_reduction_pct: float, years: int) -> float:
     """Calculate annualized linear reduction rate."""
     if years <= 0:
         return 0.0
     return total_reduction_pct / years
-
 
 def _cumulative_emissions(
     baseline: float,
@@ -170,7 +160,6 @@ def _cumulative_emissions(
         return 0.0
     return (baseline + target) / 2.0 * years
 
-
 def _rag_status(value: float, threshold_green: float, threshold_amber: float) -> str:
     if value >= threshold_green:
         return "GREEN"
@@ -179,10 +168,8 @@ def _rag_status(value: float, threshold_green: float, threshold_amber: float) ->
     else:
         return "RED"
 
-
 def _rag_color(status: str) -> str:
     return {"GREEN": _SUCCESS, "AMBER": _WARN, "RED": _DANGER}.get(status, "#999")
-
 
 def _sbti_15c_check(reduction_pct: float, years: int) -> Dict[str, Any]:
     """Validate against SBTi 1.5C near-term criteria (42% in ~10 years)."""
@@ -197,7 +184,6 @@ def _sbti_15c_check(reduction_pct: float, years: int) -> Dict[str, Any]:
         "min_reduction_pct": SBTI_NEAR_TERM_MIN_REDUCTION,
         "status": "ALIGNED" if passed else "NOT ALIGNED",
     }
-
 
 # ---------------------------------------------------------------------------
 # Template Class
@@ -241,7 +227,7 @@ class InterimTargetsSummaryTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render full report as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections: List[str] = [
             self._md_header(data),
             self._md_executive_summary(data),
@@ -264,7 +250,7 @@ class InterimTargetsSummaryTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render full report as HTML with inline CSS."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         body_parts = [
             self._html_header(data),
@@ -294,7 +280,7 @@ class InterimTargetsSummaryTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render full report as structured JSON."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         baseline_yr = int(data.get("baseline_year", 2022))
         baseline_em = float(data.get("baseline_emissions", 0))
         nt_year = int(data.get("near_term_year", 2030))

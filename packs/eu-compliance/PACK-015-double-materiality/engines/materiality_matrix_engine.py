@@ -51,25 +51,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 engine_version: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -96,7 +90,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -112,7 +105,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -133,7 +125,6 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100).
 
@@ -145,7 +136,6 @@ def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
         Percentage as Decimal; Decimal("0") when whole is zero.
     """
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* and return a float.
@@ -162,11 +152,9 @@ def _round_val(value: Decimal, places: int = 6) -> float:
     quantizer = Decimal(10) ** -places
     return float(value.quantize(quantizer, rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class Quadrant(str, Enum):
     """Double materiality matrix quadrant classification.
@@ -179,7 +167,6 @@ class Quadrant(str, Enum):
     FINANCIAL_ONLY = "financial_only"
     NOT_MATERIAL = "not_material"
 
-
 class MatrixLayout(str, Enum):
     """Matrix visualization layout options.
 
@@ -190,7 +177,6 @@ class MatrixLayout(str, Enum):
     STANDARD_2X2 = "standard_2x2"
     DETAILED_3X3 = "detailed_3x3"
     HEAT_MAP = "heat_map"
-
 
 class CombinedScoreMethod(str, Enum):
     """Method for combining impact and financial scores.
@@ -203,11 +189,9 @@ class CombinedScoreMethod(str, Enum):
     GEOMETRIC_MEAN = "geometric_mean"
     MAX_SCORE = "max_score"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 DEFAULT_IMPACT_THRESHOLD: Decimal = Decimal("3.000")
 """Default threshold for impact materiality on a 1-5 scale.
@@ -262,11 +246,9 @@ SIZE_MAP: Dict[str, int] = {
 }
 """Default marker size for matrix visualization (scatter plot points)."""
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class MatrixEntry(BaseModel):
     """Single sustainability matter positioned on the materiality matrix.
@@ -301,7 +283,6 @@ class MatrixEntry(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class MaterialityMatrix(BaseModel):
     """Complete double materiality matrix with all entries and statistics.
@@ -342,7 +323,6 @@ class MaterialityMatrix(BaseModel):
     def _coerce_threshold(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class MatrixVisualizationData(BaseModel):
     """Pre-computed visualization data for rendering the materiality matrix.
 
@@ -368,7 +348,6 @@ class MatrixVisualizationData(BaseModel):
     financial_threshold: float = Field(default=3.0, description="Financial threshold line position")
     matter_ids: List[str] = Field(default_factory=list, description="Matter IDs for lookup")
     esrs_topics: List[str] = Field(default_factory=list, description="ESRS topics per entry")
-
 
 class ScoreChange(BaseModel):
     """Change in a matter's scores between two matrices.
@@ -397,7 +376,6 @@ class ScoreChange(BaseModel):
     quadrant_changed: bool = Field(default=False)
     previous_quadrant: Optional[Quadrant] = Field(default=None)
     current_quadrant: Optional[Quadrant] = Field(default=None)
-
 
 class MatrixDelta(BaseModel):
     """Comparison between two materiality matrices (current vs. previous).
@@ -428,11 +406,9 @@ class MatrixDelta(BaseModel):
     total_removed: int = Field(default=0, ge=0)
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 # ---------------------------------------------------------------------------
 # Input Models
 # ---------------------------------------------------------------------------
-
 
 class ImpactScoreInput(BaseModel):
     """Impact materiality score input for a single matter.
@@ -453,7 +429,6 @@ class ImpactScoreInput(BaseModel):
     def _coerce_score(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class FinancialScoreInput(BaseModel):
     """Financial materiality score input for a single matter.
 
@@ -473,11 +448,9 @@ class FinancialScoreInput(BaseModel):
     def _coerce_score(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class MaterialityMatrixEngine:
     """Generates the double materiality matrix for ESRS reporting.
@@ -650,7 +623,7 @@ class MaterialityMatrixEngine:
             not_material_count=not_mat_ct,
             quadrant_distribution=quad_dist,
             combined_score_method=self.combined_method.value,
-            calculated_at=_utcnow(),
+            calculated_at=utcnow(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         matrix.provenance_hash = _compute_hash(matrix)

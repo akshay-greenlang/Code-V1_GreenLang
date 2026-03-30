@@ -84,25 +84,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -121,7 +115,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -130,7 +123,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -142,24 +134,20 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 def _decimal_sqrt(value: Decimal) -> Decimal:
     """Compute square root of a Decimal using math.sqrt conversion."""
     if value <= Decimal("0"):
         return Decimal("0")
     return _decimal(math.sqrt(float(value)))
-
 
 def _decimal_exp(value: Decimal) -> Decimal:
     """Compute e^value using math.exp conversion."""
@@ -168,18 +156,15 @@ def _decimal_exp(value: Decimal) -> Decimal:
     except OverflowError:
         return Decimal("0")
 
-
 def _decimal_log(value: Decimal) -> Decimal:
     """Compute natural log of a Decimal."""
     if value <= Decimal("0"):
         return Decimal("0")
     return _decimal(math.log(float(value)))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class TrendDirection(str, Enum):
     """Direction of energy performance trend.
@@ -196,7 +181,6 @@ class TrendDirection(str, Enum):
     DEGRADING = "degrading"
     INSUFFICIENT_DATA = "insufficient_data"
 
-
 class AnalysisType(str, Enum):
     """Type of performance trend analysis to perform.
 
@@ -211,7 +195,6 @@ class AnalysisType(str, Enum):
     REGRESSION_VALIDATION = "regression_validation"
     FORECAST_VS_ACTUAL = "forecast_vs_actual"
     SEASONAL_DECOMPOSITION = "seasonal_decomposition"
-
 
 class RegressionMetric(str, Enum):
     """Statistical metrics for regression model validation.
@@ -230,7 +213,6 @@ class RegressionMetric(str, Enum):
     DURBIN_WATSON = "durbin_watson"
     MAPE = "mape"
 
-
 class ForecastMethod(str, Enum):
     """Forecasting method for energy consumption projection.
 
@@ -248,7 +230,6 @@ class ForecastMethod(str, Enum):
     WEIGHTED_MOVING_AVERAGE = "weighted_moving_average"
     HOLT_WINTERS = "holt_winters"
 
-
 class VerificationStandard(str, Enum):
     """M&V standard/option for savings verification.
 
@@ -263,7 +244,6 @@ class VerificationStandard(str, Enum):
     IPMVP_OPTION_B = "ipmvp_option_b"
     IPMVP_OPTION_C = "ipmvp_option_c"
     IPMVP_OPTION_D = "ipmvp_option_d"
-
 
 # ---------------------------------------------------------------------------
 # Reference Data
@@ -469,11 +449,9 @@ _MIN_DATA_POINTS_TREND: int = 3
 _MIN_DATA_POINTS_REGRESSION: int = 6
 _MIN_DATA_POINTS_FORECAST: int = 4
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class PerformanceDataPoint(BaseModel):
     """A single period of energy performance data.
@@ -525,7 +503,6 @@ class PerformanceDataPoint(BaseModel):
                 f"period_end ({v}) cannot be before period_start ({period_start})"
             )
         return v
-
 
 class TrendAnalysis(BaseModel):
     """Result of a trend analysis on energy performance data.
@@ -583,7 +560,6 @@ class TrendAnalysis(BaseModel):
         description="Summarised data points for charting"
     )
 
-
 class YearOverYearComparison(BaseModel):
     """Year-over-year comparison of energy performance.
 
@@ -633,7 +609,6 @@ class YearOverYearComparison(BaseModel):
         description="Per-month comparison details"
     )
 
-
 class RollingAnalysis(BaseModel):
     """Rolling window analysis of energy performance.
 
@@ -664,7 +639,6 @@ class RollingAnalysis(BaseModel):
         default_factory=list,
         description="Time series of rolling window values"
     )
-
 
 class RegressionValidation(BaseModel):
     """Statistical validation results for a regression model.
@@ -722,7 +696,6 @@ class RegressionValidation(BaseModel):
         description="Reasons for model inadequacy"
     )
 
-
 class ForecastResult(BaseModel):
     """Result of an energy consumption forecast.
 
@@ -758,7 +731,6 @@ class ForecastResult(BaseModel):
         default=None, ge=0,
         description="Forecast accuracy percentage"
     )
-
 
 class SavingsVerification(BaseModel):
     """M&V savings verification result per ISO 50015 or IPMVP.
@@ -811,7 +783,6 @@ class SavingsVerification(BaseModel):
         description="Whether savings exceed 2x uncertainty"
     )
 
-
 class PerformanceTrendResult(BaseModel):
     """Complete performance trend analysis result.
 
@@ -839,7 +810,7 @@ class PerformanceTrendResult(BaseModel):
         default="", description="Energy management system identifier"
     )
     analysis_date: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Analysis date/time"
     )
     period_start: date = Field(
@@ -884,7 +855,6 @@ class PerformanceTrendResult(BaseModel):
         description="Calculation time (milliseconds)"
     )
 
-
 # ---------------------------------------------------------------------------
 # Model Rebuild (required for `from __future__ import annotations`)
 # ---------------------------------------------------------------------------
@@ -898,11 +868,9 @@ ForecastResult.model_rebuild()
 SavingsVerification.model_rebuild()
 PerformanceTrendResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class PerformanceTrendEngine:
     """Energy performance trending, regression validation, and savings
@@ -1119,7 +1087,7 @@ class PerformanceTrendEngine:
 
         result = PerformanceTrendResult(
             enms_id=enms_id,
-            analysis_date=_utcnow(),
+            analysis_date=utcnow(),
             period_start=period_start,
             period_end=period_end,
             trend_analysis=trend_analysis,

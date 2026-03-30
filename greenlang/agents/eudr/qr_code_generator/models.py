@@ -65,15 +65,13 @@ import uuid
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import GreenLangBase, utcnow
 
 from pydantic import (
-    BaseModel,
-    ConfigDict,
     Field,
     field_validator,
     model_validator,
 )
-
 
 # ---------------------------------------------------------------------------
 # Cross-agent commodity import (graceful fallback)
@@ -86,16 +84,9 @@ try:
 except ImportError:
     _ExternalEUDRCommodity = None  # type: ignore[assignment,misc]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -161,11 +152,9 @@ DEFAULT_EUDR_COMMODITIES: List[str] = [
     "rubber", "soya", "wood",
 ]
 
-
 # =============================================================================
 # Enumerations
 # =============================================================================
-
 
 class QRCodeVersion(str, Enum):
     """QR code version selection per ISO/IEC 18004.
@@ -220,7 +209,6 @@ class QRCodeVersion(str, Enum):
     V39 = "39"
     V40 = "40"
 
-
 class ErrorCorrectionLevel(str, Enum):
     """Error correction level per ISO/IEC 18004.
 
@@ -238,7 +226,6 @@ class ErrorCorrectionLevel(str, Enum):
     M = "M"
     Q = "Q"
     H = "H"
-
 
 class OutputFormat(str, Enum):
     """Output image format for generated QR codes.
@@ -260,7 +247,6 @@ class OutputFormat(str, Enum):
     PDF = "pdf"
     ZPL = "zpl"
     EPS = "eps"
-
 
 class ContentType(str, Enum):
     """Payload content type for QR code data.
@@ -289,7 +275,6 @@ class ContentType(str, Enum):
     BATCH_IDENTIFIER = "batch_identifier"
     BLOCKCHAIN_ANCHOR = "blockchain_anchor"
 
-
 class SymbologyType(str, Enum):
     """Barcode symbology type for generated codes.
 
@@ -310,7 +295,6 @@ class SymbologyType(str, Enum):
     MICRO_QR = "micro_qr"
     DATA_MATRIX = "data_matrix"
     GS1_DIGITAL_LINK = "gs1_digital_link"
-
 
 class LabelTemplate(str, Enum):
     """Pre-designed label template for QR code rendering.
@@ -333,7 +317,6 @@ class LabelTemplate(str, Enum):
     CONTAINER_LABEL = "container_label"
     CONSUMER_LABEL = "consumer_label"
 
-
 class CheckDigitAlgorithm(str, Enum):
     """Algorithm for computing batch code check digits.
 
@@ -351,7 +334,6 @@ class CheckDigitAlgorithm(str, Enum):
     LUHN = "luhn"
     ISO7064_MOD11_10 = "iso7064_mod11_10"
     CRC8 = "crc8"
-
 
 class CodeStatus(str, Enum):
     """Lifecycle status of a generated QR code.
@@ -375,7 +357,6 @@ class CodeStatus(str, Enum):
     REVOKED = "revoked"
     EXPIRED = "expired"
 
-
 class ScanOutcome(str, Enum):
     """Outcome of a QR code scan verification event.
 
@@ -398,7 +379,6 @@ class ScanOutcome(str, Enum):
     REVOKED_CODE = "revoked_code"
     ERROR = "error"
 
-
 class CounterfeitRiskLevel(str, Enum):
     """Risk level assessment for counterfeit detection.
 
@@ -417,7 +397,6 @@ class CounterfeitRiskLevel(str, Enum):
     MEDIUM = "medium"
     HIGH = "high"
     CRITICAL = "critical"
-
 
 class BulkJobStatus(str, Enum):
     """Status of a bulk QR code generation job.
@@ -440,7 +419,6 @@ class BulkJobStatus(str, Enum):
     FAILED = "failed"
     CANCELLED = "cancelled"
 
-
 class EUDRCommodity(str, Enum):
     """EUDR-regulated commodity types per EU 2023/1115 Article 1.
 
@@ -461,7 +439,6 @@ class EUDRCommodity(str, Enum):
     SOYA = "soya"
     WOOD = "wood"
 
-
 class ComplianceStatus(str, Enum):
     """EUDR compliance status for a product or operator.
 
@@ -481,7 +458,6 @@ class ComplianceStatus(str, Enum):
     NON_COMPLIANT = "non_compliant"
     UNDER_REVIEW = "under_review"
 
-
 class PayloadEncoding(str, Enum):
     """Encoding format for QR code payload data.
 
@@ -497,7 +473,6 @@ class PayloadEncoding(str, Enum):
     UTF8 = "utf8"
     BASE64 = "base64"
     ZLIB_BASE64 = "zlib_base64"
-
 
 class DPILevel(str, Enum):
     """Dots-per-inch resolution presets for QR code output.
@@ -515,13 +490,11 @@ class DPILevel(str, Enum):
     STANDARD_300 = "standard_300"
     HIGH_600 = "high_600"
 
-
 # =============================================================================
 # Core Models
 # =============================================================================
 
-
-class QRCodeRecord(BaseModel):
+class QRCodeRecord(GreenLangBase):
     """A generated QR code record for EUDR supply chain compliance.
 
     Represents a single QR code generated for product labelling,
@@ -692,7 +665,7 @@ class QRCodeRecord(BaseModel):
         description="Total scan count",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when code was generated",
     )
     activated_at: Optional[datetime] = Field(
@@ -729,8 +702,7 @@ class QRCodeRecord(BaseModel):
             )
         return v.lower()
 
-
-class DataPayload(BaseModel):
+class DataPayload(GreenLangBase):
     """Structured data payload for QR code encoding.
 
     Attributes:
@@ -846,7 +818,7 @@ class DataPayload(BaseModel):
         description="Size of the encoded payload in bytes",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when payload was composed",
     )
     provenance_hash: Optional[str] = Field(
@@ -854,8 +826,7 @@ class DataPayload(BaseModel):
         description="SHA-256 provenance chain hash",
     )
 
-
-class LabelRecord(BaseModel):
+class LabelRecord(GreenLangBase):
     """A rendered label containing a QR code for EUDR compliance.
 
     Attributes:
@@ -981,7 +952,7 @@ class LabelRecord(BaseModel):
         description="Additional custom fields",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when label was rendered",
     )
     provenance_hash: Optional[str] = Field(
@@ -989,8 +960,7 @@ class LabelRecord(BaseModel):
         description="SHA-256 provenance chain hash",
     )
 
-
-class BatchCode(BaseModel):
+class BatchCode(GreenLangBase):
     """A generated batch code for EUDR supply chain tracking.
 
     Attributes:
@@ -1082,7 +1052,7 @@ class BatchCode(BaseModel):
         description="Current batch code status",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when batch code was generated",
     )
     provenance_hash: Optional[str] = Field(
@@ -1090,8 +1060,7 @@ class BatchCode(BaseModel):
         description="SHA-256 provenance chain hash",
     )
 
-
-class VerificationURL(BaseModel):
+class VerificationURL(GreenLangBase):
     """A verification URL for a QR code with HMAC-signed token.
 
     Attributes:
@@ -1149,7 +1118,7 @@ class VerificationURL(BaseModel):
         description="Truncated HMAC hex string",
     )
     token_created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when token was created",
     )
     token_expires_at: Optional[datetime] = Field(
@@ -1162,7 +1131,7 @@ class VerificationURL(BaseModel):
         description="EUDR operator identifier",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when URL was constructed",
     )
     provenance_hash: Optional[str] = Field(
@@ -1170,8 +1139,7 @@ class VerificationURL(BaseModel):
         description="SHA-256 provenance chain hash",
     )
 
-
-class SignatureRecord(BaseModel):
+class SignatureRecord(GreenLangBase):
     """A digital signature record for QR code authentication.
 
     Attributes:
@@ -1231,7 +1199,7 @@ class SignatureRecord(BaseModel):
         description="UTC timestamp of last verification",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when signature was created",
     )
     provenance_hash: Optional[str] = Field(
@@ -1252,8 +1220,7 @@ class SignatureRecord(BaseModel):
             )
         return v.lower()
 
-
-class ScanEvent(BaseModel):
+class ScanEvent(GreenLangBase):
     """A scan event recorded when a QR code is scanned.
 
     Attributes:
@@ -1342,7 +1309,7 @@ class ScanEvent(BaseModel):
         description="Processing time in milliseconds",
     )
     scanned_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when scan occurred",
     )
     provenance_hash: Optional[str] = Field(
@@ -1350,8 +1317,7 @@ class ScanEvent(BaseModel):
         description="SHA-256 provenance chain hash",
     )
 
-
-class BulkJob(BaseModel):
+class BulkJob(GreenLangBase):
     """A bulk QR code generation job.
 
     Attributes:
@@ -1469,7 +1435,7 @@ class BulkJob(BaseModel):
         description="UTC timestamp when job completed",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when job was submitted",
     )
     provenance_hash: Optional[str] = Field(
@@ -1477,8 +1443,7 @@ class BulkJob(BaseModel):
         description="SHA-256 provenance chain hash",
     )
 
-
-class LifecycleEvent(BaseModel):
+class LifecycleEvent(GreenLangBase):
     """A lifecycle event for a QR code (activation, deactivation, etc.).
 
     Attributes:
@@ -1535,7 +1500,7 @@ class LifecycleEvent(BaseModel):
         description="Additional event metadata",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when event occurred",
     )
     provenance_hash: Optional[str] = Field(
@@ -1543,8 +1508,7 @@ class LifecycleEvent(BaseModel):
         description="SHA-256 provenance chain hash",
     )
 
-
-class TemplateDefinition(BaseModel):
+class TemplateDefinition(GreenLangBase):
     """A label template definition for QR code rendering.
 
     Attributes:
@@ -1626,7 +1590,7 @@ class TemplateDefinition(BaseModel):
         description="Whether template is currently active",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when template was created",
     )
     updated_at: Optional[datetime] = Field(
@@ -1638,8 +1602,7 @@ class TemplateDefinition(BaseModel):
         description="SHA-256 provenance chain hash",
     )
 
-
-class CodeAssociation(BaseModel):
+class CodeAssociation(GreenLangBase):
     """An association between a QR code and an external entity.
 
     Attributes:
@@ -1687,7 +1650,7 @@ class CodeAssociation(BaseModel):
         description="Additional association metadata",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when association was created",
     )
     provenance_hash: Optional[str] = Field(
@@ -1695,8 +1658,7 @@ class CodeAssociation(BaseModel):
         description="SHA-256 provenance chain hash",
     )
 
-
-class AuditLogEntry(BaseModel):
+class AuditLogEntry(GreenLangBase):
     """An audit log entry for QR code generator operations.
 
     Attributes:
@@ -1765,7 +1727,7 @@ class AuditLogEntry(BaseModel):
         description="Operation duration in milliseconds",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when entry was recorded",
     )
     provenance_hash: Optional[str] = Field(
@@ -1773,13 +1735,11 @@ class AuditLogEntry(BaseModel):
         description="SHA-256 provenance chain hash",
     )
 
-
 # =============================================================================
 # Request Models
 # =============================================================================
 
-
-class GenerateQRCodeRequest(BaseModel):
+class GenerateQRCodeRequest(GreenLangBase):
     """Request to generate a QR code."""
 
     model_config = ConfigDict(str_strip_whitespace=True, use_enum_values=True)
@@ -1798,8 +1758,7 @@ class GenerateQRCodeRequest(BaseModel):
     dds_reference: Optional[str] = Field(None, description="DDS reference number")
     compliance_status: Optional[str] = Field(None, description="Compliance status")
 
-
-class ComposePayloadRequest(BaseModel):
+class ComposePayloadRequest(GreenLangBase):
     """Request to compose a data payload for QR encoding."""
 
     model_config = ConfigDict(str_strip_whitespace=True, use_enum_values=True)
@@ -1814,8 +1773,7 @@ class ComposePayloadRequest(BaseModel):
     compliance_status: Optional[str] = Field(None, description="Compliance status")
     origin_country: Optional[str] = Field(None, description="Origin country code")
 
-
-class RenderLabelRequest(BaseModel):
+class RenderLabelRequest(GreenLangBase):
     """Request to render a label with QR code."""
 
     model_config = ConfigDict(str_strip_whitespace=True, use_enum_values=True)
@@ -1829,8 +1787,7 @@ class RenderLabelRequest(BaseModel):
     output_format: Optional[str] = Field(None, description="Output format")
     dpi: Optional[int] = Field(None, ge=72, le=1200, description="DPI")
 
-
-class GenerateBatchCodeRequest(BaseModel):
+class GenerateBatchCodeRequest(GreenLangBase):
     """Request to generate a batch code."""
 
     model_config = ConfigDict(str_strip_whitespace=True, use_enum_values=True)
@@ -1843,8 +1800,7 @@ class GenerateBatchCodeRequest(BaseModel):
     prefix_format: Optional[str] = Field(None, description="Prefix format override")
     check_digit_algorithm: Optional[str] = Field(None, description="Check digit algo")
 
-
-class BuildVerificationURLRequest(BaseModel):
+class BuildVerificationURLRequest(GreenLangBase):
     """Request to build a verification URL for a QR code."""
 
     model_config = ConfigDict(str_strip_whitespace=True, use_enum_values=True)
@@ -1855,8 +1811,7 @@ class BuildVerificationURLRequest(BaseModel):
     use_short_url: Optional[bool] = Field(None, description="Generate short URL")
     ttl_years: Optional[int] = Field(None, ge=1, le=25, description="Token TTL years")
 
-
-class SignCodeRequest(BaseModel):
+class SignCodeRequest(GreenLangBase):
     """Request to sign a QR code with HMAC."""
 
     model_config = ConfigDict(str_strip_whitespace=True, use_enum_values=True)
@@ -1865,8 +1820,7 @@ class SignCodeRequest(BaseModel):
     data_hash: str = Field(..., min_length=64, description="Data hash to sign")
     key_id: Optional[str] = Field(None, description="Signing key identifier")
 
-
-class RecordScanRequest(BaseModel):
+class RecordScanRequest(GreenLangBase):
     """Request to record a QR code scan event."""
 
     model_config = ConfigDict(str_strip_whitespace=True, use_enum_values=True)
@@ -1878,8 +1832,7 @@ class RecordScanRequest(BaseModel):
     longitude: Optional[float] = Field(None, ge=-180.0, le=180.0, description="Longitude")
     hmac_token: Optional[str] = Field(None, description="HMAC token from URL")
 
-
-class SubmitBulkJobRequest(BaseModel):
+class SubmitBulkJobRequest(GreenLangBase):
     """Request to submit a bulk QR code generation job."""
 
     model_config = ConfigDict(str_strip_whitespace=True, use_enum_values=True)
@@ -1893,8 +1846,7 @@ class SubmitBulkJobRequest(BaseModel):
     payload_template: Optional[Dict[str, Any]] = Field(None, description="Payload template")
     worker_count: Optional[int] = Field(None, ge=1, le=64, description="Worker count")
 
-
-class ActivateCodeRequest(BaseModel):
+class ActivateCodeRequest(GreenLangBase):
     """Request to activate a QR code for scanning."""
 
     model_config = ConfigDict(str_strip_whitespace=True, use_enum_values=True)
@@ -1903,8 +1855,7 @@ class ActivateCodeRequest(BaseModel):
     performed_by: Optional[str] = Field(None, description="User performing activation")
     reason: Optional[str] = Field(None, description="Activation reason")
 
-
-class DeactivateCodeRequest(BaseModel):
+class DeactivateCodeRequest(GreenLangBase):
     """Request to deactivate a QR code (temporarily)."""
 
     model_config = ConfigDict(str_strip_whitespace=True, use_enum_values=True)
@@ -1913,8 +1864,7 @@ class DeactivateCodeRequest(BaseModel):
     reason: str = Field(..., min_length=1, description="Deactivation reason")
     performed_by: Optional[str] = Field(None, description="User performing deactivation")
 
-
-class RevokeCodeRequest(BaseModel):
+class RevokeCodeRequest(GreenLangBase):
     """Request to permanently revoke a QR code."""
 
     model_config = ConfigDict(str_strip_whitespace=True, use_enum_values=True)
@@ -1923,8 +1873,7 @@ class RevokeCodeRequest(BaseModel):
     reason: str = Field(..., min_length=1, description="Revocation reason")
     performed_by: Optional[str] = Field(None, description="User performing revocation")
 
-
-class ReprintCodeRequest(BaseModel):
+class ReprintCodeRequest(GreenLangBase):
     """Request to reprint a QR code label."""
 
     model_config = ConfigDict(str_strip_whitespace=True, use_enum_values=True)
@@ -1934,8 +1883,7 @@ class ReprintCodeRequest(BaseModel):
     output_format: Optional[str] = Field(None, description="Output format override")
     performed_by: Optional[str] = Field(None, description="User requesting reprint")
 
-
-class SearchCodesRequest(BaseModel):
+class SearchCodesRequest(GreenLangBase):
     """Request to search QR codes by criteria."""
 
     model_config = ConfigDict(str_strip_whitespace=True, use_enum_values=True)
@@ -1950,8 +1898,7 @@ class SearchCodesRequest(BaseModel):
     limit: int = Field(default=50, ge=1, le=1000, description="Max results")
     offset: int = Field(default=0, ge=0, description="Result offset")
 
-
-class GetScanHistoryRequest(BaseModel):
+class GetScanHistoryRequest(GreenLangBase):
     """Request to get scan history for a QR code."""
 
     model_config = ConfigDict(str_strip_whitespace=True, use_enum_values=True)
@@ -1963,8 +1910,7 @@ class GetScanHistoryRequest(BaseModel):
     limit: int = Field(default=50, ge=1, le=1000, description="Max results")
     offset: int = Field(default=0, ge=0, description="Result offset")
 
-
-class ValidateCodeRequest(BaseModel):
+class ValidateCodeRequest(GreenLangBase):
     """Request to validate a QR code image (decode and verify)."""
 
     model_config = ConfigDict(str_strip_whitespace=True, use_enum_values=True)
@@ -1972,13 +1918,11 @@ class ValidateCodeRequest(BaseModel):
     code_id: str = Field(..., min_length=1, description="QR code ID")
     image_data_hash: str = Field(..., min_length=64, description="Image data hash")
 
-
 # =============================================================================
 # Response Models
 # =============================================================================
 
-
-class QRCodeResponse(BaseModel):
+class QRCodeResponse(GreenLangBase):
     """Response after generating a QR code."""
 
     model_config = ConfigDict(str_strip_whitespace=True, use_enum_values=True)
@@ -1990,8 +1934,7 @@ class QRCodeResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time")
     provenance_hash: Optional[str] = Field(None, description="Provenance hash")
 
-
-class PayloadResponse(BaseModel):
+class PayloadResponse(GreenLangBase):
     """Response after composing a payload."""
 
     model_config = ConfigDict(str_strip_whitespace=True, use_enum_values=True)
@@ -2004,8 +1947,7 @@ class PayloadResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time")
     provenance_hash: Optional[str] = Field(None, description="Provenance hash")
 
-
-class LabelResponse(BaseModel):
+class LabelResponse(GreenLangBase):
     """Response after rendering a label."""
 
     model_config = ConfigDict(str_strip_whitespace=True, use_enum_values=True)
@@ -2017,8 +1959,7 @@ class LabelResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time")
     provenance_hash: Optional[str] = Field(None, description="Provenance hash")
 
-
-class BatchCodeResponse(BaseModel):
+class BatchCodeResponse(GreenLangBase):
     """Response after generating batch codes."""
 
     model_config = ConfigDict(str_strip_whitespace=True, use_enum_values=True)
@@ -2029,8 +1970,7 @@ class BatchCodeResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time")
     provenance_hash: Optional[str] = Field(None, description="Provenance hash")
 
-
-class VerificationURLResponse(BaseModel):
+class VerificationURLResponse(GreenLangBase):
     """Response after building a verification URL."""
 
     model_config = ConfigDict(str_strip_whitespace=True, use_enum_values=True)
@@ -2043,8 +1983,7 @@ class VerificationURLResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time")
     provenance_hash: Optional[str] = Field(None, description="Provenance hash")
 
-
-class SignatureResponse(BaseModel):
+class SignatureResponse(GreenLangBase):
     """Response after signing a QR code."""
 
     model_config = ConfigDict(str_strip_whitespace=True, use_enum_values=True)
@@ -2055,8 +1994,7 @@ class SignatureResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time")
     provenance_hash: Optional[str] = Field(None, description="Provenance hash")
 
-
-class ScanResponse(BaseModel):
+class ScanResponse(GreenLangBase):
     """Response after recording a scan event."""
 
     model_config = ConfigDict(str_strip_whitespace=True, use_enum_values=True)
@@ -2069,8 +2007,7 @@ class ScanResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time")
     provenance_hash: Optional[str] = Field(None, description="Provenance hash")
 
-
-class BulkJobResponse(BaseModel):
+class BulkJobResponse(GreenLangBase):
     """Response after submitting or querying a bulk job."""
 
     model_config = ConfigDict(str_strip_whitespace=True, use_enum_values=True)
@@ -2081,8 +2018,7 @@ class BulkJobResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time")
     provenance_hash: Optional[str] = Field(None, description="Provenance hash")
 
-
-class ActivateResponse(BaseModel):
+class ActivateResponse(GreenLangBase):
     """Response after activating a QR code."""
 
     model_config = ConfigDict(str_strip_whitespace=True, use_enum_values=True)
@@ -2094,8 +2030,7 @@ class ActivateResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time")
     provenance_hash: Optional[str] = Field(None, description="Provenance hash")
 
-
-class DeactivateResponse(BaseModel):
+class DeactivateResponse(GreenLangBase):
     """Response after deactivating a QR code."""
 
     model_config = ConfigDict(str_strip_whitespace=True, use_enum_values=True)
@@ -2107,8 +2042,7 @@ class DeactivateResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time")
     provenance_hash: Optional[str] = Field(None, description="Provenance hash")
 
-
-class RevokeResponse(BaseModel):
+class RevokeResponse(GreenLangBase):
     """Response after revoking a QR code."""
 
     model_config = ConfigDict(str_strip_whitespace=True, use_enum_values=True)
@@ -2120,8 +2054,7 @@ class RevokeResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time")
     provenance_hash: Optional[str] = Field(None, description="Provenance hash")
 
-
-class ReprintResponse(BaseModel):
+class ReprintResponse(GreenLangBase):
     """Response after reprinting a QR code label."""
 
     model_config = ConfigDict(str_strip_whitespace=True, use_enum_values=True)
@@ -2133,8 +2066,7 @@ class ReprintResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time")
     provenance_hash: Optional[str] = Field(None, description="Provenance hash")
 
-
-class SearchResponse(BaseModel):
+class SearchResponse(GreenLangBase):
     """Response after searching QR codes."""
 
     model_config = ConfigDict(str_strip_whitespace=True, use_enum_values=True)
@@ -2146,8 +2078,7 @@ class SearchResponse(BaseModel):
     offset: int = Field(default=0, description="Result offset used")
     processing_time_ms: float = Field(default=0.0, description="Processing time")
 
-
-class ScanHistoryResponse(BaseModel):
+class ScanHistoryResponse(GreenLangBase):
     """Response after querying scan history."""
 
     model_config = ConfigDict(str_strip_whitespace=True, use_enum_values=True)
@@ -2160,8 +2091,7 @@ class ScanHistoryResponse(BaseModel):
     offset: int = Field(default=0, description="Result offset used")
     processing_time_ms: float = Field(default=0.0, description="Processing time")
 
-
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Health check response for QR Code Generator Agent."""
 
     model_config = ConfigDict(str_strip_whitespace=True, use_enum_values=True)
@@ -2175,4 +2105,4 @@ class HealthResponse(BaseModel):
     total_codes_generated: int = Field(default=0, description="Total codes generated")
     total_scans_recorded: int = Field(default=0, description="Total scans recorded")
     uptime_seconds: float = Field(default=0.0, description="Service uptime")
-    checked_at: datetime = Field(default_factory=_utcnow, description="Check timestamp")
+    checked_at: datetime = Field(default_factory=utcnow, description="Check timestamp")

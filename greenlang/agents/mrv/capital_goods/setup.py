@@ -49,6 +49,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -218,26 +219,17 @@ try:
 except ImportError:
     CapitalGoodsMetrics = None  # type: ignore[assignment, misc]
 
-
 # ===================================================================
 # Utility helpers
 # ===================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _utcnow_iso() -> str:
     """Return current UTC datetime as an ISO-8601 string."""
-    return _utcnow().isoformat()
-
+    return utcnow().isoformat()
 
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _short_id(prefix: str = "cg") -> str:
     """Generate a short unique identifier with a given prefix.
@@ -249,7 +241,6 @@ def _short_id(prefix: str = "cg") -> str:
         A string like ``cg_a1b2c3d4e5f6``.
     """
     return f"{prefix}_{uuid.uuid4().hex[:12]}"
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -268,7 +259,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 def _quantize(value: Decimal, places: int = 8) -> Decimal:
     """Quantize a Decimal to the given number of decimal places.
 
@@ -281,7 +271,6 @@ def _quantize(value: Decimal, places: int = 8) -> Decimal:
     """
     quantizer = Decimal(10) ** -places
     return value.quantize(quantizer, rounding=ROUND_HALF_UP)
-
 
 def _safe_float(value: Any, default: float = 0.0) -> float:
     """Convert a value to float, returning default on failure.
@@ -298,7 +287,6 @@ def _safe_float(value: Any, default: float = 0.0) -> float:
     except (TypeError, ValueError, ArithmeticError):
         return default
 
-
 def _safe_decimal(value: Any, default: Decimal = Decimal("0")) -> Decimal:
     """Convert a value to Decimal, returning default on failure.
 
@@ -314,7 +302,6 @@ def _safe_decimal(value: Any, default: Decimal = Decimal("0")) -> Decimal:
     except Exception:
         return default
 
-
 # ===================================================================
 # Default compliance frameworks for Category 2
 # ===================================================================
@@ -329,11 +316,9 @@ DEFAULT_COMPLIANCE_FRAMEWORKS: List[str] = [
     "iso_14064",
 ]
 
-
 # ===================================================================
 # Lightweight Pydantic response models (14 models)
 # ===================================================================
-
 
 class CalculateResponse(BaseModel):
     """Response for a full pipeline calculation."""
@@ -356,7 +341,6 @@ class CalculateResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
 class BatchCalculateResponse(BaseModel):
     """Response for a batch calculation across multiple periods."""
 
@@ -373,7 +357,6 @@ class BatchCalculateResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
 class CalculationListResponse(BaseModel):
     """Response for listing stored calculations."""
 
@@ -385,7 +368,6 @@ class CalculationListResponse(BaseModel):
     items: List[Dict[str, Any]] = Field(default_factory=list)
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
 class CalculationDetailResponse(BaseModel):
     """Response for retrieving a single calculation by ID."""
 
@@ -395,7 +377,6 @@ class CalculationDetailResponse(BaseModel):
     calculation_id: str = Field(default="")
     data: Optional[Dict[str, Any]] = Field(default=None)
     timestamp: str = Field(default_factory=_utcnow_iso)
-
 
 class AssetRegisterResponse(BaseModel):
     """Response for registering a capital asset."""
@@ -409,7 +390,6 @@ class AssetRegisterResponse(BaseModel):
     provenance_hash: str = Field(default="")
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
 class AssetListResponse(BaseModel):
     """Response for listing registered assets."""
 
@@ -418,7 +398,6 @@ class AssetListResponse(BaseModel):
     total: int = Field(default=0)
     assets: List[Dict[str, Any]] = Field(default_factory=list)
     timestamp: str = Field(default_factory=_utcnow_iso)
-
 
 class EFListResponse(BaseModel):
     """Response for listing emission factors."""
@@ -431,7 +410,6 @@ class EFListResponse(BaseModel):
     factors: List[Dict[str, Any]] = Field(default_factory=list)
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
 class ClassifyResponse(BaseModel):
     """Response for asset classification."""
 
@@ -441,7 +419,6 @@ class ClassifyResponse(BaseModel):
     classified_count: int = Field(default=0)
     classifications: List[Dict[str, Any]] = Field(default_factory=list)
     timestamp: str = Field(default_factory=_utcnow_iso)
-
 
 class ComplianceResponse(BaseModel):
     """Response for a regulatory compliance check."""
@@ -459,7 +436,6 @@ class ComplianceResponse(BaseModel):
     provenance_hash: str = Field(default="")
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
 class UncertaintyResponse(BaseModel):
     """Response for uncertainty analysis."""
 
@@ -472,7 +448,6 @@ class UncertaintyResponse(BaseModel):
     upper_bound_tco2e: float = Field(default=0.0)
     uncertainty_percentage: float = Field(default=0.0)
     timestamp: str = Field(default_factory=_utcnow_iso)
-
 
 class AggregationResponse(BaseModel):
     """Response for an aggregated emissions summary."""
@@ -487,7 +462,6 @@ class AggregationResponse(BaseModel):
     period: str = Field(default="annual")
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
 class HotSpotResponse(BaseModel):
     """Response for hot-spot analysis."""
 
@@ -499,7 +473,6 @@ class HotSpotResponse(BaseModel):
     top_suppliers: List[Dict[str, Any]] = Field(default_factory=list)
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
 class ExportResponse(BaseModel):
     """Response for an export operation."""
 
@@ -510,7 +483,6 @@ class ExportResponse(BaseModel):
     content: Any = Field(default=None)
     size_bytes: int = Field(default=0)
     timestamp: str = Field(default_factory=_utcnow_iso)
-
 
 class HealthResponse(BaseModel):
     """Service health check response."""
@@ -527,11 +499,9 @@ class HealthResponse(BaseModel):
     total_calculations: int = Field(default=0)
     timestamp: str = Field(default_factory=_utcnow_iso)
 
-
 # ===================================================================
 # CapitalGoodsService facade
 # ===================================================================
-
 
 class CapitalGoodsService:
     """Unified facade over the Capital Goods Agent SDK.
@@ -1822,13 +1792,11 @@ class CapitalGoodsService:
         else:
             return {"result": str(result)}
 
-
 # ===================================================================
 # Module-level singleton accessor
 # ===================================================================
 
 _SERVICE_INSTANCE: Optional[CapitalGoodsService] = None
-
 
 def get_service(config: Optional[Any] = None) -> CapitalGoodsService:
     """Get the singleton CapitalGoodsService instance.
@@ -1844,11 +1812,9 @@ def get_service(config: Optional[Any] = None) -> CapitalGoodsService:
         _SERVICE_INSTANCE = CapitalGoodsService(config)
     return _SERVICE_INSTANCE
 
-
 # ===================================================================
 # FastAPI router configuration
 # ===================================================================
-
 
 def get_router() -> Any:
     """Create and configure a FastAPI APIRouter for capital goods endpoints.
@@ -1949,11 +1915,9 @@ def get_router() -> Any:
 
     return router
 
-
 # ===================================================================
 # FastAPI app configuration
 # ===================================================================
-
 
 def configure_capital_goods(app: Any) -> None:
     """Configure a FastAPI app with capital goods endpoints.

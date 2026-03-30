@@ -45,6 +45,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
 
 from greenlang.agents.data.time_series_gap_filler.config import get_config
+from greenlang.schemas import utcnow
 from greenlang.agents.data.time_series_gap_filler.metrics import (
     inc_gaps_filled,
     observe_confidence,
@@ -58,16 +59,9 @@ from greenlang.agents.data.time_series_gap_filler.provenance import (
 
 logger = logging.getLogger(__name__)
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _is_missing(value: Any) -> bool:
     """Determine whether a value represents a missing data point.
@@ -86,11 +80,9 @@ def _is_missing(value: Any) -> bool:
         return True
     return False
 
-
 # ---------------------------------------------------------------------------
 # Lightweight data models (self-contained until models.py adds these)
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class ReferenceSeries:
@@ -113,8 +105,7 @@ class ReferenceSeries:
     def __post_init__(self) -> None:
         """Set default registration timestamp if not provided."""
         if not self.registered_at:
-            self.registered_at = _utcnow().isoformat()
-
+            self.registered_at = utcnow().isoformat()
 
 @dataclass
 class FilledPoint:
@@ -135,7 +126,6 @@ class FilledPoint:
     confidence: float = 0.0
     donor_id: str = ""
     method: str = "cross_series"
-
 
 @dataclass
 class FillResult:
@@ -181,7 +171,6 @@ class FillResult:
     provenance_hash: str = ""
     details: Dict[str, Any] = field(default_factory=dict)
 
-
 @dataclass
 class DonorContribution:
     """Contribution from a single donor to a multi-donor fill.
@@ -197,7 +186,6 @@ class DonorContribution:
     correlation: float = 0.0
     predicted_value: float = 0.0
     weight: float = 0.0
-
 
 @dataclass
 class CrossSeriesResult:
@@ -246,11 +234,9 @@ class CrossSeriesResult:
         if not self.result_id:
             self.result_id = str(uuid4())
 
-
 # ---------------------------------------------------------------------------
 # Pure-Python statistical helpers
 # ---------------------------------------------------------------------------
-
 
 def _overlap_indices(
     a: List[Optional[float]],
@@ -270,7 +256,6 @@ def _overlap_indices(
         i for i in range(length)
         if not _is_missing(a[i]) and not _is_missing(b[i])
     ]
-
 
 def _pearson_r(x: List[float], y: List[float]) -> float:
     """Compute Pearson correlation coefficient between two lists.
@@ -322,7 +307,6 @@ def _pearson_r(x: List[float], y: List[float]) -> float:
     r = numerator / denominator
     # Clamp to [-1, 1] to guard against floating-point drift
     return max(-1.0, min(1.0, r))
-
 
 def _ols_fit(
     x: List[float],
@@ -379,7 +363,6 @@ def _ols_fit(
 
     return slope, intercept, r_squared
 
-
 def _compute_confidence(
     r_squared: float,
     n_donors: int,
@@ -416,7 +399,6 @@ def _compute_confidence(
     confidence = base * method_factor + donor_bonus
     return max(0.0, min(1.0, confidence))
 
-
 def _count_missing(series: List[Optional[float]]) -> int:
     """Count missing values in a series.
 
@@ -428,11 +410,9 @@ def _count_missing(series: List[Optional[float]]) -> int:
     """
     return sum(1 for v in series if _is_missing(v))
 
-
 # ---------------------------------------------------------------------------
 # CrossSeriesFillerEngine
 # ---------------------------------------------------------------------------
-
 
 class CrossSeriesFillerEngine:
     """Pure-Python cross-series correlation-based gap filling engine.
@@ -1470,7 +1450,6 @@ class CrossSeriesFillerEngine:
             output_hash=output_hash,
             metadata=metadata,
         )
-
 
 # ---------------------------------------------------------------------------
 # __all__ export list

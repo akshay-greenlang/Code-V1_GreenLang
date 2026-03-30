@@ -53,14 +53,6 @@ class ScheduleFrequency(str, Enum):
     CUSTOM = "custom"
 
 
-class AlertSeverity(str, Enum):
-    """Alert severity levels."""
-    INFO = "info"
-    WARNING = "warning"
-    ERROR = "error"
-    CRITICAL = "critical"
-
-
 class AlertChannel(str, Enum):
     """Alert delivery channels."""
     EMAIL = "email"
@@ -737,6 +729,7 @@ from datetime import datetime, timedelta
 
 # Import the pipeline
 from {pipeline.pipeline_class.rsplit(".", 1)[0]} import {pipeline.pipeline_class.rsplit(".", 1)[1]}
+from greenlang.schemas.enums import AlertSeverity
 
 default_args = {{
     'owner': '{pipeline.owner}',

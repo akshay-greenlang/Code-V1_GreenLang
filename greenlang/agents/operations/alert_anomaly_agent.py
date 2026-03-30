@@ -38,6 +38,7 @@ from pydantic import BaseModel, Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas.enums import AlertStatus
 
 logger = logging.getLogger(__name__)
 
@@ -76,14 +77,6 @@ class DetectionMethod(str, Enum):
     EXPONENTIAL_SMOOTHING = "exponential_smoothing"
     PERCENTAGE_CHANGE = "percentage_change"
     STATIC_THRESHOLD = "static_threshold"
-
-
-class AlertStatus(str, Enum):
-    """Status of an alert."""
-    ACTIVE = "active"
-    ACKNOWLEDGED = "acknowledged"
-    RESOLVED = "resolved"
-    SUPPRESSED = "suppressed"
 
 
 # =============================================================================

@@ -16,32 +16,19 @@ import time
 import uuid
 from collections import defaultdict, deque
 from datetime import datetime, timedelta
-from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
+from greenlang.schemas.enums import AlertSeverity, HealthStatus
 
 logger = logging.getLogger(__name__)
 
 
-class AlertSeverity(str, Enum):
-    INFO = "info"
-    WARNING = "warning"
-    ERROR = "error"
-    CRITICAL = "critical"
-
-
-class HealthStatus(str, Enum):
-    HEALTHY = "healthy"
-    DEGRADED = "degraded"
-    UNHEALTHY = "unhealthy"
-    UNKNOWN = "unknown"
-
-
-class ResourceUsage(BaseModel):
+class ResourceUsage(GreenLangBase):
     timestamp: datetime = Field(default_factory=DeterministicClock.now)
     cpu_percent: float = Field(default=0.0, ge=0, le=100)
     memory_mb: float = Field(default=0.0, ge=0)
@@ -50,7 +37,7 @@ class ResourceUsage(BaseModel):
     network_io_mb: float = Field(default=0.0, ge=0)
 
 
-class AgentPerformanceMetrics(BaseModel):
+class AgentPerformanceMetrics(GreenLangBase):
     agent_id: str = Field(..., description="Agent identifier")
     timestamp: datetime = Field(default_factory=DeterministicClock.now)
 
@@ -73,7 +60,7 @@ class AgentPerformanceMetrics(BaseModel):
     health_status: HealthStatus = Field(default=HealthStatus.UNKNOWN)
 
 
-class PerformanceThreshold(BaseModel):
+class PerformanceThreshold(GreenLangBase):
     threshold_id: str = Field(default_factory=lambda: str(uuid.uuid4())[:8])
     agent_id: str = Field(..., description="Agent to monitor")
     metric_name: str = Field(..., description="Metric name")
@@ -83,7 +70,7 @@ class PerformanceThreshold(BaseModel):
     enabled: bool = Field(default=True)
 
 
-class PerformanceAlert(BaseModel):
+class PerformanceAlert(GreenLangBase):
     alert_id: str = Field(default_factory=lambda: str(uuid.uuid4())[:8])
     agent_id: str = Field(..., description="Agent with issue")
     threshold_id: str = Field(..., description="Threshold that triggered")
@@ -96,7 +83,7 @@ class PerformanceAlert(BaseModel):
     resolved_at: Optional[datetime] = Field(None)
 
 
-class PerformanceMonitorInput(BaseModel):
+class PerformanceMonitorInput(GreenLangBase):
     operation: str = Field(..., description="Operation to perform")
     agent_id: Optional[str] = Field(None)
     metrics: Optional[AgentPerformanceMetrics] = Field(None)
@@ -119,7 +106,7 @@ class PerformanceMonitorInput(BaseModel):
         return v
 
 
-class PerformanceMonitorOutput(BaseModel):
+class PerformanceMonitorOutput(GreenLangBase):
     success: bool = Field(...)
     operation: str = Field(...)
     data: Dict[str, Any] = Field(default_factory=dict)

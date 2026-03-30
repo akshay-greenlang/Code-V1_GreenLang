@@ -45,35 +45,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "23.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a single workflow phase."""
@@ -84,7 +76,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -94,7 +85,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class FLAGTriggerStatus(str, Enum):
     """FLAG trigger evaluation result."""
 
@@ -102,7 +92,6 @@ class FLAGTriggerStatus(str, Enum):
     NOT_TRIGGERED = "not_triggered"  # < 20% FLAG emissions
     BORDERLINE = "borderline"        # 15-20% (recommended but not required)
     INSUFFICIENT_DATA = "insufficient_data"
-
 
 class CommitmentStatus(str, Enum):
     """No-deforestation commitment validation status."""
@@ -112,7 +101,6 @@ class CommitmentStatus(str, Enum):
     PARTIAL = "partial"
     NOT_ASSESSED = "not_assessed"
 
-
 class CommodityRiskLevel(str, Enum):
     """Deforestation risk level for FLAG commodities."""
 
@@ -120,7 +108,6 @@ class CommodityRiskLevel(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     NEGLIGIBLE = "negligible"
-
 
 # =============================================================================
 # REFERENCE DATA (Zero-Hallucination Lookups)
@@ -259,11 +246,9 @@ FLAG_TRIGGER_THRESHOLD_PCT = 20.0     # 20% trigger (SBTi FLAG V1.1 Section 3)
 FLAG_BORDERLINE_LOWER_PCT = 15.0      # Below trigger but recommended
 NO_DEFORESTATION_DEADLINE_YEAR = 2025 # AFi/SBTi deadline for zero deforestation
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -275,7 +260,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class CommodityInput(BaseModel):
     """Input data for a single FLAG commodity."""
@@ -322,7 +306,6 @@ class CommodityInput(BaseModel):
             + self.post_harvest_tco2e
         )
 
-
 class CommodityAssessment(BaseModel):
     """Assessment result for a single FLAG commodity."""
 
@@ -341,7 +324,6 @@ class CommodityAssessment(BaseModel):
     has_traceability: bool = Field(default=False)
     certified_pct: float = Field(default=0.0)
 
-
 class TriggerEvaluation(BaseModel):
     """FLAG trigger evaluation result."""
 
@@ -355,7 +337,6 @@ class TriggerEvaluation(BaseModel):
     commodities_contributing: List[str] = Field(default_factory=list)
     notes: List[str] = Field(default_factory=list)
 
-
 class PathwayMilestone(BaseModel):
     """Annual milestone on the FLAG reduction pathway."""
 
@@ -365,7 +346,6 @@ class PathwayMilestone(BaseModel):
     annual_reduction_rate_pct: float = Field(default=0.0)
     luc_target_tco2e: float = Field(default=0.0, description="LUC reduction target")
     non_luc_target_tco2e: float = Field(default=0.0, description="Non-LUC reduction target")
-
 
 class FLAGPathway(BaseModel):
     """Complete FLAG reduction pathway."""
@@ -381,7 +361,6 @@ class FLAGPathway(BaseModel):
                                                 description="Year when FLAG emissions reach zero")
     luc_base_tco2e: float = Field(default=0.0)
     non_luc_base_tco2e: float = Field(default=0.0)
-
 
 class DeforestationCommitment(BaseModel):
     """No-deforestation commitment assessment."""
@@ -399,7 +378,6 @@ class DeforestationCommitment(BaseModel):
     has_monitoring: bool = Field(default=False)
     has_grievance_mechanism: bool = Field(default=False)
 
-
 class CommitmentValidation(BaseModel):
     """Complete no-deforestation commitment validation result."""
 
@@ -409,7 +387,6 @@ class CommitmentValidation(BaseModel):
     gaps: List[str] = Field(default_factory=list)
     recommendations: List[str] = Field(default_factory=list)
     blocking_submission: bool = Field(default=False)
-
 
 class FLAGWorkflowConfig(BaseModel):
     """Configuration for the FLAG assessment workflow."""
@@ -437,7 +414,6 @@ class FLAGWorkflowConfig(BaseModel):
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
 
-
 class FLAGWorkflowResult(BaseModel):
     """Complete result from the FLAG assessment workflow."""
 
@@ -452,11 +428,9 @@ class FLAGWorkflowResult(BaseModel):
     commitment_validation: Optional[CommitmentValidation] = Field(None)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class FLAGWorkflow:
     """
@@ -511,7 +485,7 @@ class FLAGWorkflow:
             FLAGWorkflowResult with commodity assessments, trigger
             evaluation, reduction pathway, and commitment validation.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting FLAG workflow %s, commodities=%d",
             self.workflow_id, len(config.commodities),
@@ -546,7 +520,7 @@ class FLAGWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         result = FLAGWorkflowResult(
             workflow_id=self.workflow_id,
             status=overall_status,
@@ -573,7 +547,7 @@ class FLAGWorkflow:
 
     async def _phase_commodity_assess(self, config: FLAGWorkflowConfig) -> PhaseResult:
         """Identify FLAG commodities and assess emissions contribution."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._commodity_assessments = []
@@ -663,7 +637,7 @@ class FLAGWorkflow:
             sum(ca.land_use_change_tco2e for ca in self._commodity_assessments), 2
         )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Commodity assess: %d commodities, FLAG=%.2f tCO2e (%.1f%% of total)",
             len(self._commodity_assessments), flag_total,
@@ -684,7 +658,7 @@ class FLAGWorkflow:
 
     async def _phase_trigger_eval(self, config: FLAGWorkflowConfig) -> PhaseResult:
         """Evaluate 20% FLAG trigger threshold."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -754,7 +728,7 @@ class FLAGWorkflow:
         outputs["flag_target_recommended"] = flag_recommended
         outputs["commodities_contributing"] = len(contributing)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Trigger eval: FLAG=%.1f%%, status=%s, required=%s",
             flag_pct, trigger_status.value, flag_required,
@@ -774,7 +748,7 @@ class FLAGWorkflow:
 
     async def _phase_pathway_calc(self, config: FLAGWorkflowConfig) -> PhaseResult:
         """Calculate FLAG reduction pathway at 3.03%/yr."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -788,7 +762,7 @@ class FLAGWorkflow:
                 base_year=config.base_year,
                 target_year=config.target_year,
             )
-            elapsed = (_utcnow() - started).total_seconds()
+            elapsed = (utcnow() - started).total_seconds()
             return PhaseResult(
                 phase_name="pathway_calc",
                 status=PhaseStatus.COMPLETED,
@@ -874,7 +848,7 @@ class FLAGWorkflow:
         outputs["luc_base_tco2e"] = round(luc_total, 2)
         outputs["non_luc_base_tco2e"] = round(non_luc_total, 2)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Pathway calc: base=%.2f, target=%.2f, reduction=%.1f%%, zero_year=%d",
             flag_total, target_emissions, total_reduction_pct, zero_year_calc,
@@ -894,7 +868,7 @@ class FLAGWorkflow:
 
     async def _phase_commitment_validate(self, config: FLAGWorkflowConfig) -> PhaseResult:
         """Validate no-deforestation commitments per SBTi FLAG Guidance V1.1."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -1034,7 +1008,7 @@ class FLAGWorkflow:
         outputs["blocking_submission"] = blocking
         outputs["uncovered_commodities"] = uncovered
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Commitment validate: status=%s, score=%.0f%%, gaps=%d, blocking=%s",
             status.value, compliance_score, len(gaps), blocking,

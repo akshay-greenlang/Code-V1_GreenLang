@@ -36,6 +36,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "28.0.0"
@@ -98,22 +100,16 @@ XBRL_TAGS: Dict[str, str] = {
     "scenario": "gl:PathwayScenarioIdentifier",
 }
 
-
 # ---------------------------------------------------------------------------
 # Utility Functions
 # ---------------------------------------------------------------------------
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 
-
 def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str) if isinstance(data, dict) else str(data)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 def _dec(val: Any, places: int = 2) -> str:
     try:
@@ -122,7 +118,6 @@ def _dec(val: Any, places: int = 2) -> str:
         return str(d.quantize(Decimal(q), rounding=ROUND_HALF_UP))
     except Exception:
         return str(val)
-
 
 def _dec_comma(val: Any, places: int = 2) -> str:
     try:
@@ -147,7 +142,6 @@ def _dec_comma(val: Any, places: int = 2) -> str:
     except Exception:
         return str(val)
 
-
 def _pct_of(part: Any, total: Any) -> Decimal:
     p = Decimal(str(part))
     t = Decimal(str(total))
@@ -155,14 +149,12 @@ def _pct_of(part: Any, total: Any) -> Decimal:
         return Decimal("0.00")
     return (p / t * Decimal("100")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
-
 def _pct_change(current: Any, baseline: Any) -> Decimal:
     c = Decimal(str(current))
     b = Decimal(str(baseline))
     if b == 0:
         return Decimal("0.00")
     return ((c - b) / b * Decimal("100")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-
 
 def _rag_status(gap_pct: float) -> str:
     """Return RAG status based on gap-to-pathway percentage."""
@@ -173,10 +165,8 @@ def _rag_status(gap_pct: float) -> str:
     else:
         return "RED"
 
-
 def _rag_color(status: str) -> str:
     return {"GREEN": _SUCCESS, "AMBER": _WARN, "RED": _DANGER}.get(status, "#999")
-
 
 def _convergence_value(
     base_intensity: float,
@@ -214,7 +204,6 @@ def _convergence_value(
         return base_intensity + step_size * step_idx
     return base_intensity + (target_intensity - base_intensity) * t
 
-
 def _sector_lookup(sector_id: str) -> Optional[Dict[str, str]]:
     """Look up sector definition by ID."""
     for s in SDA_SECTORS:
@@ -222,14 +211,12 @@ def _sector_lookup(sector_id: str) -> Optional[Dict[str, str]]:
             return s
     return None
 
-
 def _scenario_lookup(scenario_id: str) -> Optional[Dict[str, str]]:
     """Look up IEA scenario by ID."""
     for s in IEA_SCENARIOS:
         if s["id"] == scenario_id:
             return s
     return None
-
 
 # ---------------------------------------------------------------------------
 # Template Class
@@ -275,7 +262,7 @@ class SectorPathwayReportTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render full report as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections: List[str] = [
             self._md_header(data),
             self._md_executive_summary(data),
@@ -300,7 +287,7 @@ class SectorPathwayReportTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render full report as HTML with inline CSS."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         body_parts = [
             self._html_header(data),
@@ -332,7 +319,7 @@ class SectorPathwayReportTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render full report as structured JSON."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sector_id = data.get("sector_id", "")
         sector_def = _sector_lookup(sector_id) or {}
         scenario_id = data.get("scenario", "nze")

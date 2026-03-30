@@ -47,20 +47,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -73,11 +68,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EUMemberState(str, Enum):
     """EU member states and UK for EPBD transposition."""
@@ -111,7 +104,6 @@ class EUMemberState(str, Enum):
     MT = "MT"
     LU = "LU"
 
-
 class ComplianceStatus(str, Enum):
     """Compliance assessment status values."""
 
@@ -121,7 +113,6 @@ class ComplianceStatus(str, Enum):
     EXEMPT = "exempt"
     NOT_ASSESSED = "not_assessed"
     PENDING_DATA = "pending_data"
-
 
 class BuildingCategory(str, Enum):
     """EPBD building categories."""
@@ -135,7 +126,6 @@ class BuildingCategory(str, Enum):
     TEMPORARY = "temporary"
     WORSHIP = "worship"
 
-
 class EPCRating(str, Enum):
     """EPC rating bands."""
 
@@ -148,7 +138,6 @@ class EPCRating(str, Enum):
     F = "F"
     G = "G"
 
-
 class SolarObligationType(str, Enum):
     """Solar obligation types under EPBD Art. 9a."""
 
@@ -159,11 +148,9 @@ class SolarObligationType(str, Enum):
     EXISTING_PUBLIC = "existing_public"
     EXISTING_NON_RESIDENTIAL = "existing_non_residential"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class NationalTransposition(BaseModel):
     """National EPBD transposition requirements."""
@@ -189,7 +176,6 @@ class NationalTransposition(BaseModel):
     air_permeability_max: float = Field(default=0.0)
     epc_validity_years: int = Field(default=10)
 
-
 class EPBDObligationAssessment(BaseModel):
     """Result of EPBD obligation assessment for a building."""
 
@@ -214,7 +200,6 @@ class EPBDObligationAssessment(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class MEESAssessment(BaseModel):
     """MEES (Minimum Energy Efficiency Standards) assessment."""
 
@@ -233,7 +218,6 @@ class MEESAssessment(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class SolarObligationAssessment(BaseModel):
     """Solar obligation assessment under EPBD Art. 9a."""
 
@@ -251,7 +235,6 @@ class SolarObligationAssessment(BaseModel):
     gap_kwp: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class EPBDComplianceBridgeConfig(BaseModel):
     """Configuration for the EPBD Compliance Bridge."""
 
@@ -262,7 +245,6 @@ class EPBDComplianceBridgeConfig(BaseModel):
     include_future_requirements: bool = Field(default=True)
     mees_future_threshold: str = Field(default="C")
     mees_future_date: str = Field(default="2027-04-01")
-
 
 # ---------------------------------------------------------------------------
 # National Transposition Database
@@ -476,11 +458,9 @@ NATIONAL_TRANSPOSITIONS: Dict[str, NationalTransposition] = {
 # EPC rating order for comparison
 EPC_RATING_ORDER: List[str] = ["A+", "A", "B", "C", "D", "E", "F", "G"]
 
-
 # ---------------------------------------------------------------------------
 # EPBDComplianceBridge
 # ---------------------------------------------------------------------------
-
 
 class EPBDComplianceBridge:
     """EPBD (EU) 2024/1275 compliance assessment engine for buildings.

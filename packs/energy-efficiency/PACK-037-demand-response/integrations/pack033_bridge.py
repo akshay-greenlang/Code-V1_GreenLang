@@ -39,25 +39,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -70,11 +64,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class QuickWinDRCategory(str, Enum):
     """Quick win categories relevant to DR enablement."""
@@ -88,7 +80,6 @@ class QuickWinDRCategory(str, Enum):
     PROCESS_SCHEDULING = "process_scheduling"
     EV_CHARGING_CONTROL = "ev_charging_control"
 
-
 class ImplementationStatus(str, Enum):
     """Quick win measure implementation status."""
 
@@ -97,11 +88,9 @@ class ImplementationStatus(str, Enum):
     IMPLEMENTED = "implemented"
     VERIFIED = "verified"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class Pack033Config(BaseModel):
     """Configuration for importing PACK-033 quick wins data."""
@@ -111,7 +100,6 @@ class Pack033Config(BaseModel):
     enable_provenance: bool = Field(default=True)
     import_implemented_only: bool = Field(default=False)
     min_curtailable_kw: float = Field(default=5.0, ge=0.0)
-
 
 class QuickWinMeasure(BaseModel):
     """A quick win measure from PACK-033 with DR relevance."""
@@ -133,7 +121,6 @@ class QuickWinMeasure(BaseModel):
     dr_response_time_minutes: int = Field(default=15, ge=0)
     provenance_hash: str = Field(default="")
 
-
 class DREnablementMeasure(BaseModel):
     """A quick win measure assessed for DR enablement value."""
 
@@ -152,7 +139,6 @@ class DREnablementMeasure(BaseModel):
     bms_control_point: str = Field(default="", description="BMS point for automated control")
     provenance_hash: str = Field(default="")
 
-
 class Pack033ImportResult(BaseModel):
     """Result of importing quick wins data from PACK-033."""
 
@@ -168,7 +154,6 @@ class Pack033ImportResult(BaseModel):
     message: str = Field(default="")
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Quick Win to DR Mapping
@@ -241,11 +226,9 @@ DR_ENABLEMENT_MAP: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Pack033Bridge
 # ---------------------------------------------------------------------------
-
 
 class Pack033Bridge:
     """Bridge to PACK-033 Quick Wins Identifier data for DR enablement.

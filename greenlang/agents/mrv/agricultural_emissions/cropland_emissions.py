@@ -84,6 +84,7 @@ from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -134,15 +135,9 @@ except ImportError:
     _record_calculation_error = None  # type: ignore[assignment]
     _observe_duration = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Decimal precision constants
@@ -165,7 +160,6 @@ KG_TO_TONNES = Decimal("0.001")
 #: Gg to tonnes conversion: 1 Gg = 1000 tonnes
 GG_TO_TONNES = Decimal("1000")
 
-
 def _D(value: Any) -> Decimal:
     """Convert a value to Decimal with controlled precision.
 
@@ -185,7 +179,6 @@ def _D(value: Any) -> Decimal:
     except (InvalidOperation, ValueError) as exc:
         raise ValueError(f"Cannot convert {value!r} to Decimal") from exc
 
-
 def _safe_decimal(value: Any, default: Decimal = _ZERO) -> Decimal:
     """Safely convert a value to Decimal, returning default on failure.
 
@@ -203,7 +196,6 @@ def _safe_decimal(value: Any, default: Decimal = _ZERO) -> Decimal:
     except (InvalidOperation, ValueError, TypeError):
         return default
 
-
 def _Q(value: Decimal) -> Decimal:
     """Quantize a Decimal to the standard 8-decimal-place precision.
 
@@ -214,7 +206,6 @@ def _Q(value: Decimal) -> Decimal:
         Quantized Decimal.
     """
     return value.quantize(_PRECISION, rounding=ROUND_HALF_UP)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -232,7 +223,6 @@ def _compute_hash(data: Any) -> str:
     else:
         canonical = str(data)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-
 
 # ===========================================================================
 # GWP Values (fallback when models module is not available)
@@ -261,11 +251,9 @@ GWP_VALUES: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ===========================================================================
 # Enumerations
 # ===========================================================================
-
 
 class WaterRegime(str, Enum):
     """Rice paddy water regime types with IPCC scaling factors."""
@@ -278,7 +266,6 @@ class WaterRegime(str, Enum):
     DEEP_WATER = "deep_water"
     UPLAND = "upland"
 
-
 class PreSeasonFlooding(str, Enum):
     """Pre-season water status for rice paddies."""
 
@@ -286,7 +273,6 @@ class PreSeasonFlooding(str, Enum):
     NOT_FLOODED_LONG = "not_flooded_long"
     FLOODED_SHORT = "flooded_short"
     FLOODED_LONG = "flooded_long"
-
 
 class OrganicAmendmentType(str, Enum):
     """Types of organic amendments applied to rice paddies."""
@@ -297,14 +283,12 @@ class OrganicAmendmentType(str, Enum):
     FARM_YARD_MANURE = "farm_yard_manure"
     GREEN_MANURE = "green_manure"
 
-
 class PRPAnimalType(str, Enum):
     """Animal type categories for PRP (pasture, range, paddock) N inputs."""
 
     CATTLE = "cattle"
     POULTRY = "poultry"
     OTHER = "other"
-
 
 class CropType(str, Enum):
     """Crop types for field burning and residue estimation."""
@@ -320,7 +304,6 @@ class CropType(str, Enum):
     MILLET = "millet"
     OTHER = "other"
 
-
 class CalculationStatus(str, Enum):
     """Result status codes."""
 
@@ -328,7 +311,6 @@ class CalculationStatus(str, Enum):
     PARTIAL = "PARTIAL"
     ERROR = "ERROR"
     VALIDATION_ERROR = "VALIDATION_ERROR"
-
 
 # ===========================================================================
 # IPCC Default Emission Factors -- Soil N2O (Vol 4 Ch 11)
@@ -365,7 +347,6 @@ FRAC_LEACH_DEFAULT = Decimal("0.30")
 #: EF5 -- N2O from leaching/runoff (kg N2O-N / kg N leached)
 EF5_DEFAULT = Decimal("0.0075")
 
-
 # ===========================================================================
 # IPCC Liming and Urea Emission Factors (Vol 4 Ch 11)
 # ===========================================================================
@@ -378,7 +359,6 @@ DOLOMITE_EF = Decimal("0.13")
 
 #: Urea CO(NH2)2 emission factor -- fraction of C released as CO2
 UREA_EF = Decimal("0.20")
-
 
 # ===========================================================================
 # IPCC Rice CH4 Parameters (Vol 4 Ch 5)
@@ -419,7 +399,6 @@ ORGANIC_AMENDMENT_CFOA: Dict[str, Decimal] = {
 
 #: Exponent for organic amendment scaling factor (IPCC 2006 Eq 5.3)
 ORGANIC_AMENDMENT_EXPONENT = Decimal("0.59")
-
 
 # ===========================================================================
 # Field Burning Parameters (Vol 4 Ch 2, Table 2.6 / Vol 4 Ch 5)
@@ -555,11 +534,9 @@ FIELD_BURNING_EF: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ===========================================================================
 # CroplandEmissionsEngine
 # ===========================================================================
-
 
 class CroplandEmissionsEngine:
     """Engine 4: Cropland emissions calculations covering agricultural soils
@@ -606,7 +583,7 @@ class CroplandEmissionsEngine:
         self._lock = threading.RLock()
         self._total_calculations: int = 0
         self._total_errors: int = 0
-        self._created_at = _utcnow()
+        self._created_at = utcnow()
 
         self._default_gwp_source: str = str(
             self._config.get("default_gwp_source", "AR6")
@@ -1036,7 +1013,7 @@ class CroplandEmissionsEngine:
         result["calculation_trace"] = trace
         result["provenance_hash"] = provenance_hash
         result["processing_time_ms"] = round(elapsed_ms, 3)
-        result["calculated_at"] = _utcnow().isoformat()
+        result["calculated_at"] = utcnow().isoformat()
 
         if extra:
             result.update(extra)
@@ -1098,7 +1075,7 @@ class CroplandEmissionsEngine:
             "calculation_trace": trace,
             "provenance_hash": "",
             "processing_time_ms": round(elapsed_ms, 3),
-            "calculated_at": _utcnow().isoformat(),
+            "calculated_at": utcnow().isoformat(),
         }
 
     # ==================================================================
@@ -2445,7 +2422,7 @@ class CroplandEmissionsEngine:
             "failed": failed,
             "continue_on_error": continue_on_error,
             "processing_time_ms": round(elapsed_ms, 3),
-            "calculated_at": _utcnow().isoformat(),
+            "calculated_at": utcnow().isoformat(),
         }
         batch_result["provenance_hash"] = _compute_hash({
             k: v for k, v in batch_result.items()

@@ -14,6 +14,7 @@ from typing import Any, Dict, List
 import pytest
 
 import sys, os
+from greenlang.schemas import utcnow
 sys.path.insert(0, os.path.dirname(__file__))
 
 from conftest import (
@@ -358,7 +359,7 @@ class TestVerificationCycleWorkflow:
             "verifier": sample_verifier["company_name"],
             "opinion": "unqualified",
             "scope": sample_verifier["scopes"],
-            "issued_at": _utcnow().isoformat(),
+            "issued_at": utcnow().isoformat(),
             "valid_until": sample_verifier["accreditation_valid_until"],
             "provenance_hash": _compute_hash({
                 "verifier": sample_verifier["verifier_id"],
@@ -470,6 +471,7 @@ class TestDataCollectionWorkflow:
         """Test data ingestion from CSV."""
         import csv
         import io
+
         reader = csv.DictReader(io.StringIO(sample_import_csv_data))
         rows = list(reader)
         assert len(rows) == 20

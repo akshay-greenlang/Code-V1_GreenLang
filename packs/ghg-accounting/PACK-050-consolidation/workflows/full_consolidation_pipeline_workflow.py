@@ -45,27 +45,21 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ReportFormat
 
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -74,14 +68,12 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class PipelinePhase(str, Enum):
     ENTITY_SETUP = "entity_setup"
@@ -93,19 +85,10 @@ class PipelinePhase(str, Enum):
     REPORT_GENERATION = "report_generation"
     AUDIT_FINALIZATION = "audit_finalization"
 
-
-class ReportFormat(str, Enum):
-    JSON = "json"
-    MARKDOWN = "markdown"
-    HTML = "html"
-    CSV = "csv"
-
-
 class CheckpointStatus(str, Enum):
     SAVED = "saved"
     LOADED = "loaded"
     NOT_FOUND = "not_found"
-
 
 class AuditVerdict(str, Enum):
     CLEAN = "clean"
@@ -113,11 +96,9 @@ class AuditVerdict(str, Enum):
     ADVERSE = "adverse"
     DISCLAIMER = "disclaimer"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -131,17 +112,15 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     sub_workflow_id: str = Field(default="", description="Sub-workflow run ID")
 
-
 class PipelineCheckpoint(BaseModel):
     """Checkpoint state for pipeline resumption."""
     checkpoint_id: str = Field(default_factory=_new_uuid)
     pipeline_id: str = Field("")
     phase: PipelinePhase = Field(...)
     status: CheckpointStatus = Field(CheckpointStatus.SAVED)
-    saved_at: str = Field(default_factory=lambda: _utcnow().isoformat())
+    saved_at: str = Field(default_factory=lambda: utcnow().isoformat())
     data: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field("")
-
 
 class PipelineMilestone(BaseModel):
     """Milestone marker within the pipeline."""
@@ -152,17 +131,15 @@ class PipelineMilestone(BaseModel):
     metric_name: str = Field("")
     metric_value: str = Field("")
 
-
 class AuditTrailEntry(BaseModel):
     """Audit trail entry for the consolidation pipeline."""
     entry_id: str = Field(default_factory=_new_uuid)
     phase: str = Field("")
     action: str = Field("")
-    timestamp: str = Field(default_factory=lambda: _utcnow().isoformat())
+    timestamp: str = Field(default_factory=lambda: utcnow().isoformat())
     actor: str = Field("system")
     details: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field("")
-
 
 class PipelineSummaryReport(BaseModel):
     """Summary report generated at pipeline completion."""
@@ -189,7 +166,6 @@ class PipelineSummaryReport(BaseModel):
     audit_verdict: AuditVerdict = Field(AuditVerdict.CLEAN)
     provenance_chain: List[str] = Field(default_factory=list)
     provenance_hash: str = Field("")
-
 
 class FullConsolidationInput(BaseModel):
     """Input for the full consolidation pipeline."""
@@ -224,7 +200,6 @@ class FullConsolidationInput(BaseModel):
     stakeholder_votes: List[Dict[str, Any]] = Field(default_factory=list)
     signatories: List[Dict[str, Any]] = Field(default_factory=list)
 
-
 class FullConsolidationResult(BaseModel):
     """Output from the full consolidation pipeline."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -246,11 +221,9 @@ class FullConsolidationResult(BaseModel):
     started_at: str = Field("")
     completed_at: str = Field("")
 
-
 # =============================================================================
 # WORKFLOW CLASS
 # =============================================================================
-
 
 class FullConsolidationPipelineWorkflow:
     """
@@ -290,7 +263,7 @@ class FullConsolidationPipelineWorkflow:
 
     def execute(self, input_data: FullConsolidationInput) -> FullConsolidationResult:
         """Execute the full 8-phase consolidation pipeline."""
-        start = _utcnow()
+        start = utcnow()
         result = FullConsolidationResult(
             organisation_id=input_data.organisation_id,
             reporting_year=input_data.reporting_year,
@@ -339,13 +312,13 @@ class FullConsolidationPipelineWorkflow:
                 ))
                 continue
 
-            phase_start = _utcnow()
+            phase_start = utcnow()
             logger.info("Pipeline Phase %d/%d: %s",
                         phase_num, len(self.PHASE_ORDER), phase.value)
 
             try:
                 phase_out = phase_methods[phase](input_data, result)
-                elapsed = (_utcnow() - phase_start).total_seconds()
+                elapsed = (utcnow() - phase_start).total_seconds()
                 ph_hash = _compute_hash(str(phase_out))
                 self._provenance_chain.append(ph_hash)
 
@@ -359,7 +332,7 @@ class FullConsolidationPipelineWorkflow:
                 result.milestones.append(PipelineMilestone(
                     milestone_name=f"{phase.value}_completed",
                     phase=phase,
-                    achieved_at=_utcnow().isoformat(),
+                    achieved_at=utcnow().isoformat(),
                     metric_name="duration_s",
                     metric_value=f"{elapsed:.2f}",
                 ))
@@ -379,7 +352,7 @@ class FullConsolidationPipelineWorkflow:
                 })
 
             except Exception as exc:
-                elapsed = (_utcnow() - phase_start).total_seconds()
+                elapsed = (utcnow() - phase_start).total_seconds()
                 logger.error("Pipeline phase %s failed: %s", phase.value, exc, exc_info=True)
                 result.phase_results.append(PhaseResult(
                     phase_name=phase.value, phase_number=phase_num,
@@ -407,7 +380,7 @@ class FullConsolidationPipelineWorkflow:
             else:
                 result.status = WorkflowStatus.FAILED
 
-        end = _utcnow()
+        end = utcnow()
         result.completed_at = end.isoformat()
         result.duration_seconds = (end - start).total_seconds()
         result.audit_trail = self._audit_trail
@@ -735,6 +708,7 @@ class FullConsolidationPipelineWorkflow:
         logger.info("Pipeline: Report Generation phase")
         from .group_reporting_workflow import GroupReportingWorkflow, GroupReportingInput
 
+
         config = input_data.reporting_config
         cons_state = self._state.get("consolidation", {})
 
@@ -791,7 +765,7 @@ class FullConsolidationPipelineWorkflow:
     ) -> Dict[str, Any]:
         """Generate final audit trail and summary report."""
         logger.info("Pipeline: Audit Finalization phase")
-        now_iso = _utcnow().isoformat()
+        now_iso = utcnow().isoformat()
 
         cons_state = self._state.get("consolidation", {})
         entity_state = self._state.get("entity_setup", {})
@@ -861,7 +835,7 @@ class FullConsolidationPipelineWorkflow:
         self, phase: str, action: str, details: Dict[str, Any]
     ) -> None:
         """Add an entry to the audit trail."""
-        prov = _compute_hash(f"{phase}|{action}|{_utcnow().isoformat()}")
+        prov = _compute_hash(f"{phase}|{action}|{utcnow().isoformat()}")
         entry = AuditTrailEntry(
             phase=phase, action=action, details=details, provenance_hash=prov,
         )
@@ -874,7 +848,6 @@ class FullConsolidationPipelineWorkflow:
             return Decimal(str(value))
         except Exception:
             return Decimal("0")
-
 
 # =============================================================================
 # MODULE EXPORTS

@@ -42,35 +42,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.utcnow()
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hash of a string."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -81,7 +73,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -90,7 +81,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class ConnectionStatus(str, Enum):
     """Protocol connection status."""
@@ -101,7 +91,6 @@ class ConnectionStatus(str, Enum):
     AUTH_FAILED = "auth_failed"
     DISCONNECTED = "disconnected"
 
-
 class DataQuality(str, Enum):
     """Data quality classification."""
 
@@ -110,7 +99,6 @@ class DataQuality(str, Enum):
     SUSPECT = "suspect"
     BAD = "bad"
     MISSING = "missing"
-
 
 # =============================================================================
 # REFERENCE DATA (Zero-Hallucination)
@@ -207,11 +195,9 @@ POLLING_SCHEDULES: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -224,7 +210,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list, description="Warnings raised")
     errors: List[str] = Field(default_factory=list, description="Errors encountered")
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
-
 
 class MeterChannel(BaseModel):
     """A single meter channel to poll."""
@@ -240,7 +225,6 @@ class MeterChannel(BaseModel):
     scaling_factor: float = Field(default=1.0, description="Value scaling factor")
     ct_ratio: float = Field(default=1.0, gt=0, description="CT ratio to apply")
     pt_ratio: float = Field(default=1.0, gt=0, description="PT ratio to apply")
-
 
 class DataCollectionInput(BaseModel):
     """Input data model for DataCollectionWorkflow."""
@@ -281,7 +265,6 @@ class DataCollectionInput(BaseModel):
             raise ValueError("facility_name must not be blank")
         return stripped
 
-
 class DataCollectionResult(BaseModel):
     """Complete result from data collection workflow."""
 
@@ -304,11 +287,9 @@ class DataCollectionResult(BaseModel):
     calculated_at: str = Field(default="", description="ISO 8601 timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 of complete result")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class DataCollectionWorkflow:
     """
@@ -367,7 +348,7 @@ class DataCollectionWorkflow:
             ValueError: If input validation fails.
         """
         t_start = time.perf_counter()
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting data collection workflow %s for facility=%s channels=%d",
             self.collection_id, input_data.facility_name, len(input_data.channels),
@@ -482,7 +463,7 @@ class DataCollectionWorkflow:
                 "timeout_ms": schedule["timeout_ms"],
                 "concurrent_sessions": schedule["concurrent_sessions"],
                 "batch_size": schedule["batch_size"],
-                "connected_at": _utcnow().isoformat() + "Z",
+                "connected_at": utcnow().isoformat() + "Z",
             }
             self._connections.append(session)
             sessions_established += 1
@@ -515,7 +496,7 @@ class DataCollectionWorkflow:
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
 
-        poll_timestamp = _utcnow().isoformat() + "Z"
+        poll_timestamp = utcnow().isoformat() + "Z"
 
         for ch in input_data.channels:
             schedule = POLLING_SCHEDULES.get(ch.protocol, POLLING_SCHEDULES["modbus_tcp"])
@@ -660,7 +641,7 @@ class DataCollectionWorkflow:
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
 
-        store_timestamp = _utcnow().isoformat() + "Z"
+        store_timestamp = utcnow().isoformat() + "Z"
 
         for record in self._validated:
             if record.get("quality") == DataQuality.BAD.value and not record.get("gap_filled"):

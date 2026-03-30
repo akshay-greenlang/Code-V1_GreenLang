@@ -58,21 +58,13 @@ logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -85,11 +77,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SAPModule(str, Enum):
     """SAP S/4HANA modules for data extraction."""
@@ -104,7 +94,6 @@ class SAPModule(str, Enum):
     RE = "re"           # Real Estate Management
     EHS = "ehs"         # Environment, Health & Safety
 
-
 class SAPAuthMethod(str, Enum):
     """SAP authentication methods."""
 
@@ -113,7 +102,6 @@ class SAPAuthMethod(str, Enum):
     BASIC_AUTH = "basic_auth"
     X509_CERTIFICATE = "x509_certificate"
     API_KEY = "api_key"
-
 
 class SAPConnectionProtocol(str, Enum):
     """SAP connection protocols."""
@@ -124,14 +112,12 @@ class SAPConnectionProtocol(str, Enum):
     REST_API = "rest_api"
     IDOC = "idoc"
 
-
 class ExtractionMode(str, Enum):
     """Data extraction modes."""
 
     FULL = "full"
     DELTA = "delta"
     SNAPSHOT = "snapshot"
-
 
 class ScopeMapping(str, Enum):
     """GHG Protocol scope mapping for SAP data categories."""
@@ -151,11 +137,9 @@ class ScopeMapping(str, Enum):
     SCOPE_3_CAT7 = "scope_3_cat7"
     SCOPE_3_CAT9 = "scope_3_cat9"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class SAPConfig(BaseModel):
     """Configuration for SAP S/4HANA connector."""
@@ -186,7 +170,6 @@ class SAPConfig(BaseModel):
         ],
     )
 
-
 class SAPConnectionStatus(BaseModel):
     """SAP connection status."""
 
@@ -204,7 +187,6 @@ class SAPConnectionStatus(BaseModel):
     token_expires_at: Optional[datetime] = Field(None)
     message: str = Field(default="")
 
-
 class SAPExtractionRequest(BaseModel):
     """Request for SAP data extraction."""
 
@@ -218,7 +200,6 @@ class SAPExtractionRequest(BaseModel):
     scope_mapping: Optional[ScopeMapping] = Field(None)
     filters: Dict[str, Any] = Field(default_factory=dict)
     max_records: int = Field(default=100000, ge=100, le=10000000)
-
 
 class SAPExtractionResult(BaseModel):
     """Result of SAP data extraction."""
@@ -242,7 +223,6 @@ class SAPExtractionResult(BaseModel):
     delta_token: str = Field(default="", description="Token for next delta extraction")
     provenance_hash: str = Field(default="")
 
-
 class SAPMaterialGroupMapping(BaseModel):
     """Mapping of SAP material groups to GHG Scope 3 categories."""
 
@@ -253,7 +233,6 @@ class SAPMaterialGroupMapping(BaseModel):
     emission_factor_kgco2e_per_unit: float = Field(default=0.0, ge=0.0)
     unit: str = Field(default="")
     confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-
 
 class SAPWriteBackRequest(BaseModel):
     """Request to write carbon allocation data back to SAP."""
@@ -269,7 +248,6 @@ class SAPWriteBackRequest(BaseModel):
     document_type: str = Field(default="SA")
     gl_account: str = Field(default="")
 
-
 class SAPWriteBackResult(BaseModel):
     """Result of writing carbon data back to SAP."""
 
@@ -279,7 +257,6 @@ class SAPWriteBackResult(BaseModel):
     posted: bool = Field(default=False)
     message: str = Field(default="")
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Material Group to Scope 3 Category Mapping
@@ -305,11 +282,9 @@ DEFAULT_MATERIAL_GROUP_MAPPINGS: Dict[str, Dict[str, Any]] = {
     "FREIGHT_OUTBOUND": {"scope3_category": 9, "ef_kgco2e_per_eur": 0.75, "desc": "Outbound freight/logistics"},
 }
 
-
 # ---------------------------------------------------------------------------
 # SAPConnector
 # ---------------------------------------------------------------------------
-
 
 class SAPConnector:
     """SAP S/4HANA integration connector for PACK-027 Enterprise Net Zero.
@@ -394,7 +369,7 @@ class SAPConnector:
                 company_codes_accessible=list(self.config.company_codes),
                 modules_available=[m.value for m in self.config.modules_enabled],
                 sap_version="S/4HANA 2023 FPS02",
-                last_connected_at=_utcnow(),
+                last_connected_at=utcnow(),
                 latency_ms=(time.monotonic() - start) * 1000,
                 message="Connected successfully",
             )
@@ -436,6 +411,8 @@ class SAPConnector:
 
         Retrieves purchase orders, goods receipts, and invoice data
         from SAP MM module, mapping material groups to Scope 3
+
+from greenlang.schemas import utcnow
         categories with emission factor assignment.
 
         Args:
@@ -860,7 +837,7 @@ class SAPConnector:
             "access_token": f"sap_token_{_new_uuid()[:8]}",
             "token_type": "Bearer",
             "expires_in": 3600,
-            "obtained_at": _utcnow().isoformat(),
+            "obtained_at": utcnow().isoformat(),
         }
 
     def _execute_extraction(
@@ -873,7 +850,7 @@ class SAPConnector:
             request_id=request.request_id,
             module=request.module.value,
             company_code=request.company_code,
-            started_at=_utcnow(),
+            started_at=utcnow(),
         )
 
         try:
@@ -909,7 +886,7 @@ class SAPConnector:
             # Generate delta token for next sync
             delta_key = f"{request.module.value}:{request.company_code}"
             self._delta_tokens[delta_key] = _compute_hash(
-                f"{delta_key}:{_utcnow().isoformat()}"
+                f"{delta_key}:{utcnow().isoformat()}"
             )[:16]
             result.delta_token = self._delta_tokens[delta_key]
 
@@ -928,7 +905,7 @@ class SAPConnector:
         finally:
             self._connection_pool_active = max(0, self._connection_pool_active - 1)
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         result.duration_ms = (time.monotonic() - start) * 1000
 
         if self.config.enable_provenance:
@@ -937,11 +914,9 @@ class SAPConnector:
         self._extraction_history.append(result)
         return result
 
-
 # ---------------------------------------------------------------------------
 # Rate Limiter
 # ---------------------------------------------------------------------------
-
 
 class _RateLimiter:
     """Token-bucket rate limiter for SAP API calls."""

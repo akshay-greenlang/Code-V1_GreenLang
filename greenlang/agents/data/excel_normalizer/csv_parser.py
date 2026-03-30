@@ -49,7 +49,8 @@ from collections import Counter
 from datetime import datetime, timezone
 from typing import Any, Dict, Generator, List, Optional, Tuple, Union
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase, utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -58,16 +59,9 @@ __all__ = [
     "CSVParser",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # BOM markers
@@ -79,13 +73,11 @@ _BOM_MAP: Dict[bytes, Tuple[str, int]] = {
     b"\xfe\xff": ("utf-16-be", 2),
 }
 
-
 # ---------------------------------------------------------------------------
 # Data models
 # ---------------------------------------------------------------------------
 
-
-class CSVSheetMetadata(BaseModel):
+class CSVSheetMetadata(GreenLangBase):
     """Metadata for a parsed CSV/TSV file (treated as a single sheet)."""
 
     sheet_id: str = Field(
@@ -106,14 +98,13 @@ class CSVSheetMetadata(BaseModel):
     line_ending: str = Field(default="LF", description="Detected line ending style")
     has_bom: bool = Field(default=False, description="Whether file has BOM marker")
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Parse timestamp",
+        default_factory=utcnow, description="Parse timestamp",
     )
     provenance_hash: str = Field(
         default="", description="SHA-256 provenance hash",
     )
 
     model_config = {"extra": "forbid"}
-
 
 # ---------------------------------------------------------------------------
 # Graceful encoding detection imports
@@ -135,11 +126,9 @@ if not _CCHARDET_AVAILABLE:
     except ImportError:
         pass
 
-
 # ---------------------------------------------------------------------------
 # CSVParser
 # ---------------------------------------------------------------------------
-
 
 class CSVParser:
     """CSV/TSV file parser with auto-detection and streaming support.
@@ -326,6 +315,7 @@ class CSVParser:
         if _CHARDET_AVAILABLE:
             try:
                 import chardet
+
                 result = chardet.detect(sample)
                 if result and result.get("encoding"):
                     enc = result["encoding"].lower()
@@ -622,7 +612,7 @@ class CSVParser:
                 "parse_errors": self._stats["parse_errors"],
                 "chardet_available": _CHARDET_AVAILABLE,
                 "cchardet_available": _CCHARDET_AVAILABLE,
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }
 
     # ------------------------------------------------------------------

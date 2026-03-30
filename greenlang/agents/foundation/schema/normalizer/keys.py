@@ -37,9 +37,10 @@ import re
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import ConfigDict, Field
 
 from ..compiler.ir import SchemaIR
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -80,7 +81,7 @@ class RenameReason(str, Enum):
 # =============================================================================
 
 
-class KeyRename(BaseModel):
+class KeyRename(GreenLangBase):
     """
     Record of a key rename operation.
 

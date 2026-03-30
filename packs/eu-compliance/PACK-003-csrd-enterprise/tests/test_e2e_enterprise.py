@@ -18,9 +18,11 @@ from typing import Any, Dict, List
 import pytest
 
 import sys, os
+from greenlang.schemas import utcnow
 sys.path.insert(0, os.path.dirname(__file__))
 
 from conftest import (
+
     ENTERPRISE_TEMPLATE_IDS,
     ENTERPRISE_WORKFLOW_IDS,
     StubAuditorPortal,
@@ -399,7 +401,7 @@ class TestE2EEnterprise:
             "checks_total": 8,
             "checks_passed": 8,
             "checks_failed": 0,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
         assert health["overall_status"] == "healthy"
         assert health["checks_failed"] == 0

@@ -44,28 +44,23 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import AlertSeverity
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "29.0.0"
 _PACK_ID = "PACK-029"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -74,7 +69,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
@@ -82,26 +76,16 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class RAGStatus(str, Enum):
     RED = "red"
     AMBER = "amber"
     GREEN = "green"
-
 
 class Quarter(str, Enum):
     Q1 = "Q1"
     Q2 = "Q2"
     Q3 = "Q3"
     Q4 = "Q4"
-
-
-class AlertSeverity(str, Enum):
-    CRITICAL = "critical"
-    HIGH = "high"
-    WARNING = "warning"
-    INFO = "info"
-
 
 class AlertCategory(str, Enum):
     ABSOLUTE_GAP = "absolute_gap"
@@ -112,18 +96,15 @@ class AlertCategory(str, Enum):
     SCOPE_SPECIFIC = "scope_specific"
     RUN_RATE_DEVIATION = "run_rate_deviation"
 
-
 class CorrectiveActionPriority(str, Enum):
     IMMEDIATE = "immediate"
     SHORT_TERM = "short_term"
     MEDIUM_TERM = "medium_term"
     MONITOR = "monitor"
 
-
 # =============================================================================
 # QUARTERLY ALERT RULES (Zero-Hallucination: Deterministic Thresholds)
 # =============================================================================
-
 
 QUARTERLY_ALERT_RULES: Dict[str, Dict[str, Any]] = {
     "QAR-001": {
@@ -227,11 +208,9 @@ SEASONALITY_FACTORS: Dict[str, Dict[str, float]] = {
     "flat": {"Q1": 1.00, "Q2": 1.00, "Q3": 1.00, "Q4": 1.00},
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase_name: str = Field(...)
@@ -244,7 +223,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
     dag_node_id: str = Field(default="")
-
 
 class QuarterlyEmissions(BaseModel):
     """Quarterly emissions data."""
@@ -259,7 +237,6 @@ class QuarterlyEmissions(BaseModel):
     data_quality_score: float = Field(default=3.0, ge=0.0, le=5.0)
     provenance_hash: str = Field(default="")
 
-
 class QuarterlyMilestone(BaseModel):
     """Quarterly milestone target."""
     year: int = Field(default=2025)
@@ -268,7 +245,6 @@ class QuarterlyMilestone(BaseModel):
     seasonality_factor: float = Field(default=1.0)
     adjusted_target_tco2e: float = Field(default=0.0, ge=0.0)
     cumulative_ytd_target_tco2e: float = Field(default=0.0, ge=0.0)
-
 
 class QuarterlyComparison(BaseModel):
     """Comparison of quarterly actual vs milestone."""
@@ -288,7 +264,6 @@ class QuarterlyComparison(BaseModel):
     qoq_change_pct: float = Field(default=0.0)
     scope1_qoq_change_pct: float = Field(default=0.0)
 
-
 class QuarterlyAlert(BaseModel):
     """A single quarterly monitoring alert."""
     alert_id: str = Field(default="")
@@ -303,7 +278,6 @@ class QuarterlyAlert(BaseModel):
     recommended_action: str = Field(default="")
     escalation_required: bool = Field(default=False)
 
-
 class CorrectiveActionTrigger(BaseModel):
     """Trigger for corrective action workflow."""
     trigger_id: str = Field(default="")
@@ -315,7 +289,6 @@ class CorrectiveActionTrigger(BaseModel):
     remaining_quarters_in_year: int = Field(default=0)
     recommended_initiatives: List[str] = Field(default_factory=list)
     escalation_contacts: List[str] = Field(default_factory=list)
-
 
 class QuarterlyMonitoringReport(BaseModel):
     """Complete quarterly monitoring report."""
@@ -333,7 +306,6 @@ class QuarterlyMonitoringReport(BaseModel):
     key_metrics: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
 
-
 class QuarterlyMonitoringConfig(BaseModel):
     company_name: str = Field(default="")
     entity_id: str = Field(default="")
@@ -349,7 +321,6 @@ class QuarterlyMonitoringConfig(BaseModel):
     amber_threshold_pct: float = Field(default=5.0, ge=0.0, le=100.0)
     auto_trigger_corrective: bool = Field(default=True)
 
-
 class QuarterlyMonitoringInput(BaseModel):
     config: QuarterlyMonitoringConfig = Field(default_factory=QuarterlyMonitoringConfig)
     current_quarter: QuarterlyEmissions = Field(default_factory=QuarterlyEmissions)
@@ -358,7 +329,6 @@ class QuarterlyMonitoringInput(BaseModel):
         description="Previous quarters in the same year (for YTD calculation)",
     )
     previous_year_same_quarter: Optional[QuarterlyEmissions] = Field(default=None)
-
 
 class QuarterlyMonitoringResult(BaseModel):
     workflow_id: str = Field(...)
@@ -376,11 +346,9 @@ class QuarterlyMonitoringResult(BaseModel):
     key_findings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class QuarterlyMonitoringWorkflow:
     """
@@ -420,7 +388,7 @@ class QuarterlyMonitoringWorkflow:
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     async def execute(self, input_data: QuarterlyMonitoringInput) -> QuarterlyMonitoringResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         self.config = input_data.config
         self._phase_results = []
         overall_status = WorkflowStatus.RUNNING
@@ -455,7 +423,7 @@ class QuarterlyMonitoringWorkflow:
                 status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         overall_rag = self._comparison.rag_status
 
         # Build report
@@ -474,7 +442,7 @@ class QuarterlyMonitoringWorkflow:
 
         self._report = QuarterlyMonitoringReport(
             report_id=f"QMR-{self.workflow_id[:8]}",
-            report_date=_utcnow().strftime("%Y-%m-%d"),
+            report_date=utcnow().strftime("%Y-%m-%d"),
             year=self.config.year,
             quarter=self.config.quarter,
             company_name=self.config.company_name,
@@ -521,7 +489,7 @@ class QuarterlyMonitoringWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_collect_quarterly(self, input_data: QuarterlyMonitoringInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -553,7 +521,7 @@ class QuarterlyMonitoringWorkflow:
         outputs["scope3_tco2e"] = q.scope3_tco2e
         outputs["data_quality_score"] = q.data_quality_score
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="collect_quarterly", phase_number=1,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -567,7 +535,7 @@ class QuarterlyMonitoringWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_compare_milestone(self, input_data: QuarterlyMonitoringInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -654,7 +622,7 @@ class QuarterlyMonitoringWorkflow:
         outputs["qoq_change_pct"] = round(qoq_change, 2)
         outputs["seasonality_factor"] = season_factor
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="compare_milestone", phase_number=2,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -668,7 +636,7 @@ class QuarterlyMonitoringWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_generate_alerts(self, input_data: QuarterlyMonitoringInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -819,7 +787,7 @@ class QuarterlyMonitoringWorkflow:
         outputs["info_count"] = sum(1 for a in alerts if a.severity == AlertSeverity.INFO)
         outputs["escalation_required"] = any(a.escalation_required for a in alerts)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="generate_alerts", phase_number=3,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -833,7 +801,7 @@ class QuarterlyMonitoringWorkflow:
     # -------------------------------------------------------------------------
 
     async def _phase_trigger_corrective(self, input_data: QuarterlyMonitoringInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -916,7 +884,7 @@ class QuarterlyMonitoringWorkflow:
         outputs["remaining_quarters"] = remaining_q
         outputs["initiatives_count"] = len(initiatives)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="trigger_corrective", phase_number=4,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),

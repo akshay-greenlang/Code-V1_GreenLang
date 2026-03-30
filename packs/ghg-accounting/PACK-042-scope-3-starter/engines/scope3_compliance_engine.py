@@ -74,25 +74,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -110,7 +104,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -119,7 +112,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -131,16 +123,13 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> float:
     """Round to 2 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class FrameworkType(str, Enum):
     """Supported Scope 3 compliance frameworks.
@@ -159,14 +148,12 @@ class FrameworkType(str, Enum):
     SEC = "sec"
     SB_253 = "sb_253"
 
-
 class RequirementStatus(str, Enum):
     """Compliance status for an individual requirement."""
     MET = "met"
     PARTIALLY_MET = "partially_met"
     NOT_MET = "not_met"
     NOT_APPLICABLE = "not_applicable"
-
 
 class ComplianceClassification(str, Enum):
     """Overall compliance classification."""
@@ -175,7 +162,6 @@ class ComplianceClassification(str, Enum):
     PARTIALLY_COMPLIANT = "partially_compliant"
     NON_COMPLIANT = "non_compliant"
 
-
 class GapPriority(str, Enum):
     """Priority level for compliance gaps."""
     CRITICAL = "critical"
@@ -183,11 +169,9 @@ class GapPriority(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
 
-
 # ---------------------------------------------------------------------------
 # Constants -- Framework Weights
 # ---------------------------------------------------------------------------
-
 
 FRAMEWORK_WEIGHTS: Dict[str, float] = {
     FrameworkType.GHG_PROTOCOL_S3: 1.0,
@@ -209,11 +193,9 @@ FRAMEWORK_DISPLAY_NAMES: Dict[str, str] = {
 }
 """Human-readable framework names."""
 
-
 # ---------------------------------------------------------------------------
 # Constants -- Requirement Database (50 requirements)
 # ---------------------------------------------------------------------------
-
 
 REQUIREMENT_DATABASE: List[Dict[str, Any]] = [
     # -------------------------------------------------------------------
@@ -487,11 +469,9 @@ REQUIREMENT_DATABASE: List[Dict[str, Any]] = [
 ]
 """Master requirement database for Scope 3 compliance mapping (50 requirements)."""
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class Scope3InventoryData(BaseModel):
     """Scope 3 inventory data for compliance assessment.
@@ -563,11 +543,9 @@ class Scope3InventoryData(BaseModel):
     reporting_organisation: Optional[str] = Field(default=None)
     additional_fields: Dict[str, Any] = Field(default_factory=dict)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class RequirementCheck(BaseModel):
     """Result of evaluating a single compliance requirement.
@@ -596,7 +574,6 @@ class RequirementCheck(BaseModel):
     remediation_action: str = Field(default="", description="Remediation")
     priority: str = Field(default=GapPriority.MEDIUM, description="Priority")
     reference: str = Field(default="", description="Regulatory reference")
-
 
 class FrameworkResult(BaseModel):
     """Compliance result for a single framework.
@@ -628,7 +605,6 @@ class FrameworkResult(BaseModel):
         default_factory=list, description="All results"
     )
 
-
 class ComplianceGap(BaseModel):
     """A compliance gap requiring action.
 
@@ -646,7 +622,6 @@ class ComplianceGap(BaseModel):
     remediation_action: str = Field(default="", description="Remediation")
     priority: str = Field(default=GapPriority.MEDIUM, description="Priority")
     estimated_effort: str = Field(default="", description="Effort")
-
 
 class ActionItem(BaseModel):
     """Remediation action item.
@@ -674,7 +649,6 @@ class ActionItem(BaseModel):
         default_factory=dict, description="Score improvement per framework"
     )
 
-
 class ComplianceAssessment(BaseModel):
     """Complete Scope 3 compliance assessment with provenance.
 
@@ -697,7 +671,7 @@ class ComplianceAssessment(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid, description="Result ID")
     engine_version: str = Field(default=_MODULE_VERSION, description="Version")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Timestamp")
     processing_time_ms: float = Field(default=0.0, description="Processing time")
     frameworks: List[FrameworkResult] = Field(
         default_factory=list, description="Framework results"
@@ -719,11 +693,9 @@ class ComplianceAssessment(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class Scope3ComplianceEngine:
     """Scope 3 regulatory compliance mapping engine.
@@ -1368,7 +1340,6 @@ class Scope3ComplianceEngine:
         if order.get(a, 4) <= order.get(b, 4):
             return a
         return b
-
 
 # ---------------------------------------------------------------------------
 # Pydantic v2 model_rebuild for forward-reference resolution

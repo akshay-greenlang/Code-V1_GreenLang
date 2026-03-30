@@ -65,9 +65,9 @@ import uuid
 from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from typing import Any, Dict, List, Optional, Set, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Conditional imports: metrics
@@ -97,7 +97,6 @@ except ImportError:
     _DB_AVAILABLE = False
     SteamHeatDatabaseEngine = None  # type: ignore[assignment,misc]
 
-
 # ---------------------------------------------------------------------------
 # Decimal precision constants
 # ---------------------------------------------------------------------------
@@ -108,7 +107,6 @@ _ZERO = Decimal("0")
 _ONE = Decimal("1")
 _HUNDRED = Decimal("100")
 _THOUSAND = Decimal("1000")
-
 
 # ---------------------------------------------------------------------------
 # Unit Conversion Constants (all Decimal for zero-hallucination)
@@ -138,7 +136,6 @@ _KG_TO_TONNES = Decimal("0.001")
 #: tonnes to kg
 _TONNES_TO_KG = Decimal("1000")
 
-
 # ---------------------------------------------------------------------------
 # GWP Values by IPCC Assessment Report
 # ---------------------------------------------------------------------------
@@ -165,7 +162,6 @@ GWP_VALUES: Dict[str, Dict[str, Decimal]] = {
         "N2O": Decimal("273"),
     },
 }
-
 
 # ---------------------------------------------------------------------------
 # Fuel Emission Factors (kgCO2, kgCH4, kgN2O per GJ of fuel input, HHV)
@@ -305,7 +301,6 @@ ZERO_EMISSION_FUEL_TYPES: Set[str] = {
 #: Valid fuel type identifiers.
 VALID_FUEL_TYPES: Set[str] = set(FUEL_EMISSION_FACTORS.keys())
 
-
 # ---------------------------------------------------------------------------
 # Default boiler efficiency bounds
 # ---------------------------------------------------------------------------
@@ -323,7 +318,6 @@ _MAX_CONDENSATE_RETURN_PCT = Decimal("95")
 # Maximum batch size
 # ---------------------------------------------------------------------------
 _MAX_BATCH_SIZE = 10_000
-
 
 # ---------------------------------------------------------------------------
 # Prometheus metrics helpers (graceful fallback)
@@ -366,7 +360,6 @@ def _record_calculation_metric(
         except Exception:
             pass
 
-
 def _record_batch_metric(
     status: str,
     size: int,
@@ -387,7 +380,6 @@ def _record_batch_metric(
         except Exception:
             pass
 
-
 def _record_error_metric(
     error_type: str,
     tenant_id: str = "default",
@@ -407,7 +399,6 @@ def _record_error_metric(
             )
         except Exception:
             pass
-
 
 # ---------------------------------------------------------------------------
 # Provenance helper (lightweight inline tracker)
@@ -504,15 +495,9 @@ class _ProvenanceTracker:
         with self._lock:
             return len(self._entries)
 
-
 # ---------------------------------------------------------------------------
 # Utility: UTC now helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Utility: Safe Decimal conversion
@@ -537,7 +522,6 @@ def _to_decimal(value: Any) -> Decimal:
     except (InvalidOperation, ValueError, TypeError) as exc:
         raise ValueError(f"Cannot convert {value!r} to Decimal: {exc}") from exc
 
-
 def _q(value: Decimal) -> Decimal:
     """Quantize a Decimal to 8 internal decimal places.
 
@@ -549,7 +533,6 @@ def _q(value: Decimal) -> Decimal:
     """
     return value.quantize(_PRECISION_INTERNAL, rounding=ROUND_HALF_UP)
 
-
 def _q_out(value: Decimal) -> Decimal:
     """Quantize a Decimal to 3 output decimal places.
 
@@ -560,7 +543,6 @@ def _q_out(value: Decimal) -> Decimal:
         Quantized Decimal.
     """
     return value.quantize(_PRECISION_OUTPUT, rounding=ROUND_HALF_UP)
-
 
 # ---------------------------------------------------------------------------
 # Energy unit normalization to GJ
@@ -574,7 +556,6 @@ _ENERGY_UNIT_TO_GJ: Dict[str, Decimal] = {
     "THERM": _THERM_TO_GJ,
     "MJ": _MJ_TO_GJ,
 }
-
 
 def _normalize_to_gj(quantity: Decimal, unit: str) -> Decimal:
     """Convert an energy quantity from any supported unit to GJ.
@@ -601,11 +582,9 @@ def _normalize_to_gj(quantity: Decimal, unit: str) -> Decimal:
         )
     return _q(quantity * factor)
 
-
 # ===========================================================================
 # SteamEmissionsCalculatorEngine
 # ===========================================================================
-
 
 class SteamEmissionsCalculatorEngine:
     """Core purchased-steam emission calculation engine (Engine 2).
@@ -908,7 +887,7 @@ class SteamEmissionsCalculatorEngine:
 
             elapsed = time.monotonic() - start
             result["processing_time_ms"] = round(elapsed * 1000, 3)
-            result["timestamp"] = _utcnow().isoformat()
+            result["timestamp"] = utcnow().isoformat()
             result["status"] = "SUCCESS"
 
             # Update stats
@@ -967,7 +946,7 @@ class SteamEmissionsCalculatorEngine:
                 "provenance_hash": "",
                 "calculation_trace": trace,
                 "processing_time_ms": round(elapsed * 1000, 3),
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
                 "error_message": str(exc),
             }
 
@@ -2055,7 +2034,7 @@ class SteamEmissionsCalculatorEngine:
             "request_count": len(requests),
             "provenance_hash": provenance_hash,
             "processing_time_ms": round(elapsed * 1000, 3),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     # ==================================================================
@@ -2194,7 +2173,7 @@ class SteamEmissionsCalculatorEngine:
             "test_calculation_passed": test_passed,
             "total_calculations": total_calcs,
             "total_errors": total_errs,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     # ==================================================================
@@ -3016,13 +2995,11 @@ class SteamEmissionsCalculatorEngine:
         with self._stats_lock:
             self._total_errors += 1
 
-
 # ---------------------------------------------------------------------------
 # Module-level singleton accessor
 # ---------------------------------------------------------------------------
 
 _default_calculator: Optional[SteamEmissionsCalculatorEngine] = None
-
 
 def get_calculator(
     config: Optional[Dict[str, Any]] = None,
@@ -3054,7 +3031,6 @@ def get_calculator(
         _default_calculator = SteamEmissionsCalculatorEngine(config=config)
     return _default_calculator
 
-
 def reset() -> None:
     """Reset the module-level calculator singleton.
 
@@ -3064,7 +3040,6 @@ def reset() -> None:
     global _default_calculator
     _default_calculator = None
     SteamEmissionsCalculatorEngine.reset_singleton()
-
 
 # ---------------------------------------------------------------------------
 # Public API

@@ -72,6 +72,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -110,20 +111,13 @@ except ImportError:
     _METRICS_AVAILABLE = False
     _record_ldar_operation = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # UTC / date helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _today_utc() -> date:
     """Return today's date in UTC."""
     return datetime.now(timezone.utc).date()
-
 
 def _parse_date(value: str) -> date:
     """Parse an ISO date string to a date object.
@@ -144,7 +138,6 @@ def _parse_date(value: str) -> date:
     except (ValueError, TypeError) as exc:
         raise ValueError(f"Cannot parse date: {value!r}") from exc
 
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
 
@@ -161,7 +154,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Decimal helpers
 # ---------------------------------------------------------------------------
@@ -171,23 +163,19 @@ _ZERO = Decimal("0")
 _ONE = Decimal("1")
 _HUNDRED = Decimal("100")
 
-
 def _D(value: Any) -> Decimal:
     """Convert a value to Decimal."""
     if isinstance(value, Decimal):
         return value
     return Decimal(str(value))
 
-
 def _quantize(value: Decimal) -> Decimal:
     """Quantize to 8 decimal places."""
     return value.quantize(_PRECISION, rounding=ROUND_HALF_UP)
 
-
 # ===========================================================================
 # Enumerations
 # ===========================================================================
-
 
 class SurveyType(str, Enum):
     """LDAR survey method types.
@@ -205,7 +193,6 @@ class SurveyType(str, Enum):
     HIFLOW = "HIFLOW"
     DRONE_OGI = "DRONE_OGI"
 
-
 class SurveyStatus(str, Enum):
     """Survey lifecycle status."""
 
@@ -214,7 +201,6 @@ class SurveyStatus(str, Enum):
     COMPLETED = "COMPLETED"
     CANCELLED = "CANCELLED"
     OVERDUE = "OVERDUE"
-
 
 class LeakSeverity(str, Enum):
     """Leak severity classification based on screening concentration.
@@ -232,7 +218,6 @@ class LeakSeverity(str, Enum):
     MAJOR = "MAJOR"
     CRITICAL = "CRITICAL"
 
-
 class RepairStatus(str, Enum):
     """Leak repair lifecycle status."""
 
@@ -243,7 +228,6 @@ class RepairStatus(str, Enum):
     DOR = "DOR"  # Delay of Repair
     FAILED = "FAILED"
 
-
 class RegulatoryFramework(str, Enum):
     """Supported LDAR regulatory frameworks."""
 
@@ -252,7 +236,6 @@ class RegulatoryFramework(str, Enum):
     EPA_MACT_SUBPART_H = "EPA_MACT_SUBPART_H"
     EU_METHANE_REG = "EU_METHANE_REG"
     ALBERTA_DIRECTIVE_060 = "ALBERTA_DIRECTIVE_060"
-
 
 # ===========================================================================
 # Reference Data: Regulatory Thresholds and Deadlines
@@ -349,11 +332,9 @@ DOR_JUSTIFICATION_CODES: Dict[str, str] = {
     "OTHER": "Other justification (must provide description)",
 }
 
-
 # ===========================================================================
 # Data classes
 # ===========================================================================
-
 
 @dataclass
 class SurveyRecord:
@@ -390,7 +371,6 @@ class SurveyRecord:
     created_at: str = ""
     updated_at: str = ""
     provenance_hash: str = ""
-
 
 @dataclass
 class LeakRecord:
@@ -440,7 +420,6 @@ class LeakRecord:
     updated_at: str = ""
     provenance_hash: str = ""
 
-
 @dataclass
 class InspectorRecord:
     """Inspector certification record.
@@ -465,11 +444,9 @@ class InspectorRecord:
     created_at: str = ""
     provenance_hash: str = ""
 
-
 # ===========================================================================
 # LeakDetectionEngine
 # ===========================================================================
-
 
 class LeakDetectionEngine:
     """LDAR program management engine for survey scheduling, leak tracking,
@@ -585,7 +562,7 @@ class LeakDetectionEngine:
         sched_date = _parse_date(scheduled_date)
 
         survey_id = f"survey_{uuid4().hex[:12]}"
-        now_iso = _utcnow().isoformat()
+        now_iso = utcnow().isoformat()
 
         record = SurveyRecord(
             survey_id=survey_id,
@@ -670,7 +647,7 @@ class LeakDetectionEngine:
                 record.components_total = int(data["components_total"])
             record.leaks_detected = int(data.get("leaks_detected", 0))
             record.status = SurveyStatus.COMPLETED.value
-            record.updated_at = _utcnow().isoformat()
+            record.updated_at = utcnow().isoformat()
 
             if data.get("inspector_id"):
                 record.inspector_id = data["inspector_id"]
@@ -766,7 +743,7 @@ class LeakDetectionEngine:
         repair_deadline = detection_date + timedelta(days=repair_deadline_days)
 
         leak_id = f"leak_{uuid4().hex[:12]}"
-        now_iso = _utcnow().isoformat()
+        now_iso = utcnow().isoformat()
 
         record = LeakRecord(
             leak_id=leak_id,
@@ -858,7 +835,7 @@ class LeakDetectionEngine:
 
             record.repair_date = repair_date_str
             record.post_repair_ppmv = post_repair_ppmv
-            record.updated_at = _utcnow().isoformat()
+            record.updated_at = utcnow().isoformat()
             if data.get("notes"):
                 record.notes = data["notes"]
 
@@ -1150,7 +1127,7 @@ class LeakDetectionEngine:
                         remonitor_interval = threshold_data.get("dor_remonitor_interval_days", 15)
                         next_monitor = today + timedelta(days=remonitor_interval)
                         record.dor_next_monitor_date = next_monitor.isoformat()
-                        record.updated_at = _utcnow().isoformat()
+                        record.updated_at = utcnow().isoformat()
                         record.provenance_hash = _compute_hash({
                             "leak_id": leak_id, "action": "dor",
                             "justification_code": justification_code,
@@ -1328,7 +1305,7 @@ class LeakDetectionEngine:
             raise ValueError("name is required")
 
         inspector_id = f"insp_{uuid4().hex[:12]}"
-        now_iso = _utcnow().isoformat()
+        now_iso = utcnow().isoformat()
         record = InspectorRecord(
             inspector_id=inspector_id, name=name,
             certifications=data.get("certifications", []),

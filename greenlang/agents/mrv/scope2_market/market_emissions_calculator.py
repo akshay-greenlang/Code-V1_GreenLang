@@ -51,9 +51,9 @@ import uuid
 from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from typing import Any, Dict, List, Optional, Set, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Decimal precision constants
@@ -90,7 +90,6 @@ _TONNES_TO_KG = Decimal("1000")
 #: kgCO2e/kWh to kgCO2e/MWh
 _KGCO2E_KWH_TO_MWH = Decimal("1000")
 
-
 # ---------------------------------------------------------------------------
 # GWP Values by IPCC Assessment Report
 # ---------------------------------------------------------------------------
@@ -118,7 +117,6 @@ GWP_VALUES: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Default Gas Fractions for Residual Mix
 # ---------------------------------------------------------------------------
@@ -131,7 +129,6 @@ DEFAULT_GAS_FRACTIONS: Dict[str, Decimal] = {
     "ch4": Decimal("0.03"),
     "n2o": Decimal("0.02"),
 }
-
 
 # ---------------------------------------------------------------------------
 # Renewable Energy Emission Factors (zero EF instruments)
@@ -146,7 +143,6 @@ RENEWABLE_EF: Dict[str, Decimal] = {
     "nuclear": Decimal("0.000"),
     "geothermal": Decimal("0.000"),
 }
-
 
 # ---------------------------------------------------------------------------
 # Biogenic Sources
@@ -163,7 +159,6 @@ BIOGENIC_SOURCES: Set[str] = {
     "municipal_solid_waste_biogenic",
     "sewage_gas",
 }
-
 
 # ---------------------------------------------------------------------------
 # Valid Instrument Types
@@ -185,7 +180,6 @@ _VALID_INSTRUMENT_TYPES: Set[str] = {
     "RESIDUAL_MIX",       # Residual mix (uncovered)
     "OTHER",              # Other contractual instrument
 }
-
 
 # ---------------------------------------------------------------------------
 # Default Residual Mix Emission Factors by Region (kgCO2e/kWh)
@@ -287,13 +281,13 @@ _DEFAULT_RESIDUAL_MIX_EF: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Prometheus metrics helpers (graceful fallback)
 # ---------------------------------------------------------------------------
 
 try:
     from prometheus_client import Counter, Gauge, Histogram
+
     _PROMETHEUS_AVAILABLE = True
 except ImportError:
     _PROMETHEUS_AVAILABLE = False
@@ -331,14 +325,12 @@ else:
     _s2m_calculation_duration = None        # type: ignore[assignment]
     _s2m_active_calculations = None         # type: ignore[assignment]
 
-
 def _record_calculation(instrument_type: str, method: str, status: str) -> None:
     """Record a Scope 2 market-based calculation metric."""
     if _PROMETHEUS_AVAILABLE and _s2m_calculations_total is not None:
         _s2m_calculations_total.labels(
             instrument_type=instrument_type, method=method, status=status,
         ).inc()
-
 
 def _record_emissions(instrument_type: str, gas: str, kg: float) -> None:
     """Record cumulative emissions metric."""
@@ -347,18 +339,15 @@ def _record_emissions(instrument_type: str, gas: str, kg: float) -> None:
             instrument_type=instrument_type, gas=gas,
         ).inc(kg)
 
-
 def _record_batch_metric(status: str) -> None:
     """Record batch job metric."""
     if _PROMETHEUS_AVAILABLE and _s2m_batch_jobs_total is not None:
         _s2m_batch_jobs_total.labels(status=status).inc()
 
-
 def _observe_duration(operation: str, seconds: float) -> None:
     """Record calculation duration metric."""
     if _PROMETHEUS_AVAILABLE and _s2m_calculation_duration is not None:
         _s2m_calculation_duration.labels(operation=operation).observe(seconds)
-
 
 # ---------------------------------------------------------------------------
 # Provenance helper (lightweight inline tracker)
@@ -455,15 +444,9 @@ class _ProvenanceTracker:
         with self._lock:
             return len(self._entries)
 
-
 # ---------------------------------------------------------------------------
 # Utility: UTC now helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Utility: Safe Decimal conversion
@@ -488,7 +471,6 @@ def _to_decimal(value: Any) -> Decimal:
     except (InvalidOperation, ValueError, TypeError) as exc:
         raise ValueError(f"Cannot convert {value!r} to Decimal: {exc}") from exc
 
-
 def _q(value: Decimal) -> Decimal:
     """Quantize a Decimal to 8 internal decimal places.
 
@@ -499,7 +481,6 @@ def _q(value: Decimal) -> Decimal:
         Quantized Decimal.
     """
     return value.quantize(_PRECISION_INTERNAL, rounding=ROUND_HALF_UP)
-
 
 def _q_out(value: Decimal) -> Decimal:
     """Quantize a Decimal to 3 output decimal places.
@@ -512,11 +493,9 @@ def _q_out(value: Decimal) -> Decimal:
     """
     return value.quantize(_PRECISION_OUTPUT, rounding=ROUND_HALF_UP)
 
-
 # ===========================================================================
 # MarketEmissionsCalculatorEngine
 # ===========================================================================
-
 
 class MarketEmissionsCalculatorEngine:
     """Core Scope 2 market-based emission calculation engine.
@@ -1255,7 +1234,7 @@ class MarketEmissionsCalculatorEngine:
                 "provenance_hash": provenance_hash,
                 "calculation_trace": trace,
                 "processing_time_ms": round(elapsed * 1000, 3),
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
                 "error_message": None,
             }
 
@@ -1283,7 +1262,7 @@ class MarketEmissionsCalculatorEngine:
                 "provenance_hash": "",
                 "calculation_trace": trace,
                 "processing_time_ms": round(elapsed * 1000, 3),
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
                 "error_message": str(exc),
             }
 

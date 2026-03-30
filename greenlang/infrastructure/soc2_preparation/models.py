@@ -52,8 +52,7 @@ from enum import Enum, IntEnum
 from typing import Any, Dict, List, Optional
 
 from pydantic import (
-    BaseModel,
-    ConfigDict,
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
     Field,
     field_validator,
     model_validator,
@@ -292,7 +291,7 @@ class TrustServiceCategory(str, Enum):
 # ---------------------------------------------------------------------------
 
 
-class SOC2BaseModel(BaseModel):
+class SOC2BaseModel(GreenLangBase):
     """Base model for all SOC 2 data models.
 
     Provides common configuration and validation patterns.

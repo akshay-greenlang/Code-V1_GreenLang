@@ -34,9 +34,10 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -95,7 +96,7 @@ class ImpactCategory(str, Enum):
 # PYDANTIC MODELS
 # =============================================================================
 
-class LCIDatasetMeta(BaseModel):
+class LCIDatasetMeta(GreenLangBase):
     """LCI dataset metadata."""
     database: LCIDatabase = Field(...)
     version: str = Field(...)
@@ -106,7 +107,7 @@ class LCIDatasetMeta(BaseModel):
     reviewer: Optional[str] = Field(None)
 
 
-class ImpactValue(BaseModel):
+class ImpactValue(GreenLangBase):
     """Impact category value."""
     category: ImpactCategory = Field(...)
     value: float = Field(...)
@@ -114,7 +115,7 @@ class ImpactValue(BaseModel):
     uncertainty_pct: Optional[float] = Field(None)
 
 
-class MaterialDataset(BaseModel):
+class MaterialDataset(GreenLangBase):
     """Material LCI dataset."""
     dataset_id: str = Field(...)
     name: str = Field(...)
@@ -133,7 +134,7 @@ class MaterialDataset(BaseModel):
     tags: List[str] = Field(default_factory=list)
 
 
-class ProcessDataset(BaseModel):
+class ProcessDataset(GreenLangBase):
     """Process LCI dataset."""
     dataset_id: str = Field(...)
     name: str = Field(...)
@@ -149,7 +150,7 @@ class ProcessDataset(BaseModel):
     metadata: LCIDatasetMeta = Field(...)
 
 
-class MaterialLookup(BaseModel):
+class MaterialLookup(GreenLangBase):
     """Material lookup result."""
     dataset_id: str = Field(...)
     name: str = Field(...)
@@ -160,7 +161,7 @@ class MaterialLookup(BaseModel):
     confidence: float = Field(...)
 
 
-class MaterialCalculation(BaseModel):
+class MaterialCalculation(GreenLangBase):
     """Material emissions calculation."""
     calculation_id: str = Field(...)
     material_name: str = Field(...)
@@ -173,7 +174,7 @@ class MaterialCalculation(BaseModel):
     provenance_hash: str = Field(...)
 
 
-class LCIQueryInput(BaseModel):
+class LCIQueryInput(GreenLangBase):
     """Input for LCI query."""
     operation: str = Field(...)  # lookup, calculate, register, search
     material_name: Optional[str] = Field(None)
@@ -187,7 +188,7 @@ class LCIQueryInput(BaseModel):
     tenant_id: Optional[str] = Field(None)
 
 
-class LCIQueryOutput(BaseModel):
+class LCIQueryOutput(GreenLangBase):
     """Output from LCI query."""
     operation: str = Field(...)
     materials: List[MaterialDataset] = Field(default_factory=list)

@@ -50,22 +50,17 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 __all__ = [
     "ValidityChecker",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _generate_id(prefix: str = "VLD") -> str:
     """Generate a unique identifier with the given prefix.
@@ -78,7 +73,6 @@ def _generate_id(prefix: str = "VLD") -> str:
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
 
-
 def _compute_provenance(operation: str, data_repr: str) -> str:
     """Compute SHA-256 provenance hash for a validity operation.
 
@@ -89,9 +83,8 @@ def _compute_provenance(operation: str, data_repr: str) -> str:
     Returns:
         Hex-encoded SHA-256 digest.
     """
-    payload = f"{operation}:{data_repr}:{_utcnow().isoformat()}"
+    payload = f"{operation}:{data_repr}:{utcnow().isoformat()}"
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Format Regex Patterns
@@ -208,11 +201,9 @@ ALL_OPERATORS = frozenset({
     OPERATOR_CONTAINS, OPERATOR_IN_SET,
 })
 
-
 # ---------------------------------------------------------------------------
 # Luhn Algorithm (credit card)
 # ---------------------------------------------------------------------------
-
 
 def _luhn_check(number_str: str) -> bool:
     """Validate a number string using the Luhn algorithm.
@@ -239,13 +230,11 @@ def _luhn_check(number_str: str) -> bool:
 
     return total % 10 == 0
 
-
 # ---------------------------------------------------------------------------
 # Type Conformance Helpers
 # ---------------------------------------------------------------------------
 
 _TYPE_CHECKERS: Dict[str, Callable[[Any], bool]] = {}
-
 
 def _is_integer(value: Any) -> bool:
     """Check if a value is or can be parsed as an integer."""
@@ -259,7 +248,6 @@ def _is_integer(value: Any) -> bool:
     except (ValueError, TypeError):
         return False
 
-
 def _is_float(value: Any) -> bool:
     """Check if a value is or can be parsed as a float."""
     if isinstance(value, bool):
@@ -272,7 +260,6 @@ def _is_float(value: Any) -> bool:
     except (ValueError, TypeError):
         return False
 
-
 def _is_boolean(value: Any) -> bool:
     """Check if a value is or represents a boolean."""
     if isinstance(value, bool):
@@ -280,11 +267,9 @@ def _is_boolean(value: Any) -> bool:
     s = str(value).strip().lower()
     return s in {"true", "false", "yes", "no", "1", "0", "t", "f", "y", "n", "on", "off"}
 
-
 def _is_string(value: Any) -> bool:
     """Check if a value is a non-empty string."""
     return isinstance(value, str) and len(value.strip()) > 0
-
 
 _TYPE_CHECKERS = {
     "integer": _is_integer,
@@ -300,11 +285,9 @@ _TYPE_CHECKERS = {
     "phone": lambda v: bool(_RE_PHONE.match(str(v).strip())) and len(str(v).strip()) >= 7,
 }
 
-
 # ---------------------------------------------------------------------------
 # ValidityChecker Engine
 # ---------------------------------------------------------------------------
-
 
 class ValidityChecker:
     """Format validation and type conformance engine.
@@ -465,7 +448,7 @@ class ValidityChecker:
             "issue_count": len(issues),
             "provenance_hash": provenance_hash,
             "validation_time_ms": round(elapsed_ms, 2),
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
 
         with self._lock:
@@ -962,7 +945,7 @@ class ValidityChecker:
                         "invalid_rate": round(rate, 4),
                         "validity_rate": col_result.get("validity_rate", 0.0),
                     },
-                    "created_at": _utcnow().isoformat(),
+                    "created_at": utcnow().isoformat(),
                 })
 
         # Dataset-level issue
@@ -981,7 +964,7 @@ class ValidityChecker:
                     "validity_score": round(validity_score, 4),
                     "total_violations": len(violations),
                 },
-                "created_at": _utcnow().isoformat(),
+                "created_at": utcnow().isoformat(),
             })
 
         return issues
@@ -1090,5 +1073,5 @@ class ValidityChecker:
                 ),
                 "avg_validation_time_ms": round(avg_time, 2),
                 "stored_validations": len(self._validations),
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }

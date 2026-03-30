@@ -88,23 +88,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -121,7 +116,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -130,7 +124,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -138,15 +131,12 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class AssuranceStandard(str, Enum):
     """Assurance standard for readiness assessment.
@@ -158,7 +148,6 @@ class AssuranceStandard(str, Enum):
     ISAE_3410 = "isae_3410"
     ISO_14064_3 = "iso_14064_3"
     AA1000AS_V3 = "aa1000as_v3"
-
 
 class ChecklistCategoryName(str, Enum):
     """Checklist category names."""
@@ -173,7 +162,6 @@ class ChecklistCategoryName(str, Enum):
     REPORTING = "reporting"
     PRIOR_PERIOD = "prior_period"
 
-
 class ReadinessLevel(str, Enum):
     """Readiness level thresholds.
 
@@ -187,7 +175,6 @@ class ReadinessLevel(str, Enum):
     PARTIALLY_READY = "partially_ready"
     NOT_READY = "not_ready"
 
-
 class GapSeverity(str, Enum):
     """Gap severity levels.
 
@@ -200,7 +187,6 @@ class GapSeverity(str, Enum):
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -233,7 +219,6 @@ DEFAULT_REMEDIATION_DAYS: Dict[str, Decimal] = {
     GapSeverity.MEDIUM.value: Decimal("3"),
     GapSeverity.LOW.value: Decimal("1"),
 }
-
 
 # ---------------------------------------------------------------------------
 # Standard Checklists
@@ -395,7 +380,6 @@ def _build_isae_3410_checklist() -> List[Dict[str, Any]]:
 
     return items
 
-
 def _build_iso_14064_3_checklist() -> List[Dict[str, Any]]:
     """Build ISO 14064-3 checklist (60+ items across 8 categories)."""
     items: List[Dict[str, Any]] = []
@@ -482,7 +466,6 @@ def _build_iso_14064_3_checklist() -> List[Dict[str, Any]]:
 
     return items
 
-
 def _build_aa1000as_v3_checklist() -> List[Dict[str, Any]]:
     """Build AA1000AS v3 checklist (50+ items across 6 categories)."""
     items: List[Dict[str, Any]] = []
@@ -558,18 +541,15 @@ def _build_aa1000as_v3_checklist() -> List[Dict[str, Any]]:
 
     return items
 
-
 STANDARD_CHECKLISTS: Dict[str, List[Dict[str, Any]]] = {
     AssuranceStandard.ISAE_3410.value: _build_isae_3410_checklist(),
     AssuranceStandard.ISO_14064_3.value: _build_iso_14064_3_checklist(),
     AssuranceStandard.AA1000AS_V3.value: _build_aa1000as_v3_checklist(),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class ChecklistItem(BaseModel):
     """A single checklist item with assessment score.
@@ -596,7 +576,6 @@ class ChecklistItem(BaseModel):
     def coerce_score(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class CategoryWeights(BaseModel):
     """Configurable category weights.
 
@@ -616,7 +595,6 @@ class CategoryWeights(BaseModel):
                 "Category weights sum to %s (expected ~1.0). Results may be skewed.", total
             )
         return self
-
 
 class ReadinessConfig(BaseModel):
     """Configuration for readiness assessment.
@@ -640,7 +618,6 @@ class ReadinessConfig(BaseModel):
     )
     output_precision: int = Field(default=2, ge=0, le=6, description="Output precision")
 
-
 class ReadinessInput(BaseModel):
     """Input for readiness assessment.
 
@@ -655,11 +632,9 @@ class ReadinessInput(BaseModel):
         default_factory=ReadinessConfig, description="Configuration"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class ChecklistCategory(BaseModel):
     """Aggregated category score.
@@ -683,7 +658,6 @@ class ChecklistCategory(BaseModel):
     category_pct: Decimal = Field(default=Decimal("0"), description="Category %")
     items: List[ChecklistItem] = Field(default_factory=list, description="Items")
 
-
 class ReadinessScore(BaseModel):
     """Overall readiness score.
 
@@ -703,7 +677,6 @@ class ReadinessScore(BaseModel):
     weighted_scores: Dict[str, Decimal] = Field(
         default_factory=dict, description="Weighted contributions"
     )
-
 
 class GapItem(BaseModel):
     """An identified gap with remediation recommendation.
@@ -730,7 +703,6 @@ class GapItem(BaseModel):
         default=Decimal("0"), description="Effort (person-days)"
     )
     priority_rank: int = Field(default=0, description="Priority rank")
-
 
 class ReadinessResult(BaseModel):
     """Complete result of readiness assessment.
@@ -770,11 +742,9 @@ class ReadinessResult(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ReadinessAssessmentEngine:
     """Evaluates organisational readiness for GHG assurance engagements.
@@ -943,7 +913,7 @@ class ReadinessAssessmentEngine:
             checklist_item_count=total_items,
             assessed_item_count=assessed_items,
             warnings=warnings,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         result.provenance_hash = _compute_hash(result)
@@ -1066,7 +1036,6 @@ class ReadinessAssessmentEngine:
 
     def get_version(self) -> str:
         return self._version
-
 
 # ---------------------------------------------------------------------------
 # __all__

@@ -32,6 +32,7 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 import pytest
 import yaml
 
+from greenlang.schemas import utcnow
 
 # ---------------------------------------------------------------------------
 # Paths & sys.path setup
@@ -61,7 +62,6 @@ TEMPLATES_DIR = PACK_ROOT / "templates"
 ENGINES_DIR = PACK_ROOT / "engines"
 INTEGRATIONS_DIR = PACK_ROOT / "integrations"
 
-
 # ---------------------------------------------------------------------------
 # Utility helpers
 # ---------------------------------------------------------------------------
@@ -76,16 +76,9 @@ def _compute_hash(data: Any) -> str:
         raw = json.dumps(str(data), sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4."""
     return str(uuid.uuid4())
-
 
 # ---------------------------------------------------------------------------
 # Pack YAML fixtures
@@ -96,18 +89,15 @@ def pack_yaml_path() -> Path:
     """Return the absolute path to pack.yaml."""
     return PACK_YAML_PATH
 
-
 @pytest.fixture(scope="session")
 def pack_yaml_raw(pack_yaml_path) -> str:
     """Return the raw text content of pack.yaml."""
     return pack_yaml_path.read_text(encoding="utf-8")
 
-
 @pytest.fixture(scope="session")
 def pack_yaml(pack_yaml_raw) -> Dict[str, Any]:
     """Return the parsed pack.yaml as a dictionary."""
     return yaml.safe_load(pack_yaml_raw)
-
 
 # ---------------------------------------------------------------------------
 # Preset / Sector YAML loading fixtures
@@ -122,7 +112,6 @@ def preset_files() -> Dict[str, Path]:
             result[f.stem] = f
     return result
 
-
 @pytest.fixture(scope="session")
 def sector_files() -> Dict[str, Path]:
     """Return mapping of sector ID to file path."""
@@ -132,12 +121,10 @@ def sector_files() -> Dict[str, Path]:
             result[f.stem] = f
     return result
 
-
 @pytest.fixture(scope="session")
 def demo_config_path() -> Path:
     """Return path to demo configuration."""
     return DEMO_DIR / "demo_config.yaml"
-
 
 @pytest.fixture(scope="session")
 def demo_config(demo_config_path) -> Dict[str, Any]:
@@ -146,12 +133,10 @@ def demo_config(demo_config_path) -> Dict[str, Any]:
         return yaml.safe_load(demo_config_path.read_text(encoding="utf-8"))
     return {}
 
-
 @pytest.fixture(scope="session")
 def demo_tenant_profiles_path() -> Path:
     """Return path to demo tenant profiles."""
     return DEMO_DIR / "demo_tenant_profiles.json"
-
 
 @pytest.fixture(scope="session")
 def demo_tenant_profiles(demo_tenant_profiles_path) -> Any:
@@ -160,12 +145,10 @@ def demo_tenant_profiles(demo_tenant_profiles_path) -> Any:
         return json.loads(demo_tenant_profiles_path.read_text(encoding="utf-8"))
     return []
 
-
 @pytest.fixture(scope="session")
 def demo_iot_stream_path() -> Path:
     """Return path to demo IoT stream CSV."""
     return DEMO_DIR / "demo_iot_stream.csv"
-
 
 # ---------------------------------------------------------------------------
 # Enterprise PackConfig fixture (dict-based, no external deps)
@@ -405,7 +388,6 @@ def sample_enterprise_config() -> Dict[str, Any]:
         },
     }
 
-
 # ---------------------------------------------------------------------------
 # Tenant Profile fixtures
 # ---------------------------------------------------------------------------
@@ -436,7 +418,6 @@ def sample_tenant_profile() -> Dict[str, Any]:
         "created_at": "2026-01-15T00:00:00Z",
     }
 
-
 # ---------------------------------------------------------------------------
 # White Label / Brand Config fixtures
 # ---------------------------------------------------------------------------
@@ -466,7 +447,6 @@ def sample_brand_config() -> Dict[str, Any]:
         },
     }
 
-
 # ---------------------------------------------------------------------------
 # Forecast / Predictive Analytics fixtures
 # ---------------------------------------------------------------------------
@@ -491,7 +471,6 @@ def sample_forecast_data() -> List[Dict[str, Any]]:
             "confidence": 0.95,
         })
     return data
-
 
 # ---------------------------------------------------------------------------
 # Narrative fixtures
@@ -524,7 +503,6 @@ def sample_narrative_data() -> Dict[str, Any]:
             {"id": "GRID-DE", "name": "IEA 2024 Grid Factor - Germany", "type": "grid_factor"},
         ],
     }
-
 
 # ---------------------------------------------------------------------------
 # Workflow Definition fixtures
@@ -647,7 +625,6 @@ def sample_workflow_definition() -> Dict[str, Any]:
         "retry_policy": {"max_retries": 2, "backoff_seconds": 30},
     }
 
-
 # ---------------------------------------------------------------------------
 # IoT Sensor Reading fixtures
 # ---------------------------------------------------------------------------
@@ -682,7 +659,6 @@ def sample_iot_readings() -> List[Dict[str, Any]]:
             "battery_pct": 85.0 + (i % 15),
         })
     return readings
-
 
 # ---------------------------------------------------------------------------
 # Carbon Credit fixtures
@@ -723,7 +699,6 @@ def sample_carbon_credits() -> List[Dict[str, Any]]:
         })
     return credits
 
-
 # ---------------------------------------------------------------------------
 # Supplier Data fixtures
 # ---------------------------------------------------------------------------
@@ -761,7 +736,6 @@ def sample_supplier_data() -> List[Dict[str, Any]]:
             "deforestation_risk": "low" if i % 4 != 0 else "medium",
         })
     return suppliers
-
 
 # ---------------------------------------------------------------------------
 # Filing Package fixtures
@@ -801,7 +775,6 @@ def sample_filing_package() -> Dict[str, Any]:
         "amendment_history": [],
         "provenance_hash": _compute_hash({"filing_id": "FIL-2025-001"}),
     }
-
 
 # ---------------------------------------------------------------------------
 # API Key fixtures
@@ -854,7 +827,6 @@ def sample_api_keys() -> List[Dict[str, Any]]:
             "usage_count_today": 0,
         },
     ]
-
 
 # ---------------------------------------------------------------------------
 # Audit Engagement fixtures
@@ -912,7 +884,6 @@ def sample_audit_engagement() -> Dict[str, Any]:
         "provenance_hash": _compute_hash({"engagement_id": "AUD-2025-001"}),
     }
 
-
 # ---------------------------------------------------------------------------
 # Stub classes for external dependencies
 # ---------------------------------------------------------------------------
@@ -931,7 +902,7 @@ class StubTenantManager:
             "name": config.get("tenant_name", "Test Tenant"),
             "tier": config.get("tier", "starter"),
             "status": "active",
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
             "provenance_hash": _compute_hash(config),
         }
         self.tenants[tenant_id] = tenant
@@ -957,7 +928,6 @@ class StubTenantManager:
             self.audit_log.append({"event": "deleted", "tenant_id": tenant_id})
             return True
         return False
-
 
 class StubSAMLProvider:
     """Stub for SAML identity provider."""
@@ -997,7 +967,6 @@ class StubSAMLProvider:
             "jit": True,
         }
 
-
 class StubGraphQLSchema:
     """Stub for GraphQL schema manager."""
 
@@ -1030,7 +999,6 @@ class StubGraphQLSchema:
             if part in protected_prefixes:
                 return "admin" in user_roles or "auditor" in user_roles
         return True
-
 
 class StubMLModel:
     """Stub for ML predictive models."""
@@ -1105,7 +1073,6 @@ class StubMLModel:
             "method": "SHAP",
         }
 
-
 class StubAuditorPortal:
     """Stub for auditor collaboration portal."""
 
@@ -1122,7 +1089,7 @@ class StubAuditorPortal:
         engagement = {
             "engagement_id": eng_id,
             "status": "active",
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
             "portal_url": f"https://auditor.greenlang.io/engagement/{eng_id}",
             **engagement_data,
         }
@@ -1159,9 +1126,8 @@ class StubAuditorPortal:
             "scope_coverage_pct": 95.0,
             "material_findings": 0,
             "observations": 2,
-            "issued_date": _utcnow().strftime("%Y-%m-%d"),
+            "issued_date": utcnow().strftime("%Y-%m-%d"),
         }
-
 
 class StubMarketplace:
     """Stub for plugin marketplace."""
@@ -1225,7 +1191,6 @@ class StubMarketplace:
             "remaining": 50 - len(self.installed),
         }
 
-
 # ---------------------------------------------------------------------------
 # Mock fixtures
 # ---------------------------------------------------------------------------
@@ -1235,18 +1200,15 @@ def mock_tenant_manager() -> StubTenantManager:
     """Return a StubTenantManager instance."""
     return StubTenantManager()
 
-
 @pytest.fixture
 def mock_saml_provider() -> StubSAMLProvider:
     """Return a StubSAMLProvider instance."""
     return StubSAMLProvider()
 
-
 @pytest.fixture
 def mock_graphql_schema() -> StubGraphQLSchema:
     """Return a StubGraphQLSchema instance."""
     return StubGraphQLSchema()
-
 
 @pytest.fixture
 def mock_ml_models() -> Dict[str, StubMLModel]:
@@ -1257,18 +1219,15 @@ def mock_ml_models() -> Dict[str, StubMLModel]:
         "drift_monitor": StubMLModel("drift_monitor"),
     }
 
-
 @pytest.fixture
 def mock_auditor_portal() -> StubAuditorPortal:
     """Return a StubAuditorPortal instance."""
     return StubAuditorPortal()
 
-
 @pytest.fixture
 def mock_marketplace() -> StubMarketplace:
     """Return a StubMarketplace instance."""
     return StubMarketplace()
-
 
 # ---------------------------------------------------------------------------
 # MultiTenantEngine fixture (loaded from engines directory)
@@ -1304,7 +1263,6 @@ def _load_multi_tenant_module():
         return mod
     return None
 
-
 @pytest.fixture
 def multi_tenant_engine():
     """Create a MultiTenantEngine instance for testing.
@@ -1317,7 +1275,6 @@ def multi_tenant_engine():
         pytest.skip("multi_tenant_engine.py not found")
     return mod.MultiTenantEngine()
 
-
 @pytest.fixture
 def multi_tenant_module():
     """Return the multi_tenant_engine module for model access."""
@@ -1325,7 +1282,6 @@ def multi_tenant_module():
     if mod is None:
         pytest.skip("multi_tenant_engine.py not found")
     return mod
-
 
 # ---------------------------------------------------------------------------
 # PackConfig fixture (loaded from config directory)
@@ -1343,7 +1299,6 @@ def pack_config_module():
         spec.loader.exec_module(mod)
         return mod
     pytest.skip("pack_config.py not found")
-
 
 # ---------------------------------------------------------------------------
 # Template render helper
@@ -1379,7 +1334,7 @@ def render_template_stub(
             "title": title,
             "data": data,
             "provenance_hash": provenance_hash,
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
         }, indent=2, default=str)
     else:
         content = f"{title}: {json.dumps(data, default=str)}"
@@ -1389,15 +1344,13 @@ def render_template_stub(
         "format": output_format,
         "content": content,
         "provenance_hash": provenance_hash,
-        "generated_at": _utcnow().isoformat(),
+        "generated_at": utcnow().isoformat(),
     }
-
 
 @pytest.fixture
 def template_renderer():
     """Return the template render stub function."""
     return render_template_stub
-
 
 # ---------------------------------------------------------------------------
 # ENTERPRISE TEMPLATE IDS (the 9 PACK-003 templates)
@@ -1419,7 +1372,6 @@ ENTERPRISE_TEMPLATE_IDS = [
 def enterprise_template_ids() -> List[str]:
     """Return the 9 enterprise template IDs."""
     return list(ENTERPRISE_TEMPLATE_IDS)
-
 
 # ---------------------------------------------------------------------------
 # ENTERPRISE WORKFLOW IDS (the 8 PACK-003 workflows)

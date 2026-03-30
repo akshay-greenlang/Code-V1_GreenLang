@@ -40,19 +40,14 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import HealthStatus
 
 logger = logging.getLogger(__name__)
-
 
 # =============================================================================
 # Utility Helpers
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute a SHA-256 hash of arbitrary data."""
@@ -60,18 +55,9 @@ def _hash_data(data: Any) -> str:
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # Enums
 # =============================================================================
-
-
-class HealthStatus(str, Enum):
-    """Traffic light health status."""
-    GREEN = "green"
-    AMBER = "amber"
-    RED = "red"
-
 
 class CheckArea(str, Enum):
     """Health check area."""
@@ -79,7 +65,6 @@ class CheckArea(str, Enum):
     WORKFLOWS = "workflows"
     CONFIG = "config"
     INTEGRATIONS = "integrations"
-
 
 class SFDRCheckCategory(str, Enum):
     """20 health check categories."""
@@ -108,11 +93,9 @@ class SFDRCheckCategory(str, Enum):
     INTEGRATION_PORTFOLIO = "integration_portfolio"
     INTEGRATION_REGULATORY = "integration_regulatory"
 
-
 # =============================================================================
 # Data Models
 # =============================================================================
-
 
 class HealthCheckConfig(BaseModel):
     """Configuration for the SFDR Health Check."""
@@ -128,7 +111,6 @@ class HealthCheckConfig(BaseModel):
         default="",
         description="Project root directory",
     )
-
 
 class CategoryCheckResult(BaseModel):
     """Result of a single category health check."""
@@ -150,11 +132,9 @@ class CategoryCheckResult(BaseModel):
         default=0.0, description="Check execution time in ms"
     )
 
-
 # =============================================================================
 # Expected Resources
 # =============================================================================
-
 
 EXPECTED_ENGINES: List[str] = [
     "pai_engine",
@@ -195,11 +175,9 @@ EXPECTED_INTEGRATIONS: List[str] = [
     "setup_wizard",
 ]
 
-
 # =============================================================================
 # SFDR Health Check
 # =============================================================================
-
 
 class SFDRHealthCheck:
     """20-category health check for SFDR Article 8 Pack.
@@ -347,7 +325,7 @@ class SFDRHealthCheck:
             "amber_count": amber_count,
             "red_count": red_count,
             "duration_seconds": round(duration, 3),
-            "checked_at": _utcnow().isoformat(),
+            "checked_at": utcnow().isoformat(),
             "pack_id": "PACK-010",
             "provenance_hash": _hash_data({
                 "score": health_score,
@@ -680,6 +658,7 @@ class SFDRHealthCheck:
 
         try:
             import importlib
+
             mod = importlib.import_module(module_path)
             has_class = hasattr(mod, class_name)
             elapsed = (time.monotonic() - start) * 1000

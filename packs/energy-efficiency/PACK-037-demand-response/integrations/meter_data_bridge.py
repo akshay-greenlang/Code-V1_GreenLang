@@ -44,25 +44,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -75,11 +69,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class MeterProtocol(str, Enum):
     """Meter data communication protocols."""
@@ -92,7 +84,6 @@ class MeterProtocol(str, Enum):
     UTILITY_API = "utility_api"
     CSV_IMPORT = "csv_import"
 
-
 class IntervalLength(str, Enum):
     """Standard interval lengths for meter data."""
 
@@ -100,7 +91,6 @@ class IntervalLength(str, Enum):
     FIFTEEN_MINUTE = "15min"
     THIRTY_MINUTE = "30min"
     HOURLY = "60min"
-
 
 class MeterChannel(str, Enum):
     """Meter measurement channels."""
@@ -113,7 +103,6 @@ class MeterChannel(str, Enum):
     VOLTAGE_V = "voltage_v"
     CURRENT_A = "current_a"
 
-
 class DataQuality(str, Enum):
     """Interval data quality flags."""
 
@@ -123,11 +112,9 @@ class DataQuality(str, Enum):
     MISSING = "missing"
     VALIDATED = "validated"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class MeterConfig(BaseModel):
     """Configuration for the Meter Data Bridge."""
@@ -146,13 +133,12 @@ class MeterConfig(BaseModel):
     modbus_port: int = Field(default=502, ge=1, le=65535)
     cache_intervals: int = Field(default=10000, ge=100)
 
-
 class MeterReading(BaseModel):
     """A single meter reading with quality flag."""
 
     reading_id: str = Field(default_factory=_new_uuid)
     meter_id: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     channel: MeterChannel = Field(default=MeterChannel.ENERGY_KWH)
     value: float = Field(default=0.0)
     unit: str = Field(default="kWh")
@@ -160,7 +146,6 @@ class MeterReading(BaseModel):
     interval_length: IntervalLength = Field(default=IntervalLength.FIFTEEN_MINUTE)
     source_protocol: str = Field(default="")
     is_revenue_grade: bool = Field(default=True)
-
 
 class IntervalData(BaseModel):
     """A block of interval data for a time period."""
@@ -184,7 +169,6 @@ class IntervalData(BaseModel):
     load_factor_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
 
-
 class BaselineData(BaseModel):
     """Customer Baseline Load (CBL) data for DR performance measurement."""
 
@@ -201,11 +185,9 @@ class BaselineData(BaseModel):
     excluded_event_days: int = Field(default=0, ge=0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # MeterDataBridge
 # ---------------------------------------------------------------------------
-
 
 class MeterDataBridge:
     """AMI and interval meter data integration for demand response.

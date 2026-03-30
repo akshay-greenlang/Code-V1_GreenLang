@@ -104,6 +104,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -144,20 +145,13 @@ except ImportError:
     _record_leak_rate_selection = None  # type: ignore[assignment]
     _observe_calculation_duration = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ===========================================================================
 # Enumerations
 # ===========================================================================
-
 
 class LeakEquipmentType(str, Enum):
     """Equipment type classification for leak rate estimation.
@@ -211,7 +205,6 @@ class LeakEquipmentType(str, Enum):
     AEROSOL_MDI = "AEROSOL_MDI"
     SOLVENT = "SOLVENT"
 
-
 class LifecycleStage(str, Enum):
     """Lifecycle stage for emission accounting per IPCC.
 
@@ -226,7 +219,6 @@ class LifecycleStage(str, Enum):
     INSTALLATION = "INSTALLATION"
     OPERATING = "OPERATING"
     END_OF_LIFE = "END_OF_LIFE"
-
 
 class ClimateZone(str, Enum):
     """Climate zone classification affecting leak rates.
@@ -247,7 +239,6 @@ class ClimateZone(str, Enum):
     CONTINENTAL = "CONTINENTAL"
     POLAR = "POLAR"
 
-
 class LDARLevel(str, Enum):
     """Leak Detection and Repair (LDAR) program intensity levels.
 
@@ -263,11 +254,9 @@ class LDARLevel(str, Enum):
     QUARTERLY = "QUARTERLY"
     CONTINUOUS = "CONTINUOUS"
 
-
 # ===========================================================================
 # Dataclasses for results
 # ===========================================================================
-
 
 @dataclass
 class LeakRateProfile:
@@ -342,7 +331,6 @@ class LeakRateProfile:
             "metadata": self.metadata,
         }
 
-
 @dataclass
 class LifetimeEmissionsProfile:
     """Lifetime emission estimate across all lifecycle stages.
@@ -406,7 +394,6 @@ class LifetimeEmissionsProfile:
             "provenance_hash": self.provenance_hash,
             "timestamp": self.timestamp,
         }
-
 
 # ===========================================================================
 # Default Leak Rate Database
@@ -625,7 +612,6 @@ _DEFAULT_LEAK_RATES: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ===========================================================================
 # Age Adjustment Factor Table
 # ===========================================================================
@@ -639,7 +625,6 @@ _AGE_ADJUSTMENT_TABLE: List[Tuple[int, Decimal]] = [
 ]
 _AGE_ADJUSTMENT_MAX: Decimal = Decimal("1.60")  # 15+ years: +60%
 
-
 # ===========================================================================
 # Climate Zone Adjustment Factor Table
 # ===========================================================================
@@ -652,7 +637,6 @@ _CLIMATE_ZONE_FACTORS: Dict[str, Decimal] = {
     ClimateZone.POLAR.value: Decimal("0.90"),
 }
 
-
 # ===========================================================================
 # LDAR Program Effectiveness Factor Table
 # ===========================================================================
@@ -664,7 +648,6 @@ _LDAR_FACTORS: Dict[str, Decimal] = {
     LDARLevel.CONTINUOUS.value: Decimal("0.50"),
 }
 
-
 # ===========================================================================
 # Default Recovery Efficiencies by Equipment Type
 # ===========================================================================
@@ -674,11 +657,9 @@ _DEFAULT_RECOVERY_EFFICIENCIES: Dict[str, Decimal] = {
     for et in _DEFAULT_LEAK_RATES
 }
 
-
 # ===========================================================================
 # LeakRateEstimatorEngine
 # ===========================================================================
-
 
 class LeakRateEstimatorEngine:
     """Sophisticated leak rate estimation engine for refrigerant and F-gas
@@ -888,7 +869,7 @@ class LeakRateEstimatorEngine:
             json.dumps(provenance_data, sort_keys=True).encode("utf-8")
         ).hexdigest()
 
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         profile = LeakRateProfile(
             profile_id=f"lr_{uuid4().hex[:12]}",
@@ -1280,7 +1261,7 @@ class LeakRateEstimatorEngine:
             json.dumps(provenance_data, sort_keys=True).encode("utf-8")
         ).hexdigest()
 
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         profile = LifetimeEmissionsProfile(
             profile_id=f"le_{uuid4().hex[:12]}",

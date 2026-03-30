@@ -40,35 +40,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.utcnow()
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hash of a string."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -79,7 +71,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -89,7 +80,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class DayType(str, Enum):
     """Day-type classification for load clustering."""
 
@@ -98,14 +88,12 @@ class DayType(str, Enum):
     HOLIDAY = "holiday"
     SHOULDER = "shoulder"
 
-
 class Season(str, Enum):
     """Season classification."""
 
     SUMMER = "summer"
     WINTER = "winter"
     SHOULDER = "shoulder"
-
 
 # =============================================================================
 # REFERENCE DATA (Zero-Hallucination)
@@ -194,11 +182,9 @@ LOAD_PROFILE_BENCHMARKS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -212,7 +198,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list, description="Errors encountered")
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
 
-
 class IntervalRecord(BaseModel):
     """Single 15-minute interval demand reading."""
 
@@ -220,7 +205,6 @@ class IntervalRecord(BaseModel):
     demand_kw: Decimal = Field(default=Decimal("0"), ge=0, description="Interval demand kW")
     energy_kwh: Decimal = Field(default=Decimal("0"), ge=0, description="Interval energy kWh")
     quality_flag: str = Field(default="actual", description="actual|estimated|missing")
-
 
 class LoadAnalysisInput(BaseModel):
     """Input data model for LoadAnalysisWorkflow."""
@@ -252,7 +236,6 @@ class LoadAnalysisInput(BaseModel):
             raise ValueError("facility_name must not be blank")
         return stripped
 
-
 class LoadAnalysisResult(BaseModel):
     """Complete result from load profile analysis workflow."""
 
@@ -275,11 +258,9 @@ class LoadAnalysisResult(BaseModel):
     calculated_at: str = Field(default="", description="ISO 8601 timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 of complete result")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class LoadAnalysisWorkflow:
     """
@@ -337,7 +318,7 @@ class LoadAnalysisWorkflow:
             ValueError: If input validation fails.
         """
         t_start = time.perf_counter()
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting load analysis workflow %s for facility=%s type=%s",
             self.analysis_id, input_data.facility_name, input_data.facility_type,

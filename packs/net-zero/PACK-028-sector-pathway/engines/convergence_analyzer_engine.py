@@ -60,23 +60,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import RiskLevel
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -93,7 +89,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -102,30 +97,24 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(n: Decimal, d: Decimal, default: Decimal = Decimal("0")) -> Decimal:
     if d == Decimal("0"):
         return default
     return n / d
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     q = "0." + "0" * places
     return value.quantize(Decimal(q), rounding=ROUND_HALF_UP)
 
-
 def _round3(value: float) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
-
 
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ConvergenceStatus(str, Enum):
     """Convergence status relative to sector pathway."""
@@ -136,15 +125,6 @@ class ConvergenceStatus(str, Enum):
     CONVERGED = "converged"
     NOT_ASSESSED = "not_assessed"
 
-
-class RiskLevel(str, Enum):
-    """Risk level for convergence gap."""
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
-    CRITICAL = "critical"
-
-
 class TrajectoryDirection(str, Enum):
     """Direction of company intensity trajectory."""
     DECLINING = "declining"
@@ -153,18 +133,15 @@ class TrajectoryDirection(str, Enum):
     VOLATILE = "volatile"
     INSUFFICIENT_DATA = "insufficient_data"
 
-
 class CatchUpScenarioType(str, Enum):
     """Catch-up scenario aggressiveness."""
     GRADUAL = "gradual"       # 10-year catch-up
     MODERATE = "moderate"     # 7-year catch-up
     AGGRESSIVE = "aggressive"  # 5-year catch-up
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class HistoricalIntensityPoint(BaseModel):
     """Historical intensity data point.
@@ -180,7 +157,6 @@ class HistoricalIntensityPoint(BaseModel):
     emissions_tco2e: Decimal = Field(default=Decimal("0"), ge=Decimal("0"))
     activity_value: Decimal = Field(default=Decimal("0"), ge=Decimal("0"))
 
-
 class PathwayTargetPoint(BaseModel):
     """Sector pathway target at a given year.
 
@@ -192,7 +168,6 @@ class PathwayTargetPoint(BaseModel):
     year: int = Field(..., ge=2020, le=2070)
     target_intensity: Decimal = Field(..., ge=Decimal("0"))
     scenario: str = Field(default="nze")
-
 
 class ConvergenceInput(BaseModel):
     """Input for convergence analysis.
@@ -244,11 +219,9 @@ class ConvergenceInput(BaseModel):
         default=True, description="Risk assessment"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class GapAnalysisPoint(BaseModel):
     """Gap analysis at a specific year.
@@ -268,7 +241,6 @@ class GapAnalysisPoint(BaseModel):
     gap_pct: Decimal = Field(default=Decimal("0"))
     status: str = Field(default=ConvergenceStatus.NOT_ASSESSED.value)
 
-
 class TimeToConvergence(BaseModel):
     """Time-to-convergence calculation result.
 
@@ -286,7 +258,6 @@ class TimeToConvergence(BaseModel):
     current_annual_reduction_pct: Decimal = Field(default=Decimal("0"))
     required_annual_reduction_pct: Decimal = Field(default=Decimal("0"))
     acceleration_needed_pct: Decimal = Field(default=Decimal("0"))
-
 
 class CatchUpScenario(BaseModel):
     """A catch-up scenario for closing the convergence gap.
@@ -312,7 +283,6 @@ class CatchUpScenario(BaseModel):
     feasibility: str = Field(default="medium")
     key_actions: List[str] = Field(default_factory=list)
 
-
 class MilestoneCheck(BaseModel):
     """Milestone compliance check.
 
@@ -328,7 +298,6 @@ class MilestoneCheck(BaseModel):
     projected_intensity: Decimal = Field(default=Decimal("0"))
     on_track: bool = Field(default=False)
     gap_pct: Decimal = Field(default=Decimal("0"))
-
 
 class RiskAssessment(BaseModel):
     """Convergence risk assessment.
@@ -349,7 +318,6 @@ class RiskAssessment(BaseModel):
     technology_risk: str = Field(default=RiskLevel.MEDIUM.value)
     risk_factors: List[str] = Field(default_factory=list)
     mitigation_actions: List[str] = Field(default_factory=list)
-
 
 class ConvergenceResult(BaseModel):
     """Complete convergence analysis result.
@@ -378,7 +346,7 @@ class ConvergenceResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     sector: str = Field(default="")
     intensity_unit: str = Field(default="")
@@ -399,11 +367,9 @@ class ConvergenceResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ConvergenceAnalyzerEngine:
     """Sector intensity convergence analysis engine.

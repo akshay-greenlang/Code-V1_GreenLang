@@ -15,12 +15,13 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig
 from greenlang.agents.base_agents import DeterministicAgent
 from greenlang.agents.categories import AgentCategory, AgentMetadata
 from greenlang.utilities.determinism import DeterministicClock, content_hash, deterministic_id
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +43,7 @@ class CostCategory(str, Enum):
     OPPORTUNITY = "opportunity"
 
 
-class CostItem(BaseModel):
+class CostItem(GreenLangBase):
     name: str = Field(...)
     category: CostCategory = Field(...)
     amount_usd: float = Field(...)
@@ -50,7 +51,7 @@ class CostItem(BaseModel):
     years: int = Field(default=1, ge=1)
 
 
-class BenefitItem(BaseModel):
+class BenefitItem(GreenLangBase):
     name: str = Field(...)
     benefit_type: BenefitType = Field(...)
     annual_value_usd: float = Field(default=0, ge=0)
@@ -58,7 +59,7 @@ class BenefitItem(BaseModel):
     description: str = Field(default="")
 
 
-class CostBenefitAnalysis(BaseModel):
+class CostBenefitAnalysis(GreenLangBase):
     analysis_id: str = Field(...)
     project_name: str = Field(...)
     analysis_period_years: int = Field(default=15, ge=1)
@@ -82,7 +83,7 @@ class CostBenefitAnalysis(BaseModel):
     provenance_hash: str = Field(default="")
 
 
-class CostBenefitInput(BaseModel):
+class CostBenefitInput(GreenLangBase):
     operation: str = Field(default="analyze")
     project_name: str = Field(default="Decarbonization Project")
     analysis_period_years: int = Field(default=15, ge=1)
@@ -93,7 +94,7 @@ class CostBenefitInput(BaseModel):
     emission_reduction_tco2e: float = Field(default=1000, ge=0)
 
 
-class CostBenefitOutput(BaseModel):
+class CostBenefitOutput(GreenLangBase):
     operation: str = Field(...)
     success: bool = Field(...)
     analysis: Optional[CostBenefitAnalysis] = Field(None)

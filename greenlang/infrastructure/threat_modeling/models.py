@@ -50,7 +50,8 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 
 
 # ---------------------------------------------------------------------------
@@ -269,7 +270,7 @@ class DataClassification(str, Enum):
 # ---------------------------------------------------------------------------
 
 
-class Component(BaseModel):
+class Component(GreenLangBase):
     """System component in a threat model.
 
     Represents a distinct element of the system architecture that
@@ -371,7 +372,7 @@ class Component(BaseModel):
         return v.strip().lower()
 
 
-class DataFlow(BaseModel):
+class DataFlow(GreenLangBase):
     """Data flow between components.
 
     Represents the movement of data between two components in the system.
@@ -490,7 +491,7 @@ class DataFlow(BaseModel):
         return self
 
 
-class TrustBoundary(BaseModel):
+class TrustBoundary(GreenLangBase):
     """Trust boundary definition.
 
     Represents a boundary where the trust level changes. Data flows
@@ -546,7 +547,7 @@ class TrustBoundary(BaseModel):
     )
 
 
-class Threat(BaseModel):
+class Threat(GreenLangBase):
     """Individual threat instance.
 
     Represents a specific threat identified during STRIDE analysis.
@@ -728,7 +729,7 @@ class Threat(BaseModel):
         return self
 
 
-class Mitigation(BaseModel):
+class Mitigation(GreenLangBase):
     """Control mitigating a threat.
 
     Represents a security control or measure that mitigates one or more threats.
@@ -858,7 +859,7 @@ class Mitigation(BaseModel):
         return v_lower
 
 
-class ThreatModel(BaseModel):
+class ThreatModel(GreenLangBase):
     """Complete threat model for a service.
 
     Represents a comprehensive threat model including components,

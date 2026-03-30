@@ -33,10 +33,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +77,7 @@ class TimeFrame(str, Enum):
 # Pydantic Models
 # =============================================================================
 
-class InvestmentOption(BaseModel):
+class InvestmentOption(GreenLangBase):
     """Single investment option for prioritization."""
     option_id: str = Field(...)
     name: str = Field(...)
@@ -93,7 +94,7 @@ class InvestmentOption(BaseModel):
     strategic_alignment: float = Field(default=0.5, ge=0, le=1)
 
 
-class PrioritizedInvestment(BaseModel):
+class PrioritizedInvestment(GreenLangBase):
     """Investment with prioritization scores."""
     option: InvestmentOption = Field(...)
     priority_level: PriorityLevel = Field(...)
@@ -122,7 +123,7 @@ class PrioritizedInvestment(BaseModel):
     prioritization_rationale: List[str] = Field(default_factory=list)
 
 
-class BudgetAllocation(BaseModel):
+class BudgetAllocation(GreenLangBase):
     """Recommended budget allocation."""
     category: InvestmentCategory = Field(...)
     allocated_amount_usd: float = Field(..., ge=0)
@@ -131,7 +132,7 @@ class BudgetAllocation(BaseModel):
     risk_reduction_achieved_pct: float = Field(default=0.0, ge=0, le=100)
 
 
-class PrioritizationInput(BaseModel):
+class PrioritizationInput(GreenLangBase):
     """Input model for Adaptation Investment Prioritizer."""
     request_id: str = Field(...)
     investment_options: List[InvestmentOption] = Field(..., min_length=1)
@@ -148,7 +149,7 @@ class PrioritizationInput(BaseModel):
     strategic_weight: float = Field(default=0.1, ge=0, le=1)
 
 
-class PrioritizationOutput(BaseModel):
+class PrioritizationOutput(GreenLangBase):
     """Output model for Adaptation Investment Prioritizer."""
     request_id: str = Field(...)
     completed_at: datetime = Field(default_factory=DeterministicClock.now)

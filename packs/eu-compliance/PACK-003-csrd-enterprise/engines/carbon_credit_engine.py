@@ -51,25 +51,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -82,11 +76,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CreditRegistry(str, Enum):
     """Carbon credit registry."""
@@ -98,14 +90,12 @@ class CreditRegistry(str, Enum):
     CDM = "cdm"
     ARTICLE_6 = "article_6"
 
-
 class CreditType(str, Enum):
     """Type of carbon credit."""
 
     AVOIDANCE = "avoidance"
     REMOVAL = "removal"
     HYBRID = "hybrid"
-
 
 class CreditStatus(str, Enum):
     """Lifecycle status of a carbon credit."""
@@ -116,7 +106,6 @@ class CreditStatus(str, Enum):
     TRANSFERRED = "transferred"
     EXPIRED = "expired"
 
-
 class RetirementReason(str, Enum):
     """Reason for credit retirement."""
 
@@ -126,11 +115,9 @@ class RetirementReason(str, Enum):
     CARBON_NEUTRAL_CLAIM = "carbon_neutral_claim"
     CUSTOMER_REQUEST = "customer_request"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class CarbonCredit(BaseModel):
     """A single carbon credit or credit batch."""
@@ -152,7 +139,7 @@ class CarbonCredit(BaseModel):
         CreditStatus.ACTIVE, description="Current status"
     )
     purchase_date: datetime = Field(
-        default_factory=_utcnow, description="Date of purchase"
+        default_factory=utcnow, description="Date of purchase"
     )
     purchase_price_per_tco2e: float = Field(
         ..., ge=0, description="Purchase price per tCO2e"
@@ -180,7 +167,6 @@ class CarbonCredit(BaseModel):
             raise ValueError(f"Currency must be 3-letter ISO 4217 code: {v}")
         return v.upper()
 
-
 class CreditPortfolio(BaseModel):
     """Summary of a tenant's carbon credit portfolio."""
 
@@ -205,7 +191,6 @@ class CreditPortfolio(BaseModel):
     )
     currency: str = Field("USD", description="Portfolio currency")
     provenance_hash: str = Field("", description="SHA-256 provenance hash")
-
 
 class NetZeroAccounting(BaseModel):
     """Net-zero emissions accounting result."""
@@ -237,7 +222,6 @@ class NetZeroAccounting(BaseModel):
     )
     provenance_hash: str = Field("", description="SHA-256 provenance hash")
 
-
 # ---------------------------------------------------------------------------
 # Quality Weights
 # ---------------------------------------------------------------------------
@@ -260,11 +244,9 @@ _REGISTRY_SCORES: Dict[CreditRegistry, float] = {
     CreditRegistry.CDM: 65.0,
 }
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class CarbonCreditEngine:
     """Carbon credit portfolio management engine.
@@ -389,7 +371,7 @@ class CarbonCreditEngine:
             "credit_id": credit_id,
             "quantity_retired": quantity,
             "retirement_reason": retirement_reason.value,
-            "retired_at": _utcnow().isoformat(),
+            "retired_at": utcnow().isoformat(),
             "registry": credit.registry.value,
             "project_name": credit.project_name,
             "vintage_year": credit.vintage_year,
@@ -437,7 +419,7 @@ class CarbonCreditEngine:
             "from_entity": old_tenant,
             "to_entity": to_entity,
             "quantity_tco2e": credit.quantity_tco2e,
-            "transferred_at": _utcnow().isoformat(),
+            "transferred_at": utcnow().isoformat(),
             "provenance_hash": _compute_hash({
                 "credit_id": credit_id, "from": old_tenant, "to": to_entity,
             }),
@@ -552,7 +534,7 @@ class CarbonCreditEngine:
             )
 
         # Check vintage freshness
-        current_year = _utcnow().year
+        current_year = utcnow().year
         old_vintages = [
             c for c in retired_credits
             if current_year - c.vintage_year > 5
@@ -602,7 +584,7 @@ class CarbonCreditEngine:
             KeyError: If credit not found.
         """
         credit = self._get_credit(credit_id)
-        current_year = _utcnow().year
+        current_year = utcnow().year
 
         # Additionality (from credit data)
         additionality = credit.additionality_score
@@ -727,7 +709,7 @@ class CarbonCreditEngine:
         Returns:
             List of price data points.
         """
-        current_year = _utcnow().year
+        current_year = utcnow().year
         relevant = [
             c for c in self._credits.values()
             if c.registry == registry
@@ -773,7 +755,7 @@ class CarbonCreditEngine:
             key=lambda c: c.vintage_year,  # Retire oldest first
         )
 
-        current_year = _utcnow().year
+        current_year = utcnow().year
         schedule: List[Dict[str, Any]] = []
         remaining_credits = list(active_credits)
 
@@ -888,7 +870,7 @@ class CarbonCreditEngine:
         Returns:
             Quality score 0-100.
         """
-        current_year = _utcnow().year
+        current_year = utcnow().year
         registry_score = _REGISTRY_SCORES.get(credit.registry, 50.0)
         vintage_freshness = max(0.0, 100.0 - (current_year - credit.vintage_year) * 15)
 
@@ -914,6 +896,6 @@ class CarbonCreditEngine:
             "event": event,
             "credit_id": credit_id,
             "details": details,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "provenance_hash": _compute_hash(details),
         })

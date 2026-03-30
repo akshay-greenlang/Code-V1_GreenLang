@@ -42,22 +42,17 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -69,11 +64,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Agent Stubs
 # ---------------------------------------------------------------------------
-
 
 class _AgentStub:
     def __init__(self, agent_name: str) -> None:
@@ -85,7 +78,6 @@ class _AgentStub:
             return {"agent": self._agent_name, "method": name, "status": "degraded"}
         return _stub_method
 
-
 def _try_import_decarb_agent(agent_id: str, module_path: str) -> Any:
     try:
         return importlib.import_module(module_path)
@@ -93,11 +85,9 @@ def _try_import_decarb_agent(agent_id: str, module_path: str) -> Any:
         logger.debug("DECARB agent %s not available, using stub", agent_id)
         return _AgentStub(agent_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DecarbLever(str, Enum):
     RENEWABLE_ENERGY = "renewable_energy"
@@ -116,7 +106,6 @@ class DecarbLever(str, Enum):
     NATURE_BASED = "nature_based"
     DIGITAL_EFFICIENCY = "digital_efficiency"
 
-
 class TechnologyReadiness(str, Enum):
     MATURE = "mature"
     COMMERCIAL = "commercial"
@@ -125,14 +114,12 @@ class TechnologyReadiness(str, Enum):
     PROTOTYPE = "prototype"
     CONCEPT = "concept"
 
-
 class ScenarioFilter(str, Enum):
     BAU = "bau"
     AMBITIOUS = "ambitious"
     AGGRESSIVE = "aggressive"
     R2Z_ALIGNED = "r2z_aligned"
     ALL = "all"
-
 
 class PriorityTier(str, Enum):
     """R2Z reduction priority tiers."""
@@ -141,7 +128,6 @@ class PriorityTier(str, Enum):
     MEDIUM_TERM = "medium_term"
     LONG_TERM = "long_term"
     RESIDUAL = "residual"
-
 
 # ---------------------------------------------------------------------------
 # DECARB Agent Routing Table
@@ -164,11 +150,9 @@ DECARB_AGENT_ROUTES: Dict[str, Dict[str, Any]] = {
     ], start=1)
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class DecarbBridgeConfig(BaseModel):
     """Configuration for the DECARB bridge."""
@@ -185,7 +169,6 @@ class DecarbBridgeConfig(BaseModel):
     timeout_seconds: int = Field(default=300, ge=30)
     prioritize_real_reductions: bool = Field(default=True)
     no_fossil_expansion: bool = Field(default=True)
-
 
 class AbatementOption(BaseModel):
     """A single abatement/decarbonisation option."""
@@ -205,7 +188,6 @@ class AbatementOption(BaseModel):
     involves_fossil_expansion: bool = Field(default=False)
     co_benefits: List[str] = Field(default_factory=list)
 
-
 class AbatementResult(BaseModel):
     """Result of abatement option retrieval."""
 
@@ -218,7 +200,6 @@ class AbatementResult(BaseModel):
     fossil_options_excluded: int = Field(default=0)
     provenance_hash: str = Field(default="")
 
-
 class MACCResult(BaseModel):
     """Marginal Abatement Cost Curve result."""
 
@@ -230,7 +211,6 @@ class MACCResult(BaseModel):
     positive_cost_options: int = Field(default=0)
     breakeven_tco2e: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class RoadmapResult(BaseModel):
     """Decarbonisation roadmap result."""
@@ -245,7 +225,6 @@ class RoadmapResult(BaseModel):
     offset_needed_tco2e: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class TechnologyResult(BaseModel):
     """Technology readiness assessment result."""
 
@@ -256,7 +235,6 @@ class TechnologyResult(BaseModel):
     assessments: List[Dict[str, Any]] = Field(default_factory=list)
     sector_fit_score: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
-
 
 class BudgetOptimizationResult(BaseModel):
     """Budget-constrained optimization result."""
@@ -271,11 +249,9 @@ class BudgetOptimizationResult(BaseModel):
     unselected_count: int = Field(default=0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # DecarbBridge
 # ---------------------------------------------------------------------------
-
 
 class DecarbBridge:
     """Bridge to 21 DECARB-X agents for Race to Zero decarbonisation.

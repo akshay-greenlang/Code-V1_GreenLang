@@ -71,6 +71,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.land_use_change.land_use_classifier import (
     LandUseCategory,
@@ -88,27 +89,18 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a unique identifier using UUID4."""
     return str(uuid.uuid4())
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class TrajectoryType(str, Enum):
     """Temporal trajectory classification types.
@@ -140,7 +132,6 @@ class TrajectoryType(str, Enum):
     GRADUAL_CHANGE = "gradual_change"
     OSCILLATING = "oscillating"
     RECOVERY = "recovery"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -185,11 +176,9 @@ NATURAL_DISTURBANCE_RECOVERY_RATE: float = 0.04
 #: Tolerance for class change detection.
 CLASS_CHANGE_TOLERANCE: float = 0.10
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class TrajectoryPlotInput:
@@ -221,7 +210,6 @@ class TrajectoryPlotInput:
     date_to: str = ""
     spatial_context: Optional[Dict[str, Any]] = None
     area_ha: float = 1.0
-
 
 @dataclass
 class TemporalTrajectory:
@@ -328,11 +316,9 @@ class TemporalTrajectory:
             "metadata": self.metadata,
         }
 
-
 # ---------------------------------------------------------------------------
 # TemporalTrajectoryAnalyzer
 # ---------------------------------------------------------------------------
-
 
 class TemporalTrajectoryAnalyzer:
     """Production-grade temporal trajectory analysis engine for EUDR.
@@ -522,7 +508,7 @@ class TemporalTrajectoryAnalyzer:
         self._validate_plot_input(plot)
 
         result_id = _generate_id()
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
         values = plot.ndvi_values
 
         # Compute basic statistics
@@ -1342,14 +1328,13 @@ class TemporalTrajectoryAnalyzer:
             longitude=plot.longitude,
             processing_time_ms=0.0,
             provenance_hash="",
-            timestamp=_utcnow().isoformat(),
+            timestamp=utcnow().isoformat(),
             metadata={
                 "error": True,
                 "error_message": error_msg,
                 "module_version": _MODULE_VERSION,
             },
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

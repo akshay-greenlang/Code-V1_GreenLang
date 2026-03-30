@@ -38,9 +38,9 @@ from greenlang.agents.data.data_freshness_monitor.provenance import (
     ProvenanceTracker,
     get_provenance_tracker,
 )
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Optional FastAPI import
@@ -52,7 +52,6 @@ try:
 except ImportError:
     FastAPI = None  # type: ignore[assignment, misc]
     FASTAPI_AVAILABLE = False
-
 
 # ---------------------------------------------------------------------------
 # Optional engine imports (graceful fallback)
@@ -112,27 +111,18 @@ try:
 except ImportError:
     PROMETHEUS_AVAILABLE = False  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Build a SHA-256 hash for arbitrary data."""
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
-
 # ===================================================================
 # DataFreshnessMonitorService facade
 # ===================================================================
-
 
 class DataFreshnessMonitorService:
     """Facade service for the Data Freshness Monitor SDK.
@@ -261,7 +251,7 @@ class DataFreshnessMonitorService:
                 "alerts": len(self._alerts),
                 "predictions": len(self._predictions),
             },
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     def get_stats(self) -> Dict[str, Any]:
@@ -280,7 +270,7 @@ class DataFreshnessMonitorService:
             "predictions_stored": len(self._predictions),
             "pipeline_results_stored": len(self._pipeline_results),
             "provenance_entries": self._provenance.entry_count,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     def get_statistics(self) -> Dict[str, Any]:
@@ -340,8 +330,8 @@ class DataFreshnessMonitorService:
             "freshness_score": None,
             "freshness_level": None,
             "sla_status": "unknown",
-            "created_at": _utcnow().isoformat(),
-            "updated_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
+            "updated_at": utcnow().isoformat(),
             "provenance_hash": _compute_hash({
                 "dataset_id": dataset_id,
                 "name": name,
@@ -472,7 +462,7 @@ class DataFreshnessMonitorService:
         if status is not None:
             dataset["status"] = status
 
-        dataset["updated_at"] = _utcnow().isoformat()
+        dataset["updated_at"] = utcnow().isoformat()
         dataset["provenance_hash"] = _compute_hash({
             "dataset_id": dataset_id,
             "updated_at": dataset["updated_at"],
@@ -545,8 +535,8 @@ class DataFreshnessMonitorService:
             "escalation_policy": escalation_policy or {},
             "metadata": metadata or {},
             "status": "active",
-            "created_at": _utcnow().isoformat(),
-            "updated_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
+            "updated_at": utcnow().isoformat(),
             "provenance_hash": _compute_hash({
                 "sla_id": sla_id,
                 "dataset_id": dataset_id,
@@ -667,7 +657,7 @@ class DataFreshnessMonitorService:
         if status is not None:
             sla["status"] = status
 
-        sla["updated_at"] = _utcnow().isoformat()
+        sla["updated_at"] = utcnow().isoformat()
         sla["provenance_hash"] = _compute_hash({
             "sla_id": sla_id,
             "updated_at": sla["updated_at"],
@@ -710,7 +700,7 @@ class DataFreshnessMonitorService:
 
         # Determine last refresh time
         refresh_ts = last_refreshed_at or dataset.get("last_refreshed_at")
-        now = _utcnow()
+        now = utcnow()
 
         # Compute age in hours
         age_hours = 0.0
@@ -940,13 +930,13 @@ class DataFreshnessMonitorService:
         if status is not None:
             breach["status"] = status
             if status == "resolved":
-                breach["resolved_at"] = _utcnow().isoformat()
+                breach["resolved_at"] = utcnow().isoformat()
         if resolution_notes is not None:
             breach["resolution_notes"] = resolution_notes
         if metadata is not None:
             breach.setdefault("metadata", {}).update(metadata)
 
-        breach["updated_at"] = _utcnow().isoformat()
+        breach["updated_at"] = utcnow().isoformat()
         breach["provenance_hash"] = _compute_hash({
             "breach_id": breach_id,
             "status": breach["status"],
@@ -1082,7 +1072,7 @@ class DataFreshnessMonitorService:
                         "dataset_id": check.get("dataset_id", ""),
                         "pattern_type": "sla_critical",
                         "severity": "high",
-                        "detected_at": _utcnow().isoformat(),
+                        "detected_at": utcnow().isoformat(),
                     })
 
         # Step 3: Refresh predictions (optional)
@@ -1238,7 +1228,7 @@ class DataFreshnessMonitorService:
                 "age_hours": round(age_hours, 4),
                 "threshold_hours": critical_hours,
                 "status": "detected",
-                "detected_at": _utcnow().isoformat(),
+                "detected_at": utcnow().isoformat(),
                 "resolved_at": None,
                 "provenance_hash": _compute_hash({
                     "dataset_id": dataset_id,
@@ -1256,7 +1246,7 @@ class DataFreshnessMonitorService:
                 "age_hours": round(age_hours, 4),
                 "threshold_hours": warning_hours,
                 "status": "detected",
-                "detected_at": _utcnow().isoformat(),
+                "detected_at": utcnow().isoformat(),
                 "resolved_at": None,
                 "provenance_hash": _compute_hash({
                     "dataset_id": dataset_id,
@@ -1294,7 +1284,7 @@ class DataFreshnessMonitorService:
             "severity": severity,
             "message": message,
             "status": "open",
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
             "acknowledged_at": None,
             "resolved_at": None,
             "provenance_hash": _compute_hash({
@@ -1326,14 +1316,12 @@ class DataFreshnessMonitorService:
         )
         return alert
 
-
 # ---------------------------------------------------------------------------
 # Thread-safe singleton
 # ---------------------------------------------------------------------------
 
 _service_instance: Optional[DataFreshnessMonitorService] = None
 _service_lock = threading.Lock()
-
 
 def get_service() -> DataFreshnessMonitorService:
     """Return the singleton DataFreshnessMonitorService.
@@ -1352,7 +1340,6 @@ def get_service() -> DataFreshnessMonitorService:
                 _service_instance.startup()
     return _service_instance
 
-
 def set_service(
     service: DataFreshnessMonitorService,
 ) -> None:
@@ -1368,7 +1355,6 @@ def set_service(
         _service_instance = service
     logger.info("DataFreshnessMonitorService replaced programmatically")
 
-
 def reset_service() -> DataFreshnessMonitorService:
     """Reset and return a new singleton instance.
 
@@ -1381,11 +1367,9 @@ def reset_service() -> DataFreshnessMonitorService:
         _service_instance.startup()
     return _service_instance
 
-
 # ---------------------------------------------------------------------------
 # FastAPI integration
 # ---------------------------------------------------------------------------
-
 
 def configure_freshness_monitor(
     app: Any,
@@ -1418,7 +1402,6 @@ def configure_freshness_monitor(
     logger.info("Data freshness monitor service configured on app")
     return service
 
-
 def get_freshness_monitor(
     app: Any,
 ) -> Optional[DataFreshnessMonitorService]:
@@ -1434,7 +1417,6 @@ def get_freshness_monitor(
         app.state, "data_freshness_monitor_service", None,
     )
 
-
 def get_router() -> Any:
     """Return the FastAPI APIRouter for the freshness monitor service.
 
@@ -1446,7 +1428,6 @@ def get_router() -> Any:
         return router
     except ImportError:
         return None
-
 
 __all__ = [
     "DataFreshnessMonitorService",

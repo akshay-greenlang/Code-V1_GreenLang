@@ -40,20 +40,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "43.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -66,11 +61,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CloudProvider(str, Enum):
     """Cloud provider types."""
@@ -79,7 +72,6 @@ class CloudProvider(str, Enum):
     AZURE = "azure"
     GCP = "gcp"
     ON_PREMISE = "on_premise"
-
 
 # ---------------------------------------------------------------------------
 # Cloud Provider Defaults
@@ -133,11 +125,9 @@ CLOUD_PROVIDER_DEFAULTS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class CloudCarbonResult(BaseModel):
     """Cloud carbon data result."""
@@ -155,8 +145,7 @@ class CloudCarbonResult(BaseModel):
     scope3_category: int = Field(default=1)
     scope3_note: str = Field(default="Category 1 - Purchased cloud services")
     provenance_hash: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class DataCenterProfile(BaseModel):
     """On-premise datacenter profile."""
@@ -172,11 +161,9 @@ class DataCenterProfile(BaseModel):
     annual_emissions_tco2e: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # CloudCarbonBridge
 # ---------------------------------------------------------------------------
-
 
 class CloudCarbonBridge:
     """Cloud provider carbon data integration for PACK-043.

@@ -70,25 +70,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -106,7 +100,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -115,7 +108,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -127,22 +119,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SourceCategory(str, Enum):
     """GHG Protocol Scope 1 and 2 source categories.
@@ -175,7 +163,6 @@ class SourceCategory(str, Enum):
     COOLING = "cooling"
     DUAL_REPORTING = "dual_reporting"
 
-
 class MaterialityLevel(str, Enum):
     """Materiality classification for a source category.
 
@@ -188,7 +175,6 @@ class MaterialityLevel(str, Enum):
     IMMATERIAL = "immaterial"
     REGULATORY_REQUIRED = "regulatory_required"
     UNKNOWN = "unknown"
-
 
 class DataAvailability(str, Enum):
     """Data availability status for a source category.
@@ -203,7 +189,6 @@ class DataAvailability(str, Enum):
     MISSING = "missing"
     NOT_APPLICABLE = "not_applicable"
 
-
 class GapSeverity(str, Enum):
     """Severity classification of a data gap.
 
@@ -216,7 +201,6 @@ class GapSeverity(str, Enum):
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 class GapResolutionAction(str, Enum):
     """Recommended action to resolve a data gap.
@@ -236,7 +220,6 @@ class GapResolutionAction(str, Enum):
     INSTALL_METERING = "install_metering"
     REVIEW_RECORDS = "review_records"
     NOT_REQUIRED = "not_required"
-
 
 class SectorType(str, Enum):
     """Industry sector classification for category mapping.
@@ -269,7 +252,6 @@ class SectorType(str, Enum):
     WATER_UTILITY = "water_utility"
     GOVERNMENT = "government"
     OTHER = "other"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -626,11 +608,9 @@ REGULATORY_REQUIRED_CATEGORIES: set = {
     SourceCategory.DUAL_REPORTING.value,
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class FacilityInfo(BaseModel):
     """Basic facility information for completeness scanning.
@@ -684,11 +664,9 @@ class FacilityInfo(BaseModel):
         default_factory=dict, description="Category -> data source names"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class CategoryAssessment(BaseModel):
     """Assessment of a single source category for one or more facilities.
@@ -720,7 +698,6 @@ class CategoryAssessment(BaseModel):
     facility_count: int = Field(default=0, ge=0, description="Applicable facilities")
     notes: str = Field(default="", description="Notes")
 
-
 class MaterialityAssessment(BaseModel):
     """Materiality assessment for a source category.
 
@@ -750,7 +727,6 @@ class MaterialityAssessment(BaseModel):
         default=False, description="Regulatory-required"
     )
     rationale: str = Field(default="", description="Rationale")
-
 
 class DataGap(BaseModel):
     """A data gap identified during completeness assessment.
@@ -784,7 +760,6 @@ class DataGap(BaseModel):
         default=30, ge=0, description="Resolution deadline (days)"
     )
     notes: str = Field(default="", description="Notes")
-
 
 class CompletenessResult(BaseModel):
     """Overall completeness assessment result.
@@ -833,13 +808,12 @@ class CompletenessResult(BaseModel):
     passes_completeness: bool = Field(default=False, description="Passes threshold")
     warnings: List[str] = Field(default_factory=list, description="Warnings")
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     processing_time_ms: Decimal = Field(
         default=Decimal("0"), description="Processing time (ms)"
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class CompletenessReport(BaseModel):
     """Full completeness report combining all assessment outputs.
@@ -861,10 +835,9 @@ class CompletenessReport(BaseModel):
         default_factory=list, description="Recommendations"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 # ---------------------------------------------------------------------------
 # Model Rebuild (resolve forward references from __future__ annotations)
@@ -877,11 +850,9 @@ DataGap.model_rebuild()
 CompletenessResult.model_rebuild()
 CompletenessReport.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class SourceCompletenessEngine:
     """Source completeness and materiality assessment engine.

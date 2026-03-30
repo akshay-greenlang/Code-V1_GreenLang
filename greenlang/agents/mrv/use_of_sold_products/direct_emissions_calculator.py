@@ -72,6 +72,7 @@ import uuid
 from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -116,7 +117,6 @@ except ImportError:
     _record_emissions = None  # type: ignore[assignment]
     _observe_calculation_duration = None  # type: ignore[assignment]
 
-
 # =============================================================================
 # CONSTANTS
 # =============================================================================
@@ -160,11 +160,9 @@ _DEFAULT_UNCERTAINTY: Dict[str, Decimal] = {
     "CHEMICAL_RELEASE": Decimal("0.25"),
 }
 
-
 # =============================================================================
 # HELPER FUNCTIONS
 # =============================================================================
-
 
 def _quantize(value: Decimal, precision: Decimal = _QUANT_8DP) -> Decimal:
     """
@@ -178,7 +176,6 @@ def _quantize(value: Decimal, precision: Decimal = _QUANT_8DP) -> Decimal:
         Quantized Decimal value.
     """
     return value.quantize(precision, rounding=ROUND_HALF_UP)
-
 
 def _to_decimal(value: Any) -> Decimal:
     """
@@ -202,7 +199,6 @@ def _to_decimal(value: Any) -> Decimal:
             f"Cannot convert '{value}' (type={type(value).__name__}) to Decimal"
         ) from e
 
-
 def _compute_provenance_hash(*inputs: Any) -> str:
     """
     Calculate SHA-256 provenance hash from variable inputs.
@@ -225,16 +221,9 @@ def _compute_provenance_hash(*inputs: Any) -> str:
             hash_input += str(inp)
     return hashlib.sha256(hash_input.encode("utf-8")).hexdigest()
 
-
-def _utcnow() -> str:
-    """Return current UTC ISO 8601 timestamp string."""
-    return datetime.now(timezone.utc).isoformat()
-
-
 # =============================================================================
 # ENGINE CLASS
 # =============================================================================
-
 
 class DirectEmissionsCalculatorEngine:
     """
@@ -495,7 +484,7 @@ class DirectEmissionsCalculatorEngine:
             "version": VERSION,
             "inputs": inputs,
             "total_emissions": str(result.get("total_emissions_kgco2e", "0")),
-            "timestamp": result.get("timestamp", _utcnow()),
+            "timestamp": result.get("timestamp", utcnow()),
         }
         return _compute_provenance_hash(provenance_data)
 
@@ -704,7 +693,7 @@ class DirectEmissionsCalculatorEngine:
                 "calculation_trace": trace,
                 "dqi_score": dqi_score,
                 "uncertainty": uncertainty,
-                "timestamp": _utcnow(),
+                "timestamp": utcnow(),
             }
 
             result["provenance_hash"] = self._build_provenance(
@@ -756,7 +745,7 @@ class DirectEmissionsCalculatorEngine:
                 "calculation_trace": trace,
                 "error_message": str(e),
                 "processing_time_ms": round(elapsed_ms, 2),
-                "timestamp": _utcnow(),
+                "timestamp": utcnow(),
             }
 
     def _calculate_single_fuel_product(
@@ -992,7 +981,7 @@ class DirectEmissionsCalculatorEngine:
                 "calculation_trace": trace,
                 "dqi_score": dqi_score,
                 "uncertainty": uncertainty,
-                "timestamp": _utcnow(),
+                "timestamp": utcnow(),
             }
 
             result["provenance_hash"] = self._build_provenance(
@@ -1045,7 +1034,7 @@ class DirectEmissionsCalculatorEngine:
                 "calculation_trace": trace,
                 "error_message": str(e),
                 "processing_time_ms": round(elapsed_ms, 2),
-                "timestamp": _utcnow(),
+                "timestamp": utcnow(),
             }
 
     def _calculate_single_refrigerant_product(
@@ -1268,7 +1257,7 @@ class DirectEmissionsCalculatorEngine:
                 "calculation_trace": trace,
                 "dqi_score": dqi_score,
                 "uncertainty": uncertainty,
-                "timestamp": _utcnow(),
+                "timestamp": utcnow(),
             }
 
             result["provenance_hash"] = self._build_provenance(
@@ -1321,7 +1310,7 @@ class DirectEmissionsCalculatorEngine:
                 "calculation_trace": trace,
                 "error_message": str(e),
                 "processing_time_ms": round(elapsed_ms, 2),
-                "timestamp": _utcnow(),
+                "timestamp": utcnow(),
             }
 
     def _calculate_single_chemical_product(
@@ -1988,7 +1977,7 @@ class DirectEmissionsCalculatorEngine:
             },
             "sub_results": sub_results,
             "processing_time_ms": round(elapsed_ms, 2),
-            "timestamp": _utcnow(),
+            "timestamp": utcnow(),
         }
 
         batch_result["provenance_hash"] = self._build_provenance(
@@ -2156,7 +2145,7 @@ class DirectEmissionsCalculatorEngine:
             "checks": checks,
             "warnings": warnings,
             "total_calculations": self.get_calc_count(),
-            "timestamp": _utcnow(),
+            "timestamp": utcnow(),
         }
 
     @classmethod

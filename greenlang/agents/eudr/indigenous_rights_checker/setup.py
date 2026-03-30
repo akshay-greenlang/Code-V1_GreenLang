@@ -57,6 +57,7 @@ import time
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from typing import Any, AsyncIterator, Dict, List, Optional
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -192,21 +193,13 @@ _ENGINE_NAMES: List[str] = [
     "ComplianceReportingEngine",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed for determinism."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # =============================================================================
 # FACADE: IndigenousRightsCheckerService
 # =============================================================================
-
 
 class IndigenousRightsCheckerService:
     """IndigenousRightsCheckerService orchestrates all 7 engines of AGENT-EUDR-021.
@@ -493,7 +486,7 @@ class IndigenousRightsCheckerService:
 
                 # 4. Mark as started
                 self._started = True
-                self._startup_time = _utcnow()
+                self._startup_time = utcnow()
                 duration_ms = (time.monotonic() - start_time) * 1000
 
                 # 5. Log provenance
@@ -859,14 +852,12 @@ class IndigenousRightsCheckerService:
 
         return counts
 
-
 # ---------------------------------------------------------------------------
 # Thread-safe singleton pattern (double-checked locking)
 # ---------------------------------------------------------------------------
 
 _service_lock = threading.Lock()
 _global_service: Optional[IndigenousRightsCheckerService] = None
-
 
 def get_service(
     config: Optional[IndigenousRightsCheckerConfig] = None,
@@ -897,7 +888,6 @@ def get_service(
                 )
     return _global_service
 
-
 def reset_service() -> None:
     """Reset the global service singleton (for testing only).
 
@@ -908,11 +898,9 @@ def reset_service() -> None:
         _global_service = None
         logger.warning("Service singleton reset (testing only)")
 
-
 # ---------------------------------------------------------------------------
 # FastAPI lifespan context manager
 # ---------------------------------------------------------------------------
-
 
 @asynccontextmanager
 async def lifespan(app: Any) -> AsyncIterator[None]:

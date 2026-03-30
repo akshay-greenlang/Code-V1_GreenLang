@@ -47,18 +47,14 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -69,7 +65,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 class _AgentStub:
     def __init__(self, agent_name: str) -> None:
@@ -86,7 +81,6 @@ class _AgentStub:
             }
         return _stub_method
 
-
 def _try_import_data_agent(agent_id: str, module_path: str) -> Any:
     try:
         return importlib.import_module(module_path)
@@ -94,11 +88,9 @@ def _try_import_data_agent(agent_id: str, module_path: str) -> Any:
         logger.debug("DATA agent %s not available, using stub", agent_id)
         return _AgentStub(agent_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DataSourceType(str, Enum):
     EXCEL = "excel"
@@ -110,7 +102,6 @@ class DataSourceType(str, Enum):
     QUESTIONNAIRE = "questionnaire"
     MANUAL = "manual"
 
-
 class ERPSystem(str, Enum):
     SAP = "sap"
     ORACLE = "oracle"
@@ -118,7 +109,6 @@ class ERPSystem(str, Enum):
     DYNAMICS_365 = "dynamics_365"
     NETSUITE = "netsuite"
     CUSTOM = "custom"
-
 
 class DataCategory(str, Enum):
     ENERGY = "energy"
@@ -132,13 +122,11 @@ class DataCategory(str, Enum):
     FINANCIAL = "financial"
     EMISSIONS = "emissions"
 
-
 class QualityLevel(str, Enum):
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
     INSUFFICIENT = "insufficient"
-
 
 # ---------------------------------------------------------------------------
 # DATA Agent Routing Table
@@ -194,11 +182,9 @@ ERP_FIELD_MAPPINGS: Dict[str, Dict[str, List[str]]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class DataBridgeConfig(BaseModel):
     pack_id: str = Field(default="PACK-025")
@@ -212,14 +198,12 @@ class DataBridgeConfig(BaseModel):
     reporting_year: int = Field(default=2025, ge=2020, le=2035)
     timeout_seconds: int = Field(default=300, ge=30)
 
-
 class ERPFieldMapping(BaseModel):
     erp_system: ERPSystem = Field(default=ERPSystem.SAP)
     category: DataCategory = Field(default=DataCategory.ENERGY)
     source_fields: List[str] = Field(default_factory=list)
     target_fields: List[str] = Field(default_factory=list)
     transformation: str = Field(default="direct")
-
 
 class IntakeResult(BaseModel):
     """Data intake processing result."""
@@ -236,7 +220,6 @@ class IntakeResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
     duration_ms: float = Field(default=0.0)
-
 
 class QualityResult(BaseModel):
     """Data quality assessment result."""
@@ -256,7 +239,6 @@ class QualityResult(BaseModel):
     r2z_verification_ready: bool = Field(default=False)
     provenance_hash: str = Field(default="")
 
-
 class ReconciliationResult(BaseModel):
     """Cross-source reconciliation result."""
 
@@ -268,7 +250,6 @@ class ReconciliationResult(BaseModel):
     reconciled_value: float = Field(default=0.0)
     confidence_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
-
 
 class SupplierDataResult(BaseModel):
     """Supplier data collection result."""
@@ -282,11 +263,9 @@ class SupplierDataResult(BaseModel):
     coverage_by_spend_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # DataBridge
 # ---------------------------------------------------------------------------
-
 
 class DataBridge:
     """Bridge to 20 DATA agents for Race to Zero data management.

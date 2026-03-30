@@ -38,25 +38,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -69,11 +63,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class UtilityType(str, Enum):
     """Utility service types."""
@@ -85,7 +77,6 @@ class UtilityType(str, Enum):
     WATER = "water"
     FUEL_OIL = "fuel_oil"
 
-
 class RateType(str, Enum):
     """Utility rate structure types."""
 
@@ -95,7 +86,6 @@ class RateType(str, Enum):
     DEMAND = "demand"
     REAL_TIME = "real_time"
     SEASONAL = "seasonal"
-
 
 class BillFormat(str, Enum):
     """Utility bill input formats."""
@@ -107,7 +97,6 @@ class BillFormat(str, Enum):
     GREEN_BUTTON_CSV = "green_button_csv"
     EDI = "edi"
 
-
 class DemandType(str, Enum):
     """Demand charge types."""
 
@@ -116,7 +105,6 @@ class DemandType(str, Enum):
     MID_PEAK = "mid_peak"
     RATCHET = "ratchet"
     COINCIDENT = "coincident"
-
 
 class BillStatus(str, Enum):
     """Bill processing status."""
@@ -127,11 +115,9 @@ class BillStatus(str, Enum):
     RECONCILED = "reconciled"
     ERROR = "error"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class RateSchedule(BaseModel):
     """Utility rate schedule definition."""
@@ -149,7 +135,6 @@ class RateSchedule(BaseModel):
     tou_periods: List[Dict[str, Any]] = Field(default_factory=list)
     effective_date: str = Field(default="")
     expiration_date: Optional[str] = Field(None)
-
 
 class UtilityBill(BaseModel):
     """Utility bill record."""
@@ -172,7 +157,6 @@ class UtilityBill(BaseModel):
     status: BillStatus = Field(default=BillStatus.IMPORTED)
     format_source: BillFormat = Field(default=BillFormat.MANUAL)
 
-
 class DemandData(BaseModel):
     """Demand register data from utility bills."""
 
@@ -185,7 +169,6 @@ class DemandData(BaseModel):
     power_factor: Optional[float] = Field(None, ge=0.0, le=1.0)
     charge_per_kw: float = Field(default=0.0, ge=0.0)
     total_charge_usd: float = Field(default=0.0, ge=0.0)
-
 
 class UtilityImportResult(BaseModel):
     """Result of utility data import."""
@@ -203,13 +186,11 @@ class UtilityImportResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
     processing_time_ms: float = Field(default=0.0)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # UtilityDataBridge
 # ---------------------------------------------------------------------------
-
 
 class UtilityDataBridge:
     """Utility billing data import service for M&V.

@@ -34,23 +34,18 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "27.0.0"
 _PACK_ID = "PACK-027"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -59,7 +54,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
@@ -67,23 +61,19 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class RAGStatus(str, Enum):
     GREEN = "green"
     AMBER = "amber"
     RED = "red"
-
 
 class TrendDirection(str, Enum):
     IMPROVING = "improving"
     STABLE = "stable"
     DECLINING = "declining"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase_name: str = Field(...)
@@ -97,7 +87,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     dag_node_id: str = Field(default="")
 
-
 class KPI(BaseModel):
     kpi_name: str = Field(default="")
     value: float = Field(default=0.0)
@@ -107,7 +96,6 @@ class KPI(BaseModel):
     trend: str = Field(default="stable")
     yoy_change_pct: float = Field(default=0.0)
     commentary: str = Field(default="")
-
 
 class Initiative(BaseModel):
     initiative_id: str = Field(default="")
@@ -120,7 +108,6 @@ class Initiative(BaseModel):
     investment_usd: float = Field(default=0.0, ge=0.0)
     target_completion: str = Field(default="")
 
-
 class ClimateRisk(BaseModel):
     risk_id: str = Field(default="")
     risk_type: str = Field(default="", description="physical_acute|physical_chronic|transition_policy|transition_technology|transition_market|transition_reputation")
@@ -131,13 +118,11 @@ class ClimateRisk(BaseModel):
     mitigation_status: str = Field(default="", description="mitigated|in_progress|unmitigated")
     owner: str = Field(default="")
 
-
 class RegulatoryStatus(BaseModel):
     framework: str = Field(default="")
     status: str = Field(default="", description="compliant|in_progress|at_risk|not_applicable")
     next_deadline: str = Field(default="")
     action_required: str = Field(default="")
-
 
 class BoardReportingConfig(BaseModel):
     reporting_quarter: str = Field(default="Q1", description="Q1|Q2|Q3|Q4")
@@ -146,7 +131,6 @@ class BoardReportingConfig(BaseModel):
     include_carbon_pricing: bool = Field(default=True)
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
-
 
 class BoardReportingInput(BaseModel):
     config: BoardReportingConfig = Field(default_factory=BoardReportingConfig)
@@ -157,7 +141,6 @@ class BoardReportingInput(BaseModel):
     regulatory_frameworks: List[str] = Field(default_factory=list)
     supplier_engagement_stats: Dict[str, Any] = Field(default_factory=dict)
     carbon_price_usd: float = Field(default=0.0)
-
 
 class BoardReportingResult(BaseModel):
     workflow_id: str = Field(...)
@@ -176,11 +159,9 @@ class BoardReportingResult(BaseModel):
     next_steps: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class BoardReportingWorkflow:
     """
@@ -211,7 +192,7 @@ class BoardReportingWorkflow:
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     async def execute(self, input_data: BoardReportingInput) -> BoardReportingResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         self.config = input_data.config
         self._phase_results = []
         overall_status = WorkflowStatus.RUNNING
@@ -239,7 +220,7 @@ class BoardReportingWorkflow:
                 status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
 
         # Overall RAG
         red_kpis = sum(1 for k in self._kpis if k.rag_status == "red")
@@ -268,13 +249,13 @@ class BoardReportingWorkflow:
         return result
 
     async def _phase_data_refresh(self, input_data: BoardReportingInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {
             "data_sources_refreshed": ["ERP", "Fleet", "Travel", "Procurement", "Energy"],
             "quarter": self.config.reporting_quarter,
             "year": self.config.reporting_year,
         }
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="data_refresh", phase_number=1,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -284,7 +265,7 @@ class BoardReportingWorkflow:
         )
 
     async def _phase_performance_analysis(self, input_data: BoardReportingInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         em = input_data.current_emissions
@@ -341,7 +322,7 @@ class BoardReportingWorkflow:
         outputs["gap_tco2e"] = round(gap, 2)
         outputs["kpi_count"] = len(self._kpis)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="performance_analysis", phase_number=2,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -351,7 +332,7 @@ class BoardReportingWorkflow:
         )
 
     async def _phase_initiative_status(self, input_data: BoardReportingInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         initiatives = input_data.initiatives
@@ -372,7 +353,7 @@ class BoardReportingWorkflow:
             sum(i.achieved_reduction_tco2e for i in initiatives), 2,
         )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="initiative_status", phase_number=3,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -382,7 +363,7 @@ class BoardReportingWorkflow:
         )
 
     async def _phase_risk_assessment(self, input_data: BoardReportingInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         risks = input_data.climate_risks
@@ -396,7 +377,7 @@ class BoardReportingWorkflow:
             sum(r.financial_impact_usd for r in risks), 2,
         )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="risk_assessment", phase_number=4,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -406,7 +387,7 @@ class BoardReportingWorkflow:
         )
 
     async def _phase_compliance_update(self, input_data: BoardReportingInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         framework_status = {
@@ -436,7 +417,7 @@ class BoardReportingWorkflow:
         outputs["in_progress"] = sum(1 for r in self._reg_statuses if r.status == "in_progress")
         outputs["at_risk"] = sum(1 for r in self._reg_statuses if r.status == "at_risk")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="compliance_update", phase_number=5,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -446,7 +427,7 @@ class BoardReportingWorkflow:
         )
 
     async def _phase_report_generation(self, input_data: BoardReportingInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         outputs["report_sections"] = [
@@ -465,7 +446,7 @@ class BoardReportingWorkflow:
         outputs["page_count"] = 10
         outputs["board_ready"] = True
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="report_generation", phase_number=6,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),

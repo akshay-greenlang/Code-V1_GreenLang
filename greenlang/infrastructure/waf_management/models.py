@@ -41,7 +41,8 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 
 
 # ---------------------------------------------------------------------------
@@ -252,7 +253,7 @@ class RuleStatus(str, Enum):
 # ---------------------------------------------------------------------------
 
 
-class RuleCondition(BaseModel):
+class RuleCondition(GreenLangBase):
     """Targeting condition for WAF rule matching.
 
     Conditions define what aspects of a request to inspect and how
@@ -348,7 +349,7 @@ class RuleCondition(BaseModel):
         return v_lower
 
 
-class WAFRuleMetrics(BaseModel):
+class WAFRuleMetrics(GreenLangBase):
     """Metrics associated with a WAF rule.
 
     Tracks rule performance and effectiveness over time.
@@ -361,9 +362,6 @@ class WAFRuleMetrics(BaseModel):
         average_latency_ms: Average evaluation latency in milliseconds.
         last_matched_at: Last time a request matched this rule.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     requests_evaluated: int = Field(
         default=0,
         ge=0,
@@ -395,7 +393,7 @@ class WAFRuleMetrics(BaseModel):
     )
 
 
-class WAFRule(BaseModel):
+class WAFRule(GreenLangBase):
     """WAF rule definition for request filtering.
 
     Represents a complete WAF rule with its conditions, action,
@@ -628,7 +626,7 @@ class WAFRule(BaseModel):
         return self
 
 
-class Attack(BaseModel):
+class Attack(GreenLangBase):
     """Detected attack with source and timing information.
 
     Represents an attack detected by the anomaly detection system,
@@ -769,7 +767,7 @@ class Attack(BaseModel):
         return (self.detected_at - self.started_at).total_seconds()
 
 
-class MitigationAction(BaseModel):
+class MitigationAction(GreenLangBase):
     """Individual mitigation action taken during attack response.
 
     Attributes:
@@ -779,9 +777,6 @@ class MitigationAction(BaseModel):
         success: Whether the action succeeded.
         details: Additional action details.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     action_type: str = Field(
         ...,
         max_length=64,
@@ -806,7 +801,7 @@ class MitigationAction(BaseModel):
     )
 
 
-class MitigationResult(BaseModel):
+class MitigationResult(GreenLangBase):
     """Outcome of attack mitigation efforts.
 
     Tracks all mitigation actions taken and their effectiveness.
@@ -893,7 +888,7 @@ class MitigationResult(BaseModel):
     )
 
 
-class TrafficMetrics(BaseModel):
+class TrafficMetrics(GreenLangBase):
     """Real-time traffic statistics for anomaly detection.
 
     Captures traffic patterns at a point in time for baseline
@@ -915,9 +910,6 @@ class TrafficMetrics(BaseModel):
         user_agent_breakdown: Requests per user agent category.
         status_code_breakdown: Requests per HTTP status code.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     timestamp: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
         description="When these metrics were captured.",
@@ -994,7 +986,7 @@ class TrafficMetrics(BaseModel):
         return v.astimezone(timezone.utc)
 
 
-class ShieldProtection(BaseModel):
+class ShieldProtection(GreenLangBase):
     """AWS Shield Advanced protection configuration.
 
     Attributes:
@@ -1006,9 +998,6 @@ class ShieldProtection(BaseModel):
         proactive_engagement: Whether DRT proactive engagement is enabled.
         created_at: When protection was enabled.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     id: str = Field(
         ...,
         description="Protection ID from AWS Shield.",
@@ -1042,7 +1031,7 @@ class ShieldProtection(BaseModel):
     )
 
 
-class ProtectionGroup(BaseModel):
+class ProtectionGroup(GreenLangBase):
     """AWS Shield protection group configuration.
 
     Attributes:
@@ -1052,9 +1041,6 @@ class ProtectionGroup(BaseModel):
         resource_type: Optional resource type filter.
         members: List of resource ARNs in the group.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     id: str = Field(
         ...,
         description="Protection group ID.",

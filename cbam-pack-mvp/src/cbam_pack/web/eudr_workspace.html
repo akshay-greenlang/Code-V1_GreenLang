@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GreenLang EUDR Workspace</title>
+  <style>
+    :root {
+      --bg-1: #071027;
+      --bg-2: #0f1f3d;
+      --card: rgba(255, 255, 255, 0.06);
+      --card-border: rgba(255, 255, 255, 0.14);
+      --text-primary: #e8efff;
+      --text-secondary: #a8b6d8;
+      --accent: #42d9b5;
+      --accent-2: #66f2cf;
+      --warn: #fbbf24;
+      --danger: #ef4444;
+      --shadow: 0 24px 60px rgba(2, 8, 23, 0.45);
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+      color: var(--text-primary);
+      background:
+        radial-gradient(1200px 700px at 15% -10%, rgba(66, 217, 181, 0.22), transparent 60%),
+        radial-gradient(1000px 600px at 100% 0, rgba(107, 114, 255, 0.25), transparent 65%),
+        linear-gradient(160deg, var(--bg-1), var(--bg-2));
+      min-height: 100vh;
+      padding: 20px 16px;
+    }
+    .container { width: min(1120px, 100%); margin: 0 auto; }
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 14px 16px;
+      border: 1px solid var(--card-border);
+      border-radius: calc(var(--radius) + 6px);
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
+      box-shadow: var(--shadow);
+      margin-bottom: 14px;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brandMark {
+      width: 34px; height: 34px; display: grid; place-items: center;
+      border-radius: 10px;
+      background: rgba(66, 217, 181, 0.12);
+      border: 1px solid rgba(66, 217, 181, 0.25);
+      color: var(--accent-2);
+      font-weight: 800;
+    }
+    .brandText .title { font-weight: 800; }
+    .brandText .sub { color: var(--text-secondary); font-size: 0.86rem; margin-top: 2px; }
+    .nav { display: flex; gap: 8px; flex-wrap: wrap; }
+    .nav a {
+      text-decoration: none; color: var(--text-primary);
+      padding: 8px 10px; border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(12, 20, 40, 0.35);
+      font-size: 0.9rem; font-weight: 700;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .nav a:hover { transform: translateY(-1px); border-color: rgba(102, 242, 207, 0.5); }
+    .hero, .card {
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      background: var(--card);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      margin-bottom: 12px;
+    }
+    .hero h1 { font-size: 1.35rem; margin-bottom: 6px; }
+    .hero p { color: var(--text-secondary); max-width: 95ch; }
+    .section-title { font-size: 1.05rem; margin-bottom: 12px; }
+    .upload-zone {
+      border: 1.5px dashed rgba(102, 242, 207, 0.5);
+      border-radius: 14px;
+      padding: 18px;
+      min-height: 120px;
+      display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: rgba(12, 20, 40, 0.35);
+    }
+    .upload-zone:hover,
+    .upload-zone.dragover { border-color: var(--accent-2); transform: translateY(-1px); background: rgba(66, 217, 181, 0.12); }
+    .upload-zone.has-file { border-color: var(--accent); background: rgba(66, 217, 181, 0.14); }
+    .file-name { margin-top: 10px; color: var(--accent-2); font-size: 0.92rem; word-break: break-word; }
+    input[type="file"] { display: none; }
+    .btn-row { display: flex; gap: 10px; margin-top: 14px; }
+    .btn {
+      border: 0; flex: 1;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #042016;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      padding: 12px 14px;
+      cursor: pointer;
+      transition: opacity 0.15s ease;
+    }
+    .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+    .btn.secondary {
+      background: rgba(12, 20, 40, 0.35);
+      color: var(--text-primary);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+    }
+    .progress-bar { display: none; margin-top: 14px; }
+    .progress-track { height: 8px; border-radius: 999px; background: rgba(255, 255, 255, 0.1); overflow: hidden; }
+    .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width 0.3s ease; border-radius: 999px; }
+    .progress-label { text-align: center; margin-top: 8px; color: var(--text-secondary); font-size: 0.88rem; }
+    .results { display: none; }
+    .results.show { display: block; }
+    .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-bottom: 14px; }
+    .metric-card {
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 14px; text-align: center;
+    }
+    .metric-value { font-size: 1.6rem; font-weight: 800; color: var(--accent-2); }
+    .metric-label { color: var(--text-secondary); font-size: 0.82rem; margin-top: 4px; }
+    .risk-bar-container { margin-bottom: 14px; }
+    .risk-bar-track { display: flex; height: 18px; border-radius: 999px; overflow: hidden; margin-top: 8px; }
+    .risk-segment { transition: width 0.4s ease; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; color: #042016; }
+    .risk-high { background: #ef4444; }
+    .risk-medium { background: #fbbf24; }
+    .risk-low { background: #42d9b5; }
+    .supplier-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    .supplier-table th, .supplier-table td {
+      text-align: left; padding: 10px 12px; font-size: 0.88rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .supplier-table th { color: var(--text-secondary); font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .risk-badge {
+      display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 800;
+    }
+    .risk-badge.high { color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.15); }
+    .risk-badge.medium { color: #fde68a; border: 1px solid rgba(251, 191, 36, 0.4); background: rgba(251, 191, 36, 0.15); }
+    .risk-badge.low { color: #86efac; border: 1px solid rgba(134, 239, 172, 0.4); background: rgba(34, 197, 94, 0.15); }
+    .artifact-list { list-style: none; margin-top: 10px; }
+    .artifact-list li {
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      display: flex; justify-content: space-between; align-items: center; gap: 8px;
+      padding: 10px 12px; margin-bottom: 8px;
+    }
+    .download-link {
+      text-decoration: none;
+      border: 1px solid rgba(66, 217, 181, 0.45);
+      color: #b2fff0; padding: 6px 10px; border-radius: 8px; font-size: 0.84rem;
+      transition: background 0.15s ease;
+    }
+    .download-link:hover { background: rgba(66, 217, 181, 0.15); }
+    .status-chip {
+      display: inline-block; padding: 6px 10px; border-radius: 999px;
+      font-size: 0.82rem; font-weight: 800;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(12, 20, 40, 0.35);
+      color: var(--text-secondary); margin-bottom: 10px;
+    }
+    .status-chip.ok { color: #86efac; border-color: rgba(134, 239, 172, 0.35); background: rgba(34, 197, 94, 0.16); }
+    .status-chip.warn { color: #fde68a; border-color: rgba(253, 230, 138, 0.35); background: rgba(251, 191, 36, 0.16); }
+    .status-chip.fail { color: #fca5a5; border-color: rgba(252, 165, 165, 0.35); background: rgba(239, 68, 68, 0.16); }
+    .muted { color: var(--text-secondary); }
+    .error-box {
+      display: none; margin-top: 12px;
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      border-radius: 12px; padding: 12px;
+      background: rgba(239, 68, 68, 0.1);
+      color: #fca5a5;
+    }
+    .error-box.show { display: block; }
+    .policy-verdict {
+      border: 1px solid var(--card-border); border-radius: 12px;
+      padding: 14px; margin-bottom: 14px;
+      background: rgba(255, 255, 255, 0.03);
+    }
+    .policy-verdict h3 { font-size: 0.95rem; margin-bottom: 8px; }
+    .policy-verdict .verdict-text { color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5; }
+    footer { margin-top: 12px; text-align: center; color: var(--text-secondary); font-size: 0.86rem; }
+    footer a { color: #b2fff0; text-decoration: none; }
+    @media (max-width: 700px) { .metric-grid { grid-template-columns: 1fr 1fr; } .btn-row { flex-direction: column; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brandMark">GL</div>
+        <div class="brandText">
+          <div class="title">EUDR Workspace</div>
+          <div class="sub">Deforestation due-diligence + audit artifacts</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="/apps">Home</a>
+        <a href="/apps/cbam">CBAM</a>
+        <a href="/apps/csrd">CSRD</a>
+        <a href="/apps/vcci">VCCI</a>
+        <a href="/apps/eudr">EUDR</a>
+        <a href="/apps/ghg">GHG</a>
+        <a href="/apps/iso14064">ISO14064</a>
+        <a href="/runs">Runs</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <h1>EU Deforestation Regulation (EUDR) Due Diligence</h1>
+      <p>
+        Upload a supplier due-diligence JSON file and execute the EUDR compliance pipeline.
+        Outputs include risk classification, supplier analysis, due-diligence statement, and audit artifacts
+        (<code>run_manifest.json</code>, <code>checksums.json</code>).
+      </p>
+    </section>
+
+    <section class="card">
+      <h2 class="section-title">Upload Input</h2>
+      <div class="upload-zone" id="inputZone" onclick="document.getElementById('inputFile').click()">
+        <div style="font-size: 1.8rem; margin-bottom: 8px;">📋</div>
+        <div style="font-weight: 700; margin-bottom: 4px;">Supplier Due-Diligence Data (JSON)</div>
+        <div class="muted" style="font-size: 0.9rem;">Drag and drop or click to select</div>
+        <div class="file-name" id="inputFileName"></div>
+        <input type="file" id="inputFile" accept=".json" onchange="handleSelect(this)">
+      </div>
+      <div class="btn-row">
+        <button class="btn" id="runBtn" onclick="runEudr()" disabled>Run EUDR</button>
+        <button class="btn secondary" id="demoBtn" onclick="runDemo()">Demo Run</button>
+      </div>
+      <div class="progress-bar" id="progressBar">
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="progress-label" id="progressLabel">Initializing pipeline...</div>
+      </div>
+      <div id="errorBox" class="error-box"></div>
+    </section>
+
+    <section class="card results" id="resultsCard">
+      <h2 class="section-title">Results</h2>
+      <div id="statusChip" class="status-chip">Waiting</div>
+      <div class="muted" id="modeLine" style="margin-bottom: 14px;"></div>
+
+      <div class="metric-grid" id="metricGrid"></div>
+
+      <div class="risk-bar-container" id="riskBarContainer" style="display:none;">
+        <h3 class="section-title">Supplier Risk Distribution</h3>
+        <div class="risk-bar-track" id="riskBarTrack"></div>
+      </div>
+
+      <div class="policy-verdict" id="policyVerdict" style="display:none;">
+        <h3>Policy Verdict</h3>
+        <div class="verdict-text" id="verdictText"></div>
+      </div>
+
+      <div id="supplierSection" style="display:none;">
+        <h3 class="section-title" style="margin-top: 14px;">Supplier Analysis</h3>
+        <div style="overflow-x: auto;">
+          <table class="supplier-table" id="supplierTable">
+            <thead><tr><th>Supplier</th><th>Country</th><th>Commodity</th><th>Risk</th></tr></thead>
+            <tbody id="supplierTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <h3 class="section-title" style="margin-top: 14px;">Artifacts</h3>
+      <ul class="artifact-list" id="artifactList"></ul>
+      <button class="btn" id="zipBtn" onclick="downloadZip()" style="margin-top: 14px;">Download Bundle (ZIP)</button>
+    </section>
+
+    <footer>
+      <p>GreenLang v2 &middot; EUDR Workspace</p>
+      <p><a href="https://greenlang.in" target="_blank" rel="noopener noreferrer">greenlang.in</a></p>
+    </footer>
+  </div>
+
+  <script>
+    let inputFile = null;
+    let currentRunId = null;
+
+    const zone = document.getElementById('inputZone');
+    zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('dragover'); });
+    zone.addEventListener('dragleave', () => { zone.classList.remove('dragover'); });
+    zone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      zone.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (!file) return;
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      const input = document.getElementById('inputFile');
+      input.files = dt.files;
+      handleSelect(input);
+    });
+
+    function handleSelect(input) {
+      const file = input.files[0];
+      if (!file) return;
+      inputFile = file;
+      zone.classList.add('has-file');
+      document.getElementById('inputFileName').textContent = '\u2713 ' + file.name;
+      document.getElementById('runBtn').disabled = false;
+      hideError();
+    }
+
+    function setStatus(type, text) {
+      const chip = document.getElementById('statusChip');
+      chip.classList.remove('ok', 'warn', 'fail');
+      if (type) chip.classList.add(type);
+      chip.textContent = text;
+    }
+
+    function showError(message) {
+      const el = document.getElementById('errorBox');
+      el.classList.add('show');
+      el.textContent = message;
+    }
+
+    function hideError() {
+      const el = document.getElementById('errorBox');
+      el.classList.remove('show');
+      el.textContent = '';
+    }
+
+    function showProgress(show) {
+      document.getElementById('progressBar').style.display = show ? 'block' : 'none';
+    }
+
+    function setProgress(pct, label) {
+      document.getElementById('progressFill').style.width = pct + '%';
+      document.getElementById('progressLabel').textContent = label;
+    }
+
+    function renderResults(payload) {
+      currentRunId = payload.run_id;
+      document.getElementById('resultsCard').classList.add('show');
+      setStatus(payload.success ? 'ok' : 'fail', payload.success ? 'Completed' : 'Failed');
+      document.getElementById('modeLine').textContent = 'Execution mode: ' + payload.execution_mode + ' \u2022 App: ' + (payload.app_id || 'eudr').toUpperCase();
+
+      const summary = payload.summary || {};
+      const recordsProcessed = summary.records_processed || 0;
+      const highRisk = summary.high_risk_suppliers || 0;
+      const status = summary.status || 'unknown';
+
+      document.getElementById('metricGrid').innerHTML =
+        '<div class="metric-card"><div class="metric-value">' + recordsProcessed + '</div><div class="metric-label">Suppliers Evaluated</div></div>' +
+        '<div class="metric-card"><div class="metric-value">' + highRisk + '</div><div class="metric-label">High Risk Suppliers</div></div>' +
+        '<div class="metric-card"><div class="metric-value">' + (recordsProcessed - highRisk) + '</div><div class="metric-label">Cleared Suppliers</div></div>' +
+        '<div class="metric-card"><div class="metric-value" style="color:' + (status === 'blocked' ? '#fca5a5' : '#86efac') + ';">' + status.toUpperCase() + '</div><div class="metric-label">Pipeline Status</div></div>';
+
+      if (recordsProcessed > 0) {
+        const highPct = Math.round((highRisk / recordsProcessed) * 100);
+        const lowPct = 100 - highPct;
+        document.getElementById('riskBarContainer').style.display = 'block';
+        document.getElementById('riskBarTrack').innerHTML =
+          (highPct > 0 ? '<div class="risk-segment risk-high" style="width:' + highPct + '%;">' + highPct + '%</div>' : '') +
+          (lowPct > 0 ? '<div class="risk-segment risk-low" style="width:' + lowPct + '%;">' + lowPct + '%</div>' : '');
+      }
+
+      const pv = document.getElementById('policyVerdict');
+      if (status === 'blocked') {
+        pv.style.display = 'block';
+        document.getElementById('verdictText').innerHTML =
+          '<span style="color:#fca5a5;font-weight:800;">BLOCKED</span> &mdash; Policy gate has blocked EUDR export. ' +
+          highRisk + ' high-risk supplier(s) detected. Review supplier data and resubmit after remediation.';
+      } else if (highRisk > 0) {
+        pv.style.display = 'block';
+        document.getElementById('verdictText').innerHTML =
+          '<span style="color:#fde68a;font-weight:800;">WARNING</span> &mdash; ' +
+          highRisk + ' supplier(s) flagged as high risk. Due-diligence statement generated but manual review recommended.';
+      } else {
+        pv.style.display = 'block';
+        document.getElementById('verdictText').innerHTML =
+          '<span style="color:#86efac;font-weight:800;">PASS</span> &mdash; All suppliers cleared. Due-diligence statement ready for submission.';
+      }
+
+      if (payload.input_suppliers && payload.input_suppliers.length > 0) {
+        renderSupplierTable(payload.input_suppliers);
+      } else if (summary.records_processed > 0) {
+        renderDefaultSupplierTable(summary);
+      }
+
+      const artifacts = payload.artifacts || [];
+      document.getElementById('artifactList').innerHTML = artifacts.map(function(a) {
+        return '<li><span>' + a + '</span>' +
+          '<a class="download-link" href="/api/v1/runs/' + payload.run_id + '/artifacts/' + encodeURIComponent(a) + '">Download</a></li>';
+      }).join('');
+
+      if (payload.warnings && payload.warnings.length > 0) {
+        document.getElementById('modeLine').textContent += ' \u2022 ' + payload.warnings.length + ' warning(s)';
+      }
+    }
+
+    function renderSupplierTable(suppliers) {
+      document.getElementById('supplierSection').style.display = 'block';
+      document.getElementById('supplierTableBody').innerHTML = suppliers.map(function(s) {
+        var risk = (s.risk || 'unknown').toLowerCase();
+        return '<tr><td>' + (s.name || s.id || 'N/A') + '</td><td>' + (s.country || 'N/A') + '</td><td>' +
+          (s.commodity || 'N/A') + '</td><td><span class="risk-badge ' + risk + '">' + risk.toUpperCase() + '</span></td></tr>';
+      }).join('');
+    }
+
+    function renderDefaultSupplierTable(summary) {
+      document.getElementById('supplierSection').style.display = 'block';
+      var rows = '';
+      var high = summary.high_risk_suppliers || 0;
+      var total = summary.records_processed || 0;
+      for (var i = 0; i < Math.min(total, 10); i++) {
+        var risk = i < high ? 'high' : 'low';
+        rows += '<tr><td>Supplier ' + (i + 1) + '</td><td>-</td><td>-</td><td><span class="risk-badge ' + risk + '">' + risk.toUpperCase() + '</span></td></tr>';
+      }
+      if (total > 10) {
+        rows += '<tr><td colspan="4" class="muted">...and ' + (total - 10) + ' more</td></tr>';
+      }
+      document.getElementById('supplierTableBody').innerHTML = rows;
+    }
+
+    async function runEudr() {
+      if (!inputFile) return;
+      document.getElementById('runBtn').disabled = true;
+      document.getElementById('demoBtn').disabled = true;
+      hideError();
+      setStatus(null, 'Running...');
+      showProgress(true);
+
+      var stages = ['Validating input...', 'Classifying suppliers...', 'Evaluating risk...', 'Checking policy gates...', 'Generating due-diligence statement...', 'Building audit bundle...'];
+      var progress = 0;
+      var stageIdx = 0;
+      var interval = setInterval(function() {
+        progress += 15;
+        if (progress > 90) progress = 90;
+        stageIdx = Math.min(Math.floor(progress / 16), stages.length - 1);
+        setProgress(progress, stages[stageIdx]);
+      }, 400);
+
+      var form = new FormData();
+      form.append('input_file', inputFile);
+
+      try {
+        var response = await fetch('/api/v1/apps/eudr/run', { method: 'POST', body: form });
+        var payload = await response.json();
+        clearInterval(interval);
+        setProgress(100, 'Complete');
+        if (!response.ok) {
+          throw new Error(payload && payload.error ? payload.error : ('HTTP ' + response.status));
+        }
+        setTimeout(function() { showProgress(false); renderResults(payload); }, 400);
+      } catch (e) {
+        clearInterval(interval);
+        showProgress(false);
+        setStatus('fail', 'Failed');
+        showError('EUDR run failed: ' + (e && e.message ? e.message : String(e)));
+      } finally {
+        document.getElementById('runBtn').disabled = false;
+        document.getElementById('demoBtn').disabled = false;
+      }
+    }
+
+    async function runDemo() {
+      document.getElementById('runBtn').disabled = true;
+      document.getElementById('demoBtn').disabled = true;
+      hideError();
+      setStatus(null, 'Running demo...');
+      showProgress(true);
+      setProgress(30, 'Executing demo pipeline...');
+
+      try {
+        var response = await fetch('/api/v1/apps/eudr/demo-run', { method: 'POST' });
+        var payload = await response.json();
+        setProgress(100, 'Complete');
+        if (!response.ok) {
+          throw new Error(payload && payload.error ? payload.error : ('HTTP ' + response.status));
+        }
+        setTimeout(function() { showProgress(false); renderResults(payload); }, 400);
+      } catch (e) {
+        showProgress(false);
+        setStatus('fail', 'Failed');
+        showError('EUDR demo failed: ' + (e && e.message ? e.message : String(e)));
+      } finally {
+        document.getElementById('runBtn').disabled = false;
+        document.getElementById('demoBtn').disabled = false;
+      }
+    }
+
+    function downloadZip() {
+      if (!currentRunId) return;
+      window.location.href = '/api/v1/runs/' + currentRunId + '/bundle';
+    }
+  </script>
+</body>
+</html>

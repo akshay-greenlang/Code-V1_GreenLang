@@ -45,19 +45,13 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # =============================================================================
 # Utility Helpers
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute a SHA-256 hash of arbitrary data."""
@@ -65,11 +59,9 @@ def _hash_data(data: Any) -> str:
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # Agent Stub
 # =============================================================================
-
 
 class _AgentStub:
     """Deferred agent loader for lazy initialization."""
@@ -86,6 +78,7 @@ class _AgentStub:
             return self._instance
         try:
             import importlib
+
             mod = importlib.import_module(self.module_path)
             cls = getattr(mod, self.class_name)
             self._instance = cls()
@@ -102,11 +95,9 @@ class _AgentStub:
         """Whether the agent has been loaded."""
         return self._instance is not None
 
-
 # =============================================================================
 # Enums
 # =============================================================================
-
 
 class BenchmarkType(str, Enum):
     """EU Climate Benchmark types."""
@@ -114,7 +105,6 @@ class BenchmarkType(str, Enum):
     PAB = "pab"
     CUSTOM = "custom"
     NONE = "none"
-
 
 class BenchmarkProvider(str, Enum):
     """Supported benchmark data providers."""
@@ -126,14 +116,12 @@ class BenchmarkProvider(str, Enum):
     CUSTOM = "custom"
     INTERNAL = "internal"
 
-
 class DecarbonizationPathway(str, Enum):
     """Decarbonization pathway type."""
     LINEAR = "linear"
     EXPONENTIAL = "exponential"
     SECTORAL = "sectoral"
     CUSTOM = "custom"
-
 
 class AlignmentStatus(str, Enum):
     """Benchmark alignment status."""
@@ -142,7 +130,6 @@ class AlignmentStatus(str, Enum):
     NOT_ALIGNED = "not_aligned"
     INSUFFICIENT_DATA = "insufficient_data"
 
-
 class RebalanceFrequency(str, Enum):
     """Index rebalance frequency."""
     QUARTERLY = "quarterly"
@@ -150,11 +137,9 @@ class RebalanceFrequency(str, Enum):
     ANNUAL = "annual"
     CUSTOM = "custom"
 
-
 # =============================================================================
 # Data Models
 # =============================================================================
-
 
 class BenchmarkDataConfig(BaseModel):
     """Configuration for the Benchmark Data Bridge."""
@@ -218,7 +203,6 @@ class BenchmarkDataConfig(BaseModel):
             )
         return v
 
-
 class BenchmarkConstituent(BaseModel):
     """A single constituent of a benchmark index."""
     isin: str = Field(default="", description="Constituent ISIN")
@@ -245,7 +229,6 @@ class BenchmarkConstituent(BaseModel):
     is_excluded: bool = Field(
         default=False, description="Whether constituent is BMR-excluded"
     )
-
 
 class BenchmarkIndex(BaseModel):
     """Complete benchmark index composition and metadata."""
@@ -281,7 +264,6 @@ class BenchmarkIndex(BaseModel):
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
     loaded_at: str = Field(default="", description="Load timestamp")
 
-
 class UniverseData(BaseModel):
     """Investable universe carbon intensity data for benchmark comparison."""
     universe_name: str = Field(default="", description="Universe name")
@@ -312,7 +294,6 @@ class UniverseData(BaseModel):
         default=0.0, description="PAB carbon intensity threshold"
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class BenchmarkPerformance(BaseModel):
     """Performance comparison between portfolio and benchmark."""
@@ -382,11 +363,9 @@ class BenchmarkPerformance(BaseModel):
     calculated_at: str = Field(default="", description="Calculation timestamp")
     execution_time_ms: float = Field(default=0.0, description="Execution time")
 
-
 # =============================================================================
 # BMR Exclusion Criteria
 # =============================================================================
-
 
 CTB_EXCLUSIONS: Dict[str, str] = {
     "controversial_weapons": "Companies involved in controversial weapons",
@@ -403,7 +382,6 @@ PAB_EXCLUSIONS: Dict[str, str] = {
     "electricity_50pct": "Companies with 50%+ GHG-intensive electricity generation",
 }
 
-
 # Decarbonization trajectory constants
 DECARBONIZATION_CONSTANTS: Dict[str, Dict[str, float]] = {
     "ctb": {
@@ -418,11 +396,9 @@ DECARBONIZATION_CONSTANTS: Dict[str, Dict[str, float]] = {
     },
 }
 
-
 # =============================================================================
 # Benchmark Data Bridge
 # =============================================================================
-
 
 class BenchmarkDataBridge:
     """Bridge for CTB/PAB benchmark data intake and alignment analysis.
@@ -491,7 +467,7 @@ class BenchmarkDataBridge:
             BenchmarkIndex with full composition and metadata.
         """
         start_time = time.time()
-        ref_date = reference_date or _utcnow().strftime("%Y-%m-%d")
+        ref_date = reference_date or utcnow().strftime("%Y-%m-%d")
 
         parsed: List[BenchmarkConstituent] = []
         sector_weights: Dict[str, float] = {}
@@ -527,7 +503,7 @@ class BenchmarkDataBridge:
             excluded_count=excluded_count,
             sector_breakdown=sector_weights,
             country_breakdown=country_weights,
-            loaded_at=_utcnow().isoformat(),
+            loaded_at=utcnow().isoformat(),
         )
 
         if self.config.enable_provenance:
@@ -564,7 +540,7 @@ class BenchmarkDataBridge:
         Returns:
             UniverseData with intensity statistics and thresholds.
         """
-        ref_date = reference_date or _utcnow().strftime("%Y-%m-%d")
+        ref_date = reference_date or utcnow().strftime("%Y-%m-%d")
         intensities: List[float] = []
         sector_intensities: Dict[str, List[float]] = {}
 
@@ -690,7 +666,7 @@ class BenchmarkDataBridge:
         perf = BenchmarkPerformance(
             portfolio_name="Article 9 Portfolio",
             benchmark_name=index.index_name,
-            reference_date=_utcnow().strftime("%Y-%m-%d"),
+            reference_date=utcnow().strftime("%Y-%m-%d"),
             period_start=period_start,
             period_end=period_end,
             portfolio_carbon_intensity=portfolio_ci,
@@ -705,7 +681,7 @@ class BenchmarkDataBridge:
             excluded_holdings=excluded_holdings,
             errors=errors,
             warnings=warnings,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             execution_time_ms=elapsed_ms,
         )
 
@@ -735,7 +711,7 @@ class BenchmarkDataBridge:
         Returns:
             Trajectory data with yearly targets and current status.
         """
-        year = current_year or _utcnow().year
+        year = current_year or utcnow().year
         reduction_rate = self.config.annual_reduction_pct / 100.0
         years_elapsed = year - self.config.base_year
 

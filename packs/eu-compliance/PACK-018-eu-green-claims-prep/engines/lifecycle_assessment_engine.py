@@ -82,25 +82,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -120,7 +114,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely.
 
@@ -134,7 +127,6 @@ def _decimal(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
 ) -> Decimal:
@@ -142,7 +134,6 @@ def _safe_divide(
     if denominator == Decimal("0"):
         return default
     return numerator / denominator
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value to the specified number of decimal places.
@@ -159,18 +150,15 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class LifecyclePhase(str, Enum):
     """Product lifecycle phases per PEF/ISO 14040 framework.
@@ -184,7 +172,6 @@ class LifecyclePhase(str, Enum):
     DISTRIBUTION = "distribution"
     USE = "use"
     END_OF_LIFE = "end_of_life"
-
 
 class ImpactCategory(str, Enum):
     """PEF impact categories per EU JRC EF reference package 3.1.
@@ -209,7 +196,6 @@ class ImpactCategory(str, Enum):
     PARTICULATE_MATTER = "particulate_matter"
     IONISING_RADIATION = "ionising_radiation"
 
-
 class DataQualityRating(str, Enum):
     """Data quality rating per PEF Data Quality Requirements.
 
@@ -222,7 +208,6 @@ class DataQualityRating(str, Enum):
     FAIR = "fair"
     POOR = "poor"
 
-
 class SystemBoundaryType(str, Enum):
     """System boundary types for LCA scope definition.
 
@@ -234,11 +219,9 @@ class SystemBoundaryType(str, Enum):
     GATE_TO_GATE = "gate_to_gate"
     GATE_TO_GRAVE = "gate_to_grave"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # Official EU JRC PEF weighting factors (EF 3.1).
 PEF_WEIGHTING_FACTORS: Dict[str, Decimal] = {
@@ -309,11 +292,9 @@ BOUNDARY_REQUIRED_PHASES: Dict[str, List[str]] = {
 MINIMUM_DQR_THRESHOLD: Decimal = Decimal("70")
 DEFAULT_HOTSPOT_COUNT: int = 5
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class LifecycleImpact(BaseModel):
     """A single lifecycle impact data point."""
@@ -328,7 +309,6 @@ class LifecycleImpact(BaseModel):
     source: str = Field(default="", description="Data source reference", max_length=500)
     is_primary_data: bool = Field(default=False, description="Whether primary data")
     normalised_value: Optional[Decimal] = Field(default=None, description="Normalised value")
-
 
 class LCAResult(BaseModel):
     """Result of a lifecycle assessment calculation."""
@@ -348,10 +328,9 @@ class LCAResult(BaseModel):
     primary_data_ratio: Decimal = Field(default=Decimal("0.00"), description="Primary data pct")
     hotspots: List[Dict[str, str]] = Field(default_factory=list, description="Top hotspots")
     engine_version: str = Field(default=_MODULE_VERSION, description="Engine version")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Timestamp UTC")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Timestamp UTC")
     processing_time_ms: float = Field(default=0.0, description="Processing time ms")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class DataQualityResult(BaseModel):
     """Result of a data quality assessment."""
@@ -368,10 +347,9 @@ class DataQualityResult(BaseModel):
     issues: List[str] = Field(default_factory=list, description="Issues")
     recommendations: List[str] = Field(default_factory=list, description="Recommendations")
     engine_version: str = Field(default=_MODULE_VERSION, description="Engine version")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Timestamp UTC")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Timestamp UTC")
     processing_time_ms: float = Field(default=0.0, description="Processing time ms")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class SystemBoundaryResult(BaseModel):
     """Result of a system boundary validation."""
@@ -387,15 +365,13 @@ class SystemBoundaryResult(BaseModel):
     issues: List[str] = Field(default_factory=list, description="Issues")
     recommendations: List[str] = Field(default_factory=list, description="Recommendations")
     engine_version: str = Field(default=_MODULE_VERSION, description="Engine version")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Timestamp UTC")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Timestamp UTC")
     processing_time_ms: float = Field(default=0.0, description="Processing time ms")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class LifecycleAssessmentEngine:
     """Lifecycle assessment engine per EU Green Claims Directive Art. 3(1).

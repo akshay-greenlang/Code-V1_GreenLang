@@ -43,25 +43,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -74,11 +68,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class WeatherSource(str, Enum):
     """Weather data sources."""
@@ -89,20 +81,17 @@ class WeatherSource(str, Enum):
     TMY3 = "tmy3"
     LOCAL_STATION = "local_station"
 
-
 class TemperatureUnit(str, Enum):
     """Temperature unit systems."""
 
     FAHRENHEIT = "fahrenheit"
     CELSIUS = "celsius"
 
-
 class DegreeDayType(str, Enum):
     """Heating or cooling degree day type."""
 
     HDD = "hdd"
     CDD = "cdd"
-
 
 class WeatherQuality(str, Enum):
     """Weather data quality levels."""
@@ -113,7 +102,6 @@ class WeatherQuality(str, Enum):
     POOR = "poor"
     INSUFFICIENT = "insufficient"
 
-
 class NormalizationMethod(str, Enum):
     """Weather normalization methods."""
 
@@ -122,11 +110,9 @@ class NormalizationMethod(str, Enum):
     ACTUAL = "actual"
     CUSTOM = "custom"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class WeatherStation(BaseModel):
     """Weather station metadata."""
@@ -142,7 +128,6 @@ class WeatherStation(BaseModel):
     quality: WeatherQuality = Field(default=WeatherQuality.GOOD)
     wmo_id: Optional[str] = Field(None)
 
-
 class DegreeDayRecord(BaseModel):
     """Daily degree day record."""
 
@@ -152,7 +137,6 @@ class DegreeDayRecord(BaseModel):
     avg_temp_f: float = Field(default=0.0)
     balance_point_heating_f: float = Field(default=65.0)
     balance_point_cooling_f: float = Field(default=65.0)
-
 
 class WeatherDataResult(BaseModel):
     """Weather data retrieval result."""
@@ -171,8 +155,7 @@ class WeatherDataResult(BaseModel):
     balance_point_cooling_f: float = Field(default=65.0)
     provenance_hash: str = Field(default="")
     processing_time_ms: float = Field(default=0.0)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class TMYData(BaseModel):
     """Typical Meteorological Year data for normalization."""
@@ -186,11 +169,9 @@ class TMYData(BaseModel):
     monthly_cdd: Dict[str, float] = Field(default_factory=dict)
     avg_annual_temp_f: float = Field(default=0.0)
 
-
 # ---------------------------------------------------------------------------
 # WeatherServiceBridge
 # ---------------------------------------------------------------------------
-
 
 class WeatherServiceBridge:
     """Weather data service for M&V baseline normalization.

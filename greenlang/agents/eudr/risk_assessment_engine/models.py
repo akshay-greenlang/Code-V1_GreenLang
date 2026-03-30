@@ -22,7 +22,8 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase
 
 
 # ---------------------------------------------------------------------------
@@ -178,7 +179,7 @@ VERSION = "1.0.0"
 # ---------------------------------------------------------------------------
 
 
-class RiskFactorInput(BaseModel):
+class RiskFactorInput(GreenLangBase):
     """A single risk factor input from an upstream EUDR agent."""
 
     source_agent: SourceAgent
@@ -192,7 +193,7 @@ class RiskFactorInput(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class DimensionScore(BaseModel):
+class DimensionScore(GreenLangBase):
     """Weighted score for a single risk dimension."""
 
     dimension: RiskDimension
@@ -204,7 +205,7 @@ class DimensionScore(BaseModel):
     explanation: str = ""
 
 
-class CompositeRiskScore(BaseModel):
+class CompositeRiskScore(GreenLangBase):
     """Aggregated composite risk score across all dimensions."""
 
     overall_score: Decimal = Field(
@@ -223,7 +224,7 @@ class CompositeRiskScore(BaseModel):
     provenance_hash: str = ""
 
 
-class Article10CriterionEvaluation(BaseModel):
+class Article10CriterionEvaluation(GreenLangBase):
     """Evaluation result for a single Article 10(2) criterion."""
 
     criterion: Article10Criterion
@@ -236,7 +237,7 @@ class Article10CriterionEvaluation(BaseModel):
     data_sources: List[str] = Field(default_factory=list)
 
 
-class Article10CriteriaResult(BaseModel):
+class Article10CriteriaResult(GreenLangBase):
     """Aggregated Article 10(2) criteria evaluation results."""
 
     evaluations: List[Article10CriterionEvaluation] = Field(default_factory=list)
@@ -254,7 +255,7 @@ class Article10CriteriaResult(BaseModel):
     provenance_hash: str = ""
 
 
-class CountryBenchmark(BaseModel):
+class CountryBenchmark(GreenLangBase):
     """Country benchmarking data per Article 29(2)."""
 
     country_code: str = Field(..., min_length=2, max_length=3)
@@ -281,7 +282,7 @@ class CountryBenchmark(BaseModel):
             object.__setattr__(self, "level", self.benchmark_level)
 
 
-class SimplifiedDDEligibility(BaseModel):
+class SimplifiedDDEligibility(GreenLangBase):
     """Article 13 simplified due diligence eligibility assessment."""
 
     is_eligible: bool = False
@@ -306,7 +307,7 @@ class SimplifiedDDEligibility(BaseModel):
         return self.is_eligible
 
 
-class RiskTrendPoint(BaseModel):
+class RiskTrendPoint(GreenLangBase):
     """A single data point in a risk trend time series."""
 
     # Engine-produced fields
@@ -326,7 +327,7 @@ class RiskTrendPoint(BaseModel):
     model_config = {"extra": "ignore"}
 
 
-class RiskTrendAnalysis(BaseModel):
+class RiskTrendAnalysis(GreenLangBase):
     """Risk trend analysis over a configurable time window."""
 
     operator_id: str
@@ -351,7 +352,7 @@ class RiskTrendAnalysis(BaseModel):
     model_config = {"extra": "ignore"}
 
 
-class RiskOverride(BaseModel):
+class RiskOverride(GreenLangBase):
     """Manual risk score override with audit trail."""
 
     override_id: str
@@ -367,7 +368,7 @@ class RiskOverride(BaseModel):
     valid_until: Optional[datetime] = None
 
 
-class RiskAssessmentReport(BaseModel):
+class RiskAssessmentReport(GreenLangBase):
     """Complete risk assessment report for DDS submission."""
 
     report_id: str
@@ -404,7 +405,7 @@ class RiskAssessmentReport(BaseModel):
                 object.__setattr__(self, "commodity", self.operation.commodity.value)
 
 
-class RiskAssessmentOperation(BaseModel):
+class RiskAssessmentOperation(GreenLangBase):
     """Top-level risk assessment operation tracking."""
 
     operation_id: str
@@ -423,7 +424,7 @@ class RiskAssessmentOperation(BaseModel):
     provenance_hash: str = ""
 
 
-class RiskAssessmentRequest(BaseModel):
+class RiskAssessmentRequest(GreenLangBase):
     """Request to perform a risk assessment for an operator-commodity pair."""
 
     operator_id: str
@@ -437,13 +438,13 @@ class RiskAssessmentRequest(BaseModel):
     override_justification: Optional[str] = None
 
 
-class BatchRiskAssessmentRequest(BaseModel):
+class BatchRiskAssessmentRequest(GreenLangBase):
     """Batch request for multiple risk assessments."""
 
     assessments: List[RiskAssessmentRequest] = Field(default_factory=list)
 
 
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Health check response for the Risk Assessment Engine."""
 
     status: str = "healthy"

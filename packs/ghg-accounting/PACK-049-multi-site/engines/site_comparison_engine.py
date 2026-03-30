@@ -62,26 +62,20 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 _ZERO = Decimal("0")
 _ONE = Decimal("1")
@@ -90,18 +84,15 @@ _HUNDRED = Decimal("100")
 _DP6 = Decimal("0.000001")
 _DP10 = Decimal("0.0000000001")
 
-
 def _safe_divide(numerator: Decimal, denominator: Decimal) -> Decimal:
     """Divide with zero-guard."""
     if denominator == _ZERO:
         return _ZERO
     return (numerator / denominator).quantize(_DP6, rounding=ROUND_HALF_UP)
 
-
 def _quantise(value: Decimal, precision: Decimal = _DP6) -> Decimal:
     """Quantise a Decimal to the requested precision."""
     return value.quantize(precision, rounding=ROUND_HALF_UP)
-
 
 def _decimal_sqrt(value: Decimal) -> Decimal:
     """
@@ -118,11 +109,9 @@ def _decimal_sqrt(value: Decimal) -> Decimal:
     result = value.sqrt()
     return _quantise(result, _DP6)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class KPIType(str, Enum):
     """Supported key performance indicator types."""
@@ -138,17 +127,14 @@ class KPIType(str, Enum):
     SCOPE2_PER_M2 = "SCOPE2_PER_M2"
     CUSTOM = "CUSTOM"
 
-
 class RankDirection(str, Enum):
     """Direction of ranking: ASCENDING means lower is better."""
     ASCENDING = "ASCENDING"
     DESCENDING = "DESCENDING"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class SiteKPI(BaseModel):
     """A single KPI observation for a site."""
@@ -171,7 +157,6 @@ class SiteKPI(BaseModel):
         if self.value == _ZERO and self.denominator != _ZERO:
             self.value = _safe_divide(self.numerator, self.denominator)
 
-
 class PeerGroup(BaseModel):
     """A group of comparable sites for benchmarking."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -185,7 +170,6 @@ class PeerGroup(BaseModel):
     member_site_ids: List[str] = Field(
         default_factory=list, description="Site IDs in this peer group"
     )
-
 
 class SiteStatistics(BaseModel):
     """Descriptive statistics for a set of KPI values."""
@@ -202,7 +186,6 @@ class SiteStatistics(BaseModel):
     max_val: Decimal = Field(_ZERO, description="Maximum value")
     count: int = Field(0, description="Number of observations")
 
-
 class RankingResult(BaseModel):
     """Ranking of a single site within its peer group."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -215,7 +198,6 @@ class RankingResult(BaseModel):
     peer_group_mean: Decimal = Field(_ZERO, description="Peer group mean")
     peer_group_median: Decimal = Field(_ZERO, description="Peer group median")
     gap_to_best: Decimal = Field(_ZERO, description="Gap to best performer (value - min)")
-
 
 class ComparisonResult(BaseModel):
     """Full comparison result for a peer group and KPI type."""
@@ -236,7 +218,7 @@ class ComparisonResult(BaseModel):
     improvement_potential: Decimal = Field(
         _ZERO, description="Total improvement potential if all sites matched best (tCO2e)"
     )
-    created_at: datetime = Field(default_factory=_utcnow, description="Timestamp")
+    created_at: datetime = Field(default_factory=utcnow, description="Timestamp")
     provenance_hash: str = Field("", description="SHA-256 provenance hash")
 
     def model_post_init(self, __context: Any) -> None:
@@ -250,7 +232,6 @@ class ComparisonResult(BaseModel):
             )
             self.provenance_hash = _compute_hash(payload)
 
-
 class TrendPoint(BaseModel):
     """A single data point in a trend series."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -258,7 +239,6 @@ class TrendPoint(BaseModel):
     period: str = Field(..., description="Period label (e.g. '2023', 'Q1-2025')")
     value: Decimal = Field(..., description="KPI value for the period")
     rank: Optional[int] = Field(None, description="Rank within peer group for the period")
-
 
 class SiteTrend(BaseModel):
     """Trend data for a site across multiple periods."""
@@ -277,11 +257,9 @@ class SiteTrend(BaseModel):
             payload = f"{self.site_id}|{self.kpi_type}|{len(self.data_points)}|{self.change_pct}"
             self.provenance_hash = _compute_hash(payload)
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class SiteComparisonEngine:
     """
@@ -1052,7 +1030,6 @@ class SiteComparisonEngine:
         numerator = emissions.get("custom_numerator", emissions.get("total", _ZERO))
         denominator = denominators.get("custom_denominator", denominators.get("m2", _ZERO))
         return numerator, denominator, "custom"
-
 
 # ---------------------------------------------------------------------------
 # Pydantic v2 model rebuild (required with `from __future__ import annotations`)

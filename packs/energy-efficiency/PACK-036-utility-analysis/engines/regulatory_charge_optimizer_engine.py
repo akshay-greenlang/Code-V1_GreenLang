@@ -67,25 +67,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -112,7 +106,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -128,7 +121,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -149,7 +141,6 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100).
 
@@ -161,7 +152,6 @@ def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
         Percentage as Decimal; Decimal("0") when whole is zero.
     """
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* and return a float.
@@ -178,26 +168,21 @@ def _round_val(value: Decimal, places: int = 6) -> float:
     quantizer = Decimal(10) ** -places
     return float(value.quantize(quantizer, rounding=ROUND_HALF_UP))
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: float) -> float:
     """Round to 4 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ChargeType(str, Enum):
     """Non-commodity charge types found on electricity and gas bills.
@@ -219,7 +204,6 @@ class ChargeType(str, Enum):
     METER = "meter"
     STRANDED_COST = "stranded_cost"
     PUBLIC_PURPOSE = "public_purpose"
-
 
 class Jurisdiction(str, Enum):
     """Electricity market jurisdictions with distinct regulatory charge regimes.
@@ -244,7 +228,6 @@ class Jurisdiction(str, Enum):
     US_ISO_NE = "us_iso_ne"
     US_SPP = "us_spp"
 
-
 class ExemptionType(str, Enum):
     """Regulatory charge exemption or reduction categories.
 
@@ -260,7 +243,6 @@ class ExemptionType(str, Enum):
     REDUCED_NETWORK = "reduced_network"
     INTERRUPTIBLE_LOAD = "interruptible_load"
 
-
 class VoltageLevel(str, Enum):
     """Grid connection voltage levels.
 
@@ -272,7 +254,6 @@ class VoltageLevel(str, Enum):
     HIGH_VOLTAGE = "high_voltage"
     EXTRA_HIGH_VOLTAGE = "extra_high_voltage"
 
-
 class OptimizationAction(str, Enum):
     """Categories of actions to reduce non-commodity charges."""
     VOLTAGE_UPGRADE = "voltage_upgrade"
@@ -283,7 +264,6 @@ class OptimizationAction(str, Enum):
     DEMAND_SHIFTING = "demand_shifting"
     STORAGE_ARBITRAGE = "storage_arbitrage"
     CONTRACT_RENEGOTIATION = "contract_renegotiation"
-
 
 class ChargeMethodology(str, Enum):
     """Methodology by which a regulatory charge is computed.
@@ -301,7 +281,6 @@ class ChargeMethodology(str, Enum):
     FIXED = "fixed"
     COINCIDENT_PEAK = "coincident_peak"
     POSTAGE_STAMP = "postage_stamp"
-
 
 # ---------------------------------------------------------------------------
 # Reference Data Constants
@@ -544,11 +523,9 @@ PF_PENALTY_THRESHOLDS: Dict[str, float] = {
     "default": 0.90,
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input / Output
 # ---------------------------------------------------------------------------
-
 
 class RegulatoryCharge(BaseModel):
     """A single non-commodity charge line item on a utility bill."""
@@ -577,7 +554,6 @@ class RegulatoryCharge(BaseModel):
         True, description="Whether this charge can be reduced via action"
     )
 
-
 class ChargeBreakdown(BaseModel):
     """Full decomposition of a utility bill into commodity and non-commodity."""
 
@@ -602,10 +578,9 @@ class ChargeBreakdown(BaseModel):
         0.0, ge=0, le=100, description="Tax share of total bill"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     provenance_hash: str = Field("", description="SHA-256 provenance hash")
-
 
 class ExemptionAssessment(BaseModel):
     """Assessment of a facility's eligibility for a regulatory charge exemption."""
@@ -636,7 +611,6 @@ class ExemptionAssessment(BaseModel):
         None, description="Application deadline if applicable"
     )
 
-
 class CapacityOptimization(BaseModel):
     """Result of contracted capacity vs actual demand analysis."""
 
@@ -659,7 +633,6 @@ class CapacityOptimization(BaseModel):
         "low", description="Risk level for exceeding capacity: low/medium/high"
     )
     recommendation: str = Field("", description="Action recommendation")
-
 
 class PowerFactorOptimization(BaseModel):
     """Power factor correction analysis and capacitor sizing."""
@@ -688,7 +661,6 @@ class PowerFactorOptimization(BaseModel):
     payback_months: float = Field(
         ..., ge=0, description="Simple payback in months"
     )
-
 
 class VoltageLevelAnalysis(BaseModel):
     """Analysis of voltage level migration economics."""
@@ -719,7 +691,6 @@ class VoltageLevelAnalysis(BaseModel):
         description="Feasibility rating: feasible / marginal / infeasible",
     )
 
-
 class GridChargeProjection(BaseModel):
     """Projected non-commodity charges for a future year."""
 
@@ -738,7 +709,6 @@ class GridChargeProjection(BaseModel):
         default_factory=list,
         description="Key regulatory drivers affecting charges",
     )
-
 
 class SelfGenerationImpact(BaseModel):
     """Impact of on-site generation on non-commodity charges."""
@@ -761,7 +731,6 @@ class SelfGenerationImpact(BaseModel):
     backup_charges_eur: float = Field(
         ..., ge=0, description="Additional backup capacity charges"
     )
-
 
 class ChargeOptimizationResult(BaseModel):
     """Comprehensive result of non-commodity charge optimisation for a facility."""
@@ -799,13 +768,12 @@ class ChargeOptimizationResult(BaseModel):
         default_factory=list, description="Multi-year charge projections"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     processing_time_ms: float = Field(
         0.0, ge=0, description="Engine processing time in ms"
     )
     provenance_hash: str = Field("", description="SHA-256 provenance hash")
-
 
 # ---------------------------------------------------------------------------
 # Model Rebuild (required with `from __future__ import annotations`)
@@ -821,11 +789,9 @@ GridChargeProjection.model_rebuild()
 SelfGenerationImpact.model_rebuild()
 ChargeOptimizationResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class RegulatoryChargeOptimizerEngine:
     """Engine for analysing and optimising non-commodity utility charges.
@@ -1516,7 +1482,7 @@ class RegulatoryChargeOptimizerEngine:
         current_total = sum(
             _decimal(c.annual_amount_eur) for c in current_charges
         )
-        current_year = _utcnow().year
+        current_year = utcnow().year
 
         for y_offset in range(1, years + 1):
             proj_year = current_year + y_offset

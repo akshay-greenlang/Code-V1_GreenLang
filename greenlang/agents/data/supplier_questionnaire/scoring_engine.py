@@ -48,6 +48,7 @@ import threading
 import time
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Set
+from greenlang.schemas import utcnow
 
 from greenlang.agents.data.supplier_questionnaire.models import (
     Answer,
@@ -67,16 +68,9 @@ __all__ = [
     "ScoringEngine",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # CDP Grade boundaries (normalised 0-100)
@@ -132,11 +126,9 @@ _INDUSTRY_BENCHMARKS: Dict[str, Dict[str, float]] = {
     "default": {"cdp_climate": 45.0, "ecovadis": 47.0, "djsi": 45.0},
 }
 
-
 # ---------------------------------------------------------------------------
 # ScoringEngine
 # ---------------------------------------------------------------------------
-
 
 class ScoringEngine:
     """Questionnaire response scoring engine.
@@ -610,7 +602,7 @@ class ScoringEngine:
                 else None
             ),
             "provenance_hash": provenance_hash,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     def get_trend(
@@ -677,7 +669,7 @@ class ScoringEngine:
             "data_points": data_points,
             "trend_direction": trend_direction,
             "total_scores": len(data_points),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     def assign_performance_tier(self, score: float) -> PerformanceTier:
@@ -733,7 +725,7 @@ class ScoringEngine:
                 **self._stats,
                 "active_scores": len(self._scores),
                 "suppliers_scored": len(self._supplier_scores),
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }
 
     # ------------------------------------------------------------------
@@ -983,7 +975,7 @@ class ScoringEngine:
             Hex-encoded SHA-256 digest.
         """
         combined = json.dumps(
-            {"parts": list(parts), "timestamp": _utcnow().isoformat()},
+            {"parts": list(parts), "timestamp": utcnow().isoformat()},
             sort_keys=True,
         )
         return hashlib.sha256(combined.encode("utf-8")).hexdigest()

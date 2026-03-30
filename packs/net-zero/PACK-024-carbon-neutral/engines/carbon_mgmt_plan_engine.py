@@ -76,23 +76,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -109,7 +104,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -117,7 +111,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -128,26 +121,21 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     return float(
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class MitigationPriority(str, Enum):
     """Mitigation hierarchy levels per ISO 14068-1:2023, Section 9.2.
@@ -161,7 +149,6 @@ class MitigationPriority(str, Enum):
     REDUCE = "reduce"
     SUBSTITUTE = "substitute"
     COMPENSATE = "compensate"
-
 
 class MeasureStatus(str, Enum):
     """Implementation status of a reduction measure.
@@ -177,7 +164,6 @@ class MeasureStatus(str, Enum):
     COMPLETED = "completed"
     DEFERRED = "deferred"
     CANCELLED = "cancelled"
-
 
 class MeasureCategory(str, Enum):
     """Category of emission reduction measure.
@@ -202,7 +188,6 @@ class MeasureCategory(str, Enum):
     CIRCULAR_ECONOMY = "circular_economy"
     NATURE_BASED = "nature_based"
 
-
 class RoadmapPhase(str, Enum):
     """Phase of the carbon management roadmap.
 
@@ -218,7 +203,6 @@ class RoadmapPhase(str, Enum):
     LONG_TERM = "long_term"
     STRATEGIC = "strategic"
 
-
 class PlanCompliance(str, Enum):
     """Compliance level of the management plan.
 
@@ -231,7 +215,6 @@ class PlanCompliance(str, Enum):
     PARTIALLY_COMPLIANT = "partially_compliant"
     NON_COMPLIANT = "non_compliant"
     NOT_ASSESSED = "not_assessed"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- ISO 14068-1 / PAS 2060 Requirements
@@ -283,11 +266,9 @@ COST_TIER_VERY_HIGH: Decimal = Decimal("500")
 MIN_ANNUAL_REDUCTION_RATE_15C: Decimal = Decimal("4.2")
 MIN_ANNUAL_REDUCTION_RATE_WB2C: Decimal = Decimal("2.5")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class ReductionMeasureInput(BaseModel):
     """Input for a single emission reduction measure.
@@ -405,7 +386,6 @@ class ReductionMeasureInput(BaseModel):
             raise ValueError(f"Unknown status '{v}'. Must be one of: {sorted(valid)}")
         return v
 
-
 class CarbonMgmtPlanInput(BaseModel):
     """Complete input for carbon management plan generation.
 
@@ -498,11 +478,9 @@ class CarbonMgmtPlanInput(BaseModel):
         description="Temperature pathway ambition"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class MACCEntry(BaseModel):
     """MACC (Marginal Abatement Cost Curve) entry for a measure.
@@ -537,7 +515,6 @@ class MACCEntry(BaseModel):
     cost_tier: str = Field(default="moderate")
     is_negative_cost: bool = Field(default=False)
     macc_rank: int = Field(default=0)
-
 
 class YearlyMilestone(BaseModel):
     """Annual milestone in the carbon management roadmap.
@@ -575,7 +552,6 @@ class YearlyMilestone(BaseModel):
     actual_reduction_pct: Optional[Decimal] = Field(default=None)
     variance_pct: Optional[Decimal] = Field(default=None)
 
-
 class ReductionOffsetBalance(BaseModel):
     """Balance between reductions and offsets.
 
@@ -604,7 +580,6 @@ class ReductionOffsetBalance(BaseModel):
     improvement_trajectory: bool = Field(default=False)
     message: str = Field(default="")
 
-
 class FinancialSummary(BaseModel):
     """Financial summary of the management plan.
 
@@ -630,7 +605,6 @@ class FinancialSummary(BaseModel):
     negative_cost_abatement_tco2e: Decimal = Field(default=Decimal("0"))
     roi_pct: Decimal = Field(default=Decimal("0"))
     message: str = Field(default="")
-
 
 class HierarchyAssessment(BaseModel):
     """Assessment of mitigation hierarchy compliance.
@@ -660,7 +634,6 @@ class HierarchyAssessment(BaseModel):
     hierarchy_score: Decimal = Field(default=Decimal("0"))
     recommendations: List[str] = Field(default_factory=list)
 
-
 class PathwayAlignment(BaseModel):
     """Assessment of alignment with temperature pathway.
 
@@ -680,7 +653,6 @@ class PathwayAlignment(BaseModel):
     gap_pct: Decimal = Field(default=Decimal("0"))
     years_to_neutrality: int = Field(default=0)
     message: str = Field(default="")
-
 
 class CarbonMgmtPlanResult(BaseModel):
     """Complete carbon management plan result.
@@ -714,7 +686,7 @@ class CarbonMgmtPlanResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     base_year: int = Field(default=0)
     target_year: int = Field(default=0)
@@ -738,11 +710,9 @@ class CarbonMgmtPlanResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class CarbonMgmtPlanEngine:
     """ISO 14068-1 compliant carbon management plan engine.

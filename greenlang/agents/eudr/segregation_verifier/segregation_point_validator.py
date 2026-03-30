@@ -57,6 +57,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -69,22 +71,14 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a unique identifier using UUID4."""
     return str(uuid.uuid4())
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -203,11 +197,9 @@ EVENT_TYPE_TO_SCP_TYPE: Dict[str, str] = {
     "import": "loading_unloading",
 }
 
-
 # ---------------------------------------------------------------------------
 # Internal Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class SCPRecord:
@@ -292,7 +284,6 @@ class SCPRecord:
             ),
         }
 
-
 @dataclass
 class SCPValidationResult:
     """Result of validating a segregation control point.
@@ -334,7 +325,6 @@ class SCPValidationResult:
             ),
         }
 
-
 @dataclass
 class SCPSearchResult:
     """Paginated search result for SCP queries.
@@ -359,7 +349,6 @@ class SCPSearchResult:
             "page_size": self.page_size,
             "results": [r.to_dict() for r in self.results],
         }
-
 
 @dataclass
 class SCPAmendment:
@@ -402,11 +391,9 @@ class SCPAmendment:
             ),
         }
 
-
 # ---------------------------------------------------------------------------
 # SegregationPointValidator
 # ---------------------------------------------------------------------------
-
 
 class SegregationPointValidator:
     """Production-grade segregation control point validation engine.
@@ -566,7 +553,7 @@ class SegregationPointValidator:
         # Method adequacy for initial compliance score
         method_score = METHOD_ADEQUACY_SCORES.get(segregation_method, 50.0)
 
-        now = _utcnow()
+        now = utcnow()
         scp = SCPRecord(
             scp_id=scp_id,
             facility_id=facility_id,
@@ -679,7 +666,7 @@ class SegregationPointValidator:
         if not applicable:
             raise ValueError("No valid fields to update")
 
-        now = _utcnow()
+        now = utcnow()
         amendments: List[SCPAmendment] = []
 
         for field_name, new_value in applicable.items():
@@ -830,7 +817,7 @@ class SegregationPointValidator:
         )
 
         # Update SCP status
-        now = _utcnow()
+        now = utcnow()
         if is_valid:
             scp.status = "verified"
             scp.verification_date = now
@@ -989,7 +976,7 @@ class SegregationPointValidator:
                 f"interval_days must be in [1, 365], got {interval_days}"
             )
 
-        now = _utcnow()
+        now = utcnow()
         scp.next_verification_date = now + timedelta(days=interval_days)
 
         if scp.status != "verified":
@@ -1022,7 +1009,7 @@ class SegregationPointValidator:
             List of SCPRecord objects with expired verification. Also
             updates their status to 'expired' if currently 'verified'.
         """
-        now = _utcnow()
+        now = utcnow()
         expired: List[SCPRecord] = []
 
         for scp in self._scps.values():
@@ -1257,7 +1244,7 @@ class SegregationPointValidator:
 
         # Sort by created_at descending (newest first)
         matched.sort(
-            key=lambda s: s.created_at or _utcnow(),
+            key=lambda s: s.created_at or utcnow(),
             reverse=True,
         )
 
@@ -1294,7 +1281,7 @@ class SegregationPointValidator:
             if sid in self._scps
         ]
 
-        scps.sort(key=lambda s: s.created_at or _utcnow())
+        scps.sort(key=lambda s: s.created_at or utcnow())
         return scps
 
     # ------------------------------------------------------------------
@@ -1708,7 +1695,7 @@ class SegregationPointValidator:
             List of finding strings.
         """
         findings: List[str] = []
-        now = _utcnow()
+        now = utcnow()
 
         if scp.verification_date is None:
             findings.append(
@@ -1850,7 +1837,6 @@ class SegregationPointValidator:
             f"facilities={self.facility_count}, "
             f"reverification={self._reverification_days}d)"
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

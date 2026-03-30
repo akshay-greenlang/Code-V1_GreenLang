@@ -80,25 +80,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -125,7 +119,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -141,7 +134,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -162,7 +154,6 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100).
 
@@ -174,7 +165,6 @@ def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
         Percentage as Decimal; Decimal("0") when whole is zero.
     """
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* and return a float.
@@ -191,26 +181,21 @@ def _round_val(value: Decimal, places: int = 6) -> float:
     quantizer = Decimal(10) ** -places
     return float(value.quantize(quantizer, rounding=ROUND_HALF_UP))
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: float) -> float:
     """Round to 4 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class LoadCategory(str, Enum):
     """Electrical load category classification.
@@ -224,7 +209,6 @@ class LoadCategory(str, Enum):
     INTERMEDIATE = "intermediate"
     PEAK = "peak"
     CRITICAL = "critical"
-
 
 class DemandPeriod(str, Enum):
     """Time-of-use demand period classification.
@@ -241,7 +225,6 @@ class DemandPeriod(str, Enum):
     SHOULDER = "shoulder"
     CRITICAL_PEAK = "critical_peak"
 
-
 class DemandResponseType(str, Enum):
     """Demand response strategy classification per NAESB WEQ.
 
@@ -256,7 +239,6 @@ class DemandResponseType(str, Enum):
     GENERATION = "generation"
     STORAGE = "storage"
     BEHAVIORAL = "behavioral"
-
 
 class PeakType(str, Enum):
     """Peak demand classification for utility billing.
@@ -273,7 +255,6 @@ class PeakType(str, Enum):
     TRANSMISSION = "transmission"
     DISTRIBUTION = "distribution"
 
-
 class IntervalResolution(str, Enum):
     """Interval meter data resolution.
 
@@ -288,7 +269,6 @@ class IntervalResolution(str, Enum):
     MIN_15 = "15min"
     MIN_30 = "30min"
     HOURLY = "60min"
-
 
 class LoadShiftStrategy(str, Enum):
     """Load shifting strategy classification.
@@ -305,7 +285,6 @@ class LoadShiftStrategy(str, Enum):
     EV_CHARGING = "ev_charging"
     PRECOOLING = "precooling"
 
-
 # ---------------------------------------------------------------------------
 # Constants -- Interval Resolution Mapping
 # ---------------------------------------------------------------------------
@@ -318,7 +297,6 @@ INTERVAL_MINUTES_MAP: Dict[str, int] = {
     IntervalResolution.HOURLY.value: 60,
 }
 """Maps IntervalResolution enum values to integer minutes."""
-
 
 # Default demand response parameters by strategy type.
 # Sources: LBNL Demand Response Research Center, NAESB WEQ.
@@ -372,11 +350,9 @@ BATTERY_USEFUL_LIFE_YEARS: int = 15
 CAPACITOR_COST_PER_KVAR: Decimal = Decimal("25")
 """Installed cost per kVAR for LV switched capacitor bank (EUR/kVAR)."""
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class IntervalData(BaseModel):
     """Single interval meter reading.
@@ -412,7 +388,6 @@ class IntervalData(BaseModel):
         if v > 1_000_000:
             raise ValueError("Demand exceeds 1 GW sanity check")
         return v
-
 
 class TOURateSchedule(BaseModel):
     """Time-of-use rate schedule for demand cost analysis.
@@ -461,7 +436,6 @@ class TOURateSchedule(BaseModel):
         default=11, ge=1, le=36, description="Ratchet lookback months"
     )
 
-
 class TOUScheduleEntry(BaseModel):
     """Single entry in a time-of-use schedule definition.
 
@@ -479,11 +453,9 @@ class TOUScheduleEntry(BaseModel):
         description="Days of week (0=Mon, 6=Sun)",
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class DemandProfile(BaseModel):
     """Demand profile analysis result.
@@ -536,7 +508,6 @@ class DemandProfile(BaseModel):
         default=0.0, ge=0, description="Total hours of data"
     )
 
-
 class LoadFactor(BaseModel):
     """Load factor calculation result.
 
@@ -563,7 +534,6 @@ class LoadFactor(BaseModel):
     utilization_hours: float = Field(
         default=0.0, ge=0, description="Equivalent full-load hours"
     )
-
 
 class LoadDurationCurve(BaseModel):
     """Load duration curve analysis result.
@@ -594,7 +564,6 @@ class LoadDurationCurve(BaseModel):
     load_shape_factor: float = Field(
         default=0.0, ge=0, le=1.0, description="Load shape factor"
     )
-
 
 class PeakEvent(BaseModel):
     """Identified peak demand event.
@@ -629,7 +598,6 @@ class PeakEvent(BaseModel):
     )
     avoidable: bool = Field(default=False, description="Is peak avoidable")
 
-
 class DemandResponseOpportunity(BaseModel):
     """Demand response opportunity assessment.
 
@@ -662,7 +630,6 @@ class DemandResponseOpportunity(BaseModel):
         default=0.0, ge=0, description="Payback period (months)"
     )
     description: str = Field(default="", description="Strategy description")
-
 
 class PeakShavingAnalysis(BaseModel):
     """Peak shaving / battery storage analysis result.
@@ -709,7 +676,6 @@ class PeakShavingAnalysis(BaseModel):
         default=0.0, ge=0, description="Estimated daily cycles"
     )
 
-
 class PowerFactorAnalysis(BaseModel):
     """Power factor correction analysis result.
 
@@ -755,7 +721,6 @@ class PowerFactorAnalysis(BaseModel):
         default=0.0, ge=0, description="Corrected apparent power (kVA)"
     )
 
-
 class DemandForecast(BaseModel):
     """Monthly demand forecast data point.
 
@@ -777,7 +742,6 @@ class DemandForecast(BaseModel):
         default=0.0, ge=0, description="95% CI upper bound (kW)"
     )
     method: str = Field(default="linear_trend", description="Forecast method")
-
 
 class RatchetImpact(BaseModel):
     """Ratchet clause impact analysis result.
@@ -816,7 +780,6 @@ class RatchetImpact(BaseModel):
         default=0.0, ge=0, description="Highest ratchet demand (kW)"
     )
 
-
 class LoadShiftOpportunity(BaseModel):
     """Load shifting opportunity assessment.
 
@@ -853,7 +816,6 @@ class LoadShiftOpportunity(BaseModel):
         default=0.0, ge=0, description="Daily energy shifted (kWh)"
     )
 
-
 class DemandAnalysisResult(BaseModel):
     """Complete demand analysis result with full provenance.
 
@@ -865,7 +827,7 @@ class DemandAnalysisResult(BaseModel):
         default=_MODULE_VERSION, description="Engine version"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     processing_time_ms: float = Field(
         default=0.0, description="Processing time (ms)"
@@ -909,11 +871,9 @@ class DemandAnalysisResult(BaseModel):
         default="", description="SHA-256 provenance hash"
     )
 
-
 # ---------------------------------------------------------------------------
 # Calculation Engine
 # ---------------------------------------------------------------------------
-
 
 class DemandAnalysisEngine:
     """Electrical demand profile analysis and management engine.
@@ -2124,7 +2084,7 @@ class DemandAnalysisEngine:
         elif last_profile.period_start is not None:
             base_dt = last_profile.period_start
         else:
-            base_dt = _utcnow()
+            base_dt = utcnow()
 
         # Calculate target month
         year = base_dt.year
@@ -2288,11 +2248,9 @@ class DemandAnalysisEngine:
 
         return recs
 
-
 # ---------------------------------------------------------------------------
 # Module-level convenience function
 # ---------------------------------------------------------------------------
-
 
 def create_engine() -> DemandAnalysisEngine:
     """Create and return a new DemandAnalysisEngine instance.

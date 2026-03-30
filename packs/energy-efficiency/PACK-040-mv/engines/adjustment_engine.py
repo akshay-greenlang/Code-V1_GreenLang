@@ -81,25 +81,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -117,7 +111,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -126,7 +119,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -138,22 +130,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class AdjustmentCategory(str, Enum):
     """Top-level adjustment category per IPMVP.
@@ -165,7 +153,6 @@ class AdjustmentCategory(str, Enum):
     """
     ROUTINE = "routine"
     NON_ROUTINE = "non_routine"
-
 
 class RoutineAdjustmentType(str, Enum):
     """Type of routine adjustment.
@@ -181,7 +168,6 @@ class RoutineAdjustmentType(str, Enum):
     OCCUPANCY = "occupancy"
     OPERATING_HOURS = "operating_hours"
     CUSTOM_ROUTINE = "custom_routine"
-
 
 class NonRoutineAdjustmentType(str, Enum):
     """Type of non-routine adjustment.
@@ -206,7 +192,6 @@ class NonRoutineAdjustmentType(str, Enum):
     ENVELOPE_CHANGE = "envelope_change"
     CUSTOM_NON_ROUTINE = "custom_non_routine"
 
-
 class AdjustmentStatus(str, Enum):
     """Status of an adjustment in the M&V process.
 
@@ -222,7 +207,6 @@ class AdjustmentStatus(str, Enum):
     DISPUTED = "disputed"
     ARCHIVED = "archived"
 
-
 class UncertaintyLevel(str, Enum):
     """Qualitative uncertainty level for adjustment estimate.
 
@@ -233,7 +217,6 @@ class UncertaintyLevel(str, Enum):
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
-
 
 class WeatherNormMethod(str, Enum):
     """Weather normalisation method.
@@ -247,7 +230,6 @@ class WeatherNormMethod(str, Enum):
     BIN_METHOD = "bin_method"
     REGRESSION = "regression"
     TMY_NORMAL = "tmy_normal"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -284,11 +266,9 @@ MAX_ADJUSTMENT_PCT: Decimal = Decimal("50")
 # Default hours per year for annualisation.
 HOURS_PER_YEAR: Decimal = Decimal("8760")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class WeatherAdjustmentInput(BaseModel):
     """Input for weather-based routine adjustment.
@@ -344,7 +324,6 @@ class WeatherAdjustmentInput(BaseModel):
         default=WeatherNormMethod.DEGREE_DAY, description="Normalisation method"
     )
 
-
 class ProductionAdjustmentInput(BaseModel):
     """Input for production-based routine adjustment.
 
@@ -376,7 +355,6 @@ class ProductionAdjustmentInput(BaseModel):
         default="units", description="Production unit name"
     )
 
-
 class OccupancyAdjustmentInput(BaseModel):
     """Input for occupancy-based routine adjustment.
 
@@ -404,7 +382,6 @@ class OccupancyAdjustmentInput(BaseModel):
         description="Fixed energy percentage"
     )
 
-
 class OperatingHoursAdjustmentInput(BaseModel):
     """Input for operating hours-based routine adjustment.
 
@@ -427,7 +404,6 @@ class OperatingHoursAdjustmentInput(BaseModel):
         default=Decimal("20"), ge=0, le=100,
         description="Fixed energy percentage"
     )
-
 
 class NonRoutineAdjustmentInput(BaseModel):
     """Input for a non-routine adjustment.
@@ -460,7 +436,7 @@ class NonRoutineAdjustmentInput(BaseModel):
         default="", max_length=1000, description="Description"
     )
     effective_date: datetime = Field(
-        default_factory=_utcnow, description="Effective date"
+        default_factory=utcnow, description="Effective date"
     )
     delta_floor_area_sqft: Decimal = Field(
         default=Decimal("0"), description="Floor area change (sq ft)"
@@ -509,7 +485,6 @@ class NonRoutineAdjustmentInput(BaseModel):
         default="", max_length=500, description="Source document"
     )
 
-
 class AdjustmentConfig(BaseModel):
     """Configuration for adjustment calculations.
 
@@ -528,10 +503,10 @@ class AdjustmentConfig(BaseModel):
     ecm_id: str = Field(default="", description="ECM identifier")
     facility_id: str = Field(default="", description="Facility ID")
     reporting_period_start: datetime = Field(
-        default_factory=_utcnow, description="Reporting period start"
+        default_factory=utcnow, description="Reporting period start"
     )
     reporting_period_end: datetime = Field(
-        default_factory=_utcnow, description="Reporting period end"
+        default_factory=utcnow, description="Reporting period end"
     )
     baseline_energy: Decimal = Field(
         default=Decimal("0"), ge=0, description="Baseline energy"
@@ -545,11 +520,9 @@ class AdjustmentConfig(BaseModel):
         default=True, description="Require justification for non-routine"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class AdjustmentRecord(BaseModel):
     """Record of a single calculated adjustment.
@@ -587,14 +560,13 @@ class AdjustmentRecord(BaseModel):
     uncertainty_absolute: Decimal = Field(default=Decimal("0"))
     justification: str = Field(default="", max_length=2000)
     source_document: str = Field(default="", max_length=500)
-    effective_date: datetime = Field(default_factory=_utcnow)
+    effective_date: datetime = Field(default_factory=utcnow)
     calculation_method: str = Field(default="")
     input_parameters: Dict[str, str] = Field(default_factory=dict)
     status: AdjustmentStatus = Field(default=AdjustmentStatus.DRAFT)
     is_capped: bool = Field(default=False)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class RoutineAdjustmentResult(BaseModel):
     """Result of all routine adjustments for a reporting period.
@@ -623,9 +595,8 @@ class RoutineAdjustmentResult(BaseModel):
     occupancy_adjustment: Decimal = Field(default=Decimal("0"))
     hours_adjustment: Decimal = Field(default=Decimal("0"))
     processing_time_ms: Decimal = Field(default=Decimal("0"))
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class NonRoutineAdjustmentResult(BaseModel):
     """Result of all non-routine adjustments for a reporting period.
@@ -652,9 +623,8 @@ class NonRoutineAdjustmentResult(BaseModel):
     combined_uncertainty_pct: Decimal = Field(default=Decimal("0"))
     combined_uncertainty_absolute: Decimal = Field(default=Decimal("0"))
     processing_time_ms: Decimal = Field(default=Decimal("0"))
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class FullAdjustmentResult(BaseModel):
     """Complete adjustment result combining routine and non-routine.
@@ -684,8 +654,8 @@ class FullAdjustmentResult(BaseModel):
     project_id: str = Field(default="")
     ecm_id: str = Field(default="")
     facility_id: str = Field(default="")
-    reporting_period_start: datetime = Field(default_factory=_utcnow)
-    reporting_period_end: datetime = Field(default_factory=_utcnow)
+    reporting_period_start: datetime = Field(default_factory=utcnow)
+    reporting_period_end: datetime = Field(default_factory=utcnow)
     unadjusted_baseline_energy: Decimal = Field(default=Decimal("0"))
     routine_result: Optional[RoutineAdjustmentResult] = Field(default=None)
     non_routine_result: Optional[NonRoutineAdjustmentResult] = Field(
@@ -701,14 +671,12 @@ class FullAdjustmentResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     recommendations: List[str] = Field(default_factory=list)
     processing_time_ms: Decimal = Field(default=Decimal("0"))
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class AdjustmentEngine:
     """Routine and non-routine adjustment engine for M&V per IPMVP.

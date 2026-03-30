@@ -36,9 +36,10 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -81,7 +82,7 @@ class OCREngine(str, Enum):
 # PYDANTIC MODELS
 # =============================================================================
 
-class BoundingBox(BaseModel):
+class BoundingBox(GreenLangBase):
     """Bounding box for extracted text region."""
     x: float = Field(..., description="X coordinate (left)")
     y: float = Field(..., description="Y coordinate (top)")
@@ -90,7 +91,7 @@ class BoundingBox(BaseModel):
     page: int = Field(default=1, ge=1, description="Page number")
 
 
-class ExtractedField(BaseModel):
+class ExtractedField(GreenLangBase):
     """A single extracted field with confidence score."""
     field_name: str = Field(..., description="Name of the field")
     value: Any = Field(..., description="Extracted value")
@@ -101,7 +102,7 @@ class ExtractedField(BaseModel):
     validated: bool = Field(default=False, description="Whether value passed validation")
 
 
-class LineItem(BaseModel):
+class LineItem(GreenLangBase):
     """A line item from an invoice or manifest."""
     line_number: int = Field(..., ge=1, description="Line number")
     description: str = Field(..., description="Item description")
@@ -112,7 +113,7 @@ class LineItem(BaseModel):
     confidence: float = Field(default=0.0, ge=0.0, le=1.0)
 
 
-class InvoiceData(BaseModel):
+class InvoiceData(GreenLangBase):
     """Structured data extracted from an invoice."""
     invoice_number: Optional[str] = Field(None, description="Invoice number")
     invoice_date: Optional[date] = Field(None, description="Invoice date")
@@ -130,7 +131,7 @@ class InvoiceData(BaseModel):
     payment_terms: Optional[str] = Field(None, description="Payment terms")
 
 
-class ManifestData(BaseModel):
+class ManifestData(GreenLangBase):
     """Structured data extracted from a shipping manifest."""
     manifest_number: Optional[str] = Field(None, description="Manifest/BOL number")
     shipment_date: Optional[date] = Field(None, description="Shipment date")
@@ -147,7 +148,7 @@ class ManifestData(BaseModel):
     seal_numbers: List[str] = Field(default_factory=list, description="Seal numbers")
 
 
-class UtilityBillData(BaseModel):
+class UtilityBillData(GreenLangBase):
     """Structured data extracted from a utility bill."""
     account_number: Optional[str] = Field(None, description="Account number")
     billing_period_start: Optional[date] = Field(None, description="Billing period start")
@@ -163,7 +164,7 @@ class UtilityBillData(BaseModel):
     currency: str = Field(default="USD", description="Currency code")
 
 
-class DocumentIngestionInput(BaseModel):
+class DocumentIngestionInput(GreenLangBase):
     """Input for document ingestion."""
     document_id: str = Field(..., description="Unique document identifier")
     file_path: Optional[str] = Field(None, description="Path to document file")
@@ -177,7 +178,7 @@ class DocumentIngestionInput(BaseModel):
     tenant_id: Optional[str] = Field(None, description="Tenant identifier")
 
 
-class DocumentIngestionOutput(BaseModel):
+class DocumentIngestionOutput(GreenLangBase):
     """Output from document ingestion."""
     document_id: str = Field(..., description="Document identifier")
     document_type: DocumentType = Field(..., description="Detected/specified document type")

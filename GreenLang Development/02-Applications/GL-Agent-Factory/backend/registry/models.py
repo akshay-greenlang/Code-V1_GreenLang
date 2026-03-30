@@ -27,7 +27,8 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel, Field, validator, root_validator
+from pydantic import Field, validator, root_validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 
 
 class AgentStatus(str, Enum):
@@ -45,7 +46,7 @@ class AgentStatus(str, Enum):
     DEPRECATED = "deprecated"
 
 
-class CertificationStatus(BaseModel):
+class CertificationStatus(GreenLangBase):
     """
     Agent certification status tracking.
 
@@ -76,7 +77,7 @@ class CertificationStatus(BaseModel):
         }
 
 
-class AgentRecord(BaseModel):
+class AgentRecord(GreenLangBase):
     """
     Core agent record model.
 
@@ -271,7 +272,7 @@ class AgentRecord(BaseModel):
         }
 
 
-class AgentVersion(BaseModel):
+class AgentVersion(GreenLangBase):
     """
     Agent version record.
 
@@ -364,7 +365,7 @@ class AgentVersion(BaseModel):
 # Request/Response Models for API
 
 
-class AgentCreateRequest(BaseModel):
+class AgentCreateRequest(GreenLangBase):
     """
     Request model for creating a new agent.
 
@@ -432,7 +433,7 @@ class AgentCreateRequest(BaseModel):
         return v.lower()
 
 
-class AgentUpdateRequest(BaseModel):
+class AgentUpdateRequest(GreenLangBase):
     """
     Request model for updating an agent.
 
@@ -448,7 +449,7 @@ class AgentUpdateRequest(BaseModel):
     repository_url: Optional[str] = None
 
 
-class AgentResponse(BaseModel):
+class AgentResponse(GreenLangBase):
     """
     Response model for agent endpoints.
 
@@ -487,7 +488,7 @@ class AgentResponse(BaseModel):
         }
 
 
-class AgentListResponse(BaseModel):
+class AgentListResponse(GreenLangBase):
     """
     Paginated response for listing agents.
     """
@@ -503,7 +504,7 @@ class AgentListResponse(BaseModel):
     )
 
 
-class AgentSearchRequest(BaseModel):
+class AgentSearchRequest(GreenLangBase):
     """
     Request model for searching agents.
     """
@@ -523,7 +524,7 @@ class AgentSearchRequest(BaseModel):
     sort_order: str = Field("desc", description="Sort order")
 
 
-class VersionCreateRequest(BaseModel):
+class VersionCreateRequest(GreenLangBase):
     """
     Request model for creating a new version.
     """
@@ -544,7 +545,7 @@ class VersionCreateRequest(BaseModel):
         return v
 
 
-class VersionResponse(BaseModel):
+class VersionResponse(GreenLangBase):
     """
     Response model for version endpoints.
     """
@@ -573,7 +574,7 @@ class VersionResponse(BaseModel):
         }
 
 
-class PublishRequest(BaseModel):
+class PublishRequest(GreenLangBase):
     """
     Request model for publishing an agent version.
     """
@@ -586,7 +587,7 @@ class PublishRequest(BaseModel):
     )
 
 
-class PublishResponse(BaseModel):
+class PublishResponse(GreenLangBase):
     """
     Response model for publish operation.
     """

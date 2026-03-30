@@ -61,9 +61,9 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Conditional imports
@@ -79,15 +79,9 @@ try:
 except ImportError:  # pragma: no cover
     get_provenance_tracker = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Default Uncertainty Parameters
@@ -115,7 +109,6 @@ DEFAULT_UNCERTAINTIES: Dict[str, Any] = {
     "ch4_factor": 2.0,        # Factor-of-2 multiplicative uncertainty
     "n2o_factor": 2.0,        # Factor-of-2 multiplicative uncertainty
 }
-
 
 # ---------------------------------------------------------------------------
 # Data Quality Indicator (DQI) Scoring Thresholds
@@ -147,11 +140,9 @@ _DQI_THRESHOLDS: Dict[str, List[Tuple[Any, int]]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # Result dataclass
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class UncertaintyResult:
@@ -183,13 +174,11 @@ class UncertaintyResult:
     monte_carlo_iterations: int
     seed: int
     provenance_hash: str
-    timestamp: str = field(default_factory=lambda: _utcnow().isoformat())
-
+    timestamp: str = field(default_factory=lambda: utcnow().isoformat())
 
 # ---------------------------------------------------------------------------
 # UncertaintyQuantifierEngine
 # ---------------------------------------------------------------------------
-
 
 class UncertaintyQuantifierEngine:
     """Monte Carlo simulation and analytical error propagation engine.
@@ -846,7 +835,6 @@ class UncertaintyQuantifierEngine:
         """
         serialized = json.dumps(data, sort_keys=True, default=str)
         return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Public API

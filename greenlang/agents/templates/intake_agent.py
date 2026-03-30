@@ -17,9 +17,9 @@ from enum import Enum
 import pandas as pd
 import json
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas.enums import ValidationSeverity
 
 logger = logging.getLogger(__name__)
-
 
 class DataFormat(str, Enum):
     """Supported data formats."""
@@ -33,14 +33,6 @@ class DataFormat(str, Enum):
     ORC = "orc"
     FEATHER = "feather"
 
-
-class ValidationSeverity(str, Enum):
-    """Validation issue severity."""
-    ERROR = "error"
-    WARNING = "warning"
-    INFO = "info"
-
-
 @dataclass
 class ValidationIssue:
     """Validation issue."""
@@ -49,7 +41,6 @@ class ValidationIssue:
     row_number: Optional[int] = None
     column: Optional[str] = None
     value: Optional[Any] = None
-
 
 @dataclass
 class IntakeResult:
@@ -70,7 +61,6 @@ class IntakeResult:
             self.metadata = {}
         if self.timestamp is None:
             self.timestamp = DeterministicClock.utcnow()
-
 
 class IntakeAgent:
     """

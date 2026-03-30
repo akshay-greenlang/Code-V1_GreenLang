@@ -40,36 +40,27 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
 
-
 # =============================================================================
 # HELPERS
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.utcnow()
-
 
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
 
-
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hash of a string."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -80,7 +71,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -90,7 +80,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class ComplianceStatus(str, Enum):
     """Framework compliance status."""
 
@@ -98,7 +87,6 @@ class ComplianceStatus(str, Enum):
     PARTIALLY_COMPLIANT = "partially_compliant"
     NON_COMPLIANT = "non_compliant"
     NOT_APPLICABLE = "not_applicable"
-
 
 # =============================================================================
 # REFERENCE DATA (Zero-Hallucination)
@@ -311,11 +299,9 @@ REPORT_SECTIONS_TEMPLATE: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -328,7 +314,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list, description="Warnings raised")
     errors: List[str] = Field(default_factory=list, description="Errors encountered")
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
-
 
 class AnnualSavingsRecord(BaseModel):
     """Savings record for a single ECM within the annual period."""
@@ -348,7 +333,6 @@ class AnnualSavingsRecord(BaseModel):
     baseline_cvrmse_pct: float = Field(default=0.0, ge=0, description="Baseline CV(RMSE)")
     baseline_nmbe_pct: float = Field(default=0.0, ge=0, description="Baseline NMBE")
     baseline_r_squared: float = Field(default=0.0, ge=0, le=1.0, description="Baseline R-sq")
-
 
 class AnnualReportingInput(BaseModel):
     """Input data model for AnnualReportingWorkflow."""
@@ -388,7 +372,6 @@ class AnnualReportingInput(BaseModel):
             raise ValueError("project_name must not be blank")
         return stripped
 
-
 class AnnualReportingResult(BaseModel):
     """Complete result from annual reporting workflow."""
 
@@ -411,11 +394,9 @@ class AnnualReportingResult(BaseModel):
     calculated_at: str = Field(default="", description="ISO 8601 timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 of complete result")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class AnnualReportingWorkflow:
     """
@@ -471,7 +452,7 @@ class AnnualReportingWorkflow:
             ValueError: If input validation fails.
         """
         t_start = time.perf_counter()
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting annual reporting workflow %s for project=%s year=%d",
             self.report_id, input_data.project_name, input_data.reporting_year,
@@ -597,6 +578,7 @@ class AnnualReportingWorkflow:
 
         # Portfolio uncertainty (root sum of squares of ECM uncertainties weighted by savings)
         import math
+
         portfolio_unc = 0.0
         if uncertainty_list and total_avoided > 0:
             weighted_unc_sq = 0.0
@@ -669,7 +651,7 @@ class AnnualReportingWorkflow:
                 checks.append({
                     "element": element,
                     "passed": passed,
-                    "checked_at": _utcnow().isoformat() + "Z",
+                    "checked_at": utcnow().isoformat() + "Z",
                 })
                 if passed:
                     passed_count += 1
@@ -750,7 +732,7 @@ class AnnualReportingWorkflow:
                 "order": section_spec["order"],
                 "content": content,
                 "fields_populated": len(content),
-                "generated_at": _utcnow().isoformat() + "Z",
+                "generated_at": utcnow().isoformat() + "Z",
             })
 
         self._report = report_sections

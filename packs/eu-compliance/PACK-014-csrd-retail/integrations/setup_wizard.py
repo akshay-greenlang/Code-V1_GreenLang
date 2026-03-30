@@ -36,20 +36,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -62,11 +57,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class RetailWizardStep(str, Enum):
     """Names of retail wizard steps in execution order."""
@@ -80,7 +73,6 @@ class RetailWizardStep(str, Enum):
     SUPPLY_CHAIN = "supply_chain"
     REPORTING_SETUP = "reporting_setup"
 
-
 class StepStatus(str, Enum):
     """Status of a wizard step."""
 
@@ -90,11 +82,9 @@ class StepStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class CompanyProfile(BaseModel):
     """Company profile from step 1."""
@@ -108,7 +98,6 @@ class CompanyProfile(BaseModel):
     is_listed: bool = Field(default=False)
     balance_sheet_total_eur: Optional[float] = Field(None, ge=0)
 
-
 class StorePortfolio(BaseModel):
     """Store portfolio from step 2."""
 
@@ -118,7 +107,6 @@ class StorePortfolio(BaseModel):
     countries: List[str] = Field(default_factory=list)
     distribution_centres: int = Field(default=0, ge=0)
 
-
 class RetailSubSectorConfig(BaseModel):
     """Retail sub-sector configuration from step 3."""
 
@@ -127,7 +115,6 @@ class RetailSubSectorConfig(BaseModel):
     engines_enabled: List[str] = Field(default_factory=list)
     mrv_agents_priority: List[str] = Field(default_factory=list)
     esrs_focus_chapters: List[str] = Field(default_factory=list)
-
 
 class RegulatoryScope(BaseModel):
     """Regulatory scope from step 4."""
@@ -141,7 +128,6 @@ class RegulatoryScope(BaseModel):
     weee_applicable: bool = Field(default=False)
     battery_regulation_applicable: bool = Field(default=False)
     textile_epr_applicable: bool = Field(default=False)
-
 
 class EmissionsSourceConfig(BaseModel):
     """Emissions source configuration from step 5."""
@@ -159,7 +145,6 @@ class EmissionsSourceConfig(BaseModel):
     has_owned_fleet: bool = Field(default=False)
     has_refrigeration: bool = Field(default=True)
 
-
 class ProductCategoryConfig(BaseModel):
     """Product category configuration from step 6."""
 
@@ -171,7 +156,6 @@ class ProductCategoryConfig(BaseModel):
     total_sku_count: int = Field(default=0, ge=0)
     own_brand_pct: float = Field(default=0.0, ge=0.0, le=100.0)
 
-
 class SupplyChainConfig(BaseModel):
     """Supply chain configuration from step 7."""
 
@@ -181,7 +165,6 @@ class SupplyChainConfig(BaseModel):
     csddd_screening_enabled: bool = Field(default=False)
     forced_labour_screening_enabled: bool = Field(default=False)
     high_risk_countries: List[str] = Field(default_factory=list)
-
 
 class ReportingSetup(BaseModel):
     """Reporting setup from step 8."""
@@ -194,7 +177,6 @@ class ReportingSetup(BaseModel):
     first_reporting_year: int = Field(default=2025, ge=2024, le=2030)
     assurance_level: str = Field(default="limited")
 
-
 class WizardStepState(BaseModel):
     """State of a single wizard step."""
 
@@ -206,7 +188,6 @@ class WizardStepState(BaseModel):
     started_at: Optional[datetime] = Field(None)
     completed_at: Optional[datetime] = Field(None)
     execution_time_ms: float = Field(default=0.0)
-
 
 class WizardState(BaseModel):
     """Complete state of the retail setup wizard."""
@@ -223,9 +204,8 @@ class WizardState(BaseModel):
     supply_chain_config: Optional[SupplyChainConfig] = Field(None)
     reporting_setup: Optional[ReportingSetup] = Field(None)
     is_complete: bool = Field(default=False)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     completed_at: Optional[datetime] = Field(None)
-
 
 class SetupResult(BaseModel):
     """Final setup result."""
@@ -240,9 +220,8 @@ class SetupResult(BaseModel):
     total_steps_completed: int = Field(default=0)
     total_steps: int = Field(default=8)
     configuration_hash: str = Field(default="")
-    generated_at: datetime = Field(default_factory=_utcnow)
+    generated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Step Definitions
@@ -269,7 +248,6 @@ STEP_DISPLAY_NAMES: Dict[RetailWizardStep, str] = {
     RetailWizardStep.SUPPLY_CHAIN: "Supply Chain",
     RetailWizardStep.REPORTING_SETUP: "Reporting Setup",
 }
-
 
 # ---------------------------------------------------------------------------
 # Sub-Sector Presets (13 presets)
@@ -369,11 +347,9 @@ SUB_SECTOR_PRESETS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # RetailSetupWizard
 # ---------------------------------------------------------------------------
-
 
 class RetailSetupWizard:
     """8-step retail-specific configuration wizard for PACK-014.
@@ -407,7 +383,7 @@ class RetailSetupWizard:
 
     def start(self) -> WizardState:
         """Start a new wizard session."""
-        wizard_id = _compute_hash(f"retail-wizard:{_utcnow().isoformat()}")[:16]
+        wizard_id = _compute_hash(f"retail-wizard:{utcnow().isoformat()}")[:16]
         steps: Dict[str, WizardStepState] = {}
         for step_name in STEP_ORDER:
             steps[step_name.value] = WizardStepState(
@@ -442,7 +418,7 @@ class RetailSetupWizard:
             raise ValueError(f"Step '{step_name}' not found")
 
         step.status = StepStatus.IN_PROGRESS
-        step.started_at = _utcnow()
+        step.started_at = utcnow()
         start_time = time.monotonic()
 
         handler = self._step_handlers.get(step_enum)
@@ -460,7 +436,7 @@ class RetailSetupWizard:
                 step.validation_errors = errors
             else:
                 step.status = StepStatus.COMPLETED
-                step.completed_at = _utcnow()
+                step.completed_at = utcnow()
                 step.validation_errors = []
                 self._advance_step(step_enum)
         except Exception as exc:
@@ -660,7 +636,7 @@ class RetailSetupWizard:
                 self._state.current_step = STEP_ORDER[idx + 1]
             else:
                 self._state.is_complete = True
-                self._state.completed_at = _utcnow()
+                self._state.completed_at = utcnow()
         except ValueError:
             pass
 

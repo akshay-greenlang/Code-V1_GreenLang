@@ -67,6 +67,7 @@ from typing import Any, Dict, List, Optional, Union
 
 import yaml
 from pydantic import BaseModel, Field, field_validator, model_validator
+from greenlang.schemas.enums import ReportFormat
 
 logger = logging.getLogger(__name__)
 
@@ -157,15 +158,6 @@ class DataSourceType(str, Enum):
     ERP_DYNAMICS = "ERP_DYNAMICS"
     API = "API"
     FILE_UPLOAD = "FILE_UPLOAD"
-
-
-class ReportFormat(str, Enum):
-    """Output format for reports and disclosures."""
-
-    MARKDOWN = "MARKDOWN"
-    HTML = "HTML"
-    JSON = "JSON"
-    PDF = "PDF"
 
 
 class Scope3Method(str, Enum):

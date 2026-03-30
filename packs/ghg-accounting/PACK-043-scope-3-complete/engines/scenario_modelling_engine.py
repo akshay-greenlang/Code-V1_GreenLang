@@ -80,21 +80,13 @@ logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "43.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -112,7 +104,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serialisable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -121,7 +112,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -133,17 +123,14 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _s_curve(t: float, k: float = 0.5, t0: float = 5.0) -> float:
     """Logistic S-curve for technology adoption.
@@ -158,11 +145,9 @@ def _s_curve(t: float, k: float = 0.5, t0: float = 5.0) -> float:
     """
     return 1.0 / (1.0 + math.exp(-k * (t - t0)))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class InterventionType(str, Enum):
     """Type of emission reduction intervention.
@@ -191,7 +176,6 @@ class InterventionType(str, Enum):
     PROCESS_OPTIMISATION = "process_optimisation"
     CUSTOM = "custom"
 
-
 class ScenarioType(str, Enum):
     """Type of what-if scenario.
 
@@ -206,7 +190,6 @@ class ScenarioType(str, Enum):
     REGULATORY = "regulatory"
     TECHNOLOGY = "technology"
     CUSTOM = "custom"
-
 
 class ParisPathway(str, Enum):
     """Paris Agreement alignment pathway.
@@ -225,13 +208,11 @@ class ParisPathway(str, Enum):
     NGFS_DISORDERLY = "ngfs_disorderly"
     NGFS_HOT_HOUSE = "ngfs_hot_house"
 
-
 class ModellingStatus(str, Enum):
     """Status of scenario modelling."""
     COMPLETE = "complete"
     PARTIAL = "partial"
     ERROR = "error"
-
 
 # ---------------------------------------------------------------------------
 # Default Intervention Parameters
@@ -514,11 +495,9 @@ PARIS_PATHWAY_RATES: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class Intervention(BaseModel):
     """An emission reduction intervention.
@@ -560,7 +539,6 @@ class Intervention(BaseModel):
     start_year: int = Field(default=2025, description="Start year")
     description: str = Field(default="", description="Description")
 
-
 class BaselineEmissions(BaseModel):
     """Baseline emissions for scenario modelling.
 
@@ -580,7 +558,6 @@ class BaselineEmissions(BaseModel):
     total_scope12_tco2e: Decimal = Field(
         default=Decimal("0"), ge=0, description="Scope 1+2"
     )
-
 
 class ScenarioAssumptions(BaseModel):
     """Assumptions for what-if scenario.
@@ -605,7 +582,6 @@ class ScenarioAssumptions(BaseModel):
         default_factory=dict, description="Category adjustments %"
     )
     description: str = Field(default="", description="Description")
-
 
 class TechnologyTransition(BaseModel):
     """A technology transition for pathway modelling.
@@ -633,7 +609,6 @@ class TechnologyTransition(BaseModel):
     )
     start_year: int = Field(default=2025, description="Start year")
 
-
 class SupplierProgramme(BaseModel):
     """Supplier engagement programme definition.
 
@@ -660,11 +635,9 @@ class SupplierProgramme(BaseModel):
     )
     duration_years: int = Field(default=3, ge=1, description="Duration years")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class MACCItem(BaseModel):
     """A single item on the MACC curve.
@@ -690,7 +663,6 @@ class MACCItem(BaseModel):
     is_negative_cost: bool = Field(default=False, description="Net savings")
     width_tco2e: Decimal = Field(default=Decimal("0"), description="Width")
 
-
 class MACCResult(BaseModel):
     """Complete MACC curve result.
 
@@ -712,7 +684,6 @@ class MACCResult(BaseModel):
         default=0, description="Net savings count"
     )
     items: List[MACCItem] = Field(default_factory=list, description="Items")
-
 
 class ScenarioResult(BaseModel):
     """What-if scenario result.
@@ -738,7 +709,6 @@ class ScenarioResult(BaseModel):
         default_factory=dict, description="Assumptions"
     )
 
-
 class WaterfallItem(BaseModel):
     """A single item in a reduction waterfall chart.
 
@@ -756,7 +726,6 @@ class WaterfallItem(BaseModel):
     )
     is_total: bool = Field(default=False, description="Is total bar")
     category: str = Field(default="", description="Category")
-
 
 class ParisAlignment(BaseModel):
     """Paris alignment check result.
@@ -798,7 +767,6 @@ class ParisAlignment(BaseModel):
         default=None, description="First misaligned year"
     )
 
-
 class PortfolioOptimisation(BaseModel):
     """Portfolio optimisation result.
 
@@ -828,7 +796,6 @@ class PortfolioOptimisation(BaseModel):
     residual_emissions_tco2e: Decimal = Field(
         default=Decimal("0"), description="Residual"
     )
-
 
 class ScenarioModellingResult(BaseModel):
     """Complete scenario modelling result.
@@ -868,12 +835,11 @@ class ScenarioModellingResult(BaseModel):
     status: ModellingStatus = Field(
         default=ModellingStatus.COMPLETE, description="Status"
     )
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Timestamp")
     processing_time_ms: Decimal = Field(
         default=Decimal("0"), description="Processing ms"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 # ---------------------------------------------------------------------------
 # Model Rebuild
@@ -892,11 +858,9 @@ ParisAlignment.model_rebuild()
 PortfolioOptimisation.model_rebuild()
 ScenarioModellingResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ScenarioModellingEngine:
     """Model emission reduction scenarios and pathways.
@@ -907,6 +871,8 @@ class ScenarioModellingEngine:
 
     Follows the zero-hallucination principle: all intervention parameters
     from published sources; all pathway rates from IEA/NGFS data.
+
+from greenlang.schemas import utcnow
 
     Attributes:
         _warnings: Warnings generated during modelling.

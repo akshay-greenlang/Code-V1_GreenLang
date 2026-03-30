@@ -44,26 +44,19 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -76,11 +69,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Agent Stubs
 # ---------------------------------------------------------------------------
-
 
 class _AgentStub:
     """Stub for unavailable MRV agent modules."""
@@ -100,7 +91,6 @@ class _AgentStub:
             }
         return _stub_method
 
-
 def _try_import_mrv_agent(agent_id: str, module_path: str) -> Any:
     """Try to import an MRV agent with graceful fallback.
 
@@ -113,16 +103,15 @@ def _try_import_mrv_agent(agent_id: str, module_path: str) -> Any:
     """
     try:
         import importlib
+
         return importlib.import_module(module_path)
     except ImportError:
         logger.debug("MRV agent %s not available, using stub", agent_id)
         return _AgentStub(agent_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class PSEmissionCategory(str, Enum):
     """Peak shaving emission accounting categories mapped to MRV agents."""
@@ -134,14 +123,12 @@ class PSEmissionCategory(str, Enum):
     CP_AVOIDANCE = "cp_avoidance"
     DEMAND_REDUCTION = "demand_reduction"
 
-
 class MRVScope(str, Enum):
     """GHG Protocol emission scopes."""
 
     SCOPE_1 = "scope_1"
     SCOPE_2 = "scope_2"
     SCOPE_3 = "scope_3"
-
 
 class PeakPeriodType(str, Enum):
     """Peak period type classifications."""
@@ -152,7 +139,6 @@ class PeakPeriodType(str, Enum):
     SUPER_PEAK = "super_peak"
     SHOULDER = "shoulder"
 
-
 class EmissionFactorSource(str, Enum):
     """Source of marginal emission factor data."""
 
@@ -161,7 +147,6 @@ class EmissionFactorSource(str, Enum):
     EPA_EGRID = "EPA_eGRID"
     ISO_RTO = "ISO_RTO"
     CUSTOM = "custom"
-
 
 class ReductionMethod(str, Enum):
     """Method used to achieve peak reduction."""
@@ -173,11 +158,9 @@ class ReductionMethod(str, Enum):
     PROCESS_RESCHEDULE = "process_reschedule"
     COMBINED = "combined"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class MRVRouteConfig(BaseModel):
     """Configuration for the MRV Peak Shaving Bridge."""
@@ -195,7 +178,6 @@ class MRVRouteConfig(BaseModel):
         default=True, description="Use marginal EF for peak period accounting (recommended)"
     )
 
-
 class MRVRequest(BaseModel):
     """Request to calculate avoided emissions from peak shaving."""
 
@@ -211,20 +193,18 @@ class MRVRequest(BaseModel):
     event_timestamp: Optional[datetime] = Field(None)
     emission_factor_override: Optional[float] = Field(None, ge=0.0)
 
-
 class EmissionFactorSet(BaseModel):
     """Emission factor data for a grid region and time period."""
 
     factor_id: str = Field(default_factory=_new_uuid)
     grid_region: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     average_ef_kgco2_per_kwh: float = Field(default=0.0, ge=0.0)
     marginal_ef_kgco2_per_kwh: float = Field(default=0.0, ge=0.0)
     peak_ef_kgco2_per_kwh: float = Field(default=0.0, ge=0.0)
     source: str = Field(default="", description="WattTime|ElectricityMaps|EPA_eGRID|custom")
     confidence_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
-
 
 class MRVResponse(BaseModel):
     """Response with avoided emissions calculation from peak shaving."""
@@ -244,7 +224,6 @@ class MRVResponse(BaseModel):
     message: str = Field(default="")
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # MRV Agent Routing Table
@@ -317,11 +296,9 @@ MARGINAL_EMISSION_FACTORS: Dict[str, float] = {
     "FR_GRID": 0.052,
 }
 
-
 # ---------------------------------------------------------------------------
 # MRVBridge
 # ---------------------------------------------------------------------------
-
 
 class MRVBridge:
     """Bridge to MRV agents for peak shaving emissions accounting.

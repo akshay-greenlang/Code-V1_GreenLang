@@ -94,6 +94,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -168,20 +169,13 @@ try:
 except ImportError:
     ProvenanceTracker = None  # type: ignore[assignment, misc]
 
-
 # ---------------------------------------------------------------------------
 # UTC helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _utcnow_iso() -> str:
     """Return current UTC datetime as an ISO-8601 string."""
-    return _utcnow().isoformat()
-
+    return utcnow().isoformat()
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -199,7 +193,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Decimal helpers
 # ---------------------------------------------------------------------------
@@ -215,7 +208,6 @@ _CH4_C_RATIO = Decimal("1.333333")   # 16/12 molecular weight ratio CH4/C
 _DAYS_PER_YEAR = Decimal("365")
 _KG_PER_TONNE = Decimal("1000")
 
-
 def _D(value: Any) -> Decimal:
     """Convert a value to Decimal.
 
@@ -228,7 +220,6 @@ def _D(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
     return Decimal(str(value))
-
 
 def _safe_decimal(value: Any, default: Decimal = _ZERO) -> Decimal:
     """Safely convert to Decimal, returning a default on failure.
@@ -247,7 +238,6 @@ def _safe_decimal(value: Any, default: Decimal = _ZERO) -> Decimal:
     except Exception:
         return default
 
-
 def _quantize(value: Decimal) -> Decimal:
     """Quantize a Decimal to pipeline precision.
 
@@ -258,7 +248,6 @@ def _quantize(value: Decimal) -> Decimal:
         Quantized Decimal value.
     """
     return value.quantize(_PRECISION, rounding=ROUND_HALF_UP)
-
 
 # ---------------------------------------------------------------------------
 # GWP values (IPCC AR4 / AR5 / AR6 100-year)
@@ -288,11 +277,9 @@ GWP_VALUES: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ===========================================================================
 # Pipeline Stages
 # ===========================================================================
-
 
 class PipelineStage(str, Enum):
     """Enumeration of the 8 pipeline stages for agricultural emissions."""
@@ -305,7 +292,6 @@ class PipelineStage(str, Enum):
     APPLY_GWP = "APPLY_GWP"
     CHECK_COMPLIANCE = "CHECK_COMPLIANCE"
     ASSEMBLE_RESULTS = "ASSEMBLE_RESULTS"
-
 
 # ---------------------------------------------------------------------------
 # Valid enumerations
@@ -371,7 +357,6 @@ VALID_CALCULATION_METHODS: List[str] = [
 #: Valid GWP assessment report sources.
 VALID_GWP_SOURCES: List[str] = ["AR6", "AR5", "AR4"]
 
-
 # ---------------------------------------------------------------------------
 # IPCC Tier 1 Enteric Fermentation Default EFs (kg CH4/head/year)
 # IPCC 2006 Vol 4 Table 10.11
@@ -400,7 +385,6 @@ ENTERIC_DEFAULT_EFS: Dict[str, Decimal] = {
     "OTHER_LIVESTOCK": Decimal("10"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Manure Management Default MCF (Methane Conversion Factor) by AWMS
 # IPCC 2006 Vol 4 Table 10.17 (temperate climate ~15 deg C)
@@ -423,7 +407,6 @@ MANURE_DEFAULT_MCF: Dict[str, Decimal] = {
     "AEROBIC_TREATMENT": Decimal("0.0"),
     "POULTRY_WITH_LITTER": Decimal("0.015"),
 }
-
 
 # ---------------------------------------------------------------------------
 # Manure Management Default Bo (max CH4 producing capacity, m3 CH4/kg VS)
@@ -522,7 +505,6 @@ MANURE_N2O_EF3: Dict[str, Decimal] = {
     "POULTRY_WITH_LITTER": Decimal("0.001"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Agricultural Soils N2O Default Parameters
 # IPCC 2006 Vol 4 Ch 11
@@ -555,7 +537,6 @@ SOIL_N2O_DEFAULTS: Dict[str, Decimal] = {
     "FRAC_RENEW": Decimal("0.50"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Rice Cultivation Default Parameters
 # IPCC 2006 Vol 4 Ch 5 Table 5.11 / 5.12 / 5.13
@@ -584,7 +565,6 @@ RICE_DEFAULTS: Dict[str, Any] = {
     "DEFAULT_CULTIVATION_DAYS": Decimal("120"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Liming and Urea Application Default EFs
 # IPCC 2006 Vol 4 Ch 11.3
@@ -600,7 +580,6 @@ LIMING_UREA_DEFAULTS: Dict[str, Decimal] = {
     # Urea molecular weight ratio CO2/urea = 44/60
     "UREA_CO2_RATIO": Decimal("0.7333"),
 }
-
 
 # ---------------------------------------------------------------------------
 # Field Burning Default EFs
@@ -727,11 +706,9 @@ FIELD_BURNING_DEFAULTS: Dict[str, Dict[str, Decimal]] = {
 #: CH4 density at STP (kg/m3) for manure Bo conversion
 _CH4_DENSITY = Decimal("0.6682")
 
-
 # ===========================================================================
 # AgriculturalPipelineEngine
 # ===========================================================================
-
 
 class AgriculturalPipelineEngine:
     """End-to-end orchestration pipeline for agricultural emissions.
@@ -844,7 +821,7 @@ class AgriculturalPipelineEngine:
         self._stage_timings: Dict[str, List[float]] = {
             stage.value: [] for stage in PipelineStage
         }
-        self._created_at = _utcnow()
+        self._created_at = utcnow()
 
         engine_status = {
             "db": self._db_engine is not None,
@@ -1008,7 +985,7 @@ class AgriculturalPipelineEngine:
         ctx["frameworks"] = request.get("frameworks", [])
 
         # Reporting year
-        ctx["reporting_year"] = request.get("reporting_year", _utcnow().year)
+        ctx["reporting_year"] = request.get("reporting_year", utcnow().year)
 
         # Climate zone (optional, used for MCF temperature adjustment)
         ctx["climate_zone"] = str(

@@ -76,27 +76,22 @@ from typing import Any, Callable, Coroutine, Dict, List, Optional, Set
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ExecutionStatus, ReportFormat
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
 ProgressCallback = Callable[[str, float, str], Coroutine[Any, Any, None]]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for provenance tracking.
@@ -116,11 +111,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class PipelinePhase(str, Enum):
     """The 12 phases of the Scope 1-2 Complete pipeline."""
@@ -138,25 +131,12 @@ class PipelinePhase(str, Enum):
     COMPLIANCE_MAPPING = "compliance_mapping"
     REPORT_GENERATION = "report_generation"
 
-
-class ExecutionStatus(str, Enum):
-    """Pipeline execution lifecycle status."""
-
-    PENDING = "pending"
-    RUNNING = "running"
-    SUCCESS = "success"
-    FAILED = "failed"
-    SKIPPED = "skipped"
-    CANCELLED = "cancelled"
-
-
 class ConsolidationApproach(str, Enum):
     """GHG Protocol consolidation approaches."""
 
     EQUITY_SHARE = "equity_share"
     FINANCIAL_CONTROL = "financial_control"
     OPERATIONAL_CONTROL = "operational_control"
-
 
 class ComplianceFramework(str, Enum):
     """Supported compliance frameworks for mapping."""
@@ -169,21 +149,9 @@ class ComplianceFramework(str, Enum):
     SBTI = "sbti"
     SEC_CLIMATE = "sec_climate"
 
-
-class ReportFormat(str, Enum):
-    """Report generation formats."""
-
-    PDF = "pdf"
-    EXCEL = "excel"
-    JSON_EXPORT = "json"
-    XML_XBRL = "xml_xbrl"
-    CSV = "csv"
-
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class PhaseConfig(BaseModel):
     """Configuration for a single pipeline phase."""
@@ -195,7 +163,6 @@ class PhaseConfig(BaseModel):
     cache_enabled: bool = Field(default=True)
     optional: bool = Field(default=False)
 
-
 class RetryConfig(BaseModel):
     """Retry configuration with exponential backoff and jitter."""
 
@@ -205,7 +172,6 @@ class RetryConfig(BaseModel):
     jitter_factor: float = Field(
         default=0.5, ge=0.0, le=1.0, description="Jitter multiplier"
     )
-
 
 class PipelineConfig(BaseModel):
     """Configuration for the Scope 1-2 Complete orchestrator."""
@@ -237,7 +203,6 @@ class PipelineConfig(BaseModel):
     uncertainty_method: str = Field(default="error_propagation")
     significance_threshold_tco2e: float = Field(default=1.0, ge=0.0)
 
-
 class PhaseResult(BaseModel):
     """Result of a single phase execution."""
 
@@ -253,7 +218,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     retry_count: int = Field(default=0)
     input_hash: str = Field(default="")
-
 
 class PipelineResult(BaseModel):
     """Complete result of the Scope 1-2 pipeline execution."""
@@ -276,7 +240,6 @@ class PipelineResult(BaseModel):
     quality_score: float = Field(default=0.0, ge=0.0, le=100.0)
     errors: List[str] = Field(default_factory=list)
 
-
 class PipelineStatus(BaseModel):
     """Current status of a pipeline execution."""
 
@@ -287,7 +250,6 @@ class PipelineStatus(BaseModel):
     phases_completed: int = Field(default=0)
     phases_total: int = Field(default=12)
     elapsed_ms: float = Field(default=0.0)
-
 
 # ---------------------------------------------------------------------------
 # DAG Dependency Map
@@ -364,11 +326,9 @@ DEFAULT_PHASE_CONFIGS: Dict[PipelinePhase, PhaseConfig] = {
     for phase in PipelinePhase
 }
 
-
 # ---------------------------------------------------------------------------
 # PackOrchestrator
 # ---------------------------------------------------------------------------
-
 
 class PackOrchestrator:
     """12-phase DAG pipeline orchestrator for Scope 1-2 Complete Pack.
@@ -468,7 +428,7 @@ class PackOrchestrator:
             organization_name=self.config.organization_name,
             reporting_year=self.config.reporting_year,
             status=ExecutionStatus.RUNNING,
-            started_at=_utcnow(),
+            started_at=utcnow(),
         )
         self._results[result.pipeline_id] = result
 
@@ -597,7 +557,7 @@ class PackOrchestrator:
             result.errors.append(str(exc))
 
         finally:
-            result.completed_at = _utcnow()
+            result.completed_at = utcnow()
             result.total_duration_ms = (time.monotonic() - start_time) * 1000
             self._aggregate_emissions(result, shared_context)
             result.quality_score = self._compute_quality_score(result)
@@ -807,7 +767,7 @@ class PackOrchestrator:
             "pipeline_id": pipeline_id,
             "cancelled": True,
             "reason": "Cancellation signal sent",
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     def list_executions(self) -> List[Dict[str, Any]]:
@@ -881,8 +841,8 @@ class PackOrchestrator:
                     phase=phase,
                     status=ExecutionStatus.FAILED,
                     error_message=str(raw),
-                    started_at=_utcnow(),
-                    completed_at=_utcnow(),
+                    started_at=utcnow(),
+                    completed_at=utcnow(),
                 ))
             else:
                 results.append(raw)
@@ -959,8 +919,8 @@ class PackOrchestrator:
         return PhaseResult(
             phase=phase,
             status=ExecutionStatus.FAILED,
-            started_at=_utcnow(),
-            completed_at=_utcnow(),
+            started_at=utcnow(),
+            completed_at=utcnow(),
             error_message=last_error or "Unknown error",
             retry_count=retries,
         )
@@ -985,7 +945,7 @@ class PackOrchestrator:
             PhaseResult with execution details.
         """
         start_time = time.monotonic()
-        phase_start = _utcnow()
+        phase_start = utcnow()
 
         self.logger.info("Executing phase '%s' (attempt %d)", phase.value, attempt + 1)
 
@@ -1192,7 +1152,7 @@ class PackOrchestrator:
             phase=phase,
             status=ExecutionStatus.SUCCESS,
             started_at=phase_start,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             duration_ms=elapsed_ms,
             output_hash=output_hash,
             result_data=outputs,

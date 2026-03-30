@@ -34,7 +34,7 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.agents.base_agents import DeterministicAgent, AuditEntry
@@ -44,6 +44,7 @@ from greenlang.utilities.determinism import (
     content_hash,
     deterministic_id,
 )
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -155,7 +156,7 @@ SECTOR_PATHWAYS = {
 # Pydantic Models
 # =============================================================================
 
-class BaseYearEmissions(BaseModel):
+class BaseYearEmissions(GreenLangBase):
     """Base year emissions data for target setting."""
     base_year: int = Field(..., ge=2015, le=2025, description="Base year (2015-2025)")
     scope_1_tco2e: float = Field(..., ge=0, description="Scope 1 emissions (tCO2e)")
@@ -179,7 +180,7 @@ class BaseYearEmissions(BaseModel):
         return self.scope_1_tco2e + self.scope_2_tco2e + self.scope_3_tco2e
 
 
-class TargetMilestone(BaseModel):
+class TargetMilestone(GreenLangBase):
     """Milestone along target trajectory."""
     year: int = Field(..., description="Milestone year")
     target_emissions_tco2e: float = Field(..., ge=0, description="Target emissions for this year")
@@ -188,7 +189,7 @@ class TargetMilestone(BaseModel):
     is_interim_target: bool = Field(default=False, description="Whether this is a formal interim target")
 
 
-class EmissionTarget(BaseModel):
+class EmissionTarget(GreenLangBase):
     """Complete emission reduction target."""
     target_id: str = Field(..., description="Unique target identifier")
     name: str = Field(..., description="Target name/description")
@@ -229,7 +230,7 @@ class EmissionTarget(BaseModel):
     created_at: datetime = Field(default_factory=DeterministicClock.now)
 
 
-class TargetSettingInput(BaseModel):
+class TargetSettingInput(GreenLangBase):
     """Input model for TargetSettingAgent."""
     operation: str = Field(
         default="set_target",
@@ -264,7 +265,7 @@ class TargetSettingInput(BaseModel):
     interim_target_years: List[int] = Field(default_factory=list, description="Specific interim target years")
 
 
-class TargetSettingOutput(BaseModel):
+class TargetSettingOutput(GreenLangBase):
     """Output model for TargetSettingAgent."""
     operation: str = Field(..., description="Operation performed")
     success: bool = Field(..., description="Whether operation succeeded")

@@ -51,6 +51,9 @@ from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ReportFormat
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -63,22 +66,14 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class ComplianceStatus(str, Enum):
     """Compliance status for a GPS coordinate or batch.
@@ -94,15 +89,6 @@ class ComplianceStatus(str, Enum):
     NEEDS_REVIEW = "needs_review"
     INSUFFICIENT_DATA = "insufficient_data"
 
-
-class ReportFormat(str, Enum):
-    """Supported report output formats."""
-
-    JSON = "json"
-    CSV = "csv"
-    EUDR_XML = "eudr_xml"
-
-
 class RemediationPriority(str, Enum):
     """Priority level for remediation actions."""
 
@@ -111,11 +97,9 @@ class RemediationPriority(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
 
-
 # ---------------------------------------------------------------------------
 # Result Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class ComplianceCertificate:
@@ -161,7 +145,6 @@ class ComplianceCertificate:
     provenance_hash: str = ""
     validation_engine_version: str = _MODULE_VERSION
 
-
 @dataclass
 class RemediationItem:
     """A single remediation action item.
@@ -182,7 +165,6 @@ class RemediationItem:
     fix_instruction: str = ""
     expected_improvement: float = 0.0
     affected_coordinates: int = 0
-
 
 @dataclass
 class QualityTrend:
@@ -207,7 +189,6 @@ class QualityTrend:
     tier_distribution: Dict[str, int] = field(default_factory=dict)
     trend_direction: str = "stable"
     change_pct: float = 0.0
-
 
 @dataclass
 class SubmissionReadiness:
@@ -235,7 +216,6 @@ class SubmissionReadiness:
     minimum_score_met: bool = False
     provenance_hash: str = ""
 
-
 @dataclass
 class AuditTrailEntry:
     """A single entry in the compliance audit trail.
@@ -257,7 +237,6 @@ class AuditTrailEntry:
     details: Dict[str, Any] = field(default_factory=dict)
     hash_value: str = ""
     parent_hash: str = ""
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -369,11 +348,9 @@ REMEDIATION_TEMPLATES: Dict[str, Dict[str, str]] = {
     },
 }
 
-
 # ===========================================================================
 # ComplianceReporter
 # ===========================================================================
-
 
 class ComplianceReporter:
     """Production-grade compliance reporting engine for EUDR GPS coordinates.
@@ -457,7 +434,7 @@ class ComplianceReporter:
             ComplianceCertificate with all fields populated.
         """
         start_time = time.monotonic()
-        now = _utcnow()
+        now = utcnow()
 
         # Determine compliance status
         status = self._determine_compliance_status(
@@ -652,7 +629,7 @@ class ComplianceReporter:
             "commodity_breakdown": commodity_stats,
             "country_breakdown": country_stats,
             "top_issues": top_issues,
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
             "provenance_hash": _compute_hash({
                 "total": total,
                 "valid": valid,
@@ -852,7 +829,7 @@ class ComplianceReporter:
             f'<GeolocationValidation '
             f'xmlns="{EUDR_DDS_NAMESPACE}" '
             f'version="{_MODULE_VERSION}" '
-            f'generated="{_utcnow().isoformat()}">'
+            f'generated="{utcnow().isoformat()}">'
         )
 
         for cert in certificates:
@@ -960,7 +937,7 @@ class ComplianceReporter:
 
         for record in provenance_records:
             timestamp = record.get(
-                "timestamp", _utcnow().isoformat()
+                "timestamp", utcnow().isoformat()
             )
             operation = record.get("operation", "unknown")
             entity_id = record.get("entity_id", "")
@@ -1001,7 +978,7 @@ class ComplianceReporter:
             "first_entry_hash": chain[0]["hash_value"] if chain else "",
             "last_entry_hash": chain[-1]["hash_value"] if chain else "",
             "operation_timeline": operation_counts,
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
         }
 
     # ------------------------------------------------------------------
@@ -1420,7 +1397,7 @@ class ComplianceReporter:
         Returns:
             The recorded AuditTrailEntry.
         """
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
         entry_data = {
             "timestamp": timestamp,
             "operation": operation,
@@ -1479,11 +1456,9 @@ class ComplianceReporter:
         }
         return _compute_hash(hash_data)
 
-
 # ---------------------------------------------------------------------------
 # Internal Helper: XML Escape
 # ---------------------------------------------------------------------------
-
 
 def _xml_escape(value: Optional[str]) -> str:
     """Escape special XML characters.
@@ -1504,7 +1479,6 @@ def _xml_escape(value: Optional[str]) -> str:
         .replace('"', "&quot;")
         .replace("'", "&apos;")
     )
-
 
 # ---------------------------------------------------------------------------
 # Module Exports

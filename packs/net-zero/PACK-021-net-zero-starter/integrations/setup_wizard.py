@@ -34,25 +34,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -65,11 +59,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class NetZeroWizardStep(str, Enum):
     """Names of wizard steps in execution order."""
@@ -81,7 +73,6 @@ class NetZeroWizardStep(str, Enum):
     TARGET_PREFERENCES = "target_preferences"
     PRESET_SELECTION = "preset_selection"
 
-
 class StepStatus(str, Enum):
     """Status of a wizard step."""
 
@@ -91,7 +82,6 @@ class StepStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class ConsolidationApproach(str, Enum):
     """GHG Protocol consolidation approaches."""
 
@@ -99,14 +89,12 @@ class ConsolidationApproach(str, Enum):
     FINANCIAL_CONTROL = "financial_control"
     EQUITY_SHARE = "equity_share"
 
-
 class AmbitionLevel(str, Enum):
     """Target ambition levels."""
 
     AMBITIOUS = "1.5C"
     MODERATE = "well_below_2C"
     STANDARD = "2C"
-
 
 class OrganizationSize(str, Enum):
     """Organization size classification."""
@@ -116,11 +104,9 @@ class OrganizationSize(str, Enum):
     LARGE = "large"
     ENTERPRISE = "enterprise"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class OrganizationProfile(BaseModel):
     """Organization profile from step 1."""
@@ -137,7 +123,6 @@ class OrganizationProfile(BaseModel):
     nace_code: str = Field(default="")
     fiscal_year_end: str = Field(default="12-31")
 
-
 class BoundarySelection(BaseModel):
     """Boundary selection from step 2."""
 
@@ -149,7 +134,6 @@ class BoundarySelection(BaseModel):
     joint_ventures: int = Field(default=0, ge=0)
     equity_share_threshold_pct: float = Field(default=50.0, ge=0.0, le=100.0)
     countries_of_operation: List[str] = Field(default_factory=lambda: ["DE"])
-
 
 class ScopeConfiguration(BaseModel):
     """Scope configuration from step 3."""
@@ -169,7 +153,6 @@ class ScopeConfiguration(BaseModel):
         default_factory=lambda: ["stationary_combustion", "mobile_combustion"],
     )
 
-
 class DataSourceSetup(BaseModel):
     """Data source setup from step 4."""
 
@@ -183,7 +166,6 @@ class DataSourceSetup(BaseModel):
     travel_management_system: str = Field(default="none")
     procurement_system: str = Field(default="none")
 
-
 class TargetPreferences(BaseModel):
     """Target preferences from step 5."""
 
@@ -196,7 +178,6 @@ class TargetPreferences(BaseModel):
     sbti_submission_planned: bool = Field(default=True)
     net_zero_commitment_year: int = Field(default=2050, ge=2030, le=2060)
 
-
 class PresetSelection(BaseModel):
     """Preset selection from step 6."""
 
@@ -205,7 +186,6 @@ class PresetSelection(BaseModel):
     engines_enabled: List[str] = Field(default_factory=list)
     scope3_priority: List[int] = Field(default_factory=list)
     recommended_levers: List[str] = Field(default_factory=list)
-
 
 class WizardStepState(BaseModel):
     """State of a single wizard step."""
@@ -218,7 +198,6 @@ class WizardStepState(BaseModel):
     started_at: Optional[datetime] = Field(None)
     completed_at: Optional[datetime] = Field(None)
     execution_time_ms: float = Field(default=0.0)
-
 
 class WizardState(BaseModel):
     """Complete state of the setup wizard."""
@@ -233,9 +212,8 @@ class WizardState(BaseModel):
     target_prefs: Optional[TargetPreferences] = Field(None)
     preset: Optional[PresetSelection] = Field(None)
     is_complete: bool = Field(default=False)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     completed_at: Optional[datetime] = Field(None)
-
 
 class SetupResult(BaseModel):
     """Final setup result with generated configuration."""
@@ -254,9 +232,8 @@ class SetupResult(BaseModel):
     total_steps_completed: int = Field(default=0)
     total_steps: int = Field(default=6)
     configuration_hash: str = Field(default="")
-    generated_at: datetime = Field(default_factory=_utcnow)
+    generated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Step Definitions
@@ -279,7 +256,6 @@ STEP_DISPLAY_NAMES: Dict[NetZeroWizardStep, str] = {
     NetZeroWizardStep.TARGET_PREFERENCES: "Target Preferences",
     NetZeroWizardStep.PRESET_SELECTION: "Preset Selection",
 }
-
 
 # ---------------------------------------------------------------------------
 # Sector Presets
@@ -373,11 +349,9 @@ SECTOR_PRESETS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # NetZeroSetupWizard
 # ---------------------------------------------------------------------------
-
 
 class NetZeroSetupWizard:
     """6-step guided configuration wizard for PACK-021.
@@ -413,7 +387,7 @@ class NetZeroSetupWizard:
         Returns:
             Initial WizardState.
         """
-        wizard_id = _compute_hash(f"nz-wizard:{_utcnow().isoformat()}")[:16]
+        wizard_id = _compute_hash(f"nz-wizard:{utcnow().isoformat()}")[:16]
         steps: Dict[str, WizardStepState] = {}
         for step_name in STEP_ORDER:
             steps[step_name.value] = WizardStepState(
@@ -452,7 +426,7 @@ class NetZeroSetupWizard:
             raise ValueError(f"Step '{step_name}' not found")
 
         step.status = StepStatus.IN_PROGRESS
-        step.started_at = _utcnow()
+        step.started_at = utcnow()
         start_time = time.monotonic()
 
         handler = self._step_handlers.get(step_enum)
@@ -470,7 +444,7 @@ class NetZeroSetupWizard:
                 step.validation_errors = errors
             else:
                 step.status = StepStatus.COMPLETED
-                step.completed_at = _utcnow()
+                step.completed_at = utcnow()
                 step.validation_errors = []
                 self._advance_step(step_enum)
         except Exception as exc:
@@ -714,7 +688,7 @@ class NetZeroSetupWizard:
                 self._state.current_step = STEP_ORDER[idx + 1]
             else:
                 self._state.is_complete = True
-                self._state.completed_at = _utcnow()
+                self._state.completed_at = utcnow()
         except ValueError:
             pass
 

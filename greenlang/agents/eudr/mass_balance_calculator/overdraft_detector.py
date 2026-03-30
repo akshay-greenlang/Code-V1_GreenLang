@@ -69,6 +69,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Tuple
 
 from greenlang.agents.eudr.mass_balance_calculator.config import get_config
+from greenlang.schemas import utcnow
 from greenlang.agents.eudr.mass_balance_calculator.metrics import (
     observe_overdraft_check_duration,
     record_api_error,
@@ -96,12 +97,6 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance.
 
@@ -114,7 +109,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a new UUID4 string identifier.
 
@@ -122,7 +116,6 @@ def _generate_id() -> str:
         UUID4 string.
     """
     return str(uuid.uuid4())
-
 
 # ---------------------------------------------------------------------------
 # Severity thresholds for multi-level classification
@@ -148,11 +141,9 @@ _SEVERITY_THRESHOLDS: Dict[str, Dict[str, float]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # OverdraftDetector
 # ---------------------------------------------------------------------------
-
 
 class OverdraftDetector:
     """Real-time overdraft detection engine for EUDR mass balance ledgers.
@@ -350,7 +341,7 @@ class OverdraftDetector:
             is_overdraft = False
 
         check_id = _generate_id()
-        now = _utcnow()
+        now = utcnow()
         severity = None
         event_id = None
         alert_id = None
@@ -564,7 +555,7 @@ class OverdraftDetector:
                 - created_at: Alert creation timestamp
         """
         alert_id = _generate_id()
-        now = _utcnow()
+        now = utcnow()
         severity = event_data.get("severity", OverdraftSeverity.WARNING.value)
         facility_id = event_data.get("facility_id", "")
         commodity = event_data.get("commodity", "")
@@ -697,7 +688,7 @@ class OverdraftDetector:
         self._validate_string("event_id", event_id)
         self._validate_string("resolution_entry_id", resolution_entry_id)
 
-        now = _utcnow()
+        now = utcnow()
 
         with self._lock:
             event = self._overdraft_events.get(event_id)
@@ -948,7 +939,7 @@ class OverdraftDetector:
         if expiry_date.tzinfo is None:
             expiry_date = expiry_date.replace(tzinfo=timezone.utc)
 
-        now = _utcnow()
+        now = utcnow()
         if expiry_date <= now:
             raise ValueError("expiry_date must be in the future")
 
@@ -1102,7 +1093,7 @@ class OverdraftDetector:
         """
         self._validate_string("facility_id", facility_id)
 
-        cutoff = _utcnow() - timedelta(days=lookback_days)
+        cutoff = utcnow() - timedelta(days=lookback_days)
         events = self.get_overdraft_history(
             facility_id=facility_id,
             commodity=commodity,
@@ -1247,7 +1238,7 @@ class OverdraftDetector:
         Returns:
             Tuple of (is_exempted, exemption_id or None).
         """
-        now = _utcnow()
+        now = utcnow()
         amount = Decimal(str(amount))
 
         with self._lock:
@@ -1321,7 +1312,7 @@ class OverdraftDetector:
             Overdraft event dictionary.
         """
         event_id = _generate_id()
-        now = _utcnow()
+        now = utcnow()
         resolution_deadline = now + timedelta(
             hours=self._config.overdraft_resolution_hours
         )
@@ -1618,7 +1609,6 @@ class OverdraftDetector:
             f"OverdraftDetector(events={total}, unresolved={unresolved}, "
             f"active_alerts={active_alerts}, mode={self._config.overdraft_mode})"
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

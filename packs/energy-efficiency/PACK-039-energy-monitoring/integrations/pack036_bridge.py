@@ -43,25 +43,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -74,11 +68,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class RateType(str, Enum):
     """Utility rate structure types."""
@@ -90,7 +82,6 @@ class RateType(str, Enum):
     REAL_TIME_PRICING = "real_time_pricing"
     CRITICAL_PEAK_PRICING = "critical_peak_pricing"
 
-
 class TOUPeriodType(str, Enum):
     """Time-of-use period classifications."""
 
@@ -100,7 +91,6 @@ class TOUPeriodType(str, Enum):
     CRITICAL_PEAK = "critical_peak"
     SUPER_OFF_PEAK = "super_off_peak"
 
-
 class SeasonType(str, Enum):
     """Seasonal rate variation periods."""
 
@@ -108,7 +98,6 @@ class SeasonType(str, Enum):
     WINTER = "winter"
     SHOULDER = "shoulder"
     ALL_YEAR = "all_year"
-
 
 class DemandChargeType(str, Enum):
     """Demand charge billing categories."""
@@ -119,7 +108,6 @@ class DemandChargeType(str, Enum):
     TRANSMISSION_DEMAND = "transmission_demand"
     COINCIDENT_PEAK = "coincident_peak"
 
-
 class CurrencyCode(str, Enum):
     """Supported currency codes."""
 
@@ -129,11 +117,9 @@ class CurrencyCode(str, Enum):
     CAD = "CAD"
     AUD = "AUD"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class Pack036Config(BaseModel):
     """Configuration for the PACK-036 Bridge."""
@@ -143,7 +129,6 @@ class Pack036Config(BaseModel):
     enable_provenance: bool = Field(default=True)
     default_currency: CurrencyCode = Field(default=CurrencyCode.USD)
     cache_ttl_minutes: int = Field(default=60, ge=5, le=1440)
-
 
 class RateStructure(BaseModel):
     """A utility rate structure definition from PACK-036."""
@@ -161,7 +146,6 @@ class RateStructure(BaseModel):
     fixed_monthly_charge: float = Field(default=0.0, ge=0.0)
     provenance_hash: str = Field(default="")
 
-
 class TOUPeriod(BaseModel):
     """A time-of-use period definition."""
 
@@ -174,7 +158,6 @@ class TOUPeriod(BaseModel):
     rate_per_kwh: float = Field(default=0.0, ge=0.0)
     description: str = Field(default="")
 
-
 class TariffData(BaseModel):
     """Complete tariff data set from PACK-036."""
 
@@ -184,9 +167,8 @@ class TariffData(BaseModel):
     rate_structures: List[RateStructure] = Field(default_factory=list)
     tou_periods: List[TOUPeriod] = Field(default_factory=list)
     demand_charges: List[Dict[str, Any]] = Field(default_factory=list)
-    imported_at: datetime = Field(default_factory=_utcnow)
+    imported_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class DemandChargeProfile(BaseModel):
     """Demand charge profile from PACK-036."""
@@ -199,11 +181,9 @@ class DemandChargeProfile(BaseModel):
     minimum_kw: float = Field(default=0.0, ge=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Pack036Bridge
 # ---------------------------------------------------------------------------
-
 
 class Pack036Bridge:
     """Bridge to import PACK-036 Utility Analysis data for cost allocation.

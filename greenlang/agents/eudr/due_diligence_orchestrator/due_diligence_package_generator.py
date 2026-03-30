@@ -53,6 +53,7 @@ import logging
 from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.due_diligence_orchestrator.config import (
     DueDiligenceOrchestratorConfig,
@@ -303,7 +304,7 @@ class DueDiligencePackageGenerator:
             >>> pkg = generator.generate_package(workflow_state=state)
             >>> assert len(pkg.sections) == 9
         """
-        start_time = _utcnow()
+        start_time = utcnow()
         outputs = agent_outputs or {}
 
         # Build DDS sections
@@ -352,7 +353,7 @@ class DueDiligencePackageGenerator:
             total_duration_ms=workflow_state.total_duration_ms,
             language=language,
             artifact_hashes=artifact_hashes,
-            generated_at=_utcnow(),
+            generated_at=utcnow(),
             generated_by=generated_by,
         )
 
@@ -360,7 +361,7 @@ class DueDiligencePackageGenerator:
         package.integrity_hash = self._compute_package_hash(package)
         package.provenance_hash = package.integrity_hash
 
-        duration_ms = (_utcnow() - start_time).total_seconds() * 1000
+        duration_ms = (utcnow() - start_time).total_seconds() * 1000
         logger.info(
             f"Generated DD package {package.package_id} for workflow "
             f"{workflow_state.workflow_id}: {len(sections)} sections, "

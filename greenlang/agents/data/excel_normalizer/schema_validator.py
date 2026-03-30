@@ -45,7 +45,9 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+
+from greenlang.schemas import GreenLangBase, utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -54,23 +56,15 @@ __all__ = [
     "SchemaValidator",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Data models
 # ---------------------------------------------------------------------------
 
-
-class ValidationFinding(BaseModel):
+class ValidationFinding(GreenLangBase):
     """A single validation finding."""
 
     finding_id: str = Field(
@@ -88,7 +82,6 @@ class ValidationFinding(BaseModel):
     actual: Optional[str] = Field(None, description="Actual value found")
 
     model_config = {"extra": "forbid"}
-
 
 # ---------------------------------------------------------------------------
 # Canonical schema definitions
@@ -275,11 +268,9 @@ CANONICAL_SCHEMAS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # SchemaValidator
 # ---------------------------------------------------------------------------
-
 
 class SchemaValidator:
     """Schema validation engine for normalised spreadsheet data.
@@ -665,7 +656,7 @@ class SchemaValidator:
                 "findings_info": self._stats["findings_info"],
                 "schemas_used": self._stats["schemas_used"],
                 "available_schemas": list(self._schemas.keys()),
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }
 
     # ------------------------------------------------------------------

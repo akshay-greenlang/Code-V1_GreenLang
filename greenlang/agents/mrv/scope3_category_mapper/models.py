@@ -40,8 +40,9 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, List, Optional, Any
 from datetime import datetime, date
 from enum import Enum
-from pydantic import BaseModel, Field, validator
-from pydantic import ConfigDict
+from pydantic import Field, validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
+
 import hashlib
 import json
 
@@ -1014,7 +1015,7 @@ def category_name(category: Scope3Category) -> str:
 # ==============================================================================
 
 
-class SpendRecord(BaseModel):
+class SpendRecord(GreenLangBase):
     """Spend-based record for classification.
 
     Represents a financial transaction from the general ledger, accounts
@@ -1100,7 +1101,7 @@ class SpendRecord(BaseModel):
         return v
 
 
-class PurchaseOrderRecord(BaseModel):
+class PurchaseOrderRecord(GreenLangBase):
     """Purchase order record for classification.
 
     Contains line-item detail enabling more precise category determination
@@ -1152,7 +1153,7 @@ class PurchaseOrderRecord(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class BOMRecord(BaseModel):
+class BOMRecord(GreenLangBase):
     """Bill of materials record for classification.
 
     BOM records represent individual material inputs to production and
@@ -1201,7 +1202,7 @@ class BOMRecord(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class TravelRecord(BaseModel):
+class TravelRecord(GreenLangBase):
     """Business travel record for classification.
 
     Travel records map to Category 6 (business travel) and may include
@@ -1250,7 +1251,7 @@ class TravelRecord(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class WasteRecord(BaseModel):
+class WasteRecord(GreenLangBase):
     """Waste generation record for classification.
 
     Waste records map to Category 5 (waste generated in operations).
@@ -1284,7 +1285,7 @@ class WasteRecord(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class LeaseRecord(BaseModel):
+class LeaseRecord(GreenLangBase):
     """Lease record for classification.
 
     Lease records map to Category 8 (upstream leased assets) or
@@ -1324,7 +1325,7 @@ class LeaseRecord(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class LogisticsRecord(BaseModel):
+class LogisticsRecord(GreenLangBase):
     """Logistics/transportation record for classification.
 
     Maps to Category 4 (upstream transportation) or Category 9
@@ -1369,7 +1370,7 @@ class LogisticsRecord(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class EnergyRecord(BaseModel):
+class EnergyRecord(GreenLangBase):
     """Energy purchase record for classification.
 
     Maps to Category 3 (fuel- and energy-related activities) for WTT,
@@ -1404,7 +1405,7 @@ class EnergyRecord(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class InvestmentRecord(BaseModel):
+class InvestmentRecord(GreenLangBase):
     """Investment holding record for classification.
 
     Maps to Category 15 (investments), primarily relevant for financial
@@ -1434,7 +1435,7 @@ class InvestmentRecord(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class FranchiseRecord(BaseModel):
+class FranchiseRecord(GreenLangBase):
     """Franchise record for classification.
 
     Maps to Category 14 (franchises) for franchisor reporting.
@@ -1468,7 +1469,7 @@ class FranchiseRecord(BaseModel):
 # ==============================================================================
 
 
-class ClassificationInput(BaseModel):
+class ClassificationInput(GreenLangBase):
     """Input for classifying a single record to a Scope 3 category.
 
     The ``record`` field is a generic dictionary to accommodate diverse
@@ -1504,7 +1505,7 @@ class ClassificationInput(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class BatchClassificationInput(BaseModel):
+class BatchClassificationInput(GreenLangBase):
     """Input for batch classification of multiple records.
 
     Supports up to max_batch_size records (default 50,000) in a single
@@ -1553,7 +1554,7 @@ class BatchClassificationInput(BaseModel):
         return v
 
 
-class ClassificationResult(BaseModel):
+class ClassificationResult(GreenLangBase):
     """Result of classifying a single record to a Scope 3 category.
 
     Contains the mapped category, confidence score, classification method,
@@ -1645,7 +1646,7 @@ class ClassificationResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class BatchClassificationResult(BaseModel):
+class BatchClassificationResult(GreenLangBase):
     """Result of batch classification of multiple records.
 
     Contains aggregated statistics, per-category summary, and the full
@@ -1714,7 +1715,7 @@ class BatchClassificationResult(BaseModel):
 # ==============================================================================
 
 
-class RoutingInstruction(BaseModel):
+class RoutingInstruction(GreenLangBase):
     """Instruction for routing a classified record to a target agent.
 
     After classification, the mapper generates routing instructions
@@ -1753,7 +1754,7 @@ class RoutingInstruction(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class RoutingPlan(BaseModel):
+class RoutingPlan(GreenLangBase):
     """Complete routing plan for a classified batch.
 
     Aggregates all routing instructions and provides a summary of
@@ -1798,7 +1799,7 @@ class RoutingPlan(BaseModel):
 # ==============================================================================
 
 
-class BoundaryDetermination(BaseModel):
+class BoundaryDetermination(GreenLangBase):
     """Boundary determination for a Scope 3 category.
 
     Determines whether a data record falls within a specific category's
@@ -1847,7 +1848,7 @@ class BoundaryDetermination(BaseModel):
 # ==============================================================================
 
 
-class CategoryCompletenessEntry(BaseModel):
+class CategoryCompletenessEntry(GreenLangBase):
     """Completeness assessment for a single Scope 3 category.
 
     Evaluates whether a given category has data available, its quality
@@ -1897,7 +1898,7 @@ class CategoryCompletenessEntry(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class CompletenessReport(BaseModel):
+class CompletenessReport(GreenLangBase):
     """Full completeness report across all 15 Scope 3 categories.
 
     Provides an overall completeness score and identifies gaps where
@@ -1952,7 +1953,7 @@ class CompletenessReport(BaseModel):
 # ==============================================================================
 
 
-class DoubleCountingCheck(BaseModel):
+class DoubleCountingCheck(GreenLangBase):
     """Result of a double-counting prevention check.
 
     Checks for overlap between two categories or between Scope 3 and
@@ -2007,7 +2008,7 @@ class DoubleCountingCheck(BaseModel):
 # ==============================================================================
 
 
-class ComplianceAssessment(BaseModel):
+class ComplianceAssessment(GreenLangBase):
     """Compliance assessment against a regulatory framework.
 
     Evaluates whether the organization's Scope 3 category coverage
@@ -2090,7 +2091,7 @@ class ComplianceSeverity(str, Enum):
 # ==============================================================================
 
 
-class ComplianceFinding(BaseModel):
+class ComplianceFinding(GreenLangBase):
     """Single compliance finding with rule code and severity.
 
     Represents one discrete compliance check result, typically a failure
@@ -2136,7 +2137,7 @@ class ComplianceFinding(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class DetailedComplianceAssessment(BaseModel):
+class DetailedComplianceAssessment(GreenLangBase):
     """Detailed compliance assessment with findings and check counts.
 
     Extends the base ComplianceAssessment with granular findings,
@@ -2200,7 +2201,7 @@ class DetailedComplianceAssessment(BaseModel):
     model_config = ConfigDict(frozen=True)
 
 
-class BenchmarkComparison(BaseModel):
+class BenchmarkComparison(GreenLangBase):
     """Result of comparing actual emissions distribution against benchmarks.
 
     Compares the actual reported percentage for a category against the

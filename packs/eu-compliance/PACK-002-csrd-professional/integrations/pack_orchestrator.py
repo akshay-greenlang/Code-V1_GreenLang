@@ -45,6 +45,7 @@ from enum import Enum
 from typing import Any, Callable, Coroutine, Dict, List, Optional, Set
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -53,21 +54,13 @@ _MODULE_VERSION: str = "1.0.0"
 # Re-export PACK-001 compatible types
 ProgressCallback = Callable[[str, float, str], Coroutine[Any, Any, None]]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash."""
@@ -80,11 +73,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class WorkflowType(str, Enum):
     """Supported workflow types in the CSRD Professional Pack."""
@@ -96,7 +87,6 @@ class WorkflowType(str, Enum):
     CONSOLIDATED_REPORT = "consolidated_report"
     CROSS_FRAMEWORK_ALIGNMENT = "cross_framework_alignment"
     REGULATORY_UPDATE = "regulatory_update"
-
 
 class WorkflowPhase(str, Enum):
     """Execution phases within a workflow."""
@@ -113,7 +103,6 @@ class WorkflowPhase(str, Enum):
     APPROVAL = "approval"
     FINALIZATION = "finalization"
 
-
 class AgentStatusCode(str, Enum):
     """Status codes for individual agents."""
     PENDING = "pending"
@@ -124,13 +113,11 @@ class AgentStatusCode(str, Enum):
     SKIPPED = "skipped"
     DISABLED = "disabled"
 
-
 class QualityGateId(str, Enum):
     """Quality gate identifiers."""
     QG_1 = "QG-1"  # After data_collection
     QG_2 = "QG-2"  # After calculation
     QG_3 = "QG-3"  # After reporting
-
 
 class QualityGateStatus(str, Enum):
     """Quality gate evaluation status."""
@@ -139,11 +126,9 @@ class QualityGateStatus(str, Enum):
     WAIVED = "waived"
     NOT_EVALUATED = "not_evaluated"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class RetryConfig(BaseModel):
     """Configuration for retry logic."""
@@ -158,7 +143,6 @@ class RetryConfig(BaseModel):
     retry_on_timeout: bool = Field(
         default=True, description="Whether to retry on timeout errors"
     )
-
 
 class WebhookConfig(BaseModel):
     """Webhook integration configuration."""
@@ -179,7 +163,6 @@ class WebhookConfig(BaseModel):
     emit_approval_events: bool = Field(
         default=True, description="Emit approval events"
     )
-
 
 class QualityGateConfig(BaseModel):
     """Quality gate configuration."""
@@ -204,7 +187,6 @@ class QualityGateConfig(BaseModel):
         default=True, description="Allow manual gate waivers"
     )
 
-
 class ApprovalConfig(BaseModel):
     """Approval chain integration configuration."""
 
@@ -216,7 +198,6 @@ class ApprovalConfig(BaseModel):
         default="GL-PRO-APPROVAL",
         description="Approval workflow engine agent ID",
     )
-
 
 class OrchestratorConfig(BaseModel):
     """Configuration for the Professional Pack Orchestrator."""
@@ -256,7 +237,6 @@ class OrchestratorConfig(BaseModel):
         description="Max entities to process concurrently",
     )
 
-
 class AgentStatus(BaseModel):
     """Runtime status of an individual agent."""
 
@@ -272,7 +252,6 @@ class AgentStatus(BaseModel):
     provenance_hash: Optional[str] = Field(None)
     retry_count: int = Field(default=0)
 
-
 class QualityGateResult(BaseModel):
     """Result of a quality gate evaluation."""
 
@@ -281,11 +260,10 @@ class QualityGateResult(BaseModel):
     score: float = Field(default=0.0, ge=0.0, le=1.0)
     threshold: float = Field(default=0.0, ge=0.0, le=1.0)
     details: Dict[str, Any] = Field(default_factory=dict)
-    evaluated_at: datetime = Field(default_factory=_utcnow)
+    evaluated_at: datetime = Field(default_factory=utcnow)
     waived_by: Optional[str] = Field(None)
     waiver_reason: Optional[str] = Field(None)
     provenance_hash: str = Field(default="")
-
 
 class PhaseDataStore(BaseModel):
     """Shared data store that accumulates results across workflow phases."""
@@ -328,18 +306,16 @@ class PhaseDataStore(BaseModel):
         """
         return self.phase_results.get(phase)
 
-
 class WebhookEvent(BaseModel):
     """Event payload for webhook emission."""
 
     event_id: str = Field(default_factory=_new_uuid)
     event_type: str = Field(..., description="Event type name")
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     payload: Dict[str, Any] = Field(default_factory=dict)
     source: str = Field(default="pack-002-orchestrator")
     workflow_id: Optional[str] = Field(None)
     entity_id: Optional[str] = Field(None)
-
 
 class WorkflowCheckpoint(BaseModel):
     """Checkpoint saved after each phase for resume capability."""
@@ -349,15 +325,14 @@ class WorkflowCheckpoint(BaseModel):
     phase_completed: str = Field(..., description="Last completed phase")
     phase_results: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
     data_store_snapshot: Dict[str, Any] = Field(default_factory=dict)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class WorkflowExecution(BaseModel):
     """Complete record of a workflow execution."""
 
     execution_id: str = Field(default_factory=lambda: _compute_hash(
-        f"exec:{_utcnow().isoformat()}:{uuid.uuid4()}"
+        f"exec:{utcnow().isoformat()}:{uuid.uuid4()}"
     )[:16])
     workflow_type: WorkflowType = Field(...)
     status: str = Field(default="pending")
@@ -382,7 +357,6 @@ class WorkflowExecution(BaseModel):
         default_factory=dict, description="Retries per phase"
     )
 
-
 class PackStatus(BaseModel):
     """Overall status of the CSRD Professional Pack."""
 
@@ -398,7 +372,6 @@ class PackStatus(BaseModel):
     initialized_at: Optional[datetime] = Field(None)
     health_status: str = Field(default="unknown")
     professional_features: Dict[str, bool] = Field(default_factory=dict)
-
 
 # ---------------------------------------------------------------------------
 # Workflow Phase Definitions
@@ -484,11 +457,9 @@ PHASE_QUALITY_GATES: Dict[WorkflowPhase, QualityGateId] = {
     WorkflowPhase.REPORTING: QualityGateId.QG_3,
 }
 
-
 # ---------------------------------------------------------------------------
 # ProfessionalPackOrchestrator
 # ---------------------------------------------------------------------------
-
 
 class ProfessionalPackOrchestrator:
     """Enhanced orchestrator for CSRD Professional Pack.
@@ -562,7 +533,7 @@ class ProfessionalPackOrchestrator:
         await self._initialize_agents()
 
         self._initialized = True
-        self._initialized_at = _utcnow()
+        self._initialized_at = utcnow()
         elapsed_ms = (time.monotonic() - start_time) * 1000
 
         logger.info(
@@ -631,7 +602,7 @@ class ProfessionalPackOrchestrator:
             entity_id=params.get("entity_id"),
         )
         self._current_execution = execution
-        execution.started_at = _utcnow()
+        execution.started_at = utcnow()
         execution.status = "running"
 
         start_time = time.monotonic()
@@ -731,7 +702,7 @@ class ProfessionalPackOrchestrator:
             execution.errors.append(str(exc))
 
         finally:
-            execution.completed_at = _utcnow()
+            execution.completed_at = utcnow()
             execution.total_execution_time_ms = (
                 (time.monotonic() - start_time) * 1000
             )
@@ -987,7 +958,7 @@ class ProfessionalPackOrchestrator:
             workflow_type=original.workflow_type,
             parameters=merged_params,
             status="running",
-            started_at=_utcnow(),
+            started_at=utcnow(),
             phases_completed=list(checkpoint.phase_results.keys()),
             result_data=dict(checkpoint.phase_results),
         )
@@ -1004,7 +975,7 @@ class ProfessionalPackOrchestrator:
 
         if start_index < 0 or start_index >= len(all_phases):
             execution.status = "completed"
-            execution.completed_at = _utcnow()
+            execution.completed_at = utcnow()
             self._execution_history.append(execution)
             return execution
 
@@ -1040,7 +1011,7 @@ class ProfessionalPackOrchestrator:
             execution.errors.append(str(exc))
 
         finally:
-            execution.completed_at = _utcnow()
+            execution.completed_at = utcnow()
             execution.total_execution_time_ms = (
                 (time.monotonic() - start_time) * 1000
             )
@@ -1221,6 +1192,7 @@ class ProfessionalPackOrchestrator:
             try:
                 # Import WebhookEvent type from webhook_manager for conversion
                 from packs.eu_compliance.PACK_002_csrd_professional.integrations.webhook_manager import (
+
                     WebhookEvent as WMEvent,
                     WebhookEventType,
                 )
@@ -1258,7 +1230,7 @@ class ProfessionalPackOrchestrator:
         """
         uptime = 0.0
         if self._initialized_at:
-            uptime = (_utcnow() - self._initialized_at).total_seconds()
+            uptime = (utcnow() - self._initialized_at).total_seconds()
 
         return PackStatus(
             pack_id=self.config.pack_id,

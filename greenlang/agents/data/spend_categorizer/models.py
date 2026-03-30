@@ -51,7 +51,9 @@ from datetime import date, datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ReportFormat
 
 # ---------------------------------------------------------------------------
 # Re-export Layer 1 enumerations from scope3_category_mapper
@@ -118,21 +120,13 @@ from greenlang.agents.procurement.procurement_carbon_footprint import (
     EmissionCalculation,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # =============================================================================
 # New Enumerations (12)
 # =============================================================================
-
 
 class TaxonomySystem(str, Enum):
     """Taxonomy classification systems for spend categorization.
@@ -149,7 +143,6 @@ class TaxonomySystem(str, Enum):
     CPV = "cpv"
     HS_CN = "hs_cn"
 
-
 class IngestionSource(str, Enum):
     """Source types for spend data ingestion.
 
@@ -163,7 +156,6 @@ class IngestionSource(str, Enum):
     API_FEED = "api_feed"
     MANUAL_ENTRY = "manual_entry"
     PROCUREMENT_PLATFORM = "procurement_platform"
-
 
 class RecordStatus(str, Enum):
     """Lifecycle status of a spend record through the pipeline.
@@ -180,7 +172,6 @@ class RecordStatus(str, Enum):
     VALIDATED = "validated"
     EXPORTED = "exported"
 
-
 class ClassificationConfidence(str, Enum):
     """Classification confidence levels based on score thresholds.
 
@@ -194,7 +185,6 @@ class ClassificationConfidence(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     UNCLASSIFIED = "unclassified"
-
 
 class EmissionFactorSource(str, Enum):
     """Sources for emission factor data.
@@ -210,7 +200,6 @@ class EmissionFactorSource(str, Enum):
     CUSTOM = "custom"
     SUPPLIER_SPECIFIC = "supplier_specific"
 
-
 class EmissionFactorUnit(str, Enum):
     """Units for emission factor values.
 
@@ -223,7 +212,6 @@ class EmissionFactorUnit(str, Enum):
     KG_CO2E_PER_KG = "kgCO2e/kg"
     KG_CO2E_PER_UNIT = "kgCO2e/unit"
     KG_CO2E_PER_KWH = "kgCO2e/kWh"
-
 
 class CurrencyCode(str, Enum):
     """ISO 4217 currency codes for the 12 major trading currencies.
@@ -245,7 +233,6 @@ class CurrencyCode(str, Enum):
     KRW = "KRW"
     MXN = "MXN"
 
-
 class AnalyticsTimeframe(str, Enum):
     """Timeframe options for spend and emissions analytics.
 
@@ -257,20 +244,6 @@ class AnalyticsTimeframe(str, Enum):
     QUARTERLY = "quarterly"
     ANNUAL = "annual"
     CUSTOM = "custom"
-
-
-class ReportFormat(str, Enum):
-    """Output format for categorization reports.
-
-    Defines the serialization format for generated reports
-    including analytics summaries and compliance outputs.
-    """
-
-    JSON = "json"
-    CSV = "csv"
-    MARKDOWN = "markdown"
-    HTML = "html"
-
 
 class RuleMatchType(str, Enum):
     """Match types for category classification rules.
@@ -286,7 +259,6 @@ class RuleMatchType(str, Enum):
     STARTS_WITH = "starts_with"
     ENDS_WITH = "ends_with"
 
-
 class RulePriority(str, Enum):
     """Priority levels for classification rules.
 
@@ -300,7 +272,6 @@ class RulePriority(str, Enum):
     LOW = "low"
     DEFAULT = "default"
 
-
 class HotspotType(str, Enum):
     """Types of hotspot analysis for spend and emissions.
 
@@ -313,13 +284,11 @@ class HotspotType(str, Enum):
     TOP_INTENSITY = "top_intensity"
     RISING_TREND = "rising_trend"
 
-
 # =============================================================================
 # SDK Data Models (15)
 # =============================================================================
 
-
-class SpendRecord(BaseModel):
+class SpendRecord(GreenLangBase):
     """Ingested spend record with all fields for categorization.
 
     Represents a single financial transaction or spend line item
@@ -413,7 +382,7 @@ class SpendRecord(BaseModel):
         description="Tenant identifier for multi-tenant isolation",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the record was ingested",
     )
     provenance_hash: str = Field(
@@ -439,8 +408,7 @@ class SpendRecord(BaseModel):
             raise ValueError("vendor_name must be non-empty")
         return v
 
-
-class NormalizedSpendRecord(BaseModel):
+class NormalizedSpendRecord(GreenLangBase):
     """Spend record after normalization and deduplication.
 
     Extends the raw spend record with normalized fields including
@@ -498,7 +466,7 @@ class NormalizedSpendRecord(BaseModel):
         description="Current lifecycle status (NORMALIZED or later)",
     )
     normalized_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when normalization was performed",
     )
     provenance_hash: str = Field(
@@ -532,8 +500,7 @@ class NormalizedSpendRecord(BaseModel):
             raise ValueError("normalized_vendor_name must be non-empty")
         return v
 
-
-class TaxonomyCode(BaseModel):
+class TaxonomyCode(GreenLangBase):
     """A taxonomy code from a classification system.
 
     Represents a single node in a hierarchical taxonomy tree
@@ -575,8 +542,7 @@ class TaxonomyCode(BaseModel):
             raise ValueError("code must be non-empty")
         return v
 
-
-class TaxonomyClassification(BaseModel):
+class TaxonomyClassification(GreenLangBase):
     """Result of taxonomy classification for a spend record.
 
     Links a normalized spend record to one or more taxonomy codes
@@ -625,7 +591,7 @@ class TaxonomyClassification(BaseModel):
         None, description="ID of the CategoryRule used (if rule-based)",
     )
     classified_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when classification was performed",
     )
     provenance_hash: str = Field(
@@ -643,8 +609,7 @@ class TaxonomyClassification(BaseModel):
             raise ValueError("record_id must be non-empty")
         return v
 
-
-class Scope3Assignment(BaseModel):
+class Scope3Assignment(GreenLangBase):
     """Result of Scope 3 category assignment for a spend record.
 
     Maps a classified spend record to a GHG Protocol Scope 3
@@ -702,7 +667,7 @@ class Scope3Assignment(BaseModel):
         None, description="Taxonomy code used for the mapping (if any)",
     )
     assigned_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when assignment was performed",
     )
     provenance_hash: str = Field(
@@ -728,8 +693,7 @@ class Scope3Assignment(BaseModel):
             raise ValueError("category_name must be non-empty")
         return v
 
-
-class EmissionFactor(BaseModel):
+class EmissionFactor(GreenLangBase):
     """An emission factor from an authoritative source.
 
     Represents a single emission conversion factor used to estimate
@@ -809,8 +773,7 @@ class EmissionFactor(BaseModel):
             raise ValueError("taxonomy_code must be non-empty")
         return v
 
-
-class EmissionCalculationResult(BaseModel):
+class EmissionCalculationResult(GreenLangBase):
     """Result of an emissions calculation for a single spend record.
 
     Contains the calculated emissions estimate with full traceability
@@ -884,7 +847,7 @@ class EmissionCalculationResult(BaseModel):
         None, description="Scope 3 category for the emissions",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when calculation was performed",
     )
     provenance_hash: str = Field(
@@ -910,8 +873,7 @@ class EmissionCalculationResult(BaseModel):
             raise ValueError("vendor_id must be non-empty")
         return v
 
-
-class CategoryRule(BaseModel):
+class CategoryRule(GreenLangBase):
     """A classification rule for automated spend categorization.
 
     Defines a pattern-based rule that maps spend record fields
@@ -981,7 +943,7 @@ class CategoryRule(BaseModel):
         description="User or system that created the rule",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the rule was created",
     )
     tenant_id: str = Field(
@@ -1007,8 +969,7 @@ class CategoryRule(BaseModel):
             raise ValueError("pattern must be non-empty")
         return v
 
-
-class SpendAggregate(BaseModel):
+class SpendAggregate(GreenLangBase):
     """Aggregated spend and emissions data for a single category.
 
     Provides summary statistics for a taxonomy code, Scope 3
@@ -1072,8 +1033,7 @@ class SpendAggregate(BaseModel):
             raise ValueError("category must be non-empty")
         return v
 
-
-class HotspotResult(BaseModel):
+class HotspotResult(GreenLangBase):
     """Result of hotspot analysis identifying high-impact categories.
 
     Identifies categories, vendors, or spend areas that represent
@@ -1146,8 +1106,7 @@ class HotspotResult(BaseModel):
             raise ValueError("category must be non-empty")
         return v
 
-
-class TrendDataPoint(BaseModel):
+class TrendDataPoint(GreenLangBase):
     """A single data point in a spend or emissions trend series.
 
     Represents spend and emissions values for a single time period
@@ -1223,8 +1182,7 @@ class TrendDataPoint(BaseModel):
             raise ValueError(f"direction must be one of {allowed}, got '{v}'")
         return v
 
-
-class CategorizationReport(BaseModel):
+class CategorizationReport(GreenLangBase):
     """A generated categorization report with analytics sections.
 
     Contains a complete report output including title, period,
@@ -1301,7 +1259,7 @@ class CategorizationReport(BaseModel):
         description="Total number of spend records in the report",
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the report was generated",
     )
     generated_by: str = Field(
@@ -1327,8 +1285,7 @@ class CategorizationReport(BaseModel):
             raise ValueError("title must be non-empty")
         return v
 
-
-class IngestionBatch(BaseModel):
+class IngestionBatch(GreenLangBase):
     """Metadata for a batch of ingested spend records.
 
     Tracks the lifecycle, size, source, and error details of
@@ -1387,7 +1344,7 @@ class IngestionBatch(BaseModel):
         description="List of warning messages",
     )
     started_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when ingestion started",
     )
     completed_at: Optional[datetime] = Field(
@@ -1408,8 +1365,7 @@ class IngestionBatch(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class SpendCategorizerStatistics(BaseModel):
+class SpendCategorizerStatistics(GreenLangBase):
     """Aggregated statistics for the spend categorizer service.
 
     Provides high-level operational metrics for monitoring the
@@ -1491,8 +1447,7 @@ class SpendCategorizerStatistics(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class VendorProfile(BaseModel):
+class VendorProfile(GreenLangBase):
     """Profile of a vendor with categorization metadata.
 
     Aggregates vendor-level information including normalized name,
@@ -1598,13 +1553,11 @@ class VendorProfile(BaseModel):
             raise ValueError("normalized_name must be non-empty")
         return v
 
-
 # =============================================================================
 # Request Models (7)
 # =============================================================================
 
-
-class IngestSpendRequest(BaseModel):
+class IngestSpendRequest(GreenLangBase):
     """Request body for ingesting a batch of spend records.
 
     Attributes:
@@ -1647,8 +1600,7 @@ class IngestSpendRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class ClassifyRequest(BaseModel):
+class ClassifyRequest(GreenLangBase):
     """Request body for classifying spend records with taxonomy codes.
 
     Attributes:
@@ -1682,8 +1634,7 @@ class ClassifyRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class MapScope3Request(BaseModel):
+class MapScope3Request(GreenLangBase):
     """Request body for mapping classified records to Scope 3 categories.
 
     Attributes:
@@ -1722,8 +1673,7 @@ class MapScope3Request(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class CalculateEmissionsRequest(BaseModel):
+class CalculateEmissionsRequest(GreenLangBase):
     """Request body for calculating emissions from categorized spend.
 
     Attributes:
@@ -1767,8 +1717,7 @@ class CalculateEmissionsRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class CreateRuleRequest(BaseModel):
+class CreateRuleRequest(GreenLangBase):
     """Request body for creating a new classification rule.
 
     Attributes:
@@ -1841,8 +1790,7 @@ class CreateRuleRequest(BaseModel):
             raise ValueError("pattern must be non-empty")
         return v
 
-
-class AnalyticsRequest(BaseModel):
+class AnalyticsRequest(GreenLangBase):
     """Request body for running spend and emissions analytics.
 
     Attributes:
@@ -1898,8 +1846,7 @@ class AnalyticsRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class GenerateReportRequest(BaseModel):
+class GenerateReportRequest(GreenLangBase):
     """Request body for generating a categorization report.
 
     Attributes:
@@ -1957,7 +1904,6 @@ class GenerateReportRequest(BaseModel):
         if not v or not v.strip():
             raise ValueError("title must be non-empty")
         return v
-
 
 # =============================================================================
 # __all__ export list

@@ -46,29 +46,23 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 def _compute_hash(content: str) -> str:
     """Compute SHA-256 hash of string content."""
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -82,7 +76,6 @@ class OutputFormat(str, Enum):
     JSON = "json"
     XBRL = "xbrl"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Input Models
 # ---------------------------------------------------------------------------
@@ -94,7 +87,6 @@ class BenchmarkContextParagraph(BaseModel):
     data_references: List[str] = Field(
         default_factory=list, description="Referenced data points"
     )
-
 
 class SectorComparisonMetric(BaseModel):
     """Sector comparison metric for ESRS topical standards."""
@@ -108,7 +100,6 @@ class SectorComparisonMetric(BaseModel):
     nace_code: str = Field("", description="NACE sector code")
     gap_to_average_pct: Optional[float] = Field(None, description="Gap to average (%)")
     reporting_year: int = Field(0, description="Reporting year")
-
 
 class TaxonomyAlignmentBenchmark(BaseModel):
     """EU Taxonomy alignment benchmark entry."""
@@ -130,7 +121,6 @@ class TaxonomyAlignmentBenchmark(BaseModel):
     )
     dnsh_compliant: bool = Field(False, description="DNSH criteria met")
 
-
 class XBRLTagMapping(BaseModel):
     """XBRL tag mapping for ESRS benchmark fields."""
     field_name: str = Field(..., description="Field name")
@@ -142,7 +132,6 @@ class XBRLTagMapping(BaseModel):
     value: Optional[str] = Field(None, description="Tagged value")
     period_type: str = Field("duration", description="Period type (instant/duration)")
 
-
 class IntensityCrossReference(BaseModel):
     """Cross-reference to PACK-046 intensity disclosures."""
     disclosure_reference: str = Field("", description="PACK-046 disclosure reference")
@@ -153,7 +142,6 @@ class IntensityCrossReference(BaseModel):
         None, description="Benchmark percentile for this metric"
     )
     link_description: str = Field("", description="Link description")
-
 
 class ESRSE1BenchmarkInput(BaseModel):
     """Complete input model for ESRSE1BenchmarkDisclosure."""
@@ -183,7 +171,6 @@ class ESRSE1BenchmarkInput(BaseModel):
     consolidation_approach: str = Field(
         "operational control", description="Consolidation approach"
     )
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -243,7 +230,7 @@ class ESRSE1BenchmarkDisclosure:
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render ESRS benchmark disclosure as Markdown."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_md(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -251,7 +238,7 @@ class ESRSE1BenchmarkDisclosure:
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render ESRS benchmark disclosure as HTML."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_html(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -259,7 +246,7 @@ class ESRSE1BenchmarkDisclosure:
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render ESRS benchmark disclosure as JSON dict."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_json(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -267,7 +254,7 @@ class ESRSE1BenchmarkDisclosure:
     def render_xbrl(self, data: Dict[str, Any]) -> str:
         """Render ESRS benchmark disclosure as XBRL XML."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_xbrl(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -309,7 +296,7 @@ class ESRSE1BenchmarkDisclosure:
         return (
             f"# {ref} Benchmark Disclosure - {company}\n\n"
             f"**Reporting Year:** {year} | "
-            f"**Report Date:** {_utcnow().strftime('%Y-%m-%d')}\n\n"
+            f"**Report Date:** {utcnow().strftime('%Y-%m-%d')}\n\n"
             "---"
         )
 

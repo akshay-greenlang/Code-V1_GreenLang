@@ -51,7 +51,8 @@ import time
 from datetime import date, datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase, utcnow
 
 # Layer 1 imports
 from greenlang.agents.data.erp_connector_agent import (
@@ -67,16 +68,9 @@ __all__ = [
     "PurchaseOrderEngine",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _hash_int(seed: str, modulus: int) -> int:
     """Deterministic integer from a seed string.
@@ -90,7 +84,6 @@ def _hash_int(seed: str, modulus: int) -> int:
     """
     digest = hashlib.sha256(seed.encode("utf-8")).hexdigest()
     return int(digest[:8], 16) % modulus
-
 
 def _hash_float(seed: str, low: float, high: float) -> float:
     """Deterministic float in [low, high] from a seed string.
@@ -106,7 +99,6 @@ def _hash_float(seed: str, low: float, high: float) -> float:
     digest = hashlib.sha256(seed.encode("utf-8")).hexdigest()
     fraction = int(digest[:8], 16) / 0xFFFFFFFF
     return round(low + fraction * (high - low), 2)
-
 
 # ---------------------------------------------------------------------------
 # Simulated data catalogues
@@ -145,13 +137,11 @@ _MATERIAL_DESCRIPTIONS = [
 
 _PO_STATUSES = ["open", "partial", "complete", "cancelled"]
 
-
 # ---------------------------------------------------------------------------
 # Additional data model
 # ---------------------------------------------------------------------------
 
-
-class GoodsReceipt(BaseModel):
+class GoodsReceipt(GreenLangBase):
     """Goods receipt record for 3-way matching."""
 
     gr_number: str = Field(..., description="Goods receipt number")
@@ -170,11 +160,9 @@ class GoodsReceipt(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
 # ---------------------------------------------------------------------------
 # PurchaseOrderEngine
 # ---------------------------------------------------------------------------
-
 
 class PurchaseOrderEngine:
     """Purchase order extraction and analysis engine.
@@ -482,7 +470,7 @@ class PurchaseOrderEngine:
                 "lines_processed": self._stats["lines_processed"],
                 "cached_pos": len(self._po_cache),
                 "errors": self._stats["errors"],
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }
 
     # ------------------------------------------------------------------
@@ -622,7 +610,7 @@ class PurchaseOrderEngine:
             Hex-encoded SHA-256 digest.
         """
         combined = json.dumps(
-            {"parts": list(parts), "timestamp": _utcnow().isoformat()},
+            {"parts": list(parts), "timestamp": utcnow().isoformat()},
             sort_keys=True,
         )
         return hashlib.sha256(combined.encode("utf-8")).hexdigest()

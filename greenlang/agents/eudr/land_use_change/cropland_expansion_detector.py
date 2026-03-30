@@ -64,6 +64,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -77,27 +78,18 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a unique identifier using UUID4."""
     return str(uuid.uuid4())
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class ConversionType(str, Enum):
     """Type of forest-to-commodity conversion detected.
@@ -115,7 +107,6 @@ class ConversionType(str, Enum):
     FOREST_TO_PASTURE = "FOREST_TO_PASTURE"
     FOREST_TO_TIMBER_PLANTATION = "FOREST_TO_TIMBER_PLANTATION"
     UNKNOWN = "UNKNOWN"
-
 
 # ---------------------------------------------------------------------------
 # Constants: Commodity Spectral Signatures
@@ -238,11 +229,9 @@ _CONFIDENCE_WEIGHTS: Dict[str, float] = {
 #: Spatial clustering threshold for hotspot detection (degrees).
 _DEFAULT_SPATIAL_THRESHOLD_DEG = 0.05
 
-
 # ---------------------------------------------------------------------------
 # Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class PlotConversionInput:
@@ -283,7 +272,6 @@ class PlotConversionInput:
     to_class: str = "cropland"
     cloud_cover_pct: float = 0.0
     classification_confidence: float = 0.8
-
 
 @dataclass
 class CroplandConversion:
@@ -358,11 +346,9 @@ class CroplandConversion:
             "metadata": self.metadata,
         }
 
-
 # ---------------------------------------------------------------------------
 # CroplandExpansionDetector
 # ---------------------------------------------------------------------------
-
 
 class CroplandExpansionDetector:
     """Detects agricultural expansion into forests for all 7 EUDR commodities.
@@ -507,7 +493,7 @@ class CroplandExpansionDetector:
             latitude=latitude,
             longitude=longitude,
             processing_time_ms=round(elapsed_ms, 2),
-            timestamp=_utcnow().isoformat(),
+            timestamp=utcnow().isoformat(),
             metadata={
                 "date_from": date_from,
                 "date_to": date_to,
@@ -1806,6 +1792,7 @@ class CroplandExpansionDetector:
             Period in years (float).
         """
         from datetime import date as date_type
+
         try:
             d1 = date_type.fromisoformat(date_from)
             d2 = date_type.fromisoformat(date_to)
@@ -1843,7 +1830,7 @@ class CroplandExpansionDetector:
             confidence=0.0,
             latitude=plot.latitude,
             longitude=plot.longitude,
-            timestamp=_utcnow().isoformat(),
+            timestamp=utcnow().isoformat(),
             metadata={"error": error_msg},
         )
         result.provenance_hash = self._compute_result_hash(result)
@@ -1878,7 +1865,6 @@ class CroplandExpansionDetector:
             "timestamp": result.timestamp,
         }
         return _compute_hash(hash_data)
-
 
 # ---------------------------------------------------------------------------
 # Module Exports

@@ -64,32 +64,26 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ReportFormat
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 _ZERO = Decimal("0")
 _HUNDRED = Decimal("100")
 _DP6 = Decimal("0.000001")
 _DP2 = Decimal("0.01")
-
 
 def _safe_divide(numerator: Decimal, denominator: Decimal) -> Decimal:
     """Divide with zero-guard."""
@@ -97,11 +91,9 @@ def _safe_divide(numerator: Decimal, denominator: Decimal) -> Decimal:
         return _ZERO
     return (numerator / denominator).quantize(_DP6, rounding=ROUND_HALF_UP)
 
-
 def _quantise(value: Decimal, precision: Decimal = _DP2) -> Decimal:
     """Quantise a Decimal value for display."""
     return value.quantize(precision, rounding=ROUND_HALF_UP)
-
 
 def _fmt_decimal(value: Any, dp: int = 2) -> str:
     """Format a Decimal or numeric value for display."""
@@ -111,11 +103,9 @@ def _fmt_decimal(value: Any, dp: int = 2) -> str:
         return f"{value:.{dp}f}"
     return str(value)
 
-
 def _escape_md(text: str) -> str:
     """Escape pipe characters for markdown tables."""
     return str(text).replace("|", "\\|")
-
 
 def _escape_html(text: str) -> str:
     """Escape HTML special characters."""
@@ -126,7 +116,6 @@ def _escape_html(text: str) -> str:
         .replace(">", "&gt;")
         .replace('"', "&quot;")
     )
-
 
 class _DecimalEncoder(json.JSONEncoder):
     """JSON encoder that serialises Decimal, datetime, and date."""
@@ -140,11 +129,9 @@ class _DecimalEncoder(json.JSONEncoder):
             return obj.isoformat()
         return super().default(obj)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ReportType(str, Enum):
     """Supported multi-site report types."""
@@ -158,19 +145,9 @@ class ReportType(str, Enum):
     QUALITY_HEATMAP = "QUALITY_HEATMAP"
     TREND = "TREND"
 
-
-class ExportFormat(str, Enum):
-    """Supported export formats."""
-    MARKDOWN = "MARKDOWN"
-    HTML = "HTML"
-    JSON = "JSON"
-    CSV = "CSV"
-
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class ReportSection(BaseModel):
     """A single section within a multi-site report."""
@@ -190,7 +167,6 @@ class ReportSection(BaseModel):
         description="Chart specifications for visualisation layer",
     )
 
-
 class DrillDownLevel(BaseModel):
     """A single level in the drill-down hierarchy."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -200,7 +176,6 @@ class DrillDownLevel(BaseModel):
     data: List[Dict[str, Any]] = Field(
         default_factory=list, description="Aggregated data rows for this level"
     )
-
 
 class MultiSiteReport(BaseModel):
     """A complete multi-site report."""
@@ -218,7 +193,7 @@ class MultiSiteReport(BaseModel):
     metadata: Dict[str, Any] = Field(
         default_factory=dict, description="Report metadata"
     )
-    created_at: datetime = Field(default_factory=_utcnow, description="Report timestamp")
+    created_at: datetime = Field(default_factory=utcnow, description="Report timestamp")
     provenance_hash: str = Field("", description="SHA-256 provenance hash")
 
     def model_post_init(self, __context: Any) -> None:
@@ -229,11 +204,9 @@ class MultiSiteReport(BaseModel):
                 payload += f"|{s.section_id}:{s.title}"
             self.provenance_hash = _compute_hash(payload)
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class MultiSiteReportingEngine:
     """
@@ -351,7 +324,7 @@ class MultiSiteReportingEngine:
             metadata={
                 "engine_version": _MODULE_VERSION,
                 "company_name": self._company,
-                "generated_at": _utcnow().isoformat(),
+                "generated_at": utcnow().isoformat(),
             },
         )
 
@@ -1355,7 +1328,6 @@ code {{ background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 0.
                     _fmt_decimal(ds.get("weighted_score", _ZERO), 2),
                 ])
         return rows
-
 
 # ---------------------------------------------------------------------------
 # Pydantic v2 model rebuild (required with `from __future__ import annotations`)

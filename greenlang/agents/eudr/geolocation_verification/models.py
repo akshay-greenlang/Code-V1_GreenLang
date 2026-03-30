@@ -54,25 +54,17 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import (
-    BaseModel,
-    ConfigDict,
     Field,
     field_validator,
     model_validator,
 )
 
 from greenlang.agents.data.eudr_traceability.models import EUDRCommodity
-
+from greenlang.schemas import GreenLangBase, utcnow
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -105,11 +97,9 @@ QUALITY_TIER_THRESHOLDS: Dict[str, Tuple[float, float]] = {
 #: Maximum number of plots in a single batch verification request.
 MAX_BATCH_SIZE: int = 50_000
 
-
 # =============================================================================
 # Enumerations
 # =============================================================================
-
 
 class VerificationLevel(str, Enum):
     """Verification depth level for plot geolocation checks.
@@ -131,7 +121,6 @@ class VerificationLevel(str, Enum):
     STANDARD = "standard"
     DEEP = "deep"
 
-
 class VerificationStatus(str, Enum):
     """Overall verification outcome for a plot or verification component.
 
@@ -147,7 +136,6 @@ class VerificationStatus(str, Enum):
     PASSED = "passed"
     FAILED = "failed"
     WARNING = "warning"
-
 
 class CoordinateIssueType(str, Enum):
     """Classification of coordinate validation issues.
@@ -190,7 +178,6 @@ class CoordinateIssueType(str, Enum):
     ZERO_COORDINATE = "zero_coordinate"
     HEMISPHERE_MISMATCH = "hemisphere_mismatch"
     ROUNDED_COORDINATE = "rounded_coordinate"
-
 
 class PolygonIssueType(str, Enum):
     """Classification of polygon topology issues.
@@ -237,7 +224,6 @@ class PolygonIssueType(str, Enum):
     VERTEX_DENSITY_LOW = "vertex_density_low"
     DEGENERATE_POLYGON = "degenerate_polygon"
 
-
 class OverlapSeverity(str, Enum):
     """Severity classification for protected area overlap.
 
@@ -254,7 +240,6 @@ class OverlapSeverity(str, Enum):
     MARGINAL = "marginal"
     PARTIAL = "partial"
     FULL = "full"
-
 
 class DeforestationStatus(str, Enum):
     """Deforestation cutoff verification status for a plot.
@@ -281,7 +266,6 @@ class DeforestationStatus(str, Enum):
     DEFORESTATION_DETECTED = "deforestation_detected"
     INCONCLUSIVE = "inconclusive"
 
-
 class QualityTier(str, Enum):
     """Quality tier classification based on Geolocation Accuracy Score.
 
@@ -302,7 +286,6 @@ class QualityTier(str, Enum):
     SILVER = "silver"
     BRONZE = "bronze"
     UNVERIFIED = "unverified"
-
 
 class ChangeType(str, Enum):
     """Classification of temporal boundary change events.
@@ -326,13 +309,11 @@ class ChangeType(str, Enum):
     SHIFT = "shift"
     RESHAPE = "reshape"
 
-
 # =============================================================================
 # Core Data Models
 # =============================================================================
 
-
-class CoordinateIssue(BaseModel):
+class CoordinateIssue(GreenLangBase):
     """A single issue detected during coordinate validation.
 
     Represents one specific problem found with a GPS coordinate pair,
@@ -377,8 +358,7 @@ class CoordinateIssue(BaseModel):
             )
         return v
 
-
-class PolygonIssue(BaseModel):
+class PolygonIssue(GreenLangBase):
     """A single issue detected during polygon topology verification.
 
     Represents one specific problem found with a polygon geometry,
@@ -428,8 +408,7 @@ class PolygonIssue(BaseModel):
             )
         return v
 
-
-class RepairSuggestion(BaseModel):
+class RepairSuggestion(GreenLangBase):
     """A suggested auto-repair action for a polygon issue.
 
     Provides actionable guidance for fixing common polygon topology
@@ -469,8 +448,7 @@ class RepairSuggestion(BaseModel):
         description="Suggested corrected vertex list if applicable",
     )
 
-
-class ProtectedAreaOverlap(BaseModel):
+class ProtectedAreaOverlap(GreenLangBase):
     """Details of a detected overlap between a plot and a protected area.
 
     Contains identification, classification, and spatial metrics for
@@ -534,8 +512,7 @@ class ProtectedAreaOverlap(BaseModel):
         description="Severity classification of the overlap",
     )
 
-
-class ProtectedAreaProximity(BaseModel):
+class ProtectedAreaProximity(GreenLangBase):
     """Details of a protected area found near (but not overlapping) a plot.
 
     Used for buffer zone analysis to identify plots that are close to
@@ -580,8 +557,7 @@ class ProtectedAreaProximity(BaseModel):
         description="Cardinal direction from plot to protected area",
     )
 
-
-class TreeCoverLossEvent(BaseModel):
+class TreeCoverLossEvent(GreenLangBase):
     """A single tree cover loss event detected for a plot.
 
     Represents a discrete deforestation or tree cover loss event
@@ -638,13 +614,11 @@ class TreeCoverLossEvent(BaseModel):
         description="Whether event occurred after EUDR cutoff date",
     )
 
-
 # =============================================================================
 # Result Models
 # =============================================================================
 
-
-class CoordinateValidationResult(BaseModel):
+class CoordinateValidationResult(GreenLangBase):
     """Result of multi-layer coordinate validation (Feature 1).
 
     Contains the outcome of all coordinate validation checks including
@@ -727,8 +701,7 @@ class CoordinateValidationResult(BaseModel):
         description="List of specific coordinate issues detected",
     )
 
-
-class PolygonVerificationResult(BaseModel):
+class PolygonVerificationResult(GreenLangBase):
     """Result of polygon topology verification (Feature 2).
 
     Contains the outcome of all polygon topology checks including
@@ -823,8 +796,7 @@ class PolygonVerificationResult(BaseModel):
         description="List of auto-repair suggestions",
     )
 
-
-class ProtectedAreaCheckResult(BaseModel):
+class ProtectedAreaCheckResult(GreenLangBase):
     """Result of protected area intersection analysis (Feature 3).
 
     Contains the outcome of cross-referencing the plot against all
@@ -874,8 +846,7 @@ class ProtectedAreaCheckResult(BaseModel):
         description="IUCN category of most strictly protected area",
     )
 
-
-class DeforestationVerificationResult(BaseModel):
+class DeforestationVerificationResult(GreenLangBase):
     """Result of deforestation cutoff verification (Feature 4).
 
     Contains the outcome of multi-temporal satellite analysis to verify
@@ -942,8 +913,7 @@ class DeforestationVerificationResult(BaseModel):
         description="Structured evidence data for audit",
     )
 
-
-class GeolocationAccuracyScore(BaseModel):
+class GeolocationAccuracyScore(GreenLangBase):
     """Composite Geolocation Accuracy Score (GAS) for a single plot (Feature 5).
 
     Provides a weighted composite score from 0-100 based on six
@@ -1024,7 +994,7 @@ class GeolocationAccuracyScore(BaseModel):
         description="Breakdown of individual check results",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of score calculation",
     )
     provenance_hash: str = Field(
@@ -1032,8 +1002,7 @@ class GeolocationAccuracyScore(BaseModel):
         description="SHA-256 hash for audit trail",
     )
 
-
-class BoundaryChange(BaseModel):
+class BoundaryChange(GreenLangBase):
     """A single boundary change event detected between plot versions.
 
     Describes how a plot's boundary changed between two consecutive
@@ -1086,12 +1055,11 @@ class BoundaryChange(BaseModel):
         description="Whether expansion encroaches into forest",
     )
     detected_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when change was detected",
     )
 
-
-class TemporalChangeResult(BaseModel):
+class TemporalChangeResult(GreenLangBase):
     """Result of temporal consistency analysis for a plot (Feature 6).
 
     Contains the history of boundary changes, anomaly flags, and
@@ -1155,13 +1123,11 @@ class TemporalChangeResult(BaseModel):
         description="End of the analysis period",
     )
 
-
 # =============================================================================
 # Request Models
 # =============================================================================
 
-
-class VerifyCoordinateRequest(BaseModel):
+class VerifyCoordinateRequest(GreenLangBase):
     """Request body for validating a single coordinate pair.
 
     Attributes:
@@ -1173,9 +1139,6 @@ class VerifyCoordinateRequest(BaseModel):
         existing_plot_ids: Optional list of existing plot IDs to check
             for duplicate coordinates.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     latitude: float = Field(
         ...,
         description="WGS84 latitude in decimal degrees",
@@ -1211,8 +1174,7 @@ class VerifyCoordinateRequest(BaseModel):
             )
         return v
 
-
-class VerifyPolygonRequest(BaseModel):
+class VerifyPolygonRequest(GreenLangBase):
     """Request body for verifying a single polygon geometry.
 
     Attributes:
@@ -1223,9 +1185,6 @@ class VerifyPolygonRequest(BaseModel):
         declared_country_code: ISO 3166-1 alpha-2 country code.
         commodity: EUDR commodity for context-aware area limits.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     vertices: List[Tuple[float, float]] = Field(
         ...,
         min_length=3,
@@ -1259,8 +1218,7 @@ class VerifyPolygonRequest(BaseModel):
             )
         return v
 
-
-class VerifyPlotRequest(BaseModel):
+class VerifyPlotRequest(GreenLangBase):
     """Request body for full verification of a single production plot.
 
     Combines coordinate validation, polygon verification (if provided),
@@ -1277,9 +1235,6 @@ class VerifyPlotRequest(BaseModel):
         verification_level: Depth of verification to perform.
         operator_id: Optional operator ID for provenance tracking.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     plot_id: str = Field(
         ...,
         description="Unique identifier for the plot",
@@ -1369,8 +1324,7 @@ class VerifyPlotRequest(BaseModel):
         """
         return self
 
-
-class BatchVerificationRequest(BaseModel):
+class BatchVerificationRequest(GreenLangBase):
     """Request body for submitting a batch verification job.
 
     Attributes:
@@ -1382,9 +1336,6 @@ class BatchVerificationRequest(BaseModel):
             modified since this timestamp.
         operator_id: Operator ID for the batch job.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     plots: List[VerifyPlotRequest] = Field(
         ...,
         min_length=1,
@@ -1416,8 +1367,7 @@ class BatchVerificationRequest(BaseModel):
             raise ValueError("operator_id must be non-empty")
         return v
 
-
-class ComplianceReportRequest(BaseModel):
+class ComplianceReportRequest(GreenLangBase):
     """Request body for generating an Article 9 compliance report.
 
     Attributes:
@@ -1428,9 +1378,6 @@ class ComplianceReportRequest(BaseModel):
             details in the report.
         report_format: Desired report format (json, csv, pdf).
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     operator_id: str = Field(
         ...,
         description="Operator ID for the compliance report",
@@ -1486,13 +1433,11 @@ class ComplianceReportRequest(BaseModel):
             )
         return v
 
-
 # =============================================================================
 # Response Models
 # =============================================================================
 
-
-class PlotVerificationResult(BaseModel):
+class PlotVerificationResult(GreenLangBase):
     """Complete verification result for a single production plot.
 
     Aggregates results from all verification engines (coordinate,
@@ -1580,7 +1525,7 @@ class PlotVerificationResult(BaseModel):
         description="SHA-256 hash for tamper detection",
     )
     verified_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of verification completion",
     )
     processing_time_ms: float = Field(
@@ -1589,8 +1534,7 @@ class PlotVerificationResult(BaseModel):
         description="Total processing time in milliseconds",
     )
 
-
-class BatchProgress(BaseModel):
+class BatchProgress(GreenLangBase):
     """Real-time progress snapshot for a running batch verification job.
 
     Provides current processing status for UI integration via
@@ -1661,8 +1605,7 @@ class BatchProgress(BaseModel):
         description="ID of the plot currently being processed",
     )
 
-
-class BatchVerificationResult(BaseModel):
+class BatchVerificationResult(GreenLangBase):
     """Complete result of a batch verification job.
 
     Provides aggregate statistics and individual plot results for
@@ -1741,7 +1684,7 @@ class BatchVerificationResult(BaseModel):
         description="Individual plot verification results",
     )
     started_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when batch started",
     )
     completed_at: Optional[datetime] = Field(
@@ -1758,8 +1701,7 @@ class BatchVerificationResult(BaseModel):
         description="SHA-256 hash of the complete batch result",
     )
 
-
-class ComplianceSummary(BaseModel):
+class ComplianceSummary(GreenLangBase):
     """Aggregate compliance statistics for a subset of plots.
 
     Used in compliance reports to summarize verification status by
@@ -1819,8 +1761,7 @@ class ComplianceSummary(BaseModel):
         description="Most common issue types in this category",
     )
 
-
-class ComplianceReport(BaseModel):
+class ComplianceReport(GreenLangBase):
     """Complete Article 9 compliance report (Feature 8).
 
     Comprehensive report showing verification status, identified
@@ -1905,7 +1846,7 @@ class ComplianceReport(BaseModel):
         description="Per-plot verification results",
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of report generation",
     )
     report_format: str = Field(
@@ -1916,7 +1857,6 @@ class ComplianceReport(BaseModel):
         default="",
         description="SHA-256 hash of the complete report",
     )
-
 
 # =============================================================================
 # Public API

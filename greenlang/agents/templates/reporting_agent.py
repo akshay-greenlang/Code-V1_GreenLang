@@ -17,22 +17,9 @@ from enum import Enum
 import pandas as pd
 import json
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas.enums import ReportFormat
 
 logger = logging.getLogger(__name__)
-
-
-class ReportFormat(str, Enum):
-    """Supported report formats."""
-    JSON = "json"
-    EXCEL = "excel"
-    PDF = "pdf"
-    XBRL = "xbrl"
-    CSV = "csv"
-    HTML = "html"
-    PARQUET = "parquet"
-    XML = "xml"
-    MARKDOWN = "markdown"
-    YAML = "yaml"
 
 
 class ComplianceFramework(str, Enum):

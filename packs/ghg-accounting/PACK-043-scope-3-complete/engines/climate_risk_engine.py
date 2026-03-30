@@ -74,25 +74,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "43.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -117,7 +111,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -126,7 +119,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -138,32 +130,26 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round2(value: Any) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: Any) -> float:
     """Round to 4 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
-
 
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
 
-
 class RiskType(str, Enum):
     """Climate risk type per TCFD taxonomy."""
     TRANSITION = "transition"
     PHYSICAL = "physical"
-
 
 class TransitionRiskDriver(str, Enum):
     """Transition risk drivers per TCFD."""
@@ -172,7 +158,6 @@ class TransitionRiskDriver(str, Enum):
     TECHNOLOGY_SHIFT = "technology_shift"
     MARKET_SHIFT = "market_shift"
     REPUTATION = "reputation"
-
 
 class PhysicalHazardType(str, Enum):
     """Physical hazard types."""
@@ -183,7 +168,6 @@ class PhysicalHazardType(str, Enum):
     SEA_LEVEL_RISE = "sea_level_rise"
     WILDFIRE = "wildfire"
 
-
 class ScenarioType(str, Enum):
     """Climate scenario types."""
     IEA_NZE = "iea_nze_2050"
@@ -193,7 +177,6 @@ class ScenarioType(str, Enum):
     NGFS_DISORDERLY = "ngfs_disorderly"
     NGFS_HOT_HOUSE = "ngfs_hot_house"
 
-
 class RiskSeverity(str, Enum):
     """Risk severity classification."""
     CRITICAL = "critical"
@@ -201,7 +184,6 @@ class RiskSeverity(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     NEGLIGIBLE = "negligible"
-
 
 class OpportunityType(str, Enum):
     """Climate opportunity types per TCFD."""
@@ -211,7 +193,6 @@ class OpportunityType(str, Enum):
     MARKETS = "markets"
     RESILIENCE = "resilience"
 
-
 class PCAFAssetClass(str, Enum):
     """PCAF asset classes for financed emissions."""
     LISTED_EQUITY = "listed_equity"
@@ -220,7 +201,6 @@ class PCAFAssetClass(str, Enum):
     PROJECT_FINANCE = "project_finance"
     COMMERCIAL_REAL_ESTATE = "commercial_real_estate"
     MORTGAGES = "mortgages"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -342,11 +322,9 @@ REGIONAL_EXPOSURE: Dict[str, Dict[str, float]] = {
 }
 """Regional exposure multipliers for physical hazards."""
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Data Models
 # ---------------------------------------------------------------------------
-
 
 class Scope3CategoryData(BaseModel):
     """Scope 3 category emission data for risk analysis.
@@ -365,7 +343,6 @@ class Scope3CategoryData(BaseModel):
     methodology_tier: str = Field(default="spend", description="Methodology tier")
     key_suppliers: int = Field(default=0, ge=0, description="Number of key suppliers")
     regions: List[str] = Field(default_factory=list, description="Regions of origin")
-
 
 class SupplierLocation(BaseModel):
     """Supplier location for physical risk assessment.
@@ -387,7 +364,6 @@ class SupplierLocation(BaseModel):
         default_factory=list, description="Known hazard vulnerabilities"
     )
 
-
 class ImportItem(BaseModel):
     """Import item for CBAM exposure calculation.
 
@@ -408,7 +384,6 @@ class ImportItem(BaseModel):
         default=None, description="Override CBAM rate"
     )
 
-
 class MarketData(BaseModel):
     """Market data for opportunity assessment.
 
@@ -422,7 +397,6 @@ class MarketData(BaseModel):
     green_premium_pct: float = Field(default=5.0, description="Green premium %")
     customer_willingness_to_pay_pct: float = Field(default=60.0, description="WTP %")
     market_size_total: float = Field(default=0, ge=0, description="Total market size")
-
 
 class SupplierAsset(BaseModel):
     """Supplier asset for stranded asset assessment.
@@ -443,7 +417,6 @@ class SupplierAsset(BaseModel):
     asset_type: str = Field(default="plant", description="Asset type")
     remaining_useful_life_years: int = Field(default=20, ge=0, description="Remaining life")
     annual_emissions_tco2e: float = Field(default=0, ge=0, description="Annual emissions")
-
 
 class TransitionRiskResult(BaseModel):
     """Transition risk quantification result.
@@ -466,7 +439,6 @@ class TransitionRiskResult(BaseModel):
     pct_of_revenue: float = 0.0
     provenance_hash: str = ""
     calculated_at: str = ""
-
 
 class PhysicalRiskResult(BaseModel):
     """Physical risk assessment result.
@@ -492,7 +464,6 @@ class PhysicalRiskResult(BaseModel):
     provenance_hash: str = ""
     calculated_at: str = ""
 
-
 class OpportunityResult(BaseModel):
     """Climate opportunity assessment result.
 
@@ -515,7 +486,6 @@ class OpportunityResult(BaseModel):
     provenance_hash: str = ""
     calculated_at: str = ""
 
-
 class CBAMExposure(BaseModel):
     """CBAM exposure assessment.
 
@@ -531,7 +501,6 @@ class CBAMExposure(BaseModel):
     total_embedded_emissions: float = 0.0
     provenance_hash: str = ""
     calculated_at: str = ""
-
 
 class StrandedAssetResult(BaseModel):
     """Stranded asset assessment.
@@ -554,7 +523,6 @@ class StrandedAssetResult(BaseModel):
     years_to_stranding: float
     provenance_hash: str = ""
     calculated_at: str = ""
-
 
 class FinancialNPV(BaseModel):
     """Net present value of risks and opportunities.
@@ -579,7 +547,6 @@ class FinancialNPV(BaseModel):
     annual_opp_trajectory: Dict[int, float] = Field(default_factory=dict)
     provenance_hash: str = ""
     calculated_at: str = ""
-
 
 class ScenarioResult(BaseModel):
     """Result of a scenario analysis run.
@@ -613,11 +580,9 @@ class ScenarioResult(BaseModel):
     provenance_hash: str = ""
     calculated_at: str = ""
 
-
 # ---------------------------------------------------------------------------
 # Engine Class
 # ---------------------------------------------------------------------------
-
 
 class ClimateRiskEngine:
     """Translates Scope 3 emissions into financial risk metrics.
@@ -694,7 +659,7 @@ class ClimateRiskEngine:
             by_category=by_category,
             severity=severity,
             pct_of_revenue=_round2(pct_rev),
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         )
         result.provenance_hash = _compute_hash(result)
 
@@ -785,7 +750,7 @@ class ClimateRiskEngine:
             by_hazard={k: _round2(v) for k, v in by_hazard.items()},
             by_location={k: _round2(v) for k, v in by_location.items()},
             severity=severity,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         )
         result.provenance_hash = _compute_hash(result)
 
@@ -837,7 +802,7 @@ class ClimateRiskEngine:
             confidence="medium",
             investment_required=_round2(efficiency_savings * Decimal("2")),
             payback_years=_round2(Decimal("2")),
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         ))
 
         # 2. Energy source (renewable energy in supply chain).
@@ -852,7 +817,7 @@ class ClimateRiskEngine:
                 confidence="medium",
                 investment_required=_round2(re_value * Decimal("5")),
                 payback_years=_round2(Decimal("5")),
-                calculated_at=_utcnow().isoformat(),
+                calculated_at=utcnow().isoformat(),
             ))
 
         # 3. Products/services (low-carbon product premium).
@@ -867,7 +832,7 @@ class ClimateRiskEngine:
             confidence="low" if product_value < rev_d * Decimal("0.01") else "medium",
             investment_required=_round2(product_value * Decimal("3")),
             payback_years=_round2(Decimal("3")),
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         ))
 
         # 4. Markets (access new low-carbon markets).
@@ -877,7 +842,7 @@ class ClimateRiskEngine:
             description="Access to growing low-carbon markets and green procurement",
             estimated_annual_value=_round2(market_value),
             confidence="low",
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         ))
 
         # 5. Resilience (supply chain de-risking value).
@@ -887,7 +852,7 @@ class ClimateRiskEngine:
             description="Supply chain resilience through diversification and decarbonisation",
             estimated_annual_value=_round2(resilience_value),
             confidence="medium",
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         ))
 
         for opp in opportunities:
@@ -972,7 +937,7 @@ class ClimateRiskEngine:
             total_cbam_cost=_round2(total_cost),
             by_product={k: _round2(v) for k, v in by_product.items()},
             total_embedded_emissions=_round2(total_emissions),
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
         )
         result.provenance_hash = _compute_hash(result)
 
@@ -1007,7 +972,7 @@ class ClimateRiskEngine:
             List of StrandedAssetResult.
         """
         start_ms = time.time()
-        current_year = _utcnow().year
+        current_year = utcnow().year
         results: List[StrandedAssetResult] = []
 
         for asset in supplier_assets:
@@ -1049,7 +1014,7 @@ class ClimateRiskEngine:
                 impairment_pct=_round2(total_impairment_pct),
                 impairment_value=_round2(impairment_value),
                 years_to_stranding=_round2(years_to_strand),
-                calculated_at=_utcnow().isoformat(),
+                calculated_at=utcnow().isoformat(),
             )
             result.provenance_hash = _compute_hash(result)
             results.append(result)
@@ -1115,7 +1080,7 @@ class ClimateRiskEngine:
                 net_npv=_round2(net),
                 annual_risk_trajectory=risk_traj,
                 annual_opp_trajectory=opp_traj,
-                calculated_at=_utcnow().isoformat(),
+                calculated_at=utcnow().isoformat(),
             )
             result.provenance_hash = _compute_hash(result)
             results.append(result)
@@ -1202,7 +1167,7 @@ class ClimateRiskEngine:
                 opportunities=_round2(opp_value),
                 net_impact=_round2(net_impact),
                 description=params.get("description", ""),
-                calculated_at=_utcnow().isoformat(),
+                calculated_at=utcnow().isoformat(),
             )
             result.provenance_hash = _compute_hash(result)
             results.append(result)
@@ -1229,7 +1194,6 @@ class ClimateRiskEngine:
             SHA-256 hex digest (64 characters).
         """
         return _compute_hash(data)
-
 
 # ---------------------------------------------------------------------------
 # Pydantic v2 model_rebuild for forward-reference resolution

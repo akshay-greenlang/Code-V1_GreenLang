@@ -74,25 +74,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -121,7 +115,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -130,7 +123,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -142,22 +134,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 4) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class VersionStatus(str, Enum):
     """Lifecycle status of an inventory version.
@@ -176,7 +164,6 @@ class VersionStatus(str, Enum):
     SUPERSEDED = "superseded"
     ARCHIVED = "archived"
 
-
 class ChangeType(str, Enum):
     """Type of change detected in a field-level diff.
 
@@ -190,7 +177,6 @@ class ChangeType(str, Enum):
     MODIFIED = "modified"
     UNCHANGED = "unchanged"
 
-
 class RollbackStrategy(str, Enum):
     """Strategy for rolling back to a prior version.
 
@@ -202,7 +188,6 @@ class RollbackStrategy(str, Enum):
     FULL_RESTORE = "full_restore"
     SELECTIVE_FIELDS = "selective_fields"
     MERGE_LATEST = "merge_latest"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -229,11 +214,9 @@ IMMUTABLE_STATUSES = frozenset({
 # Maximum number of versions in a single version chain.
 MAX_VERSION_CHAIN_LENGTH: int = 500
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Core
 # ---------------------------------------------------------------------------
-
 
 class FieldChange(BaseModel):
     """A single field-level change between two versions.
@@ -268,7 +251,6 @@ class FieldChange(BaseModel):
         default=None, description="Percentage change"
     )
     section: str = Field(default="", description="Inventory section")
-
 
 class VersionDiff(BaseModel):
     """Complete diff between two inventory versions.
@@ -307,7 +289,6 @@ class VersionDiff(BaseModel):
     )
     summary: str = Field(default="", description="Diff summary")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class InventoryVersion(BaseModel):
     """A single versioned snapshot of a GHG inventory.
@@ -358,10 +339,10 @@ class InventoryVersion(BaseModel):
     created_by: str = Field(default="", description="Creator user ID")
     created_by_name: str = Field(default="", description="Creator display name")
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation timestamp"
+        default_factory=utcnow, description="Creation timestamp"
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow, description="Last update timestamp"
+        default_factory=utcnow, description="Last update timestamp"
     )
     finalised_at: Optional[datetime] = Field(
         default=None, description="Finalisation timestamp"
@@ -380,7 +361,6 @@ class InventoryVersion(BaseModel):
     )
     notes: str = Field(default="", description="Version notes")
     provenance_hash: str = Field(default="", description="SHA-256 data hash")
-
 
 class VersionComparison(BaseModel):
     """Side-by-side comparison of two inventory versions.
@@ -412,11 +392,9 @@ class VersionComparison(BaseModel):
         default=Decimal("5"), description="Materiality threshold (%)"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class VersioningResult(BaseModel):
     """Complete result from the inventory versioning engine.
@@ -455,13 +433,12 @@ class VersioningResult(BaseModel):
     )
     warnings: List[str] = Field(default_factory=list, description="Warnings")
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Processing timestamp"
+        default_factory=utcnow, description="Processing timestamp"
     )
     processing_time_ms: Decimal = Field(
         default=Decimal("0"), description="Processing time (ms)"
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 # ---------------------------------------------------------------------------
 # Model Rebuild (resolve forward references from __future__ annotations)
@@ -473,11 +450,9 @@ InventoryVersion.model_rebuild()
 VersionComparison.model_rebuild()
 VersioningResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class InventoryVersioningEngine:
     """Version control engine for GHG inventories.
@@ -722,12 +697,12 @@ class InventoryVersioningEngine:
 
         # Apply transition.
         version.status = new_status
-        version.updated_at = _utcnow()
+        version.updated_at = utcnow()
         version.lock_version += 1
 
         # Set finalisation metadata.
         if new_status == VersionStatus.FINAL:
-            version.finalised_at = _utcnow()
+            version.finalised_at = utcnow()
             version.finalised_by = actor_id
             version.label = version.label.replace("-draft", "").replace("-review", "")
             if not version.label.endswith("-final"):
@@ -804,7 +779,7 @@ class InventoryVersioningEngine:
                 version.data[key] = copy.deepcopy(value)
                 changed_fields.append(key)
 
-        version.updated_at = _utcnow()
+        version.updated_at = utcnow()
         version.lock_version += 1
         version.provenance_hash = _compute_hash(version)
 
@@ -1377,7 +1352,7 @@ class InventoryVersioningEngine:
             "actor_id": actor_id,
             "actor_name": actor_name,
             "details": details,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
         entry["provenance_hash"] = _compute_hash(entry)
         self._audit_entries.append(entry)

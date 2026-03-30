@@ -36,26 +36,19 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -68,11 +61,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class BuildingType(str, Enum):
     """Building types for energy assessment."""
@@ -86,7 +77,6 @@ class BuildingType(str, Enum):
     HOTEL = "hotel"
     MULTIFAMILY = "multifamily"
     MIXED_USE = "mixed_use"
-
 
 class RetrofitCategory(str, Enum):
     """Building retrofit categories."""
@@ -102,7 +92,6 @@ class RetrofitCategory(str, Enum):
     ECONOMIZER = "economizer"
     HEAT_RECOVERY = "heat_recovery"
 
-
 class AssessmentLevel(str, Enum):
     """Building energy assessment levels."""
 
@@ -110,7 +99,6 @@ class AssessmentLevel(str, Enum):
     STANDARD = "standard"
     DETAILED = "detailed"
     INVESTMENT_GRADE = "investment_grade"
-
 
 class EnvelopeComponent(str, Enum):
     """Building envelope components."""
@@ -121,7 +109,6 @@ class EnvelopeComponent(str, Enum):
     FLOORS = "floors"
     DOORS = "doors"
     AIR_BARRIER = "air_barrier"
-
 
 class HVACType(str, Enum):
     """HVAC system types."""
@@ -134,11 +121,9 @@ class HVACType(str, Enum):
     AIR_SOURCE_HP = "air_source_hp"
     DISTRICT = "district"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class RetrofitSpec(BaseModel):
     """Retrofit specification from PACK-032 assessment."""
@@ -157,7 +142,6 @@ class RetrofitSpec(BaseModel):
     ipmvp_option_recommended: str = Field(default="option_c")
     interactive_effects: bool = Field(default=True)
 
-
 class EnvelopeData(BaseModel):
     """Building envelope data from PACK-032 assessment."""
 
@@ -168,7 +152,6 @@ class EnvelopeData(BaseModel):
     infiltration_cfm_sqft: float = Field(default=0.0, ge=0.0)
     solar_heat_gain_coefficient: float = Field(default=0.0, ge=0.0, le=1.0)
     condition: str = Field(default="fair")
-
 
 class HVACProfile(BaseModel):
     """HVAC system profile from PACK-032 assessment."""
@@ -185,7 +168,6 @@ class HVACProfile(BaseModel):
     setpoint_cooling_f: float = Field(default=74.0)
     setpoint_heating_f: float = Field(default=70.0)
     operating_schedule: str = Field(default="6am-6pm weekdays")
-
 
 class BuildingAssessment(BaseModel):
     """Building energy assessment from PACK-032."""
@@ -206,7 +188,6 @@ class BuildingAssessment(BaseModel):
     hvac_systems: List[HVACProfile] = Field(default_factory=list)
     retrofit_specs: List[RetrofitSpec] = Field(default_factory=list)
 
-
 class Pack032ImportResult(BaseModel):
     """Result of importing data from PACK-032."""
 
@@ -222,13 +203,11 @@ class Pack032ImportResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
     processing_time_ms: float = Field(default=0.0)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # Pack032Bridge
 # ---------------------------------------------------------------------------
-
 
 class Pack032Bridge:
     """Bridge to PACK-032 Building Energy Assessment data.
@@ -405,6 +384,7 @@ class Pack032Bridge:
         """Check if PACK-032 module is importable."""
         try:
             import importlib
+
             importlib.import_module(
                 "packs.energy_efficiency.PACK_032_building_assessment"
             )

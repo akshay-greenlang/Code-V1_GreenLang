@@ -23,6 +23,8 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
@@ -39,22 +41,15 @@ ENERGY_CONVERSIONS: Dict[str, float] = {
     "short_ton_to_tonne": 0.907185,
 }
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 class FoundationConfig(BaseModel):
     """Configuration for Foundation bridge."""
     timeout_s: float = Field(30.0, ge=5.0)
     enable_telemetry: bool = Field(True)
     enable_citations: bool = Field(True)
-
 
 class ValidationResult(BaseModel):
     """Schema validation result from FOUND-002."""
@@ -63,7 +58,6 @@ class ValidationResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     schema_version: str = ""
 
-
 class NormalizationResult(BaseModel):
     """Unit normalization result from FOUND-003."""
     original_value: float = 0.0
@@ -71,7 +65,6 @@ class NormalizationResult(BaseModel):
     normalized_value: float = 0.0
     normalized_unit: str = ""
     conversion_factor: float = 1.0
-
 
 class AssumptionRecord(BaseModel):
     """Assumption record from FOUND-004."""
@@ -83,7 +76,6 @@ class AssumptionRecord(BaseModel):
     approved_by: str = ""
     provenance_hash: str = ""
 
-
 class CitationRecord(BaseModel):
     """Citation record from FOUND-005."""
     citation_id: str = ""
@@ -91,7 +83,6 @@ class CitationRecord(BaseModel):
     reference: str = ""
     url: str = ""
     accessed_date: str = ""
-
 
 class TelemetryEvent(BaseModel):
     """Telemetry event from FOUND-010."""
@@ -101,7 +92,6 @@ class TelemetryEvent(BaseModel):
     timestamp: str = ""
     duration_ms: float = 0.0
     metadata: Dict[str, Any] = Field(default_factory=dict)
-
 
 class FoundationBridge:
     """

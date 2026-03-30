@@ -31,6 +31,7 @@ import logging
 from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.due_diligence_orchestrator.config import (
     DueDiligenceOrchestratorConfig,
@@ -185,7 +186,7 @@ class AgentClient:
             ...     "EUDR-016", {"countries": ["BR"]}
             ... )
         """
-        start_time = _utcnow()
+        start_time = utcnow()
         request_id = _new_uuid()
         timeout = timeout_s or self._config.agent_timeout_s
 
@@ -220,7 +221,7 @@ class AgentClient:
                 )
 
                 duration_ms = Decimal(str(
-                    (_utcnow() - start_time).total_seconds() * 1000
+                    (utcnow() - start_time).total_seconds() * 1000
                 )).quantize(Decimal("0.01"))
 
                 if 200 <= response.status_code < 300:
@@ -266,7 +267,7 @@ class AgentClient:
 
         except Exception as e:
             duration_ms = Decimal(str(
-                (_utcnow() - start_time).total_seconds() * 1000
+                (utcnow() - start_time).total_seconds() * 1000
             )).quantize(Decimal("0.01"))
 
             error_cls = self._classify_exception(type(e).__name__)

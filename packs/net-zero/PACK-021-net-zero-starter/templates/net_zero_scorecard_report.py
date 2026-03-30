@@ -26,6 +26,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "21.0.0"
@@ -57,14 +59,8 @@ _MATURITY_LEVELS: List[Dict[str, Any]] = [
     {"min": 80, "max": 100, "level": "Leading", "description": "Best-in-class, continuous improvement"},
 ]
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if isinstance(data, dict):
@@ -72,7 +68,6 @@ def _compute_hash(data: Any) -> str:
     else:
         raw = str(data)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 def _dec(val: Any, places: int = 2) -> str:
     try:
@@ -82,13 +77,11 @@ def _dec(val: Any, places: int = 2) -> str:
     except Exception:
         return str(val)
 
-
 def _get_maturity(score: float) -> Dict[str, Any]:
     for level in _MATURITY_LEVELS:
         if level["min"] <= score < level["max"]:
             return level
     return _MATURITY_LEVELS[-1]
-
 
 class NetZeroScorecardReportTemplate:
     """
@@ -111,7 +104,7 @@ class NetZeroScorecardReportTemplate:
     # ------------------------------------------------------------------
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections: List[str] = [
             self._md_header(data),
             self._md_overall_score(data),
@@ -127,7 +120,7 @@ class NetZeroScorecardReportTemplate:
         return content + f"\n\n<!-- Provenance: {prov} -->"
 
     def render_html(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         body = "\n".join([
             self._html_header(data),
@@ -149,7 +142,7 @@ class NetZeroScorecardReportTemplate:
         )
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         dim_scores = data.get("dimension_scores", {})
         overall = self._calc_overall(dim_scores)
         maturity = _get_maturity(overall)

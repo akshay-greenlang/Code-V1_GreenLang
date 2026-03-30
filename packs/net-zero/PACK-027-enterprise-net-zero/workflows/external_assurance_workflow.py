@@ -33,23 +33,18 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "27.0.0"
 _PACK_ID = "PACK-027"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return uuid.uuid4().hex
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 class PhaseStatus(str, Enum):
     PENDING = "pending"
@@ -58,7 +53,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     PENDING = "pending"
     RUNNING = "running"
@@ -66,18 +60,15 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class AssuranceLevel(str, Enum):
     LIMITED = "limited"
     REASONABLE = "reasonable"
-
 
 class AssuranceStandard(str, Enum):
     ISO_14064_3 = "iso_14064_3"
     ISAE_3410 = "isae_3410"
     ISAE_3000 = "isae_3000"
     AA1000AS = "aa1000as"
-
 
 class EvidenceType(str, Enum):
     SOURCE_DATA = "source_data"
@@ -87,18 +78,15 @@ class EvidenceType(str, Enum):
     MANAGEMENT_ASSERTION = "management_assertion"
     PROVENANCE_HASH = "provenance_hash"
 
-
 class ControlTestResult(str, Enum):
     PASS = "pass"
     FAIL = "fail"
     EXCEPTION = "exception"
     NOT_TESTED = "not_tested"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     phase_name: str = Field(...)
@@ -112,7 +100,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     dag_node_id: str = Field(default="")
 
-
 class AssuranceScope(BaseModel):
     assurance_level: str = Field(default="limited")
     assurance_standard: str = Field(default="isae_3410")
@@ -124,7 +111,6 @@ class AssuranceScope(BaseModel):
     criteria: str = Field(default="GHG Protocol Corporate Standard")
     provider: str = Field(default="")
 
-
 class EvidenceItem(BaseModel):
     evidence_id: str = Field(default="")
     evidence_type: str = Field(default="source_data")
@@ -135,7 +121,6 @@ class EvidenceItem(BaseModel):
     collection_date: str = Field(default="")
     status: str = Field(default="collected", description="collected|pending|missing")
 
-
 class Workpaper(BaseModel):
     workpaper_id: str = Field(default="")
     workpaper_name: str = Field(default="")
@@ -144,7 +129,6 @@ class Workpaper(BaseModel):
     format: str = Field(default="XLSX")
     description: str = Field(default="")
     sha256_hash: str = Field(default="")
-
 
 class ControlTest(BaseModel):
     test_id: str = Field(default="")
@@ -156,7 +140,6 @@ class ControlTest(BaseModel):
     result: str = Field(default="pass")
     findings: str = Field(default="")
 
-
 class ExternalAssuranceConfig(BaseModel):
     assurance_level: str = Field(default="limited")
     assurance_standard: str = Field(default="isae_3410")
@@ -167,7 +150,6 @@ class ExternalAssuranceConfig(BaseModel):
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
 
-
 class ExternalAssuranceInput(BaseModel):
     config: ExternalAssuranceConfig = Field(default_factory=ExternalAssuranceConfig)
     total_scope1_tco2e: float = Field(default=0.0, ge=0.0)
@@ -176,7 +158,6 @@ class ExternalAssuranceInput(BaseModel):
     entities_in_scope: int = Field(default=1, ge=1)
     data_sources: List[str] = Field(default_factory=list)
     methodology_documented: bool = Field(default=True)
-
 
 class ExternalAssuranceResult(BaseModel):
     workflow_id: str = Field(...)
@@ -196,11 +177,9 @@ class ExternalAssuranceResult(BaseModel):
     next_steps: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class ExternalAssuranceWorkflow:
     """
@@ -233,7 +212,7 @@ class ExternalAssuranceWorkflow:
         self.logger = logging.getLogger(f"{__name__}.{self.__class__.__name__}")
 
     async def execute(self, input_data: ExternalAssuranceInput) -> ExternalAssuranceResult:
-        started_at = _utcnow()
+        started_at = utcnow()
         self.config = input_data.config
         self._phase_results = []
         overall_status = WorkflowStatus.RUNNING
@@ -265,7 +244,7 @@ class ExternalAssuranceWorkflow:
                 status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
 
         pass_count = sum(1 for t in self._control_tests if t.result == "pass")
         total_tests = len(self._control_tests) or 1
@@ -305,7 +284,7 @@ class ExternalAssuranceWorkflow:
         return result
 
     async def _phase_scope_definition(self, input_data: ExternalAssuranceInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         total = input_data.total_scope1_tco2e + input_data.total_scope2_tco2e + input_data.total_scope3_tco2e
@@ -330,7 +309,7 @@ class ExternalAssuranceWorkflow:
             total * self.config.materiality_threshold_pct / 100, 2,
         )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="scope_definition", phase_number=1,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -340,7 +319,7 @@ class ExternalAssuranceWorkflow:
         )
 
     async def _phase_evidence_collection(self, input_data: ExternalAssuranceInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         evidence_items = [
@@ -374,8 +353,8 @@ class ExternalAssuranceWorkflow:
                 description=desc,
                 source_system=source,
                 record_count=100,
-                sha256_hash=_compute_hash(f"{ev_id}_{_utcnow().isoformat()}"),
-                collection_date=_utcnow().strftime("%Y-%m-%d"),
+                sha256_hash=_compute_hash(f"{ev_id}_{utcnow().isoformat()}"),
+                collection_date=utcnow().strftime("%Y-%m-%d"),
                 status="collected",
             )
             self._evidence.append(item)
@@ -390,7 +369,7 @@ class ExternalAssuranceWorkflow:
             "management_assertion": sum(1 for e in self._evidence if e.evidence_type == "management_assertion"),
         }
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="evidence_collection", phase_number=2,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -400,7 +379,7 @@ class ExternalAssuranceWorkflow:
         )
 
     async def _phase_workpaper_generation(self, input_data: ExternalAssuranceInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         workpaper_defs = [
@@ -429,7 +408,7 @@ class ExternalAssuranceWorkflow:
                 page_count=pages,
                 format=fmt,
                 description=f"{name} - {section} phase workpaper",
-                sha256_hash=_compute_hash(f"{wp_id}_{_utcnow().isoformat()}"),
+                sha256_hash=_compute_hash(f"{wp_id}_{utcnow().isoformat()}"),
             )
             self._workpapers.append(wp)
 
@@ -437,7 +416,7 @@ class ExternalAssuranceWorkflow:
         outputs["total_pages"] = sum(wp.page_count for wp in self._workpapers)
         outputs["sections"] = list({wp.section for wp in self._workpapers})
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="workpaper_generation", phase_number=3,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -447,7 +426,7 @@ class ExternalAssuranceWorkflow:
         )
 
     async def _phase_control_testing(self, input_data: ExternalAssuranceInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         test_defs = [
@@ -483,7 +462,7 @@ class ExternalAssuranceWorkflow:
         outputs["tests_with_exceptions"] = len(self._control_tests) - pass_count
         outputs["pass_rate_pct"] = round(pass_count / max(len(self._control_tests), 1) * 100, 1)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="control_testing", phase_number=4,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),
@@ -493,7 +472,7 @@ class ExternalAssuranceWorkflow:
         )
 
     async def _phase_assurance_package(self, input_data: ExternalAssuranceInput) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
 
         outputs["package_contents"] = [
@@ -512,7 +491,7 @@ class ExternalAssuranceWorkflow:
         outputs["assurance_report_template_ready"] = True
         outputs["package_format"] = "ZIP archive with indexed contents"
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="assurance_package", phase_number=5,
             status=PhaseStatus.COMPLETED, duration_seconds=round(elapsed, 4),

@@ -57,25 +57,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -95,13 +89,11 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely."""
     if isinstance(value, Decimal):
         return value
     return Decimal(str(value))
-
 
 def _safe_divide(
     numerator: float, denominator: float, default: float = 0.0
@@ -111,13 +103,11 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(numerator: float, denominator: float) -> float:
     """Calculate percentage safely, returning 0.0 on zero denominator."""
     if denominator == 0.0:
         return 0.0
     return (numerator / denominator) * 100.0
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value to the specified number of decimal places.
@@ -127,13 +117,11 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
-
 
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
@@ -141,11 +129,9 @@ def _round2(value: float) -> float:
         Decimal("0.01"), rounding=ROUND_HALF_UP
     ))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class IROType(str, Enum):
     """Type of Impact, Risk, or Opportunity per ESRS 1.
@@ -161,14 +147,12 @@ class IROType(str, Enum):
     RISK = "risk"
     OPPORTUNITY = "opportunity"
 
-
 class PriorityLevel(str, Enum):
     """Priority level for an IRO based on combined materiality scoring."""
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
     CRITICAL = "critical"
-
 
 class ESRSTopic(str, Enum):
     """ESRS sustainability topics (self-contained for this engine)."""
@@ -183,13 +167,11 @@ class ESRSTopic(str, Enum):
     S4_CONSUMERS = "s4_consumers"
     G1_BUSINESS_CONDUCT = "g1_business_conduct"
 
-
 class ValueChainStage(str, Enum):
     """Stage of the value chain where the IRO applies."""
     UPSTREAM = "upstream"
     OWN_OPERATIONS = "own_operations"
     DOWNSTREAM = "downstream"
-
 
 class TimeHorizon(str, Enum):
     """Time horizon for the IRO."""
@@ -197,11 +179,9 @@ class TimeHorizon(str, Enum):
     MEDIUM_TERM = "medium_term"
     LONG_TERM = "long_term"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # Default materiality threshold for combined scoring.
 DEFAULT_MATERIALITY_THRESHOLD: Decimal = Decimal("0.40")
@@ -993,11 +973,9 @@ SECTOR_IRO_PRIORITIES: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class IRO(BaseModel):
     """An Impact, Risk, or Opportunity identified per ESRS 1 Para 28-39.
@@ -1063,7 +1041,6 @@ class IRO(BaseModel):
         if not v.strip():
             raise ValueError("IRO name cannot be empty")
         return v.strip()
-
 
 class IROAssessment(BaseModel):
     """Assessment result for a single IRO combining impact and financial scores.
@@ -1131,7 +1108,6 @@ class IROAssessment(BaseModel):
         description="SHA-256 hash for audit trail",
     )
 
-
 class IRORegister(BaseModel):
     """Register of all identified and assessed IROs.
 
@@ -1148,7 +1124,7 @@ class IRORegister(BaseModel):
         description="Engine version used",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of register creation (UTC)",
     )
 
@@ -1226,11 +1202,9 @@ class IRORegister(BaseModel):
         description="SHA-256 hash of the entire register",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class IROIdentificationEngine:
     """IRO identification and register management engine per ESRS 1 Para 28-39.

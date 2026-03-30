@@ -35,9 +35,10 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -89,7 +90,7 @@ class WeatherVariable(str, Enum):
 # PYDANTIC MODELS
 # =============================================================================
 
-class WeatherConnectionConfig(BaseModel):
+class WeatherConnectionConfig(GreenLangBase):
     """Weather data connection configuration."""
     connection_id: str = Field(...)
     provider: WeatherProvider = Field(...)
@@ -98,7 +99,7 @@ class WeatherConnectionConfig(BaseModel):
     timeout_seconds: int = Field(default=30)
 
 
-class Location(BaseModel):
+class Location(GreenLangBase):
     """Geographic location."""
     location_id: str = Field(...)
     name: str = Field(...)
@@ -110,7 +111,7 @@ class Location(BaseModel):
     region: Optional[str] = Field(None)
 
 
-class WeatherObservation(BaseModel):
+class WeatherObservation(GreenLangBase):
     """Weather observation."""
     observation_id: str = Field(...)
     location_id: str = Field(...)
@@ -129,7 +130,7 @@ class WeatherObservation(BaseModel):
     provider: WeatherProvider = Field(...)
 
 
-class DailyWeatherSummary(BaseModel):
+class DailyWeatherSummary(GreenLangBase):
     """Daily weather summary."""
     location_id: str = Field(...)
     observation_date: date = Field(..., description="Date of observation")
@@ -144,7 +145,7 @@ class DailyWeatherSummary(BaseModel):
     cdd: float = Field(default=0, description="Cooling degree days")
 
 
-class ClimateProjection(BaseModel):
+class ClimateProjection(GreenLangBase):
     """Climate projection data."""
     projection_id: str = Field(...)
     location_id: str = Field(...)
@@ -161,7 +162,7 @@ class ClimateProjection(BaseModel):
     uncertainty_high: float = Field(...)
 
 
-class WeatherNormalization(BaseModel):
+class WeatherNormalization(GreenLangBase):
     """Weather normalization result."""
     location_id: str = Field(...)
     period_start: date = Field(...)
@@ -175,7 +176,7 @@ class WeatherNormalization(BaseModel):
     weather_adjustment_factor: float = Field(...)
 
 
-class WeatherQueryInput(BaseModel):
+class WeatherQueryInput(GreenLangBase):
     """Input for weather data query."""
     connection_id: str = Field(...)
     query_type: str = Field(...)  # observations, daily, forecast, climate, normalize
@@ -189,7 +190,7 @@ class WeatherQueryInput(BaseModel):
     calculate_degree_days: bool = Field(default=True)
 
 
-class WeatherQueryOutput(BaseModel):
+class WeatherQueryOutput(GreenLangBase):
     """Output from weather data query."""
     connection_id: str = Field(...)
     query_type: str = Field(...)

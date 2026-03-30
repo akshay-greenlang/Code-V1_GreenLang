@@ -34,6 +34,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "28.0.0"
@@ -79,22 +81,16 @@ XBRL_CONVERGENCE_TAGS: Dict[str, str] = {
     "peer_percentile": "gl:PeerIntensityPercentile",
 }
 
-
 # ---------------------------------------------------------------------------
 # Utility Functions
 # ---------------------------------------------------------------------------
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 
-
 def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str) if isinstance(data, dict) else str(data)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 def _dec(val: Any, places: int = 2) -> str:
     try:
@@ -103,7 +99,6 @@ def _dec(val: Any, places: int = 2) -> str:
         return str(d.quantize(Decimal(q), rounding=ROUND_HALF_UP))
     except Exception:
         return str(val)
-
 
 def _dec_comma(val: Any, places: int = 2) -> str:
     try:
@@ -128,14 +123,12 @@ def _dec_comma(val: Any, places: int = 2) -> str:
     except Exception:
         return str(val)
 
-
 def _pct_change(current: Any, baseline: Any) -> Decimal:
     c = Decimal(str(current))
     b = Decimal(str(baseline))
     if b == 0:
         return Decimal("0.00")
     return ((c - b) / b * Decimal("100")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-
 
 def _rag_status(gap_pct: float) -> str:
     if gap_pct <= 5.0:
@@ -144,7 +137,6 @@ def _rag_status(gap_pct: float) -> str:
         return "AMBER"
     return "RED"
 
-
 def _linear_convergence(base: float, target: float, base_yr: int, target_yr: int, yr: int) -> float:
     if yr <= base_yr:
         return base
@@ -152,7 +144,6 @@ def _linear_convergence(base: float, target: float, base_yr: int, target_yr: int
         return target
     t = (yr - base_yr) / (target_yr - base_yr)
     return base + (target - base) * t
-
 
 def _projected_convergence_year(
     current_intensity: float,
@@ -171,13 +162,11 @@ def _projected_convergence_year(
         intensity *= (1 - annual_reduction_rate / 100)
     return max_year
 
-
 def _cagr(start_val: float, end_val: float, years: int) -> float:
     """Compound annual growth rate (negative = reduction)."""
     if start_val <= 0 or end_val <= 0 or years <= 0:
         return 0.0
     return (math.pow(end_val / start_val, 1.0 / years) - 1) * 100
-
 
 # ---------------------------------------------------------------------------
 # Template Class
@@ -215,7 +204,7 @@ class IntensityConvergenceReportTemplate:
     # ------------------------------------------------------------------
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections: List[str] = [
             self._md_header(data),
             self._md_executive_summary(data),
@@ -237,7 +226,7 @@ class IntensityConvergenceReportTemplate:
         return content + f"\n\n<!-- Provenance: {prov} -->"
 
     def render_html(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         body_parts = [
             self._html_header(data),
@@ -266,7 +255,7 @@ class IntensityConvergenceReportTemplate:
         )
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sector_id = data.get("sector_id", "")
         metric_info = INTENSITY_METRICS.get(sector_id, {})
 

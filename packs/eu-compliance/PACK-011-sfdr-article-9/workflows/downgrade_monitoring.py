@@ -42,18 +42,14 @@ from typing import Any, Callable, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import AlertSeverity
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # UTILITIES
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return current UTC time with timezone info."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute SHA-256 provenance hash of arbitrary data."""
@@ -61,11 +57,9 @@ def _hash_data(data: Any) -> str:
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -75,7 +69,6 @@ class PhaseStatus(str, Enum):
     FAILED = "FAILED"
     SKIPPED = "SKIPPED"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "PENDING"
@@ -84,14 +77,12 @@ class WorkflowStatus(str, Enum):
     FAILED = "FAILED"
     PARTIAL = "PARTIAL"
 
-
 class DowngradeRiskLevel(str, Enum):
     """Downgrade risk classification level."""
     LOW = "LOW"
     MEDIUM = "MEDIUM"
     HIGH = "HIGH"
     CRITICAL = "CRITICAL"
-
 
 class DowngradeTrigger(str, Enum):
     """Types of events that can trigger a downgrade."""
@@ -105,25 +96,15 @@ class DowngradeTrigger(str, Enum):
     REGULATORY_CHANGE = "REGULATORY_CHANGE"
     GOOD_GOVERNANCE_FAILURE = "GOOD_GOVERNANCE_FAILURE"
 
-
-class AlertSeverity(str, Enum):
-    """Alert severity classification."""
-    INFO = "INFO"
-    WARNING = "WARNING"
-    HIGH = "HIGH"
-    CRITICAL = "CRITICAL"
-
-
 # =============================================================================
 # DATA MODELS - SHARED
 # =============================================================================
-
 
 class WorkflowContext(BaseModel):
     """Shared state passed between workflow phases."""
     workflow_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     organization_id: str = Field(..., description="Organization identifier")
-    execution_timestamp: datetime = Field(default_factory=_utcnow)
+    execution_timestamp: datetime = Field(default_factory=utcnow)
     config: Dict[str, Any] = Field(default_factory=dict)
     phase_states: Dict[str, PhaseStatus] = Field(default_factory=dict)
     phase_outputs: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
@@ -146,7 +127,6 @@ class WorkflowContext(BaseModel):
         """Check if a phase has already completed."""
         return self.phase_states.get(phase_name) == PhaseStatus.COMPLETED
 
-
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
     phase_name: str = Field(..., description="Phase identifier")
@@ -160,7 +140,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     records_processed: int = Field(default=0)
 
-
 class WorkflowResult(BaseModel):
     """Complete result from a multi-phase workflow execution."""
     workflow_id: str = Field(..., description="Unique workflow execution ID")
@@ -173,11 +152,9 @@ class WorkflowResult(BaseModel):
     summary: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # DATA MODELS - DOWNGRADE MONITORING
 # =============================================================================
-
 
 class DowngradeMonitoringInput(BaseModel):
     """Input configuration for the downgrade monitoring workflow."""
@@ -259,7 +236,6 @@ class DowngradeMonitoringInput(BaseModel):
             raise ValueError("assessment_date must be YYYY-MM-DD format")
         return v
 
-
 class DowngradeMonitoringResult(WorkflowResult):
     """Complete result from the downgrade monitoring workflow."""
     product_name: str = Field(default="")
@@ -274,11 +250,9 @@ class DowngradeMonitoringResult(WorkflowResult):
     critical_alerts: int = Field(default=0)
     immediate_action_required: bool = Field(default=False)
 
-
 # =============================================================================
 # PHASE IMPLEMENTATIONS
 # =============================================================================
-
 
 class ComplianceCheckPhase:
     """
@@ -301,7 +275,7 @@ class ComplianceCheckPhase:
         Returns:
             PhaseResult with compliance check results.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -490,7 +464,7 @@ class ComplianceCheckPhase:
             status = PhaseStatus.FAILED
             records = 0
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -503,7 +477,6 @@ class ComplianceCheckPhase:
             provenance_hash=_hash_data(outputs),
             records_processed=records,
         )
-
 
 class ThresholdMonitoringPhase:
     """
@@ -526,7 +499,7 @@ class ThresholdMonitoringPhase:
         Returns:
             PhaseResult with threshold monitoring results.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -674,7 +647,7 @@ class ThresholdMonitoringPhase:
             status = PhaseStatus.FAILED
             records = 0
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -687,7 +660,6 @@ class ThresholdMonitoringPhase:
             provenance_hash=_hash_data(outputs),
             records_processed=records,
         )
-
 
 class RiskScoringPhase:
     """
@@ -718,7 +690,7 @@ class RiskScoringPhase:
         Returns:
             PhaseResult with composite risk score and classification.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -837,7 +809,7 @@ class RiskScoringPhase:
             status = PhaseStatus.FAILED
             records = 0
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -850,7 +822,6 @@ class RiskScoringPhase:
             provenance_hash=_hash_data(outputs),
             records_processed=records,
         )
-
 
 class AlertGenerationPhase:
     """
@@ -873,7 +844,7 @@ class AlertGenerationPhase:
         Returns:
             PhaseResult with generated alerts and escalation plan.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -931,7 +902,7 @@ class AlertGenerationPhase:
                             else "Within 30 days"
                         ),
                         "recipients": alert_recipients,
-                        "generated_at": _utcnow().isoformat(),
+                        "generated_at": utcnow().isoformat(),
                     })
 
             # Generate alerts for threshold breaches
@@ -956,7 +927,7 @@ class AlertGenerationPhase:
                         ),
                         "timeline": "Within 30 days",
                         "recipients": alert_recipients,
-                        "generated_at": _utcnow().isoformat(),
+                        "generated_at": utcnow().isoformat(),
                     })
                 elif threshold.get("in_warning_zone"):
                     alerts.append({
@@ -978,7 +949,7 @@ class AlertGenerationPhase:
                         ),
                         "timeline": "Within 60 days",
                         "recipients": alert_recipients,
-                        "generated_at": _utcnow().isoformat(),
+                        "generated_at": utcnow().isoformat(),
                     })
 
             # Generate overall risk alert
@@ -1015,7 +986,7 @@ class AlertGenerationPhase:
                         else "Within 2 weeks"
                     ),
                     "recipients": alert_recipients,
-                    "generated_at": _utcnow().isoformat(),
+                    "generated_at": utcnow().isoformat(),
                 })
 
             # Escalation plan
@@ -1051,7 +1022,7 @@ class AlertGenerationPhase:
             outputs["critical_alerts"] = critical_count
             outputs["escalation_plan"] = escalation
             outputs["alert_recipients"] = alert_recipients
-            outputs["generated_at"] = _utcnow().isoformat()
+            outputs["generated_at"] = utcnow().isoformat()
 
             status = PhaseStatus.COMPLETED
             records = len(alerts)
@@ -1064,7 +1035,7 @@ class AlertGenerationPhase:
             status = PhaseStatus.FAILED
             records = 0
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -1078,11 +1049,9 @@ class AlertGenerationPhase:
             records_processed=records,
         )
 
-
 # =============================================================================
 # WORKFLOW ORCHESTRATOR
 # =============================================================================
-
 
 class DowngradeMonitoringWorkflow:
     """
@@ -1149,7 +1118,7 @@ class DowngradeMonitoringWorkflow:
         Returns:
             DowngradeMonitoringResult with per-phase details and summary.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         logger.info(
             "Starting downgrade monitoring workflow %s for org=%s product=%s",
             self.workflow_id, input_data.organization_id,
@@ -1224,7 +1193,7 @@ class DowngradeMonitoringWorkflow:
                 error_result = PhaseResult(
                     phase_name=phase_name,
                     status=PhaseStatus.FAILED,
-                    started_at=_utcnow(),
+                    started_at=utcnow(),
                     errors=[str(exc)],
                     provenance_hash=_hash_data({"error": str(exc)}),
                 )
@@ -1243,7 +1212,7 @@ class DowngradeMonitoringWorkflow:
                 else WorkflowStatus.PARTIAL
             )
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         total_duration = (completed_at - started_at).total_seconds()
         summary = self._build_summary(context)
         provenance = _hash_data({

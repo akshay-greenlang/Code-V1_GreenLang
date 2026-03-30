@@ -18,10 +18,11 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism.clock import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +45,7 @@ class CreditStandard(str, Enum):
     PURO = "puro"
 
 
-class CarbonPrice(BaseModel):
+class CarbonPrice(GreenLangBase):
     market: CarbonMarket = Field(...)
     price_per_tonne_usd: float = Field(...)
     price_date: date = Field(...)
@@ -55,7 +56,7 @@ class CarbonPrice(BaseModel):
     change_30d_pct: float = Field(default=0)
 
 
-class CarbonCredit(BaseModel):
+class CarbonCredit(GreenLangBase):
     credit_id: str = Field(...)
     standard: CreditStandard = Field(...)
     project_type: str = Field(...)
@@ -66,7 +67,7 @@ class CarbonCredit(BaseModel):
     verification_status: str = Field(...)
 
 
-class MarketForecast(BaseModel):
+class MarketForecast(GreenLangBase):
     market: CarbonMarket = Field(...)
     forecast_year: int = Field(...)
     price_low_usd: float = Field(...)
@@ -75,14 +76,14 @@ class MarketForecast(BaseModel):
     confidence_level: str = Field(...)
 
 
-class CarbonMarketInput(BaseModel):
+class CarbonMarketInput(GreenLangBase):
     organization_id: str = Field(...)
     markets_of_interest: List[CarbonMarket] = Field(...)
     include_voluntary: bool = Field(default=True)
     forecast_years: int = Field(default=5)
 
 
-class CarbonMarketOutput(BaseModel):
+class CarbonMarketOutput(GreenLangBase):
     organization_id: str = Field(...)
     query_date: datetime = Field(default_factory=DeterministicClock.now)
     compliance_prices: List[CarbonPrice] = Field(...)

@@ -21,7 +21,8 @@ from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Any, Dict, List, Optional, TypeVar, Generic
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +67,7 @@ class TimeHorizon(str, Enum):
 # DATA MODELS
 # =============================================================================
 
-class RiskAssessment(BaseModel):
+class RiskAssessment(GreenLangBase):
     """Climate risk assessment result."""
     hazard: ClimateHazard
     current_risk: RiskLevel
@@ -76,7 +77,7 @@ class RiskAssessment(BaseModel):
     annual_expected_loss_usd: Optional[Decimal] = None
 
 
-class AdaptationMeasure(BaseModel):
+class AdaptationMeasure(GreenLangBase):
     """Recommended adaptation measure."""
     measure_id: str
     name: str
@@ -89,7 +90,7 @@ class AdaptationMeasure(BaseModel):
     effectiveness_years: int = Field(default=30, ge=1)
 
 
-class BuildingVulnerability(BaseModel):
+class BuildingVulnerability(GreenLangBase):
     """Building vulnerability profile."""
     building_id: str
     year_built: Optional[int] = None
@@ -104,7 +105,7 @@ class BuildingVulnerability(BaseModel):
 # INPUT/OUTPUT MODELS
 # =============================================================================
 
-class AdaptationInput(BaseModel):
+class AdaptationInput(GreenLangBase):
     """Base input for adaptation agents."""
     building_id: str
     building_type: str
@@ -119,7 +120,7 @@ class AdaptationInput(BaseModel):
     climate_scenario: str = Field(default="RCP4.5")
 
 
-class AdaptationOutput(BaseModel):
+class AdaptationOutput(GreenLangBase):
     """Base output for adaptation agents."""
     analysis_id: str
     agent_id: str

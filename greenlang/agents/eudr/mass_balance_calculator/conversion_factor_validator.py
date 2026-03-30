@@ -68,6 +68,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Tuple
 
 from greenlang.agents.eudr.mass_balance_calculator.config import get_config
+from greenlang.schemas import utcnow
 from greenlang.agents.eudr.mass_balance_calculator.metrics import (
     record_api_error,
     record_conversion_rejection,
@@ -93,12 +94,6 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance.
 
@@ -111,7 +106,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a new UUID4 string identifier.
 
@@ -119,7 +113,6 @@ def _generate_id() -> str:
         UUID4 string.
     """
     return str(uuid.uuid4())
-
 
 # ---------------------------------------------------------------------------
 # Seasonal adjustment factors by commodity and month (1-12)
@@ -329,11 +322,9 @@ _EXTENDED_REFERENCE_FACTORS: Dict[Tuple[str, str], Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # ConversionFactorValidator
 # ---------------------------------------------------------------------------
-
 
 class ConversionFactorValidator:
     """Conversion factor validation engine for EUDR mass balance accounting.
@@ -552,7 +543,7 @@ class ConversionFactorValidator:
         )
 
         validation_id = _generate_id()
-        now = _utcnow()
+        now = utcnow()
 
         # Compute provenance hash
         provenance_hash = _compute_hash({
@@ -743,7 +734,7 @@ class ConversionFactorValidator:
 
         commodity_lower = commodity.lower().strip()
         process_lower = process.lower().strip()
-        now = _utcnow()
+        now = utcnow()
 
         factor_id = _generate_id()
         custom_key = f"{facility_id}:{commodity_lower}:{process_lower}"
@@ -1435,7 +1426,7 @@ class ConversionFactorValidator:
         Returns:
             Advisory validation result dictionary.
         """
-        now = _utcnow()
+        now = utcnow()
         provenance_hash = _compute_hash({
             "validation_id": validation_id,
             "commodity": commodity,
@@ -1531,7 +1522,6 @@ class ConversionFactorValidator:
             f"warn={self._warn_deviation}, "
             f"reject={self._reject_deviation})"
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

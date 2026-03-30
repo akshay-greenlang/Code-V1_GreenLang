@@ -34,14 +34,15 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
 
 from greenlang.agents.foundation.schema.models.schema_ref import SchemaRef
 from greenlang.agents.foundation.schema.models.finding import Finding
 from greenlang.agents.foundation.schema.models.patch import FixSuggestion
+from greenlang.schemas import GreenLangBase
 
 
-class ValidationSummary(BaseModel):
+class ValidationSummary(GreenLangBase):
     """
     Summary of validation findings.
 
@@ -179,7 +180,7 @@ class ValidationSummary(BaseModel):
         )
 
 
-class TimingInfo(BaseModel):
+class TimingInfo(GreenLangBase):
     """
     Performance timing information for validation phases.
 
@@ -295,7 +296,7 @@ class TimingInfo(BaseModel):
         return max(0.0, self.total_ms - tracked)
 
 
-class ValidationReport(BaseModel):
+class ValidationReport(GreenLangBase):
     """
     Complete validation report for a single payload.
 
@@ -513,7 +514,7 @@ class ValidationReport(BaseModel):
         return f"{status}: {self.schema_ref} ({count_str}) [{self.timings.total_ms:.1f}ms]"
 
 
-class BatchSummary(BaseModel):
+class BatchSummary(GreenLangBase):
     """
     Summary for batch validation results.
 
@@ -593,7 +594,7 @@ class BatchSummary(BaseModel):
         return (self.valid_count / self.total_items) * 100.0
 
 
-class ItemResult(BaseModel):
+class ItemResult(GreenLangBase):
     """
     Validation result for a single item in batch validation.
 
@@ -663,7 +664,7 @@ class ItemResult(BaseModel):
         return sum(1 for f in self.findings if f.is_warning())
 
 
-class BatchValidationReport(BaseModel):
+class BatchValidationReport(GreenLangBase):
     """
     Complete validation report for batch validation.
 

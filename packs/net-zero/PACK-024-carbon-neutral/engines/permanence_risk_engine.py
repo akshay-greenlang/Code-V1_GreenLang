@@ -98,23 +98,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -131,7 +126,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -140,7 +134,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -148,26 +141,21 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     return float(
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class RiskCategory(str, Enum):
     """Permanence risk categories.
@@ -183,7 +171,6 @@ class RiskCategory(str, Enum):
     BUFFER_POOL = "buffer_pool"
     NATURAL_DISASTER = "natural_disaster"
 
-
 class PermanenceTier(str, Enum):
     """5-tier permanence classification.
 
@@ -198,7 +185,6 @@ class PermanenceTier(str, Enum):
     MODERATE = "moderate"
     LOW = "low"
     VERY_LOW = "very_low"
-
 
 class ProjectCategory(str, Enum):
     """Project category for risk profiling.
@@ -229,7 +215,6 @@ class ProjectCategory(str, Enum):
     COOKSTOVE = "cookstove"
     METHANE_CAPTURE = "methane_capture"
 
-
 class RiskLevel(str, Enum):
     """Risk level for individual categories."""
     NEGLIGIBLE = "negligible"
@@ -237,7 +222,6 @@ class RiskLevel(str, Enum):
     MODERATE = "moderate"
     HIGH = "high"
     VERY_HIGH = "very_high"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -417,11 +401,9 @@ BUFFER_REQUIREMENTS: Dict[str, Decimal] = {
     ProjectCategory.METHANE_CAPTURE.value: Decimal("10"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class RiskCategoryInput(BaseModel):
     """Input for a single risk category assessment.
@@ -451,7 +433,6 @@ class RiskCategoryInput(BaseModel):
         if v not in valid:
             raise ValueError(f"Unknown risk category '{v}'.")
         return v
-
 
 class CreditRiskInput(BaseModel):
     """Input for a single credit's permanence risk assessment.
@@ -505,7 +486,6 @@ class CreditRiskInput(BaseModel):
             raise ValueError(f"Unknown project category '{v}'.")
         return v
 
-
 class PermanenceRiskInput(BaseModel):
     """Complete input for permanence risk assessment.
 
@@ -541,11 +521,9 @@ class PermanenceRiskInput(BaseModel):
         description="Max acceptable risk"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class RiskCategoryResult(BaseModel):
     """Result for a single risk category.
@@ -568,7 +546,6 @@ class RiskCategoryResult(BaseModel):
     risk_level: str = Field(default=RiskLevel.MODERATE.value)
     mitigations_in_place: List[str] = Field(default_factory=list)
     recommended_mitigations: List[str] = Field(default_factory=list)
-
 
 class CreditRiskResult(BaseModel):
     """Permanence risk result for a single credit.
@@ -612,7 +589,6 @@ class CreditRiskResult(BaseModel):
     issues: List[str] = Field(default_factory=list)
     recommendations: List[str] = Field(default_factory=list)
 
-
 class PortfolioRiskSummary(BaseModel):
     """Portfolio-level permanence risk summary.
 
@@ -645,7 +621,6 @@ class PortfolioRiskSummary(BaseModel):
     highest_risk_credits: List[str] = Field(default_factory=list)
     message: str = Field(default="")
 
-
 class PermanenceRiskResult(BaseModel):
     """Complete permanence risk assessment result.
 
@@ -667,7 +642,7 @@ class PermanenceRiskResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     assessment_year: int = Field(default=0)
     credit_results: List[CreditRiskResult] = Field(default_factory=list)
@@ -679,7 +654,6 @@ class PermanenceRiskResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Risk Category Names
@@ -740,11 +714,9 @@ MITIGATION_RECOMMENDATIONS: Dict[str, List[str]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class PermanenceRiskEngine:
     """8-category permanence risk assessment engine.

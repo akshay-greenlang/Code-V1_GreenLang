@@ -40,25 +40,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -71,11 +65,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Agent Stubs
 # ---------------------------------------------------------------------------
-
 
 class _AgentStub:
     """Stub for unavailable DATA agent modules."""
@@ -94,7 +86,6 @@ class _AgentStub:
             }
         return _stub_method
 
-
 def _try_import_data_agent(agent_id: str, module_path: str) -> Any:
     """Try to import a DATA agent with graceful fallback."""
     try:
@@ -103,11 +94,9 @@ def _try_import_data_agent(agent_id: str, module_path: str) -> Any:
         logger.debug("DATA agent %s not available, using stub", agent_id)
         return _AgentStub(agent_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SMEDataSourceType(str, Enum):
     """Supported data source types for SME."""
@@ -116,7 +105,6 @@ class SMEDataSourceType(str, Enum):
     EXCEL = "excel"
     CSV = "csv"
     ACCOUNTING_SOFTWARE = "accounting_software"
-
 
 class SMEDataCategory(str, Enum):
     """SME net-zero data categories."""
@@ -127,7 +115,6 @@ class SMEDataCategory(str, Enum):
     PROCUREMENT = "procurement"
     FLEET = "fleet"
     OFFICE = "office"
-
 
 class SMESpendCategory(str, Enum):
     """Spend categories for auto-mapping to emission categories."""
@@ -148,7 +135,6 @@ class SMESpendCategory(str, Enum):
     MAINTENANCE = "maintenance"
     INSURANCE = "insurance"
     OTHER = "other"
-
 
 # ---------------------------------------------------------------------------
 # Spend-to-Emission Category Mapping
@@ -308,11 +294,9 @@ INDUSTRY_DEFAULTS: Dict[str, Dict[str, float]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class SMEDataBridgeConfig(BaseModel):
     """Configuration for the SME Data Bridge."""
@@ -327,7 +311,6 @@ class SMEDataBridgeConfig(BaseModel):
     )
     default_sector: str = Field(default="general")
     connection_pool_size: int = Field(default=3, ge=1, le=10)
-
 
 class IntakeResult(BaseModel):
     """Result of a data intake operation."""
@@ -348,7 +331,6 @@ class IntakeResult(BaseModel):
     data: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
 
-
 class QualityResult(BaseModel):
     """Result of data quality assessment."""
 
@@ -363,7 +345,6 @@ class QualityResult(BaseModel):
     suggestions: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class SpendMappingResult(BaseModel):
     """Result of auto-mapping spend to emission categories."""
 
@@ -374,7 +355,6 @@ class SpendMappingResult(BaseModel):
     estimated_emissions_tco2e: float = Field(default=0.0)
     mappings: List[Dict[str, Any]] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # DATA Agent Routing (SME subset)
@@ -389,11 +369,9 @@ SME_DATA_AGENT_ROUTING: Dict[str, Dict[str, str]] = {
     "DATA-012": {"name": "Missing Value Imputer", "module": "greenlang.agents.data.missing_imputer"},
 }
 
-
 # ---------------------------------------------------------------------------
 # SMEDataBridge
 # ---------------------------------------------------------------------------
-
 
 class SMEDataBridge:
     """AGENT-DATA integration bridge for PACK-026 SME Net Zero.
@@ -688,7 +666,7 @@ class SMEDataBridge:
             agent_id=agent_id,
             source_type=source_type,
             category=category,
-            started_at=_utcnow(),
+            started_at=utcnow(),
         )
 
         try:
@@ -716,7 +694,7 @@ class SMEDataBridge:
         finally:
             self._connection_pool_active = max(0, self._connection_pool_active - 1)
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         result.duration_ms = (time.monotonic() - start) * 1000
 
         if self.config.enable_provenance:

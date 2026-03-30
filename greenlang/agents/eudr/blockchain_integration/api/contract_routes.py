@@ -31,6 +31,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.blockchain_integration.api.dependencies import (
     AuthUser,
@@ -68,27 +69,18 @@ router = APIRouter(tags=["Smart Contracts"])
 
 _contract_store: Dict[str, Dict] = {}
 
-
 def _get_contract_store() -> Dict[str, Dict]:
     """Return the contract record store singleton."""
     return _contract_store
-
 
 def _compute_provenance_hash(data: dict) -> str:
     """Compute SHA-256 hash for provenance tracking."""
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ---------------------------------------------------------------------------
 # POST /contracts/deploy
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/contracts/deploy",
@@ -131,7 +123,7 @@ async def deploy_contract(
     start = time.monotonic()
     try:
         contract_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         # Simulate deployment transaction hash (deterministic)
         deploy_data = f"{contract_id}:{body.contract_type.value}:{body.chain.value}"
@@ -203,11 +195,9 @@ async def deploy_contract(
             detail="Failed to deploy contract",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /contracts/{contract_id}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/contracts/{contract_id}",
@@ -267,11 +257,9 @@ async def get_contract(
             detail="Failed to retrieve contract",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /contracts/{contract_id}/call
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/contracts/{contract_id}/call",
@@ -354,7 +342,7 @@ async def call_contract(
             tx_hash=tx_hash,
             gas_used=gas_used,
             is_read_only=body.is_read_only,
-            executed_at=_utcnow(),
+            executed_at=utcnow(),
         )
 
     except HTTPException:
@@ -372,11 +360,9 @@ async def call_contract(
             detail="Failed to execute contract call",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /contracts/{contract_id}/state
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/contracts/{contract_id}/state",
@@ -441,7 +427,7 @@ async def get_contract_state(
             chain=record.get("chain", BlockchainNetworkSchema.POLYGON),
             state=state,
             block_number=0,
-            queried_at=_utcnow(),
+            queried_at=utcnow(),
         )
 
     except HTTPException:
@@ -458,11 +444,9 @@ async def get_contract_state(
             detail="Failed to retrieve contract state",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /contracts
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/contracts",
@@ -549,7 +533,6 @@ async def list_contracts(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to list contracts",
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

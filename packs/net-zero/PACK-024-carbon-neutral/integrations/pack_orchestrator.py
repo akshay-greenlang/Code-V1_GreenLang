@@ -44,15 +44,14 @@ from typing import Any, Callable, Coroutine, Dict, List, Optional, Set
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ExecutionStatus
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
 ProgressCallback = Callable[[str, float, str], Coroutine[Any, Any, None]]
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
@@ -66,7 +65,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -85,16 +83,6 @@ class CarbonNeutralPhase(str, Enum):
     VERIFICATION = "verification"
     REPORTING = "reporting"
 
-
-class ExecutionStatus(str, Enum):
-    PENDING = "pending"
-    RUNNING = "running"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    CANCELLED = "cancelled"
-    SKIPPED = "skipped"
-
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
@@ -104,7 +92,6 @@ class RetryConfig(BaseModel):
     base_delay: float = Field(default=1.0, ge=0.1)
     max_delay: float = Field(default=30.0, ge=1.0)
     jitter: float = Field(default=0.5, ge=0.0, le=1.0)
-
 
 class CarbonNeutralOrchestratorConfig(BaseModel):
     pack_id: str = Field(default="PACK-024")
@@ -124,15 +111,13 @@ class CarbonNeutralOrchestratorConfig(BaseModel):
     enable_checkpoints: bool = Field(default=True)
     retry_config: RetryConfig = Field(default_factory=RetryConfig)
 
-
 class PhaseProvenance(BaseModel):
     phase: str = Field(default="")
     input_hash: str = Field(default="")
     output_hash: str = Field(default="")
     duration_ms: float = Field(default=0.0)
     attempt: int = Field(default=1)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class PhaseResult(BaseModel):
     phase: CarbonNeutralPhase = Field(...)
@@ -146,7 +131,6 @@ class PhaseResult(BaseModel):
     outputs: Dict[str, Any] = Field(default_factory=dict)
     provenance: Optional[PhaseProvenance] = Field(None)
     retry_count: int = Field(default=0)
-
 
 class PipelineResult(BaseModel):
     execution_id: str = Field(default_factory=_new_uuid)
@@ -163,7 +147,6 @@ class PipelineResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     quality_score: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # DAG Dependency Map
@@ -208,7 +191,6 @@ PAS2060_PHASE_REQUIREMENTS: Dict[str, List[str]] = {
     "verification": ["Independent validation obtained", "ISO 14064-3 standard"],
     "reporting": ["Public disclosure prepared", "Evidence package complete"],
 }
-
 
 # ---------------------------------------------------------------------------
 # CarbonNeutralOrchestrator
@@ -255,7 +237,7 @@ class CarbonNeutralOrchestrator:
         result = PipelineResult(
             organization_name=self.config.organization_name,
             status=ExecutionStatus.RUNNING,
-            started_at=_utcnow(),
+            started_at=utcnow(),
         )
         self._results[result.execution_id] = result
         start_time = time.monotonic()
@@ -286,7 +268,7 @@ class CarbonNeutralOrchestrator:
 
                 if self._should_skip_phase(phase):
                     pr = PhaseResult(phase=phase, status=ExecutionStatus.SKIPPED,
-                                    started_at=_utcnow(), completed_at=_utcnow())
+                                    started_at=utcnow(), completed_at=utcnow())
                     result.phase_results[phase.value] = pr
                     result.phases_skipped.append(phase.value)
                     continue
@@ -324,7 +306,7 @@ class CarbonNeutralOrchestrator:
             result.errors.append(str(exc))
 
         finally:
-            result.completed_at = _utcnow()
+            result.completed_at = utcnow()
             result.total_duration_ms = (time.monotonic() - start_time) * 1000
             result.quality_score = self._compute_quality_score(result)
             if self.config.enable_provenance:
@@ -390,7 +372,7 @@ class CarbonNeutralOrchestrator:
         return pr
 
     async def _execute_phase(self, phase: CarbonNeutralPhase, context: Dict[str, Any]) -> PhaseResult:
-        started = _utcnow()
+        started = utcnow()
         start_time = time.monotonic()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
@@ -455,7 +437,7 @@ class CarbonNeutralOrchestrator:
             )
 
         return PhaseResult(
-            phase=phase, status=status, started_at=started, completed_at=_utcnow(),
+            phase=phase, status=status, started_at=started, completed_at=utcnow(),
             duration_ms=round(elapsed_ms, 2), outputs=outputs, warnings=warnings,
             errors=errors, provenance=prov,
         )

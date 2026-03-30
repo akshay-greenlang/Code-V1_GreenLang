@@ -121,16 +121,11 @@ from greenlang.agents.mrv.refrigerants_fgas.models import (
     ServiceEvent,
     ServiceEventType,
 )
+from greenlang.schemas import utcnow
 
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ===========================================================================
 # Equipment Defaults Database
@@ -390,11 +385,9 @@ EQUIPMENT_DEFAULTS: Dict[EquipmentType, Dict[str, Any]] = {
     },
 }
 
-
 # ===========================================================================
 # EquipmentRegistryEngine
 # ===========================================================================
-
 
 class EquipmentRegistryEngine:
     """Equipment lifecycle management and service event tracking engine.
@@ -790,7 +783,7 @@ class EquipmentRegistryEngine:
         event = ServiceEvent(
             equipment_id=equip_id,
             event_type=ServiceEventType.DECOMMISSIONING,
-            date=_utcnow(),
+            date=utcnow(),
             refrigerant_added_kg=0.0,
             refrigerant_recovered_kg=float(recovery_kg),
             notes=f"Equipment decommissioned. Recovered {recovery_kg} kg.",
@@ -1191,7 +1184,7 @@ class EquipmentRegistryEngine:
         if profile.installation_date is None:
             return 0.0
 
-        now = _utcnow()
+        now = utcnow()
         install_date = profile.installation_date
 
         # Ensure timezone-aware comparison
@@ -1371,7 +1364,7 @@ class EquipmentRegistryEngine:
             install_date = profile.installation_date
             if install_date.tzinfo is None:
                 install_date = install_date.replace(tzinfo=timezone.utc)
-            now = _utcnow()
+            now = utcnow()
             if install_date > now:
                 errors.append(
                     f"Installation date {install_date.isoformat()} is in "

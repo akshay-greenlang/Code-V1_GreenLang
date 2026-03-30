@@ -49,6 +49,8 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -61,17 +63,10 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -83,11 +78,9 @@ EARTH_RADIUS_M: float = 6_371_000.0
 #: Earth radius in kilometres.
 EARTH_RADIUS_KM: float = 6_371.0
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class PlausibilityLevel(str, Enum):
     """Plausibility assessment outcome level."""
@@ -97,11 +90,9 @@ class PlausibilityLevel(str, Enum):
     IMPLAUSIBLE = "implausible"
     UNKNOWN = "unknown"
 
-
 # ---------------------------------------------------------------------------
 # Result Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class LandOceanResult:
@@ -118,7 +109,6 @@ class LandOceanResult:
     ocean_basin: Optional[str] = None
     inland_water: Optional[str] = None
     confidence: float = 0.8
-
 
 @dataclass
 class CountryResult:
@@ -137,7 +127,6 @@ class CountryResult:
     matches_declared: bool = True
     is_border_region: bool = False
     distance_to_border_km: float = 0.0
-
 
 @dataclass
 class CommodityPlausibilityResult:
@@ -158,7 +147,6 @@ class CommodityPlausibilityResult:
     latitude_ok: bool = True
     elevation_ok: bool = True
 
-
 @dataclass
 class ElevationResult:
     """Result of elevation plausibility check.
@@ -178,7 +166,6 @@ class ElevationResult:
     range_min: float = 0.0
     range_max: float = 9000.0
 
-
 @dataclass
 class UrbanResult:
     """Result of urban area check.
@@ -194,7 +181,6 @@ class UrbanResult:
     nearest_city: Optional[str] = None
     distance_km: float = 0.0
     city_radius_km: float = 0.0
-
 
 @dataclass
 class ProtectedAreaResult:
@@ -212,7 +198,6 @@ class ProtectedAreaResult:
     distance_km: float = 0.0
     area_name: Optional[str] = None
     area_type: Optional[str] = None
-
 
 @dataclass
 class PlausibilityResult:
@@ -253,7 +238,6 @@ class PlausibilityResult:
     provenance_hash: str = ""
     checked_at: str = ""
     processing_time_ms: float = 0.0
-
 
 # ---------------------------------------------------------------------------
 # Country Bounding Boxes (200+ countries)
@@ -439,7 +423,6 @@ COUNTRY_BOUNDING_BOXES: Dict[str, Tuple[str, float, float, float, float]] = {
     "KM": ("Comoros", -12.42, -11.36, 43.23, 44.54),
 }
 
-
 # ---------------------------------------------------------------------------
 # Major Ocean Basins
 # ---------------------------------------------------------------------------
@@ -458,7 +441,6 @@ MAJOR_OCEAN_BASINS: List[Tuple[str, float, float, float, float]] = [
     ("Central Pacific", -30.0, 30.0, -180.0, -100.0),
     ("Central Pacific West", -30.0, 30.0, 150.0, 180.0),
 ]
-
 
 # ---------------------------------------------------------------------------
 # Major Inland Water Bodies
@@ -485,7 +467,6 @@ MAJOR_INLAND_WATERS: List[Tuple[str, float, float, float]] = [
     ("Lake Turkana", 3.5, 36.0, 40.0),
     ("Dead Sea", 31.5, 35.5, 20.0),
 ]
-
 
 # ---------------------------------------------------------------------------
 # Commodity Growing Zones
@@ -558,7 +539,6 @@ COMMODITY_GROWING_ZONES: Dict[str, List[Tuple[float, float, float, float, float,
         (-55.0, 70.0, -180.0, 180.0, 0.0, 4500.0, "Global (excl. extreme)"),
     ],
 }
-
 
 # ---------------------------------------------------------------------------
 # Major City Centroids (500+ entries)
@@ -746,7 +726,6 @@ MAJOR_CITIES: List[Tuple[str, str, float, float, float]] = [
     ("Rosario", "AR", -32.95, -60.65, 6.0),
 ]
 
-
 # ---------------------------------------------------------------------------
 # Simplified Protected Areas Database
 # ---------------------------------------------------------------------------
@@ -796,7 +775,6 @@ PROTECTED_AREAS: List[Tuple[str, str, float, float, float]] = [
     ("Great Barrier Reef", "marine_park", -18.3, 147.7, 100.0),
 ]
 
-
 # ---------------------------------------------------------------------------
 # Simplified Coastline Reference Points
 # ---------------------------------------------------------------------------
@@ -835,7 +813,6 @@ COASTLINE_REFERENCE_POINTS: List[Tuple[float, float]] = [
     (8.0, 77.0), (13.0, 80.0), (19.0, 73.0), (23.0, 70.0),
     (15.0, 74.0), (10.0, 76.0),
 ]
-
 
 # ---------------------------------------------------------------------------
 # Simplified Elevation Grid (1-degree resolution, major regions)
@@ -895,11 +872,9 @@ CONTINENTAL_AVERAGES: Dict[str, Tuple[float, float, float, float, float]] = {
     "south_asia": (5.0, 38.0, 60.0, 98.0, 800.0),
 }
 
-
 # ===========================================================================
 # SpatialPlausibilityChecker
 # ===========================================================================
-
 
 class SpatialPlausibilityChecker:
     """Production-grade spatial plausibility checking engine for EUDR GPS coordinates.
@@ -982,7 +957,7 @@ class SpatialPlausibilityChecker:
         """
         start_time = time.monotonic()
         result = PlausibilityResult()
-        result.checked_at = _utcnow().isoformat()
+        result.checked_at = utcnow().isoformat()
         issues: List[str] = []
 
         # 1. Land/ocean check
@@ -1814,7 +1789,6 @@ class SpatialPlausibilityChecker:
             "issue_count": len(result.issues),
         }
         return _compute_hash(hash_data)
-
 
 # ---------------------------------------------------------------------------
 # Module Exports

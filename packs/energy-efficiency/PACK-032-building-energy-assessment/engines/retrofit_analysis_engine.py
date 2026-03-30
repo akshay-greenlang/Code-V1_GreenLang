@@ -70,25 +70,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -106,7 +100,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -115,7 +108,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -127,37 +119,30 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* and return a float."""
     quantizer = Decimal(10) ** -places
     return float(value.quantize(quantizer, rounding=ROUND_HALF_UP))
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: float) -> float:
     """Round to 4 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class RetrofitCategory(str, Enum):
     """Categories of building retrofit measures per EPBD and EN 15459."""
@@ -179,14 +164,12 @@ class RetrofitCategory(str, Enum):
     WATER_EFFICIENCY = "water_efficiency"
     PLUG_LOADS = "plug_loads"
 
-
 class RetrofitPriority(str, Enum):
     """Implementation priority phases for retrofit roadmap."""
     QUICK_WIN = "quick_win"
     NEAR_TERM = "near_term"
     MEDIUM_TERM = "medium_term"
     LONG_TERM = "long_term"
-
 
 class NZEBLevel(str, Enum):
     """Nearly Zero Energy Building compliance levels per EPBD."""
@@ -196,20 +179,17 @@ class NZEBLevel(str, Enum):
     NET_ZERO = "net_zero"
     NET_POSITIVE = "net_positive"
 
-
 class MeasureComplexity(str, Enum):
     """Installation complexity classification."""
     SIMPLE = "simple"
     MODERATE = "moderate"
     COMPLEX = "complex"
 
-
 class DisruptionLevel(str, Enum):
     """Occupant disruption level during retrofit works."""
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
-
 
 class BuildingType(str, Enum):
     """Building typology for measure applicability."""
@@ -225,13 +205,11 @@ class BuildingType(str, Enum):
     WAREHOUSE = "warehouse"
     INDUSTRIAL = "industrial"
 
-
 class CarbonPriceScenario(str, Enum):
     """Carbon price projection scenario."""
     LOW = "low"
     CENTRAL = "central"
     HIGH = "high"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Retrofit Measure Library (60+ measures)
@@ -789,7 +767,6 @@ RETROFIT_MEASURE_LIBRARY: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Measure Interaction Matrix
 # ---------------------------------------------------------------------------
@@ -855,7 +832,6 @@ MEASURE_INTERACTION_MATRIX: Dict[str, Dict[str, str]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # nZEB Targets by Country and Building Type (kWh/m2/yr primary energy)
 # ---------------------------------------------------------------------------
@@ -914,7 +890,6 @@ NZEB_TARGETS: Dict[str, Dict[str, str]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Financing Options
 # ---------------------------------------------------------------------------
@@ -965,7 +940,6 @@ FINANCING_OPTIONS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Carbon Price Projections (EUR/tCO2) 2025-2050
 # ---------------------------------------------------------------------------
@@ -998,7 +972,6 @@ CARBON_PRICE_PROJECTIONS: Dict[str, Dict[str, str]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Priority Classification Thresholds
 # ---------------------------------------------------------------------------
@@ -1013,7 +986,6 @@ PRIORITY_THRESHOLDS: Dict[str, Dict[str, str]] = {
 COMPLEXITY_ORDER = {"simple": 1, "moderate": 2, "complex": 3}
 DISRUPTION_ORDER = {"low": 1, "medium": 2, "high": 3}
 
-
 # ---------------------------------------------------------------------------
 # Grid Emission Factor for Carbon Savings (kgCO2/kWh)
 # ---------------------------------------------------------------------------
@@ -1025,11 +997,9 @@ GRID_EMISSION_FACTORS: Dict[str, str] = {
     "PT": "0.173", "FI": "0.068", "CZ": "0.395", "EU_AVG": "0.230",
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class MeasureInput(BaseModel):
     """A single retrofit measure to evaluate."""
@@ -1039,7 +1009,6 @@ class MeasureInput(BaseModel):
     custom_lifetime_years: Optional[int] = Field(None, ge=1, le=60, description="Override lifetime")
     quantity_m2: Optional[float] = Field(None, ge=0.0, description="Area in m2 for cost calculation")
     notes: Optional[str] = None
-
 
 class RetrofitAnalysisInput(BaseModel):
     """Input for the RetrofitAnalysisEngine.analyze() method."""
@@ -1074,11 +1043,9 @@ class RetrofitAnalysisInput(BaseModel):
             raise ValueError("carbon_price_scenario must be low/central/high")
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class MeasureFinancials(BaseModel):
     """Financial evaluation of a single retrofit measure."""
@@ -1102,7 +1069,6 @@ class MeasureFinancials(BaseModel):
     complexity: str
     disruption_level: str
 
-
 class InteractionResult(BaseModel):
     """Result of measure interaction analysis."""
     measure_pair: List[str]
@@ -1111,7 +1077,6 @@ class InteractionResult(BaseModel):
     adjusted_combined_savings_pct: float
     standalone_sum_savings_pct: float
     interaction_reduction_pct: float
-
 
 class MACCEntry(BaseModel):
     """Single entry in the Marginal Abatement Cost Curve."""
@@ -1122,7 +1087,6 @@ class MACCEntry(BaseModel):
     cumulative_savings_kwh: float
     cumulative_savings_pct: float
     is_cost_effective: bool
-
 
 class RoadmapPhase(BaseModel):
     """A phase in the staged retrofit roadmap."""
@@ -1136,7 +1100,6 @@ class RoadmapPhase(BaseModel):
     weighted_payback_years: float
     ep_after_phase_kwh_m2_yr: float
 
-
 class NZEBAssessment(BaseModel):
     """Assessment of nZEB gap and compliance pathway."""
     current_ep_kwh_m2_yr: float
@@ -1149,7 +1112,6 @@ class NZEBAssessment(BaseModel):
     remaining_gap_kwh_m2_yr: float
     additional_measures_needed: List[str]
 
-
 class FinancingSummary(BaseModel):
     """Summary of available financing for the retrofit package."""
     total_capex_eur: float
@@ -1161,7 +1123,6 @@ class FinancingSummary(BaseModel):
     total_loan_cost_eur: float
     effective_interest_rate_pct: float
 
-
 class CarbonValueSummary(BaseModel):
     """Carbon value analysis over study period."""
     total_carbon_savings_kg: float
@@ -1170,7 +1131,6 @@ class CarbonValueSummary(BaseModel):
     carbon_value_eur_central: float
     carbon_value_eur_high: float
     social_cost_of_carbon_included: bool
-
 
 class RetrofitAnalysisResult(BaseModel):
     """Complete output of the RetrofitAnalysisEngine."""
@@ -1224,11 +1184,9 @@ class RetrofitAnalysisResult(BaseModel):
     processing_time_ms: float
     provenance_hash: str
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class RetrofitAnalysisEngine:
     """
@@ -2046,7 +2004,7 @@ class RetrofitAnalysisEngine:
             portfolio_irr_pct=_round2(float(portfolio_irr)),
             total_carbon_savings_kg_yr=_round2(float(total_carbon_kg_yr)),
             engine_version=_MODULE_VERSION,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 2),
             provenance_hash="",
         )

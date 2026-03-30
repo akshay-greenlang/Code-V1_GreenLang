@@ -54,37 +54,28 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> str:
-    """Return current UTC timestamp as ISO-8601 string."""
-    return datetime.utcnow().isoformat() + "Z"
-
-
 def _new_uuid() -> str:
     """Return a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash of JSON-serialisable data."""
     serialised = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialised.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -95,7 +86,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -105,14 +95,12 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class ScenarioPhase(str, Enum):
     """Scenario analysis workflow phases."""
 
     SCENARIO_DEFINITION = "scenario_definition"
     SIMULATION = "simulation"
     PROBABILITY_ASSESSMENT = "probability_assessment"
-
 
 class ScenarioType(str, Enum):
     """Type of intensity scenario."""
@@ -124,14 +112,12 @@ class ScenarioType(str, Enum):
     COMBINED = "combined"
     CUSTOM = "custom"
 
-
 class SimulationMethod(str, Enum):
     """Monte Carlo simulation method."""
 
     MONTE_CARLO = "monte_carlo"
     LATIN_HYPERCUBE = "latin_hypercube"
     DETERMINISTIC = "deterministic"
-
 
 class ProbabilityBand(str, Enum):
     """Probability classification band."""
@@ -142,11 +128,9 @@ class ProbabilityBand(str, Enum):
     UNLIKELY = "unlikely"             # 10-33%
     VERY_UNLIKELY = "very_unlikely"   # <10%
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -160,7 +144,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
 
-
 class ScenarioParameter(BaseModel):
     """A parameter within a scenario definition."""
 
@@ -170,7 +153,6 @@ class ScenarioParameter(BaseModel):
     max_value: float = Field(default=0.0)
     distribution: str = Field(default="normal", description="normal|uniform|triangular")
     std_dev: float = Field(default=0.0, ge=0.0, description="Standard deviation for normal")
-
 
 class ScenarioDefinition(BaseModel):
     """Definition of a single scenario for analysis."""
@@ -191,7 +173,6 @@ class ScenarioDefinition(BaseModel):
         default=0.0, description="Expected denominator change",
     )
 
-
 class SimulationResult(BaseModel):
     """Result from Monte Carlo simulation for one scenario."""
 
@@ -210,7 +191,6 @@ class SimulationResult(BaseModel):
     intensity_change_pct: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class ProbabilityAssessment(BaseModel):
     """Probability of target achievement under a scenario."""
 
@@ -227,11 +207,9 @@ class ProbabilityAssessment(BaseModel):
     )
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # INPUT / OUTPUT
 # =============================================================================
-
 
 class ScenarioWorkflowInput(BaseModel):
     """Input data model for ScenarioAnalysisWorkflow."""
@@ -262,7 +240,6 @@ class ScenarioWorkflowInput(BaseModel):
     tenant_id: str = Field(default="")
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class ScenarioWorkflowResult(BaseModel):
     """Complete result from scenario analysis workflow."""
 
@@ -279,11 +256,9 @@ class ScenarioWorkflowResult(BaseModel):
     worst_case_scenario: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class ScenarioAnalysisWorkflow:
     """
@@ -793,6 +768,7 @@ class ScenarioAnalysisWorkflow:
                         phase_number, attempt, self.MAX_RETRIES, exc, delay,
                     )
                     import asyncio
+
                     await asyncio.sleep(delay)
         return PhaseResult(
             phase_name=f"phase_{phase_number}_failed",

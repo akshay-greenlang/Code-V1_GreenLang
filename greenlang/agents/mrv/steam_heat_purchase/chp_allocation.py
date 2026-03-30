@@ -114,9 +114,9 @@ import uuid
 from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Conditional imports (graceful degradation)
@@ -135,7 +135,6 @@ try:
 except ImportError:
     _DB_AVAILABLE = False
     SteamHeatDatabaseEngine = None  # type: ignore[assignment,misc]
-
 
 # ---------------------------------------------------------------------------
 # Decimal precision constants
@@ -158,7 +157,6 @@ _ONE = Decimal("1")
 
 #: Decimal one hundred constant.
 _HUNDRED = Decimal("100")
-
 
 # ---------------------------------------------------------------------------
 # Built-in Constants: GWP Values
@@ -188,7 +186,6 @@ GWP_VALUES: Dict[str, Dict[str, Decimal]] = {
         "N2O": Decimal("273"),
     },
 }
-
 
 # ---------------------------------------------------------------------------
 # Built-in Constants: Fuel Emission Factors
@@ -270,7 +267,6 @@ FUEL_EMISSION_FACTORS: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Built-in Constants: CHP Default Efficiencies
 # ---------------------------------------------------------------------------
@@ -319,7 +315,6 @@ _FUEL_TYPE_TO_CHP_KEY: Dict[str, str] = {
     "biomass_wood": "biomass",
     "municipal_waste": "municipal_waste",
 }
-
 
 # ---------------------------------------------------------------------------
 # Built-in Constants: Reference Efficiencies (EU EED 2012/27/EU Annex II)
@@ -370,15 +365,9 @@ VERSION: str = "1.0.0"
 #: Database table prefix.
 TABLE_PREFIX: str = "gl_shp_"
 
-
 # ---------------------------------------------------------------------------
 # Utility: UTC now helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Utility: Safe Decimal conversion
@@ -403,7 +392,6 @@ def _to_decimal(value: Any) -> Decimal:
     except (InvalidOperation, ValueError, TypeError) as exc:
         raise ValueError(f"Cannot convert {value!r} to Decimal: {exc}") from exc
 
-
 def _safe_get_decimal(
     data: Dict[str, Any], key: str, default: Decimal = _ZERO,
 ) -> Decimal:
@@ -422,7 +410,6 @@ def _safe_get_decimal(
         return default
     return _to_decimal(raw)
 
-
 # ---------------------------------------------------------------------------
 # Utility: SHA-256 hash for CHP allocation results
 # ---------------------------------------------------------------------------
@@ -438,7 +425,6 @@ def _hash_allocation(data: Dict[str, Any]) -> str:
     """
     canonical = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Provenance helper (lightweight inline tracker)
@@ -482,7 +468,7 @@ class _CHPAllocationProvenance:
             Dictionary with entity_type, entity_id, action, hash_value,
             parent_hash, timestamp, and data_hash.
         """
-        ts = _utcnow().isoformat()
+        ts = utcnow().isoformat()
         data_hash = hashlib.sha256(
             json.dumps(data or {}, sort_keys=True, default=str).encode("utf-8")
         ).hexdigest()
@@ -536,11 +522,9 @@ class _CHPAllocationProvenance:
             self._entries.clear()
             self._last_hash = self._genesis
 
-
 # ===========================================================================
 # CHPAllocationEngine
 # ===========================================================================
-
 
 class CHPAllocationEngine:
     """CHP emission allocation engine for GHG Protocol Scope 2 compliance.
@@ -670,7 +654,7 @@ class CHPAllocationEngine:
         self._lock: threading.RLock = threading.RLock()
 
         # Statistics
-        self._created_at: datetime = _utcnow()
+        self._created_at: datetime = utcnow()
         self._total_allocations: int = 0
         self._total_efficiency_allocations: int = 0
         self._total_energy_allocations: int = 0
@@ -2471,7 +2455,7 @@ class CHPAllocationEngine:
         """
         with self._lock:
             uptime_seconds = (
-                _utcnow() - self._created_at
+                utcnow() - self._created_at
             ).total_seconds()
 
             stats = {
@@ -2612,7 +2596,7 @@ class CHPAllocationEngine:
             "status": "healthy" if overall_healthy else "unhealthy",
             "engine_id": self.ENGINE_ID,
             "engine_version": self.ENGINE_VERSION,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "checks": checks,
             "checks_passed": sum(1 for c in checks if c["status"] == "pass"),
             "checks_total": len(checks),
@@ -2818,14 +2802,12 @@ class CHPAllocationEngine:
             f"{self._total_batch_allocations} batches"
         )
 
-
 # ---------------------------------------------------------------------------
 # Module-level convenience functions
 # ---------------------------------------------------------------------------
 
 _module_engine: Optional[CHPAllocationEngine] = None
 _module_lock = threading.Lock()
-
 
 def get_chp_allocator(
     config: Optional[Dict[str, Any]] = None,
@@ -2857,7 +2839,6 @@ def get_chp_allocator(
                 _module_engine = CHPAllocationEngine(config=config)
     return _module_engine
 
-
 def reset_chp_allocator() -> None:
     """Reset the module-level CHPAllocationEngine singleton.
 
@@ -2871,7 +2852,6 @@ def reset_chp_allocator() -> None:
         _module_engine = None
     CHPAllocationEngine.reset_singleton()
     logger.info("Module-level CHPAllocationEngine reset")
-
 
 # ---------------------------------------------------------------------------
 # Public surface

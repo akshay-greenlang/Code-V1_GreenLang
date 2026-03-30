@@ -40,29 +40,23 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 def _compute_hash(content: str) -> str:
     """Compute SHA-256 hash of string content."""
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -75,13 +69,11 @@ class OutputFormat(str, Enum):
     PDF = "pdf"
     JSON = "json"
 
-
 class GapType(str, Enum):
     """Gap analysis comparison type."""
     TO_AVERAGE = "to_average"
     TO_BEST = "to_best_in_class"
     TO_TARGET = "to_target"
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Input Models
@@ -98,7 +90,6 @@ class PeerGroupDefinition(BaseModel):
     data_source: str = Field("", description="Source of benchmark data")
     data_year: Optional[int] = Field(None, description="Year of benchmark data")
 
-
 class PeerRankingEntry(BaseModel):
     """Single entry in the ranking table."""
     rank: int = Field(..., description="Rank position (1 = best)")
@@ -108,7 +99,6 @@ class PeerRankingEntry(BaseModel):
     intensity_unit: str = Field("", description="Intensity unit")
     denominator_type: str = Field("", description="Denominator type used")
     percentile: Optional[float] = Field(None, description="Percentile position")
-
 
 class GapAnalysisItem(BaseModel):
     """Gap analysis for a single metric."""
@@ -124,14 +114,12 @@ class GapAnalysisItem(BaseModel):
     gap_to_target: Optional[float] = Field(None, description="Gap to target (absolute)")
     gap_to_target_pct: Optional[float] = Field(None, description="Gap to target (%)")
 
-
 class SectorDistributionBucket(BaseModel):
     """Histogram bucket for sector distribution."""
     range_low: float = Field(0.0, description="Bucket lower bound")
     range_high: float = Field(0.0, description="Bucket upper bound")
     count: int = Field(0, description="Number of entities in bucket")
     includes_org: bool = Field(False, description="Whether org falls in this bucket")
-
 
 class BenchmarkRecommendation(BaseModel):
     """Improvement recommendation from benchmark analysis."""
@@ -140,7 +128,6 @@ class BenchmarkRecommendation(BaseModel):
     recommendation: str = Field(..., description="Recommendation text")
     potential_improvement: str = Field("", description="Estimated improvement potential")
     benchmark_reference: str = Field("", description="Reference peer or best practice")
-
 
 class BenchmarkReportInput(BaseModel):
     """Complete input model for BenchmarkComparisonReport."""
@@ -168,7 +155,6 @@ class BenchmarkReportInput(BaseModel):
         default_factory=list,
         description="Spider/radar chart data points with label, org_value, peer_avg, best_value",
     )
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -217,7 +203,7 @@ class BenchmarkComparisonReport:
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render benchmark comparison as Markdown."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_md(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -225,7 +211,7 @@ class BenchmarkComparisonReport:
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render benchmark comparison as HTML."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_html(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -233,7 +219,7 @@ class BenchmarkComparisonReport:
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render benchmark comparison as JSON dict."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_json(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -263,7 +249,7 @@ class BenchmarkComparisonReport:
         return (
             f"# Benchmark Comparison Report - {company}\n\n"
             f"**Reporting Period:** {period} | "
-            f"**Report Date:** {_utcnow().strftime('%Y-%m-%d')}\n\n"
+            f"**Report Date:** {utcnow().strftime('%Y-%m-%d')}\n\n"
             "---"
         )
 

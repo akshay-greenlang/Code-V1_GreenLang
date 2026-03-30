@@ -38,25 +38,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -69,11 +63,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class SetupStep(str, Enum):
     """Wizard setup steps."""
@@ -87,7 +79,6 @@ class SetupStep(str, Enum):
     DISCLOSURE_FRAMEWORKS = "disclosure_frameworks"
     ALERT_PREFERENCES = "alert_preferences"
 
-
 class StepStatus(str, Enum):
     """Step completion status."""
 
@@ -96,7 +87,6 @@ class StepStatus(str, Enum):
     COMPLETED = "completed"
     SKIPPED = "skipped"
     ERROR = "error"
-
 
 # ---------------------------------------------------------------------------
 # Step Ordering and Descriptions
@@ -191,11 +181,9 @@ STEP_RECOMMENDATIONS: Dict[SetupStep, List[str]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class StepData(BaseModel):
     """Data collected for a wizard step."""
@@ -208,7 +196,6 @@ class StepData(BaseModel):
     errors: List[str] = Field(default_factory=list)
     recommendations: List[str] = Field(default_factory=list)
 
-
 class WizardState(BaseModel):
     """Current state of the setup wizard."""
 
@@ -220,13 +207,11 @@ class WizardState(BaseModel):
     last_updated: str = ""
     is_complete: bool = False
 
-
 class WizardInput(BaseModel):
     """Input for completing a wizard step."""
 
     step_name: str = Field(..., description="Name of the step to complete")
     data: Dict[str, Any] = Field(..., description="Data for this step")
-
 
 class WizardResult(BaseModel):
     """Result of completing a wizard step."""
@@ -237,7 +222,6 @@ class WizardResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     recommendations: List[str] = Field(default_factory=list)
     state: Optional[WizardState] = None
-
 
 class PackConfigOutput(BaseModel):
     """Final pack configuration produced by the wizard."""
@@ -263,11 +247,9 @@ class PackConfigOutput(BaseModel):
     provenance_hash: str = ""
     generated_at: str = ""
 
-
 # ---------------------------------------------------------------------------
 # Wizard Implementation
 # ---------------------------------------------------------------------------
-
 
 class SetupWizard:
     """
@@ -313,8 +295,8 @@ class SetupWizard:
         self._state = WizardState(
             wizard_id=wizard_id,
             steps=steps,
-            started_at=_utcnow().isoformat(),
-            last_updated=_utcnow().isoformat(),
+            started_at=utcnow().isoformat(),
+            last_updated=utcnow().isoformat(),
         )
         logger.info("Wizard session started: %s", wizard_id)
         return self._state
@@ -349,7 +331,7 @@ class SetupWizard:
                     StepStatus.COMPLETED.value if step_data.validated
                     else StepStatus.ERROR.value
                 )
-                step_data.completed_at = _utcnow().isoformat()
+                step_data.completed_at = utcnow().isoformat()
                 step_found = True
                 break
 
@@ -362,7 +344,7 @@ class SetupWizard:
             if s.status == StepStatus.COMPLETED.value
         )
         self._state.overall_progress_pct = (completed / len(STEP_ORDER)) * 100
-        self._state.last_updated = _utcnow().isoformat()
+        self._state.last_updated = utcnow().isoformat()
 
         # Advance current step
         for step in STEP_ORDER:
@@ -466,7 +448,7 @@ class SetupWizard:
             disclosure_frameworks=frameworks.get("frameworks", []),
             alert_thresholds=alerts.get("thresholds", {}),
             alert_channels=alerts.get("channels", []),
-            generated_at=_utcnow().isoformat(),
+            generated_at=utcnow().isoformat(),
         )
         config.provenance_hash = _compute_hash(config.model_dump())
 

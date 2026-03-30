@@ -76,11 +76,11 @@ from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from greenlang.agents.data.schema_migration.provenance import ProvenanceTracker
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 __all__ = ["MigrationExecutorEngine"]
-
 
 # ---------------------------------------------------------------------------
 # Module-level constants
@@ -125,20 +125,9 @@ CAST_FUNCTIONS: Dict[Tuple[str, str], Callable[[Any], Any]] = {
     ("boolean", "integer"): lambda v: int(v) if v is not None else None,
 }
 
-
 # ---------------------------------------------------------------------------
 # Internal helper utilities
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed.
-
-    Returns:
-        Timezone-aware UTC datetime, microseconds stripped for log readability.
-    """
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _utcnow_iso() -> str:
     """Return current UTC time as ISO-8601 string.
@@ -146,8 +135,7 @@ def _utcnow_iso() -> str:
     Returns:
         ISO-formatted UTC timestamp string.
     """
-    return _utcnow().isoformat()
-
+    return utcnow().isoformat()
 
 def _generate_id(prefix: str = "EXE") -> str:
     """Generate a short unique identifier with the given prefix.
@@ -159,7 +147,6 @@ def _generate_id(prefix: str = "EXE") -> str:
         String of the form ``{prefix}-{12-hex-chars}``.
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 def _sha256(data: Any) -> str:
     """Compute a canonical SHA-256 hash of arbitrary data.
@@ -179,7 +166,6 @@ def _sha256(data: Any) -> str:
         serialised = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialised.encode("utf-8")).hexdigest()
 
-
 def _elapsed_ms(start: float) -> float:
     """Compute elapsed milliseconds from a ``time.monotonic()`` start time.
 
@@ -190,7 +176,6 @@ def _elapsed_ms(start: float) -> float:
         Elapsed duration in milliseconds as a float.
     """
     return (time.monotonic() - start) * 1000.0
-
 
 def _is_missing(value: Any) -> bool:
     """Return True if a value should be treated as missing / null.
@@ -210,11 +195,9 @@ def _is_missing(value: Any) -> bool:
         return True
     return False
 
-
 # ---------------------------------------------------------------------------
 # Expression evaluator
 # ---------------------------------------------------------------------------
-
 
 class _ExpressionEvaluator:
     """Restricted expression evaluator for the ``compute`` transformation.
@@ -426,11 +409,9 @@ class _ExpressionEvaluator:
 
         raise ValueError(f"Unexpected token in expression: '{token}'")
 
-
 # ---------------------------------------------------------------------------
 # MigrationExecutorEngine
 # ---------------------------------------------------------------------------
-
 
 class MigrationExecutorEngine:
     """Executes schema migration plans with checkpoints, rollback, and retry.
@@ -1455,7 +1436,7 @@ class MigrationExecutorEngine:
             try:
                 started_dt = datetime.fromisoformat(started_at_str)
                 elapsed_ms = (
-                    _utcnow() - started_dt.replace(tzinfo=timezone.utc)
+                    utcnow() - started_dt.replace(tzinfo=timezone.utc)
                 ).total_seconds() * 1000.0
             except (ValueError, TypeError):
                 pass
@@ -1945,11 +1926,9 @@ class MigrationExecutorEngine:
             f"Supported: '{ROLLBACK_FULL}', '{ROLLBACK_PARTIAL}'"
         )
 
-
 # ---------------------------------------------------------------------------
 # Internal exception
 # ---------------------------------------------------------------------------
-
 
 class _TimeoutError(Exception):
     """Raised when a migration execution exceeds its configured timeout."""

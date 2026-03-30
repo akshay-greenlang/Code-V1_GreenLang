@@ -49,25 +49,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for provenance tracking."""
@@ -80,11 +74,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class GHGScope(str, Enum):
     """GHG Protocol emission scopes."""
@@ -93,7 +85,6 @@ class GHGScope(str, Enum):
     SCOPE_2 = "scope_2"
     SCOPE_3 = "scope_3"
     CROSS_CUTTING = "cross_cutting"
-
 
 class ClaimVerificationStatus(str, Enum):
     """Claim verification outcome status."""
@@ -104,14 +95,12 @@ class ClaimVerificationStatus(str, Enum):
     CONTRADICTED = "contradicted"
     PENDING = "pending"
 
-
 class RoutingStatus(str, Enum):
     """Status of a routing operation."""
 
     ROUTED = "routed"
     NO_AGENT = "no_agent_found"
     FAILED = "failed"
-
 
 # ---------------------------------------------------------------------------
 # Agent Routing Tables
@@ -180,11 +169,9 @@ CLAIM_TO_AGENT_MAP: Dict[str, List[str]] = {
                           "MRV-024", "MRV-025", "MRV-026", "MRV-027", "MRV-028"],
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class MRVRoutingConfig(BaseModel):
     """Configuration for MRV claim verification routing."""
@@ -201,7 +188,6 @@ class MRVRoutingConfig(BaseModel):
         description="Minimum confidence for claim verification",
     )
 
-
 class AgentRoutingEntry(BaseModel):
     """A single agent routing entry for claim verification."""
 
@@ -210,7 +196,6 @@ class AgentRoutingEntry(BaseModel):
     scope: GHGScope = Field(default=GHGScope.SCOPE_1)
     relevance_score: float = Field(default=1.0, ge=0.0, le=1.0)
     data_required: List[str] = Field(default_factory=list)
-
 
 class MRVRoutingResult(BaseModel):
     """Result of an MRV claim verification routing operation."""
@@ -224,15 +209,13 @@ class MRVRoutingResult(BaseModel):
         default=ClaimVerificationStatus.PENDING
     )
     total_agents: int = Field(default=0)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
     duration_ms: float = Field(default=0.0)
-
 
 # ---------------------------------------------------------------------------
 # MRVClaimsBridge
 # ---------------------------------------------------------------------------
-
 
 class MRVClaimsBridge:
     """Routes carbon and climate claims to MRV agents for verification.
@@ -279,7 +262,7 @@ class MRVClaimsBridge:
         Returns:
             Dict with routing result including agents, scopes, and hash.
         """
-        start = _utcnow()
+        start = utcnow()
         context = data or {}
         result = MRVRoutingResult(claim_type=claim_type)
 
@@ -294,7 +277,7 @@ class MRVClaimsBridge:
             result.scopes_involved = list(set(e.scope.value for e in entries))
             result.status = RoutingStatus.ROUTED
 
-        result.duration_ms = (_utcnow() - start).total_seconds() * 1000
+        result.duration_ms = (utcnow() - start).total_seconds() * 1000
 
         if self.config.enable_provenance:
             result.provenance_hash = _compute_hash(result)

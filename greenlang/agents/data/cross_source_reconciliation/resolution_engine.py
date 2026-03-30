@@ -67,6 +67,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 from greenlang.agents.data.cross_source_reconciliation.metrics import (
     inc_errors,
@@ -82,16 +83,9 @@ from greenlang.agents.data.cross_source_reconciliation.provenance import (
 
 logger = logging.getLogger(__name__)
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _normalize_value(value: Any) -> Any:
     """Normalize a value for deterministic serialization.
@@ -117,7 +111,6 @@ def _normalize_value(value: Any) -> Any:
         return [_normalize_value(v) for v in value]
     return value
 
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
 
@@ -130,7 +123,6 @@ def _compute_hash(data: Any) -> str:
     normalized = _normalize_value(data)
     serialized = json.dumps(normalized, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
 
 def _is_numeric(value: Any) -> bool:
     """Check whether a value is numeric (int or float, not NaN/Inf).
@@ -148,7 +140,6 @@ def _is_numeric(value: Any) -> bool:
             return False
         return True
     return False
-
 
 def _try_parse_numeric(value: Any) -> Optional[float]:
     """Attempt to parse a value as a float.
@@ -170,7 +161,6 @@ def _try_parse_numeric(value: Any) -> Optional[float]:
             pass
     return None
 
-
 def _is_empty(value: Any) -> bool:
     """Check whether a value is null, empty string, or NaN.
 
@@ -188,7 +178,6 @@ def _is_empty(value: Any) -> bool:
         return True
     return False
 
-
 def _compute_completeness(record: Dict[str, Any]) -> float:
     """Compute completeness ratio for a record (non-empty fields / total).
 
@@ -204,11 +193,9 @@ def _compute_completeness(record: Dict[str, Any]) -> float:
     non_empty = sum(1 for v in record.values() if not _is_empty(v))
     return non_empty / total
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class ResolutionStrategy(str, Enum):
     """Strategy for resolving discrepancies between sources.
@@ -232,7 +219,6 @@ class ResolutionStrategy(str, Enum):
     CUSTOM = "custom"
     AUTO = "auto"
 
-
 class ResolutionStatus(str, Enum):
     """Status of a resolution decision.
 
@@ -249,7 +235,6 @@ class ResolutionStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class DiscrepancySeverity(str, Enum):
     """Severity classification for a detected discrepancy.
 
@@ -265,7 +250,6 @@ class DiscrepancySeverity(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     INFO = "info"
-
 
 class FieldType(str, Enum):
     """Data type classification for a field involved in a discrepancy.
@@ -287,7 +271,6 @@ class FieldType(str, Enum):
     IDENTIFIER = "identifier"
     COMPOSITE = "composite"
 
-
 class CredibilityFactor(str, Enum):
     """Factors that contribute to a source's credibility score.
 
@@ -306,11 +289,9 @@ class CredibilityFactor(str, Enum):
     ACCURACY = "accuracy"
     CONSISTENCY = "consistency"
 
-
 # ---------------------------------------------------------------------------
 # Lightweight data models (self-contained until models.py adds these)
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class SourceCredibility:
@@ -338,8 +319,7 @@ class SourceCredibility:
         """Clamp credibility_score to [0.0, 1.0]."""
         self.credibility_score = max(0.0, min(1.0, self.credibility_score))
         if not self.last_updated:
-            self.last_updated = _utcnow().isoformat()
-
+            self.last_updated = utcnow().isoformat()
 
 @dataclass
 class Discrepancy:
@@ -374,8 +354,7 @@ class Discrepancy:
         if not self.discrepancy_id:
             self.discrepancy_id = f"disc-{uuid4().hex[:12]}"
         if not self.detected_at:
-            self.detected_at = _utcnow().isoformat()
-
+            self.detected_at = utcnow().isoformat()
 
 @dataclass
 class ResolutionDecision:
@@ -424,7 +403,7 @@ class ResolutionDecision:
         if not self.decision_id:
             self.decision_id = f"res-{uuid4().hex[:12]}"
         if not self.resolved_at:
-            self.resolved_at = _utcnow().isoformat()
+            self.resolved_at = utcnow().isoformat()
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize decision to a dictionary.
@@ -433,7 +412,6 @@ class ResolutionDecision:
             Dictionary representation of this decision.
         """
         return asdict(self)
-
 
 @dataclass
 class FieldLineage:
@@ -468,7 +446,6 @@ class FieldLineage:
             Dictionary representation of this lineage record.
         """
         return asdict(self)
-
 
 @dataclass
 class GoldenRecord:
@@ -511,7 +488,7 @@ class GoldenRecord:
         if not self.record_id:
             self.record_id = f"gr-{uuid4().hex[:12]}"
         if not self.created_at:
-            self.created_at = _utcnow().isoformat()
+            self.created_at = utcnow().isoformat()
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize golden record to a dictionary.
@@ -520,7 +497,6 @@ class GoldenRecord:
             Dictionary representation of this golden record.
         """
         return asdict(self)
-
 
 @dataclass
 class ResolutionSummary:
@@ -563,7 +539,7 @@ class ResolutionSummary:
     def __post_init__(self) -> None:
         """Set defaults for missing fields."""
         if not self.summary_generated_at:
-            self.summary_generated_at = _utcnow().isoformat()
+            self.summary_generated_at = utcnow().isoformat()
 
     def to_dict(self) -> Dict[str, Any]:
         """Serialize summary to a dictionary.
@@ -573,11 +549,9 @@ class ResolutionSummary:
         """
         return asdict(self)
 
-
 # ===========================================================================
 # ResolutionEngine
 # ===========================================================================
-
 
 class ResolutionEngine:
     """Engine for resolving cross-source discrepancies and assembling golden records.
@@ -2545,7 +2519,6 @@ class ResolutionEngine:
             is_auto=True,
             metadata={"error": error_message},
         )
-
 
 # ---------------------------------------------------------------------------
 # Module exports

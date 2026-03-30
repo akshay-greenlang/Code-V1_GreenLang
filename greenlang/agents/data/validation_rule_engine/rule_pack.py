@@ -58,6 +58,7 @@ import threading
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -107,7 +108,7 @@ except ImportError:
             metadata: Optional[Any] = None,
         ) -> Any:
             """Record a provenance entry and return a stub entry."""
-            ts = _utcnow().isoformat()
+            ts = utcnow().isoformat()
             if metadata is None:
                 serialized = "null"
             else:
@@ -171,7 +172,6 @@ except ImportError:
                     self, "_genesis_hash", self.GENESIS_HASH
                 )
 
-
 # ---------------------------------------------------------------------------
 # Optional dependency: config
 # ---------------------------------------------------------------------------
@@ -220,27 +220,18 @@ except ImportError:
     observe_processing_duration = None  # type: ignore[assignment]
     PROMETHEUS_AVAILABLE = False  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # Utility helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _sha256(data: Any) -> str:
     """Return SHA-256 hex digest of JSON-serialized data."""
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
-
 # ===================================================================
 # Built-in rule pack definitions
 # ===================================================================
-
 
 def _build_ghg_protocol_rules() -> List[Dict[str, Any]]:
     """Build GHG Protocol Corporate Standard rule definitions (42 rules).
@@ -630,7 +621,6 @@ def _build_ghg_protocol_rules() -> List[Dict[str, Any]]:
 
     return rules
 
-
 def _build_csrd_esrs_rules() -> List[Dict[str, Any]]:
     """Build CSRD/ESRS (2024 Delegated Acts) rule definitions (38 rules).
 
@@ -968,7 +958,6 @@ def _build_csrd_esrs_rules() -> List[Dict[str, Any]]:
 
     return rules
 
-
 def _build_eudr_rules() -> List[Dict[str, Any]]:
     """Build EU Deforestation Regulation (EUDR) rule definitions (28 rules).
 
@@ -1224,7 +1213,6 @@ def _build_eudr_rules() -> List[Dict[str, Any]]:
 
     return rules
 
-
 def _build_soc2_rules() -> List[Dict[str, Any]]:
     """Build SOC 2 Type II (AICPA 2022) rule definitions (22 rules).
 
@@ -1427,7 +1415,6 @@ def _build_soc2_rules() -> List[Dict[str, Any]]:
 
     return rules
 
-
 # ===================================================================
 # Built-in pack metadata
 # ===================================================================
@@ -1499,11 +1486,9 @@ _BUILTIN_PACK_SPECS: List[Dict[str, Any]] = [
     },
 ]
 
-
 # ===================================================================
 # RulePackEngine
 # ===================================================================
-
 
 class RulePackEngine:
     """Pure-Python engine for managing validation rule packs.
@@ -1631,8 +1616,8 @@ class RulePackEngine:
                 },
                 "namespace": "default",
                 "published_by": "system",
-                "published_at": _utcnow().isoformat(),
-                "updated_at": _utcnow().isoformat(),
+                "published_at": utcnow().isoformat(),
+                "updated_at": utcnow().isoformat(),
             }
 
             self._packs[pack_id] = pack_data
@@ -1731,7 +1716,7 @@ class RulePackEngine:
             List of instantiated rule dictionaries.
         """
         instantiated: List[Dict[str, Any]] = []
-        now_iso = _utcnow().isoformat()
+        now_iso = utcnow().isoformat()
 
         for defn in rule_definitions:
             rule_id = str(uuid.uuid4())
@@ -1915,7 +1900,7 @@ class RulePackEngine:
             "rule_set_id": effective_rule_set_id,
             "rules_created": len(instantiated_rules),
             "namespace": namespace or "default",
-            "applied_at": _utcnow().isoformat(),
+            "applied_at": utcnow().isoformat(),
         }
         provenance_hash = _sha256(provenance_payload)
 
@@ -1946,7 +1931,7 @@ class RulePackEngine:
                 "rule_set_id": effective_rule_set_id,
                 "rules_created": len(instantiated_rules),
                 "namespace": namespace or "default",
-                "applied_at": _utcnow().isoformat(),
+                "applied_at": utcnow().isoformat(),
                 "provenance_hash": provenance_hash,
             })
 
@@ -1967,7 +1952,7 @@ class RulePackEngine:
             "pack_name": pack_data["name"],
             "pack_id": pack_data["pack_id"],
             "namespace": namespace or "default",
-            "applied_at": _utcnow().isoformat(),
+            "applied_at": utcnow().isoformat(),
         }
 
     def register_custom_pack(
@@ -2006,7 +1991,7 @@ class RulePackEngine:
             >>> assert result["pack_id"] is not None
         """
         pack_id = str(uuid.uuid4())
-        now_iso = _utcnow().isoformat()
+        now_iso = utcnow().isoformat()
 
         pack_data: Dict[str, Any] = {
             "pack_id": pack_id,
@@ -2262,11 +2247,9 @@ class RulePackEngine:
 
         return None
 
-
 # ===================================================================
 # Helper: SemVer parsing
 # ===================================================================
-
 
 def _parse_semver(version: str) -> tuple:
     """Parse a SemVer string into (major, minor, patch) integers.
@@ -2288,11 +2271,9 @@ def _parse_semver(version: str) -> tuple:
     except (ValueError, IndexError):
         return (0, 0, 0)
 
-
 # ===================================================================
 # Helper: dict wrapper for attribute-style access
 # ===================================================================
-
 
 class _DictWrapper:
     """Lightweight wrapper providing attribute-style access over a dict.
@@ -2333,7 +2314,6 @@ class _DictWrapper:
         """Return repr of underlying dict."""
         data = object.__getattribute__(self, "_data")
         return f"_DictWrapper({data.get('name', 'unknown')})"
-
 
 # ---------------------------------------------------------------------------
 # Public API

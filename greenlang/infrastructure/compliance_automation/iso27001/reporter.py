@@ -37,6 +37,7 @@ from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
+from greenlang.schemas.enums import ReportFormat
 
 logger = logging.getLogger(__name__)
 
@@ -44,14 +45,6 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Report Models
 # ---------------------------------------------------------------------------
-
-
-class ReportFormat(str, Enum):
-    """Supported report output formats."""
-
-    JSON = "json"
-    MARKDOWN = "markdown"
-    HTML = "html"
 
 
 class ReportMetadata(BaseModel):

@@ -35,25 +35,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -66,11 +60,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EmissionScope(str, Enum):
     """GHG Protocol emission scopes."""
@@ -78,7 +70,6 @@ class EmissionScope(str, Enum):
     SCOPE_1 = "scope_1"
     SCOPE_2 = "scope_2"
     SCOPE_3 = "scope_3"
-
 
 class TargetValidationStatus(str, Enum):
     """Validation status for a climate target against MRV data."""
@@ -89,7 +80,6 @@ class TargetValidationStatus(str, Enum):
     INSUFFICIENT_DATA = "insufficient_data"
     NOT_VALIDATED = "not_validated"
 
-
 class ReductionTrajectory(str, Enum):
     """Emission reduction trajectory classification."""
 
@@ -98,11 +88,9 @@ class ReductionTrajectory(str, Enum):
     NOT_ALIGNED = "not_aligned"
     INSUFFICIENT_DATA = "insufficient_data"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class MRVBridgeConfig(BaseModel):
     """Configuration for the MRV Bridge."""
@@ -118,7 +106,6 @@ class MRVBridgeConfig(BaseModel):
         default=2.5, description="Required annual reduction rate (%) for 2C alignment"
     )
 
-
 class EmissionDataPoint(BaseModel):
     """A single emission data point from MRV agents."""
 
@@ -129,7 +116,6 @@ class EmissionDataPoint(BaseModel):
     source_agent: str = Field(default="")
     methodology: str = Field(default="")
 
-
 class ScopeEmissions(BaseModel):
     """Aggregated emissions for a single scope."""
 
@@ -138,7 +124,6 @@ class ScopeEmissions(BaseModel):
     categories: List[EmissionDataPoint] = Field(default_factory=list)
     year: int = Field(default=2025)
     agent_count: int = Field(default=0)
-
 
 class TargetValidation(BaseModel):
     """Result of validating a climate target against MRV data."""
@@ -154,7 +139,6 @@ class TargetValidation(BaseModel):
     status: TargetValidationStatus = Field(default=TargetValidationStatus.NOT_VALIDATED)
     trajectory: ReductionTrajectory = Field(default=ReductionTrajectory.INSUFFICIENT_DATA)
 
-
 class ReductionProgress(BaseModel):
     """Year-over-year emission reduction progress calculation."""
 
@@ -169,7 +153,6 @@ class ReductionProgress(BaseModel):
     years_elapsed: int = Field(default=0)
     provenance_hash: str = Field(default="")
 
-
 class BridgeResult(BaseModel):
     """Result of an MRV bridge operation."""
 
@@ -181,7 +164,6 @@ class BridgeResult(BaseModel):
     records_processed: int = Field(default=0)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # MRV Agent Routing Map
@@ -211,11 +193,9 @@ SCOPE3_AGENTS: Dict[str, str] = {
     for i in range(1, 16)
 }
 
-
 # ---------------------------------------------------------------------------
 # MRVBridge
 # ---------------------------------------------------------------------------
-
 
 class MRVBridge:
     """AGENT-MRV emission data bridge for PACK-019 CSDDD climate transition.
@@ -259,7 +239,7 @@ class MRVBridge:
         Returns:
             BridgeResult with status and records processed.
         """
-        result = BridgeResult(started_at=_utcnow())
+        result = BridgeResult(started_at=utcnow())
         ctx = context or {}
 
         try:
@@ -300,7 +280,7 @@ class MRVBridge:
             result.errors.append(str(exc))
             logger.error("Emission data retrieval failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at

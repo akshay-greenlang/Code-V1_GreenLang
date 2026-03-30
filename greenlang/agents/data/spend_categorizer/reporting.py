@@ -51,7 +51,9 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+
+from greenlang.schemas import GreenLangBase, utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -60,28 +62,19 @@ __all__ = [
     "ReportingEngine",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _generate_id(prefix: str = "rpt") -> str:
     """Generate a unique identifier with a prefix."""
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 # ---------------------------------------------------------------------------
 # Supported formats
 # ---------------------------------------------------------------------------
 
 _SUPPORTED_FORMATS = {"json", "csv", "markdown", "html", "text"}
-
 
 # ---------------------------------------------------------------------------
 # HTML base template
@@ -122,13 +115,11 @@ _HTML_TEMPLATE = """<!DOCTYPE html>
 </body>
 </html>"""
 
-
 # ---------------------------------------------------------------------------
 # Data models
 # ---------------------------------------------------------------------------
 
-
-class CategorizationReport(BaseModel):
+class CategorizationReport(GreenLangBase):
     """Generated report container."""
 
     report_id: str = Field(..., description="Unique report identifier")
@@ -144,11 +135,9 @@ class CategorizationReport(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
 # ---------------------------------------------------------------------------
 # ReportingEngine
 # ---------------------------------------------------------------------------
-
 
 class ReportingEngine:
     """Multi-format report generation engine.
@@ -732,7 +721,7 @@ class ReportingEngine:
             html_content = self._categorization_html(summary)
             return _HTML_TEMPLATE.format(
                 title=title,
-                timestamp=_utcnow().isoformat(),
+                timestamp=utcnow().isoformat(),
                 report_id=_generate_id("rpt"),
                 content=html_content,
                 provenance_hash=self._compute_provenance(title, summary),
@@ -742,7 +731,7 @@ class ReportingEngine:
         lines = [
             f"# {title}",
             "",
-            f"**Generated:** {_utcnow().isoformat()}",
+            f"**Generated:** {utcnow().isoformat()}",
             "",
             "## Summary",
             "",
@@ -817,7 +806,7 @@ class ReportingEngine:
             html_content = self._emissions_html(summary)
             return _HTML_TEMPLATE.format(
                 title=title,
-                timestamp=_utcnow().isoformat(),
+                timestamp=utcnow().isoformat(),
                 report_id=_generate_id("rpt"),
                 content=html_content,
                 provenance_hash=self._compute_provenance(title, summary),
@@ -827,7 +816,7 @@ class ReportingEngine:
         lines = [
             f"# {title}",
             "",
-            f"**Generated:** {_utcnow().isoformat()}",
+            f"**Generated:** {utcnow().isoformat()}",
             "",
             "## Key Metrics",
             "",
@@ -891,7 +880,7 @@ class ReportingEngine:
         lines = [
             f"# {title}",
             "",
-            f"**Generated:** {_utcnow().isoformat()}",
+            f"**Generated:** {utcnow().isoformat()}",
             "",
             "## Audit Summary",
             "",
@@ -905,7 +894,7 @@ class ReportingEngine:
         if fmt == "html":
             return _HTML_TEMPLATE.format(
                 title=title,
-                timestamp=_utcnow().isoformat(),
+                timestamp=utcnow().isoformat(),
                 report_id=_generate_id("rpt"),
                 content="\n".join(lines),
                 provenance_hash=self._compute_provenance(title, summary),
@@ -935,7 +924,7 @@ class ReportingEngine:
         lines = [
             f"# {title}",
             "",
-            f"**Generated:** {_utcnow().isoformat()}",
+            f"**Generated:** {utcnow().isoformat()}",
             "",
             "## Procurement Summary",
             "",
@@ -962,7 +951,7 @@ class ReportingEngine:
         if fmt == "html":
             return _HTML_TEMPLATE.format(
                 title=title,
-                timestamp=_utcnow().isoformat(),
+                timestamp=utcnow().isoformat(),
                 report_id=_generate_id("rpt"),
                 content="\n".join(lines),
                 provenance_hash=self._compute_provenance(title, summary),
@@ -1002,7 +991,7 @@ class ReportingEngine:
         lines = [
             f"# {title}",
             "",
-            f"**Generated:** {_utcnow().isoformat()}",
+            f"**Generated:** {utcnow().isoformat()}",
             "",
             "## Key Performance Indicators",
             "",
@@ -1039,7 +1028,7 @@ class ReportingEngine:
         if fmt == "html":
             return _HTML_TEMPLATE.format(
                 title=title,
-                timestamp=_utcnow().isoformat(),
+                timestamp=utcnow().isoformat(),
                 report_id=_generate_id("rpt"),
                 content="\n".join(lines),
                 provenance_hash=self._compute_provenance(title, analytics),
@@ -1226,7 +1215,7 @@ class ReportingEngine:
         """
         elapsed = (time.monotonic() - start_time) * 1000
         rid = _generate_id("rpt")
-        now_iso = _utcnow().isoformat()
+        now_iso = utcnow().isoformat()
 
         provenance_hash = self._compute_provenance(title, {"content_length": len(content)})
 
@@ -1296,6 +1285,6 @@ class ReportingEngine:
         payload = json.dumps({
             "title": title,
             "data": str(data)[:1000],
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }, sort_keys=True)
         return hashlib.sha256(payload.encode("utf-8")).hexdigest()

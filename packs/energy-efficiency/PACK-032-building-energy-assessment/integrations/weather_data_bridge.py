@@ -43,20 +43,15 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -69,11 +64,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ClimateZone(str, Enum):
     """ASHRAE 169-2021 climate zones."""
@@ -96,7 +89,6 @@ class ClimateZone(str, Enum):
     ZONE_7 = "7"    # Very Cold
     ZONE_8 = "8"    # Subarctic/Arctic
 
-
 class DegreeDayMethod(str, Enum):
     """Degree-day calculation methods."""
 
@@ -104,7 +96,6 @@ class DegreeDayMethod(str, Enum):
     MEAN_TEMPERATURE = "mean_temperature"
     MET_OFFICE = "met_office"
     ASHRAE = "ashrae"
-
 
 class WeatherSource(str, Enum):
     """Weather data sources."""
@@ -117,7 +108,6 @@ class WeatherSource(str, Enum):
     DWD = "dwd"
     MANUAL = "manual"
 
-
 class WindExposure(str, Enum):
     """Wind exposure classification for infiltration calculations."""
 
@@ -126,11 +116,9 @@ class WindExposure(str, Enum):
     EXPOSED = "exposed"
     VERY_EXPOSED = "very_exposed"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class WeatherStationConfig(BaseModel):
     """Weather station configuration."""
@@ -144,7 +132,6 @@ class WeatherStationConfig(BaseModel):
     climate_zone: str = Field(default="")
     source: WeatherSource = Field(default=WeatherSource.TMY3)
     distance_km: float = Field(default=0.0, ge=0, description="Distance to building")
-
 
 class DailyWeatherRecord(BaseModel):
     """Daily weather data record."""
@@ -161,7 +148,6 @@ class DailyWeatherRecord(BaseModel):
     solar_diffuse_kwh_m2: float = Field(default=0.0, ge=0)
     precipitation_mm: float = Field(default=0.0, ge=0)
     cloud_cover_pct: float = Field(default=0.0, ge=0, le=100)
-
 
 class DegreeDayResult(BaseModel):
     """Result of degree-day calculation."""
@@ -182,7 +168,6 @@ class DegreeDayResult(BaseModel):
     monthly_cdd: Dict[str, float] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
 
-
 class SolarIrradianceResult(BaseModel):
     """Solar irradiance data for a location."""
 
@@ -198,7 +183,6 @@ class SolarIrradianceResult(BaseModel):
     monthly_global_kwh_m2: Dict[str, float] = Field(default_factory=dict)
     pv_yield_kwh_kwp: float = Field(default=0.0, description="Annual PV yield per kWp")
     provenance_hash: str = Field(default="")
-
 
 class WeatherNormalizationResult(BaseModel):
     """Weather normalization result for energy benchmarking."""
@@ -218,7 +202,6 @@ class WeatherNormalizationResult(BaseModel):
     method: str = Field(default="degree_day_regression")
     provenance_hash: str = Field(default="")
 
-
 class WeatherDataBridgeConfig(BaseModel):
     """Configuration for the Weather Data Bridge."""
 
@@ -229,7 +212,6 @@ class WeatherDataBridgeConfig(BaseModel):
     degree_day_method: DegreeDayMethod = Field(default=DegreeDayMethod.SIMPLE)
     default_source: WeatherSource = Field(default=WeatherSource.TMY3)
     cache_ttl_hours: int = Field(default=24, ge=1)
-
 
 # ---------------------------------------------------------------------------
 # Reference Data
@@ -280,11 +262,9 @@ CLIMATE_ZONE_SOLAR: Dict[str, List[float]] = {
     "7":  [0.3, 0.7, 1.5, 2.5, 3.5, 4.0, 3.5, 2.5, 1.5, 0.8, 0.3, 0.1],
 }
 
-
 # ---------------------------------------------------------------------------
 # WeatherDataBridge
 # ---------------------------------------------------------------------------
-
 
 class WeatherDataBridge:
     """Weather and climate data integration for building energy assessment.

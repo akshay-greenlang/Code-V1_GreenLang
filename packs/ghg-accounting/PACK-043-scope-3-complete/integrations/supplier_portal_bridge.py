@@ -36,20 +36,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "43.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -62,11 +57,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class RequestStatus(str, Enum):
     """Data request lifecycle status."""
@@ -80,7 +73,6 @@ class RequestStatus(str, Enum):
     REJECTED = "rejected"
     OVERDUE = "overdue"
 
-
 class QualityGateResult(str, Enum):
     """Quality gate outcome."""
 
@@ -88,11 +80,9 @@ class QualityGateResult(str, Enum):
     FAIL = "FAIL"
     PARTIAL = "PARTIAL"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class DataRequest(BaseModel):
     """Supplier data request record."""
@@ -107,8 +97,7 @@ class DataRequest(BaseModel):
     reminder_count: int = Field(default=0)
     categories_requested: List[int] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class SupplierResponse(BaseModel):
     """Validated supplier response."""
@@ -129,8 +118,7 @@ class SupplierResponse(BaseModel):
     completeness_pct: float = Field(default=0.0)
     validation_errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class SupplierCommitment(BaseModel):
     """Supplier sustainability commitment status."""
@@ -145,7 +133,6 @@ class SupplierCommitment(BaseModel):
     ep100_committed: bool = Field(default=False)
     net_zero_target_year: Optional[int] = Field(None)
     provenance_hash: str = Field(default="")
-
 
 class ProgrammeMetrics(BaseModel):
     """Supplier programme metrics export."""
@@ -164,13 +151,11 @@ class ProgrammeMetrics(BaseModel):
     programme_cost_usd: float = Field(default=0.0)
     cost_per_tco2e_abated: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # SupplierPortalBridge
 # ---------------------------------------------------------------------------
-
 
 class SupplierPortalBridge:
     """Supplier data intake and programme management for PACK-043.
@@ -224,7 +209,7 @@ class SupplierPortalBridge:
             supplier_name=supplier_name or supplier_id,
             questionnaire_type=questionnaire_type,
             status=RequestStatus.SENT,
-            sent_at=_utcnow(),
+            sent_at=utcnow(),
             due_date=due_date or "2026-06-30",
             categories_requested=categories or [1, 2, 4],
         )

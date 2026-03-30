@@ -31,10 +31,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.agents.categories import AgentCategory
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -147,7 +148,7 @@ RISK_FACTOR_WEIGHTS: Dict[str, float] = {
 # =============================================================================
 
 
-class Asset(BaseModel):
+class Asset(GreenLangBase):
     """Asset specification for stranding analysis."""
     asset_id: str = Field(..., description="Unique identifier")
     name: str = Field(..., description="Asset name")
@@ -180,7 +181,7 @@ class Asset(BaseModel):
     locked_in_emissions: float = Field(default=0, ge=0)
 
 
-class StrandingRisk(BaseModel):
+class StrandingRisk(GreenLangBase):
     """Stranding risk assessment for an asset."""
     asset_id: str
     asset_name: str
@@ -205,7 +206,7 @@ class StrandingRisk(BaseModel):
     trigger_probability: Dict[str, float] = Field(default_factory=dict)
 
 
-class AssetValuationImpact(BaseModel):
+class AssetValuationImpact(GreenLangBase):
     """Valuation impact from stranding risk."""
     asset_id: str
     asset_name: str
@@ -233,7 +234,7 @@ class AssetValuationImpact(BaseModel):
     write_down_rationale: str
 
 
-class StrandedAssetInput(BaseModel):
+class StrandedAssetInput(GreenLangBase):
     """Input for stranded asset analysis."""
     operation: str = Field(
         default="assess_risk",
@@ -255,7 +256,7 @@ class StrandedAssetInput(BaseModel):
     )
 
 
-class StrandedAssetOutput(BaseModel):
+class StrandedAssetOutput(GreenLangBase):
     """Output from stranded asset analysis."""
     success: bool
     operation: str

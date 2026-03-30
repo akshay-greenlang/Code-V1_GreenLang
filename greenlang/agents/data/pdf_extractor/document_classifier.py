@@ -45,6 +45,8 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 __all__ = [
@@ -52,21 +54,13 @@ __all__ = [
     "DocumentClassifier",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class DocumentType(str, Enum):
     """Classifiable document types."""
@@ -77,7 +71,6 @@ class DocumentType(str, Enum):
     RECEIPT = "receipt"
     PURCHASE_ORDER = "purchase_order"
     UNKNOWN = "unknown"
-
 
 # ---------------------------------------------------------------------------
 # Built-in keyword dictionaries
@@ -190,11 +183,9 @@ _DEFAULT_WEIGHTS = {
     "filename": 0.15,
 }
 
-
 # ---------------------------------------------------------------------------
 # DocumentClassifier
 # ---------------------------------------------------------------------------
-
 
 class DocumentClassifier:
     """Document type classifier using keyword and structural scoring.
@@ -397,7 +388,7 @@ class DocumentClassifier:
                 "by_type": dict(self._stats["by_type"]),
                 "unknown_count": self._stats["unknown_count"],
                 "registered_types": len(self._keyword_dicts),
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }
 
     # ------------------------------------------------------------------

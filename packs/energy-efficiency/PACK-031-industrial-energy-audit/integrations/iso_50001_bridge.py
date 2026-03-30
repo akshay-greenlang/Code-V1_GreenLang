@@ -34,20 +34,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -60,11 +55,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ISO50001Clause(str, Enum):
     """ISO 50001:2018 main clause numbers."""
@@ -77,7 +70,6 @@ class ISO50001Clause(str, Enum):
     PERFORMANCE = "clause_9"
     IMPROVEMENT = "clause_10"
 
-
 class DocumentStatus(str, Enum):
     """EnMS document lifecycle status."""
 
@@ -87,7 +79,6 @@ class DocumentStatus(str, Enum):
     SUPERSEDED = "superseded"
     OBSOLETE = "obsolete"
 
-
 class NonconformitySeverity(str, Enum):
     """Nonconformity severity levels."""
 
@@ -95,7 +86,6 @@ class NonconformitySeverity(str, Enum):
     MINOR = "minor"
     OBSERVATION = "observation"
     OPPORTUNITY = "opportunity_for_improvement"
-
 
 class CorrectiveActionStatus(str, Enum):
     """Status of a corrective action."""
@@ -105,7 +95,6 @@ class CorrectiveActionStatus(str, Enum):
     IMPLEMENTED = "implemented"
     VERIFIED = "verified"
     CLOSED = "closed"
-
 
 class CertificationStatus(str, Enum):
     """ISO 50001 certification status."""
@@ -120,11 +109,9 @@ class CertificationStatus(str, Enum):
     SUSPENDED = "suspended"
     WITHDRAWN = "withdrawn"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class EnMSDocument(BaseModel):
     """Energy Management System document record."""
@@ -139,7 +126,6 @@ class EnMSDocument(BaseModel):
     last_review_date: Optional[date] = Field(None)
     next_review_date: Optional[date] = Field(None)
     description: str = Field(default="")
-
 
 class InternalAuditRecord(BaseModel):
     """Internal EnMS audit record."""
@@ -157,7 +143,6 @@ class InternalAuditRecord(BaseModel):
     status: str = Field(default="planned")
     provenance_hash: str = Field(default="")
 
-
 class Nonconformity(BaseModel):
     """Nonconformity record from internal or external audit."""
 
@@ -172,7 +157,6 @@ class Nonconformity(BaseModel):
     closed_date: Optional[date] = Field(None)
     status: CorrectiveActionStatus = Field(default=CorrectiveActionStatus.OPEN)
 
-
 class CorrectiveAction(BaseModel):
     """Corrective action for a nonconformity."""
 
@@ -185,7 +169,6 @@ class CorrectiveAction(BaseModel):
     verification_date: Optional[date] = Field(None)
     status: CorrectiveActionStatus = Field(default=CorrectiveActionStatus.OPEN)
     effectiveness_verified: bool = Field(default=False)
-
 
 class ManagementReviewData(BaseModel):
     """Aggregated data for ISO 50001 management review (Clause 9.3)."""
@@ -204,7 +187,6 @@ class ManagementReviewData(BaseModel):
     resource_needs: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class CertificationRecord(BaseModel):
     """Certification body interaction record."""
 
@@ -218,7 +200,6 @@ class CertificationRecord(BaseModel):
     next_surveillance_date: Optional[date] = Field(None)
     scope_description: str = Field(default="")
 
-
 class ISO50001BridgeConfig(BaseModel):
     """Configuration for the ISO 50001 Bridge."""
 
@@ -228,11 +209,9 @@ class ISO50001BridgeConfig(BaseModel):
     management_review_frequency_months: int = Field(default=12, ge=1, le=24)
     surveillance_cycle_months: int = Field(default=12, ge=6, le=18)
 
-
 # ---------------------------------------------------------------------------
 # ISO50001Bridge
 # ---------------------------------------------------------------------------
-
 
 class ISO50001Bridge:
     """ISO 50001 Energy Management System integration.

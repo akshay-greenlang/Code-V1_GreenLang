@@ -33,7 +33,8 @@ from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Any, Dict, List, Optional, TypeVar, Generic
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -93,7 +94,7 @@ class ConfidenceLevel(str, Enum):
 # DATA MODELS
 # =============================================================================
 
-class DecarbonizationIntervention(BaseModel):
+class DecarbonizationIntervention(GreenLangBase):
     """Individual decarbonization intervention."""
     intervention_id: str = Field(..., description="Unique intervention identifier")
     strategy: DecarbonizationStrategy = Field(..., description="Decarbonization strategy")
@@ -126,7 +127,7 @@ class DecarbonizationIntervention(BaseModel):
         use_enum_values = True
 
 
-class DecarbonizationPathway(BaseModel):
+class DecarbonizationPathway(GreenLangBase):
     """Complete decarbonization pathway."""
     pathway_id: str = Field(..., description="Unique pathway identifier")
     name: str = Field(..., description="Pathway name")
@@ -156,7 +157,7 @@ class DecarbonizationPathway(BaseModel):
 # BASE INPUT/OUTPUT MODELS
 # =============================================================================
 
-class WasteDecarbInput(BaseModel):
+class WasteDecarbInput(GreenLangBase):
     """Base input model for waste decarbonization agents."""
 
     # Identification
@@ -190,7 +191,7 @@ class WasteDecarbInput(BaseModel):
         use_enum_values = True
 
 
-class WasteDecarbOutput(BaseModel):
+class WasteDecarbOutput(GreenLangBase):
     """Base output model for waste decarbonization agents."""
 
     # Agent identification

@@ -31,7 +31,8 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
+from greenlang.schemas import GreenLangBase, utcnow
 
 # ---------------------------------------------------------------------------
 # Re-export Layer 1 enumerations
@@ -67,23 +68,15 @@ from greenlang.agents.foundation.qa_test_harness import (
     COMMON_FIXTURES,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # =============================================================================
 # SDK Data Models
 # =============================================================================
 
-
-class TestRun(BaseModel):
+class TestRun(GreenLangBase):
     """Record of a single test case execution for persistent storage.
 
     Captures the full state and results of a test run for audit
@@ -140,7 +133,7 @@ class TestRun(BaseModel):
         None, description="Error description if test failed or errored"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp when the run was created"
+        default_factory=utcnow, description="Timestamp when the run was created"
     )
     tenant_id: str = Field(
         default="default", description="Tenant identifier for multi-tenant isolation"
@@ -164,8 +157,7 @@ class TestRun(BaseModel):
             raise ValueError("agent_type must be non-empty")
         return v
 
-
-class GoldenFileEntry(BaseModel):
+class GoldenFileEntry(GreenLangBase):
     """Record of a golden file for snapshot testing.
 
     Stores metadata about a golden file including its content hash,
@@ -208,10 +200,10 @@ class GoldenFileEntry(BaseModel):
         default="", description="Filesystem path where the golden file is stored"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp when the golden file was created"
+        default_factory=utcnow, description="Timestamp when the golden file was created"
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp of the last update"
+        default_factory=utcnow, description="Timestamp of the last update"
     )
     created_by: str = Field(
         default="system", description="User or system that created the golden file"
@@ -238,8 +230,7 @@ class GoldenFileEntry(BaseModel):
             raise ValueError("name must be non-empty")
         return v
 
-
-class PerformanceBaseline(BaseModel):
+class PerformanceBaseline(GreenLangBase):
     """Stored performance baseline for benchmark comparison.
 
     A performance snapshot used as a reference point for detecting
@@ -280,7 +271,7 @@ class PerformanceBaseline(BaseModel):
         None, description="Performance threshold in milliseconds"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp when the baseline was created"
+        default_factory=utcnow, description="Timestamp when the baseline was created"
     )
     is_active: bool = Field(
         default=True, description="Whether this baseline is currently active"
@@ -296,8 +287,7 @@ class PerformanceBaseline(BaseModel):
             raise ValueError("agent_type must be non-empty")
         return v
 
-
-class CoverageSnapshot(BaseModel):
+class CoverageSnapshot(GreenLangBase):
     """Point-in-time snapshot of test coverage for an agent.
 
     Captures coverage metrics at a specific point in time for
@@ -333,7 +323,7 @@ class CoverageSnapshot(BaseModel):
         default_factory=list, description="List of uncovered method names"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp when the snapshot was taken"
+        default_factory=utcnow, description="Timestamp when the snapshot was taken"
     )
 
     model_config = {"extra": "forbid"}
@@ -346,8 +336,7 @@ class CoverageSnapshot(BaseModel):
             raise ValueError("agent_type must be non-empty")
         return v
 
-
-class RegressionBaseline(BaseModel):
+class RegressionBaseline(GreenLangBase):
     """Stored regression baseline for output comparison.
 
     A snapshot of expected output hash for a given input hash, used to
@@ -376,7 +365,7 @@ class RegressionBaseline(BaseModel):
         ..., description="SHA-256 hash of the expected output"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp when the baseline was created"
+        default_factory=utcnow, description="Timestamp when the baseline was created"
     )
     is_active: bool = Field(
         default=True, description="Whether this baseline is currently active"
@@ -400,8 +389,7 @@ class RegressionBaseline(BaseModel):
             raise ValueError("hash must be non-empty")
         return v
 
-
-class QAStatistics(BaseModel):
+class QAStatistics(GreenLangBase):
     """Aggregated statistics for the QA test harness.
 
     Attributes:
@@ -450,13 +438,11 @@ class QAStatistics(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
 # =============================================================================
 # Request / Response Models
 # =============================================================================
 
-
-class RunTestRequest(BaseModel):
+class RunTestRequest(GreenLangBase):
     """Request body for running a single test case.
 
     Attributes:
@@ -469,8 +455,7 @@ class RunTestRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class RunSuiteRequest(BaseModel):
+class RunSuiteRequest(GreenLangBase):
     """Request body for running a test suite.
 
     Attributes:
@@ -483,8 +468,7 @@ class RunSuiteRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class BenchmarkRequest(BaseModel):
+class BenchmarkRequest(GreenLangBase):
     """Request body for running a performance benchmark.
 
     Attributes:
@@ -521,8 +505,7 @@ class BenchmarkRequest(BaseModel):
             raise ValueError("agent_type must be non-empty")
         return v
 
-
-class ReportRequest(BaseModel):
+class ReportRequest(GreenLangBase):
     """Request body for generating a test report.
 
     Attributes:
@@ -547,7 +530,6 @@ class ReportRequest(BaseModel):
         if v.lower() not in allowed:
             raise ValueError(f"format must be one of {allowed}")
         return v.lower()
-
 
 __all__ = [
     # Re-exported enums

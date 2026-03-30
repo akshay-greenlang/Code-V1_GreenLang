@@ -46,30 +46,23 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _today() -> date:
     """Return current date."""
     return date.today()
 
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -82,7 +75,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _parse_date(value: Any) -> date:
     """Parse a date from string or date object."""
     if isinstance(value, date):
@@ -93,11 +85,9 @@ def _parse_date(value: Any) -> date:
         return date.fromisoformat(value)
     raise ValueError(f"Cannot parse date from {type(value)}: {value}")
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CalendarEventType(str, Enum):
     """Type of regulatory calendar event."""
@@ -117,7 +107,6 @@ class CalendarEventType(str, Enum):
     REGULATORY_UPDATE = "REGULATORY_UPDATE"
     INTERNAL_MILESTONE = "INTERNAL_MILESTONE"
 
-
 class EventStatus(str, Enum):
     """Status of a calendar event."""
     PENDING = "PENDING"
@@ -126,7 +115,6 @@ class EventStatus(str, Enum):
     OVERDUE = "OVERDUE"
     CANCELLED = "CANCELLED"
 
-
 class AlertLevel(str, Enum):
     """Alert level for upcoming deadlines."""
     CRITICAL = "CRITICAL"
@@ -134,11 +122,9 @@ class AlertLevel(str, Enum):
     INFO = "INFO"
     NONE = "NONE"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class CalendarEvent(BaseModel):
     """A single regulatory calendar event."""
@@ -159,7 +145,6 @@ class CalendarEvent(BaseModel):
         default_factory=list, description="Related events in other regulations"
     )
 
-
 class DeadlineConflict(BaseModel):
     """A conflict between two or more overlapping deadlines."""
     conflict_id: str = Field(default_factory=_new_uuid, description="Conflict identifier")
@@ -171,7 +156,6 @@ class DeadlineConflict(BaseModel):
     severity: str = Field(default="WARNING", description="Conflict severity")
     recommendation: str = Field(default="", description="Resolution recommendation")
 
-
 class DependencyChain(BaseModel):
     """A dependency chain between events."""
     chain_id: str = Field(default_factory=_new_uuid, description="Chain identifier")
@@ -181,7 +165,6 @@ class DependencyChain(BaseModel):
     chain_start_date: str = Field(default="", description="Earliest start date")
     chain_end_date: str = Field(default="", description="Final deadline")
     critical: bool = Field(default=False, description="Whether chain is on critical path")
-
 
 class CalendarAlert(BaseModel):
     """An alert for an upcoming deadline."""
@@ -194,7 +177,6 @@ class CalendarAlert(BaseModel):
     alert_level: str = Field(default="INFO", description="Alert level")
     message: str = Field(default="", description="Alert message")
 
-
 class CalendarResult(BaseModel):
     """Complete result of a calendar operation."""
     result_id: str = Field(default_factory=_new_uuid, description="Result identifier")
@@ -206,9 +188,8 @@ class CalendarResult(BaseModel):
     events_by_regulation: Dict[str, int] = Field(default_factory=dict, description="Events per regulation")
     events_by_month: Dict[str, int] = Field(default_factory=dict, description="Events per month")
     next_deadline: Optional[CalendarEvent] = Field(default=None, description="Next upcoming deadline")
-    timestamp: str = Field(default_factory=lambda: _utcnow().isoformat(), description="Query timestamp")
+    timestamp: str = Field(default_factory=lambda: utcnow().isoformat(), description="Query timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class ICalExport(BaseModel):
     """iCal export data."""
@@ -217,11 +198,9 @@ class ICalExport(BaseModel):
     event_count: int = Field(default=0, description="Number of events exported")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
-
 
 class CalendarConfig(BaseModel):
     """Configuration for the RegulatoryCalendarEngine."""
@@ -251,7 +230,6 @@ class CalendarConfig(BaseModel):
         description="Days within which overlapping deadlines are flagged as conflicts"
     )
 
-
 # ---------------------------------------------------------------------------
 # Model rebuilds
 # ---------------------------------------------------------------------------
@@ -263,7 +241,6 @@ DependencyChain.model_rebuild()
 CalendarAlert.model_rebuild()
 CalendarResult.model_rebuild()
 ICalExport.model_rebuild()
-
 
 # ---------------------------------------------------------------------------
 # Regulatory Deadlines Database (50+ events across 4 regulations)
@@ -448,11 +425,9 @@ REGULATORY_DEADLINES: Dict[str, List[Dict[str, Any]]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # RegulatoryCalendarEngine
 # ---------------------------------------------------------------------------
-
 
 class RegulatoryCalendarEngine:
     """
@@ -928,7 +903,7 @@ class RegulatoryCalendarEngine:
 
             dtstart = deadline.strftime("%Y%m%d")
             dtend = (deadline + timedelta(days=1)).strftime("%Y%m%d")
-            dtstamp = _utcnow().strftime("%Y%m%dT%H%M%SZ")
+            dtstamp = utcnow().strftime("%Y%m%dT%H%M%SZ")
             uid = f"{event.event_id}@greenlang.io"
 
             alert_minutes = event.lead_time_days * 24 * 60

@@ -44,9 +44,10 @@ from decimal import Decimal, InvalidOperation
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import ConfigDict, Field
 
 from ..models.config import CoercionPolicy
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -109,7 +110,7 @@ class CoercionType(str, Enum):
 # =============================================================================
 
 
-class CoercionRecord(BaseModel):
+class CoercionRecord(GreenLangBase):
     """
     Record of a coercion operation.
 
@@ -196,7 +197,7 @@ class CoercionRecord(BaseModel):
 # =============================================================================
 
 
-class CoercionResult(BaseModel):
+class CoercionResult(GreenLangBase):
     """
     Result of a coercion attempt.
 

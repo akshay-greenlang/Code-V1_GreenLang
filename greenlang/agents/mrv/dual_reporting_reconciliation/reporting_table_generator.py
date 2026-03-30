@@ -79,6 +79,7 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -153,15 +154,9 @@ except ImportError:
         "engine will not function correctly without models"
     )
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Decimal helpers
@@ -174,14 +169,12 @@ _QUANT_8 = Decimal("0.00000001")
 _QUANT_2 = Decimal("0.01")
 _QUANT_4 = Decimal("0.0001")
 
-
 def _q8(value: Decimal) -> Decimal:
     """Quantize a Decimal to 8 decimal places with ROUND_HALF_UP."""
     try:
         return value.quantize(_QUANT_8, rounding=ROUND_HALF_UP)
     except (InvalidOperation, TypeError):
         return _ZERO
-
 
 def _q2(value: Decimal) -> Decimal:
     """Quantize a Decimal to 2 decimal places with ROUND_HALF_UP."""
@@ -190,7 +183,6 @@ def _q2(value: Decimal) -> Decimal:
     except (InvalidOperation, TypeError):
         return _ZERO
 
-
 def _q4(value: Decimal) -> Decimal:
     """Quantize a Decimal to 4 decimal places with ROUND_HALF_UP."""
     try:
@@ -198,20 +190,17 @@ def _q4(value: Decimal) -> Decimal:
     except (InvalidOperation, TypeError):
         return _ZERO
 
-
 def _safe_pct(numerator: Decimal, denominator: Decimal) -> Decimal:
     """Compute percentage safely, returning 0 when denominator is zero."""
     if denominator == _ZERO:
         return _ZERO
     return _q4((numerator / denominator) * _HUNDRED)
 
-
 def _safe_div(numerator: Decimal, denominator: Decimal) -> Decimal:
     """Divide safely, returning 0 when denominator is zero."""
     if denominator == _ZERO:
         return _ZERO
     return _q8(numerator / denominator)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -225,7 +214,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Energy type display helpers
@@ -241,17 +229,14 @@ _ENERGY_TYPE_LABELS: Dict[str, str] = {
 _ENERGY_TYPE_UNIT = "tCO2e"
 _ENERGY_MWH_UNIT = "MWh"
 
-
 def _energy_label(energy_type: Any) -> str:
     """Return a human-readable label for an energy type."""
     val = energy_type.value if hasattr(energy_type, "value") else str(energy_type)
     return _ENERGY_TYPE_LABELS.get(val, val.replace("_", " ").title())
 
-
 # ===========================================================================
 # ReportingTableGeneratorEngine
 # ===========================================================================
-
 
 class ReportingTableGeneratorEngine:
     """Multi-framework reporting table generator for dual Scope 2 reporting.
@@ -320,7 +305,7 @@ class ReportingTableGeneratorEngine:
             self._total_tables_generated: int = 0
             self._total_exports: int = 0
             self._total_errors: int = 0
-            self._created_at: datetime = _utcnow()
+            self._created_at: datetime = utcnow()
 
             # Framework generator dispatch map
             self._framework_generators: Dict[str, Any] = {}
@@ -732,7 +717,7 @@ class ReportingTableGeneratorEngine:
             "tables_count": len(tables),
             "frameworks": [t.framework.value for t in tables],
             "total_rows": sum(len(t.rows) for t in tables),
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
         }
         provenance_hash = _compute_hash(provenance_input)
 
@@ -2461,7 +2446,7 @@ class ReportingTableGeneratorEngine:
         export_data = {
             "reconciliation_id": table_set.reconciliation_id,
             "export_format": "json",
-            "exported_at": _utcnow().isoformat(),
+            "exported_at": utcnow().isoformat(),
             "agent_id": AGENT_ID if _MODELS_AVAILABLE else "unknown",
             "agent_component": AGENT_COMPONENT if _MODELS_AVAILABLE else "unknown",
             "version": VERSION if _MODELS_AVAILABLE else "unknown",
@@ -2510,7 +2495,7 @@ class ReportingTableGeneratorEngine:
         """
         with self._lock:
             uptime_seconds = (
-                _utcnow() - self._created_at
+                utcnow() - self._created_at
             ).total_seconds()
 
             return {

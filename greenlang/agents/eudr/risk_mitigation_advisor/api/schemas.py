@@ -18,7 +18,8 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase
 
 
 # ---------------------------------------------------------------------------
@@ -26,7 +27,7 @@ from pydantic import BaseModel, Field
 # ---------------------------------------------------------------------------
 
 
-class PaginatedMeta(BaseModel):
+class PaginatedMeta(GreenLangBase):
     """Pagination metadata included in list responses."""
 
     total: int = Field(..., ge=0, description="Total number of records matching filters")
@@ -35,7 +36,7 @@ class PaginatedMeta(BaseModel):
     has_more: bool = Field(..., description="Whether more records exist beyond this page")
 
 
-class ProvenanceInfo(BaseModel):
+class ProvenanceInfo(GreenLangBase):
     """Provenance information for audit trail."""
 
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
@@ -44,7 +45,7 @@ class ProvenanceInfo(BaseModel):
     timestamp: datetime = Field(default_factory=lambda: datetime.utcnow(), description="Computation timestamp")
 
 
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     """Standard error response envelope."""
 
     error: str = Field(..., description="Error type identifier")
@@ -58,7 +59,7 @@ class ErrorResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class StrategyRecommendRequest(BaseModel):
+class StrategyRecommendRequest(GreenLangBase):
     """Request body for POST /strategies/recommend."""
 
     operator_id: str = Field(..., min_length=1, description="Operator identifier")
@@ -97,7 +98,7 @@ class StrategyRecommendRequest(BaseModel):
         }
 
 
-class StrategyEntry(BaseModel):
+class StrategyEntry(GreenLangBase):
     """A single strategy in a recommendation response."""
 
     strategy_id: str = Field(..., description="Strategy unique identifier")
@@ -119,7 +120,7 @@ class StrategyEntry(BaseModel):
     created_at: Optional[datetime] = Field(default=None, description="Creation timestamp")
 
 
-class StrategyRecommendResponse(BaseModel):
+class StrategyRecommendResponse(GreenLangBase):
     """Response for POST /strategies/recommend."""
 
     strategies: List[StrategyEntry] = Field(default_factory=list, description="Ranked strategy recommendations")
@@ -128,21 +129,21 @@ class StrategyRecommendResponse(BaseModel):
     provenance: ProvenanceInfo = Field(default_factory=ProvenanceInfo, description="Provenance metadata")
 
 
-class StrategyListResponse(BaseModel):
+class StrategyListResponse(GreenLangBase):
     """Response for GET /strategies."""
 
     strategies: List[StrategyEntry] = Field(default_factory=list, description="Strategy list")
     meta: PaginatedMeta = Field(..., description="Pagination metadata")
 
 
-class StrategySelectRequest(BaseModel):
+class StrategySelectRequest(GreenLangBase):
     """Request body for POST /strategies/{strategy_id}/select."""
 
     selected_by: str = Field(..., min_length=1, description="User selecting the strategy")
     notes: str = Field(default="", description="Selection rationale")
 
 
-class StrategyExplainResponse(BaseModel):
+class StrategyExplainResponse(GreenLangBase):
     """Response for GET /strategies/{strategy_id}/explain."""
 
     strategy_id: str = Field(..., description="Strategy identifier")
@@ -159,7 +160,7 @@ class StrategyExplainResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class CreatePlanRequest(BaseModel):
+class CreatePlanRequest(GreenLangBase):
     """Request body for POST /plans."""
 
     operator_id: str = Field(..., min_length=1, description="Operator identifier")
@@ -187,7 +188,7 @@ class CreatePlanRequest(BaseModel):
         }
 
 
-class PlanEntry(BaseModel):
+class PlanEntry(GreenLangBase):
     """A remediation plan summary entry."""
 
     plan_id: str = Field(..., description="Plan identifier")
@@ -208,7 +209,7 @@ class PlanEntry(BaseModel):
     updated_at: Optional[datetime] = Field(default=None, description="Last update timestamp")
 
 
-class PlanDetailResponse(BaseModel):
+class PlanDetailResponse(GreenLangBase):
     """Full plan detail response for GET /plans/{plan_id}."""
 
     plan: PlanEntry = Field(..., description="Plan summary")
@@ -222,14 +223,14 @@ class PlanDetailResponse(BaseModel):
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
 
-class PlanListResponse(BaseModel):
+class PlanListResponse(GreenLangBase):
     """Response for GET /plans."""
 
     plans: List[PlanEntry] = Field(default_factory=list, description="Plan list")
     meta: PaginatedMeta = Field(..., description="Pagination metadata")
 
 
-class PlanStatusUpdateRequest(BaseModel):
+class PlanStatusUpdateRequest(GreenLangBase):
     """Request body for PUT /plans/{plan_id}/status."""
 
     status: str = Field(..., description="New status: active, on_track, at_risk, delayed, completed, suspended, abandoned")
@@ -237,7 +238,7 @@ class PlanStatusUpdateRequest(BaseModel):
     approved_by: Optional[str] = Field(default=None, description="Approver for activation/completion")
 
 
-class PlanCloneRequest(BaseModel):
+class PlanCloneRequest(GreenLangBase):
     """Request body for POST /plans/{plan_id}/clone."""
 
     target_supplier_id: str = Field(..., min_length=1, description="Target supplier for cloned plan")
@@ -246,7 +247,7 @@ class PlanCloneRequest(BaseModel):
     budget_allocated: Optional[Decimal] = Field(default=None, ge=Decimal("0"), description="Override budget for clone")
 
 
-class GanttChartResponse(BaseModel):
+class GanttChartResponse(GreenLangBase):
     """Response for GET /plans/{plan_id}/gantt."""
 
     plan_id: str = Field(..., description="Plan identifier")
@@ -259,7 +260,7 @@ class GanttChartResponse(BaseModel):
     end_date: Optional[date] = Field(default=None, description="Plan target end date")
 
 
-class MilestoneCreateRequest(BaseModel):
+class MilestoneCreateRequest(GreenLangBase):
     """Request body for POST /plans/{plan_id}/milestones."""
 
     name: str = Field(..., min_length=1, max_length=500, description="Milestone name")
@@ -272,7 +273,7 @@ class MilestoneCreateRequest(BaseModel):
     dependencies: List[str] = Field(default_factory=list, description="Prerequisite milestone IDs")
 
 
-class MilestoneUpdateRequest(BaseModel):
+class MilestoneUpdateRequest(GreenLangBase):
     """Request body for PUT /plans/{plan_id}/milestones/{milestone_id}."""
 
     status: Optional[str] = Field(default=None, description="New status: pending, in_progress, completed, overdue, skipped")
@@ -281,7 +282,7 @@ class MilestoneUpdateRequest(BaseModel):
     notes: str = Field(default="", description="Update notes")
 
 
-class EvidenceUploadRequest(BaseModel):
+class EvidenceUploadRequest(GreenLangBase):
     """Request body for POST /plans/{plan_id}/milestones/{milestone_id}/evidence."""
 
     file_name: str = Field(..., min_length=1, description="Evidence file name")
@@ -298,7 +299,7 @@ class EvidenceUploadRequest(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class EnrollSupplierRequest(BaseModel):
+class EnrollSupplierRequest(GreenLangBase):
     """Request body for POST /capacity-building/enroll."""
 
     supplier_id: str = Field(..., min_length=1, description="Supplier identifier")
@@ -320,7 +321,7 @@ class EnrollSupplierRequest(BaseModel):
         }
 
 
-class EnrollmentEntry(BaseModel):
+class EnrollmentEntry(GreenLangBase):
     """A capacity building enrollment entry."""
 
     enrollment_id: str = Field(..., description="Enrollment identifier")
@@ -340,14 +341,14 @@ class EnrollmentEntry(BaseModel):
     risk_reduction_pct: Optional[Decimal] = Field(default=None, description="Risk reduction since enrollment")
 
 
-class EnrollmentListResponse(BaseModel):
+class EnrollmentListResponse(GreenLangBase):
     """Response for GET /capacity-building/enrollments."""
 
     enrollments: List[EnrollmentEntry] = Field(default_factory=list, description="Enrollment list")
     meta: PaginatedMeta = Field(..., description="Pagination metadata")
 
 
-class ProgressUpdateRequest(BaseModel):
+class ProgressUpdateRequest(GreenLangBase):
     """Request body for PUT /capacity-building/enrollments/{enrollment_id}/progress."""
 
     modules_completed: Optional[int] = Field(default=None, ge=0, description="Updated modules completed count")
@@ -356,7 +357,7 @@ class ProgressUpdateRequest(BaseModel):
     notes: str = Field(default="", description="Progress notes")
 
 
-class ScorecardResponse(BaseModel):
+class ScorecardResponse(GreenLangBase):
     """Response for GET /capacity-building/scorecard/{supplier_id}."""
 
     supplier_id: str = Field(..., description="Supplier identifier")
@@ -373,7 +374,7 @@ class ScorecardResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class MeasureEntry(BaseModel):
+class MeasureEntry(GreenLangBase):
     """A mitigation measure summary."""
 
     measure_id: str = Field(..., description="Measure identifier")
@@ -395,7 +396,7 @@ class MeasureEntry(BaseModel):
     applicability: Dict[str, Any] = Field(default_factory=dict, description="Applicability criteria")
 
 
-class MeasureDetailResponse(BaseModel):
+class MeasureDetailResponse(GreenLangBase):
     """Full measure detail response for GET /measures/{measure_id}."""
 
     measure: MeasureEntry = Field(..., description="Measure data")
@@ -404,7 +405,7 @@ class MeasureDetailResponse(BaseModel):
     target_risk_factors: List[str] = Field(default_factory=list, description="Risk factors addressed")
 
 
-class MeasureSearchResponse(BaseModel):
+class MeasureSearchResponse(GreenLangBase):
     """Response for GET /measures."""
 
     measures: List[MeasureEntry] = Field(default_factory=list, description="Matching measures")
@@ -412,7 +413,7 @@ class MeasureSearchResponse(BaseModel):
     facets: Dict[str, Any] = Field(default_factory=dict, description="Available facet counts for refinement")
 
 
-class MeasureCompareResponse(BaseModel):
+class MeasureCompareResponse(GreenLangBase):
     """Response for GET /measures/compare."""
 
     measures: List[MeasureEntry] = Field(default_factory=list, description="Measures being compared")
@@ -420,7 +421,7 @@ class MeasureCompareResponse(BaseModel):
     recommendation: Optional[str] = Field(default=None, description="Recommended measure based on context")
 
 
-class MeasurePackageResponse(BaseModel):
+class MeasurePackageResponse(GreenLangBase):
     """Response for GET /measures/packages/{risk_scenario}."""
 
     risk_scenario: str = Field(..., description="Risk scenario identifier")
@@ -435,7 +436,7 @@ class MeasurePackageResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class EffectivenessEntry(BaseModel):
+class EffectivenessEntry(GreenLangBase):
     """An effectiveness measurement record."""
 
     record_id: str = Field(default="", description="Record identifier")
@@ -455,7 +456,7 @@ class EffectivenessEntry(BaseModel):
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
 
-class EffectivenessPlanResponse(BaseModel):
+class EffectivenessPlanResponse(GreenLangBase):
     """Response for GET /effectiveness/{plan_id}."""
 
     plan_id: str = Field(..., description="Plan identifier")
@@ -464,7 +465,7 @@ class EffectivenessPlanResponse(BaseModel):
     trend: str = Field(default="stable", description="Trend direction: improving, stable, degrading")
 
 
-class EffectivenessSupplierResponse(BaseModel):
+class EffectivenessSupplierResponse(GreenLangBase):
     """Response for GET /effectiveness/supplier/{supplier_id}."""
 
     supplier_id: str = Field(..., description="Supplier identifier")
@@ -473,7 +474,7 @@ class EffectivenessSupplierResponse(BaseModel):
     aggregate_roi: Optional[Decimal] = Field(default=None, description="Aggregate ROI across plans")
 
 
-class PortfolioEffectivenessResponse(BaseModel):
+class PortfolioEffectivenessResponse(GreenLangBase):
     """Response for GET /effectiveness/portfolio."""
 
     total_plans_active: int = Field(default=0, description="Active plans count")
@@ -485,7 +486,7 @@ class PortfolioEffectivenessResponse(BaseModel):
     trend_data: List[Dict[str, Any]] = Field(default_factory=list, description="Monthly trend data points")
 
 
-class ROIAnalysisResponse(BaseModel):
+class ROIAnalysisResponse(GreenLangBase):
     """Response for GET /effectiveness/roi."""
 
     total_investment_eur: Decimal = Field(default=Decimal("0"), description="Total mitigation investment")
@@ -501,7 +502,7 @@ class ROIAnalysisResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class TriggerEventEntry(BaseModel):
+class TriggerEventEntry(GreenLangBase):
     """A monitoring trigger event."""
 
     event_id: str = Field(default="", description="Event identifier")
@@ -521,21 +522,21 @@ class TriggerEventEntry(BaseModel):
     detected_at: Optional[datetime] = Field(default=None, description="Detection timestamp")
 
 
-class TriggerListResponse(BaseModel):
+class TriggerListResponse(GreenLangBase):
     """Response for GET /monitoring/triggers."""
 
     triggers: List[TriggerEventEntry] = Field(default_factory=list, description="Trigger events")
     meta: PaginatedMeta = Field(..., description="Pagination metadata")
 
 
-class AcknowledgeRequest(BaseModel):
+class AcknowledgeRequest(GreenLangBase):
     """Request body for PUT /monitoring/triggers/{event_id}/acknowledge."""
 
     notes: str = Field(default="", description="Acknowledgement notes")
     action_taken: Optional[str] = Field(default=None, description="Immediate action taken")
 
 
-class MonitoringDashboardResponse(BaseModel):
+class MonitoringDashboardResponse(GreenLangBase):
     """Response for GET /monitoring/dashboard."""
 
     active_plans_count: int = Field(default=0, description="Active plans")
@@ -548,7 +549,7 @@ class MonitoringDashboardResponse(BaseModel):
     next_annual_review: Optional[date] = Field(default=None, description="Next Article 8(3) annual review date")
 
 
-class DriftAnalysisResponse(BaseModel):
+class DriftAnalysisResponse(GreenLangBase):
     """Response for GET /monitoring/drift/{plan_id}."""
 
     plan_id: str = Field(..., description="Plan identifier")
@@ -565,7 +566,7 @@ class DriftAnalysisResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class OptimizeBudgetRequest(BaseModel):
+class OptimizeBudgetRequest(GreenLangBase):
     """Request body for POST /optimization/run."""
 
     operator_id: str = Field(..., min_length=1, description="Operator identifier")
@@ -586,7 +587,7 @@ class OptimizeBudgetRequest(BaseModel):
         }
 
 
-class OptimizationResultResponse(BaseModel):
+class OptimizationResultResponse(GreenLangBase):
     """Response for POST /optimization/run and GET /optimization/{id}."""
 
     optimization_id: str = Field(..., description="Optimization result identifier")
@@ -602,7 +603,7 @@ class OptimizationResultResponse(BaseModel):
     created_at: Optional[datetime] = Field(default=None, description="Creation timestamp")
 
 
-class ParetoFrontierResponse(BaseModel):
+class ParetoFrontierResponse(GreenLangBase):
     """Response for GET /optimization/{id}/pareto."""
 
     optimization_id: str = Field(..., description="Optimization identifier")
@@ -611,7 +612,7 @@ class ParetoFrontierResponse(BaseModel):
     recommended_point: Optional[Dict[str, Any]] = Field(default=None, description="Recommended operating point")
 
 
-class SensitivityAnalysisResponse(BaseModel):
+class SensitivityAnalysisResponse(GreenLangBase):
     """Response for GET /optimization/{id}/sensitivity."""
 
     optimization_id: str = Field(..., description="Optimization identifier")
@@ -626,7 +627,7 @@ class SensitivityAnalysisResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class PostMessageRequest(BaseModel):
+class PostMessageRequest(GreenLangBase):
     """Request body for POST /collaboration/{plan_id}/messages."""
 
     content: str = Field(..., min_length=1, description="Message content")
@@ -635,7 +636,7 @@ class PostMessageRequest(BaseModel):
     mentions: List[str] = Field(default_factory=list, description="Mentioned user IDs")
 
 
-class MessageEntry(BaseModel):
+class MessageEntry(GreenLangBase):
     """A collaboration message entry."""
 
     message_id: str = Field(default="", description="Message identifier")
@@ -650,14 +651,14 @@ class MessageEntry(BaseModel):
     sent_at: Optional[datetime] = Field(default=None, description="Send timestamp")
 
 
-class MessageListResponse(BaseModel):
+class MessageListResponse(GreenLangBase):
     """Response for GET /collaboration/{plan_id}/messages."""
 
     messages: List[MessageEntry] = Field(default_factory=list, description="Messages in thread")
     meta: PaginatedMeta = Field(..., description="Pagination metadata")
 
 
-class CreateTaskRequest(BaseModel):
+class CreateTaskRequest(GreenLangBase):
     """Request body for POST /collaboration/{plan_id}/tasks."""
 
     title: str = Field(..., min_length=1, max_length=500, description="Task title")
@@ -668,7 +669,7 @@ class CreateTaskRequest(BaseModel):
     priority: str = Field(default="medium", description="Priority: low, medium, high, urgent")
 
 
-class TaskEntry(BaseModel):
+class TaskEntry(GreenLangBase):
     """A collaboration task entry."""
 
     task_id: str = Field(default="", description="Task identifier")
@@ -684,7 +685,7 @@ class TaskEntry(BaseModel):
     created_at: Optional[datetime] = Field(default=None, description="Creation timestamp")
 
 
-class SupplierPortalResponse(BaseModel):
+class SupplierPortalResponse(GreenLangBase):
     """Response for GET /collaboration/supplier-portal/{supplier_id}."""
 
     supplier_id: str = Field(..., description="Supplier identifier")
@@ -701,7 +702,7 @@ class SupplierPortalResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class GenerateReportRequest(BaseModel):
+class GenerateReportRequest(GreenLangBase):
     """Request body for POST /reports/generate."""
 
     operator_id: str = Field(..., min_length=1, description="Operator identifier")
@@ -734,7 +735,7 @@ class GenerateReportRequest(BaseModel):
         }
 
 
-class ReportEntry(BaseModel):
+class ReportEntry(GreenLangBase):
     """A generated report entry."""
 
     report_id: str = Field(default="", description="Report identifier")
@@ -748,14 +749,14 @@ class ReportEntry(BaseModel):
     generated_at: Optional[datetime] = Field(default=None, description="Generation timestamp")
 
 
-class ReportListResponse(BaseModel):
+class ReportListResponse(GreenLangBase):
     """Response for GET /reports."""
 
     reports: List[ReportEntry] = Field(default_factory=list, description="Report list")
     meta: PaginatedMeta = Field(..., description="Pagination metadata")
 
 
-class ReportDownloadResponse(BaseModel):
+class ReportDownloadResponse(GreenLangBase):
     """Response for GET /reports/{report_id}/download."""
 
     report_id: str = Field(..., description="Report identifier")
@@ -766,7 +767,7 @@ class ReportDownloadResponse(BaseModel):
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
 
-class DDSSectionResponse(BaseModel):
+class DDSSectionResponse(GreenLangBase):
     """Response for GET /reports/dds-section/{operator_id}."""
 
     operator_id: str = Field(..., description="Operator identifier")
@@ -786,7 +787,7 @@ class DDSSectionResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Health check response."""
 
     status: str = Field(default="healthy", description="Service status")
@@ -798,7 +799,7 @@ class HealthResponse(BaseModel):
     timestamp: Optional[datetime] = Field(default=None, description="Check timestamp")
 
 
-class StatsResponse(BaseModel):
+class StatsResponse(GreenLangBase):
     """Service statistics response."""
 
     total_strategies_recommended: int = Field(default=0, description="Total strategies recommended")

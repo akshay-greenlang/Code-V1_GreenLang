@@ -40,35 +40,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "22.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a single workflow phase."""
@@ -79,7 +71,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -89,7 +80,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class SupplierTier(str, Enum):
     """Supplier engagement tiers."""
 
@@ -97,7 +87,6 @@ class SupplierTier(str, Enum):
     TIER_2 = "tier_2"   # Significant emitters, standard engagement
     TIER_3 = "tier_3"   # Moderate emitters, awareness program
     TIER_4 = "tier_4"   # Low emitters, monitoring only
-
 
 class RAGStatus(str, Enum):
     """Red/Amber/Green progress status."""
@@ -107,7 +96,6 @@ class RAGStatus(str, Enum):
     GREEN = "green"
     NOT_STARTED = "not_started"
 
-
 class SupplierMaturity(str, Enum):
     """Supplier climate maturity levels."""
 
@@ -115,7 +103,6 @@ class SupplierMaturity(str, Enum):
     ADVANCED = "advanced"       # Has targets, some reporting
     DEVELOPING = "developing"   # Awareness, no formal targets
     NASCENT = "nascent"         # No climate action
-
 
 # =============================================================================
 # TIER THRESHOLDS (Zero-Hallucination)
@@ -161,11 +148,9 @@ TIER_REDUCTION_POTENTIAL: Dict[str, float] = {
     "tier_4": 2.0,    # 2% reduction
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -177,7 +162,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class SupplierRecord(BaseModel):
     """A single supplier assessment record."""
@@ -194,7 +178,6 @@ class SupplierRecord(BaseModel):
     reports_cdp: bool = Field(default=False)
     maturity: SupplierMaturity = Field(default=SupplierMaturity.NASCENT)
 
-
 class SupplierAssessment(BaseModel):
     """Assessment result for a single supplier."""
 
@@ -208,7 +191,6 @@ class SupplierAssessment(BaseModel):
     tier: SupplierTier = Field(default=SupplierTier.TIER_4)
     rank: int = Field(default=0)
 
-
 class TierSummary(BaseModel):
     """Summary statistics for a supplier tier."""
 
@@ -221,7 +203,6 @@ class TierSummary(BaseModel):
     review_frequency: str = Field(default="")
     expected_reduction_pct: float = Field(default=0.0)
 
-
 class EngagementMilestone(BaseModel):
     """A milestone in the supplier engagement program."""
 
@@ -231,7 +212,6 @@ class EngagementMilestone(BaseModel):
     tier: SupplierTier = Field(default=SupplierTier.TIER_1)
     kpi: str = Field(default="")
     success_criteria: str = Field(default="")
-
 
 class TierProgram(BaseModel):
     """Engagement program design for a single tier."""
@@ -245,7 +225,6 @@ class TierProgram(BaseModel):
     supplier_count: int = Field(default=0)
     resources_required: List[str] = Field(default_factory=list)
 
-
 class SupplierProgress(BaseModel):
     """Execution progress for a single supplier."""
 
@@ -258,7 +237,6 @@ class SupplierProgress(BaseModel):
     completion_pct: float = Field(default=0.0)
     estimated_reduction_tco2e: float = Field(default=0.0)
     notes: str = Field(default="")
-
 
 class ImpactReport(BaseModel):
     """Scope 3 supplier program impact report."""
@@ -278,7 +256,6 @@ class ImpactReport(BaseModel):
     cost_per_tco2e_reduced: float = Field(default=0.0)
     recommendations: List[str] = Field(default_factory=list)
 
-
 class SupplierProgramConfig(BaseModel):
     """Configuration for the supplier engagement program workflow."""
 
@@ -290,7 +267,6 @@ class SupplierProgramConfig(BaseModel):
     base_year: int = Field(default=2024, ge=2015, le=2050)
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
-
 
 class SupplierProgramResult(BaseModel):
     """Complete result from the supplier engagement program workflow."""
@@ -307,11 +283,9 @@ class SupplierProgramResult(BaseModel):
     impact_report: ImpactReport = Field(default_factory=ImpactReport)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class SupplierProgramWorkflow:
     """
@@ -362,7 +336,7 @@ class SupplierProgramWorkflow:
             SupplierProgramResult with assessments, programs, progress,
             and impact report.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting supplier program workflow %s, suppliers=%d",
             self.workflow_id, len(config.suppliers),
@@ -396,7 +370,7 @@ class SupplierProgramWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         result = SupplierProgramResult(
             workflow_id=self.workflow_id,
             status=overall_status,
@@ -423,7 +397,7 @@ class SupplierProgramWorkflow:
 
     async def _phase_assessment(self, config: SupplierProgramConfig) -> PhaseResult:
         """Assess suppliers by Scope 3 contribution and maturity."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -470,7 +444,7 @@ class SupplierProgramWorkflow:
             assessed[4].cumulative_contribution_pct if len(assessed) >= 5 else cumulative, 2
         )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Assessment: %d suppliers assessed", len(assessed))
         return PhaseResult(
             phase_name="assessment",
@@ -529,7 +503,7 @@ class SupplierProgramWorkflow:
 
     async def _phase_tiering(self, config: SupplierProgramConfig) -> PhaseResult:
         """Tier suppliers into 4 levels by emission contribution."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -580,7 +554,7 @@ class SupplierProgramWorkflow:
             outputs[f"{ts.tier.value}_count"] = ts.supplier_count
             outputs[f"{ts.tier.value}_emissions_pct"] = ts.emissions_share_pct
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Tiering: T1=%d, T2=%d, T3=%d, T4=%d",
                          len(tier_assignments["tier_1"]), len(tier_assignments["tier_2"]),
                          len(tier_assignments["tier_3"]), len(tier_assignments["tier_4"]))
@@ -599,7 +573,7 @@ class SupplierProgramWorkflow:
 
     async def _phase_program_design(self, config: SupplierProgramConfig) -> PhaseResult:
         """Design engagement programs per tier."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -632,7 +606,7 @@ class SupplierProgramWorkflow:
             outputs[f"{prog.tier.value}_budget_usd"] = prog.total_budget_usd
             outputs[f"{prog.tier.value}_milestones"] = len(prog.milestones)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Program design: %d tier programs created", len(self._programs))
         return PhaseResult(
             phase_name="program_design",
@@ -767,7 +741,7 @@ class SupplierProgramWorkflow:
 
     async def _phase_execution(self, config: SupplierProgramConfig) -> PhaseResult:
         """Track execution progress with supplier-by-supplier RAG status."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -811,7 +785,7 @@ class SupplierProgramWorkflow:
         outputs["not_started"] = not_started
         outputs["total_suppliers"] = len(self._progress)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Execution: G=%d, A=%d, R=%d, NS=%d",
             green_count, amber_count, red_count, not_started,
@@ -849,7 +823,7 @@ class SupplierProgramWorkflow:
 
     async def _phase_reporting(self, config: SupplierProgramConfig) -> PhaseResult:
         """Generate impact report with Scope 3 reduction estimation."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -902,7 +876,7 @@ class SupplierProgramWorkflow:
         outputs["cost_per_tco2e"] = self._impact.cost_per_tco2e_reduced
         outputs["recommendation_count"] = len(recommendations)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Reporting: coverage=%.1f%%, reduction=%.1f tCO2e (%.1f%%)",
             coverage_pct, total_reduction, reduction_pct,

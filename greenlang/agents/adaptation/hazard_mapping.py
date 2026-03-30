@@ -34,10 +34,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -94,7 +95,7 @@ SEVERITY_THRESHOLDS = {
 # Pydantic Models
 # =============================================================================
 
-class BoundingBox(BaseModel):
+class BoundingBox(GreenLangBase):
     """Geographic bounding box."""
     min_lat: float = Field(..., ge=-90, le=90, description="Minimum latitude")
     max_lat: float = Field(..., ge=-90, le=90, description="Maximum latitude")
@@ -110,7 +111,7 @@ class BoundingBox(BaseModel):
         return v
 
 
-class GridCell(BaseModel):
+class GridCell(GreenLangBase):
     """A single grid cell in the hazard map."""
     cell_id: str = Field(..., description="Unique cell identifier")
     center_lat: float = Field(..., ge=-90, le=90, description="Cell center latitude")
@@ -118,7 +119,7 @@ class GridCell(BaseModel):
     cell_size_km: float = Field(..., gt=0, description="Cell size in kilometers")
 
 
-class HazardIntensity(BaseModel):
+class HazardIntensity(GreenLangBase):
     """Hazard intensity data for a location."""
     hazard_type: str = Field(..., description="Type of hazard")
     intensity: float = Field(..., ge=0, le=1, description="Normalized intensity (0-1)")
@@ -129,7 +130,7 @@ class HazardIntensity(BaseModel):
     data_source: HazardSource = Field(default=HazardSource.INTERNAL)
 
 
-class HazardMapCell(BaseModel):
+class HazardMapCell(GreenLangBase):
     """Hazard data for a single map cell."""
     cell: GridCell = Field(..., description="Cell location information")
     hazards: List[HazardIntensity] = Field(default_factory=list, description="Hazard intensities")
@@ -138,7 +139,7 @@ class HazardMapCell(BaseModel):
     hotspot: bool = Field(default=False, description="Whether this is a risk hotspot")
 
 
-class HazardLayer(BaseModel):
+class HazardLayer(GreenLangBase):
     """A complete hazard layer for a specific hazard type."""
     hazard_type: str = Field(..., description="Hazard type")
     category: HazardCategory = Field(..., description="Hazard category")
@@ -155,7 +156,7 @@ class HazardLayer(BaseModel):
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
 
-class HazardMappingInput(BaseModel):
+class HazardMappingInput(GreenLangBase):
     """Input model for Hazard Mapping Agent."""
     mapping_id: str = Field(..., description="Unique mapping identifier")
     bounding_box: BoundingBox = Field(..., description="Geographic area to map")
@@ -169,7 +170,7 @@ class HazardMappingInput(BaseModel):
     custom_data: Dict[str, Any] = Field(default_factory=dict, description="Custom hazard data")
 
 
-class HazardMappingOutput(BaseModel):
+class HazardMappingOutput(GreenLangBase):
     """Output model for Hazard Mapping Agent."""
     mapping_id: str = Field(..., description="Mapping identifier")
     bounding_box: BoundingBox = Field(..., description="Mapped area")

@@ -27,12 +27,10 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "24.0.0"
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
@@ -81,7 +79,6 @@ def _pct(val: Any) -> str:
     except Exception:
         return str(val)
 
-
 class CarbonMgmtPlanReportTemplate:
     """Carbon management plan report template for PACK-024."""
 
@@ -90,7 +87,7 @@ class CarbonMgmtPlanReportTemplate:
         self.generated_at: Optional[datetime] = None
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [
             self._md_header(data),
             self._md_plan_overview(data),
@@ -107,7 +104,7 @@ class CarbonMgmtPlanReportTemplate:
         return content + f"\n\n<!-- Provenance: {prov} -->"
 
     def render_html(self, data: Dict[str, Any]) -> str:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = (
             "body{font-family:'Segoe UI',sans-serif;padding:20px;background:#f0f4f0;}"
             ".report{max-width:1200px;margin:0 auto;background:#fff;padding:40px;border-radius:12px;}"
@@ -134,7 +131,7 @@ class CarbonMgmtPlanReportTemplate:
         )
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = {
             "template": "carbon_mgmt_plan_report",
             "version": _MODULE_VERSION,

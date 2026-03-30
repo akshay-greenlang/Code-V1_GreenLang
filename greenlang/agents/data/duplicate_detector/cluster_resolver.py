@@ -42,6 +42,7 @@ import uuid
 from collections import defaultdict, deque
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Set, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.data.duplicate_detector.models import (
     ClusterAlgorithm,
@@ -56,22 +57,14 @@ __all__ = [
     "ClusterResolver",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_provenance(operation: str, data_repr: str) -> str:
     """Compute SHA-256 provenance hash for a clustering operation."""
-    payload = f"{operation}:{data_repr}:{_utcnow().isoformat()}"
+    payload = f"{operation}:{data_repr}:{utcnow().isoformat()}"
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -79,11 +72,9 @@ def _compute_provenance(operation: str, data_repr: str) -> str:
 
 _DEFAULT_MIN_QUALITY: float = 0.5
 
-
 # =============================================================================
 # UnionFind (internal data structure)
 # =============================================================================
-
 
 class _UnionFind:
     """Disjoint-set (Union-Find) with path compression and union by rank.
@@ -181,11 +172,9 @@ class _UnionFind:
             components[root].append(element)
         return dict(components)
 
-
 # =============================================================================
 # ClusterResolver
 # =============================================================================
-
 
 class ClusterResolver:
     """Cluster resolution engine for duplicate detection.
@@ -733,7 +722,7 @@ class ClusterResolver:
             self._invocations += 1
             self._successes += 1
             self._total_duration_ms += ms
-            self._last_invoked_at = _utcnow()
+            self._last_invoked_at = utcnow()
 
     def _record_failure(self, elapsed_seconds: float) -> None:
         """Record a failed invocation."""
@@ -742,4 +731,4 @@ class ClusterResolver:
             self._invocations += 1
             self._failures += 1
             self._total_duration_ms += ms
-            self._last_invoked_at = _utcnow()
+            self._last_invoked_at = utcnow()

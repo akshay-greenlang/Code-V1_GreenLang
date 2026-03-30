@@ -45,35 +45,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "22.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a single workflow phase."""
@@ -84,7 +76,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -94,7 +85,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class CarbonPriceScenario(str, Enum):
     """IEA/NGFS carbon price scenarios."""
 
@@ -103,7 +93,6 @@ class CarbonPriceScenario(str, Enum):
     HIGH = "high"           # ~200 USD/tCO2 by 2030
     NET_ZERO = "net_zero"   # ~250 USD/tCO2 by 2030
 
-
 class ComparisonDimension(str, Enum):
     """Scenario comparison dimensions."""
 
@@ -111,7 +100,6 @@ class ComparisonDimension(str, Enum):
     RISK = "risk"
     AMBITION = "ambition"
     TIMELINE = "timeline"
-
 
 # =============================================================================
 # CARBON PRICE PROJECTIONS (Zero-Hallucination, from IEA WEO / NGFS)
@@ -132,11 +120,9 @@ DEFAULT_DIMENSION_WEIGHTS: Dict[str, float] = {
     "timeline": 0.20,
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -148,7 +134,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class ScenarioDefinition(BaseModel):
     """Definition of a single net-zero transition scenario."""
@@ -168,7 +153,6 @@ class ScenarioDefinition(BaseModel):
     scope3_coverage_pct: float = Field(default=67.0, ge=0.0, le=100.0)
     renewable_energy_pct: float = Field(default=50.0, ge=0.0, le=100.0)
 
-
 class MonteCarloDistribution(BaseModel):
     """Distribution summary from Monte Carlo simulation."""
 
@@ -184,7 +168,6 @@ class MonteCarloDistribution(BaseModel):
     max_value: float = Field(default=0.0)
     num_runs: int = Field(default=0)
 
-
 class SensitivityParameter(BaseModel):
     """Tornado sensitivity result for a single parameter."""
 
@@ -196,7 +179,6 @@ class SensitivityParameter(BaseModel):
     high_outcome: float = Field(default=0.0)
     swing: float = Field(default=0.0, description="Absolute swing (high - low outcome)")
     rank: int = Field(default=0)
-
 
 class ScenarioComparison(BaseModel):
     """Comparison of a single scenario across dimensions."""
@@ -210,7 +192,6 @@ class ScenarioComparison(BaseModel):
     weighted_total: float = Field(default=0.0, ge=0.0, le=100.0)
     rank: int = Field(default=0)
 
-
 class DecisionMatrix(BaseModel):
     """Decision matrix comparing all scenarios."""
 
@@ -219,7 +200,6 @@ class DecisionMatrix(BaseModel):
     recommended_scenario_name: str = Field(default="")
     recommendation_rationale: str = Field(default="")
     dimension_weights: Dict[str, float] = Field(default_factory=dict)
-
 
 class ScenarioAnalysisConfig(BaseModel):
     """Configuration for the scenario analysis workflow."""
@@ -243,7 +223,6 @@ class ScenarioAnalysisConfig(BaseModel):
             raise ValueError(f"carbon_price_scenario must be one of {allowed}")
         return v
 
-
 class ScenarioAnalysisResult(BaseModel):
     """Complete result from the scenario analysis workflow."""
 
@@ -258,11 +237,9 @@ class ScenarioAnalysisResult(BaseModel):
     decision_matrix: DecisionMatrix = Field(default_factory=DecisionMatrix)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class ScenarioAnalysisWorkflow:
     """
@@ -314,7 +291,7 @@ class ScenarioAnalysisWorkflow:
             ScenarioAnalysisResult with distributions, sensitivity, and
             decision matrix.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting scenario analysis workflow %s, scenarios=%d, runs=%d",
             self.workflow_id, len(config.scenarios), config.monte_carlo_runs,
@@ -350,7 +327,7 @@ class ScenarioAnalysisWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         result = ScenarioAnalysisResult(
             workflow_id=self.workflow_id,
             status=overall_status,
@@ -377,7 +354,7 @@ class ScenarioAnalysisWorkflow:
 
     async def _phase_setup(self, config: ScenarioAnalysisConfig) -> PhaseResult:
         """Validate scenario definitions, set Monte Carlo parameters, initialise RNG."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         errors: List[str] = []
@@ -428,7 +405,7 @@ class ScenarioAnalysisWorkflow:
         outputs["carbon_price_scenario"] = config.carbon_price_scenario
         outputs["scenario_ids"] = [s.scenario_id for s in self._scenarios]
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Setup: %d scenarios validated, seed=%d", len(self._scenarios), config.seed)
         return PhaseResult(
             phase_name="setup",
@@ -500,7 +477,7 @@ class ScenarioAnalysisWorkflow:
 
     async def _phase_model_run(self, config: ScenarioAnalysisConfig) -> PhaseResult:
         """Run Monte Carlo simulation for each scenario."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._distributions = []
@@ -516,7 +493,7 @@ class ScenarioAnalysisWorkflow:
             outputs[f"{dist.scenario_id}_p5"] = round(dist.p5, 2)
             outputs[f"{dist.scenario_id}_p95"] = round(dist.p95, 2)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Model run: %d scenarios x %d runs completed in %.3fs",
             len(self._scenarios), config.monte_carlo_runs, elapsed,
@@ -636,7 +613,7 @@ class ScenarioAnalysisWorkflow:
 
     async def _phase_sensitivity(self, config: ScenarioAnalysisConfig) -> PhaseResult:
         """Perform tornado sensitivity analysis on key parameters."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._sensitivity = {}
@@ -665,7 +642,7 @@ class ScenarioAnalysisWorkflow:
         outputs["parameters_tested"] = len(parameters_to_test)
         outputs["scenarios_analysed"] = len(self._scenarios)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Sensitivity: %d parameters across %d scenarios",
                          len(parameters_to_test), len(self._scenarios))
         return PhaseResult(
@@ -823,7 +800,7 @@ class ScenarioAnalysisWorkflow:
 
     async def _phase_compare(self, config: ScenarioAnalysisConfig) -> PhaseResult:
         """Compare scenarios on cost, risk, ambition, timeline dimensions."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -850,7 +827,7 @@ class ScenarioAnalysisWorkflow:
             outputs[f"{comp.scenario_id}_weighted_total"] = round(comp.weighted_total, 2)
             outputs[f"{comp.scenario_id}_rank"] = comp.rank
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Compare: %d scenarios ranked", len(comparisons))
         return PhaseResult(
             phase_name="compare",
@@ -932,14 +909,14 @@ class ScenarioAnalysisWorkflow:
 
     async def _phase_recommend(self, config: ScenarioAnalysisConfig) -> PhaseResult:
         """Generate decision matrix with scoring and recommended scenario."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
         comparisons = self._decision_matrix.comparisons
         if not comparisons:
             warnings.append("No scenarios to recommend")
-            elapsed = (_utcnow() - started).total_seconds()
+            elapsed = (utcnow() - started).total_seconds()
             return PhaseResult(
                 phase_name="recommend",
                 status=PhaseStatus.COMPLETED,
@@ -986,7 +963,7 @@ class ScenarioAnalysisWorkflow:
         outputs["recommended_score"] = round(best.weighted_total, 2)
         outputs["rationale"] = self._decision_matrix.recommendation_rationale
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Recommend: %s (score=%.1f)", best.scenario_name, best.weighted_total)
         return PhaseResult(
             phase_name="recommend",

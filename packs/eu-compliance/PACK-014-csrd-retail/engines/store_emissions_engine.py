@@ -53,21 +53,13 @@ logger = logging.getLogger(__name__)
 
 engine_version: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -95,7 +87,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -111,7 +102,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -132,7 +122,6 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100).
 
@@ -144,7 +133,6 @@ def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
         Percentage as Decimal; Decimal("0") when whole is zero.
     """
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* and return a float.
@@ -161,11 +149,9 @@ def _round_val(value: Decimal, places: int = 6) -> float:
     quantizer = Decimal(10) ** -places
     return float(value.quantize(quantizer, rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class StoreType(str, Enum):
     """Retail store format classification."""
@@ -176,7 +162,6 @@ class StoreType(str, Enum):
     WAREHOUSE = "warehouse"
     DARK_STORE = "dark_store"
     POP_UP = "pop_up"
-
 
 class EnergySource(str, Enum):
     """Energy source types used in retail operations."""
@@ -191,7 +176,6 @@ class EnergySource(str, Enum):
     BIOMASS = "biomass"
     DIESEL_GENERATOR = "diesel_generator"
 
-
 class RefrigerantType(str, Enum):
     """Refrigerant types with GWP classification."""
     R404A = "R404A"
@@ -204,7 +188,6 @@ class RefrigerantType(str, Enum):
     R1234ZE = "R1234ZE"
     R717_AMMONIA = "R717_AMMONIA"
 
-
 class FleetVehicleType(str, Enum):
     """Fleet vehicle types used by retail operations."""
     DELIVERY_VAN = "delivery_van"
@@ -213,7 +196,6 @@ class FleetVehicleType(str, Enum):
     CARGO_BIKE = "cargo_bike"
     FORKLIFT_DIESEL = "forklift_diesel"
     FORKLIFT_ELECTRIC = "forklift_electric"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Emission Factors
@@ -345,11 +327,9 @@ FLEET_DISTANCE_FACTORS: Dict[str, float] = {
 # Renewable energy sources -- zero or near-zero emission factors
 RENEWABLE_SOURCES = {EnergySource.SOLAR_PV, EnergySource.WIND}
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class EnergyConsumption(BaseModel):
     """Energy consumption record for a single source at a store.
@@ -377,7 +357,6 @@ class EnergyConsumption(BaseModel):
             raise ValueError("Energy quantity exceeds plausible maximum (500 GWh)")
         return v
 
-
 class RefrigerantData(BaseModel):
     """Refrigerant data for a store's refrigeration system.
 
@@ -397,7 +376,6 @@ class RefrigerantData(BaseModel):
     new_equipment_gwp: Optional[float] = Field(
         None, ge=0, description="New equipment GWP"
     )
-
 
 class FleetData(BaseModel):
     """Fleet vehicle data for a store or distribution center.
@@ -430,7 +408,6 @@ class FleetData(BaseModel):
                     "for combustion vehicles"
                 )
         return self
-
 
 class StoreData(BaseModel):
     """Complete store data for emissions calculation.
@@ -470,11 +447,9 @@ class StoreData(BaseModel):
     )
     rec_mwh: float = Field(0.0, ge=0, description="RECs purchased (MWh)")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class RefrigerantEmissionDetail(BaseModel):
     """Detailed refrigerant emission breakdown.
@@ -492,7 +467,6 @@ class RefrigerantEmissionDetail(BaseModel):
     leakage_kg: float
     emissions_tco2e: float
 
-
 class FleetEmissionDetail(BaseModel):
     """Detailed fleet emission breakdown.
 
@@ -508,7 +482,6 @@ class FleetEmissionDetail(BaseModel):
     fuel_litres: float
     distance_km: float
     emissions_tco2e: float
-
 
 class EnergyEmissionDetail(BaseModel):
     """Detailed energy source emission breakdown.
@@ -527,7 +500,6 @@ class EnergyEmissionDetail(BaseModel):
     emission_factor: float
     emissions_tco2e: float
     is_renewable: bool
-
 
 class FGasComplianceResult(BaseModel):
     """F-gas Regulation compliance assessment.
@@ -548,7 +520,6 @@ class FGasComplianceResult(BaseModel):
     quota_pct_allowed: float
     compliant: bool
     recommendation: str
-
 
 class StoreEmissionsResult(BaseModel):
     """Complete store-level emissions result with provenance.
@@ -600,10 +571,9 @@ class StoreEmissionsResult(BaseModel):
     fleet_details: List[FleetEmissionDetail]
     fgas_compliance: Optional[FGasComplianceResult] = None
     engine_version: str = engine_version
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     processing_time_ms: float = 0.0
     provenance_hash: str = ""
-
 
 class MultiStoreConsolidationResult(BaseModel):
     """Consolidated emissions across multiple stores.
@@ -637,15 +607,13 @@ class MultiStoreConsolidationResult(BaseModel):
     by_region: Dict[str, Dict[str, float]]
     store_results: List[StoreEmissionsResult]
     engine_version: str = engine_version
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     processing_time_ms: float = 0.0
     provenance_hash: str = ""
-
 
 # ---------------------------------------------------------------------------
 # Calculation Engine
 # ---------------------------------------------------------------------------
-
 
 class StoreEmissionsEngine:
     """Store-level Scope 1 and Scope 2 emissions calculation engine.
@@ -1042,6 +1010,8 @@ class StoreEmissionsEngine:
 
         Uses actual top-up data when available; otherwise estimates leakage
         from charge * leakage rate. Applies IPCC AR6 GWP-100 values.
+
+from greenlang.schemas import utcnow
 
         Formula: emissions_tCO2e = leakage_kg * GWP / 1000
 

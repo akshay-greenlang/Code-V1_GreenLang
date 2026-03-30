@@ -25,7 +25,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, List, Optional, Any
 from enum import Enum
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.mrv.agriculture.base import (
     BaseAgricultureMRVAgent,
@@ -40,6 +40,7 @@ from greenlang.agents.mrv.agriculture.base import (
     ClimateZone,
     SoilType,
 )
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -147,7 +148,7 @@ EF_BURN_N2O = Decimal("0.07")  # g N2O/kg dry matter burned
 # Input Models
 # =============================================================================
 
-class CropRecord(BaseModel):
+class CropRecord(GreenLangBase):
     """Individual crop production record."""
 
     # Identification

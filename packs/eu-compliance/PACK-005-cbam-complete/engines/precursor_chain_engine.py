@@ -47,25 +47,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -78,7 +72,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -88,11 +81,9 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class GoodsCategory(str, Enum):
     """CBAM goods categories per Annex I."""
@@ -103,13 +94,11 @@ class GoodsCategory(str, Enum):
     HYDROGEN = "hydrogen"
     ELECTRICITY = "electricity"
 
-
 class AllocationMethod(str, Enum):
     """Emission allocation method for multi-output processes."""
     MASS = "mass"
     ECONOMIC = "economic"
     ENERGY = "energy"
-
 
 class DefaultValueTier(str, Enum):
     """Default value waterfall tiers per Annex III."""
@@ -120,14 +109,12 @@ class DefaultValueTier(str, Enum):
     GLOBAL_DEFAULT = "global_default"
     ANNEX_III_FALLBACK = "annex_iii_fallback"
 
-
 class ScrapType(str, Enum):
     """Classification of scrap material."""
     PRE_CONSUMER = "pre_consumer"
     POST_CONSUMER = "post_consumer"
     MIXED = "mixed"
     UNKNOWN = "unknown"
-
 
 class ProductionRouteType(str, Enum):
     """Steel/aluminium production route."""
@@ -144,11 +131,9 @@ class ProductionRouteType(str, Enum):
     ELECTROLYSIS = "electrolysis"
     DIRECT = "direct"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class PrecursorNode(BaseModel):
     """A node in the precursor chain representing one production stage."""
@@ -181,7 +166,6 @@ class PrecursorNode(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class PrecursorChain(BaseModel):
     """Complete precursor chain for a CBAM product."""
     chain_id: str = Field(default_factory=_new_uuid, description="Chain identifier")
@@ -192,7 +176,7 @@ class PrecursorChain(BaseModel):
     nodes: List[PrecursorNode] = Field(default_factory=list, description="All nodes in the chain")
     root_node_id: Optional[str] = Field(default=None, description="Root node identifier")
     total_chain_emissions_tco2e: Decimal = Field(default=Decimal("0"), description="Total chain emissions")
-    resolved_at: datetime = Field(default_factory=_utcnow, description="Resolution timestamp")
+    resolved_at: datetime = Field(default_factory=utcnow, description="Resolution timestamp")
     gaps: List[str] = Field(default_factory=list, description="Identified data gaps")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
@@ -200,7 +184,6 @@ class PrecursorChain(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class PrecursorEmissionResult(BaseModel):
     """Result of precursor emission calculation."""
@@ -212,7 +195,7 @@ class PrecursorEmissionResult(BaseModel):
     specific_embedded_emissions: Decimal = Field(description="Emissions per tonne of final product")
     emission_by_stage: List[Dict[str, Any]] = Field(default_factory=list, description="Emissions at each stage")
     data_quality_score: Decimal = Field(default=Decimal("0"), description="Overall data quality (0-1)")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Calculation timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Calculation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("total_direct_emissions", "total_indirect_emissions",
@@ -221,7 +204,6 @@ class PrecursorEmissionResult(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class AllocationResult(BaseModel):
     """Result of emission allocation across co-products."""
@@ -238,7 +220,6 @@ class AllocationResult(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class CompositionRecord(BaseModel):
     """Record of product composition and its precursor materials."""
     record_id: str = Field(default_factory=_new_uuid, description="Record identifier")
@@ -246,14 +227,13 @@ class CompositionRecord(BaseModel):
     product_name: str = Field(default="", description="Product name")
     components: List[Dict[str, Any]] = Field(default_factory=list, description="Component breakdown")
     total_mass_tonnes: Decimal = Field(description="Total product mass in tonnes")
-    recorded_at: datetime = Field(default_factory=_utcnow, description="Record timestamp")
+    recorded_at: datetime = Field(default_factory=utcnow, description="Record timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("total_mass_tonnes", mode="before")
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class DefaultFallbackResult(BaseModel):
     """Result of applying default value waterfall."""
@@ -268,7 +248,6 @@ class DefaultFallbackResult(BaseModel):
         default_factory=list, description="Details of defaults applied"
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class MassBalanceResult(BaseModel):
     """Result of mass balance validation across the chain."""
@@ -290,7 +269,6 @@ class MassBalanceResult(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class ScrapClassification(BaseModel):
     """Classification result for scrap material."""
     classification_id: str = Field(default_factory=_new_uuid, description="Classification identifier")
@@ -306,7 +284,6 @@ class ScrapClassification(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class ProductionRoute(BaseModel):
     """Production route definition for a product."""
@@ -324,7 +301,6 @@ class ProductionRoute(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class GapAnalysis(BaseModel):
     """Gap analysis for a precursor chain."""
@@ -345,7 +321,6 @@ class GapAnalysis(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class ChainVisualization(BaseModel):
     """Visualization data for a precursor chain."""
     visualization_id: str = Field(default_factory=_new_uuid, description="Visualization identifier")
@@ -357,11 +332,9 @@ class ChainVisualization(BaseModel):
     mermaid_diagram: str = Field(default="", description="Mermaid.js diagram source")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 # ---------------------------------------------------------------------------
 # Predefined Precursor Chains
 # ---------------------------------------------------------------------------
-
 
 _PREDEFINED_CHAINS: Dict[GoodsCategory, List[Dict[str, Any]]] = {
     GoodsCategory.IRON_STEEL: [
@@ -466,11 +439,9 @@ _SCRAP_EMISSION_FACTORS: Dict[str, Dict[ScrapType, Decimal]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Engine Configuration
 # ---------------------------------------------------------------------------
-
 
 class PrecursorChainConfig(BaseModel):
     """Configuration for the PrecursorChainEngine."""
@@ -480,7 +451,6 @@ class PrecursorChainConfig(BaseModel):
     )
     default_country: str = Field(default="DEFAULT", description="Default country for emission factors")
     enable_scrap_netting: bool = Field(default=True, description="Enable scrap emission netting")
-
 
 # ---------------------------------------------------------------------------
 # Pydantic model_rebuild for forward reference resolution
@@ -499,11 +469,9 @@ ProductionRoute.model_rebuild()
 GapAnalysis.model_rebuild()
 ChainVisualization.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # PrecursorChainEngine
 # ---------------------------------------------------------------------------
-
 
 class PrecursorChainEngine:
     """

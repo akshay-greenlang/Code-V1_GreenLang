@@ -35,26 +35,19 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -67,11 +60,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class QuickWinCategory(str, Enum):
     """Quick win measure categories."""
@@ -87,7 +78,6 @@ class QuickWinCategory(str, Enum):
     LEAK_REPAIR = "leak_repair"
     MAINTENANCE = "maintenance"
 
-
 class ImplementationStatus(str, Enum):
     """Quick win implementation status."""
 
@@ -98,7 +88,6 @@ class ImplementationStatus(str, Enum):
     VERIFIED = "verified"
     REVERTED = "reverted"
 
-
 class PersistenceRisk(str, Enum):
     """Risk level for savings persistence of quick wins."""
 
@@ -106,7 +95,6 @@ class PersistenceRisk(str, Enum):
     MEDIUM = "medium"
     HIGH = "high"
     CRITICAL = "critical"
-
 
 class VerificationMethod(str, Enum):
     """Verification methods for quick win savings."""
@@ -117,7 +105,6 @@ class VerificationMethod(str, Enum):
     ENGINEERING_CALC = "engineering_calculation"
     OPTION_A = "ipmvp_option_a"
 
-
 class MeasureComplexity(str, Enum):
     """Quick win measure complexity."""
 
@@ -126,11 +113,9 @@ class MeasureComplexity(str, Enum):
     MODERATE = "moderate"
     COMPLEX = "complex"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class QuickWinMeasure(BaseModel):
     """Quick win measure from PACK-033."""
@@ -155,7 +140,6 @@ class QuickWinMeasure(BaseModel):
     interactive_effects: bool = Field(default=False)
     implementation_date: Optional[str] = Field(None)
 
-
 class QuickWinSavingsSnapshot(BaseModel):
     """Pre/post implementation data snapshot for quick win verification."""
 
@@ -169,7 +153,6 @@ class QuickWinSavingsSnapshot(BaseModel):
     operating_hours_per_day: float = Field(default=0.0, ge=0.0)
     temperature_f: Optional[float] = Field(None)
     occupancy_pct: Optional[float] = Field(None, ge=0.0, le=100.0)
-
 
 class Pack033ImportResult(BaseModel):
     """Result of importing data from PACK-033."""
@@ -186,13 +169,11 @@ class Pack033ImportResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
     processing_time_ms: float = Field(default=0.0)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # Pack033Bridge
 # ---------------------------------------------------------------------------
-
 
 class Pack033Bridge:
     """Bridge to PACK-033 Quick Wins Identifier data.
@@ -416,6 +397,7 @@ class Pack033Bridge:
         """Check if PACK-033 module is importable."""
         try:
             import importlib
+
             importlib.import_module(
                 "packs.energy_efficiency.PACK_033_quick_wins"
             )

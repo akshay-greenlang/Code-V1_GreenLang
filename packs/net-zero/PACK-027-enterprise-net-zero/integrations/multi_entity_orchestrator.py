@@ -35,18 +35,14 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -58,17 +54,14 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ConsolidationApproach(str, Enum):
     FINANCIAL_CONTROL = "financial_control"
     OPERATIONAL_CONTROL = "operational_control"
     EQUITY_SHARE = "equity_share"
-
 
 class EntityType(str, Enum):
     PARENT = "parent"
@@ -79,7 +72,6 @@ class EntityType(str, Enum):
     SPV = "spv"
     FRANCHISE = "franchise"
 
-
 class StructuralChangeType(str, Enum):
     ACQUISITION = "acquisition"
     DIVESTITURE = "divestiture"
@@ -88,11 +80,9 @@ class StructuralChangeType(str, Enum):
     OUTSOURCING = "outsourcing"
     INSOURCING = "insourcing"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class MultiEntityConfig(BaseModel):
     pack_id: str = Field(default="PACK-027")
@@ -104,7 +94,6 @@ class MultiEntityConfig(BaseModel):
     max_entities: int = Field(default=500, ge=1, le=5000)
     enable_intercompany_elimination: bool = Field(default=True)
     enable_provenance: bool = Field(default=True)
-
 
 class EntityDefinition(BaseModel):
     entity_id: str = Field(default_factory=_new_uuid)
@@ -126,7 +115,6 @@ class EntityDefinition(BaseModel):
     data_quality_score: float = Field(default=0.0, ge=0.0, le=1.0)
     reporting_currency: str = Field(default="USD")
 
-
 class IntercompanyTransaction(BaseModel):
     transaction_id: str = Field(default_factory=_new_uuid)
     selling_entity_id: str = Field(default="")
@@ -137,7 +125,6 @@ class IntercompanyTransaction(BaseModel):
     currency: str = Field(default="USD")
     period: str = Field(default="")
 
-
 class StructuralChange(BaseModel):
     change_id: str = Field(default_factory=_new_uuid)
     change_type: StructuralChangeType = Field(...)
@@ -146,7 +133,6 @@ class StructuralChange(BaseModel):
     emissions_impact_tco2e: float = Field(default=0.0)
     impact_pct_of_base_year: float = Field(default=0.0)
     requires_recalculation: bool = Field(default=False)
-
 
 class ConsolidationResult(BaseModel):
     result_id: str = Field(default_factory=_new_uuid)
@@ -167,11 +153,9 @@ class ConsolidationResult(BaseModel):
     data_quality_score: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # MultiEntityOrchestrator
 # ---------------------------------------------------------------------------
-
 
 class MultiEntityOrchestrator:
     """Manage 100+ entity hierarchy for GHG consolidation.

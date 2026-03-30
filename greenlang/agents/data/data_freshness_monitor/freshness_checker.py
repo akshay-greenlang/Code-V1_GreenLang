@@ -46,9 +46,9 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Module-level exports
@@ -56,11 +56,9 @@ logger = logging.getLogger(__name__)
 
 __all__ = ["FreshnessCheckerEngine"]
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class FreshnessLevel(str, Enum):
     """Freshness tier classification for a dataset."""
@@ -71,7 +69,6 @@ class FreshnessLevel(str, Enum):
     POOR = "poor"
     STALE = "stale"
 
-
 class SLAStatus(str, Enum):
     """SLA compliance status for a dataset freshness check."""
 
@@ -79,11 +76,9 @@ class SLAStatus(str, Enum):
     WARNING = "warning"
     BREACHED = "breached"
 
-
 # ---------------------------------------------------------------------------
 # Data Models (self-contained until models.py is built)
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class FreshnessCheck:
@@ -123,7 +118,6 @@ class FreshnessCheck:
         """
         return asdict(self)
 
-
 @dataclass
 class FreshnessSummary:
     """Summary of a stale dataset identified by freshness checks.
@@ -152,7 +146,6 @@ class FreshnessSummary:
         """
         return asdict(self)
 
-
 # ---------------------------------------------------------------------------
 # Metrics helpers (safe when prometheus_client is absent)
 # ---------------------------------------------------------------------------
@@ -170,7 +163,6 @@ except ImportError:
     _observe_freshness_score_raw = None  # type: ignore[assignment]
     _observe_data_age_raw = None  # type: ignore[assignment]
 
-
 def _safe_record_check(status: str, count: int = 1) -> None:
     """Safely record a freshness check metric.
 
@@ -184,7 +176,6 @@ def _safe_record_check(status: str, count: int = 1) -> None:
         except Exception:
             pass
 
-
 def _safe_observe_freshness_score(score: float) -> None:
     """Safely observe a freshness score metric.
 
@@ -196,7 +187,6 @@ def _safe_observe_freshness_score(score: float) -> None:
             _observe_freshness_score_raw(score)
         except Exception:
             pass
-
 
 def _safe_observe_data_age(age_hours: float) -> None:
     """Safely observe a data age metric.
@@ -210,7 +200,6 @@ def _safe_observe_data_age(age_hours: float) -> None:
         except Exception:
             pass
 
-
 # ---------------------------------------------------------------------------
 # Provenance helper (safe when provenance module is absent)
 # ---------------------------------------------------------------------------
@@ -223,16 +212,9 @@ try:
 except ImportError:
     _PROVENANCE_MODULE_AVAILABLE = False
 
-
 # ---------------------------------------------------------------------------
 # Private helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _build_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -248,7 +230,6 @@ def _build_hash(data: Any) -> str:
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
-
 def _generate_check_id() -> str:
     """Generate a unique freshness check ID.
 
@@ -257,11 +238,9 @@ def _generate_check_id() -> str:
     """
     return f"FC-{uuid4().hex[:12]}"
 
-
 # ===========================================================================
 # FreshnessCheckerEngine
 # ===========================================================================
-
 
 class FreshnessCheckerEngine:
     """Dataset freshness check engine with piecewise-linear scoring.
@@ -375,7 +354,7 @@ class FreshnessCheckerEngine:
                 "sla_warning_hours must be < sla_critical_hours"
             )
 
-        current_time = _utcnow()
+        current_time = utcnow()
         check_id = _generate_check_id()
 
         # Compute age
@@ -524,7 +503,7 @@ class FreshnessCheckerEngine:
             >>> assert 4.9 < age < 5.1
         """
         if current_time is None:
-            current_time = _utcnow()
+            current_time = utcnow()
 
         # Ensure both are timezone-aware for subtraction
         if last_refreshed_at.tzinfo is None:
@@ -1249,7 +1228,7 @@ class FreshnessCheckerEngine:
         Returns:
             Hex-encoded SHA-256 hash string.
         """
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
         payload = {
             "operation": operation,
             "input": input_data,

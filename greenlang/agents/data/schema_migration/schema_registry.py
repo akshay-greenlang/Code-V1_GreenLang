@@ -56,6 +56,7 @@ import threading
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Set
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +92,7 @@ except ImportError:
                 user_id: str = "system",
             ) -> str:
                 """Record a provenance entry and return a chain hash."""
-                ts = _utcnow().isoformat()
+                ts = utcnow().isoformat()
                 chain_input = json.dumps(
                     {"entity_type": entity_type, "entity_id": entity_id,
                      "action": action, "data_hash": data_hash, "ts": ts},
@@ -110,7 +111,6 @@ except ImportError:
                 return hashlib.sha256(
                     json.dumps(data, sort_keys=True, default=str).encode()
                 ).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Optional dependency: Prometheus metrics
@@ -218,7 +218,6 @@ except (ImportError, ValueError):
     sm_registry_size = _NoOpGauge()  # type: ignore
     sm_namespaces_total = _NoOpGauge()  # type: ignore
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -258,20 +257,9 @@ MAX_NAMESPACE_LENGTH = 128
 #: Maximum schema name length.
 MAX_SCHEMA_NAME_LENGTH = 256
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed for determinism.
-
-    Returns:
-        Current UTC datetime with microseconds set to zero.
-    """
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _build_sha256(data: Any) -> str:
     """Build a deterministic SHA-256 hash from any JSON-serialisable value.
@@ -286,7 +274,6 @@ def _build_sha256(data: Any) -> str:
     """
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
 
 def _normalize_tags(tags: Optional[List[str]]) -> List[str]:
     """Normalize, deduplicate, and sort a list of tags.
@@ -310,7 +297,6 @@ def _normalize_tags(tags: Optional[List[str]]) -> List[str]:
             seen.add(normalized)
             result.append(normalized)
     return sorted(result)
-
 
 def _validate_namespace(namespace: str) -> None:
     """Raise ValueError if the namespace string is invalid.
@@ -336,7 +322,6 @@ def _validate_namespace(namespace: str) -> None:
             "underscores, and dots."
         )
 
-
 def _validate_schema_name(name: str) -> None:
     """Raise ValueError if the schema name string is invalid.
 
@@ -355,7 +340,6 @@ def _validate_schema_name(name: str) -> None:
             f"name exceeds maximum length of {MAX_SCHEMA_NAME_LENGTH} characters."
         )
 
-
 def _validate_tags_list(tags: List[str]) -> None:
     """Raise ValueError if any individual tag exceeds the maximum length.
 
@@ -371,11 +355,9 @@ def _validate_tags_list(tags: List[str]) -> None:
                 f"Tag '{tag}' exceeds maximum length of {MAX_TAG_LENGTH} characters."
             )
 
-
 # ---------------------------------------------------------------------------
 # SchemaRegistryEngine
 # ---------------------------------------------------------------------------
-
 
 class SchemaRegistryEngine:
     """
@@ -548,7 +530,7 @@ class SchemaRegistryEngine:
                 f"Schema definition validation failed: {validation_result['errors']}"
             )
 
-        now_str = _utcnow().isoformat()
+        now_str = utcnow().isoformat()
         schema_id = str(uuid.uuid4())
         safe_metadata = copy.deepcopy(metadata) if metadata else {}
 
@@ -841,7 +823,7 @@ class SchemaRegistryEngine:
             if metadata is not None:
                 record["metadata"].update(copy.deepcopy(metadata))
 
-            record["updated_at"] = _utcnow().isoformat()
+            record["updated_at"] = utcnow().isoformat()
 
             # Compute new provenance hash
             data_hash = _build_sha256(
@@ -917,7 +899,7 @@ class SchemaRegistryEngine:
             if old_status != "archived":
                 # Force-archive regardless of current status (soft delete bypass)
                 record["status"] = "archived"
-                record["updated_at"] = _utcnow().isoformat()
+                record["updated_at"] = utcnow().isoformat()
 
                 data_hash = _build_sha256(
                     {k: v for k, v in record.items() if k != "provenance_hash"}
@@ -1559,7 +1541,7 @@ class SchemaRegistryEngine:
         if not name:
             raise ValueError("Group name must be a non-empty string.")
 
-        now_str = _utcnow().isoformat()
+        now_str = utcnow().isoformat()
 
         with self._lock:
             if name in self._groups:
@@ -1690,7 +1672,7 @@ class SchemaRegistryEngine:
                 return copy.deepcopy(group)
 
             group["schema_ids"].append(schema_id)
-            group["updated_at"] = _utcnow().isoformat()
+            group["updated_at"] = utcnow().isoformat()
 
             data_hash = _build_sha256(
                 {k: v for k, v in group.items() if k != "provenance_hash"}
@@ -1745,7 +1727,7 @@ class SchemaRegistryEngine:
                 return copy.deepcopy(group)
 
             group["schema_ids"].remove(schema_id)
-            group["updated_at"] = _utcnow().isoformat()
+            group["updated_at"] = utcnow().isoformat()
 
             data_hash = _build_sha256(
                 {k: v for k, v in group.items() if k != "provenance_hash"}
@@ -1885,7 +1867,6 @@ class SchemaRegistryEngine:
         logger.warning(
             "SchemaRegistryEngine.reset() called — all registry data cleared."
         )
-
 
 # ---------------------------------------------------------------------------
 # Module exports

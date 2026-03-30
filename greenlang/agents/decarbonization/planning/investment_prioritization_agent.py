@@ -34,7 +34,7 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.agents.base_agents import DeterministicAgent, AuditEntry
@@ -44,6 +44,7 @@ from greenlang.utilities.determinism import (
     content_hash,
     deterministic_id,
 )
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -85,7 +86,7 @@ class RiskLevel(str, Enum):
 # Pydantic Models
 # =============================================================================
 
-class CashFlow(BaseModel):
+class CashFlow(GreenLangBase):
     """Cash flow for a specific year."""
     year: int = Field(..., description="Year")
     capital_expenditure: float = Field(default=0, description="Capital expenditure (negative)")
@@ -95,7 +96,7 @@ class CashFlow(BaseModel):
     net_cash_flow: float = Field(default=0, description="Net cash flow for year")
 
 
-class InvestmentProject(BaseModel):
+class InvestmentProject(GreenLangBase):
     """A decarbonization investment project."""
     project_id: str = Field(..., description="Unique project identifier")
     name: str = Field(..., description="Project name")
@@ -123,7 +124,7 @@ class InvestmentProject(BaseModel):
     technology_readiness: int = Field(default=7, ge=1, le=9, description="TRL")
 
 
-class InvestmentMetrics(BaseModel):
+class InvestmentMetrics(GreenLangBase):
     """Financial metrics for an investment project."""
     project_id: str = Field(..., description="Project ID")
     project_name: str = Field(..., description="Project name")
@@ -160,7 +161,7 @@ class InvestmentMetrics(BaseModel):
     cash_flows: List[CashFlow] = Field(default_factory=list, description="Year-by-year cash flows")
 
 
-class InvestmentPrioritizationInput(BaseModel):
+class InvestmentPrioritizationInput(GreenLangBase):
     """Input model for InvestmentPrioritizationAgent."""
     operation: str = Field(
         default="rank_investments",
@@ -191,7 +192,7 @@ class InvestmentPrioritizationInput(BaseModel):
     budget_constraint_usd: Optional[float] = Field(None, ge=0, description="Total budget")
 
 
-class InvestmentPrioritizationOutput(BaseModel):
+class InvestmentPrioritizationOutput(GreenLangBase):
     """Output model for InvestmentPrioritizationAgent."""
     operation: str = Field(..., description="Operation performed")
     success: bool = Field(..., description="Whether operation succeeded")

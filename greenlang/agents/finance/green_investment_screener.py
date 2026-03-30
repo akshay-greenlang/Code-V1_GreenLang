@@ -32,11 +32,12 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set
 
-from pydantic import BaseModel, Field, validator
+from pydantic import Field, validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.agents.base_agents import AuditEntry
 from greenlang.agents.categories import AgentCategory
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -123,7 +124,7 @@ DEFAULT_EXCLUSION_THRESHOLDS: Dict[str, float] = {
 # =============================================================================
 
 
-class InvestmentCriteria(BaseModel):
+class InvestmentCriteria(GreenLangBase):
     """Criteria for screening investments."""
     # Negative screening
     exclusion_categories: List[ExclusionCategory] = Field(
@@ -182,7 +183,7 @@ class InvestmentCriteria(BaseModel):
     )
 
 
-class InvestmentProfile(BaseModel):
+class InvestmentProfile(GreenLangBase):
     """Profile of an investment to be screened."""
     investment_id: str = Field(..., description="Unique identifier")
     name: str = Field(..., description="Investment name")
@@ -224,7 +225,7 @@ class InvestmentProfile(BaseModel):
     )
 
 
-class ScreeningResult(BaseModel):
+class ScreeningResult(GreenLangBase):
     """Result of screening a single investment."""
     investment_id: str
     investment_name: str
@@ -253,7 +254,7 @@ class ScreeningResult(BaseModel):
     )
 
 
-class SustainabilityScore(BaseModel):
+class SustainabilityScore(GreenLangBase):
     """Detailed sustainability score breakdown."""
     overall_score: float = Field(..., ge=0, le=100)
     environmental_score: float = Field(..., ge=0, le=100)
@@ -263,7 +264,7 @@ class SustainabilityScore(BaseModel):
     impact_score: float = Field(..., ge=0, le=100)
 
 
-class InvestmentScreenerInput(BaseModel):
+class InvestmentScreenerInput(GreenLangBase):
     """Input for investment screening."""
     operation: str = Field(
         default="screen_investment",
@@ -289,7 +290,7 @@ class InvestmentScreenerInput(BaseModel):
     )
 
 
-class InvestmentScreenerOutput(BaseModel):
+class InvestmentScreenerOutput(GreenLangBase):
     """Output from investment screening."""
     success: bool
     operation: str

@@ -23,7 +23,8 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase
 
 
 # ---------------------------------------------------------------------------
@@ -219,7 +220,7 @@ REQUIRED_DDS_FIELDS = [
 # ---------------------------------------------------------------------------
 
 
-class Coordinate(BaseModel):
+class Coordinate(GreenLangBase):
     """Geographic coordinate with WGS84 precision.
 
     Per EUDR Annex II, latitude and longitude must be provided
@@ -236,7 +237,7 @@ class Coordinate(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class GeoPolygon(BaseModel):
+class GeoPolygon(GreenLangBase):
     """Geographic polygon boundary for plot identification.
 
     Per EUDR Annex II, plots of land above 4 hectares require polygon
@@ -259,7 +260,7 @@ class GeoPolygon(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class GeolocationData(BaseModel):
+class GeolocationData(GreenLangBase):
     """Geolocation data for DDS submission per EUDR Annex II.
 
     Supports point, polygon, and multipolygon formats depending
@@ -293,7 +294,7 @@ class GeolocationData(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class OperatorRegistration(BaseModel):
+class OperatorRegistration(GreenLangBase):
     """Operator registration record for the EU Information System.
 
     Per EUDR Article 4, all operators and traders must register
@@ -330,7 +331,7 @@ class OperatorRegistration(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class DDSCommodityLine(BaseModel):
+class DDSCommodityLine(GreenLangBase):
     """Individual commodity line item within a DDS.
 
     Each DDS may contain multiple commodity lines for different
@@ -372,7 +373,7 @@ class DDSCommodityLine(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class DueDiligenceStatement(BaseModel):
+class DueDiligenceStatement(GreenLangBase):
     """Complete Due Diligence Statement for EU Information System.
 
     Per EUDR Articles 4 and 12, operators must submit a DDS before
@@ -422,7 +423,7 @@ class DueDiligenceStatement(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class DocumentPackage(BaseModel):
+class DocumentPackage(GreenLangBase):
     """Assembled document package for DDS submission.
 
     Contains all supporting documents required for a DDS submission,
@@ -453,7 +454,7 @@ class DocumentPackage(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class SubmissionRequest(BaseModel):
+class SubmissionRequest(GreenLangBase):
     """DDS submission request to the EU Information System.
 
     Tracks the full submission lifecycle from creation through
@@ -487,7 +488,7 @@ class SubmissionRequest(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class StatusCheckResult(BaseModel):
+class StatusCheckResult(GreenLangBase):
     """Result from checking DDS status on the EU Information System."""
 
     check_id: str = Field(..., description="Status check identifier")
@@ -516,7 +517,7 @@ class StatusCheckResult(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class AuditRecord(BaseModel):
+class AuditRecord(GreenLangBase):
     """Article 31 audit trail record.
 
     EUDR Article 31 requires operators to maintain records of
@@ -562,7 +563,7 @@ class AuditRecord(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class APICallRecord(BaseModel):
+class APICallRecord(GreenLangBase):
     """Record of an API call to the EU Information System.
 
     Tracks request/response details, timing, and outcome for
@@ -597,7 +598,7 @@ class APICallRecord(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class DDSSummary(BaseModel):
+class DDSSummary(GreenLangBase):
     """Summary of a DDS for listing and reporting."""
 
     dds_id: str
@@ -613,7 +614,7 @@ class DDSSummary(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class SubmissionReport(BaseModel):
+class SubmissionReport(GreenLangBase):
     """Submission report aggregating DDS submission outcomes.
 
     Provides summary statistics for batch submission operations
@@ -635,7 +636,7 @@ class SubmissionReport(BaseModel):
     model_config = {"frozen": False, "extra": "ignore"}
 
 
-class HealthStatus(BaseModel):
+class HealthStatus(GreenLangBase):
     """Health check response for the EU Information System Interface."""
 
     agent_id: str = AGENT_ID

@@ -55,21 +55,13 @@ logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -89,7 +81,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _safe_pct(numerator: float, denominator: float) -> float:
     """Calculate percentage safely, returning 0.0 on zero denominator.
 
@@ -104,11 +95,9 @@ def _safe_pct(numerator: float, denominator: float) -> float:
         return 0.0
     return (numerator / denominator) * 100.0
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class InvestmentClassificationType(str, Enum):
     """Classification of an investment per SFDR Article 2(17)."""
@@ -117,7 +106,6 @@ class InvestmentClassificationType(str, Enum):
     SOCIAL = "social"
     NOT_SUSTAINABLE = "not_sustainable"
 
-
 class DNSHStatus(str, Enum):
     """Do No Significant Harm assessment status."""
     PASSED = "passed"
@@ -125,14 +113,12 @@ class DNSHStatus(str, Enum):
     INSUFFICIENT_DATA = "insufficient_data"
     NOT_ASSESSED = "not_assessed"
 
-
 class GovernanceStatus(str, Enum):
     """Good governance assessment status."""
     GOOD = "good"
     INADEQUATE = "inadequate"
     INSUFFICIENT_DATA = "insufficient_data"
     NOT_ASSESSED = "not_assessed"
-
 
 class ObjectiveContribution(str, Enum):
     """Type of sustainable objective contribution."""
@@ -147,7 +133,6 @@ class ObjectiveContribution(str, Enum):
     HUMAN_CAPITAL = "human_capital"
     NONE = "none"
 
-
 class AdherenceStatus(str, Enum):
     """Status of adherence to minimum commitment."""
     MEETING = "meeting"
@@ -155,11 +140,9 @@ class AdherenceStatus(str, Enum):
     BELOW = "below"
     AT_RISK = "at_risk"
 
-
 # ---------------------------------------------------------------------------
 # DNSH Criteria Reference Data
 # ---------------------------------------------------------------------------
-
 
 DNSH_PAI_MAPPING: Dict[str, List[str]] = {
     ObjectiveContribution.CLIMATE_MITIGATION: [
@@ -199,11 +182,9 @@ GOVERNANCE_CRITERIA: List[str] = [
     "tax_compliance",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class DNSHAssessment(BaseModel):
     """Do No Significant Harm assessment for an investment.
@@ -225,9 +206,8 @@ class DNSHAssessment(BaseModel):
     )
     coverage_pct: float = Field(default=0.0, description="Percentage of required PAI indicators covered")
     notes: str = Field(default="", description="Assessment notes")
-    assessed_at: datetime = Field(default_factory=_utcnow, description="Assessment timestamp")
+    assessed_at: datetime = Field(default_factory=utcnow, description="Assessment timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class GovernanceAssessment(BaseModel):
     """Good governance assessment for an investee company.
@@ -251,9 +231,8 @@ class GovernanceAssessment(BaseModel):
     ungc_signatory: bool = Field(default=False, description="UN Global Compact signatory")
     controversies_flag: bool = Field(default=False, description="Active controversies flag")
     notes: str = Field(default="", description="Assessment notes")
-    assessed_at: datetime = Field(default_factory=_utcnow, description="Assessment timestamp")
+    assessed_at: datetime = Field(default_factory=utcnow, description="Assessment timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class InvestmentData(BaseModel):
     """Input data for a single investment holding.
@@ -287,12 +266,13 @@ class InvestmentData(BaseModel):
         default_factory=dict, description="Governance criteria flags"
     )
 
-
 class InvestmentClassification(BaseModel):
     """Classification result for a single investment.
 
     Contains the final classification, confidence level, and evidence
     from the three-step assessment process.
+
+from greenlang.schemas import utcnow
     """
     classification_id: str = Field(default_factory=_new_uuid, description="Unique classification identifier")
     investment_id: str = Field(description="Classified investment identifier")
@@ -317,9 +297,8 @@ class InvestmentClassification(BaseModel):
     )
     taxonomy_aligned: bool = Field(default=False, description="Whether Taxonomy-aligned")
     nav_value: float = Field(default=0.0, description="NAV value of this holding")
-    classified_at: datetime = Field(default_factory=_utcnow, description="Classification timestamp")
+    classified_at: datetime = Field(default_factory=utcnow, description="Classification timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class ProportionResult(BaseModel):
     """Result of sustainable investment proportion calculation.
@@ -353,9 +332,8 @@ class ProportionResult(BaseModel):
     coverage_ratio: float = Field(
         default=0.0, description="Percentage of holdings with sufficient data"
     )
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Calculation timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Calculation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class CommitmentAdherence(BaseModel):
     """Result of checking adherence to minimum sustainability commitment.
@@ -386,9 +364,8 @@ class CommitmentAdherence(BaseModel):
     at_risk_threshold_pct: float = Field(
         default=5.0, description="Buffer below which status becomes AT_RISK"
     )
-    checked_at: datetime = Field(default_factory=_utcnow, description="Check timestamp")
+    checked_at: datetime = Field(default_factory=utcnow, description="Check timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class ClassificationSummary(BaseModel):
     """Summary of all investment classifications.
@@ -413,14 +390,12 @@ class ClassificationSummary(BaseModel):
     classifications: List[InvestmentClassification] = Field(
         default_factory=list, description="Individual classification results"
     )
-    generated_at: datetime = Field(default_factory=_utcnow, description="Generation timestamp")
+    generated_at: datetime = Field(default_factory=utcnow, description="Generation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 # ---------------------------------------------------------------------------
 # Engine Configuration
 # ---------------------------------------------------------------------------
-
 
 class SustainableInvestmentConfig(BaseModel):
     """Configuration for the SustainableInvestmentCalculatorEngine.
@@ -467,7 +442,6 @@ class SustainableInvestmentConfig(BaseModel):
         description="PAI indicator thresholds for DNSH assessment"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic model_rebuild for forward reference resolution
 # ---------------------------------------------------------------------------
@@ -481,11 +455,9 @@ ProportionResult.model_rebuild()
 CommitmentAdherence.model_rebuild()
 ClassificationSummary.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # SustainableInvestmentCalculatorEngine
 # ---------------------------------------------------------------------------
-
 
 class SustainableInvestmentCalculatorEngine:
     """
@@ -557,7 +529,7 @@ class SustainableInvestmentCalculatorEngine:
         Returns:
             List of InvestmentClassification results.
         """
-        start = _utcnow()
+        start = utcnow()
         self._investments = investments
         results: List[InvestmentClassification] = []
 
@@ -574,7 +546,7 @@ class SustainableInvestmentCalculatorEngine:
             "Classified %d investments (%d sustainable) in %dms",
             len(results),
             sustainable_count,
-            int((_utcnow() - start).total_seconds() * 1000),
+            int((utcnow() - start).total_seconds() * 1000),
         )
         return results
 
@@ -905,7 +877,7 @@ class SustainableInvestmentCalculatorEngine:
         Returns:
             ProportionResult with percentage breakdowns.
         """
-        start = _utcnow()
+        start = utcnow()
         if classifications is None:
             classifications = list(self._classifications.values())
 
@@ -973,7 +945,7 @@ class SustainableInvestmentCalculatorEngine:
             result.other_environmental_pct,
             result.social_pct,
             len(classifications),
-            int((_utcnow() - start).total_seconds() * 1000),
+            int((utcnow() - start).total_seconds() * 1000),
         )
         return result
 
@@ -1023,7 +995,7 @@ class SustainableInvestmentCalculatorEngine:
         Returns:
             CommitmentAdherence result.
         """
-        start = _utcnow()
+        start = utcnow()
         if proportion is None:
             proportion = self.calculate_proportion()
 
@@ -1073,7 +1045,7 @@ class SustainableInvestmentCalculatorEngine:
             actual,
             committed,
             buffer,
-            int((_utcnow() - start).total_seconds() * 1000),
+            int((utcnow() - start).total_seconds() * 1000),
         )
         return result
 
@@ -1096,7 +1068,7 @@ class SustainableInvestmentCalculatorEngine:
         Returns:
             ClassificationSummary with aggregate statistics.
         """
-        start = _utcnow()
+        start = utcnow()
         if classifications is None:
             classifications = list(self._classifications.values())
 
@@ -1156,7 +1128,7 @@ class SustainableInvestmentCalculatorEngine:
             summary.other_environmental_count,
             summary.social_count,
             summary.not_sustainable_count,
-            int((_utcnow() - start).total_seconds() * 1000),
+            int((utcnow() - start).total_seconds() * 1000),
         )
         return summary
 

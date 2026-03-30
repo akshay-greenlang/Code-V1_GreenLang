@@ -53,20 +53,15 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "36.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC timestamp with zero microseconds."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -83,11 +78,9 @@ def _compute_hash(data: Any) -> str:
         json.dumps(s, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -97,7 +90,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "pending"
@@ -105,7 +97,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class PeakCause(str, Enum):
     """Root cause classification for peak demand events."""
@@ -120,7 +111,6 @@ class PeakCause(str, Enum):
     OCCUPANCY_DRIVEN = "occupancy_driven"
     UNKNOWN = "unknown"
 
-
 class StrategyType(str, Enum):
     """Demand reduction strategy classification."""
     LOAD_SHIFTING = "load_shifting"
@@ -134,14 +124,12 @@ class StrategyType(str, Enum):
     THERMAL_STORAGE = "thermal_storage"
     ON_SITE_GENERATION = "on_site_generation"
 
-
 class StrategyPriority(str, Enum):
     """Strategy implementation priority."""
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 # =============================================================================
 # REFERENCE DATA (Zero-Hallucination)
@@ -192,11 +180,9 @@ LOAD_FACTOR_TARGETS: Dict[str, float] = {
     "above_70": 0.85,
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -208,7 +194,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class DemandInterval(BaseModel):
     """Demand interval measurement record.
@@ -231,7 +216,6 @@ class DemandInterval(BaseModel):
     month: int = Field(default=1, ge=1, le=12)
     is_weekend: bool = Field(default=False)
     temperature_c: Optional[float] = Field(default=None)
-
 
 class PeakEvent(BaseModel):
     """A detected peak demand event.
@@ -256,7 +240,6 @@ class PeakEvent(BaseModel):
     hour_of_day: int = Field(default=12, ge=0, le=23)
     is_billing_peak: bool = Field(default=False)
     estimated_cost_impact: float = Field(default=0.0)
-
 
 class DemandReductionStrategy(BaseModel):
     """A demand reduction strategy recommendation.
@@ -287,7 +270,6 @@ class DemandReductionStrategy(BaseModel):
     load_factor_improvement: float = Field(default=0.0)
     implementation_timeline: str = Field(default="")
     prerequisites: List[str] = Field(default_factory=list)
-
 
 class DemandManagementInput(BaseModel):
     """Input data model for DemandManagementWorkflow.
@@ -325,7 +307,6 @@ class DemandManagementInput(BaseModel):
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
 
-
 class DemandManagementResult(BaseModel):
     """Complete result from demand management workflow."""
     workflow_id: str = Field(..., description="Unique execution ID")
@@ -346,11 +327,9 @@ class DemandManagementResult(BaseModel):
     duration_seconds: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class DemandManagementWorkflow:
     """
@@ -975,7 +954,7 @@ class DemandManagementWorkflow:
             })
 
         outputs["report_id"] = report_id
-        outputs["generated_at"] = _utcnow().isoformat()
+        outputs["generated_at"] = utcnow().isoformat()
         outputs["facility_id"] = input_data.facility_id
         outputs["current_peak_kw"] = self._demand_profile.get("overall_peak_kw", 0.0)
         outputs["current_load_factor"] = self._demand_profile.get("load_factor", 0.0)

@@ -16,12 +16,13 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig
 from greenlang.agents.base_agents import DeterministicAgent
 from greenlang.agents.categories import AgentCategory, AgentMetadata
 from greenlang.utilities.determinism import DeterministicClock, content_hash, deterministic_id
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +55,7 @@ EMISSION_FACTORS = {
 }
 
 
-class FuelSwitchOption(BaseModel):
+class FuelSwitchOption(GreenLangBase):
     option_id: str = Field(...)
     from_fuel: FuelType = Field(...)
     to_fuel: FuelType = Field(...)
@@ -77,7 +78,7 @@ class FuelSwitchOption(BaseModel):
     implementation_months: int = Field(default=12, ge=1)
 
 
-class FuelSwitchingInput(BaseModel):
+class FuelSwitchingInput(GreenLangBase):
     operation: str = Field(default="optimize")
     current_fuel: FuelType = Field(default=FuelType.NATURAL_GAS)
     consumption_mwh: float = Field(default=10000, ge=0)
@@ -86,7 +87,7 @@ class FuelSwitchingInput(BaseModel):
     electricity_emission_factor: float = Field(default=0.4, ge=0)
 
 
-class FuelSwitchingOutput(BaseModel):
+class FuelSwitchingOutput(GreenLangBase):
     operation: str = Field(...)
     success: bool = Field(...)
     options: List[FuelSwitchOption] = Field(default_factory=list)

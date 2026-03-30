@@ -58,9 +58,9 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Optional upstream-engine imports (graceful degradation)
@@ -138,7 +138,6 @@ except ImportError:
     def _record_emissions(flare_type: str, gas: str, kg: float) -> None:  # type: ignore[misc]
         """No-op fallback when metrics module is unavailable."""
 
-
 # ---------------------------------------------------------------------------
 # Pipeline stage enum
 # ---------------------------------------------------------------------------
@@ -155,9 +154,7 @@ class PipelineStage(str, Enum):
     CHECK_COMPLIANCE = "CHECK_COMPLIANCE"
     ASSEMBLE_RESULT = "ASSEMBLE_RESULT"
 
-
 PIPELINE_STAGES: List[str] = [s.value for s in PipelineStage]
-
 
 # ---------------------------------------------------------------------------
 # Built-in reference data for standalone operation
@@ -504,25 +501,17 @@ N2O_FACTOR_KG_PER_TJ: float = 0.1
 #: BTU to TJ conversion: 1 TJ = 947,817,120 BTU.
 BTU_PER_TJ: float = 947_817_120.0
 
-
 # ---------------------------------------------------------------------------
 # Utility helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _utcnow_iso() -> str:
     """Return current UTC datetime as an ISO-8601 string."""
-    return _utcnow().isoformat()
-
+    return utcnow().isoformat()
 
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -542,7 +531,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 def _to_decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -558,7 +546,6 @@ def _to_decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 # ---------------------------------------------------------------------------
 # Stage result helper
@@ -602,11 +589,9 @@ def _stage_result(
         result.update(extra)
     return result
 
-
 # ===================================================================
 # FlaringPipelineEngine
 # ===================================================================
-
 
 class FlaringPipelineEngine:
     """Eight-stage orchestration pipeline for flaring emissions calculations.
@@ -2541,7 +2526,6 @@ class FlaringPipelineEngine:
             "met_count": met_count,
             "requirements": requirement_results,
         }
-
 
 # ===================================================================
 # Public API

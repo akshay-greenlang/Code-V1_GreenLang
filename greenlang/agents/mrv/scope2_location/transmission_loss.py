@@ -63,6 +63,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from typing import Any, Dict, FrozenSet, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -104,15 +105,9 @@ except ImportError:
     _ProvenanceTracker = None  # type: ignore[assignment,misc]
     _get_provenance_tracker = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # SHA-256 hashing utility
@@ -140,7 +135,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Decimal precision constants
 # ---------------------------------------------------------------------------
@@ -157,7 +151,6 @@ _THOUSAND = Decimal("1000")
 _MAX_TD_LOSS_PCT = Decimal("0.50")
 # Minimum allowable T&D loss factor (0%, exclusive)
 _MIN_TD_LOSS_PCT = Decimal("0")
-
 
 # ---------------------------------------------------------------------------
 # T&D Loss Factor Database - All values as Decimal
@@ -594,7 +587,6 @@ REGIONAL_GROUPS: Dict[str, List[str]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # TDLossResult dataclass
 # ---------------------------------------------------------------------------
@@ -655,7 +647,6 @@ class TDLossResult:
             "confidence": self.confidence,
             "calculation_steps": self.calculation_steps,
         }
-
 
 # ---------------------------------------------------------------------------
 # TransmissionLossEngine
@@ -950,7 +941,7 @@ class TransmissionLossEngine:
             try:
                 self._provenance.record(
                     entity_type="TD_LOSS",
-                    entity_id=f"td_loss_{country_code}_{_utcnow().isoformat()}",
+                    entity_id=f"td_loss_{country_code}_{utcnow().isoformat()}",
                     action="CALCULATE",
                     data=provenance_data,
                     metadata={
@@ -990,7 +981,7 @@ class TransmissionLossEngine:
             loss_emissions_kg=loss_emissions_kg,
             provenance_hash=provenance_hash,
             calculation_time_ms=round(elapsed_ms, 3),
-            timestamp=_utcnow().isoformat(),
+            timestamp=utcnow().isoformat(),
             source=source,
             confidence=confidence,
             calculation_steps=calculation_steps,
@@ -1125,7 +1116,7 @@ class TransmissionLossEngine:
             try:
                 self._provenance.record(
                     entity_type="TD_LOSS",
-                    entity_id=f"loss_emissions_{_utcnow().isoformat()}",
+                    entity_id=f"loss_emissions_{utcnow().isoformat()}",
                     action="CALCULATE",
                     data={
                         "net_mwh": str(net),
@@ -1182,7 +1173,7 @@ class TransmissionLossEngine:
             try:
                 self._provenance.record(
                     entity_type="TD_LOSS",
-                    entity_id=f"td_adjust_{_utcnow().isoformat()}",
+                    entity_id=f"td_adjust_{utcnow().isoformat()}",
                     action="CALCULATE",
                     data={
                         "base_emissions_kg": str(base),
@@ -1305,7 +1296,7 @@ class TransmissionLossEngine:
                     "name": record.get("name", code),
                     "td_loss_pct": str(record["td_loss_pct"]),
                     "source": record.get("source", "user_provided"),
-                    "year": record.get("year", _utcnow().year),
+                    "year": record.get("year", utcnow().year),
                     "confidence": record.get("confidence", "USER"),
                     "is_custom": True,
                     "is_fallback": False,
@@ -1376,7 +1367,7 @@ class TransmissionLossEngine:
                     "name": record.get("name", code),
                     "td_loss_pct": str(record["td_loss_pct"]),
                     "source": record.get("source", "user_provided"),
-                    "year": record.get("year", _utcnow().year),
+                    "year": record.get("year", utcnow().year),
                     "confidence": record.get("confidence", "USER"),
                     "is_custom": True,
                 }
@@ -1513,7 +1504,7 @@ class TransmissionLossEngine:
             "td_loss_pct": pct,
             "name": name or code,
             "source": source or "user_provided",
-            "year": year or _utcnow().year,
+            "year": year or utcnow().year,
             "confidence": confidence or "USER",
         }
 
@@ -1681,7 +1672,7 @@ class TransmissionLossEngine:
             try:
                 self._provenance.record(
                     entity_type="TD_LOSS",
-                    entity_id=f"proportional_alloc_{_utcnow().isoformat()}",
+                    entity_id=f"proportional_alloc_{utcnow().isoformat()}",
                     action="CALCULATE",
                     data={
                         "method": "proportional",
@@ -1742,7 +1733,7 @@ class TransmissionLossEngine:
             try:
                 self._provenance.record(
                     entity_type="TD_LOSS",
-                    entity_id=f"marginal_alloc_{_utcnow().isoformat()}",
+                    entity_id=f"marginal_alloc_{utcnow().isoformat()}",
                     action="CALCULATE",
                     data={
                         "method": "marginal",
@@ -1793,7 +1784,7 @@ class TransmissionLossEngine:
             try:
                 self._provenance.record(
                     entity_type="TD_LOSS",
-                    entity_id=f"fixed_alloc_{_utcnow().isoformat()}",
+                    entity_id=f"fixed_alloc_{utcnow().isoformat()}",
                     action="CALCULATE",
                     data={
                         "method": "fixed",
@@ -1962,7 +1953,7 @@ class TransmissionLossEngine:
             try:
                 self._provenance.record(
                     entity_type="TD_LOSS",
-                    entity_id=f"onsite_calc_{code}_{_utcnow().isoformat()}",
+                    entity_id=f"onsite_calc_{code}_{utcnow().isoformat()}",
                     action="CALCULATE",
                     data=provenance_data,
                 )
@@ -2044,7 +2035,7 @@ class TransmissionLossEngine:
             try:
                 self._provenance.record(
                     entity_type="TD_LOSS",
-                    entity_id=f"net_to_gross_{code}_{_utcnow().isoformat()}",
+                    entity_id=f"net_to_gross_{code}_{utcnow().isoformat()}",
                     action="CALCULATE",
                     data=provenance_data,
                 )
@@ -2110,7 +2101,7 @@ class TransmissionLossEngine:
             try:
                 self._provenance.record(
                     entity_type="TD_LOSS",
-                    entity_id=f"gross_to_net_{code}_{_utcnow().isoformat()}",
+                    entity_id=f"gross_to_net_{code}_{utcnow().isoformat()}",
                     action="CALCULATE",
                     data=provenance_data,
                 )
@@ -2219,7 +2210,7 @@ class TransmissionLossEngine:
             try:
                 self._provenance.record(
                     entity_type="TD_LOSS",
-                    entity_id=f"accounting_{code}_{_utcnow().isoformat()}",
+                    entity_id=f"accounting_{code}_{utcnow().isoformat()}",
                     action="CALCULATE",
                     data=provenance_data,
                 )
@@ -3039,14 +3030,12 @@ class TransmissionLossEngine:
 
         return list(effective.values())
 
-
 # ---------------------------------------------------------------------------
 # Module-level singleton helpers
 # ---------------------------------------------------------------------------
 
 _singleton_lock = threading.Lock()
 _singleton_engine: Optional[TransmissionLossEngine] = None
-
 
 def get_transmission_loss_engine(
     config: Optional[Dict[str, Any]] = None,
@@ -3072,7 +3061,6 @@ def get_transmission_loss_engine(
                     "TransmissionLossEngine singleton created"
                 )
     return _singleton_engine
-
 
 def reset_transmission_loss_engine() -> None:
     """Reset the singleton to ``None`` for testing.

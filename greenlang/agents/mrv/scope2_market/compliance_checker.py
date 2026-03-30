@@ -54,6 +54,7 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Callable, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -81,15 +82,9 @@ except ImportError:
     _METRICS_AVAILABLE = False
     _get_metrics = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -99,7 +94,6 @@ def _compute_hash(data: Any) -> str:
         serializable = data
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 # ===========================================================================
 # Constants
@@ -237,11 +231,9 @@ FRAMEWORK_INFO: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ===========================================================================
 # Dataclasses
 # ===========================================================================
-
 
 @dataclass(frozen=True)
 class ComplianceRequirement:
@@ -254,7 +246,6 @@ class ComplianceRequirement:
     category: str
     check_fn_name: str
 
-
 @dataclass
 class ComplianceFinding:
     """Result of evaluating a single compliance requirement."""
@@ -265,7 +256,6 @@ class ComplianceFinding:
     severity: str
     details: str = ""
     recommendation: str = ""
-
 
 # ===========================================================================
 # Requirement Definitions (84 total across 7 frameworks)
@@ -387,11 +377,9 @@ _REQUIREMENTS_BY_FRAMEWORK: Dict[str, List[ComplianceRequirement]] = {
     "green_e": _GREEN_E_REQUIREMENTS,
 }
 
-
 # ===========================================================================
 # ComplianceCheckerEngine
 # ===========================================================================
-
 
 class ComplianceCheckerEngine:
     """Multi-framework regulatory compliance checker for Scope 2 market-based
@@ -677,7 +665,7 @@ class ComplianceCheckerEngine:
             "frameworks_checked": len(results),
             "framework_results": results,
             "processing_time_ms": elapsed,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "provenance_hash": _compute_hash(results),
         }
 
@@ -775,7 +763,7 @@ class ComplianceCheckerEngine:
             "failed": failed,
             "findings": findings,
             "provenance_hash": _compute_hash(findings),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     # -------------------------------------------------------------------
@@ -1246,7 +1234,7 @@ class ComplianceCheckerEngine:
             "failed": total - passed,
             "findings": findings,
             "provenance_hash": _compute_hash(findings),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     # -------------------------------------------------------------------
@@ -1350,7 +1338,7 @@ class ComplianceCheckerEngine:
             "lower_method": "market" if mkt_co2e < loc_co2e else "location",
             "findings": findings,
             "provenance_hash": _compute_hash(findings),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     # -------------------------------------------------------------------
@@ -1527,7 +1515,7 @@ class ComplianceCheckerEngine:
                 "total_passed": self._total_passed,
                 "total_failed": self._total_failed,
                 "stored_results": len(self._compliance_results),
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }
 
     def reset(self) -> None:
@@ -1540,14 +1528,12 @@ class ComplianceCheckerEngine:
             self._total_passed = 0
             self._total_failed = 0
 
-
 # ===========================================================================
 # Module-level convenience functions
 # ===========================================================================
 
 _default_engine: Optional[ComplianceCheckerEngine] = None
 _engine_lock = threading.Lock()
-
 
 def get_engine() -> ComplianceCheckerEngine:
     """Get or create the default ComplianceCheckerEngine singleton."""
@@ -1558,7 +1544,6 @@ def get_engine() -> ComplianceCheckerEngine:
                 _default_engine = ComplianceCheckerEngine()
     return _default_engine
 
-
 def check_compliance(
     calculation_result: Dict[str, Any],
     frameworks: Optional[List[str]] = None,
@@ -1566,16 +1551,13 @@ def check_compliance(
     """Check compliance using the default engine."""
     return get_engine().check_compliance(calculation_result, frameworks)
 
-
 def check_all_frameworks(calculation_result: Dict[str, Any]) -> Dict[str, Any]:
     """Check all frameworks using the default engine."""
     return get_engine().check_all_frameworks(calculation_result)
 
-
 def validate_instrument(instrument: Dict[str, Any]) -> Dict[str, Any]:
     """Validate an instrument using the default engine."""
     return get_engine().validate_instrument_compliance(instrument)
-
 
 def validate_dual_reporting(
     location_result: Dict[str, Any],
@@ -1584,11 +1566,9 @@ def validate_dual_reporting(
     """Validate dual reporting using the default engine."""
     return get_engine().validate_dual_reporting(location_result, market_result)
 
-
 def list_frameworks() -> List[str]:
     """List all supported frameworks."""
     return get_engine().list_frameworks()
-
 
 def get_statistics() -> Dict[str, Any]:
     """Get engine statistics."""

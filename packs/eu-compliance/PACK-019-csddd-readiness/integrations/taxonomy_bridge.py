@@ -44,25 +44,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -75,11 +69,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EnvironmentalObjective(str, Enum):
     """EU Taxonomy six environmental objectives."""
@@ -91,7 +83,6 @@ class EnvironmentalObjective(str, Enum):
     POLLUTION_PREVENTION = "pollution_prevention"
     BIODIVERSITY = "biodiversity_and_ecosystems"
 
-
 class DNSHStatus(str, Enum):
     """Do No Significant Harm assessment status."""
 
@@ -100,7 +91,6 @@ class DNSHStatus(str, Enum):
     NOT_ASSESSED = "not_assessed"
     PARTIALLY_MET = "partially_met"
 
-
 class AlignmentStatus(str, Enum):
     """Taxonomy alignment assessment status."""
 
@@ -108,7 +98,6 @@ class AlignmentStatus(str, Enum):
     ALIGNED = "aligned"
     NOT_ELIGIBLE = "not_eligible"
     UNDER_REVIEW = "under_review"
-
 
 class CSDDDEnvironmentalImpact(str, Enum):
     """CSDDD Annex Part II environmental adverse impact categories."""
@@ -123,11 +112,9 @@ class CSDDDEnvironmentalImpact(str, Enum):
     WASTE_GENERATION = "waste_generation"
     ECOSYSTEM_DEGRADATION = "ecosystem_degradation"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class TaxonomyBridgeConfig(BaseModel):
     """Configuration for the Taxonomy Bridge."""
@@ -137,7 +124,6 @@ class TaxonomyBridgeConfig(BaseModel):
     enable_provenance: bool = Field(default=True)
     reporting_year: int = Field(default=2025, ge=2020, le=2030)
     include_minimum_safeguards: bool = Field(default=True)
-
 
 class EconomicActivity(BaseModel):
     """An economic activity assessed for Taxonomy alignment."""
@@ -157,7 +143,6 @@ class EconomicActivity(BaseModel):
     opex_eur: float = Field(default=0.0, ge=0.0)
     revenue_eur: float = Field(default=0.0, ge=0.0)
 
-
 class DNSHAssessment(BaseModel):
     """DNSH assessment result for a single activity against all objectives."""
 
@@ -172,7 +157,6 @@ class DNSHAssessment(BaseModel):
     csddd_impacts: List[CSDDDEnvironmentalImpact] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class EnvironmentalImpactMapping(BaseModel):
     """Mapping from CSDDD environmental impact to Taxonomy DNSH criteria."""
 
@@ -182,7 +166,6 @@ class EnvironmentalImpactMapping(BaseModel):
     taxonomy_objectives: List[EnvironmentalObjective] = Field(default_factory=list)
     dnsh_relevance: str = Field(default="")
     csddd_articles: List[str] = Field(default_factory=list)
-
 
 class TaxonomyAlignmentResult(BaseModel):
     """Result of Taxonomy alignment assessment."""
@@ -198,7 +181,6 @@ class TaxonomyAlignmentResult(BaseModel):
     minimum_safeguards_failures: int = Field(default=0)
     csddd_relevant_impacts: List[CSDDDEnvironmentalImpact] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # CSDDD Impact to Taxonomy Objective Mapping
@@ -249,11 +231,9 @@ DNSH_FAILURE_TO_CSDDD_IMPACT: Dict[str, CSDDDEnvironmentalImpact] = {
     EnvironmentalObjective.BIODIVERSITY.value: CSDDDEnvironmentalImpact.BIODIVERSITY_LOSS,
 }
 
-
 # ---------------------------------------------------------------------------
 # TaxonomyBridge
 # ---------------------------------------------------------------------------
-
 
 class TaxonomyBridge:
     """EU Taxonomy DNSH / CSDDD environmental impact bridge for PACK-019.

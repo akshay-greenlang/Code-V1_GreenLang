@@ -44,18 +44,14 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -67,11 +63,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SBTiSDAPathway(str, Enum):
     """SBTi pathway types."""
@@ -81,12 +75,10 @@ class SBTiSDAPathway(str, Enum):
     FLAG = "flag"
     MIXED = "mixed"
 
-
 class SBTiTargetType(str, Enum):
     NEAR_TERM = "near_term"
     LONG_TERM = "long_term"
     NET_ZERO = "net_zero"
-
 
 class CriteriaStatus(str, Enum):
     PASS = "pass"
@@ -94,7 +86,6 @@ class CriteriaStatus(str, Enum):
     WARNING = "warning"
     NOT_APPLICABLE = "not_applicable"
     PENDING = "pending"
-
 
 class SBTiSubmissionStatus(str, Enum):
     DRAFT = "draft"
@@ -105,7 +96,6 @@ class SBTiSubmissionStatus(str, Enum):
     REVISION_REQUIRED = "revision_required"
     REJECTED = "rejected"
 
-
 class TemperatureRating(str, Enum):
     BELOW_15C = "below_1.5C"
     C_15 = "1.5C"
@@ -114,13 +104,11 @@ class TemperatureRating(str, Enum):
     ABOVE_2C = "above_2C"
     NOT_ALIGNED = "not_aligned"
 
-
 class ConvergenceMethod(str, Enum):
     LINEAR = "linear"
     EXPONENTIAL = "exponential"
     S_CURVE = "s_curve"
     STEPPED = "stepped"
-
 
 class SDASector(str, Enum):
     POWER_GENERATION = "power_generation"
@@ -135,7 +123,6 @@ class SDASector(str, Enum):
     RAIL = "rail"
     BUILDINGS_RESIDENTIAL = "buildings_residential"
     BUILDINGS_COMMERCIAL = "buildings_commercial"
-
 
 # ---------------------------------------------------------------------------
 # SDA Sector Pathway Convergence Tables
@@ -247,7 +234,6 @@ GICS_TO_SDA_SECTOR: Dict[str, str] = {
     "601020": "buildings_commercial",
 }
 
-
 # ---------------------------------------------------------------------------
 # SBTi Criteria Database
 # ---------------------------------------------------------------------------
@@ -300,11 +286,9 @@ SBTI_NET_ZERO_CRITERIA: List[Dict[str, str]] = [
     {"id": "NZ-C14", "name": "Public net-zero pledge and communication", "category": "communication"},
 ]
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class SBTiSDABridgeConfig(BaseModel):
     """Configuration for the SBTi SDA bridge."""
@@ -332,7 +316,6 @@ class SBTiSDABridgeConfig(BaseModel):
     base_year_emissions_scope3_tco2e: float = Field(default=0.0)
     base_year_activity_value: float = Field(default=0.0)
 
-
 class SectorClassification(BaseModel):
     """Result of SDA sector classification."""
     classification_id: str = Field(default_factory=_new_uuid)
@@ -348,7 +331,6 @@ class SectorClassification(BaseModel):
     confidence_score: float = Field(default=0.0, ge=0.0, le=1.0)
     provenance_hash: str = Field(default="")
 
-
 class IntensityConvergencePoint(BaseModel):
     """Single point on the intensity convergence curve."""
     year: int = Field(...)
@@ -357,7 +339,6 @@ class IntensityConvergencePoint(BaseModel):
     gap_intensity: float = Field(default=0.0)
     gap_pct: float = Field(default=0.0)
     on_track: bool = Field(default=True)
-
 
 class IntensityConvergenceResult(BaseModel):
     """Result of intensity convergence calculation."""
@@ -376,7 +357,6 @@ class IntensityConvergenceResult(BaseModel):
     aligned_with_pathway: bool = Field(default=False)
     provenance_hash: str = Field(default="")
 
-
 class CriteriaValidation(BaseModel):
     """Validation result for a single SBTi criterion."""
     criteria_id: str = Field(default="")
@@ -387,7 +367,6 @@ class CriteriaValidation(BaseModel):
     evidence: str = Field(default="")
     remediation: str = Field(default="")
     data_source: str = Field(default="")
-
 
 class SBTiTargetDefinition(BaseModel):
     """SBTi target definition for submission."""
@@ -407,7 +386,6 @@ class SBTiTargetDefinition(BaseModel):
     annual_reduction_rate_pct: float = Field(default=0.0)
     temperature_alignment: TemperatureRating = Field(default=TemperatureRating.C_15)
     target_language: str = Field(default="")
-
 
 class SBTiSDAValidationResult(BaseModel):
     """Complete SBTi SDA validation result."""
@@ -432,7 +410,6 @@ class SBTiSDAValidationResult(BaseModel):
     improvement_actions: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class SBTiSubmissionPackage(BaseModel):
     """SBTi target submission package."""
     package_id: str = Field(default_factory=_new_uuid)
@@ -446,9 +423,8 @@ class SBTiSubmissionPackage(BaseModel):
     target_data: Dict[str, Any] = Field(default_factory=dict)
     supporting_evidence: List[str] = Field(default_factory=list)
     methodology_notes: List[str] = Field(default_factory=list)
-    generated_at: datetime = Field(default_factory=_utcnow)
+    generated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class SBTiProgressReport(BaseModel):
     """Annual progress tracking against SBTi SDA targets."""
@@ -467,11 +443,9 @@ class SBTiProgressReport(BaseModel):
     required_acceleration_pct: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # SBTiSDABridge
 # ---------------------------------------------------------------------------
-
 
 class SBTiSDABridge:
     """SBTi Sectoral Decarbonization Approach bridge for PACK-028.

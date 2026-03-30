@@ -46,25 +46,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -77,18 +71,15 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class AmbitionLevel(str, Enum):
     """SBTi target ambition levels."""
 
     WELL_BELOW_2C = "well_below_2c"
     ONE_POINT_FIVE_C = "1.5c"
-
 
 class SBTiSector(str, Enum):
     """SBTi SDA covered sectors."""
@@ -103,7 +94,6 @@ class SBTiSector(str, Enum):
     TRANSPORT_FREIGHT = "transport_freight"
     PAPER = "paper"
     FOOD = "food"
-
 
 # ---------------------------------------------------------------------------
 # SBTi SDA Pathway Data
@@ -234,11 +224,9 @@ PATHWAY_METADATA: Dict[str, str] = {
     "reference": "https://sciencebasedtargets.org/resources/files/SBTi-criteria.pdf",
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class SBTiConfig(BaseModel):
     """Configuration for SBTi pathway bridge."""
@@ -246,7 +234,6 @@ class SBTiConfig(BaseModel):
     cache_ttl_s: float = Field(86400.0, ge=300.0)
     default_ambition: str = Field(AmbitionLevel.ONE_POINT_FIVE_C.value)
     timeout_s: float = Field(10.0, ge=1.0)
-
 
 class SectorPathway(BaseModel):
     """SBTi SDA pathway for a specific sector and ambition level."""
@@ -266,7 +253,6 @@ class SectorPathway(BaseModel):
     last_updated: str = PATHWAY_METADATA["last_updated"]
     provenance_hash: str = ""
 
-
 class PathwayRequest(BaseModel):
     """Request for SBTi pathway data."""
 
@@ -276,7 +262,6 @@ class PathwayRequest(BaseModel):
         description="Ambition level: 1.5c or well_below_2c",
     )
     target_year: int = Field(2030, ge=2025, le=2050)
-
 
 class PathwayResponse(BaseModel):
     """Response with SBTi pathway data."""
@@ -291,11 +276,9 @@ class PathwayResponse(BaseModel):
     duration_ms: float = 0.0
     warnings: List[str] = Field(default_factory=list)
 
-
 # ---------------------------------------------------------------------------
 # Bridge Implementation
 # ---------------------------------------------------------------------------
-
 
 class SBTiPathwayBridge:
     """
@@ -512,7 +495,7 @@ class SBTiPathwayBridge:
                     "ambition": request.ambition_level,
                     "target_year": request.target_year,
                 }),
-                retrieved_at=_utcnow().isoformat(),
+                retrieved_at=utcnow().isoformat(),
                 duration_ms=duration,
             )
 
@@ -522,7 +505,7 @@ class SBTiPathwayBridge:
             return PathwayResponse(
                 success=False,
                 warnings=[str(e)],
-                retrieved_at=_utcnow().isoformat(),
+                retrieved_at=utcnow().isoformat(),
                 duration_ms=duration,
             )
 

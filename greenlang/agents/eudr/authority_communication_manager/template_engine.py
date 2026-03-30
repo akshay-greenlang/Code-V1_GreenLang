@@ -37,8 +37,9 @@ from .models import (
 )
 from .provenance import ProvenanceTracker
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance."""
@@ -47,16 +48,9 @@ def _compute_hash(data: Any) -> str:
     )
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 # ---------------------------------------------------------------------------
 # Default templates for all communication types in English
@@ -197,7 +191,6 @@ _DEFAULT_TEMPLATES: List[Dict[str, Any]] = [
         ],
     },
 ]
-
 
 class TemplateEngine:
     """Multi-language communication template rendering engine.

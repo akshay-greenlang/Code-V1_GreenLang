@@ -68,6 +68,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 from greenlang.agents.eudr.blockchain_integration.config import get_config
+from greenlang.schemas import utcnow
 from greenlang.agents.eudr.blockchain_integration.metrics import (
     observe_anchor_duration,
     record_anchor_confirmed,
@@ -103,12 +104,6 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance.
 
@@ -121,7 +116,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a new UUID4 string identifier.
 
@@ -129,7 +123,6 @@ def _generate_id() -> str:
         UUID4 string.
     """
     return str(uuid.uuid4())
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -173,11 +166,9 @@ _LEAF_PREFIX: bytes = b"\x00"
 #: Merkle tree node domain separator prefix for second pre-image resistance.
 _NODE_PREFIX: bytes = b"\x01"
 
-
 # ==========================================================================
 # TransactionAnchor
 # ==========================================================================
-
 
 class TransactionAnchor:
     """Transaction anchoring engine for EUDR compliance data.
@@ -329,7 +320,7 @@ class TransactionAnchor:
         confirmation_depth = self._get_confirmation_depth(chain)
 
         anchor_id = _generate_id()
-        now = _utcnow()
+        now = utcnow()
 
         anchor = AnchorRecord(
             anchor_id=anchor_id,
@@ -510,7 +501,7 @@ class TransactionAnchor:
                 anchor.merkle_leaf_index = i
                 anchor.tx_hash = tx_hash
                 anchor.status = AnchorStatus.SUBMITTED
-                anchor.submitted_at = _utcnow()
+                anchor.submitted_at = utcnow()
                 self._anchors[anchor.anchor_id] = anchor
 
                 if tx_hash:
@@ -629,7 +620,7 @@ class TransactionAnchor:
                     anchor.merkle_leaf_index = i
                     anchor.tx_hash = tx_hash
                     anchor.status = AnchorStatus.SUBMITTED
-                    anchor.submitted_at = _utcnow()
+                    anchor.submitted_at = utcnow()
 
             merkle_tree.tx_hash = tx_hash
             self._merkle_trees[merkle_tree.tree_id] = merkle_tree
@@ -814,7 +805,7 @@ class TransactionAnchor:
                         f"Cannot confirm anchor in status '{current_status}'"
                     )
 
-            now = _utcnow()
+            now = utcnow()
             anchor.status = AnchorStatus.CONFIRMED
             anchor.block_number = block_number
             anchor.block_hash = block_hash
@@ -902,7 +893,7 @@ class TransactionAnchor:
                 "anchor_id": anchor_id,
                 "error_message": error_message,
                 "retry_count": anchor.retry_count,
-                "failed_at": _utcnow().isoformat(),
+                "failed_at": utcnow().isoformat(),
             }
             anchor.provenance_hash = _compute_hash(provenance_data)
             self._anchors[anchor_id] = anchor
@@ -1226,7 +1217,7 @@ class TransactionAnchor:
             Created AnchorRecord.
         """
         anchor_id = _generate_id()
-        now = _utcnow()
+        now = utcnow()
         confirmation_depth = self._get_confirmation_depth(chain)
 
         anchor = AnchorRecord(
@@ -1309,7 +1300,7 @@ class TransactionAnchor:
         anchor.merkle_leaf_index = 0
         anchor.tx_hash = tx_hash
         anchor.status = AnchorStatus.SUBMITTED
-        anchor.submitted_at = _utcnow()
+        anchor.submitted_at = utcnow()
         self._anchors[anchor_id] = anchor
 
         if tx_hash:
@@ -1609,7 +1600,7 @@ class TransactionAnchor:
             Simulated transaction hash (hex string).
         """
         # Generate deterministic tx hash from root and timestamp
-        tx_data = f"{merkle_root}:{network}:{_utcnow().isoformat()}"
+        tx_data = f"{merkle_root}:{network}:{utcnow().isoformat()}"
         tx_hash = "0x" + hashlib.sha256(
             tx_data.encode("utf-8")
         ).hexdigest()
@@ -1801,7 +1792,6 @@ class TransactionAnchor:
             set_pending_anchors(0)
 
         logger.info("TransactionAnchor state cleared")
-
 
 # ---------------------------------------------------------------------------
 # Public API

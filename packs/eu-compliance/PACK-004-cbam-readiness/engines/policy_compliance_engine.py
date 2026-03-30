@@ -54,25 +54,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -85,7 +79,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -95,11 +88,9 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class RuleSeverity(str, Enum):
     """Compliance rule severity level."""
@@ -108,14 +99,12 @@ class RuleSeverity(str, Enum):
     WARNING = "WARNING"
     INFO = "INFO"
 
-
 class RuleApplicability(str, Enum):
     """When the rule applies relative to CBAM periods."""
 
     TRANSITIONAL = "TRANSITIONAL"
     DEFINITIVE = "DEFINITIVE"
     BOTH = "BOTH"
-
 
 class CheckStatus(str, Enum):
     """Result status of a compliance check."""
@@ -125,18 +114,15 @@ class CheckStatus(str, Enum):
     WARN = "WARN"
     SKIP = "SKIP"
 
-
 class PeriodType(str, Enum):
     """CBAM period type for rule applicability."""
 
     TRANSITIONAL = "TRANSITIONAL"
     DEFINITIVE = "DEFINITIVE"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class ComplianceRule(BaseModel):
     """Definition of a single CBAM compliance rule.
@@ -171,7 +157,6 @@ class ComplianceRule(BaseModel):
         description="Legal reference (e.g., 'CBAM Regulation Art. 35(2)')",
     )
 
-
 class ComplianceCheckResult(BaseModel):
     """Result of evaluating a single compliance rule.
 
@@ -197,7 +182,6 @@ class ComplianceCheckResult(BaseModel):
         RuleSeverity.INFO,
         description="Severity of the rule",
     )
-
 
 class ComplianceAssessment(BaseModel):
     """Complete compliance assessment result.
@@ -243,18 +227,16 @@ class ComplianceAssessment(BaseModel):
         description="Individual rule check results",
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Assessment timestamp",
     )
     provenance_hash: str = Field(
         "", description="SHA-256 hash for audit trail",
     )
 
-
 # ---------------------------------------------------------------------------
 # Pre-built CBAM Compliance Rules (50+)
 # ---------------------------------------------------------------------------
-
 
 def _build_rules() -> List[ComplianceRule]:
     """Build the complete set of CBAM compliance rules."""
@@ -795,7 +777,6 @@ def _build_rules() -> List[ComplianceRule]:
 
     return rules
 
-
 # Module-level rule registry
 _CBAM_RULES: List[ComplianceRule] = _build_rules()
 _RULES_BY_ID: Dict[str, ComplianceRule] = {r.rule_id: r for r in _CBAM_RULES}
@@ -830,11 +811,9 @@ _EF_RANGES: Dict[str, Dict[str, float]] = {
     "hydrogen": {"min": 0.2, "max": 12.0},
 }
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class PolicyComplianceEngine:
     """CBAM policy compliance rules engine.

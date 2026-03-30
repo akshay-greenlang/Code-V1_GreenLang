@@ -51,7 +51,9 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+
+from greenlang.schemas import GreenLangBase, utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -61,21 +63,13 @@ __all__ = [
     "EmissionFactorEngine",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _generate_id(prefix: str = "ef") -> str:
     """Generate a unique identifier with a prefix."""
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
-
 
 # ---------------------------------------------------------------------------
 # EPA EEIO v2.0 Factors (kgCO2e per USD of spend)
@@ -213,7 +207,6 @@ _EPA_EEIO_FACTORS: Dict[str, Dict[str, Any]] = {
     "5629": {"factor": 0.30, "name": "Remediation and other waste services", "sector": "waste"},
 }
 
-
 # ---------------------------------------------------------------------------
 # EXIOBASE Regional Factors (kgCO2e per USD by product group and region)
 # ---------------------------------------------------------------------------
@@ -269,7 +262,6 @@ _EXIOBASE_FACTORS: Dict[str, Dict[str, float]] = {
     "health_services": {"US": 0.15, "EU": 0.12, "CN": 0.22, "JP": 0.10, "IN": 0.25, "ROW": 0.18},
 }
 
-
 # ---------------------------------------------------------------------------
 # DEFRA Emission Factors (kgCO2e per unit)
 # Source: UK DEFRA/BEIS Greenhouse Gas Reporting Conversion Factors
@@ -312,7 +304,6 @@ _DEFRA_FACTORS: Dict[str, Dict[str, Any]] = {
     "glass_kg": {"factor": 0.840, "unit": "kg", "category": "Glass", "scope": "scope_3"},
 }
 
-
 # ---------------------------------------------------------------------------
 # NAICS 2-digit to EEIO sector mapping (for quick lookup)
 # ---------------------------------------------------------------------------
@@ -340,13 +331,11 @@ _UNSPSC_TO_EEIO_PREFIX: Dict[str, str] = {
     "86": "5411", "90": "5615",
 }
 
-
 # ---------------------------------------------------------------------------
 # Data models
 # ---------------------------------------------------------------------------
 
-
-class EmissionFactor(BaseModel):
+class EmissionFactor(GreenLangBase):
     """Emission factor with metadata and source tracking."""
 
     factor_id: str = Field(..., description="Unique factor identifier")
@@ -363,8 +352,7 @@ class EmissionFactor(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class EmissionCalculation(BaseModel):
+class EmissionCalculation(GreenLangBase):
     """Emission calculation result."""
 
     calculation_id: str = Field(..., description="Unique calculation identifier")
@@ -381,11 +369,9 @@ class EmissionCalculation(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
 # ---------------------------------------------------------------------------
 # EmissionFactorEngine
 # ---------------------------------------------------------------------------
-
 
 class EmissionFactorEngine:
     """Emission factor database and calculation engine.
@@ -725,7 +711,7 @@ class EmissionFactorEngine:
             emissions_t = round(emissions / 1000.0, 6)
 
             cid = _generate_id("calc")
-            now_iso = _utcnow().isoformat()
+            now_iso = utcnow().isoformat()
 
             provenance_hash = self._compute_calc_provenance(
                 cid, spend_usd, factor_value, emissions, now_iso,
@@ -1051,7 +1037,7 @@ class EmissionFactorEngine:
             "value": str(value),
             "source": source,
             "region": region,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }, sort_keys=True)
         return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 

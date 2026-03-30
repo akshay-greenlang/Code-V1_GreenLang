@@ -74,23 +74,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -107,7 +102,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -116,30 +110,24 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(n: Decimal, d: Decimal, default: Decimal = Decimal("0")) -> Decimal:
     if d == Decimal("0"):
         return default
     return n / d
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     q = "0." + "0" * places
     return value.quantize(Decimal(q), rounding=ROUND_HALF_UP)
 
-
 def _round3(value: float) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
-
 
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ForecastMethod(str, Enum):
     """Time-series forecasting method."""
@@ -148,13 +136,11 @@ class ForecastMethod(str, Enum):
     HOLT_LINEAR_TREND = "holt_linear_trend"
     MOVING_AVERAGE = "moving_average"
 
-
 class ScenarioType(str, Enum):
     """Scenario projection type."""
     OPTIMISTIC = "optimistic"
     BASELINE = "baseline"
     PESSIMISTIC = "pessimistic"
-
 
 class ConfidenceLevel(str, Enum):
     """Confidence interval level."""
@@ -162,13 +148,11 @@ class ConfidenceLevel(str, Enum):
     CI_90 = "90"
     CI_95 = "95"
 
-
 class TrendDirection(str, Enum):
     """Trend direction."""
     DECREASING = "decreasing"
     FLAT = "flat"
     INCREASING = "increasing"
-
 
 class DataQuality(str, Enum):
     """Data quality tier."""
@@ -176,7 +160,6 @@ class DataQuality(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     ESTIMATED = "estimated"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -196,11 +179,9 @@ SCENARIO_SPREADS: Dict[str, Decimal] = {
     ScenarioType.PESSIMISTIC.value: Decimal("0.15"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class HistoricalDataPoint(BaseModel):
     """Historical emissions data point.
@@ -216,7 +197,6 @@ class HistoricalDataPoint(BaseModel):
     )
     is_verified: bool = Field(default=False, description="Verified")
 
-
 class TargetTrajectoryPoint(BaseModel):
     """Target emissions at a specific year.
 
@@ -230,7 +210,6 @@ class TargetTrajectoryPoint(BaseModel):
         ..., ge=Decimal("0"), description="Target (tCO2e)"
     )
     is_interim: bool = Field(default=False, description="Interim target")
-
 
 class TrendExtrapolationInput(BaseModel):
     """Input for trend extrapolation.
@@ -294,11 +273,9 @@ class TrendExtrapolationInput(BaseModel):
     include_scenarios: bool = Field(default=True, description="Include scenarios")
     include_target_miss: bool = Field(default=True, description="Include miss prediction")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class ForecastPoint(BaseModel):
     """A single forecast data point.
@@ -322,7 +299,6 @@ class ForecastPoint(BaseModel):
     ci_95_upper: Decimal = Field(default=Decimal("0"))
     is_historical: bool = Field(default=False)
 
-
 class RegressionStats(BaseModel):
     """Linear regression statistics.
 
@@ -343,7 +319,6 @@ class RegressionStats(BaseModel):
     annual_change_pct: Decimal = Field(default=Decimal("0"))
     trend_direction: str = Field(default=TrendDirection.FLAT.value)
 
-
 class ScenarioProjection(BaseModel):
     """Scenario projection result.
 
@@ -357,7 +332,6 @@ class ScenarioProjection(BaseModel):
     forecast_points: List[ForecastPoint] = Field(default_factory=list)
     target_year_emissions_tco2e: Decimal = Field(default=Decimal("0"))
     total_cumulative_tco2e: Decimal = Field(default=Decimal("0"))
-
 
 class TargetMissPrediction(BaseModel):
     """Target miss prediction.
@@ -380,7 +354,6 @@ class TargetMissPrediction(BaseModel):
     will_miss: bool = Field(default=False)
     deviation_year: int = Field(default=0)
     years_of_delay: int = Field(default=0)
-
 
 class TrendExtrapolationResult(BaseModel):
     """Complete trend extrapolation result.
@@ -406,7 +379,7 @@ class TrendExtrapolationResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     entity_id: str = Field(default="")
     historical_years: int = Field(default=0)
@@ -422,11 +395,9 @@ class TrendExtrapolationResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class TrendExtrapolationEngine:
     """Trend extrapolation engine for PACK-029.

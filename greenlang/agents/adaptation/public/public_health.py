@@ -16,10 +16,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +37,7 @@ class HealthOutcome(str, Enum):
     ALLERGIES = "allergies"
 
 
-class VulnerablePopulation(BaseModel):
+class VulnerablePopulation(GreenLangBase):
     """Vulnerable population group."""
     group_id: str = Field(...)
     group_name: str = Field(...)
@@ -46,7 +47,7 @@ class VulnerablePopulation(BaseModel):
     access_to_healthcare: str = Field(default="moderate")  # low, moderate, high
 
 
-class HealthInterventionProgram(BaseModel):
+class HealthInterventionProgram(GreenLangBase):
     """Health intervention program."""
     program_id: str = Field(...)
     name: str = Field(...)
@@ -57,7 +58,7 @@ class HealthInterventionProgram(BaseModel):
     implementation_status: str = Field(default="planned")
 
 
-class HealthAdaptationPlan(BaseModel):
+class HealthAdaptationPlan(GreenLangBase):
     """Health adaptation plan."""
     plan_id: str = Field(...)
     jurisdiction_name: str = Field(...)
@@ -71,7 +72,7 @@ class HealthAdaptationPlan(BaseModel):
     provenance_hash: Optional[str] = Field(None)
 
 
-class PublicHealthInput(BaseModel):
+class PublicHealthInput(GreenLangBase):
     """Input for Public Health Agent."""
     action: str = Field(...)
     plan_id: Optional[str] = Field(None)
@@ -90,7 +91,7 @@ class PublicHealthInput(BaseModel):
         return v
 
 
-class PublicHealthOutput(BaseModel):
+class PublicHealthOutput(GreenLangBase):
     """Output from Public Health Agent."""
     success: bool = Field(...)
     action: str = Field(...)

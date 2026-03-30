@@ -49,25 +49,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -80,11 +74,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class IoTProtocol(str, Enum):
     """IoT communication protocols."""
@@ -94,7 +86,6 @@ class IoTProtocol(str, Enum):
     COAP = "coap"
     LORAWAN = "lorawan"
     ZIGBEE = "zigbee"
-
 
 class SensorType(str, Enum):
     """Supported IoT sensor types."""
@@ -108,7 +99,6 @@ class SensorType(str, Enum):
     POWER = "power"
     PRESSURE = "pressure"
 
-
 class SensorLocation(str, Enum):
     """Sensor deployment location categories."""
 
@@ -121,7 +111,6 @@ class SensorLocation(str, Enum):
     WAREHOUSE = "warehouse"
     PRODUCTION = "production"
 
-
 class SensorStatus(str, Enum):
     """Sensor operational status."""
 
@@ -130,7 +119,6 @@ class SensorStatus(str, Enum):
     LOW_BATTERY = "low_battery"
     ERROR = "error"
     MAINTENANCE = "maintenance"
-
 
 class DataQuality(str, Enum):
     """Sensor data quality indicators."""
@@ -141,11 +129,9 @@ class DataQuality(str, Enum):
     STALE = "stale"
     CALIBRATION_DUE = "calibration_due"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class IoTConfig(BaseModel):
     """Configuration for the IoT Sensor Bridge."""
@@ -163,7 +149,6 @@ class IoTConfig(BaseModel):
     stale_threshold_minutes: int = Field(default=15, ge=5)
     max_sensors: int = Field(default=500, ge=1, le=10000)
 
-
 class SensorReading(BaseModel):
     """A single IoT sensor reading."""
 
@@ -177,9 +162,8 @@ class SensorReading(BaseModel):
     quality: DataQuality = Field(default=DataQuality.GOOD)
     battery_pct: Optional[float] = Field(None, ge=0.0, le=100.0)
     rssi_dbm: Optional[float] = Field(None, description="Signal strength")
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class SensorConfig(BaseModel):
     """Configuration for a registered IoT sensor."""
@@ -197,7 +181,6 @@ class SensorConfig(BaseModel):
     max_valid: Optional[float] = Field(None, description="Max valid value")
     status: SensorStatus = Field(default=SensorStatus.ONLINE)
 
-
 class SensorBatchResult(BaseModel):
     """Result of a batch sensor reading operation."""
 
@@ -211,11 +194,9 @@ class SensorBatchResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # IoTSensorBridge
 # ---------------------------------------------------------------------------
-
 
 class IoTSensorBridge:
     """IoT platform integration for supplementary sensor data.

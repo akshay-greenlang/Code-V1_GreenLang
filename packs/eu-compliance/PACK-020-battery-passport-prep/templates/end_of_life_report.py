@@ -27,6 +27,8 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
@@ -93,16 +95,9 @@ _MATERIAL_RECOVERY_TARGETS: Dict[str, List[Dict[str, Any]]] = {
     ],
 }
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -114,7 +109,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 class EndOfLifeReportTemplate:
     """
@@ -149,7 +143,7 @@ class EndOfLifeReportTemplate:
 
     def render(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render full report as structured dict."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result: Dict[str, Any] = {
             "report_id": _new_uuid(),
             "generated_at": self.generated_at.isoformat(),
@@ -188,7 +182,7 @@ class EndOfLifeReportTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render end-of-life report as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [
             self._md_header(data),
             self._md_collection_rates(data),
@@ -203,7 +197,7 @@ class EndOfLifeReportTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render end-of-life report as HTML."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         body = "\n".join([
             self._html_header(data),
@@ -223,7 +217,7 @@ class EndOfLifeReportTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render end-of-life report as JSON."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result: Dict[str, Any] = {
             "template": "end_of_life_report",
             "regulation_reference": "EU Battery Regulation 2023/1542, Art 56-71",
@@ -247,7 +241,7 @@ class EndOfLifeReportTemplate:
     def _section_collection_rates(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Build collection rates section."""
         collection = data.get("collection_data", {})
-        reporting_year = data.get("reporting_year", _utcnow().year)
+        reporting_year = data.get("reporting_year", utcnow().year)
         category_results: List[Dict[str, Any]] = []
 
         for category, targets in _COLLECTION_TARGETS.items():
@@ -298,7 +292,7 @@ class EndOfLifeReportTemplate:
     def _section_recycling_efficiency(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Build recycling efficiency section."""
         recycling = data.get("recycling_data", {})
-        reporting_year = data.get("reporting_year", _utcnow().year)
+        reporting_year = data.get("reporting_year", utcnow().year)
         efficiency_results: List[Dict[str, Any]] = []
 
         for target_def in _RECYCLING_EFFICIENCY_TARGETS:
@@ -350,7 +344,7 @@ class EndOfLifeReportTemplate:
     def _section_material_recovery(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Build material recovery rates section."""
         recovery = data.get("material_recovery_data", {})
-        reporting_year = data.get("reporting_year", _utcnow().year)
+        reporting_year = data.get("reporting_year", utcnow().year)
         material_results: List[Dict[str, Any]] = []
 
         for material, targets in _MATERIAL_RECOVERY_TARGETS.items():

@@ -26,7 +26,8 @@ from __future__ import annotations
 import re
 from typing import Optional
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
+from greenlang.schemas import GreenLangBase
 
 
 # Schema ID pattern: domain/name or just name
@@ -44,7 +45,7 @@ SEMVER_PATTERN = re.compile(
 VARIANT_PATTERN = re.compile(r"^[a-z][a-z0-9_]*$")
 
 
-class SchemaRef(BaseModel):
+class SchemaRef(GreenLangBase):
     """
     Reference to a schema in the GreenLang registry.
 

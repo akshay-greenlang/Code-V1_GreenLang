@@ -96,16 +96,9 @@ from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ---------------------------------------------------------------------------
 # ProvenanceEntry dataclass
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class ProvenanceEntry:
@@ -175,7 +168,6 @@ class ProvenanceEntry:
             "metadata": json.dumps(self.metadata, sort_keys=True, default=str),
         }
 
-
 # ---------------------------------------------------------------------------
 # Valid entity types and actions
 # ---------------------------------------------------------------------------
@@ -230,11 +222,9 @@ _CSV_COLUMNS = [
     "metadata",
 ]
 
-
 # ---------------------------------------------------------------------------
 # ProvenanceTracker
 # ---------------------------------------------------------------------------
-
 
 class ProvenanceTracker:
     """Tracks provenance for agricultural emission operations with SHA-256 chain hashing.
@@ -373,7 +363,7 @@ class ProvenanceTracker:
         if not action:
             raise ValueError("action must not be empty")
 
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
         data_hash = self._hash_data(data)
         store_key = f"{entity_type}:{entity_id}"
 
@@ -953,14 +943,12 @@ class ProvenanceTracker:
         combined = "|".join(individual_hashes)
         return hashlib.sha256(combined.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Thread-safe singleton helpers
 # ---------------------------------------------------------------------------
 
 _singleton_lock = threading.Lock()
 _singleton_tracker: Optional[ProvenanceTracker] = None
-
 
 def get_provenance_tracker() -> ProvenanceTracker:
     """Return the process-wide singleton ProvenanceTracker.
@@ -987,7 +975,6 @@ def get_provenance_tracker() -> ProvenanceTracker:
                 )
     return _singleton_tracker
 
-
 def set_provenance_tracker(tracker: ProvenanceTracker) -> None:
     """Replace the process-wide singleton with a custom tracker.
 
@@ -1011,7 +998,6 @@ def set_provenance_tracker(tracker: ProvenanceTracker) -> None:
         "Agricultural emissions ProvenanceTracker singleton replaced"
     )
 
-
 def reset_provenance_tracker() -> None:
     """Destroy the current singleton and reset to None.
 
@@ -1030,11 +1016,9 @@ def reset_provenance_tracker() -> None:
         "reset to None"
     )
 
-
 # ---------------------------------------------------------------------------
 # Convenience factory: Enteric fermentation provenance
 # ---------------------------------------------------------------------------
-
 
 def record_enteric_provenance(
     tracker: ProvenanceTracker,
@@ -1166,11 +1150,9 @@ def record_enteric_provenance(
     )
     return entries
 
-
 # ---------------------------------------------------------------------------
 # Convenience factory: Manure management provenance
 # ---------------------------------------------------------------------------
-
 
 def record_manure_provenance(
     tracker: ProvenanceTracker,
@@ -1309,11 +1291,9 @@ def record_manure_provenance(
     )
     return entries
 
-
 # ---------------------------------------------------------------------------
 # Convenience factory: Cropland / soil emission provenance
 # ---------------------------------------------------------------------------
-
 
 def record_cropland_provenance(
     tracker: ProvenanceTracker,
@@ -1343,6 +1323,8 @@ def record_cropland_provenance(
           limestone (CaCO3) and dolomite (CaMg(CO3)2) application.
         - ``"urea"``: Maps to APPLY_UREA action. Covers CO2 emissions
           from urea and urea-containing fertiliser hydrolysis.
+
+from greenlang.schemas import utcnow
         - ``"crop_residue"``: Maps to CULTIVATE action. Covers N2O from
           crop residue decomposition and nitrogen mineralisation.
 
@@ -1457,11 +1439,9 @@ def record_cropland_provenance(
     )
     return entries
 
-
 # ---------------------------------------------------------------------------
 # Convenience factory: Rice cultivation provenance
 # ---------------------------------------------------------------------------
-
 
 def record_rice_provenance(
     tracker: ProvenanceTracker,
@@ -1581,11 +1561,9 @@ def record_rice_provenance(
     )
     return entries
 
-
 # ---------------------------------------------------------------------------
 # Convenience factory: Field burning provenance
 # ---------------------------------------------------------------------------
-
 
 def record_field_burning_provenance(
     tracker: ProvenanceTracker,
@@ -1699,11 +1677,9 @@ def record_field_burning_provenance(
     )
     return entries
 
-
 # ---------------------------------------------------------------------------
 # Convenience factory: Pasture/grazing provenance
 # ---------------------------------------------------------------------------
-
 
 def record_grazing_provenance(
     tracker: ProvenanceTracker,
@@ -1839,7 +1815,6 @@ def record_grazing_provenance(
         len(entries),
     )
     return entries
-
 
 # ---------------------------------------------------------------------------
 # Public API

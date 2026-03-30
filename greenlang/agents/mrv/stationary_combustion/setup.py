@@ -65,6 +65,7 @@ from greenlang.agents.mrv.stationary_combustion.models import (
     UncertaintyResult,
     UnitType,
 )
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -140,11 +141,9 @@ except ImportError:
     def observe_calculation_duration(fuel_type: str, duration: float) -> None:  # type: ignore[misc]
         """No-op fallback when metrics module is unavailable."""
 
-
 # ===================================================================
 # Lightweight Pydantic response models used by the facade / API layer
 # ===================================================================
-
 
 class CalculationResponse(BaseModel):
     """Single combustion emission calculation response.
@@ -191,7 +190,6 @@ class CalculationResponse(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc).isoformat(),
     )
 
-
 class BatchCalculationResponse(BaseModel):
     """Batch combustion emission calculation response.
 
@@ -220,7 +218,6 @@ class BatchCalculationResponse(BaseModel):
     failure_count: int = Field(default=0)
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class FuelResponse(BaseModel):
     """Fuel type properties response.
@@ -253,7 +250,6 @@ class FuelResponse(BaseModel):
     is_biogenic: bool = Field(default=False)
     provenance_hash: str = Field(default="")
 
-
 class FuelListResponse(BaseModel):
     """Response listing all available fuel types.
 
@@ -266,7 +262,6 @@ class FuelListResponse(BaseModel):
 
     fuels: List[Dict[str, Any]] = Field(default_factory=list)
     total_count: int = Field(default=0)
-
 
 class EmissionFactorResponse(BaseModel):
     """Emission factor retrieval response.
@@ -296,7 +291,6 @@ class EmissionFactorResponse(BaseModel):
     year: int = Field(default=2025)
     reference: str = Field(default="")
     provenance_hash: str = Field(default="")
-
 
 class EquipmentResponse(BaseModel):
     """Equipment profile registration / retrieval response.
@@ -329,7 +323,6 @@ class EquipmentResponse(BaseModel):
     )
     provenance_hash: str = Field(default="")
 
-
 class AggregationResponse(BaseModel):
     """Facility-level emission aggregation response.
 
@@ -354,7 +347,6 @@ class AggregationResponse(BaseModel):
     calculation_count: int = Field(default=0)
     control_approach: str = Field(default="OPERATIONAL")
     provenance_hash: str = Field(default="")
-
 
 class UncertaintyResponse(BaseModel):
     """Monte Carlo uncertainty analysis response.
@@ -381,7 +373,6 @@ class UncertaintyResponse(BaseModel):
     num_simulations: int = Field(default=10000)
     provenance_hash: str = Field(default="")
 
-
 class AuditTrailResponse(BaseModel):
     """Audit trail retrieval response.
 
@@ -398,7 +389,6 @@ class AuditTrailResponse(BaseModel):
     entries: List[Dict[str, Any]] = Field(default_factory=list)
     total_entries: int = Field(default=0)
     provenance_hash: str = Field(default="")
-
 
 class ComplianceResponse(BaseModel):
     """Regulatory compliance mapping response.
@@ -421,7 +411,6 @@ class ComplianceResponse(BaseModel):
     overall_compliant: bool = Field(default=False)
     provenance_hash: str = Field(default="")
 
-
 class ValidationResponse(BaseModel):
     """Input validation response (without calculation).
 
@@ -440,7 +429,6 @@ class ValidationResponse(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     validated_count: int = Field(default=0)
     total_count: int = Field(default=0)
-
 
 class PipelineResponse(BaseModel):
     """End-to-end combustion pipeline execution response.
@@ -468,7 +456,6 @@ class PipelineResponse(BaseModel):
     aggregations: List[Dict[str, Any]] = Field(default_factory=list)
     pipeline_provenance_hash: str = Field(default="")
     total_duration_ms: float = Field(default=0.0)
-
 
 class HealthResponse(BaseModel):
     """Service health check response.
@@ -509,7 +496,6 @@ class HealthResponse(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc).isoformat(),
     )
 
-
 class StatsResponse(BaseModel):
     """Service aggregate statistics response.
 
@@ -541,26 +527,17 @@ class StatsResponse(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc).isoformat(),
     )
 
-
 # ===================================================================
 # Utility helpers
 # ===================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _utcnow_iso() -> str:
     """Return current UTC datetime as an ISO-8601 string."""
-    return _utcnow().isoformat()
-
+    return utcnow().isoformat()
 
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -578,7 +555,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ===================================================================
 # StationaryCombustionService facade
 # ===================================================================
@@ -586,7 +562,6 @@ def _compute_hash(data: Any) -> str:
 # Thread-safe singleton lock
 _singleton_lock = threading.Lock()
 _singleton_instance: Optional["StationaryCombustionService"] = None
-
 
 class StationaryCombustionService:
     """Unified facade over the Stationary Combustion Agent SDK.
@@ -1695,11 +1670,9 @@ class StationaryCombustionService:
 
         return requirements_map.get(framework, [])
 
-
 # ===================================================================
 # Thread-safe singleton access
 # ===================================================================
-
 
 def _get_singleton() -> StationaryCombustionService:
     """Get or create the singleton StationaryCombustionService instance.
@@ -1714,7 +1687,6 @@ def _get_singleton() -> StationaryCombustionService:
                 _singleton_instance = StationaryCombustionService()
     return _singleton_instance
 
-
 # ===================================================================
 # Module-level singletons for FastAPI integration
 # ===================================================================
@@ -1722,11 +1694,9 @@ def _get_singleton() -> StationaryCombustionService:
 _service: Optional[StationaryCombustionService] = None
 _router: Any = None
 
-
 # ===================================================================
 # FastAPI integration
 # ===================================================================
-
 
 async def configure_stationary_combustion(
     app: Any,
@@ -1772,7 +1742,6 @@ async def configure_stationary_combustion(
     logger.info("Stationary combustion service configured on app")
     return service
 
-
 def get_service() -> Optional[StationaryCombustionService]:
     """Get the singleton StationaryCombustionService instance.
 
@@ -1794,7 +1763,6 @@ def get_service() -> Optional[StationaryCombustionService]:
         _service = _singleton_instance
     return _singleton_instance
 
-
 def get_router() -> Any:
     """Get the stationary combustion API router.
 
@@ -1814,7 +1782,6 @@ def get_router() -> Any:
             "Stationary combustion API router module not available"
         )
         return None
-
 
 # ===================================================================
 # Public API

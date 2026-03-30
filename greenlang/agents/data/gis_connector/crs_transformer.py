@@ -35,14 +35,9 @@ import time
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -54,7 +49,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # WGS84 Ellipsoid Constants
@@ -68,7 +62,6 @@ WGS84_E2 = WGS84_E ** 2        # Eccentricity squared
 
 # Web Mercator limits
 WEB_MERCATOR_MAX_LAT = 85.06
-
 
 # ---------------------------------------------------------------------------
 # Built-in CRS Database
@@ -167,7 +160,6 @@ CRS_DATABASE: Dict[str, Dict[str, Any]] = {
     "EPSG:3035": {"name": "ETRS89-extended / LAEA Europe", "type": "projected", "unit": "metre", "datum": "ETRS89", "area": "Europe"},
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Structures
 # ---------------------------------------------------------------------------
@@ -203,9 +195,8 @@ def _make_transform_result(
         "output_coordinates": output_coordinates,
         "point_count": point_count,
         "method": method,
-        "created_at": _utcnow().isoformat(),
+        "created_at": utcnow().isoformat(),
     }
-
 
 # ---------------------------------------------------------------------------
 # Engine
@@ -871,7 +862,6 @@ class CRSTransformerEngine:
             "total_crs_definitions": len(CRS_DATABASE),
             "method_distribution": method_counts,
         }
-
 
 __all__ = [
     "CRSTransformerEngine",

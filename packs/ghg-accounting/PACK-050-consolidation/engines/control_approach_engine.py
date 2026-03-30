@@ -61,24 +61,18 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC timestamp with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 provenance hash, excluding volatile fields."""
@@ -96,7 +90,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert any value to Decimal."""
     if isinstance(value, Decimal):
@@ -105,7 +98,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -117,45 +109,37 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> Decimal:
     """Round a value to two decimal places using ROUND_HALF_UP."""
     return Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-
 
 def _round4(value: Any) -> Decimal:
     """Round a value to four decimal places using ROUND_HALF_UP."""
     return Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ControlApproachType(str, Enum):
     """The two control-based consolidation approaches."""
     OPERATIONAL_CONTROL = "OPERATIONAL_CONTROL"
     FINANCIAL_CONTROL = "FINANCIAL_CONTROL"
 
-
 class FranchiseRole(str, Enum):
     """Role in a franchise arrangement."""
     FRANCHISER = "FRANCHISER"
     FRANCHISEE = "FRANCHISEE"
-
 
 class LeaseType(str, Enum):
     """Type of lease arrangement for GHG boundary decisions."""
     FINANCE_LEASE = "FINANCE_LEASE"
     OPERATING_LEASE = "OPERATING_LEASE"
 
-
 class LeaseRole(str, Enum):
     """Role in a lease arrangement."""
     LESSEE = "LESSEE"
     LESSOR = "LESSOR"
-
 
 class OutsourceType(str, Enum):
     """Type of outsourced operation."""
@@ -166,7 +150,6 @@ class OutsourceType(str, Enum):
     WASTE_MANAGEMENT = "WASTE_MANAGEMENT"
     OTHER = "OTHER"
 
-
 class ScopeType(str, Enum):
     """GHG emission scope categories."""
     SCOPE_1 = "SCOPE_1"
@@ -174,11 +157,9 @@ class ScopeType(str, Enum):
     SCOPE_2_MARKET = "SCOPE_2_MARKET"
     SCOPE_3 = "SCOPE_3"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class ControlInput(BaseModel):
     """Input data for control approach calculation.
@@ -256,7 +237,6 @@ class ControlInput(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Any:
         return Decimal(str(v))
 
-
 class ControlResult(BaseModel):
     """Result of applying a control approach to a single entity.
 
@@ -326,7 +306,6 @@ class ControlResult(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Any:
         return Decimal(str(v))
 
-
 class ControlAssessmentDetail(BaseModel):
     """Detailed control assessment for documentation purposes.
 
@@ -383,7 +362,6 @@ class ControlAssessmentDetail(BaseModel):
         description="SHA-256 hash.",
     )
 
-
 class FranchiseBoundary(BaseModel):
     """Franchise boundary decision per GHG Protocol Appendix B.
 
@@ -436,7 +414,6 @@ class FranchiseBoundary(BaseModel):
         description="SHA-256 hash.",
     )
 
-
 class LeaseBoundary(BaseModel):
     """Lease boundary decision per GHG Protocol guidance.
 
@@ -485,11 +462,9 @@ class LeaseBoundary(BaseModel):
         description="SHA-256 hash.",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ControlApproachEngine:
     """Implements control-based GHG consolidation approaches.
@@ -612,7 +587,7 @@ class ControlApproachEngine:
             "has_control": has_control,
             "inclusion_pct": str(inclusion_pct),
             "total_contribution": str(total_contrib),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         })
 
         logger.info(
@@ -916,7 +891,7 @@ class ControlApproachEngine:
             "role": role_upper,
             "approach": approach_upper,
             "include_scope1_2": include_scope1_2,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         })
 
         logger.info(
@@ -1032,7 +1007,7 @@ class ControlApproachEngine:
             "role": role_upper,
             "approach": approach_upper,
             "include_scope1_2": include_scope1_2,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         })
 
         logger.info(
@@ -1098,7 +1073,7 @@ class ControlApproachEngine:
             "consolidated_scope2_market": str(_round2(total_s2_mkt)),
             "consolidated_scope3": str(_round2(total_s3)),
             "consolidated_total": str(consolidated_total),
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
         consolidation["provenance_hash"] = _compute_hash(consolidation)
 

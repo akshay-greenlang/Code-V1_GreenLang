@@ -57,18 +57,13 @@ from greenlang.agents.foundation.citations.models import (
     VerificationStatus,
 )
 from greenlang.agents.foundation.citations.provenance import ProvenanceTracker
+from greenlang.schemas import utcnow
 from greenlang.agents.foundation.citations.metrics import (
     record_operation,
     update_citations_count,
 )
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 class CitationRegistry:
     """Core registry for managing citations.
@@ -211,7 +206,7 @@ class CitationRegistry:
             old_citation = self._citations[supersedes]
             old_citation.superseded_by = citation.citation_id
             old_citation.verification_status = VerificationStatus.SUPERSEDED
-            old_citation.updated_at = _utcnow()
+            old_citation.updated_at = utcnow()
 
         # Store
         self._citations[citation.citation_id] = citation
@@ -338,7 +333,7 @@ class CitationRegistry:
 
         # Recalculate hash and timestamp
         citation.content_hash = citation.calculate_content_hash()
-        citation.updated_at = _utcnow()
+        citation.updated_at = utcnow()
 
         # Create new version
         versions = self._versions.get(citation_id, [])
@@ -665,7 +660,6 @@ class CitationRegistry:
             return hashlib.sha256(json_str.encode()).hexdigest()
         except Exception:
             return hashlib.sha256(str(data).encode()).hexdigest()
-
 
 __all__ = [
     "CitationRegistry",

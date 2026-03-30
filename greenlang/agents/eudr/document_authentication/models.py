@@ -60,13 +60,12 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import (
-    BaseModel,
-    ConfigDict,
     Field,
     field_validator,
     model_validator,
 )
-
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ReportFormat
 
 # ---------------------------------------------------------------------------
 # Cross-agent commodity import (graceful fallback)
@@ -77,16 +76,9 @@ try:
 except ImportError:
     EUDRCommodity = None  # type: ignore[assignment,misc]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -118,11 +110,9 @@ MIN_RSA_KEY_SIZE: int = 2048
 #: Minimum ECDSA curve size in bits (NIST P-256).
 MIN_ECDSA_KEY_SIZE: int = 256
 
-
 # =============================================================================
 # Enumerations
 # =============================================================================
-
 
 class DocumentType(str, Enum):
     """Type of EUDR supply chain document.
@@ -189,7 +179,6 @@ class DocumentType(str, Enum):
     TC = "tc"
     WR = "wr"
 
-
 class ClassificationConfidence(str, Enum):
     """Confidence level of document classification.
 
@@ -208,7 +197,6 @@ class ClassificationConfidence(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     UNKNOWN = "unknown"
-
 
 class SignatureStandard(str, Enum):
     """Digital signature standard used to sign the document.
@@ -237,7 +225,6 @@ class SignatureStandard(str, Enum):
     PGP = "pgp"
     PKCS7 = "pkcs7"
 
-
 class SignatureStatus(str, Enum):
     """Verification status of a digital signature.
 
@@ -264,7 +251,6 @@ class SignatureStatus(str, Enum):
     UNKNOWN_SIGNER = "unknown_signer"
     STRIPPED = "stripped"
 
-
 class HashAlgorithm(str, Enum):
     """Cryptographic hash algorithm for document integrity.
 
@@ -279,7 +265,6 @@ class HashAlgorithm(str, Enum):
     SHA256 = "sha256"
     SHA512 = "sha512"
     HMAC_SHA256 = "hmac_sha256"
-
 
 class CertificateStatus(str, Enum):
     """Validation status of a signing certificate.
@@ -305,7 +290,6 @@ class CertificateStatus(str, Enum):
     WEAK_KEY = "weak_key"
     UNKNOWN = "unknown"
 
-
 class FraudSeverity(str, Enum):
     """Severity level of a detected fraud pattern.
 
@@ -327,7 +311,6 @@ class FraudSeverity(str, Enum):
     MEDIUM = "medium"
     HIGH = "high"
     CRITICAL = "critical"
-
 
 class FraudPatternType(str, Enum):
     """Type of fraud pattern detected in document analysis.
@@ -380,7 +363,6 @@ class FraudPatternType(str, Enum):
     MISSING_REQUIRED = "missing_required"
     SCOPE_MISMATCH = "scope_mismatch"
 
-
 class VerificationStatus(str, Enum):
     """Overall status of a document verification process.
 
@@ -398,7 +380,6 @@ class VerificationStatus(str, Enum):
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
     FAILED = "failed"
-
 
 class RegistryType(str, Enum):
     """External registry type for cross-reference verification.
@@ -427,22 +408,6 @@ class RegistryType(str, Enum):
     IPPC = "ippc"
     NATIONAL_CUSTOMS = "national_customs"
 
-
-class ReportFormat(str, Enum):
-    """Output format for authentication reports.
-
-    JSON: Machine-readable JSON format for API integration.
-    PDF: Human-readable PDF format for regulatory submission.
-    CSV: Tabular CSV format for spreadsheet analysis.
-    EUDR_XML: EU Information System XML schema for DDS submission.
-    """
-
-    JSON = "json"
-    PDF = "pdf"
-    CSV = "csv"
-    EUDR_XML = "eudr_xml"
-
-
 class MetadataField(str, Enum):
     """Standard metadata fields extracted from documents.
 
@@ -467,7 +432,6 @@ class MetadataField(str, Enum):
     GPS_LAT = "gps_lat"
     GPS_LON = "gps_lon"
 
-
 class DocumentLanguage(str, Enum):
     """Language of the document content.
 
@@ -488,7 +452,6 @@ class DocumentLanguage(str, Enum):
     ID = "id"
     NL = "nl"
 
-
 class AuthenticationResult(str, Enum):
     """Overall authentication verdict for a document.
 
@@ -506,7 +469,6 @@ class AuthenticationResult(str, Enum):
     SUSPICIOUS = "suspicious"
     FRAUDULENT = "fraudulent"
     INCONCLUSIVE = "inconclusive"
-
 
 class BatchJobStatus(str, Enum):
     """Status of a batch verification job.
@@ -526,13 +488,11 @@ class BatchJobStatus(str, Enum):
     FAILED = "failed"
     CANCELLED = "cancelled"
 
-
 # =============================================================================
 # Core Models
 # =============================================================================
 
-
-class DocumentRecord(BaseModel):
+class DocumentRecord(GreenLangBase):
     """A document record tracked by the authentication system.
 
     Represents a single document submitted for authentication,
@@ -637,16 +597,15 @@ class DocumentRecord(BaseModel):
         description="SHA-256 provenance hash for audit trail",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the record was created",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the record was last updated",
     )
 
-
-class ClassificationResult(BaseModel):
+class ClassificationResult(GreenLangBase):
     """Result of document type classification.
 
     Contains the predicted document type, confidence score, and
@@ -704,12 +663,11 @@ class ClassificationResult(BaseModel):
         description="SHA-256 provenance hash for audit trail",
     )
     classified_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of classification",
     )
 
-
-class SignatureVerificationResult(BaseModel):
+class SignatureVerificationResult(GreenLangBase):
     """Result of digital signature verification.
 
     Contains the verification status, signer identity, signing
@@ -811,12 +769,11 @@ class SignatureVerificationResult(BaseModel):
         description="SHA-256 provenance hash for audit trail",
     )
     verified_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of verification",
     )
 
-
-class HashRecord(BaseModel):
+class HashRecord(GreenLangBase):
     """Hash integrity record for a document.
 
     Stores the primary and secondary hashes along with registry
@@ -882,12 +839,11 @@ class HashRecord(BaseModel):
         description="SHA-256 provenance hash for audit trail",
     )
     computed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the hash was computed",
     )
 
-
-class CertificateChainResult(BaseModel):
+class CertificateChainResult(GreenLangBase):
     """Result of certificate chain validation.
 
     Contains the validation status of each certificate in the chain
@@ -980,12 +936,11 @@ class CertificateChainResult(BaseModel):
         description="SHA-256 provenance hash for audit trail",
     )
     validated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of validation",
     )
 
-
-class MetadataRecord(BaseModel):
+class MetadataRecord(GreenLangBase):
     """Extracted and analyzed metadata from a document.
 
     Contains all metadata fields extracted from the document along
@@ -1095,12 +1050,11 @@ class MetadataRecord(BaseModel):
         description="SHA-256 provenance hash for audit trail",
     )
     extracted_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of extraction",
     )
 
-
-class FraudAlert(BaseModel):
+class FraudAlert(GreenLangBase):
     """A fraud pattern detection alert for a document.
 
     Represents a single detected fraud pattern with severity,
@@ -1187,12 +1141,11 @@ class FraudAlert(BaseModel):
         description="SHA-256 provenance hash for audit trail",
     )
     detected_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of detection",
     )
 
-
-class CrossRefResult(BaseModel):
+class CrossRefResult(GreenLangBase):
     """Result of cross-reference verification against an external registry.
 
     Contains the verification outcome from querying an external
@@ -1294,12 +1247,11 @@ class CrossRefResult(BaseModel):
         description="SHA-256 provenance hash for audit trail",
     )
     verified_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of verification",
     )
 
-
-class AuthenticationReport(BaseModel):
+class AuthenticationReport(GreenLangBase):
     """Comprehensive authentication report for a document.
 
     Aggregates all verification results (classification, signature,
@@ -1398,7 +1350,7 @@ class AuthenticationReport(BaseModel):
         description="SHA-256 provenance hash for audit trail",
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of report generation",
     )
     expires_at: Optional[datetime] = Field(
@@ -1406,13 +1358,11 @@ class AuthenticationReport(BaseModel):
         description="UTC timestamp when the report expires",
     )
 
-
 # =============================================================================
 # Request Models
 # =============================================================================
 
-
-class ClassifyDocumentRequest(BaseModel):
+class ClassifyDocumentRequest(GreenLangBase):
     """Request to classify a single document by type.
 
     Attributes:
@@ -1448,8 +1398,7 @@ class ClassifyDocumentRequest(BaseModel):
         None, description="Identifier of the requesting operator",
     )
 
-
-class BatchClassifyRequest(BaseModel):
+class BatchClassifyRequest(GreenLangBase):
     """Request to classify multiple documents in batch.
 
     Attributes:
@@ -1480,8 +1429,7 @@ class BatchClassifyRequest(BaseModel):
             )
         return v
 
-
-class VerifySignatureRequest(BaseModel):
+class VerifySignatureRequest(GreenLangBase):
     """Request to verify a document's digital signature.
 
     Attributes:
@@ -1512,8 +1460,7 @@ class VerifySignatureRequest(BaseModel):
         None, description="Identifier of the requesting operator",
     )
 
-
-class ComputeHashRequest(BaseModel):
+class ComputeHashRequest(GreenLangBase):
     """Request to compute integrity hashes for a document.
 
     Attributes:
@@ -1551,8 +1498,7 @@ class ComputeHashRequest(BaseModel):
         None, description="Identifier of the requesting operator",
     )
 
-
-class VerifyHashRequest(BaseModel):
+class VerifyHashRequest(GreenLangBase):
     """Request to verify a document against a known hash.
 
     Attributes:
@@ -1581,8 +1527,7 @@ class VerifyHashRequest(BaseModel):
         description="Hash algorithm of the expected hash",
     )
 
-
-class ValidateCertificateRequest(BaseModel):
+class ValidateCertificateRequest(GreenLangBase):
     """Request to validate a document's signing certificate chain.
 
     Attributes:
@@ -1617,8 +1562,7 @@ class ValidateCertificateRequest(BaseModel):
         None, description="Identifier of the requesting operator",
     )
 
-
-class ExtractMetadataRequest(BaseModel):
+class ExtractMetadataRequest(GreenLangBase):
     """Request to extract and analyze document metadata.
 
     Attributes:
@@ -1650,8 +1594,7 @@ class ExtractMetadataRequest(BaseModel):
         None, description="Identifier of the requesting operator",
     )
 
-
-class DetectFraudRequest(BaseModel):
+class DetectFraudRequest(GreenLangBase):
     """Request to run fraud pattern detection on a document.
 
     Attributes:
@@ -1700,8 +1643,7 @@ class DetectFraudRequest(BaseModel):
         None, description="Identifier of the requesting operator",
     )
 
-
-class CrossRefVerifyRequest(BaseModel):
+class CrossRefVerifyRequest(GreenLangBase):
     """Request to cross-reference a certificate against external registry.
 
     Attributes:
@@ -1748,8 +1690,7 @@ class CrossRefVerifyRequest(BaseModel):
         None, description="Identifier of the requesting operator",
     )
 
-
-class GenerateReportRequest(BaseModel):
+class GenerateReportRequest(GreenLangBase):
     """Request to generate a comprehensive authentication report.
 
     Attributes:
@@ -1805,8 +1746,7 @@ class GenerateReportRequest(BaseModel):
         None, description="Identifier of the requesting operator",
     )
 
-
-class BatchVerificationRequest(BaseModel):
+class BatchVerificationRequest(GreenLangBase):
     """Request to verify multiple documents in batch.
 
     Attributes:
@@ -1867,8 +1807,7 @@ class BatchVerificationRequest(BaseModel):
             )
         return v
 
-
-class RegisterTemplateRequest(BaseModel):
+class RegisterTemplateRequest(GreenLangBase):
     """Request to register a known document template for forgery detection.
 
     Attributes:
@@ -1913,8 +1852,7 @@ class RegisterTemplateRequest(BaseModel):
         None, description="Identifier of the registering operator",
     )
 
-
-class AddTrustedCARequest(BaseModel):
+class AddTrustedCARequest(GreenLangBase):
     """Request to add a trusted certificate authority.
 
     Attributes:
@@ -1950,8 +1888,7 @@ class AddTrustedCARequest(BaseModel):
         None, description="Identifier of the registering operator",
     )
 
-
-class SearchDocumentsRequest(BaseModel):
+class SearchDocumentsRequest(GreenLangBase):
     """Request to search authenticated documents.
 
     Attributes:
@@ -1999,8 +1936,7 @@ class SearchDocumentsRequest(BaseModel):
         description="Pagination offset",
     )
 
-
-class GetFraudAlertsRequest(BaseModel):
+class GetFraudAlertsRequest(GreenLangBase):
     """Request to retrieve fraud alerts with filtering.
 
     Attributes:
@@ -2043,13 +1979,11 @@ class GetFraudAlertsRequest(BaseModel):
         description="Pagination offset",
     )
 
-
 # =============================================================================
 # Response Models
 # =============================================================================
 
-
-class ClassificationResponse(BaseModel):
+class ClassificationResponse(GreenLangBase):
     """Response for document classification requests.
 
     Attributes:
@@ -2068,8 +2002,7 @@ class ClassificationResponse(BaseModel):
         None, description="Optional message or error description",
     )
 
-
-class SignatureResponse(BaseModel):
+class SignatureResponse(GreenLangBase):
     """Response for signature verification requests.
 
     Attributes:
@@ -2090,8 +2023,7 @@ class SignatureResponse(BaseModel):
         None, description="Optional message or error description",
     )
 
-
-class HashResponse(BaseModel):
+class HashResponse(GreenLangBase):
     """Response for hash computation and verification requests.
 
     Attributes:
@@ -2116,8 +2048,7 @@ class HashResponse(BaseModel):
         None, description="Optional message or error description",
     )
 
-
-class CertificateResponse(BaseModel):
+class CertificateResponse(GreenLangBase):
     """Response for certificate chain validation requests.
 
     Attributes:
@@ -2138,8 +2069,7 @@ class CertificateResponse(BaseModel):
         None, description="Optional message or error description",
     )
 
-
-class MetadataResponse(BaseModel):
+class MetadataResponse(GreenLangBase):
     """Response for metadata extraction requests.
 
     Attributes:
@@ -2160,8 +2090,7 @@ class MetadataResponse(BaseModel):
         None, description="Optional message or error description",
     )
 
-
-class FraudDetectionResponse(BaseModel):
+class FraudDetectionResponse(GreenLangBase):
     """Response for fraud pattern detection requests.
 
     Attributes:
@@ -2197,8 +2126,7 @@ class FraudDetectionResponse(BaseModel):
         None, description="Optional message or error description",
     )
 
-
-class CrossRefResponse(BaseModel):
+class CrossRefResponse(GreenLangBase):
     """Response for cross-reference verification requests.
 
     Attributes:
@@ -2219,8 +2147,7 @@ class CrossRefResponse(BaseModel):
         None, description="Optional message or error description",
     )
 
-
-class ReportResponse(BaseModel):
+class ReportResponse(GreenLangBase):
     """Response for report generation requests.
 
     Attributes:
@@ -2241,8 +2168,7 @@ class ReportResponse(BaseModel):
         None, description="Optional message or error description",
     )
 
-
-class BatchResponse(BaseModel):
+class BatchResponse(GreenLangBase):
     """Response for batch verification requests.
 
     Attributes:
@@ -2288,8 +2214,7 @@ class BatchResponse(BaseModel):
         None, description="Optional message or error description",
     )
 
-
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Health check response for the document authentication service.
 
     Attributes:
@@ -2346,12 +2271,11 @@ class HealthResponse(BaseModel):
         description="Service uptime in seconds",
     )
     checked_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of health check",
     )
 
-
-class DashboardResponse(BaseModel):
+class DashboardResponse(GreenLangBase):
     """Dashboard summary response for the document authentication service.
 
     Attributes:
@@ -2418,12 +2342,11 @@ class DashboardResponse(BaseModel):
         description="Status of external registry connections",
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of dashboard generation",
     )
 
-
-class TemplateResponse(BaseModel):
+class TemplateResponse(GreenLangBase):
     """Response for template registration requests.
 
     Attributes:
@@ -2448,8 +2371,7 @@ class TemplateResponse(BaseModel):
         None, description="Optional message or error description",
     )
 
-
-class TrustedCAResponse(BaseModel):
+class TrustedCAResponse(GreenLangBase):
     """Response for trusted CA addition requests.
 
     Attributes:
@@ -2474,8 +2396,7 @@ class TrustedCAResponse(BaseModel):
         None, description="Optional message or error description",
     )
 
-
-class DocumentSearchResponse(BaseModel):
+class DocumentSearchResponse(GreenLangBase):
     """Response for document search requests.
 
     Attributes:
@@ -2512,8 +2433,7 @@ class DocumentSearchResponse(BaseModel):
         None, description="Optional message or error description",
     )
 
-
-class FraudAlertListResponse(BaseModel):
+class FraudAlertListResponse(GreenLangBase):
     """Response for fraud alert list requests.
 
     Attributes:

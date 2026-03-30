@@ -71,25 +71,20 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ReportFormat
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -107,7 +102,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -116,7 +110,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -128,22 +121,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DashboardPanel(str, Enum):
     """Dashboard panel type.
@@ -166,7 +155,6 @@ class DashboardPanel(str, Enum):
     POWER_FACTOR = "power_factor"
     FINANCIAL = "financial"
 
-
 class ReportType(str, Enum):
     """Report type.
 
@@ -186,23 +174,6 @@ class ReportType(str, Enum):
     FINANCIAL = "financial"
     VERIFICATION = "verification"
 
-
-class ExportFormat(str, Enum):
-    """Report export format.
-
-    MARKDOWN: Markdown text format.
-    HTML:     HTML with inline CSS.
-    JSON:     Structured JSON.
-    CSV:      CSV tabular data.
-    PDF:      PDF document (placeholder).
-    """
-    MARKDOWN = "markdown"
-    HTML = "html"
-    JSON = "json"
-    CSV = "csv"
-    PDF = "pdf"
-
-
 class WidgetType(str, Enum):
     """Dashboard widget type.
 
@@ -218,7 +189,6 @@ class WidgetType(str, Enum):
     TIMELINE = "timeline"
     HEATMAP = "heatmap"
 
-
 class TrendDirection(str, Enum):
     """Metric trend direction.
 
@@ -231,7 +201,6 @@ class TrendDirection(str, Enum):
     STABLE = "stable"
     DECLINING = "declining"
     VOLATILE = "volatile"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -279,11 +248,9 @@ IPMVP_CVRMSE_HOURLY: Decimal = Decimal("25.0")
 # Maximum panels per dashboard.
 MAX_DASHBOARD_PANELS: int = 20
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input / Core
 # ---------------------------------------------------------------------------
-
 
 class KPIMetric(BaseModel):
     """Key Performance Indicator metric.
@@ -331,7 +298,6 @@ class KPIMetric(BaseModel):
         default="", max_length=500, description="Description"
     )
 
-
 class DashboardWidget(BaseModel):
     """Dashboard widget configuration and data.
 
@@ -368,7 +334,6 @@ class DashboardWidget(BaseModel):
         description="Widget size"
     )
 
-
 class ReportSection(BaseModel):
     """Report section with content.
 
@@ -399,11 +364,9 @@ class ReportSection(BaseModel):
         default=0, ge=0, description="Display order"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class DashboardData(BaseModel):
     """Dashboard data payload.
@@ -434,10 +397,9 @@ class DashboardData(BaseModel):
         default_factory=list, description="Top-level KPIs"
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow, description="Generation timestamp"
+        default_factory=utcnow, description="Generation timestamp"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class ReportOutput(BaseModel):
     """Generated report output.
@@ -470,8 +432,8 @@ class ReportOutput(BaseModel):
     executive_summary: str = Field(
         default="", description="Executive summary"
     )
-    export_format: ExportFormat = Field(
-        default=ExportFormat.MARKDOWN, description="Export format"
+    export_format: ReportFormat = Field(
+        default=ReportFormat.MARKDOWN, description="Export format"
     )
     content: str = Field(
         default="", description="Rendered content"
@@ -480,18 +442,16 @@ class ReportOutput(BaseModel):
         default_factory=dict, description="Metadata"
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow, description="Generation timestamp"
+        default_factory=utcnow, description="Generation timestamp"
     )
     processing_time_ms: float = Field(
         default=0.0, description="Processing time (ms)"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class PeakReportingEngine:
     """Dashboard and report generation engine for peak shaving analysis.
@@ -590,7 +550,7 @@ class PeakReportingEngine:
         self,
         report_type: ReportType,
         data: Dict[str, Any],
-        export_format: ExportFormat = ExportFormat.MARKDOWN,
+        export_format: ReportFormat = ReportFormat.MARKDOWN,
     ) -> ReportOutput:
         """Generate a typed report from analysis data.
 
@@ -679,7 +639,7 @@ class PeakReportingEngine:
         summary_lines = [
             f"# {self._facility} - Peak Shaving Executive Summary",
             f"",
-            f"**Report Date:** {_utcnow().strftime(self._date_fmt)}",
+            f"**Report Date:** {utcnow().strftime(self._date_fmt)}",
             f"**Generated By:** PACK-038 Peak Shaving Pack v{self.engine_version}",
             f"",
             f"## Key Results",
@@ -744,7 +704,7 @@ class PeakReportingEngine:
             title=f"{self._facility} - Executive Summary",
             sections=sections,
             executive_summary=summary_md,
-            export_format=ExportFormat.MARKDOWN,
+            export_format=ReportFormat.MARKDOWN,
             content=summary_md,
             metadata={
                 "facility": self._facility,
@@ -826,7 +786,7 @@ class PeakReportingEngine:
             f"",
             f"**IPMVP Option:** {ipmvp}",
             f"**Measurement Period:** {period} months",
-            f"**Report Date:** {_utcnow().strftime(self._date_fmt)}",
+            f"**Report Date:** {utcnow().strftime(self._date_fmt)}",
             f"",
             f"## Baseline Model Quality",
             f"",
@@ -878,7 +838,7 @@ class PeakReportingEngine:
                 f"Model {'compliant' if model_compliant else 'non-compliant'} "
                 f"with IPMVP standards."
             ),
-            export_format=ExportFormat.MARKDOWN,
+            export_format=ReportFormat.MARKDOWN,
             content=content,
             metadata={
                 "ipmvp_option": ipmvp,
@@ -904,7 +864,7 @@ class PeakReportingEngine:
     def export_report(
         self,
         report: ReportOutput,
-        export_format: ExportFormat = ExportFormat.MARKDOWN,
+        export_format: ReportFormat = ReportFormat.MARKDOWN,
     ) -> ReportOutput:
         """Export a report in the specified format.
 
@@ -923,19 +883,19 @@ class PeakReportingEngine:
             report.report_id, export_format.value,
         )
 
-        if export_format == ExportFormat.MARKDOWN:
+        if export_format == ReportFormat.MARKDOWN:
             content = report.content
 
-        elif export_format == ExportFormat.HTML:
+        elif export_format == ReportFormat.HTML:
             content = self._markdown_to_html(report.content)
 
-        elif export_format == ExportFormat.JSON:
+        elif export_format == ReportFormat.JSON:
             content = json.dumps(
                 report.model_dump(mode="json"),
                 indent=2, default=str,
             )
 
-        elif export_format == ExportFormat.CSV:
+        elif export_format == ReportFormat.CSV:
             content = self._extract_csv_tables(report.sections)
 
         else:
@@ -1252,7 +1212,7 @@ class PeakReportingEngine:
             content_markdown=(
                 f"This report presents the {report_type.value.replace('_', ' ')} "
                 f"analysis for {self._facility}.\n\n"
-                f"**Analysis Date:** {_utcnow().strftime(self._date_fmt)}\n\n"
+                f"**Analysis Date:** {utcnow().strftime(self._date_fmt)}\n\n"
                 f"**Generated By:** PACK-038 Peak Shaving Pack v{self.engine_version}\n"
             ),
             order=0,
@@ -1374,7 +1334,7 @@ class PeakReportingEngine:
         self,
         title: str,
         sections: List[ReportSection],
-        export_format: ExportFormat,
+        export_format: ReportFormat,
     ) -> str:
         """Render report content in target format.
 
@@ -1386,7 +1346,7 @@ class PeakReportingEngine:
         Returns:
             Rendered content string.
         """
-        if export_format == ExportFormat.MARKDOWN:
+        if export_format == ReportFormat.MARKDOWN:
             parts = [f"# {title}\n"]
             for section in sorted(sections, key=lambda s: s.order):
                 if section.title:
@@ -1394,20 +1354,20 @@ class PeakReportingEngine:
                 parts.append(section.content_markdown)
             return "\n".join(parts)
 
-        elif export_format == ExportFormat.HTML:
-            md = self._render_content(title, sections, ExportFormat.MARKDOWN)
+        elif export_format == ReportFormat.HTML:
+            md = self._render_content(title, sections, ReportFormat.MARKDOWN)
             return self._markdown_to_html(md)
 
-        elif export_format == ExportFormat.JSON:
+        elif export_format == ReportFormat.JSON:
             return json.dumps({
                 "title": title,
                 "sections": [s.model_dump(mode="json") for s in sections],
             }, indent=2, default=str)
 
-        elif export_format == ExportFormat.CSV:
+        elif export_format == ReportFormat.CSV:
             return self._extract_csv_tables(sections)
 
-        return self._render_content(title, sections, ExportFormat.MARKDOWN)
+        return self._render_content(title, sections, ReportFormat.MARKDOWN)
 
     def _markdown_to_html(self, markdown: str) -> str:
         """Convert Markdown to HTML with inline CSS.

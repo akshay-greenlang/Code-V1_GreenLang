@@ -33,10 +33,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -136,7 +137,7 @@ SEA_LEVEL_PROJECTIONS = {
 # Pydantic Models
 # =============================================================================
 
-class VariableProjection(BaseModel):
+class VariableProjection(GreenLangBase):
     """Projection for a single variable."""
     variable: ProjectionVariable = Field(...)
     baseline_value: float = Field(...)
@@ -148,7 +149,7 @@ class VariableProjection(BaseModel):
     confidence_high: float = Field(...)
 
 
-class ScenarioProjection(BaseModel):
+class ScenarioProjection(GreenLangBase):
     """Complete projection for a scenario at a time horizon."""
     scenario: str = Field(...)
     scenario_family: ScenarioFamily = Field(...)
@@ -158,7 +159,7 @@ class ScenarioProjection(BaseModel):
     description: str = Field(default="")
 
 
-class LocationProjection(BaseModel):
+class LocationProjection(GreenLangBase):
     """Climate projections for a specific location."""
     location_id: str = Field(...)
     latitude: float = Field(..., ge=-90, le=90)
@@ -168,7 +169,7 @@ class LocationProjection(BaseModel):
     coastal_flag: bool = Field(default=False)
 
 
-class ScenarioInput(BaseModel):
+class ScenarioInput(GreenLangBase):
     """Input for climate scenario application."""
     request_id: str = Field(...)
     locations: List[Dict[str, Any]] = Field(default_factory=list)
@@ -187,7 +188,7 @@ class ScenarioInput(BaseModel):
     )
 
 
-class ScenarioOutput(BaseModel):
+class ScenarioOutput(GreenLangBase):
     """Output from climate scenario agent."""
     request_id: str = Field(...)
     completed_at: datetime = Field(default_factory=DeterministicClock.now)

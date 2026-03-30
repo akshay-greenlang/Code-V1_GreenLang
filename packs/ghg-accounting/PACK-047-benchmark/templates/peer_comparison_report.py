@@ -45,29 +45,23 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
 
-
 def _compute_hash(content: str) -> str:
     """Compute SHA-256 hash of string content."""
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Enums
@@ -80,7 +74,6 @@ class OutputFormat(str, Enum):
     PDF = "pdf"
     JSON = "json"
 
-
 class GapType(str, Enum):
     """Gap analysis comparison target."""
     TO_AVERAGE = "to_average"
@@ -88,14 +81,12 @@ class GapType(str, Enum):
     TO_BEST = "to_best_in_class"
     TO_TARGET = "to_target"
 
-
 class QuartilePosition(str, Enum):
     """Quartile position classification."""
     Q1 = "Q1"
     Q2 = "Q2"
     Q3 = "Q3"
     Q4 = "Q4"
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Input Models
@@ -113,7 +104,6 @@ class PeerGroupComposition(BaseModel):
     data_year: Optional[int] = Field(None, description="Year of benchmark data")
     selection_criteria: str = Field("", description="Selection criteria description")
 
-
 class LeagueTableEntry(BaseModel):
     """Single entry in the league table."""
     rank: int = Field(0, ge=0, description="Rank (1=best)")
@@ -126,14 +116,12 @@ class LeagueTableEntry(BaseModel):
     percentile: Optional[float] = Field(None, ge=0, le=100, description="Percentile rank")
     quartile: QuartilePosition = Field(QuartilePosition.Q2, description="Quartile position")
 
-
 class DistributionBin(BaseModel):
     """Single histogram bin."""
     bin_start: float = Field(0.0, description="Bin lower bound")
     bin_end: float = Field(0.0, description="Bin upper bound")
     count: int = Field(0, ge=0, description="Number of entities in bin")
     org_in_bin: bool = Field(False, description="Whether org falls in this bin")
-
 
 class BoxPlotData(BaseModel):
     """Box plot statistics."""
@@ -145,7 +133,6 @@ class BoxPlotData(BaseModel):
     maximum: float = Field(0.0, description="Maximum value")
     org_value: Optional[float] = Field(None, description="Organisation value")
     outliers: List[float] = Field(default_factory=list, description="Outlier values")
-
 
 class GapAnalysisRow(BaseModel):
     """Gap analysis for a single metric."""
@@ -161,7 +148,6 @@ class GapAnalysisRow(BaseModel):
     gap_to_target: Optional[float] = Field(None, description="Gap to target (%)")
     unit: str = Field("", description="Metric unit")
 
-
 class NormalisationMethodology(BaseModel):
     """Normalisation methodology disclosure."""
     approach: str = Field("", description="Normalisation approach description")
@@ -169,7 +155,6 @@ class NormalisationMethodology(BaseModel):
     adjustments: List[str] = Field(default_factory=list, description="Adjustments applied")
     limitations: List[str] = Field(default_factory=list, description="Known limitations")
     data_quality_notes: str = Field("", description="Data quality notes")
-
 
 class PeerComparisonInput(BaseModel):
     """Complete input model for PeerComparisonReport."""
@@ -194,7 +179,6 @@ class PeerComparisonInput(BaseModel):
     normalisation: Optional[NormalisationMethodology] = Field(
         None, description="Normalisation methodology"
     )
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -253,7 +237,7 @@ class PeerComparisonReport:
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render peer comparison as Markdown."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_md(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -261,7 +245,7 @@ class PeerComparisonReport:
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render peer comparison as HTML."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_html(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -269,7 +253,7 @@ class PeerComparisonReport:
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render peer comparison as JSON dict."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         result = self._render_json(data)
         self.processing_time_ms = (time.monotonic() - start) * 1000
         return result
@@ -310,7 +294,7 @@ class PeerComparisonReport:
         return (
             f"# Peer Comparison Report - {company}\n\n"
             f"**Reporting Period:** {period} | "
-            f"**Report Date:** {_utcnow().strftime('%Y-%m-%d')}\n\n"
+            f"**Report Date:** {utcnow().strftime('%Y-%m-%d')}\n\n"
             "---"
         )
 
@@ -545,7 +529,7 @@ class PeerComparisonReport:
             '<div class="section">\n'
             f"<h1>Peer Comparison Report &mdash; {company}</h1>\n"
             f"<p><strong>Reporting Period:</strong> {period} | "
-            f"<strong>Report Date:</strong> {_utcnow().strftime('%Y-%m-%d')}</p>\n"
+            f"<strong>Report Date:</strong> {utcnow().strftime('%Y-%m-%d')}</p>\n"
             "<hr>\n</div>"
         )
 

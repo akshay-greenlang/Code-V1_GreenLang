@@ -34,35 +34,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class WorkflowPhase(str, Enum):
     """Phases of the recycled content tracking workflow."""
@@ -70,7 +62,6 @@ class WorkflowPhase(str, Enum):
     CONTENT_CALCULATION = "content_calculation"
     TARGET_COMPARISON = "target_comparison"
     DOCUMENTATION = "documentation"
-
 
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
@@ -80,7 +71,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class PhaseStatus(str, Enum):
     """Status of a single phase."""
     PENDING = "pending"
@@ -88,7 +78,6 @@ class PhaseStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class RecoveredMaterialType(str, Enum):
     """Critical raw materials tracked for recycled content per Art. 8."""
@@ -101,7 +90,6 @@ class RecoveredMaterialType(str, Enum):
     GRAPHITE = "graphite"
     OTHER = "other"
 
-
 class MaterialSourceType(str, Enum):
     """Source classification for material traceability."""
     PRIMARY_VIRGIN = "primary_virgin"
@@ -111,17 +99,14 @@ class MaterialSourceType(str, Enum):
     RECOVERED_FROM_WASTE = "recovered_from_waste"
     UNKNOWN = "unknown"
 
-
 class ComplianceTargetPhase(str, Enum):
     """Regulatory phase for recycled content targets."""
     PHASE_1_2031 = "phase_1_2031"
     PHASE_2_2036 = "phase_2_2036"
 
-
 # =============================================================================
 # REGULATORY TARGETS (% by weight per Art. 8)
 # =============================================================================
-
 
 RECYCLED_CONTENT_TARGETS_2031: Dict[str, float] = {
     "cobalt": 16.0,
@@ -137,11 +122,9 @@ RECYCLED_CONTENT_TARGETS_2036: Dict[str, float] = {
     "lead": 85.0,
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -152,7 +135,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class MaterialEntry(BaseModel):
     """Individual material entry within the battery BOM."""
@@ -176,7 +158,6 @@ class MaterialEntry(BaseModel):
     chain_of_custody_verified: bool = Field(default=False)
     recycled_content_pct: float = Field(default=0.0, ge=0.0, le=100.0)
 
-
 class RecycledContentSummary(BaseModel):
     """Aggregated recycled content for a specific material type."""
     material_type: str = Field(..., description="Material type")
@@ -190,7 +171,6 @@ class RecycledContentSummary(BaseModel):
     gap_to_2031_pct: float = Field(default=0.0)
     gap_to_2036_pct: float = Field(default=0.0)
     entry_count: int = Field(default=0, ge=0)
-
 
 class RecycledContentInput(BaseModel):
     """Input data model for RecycledContentWorkflow."""
@@ -208,7 +188,6 @@ class RecycledContentInput(BaseModel):
     entity_id: str = Field(default="")
     entity_name: str = Field(default="")
     config: Dict[str, Any] = Field(default_factory=dict)
-
 
 class RecycledContentResult(BaseModel):
     """Complete result from recycled content tracking workflow."""
@@ -233,11 +212,9 @@ class RecycledContentResult(BaseModel):
     executed_at: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class RecycledContentWorkflow:
     """
@@ -309,7 +286,7 @@ class RecycledContentWorkflow:
         if input_data is None:
             input_data = RecycledContentInput(config=config or {})
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting recycled content workflow %s", self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = WorkflowStatus.IN_PROGRESS
@@ -332,7 +309,7 @@ class RecycledContentWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         total_mass = sum(s.total_mass_kg for s in self._summaries)
         recycled_mass = sum(s.recycled_mass_kg for s in self._summaries)
         overall_pct = round(
@@ -365,7 +342,7 @@ class RecycledContentWorkflow:
             target_phase=input_data.target_phase.value,
             verified_supply_chain_pct=verified_pct,
             reporting_year=input_data.reporting_year,
-            executed_at=_utcnow().isoformat(),
+            executed_at=utcnow().isoformat(),
         )
         result.provenance_hash = self._compute_provenance(result)
         self.logger.info(
@@ -382,7 +359,7 @@ class RecycledContentWorkflow:
         self, input_data: RecycledContentInput,
     ) -> PhaseResult:
         """Catalogue all materials and their source classifications."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -437,7 +414,7 @@ class RecycledContentWorkflow:
         if not self._entries:
             warnings.append("No material entries provided; analysis will be empty")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 1 MaterialInventory: %d entries, %d material types",
             len(self._entries), len(type_counts),
@@ -457,7 +434,7 @@ class RecycledContentWorkflow:
         self, input_data: RecycledContentInput,
     ) -> PhaseResult:
         """Calculate recycled content percentages per material type."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._summaries = []
@@ -513,7 +490,7 @@ class RecycledContentWorkflow:
                 f"{len(zero_recycled)} material types have zero recycled content"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 2 ContentCalculation: %d types, overall %.1f%%",
             len(self._summaries),
@@ -534,7 +511,7 @@ class RecycledContentWorkflow:
         self, input_data: RecycledContentInput,
     ) -> PhaseResult:
         """Compare recycled content against regulatory targets."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -582,7 +559,7 @@ class RecycledContentWorkflow:
         outputs["targets_applied"] = targets
         outputs["missing_regulated_materials"] = sorted(missing_regulated)
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 3 TargetComparison: %d meeting, %d below, all_met=%s",
             len(meeting_target), len(below_target), self._all_targets_met,
@@ -602,7 +579,7 @@ class RecycledContentWorkflow:
         self, input_data: RecycledContentInput,
     ) -> PhaseResult:
         """Generate recycled content compliance documentation."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -635,7 +612,7 @@ class RecycledContentWorkflow:
                 for s in self._summaries
             ],
             "all_targets_met": self._all_targets_met,
-            "issued_at": _utcnow().isoformat(),
+            "issued_at": utcnow().isoformat(),
         }
 
         # Completeness assessment
@@ -661,7 +638,7 @@ class RecycledContentWorkflow:
         outputs["completeness_checks"] = completeness_checks
         outputs["all_targets_met"] = self._all_targets_met
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 4 Documentation: %s issued, completeness %.1f%%",
             documentation["document_id"], completeness_pct,

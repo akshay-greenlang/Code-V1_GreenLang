@@ -74,25 +74,19 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -112,13 +106,11 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely."""
     if isinstance(value, Decimal):
         return value
     return Decimal(str(value))
-
 
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
@@ -127,7 +119,6 @@ def _safe_divide(
     if denominator == Decimal("0"):
         return default
     return numerator / denominator
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value using ROUND_HALF_UP.
@@ -142,20 +133,17 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.01"), rounding=ROUND_HALF_UP
     ))
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
-
 
 def _pct(part: int, total: int) -> Decimal:
     """Calculate percentage as Decimal, rounded to 1 decimal place."""
@@ -165,18 +153,15 @@ def _pct(part: int, total: int) -> Decimal:
         _decimal(part) / _decimal(total) * Decimal("100"), 1
     )
 
-
 def _pct_dec(part: Decimal, total: Decimal) -> Decimal:
     """Calculate percentage from Decimal values, rounded to 1 dp."""
     if total == Decimal("0"):
         return Decimal("0.0")
     return _round_val(part / total * Decimal("100"), 1)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class MeasureType(str, Enum):
     """Type of prevention or mitigation measure under CSDDD Art 8-9.
@@ -191,7 +176,6 @@ class MeasureType(str, Enum):
     CESSATION = "cessation"
     REMEDIATION = "remediation"
 
-
 class MeasureStatus(str, Enum):
     """Implementation status of a prevention or mitigation measure.
 
@@ -203,7 +187,6 @@ class MeasureStatus(str, Enum):
     COMPLETED = "completed"
     OVERDUE = "overdue"
     CANCELLED = "cancelled"
-
 
 class EffectivenessRating(str, Enum):
     """Effectiveness rating for a measure's outcomes.
@@ -223,7 +206,6 @@ class EffectivenessRating(str, Enum):
     INEFFECTIVE = "ineffective"
     NOT_ASSESSED = "not_assessed"
 
-
 class MeasureCategory(str, Enum):
     """Category of measure per CSDDD Art 8 Para 2 / Art 9 Para 3.
 
@@ -241,7 +223,6 @@ class MeasureCategory(str, Enum):
     SUPPLIER_ENGAGEMENT = "supplier_engagement"
     OTHER = "other"
 
-
 class ImpactDomain(str, Enum):
     """Domain of the adverse impact being addressed.
 
@@ -251,11 +232,9 @@ class ImpactDomain(str, Enum):
     ENVIRONMENTAL = "environmental"
     BOTH = "both"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # Effectiveness score ranges for rating determination
 EFFECTIVENESS_THRESHOLDS: List[Tuple[Decimal, EffectivenessRating]] = [
@@ -274,11 +253,9 @@ STATUS_PROGRESS_WEIGHTS: Dict[str, Decimal] = {
     MeasureStatus.CANCELLED.value: Decimal("0.0"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class PreventionMeasure(BaseModel):
     """A single prevention or mitigation measure per CSDDD Art 8-9.
@@ -409,7 +386,6 @@ class PreventionMeasure(BaseModel):
         description="Whether compliance with assurances has been verified",
     )
 
-
 class MeasureEffectiveness(BaseModel):
     """Effectiveness assessment for a single measure.
 
@@ -435,7 +411,7 @@ class MeasureEffectiveness(BaseModel):
         description="Supporting evidence for the assessment",
     )
     assessment_date: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Date of effectiveness assessment",
     )
     assessor: str = Field(
@@ -443,7 +419,6 @@ class MeasureEffectiveness(BaseModel):
         description="Person or body that conducted the assessment",
         max_length=500,
     )
-
 
 class BudgetSummary(BaseModel):
     """Financial summary of prevention and mitigation measures.
@@ -490,7 +465,6 @@ class BudgetSummary(BaseModel):
         description="Total amount over budget across all measures",
     )
 
-
 class CoverageAnalysis(BaseModel):
     """Analysis of how well measures cover identified impacts.
 
@@ -533,7 +507,6 @@ class CoverageAnalysis(BaseModel):
         default=Decimal("0"),
         description="Average number of measures per covered impact",
     )
-
 
 class GapAnalysis(BaseModel):
     """Gap analysis identifying weaknesses in the measure portfolio.
@@ -584,7 +557,6 @@ class GapAnalysis(BaseModel):
         description="Actionable recommendations to close gaps",
     )
 
-
 class EffectivenessSummary(BaseModel):
     """Summary of effectiveness across all measures.
 
@@ -621,7 +593,6 @@ class EffectivenessSummary(BaseModel):
         default=Decimal("0.0"),
         description="Percentage of measures rated ineffective",
     )
-
 
 class PreventionResult(BaseModel):
     """Complete prevention and mitigation assessment result.
@@ -694,7 +665,7 @@ class PreventionResult(BaseModel):
         description="Processing time in milliseconds",
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Assessment timestamp (UTC)",
     )
     provenance_hash: str = Field(
@@ -702,11 +673,9 @@ class PreventionResult(BaseModel):
         description="SHA-256 hash for audit trail provenance",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class PreventionMitigationEngine:
     """CSDDD Prevention and Mitigation assessment engine.
@@ -771,7 +740,7 @@ class PreventionMitigationEngine:
             rating=rating,
             score=score,
             evidence=measure.evidence,
-            assessment_date=_utcnow(),
+            assessment_date=utcnow(),
         )
 
     @staticmethod
@@ -1099,7 +1068,7 @@ class PreventionMitigationEngine:
         )
 
         # Overdue measures
-        now = _utcnow()
+        now = utcnow()
         overdue_count = sum(
             1 for m in active_measures
             if m.status == MeasureStatus.OVERDUE
@@ -1254,7 +1223,7 @@ class PreventionMitigationEngine:
         if not active:
             return Decimal("0.0")
 
-        now = _utcnow()
+        now = utcnow()
         on_track = 0
         for m in active:
             if m.status == MeasureStatus.COMPLETED:
@@ -1383,7 +1352,7 @@ class PreventionMitigationEngine:
                         "all identified potential adverse impacts."
                     ],
                 ),
-                assessed_at=_utcnow(),
+                assessed_at=utcnow(),
             )
             empty_result.provenance_hash = _compute_hash(empty_result)
             return empty_result
@@ -1458,7 +1427,7 @@ class PreventionMitigationEngine:
             verification_rate_pct=verification_rate,
             recommendations=recommendations,
             processing_time_ms=_round2(processing_time_ms),
-            assessed_at=_utcnow(),
+            assessed_at=utcnow(),
         )
 
         # Step 12: Compute provenance hash

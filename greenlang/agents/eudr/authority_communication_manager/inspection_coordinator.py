@@ -35,6 +35,8 @@ from .models import (
 )
 from .provenance import ProvenanceTracker
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # Valid inspection status transitions
@@ -51,7 +53,6 @@ _VALID_TRANSITIONS: Dict[str, List[str]] = {
     "cancelled": [],
 }
 
-
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance."""
     canonical = json.dumps(
@@ -59,16 +60,9 @@ def _compute_hash(data: Any) -> str:
     )
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 class InspectionCoordinator:
     """Coordinates on-the-spot checks and inspections per Article 15.
@@ -147,7 +141,7 @@ class InspectionCoordinator:
             )
 
         inspection_id = _new_uuid()
-        now = _utcnow()
+        now = utcnow()
 
         if not communication_id:
             communication_id = _new_uuid()
@@ -242,7 +236,7 @@ class InspectionCoordinator:
                 f"Valid transitions: {valid_next}"
             )
 
-        now = _utcnow()
+        now = utcnow()
         inspection.status = new_status
 
         # Track timing milestones
@@ -343,7 +337,7 @@ class InspectionCoordinator:
         Returns:
             List of upcoming Inspection records.
         """
-        now = _utcnow()
+        now = utcnow()
         cutoff = now + timedelta(days=days_ahead)
         return [
             i for i in self._inspections.values()

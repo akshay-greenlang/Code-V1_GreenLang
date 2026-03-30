@@ -107,21 +107,13 @@ logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -150,7 +142,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -166,7 +157,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -187,7 +177,6 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely: (part / whole) * 100.
 
@@ -199,7 +188,6 @@ def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
         Percentage as Decimal; Decimal('0') when whole is zero.
     """
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 4) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP.
@@ -214,7 +202,6 @@ def _round_val(value: Decimal, places: int = 4) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 def _abs_decimal(value: Decimal) -> Decimal:
     """Return the absolute value of a Decimal.
 
@@ -226,11 +213,9 @@ def _abs_decimal(value: Decimal) -> Decimal:
     """
     return value if value >= Decimal("0") else -value
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class TriggerType(str, Enum):
     """Types of events that may trigger base year recalculation.
@@ -249,6 +234,8 @@ class TriggerType(str, Enum):
                               in historical data or calculations.
     SOURCE_BOUNDARY_CHANGE:   Addition or removal of emission source categories
                               from the operational boundary.
+
+from greenlang.schemas import utcnow
     OUTSOURCING_INSOURCING:   Transfer of activities across the organisational
                               boundary through outsourcing or insourcing.
     """
@@ -259,7 +246,6 @@ class TriggerType(str, Enum):
     ERROR_CORRECTION = "error_correction"
     SOURCE_BOUNDARY_CHANGE = "source_boundary_change"
     OUTSOURCING_INSOURCING = "outsourcing_insourcing"
-
 
 class TriggerStatus(str, Enum):
     """Lifecycle status of a detected recalculation trigger.
@@ -279,7 +265,6 @@ class TriggerStatus(str, Enum):
     DISMISSED = "dismissed"
     PROCESSED = "processed"
 
-
 class DetectionMethod(str, Enum):
     """How the recalculation trigger was identified.
 
@@ -292,7 +277,6 @@ class DetectionMethod(str, Enum):
     AUTOMATED = "automated"
     MANUAL = "manual"
     IMPORTED = "imported"
-
 
 class Scope(str, Enum):
     """GHG Protocol emission scope classification.
@@ -309,7 +293,6 @@ class Scope(str, Enum):
     SCOPE_3 = "scope_3"
     ALL = "all"
 
-
 class CalculationTier(str, Enum):
     """Emission calculation tier per GHG Protocol methodology hierarchy.
 
@@ -322,7 +305,6 @@ class CalculationTier(str, Enum):
     TIER_1 = "tier_1"
     TIER_2 = "tier_2"
     TIER_3 = "tier_3"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -353,11 +335,9 @@ MAXIMUM_BASE_YEAR: int = 2030
 # Only flag entity changes where ownership % changes by at least this amount.
 OWNERSHIP_CHANGE_THRESHOLD_PCT: Decimal = Decimal("1.0")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Trigger Detail Models
 # ---------------------------------------------------------------------------
-
 
 class EntityChange(BaseModel):
     """Details of an organisational entity change (acquisition, divestiture, merger).
@@ -429,7 +409,6 @@ class EntityChange(BaseModel):
         """
         return _abs_decimal(self.ownership_pct_after - self.ownership_pct_before)
 
-
 class MethodologyChange(BaseModel):
     """Details of a methodology change affecting emission calculations.
 
@@ -481,7 +460,6 @@ class MethodologyChange(BaseModel):
     def coerce_decimal(cls, v: Any) -> Decimal:
         """Coerce emission impact to Decimal."""
         return _decimal(v)
-
 
 class ErrorCorrection(BaseModel):
     """Details of an error correction in historical emission data.
@@ -542,7 +520,6 @@ class ErrorCorrection(BaseModel):
         """
         return _abs_decimal(self.corrected_value_tco2e - self.original_value_tco2e)
 
-
 class BoundaryChange(BaseModel):
     """Details of an operational boundary change.
 
@@ -585,11 +562,9 @@ class BoundaryChange(BaseModel):
         """Compute net number of sources added (positive) or removed (negative)."""
         return len(self.sources_added) - len(self.sources_removed)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class InventorySnapshot(BaseModel):
     """A snapshot of GHG inventory emissions for trigger comparison.
@@ -664,7 +639,6 @@ class InventorySnapshot(BaseModel):
             + self.scope3_total_tco2e
         )
 
-
 class EntityRegistryEntry(BaseModel):
     """An entity (facility, subsidiary, business unit) in the organisational boundary.
 
@@ -698,7 +672,6 @@ class EntityRegistryEntry(BaseModel):
     def coerce_decimal(cls, v: Any) -> Decimal:
         """Coerce numeric fields to Decimal."""
         return _decimal(v)
-
 
 class ExternalEvent(BaseModel):
     """An externally reported event that may trigger recalculation.
@@ -754,7 +727,6 @@ class ExternalEvent(BaseModel):
     def coerce_decimal(cls, v: Any) -> Decimal:
         """Coerce impact to Decimal."""
         return _decimal(v)
-
 
 class TriggerDetectionConfig(BaseModel):
     """Configuration parameters for the trigger detection engine.
@@ -821,11 +793,9 @@ class TriggerDetectionConfig(BaseModel):
         """Coerce thresholds to Decimal."""
         return _decimal(v)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class DetectedTrigger(BaseModel):
     """A single detected recalculation trigger with full provenance.
@@ -864,7 +834,7 @@ class DetectedTrigger(BaseModel):
         default=DetectionMethod.AUTOMATED, description="Detection method"
     )
     detected_date: datetime = Field(
-        default_factory=_utcnow, description="Detection timestamp"
+        default_factory=utcnow, description="Detection timestamp"
     )
     description: str = Field(
         default="", description="Trigger description"
@@ -903,7 +873,6 @@ class DetectedTrigger(BaseModel):
         """Coerce numeric fields to Decimal."""
         return _decimal(v)
 
-
 class TriggerDetectionResult(BaseModel):
     """Complete result of a trigger detection run with provenance.
 
@@ -936,7 +905,7 @@ class TriggerDetectionResult(BaseModel):
         default=_MODULE_VERSION, description="Engine version"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Detection timestamp"
+        default_factory=utcnow, description="Detection timestamp"
     )
     processing_time_ms: float = Field(
         default=0.0, ge=0, description="Processing time (ms)"
@@ -985,7 +954,6 @@ class TriggerDetectionResult(BaseModel):
         """Coerce numeric fields to Decimal."""
         return _decimal(v)
 
-
 # ---------------------------------------------------------------------------
 # Model Rebuild (Pydantic v2 deferred annotations resolution)
 # ---------------------------------------------------------------------------
@@ -1001,11 +969,9 @@ TriggerDetectionConfig.model_rebuild()
 DetectedTrigger.model_rebuild()
 TriggerDetectionResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class RecalculationTriggerEngine:
     """Automated recalculation trigger detection engine.

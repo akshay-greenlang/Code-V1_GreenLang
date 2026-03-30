@@ -36,26 +36,19 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -68,11 +61,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class TenantTier(str, Enum):
     """Tenant subscription tiers matching platform definitions."""
@@ -82,7 +73,6 @@ class TenantTier(str, Enum):
     ENTERPRISE = "enterprise"
     CUSTOM = "custom"
 
-
 class TenantIsolationLevel(str, Enum):
     """Data isolation levels for multi-tenant deployments."""
 
@@ -90,7 +80,6 @@ class TenantIsolationLevel(str, Enum):
     NAMESPACE = "namespace"
     CLUSTER = "cluster"
     PHYSICAL = "physical"
-
 
 class TenantStatus(str, Enum):
     """Tenant lifecycle status."""
@@ -100,11 +89,9 @@ class TenantStatus(str, Enum):
     SUSPENDED = "suspended"
     DECOMMISSIONED = "decommissioned"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class CSRDTenantConfig(BaseModel):
     """CSRD-specific configuration attached to a tenant profile."""
@@ -135,7 +122,6 @@ class CSRDTenantConfig(BaseModel):
     max_api_calls_per_hour: int = Field(default=1000, ge=100)
     data_residency_region: str = Field(default="EU")
 
-
 class TenantProfile(BaseModel):
     """Complete tenant profile with CSRD-specific enrichment."""
 
@@ -150,7 +136,7 @@ class TenantProfile(BaseModel):
     csrd_config: CSRDTenantConfig = Field(default_factory=CSRDTenantConfig)
     features: Dict[str, bool] = Field(default_factory=dict)
     status: TenantStatus = Field(default=TenantStatus.ACTIVE)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     updated_at: Optional[datetime] = Field(None)
     provenance_hash: str = Field(default="")
 
@@ -161,7 +147,6 @@ class TenantProfile(BaseModel):
         if "@" not in v or "." not in v:
             raise ValueError("admin_email must be a valid email address")
         return v
-
 
 class ResourceUsage(BaseModel):
     """Tenant resource usage metrics."""
@@ -174,13 +159,11 @@ class ResourceUsage(BaseModel):
     active_workflows: int = Field(default=0, ge=0)
     subsidiaries_configured: int = Field(default=0, ge=0)
     last_activity_at: Optional[datetime] = Field(None)
-    measured_at: datetime = Field(default_factory=_utcnow)
-
+    measured_at: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # Tier Feature Definitions
 # ---------------------------------------------------------------------------
-
 
 TIER_FEATURES: Dict[TenantTier, Dict[str, bool]] = {
     TenantTier.STARTER: {
@@ -260,11 +243,9 @@ TIER_ISOLATION_DEFAULTS: Dict[TenantTier, TenantIsolationLevel] = {
     TenantTier.CUSTOM: TenantIsolationLevel.PHYSICAL,
 }
 
-
 # ---------------------------------------------------------------------------
 # TenantBridge
 # ---------------------------------------------------------------------------
-
 
 class TenantBridge:
     """Bridge connecting CSRD Enterprise Pack to the platform TenantManager.
@@ -413,7 +394,7 @@ class TenantBridge:
         current = profile.csrd_config.model_dump()
         current.update(config)
         profile.csrd_config = CSRDTenantConfig(**current)
-        profile.updated_at = _utcnow()
+        profile.updated_at = utcnow()
         profile.provenance_hash = _compute_hash(profile)
 
         self.logger.info(
@@ -535,7 +516,7 @@ class TenantBridge:
             new_tier_enum, TenantIsolationLevel.NAMESPACE,
         )
         profile.features = dict(TIER_FEATURES.get(new_tier_enum, {}))
-        profile.updated_at = _utcnow()
+        profile.updated_at = utcnow()
         profile.provenance_hash = _compute_hash(profile)
 
         self.logger.info(
@@ -548,7 +529,7 @@ class TenantBridge:
             "new_tier": new_tier,
             "new_isolation_level": profile.isolation_level.value,
             "features_changed": True,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
             "provenance_hash": profile.provenance_hash,
         }
 
@@ -591,7 +572,7 @@ class TenantBridge:
             "min": min(values),
             "max": max(values),
             "anonymized": anonymize,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
         if not anonymize:

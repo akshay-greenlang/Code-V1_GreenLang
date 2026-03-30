@@ -51,13 +51,14 @@ import logging
 import re
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import ConfigDict, Field
 
 from greenlang.agents.foundation.schema.compiler.ir import UnitSpecIR
 from greenlang.agents.foundation.schema.errors import ErrorCode, format_error_message
 from greenlang.agents.foundation.schema.models.config import ValidationOptions, ValidationProfile
 from greenlang.agents.foundation.schema.models.finding import Finding, FindingHint, Severity
 from greenlang.agents.foundation.schema.units.catalog import UnitCatalog
+from greenlang.schemas import GreenLangBase
 
 
 logger = logging.getLogger(__name__)
@@ -83,7 +84,7 @@ UNIT_STRING_PATTERN = re.compile(
 # =============================================================================
 
 
-class NormalizedUnit(BaseModel):
+class NormalizedUnit(GreenLangBase):
     """
     Normalized unit value with conversion provenance.
 

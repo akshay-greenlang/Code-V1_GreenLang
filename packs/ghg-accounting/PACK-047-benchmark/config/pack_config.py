@@ -46,36 +46,29 @@ from typing import Any, Dict, List, Optional, Union
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ReportFormat
+
 logger = logging.getLogger(__name__)
 
 PACK_BASE_DIR = Path(__file__).parent.parent
 CONFIG_DIR = Path(__file__).parent
 
-
 # =============================================================================
 # Helper Functions
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime (mockable for testing)."""
-    return datetime.now(timezone.utc)
-
 
 def _new_uuid() -> str:
     """Return new UUID4 string (mockable for testing)."""
     return str(uuid.uuid4())
 
-
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hash of a string for provenance tracking."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # Enums (18 total)
 # =============================================================================
-
 
 class SectorClassification(str, Enum):
     """Sector classification system for peer group construction."""
@@ -94,7 +87,6 @@ class SectorClassification(str, Enum):
     SIC_4DIG = "SIC_4DIG"
     CUSTOM = "CUSTOM"
 
-
 class PeerSizeBand(str, Enum):
     """Revenue-based size band for peer group matching."""
     MICRO = "MICRO"
@@ -104,7 +96,6 @@ class PeerSizeBand(str, Enum):
     ENTERPRISE = "ENTERPRISE"
     MEGA = "MEGA"
 
-
 class ScopeAlignment(str, Enum):
     """Scope alignment configuration for normalisation."""
     S1_ONLY = "S1_ONLY"
@@ -113,20 +104,17 @@ class ScopeAlignment(str, Enum):
     S1_S2_S3 = "S1_S2_S3"
     CUSTOM = "CUSTOM"
 
-
 class ConsolidationApproach(str, Enum):
     """Organisational boundary consolidation approach per GHG Protocol Ch 3."""
     EQUITY_SHARE = "EQUITY_SHARE"
     OPERATIONAL_CONTROL = "OPERATIONAL_CONTROL"
     FINANCIAL_CONTROL = "FINANCIAL_CONTROL"
 
-
 class GWPVersion(str, Enum):
     """IPCC Global Warming Potential assessment report version."""
     AR4 = "AR4"
     AR5 = "AR5"
     AR6 = "AR6"
-
 
 class PathwayType(str, Enum):
     """Science-based pathway type for alignment scoring."""
@@ -139,20 +127,17 @@ class PathwayType(str, Enum):
     TPI_CP = "TPI_CP"
     CRREM = "CRREM"
 
-
 class PathwayScenario(str, Enum):
     """Temperature scenario for pathway alignment."""
     ONE_POINT_FIVE_C = "ONE_POINT_FIVE_C"
     WELL_BELOW_2C = "WELL_BELOW_2C"
     BELOW_2C = "BELOW_2C"
 
-
 class ITRMethod(str, Enum):
     """Implied temperature rise calculation method."""
     BUDGET_BASED = "BUDGET_BASED"
     SECTOR_RELATIVE = "SECTOR_RELATIVE"
     RATE_OF_REDUCTION = "RATE_OF_REDUCTION"
-
 
 class PortfolioAssetClass(str, Enum):
     """Asset class for portfolio-level benchmarking (PCAF aligned)."""
@@ -163,7 +148,6 @@ class PortfolioAssetClass(str, Enum):
     MORTGAGES = "MORTGAGES"
     SOVEREIGN_DEBT = "SOVEREIGN_DEBT"
 
-
 class PCAFScore(int, Enum):
     """PCAF data quality score (1 = best, 5 = worst)."""
     SCORE_1 = 1
@@ -171,7 +155,6 @@ class PCAFScore(int, Enum):
     SCORE_3 = 3
     SCORE_4 = 4
     SCORE_5 = 5
-
 
 class DataSourceType(str, Enum):
     """External benchmark data source type."""
@@ -182,7 +165,6 @@ class DataSourceType(str, Enum):
     ISS_ESG = "ISS_ESG"
     CUSTOM = "CUSTOM"
 
-
 class TransitionRiskCategory(str, Enum):
     """Transition risk category for scoring."""
     CARBON_BUDGET = "CARBON_BUDGET"
@@ -190,7 +172,6 @@ class TransitionRiskCategory(str, Enum):
     REGULATORY = "REGULATORY"
     COMPETITIVE = "COMPETITIVE"
     FINANCIAL = "FINANCIAL"
-
 
 class BenchmarkMetric(str, Enum):
     """Benchmark metric type for reporting."""
@@ -201,17 +182,6 @@ class BenchmarkMetric(str, Enum):
     ITR = "ITR"
     TRANSITION_RISK = "TRANSITION_RISK"
 
-
-class ReportFormat(str, Enum):
-    """Supported report output formats."""
-    MARKDOWN = "MARKDOWN"
-    HTML = "HTML"
-    PDF = "PDF"
-    JSON = "JSON"
-    CSV = "CSV"
-    XBRL = "XBRL"
-
-
 class DisclosureFramework(str, Enum):
     """Supported regulatory and voluntary reporting frameworks."""
     ESRS = "ESRS"
@@ -220,7 +190,6 @@ class DisclosureFramework(str, Enum):
     TCFD = "TCFD"
     SEC = "SEC"
     GRI = "GRI"
-
 
 class AlertType(str, Enum):
     """Alert trigger type for benchmark monitoring."""
@@ -231,7 +200,6 @@ class AlertType(str, Enum):
     QUALITY_DROP = "QUALITY_DROP"
     RANK_CHANGE = "RANK_CHANGE"
 
-
 class QualityDimension(str, Enum):
     """Data quality dimension for PCAF scoring."""
     TEMPORAL = "TEMPORAL"
@@ -239,7 +207,6 @@ class QualityDimension(str, Enum):
     TECHNOLOGICAL = "TECHNOLOGICAL"
     COMPLETENESS = "COMPLETENESS"
     RELIABILITY = "RELIABILITY"
-
 
 class NormalisationStep(str, Enum):
     """Normalisation step type in the pipeline."""
@@ -252,11 +219,9 @@ class NormalisationStep(str, Enum):
     BIOGENIC = "BIOGENIC"
     CLIMATE = "CLIMATE"
 
-
 # =============================================================================
 # Reference Data Constants
 # =============================================================================
-
 
 IPCC_CARBON_BUDGETS: Dict[str, Dict[str, Any]] = {
     "1.5C": {
@@ -284,7 +249,6 @@ IPCC_CARBON_BUDGETS: Dict[str, Dict[str, Any]] = {
         "description": "Remaining carbon budget for 67% chance of limiting warming to 2.0C",
     },
 }
-
 
 SBTI_SECTOR_PATHWAYS: Dict[str, Dict[str, Any]] = {
     "power": {
@@ -433,7 +397,6 @@ SBTI_SECTOR_PATHWAYS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 GWP_CONVERSION_FACTORS: Dict[str, Dict[str, Dict[str, Decimal]]] = {
     "AR4_to_AR6": {
         "CO2": {"factor": Decimal("1.000"), "note": "No change across ARs"},
@@ -448,7 +411,6 @@ GWP_CONVERSION_FACTORS: Dict[str, Dict[str, Dict[str, Decimal]]] = {
         "HFCs": {"factor": Decimal("1.010"), "note": "Approximate weighted average for HFC mix"},
     },
 }
-
 
 PCAF_QUALITY_THRESHOLDS: Dict[int, Dict[str, Any]] = {
     1: {
@@ -513,7 +475,6 @@ PCAF_QUALITY_THRESHOLDS: Dict[int, Dict[str, Any]] = {
     },
 }
 
-
 PEER_SIZE_BANDS: Dict[str, Dict[str, Any]] = {
     "MICRO": {
         "label": "Micro",
@@ -559,7 +520,6 @@ PEER_SIZE_BANDS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 TRANSITION_RISK_WEIGHTS: Dict[str, Decimal] = {
     "CARBON_BUDGET": Decimal("0.25"),
     "STRANDING": Decimal("0.20"),
@@ -567,7 +527,6 @@ TRANSITION_RISK_WEIGHTS: Dict[str, Decimal] = {
     "COMPETITIVE": Decimal("0.15"),
     "FINANCIAL": Decimal("0.15"),
 }
-
 
 AVAILABLE_PRESETS: Dict[str, str] = {
     "corporate_general": (
@@ -604,11 +563,9 @@ AVAILABLE_PRESETS: Dict[str, str] = {
     ),
 }
 
-
 # =============================================================================
 # Sub-Config Models (15+ Pydantic v2 models)
 # =============================================================================
-
 
 class PeerGroupConfig(BaseModel):
     """Configuration for peer group construction and matching."""
@@ -667,7 +624,6 @@ class PeerGroupConfig(BaseModel):
         if v.upper() not in allowed:
             raise ValueError(f"region_scope must be one of {allowed}, got '{v}'")
         return v.upper()
-
 
 class NormalisationConfig(BaseModel):
     """Configuration for scope normalisation and data alignment."""
@@ -748,7 +704,6 @@ class NormalisationConfig(BaseModel):
             raise ValueError(f"biogenic_treatment must be one of {allowed}, got '{v}'")
         return v.upper()
 
-
 class ExternalDataConfig(BaseModel):
     """Configuration for external benchmark data source integration."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -789,7 +744,6 @@ class ExternalDataConfig(BaseModel):
         None,
         description="Path to custom benchmark dataset (CSV or JSON)",
     )
-
 
 class PathwayConfig(BaseModel):
     """Configuration for science-based pathway alignment scoring."""
@@ -835,7 +789,6 @@ class PathwayConfig(BaseModel):
             )
         return v
 
-
 class ITRConfig(BaseModel):
     """Configuration for implied temperature rise calculation."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -872,7 +825,6 @@ class ITRConfig(BaseModel):
         Decimal("1.07"),
         description="Current warming above pre-industrial levels (degrees C)",
     )
-
 
 class TrajectoryConfig(BaseModel):
     """Configuration for trajectory benchmarking and forward-looking assessment."""
@@ -915,7 +867,6 @@ class TrajectoryConfig(BaseModel):
         if v.upper() not in allowed:
             raise ValueError(f"regression_model must be one of {allowed}, got '{v}'")
         return v.upper()
-
 
 class PortfolioConfig(BaseModel):
     """Configuration for portfolio-level carbon benchmarking (PCAF aligned)."""
@@ -965,7 +916,6 @@ class PortfolioConfig(BaseModel):
         if v.upper() not in allowed:
             raise ValueError(f"attribution_method must be one of {allowed}, got '{v}'")
         return v.upper()
-
 
 class DataQualityConfig(BaseModel):
     """Configuration for PCAF data quality scoring."""
@@ -1017,7 +967,6 @@ class DataQualityConfig(BaseModel):
                 f"Dimension weights must sum to 1.0, got {total}"
             )
         return self
-
 
 class TransitionRiskConfig(BaseModel):
     """Configuration for transition risk scoring."""
@@ -1087,7 +1036,6 @@ class TransitionRiskConfig(BaseModel):
             raise ValueError(f"carbon_price_scenario must be one of {allowed}, got '{v}'")
         return v.upper()
 
-
 class ReportingConfig(BaseModel):
     """Configuration for benchmark report generation."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -1134,7 +1082,6 @@ class ReportingConfig(BaseModel):
         description="Decimal places for display in reports",
     )
 
-
 class DisclosureConfig(BaseModel):
     """Configuration for multi-framework benchmark disclosure mapping."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -1172,7 +1119,6 @@ class DisclosureConfig(BaseModel):
         description="Manual overrides for framework field mappings",
     )
 
-
 class AlertConfig(BaseModel):
     """Configuration for benchmark monitoring and alerting."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -1206,7 +1152,6 @@ class AlertConfig(BaseModel):
         description="PCAF score drop amount to trigger quality alert",
     )
 
-
 class PerformanceConfig(BaseModel):
     """Configuration for computational performance tuning."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -1233,7 +1178,6 @@ class PerformanceConfig(BaseModel):
         True, description="Lazy-load external benchmark data only when needed",
     )
 
-
 class SecurityConfig(BaseModel):
     """Configuration for access control and data protection."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -1249,11 +1193,9 @@ class SecurityConfig(BaseModel):
         description="Available RBAC roles for benchmark management",
     )
 
-
 # =============================================================================
 # Main Configuration Model
 # =============================================================================
-
 
 class BenchmarkPackConfig(BaseModel):
     """
@@ -1356,11 +1298,9 @@ class BenchmarkPackConfig(BaseModel):
                 )
         return self
 
-
 # =============================================================================
 # Pack Configuration Wrapper
 # =============================================================================
-
 
 class PackConfig(BaseModel):
     """
@@ -1520,11 +1460,9 @@ class PackConfig(BaseModel):
         """
         return self.model_dump()
 
-
 # =============================================================================
 # Utility Functions
 # =============================================================================
-
 
 def load_preset(preset_name: str, overrides: Optional[Dict[str, Any]] = None) -> PackConfig:
     """
@@ -1538,7 +1476,6 @@ def load_preset(preset_name: str, overrides: Optional[Dict[str, Any]] = None) ->
         Initialised PackConfig from the named preset.
     """
     return PackConfig.from_preset(preset_name, overrides)
-
 
 def validate_config(config: BenchmarkPackConfig) -> List[str]:
     """
@@ -1635,7 +1572,6 @@ def validate_config(config: BenchmarkPackConfig) -> List[str]:
 
     return warnings
 
-
 def get_default_config(
     sector: SectorClassification = SectorClassification.GICS_4DIG,
 ) -> BenchmarkPackConfig:
@@ -1650,7 +1586,6 @@ def get_default_config(
     """
     return BenchmarkPackConfig(sector_classification=sector)
 
-
 def list_available_presets() -> Dict[str, str]:
     """
     Return a copy of all available preset names and descriptions.
@@ -1659,7 +1594,6 @@ def list_available_presets() -> Dict[str, str]:
         Dict mapping preset name to human-readable description.
     """
     return AVAILABLE_PRESETS.copy()
-
 
 def get_pcaf_quality_info(score: int) -> Optional[Dict[str, Any]]:
     """
@@ -1672,7 +1606,6 @@ def get_pcaf_quality_info(score: int) -> Optional[Dict[str, Any]]:
         Dict of quality threshold metadata, or None if score invalid.
     """
     return PCAF_QUALITY_THRESHOLDS.get(score)
-
 
 def get_sbti_pathway(
     sector_key: str,
@@ -1688,7 +1621,6 @@ def get_sbti_pathway(
     """
     return SBTI_SECTOR_PATHWAYS.get(sector_key)
 
-
 def get_carbon_budget(
     scenario: str,
 ) -> Optional[Dict[str, Any]]:
@@ -1702,7 +1634,6 @@ def get_carbon_budget(
         Dict of carbon budget data, or None if scenario not found.
     """
     return IPCC_CARBON_BUDGETS.get(scenario)
-
 
 def get_peer_size_band(
     revenue_meur: Decimal,

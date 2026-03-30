@@ -29,13 +29,13 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas.enums import ValidationSeverity
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -46,7 +46,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -56,14 +55,12 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     PARTIAL = "partial"
 
-
 class FilingTarget(str, Enum):
     """Regulatory filing target registries."""
 
     ESAP = "ESAP"
     NATIONAL = "national_registries"
     EDGAR = "EDGAR"
-
 
 class FilingFormat(str, Enum):
     """Filing output formats."""
@@ -73,15 +70,6 @@ class FilingFormat(str, Enum):
     INLINE_XBRL = "inline_XBRL"
     PDF = "PDF"
     XHTML = "XHTML"
-
-
-class ValidationSeverity(str, Enum):
-    """Validation error severity."""
-
-    ERROR = "error"
-    WARNING = "warning"
-    INFO = "info"
-
 
 class SubmissionStatus(str, Enum):
     """Registry submission status."""
@@ -93,7 +81,6 @@ class SubmissionStatus(str, Enum):
     ACKNOWLEDGED = "acknowledged"
     ERROR = "error"
 
-
 class ApprovalStatus(str, Enum):
     """Internal approval status."""
 
@@ -102,11 +89,9 @@ class ApprovalStatus(str, Enum):
     REJECTED = "rejected"
     ESCALATED = "escalated"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -119,7 +104,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list, description="Errors encountered")
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
 
-
 class ValidationError(BaseModel):
     """A single validation error or warning."""
 
@@ -128,7 +112,6 @@ class ValidationError(BaseModel):
     message: str = Field(..., description="Error description")
     location: str = Field(default="", description="Location in the filing package")
     rule_reference: str = Field(default="", description="Validation rule reference")
-
 
 class FilingTargetConfig(BaseModel):
     """Configuration for a specific filing target."""
@@ -141,7 +124,6 @@ class FilingTargetConfig(BaseModel):
     taxonomy_version: str = Field(default="2023", description="XBRL taxonomy version")
     language: str = Field(default="en", description="Filing language")
     additional_metadata: Dict[str, Any] = Field(default_factory=dict)
-
 
 class FilingInput(BaseModel):
     """Input for the regulatory filing workflow."""
@@ -172,7 +154,6 @@ class FilingInput(BaseModel):
             raise ValueError(f"Date must be YYYY-MM-DD format, got: {v}")
         return v
 
-
 class SubmissionRecord(BaseModel):
     """Record of a single registry submission."""
 
@@ -184,7 +165,6 @@ class SubmissionRecord(BaseModel):
     reference_number: str = Field(default="", description="Registry reference number")
     errors: List[str] = Field(default_factory=list)
     package_hash: str = Field(default="", description="SHA-256 of submitted package")
-
 
 class FilingResult(BaseModel):
     """Complete result from the regulatory filing workflow."""
@@ -203,11 +183,9 @@ class FilingResult(BaseModel):
     archive_id: str = Field(default="", description="Post-filing archive ID")
     provenance_hash: str = Field(default="", description="SHA-256 of complete output")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class RegulatoryFilingWorkflow:
     """

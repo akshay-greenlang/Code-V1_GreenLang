@@ -36,20 +36,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -62,11 +57,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SetupWizardStep(str, Enum):
     """Names of setup wizard steps in execution order."""
@@ -80,7 +73,6 @@ class SetupWizardStep(str, Enum):
     RENEWABLE_SYSTEMS = "renewable_systems"
     REGULATORY_SCOPE = "regulatory_scope"
 
-
 class StepStatus(str, Enum):
     """Status of a wizard step."""
 
@@ -90,11 +82,9 @@ class StepStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class BuildingTypeConfig(BaseModel):
     """Building type configuration from step 1."""
@@ -104,7 +94,6 @@ class BuildingTypeConfig(BaseModel):
     building_use: str = Field(default="office", description="Primary use")
     is_listed: bool = Field(default=False, description="Heritage/listed building")
     is_public: bool = Field(default=False, description="Public sector building")
-
 
 class LocationClimateConfig(BaseModel):
     """Location and climate configuration from step 2."""
@@ -122,7 +111,6 @@ class LocationClimateConfig(BaseModel):
     heating_degree_days: float = Field(default=2600, ge=0)
     cooling_degree_days: float = Field(default=100, ge=0)
 
-
 class BuildingGeometryConfig(BaseModel):
     """Building geometry configuration from step 3."""
 
@@ -136,7 +124,6 @@ class BuildingGeometryConfig(BaseModel):
     year_of_last_renovation: Optional[int] = Field(None, ge=1800, le=2035)
     window_to_wall_ratio: float = Field(default=0.30, ge=0, le=1.0)
     perimeter_m: float = Field(default=0.0, ge=0)
-
 
 class EnvelopeConfig(BaseModel):
     """Building envelope configuration from step 4."""
@@ -152,7 +139,6 @@ class EnvelopeConfig(BaseModel):
     window_g_value: float = Field(default=0.50, ge=0, le=1)
     air_permeability_m3_m2_h: float = Field(default=7.0, ge=0, le=50)
     thermal_mass: str = Field(default="medium", description="low/medium/high")
-
 
 class HVACSystemsConfig(BaseModel):
     """HVAC systems configuration from step 5."""
@@ -170,7 +156,6 @@ class HVACSystemsConfig(BaseModel):
     bms_installed: bool = Field(default=False)
     refrigerant_type: str = Field(default="R410A")
 
-
 class LightingDHWConfig(BaseModel):
     """Lighting and DHW configuration from step 6."""
 
@@ -184,7 +169,6 @@ class LightingDHWConfig(BaseModel):
     dhw_efficiency: float = Field(default=0.85, ge=0, le=5)
     dhw_demand_kwh_m2: float = Field(default=15.0, ge=0)
     external_lighting_w: float = Field(default=0.0, ge=0)
-
 
 class RenewableSystemsConfig(BaseModel):
     """Renewable systems configuration from step 7."""
@@ -201,7 +185,6 @@ class RenewableSystemsConfig(BaseModel):
     biomass_boiler: bool = Field(default=False)
     chp_installed: bool = Field(default=False)
 
-
 class RegulatoryConfig(BaseModel):
     """Regulatory scope configuration from step 8."""
 
@@ -216,7 +199,6 @@ class RegulatoryConfig(BaseModel):
     include_whole_life_carbon: bool = Field(default=False)
     reporting_frameworks: List[str] = Field(default_factory=list)
 
-
 class WizardStepState(BaseModel):
     """State of a single wizard step."""
 
@@ -228,7 +210,6 @@ class WizardStepState(BaseModel):
     started_at: Optional[datetime] = Field(None)
     completed_at: Optional[datetime] = Field(None)
     execution_time_ms: float = Field(default=0.0)
-
 
 class WizardState(BaseModel):
     """Complete state of the setup wizard."""
@@ -245,9 +226,8 @@ class WizardState(BaseModel):
     renewable_systems: Optional[RenewableSystemsConfig] = Field(None)
     regulatory_config: Optional[RegulatoryConfig] = Field(None)
     is_complete: bool = Field(default=False)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     completed_at: Optional[datetime] = Field(None)
-
 
 class SetupResult(BaseModel):
     """Final setup result."""
@@ -267,9 +247,8 @@ class SetupResult(BaseModel):
     total_steps_completed: int = Field(default=0)
     total_steps: int = Field(default=8)
     configuration_hash: str = Field(default="")
-    generated_at: datetime = Field(default_factory=_utcnow)
+    generated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Step Definitions
@@ -368,11 +347,9 @@ BUILDING_PRESETS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # SetupWizard
 # ---------------------------------------------------------------------------
-
 
 class SetupWizard:
     """8-step guided building configuration wizard for PACK-032.
@@ -407,7 +384,7 @@ class SetupWizard:
 
     def start(self) -> WizardState:
         """Start a new wizard session."""
-        wizard_id = _compute_hash(f"building-assessment-wizard:{_utcnow().isoformat()}")[:16]
+        wizard_id = _compute_hash(f"building-assessment-wizard:{utcnow().isoformat()}")[:16]
         steps: Dict[str, WizardStepState] = {}
         for step_name in STEP_ORDER:
             steps[step_name.value] = WizardStepState(
@@ -442,7 +419,7 @@ class SetupWizard:
             raise ValueError(f"Step '{step_name}' not found")
 
         step.status = StepStatus.IN_PROGRESS
-        step.started_at = _utcnow()
+        step.started_at = utcnow()
         start_time = time.monotonic()
 
         handler = self._step_handlers.get(step_enum)
@@ -460,7 +437,7 @@ class SetupWizard:
                 step.validation_errors = errors
             else:
                 step.status = StepStatus.COMPLETED
-                step.completed_at = _utcnow()
+                step.completed_at = utcnow()
                 step.validation_errors = []
                 self._advance_step(step_enum)
         except Exception as exc:
@@ -666,7 +643,7 @@ class SetupWizard:
             self._state.current_step = STEP_ORDER[idx + 1]
         else:
             self._state.is_complete = True
-            self._state.completed_at = _utcnow()
+            self._state.completed_at = utcnow()
 
     def _generate_result(self) -> SetupResult:
         """Generate the final setup result from wizard state."""

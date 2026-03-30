@@ -17,9 +17,11 @@ import pytest
 
 import sys
 import os
+from greenlang.schemas import utcnow
 sys.path.insert(0, os.path.dirname(__file__))
 
 from conftest import (
+
     PACK005_WORKFLOW_IDS,
     _compute_hash,
     _new_uuid,
@@ -54,7 +56,7 @@ class TestCertificateTradingWorkflow:
         phase = self.PHASES[phase_idx]
         result = {
             "phase": phase,
-            "started_at": _utcnow().isoformat(),
+            "started_at": utcnow().isoformat(),
             "status": "completed",
             "duration_ms": 150 + phase_idx * 50,
         }

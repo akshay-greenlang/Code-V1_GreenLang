@@ -21,6 +21,7 @@ import uuid
 from pydantic import BaseModel, Field, validator
 
 from .config import BMSSequence, ControlMode, EmissionControlTechnology
+from greenlang.schemas.enums import AlertSeverity
 
 
 # =============================================================================
@@ -41,15 +42,6 @@ class OperatingStatus(Enum):
     TRIP = "trip"
     LOCKOUT = "lockout"
     MAINTENANCE = "maintenance"
-
-
-class AlertSeverity(Enum):
-    """Alert severity levels."""
-    INFO = "info"
-    WARNING = "warning"
-    ALARM = "alarm"
-    CRITICAL = "critical"
-    TRIP = "trip"
 
 
 class RecommendationPriority(Enum):

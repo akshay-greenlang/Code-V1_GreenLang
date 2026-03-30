@@ -36,23 +36,17 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID-4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hex digest for provenance tracking."""
@@ -65,11 +59,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Execution status for a single workflow phase."""
@@ -79,14 +71,12 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class ScreeningPhase(str, Enum):
     """Greenwashing screening workflow phase identifiers."""
     CLAIM_UNIVERSE_EXTRACTION = "ClaimUniverseExtraction"
     SEVEN_SINS_ANALYSIS = "SevenSinsAnalysis"
     RISK_SCORING = "RiskScoring"
     ACTION_PLAN_GENERATION = "ActionPlanGeneration"
-
 
 class SevenSin(str, Enum):
     """TerraChoice Seven Sins of Greenwashing + UCPD extensions."""
@@ -102,7 +92,6 @@ class SevenSin(str, Enum):
     FUTURE_PROMISE = "future_promise"
     OFFSET_RELIANCE = "offset_reliance"
 
-
 class ClaimChannel(str, Enum):
     """Communication channel where claims appear."""
     WEBSITE = "website"
@@ -114,7 +103,6 @@ class ClaimChannel(str, Enum):
     POINT_OF_SALE = "point_of_sale"
     OTHER = "other"
 
-
 class RiskTier(str, Enum):
     """Risk tier classification for remediation prioritisation."""
     CRITICAL = "critical"
@@ -123,11 +111,9 @@ class RiskTier(str, Enum):
     LOW = "low"
     NEGLIGIBLE = "negligible"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class ScreeningConfig(BaseModel):
     """Configuration for GreenwashingScreeningWorkflow."""
@@ -148,7 +134,6 @@ class ScreeningConfig(BaseModel):
         description="Risk score threshold for low classification",
     )
 
-
 class ScreeningResult(BaseModel):
     """Per-claim screening result."""
     claim_id: str = Field(..., description="Unique claim identifier")
@@ -160,7 +145,6 @@ class ScreeningResult(BaseModel):
     remediation_actions: List[str] = Field(default_factory=list)
     priority_rank: int = Field(default=0, ge=0)
 
-
 class WorkflowInput(BaseModel):
     """Input model for GreenwashingScreeningWorkflow."""
     claims: List[Dict[str, Any]] = Field(
@@ -170,7 +154,6 @@ class WorkflowInput(BaseModel):
     entity_name: str = Field(default="", description="Reporting entity name")
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
     phase_name: str = Field(..., description="Phase identifier")
@@ -179,7 +162,6 @@ class PhaseResult(BaseModel):
     completed_at: Optional[datetime] = Field(default=None)
     result_data: Dict[str, Any] = Field(default_factory=dict)
     error_message: Optional[str] = Field(default=None)
-
 
 class WorkflowResult(BaseModel):
     """Complete result from GreenwashingScreeningWorkflow."""
@@ -192,11 +174,9 @@ class WorkflowResult(BaseModel):
     started_at: Optional[datetime] = Field(default=None)
     completed_at: Optional[datetime] = Field(default=None)
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class GreenwashingScreeningWorkflow:
     """
@@ -303,7 +283,7 @@ class GreenwashingScreeningWorkflow:
             config=kwargs.get("config", {}),
         )
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting %s workflow %s -- %d claims",
                          self.WORKFLOW_NAME, self.workflow_id, len(input_data.claims))
         phase_results: List[PhaseResult] = []
@@ -332,12 +312,12 @@ class GreenwashingScreeningWorkflow:
             phase_results.append(PhaseResult(
                 phase_name="error_capture",
                 status=PhaseStatus.FAILED,
-                started_at=_utcnow(),
-                completed_at=_utcnow(),
+                started_at=utcnow(),
+                completed_at=utcnow(),
                 error_message=str(exc),
             ))
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
 
         completed_phases = [p for p in phase_results if p.status == PhaseStatus.COMPLETED]
         overall_result: Dict[str, Any] = {
@@ -412,7 +392,7 @@ class GreenwashingScreeningWorkflow:
 
     def _run_claim_universe_extraction(self, input_data: WorkflowInput) -> PhaseResult:
         """Extract and normalise claims from all communication channels."""
-        started = _utcnow()
+        started = utcnow()
         self.logger.info("Phase 1/4 ClaimUniverseExtraction -- processing %d claims",
                          len(input_data.claims))
 
@@ -446,7 +426,7 @@ class GreenwashingScreeningWorkflow:
             phase_name=ScreeningPhase.CLAIM_UNIVERSE_EXTRACTION.value,
             status=PhaseStatus.COMPLETED,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             result_data=result_data,
         )
 
@@ -456,7 +436,7 @@ class GreenwashingScreeningWorkflow:
 
     def _run_seven_sins_analysis(self, universe_data: Dict[str, Any]) -> PhaseResult:
         """Evaluate each claim against TerraChoice Seven Sins and UCPD criteria."""
-        started = _utcnow()
+        started = utcnow()
         self.logger.info("Phase 2/4 SevenSinsAnalysis -- evaluating patterns")
 
         analysed: List[Dict[str, Any]] = []
@@ -494,7 +474,7 @@ class GreenwashingScreeningWorkflow:
             phase_name=ScreeningPhase.SEVEN_SINS_ANALYSIS.value,
             status=PhaseStatus.COMPLETED,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             result_data=result_data,
         )
 
@@ -504,7 +484,7 @@ class GreenwashingScreeningWorkflow:
 
     def _run_risk_scoring(self, sins_data: Dict[str, Any]) -> PhaseResult:
         """Score each claim 0-100 based on detected sins and context."""
-        started = _utcnow()
+        started = utcnow()
         self.logger.info("Phase 3/4 RiskScoring -- computing scores")
 
         scored: List[Dict[str, Any]] = []
@@ -547,7 +527,7 @@ class GreenwashingScreeningWorkflow:
             phase_name=ScreeningPhase.RISK_SCORING.value,
             status=PhaseStatus.COMPLETED,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             result_data=result_data,
         )
 
@@ -557,7 +537,7 @@ class GreenwashingScreeningWorkflow:
 
     def _run_action_plan_generation(self, risk_data: Dict[str, Any]) -> PhaseResult:
         """Generate a prioritised remediation action plan."""
-        started = _utcnow()
+        started = utcnow()
         self.logger.info("Phase 4/4 ActionPlanGeneration -- building action plan")
 
         action_items: List[Dict[str, Any]] = []
@@ -598,7 +578,7 @@ class GreenwashingScreeningWorkflow:
             phase_name=ScreeningPhase.ACTION_PLAN_GENERATION.value,
             status=PhaseStatus.COMPLETED,
             started_at=started,
-            completed_at=_utcnow(),
+            completed_at=utcnow(),
             result_data=result_data,
         )
 

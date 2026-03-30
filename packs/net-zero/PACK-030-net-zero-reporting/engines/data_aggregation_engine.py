@@ -74,25 +74,19 @@ from typing import Any, Dict, List, Optional, Tuple, Set
 
 from pydantic import BaseModel, Field, field_validator, ConfigDict
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -110,7 +104,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -119,7 +112,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -131,17 +123,14 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places."""
@@ -149,11 +138,9 @@ def _round3(value: float) -> float:
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DataSourceType(str, Enum):
     """Type of data source for aggregation."""
@@ -168,7 +155,6 @@ class DataSourceType(str, Enum):
     ERP_SYSTEM = "erp_system"
     FILE_UPLOAD = "file_upload"
     API_EXTERNAL = "api_external"
-
 
 class MetricCategory(str, Enum):
     """Category of metric being aggregated."""
@@ -186,7 +172,6 @@ class MetricCategory(str, Enum):
     CARBON_INTENSITY = "carbon_intensity"
     FINANCIAL_METRIC = "financial_metric"
 
-
 class ReconciliationStatus(str, Enum):
     """Status of data reconciliation between sources."""
     RECONCILED = "reconciled"
@@ -196,14 +181,12 @@ class ReconciliationStatus(str, Enum):
     PENDING_REVIEW = "pending_review"
     APPROVED = "approved"
 
-
 class DataQuality(str, Enum):
     """Data quality tier for aggregated data."""
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
     ESTIMATED = "estimated"
-
 
 class GapSeverity(str, Enum):
     """Severity of a data gap."""
@@ -212,7 +195,6 @@ class GapSeverity(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     INFO = "info"
-
 
 class FrameworkTarget(str, Enum):
     """Target reporting framework."""
@@ -224,14 +206,12 @@ class FrameworkTarget(str, Enum):
     SEC = "SEC"
     CSRD = "CSRD"
 
-
 class ConnectionStatus(str, Enum):
     """Status of a source connection."""
     CONNECTED = "connected"
     DISCONNECTED = "disconnected"
     DEGRADED = "degraded"
     NOT_CONFIGURED = "not_configured"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Framework Metric Requirements
@@ -308,11 +288,9 @@ SOURCE_PRIORITY: Dict[str, int] = {
     DataSourceType.API_EXTERNAL.value: 11,
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class SourceDataPoint(BaseModel):
     """A single data point from a source system.
@@ -348,7 +326,7 @@ class SourceDataPoint(BaseModel):
         default=None, description="Reporting period end"
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Data timestamp"
+        default_factory=utcnow, description="Data timestamp"
     )
     source_record_id: str = Field(
         default="", description="Source record identifier"
@@ -361,7 +339,6 @@ class SourceDataPoint(BaseModel):
         default="", description="Calculation methodology"
     )
     notes: str = Field(default="", description="Additional notes")
-
 
 class SourceConnection(BaseModel):
     """Configuration for a data source connection.
@@ -387,7 +364,6 @@ class SourceConnection(BaseModel):
         default=None, description="Last sync time"
     )
     priority: int = Field(default=10, ge=1, le=100, description="Priority")
-
 
 class DataAggregationInput(BaseModel):
     """Input for the data aggregation engine.
@@ -450,11 +426,9 @@ class DataAggregationInput(BaseModel):
         description="Preferred Scope 2 method",
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class AggregatedMetric(BaseModel):
     """A single aggregated metric with provenance.
@@ -490,7 +464,6 @@ class AggregatedMetric(BaseModel):
     methodology: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 class ReconciliationItem(BaseModel):
     """A reconciliation check between sources.
 
@@ -519,7 +492,6 @@ class ReconciliationItem(BaseModel):
     selected_value: Decimal = Field(default=Decimal("0"))
     selected_source: str = Field(default="")
 
-
 class DataGap(BaseModel):
     """A detected data gap.
 
@@ -537,7 +509,6 @@ class DataGap(BaseModel):
     description: str = Field(default="")
     suggested_source: str = Field(default="")
     impact: str = Field(default="")
-
 
 class LineageNode(BaseModel):
     """A node in the data lineage graph.
@@ -563,7 +534,6 @@ class LineageNode(BaseModel):
     parent_ids: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class LineageGraph(BaseModel):
     """Data lineage graph showing source-to-metric flow.
 
@@ -579,7 +549,6 @@ class LineageGraph(BaseModel):
     total_sources: int = Field(default=0)
     total_transformations: int = Field(default=0)
     total_metrics: int = Field(default=0)
-
 
 class FrameworkCompleteness(BaseModel):
     """Completeness assessment for a single framework.
@@ -601,7 +570,6 @@ class FrameworkCompleteness(BaseModel):
     missing_metric_names: List[str] = Field(default_factory=list)
     status: str = Field(default="incomplete")
 
-
 class SourceHealthStatus(BaseModel):
     """Health status for a data source.
 
@@ -619,7 +587,6 @@ class SourceHealthStatus(BaseModel):
     last_sync: Optional[datetime] = Field(default=None)
     latency_ms: float = Field(default=0.0)
     error_message: str = Field(default="")
-
 
 class DataAggregationResult(BaseModel):
     """Complete data aggregation result.
@@ -652,7 +619,7 @@ class DataAggregationResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     organization_id: str = Field(default="")
     organization_name: str = Field(default="")
     reporting_period_start: Optional[date] = Field(default=None)
@@ -677,11 +644,9 @@ class DataAggregationResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class DataAggregationEngine:
     """Multi-source data aggregation engine for PACK-030.

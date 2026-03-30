@@ -53,18 +53,13 @@ from typing import Any, Callable, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # UTILITIES
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return current UTC time with timezone info."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute SHA-256 provenance hash of arbitrary data."""
@@ -72,11 +67,9 @@ def _hash_data(data: Any) -> str:
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -86,7 +79,6 @@ class PhaseStatus(str, Enum):
     FAILED = "FAILED"
     SKIPPED = "SKIPPED"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "PENDING"
@@ -94,7 +86,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
     PARTIAL = "PARTIAL"
-
 
 class IssueSeverity(str, Enum):
     """Compliance issue severity."""
@@ -104,14 +95,12 @@ class IssueSeverity(str, Enum):
     LOW = "LOW"
     INFO = "INFO"
 
-
 class DisclosureType(str, Enum):
     """Type of SFDR disclosure."""
     ANNEX_II = "ANNEX_II"
     ANNEX_III = "ANNEX_III"
     ANNEX_IV = "ANNEX_IV"
     PAI_STATEMENT = "PAI_STATEMENT"
-
 
 class ActionPriority(str, Enum):
     """Action item priority."""
@@ -120,17 +109,15 @@ class ActionPriority(str, Enum):
     MEDIUM = "MEDIUM"
     LOW = "LOW"
 
-
 # =============================================================================
 # DATA MODELS - SHARED
 # =============================================================================
-
 
 class WorkflowContext(BaseModel):
     """Shared state passed between workflow phases."""
     workflow_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     organization_id: str = Field(..., description="Organization identifier")
-    execution_timestamp: datetime = Field(default_factory=_utcnow)
+    execution_timestamp: datetime = Field(default_factory=utcnow)
     config: Dict[str, Any] = Field(default_factory=dict)
     phase_states: Dict[str, PhaseStatus] = Field(default_factory=dict)
     phase_outputs: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
@@ -153,7 +140,6 @@ class WorkflowContext(BaseModel):
         """Check if a phase has already completed."""
         return self.phase_states.get(phase_name) == PhaseStatus.COMPLETED
 
-
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
     phase_name: str = Field(..., description="Phase identifier")
@@ -167,7 +153,6 @@ class PhaseResult(BaseModel):
     provenance_hash: str = Field(default="")
     records_processed: int = Field(default=0)
 
-
 class WorkflowResult(BaseModel):
     """Complete result from a multi-phase workflow execution."""
     workflow_id: str = Field(..., description="Unique workflow execution ID")
@@ -180,11 +165,9 @@ class WorkflowResult(BaseModel):
     summary: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # DATA MODELS - COMPLIANCE REVIEW
 # =============================================================================
-
 
 class DisclosureStatus(BaseModel):
     """Status of a specific disclosure document."""
@@ -195,7 +178,6 @@ class DisclosureStatus(BaseModel):
     published: bool = Field(default=False)
     publication_url: Optional[str] = Field(None)
     completeness_pct: float = Field(default=0.0, ge=0.0, le=100.0)
-
 
 class BindingElement(BaseModel):
     """A binding element commitment to verify."""
@@ -210,7 +192,6 @@ class BindingElement(BaseModel):
     unit: str = Field(default="%")
     is_satisfied: Optional[bool] = Field(None)
 
-
 class PAIDataQuality(BaseModel):
     """PAI data quality metrics."""
     indicator_id: str = Field(...)
@@ -219,7 +200,6 @@ class PAIDataQuality(BaseModel):
     estimation_rate_pct: float = Field(default=0.0, ge=0.0, le=100.0)
     data_age_months: Optional[int] = Field(None, ge=0)
     data_source: str = Field(default="")
-
 
 class ComplianceReviewInput(BaseModel):
     """Input configuration for the compliance review workflow."""
@@ -276,7 +256,6 @@ class ComplianceReviewInput(BaseModel):
             raise ValueError("review_date must be YYYY-MM-DD format")
         return v
 
-
 class ComplianceReviewResult(WorkflowResult):
     """Complete result from the compliance review workflow."""
     product_name: str = Field(default="")
@@ -290,11 +269,9 @@ class ComplianceReviewResult(WorkflowResult):
     urgent_action_items: int = Field(default=0)
     is_fully_compliant: bool = Field(default=False)
 
-
 # =============================================================================
 # PHASE IMPLEMENTATIONS
 # =============================================================================
-
 
 class DisclosureCompletenessPhase:
     """
@@ -314,7 +291,7 @@ class DisclosureCompletenessPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Execute disclosure completeness phase."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -441,7 +418,7 @@ class DisclosureCompletenessPhase:
             errors.append(f"Disclosure completeness check failed: {str(exc)}")
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -453,7 +430,6 @@ class DisclosureCompletenessPhase:
             warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 class DataQualityPhase:
     """
@@ -467,7 +443,7 @@ class DataQualityPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Execute data quality phase."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -586,7 +562,7 @@ class DataQualityPhase:
             status = PhaseStatus.FAILED
             records = 0
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -600,7 +576,6 @@ class DataQualityPhase:
             records_processed=records,
         )
 
-
 class CommitmentAdherencePhase:
     """
     Phase 3: Commitment Adherence.
@@ -613,7 +588,7 @@ class CommitmentAdherencePhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Execute commitment adherence phase."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -784,7 +759,7 @@ class CommitmentAdherencePhase:
             errors.append(f"Commitment adherence check failed: {str(exc)}")
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -796,7 +771,6 @@ class CommitmentAdherencePhase:
             warnings=warnings,
             provenance_hash=_hash_data(outputs),
         )
-
 
 class ActionItemsPhase:
     """
@@ -810,7 +784,7 @@ class ActionItemsPhase:
 
     async def execute(self, context: WorkflowContext) -> PhaseResult:
         """Execute action items phase."""
-        started_at = _utcnow()
+        started_at = utcnow()
         errors: List[str] = []
         warnings: List[str] = []
         outputs: Dict[str, Any] = {}
@@ -936,7 +910,7 @@ class ActionItemsPhase:
             errors.append(f"Action items generation failed: {str(exc)}")
             status = PhaseStatus.FAILED
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         return PhaseResult(
             phase_name=self.PHASE_NAME,
             status=status,
@@ -1011,11 +985,9 @@ class ActionItemsPhase:
         }
         return owner_map.get(category, "compliance_officer")
 
-
 # =============================================================================
 # WORKFLOW ORCHESTRATOR
 # =============================================================================
-
 
 class ComplianceReviewWorkflow:
     """
@@ -1062,7 +1034,7 @@ class ComplianceReviewWorkflow:
         self, input_data: ComplianceReviewInput
     ) -> ComplianceReviewResult:
         """Execute the complete 4-phase compliance review workflow."""
-        started_at = _utcnow()
+        started_at = utcnow()
         logger.info(
             "Starting compliance review workflow %s for org=%s product=%s",
             self.workflow_id, input_data.organization_id,
@@ -1118,7 +1090,7 @@ class ComplianceReviewWorkflow:
                 error_result = PhaseResult(
                     phase_name=phase_name,
                     status=PhaseStatus.FAILED,
-                    started_at=_utcnow(),
+                    started_at=utcnow(),
                     errors=[str(exc)],
                     provenance_hash=_hash_data({"error": str(exc)}),
                 )
@@ -1136,7 +1108,7 @@ class ComplianceReviewWorkflow:
                 WorkflowStatus.COMPLETED if all_ok else WorkflowStatus.PARTIAL
             )
 
-        completed_at = _utcnow()
+        completed_at = utcnow()
         total_duration = (completed_at - started_at).total_seconds()
         summary = self._build_summary(context)
         provenance = _hash_data({

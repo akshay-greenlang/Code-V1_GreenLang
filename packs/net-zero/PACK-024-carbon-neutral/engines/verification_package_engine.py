@@ -77,23 +77,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -110,7 +105,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -119,7 +113,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -127,26 +120,21 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     return float(
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ComponentId(str, Enum):
     """Verification package component identifiers.
@@ -164,7 +152,6 @@ class ComponentId(str, Enum):
     TEMPORAL_ALIGNMENT = "temporal_alignment"
     ASSURANCE_STATEMENT = "assurance_statement"
 
-
 class ComponentStatus(str, Enum):
     """Component status in the verification package.
 
@@ -178,7 +165,6 @@ class ComponentStatus(str, Enum):
     MISSING = "missing"
     NOT_REQUIRED = "not_required"
 
-
 class AssuranceLevel(str, Enum):
     """Level of assurance per ISAE 3410.
 
@@ -190,7 +176,6 @@ class AssuranceLevel(str, Enum):
     REASONABLE = "reasonable"
     NO_ASSURANCE = "no_assurance"
 
-
 class VerificationReadiness(str, Enum):
     """Verification package readiness.
 
@@ -201,7 +186,6 @@ class VerificationReadiness(str, Enum):
     READY = "ready"
     CONDITIONALLY_READY = "conditionally_ready"
     NOT_READY = "not_ready"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -353,11 +337,9 @@ COMPONENT_DEFINITIONS: Dict[str, Dict[str, Any]] = {
 MIN_COMPLETENESS_READY: Decimal = Decimal("80")
 MIN_COMPLETENESS_CONDITIONAL: Decimal = Decimal("60")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class ComponentInput(BaseModel):
     """Input for a single verification package component.
@@ -410,7 +392,6 @@ class ComponentInput(BaseModel):
             raise ValueError(f"Unknown status '{v}'.")
         return v
 
-
 class VerificationPackageInput(BaseModel):
     """Complete input for verification package assembly.
 
@@ -447,11 +428,9 @@ class VerificationPackageInput(BaseModel):
     include_gap_analysis: bool = Field(default=True)
     include_recommendations: bool = Field(default=True)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class ComponentResult(BaseModel):
     """Assessment result for a single component.
@@ -493,7 +472,6 @@ class ComponentResult(BaseModel):
     issues: List[str] = Field(default_factory=list)
     recommendations: List[str] = Field(default_factory=list)
 
-
 class GapAnalysis(BaseModel):
     """Gap analysis for the verification package.
 
@@ -509,7 +487,6 @@ class GapAnalysis(BaseModel):
     element_gaps: int = Field(default=0)
     estimated_effort_days: int = Field(default=0)
     priority_actions: List[str] = Field(default_factory=list)
-
 
 class VerificationPackageResult(BaseModel):
     """Complete verification package result.
@@ -541,7 +518,7 @@ class VerificationPackageResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     assessment_year: int = Field(default=0)
     claim_type: str = Field(default="")
@@ -563,11 +540,9 @@ class VerificationPackageResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class VerificationPackageEngine:
     """10-component verification package assembly engine.

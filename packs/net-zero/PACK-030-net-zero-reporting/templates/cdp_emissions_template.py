@@ -37,6 +37,8 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "30.0.0"
@@ -83,10 +85,6 @@ XBRL_TAGS: Dict[str, str] = {
     "methodology": "gl:CDPEmissionsMethodology",
 }
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 
@@ -130,7 +128,6 @@ def _pct_of_total(part: float, total: float) -> str:
         return "0.00"
     return _dec(part / total * 100)
 
-
 class CDPEmissionsTemplate:
     """
     CDP C4-C7 Emissions template for PACK-030 Net Zero Reporting Pack.
@@ -157,7 +154,7 @@ class CDPEmissionsTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render CDP emissions report as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections = [
             self._md_header(data), self._md_executive_summary(data),
             self._md_c4_targets(data), self._md_c4_1_targets_detail(data),
@@ -174,7 +171,7 @@ class CDPEmissionsTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render CDP emissions report as HTML."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         parts = [
             self._html_header(data), self._html_executive_summary(data),
@@ -194,7 +191,7 @@ class CDPEmissionsTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render as structured JSON."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         s1 = data.get("scope1", {})
         s2 = data.get("scope2", {})
         s3 = data.get("scope3", {})

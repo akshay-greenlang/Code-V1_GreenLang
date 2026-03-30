@@ -72,25 +72,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -108,7 +102,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -117,7 +110,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -129,22 +121,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DERAssetType(str, Enum):
     """Distributed Energy Resource asset type classification.
@@ -163,7 +151,6 @@ class DERAssetType(str, Enum):
     THERMAL_STORAGE = "thermal_storage"
     CHP = "chp"
 
-
 class DERStatus(str, Enum):
     """Operational status of a DER asset.
 
@@ -181,7 +168,6 @@ class DERStatus(str, Enum):
     STANDBY = "standby"
     DEGRADED = "degraded"
 
-
 class DispatchPriority(str, Enum):
     """Dispatch priority for DER assets during DR events.
 
@@ -197,7 +183,6 @@ class DispatchPriority(str, Enum):
     LOW = "low"
     EXCLUDED = "excluded"
 
-
 class DegradationModel(str, Enum):
     """Battery degradation model type.
 
@@ -210,7 +195,6 @@ class DegradationModel(str, Enum):
     CALENDAR = "calendar"
     COMBINED = "combined"
     NONE = "none"
-
 
 class DispatchStrategy(str, Enum):
     """Portfolio dispatch strategy for DR events.
@@ -226,7 +210,6 @@ class DispatchStrategy(str, Enum):
     MAXIMIZE_DURATION = "maximize_duration"
     MINIMIZE_DEGRADATION = "minimize_degradation"
     ROUND_ROBIN = "round_robin"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -267,11 +250,9 @@ DEFAULT_MARGINAL_COST: Dict[str, Decimal] = {
     DERAssetType.CHP.value: Decimal("0.12"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class DERAsset(BaseModel):
     """Distributed Energy Resource asset definition.
@@ -380,7 +361,6 @@ class DERAsset(BaseModel):
             raise ValueError("SOC max must be >= 0.50")
         return v
 
-
 class DispatchRequest(BaseModel):
     """Dispatch request for a DR event.
 
@@ -412,11 +392,9 @@ class DispatchRequest(BaseModel):
         default_factory=list, description="Asset IDs to exclude"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class DERDispatch(BaseModel):
     """Dispatch assignment for a single DER asset.
@@ -461,7 +439,6 @@ class DERDispatch(BaseModel):
     constraint_notes: str = Field(
         default="", description="Constraint notes"
     )
-
 
 class DERPerformance(BaseModel):
     """Performance metrics for a DER asset over a period.
@@ -512,7 +489,6 @@ class DERPerformance(BaseModel):
         default=Decimal("0"), description="Avg response time (min)"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 class DERPortfolio(BaseModel):
     """Aggregated DER portfolio summary.
@@ -574,15 +550,13 @@ class DERPortfolio(BaseModel):
         default_factory=dict, description="kW by asset type"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class DERCoordinatorEngine:
     """DER coordination engine for demand response programmes.
@@ -722,7 +696,7 @@ class DERCoordinatorEngine:
             "total_available_kw": str(_round_val(total_available, 2)),
             "availability_pct": str(_round_val(availability_pct, 2)),
             "assets": results,
-            "assessed_at": _utcnow().isoformat(),
+            "assessed_at": utcnow().isoformat(),
             "processing_time_ms": round(elapsed, 2),
         }
         assessment["provenance_hash"] = _compute_hash(assessment)
@@ -1030,7 +1004,7 @@ class DERCoordinatorEngine:
             },
             "remaining_useful_life_cycles": str(_round_val(rul_cycles, 0)),
             "eol_threshold_pct": "20.0",
-            "calculated_at": _utcnow().isoformat(),
+            "calculated_at": utcnow().isoformat(),
             "processing_time_ms": round(elapsed, 2),
         }
         result["provenance_hash"] = _compute_hash(result)

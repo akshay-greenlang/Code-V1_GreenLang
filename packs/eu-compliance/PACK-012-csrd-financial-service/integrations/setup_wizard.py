@@ -56,18 +56,13 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # Utility Helpers
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute a SHA-256 hash of arbitrary data."""
@@ -75,11 +70,9 @@ def _hash_data(data: Any) -> str:
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # Enums
 # =============================================================================
-
 
 class WizardStepId(str, Enum):
     """Wizard step identifiers."""
@@ -92,7 +85,6 @@ class WizardStepId(str, Enum):
     INTEGRATION_SETUP = "integration_setup"
     REVIEW_VALIDATE = "review_validate"
 
-
 class InstitutionType(str, Enum):
     """Financial institution types."""
     BANK = "bank"
@@ -102,7 +94,6 @@ class InstitutionType(str, Enum):
     PENSION_FUND = "pension_fund"
     DEVELOPMENT_BANK = "development_bank"
 
-
 class StepStatus(str, Enum):
     """Status of a wizard step."""
     PENDING = "pending"
@@ -110,7 +101,6 @@ class StepStatus(str, Enum):
     COMPLETED = "completed"
     SKIPPED = "skipped"
     FAILED = "failed"
-
 
 class RegulatoryFramework(str, Enum):
     """Applicable regulatory frameworks."""
@@ -123,7 +113,6 @@ class RegulatoryFramework(str, Enum):
     CRR_CRD = "crr_crd"
     PCAF = "pcaf"
 
-
 class PCAFAssetClass(str, Enum):
     """PCAF asset classes for financed emissions."""
     LISTED_EQUITY = "listed_equity"
@@ -135,18 +124,15 @@ class PCAFAssetClass(str, Enum):
     MOTOR_VEHICLE_LOANS = "motor_vehicle_loans"
     SOVEREIGN_DEBT = "sovereign_debt"
 
-
 class CSRDTier(str, Enum):
     """CSRD reporting tier."""
     STARTER = "starter"
     PROFESSIONAL = "professional"
     ENTERPRISE = "enterprise"
 
-
 # =============================================================================
 # Data Models
 # =============================================================================
-
 
 class SetupWizardConfig(BaseModel):
     """Configuration for the FI CSRD Setup Wizard."""
@@ -178,7 +164,6 @@ class SetupWizardConfig(BaseModel):
         description="Default reporting currency",
     )
 
-
 class WizardStep(BaseModel):
     """Definition and state of a single wizard step."""
     step_id: str = Field(default="", description="Step identifier")
@@ -208,7 +193,6 @@ class WizardStep(BaseModel):
     validation_warnings: List[str] = Field(
         default_factory=list, description="Validation warnings",
     )
-
 
 class InstitutionInfo(BaseModel):
     """Institution information collected in Step 1."""
@@ -245,7 +229,6 @@ class InstitutionInfo(BaseModel):
         description="Consolidation scope: solo, sub-consolidated, consolidated",
     )
 
-
 class RegulatoryScope(BaseModel):
     """Regulatory scope determined in Step 2."""
     applicable_frameworks: List[str] = Field(
@@ -279,7 +262,6 @@ class RegulatoryScope(BaseModel):
     first_filing_date: str = Field(
         default="", description="First CSRD filing deadline",
     )
-
 
 class DataSourceConfig(BaseModel):
     """Data source configuration from Step 3."""
@@ -315,7 +297,6 @@ class DataSourceConfig(BaseModel):
         default_factory=list,
         description="External ESG data providers (e.g., MSCI, Sustainalytics)",
     )
-
 
 class EngineConfig(BaseModel):
     """Engine configuration from Step 4."""
@@ -363,7 +344,6 @@ class EngineConfig(BaseModel):
         description="Minimum quality gate pass score",
     )
 
-
 class WorkflowConfig(BaseModel):
     """Workflow configuration from Step 5."""
     parallel_execution: bool = Field(
@@ -386,7 +366,6 @@ class WorkflowConfig(BaseModel):
         default_factory=lambda: ["email"],
         description="Notification channels: email, slack, teams, webhook",
     )
-
 
 class TemplateSelection(BaseModel):
     """Template selection from Step 6."""
@@ -420,7 +399,6 @@ class TemplateSelection(BaseModel):
         description="Output format options: pdf, xlsx, xbrl, html, json",
     )
 
-
 class IntegrationSetup(BaseModel):
     """Integration setup from Step 7."""
     csrd_pack_enabled: bool = Field(
@@ -447,7 +425,6 @@ class IntegrationSetup(BaseModel):
     finance_agent_bridge_enabled: bool = Field(
         default=True, description="Enable finance agent bridge",
     )
-
 
 class WizardResult(BaseModel):
     """Complete result of the setup wizard execution."""
@@ -519,11 +496,9 @@ class WizardResult(BaseModel):
         default=0.0, description="Total execution time",
     )
 
-
 # =============================================================================
 # Step Definitions
 # =============================================================================
-
 
 STEP_DEFINITIONS: List[Dict[str, Any]] = [
     {
@@ -620,7 +595,6 @@ STEP_DEFINITIONS: List[Dict[str, Any]] = [
         "is_conditional": False,
     },
 ]
-
 
 # Institution type guidance
 INSTITUTION_TYPE_GUIDANCE: Dict[str, Dict[str, Any]] = {
@@ -733,11 +707,9 @@ INSTITUTION_TYPE_GUIDANCE: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # Setup Wizard
 # =============================================================================
-
 
 class SetupWizard:
     """8-step guided configuration wizard for FI CSRD reporting.
@@ -1035,7 +1007,7 @@ class SetupWizard:
             guidance.get("default_frameworks", []),
         )
 
-        now = _utcnow()
+        now = utcnow()
         scope = RegulatoryScope(
             applicable_frameworks=frameworks,
             csrd_tier=str(data.get("csrd_tier", self.config.default_csrd_tier)),
@@ -1522,9 +1494,9 @@ class SetupWizard:
         )
 
         result = WizardResult(
-            wizard_id=f"WIZ-FS-{_utcnow().strftime('%Y%m%d%H%M%S')}",
-            started_at=_utcnow().isoformat(),
-            completed_at=_utcnow().isoformat(),
+            wizard_id=f"WIZ-FS-{utcnow().strftime('%Y%m%d%H%M%S')}",
+            started_at=utcnow().isoformat(),
+            completed_at=utcnow().isoformat(),
             is_valid=is_valid,
             config_ready=is_valid,
             total_steps=len(self._steps),

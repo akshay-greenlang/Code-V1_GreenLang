@@ -47,25 +47,20 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import AlertSeverity, AlertStatus
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -78,11 +73,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class AlertType(str, Enum):
     """Types of intensity metric alerts."""
@@ -94,15 +87,6 @@ class AlertType(str, Enum):
     DISCLOSURE_DEADLINE = "disclosure_deadline"
     BENCHMARK_DATA_UPDATE = "benchmark_data_update"
 
-
-class AlertSeverity(str, Enum):
-    """Alert severity levels."""
-
-    INFO = "info"
-    WARNING = "warning"
-    CRITICAL = "critical"
-
-
 class AlertChannel(str, Enum):
     """Alert delivery channels."""
 
@@ -110,17 +94,6 @@ class AlertChannel(str, Enum):
     SMS = "sms"
     WEBHOOK = "webhook"
     IN_APP = "in_app"
-
-
-class AlertStatus(str, Enum):
-    """Alert delivery status."""
-
-    QUEUED = "queued"
-    SENT = "sent"
-    DELIVERED = "delivered"
-    FAILED = "failed"
-    ACKNOWLEDGED = "acknowledged"
-
 
 # ---------------------------------------------------------------------------
 # Alert Severity Defaults
@@ -134,7 +107,6 @@ DEFAULT_SEVERITY: Dict[AlertType, AlertSeverity] = {
     AlertType.DISCLOSURE_DEADLINE: AlertSeverity.CRITICAL,
     AlertType.BENCHMARK_DATA_UPDATE: AlertSeverity.INFO,
 }
-
 
 # ---------------------------------------------------------------------------
 # Threshold Configuration
@@ -151,11 +123,9 @@ DEFAULT_THRESHOLDS: Dict[str, float] = {
     "deadline_reminder_days": 30.0,
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class AlertConfig(BaseModel):
     """Configuration for alert bridge."""
@@ -175,7 +145,6 @@ class AlertConfig(BaseModel):
     retry_count: int = Field(3, ge=0, le=10)
     batch_size: int = Field(50, ge=1, le=500)
 
-
 class Alert(BaseModel):
     """An alert to be sent."""
 
@@ -190,7 +159,6 @@ class Alert(BaseModel):
     created_at: str = ""
     provenance_hash: str = ""
 
-
 class ChannelResult(BaseModel):
     """Result of sending through a single channel."""
 
@@ -198,7 +166,6 @@ class ChannelResult(BaseModel):
     status: str = AlertStatus.QUEUED.value
     sent_at: str = ""
     error_message: str = ""
-
 
 class AlertResult(BaseModel):
     """Result of sending an alert."""
@@ -213,7 +180,6 @@ class AlertResult(BaseModel):
     provenance_hash: str = ""
     duration_ms: float = 0.0
 
-
 class ThresholdCheckResult(BaseModel):
     """Result of checking intensity thresholds."""
 
@@ -222,11 +188,9 @@ class ThresholdCheckResult(BaseModel):
     checked_at: str = ""
     provenance_hash: str = ""
 
-
 # ---------------------------------------------------------------------------
 # Bridge Implementation
 # ---------------------------------------------------------------------------
-
 
 class AlertBridge:
     """
@@ -305,7 +269,7 @@ class AlertBridge:
                 c.value for c in (channels or self.config.default_channels)
             ],
             metadata=context,
-            created_at=_utcnow().isoformat(),
+            created_at=utcnow().isoformat(),
             provenance_hash=_compute_hash({
                 "type": alert_type.value,
                 "context": context,
@@ -414,7 +378,7 @@ class AlertBridge:
         return ThresholdCheckResult(
             alerts_triggered=len(alerts),
             alerts=alerts,
-            checked_at=_utcnow().isoformat(),
+            checked_at=utcnow().isoformat(),
             provenance_hash=_compute_hash({
                 "current": current_intensity,
                 "previous": previous_intensity,
@@ -451,7 +415,7 @@ class AlertBridge:
             channels=[
                 c.value for c in (channels or self.config.default_channels)
             ],
-            created_at=_utcnow().isoformat(),
+            created_at=utcnow().isoformat(),
             provenance_hash=_compute_hash({"subject": subject, "body": body}),
         )
         return await self._send_alert(alert)
@@ -500,7 +464,7 @@ class AlertBridge:
         return ChannelResult(
             channel=channel,
             status=AlertStatus.SENT.value,
-            sent_at=_utcnow().isoformat(),
+            sent_at=utcnow().isoformat(),
         )
 
     def _build_subject(
@@ -558,7 +522,7 @@ class AlertBridge:
             recipients=self.config.recipients,
             channels=[c.value for c in self.config.default_channels],
             metadata=context,
-            created_at=_utcnow().isoformat(),
+            created_at=utcnow().isoformat(),
             provenance_hash=_compute_hash(context),
         )
 

@@ -48,10 +48,11 @@ from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 # Layer 1 imports
 from greenlang.agents.data.erp_connector_agent import InventoryItem
+from greenlang.schemas import GreenLangBase, utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -59,21 +60,13 @@ __all__ = [
     "InventoryTracker",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _today() -> date:
     """Return today's date in UTC."""
     return datetime.now(timezone.utc).date()
-
 
 def _hash_int(seed: str, modulus: int) -> int:
     """Deterministic integer from a seed string.
@@ -87,7 +80,6 @@ def _hash_int(seed: str, modulus: int) -> int:
     """
     digest = hashlib.sha256(seed.encode("utf-8")).hexdigest()
     return int(digest[:8], 16) % modulus
-
 
 def _hash_float(seed: str, low: float, high: float) -> float:
     """Deterministic float in [low, high] from a seed string.
@@ -103,7 +95,6 @@ def _hash_float(seed: str, low: float, high: float) -> float:
     digest = hashlib.sha256(seed.encode("utf-8")).hexdigest()
     fraction = int(digest[:8], 16) / 0xFFFFFFFF
     return round(low + fraction * (high - low), 2)
-
 
 # ---------------------------------------------------------------------------
 # Simulated data catalogues
@@ -168,11 +159,9 @@ _WAREHOUSE_IDS = ["WH01", "WH02", "WH03", "WH04"]
 
 _UNITS = ["EA", "KG", "LT", "MT", "M", "PC"]
 
-
 # ---------------------------------------------------------------------------
 # InventoryTracker
 # ---------------------------------------------------------------------------
-
 
 class InventoryTracker:
     """Material inventory tracking engine with deterministic simulation.
@@ -413,7 +402,7 @@ class InventoryTracker:
                 "syncs_count": self._stats["syncs_count"],
                 "cached_connections": len(self._inventory_cache),
                 "errors": self._stats["errors"],
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }
 
     # ------------------------------------------------------------------

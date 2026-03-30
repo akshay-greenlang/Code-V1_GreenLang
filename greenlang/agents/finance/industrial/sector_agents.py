@@ -26,7 +26,8 @@ from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +41,7 @@ class FinancingType(str, Enum):
     EQUITY = "EQUITY"
 
 
-class FinanceInput(BaseModel):
+class FinanceInput(GreenLangBase):
     """Input for industrial finance agents."""
     facility_id: str
     sector: str
@@ -65,7 +66,7 @@ class FinanceInput(BaseModel):
         json_encoders = {Decimal: str}
 
 
-class FinanceOutput(BaseModel):
+class FinanceOutput(GreenLangBase):
     """Output from industrial finance agents."""
     calculation_id: str
     agent_id: str

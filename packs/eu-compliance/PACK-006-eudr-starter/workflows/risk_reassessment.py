@@ -42,6 +42,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
+from greenlang.schemas.enums import AlertSeverity
 
 logger = logging.getLogger(__name__)
 
@@ -65,15 +66,6 @@ class RiskLevel(str, Enum):
     LOW = "low"
     STANDARD = "standard"
     HIGH = "high"
-
-
-class AlertSeverity(str, Enum):
-    """Alert severity classification."""
-    CRITICAL = "critical"
-    HIGH = "high"
-    MEDIUM = "medium"
-    LOW = "low"
-    INFO = "info"
 
 
 class AlertType(str, Enum):

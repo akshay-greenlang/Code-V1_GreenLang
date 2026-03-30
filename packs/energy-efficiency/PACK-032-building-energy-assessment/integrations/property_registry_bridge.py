@@ -40,20 +40,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -66,11 +61,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class BuildingLifecycleStage(str, Enum):
     """Building lifecycle stages."""
@@ -85,7 +78,6 @@ class BuildingLifecycleStage(str, Enum):
     DECOMMISSIONED = "decommissioned"
     DEMOLISHED = "demolished"
 
-
 class TenureType(str, Enum):
     """Property tenure types."""
 
@@ -97,7 +89,6 @@ class TenureType(str, Enum):
     MIXED_TENURE = "mixed_tenure"
     GROUND_LEASE = "ground_lease"
 
-
 class PortfolioCategory(str, Enum):
     """Portfolio categorization types."""
 
@@ -108,7 +99,6 @@ class PortfolioCategory(str, Enum):
     DEVELOPMENT = "development"
     SOCIAL_HOUSING = "social_housing"
     PUBLIC_SECTOR = "public_sector"
-
 
 class SpaceType(str, Enum):
     """Types of lettable/usable space."""
@@ -124,11 +114,9 @@ class SpaceType(str, Enum):
     ROOF_TERRACE = "roof_terrace"
     VACANT = "vacant"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class BuildingRecord(BaseModel):
     """Building record in the property registry."""
@@ -161,10 +149,9 @@ class BuildingRecord(BaseModel):
     epc_valid_until: str = Field(default="")
     asset_value: float = Field(default=0.0, ge=0)
     currency: str = Field(default="GBP")
-    created_at: datetime = Field(default_factory=_utcnow)
-    updated_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
+    updated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class TenantRecord(BaseModel):
     """Tenant/occupier record within a building."""
@@ -184,7 +171,6 @@ class TenantRecord(BaseModel):
     sub_metered: bool = Field(default=False)
     green_lease: bool = Field(default=False)
     energy_management_clause: bool = Field(default=False)
-
 
 class PortfolioSummary(BaseModel):
     """Portfolio-level aggregation summary."""
@@ -207,7 +193,6 @@ class PortfolioSummary(BaseModel):
     lifecycle_distribution: Dict[str, int] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
 
-
 class PropertyRegistryBridgeConfig(BaseModel):
     """Configuration for the Property Registry Bridge."""
 
@@ -217,11 +202,9 @@ class PropertyRegistryBridgeConfig(BaseModel):
     portfolio_id: str = Field(default="")
     mees_threshold_rating: str = Field(default="E")
 
-
 # ---------------------------------------------------------------------------
 # PropertyRegistryBridge
 # ---------------------------------------------------------------------------
-
 
 class PropertyRegistryBridge:
     """Building/property database integration for portfolio management.
@@ -306,7 +289,7 @@ class PropertyRegistryBridge:
             if hasattr(record, key):
                 setattr(record, key, value)
 
-        record.updated_at = _utcnow()
+        record.updated_at = utcnow()
         if self.config.enable_provenance:
             record.provenance_hash = _compute_hash(record)
 
@@ -559,7 +542,7 @@ class PropertyRegistryBridge:
 
         old_stage = record.lifecycle_stage
         record.lifecycle_stage = new_stage
-        record.updated_at = _utcnow()
+        record.updated_at = utcnow()
 
         if self.config.enable_provenance:
             record.provenance_hash = _compute_hash(record)
@@ -573,7 +556,7 @@ class PropertyRegistryBridge:
             "updated": True,
             "old_stage": old_stage.value,
             "new_stage": new_stage.value,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     def list_buildings(self) -> List[Dict[str, Any]]:

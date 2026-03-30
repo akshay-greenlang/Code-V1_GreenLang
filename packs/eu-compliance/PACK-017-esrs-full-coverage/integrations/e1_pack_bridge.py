@@ -31,25 +31,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -62,11 +56,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class E1ImportStatus(str, Enum):
     """E1 import operation status."""
@@ -76,7 +68,6 @@ class E1ImportStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     NOT_AVAILABLE = "not_available"
-
 
 class E1DisclosureRequirement(str, Enum):
     """ESRS E1 Disclosure Requirements."""
@@ -91,11 +82,9 @@ class E1DisclosureRequirement(str, Enum):
     E1_8 = "E1-8"   # Internal carbon pricing
     E1_9 = "E1-9"   # Anticipated financial effects - climate-related risks
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class E1BridgeConfig(BaseModel):
     """Configuration for the E1 Pack Bridge."""
@@ -111,7 +100,6 @@ class E1BridgeConfig(BaseModel):
         description="Automatically map E1 results to PACK-017 common data model",
     )
 
-
 class E1ComplianceScore(BaseModel):
     """E1 compliance score for the overall ESRS scorecard."""
 
@@ -124,7 +112,6 @@ class E1ComplianceScore(BaseModel):
     mandatory_met: bool = Field(default=False)
     voluntary_met: bool = Field(default=False)
 
-
 class E1DataPoint(BaseModel):
     """A single E1 XBRL datapoint."""
 
@@ -136,7 +123,6 @@ class E1DataPoint(BaseModel):
     period_start: str = Field(default="")
     period_end: str = Field(default="")
     is_mandatory: bool = Field(default=False)
-
 
 class E1ImportResult(BaseModel):
     """Result of an E1 import operation."""
@@ -153,7 +139,6 @@ class E1ImportResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     warnings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # E1 Datapoint Mapping (PACK-016 output keys -> PACK-017 CDM keys)
@@ -183,11 +168,9 @@ E1_DISCLOSURE_DATAPOINT_COUNT: Dict[str, int] = {
     "E1-9": 14,
 }
 
-
 # ---------------------------------------------------------------------------
 # E1PackBridge
 # ---------------------------------------------------------------------------
-
 
 class E1PackBridge:
     """PACK-016 ESRS E1 Climate integration bridge for PACK-017.
@@ -226,7 +209,7 @@ class E1PackBridge:
         Returns:
             E1ImportResult with imported disclosures and compliance scores.
         """
-        result = E1ImportResult(started_at=_utcnow())
+        result = E1ImportResult(started_at=utcnow())
 
         try:
             e1_data = context.get("e1_results", {})
@@ -391,7 +374,7 @@ class E1PackBridge:
 
         cdm["cdm.metadata.source_pack"] = self.config.source_pack_id
         cdm["cdm.metadata.standard"] = "ESRS E1"
-        cdm["cdm.metadata.mapped_at"] = _utcnow().isoformat()
+        cdm["cdm.metadata.mapped_at"] = utcnow().isoformat()
 
         logger.info("Mapped %d E1 fields to CDM", len(cdm))
         return cdm
@@ -454,7 +437,7 @@ class E1PackBridge:
 
     def _finalize_result(self, result: E1ImportResult) -> None:
         """Set completed_at and duration_ms on a result."""
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at

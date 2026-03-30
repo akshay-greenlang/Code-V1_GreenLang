@@ -80,13 +80,13 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 from greenlang.agents.data.schema_migration.provenance import ProvenanceTracker
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 __all__ = [
     "MigrationPlannerEngine",
 ]
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -144,16 +144,9 @@ _MERGE_CHANGE_TYPES = frozenset({"fields_merged", "merge"})
 # Valid plan status values.
 _PLAN_STATUSES = frozenset({"pending", "validated", "dry_run_complete", "executed", "failed"})
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _generate_id(prefix: str = "PLAN") -> str:
     """Generate a unique identifier with the given prefix.
@@ -166,7 +159,6 @@ def _generate_id(prefix: str = "PLAN") -> str:
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
 
-
 def _compute_sha256(payload: str) -> str:
     """Compute a SHA-256 hex digest from a UTF-8 payload string.
 
@@ -178,7 +170,6 @@ def _compute_sha256(payload: str) -> str:
     """
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
-
 def _serialize(obj: Any) -> str:
     """Serialize obj to a canonical JSON string for hashing.
 
@@ -189,7 +180,6 @@ def _serialize(obj: Any) -> str:
         Sorted-key JSON string with str fallback for non-serialisable values.
     """
     return json.dumps(obj, sort_keys=True, default=str)
-
 
 def _safe_cast(value: Any, target_type: str) -> Tuple[bool, Any]:
     """Attempt to cast ``value`` to ``target_type`` for dry-run simulation.
@@ -226,11 +216,9 @@ def _safe_cast(value: Any, target_type: str) -> Tuple[bool, Any]:
     except (ValueError, TypeError):
         return False, value
 
-
 # ---------------------------------------------------------------------------
 # MigrationPlannerEngine
 # ---------------------------------------------------------------------------
-
 
 class MigrationPlannerEngine:
     """Engine 5 of 7: generates dependency-aware migration plans.
@@ -342,7 +330,7 @@ class MigrationPlannerEngine:
         )
 
         plan_id = _generate_id("PLAN")
-        created_at = _utcnow().isoformat()
+        created_at = utcnow().isoformat()
 
         steps = self.generate_steps(
             changes=changes,
@@ -1038,7 +1026,7 @@ class MigrationPlannerEngine:
                 "errors": [f"Plan '{plan_id}' not found"],
                 "warnings": [],
                 "step_count": 0,
-                "validated_at": _utcnow().isoformat(),
+                "validated_at": utcnow().isoformat(),
             }
 
         steps = plan.get("steps", [])
@@ -1070,7 +1058,7 @@ class MigrationPlannerEngine:
         # Remove steps should come last.
         self._validate_remove_order(steps, errors)
 
-        validated_at = _utcnow().isoformat()
+        validated_at = utcnow().isoformat()
         valid = len(errors) == 0
 
         # Update stored plan with validation outcome.
@@ -1161,7 +1149,7 @@ class MigrationPlannerEngine:
                     f"Step {step.get('step_number')}: {outcome.get('error', 'unknown error')}"
                 )
 
-        completed_at = _utcnow().isoformat()
+        completed_at = utcnow().isoformat()
 
         with self._lock:
             if plan_id in self._plans:
@@ -1949,5 +1937,5 @@ class MigrationPlannerEngine:
             "cast_failures": [],
             "warnings": [],
             "errors": [message],
-            "completed_at": _utcnow().isoformat(),
+            "completed_at": utcnow().isoformat(),
         }

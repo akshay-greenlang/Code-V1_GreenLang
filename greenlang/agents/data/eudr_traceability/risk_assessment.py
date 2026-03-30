@@ -42,14 +42,9 @@ from greenlang.agents.data.eudr_traceability.models import (
     RiskLevel,
     RiskScore,
 )
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -59,7 +54,6 @@ def _compute_hash(data: Any) -> str:
         serializable = data
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 class RiskAssessmentEngine:
     """Deterministic risk assessment engine for EUDR compliance.
@@ -467,7 +461,7 @@ class RiskAssessmentEngine:
         self._supplier_history[supplier_id].append({
             "compliant": compliant,
             "details": details or "",
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         })
 
         logger.info(
@@ -590,7 +584,6 @@ class RiskAssessmentEngine:
     def assessment_count(self) -> int:
         """Return the total number of assessments."""
         return len(self._assessments)
-
 
 __all__ = [
     "RiskAssessmentEngine",

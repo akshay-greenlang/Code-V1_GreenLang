@@ -85,6 +85,7 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from decimal import Decimal
 from typing import Any, AsyncIterator, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -351,7 +352,6 @@ except ImportError:
     RegulatoryUpdateTracker = None  # type: ignore[assignment,misc]
     _REGULATORY_UPDATE_TRACKER_AVAILABLE = False
 
-
 # ---------------------------------------------------------------------------
 # Module constants
 # ---------------------------------------------------------------------------
@@ -360,16 +360,9 @@ _MODULE_VERSION = "1.0.0"
 _AGENT_ID = "GL-EUDR-CRE-016"
 _ENGINE_COUNT = 8
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed for determinism."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _calculate_sha256(data: Any) -> str:
     """Calculate SHA-256 hash of JSON-serialized data."""
@@ -381,7 +374,6 @@ def _calculate_sha256(data: Any) -> str:
         payload = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
-
 def _safe_decimal(value: Any, default: Decimal = Decimal("0.0")) -> Decimal:
     """Safely convert value to Decimal."""
     try:
@@ -389,11 +381,9 @@ def _safe_decimal(value: Any, default: Decimal = Decimal("0.0")) -> Decimal:
     except Exception:
         return default
 
-
 # =============================================================================
 # FACADE: CountryRiskEvaluatorService
 # =============================================================================
-
 
 class CountryRiskEvaluatorService:
     """
@@ -806,7 +796,7 @@ class CountryRiskEvaluatorService:
             if country_code not in SUPPORTED_COUNTRIES:
                 raise ValueError(f"Unsupported country code: {country_code}")
 
-            assessment_date = assessment_date or _utcnow()
+            assessment_date = assessment_date or utcnow()
 
             # 2. Get base country risk score (CountryRiskScorer)
             scorer = await self._ensure_country_risk_scorer()
@@ -943,7 +933,7 @@ class CountryRiskEvaluatorService:
             if commodity not in SUPPORTED_COMMODITIES:
                 raise ValueError(f"Unsupported commodity: {commodity}")
 
-            assessment_date = assessment_date or _utcnow()
+            assessment_date = assessment_date or utcnow()
 
             # Delegate to CommodityRiskAnalyzer
             commodity_analyzer = await self._ensure_commodity_risk_analyzer()
@@ -1015,7 +1005,7 @@ class CountryRiskEvaluatorService:
             if country_code not in SUPPORTED_COUNTRIES:
                 raise ValueError(f"Unsupported country code: {country_code}")
 
-            end_date = end_date or _utcnow()
+            end_date = end_date or utcnow()
             start_date = start_date or end_date.replace(year=end_date.year - 1)
 
             # Delegate to DeforestationHotspotDetector
@@ -1088,7 +1078,7 @@ class CountryRiskEvaluatorService:
             if country_code not in SUPPORTED_COUNTRIES:
                 raise ValueError(f"Unsupported country code: {country_code}")
 
-            assessment_date = assessment_date or _utcnow()
+            assessment_date = assessment_date or utcnow()
 
             # Delegate to GovernanceIndexEngine
             gov_engine = await self._ensure_governance_index_engine()
@@ -1653,14 +1643,12 @@ class CountryRiskEvaluatorService:
 
         return stats
 
-
 # =============================================================================
 # Module-level singleton management
 # =============================================================================
 
 _service_instance: Optional[CountryRiskEvaluatorService] = None
 _service_lock = threading.Lock()
-
 
 def get_service(
     config: Optional[CountryRiskEvaluatorConfig] = None,
@@ -1692,7 +1680,6 @@ def get_service(
 
     return _service_instance
 
-
 def set_service(service: CountryRiskEvaluatorService) -> None:
     """
     Override the singleton service instance (for testing).
@@ -1705,7 +1692,6 @@ def set_service(service: CountryRiskEvaluatorService) -> None:
         _service_instance = service
         logger.info("CountryRiskEvaluatorService singleton overridden")
 
-
 def reset_service() -> None:
     """
     Reset the singleton service instance (for testing).
@@ -1717,11 +1703,9 @@ def reset_service() -> None:
         _service_instance = None
         logger.info("CountryRiskEvaluatorService singleton reset")
 
-
 # =============================================================================
 # FastAPI Lifespan Integration
 # =============================================================================
-
 
 @asynccontextmanager
 async def lifespan(app: Any) -> AsyncIterator[None]:
@@ -1750,7 +1734,6 @@ async def lifespan(app: Any) -> AsyncIterator[None]:
     # Shutdown
     await service.shutdown()
     logger.info("CountryRiskEvaluatorService shutdown (FastAPI lifespan)")
-
 
 __all__ = [
     "CountryRiskEvaluatorService",

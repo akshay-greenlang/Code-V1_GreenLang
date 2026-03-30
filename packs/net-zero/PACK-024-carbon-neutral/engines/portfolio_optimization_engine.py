@@ -83,23 +83,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -116,7 +111,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -125,7 +119,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -133,26 +126,21 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     return float(
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CreditType(str, Enum):
     """Carbon credit type classification."""
@@ -161,7 +149,6 @@ class CreditType(str, Enum):
     REMOVAL_NATURE = "removal_nature"
     REMOVAL_TECH = "removal_tech"
 
-
 class OptimizationObjective(str, Enum):
     """Portfolio optimisation objective."""
     MAXIMIZE_QUALITY = "maximize_quality"
@@ -169,14 +156,12 @@ class OptimizationObjective(str, Enum):
     MAXIMIZE_COBENEFIT = "maximize_cobenefit"
     BALANCED = "balanced"
 
-
 class RiskLevel(str, Enum):
     """Portfolio risk classification."""
     LOW = "low"
     MODERATE = "moderate"
     HIGH = "high"
     VERY_HIGH = "very_high"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Oxford Principles Removal Progression
@@ -205,11 +190,9 @@ QUALITY_GOOD: Decimal = Decimal("70")
 QUALITY_ADEQUATE: Decimal = Decimal("55")
 QUALITY_POOR: Decimal = Decimal("40")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class CreditOption(BaseModel):
     """A carbon credit option available for the portfolio.
@@ -266,7 +249,6 @@ class CreditOption(BaseModel):
         if v not in valid:
             raise ValueError(f"Unknown credit type '{v}'.")
         return v
-
 
 class PortfolioConstraints(BaseModel):
     """Constraints for portfolio optimisation.
@@ -326,7 +308,6 @@ class PortfolioConstraints(BaseModel):
         default=2026, ge=2020, le=2060, description="Target year"
     )
 
-
 class PortfolioOptimizationInput(BaseModel):
     """Complete input for portfolio optimisation.
 
@@ -378,11 +359,9 @@ class PortfolioOptimizationInput(BaseModel):
             raise ValueError(f"Unknown objective '{v}'.")
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class PortfolioAllocation(BaseModel):
     """Allocation for a single credit in the optimised portfolio.
@@ -422,7 +401,6 @@ class PortfolioAllocation(BaseModel):
     co_benefit_score: Decimal = Field(default=Decimal("0"))
     value_score: Decimal = Field(default=Decimal("0"))
 
-
 class DiversificationMetrics(BaseModel):
     """Portfolio diversification metrics.
 
@@ -455,7 +433,6 @@ class DiversificationMetrics(BaseModel):
     is_sufficiently_diversified: bool = Field(default=False)
     recommendations: List[str] = Field(default_factory=list)
 
-
 class OxfordPrinciplesAssessment(BaseModel):
     """Oxford Principles alignment assessment.
 
@@ -484,7 +461,6 @@ class OxfordPrinciplesAssessment(BaseModel):
     progression_on_track: bool = Field(default=False)
     message: str = Field(default="")
 
-
 class VintageAnalysis(BaseModel):
     """Vintage matching analysis.
 
@@ -511,7 +487,6 @@ class VintageAnalysis(BaseModel):
     vintage_match_score: Decimal = Field(default=Decimal("0"))
     message: str = Field(default="")
 
-
 class ParetoPoint(BaseModel):
     """A point on the Pareto frontier.
 
@@ -531,7 +506,6 @@ class ParetoPoint(BaseModel):
     removal_pct: Decimal = Field(default=Decimal("0"))
     is_pareto_optimal: bool = Field(default=False)
     allocations: List[str] = Field(default_factory=list)
-
 
 class PortfolioOptimizationResult(BaseModel):
     """Complete portfolio optimisation result.
@@ -565,7 +539,7 @@ class PortfolioOptimizationResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     footprint_year: int = Field(default=0)
     footprint_tco2e: Decimal = Field(default=Decimal("0"))
@@ -589,11 +563,9 @@ class PortfolioOptimizationResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class PortfolioOptimizationEngine:
     """Carbon credit portfolio optimisation engine.

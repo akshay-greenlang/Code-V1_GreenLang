@@ -48,25 +48,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -79,16 +73,13 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _clamp(value: float, low: float = 0.0, high: float = 100.0) -> float:
     """Clamp a value to [low, high] range."""
     return max(low, min(high, value))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class RiskLevel(str, Enum):
     """Risk classification levels."""
@@ -98,14 +89,12 @@ class RiskLevel(str, Enum):
     HIGH = "HIGH"
     CRITICAL = "CRITICAL"
 
-
 class Article29Benchmark(str, Enum):
     """Article 29 country risk benchmark classification."""
 
     LOW = "LOW"
     STANDARD = "STANDARD"
     HIGH = "HIGH"
-
 
 class EUDRCommodity(str, Enum):
     """EUDR-regulated commodity categories."""
@@ -118,7 +107,6 @@ class EUDRCommodity(str, Enum):
     SOYA = "SOYA"
     WOOD = "WOOD"
 
-
 class RiskFactorCategory(str, Enum):
     """Categories of risk factors."""
 
@@ -129,7 +117,6 @@ class RiskFactorCategory(str, Enum):
     GEOLOCATION = "GEOLOCATION"
     TEMPORAL = "TEMPORAL"
 
-
 class TrendDirection(str, Enum):
     """Risk trend direction."""
 
@@ -137,11 +124,9 @@ class TrendDirection(str, Enum):
     STABLE = "STABLE"
     DETERIORATING = "DETERIORATING"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class RiskFactor(BaseModel):
     """Individual risk factor contributing to a score."""
@@ -155,7 +140,6 @@ class RiskFactor(BaseModel):
     weighted_score: float = Field(default=0.0, description="Score * weight")
     data_source: Optional[str] = Field(None, description="Source of the risk data")
     article_reference: Optional[str] = Field(None, description="EUDR article reference")
-
 
 class CountryRiskScore(BaseModel):
     """Country-level risk score per EUDR Article 11."""
@@ -172,9 +156,8 @@ class CountryRiskScore(BaseModel):
         default=Article29Benchmark.STANDARD, description="Article 29 benchmark"
     )
     factors: List[RiskFactor] = Field(default_factory=list, description="Contributing factors")
-    assessed_at: datetime = Field(default_factory=_utcnow, description="Assessment timestamp")
+    assessed_at: datetime = Field(default_factory=utcnow, description="Assessment timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class SupplierRiskScore(BaseModel):
     """Supplier-level risk score."""
@@ -189,9 +172,8 @@ class SupplierRiskScore(BaseModel):
     compliance_history_score: float = Field(default=0.0, ge=0, le=100, description="Compliance history risk")
     tier_depth_score: float = Field(default=0.0, ge=0, le=100, description="Supply chain depth risk")
     factors: List[RiskFactor] = Field(default_factory=list, description="Contributing factors")
-    assessed_at: datetime = Field(default_factory=_utcnow, description="Assessment timestamp")
+    assessed_at: datetime = Field(default_factory=utcnow, description="Assessment timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class CommodityRiskScore(BaseModel):
     """Commodity-specific risk score."""
@@ -205,9 +187,8 @@ class CommodityRiskScore(BaseModel):
     deforestation_association: float = Field(default=0.0, ge=0, le=100, description="Deforestation association risk")
     supply_chain_complexity: float = Field(default=0.0, ge=0, le=100, description="Supply chain complexity risk")
     factors: List[RiskFactor] = Field(default_factory=list, description="Contributing factors")
-    assessed_at: datetime = Field(default_factory=_utcnow, description="Assessment timestamp")
+    assessed_at: datetime = Field(default_factory=utcnow, description="Assessment timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class DocumentRiskScore(BaseModel):
     """Document completeness and quality risk score."""
@@ -221,9 +202,8 @@ class DocumentRiskScore(BaseModel):
     total_documents: int = Field(default=0, description="Total documents assessed")
     missing_documents: List[str] = Field(default_factory=list, description="Missing required documents")
     factors: List[RiskFactor] = Field(default_factory=list, description="Contributing factors")
-    assessed_at: datetime = Field(default_factory=_utcnow, description="Assessment timestamp")
+    assessed_at: datetime = Field(default_factory=utcnow, description="Assessment timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class CompositeRiskScore(BaseModel):
     """Composite risk score aggregating all risk dimensions."""
@@ -243,9 +223,8 @@ class CompositeRiskScore(BaseModel):
     all_factors: List[RiskFactor] = Field(default_factory=list, description="All contributing factors")
     requires_enhanced_dd: bool = Field(default=False, description="Whether enhanced DD is required")
     simplified_dd_eligible: bool = Field(default=False, description="Whether simplified DD is possible")
-    assessed_at: datetime = Field(default_factory=_utcnow, description="Assessment timestamp")
+    assessed_at: datetime = Field(default_factory=utcnow, description="Assessment timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class CountryBenchmark(BaseModel):
     """Article 29 country benchmarking result."""
@@ -259,7 +238,6 @@ class CountryBenchmark(BaseModel):
     rationale: str = Field(default="", description="Benchmarking rationale")
     effective_date: Optional[datetime] = Field(None, description="When benchmark became effective")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class SimplifiedDDEligibility(BaseModel):
     """Simplified due diligence eligibility assessment."""
@@ -275,14 +253,12 @@ class SimplifiedDDEligibility(BaseModel):
     article_reference: str = Field(default="Article 13", description="EUDR article reference")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class RiskTrendPoint(BaseModel):
     """A single point in a risk trend timeline."""
 
     period: str = Field(..., description="Period identifier (e.g., '2025-Q1')")
     score: float = Field(..., ge=0, le=100, description="Risk score for this period")
     risk_level: RiskLevel = Field(..., description="Risk classification for this period")
-
 
 class RiskTrend(BaseModel):
     """Risk trend analysis over multiple periods."""
@@ -295,7 +271,6 @@ class RiskTrend(BaseModel):
     score_change: float = Field(default=0.0, description="Score change from first to last period")
     periods_analyzed: int = Field(default=0, description="Number of periods analyzed")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 # ---------------------------------------------------------------------------
 # Country Risk Database
@@ -475,7 +450,6 @@ REQUIRED_DOCUMENTS: List[str] = [
     "risk_assessment_report",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Default Weights
 # ---------------------------------------------------------------------------
@@ -504,11 +478,9 @@ SUPPLIER_SUB_WEIGHTS: Dict[str, float] = {
     "tier_depth": 0.10,
 }
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class RiskScoringEngine:
     """
@@ -958,7 +930,7 @@ class RiskScoringEngine:
         authenticity_risk = _clamp((1.0 - authentic_ratio) * 100.0)
 
         # Currency: check expiry dates
-        now = _utcnow()
+        now = utcnow()
         expired_count = 0
         for d in documents:
             expiry = d.get("expiry_date")

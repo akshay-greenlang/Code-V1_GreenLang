@@ -69,6 +69,7 @@ from uuid import uuid4
 
 from greenlang.agents.mrv.mobile_combustion.vehicle_database import VehicleDatabaseEngine
 from greenlang.agents.mrv.mobile_combustion.emission_calculator import EmissionCalculatorEngine
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -136,21 +137,13 @@ TRIP_PURPOSES = {
     "PICKUP", "TRANSPORT", "PATROL", "INSPECTION", "OTHER",
 }
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ===========================================================================
 # FleetManagerEngine
 # ===========================================================================
-
 
 class FleetManagerEngine:
     """Vehicle registry and fleet analytics engine for mobile combustion.
@@ -280,7 +273,7 @@ class FleetManagerEngine:
             if vehicle_id in self._vehicles:
                 raise ValueError(f"Vehicle ID already exists: '{vehicle_id}'")
 
-            now = _utcnow()
+            now = utcnow()
             model_year = registration.get("year")
             odometer = Decimal(str(registration.get("odometer_km", "0")))
 
@@ -363,7 +356,7 @@ class FleetManagerEngine:
                 raise ValueError(f"Vehicle not found: '{vehicle_id}'")
 
             vehicle = self._vehicles[vehicle_id]
-            now = _utcnow()
+            now = utcnow()
 
             updatable_fields = {
                 "vin", "make", "model", "license_plate", "department",
@@ -450,8 +443,8 @@ class FleetManagerEngine:
 
             old_status = vehicle["status"]
             vehicle["status"] = VEHICLE_STATUS_DISPOSED
-            vehicle["updated_at"] = _utcnow().isoformat()
-            vehicle["disposal_date"] = _utcnow().date().isoformat()
+            vehicle["updated_at"] = utcnow().isoformat()
+            vehicle["disposal_date"] = utcnow().date().isoformat()
             vehicle["disposal_reason"] = reason
 
             self._add_lifecycle_event(
@@ -610,7 +603,7 @@ class FleetManagerEngine:
                 fuel_consumed = Decimal(str(fuel_consumed))
 
             trip_id = trip_record.get("trip_id") or f"trip_{uuid4().hex[:12]}"
-            now = _utcnow()
+            now = utcnow()
 
             # Calculate emissions if auto-calc is enabled
             emission_result: Optional[Dict[str, Any]] = None
@@ -1428,10 +1421,10 @@ class FleetManagerEngine:
             # Update vehicle status if needed
             if event_type == LIFECYCLE_MAINTENANCE:
                 self._vehicles[vehicle_id]["status"] = VEHICLE_STATUS_MAINTENANCE
-                self._vehicles[vehicle_id]["updated_at"] = _utcnow().isoformat()
+                self._vehicles[vehicle_id]["updated_at"] = utcnow().isoformat()
             elif event_type == LIFECYCLE_DISPOSAL:
                 self._vehicles[vehicle_id]["status"] = VEHICLE_STATUS_DISPOSED
-                self._vehicles[vehicle_id]["updated_at"] = _utcnow().isoformat()
+                self._vehicles[vehicle_id]["updated_at"] = utcnow().isoformat()
 
             return event_id
 
@@ -1572,7 +1565,7 @@ class FleetManagerEngine:
                 fuel_economy = vehicle.get("fuel_economy_km_per_l")
                 vehicle_age = None
                 if model_year is not None:
-                    vehicle_age = _utcnow().year - model_year
+                    vehicle_age = utcnow().year - model_year
 
                 return self._calculator.calculate_distance_based(
                     vehicle_type=vtype,
@@ -1629,7 +1622,7 @@ class FleetManagerEngine:
             events.pop(0)
 
         event_id = f"evt_{uuid4().hex[:12]}"
-        now = _utcnow()
+        now = utcnow()
 
         event: Dict[str, Any] = {
             "event_id": event_id,
@@ -1668,7 +1661,7 @@ class FleetManagerEngine:
             Hexadecimal SHA-256 hash string.
         """
         hash_input = json.dumps(
-            {"operation": operation, "data": data, "timestamp": _utcnow().isoformat()},
+            {"operation": operation, "data": data, "timestamp": utcnow().isoformat()},
             sort_keys=True,
             default=str,
         )

@@ -87,21 +87,13 @@ logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -121,7 +113,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely.
 
@@ -135,7 +126,6 @@ def _decimal(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _safe_divide(
     numerator: float, denominator: float, default: float = 0.0
 ) -> float:
@@ -144,20 +134,17 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.01"), rounding=ROUND_HALF_UP
     ))
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value to the specified number of decimal places.
@@ -174,11 +161,9 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class PerformanceMetric(str, Enum):
     """Performance metric identifier per Annex IV.
@@ -203,7 +188,6 @@ class PerformanceMetric(str, Enum):
     C_RATE = "c_rate"
     TEMPERATURE_RANGE = "temperature_range"
 
-
 class DurabilityRating(str, Enum):
     """Durability rating based on State of Health assessment.
 
@@ -217,7 +201,6 @@ class DurabilityRating(str, Enum):
     POOR = "poor"
     CRITICAL = "critical"
 
-
 class MetricStatus(str, Enum):
     """Validation status for an individual performance metric.
 
@@ -228,7 +211,6 @@ class MetricStatus(str, Enum):
     WARNING = "warning"
     FAIL = "fail"
     NOT_ASSESSED = "not_assessed"
-
 
 class BatteryLifeStage(str, Enum):
     """Stage in the battery's service life.
@@ -242,11 +224,9 @@ class BatteryLifeStage(str, Enum):
     END_OF_FIRST_LIFE = "end_of_first_life"
     SECOND_LIFE = "second_life"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # State of Health thresholds for durability rating.
 SOH_THRESHOLDS: Dict[str, Decimal] = {
@@ -257,7 +237,6 @@ SOH_THRESHOLDS: Dict[str, Decimal] = {
     # CRITICAL is below POOR threshold
 }
 
-
 # Minimum efficiency thresholds by category.
 # Values are round-trip energy efficiency percentages.
 MIN_EFFICIENCY_THRESHOLDS: Dict[str, Decimal] = {
@@ -267,7 +246,6 @@ MIN_EFFICIENCY_THRESHOLDS: Dict[str, Decimal] = {
     "portable": Decimal("75"),
     "sli": Decimal("70"),
 }
-
 
 # Expected cycle life ranges by chemistry for plausibility checks.
 CHEMISTRY_CYCLE_LIFE: Dict[str, Dict[str, int]] = {
@@ -285,7 +263,6 @@ CHEMISTRY_CYCLE_LIFE: Dict[str, Dict[str, int]] = {
     "solid_state": {"low": 1000, "typical": 3000, "high": 10000},
 }
 
-
 # Operating temperature range limits for plausibility checks (degC).
 TEMPERATURE_PLAUSIBILITY: Dict[str, Dict[str, int]] = {
     "min_absolute": {"value": -40, "description": "Absolute minimum operating temperature"},
@@ -293,7 +270,6 @@ TEMPERATURE_PLAUSIBILITY: Dict[str, Dict[str, int]] = {
     "typical_min": {"value": -20, "description": "Typical minimum operating temperature"},
     "typical_max": {"value": 45, "description": "Typical maximum operating temperature"},
 }
-
 
 # Performance metric labels and units.
 METRIC_LABELS: Dict[str, Dict[str, str]] = {
@@ -374,7 +350,6 @@ METRIC_LABELS: Dict[str, Dict[str, str]] = {
     },
 }
 
-
 # Durability rating descriptions.
 RATING_DESCRIPTIONS: Dict[str, str] = {
     DurabilityRating.EXCELLENT.value: (
@@ -400,7 +375,6 @@ RATING_DESCRIPTIONS: Dict[str, str] = {
     ),
 }
 
-
 # Second-life SoH threshold: below this, the battery should be
 # evaluated for second-life applications or recycling.
 SECOND_LIFE_SOH_THRESHOLD: Decimal = Decimal("80")
@@ -409,11 +383,9 @@ SECOND_LIFE_SOH_THRESHOLD: Decimal = Decimal("80")
 # considered end of first life for EV batteries).
 END_OF_FIRST_LIFE_SOH: Decimal = Decimal("70")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class PerformanceInput(BaseModel):
     """Input data for battery performance assessment per Art 10.
@@ -544,7 +516,6 @@ class PerformanceInput(BaseModel):
         ge=0,
     )
 
-
 class MetricValidation(BaseModel):
     """Validation result for a single performance metric."""
     metric: PerformanceMetric = Field(
@@ -576,7 +547,6 @@ class MetricValidation(BaseModel):
         default="",
         description="Annex IV reference",
     )
-
 
 class SoHAssessment(BaseModel):
     """State of Health assessment result.
@@ -617,7 +587,6 @@ class SoHAssessment(BaseModel):
         description="SHA-256 provenance hash",
     )
 
-
 class CycleLifeAssessment(BaseModel):
     """Cycle life assessment result.
 
@@ -653,7 +622,6 @@ class CycleLifeAssessment(BaseModel):
         description="SHA-256 provenance hash",
     )
 
-
 class EfficiencyAssessment(BaseModel):
     """Energy efficiency assessment result.
 
@@ -685,7 +653,6 @@ class EfficiencyAssessment(BaseModel):
         description="SHA-256 provenance hash",
     )
 
-
 class PerformanceResult(BaseModel):
     """Result of battery performance and durability assessment.
 
@@ -702,7 +669,7 @@ class PerformanceResult(BaseModel):
         description="Engine version used for this assessment",
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of assessment (UTC)",
     )
     battery_id: str = Field(
@@ -786,11 +753,9 @@ class PerformanceResult(BaseModel):
         description="SHA-256 hash of the entire result",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class PerformanceDurabilityEngine:
     """Battery performance and durability engine per Art 10 and Annex IV.
@@ -1451,6 +1416,8 @@ class PerformanceDurabilityEngine:
 
         Uses directly reported SoH if available; otherwise calculates
         from rated and current capacity.
+
+from greenlang.schemas import utcnow
 
         Args:
             input_data: PerformanceInput with capacity/SoH data.

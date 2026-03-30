@@ -40,8 +40,10 @@ import math
 import time
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from .models import (
+
     PolygonIssue,
     PolygonIssueType,
     PolygonVerificationResult,
@@ -61,17 +63,10 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -129,11 +124,9 @@ COMMODITY_MAX_AREA_HA: Dict[str, float] = {
 #: Default maximum area for unlisted commodities.
 DEFAULT_MAX_AREA_HA: float = 1_000_000.0
 
-
 # ---------------------------------------------------------------------------
 # PolygonTopologyVerifier
 # ---------------------------------------------------------------------------
-
 
 class PolygonTopologyVerifier:
     """Production-grade polygon topology verifier for EUDR compliance.
@@ -1070,7 +1063,6 @@ class PolygonTopologyVerifier:
             "issue_codes": sorted([i.code for i in result.issues]),
         }
         return _compute_hash(hash_data)
-
 
 # ---------------------------------------------------------------------------
 # Module Exports

@@ -36,33 +36,25 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class WorkflowPhase(str, Enum):
     """Phases of the E5 circular economy workflow."""
@@ -72,7 +64,6 @@ class WorkflowPhase(str, Enum):
     TARGET_EVALUATION = "target_evaluation"
     FINANCIAL_EFFECTS = "financial_effects"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "pending"
@@ -80,7 +71,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class PhaseStatus(str, Enum):
     """Status of a single phase."""
@@ -90,7 +80,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class MaterialOrigin(str, Enum):
     """Material origin classification for inflows."""
     VIRGIN = "virgin"
@@ -98,13 +87,11 @@ class MaterialOrigin(str, Enum):
     RENEWABLE = "renewable"
     SECONDARY = "secondary"
 
-
 class WasteCategory(str, Enum):
     """Waste category classification for outflows."""
     HAZARDOUS = "hazardous"
     NON_HAZARDOUS = "non_hazardous"
     RADIOACTIVE = "radioactive"
-
 
 class WasteDisposal(str, Enum):
     """Waste disposal method."""
@@ -116,11 +103,9 @@ class WasteDisposal(str, Enum):
     LANDFILL = "landfill"
     OTHER = "other"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -132,7 +117,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class InflowRecord(BaseModel):
     """Resource inflow record per E5-4."""
     record_id: str = Field(default_factory=lambda: f"in-{_new_uuid()[:8]}")
@@ -142,7 +126,6 @@ class InflowRecord(BaseModel):
     is_renewable: bool = Field(default=False)
     reporting_year: int = Field(default=2025)
 
-
 class OutflowRecord(BaseModel):
     """Resource outflow / waste record per E5-5."""
     record_id: str = Field(default_factory=lambda: f"out-{_new_uuid()[:8]}")
@@ -151,7 +134,6 @@ class OutflowRecord(BaseModel):
     disposal_method: WasteDisposal = Field(default=WasteDisposal.LANDFILL)
     weight_tonnes: float = Field(default=0.0, ge=0.0)
     reporting_year: int = Field(default=2025)
-
 
 class CircularTarget(BaseModel):
     """Circular economy target per E5-3."""
@@ -163,7 +145,6 @@ class CircularTarget(BaseModel):
     target_value: float = Field(default=0.0)
     current_value: float = Field(default=0.0)
     on_track: bool = Field(default=False)
-
 
 class E5CircularInput(BaseModel):
     """Input data model for E5CircularWorkflow."""
@@ -191,7 +172,6 @@ class E5CircularInput(BaseModel):
     )
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class E5CircularWorkflowResult(BaseModel):
     """Complete result from E5 circular economy workflow."""
     workflow_id: str = Field(..., description="Unique execution ID")
@@ -218,11 +198,9 @@ class E5CircularWorkflowResult(BaseModel):
     reporting_year: int = Field(default=2025)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class E5CircularWorkflow:
     """
@@ -286,7 +264,7 @@ class E5CircularWorkflow:
         if input_data is None:
             input_data = E5CircularInput(config=config or {})
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting E5 circular economy workflow %s", self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = WorkflowStatus.IN_PROGRESS
@@ -305,7 +283,7 @@ class E5CircularWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         completed_count = sum(1 for p in phase_results if p.status == PhaseStatus.COMPLETED)
 
         total_inflow = sum(r.weight_tonnes for r in input_data.inflow_records)
@@ -371,7 +349,7 @@ class E5CircularWorkflow:
 
     async def _phase_policy_review(self, input_data: E5CircularInput) -> PhaseResult:
         """Review circular economy policies and actions."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -389,7 +367,7 @@ class E5CircularWorkflow:
         if not input_data.actions:
             warnings.append("No circular economy actions defined (E5-2)")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 1 PolicyReview: %d policies, %d actions",
                          len(input_data.policies), len(input_data.actions))
         return PhaseResult(
@@ -404,7 +382,7 @@ class E5CircularWorkflow:
 
     async def _phase_resource_inflows(self, input_data: E5CircularInput) -> PhaseResult:
         """Analyse resource inflows and circularity of inputs."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -426,7 +404,7 @@ class E5CircularWorkflow:
         if not records:
             warnings.append("No resource inflow records provided (E5-4)")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 2 ResourceInflows: %.0f tonnes, %.1f%% recycled",
                          total, outputs["recycled_content_pct"])
         return PhaseResult(
@@ -441,7 +419,7 @@ class E5CircularWorkflow:
 
     async def _phase_resource_outflows(self, input_data: E5CircularInput) -> PhaseResult:
         """Analyse resource outflows and waste management."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -470,7 +448,7 @@ class E5CircularWorkflow:
         if not records:
             warnings.append("No resource outflow records provided (E5-5)")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 3 ResourceOutflows: %.0f tonnes, %.1f%% diverted",
                          total, outputs["diversion_rate_pct"])
         return PhaseResult(
@@ -485,7 +463,7 @@ class E5CircularWorkflow:
 
     async def _phase_target_evaluation(self, input_data: E5CircularInput) -> PhaseResult:
         """Evaluate circular economy targets and progress."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -500,7 +478,7 @@ class E5CircularWorkflow:
         if not targets:
             warnings.append("No circular economy targets defined (E5-3)")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 4 TargetEvaluation: %d targets, %d on track",
                          len(targets), len(on_track))
         return PhaseResult(
@@ -515,7 +493,7 @@ class E5CircularWorkflow:
 
     async def _phase_financial_effects(self, input_data: E5CircularInput) -> PhaseResult:
         """Assess anticipated financial effects from resource use."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -529,7 +507,7 @@ class E5CircularWorkflow:
         if not data:
             warnings.append("No financial effects data provided (E5-6)")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Phase 5 FinancialEffects: has_data=%s", bool(data))
         return PhaseResult(
             phase_name=WorkflowPhase.FINANCIAL_EFFECTS.value, status=PhaseStatus.COMPLETED,

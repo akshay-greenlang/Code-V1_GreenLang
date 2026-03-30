@@ -32,25 +32,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -63,11 +57,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class MaterialityStatus(str, Enum):
     """Materiality assessment status for an ESRS standard."""
@@ -77,14 +69,12 @@ class MaterialityStatus(str, Enum):
     PENDING = "pending"
     UNDER_REVIEW = "under_review"
 
-
 class IROType(str, Enum):
     """IRO classification type."""
 
     IMPACT = "impact"
     RISK = "risk"
     OPPORTUNITY = "opportunity"
-
 
 class ESRSStandard(str, Enum):
     """All 12 ESRS topical and cross-cutting standards."""
@@ -102,11 +92,9 @@ class ESRSStandard(str, Enum):
     ESRS_S4 = "ESRS S4"
     ESRS_G1 = "ESRS G1"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class DMABridgeConfig(BaseModel):
     """Configuration for the DMA Pack Bridge."""
@@ -122,7 +110,6 @@ class DMABridgeConfig(BaseModel):
         description="Minimum composite score for a standard to be deemed material",
     )
 
-
 class StandardMateriality(BaseModel):
     """Materiality assessment for a single ESRS standard."""
 
@@ -135,7 +122,6 @@ class StandardMateriality(BaseModel):
     rationale: str = Field(default="")
     sub_topics: List[str] = Field(default_factory=list)
     assessment_date: str = Field(default="")
-
 
 class IROEntry(BaseModel):
     """Impact, Risk, or Opportunity register entry."""
@@ -152,7 +138,6 @@ class IROEntry(BaseModel):
     value_chain_stage: str = Field(default="")
     time_horizon: str = Field(default="")
     stakeholder_groups: List[str] = Field(default_factory=list)
-
 
 class DMAImportResult(BaseModel):
     """Result of a DMA import operation."""
@@ -171,7 +156,6 @@ class DMAImportResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     warnings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Standard to Topic Mapping
@@ -193,11 +177,9 @@ STANDARD_TOPIC_MAP: Dict[str, str] = {
 # ESRS 1 and ESRS 2 are always mandatory (cross-cutting)
 MANDATORY_STANDARDS: List[str] = ["ESRS 1", "ESRS 2"]
 
-
 # ---------------------------------------------------------------------------
 # DMAPackBridge
 # ---------------------------------------------------------------------------
-
 
 class DMAPackBridge:
     """PACK-015 Double Materiality integration bridge for PACK-017.
@@ -239,7 +221,7 @@ class DMAPackBridge:
         Returns:
             DMAImportResult with per-standard materiality and IRO data.
         """
-        result = DMAImportResult(started_at=_utcnow())
+        result = DMAImportResult(started_at=utcnow())
 
         try:
             dma_data = context.get("dma_results", {})
@@ -332,7 +314,7 @@ class DMAPackBridge:
             result.errors.append(str(exc))
             logger.error("DMA import failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at
@@ -416,7 +398,7 @@ class DMAPackBridge:
                 "target_pack": self.config.dma_pack_id,
                 "reporting_year": self.config.reporting_year,
                 "disclosure_status": disclosure_status,
-                "exported_at": _utcnow().isoformat(),
+                "exported_at": utcnow().isoformat(),
             }
             logger.info(
                 "Exported disclosure status for %d standards to DMA pack",

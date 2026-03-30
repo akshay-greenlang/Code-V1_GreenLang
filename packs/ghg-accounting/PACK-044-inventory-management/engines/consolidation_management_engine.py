@@ -74,25 +74,19 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -119,7 +113,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -136,7 +129,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal,
     denominator: Decimal,
@@ -147,31 +139,25 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round2(value: Any) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: Any) -> float:
     """Round to 4 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
-
 
 def _round6(value: Any) -> float:
     """Round to 6 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ConsolidationApproach(str, Enum):
     """Consolidation approach per GHG Protocol Chapter 3.
@@ -183,7 +169,6 @@ class ConsolidationApproach(str, Enum):
     EQUITY_SHARE = "equity_share"
     OPERATIONAL_CONTROL = "operational_control"
     FINANCIAL_CONTROL = "financial_control"
-
 
 class EntityType(str, Enum):
     """Type of entity within a corporate hierarchy.
@@ -204,7 +189,6 @@ class EntityType(str, Enum):
     JOINT_OPERATION = "joint_operation"
     BRANCH = "branch"
 
-
 class SubmissionStatus(str, Enum):
     """Status of an entity's emission data submission.
 
@@ -222,7 +206,6 @@ class SubmissionStatus(str, Enum):
     REJECTED = "rejected"
     OVERDUE = "overdue"
 
-
 class ConsolidationStatusEnum(str, Enum):
     """Overall status of the consolidation process.
 
@@ -237,7 +220,6 @@ class ConsolidationStatusEnum(str, Enum):
     REVIEWED = "reviewed"
     FINAL = "final"
     RESTATED = "restated"
-
 
 class EliminationType(str, Enum):
     """Type of intra-group elimination.
@@ -254,11 +236,9 @@ class EliminationType(str, Enum):
     WASTE_TRANSFER = "waste_transfer"
     PRODUCT_TRANSFER = "product_transfer"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class Entity(BaseModel):
     """A legal entity within the corporate hierarchy.
@@ -305,7 +285,6 @@ class Entity(BaseModel):
         """Coerce equity percentage to Decimal."""
         return _decimal(v)
 
-
 class EntityHierarchy(BaseModel):
     """Complete corporate hierarchy definition.
 
@@ -342,7 +321,6 @@ class EntityHierarchy(BaseModel):
                 f"Hierarchy has {len(roots)} root entities; expected exactly 1"
             )
         return self
-
 
 class SubsidiarySubmission(BaseModel):
     """Emission data submission from a subsidiary or entity.
@@ -403,7 +381,6 @@ class SubsidiarySubmission(BaseModel):
         """Coerce numeric fields to Decimal."""
         return _decimal(v)
 
-
 class IntraGroupTransfer(BaseModel):
     """An intra-group emission transfer to be eliminated.
 
@@ -434,11 +411,9 @@ class IntraGroupTransfer(BaseModel):
         """Coerce amount to Decimal."""
         return _decimal(v)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class EntityConsolidatedResult(BaseModel):
     """Consolidated emission result for a single entity.
@@ -480,7 +455,6 @@ class EntityConsolidatedResult(BaseModel):
     submission_status: str = Field(default="not_started", description="Submission status")
     data_quality_score: float = Field(default=0.0, description="Quality score")
 
-
 class EliminationRecord(BaseModel):
     """Record of an intra-group elimination applied.
 
@@ -500,7 +474,6 @@ class EliminationRecord(BaseModel):
     scope: int = Field(default=2, description="Scope")
     amount_tco2e: float = Field(default=0.0, description="Eliminated amount")
     rationale: str = Field(default="", description="Rationale")
-
 
 class ConsolidationStatus(BaseModel):
     """Status summary of the consolidation process.
@@ -525,7 +498,6 @@ class ConsolidationStatus(BaseModel):
         default_factory=list, description="Blocking entity IDs"
     )
     status: str = Field(default="draft", description="Consolidation status")
-
 
 class ConsolidationManagementResult(BaseModel):
     """Complete multi-entity consolidation result.
@@ -555,7 +527,7 @@ class ConsolidationManagementResult(BaseModel):
     result_id: str = Field(default_factory=_new_uuid, description="Result ID")
     engine_version: str = Field(default=_MODULE_VERSION, description="Engine version")
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     group_name: str = Field(default="", description="Group name")
@@ -593,7 +565,6 @@ class ConsolidationManagementResult(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 # ---------------------------------------------------------------------------
 # Model Rebuild
 # ---------------------------------------------------------------------------
@@ -607,11 +578,9 @@ EliminationRecord.model_rebuild()
 ConsolidationStatus.model_rebuild()
 ConsolidationManagementResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ConsolidationManagementEngine:
     """Multi-entity GHG inventory consolidation engine.

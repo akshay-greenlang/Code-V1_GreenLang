@@ -34,10 +34,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -124,7 +125,7 @@ RISK_THRESHOLDS = {
 # Pydantic Models - Input/Output
 # =============================================================================
 
-class GeoLocation(BaseModel):
+class GeoLocation(GreenLangBase):
     """Geographic location specification."""
     latitude: float = Field(..., ge=-90, le=90, description="Latitude in degrees")
     longitude: float = Field(..., ge=-180, le=180, description="Longitude in degrees")
@@ -134,7 +135,7 @@ class GeoLocation(BaseModel):
     coastal_distance_km: Optional[float] = Field(None, ge=0, description="Distance to coast in km")
 
 
-class AssetDefinition(BaseModel):
+class AssetDefinition(GreenLangBase):
     """Definition of an asset for risk screening."""
     asset_id: str = Field(..., description="Unique asset identifier")
     asset_name: str = Field(..., description="Asset name")
@@ -147,7 +148,7 @@ class AssetDefinition(BaseModel):
     attributes: Dict[str, Any] = Field(default_factory=dict, description="Additional attributes")
 
 
-class HazardExposure(BaseModel):
+class HazardExposure(GreenLangBase):
     """Exposure data for a specific hazard."""
     hazard_type: HazardType = Field(..., description="Type of hazard")
     exposure_score: float = Field(..., ge=0, le=1, description="Exposure score (0-1)")
@@ -158,7 +159,7 @@ class HazardExposure(BaseModel):
     notes: Optional[str] = Field(None, description="Additional notes")
 
 
-class HazardRiskScore(BaseModel):
+class HazardRiskScore(GreenLangBase):
     """Risk score for a specific hazard."""
     hazard_type: HazardType = Field(..., description="Type of hazard")
     exposure_score: float = Field(..., ge=0, le=1, description="Exposure score")
@@ -171,7 +172,7 @@ class HazardRiskScore(BaseModel):
     calculation_trace: List[str] = Field(default_factory=list, description="Calculation steps")
 
 
-class AssetRiskProfile(BaseModel):
+class AssetRiskProfile(GreenLangBase):
     """Complete risk profile for an asset."""
     asset_id: str = Field(..., description="Asset identifier")
     asset_name: str = Field(..., description="Asset name")
@@ -201,7 +202,7 @@ class AssetRiskProfile(BaseModel):
     provenance_hash: str = Field(default="", description="SHA-256 hash for audit")
 
 
-class PhysicalRiskScreeningInput(BaseModel):
+class PhysicalRiskScreeningInput(GreenLangBase):
     """Input model for Physical Risk Screening Agent."""
     screening_id: str = Field(..., description="Unique screening identifier")
     assets: List[AssetDefinition] = Field(..., min_length=1, description="Assets to screen")
@@ -245,7 +246,7 @@ class PhysicalRiskScreeningInput(BaseModel):
         return v
 
 
-class PhysicalRiskScreeningOutput(BaseModel):
+class PhysicalRiskScreeningOutput(GreenLangBase):
     """Output model for Physical Risk Screening Agent."""
     screening_id: str = Field(..., description="Screening identifier")
     completed_at: datetime = Field(default_factory=DeterministicClock.now)

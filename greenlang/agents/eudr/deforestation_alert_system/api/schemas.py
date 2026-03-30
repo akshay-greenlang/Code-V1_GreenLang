@@ -46,23 +46,17 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import ConfigDict, Field, field_validator
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
+from greenlang.schemas import GreenLangBase, utcnow
 
 def _new_id() -> str:
     """Generate a new UUID4 string identifier."""
     return str(uuid.uuid4())
 
-
 # =============================================================================
 # Enumerations (API-level mirrors for OpenAPI documentation)
 # =============================================================================
-
 
 class SatelliteSourceEnum(str, Enum):
     """Satellite data source identifiers."""
@@ -75,7 +69,6 @@ class SatelliteSourceEnum(str, Enum):
     PLANET = "planet"
     CUSTOM = "custom"
 
-
 class ChangeTypeEnum(str, Enum):
     """Types of detected land cover change."""
 
@@ -86,7 +79,6 @@ class ChangeTypeEnum(str, Enum):
     NO_CHANGE = "no_change"
     UNKNOWN = "unknown"
 
-
 class AlertSeverityEnum(str, Enum):
     """Alert severity levels for deforestation events."""
 
@@ -95,7 +87,6 @@ class AlertSeverityEnum(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     INFORMATIONAL = "informational"
-
 
 class AlertStatusEnum(str, Enum):
     """Alert lifecycle status values."""
@@ -109,14 +100,12 @@ class AlertStatusEnum(str, Enum):
     DISMISSED = "dismissed"
     FALSE_POSITIVE = "false_positive"
 
-
 class BufferTypeEnum(str, Enum):
     """Spatial buffer geometry types."""
 
     CIRCULAR = "circular"
     POLYGON = "polygon"
     ADAPTIVE = "adaptive"
-
 
 class CutoffResultEnum(str, Enum):
     """EUDR cutoff date verification outcomes."""
@@ -126,7 +115,6 @@ class CutoffResultEnum(str, Enum):
     GRACE_PERIOD = "grace_period"
     INCONCLUSIVE = "inconclusive"
 
-
 class ComplianceOutcomeEnum(str, Enum):
     """Compliance impact assessment outcomes."""
 
@@ -135,7 +123,6 @@ class ComplianceOutcomeEnum(str, Enum):
     AT_RISK = "at_risk"
     REQUIRES_INVESTIGATION = "requires_investigation"
     REMEDIATION_REQUIRED = "remediation_required"
-
 
 class WorkflowActionEnum(str, Enum):
     """Alert workflow actions."""
@@ -148,7 +135,6 @@ class WorkflowActionEnum(str, Enum):
     DISMISS = "dismiss"
     REOPEN = "reopen"
 
-
 class SpectralIndexEnum(str, Enum):
     """Spectral vegetation indices for change detection."""
 
@@ -157,7 +143,6 @@ class SpectralIndexEnum(str, Enum):
     NBR = "nbr"
     NDMI = "ndmi"
     SAVI = "savi"
-
 
 class EUDRCommodityEnum(str, Enum):
     """EUDR-regulated commodity types per Article 1."""
@@ -170,7 +155,6 @@ class EUDRCommodityEnum(str, Enum):
     SOYA = "soya"
     WOOD = "wood"
 
-
 class EvidenceQualityEnum(str, Enum):
     """Quality classification for temporal evidence."""
 
@@ -178,7 +162,6 @@ class EvidenceQualityEnum(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     UNCERTAIN = "uncertain"
-
 
 class RemediationActionEnum(str, Enum):
     """Types of remediation actions for non-compliant alerts."""
@@ -192,7 +175,6 @@ class RemediationActionEnum(str, Enum):
     STAKEHOLDER_ENGAGEMENT = "stakeholder_engagement"
     CORRECTIVE_ACTION_PLAN = "corrective_action_plan"
 
-
 class WorkflowPriorityEnum(str, Enum):
     """Workflow processing priority levels."""
 
@@ -200,7 +182,6 @@ class WorkflowPriorityEnum(str, Enum):
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 class SLAStatusEnum(str, Enum):
     """SLA compliance status."""
@@ -210,13 +191,11 @@ class SLAStatusEnum(str, Enum):
     BREACHED = "breached"
     COMPLETED = "completed"
 
-
 # =============================================================================
 # Common / Shared Schemas
 # =============================================================================
 
-
-class ProvenanceInfo(BaseModel):
+class ProvenanceInfo(GreenLangBase):
     """Provenance tracking information for audit trail."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -232,12 +211,11 @@ class ProvenanceInfo(BaseModel):
         description="Agent identifier",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp of operation",
     )
 
-
-class MetadataSchema(BaseModel):
+class MetadataSchema(GreenLangBase):
     """Response metadata for traceability."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -258,8 +236,7 @@ class MetadataSchema(BaseModel):
         default="1.0.0", description="API version"
     )
 
-
-class PaginatedMeta(BaseModel):
+class PaginatedMeta(GreenLangBase):
     """Pagination metadata for list responses."""
 
     total: int = Field(..., ge=0, description="Total number of records")
@@ -267,8 +244,7 @@ class PaginatedMeta(BaseModel):
     offset: int = Field(..., ge=0, description="Number of records skipped")
     has_more: bool = Field(..., description="Whether more pages exist")
 
-
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     """Structured error response for all API endpoints."""
 
     error: str = Field(..., description="Error type identifier")
@@ -276,8 +252,7 @@ class ErrorResponse(BaseModel):
     detail: Optional[str] = Field(None, description="Additional error details")
     request_id: Optional[str] = Field(None, description="Request correlation ID")
 
-
-class GeoPointSchema(BaseModel):
+class GeoPointSchema(GreenLangBase):
     """Geographic coordinate point with regulatory-grade precision."""
 
     latitude: Decimal = Field(
@@ -293,8 +268,7 @@ class GeoPointSchema(BaseModel):
         description="WGS84 longitude in decimal degrees",
     )
 
-
-class GeoPolygonSchema(BaseModel):
+class GeoPolygonSchema(GreenLangBase):
     """Geographic polygon defined by ordered coordinate points."""
 
     coordinates: List[GeoPointSchema] = Field(
@@ -311,8 +285,7 @@ class GeoPolygonSchema(BaseModel):
             raise ValueError("Polygon must have at least 3 vertices")
         return v
 
-
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Health check response schema."""
 
     status: str = Field(default="healthy", description="Service health status")
@@ -324,13 +297,11 @@ class HealthResponse(BaseModel):
     )
     version: str = Field(default="1.0.0", description="API version")
 
-
 # =============================================================================
 # 1. Satellite Schemas
 # =============================================================================
 
-
-class SatelliteDetectionRequest(BaseModel):
+class SatelliteDetectionRequest(GreenLangBase):
     """Request to trigger satellite change detection for an area."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -383,8 +354,7 @@ class SatelliteDetectionRequest(BaseModel):
                 raise ValueError("end_date must be >= start_date")
         return v
 
-
-class DetectionEntry(BaseModel):
+class DetectionEntry(GreenLangBase):
     """A single satellite detection result."""
 
     detection_id: str = Field(
@@ -419,8 +389,7 @@ class DetectionEntry(BaseModel):
         None, description="Spatial resolution in meters"
     )
 
-
-class SatelliteDetectionResponse(BaseModel):
+class SatelliteDetectionResponse(GreenLangBase):
     """Response for satellite change detection operation."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -451,8 +420,7 @@ class SatelliteDetectionResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class SatelliteScanRequest(BaseModel):
+class SatelliteScanRequest(GreenLangBase):
     """Request to scan a specific area with a specific satellite source."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -486,8 +454,7 @@ class SatelliteScanRequest(BaseModel):
         default=20, ge=0, le=100, description="Maximum cloud cover"
     )
 
-
-class SatelliteScanResponse(BaseModel):
+class SatelliteScanResponse(GreenLangBase):
     """Response for a targeted satellite scan."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -520,8 +487,7 @@ class SatelliteScanResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class SatelliteSourceInfo(BaseModel):
+class SatelliteSourceInfo(GreenLangBase):
     """Information about an available satellite data source."""
 
     source: SatelliteSourceEnum = Field(
@@ -544,8 +510,7 @@ class SatelliteSourceInfo(BaseModel):
         default="optical", description="Data type (optical, radar, etc.)"
     )
 
-
-class SatelliteSourcesResponse(BaseModel):
+class SatelliteSourcesResponse(GreenLangBase):
     """Response listing available satellite data sources."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -566,8 +531,7 @@ class SatelliteSourcesResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class ImageryMetadata(BaseModel):
+class ImageryMetadata(GreenLangBase):
     """Metadata for a satellite imagery scene."""
 
     scene_id: str = Field(..., description="Unique scene identifier")
@@ -590,8 +554,7 @@ class ImageryMetadata(BaseModel):
         None, description="URL to thumbnail preview"
     )
 
-
-class SatelliteImageryResponse(BaseModel):
+class SatelliteImageryResponse(GreenLangBase):
     """Response with imagery metadata for a detection."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -612,13 +575,11 @@ class SatelliteImageryResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
 # =============================================================================
 # 2. Alert Schemas
 # =============================================================================
 
-
-class AlertCreateRequest(BaseModel):
+class AlertCreateRequest(GreenLangBase):
     """Request to create a manual deforestation alert."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -670,8 +631,7 @@ class AlertCreateRequest(BaseModel):
         None, description="Affected EUDR-regulated commodities"
     )
 
-
-class AlertEntry(BaseModel):
+class AlertEntry(GreenLangBase):
     """Summary of a single deforestation alert."""
 
     alert_id: str = Field(..., description="Unique alert identifier")
@@ -703,8 +663,7 @@ class AlertEntry(BaseModel):
         None, description="Last update timestamp"
     )
 
-
-class AlertDetailResponse(BaseModel):
+class AlertDetailResponse(GreenLangBase):
     """Detailed response for a single alert."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -735,8 +694,7 @@ class AlertDetailResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class AlertListResponse(BaseModel):
+class AlertListResponse(GreenLangBase):
     """Paginated list of deforestation alerts."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -757,8 +715,7 @@ class AlertListResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class AlertBatchRequest(BaseModel):
+class AlertBatchRequest(GreenLangBase):
     """Request to batch-create alerts from satellite detections."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -777,8 +734,7 @@ class AlertBatchRequest(BaseModel):
         default=True, description="Automatically triage generated alerts"
     )
 
-
-class AlertBatchResponse(BaseModel):
+class AlertBatchResponse(GreenLangBase):
     """Response for batch alert creation."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -805,8 +761,7 @@ class AlertBatchResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class AlertSummaryByCategory(BaseModel):
+class AlertSummaryByCategory(GreenLangBase):
     """Alert count by a category dimension."""
 
     category: str = Field(..., description="Category name")
@@ -815,8 +770,7 @@ class AlertSummaryByCategory(BaseModel):
         None, description="Percentage of total"
     )
 
-
-class AlertSummaryResponse(BaseModel):
+class AlertSummaryResponse(GreenLangBase):
     """Alert summary statistics grouped by country/severity."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -843,8 +797,7 @@ class AlertSummaryResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class AlertStatisticsResponse(BaseModel):
+class AlertStatisticsResponse(GreenLangBase):
     """Detailed alert statistics with trends."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -887,13 +840,11 @@ class AlertStatisticsResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
 # =============================================================================
 # 3. Severity Schemas
 # =============================================================================
 
-
-class SeverityClassifyRequest(BaseModel):
+class SeverityClassifyRequest(GreenLangBase):
     """Request to classify the severity of an alert."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -930,8 +881,7 @@ class SeverityClassifyRequest(BaseModel):
         description="Custom severity weights override (area, rate, proximity, protected, timing)",
     )
 
-
-class SeverityScoreBreakdown(BaseModel):
+class SeverityScoreBreakdown(GreenLangBase):
     """Detailed severity score component breakdown."""
 
     area_score: Decimal = Field(
@@ -974,8 +924,7 @@ class SeverityScoreBreakdown(BaseModel):
         ..., description="Final severity score after multipliers"
     )
 
-
-class SeverityClassifyResponse(BaseModel):
+class SeverityClassifyResponse(GreenLangBase):
     """Response for severity classification."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1003,8 +952,7 @@ class SeverityClassifyResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class SeverityReclassifyRequest(BaseModel):
+class SeverityReclassifyRequest(GreenLangBase):
     """Request to reclassify an existing alert's severity."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1023,8 +971,7 @@ class SeverityReclassifyRequest(BaseModel):
         None, description="Force a specific severity level"
     )
 
-
-class SeverityReclassifyResponse(BaseModel):
+class SeverityReclassifyResponse(GreenLangBase):
     """Response for severity reclassification."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1042,7 +989,7 @@ class SeverityReclassifyResponse(BaseModel):
         default="system", description="User who reclassified"
     )
     reclassified_at: datetime = Field(
-        default_factory=_utcnow, description="Reclassification timestamp"
+        default_factory=utcnow, description="Reclassification timestamp"
     )
     provenance: ProvenanceInfo = Field(
         ..., description="Provenance tracking information"
@@ -1051,8 +998,7 @@ class SeverityReclassifyResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class SeverityThresholdEntry(BaseModel):
+class SeverityThresholdEntry(GreenLangBase):
     """A single severity threshold configuration."""
 
     severity: AlertSeverityEnum = Field(
@@ -1071,8 +1017,7 @@ class SeverityThresholdEntry(BaseModel):
         ..., description="Maximum score for this severity"
     )
 
-
-class SeverityThresholdsResponse(BaseModel):
+class SeverityThresholdsResponse(GreenLangBase):
     """Current severity classification threshold configuration."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1093,8 +1038,7 @@ class SeverityThresholdsResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class SeverityDistributionEntry(BaseModel):
+class SeverityDistributionEntry(GreenLangBase):
     """Distribution entry for a severity level."""
 
     severity: AlertSeverityEnum = Field(
@@ -1111,8 +1055,7 @@ class SeverityDistributionEntry(BaseModel):
         None, description="Average severity score"
     )
 
-
-class SeverityDistributionResponse(BaseModel):
+class SeverityDistributionResponse(GreenLangBase):
     """Distribution of alerts across severity levels."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1133,13 +1076,11 @@ class SeverityDistributionResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
 # =============================================================================
 # 4. Buffer Schemas
 # =============================================================================
 
-
-class BufferCreateRequest(BaseModel):
+class BufferCreateRequest(GreenLangBase):
     """Request to create a spatial buffer zone."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1171,8 +1112,7 @@ class BufferCreateRequest(BaseModel):
         None, description="Commodities produced in the plot"
     )
 
-
-class BufferZoneEntry(BaseModel):
+class BufferZoneEntry(GreenLangBase):
     """A spatial buffer zone record."""
 
     buffer_id: str = Field(..., description="Unique buffer zone identifier")
@@ -1199,11 +1139,10 @@ class BufferZoneEntry(BaseModel):
         default=0, ge=0, description="Total violations detected"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation timestamp"
+        default_factory=utcnow, description="Creation timestamp"
     )
 
-
-class BufferCreateResponse(BaseModel):
+class BufferCreateResponse(GreenLangBase):
     """Response for buffer zone creation."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1218,8 +1157,7 @@ class BufferCreateResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class BufferUpdateRequest(BaseModel):
+class BufferUpdateRequest(GreenLangBase):
     """Request to update an existing buffer zone."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1243,8 +1181,7 @@ class BufferUpdateRequest(BaseModel):
         None, ge=4, le=256, description="Updated resolution"
     )
 
-
-class BufferCheckRequest(BaseModel):
+class BufferCheckRequest(GreenLangBase):
     """Request to check if a point falls within any active buffer zones."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1268,8 +1205,7 @@ class BufferCheckRequest(BaseModel):
         default=True, description="Include distance to buffer center"
     )
 
-
-class BufferCheckResult(BaseModel):
+class BufferCheckResult(GreenLangBase):
     """Result of checking a point against a single buffer zone."""
 
     buffer_id: str = Field(..., description="Buffer zone ID")
@@ -1287,8 +1223,7 @@ class BufferCheckResult(BaseModel):
         default_factory=list, description="Commodities at risk"
     )
 
-
-class BufferCheckResponse(BaseModel):
+class BufferCheckResponse(GreenLangBase):
     """Response for spatial buffer check."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1311,8 +1246,7 @@ class BufferCheckResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class BufferViolationEntry(BaseModel):
+class BufferViolationEntry(GreenLangBase):
     """A buffer zone violation record."""
 
     violation_id: str = Field(
@@ -1338,11 +1272,10 @@ class BufferViolationEntry(BaseModel):
         None, description="Violation severity"
     )
     detected_at: datetime = Field(
-        default_factory=_utcnow, description="Detection timestamp"
+        default_factory=utcnow, description="Detection timestamp"
     )
 
-
-class BufferViolationsResponse(BaseModel):
+class BufferViolationsResponse(GreenLangBase):
     """List of buffer zone violations."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1363,8 +1296,7 @@ class BufferViolationsResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class BufferZonesResponse(BaseModel):
+class BufferZonesResponse(GreenLangBase):
     """List of active buffer zones."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1391,13 +1323,11 @@ class BufferZonesResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
 # =============================================================================
 # 5. Cutoff Schemas
 # =============================================================================
 
-
-class CutoffVerifyRequest(BaseModel):
+class CutoffVerifyRequest(GreenLangBase):
     """Request to verify a detection against the EUDR cutoff date."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1430,8 +1360,7 @@ class CutoffVerifyRequest(BaseModel):
         description="Override confidence threshold",
     )
 
-
-class TemporalEvidenceEntry(BaseModel):
+class TemporalEvidenceEntry(GreenLangBase):
     """A single piece of temporal evidence for cutoff verification."""
 
     source: SatelliteSourceEnum = Field(
@@ -1457,8 +1386,7 @@ class TemporalEvidenceEntry(BaseModel):
         description="Evidence confidence",
     )
 
-
-class CutoffVerifyResponse(BaseModel):
+class CutoffVerifyResponse(GreenLangBase):
     """Response for EUDR cutoff date verification."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1501,8 +1429,7 @@ class CutoffVerifyResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class CutoffBatchVerifyRequest(BaseModel):
+class CutoffBatchVerifyRequest(GreenLangBase):
     """Request to batch-verify multiple detections against cutoff."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1514,8 +1441,7 @@ class CutoffBatchVerifyRequest(BaseModel):
         description="Detections to verify (max 500)",
     )
 
-
-class CutoffBatchResultEntry(BaseModel):
+class CutoffBatchResultEntry(GreenLangBase):
     """A single result in batch cutoff verification."""
 
     detection_id: str = Field(..., description="Detection ID")
@@ -1530,8 +1456,7 @@ class CutoffBatchResultEntry(BaseModel):
         None, description="Error message if verification failed"
     )
 
-
-class CutoffBatchVerifyResponse(BaseModel):
+class CutoffBatchVerifyResponse(GreenLangBase):
     """Response for batch cutoff verification."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1561,8 +1486,7 @@ class CutoffBatchVerifyResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class CutoffEvidenceResponse(BaseModel):
+class CutoffEvidenceResponse(GreenLangBase):
     """Temporal evidence details for a detection."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1590,8 +1514,7 @@ class CutoffEvidenceResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class ForestStateEntry(BaseModel):
+class ForestStateEntry(GreenLangBase):
     """Forest state at a point in time for timeline construction."""
 
     observation_date: date = Field(
@@ -1614,8 +1537,7 @@ class ForestStateEntry(BaseModel):
         description="Whether this observation is near cutoff date",
     )
 
-
-class CutoffTimelineResponse(BaseModel):
+class CutoffTimelineResponse(GreenLangBase):
     """Forest state timeline for a detection location."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1643,13 +1565,11 @@ class CutoffTimelineResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
 # =============================================================================
 # 6. Baseline Schemas
 # =============================================================================
 
-
-class BaselineEstablishRequest(BaseModel):
+class BaselineEstablishRequest(GreenLangBase):
     """Request to establish a historical baseline for an area."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1680,8 +1600,7 @@ class BaselineEstablishRequest(BaseModel):
         default=3, ge=1, description="Minimum observation samples required"
     )
 
-
-class BaselineDataEntry(BaseModel):
+class BaselineDataEntry(GreenLangBase):
     """A baseline observation data point."""
 
     observation_date: date = Field(
@@ -1700,8 +1619,7 @@ class BaselineDataEntry(BaseModel):
         ..., description="Data source"
     )
 
-
-class BaselineEstablishResponse(BaseModel):
+class BaselineEstablishResponse(GreenLangBase):
     """Response for baseline establishment."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1739,8 +1657,7 @@ class BaselineEstablishResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class BaselineCompareRequest(BaseModel):
+class BaselineCompareRequest(GreenLangBase):
     """Request to compare current state against a baseline."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1755,8 +1672,7 @@ class BaselineCompareRequest(BaseModel):
         default=False, description="Include full timeline comparison"
     )
 
-
-class BaselineCompareResponse(BaseModel):
+class BaselineCompareResponse(GreenLangBase):
     """Response for baseline comparison."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1792,8 +1708,7 @@ class BaselineCompareResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class BaselineUpdateRequest(BaseModel):
+class BaselineUpdateRequest(GreenLangBase):
     """Request to update an existing baseline."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1811,8 +1726,7 @@ class BaselineUpdateRequest(BaseModel):
         None, max_length=2000, description="Update notes"
     )
 
-
-class BaselineCoverageEntry(BaseModel):
+class BaselineCoverageEntry(GreenLangBase):
     """Coverage statistics for a single baseline."""
 
     baseline_id: str = Field(..., description="Baseline ID")
@@ -1831,8 +1745,7 @@ class BaselineCoverageEntry(BaseModel):
         ..., description="Last update timestamp"
     )
 
-
-class BaselineCoverageResponse(BaseModel):
+class BaselineCoverageResponse(GreenLangBase):
     """Response for baseline coverage statistics."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1862,13 +1775,11 @@ class BaselineCoverageResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
 # =============================================================================
 # 7. Workflow Schemas
 # =============================================================================
 
-
-class WorkflowTriageRequest(BaseModel):
+class WorkflowTriageRequest(GreenLangBase):
     """Request to triage a deforestation alert."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1888,8 +1799,7 @@ class WorkflowTriageRequest(BaseModel):
         None, description="Assignee for auto-assignment"
     )
 
-
-class WorkflowTriageResponse(BaseModel):
+class WorkflowTriageResponse(GreenLangBase):
     """Response for alert triage operation."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1908,7 +1818,7 @@ class WorkflowTriageResponse(BaseModel):
         default="system", description="User who performed triage"
     )
     triaged_at: datetime = Field(
-        default_factory=_utcnow, description="Triage timestamp"
+        default_factory=utcnow, description="Triage timestamp"
     )
     sla_deadline: Optional[datetime] = Field(
         None, description="SLA deadline for next action"
@@ -1923,8 +1833,7 @@ class WorkflowTriageResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class WorkflowAssignRequest(BaseModel):
+class WorkflowAssignRequest(GreenLangBase):
     """Request to assign an alert to an investigator."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1943,8 +1852,7 @@ class WorkflowAssignRequest(BaseModel):
         None, description="Custom due date for investigation"
     )
 
-
-class WorkflowInvestigateRequest(BaseModel):
+class WorkflowInvestigateRequest(GreenLangBase):
     """Request to start investigation on an alert."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1963,8 +1871,7 @@ class WorkflowInvestigateRequest(BaseModel):
         None, description="URLs to supporting evidence"
     )
 
-
-class WorkflowResolveRequest(BaseModel):
+class WorkflowResolveRequest(GreenLangBase):
     """Request to resolve a deforestation alert."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -1990,8 +1897,7 @@ class WorkflowResolveRequest(BaseModel):
         default=False, description="Mark as false positive"
     )
 
-
-class WorkflowEscalateRequest(BaseModel):
+class WorkflowEscalateRequest(GreenLangBase):
     """Request to escalate a deforestation alert."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -2011,8 +1917,7 @@ class WorkflowEscalateRequest(BaseModel):
         description="Whether external review (e.g. competent authority) needed",
     )
 
-
-class WorkflowTransitionResponse(BaseModel):
+class WorkflowTransitionResponse(GreenLangBase):
     """Generic response for workflow state transitions."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -2031,7 +1936,7 @@ class WorkflowTransitionResponse(BaseModel):
         default="system", description="User who performed action"
     )
     performed_at: datetime = Field(
-        default_factory=_utcnow, description="Action timestamp"
+        default_factory=utcnow, description="Action timestamp"
     )
     sla_deadline: Optional[datetime] = Field(
         None, description="SLA deadline for next action"
@@ -2044,8 +1949,7 @@ class WorkflowTransitionResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class SLAEntry(BaseModel):
+class SLAEntry(GreenLangBase):
     """SLA status for a single alert."""
 
     alert_id: str = Field(..., description="Alert ID")
@@ -2069,8 +1973,7 @@ class SLAEntry(BaseModel):
         default=0, ge=0, description="Current escalation level"
     )
 
-
-class WorkflowSLAResponse(BaseModel):
+class WorkflowSLAResponse(GreenLangBase):
     """Response for SLA status query."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -2111,13 +2014,11 @@ class WorkflowSLAResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
 # =============================================================================
 # 8. Compliance Schemas
 # =============================================================================
 
-
-class ComplianceAssessRequest(BaseModel):
+class ComplianceAssessRequest(GreenLangBase):
     """Request to assess compliance impact of a deforestation alert."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -2141,8 +2042,7 @@ class ComplianceAssessRequest(BaseModel):
         None, description="Operator ID for impact scoping"
     )
 
-
-class AffectedSupplierEntry(BaseModel):
+class AffectedSupplierEntry(GreenLangBase):
     """An affected supplier in compliance assessment."""
 
     supplier_id: str = Field(..., description="Supplier identifier")
@@ -2162,8 +2062,7 @@ class AffectedSupplierEntry(BaseModel):
         None, description="Estimated volume affected (tonnes)"
     )
 
-
-class AffectedProductEntry(BaseModel):
+class AffectedProductEntry(GreenLangBase):
     """An affected product in compliance assessment."""
 
     product_id: str = Field(..., description="Product identifier")
@@ -2183,8 +2082,7 @@ class AffectedProductEntry(BaseModel):
         default="low", description="Market restriction risk"
     )
 
-
-class ComplianceRecommendationEntry(BaseModel):
+class ComplianceRecommendationEntry(GreenLangBase):
     """A compliance remediation recommendation."""
 
     recommendation_id: str = Field(
@@ -2207,8 +2105,7 @@ class ComplianceRecommendationEntry(BaseModel):
         None, description="Applicable EUDR article reference"
     )
 
-
-class ComplianceAssessResponse(BaseModel):
+class ComplianceAssessResponse(GreenLangBase):
     """Response for compliance impact assessment."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -2258,8 +2155,7 @@ class ComplianceAssessResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class AffectedProductsResponse(BaseModel):
+class AffectedProductsResponse(GreenLangBase):
     """Response for affected products query."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -2287,8 +2183,7 @@ class AffectedProductsResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class ComplianceRecommendationsResponse(BaseModel):
+class ComplianceRecommendationsResponse(GreenLangBase):
     """Response for compliance recommendations query."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -2312,8 +2207,7 @@ class ComplianceRecommendationsResponse(BaseModel):
         default_factory=MetadataSchema, description="Response metadata"
     )
 
-
-class RemediationPlanRequest(BaseModel):
+class RemediationPlanRequest(GreenLangBase):
     """Request to create a remediation plan for a compliance incident."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -2343,8 +2237,7 @@ class RemediationPlanRequest(BaseModel):
         None, description="Estimated remediation cost (EUR)"
     )
 
-
-class RemediationPlanResponse(BaseModel):
+class RemediationPlanResponse(GreenLangBase):
     """Response for remediation plan creation."""
 
     model_config = ConfigDict(populate_by_name=True)
@@ -2366,7 +2259,7 @@ class RemediationPlanResponse(BaseModel):
         ..., description="Responsible party"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Creation timestamp"
+        default_factory=utcnow, description="Creation timestamp"
     )
     provenance: ProvenanceInfo = Field(
         ..., description="Provenance tracking information"
@@ -2374,7 +2267,6 @@ class RemediationPlanResponse(BaseModel):
     metadata: MetadataSchema = Field(
         default_factory=MetadataSchema, description="Response metadata"
     )
-
 
 # =============================================================================
 # Public API

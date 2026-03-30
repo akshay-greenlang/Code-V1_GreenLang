@@ -36,6 +36,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 from .scenario_analysis_workflow import (
     ScenarioAnalysisConfig,
@@ -76,6 +77,7 @@ from .temperature_alignment_workflow import (
     TemperatureAlignmentWorkflow,
 )
 from .vcmi_certification_workflow import (
+
     CreditPortfolioItem,
     VCMICertificationConfig,
     VCMICertificationResult,
@@ -86,31 +88,21 @@ logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "22.0.0"
 
-
 # =============================================================================
 # HELPERS
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
 
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
 
-
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a single workflow phase."""
@@ -121,7 +113,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
 
@@ -130,7 +121,6 @@ class WorkflowStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     PARTIAL = "partial"
-
 
 class AccelerationMaturity(str, Enum):
     """Net-zero acceleration maturity level."""
@@ -141,11 +131,9 @@ class AccelerationMaturity(str, Enum):
     ADVANCED = "advanced"
     LEADING = "leading"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -157,7 +145,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class AccelerationScorecard(BaseModel):
     """Net-zero acceleration scorecard."""
@@ -171,7 +158,6 @@ class AccelerationScorecard(BaseModel):
     vcmi_score: float = Field(default=0.0, ge=0.0, le=100.0)
     overall_score: float = Field(default=0.0, ge=0.0, le=100.0)
     maturity: AccelerationMaturity = Field(default=AccelerationMaturity.NASCENT)
-
 
 class AccelerationStrategySummary(BaseModel):
     """Unified acceleration strategy summary."""
@@ -198,7 +184,6 @@ class AccelerationStrategySummary(BaseModel):
     maturity_level: str = Field(default="")
     key_actions: List[str] = Field(default_factory=list)
     key_risks: List[str] = Field(default_factory=list)
-
 
 class FullAccelerationConfig(BaseModel):
     """Configuration combining all sub-workflow configs."""
@@ -253,7 +238,6 @@ class FullAccelerationConfig(BaseModel):
     entity_id: str = Field(default="")
     tenant_id: str = Field(default="")
 
-
 class FullAccelerationResult(BaseModel):
     """Complete result from the full acceleration workflow."""
 
@@ -273,11 +257,9 @@ class FullAccelerationResult(BaseModel):
     strategy: AccelerationStrategySummary = Field(default_factory=AccelerationStrategySummary)
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class FullAccelerationWorkflow:
     """
@@ -334,7 +316,7 @@ class FullAccelerationWorkflow:
         Returns:
             FullAccelerationResult with all sub-results and unified strategy.
         """
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info(
             "Starting full acceleration workflow %s, sector=%s",
             self.workflow_id, config.sector,
@@ -397,7 +379,7 @@ class FullAccelerationWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         result = FullAccelerationResult(
             workflow_id=self.workflow_id,
             status=overall_status,
@@ -428,7 +410,7 @@ class FullAccelerationWorkflow:
 
     async def _phase_scenarios(self, config: FullAccelerationConfig) -> PhaseResult:
         """Run scenario analysis workflow."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -461,7 +443,7 @@ class FullAccelerationWorkflow:
             warnings.append(str(exc))
             status = PhaseStatus.FAILED
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="scenarios",
             status=status,
@@ -477,7 +459,7 @@ class FullAccelerationWorkflow:
 
     async def _phase_sda(self, config: FullAccelerationConfig) -> PhaseResult:
         """Run SDA target workflow if sector is SDA-eligible."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -488,7 +470,7 @@ class FullAccelerationWorkflow:
             reason = "skip_sda flag set" if config.skip_sda else f"Sector '{sector}' not SDA-eligible"
             outputs["skipped_reason"] = reason
             warnings.append(f"SDA phase skipped: {reason}")
-            elapsed = (_utcnow() - started).total_seconds()
+            elapsed = (utcnow() - started).total_seconds()
             return PhaseResult(
                 phase_name="sda_targets",
                 status=PhaseStatus.SKIPPED,
@@ -525,7 +507,7 @@ class FullAccelerationWorkflow:
             warnings.append(str(exc))
             status = PhaseStatus.FAILED
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="sda_targets",
             status=status,
@@ -541,7 +523,7 @@ class FullAccelerationWorkflow:
 
     async def _phase_suppliers(self, config: FullAccelerationConfig) -> PhaseResult:
         """Run supplier engagement program workflow."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -570,7 +552,7 @@ class FullAccelerationWorkflow:
             warnings.append(str(exc))
             status = PhaseStatus.FAILED
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="suppliers",
             status=status,
@@ -586,7 +568,7 @@ class FullAccelerationWorkflow:
 
     async def _phase_finance(self, config: FullAccelerationConfig) -> PhaseResult:
         """Run transition finance workflow."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -614,7 +596,7 @@ class FullAccelerationWorkflow:
             warnings.append(str(exc))
             status = PhaseStatus.FAILED
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="finance",
             status=status,
@@ -630,7 +612,7 @@ class FullAccelerationWorkflow:
 
     async def _phase_progress(self, config: FullAccelerationConfig) -> PhaseResult:
         """Run advanced progress tracking workflow."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -660,7 +642,7 @@ class FullAccelerationWorkflow:
             warnings.append(str(exc))
             status = PhaseStatus.FAILED
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="progress",
             status=status,
@@ -676,7 +658,7 @@ class FullAccelerationWorkflow:
 
     async def _phase_temperature(self, config: FullAccelerationConfig) -> PhaseResult:
         """Run temperature alignment workflow."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -704,7 +686,7 @@ class FullAccelerationWorkflow:
             warnings.append(str(exc))
             status = PhaseStatus.FAILED
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="temperature",
             status=status,
@@ -720,7 +702,7 @@ class FullAccelerationWorkflow:
 
     async def _phase_vcmi(self, config: FullAccelerationConfig) -> PhaseResult:
         """Run VCMI certification workflow if credits exist."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -729,7 +711,7 @@ class FullAccelerationWorkflow:
             reason = "skip_vcmi flag set" if config.skip_vcmi else "No carbon credits in portfolio"
             outputs["skipped_reason"] = reason
             warnings.append(f"VCMI phase skipped: {reason}")
-            elapsed = (_utcnow() - started).total_seconds()
+            elapsed = (utcnow() - started).total_seconds()
             return PhaseResult(
                 phase_name="vcmi",
                 status=PhaseStatus.SKIPPED,
@@ -765,7 +747,7 @@ class FullAccelerationWorkflow:
             warnings.append(str(exc))
             status = PhaseStatus.FAILED
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         return PhaseResult(
             phase_name="vcmi",
             status=status,
@@ -781,7 +763,7 @@ class FullAccelerationWorkflow:
 
     async def _phase_strategy(self, config: FullAccelerationConfig) -> PhaseResult:
         """Compile all outputs into unified acceleration strategy."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -797,7 +779,7 @@ class FullAccelerationWorkflow:
         outputs["key_risks"] = len(self._strategy.key_risks)
         outputs["paris_aligned"] = self._strategy.paris_aligned
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info("Strategy compiled: score=%.1f, maturity=%s",
                          self._scorecard.overall_score, self._scorecard.maturity.value)
         return PhaseResult(
@@ -992,7 +974,7 @@ class FullAccelerationWorkflow:
         key_risks = self._compile_key_risks(config)
 
         return AccelerationStrategySummary(
-            assessment_date=_utcnow().strftime("%Y-%m-%d"),
+            assessment_date=utcnow().strftime("%Y-%m-%d"),
             recommended_scenario=rec_scenario,
             recommended_scenario_score=round(rec_score, 2),
             sda_sector=sda_sector,

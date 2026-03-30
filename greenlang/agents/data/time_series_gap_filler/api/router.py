@@ -39,6 +39,7 @@ Status: Production Ready
 
 import logging
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +69,7 @@ if FASTAPI_AVAILABLE:
 
     # === Request Bodies ===
 
-    class CreateGapFillerJobRequest(BaseModel):
+    class CreateGapFillerJobRequest(GreenLangBase):
         """Request body for creating a gap filling job."""
         series_id: str = Field(
             default="", description="Identifier of the series to process",
@@ -90,7 +91,7 @@ if FASTAPI_AVAILABLE:
             None, description="Additional job configuration options",
         )
 
-    class DetectGapsRequest(BaseModel):
+    class DetectGapsRequest(GreenLangBase):
         """Request body for detecting gaps in a time series."""
         series: List[Any] = Field(
             ..., description="Time series data values",
@@ -108,7 +109,7 @@ if FASTAPI_AVAILABLE:
             None, description="Optional series name for labeling",
         )
 
-    class AnalyzeFrequencyRequest(BaseModel):
+    class AnalyzeFrequencyRequest(GreenLangBase):
         """Request body for analyzing time series frequency."""
         timestamps: List[Any] = Field(
             ...,
@@ -116,7 +117,7 @@ if FASTAPI_AVAILABLE:
             "floats, or datetime objects)",
         )
 
-    class FillGapsRequest(BaseModel):
+    class FillGapsRequest(GreenLangBase):
         """Request body for filling gaps in a time series."""
         series: List[Any] = Field(
             ..., description="Time series data values (None/null for gaps)",
@@ -135,7 +136,7 @@ if FASTAPI_AVAILABLE:
             "forward_fill, backward_fill, kalman)",
         )
 
-    class ValidateFillsRequest(BaseModel):
+    class ValidateFillsRequest(GreenLangBase):
         """Request body for validating filled values."""
         fills: List[Dict[str, Any]] = Field(
             ..., description="List of filled value dicts from a FillResult",
@@ -144,7 +145,7 @@ if FASTAPI_AVAILABLE:
             ..., description="Original series values before filling",
         )
 
-    class ComputeCorrelationsRequest(BaseModel):
+    class ComputeCorrelationsRequest(GreenLangBase):
         """Request body for computing cross-series correlations."""
         target: List[Any] = Field(
             ..., description="Target series values",
@@ -157,7 +158,7 @@ if FASTAPI_AVAILABLE:
             description="Correlation method (pearson, spearman, kendall)",
         )
 
-    class CreateCalendarRequest(BaseModel):
+    class CreateCalendarRequest(GreenLangBase):
         """Request body for creating a calendar definition."""
         name: str = Field(
             ..., description="Human-readable calendar name",
@@ -189,7 +190,7 @@ if FASTAPI_AVAILABLE:
 
     # === Response Models ===
 
-    class JobResponse(BaseModel):
+    class JobResponse(GreenLangBase):
         """Response model for a gap filling job."""
         job_id: str = Field(default="")
         series_id: str = Field(default="")
@@ -206,7 +207,7 @@ if FASTAPI_AVAILABLE:
         completed_at: Optional[str] = Field(default=None)
         provenance_hash: str = Field(default="")
 
-    class JobListResponse(BaseModel):
+    class JobListResponse(GreenLangBase):
         """Response model for listing jobs."""
         jobs: List[Dict[str, Any]] = Field(default_factory=list)
         count: int = Field(default=0)
@@ -214,7 +215,7 @@ if FASTAPI_AVAILABLE:
         limit: int = Field(default=50)
         offset: int = Field(default=0)
 
-    class GapDetectionResponse(BaseModel):
+    class GapDetectionResponse(GreenLangBase):
         """Response model for gap detection results."""
         detection_id: str = Field(default="")
         series_name: str = Field(default="")
@@ -228,7 +229,7 @@ if FASTAPI_AVAILABLE:
         processing_time_ms: float = Field(default=0.0)
         provenance_hash: str = Field(default="")
 
-    class FrequencyResponse(BaseModel):
+    class FrequencyResponse(GreenLangBase):
         """Response model for frequency analysis results."""
         analysis_id: str = Field(default="")
         detected_frequency: str = Field(default="unknown")
@@ -242,7 +243,7 @@ if FASTAPI_AVAILABLE:
         processing_time_ms: float = Field(default=0.0)
         provenance_hash: str = Field(default="")
 
-    class FillResponse(BaseModel):
+    class FillResponse(GreenLangBase):
         """Response model for gap filling results."""
         fill_id: str = Field(default="")
         series_name: str = Field(default="")
@@ -257,7 +258,7 @@ if FASTAPI_AVAILABLE:
         processing_time_ms: float = Field(default=0.0)
         provenance_hash: str = Field(default="")
 
-    class ValidationResponse(BaseModel):
+    class ValidationResponse(GreenLangBase):
         """Response model for fill validation results."""
         validation_id: str = Field(default="")
         fill_id: str = Field(default="")
@@ -271,7 +272,7 @@ if FASTAPI_AVAILABLE:
         processing_time_ms: float = Field(default=0.0)
         provenance_hash: str = Field(default="")
 
-    class CorrelationResponse(BaseModel):
+    class CorrelationResponse(GreenLangBase):
         """Response model for correlation analysis results."""
         correlation_id: str = Field(default="")
         target_series: str = Field(default="")
@@ -285,7 +286,7 @@ if FASTAPI_AVAILABLE:
         processing_time_ms: float = Field(default=0.0)
         provenance_hash: str = Field(default="")
 
-    class CalendarResponse(BaseModel):
+    class CalendarResponse(GreenLangBase):
         """Response model for calendar definitions."""
         calendar_id: str = Field(default="")
         name: str = Field(default="")
@@ -299,7 +300,7 @@ if FASTAPI_AVAILABLE:
         created_at: str = Field(default="")
         provenance_hash: str = Field(default="")
 
-    class HealthResponse(BaseModel):
+    class HealthResponse(GreenLangBase):
         """Response model for health check."""
         status: str = Field(default="healthy")
         service: str = Field(default="time-series-gap-filler")
@@ -311,7 +312,7 @@ if FASTAPI_AVAILABLE:
         provenance_entries: int = Field(default=0)
         prometheus_available: bool = Field(default=False)
 
-    class StatsResponse(BaseModel):
+    class StatsResponse(GreenLangBase):
         """Response model for aggregate statistics."""
         total_jobs: int = Field(default=0)
         completed_jobs: int = Field(default=0)
@@ -331,7 +332,7 @@ if FASTAPI_AVAILABLE:
         by_frequency: Dict[str, int] = Field(default_factory=dict)
         provenance_entries: int = Field(default=0)
 
-    class ErrorResponse(BaseModel):
+    class ErrorResponse(GreenLangBase):
         """Error response model."""
         error: str = Field(default="")
         detail: str = Field(default="")

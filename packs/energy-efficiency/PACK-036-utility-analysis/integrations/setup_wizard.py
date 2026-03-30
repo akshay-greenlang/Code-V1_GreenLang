@@ -37,20 +37,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -68,11 +63,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SetupWizardStep(str, Enum):
     """Names of setup wizard steps in execution order."""
@@ -86,7 +79,6 @@ class SetupWizardStep(str, Enum):
     BUDGET_PARAMETERS = "budget_parameters"
     REVIEW_CONFIRM = "review_confirm"
 
-
 class StepStatus(str, Enum):
     """Status of a wizard step."""
 
@@ -95,11 +87,9 @@ class StepStatus(str, Enum):
     COMPLETED = "completed"
     SKIPPED = "skipped"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class FacilitySetup(BaseModel):
     """Facility profile data from the wizard."""
@@ -140,7 +130,6 @@ class FacilitySetup(BaseModel):
         description="energy_star|cibse_tm46|internal|none",
     )
 
-
 class WizardStepState(BaseModel):
     """State of a single wizard step."""
 
@@ -153,7 +142,6 @@ class WizardStepState(BaseModel):
     completed_at: Optional[datetime] = Field(None)
     execution_time_ms: float = Field(default=0.0)
 
-
 class WizardState(BaseModel):
     """Complete state of the setup wizard."""
 
@@ -162,9 +150,8 @@ class WizardState(BaseModel):
     steps: Dict[str, WizardStepState] = Field(default_factory=dict)
     facility_setup: Optional[FacilitySetup] = Field(None)
     is_complete: bool = Field(default=False)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     completed_at: Optional[datetime] = Field(None)
-
 
 class PresetConfig(BaseModel):
     """Facility type preset configuration."""
@@ -180,7 +167,6 @@ class PresetConfig(BaseModel):
     engines_enabled: List[str] = Field(default_factory=list)
     benchmark_eui_kwh_m2: float = Field(default=0.0)
     typical_cost_eur_m2: float = Field(default=0.0)
-
 
 class SetupResult(BaseModel):
     """Final setup result."""
@@ -201,9 +187,8 @@ class SetupResult(BaseModel):
     total_steps_completed: int = Field(default=0)
     total_steps: int = Field(default=8)
     configuration_hash: str = Field(default="")
-    generated_at: datetime = Field(default_factory=_utcnow)
+    generated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Step Definitions
@@ -331,11 +316,9 @@ FACILITY_PRESETS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # SetupWizard
 # ---------------------------------------------------------------------------
-
 
 class SetupWizard:
     """8-step guided utility account configuration wizard for PACK-036.
@@ -375,7 +358,7 @@ class SetupWizard:
             Initial WizardState with all steps in PENDING status.
         """
         wizard_id = _compute_hash(
-            f"utility-wizard:{_utcnow().isoformat()}"
+            f"utility-wizard:{utcnow().isoformat()}"
         )[:16]
         steps: Dict[str, WizardStepState] = {}
         for step_name in STEP_ORDER:
@@ -411,7 +394,7 @@ class SetupWizard:
             raise ValueError(f"Step '{current.value}' not found")
 
         step.status = StepStatus.IN_PROGRESS
-        step.started_at = _utcnow()
+        step.started_at = utcnow()
         start_time = time.monotonic()
 
         handler = self._step_handlers.get(current)
@@ -429,7 +412,7 @@ class SetupWizard:
                 step.validation_errors = errors
             else:
                 step.status = StepStatus.COMPLETED
-                step.completed_at = _utcnow()
+                step.completed_at = utcnow()
                 step.validation_errors = []
                 self._advance_to_next(current)
         except Exception as exc:
@@ -596,7 +579,7 @@ class SetupWizard:
                 self._state.current_step = STEP_ORDER[idx + 1]
             else:
                 self._state.is_complete = True
-                self._state.completed_at = _utcnow()
+                self._state.completed_at = utcnow()
         except ValueError:
             pass
 

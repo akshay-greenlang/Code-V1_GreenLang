@@ -35,7 +35,7 @@ from datetime import datetime
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, List, Optional
 
-from pydantic import BaseModel, Field, validator
+from pydantic import Field, validator
 
 from .base import (
     Scope3CategoryCalculator,
@@ -47,11 +47,12 @@ from .base import (
     EmissionFactorSource,
     DataQualityTier,
 )
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
 
-class WasteStream(BaseModel):
+class WasteStream(GreenLangBase):
     """Individual waste stream for disposal."""
 
     waste_type: str = Field(..., description="Type of waste")
@@ -95,7 +96,7 @@ class WasteStream(BaseModel):
         return Decimal("0")
 
 
-class WastewaterData(BaseModel):
+class WastewaterData(GreenLangBase):
     """Wastewater treatment data."""
 
     volume_m3: Decimal = Field(..., ge=0, description="Volume in cubic meters")

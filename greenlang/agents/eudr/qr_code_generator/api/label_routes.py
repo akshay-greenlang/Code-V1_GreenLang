@@ -31,6 +31,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.qr_code_generator.api.dependencies import (
     AuthUser,
@@ -62,22 +63,14 @@ router = APIRouter(tags=["Label Rendering"])
 
 _label_store: Dict[str, Dict] = {}
 
-
 def _get_label_store() -> Dict[str, Dict]:
     """Return the label record store singleton."""
     return _label_store
-
 
 def _compute_provenance_hash(data: dict) -> str:
     """Compute SHA-256 hash for provenance tracking."""
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Compliance colour mapping per EUDR status
@@ -142,7 +135,6 @@ _TEMPLATES: List[TemplateDetailResponse] = [
     ),
 ]
 
-
 def _create_label_record(
     req: GenerateLabelRequest,
     user_id: str,
@@ -157,7 +149,7 @@ def _create_label_record(
         Dict representing the label record.
     """
     label_id = str(uuid.uuid4())
-    now = _utcnow()
+    now = utcnow()
 
     template = req.template.value if req.template else "product_label"
     output_format = req.output_format.value if req.output_format else "pdf"
@@ -205,11 +197,9 @@ def _create_label_record(
         ),
     }
 
-
 # ---------------------------------------------------------------------------
 # POST /labels/generate
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/labels/generate",
@@ -282,11 +272,9 @@ async def generate_label(
             detail="Failed to generate label",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /labels/generate/batch
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/labels/generate/batch",
@@ -390,11 +378,9 @@ async def batch_generate_labels(
             detail="Failed to batch generate labels",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /labels/{label_id}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/labels/{label_id}",
@@ -454,11 +440,9 @@ async def get_label_detail(
             detail="Failed to retrieve label details",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /labels/{label_id}/download
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/labels/{label_id}/download",
@@ -521,11 +505,9 @@ async def download_label(
             detail="Failed to download label",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /labels/templates
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/labels/templates",
@@ -563,7 +545,6 @@ async def list_templates(
         templates=_TEMPLATES,
         total=len(_TEMPLATES),
     )
-
 
 # ---------------------------------------------------------------------------
 # Public API

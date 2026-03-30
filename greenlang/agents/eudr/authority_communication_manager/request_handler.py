@@ -49,8 +49,9 @@ from .models import (
 )
 from .provenance import ProvenanceTracker
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Request type to required data source mapping
@@ -89,7 +90,6 @@ _REQUEST_DATA_SOURCES: Dict[InformationRequestType, List[str]] = {
     ],
 }
 
-
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance."""
     canonical = json.dumps(
@@ -97,16 +97,9 @@ def _compute_hash(data: Any) -> str:
     )
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 class RequestHandler:
     """Processes information requests from competent authorities.
@@ -192,7 +185,7 @@ class RequestHandler:
         deadline = self._calculate_deadline(priority)
 
         request_id = _new_uuid()
-        now = _utcnow()
+        now = utcnow()
 
         # Build communication ID for parent tracking
         communication_id = _new_uuid()
@@ -274,7 +267,7 @@ class RequestHandler:
             raise ValueError(f"Request {request_id} not found")
 
         response_id = _new_uuid()
-        now = _utcnow()
+        now = utcnow()
 
         response = ResponseData(
             response_id=response_id,
@@ -343,7 +336,7 @@ class RequestHandler:
         Returns:
             List of InformationRequest records past their deadline.
         """
-        now = _utcnow()
+        now = utcnow()
         return [
             r for r in self._requests.values()
             if not r.response_submitted
@@ -378,7 +371,7 @@ class RequestHandler:
         Returns:
             Deadline datetime.
         """
-        now = _utcnow()
+        now = utcnow()
         if priority == "urgent":
             return now + timedelta(hours=self.config.deadline_urgent_hours)
         elif priority in ("high",):

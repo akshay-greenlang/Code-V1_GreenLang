@@ -47,25 +47,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -78,11 +72,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class AssumptionStatus(str, Enum):
     """Assumption approval status."""
@@ -93,14 +85,12 @@ class AssumptionStatus(str, Enum):
     CHALLENGED = "challenged"
     SUPERSEDED = "superseded"
 
-
 class AssumptionImpact(str, Enum):
     """Assumption impact level."""
 
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 class CitationType(str, Enum):
     """Citation types."""
@@ -113,11 +103,9 @@ class CitationType(str, Enum):
     CONVERSION_FACTOR = "conversion_factor"
     CONSOLIDATION_STANDARD = "consolidation_standard"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class FoundationBridgeConfig(BaseModel):
     """Configuration for foundation bridge."""
@@ -133,7 +121,6 @@ class FoundationBridgeConfig(BaseModel):
     )
     timeout_s: float = Field(60.0, ge=5.0)
 
-
 class NormalisationResult(BaseModel):
     """Result of unit normalisation from FOUND-003."""
 
@@ -147,7 +134,6 @@ class NormalisationResult(BaseModel):
     entity_id: str = ""
     is_exact: bool = True
     provenance_hash: str = ""
-
 
 class AssumptionRecord(BaseModel):
     """Assumption record from FOUND-004."""
@@ -166,7 +152,6 @@ class AssumptionRecord(BaseModel):
     approved_date: str = ""
     provenance_hash: str = ""
 
-
 class CitationRecord(BaseModel):
     """Citation record from FOUND-005."""
 
@@ -183,7 +168,6 @@ class CitationRecord(BaseModel):
     is_verified: bool = False
     provenance_hash: str = ""
 
-
 class BatchNormalisationResult(BaseModel):
     """Result of batch normalisation across multiple entities."""
 
@@ -195,11 +179,9 @@ class BatchNormalisationResult(BaseModel):
     provenance_hash: str = ""
     duration_ms: float = 0.0
 
-
 # ---------------------------------------------------------------------------
 # Bridge Implementation
 # ---------------------------------------------------------------------------
-
 
 class FoundationBridge:
     """

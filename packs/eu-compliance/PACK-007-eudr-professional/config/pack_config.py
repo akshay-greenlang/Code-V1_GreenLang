@@ -55,6 +55,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import yaml
 from pydantic import BaseModel, Field, field_validator, model_validator
+from greenlang.schemas.enums import NotificationChannel
 
 logger = logging.getLogger(__name__)
 
@@ -234,17 +235,6 @@ class BenchmarkDimension(str, Enum):
     CERTIFICATION_STATUS = "CERTIFICATION_STATUS"
     RESPONSE_TIME = "RESPONSE_TIME"
     SUSTAINABILITY_PERFORMANCE = "SUSTAINABILITY_PERFORMANCE"
-
-
-class NotificationChannel(str, Enum):
-    """Notification delivery channels."""
-
-    EMAIL = "EMAIL"
-    WEBHOOK = "WEBHOOK"
-    SMS = "SMS"
-    SLACK = "SLACK"
-    TEAMS = "TEAMS"
-    IN_APP = "IN_APP"
 
 
 # =============================================================================

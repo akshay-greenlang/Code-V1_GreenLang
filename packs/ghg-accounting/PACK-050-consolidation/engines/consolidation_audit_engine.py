@@ -64,24 +64,18 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC timestamp with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 provenance hash, excluding volatile fields."""
@@ -99,7 +93,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert any value to Decimal."""
     if isinstance(value, Decimal):
@@ -108,7 +101,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -120,16 +112,13 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> Decimal:
     """Round a value to two decimal places using ROUND_HALF_UP."""
     return Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class AuditStepType(str, Enum):
     """Types of consolidation steps tracked in the audit trail."""
@@ -146,7 +135,6 @@ class AuditStepType(str, Enum):
     REPORT_GENERATION = "REPORT_GENERATION"
     ASSURANCE_PACKAGE = "ASSURANCE_PACKAGE"
 
-
 class FindingSeverity(str, Enum):
     """Severity levels for audit findings."""
     CRITICAL = "CRITICAL"
@@ -154,7 +142,6 @@ class FindingSeverity(str, Enum):
     MINOR = "MINOR"
     OBSERVATION = "OBSERVATION"
     IMPROVEMENT = "IMPROVEMENT"
-
 
 class FindingStatus(str, Enum):
     """Status of an audit finding."""
@@ -164,7 +151,6 @@ class FindingStatus(str, Enum):
     CLOSED = "CLOSED"
     ACCEPTED = "ACCEPTED"
 
-
 class SignOffLevel(str, Enum):
     """Level at which sign-off is performed."""
     ENTITY = "ENTITY"
@@ -173,7 +159,6 @@ class SignOffLevel(str, Enum):
     GROUP = "GROUP"
     EXTERNAL_ASSURANCE = "EXTERNAL_ASSURANCE"
 
-
 # ---------------------------------------------------------------------------
 # Default Configuration
 # ---------------------------------------------------------------------------
@@ -181,11 +166,9 @@ class SignOffLevel(str, Enum):
 DEFAULT_MATERIALITY_THRESHOLD_PCT = Decimal("5")
 DEFAULT_COMPLETENESS_TARGET_PCT = Decimal("95")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class AuditEntry(BaseModel):
     """A single audit trail entry for a consolidation step.
@@ -245,7 +228,7 @@ class AuditEntry(BaseModel):
         description="Additional metadata.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of the audit entry.",
     )
     provenance_hash: str = Field(
@@ -265,7 +248,6 @@ class AuditEntry(BaseModel):
         if v.upper() not in valid:
             logger.warning("Audit step type '%s' not standard; accepted.", v)
         return v.upper()
-
 
 class ReconciliationResult(BaseModel):
     """Reconciliation between bottom-up and top-down totals.
@@ -327,7 +309,7 @@ class ReconciliationResult(BaseModel):
         description="Reconciliation notes.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
     )
     provenance_hash: str = Field(default="")
 
@@ -339,7 +321,6 @@ class ReconciliationResult(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Any:
         return Decimal(str(v))
-
 
 class CompletenessCheck(BaseModel):
     """Completeness assessment for the consolidation."""
@@ -391,7 +372,7 @@ class CompletenessCheck(BaseModel):
         description="Scopes with incomplete coverage.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
     )
     provenance_hash: str = Field(default="")
 
@@ -399,7 +380,6 @@ class CompletenessCheck(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Any:
         return Decimal(str(v))
-
 
 class SignOff(BaseModel):
     """Sign-off record for entity or group level approval."""
@@ -434,7 +414,7 @@ class SignOff(BaseModel):
         description="Sign-off comments.",
     )
     signed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="When the sign-off was performed.",
     )
     provenance_hash: str = Field(default="")
@@ -446,7 +426,6 @@ class SignOff(BaseModel):
         if v.upper() not in valid:
             logger.warning("Sign-off level '%s' not standard; accepted.", v)
         return v.upper()
-
 
 class AuditFinding(BaseModel):
     """An audit finding identified during consolidation review."""
@@ -504,10 +483,10 @@ class AuditFinding(BaseModel):
         description="Notes on how the finding was resolved.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
     )
     provenance_hash: str = Field(default="")
 
@@ -525,7 +504,6 @@ class AuditFinding(BaseModel):
                 f"Invalid severity '{v}'. Must be one of {sorted(valid)}."
             )
         return v.upper()
-
 
 class AssurancePackage(BaseModel):
     """Assurance-ready documentation package.
@@ -572,7 +550,7 @@ class AssurancePackage(BaseModel):
         description="Individual assurance readiness checks.",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
     )
     provenance_hash: str = Field(default="")
 
@@ -583,11 +561,9 @@ class AssurancePackage(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Any:
         return Decimal(str(v))
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ConsolidationAuditEngine:
     """Provides a complete audit trail for GHG consolidation.
@@ -999,7 +975,7 @@ class ConsolidationAuditEngine:
         finding = self._findings[finding_id]
         data = finding.model_dump()
         data["status"] = new_status.upper()
-        data["updated_at"] = _utcnow()
+        data["updated_at"] = utcnow()
         if resolution_notes:
             data["resolution_notes"] = resolution_notes
 

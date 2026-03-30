@@ -63,17 +63,16 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import RiskLevel
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
@@ -116,7 +115,6 @@ def _round_val(value, places: int = 6) -> Decimal:
 def _round3(value: float) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
@@ -148,12 +146,6 @@ class SBTiStatus(str, Enum):
     NO_COMMITMENT = "no_commitment"
     UNKNOWN = "unknown"
 
-class RiskLevel(str, Enum):
-    HIGH = "high"
-    MEDIUM = "medium"
-    LOW = "low"
-
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -173,7 +165,6 @@ GEO_RISK_FACTORS: Dict[str, Decimal] = {
     "FR": Decimal("0.15"), "SE": Decimal("0.05"), "NO": Decimal("0.05"),
     "GLOBAL_AVG": Decimal("0.50"),
 }
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
@@ -207,7 +198,6 @@ class SupplyChainMappingInput(BaseModel):
     tier_2_threshold_count: int = Field(default=200, ge=10, le=2000)
     tier_3_threshold_count: int = Field(default=1000, ge=50, le=10000)
     engagement_target_pct: Decimal = Field(default=Decimal("80"), ge=Decimal("0"), le=Decimal("100"))
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
@@ -263,7 +253,7 @@ class SupplyChainMappingResult(BaseModel):
     """Complete supply chain mapping result."""
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     organization_name: str = Field(default="")
 
     supplier_scorecards: List[SupplierScorecard] = Field(default_factory=list)
@@ -285,7 +275,6 @@ class SupplyChainMappingResult(BaseModel):
     ])
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine

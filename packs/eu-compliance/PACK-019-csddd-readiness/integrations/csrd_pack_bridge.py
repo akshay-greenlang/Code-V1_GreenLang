@@ -41,25 +41,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -72,11 +66,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ESRSStandard(str, Enum):
     """ESRS social and governance standards relevant to CSDDD."""
@@ -87,7 +79,6 @@ class ESRSStandard(str, Enum):
     S4 = "S4"
     G1 = "G1"
 
-
 class MappingCoverage(str, Enum):
     """Level of coverage between ESRS disclosure and CSDDD requirement."""
 
@@ -95,7 +86,6 @@ class MappingCoverage(str, Enum):
     PARTIAL = "partial"
     MINIMAL = "minimal"
     NONE = "none"
-
 
 class GapSeverity(str, Enum):
     """Severity of identified gap between ESRS and CSDDD."""
@@ -105,11 +95,9 @@ class GapSeverity(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class BridgeConfig(BaseModel):
     """Configuration for the CSRD Pack Bridge."""
@@ -118,7 +106,6 @@ class BridgeConfig(BaseModel):
     source_pack_id: str = Field(default="PACK-017")
     enable_provenance: bool = Field(default=True)
     reporting_year: int = Field(default=2025, ge=2020, le=2030)
-
 
 class ESRSDisclosure(BaseModel):
     """An ESRS disclosure requirement with its data."""
@@ -129,7 +116,6 @@ class ESRSDisclosure(BaseModel):
     is_reported: bool = Field(default=False)
     data: Dict[str, Any] = Field(default_factory=dict)
 
-
 class CSDDDMapping(BaseModel):
     """Mapping between an ESRS DR and CSDDD article(s)."""
 
@@ -138,7 +124,6 @@ class CSDDDMapping(BaseModel):
     csddd_articles: List[str] = Field(default_factory=list)
     coverage: MappingCoverage = Field(default=MappingCoverage.NONE)
     description: str = Field(default="")
-
 
 class DisclosureGap(BaseModel):
     """Gap identified between ESRS disclosures and CSDDD requirements."""
@@ -149,7 +134,6 @@ class DisclosureGap(BaseModel):
     severity: GapSeverity = Field(default=GapSeverity.MEDIUM)
     missing_disclosures: List[str] = Field(default_factory=list)
     recommendation: str = Field(default="")
-
 
 class BridgeResult(BaseModel):
     """Result of a bridge mapping operation."""
@@ -165,7 +149,6 @@ class BridgeResult(BaseModel):
     records_processed: int = Field(default=0)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # ESRS-to-CSDDD Mapping Tables
@@ -436,11 +419,9 @@ CSDDD_REQUIRED_ARTICLES: Dict[str, str] = {
     "Art_16": "Model contractual clauses",
 }
 
-
 # ---------------------------------------------------------------------------
 # CSRDPackBridge
 # ---------------------------------------------------------------------------
-
 
 class CSRDPackBridge:
     """ESRS S1-S4/G1 to CSDDD mapping bridge for PACK-019.
@@ -478,7 +459,7 @@ class CSRDPackBridge:
         Returns:
             BridgeResult with mappings, gaps, and coverage summary.
         """
-        result = BridgeResult(started_at=_utcnow())
+        result = BridgeResult(started_at=utcnow())
 
         try:
             all_mappings: List[CSDDDMapping] = []
@@ -525,7 +506,7 @@ class CSRDPackBridge:
             result.errors.append(str(exc))
             logger.error("ESRS-to-CSDDD mapping failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at

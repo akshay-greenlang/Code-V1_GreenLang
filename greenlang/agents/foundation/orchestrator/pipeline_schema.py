@@ -55,7 +55,8 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Literal, Optional, Set, Union
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -128,7 +129,7 @@ class DataClassification(str, Enum):
 # Pipeline Metadata
 # ==============================================================================
 
-class PipelineMetadata(BaseModel):
+class PipelineMetadata(GreenLangBase):
     """
     Pipeline metadata containing identification and organizational information.
 
@@ -246,7 +247,7 @@ class PipelineMetadata(BaseModel):
 # Parameter Definition
 # ==============================================================================
 
-class ParameterDefinition(BaseModel):
+class ParameterDefinition(GreenLangBase):
     """
     Definition for a pipeline parameter.
 
@@ -359,7 +360,7 @@ class ParameterDefinition(BaseModel):
 # Policy Attachment
 # ==============================================================================
 
-class PolicyAttachment(BaseModel):
+class PolicyAttachment(GreenLangBase):
     """
     Policy attachment for governance enforcement on a step.
 
@@ -404,7 +405,7 @@ class PolicyAttachment(BaseModel):
 # Resource Requirements (Legacy)
 # ==============================================================================
 
-class ResourceRequirements(BaseModel):
+class ResourceRequirements(GreenLangBase):
     """Resource requirements for a step."""
 
     cpu: Optional[str] = Field(None, description="CPU request (e.g., '100m', '1')")
@@ -417,7 +418,7 @@ class ResourceRequirements(BaseModel):
 # Artifact Definition (Legacy)
 # ==============================================================================
 
-class ArtifactDefinition(BaseModel):
+class ArtifactDefinition(GreenLangBase):
     """Definition of an artifact produced or consumed by a step."""
 
     name: str = Field(..., description="Artifact name")
@@ -434,7 +435,7 @@ class ArtifactDefinition(BaseModel):
 # Step Definition
 # ==============================================================================
 
-class StepDefinition(BaseModel):
+class StepDefinition(GreenLangBase):
     """
     Definition for a pipeline step.
 
@@ -674,7 +675,7 @@ class StepDefinition(BaseModel):
 # Pipeline Defaults
 # ==============================================================================
 
-class PipelineDefaults(BaseModel):
+class PipelineDefaults(GreenLangBase):
     """
     Default values applied to all steps in the pipeline.
 
@@ -716,7 +717,7 @@ class PipelineDefaults(BaseModel):
 # Pipeline Spec
 # ==============================================================================
 
-class PipelineSpec(BaseModel):
+class PipelineSpec(GreenLangBase):
     """
     Pipeline specification containing parameters, defaults, and steps.
 
@@ -1013,7 +1014,7 @@ class PipelineSpec(BaseModel):
 # Pipeline Definition (Root)
 # ==============================================================================
 
-class PipelineDefinition(BaseModel):
+class PipelineDefinition(GreenLangBase):
     """
     Root pipeline definition model.
 
@@ -1304,7 +1305,7 @@ class PipelineDefinition(BaseModel):
 # Run Configuration (Legacy)
 # ==============================================================================
 
-class RunConfig(BaseModel):
+class RunConfig(GreenLangBase):
     """Configuration for a pipeline run."""
 
     run_id: str = Field(..., description="Unique run identifier")
@@ -1354,7 +1355,7 @@ class RunConfig(BaseModel):
 # Step Result (Legacy)
 # ==============================================================================
 
-class StepResult(BaseModel):
+class StepResult(GreenLangBase):
     """Result from executing a pipeline step."""
 
     step_name: str = Field(..., description="Step name")
@@ -1378,7 +1379,7 @@ class StepResult(BaseModel):
 # Execution Context (Legacy)
 # ==============================================================================
 
-class ExecutionContext(BaseModel):
+class ExecutionContext(GreenLangBase):
     """Context passed to policy evaluation during execution."""
 
     run_id: str = Field(..., description="Run identifier")

@@ -20,9 +20,10 @@ from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException, Query
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.eudr.customs_declaration_support.setup import get_service
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +33,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-class CreateDeclarationRequest(BaseModel):
+class CreateDeclarationRequest(GreenLangBase):
     """Request body for creating a customs declaration."""
     operator_id: str = Field(..., description="EUDR operator identifier")
     operator_name: str = Field(default="", description="EUDR operator name")
@@ -50,18 +51,18 @@ class CreateDeclarationRequest(BaseModel):
     )
 
 
-class MapCNCodesRequest(BaseModel):
+class MapCNCodesRequest(GreenLangBase):
     """Request body for mapping a commodity to CN codes."""
     commodity: str = Field(..., description="EUDR commodity type")
     product_description: str = Field(default="", description="Product description")
 
 
-class ValidateHSCodeRequest(BaseModel):
+class ValidateHSCodeRequest(GreenLangBase):
     """Request body for validating an HS code."""
     hs_code: str = Field(..., min_length=6, max_length=6, description="6-digit HS code")
 
 
-class CalculateTariffRequest(BaseModel):
+class CalculateTariffRequest(GreenLangBase):
     """Request body for calculating tariff."""
     cn_code: str = Field(..., description="CN code")
     customs_value: float = Field(default=0, description="Customs value")
@@ -71,7 +72,7 @@ class CalculateTariffRequest(BaseModel):
     declaration_id: str = Field(default="", description="Declaration ID")
 
 
-class VerifyOriginRequest(BaseModel):
+class VerifyOriginRequest(GreenLangBase):
     """Request body for origin verification."""
     declared_origin: str = Field(..., description="Declared country of origin")
     supply_chain_origins: List[str] = Field(default_factory=list, description="Supply chain origins")
@@ -82,7 +83,7 @@ class VerifyOriginRequest(BaseModel):
     certificate_ref: str = Field(default="", description="Certificate of origin ref")
 
 
-class RunComplianceCheckRequest(BaseModel):
+class RunComplianceCheckRequest(GreenLangBase):
     """Request body for running compliance checks."""
     dds_reference: str = Field(default="", description="DDS reference")
     cn_codes: List[str] = Field(default_factory=list, description="CN codes")
@@ -93,7 +94,7 @@ class RunComplianceCheckRequest(BaseModel):
     country_code: str = Field(default="", description="Country code")
 
 
-class GenerateSADFormRequest(BaseModel):
+class GenerateSADFormRequest(GreenLangBase):
     """Request body for generating a SAD form."""
     consignor_name: str = Field(default="", description="Consignor name")
     consignor_eori: str = Field(default="", description="Consignor EORI")
@@ -101,19 +102,19 @@ class GenerateSADFormRequest(BaseModel):
     consignee_eori: str = Field(default="", description="Consignee EORI")
 
 
-class SubmitDeclarationRequest(BaseModel):
+class SubmitDeclarationRequest(GreenLangBase):
     """Request body for submitting a declaration."""
     system: str = Field(..., description="Target customs system (ncts/ais)")
 
 
-class UpdateStatusRequest(BaseModel):
+class UpdateStatusRequest(GreenLangBase):
     """Request body for updating declaration status."""
     status: str = Field(..., description="New status")
     mrn: Optional[str] = Field(None, description="MRN if assigned")
     notes: str = Field(default="", description="Update notes")
 
 
-class CalculateValueRequest(BaseModel):
+class CalculateValueRequest(GreenLangBase):
     """Request body for customs value calculation."""
     fob_value: float = Field(default=0, description="FOB value")
     freight_cost: float = Field(default=0, description="Freight cost")
@@ -123,14 +124,14 @@ class CalculateValueRequest(BaseModel):
     currency: str = Field(default="EUR", description="Original currency")
 
 
-class ConvertCurrencyRequest(BaseModel):
+class ConvertCurrencyRequest(GreenLangBase):
     """Request body for currency conversion."""
     amount: float = Field(..., description="Amount to convert")
     from_currency: str = Field(..., description="Source currency")
     to_currency: str = Field(default="EUR", description="Target currency")
 
 
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     """Standard error response body."""
     detail: str = Field(..., description="Error description")
     error_code: str = Field(default="internal_error", description="Error classification")

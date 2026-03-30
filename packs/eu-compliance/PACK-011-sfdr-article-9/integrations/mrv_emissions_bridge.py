@@ -47,19 +47,13 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # =============================================================================
 # Utility Helpers
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute a SHA-256 hash of arbitrary data."""
@@ -67,11 +61,9 @@ def _hash_data(data: Any) -> str:
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # Agent Stub
 # =============================================================================
-
 
 class _AgentStub:
     """Deferred agent loader for lazy initialization."""
@@ -88,6 +80,7 @@ class _AgentStub:
             return self._instance
         try:
             import importlib
+
             mod = importlib.import_module(self.module_path)
             cls = getattr(mod, self.class_name)
             self._instance = cls()
@@ -104,11 +97,9 @@ class _AgentStub:
         """Whether the agent has been loaded."""
         return self._instance is not None
 
-
 # =============================================================================
 # Enums
 # =============================================================================
-
 
 class EmissionScope(str, Enum):
     """GHG Protocol emission scopes."""
@@ -116,7 +107,6 @@ class EmissionScope(str, Enum):
     SCOPE_2_LOCATION = "scope_2_location"
     SCOPE_2_MARKET = "scope_2_market"
     SCOPE_3 = "scope_3"
-
 
 class PAIEmissionIndicator(str, Enum):
     """PAI indicators 1-6 (emissions-related)."""
@@ -127,7 +117,6 @@ class PAIEmissionIndicator(str, Enum):
     PAI_5_NON_RENEWABLE = "pai_5_non_renewable"
     PAI_6_ENERGY_INTENSITY = "pai_6_energy_intensity"
 
-
 class DataQualityTier(str, Enum):
     """Emissions data quality tier per PCAF."""
     REPORTED = "reported"
@@ -135,7 +124,6 @@ class DataQualityTier(str, Enum):
     ESTIMATED_AVERAGE = "estimated_average"
     PROXY = "proxy"
     UNAVAILABLE = "unavailable"
-
 
 class MRVAgentCategory(str, Enum):
     """MRV agent categories."""
@@ -170,11 +158,9 @@ class MRVAgentCategory(str, Enum):
     SCOPE_3_MAPPER = "scope_3_mapper"
     AUDIT_TRAIL = "audit_trail"
 
-
 # =============================================================================
 # Data Models
 # =============================================================================
-
 
 class MRVBridgeConfig(BaseModel):
     """Configuration for the MRV Emissions Bridge."""
@@ -220,7 +206,6 @@ class MRVBridgeConfig(BaseModel):
         default=500, ge=1, le=10000, description="Batch size for processing"
     )
 
-
 class MRVAgentMapping(BaseModel):
     """Mapping of a single MRV agent to its configuration."""
     agent_id: str = Field(..., description="GreenLang agent identifier")
@@ -236,7 +221,6 @@ class MRVAgentMapping(BaseModel):
     priority: int = Field(
         default=10, ge=1, le=100, description="Routing priority"
     )
-
 
 class PAIRoutingResult(BaseModel):
     """Result of routing a PAI calculation to MRV agents."""
@@ -271,7 +255,6 @@ class PAIRoutingResult(BaseModel):
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
     calculated_at: str = Field(default="", description="Calculation timestamp")
     execution_time_ms: float = Field(default=0.0, description="Execution time in ms")
-
 
 class EmissionsAggregate(BaseModel):
     """Aggregated emissions data for SFDR PAI reporting."""
@@ -348,11 +331,9 @@ class EmissionsAggregate(BaseModel):
     calculated_at: str = Field(default="", description="Calculation timestamp")
     execution_time_ms: float = Field(default=0.0, description="Total execution time")
 
-
 # =============================================================================
 # MRV Agent Registry
 # =============================================================================
-
 
 MRV_AGENT_REGISTRY: List[MRVAgentMapping] = [
     # Scope 1 agents (001-008)
@@ -511,7 +492,6 @@ MRV_AGENT_REGISTRY: List[MRVAgentMapping] = [
     ),
 ]
 
-
 # PAI indicator definitions for Article 9
 PAI_INDICATOR_DEFINITIONS: Dict[str, Dict[str, str]] = {
     "pai_1": {
@@ -552,7 +532,6 @@ PAI_INDICATOR_DEFINITIONS: Dict[str, Dict[str, str]] = {
     },
 }
 
-
 # NACE high-impact sectors for PAI 6
 NACE_HIGH_IMPACT_SECTORS: Dict[str, str] = {
     "A": "Agriculture, Forestry and Fishing",
@@ -566,11 +545,9 @@ NACE_HIGH_IMPACT_SECTORS: Dict[str, str] = {
     "L": "Real Estate Activities",
 }
 
-
 # =============================================================================
 # MRV Emissions Bridge
 # =============================================================================
-
 
 class MRVEmissionsBridge:
     """Bridge connecting SFDR Article 9 Pack to 30 MRV emission agents.
@@ -643,7 +620,7 @@ class MRVEmissionsBridge:
             EmissionsAggregate with all PAI 1-6 values and metadata.
         """
         start_time = time.time()
-        start_dt = _utcnow()
+        start_dt = utcnow()
 
         all_agents_used: List[str] = []
         all_errors: List[str] = []
@@ -810,7 +787,7 @@ class MRVEmissionsBridge:
             "indicators": per_pai,
             "total_indicators": len(PAI_INDICATOR_DEFINITIONS),
             "passing_indicators": sum(1 for p in per_pai.values() if p["passed"]),
-            "validated_at": _utcnow().isoformat(),
+            "validated_at": utcnow().isoformat(),
         }
 
     # -------------------------------------------------------------------------
@@ -853,7 +830,7 @@ class MRVEmissionsBridge:
                 pai_indicator=pai_id,
                 pai_name=pai_def.get("name", ""),
                 errors=errors,
-                calculated_at=_utcnow().isoformat(),
+                calculated_at=utcnow().isoformat(),
             )
 
         # Route based on PAI type
@@ -898,7 +875,7 @@ class MRVEmissionsBridge:
             scope_breakdown=scope_breakdown,
             warnings=warnings,
             errors=errors,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             execution_time_ms=elapsed_ms,
         )
 

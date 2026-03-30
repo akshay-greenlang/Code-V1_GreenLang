@@ -62,25 +62,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -98,7 +92,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -107,7 +100,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -119,17 +111,14 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
@@ -137,11 +126,9 @@ def _round3(value: float) -> float:
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class TargetType(str, Enum):
     """SBTi target classification types.
@@ -156,7 +143,6 @@ class TargetType(str, Enum):
     NET_ZERO = "net_zero"
     FLAG = "flag"
 
-
 class AmbitionLevel(str, Enum):
     """Temperature ambition levels per SBTi alignment.
 
@@ -167,7 +153,6 @@ class AmbitionLevel(str, Enum):
     CELSIUS_1_5 = "1.5c"
     WELL_BELOW_2C = "well_below_2c"
     CELSIUS_2 = "2c"
-
 
 class PathwayMethod(str, Enum):
     """SBTi target-setting methodological approaches.
@@ -186,7 +171,6 @@ class PathwayMethod(str, Enum):
     PHYSICAL_INTENSITY = "physical_intensity"
     SUPPLIER_ENGAGEMENT = "supplier_engagement"
 
-
 class TargetScope(str, Enum):
     """GHG Protocol emission scopes for SBTi target boundary.
 
@@ -204,7 +188,6 @@ class TargetScope(str, Enum):
     SCOPE_1_2_3 = "scope_1_2_3"
     FLAG = "flag"
 
-
 class BoundaryApproach(str, Enum):
     """Organisational boundary consolidation approach.
 
@@ -215,7 +198,6 @@ class BoundaryApproach(str, Enum):
     OPERATIONAL_CONTROL = "operational_control"
     FINANCIAL_CONTROL = "financial_control"
     EQUITY_SHARE = "equity_share"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- SBTi ACA Rates and Thresholds
@@ -273,11 +255,9 @@ NET_ZERO_MAX_RESIDUAL_PCT: Decimal = Decimal("10.0")
 # Scope 2: renewable electricity target year.
 SCOPE2_RE100_YEAR: int = 2030
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class EmissionsInventory(BaseModel):
     """Base year emissions inventory.
@@ -300,7 +280,6 @@ class EmissionsInventory(BaseModel):
     flag_emissions_tco2e: Decimal = Field(default=Decimal("0"), ge=0)
     biogenic_tco2e: Decimal = Field(default=Decimal("0"), ge=0)
     total_tco2e: Decimal = Field(default=Decimal("0"), ge=0)
-
 
 class TargetSettingInput(BaseModel):
     """Input data for SBTi target definition.
@@ -391,11 +370,9 @@ class TargetSettingInput(BaseModel):
             return base + 7  # default 7-year horizon
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class PathwayMilestone(BaseModel):
     """Annual milestone point on a reduction pathway.
@@ -412,7 +389,6 @@ class PathwayMilestone(BaseModel):
     reduction_from_base_pct: Decimal = Field(default=Decimal("0"))
     annual_reduction_rate_pct: Decimal = Field(default=Decimal("0"))
     on_track_threshold_tco2e: Decimal = Field(default=Decimal("0"))
-
 
 class ScopeTarget(BaseModel):
     """Target definition for a specific scope.
@@ -435,7 +411,6 @@ class ScopeTarget(BaseModel):
     method: str = Field(default="")
     coverage_pct: Decimal = Field(default=Decimal("0"))
     meets_coverage_requirement: bool = Field(default=False)
-
 
 class TargetDefinition(BaseModel):
     """Complete target definition for a target type.
@@ -467,7 +442,6 @@ class TargetDefinition(BaseModel):
     total_target_emissions_tco2e: Decimal = Field(default=Decimal("0"))
     total_reduction_pct: Decimal = Field(default=Decimal("0"))
 
-
 class AmbitionAssessment(BaseModel):
     """Temperature alignment assessment of defined targets.
 
@@ -492,7 +466,6 @@ class AmbitionAssessment(BaseModel):
     gap_to_1_5c_pct: Decimal = Field(default=Decimal("0"))
     temperature_estimate_c: Decimal = Field(default=Decimal("0"))
 
-
 class BaseYearValidation(BaseModel):
     """Result of base year validation.
 
@@ -511,7 +484,6 @@ class BaseYearValidation(BaseModel):
     meets_recency: bool = Field(default=False)
     inventory_complete: bool = Field(default=False)
 
-
 class CoverageCheck(BaseModel):
     """Scope coverage validation result.
 
@@ -529,7 +501,6 @@ class CoverageCheck(BaseModel):
     is_sufficient: bool = Field(default=False)
     gap_pct: Decimal = Field(default=Decimal("0"))
     message: str = Field(default="")
-
 
 class TargetSettingResult(BaseModel):
     """Complete target-setting result.
@@ -552,7 +523,7 @@ class TargetSettingResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     targets: List[TargetDefinition] = Field(default_factory=list)
     ambition_assessment: Optional[AmbitionAssessment] = Field(None)
@@ -565,11 +536,9 @@ class TargetSettingResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class TargetSettingEngine:
     """SBTi target setting engine.
@@ -815,7 +784,7 @@ class TargetSettingEngine:
             BaseYearValidation with pass/fail and issues.
         """
         issues: List[str] = []
-        current_year = _utcnow().year
+        current_year = utcnow().year
 
         meets_min = base_year >= BASE_YEAR_MIN
         if not meets_min:

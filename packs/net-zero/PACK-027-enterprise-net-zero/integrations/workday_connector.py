@@ -46,18 +46,14 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -69,11 +65,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class WorkdayDataType(str, Enum):
     HEADCOUNT = "headcount"
@@ -83,12 +77,10 @@ class WorkdayDataType(str, Enum):
     ORGANIZATIONS = "organizations"
     WORK_ARRANGEMENTS = "work_arrangements"
 
-
 class WorkArrangement(str, Enum):
     OFFICE = "office"
     REMOTE = "remote"
     HYBRID = "hybrid"
-
 
 class CommuteMode(str, Enum):
     CAR_PETROL = "car_petrol"
@@ -100,11 +92,9 @@ class CommuteMode(str, Enum):
     WALKING = "walking"
     MOTORCYCLE = "motorcycle"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class WorkdayConfig(BaseModel):
     pack_id: str = Field(default="PACK-027")
@@ -122,7 +112,6 @@ class WorkdayConfig(BaseModel):
     pii_aggregation: bool = Field(default=True, description="Aggregate to location-level, no PII")
     default_commute_distance_km: float = Field(default=25.0)
 
-
 class WorkdayConnectionStatus(BaseModel):
     connected: bool = Field(default=False)
     host: str = Field(default="")
@@ -130,7 +119,6 @@ class WorkdayConnectionStatus(BaseModel):
     message: str = Field(default="")
     latency_ms: float = Field(default=0.0)
     last_connected_at: Optional[datetime] = Field(None)
-
 
 class WorkdayExtractionResult(BaseModel):
     extraction_id: str = Field(default_factory=_new_uuid)
@@ -145,7 +133,6 @@ class WorkdayExtractionResult(BaseModel):
     data: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
 
-
 class HeadcountByLocation(BaseModel):
     location_name: str = Field(default="")
     country: str = Field(default="")
@@ -156,7 +143,6 @@ class HeadcountByLocation(BaseModel):
     hybrid_workers: int = Field(default=0)
     avg_commute_distance_km: float = Field(default=25.0)
     primary_commute_modes: Dict[str, float] = Field(default_factory=dict)
-
 
 class TravelSummary(BaseModel):
     total_trips: int = Field(default=0)
@@ -169,11 +155,9 @@ class TravelSummary(BaseModel):
     hotel_nights: int = Field(default=0)
     total_spend_usd: float = Field(default=0.0)
 
-
 # ---------------------------------------------------------------------------
 # WorkdayConnector
 # ---------------------------------------------------------------------------
-
 
 class WorkdayConnector:
     """Workday HCM integration for employee-related GHG data.
@@ -215,7 +199,7 @@ class WorkdayConnector:
                 tenant_id=self.config.tenant_id,
                 message="Connected successfully",
                 latency_ms=(time.monotonic() - start) * 1000,
-                last_connected_at=_utcnow(),
+                last_connected_at=utcnow(),
             )
         except Exception as exc:
             self._connection_status = WorkdayConnectionStatus(
@@ -236,7 +220,7 @@ class WorkdayConnector:
         start = time.monotonic()
         result = WorkdayExtractionResult(
             data_type=WorkdayDataType.HEADCOUNT.value,
-            started_at=_utcnow(),
+            started_at=utcnow(),
         )
         try:
             locations = [
@@ -273,7 +257,7 @@ class WorkdayConnector:
             result.status = "failed"
             result.errors.append(str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         result.duration_ms = (time.monotonic() - start) * 1000
         if self.config.enable_provenance:
             result.provenance_hash = _compute_hash(result.data)
@@ -287,7 +271,7 @@ class WorkdayConnector:
         start = time.monotonic()
         result = WorkdayExtractionResult(
             data_type=WorkdayDataType.TRAVEL_BOOKINGS.value,
-            started_at=_utcnow(),
+            started_at=utcnow(),
         )
         try:
             summary = TravelSummary(
@@ -306,7 +290,7 @@ class WorkdayConnector:
             result.status = "failed"
             result.errors.append(str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         result.duration_ms = (time.monotonic() - start) * 1000
         if self.config.enable_provenance:
             result.provenance_hash = _compute_hash(result.data)
@@ -320,7 +304,7 @@ class WorkdayConnector:
         start = time.monotonic()
         result = WorkdayExtractionResult(
             data_type=WorkdayDataType.WORK_ARRANGEMENTS.value,
-            started_at=_utcnow(),
+            started_at=utcnow(),
         )
         try:
             result.status = "completed"
@@ -337,7 +321,7 @@ class WorkdayConnector:
             result.status = "failed"
             result.errors.append(str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         result.duration_ms = (time.monotonic() - start) * 1000
         if self.config.enable_provenance:
             result.provenance_hash = _compute_hash(result.data)
@@ -349,7 +333,7 @@ class WorkdayConnector:
         start = time.monotonic()
         result = WorkdayExtractionResult(
             data_type=WorkdayDataType.ORGANIZATIONS.value,
-            started_at=_utcnow(),
+            started_at=utcnow(),
         )
         try:
             result.status = "completed"
@@ -364,7 +348,7 @@ class WorkdayConnector:
             result.status = "failed"
             result.errors.append(str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         result.duration_ms = (time.monotonic() - start) * 1000
         if self.config.enable_provenance:
             result.provenance_hash = _compute_hash(result.data)

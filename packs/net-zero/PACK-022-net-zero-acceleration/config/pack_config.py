@@ -95,6 +95,8 @@ from typing import Any, Dict, List, Optional, Union
 import yaml
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # Base directory for all pack configuration files
@@ -355,21 +357,13 @@ SECTOR_INFO: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # =============================================================================
 # Helper Functions
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hash of a string.
@@ -381,7 +375,6 @@ def _compute_hash(data: str) -> str:
         Hex-encoded SHA-256 hash.
     """
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 def _decimal(value: float, places: int = 6) -> Decimal:
     """Convert a float to a Decimal with specified precision.
@@ -395,7 +388,6 @@ def _decimal(value: float, places: int = 6) -> Decimal:
     """
     quantize_str = "0." + "0" * places
     return Decimal(str(value)).quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _safe_divide(numerator: float, denominator: float, default: float = 0.0) -> float:
     """Safely divide two numbers, returning default on zero division.
@@ -412,7 +404,6 @@ def _safe_divide(numerator: float, denominator: float, default: float = 0.0) -> 
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: float, whole: float, default: float = 0.0) -> float:
     """Calculate percentage safely.
 
@@ -426,7 +417,6 @@ def _safe_pct(part: float, whole: float, default: float = 0.0) -> float:
     """
     return _safe_divide(part * 100.0, whole, default)
 
-
 def _round_val(value: float, decimals: int = 2) -> float:
     """Round a value to the specified number of decimal places.
 
@@ -439,11 +429,9 @@ def _round_val(value: float, decimals: int = 2) -> float:
     """
     return round(value, decimals)
 
-
 # =============================================================================
 # Enums - Net Zero Acceleration specific enumeration types (11 enums)
 # =============================================================================
-
 
 class ScenarioType(str, Enum):
     """Scenario type for Monte Carlo pathway analysis."""
@@ -453,14 +441,12 @@ class ScenarioType(str, Enum):
     AMBITIOUS = "AMBITIOUS"
     CUSTOM = "CUSTOM"
 
-
 class PathwayMethodology(str, Enum):
     """SBTi target-setting pathway methodology."""
 
     ACA = "ACA"
     SDA = "SDA"
     FLAG = "FLAG"
-
 
 class SupplierTier(str, Enum):
     """Supplier engagement tier level."""
@@ -470,7 +456,6 @@ class SupplierTier(str, Enum):
     REQUIRE = "REQUIRE"
     COLLABORATE = "COLLABORATE"
 
-
 class ScopeCategory(str, Enum):
     """Scope category for emissions classification."""
 
@@ -478,7 +463,6 @@ class ScopeCategory(str, Enum):
     SCOPE_2_LOCATION = "SCOPE_2_LOCATION"
     SCOPE_2_MARKET = "SCOPE_2_MARKET"
     SCOPE_3 = "SCOPE_3"
-
 
 class FinanceInstrument(str, Enum):
     """Climate finance instrument types."""
@@ -490,14 +474,12 @@ class FinanceInstrument(str, Enum):
     CAPEX_ALLOCATION = "CAPEX_ALLOCATION"
     OPEX_ALLOCATION = "OPEX_ALLOCATION"
 
-
 class TemperatureTarget(str, Enum):
     """Temperature alignment target level."""
 
     CELSIUS_1_5 = "CELSIUS_1_5"
     WELL_BELOW_2 = "WELL_BELOW_2"
     CELSIUS_2 = "CELSIUS_2"
-
 
 class DecompositionMethod(str, Enum):
     """Emissions variance decomposition method."""
@@ -506,14 +488,12 @@ class DecompositionMethod(str, Enum):
     SDA_DECOMP = "SDA_DECOMP"
     IDA = "IDA"
 
-
 class EntityScope(str, Enum):
     """Multi-entity consolidation scope method."""
 
     EQUITY_SHARE = "EQUITY_SHARE"
     FINANCIAL_CONTROL = "FINANCIAL_CONTROL"
     OPERATIONAL_CONTROL = "OPERATIONAL_CONTROL"
-
 
 class VCMITier(str, Enum):
     """VCMI Claims Code claim tier."""
@@ -522,13 +502,11 @@ class VCMITier(str, Enum):
     GOLD = "GOLD"
     PLATINUM = "PLATINUM"
 
-
 class AssuranceLevel(str, Enum):
     """Assurance engagement level."""
 
     LIMITED = "LIMITED"
     REASONABLE = "REASONABLE"
-
 
 class SectorClassification(str, Enum):
     """Organization sector classification for PACK-022."""
@@ -542,11 +520,9 @@ class SectorClassification(str, Enum):
     CONSUMER_GOODS = "CONSUMER_GOODS"
     TECHNOLOGY = "TECHNOLOGY"
 
-
 # =============================================================================
 # Pydantic Sub-Config Models (10 models)
 # =============================================================================
-
 
 class ScenarioConfig(BaseModel):
     """Configuration for multi-scenario Monte Carlo pathway analysis.
@@ -614,7 +590,6 @@ class ScenarioConfig(BaseModel):
         le=10,
         description="Maximum number of custom user-defined scenarios",
     )
-
 
 class PathwayConfig(BaseModel):
     """Configuration for SBTi Sectoral Decarbonization Approach.
@@ -726,7 +701,6 @@ class PathwayConfig(BaseModel):
             )
         return self
 
-
 class SupplierConfig(BaseModel):
     """Configuration for tiered supplier engagement program.
 
@@ -799,7 +773,6 @@ class SupplierConfig(BaseModel):
             )
         return v.lower()
 
-
 class Scope3Config(BaseModel):
     """Configuration for activity-based Scope 3 calculations.
 
@@ -854,7 +827,6 @@ class Scope3Config(BaseModel):
                 f"Invalid Scope 3 categories: {invalid}. Must be 1-15."
             )
         return sorted(set(v))
-
 
 class FinanceConfig(BaseModel):
     """Configuration for climate transition finance integration.
@@ -933,7 +905,6 @@ class FinanceConfig(BaseModel):
             )
         return v.upper()
 
-
 class TemperatureConfig(BaseModel):
     """Configuration for SBTi Temperature Rating v2.0.
 
@@ -996,7 +967,6 @@ class TemperatureConfig(BaseModel):
             )
         return v
 
-
 class DecompositionConfig(BaseModel):
     """Configuration for emissions variance decomposition.
 
@@ -1047,7 +1017,6 @@ class DecompositionConfig(BaseModel):
         description="Number of historical periods for trend analysis",
     )
 
-
 class MultiEntityConfig(BaseModel):
     """Configuration for multi-entity consolidation.
 
@@ -1087,7 +1056,6 @@ class MultiEntityConfig(BaseModel):
         le=100.0,
         description="Minimum ownership percentage for equity share inclusion",
     )
-
 
 class VCMIConfig(BaseModel):
     """Configuration for VCMI Claims Code validation.
@@ -1145,7 +1113,6 @@ class VCMIConfig(BaseModel):
         True,
         description="Automatically collect evidence for criteria validation",
     )
-
 
 class AssuranceConfig(BaseModel):
     """Configuration for assurance workpaper generation.
@@ -1218,11 +1185,9 @@ class AssuranceConfig(BaseModel):
             )
         return v
 
-
 # =============================================================================
 # Main Configuration Models
 # =============================================================================
-
 
 class NetZeroAccelerationConfig(BaseModel):
     """Main configuration for PACK-022 Net Zero Acceleration Pack.
@@ -1408,11 +1373,9 @@ class NetZeroAccelerationConfig(BaseModel):
 
         return sorted(set(engines))
 
-
 # =============================================================================
 # Pack Configuration Wrapper
 # =============================================================================
-
 
 class PackConfig(BaseModel):
     """Top-level pack configuration wrapper for PACK-022.
@@ -1535,11 +1498,9 @@ class PackConfig(BaseModel):
         """
         return validate_config(self.pack)
 
-
 # =============================================================================
 # Utility Functions
 # =============================================================================
-
 
 def load_config(yaml_path: Union[str, Path]) -> PackConfig:
     """Load configuration from a YAML file.
@@ -1553,7 +1514,6 @@ def load_config(yaml_path: Union[str, Path]) -> PackConfig:
         PackConfig instance.
     """
     return PackConfig.from_yaml(yaml_path)
-
 
 def load_preset(
     preset_name: str,
@@ -1571,7 +1531,6 @@ def load_preset(
         PackConfig instance with preset applied.
     """
     return PackConfig.from_preset(preset_name, overrides)
-
 
 def get_sector_defaults(
     sector: Union[str, SectorClassification],
@@ -1636,7 +1595,6 @@ def get_sector_defaults(
         ),
     )
 
-
 def _merge_config(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
     """Deep merge two dictionaries, with override taking precedence.
 
@@ -1655,7 +1613,6 @@ def _merge_config(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, A
             result[key] = value
     return result
 
-
 def merge_config(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
     """Public deep merge two dictionaries, with override taking precedence.
 
@@ -1667,7 +1624,6 @@ def merge_config(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, An
         Merged dictionary.
     """
     return _merge_config(base, override)
-
 
 def _get_env_overrides(prefix: str) -> Dict[str, Any]:
     """Load configuration overrides from environment variables.
@@ -1709,7 +1665,6 @@ def _get_env_overrides(prefix: str) -> Dict[str, Any]:
                         current[parts[-1]] = value
     return overrides
 
-
 def get_env_overrides(prefix: str) -> Dict[str, Any]:
     """Public wrapper for loading environment variable overrides.
 
@@ -1720,7 +1675,6 @@ def get_env_overrides(prefix: str) -> Dict[str, Any]:
         Dictionary of parsed overrides.
     """
     return _get_env_overrides(prefix)
-
 
 def validate_config(config: NetZeroAccelerationConfig) -> List[str]:
     """Validate an acceleration configuration and return any warnings.
@@ -1833,7 +1787,6 @@ def validate_config(config: NetZeroAccelerationConfig) -> List[str]:
 
     return warnings
 
-
 def get_sector_info(sector: Union[str, SectorClassification]) -> Dict[str, Any]:
     """Get detailed information about an organization sector.
 
@@ -1853,7 +1806,6 @@ def get_sector_info(sector: Union[str, SectorClassification]) -> Dict[str, Any]:
         "key_levers": ["energy efficiency", "renewable procurement"],
     })
 
-
 def get_sda_intensity_metric(sector: str) -> str:
     """Get the SDA intensity metric for a given sector.
 
@@ -1864,7 +1816,6 @@ def get_sda_intensity_metric(sector: str) -> str:
         Intensity metric string (e.g., tCO2e/MWh).
     """
     return SDA_INTENSITY_METRICS.get(sector, "tCO2e/unit")
-
 
 def get_vcmi_tier_thresholds(tier: Union[str, VCMITier]) -> Dict[str, float]:
     """Get VCMI Claims Code tier threshold scores.
@@ -1878,7 +1829,6 @@ def get_vcmi_tier_thresholds(tier: Union[str, VCMITier]) -> Dict[str, float]:
     key = tier.value if isinstance(tier, VCMITier) else tier
     return VCMI_TIER_THRESHOLDS.get(key, VCMI_TIER_THRESHOLDS["SILVER"])
 
-
 def get_temperature_regression(scope: str) -> Dict[str, float]:
     """Get SBTi temperature regression coefficients for a scope.
 
@@ -1889,7 +1839,6 @@ def get_temperature_regression(scope: str) -> Dict[str, float]:
         Dictionary with intercept and slope coefficients.
     """
     return TEMPERATURE_REGRESSION.get(scope, TEMPERATURE_REGRESSION["scope_1_2"])
-
 
 def get_sbti_reduction_rate(ambition: Union[str, TemperatureTarget]) -> Dict[str, float]:
     """Get SBTi minimum annual reduction rates for an ambition level.
@@ -1904,7 +1853,6 @@ def get_sbti_reduction_rate(ambition: Union[str, TemperatureTarget]) -> Dict[str
     key = ambition.value if isinstance(ambition, TemperatureTarget) else ambition
     return SBTI_REDUCTION_RATES.get(key, SBTI_REDUCTION_RATES["CELSIUS_1_5"])
 
-
 def get_gwp100(gas: str) -> int:
     """Get IPCC AR6 GWP100 value for a greenhouse gas.
 
@@ -1916,7 +1864,6 @@ def get_gwp100(gas: str) -> int:
     """
     return IPCC_AR6_GWP100.get(gas.upper(), 0)
 
-
 def list_available_presets() -> Dict[str, str]:
     """List all available configuration presets.
 
@@ -1924,7 +1871,6 @@ def list_available_presets() -> Dict[str, str]:
         Dictionary mapping preset names to descriptions.
     """
     return SUPPORTED_PRESETS.copy()
-
 
 def list_sda_sectors() -> Dict[str, str]:
     """List all supported SDA sectors.

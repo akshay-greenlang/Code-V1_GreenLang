@@ -31,6 +31,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.document_authentication.api.dependencies import (
     AuthUser,
@@ -65,22 +66,14 @@ router = APIRouter(tags=["Reports"])
 
 _report_store: Dict[str, Dict] = {}
 
-
 def _get_report_store() -> Dict[str, Dict]:
     """Return the report store singleton."""
     return _report_store
-
 
 def _compute_provenance_hash(data: dict) -> str:
     """Compute SHA-256 hash for provenance tracking."""
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _generate_report_summary(document_ids: List[str]) -> Dict[str, Any]:
     """Generate deterministic report summary.
@@ -123,11 +116,9 @@ def _generate_report_summary(document_ids: List[str]) -> Dict[str, Any]:
         },
     }
 
-
 # ---------------------------------------------------------------------------
 # POST /reports/authentication
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/reports/authentication",
@@ -167,7 +158,7 @@ async def generate_report(
     start = time.monotonic()
     try:
         report_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         summary = _generate_report_summary(body.document_ids)
 
@@ -226,11 +217,9 @@ async def generate_report(
             detail="Failed to generate report",
         )
 
-
 # ---------------------------------------------------------------------------
 # POST /reports/evidence-package
 # ---------------------------------------------------------------------------
-
 
 @router.post(
     "/reports/evidence-package",
@@ -270,7 +259,7 @@ async def generate_evidence_package(
     start = time.monotonic()
     try:
         report_id = str(uuid.uuid4())
-        now = _utcnow()
+        now = utcnow()
 
         summary = _generate_report_summary(body.document_ids)
         summary["dds_id"] = body.dds_id
@@ -333,11 +322,9 @@ async def generate_evidence_package(
             detail="Failed to generate evidence package",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /reports/{report_id}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/reports/{report_id}",
@@ -400,11 +387,9 @@ async def get_report(
             detail="Failed to retrieve report",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /reports/{report_id}/download
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/reports/{report_id}/download",
@@ -449,7 +434,7 @@ async def download_report(
                 detail=f"Report {report_id} not found",
             )
 
-        now = _utcnow()
+        now = utcnow()
         download_url = f"https://storage.greenlang.io/{record['file_reference']}"
         expires_at = now + timedelta(hours=1)
 
@@ -480,11 +465,9 @@ async def download_report(
             detail="Failed to retrieve download information",
         )
 
-
 # ---------------------------------------------------------------------------
 # GET /reports/dashboard/{operator_id}
 # ---------------------------------------------------------------------------
-
 
 @router.get(
     "/reports/dashboard/{operator_id}",
@@ -519,7 +502,7 @@ async def get_dashboard(
     """
     start = time.monotonic()
     try:
-        now = _utcnow()
+        now = utcnow()
 
         provenance_hash = _compute_provenance_hash({
             "operator_id": operator_id,
@@ -572,7 +555,6 @@ async def get_dashboard(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to retrieve dashboard",
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

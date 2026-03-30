@@ -40,6 +40,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, validator
+from greenlang.schemas.enums import AlertSeverity
 
 
 # =============================================================================
@@ -140,14 +141,6 @@ class AcidDewPointMethod(str, Enum):
     PIERCE = "pierce"                        # Pierce method
     ZNO_CORRELATION = "zno_correlation"      # ZnO correlation
     MEASURED = "measured"                    # From in-situ probe
-
-
-class AlertSeverity(str, Enum):
-    """Alert severity levels."""
-    INFO = "info"
-    WARNING = "warning"
-    ALARM = "alarm"
-    CRITICAL = "critical"
 
 
 # =============================================================================

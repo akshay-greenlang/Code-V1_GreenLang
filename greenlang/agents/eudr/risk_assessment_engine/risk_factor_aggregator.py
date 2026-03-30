@@ -61,6 +61,7 @@ from greenlang.agents.eudr.risk_assessment_engine.models import (
     SourceAgent,
 )
 from greenlang.agents.eudr.risk_assessment_engine.provenance import ProvenanceTracker
+from greenlang.schemas import utcnow
 from greenlang.agents.eudr.risk_assessment_engine.metrics import (
     record_factor_aggregation,
     observe_aggregation_duration,
@@ -80,16 +81,9 @@ _SCORE_PRECISION = Decimal("0.01")
 _CONFIDENCE_MIN = Decimal("0")
 _CONFIDENCE_MAX = Decimal("1")
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute deterministic SHA-256 hash of data.
@@ -103,11 +97,9 @@ def _compute_hash(data: Any) -> str:
     canonical = json.dumps(data, sort_keys=True, separators=(",", ":"), default=str)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Main Engine
 # ---------------------------------------------------------------------------
-
 
 class RiskFactorAggregator:
     """Engine for aggregating risk signals from upstream EUDR agents.
@@ -293,7 +285,7 @@ class RiskFactorAggregator:
                 raw_score=normalized,
                 confidence=Decimal("0.85"),
                 metadata={"country_code": code.upper()},
-                timestamp=_utcnow(),
+                timestamp=utcnow(),
                 provenance_hash=_compute_hash({
                     "source": "EUDR-016",
                     "country": code.upper(),
@@ -337,7 +329,7 @@ class RiskFactorAggregator:
                 raw_score=normalized,
                 confidence=Decimal("0.80"),
                 metadata={"supplier_id": supplier_id},
-                timestamp=_utcnow(),
+                timestamp=utcnow(),
                 provenance_hash=_compute_hash({
                     "source": "EUDR-017",
                     "supplier": supplier_id,
@@ -386,7 +378,7 @@ class RiskFactorAggregator:
             raw_score=normalized,
             confidence=Decimal("0.90"),
             metadata={"commodity": commodity_key},
-            timestamp=_utcnow(),
+            timestamp=utcnow(),
             provenance_hash=_compute_hash({
                 "source": "EUDR-018",
                 "commodity": commodity_key,
@@ -437,7 +429,7 @@ class RiskFactorAggregator:
                     "country_code": code.upper(),
                     "cpi_score": cpi,
                 },
-                timestamp=_utcnow(),
+                timestamp=utcnow(),
                 provenance_hash=_compute_hash({
                     "source": "EUDR-019",
                     "country": code.upper(),
@@ -490,7 +482,7 @@ class RiskFactorAggregator:
                 raw_score=normalized,
                 confidence=Decimal("0.82"),
                 metadata={"country_code": code.upper()},
-                timestamp=_utcnow(),
+                timestamp=utcnow(),
                 provenance_hash=_compute_hash({
                     "source": "EUDR-020",
                     "country": code.upper(),
@@ -552,7 +544,7 @@ class RiskFactorAggregator:
                 "supplier_count": supplier_count,
                 "country_count": country_count,
             },
-            timestamp=_utcnow(),
+            timestamp=utcnow(),
             provenance_hash=_compute_hash({
                 "source": "derived",
                 "dimension": "supply_chain_complexity",
@@ -604,7 +596,7 @@ class RiskFactorAggregator:
                 "supplier_count": len(supplier_ids),
                 "high_mix_commodity": commodity_key in high_mix_commodities,
             },
-            timestamp=_utcnow(),
+            timestamp=utcnow(),
             provenance_hash=_compute_hash({
                 "source": "derived",
                 "dimension": "mixing_risk",
@@ -662,7 +654,7 @@ class RiskFactorAggregator:
                 "country_codes": [c.upper() for c in country_codes],
                 "circumvention_matches": circumvention_matches,
             },
-            timestamp=_utcnow(),
+            timestamp=utcnow(),
             provenance_hash=_compute_hash({
                 "source": "derived",
                 "dimension": "circumvention_risk",

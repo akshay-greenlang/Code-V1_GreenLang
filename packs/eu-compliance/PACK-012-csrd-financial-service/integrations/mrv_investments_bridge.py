@@ -40,21 +40,15 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute a SHA-256 hash of arbitrary data."""
     return hashlib.sha256(
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
-
 
 class _AgentStub:
     """Deferred agent loader for lazy initialization."""
@@ -71,6 +65,7 @@ class _AgentStub:
             return self._instance
         try:
             import importlib
+
             mod = importlib.import_module(self.module_path)
             cls = getattr(mod, self.class_name)
             self._instance = cls()
@@ -84,7 +79,6 @@ class _AgentStub:
         """Whether the agent has been loaded."""
         return self._instance is not None
 
-
 class PCAFAssetClass(str, Enum):
     """PCAF asset classes for financed emissions."""
     LISTED_EQUITY = "listed_equity"
@@ -96,7 +90,6 @@ class PCAFAssetClass(str, Enum):
     MOTOR_VEHICLE_LOANS = "motor_vehicle_loans"
     SOVEREIGN_BONDS = "sovereign_bonds"
 
-
 class PCAFDataQuality(int, Enum):
     """PCAF data quality scores (1=best, 5=worst)."""
     REPORTED_VERIFIED = 1
@@ -104,7 +97,6 @@ class PCAFDataQuality(int, Enum):
     ESTIMATED_PHYSICAL = 3
     ESTIMATED_ECONOMIC = 4
     ESTIMATED_SECTOR = 5
-
 
 class MRVInvestmentsBridgeConfig(BaseModel):
     """Configuration for the MRV Investments Bridge."""
@@ -135,7 +127,6 @@ class MRVInvestmentsBridgeConfig(BaseModel):
         description="Target PCAF data quality score (1-5)",
     )
 
-
 class AssetClassResult(BaseModel):
     """Financed emissions result for a single asset class."""
     asset_class: str = Field(default="", description="PCAF asset class")
@@ -161,7 +152,6 @@ class AssetClassResult(BaseModel):
     calculation_method: str = Field(
         default="", description="Calculation method used",
     )
-
 
 class FinancedEmissionsResult(BaseModel):
     """Complete financed emissions calculation result."""
@@ -191,7 +181,6 @@ class FinancedEmissionsResult(BaseModel):
         default=0.0, description="Total Scope 3 financed",
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class MRVInvestmentsBridge:
     """Bridge connecting PACK-012 with AGENT-MRV-028 Investments Agent.

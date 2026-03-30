@@ -41,7 +41,8 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException, Query
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +54,7 @@ router = APIRouter(prefix="/v1/gis", tags=["GIS Connector"])
 # =============================================================================
 
 
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Health check response."""
     status: str = "healthy"
     agent_id: str = "GL-DATA-GEO-001"
@@ -62,13 +63,13 @@ class HealthResponse(BaseModel):
     timestamp: str = ""
 
 
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     """Standard error response."""
     error: str
     detail: str = ""
 
 
-class ParseResultResponse(BaseModel):
+class ParseResultResponse(GreenLangBase):
     """Parse result response."""
     parse_id: str
     source_format: str = ""
@@ -78,7 +79,7 @@ class ParseResultResponse(BaseModel):
     errors: List[str] = []
 
 
-class TransformResultResponse(BaseModel):
+class TransformResultResponse(GreenLangBase):
     """Transform result response."""
     transform_id: str
     source_crs: str = ""
@@ -87,7 +88,7 @@ class TransformResultResponse(BaseModel):
     method: str = ""
 
 
-class SpatialResultResponse(BaseModel):
+class SpatialResultResponse(GreenLangBase):
     """Spatial analysis result response."""
     result_id: str
     operation: str = ""
@@ -95,7 +96,7 @@ class SpatialResultResponse(BaseModel):
     unit: str = ""
 
 
-class GeocodingResultResponse(BaseModel):
+class GeocodingResultResponse(GreenLangBase):
     """Geocoding result response."""
     result_id: str
     direction: str = ""
@@ -103,7 +104,7 @@ class GeocodingResultResponse(BaseModel):
     total_results: int = 0
 
 
-class LayerResponse(BaseModel):
+class LayerResponse(GreenLangBase):
     """Layer response."""
     layer_id: str
     name: str = ""

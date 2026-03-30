@@ -43,7 +43,9 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ReportFormat
 
 # ---------------------------------------------------------------------------
 # Layer 1 Re-exports (best-effort with stubs on ImportError)
@@ -64,7 +66,6 @@ except ImportError:  # pragma: no cover
 
         pass
 
-
 try:
     from greenlang.agents.data.data_quality_profiler.validity_checker import (  # type: ignore[import]
         ValidityChecker as L1ValidityChecker,
@@ -79,7 +80,6 @@ except ImportError:  # pragma: no cover
         """Stub re-export when data_quality_profiler.validity_checker is unavailable."""
 
         pass
-
 
 try:
     from greenlang.agents.data.data_quality_profiler.models import (  # type: ignore[import]
@@ -101,7 +101,6 @@ except ImportError:  # pragma: no cover
         UNIQUENESS = "uniqueness"
         ACCURACY = "accuracy"
 
-
 try:
     from greenlang.agents.data.data_quality_profiler.models import (  # type: ignore[import]
         RuleType as L1RuleType,
@@ -122,16 +121,9 @@ except ImportError:  # pragma: no cover
         CUSTOM = "custom"
         FRESHNESS = "freshness"
 
-
 # ---------------------------------------------------------------------------
 # Helper
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -185,11 +177,9 @@ SUPPORTED_REPORT_FORMATS: tuple = ("text", "json", "html", "markdown", "csv")
 #: Rule pack framework identifiers for built-in compliance packs.
 BUILT_IN_RULE_PACKS: tuple = ("ghg_protocol", "csrd_esrs", "eudr", "soc2")
 
-
 # =============================================================================
 # Enumerations (12)
 # =============================================================================
-
 
 class ValidationRuleType(str, Enum):
     """Type classification for a validation rule.
@@ -220,7 +210,6 @@ class ValidationRuleType(str, Enum):
     CONDITIONAL = "conditional"
     STATISTICAL = "statistical"
     REFERENTIAL = "referential"
-
 
 class RuleOperator(str, Enum):
     """Comparison operators for validation rule evaluation.
@@ -258,7 +247,6 @@ class RuleOperator(str, Enum):
     NOT_IN_SET = "not_in_set"
     IS_NULL = "is_null"
 
-
 class RuleSeverity(str, Enum):
     """Severity classification for a validation rule violation.
 
@@ -277,7 +265,6 @@ class RuleSeverity(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
 
-
 class RuleStatus(str, Enum):
     """Lifecycle status of a validation rule definition.
 
@@ -295,7 +282,6 @@ class RuleStatus(str, Enum):
     DEPRECATED = "deprecated"
     ARCHIVED = "archived"
 
-
 class CompoundOperator(str, Enum):
     """Logical operators for combining validation rules into compound expressions.
 
@@ -310,7 +296,6 @@ class CompoundOperator(str, Enum):
     AND = "and"
     OR = "or"
     NOT = "not"
-
 
 class EvaluationResult(str, Enum):
     """Outcome of a single validation rule evaluation against a data record.
@@ -327,7 +312,6 @@ class EvaluationResult(str, Enum):
     PASS_RESULT = "pass"
     WARN = "warn"
     FAIL = "fail"
-
 
 class ConflictType(str, Enum):
     """Type of conflict detected between validation rules.
@@ -349,7 +333,6 @@ class ConflictType(str, Enum):
     SEVERITY_INCONSISTENCY = "severity_inconsistency"
     REDUNDANCY = "redundancy"
 
-
 class RulePackType(str, Enum):
     """Classification of a pre-built validation rule pack.
 
@@ -370,7 +353,6 @@ class RulePackType(str, Enum):
     SOC2 = "soc2"
     CUSTOM = "custom"
 
-
 class ReportType(str, Enum):
     """Type of validation report to generate.
 
@@ -390,24 +372,6 @@ class ReportType(str, Enum):
     TREND = "trend"
     EXECUTIVE = "executive"
 
-
-class ReportFormat(str, Enum):
-    """Output format for a validation report.
-
-    TEXT: Plain-text summary for terminal or log output.
-    JSON: Structured JSON for programmatic consumption.
-    HTML: Self-contained HTML page with formatting and styling.
-    MARKDOWN: Markdown-formatted report for documentation systems.
-    CSV: Comma-separated values for spreadsheet import.
-    """
-
-    TEXT = "text"
-    JSON = "json"
-    HTML = "html"
-    MARKDOWN = "markdown"
-    CSV = "csv"
-
-
 class VersionBumpType(str, Enum):
     """Semantic version bump classification for a rule change.
 
@@ -422,7 +386,6 @@ class VersionBumpType(str, Enum):
     MAJOR = "major"
     MINOR = "minor"
     PATCH = "patch"
-
 
 class SLALevel(str, Enum):
     """SLA enforcement level for validation rule evaluation performance.
@@ -439,13 +402,11 @@ class SLALevel(str, Enum):
     ALL_RULES = "all_rules"
     CUSTOM = "custom"
 
-
 # =============================================================================
 # SDK Data Models (14)
 # =============================================================================
 
-
-class ValidationRule(BaseModel):
+class ValidationRule(GreenLangBase):
     """A single validation rule definition in the Validation Rule Engine.
 
     Represents an atomic data quality check that can be applied to one or
@@ -576,11 +537,11 @@ class ValidationRule(BaseModel):
         description="Actor (user or service) that created the rule",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the rule was first created",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the rule was last modified",
     )
 
@@ -610,8 +571,7 @@ class ValidationRule(BaseModel):
             raise ValueError(f"version must be >= 1, got {v}")
         return v
 
-
-class RuleSet(BaseModel):
+class RuleSet(GreenLangBase):
     """A named collection of validation rules evaluated as a unit.
 
     Rule sets group related validation rules for batch evaluation
@@ -698,11 +658,11 @@ class RuleSet(BaseModel):
         description="Actor (user or service) that created the rule set",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the rule set was first created",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the rule set was last modified",
     )
 
@@ -734,8 +694,7 @@ class RuleSet(BaseModel):
             raise ValueError(f"version must be >= 1, got {v}")
         return v
 
-
-class RuleSetMember(BaseModel):
+class RuleSetMember(GreenLangBase):
     """Membership record linking a validation rule to a rule set.
 
     Tracks which rules belong to which rule sets with ordering,
@@ -788,7 +747,7 @@ class RuleSetMember(BaseModel):
         description="Actor that added this rule to the rule set",
     )
     added_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the rule was added to the set",
     )
 
@@ -810,8 +769,7 @@ class RuleSetMember(BaseModel):
             raise ValueError("rule_id must be non-empty")
         return v
 
-
-class CompoundRule(BaseModel):
+class CompoundRule(GreenLangBase):
     """A compound validation rule composed of multiple child rules.
 
     Enables construction of complex validation logic by combining
@@ -892,11 +850,11 @@ class CompoundRule(BaseModel):
         description="Actor that created the compound rule",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the compound rule was created",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the compound rule was last modified",
     )
 
@@ -920,8 +878,7 @@ class CompoundRule(BaseModel):
             )
         return v
 
-
-class RulePack(BaseModel):
+class RulePack(GreenLangBase):
     """A pre-built collection of validation rules for a compliance framework.
 
     Rule packs bundle validation rules that implement the data quality
@@ -1011,11 +968,11 @@ class RulePack(BaseModel):
         description="Actor that published this rule pack",
     )
     published_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the rule pack was published",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the rule pack was last modified",
     )
 
@@ -1037,8 +994,7 @@ class RulePack(BaseModel):
             raise ValueError("version must be non-empty")
         return v
 
-
-class RuleVersion(BaseModel):
+class RuleVersion(GreenLangBase):
     """A versioned snapshot of a validation rule definition.
 
     Each time a rule is modified, a new RuleVersion is created to
@@ -1101,7 +1057,7 @@ class RuleVersion(BaseModel):
         description="Actor that created this version",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when this version was created",
     )
 
@@ -1123,8 +1079,7 @@ class RuleVersion(BaseModel):
             raise ValueError(f"version_number must be >= 1, got {v}")
         return v
 
-
-class EvaluationRun(BaseModel):
+class EvaluationRun(GreenLangBase):
     """A completed evaluation run of a rule set against a dataset.
 
     Captures aggregate results, performance metrics, and gate-pass
@@ -1239,7 +1194,7 @@ class EvaluationRun(BaseModel):
         description="Actor or service that triggered the evaluation",
     )
     started_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the evaluation began",
     )
     completed_at: Optional[datetime] = Field(
@@ -1265,8 +1220,7 @@ class EvaluationRun(BaseModel):
             raise ValueError(f"pass_rate must be between 0.0 and 1.0, got {v}")
         return v
 
-
-class EvaluationDetail(BaseModel):
+class EvaluationDetail(GreenLangBase):
     """A single rule-record evaluation result within an evaluation run.
 
     Records the outcome of applying one validation rule to one data
@@ -1345,7 +1299,7 @@ class EvaluationDetail(BaseModel):
         description="Additional diagnostic metadata for this evaluation",
     )
     evaluated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the evaluation was performed",
     )
 
@@ -1367,8 +1321,7 @@ class EvaluationDetail(BaseModel):
             raise ValueError("rule_id must be non-empty")
         return v
 
-
-class ConflictReport(BaseModel):
+class ConflictReport(GreenLangBase):
     """Result of a conflict detection analysis across validation rules.
 
     Produced by the conflict detection engine to identify logical
@@ -1427,14 +1380,13 @@ class ConflictReport(BaseModel):
         description="SHA-256 hash of the conflict report for audit trail",
     )
     analyzed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the analysis was performed",
     )
 
     model_config = {"extra": "forbid"}
 
-
-class ValidationReport(BaseModel):
+class ValidationReport(GreenLangBase):
     """A generated validation report in a specified format.
 
     Produced by the reporting engine to render validation results
@@ -1533,7 +1485,7 @@ class ValidationReport(BaseModel):
         description="Actor (user or service) that requested the report",
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the report was generated",
     )
 
@@ -1557,8 +1509,7 @@ class ValidationReport(BaseModel):
             )
         return v
 
-
-class RuleTemplate(BaseModel):
+class RuleTemplate(GreenLangBase):
     """A reusable template for creating validation rules.
 
     Templates capture common validation patterns with parameterized
@@ -1643,11 +1594,11 @@ class RuleTemplate(BaseModel):
         description="Actor that created the template",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the template was created",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the template was last modified",
     )
 
@@ -1661,8 +1612,7 @@ class RuleTemplate(BaseModel):
             raise ValueError("name must be non-empty")
         return v
 
-
-class RuleDependency(BaseModel):
+class RuleDependency(GreenLangBase):
     """A declared dependency between two validation rules.
 
     Tracks execution order constraints where one rule must be
@@ -1710,7 +1660,7 @@ class RuleDependency(BaseModel):
         description="Tenant or organizational namespace for isolation",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the dependency was declared",
     )
 
@@ -1732,8 +1682,7 @@ class RuleDependency(BaseModel):
             raise ValueError("depends_on_rule_id must be non-empty")
         return v
 
-
-class SLAThreshold(BaseModel):
+class SLAThreshold(GreenLangBase):
     """Performance SLA threshold for validation rule evaluation.
 
     Defines acceptable execution time thresholds for the rule
@@ -1788,11 +1737,11 @@ class SLAThreshold(BaseModel):
         description="Whether this SLA threshold is actively enforced",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the SLA threshold was created",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the SLA threshold was last modified",
     )
 
@@ -1826,8 +1775,7 @@ class SLAThreshold(BaseModel):
             )
         return v
 
-
-class AuditEntry(BaseModel):
+class AuditEntry(GreenLangBase):
     """An immutable audit log entry for any validation rule engine action.
 
     All create, update, delete, and evaluation actions in the Validation
@@ -1900,7 +1848,7 @@ class AuditEntry(BaseModel):
         description="User agent string of the actor (for security audit)",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the audit entry was created",
     )
 
@@ -1930,13 +1878,11 @@ class AuditEntry(BaseModel):
             raise ValueError("entity_id must be non-empty")
         return v
 
-
 # =============================================================================
 # Request Models (8)
 # =============================================================================
 
-
-class CreateRuleRequest(BaseModel):
+class CreateRuleRequest(GreenLangBase):
     """Request body for creating a new validation rule.
 
     Attributes:
@@ -2043,8 +1989,7 @@ class CreateRuleRequest(BaseModel):
             raise ValueError("name must be non-empty")
         return v
 
-
-class UpdateRuleRequest(BaseModel):
+class UpdateRuleRequest(GreenLangBase):
     """Request body for updating mutable fields of an existing validation rule.
 
     Only fields explicitly included in this model can be updated.
@@ -2137,8 +2082,7 @@ class UpdateRuleRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class CreateRuleSetRequest(BaseModel):
+class CreateRuleSetRequest(GreenLangBase):
     """Request body for creating a new rule set.
 
     Attributes:
@@ -2207,8 +2151,7 @@ class CreateRuleSetRequest(BaseModel):
             )
         return v
 
-
-class UpdateRuleSetRequest(BaseModel):
+class UpdateRuleSetRequest(GreenLangBase):
     """Request body for updating mutable fields of an existing rule set.
 
     All fields are optional; only provided fields will be updated.
@@ -2267,8 +2210,7 @@ class UpdateRuleSetRequest(BaseModel):
             )
         return v
 
-
-class EvaluateRequest(BaseModel):
+class EvaluateRequest(GreenLangBase):
     """Request body for evaluating a rule set against a dataset.
 
     Triggers the evaluation engine to apply all active rules in the
@@ -2323,8 +2265,7 @@ class EvaluateRequest(BaseModel):
             raise ValueError("rule_set_id must be non-empty")
         return v
 
-
-class BatchEvaluateRequest(BaseModel):
+class BatchEvaluateRequest(GreenLangBase):
     """Request body for batch evaluation of multiple rule sets or datasets.
 
     Enables evaluating multiple rule sets against multiple datasets
@@ -2390,8 +2331,7 @@ class BatchEvaluateRequest(BaseModel):
             )
         return v
 
-
-class DetectConflictsRequest(BaseModel):
+class DetectConflictsRequest(GreenLangBase):
     """Request body for detecting conflicts between validation rules.
 
     Triggers the conflict detection engine to analyze rules within
@@ -2434,8 +2374,7 @@ class DetectConflictsRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class GenerateReportRequest(BaseModel):
+class GenerateReportRequest(GreenLangBase):
     """Request body for generating a validation report.
 
     Triggers the reporting engine to produce a validation report in
@@ -2497,7 +2436,6 @@ class GenerateReportRequest(BaseModel):
     )
 
     model_config = {"extra": "forbid"}
-
 
 # =============================================================================
 # __all__ export list

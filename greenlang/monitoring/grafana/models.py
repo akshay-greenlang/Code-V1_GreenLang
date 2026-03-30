@@ -16,10 +16,11 @@ from __future__ import annotations
 
 from typing import Any, Optional
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 
 
-class GridPos(BaseModel):
+class GridPos(GreenLangBase):
     """Panel position within the Grafana dashboard grid (24-column layout)."""
 
     h: int = Field(default=8, ge=1, le=40, description="Panel height in grid units")
@@ -28,7 +29,7 @@ class GridPos(BaseModel):
     y: int = Field(default=0, ge=0, description="Vertical position (row offset)")
 
 
-class Target(BaseModel):
+class Target(GreenLangBase):
     """Data source query target for a panel.
 
     Supports Prometheus (PromQL), Loki (LogQL), and generic data source queries
@@ -60,7 +61,7 @@ class Target(BaseModel):
         return v
 
 
-class Variable(BaseModel):
+class Variable(GreenLangBase):
     """Dashboard template variable.
 
     Variables allow dynamic filtering of dashboard panels via drop-down selectors.
@@ -109,7 +110,7 @@ class Variable(BaseModel):
         return v
 
 
-class Annotation(BaseModel):
+class Annotation(GreenLangBase):
     """Dashboard annotation query.
 
     Annotations overlay time-based events on panels to mark deployments,
@@ -130,7 +131,7 @@ class Annotation(BaseModel):
     tags: list[str] = Field(default_factory=list, description="Tags to filter annotations")
 
 
-class Panel(BaseModel):
+class Panel(GreenLangBase):
     """Grafana dashboard panel.
 
     Represents a single visualization within a dashboard including its query
@@ -192,7 +193,7 @@ class Panel(BaseModel):
         return v
 
 
-class Dashboard(BaseModel):
+class Dashboard(GreenLangBase):
     """Complete Grafana dashboard model.
 
     Represents a full dashboard JSON structure compatible with the Grafana
@@ -252,7 +253,7 @@ class Dashboard(BaseModel):
         return self
 
 
-class DataSource(BaseModel):
+class DataSource(GreenLangBase):
     """Grafana data source configuration.
 
     Represents a data source as returned by the Grafana Data Source API
@@ -289,7 +290,7 @@ class DataSource(BaseModel):
         return v
 
 
-class Folder(BaseModel):
+class Folder(GreenLangBase):
     """Grafana folder.
 
     Folders organise dashboards into a hierarchy for access control and navigation.
@@ -310,7 +311,7 @@ class Folder(BaseModel):
     parentUid: str = Field(default="", description="Parent folder UID for nested folders")
 
 
-class FolderPermission(BaseModel):
+class FolderPermission(GreenLangBase):
     """Folder permission assignment.
 
     Grants a role, team, or user a specific permission level on a folder.
@@ -335,7 +336,7 @@ class FolderPermission(BaseModel):
         return v
 
 
-class AlertRule(BaseModel):
+class AlertRule(GreenLangBase):
     """Grafana Unified Alerting rule.
 
     Represents an alert rule within the Grafana Unified Alerting system
@@ -394,7 +395,7 @@ class AlertRule(BaseModel):
         return v
 
 
-class DashboardSearchResult(BaseModel):
+class DashboardSearchResult(GreenLangBase):
     """Dashboard search result from Grafana Search API.
 
     Returned by GET /api/search when querying for dashboards and folders.
@@ -416,7 +417,7 @@ class DashboardSearchResult(BaseModel):
     sortMeta: int = Field(default=0, description="Sort metadata value")
 
 
-class HealthStatus(BaseModel):
+class HealthStatus(GreenLangBase):
     """Grafana health check response.
 
     Returned by GET /api/health to verify Grafana server status.
@@ -427,7 +428,7 @@ class HealthStatus(BaseModel):
     version: str = Field(default="", description="Grafana version string")
 
 
-class ContactPoint(BaseModel):
+class ContactPoint(GreenLangBase):
     """Grafana alerting contact point.
 
     Defines a notification receiver for alerts (Slack, PagerDuty, email, etc.).
@@ -464,7 +465,7 @@ class ContactPoint(BaseModel):
         return v
 
 
-class NotificationPolicy(BaseModel):
+class NotificationPolicy(GreenLangBase):
     """Grafana notification policy tree node.
 
     Defines routing rules for alerts to contact points, including grouping,

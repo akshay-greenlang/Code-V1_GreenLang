@@ -50,18 +50,14 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -73,11 +69,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class CDPModule(str, Enum):
     C0_INTRODUCTION = "C0"
@@ -96,7 +90,6 @@ class CDPModule(str, Enum):
     C14_SIGNOFF = "C14"
     C15_BIODIVERSITY = "C15"
 
-
 class CDPScore(str, Enum):
     A = "A"
     A_MINUS = "A-"
@@ -109,7 +102,6 @@ class CDPScore(str, Enum):
     F = "F"
     NOT_SCORED = "not_scored"
 
-
 class CDPSubmissionStatus(str, Enum):
     DRAFT = "draft"
     IN_PROGRESS = "in_progress"
@@ -117,11 +109,9 @@ class CDPSubmissionStatus(str, Enum):
     SUBMITTED = "submitted"
     SCORED = "scored"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class CDPBridgeConfig(BaseModel):
     pack_id: str = Field(default="PACK-027")
@@ -136,7 +126,6 @@ class CDPBridgeConfig(BaseModel):
     target_score: CDPScore = Field(default=CDPScore.A)
     supply_chain_module: bool = Field(default=True)
 
-
 class CDPModuleResponse(BaseModel):
     module: CDPModule = Field(...)
     module_name: str = Field(default="")
@@ -146,7 +135,6 @@ class CDPModuleResponse(BaseModel):
     questions_answered: int = Field(default=0)
     score_indicators: List[str] = Field(default_factory=list)
     data: Dict[str, Any] = Field(default_factory=dict)
-
 
 class CDPPopulationResult(BaseModel):
     result_id: str = Field(default_factory=_new_uuid)
@@ -161,7 +149,6 @@ class CDPPopulationResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class CDPSubmissionResult(BaseModel):
     submission_id: str = Field(default_factory=_new_uuid)
     status: CDPSubmissionStatus = Field(default=CDPSubmissionStatus.SUBMITTED)
@@ -169,7 +156,6 @@ class CDPSubmissionResult(BaseModel):
     confirmation_number: str = Field(default="")
     message: str = Field(default="")
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # CDP Module Question Counts and Score Weights
@@ -192,11 +178,9 @@ CDP_MODULE_INFO: Dict[str, Dict[str, Any]] = {
     "C14": {"name": "Signoff", "questions": 2, "weight": 0.02},
 }
 
-
 # ---------------------------------------------------------------------------
 # CDPBridge
 # ---------------------------------------------------------------------------
-
 
 class CDPBridge:
     """Automated CDP Climate Change questionnaire bridge for PACK-027.
@@ -272,7 +256,7 @@ class CDPBridge:
         """Submit a populated CDP response."""
         return CDPSubmissionResult(
             status=CDPSubmissionStatus.SUBMITTED,
-            submitted_at=_utcnow(),
+            submitted_at=utcnow(),
             confirmation_number=f"CDP-{self.config.reporting_year}-{_new_uuid()[:8].upper()}",
             message="CDP Climate Change questionnaire submitted successfully",
             provenance_hash=_compute_hash(population_result_id),

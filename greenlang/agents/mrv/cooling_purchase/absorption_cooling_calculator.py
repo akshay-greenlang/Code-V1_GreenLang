@@ -114,6 +114,7 @@ from greenlang.agents.mrv.cooling_purchase.models import (
     UNIT_CONVERSIONS,
 )
 from greenlang.agents.mrv.cooling_purchase.provenance import get_provenance
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -242,21 +243,9 @@ _GRID_GAS_FRACTIONS: Dict[str, Decimal] = {
     "N2O": Decimal("0.010"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Utility helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed.
-
-    Returns:
-        UTC datetime with microsecond component set to zero for
-        reproducible ISO timestamp strings.
-    """
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _q(value: Decimal) -> Decimal:
     """Quantize a Decimal value to 8 decimal places using ROUND_HALF_UP.
@@ -268,7 +257,6 @@ def _q(value: Decimal) -> Decimal:
         Quantized Decimal value with 8 decimal places.
     """
     return value.quantize(_PRECISION, rounding=ROUND_HALF_UP)
-
 
 def _canonical_json(data: Dict[str, Any]) -> str:
     """Serialize a dictionary to canonical JSON form.
@@ -285,7 +273,6 @@ def _canonical_json(data: Dict[str, Any]) -> str:
     """
     return json.dumps(data, sort_keys=True, default=str)
 
-
 def _compute_hash(data: Dict[str, Any]) -> str:
     """Compute SHA-256 hash of a canonical JSON dictionary.
 
@@ -298,11 +285,9 @@ def _compute_hash(data: Dict[str, Any]) -> str:
     canonical = _canonical_json(data)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
-
 # ===========================================================================
 # AbsorptionCoolingCalculatorEngine
 # ===========================================================================
-
 
 class AbsorptionCoolingCalculatorEngine:
     """Calculation engine for Scope 2 absorption chiller emissions.
@@ -2714,11 +2699,9 @@ class AbsorptionCoolingCalculatorEngine:
                 "Failed to record metrics: %s", str(exc),
             )
 
-
 # ---------------------------------------------------------------------------
 # Module-level convenience functions
 # ---------------------------------------------------------------------------
-
 
 def get_absorption_calculator() -> AbsorptionCoolingCalculatorEngine:
     """Return the process-wide singleton AbsorptionCoolingCalculatorEngine.
@@ -2736,7 +2719,6 @@ def get_absorption_calculator() -> AbsorptionCoolingCalculatorEngine:
     """
     return AbsorptionCoolingCalculatorEngine()
 
-
 def reset_absorption_calculator() -> None:
     """Reset the singleton AbsorptionCoolingCalculatorEngine.
 
@@ -2748,7 +2730,6 @@ def reset_absorption_calculator() -> None:
         >>> calc = get_absorption_calculator()  # fresh instance
     """
     AbsorptionCoolingCalculatorEngine.reset()
-
 
 def calculate_absorption_cooling(
     request: AbsorptionCoolingRequest,
@@ -2778,7 +2759,6 @@ def calculate_absorption_cooling(
         >>> assert result.emissions_kgco2e >= Decimal("0")
     """
     return get_absorption_calculator().calculate_absorption_cooling(request)
-
 
 def calculate_single_effect(
     cooling_kwh_th: Decimal,
@@ -2810,7 +2790,6 @@ def calculate_single_effect(
         grid_ef=grid_ef,
     )
 
-
 def calculate_double_effect(
     cooling_kwh_th: Decimal,
     grid_ef: Decimal,
@@ -2841,7 +2820,6 @@ def calculate_double_effect(
         grid_ef=grid_ef,
     )
 
-
 def calculate_triple_effect(
     cooling_kwh_th: Decimal,
     grid_ef: Decimal,
@@ -2871,7 +2849,6 @@ def calculate_triple_effect(
         parasitic_ratio=parasitic_ratio,
         grid_ef=grid_ef,
     )
-
 
 def calculate_ammonia(
     cooling_kwh_th: Decimal,

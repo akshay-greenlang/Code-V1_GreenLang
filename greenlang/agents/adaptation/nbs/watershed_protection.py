@@ -16,10 +16,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism.clock import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +40,7 @@ class LandUseType(str, Enum):
     GRASSLAND = "grassland"
 
 
-class WatershedSite(BaseModel):
+class WatershedSite(GreenLangBase):
     watershed_id: str = Field(...)
     area_km2: float = Field(..., gt=0)
     forest_cover_pct: float = Field(default=40, ge=0, le=100)
@@ -50,7 +51,7 @@ class WatershedSite(BaseModel):
     population_served: int = Field(default=50000, ge=0)
 
 
-class WatershedProtectionPlan(BaseModel):
+class WatershedProtectionPlan(GreenLangBase):
     watershed_id: str = Field(...)
     flood_risk_level: WatershedRisk = Field(...)
     water_quality_risk_level: WatershedRisk = Field(...)
@@ -62,13 +63,13 @@ class WatershedProtectionPlan(BaseModel):
     ecosystem_services_value_million_annual: float = Field(...)
 
 
-class WatershedInput(BaseModel):
+class WatershedInput(GreenLangBase):
     project_id: str = Field(...)
     watersheds: List[WatershedSite] = Field(..., min_length=1)
     climate_scenario: str = Field(default="RCP4.5")
 
 
-class WatershedOutput(BaseModel):
+class WatershedOutput(GreenLangBase):
     project_id: str = Field(...)
     calculation_date: datetime = Field(default_factory=DeterministicClock.now)
     total_watershed_area_km2: float = Field(...)

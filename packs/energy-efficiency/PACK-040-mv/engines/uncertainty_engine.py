@@ -77,25 +77,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -113,7 +107,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -122,7 +115,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -134,22 +126,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class UncertaintyComponent(str, Enum):
     """Component of total uncertainty.
@@ -163,7 +151,6 @@ class UncertaintyComponent(str, Enum):
     MODEL = "model"
     SAMPLING = "sampling"
     COMBINED = "combined"
-
 
 class ConfidenceLevel(str, Enum):
     """Statistical confidence level for uncertainty bounds.
@@ -179,7 +166,6 @@ class ConfidenceLevel(str, Enum):
     CL_90 = "90"
     CL_95 = "95"
     CL_99 = "99"
-
 
 class MeterAccuracyClass(str, Enum):
     """Meter accuracy class per ANSI C12.20 / IEC 62053.
@@ -198,7 +184,6 @@ class MeterAccuracyClass(str, Enum):
     CLASS_20 = "2.0"
     CLASS_50 = "5.0"
 
-
 class UncertaintyGrade(str, Enum):
     """Qualitative grade for overall uncertainty assessment.
 
@@ -214,7 +199,6 @@ class UncertaintyGrade(str, Enum):
     POOR = "poor"
     INVALID = "invalid"
 
-
 class SamplingMethod(str, Enum):
     """Sampling method for Option A uncertainty.
 
@@ -228,7 +212,6 @@ class SamplingMethod(str, Enum):
     SYSTEMATIC = "systematic"
     CENSUS = "census"
 
-
 class PropagationMethod(str, Enum):
     """Uncertainty propagation method.
 
@@ -239,7 +222,6 @@ class PropagationMethod(str, Enum):
     RSS = "rss"
     LINEAR = "linear"
     MONTE_CARLO = "monte_carlo"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- t-distribution lookup table
@@ -324,11 +306,9 @@ CT_PT_ACCURACY: Dict[str, Decimal] = {
 # Calibration drift per year (% per year).
 CALIBRATION_DRIFT_PER_YEAR: Decimal = Decimal("0.001")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
-
 
 class MeasurementUncertaintyInput(BaseModel):
     """Input for measurement uncertainty calculation.
@@ -361,7 +341,7 @@ class MeasurementUncertaintyInput(BaseModel):
         default=None, description="Last calibration date"
     )
     analysis_date: datetime = Field(
-        default_factory=_utcnow, description="Analysis date"
+        default_factory=utcnow, description="Analysis date"
     )
     calibration_drift_pct_per_year: Decimal = Field(
         default=CALIBRATION_DRIFT_PER_YEAR,
@@ -374,7 +354,6 @@ class MeasurementUncertaintyInput(BaseModel):
     total_metered_energy: Decimal = Field(
         default=Decimal("0"), ge=0, description="Total metered energy"
     )
-
 
 class ModelUncertaintyInput(BaseModel):
     """Input for regression model uncertainty calculation.
@@ -413,7 +392,6 @@ class ModelUncertaintyInput(BaseModel):
     mean_y: Decimal = Field(
         default=Decimal("0"), description="Mean of Y"
     )
-
 
 class SamplingUncertaintyInput(BaseModel):
     """Input for sampling uncertainty calculation (Option A).
@@ -455,7 +433,6 @@ class SamplingUncertaintyInput(BaseModel):
         default=SamplingMethod.SIMPLE_RANDOM,
         description="Sampling method"
     )
-
 
 class UncertaintyConfig(BaseModel):
     """Configuration for uncertainty analysis.
@@ -499,11 +476,9 @@ class UncertaintyConfig(BaseModel):
         default=False, description="Include sampling uncertainty"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
-
 
 class MeasurementUncertaintyResult(BaseModel):
     """Result of measurement uncertainty calculation.
@@ -526,9 +501,8 @@ class MeasurementUncertaintyResult(BaseModel):
     combined_measurement_pct: Decimal = Field(default=Decimal("0"))
     absolute_uncertainty: Decimal = Field(default=Decimal("0"))
     years_since_calibration: Decimal = Field(default=Decimal("0"))
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class ModelUncertaintyResult(BaseModel):
     """Result of model (regression) uncertainty calculation.
@@ -557,9 +531,8 @@ class ModelUncertaintyResult(BaseModel):
     model_uncertainty_pct: Decimal = Field(default=Decimal("0"))
     prediction_interval_half_width: Decimal = Field(default=Decimal("0"))
     confidence_level: ConfidenceLevel = Field(default=ConfidenceLevel.CL_68)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class SamplingUncertaintyResult(BaseModel):
     """Result of sampling uncertainty calculation.
@@ -590,9 +563,8 @@ class SamplingUncertaintyResult(BaseModel):
     sampling_method: SamplingMethod = Field(
         default=SamplingMethod.SIMPLE_RANDOM
     )
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class FSUResult(BaseModel):
     """Fractional savings uncertainty result at a specific confidence level.
@@ -625,9 +597,8 @@ class FSUResult(BaseModel):
     uncertainty_grade: UncertaintyGrade = Field(
         default=UncertaintyGrade.INVALID
     )
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class UncertaintyResult(BaseModel):
     """Complete uncertainty analysis result.
@@ -676,14 +647,12 @@ class UncertaintyResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     recommendations: List[str] = Field(default_factory=list)
     processing_time_ms: Decimal = Field(default=Decimal("0"))
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class UncertaintyEngine:
     """ASHRAE 14 fractional savings uncertainty engine for M&V.

@@ -588,7 +588,7 @@ THIRD_COUNTRY_CARBON_PRICING: Dict[str, Dict[str, Any]] = {
     "US": {"name": "US (no federal carbon price)", "type": "other", "coverage": "state_level", "price_eur_2024": 0.0, "currency": "USD", "recognized": False},
     "US-CA": {"name": "California Cap-and-Trade", "type": "ets", "coverage": "economy_wide", "price_eur_2024": 30.00, "currency": "USD", "recognized": True},
     "US-RGGI": {"name": "RGGI (Northeast US)", "type": "ets", "coverage": "power_sector", "price_eur_2024": 13.00, "currency": "USD", "recognized": True},
-]
+}
 
 
 # Anti-circumvention detection thresholds per rule type.

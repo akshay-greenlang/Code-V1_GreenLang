@@ -43,22 +43,17 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -70,11 +65,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Agent Stubs
 # ---------------------------------------------------------------------------
-
 
 class _AgentStub:
     def __init__(self, component_name: str) -> None:
@@ -86,7 +79,6 @@ class _AgentStub:
             return {"component": self._component_name, "method": name, "status": "degraded"}
         return _stub_method
 
-
 def _try_import_sbti_component(component_id: str, module_path: str) -> Any:
     try:
         return importlib.import_module(module_path)
@@ -94,17 +86,14 @@ def _try_import_sbti_component(component_id: str, module_path: str) -> Any:
         logger.debug("SBTi component %s not available, using stub", component_id)
         return _AgentStub(component_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class PathwayType(str, Enum):
     PATHWAY_1_5C = "1.5C"
     PATHWAY_WB2C = "well_below_2C"
     PATHWAY_2C = "2C"
-
 
 class TargetScope(str, Enum):
     NEAR_TERM = "near_term"
@@ -112,11 +101,9 @@ class TargetScope(str, Enum):
     NET_ZERO = "net_zero"
     INTERIM = "interim"
 
-
 class TargetType(str, Enum):
     ABSOLUTE = "absolute"
     INTENSITY = "intensity"
-
 
 class ValidationStatus(str, Enum):
     VALID = "valid"
@@ -126,7 +113,6 @@ class ValidationStatus(str, Enum):
     R2Z_COMPLIANT = "r2z_compliant"
     R2Z_NON_COMPLIANT = "r2z_non_compliant"
 
-
 class R2ZTargetCriteria(str, Enum):
     """Race to Zero specific target criteria."""
     HALVE_BY_2030 = "halve_by_2030"
@@ -135,7 +121,6 @@ class R2ZTargetCriteria(str, Enum):
     SCIENCE_BASED = "science_based"
     NO_FOSSIL_EXPANSION = "no_fossil_expansion"
     RESTRICT_OFFSETS = "restrict_offsets"
-
 
 # ---------------------------------------------------------------------------
 # R2Z Target Thresholds
@@ -173,11 +158,9 @@ R2Z_TARGET_THRESHOLDS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class SBTiAppBridgeConfig(BaseModel):
     """Configuration for the SBTi App bridge."""
@@ -193,7 +176,6 @@ class SBTiAppBridgeConfig(BaseModel):
     sector: str = Field(default="")
     include_scope3: bool = Field(default=True)
     timeout_seconds: int = Field(default=300, ge=30)
-
 
 class TargetResult(BaseModel):
     """Result of setting a science-based target."""
@@ -212,7 +194,6 @@ class TargetResult(BaseModel):
     sbti_validated: bool = Field(default=False)
     provenance_hash: str = Field(default="")
 
-
 class ValidationResult(BaseModel):
     """Result of target validation."""
 
@@ -228,7 +209,6 @@ class ValidationResult(BaseModel):
     temperature_alignment: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class TemperatureScoreResult(BaseModel):
     """Temperature alignment score result."""
 
@@ -240,7 +220,6 @@ class TemperatureScoreResult(BaseModel):
     methodology: str = Field(default="SBTi Temperature Rating")
     confidence: float = Field(default=0.0, ge=0.0, le=100.0)
     provenance_hash: str = Field(default="")
-
 
 class SDAPathwayResult(BaseModel):
     """Sectoral Decarbonisation Approach pathway result."""
@@ -255,7 +234,6 @@ class SDAPathwayResult(BaseModel):
     annual_reduction_rate_pct: float = Field(default=0.0)
     milestones: Dict[int, float] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
-
 
 class ProgressResult(BaseModel):
     """Progress against targets result."""
@@ -273,7 +251,6 @@ class ProgressResult(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class SectorBenchmarkResult(BaseModel):
     """Sector benchmark comparison result."""
 
@@ -286,11 +263,9 @@ class SectorBenchmarkResult(BaseModel):
     above_average: bool = Field(default=False)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # SBTiAppBridge
 # ---------------------------------------------------------------------------
-
 
 class SBTiAppBridge:
     """Bridge to GL-SBTi-APP for Race to Zero target management.

@@ -24,19 +24,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 class GHGDataSource(str, Enum):
     """Data source types for base year data."""
@@ -47,7 +43,6 @@ class GHGDataSource(str, Enum):
     MANUAL_ENTRY = "manual_entry"
     SUPPLIER_RESPONSE = "supplier_response"
 
-
 class DataFormat(str, Enum):
     """Supported data formats."""
     PDF = "pdf"
@@ -55,7 +50,6 @@ class DataFormat(str, Enum):
     CSV = "csv"
     JSON = "json"
     XML = "xml"
-
 
 class DataAgentTarget(str, Enum):
     """Target DATA agent for routing."""
@@ -69,7 +63,6 @@ class DataAgentTarget(str, Enum):
     LINEAGE_TRACKER = "DATA-018"
     VALIDATION_ENGINE = "DATA-019"
 
-
 class QualityLevel(str, Enum):
     """Data quality levels."""
     HIGH = "high"
@@ -77,13 +70,11 @@ class QualityLevel(str, Enum):
     LOW = "low"
     UNKNOWN = "unknown"
 
-
 class DataRouteConfig(BaseModel):
     """Configuration for data routing."""
     timeout_s: float = Field(60.0, ge=5.0)
     auto_quality_check: bool = Field(True)
     enable_lineage: bool = Field(True)
-
 
 class DataRequest(BaseModel):
     """Request to process data through a DATA agent."""
@@ -92,7 +83,6 @@ class DataRequest(BaseModel):
     base_year: str = ""
     entity_id: str = ""
     scope: str = ""
-
 
 class DataResponse(BaseModel):
     """Response from a DATA agent."""
@@ -103,7 +93,6 @@ class DataResponse(BaseModel):
     provenance_hash: str = ""
     warnings: List[str] = Field(default_factory=list)
 
-
 class QualityReport(BaseModel):
     """Data quality assessment report."""
     overall_score: float = 0.0
@@ -113,7 +102,6 @@ class QualityReport(BaseModel):
     consistency_score: float = 0.0
     issues: List[Dict[str, Any]] = Field(default_factory=list)
 
-
 class LineageRecord(BaseModel):
     """Data lineage tracking record."""
     record_id: str = ""
@@ -121,7 +109,6 @@ class LineageRecord(BaseModel):
     transformations: List[str] = Field(default_factory=list)
     provenance_hash: str = ""
     timestamp: str = ""
-
 
 class DataBridge:
     """
@@ -169,7 +156,7 @@ class DataBridge:
         return LineageRecord(
             record_id=record_id,
             provenance_hash=_compute_hash({"record": record_id}),
-            timestamp=_utcnow().isoformat(),
+            timestamp=utcnow().isoformat(),
         )
 
     async def detect_outliers(self, base_year: str) -> Dict[str, Any]:

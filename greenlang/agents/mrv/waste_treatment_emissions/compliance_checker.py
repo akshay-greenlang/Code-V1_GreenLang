@@ -73,6 +73,7 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -102,15 +103,9 @@ except ImportError:
     _PROVENANCE_AVAILABLE = False
     _get_provenance_tracker = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -120,7 +115,6 @@ def _compute_hash(data: Any) -> str:
         serializable = data
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 def _to_decimal(value: Any, default: Decimal = Decimal("0")) -> Decimal:
     """Convert a value to Decimal safely, returning *default* on failure."""
@@ -132,7 +126,6 @@ def _to_decimal(value: Any, default: Decimal = Decimal("0")) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, ValueError, TypeError):
         return default
-
 
 # ===========================================================================
 # Constants
@@ -245,11 +238,9 @@ VALID_EF_SOURCES: Set[str] = {
 #: EPA Subpart identifiers for waste treatment.
 EPA_SUBPARTS: Set[str] = {"HH", "TT"}
 
-
 # ===========================================================================
 # Dataclasses
 # ===========================================================================
-
 
 @dataclass
 class ComplianceFinding:
@@ -285,11 +276,9 @@ class ComplianceFinding:
             "recommendation": self.recommendation,
         }
 
-
 # ===========================================================================
 # ComplianceCheckerEngine
 # ===========================================================================
-
 
 class ComplianceCheckerEngine:
     """Multi-framework regulatory compliance checker for waste treatment
@@ -314,7 +303,7 @@ class ComplianceCheckerEngine:
         """Initialize the ComplianceCheckerEngine."""
         self._lock = threading.RLock()
         self._total_checks: int = 0
-        self._created_at = _utcnow()
+        self._created_at = utcnow()
 
         # Map framework names to checker methods
         self._framework_checkers: Dict[str, Callable] = {

@@ -79,25 +79,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -115,7 +109,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -124,7 +117,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -136,22 +128,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class AlarmPriority(str, Enum):
     """Alarm priority classification per ISA 18.2.
@@ -167,7 +155,6 @@ class AlarmPriority(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     DIAGNOSTIC = "diagnostic"
-
 
 class AlarmState(str, Enum):
     """Alarm lifecycle state per ISA 18.2.
@@ -186,7 +173,6 @@ class AlarmState(str, Enum):
     CLEARED = "cleared"
     CLOSED = "closed"
 
-
 class SuppressionType(str, Enum):
     """Alarm suppression rule type.
 
@@ -202,7 +188,6 @@ class SuppressionType(str, Enum):
     TIME_WINDOW = "time_window"
     CORRELATION = "correlation"
 
-
 class EscalationLevel(str, Enum):
     """Alarm escalation hierarchy level.
 
@@ -215,7 +200,6 @@ class EscalationLevel(str, Enum):
     L2_SUPERVISOR = "l2_supervisor"
     L3_MANAGER = "l3_manager"
     L4_EXECUTIVE = "l4_executive"
-
 
 class AlarmCategory(str, Enum):
     """Energy monitoring alarm category.
@@ -233,7 +217,6 @@ class AlarmCategory(str, Enum):
     COMFORT_VIOLATION = "comfort_violation"
     SAFETY = "safety"
     FINANCIAL = "financial"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -273,11 +256,9 @@ MAX_ALARM_BATCH: int = 5000
 CHATTER_MIN_TRANSITIONS: int = 5
 CHATTER_WINDOW_MIN: int = 30
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class AlarmDefinition(BaseModel):
     """Alarm point definition and configuration.
@@ -353,7 +334,6 @@ class AlarmDefinition(BaseModel):
             return "Unnamed Alarm"
         return v
 
-
 class AlarmEvent(BaseModel):
     """Alarm event instance (an occurrence of an alarm).
 
@@ -402,7 +382,7 @@ class AlarmEvent(BaseModel):
         default=Decimal("0"), description="Deviation (%)"
     )
     activated_at: datetime = Field(
-        default_factory=_utcnow, description="Activation time"
+        default_factory=utcnow, description="Activation time"
     )
     acknowledged_at: Optional[datetime] = Field(
         default=None, description="Acknowledgement time"
@@ -431,7 +411,6 @@ class AlarmEvent(BaseModel):
     notes: str = Field(
         default="", max_length=2000, description="Operator notes"
     )
-
 
 class SuppressionRule(BaseModel):
     """Alarm suppression rule configuration.
@@ -487,7 +466,6 @@ class SuppressionRule(BaseModel):
         default="", max_length=2000, description="Description"
     )
 
-
 class EscalationConfig(BaseModel):
     """Alarm escalation configuration.
 
@@ -524,7 +502,6 @@ class EscalationConfig(BaseModel):
         default=EscalationLevel.L4_EXECUTIVE, description="Max level"
     )
 
-
 class AlarmReport(BaseModel):
     """Alarm management performance report (ISA 18.2 KPIs).
 
@@ -558,10 +535,10 @@ class AlarmReport(BaseModel):
         default_factory=_new_uuid, description="Report ID"
     )
     reporting_period_start: datetime = Field(
-        default_factory=_utcnow, description="Period start"
+        default_factory=utcnow, description="Period start"
     )
     reporting_period_end: datetime = Field(
-        default_factory=_utcnow, description="Period end"
+        default_factory=utcnow, description="Period end"
     )
     total_alarms: int = Field(default=0, ge=0, description="Total alarms")
     active_alarms: int = Field(default=0, ge=0, description="Active")
@@ -605,18 +582,16 @@ class AlarmReport(BaseModel):
         description="ISA 18.2 score"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp"
+        default_factory=utcnow, description="Timestamp"
     )
     processing_time_ms: float = Field(
         default=0.0, description="Processing time (ms)"
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class AlarmEngine:
     """Intelligent alarm management engine with ISA 18.2 lifecycle.
@@ -789,7 +764,7 @@ class AlarmEngine:
 
         action_map = actions or {}
         transitions: List[Dict[str, Any]] = []
-        now = _utcnow()
+        now = utcnow()
 
         for event in events:
             action = action_map.get(event.event_id, "")
@@ -868,7 +843,7 @@ class AlarmEngine:
             len(events), len(rules),
         )
 
-        now = _utcnow()
+        now = utcnow()
         suppressed_events: List[Dict[str, Any]] = []
         active_rules = [r for r in rules if r.is_active]
 
@@ -1024,7 +999,7 @@ class AlarmEngine:
             "correlations": correlations,
             "chattering_alarms": chattering,
             "chattering_count": len(chattering),
-            "calculated_at": _utcnow().isoformat(),
+            "calculated_at": utcnow().isoformat(),
             "processing_time_ms": round(elapsed, 2),
         }
         result["provenance_hash"] = _compute_hash(result)
@@ -1061,7 +1036,7 @@ class AlarmEngine:
         )
 
         total = len(events)
-        now = _utcnow()
+        now = utcnow()
 
         # State counts
         state_dist: Dict[str, int] = {}

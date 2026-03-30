@@ -104,25 +104,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -147,7 +141,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -156,7 +149,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -168,26 +160,21 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round2(value: Any) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
-
 def _round3(value: Any) -> float:
     """Round to 3 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class Scope3Category(str, Enum):
     """GHG Protocol Scope 3 categories (1-15)."""
@@ -207,7 +194,6 @@ class Scope3Category(str, Enum):
     CAT_14 = "cat_14_franchises"
     CAT_15 = "cat_15_investments"
 
-
 class MethodologyTier(str, Enum):
     """Methodology tiers for Scope 3 calculations.
 
@@ -220,7 +206,6 @@ class MethodologyTier(str, Enum):
     AVERAGE_DATA = "average_data"
     SUPPLIER_SPECIFIC = "supplier_specific"
     HYBRID = "hybrid"
-
 
 class ImprovementPriority(str, Enum):
     """Priority level for quality improvement actions.
@@ -235,11 +220,9 @@ class ImprovementPriority(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # Default DQI weights per GHG Protocol Scope 3 Guidance, Table 7.2.
 DEFAULT_DQI_WEIGHTS: Dict[str, Decimal] = {
@@ -332,11 +315,9 @@ IMPROVEMENT_ACTIONS: Dict[str, Dict[str, str]] = {
 }
 """Improvement actions indexed by quality dimension and gap severity."""
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class DataSourceInfo(BaseModel):
     """Metadata about a data source used for a Scope 3 category.
@@ -378,7 +359,6 @@ class DataSourceInfo(BaseModel):
         """Coerce coverage to Decimal."""
         return _decimal(v)
 
-
 class CategoryDataInput(BaseModel):
     """Input data for a single Scope 3 category quality assessment.
 
@@ -411,7 +391,6 @@ class CategoryDataInput(BaseModel):
         """Coerce emissions to Decimal."""
         return _decimal(v)
 
-
 class HistoricalQualityRecord(BaseModel):
     """Historical quality record for trend tracking.
 
@@ -426,11 +405,9 @@ class HistoricalQualityRecord(BaseModel):
     dqr_score: float = Field(..., ge=1.0, le=5.0, description="DQR score")
     methodology_tier: str = Field(default="", description="Methodology tier")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class QualityIndicator(BaseModel):
     """Individual quality indicator score.
@@ -445,7 +422,6 @@ class QualityIndicator(BaseModel):
     score: int = Field(default=1, ge=1, le=5, description="Score (1-5)")
     weight: float = Field(default=0.0, ge=0, le=1, description="Weight")
     rationale: str = Field(default="", description="Score rationale")
-
 
 class QualityAssessment(BaseModel):
     """Quality assessment result for a single Scope 3 category.
@@ -479,7 +455,6 @@ class QualityAssessment(BaseModel):
         default_factory=list, description="Improvement actions"
     )
 
-
 class DQRScore(BaseModel):
     """Summary DQR score across all categories.
 
@@ -503,7 +478,6 @@ class DQRScore(BaseModel):
     framework_readiness: Dict[str, bool] = Field(
         default_factory=dict, description="Framework readiness"
     )
-
 
 class ImprovementAction(BaseModel):
     """A prioritised improvement action.
@@ -529,7 +503,6 @@ class ImprovementAction(BaseModel):
         default=0.0, ge=0, description="Expected DQR improvement"
     )
 
-
 class QualityTrend(BaseModel):
     """Year-over-year quality trend for a category.
 
@@ -545,7 +518,6 @@ class QualityTrend(BaseModel):
     dqr_scores: List[float] = Field(default_factory=list, description="DQR scores")
     trend_direction: str = Field(default="stable", description="Trend direction")
     avg_annual_change: float = Field(default=0.0, description="Avg annual change")
-
 
 class DataQualityResult(BaseModel):
     """Complete data quality assessment result with provenance.
@@ -564,7 +536,7 @@ class DataQualityResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid, description="Result ID")
     engine_version: str = Field(default=_MODULE_VERSION, description="Version")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Timestamp")
     processing_time_ms: float = Field(default=0.0, description="Processing time")
     category_assessments: List[QualityAssessment] = Field(
         default_factory=list, description="Category assessments"
@@ -583,11 +555,9 @@ class DataQualityResult(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class DataQualityAssessmentEngine:
     """Scope 3 data quality assessment engine.
@@ -1425,7 +1395,6 @@ class DataQualityAssessmentEngine:
             categories_below_threshold=below,
             framework_readiness=readiness,
         )
-
 
 # ---------------------------------------------------------------------------
 # Pydantic v2 model_rebuild for forward-reference resolution

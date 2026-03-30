@@ -43,9 +43,9 @@ from greenlang.agents.data.time_series_gap_filler.provenance import (
     ProvenanceTracker,
     get_provenance_tracker,
 )
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Optional FastAPI import
@@ -57,7 +57,6 @@ try:
 except ImportError:
     FastAPI = None  # type: ignore[assignment, misc]
     FASTAPI_AVAILABLE = False
-
 
 # ---------------------------------------------------------------------------
 # Optional engine imports (graceful fallback)
@@ -106,27 +105,18 @@ try:
 except ImportError:
     PROMETHEUS_AVAILABLE = False  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Build a SHA-256 hash for arbitrary data."""
     serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
-
 # ===================================================================
 # TimeSeriesGapFillerService facade
 # ===================================================================
-
 
 class TimeSeriesGapFillerService:
     """Facade service for the Time Series Gap Filler SDK.
@@ -231,7 +221,7 @@ class TimeSeriesGapFillerService:
                 "trend_extrapolator": self._trend_extrapolator is not None,
                 "pipeline": self._pipeline is not None,
             },
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     def get_stats(self) -> Dict[str, Any]:
@@ -243,7 +233,7 @@ class TimeSeriesGapFillerService:
             "validations_stored": len(self._validation_results),
             "calendars_stored": len(self._calendars),
             "jobs_stored": len(self._jobs),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     def get_statistics(self) -> Dict[str, Any]:
@@ -574,7 +564,7 @@ class TimeSeriesGapFillerService:
             "holidays": holidays or [],
             "business_days": business_days or [0, 1, 2, 3, 4],
             "fiscal_start_month": fiscal_start_month,
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
         self._calendars[calendar_id] = cal
         return cal
@@ -669,7 +659,7 @@ class TimeSeriesGapFillerService:
             "strategy": strategy,
             "method": method,
             "status": "pending",
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
         self._jobs[job_id] = job
         self._stats["total_jobs"] += 1
@@ -698,14 +688,12 @@ class TimeSeriesGapFillerService:
             return True
         return False
 
-
 # ---------------------------------------------------------------------------
 # Thread-safe singleton
 # ---------------------------------------------------------------------------
 
 _service_instance: Optional[TimeSeriesGapFillerService] = None
 _service_lock = threading.Lock()
-
 
 def get_service() -> TimeSeriesGapFillerService:
     """Return the singleton TimeSeriesGapFillerService."""
@@ -717,7 +705,6 @@ def get_service() -> TimeSeriesGapFillerService:
                 _service_instance.startup()
     return _service_instance
 
-
 def reset_service() -> TimeSeriesGapFillerService:
     """Reset and return a new singleton instance."""
     global _service_instance
@@ -726,11 +713,9 @@ def reset_service() -> TimeSeriesGapFillerService:
         _service_instance.startup()
     return _service_instance
 
-
 # ---------------------------------------------------------------------------
 # FastAPI integration
 # ---------------------------------------------------------------------------
-
 
 def configure_gap_filler(app: Any) -> TimeSeriesGapFillerService:
     """Configure the gap filler service on a FastAPI app.
@@ -760,7 +745,6 @@ def configure_gap_filler(app: Any) -> TimeSeriesGapFillerService:
     logger.info("Gap filler service configured on app")
     return service
 
-
 def get_gap_filler(app: Any) -> Optional[TimeSeriesGapFillerService]:
     """Retrieve the gap filler service from a FastAPI app.
 
@@ -771,7 +755,6 @@ def get_gap_filler(app: Any) -> Optional[TimeSeriesGapFillerService]:
         TimeSeriesGapFillerService or None if not configured.
     """
     return getattr(app.state, "gap_filler_service", None)
-
 
 def get_router() -> Any:
     """Return the FastAPI APIRouter for the gap filler service.
@@ -784,7 +767,6 @@ def get_router() -> Any:
         return router
     except ImportError:
         return None
-
 
 __all__ = [
     "TimeSeriesGapFillerService",

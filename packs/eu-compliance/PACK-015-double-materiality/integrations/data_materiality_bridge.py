@@ -53,26 +53,19 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -85,11 +78,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Agent Stubs
 # ---------------------------------------------------------------------------
-
 
 class _AgentStub:
     """Stub for unavailable DATA agent modules."""
@@ -108,21 +99,19 @@ class _AgentStub:
             }
         return _stub_method
 
-
 def _try_import_data_agent(agent_id: str, module_path: str) -> Any:
     """Try to import a DATA agent with graceful fallback."""
     try:
         import importlib
+
         return importlib.import_module(module_path)
     except ImportError:
         logger.debug("DATA agent %s not available, using stub", agent_id)
         return _AgentStub(agent_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DMADataSource(str, Enum):
     """Data source categories for the DMA pipeline."""
@@ -137,7 +126,6 @@ class DMADataSource(str, Enum):
     SPEND_DATA = "spend_data"
     INCIDENT_REPORTS = "incident_reports"
 
-
 class DataQualityLevel(str, Enum):
     """Data quality assessment levels."""
 
@@ -146,11 +134,9 @@ class DataQualityLevel(str, Enum):
     LOW = "low"
     INSUFFICIENT = "insufficient"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class DataAgentRoute(BaseModel):
     """Routing entry mapping a DMA data source to a DATA agent."""
@@ -165,7 +151,6 @@ class DataAgentRoute(BaseModel):
         default="",
         description="DMA phase this data feeds into",
     )
-
 
 class DataRoutingResult(BaseModel):
     """Result of routing a data operation to a DATA agent."""
@@ -182,7 +167,6 @@ class DataRoutingResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class StakeholderSurveyResult(BaseModel):
     """Result of processing stakeholder survey data via DATA-008."""
 
@@ -198,7 +182,6 @@ class StakeholderSurveyResult(BaseModel):
     message: str = Field(default="")
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class DataQualityReport(BaseModel):
     """Data quality report from DATA-010 profiling."""
@@ -219,7 +202,6 @@ class DataQualityReport(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class DataBridgeConfig(BaseModel):
     """Configuration for the Data Materiality Bridge."""
 
@@ -233,7 +215,6 @@ class DataBridgeConfig(BaseModel):
         description="Minimum quality score to pass data to DMA engines",
     )
     max_records_per_batch: int = Field(default=10000, ge=100)
-
 
 # ---------------------------------------------------------------------------
 # Data Agent Routing Table
@@ -314,11 +295,9 @@ DMA_DATA_AGENT_ROUTES: List[DataAgentRoute] = [
     ),
 ]
 
-
 # ---------------------------------------------------------------------------
 # DataMaterialityBridge
 # ---------------------------------------------------------------------------
-
 
 class DataMaterialityBridge:
     """Bridge to DATA agents for DMA data intake and quality management.

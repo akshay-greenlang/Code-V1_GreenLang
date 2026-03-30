@@ -60,17 +60,15 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
@@ -113,7 +111,6 @@ def _round_val(value: Decimal, places: int = 6) -> Decimal:
 def _round3(value: float) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
@@ -150,7 +147,6 @@ class Revenueband(str, Enum):
     MID_MARKET = "mid_market" # 100M-1B
     LARGE = "large"           # 1B-10B
     MEGA = "mega"             # >10B
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Sector Benchmark Data
@@ -342,7 +338,6 @@ SECTOR_PEER_DATA: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
@@ -364,7 +359,6 @@ class PeerCompanyEntry(BaseModel):
     )
     region: str = Field(default="global", max_length=50)
     revenue_band: Revenueband = Field(default=Revenueband.LARGE)
-
 
 class BenchmarkInput(BaseModel):
     """Input for sector benchmarking.
@@ -432,7 +426,6 @@ class BenchmarkInput(BaseModel):
         default=True, description="Regulatory benchmark comparison"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
@@ -450,7 +443,6 @@ class PercentileRanking(BaseModel):
     total_peers: int = Field(default=0)
     rank_position: int = Field(default=0)
     rating: str = Field(default=PerformanceRating.AVERAGE.value)
-
 
 class GapToLeader(BaseModel):
     """Gap-to-leader analysis.
@@ -472,7 +464,6 @@ class GapToLeader(BaseModel):
     top_quartile_intensity: Decimal = Field(default=Decimal("0"))
     gap_to_top_quartile_pct: Decimal = Field(default=Decimal("0"))
 
-
 class SBTiBenchmarkResult(BaseModel):
     """Comparison against SBTi-validated peers.
 
@@ -488,7 +479,6 @@ class SBTiBenchmarkResult(BaseModel):
     vs_sbti_average_pct: Decimal = Field(default=Decimal("0"))
     company_sbti_status: str = Field(default="")
     sbti_leaders_intensity: Decimal = Field(default=Decimal("0"))
-
 
 class IEAPathwayBenchmark(BaseModel):
     """IEA pathway milestone comparison.
@@ -510,7 +500,6 @@ class IEAPathwayBenchmark(BaseModel):
     on_track_for_2050: bool = Field(default=False)
     required_annual_reduction_pct: Decimal = Field(default=Decimal("0"))
 
-
 class CompositeBenchmarkScore(BaseModel):
     """Composite benchmark score.
 
@@ -528,7 +517,6 @@ class CompositeBenchmarkScore(BaseModel):
     sbti_score: Decimal = Field(default=Decimal("0"))
     pathway_score: Decimal = Field(default=Decimal("0"))
     rating: str = Field(default=PerformanceRating.AVERAGE.value)
-
 
 class BenchmarkResult(BaseModel):
     """Complete benchmark result.
@@ -554,7 +542,7 @@ class BenchmarkResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     sector: str = Field(default="")
     intensity_unit: str = Field(default="")
@@ -570,11 +558,9 @@ class BenchmarkResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class SectorBenchmarkEngine:
     """Multi-dimensional sector benchmarking engine.

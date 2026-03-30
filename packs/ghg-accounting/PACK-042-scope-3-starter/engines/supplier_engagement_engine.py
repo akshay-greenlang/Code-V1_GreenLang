@@ -83,21 +83,13 @@ logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -122,7 +114,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -139,7 +130,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal,
     denominator: Decimal,
@@ -150,21 +140,17 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round2(value: Any) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
-
 def _round3(value: Any) -> float:
     """Round to 3 decimal places."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
-
 
 def _fmt(value: Any) -> str:
     """Format a number with comma separators and 2dp."""
@@ -173,11 +159,9 @@ def _fmt(value: Any) -> str:
     except (ValueError, TypeError):
         return str(value)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DataQualityLevel(int, Enum):
     """GHG Protocol Data Quality Indicator (DQI) levels.
@@ -193,7 +177,6 @@ class DataQualityLevel(int, Enum):
     LEVEL_3 = 3
     LEVEL_4 = 4
     LEVEL_5 = 5
-
 
 class EngagementStatus(str, Enum):
     """Supplier engagement lifecycle status.
@@ -212,7 +195,6 @@ class EngagementStatus(str, Enum):
     VALIDATED = "validated"
     ESCALATED = "escalated"
 
-
 class SupplierTier(str, Enum):
     """Supplier prioritisation tier.
 
@@ -225,7 +207,6 @@ class SupplierTier(str, Enum):
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 class IndustryType(str, Enum):
     """Supported industry types for questionnaire templates."""
@@ -242,7 +223,6 @@ class IndustryType(str, Enum):
     FOOD_BEVERAGE = "food_beverage"
     TEXTILES_APPAREL = "textiles_apparel"
 
-
 class ReminderType(str, Enum):
     """Reminder types for engagement follow-up."""
     INITIAL_REQUEST = "initial_request"
@@ -250,7 +230,6 @@ class ReminderType(str, Enum):
     SECOND_FOLLOW_UP = "second_follow_up"
     ESCALATION = "escalation"
     ANNUAL_REFRESH = "annual_refresh"
-
 
 class Scope3Category(str, Enum):
     """GHG Protocol Scope 3 categories (upstream + downstream)."""
@@ -270,11 +249,9 @@ class Scope3Category(str, Enum):
     CAT_14 = "cat_14_franchises"
     CAT_15 = "cat_15_investments"
 
-
 # ---------------------------------------------------------------------------
 # Constants -- Questionnaire Templates
 # ---------------------------------------------------------------------------
-
 
 # CDP Supply Chain field mapping for interoperability.
 CDP_SUPPLY_CHAIN_FIELDS: Dict[str, str] = {
@@ -739,7 +716,6 @@ QUESTIONNAIRE_TEMPLATES: Dict[str, Dict[str, Any]] = {
 }
 """Industry-specific questionnaire templates with CDP field mappings."""
 
-
 # DQI level descriptions for scoring rubric.
 DQI_DESCRIPTIONS: Dict[int, str] = {
     1: "No primary data; EEIO model estimate based on sector averages.",
@@ -750,11 +726,9 @@ DQI_DESCRIPTIONS: Dict[int, str] = {
 }
 """Human-readable descriptions of each DQI level."""
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class ProcurementItem(BaseModel):
     """A single procurement line item linking a supplier to spend/category.
@@ -785,7 +759,6 @@ class ProcurementItem(BaseModel):
     def coerce_decimal(cls, v: Any) -> Decimal:
         """Coerce to Decimal."""
         return _decimal(v)
-
 
 class Supplier(BaseModel):
     """Supplier master data record.
@@ -821,7 +794,6 @@ class Supplier(BaseModel):
     cdp_respondent: bool = Field(default=False, description="CDP Supply Chain respondent")
     notes: str = Field(default="", description="Free-text notes")
 
-
 class SupplierResponseData(BaseModel):
     """Data submitted by a supplier in response to a data request.
 
@@ -841,7 +813,7 @@ class SupplierResponseData(BaseModel):
     """
     supplier_id: str = Field(..., min_length=1, description="Supplier ID")
     response_id: str = Field(default_factory=_new_uuid, description="Response ID")
-    submitted_at: datetime = Field(default_factory=_utcnow, description="Submission time")
+    submitted_at: datetime = Field(default_factory=utcnow, description="Submission time")
     scope1_tco2e: Optional[Decimal] = Field(default=None, ge=0, description="Scope 1 (tCO2e)")
     scope2_tco2e: Optional[Decimal] = Field(default=None, ge=0, description="Scope 2 (tCO2e)")
     methodology: str = Field(default="", description="Methodology used")
@@ -862,11 +834,9 @@ class SupplierResponseData(BaseModel):
         default_factory=dict, description="Full questionnaire answers"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class SupplierPriority(BaseModel):
     """Supplier prioritisation result.
@@ -898,7 +868,6 @@ class SupplierPriority(BaseModel):
     engagement_status: str = Field(default="not_started", description="Engagement status")
     recommended_action: str = Field(default="", description="Recommended next action")
 
-
 class DataRequest(BaseModel):
     """Generated data request for a supplier.
 
@@ -929,8 +898,7 @@ class DataRequest(BaseModel):
     reminder_schedule: Dict[str, Any] = Field(
         default_factory=dict, description="Reminder schedule"
     )
-    created_at: datetime = Field(default_factory=_utcnow, description="Created timestamp")
-
+    created_at: datetime = Field(default_factory=utcnow, description="Created timestamp")
 
 class QualityScore(BaseModel):
     """Data quality assessment result for a supplier response.
@@ -960,7 +928,6 @@ class QualityScore(BaseModel):
     improvement_areas: List[str] = Field(default_factory=list, description="Improvement areas")
     assessment_notes: List[str] = Field(default_factory=list, description="Assessment notes")
 
-
 class EngagementPlan(BaseModel):
     """Multi-year engagement plan for a supplier.
 
@@ -988,7 +955,6 @@ class EngagementPlan(BaseModel):
     expected_uncertainty_reduction_pct: float = Field(
         default=0.0, ge=0, description="Uncertainty reduction %"
     )
-
 
 class EngagementROI(BaseModel):
     """Return on investment analysis for supplier engagement.
@@ -1018,7 +984,6 @@ class EngagementROI(BaseModel):
     )
     ranking: int = Field(default=0, ge=0, description="ROI ranking")
 
-
 class ReminderSchedule(BaseModel):
     """Scheduled reminders for supplier engagement.
 
@@ -1032,7 +997,6 @@ class ReminderSchedule(BaseModel):
     reminders: List[Dict[str, Any]] = Field(
         default_factory=list, description="Scheduled reminders"
     )
-
 
 class EngagementMetrics(BaseModel):
     """Aggregated engagement metrics across all suppliers.
@@ -1072,7 +1036,6 @@ class EngagementMetrics(BaseModel):
         default_factory=dict, description="YoY improvement"
     )
 
-
 class SupplierEngagementResult(BaseModel):
     """Complete supplier engagement result with provenance.
 
@@ -1092,7 +1055,7 @@ class SupplierEngagementResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid, description="Result ID")
     engine_version: str = Field(default=_MODULE_VERSION, description="Version")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Timestamp")
     processing_time_ms: float = Field(default=0.0, description="Processing time")
     prioritised_suppliers: List[SupplierPriority] = Field(
         default_factory=list, description="Prioritised suppliers"
@@ -1117,11 +1080,9 @@ class SupplierEngagementResult(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class SupplierEngagementEngine:
     """Supplier carbon data engagement engine.
@@ -1284,11 +1245,11 @@ class SupplierEngagementEngine:
             supplier.industry, QUESTIONNAIRE_TEMPLATES[IndustryType.MANUFACTURING]
         )
 
-        due_date = _utcnow() + timedelta(days=due_days)
+        due_date = utcnow() + timedelta(days=due_days)
 
         # Build reminder schedule based on due date.
         reminders: Dict[str, Any] = {}
-        request_date = _utcnow()
+        request_date = utcnow()
         for rtype, days_offset in self._reminder_schedule.items():
             reminder_date = request_date + timedelta(days=days_offset)
             reminders[rtype if isinstance(rtype, str) else rtype.value] = {
@@ -1481,6 +1442,8 @@ class SupplierEngagementEngine:
 
         Builds year-by-year milestones with specific actions to progress
         from the current DQI level to the target level.
+
+from greenlang.schemas import utcnow
 
         Args:
             supplier: Supplier record.
@@ -1691,7 +1654,7 @@ class SupplierEngagementEngine:
             ReminderSchedule with dated reminders.
         """
         t0 = time.perf_counter()
-        base_date = start_date or _utcnow()
+        base_date = start_date or utcnow()
         logger.info("Scheduling reminders for supplier=%s from %s.",
                      engagement_plan.supplier_name, base_date.isoformat())
 
@@ -1981,7 +1944,7 @@ class SupplierEngagementEngine:
         Returns:
             Score from 1 to 5.
         """
-        now = _utcnow()
+        now = utcnow()
         data_age_days = (now - response.submitted_at).days
 
         if data_age_days <= 365:
@@ -2167,7 +2130,6 @@ class SupplierEngagementEngine:
             if key_str == reminder_type:
                 return msg
         return f"Reminder for {supplier_name}: {reminder_type}."
-
 
 # ---------------------------------------------------------------------------
 # Pydantic v2 model_rebuild for forward-reference resolution

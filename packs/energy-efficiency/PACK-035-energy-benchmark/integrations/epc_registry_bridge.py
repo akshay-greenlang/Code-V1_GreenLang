@@ -32,20 +32,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -58,11 +53,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class EPCRegistryRegion(str, Enum):
     """EPC registry regions."""
@@ -85,7 +78,6 @@ class EPCRegistryRegion(str, Enum):
     POLAND = "poland"
     EU_MEMBER_STATES = "eu_member_states"
 
-
 class EPCRating(str, Enum):
     """EPC rating bands."""
 
@@ -98,11 +90,9 @@ class EPCRating(str, Enum):
     F = "F"
     G = "G"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class EPCRegistryConfig(BaseModel):
     """Configuration for the EPC Registry Bridge."""
@@ -113,7 +103,6 @@ class EPCRegistryConfig(BaseModel):
     api_key: str = Field(default="", description="EPC registry API key")
     cache_certificates: bool = Field(default=True)
 
-
 class EPCLookupRequest(BaseModel):
     """Request for EPC certificate lookup."""
 
@@ -123,7 +112,6 @@ class EPCLookupRequest(BaseModel):
     uprn: str = Field(default="")
     address: str = Field(default="")
     postcode: str = Field(default="")
-
 
 class EPCCertificateData(BaseModel):
     """EPC certificate data from a registry lookup."""
@@ -155,11 +143,9 @@ class EPCCertificateData(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # EPCRegistryBridge
 # ---------------------------------------------------------------------------
-
 
 class EPCRegistryBridge:
     """Bridge to EPC registries for certificate data.

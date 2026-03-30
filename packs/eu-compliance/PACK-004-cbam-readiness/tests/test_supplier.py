@@ -15,9 +15,11 @@ from typing import Any, Dict, List
 import pytest
 
 import sys, os
+from greenlang.schemas import utcnow
 sys.path.insert(0, os.path.dirname(__file__))
 
 from conftest import (
+
     StubSupplierPortal,
     _compute_hash,
     _new_uuid,
@@ -98,7 +100,7 @@ class TestEmissionDataFlow:
             "goods_categories": ["steel"],
             "deadline": "2026-03-15",
             "status": "sent",
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
         assert request["status"] == "sent"
         assert request["supplier_id"] == "SUP-TR-001"

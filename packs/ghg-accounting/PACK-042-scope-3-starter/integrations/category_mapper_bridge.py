@@ -35,26 +35,19 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -67,26 +60,23 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Agent Import
 # ---------------------------------------------------------------------------
-
 
 def _try_import_mapper() -> Any:
     """Try to import the MRV-029 Category Mapper agent."""
     try:
         import importlib
+
         return importlib.import_module("greenlang.agents.mrv.scope3_category_mapper")
     except ImportError:
         logger.debug("MRV-029 Category Mapper not available, using built-in rules")
         return None
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ClassificationSource(str, Enum):
     """Source of classification input."""
@@ -99,7 +89,6 @@ class ClassificationSource(str, Enum):
     DESCRIPTION = "description"
     MANUAL = "manual"
 
-
 class ConfidenceLevel(str, Enum):
     """Classification confidence levels."""
 
@@ -107,7 +96,6 @@ class ConfidenceLevel(str, Enum):
     MEDIUM = "medium"
     LOW = "low"
     UNCLASSIFIED = "unclassified"
-
 
 # ---------------------------------------------------------------------------
 # NAICS-to-Scope3 Mapping (representative top-level codes)
@@ -136,11 +124,9 @@ NAICS_TO_SCOPE3: Dict[str, Dict[str, Any]] = {
     "72": {"category": "cat_6", "sector": "Accommodation/Food", "eeio_sector": "721"},
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class ClassificationInput(BaseModel):
     """Input for activity/spend classification."""
@@ -155,7 +141,6 @@ class ClassificationInput(BaseModel):
     spend_usd: float = Field(default=0.0, ge=0.0)
     vendor_name: str = Field(default="")
     vendor_country: str = Field(default="US")
-
 
 class ClassificationResult(BaseModel):
     """Result of activity/spend classification."""
@@ -176,8 +161,7 @@ class ClassificationResult(BaseModel):
     estimated_emissions_tco2e: float = Field(default=0.0)
     warnings: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 class BatchClassificationResult(BaseModel):
     """Result of batch classification."""
@@ -193,13 +177,11 @@ class BatchClassificationResult(BaseModel):
     results: List[ClassificationResult] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
     processing_time_ms: float = Field(default=0.0)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # CategoryMapperBridge
 # ---------------------------------------------------------------------------
-
 
 class CategoryMapperBridge:
     """Bridge to MRV-029 (Scope 3 Category Mapper) agent.

@@ -98,12 +98,13 @@ from typing import Any, Dict, List, Optional, Union
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # Base directory for all pack configuration files
 PACK_BASE_DIR = Path(__file__).resolve().parent.parent
 CONFIG_DIR = Path(__file__).resolve().parent
-
 
 # =============================================================================
 # Constants
@@ -374,21 +375,13 @@ SUPPORTED_PRESETS: Dict[str, str] = {
     "scope_3_extended": "Extended Scope 3 timeline per SBTi guidance with category-level tracking",
 }
 
-
 # =============================================================================
 # Helper Functions
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hash of a string.
@@ -401,11 +394,9 @@ def _compute_hash(data: str) -> str:
     """
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # Enums (10 enums)
 # =============================================================================
-
 
 class SBTiPathwayLevel(str, Enum):
     """SBTi temperature alignment pathway level.
@@ -416,7 +407,6 @@ class SBTiPathwayLevel(str, Enum):
 
     CELSIUS_1_5 = "1.5C"
     WELL_BELOW_2 = "WB2C"
-
 
 class PathwayType(str, Enum):
     """Interim target pathway mathematical model.
@@ -431,14 +421,12 @@ class PathwayType(str, Enum):
     ACCELERATING = "accelerating"
     S_CURVE = "s_curve"
 
-
 class MonitoringFrequency(str, Enum):
     """Progress monitoring and reporting frequency."""
 
     MONTHLY = "monthly"
     QUARTERLY = "quarterly"
     ANNUAL = "annual"
-
 
 class VarianceMethod(str, Enum):
     """Variance analysis decomposition method.
@@ -452,7 +440,6 @@ class VarianceMethod(str, Enum):
     KAYA = "kaya"
     BOTH = "both"
 
-
 class ExtrapolationMethod(str, Enum):
     """Trend extrapolation forecasting method.
 
@@ -465,7 +452,6 @@ class ExtrapolationMethod(str, Enum):
     EXPONENTIAL_SMOOTHING = "exponential_smoothing"
     ARIMA = "arima"
 
-
 class CorrectiveActionTrigger(str, Enum):
     """Performance level that triggers corrective action process.
 
@@ -475,7 +461,6 @@ class CorrectiveActionTrigger(str, Enum):
 
     AMBER = "amber"
     RED = "red"
-
 
 class BudgetAllocationMethod(str, Enum):
     """Carbon budget year-by-year allocation strategy.
@@ -489,14 +474,12 @@ class BudgetAllocationMethod(str, Enum):
     FRONT_LOADED = "front_loaded"
     BACK_LOADED = "back_loaded"
 
-
 class AssuranceLevel(str, Enum):
     """External assurance engagement level for reported interim progress."""
 
     NONE = "none"
     LIMITED = "limited"
     REASONABLE = "reasonable"
-
 
 class ReportingFrequency(str, Enum):
     """External reporting and disclosure frequency."""
@@ -506,7 +489,6 @@ class ReportingFrequency(str, Enum):
     SEMI_ANNUAL = "semi_annual"
     ANNUAL = "annual"
 
-
 class PerformanceScore(str, Enum):
     """Traffic light performance scoring classification."""
 
@@ -514,11 +496,9 @@ class PerformanceScore(str, Enum):
     AMBER = "amber"
     RED = "red"
 
-
 # =============================================================================
 # Pydantic Sub-Config Models (9 models)
 # =============================================================================
-
 
 class InterimTargetConfig(BaseModel):
     """Configuration for a single interim target milestone.
@@ -573,7 +553,6 @@ class InterimTargetConfig(BaseModel):
                 f"Minimum is 2025."
             )
         return v
-
 
 class ScopeConfig(BaseModel):
     """Configuration for emission scope coverage in interim targets.
@@ -657,7 +636,6 @@ class ScopeConfig(BaseModel):
             )
         return sorted(set(v))
 
-
 class MonitoringConfig(BaseModel):
     """Configuration for progress monitoring and performance scoring.
 
@@ -726,7 +704,6 @@ class MonitoringConfig(BaseModel):
             )
         return self
 
-
 class VarianceAnalysisConfig(BaseModel):
     """Configuration for variance analysis and root cause attribution.
 
@@ -785,7 +762,6 @@ class VarianceAnalysisConfig(BaseModel):
                 "Valid levels: %s", invalid, sorted(valid_levels)
             )
         return v
-
 
 class ExtrapolationConfig(BaseModel):
     """Configuration for trend extrapolation and forecasting.
@@ -862,7 +838,6 @@ class ExtrapolationConfig(BaseModel):
             object.__setattr__(self, "min_data_points", method_min)
         return self
 
-
 class CorrectiveActionConfig(BaseModel):
     """Configuration for corrective action planning and execution.
 
@@ -927,7 +902,6 @@ class CorrectiveActionConfig(BaseModel):
         True,
         description="Generate implementation timeline with milestones for corrective actions",
     )
-
 
 class CarbonBudgetConfig(BaseModel):
     """Configuration for carbon budget allocation and tracking.
@@ -994,7 +968,6 @@ class CarbonBudgetConfig(BaseModel):
             )
         return v
 
-
 class SBTiValidationConfig(BaseModel):
     """Configuration for SBTi target validation checks.
 
@@ -1055,7 +1028,6 @@ class SBTiValidationConfig(BaseModel):
                 f"Invalid sbti_commitment_type: {v}. Must be one of: {sorted(valid_types)}"
             )
         return v
-
 
 class ReportingConfig(BaseModel):
     """Configuration for multi-framework reporting and disclosure.
@@ -1126,7 +1098,6 @@ class ReportingConfig(BaseModel):
             )
         return [f.lower() for f in v]
 
-
 class AlertingConfig(BaseModel):
     """Configuration for alerting and notification channels.
 
@@ -1196,7 +1167,6 @@ class AlertingConfig(BaseModel):
             )
         return v
 
-
 class PerformanceConfig(BaseModel):
     """Configuration for runtime performance tuning.
 
@@ -1241,11 +1211,9 @@ class PerformanceConfig(BaseModel):
         description="Memory limit in MB for the calculation pipeline",
     )
 
-
 # =============================================================================
 # Main Configuration Model
 # =============================================================================
-
 
 class InterimTargetsConfig(BaseModel):
     """Main configuration model for PACK-029 Interim Targets Pack.
@@ -1650,11 +1618,9 @@ class InterimTargetsConfig(BaseModel):
             return self.interim_target_5yr.target_year + self.scope.scope_3_lag_years
         return DEFAULT_5YR_TARGET_YEAR + self.scope.scope_3_lag_years
 
-
 # =============================================================================
 # Pack Configuration Wrapper
 # =============================================================================
-
 
 class PackConfig(BaseModel):
     """Top-level pack configuration wrapper for PACK-029.
@@ -1807,11 +1773,9 @@ class PackConfig(BaseModel):
         """
         return InterimTargetsConfig.model_json_schema()
 
-
 # =============================================================================
 # Utility Functions
 # =============================================================================
-
 
 def load_config(yaml_path: Union[str, Path]) -> PackConfig:
     """Load configuration from a YAML file.
@@ -1825,7 +1789,6 @@ def load_config(yaml_path: Union[str, Path]) -> PackConfig:
         PackConfig instance.
     """
     return PackConfig.from_yaml(yaml_path)
-
 
 def load_preset(
     preset_name: str,
@@ -1843,7 +1806,6 @@ def load_preset(
         PackConfig instance with preset applied.
     """
     return PackConfig.from_preset(preset_name, overrides)
-
 
 def get_pathway_defaults(
     pathway: Union[str, SBTiPathwayLevel],
@@ -1890,7 +1852,6 @@ def get_pathway_defaults(
         long_term_reduction_pct=long_term_pct,
     )
 
-
 def _merge_config(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
     """Deep merge two dictionaries, with override taking precedence.
 
@@ -1909,7 +1870,6 @@ def _merge_config(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, A
             result[key] = value
     return result
 
-
 def merge_config(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
     """Public deep merge two dictionaries, with override taking precedence.
 
@@ -1921,7 +1881,6 @@ def merge_config(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, An
         Merged dictionary.
     """
     return _merge_config(base, override)
-
 
 def _get_env_overrides(prefix: str) -> Dict[str, Any]:
     """Load configuration overrides from environment variables.
@@ -1963,7 +1922,6 @@ def _get_env_overrides(prefix: str) -> Dict[str, Any]:
                         current[parts[-1]] = value
     return overrides
 
-
 def get_env_overrides(prefix: str) -> Dict[str, Any]:
     """Public wrapper for loading environment variable overrides.
 
@@ -1974,7 +1932,6 @@ def get_env_overrides(prefix: str) -> Dict[str, Any]:
         Dictionary of parsed overrides.
     """
     return _get_env_overrides(prefix)
-
 
 def validate_config(config: InterimTargetsConfig) -> List[str]:
     """Validate an interim targets configuration and return any warnings.
@@ -2142,7 +2099,6 @@ def validate_config(config: InterimTargetsConfig) -> List[str]:
 
     return warnings
 
-
 def get_sbti_minimums(pathway: Union[str, SBTiPathwayLevel]) -> Dict[str, float]:
     """Get SBTi minimum reduction requirements for a pathway level.
 
@@ -2155,7 +2111,6 @@ def get_sbti_minimums(pathway: Union[str, SBTiPathwayLevel]) -> Dict[str, float]
     key = pathway.value if isinstance(pathway, SBTiPathwayLevel) else pathway
     return SBTI_NEAR_TERM_MINIMUMS.get(key, SBTI_NEAR_TERM_MINIMUMS["1.5C"])
 
-
 def get_sbti_criteria() -> Dict[str, str]:
     """Get all 21 SBTi validation criteria descriptions.
 
@@ -2163,7 +2118,6 @@ def get_sbti_criteria() -> Dict[str, str]:
         Dictionary mapping criteria codes (C01-C21) to descriptions.
     """
     return SBTI_VALIDATION_CRITERIA.copy()
-
 
 def get_performance_score_info(score: Union[str, PerformanceScore]) -> Dict[str, Any]:
     """Get performance score display information.
@@ -2177,7 +2131,6 @@ def get_performance_score_info(score: Union[str, PerformanceScore]) -> Dict[str,
     key = score.value.upper() if isinstance(score, PerformanceScore) else score.upper()
     return PERFORMANCE_SCORES.get(key, PERFORMANCE_SCORES["RED"])
 
-
 def get_root_cause_categories() -> Dict[str, List[str]]:
     """Get the root cause classification taxonomy.
 
@@ -2185,7 +2138,6 @@ def get_root_cause_categories() -> Dict[str, List[str]]:
         Dictionary mapping category names to lists of specific causes.
     """
     return ROOT_CAUSE_CATEGORIES.copy()
-
 
 def get_budget_allocation_info(
     method: Union[str, BudgetAllocationMethod],
@@ -2201,7 +2153,6 @@ def get_budget_allocation_info(
     key = method.value if isinstance(method, BudgetAllocationMethod) else method
     return BUDGET_ALLOCATION_PROFILES.get(key, BUDGET_ALLOCATION_PROFILES["linear"])
 
-
 def get_reporting_framework_info(framework: str) -> Dict[str, str]:
     """Get reporting framework details.
 
@@ -2216,7 +2167,6 @@ def get_reporting_framework_info(framework: str) -> Dict[str, str]:
         {"name": framework, "version": "Unknown", "relevant_sections": "N/A", "disclosure_frequency": "Annual"},
     )
 
-
 def get_extrapolation_model_info(
     method: Union[str, ExtrapolationMethod],
 ) -> Dict[str, Any]:
@@ -2230,7 +2180,6 @@ def get_extrapolation_model_info(
     """
     key = method.value if isinstance(method, ExtrapolationMethod) else method
     return EXTRAPOLATION_MODEL_PARAMS.get(key, EXTRAPOLATION_MODEL_PARAMS["linear"])
-
 
 def get_corrective_action_priority(gap_pct: float) -> Dict[str, Any]:
     """Get corrective action priority level based on gap percentage.
@@ -2250,7 +2199,6 @@ def get_corrective_action_priority(gap_pct: float) -> Dict[str, Any]:
             return {"priority": priority, **params}
     return {"priority": "low", **CORRECTIVE_ACTION_PRIORITIES["low"]}
 
-
 def list_available_presets() -> Dict[str, str]:
     """List all available configuration presets.
 
@@ -2258,7 +2206,6 @@ def list_available_presets() -> Dict[str, str]:
         Dictionary mapping preset names to descriptions.
     """
     return SUPPORTED_PRESETS.copy()
-
 
 def list_sbti_pathways() -> Dict[str, Dict[str, float]]:
     """List all supported SBTi pathway levels with their minimums.
@@ -2268,7 +2215,6 @@ def list_sbti_pathways() -> Dict[str, Dict[str, float]]:
     """
     return SBTI_NEAR_TERM_MINIMUMS.copy()
 
-
 def list_reporting_frameworks() -> Dict[str, str]:
     """List all supported reporting frameworks.
 
@@ -2276,7 +2222,6 @@ def list_reporting_frameworks() -> Dict[str, str]:
         Dictionary mapping framework codes to names.
     """
     return {k: v["name"] for k, v in REPORTING_FRAMEWORK_MAPPING.items()}
-
 
 def list_variance_methods() -> Dict[str, str]:
     """List all supported variance analysis methods.
@@ -2290,7 +2235,6 @@ def list_variance_methods() -> Dict[str, str]:
         "both": "Combined LMDI + Kaya analysis",
     }
 
-
 def list_extrapolation_methods() -> Dict[str, str]:
     """List all supported trend extrapolation methods.
 
@@ -2298,7 +2242,6 @@ def list_extrapolation_methods() -> Dict[str, str]:
         Dictionary mapping method codes to names.
     """
     return {k: v["name"] for k, v in EXTRAPOLATION_MODEL_PARAMS.items()}
-
 
 def list_pathway_types() -> Dict[str, str]:
     """List all supported pathway types.

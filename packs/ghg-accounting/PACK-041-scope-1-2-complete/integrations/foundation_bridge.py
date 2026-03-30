@@ -39,25 +39,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -69,7 +63,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Unit Conversion Tables (deterministic)
@@ -94,11 +87,9 @@ ENERGY_CONVERSIONS: Dict[str, Dict[str, float]] = {
     "ccf_to_therms": {"factor": 1.024, "from": "ccf", "to": "therms"},
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class FoundationConfig(BaseModel):
     """Configuration for Foundation agent routing."""
@@ -109,7 +100,6 @@ class FoundationConfig(BaseModel):
     enable_citations: bool = Field(default=True)
     enable_access_control: bool = Field(default=True)
 
-
 class ValidationResult(BaseModel):
     """Schema validation result."""
 
@@ -118,7 +108,6 @@ class ValidationResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     fields_validated: int = Field(default=0)
     provenance_hash: str = Field(default="")
-
 
 class NormalizationResult(BaseModel):
     """Unit normalization result."""
@@ -130,7 +119,6 @@ class NormalizationResult(BaseModel):
     conversion_factor: float = Field(default=1.0)
     provenance_hash: str = Field(default="")
 
-
 class AssumptionRecord(BaseModel):
     """Registered assumption for audit trail."""
 
@@ -140,9 +128,8 @@ class AssumptionRecord(BaseModel):
     value: str = Field(default="")
     source: str = Field(default="")
     impact: str = Field(default="low")
-    registered_at: datetime = Field(default_factory=_utcnow)
+    registered_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class CitationRecord(BaseModel):
     """Citation and evidence reference."""
@@ -157,7 +144,6 @@ class CitationRecord(BaseModel):
     page_reference: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 class TelemetryEvent(BaseModel):
     """Telemetry event for observability."""
 
@@ -166,13 +152,11 @@ class TelemetryEvent(BaseModel):
     component: str = Field(default="PACK-041")
     message: str = Field(default="")
     metadata: Dict[str, Any] = Field(default_factory=dict)
-    timestamp: datetime = Field(default_factory=_utcnow)
-
+    timestamp: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # FoundationBridge
 # ---------------------------------------------------------------------------
-
 
 class FoundationBridge:
     """Bridge to Foundation agents (FOUND-001 through FOUND-010).

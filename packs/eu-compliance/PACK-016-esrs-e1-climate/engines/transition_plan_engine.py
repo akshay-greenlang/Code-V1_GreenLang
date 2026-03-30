@@ -66,21 +66,13 @@ logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -100,7 +92,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely.
 
@@ -114,7 +105,6 @@ def _decimal(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
 ) -> Decimal:
@@ -122,7 +112,6 @@ def _safe_divide(
     if denominator == Decimal("0"):
         return default
     return numerator / denominator
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value to the specified number of decimal places.
@@ -139,13 +128,11 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
-
 
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
@@ -153,16 +140,13 @@ def _round2(value: float) -> float:
         Decimal("0.01"), rounding=ROUND_HALF_UP
     ))
 
-
 def _round6(value: Decimal) -> Decimal:
     """Round Decimal to 6 decimal places using ROUND_HALF_UP."""
     return value.quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DecarbonizationLever(str, Enum):
     """Decarbonisation levers per ESRS E1-1 and TPT framework.
@@ -181,7 +165,6 @@ class DecarbonizationLever(str, Enum):
     SUPPLY_CHAIN_ENGAGEMENT = "supply_chain_engagement"
     PRODUCT_REDESIGN = "product_redesign"
 
-
 class PlanStatus(str, Enum):
     """Status of the transition plan.
 
@@ -192,7 +175,6 @@ class PlanStatus(str, Enum):
     IN_PROGRESS = "in_progress"
     ON_TRACK = "on_track"
     BEHIND_SCHEDULE = "behind_schedule"
-
 
 class ScenarioAlignment(str, Enum):
     """Climate scenario alignment classification.
@@ -207,7 +189,6 @@ class ScenarioAlignment(str, Enum):
     PARTIALLY_ALIGNED = "partially_aligned"
     ASSESSMENT_PENDING = "assessment_pending"
 
-
 class LockedInEmissionType(str, Enum):
     """Type of locked-in GHG emissions per ESRS E1-1 Para 17.
 
@@ -219,7 +200,6 @@ class LockedInEmissionType(str, Enum):
     CONTRACTUAL_OBLIGATIONS = "contractual_obligations"
     PRODUCT_LIFECYCLE = "product_lifecycle"
 
-
 class TimeHorizon(str, Enum):
     """Time horizon for transition plan actions.
 
@@ -229,11 +209,9 @@ class TimeHorizon(str, Enum):
     MEDIUM_TERM = "medium_term"
     LONG_TERM = "long_term"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # Typical abatement potential ranges by lever (% reduction achievable).
 # These are indicative values from IEA and IPCC literature for
@@ -327,11 +305,9 @@ E1_1_DATAPOINTS: List[str] = [
     "e1_1_18_methodology_description",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class TransitionPlanAction(BaseModel):
     """A single decarbonisation action within the transition plan.
@@ -430,7 +406,6 @@ class TransitionPlanAction(BaseModel):
             )
         return v
 
-
 class LockedInEmission(BaseModel):
     """A locked-in emission source per ESRS E1-1 Para 17.
 
@@ -486,7 +461,6 @@ class LockedInEmission(BaseModel):
     notes: str = Field(
         default="", description="Additional notes", max_length=1000
     )
-
 
 class PlanGapAnalysis(BaseModel):
     """Gap analysis between transition plan and target.
@@ -553,7 +527,6 @@ class PlanGapAnalysis(BaseModel):
         default="", description="SHA-256 hash"
     )
 
-
 class TransitionPlanResult(BaseModel):
     """Complete transition plan result per ESRS E1-1.
 
@@ -597,7 +570,7 @@ class TransitionPlanResult(BaseModel):
         default=_MODULE_VERSION, description="Engine version"
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp"
+        default_factory=utcnow, description="Timestamp"
     )
     reporting_year: int = Field(
         default=0, description="Reporting year"
@@ -676,11 +649,9 @@ class TransitionPlanResult(BaseModel):
         default="", description="SHA-256 provenance hash"
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class TransitionPlanEngine:
     """Transition plan calculation engine per ESRS E1-1.
@@ -871,7 +842,7 @@ class TransitionPlanEngine:
             plan_completeness_score=completeness_score,
             plan_completeness_missing=completeness_missing,
             board_approved=board_approved,
-            last_updated=_utcnow().isoformat(),
+            last_updated=utcnow().isoformat(),
             warnings=warnings,
             processing_time_ms=elapsed_ms,
         )
@@ -993,6 +964,8 @@ class TransitionPlanEngine:
 
         Convenience method that wraps _perform_gap_analysis using data
         from the result.
+
+from greenlang.schemas import utcnow
 
         Args:
             result: TransitionPlanResult to analyse.

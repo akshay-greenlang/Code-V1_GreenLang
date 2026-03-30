@@ -83,25 +83,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -119,7 +113,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -128,7 +121,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -140,22 +132,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class RegressionModelType(str, Enum):
     """Regression model type for M&V baseline.
@@ -174,7 +162,6 @@ class RegressionModelType(str, Enum):
     CP5 = "cp5"
     TOWT = "towt"
 
-
 class DataFrequency(str, Enum):
     """Time-series data frequency for regression.
 
@@ -187,7 +174,6 @@ class DataFrequency(str, Enum):
     DAILY = "daily"
     WEEKLY = "weekly"
     MONTHLY = "monthly"
-
 
 class ValidationGrade(str, Enum):
     """Model validation grade per ASHRAE 14.
@@ -203,7 +189,6 @@ class ValidationGrade(str, Enum):
     ACCEPTABLE = "acceptable"
     MARGINAL = "marginal"
     FAIL = "fail"
-
 
 class ResidualPattern(str, Enum):
     """Residual analysis pattern classification.
@@ -222,7 +207,6 @@ class ResidualPattern(str, Enum):
     CLUSTERED = "clustered"
     AUTOCORRELATED = "autocorrelated"
 
-
 class DiagnosticStatus(str, Enum):
     """Diagnostic check pass / fail status.
 
@@ -235,7 +219,6 @@ class DiagnosticStatus(str, Enum):
     WARNING = "warning"
     FAIL = "fail"
     SKIPPED = "skipped"
-
 
 class VariableRole(str, Enum):
     """Role of an independent variable in the regression.
@@ -255,7 +238,6 @@ class VariableRole(str, Enum):
     SCHEDULE = "schedule"
     TIME_OF_WEEK = "time_of_week"
     CUSTOM = "custom"
-
 
 # ---------------------------------------------------------------------------
 # ASHRAE 14 Validation Thresholds
@@ -284,11 +266,9 @@ ASHRAE14_THRESHOLDS: Dict[str, Dict[str, Decimal]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class IndependentVariable(BaseModel):
     """Definition of an independent variable for regression."""
@@ -306,7 +286,6 @@ class IndependentVariable(BaseModel):
         if isinstance(v, list):
             return [_decimal(x) for x in v]
         return v
-
 
 class RegressionConfig(BaseModel):
     """Configuration for a regression analysis run."""
@@ -348,7 +327,6 @@ class RegressionConfig(BaseModel):
             return [_decimal(x) for x in v]
         return v
 
-
 class CoefficientDetail(BaseModel):
     """Detailed regression coefficient with statistics."""
 
@@ -360,7 +338,6 @@ class CoefficientDetail(BaseModel):
     significant: bool = Field(default=False, description="Significant at alpha=0.05")
     vif: Decimal = Field(default=Decimal("1"), description="Variance Inflation Factor")
 
-
 class ChangePointResult(BaseModel):
     """Change-point search result."""
 
@@ -371,7 +348,6 @@ class ChangePointResult(BaseModel):
     search_max: Decimal = Field(default=Decimal("35"), description="Search upper bound")
     candidates_evaluated: int = Field(default=0, description="Number of candidates tested")
 
-
 class DiagnosticResult(BaseModel):
     """Single diagnostic check result."""
 
@@ -381,7 +357,6 @@ class DiagnosticResult(BaseModel):
     threshold: Optional[Decimal] = Field(None, description="Threshold for pass/fail")
     status: DiagnosticStatus = Field(default=DiagnosticStatus.SKIPPED, description="Status")
     detail: str = Field(default="", description="Additional detail")
-
 
 class RegressionStatistics(BaseModel):
     """Comprehensive regression statistics."""
@@ -403,7 +378,6 @@ class RegressionStatistics(BaseModel):
     durbin_watson: Decimal = Field(default=Decimal("0"), description="Durbin-Watson statistic")
     y_mean: Decimal = Field(default=Decimal("0"), description="Mean of dependent variable")
     y_std: Decimal = Field(default=Decimal("0"), description="Std dev of dependent variable")
-
 
 class RegressionFitResult(BaseModel):
     """Complete regression fit result with provenance."""
@@ -430,11 +404,10 @@ class RegressionFitResult(BaseModel):
     validation_grade: ValidationGrade = Field(
         default=ValidationGrade.FAIL, description="ASHRAE 14 validation grade"
     )
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Timestamp")
     processing_time_ms: Decimal = Field(default=Decimal("0"), description="Processing time")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
     notes: List[str] = Field(default_factory=list, description="Processing notes")
-
 
 class ModelComparisonEntry(BaseModel):
     """Single entry in a model comparison."""
@@ -450,7 +423,6 @@ class ModelComparisonEntry(BaseModel):
     bic: Decimal = Field(default=Decimal("0"), description="Bayesian Information Criterion")
     rank: int = Field(default=0, description="Rank (1 = best)")
 
-
 class ModelComparisonResult(BaseModel):
     """Model comparison across multiple regression types."""
 
@@ -462,15 +434,13 @@ class ModelComparisonResult(BaseModel):
         None, description="Recommended model type"
     )
     recommendation_reason: str = Field(default="", description="Recommendation rationale")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Timestamp")
     processing_time_ms: Decimal = Field(default=Decimal("0"), description="Processing time")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 # ---------------------------------------------------------------------------
 # Linear Algebra Helpers (Pure Python - no numpy)
 # ---------------------------------------------------------------------------
-
 
 def _transpose(matrix: List[List[Decimal]]) -> List[List[Decimal]]:
     """Transpose a 2D matrix."""
@@ -479,7 +449,6 @@ def _transpose(matrix: List[List[Decimal]]) -> List[List[Decimal]]:
     rows = len(matrix)
     cols = len(matrix[0])
     return [[matrix[r][c] for r in range(rows)] for c in range(cols)]
-
 
 def _mat_mult(a: List[List[Decimal]], b: List[List[Decimal]]) -> List[List[Decimal]]:
     """Multiply two 2D matrices (a x b)."""
@@ -495,7 +464,6 @@ def _mat_mult(a: List[List[Decimal]], b: List[List[Decimal]]) -> List[List[Decim
             result[i][j] = s
     return result
 
-
 def _mat_vec_mult(a: List[List[Decimal]], v: List[Decimal]) -> List[Decimal]:
     """Multiply a matrix by a column vector."""
     result = []
@@ -505,7 +473,6 @@ def _mat_vec_mult(a: List[List[Decimal]], v: List[Decimal]) -> List[Decimal]:
             s += val * v[j]
         result.append(s)
     return result
-
 
 def _gauss_jordan_inverse(matrix: List[List[Decimal]]) -> Optional[List[List[Decimal]]]:
     """Invert a square matrix via Gauss-Jordan elimination.
@@ -545,26 +512,21 @@ def _gauss_jordan_inverse(matrix: List[List[Decimal]]) -> Optional[List[List[Dec
     # Extract inverse
     return [row[n:] for row in aug]
 
-
 def _identity(n: int) -> List[List[Decimal]]:
     """Create an n x n identity matrix."""
     return [[Decimal("1") if i == j else Decimal("0") for j in range(n)] for i in range(n)]
-
 
 # ---------------------------------------------------------------------------
 # Statistical Helpers
 # ---------------------------------------------------------------------------
 
-
 def _compute_ss_total(y: List[Decimal], y_mean: Decimal) -> Decimal:
     """Compute total sum of squares."""
     return sum((yi - y_mean) ** 2 for yi in y)
 
-
 def _compute_ss_residual(y: List[Decimal], y_hat: List[Decimal]) -> Decimal:
     """Compute residual sum of squares."""
     return sum((yi - yhi) ** 2 for yi, yhi in zip(y, y_hat))
-
 
 def _compute_rmse(ss_res: Decimal, n: int) -> Decimal:
     """Compute root mean squared error."""
@@ -575,11 +537,9 @@ def _compute_rmse(ss_res: Decimal, n: int) -> Decimal:
         return Decimal("0")
     return _decimal(math.sqrt(float(mse)))
 
-
 def _compute_cvrmse(rmse: Decimal, y_mean: Decimal) -> Decimal:
     """Compute CV(RMSE) in percent."""
     return _safe_pct(rmse, y_mean)
-
 
 def _compute_nmbe(residuals: List[Decimal], y_mean: Decimal, n: int) -> Decimal:
     """Compute NMBE in percent."""
@@ -589,7 +549,6 @@ def _compute_nmbe(residuals: List[Decimal], y_mean: Decimal, n: int) -> Decimal:
         sum(residuals) * Decimal("100"),
         _decimal(n) * y_mean,
     )
-
 
 def _compute_durbin_watson(residuals: List[Decimal]) -> Decimal:
     """Compute Durbin-Watson statistic for autocorrelation."""
@@ -601,7 +560,6 @@ def _compute_durbin_watson(residuals: List[Decimal]) -> Decimal:
     )
     denominator = sum(e ** 2 for e in residuals)
     return _safe_divide(numerator, denominator, Decimal("2"))
-
 
 def _compute_cooks_distance(
     residuals: List[Decimal],
@@ -623,7 +581,6 @@ def _compute_cooks_distance(
             cooks.append(residuals[i] ** 2 * h_ii / denom)
     return cooks
 
-
 def _approximate_p_value(t_stat: Decimal, df: int) -> Decimal:
     """Approximate two-tailed p-value from t-statistic using normal approx.
 
@@ -643,7 +600,6 @@ def _approximate_p_value(t_stat: Decimal, df: int) -> Decimal:
     one_tail = phi * poly
     return _decimal(max(2.0 * one_tail, 0.0001))
 
-
 def _compute_hat_diagonal(
     x_matrix: List[List[Decimal]],
     xtx_inv: List[List[Decimal]],
@@ -660,11 +616,9 @@ def _compute_hat_diagonal(
         hat_diag.append(h_ii)
     return hat_diag
 
-
 # ---------------------------------------------------------------------------
 # Engine Class
 # ---------------------------------------------------------------------------
-
 
 class RegressionEngine:
     """Statistical regression engine for M&V baseline modelling.

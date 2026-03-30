@@ -38,16 +38,9 @@ from pydantic import BaseModel, Field, field_validator
 
 logger = logging.getLogger(__name__)
 
-
 # =============================================================================
 # Utility Helpers
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute a SHA-256 hash of arbitrary data."""
@@ -55,11 +48,9 @@ def _hash_data(data: Any) -> str:
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # Agent Stub
 # =============================================================================
-
 
 class _AgentStub:
     """Deferred agent loader for lazy initialization."""
@@ -92,11 +83,9 @@ class _AgentStub:
         """Whether the agent has been loaded."""
         return self._instance is not None
 
-
 # =============================================================================
 # Enums
 # =============================================================================
-
 
 class TaxonomyObjective(str, Enum):
     """EU Taxonomy environmental objectives."""
@@ -107,13 +96,11 @@ class TaxonomyObjective(str, Enum):
     POLLUTION_PREVENTION = "pollution_prevention"
     BIODIVERSITY_ECOSYSTEMS = "biodiversity_ecosystems"
 
-
 class AlignmentMethodology(str, Enum):
     """Methodology for calculating taxonomy alignment."""
     TURNOVER = "turnover"
     CAPEX = "capex"
     OPEX = "opex"
-
 
 class AlignmentStatus(str, Enum):
     """Alignment status for a holding."""
@@ -122,11 +109,9 @@ class AlignmentStatus(str, Enum):
     NOT_ELIGIBLE = "not_eligible"
     DATA_UNAVAILABLE = "data_unavailable"
 
-
 # =============================================================================
 # Data Models
 # =============================================================================
-
 
 class TaxonomyBridgeConfig(BaseModel):
     """Configuration for the Taxonomy Pack Bridge."""
@@ -158,7 +143,6 @@ class TaxonomyBridgeConfig(BaseModel):
         description="Minimum data quality score to include in calculations",
     )
 
-
 class AlignmentResult(BaseModel):
     """Result of a taxonomy alignment calculation."""
     aligned_pct: float = Field(default=0.0, description="Taxonomy-aligned %")
@@ -178,7 +162,6 @@ class AlignmentResult(BaseModel):
         default="pack_008", description="Data source (pack_008 or estimated)"
     )
 
-
 class EligibilityResult(BaseModel):
     """Result of taxonomy eligibility vs alignment comparison."""
     total_eligible_pct: float = Field(default=0.0, description="Total eligible %")
@@ -191,11 +174,9 @@ class EligibilityResult(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 # =============================================================================
 # Field Mappings
 # =============================================================================
-
 
 FIELD_MAPPINGS: Dict[str, str] = {
     # SFDR field -> PACK-008 field
@@ -232,11 +213,9 @@ FIELD_MAPPINGS: Dict[str, str] = {
     "coverage_pct": "coverage_ratio",
 }
 
-
 # =============================================================================
 # Taxonomy Pack Bridge
 # =============================================================================
-
 
 class TaxonomyPackBridge:
     """Bridge connecting SFDR Article 8 disclosures to PACK-008 taxonomy engines.
@@ -317,7 +296,7 @@ class TaxonomyPackBridge:
             AlignmentResult with alignment and eligibility percentages.
         """
         method = methodology or self.config.alignment_methodology
-        start_time = _utcnow()
+        start_time = utcnow()
 
         # Attempt PACK-008 route
         if self.config.use_pack_008:
@@ -538,7 +517,7 @@ class TaxonomyPackBridge:
             not_eligible_pct=round(100.0 - eligible, 2),
             methodology=method_key,
             holdings_assessed=int(data.get("holdings_assessed", 0)),
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             source="pack_008",
         )
         result.provenance_hash = _hash_data(result.model_dump())
@@ -554,6 +533,8 @@ class TaxonomyPackBridge:
         Used when PACK-008 is not available. Calculates alignment ratios
         from holding-level taxonomy flags.
 
+from greenlang.schemas import utcnow
+
         Args:
             holdings: Portfolio holdings with taxonomy flags.
             methodology: Alignment methodology.
@@ -564,7 +545,7 @@ class TaxonomyPackBridge:
         total_weight = sum(float(h.get("weight", 0.0)) for h in holdings)
         if total_weight <= 0:
             return AlignmentResult(
-                calculated_at=_utcnow().isoformat(),
+                calculated_at=utcnow().isoformat(),
                 source="estimated",
             )
 
@@ -601,7 +582,7 @@ class TaxonomyPackBridge:
             methodology=methodology.value,
             holdings_assessed=len(holdings),
             objective_breakdown=objective_breakdown,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             source="estimated",
         )
         result.provenance_hash = _hash_data(result.model_dump())

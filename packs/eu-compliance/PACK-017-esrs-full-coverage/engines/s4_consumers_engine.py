@@ -52,25 +52,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -90,13 +84,11 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely."""
     if isinstance(value, Decimal):
         return value
     return Decimal(str(value))
-
 
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
@@ -105,7 +97,6 @@ def _safe_divide(
     if denominator == Decimal("0"):
         return default
     return numerator / denominator
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value using ROUND_HALF_UP.
@@ -120,13 +111,11 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
-
 
 def _pct(part: int, total: int) -> Decimal:
     """Calculate percentage as Decimal, rounded to 1 decimal place."""
@@ -136,11 +125,9 @@ def _pct(part: int, total: int) -> Decimal:
         _decimal(part) / _decimal(total) * Decimal("100"), 1
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ConsumerIssue(str, Enum):
     """Material consumer and end-user issues per ESRS S4.
@@ -157,7 +144,6 @@ class ConsumerIssue(str, Enum):
     VULNERABLE_CONSUMERS = "vulnerable_consumers"
     SUSTAINABLE_CONSUMPTION = "sustainable_consumption"
 
-
 class ProductSafetyLevel(str, Enum):
     """Product safety compliance status.
 
@@ -169,7 +155,6 @@ class ProductSafetyLevel(str, Enum):
     NON_COMPLIANT = "non_compliant"
     UNDER_REVIEW = "under_review"
     RECALLED = "recalled"
-
 
 class DataPrivacyFramework(str, Enum):
     """Data privacy regulatory framework applicable to the undertaking.
@@ -183,7 +168,6 @@ class DataPrivacyFramework(str, Enum):
     PIPA = "pipa"
     NONE = "none"
 
-
 class VulnerableGroup(str, Enum):
     """Categories of vulnerable consumer groups per ESRS S4.
 
@@ -196,11 +180,9 @@ class VulnerableGroup(str, Enum):
     DISABLED = "disabled"
     DIGITALLY_EXCLUDED = "digitally_excluded"
 
-
 # ---------------------------------------------------------------------------
 # Constants - S4 Disclosure Requirement Data Points
 # ---------------------------------------------------------------------------
-
 
 S4_1_DATAPOINTS: List[str] = [
     "s4_1_01_policies_covering_consumers",
@@ -254,11 +236,9 @@ ALL_S4_DATAPOINTS: List[str] = (
     + S4_4_DATAPOINTS + S4_5_DATAPOINTS
 )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class ConsumerPolicy(BaseModel):
     """Policy related to consumers and end-users per S4-1 (Para 14-16).
@@ -301,7 +281,6 @@ class ConsumerPolicy(BaseModel):
         max_length=2000,
     )
 
-
 class ConsumerEngagement(BaseModel):
     """Consumer engagement process per S4-2 (Para 18-21).
 
@@ -343,7 +322,6 @@ class ConsumerEngagement(BaseModel):
         default=False,
         description="Whether engagement outcomes are documented and tracked",
     )
-
 
 class ConsumerGrievance(BaseModel):
     """Consumer grievance record per S4-3 (Para 23-26).
@@ -388,7 +366,6 @@ class ConsumerGrievance(BaseModel):
         le=Decimal("10"),
     )
 
-
 class ProductSafetyAssessment(BaseModel):
     """Product safety assessment per S4-4 action tracking.
 
@@ -409,7 +386,7 @@ class ProductSafetyAssessment(BaseModel):
         description="Current safety compliance status",
     )
     assessment_date: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Date of the safety assessment",
     )
     issues_identified: int = Field(
@@ -426,7 +403,6 @@ class ProductSafetyAssessment(BaseModel):
         default=None,
         description="Whether the product primarily affects a vulnerable group",
     )
-
 
 class DataPrivacyAssessment(BaseModel):
     """Data privacy impact assessment per S4-4 action tracking.
@@ -448,7 +424,7 @@ class DataPrivacyAssessment(BaseModel):
         description="Applicable data privacy regulatory framework",
     )
     assessment_date: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Date of the privacy impact assessment",
     )
     data_subjects_count: int = Field(
@@ -470,7 +446,6 @@ class DataPrivacyAssessment(BaseModel):
         description="Whether the assessment found the system compliant",
     )
 
-
 class ConsumerAction(BaseModel):
     """Action taken on material consumer impacts per S4-4 (Para 28-33).
 
@@ -491,7 +466,7 @@ class ConsumerAction(BaseModel):
         description="Consumer issue this action addresses",
     )
     start_date: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Date the action was initiated",
     )
     is_completed: bool = Field(
@@ -514,7 +489,6 @@ class ConsumerAction(BaseModel):
         description="Number of consumers positively affected",
         ge=0,
     )
-
 
 class ConsumerTarget(BaseModel):
     """Target for managing consumer impacts per S4-5 (Para 35-37).
@@ -567,7 +541,6 @@ class ConsumerTarget(BaseModel):
         le=Decimal("100"),
     )
 
-
 class S4ConsumersResult(BaseModel):
     """Complete ESRS S4 disclosure result.
 
@@ -583,7 +556,7 @@ class S4ConsumersResult(BaseModel):
         description="Engine version used for this assessment",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of assessment (UTC)",
     )
     reporting_year: int = Field(
@@ -651,11 +624,9 @@ class S4ConsumersResult(BaseModel):
         description="SHA-256 hash of all inputs and assessment steps",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ConsumersEngine:
     """ESRS S4 Consumers and End-Users assessment engine.

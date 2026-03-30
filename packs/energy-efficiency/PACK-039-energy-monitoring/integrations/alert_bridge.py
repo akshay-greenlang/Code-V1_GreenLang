@@ -51,20 +51,16 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import AlertSeverity
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -77,20 +73,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
-
-class AlertSeverity(str, Enum):
-    """Alert severity levels."""
-
-    INFO = "info"
-    WARNING = "warning"
-    CRITICAL = "critical"
-    EMERGENCY = "emergency"
-
 
 class AlertChannel(str, Enum):
     """Notification delivery channels."""
@@ -100,7 +85,6 @@ class AlertChannel(str, Enum):
     WEBHOOK = "webhook"
     DASHBOARD = "dashboard"
     SLACK = "slack"
-
 
 class AlertType(str, Enum):
     """Types of energy monitoring alerts."""
@@ -114,14 +98,12 @@ class AlertType(str, Enum):
     REPORT_READY = "report_ready"
     SYSTEM_ERROR = "system_error"
 
-
 class EscalationLevel(str, Enum):
     """Alert escalation levels."""
 
     LEVEL_1 = "level_1"
     LEVEL_2 = "level_2"
     LEVEL_3 = "level_3"
-
 
 class AlertResolution(str, Enum):
     """Alert resolution status."""
@@ -132,11 +114,9 @@ class AlertResolution(str, Enum):
     DISMISSED = "dismissed"
     AUTO_RESOLVED = "auto_resolved"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class AlertConfig(BaseModel):
     """Configuration for the Alert Bridge."""
@@ -168,7 +148,6 @@ class AlertConfig(BaseModel):
         description="Alert when data is older than this many minutes",
     )
 
-
 class AlertMessage(BaseModel):
     """An alert message instance."""
 
@@ -179,7 +158,7 @@ class AlertMessage(BaseModel):
     message: str = Field(default="")
     facility_id: str = Field(default="")
     meter_id: str = Field(default="")
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     expires_at: Optional[datetime] = Field(None)
     acknowledged: bool = Field(default=False)
     acknowledged_at: Optional[datetime] = Field(None)
@@ -190,7 +169,6 @@ class AlertMessage(BaseModel):
     resolution: AlertResolution = Field(default=AlertResolution.OPEN)
     metadata: Dict[str, Any] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
-
 
 class EscalationRule(BaseModel):
     """An escalation rule for alert routing."""
@@ -206,7 +184,6 @@ class EscalationRule(BaseModel):
     enabled: bool = Field(default=True)
     description: str = Field(default="")
 
-
 class NotificationResult(BaseModel):
     """Result of sending an alert notification."""
 
@@ -219,7 +196,6 @@ class NotificationResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     escalation_level: EscalationLevel = Field(default=EscalationLevel.LEVEL_1)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Default Escalation Rules
@@ -300,11 +276,9 @@ DEFAULT_ESCALATION_RULES: List[Dict[str, Any]] = [
     },
 ]
 
-
 # ---------------------------------------------------------------------------
 # AlertBridge
 # ---------------------------------------------------------------------------
-
 
 class AlertBridge:
     """Multi-channel alerting for Energy Monitoring Pack.
@@ -404,7 +378,7 @@ class AlertBridge:
             channel=channels[0] if channels else AlertChannel.DASHBOARD,
             success=all_success,
             message=f"Alert sent to {len(channels)} channel(s): {[c.value for c in channels]}",
-            delivered_at=_utcnow() if all_success else None,
+            delivered_at=utcnow() if all_success else None,
             duration_ms=elapsed,
             escalation_level=alert.escalation_level,
         )
@@ -538,7 +512,7 @@ class AlertBridge:
             return False
 
         alert.dismissed = True
-        alert.dismissed_at = _utcnow()
+        alert.dismissed_at = utcnow()
         alert.resolution = AlertResolution.DISMISSED
         self.logger.info("Alert dismissed: %s", alert_id)
         return True
@@ -558,7 +532,7 @@ class AlertBridge:
             return False
 
         alert.acknowledged = True
-        alert.acknowledged_at = _utcnow()
+        alert.acknowledged_at = utcnow()
         alert.acknowledged_by = acknowledged_by
         alert.resolution = AlertResolution.ACKNOWLEDGED
         self.logger.info("Alert acknowledged: %s by %s", alert_id, acknowledged_by or "system")

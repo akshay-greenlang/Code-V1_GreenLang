@@ -29,7 +29,8 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
+from greenlang.schemas import GreenLangBase, utcnow
 
 # ---------------------------------------------------------------------------
 # Re-export Layer 1 enumerations
@@ -69,23 +70,15 @@ from greenlang.agents.foundation.reproducibility_agent import (
     DEFAULT_DRIFT_HARD_THRESHOLD,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # =============================================================================
 # SDK Data Models
 # =============================================================================
 
-
-class ArtifactHash(BaseModel):
+class ArtifactHash(GreenLangBase):
     """Computed hash record for a data artifact.
 
     Stores the deterministic hash of an artifact along with metadata
@@ -107,7 +100,7 @@ class ArtifactHash(BaseModel):
     )
     data_hash: str = Field(..., description="SHA-256 hash of the artifact data")
     computed_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp when the hash was computed"
+        default_factory=utcnow, description="Timestamp when the hash was computed"
     )
     algorithm: str = Field(
         default="sha256", description="Hash algorithm used"
@@ -141,8 +134,7 @@ class ArtifactHash(BaseModel):
             raise ValueError("data_hash must be a valid hex string")
         return v
 
-
-class VerificationRun(BaseModel):
+class VerificationRun(GreenLangBase):
     """Record of a complete verification execution.
 
     Captures the full state and results of a reproducibility
@@ -196,13 +188,12 @@ class VerificationRun(BaseModel):
         default=0.0, description="Duration of verification in milliseconds"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp of the verification run"
+        default_factory=utcnow, description="Timestamp of the verification run"
     )
 
     model_config = {"extra": "forbid"}
 
-
-class DriftBaseline(BaseModel):
+class DriftBaseline(GreenLangBase):
     """Stored baseline for drift detection comparison.
 
     A named snapshot of expected output data used as a reference
@@ -234,10 +225,10 @@ class DriftBaseline(BaseModel):
         default="", description="SHA-256 hash of the baseline data"
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp when the baseline was created"
+        default_factory=utcnow, description="Timestamp when the baseline was created"
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp of the last update"
+        default_factory=utcnow, description="Timestamp of the last update"
     )
     is_active: bool = Field(
         default=True, description="Whether this baseline is currently active"
@@ -253,8 +244,7 @@ class DriftBaseline(BaseModel):
             raise ValueError("name must be non-empty")
         return v
 
-
-class ReplaySession(BaseModel):
+class ReplaySession(GreenLangBase):
     """Record of a replay execution session.
 
     Captures the results of re-executing a previous run with the
@@ -301,7 +291,7 @@ class ReplaySession(BaseModel):
         ..., description="Overall replay verification status"
     )
     started_at: datetime = Field(
-        default_factory=_utcnow, description="Timestamp when the replay started"
+        default_factory=utcnow, description="Timestamp when the replay started"
     )
     completed_at: Optional[datetime] = Field(
         None, description="Timestamp when the replay completed"
@@ -309,8 +299,7 @@ class ReplaySession(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class VerificationStatistics(BaseModel):
+class VerificationStatistics(GreenLangBase):
     """Aggregated statistics for reproducibility verification.
 
     Attributes:
@@ -351,13 +340,11 @@ class VerificationStatistics(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
 # =============================================================================
 # Request / Response Models
 # =============================================================================
 
-
-class HashRequest(BaseModel):
+class HashRequest(GreenLangBase):
     """Request body for computing a deterministic hash.
 
     Attributes:
@@ -376,8 +363,7 @@ class HashRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class HashResponse(BaseModel):
+class HashResponse(GreenLangBase):
     """Response body from a hash computation.
 
     Attributes:
@@ -396,8 +382,7 @@ class HashResponse(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class DriftRequest(BaseModel):
+class DriftRequest(GreenLangBase):
     """Request body for drift detection.
 
     Attributes:
@@ -440,8 +425,7 @@ class DriftRequest(BaseModel):
             raise ValueError("Threshold must be non-negative")
         return v
 
-
-class DriftResponse(BaseModel):
+class DriftResponse(GreenLangBase):
     """Response body from drift detection.
 
     Attributes:
@@ -458,8 +442,7 @@ class DriftResponse(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class ReplayRequest(BaseModel):
+class ReplayRequest(GreenLangBase):
     """Request body for executing a replay.
 
     Attributes:
@@ -502,8 +485,7 @@ class ReplayRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class ReplayResponse(BaseModel):
+class ReplayResponse(GreenLangBase):
     """Response body from a replay execution.
 
     Attributes:
@@ -515,7 +497,6 @@ class ReplayResponse(BaseModel):
     )
 
     model_config = {"extra": "forbid"}
-
 
 __all__ = [
     # Re-exported enums

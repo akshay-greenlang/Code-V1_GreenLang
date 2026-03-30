@@ -47,26 +47,19 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -79,11 +72,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SSOProtocol(str, Enum):
     """Supported SSO protocols."""
@@ -92,7 +83,6 @@ class SSOProtocol(str, Enum):
     OAUTH = "oauth"
     OIDC = "oidc"
     SCIM = "scim"
-
 
 class AuthStatus(str, Enum):
     """Authentication result status."""
@@ -103,7 +93,6 @@ class AuthStatus(str, Enum):
     ACCOUNT_LOCKED = "account_locked"
     EXPIRED = "expired"
 
-
 class SyncAction(str, Enum):
     """SCIM synchronization actions."""
 
@@ -112,11 +101,9 @@ class SyncAction(str, Enum):
     DEACTIVATED = "deactivated"
     NO_CHANGE = "no_change"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class SAMLConfig(BaseModel):
     """SAML 2.0 configuration for a tenant."""
@@ -138,9 +125,8 @@ class SAMLConfig(BaseModel):
     sign_requests: bool = Field(default=True)
     want_assertions_signed: bool = Field(default=True)
     enabled: bool = Field(default=True)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class OAuthConfig(BaseModel):
     """OAuth 2.0 / OIDC configuration for a tenant."""
@@ -156,9 +142,8 @@ class OAuthConfig(BaseModel):
     userinfo_endpoint: Optional[str] = Field(None)
     redirect_uri: Optional[str] = Field(None)
     enabled: bool = Field(default=True)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class SCIMConfig(BaseModel):
     """SCIM 2.0 configuration for user provisioning."""
@@ -171,9 +156,8 @@ class SCIMConfig(BaseModel):
     auto_deactivate: bool = Field(default=True)
     group_filter: Optional[str] = Field(None)
     enabled: bool = Field(default=True)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class UserProfile(BaseModel):
     """User profile created via SSO or SCIM provisioning."""
@@ -190,9 +174,8 @@ class UserProfile(BaseModel):
     is_active: bool = Field(default=True)
     last_login_at: Optional[datetime] = Field(None)
     provisioned_via: str = Field(default="manual")
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class AuthResult(BaseModel):
     """Result of an authentication attempt."""
@@ -208,9 +191,8 @@ class AuthResult(BaseModel):
     idp_groups: List[str] = Field(default_factory=list)
     csrd_roles: List[str] = Field(default_factory=list)
     error_message: Optional[str] = Field(None)
-    authenticated_at: datetime = Field(default_factory=_utcnow)
+    authenticated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class SyncResult(BaseModel):
     """Result of SCIM user synchronization."""
@@ -224,14 +206,12 @@ class SyncResult(BaseModel):
     total_users_synced: int = Field(default=0)
     errors: List[str] = Field(default_factory=list)
     sync_duration_ms: float = Field(default=0.0)
-    synced_at: datetime = Field(default_factory=_utcnow)
+    synced_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Default CSRD Role Mappings
 # ---------------------------------------------------------------------------
-
 
 DEFAULT_GROUP_ROLE_MAPPING: Dict[str, List[str]] = {
     "csrd-admin": ["admin", "approver", "reviewer", "preparer", "viewer"],
@@ -243,11 +223,9 @@ DEFAULT_GROUP_ROLE_MAPPING: Dict[str, List[str]] = {
     "csrd-data-steward": ["data_steward", "preparer", "viewer"],
 }
 
-
 # ---------------------------------------------------------------------------
 # SSOBridge
 # ---------------------------------------------------------------------------
-
 
 class SSOBridge:
     """Unified SSO bridge for CSRD Enterprise Pack.
@@ -521,7 +499,7 @@ class SSOBridge:
             },
         )
 
-        session_token = _compute_hash(f"saml:{tenant_id}:{email}:{_utcnow().isoformat()}")
+        session_token = _compute_hash(f"saml:{tenant_id}:{email}:{utcnow().isoformat()}")
 
         return AuthResult(
             tenant_id=tenant_id,
@@ -569,7 +547,7 @@ class SSOBridge:
             },
         )
 
-        session_token = _compute_hash(f"oauth:{tenant_id}:{email}:{_utcnow().isoformat()}")
+        session_token = _compute_hash(f"oauth:{tenant_id}:{email}:{utcnow().isoformat()}")
 
         return AuthResult(
             tenant_id=tenant_id,
@@ -612,7 +590,7 @@ class SSOBridge:
             existing.last_name = user_attributes.get("last_name", existing.last_name)
             existing.idp_groups = user_attributes.get("idp_groups", existing.idp_groups)
             existing.csrd_roles = self._resolve_roles(tenant_id, existing.idp_groups)
-            existing.last_login_at = _utcnow()
+            existing.last_login_at = utcnow()
             existing.provenance_hash = _compute_hash(existing)
             return existing
 
@@ -630,7 +608,7 @@ class SSOBridge:
             idp_groups=groups,
             csrd_roles=csrd_roles,
             provisioned_via=user_attributes.get("provisioned_via", "jit"),
-            last_login_at=_utcnow(),
+            last_login_at=utcnow(),
         )
         user.provenance_hash = _compute_hash(user)
         self._users[tenant_id][user.user_id] = user
@@ -715,7 +693,7 @@ class SSOBridge:
         return {
             "tenant_id": tenant_id,
             "mappings": dict(self._role_mappings.get(tenant_id, {})),
-            "updated_at": _utcnow().isoformat(),
+            "updated_at": utcnow().isoformat(),
             "provenance_hash": _compute_hash(self._role_mappings.get(tenant_id, {})),
         }
 
@@ -756,7 +734,7 @@ class SSOBridge:
             "total_users": len(self._users.get(tenant_id, {})),
             "active_sessions": len(self._sessions.get(tenant_id, {})),
             "role_mappings_count": len(self._role_mappings.get(tenant_id, {})),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     def revoke_sso_session(
@@ -781,7 +759,7 @@ class SSOBridge:
                 "tenant_id": tenant_id,
                 "user_id": user_id,
                 "revoked": True,
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }
 
         return {
@@ -853,5 +831,5 @@ class SSOBridge:
                 "session_token": auth_result.session_token,
                 "email": auth_result.email,
                 "protocol": auth_result.protocol.value,
-                "created_at": _utcnow().isoformat(),
+                "created_at": utcnow().isoformat(),
             }

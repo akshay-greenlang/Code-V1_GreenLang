@@ -55,25 +55,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -93,7 +87,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely.
 
@@ -107,7 +100,6 @@ def _decimal(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _safe_divide(
     numerator: float, denominator: float, default: float = 0.0
 ) -> float:
@@ -116,13 +108,11 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(numerator: float, denominator: float) -> float:
     """Calculate percentage safely, returning 0.0 on zero denominator."""
     if denominator == 0.0:
         return 0.0
     return (numerator / denominator) * 100.0
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value to the specified number of decimal places.
@@ -139,13 +129,11 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(
         Decimal("0.001"), rounding=ROUND_HALF_UP
     ))
-
 
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
@@ -153,11 +141,9 @@ def _round2(value: float) -> float:
         Decimal("0.01"), rounding=ROUND_HALF_UP
     ))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class TimeHorizon(str, Enum):
     """Time horizon for financial materiality assessment.
@@ -168,7 +154,6 @@ class TimeHorizon(str, Enum):
     SHORT_TERM = "short_term"
     MEDIUM_TERM = "medium_term"
     LONG_TERM = "long_term"
-
 
 class FinancialMagnitude(int, Enum):
     """Magnitude of potential financial effect (1-5 scale).
@@ -182,7 +167,6 @@ class FinancialMagnitude(int, Enum):
     SIGNIFICANT = 4
     CRITICAL = 5
 
-
 class FinancialLikelihood(int, Enum):
     """Likelihood of the financial effect materialising (1-5 scale).
 
@@ -194,7 +178,6 @@ class FinancialLikelihood(int, Enum):
     POSSIBLE = 3
     LIKELY = 4
     VERY_LIKELY = 5
-
 
 class AffectedResource(str, Enum):
     """Financial resource or metric affected by the sustainability matter.
@@ -210,7 +193,6 @@ class AffectedResource(str, Enum):
     CAPITAL = "capital"
     ACCESS_TO_FINANCE = "access_to_finance"
 
-
 class RiskOrOpportunity(str, Enum):
     """Whether the matter represents a risk, opportunity, or both.
 
@@ -221,7 +203,6 @@ class RiskOrOpportunity(str, Enum):
     RISK = "risk"
     OPPORTUNITY = "opportunity"
     BOTH = "both"
-
 
 class ESRSTopic(str, Enum):
     """ESRS sustainability topics (duplicated for self-contained engine)."""
@@ -236,11 +217,9 @@ class ESRSTopic(str, Enum):
     S4_CONSUMERS = "s4_consumers"
     G1_BUSINESS_CONDUCT = "g1_business_conduct"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # Time horizon weights for financial materiality.
 # Nearer-term financial effects carry more weight because they are
@@ -375,11 +354,9 @@ RESOURCE_DESCRIPTIONS: Dict[str, str] = {
     "access_to_finance": "Impact on ability to raise debt or equity",
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class FinancialImpact(BaseModel):
     """Input data for financial materiality assessment of a matter.
@@ -454,7 +431,6 @@ class FinancialImpact(BaseModel):
             raise ValueError(f"Score must be between 1 and 5, got {v}")
         return v
 
-
 class FinancialMaterialityResult(BaseModel):
     """Result of financial materiality assessment for a single matter.
 
@@ -471,7 +447,7 @@ class FinancialMaterialityResult(BaseModel):
         description="Engine version used for this calculation",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of calculation (UTC)",
     )
     matter_id: str = Field(
@@ -555,7 +531,6 @@ class FinancialMaterialityResult(BaseModel):
         description="SHA-256 hash of all inputs and calculation steps",
     )
 
-
 class BatchFinancialResult(BaseModel):
     """Result of batch financial materiality assessment.
 
@@ -571,7 +546,7 @@ class BatchFinancialResult(BaseModel):
         description="Engine version used for this batch",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of batch calculation (UTC)",
     )
     total_matters: int = Field(
@@ -627,11 +602,9 @@ class BatchFinancialResult(BaseModel):
         description="SHA-256 hash of the entire batch result",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class FinancialMaterialityEngine:
     """Financial materiality scoring engine per ESRS 1 Para 49-51.

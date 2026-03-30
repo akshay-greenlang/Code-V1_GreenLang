@@ -32,21 +32,15 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -58,7 +52,6 @@ def _compute_hash(data: Any) -> str:
         serializable = str(data)
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 class _AgentStub:
     """Stub for unavailable agent modules."""
@@ -72,11 +65,9 @@ class _AgentStub:
             return {"agent": self._agent_name, "method": name, "status": "degraded"}
         return _stub_method
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class TaxonomyObjective(str, Enum):
     """EU Taxonomy environmental objectives."""
@@ -88,14 +79,12 @@ class TaxonomyObjective(str, Enum):
     POLLUTION = "pollution_prevention"
     BIODIVERSITY = "biodiversity_and_ecosystems"
 
-
 class AlignmentLevel(str, Enum):
     """Taxonomy alignment assessment level."""
 
     ALIGNED = "aligned"
     ELIGIBLE_NOT_ALIGNED = "eligible_not_aligned"
     NOT_ELIGIBLE = "not_eligible"
-
 
 class CriterionStatus(str, Enum):
     """Status of a SC or DNSH criterion evaluation."""
@@ -105,11 +94,9 @@ class CriterionStatus(str, Enum):
     NOT_APPLICABLE = "not_applicable"
     DATA_INSUFFICIENT = "data_insufficient"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class RetailNACEActivity(BaseModel):
     """A retail NACE activity eligible for Taxonomy assessment."""
@@ -119,7 +106,6 @@ class RetailNACEActivity(BaseModel):
     description: str = Field(default="")
     taxonomy_eligible: bool = Field(default=True)
     applicable_objectives: List[TaxonomyObjective] = Field(default_factory=list)
-
 
 class SCCriterion(BaseModel):
     """Substantial Contribution criterion for a Taxonomy objective."""
@@ -133,7 +119,6 @@ class SCCriterion(BaseModel):
     actual_value: Optional[float] = Field(None)
     met: bool = Field(default=False)
 
-
 class DNSHCriterion(BaseModel):
     """Do No Significant Harm criterion."""
 
@@ -142,7 +127,6 @@ class DNSHCriterion(BaseModel):
     description: str = Field(default="")
     status: CriterionStatus = Field(default=CriterionStatus.DATA_INSUFFICIENT)
     met: bool = Field(default=False)
-
 
 class TaxonomyAssessmentResult(BaseModel):
     """Result of a Taxonomy alignment assessment for a retail activity."""
@@ -165,7 +149,6 @@ class TaxonomyAssessmentResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class TaxonomyBridgeConfig(BaseModel):
     """Configuration for the Taxonomy Bridge."""
 
@@ -173,7 +156,6 @@ class TaxonomyBridgeConfig(BaseModel):
     enable_provenance: bool = Field(default=True)
     reporting_year: int = Field(default=2025)
     include_voluntary_objectives: bool = Field(default=False)
-
 
 # ---------------------------------------------------------------------------
 # Retail NACE Activity Definitions
@@ -267,11 +249,9 @@ RETAIL_DNSH_CRITERIA: Dict[TaxonomyObjective, List[Dict[str, str]]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # TaxonomyBridge
 # ---------------------------------------------------------------------------
-
 
 class TaxonomyBridge:
     """EU Taxonomy alignment assessment for retail activities.
@@ -294,6 +274,7 @@ class TaxonomyBridge:
         self._taxonomy_app = _AgentStub("GL-Taxonomy-APP")
         try:
             import importlib
+
             self._taxonomy_app = importlib.import_module("greenlang.apps.taxonomy")
         except ImportError:
             pass

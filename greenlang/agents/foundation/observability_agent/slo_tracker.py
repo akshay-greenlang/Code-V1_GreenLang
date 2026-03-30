@@ -46,18 +46,13 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -76,11 +71,9 @@ DEFAULT_BURN_RATE_THRESHOLDS: List[Dict[str, Any]] = [
     {"burn_rate": 1.0, "long_window_min": 4320, "short_window_min": 360, "severity": "log"},
 ]
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class BurnRateThreshold:
@@ -97,7 +90,6 @@ class BurnRateThreshold:
     long_window_minutes: int = 60
     short_window_minutes: int = 5
     severity: str = "ticket"
-
 
 @dataclass
 class SLODefinition:
@@ -133,8 +125,8 @@ class SLODefinition:
     metric_total: str = ""
     metric_labels: Dict[str, str] = field(default_factory=dict)
     enabled: bool = True
-    created_at: datetime = field(default_factory=_utcnow)
-    updated_at: datetime = field(default_factory=_utcnow)
+    created_at: datetime = field(default_factory=utcnow)
+    updated_at: datetime = field(default_factory=utcnow)
     provenance_hash: str = ""
 
     def __post_init__(self) -> None:
@@ -145,7 +137,6 @@ class SLODefinition:
             self.burn_rate_thresholds = [
                 BurnRateThreshold(**t) for t in DEFAULT_BURN_RATE_THRESHOLDS
             ]
-
 
 @dataclass
 class SLOStatus:
@@ -186,14 +177,12 @@ class SLOStatus:
     burn_rate_1h: float = 0.0
     burn_rate_6h: float = 0.0
     burn_rate_24h: float = 0.0
-    evaluated_at: datetime = field(default_factory=_utcnow)
+    evaluated_at: datetime = field(default_factory=utcnow)
     provenance_hash: str = ""
-
 
 # =============================================================================
 # SLOTracker
 # =============================================================================
-
 
 class SLOTracker:
     """SLO/SLI tracking engine with Google SRE burn-rate alerting.
@@ -363,7 +352,7 @@ class SLOTracker:
 
                 setattr(slo, key, value)
 
-            slo.updated_at = _utcnow()
+            slo.updated_at = utcnow()
             slo.provenance_hash = self._compute_slo_hash(slo)
 
         logger.info("Updated SLO: id=%s, fields=%s", slo_id[:8], list(updates.keys()))
@@ -456,7 +445,7 @@ class SLOTracker:
         burn_rate_6h = self.calculate_burn_rate(slo_id, window_minutes=360)
         burn_rate_24h = self.calculate_burn_rate(slo_id, window_minutes=1440)
 
-        now = _utcnow()
+        now = utcnow()
         status = SLOStatus(
             slo_id=slo.slo_id,
             slo_name=slo.name,
@@ -580,7 +569,7 @@ class SLOTracker:
                 return []
 
         alerts: List[Dict[str, Any]] = []
-        now = _utcnow()
+        now = utcnow()
 
         for threshold in slo.burn_rate_thresholds:
             long_burn = self.calculate_burn_rate(slo_id, threshold.long_window_minutes)
@@ -914,7 +903,6 @@ class SLOTracker:
             ensure_ascii=True,
         )
         return hashlib.sha256(payload.encode("utf-8")).hexdigest()
-
 
 __all__ = [
     "SLOTracker",

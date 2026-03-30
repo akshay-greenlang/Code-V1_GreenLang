@@ -79,6 +79,7 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, AsyncIterator, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -259,21 +260,13 @@ try:
 except ImportError:
     AuditRecorder = None  # type: ignore[misc,assignment]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute deterministic SHA-256 hash for provenance."""
@@ -281,7 +274,6 @@ def _compute_hash(data: Any) -> str:
         data, sort_keys=True, separators=(",", ":"), default=str
     )
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-
 
 def _safe_record(metric_fn: Any, *args: Any) -> None:
     """Safely call a metrics function if available."""
@@ -291,7 +283,6 @@ def _safe_record(metric_fn: Any, *args: Any) -> None:
         except Exception:
             pass
 
-
 def _safe_observe(metric_fn: Any, *args: Any) -> None:
     """Safely observe a histogram metric if available."""
     if metric_fn is not None:
@@ -299,7 +290,6 @@ def _safe_observe(metric_fn: Any, *args: Any) -> None:
             metric_fn(*args)
         except Exception:
             pass
-
 
 def _safe_gauge(metric_fn: Any, value: Any) -> None:
     """Safely set a gauge metric if available."""
@@ -309,11 +299,9 @@ def _safe_gauge(metric_fn: Any, value: Any) -> None:
         except Exception:
             pass
 
-
 # ---------------------------------------------------------------------------
 # Service Facade
 # ---------------------------------------------------------------------------
-
 
 class EUInformationSystemInterfaceService:
     """Unified service facade for AGENT-EUDR-036.
@@ -563,7 +551,7 @@ class EUInformationSystemInterfaceService:
             "dds_type": dds_type,
             "status": "draft",
             "commodity_lines": commodity_lines,
-            "created_at": _utcnow().isoformat(),
+            "created_at": utcnow().isoformat(),
         }
         self._dds_store[dds_id] = dds
         _safe_gauge(set_pending_dds, len(self._dds_store))
@@ -857,7 +845,7 @@ class EUInformationSystemInterfaceService:
                 "submissions": len(self._submission_store),
                 "packages": len(self._package_store),
             },
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
         # Check database
@@ -942,14 +930,12 @@ class EUInformationSystemInterfaceService:
         """Return the number of operators in memory."""
         return len(self._operator_store)
 
-
 # ---------------------------------------------------------------------------
 # Thread-safe singleton
 # ---------------------------------------------------------------------------
 
 _service_lock = threading.Lock()
 _service_instance: Optional[EUInformationSystemInterfaceService] = None
-
 
 def get_service(
     config: Optional[EUInformationSystemInterfaceConfig] = None,
@@ -971,18 +957,15 @@ def get_service(
                 _service_instance = EUInformationSystemInterfaceService(config)
     return _service_instance
 
-
 def reset_service() -> None:
     """Reset the global service singleton to None (testing only)."""
     global _service_instance
     with _service_lock:
         _service_instance = None
 
-
 # ---------------------------------------------------------------------------
 # FastAPI lifespan context manager
 # ---------------------------------------------------------------------------
-
 
 @asynccontextmanager
 async def lifespan(app: Any) -> AsyncIterator[None]:

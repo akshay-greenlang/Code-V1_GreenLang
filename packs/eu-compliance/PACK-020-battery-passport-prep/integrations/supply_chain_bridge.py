@@ -42,25 +42,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -73,11 +67,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SupplierTier(str, Enum):
     """Supplier tier classification in the battery supply chain."""
@@ -87,7 +79,6 @@ class SupplierTier(str, Enum):
     TIER_3 = "tier_3"
     TIER_4_MINE = "tier_4_mine"
     UNKNOWN = "unknown"
-
 
 class CriticalMineral(str, Enum):
     """Critical raw materials for batteries (Battery Reg Annex X)."""
@@ -99,7 +90,6 @@ class CriticalMineral(str, Enum):
     MANGANESE = "manganese"
     COPPER = "copper"
 
-
 class RiskLevel(str, Enum):
     """Supply chain risk levels per OECD Guidance."""
 
@@ -109,7 +99,6 @@ class RiskLevel(str, Enum):
     NEGLIGIBLE = "negligible"
     NOT_ASSESSED = "not_assessed"
 
-
 class DDComplianceStatus(str, Enum):
     """Due diligence compliance status."""
 
@@ -118,11 +107,9 @@ class DDComplianceStatus(str, Enum):
     NON_COMPLIANT = "non_compliant"
     NOT_ASSESSED = "not_assessed"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class SupplyChainBridgeConfig(BaseModel):
     """Configuration for the Supply Chain Bridge."""
@@ -144,7 +131,6 @@ class SupplyChainBridgeConfig(BaseModel):
         ]
     )
 
-
 class SupplierRecord(BaseModel):
     """Individual supplier record in the battery supply chain."""
 
@@ -158,7 +144,6 @@ class SupplierRecord(BaseModel):
     is_cahra_origin: bool = Field(default=False)
     audit_date: Optional[str] = Field(None)
     certification_scheme: Optional[str] = Field(None)
-
 
 class SupplierDataResult(BaseModel):
     """Result of supplier data retrieval."""
@@ -177,7 +162,6 @@ class SupplierDataResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class MineralSupplyChainResult(BaseModel):
     """Result of mineral supply chain mapping."""
 
@@ -188,7 +172,6 @@ class MineralSupplyChainResult(BaseModel):
     cahra_suppliers_by_mineral: Dict[str, int] = Field(default_factory=dict)
     risk_summary: Dict[str, Dict[str, int]] = Field(default_factory=dict)
     provenance_hash: str = Field(default="")
-
 
 class SupplierRiskResult(BaseModel):
     """Result of supplier risk assessment."""
@@ -205,7 +188,6 @@ class SupplierRiskResult(BaseModel):
     mitigation_recommendations: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class TierBreakdownResult(BaseModel):
     """Result of supply chain tier breakdown."""
 
@@ -216,7 +198,6 @@ class TierBreakdownResult(BaseModel):
     deepest_tier: str = Field(default="")
     mine_of_origin_identified: bool = Field(default=False)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Country risk classification (OECD CAHRA-relevant)
@@ -246,11 +227,9 @@ MINERAL_COUNTRY_RISK: Dict[str, Dict[str, str]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # SupplyChainBridge
 # ---------------------------------------------------------------------------
-
 
 class SupplyChainBridge:
     """Battery supply chain due diligence bridge for PACK-020.
@@ -293,7 +272,7 @@ class SupplyChainBridge:
         Returns:
             SupplierDataResult with classified supplier records.
         """
-        result = SupplierDataResult(started_at=_utcnow())
+        result = SupplierDataResult(started_at=utcnow())
 
         try:
             raw_suppliers = context.get("supplier_records", [])
@@ -349,7 +328,7 @@ class SupplyChainBridge:
             result.errors.append(str(exc))
             logger.error("Supplier data retrieval failed: %s", str(exc))
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         if result.started_at:
             result.duration_ms = (
                 result.completed_at - result.started_at

@@ -46,7 +46,9 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ExecutionStatus
 
 # ---------------------------------------------------------------------------
 # Layer 1 Re-exports (best-effort with stubs on ImportError)
@@ -84,7 +86,6 @@ except ImportError:  # pragma: no cover
         CUSTOM = "custom"
         FRESHNESS = "freshness"
 
-
 try:
     from greenlang.agents.foundation.schema_compiler import (  # type: ignore[import]
         SchemaCompilerEngine as L1SchemaCompilerEngine,
@@ -96,16 +97,9 @@ except ImportError:  # pragma: no cover
     _SC_AVAILABLE = False
     SchemaCompilerEngine = None  # type: ignore[assignment,misc]
 
-
 # ---------------------------------------------------------------------------
 # Helper
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -157,11 +151,9 @@ _SEMVER_RE: re.Pattern = re.compile(
 #: Pattern for valid namespace strings (alphanumeric, hyphens, dots).
 _NAMESPACE_RE: re.Pattern = re.compile(r"^[a-zA-Z0-9]([a-zA-Z0-9\-\.]*[a-zA-Z0-9])?$")
 
-
 # =============================================================================
 # Enumerations (14)
 # =============================================================================
-
 
 class SchemaType(str, Enum):
     """Schema serialization format for a registered schema.
@@ -173,7 +165,6 @@ class SchemaType(str, Enum):
     JSON_SCHEMA = "json_schema"
     AVRO = "avro"
     PROTOBUF = "protobuf"
-
 
 class SchemaStatus(str, Enum):
     """Lifecycle status of a schema definition in the registry.
@@ -192,7 +183,6 @@ class SchemaStatus(str, Enum):
     DEPRECATED = "deprecated"
     ARCHIVED = "archived"
 
-
 class ChangeType(str, Enum):
     """Type of structural change detected between two schema versions.
 
@@ -209,7 +199,6 @@ class ChangeType(str, Enum):
     ENUM_CHANGED = "enum_changed"
     DEFAULT_CHANGED = "default_changed"
 
-
 class ChangeSeverity(str, Enum):
     """Severity classification for a schema change.
 
@@ -224,7 +213,6 @@ class ChangeSeverity(str, Enum):
     BREAKING = "breaking"
     NON_BREAKING = "non_breaking"
     COSMETIC = "cosmetic"
-
 
 class CompatibilityLevel(str, Enum):
     """Result of a compatibility check between two schema versions.
@@ -241,7 +229,6 @@ class CompatibilityLevel(str, Enum):
     FULL = "full"
     BREAKING = "breaking"
     NONE = "none"
-
 
 class MigrationPlanStatus(str, Enum):
     """Lifecycle status of a migration plan.
@@ -263,26 +250,6 @@ class MigrationPlanStatus(str, Enum):
     FAILED = "failed"
     ROLLED_BACK = "rolled_back"
 
-
-class ExecutionStatus(str, Enum):
-    """Status of a single migration execution run.
-
-    PENDING: Execution has been queued but not started.
-    RUNNING: Execution is actively processing records.
-    COMPLETED: Execution finished without errors.
-    FAILED: Execution stopped due to an unrecoverable error.
-    ROLLED_BACK: Execution was reversed via rollback procedure.
-    TIMED_OUT: Execution exceeded the configured timeout.
-    """
-
-    PENDING = "pending"
-    RUNNING = "running"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    ROLLED_BACK = "rolled_back"
-    TIMED_OUT = "timed_out"
-
-
 class RollbackType(str, Enum):
     """Scope of a rollback operation.
 
@@ -294,7 +261,6 @@ class RollbackType(str, Enum):
     FULL = "full"
     PARTIAL = "partial"
     CHECKPOINT = "checkpoint"
-
 
 class RollbackStatus(str, Enum):
     """Status of a rollback operation.
@@ -309,7 +275,6 @@ class RollbackStatus(str, Enum):
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
-
 
 class DriftType(str, Enum):
     """Category of schema drift detected in a live dataset.
@@ -327,7 +292,6 @@ class DriftType(str, Enum):
     CONSTRAINT_VIOLATION = "constraint_violation"
     ENUM_VIOLATION = "enum_violation"
 
-
 class DriftSeverity(str, Enum):
     """Severity classification for a schema drift event.
 
@@ -341,7 +305,6 @@ class DriftSeverity(str, Enum):
     MEDIUM = "medium"
     HIGH = "high"
     CRITICAL = "critical"
-
 
 class MappingType(str, Enum):
     """Method by which a source field was mapped to a target field.
@@ -357,7 +320,6 @@ class MappingType(str, Enum):
     COMPUTED = "computed"
     MANUAL = "manual"
 
-
 class EffortLevel(str, Enum):
     """Estimated implementation effort for a migration plan.
 
@@ -371,7 +333,6 @@ class EffortLevel(str, Enum):
     MEDIUM = "medium"
     HIGH = "high"
     CRITICAL = "critical"
-
 
 class TransformationType(str, Enum):
     """Type of data transformation applied in a migration step.
@@ -395,13 +356,11 @@ class TransformationType(str, Enum):
     REMOVE_FIELD = "remove_field"
     ADD_FIELD = "add_field"
 
-
 # =============================================================================
 # SDK Data Models (16)
 # =============================================================================
 
-
-class SchemaDefinition(BaseModel):
+class SchemaDefinition(GreenLangBase):
     """A registered schema definition in the Schema Migration Agent registry.
 
     Represents the top-level schema entity that groups all versions under
@@ -464,7 +423,7 @@ class SchemaDefinition(BaseModel):
         description="The initial schema definition as a JSON-serializable dict",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the schema was first registered",
     )
 
@@ -493,8 +452,7 @@ class SchemaDefinition(BaseModel):
             raise ValueError("name must not exceed 255 characters")
         return v
 
-
-class SchemaVersion(BaseModel):
+class SchemaVersion(GreenLangBase):
     """A versioned snapshot of a schema definition.
 
     Each time a schema is updated, a new SchemaVersion is created.
@@ -551,7 +509,7 @@ class SchemaVersion(BaseModel):
         description="Actor (user or service) that created this version",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the version was registered",
     )
 
@@ -577,8 +535,7 @@ class SchemaVersion(BaseModel):
             )
         return v
 
-
-class SchemaChange(BaseModel):
+class SchemaChange(GreenLangBase):
     """A single structural change detected between two schema versions.
 
     Produced by the change detection engine when comparing a source
@@ -635,7 +592,7 @@ class SchemaChange(BaseModel):
         description="Human-readable explanation of the change",
     )
     detected_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the change was detected",
     )
 
@@ -657,8 +614,7 @@ class SchemaChange(BaseModel):
             raise ValueError("target_version_id must be non-empty")
         return v
 
-
-class CompatibilityResult(BaseModel):
+class CompatibilityResult(GreenLangBase):
     """Result of a compatibility analysis between two schema versions.
 
     Produced by the compatibility checker to determine whether a schema
@@ -706,7 +662,7 @@ class CompatibilityResult(BaseModel):
         description="Actor (user or service) that requested the check",
     )
     checked_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the check was performed",
     )
 
@@ -728,8 +684,7 @@ class CompatibilityResult(BaseModel):
             raise ValueError("target_version_id must be non-empty")
         return v
 
-
-class MigrationStep(BaseModel):
+class MigrationStep(GreenLangBase):
     """A single atomic operation within a migration plan.
 
     Each step describes one data transformation that must be applied
@@ -778,8 +733,7 @@ class MigrationStep(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class MigrationPlan(BaseModel):
+class MigrationPlan(GreenLangBase):
     """A complete migration plan for transforming data from one schema to another.
 
     A MigrationPlan is constructed by the migration planner after change
@@ -848,7 +802,7 @@ class MigrationPlan(BaseModel):
         description="Actor (user or service) that created the plan",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the plan was created",
     )
 
@@ -894,8 +848,7 @@ class MigrationPlan(BaseModel):
             )
         return v
 
-
-class MigrationExecution(BaseModel):
+class MigrationExecution(GreenLangBase):
     """A runtime execution record for a migration plan.
 
     Tracks the real-time state of a migration run including current
@@ -926,7 +879,7 @@ class MigrationExecution(BaseModel):
         description="Reference to the MigrationPlan being executed",
     )
     started_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when execution began",
     )
     completed_at: Optional[datetime] = Field(
@@ -981,8 +934,7 @@ class MigrationExecution(BaseModel):
             raise ValueError("plan_id must be non-empty")
         return v
 
-
-class RollbackRecord(BaseModel):
+class RollbackRecord(GreenLangBase):
     """An audit record for a rollback operation.
 
     Created whenever a migration execution is rolled back, either
@@ -1029,7 +981,7 @@ class RollbackRecord(BaseModel):
         description="Count of records successfully reverted",
     )
     started_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the rollback began",
     )
     completed_at: Optional[datetime] = Field(
@@ -1055,8 +1007,7 @@ class RollbackRecord(BaseModel):
             raise ValueError("execution_id must be non-empty")
         return v
 
-
-class FieldMapping(BaseModel):
+class FieldMapping(GreenLangBase):
     """A mapping between a field in the source schema and the target schema.
 
     Field mappings are generated automatically by the migration planner
@@ -1116,7 +1067,7 @@ class FieldMapping(BaseModel):
         description="Actor (user or service) that created this mapping",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the mapping was created",
     )
 
@@ -1162,8 +1113,7 @@ class FieldMapping(BaseModel):
             raise ValueError(f"confidence must be between 0.0 and 1.0, got {v}")
         return v
 
-
-class DriftEvent(BaseModel):
+class DriftEvent(GreenLangBase):
     """A single schema drift event detected in a live dataset.
 
     Drift events are produced by the drift monitor when actual data
@@ -1227,7 +1177,7 @@ class DriftEvent(BaseModel):
         description="Number of records exhibiting this drift",
     )
     detected_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the drift was first detected",
     )
 
@@ -1257,8 +1207,7 @@ class DriftEvent(BaseModel):
             raise ValueError("dataset_id must be non-empty")
         return v
 
-
-class AuditEntry(BaseModel):
+class AuditEntry(GreenLangBase):
     """An immutable audit log entry for any schema migration action.
 
     All create, update, delete, and execution actions in the Schema
@@ -1320,7 +1269,7 @@ class AuditEntry(BaseModel):
         description="SHA-256 hash of the immediately preceding audit entry",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the audit entry was created",
     )
 
@@ -1350,8 +1299,7 @@ class AuditEntry(BaseModel):
             raise ValueError("entity_id must be non-empty")
         return v
 
-
-class SchemaGroup(BaseModel):
+class SchemaGroup(GreenLangBase):
     """A logical grouping of related schema definitions.
 
     SchemaGroups enable bulk operations such as cross-schema compatibility
@@ -1378,7 +1326,7 @@ class SchemaGroup(BaseModel):
         description="List of SchemaDefinition IDs belonging to this group",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the group was created",
     )
 
@@ -1392,8 +1340,7 @@ class SchemaGroup(BaseModel):
             raise ValueError("name must be non-empty")
         return v
 
-
-class MigrationReport(BaseModel):
+class MigrationReport(GreenLangBase):
     """Aggregated summary report for a completed migration pipeline run.
 
     Provides a high-level overview of all work performed during a single
@@ -1453,14 +1400,13 @@ class MigrationReport(BaseModel):
         description="Total wall-clock time for the pipeline run in milliseconds",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="UTC timestamp when the report was generated",
     )
 
     model_config = {"extra": "forbid"}
 
-
-class SchemaStatistics(BaseModel):
+class SchemaStatistics(GreenLangBase):
     """Aggregated operational statistics for the Schema Migration Agent service.
 
     Provides high-level metrics for service health monitoring, capacity
@@ -1519,8 +1465,7 @@ class SchemaStatistics(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class VersionComparison(BaseModel):
+class VersionComparison(GreenLangBase):
     """A side-by-side comparison result for two schema versions.
 
     Produced by the change detection engine when comparing a source
@@ -1583,8 +1528,7 @@ class VersionComparison(BaseModel):
             )
         return v
 
-
-class PipelineResult(BaseModel):
+class PipelineResult(GreenLangBase):
     """The complete result of a full schema migration pipeline run.
 
     A pipeline run encompasses all stages: change detection, compatibility
@@ -1644,13 +1588,11 @@ class PipelineResult(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
 # =============================================================================
 # Request Models (8)
 # =============================================================================
 
-
-class RegisterSchemaRequest(BaseModel):
+class RegisterSchemaRequest(GreenLangBase):
     """Request body for registering a new schema definition.
 
     Attributes:
@@ -1718,8 +1660,7 @@ class RegisterSchemaRequest(BaseModel):
             raise ValueError("name must not exceed 255 characters")
         return v
 
-
-class UpdateSchemaRequest(BaseModel):
+class UpdateSchemaRequest(GreenLangBase):
     """Request body for updating mutable fields of an existing schema definition.
 
     Only fields explicitly included in this model can be updated.
@@ -1751,8 +1692,7 @@ class UpdateSchemaRequest(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
-class CreateVersionRequest(BaseModel):
+class CreateVersionRequest(GreenLangBase):
     """Request body for registering a new version of an existing schema.
 
     The version string must be greater than the current latest version
@@ -1787,8 +1727,7 @@ class CreateVersionRequest(BaseModel):
             raise ValueError("schema_id must be non-empty")
         return v
 
-
-class DetectChangesRequest(BaseModel):
+class DetectChangesRequest(GreenLangBase):
     """Request body for detecting structural changes between two schema versions.
 
     Triggers the change detection engine to produce a list of SchemaChange
@@ -1826,8 +1765,7 @@ class DetectChangesRequest(BaseModel):
             raise ValueError("target_version_id must be non-empty")
         return v
 
-
-class CheckCompatibilityRequest(BaseModel):
+class CheckCompatibilityRequest(GreenLangBase):
     """Request body for checking compatibility between two schema versions.
 
     Triggers the compatibility checker to determine whether the change
@@ -1866,8 +1804,7 @@ class CheckCompatibilityRequest(BaseModel):
             raise ValueError("target_version_id must be non-empty")
         return v
 
-
-class CreatePlanRequest(BaseModel):
+class CreatePlanRequest(GreenLangBase):
     """Request body for generating a migration plan between two schema versions.
 
     Triggers the migration planner to produce an ordered list of
@@ -1940,8 +1877,7 @@ class CreatePlanRequest(BaseModel):
             )
         return v
 
-
-class ExecuteMigrationRequest(BaseModel):
+class ExecuteMigrationRequest(GreenLangBase):
     """Request body for executing an approved migration plan.
 
     Triggers the migration executor to apply the plan's steps to
@@ -1979,8 +1915,7 @@ class ExecuteMigrationRequest(BaseModel):
             raise ValueError("plan_id must be non-empty")
         return v
 
-
-class RunPipelineRequest(BaseModel):
+class RunPipelineRequest(GreenLangBase):
     """Request body for running the full end-to-end schema migration pipeline.
 
     A single pipeline invocation encompasses all stages: change detection,
@@ -2020,7 +1955,6 @@ class RunPipelineRequest(BaseModel):
         if not v or not v.strip():
             raise ValueError("schema_id must be non-empty")
         return v
-
 
 # =============================================================================
 # __all__ export list

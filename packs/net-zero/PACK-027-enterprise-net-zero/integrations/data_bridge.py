@@ -40,18 +40,14 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -63,7 +59,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 class _AgentStub:
     def __init__(self, agent_name: str) -> None:
         self._agent_name = agent_name
@@ -73,7 +68,6 @@ class _AgentStub:
             return {"agent": self._agent_name, "status": "degraded"}
         return _stub
 
-
 def _try_import_data_agent(agent_id: str, module_path: str) -> Any:
     try:
         return importlib.import_module(module_path)
@@ -81,11 +75,9 @@ def _try_import_data_agent(agent_id: str, module_path: str) -> Any:
         logger.debug("DATA agent %s not available, using stub", agent_id)
         return _AgentStub(agent_id)
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class EnterpriseDataBridgeConfig(BaseModel):
     pack_id: str = Field(default="PACK-027")
@@ -94,7 +86,6 @@ class EnterpriseDataBridgeConfig(BaseModel):
     timeout_per_agent_seconds: int = Field(default=120, ge=10)
     quality_threshold: float = Field(default=0.85, ge=0.5, le=1.0)
     connection_pool_size: int = Field(default=10, ge=1, le=30)
-
 
 class IntakeResult(BaseModel):
     operation_id: str = Field(default_factory=_new_uuid)
@@ -108,7 +99,6 @@ class IntakeResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class ReconciliationResult(BaseModel):
     result_id: str = Field(default_factory=_new_uuid)
     sources_compared: int = Field(default=0)
@@ -118,7 +108,6 @@ class ReconciliationResult(BaseModel):
     variance_pct: float = Field(default=0.0)
     status: str = Field(default="pending")
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Full 20-Agent Routing
@@ -147,11 +136,9 @@ ENTERPRISE_DATA_AGENT_ROUTING: Dict[str, Dict[str, str]] = {
     "DATA-020": {"name": "Climate Hazard Connector", "module": "greenlang.agents.data.climate_hazard"},
 }
 
-
 # ---------------------------------------------------------------------------
 # EnterpriseDataBridge
 # ---------------------------------------------------------------------------
-
 
 class EnterpriseDataBridge:
     """Full 20-agent DATA bridge for PACK-027 enterprise data management.

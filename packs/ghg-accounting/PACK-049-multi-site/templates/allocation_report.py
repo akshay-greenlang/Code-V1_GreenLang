@@ -19,16 +19,15 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
 
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 class AllocationLine(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -82,7 +81,6 @@ class AllocationReportOutput(BaseModel):
     all_complete: bool = Field(True)
     provenance_hash: str = Field("")
 
-
 class AllocationReport:
     """Shared services allocation report template."""
 
@@ -93,7 +91,7 @@ class AllocationReport:
 
     def render(self, data: Dict[str, Any]) -> AllocationReportOutput:
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         inp = AllocationReportInput(**data) if isinstance(data, dict) else data
 
         lines = [AllocationLine(**l) if isinstance(l, dict) else l for l in inp.allocation_lines]
@@ -184,6 +182,5 @@ class AllocationReport:
         for l in r.allocation_lines:
             lines_out.append(f"{l.service_name},{l.service_type},{l.site_name},{l.method},{l.allocation_pct},{l.allocated_tco2e}")
         return "\n".join(lines_out)
-
 
 __all__ = ["AllocationReport", "AllocationReportInput", "AllocationReportOutput"]

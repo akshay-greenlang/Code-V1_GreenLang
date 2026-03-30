@@ -27,7 +27,8 @@ from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 
 logger = logging.getLogger(__name__)
 
@@ -273,7 +274,7 @@ VALID_STATUS_TRANSITIONS: Dict[ReportStatus, List[ReportStatus]] = {
 # PYDANTIC MODELS
 # ============================================================================
 
-class QuarterlyReportPeriod(BaseModel):
+class QuarterlyReportPeriod(GreenLangBase):
     """
     Represents a CBAM quarterly reporting period with computed deadlines.
 
@@ -374,7 +375,7 @@ class QuarterlyReportPeriod(BaseModel):
         }
 
 
-class ShipmentAggregation(BaseModel):
+class ShipmentAggregation(GreenLangBase):
     """
     Aggregated shipment data grouped by CN code, country, installation, or sector.
 
@@ -519,7 +520,7 @@ class ShipmentAggregation(BaseModel):
         }
 
 
-class QuarterlyReport(BaseModel):
+class QuarterlyReport(GreenLangBase):
     """
     Complete CBAM quarterly report model.
 
@@ -695,7 +696,7 @@ class QuarterlyReport(BaseModel):
         }
 
 
-class ReportAmendment(BaseModel):
+class ReportAmendment(GreenLangBase):
     """
     Versioned amendment to a submitted CBAM quarterly report.
 
@@ -824,7 +825,7 @@ class ReportAmendment(BaseModel):
         }
 
 
-class DeadlineAlert(BaseModel):
+class DeadlineAlert(GreenLangBase):
     """
     Deadline alert/notification for an upcoming or overdue CBAM report.
 
@@ -905,7 +906,7 @@ class DeadlineAlert(BaseModel):
         }
 
 
-class NotificationConfig(BaseModel):
+class NotificationConfig(GreenLangBase):
     """
     Notification routing configuration for an importer.
 
@@ -972,7 +973,7 @@ class NotificationConfig(BaseModel):
         }
 
 
-class NotificationLogEntry(BaseModel):
+class NotificationLogEntry(GreenLangBase):
     """
     Log entry for a sent notification, for audit trail.
 

@@ -33,7 +33,8 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Set
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import Field, field_validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 
 logger = logging.getLogger(__name__)
 
@@ -189,7 +190,7 @@ class TimelineEventType(str, Enum):
 # ---------------------------------------------------------------------------
 
 
-class Alert(BaseModel):
+class Alert(GreenLangBase):
     """Security alert from monitoring systems.
 
     Attributes:
@@ -255,7 +256,7 @@ class Alert(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class Incident(BaseModel):
+class Incident(GreenLangBase):
     """Security incident record.
 
     Attributes:
@@ -419,7 +420,7 @@ class Incident(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class PlaybookStep(BaseModel):
+class PlaybookStep(GreenLangBase):
     """A single step in a playbook execution.
 
     Attributes:
@@ -452,7 +453,7 @@ class PlaybookStep(BaseModel):
     rollback_data: Optional[Dict[str, Any]] = Field(None, description="Rollback data")
 
 
-class PlaybookExecution(BaseModel):
+class PlaybookExecution(GreenLangBase):
     """Playbook execution record.
 
     Attributes:
@@ -547,7 +548,7 @@ class PlaybookExecution(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class TimelineEvent(BaseModel):
+class TimelineEvent(GreenLangBase):
     """Incident timeline event.
 
     Attributes:
@@ -585,7 +586,7 @@ class TimelineEvent(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class PostMortem(BaseModel):
+class PostMortem(GreenLangBase):
     """Incident post-mortem document.
 
     Attributes:
@@ -638,7 +639,7 @@ class PostMortem(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class IncidentMetricsSummary(BaseModel):
+class IncidentMetricsSummary(GreenLangBase):
     """Summary metrics for incident response.
 
     Attributes:

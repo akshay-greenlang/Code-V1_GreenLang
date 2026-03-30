@@ -84,25 +84,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -120,7 +114,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -129,7 +122,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -141,22 +133,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ShiftableLoadType(str, Enum):
     """Type of shiftable load.
@@ -179,7 +167,6 @@ class ShiftableLoadType(str, Enum):
     LAUNDRY = "laundry"
     DISHWASHING = "dishwashing"
 
-
 class ConstraintType(str, Enum):
     """Type of constraint on load shifting.
 
@@ -195,7 +182,6 @@ class ConstraintType(str, Enum):
     SCHEDULE = "schedule"
     SAFETY = "safety"
 
-
 class ShiftDirection(str, Enum):
     """Direction of load shift.
 
@@ -207,7 +193,6 @@ class ShiftDirection(str, Enum):
     DEFER = "defer"
     SPLIT = "split"
 
-
 class ComfortStandard(str, Enum):
     """Thermal comfort standard for constraint enforcement.
 
@@ -218,7 +203,6 @@ class ComfortStandard(str, Enum):
     ASHRAE_55 = "ashrae_55"
     EN_16798 = "en_16798"
     ISO_7730 = "iso_7730"
-
 
 class OptimizationMethod(str, Enum):
     """Method used for schedule optimisation.
@@ -232,7 +216,6 @@ class OptimizationMethod(str, Enum):
     LP = "lp"
     MILP = "milp"
     HEURISTIC = "heuristic"
-
 
 class ShiftStatus(str, Enum):
     """Status of a shift schedule entry.
@@ -249,7 +232,6 @@ class ShiftStatus(str, Enum):
     ACTIVE = "active"
     COMPLETED = "completed"
 
-
 class LoadPriority(str, Enum):
     """Priority for load shifting (order of scheduling).
 
@@ -260,7 +242,6 @@ class LoadPriority(str, Enum):
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -343,11 +324,9 @@ DEFAULT_PEAK_END: int = 18
 DEFAULT_OFFPEAK_START: int = 22
 DEFAULT_OFFPEAK_END: int = 6
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input / Output
 # ---------------------------------------------------------------------------
-
 
 class ShiftableLoad(BaseModel):
     """A load that can be shifted in time.
@@ -397,7 +376,6 @@ class ShiftableLoad(BaseModel):
             return _new_uuid()
         return v
 
-
 class ShiftConstraint(BaseModel):
     """A constraint on load shifting.
 
@@ -423,7 +401,6 @@ class ShiftConstraint(BaseModel):
     penalty_per_violation: Decimal = Field(default=Decimal("0"))
     is_satisfied: bool = Field(default=True)
     violation_amount: Decimal = Field(default=Decimal("0"))
-
 
 class ShiftSchedule(BaseModel):
     """Optimised shift schedule for a single load.
@@ -468,9 +445,8 @@ class ShiftSchedule(BaseModel):
     constraints_satisfied: int = Field(default=0)
     constraints_total: int = Field(default=0)
     violation_details: List[str] = Field(default_factory=list)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class CoordinationPlan(BaseModel):
     """Coordinated plan for multiple shifted loads.
@@ -505,9 +481,8 @@ class CoordinationPlan(BaseModel):
     constraint_violations: int = Field(default=0)
     optimization_method: OptimizationMethod = Field(default=OptimizationMethod.GREEDY)
     iterations: int = Field(default=0)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 class LoadShiftResult(BaseModel):
     """Complete load shifting analysis result.
@@ -546,14 +521,12 @@ class LoadShiftResult(BaseModel):
     annual_savings: Decimal = Field(default=Decimal("0"))
     recommendations: List[str] = Field(default_factory=list)
     processing_time_ms: Decimal = Field(default=Decimal("0"))
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class LoadShiftingEngine:
     """Load shifting optimisation engine with constraint satisfaction.

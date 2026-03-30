@@ -69,15 +69,14 @@ import uuid
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import GreenLangBase, utcnow
+from greenlang.schemas.enums import ReportFormat
 
 from pydantic import (
-    BaseModel,
-    ConfigDict,
     Field,
     field_validator,
     model_validator,
 )
-
 
 # ---------------------------------------------------------------------------
 # Cross-agent commodity import (graceful fallback)
@@ -90,16 +89,9 @@ try:
 except ImportError:
     _ExternalEUDRCommodity = None  # type: ignore[assignment,misc]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -185,11 +177,9 @@ SUPPORTED_COUNTRIES: List[str] = [
     "VN", "YE", "ZM", "ZW", "HK", "MO", "PS", "XK",
 ]
 
-
 # =============================================================================
 # Enumerations
 # =============================================================================
-
 
 class RiskLevel(str, Enum):
     """Country risk classification per EUDR Article 29.
@@ -207,7 +197,6 @@ class RiskLevel(str, Enum):
     STANDARD = "standard"
     HIGH = "high"
 
-
 class DueDiligenceLevel(str, Enum):
     """Due diligence classification per EUDR Articles 10-13.
 
@@ -223,7 +212,6 @@ class DueDiligenceLevel(str, Enum):
     SIMPLIFIED = "simplified"
     STANDARD = "standard"
     ENHANCED = "enhanced"
-
 
 class CommodityType(str, Enum):
     """EUDR-regulated commodities per Article 1 and Annex I.
@@ -242,7 +230,6 @@ class CommodityType(str, Enum):
     SOYA = "soya"
     WOOD = "wood"
 
-
 class ForestType(str, Enum):
     """Forest ecosystem classification for deforestation analysis.
 
@@ -259,7 +246,6 @@ class ForestType(str, Enum):
     PLANTATION = "plantation"
     SAVANNA = "savanna"
 
-
 class GovernanceIndicator(str, Enum):
     """World Bank Worldwide Governance Indicators (WGI) dimensions.
 
@@ -274,7 +260,6 @@ class GovernanceIndicator(str, Enum):
     GOVERNMENT_EFFECTIVENESS = "government_effectiveness"
     VOICE_ACCOUNTABILITY = "voice_accountability"
     POLITICAL_STABILITY = "political_stability"
-
 
 class HotspotSeverity(str, Enum):
     """Deforestation hotspot severity classification.
@@ -292,7 +277,6 @@ class HotspotSeverity(str, Enum):
     HIGH = "high"
     CRITICAL = "critical"
 
-
 class DeforestationDriver(str, Enum):
     """Primary drivers of deforestation per IPCC and FAO classification.
 
@@ -308,7 +292,6 @@ class DeforestationDriver(str, Enum):
     FIRE = "fire"
     URBANIZATION = "urbanization"
 
-
 class TradeFlowDirection(str, Enum):
     """Direction of commodity trade flow.
 
@@ -322,24 +305,6 @@ class TradeFlowDirection(str, Enum):
     EXPORT = "export"
     RE_EXPORT = "re_export"
     TRANSIT = "transit"
-
-
-class ReportFormat(str, Enum):
-    """Output format for risk assessment reports.
-
-    PDF: Portable Document Format for regulatory submission.
-    JSON: Machine-readable structured data for API integration.
-    HTML: Web-viewable report for dashboards.
-    CSV: Tabular data for spreadsheet analysis.
-    EXCEL: Microsoft Excel workbook with formatted sheets.
-    """
-
-    PDF = "pdf"
-    JSON = "json"
-    HTML = "html"
-    CSV = "csv"
-    EXCEL = "excel"
-
 
 class ReportType(str, Enum):
     """Type of risk assessment report.
@@ -359,7 +324,6 @@ class ReportType(str, Enum):
     DUE_DILIGENCE = "due_diligence"
     EXECUTIVE_SUMMARY = "executive_summary"
 
-
 class RegulatoryStatus(str, Enum):
     """Lifecycle status of a regulatory instrument.
 
@@ -375,7 +339,6 @@ class RegulatoryStatus(str, Enum):
     ENFORCED = "enforced"
     AMENDED = "amended"
     REPEALED = "repealed"
-
 
 class AssessmentConfidence(str, Enum):
     """Confidence level for a risk assessment score.
@@ -394,7 +357,6 @@ class AssessmentConfidence(str, Enum):
     HIGH = "high"
     VERY_HIGH = "very_high"
 
-
 class TrendDirection(str, Enum):
     """Direction of risk score trend over time.
 
@@ -408,7 +370,6 @@ class TrendDirection(str, Enum):
     STABLE = "stable"
     DETERIORATING = "deteriorating"
     INSUFFICIENT_DATA = "insufficient_data"
-
 
 class CertificationScheme(str, Enum):
     """Recognized certification schemes for EUDR commodities.
@@ -426,7 +387,6 @@ class CertificationScheme(str, Enum):
     BONSUCRO = "bonsucro"
     ISCC = "iscc"
 
-
 class DataSource(str, Enum):
     """Authoritative data sources for risk factor calculation.
 
@@ -443,13 +403,11 @@ class DataSource(str, Enum):
     ITTO = "itto"
     FIRMS = "firms"
 
-
 # =============================================================================
 # Core Models (12)
 # =============================================================================
 
-
-class CountryRiskAssessment(BaseModel):
+class CountryRiskAssessment(GreenLangBase):
     """Composite country risk assessment per EUDR Article 29.
 
     Represents a complete risk evaluation for a single country,
@@ -538,7 +496,7 @@ class CountryRiskAssessment(BaseModel):
         description="List of data sources used for this assessment.",
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of assessment (UTC).",
     )
     provenance_hash: Optional[str] = Field(
@@ -552,8 +510,7 @@ class CountryRiskAssessment(BaseModel):
         """Ensure country code is uppercase ISO 3166-1 alpha-2."""
         return v.upper().strip()
 
-
-class CommodityRiskProfile(BaseModel):
+class CommodityRiskProfile(GreenLangBase):
     """Commodity-specific risk profile per country per EUDR Article 29.
 
     Provides per-commodity risk assessment including deforestation
@@ -618,7 +575,7 @@ class CommodityRiskProfile(BaseModel):
         description="Data sources used for this profile.",
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of assessment (UTC).",
     )
     provenance_hash: Optional[str] = Field(
@@ -632,8 +589,7 @@ class CommodityRiskProfile(BaseModel):
         """Ensure country code is uppercase ISO 3166-1 alpha-2."""
         return v.upper().strip()
 
-
-class DeforestationHotspot(BaseModel):
+class DeforestationHotspot(GreenLangBase):
     """Sub-national deforestation hotspot detected via spatial analysis.
 
     Represents a geographic area with concentrated deforestation
@@ -707,7 +663,7 @@ class DeforestationHotspot(BaseModel):
         description="Number of deforestation alerts in cluster.",
     )
     detected_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of detection (UTC).",
     )
     provenance_hash: Optional[str] = Field(
@@ -721,8 +677,7 @@ class DeforestationHotspot(BaseModel):
         """Ensure country code is uppercase ISO 3166-1 alpha-2."""
         return v.upper().strip()
 
-
-class GovernanceIndex(BaseModel):
+class GovernanceIndex(GreenLangBase):
     """Governance quality assessment per country.
 
     Integrates World Bank WGI, Transparency International CPI,
@@ -780,7 +735,7 @@ class GovernanceIndex(BaseModel):
         description="Data sources used for this index.",
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of assessment (UTC).",
     )
     provenance_hash: Optional[str] = Field(
@@ -794,8 +749,7 @@ class GovernanceIndex(BaseModel):
         """Ensure country code is uppercase ISO 3166-1 alpha-2."""
         return v.upper().strip()
 
-
-class DueDiligenceClassification(BaseModel):
+class DueDiligenceClassification(GreenLangBase):
     """Due diligence level classification per EUDR Articles 10-13.
 
     Determines the required level of due diligence for a specific
@@ -864,7 +818,7 @@ class DueDiligenceClassification(BaseModel):
         description="List of specific regulatory requirements for this level.",
     )
     classified_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of classification (UTC).",
     )
     provenance_hash: Optional[str] = Field(
@@ -878,8 +832,7 @@ class DueDiligenceClassification(BaseModel):
         """Ensure country code is uppercase ISO 3166-1 alpha-2."""
         return v.upper().strip()
 
-
-class TradeFlow(BaseModel):
+class TradeFlow(GreenLangBase):
     """Bilateral trade flow record for EUDR commodity analysis.
 
     Represents a commodity trade flow between an origin and
@@ -942,7 +895,7 @@ class TradeFlow(BaseModel):
         description="Data sources for this trade flow.",
     )
     recorded_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of record (UTC).",
     )
     provenance_hash: Optional[str] = Field(
@@ -956,8 +909,7 @@ class TradeFlow(BaseModel):
         """Ensure country codes are uppercase ISO 3166-1 alpha-2."""
         return v.upper().strip()
 
-
-class RiskReport(BaseModel):
+class RiskReport(GreenLangBase):
     """Generated risk assessment report.
 
     Represents a risk report document generated by the Risk Report
@@ -1008,7 +960,7 @@ class RiskReport(BaseModel):
         description="Storage path or URL for the report file.",
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of report generation (UTC).",
     )
     expires_at: Optional[datetime] = Field(
@@ -1020,8 +972,7 @@ class RiskReport(BaseModel):
         description="SHA-256 provenance hash for audit trail.",
     )
 
-
-class RegulatoryUpdate(BaseModel):
+class RegulatoryUpdate(GreenLangBase):
     """Regulatory change record for EUDR compliance tracking.
 
     Tracks EC benchmarking list updates, country reclassifications,
@@ -1082,7 +1033,7 @@ class RegulatoryUpdate(BaseModel):
         description="Number of active imports affected.",
     )
     tracked_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of tracking (UTC).",
     )
     provenance_hash: Optional[str] = Field(
@@ -1090,8 +1041,7 @@ class RegulatoryUpdate(BaseModel):
         description="SHA-256 provenance hash for audit trail.",
     )
 
-
-class RiskFactor(BaseModel):
+class RiskFactor(GreenLangBase):
     """Individual risk factor within a composite risk score.
 
     Represents a single factor (e.g., deforestation rate, governance
@@ -1126,7 +1076,7 @@ class RiskFactor(BaseModel):
         description="Publication date of the source data.",
     )
     last_updated: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of last update (UTC).",
     )
     provenance_hash: Optional[str] = Field(
@@ -1134,8 +1084,7 @@ class RiskFactor(BaseModel):
         description="SHA-256 provenance hash for audit trail.",
     )
 
-
-class RiskHistory(BaseModel):
+class RiskHistory(GreenLangBase):
     """Historical risk score record for trend analysis.
 
     Tracks risk score changes over time for a country, supporting
@@ -1173,7 +1122,7 @@ class RiskHistory(BaseModel):
         description="Previous risk level before this change.",
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of assessment (UTC).",
     )
     provenance_hash: Optional[str] = Field(
@@ -1187,8 +1136,7 @@ class RiskHistory(BaseModel):
         """Ensure country code is uppercase ISO 3166-1 alpha-2."""
         return v.upper().strip()
 
-
-class CertificationRecord(BaseModel):
+class CertificationRecord(GreenLangBase):
     """Certification scheme effectiveness record.
 
     Tracks the effectiveness and coverage of a certification scheme
@@ -1230,7 +1178,7 @@ class CertificationRecord(BaseModel):
         description="Data sources for this record.",
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of assessment (UTC).",
     )
     provenance_hash: Optional[str] = Field(
@@ -1244,8 +1192,7 @@ class CertificationRecord(BaseModel):
         """Ensure country code is uppercase ISO 3166-1 alpha-2."""
         return v.upper().strip()
 
-
-class AuditLogEntry(BaseModel):
+class AuditLogEntry(GreenLangBase):
     """Immutable audit log entry for risk assessment operations.
 
     Records all significant operations for EUDR Article 31
@@ -1296,7 +1243,7 @@ class AuditLogEntry(BaseModel):
         description="Values after the change (for updates).",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of the action (UTC).",
     )
     provenance_hash: Optional[str] = Field(
@@ -1304,13 +1251,11 @@ class AuditLogEntry(BaseModel):
         description="SHA-256 provenance hash for audit trail.",
     )
 
-
 # =============================================================================
 # Request Models (15)
 # =============================================================================
 
-
-class AssessCountryRequest(BaseModel):
+class AssessCountryRequest(GreenLangBase):
     """Request to assess risk for one or more countries."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1338,8 +1283,7 @@ class AssessCountryRequest(BaseModel):
         """Ensure all country codes are uppercase."""
         return [c.upper().strip() for c in v]
 
-
-class AnalyzeCommodityRequest(BaseModel):
+class AnalyzeCommodityRequest(GreenLangBase):
     """Request to analyze commodity-specific risk."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1361,8 +1305,7 @@ class AnalyzeCommodityRequest(BaseModel):
         description="Whether to include certification assessment.",
     )
 
-
-class DetectHotspotsRequest(BaseModel):
+class DetectHotspotsRequest(GreenLangBase):
     """Request to detect deforestation hotspots."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1388,8 +1331,7 @@ class DetectHotspotsRequest(BaseModel):
         description="Temporal window for alert clustering (months).",
     )
 
-
-class EvaluateGovernanceRequest(BaseModel):
+class EvaluateGovernanceRequest(GreenLangBase):
     """Request to evaluate governance quality."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1417,8 +1359,7 @@ class EvaluateGovernanceRequest(BaseModel):
         """Ensure all country codes are uppercase."""
         return [c.upper().strip() for c in v]
 
-
-class ClassifyDueDiligenceRequest(BaseModel):
+class ClassifyDueDiligenceRequest(GreenLangBase):
     """Request to classify due diligence level."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1444,8 +1385,7 @@ class ClassifyDueDiligenceRequest(BaseModel):
         description="Whether to include cost estimation.",
     )
 
-
-class AnalyzeTradeFlowRequest(BaseModel):
+class AnalyzeTradeFlowRequest(GreenLangBase):
     """Request to analyze trade flows."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1475,8 +1415,7 @@ class AnalyzeTradeFlowRequest(BaseModel):
         description="Trade period filter (e.g., '2025-Q4').",
     )
 
-
-class GenerateReportRequest(BaseModel):
+class GenerateReportRequest(GreenLangBase):
     """Request to generate a risk report."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1506,8 +1445,7 @@ class GenerateReportRequest(BaseModel):
         description="Whether to include visual charts.",
     )
 
-
-class TrackRegulatoryRequest(BaseModel):
+class TrackRegulatoryRequest(GreenLangBase):
     """Request to track regulatory updates."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1529,8 +1467,7 @@ class TrackRegulatoryRequest(BaseModel):
         description="Whether to include impact assessment.",
     )
 
-
-class CompareCountriesRequest(BaseModel):
+class CompareCountriesRequest(GreenLangBase):
     """Request to compare risk across countries."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1554,8 +1491,7 @@ class CompareCountriesRequest(BaseModel):
         """Ensure all country codes are uppercase."""
         return [c.upper().strip() for c in v]
 
-
-class GetTrendsRequest(BaseModel):
+class GetTrendsRequest(GreenLangBase):
     """Request to get risk score trends."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1573,8 +1509,7 @@ class GetTrendsRequest(BaseModel):
         description="Optional commodity-specific trends.",
     )
 
-
-class CostEstimateRequest(BaseModel):
+class CostEstimateRequest(GreenLangBase):
     """Request to estimate due diligence costs."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1596,8 +1531,7 @@ class CostEstimateRequest(BaseModel):
         description="Active certification schemes.",
     )
 
-
-class MatrixRequest(BaseModel):
+class MatrixRequest(GreenLangBase):
     """Request to generate a country-commodity risk matrix."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1619,8 +1553,7 @@ class MatrixRequest(BaseModel):
         description="Output format.",
     )
 
-
-class ClusteringRequest(BaseModel):
+class ClusteringRequest(GreenLangBase):
     """Request to perform hotspot clustering analysis."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1642,8 +1575,7 @@ class ClusteringRequest(BaseModel):
         description="Temporal window for clustering (months).",
     )
 
-
-class ImpactAssessmentRequest(BaseModel):
+class ImpactAssessmentRequest(GreenLangBase):
     """Request for regulatory change impact assessment."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1665,8 +1597,7 @@ class ImpactAssessmentRequest(BaseModel):
         description="Effective date of the change.",
     )
 
-
-class SearchRequest(BaseModel):
+class SearchRequest(GreenLangBase):
     """General search request for risk data."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1696,13 +1627,11 @@ class SearchRequest(BaseModel):
         description="Offset for pagination.",
     )
 
-
 # =============================================================================
 # Response Models (15)
 # =============================================================================
 
-
-class CountryRiskResponse(BaseModel):
+class CountryRiskResponse(GreenLangBase):
     """Response for country risk assessment."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1724,8 +1653,7 @@ class CountryRiskResponse(BaseModel):
         description="SHA-256 provenance hash for audit trail.",
     )
 
-
-class CommodityRiskResponse(BaseModel):
+class CommodityRiskResponse(GreenLangBase):
     """Response for commodity risk analysis."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1747,8 +1675,7 @@ class CommodityRiskResponse(BaseModel):
         description="SHA-256 provenance hash for audit trail.",
     )
 
-
-class HotspotResponse(BaseModel):
+class HotspotResponse(GreenLangBase):
     """Response for hotspot detection."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1770,8 +1697,7 @@ class HotspotResponse(BaseModel):
         description="SHA-256 provenance hash for audit trail.",
     )
 
-
-class GovernanceResponse(BaseModel):
+class GovernanceResponse(GreenLangBase):
     """Response for governance evaluation."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1793,8 +1719,7 @@ class GovernanceResponse(BaseModel):
         description="SHA-256 provenance hash for audit trail.",
     )
 
-
-class DueDiligenceResponse(BaseModel):
+class DueDiligenceResponse(GreenLangBase):
     """Response for due diligence classification."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1812,8 +1737,7 @@ class DueDiligenceResponse(BaseModel):
         description="SHA-256 provenance hash for audit trail.",
     )
 
-
-class TradeFlowResponse(BaseModel):
+class TradeFlowResponse(GreenLangBase):
     """Response for trade flow analysis."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1839,8 +1763,7 @@ class TradeFlowResponse(BaseModel):
         description="SHA-256 provenance hash for audit trail.",
     )
 
-
-class ReportResponse(BaseModel):
+class ReportResponse(GreenLangBase):
     """Response for report generation."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1858,8 +1781,7 @@ class ReportResponse(BaseModel):
         description="SHA-256 provenance hash for audit trail.",
     )
 
-
-class RegulatoryResponse(BaseModel):
+class RegulatoryResponse(GreenLangBase):
     """Response for regulatory update tracking."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1881,8 +1803,7 @@ class RegulatoryResponse(BaseModel):
         description="SHA-256 provenance hash for audit trail.",
     )
 
-
-class ComparisonResponse(BaseModel):
+class ComparisonResponse(GreenLangBase):
     """Response for country comparison."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1904,8 +1825,7 @@ class ComparisonResponse(BaseModel):
         description="SHA-256 provenance hash for audit trail.",
     )
 
-
-class TrendResponse(BaseModel):
+class TrendResponse(GreenLangBase):
     """Response for trend analysis."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1931,8 +1851,7 @@ class TrendResponse(BaseModel):
         description="SHA-256 provenance hash for audit trail.",
     )
 
-
-class CostEstimateResponse(BaseModel):
+class CostEstimateResponse(GreenLangBase):
     """Response for due diligence cost estimation."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -1974,8 +1893,7 @@ class CostEstimateResponse(BaseModel):
         description="SHA-256 provenance hash for audit trail.",
     )
 
-
-class MatrixResponse(BaseModel):
+class MatrixResponse(GreenLangBase):
     """Response for country-commodity risk matrix."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -2004,8 +1922,7 @@ class MatrixResponse(BaseModel):
         description="SHA-256 provenance hash for audit trail.",
     )
 
-
-class ClusteringResponse(BaseModel):
+class ClusteringResponse(GreenLangBase):
     """Response for hotspot clustering analysis."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -2031,8 +1948,7 @@ class ClusteringResponse(BaseModel):
         description="SHA-256 provenance hash for audit trail.",
     )
 
-
-class ImpactResponse(BaseModel):
+class ImpactResponse(GreenLangBase):
     """Response for regulatory change impact assessment."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -2070,8 +1986,7 @@ class ImpactResponse(BaseModel):
         description="SHA-256 provenance hash for audit trail.",
     )
 
-
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Health check response for the Country Risk Evaluator service.
 
     Returns service status, version, and key operational metrics.
@@ -2116,6 +2031,6 @@ class HealthResponse(BaseModel):
         description="Service uptime in seconds.",
     )
     checked_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of health check (UTC).",
     )

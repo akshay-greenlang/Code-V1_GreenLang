@@ -65,17 +65,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
@@ -116,7 +114,6 @@ def _round_val(value: Decimal, places: int = 6) -> Decimal:
 def _round3(value: float) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
@@ -155,7 +152,6 @@ class CurrencyCode(str, Enum):
 # Significance threshold for base year recalculation.
 SIGNIFICANCE_THRESHOLD_PCT: Decimal = Decimal("5.0")
 DAYS_IN_YEAR: int = 365
-
 
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
@@ -218,7 +214,6 @@ class ConsolidationInput(BaseModel):
     recalculation_events: List[RecalculationEvent] = Field(default_factory=list)
     reporting_currency: str = Field(default="usd", max_length=3)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
@@ -265,7 +260,7 @@ class ConsolidationResult(BaseModel):
     """Complete consolidation result."""
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     organization_name: str = Field(default="")
     reporting_year: int = Field(default=0)
     consolidation_approach: str = Field(default="")
@@ -295,7 +290,6 @@ class ConsolidationResult(BaseModel):
     ])
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine

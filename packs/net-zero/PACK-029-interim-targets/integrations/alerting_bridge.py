@@ -42,18 +42,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import AlertSeverity, AlertStatus
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -65,19 +62,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
-
-class AlertSeverity(str, Enum):
-    CRITICAL = "critical"
-    HIGH = "high"
-    MEDIUM = "medium"
-    LOW = "low"
-    INFO = "info"
-
 
 class AlertChannel(str, Enum):
     EMAIL = "email"
@@ -85,16 +72,6 @@ class AlertChannel(str, Enum):
     TEAMS = "teams"
     DASHBOARD = "dashboard"
     WEBHOOK = "webhook"
-
-
-class AlertStatus(str, Enum):
-    PENDING = "pending"
-    SENT = "sent"
-    ACKNOWLEDGED = "acknowledged"
-    RESOLVED = "resolved"
-    ESCALATED = "escalated"
-    SUPPRESSED = "suppressed"
-
 
 class AlertRuleType(str, Enum):
     VARIANCE_THRESHOLD = "variance_threshold"
@@ -106,7 +83,6 @@ class AlertRuleType(str, Enum):
     CONSECUTIVE_MISS = "consecutive_miss"
     CUSTOM = "custom"
 
-
 class EscalationLevel(str, Enum):
     L1_TEAM_LEAD = "l1_team_lead"
     L2_DEPARTMENT_HEAD = "l2_department_head"
@@ -114,11 +90,9 @@ class EscalationLevel(str, Enum):
     L4_CEO = "l4_ceo"
     L5_BOARD = "l5_board"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class AlertingBridgeConfig(BaseModel):
     """Configuration for the alerting bridge."""
@@ -142,7 +116,6 @@ class AlertingBridgeConfig(BaseModel):
     escalation_enabled: bool = Field(default=True)
     escalation_timeout_hours: int = Field(default=24, ge=1, le=168)
 
-
 class AlertRule(BaseModel):
     """Configurable alert rule definition."""
     rule_id: str = Field(default_factory=_new_uuid)
@@ -158,7 +131,6 @@ class AlertRule(BaseModel):
     escalation_level: EscalationLevel = Field(default=EscalationLevel.L1_TEAM_LEAD)
     recipients: List[str] = Field(default_factory=list)
 
-
 class Alert(BaseModel):
     """Single alert instance."""
     alert_id: str = Field(default_factory=_new_uuid)
@@ -172,12 +144,11 @@ class Alert(BaseModel):
     channels_targeted: List[AlertChannel] = Field(default_factory=list)
     channels_delivered: List[AlertChannel] = Field(default_factory=list)
     escalation_level: EscalationLevel = Field(default=EscalationLevel.L1_TEAM_LEAD)
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     acknowledged_at: Optional[datetime] = Field(None)
     resolved_at: Optional[datetime] = Field(None)
     acknowledged_by: str = Field(default="")
     provenance_hash: str = Field(default="")
-
 
 class AlertEvaluation(BaseModel):
     """Result of evaluating alert rules against current data."""
@@ -186,9 +157,8 @@ class AlertEvaluation(BaseModel):
     rules_triggered: int = Field(default=0)
     alerts_generated: List[Alert] = Field(default_factory=list)
     alerts_suppressed: int = Field(default=0)
-    evaluation_timestamp: datetime = Field(default_factory=_utcnow)
+    evaluation_timestamp: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Default Alert Rules
@@ -252,11 +222,9 @@ DEFAULT_ALERT_RULES: List[Dict[str, Any]] = [
     },
 ]
 
-
 # ---------------------------------------------------------------------------
 # AlertingBridge
 # ---------------------------------------------------------------------------
-
 
 class AlertingBridge:
     """Off-track performance alerting bridge for PACK-029.
@@ -383,7 +351,7 @@ class AlertingBridge:
         alert = next((a for a in self._alert_history if a.alert_id == alert_id), None)
         if alert:
             alert.status = AlertStatus.ACKNOWLEDGED
-            alert.acknowledged_at = _utcnow()
+            alert.acknowledged_at = utcnow()
             alert.acknowledged_by = acknowledged_by
         return alert
 
@@ -394,7 +362,7 @@ class AlertingBridge:
         alert = next((a for a in self._alert_history if a.alert_id == alert_id), None)
         if alert:
             alert.status = AlertStatus.RESOLVED
-            alert.resolved_at = _utcnow()
+            alert.resolved_at = utcnow()
         return alert
 
     async def escalate_alert(

@@ -53,7 +53,9 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+
+from greenlang.schemas import GreenLangBase, utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -63,16 +65,9 @@ __all__ = [
     "ConnectionManager",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _deterministic_id(seed: str) -> str:
     """Generate a deterministic 12-char hex ID from a seed string.
@@ -85,11 +80,9 @@ def _deterministic_id(seed: str) -> str:
     """
     return hashlib.sha256(seed.encode("utf-8")).hexdigest()[:12]
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class ConnectionStatus(str, Enum):
     """Connection lifecycle statuses."""
@@ -100,7 +93,6 @@ class ConnectionStatus(str, Enum):
     FAILED = "failed"
     DISCONNECTED = "disconnected"
     MAINTENANCE = "maintenance"
-
 
 # ---------------------------------------------------------------------------
 # ERP system default ports and protocols
@@ -169,13 +161,11 @@ _ERP_DEFAULTS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Data models
 # ---------------------------------------------------------------------------
 
-
-class ConnectionRecord(BaseModel):
+class ConnectionRecord(GreenLangBase):
     """Registered ERP connection record.
 
     Stores all metadata about a registered ERP connection including
@@ -198,7 +188,7 @@ class ConnectionRecord(BaseModel):
     protocol: Optional[str] = Field(None, description="Communication protocol")
     auth_type: Optional[str] = Field(None, description="Authentication type")
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Registration timestamp",
+        default_factory=utcnow, description="Registration timestamp",
     )
     last_tested_at: Optional[datetime] = Field(
         None, description="Last connectivity test timestamp",
@@ -221,11 +211,9 @@ class ConnectionRecord(BaseModel):
 
     model_config = {"extra": "forbid"}
 
-
 # ---------------------------------------------------------------------------
 # ConnectionManager
 # ---------------------------------------------------------------------------
-
 
 class ConnectionManager:
     """ERP connection lifecycle manager.
@@ -439,7 +427,7 @@ class ConnectionManager:
         elapsed_ms = (time.monotonic() - start) * 1000
         with self._lock:
             rec = self._connections[connection_id]
-            rec.last_tested_at = _utcnow()
+            rec.last_tested_at = utcnow()
             rec.last_test_success = test_result["success"]
             rec.last_test_latency_ms = test_result["latency_ms"]
             rec.test_count += 1
@@ -553,7 +541,7 @@ class ConnectionManager:
         record = self._get_record_or_raise(connection_id)
 
         uptime_seconds = (
-            _utcnow() - record.created_at
+            utcnow() - record.created_at
         ).total_seconds()
 
         success_rate = 0.0
@@ -582,7 +570,7 @@ class ConnectionManager:
             "auth_type": record.auth_type,
             "host": record.host,
             "port": record.port,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     def get_statistics(self) -> Dict[str, Any]:
@@ -614,7 +602,7 @@ class ConnectionManager:
                 "by_system": by_system,
                 "by_status": by_status,
                 "errors": self._stats["errors"],
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }
 
     # ------------------------------------------------------------------
@@ -655,7 +643,7 @@ class ConnectionManager:
             "auth_type": defaults["auth_type"],
             "response_code": 200,
             "server_version": self._get_simulated_version(erp_system),
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
         return result
@@ -719,7 +707,7 @@ class ConnectionManager:
             Hex-encoded SHA-256 digest.
         """
         combined = json.dumps(
-            {"parts": list(parts), "timestamp": _utcnow().isoformat()},
+            {"parts": list(parts), "timestamp": utcnow().isoformat()},
             sort_keys=True,
         )
         return hashlib.sha256(combined.encode("utf-8")).hexdigest()

@@ -11,7 +11,8 @@ Version: 1.0.0
 
 from datetime import datetime
 from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, Field, validator, field_validator
+from pydantic import Field, validator, field_validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 from enum import Enum
 
 
@@ -40,7 +41,7 @@ class UnitType(str, Enum):
     KG_CO2E_PER_UNIT = "kgCO2e/unit"
 
 
-class DataQualityIndicator(BaseModel):
+class DataQualityIndicator(GreenLangBase):
     """
     Data Quality Indicator (DQI) for emission factors.
 
@@ -134,7 +135,7 @@ class DataQualityIndicator(BaseModel):
         }
 
 
-class ProvenanceInfo(BaseModel):
+class ProvenanceInfo(GreenLangBase):
     """
     Provenance information for emission factor lookup.
 
@@ -191,7 +192,7 @@ class ProvenanceInfo(BaseModel):
         }
 
 
-class FactorMetadata(BaseModel):
+class FactorMetadata(GreenLangBase):
     """
     Metadata for an emission factor.
 
@@ -288,7 +289,7 @@ class FactorMetadata(BaseModel):
         }
 
 
-class FactorRequest(BaseModel):
+class FactorRequest(GreenLangBase):
     """
     Request model for emission factor lookup.
 
@@ -365,7 +366,7 @@ class FactorRequest(BaseModel):
         }
 
 
-class FactorResponse(BaseModel):
+class FactorResponse(GreenLangBase):
     """
     Response model for emission factor lookup.
 
@@ -474,7 +475,7 @@ class FactorResponse(BaseModel):
         }
 
 
-class GWPComparisonRequest(BaseModel):
+class GWPComparisonRequest(GreenLangBase):
     """
     Request model for GWP standard comparison.
 
@@ -510,7 +511,7 @@ class GWPComparisonRequest(BaseModel):
         }
 
 
-class GWPComparisonResponse(BaseModel):
+class GWPComparisonResponse(GreenLangBase):
     """
     Response model for GWP standard comparison.
 
@@ -562,7 +563,7 @@ class GWPComparisonResponse(BaseModel):
         }
 
 
-class HealthCheckResponse(BaseModel):
+class HealthCheckResponse(GreenLangBase):
     """
     Response model for health check endpoint.
 

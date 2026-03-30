@@ -47,23 +47,15 @@ from pydantic import BaseModel, ConfigDict, Field
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class PhaseStatus(str, Enum):
     """Status of a workflow phase."""
@@ -73,14 +65,12 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
     PENDING = "pending"
     RUNNING = "running"
     COMPLETED = "completed"
     FAILED = "failed"
-
 
 class EntityMappingPhase(str, Enum):
     """Entity mapping workflow phases."""
@@ -89,7 +79,6 @@ class EntityMappingPhase(str, Enum):
     CONTROL_ASSESSMENT = "control_assessment"
     MATERIALITY_SCREENING = "materiality_screening"
     REGISTRY_LOCK = "registry_lock"
-
 
 class EntityType(str, Enum):
     """Legal entity type classification."""
@@ -101,13 +90,11 @@ class EntityType(str, Enum):
     SPECIAL_PURPOSE = "special_purpose"
     OTHER = "other"
 
-
 class ControlType(str, Enum):
     """GHG Protocol control classification."""
     OPERATIONAL_CONTROL = "operational_control"
     FINANCIAL_CONTROL = "financial_control"
     NO_CONTROL = "no_control"
-
 
 class MaterialityClassification(str, Enum):
     """Materiality assessment outcome."""
@@ -115,13 +102,11 @@ class MaterialityClassification(str, Enum):
     IMMATERIAL = "immaterial"
     BORDERLINE = "borderline"
 
-
 class RegistryLockStatus(str, Enum):
     """Entity registry lock status."""
     UNLOCKED = "unlocked"
     LOCKED = "locked"
     LOCKED_WITH_EXCEPTIONS = "locked_with_exceptions"
-
 
 # =============================================================================
 # REFERENCE DATA
@@ -138,11 +123,9 @@ ENTITY_SOURCE_PRIORITY: Dict[str, int] = {
     "annual_report": 2,
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -156,7 +139,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="", description="SHA-256 of phase output")
-
 
 class CandidateEntity(BaseModel):
     """A discovered candidate entity before ownership resolution."""
@@ -174,8 +156,7 @@ class CandidateEntity(BaseModel):
     )
     source: str = Field("manual", description="Discovery data source")
     is_active: bool = Field(True, description="Entity active status")
-    discovered_at: str = Field(default_factory=lambda: _utcnow().isoformat())
-
+    discovered_at: str = Field(default_factory=lambda: utcnow().isoformat())
 
 class OwnershipChain(BaseModel):
     """Resolved ownership chain for an entity."""
@@ -194,7 +175,6 @@ class OwnershipChain(BaseModel):
     chain_depth: int = Field(0, description="Number of tiers in ownership chain")
     is_circular: bool = Field(False, description="Circular ownership detected")
 
-
 class ControlAssessmentResult(BaseModel):
     """Control assessment for a single entity."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -210,7 +190,6 @@ class ControlAssessmentResult(BaseModel):
     policy_setting_power: bool = Field(False, description="Can set operating policies")
     assessment_notes: str = Field("", description="Assessment rationale")
 
-
 class MaterialityAssessment(BaseModel):
     """Materiality assessment for a single entity."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -223,7 +202,6 @@ class MaterialityAssessment(BaseModel):
     classification: MaterialityClassification = Field(MaterialityClassification.MATERIAL)
     is_included: bool = Field(True, description="Included in consolidation boundary")
     exclusion_rationale: str = Field("", description="Reason for exclusion if immaterial")
-
 
 class LockedEntity(BaseModel):
     """A fully resolved and locked entity in the registry."""
@@ -239,7 +217,6 @@ class LockedEntity(BaseModel):
     is_included: bool = Field(True)
     locked_at: str = Field("")
     provenance_hash: str = Field("")
-
 
 class EntityMappingInput(BaseModel):
     """Input for the entity mapping workflow."""
@@ -266,7 +243,6 @@ class EntityMappingInput(BaseModel):
     )
     skip_phases: List[str] = Field(default_factory=list, description="Phase names to skip")
 
-
 class EntityMappingResult(BaseModel):
     """Output from the entity mapping workflow."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -288,11 +264,9 @@ class EntityMappingResult(BaseModel):
     started_at: str = Field("")
     completed_at: str = Field("")
 
-
 # =============================================================================
 # WORKFLOW CLASS
 # =============================================================================
-
 
 class EntityMappingWorkflow:
     """
@@ -343,7 +317,7 @@ class EntityMappingWorkflow:
         Returns:
             EntityMappingResult with locked entities and provenance.
         """
-        start = _utcnow()
+        start = utcnow()
         result = EntityMappingResult(
             organisation_id=input_data.organisation_id,
             reporting_year=input_data.reporting_year,
@@ -367,10 +341,10 @@ class EntityMappingWorkflow:
                 ))
                 continue
 
-            phase_start = _utcnow()
+            phase_start = utcnow()
             try:
                 phase_out = phase_methods[phase](input_data, result)
-                elapsed = (_utcnow() - phase_start).total_seconds()
+                elapsed = (utcnow() - phase_start).total_seconds()
                 ph_hash = _compute_hash(str(phase_out))
                 result.phase_results.append(PhaseResult(
                     phase_name=phase.value, phase_number=idx,
@@ -378,7 +352,7 @@ class EntityMappingWorkflow:
                     outputs=phase_out, provenance_hash=ph_hash,
                 ))
             except Exception as exc:
-                elapsed = (_utcnow() - phase_start).total_seconds()
+                elapsed = (utcnow() - phase_start).total_seconds()
                 logger.error("Phase %s failed: %s", phase.value, exc, exc_info=True)
                 result.phase_results.append(PhaseResult(
                     phase_name=phase.value, phase_number=idx,
@@ -392,7 +366,7 @@ class EntityMappingWorkflow:
         if result.status != WorkflowStatus.FAILED:
             result.status = WorkflowStatus.COMPLETED
 
-        end = _utcnow()
+        end = utcnow()
         result.completed_at = end.isoformat()
         result.duration_seconds = (end - start).total_seconds()
         result.provenance_hash = _compute_hash(
@@ -689,6 +663,8 @@ class EntityMappingWorkflow:
         """
         Apply materiality threshold to exclude immaterial entities
         from the consolidation boundary.
+
+from greenlang.schemas import utcnow
         """
         logger.info("Phase 4 -- Materiality Screening")
 
@@ -786,7 +762,7 @@ class EntityMappingWorkflow:
         provenance hashes and audit trail.
         """
         logger.info("Phase 5 -- Registry Lock")
-        now_iso = _utcnow().isoformat()
+        now_iso = utcnow().isoformat()
         locked_entities: List[LockedEntity] = []
         included = 0
         excluded = 0
@@ -864,7 +840,6 @@ class EntityMappingWorkflow:
             return Decimal(str(value))
         except Exception:
             return Decimal("0")
-
 
 # =============================================================================
 # MODULE EXPORTS

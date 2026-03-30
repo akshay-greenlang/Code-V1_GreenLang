@@ -15,18 +15,10 @@ from typing import Dict, List, Any, Optional
 from datetime import datetime
 import aiohttp
 from dataclasses import dataclass
-from enum import Enum
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas.enums import HealthStatus
 
 logger = logging.getLogger(__name__)
-
-
-class HealthStatus(Enum):
-    """Service health status"""
-    HEALTHY = "healthy"
-    DEGRADED = "degraded"
-    UNHEALTHY = "unhealthy"
-    UNKNOWN = "unknown"
 
 
 @dataclass

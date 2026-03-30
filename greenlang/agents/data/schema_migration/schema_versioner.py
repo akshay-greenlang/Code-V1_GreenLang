@@ -76,7 +76,6 @@ __all__ = [
     "SchemaVersionerEngine",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -101,20 +100,9 @@ BUMP_PATCH = "patch"
 _PREFIX_VERSION = "VER"
 _PREFIX_PIN = "PIN"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed for consistency.
-
-    Returns:
-        Timezone-aware datetime at second precision in UTC.
-    """
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _generate_id(prefix: str = "VER") -> str:
     """Generate a unique identifier with the given prefix.
@@ -131,7 +119,6 @@ def _generate_id(prefix: str = "VER") -> str:
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
 
-
 def _compute_provenance(operation: str, payload_repr: str) -> str:
     """Compute a SHA-256 provenance hash for an engine operation.
 
@@ -146,9 +133,8 @@ def _compute_provenance(operation: str, payload_repr: str) -> str:
     Returns:
         Hex-encoded 64-character SHA-256 digest.
     """
-    raw = f"{operation}:{payload_repr}:{_utcnow().isoformat()}"
+    raw = f"{operation}:{payload_repr}:{utcnow().isoformat()}"
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 def _serialize_definition(definition_json: Any) -> str:
     """Serialize a schema definition to a canonical JSON string.
@@ -164,11 +150,9 @@ def _serialize_definition(definition_json: Any) -> str:
     """
     return json.dumps(definition_json, sort_keys=True, separators=(",", ":"))
 
-
 # ---------------------------------------------------------------------------
 # SemVer helpers (module-level, no class dependency)
 # ---------------------------------------------------------------------------
-
 
 def _parse_version(version_string: str) -> Tuple[int, int, int]:
     """Parse a SemVer string into its (major, minor, patch) integer tuple.
@@ -205,7 +189,6 @@ def _parse_version(version_string: str) -> Tuple[int, int, int]:
         )
     return major, minor, patch
 
-
 def _bump_version(current_version: str, bump_type: str) -> str:
     """Increment a SemVer string according to the specified bump type.
 
@@ -241,7 +224,6 @@ def _bump_version(current_version: str, bump_type: str) -> str:
     raise ValueError(
         f"Unknown bump_type '{bump_type}'. Must be one of: major, minor, patch."
     )
-
 
 def _classify_bump(changes: List[Dict[str, Any]]) -> str:
     """Classify the required SemVer bump from a list of change descriptors.
@@ -280,7 +262,6 @@ def _classify_bump(changes: List[Dict[str, Any]]) -> str:
             has_minor = True
     return BUMP_MINOR if has_minor else BUMP_PATCH
 
-
 def _version_tuple_key(version_string: str) -> Tuple[int, int, int]:
     """Convert a SemVer string to a sortable tuple for ordering.
 
@@ -295,11 +276,9 @@ def _version_tuple_key(version_string: str) -> Tuple[int, int, int]:
     except ValueError:
         return (0, 0, 0)
 
-
 # ---------------------------------------------------------------------------
 # Main Engine
 # ---------------------------------------------------------------------------
-
 
 class SchemaVersionerEngine:
     """Engine 2 of 7 — Semantic versioning for the Schema Migration Agent.
@@ -388,6 +367,8 @@ class SchemaVersionerEngine:
             - ``changes`` (List[Dict]): The change list (empty list if None).
             - ``changelog`` (List[Dict]): Structured changelog entries derived
               from changes.
+
+from greenlang.schemas import utcnow
             - ``changelog_note`` (str): The free-text note.
             - ``created_by`` (str): Actor identifier.
             - ``created_at`` (str): ISO-8601 UTC timestamp.
@@ -438,7 +419,7 @@ class SchemaVersionerEngine:
                 )
 
             version_id = _generate_id(_PREFIX_VERSION)
-            now_str = _utcnow().isoformat()
+            now_str = utcnow().isoformat()
 
             # Build structured changelog from changes list
             changelog = self._build_changelog_entries(changes, changelog_note)
@@ -714,7 +695,7 @@ class SchemaVersionerEngine:
             "common_keys": common_keys,
             "changes_a": rec_a.get("changes", []),
             "changes_b": rec_b.get("changes", []),
-            "compared_at": _utcnow().isoformat(),
+            "compared_at": utcnow().isoformat(),
         }
 
     # ------------------------------------------------------------------
@@ -766,7 +747,7 @@ class SchemaVersionerEngine:
             if sunset_date is not None:
                 validated_sunset = self._validate_sunset_date(sunset_date)
 
-            now_str = _utcnow().isoformat()
+            now_str = utcnow().isoformat()
             provenance_hash = _compute_provenance(
                 "deprecate_version",
                 f"{version_id}:{sunset_date}:{reason}",
@@ -1137,7 +1118,7 @@ class SchemaVersionerEngine:
             raise ValueError("version_range must be non-empty.")
 
         pin_id = _generate_id(_PREFIX_PIN)
-        now_str = _utcnow().isoformat()
+        now_str = utcnow().isoformat()
         provenance_hash = _compute_provenance(
             "pin_version",
             f"{schema_id}:{consumer_id}:{version_range}",
@@ -1215,7 +1196,7 @@ class SchemaVersionerEngine:
             "by_schema": by_schema,
             "total_schemas": len(by_schema),
             "total_pins": total_pins,
-            "collected_at": _utcnow().isoformat(),
+            "collected_at": utcnow().isoformat(),
         }
 
     # ------------------------------------------------------------------

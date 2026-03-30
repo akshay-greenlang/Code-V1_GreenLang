@@ -37,35 +37,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class WorkflowPhase(str, Enum):
     """Phases of the regulatory submission workflow."""
@@ -73,7 +65,6 @@ class WorkflowPhase(str, Enum):
     SUPERVISORY_READINESS_CHECK = "supervisory_readiness_check"
     SUBMISSION_PACKAGE = "submission_package"
     COMPLIANCE_TRACKING = "compliance_tracking"
-
 
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
@@ -83,7 +74,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class PhaseStatus(str, Enum):
     """Status of a single phase."""
     PENDING = "pending"
@@ -92,7 +82,6 @@ class PhaseStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class DocumentStatus(str, Enum):
     """Status of a required document."""
     COMPLETE = "complete"
@@ -100,7 +89,6 @@ class DocumentStatus(str, Enum):
     MISSING = "missing"
     OUTDATED = "outdated"
     UNDER_REVIEW = "under_review"
-
 
 class ComplianceObligation(str, Enum):
     """Ongoing compliance obligation types."""
@@ -112,7 +100,6 @@ class ComplianceObligation(str, Enum):
     SUPERVISORY_RESPONSE = "supervisory_response"
     CSRD_DISCLOSURE = "csrd_disclosure"
 
-
 class RiskExposure(str, Enum):
     """Regulatory risk exposure level."""
     CRITICAL = "critical"
@@ -120,11 +107,9 @@ class RiskExposure(str, Enum):
     MODERATE = "moderate"
     LOW = "low"
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -136,7 +121,6 @@ class PhaseResult(BaseModel):
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class DDWorkflowResult(BaseModel):
     """Summary result from an upstream DD workflow."""
     workflow_name: str = Field(default="", description="Name of DD workflow")
@@ -145,7 +129,6 @@ class DDWorkflowResult(BaseModel):
     key_findings: List[str] = Field(default_factory=list)
     gaps_count: int = Field(default=0, ge=0)
     last_updated: str = Field(default="", description="ISO date")
-
 
 class CompanySubmissionProfile(BaseModel):
     """Company profile for submission context."""
@@ -158,7 +141,6 @@ class CompanySubmissionProfile(BaseModel):
     company_tier: str = Field(default="", description="group_1, group_2, etc.")
     csrd_reporting_entity: bool = Field(default=True, description="Subject to CSRD")
 
-
 class RequiredDocument(BaseModel):
     """Required document for regulatory submission."""
     document_id: str = Field(default_factory=lambda: f"doc-{_new_uuid()[:8]}")
@@ -168,7 +150,6 @@ class RequiredDocument(BaseModel):
     last_updated: str = Field(default="")
     owner: str = Field(default="", description="Responsible person/department")
     notes: str = Field(default="")
-
 
 class RegulatorySubmissionInput(BaseModel):
     """Input data model for RegulatorySubmissionWorkflow."""
@@ -183,7 +164,6 @@ class RegulatorySubmissionInput(BaseModel):
     )
     config: Dict[str, Any] = Field(default_factory=dict)
 
-
 class ComplianceItem(BaseModel):
     """Ongoing compliance tracking item."""
     item_id: str = Field(default_factory=lambda: f"ci-{_new_uuid()[:8]}")
@@ -194,7 +174,6 @@ class ComplianceItem(BaseModel):
     responsible: str = Field(default="")
     status: str = Field(default="pending", description="pending/in_progress/completed")
     risk_if_missed: RiskExposure = Field(default=RiskExposure.HIGH)
-
 
 class RegulatorySubmissionResult(BaseModel):
     """Complete result from regulatory submission workflow."""
@@ -226,11 +205,9 @@ class RegulatorySubmissionResult(BaseModel):
     executed_at: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # REQUIRED DOCUMENTATION BY ARTICLE
 # =============================================================================
-
 
 REQUIRED_DOCS: List[Dict[str, str]] = [
     {"article": "art_5", "doc_name": "Due diligence policy", "description": "Board-approved DD policy"},
@@ -245,11 +222,9 @@ REQUIRED_DOCS: List[Dict[str, str]] = [
     {"article": "art_15", "doc_name": "Climate transition plan", "description": "Paris-aligned transition plan"},
 ]
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class RegulatorySubmissionWorkflow:
     """
@@ -316,7 +291,7 @@ class RegulatorySubmissionWorkflow:
         if input_data is None:
             input_data = RegulatorySubmissionInput(config=config or {})
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting regulatory submission workflow %s", self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = WorkflowStatus.IN_PROGRESS
@@ -334,7 +309,7 @@ class RegulatorySubmissionWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         completed_count = sum(1 for p in phase_results if p.status == PhaseStatus.COMPLETED)
 
         # Document stats
@@ -399,7 +374,7 @@ class RegulatorySubmissionWorkflow:
             upcoming_deadlines=deadlines[:10],
             overall_compliance_score=overall_compliance,
             reporting_year=input_data.company_profile.reporting_year,
-            executed_at=_utcnow().isoformat(),
+            executed_at=utcnow().isoformat(),
         )
         result.provenance_hash = self._compute_provenance(result)
         self.logger.info(
@@ -416,7 +391,7 @@ class RegulatorySubmissionWorkflow:
         self, input_data: RegulatorySubmissionInput,
     ) -> PhaseResult:
         """Assemble and validate all required DD documentation."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -487,7 +462,7 @@ class RegulatorySubmissionWorkflow:
         if outdated > 0:
             warnings.append(f"{outdated} documents are outdated and need refresh")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 1 DocumentationAssembly: %d required, %d complete, %d missing",
             len(self._doc_inventory), complete, missing,
@@ -507,7 +482,7 @@ class RegulatorySubmissionWorkflow:
         self, input_data: RegulatorySubmissionInput,
     ) -> PhaseResult:
         """Verify readiness for supervisory authority review."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -596,7 +571,7 @@ class RegulatorySubmissionWorkflow:
         if not cp.supervisory_authority:
             warnings.append("Designated supervisory authority not identified")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 2 SupervisoryReadiness: score=%.1f%%, workflows=%d/%d",
             self._readiness_score, completed_workflows, len(expected_workflows),
@@ -616,7 +591,7 @@ class RegulatorySubmissionWorkflow:
         self, input_data: RegulatorySubmissionInput,
     ) -> PhaseResult:
         """Build compliant submission package."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -683,7 +658,7 @@ class RegulatorySubmissionWorkflow:
             excluded_arts = [s["article"] for s in excluded]
             warnings.append(f"Package incomplete -- missing sections: {', '.join(excluded_arts)}")
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 3 SubmissionPackage: %d/%d sections included, coverage=%.1f%%",
             included_count, len(package_sections), outputs["coverage_pct"],
@@ -703,7 +678,7 @@ class RegulatorySubmissionWorkflow:
         self, input_data: RegulatorySubmissionInput,
     ) -> PhaseResult:
         """Set up ongoing compliance tracking obligations."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -809,7 +784,7 @@ class RegulatorySubmissionWorkflow:
                 f"{critical_items} compliance items carry critical enforcement risk if missed"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 4 ComplianceTracking: %d items, %d critical",
             len(self._compliance_items), critical_items,

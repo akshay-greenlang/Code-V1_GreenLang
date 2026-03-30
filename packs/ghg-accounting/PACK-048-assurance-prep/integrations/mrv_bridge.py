@@ -44,25 +44,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -75,11 +69,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class MRVScope(str, Enum):
     """MRV agent scope grouping."""
@@ -88,7 +80,6 @@ class MRVScope(str, Enum):
     SCOPE_2 = "scope_2"
     SCOPE_3 = "scope_3"
     CROSS_CUTTING = "cross_cutting"
-
 
 # ---------------------------------------------------------------------------
 # Agent Maps
@@ -131,11 +122,9 @@ AGENT_DESCRIPTIONS: Dict[str, str] = {
     "MRV-029": "Category Mapper", "MRV-030": "Audit Trail Lineage",
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class MRVBridgeConfig(BaseModel):
     """Configuration for MRV bridge."""
@@ -147,7 +136,6 @@ class MRVBridgeConfig(BaseModel):
         description="Scope 2 method: location_based or market_based",
     )
 
-
 class ProvenanceChainLink(BaseModel):
     """Single link in a calculation provenance chain."""
 
@@ -157,7 +145,6 @@ class ProvenanceChainLink(BaseModel):
     value: float = 0.0
     unit: str = ""
     provenance_hash: str = ""
-
 
 class MRVAgentProvenance(BaseModel):
     """Provenance record from a single MRV agent query."""
@@ -174,7 +161,6 @@ class MRVAgentProvenance(BaseModel):
     data_quality_score: float = 0.0
     provenance_hash: str = ""
 
-
 class ProvenanceRequest(BaseModel):
     """Request for provenance data from MRV agents."""
 
@@ -189,7 +175,6 @@ class ProvenanceRequest(BaseModel):
         True, description="Include full provenance chain links"
     )
 
-
 class ScopedProvenance(BaseModel):
     """Provenance records aggregated by scope."""
 
@@ -201,7 +186,6 @@ class ScopedProvenance(BaseModel):
     incomplete_chains: int = 0
     agent_provenance: List[MRVAgentProvenance] = Field(default_factory=list)
     provenance_hash: str = ""
-
 
 class ProvenanceResponse(BaseModel):
     """Complete provenance response for assurance evidence."""
@@ -220,11 +204,9 @@ class ProvenanceResponse(BaseModel):
     retrieved_at: str = ""
     duration_ms: float = 0.0
 
-
 # ---------------------------------------------------------------------------
 # Bridge Implementation
 # ---------------------------------------------------------------------------
-
 
 class MRVBridge:
     """
@@ -362,7 +344,7 @@ class MRVBridge:
                 "total_chains": total_chains,
                 "complete_chains": complete_chains,
             }),
-            retrieved_at=_utcnow().isoformat(),
+            retrieved_at=utcnow().isoformat(),
             duration_ms=duration,
         )
 

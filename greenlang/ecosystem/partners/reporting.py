@@ -31,6 +31,7 @@ from reportlab.lib.units import inch
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 import pandas as pd
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas.enums import ReportFormat
 
 logger = logging.getLogger(__name__)
 
@@ -41,14 +42,6 @@ class ReportType(str, Enum):
     WEEKLY = "weekly"
     MONTHLY = "monthly"
     CUSTOM = "custom"
-
-
-class ReportFormat(str, Enum):
-    """Report formats"""
-    PDF = "pdf"
-    CSV = "csv"
-    JSON = "json"
-    HTML = "html"
 
 
 class DeliveryMethod(str, Enum):

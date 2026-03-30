@@ -39,14 +39,9 @@ from greenlang.agents.foundation.qa_test_harness.models import (
     SeverityLevel,
 )
 from greenlang.agents.foundation.qa_test_harness.metrics import record_performance_breach
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 class PerformanceBenchmarker:
     """Performance benchmarking engine for QA test harness.
@@ -315,7 +310,6 @@ class PerformanceBenchmarker:
             "p95": p95_ms,
             "p99": p99_ms,
         }
-
 
 __all__ = [
     "PerformanceBenchmarker",

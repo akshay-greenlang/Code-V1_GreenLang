@@ -24,6 +24,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Set
 
 from pydantic import BaseModel, Field, validator
+from greenlang.schemas.enums import AlertSeverity
 
 
 # =============================================================================
@@ -97,14 +98,6 @@ class SensorType(str, Enum):
     ULTRASONIC = "ultrasonic"
     PRESSURE = "pressure"
     FLOW = "flow"
-
-
-class AlertSeverity(str, Enum):
-    """Alert severity levels per ISO 10816."""
-    GOOD = "good"  # Zone A
-    ACCEPTABLE = "acceptable"  # Zone B
-    UNSATISFACTORY = "unsatisfactory"  # Zone C
-    UNACCEPTABLE = "unacceptable"  # Zone D - Immediate action
 
 
 # =============================================================================

@@ -81,25 +81,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -117,7 +111,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -126,7 +119,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -138,37 +130,30 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* and return a float."""
     quantizer = Decimal(10) ** -places
     return float(value.quantize(quantizer, rounding=ROUND_HALF_UP))
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: float) -> float:
     """Round to 4 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class RegressionModelType(str, Enum):
     """Change-point regression model types per ASHRAE Guideline 14.
@@ -185,7 +170,6 @@ class RegressionModelType(str, Enum):
     FOUR_PARAMETER = "four_parameter"
     FIVE_PARAMETER = "five_parameter"
 
-
 class NormalisationMethod(str, Enum):
     """Weather normalisation approach.
 
@@ -197,7 +181,6 @@ class NormalisationMethod(str, Enum):
     REGRESSION = "regression"
     CHANGE_POINT = "change_point"
 
-
 class ValidationStatus(str, Enum):
     """Model validation status per ASHRAE Guideline 14 criteria.
 
@@ -208,7 +191,6 @@ class ValidationStatus(str, Enum):
     VALID = "valid"
     MARGINAL = "marginal"
     INVALID = "invalid"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -256,7 +238,6 @@ DEGREE_DAY_BASE_TEMPS: Dict[str, Dict[str, float]] = {
 }
 """Degree-day base temperatures by country from ASHRAE/CIBSE."""
 
-
 # ASHRAE Guideline 14-2014 statistical thresholds for model validation.
 ASHRAE_14_THRESHOLDS: Dict[str, float] = {
     "R_SQUARED_MIN": 0.75,
@@ -267,18 +248,15 @@ ASHRAE_14_THRESHOLDS: Dict[str, float] = {
 }
 """ASHRAE Guideline 14 model validation thresholds."""
 
-
 # Change-point search parameters.
 _CP_SEARCH_MIN_TEMP: float = -5.0
 _CP_SEARCH_MAX_TEMP: float = 35.0
 _CP_SEARCH_STEP: float = 0.5
 _CP_GOLDEN_RATIO: float = (math.sqrt(5.0) - 1.0) / 2.0
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class WeatherStation(BaseModel):
     """Weather station metadata for degree-day sourcing.
@@ -306,7 +284,6 @@ class WeatherStation(BaseModel):
         None, ge=-500, le=9000, description="Elevation (m)"
     )
 
-
 class DegreeDayData(BaseModel):
     """Degree-day data for a single period.
 
@@ -323,11 +300,9 @@ class DegreeDayData(BaseModel):
     cdd: Optional[float] = Field(None, ge=0, description="Cooling Degree Days")
     num_days: int = Field(default=30, ge=1, le=366, description="Days in period")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class RegressionModel(BaseModel):
     """Fitted regression model parameters.
@@ -363,7 +338,6 @@ class RegressionModel(BaseModel):
     t_ratio_cooling: float = Field(default=0.0, description="t-ratio cooling")
     n_observations: int = Field(default=0, description="Data points")
 
-
 class ModelValidation(BaseModel):
     """Model validation result per ASHRAE Guideline 14.
 
@@ -384,7 +358,6 @@ class ModelValidation(BaseModel):
     data_sufficiency_pass: bool = Field(default=False)
     issues: List[str] = Field(default_factory=list)
 
-
 class NormalisationResult(BaseModel):
     """Complete weather normalisation result with full provenance.
 
@@ -394,7 +367,7 @@ class NormalisationResult(BaseModel):
     result_id: str = Field(default_factory=_new_uuid, description="Result ID")
     engine_version: str = Field(default=_MODULE_VERSION, description="Engine version")
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
 
@@ -434,11 +407,9 @@ class NormalisationResult(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 # ---------------------------------------------------------------------------
 # Calculation Engine
 # ---------------------------------------------------------------------------
-
 
 class WeatherNormalisationEngine:
     """Weather normalisation engine using degree-day regression.

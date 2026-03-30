@@ -44,6 +44,8 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -58,22 +60,14 @@ _MODULE_VERSION = "1.0.0"
 
 EARTH_RADIUS_KM: float = 6_371.0
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class AccuracyTier(str, Enum):
     """Accuracy quality tier classification.
@@ -89,7 +83,6 @@ class AccuracyTier(str, Enum):
     SILVER = "silver"
     BRONZE = "bronze"
     UNVERIFIED = "unverified"
-
 
 class SourceType(str, Enum):
     """Classification of the GPS coordinate data source.
@@ -117,7 +110,6 @@ class SourceType(str, Enum):
     DIGITIZED_MAP = "digitized_map"
     UNKNOWN = "unknown"
 
-
 class PrecisionLevel(str, Enum):
     """Coordinate precision level classification."""
 
@@ -127,11 +119,9 @@ class PrecisionLevel(str, Enum):
     LOW = "low"
     INADEQUATE = "inadequate"
 
-
 # ---------------------------------------------------------------------------
 # Input Data Classes (expected from upstream engines)
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class PrecisionResult:
@@ -154,7 +144,6 @@ class PrecisionResult:
     is_rounded: bool = False
     is_eudr_adequate: bool = True
 
-
 @dataclass
 class NormalizedCoordinate:
     """Normalized coordinate from Engine 1/2.
@@ -170,7 +159,6 @@ class NormalizedCoordinate:
     lon: float = 0.0
     original_format: str = "DD"
     datum: str = "WGS84"
-
 
 @dataclass
 class ValidationResult:
@@ -192,11 +180,9 @@ class ValidationResult:
     swap_detected: bool = False
     null_island_detected: bool = False
 
-
 # ---------------------------------------------------------------------------
 # Result Data Classes
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class ScoreBreakdown:
@@ -219,7 +205,6 @@ class ScoreBreakdown:
     explanation: str = ""
     penalties: List[str] = field(default_factory=list)
     bonuses: List[str] = field(default_factory=list)
-
 
 @dataclass
 class AccuracyScore:
@@ -257,7 +242,6 @@ class AccuracyScore:
     provenance_hash: str = ""
     assessed_at: str = ""
     processing_time_ms: float = 0.0
-
 
 # ---------------------------------------------------------------------------
 # Scoring Constants
@@ -315,11 +299,9 @@ TIER_THRESHOLDS: List[Tuple[float, AccuracyTier]] = [
 #: Minimum score for EUDR compliance.
 MIN_EUDR_SCORE: float = 50.0
 
-
 # ===========================================================================
 # AccuracyAssessor
 # ===========================================================================
-
 
 class AccuracyAssessor:
     """Production-grade coordinate accuracy assessment engine for EUDR.
@@ -411,7 +393,7 @@ class AccuracyAssessor:
         """
         start_time = time.monotonic()
         result = AccuracyScore()
-        result.assessed_at = _utcnow().isoformat()
+        result.assessed_at = utcnow().isoformat()
         breakdowns: List[ScoreBreakdown] = []
         explanations: List[str] = []
         recommendations: List[str] = []
@@ -1223,7 +1205,6 @@ class AccuracyAssessor:
             "is_eudr_compliant": result.is_eudr_compliant,
         }
         return _compute_hash(hash_data)
-
 
 # ---------------------------------------------------------------------------
 # Module Exports

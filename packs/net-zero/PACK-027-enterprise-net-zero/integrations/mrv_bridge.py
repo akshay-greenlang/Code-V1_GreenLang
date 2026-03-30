@@ -41,18 +41,14 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -64,7 +60,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 class _AgentStub:
     def __init__(self, agent_name: str) -> None:
         self._agent_name = agent_name
@@ -74,7 +69,6 @@ class _AgentStub:
             return {"agent": self._agent_name, "status": "degraded", "emissions_tco2e": 0.0}
         return _stub
 
-
 def _try_import_mrv_agent(agent_id: str, module_path: str) -> Any:
     try:
         return importlib.import_module(module_path)
@@ -82,22 +76,18 @@ def _try_import_mrv_agent(agent_id: str, module_path: str) -> Any:
         logger.debug("MRV agent %s not available, using stub", agent_id)
         return _AgentStub(agent_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class MRVScope(str, Enum):
     SCOPE_1 = "scope_1"
     SCOPE_2 = "scope_2"
     SCOPE_3 = "scope_3"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class EnterpriseMRVAgentRoute(BaseModel):
     mrv_agent_id: str = Field(...)
@@ -108,14 +98,12 @@ class EnterpriseMRVAgentRoute(BaseModel):
     description: str = Field(default="")
     enterprise_priority: str = Field(default="high")
 
-
 class EnterpriseMRVBridgeConfig(BaseModel):
     pack_id: str = Field(default="PACK-027")
     enable_provenance: bool = Field(default=True)
     max_concurrent_agents: int = Field(default=20, ge=1, le=50)
     connection_pool_size: int = Field(default=10, ge=1, le=30)
     data_quality_minimum: float = Field(default=0.85, ge=0.5, le=1.0)
-
 
 class RoutingResult(BaseModel):
     routing_id: str = Field(default_factory=_new_uuid)
@@ -129,7 +117,6 @@ class RoutingResult(BaseModel):
     message: str = Field(default="")
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class BatchRoutingResult(BaseModel):
     batch_id: str = Field(default_factory=_new_uuid)
@@ -145,7 +132,6 @@ class BatchRoutingResult(BaseModel):
     results: List[RoutingResult] = Field(default_factory=list)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Full 30-Agent Routing Table
@@ -188,11 +174,9 @@ ENTERPRISE_MRV_ROUTING_TABLE: List[EnterpriseMRVAgentRoute] = [
     EnterpriseMRVAgentRoute(mrv_agent_id="MRV-030", mrv_agent_name="Audit Trail & Lineage", scope=MRVScope.SCOPE_1, module_path="greenlang.agents.mrv.audit_trail", enterprise_priority="critical"),
 ]
 
-
 # ---------------------------------------------------------------------------
 # EnterpriseMRVBridge
 # ---------------------------------------------------------------------------
-
 
 class EnterpriseMRVBridge:
     """Full 30-agent MRV bridge for PACK-027 enterprise GHG accounting.

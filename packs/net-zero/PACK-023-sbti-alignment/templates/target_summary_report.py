@@ -27,24 +27,19 @@ from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "23.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -54,7 +49,6 @@ def _compute_hash(data: Any) -> str:
         raw = str(data)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _dec(val: Any, places: int = 2) -> str:
     """Format a value as a Decimal string with fixed decimal places."""
     try:
@@ -63,7 +57,6 @@ def _dec(val: Any, places: int = 2) -> str:
         return str(d.quantize(Decimal(q), rounding=ROUND_HALF_UP))
     except Exception:
         return str(val)
-
 
 def _dec_comma(val: Any, places: int = 2) -> str:
     """Format a Decimal value with thousands separator."""
@@ -89,14 +82,12 @@ def _dec_comma(val: Any, places: int = 2) -> str:
     except Exception:
         return str(val)
 
-
 def _pct(val: Any) -> str:
     """Format a value as percentage string."""
     try:
         return _dec(val, 1) + "%"
     except Exception:
         return str(val)
-
 
 class TargetSummaryReportTemplate:
     """
@@ -122,7 +113,7 @@ class TargetSummaryReportTemplate:
 
     def render_markdown(self, data: Dict[str, Any]) -> str:
         """Render target summary report as Markdown."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         sections: List[str] = [
             self._md_header(data),
             self._md_target_overview(data),
@@ -139,7 +130,7 @@ class TargetSummaryReportTemplate:
 
     def render_html(self, data: Dict[str, Any]) -> str:
         """Render target summary report as self-contained HTML."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         css = self._css()
         body = "\n".join([
             self._html_header(data),
@@ -162,7 +153,7 @@ class TargetSummaryReportTemplate:
 
     def render_json(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """Render target summary report as structured JSON."""
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         targets = data.get("targets", [])
         milestones = data.get("milestones", [])
         scope_coverage = data.get("scope_coverage", {})

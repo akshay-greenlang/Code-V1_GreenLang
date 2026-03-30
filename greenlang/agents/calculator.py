@@ -5,7 +5,7 @@ Specialized base class for computational and mathematical operations.
 """
 
 from typing import Any, Dict, Optional, Union, Callable, List, Tuple
-from pydantic import BaseModel, Field, validator
+from pydantic import Field, validator
 from abc import abstractmethod
 import logging
 import hashlib
@@ -15,6 +15,7 @@ from datetime import datetime
 from functools import lru_cache
 
 from .base import BaseAgent, AgentConfig, AgentResult, AgentMetrics
+from greenlang.schemas import GreenLangBase
 
 # Import CalculationProvenance for enhanced audit trails
 try:
@@ -52,7 +53,7 @@ class CalculatorConfig(AgentConfig):
         return v
 
 
-class CalculationStep(BaseModel):
+class CalculationStep(GreenLangBase):
     """Record of a single calculation step."""
     step_name: str = Field(..., description="Name of the calculation step")
     formula: str = Field(..., description="Formula or expression")

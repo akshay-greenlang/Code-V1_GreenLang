@@ -45,25 +45,20 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import AlertSeverity
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -76,11 +71,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DeviceType(str, Enum):
     """Types of IoT devices."""
@@ -92,7 +85,6 @@ class DeviceType(str, Enum):
     EMISSIONS_SENSOR = "emissions_sensor"
     WEATHER_STATION = "weather_station"
 
-
 class DeviceProtocol(str, Enum):
     """Communication protocols for IoT devices."""
 
@@ -100,7 +92,6 @@ class DeviceProtocol(str, Enum):
     HTTP = "http"
     OPCUA = "opcua"
     MODBUS = "modbus"
-
 
 class DeviceStatus(str, Enum):
     """Operational status of an IoT device."""
@@ -111,7 +102,6 @@ class DeviceStatus(str, Enum):
     OFFLINE = "offline"
     ERROR = "error"
 
-
 class QualityFlag(str, Enum):
     """Data quality flag for sensor readings."""
 
@@ -119,7 +109,6 @@ class QualityFlag(str, Enum):
     SUSPECT = "suspect"
     BAD = "bad"
     INTERPOLATED = "interpolated"
-
 
 class AlertType(str, Enum):
     """Types of streaming alerts."""
@@ -131,19 +120,9 @@ class AlertType(str, Enum):
     DEVICE_OFFLINE = "device_offline"
     CALIBRATION_DUE = "calibration_due"
 
-
-class AlertSeverity(str, Enum):
-    """Alert severity levels."""
-
-    INFO = "info"
-    WARNING = "warning"
-    CRITICAL = "critical"
-
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class DeviceLocation(BaseModel):
     """Physical location of an IoT device."""
@@ -153,7 +132,6 @@ class DeviceLocation(BaseModel):
     building: str = Field("", description="Building name/ID")
     floor: str = Field("", description="Floor number/label")
     zone: str = Field("", description="Zone/area within facility")
-
 
 class IoTDevice(BaseModel):
     """IoT device registration."""
@@ -190,9 +168,8 @@ class IoTDevice(BaseModel):
         None, description="Maximum expected reading"
     )
     registered_at: datetime = Field(
-        default_factory=_utcnow, description="Registration timestamp"
+        default_factory=utcnow, description="Registration timestamp"
     )
-
 
 class IoTReading(BaseModel):
     """A single sensor reading."""
@@ -202,7 +179,7 @@ class IoTReading(BaseModel):
     )
     device_id: str = Field(..., description="Source device ID")
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Reading timestamp"
+        default_factory=utcnow, description="Reading timestamp"
     )
     metric_type: str = Field(..., description="Type of metric measured")
     value: float = Field(..., description="Measured value")
@@ -210,7 +187,6 @@ class IoTReading(BaseModel):
     quality_flag: QualityFlag = Field(
         QualityFlag.GOOD, description="Data quality indicator"
     )
-
 
 class AggregatedReading(BaseModel):
     """Aggregated sensor readings over a time window."""
@@ -233,7 +209,6 @@ class AggregatedReading(BaseModel):
     )
     provenance_hash: str = Field("", description="SHA-256 provenance hash")
 
-
 class StreamAlert(BaseModel):
     """Real-time streaming alert."""
 
@@ -247,10 +222,9 @@ class StreamAlert(BaseModel):
     value: Optional[float] = Field(None, description="Triggering value")
     threshold: Optional[float] = Field(None, description="Threshold exceeded")
     timestamp: datetime = Field(
-        default_factory=_utcnow, description="Alert timestamp"
+        default_factory=utcnow, description="Alert timestamp"
     )
     acknowledged: bool = Field(False, description="Whether alert is acknowledged")
-
 
 # ---------------------------------------------------------------------------
 # Emission Factors (deterministic lookup)
@@ -265,11 +239,9 @@ _EMISSION_FACTORS: Dict[str, Dict[str, float]] = {
     "steam_kg": {"co2e_kg_per_unit": 0.17, "unit": "kg"},
 }
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class IoTStreamingEngine:
     """Real-time IoT data integration and emissions calculation engine.
@@ -417,7 +389,7 @@ class IoTStreamingEngine:
         Returns:
             Dict with batch ingestion summary.
         """
-        start = _utcnow()
+        start = utcnow()
         results = {
             "total": len(readings),
             "ingested": 0,
@@ -439,7 +411,7 @@ class IoTStreamingEngine:
                 results["failed"] += 1
                 logger.warning("Failed to ingest reading: %s", str(e))
 
-        elapsed = (_utcnow() - start).total_seconds() * 1000
+        elapsed = (utcnow() - start).total_seconds() * 1000
         results["processing_time_ms"] = round(elapsed, 2)
         results["provenance_hash"] = _compute_hash(results)
 
@@ -476,7 +448,7 @@ class IoTStreamingEngine:
         if device_id not in self._devices:
             raise KeyError(f"Device '{device_id}' not registered")
 
-        now = _utcnow()
+        now = utcnow()
         window_start = now - timedelta(minutes=window_minutes)
 
         readings = [
@@ -632,7 +604,7 @@ class IoTStreamingEngine:
         calibration_ok = True
         days_since_calibration: Optional[int] = None
         if device.calibration_date:
-            days_since = (_utcnow() - device.calibration_date).days
+            days_since = (utcnow() - device.calibration_date).days
             days_since_calibration = days_since
             if days_since > device.calibration_interval_days:
                 calibration_ok = False
@@ -646,7 +618,7 @@ class IoTStreamingEngine:
             if span > 0:
                 expected_interval = span / (len(readings) - 1)
                 expected_readings = (
-                    (_utcnow() - first).total_seconds() / expected_interval
+                    (utcnow() - first).total_seconds() / expected_interval
                 )
                 uptime_pct = min(100.0, (len(readings) / max(expected_readings, 1)) * 100)
 
@@ -692,7 +664,7 @@ class IoTStreamingEngine:
         Returns:
             Dict with emissions breakdown by source.
         """
-        start = _utcnow()
+        start = utcnow()
         cutoff = start - timedelta(minutes=time_range_minutes)
 
         facility_devices = [
@@ -792,7 +764,7 @@ class IoTStreamingEngine:
             return {
                 "action": "flush",
                 "readings_flushed": flushed,
-                "flushed_at": _utcnow().isoformat(),
+                "flushed_at": utcnow().isoformat(),
             }
 
         elif action == "resize":

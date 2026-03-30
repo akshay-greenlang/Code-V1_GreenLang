@@ -46,36 +46,29 @@ from typing import Any, Dict, List, Optional, Union
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ReportFormat
+
 logger = logging.getLogger(__name__)
 
 PACK_BASE_DIR = Path(__file__).parent.parent
 CONFIG_DIR = Path(__file__).parent
 
-
 # =============================================================================
 # Helper Functions
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime (mockable for testing)."""
-    return datetime.now(timezone.utc)
-
 
 def _new_uuid() -> str:
     """Return new UUID4 string (mockable for testing)."""
     return str(uuid.uuid4())
 
-
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hash of a string for provenance tracking."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # Enums (18 total)
 # =============================================================================
-
 
 class AssuranceStandard(str, Enum):
     """Assurance engagement standard governing the verification."""
@@ -86,7 +79,6 @@ class AssuranceStandard(str, Enum):
     SSAE_18 = "SSAE_18"
     CUSTOM = "CUSTOM"
 
-
 class AssuranceLevel(str, Enum):
     """Level of assurance to be obtained or provided."""
     LIMITED = "LIMITED"
@@ -95,7 +87,6 @@ class AssuranceLevel(str, Enum):
     MODERATE = "MODERATE"
     EXAMINATION = "EXAMINATION"
     REVIEW = "REVIEW"
-
 
 class EvidenceCategory(str, Enum):
     """Category of audit evidence for assurance preparation."""
@@ -110,7 +101,6 @@ class EvidenceCategory(str, Enum):
     APPROVAL = "APPROVAL"
     EXTERNAL = "EXTERNAL"
 
-
 class EvidenceQuality(str, Enum):
     """Quality rating for individual evidence items."""
     EXCELLENT = "EXCELLENT"
@@ -118,7 +108,6 @@ class EvidenceQuality(str, Enum):
     ADEQUATE = "ADEQUATE"
     MARGINAL = "MARGINAL"
     INSUFFICIENT = "INSUFFICIENT"
-
 
 class ControlCategory(str, Enum):
     """Category of internal control over GHG reporting."""
@@ -128,13 +117,11 @@ class ControlCategory(str, Enum):
     REPORTING = "REPORTING"
     IT_GENERAL = "IT_GENERAL"
 
-
 class ControlType(str, Enum):
     """Type of internal control."""
     PREVENTIVE = "PREVENTIVE"
     DETECTIVE = "DETECTIVE"
     CORRECTIVE = "CORRECTIVE"
-
 
 class ControlEffectiveness(str, Enum):
     """Effectiveness rating for an internal control."""
@@ -142,7 +129,6 @@ class ControlEffectiveness(str, Enum):
     PARTIALLY_EFFECTIVE = "PARTIALLY_EFFECTIVE"
     INEFFECTIVE = "INEFFECTIVE"
     NOT_TESTED = "NOT_TESTED"
-
 
 class ControlMaturity(str, Enum):
     """Maturity level for internal controls (CMMI-inspired)."""
@@ -152,14 +138,12 @@ class ControlMaturity(str, Enum):
     LEVEL_4_MANAGED = "LEVEL_4_MANAGED"
     LEVEL_5_OPTIMISED = "LEVEL_5_OPTIMISED"
 
-
 class FindingSeverity(str, Enum):
     """Severity of a verifier finding."""
     CRITICAL = "CRITICAL"
     MAJOR = "MAJOR"
     MINOR = "MINOR"
     OBSERVATION = "OBSERVATION"
-
 
 class FindingType(str, Enum):
     """Type of verifier finding."""
@@ -169,14 +153,12 @@ class FindingType(str, Enum):
     RECOMMENDATION = "RECOMMENDATION"
     GOOD_PRACTICE = "GOOD_PRACTICE"
 
-
 class QueryPriority(str, Enum):
     """Priority of a verifier query."""
     CRITICAL = "CRITICAL"
     HIGH = "HIGH"
     MEDIUM = "MEDIUM"
     LOW = "LOW"
-
 
 class QueryStatus(str, Enum):
     """Status of a verifier query in the engagement lifecycle."""
@@ -187,7 +169,6 @@ class QueryStatus(str, Enum):
     RESOLVED = "RESOLVED"
     CLOSED = "CLOSED"
 
-
 class MaterialityType(str, Enum):
     """Type of materiality threshold for assurance."""
     OVERALL = "OVERALL"
@@ -196,7 +177,6 @@ class MaterialityType(str, Enum):
     SCOPE_SPECIFIC = "SCOPE_SPECIFIC"
     SPECIFIC_ITEM = "SPECIFIC_ITEM"
 
-
 class SamplingMethod(str, Enum):
     """Statistical sampling method for assurance testing."""
     MUS = "MUS"
@@ -204,7 +184,6 @@ class SamplingMethod(str, Enum):
     SYSTEMATIC = "SYSTEMATIC"
     STRATIFIED = "STRATIFIED"
     JUDGMENTAL = "JUDGMENTAL"
-
 
 class Jurisdiction(str, Enum):
     """Regulatory jurisdiction with GHG assurance mandates."""
@@ -221,7 +200,6 @@ class Jurisdiction(str, Enum):
     INDIA_BRSR = "INDIA_BRSR"
     CANADA_CSSB = "CANADA_CSSB"
 
-
 class CompanySize(str, Enum):
     """Company size classification for cost modelling and thresholds."""
     MICRO = "MICRO"
@@ -232,7 +210,6 @@ class CompanySize(str, Enum):
     ACCELERATED_FILER = "ACCELERATED_FILER"
     NON_ACCELERATED_FILER = "NON_ACCELERATED_FILER"
 
-
 class EngagementPhase(str, Enum):
     """Phase of the assurance engagement lifecycle."""
     PLANNING = "PLANNING"
@@ -241,21 +218,9 @@ class EngagementPhase(str, Enum):
     REPORTING = "REPORTING"
     CLOSEOUT = "CLOSEOUT"
 
-
-class ReportFormat(str, Enum):
-    """Supported report output formats."""
-    MARKDOWN = "MARKDOWN"
-    HTML = "HTML"
-    PDF = "PDF"
-    JSON = "JSON"
-    CSV = "CSV"
-    XBRL = "XBRL"
-
-
 # =============================================================================
 # Reference Data Constants
 # =============================================================================
-
 
 STANDARD_CONTROLS: Dict[str, Dict[str, Any]] = {
     # Data Collection controls (DC-01 to DC-05)
@@ -490,7 +455,6 @@ STANDARD_CONTROLS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 JURISDICTION_REQUIREMENTS: Dict[str, Dict[str, Any]] = {
     "EU_CSRD": {
         "jurisdiction_name": "European Union - CSRD",
@@ -614,7 +578,6 @@ JURISDICTION_REQUIREMENTS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 ISAE_3410_CATEGORIES: Dict[str, Dict[str, Any]] = {
     "engagement_acceptance": {
         "category_name": "Engagement Acceptance and Continuance",
@@ -678,7 +641,6 @@ ISAE_3410_CATEGORIES: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 COST_MODEL_PARAMS: Dict[str, Dict[str, Any]] = {
     "base_costs_by_size": {
         "MICRO": {
@@ -737,13 +699,11 @@ COST_MODEL_PARAMS: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
 MATERIALITY_DEFAULTS: Dict[str, Decimal] = {
     "overall_pct": Decimal("5.0"),
     "performance_pct": Decimal("65.0"),
     "trivial_pct": Decimal("5.0"),
 }
-
 
 AVAILABLE_PRESETS: Dict[str, str] = {
     "corporate_general": (
@@ -780,11 +740,9 @@ AVAILABLE_PRESETS: Dict[str, str] = {
     ),
 }
 
-
 # =============================================================================
 # Sub-Config Models (15+ Pydantic v2 models)
 # =============================================================================
-
 
 class EvidenceConfig(BaseModel):
     """Configuration for evidence consolidation and management."""
@@ -839,7 +797,6 @@ class EvidenceConfig(BaseModel):
             raise ValueError(f"evidence_format must be one of {allowed}, got '{v}'")
         return v.upper()
 
-
 class ReadinessConfig(BaseModel):
     """Configuration for ISAE 3410 readiness assessment."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -872,7 +829,6 @@ class ReadinessConfig(BaseModel):
         Decimal("50.0"),
         description="Score threshold below which items are flagged as high priority",
     )
-
 
 class ProvenanceConfig(BaseModel):
     """Configuration for calculation provenance verification."""
@@ -915,7 +871,6 @@ class ProvenanceConfig(BaseModel):
             raise ValueError("Only SHA-256 is supported for provenance hashing")
         return "SHA-256"
 
-
 class ControlConfig(BaseModel):
     """Configuration for internal control testing."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -955,7 +910,6 @@ class ControlConfig(BaseModel):
         description="Maximum days allowed for control remediation",
     )
 
-
 class VerifierConfig(BaseModel):
     """Configuration for verifier collaboration management."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -994,7 +948,6 @@ class VerifierConfig(BaseModel):
         ],
         description="Engagement phases to track",
     )
-
 
 class MaterialityConfig(BaseModel):
     """Configuration for materiality assessment."""
@@ -1038,7 +991,6 @@ class MaterialityConfig(BaseModel):
             raise ValueError(f"revision_frequency must be one of {allowed}, got '{v}'")
         return v.upper()
 
-
 class SamplingConfig(BaseModel):
     """Configuration for statistical sampling plan generation."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -1076,7 +1028,6 @@ class SamplingConfig(BaseModel):
         description="Percentage coverage target for the top stratum",
     )
 
-
 class RegulatoryConfig(BaseModel):
     """Configuration for multi-jurisdiction regulatory requirement mapping."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -1105,7 +1056,6 @@ class RegulatoryConfig(BaseModel):
         90, ge=30, le=365,
         description="Days before a regulatory deadline to raise warning",
     )
-
 
 class CostTimelineConfig(BaseModel):
     """Configuration for engagement cost and timeline estimation."""
@@ -1152,7 +1102,6 @@ class CostTimelineConfig(BaseModel):
         description="Currency for cost estimates (ISO 4217)",
     )
 
-
 class ReportingConfig(BaseModel):
     """Configuration for assurance report generation."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -1193,7 +1142,6 @@ class ReportingConfig(BaseModel):
         description="Decimal places for display in reports",
     )
 
-
 class AlertConfig(BaseModel):
     """Configuration for assurance monitoring and alerting."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -1230,7 +1178,6 @@ class AlertConfig(BaseModel):
         description="Send daily digest of all assurance prep alerts",
     )
 
-
 class PerformanceConfig(BaseModel):
     """Configuration for computational performance tuning."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -1257,7 +1204,6 @@ class PerformanceConfig(BaseModel):
         True, description="Lazy-load evidence packages only when needed",
     )
 
-
 class SecurityConfig(BaseModel):
     """Configuration for access control and data protection."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -1277,7 +1223,6 @@ class SecurityConfig(BaseModel):
         ],
         description="Available RBAC roles for assurance management",
     )
-
 
 class EngagementConfig(BaseModel):
     """Configuration for the overall assurance engagement."""
@@ -1316,11 +1261,9 @@ class EngagementConfig(BaseModel):
         description="Target date for assurance report issuance (ISO 8601)",
     )
 
-
 # =============================================================================
 # Main Configuration Model
 # =============================================================================
-
 
 class AssurancePackConfig(BaseModel):
     """
@@ -1430,11 +1373,9 @@ class AssurancePackConfig(BaseModel):
                 )
         return self
 
-
 # =============================================================================
 # Pack Configuration Wrapper
 # =============================================================================
-
 
 class PackConfig(BaseModel):
     """
@@ -1594,11 +1535,9 @@ class PackConfig(BaseModel):
         """
         return self.model_dump()
 
-
 # =============================================================================
 # Utility Functions
 # =============================================================================
-
 
 def load_preset(preset_name: str, overrides: Optional[Dict[str, Any]] = None) -> PackConfig:
     """
@@ -1612,7 +1551,6 @@ def load_preset(preset_name: str, overrides: Optional[Dict[str, Any]] = None) ->
         Initialised PackConfig from the named preset.
     """
     return PackConfig.from_preset(preset_name, overrides)
-
 
 def validate_config(config: AssurancePackConfig) -> List[str]:
     """
@@ -1719,7 +1657,6 @@ def validate_config(config: AssurancePackConfig) -> List[str]:
 
     return warnings
 
-
 def get_default_config(
     standard: AssuranceStandard = AssuranceStandard.ISAE_3410,
 ) -> AssurancePackConfig:
@@ -1734,7 +1671,6 @@ def get_default_config(
     """
     return AssurancePackConfig(assurance_standard=standard)
 
-
 def list_available_presets() -> Dict[str, str]:
     """
     Return a copy of all available preset names and descriptions.
@@ -1744,7 +1680,6 @@ def list_available_presets() -> Dict[str, str]:
     """
     return AVAILABLE_PRESETS.copy()
 
-
 def get_standard_controls() -> Dict[str, Dict[str, Any]]:
     """
     Return all 25 standard controls with metadata.
@@ -1753,7 +1688,6 @@ def get_standard_controls() -> Dict[str, Dict[str, Any]]:
         Dict mapping control ID to control metadata.
     """
     return STANDARD_CONTROLS.copy()
-
 
 def get_jurisdiction_requirements(
     jurisdiction: str,
@@ -1769,7 +1703,6 @@ def get_jurisdiction_requirements(
     """
     return JURISDICTION_REQUIREMENTS.get(jurisdiction)
 
-
 def get_isae3410_categories() -> Dict[str, Dict[str, Any]]:
     """
     Return ISAE 3410 assessment categories with weights and item counts.
@@ -1778,7 +1711,6 @@ def get_isae3410_categories() -> Dict[str, Dict[str, Any]]:
         Dict mapping category key to category metadata.
     """
     return ISAE_3410_CATEGORIES.copy()
-
 
 def get_cost_estimate(
     company_size: str,
@@ -1799,7 +1731,6 @@ def get_cost_estimate(
         return None
     level_key = f"{assurance_level.lower()}_eur"
     return size_data.get(level_key)
-
 
 def get_materiality_defaults() -> Dict[str, Decimal]:
     """

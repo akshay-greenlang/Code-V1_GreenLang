@@ -84,6 +84,8 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
@@ -92,21 +94,13 @@ MAX_ENTITIES: int = 50
 MAX_HIERARCHY_DEPTH: int = 3
 DEFAULT_SIGNIFICANCE_THRESHOLD: Decimal = Decimal("5")  # 5% for base year recalculation
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -119,7 +113,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -129,7 +122,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
 ) -> Decimal:
@@ -137,7 +129,6 @@ def _safe_divide(
     if denominator == Decimal("0"):
         return default
     return numerator / denominator
-
 
 def _safe_pct(
     part: Decimal, whole: Decimal, places: int = 2
@@ -149,12 +140,10 @@ def _safe_pct(
         Decimal("0." + "0" * places), rounding=ROUND_HALF_UP
     )
 
-
 def _round_val(value: Decimal, places: int = 4) -> Decimal:
     """Round a Decimal value to the specified number of decimal places."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 # ---------------------------------------------------------------------------
 # Reference Data: Common Reporting Currencies
@@ -181,18 +170,15 @@ CURRENCY_RATES_TO_USD: Dict[str, Decimal] = {
     "ZAR": Decimal("0.055"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class ConsolidationMethod(str, Enum):
     """GHG consolidation approach per GHG Protocol Chapter 3."""
     EQUITY_SHARE = "equity_share"
     FINANCIAL_CONTROL = "financial_control"
     OPERATIONAL_CONTROL = "operational_control"
-
 
 class EntityType(str, Enum):
     """Type of entity in the corporate hierarchy."""
@@ -202,14 +188,12 @@ class EntityType(str, Enum):
     JOINT_VENTURE = "joint_venture"
     ASSOCIATE = "associate"
 
-
 class ReportingStatus(str, Enum):
     """Entity reporting completeness status."""
     ACTUAL = "actual"
     ESTIMATED = "estimated"
     PARTIAL = "partial"
     NOT_REPORTED = "not_reported"
-
 
 class StructuralChangeType(str, Enum):
     """Type of structural change triggering base year recalculation."""
@@ -220,13 +204,11 @@ class StructuralChangeType(str, Enum):
     INSOURCING = "insourcing"
     ORGANIC_GROWTH = "organic_growth"
 
-
 class TargetAllocationType(str, Enum):
     """Target allocation method for distributing group target."""
     TOP_DOWN_EQUAL = "top_down_equal"
     TOP_DOWN_PROPORTIONAL = "top_down_proportional"
     BOTTOM_UP = "bottom_up"
-
 
 class EliminationType(str, Enum):
     """Type of intercompany elimination."""
@@ -234,11 +216,9 @@ class EliminationType(str, Enum):
     SCOPE2_TO_SCOPE3 = "scope2_to_scope3"
     INTERNAL_TRANSFER = "internal_transfer"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class EntityEmissions(BaseModel):
     """GHG emissions data for a single entity in one reporting year."""
@@ -262,7 +242,7 @@ class EntityEmissions(BaseModel):
     reporting_status: ReportingStatus = Field(
         default=ReportingStatus.ACTUAL, description="Reporting completeness"
     )
-    created_at: datetime = Field(default_factory=_utcnow, description="Creation timestamp")
+    created_at: datetime = Field(default_factory=utcnow, description="Creation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("ownership_pct", "scope1_emissions", "scope2_location",
@@ -271,7 +251,6 @@ class EntityEmissions(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class IntercompanyElimination(BaseModel):
     """Intercompany emission elimination to prevent double counting."""
@@ -290,7 +269,6 @@ class IntercompanyElimination(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class StructuralChange(BaseModel):
     """Record of a structural change affecting the corporate boundary."""
     change_id: str = Field(default_factory=_new_uuid, description="Change identifier")
@@ -308,7 +286,6 @@ class StructuralChange(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class EntityTargetAllocation(BaseModel):
     """Target allocation for a single entity."""
@@ -329,7 +306,6 @@ class EntityTargetAllocation(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class GroupEmissions(BaseModel):
     """Consolidated group-level emissions."""
     group_id: str = Field(default_factory=_new_uuid, description="Group identifier")
@@ -348,7 +324,7 @@ class GroupEmissions(BaseModel):
     completeness_pct: Decimal = Field(default=Decimal("0"), description="Data completeness %")
     revenue_total: Decimal = Field(default=Decimal("0"), description="Group revenue (USD)")
     intensity_per_revenue: Decimal = Field(default=Decimal("0"), description="tCO2e per $M revenue")
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Calculation timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Calculation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("scope1_total", "scope2_location_total", "scope2_market_total",
@@ -358,7 +334,6 @@ class GroupEmissions(BaseModel):
     @classmethod
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class BaseYearRecalculation(BaseModel):
     """Result of base year recalculation assessment."""
@@ -375,7 +350,7 @@ class BaseYearRecalculation(BaseModel):
     recalculated_base_year_emissions: Optional[Decimal] = Field(
         default=None, description="Recalculated base year emissions (tCO2e)"
     )
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Calculation timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Calculation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("original_base_year_emissions", "total_impact",
@@ -391,7 +366,6 @@ class BaseYearRecalculation(BaseModel):
         if v is None:
             return None
         return _decimal(v)
-
 
 class ConsolidationResult(BaseModel):
     """Complete multi-entity consolidation result."""
@@ -413,7 +387,7 @@ class ConsolidationResult(BaseModel):
     base_year_recalculation: Optional[BaseYearRecalculation] = Field(
         default=None, description="Base year recalculation if triggered"
     )
-    calculated_at: datetime = Field(default_factory=_utcnow, description="Calculation timestamp")
+    calculated_at: datetime = Field(default_factory=utcnow, description="Calculation timestamp")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
     @field_validator("completeness_pct", mode="before")
@@ -421,11 +395,9 @@ class ConsolidationResult(BaseModel):
     def _coerce_decimal(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 # ---------------------------------------------------------------------------
 # Engine Configuration
 # ---------------------------------------------------------------------------
-
 
 class MultiEntityConfig(BaseModel):
     """Configuration for the MultiEntityEngine."""
@@ -447,7 +419,6 @@ class MultiEntityConfig(BaseModel):
         default=4, description="Decimal places for results"
     )
 
-
 # ---------------------------------------------------------------------------
 # Pydantic model_rebuild
 # ---------------------------------------------------------------------------
@@ -461,11 +432,9 @@ BaseYearRecalculation.model_rebuild()
 ConsolidationResult.model_rebuild()
 MultiEntityConfig.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # MultiEntityEngine
 # ---------------------------------------------------------------------------
-
 
 class MultiEntityEngine:
     """

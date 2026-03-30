@@ -18,7 +18,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
@@ -34,7 +34,7 @@ class DocumentationType(str, Enum):
     README = "readme"
 
 
-class DocumentationSection(BaseModel):
+class DocumentationSection(GreenLangBase):
     section_id: str = Field(default_factory=lambda: str(uuid.uuid4())[:8])
     title: str = Field(..., description="Section title")
     content: str = Field(..., description="Section content")
@@ -42,7 +42,7 @@ class DocumentationSection(BaseModel):
     subsections: List["DocumentationSection"] = Field(default_factory=list)
 
 
-class APIEndpoint(BaseModel):
+class APIEndpoint(GreenLangBase):
     method: str = Field(..., description="HTTP method")
     path: str = Field(..., description="Endpoint path")
     description: str = Field(...)
@@ -50,7 +50,7 @@ class APIEndpoint(BaseModel):
     responses: Dict[str, Any] = Field(default_factory=dict)
 
 
-class APIDocumentation(BaseModel):
+class APIDocumentation(GreenLangBase):
     doc_id: str = Field(default_factory=lambda: str(uuid.uuid4())[:8])
     title: str = Field(..., description="API title")
     version: str = Field(default="1.0.0")
@@ -60,7 +60,7 @@ class APIDocumentation(BaseModel):
     generated_at: datetime = Field(default_factory=DeterministicClock.now)
 
 
-class UserGuide(BaseModel):
+class UserGuide(GreenLangBase):
     guide_id: str = Field(default_factory=lambda: str(uuid.uuid4())[:8])
     title: str = Field(..., description="Guide title")
     version: str = Field(default="1.0.0")
@@ -68,7 +68,7 @@ class UserGuide(BaseModel):
     generated_at: datetime = Field(default_factory=DeterministicClock.now)
 
 
-class DocumentationInput(BaseModel):
+class DocumentationInput(GreenLangBase):
     operation: str = Field(..., description="Operation to perform")
     agent_id: Optional[str] = Field(None)
     doc_type: Optional[DocumentationType] = Field(None)
@@ -89,7 +89,7 @@ class DocumentationInput(BaseModel):
         return v
 
 
-class DocumentationOutput(BaseModel):
+class DocumentationOutput(GreenLangBase):
     success: bool = Field(...)
     operation: str = Field(...)
     data: Dict[str, Any] = Field(default_factory=dict)
@@ -112,6 +112,7 @@ pip install greenlang
 
 ```python
 from greenlang.agents import {class_name}
+from greenlang.schemas import GreenLangBase
 
 agent = {class_name}()
 result = agent.run({{"operation": "process"}})

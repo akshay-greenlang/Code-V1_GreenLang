@@ -19,16 +19,15 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
 
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 class FactorAssignmentRow(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -77,7 +76,6 @@ class FactorReportOutput(BaseModel):
     total_assignments: int = Field(0)
     provenance_hash: str = Field("")
 
-
 class RegionalFactorReport:
     """Factor assignment matrix report template."""
 
@@ -88,7 +86,7 @@ class RegionalFactorReport:
 
     def render(self, data: Dict[str, Any]) -> FactorReportOutput:
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         inp = FactorReportInput(**data) if isinstance(data, dict) else data
 
         assignments = [FactorAssignmentRow(**a) if isinstance(a, dict) else a for a in inp.assignments]
@@ -172,6 +170,5 @@ class RegionalFactorReport:
         for a in r.assignment_matrix:
             lines.append(f"{a.site_name},{a.source_category},{a.scope},{a.factor_name},{a.factor_value},{a.factor_unit},{a.source_db},{a.tier}")
         return "\n".join(lines)
-
 
 __all__ = ["RegionalFactorReport", "FactorReportInput", "FactorReportOutput"]

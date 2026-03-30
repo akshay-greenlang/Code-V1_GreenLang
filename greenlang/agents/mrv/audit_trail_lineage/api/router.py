@@ -36,13 +36,14 @@ Example:
 """
 
 from fastapi import APIRouter, HTTPException, Query, Path, Depends, status
-from pydantic import BaseModel, Field, validator
+from pydantic import Field, validator
 from typing import List, Optional, Dict, Any
 from enum import Enum
 import logging
 import uuid
 import hashlib
 from datetime import datetime
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -194,7 +195,7 @@ def get_service():
 # ============================================================================
 
 
-class RecordEventRequest(BaseModel):
+class RecordEventRequest(GreenLangBase):
     """
     Request model for recording a single audit event.
 
@@ -257,7 +258,7 @@ class RecordEventRequest(BaseModel):
     )
 
 
-class BatchRecordRequest(BaseModel):
+class BatchRecordRequest(GreenLangBase):
     """
     Request model for recording a batch of audit events.
 
@@ -285,7 +286,7 @@ class BatchRecordRequest(BaseModel):
 # ============================================================================
 
 
-class ChainVerifyRequest(BaseModel):
+class ChainVerifyRequest(GreenLangBase):
     """
     Request model for verifying hash chain integrity.
 
@@ -323,7 +324,7 @@ class ChainVerifyRequest(BaseModel):
 # ============================================================================
 
 
-class CreateNodeRequest(BaseModel):
+class CreateNodeRequest(GreenLangBase):
     """
     Request model for creating a lineage graph node.
 
@@ -390,7 +391,7 @@ class CreateNodeRequest(BaseModel):
     )
 
 
-class CreateEdgeRequest(BaseModel):
+class CreateEdgeRequest(GreenLangBase):
     """
     Request model for creating a lineage graph edge.
 
@@ -442,7 +443,7 @@ class CreateEdgeRequest(BaseModel):
     )
 
 
-class LineageTraceRequest(BaseModel):
+class LineageTraceRequest(GreenLangBase):
     """
     Request model for tracing lineage in the DAG.
 
@@ -484,7 +485,7 @@ class LineageTraceRequest(BaseModel):
 # ============================================================================
 
 
-class CreateEvidenceRequest(BaseModel):
+class CreateEvidenceRequest(GreenLangBase):
     """
     Request model for creating an evidence package.
 
@@ -526,7 +527,7 @@ class CreateEvidenceRequest(BaseModel):
     )
 
 
-class SignPackageRequest(BaseModel):
+class SignPackageRequest(GreenLangBase):
     """
     Request model for signing an evidence package.
 
@@ -558,7 +559,7 @@ class SignPackageRequest(BaseModel):
 # ============================================================================
 
 
-class ComplianceTraceRequest(BaseModel):
+class ComplianceTraceRequest(GreenLangBase):
     """
     Request model for tracing compliance requirements.
 
@@ -600,7 +601,7 @@ class ComplianceTraceRequest(BaseModel):
 # ============================================================================
 
 
-class DetectChangeRequest(BaseModel):
+class DetectChangeRequest(GreenLangBase):
     """
     Request model for detecting and recording a change event.
 
@@ -668,7 +669,7 @@ class DetectChangeRequest(BaseModel):
 # ============================================================================
 
 
-class PipelineExecuteRequest(BaseModel):
+class PipelineExecuteRequest(GreenLangBase):
     """
     Request model for full pipeline execution.
 
@@ -742,7 +743,7 @@ class PipelineExecuteRequest(BaseModel):
     )
 
 
-class BatchPipelineRequest(BaseModel):
+class BatchPipelineRequest(GreenLangBase):
     """
     Request model for batch pipeline execution.
 
@@ -774,7 +775,7 @@ class BatchPipelineRequest(BaseModel):
 # ============================================================================
 
 
-class EventResponse(BaseModel):
+class EventResponse(GreenLangBase):
     """Response model for a single audit event."""
 
     event_id: str = Field(..., description="Unique event UUID")
@@ -808,7 +809,7 @@ class EventResponse(BaseModel):
     created_at: str = Field(..., description="ISO 8601 creation timestamp")
 
 
-class BatchEventResponse(BaseModel):
+class BatchEventResponse(GreenLangBase):
     """Response model for batch audit event recording."""
 
     batch_id: str = Field(..., description="Unique batch UUID")
@@ -838,7 +839,7 @@ class BatchEventResponse(BaseModel):
     )
 
 
-class ChainVerifyResponse(BaseModel):
+class ChainVerifyResponse(GreenLangBase):
     """Response model for hash chain integrity verification."""
 
     organization_id: str = Field(..., description="Organization identifier")
@@ -872,7 +873,7 @@ class ChainVerifyResponse(BaseModel):
     )
 
 
-class LineageNodeResponse(BaseModel):
+class LineageNodeResponse(GreenLangBase):
     """Response model for a lineage graph node."""
 
     node_id: str = Field(..., description="Unique node UUID")
@@ -892,7 +893,7 @@ class LineageNodeResponse(BaseModel):
     created_at: str = Field(..., description="ISO 8601 creation timestamp")
 
 
-class LineageEdgeResponse(BaseModel):
+class LineageEdgeResponse(GreenLangBase):
     """Response model for a lineage graph edge."""
 
     edge_id: str = Field(..., description="Unique edge UUID")
@@ -909,7 +910,7 @@ class LineageEdgeResponse(BaseModel):
     created_at: str = Field(..., description="ISO 8601 creation timestamp")
 
 
-class LineageGraphResponse(BaseModel):
+class LineageGraphResponse(GreenLangBase):
     """Response model for a complete lineage graph."""
 
     calculation_id: str = Field(
@@ -934,7 +935,7 @@ class LineageGraphResponse(BaseModel):
     )
 
 
-class LineageTraceResponse(BaseModel):
+class LineageTraceResponse(GreenLangBase):
     """Response model for lineage trace traversal."""
 
     start_node_id: str = Field(..., description="Starting node UUID")
@@ -956,7 +957,7 @@ class LineageTraceResponse(BaseModel):
     )
 
 
-class VisualizationResponse(BaseModel):
+class VisualizationResponse(GreenLangBase):
     """Response model for lineage graph visualization export."""
 
     calculation_id: str = Field(
@@ -972,7 +973,7 @@ class VisualizationResponse(BaseModel):
     edge_count: int = Field(..., description="Number of edges rendered")
 
 
-class EvidencePackageResponse(BaseModel):
+class EvidencePackageResponse(GreenLangBase):
     """Response model for an evidence package."""
 
     package_id: str = Field(..., description="Unique package UUID")
@@ -1008,7 +1009,7 @@ class EvidencePackageResponse(BaseModel):
     )
 
 
-class SignatureVerifyResponse(BaseModel):
+class SignatureVerifyResponse(GreenLangBase):
     """Response model for evidence package signature verification."""
 
     package_id: str = Field(..., description="Package UUID")
@@ -1023,7 +1024,7 @@ class SignatureVerifyResponse(BaseModel):
     )
 
 
-class ComplianceTraceResponse(BaseModel):
+class ComplianceTraceResponse(GreenLangBase):
     """Response model for compliance requirement tracing."""
 
     framework: str = Field(
@@ -1053,7 +1054,7 @@ class ComplianceTraceResponse(BaseModel):
     )
 
 
-class ComplianceCoverageResponse(BaseModel):
+class ComplianceCoverageResponse(GreenLangBase):
     """Response model for overall compliance coverage."""
 
     organization_id: str = Field(..., description="Organization identifier")
@@ -1070,7 +1071,7 @@ class ComplianceCoverageResponse(BaseModel):
     )
 
 
-class ChangeDetectionResponse(BaseModel):
+class ChangeDetectionResponse(GreenLangBase):
     """Response model for change detection."""
 
     change_id: str = Field(..., description="Unique change UUID")
@@ -1098,7 +1099,7 @@ class ChangeDetectionResponse(BaseModel):
     created_at: str = Field(..., description="ISO 8601 creation timestamp")
 
 
-class ChangeImpactResponse(BaseModel):
+class ChangeImpactResponse(GreenLangBase):
     """Response model for change impact analysis."""
 
     change_id: str = Field(..., description="Change UUID")
@@ -1119,7 +1120,7 @@ class ChangeImpactResponse(BaseModel):
     )
 
 
-class PipelineResponse(BaseModel):
+class PipelineResponse(GreenLangBase):
     """Response model for full pipeline execution."""
 
     pipeline_id: str = Field(..., description="Unique pipeline execution UUID")
@@ -1152,7 +1153,7 @@ class PipelineResponse(BaseModel):
     )
 
 
-class BatchPipelineResponse(BaseModel):
+class BatchPipelineResponse(GreenLangBase):
     """Response model for batch pipeline execution."""
 
     batch_id: str = Field(..., description="Unique batch UUID")
@@ -1173,7 +1174,7 @@ class BatchPipelineResponse(BaseModel):
     )
 
 
-class AuditSummaryResponse(BaseModel):
+class AuditSummaryResponse(GreenLangBase):
     """Response model for audit trail summary."""
 
     organization_id: str = Field(..., description="Organization identifier")
@@ -1216,7 +1217,7 @@ class AuditSummaryResponse(BaseModel):
     )
 
 
-class EngineStatus(BaseModel):
+class EngineStatus(GreenLangBase):
     """Status of a single engine in the audit trail agent."""
 
     engine_name: str = Field(..., description="Engine identifier")
@@ -1228,7 +1229,7 @@ class EngineStatus(BaseModel):
     )
 
 
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """Response model for health check with 7 engine statuses."""
 
     status: str = Field(..., description="Service health status")

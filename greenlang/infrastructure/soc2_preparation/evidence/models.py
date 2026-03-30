@@ -27,7 +27,8 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Set
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 
 
 # ---------------------------------------------------------------------------
@@ -115,7 +116,7 @@ class ControlFrequency(str, Enum):
 # ---------------------------------------------------------------------------
 
 
-class DateRange(BaseModel):
+class DateRange(GreenLangBase):
     """Date range for evidence collection periods.
 
     Attributes:
@@ -152,7 +153,7 @@ class DateRange(BaseModel):
         return (self.end - self.start).days
 
 
-class Evidence(BaseModel):
+class Evidence(GreenLangBase):
     """Core evidence record for SOC 2 controls.
 
     Represents a single piece of evidence collected for audit purposes.
@@ -314,7 +315,7 @@ class Evidence(BaseModel):
         return hashlib.sha256(json_str.encode()).hexdigest()
 
 
-class EvidenceVersion(BaseModel):
+class EvidenceVersion(GreenLangBase):
     """Version record for evidence history tracking.
 
     Attributes:
@@ -344,7 +345,7 @@ class EvidenceVersion(BaseModel):
     tags: List[str] = Field(default_factory=list)
 
 
-class VersionDiff(BaseModel):
+class VersionDiff(GreenLangBase):
     """Difference between two evidence versions.
 
     Attributes:
@@ -364,7 +365,7 @@ class VersionDiff(BaseModel):
     hash_changed: bool = Field(default=False)
 
 
-class ValidationResult(BaseModel):
+class ValidationResult(GreenLangBase):
     """Result of validating a piece of evidence.
 
     Attributes:
@@ -390,7 +391,7 @@ class ValidationResult(BaseModel):
     validator_id: str = Field(default="system", max_length=256)
 
 
-class EvidencePackageManifest(BaseModel):
+class EvidencePackageManifest(GreenLangBase):
     """Manifest for an evidence package delivered to auditors.
 
     Attributes:
@@ -424,7 +425,7 @@ class EvidencePackageManifest(BaseModel):
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
-class EvidencePackage(BaseModel):
+class EvidencePackage(GreenLangBase):
     """Complete evidence package for auditor delivery.
 
     Attributes:
@@ -442,7 +443,7 @@ class EvidencePackage(BaseModel):
     download_url: Optional[str] = Field(default=None)
 
 
-class CollectionMetadata(BaseModel):
+class CollectionMetadata(GreenLangBase):
     """Metadata about an evidence collection run.
 
     Attributes:
@@ -470,7 +471,7 @@ class CollectionMetadata(BaseModel):
     status: str = Field(default="running")
 
 
-class SamplingResult(BaseModel):
+class SamplingResult(GreenLangBase):
     """Result of population sampling for audit.
 
     Attributes:

@@ -40,18 +40,14 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -63,11 +59,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class LeverCategory(str, Enum):
     ENERGY_EFFICIENCY = "energy_efficiency"
@@ -83,14 +77,12 @@ class LeverCategory(str, Enum):
     SUPPLY_CHAIN = "supply_chain"
     TECHNOLOGY_INNOVATION = "technology_innovation"
 
-
 class ImplementationPhase(str, Enum):
     IMMEDIATE = "immediate"       # 0-1 years
     SHORT_TERM = "short_term"     # 1-3 years
     MEDIUM_TERM = "medium_term"   # 3-7 years
     LONG_TERM = "long_term"       # 7-15 years
     TRANSFORMATIONAL = "transformational"  # 15+ years
-
 
 class LeverStatus(str, Enum):
     NOT_STARTED = "not_started"
@@ -99,7 +91,6 @@ class LeverStatus(str, Enum):
     IMPLEMENTING = "implementing"
     SCALING = "scaling"
     COMPLETED = "completed"
-
 
 # ---------------------------------------------------------------------------
 # Sector Decarbonization Lever Definitions
@@ -166,11 +157,9 @@ for _sec in ["aluminum", "chemicals", "pulp_paper", "shipping", "road_transport"
     if _sec not in SECTOR_DECARB_LEVERS:
         SECTOR_DECARB_LEVERS[_sec] = _GENERIC_LEVERS.copy()
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class SectorDecarbBridgeConfig(BaseModel):
     pack_id: str = Field(default="PACK-028")
@@ -179,7 +168,6 @@ class SectorDecarbBridgeConfig(BaseModel):
     budget_eur: float = Field(default=10_000_000.0)
     planning_horizon_years: int = Field(default=10, ge=1, le=30)
     enable_provenance: bool = Field(default=True)
-
 
 class LeverAnalysis(BaseModel):
     lever_id: str = Field(default="")
@@ -196,7 +184,6 @@ class LeverAnalysis(BaseModel):
     dependencies_met: bool = Field(default=True)
     status: LeverStatus = Field(default=LeverStatus.NOT_STARTED)
 
-
 class AbatementWaterfall(BaseModel):
     result_id: str = Field(default_factory=_new_uuid)
     sector: str = Field(default="")
@@ -210,7 +197,6 @@ class AbatementWaterfall(BaseModel):
     implementation_timeline: List[Dict[str, Any]] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class ImplementationRoadmap(BaseModel):
     result_id: str = Field(default_factory=_new_uuid)
     sector: str = Field(default="")
@@ -220,11 +206,9 @@ class ImplementationRoadmap(BaseModel):
     total_capex_eur: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # SectorDecarbBridge
 # ---------------------------------------------------------------------------
-
 
 class SectorDecarbBridge:
     """Sector-specific decarbonization agent integration for PACK-028.

@@ -39,18 +39,13 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
-logger = logging.getLogger(__name__)
+from greenlang.schemas import utcnow
 
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -63,11 +58,9 @@ VALID_PANEL_TYPES: Tuple[str, ...] = (
 DEFAULT_TIME_RANGE: str = "1h"
 DEFAULT_REFRESH_INTERVAL: str = "30s"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 @dataclass
 class PanelConfig:
@@ -100,7 +93,6 @@ class PanelConfig:
         if not self.panel_id:
             self.panel_id = str(uuid.uuid4())
 
-
 @dataclass
 class DashboardConfig:
     """Configuration for a complete dashboard.
@@ -127,8 +119,8 @@ class DashboardConfig:
     refresh_interval: str = DEFAULT_REFRESH_INTERVAL
     variables: Dict[str, Any] = field(default_factory=dict)
     tags: List[str] = field(default_factory=list)
-    created_at: datetime = field(default_factory=_utcnow)
-    updated_at: datetime = field(default_factory=_utcnow)
+    created_at: datetime = field(default_factory=utcnow)
+    updated_at: datetime = field(default_factory=utcnow)
     provenance_hash: str = ""
 
     def __post_init__(self) -> None:
@@ -136,11 +128,9 @@ class DashboardConfig:
         if not self.dashboard_id:
             self.dashboard_id = str(uuid.uuid4())
 
-
 # =============================================================================
 # DashboardProvider
 # =============================================================================
-
 
 class DashboardProvider:
     """Grafana-compatible dashboard data provisioning engine.
@@ -274,7 +264,7 @@ class DashboardProvider:
             if refresh_interval is not None:
                 dashboard.refresh_interval = refresh_interval
 
-            dashboard.updated_at = _utcnow()
+            dashboard.updated_at = utcnow()
             dashboard.provenance_hash = self._compute_dashboard_hash(dashboard)
 
         logger.info("Updated dashboard: id=%s", dashboard_id[:8])
@@ -375,7 +365,7 @@ class DashboardProvider:
             "time_range": effective_range,
             "variables": effective_vars,
             "panels": panel_data,
-            "queried_at": _utcnow().isoformat(),
+            "queried_at": utcnow().isoformat(),
         }
 
     def query_metric_data(
@@ -469,7 +459,7 @@ class DashboardProvider:
             "unit": panel.unit,
             "data_points": data_points,
             "thresholds": panel.thresholds,
-            "queried_at": _utcnow().isoformat(),
+            "queried_at": utcnow().isoformat(),
         }
 
     # ------------------------------------------------------------------
@@ -778,7 +768,6 @@ class DashboardProvider:
             ensure_ascii=True,
         )
         return hashlib.sha256(payload.encode("utf-8")).hexdigest()
-
 
 __all__ = [
     "DashboardProvider",

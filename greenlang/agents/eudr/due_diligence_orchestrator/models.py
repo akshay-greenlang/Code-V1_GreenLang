@@ -51,30 +51,21 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import GreenLangBase, utcnow
 
 from pydantic import (
-    BaseModel,
-    ConfigDict,
     Field,
     field_validator,
     model_validator,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Return a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -144,11 +135,9 @@ AGENT_NAMES: Dict[str, str] = {
     "EUDR-025": "Risk Mitigation Advisor",
 }
 
-
 # ---------------------------------------------------------------------------
 # Enumerations (10)
 # ---------------------------------------------------------------------------
-
 
 class DueDiligencePhase(str, Enum):
     """EUDR due diligence phases per Article 8.
@@ -168,7 +157,6 @@ class DueDiligencePhase(str, Enum):
     PACKAGE_GENERATION = "package_generation"
     """Phase 4: Article 12 -- compile DDS evidence package."""
 
-
 class WorkflowType(str, Enum):
     """Type of due diligence workflow.
 
@@ -183,7 +171,6 @@ class WorkflowType(str, Enum):
 
     CUSTOM = "custom"
     """Operator-customized workflow with selected agents."""
-
 
 class AgentExecutionStatus(str, Enum):
     """Execution status of an individual agent within a workflow."""
@@ -214,7 +201,6 @@ class AgentExecutionStatus(str, Enum):
 
     TIMED_OUT = "timed_out"
     """Exceeded timeout limit."""
-
 
 class WorkflowStatus(str, Enum):
     """Overall status of a due diligence workflow."""
@@ -252,7 +238,6 @@ class WorkflowStatus(str, Enum):
     TERMINATED = "terminated"
     """Unrecoverable failure after max retries."""
 
-
 class QualityGateResultEnum(str, Enum):
     """Result of a quality gate evaluation."""
 
@@ -268,7 +253,6 @@ class QualityGateResultEnum(str, Enum):
     PENDING = "pending"
     """Not yet evaluated."""
 
-
 class QualityGateId(str, Enum):
     """Identifier for the three quality gates."""
 
@@ -281,7 +265,6 @@ class QualityGateId(str, Enum):
     QG3 = "QG-3"
     """Mitigation Adequacy gate (Art. 11 -> Art. 12)."""
 
-
 class CircuitBreakerState(str, Enum):
     """State of a circuit breaker for an agent."""
 
@@ -293,7 +276,6 @@ class CircuitBreakerState(str, Enum):
 
     HALF_OPEN = "half_open"
     """Testing recovery with a single probe call."""
-
 
 class ErrorClassification(str, Enum):
     """Classification of agent execution errors."""
@@ -310,7 +292,6 @@ class ErrorClassification(str, Enum):
     UNKNOWN = "unknown"
     """Unclassified error."""
 
-
 class FallbackStrategy(str, Enum):
     """Fallback strategy when an agent fails permanently."""
 
@@ -326,7 +307,6 @@ class FallbackStrategy(str, Enum):
     FAIL = "fail"
     """No fallback, fail the workflow step."""
 
-
 class EUDRCommodity(str, Enum):
     """EUDR-regulated forest-risk commodities per Article 1."""
 
@@ -338,13 +318,11 @@ class EUDRCommodity(str, Enum):
     SOYA = "soya"
     WOOD = "wood"
 
-
 # ---------------------------------------------------------------------------
 # Core Models (18)
 # ---------------------------------------------------------------------------
 
-
-class AgentNode(BaseModel):
+class AgentNode(GreenLangBase):
     """A single agent node in the workflow DAG.
 
     Represents one of the 25 EUDR agents as a vertex in the directed
@@ -418,8 +396,7 @@ class AgentNode(BaseModel):
         description="Additional agent-specific metadata",
     )
 
-
-class WorkflowEdge(BaseModel):
+class WorkflowEdge(GreenLangBase):
     """A dependency edge in the workflow DAG.
 
     Defines a directed edge from source agent to target agent,
@@ -449,8 +426,7 @@ class WorkflowEdge(BaseModel):
         description="Description of data passed along this edge",
     )
 
-
-class WorkflowDefinition(BaseModel):
+class WorkflowDefinition(GreenLangBase):
     """Complete workflow DAG definition.
 
     Defines the agent topology, dependency edges, quality gates,
@@ -516,7 +492,7 @@ class WorkflowDefinition(BaseModel):
         description="Quality gate IDs between phases",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Definition creation timestamp",
     )
     created_by: str = Field(
@@ -528,8 +504,7 @@ class WorkflowDefinition(BaseModel):
         description="SHA-256 hash of the definition",
     )
 
-
-class AgentExecutionRecord(BaseModel):
+class AgentExecutionRecord(GreenLangBase):
     """Execution record for a single agent within a workflow.
 
     Tracks the lifecycle of an agent invocation including timing,
@@ -612,8 +587,7 @@ class AgentExecutionRecord(BaseModel):
         description="SHA-256 hash of the execution record",
     )
 
-
-class QualityGateCheck(BaseModel):
+class QualityGateCheck(GreenLangBase):
     """A single quality gate check within a gate evaluation.
 
     Represents one validation check (e.g. plot geolocation coverage)
@@ -683,8 +657,7 @@ class QualityGateCheck(BaseModel):
         description="Evidence supporting the check result",
     )
 
-
-class QualityGateEvaluation(BaseModel):
+class QualityGateEvaluation(GreenLangBase):
     """Complete quality gate evaluation result.
 
     Contains all individual checks, weighted score, pass/fail
@@ -761,7 +734,7 @@ class QualityGateEvaluation(BaseModel):
         description="User who overrode the gate",
     )
     evaluated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Evaluation timestamp",
     )
     provenance_hash: Optional[str] = Field(
@@ -769,8 +742,7 @@ class QualityGateEvaluation(BaseModel):
         description="SHA-256 hash of the evaluation",
     )
 
-
-class WorkflowStateTransition(BaseModel):
+class WorkflowStateTransition(GreenLangBase):
     """A single state transition in the workflow lifecycle.
 
     Records movement between workflow states for the audit trail.
@@ -805,7 +777,7 @@ class WorkflowStateTransition(BaseModel):
         description="User or system that triggered the transition",
     )
     timestamp: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Transition timestamp",
     )
     agent_id: Optional[str] = Field(
@@ -817,8 +789,7 @@ class WorkflowStateTransition(BaseModel):
         description="Additional transition context",
     )
 
-
-class WorkflowCheckpoint(BaseModel):
+class WorkflowCheckpoint(GreenLangBase):
     """Persistent checkpoint of workflow execution state.
 
     Captures the complete state at a point in time for resume and
@@ -887,7 +858,7 @@ class WorkflowCheckpoint(BaseModel):
         description="SHA-256 covering all accumulated state",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Checkpoint creation timestamp",
     )
     created_by: str = Field(
@@ -895,8 +866,7 @@ class WorkflowCheckpoint(BaseModel):
         description="User or system that triggered checkpoint",
     )
 
-
-class WorkflowState(BaseModel):
+class WorkflowState(GreenLangBase):
     """Complete runtime state of a due diligence workflow.
 
     Tracks the end-to-end execution of a workflow including agent
@@ -1037,7 +1007,7 @@ class WorkflowState(BaseModel):
         description="Overall progress percentage (0-100)",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Workflow creation timestamp",
     )
     created_by: str = Field(
@@ -1049,8 +1019,7 @@ class WorkflowState(BaseModel):
         description="SHA-256 hash of the workflow state",
     )
 
-
-class RiskScoreContribution(BaseModel):
+class RiskScoreContribution(GreenLangBase):
     """Individual risk score contribution from a single risk agent.
 
     Captures the risk score from one of the 10 risk assessment agents
@@ -1115,8 +1084,7 @@ class RiskScoreContribution(BaseModel):
         description="SHA-256 hash of the score data",
     )
 
-
-class CompositeRiskProfile(BaseModel):
+class CompositeRiskProfile(GreenLangBase):
     """Aggregated risk profile from all 10 risk assessment agents.
 
     Combines individual risk scores into a weighted composite using
@@ -1177,7 +1145,7 @@ class CompositeRiskProfile(BaseModel):
         description="Percentage of risk dimensions scored",
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Assessment timestamp",
     )
     provenance_hash: Optional[str] = Field(
@@ -1185,8 +1153,7 @@ class CompositeRiskProfile(BaseModel):
         description="SHA-256 hash of the profile",
     )
 
-
-class MitigationDecision(BaseModel):
+class MitigationDecision(GreenLangBase):
     """Risk mitigation decision and outcome.
 
     Records whether mitigation was required, what measures were
@@ -1263,7 +1230,7 @@ class MitigationDecision(BaseModel):
         description="Justification if mitigation was bypassed",
     )
     decided_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Decision timestamp",
     )
     provenance_hash: Optional[str] = Field(
@@ -1271,8 +1238,7 @@ class MitigationDecision(BaseModel):
         description="SHA-256 hash of the decision",
     )
 
-
-class CircuitBreakerRecord(BaseModel):
+class CircuitBreakerRecord(GreenLangBase):
     """Circuit breaker state record for an agent.
 
     Tracks the circuit breaker state machine for a specific agent
@@ -1338,8 +1304,7 @@ class CircuitBreakerRecord(BaseModel):
         description="Configured reset timeout",
     )
 
-
-class RetryRecord(BaseModel):
+class RetryRecord(GreenLangBase):
     """Record of a retry attempt for an agent invocation.
 
     Captures the details of each retry including delay, attempt number,
@@ -1394,12 +1359,11 @@ class RetryRecord(BaseModel):
         description="Result: success/failure/pending",
     )
     attempted_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Retry attempt timestamp",
     )
 
-
-class DeadLetterEntry(BaseModel):
+class DeadLetterEntry(GreenLangBase):
     """Dead letter entry for a permanently failed agent invocation.
 
     Captures the complete context of a failed agent call that has
@@ -1458,7 +1422,7 @@ class DeadLetterEntry(BaseModel):
         description="Circuit breaker state at time of failure",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Dead letter creation timestamp",
     )
     resolved: bool = Field(
@@ -1474,8 +1438,7 @@ class DeadLetterEntry(BaseModel):
         description="Resolution timestamp",
     )
 
-
-class DDSField(BaseModel):
+class DDSField(GreenLangBase):
     """A single DDS (Due Diligence Statement) field per Article 12(2).
 
     Maps a required DDS content field to its source agents, value,
@@ -1527,8 +1490,7 @@ class DDSField(BaseModel):
         description="Validation notes or errors",
     )
 
-
-class DDSSection(BaseModel):
+class DDSSection(GreenLangBase):
     """A section in the due diligence package report.
 
     Organizes DDS fields and evidence into thematic sections
@@ -1587,8 +1549,7 @@ class DDSSection(BaseModel):
         description="Section completeness percentage",
     )
 
-
-class DueDiligencePackage(BaseModel):
+class DueDiligencePackage(GreenLangBase):
     """Complete audit-ready due diligence evidence package.
 
     Compiles all 25 agent outputs into a structured, DDS-compatible
@@ -1702,7 +1663,7 @@ class DueDiligencePackage(BaseModel):
         description="Per-artifact SHA-256 hashes",
     )
     generated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Package generation timestamp",
     )
     generated_by: str = Field(
@@ -1718,13 +1679,11 @@ class DueDiligencePackage(BaseModel):
         description="SHA-256 provenance chain hash",
     )
 
-
 # ---------------------------------------------------------------------------
 # Request Models (6)
 # ---------------------------------------------------------------------------
 
-
-class CreateWorkflowRequest(BaseModel):
+class CreateWorkflowRequest(GreenLangBase):
     """Request to create a new due diligence workflow.
 
     Attributes:
@@ -1784,8 +1743,7 @@ class CreateWorkflowRequest(BaseModel):
         description="Client-provided request identifier",
     )
 
-
-class StartWorkflowRequest(BaseModel):
+class StartWorkflowRequest(GreenLangBase):
     """Request to start executing a created workflow.
 
     Attributes:
@@ -1816,8 +1774,7 @@ class StartWorkflowRequest(BaseModel):
         description="Client-provided request identifier",
     )
 
-
-class ResumeWorkflowRequest(BaseModel):
+class ResumeWorkflowRequest(GreenLangBase):
     """Request to resume a paused or failed workflow from checkpoint.
 
     Attributes:
@@ -1846,8 +1803,7 @@ class ResumeWorkflowRequest(BaseModel):
         description="Client-provided request identifier",
     )
 
-
-class EvaluateQualityGateRequest(BaseModel):
+class EvaluateQualityGateRequest(GreenLangBase):
     """Request to evaluate a quality gate for a workflow.
 
     Attributes:
@@ -1887,8 +1843,7 @@ class EvaluateQualityGateRequest(BaseModel):
         description="Client-provided request identifier",
     )
 
-
-class GeneratePackageRequest(BaseModel):
+class GeneratePackageRequest(GreenLangBase):
     """Request to generate a due diligence package.
 
     Attributes:
@@ -1927,8 +1882,7 @@ class GeneratePackageRequest(BaseModel):
         description="Client-provided request identifier",
     )
 
-
-class BatchWorkflowRequest(BaseModel):
+class BatchWorkflowRequest(GreenLangBase):
     """Request to launch multiple workflows in a batch.
 
     Attributes:
@@ -1960,13 +1914,11 @@ class BatchWorkflowRequest(BaseModel):
         description="Client-provided request identifier",
     )
 
-
 # ---------------------------------------------------------------------------
 # Response Models (6)
 # ---------------------------------------------------------------------------
 
-
-class WorkflowStatusResponse(BaseModel):
+class WorkflowStatusResponse(GreenLangBase):
     """Response containing current workflow status.
 
     Attributes:
@@ -2011,8 +1963,7 @@ class WorkflowStatusResponse(BaseModel):
     provenance_hash: Optional[str] = Field(None)
     request_id: Optional[str] = Field(None)
 
-
-class WorkflowProgressResponse(BaseModel):
+class WorkflowProgressResponse(GreenLangBase):
     """Detailed workflow progress response with per-agent status.
 
     Attributes:
@@ -2043,8 +1994,7 @@ class WorkflowProgressResponse(BaseModel):
     provenance_hash: Optional[str] = Field(None)
     request_id: Optional[str] = Field(None)
 
-
-class QualityGateResponse(BaseModel):
+class QualityGateResponse(GreenLangBase):
     """Response from quality gate evaluation.
 
     Attributes:
@@ -2061,8 +2011,7 @@ class QualityGateResponse(BaseModel):
     provenance_hash: Optional[str] = Field(None)
     request_id: Optional[str] = Field(None)
 
-
-class PackageGenerationResponse(BaseModel):
+class PackageGenerationResponse(GreenLangBase):
     """Response from due diligence package generation.
 
     Attributes:
@@ -2079,8 +2028,7 @@ class PackageGenerationResponse(BaseModel):
     provenance_hash: Optional[str] = Field(None)
     request_id: Optional[str] = Field(None)
 
-
-class WorkflowAuditTrailResponse(BaseModel):
+class WorkflowAuditTrailResponse(GreenLangBase):
     """Response containing complete workflow audit trail.
 
     Attributes:
@@ -2107,8 +2055,7 @@ class WorkflowAuditTrailResponse(BaseModel):
     processing_time_ms: Decimal = Field(Decimal("0"))
     request_id: Optional[str] = Field(None)
 
-
-class BatchWorkflowResponse(BaseModel):
+class BatchWorkflowResponse(GreenLangBase):
     """Response from batch workflow creation.
 
     Attributes:

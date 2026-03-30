@@ -63,20 +63,17 @@ from typing import Any, Callable, Coroutine, Dict, List, Optional, Set, Tuple
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import ExecutionStatus
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
 ProgressCallback = Callable[[str, float, str], Coroutine[Any, Any, None]]
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -88,11 +85,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SectorPathwayPhase(str, Enum):
     """The 10 phases of the sector pathway pipeline."""
@@ -107,17 +102,6 @@ class SectorPathwayPhase(str, Enum):
     SCENARIO_COMPARISON = "scenario_comparison"
     STRATEGY_SYNTHESIS = "strategy_synthesis"
 
-
-class ExecutionStatus(str, Enum):
-    """Execution status for phases and pipeline."""
-    PENDING = "pending"
-    RUNNING = "running"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    CANCELLED = "cancelled"
-    SKIPPED = "skipped"
-
-
 class SectorPathType(str, Enum):
     """Pipeline execution path types for different sector routing."""
     FULL = "full"
@@ -130,7 +114,6 @@ class SectorPathType(str, Enum):
     BUILDINGS = "buildings"
     AGRICULTURE = "agriculture"
     CROSS_SECTOR = "cross_sector"
-
 
 class SDAEligibleSector(str, Enum):
     """SBTi SDA eligible sectors (12 total)."""
@@ -147,14 +130,12 @@ class SDAEligibleSector(str, Enum):
     BUILDINGS_RESIDENTIAL = "buildings_residential"
     BUILDINGS_COMMERCIAL = "buildings_commercial"
 
-
 class ExtendedSector(str, Enum):
     """Extended sectors beyond SDA (IEA NZE only)."""
     AGRICULTURE = "agriculture"
     FOOD_BEVERAGE = "food_beverage"
     OIL_GAS_UPSTREAM = "oil_gas_upstream"
     CROSS_SECTOR = "cross_sector"
-
 
 class ConvergenceModel(str, Enum):
     """Convergence pathway modeling types."""
@@ -163,7 +144,6 @@ class ConvergenceModel(str, Enum):
     S_CURVE = "s_curve"
     STEPPED = "stepped"
 
-
 class ClimateScenario(str, Enum):
     """IEA/SBTi climate scenarios."""
     NZE_15C = "nze_1.5c"
@@ -171,7 +151,6 @@ class ClimateScenario(str, Enum):
     C2 = "2c"
     APS = "aps"
     STEPS = "steps"
-
 
 # ---------------------------------------------------------------------------
 # Sector Taxonomy - NACE/GICS/ISIC Mapping
@@ -346,11 +325,9 @@ SECTOR_MRV_PRIORITY: Dict[str, List[str]] = {
     "cross_sector": ["MRV-001", "MRV-003", "MRV-009", "MRV-010", "MRV-014"],
 }
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class RetryConfig(BaseModel):
     """Retry configuration for phase execution."""
@@ -358,7 +335,6 @@ class RetryConfig(BaseModel):
     backoff_base: float = Field(default=1.0, ge=0.5)
     backoff_max: float = Field(default=30.0, ge=1.0)
     jitter_factor: float = Field(default=0.5, ge=0.0, le=1.0)
-
 
 class SectorPathwayOrchestratorConfig(BaseModel):
     """Configuration for the sector pathway pipeline orchestrator."""
@@ -394,7 +370,6 @@ class SectorPathwayOrchestratorConfig(BaseModel):
     flag_sector: bool = Field(default=False)
     benchmark_peers: List[str] = Field(default_factory=list)
 
-
 class PhaseProvenance(BaseModel):
     """SHA-256 provenance tracking for each phase."""
     phase: str = Field(default="")
@@ -402,10 +377,9 @@ class PhaseProvenance(BaseModel):
     output_hash: str = Field(default="")
     duration_ms: float = Field(default=0.0)
     attempt: int = Field(default=1)
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     sector_routing: str = Field(default="")
     convergence_model: str = Field(default="")
-
 
 class PhaseResult(BaseModel):
     """Result of a single phase execution."""
@@ -422,7 +396,6 @@ class PhaseResult(BaseModel):
     retry_count: int = Field(default=0)
     sector_routing: str = Field(default="")
 
-
 class SectorClassificationOutput(BaseModel):
     """Output from sector classification phase."""
     primary_sector: str = Field(default="")
@@ -437,7 +410,6 @@ class SectorClassificationOutput(BaseModel):
     flag_applicable: bool = Field(default=False)
     confidence_score: float = Field(default=0.0, ge=0.0, le=1.0)
 
-
 class IntensityMetricOutput(BaseModel):
     """Output from intensity calculation phase."""
     sector: str = Field(default="")
@@ -449,7 +421,6 @@ class IntensityMetricOutput(BaseModel):
     data_quality_score: float = Field(default=0.0, ge=0.0, le=1.0)
     scope_coverage: str = Field(default="scope_1_2")
 
-
 class PathwayPoint(BaseModel):
     """Single data point on a pathway curve."""
     year: int = Field(...)
@@ -457,7 +428,6 @@ class PathwayPoint(BaseModel):
     absolute_target_tco2e: float = Field(default=0.0)
     cumulative_reduction_pct: float = Field(default=0.0)
     scenario: str = Field(default="nze_1.5c")
-
 
 class PipelineResult(BaseModel):
     """Overall result of the 10-phase sector pathway pipeline."""
@@ -489,7 +459,6 @@ class PipelineResult(BaseModel):
     sbti_readiness_pct: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class PhaseProgress(BaseModel):
     """Real-time progress tracking for the pipeline."""
     execution_id: str = Field(default="")
@@ -501,8 +470,7 @@ class PhaseProgress(BaseModel):
     sector_routing: str = Field(default="")
     parallel_phases_active: List[str] = Field(default_factory=list)
     estimated_remaining_seconds: float = Field(default=0.0)
-    updated_at: datetime = Field(default_factory=_utcnow)
-
+    updated_at: datetime = Field(default_factory=utcnow)
 
 # ---------------------------------------------------------------------------
 # DAG Dependencies
@@ -689,11 +657,9 @@ SECTOR_ABATEMENT_LEVERS["cross_sector"] = [
     {"lever": "supply_chain", "label": "Supply chain engagement", "max_reduction_pct": 10.0, "cost_eur_per_tco2e": 20.0},
 ]
 
-
 # ---------------------------------------------------------------------------
 # SectorPathwayPipelineOrchestrator
 # ---------------------------------------------------------------------------
-
 
 class SectorPathwayPipelineOrchestrator:
     """10-phase sector pathway pipeline orchestrator for PACK-028.
@@ -756,7 +722,7 @@ class SectorPathwayPipelineOrchestrator:
             routing_group=self._routing_group,
             path_type=self.config.path_type,
             status=ExecutionStatus.RUNNING,
-            started_at=_utcnow(),
+            started_at=utcnow(),
         )
         self._results[result.execution_id] = result
         self._progress_state[result.execution_id] = PhaseProgress(
@@ -875,7 +841,7 @@ class SectorPathwayPipelineOrchestrator:
             result.errors.append(str(exc))
 
         finally:
-            result.completed_at = _utcnow()
+            result.completed_at = utcnow()
             result.total_duration_ms = (time.monotonic() - start_time) * 1000
             result.quality_score = self._compute_quality_score(result)
 
@@ -915,7 +881,7 @@ class SectorPathwayPipelineOrchestrator:
             routing_group=self._routing_group,
             path_type=SectorPathType.QUICK_ASSESSMENT,
             status=ExecutionStatus.RUNNING,
-            started_at=_utcnow(),
+            started_at=utcnow(),
         )
         quick_orch._results[result.execution_id] = result
 
@@ -947,7 +913,7 @@ class SectorPathwayPipelineOrchestrator:
         if result.status == ExecutionStatus.RUNNING:
             result.status = ExecutionStatus.COMPLETED
 
-        result.completed_at = _utcnow()
+        result.completed_at = utcnow()
         result.total_duration_ms = (time.monotonic() - start_time) * 1000
         result.quality_score = self._compute_quality_score(result)
         self._populate_summary(result, shared_context)
@@ -1275,7 +1241,7 @@ class SectorPathwayPipelineOrchestrator:
 
         return PhaseResult(
             phase=phase, status=ExecutionStatus.COMPLETED,
-            started_at=_utcnow(), completed_at=_utcnow(),
+            started_at=utcnow(), completed_at=utcnow(),
             duration_ms=elapsed, records_processed=records,
             outputs=outputs,
             sector_routing=routing,

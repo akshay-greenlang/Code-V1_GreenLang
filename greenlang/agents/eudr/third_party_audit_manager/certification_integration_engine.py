@@ -61,6 +61,7 @@ import logging
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.third_party_audit_manager.config import (
     ThirdPartyAuditManagerConfig,
@@ -228,12 +229,6 @@ SCHEME_EUDR_COVERAGE: Dict[str, Dict[str, Any]] = {
     },
 }
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_provenance_hash(data: Dict[str, Any]) -> str:
     """Compute SHA-256 hash for provenance tracking.
 
@@ -245,7 +240,6 @@ def _compute_provenance_hash(data: Dict[str, Any]) -> str:
     """
     canonical = json.dumps(data, sort_keys=True, default=str, separators=(",", ":"))
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-
 
 class CertificationIntegrationEngine:
     """Certification scheme integration engine.
@@ -412,7 +406,7 @@ class CertificationIntegrationEngine:
             "recommendation": self._build_coverage_recommendation(
                 scheme, gap_articles
             ),
-            "analyzed_at": _utcnow().isoformat(),
+            "analyzed_at": utcnow().isoformat(),
         }
 
     def check_certificate_status(
@@ -483,7 +477,7 @@ class CertificationIntegrationEngine:
             "days_to_next_audit": days_to_audit,
             "supply_chain_model": certificate.supply_chain_model,
             "warnings": warnings,
-            "checked_at": _utcnow().isoformat(),
+            "checked_at": utcnow().isoformat(),
         }
 
     def update_certificate_status(
@@ -516,7 +510,7 @@ class CertificationIntegrationEngine:
 
         old_status = certificate.status
         certificate.status = new_status
-        certificate.updated_at = _utcnow()
+        certificate.updated_at = utcnow()
 
         certificate.provenance_hash = _compute_provenance_hash({
             "certificate_id": certificate.certificate_id,
@@ -562,7 +556,7 @@ class CertificationIntegrationEngine:
                 "Art. 3", "Art. 4", "Art. 9(1)(a-c)", "Art. 9(1)(d)",
                 "Art. 9(1)(e-g)", "Art. 10", "Art. 11", "Art. 29", "Art. 31",
             ],
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
         }
 
     def recommend_supplementary_criteria(

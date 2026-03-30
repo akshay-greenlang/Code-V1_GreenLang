@@ -64,25 +64,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -109,7 +103,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal.
 
@@ -125,7 +118,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -146,7 +138,6 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100).
 
@@ -158,7 +149,6 @@ def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
         Percentage as Decimal; Decimal("0") when whole is zero.
     """
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* and return a float.
@@ -175,26 +165,21 @@ def _round_val(value: Decimal, places: int = 6) -> float:
     quantizer = Decimal(10) ** -places
     return float(value.quantize(quantizer, rounding=ROUND_HALF_UP))
 
-
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: float) -> float:
     """Round to 4 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class HeatingSystemType(str, Enum):
     """Heating system types for HVAC assessment.
@@ -215,7 +200,6 @@ class HeatingSystemType(str, Enum):
     INFRARED_RADIANT = "infrared_radiant"
     WARM_AIR = "warm_air"
 
-
 class CoolingSystemType(str, Enum):
     """Cooling system types for HVAC assessment.
 
@@ -232,7 +216,6 @@ class CoolingSystemType(str, Enum):
     DISTRICT_COOLING = "district_cooling"
     HEAT_PUMP_REVERSIBLE = "heat_pump_reversible"
 
-
 class VentilationType(str, Enum):
     """Ventilation system types per EN 16798-3 and EN 13779.
 
@@ -244,7 +227,6 @@ class VentilationType(str, Enum):
     MECHANICAL_SUPPLY_EXTRACT = "mechanical_supply_extract"
     MVHR = "mechanical_ventilation_heat_recovery"
     DEMAND_CONTROLLED = "demand_controlled_ventilation"
-
 
 class DistributionType(str, Enum):
     """Heating/cooling distribution system types.
@@ -258,7 +240,6 @@ class DistributionType(str, Enum):
     DUCT_AIR = "duct_air"
     CHILLED_BEAM = "chilled_beam"
     RADIANT_CEILING = "radiant_ceiling"
-
 
 class RefrigerantType(str, Enum):
     """Refrigerant types with GWP classification per EU 517/2014.
@@ -282,7 +263,6 @@ class RefrigerantType(str, Enum):
     R448A = "R448A"
     R449A = "R449A"
 
-
 class ControlType(str, Enum):
     """HVAC control system types for control credit assessment."""
     MANUAL = "manual"
@@ -294,7 +274,6 @@ class ControlType(str, Enum):
     BMS = "building_management_system"
     ADAPTIVE_CONTROL = "adaptive_predictive_control"
 
-
 class HeatRecoveryType(str, Enum):
     """Heat recovery unit types with different effectiveness ranges.
 
@@ -305,7 +284,6 @@ class HeatRecoveryType(str, Enum):
     RUN_AROUND = "run_around_coil"
     HEAT_PIPE = "heat_pipe"
     NONE = "none"
-
 
 class BuildingType(str, Enum):
     """Building use type for HVAC assessment context."""
@@ -320,11 +298,9 @@ class BuildingType(str, Enum):
     MIXED_USE = "mixed_use"
     RESTAURANT = "restaurant"
 
-
 # ---------------------------------------------------------------------------
 # Constants -- Boiler Seasonal Efficiency
 # ---------------------------------------------------------------------------
-
 
 # Boiler seasonal efficiency by boiler type, condensing status, and age.
 # Format: {(heating_type, condensing, age): seasonal_efficiency}
@@ -369,7 +345,6 @@ BOILER_SEASONAL_EFFICIENCY: Dict[str, Dict[str, Dict[str, float]]] = {
 }
 """Boiler seasonal efficiency by type, condensing status, and age.
 Source: SAP 10.2 Table 4a/4b, EN 15316-4-1, CIBSE Guide B."""
-
 
 # Heat pump seasonal COP by type and operating conditions.
 # Format: {HP_type: {source_sink_condition: SCOP}}
@@ -424,7 +399,6 @@ HEAT_PUMP_SEASONAL_COP: Dict[str, Dict[str, float]] = {
 """Heat pump seasonal COP by type and source/sink temperatures.
 Source: EN 14825:2022, MCS data, ASHRAE 90.1."""
 
-
 # Cooling SEER benchmarks by system type (4-tier rating).
 # Sources: EN 14825, Eurovent certification, ASHRAE 90.1-2022.
 COOLING_SEER_BENCHMARKS: Dict[str, Dict[str, float]] = {
@@ -459,7 +433,6 @@ COOLING_SEER_BENCHMARKS: Dict[str, Dict[str, float]] = {
 """Cooling SEER benchmarks (4-tier) by system type.
 Source: EN 14825, Eurovent, ASHRAE 90.1-2022."""
 
-
 # Ventilation Specific Fan Power (SFP) benchmarks per EN 13779 / EN 16798-3.
 # Units: W/(l/s). Lower is better.
 # Sources: EN 13779:2007 Table A.16, CIBSE Guide B Table 2.6.
@@ -486,7 +459,6 @@ VENTILATION_SFP_BENCHMARKS: Dict[str, Dict[str, float]] = {
 }
 """Ventilation SFP benchmarks (W/(l/s)) by system type.
 Source: EN 13779:2007 Table A.16, CIBSE Guide B, Part L."""
-
 
 # Heat recovery effectiveness by HRV type per EN 308.
 # Sources: EN 308:1997, manufacturer data, CIBSE Guide B.
@@ -522,7 +494,6 @@ HEAT_RECOVERY_EFFECTIVENESS: Dict[str, Dict[str, float]] = {
 }
 """Heat recovery effectiveness by HRV type.
 Source: EN 308:1997, manufacturer data, CIBSE Guide B."""
-
 
 # Refrigerant GWP values (100-year, IPCC AR6).
 # Sources: IPCC AR6 WG1, EU 517/2014 Annex I, ASHRAE Standard 34.
@@ -591,7 +562,6 @@ REFRIGERANT_GWP: Dict[str, Dict[str, Any]] = {
 """Refrigerant GWP values (100-year, IPCC AR6) and regulatory status.
 Source: IPCC AR6 WG1, EU 517/2014 Annex I, ASHRAE Standard 34."""
 
-
 # Distribution efficiency by distribution type and insulation level.
 # "uninsulated" = bare pipes/ducts, "insulated" = code-compliant insulation.
 # Sources: EN 15316-2, CIBSE Guide B, ASHRAE 90.1.
@@ -617,7 +587,6 @@ DISTRIBUTION_EFFICIENCY: Dict[str, Dict[str, float]] = {
 }
 """Distribution efficiency by type and insulation level.
 Source: EN 15316-2, CIBSE Guide B, ASHRAE 90.1."""
-
 
 # Control credit factors by control type per EN 15316-2.
 # Applied as multiplier to reduce system energy consumption.
@@ -659,7 +628,6 @@ CONTROL_CREDIT: Dict[str, Dict[str, Any]] = {
 """Control credit factors by control type.
 Source: EN 15316-2:2017, SAP 10.2 Table 4e, CIBSE Guide H."""
 
-
 # F-gas annual leak rates by system type per EU 517/2014.
 # Sources: EU 517/2014, RAC Magazine, DEFRA guidance.
 F_GAS_LEAK_RATES: Dict[str, Dict[str, float]] = {
@@ -688,7 +656,6 @@ F_GAS_LEAK_RATES: Dict[str, Dict[str, float]] = {
 """F-gas annual leak rates (fraction of charge) by system type and condition.
 Source: EU 517/2014, RAC Magazine, DEFRA guidance."""
 
-
 # Minimum inspection intervals for F-gas equipment per EU 517/2014.
 # Based on charge quantity in tCO2e equivalent.
 F_GAS_INSPECTION_INTERVALS: Dict[str, Dict[str, Any]] = {
@@ -716,11 +683,9 @@ F_GAS_INSPECTION_INTERVALS: Dict[str, Dict[str, Any]] = {
 """F-gas inspection intervals per EU 517/2014 based on tCO2e charge.
 Source: EU 517/2014 Article 4."""
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class HeatingSystem(BaseModel):
     """Heating system specification for HVAC assessment.
@@ -751,7 +716,6 @@ class HeatingSystem(BaseModel):
     )
     fuel_type: str = Field(default="natural_gas", description="Fuel type label")
     description: Optional[str] = Field(None, description="Description")
-
 
 class CoolingSystem(BaseModel):
     """Cooling system specification for HVAC assessment.
@@ -787,7 +751,6 @@ class CoolingSystem(BaseModel):
     )
     description: Optional[str] = Field(None, description="Description")
 
-
 class VentilationSystem(BaseModel):
     """Ventilation system specification for HVAC assessment.
 
@@ -819,7 +782,6 @@ class VentilationSystem(BaseModel):
         None, ge=0, le=1.0, description="Heat recovery effectiveness"
     )
     description: Optional[str] = Field(None, description="Description")
-
 
 class DistributionSystem(BaseModel):
     """Heating/cooling distribution system specification.
@@ -855,7 +817,6 @@ class DistributionSystem(BaseModel):
     )
     description: Optional[str] = Field(None, description="Description")
 
-
 class ControlSystem(BaseModel):
     """HVAC control system specification.
 
@@ -875,7 +836,6 @@ class ControlSystem(BaseModel):
         default=False, description="Holiday scheduling"
     )
     description: Optional[str] = Field(None, description="Description")
-
 
 class HVACInput(BaseModel):
     """Complete HVAC system input for assessment.
@@ -935,11 +895,9 @@ class HVACInput(BaseModel):
             raise ValueError("Floor area exceeds 1,000,000 m2 sanity check")
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class HeatingAssessmentResult(BaseModel):
     """Heating system assessment result.
@@ -963,7 +921,6 @@ class HeatingAssessmentResult(BaseModel):
     losses_kwh: float = Field(default=0.0, description="System losses (kWh)")
     recommendations: List[str] = Field(default_factory=list, description="Recommendations")
 
-
 class CoolingAssessmentResult(BaseModel):
     """Cooling system assessment result.
 
@@ -983,7 +940,6 @@ class CoolingAssessmentResult(BaseModel):
     annual_electricity_kwh: float = Field(default=0.0, description="Electricity (kWh)")
     annual_cooling_kwh: float = Field(default=0.0, description="Cooling output (kWh)")
     recommendations: List[str] = Field(default_factory=list, description="Recommendations")
-
 
 class VentilationAssessmentResult(BaseModel):
     """Ventilation system assessment result.
@@ -1008,7 +964,6 @@ class VentilationAssessmentResult(BaseModel):
     annual_fan_energy_kwh: float = Field(default=0.0, description="Fan energy (kWh)")
     annual_heat_recovered_kwh: float = Field(default=0.0, description="Heat recovered (kWh)")
     recommendations: List[str] = Field(default_factory=list, description="Recommendations")
-
 
 class RefrigerantRiskResult(BaseModel):
     """Refrigerant / F-gas risk assessment result.
@@ -1036,7 +991,6 @@ class RefrigerantRiskResult(BaseModel):
     f_gas_compliant: bool = Field(default=True, description="F-gas compliance")
     recommendations: List[str] = Field(default_factory=list, description="Recommendations")
 
-
 class DistributionAssessmentResult(BaseModel):
     """Distribution system assessment result.
 
@@ -1053,7 +1007,6 @@ class DistributionAssessmentResult(BaseModel):
     loss_percentage: float = Field(default=0.0, description="Loss percentage")
     recommendations: List[str] = Field(default_factory=list, description="Recommendations")
 
-
 class ControlAssessmentResult(BaseModel):
     """Control system assessment result.
 
@@ -1069,7 +1022,6 @@ class ControlAssessmentResult(BaseModel):
     estimated_savings_pct: float = Field(default=0.0, description="Savings %")
     upgrade_potential: bool = Field(default=False, description="Upgrade potential")
     recommendations: List[str] = Field(default_factory=list, description="Recommendations")
-
 
 class ImprovementMeasure(BaseModel):
     """HVAC improvement measure with estimated savings.
@@ -1091,7 +1043,6 @@ class ImprovementMeasure(BaseModel):
     payback_years: float = Field(default=0.0, description="Payback (years)")
     priority: int = Field(default=0, description="Priority")
 
-
 class HVACResult(BaseModel):
     """Complete HVAC assessment result with full provenance.
 
@@ -1101,7 +1052,7 @@ class HVACResult(BaseModel):
     result_id: str = Field(default_factory=_new_uuid, description="Unique result ID")
     engine_version: str = Field(default=_MODULE_VERSION, description="Engine version")
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp"
+        default_factory=utcnow, description="Calculation timestamp"
     )
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
 
@@ -1154,11 +1105,9 @@ class HVACResult(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 # ---------------------------------------------------------------------------
 # Calculation Engine
 # ---------------------------------------------------------------------------
-
 
 class HVACAssessmentEngine:
     """HVAC system efficiency assessment engine.

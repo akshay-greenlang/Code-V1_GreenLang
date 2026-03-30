@@ -44,19 +44,13 @@ from typing import Any, Callable, Dict, List, Optional, Union
 from uuid import uuid4
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # =============================================================================
 # Utility Helpers
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute a SHA-256 hash of arbitrary data.
@@ -71,11 +65,9 @@ def _hash_data(data: Any) -> str:
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # Agent Stub
 # =============================================================================
-
 
 class _AgentStub:
     """Deferred agent loader for lazy initialization.
@@ -106,6 +98,7 @@ class _AgentStub:
             return self._instance
         try:
             import importlib
+
             mod = importlib.import_module(self.module_path)
             cls = getattr(mod, self.class_name)
             self._instance = cls()
@@ -122,11 +115,9 @@ class _AgentStub:
         """Whether the agent has been loaded."""
         return self._instance is not None
 
-
 # =============================================================================
 # Enums
 # =============================================================================
-
 
 class SFDRPipelinePhase(str, Enum):
     """Execution phases in the SFDR Article 8 pipeline."""
@@ -141,7 +132,6 @@ class SFDRPipelinePhase(str, Enum):
     COMPLIANCE_VERIFICATION = "compliance_verification"
     AUDIT_TRAIL = "audit_trail"
 
-
 class SFDRExecutionStatus(str, Enum):
     """Status of a pipeline or phase execution."""
     PENDING = "pending"
@@ -151,7 +141,6 @@ class SFDRExecutionStatus(str, Enum):
     SKIPPED = "skipped"
     PAUSED = "paused"
 
-
 class QualityGateStatus(str, Enum):
     """Status of a quality gate check."""
     PASSED = "passed"
@@ -159,14 +148,12 @@ class QualityGateStatus(str, Enum):
     WARNING = "warning"
     SKIPPED = "skipped"
 
-
 class SFDRClassification(str, Enum):
     """SFDR product classification."""
     ARTICLE_6 = "article_6"
     ARTICLE_8 = "article_8"
     ARTICLE_8_PLUS = "article_8_plus"
     ARTICLE_9 = "article_9"
-
 
 class DisclosureType(str, Enum):
     """SFDR disclosure document type."""
@@ -177,7 +164,6 @@ class DisclosureType(str, Enum):
     PRE_CONTRACTUAL = "pre_contractual"
     PERIODIC = "periodic"
 
-
 class PAICategory(str, Enum):
     """PAI indicator category."""
     CLIMATE = "climate"
@@ -185,11 +171,9 @@ class PAICategory(str, Enum):
     SOCIAL = "social"
     GOVERNANCE = "governance"
 
-
 # =============================================================================
 # Data Models
 # =============================================================================
-
 
 class SFDROrchestrationConfig(BaseModel):
     """Configuration for the SFDR Pack Orchestrator."""
@@ -282,7 +266,6 @@ class SFDROrchestrationConfig(BaseModel):
             )
         return v
 
-
 class PhaseResult(BaseModel):
     """Result of executing a single pipeline phase."""
     phase: SFDRPipelinePhase = Field(..., description="Phase executed")
@@ -301,7 +284,6 @@ class PhaseResult(BaseModel):
     )
     retry_count: int = Field(default=0, description="Number of retries")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class PipelineResult(BaseModel):
     """Complete result of an SFDR pipeline execution."""
@@ -352,7 +334,6 @@ class PipelineResult(BaseModel):
     warnings: List[str] = Field(default_factory=list, description="Execution warnings")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class PipelineStatus(BaseModel):
     """Current status of the running orchestration."""
     execution_id: str = Field(default="", description="Current execution ID")
@@ -366,11 +347,9 @@ class PipelineStatus(BaseModel):
     elapsed_ms: float = Field(default=0.0, description="Elapsed time in ms")
     errors: List[str] = Field(default_factory=list, description="Current errors")
 
-
 # =============================================================================
 # Phase Pipeline Definition
 # =============================================================================
-
 
 PHASE_ORDER: List[SFDRPipelinePhase] = [
     SFDRPipelinePhase.HEALTH_CHECK,
@@ -457,11 +436,9 @@ PHASE_AGENT_MAPPING: Dict[SFDRPipelinePhase, List[str]] = {
     ],
 }
 
-
 # =============================================================================
 # SFDR Pack Orchestrator
 # =============================================================================
-
 
 class SFDRPackOrchestrator:
     """10-phase SFDR Article 8 master orchestrator.
@@ -677,7 +654,7 @@ class SFDRPackOrchestrator:
         """
         self._start_time = time.monotonic()
         execution_id = _hash_data(
-            f"sfdr:{self.config.product_name}:{_utcnow().isoformat()}"
+            f"sfdr:{self.config.product_name}:{utcnow().isoformat()}"
         )[:16]
         self._current_execution_id = execution_id
 
@@ -687,7 +664,7 @@ class SFDRPackOrchestrator:
             product_isin=self.config.product_isin,
             sfdr_classification=self.config.sfdr_classification.value,
             status=SFDRExecutionStatus.RUNNING,
-            started_at=_utcnow().isoformat(),
+            started_at=utcnow().isoformat(),
         )
 
         context: Dict[str, Any] = {
@@ -709,8 +686,8 @@ class SFDRPackOrchestrator:
                     result.phase_results[phase.value] = PhaseResult(
                         phase=phase,
                         status=SFDRExecutionStatus.SKIPPED,
-                        started_at=_utcnow().isoformat(),
-                        completed_at=_utcnow().isoformat(),
+                        started_at=utcnow().isoformat(),
+                        completed_at=utcnow().isoformat(),
                     )
                     continue
 
@@ -741,7 +718,7 @@ class SFDRPackOrchestrator:
             result.errors.append(f"Unexpected error: {exc}")
             self.logger.error("Pipeline execution failed: %s", exc, exc_info=True)
 
-        result.completed_at = _utcnow().isoformat()
+        result.completed_at = utcnow().isoformat()
         result.total_execution_time_ms = (time.monotonic() - self._start_time) * 1000
         self._current_phase = ""
 
@@ -920,8 +897,8 @@ class SFDRPackOrchestrator:
         return PhaseResult(
             phase=SFDRPipelinePhase.HEALTH_CHECK,
             status=SFDRExecutionStatus.COMPLETED,
-            started_at=_utcnow().isoformat(),
-            completed_at=_utcnow().isoformat(),
+            started_at=utcnow().isoformat(),
+            completed_at=utcnow().isoformat(),
             records_processed=categories_checked,
             data={
                 "health_score": health_score,
@@ -997,7 +974,7 @@ class SFDRPackOrchestrator:
             "pai_optional_count": len(
                 config_data.get("pai_optional_indicators", [])
             ),
-            "validated_at": _utcnow().isoformat(),
+            "validated_at": utcnow().isoformat(),
         }
 
         status = (
@@ -1008,8 +985,8 @@ class SFDRPackOrchestrator:
         return PhaseResult(
             phase=SFDRPipelinePhase.CONFIGURATION_INIT,
             status=status,
-            started_at=_utcnow().isoformat(),
-            completed_at=_utcnow().isoformat(),
+            started_at=utcnow().isoformat(),
+            completed_at=utcnow().isoformat(),
             records_processed=1,
             data={"validated_config": validated_config},
             errors=errors,
@@ -1079,8 +1056,8 @@ class SFDRPackOrchestrator:
         return PhaseResult(
             phase=SFDRPipelinePhase.PORTFOLIO_DATA_LOADING,
             status=SFDRExecutionStatus.COMPLETED,
-            started_at=_utcnow().isoformat(),
-            completed_at=_utcnow().isoformat(),
+            started_at=utcnow().isoformat(),
+            completed_at=utcnow().isoformat(),
             records_processed=len(valid_holdings),
             data={
                 "total_holdings": len(portfolio_data),
@@ -1185,8 +1162,8 @@ class SFDRPackOrchestrator:
         return PhaseResult(
             phase=SFDRPipelinePhase.PAI_DATA_COLLECTION,
             status=SFDRExecutionStatus.COMPLETED,
-            started_at=_utcnow().isoformat(),
-            completed_at=_utcnow().isoformat(),
+            started_at=utcnow().isoformat(),
+            completed_at=utcnow().isoformat(),
             records_processed=len(pai_results),
             data={
                 "pai_indicators": pai_results,
@@ -1222,8 +1199,8 @@ class SFDRPackOrchestrator:
             return PhaseResult(
                 phase=SFDRPipelinePhase.TAXONOMY_ALIGNMENT_ASSESSMENT,
                 status=SFDRExecutionStatus.COMPLETED,
-                started_at=_utcnow().isoformat(),
-                completed_at=_utcnow().isoformat(),
+                started_at=utcnow().isoformat(),
+                completed_at=utcnow().isoformat(),
                 data={
                     "taxonomy_disabled": True,
                     "alignment_pct": 0.0,
@@ -1297,8 +1274,8 @@ class SFDRPackOrchestrator:
         return PhaseResult(
             phase=SFDRPipelinePhase.TAXONOMY_ALIGNMENT_ASSESSMENT,
             status=SFDRExecutionStatus.COMPLETED,
-            started_at=_utcnow().isoformat(),
-            completed_at=_utcnow().isoformat(),
+            started_at=utcnow().isoformat(),
+            completed_at=utcnow().isoformat(),
             records_processed=len(holdings),
             data={
                 "taxonomy_eligible_pct": eligible_pct,
@@ -1382,8 +1359,8 @@ class SFDRPackOrchestrator:
         return PhaseResult(
             phase=SFDRPipelinePhase.DNSH_GOVERNANCE_SCREENING,
             status=SFDRExecutionStatus.COMPLETED,
-            started_at=_utcnow().isoformat(),
-            completed_at=_utcnow().isoformat(),
+            started_at=utcnow().isoformat(),
+            completed_at=utcnow().isoformat(),
             records_processed=len(holdings),
             data={
                 "dnsh_enabled": enable_dnsh,
@@ -1468,8 +1445,8 @@ class SFDRPackOrchestrator:
         return PhaseResult(
             phase=SFDRPipelinePhase.ESG_CHARACTERISTICS_ASSESSMENT,
             status=SFDRExecutionStatus.COMPLETED,
-            started_at=_utcnow().isoformat(),
-            completed_at=_utcnow().isoformat(),
+            started_at=utcnow().isoformat(),
+            completed_at=utcnow().isoformat(),
             records_processed=len(holdings),
             data={
                 "environmental_characteristics": env_scores,
@@ -1579,8 +1556,8 @@ class SFDRPackOrchestrator:
         return PhaseResult(
             phase=SFDRPipelinePhase.DISCLOSURE_GENERATION,
             status=SFDRExecutionStatus.COMPLETED,
-            started_at=_utcnow().isoformat(),
-            completed_at=_utcnow().isoformat(),
+            started_at=utcnow().isoformat(),
+            completed_at=utcnow().isoformat(),
             records_processed=len(disclosures),
             data={
                 "disclosures": disclosures,
@@ -1730,8 +1707,8 @@ class SFDRPackOrchestrator:
         return PhaseResult(
             phase=SFDRPipelinePhase.COMPLIANCE_VERIFICATION,
             status=SFDRExecutionStatus.COMPLETED,
-            started_at=_utcnow().isoformat(),
-            completed_at=_utcnow().isoformat(),
+            started_at=utcnow().isoformat(),
+            completed_at=utcnow().isoformat(),
             records_processed=total_count,
             data={
                 "compliance_checks": checks,
@@ -1762,7 +1739,7 @@ class SFDRPackOrchestrator:
             provenance_entries.append({
                 "phase": phase_name,
                 "hash": entry_hash,
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             })
 
         chain_hash = _hash_data(
@@ -1772,8 +1749,8 @@ class SFDRPackOrchestrator:
         return PhaseResult(
             phase=SFDRPipelinePhase.AUDIT_TRAIL,
             status=SFDRExecutionStatus.COMPLETED,
-            started_at=_utcnow().isoformat(),
-            completed_at=_utcnow().isoformat(),
+            started_at=utcnow().isoformat(),
+            completed_at=utcnow().isoformat(),
             records_processed=len(provenance_entries),
             data={
                 "provenance_entries": len(provenance_entries),

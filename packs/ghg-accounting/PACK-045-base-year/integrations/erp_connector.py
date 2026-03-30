@@ -23,19 +23,15 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 class ERPSystemType(str, Enum):
     """Supported ERP system types."""
@@ -44,14 +40,12 @@ class ERPSystemType(str, Enum):
     DYNAMICS = "dynamics"
     GENERIC = "generic"
 
-
 class ConnectionStatus(str, Enum):
     """ERP connection status."""
     CONNECTED = "connected"
     DISCONNECTED = "disconnected"
     ERROR = "error"
     AUTHENTICATING = "authenticating"
-
 
 class ExtractionStatus(str, Enum):
     """Data extraction status."""
@@ -60,12 +54,10 @@ class ExtractionStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
 
-
 class DateRange(BaseModel):
     """Date range for data extraction."""
     start_date: str = Field(..., description="Start date (YYYY-MM-DD)")
     end_date: str = Field(..., description="End date (YYYY-MM-DD)")
-
 
 class ActivityRecord(BaseModel):
     """A single activity data record from ERP."""
@@ -81,7 +73,6 @@ class ActivityRecord(BaseModel):
     description: str = ""
     source_system: str = ""
 
-
 class ExtractionResult(BaseModel):
     """Result of an ERP data extraction."""
     success: bool
@@ -94,7 +85,6 @@ class ExtractionResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     duration_ms: float = 0.0
 
-
 class ERPConnectorConfig(BaseModel):
     """Configuration for ERP connector."""
     system_type: ERPSystemType = Field(ERPSystemType.GENERIC)
@@ -105,7 +95,6 @@ class ERPConnectorConfig(BaseModel):
     timeout_s: float = Field(120.0, ge=5.0)
     batch_size: int = Field(5000, ge=100, le=50000)
     ssl_verify: bool = Field(True)
-
 
 class ERPConnector:
     """

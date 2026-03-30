@@ -81,6 +81,7 @@ import uuid
 from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.mrv.purchased_goods_services.models import (
     AGENT_ID,
@@ -135,11 +136,9 @@ __all__ = [
     "MATERIAL_UNCERTAINTY_PCT",
 ]
 
-
 # ============================================================================
 # Embedded Data Tables -- All Decimal for Deterministic Arithmetic
 # ============================================================================
-
 
 # ---------------------------------------------------------------------------
 # Unit conversion factors to kilograms
@@ -219,7 +218,6 @@ _COUNT_UNITS: frozenset = frozenset({
     "pair", "pairs", "dozen", "gross",
 })
 
-
 # ---------------------------------------------------------------------------
 # Material densities in kg per liter (for volume-to-mass conversion)
 # Used when the input unit is a volume unit and material_key is known.
@@ -250,7 +248,6 @@ MATERIAL_DENSITY_KG_PER_L: Dict[str, Decimal] = {
     "nylon_6": Decimal("1.14"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Transport emission factors in kgCO2e per tonne-km
 # Sources: DEFRA 2023 conversion factors, EcoTransIT World 2023
@@ -270,7 +267,6 @@ TRANSPORT_EFS: Dict[str, Decimal] = {
     "inland_waterway": Decimal("0.0310"),
     "pipeline": Decimal("0.0050"),
 }
-
 
 # ---------------------------------------------------------------------------
 # Default material key for each MaterialCategory
@@ -299,7 +295,6 @@ CATEGORY_DEFAULT_MATERIAL: Dict[MaterialCategory, str] = {
     MaterialCategory.SERVICES_FINANCIAL: "kraft_paper",
     MaterialCategory.OTHER: "steel_world_avg",
 }
-
 
 # ---------------------------------------------------------------------------
 # Material category to material key mapping (reverse index)
@@ -362,7 +357,6 @@ MATERIAL_CATEGORY_MAP: Dict[str, MaterialCategory] = {
     "synthetic_rubber_sbr": MaterialCategory.RUBBER,
 }
 
-
 # ---------------------------------------------------------------------------
 # Description keyword to material key mapping
 # Used for fuzzy material resolution from item descriptions when no
@@ -418,7 +412,6 @@ DESCRIPTION_KEYWORD_MAP: Dict[str, str] = {
     "pcb": "pcb_printed_circuit",
     "circuit board": "pcb_printed_circuit",
 }
-
 
 # ---------------------------------------------------------------------------
 # Material-specific uncertainty percentages (+/-)
@@ -481,7 +474,6 @@ MATERIAL_UNCERTAINTY_PCT: Dict[str, Decimal] = {
     "synthetic_rubber_sbr": Decimal("25"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Default per-piece weight in kg (for count/piece unit conversion)
 # Used when unit is a count unit and no per_piece_weight_kg in metadata.
@@ -494,7 +486,6 @@ _DEFAULT_PIECE_WEIGHT_KG: Dict[str, Decimal] = {
     "bricks_general": Decimal("3.00"),
     "steel_world_avg": Decimal("10.00"),
 }
-
 
 # ---------------------------------------------------------------------------
 # Internal quantize helper
@@ -518,12 +509,6 @@ def _q(value: Decimal, places: int = DECIMAL_PLACES) -> Decimal:
     quantizer = Decimal(10) ** -places
     return value.quantize(quantizer, rounding=ROUND_HALF_UP)
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _sha256(data: Dict[str, Any]) -> str:
     """Compute SHA-256 hex digest of a JSON-serialisable dict.
 
@@ -536,11 +521,9 @@ def _sha256(data: Dict[str, Any]) -> str:
     json_str = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(json_str.encode("utf-8")).hexdigest()
 
-
 # ============================================================================
 # AverageDataCalculatorEngine -- Thread-Safe Singleton
 # ============================================================================
-
 
 class AverageDataCalculatorEngine:
     """Engine 3: Average-data emission calculator for Purchased Goods & Services.
@@ -2289,7 +2272,7 @@ class AverageDataCalculatorEngine:
             "transport_mode_count": transport_count,
             "material_category_count": cat_count,
             "checks": checks,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
     # ==================================================================
@@ -2835,7 +2818,7 @@ class AverageDataCalculatorEngine:
             "transport_emissions_kgco2e": str(transport_emissions),
             "total_emissions_kgco2e": str(total_emissions),
             "calculation_method": CalculationMethod.AVERAGE_DATA.value,
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
         return _sha256(data)
 

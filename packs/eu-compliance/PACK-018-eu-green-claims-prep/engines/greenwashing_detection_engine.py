@@ -69,25 +69,20 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+from greenlang.schemas.enums import AlertSeverity
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data.
@@ -107,7 +102,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Convert value to Decimal safely.
 
@@ -121,7 +115,6 @@ def _decimal(value: Any) -> Decimal:
         return value
     return Decimal(str(value))
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0")
 ) -> Decimal:
@@ -129,7 +122,6 @@ def _safe_divide(
     if denominator == Decimal("0"):
         return default
     return numerator / denominator
-
 
 def _round_val(value: Decimal, places: int = 3) -> Decimal:
     """Round a Decimal value to the specified number of decimal places.
@@ -146,11 +138,9 @@ def _round_val(value: Decimal, places: int = 3) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class GreenwashingSin(str, Enum):
     """TerraChoice Seven Sins of Greenwashing.
@@ -167,18 +157,6 @@ class GreenwashingSin(str, Enum):
     LESSER_OF_TWO_EVILS = "lesser_of_two_evils"
     FIBBING = "fibbing"
 
-
-class AlertSeverity(str, Enum):
-    """Severity level for greenwashing alerts.
-
-    Determines the urgency and risk weight of each detection alert.
-    """
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
-    CRITICAL = "critical"
-
-
 class ProhibitedPractice(str, Enum):
     """Prohibited environmental marketing practices per EU ECGT.
 
@@ -193,7 +171,6 @@ class ProhibitedPractice(str, Enum):
     OFFSET_NEUTRALITY_CLAIM = "offset_neutrality_claim"
     UNSUBSTANTIATED_FUTURE_CLAIM = "unsubstantiated_future_claim"
 
-
 class ClaimType(str, Enum):
     """Type of environmental claim being screened.
 
@@ -207,11 +184,9 @@ class ClaimType(str, Enum):
     LABEL = "label"
     MARKETING = "marketing"
 
-
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-
 
 # Vague keywords commonly associated with greenwashing.
 VAGUE_KEYWORDS: List[str] = [
@@ -411,11 +386,9 @@ SIN_DESCRIPTIONS: Dict[str, str] = {
     ),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class GreenwashingAlert(BaseModel):
     """A single greenwashing detection alert.
@@ -461,7 +434,6 @@ class GreenwashingAlert(BaseModel):
         description="Regulatory article reference for prohibited practices",
     )
 
-
 class ClaimScreeningInput(BaseModel):
     """Input for screening a single environmental claim.
 
@@ -506,11 +478,9 @@ class ClaimScreeningInput(BaseModel):
         description="Whether the claim relies on carbon offsets",
     )
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class GreenwashingDetectionEngine:
     """Engine for detecting greenwashing risks in environmental claims.
@@ -584,7 +554,7 @@ class GreenwashingDetectionEngine:
             claim_type.value,
             len(claim_text),
         )
-        timestamp = _utcnow()
+        timestamp = utcnow()
         screening_id = _new_uuid()
         labels = labels_used or []
         stages = lifecycle_stages or []
@@ -668,7 +638,7 @@ class GreenwashingDetectionEngine:
             Dict with detected sins, alerts, and provenance_hash.
         """
         logger.info("Detecting Seven Sins | text_length=%d", len(claim_text))
-        timestamp = _utcnow()
+        timestamp = utcnow()
         detection_id = _new_uuid()
         alerts: List[Dict[str, Any]] = []
         sins_detected: List[str] = []
@@ -910,7 +880,7 @@ class GreenwashingDetectionEngine:
             "Checking prohibited practices | text_length=%d",
             len(claim_text),
         )
-        timestamp = _utcnow()
+        timestamp = utcnow()
         check_id = _new_uuid()
         alerts: List[Dict[str, Any]] = []
         practices_detected: List[str] = []
@@ -1078,7 +1048,7 @@ class GreenwashingDetectionEngine:
             and provenance_hash.
         """
         logger.info("Calculating risk score | alert_count=%d", len(alerts))
-        timestamp = _utcnow()
+        timestamp = utcnow()
         calc_id = _new_uuid()
 
         total_score = Decimal("0")
@@ -1162,7 +1132,7 @@ class GreenwashingDetectionEngine:
         logger.info(
             "Screening portfolio | claims_count=%d", len(claims_list),
         )
-        timestamp = _utcnow()
+        timestamp = utcnow()
         portfolio_id = _new_uuid()
 
         individual_results: List[Dict[str, Any]] = []

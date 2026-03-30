@@ -17,6 +17,8 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 from conftest import _compute_hash, _utcnow
 
+from greenlang.schemas import utcnow
+
 
 class TestIoTStreaming:
     """Test suite for IoT streaming engine."""
@@ -31,7 +33,7 @@ class TestIoTStreaming:
             "protocol": reading["protocol"],
             "calibration_status": reading["calibration_status"],
             "status": "registered",
-            "registered_at": _utcnow().isoformat(),
+            "registered_at": utcnow().isoformat(),
         }
         assert device["status"] == "registered"
         assert device["device_type"] == "energy_meter"

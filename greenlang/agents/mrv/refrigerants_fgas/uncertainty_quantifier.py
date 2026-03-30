@@ -90,6 +90,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -130,20 +131,13 @@ except ImportError:
     _record_uncertainty = None  # type: ignore[assignment]
     _observe_calculation_duration = None  # type: ignore[assignment]
 
-
 # ---------------------------------------------------------------------------
 # UTC helper
 # ---------------------------------------------------------------------------
 
-def _utcnow() -> datetime:
-    """Return the current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ===========================================================================
 # Enumerations
 # ===========================================================================
-
 
 class UncertaintyMethod(str, Enum):
     """Calculation method types for uncertainty parameterisation.
@@ -174,7 +168,6 @@ class UncertaintyMethod(str, Enum):
     DIRECT_MEASUREMENT = "DIRECT_MEASUREMENT"
     TOP_DOWN = "TOP_DOWN"
 
-
 class DataQualityLevel(str, Enum):
     """Data Quality Indicator (DQI) levels on a 1-5 scale.
 
@@ -198,7 +191,6 @@ class DataQualityLevel(str, Enum):
     LEVEL_3 = "LEVEL_3"
     LEVEL_2 = "LEVEL_2"
     LEVEL_1 = "LEVEL_1"
-
 
 # ===========================================================================
 # Default Uncertainty Parameters
@@ -332,11 +324,9 @@ _MIN_ITERATIONS: int = 100
 # Maximum Monte Carlo iteration count
 _MAX_ITERATIONS: int = 100000
 
-
 # ===========================================================================
 # Dataclasses for results
 # ===========================================================================
-
 
 @dataclass
 class UncertaintyResult:
@@ -420,11 +410,9 @@ class UncertaintyResult:
             "metadata": self.metadata,
         }
 
-
 # ===========================================================================
 # UncertaintyQuantifierEngine
 # ===========================================================================
-
 
 class UncertaintyQuantifierEngine:
     """Monte Carlo and analytical uncertainty quantification engine for
@@ -656,7 +644,7 @@ class UncertaintyQuantifierEngine:
             json.dumps(provenance_data, sort_keys=True).encode("utf-8")
         ).hexdigest()
 
-        timestamp = _utcnow().isoformat()
+        timestamp = utcnow().isoformat()
 
         result = UncertaintyResult(
             result_id=f"uq_{uuid4().hex[:12]}",

@@ -45,6 +45,7 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Dict, FrozenSet, List, Optional, Set, Tuple
+from greenlang.schemas import utcnow
 
 from greenlang.agents.eudr.due_diligence_orchestrator.config import (
     DueDiligenceOrchestratorConfig,
@@ -100,7 +101,7 @@ class ExecutionSlot:
         """
         self.agent_id = agent_id
         self.workflow_id = workflow_id
-        self.started_at = _utcnow()
+        self.started_at = utcnow()
         self.timeout_s = timeout_s
         self.layer = layer
 
@@ -110,7 +111,7 @@ class ExecutionSlot:
         Returns:
             True if execution has timed out.
         """
-        elapsed = (_utcnow() - self.started_at).total_seconds()
+        elapsed = (utcnow() - self.started_at).total_seconds()
         return elapsed > self.timeout_s
 
 
@@ -160,7 +161,7 @@ class ReadyAgent:
         self.workflow_id = workflow_id
         self.layer = layer
         self.priority = priority
-        self.enqueued_at = _utcnow()
+        self.enqueued_at = utcnow()
         self.timeout_s = timeout_s
 
     def sort_key(self) -> Tuple[int, int, datetime]:

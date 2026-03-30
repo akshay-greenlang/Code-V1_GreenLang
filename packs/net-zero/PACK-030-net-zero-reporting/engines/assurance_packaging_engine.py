@@ -70,17 +70,15 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, ConfigDict
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
@@ -118,7 +116,6 @@ def _round_val(value: Decimal, places: int = 6) -> Decimal:
 def _round3(value: float) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
@@ -154,7 +151,6 @@ class BundleStatus(str, Enum):
     COMPLETE = "complete"
     PARTIAL = "partial"
     INCOMPLETE = "incomplete"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- ISAE 3410 Control Requirements
@@ -223,7 +219,6 @@ ISAE_3410_CONTROLS: List[Dict[str, str]] = [
     },
 ]
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Input
 # ---------------------------------------------------------------------------
@@ -239,7 +234,7 @@ class ProvenanceRecord(BaseModel):
     source_record_id: str = Field(default="")
     calculation_method: str = Field(default="")
     provenance_hash: str = Field(default="")
-    timestamp: datetime = Field(default_factory=_utcnow)
+    timestamp: datetime = Field(default_factory=utcnow)
     reviewed_by: str = Field(default="")
     approved_by: str = Field(default="")
 
@@ -263,7 +258,6 @@ class AssurancePackagingInput(BaseModel):
     auditor_name: str = Field(default="")
     audit_scope: str = Field(default="Scope 1, 2, and 3 GHG emissions")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Output
 # ---------------------------------------------------------------------------
@@ -277,7 +271,7 @@ class EvidenceItem(BaseModel):
     file_path: str = Field(default="")
     content: str = Field(default="")
     checksum: str = Field(default="")
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
 
 class ControlMatrixEntry(BaseModel):
     """Entry in the ISAE 3410 control matrix."""
@@ -304,7 +298,7 @@ class BundleManifest(BaseModel):
     manifest_id: str = Field(default_factory=_new_uuid)
     organization_id: str = Field(default="")
     report_id: str = Field(default="")
-    created_at: datetime = Field(default_factory=_utcnow)
+    created_at: datetime = Field(default_factory=utcnow)
     assurance_level: str = Field(default="")
     evidence_count: int = Field(default=0)
     total_provenances: int = Field(default=0)
@@ -316,7 +310,7 @@ class AssurancePackagingResult(BaseModel):
     """Complete assurance packaging result."""
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     organization_id: str = Field(default="")
     report_id: str = Field(default="")
     evidence_items: List[EvidenceItem] = Field(default_factory=list)
@@ -331,7 +325,6 @@ class AssurancePackagingResult(BaseModel):
     recommendations: List[str] = Field(default_factory=list)
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # Engine

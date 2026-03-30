@@ -34,35 +34,27 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
-
 
 # =============================================================================
 # HELPERS
 # =============================================================================
 
-
-def _utcnow() -> datetime:
-    """Return current UTC time."""
-    return datetime.now(timezone.utc)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 hex string."""
     return uuid.uuid4().hex
-
 
 def _compute_hash(data: str) -> str:
     """Compute SHA-256 hex digest of *data*."""
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
-
 
 class WorkflowPhase(str, Enum):
     """Phases of the labelling verification workflow."""
@@ -70,7 +62,6 @@ class WorkflowPhase(str, Enum):
     LABEL_REVIEW = "label_review"
     COMPLIANCE_CHECK = "compliance_check"
     CORRECTIVE_ACTIONS = "corrective_actions"
-
 
 class WorkflowStatus(str, Enum):
     """Overall workflow execution status."""
@@ -80,7 +71,6 @@ class WorkflowStatus(str, Enum):
     FAILED = "failed"
     SKIPPED = "skipped"
 
-
 class PhaseStatus(str, Enum):
     """Status of a single phase."""
     PENDING = "pending"
@@ -88,7 +78,6 @@ class PhaseStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
     SKIPPED = "skipped"
-
 
 class LabelElementType(str, Enum):
     """Types of label elements per Annex VI."""
@@ -108,7 +97,6 @@ class LabelElementType(str, Enum):
     WEIGHT = "weight"
     VOLTAGE_CAPACITY = "voltage_capacity"
 
-
 class ConformityStatus(str, Enum):
     """Conformity status for a label element."""
     CONFORMANT = "conformant"
@@ -117,7 +105,6 @@ class ConformityStatus(str, Enum):
     NOT_APPLICABLE = "not_applicable"
     NOT_REVIEWED = "not_reviewed"
 
-
 class Severity(str, Enum):
     """Non-conformity severity level."""
     CRITICAL = "critical"
@@ -125,11 +112,9 @@ class Severity(str, Enum):
     MINOR = "minor"
     OBSERVATION = "observation"
 
-
 # =============================================================================
 # LABEL REQUIREMENTS BY BATTERY CATEGORY (Art. 13/14, Annex VI)
 # =============================================================================
-
 
 LABEL_REQUIREMENTS: Dict[str, List[str]] = {
     "ev_battery": [
@@ -205,11 +190,9 @@ ELEMENT_SIZE_REQUIREMENTS: Dict[str, Dict[str, float]] = {
     LabelElementType.HAZARD_SYMBOLS.value: {"min_height_mm": 10.0, "min_width_mm": 10.0},
 }
 
-
 # =============================================================================
 # DATA MODELS
 # =============================================================================
-
 
 class PhaseResult(BaseModel):
     """Result from a single workflow phase."""
@@ -220,7 +203,6 @@ class PhaseResult(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     errors: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
-
 
 class LabelElement(BaseModel):
     """Individual label element submitted for review."""
@@ -238,7 +220,6 @@ class LabelElement(BaseModel):
     position: str = Field(default="", description="Position on battery")
     notes: str = Field(default="")
 
-
 class ConformityResult(BaseModel):
     """Conformity check result for a label element."""
     element_type: str = Field(..., description="Label element type")
@@ -249,7 +230,6 @@ class ConformityResult(BaseModel):
     issues: List[str] = Field(default_factory=list)
     severity: Optional[Severity] = Field(default=None)
 
-
 class CorrectiveAction(BaseModel):
     """Corrective action for a non-conformity."""
     action_id: str = Field(default_factory=lambda: f"ca-{_new_uuid()[:8]}")
@@ -259,7 +239,6 @@ class CorrectiveAction(BaseModel):
     severity: Severity = Field(default=Severity.MINOR)
     deadline: str = Field(default="")
     responsible_party: str = Field(default="")
-
 
 class LabellingVerificationInput(BaseModel):
     """Input data model for LabellingVerificationWorkflow."""
@@ -275,7 +254,6 @@ class LabellingVerificationInput(BaseModel):
     entity_id: str = Field(default="")
     entity_name: str = Field(default="")
     config: Dict[str, Any] = Field(default_factory=dict)
-
 
 class LabellingVerificationResult(BaseModel):
     """Complete result from labelling verification workflow."""
@@ -297,11 +275,9 @@ class LabellingVerificationResult(BaseModel):
     executed_at: str = Field(default="")
     provenance_hash: str = Field(default="")
 
-
 # =============================================================================
 # WORKFLOW IMPLEMENTATION
 # =============================================================================
-
 
 class LabellingVerificationWorkflow:
     """
@@ -369,7 +345,7 @@ class LabellingVerificationWorkflow:
         if input_data is None:
             input_data = LabellingVerificationInput(config=config or {})
 
-        started_at = _utcnow()
+        started_at = utcnow()
         self.logger.info("Starting labelling verification workflow %s", self.workflow_id)
         phase_results: List[PhaseResult] = []
         overall_status = WorkflowStatus.IN_PROGRESS
@@ -392,7 +368,7 @@ class LabellingVerificationWorkflow:
                 phase_name="error", status=PhaseStatus.FAILED, errors=[str(exc)],
             ))
 
-        elapsed = (_utcnow() - started_at).total_seconds()
+        elapsed = (utcnow() - started_at).total_seconds()
         conformant_count = sum(
             1 for c in self._conformity if c.status == ConformityStatus.CONFORMANT
         )
@@ -420,7 +396,7 @@ class LabellingVerificationWorkflow:
             overall_conformant=self._overall_conformant,
             label_completeness_pct=completeness,
             reporting_year=input_data.reporting_year,
-            executed_at=_utcnow().isoformat(),
+            executed_at=utcnow().isoformat(),
         )
         result.provenance_hash = self._compute_provenance(result)
         self.logger.info(
@@ -437,7 +413,7 @@ class LabellingVerificationWorkflow:
         self, input_data: LabellingVerificationInput,
     ) -> PhaseResult:
         """Identify applicable labelling requirements for battery category."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -468,7 +444,7 @@ class LabellingVerificationWorkflow:
                 "No target market countries specified; language compliance cannot be verified"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 1 RequirementMapping: %d required elements for %s",
             len(self._required_types), input_data.battery_category,
@@ -488,7 +464,7 @@ class LabellingVerificationWorkflow:
         self, input_data: LabellingVerificationInput,
     ) -> PhaseResult:
         """Review submitted label elements against requirements."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
 
@@ -525,7 +501,7 @@ class LabellingVerificationWorkflow:
                 f"{len(non_indelible)} elements flagged as not indelible"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 2 LabelReview: %d submitted, %d required covered, %d missing",
             len(self._elements), len(present_and_required), len(missing_required),
@@ -545,7 +521,7 @@ class LabellingVerificationWorkflow:
         self, input_data: LabellingVerificationInput,
     ) -> PhaseResult:
         """Check conformity of each label element."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._conformity = []
@@ -589,7 +565,7 @@ class LabellingVerificationWorkflow:
                 f"Non-conformant elements: {', '.join(nc_types)}"
             )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 3 ComplianceCheck: %d conformant, %d non-conformant, overall=%s",
             conformant, non_conformant, self._overall_conformant,
@@ -701,7 +677,7 @@ class LabellingVerificationWorkflow:
         self, input_data: LabellingVerificationInput,
     ) -> PhaseResult:
         """Plan corrective actions for non-conformities."""
-        started = _utcnow()
+        started = utcnow()
         outputs: Dict[str, Any] = {}
         warnings: List[str] = []
         self._corrective = []
@@ -745,7 +721,7 @@ class LabellingVerificationWorkflow:
                     f"{critical} critical corrective actions required"
                 )
 
-        elapsed = (_utcnow() - started).total_seconds()
+        elapsed = (utcnow() - started).total_seconds()
         self.logger.info(
             "Phase 4 CorrectiveActions: %d actions created",
             len(self._corrective),

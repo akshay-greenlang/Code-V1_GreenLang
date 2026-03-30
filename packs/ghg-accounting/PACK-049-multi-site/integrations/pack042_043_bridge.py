@@ -46,25 +46,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -77,11 +71,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class OwnershipType(str, Enum):
     """Entity ownership classification."""
@@ -92,7 +84,6 @@ class OwnershipType(str, Enum):
     ASSOCIATE = "associate"
     MINORITY_HOLDING = "minority_holding"
 
-
 class EliminationType(str, Enum):
     """Intercompany elimination types."""
 
@@ -102,11 +93,9 @@ class EliminationType(str, Enum):
     INTERNAL_ENERGY = "internal_energy"
     OTHER = "other"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class Pack042043Config(BaseModel):
     """Configuration for PACK-042/043 bridge."""
@@ -117,7 +106,6 @@ class Pack042043Config(BaseModel):
         default_factory=lambda: list(range(1, 16)),
         description="Scope 3 categories (1-15) to include",
     )
-
 
 class Pack043EntityBoundary(BaseModel):
     """Multi-entity boundary definition from PACK-043."""
@@ -135,7 +123,6 @@ class Pack043EntityBoundary(BaseModel):
     scope3_tco2e: float = 0.0
     provenance_hash: str = ""
 
-
 class Pack043Scope3Totals(BaseModel):
     """Consolidated Scope 3 totals from PACK-042/043."""
 
@@ -150,7 +137,6 @@ class Pack043Scope3Totals(BaseModel):
     data_quality_score: float = 0.0
     provenance_hash: str = ""
     retrieved_at: str = ""
-
 
 class IntercompanyElimination(BaseModel):
     """Intercompany elimination record from PACK-043."""
@@ -167,11 +153,9 @@ class IntercompanyElimination(BaseModel):
     description: str = ""
     provenance_hash: str = ""
 
-
 # ---------------------------------------------------------------------------
 # Bridge Implementation
 # ---------------------------------------------------------------------------
-
 
 class Pack042043Bridge:
     """
@@ -208,7 +192,7 @@ class Pack042043Bridge:
         return Pack043Scope3Totals(
             period=period,
             provenance_hash=_compute_hash({"period": period, "action": "s3_totals"}),
-            retrieved_at=_utcnow().isoformat(),
+            retrieved_at=utcnow().isoformat(),
         )
 
     async def get_multi_entity_boundary(

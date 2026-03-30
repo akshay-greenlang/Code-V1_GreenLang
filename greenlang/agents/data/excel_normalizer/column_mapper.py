@@ -45,7 +45,9 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import BaseModel, Field
+from pydantic import Field
+
+from greenlang.schemas import GreenLangBase, utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -55,16 +57,9 @@ __all__ = [
     "ColumnMapper",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _normalise_header(header: str) -> str:
     """Normalise a header string for matching.
@@ -89,16 +84,13 @@ def _normalise_header(header: str) -> str:
     h = re.sub(r"_+", "_", h)
     return h
 
-
 # ---------------------------------------------------------------------------
 # Data models
 # ---------------------------------------------------------------------------
 
-
 MappingStrategy = str  # "exact", "synonym", "fuzzy", "pattern", "template"
 
-
-class ColumnMapping(BaseModel):
+class ColumnMapping(GreenLangBase):
     """Result of mapping a single source column to a canonical field."""
 
     mapping_id: str = Field(
@@ -121,11 +113,10 @@ class ColumnMapping(BaseModel):
         description="Alternative mappings with scores",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow, description="Mapping timestamp",
+        default_factory=utcnow, description="Mapping timestamp",
     )
 
     model_config = {"extra": "forbid"}
-
 
 # ---------------------------------------------------------------------------
 # Canonical field definitions (200+ fields, 10 categories)
@@ -246,7 +237,6 @@ _FIELD_TO_CATEGORY: Dict[str, str] = {}
 for _cat, _fields in CANONICAL_FIELDS.items():
     for _f in _fields:
         _FIELD_TO_CATEGORY[_f] = _cat
-
 
 # ---------------------------------------------------------------------------
 # Synonym map (500+ entries)
@@ -716,7 +706,6 @@ SYNONYM_MAP: Dict[str, str] = {
     "record id": "row_id",
 }
 
-
 # ---------------------------------------------------------------------------
 # Regex patterns for structured headers
 # ---------------------------------------------------------------------------
@@ -745,11 +734,9 @@ _HEADER_PATTERNS: List[Tuple[str, str]] = [
     (r"(?i)^(?:reporting\s*)?quarter$", "reporting_quarter"),
 ]
 
-
 # ---------------------------------------------------------------------------
 # ColumnMapper
 # ---------------------------------------------------------------------------
-
 
 class ColumnMapper:
     """Column mapping engine with multi-strategy matching.
@@ -1142,7 +1129,7 @@ class ColumnMapper:
                 "total_canonical_fields": len(self._all_canonical),
                 "total_synonyms": len(self._synonyms),
                 "templates_registered": len(self._templates),
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }
 
     # ------------------------------------------------------------------

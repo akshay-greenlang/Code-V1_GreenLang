@@ -61,25 +61,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -97,7 +91,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -106,7 +99,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal, denominator: Decimal,
@@ -117,17 +109,14 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     """Round a Decimal to *places* using ROUND_HALF_UP."""
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     """Round to 3 decimal places."""
@@ -135,11 +124,9 @@ def _round3(value: float) -> float:
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class TargetAmbition(str, Enum):
     """Target ambition level.
@@ -147,7 +134,6 @@ class TargetAmbition(str, Enum):
     For SMEs, only 1.5C is offered (SBTi SME route).
     """
     ALIGNED_1_5C = "1.5c"
-
 
 class ScopeInclusion(str, Enum):
     """Which scopes are included in the target boundary."""
@@ -157,7 +143,6 @@ class ScopeInclusion(str, Enum):
     SCOPE_3_CAT6 = "scope_3_cat6"
     SCOPE_3_CAT7 = "scope_3_cat7"
 
-
 class MilestoneStatus(str, Enum):
     """Status of a target milestone."""
     NOT_STARTED = "not_started"
@@ -165,13 +150,11 @@ class MilestoneStatus(str, Enum):
     AT_RISK = "at_risk"
     ACHIEVED = "achieved"
 
-
 class TargetCommitment(str, Enum):
     """Type of commitment for the target statement."""
     SME_CLIMATE_HUB = "sme_climate_hub"
     SBTI_SME = "sbti_sme"
     VOLUNTARY = "voluntary"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -194,11 +177,9 @@ MIN_ANNUAL_REDUCTION_RATE: Decimal = Decimal("4.2")
 MIN_BASE_YEAR: int = 2018
 MAX_BASE_YEAR: int = 2025
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class TargetInput(BaseModel):
     """Input for SME target setting.
@@ -278,11 +259,9 @@ class TargetInput(BaseModel):
             )
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class MilestoneEntry(BaseModel):
     """A single milestone on the target pathway.
@@ -299,7 +278,6 @@ class MilestoneEntry(BaseModel):
     reduction_from_base_pct: Decimal = Field(default=Decimal("0"))
     cumulative_budget_tco2e: Decimal = Field(default=Decimal("0"))
     status: MilestoneStatus = Field(default=MilestoneStatus.NOT_STARTED)
-
 
 class TargetDefinition(BaseModel):
     """Formal target definition output.
@@ -327,7 +305,6 @@ class TargetDefinition(BaseModel):
     pathway: str = Field(default="ACA")
     is_sbti_compliant: bool = Field(default=False)
 
-
 class ProgressAssessment(BaseModel):
     """Assessment of current progress against targets.
 
@@ -348,7 +325,6 @@ class ProgressAssessment(BaseModel):
     years_remaining: int = Field(default=0)
     annual_reduction_needed_pct: Decimal = Field(default=Decimal("0"))
 
-
 class Scope3Coverage(BaseModel):
     """Scope 3 coverage analysis.
 
@@ -365,7 +341,6 @@ class Scope3Coverage(BaseModel):
     meets_requirement: bool = Field(default=False)
     categories_included: List[str] = Field(default_factory=list)
 
-
 class TargetStatement(BaseModel):
     """Auto-generated target statement for public disclosure.
 
@@ -379,7 +354,6 @@ class TargetStatement(BaseModel):
     full_statement: str = Field(default="")
     commitment_framework: str = Field(default="")
     disclosure_ready: bool = Field(default=False)
-
 
 class SimplifiedTargetResult(BaseModel):
     """Complete SME target setting result.
@@ -402,7 +376,7 @@ class SimplifiedTargetResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     ambition: str = Field(default="1.5c")
 
@@ -417,11 +391,9 @@ class SimplifiedTargetResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class SimplifiedTargetEngine:
     """Simplified 1.5C target setting engine for SMEs.

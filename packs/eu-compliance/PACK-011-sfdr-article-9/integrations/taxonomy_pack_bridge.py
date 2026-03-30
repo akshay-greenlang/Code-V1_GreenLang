@@ -43,19 +43,13 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # =============================================================================
 # Utility Helpers
 # =============================================================================
-
-
-def _utcnow() -> datetime:
-    """Return the current UTC datetime."""
-    return datetime.now(timezone.utc)
-
 
 def _hash_data(data: Any) -> str:
     """Compute a SHA-256 hash of arbitrary data."""
@@ -63,11 +57,9 @@ def _hash_data(data: Any) -> str:
         json.dumps(data, sort_keys=True, default=str).encode()
     ).hexdigest()
 
-
 # =============================================================================
 # Agent Stub
 # =============================================================================
-
 
 class _AgentStub:
     """Deferred agent loader for lazy initialization."""
@@ -84,6 +76,7 @@ class _AgentStub:
             return self._instance
         try:
             import importlib
+
             mod = importlib.import_module(self.module_path)
             cls = getattr(mod, self.class_name)
             self._instance = cls()
@@ -100,11 +93,9 @@ class _AgentStub:
         """Whether the agent has been loaded."""
         return self._instance is not None
 
-
 # =============================================================================
 # Enums
 # =============================================================================
-
 
 class TaxonomyObjective(str, Enum):
     """EU Taxonomy environmental objectives (all 6 for Article 9)."""
@@ -115,13 +106,11 @@ class TaxonomyObjective(str, Enum):
     POLLUTION_PREVENTION = "pollution_prevention"
     BIODIVERSITY_ECOSYSTEMS = "biodiversity_ecosystems"
 
-
 class AlignmentMethodology(str, Enum):
     """Methodology for calculating taxonomy alignment."""
     TURNOVER = "turnover"
     CAPEX = "capex"
     OPEX = "opex"
-
 
 class AlignmentStatus(str, Enum):
     """Alignment status for a holding."""
@@ -130,18 +119,15 @@ class AlignmentStatus(str, Enum):
     NOT_ELIGIBLE = "not_eligible"
     DATA_UNAVAILABLE = "data_unavailable"
 
-
 class CDACategory(str, Enum):
     """Complementary Delegated Act categories."""
     FOSSIL_GAS = "fossil_gas"
     NUCLEAR = "nuclear"
     NONE = "none"
 
-
 # =============================================================================
 # Data Models
 # =============================================================================
-
 
 class TaxonomyBridgeConfig(BaseModel):
     """Configuration for the Article 9 Taxonomy Pack Bridge."""
@@ -177,7 +163,6 @@ class TaxonomyBridgeConfig(BaseModel):
         default=True,
         description="Include Complementary Delegated Act (gas/nuclear) disclosure",
     )
-
 
 class TaxonomyAlignmentData(BaseModel):
     """Taxonomy alignment data for Article 9 products."""
@@ -219,7 +204,6 @@ class TaxonomyAlignmentData(BaseModel):
         default="pack_008", description="Data source (pack_008 or estimated)"
     )
 
-
 class SafeguardsResult(BaseModel):
     """Result of minimum safeguards assessment."""
     total_assessed: int = Field(default=0, description="Total holdings assessed")
@@ -243,11 +227,9 @@ class SafeguardsResult(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 # =============================================================================
 # Field Mappings (extended for Art 9)
 # =============================================================================
-
 
 FIELD_MAPPINGS: Dict[str, str] = {
     # SFDR field -> PACK-008 field
@@ -289,11 +271,9 @@ FIELD_MAPPINGS: Dict[str, str] = {
     "art_6_dnsh_compliance": "art_6_dnsh_pass_rate",
 }
 
-
 # =============================================================================
 # Taxonomy Pack Bridge
 # =============================================================================
-
 
 class TaxonomyPackBridge:
     """Bridge connecting SFDR Article 9 to PACK-008 taxonomy engines.
@@ -382,7 +362,7 @@ class TaxonomyPackBridge:
             TaxonomyAlignmentData with full Article 9 taxonomy data.
         """
         method = methodology or self.config.alignment_methodology
-        start_time = _utcnow()
+        start_time = utcnow()
 
         # Attempt PACK-008 route
         if self.config.use_pack_008:
@@ -685,7 +665,7 @@ class TaxonomyPackBridge:
             holdings_assessed=int(data.get("holdings_assessed", len(holdings))),
             objective_breakdown=objective_breakdown,
             cda_disclosure=cda,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             source="pack_008",
         )
         result.provenance_hash = _hash_data(result.model_dump())
@@ -711,7 +691,7 @@ class TaxonomyPackBridge:
         total_weight = sum(float(h.get("weight", 0.0)) for h in holdings)
         if total_weight <= 0:
             return TaxonomyAlignmentData(
-                calculated_at=_utcnow().isoformat(),
+                calculated_at=utcnow().isoformat(),
                 source="estimated",
             )
 
@@ -780,7 +760,7 @@ class TaxonomyPackBridge:
             art_5_alignment=art_5_data,
             art_6_dnsh=art_6_data,
             cda_disclosure=cda,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             source="estimated",
         )
         result.provenance_hash = _hash_data(result.model_dump())

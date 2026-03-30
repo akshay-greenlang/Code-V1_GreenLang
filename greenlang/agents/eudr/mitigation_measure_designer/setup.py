@@ -96,6 +96,7 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, AsyncIterator, Dict, List, Optional, Tuple
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -308,21 +309,13 @@ try:
 except ImportError:
     MitigationReportGenerator = None  # type: ignore[misc,assignment]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with second precision."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute deterministic SHA-256 hash for provenance.
@@ -338,7 +331,6 @@ def _compute_hash(data: Any) -> str:
     )
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
-
 def _safe_record(metric_fn: Any, *args: Any) -> None:
     """Safely call a metrics function if available.
 
@@ -351,7 +343,6 @@ def _safe_record(metric_fn: Any, *args: Any) -> None:
             metric_fn(*args)
         except Exception:
             pass
-
 
 def _safe_observe(metric_fn: Any, value: float) -> None:
     """Safely observe a histogram metric if available.
@@ -366,7 +357,6 @@ def _safe_observe(metric_fn: Any, value: float) -> None:
         except Exception:
             pass
 
-
 def _safe_gauge(metric_fn: Any, value: Any) -> None:
     """Safely set a gauge metric if available.
 
@@ -380,11 +370,9 @@ def _safe_gauge(metric_fn: Any, value: Any) -> None:
         except Exception:
             pass
 
-
 # ---------------------------------------------------------------------------
 # Service Facade
 # ---------------------------------------------------------------------------
-
 
 class MitigationMeasureDesignerService:
     """Unified service facade for AGENT-EUDR-029.
@@ -749,7 +737,7 @@ class MitigationMeasureDesignerService:
         Returns:
             Dictionary representing the strategy.
         """
-        now = _utcnow()
+        now = utcnow()
         target_score = self.config.mitigation_target_score
         risk_score = risk_trigger.risk_score
 
@@ -808,7 +796,7 @@ class MitigationMeasureDesignerService:
             List of measure dictionaries.
         """
         measures: List[Dict[str, Any]] = []
-        now = _utcnow()
+        now = utcnow()
         dimension = risk_trigger.risk_dimension.value
         commodity = risk_trigger.commodity.value
 
@@ -1069,7 +1057,7 @@ class MitigationMeasureDesignerService:
 
         measure["status"] = "approved"
         measure["approved_by"] = approved_by
-        measure["approved_at"] = _utcnow().isoformat()
+        measure["approved_at"] = utcnow().isoformat()
 
         # Record provenance
         if self._provenance is not None:
@@ -1126,7 +1114,7 @@ class MitigationMeasureDesignerService:
             )
 
         measure["status"] = "in_progress"
-        measure["started_at"] = _utcnow().isoformat()
+        measure["started_at"] = utcnow().isoformat()
 
         # Record provenance
         if self._provenance is not None:
@@ -1186,7 +1174,7 @@ class MitigationMeasureDesignerService:
             )
 
         measure["status"] = "completed"
-        measure["completed_at"] = _utcnow().isoformat()
+        measure["completed_at"] = utcnow().isoformat()
         if actual_reduction is not None:
             measure["actual_reduction"] = str(actual_reduction)
 
@@ -1261,7 +1249,7 @@ class MitigationMeasureDesignerService:
             )
 
         measure["status"] = "cancelled"
-        measure["cancelled_at"] = _utcnow().isoformat()
+        measure["cancelled_at"] = utcnow().isoformat()
         measure["cancellation_reason"] = reason
 
         # Record provenance
@@ -1326,7 +1314,7 @@ class MitigationMeasureDesignerService:
             raise ValueError(f"Measure {measure_id} not found")
 
         evidence_id = _new_uuid()
-        now = _utcnow()
+        now = utcnow()
 
         evidence_record = {
             "evidence_id": evidence_id,
@@ -1530,7 +1518,7 @@ class MitigationMeasureDesignerService:
             result_status = "insufficient"
 
         report_id = _new_uuid()
-        now = _utcnow()
+        now = utcnow()
 
         verification_report = {
             "report_id": report_id,
@@ -1633,7 +1621,7 @@ class MitigationMeasureDesignerService:
             raise ValueError(f"Strategy {strategy_id} not found")
 
         report_id = _new_uuid()
-        now = _utcnow()
+        now = utcnow()
 
         # Collect measure summaries
         strategy_measures = strategy.get("measures", [])
@@ -1756,7 +1744,7 @@ class MitigationMeasureDesignerService:
 
         # Fallback: create workflow and design strategy
         workflow_id = _new_uuid()
-        now = _utcnow()
+        now = utcnow()
 
         # Design strategy
         strategy = await self.design_strategy(risk_trigger)
@@ -1929,7 +1917,7 @@ class MitigationMeasureDesignerService:
             },
             "cap": str(cap),
             "threshold": str(threshold),
-            "estimated_at": _utcnow().isoformat(),
+            "estimated_at": utcnow().isoformat(),
         }
 
         elapsed = time.monotonic() - start
@@ -1965,7 +1953,7 @@ class MitigationMeasureDesignerService:
                 "verification_reports": len(self._verification_reports),
                 "reports": len(self._reports),
             },
-            "timestamp": _utcnow().isoformat(),
+            "timestamp": utcnow().isoformat(),
         }
 
         # Check database
@@ -2076,14 +2064,12 @@ class MitigationMeasureDesignerService:
         """Return the number of workflows in memory."""
         return len(self._workflows)
 
-
 # ---------------------------------------------------------------------------
 # Thread-safe singleton
 # ---------------------------------------------------------------------------
 
 _service_lock = threading.Lock()
 _service_instance: Optional[MitigationMeasureDesignerService] = None
-
 
 def get_service(
     config: Optional[MitigationMeasureDesignerConfig] = None,
@@ -2110,7 +2096,6 @@ def get_service(
                 _service_instance = MitigationMeasureDesignerService(config)
     return _service_instance
 
-
 def reset_service() -> None:
     """Reset the global service singleton to None.
 
@@ -2120,11 +2105,9 @@ def reset_service() -> None:
     with _service_lock:
         _service_instance = None
 
-
 # ---------------------------------------------------------------------------
 # FastAPI lifespan context manager
 # ---------------------------------------------------------------------------
-
 
 @asynccontextmanager
 async def lifespan(app: Any) -> AsyncIterator[None]:

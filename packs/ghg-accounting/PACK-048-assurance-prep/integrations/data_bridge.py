@@ -47,25 +47,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -78,11 +72,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class EvidenceDataType(str, Enum):
     """Types of evidence data for assurance."""
@@ -96,7 +88,6 @@ class EvidenceDataType(str, Enum):
     FINANCIAL_RECORD = "financial_record"
     CUSTOM = "custom"
 
-
 class DataAgentTarget(str, Enum):
     """Target DATA agent for routing."""
 
@@ -109,7 +100,6 @@ class DataAgentTarget(str, Enum):
     LINEAGE_TRACKER = "DATA-018"
     VALIDATION_ENGINE = "DATA-019"
 
-
 class DataFormat(str, Enum):
     """Supported data input formats."""
 
@@ -120,7 +110,6 @@ class DataFormat(str, Enum):
     ERP = "erp"
     API = "api"
 
-
 class EvidenceQualityGrade(str, Enum):
     """Evidence quality grades per ISAE 3410."""
 
@@ -130,11 +119,9 @@ class EvidenceQualityGrade(str, Enum):
     INSUFFICIENT = "insufficient"
     UNKNOWN = "unknown"
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
-
 
 class DataBridgeConfig(BaseModel):
     """Configuration for data bridge."""
@@ -145,7 +132,6 @@ class DataBridgeConfig(BaseModel):
     enable_reconciliation: bool = Field(True)
     enable_schema_validation: bool = Field(True)
 
-
 class EvidenceRequest(BaseModel):
     """Request to fetch evidence data."""
 
@@ -155,7 +141,6 @@ class EvidenceRequest(BaseModel):
     entity_id: Optional[str] = Field(None, description="Organisational entity ID")
     source_path: str = Field("", description="Path or identifier for data source")
     scope: str = Field("", description="Emission scope filter")
-
 
 class EvidenceResponse(BaseModel):
     """Response from a DATA agent with evidence values."""
@@ -172,7 +157,6 @@ class EvidenceResponse(BaseModel):
     warnings: List[str] = Field(default_factory=list)
     duration_ms: float = 0.0
 
-
 class EvidenceDataset(BaseModel):
     """Complete evidence dataset for a reporting period."""
 
@@ -188,7 +172,6 @@ class EvidenceDataset(BaseModel):
     assembled_at: str = ""
     duration_ms: float = 0.0
 
-
 class QualityReport(BaseModel):
     """Data quality assessment report for evidence data."""
 
@@ -201,7 +184,6 @@ class QualityReport(BaseModel):
     verifiability_score: float = 0.0
     issues: List[Dict[str, Any]] = Field(default_factory=list)
 
-
 class SchemaValidationResult(BaseModel):
     """Schema validation result for evidence sources."""
 
@@ -213,11 +195,9 @@ class SchemaValidationResult(BaseModel):
     type_errors: List[str] = Field(default_factory=list)
     provenance_hash: str = ""
 
-
 # ---------------------------------------------------------------------------
 # Bridge Implementation
 # ---------------------------------------------------------------------------
-
 
 class DataBridge:
     """
@@ -277,7 +257,7 @@ class DataBridge:
                 "agent": agent,
                 "records": response.records_processed,
             }),
-            assembled_at=_utcnow().isoformat(),
+            assembled_at=utcnow().isoformat(),
             duration_ms=duration,
         )
 

@@ -74,16 +74,15 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
 
 # ---------------------------------------------------------------------------
 # Module-level exports
 # ---------------------------------------------------------------------------
 
 __all__ = ["RiskIndexEngine"]
-
 
 # ---------------------------------------------------------------------------
 # Graceful imports -- config
@@ -100,7 +99,6 @@ except ImportError:
         "climate_hazard.config not available; "
         "RiskIndexEngine will use built-in defaults"
     )
-
 
 # ---------------------------------------------------------------------------
 # Graceful imports -- provenance
@@ -120,7 +118,6 @@ except ImportError:
         "RiskIndexEngine provenance tracking disabled"
     )
 
-
 # ---------------------------------------------------------------------------
 # Graceful imports -- metrics
 # ---------------------------------------------------------------------------
@@ -139,11 +136,9 @@ except ImportError:
         "RiskIndexEngine metrics recording disabled"
     )
 
-
 # ---------------------------------------------------------------------------
 # Safe metrics helper
 # ---------------------------------------------------------------------------
-
 
 def _safe_record_risk_calculation(hazard_type: str, risk_level: str) -> None:
     """Safely record a risk calculation metric.
@@ -158,11 +153,9 @@ def _safe_record_risk_calculation(hazard_type: str, risk_level: str) -> None:
         except Exception:
             pass
 
-
 # ---------------------------------------------------------------------------
 # Enumerations
 # ---------------------------------------------------------------------------
-
 
 class RiskLevel(str, Enum):
     """Five-tier climate risk classification.
@@ -180,7 +173,6 @@ class RiskLevel(str, Enum):
     MEDIUM = "MEDIUM"
     HIGH = "HIGH"
     EXTREME = "EXTREME"
-
 
 class HazardType(str, Enum):
     """Twelve climate hazard types supported by the connector.
@@ -213,7 +205,6 @@ class HazardType(str, Enum):
     LANDSLIDE = "landslide"
     COASTAL_EROSION = "coastal_erosion"
 
-
 class AggregationStrategy(str, Enum):
     """Strategy for aggregating multiple hazard risk scores.
 
@@ -227,7 +218,6 @@ class AggregationStrategy(str, Enum):
     MAXIMUM = "maximum"
     SUM_CAPPED = "sum_capped"
 
-
 class TrendDirection(str, Enum):
     """Direction of risk evolution over successive time horizons.
 
@@ -240,7 +230,6 @@ class TrendDirection(str, Enum):
     INCREASING = "increasing"
     DECREASING = "decreasing"
     STABLE = "stable"
-
 
 # ---------------------------------------------------------------------------
 # Default compound hazard correlation matrix
@@ -261,7 +250,6 @@ _DEFAULT_COMPOUND_CORRELATIONS: Dict[frozenset, float] = {
     frozenset({"sea_level_rise", "coastal_erosion"}): 0.70,
 }
 
-
 # ---------------------------------------------------------------------------
 # Default risk index weights
 # ---------------------------------------------------------------------------
@@ -270,7 +258,6 @@ _DEFAULT_WEIGHT_PROBABILITY: float = 0.30
 _DEFAULT_WEIGHT_INTENSITY: float = 0.30
 _DEFAULT_WEIGHT_FREQUENCY: float = 0.25
 _DEFAULT_WEIGHT_DURATION: float = 0.15
-
 
 # ---------------------------------------------------------------------------
 # Default risk level thresholds (lower bounds, inclusive)
@@ -281,7 +268,6 @@ _DEFAULT_THRESHOLD_HIGH: float = 60.0
 _DEFAULT_THRESHOLD_MEDIUM: float = 40.0
 _DEFAULT_THRESHOLD_LOW: float = 20.0
 
-
 # ---------------------------------------------------------------------------
 # Normalisation caps
 # ---------------------------------------------------------------------------
@@ -290,25 +276,13 @@ _INTENSITY_MAX: float = 10.0
 _FREQUENCY_MAX: float = 10.0
 _DURATION_MAX_DAYS: float = 365.0
 
-
 # ---------------------------------------------------------------------------
 # Helper: UTC now
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed.
-
-    Returns:
-        A timezone-aware datetime object truncated to seconds.
-    """
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 # ---------------------------------------------------------------------------
 # Helper: deterministic SHA-256 hash
 # ---------------------------------------------------------------------------
-
 
 def _hash_data(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for arbitrary data.
@@ -329,11 +303,9 @@ def _hash_data(data: Any) -> str:
         serialized = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # RiskIndexEngine
 # ---------------------------------------------------------------------------
-
 
 class RiskIndexEngine:
     """Composite climate risk index calculation engine.
@@ -416,7 +388,7 @@ class RiskIndexEngine:
         """
         self._database = database
         self._lock = threading.Lock()
-        self._created_at: str = _utcnow().isoformat()
+        self._created_at: str = utcnow().isoformat()
 
         # ---- Provenance tracker -------------------------------------------
         self._provenance = self._init_provenance(provenance, genesis_hash)
@@ -947,7 +919,7 @@ class RiskIndexEngine:
 
         # -- Build result ---------------------------------------------------
         index_id = self._generate_index_id()
-        calculated_at = _utcnow().isoformat()
+        calculated_at = utcnow().isoformat()
 
         # -- Provenance -----------------------------------------------------
         provenance_data = {
@@ -1109,7 +1081,7 @@ class RiskIndexEngine:
 
         # -- Build result ---------------------------------------------------
         multi_id = f"MH-{uuid4().hex[:12]}"
-        calculated_at = _utcnow().isoformat()
+        calculated_at = utcnow().isoformat()
 
         provenance_data = {
             "multi_hazard_id": multi_id,
@@ -1378,7 +1350,7 @@ class RiskIndexEngine:
 
         # -- Build result ---------------------------------------------------
         compound_id = f"CR-{uuid4().hex[:12]}"
-        calculated_at = _utcnow().isoformat()
+        calculated_at = utcnow().isoformat()
 
         provenance_data = {
             "compound_id": compound_id,
@@ -1771,7 +1743,7 @@ class RiskIndexEngine:
 
         # -- Build result ---------------------------------------------------
         trend_id = f"TR-{uuid4().hex[:12]}"
-        calculated_at = _utcnow().isoformat()
+        calculated_at = utcnow().isoformat()
 
         provenance_data = {
             "trend_id": trend_id,
@@ -2096,7 +2068,7 @@ class RiskIndexEngine:
         )
 
         # -- Build result ---------------------------------------------------
-        generated_at = _utcnow().isoformat()
+        generated_at = utcnow().isoformat()
 
         provenance_data = {
             "threshold": threshold,
@@ -2314,7 +2286,7 @@ class RiskIndexEngine:
             },
             "provenance_entries": provenance_entries,
             "created_at": self._created_at,
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
         }
 
         logger.debug(
@@ -2361,7 +2333,7 @@ class RiskIndexEngine:
                     "RiskIndexEngine: failed to reset provenance: %s", exc
                 )
 
-        cleared_at = _utcnow().isoformat()
+        cleared_at = utcnow().isoformat()
 
         self._record_provenance(
             entity_type="risk_index",
@@ -2716,7 +2688,7 @@ class RiskIndexEngine:
         return copy.deepcopy({
             "total": total,
             "distribution": distribution,
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
         })
 
     def get_hazard_type_summary(self) -> Dict[str, Any]:
@@ -2749,7 +2721,7 @@ class RiskIndexEngine:
         return copy.deepcopy({
             "hazard_types": summary,
             "total_types": len(summary),
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
         })
 
     def get_location_risk_profile(
@@ -2797,7 +2769,7 @@ class RiskIndexEngine:
                 "max": round(max_score, 4),
                 "mean": avg_score,
             },
-            "generated_at": _utcnow().isoformat(),
+            "generated_at": utcnow().isoformat(),
         })
 
     def validate_risk_components(

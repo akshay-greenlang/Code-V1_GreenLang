@@ -89,23 +89,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -122,7 +117,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -131,7 +125,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -139,19 +132,15 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round4(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class QualityDimension(str, Enum):
     """GHG Protocol data quality dimension."""
@@ -160,7 +149,6 @@ class QualityDimension(str, Enum):
     TECHNOLOGICAL = "technological"
     COMPLETENESS = "completeness"
     RELIABILITY = "reliability"
-
 
 class SourceTier(str, Enum):
     """Data source hierarchy tier.
@@ -177,7 +165,6 @@ class SourceTier(str, Enum):
     MODELLED = "modelled"
     SECTOR_AVG = "sector_average"
 
-
 class QualityRating(str, Enum):
     """Overall quality rating."""
     HIGH = "high"
@@ -185,7 +172,6 @@ class QualityRating(str, Enum):
     MODERATE = "moderate"
     LOW = "low"
     VERY_LOW = "very_low"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -240,11 +226,9 @@ TEMPORAL_SCORING: Dict[int, int] = {
     5: 5,  # 5+ years old
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class DimensionScore(BaseModel):
     """Score for a single quality dimension.
@@ -257,7 +241,6 @@ class DimensionScore(BaseModel):
     dimension: QualityDimension = Field(..., description="Dimension")
     score: int = Field(..., ge=1, le=5, description="Score (1-5)")
     justification: str = Field(default="", description="Justification")
-
 
 class QualityAssessmentInput(BaseModel):
     """Input for data quality assessment.
@@ -296,7 +279,6 @@ class QualityAssessmentInput(BaseModel):
     def coerce_val(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 class BatchQualityInput(BaseModel):
     """Batch quality assessment input.
 
@@ -307,11 +289,9 @@ class BatchQualityInput(BaseModel):
     assessments: List[QualityAssessmentInput] = Field(default_factory=list)
     output_precision: int = Field(default=2, ge=0, le=6)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class QualityScore(BaseModel):
     """Quality score result for a single entity.
@@ -339,7 +319,6 @@ class QualityScore(BaseModel):
     ci_lower: Decimal = Field(default=Decimal("0"))
     ci_upper: Decimal = Field(default=Decimal("0"))
 
-
 class CoverageAnalysis(BaseModel):
     """Data coverage analysis.
 
@@ -360,7 +339,6 @@ class CoverageAnalysis(BaseModel):
     avg_composite_score: Decimal = Field(default=Decimal("0"))
     data_gaps: List[str] = Field(default_factory=list)
 
-
 class QualityWeightedResult(BaseModel):
     """Quality-weighted aggregation result.
 
@@ -374,7 +352,6 @@ class QualityWeightedResult(BaseModel):
     simple_mean: Decimal = Field(default=Decimal("0"))
     difference: Decimal = Field(default=Decimal("0"))
     total_entities: int = Field(default=0)
-
 
 class DataQualityResult(BaseModel):
     """Complete data quality assessment result.
@@ -402,11 +379,9 @@ class DataQualityResult(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class DataQualityScoringEngine:
     """Assesses data quality for GHG benchmark inputs.
@@ -526,7 +501,7 @@ class DataQualityScoringEngine:
             overall_quality=overall_rating,
             overall_composite=avg_composite,
             warnings=warnings,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         result.provenance_hash = _compute_hash(result)
@@ -695,7 +670,6 @@ class DataQualityScoringEngine:
 
     def get_version(self) -> str:
         return self._version
-
 
 # ---------------------------------------------------------------------------
 # __all__

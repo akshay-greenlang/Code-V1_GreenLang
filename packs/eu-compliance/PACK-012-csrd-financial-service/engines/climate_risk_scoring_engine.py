@@ -53,26 +53,19 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -85,13 +78,11 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _safe_divide(numerator: float, denominator: float, default: float = 0.0) -> float:
     """Safely divide two numbers, returning default on zero denominator."""
     if denominator == 0.0:
         return default
     return numerator / denominator
-
 
 def _safe_pct(numerator: float, denominator: float) -> float:
     """Calculate percentage safely."""
@@ -99,21 +90,17 @@ def _safe_pct(numerator: float, denominator: float) -> float:
         return 0.0
     return (numerator / denominator) * 100.0
 
-
 def _clamp(value: float, low: float = 0.0, high: float = 100.0) -> float:
     """Clamp a value to [low, high] range."""
     return max(low, min(high, value))
-
 
 def _round_val(value: float, places: int = 4) -> float:
     """Round a float to specified decimal places."""
     return round(value, places)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class NGFSScenario(str, Enum):
     """NGFS climate scenario classification (v4, 2023)."""
@@ -123,7 +110,6 @@ class NGFSScenario(str, Enum):
     DELAYED_TRANSITION = "delayed_transition"
     NDCS = "nationally_determined_contributions"
     CURRENT_POLICIES = "current_policies"
-
 
 class PhysicalHazard(str, Enum):
     """Physical climate hazard types per TCFD/ESRS E1."""
@@ -140,7 +126,6 @@ class PhysicalHazard(str, Enum):
     PRECIPITATION_CHANGE = "precipitation_change"
     PERMAFROST_THAW = "permafrost_thaw"
 
-
 class TransitionChannel(str, Enum):
     """Transition risk transmission channels per TCFD/NGFS."""
     POLICY = "policy"
@@ -149,13 +134,11 @@ class TransitionChannel(str, Enum):
     REPUTATION = "reputation"
     LEGAL = "legal"
 
-
 class TimeHorizon(str, Enum):
     """Time horizon categories per ESRS E1."""
     SHORT = "short_term"       # 1-3 years
     MEDIUM = "medium_term"     # 3-10 years
     LONG = "long_term"         # 10-30 years
-
 
 class RiskLevel(str, Enum):
     """Qualitative risk level classification."""
@@ -166,12 +149,10 @@ class RiskLevel(str, Enum):
     VERY_HIGH = "very_high"
     CRITICAL = "critical"
 
-
 class HazardType(str, Enum):
     """Hazard temporal classification."""
     ACUTE = "acute"
     CHRONIC = "chronic"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- NGFS Scenario Parameters
@@ -349,11 +330,9 @@ FOSSIL_FUEL_NACE_CODES = {"B05", "B06", "B07", "B08", "B09", "C19", "D35"}
 DEFAULT_PHYSICAL_WEIGHT: float = 0.45
 DEFAULT_TRANSITION_WEIGHT: float = 0.55
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class ExposureData(BaseModel):
     """Climate risk exposure data for a single counterparty or asset.
@@ -442,7 +421,6 @@ class ExposureData(BaseModel):
         default=0.0, ge=0.0, le=1.0, description="Drought severity",
     )
 
-
 class PhysicalRiskScore(BaseModel):
     """Physical risk score for an exposure or portfolio."""
     score_id: str = Field(default_factory=_new_uuid, description="Score ID")
@@ -467,7 +445,6 @@ class PhysicalRiskScore(BaseModel):
         default=TimeHorizon.MEDIUM, description="Assessment time horizon",
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class TransitionRiskScore(BaseModel):
     """Transition risk score for an exposure or portfolio."""
@@ -502,7 +479,6 @@ class TransitionRiskScore(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class CreditRiskImpact(BaseModel):
     """Credit risk impact from climate risk."""
     impact_id: str = Field(default_factory=_new_uuid, description="Impact ID")
@@ -536,7 +512,6 @@ class CreditRiskImpact(BaseModel):
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class StrandedAssetExposure(BaseModel):
     """Stranded asset exposure assessment."""
     assessment_id: str = Field(
@@ -564,7 +539,6 @@ class StrandedAssetExposure(BaseModel):
         default=0.0, ge=0.0, le=100.0, description="At-risk % of total portfolio",
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 class NGFSScenarioResult(BaseModel):
     """Result of NGFS scenario analysis for the portfolio."""
@@ -603,13 +577,12 @@ class NGFSScenarioResult(BaseModel):
     gdp_impact_pct: float = Field(default=0.0, description="GDP impact (%)")
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
 
-
 class ClimateRiskResult(BaseModel):
     """Complete climate risk scoring result for a portfolio."""
     result_id: str = Field(default_factory=_new_uuid, description="Result ID")
     portfolio_name: str = Field(default="", description="Portfolio name")
     reporting_date: datetime = Field(
-        default_factory=_utcnow, description="Reporting date",
+        default_factory=utcnow, description="Reporting date",
     )
 
     # Composite scores
@@ -680,15 +653,13 @@ class ClimateRiskResult(BaseModel):
         default=_MODULE_VERSION, description="Engine version",
     )
     calculated_at: datetime = Field(
-        default_factory=_utcnow, description="Calculation timestamp",
+        default_factory=utcnow, description="Calculation timestamp",
     )
     provenance_hash: str = Field(default="", description="SHA-256 provenance hash")
-
 
 # ---------------------------------------------------------------------------
 # Engine Configuration
 # ---------------------------------------------------------------------------
-
 
 class ClimateRiskConfig(BaseModel):
     """Configuration for the ClimateRiskScoringEngine.
@@ -765,7 +736,6 @@ class ClimateRiskConfig(BaseModel):
             )
         return self
 
-
 # ---------------------------------------------------------------------------
 # model_rebuild for forward reference resolution
 # ---------------------------------------------------------------------------
@@ -779,11 +749,9 @@ StrandedAssetExposure.model_rebuild()
 NGFSScenarioResult.model_rebuild()
 ClimateRiskResult.model_rebuild()
 
-
 # ---------------------------------------------------------------------------
 # ClimateRiskScoringEngine
 # ---------------------------------------------------------------------------
-
 
 class ClimateRiskScoringEngine:
     """
@@ -840,11 +808,12 @@ class ClimateRiskScoringEngine:
             Complete ClimateRiskResult with all sub-assessments.
         """
         import time
+
         start = time.perf_counter()
 
         self._exposures = exposures
         self._total_exposure = sum(e.exposure_eur for e in exposures)
-        r_date = reporting_date or _utcnow()
+        r_date = reporting_date or utcnow()
 
         # 1. Compute per-exposure physical and transition scores
         phys_scores: List[PhysicalRiskScore] = []

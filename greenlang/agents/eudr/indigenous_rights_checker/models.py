@@ -46,7 +46,9 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import ConfigDict, Field, field_validator
+from greenlang.schemas import GreenLangBase
+from greenlang.schemas.enums import AlertSeverity, ReportFormat
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -224,15 +226,6 @@ class RiskLevel(str, Enum):
     NONE = "none"
 
 
-class AlertSeverity(str, Enum):
-    """Violation alert severity classification."""
-
-    CRITICAL = "critical"
-    HIGH = "high"
-    MEDIUM = "medium"
-    LOW = "low"
-
-
 class DataSource(str, Enum):
     """Territory data source identifiers."""
 
@@ -255,16 +248,6 @@ class ReportType(str, Enum):
     TREND_REPORT = "trend_report"
     EXECUTIVE_SUMMARY = "executive_summary"
     BI_EXPORT = "bi_export"
-
-
-class ReportFormat(str, Enum):
-    """Report output format."""
-
-    PDF = "pdf"
-    JSON = "json"
-    HTML = "html"
-    CSV = "csv"
-    XLSX = "xlsx"
 
 
 class CommunityRecognitionStatus(str, Enum):
@@ -300,7 +283,7 @@ class ViolationAlertStatus(str, Enum):
 # ---------------------------------------------------------------------------
 
 
-class IndigenousTerritory(BaseModel):
+class IndigenousTerritory(GreenLangBase):
     """Indigenous territory record with spatial data.
 
     Per PRD F1.7: territory with structured metadata including boundary,
@@ -367,7 +350,7 @@ class IndigenousTerritory(BaseModel):
     )
 
 
-class FPICAssessment(BaseModel):
+class FPICAssessment(GreenLangBase):
     """FPIC documentation verification assessment result.
 
     Per PRD F2.1: 10-element deterministic scoring with Decimal precision.
@@ -443,7 +426,7 @@ class FPICAssessment(BaseModel):
     assessed_at: Optional[datetime] = Field(None)
 
 
-class TerritoryOverlap(BaseModel):
+class TerritoryOverlap(GreenLangBase):
     """Territory overlap detection result.
 
     Per PRD F3.2: overlap classification with risk scoring.
@@ -496,7 +479,7 @@ class TerritoryOverlap(BaseModel):
     detected_at: Optional[datetime] = Field(None)
 
 
-class IndigenousCommunity(BaseModel):
+class IndigenousCommunity(GreenLangBase):
     """Indigenous community registry record.
 
     Per PRD F6.1: structured community profile with legal protections.
@@ -535,7 +518,7 @@ class IndigenousCommunity(BaseModel):
     updated_at: Optional[datetime] = Field(None)
 
 
-class ConsultationRecord(BaseModel):
+class ConsultationRecord(GreenLangBase):
     """Community consultation activity record.
 
     Per PRD F4.1-F4.2: meeting details with attendees and outcomes.
@@ -562,7 +545,7 @@ class ConsultationRecord(BaseModel):
     created_at: Optional[datetime] = Field(None)
 
 
-class GrievanceRecord(BaseModel):
+class GrievanceRecord(GreenLangBase):
     """Community grievance record.
 
     Per PRD F4.3: grievance lifecycle with SLA tracking.
@@ -588,7 +571,7 @@ class GrievanceRecord(BaseModel):
     provenance_hash: str = Field(...)
 
 
-class BenefitSharingAgreement(BaseModel):
+class BenefitSharingAgreement(GreenLangBase):
     """Benefit-sharing agreement record.
 
     Per PRD F4.4: agreement terms and compliance tracking.
@@ -614,7 +597,7 @@ class BenefitSharingAgreement(BaseModel):
     updated_at: Optional[datetime] = Field(None)
 
 
-class FPICWorkflow(BaseModel):
+class FPICWorkflow(GreenLangBase):
     """FPIC workflow instance.
 
     Per PRD F7.1: 7-stage workflow with SLA tracking.
@@ -639,7 +622,7 @@ class FPICWorkflow(BaseModel):
     updated_at: Optional[datetime] = Field(None)
 
 
-class WorkflowTransition(BaseModel):
+class WorkflowTransition(GreenLangBase):
     """FPIC workflow state transition record.
 
     Per PRD F7.7: immutable transition log with provenance.
@@ -658,7 +641,7 @@ class WorkflowTransition(BaseModel):
     transitioned_at: Optional[datetime] = Field(None)
 
 
-class ViolationAlert(BaseModel):
+class ViolationAlert(GreenLangBase):
     """Indigenous rights violation alert.
 
     Per PRD F5.2: structured violation report with severity scoring.
@@ -689,7 +672,7 @@ class ViolationAlert(BaseModel):
     detected_at: Optional[datetime] = Field(None)
 
 
-class ComplianceReport(BaseModel):
+class ComplianceReport(GreenLangBase):
     """Indigenous rights compliance report metadata.
 
     Per PRD F8.1: report with format, language, and provenance.
@@ -712,7 +695,7 @@ class ComplianceReport(BaseModel):
     generated_at: Optional[datetime] = Field(None)
 
 
-class CountryIndigenousRightsScore(BaseModel):
+class CountryIndigenousRightsScore(GreenLangBase):
     """Country-level indigenous rights protection score.
 
     Per PRD Section 7.4 table 12: composite scoring from multiple dimensions.
@@ -737,7 +720,7 @@ class CountryIndigenousRightsScore(BaseModel):
     assessed_at: Optional[datetime] = Field(None)
 
 
-class AuditLogEntry(BaseModel):
+class AuditLogEntry(GreenLangBase):
     """Immutable audit log entry.
 
     Per PRD Section 7.4 table 14: audit trail with before/after states.
@@ -763,7 +746,7 @@ class AuditLogEntry(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class DetectOverlapRequest(BaseModel):
+class DetectOverlapRequest(GreenLangBase):
     """Request to detect territory overlap for a single plot."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -776,7 +759,7 @@ class DetectOverlapRequest(BaseModel):
     outer_buffer_km: Optional[float] = Field(None, gt=0)
 
 
-class BatchOverlapRequest(BaseModel):
+class BatchOverlapRequest(GreenLangBase):
     """Request for batch overlap screening of multiple plots."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -786,7 +769,7 @@ class BatchOverlapRequest(BaseModel):
     )
 
 
-class VerifyFPICRequest(BaseModel):
+class VerifyFPICRequest(GreenLangBase):
     """Request to verify FPIC documentation for a plot-territory pair."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -799,7 +782,7 @@ class VerifyFPICRequest(BaseModel):
     country_code: Optional[str] = Field(None)
 
 
-class CreateWorkflowRequest(BaseModel):
+class CreateWorkflowRequest(GreenLangBase):
     """Request to create a new FPIC workflow."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -810,7 +793,7 @@ class CreateWorkflowRequest(BaseModel):
     initiator: str = Field(default="system")
 
 
-class AdvanceWorkflowRequest(BaseModel):
+class AdvanceWorkflowRequest(GreenLangBase):
     """Request to advance a FPIC workflow to the next stage."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -820,7 +803,7 @@ class AdvanceWorkflowRequest(BaseModel):
     supporting_evidence: List[Dict[str, Any]] = Field(default_factory=list)
 
 
-class GenerateReportRequest(BaseModel):
+class GenerateReportRequest(GreenLangBase):
     """Request to generate a compliance report."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -833,7 +816,7 @@ class GenerateReportRequest(BaseModel):
     parameters: Dict[str, Any] = Field(default_factory=dict)
 
 
-class CorrelateViolationsRequest(BaseModel):
+class CorrelateViolationsRequest(GreenLangBase):
     """Request to correlate violations with supply chain."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -844,7 +827,7 @@ class CorrelateViolationsRequest(BaseModel):
     max_distance_km: float = Field(default=25.0, gt=0)
 
 
-class RecordConsultationRequest(BaseModel):
+class RecordConsultationRequest(GreenLangBase):
     """Request to record a consultation activity."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -861,7 +844,7 @@ class RecordConsultationRequest(BaseModel):
     outcomes: Optional[str] = Field(None)
 
 
-class SubmitGrievanceRequest(BaseModel):
+class SubmitGrievanceRequest(GreenLangBase):
     """Request to submit a community grievance."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -873,7 +856,7 @@ class SubmitGrievanceRequest(BaseModel):
     severity: AlertSeverity = Field(default=AlertSeverity.MEDIUM)
 
 
-class HealthCheckRequest(BaseModel):
+class HealthCheckRequest(GreenLangBase):
     """Health check request."""
 
     include_details: bool = Field(default=False)
@@ -884,7 +867,7 @@ class HealthCheckRequest(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class OverlapDetectionResponse(BaseModel):
+class OverlapDetectionResponse(GreenLangBase):
     """Response from overlap detection."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -897,7 +880,7 @@ class OverlapDetectionResponse(BaseModel):
     provenance_hash: str = Field(...)
 
 
-class BatchOverlapResponse(BaseModel):
+class BatchOverlapResponse(GreenLangBase):
     """Response from batch overlap screening."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -913,7 +896,7 @@ class BatchOverlapResponse(BaseModel):
     provenance_hash: str = Field(...)
 
 
-class FPICVerificationResponse(BaseModel):
+class FPICVerificationResponse(GreenLangBase):
     """Response from FPIC verification."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -922,7 +905,7 @@ class FPICVerificationResponse(BaseModel):
     processing_time_ms: float = Field(default=0.0)
 
 
-class WorkflowStatusResponse(BaseModel):
+class WorkflowStatusResponse(GreenLangBase):
     """Response with FPIC workflow status."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -931,7 +914,7 @@ class WorkflowStatusResponse(BaseModel):
     transitions: List[WorkflowTransition] = Field(default_factory=list)
 
 
-class ViolationCorrelationResponse(BaseModel):
+class ViolationCorrelationResponse(GreenLangBase):
     """Response from violation-supply chain correlation."""
 
     model_config = ConfigDict(str_strip_whitespace=True)
@@ -943,7 +926,7 @@ class ViolationCorrelationResponse(BaseModel):
     provenance_hash: str = Field(...)
 
 
-class HealthCheckResponse(BaseModel):
+class HealthCheckResponse(GreenLangBase):
     """Health check response."""
 
     model_config = ConfigDict(str_strip_whitespace=True)

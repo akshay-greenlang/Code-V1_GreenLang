@@ -92,6 +92,7 @@ from typing import Any, Dict, List, Optional, Union
 
 import yaml
 from pydantic import BaseModel, Field, field_validator, model_validator
+from greenlang.schemas.enums import ReportFormat
 
 logger = logging.getLogger(__name__)
 
@@ -233,16 +234,6 @@ class Scope3Method(str, Enum):
     AVERAGE_DATA = "AVERAGE_DATA"
     SPEND_BASED = "SPEND_BASED"
     ACTIVITY_BASED = "ACTIVITY_BASED"
-
-
-class ReportFormat(str, Enum):
-    """Output format for enterprise reports (full suite)."""
-
-    PDF = "PDF"
-    EXCEL = "EXCEL"
-    HTML = "HTML"
-    MARKDOWN = "MARKDOWN"
-    JSON = "JSON"
 
 
 class CarbonPricingApproach(str, Enum):

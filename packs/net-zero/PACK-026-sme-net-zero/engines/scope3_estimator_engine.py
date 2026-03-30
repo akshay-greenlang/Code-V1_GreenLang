@@ -58,23 +58,18 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -91,7 +86,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -99,7 +93,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal, denominator: Decimal,
@@ -109,26 +102,21 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> Decimal:
     quantize_str = "0." + "0" * places
     return value.quantize(Decimal(quantize_str), rounding=ROUND_HALF_UP)
-
 
 def _round3(value: float) -> float:
     return float(
         Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
     )
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class Scope3Category(str, Enum):
     """Scope 3 categories supported for SME estimation.
@@ -144,7 +132,6 @@ class Scope3Category(str, Enum):
     CAT_06_BUSINESS_TRAVEL = "cat_06_business_travel"
     CAT_07_EMPLOYEE_COMMUTING = "cat_07_employee_commuting"
 
-
 class SpendCurrency(str, Enum):
     """Currency for spend data."""
     USD = "usd"
@@ -152,7 +139,6 @@ class SpendCurrency(str, Enum):
     EUR = "eur"
     AUD = "aud"
     CAD = "cad"
-
 
 class DataSourceType(str, Enum):
     """Source of spend data."""
@@ -162,7 +148,6 @@ class DataSourceType(str, Enum):
     QUICKBOOKS = "quickbooks"
     SAGE = "sage"
     FREEAGENT = "freeagent"
-
 
 class IndustryType(str, Enum):
     """Industry type for EEIO factor refinement."""
@@ -177,7 +162,6 @@ class IndustryType(str, Enum):
     TRANSPORT_SERVICES = "transport_services"
     HOSPITALITY = "hospitality"
 
-
 class DataQualityDimension(str, Enum):
     """Dimensions for data quality scoring."""
     COMPLETENESS = "completeness"
@@ -185,11 +169,9 @@ class DataQualityDimension(str, Enum):
     TEMPORAL = "temporal"
     SOURCE_RELIABILITY = "source_reliability"
 
-
 # ---------------------------------------------------------------------------
 # Constants -- EEIO Factors
 # ---------------------------------------------------------------------------
-
 
 # EEIO spend-based factors (tCO2e per $1000 USD).
 # Source: US EPA EEIO v2.0, DEFRA 2024, EXIOBASE 3.8.
@@ -360,11 +342,9 @@ WORKING_DAYS_PER_YEAR: Decimal = Decimal("230")
 CAR_EMISSION_FACTOR_KG_PER_KM: Decimal = Decimal("0.171")
 AVG_CAR_COMMUTE_SHARE: Decimal = Decimal("0.65")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class SpendEntry(BaseModel):
     """A single spend entry for Scope 3 estimation.
@@ -399,7 +379,6 @@ class SpendEntry(BaseModel):
         description="Custom EEIO factor (tCO2e per $1000 USD)",
     )
 
-
 class CommutingEstimateInput(BaseModel):
     """Input for employee commuting estimation (Cat 7).
 
@@ -428,7 +407,6 @@ class CommutingEstimateInput(BaseModel):
         default=Decimal("0"), ge=Decimal("0"), le=Decimal("100"),
         description="% of days worked remotely",
     )
-
 
 class Scope3EstimatorInput(BaseModel):
     """Complete input for Scope 3 estimation.
@@ -475,11 +453,9 @@ class Scope3EstimatorInput(BaseModel):
             raise ValueError("SME headcount must be <= 250")
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class CategoryEstimate(BaseModel):
     """Estimated emissions for a single Scope 3 category.
@@ -505,7 +481,6 @@ class CategoryEstimate(BaseModel):
     methodology: str = Field(default="spend_based_eeio")
     is_core: bool = Field(default=True)
 
-
 class DataQualityScore(BaseModel):
     """Data quality assessment for the Scope 3 estimate.
 
@@ -523,7 +498,6 @@ class DataQualityScore(BaseModel):
     temporal: Decimal = Field(default=Decimal("0"))
     source_reliability: Decimal = Field(default=Decimal("0"))
     level: str = Field(default="low")
-
 
 class Scope3EstimatorResult(BaseModel):
     """Complete Scope 3 estimation result.
@@ -549,7 +523,7 @@ class Scope3EstimatorResult(BaseModel):
     """
     result_id: str = Field(default_factory=_new_uuid)
     engine_version: str = Field(default=_MODULE_VERSION)
-    calculated_at: datetime = Field(default_factory=_utcnow)
+    calculated_at: datetime = Field(default_factory=utcnow)
     entity_name: str = Field(default="")
     reporting_year: int = Field(default=0)
 
@@ -568,11 +542,9 @@ class Scope3EstimatorResult(BaseModel):
     processing_time_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class Scope3EstimatorEngine:
     """Spend-based Scope 3 estimation engine for SMEs.

@@ -88,23 +88,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -121,7 +116,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -130,7 +124,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -138,23 +131,18 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round4(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 def _round6(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.000001"), rounding=ROUND_HALF_UP))
-
 
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class GWPVersion(str, Enum):
     """IPCC Assessment Report GWP version.
@@ -167,7 +155,6 @@ class GWPVersion(str, Enum):
     AR5 = "AR5"
     AR6 = "AR6"
 
-
 class ConsolidationApproach(str, Enum):
     """Organisational boundary consolidation approach.
 
@@ -178,7 +165,6 @@ class ConsolidationApproach(str, Enum):
     EQUITY_SHARE = "equity_share"
     OPERATIONAL_CONTROL = "operational_control"
     FINANCIAL_CONTROL = "financial_control"
-
 
 class ScopeBoundary(str, Enum):
     """Scope boundary for emissions reporting.
@@ -193,7 +179,6 @@ class ScopeBoundary(str, Enum):
     S1_S2_S3_PARTIAL = "s1_s2_s3_partial"
     S1_S2_S3_FULL = "s1_s2_s3_full"
 
-
 class BiogenicTreatment(str, Enum):
     """Biogenic carbon reporting treatment.
 
@@ -205,7 +190,6 @@ class BiogenicTreatment(str, Enum):
     EXCLUDED = "excluded"
     SEPARATE = "separate"
 
-
 class NormalisationStep(str, Enum):
     """Types of normalisation steps applied."""
     GWP_REALIGNMENT = "gwp_realignment"
@@ -215,7 +199,6 @@ class NormalisationStep(str, Enum):
     PERIOD_ALIGNMENT = "period_alignment"
     BIOGENIC_ALIGNMENT = "biogenic_alignment"
     DATA_GAP_ESTIMATION = "data_gap_estimation"
-
 
 class DataQualityFlag(str, Enum):
     """Data quality flags applied during normalisation."""
@@ -227,7 +210,6 @@ class DataQualityFlag(str, Enum):
     BIOGENIC_ADJUSTED = "biogenic_adjusted"
     GAP_FILLED = "gap_filled"
     CONSOLIDATION_ADJUSTED = "consolidation_adjusted"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- GWP Values (100-year time horizon)
@@ -363,11 +345,9 @@ CONSOLIDATION_FACTORS: Dict[str, Dict[str, Decimal]] = {
     "financial_control__operational_control": Decimal("1.04"),
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class GasBreakdown(BaseModel):
     """Breakdown of emissions by individual greenhouse gas.
@@ -385,7 +365,6 @@ class GasBreakdown(BaseModel):
     @classmethod
     def coerce_emissions(cls, v: Any) -> Decimal:
         return _decimal(v)
-
 
 class NormalisationInput(BaseModel):
     """Input for scope normalisation.
@@ -457,11 +436,9 @@ class NormalisationInput(BaseModel):
     def coerce_dec(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class GWPConversionResult(BaseModel):
     """Result of GWP version realignment.
@@ -481,7 +458,6 @@ class GWPConversionResult(BaseModel):
     target_gwp: Decimal = Field(default=Decimal("0"), description="Target GWP")
     conversion_factor: Decimal = Field(default=Decimal("1"), description="Conversion factor")
 
-
 class NormalisationStepDetail(BaseModel):
     """Detail of a single normalisation step applied.
 
@@ -499,7 +475,6 @@ class NormalisationStepDetail(BaseModel):
     output_value: Decimal = Field(default=Decimal("0"), description="Output value")
     factor_applied: Decimal = Field(default=Decimal("1"), description="Factor")
     quality_flag: DataQualityFlag = Field(default=DataQualityFlag.ORIGINAL)
-
 
 class NormalisedEmissions(BaseModel):
     """Normalised emissions output for an entity.
@@ -531,7 +506,6 @@ class NormalisedEmissions(BaseModel):
     quality_flags: List[DataQualityFlag] = Field(default_factory=list)
     quality_downgrade: bool = Field(default=False)
 
-
 class NormalisationRun(BaseModel):
     """Complete result of a normalisation run.
 
@@ -560,11 +534,9 @@ class NormalisationRun(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class ScopeNormalisationEngine:
     """Normalises GHG emissions for like-for-like benchmarking.
@@ -634,7 +606,7 @@ class ScopeNormalisationEngine:
             period_alignments_count=period_count,
             quality_downgrades=downgrade_count,
             warnings=warnings,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         result.provenance_hash = _compute_hash(result)
@@ -1147,7 +1119,6 @@ class ScopeNormalisationEngine:
     def get_available_currencies(self) -> List[str]:
         """Return list of currencies with PPP factors."""
         return sorted(PPP_FACTORS.keys())
-
 
 # ---------------------------------------------------------------------------
 # __all__

@@ -51,25 +51,19 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute SHA-256 hash for provenance tracking."""
@@ -82,11 +76,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Agent Stubs
 # ---------------------------------------------------------------------------
-
 
 class _AgentStub:
     """Stub for unavailable DATA agent modules."""
@@ -105,7 +97,6 @@ class _AgentStub:
             }
         return _stub_method
 
-
 def _try_import_data_agent(agent_id: str, module_path: str) -> Any:
     """Try to import a DATA agent with graceful fallback."""
     try:
@@ -114,11 +105,9 @@ def _try_import_data_agent(agent_id: str, module_path: str) -> Any:
         logger.debug("DATA agent %s not available, using stub", agent_id)
         return _AgentStub(agent_id)
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class DataSourceType(str, Enum):
     """Supported data source types."""
@@ -130,7 +119,6 @@ class DataSourceType(str, Enum):
     API = "api"
     QUESTIONNAIRE = "questionnaire"
 
-
 class ERPSystem(str, Enum):
     """Supported ERP systems."""
 
@@ -138,7 +126,6 @@ class ERPSystem(str, Enum):
     ORACLE = "oracle"
     WORKDAY = "workday"
     DYNAMICS_365 = "dynamics_365"
-
 
 class DataCategory(str, Enum):
     """SBTi-relevant data categories."""
@@ -156,7 +143,6 @@ class DataCategory(str, Enum):
     PROCESS = "process"
     LAND_USE = "land_use"
 
-
 class QualityDimension(str, Enum):
     """Data quality dimensions for SBTi assessment."""
 
@@ -166,11 +152,9 @@ class QualityDimension(str, Enum):
     TIMELINESS = "timeliness"
     RELEVANCE = "relevance"
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class DataBridgeConfig(BaseModel):
     """Configuration for the SBTi Data Bridge."""
@@ -185,7 +169,6 @@ class DataBridgeConfig(BaseModel):
         default=70.0, ge=0.0, le=100.0,
         description="Minimum data quality score for SBTi submission",
     )
-
 
 class IntakeResult(BaseModel):
     """Result of data intake processing."""
@@ -202,7 +185,6 @@ class IntakeResult(BaseModel):
     sbti_data_ready: bool = Field(default=False)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class QualityResult(BaseModel):
     """Data quality assessment result for SBTi."""
@@ -224,7 +206,6 @@ class QualityResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class LineageResult(BaseModel):
     """Data lineage tracking result."""
 
@@ -237,7 +218,6 @@ class LineageResult(BaseModel):
     sbti_traceability_met: bool = Field(default=False)
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
-
 
 class FreshnessResult(BaseModel):
     """Data freshness monitoring result."""
@@ -255,7 +235,6 @@ class FreshnessResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class ReconciliationResult(BaseModel):
     """Cross-source reconciliation result."""
 
@@ -271,7 +250,6 @@ class ReconciliationResult(BaseModel):
     duration_ms: float = Field(default=0.0)
     provenance_hash: str = Field(default="")
 
-
 class ERPFieldMapping(BaseModel):
     """ERP field mapping for SBTi data extraction."""
 
@@ -281,7 +259,6 @@ class ERPFieldMapping(BaseModel):
     fields: List[Dict[str, str]] = Field(default_factory=list)
     data_category: str = Field(default="")
     sbti_scope: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # DATA Agent Mapping (20 agents)
@@ -339,11 +316,9 @@ ERP_FIELD_MAPPINGS: Dict[str, List[ERPFieldMapping]] = {
     ],
 }
 
-
 # ---------------------------------------------------------------------------
 # SBTiDataBridge
 # ---------------------------------------------------------------------------
-
 
 class SBTiDataBridge:
     """Bridge to 20 DATA agents for SBTi activity data intake and quality.

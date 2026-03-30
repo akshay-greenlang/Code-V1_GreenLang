@@ -66,6 +66,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, FrozenSet, List, Optional, Tuple
 
 from greenlang.agents.eudr.document_authentication.config import get_config
+from greenlang.schemas import utcnow
 from greenlang.agents.eudr.document_authentication.metrics import (
     observe_classification_duration,
     record_api_error,
@@ -94,12 +95,6 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance.
 
@@ -112,7 +107,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _generate_id() -> str:
     """Generate a new UUID4 string identifier.
 
@@ -120,7 +114,6 @@ def _generate_id() -> str:
         UUID4 string.
     """
     return str(uuid.uuid4())
-
 
 # ---------------------------------------------------------------------------
 # Constants: MIME type categories
@@ -650,7 +643,6 @@ _LANGUAGE_ENUM_MAP: Dict[str, DocumentLanguage] = {
 # Template dataclass
 # ---------------------------------------------------------------------------
 
-
 class DocumentTemplate:
     """A registered template for a known document type and issuing authority.
 
@@ -725,7 +717,7 @@ class DocumentTemplate:
         self.field_layout = field_layout or {}
         self.version = version
         self.active = True
-        self.created_at = _utcnow()
+        self.created_at = utcnow()
         self.retired_at: Optional[datetime] = None
 
     def to_dict(self) -> Dict[str, Any]:
@@ -751,11 +743,9 @@ class DocumentTemplate:
             ),
         }
 
-
 # ---------------------------------------------------------------------------
 # TemplateMatchResult (internal)
 # ---------------------------------------------------------------------------
-
 
 class _TemplateMatchResult:
     """Internal result of a single template match attempt.
@@ -789,11 +779,9 @@ class _TemplateMatchResult:
         self.optional_keyword_hits: int = 0
         self.matched_serial: Optional[str] = None
 
-
 # ---------------------------------------------------------------------------
 # DocumentClassifierEngine
 # ---------------------------------------------------------------------------
-
 
 class DocumentClassifierEngine:
     """Deterministic rule-based document classification engine for EUDR compliance.
@@ -1309,7 +1297,7 @@ class DocumentClassifierEngine:
                     f"Template not found: {template_id}"
                 )
             template.active = False
-            template.retired_at = _utcnow()
+            template.retired_at = utcnow()
 
         if self._config.enable_provenance:
             self._provenance.record(
@@ -1984,7 +1972,7 @@ class DocumentClassifierEngine:
             "confidence_level": confidence_level,
             "language": language,
             "processing_time_ms": round(processing_time_ms, 2),
-            "classified_at": _utcnow().isoformat(),
+            "classified_at": utcnow().isoformat(),
         }
         with self._lock:
             self._classification_history.append(entry)
@@ -2044,7 +2032,6 @@ class DocumentClassifierEngine:
             f"templates={template_count}, "
             f"classifications={history_count})"
         )
-
 
 # ---------------------------------------------------------------------------
 # Public API

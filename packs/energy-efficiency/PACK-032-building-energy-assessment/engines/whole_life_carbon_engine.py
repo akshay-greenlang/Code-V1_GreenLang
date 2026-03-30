@@ -74,25 +74,19 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     """Generate a new UUID4 string."""
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -110,7 +104,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     """Safely convert a value to Decimal."""
     if isinstance(value, Decimal):
@@ -119,7 +112,6 @@ def _decimal(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
-
 
 def _safe_divide(
     numerator: Decimal,
@@ -131,37 +123,30 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _safe_pct(part: Decimal, whole: Decimal) -> Decimal:
     """Compute percentage safely (part / whole * 100)."""
     return _safe_divide(part * Decimal("100"), whole)
-
 
 def _round_val(value: Decimal, places: int = 6) -> float:
     """Round a Decimal to *places* and return a float."""
     quantizer = Decimal(10) ** -places
     return float(value.quantize(quantizer, rounding=ROUND_HALF_UP))
 
-
 def _round1(value: float) -> float:
     """Round to 1 decimal place using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.1"), rounding=ROUND_HALF_UP))
-
 
 def _round2(value: float) -> float:
     """Round to 2 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
-
 def _round3(value: float) -> float:
     """Round to 3 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP))
 
-
 def _round4(value: float) -> float:
     """Round to 4 decimal places using ROUND_HALF_UP."""
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
-
 
 def _ceil_div(a: int, b: int) -> int:
     """Ceiling integer division."""
@@ -169,11 +154,9 @@ def _ceil_div(a: int, b: int) -> int:
         return 0
     return (a + b - 1) // b
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class LifecycleStage(str, Enum):
     """EN 15978 lifecycle stages for whole life carbon assessment."""
@@ -194,7 +177,6 @@ class LifecycleStage(str, Enum):
     C3_WASTE_PROCESSING = "C3_waste_processing"
     C4_DISPOSAL = "C4_disposal"
     D_BENEFITS_BEYOND = "D_benefits_beyond"
-
 
 class MaterialCategory(str, Enum):
     """Material categories for embodied carbon assessment."""
@@ -220,7 +202,6 @@ class MaterialCategory(str, Enum):
     STONE = "stone"
     AGGREGATE = "aggregate"
 
-
 class CarbonTarget(str, Enum):
     """Carbon budget target standards for comparison."""
     RIBA_2030 = "RIBA_2030"
@@ -228,7 +209,6 @@ class CarbonTarget(str, Enum):
     GLA_2022 = "GLA_2022"
     RICS_2017 = "RICS_2017"
     DGNB = "DGNB"
-
 
 class TransportMode(str, Enum):
     """Transport mode for material delivery."""
@@ -238,7 +218,6 @@ class TransportMode(str, Enum):
     SHIP_CONTAINER = "ship_container"
     SHIP_BULK = "ship_bulk"
     VAN = "van"
-
 
 class BuildingTypeWLC(str, Enum):
     """Building typology for carbon budget comparison."""
@@ -250,7 +229,6 @@ class BuildingTypeWLC(str, Enum):
     HOTEL = "hotel"
     INDUSTRIAL = "industrial"
     MIXED_USE = "mixed_use"
-
 
 # ---------------------------------------------------------------------------
 # Constants -- Embodied Carbon Factors (kgCO2e per unit)
@@ -327,7 +305,6 @@ EMBODIED_CARBON_FACTORS: Dict[str, Dict[str, str]] = {
     "paint_water_based": {"factor": "2.42", "unit": "per_kg", "source": "ICE v3"},
 }
 
-
 # ---------------------------------------------------------------------------
 # Material Lifetime -- expected replacement cycle in years
 # ---------------------------------------------------------------------------
@@ -368,7 +345,6 @@ MATERIAL_LIFETIME: Dict[str, int] = {
     "pitched_roof_tiles": 60,
 }
 
-
 # ---------------------------------------------------------------------------
 # Transport Emission Factors (kgCO2e per tonne-km)
 # ---------------------------------------------------------------------------
@@ -382,7 +358,6 @@ TRANSPORT_EMISSION_FACTORS: Dict[str, str] = {
     "ship_bulk": "0.005",
     "van": "0.280",
 }
-
 
 # ---------------------------------------------------------------------------
 # Carbon Budgets by Building Type (kgCO2e/m2 GIA)
@@ -441,7 +416,6 @@ CARBON_BUDGETS: Dict[str, Dict[str, Dict[str, str]]] = {
         "mixed_use": {"upfront_A1A5": "360", "whole_life_AC": "660", "with_D": "530"},
     },
 }
-
 
 # ---------------------------------------------------------------------------
 # Grid Decarbonisation Projections (kgCO2/kWh) 2025-2070
@@ -506,7 +480,6 @@ GRID_DECARBONISATION: Dict[str, Dict[str, str]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # Biogenic Carbon Factors (kgCO2e sequestered per kg of product)
 # ---------------------------------------------------------------------------
@@ -527,7 +500,6 @@ BIOGENIC_CARBON_FACTORS: Dict[str, str] = {
     "hemp_lime": "-0.30",
 }
 
-
 # ---------------------------------------------------------------------------
 # Construction Stage Factors (A5 as % of A1-A3)
 # ---------------------------------------------------------------------------
@@ -545,7 +517,6 @@ CONSTRUCTION_WASTE_FACTORS: Dict[str, str] = {
     "default": "0.05",
 }
 
-
 # ---------------------------------------------------------------------------
 # End of Life Factors (C1-C4 as proportion of A1-A3)
 # ---------------------------------------------------------------------------
@@ -561,7 +532,6 @@ EOL_FACTORS: Dict[str, Dict[str, str]] = {
     "finishes": {"C1_pct": "0.005", "C2_pct": "0.010", "C3_pct": "0.005", "C4_pct": "0.010"},
     "default": {"C1_pct": "0.005", "C2_pct": "0.010", "C3_pct": "0.005", "C4_pct": "0.005"},
 }
-
 
 # ---------------------------------------------------------------------------
 # Module D Credits (recycling/reuse credit as proportion of A1-A3)
@@ -596,11 +566,9 @@ WATER_USE_INTENSITY: Dict[str, str] = {
     "mixed_use": "0.7",
 }
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class MaterialInput(BaseModel):
     """A single material entry for embodied carbon calculation."""
@@ -615,7 +583,6 @@ class MaterialInput(BaseModel):
     expected_lifetime_years: Optional[int] = Field(None, ge=1, le=200)
     include_biogenic: bool = Field(default=False, description="Include biogenic carbon")
     epd_reference: Optional[str] = None
-
 
 class WholeLifeCarbonInput(BaseModel):
     """Full input for the WholeLifeCarbonEngine."""
@@ -641,11 +608,9 @@ class WholeLifeCarbonInput(BaseModel):
             raise ValueError(f"building_type must be one of {valid}")
         return v
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class MaterialEmbodiedResult(BaseModel):
     """Embodied carbon result for a single material."""
@@ -664,7 +629,6 @@ class MaterialEmbodiedResult(BaseModel):
     eol_C1C4_kgCO2e: float
     module_d_kgCO2e: float
 
-
 class LifecycleStageResult(BaseModel):
     """Carbon totals by EN 15978 lifecycle stage."""
     stage: str
@@ -672,7 +636,6 @@ class LifecycleStageResult(BaseModel):
     total_kgCO2e: float
     per_m2_kgCO2e: float
     pct_of_whole_life: float
-
 
 class TargetComparison(BaseModel):
     """Comparison against a carbon budget target."""
@@ -690,14 +653,12 @@ class TargetComparison(BaseModel):
     upfront_margin_pct: float
     whole_life_margin_pct: float
 
-
 class TopMaterialContributor(BaseModel):
     """Top contributing material to embodied carbon."""
     material_id: str
     material_category: str
     embodied_A1A3_kgCO2e: float
     pct_of_total: float
-
 
 class MaterialSubstitution(BaseModel):
     """Analysis of a material substitution opportunity."""
@@ -711,7 +672,6 @@ class MaterialSubstitution(BaseModel):
     feasibility: str
     notes: str
 
-
 class SensitivityScenario(BaseModel):
     """Result of a sensitivity analysis scenario."""
     scenario_name: str
@@ -721,7 +681,6 @@ class SensitivityScenario(BaseModel):
     wlc_ac_per_m2: float
     delta_from_base_pct: float
 
-
 class DesignRecommendation(BaseModel):
     """Design recommendation for carbon reduction."""
     priority: int
@@ -729,7 +688,6 @@ class DesignRecommendation(BaseModel):
     recommendation: str
     estimated_savings_pct: float
     lifecycle_stage_affected: str
-
 
 class WholeLifeCarbonResult(BaseModel):
     """Complete output of the WholeLifeCarbonEngine."""
@@ -783,11 +741,9 @@ class WholeLifeCarbonResult(BaseModel):
     processing_time_ms: float
     provenance_hash: str
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class WholeLifeCarbonEngine:
     """
@@ -1718,7 +1674,7 @@ class WholeLifeCarbonEngine:
             sensitivity_scenarios=sensitivity,
             design_recommendations=recommendations,
             engine_version=_MODULE_VERSION,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 2),
             provenance_hash="",
         )

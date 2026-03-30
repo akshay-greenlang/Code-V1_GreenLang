@@ -33,14 +33,9 @@ import time
 import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash of arbitrary data."""
@@ -53,7 +48,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Data Structures
 # ---------------------------------------------------------------------------
@@ -63,7 +57,6 @@ VALID_FIELD_TYPES = frozenset({
     "date", "datetime", "timestamp", "json", "array",
     "uuid", "text", "binary", "enum",
 })
-
 
 def _make_schema_definition(
     schema_id: str,
@@ -88,7 +81,7 @@ def _make_schema_definition(
     Returns:
         SchemaDefinition dictionary.
     """
-    now = _utcnow().isoformat()
+    now = utcnow().isoformat()
     return {
         "schema_id": schema_id,
         "name": name,
@@ -100,7 +93,6 @@ def _make_schema_definition(
         "created_at": now,
         "updated_at": now,
     }
-
 
 def _make_schema_mapping(
     source_field: str,
@@ -129,7 +121,6 @@ def _make_schema_mapping(
         "required": required,
     }
 
-
 # ---------------------------------------------------------------------------
 # Built-in transformations
 # ---------------------------------------------------------------------------
@@ -138,16 +129,13 @@ def _transform_uppercase(value: Any) -> Any:
     """Transform value to uppercase string."""
     return str(value).upper() if value is not None else None
 
-
 def _transform_lowercase(value: Any) -> Any:
     """Transform value to lowercase string."""
     return str(value).lower() if value is not None else None
 
-
 def _transform_strip(value: Any) -> Any:
     """Strip whitespace from string value."""
     return str(value).strip() if value is not None else None
-
 
 def _transform_to_float(value: Any) -> Any:
     """Transform value to float."""
@@ -156,7 +144,6 @@ def _transform_to_float(value: Any) -> Any:
     except (ValueError, TypeError):
         return None
 
-
 def _transform_to_int(value: Any) -> Any:
     """Transform value to integer."""
     try:
@@ -164,11 +151,9 @@ def _transform_to_int(value: Any) -> Any:
     except (ValueError, TypeError):
         return None
 
-
 def _transform_to_string(value: Any) -> Any:
     """Transform value to string."""
     return str(value) if value is not None else None
-
 
 def _transform_to_bool(value: Any) -> Any:
     """Transform value to boolean."""
@@ -180,7 +165,6 @@ def _transform_to_bool(value: Any) -> Any:
         return value.lower() in ("true", "1", "yes")
     return bool(value)
 
-
 BUILT_IN_TRANSFORMS: Dict[str, Any] = {
     "uppercase": _transform_uppercase,
     "lowercase": _transform_lowercase,
@@ -190,7 +174,6 @@ BUILT_IN_TRANSFORMS: Dict[str, Any] = {
     "to_string": _transform_to_string,
     "to_bool": _transform_to_bool,
 }
-
 
 class SchemaTranslatorEngine:
     """Schema translation and mapping engine.
@@ -667,7 +650,6 @@ class SchemaTranslatorEngine:
             "total_mapping_sets": len(self._mappings),
             "mapping_pairs": list(self._mappings.keys()),
         }
-
 
 __all__ = [
     "SchemaTranslatorEngine",

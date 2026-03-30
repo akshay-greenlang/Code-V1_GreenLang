@@ -134,21 +134,9 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 logger = logging.getLogger(__name__)
 
-
 # ---------------------------------------------------------------------------
 # Utility helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed.
-
-    Returns:
-        UTC datetime with microsecond component set to zero for
-        reproducible ISO timestamp strings.
-    """
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _safe_str(value: Any) -> str:
     """Convert a value to its string representation for hashing.
@@ -167,7 +155,6 @@ def _safe_str(value: Any) -> str:
         return "null"
     return str(value)
 
-
 def _canonical_json(data: Dict[str, Any]) -> str:
     """Serialize a dictionary to canonical JSON form.
 
@@ -183,7 +170,6 @@ def _canonical_json(data: Dict[str, Any]) -> str:
         Canonical JSON string with sorted keys.
     """
     return json.dumps(data, sort_keys=True, default=str)
-
 
 # ---------------------------------------------------------------------------
 # Valid provenance stages
@@ -273,11 +259,9 @@ VALID_STAGES = frozenset({
     "audit_verify",
 })
 
-
 # ---------------------------------------------------------------------------
 # ProvenanceEntry dataclass (frozen for immutability)
 # ---------------------------------------------------------------------------
-
 
 @dataclass(frozen=True)
 class ProvenanceEntry:
@@ -388,11 +372,9 @@ class ProvenanceEntry:
             metadata=data.get("metadata", {}),
         )
 
-
 # ---------------------------------------------------------------------------
 # Scope2MarketProvenance
 # ---------------------------------------------------------------------------
-
 
 class Scope2MarketProvenance:
     """SHA-256 provenance chain for Scope 2 market-based emission calculations.
@@ -578,7 +560,7 @@ class Scope2MarketProvenance:
             entry = ProvenanceEntry(
                 stage=stage,
                 hash_value=hash_value,
-                timestamp=_utcnow().isoformat(),
+                timestamp=utcnow().isoformat(),
                 previous_hash=previous,
                 metadata=data,
             )
@@ -1073,6 +1055,8 @@ class Scope2MarketProvenance:
                 [0.0, 1.0] or booleans.
             overall_score: Aggregate quality score (0.0-1.0) computed
                 from the individual criteria scores. Must be in [0.0, 1.0].
+
+from greenlang.schemas import utcnow
 
         Returns:
             Hex-encoded SHA-256 hash string (64 characters).

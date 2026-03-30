@@ -29,7 +29,8 @@ from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
-from pydantic import BaseModel, Field
+from pydantic import Field
+from greenlang.schemas import GreenLangBase, utcnow
 
 from greenlang.agents.eudr.due_diligence_orchestrator.api.dependencies import (
     AuthUser,
@@ -57,7 +58,7 @@ router = APIRouter(prefix="/workflows", tags=["Execution Control"])
 # ---------------------------------------------------------------------------
 
 
-class StartRequest(BaseModel):
+class StartRequest(GreenLangBase):
     """Request body for starting a workflow."""
 
     input_data: Dict[str, Any] = Field(
@@ -72,7 +73,7 @@ class StartRequest(BaseModel):
     )
 
 
-class ResumeRequest(BaseModel):
+class ResumeRequest(GreenLangBase):
     """Request body for resuming a workflow."""
 
     checkpoint_id: Optional[str] = Field(
@@ -85,7 +86,7 @@ class ResumeRequest(BaseModel):
     )
 
 
-class CancelRequest(BaseModel):
+class CancelRequest(GreenLangBase):
     """Request body for cancelling a workflow."""
 
     reason: str = Field(
@@ -95,7 +96,7 @@ class CancelRequest(BaseModel):
     )
 
 
-class RollbackRequest(BaseModel):
+class RollbackRequest(GreenLangBase):
     """Request body for rolling back a workflow."""
 
     checkpoint_id: str = Field(
@@ -543,7 +544,7 @@ async def rollback_workflow(
             "workflow_id": workflow_id,
             "status": "paused",
             "rolled_back_to_checkpoint": body.checkpoint_id,
-            "rolled_back_at": _utcnow().isoformat(),
+            "rolled_back_at": utcnow().isoformat(),
             "rolled_back_by": user.user_id,
             "reason": body.reason,
             "checkpoint_phase": rollback_result.get("phase", "unknown") if isinstance(rollback_result, dict) else "unknown",

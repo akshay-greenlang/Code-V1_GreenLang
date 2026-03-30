@@ -40,6 +40,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 from pydantic import BaseModel, Field, validator, root_validator
+from greenlang.schemas.enums import AlertSeverity
 
 
 # =============================================================================
@@ -160,16 +161,6 @@ class FlameDetectorType(str, Enum):
     FLAME_ROD = "flame_rod"  # Ionization
     VISIBLE = "visible"  # Visible light
     MULTI_SPECTRUM = "multi_spectrum"
-
-
-class AlertSeverity(str, Enum):
-    """Alert severity levels for burner monitoring."""
-    GOOD = "good"
-    ADVISORY = "advisory"
-    WARNING = "warning"
-    ALARM = "alarm"
-    CRITICAL = "critical"
-    SHUTDOWN = "shutdown"
 
 
 # =============================================================================

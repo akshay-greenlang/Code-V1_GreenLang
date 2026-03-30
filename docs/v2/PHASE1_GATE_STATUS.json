@@ -1,0 +1,25 @@
+{
+  "phase": "V2-Phase1",
+  "phase1_complete": true,
+  "generated_at_utc": "2026-03-29T12:05:00Z",
+  "reference_commit_sha": "working-tree",
+  "checklist": {
+    "v2_contract_module_present": true,
+    "v2_profile_registry_present": true,
+    "expanded_cli_command_harmonization_present": true,
+    "unified_exit_taxonomy_enforced": true,
+    "compatibility_policy_documented": true,
+    "conformance_tests_cover_selected_apps": true
+  },
+  "evidence_files": [
+    "greenlang/v2/contracts.py",
+    "greenlang/v2/profiles.py",
+    "greenlang/v2/backends.py",
+    "greenlang/cli/main.py",
+    "greenlang/cli/cmd_v2.py",
+    "tests/v2/test_cli_v2.py",
+    "tests/v2/test_contracts.py",
+    ".github/workflows/greenlang-v2-platform-ci.yml",
+    "docs/v2/COMPATIBILITY_MATRIX.md"
+  ]
+}

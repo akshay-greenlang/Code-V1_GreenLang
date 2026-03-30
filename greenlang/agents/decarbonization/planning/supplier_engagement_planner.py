@@ -15,12 +15,13 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig
 from greenlang.agents.base_agents import DeterministicAgent
 from greenlang.agents.categories import AgentCategory, AgentMetadata
 from greenlang.utilities.determinism import DeterministicClock, content_hash, deterministic_id
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +33,7 @@ class EngagementTier(str, Enum):
     BASIC = "basic"  # Questionnaire only
 
 
-class SupplierSegment(BaseModel):
+class SupplierSegment(GreenLangBase):
     segment_name: str = Field(...)
     tier: EngagementTier = Field(...)
     supplier_count: int = Field(..., ge=0)
@@ -42,7 +43,7 @@ class SupplierSegment(BaseModel):
     target_reduction_percent: float = Field(default=0, ge=0, le=100)
 
 
-class SupplierEngagementPlan(BaseModel):
+class SupplierEngagementPlan(GreenLangBase):
     plan_id: str = Field(...)
     total_suppliers: int = Field(..., ge=0)
     scope_3_emissions_tco2e: float = Field(..., ge=0)
@@ -59,7 +60,7 @@ class SupplierEngagementPlan(BaseModel):
     provenance_hash: str = Field(default="")
 
 
-class SupplierEngagementInput(BaseModel):
+class SupplierEngagementInput(GreenLangBase):
     operation: str = Field(default="plan")
     total_suppliers: int = Field(default=500, ge=0)
     scope_3_emissions_tco2e: float = Field(default=500000, ge=0)
@@ -67,7 +68,7 @@ class SupplierEngagementInput(BaseModel):
     sbti_coverage_target: float = Field(default=67, ge=0, le=100)
 
 
-class SupplierEngagementOutput(BaseModel):
+class SupplierEngagementOutput(GreenLangBase):
     operation: str = Field(...)
     success: bool = Field(...)
     plan: Optional[SupplierEngagementPlan] = Field(None)

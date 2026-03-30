@@ -85,23 +85,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -118,7 +113,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -127,7 +121,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -135,19 +128,15 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round4(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class AssetClass(str, Enum):
     """PCAF asset class for financed emissions."""
@@ -159,7 +148,6 @@ class AssetClass(str, Enum):
     MORTGAGES = "mortgages"
     SOVEREIGN_DEBT = "sovereign_debt"
 
-
 class PCAFScore(int, Enum):
     """PCAF data quality score (1=best, 5=worst)."""
     SCORE_1 = 1
@@ -168,14 +156,12 @@ class PCAFScore(int, Enum):
     SCORE_4 = 4
     SCORE_5 = 5
 
-
 class MetricType(str, Enum):
     """Portfolio carbon metric type."""
     FINANCED_EMISSIONS = "financed_emissions"
     WACI = "waci"
     CARBON_FOOTPRINT = "carbon_footprint"
     CARBON_INTENSITY = "carbon_intensity"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -184,11 +170,9 @@ class MetricType(str, Enum):
 MAX_HOLDINGS: int = 50000
 DEFAULT_PCAF_QUALITY: int = 3
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class Holding(BaseModel):
     """A single portfolio holding.
@@ -240,7 +224,6 @@ class Holding(BaseModel):
             object.__setattr__(self, "total_emissions_tco2e", total)
         return self
 
-
 class BenchmarkIndex(BaseModel):
     """Benchmark index for comparison.
 
@@ -254,7 +237,6 @@ class BenchmarkIndex(BaseModel):
     index_name: str = Field(default="", description="Index name")
     holdings: List[Holding] = Field(default_factory=list, description="Holdings")
     waci: Optional[Decimal] = Field(default=None, ge=0, description="Pre-calculated WACI")
-
 
 class Portfolio(BaseModel):
     """Portfolio for benchmarking.
@@ -274,11 +256,9 @@ class Portfolio(BaseModel):
     benchmark: Optional[BenchmarkIndex] = Field(default=None, description="Benchmark")
     output_precision: int = Field(default=4, ge=0, le=12)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class HoldingResult(BaseModel):
     """Per-holding calculation result.
@@ -304,7 +284,6 @@ class HoldingResult(BaseModel):
     waci_contribution: Decimal = Field(default=Decimal("0"))
     pcaf_quality: int = Field(default=3)
 
-
 class SectorAttribution(BaseModel):
     """Sector-level attribution analysis.
 
@@ -323,7 +302,6 @@ class SectorAttribution(BaseModel):
     waci_contribution: Decimal = Field(default=Decimal("0"))
     contribution_pct: Decimal = Field(default=Decimal("0"))
 
-
 class WACIResult(BaseModel):
     """WACI calculation result.
 
@@ -337,7 +315,6 @@ class WACIResult(BaseModel):
     benchmark_waci: Optional[Decimal] = Field(default=None)
     tracking_error: Optional[Decimal] = Field(default=None)
     relative_pct: Optional[Decimal] = Field(default=None)
-
 
 class PortfolioResult(BaseModel):
     """Complete portfolio benchmarking result.
@@ -375,11 +352,9 @@ class PortfolioResult(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class PortfolioBenchmarkingEngine:
     """PCAF-aligned portfolio carbon benchmarking engine.
@@ -525,7 +500,7 @@ class PortfolioBenchmarkingEngine:
             holdings_count=len(holdings),
             coverage_pct=coverage,
             warnings=warnings,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         result.provenance_hash = _compute_hash(result)
@@ -630,7 +605,6 @@ class PortfolioBenchmarkingEngine:
 
     def get_version(self) -> str:
         return self._version
-
 
 # ---------------------------------------------------------------------------
 # __all__

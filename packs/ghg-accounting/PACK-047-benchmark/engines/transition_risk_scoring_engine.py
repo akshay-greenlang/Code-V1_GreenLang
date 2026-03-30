@@ -95,23 +95,18 @@ import random
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -128,7 +123,6 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 def _decimal(value: Any) -> Decimal:
     if isinstance(value, Decimal):
         return value
@@ -137,7 +131,6 @@ def _decimal(value: Any) -> Decimal:
     except (InvalidOperation, TypeError, ValueError):
         return Decimal("0")
 
-
 def _safe_divide(
     numerator: Decimal, denominator: Decimal, default: Decimal = Decimal("0"),
 ) -> Decimal:
@@ -145,19 +138,15 @@ def _safe_divide(
         return default
     return numerator / denominator
 
-
 def _round2(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
-
 
 def _round4(value: Any) -> float:
     return float(Decimal(str(value)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class RiskLevel(str, Enum):
     """Transition risk level."""
@@ -166,7 +155,6 @@ class RiskLevel(str, Enum):
     MODERATE = "moderate"
     HIGH = "high"
     VERY_HIGH = "very_high"
-
 
 class CarbonPriceScenario(str, Enum):
     """Carbon price scenario.
@@ -187,7 +175,6 @@ class CarbonPriceScenario(str, Enum):
     IEA_STEPS = "iea_steps"
     CUSTOM = "custom"
 
-
 class RegulatoryRegime(str, Enum):
     """Regulatory carbon pricing regime."""
     EU_ETS = "eu_ets"
@@ -196,7 +183,6 @@ class RegulatoryRegime(str, Enum):
     CALIFORNIA_CaT = "california_cap_trade"
     CHINA_ETS = "china_ets"
     NONE = "none"
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -249,11 +235,9 @@ DEFAULT_MC_SEED: int = 42
 GLOBAL_2020_EMISSIONS_GTCO2: Decimal = Decimal("36.7")
 BUDGET_1_5C_50PCT_GTCO2: Decimal = Decimal("500")
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Inputs
 # ---------------------------------------------------------------------------
-
 
 class TransitionRiskInput(BaseModel):
     """Input for transition risk scoring.
@@ -311,11 +295,9 @@ class TransitionRiskInput(BaseModel):
     def coerce_dec(cls, v: Any) -> Decimal:
         return _decimal(v)
 
-
 # ---------------------------------------------------------------------------
 # Pydantic Models -- Outputs
 # ---------------------------------------------------------------------------
-
 
 class BudgetOvershoot(BaseModel):
     """Carbon budget overshoot analysis.
@@ -330,7 +312,6 @@ class BudgetOvershoot(BaseModel):
     allocated_budget_tco2e: Decimal = Field(default=Decimal("0"))
     projected_cumulative: Decimal = Field(default=Decimal("0"))
     overshoot_tco2e: Decimal = Field(default=Decimal("0"))
-
 
 class StrandingResult(BaseModel):
     """Asset stranding risk assessment.
@@ -348,7 +329,6 @@ class StrandingResult(BaseModel):
     ceiling_at_strand: Optional[Decimal] = Field(default=None)
     strand_score: Decimal = Field(default=Decimal("0"))
 
-
 class RegulatoryRiskScore(BaseModel):
     """Regulatory risk assessment.
 
@@ -362,7 +342,6 @@ class RegulatoryRiskScore(BaseModel):
     coverage_ratio: Decimal = Field(default=Decimal("0"))
     price_gap: Decimal = Field(default=Decimal("0"))
     regulatory_score: Decimal = Field(default=Decimal("0"))
-
 
 class CarbonPriceExposure(BaseModel):
     """Carbon price exposure analysis.
@@ -382,7 +361,6 @@ class CarbonPriceExposure(BaseModel):
     cumulative_cost: Decimal = Field(default=Decimal("0"))
     cost_as_pct_revenue: Optional[Decimal] = Field(default=None)
 
-
 class RiskTrajectoryPoint(BaseModel):
     """Risk score at a point in time.
 
@@ -392,7 +370,6 @@ class RiskTrajectoryPoint(BaseModel):
     """
     year: int = Field(..., description="Year")
     risk_score: Decimal = Field(default=Decimal("0"))
-
 
 class TransitionRiskResult(BaseModel):
     """Complete transition risk assessment result.
@@ -430,11 +407,9 @@ class TransitionRiskResult(BaseModel):
     processing_time_ms: float = Field(default=0.0, description="Processing time (ms)")
     provenance_hash: str = Field(default="", description="SHA-256 hash")
 
-
 # ---------------------------------------------------------------------------
 # Engine
 # ---------------------------------------------------------------------------
-
 
 class TransitionRiskScoringEngine:
     """Assesses climate transition risk exposure.
@@ -534,7 +509,7 @@ class TransitionRiskScoringEngine:
             risk_trajectory=trajectory,
             component_scores=component_scores,
             warnings=warnings,
-            calculated_at=_utcnow().isoformat(),
+            calculated_at=utcnow().isoformat(),
             processing_time_ms=round(elapsed_ms, 3),
         )
         result.provenance_hash = _compute_hash(result)
@@ -811,7 +786,6 @@ class TransitionRiskScoringEngine:
 
     def get_version(self) -> str:
         return self._version
-
 
 # ---------------------------------------------------------------------------
 # __all__

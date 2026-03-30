@@ -29,7 +29,8 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field, field_validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 
 from greenlang.agents.foundation.schema.models.schema_ref import SchemaRef
 from greenlang.agents.foundation.schema.models.config import ValidationOptions, ValidationProfile
@@ -75,7 +76,7 @@ class GreenLangSchemaErrorCodes:
 # =============================================================================
 
 
-class ErrorDetail(BaseModel):
+class ErrorDetail(GreenLangBase):
     """Detail about a specific error."""
 
     code: str = Field(
@@ -106,7 +107,7 @@ class ErrorDetail(BaseModel):
     }
 
 
-class ErrorResponse(BaseModel):
+class ErrorResponse(GreenLangBase):
     """Standardized error response."""
 
     error: str = Field(
@@ -160,7 +161,7 @@ class ErrorResponse(BaseModel):
 # =============================================================================
 
 
-class ValidateRequest(BaseModel):
+class ValidateRequest(GreenLangBase):
     """
     Request to validate a single payload against a schema.
 
@@ -214,7 +215,7 @@ class ValidateRequest(BaseModel):
     }
 
 
-class ValidateResponse(BaseModel):
+class ValidateResponse(GreenLangBase):
     """
     Response from single payload validation.
 
@@ -315,7 +316,7 @@ class ValidateResponse(BaseModel):
 # =============================================================================
 
 
-class BatchValidateRequest(BaseModel):
+class BatchValidateRequest(GreenLangBase):
     """
     Request to validate multiple payloads against the same schema.
 
@@ -370,7 +371,7 @@ class BatchValidateRequest(BaseModel):
     }
 
 
-class BatchItemResult(BaseModel):
+class BatchItemResult(GreenLangBase):
     """
     Result for a single item in batch validation.
 
@@ -430,7 +431,7 @@ class BatchItemResult(BaseModel):
     }
 
 
-class BatchSummary(BaseModel):
+class BatchSummary(GreenLangBase):
     """
     Summary statistics for batch validation.
 
@@ -505,7 +506,7 @@ class BatchSummary(BaseModel):
     }
 
 
-class BatchValidateResponse(BaseModel):
+class BatchValidateResponse(GreenLangBase):
     """
     Response from batch validation.
 
@@ -574,7 +575,7 @@ class BatchValidateResponse(BaseModel):
 # =============================================================================
 
 
-class CompileRequest(BaseModel):
+class CompileRequest(GreenLangBase):
     """
     Request to compile a schema to intermediate representation (IR).
 
@@ -633,7 +634,7 @@ class CompileRequest(BaseModel):
     }
 
 
-class CompileResponse(BaseModel):
+class CompileResponse(GreenLangBase):
     """
     Response from schema compilation.
 
@@ -704,7 +705,7 @@ class CompileResponse(BaseModel):
 # =============================================================================
 
 
-class SchemaVersionInfo(BaseModel):
+class SchemaVersionInfo(GreenLangBase):
     """
     Information about a specific schema version.
 
@@ -758,7 +759,7 @@ class SchemaVersionInfo(BaseModel):
     }
 
 
-class SchemaVersionsResponse(BaseModel):
+class SchemaVersionsResponse(GreenLangBase):
     """
     Response listing schema versions.
 
@@ -803,7 +804,7 @@ class SchemaVersionsResponse(BaseModel):
     }
 
 
-class SchemaDetailResponse(BaseModel):
+class SchemaDetailResponse(GreenLangBase):
     """
     Response with full schema details.
 
@@ -877,7 +878,7 @@ class SchemaDetailResponse(BaseModel):
 # =============================================================================
 
 
-class ComponentHealth(BaseModel):
+class ComponentHealth(GreenLangBase):
     """
     Health status of a single component.
 
@@ -926,7 +927,7 @@ class ComponentHealth(BaseModel):
     }
 
 
-class HealthResponse(BaseModel):
+class HealthResponse(GreenLangBase):
     """
     Health check response.
 
@@ -998,7 +999,7 @@ class HealthResponse(BaseModel):
 # =============================================================================
 
 
-class MetricsResponse(BaseModel):
+class MetricsResponse(GreenLangBase):
     """
     Prometheus-compatible metrics response.
 

@@ -28,7 +28,8 @@ from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
+from greenlang.schemas import GreenLangBase, utcnow, new_uuid
 
 # ============================================================================
 # ENUMS
@@ -301,7 +302,7 @@ def _generate_uuid() -> str:
 # ============================================================================
 
 
-class ValidationIssue(BaseModel):
+class ValidationIssue(GreenLangBase):
     """A single validation issue found during emissions data checks."""
 
     field: str = Field(..., description="Field name that failed validation")
@@ -322,7 +323,7 @@ class ValidationIssue(BaseModel):
         return v
 
 
-class AccessRequest(BaseModel):
+class AccessRequest(GreenLangBase):
     """An importer's request for data access to a supplier's emissions data."""
 
     request_id: str = Field(
@@ -369,7 +370,7 @@ class AccessRequest(BaseModel):
     notes: Optional[str] = Field(None, max_length=2000)
 
 
-class AccessEvent(BaseModel):
+class AccessEvent(GreenLangBase):
     """An audit log entry for data access events."""
 
     event_id: str = Field(
@@ -402,7 +403,7 @@ class AccessEvent(BaseModel):
     ip_address: Optional[str] = Field(None, description="Client IP address")
 
 
-class Deadline(BaseModel):
+class Deadline(GreenLangBase):
     """An upcoming deadline for the supplier."""
 
     deadline_id: str = Field(
@@ -435,7 +436,7 @@ class Deadline(BaseModel):
 # ============================================================================
 
 
-class PrecursorEmission(BaseModel):
+class PrecursorEmission(GreenLangBase):
     """
     Emissions data for a precursor material used in production.
 
@@ -486,7 +487,7 @@ class PrecursorEmission(BaseModel):
             raise ValueError(f"Invalid decimal value: {v}")
 
 
-class SupportingDocument(BaseModel):
+class SupportingDocument(GreenLangBase):
     """A supporting document attached to an emissions submission."""
 
     doc_id: str = Field(
@@ -536,7 +537,7 @@ class SupportingDocument(BaseModel):
         return v.lower()
 
 
-class DataQualityScore(BaseModel):
+class DataQualityScore(GreenLangBase):
     """
     Data quality assessment for an emissions submission.
 
@@ -603,7 +604,7 @@ class DataQualityScore(BaseModel):
             raise ValueError(f"Invalid decimal score: {v}")
 
 
-class VerificationRecord(BaseModel):
+class VerificationRecord(GreenLangBase):
     """
     Record of a third-party verification visit for an installation.
 
@@ -685,7 +686,7 @@ class VerificationRecord(BaseModel):
         return self
 
 
-class Installation(BaseModel):
+class Installation(GreenLangBase):
     """
     A production installation (facility) registered under the Supplier Portal.
 
@@ -799,7 +800,7 @@ class Installation(BaseModel):
         return v
 
 
-class EmissionsDataSubmission(BaseModel):
+class EmissionsDataSubmission(GreenLangBase):
     """
     An emissions data submission from a supplier for a specific product
     at a specific installation during a reporting period.
@@ -1010,7 +1011,7 @@ class EmissionsDataSubmission(BaseModel):
         )
 
 
-class SupplierProfile(BaseModel):
+class SupplierProfile(GreenLangBase):
     """
     A registered third-country supplier (installation operator) in the
     CBAM Supplier Portal.
@@ -1127,7 +1128,7 @@ class SupplierProfile(BaseModel):
         return v.lower()
 
 
-class SupplierSearchResult(BaseModel):
+class SupplierSearchResult(GreenLangBase):
     """
     A summarized supplier record returned from search queries.
 
@@ -1157,7 +1158,7 @@ class SupplierSearchResult(BaseModel):
     )
 
 
-class SupplierDashboard(BaseModel):
+class SupplierDashboard(GreenLangBase):
     """
     Aggregated dashboard data for a supplier.
 

@@ -35,35 +35,25 @@ from datetime import date, datetime, timezone
 from decimal import Decimal
 from enum import Enum
 from typing import Any, Dict, List, Optional
+from greenlang.schemas import GreenLangBase, utcnow
 
 from pydantic import (
-    BaseModel,
-    ConfigDict,
     Field,
     field_validator,
     model_validator,
 )
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _today() -> date:
     """Return current UTC date."""
     return datetime.now(timezone.utc).date()
 
-
 # =============================================================================
 # Enumerations
 # =============================================================================
-
 
 class EUDRCommodity(str, Enum):
     """EUDR-regulated commodities and their derived products.
@@ -106,7 +96,6 @@ class EUDRCommodity(str, Enum):
     PAPER = "paper"
     CHARCOAL = "charcoal"
 
-
 class RiskLevel(str, Enum):
     """Risk classification levels for EUDR country benchmarking.
 
@@ -117,7 +106,6 @@ class RiskLevel(str, Enum):
     LOW = "low"
     STANDARD = "standard"
     HIGH = "high"
-
 
 class ComplianceStatus(str, Enum):
     """EUDR compliance status for plots, products, or operators.
@@ -134,7 +122,6 @@ class ComplianceStatus(str, Enum):
     INSUFFICIENT_DATA = "insufficient_data"
     EXEMPTED = "exempted"
 
-
 class LandUseType(str, Enum):
     """Land use classification for production plots.
 
@@ -150,7 +137,6 @@ class LandUseType(str, Enum):
     DEGRADED = "degraded"
     OTHER = "other"
 
-
 class CustodyModel(str, Enum):
     """Chain of custody models for commodity traceability.
 
@@ -161,7 +147,6 @@ class CustodyModel(str, Enum):
     IDENTITY_PRESERVED = "identity_preserved"
     SEGREGATED = "segregated"
     MASS_BALANCE = "mass_balance"
-
 
 class DDSStatus(str, Enum):
     """Lifecycle status of a Due Diligence Statement (DDS).
@@ -176,7 +161,6 @@ class DDSStatus(str, Enum):
     REJECTED = "rejected"
     EXPIRED = "expired"
 
-
 class DDSType(str, Enum):
     """Type of Due Diligence Statement based on market activity.
 
@@ -188,7 +172,6 @@ class DDSType(str, Enum):
     IMPORT_PLACEMENT = "import_placement"
     EXPORT = "export"
     DOMESTIC = "domestic"
-
 
 class SubmissionStatus(str, Enum):
     """Status of a submission to the EU Information System.
@@ -202,7 +185,6 @@ class SubmissionStatus(str, Enum):
     ACCEPTED = "accepted"
     REJECTED = "rejected"
     ERROR = "error"
-
 
 # =============================================================================
 # Primary Commodity Mapping
@@ -235,13 +217,11 @@ PRIMARY_COMMODITIES = frozenset({
     EUDRCommodity.WOOD,
 })
 
-
 # =============================================================================
 # Core Data Models
 # =============================================================================
 
-
-class GeolocationData(BaseModel):
+class GeolocationData(GreenLangBase):
     """Geolocation data for a production plot as required by EUDR Article 9.
 
     EUDR mandates geolocation of all plots of land where the relevant
@@ -375,8 +355,7 @@ class GeolocationData(BaseModel):
             )
         return self
 
-
-class PlotRecord(BaseModel):
+class PlotRecord(GreenLangBase):
     """Record of a registered production plot for EUDR traceability.
 
     Represents a single plot of land where an EUDR-relevant commodity
@@ -480,11 +459,11 @@ class PlotRecord(BaseModel):
         description="Risk classification for this plot",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the plot record was created",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of the last update to this record",
     )
     metadata: Dict[str, Any] = Field(
@@ -519,8 +498,7 @@ class PlotRecord(BaseModel):
             )
         return v
 
-
-class CustodyTransfer(BaseModel):
+class CustodyTransfer(GreenLangBase):
     """Record of a chain of custody transfer between operators.
 
     Represents a single transfer event in the supply chain where
@@ -610,7 +588,7 @@ class CustodyTransfer(BaseModel):
         description="Chain of custody model applied to this transfer",
     )
     transaction_date: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Date and time of the transfer",
     )
     transport_mode: Optional[str] = Field(
@@ -646,7 +624,7 @@ class CustodyTransfer(BaseModel):
         description="Timestamp of verification",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the transfer was recorded",
     )
     metadata: Dict[str, Any] = Field(
@@ -694,8 +672,7 @@ class CustodyTransfer(BaseModel):
             raise ValueError("product_description must be non-empty")
         return v
 
-
-class BatchRecord(BaseModel):
+class BatchRecord(GreenLangBase):
     """Record of a batch or lot of EUDR-relevant commodities.
 
     Represents a grouped collection of commodities from one or more
@@ -749,7 +726,7 @@ class BatchRecord(BaseModel):
         description="Chain of custody model applied to this batch",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the batch was created",
     )
 
@@ -761,8 +738,7 @@ class BatchRecord(BaseModel):
             raise ValueError("product_description must be non-empty")
         return v
 
-
-class RiskScore(BaseModel):
+class RiskScore(GreenLangBase):
     """Risk assessment score for a plot, product, or operator.
 
     Implements composite risk scoring based on country, commodity,
@@ -846,7 +822,7 @@ class RiskScore(BaseModel):
         description="Risk assessment methodology identifier",
     )
     assessed_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the assessment was performed",
     )
 
@@ -870,8 +846,7 @@ class RiskScore(BaseModel):
             raise ValueError("target_id must be non-empty")
         return v
 
-
-class CommodityClassification(BaseModel):
+class CommodityClassification(GreenLangBase):
     """Classification of a product against the EUDR commodity list.
 
     Maps a product to its EUDR commodity category and identifies
@@ -925,7 +900,7 @@ class CommodityClassification(BaseModel):
         description="Composition percentages by commodity (for blends)",
     )
     classified_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the classification was performed",
     )
 
@@ -962,8 +937,7 @@ class CommodityClassification(BaseModel):
             )
         return self
 
-
-class SupplierDeclaration(BaseModel):
+class SupplierDeclaration(GreenLangBase):
     """Declaration from a supplier regarding EUDR compliance.
 
     Captures supplier-level attestations about deforestation-free
@@ -1081,8 +1055,7 @@ class SupplierDeclaration(BaseModel):
             )
         return self
 
-
-class DueDiligenceStatement(BaseModel):
+class DueDiligenceStatement(GreenLangBase):
     """Due Diligence Statement (DDS) as required by EUDR Article 4.
 
     Represents the formal due diligence statement that operators and
@@ -1230,11 +1203,11 @@ class DueDiligenceStatement(BaseModel):
         description="End date of the DDS validity period",
     )
     created_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the DDS was created",
     )
     updated_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp of the last update to this DDS",
     )
 
@@ -1287,8 +1260,7 @@ class DueDiligenceStatement(BaseModel):
             )
         return self
 
-
-class ComplianceCheckResult(BaseModel):
+class ComplianceCheckResult(GreenLangBase):
     """Result of a compliance check against a specific EUDR article.
 
     Represents the outcome of verifying a plot, product, or operator
@@ -1341,7 +1313,7 @@ class ComplianceCheckResult(BaseModel):
         description="Suggested remediation action if non-compliant",
     )
     checked_at: datetime = Field(
-        default_factory=_utcnow,
+        default_factory=utcnow,
         description="Timestamp when the compliance check was performed",
     )
 
@@ -1389,8 +1361,7 @@ class ComplianceCheckResult(BaseModel):
             raise ValueError("details must be non-empty")
         return v
 
-
-class EUSubmissionRecord(BaseModel):
+class EUSubmissionRecord(GreenLangBase):
     """Record of a submission to the EU Information System.
 
     Tracks the lifecycle and status of electronic submissions to the
@@ -1451,8 +1422,7 @@ class EUSubmissionRecord(BaseModel):
             raise ValueError("dds_id must be non-empty")
         return v
 
-
-class EUDRStatistics(BaseModel):
+class EUDRStatistics(GreenLangBase):
     """Aggregated statistics for the EUDR traceability service.
 
     Provides high-level operational metrics for monitoring the overall
@@ -1516,13 +1486,11 @@ class EUDRStatistics(BaseModel):
         description="Count of plots by country of origin",
     )
 
-
 # =============================================================================
 # Request Models
 # =============================================================================
 
-
-class RegisterPlotRequest(BaseModel):
+class RegisterPlotRequest(GreenLangBase):
     """Request body for registering a new production plot.
 
     Attributes:
@@ -1535,9 +1503,6 @@ class RegisterPlotRequest(BaseModel):
         land_use_type: Type of land use on this plot.
         supporting_documents: List of supporting document references.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     geolocation: GeolocationData = Field(
         ...,
         description="Geolocation data for the production plot",
@@ -1600,8 +1565,7 @@ class RegisterPlotRequest(BaseModel):
             )
         return v
 
-
-class RecordTransferRequest(BaseModel):
+class RecordTransferRequest(GreenLangBase):
     """Request body for recording a chain of custody transfer.
 
     Attributes:
@@ -1619,9 +1583,6 @@ class RecordTransferRequest(BaseModel):
         cn_code: Optional EU Combined Nomenclature code.
         hs_code: Optional Harmonized System code.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     source_operator_id: str = Field(
         ...,
         description="Identifier of the operator transferring custody",
@@ -1717,8 +1678,7 @@ class RecordTransferRequest(BaseModel):
             raise ValueError("product_description must be non-empty")
         return v
 
-
-class GenerateDDSRequest(BaseModel):
+class GenerateDDSRequest(GreenLangBase):
     """Request body for generating a due diligence statement.
 
     Attributes:
@@ -1729,9 +1689,6 @@ class GenerateDDSRequest(BaseModel):
         origin_plot_ids: List of origin plot IDs for traceability.
         dds_type: Type of DDS based on market activity.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     commodity: EUDRCommodity = Field(
         ...,
         description="EUDR commodity covered by this DDS",
@@ -1768,8 +1725,7 @@ class GenerateDDSRequest(BaseModel):
             raise ValueError("product_description must be non-empty")
         return v
 
-
-class AssessRiskRequest(BaseModel):
+class AssessRiskRequest(GreenLangBase):
     """Request body for performing a risk assessment.
 
     Attributes:
@@ -1778,9 +1734,6 @@ class AssessRiskRequest(BaseModel):
         commodity: Optional commodity to consider in the assessment.
         country_codes: Optional list of countries to consider.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     target_type: str = Field(
         ...,
         description="Type of entity to assess: 'plot', 'product', or 'operator'",
@@ -1837,8 +1790,7 @@ class AssessRiskRequest(BaseModel):
             validated.append(code)
         return validated
 
-
-class ClassifyCommodityRequest(BaseModel):
+class ClassifyCommodityRequest(GreenLangBase):
     """Request body for classifying a product against EUDR commodity list.
 
     Attributes:
@@ -1846,9 +1798,6 @@ class ClassifyCommodityRequest(BaseModel):
         hs_code: Optional Harmonized System code.
         cn_code: Optional EU Combined Nomenclature code.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     product_name: str = Field(
         ...,
         description="Name of the product to classify",
@@ -1870,8 +1819,7 @@ class ClassifyCommodityRequest(BaseModel):
             raise ValueError("product_name must be non-empty")
         return v
 
-
-class RegisterDeclarationRequest(BaseModel):
+class RegisterDeclarationRequest(GreenLangBase):
     """Request body for registering a supplier declaration.
 
     Attributes:
@@ -1884,9 +1832,6 @@ class RegisterDeclarationRequest(BaseModel):
         confirms_traceability: Whether supplier confirms traceability.
         valid_until: Optional end date of declaration validity.
     """
-
-    model_config = ConfigDict(extra="forbid")
-
     supplier_id: str = Field(
         ...,
         description="Identifier for the declaring supplier",
@@ -1949,7 +1894,6 @@ class RegisterDeclarationRequest(BaseModel):
                 "supplier_country must be a two-letter ISO 3166-1 alpha-2 code"
             )
         return v
-
 
 __all__ = [
     # Enumerations

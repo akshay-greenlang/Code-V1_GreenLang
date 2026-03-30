@@ -59,6 +59,7 @@ from greenlang.agents.eudr.information_gathering.models import (
     QueryStatus,
 )
 from greenlang.agents.eudr.information_gathering.provenance import ProvenanceTracker
+from greenlang.schemas import utcnow
 from greenlang.agents.eudr.information_gathering.metrics import (
     record_external_query,
     observe_external_query_duration,
@@ -70,16 +71,9 @@ logger = logging.getLogger(__name__)
 
 _MODULE_VERSION = "1.0.0"
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _compute_hash(data: Any) -> str:
     """Compute deterministic SHA-256 hash for audit provenance.
@@ -93,11 +87,9 @@ def _compute_hash(data: Any) -> str:
     canonical = json.dumps(data, sort_keys=True, separators=(",", ":"), default=str)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Circuit Breaker
 # ---------------------------------------------------------------------------
-
 
 class CircuitState(str, Enum):
     """Circuit breaker states."""
@@ -105,7 +97,6 @@ class CircuitState(str, Enum):
     CLOSED = "closed"
     OPEN = "open"
     HALF_OPEN = "half_open"
-
 
 class CircuitBreaker:
     """Per-source circuit breaker preventing cascading failures.
@@ -190,11 +181,9 @@ class CircuitBreaker:
                     self.failure_count,
                 )
 
-
 # ---------------------------------------------------------------------------
 # Token-Bucket Rate Limiter
 # ---------------------------------------------------------------------------
-
 
 class TokenBucketRateLimiter:
     """Token-bucket rate limiter for external API calls.
@@ -227,11 +216,9 @@ class TokenBucketRateLimiter:
             return True
         return False
 
-
 # ---------------------------------------------------------------------------
 # Cache Stub
 # ---------------------------------------------------------------------------
-
 
 class QueryCache:
     """In-memory cache stub with TTL (production uses Redis).
@@ -290,11 +277,9 @@ class QueryCache:
         self._hits = 0
         self._misses = 0
 
-
 # ---------------------------------------------------------------------------
 # Abstract Adapter
 # ---------------------------------------------------------------------------
-
 
 class ExternalDatabaseAdapter(abc.ABC):
     """Abstract base class for external database adapters.
@@ -354,16 +339,14 @@ class ExternalDatabaseAdapter(abc.ABC):
             status=status,
             records=records,
             record_count=len(records),
-            query_timestamp=_utcnow(),
+            query_timestamp=utcnow(),
             response_time_ms=response_time_ms,
             provenance_hash=provenance_hash,
         )
 
-
 # ---------------------------------------------------------------------------
 # Concrete Adapters
 # ---------------------------------------------------------------------------
-
 
 class EUTracesAdapter(ExternalDatabaseAdapter):
     """EU TRACES adapter for health/phytosanitary certificate lookups."""
@@ -400,7 +383,6 @@ class EUTracesAdapter(ExternalDatabaseAdapter):
         elapsed = int((time.monotonic() - start) * 1000)
         return self._make_result(qid, parameters, records, response_time_ms=elapsed)
 
-
 class CITESAdapter(ExternalDatabaseAdapter):
     """CITES trade database adapter for species/commodity trade records."""
 
@@ -428,7 +410,6 @@ class CITESAdapter(ExternalDatabaseAdapter):
         ] if parameters.get("taxon") or parameters.get("country_origin") else []
         elapsed = int((time.monotonic() - start) * 1000)
         return self._make_result(qid, parameters, records, response_time_ms=elapsed)
-
 
 class FLEGTAdapter(ExternalDatabaseAdapter):
     """FLEGT/VPA licensing system adapter for timber legality verification."""
@@ -458,7 +439,6 @@ class FLEGTAdapter(ExternalDatabaseAdapter):
         ] if license_num or parameters.get("country_origin") else []
         elapsed = int((time.monotonic() - start) * 1000)
         return self._make_result(qid, parameters, records, response_time_ms=elapsed)
-
 
 class COMTRADEAdapter(ExternalDatabaseAdapter):
     """UN COMTRADE adapter for international trade statistics."""
@@ -491,7 +471,6 @@ class COMTRADEAdapter(ExternalDatabaseAdapter):
         elapsed = int((time.monotonic() - start) * 1000)
         return self._make_result(qid, parameters, records, response_time_ms=elapsed)
 
-
 class FAOAdapter(ExternalDatabaseAdapter):
     """FAO STAT adapter for agricultural production and deforestation data."""
 
@@ -522,7 +501,6 @@ class FAOAdapter(ExternalDatabaseAdapter):
         elapsed = int((time.monotonic() - start) * 1000)
         return self._make_result(qid, parameters, records, response_time_ms=elapsed)
 
-
 class GFWAdapter(ExternalDatabaseAdapter):
     """Global Forest Watch adapter for deforestation and land-use data."""
 
@@ -552,7 +530,6 @@ class GFWAdapter(ExternalDatabaseAdapter):
         ] if parameters.get("country_code") else []
         elapsed = int((time.monotonic() - start) * 1000)
         return self._make_result(qid, parameters, records, response_time_ms=elapsed)
-
 
 class WGIAdapter(ExternalDatabaseAdapter):
     """World Bank Worldwide Governance Indicators adapter."""
@@ -593,7 +570,6 @@ class WGIAdapter(ExternalDatabaseAdapter):
         elapsed = int((time.monotonic() - start) * 1000)
         return self._make_result(qid, parameters, records, response_time_ms=elapsed)
 
-
 class CPIAdapter(ExternalDatabaseAdapter):
     """Transparency International Corruption Perceptions Index adapter."""
 
@@ -622,7 +598,6 @@ class CPIAdapter(ExternalDatabaseAdapter):
         elapsed = int((time.monotonic() - start) * 1000)
         return self._make_result(qid, parameters, records, response_time_ms=elapsed)
 
-
 class SanctionsAdapter(ExternalDatabaseAdapter):
     """EU Sanctions / Restrictive Measures database adapter."""
 
@@ -647,12 +622,11 @@ class SanctionsAdapter(ExternalDatabaseAdapter):
                 "regulation_reference": "",
                 "listing_date": None,
                 "match_score": 0.0,
-                "last_checked": _utcnow().isoformat(),
+                "last_checked": utcnow().isoformat(),
             }
         ] if entity_name else []
         elapsed = int((time.monotonic() - start) * 1000)
         return self._make_result(qid, parameters, records, response_time_ms=elapsed)
-
 
 # ---------------------------------------------------------------------------
 # Adapter Registry
@@ -670,11 +644,9 @@ _ADAPTER_MAP: Dict[ExternalDatabaseSource, type] = {
     ExternalDatabaseSource.EU_SANCTIONS: SanctionsAdapter,
 }
 
-
 # ---------------------------------------------------------------------------
 # Main Engine
 # ---------------------------------------------------------------------------
-
 
 class ExternalDatabaseConnectorEngine:
     """Engine for querying external regulatory and trade databases.
@@ -774,7 +746,7 @@ class ExternalDatabaseConnectorEngine:
                 source=source,
                 query_parameters=parameters,
                 status=QueryStatus.FAILED,
-                query_timestamp=_utcnow(),
+                query_timestamp=utcnow(),
                 provenance_hash=_compute_hash({"source": source.value, "error": "circuit_open"}),
             )
 
@@ -790,7 +762,7 @@ class ExternalDatabaseConnectorEngine:
                     source=source,
                     query_parameters=parameters,
                     status=QueryStatus.FAILED,
-                    query_timestamp=_utcnow(),
+                    query_timestamp=utcnow(),
                     provenance_hash=_compute_hash(
                         {"source": source.value, "error": "rate_limited"}
                     ),
@@ -864,7 +836,7 @@ class ExternalDatabaseConnectorEngine:
             source=source,
             query_parameters=parameters,
             status=QueryStatus.FAILED,
-            query_timestamp=_utcnow(),
+            query_timestamp=utcnow(),
             provenance_hash=_compute_hash(
                 {"source": source.value, "error": str(last_error)}
             ),
@@ -905,7 +877,7 @@ class ExternalDatabaseConnectorEngine:
                         source=sources[i],
                         query_parameters=parameters,
                         status=QueryStatus.FAILED,
-                        query_timestamp=_utcnow(),
+                        query_timestamp=utcnow(),
                         provenance_hash=_compute_hash(
                             {"source": sources[i].value, "error": str(result)}
                         ),

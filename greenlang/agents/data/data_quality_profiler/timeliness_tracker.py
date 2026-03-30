@@ -46,22 +46,17 @@ import uuid
 from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, List, Optional, Tuple
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 __all__ = [
     "TimelinessTracker",
 ]
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
 
 def _generate_id(prefix: str = "TML") -> str:
     """Generate a unique identifier with the given prefix.
@@ -74,7 +69,6 @@ def _generate_id(prefix: str = "TML") -> str:
     """
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
 
-
 def _compute_provenance(operation: str, data_repr: str) -> str:
     """Compute SHA-256 provenance hash for a timeliness operation.
 
@@ -85,9 +79,8 @@ def _compute_provenance(operation: str, data_repr: str) -> str:
     Returns:
         Hex-encoded SHA-256 digest.
     """
-    payload = f"{operation}:{data_repr}:{_utcnow().isoformat()}"
+    payload = f"{operation}:{data_repr}:{utcnow().isoformat()}"
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
-
 
 def _parse_timestamp(value: Any) -> Optional[datetime]:
     """Parse a value into a UTC datetime object.
@@ -153,7 +146,6 @@ def _parse_timestamp(value: Any) -> Optional[datetime]:
             pass
     return None
 
-
 def _safe_stdev(values: List[float]) -> float:
     """Compute sample standard deviation, 0.0 for < 2 values.
 
@@ -166,7 +158,6 @@ def _safe_stdev(values: List[float]) -> float:
     if len(values) < 2:
         return 0.0
     return statistics.stdev(values)
-
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -184,11 +175,9 @@ _DEFAULT_GOOD_HOURS = 6.0
 _DEFAULT_FAIR_HOURS = 24.0
 _DEFAULT_POOR_HOURS = 72.0
 
-
 # ---------------------------------------------------------------------------
 # TimelinessTracker Engine
 # ---------------------------------------------------------------------------
-
 
 class TimelinessTracker:
     """Data freshness and staleness scoring engine.
@@ -288,7 +277,7 @@ class TimelinessTracker:
                 f"Cannot parse last_updated timestamp: {last_updated!r}"
             )
 
-        now = _utcnow()
+        now = utcnow()
         age_delta = now - ts
         age_hours = age_delta.total_seconds() / 3600.0
         if age_hours < 0:
@@ -453,7 +442,7 @@ class TimelinessTracker:
         if not data:
             raise ValueError("Cannot analyse empty dataset")
 
-        now = _utcnow()
+        now = utcnow()
         record_scores: List[Dict[str, Any]] = []
         ages: List[float] = []
         parse_failures = 0
@@ -557,7 +546,7 @@ class TimelinessTracker:
             return 1.0
 
         column_scores: List[float] = []
-        now = _utcnow()
+        now = utcnow()
 
         for col in timestamp_columns:
             scores: List[float] = []
@@ -597,7 +586,7 @@ class TimelinessTracker:
             age_hours, freshness_score.
         """
         threshold = threshold_hours if threshold_hours is not None else self._poor_hours
-        now = _utcnow()
+        now = utcnow()
         stale: List[Dict[str, Any]] = []
 
         for idx, row in enumerate(data):
@@ -776,7 +765,7 @@ class TimelinessTracker:
             return []
 
         issues: List[Dict[str, Any]] = []
-        now = _utcnow()
+        now = utcnow()
 
         for col in timestamp_columns:
             ages: List[float] = []
@@ -943,5 +932,5 @@ class TimelinessTracker:
                 ),
                 "avg_check_time_ms": round(avg_time, 2),
                 "stored_checks": len(self._checks),
-                "timestamp": _utcnow().isoformat(),
+                "timestamp": utcnow().isoformat(),
             }

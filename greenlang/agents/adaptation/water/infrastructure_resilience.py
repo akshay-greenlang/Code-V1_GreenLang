@@ -17,10 +17,11 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from greenlang.agents.base import AgentConfig, AgentResult, BaseAgent
 from greenlang.utilities.determinism import DeterministicClock
+from greenlang.schemas import GreenLangBase
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +50,7 @@ class ResilienceRating(str, Enum):
     CRITICAL = "critical"
 
 
-class InfrastructureAsset(BaseModel):
+class InfrastructureAsset(GreenLangBase):
     """Infrastructure asset definition."""
     asset_id: str
     asset_name: str
@@ -62,7 +63,7 @@ class InfrastructureAsset(BaseModel):
     exposed_hazards: List[ClimateHazard]
 
 
-class ResilienceAssessment(BaseModel):
+class ResilienceAssessment(GreenLangBase):
     """Resilience assessment for asset."""
     asset_id: str
     overall_resilience_score: float
@@ -72,7 +73,7 @@ class ResilienceAssessment(BaseModel):
     adaptation_priority: str
 
 
-class AdaptationMeasure(BaseModel):
+class AdaptationMeasure(GreenLangBase):
     """Adaptation measure for asset."""
     measure_id: str
     asset_id: str
@@ -83,7 +84,7 @@ class AdaptationMeasure(BaseModel):
     implementation_priority: str
 
 
-class InfraResilienceInput(BaseModel):
+class InfraResilienceInput(GreenLangBase):
     """Input for infrastructure resilience analysis."""
     system_id: str
     assets: List[InfrastructureAsset]
@@ -91,7 +92,7 @@ class InfraResilienceInput(BaseModel):
     planning_horizon_years: int = Field(default=30)
 
 
-class InfraResilienceOutput(BaseModel):
+class InfraResilienceOutput(GreenLangBase):
     """Output from infrastructure resilience analysis."""
     system_id: str
     overall_system_resilience: float

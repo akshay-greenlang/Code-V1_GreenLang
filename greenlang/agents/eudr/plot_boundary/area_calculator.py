@@ -60,6 +60,8 @@ from .models import (
 )
 from .provenance import ProvenanceTracker
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -72,17 +74,10 @@ _MODULE_VERSION = "1.0.0"
 # Helpers
 # ---------------------------------------------------------------------------
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_hash(data: Any) -> str:
     """Compute a deterministic SHA-256 hash for audit provenance."""
     raw = json.dumps(data, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # WGS84 Ellipsoid Constants
@@ -152,11 +147,9 @@ _C4: List[float] = [
     (1.0 / 63.0),
 ]
 
-
 # ===========================================================================
 # AreaCalculator
 # ===========================================================================
-
 
 class AreaCalculator:
     """Geodetic area calculation engine for EUDR plot boundaries.
@@ -1165,7 +1158,6 @@ class AreaCalculator:
             area += ring[i].lon * ring[j].lat - ring[j].lon * ring[i].lat
 
         return area * 0.5
-
 
 # ---------------------------------------------------------------------------
 # Public API

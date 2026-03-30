@@ -39,19 +39,14 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseModel, Field
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
 _MODULE_VERSION: str = "1.0.0"
 
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _new_uuid() -> str:
     return str(uuid.uuid4())
-
 
 def _compute_hash(data: Any) -> str:
     if hasattr(data, "model_dump"):
@@ -63,11 +58,9 @@ def _compute_hash(data: Any) -> str:
     raw = json.dumps(serializable, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
-
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
-
 
 class SBTiPathway(str, Enum):
     ACA_15C = "aca_15c"
@@ -75,13 +68,11 @@ class SBTiPathway(str, Enum):
     SDA = "sda"
     FLAG = "flag"
 
-
 class TargetType(str, Enum):
     NEAR_TERM = "near_term"
     INTERIM = "interim"
     LONG_TERM = "long_term"
     NET_ZERO = "net_zero"
-
 
 class CriteriaStatus(str, Enum):
     PASS = "pass"
@@ -89,7 +80,6 @@ class CriteriaStatus(str, Enum):
     WARNING = "warning"
     NOT_APPLICABLE = "not_applicable"
     PENDING = "pending"
-
 
 class SubmissionStatus(str, Enum):
     DRAFT = "draft"
@@ -100,7 +90,6 @@ class SubmissionStatus(str, Enum):
     REVISION_REQUIRED = "revision_required"
     REJECTED = "rejected"
 
-
 class TemperatureRating(str, Enum):
     BELOW_15C = "below_1.5C"
     C_15 = "1.5C"
@@ -109,14 +98,12 @@ class TemperatureRating(str, Enum):
     ABOVE_2C = "above_2C"
     NOT_ALIGNED = "not_aligned"
 
-
 class LinearityStatus(str, Enum):
     LINEAR = "linear"
     FRONT_LOADED = "front_loaded"
     BACK_LOADED = "back_loaded"
     BACKSLIDING = "backsliding"
     STEPPED = "stepped"
-
 
 # ---------------------------------------------------------------------------
 # SBTi Minimum Ambition Tables
@@ -152,7 +139,6 @@ SBTI_MINIMUM_AMBITION: Dict[str, Dict[str, float]] = {
     },
 }
 
-
 # ---------------------------------------------------------------------------
 # 21-Criteria Validation Checklist
 # ---------------------------------------------------------------------------
@@ -187,11 +173,9 @@ INTERIM_TARGET_CRITERIA: List[Dict[str, str]] = [
     {"id": "IT-C21", "name": "Target language meets SBTi clarity requirements", "category": "methodology", "severity": "required"},
 ]
 
-
 # ---------------------------------------------------------------------------
 # Data Models
 # ---------------------------------------------------------------------------
-
 
 class SBTiBridgeConfig(BaseModel):
     """Configuration for the SBTi bridge."""
@@ -213,7 +197,6 @@ class SBTiBridgeConfig(BaseModel):
     enable_provenance: bool = Field(default=True)
     rate_limit_per_minute: int = Field(default=20, ge=1, le=60)
 
-
 class InterimTargetDefinition(BaseModel):
     """A single interim target for SBTi validation."""
     target_id: str = Field(default_factory=_new_uuid)
@@ -234,7 +217,6 @@ class InterimTargetDefinition(BaseModel):
     flag_target_separate: bool = Field(default=False)
     target_language: str = Field(default="")
 
-
 class CriteriaValidation(BaseModel):
     """Validation result for a single SBTi criterion."""
     criteria_id: str = Field(default="")
@@ -245,7 +227,6 @@ class CriteriaValidation(BaseModel):
     evidence: str = Field(default="")
     remediation: str = Field(default="")
     data_source: str = Field(default="")
-
 
 class LinearityAssessment(BaseModel):
     """Assessment of target linearity (no backsliding)."""
@@ -259,7 +240,6 @@ class LinearityAssessment(BaseModel):
     pathway_budget_tco2e: float = Field(default=0.0)
     budget_within_envelope: bool = Field(default=True)
     provenance_hash: str = Field(default="")
-
 
 class SBTiValidationResult(BaseModel):
     """Complete SBTi interim target validation result."""
@@ -280,7 +260,6 @@ class SBTiValidationResult(BaseModel):
     improvement_actions: List[str] = Field(default_factory=list)
     provenance_hash: str = Field(default="")
 
-
 class SBTiSubmissionPackage(BaseModel):
     """SBTi target submission package."""
     package_id: str = Field(default_factory=_new_uuid)
@@ -295,14 +274,12 @@ class SBTiSubmissionPackage(BaseModel):
     linearity_evidence: Dict[str, Any] = Field(default_factory=dict)
     supporting_evidence: List[str] = Field(default_factory=list)
     methodology_notes: List[str] = Field(default_factory=list)
-    generated_at: datetime = Field(default_factory=_utcnow)
+    generated_at: datetime = Field(default_factory=utcnow)
     provenance_hash: str = Field(default="")
-
 
 # ---------------------------------------------------------------------------
 # SBTiBridge
 # ---------------------------------------------------------------------------
-
 
 class SBTiBridge:
     """SBTi interim target validation bridge for PACK-029.
@@ -565,6 +542,7 @@ class SBTiBridge:
 
         try:
             import httpx
+
             if not self._http_client:
                 self._http_client = httpx.AsyncClient(
                     base_url=self.config.sbti_api_url,

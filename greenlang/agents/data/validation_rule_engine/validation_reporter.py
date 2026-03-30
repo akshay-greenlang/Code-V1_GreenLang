@@ -77,6 +77,7 @@ from typing import Any, Dict, List, Optional
 
 from greenlang.agents.data.validation_rule_engine.config import get_config
 from greenlang.agents.data.validation_rule_engine.provenance import ProvenanceTracker
+from greenlang.schemas import utcnow
 
 logger = logging.getLogger(__name__)
 
@@ -151,12 +152,6 @@ _SEVERITY_ORDER: Dict[str, int] = {
     "informational": 4,
 }
 
-
-def _utcnow() -> datetime:
-    """Return current UTC datetime with microseconds zeroed."""
-    return datetime.now(timezone.utc).replace(microsecond=0)
-
-
 def _compute_sha256(content: str) -> str:
     """Compute a SHA-256 hex digest for the given content string.
 
@@ -167,7 +162,6 @@ def _compute_sha256(content: str) -> str:
         Hex-encoded SHA-256 digest.
     """
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
-
 
 def _safe_division(numerator: float, denominator: float) -> float:
     """Perform safe floating-point division returning 0.0 on zero denominator.
@@ -183,7 +177,6 @@ def _safe_division(numerator: float, denominator: float) -> float:
         return 0.0
     return numerator / denominator
 
-
 def _severity_sort_key(item: dict) -> int:
     """Return a numeric sort key for a result dict's severity field.
 
@@ -196,7 +189,6 @@ def _severity_sort_key(item: dict) -> int:
     return _SEVERITY_ORDER.get(
         str(item.get("severity", "info")).lower(), 99
     )
-
 
 def _escape_csv(value: str) -> str:
     """Escape a string for safe CSV inclusion.
@@ -214,7 +206,6 @@ def _escape_csv(value: str) -> str:
     if "," in s or "\n" in s or '"' in s:
         return '"' + s.replace('"', '""') + '"'
     return s
-
 
 def _escape_html(value: str) -> str:
     """Escape a string for safe HTML rendering.
@@ -236,11 +227,9 @@ def _escape_html(value: str) -> str:
     s = s.replace("'", "&#39;")
     return s
 
-
 # ---------------------------------------------------------------------------
 # Aggregate helpers
 # ---------------------------------------------------------------------------
-
 
 def _compute_aggregates(
     evaluation_results: List[dict],
@@ -318,7 +307,6 @@ def _compute_aggregates(
         "severity_counts": severity_counts,
         "top_failures": failures[:20],
     }
-
 
 def _generate_recommendations(aggregates: Dict[str, Any]) -> List[str]:
     """Generate actionable recommendations based on aggregate statistics.
@@ -398,11 +386,9 @@ def _generate_recommendations(aggregates: Dict[str, Any]) -> List[str]:
 
     return recommendations
 
-
 # ---------------------------------------------------------------------------
 # ValidationReporterEngine
 # ---------------------------------------------------------------------------
-
 
 class ValidationReporterEngine:
     """Generates validation reports from evaluation results.
@@ -538,7 +524,7 @@ class ValidationReporterEngine:
         # -- Build report envelope -----------------------------------------
         report_id = str(uuid.uuid4())
         report_hash = _compute_sha256(content)
-        generated_at = _utcnow().isoformat()
+        generated_at = utcnow().isoformat()
 
         # -- Record provenance ---------------------------------------------
         provenance_hash = self._provenance.record(
@@ -602,7 +588,7 @@ class ValidationReporterEngine:
         """
         aggregates = _compute_aggregates(evaluation_results)
         recommendations = _generate_recommendations(aggregates)
-        generated_at = _utcnow().isoformat()
+        generated_at = utcnow().isoformat()
 
         content_data: Dict[str, Any] = {
             "title": "Validation Summary Report",
@@ -657,7 +643,7 @@ class ValidationReporterEngine:
             Formatted report content string.
         """
         aggregates = _compute_aggregates(evaluation_results)
-        generated_at = _utcnow().isoformat()
+        generated_at = utcnow().isoformat()
 
         rule_details: List[Dict[str, Any]] = []
         for result in evaluation_results:
@@ -730,7 +716,7 @@ class ValidationReporterEngine:
             Formatted report content string.
         """
         aggregates = _compute_aggregates(evaluation_results)
-        generated_at = _utcnow().isoformat()
+        generated_at = utcnow().isoformat()
 
         # Determine which frameworks to include
         if framework and framework in _REGULATORY_FRAMEWORKS:
@@ -838,7 +824,7 @@ class ValidationReporterEngine:
         Returns:
             Formatted report content string.
         """
-        generated_at = _utcnow().isoformat()
+        generated_at = utcnow().isoformat()
 
         if len(evaluation_history) < 2:
             # Need at least two snapshots for a trend
@@ -962,7 +948,7 @@ class ValidationReporterEngine:
         """
         aggregates = _compute_aggregates(evaluation_results)
         recommendations = _generate_recommendations(aggregates)
-        generated_at = _utcnow().isoformat()
+        generated_at = utcnow().isoformat()
 
         # Compute risk score (0 = no risk, 100 = maximum risk)
         risk_score = self._compute_risk_score(aggregates)
@@ -2685,7 +2671,6 @@ class ValidationReporterEngine:
         if risk_score <= 75:
             return "HIGH"
         return "CRITICAL"
-
 
 # ---------------------------------------------------------------------------
 # Public surface

@@ -32,21 +32,16 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from greenlang.schemas import utcnow
+
 logger = logging.getLogger(__name__)
 _MODULE_VERSION = "1.0.0"
-
-
-def _utcnow() -> datetime:
-    return datetime.now(timezone.utc)
-
 
 def _new_uuid() -> str:
     return str(uuid.uuid4())
 
-
 def _compute_hash(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
-
 
 # ---------------------------------------------------------------------------
 # Input Models
@@ -60,7 +55,6 @@ class ScopeOverviewLine(BaseModel):
     share_pct: Decimal = Field(Decimal("0"))
     yoy_change_pct: Optional[Decimal] = Field(None)
 
-
 class Scope1SourceCategory(BaseModel):
     """Scope 1 emission source category."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -69,7 +63,6 @@ class Scope1SourceCategory(BaseModel):
     share_of_scope1_pct: Decimal = Field(Decimal("0"))
     entity_count: int = Field(0)
     source_count: int = Field(0)
-
 
 class Scope2DualReporting(BaseModel):
     """Scope 2 dual reporting comparison."""
@@ -82,7 +75,6 @@ class Scope2DualReporting(BaseModel):
     ppa_volume_mwh: Decimal = Field(Decimal("0"))
     residual_mix_tco2e: Decimal = Field(Decimal("0"))
 
-
 class Scope3CategoryLine(BaseModel):
     """Scope 3 category-level breakdown."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -93,7 +85,6 @@ class Scope3CategoryLine(BaseModel):
     data_quality: str = Field("", description="primary, secondary, estimated, not_relevant")
     is_material: bool = Field(True)
     methodology: str = Field("")
-
 
 class GeographicEmissions(BaseModel):
     """Emissions by geographic region."""
@@ -106,7 +97,6 @@ class GeographicEmissions(BaseModel):
     total_tco2e: Decimal = Field(Decimal("0"))
     share_pct: Decimal = Field(Decimal("0"))
 
-
 class SectorEmissions(BaseModel):
     """Emissions by business sector."""
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -117,7 +107,6 @@ class SectorEmissions(BaseModel):
     total_tco2e: Decimal = Field(Decimal("0"))
     share_pct: Decimal = Field(Decimal("0"))
     entity_count: int = Field(0)
-
 
 class ScopeBreakdownReportInput(BaseModel):
     """Complete input for the scope breakdown report."""
@@ -134,7 +123,6 @@ class ScopeBreakdownReportInput(BaseModel):
     total_scope_2_location_tco2e: Decimal = Field(Decimal("0"))
     total_scope_2_market_tco2e: Decimal = Field(Decimal("0"))
     total_scope_3_tco2e: Decimal = Field(Decimal("0"))
-
 
 # ---------------------------------------------------------------------------
 # Output Model
@@ -162,7 +150,6 @@ class ScopeBreakdownReportOutput(BaseModel):
     geographic: List[GeographicEmissions] = Field(default_factory=list)
     sectors: List[SectorEmissions] = Field(default_factory=list)
     provenance_hash: str = Field("")
-
 
 # =============================================================================
 # TEMPLATE CLASS
@@ -193,7 +180,7 @@ class ScopeBreakdownReport:
     def render(self, data: Dict[str, Any]) -> ScopeBreakdownReportOutput:
         """Render scope breakdown from input data."""
         start = time.monotonic()
-        self.generated_at = _utcnow()
+        self.generated_at = utcnow()
         inp = ScopeBreakdownReportInput(**data) if isinstance(data, dict) else data
 
         overview = [ScopeOverviewLine(**s) if isinstance(s, dict) else s for s in inp.scope_overview]
@@ -383,7 +370,6 @@ class ScopeBreakdownReport:
                 f"{c.share_of_scope3_pct},{c.data_quality},{c.is_material},{c.methodology}"
             )
         return "\n".join(lines_out)
-
 
 __all__ = [
     "ScopeBreakdownReport",
